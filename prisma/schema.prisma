@@ -1,0 +1,305 @@
+generator client {
+  	provider = "prisma-client-js"
+	previewFeatures = ["extendedWhereUnique"]
+}
+
+datasource db {
+  	provider = "mysql"
+  	url      = env("DATABASE_URL")
+}
+
+model Items {
+	internal_id   Int      @id @default(autoincrement())
+	item_id       Int? 	   @unique 
+	name          String
+	description   String?  @db.Text
+	image         String?  @db.VarChar(2200)
+	image_id      String?	
+	category      String?
+	rarity        Int?
+	weight        Int?
+	isNC          Boolean
+	isWearable    Boolean @default(false)
+	isNeohome	  Boolean @default(false)
+	est_val       Int?
+	specialType   String?
+	releaseDate   DateTime?
+	retiredDate   DateTime?
+	status		  String?
+	comment       String? @db.Text
+
+	addedAt 	  DateTime @default(now())
+	updatedAt 	  DateTime @updatedAt
+
+	translation   ItemTranslation[]
+	child_itens	  OpenableItems[] @relation("parentItem")
+	inside_at	  OpenableItems[] @relation("childItem")
+
+	atLists 	  ListItems[]
+
+	tags 		  ItemTags[]
+
+	@@index([name, image_id])
+}
+
+model ItemTranslation {
+	translation_id    Int   @id @default(autoincrement())
+	name              String
+	image_id          String?
+	description       String? @db.Text
+	category          String?
+	est_val           Int?
+	item              Items?  @relation(fields: [item_id], references: [item_id], onDelete: SetNull, onUpdate: Cascade)
+	item_id           Int?
+	language          String
+
+	@@index([name, image_id])
+}
+
+model ItemProcess {
+	internal_id   Int     @id @default(autoincrement())
+	item_id       Int? 
+	name          String
+	description   String? @db.Text
+	image         String? @db.Text
+	image_id      String?
+	category      String?
+	rarity        Int?
+	weight        Int?
+	isNC          Boolean
+	est_val       Int?
+	specialType   String?
+	status		  String?
+	releaseDate   DateTime?
+	retiredDate   DateTime?
+	isWearable    Boolean @default(false)
+	addedAt 	  DateTime @default(now())
+	updatedAt 	  DateTime @updatedAt
+	ip_address    String?
+	language	  String
+	
+	hash		  String? @unique
+
+	manual_check  String?
+
+	@@index([name, image_id])
+}
+
+model ItemColor {
+	internal_id   Int      	@id @default(autoincrement())
+	image_id	  String
+	image		  String	
+	
+	lab_l		  Float
+	lab_a		  Float
+	lab_b		  Float
+
+	hsv_h		  Float
+	hsv_s		  Float
+	hsv_v		  Float
+
+	rgb_r		  Float
+	rgb_g		  Float
+	rgb_b		  Float
+
+	hex			  String
+	
+	type          String
+	population	  Float
+
+	@@unique([image_id, type])
+}
+
+model ItemColorLab {
+	internal_id   Int      	@id @default(autoincrement())
+	image_id	  String
+	image		  String	
+	lab_l		  Float
+	lab_a		  Float
+	lab_b		  Float
+	type          String
+	population	  Float
+
+	@@unique([image_id, type])
+}
+
+model ItemPrices {
+	internal_id 	Int 	@id @default(autoincrement())
+	item_id			Int?
+	name			String
+	image_id		String?
+	price			Int
+	addedAt 		DateTime @default(now())
+	manual_check  	String?
+	noInflation_id	Int?
+	usedProcessIDs	String @db.Text
+
+	@@index([name, image_id])
+}
+
+model PriceProcess {
+	internal_id   Int      @id @default(autoincrement())
+	name          String
+	item_id		  Int?
+	image         String?  @db.Text
+	image_id      String?
+	owner		  String?
+	type		  String
+	otherInfo	  String?
+	stock		  Int	   @default(1)
+	price         Int
+	addedAt 	  DateTime @default(now())
+	ip_address    String?
+	language	  String
+
+	hash		  String? @unique
+
+	processed 	  Boolean @default(false)
+	
+	@@index([name, image_id])
+}
+
+model Trades {
+	trade_id	Int @id
+	owner		String
+	wishlist	String @db.Text
+	ip_address  String?
+	addedAt 	DateTime @default(now())
+	
+	processed 	Boolean @default(false)
+	priced		Boolean @default(false)
+
+	items		TradeItems[]
+}
+
+model TradeItems {
+	internal_id Int @id @default(autoincrement())
+	trade_id	Int
+	trade		Trades @relation(fields: [trade_id], references: [trade_id], onDelete: Cascade, onUpdate: Cascade)
+	name		String
+	image		String
+	image_id	String
+	order		Int
+	price		Int?
+	addedAt 	DateTime @default(now())
+	item_id		Int?
+}
+
+model Tags {
+	tag_id		Int 		@id @default(autoincrement())
+	name		String		@unique
+	description	String?		@db.Text
+	addedAt 	DateTime 	@default(now())
+	updateAt 	DateTime 	@updatedAt
+	type		String		@default("tag")
+	items		ItemTags[]
+}
+
+model ItemTags {
+	internal_id Int 		@id @default(autoincrement())
+	item_iid	Int			
+	tag_id		Int
+	tag			Tags 		@relation(fields: [tag_id], references: [tag_id], onDelete: Cascade, onUpdate: Cascade)
+	item		Items 		@relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+	addedAt 	DateTime 	@default(now())
+	added_by	String		@default("SYSTEM")
+}
+
+model User {
+	id        	String   @id
+	username  	String?   @unique
+	neo_user 	String?    
+	email     	String   @unique
+	role      	String   @default("USER")
+	createdAt   DateTime @default(now())
+	last_login 	DateTime @default(now())
+	last_ip   	String?
+
+	xp			Int 	 @default(0)
+
+	feedbacks	Feedbacks[]
+	itemLists	UserList[]
+}
+
+model OpenableItems {
+	internal_id   Int      @id @default(autoincrement())
+	item_iid	  Int
+	parent_iid    Int?	   
+	notes		  String?	
+	addedAt 	  DateTime @default(now())
+	updatedAt 	  DateTime @updatedAt
+	item		  Items    @relation("childItem", fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+	parent_item	  Items?   @relation("parentItem", fields: [parent_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model Feedbacks {
+	feedback_id		Int 		@id @default(autoincrement())
+	type			String		@default("feedback")
+	subject_id		Int?
+	json 			Json?
+	email			String? 	@db.Text
+	votes			Int		    @default(0)
+	addedAt 		DateTime 	@default(now())
+	
+	processed 		Boolean 	@default(false)
+	approved 		Boolean 	@default(false)
+	processedAt 	DateTime?
+		
+	user_id			String?
+	user            User?	    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model UserList {
+	internal_id   Int      	@id @default(autoincrement())
+	name          String
+	description   String? 	@db.Text
+	user_id 	  String
+
+	user		  User	    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+	cover_url	  String?	@db.VarChar(2200)
+	official   	  Boolean 	@default(false)
+
+	createdAt 	  DateTime 	@default(now())
+	updatedAt 	  DateTime 	@updatedAt
+	
+	purpose		  UserListPurpose @default(none)
+
+	visibility 	  UserListVisibility @default(public)
+
+	colorHex	  String?
+	
+	sortBy		  String	@default("name")
+	sortDir		  String	@default("asc")
+	order		  Int?
+	
+	items		  ListItems[]
+}
+
+enum UserListPurpose {
+	none
+	seeking
+	trading
+}
+
+enum UserListVisibility {
+	public
+	private
+	unlisted
+}
+
+model ListItems {
+	internal_id   Int      	@id @default(autoincrement())
+	list_id 	  Int
+	item_iid	  Int
+	item		  Items   	@relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+	list		  UserList 	@relation(fields: [list_id], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+	addedAt 	  DateTime 	@default(now())
+	updatedAt 	  DateTime 	@updatedAt
+	capValue	  Int?
+	amount		  Int		@default(1)
+	imported	  Boolean	@default(false)
+	order		  Int?
+	isHighlight   Boolean	@default(false)
+
+	@@unique([list_id, item_iid])
+}

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `TradeItems` MODIFY `internal_id` INTEGER NOT NULL AUTO_INCREMENT;

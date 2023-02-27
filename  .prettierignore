@@ -1,0 +1,7 @@
+# Ignore artifacts:
+
+prisma
+public
+node_modules
+**/.next/**
+**/_next/**
