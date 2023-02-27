@@ -36,9 +36,9 @@ export default async function handle(
     const itemData = { ...item };
 
     for (const itemOtherData of allItemData) {
+      for (const key of Object.keys(itemData))
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
-      for (const key of Object.keys(itemData))
         itemData[key] ??= itemOtherData[key];
 
       deleteIds.push(itemOtherData.internal_id);

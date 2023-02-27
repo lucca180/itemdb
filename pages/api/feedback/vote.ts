@@ -4,7 +4,7 @@ import { FeedbackParsed, TradeData } from '../../../types';
 import { CheckAuth } from '../../../utils/googleCloud';
 import { Feedbacks } from '@prisma/client';
 import { processTradePrice } from '../trades/setPrice';
-import { processTags } from '../item/update';
+import { processTags } from '../v1/items/[id]/index';
 
 export default async function handle(
   req: NextApiRequest,
