@@ -1,13 +1,20 @@
 {
   "plugins": ["@typescript-eslint"],
-  "extends": ["next/core-web-vitals", "plugin:@typescript-eslint/recommended", "prettier"],
+  "extends": [
+    "next/core-web-vitals",
+    "plugin:@typescript-eslint/recommended",
+    "prettier"
+  ],
   "rules": {
     "react-hooks/exhaustive-deps": "off",
     "react/no-children-prop": "off",
-    "prefer-const": ["error", {
-      "destructuring": "all",
-      "ignoreReadBeforeAssign": false
-    }],
+    "prefer-const": [
+      "error",
+      {
+        "destructuring": "all",
+        "ignoreReadBeforeAssign": false
+      }
+    ],
     // wrongly assuming that you will type things correcly :pray:
     "@typescript-eslint/no-explicit-any": "off"
   }

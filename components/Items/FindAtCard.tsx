@@ -1,21 +1,21 @@
-import { Box, Flex } from '@chakra-ui/react'
-import React from 'react'
-import Image from 'next/image'
-import { ItemData } from '../../types'
-import AuctionIcon from '../../public/icons/auction.png'
-import ShopIcon from '../../public/icons/shop.svg'
-import SDBIcon from '../../public/icons/safetydeposit.svg'
-import SWIcon from '../../public/icons/shopwizard.png'
-import TPIcon from '../../public/icons/tradingpost.png'
-import ClosetIcon from '../../public/icons/closet.svg'
+import { Box, Flex } from '@chakra-ui/react';
+import React from 'react';
+import Image from 'next/image';
+import { ItemData } from '../../types';
+import AuctionIcon from '../../public/icons/auction.png';
+import ShopIcon from '../../public/icons/shop.svg';
+import SDBIcon from '../../public/icons/safetydeposit.svg';
+import SWIcon from '../../public/icons/shopwizard.png';
+import TPIcon from '../../public/icons/tradingpost.png';
+import ClosetIcon from '../../public/icons/closet.svg';
 
 type Props = {
-  item: ItemData
-}
+  item: ItemData;
+};
 
 const FindAtCard = (props: Props) => {
-  const { item } = props
-  const color = item.color.rgb
+  const { item } = props;
+  const color = item.color.rgb;
 
   return (
     <Flex
@@ -110,7 +110,7 @@ const FindAtCard = (props: Props) => {
         )}
       </Flex>
     </Flex>
-  )
-}
+  );
+};
 
-export default FindAtCard
+export default FindAtCard;

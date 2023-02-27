@@ -1,13 +1,13 @@
-import { Checkbox } from '@chakra-ui/react'
+import { Checkbox } from '@chakra-ui/react';
 
 type Props = {
-  allChecked?: boolean
-  checked?: any[]
-  onClick?: (checkAll: boolean) => void
-}
+  allChecked?: boolean;
+  checked?: any[];
+  onClick?: (checkAll: boolean) => void;
+};
 
 export const SelectItemsCheckbox = (props: Props) => {
-  const { allChecked, checked, onClick } = props
+  const { allChecked, checked, onClick } = props;
   return (
     <Checkbox
       colorScheme={'gray'}
@@ -18,5 +18,5 @@ export const SelectItemsCheckbox = (props: Props) => {
     >
       {checked?.length ?? 0} Items Selected
     </Checkbox>
-  )
-}
+  );
+};

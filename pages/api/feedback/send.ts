@@ -1,6 +1,6 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
-import prisma from '../../../utils/prisma'
-import requestIp from 'request-ip'
+import type { NextApiRequest, NextApiResponse } from 'next';
+import prisma from '../../../utils/prisma';
+import requestIp from 'request-ip';
 
 export default async function handle(
   req: NextApiRequest,
@@ -9,39 +9,39 @@ export default async function handle(
   if (req.method !== 'POST')
     throw new Error(
       `The HTTP ${req.method} method is not supported at this route.`
-    )
+    );
 
-  const { email, json, user_id, type, subject_id } = req.body
-  let { pageInfo } = req.body
+  const { email, json, user_id, type, subject_id } = req.body;
+  let { pageInfo } = req.body;
 
-  if (!json || !type) return res.status(401).send('Missing required fields')
+  if (!json || !type) return res.status(401).send('Missing required fields');
 
   if (type === 'tradePrice') {
     if (!subject_id || isNaN(parseInt(subject_id)) || !user_id)
-      return res.status(401).send('Missing required fields')
+      return res.status(401).send('Missing required fields');
   }
 
-  const parsed = JSON.parse(json ?? '{}')
+  const parsed = JSON.parse(json ?? '{}');
 
-  if (!pageInfo) pageInfo = req.headers.referer
-  if (!pageInfo) return res.status(401).send('Missing required fields')
+  if (!pageInfo) pageInfo = req.headers.referer;
+  if (!pageInfo) return res.status(401).send('Missing required fields');
 
-  const ip = requestIp.getClientIp(req)
+  const ip = requestIp.getClientIp(req);
   const obj = {
     ip: ip,
     pageRef: pageInfo,
     content: parsed,
-  }
+  };
 
-  let shoudContinue = true
+  let shoudContinue = true;
 
   if (type === 'tradePrice')
-    shoudContinue = await processTradePrice(parseInt(subject_id))
+    shoudContinue = await processTradePrice(parseInt(subject_id));
 
   if (!shoudContinue)
     return res
       .status(401)
-      .json({ success: false, message: 'already processed' })
+      .json({ success: false, message: 'already processed' });
 
   const result = await prisma.feedbacks.create({
     data: {
@@ -60,24 +60,24 @@ export default async function handle(
     include: {
       user: true,
     },
-  })
+  });
 
-  return res.status(200).json({ success: true, message: result })
+  return res.status(200).json({ success: true, message: result });
 }
 
 const processTradePrice = async (trade_id?: number) => {
   const tradeFeedback = await prisma.feedbacks.findFirst({
     where: { type: 'tradePrice', subject_id: trade_id },
-  })
+  });
 
-  if (tradeFeedback) return false
+  if (tradeFeedback) return false;
 
   await prisma.trades.update({
     where: { trade_id: trade_id },
     data: {
       processed: true,
     },
-  })
+  });
 
-  return true
-}
+  return true;
+};

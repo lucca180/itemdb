@@ -1,23 +1,23 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
-import prisma from '../../../../utils/prisma'
-import { PriceData } from '../../../../types'
-import requestIp from 'request-ip'
-import hash from 'object-hash'
+import type { NextApiRequest, NextApiResponse } from 'next';
+import prisma from '../../../../utils/prisma';
+import { PriceData } from '../../../../types';
+import requestIp from 'request-ip';
+import hash from 'object-hash';
 
 export default async function handle(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method === 'GET') return GET(req, res)
-  if (req.method === 'POST') return POST(req, res)
+  if (req.method === 'GET') return GET(req, res);
+  if (req.method === 'POST') return POST(req, res);
 
-  return res.status(405).json({ error: 'Method not allowed' })
+  return res.status(405).json({ error: 'Method not allowed' });
 }
 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
-  const item_id = req.query.item_id as string
-  const name = req.query.name as string
-  const image_id = req.query.image_id as string
+  const item_id = req.query.item_id as string;
+  const name = req.query.name as string;
+  const image_id = req.query.image_id as string;
 
   const pricesRaw = await prisma.itemPrices.findMany({
     where: {
@@ -30,42 +30,43 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       ],
     },
     orderBy: { addedAt: 'desc' },
-  })
+  });
 
   const prices: PriceData[] = pricesRaw.map((p) => {
     return {
       value: p.price,
       addedAt: p.addedAt.toJSON(),
       inflated: !!p.noInflation_id,
-    }
-  })
+    };
+  });
 
-  return res.json(prices)
-}
+  return res.json(prices);
+};
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
-  const data = JSON.parse(req.body)
+  const data = JSON.parse(req.body);
 
-  const itemPrices = data.itemPrices
-  const lang = data.lang
+  const itemPrices = data.itemPrices;
+  const lang = data.lang;
 
-  const dataList = []
+  const dataList = [];
   for (const priceInfo of itemPrices) {
-    let { name, img, owner, stock, value, otherInfo, type, item_id } = priceInfo
-    let imageId: string | null = null
+    let { name, img, owner, stock, value, otherInfo, type, item_id } =
+      priceInfo;
+    let imageId: string | null = null;
 
-    stock = isNaN(Number(stock)) ? undefined : Number(stock)
-    value = isNaN(Number(value)) ? undefined : Number(value)
-    item_id = isNaN(Number(item_id)) ? undefined : Number(item_id)
+    stock = isNaN(Number(stock)) ? undefined : Number(stock);
+    value = isNaN(Number(value)) ? undefined : Number(value);
+    item_id = isNaN(Number(item_id)) ? undefined : Number(item_id);
 
-    if (!name || !value) continue
+    if (!name || !value) continue;
 
     if (typeof stock === undefined || typeof value === undefined)
-      return res.status(401).send('Invalid Data')
+      return res.status(401).send('Invalid Data');
 
-    if (img) img = (img as string).replace(/^[^\/\/\s]*\/\//gim, 'https://')
+    if (img) img = (img as string).replace(/^[^\/\/\s]*\/\//gim, 'https://');
 
-    if (img) imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? null
+    if (img) imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? null;
 
     const x = {
       name: name,
@@ -82,20 +83,20 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       ip_address: requestIp.getClientIp(req),
 
       hash: '',
-    }
+    };
 
     x.hash = hash(x, {
       excludeKeys: (key: string) =>
         ['ip_address', 'hash', 'stock'].includes(key),
-    })
+    });
 
-    dataList.push(x)
+    dataList.push(x);
   }
 
   const result = await prisma.priceProcess.createMany({
     data: dataList,
     skipDuplicates: true,
-  })
+  });
 
-  return res.json(result)
-}
+  return res.json(result);
+};

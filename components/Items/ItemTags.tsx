@@ -1,18 +1,18 @@
-import { Button, Flex, Tag, Text } from '@chakra-ui/react'
-import React from 'react'
-import { ItemData, ItemTag } from '../../types'
-import CardBase from '../Card/CardBase'
+import { Button, Flex, Tag, Text } from '@chakra-ui/react';
+import React from 'react';
+import { ItemData, ItemTag } from '../../types';
+import CardBase from '../Card/CardBase';
 
 type Props = {
-  item: ItemData
-  tags: ItemTag[]
-  toggleModal: () => void
-}
+  item: ItemData;
+  tags: ItemTag[];
+  toggleModal: () => void;
+};
 
 const ItemTags = (props: Props) => {
-  const { item, tags, toggleModal } = props
-  const color = item.color.rgb
-  const tagsFiltered = tags.filter((a) => a.type == 'tag')
+  const { item, tags, toggleModal } = props;
+  const color = item.color.rgb;
+  const tagsFiltered = tags.filter((a) => a.type == 'tag');
 
   return (
     <CardBase title="Tags" color={item.color.rgb}>
@@ -38,7 +38,7 @@ const ItemTags = (props: Props) => {
         )}
       </Flex>
     </CardBase>
-  )
-}
+  );
+};
 
-export default ItemTags
+export default ItemTags;

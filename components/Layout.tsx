@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect } from 'react'
+import React, { ReactNode, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -14,36 +14,36 @@ import {
   MenuList,
   Text,
   useDisclosure,
-} from '@chakra-ui/react'
+} from '@chakra-ui/react';
 
-import Image from 'next/image'
-import logo from '../public/logo_white.svg'
-import { ChevronDownIcon, SearchIcon } from '@chakra-ui/icons'
-import Link from 'next/link'
-import { useRouter } from 'next/router'
-import SearchMenu from './Menus/SearchMenu'
-import LoginModal from './Modal/LoginModal'
-import { useAuth } from '../utils/auth'
+import Image from 'next/image';
+import logo from '../public/logo_white.svg';
+import { ChevronDownIcon, SearchIcon } from '@chakra-ui/icons';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import SearchMenu from './Menus/SearchMenu';
+import LoginModal from './Modal/LoginModal';
+import { useAuth } from '../utils/auth';
 
 type Props = {
-  children: ReactNode
-}
+  children: ReactNode;
+};
 
 const Layout = (props: Props) => {
-  const router = useRouter()
-  const [search, setSearch] = React.useState<string>('')
-  const { isOpen, onOpen, onClose } = useDisclosure()
-  const { user, authLoading, signout } = useAuth()
+  const router = useRouter();
+  const [search, setSearch] = React.useState<string>('');
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { user, authLoading, signout } = useAuth();
 
   useEffect(() => {
-    if (!router.isReady) return
-    setSearch((router.query.s as string) ?? '')
-  }, [router.isReady])
+    if (!router.isReady) return;
+    setSearch((router.query.s as string) ?? '');
+  }, [router.isReady]);
 
   const onSubmit = (e: any) => {
-    e.preventDefault()
-    router.push(`/search?s=${encodeURIComponent(search)}`)
-  }
+    e.preventDefault();
+    router.push(`/search?s=${encodeURIComponent(search)}`);
+  };
 
   return (
     <>
@@ -152,7 +152,7 @@ const Layout = (props: Props) => {
         </Box>
       </Flex>
     </>
-  )
-}
+  );
+};
 
-export default Layout
+export default Layout;

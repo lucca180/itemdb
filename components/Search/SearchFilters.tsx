@@ -11,19 +11,19 @@ import {
   HStack,
   Badge,
   Skeleton,
-} from '@chakra-ui/react'
-import { useEffect, useState } from 'react'
-import { SearchStats, SearchFilters } from '../../types'
-import CustomNumberInput from '../Input/CustomNumber'
-import NegCheckbox from '../Input/NegCheckbox'
-import debounce from 'lodash/debounce'
+} from '@chakra-ui/react';
+import { useEffect, useState } from 'react';
+import { SearchStats, SearchFilters } from '../../types';
+import CustomNumberInput from '../Input/CustomNumber';
+import NegCheckbox from '../Input/NegCheckbox';
+import debounce from 'lodash/debounce';
 
 type Props = {
-  stats?: SearchStats | null
-  filters: SearchFilters
-  isColorSearch?: boolean
-  onChange?: (newFilters: SearchFilters) => void
-}
+  stats?: SearchStats | null;
+  filters: SearchFilters;
+  isColorSearch?: boolean;
+  onChange?: (newFilters: SearchFilters) => void;
+};
 
 const ALL_COLORS = [
   ['#ff0000', 'Red'],
@@ -35,16 +35,16 @@ const ALL_COLORS = [
   ['#ff00ff', 'Magenta'],
   ['#ff0080', 'Pink'],
   ['#808080', 'Gray'],
-]
+];
 
 const SearchFilters = (props: Props) => {
-  const { stats, isColorSearch } = props
-  const [showMoreCat, setCat] = useBoolean()
-  const [filters, setFilters] = useState<SearchFilters>(props.filters)
+  const { stats, isColorSearch } = props;
+  const [showMoreCat, setCat] = useBoolean();
+  const [filters, setFilters] = useState<SearchFilters>(props.filters);
 
   useEffect(() => {
-    setFilters(props.filters)
-  }, [props.filters])
+    setFilters(props.filters);
+  }, [props.filters]);
 
   const handleCheckChange = (
     newFilter: string,
@@ -63,41 +63,42 @@ const SearchFilters = (props: Props) => {
         'limit',
       ].includes(filterType)
     )
-      return
+      return;
 
     if (filterType === 'color') {
-      setFilters({ ...filters, color: newFilter })
-      if (props.onChange) props.onChange({ ...filters, color: newFilter })
-      return
+      setFilters({ ...filters, color: newFilter });
+      if (props.onChange) props.onChange({ ...filters, color: newFilter });
+      return;
     }
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
     const newFilters = [...filters[filterType]].filter(
       (f) => f !== defaultValue && f !== `!${defaultValue}`
-    )
+    );
 
-    if (newFilter) newFilters.push(newFilter)
+    if (newFilter) newFilters.push(newFilter);
 
-    setFilters({ ...filters, [filterType]: newFilters })
+    setFilters({ ...filters, [filterType]: newFilters });
 
-    if (props.onChange) props.onChange({ ...filters, [filterType]: newFilters })
-  }
+    if (props.onChange)
+      props.onChange({ ...filters, [filterType]: newFilters });
+  };
 
   const handleNumberChange = (
     newNumber: string,
     index: 0 | 1,
     filterType: 'price' | 'rarity' | 'weight' | 'estVal'
   ) => {
-    const tuple = [...filters[filterType]]
-    tuple[index] = newNumber
+    const tuple = [...filters[filterType]];
+    tuple[index] = newNumber;
 
-    setFilters({ ...filters, [filterType]: tuple })
+    setFilters({ ...filters, [filterType]: tuple });
 
-    if (props.onChange) props.onChange({ ...filters, [filterType]: tuple })
-  }
+    if (props.onChange) props.onChange({ ...filters, [filterType]: tuple });
+  };
 
-  const debouncedPriceChange = debounce(handleNumberChange, 200)
+  const debouncedPriceChange = debounce(handleNumberChange, 200);
 
   return (
     <Accordion defaultIndex={[0]} allowToggle>
@@ -431,10 +432,10 @@ const SearchFilters = (props: Props) => {
         </AccordionPanel>
       </AccordionItem>
     </Accordion>
-  )
-}
+  );
+};
 
-export default SearchFilters
+export default SearchFilters;
 
 const ColorBox = (props: { color: string }) => (
   <Box
@@ -444,4 +445,4 @@ const ColorBox = (props: { color: string }) => (
     width="15px"
     height="15px"
   ></Box>
-)
+);

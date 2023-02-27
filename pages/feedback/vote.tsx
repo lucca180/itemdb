@@ -12,68 +12,68 @@ import {
   Icon,
   Spinner,
   Text,
-} from '@chakra-ui/react'
-import axios from 'axios'
-import { useState, useEffect } from 'react'
-import { BsArrowDownCircleFill, BsArrowUpCircleFill } from 'react-icons/bs'
-import CardBase from '../../components/Card/CardBase'
-import FeedbackItem from '../../components/FeebackCards/FeedbackItem'
-import Layout from '../../components/Layout'
-import TradeTable from '../../components/Trades/TradeTable'
-import { Feedback, TradeData } from '../../types'
-import { useAuth } from '../../utils/auth'
-import { TradeGuidelines } from './trades'
+} from '@chakra-ui/react';
+import axios from 'axios';
+import { useState, useEffect } from 'react';
+import { BsArrowDownCircleFill, BsArrowUpCircleFill } from 'react-icons/bs';
+import CardBase from '../../components/Card/CardBase';
+import FeedbackItem from '../../components/FeebackCards/FeedbackItem';
+import Layout from '../../components/Layout';
+import TradeTable from '../../components/Trades/TradeTable';
+import { Feedback, TradeData } from '../../types';
+import { useAuth } from '../../utils/auth';
+import { TradeGuidelines } from './trades';
 
 const FeedbackVotingPage = () => {
-  const { user, authLoading, getIdToken } = useAuth()
-  const [feedbacks, setFeedbacks] = useState<Feedback[]>([])
-  const [currentFeedback, setCurrentFeedback] = useState<Feedback>()
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string>('')
+  const { user, authLoading, getIdToken } = useAuth();
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [currentFeedback, setCurrentFeedback] = useState<Feedback>();
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string>('');
 
-  const isAdmin = user?.role === 'ADMIN'
+  const isAdmin = user?.role === 'ADMIN';
 
   useEffect(() => {
-    if (!authLoading && user) init()
-  }, [authLoading, user])
+    if (!authLoading && user) init();
+  }, [authLoading, user]);
 
   const init = async () => {
-    setError('')
-    setIsLoading(true)
+    setError('');
+    setIsLoading(true);
     try {
-      const token = await getIdToken()
-      if (!token) throw new Error('No token')
+      const token = await getIdToken();
+      if (!token) throw new Error('No token');
 
       const res = await axios.get('/api/feedback/getLatest', {
         headers: {
           authorization: `Bearer ${token}`,
         },
-      })
+      });
 
       const data: Feedback[] = res.data.map((d: Feedback) => {
-        const parsed = JSON.parse(d.json)
+        const parsed = JSON.parse(d.json);
         return {
           ...d,
           parsed: parsed,
-        }
-      })
+        };
+      });
 
-      setFeedbacks(data)
-      setCurrentFeedback(data[0])
+      setFeedbacks(data);
+      setCurrentFeedback(data[0]);
     } catch (e: any) {
-      console.error(e)
-      setError(e.message)
+      console.error(e);
+      setError(e.message);
     }
-    setIsLoading(false)
-  }
+    setIsLoading(false);
+  };
 
   const handleVote = async (action: 'upvote' | 'downvote') => {
-    setIsLoading(true)
+    setIsLoading(true);
 
     try {
-      if (!currentFeedback) throw new Error('No feedback selected')
-      const token = await getIdToken()
-      if (!token) throw new Error('No token')
+      if (!currentFeedback) throw new Error('No feedback selected');
+      const token = await getIdToken();
+      if (!token) throw new Error('No token');
 
       const res = await axios.post(
         '/api/feedback/vote',
@@ -86,22 +86,22 @@ const FeedbackVotingPage = () => {
             authorization: `Bearer ${token}`,
           },
         }
-      )
+      );
 
       if (res.data.success) {
         const newFeedbacks = feedbacks.filter(
           (f) => f.feedback_id !== currentFeedback?.feedback_id
-        )
-        setFeedbacks(newFeedbacks)
-        setCurrentFeedback(newFeedbacks[0])
-      } else throw new Error(res.data.message)
+        );
+        setFeedbacks(newFeedbacks);
+        setCurrentFeedback(newFeedbacks[0]);
+      } else throw new Error(res.data.message);
     } catch (e: any) {
-      console.error(e)
-      setError(e.message)
+      console.error(e);
+      setError(e.message);
     }
 
-    setIsLoading(false)
-  }
+    setIsLoading(false);
+  };
 
   return (
     <Layout>
@@ -213,7 +213,7 @@ const FeedbackVotingPage = () => {
         </Flex>
       </Flex>
     </Layout>
-  )
-}
+  );
+};
 
-export default FeedbackVotingPage
+export default FeedbackVotingPage;

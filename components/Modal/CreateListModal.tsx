@@ -19,19 +19,19 @@ import {
   Center,
   FormHelperText,
   Select,
-} from '@chakra-ui/react'
-import axios from 'axios'
-import { useState } from 'react'
-import { UserList } from '../../types'
-import { useAuth } from '../../utils/auth'
-import { ColorResult, TwitterPicker } from '@hello-pangea/color-picker'
+} from '@chakra-ui/react';
+import axios from 'axios';
+import { useState } from 'react';
+import { UserList } from '../../types';
+import { useAuth } from '../../utils/auth';
+import { ColorResult, TwitterPicker } from '@hello-pangea/color-picker';
 
 type Props = {
-  list?: UserList
-  isOpen: boolean
-  onClose: () => void
-  refresh?: () => void
-}
+  list?: UserList;
+  isOpen: boolean;
+  onClose: () => void;
+  refresh?: () => void;
+};
 
 const defaultList: Partial<UserList> = {
   name: '',
@@ -41,7 +41,7 @@ const defaultList: Partial<UserList> = {
   visibility: 'public',
   purpose: 'none',
   official: false,
-}
+};
 
 const colorPickerStyles = {
   card: {
@@ -53,19 +53,19 @@ const colorPickerStyles = {
     boxShadow: 'none',
     height: '30px',
   },
-}
+};
 
 const CreateListModal = (props: Props) => {
-  const { user, getIdToken } = useAuth()
-  const { isOpen, onClose } = props
-  const [isLoading, setLoading] = useState<boolean>(false)
-  const [error, setError] = useState<boolean>(false)
-  const [list, setList] = useState(props.list ?? defaultList)
+  const { user, getIdToken } = useAuth();
+  const { isOpen, onClose } = props;
+  const [isLoading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(false);
+  const [list, setList] = useState(props.list ?? defaultList);
 
   const saveChanges = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const token = await getIdToken()
+      const token = await getIdToken();
       const res = await axios.post(
         props.list ? '/api/lists/update' : '/api/lists/create',
         {
@@ -83,27 +83,27 @@ const CreateListModal = (props: Props) => {
             authorization: `Bearer ${token}`,
           },
         }
-      )
+      );
 
-      setLoading(false)
+      setLoading(false);
 
       if (res.data.success) {
-        props.refresh?.()
-        onClose()
-      } else throw res.data
+        props.refresh?.();
+        onClose();
+      } else throw res.data;
     } catch (err) {
-      console.log(err)
-      setLoading(false)
-      setError(true)
+      console.log(err);
+      setLoading(false);
+      setError(true);
     }
-  }
+  };
 
   const handleCancel = () => {
-    setList(props.list ?? defaultList)
-    setError(false)
-    setLoading(false)
-    onClose()
-  }
+    setList(props.list ?? defaultList);
+    setError(false);
+    setLoading(false);
+    onClose();
+  };
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -113,15 +113,15 @@ const CreateListModal = (props: Props) => {
     setList({
       ...list,
       [e.target.name]: e.target.value,
-    })
-  }
+    });
+  };
 
   const handleColorChange = (color: ColorResult) => {
     setList({
       ...list,
       colorHex: color.hex,
-    })
-  }
+    });
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={handleCancel} isCentered>
@@ -259,7 +259,7 @@ const CreateListModal = (props: Props) => {
         </ModalFooter>
       </ModalContent>
     </Modal>
-  )
-}
+  );
+};
 
-export default CreateListModal
+export default CreateListModal;

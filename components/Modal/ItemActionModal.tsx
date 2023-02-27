@@ -13,33 +13,33 @@ import {
   Spinner,
   Center,
   FormHelperText,
-} from '@chakra-ui/react'
-import axios from 'axios'
-import { useState } from 'react'
-import { ListItemInfo, UserList } from '../../types'
-import { useAuth } from '../../utils/auth'
-import ListSelect from '../UserLists/ListSelect'
+} from '@chakra-ui/react';
+import axios from 'axios';
+import { useState } from 'react';
+import { ListItemInfo, UserList } from '../../types';
+import { useAuth } from '../../utils/auth';
+import ListSelect from '../UserLists/ListSelect';
 
 type Props = {
-  list: UserList
-  isOpen: boolean
-  action: string
-  selectedItems: ListItemInfo[]
-  onClose: () => void
-  refresh: () => void
-}
+  list: UserList;
+  isOpen: boolean;
+  action: string;
+  selectedItems: ListItemInfo[];
+  onClose: () => void;
+  refresh: () => void;
+};
 
 const ItemActionModal = (props: Props) => {
-  const { getIdToken } = useAuth()
-  const { isOpen, onClose, action, selectedItems, list, refresh } = props
-  const [isLoading, setLoading] = useState<boolean>(false)
-  const [error, setError] = useState<boolean>(false)
-  const [dest, setDest] = useState<UserList>()
+  const { getIdToken } = useAuth();
+  const { isOpen, onClose, action, selectedItems, list, refresh } = props;
+  const [isLoading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(false);
+  const [dest, setDest] = useState<UserList>();
 
   const saveChanges = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const token = await getIdToken()
+      const token = await getIdToken();
 
       const res = await axios.post(
         '/api/lists/update',
@@ -54,26 +54,26 @@ const ItemActionModal = (props: Props) => {
             authorization: `Bearer ${token}`,
           },
         }
-      )
+      );
 
       if (res.status === 200) {
-        refresh()
-        handleClose()
-        setLoading(false)
-      } else throw res.data
+        refresh();
+        handleClose();
+        setLoading(false);
+      } else throw res.data;
     } catch (e) {
-      console.log(e)
-      setLoading(false)
-      setError(true)
+      console.log(e);
+      setLoading(false);
+      setError(true);
     }
-  }
+  };
 
   const handleClose = () => {
-    onClose()
-    setError(false)
-    setDest(undefined)
-    setLoading(false)
-  }
+    onClose();
+    setError(false);
+    setDest(undefined);
+    setLoading(false);
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} isCentered>
@@ -129,7 +129,7 @@ const ItemActionModal = (props: Props) => {
         </ModalFooter>
       </ModalContent>
     </Modal>
-  )
-}
+  );
+};
 
-export default ItemActionModal
+export default ItemActionModal;

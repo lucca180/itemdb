@@ -9,40 +9,40 @@ import {
   MenuDivider,
   Tooltip,
   useToast,
-} from '@chakra-ui/react'
-import axios from 'axios'
-import { useEffect, useState } from 'react'
-import { BsBookmarkCheckFill } from 'react-icons/bs'
-import { ItemData, UserList } from '../../types'
-import { useAuth } from '../../utils/auth'
+} from '@chakra-ui/react';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
+import { BsBookmarkCheckFill } from 'react-icons/bs';
+import { ItemData, UserList } from '../../types';
+import { useAuth } from '../../utils/auth';
 
 type Props = {
-  item: ItemData
-}
+  item: ItemData;
+};
 
 const AddToListSelect = (props: Props) => {
-  const { item } = props
-  const { user, getIdToken, authLoading } = useAuth()
-  const [lists, setLists] = useState<UserList[]>([])
-  const toast = useToast()
+  const { item } = props;
+  const { user, getIdToken, authLoading } = useAuth();
+  const [lists, setLists] = useState<UserList[]>([]);
+  const toast = useToast();
 
   const seeking = lists
     .filter((list) => list.purpose === 'seeking')
-    .sort((a, b) => SortListByItem(a, b, item))
-  console.log(seeking)
-  const trading = lists.filter((list) => list.purpose === 'trading')
-  const none = lists.filter((list) => list.purpose === 'none')
+    .sort((a, b) => SortListByItem(a, b, item));
+  console.log(seeking);
+  const trading = lists.filter((list) => list.purpose === 'trading');
+  const none = lists.filter((list) => list.purpose === 'none');
 
   useEffect(() => {
     if (!authLoading && user) {
-      init()
+      init();
     }
-  }, [authLoading, user])
+  }, [authLoading, user]);
 
   const init = async () => {
-    if (!user) return
+    if (!user) return;
     try {
-      const token = await getIdToken()
+      const token = await getIdToken();
 
       const res = await axios.get(
         `/api/lists/getUserLists?username=${user.username}`,
@@ -51,18 +51,18 @@ const AddToListSelect = (props: Props) => {
             authorization: `Bearer ${token}`,
           },
         }
-      )
+      );
 
-      setLists(res.data)
+      setLists(res.data);
     } catch (err) {
-      console.log(err)
+      console.log(err);
     }
-  }
+  };
 
   const addItemToList = async (list_id: number) => {
-    if (!user) return
+    if (!user) return;
     try {
-      const token = await getIdToken()
+      const token = await getIdToken();
 
       const res = await axios.post(
         `/api/lists/addItem`,
@@ -75,26 +75,26 @@ const AddToListSelect = (props: Props) => {
             authorization: `Bearer ${token}`,
           },
         }
-      )
-      if(res.data.success) {
+      );
+      if (res.data.success) {
         toast({
           title: 'Item added to list',
           status: 'success',
           duration: 5000,
-        })
+        });
 
-        init()
+        init();
       }
     } catch (err) {
-      console.log(err)
+      console.log(err);
 
       toast({
         title: 'An error occurred',
         status: 'error',
         duration: 5000,
-      })
+      });
     }
-  }
+  };
 
   return (
     <Menu>
@@ -209,19 +209,19 @@ const AddToListSelect = (props: Props) => {
         )}
       </MenuList>
     </Menu>
-  )
-}
+  );
+};
 
-export default AddToListSelect
+export default AddToListSelect;
 
 function SortListByItem(a: UserList, b: UserList, item: ItemData) {
-  const aHasItem = a.itemInfo.some((i) => i.item_iid === item.internal_id)
-  const bHasItem = b.itemInfo.some((i) => i.item_iid === item.internal_id)
+  const aHasItem = a.itemInfo.some((i) => i.item_iid === item.internal_id);
+  const bHasItem = b.itemInfo.some((i) => i.item_iid === item.internal_id);
 
-  if (aHasItem && !bHasItem) return 1
-  if (!aHasItem && bHasItem) return -1
+  if (aHasItem && !bHasItem) return 1;
+  if (!aHasItem && bHasItem) return -1;
   return (
     (a.order ?? 0) - (b.order ?? 0) ||
     new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-  )
+  );
 }

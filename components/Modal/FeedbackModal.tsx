@@ -15,31 +15,31 @@ import {
   Textarea,
   Spinner,
   Center,
-} from '@chakra-ui/react'
-import axios from 'axios'
-import { useRouter } from 'next/router'
-import { useState } from 'react'
-import { ItemData } from '../../types'
-import { useAuth } from '../../utils/auth'
+} from '@chakra-ui/react';
+import axios from 'axios';
+import { useRouter } from 'next/router';
+import { useState } from 'react';
+import { ItemData } from '../../types';
+import { useAuth } from '../../utils/auth';
 
 type Props = {
-  isOpen: boolean
-  onClose: () => void
-  item?: ItemData
-}
+  isOpen: boolean;
+  onClose: () => void;
+  item?: ItemData;
+};
 
 const FeedbackModal = (props: Props) => {
-  const { user } = useAuth()
-  const router = useRouter()
-  const { isOpen, onClose, item } = props
-  const [isLoading, setLoading] = useState<boolean>(false)
-  const [isSuccess, setIsSuccess] = useState<boolean>(false)
-  const [error, setError] = useState<boolean>(false)
-  const [email, setEmail] = useState<string>(user?.email ?? '')
-  const [message, setMessage] = useState<string>('')
+  const { user } = useAuth();
+  const router = useRouter();
+  const { isOpen, onClose, item } = props;
+  const [isLoading, setLoading] = useState<boolean>(false);
+  const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(false);
+  const [email, setEmail] = useState<string>(user?.email ?? '');
+  const [message, setMessage] = useState<string>('');
 
   const saveChanges = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
       const res = await axios.post('/api/feedback/send', {
         email: email,
@@ -48,26 +48,26 @@ const FeedbackModal = (props: Props) => {
           message: message,
         }),
         pageInfo: router.asPath,
-      })
+      });
 
-      setLoading(false)
+      setLoading(false);
 
-      if (res.data.success) setIsSuccess(true)
-      else throw res.data
+      if (res.data.success) setIsSuccess(true);
+      else throw res.data;
     } catch (err) {
-      console.log(err)
-      setLoading(false)
-      setError(true)
+      console.log(err);
+      setLoading(false);
+      setError(true);
     }
-  }
+  };
 
   const handleCancel = () => {
-    setMessage('')
-    setError(false)
-    setIsSuccess(false)
-    setLoading(false)
-    onClose()
-  }
+    setMessage('');
+    setError(false);
+    setIsSuccess(false);
+    setLoading(false);
+    onClose();
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={handleCancel} isCentered>
@@ -137,7 +137,7 @@ const FeedbackModal = (props: Props) => {
         </ModalFooter>
       </ModalContent>
     </Modal>
-  )
-}
+  );
+};
 
-export default FeedbackModal
+export default FeedbackModal;

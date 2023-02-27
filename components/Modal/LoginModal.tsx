@@ -13,38 +13,38 @@ import {
   Center,
   FormErrorMessage,
   Spinner,
-} from '@chakra-ui/react'
-import { getAuth, sendSignInLinkToEmail } from 'firebase/auth'
-import Image from 'next/image'
-import { useRouter } from 'next/router'
-import { useState } from 'react'
-import logoIcon from '../../public/logo_white.svg'
+} from '@chakra-ui/react';
+import { getAuth, sendSignInLinkToEmail } from 'firebase/auth';
+import Image from 'next/image';
+import { useRouter } from 'next/router';
+import { useState } from 'react';
+import logoIcon from '../../public/logo_white.svg';
 
-const mailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const mailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type Props = {
-  isOpen: boolean
-  onClose: () => void
-}
+  isOpen: boolean;
+  onClose: () => void;
+};
 
 const LoginModal = (props: Props) => {
-  const { isOpen, onClose } = props
-  const [email, setEmail] = useState<string>('')
-  const [error, setError] = useState<string>('')
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [isSent, setIsSent] = useState<boolean>(false)
-  const auth = getAuth()
-  const router = useRouter()
+  const { isOpen, onClose } = props;
+  const [email, setEmail] = useState<string>('');
+  const [error, setError] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isSent, setIsSent] = useState<boolean>(false);
+  const auth = getAuth();
+  const router = useRouter();
 
   const doLogin = async () => {
-    if (isSent) return onClose()
+    if (isSent) return onClose();
 
     if (!email.match(mailRegex)) {
-      setError('Invalid email address')
-      return
+      setError('Invalid email address');
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
 
     try {
       await sendSignInLinkToEmail(auth, email, {
@@ -52,22 +52,22 @@ const LoginModal = (props: Props) => {
           'http://localhost:3000/login?redirect=' +
           encodeURIComponent(router.pathname),
         handleCodeInApp: true,
-      })
+      });
 
-      window.localStorage.setItem('emailForSignIn', email)
-      setIsSent(true)
+      window.localStorage.setItem('emailForSignIn', email);
+      setIsSent(true);
     } catch (e: any) {
-      setError(e.message)
-      console.log(error)
+      setError(e.message);
+      console.log(error);
     }
 
-    setIsLoading(false)
-  }
+    setIsLoading(false);
+  };
 
   const onEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value)
-    setError('')
-  }
+    setEmail(e.target.value);
+    setError('');
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} isCentered>
@@ -123,7 +123,7 @@ const LoginModal = (props: Props) => {
         </ModalFooter>
       </ModalContent>
     </Modal>
-  )
-}
+  );
+};
 
-export default LoginModal
+export default LoginModal;

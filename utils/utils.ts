@@ -1,40 +1,40 @@
-import { ItemProcess, Items, PriceProcess } from '@prisma/client'
-import { mean, sampleStandardDeviation } from 'simple-statistics'
-import { ItemData, ItemFindAt, TradeData } from '../types'
-import Color from 'color'
+import { ItemProcess, Items, PriceProcess } from '@prisma/client';
+import { mean, sampleStandardDeviation } from 'simple-statistics';
+import { ItemData, ItemFindAt, TradeData } from '../types';
+import Color from 'color';
 
 export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
   let findAt: ItemFindAt = {
     safetyDeposit: `https://www.neopets.com/safetydeposit.phtml?obj_name=${cleanItem(
       item
     )}&category=0`,
-  }
+  };
 
   if (item.isWearable)
     findAt.closet = `https://www.neopets.com/closet.phtml?obj_name=${cleanItem(
       item
-    )}`
+    )}`;
 
   if (item.isWearable) {
     if (item.item_id)
-      findAt.dti = `http://impress-2020.openneo.net/items/${item.item_id}`
+      findAt.dti = `http://impress-2020.openneo.net/items/${item.item_id}`;
     else
       findAt.dti = `http://impress-2020.openneo.net/items/search/${cleanItem(
         item
-      ).replaceAll('+', '%20')}`
+      ).replaceAll('+', '%20')}`;
   }
 
-  if (item.isNC) return findAt
+  if (item.isNC) return findAt;
 
   findAt.auction = `https://www.neopets.com/genie.phtml?type=process_genie&criteria=exact&auctiongenie=${cleanItem(
     item
-  )}`
+  )}`;
   findAt.shopWizard = `https://www.neopets.com/shops/wizard.phtml?string=${cleanItem(
     item
-  )}`
+  )}`;
   findAt.trading = `https://www.neopets.com/island/tradingpost.phtml?type=browse&criteria=item_exact&search_string=${cleanItem(
     item
-  )}`
+  )}`;
 
   if (
     item.rarity &&
@@ -44,15 +44,15 @@ export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
   ) {
     findAt.restockShop = `https://www.neopets.com/objects.phtml?type=shop&obj_type=${
       categoryToShopID[item.category.toLowerCase()]
-    }`
+    }`;
   }
 
-  return findAt
+  return findAt;
 }
 
 // Borrowed from Dice's Search Helper - https://github.com/diceroll123/NeoSearchHelper/
 function cleanItem(item: ItemData | Items | string) {
-  let itemName = typeof item != 'string' ? item.name : item
+  let itemName = typeof item != 'string' ? item.name : item;
   return itemName
     .replaceAll('!', '%21')
     .replaceAll('#', '%23')
@@ -65,24 +65,24 @@ function cleanItem(item: ItemData | Items | string) {
     .replaceAll('/', '%2F')
     .replaceAll(':', '%3A')
     .replaceAll('?', '%3F')
-    .replaceAll(' ', '+')
+    .replaceAll(' ', '+');
 }
 
 export function genItemKey(
   item: Items | ItemProcess | PriceProcess | ItemData | TradeData['items'][0],
   ignoreID = false
 ) {
-  const image_id = item.image_id ?? ''
+  const image_id = item.image_id ?? '';
   //@ts-ignore
-  const item_id = item?.item_id ?? ''
+  const item_id = item?.item_id ?? '';
 
-  if (ignoreID) return item.name + image_id
+  if (ignoreID) return item.name + image_id;
 
-  return item.name + image_id + item_id
+  return item.name + image_id + item_id;
 }
 
 export function coefficientOfVariation(x: number[]) {
-  return (sampleStandardDeviation(x) / mean(x)) * 100
+  return (sampleStandardDeviation(x) / mean(x)) * 100;
 }
 
 export const categoryToShopID: { [id: string]: string } = {
@@ -190,7 +190,7 @@ export const categoryToShopID: { [id: string]: string } = {
   'ugga shinies': '117',
   'medieval food': '56',
   refreshments: '63',
-}
+};
 export const shopIDToCategory: { [id: string]: string } = {
   '1': 'food',
   '2': 'magic item',
@@ -296,14 +296,14 @@ export const shopIDToCategory: { [id: string]: string } = {
   '114': 'moltaran books',
   '116': 'springy things',
   '117': 'ugga shinies',
-}
+};
 
 export const isMissingInfo = (item: ItemData) => {
   for (const [key, val] of Object.entries(item)) {
-    if (['comment'].includes(key)) continue
+    if (['comment'].includes(key)) continue;
 
-    if (val === null) return true
+    if (val === null) return true;
   }
 
-  return false
-}
+  return false;
+};

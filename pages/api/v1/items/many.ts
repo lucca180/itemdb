@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { NextApiRequest, NextApiResponse } from 'next'
-import prisma from '../../../../utils/prisma'
-import { getItemFindAtLinks, isMissingInfo } from '../../../../utils/utils'
-import { ItemData } from '../../../../types'
-import Color from 'color'
-import { Prisma } from '@prisma/client'
-import qs from 'qs'
+import type { NextApiRequest, NextApiResponse } from 'next';
+import prisma from '../../../../utils/prisma';
+import { getItemFindAtLinks, isMissingInfo } from '../../../../utils/utils';
+import { ItemData } from '../../../../types';
+import Color from 'color';
+import { Prisma } from '@prisma/client';
+import qs from 'qs';
 
 export default async function handle(
   req: NextApiRequest,
@@ -14,9 +14,9 @@ export default async function handle(
   if (req.method !== 'GET' && req.method !== 'POST')
     throw new Error(
       `The HTTP ${req.method} method is not supported at this route.`
-    )
+    );
 
-  let reqData
+  let reqData;
 
   if (req.method == 'POST')
     reqData = {
@@ -24,19 +24,20 @@ export default async function handle(
       item_id: req.body.item_id,
       image_id: req.body.image_id,
       name: req.body.name,
-    }
-  else if (req.method == 'GET' && req.url) reqData = qs.parse(req.url.split('?')[1])
+    };
+  else if (req.method == 'GET' && req.url)
+    reqData = qs.parse(req.url.split('?')[1]);
 
   if (!reqData)
-    return res.status(400).json({ success: false, message: 'Invalid request' })
+    return res.status(400).json({ success: false, message: 'Invalid request' });
 
-  const ids = reqData.id as string[]
-  const item_id = reqData.item_id as string[]
-  const image_id = reqData.image_id as string[]
-  const name = reqData.name as string[]
+  const ids = reqData.id as string[];
+  const item_id = reqData.item_id as string[];
+  const image_id = reqData.image_id as string[];
+  const name = reqData.name as string[];
 
   if (!ids && !item_id && !image_id && !name)
-    return res.status(400).json({ success: false, message: 'Invalid request' })
+    return res.status(400).json({ success: false, message: 'Invalid request' });
 
   if (
     ids?.length === 0 &&
@@ -44,20 +45,20 @@ export default async function handle(
     image_id?.length === 0 &&
     name?.length === 0
   )
-    return res.status(400).json({ success: false, message: 'Invalid request' })
+    return res.status(400).json({ success: false, message: 'Invalid request' });
 
-  let query
+  let query;
   if (ids?.length > 0)
-    query = Prisma.sql`a.internal_id IN (${Prisma.join(ids)})`
+    query = Prisma.sql`a.internal_id IN (${Prisma.join(ids)})`;
   else if (item_id?.length > 0)
-    query = Prisma.sql`a.item_id IN (${Prisma.join(item_id)})`
+    query = Prisma.sql`a.item_id IN (${Prisma.join(item_id)})`;
   else if (image_id?.length > 0)
-    query = Prisma.sql`a.image_id IN (${Prisma.join(image_id)})`
+    query = Prisma.sql`a.image_id IN (${Prisma.join(image_id)})`;
   else if (name?.length > 0)
-    query = Prisma.sql`a.name IN (${Prisma.join(name)})`
+    query = Prisma.sql`a.name IN (${Prisma.join(name)})`;
 
   if (!query)
-    return res.status(400).json({ success: false, message: 'Invalid request' })
+    return res.status(400).json({ success: false, message: 'Invalid request' });
 
   const resultRaw = (await prisma.$queryRaw`
         SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, c.addedAt as priceAdded, c.price, c.noInflation_id 
@@ -71,14 +72,14 @@ export default async function handle(
             LIMIT 1
         )
         WHERE b.type = "Vibrant" AND ${query}
-    `) as any[]
+    `) as any[];
 
-  if (resultRaw.length === 0) res.json([])
+  if (resultRaw.length === 0) res.json([]);
 
-  const items: { [identifier: string]: ItemData } = {}
+  const items: { [identifier: string]: ItemData } = {};
 
   for (const result of resultRaw) {
-    const colorlab = Color.lab(result.l, result.a, result.b)
+    const colorlab = Color.lab(result.l, result.a, result.b);
 
     const x: ItemData = {
       internal_id: result.internal_id,
@@ -112,15 +113,15 @@ export default async function handle(
         inflated: !!result.noInflation_id,
       },
       comment: result.comment ?? null,
-    }
-    x.findAt = getItemFindAtLinks(x) // does have all the info we need :)
-    x.isMissingInfo = isMissingInfo(x)
+    };
+    x.findAt = getItemFindAtLinks(x); // does have all the info we need :)
+    x.isMissingInfo = isMissingInfo(x);
 
-    if (ids) items[result.internal_id] = x
-    else if (item_id) items[result.item_id] = x
-    else if (image_id) items[result.image_id] = x
-    else if (name) items[result.name] = x
+    if (ids) items[result.internal_id] = x;
+    else if (item_id) items[result.item_id] = x;
+    else if (image_id) items[result.image_id] = x;
+    else if (name) items[result.name] = x;
   }
 
-  res.json(items)
+  res.json(items);
 }

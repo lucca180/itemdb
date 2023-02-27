@@ -1,46 +1,40 @@
-import {
-  Box,
-  Flex,
-  FormControl,
-  FormHelperText,
-  Text,
-} from '@chakra-ui/react'
-import { TradeData } from '../../types'
-import CardBase from '../Card/CardBase'
-import Image from 'next/image'
-import CustomNumberInput from '../Input/CustomNumber'
-import { useCallback, useEffect, useState } from 'react'
-import debounce from 'lodash/debounce'
+import { Box, Flex, FormControl, FormHelperText, Text } from '@chakra-ui/react';
+import { TradeData } from '../../types';
+import CardBase from '../Card/CardBase';
+import Image from 'next/image';
+import CustomNumberInput from '../Input/CustomNumber';
+import { useCallback, useEffect, useState } from 'react';
+import debounce from 'lodash/debounce';
 
 type Props = {
-  trade?: TradeData
-  onChange?: (newValue: TradeData) => void
-}
+  trade?: TradeData;
+  onChange?: (newValue: TradeData) => void;
+};
 
-type TradeItems = TradeData['items'][0]
+type TradeItems = TradeData['items'][0];
 
 const FeedbackTrade = (props: Props) => {
-  const { trade: tradeProps } = props
-  const [trade, setTrade] = useState<TradeData | undefined>(tradeProps)
+  const { trade: tradeProps } = props;
+  const [trade, setTrade] = useState<TradeData | undefined>(tradeProps);
 
   useEffect(() => {
     if ((!trade && tradeProps) || tradeProps?.trade_id !== trade?.trade_id)
-      setTrade(tradeProps)
-  }, [tradeProps])
+      setTrade(tradeProps);
+  }, [tradeProps]);
 
   const handleChange = (item: TradeItems, index: number) => {
-    if (!trade) return
-    const tempTrade = { ...trade }
-    tempTrade.items[index] = item
-    setTrade(tempTrade)
-    debouncedOnChange(tempTrade)
-  }
+    if (!trade) return;
+    const tempTrade = { ...trade };
+    tempTrade.items[index] = item;
+    setTrade(tempTrade);
+    debouncedOnChange(tempTrade);
+  };
 
   //debounce props onChange call
   const debouncedOnChange = useCallback(
     debounce((newValue: TradeData) => props.onChange?.(newValue), 750),
     []
-  )
+  );
 
   return (
     <CardBase
@@ -70,25 +64,25 @@ const FeedbackTrade = (props: Props) => {
         ))}
       </Flex>
     </CardBase>
-  )
-}
+  );
+};
 
-export default FeedbackTrade
+export default FeedbackTrade;
 
 type ItemTradeProps = {
-  item: TradeItems
-  onChange?: (newValue: TradeItems) => void
-}
+  item: TradeItems;
+  onChange?: (newValue: TradeItems) => void;
+};
 
 const ItemTrade = (props: ItemTradeProps) => {
-  const { item } = props
+  const { item } = props;
 
   const handleChange = (val: string) => {
-    const tempItem = { ...item }
-    tempItem.price = val ? parseInt(val) : null
+    const tempItem = { ...item };
+    tempItem.price = val ? parseInt(val) : null;
 
-    props.onChange?.(tempItem)
-  }
+    props.onChange?.(tempItem);
+  };
 
   return (
     <Flex gap={3}>
@@ -120,5 +114,5 @@ const ItemTrade = (props: ItemTradeProps) => {
         </FormControl>
       </Flex>
     </Flex>
-  )
-}
+  );
+};

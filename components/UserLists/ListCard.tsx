@@ -1,47 +1,47 @@
-import { Badge, Flex, Link, Text } from '@chakra-ui/react'
-import { ListItemInfo, UserList } from '../../types'
-import icon from '../../public/logo_icon.svg'
-import Image from 'next/image'
-import Color from 'color'
-import NextLink from 'next/link'
-import { useEffect, useState } from 'react'
+import { Badge, Flex, Link, Text } from '@chakra-ui/react';
+import { ListItemInfo, UserList } from '../../types';
+import icon from '../../public/logo_icon.svg';
+import Image from 'next/image';
+import Color from 'color';
+import NextLink from 'next/link';
+import { useEffect, useState } from 'react';
 
 type Props = {
-  list: UserList
-  isSelected?: boolean
-  disableLink?: boolean
+  list: UserList;
+  isSelected?: boolean;
+  disableLink?: boolean;
   matches?: {
-    seek: ListItemInfo[]
-    trade: ListItemInfo[]
-  }
-}
+    seek: ListItemInfo[];
+    trade: ListItemInfo[];
+  };
+};
 
 const UserListCard = (props: Props) => {
-  const { list, matches, isSelected, disableLink } = props
-  const [matchCount, setMatchCount] = useState(0)
+  const { list, matches, isSelected, disableLink } = props;
+  const [matchCount, setMatchCount] = useState(0);
 
-  const color = Color(list?.colorHex ?? '#4A5568')
-  const rgb = color.rgb().array()
+  const color = Color(list?.colorHex ?? '#4A5568');
+  const rgb = color.rgb().array();
 
   useEffect(() => {
-    if (!matches) return
+    if (!matches) return;
 
-    const listItemsMap = new Set(list.itemInfo.map((item) => item.item_iid))
+    const listItemsMap = new Set(list.itemInfo.map((item) => item.item_iid));
 
     if (list.purpose === 'trading' && matches?.seek.length) {
       const count = matches.seek.filter((item) =>
         listItemsMap.has(item.item_iid)
-      ).length
-      setMatchCount(count)
+      ).length;
+      setMatchCount(count);
     }
 
     if (list.purpose === 'seeking' && matches?.trade.length) {
       const count = matches.trade.filter((item) =>
         listItemsMap.has(item.item_iid)
-      ).length
-      setMatchCount(count)
+      ).length;
+      setMatchCount(count);
     }
-  }, [list, matches])
+  }, [list, matches]);
 
   return (
     <Flex
@@ -147,7 +147,7 @@ const UserListCard = (props: Props) => {
         </Flex>
       </Flex>
     </Flex>
-  )
-}
+  );
+};
 
-export default UserListCard
+export default UserListCard;

@@ -4,8 +4,8 @@ import {
   AlertIcon,
   AlertTitle,
   Button,
-} from '@chakra-ui/react'
-import React from 'react'
+} from '@chakra-ui/react';
+import React from 'react';
 
 const MissingInfoCard = () => {
   return (
@@ -18,7 +18,7 @@ const MissingInfoCard = () => {
         </Button>
       </AlertDescription>
     </Alert>
-  )
-}
+  );
+};
 
-export default MissingInfoCard
+export default MissingInfoCard;

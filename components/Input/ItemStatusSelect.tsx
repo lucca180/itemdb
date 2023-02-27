@@ -1,28 +1,28 @@
-import React from 'react'
+import React from 'react';
 import {
   AutoComplete,
   AutoCompleteInput,
   AutoCompleteItem,
   AutoCompleteList,
   Item,
-} from '@choc-ui/chakra-autocomplete'
+} from '@choc-ui/chakra-autocomplete';
 
 type Props = {
-  value: string
-  name: string
-  color?: string
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-}
+  value: string;
+  name: string;
+  color?: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+};
 
 const ItemStatusSelect = (props: Props) => {
-  const { value, onChange, name, color } = props
-  const options = ['active', 'unreleased', 'no-trade']
+  const { value, onChange, name, color } = props;
+  const options = ['active', 'unreleased', 'no-trade'];
 
   const onSelectOption = ({ item }: { item: Item }) => {
     onChange({
       target: { name, value: item.value },
-    } as React.ChangeEvent<HTMLInputElement>)
-  }
+    } as React.ChangeEvent<HTMLInputElement>);
+  };
 
   return (
     <AutoComplete rollNavigation onSelectOption={onSelectOption}>
@@ -49,7 +49,7 @@ const ItemStatusSelect = (props: Props) => {
         ))}
       </AutoCompleteList>
     </AutoComplete>
-  )
-}
+  );
+};
 
-export default ItemStatusSelect
+export default ItemStatusSelect;

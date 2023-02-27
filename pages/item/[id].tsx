@@ -7,10 +7,10 @@ import {
   Icon,
   Stack,
   Text,
-} from '@chakra-ui/react'
-import React, { useEffect, useState } from 'react'
-import Layout from '../../components/Layout'
-import Image from 'next/image'
+} from '@chakra-ui/react';
+import React, { useEffect, useState } from 'react';
+import Layout from '../../components/Layout';
+import Image from 'next/image';
 import {
   FullItemColors,
   ItemData,
@@ -18,56 +18,56 @@ import {
   ItemTag,
   PriceData,
   TradeData,
-} from '../../types'
-import { useRouter } from 'next/router'
-import FindAtCard from '../../components/Items/FindAtCard'
-import ItemInfoCard from '../../components/Items/InfoCard'
-import ColorInfoCard from '../../components/Items/ColorInfoCard'
-import MissingInfoCard from '../../components/Items/MissingInfoCard'
-import ItemPreview from '../../components/Items/ItemPreview'
-import ItemPriceCard from '../../components/Price/ItemPriceCard'
-import axios from 'axios'
-import TradeCard from '../../components/Trades/TradeCard'
-import ItemTags from '../../components/Items/ItemTags'
-import ItemCats from '../../components/Items/CategoryCard'
-import { FiSend, FiEdit3 } from 'react-icons/fi'
-import EditItemModal from '../../components/Modal/EditItemModal'
-import FeedbackModal from '../../components/Modal/FeedbackModal'
-import AddToListSelect from '../../components/UserLists/AddToListSelect'
+} from '../../types';
+import { useRouter } from 'next/router';
+import FindAtCard from '../../components/Items/FindAtCard';
+import ItemInfoCard from '../../components/Items/InfoCard';
+import ColorInfoCard from '../../components/Items/ColorInfoCard';
+import MissingInfoCard from '../../components/Items/MissingInfoCard';
+import ItemPreview from '../../components/Items/ItemPreview';
+import ItemPriceCard from '../../components/Price/ItemPriceCard';
+import axios from 'axios';
+import TradeCard from '../../components/Trades/TradeCard';
+import ItemTags from '../../components/Items/ItemTags';
+import ItemCats from '../../components/Items/CategoryCard';
+import { FiSend, FiEdit3 } from 'react-icons/fi';
+import EditItemModal from '../../components/Modal/EditItemModal';
+import FeedbackModal from '../../components/Modal/FeedbackModal';
+import AddToListSelect from '../../components/UserLists/AddToListSelect';
 
 const defaultLastSeen: ItemLastSeen = {
   sw: null,
   tp: null,
   auction: null,
   restock: null,
-}
+};
 
 const ItemPage = () => {
-  const [item, setItem] = useState<ItemData | null>(null)
-  const [colors, setColors] = useState<FullItemColors | null>(null)
-  const [prices, setPrices] = useState<PriceData[] | null>(null)
-  const [seenStats, setSeen] = useState<ItemLastSeen>(defaultLastSeen)
-  const [trades, setTrades] = useState<TradeData[]>([])
-  const [tags, setTags] = useState<ItemTag[]>([])
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false)
+  const [item, setItem] = useState<ItemData | null>(null);
+  const [colors, setColors] = useState<FullItemColors | null>(null);
+  const [prices, setPrices] = useState<PriceData[] | null>(null);
+  const [seenStats, setSeen] = useState<ItemLastSeen>(defaultLastSeen);
+  const [trades, setTrades] = useState<TradeData[]>([]);
+  const [tags, setTags] = useState<ItemTag[]>([]);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
 
   const color = item?.color.rgb ?? [255, 255, 255];
-  const router = useRouter()
+  const router = useRouter();
 
   useEffect(() => {
-    init()
-  }, [router])
+    init();
+  }, [router]);
 
   const init = async () => {
-    const id = router.query.id
+    const id = router.query.id;
 
-    if (!id) return
+    if (!id) return;
 
-    const resItem = await axios.get('/api/v1/items/' + id)
-    const itemData = resItem.data as ItemData
+    const resItem = await axios.get('/api/v1/items/' + id);
+    const itemData = resItem.data as ItemData;
 
-    setItem(itemData)
+    setItem(itemData);
 
     const [resColor, resPrice, resStats, resTrades, resTags] =
       await Promise.all([
@@ -86,16 +86,16 @@ const ItemPage = () => {
           `/api/trades/get?name=${itemData.name}&image_id=${itemData.image_id}`
         ),
         axios.get(`/api/v1/items/${id}/tags`),
-      ])
+      ]);
 
-    setColors(resColor.data)
-    setPrices(resPrice.data ?? [])
-    setSeen(resStats.data)
-    setTrades(resTrades.data)
-    setTags(resTags.data)
-  }
+    setColors(resColor.data);
+    setPrices(resPrice.data ?? []);
+    setSeen(resStats.data);
+    setTrades(resTrades.data);
+    setTags(resTags.data);
+  };
 
-  if (!item) return null
+  if (!item) return null;
 
   return (
     <Layout>
@@ -212,7 +212,7 @@ const ItemPage = () => {
         </Flex>
       </Flex>
     </Layout>
-  )
-}
+  );
+};
 
-export default ItemPage
+export default ItemPage;

@@ -1,7 +1,7 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
-import prisma from '../../../utils/prisma'
-import { CheckAuth } from '../../../utils/googleCloud'
-import { UserList } from '../../../types'
+import type { NextApiRequest, NextApiResponse } from 'next';
+import prisma from '../../../utils/prisma';
+import { CheckAuth } from '../../../utils/googleCloud';
+import { UserList } from '../../../types';
 
 export default async function handle(
   req: NextApiRequest,
@@ -10,16 +10,16 @@ export default async function handle(
   if (req.method !== 'GET')
     throw new Error(
       `The HTTP ${req.method} method is not supported at this route.`
-    )
+    );
 
-  const username = req.query.username as string
+  const username = req.query.username as string;
   if (!username)
-    return res.status(400).json({ success: false, message: 'Bad Request' })
+    return res.status(400).json({ success: false, message: 'Bad Request' });
 
-  let user = null
+  let user = null;
 
   try {
-    user = (await CheckAuth(req)).user
+    user = (await CheckAuth(req)).user;
   } catch (e) {}
 
   try {
@@ -36,13 +36,13 @@ export default async function handle(
       orderBy: {
         createdAt: 'desc',
       },
-    })
+    });
 
     const owner = await prisma.user.findUnique({
       where: {
         username: username,
       },
-    })
+    });
 
     const lists: UserList[] = listsRaw
       .map((list) => {
@@ -80,20 +80,20 @@ export default async function handle(
               imported: item.imported,
               order: item.order,
               isHighlight: item.isHighlight,
-            }
+            };
           }),
-        }
+        };
       })
       .sort(
         (a, b) =>
           (a.order ?? 0) - (b.order ?? 0) ||
           (a.createdAt < b.createdAt ? -1 : 1)
-      )
+      );
 
-    return res.status(200).json(lists)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return res.status(200).json(lists);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
-    console.error(e)
-    res.status(500).json({ error: 'Internal Server Error' })
+    console.error(e);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 }

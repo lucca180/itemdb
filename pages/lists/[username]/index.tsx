@@ -16,64 +16,64 @@ import {
   Switch,
   useToast,
   Icon,
-} from '@chakra-ui/react'
-import axios from 'axios'
-import React, { useEffect, useState } from 'react'
-import Layout from '../../../components/Layout'
-import CreateListModal from '../../../components/Modal/CreateListModal'
-import { User, UserList } from '../../../types'
-import { useAuth } from '../../../utils/auth'
-import { useRouter } from 'next/router'
-import { SortableLists } from '../../../components/Sortable/SortableLists'
-import Color from 'color'
-import { SelectItemsCheckbox } from '../../../components/Input/SelectItemsCheckbox'
-import { FaTrash } from 'react-icons/fa'
-import DeleteListModal from '../../../components/Modal/DeleteListModal'
-import { BiLinkExternal } from 'react-icons/bi'
+} from '@chakra-ui/react';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import Layout from '../../../components/Layout';
+import CreateListModal from '../../../components/Modal/CreateListModal';
+import { User, UserList } from '../../../types';
+import { useAuth } from '../../../utils/auth';
+import { useRouter } from 'next/router';
+import { SortableLists } from '../../../components/Sortable/SortableLists';
+import Color from 'color';
+import { SelectItemsCheckbox } from '../../../components/Input/SelectItemsCheckbox';
+import { FaTrash } from 'react-icons/fa';
+import DeleteListModal from '../../../components/Modal/DeleteListModal';
+import { BiLinkExternal } from 'react-icons/bi';
 
 type ExtendedUserList = UserList & {
-  hasChanged?: boolean
-}
+  hasChanged?: boolean;
+};
 
 const UserListsPage = () => {
-  const router = useRouter()
-  const toast = useToast()
-  const { user, getIdToken, authLoading } = useAuth()
-  const [openCreateModal, setOpenCreateModal] = useState<boolean>(false)
-  const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false)
+  const router = useRouter();
+  const toast = useToast();
+  const { user, getIdToken, authLoading } = useAuth();
+  const [openCreateModal, setOpenCreateModal] = useState<boolean>(false);
+  const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false);
 
   const [lists, setLists] = useState<{ [list_id: number]: ExtendedUserList }>(
     {}
-  )
-  const [listsIds, setListsIds] = useState<number[]>([])
+  );
+  const [listsIds, setListsIds] = useState<number[]>([]);
 
-  const [selectedLists, setSelectedLists] = useState<number[]>([])
-  const [isEdit, setEdit] = useState<boolean>(false)
+  const [selectedLists, setSelectedLists] = useState<number[]>([]);
+  const [isEdit, setEdit] = useState<boolean>(false);
 
-  const [owner, setOwner] = useState<User>()
-  const [matches, setMatches] = useState({ seek: [], trade: [] })
+  const [owner, setOwner] = useState<User>();
+  const [matches, setMatches] = useState({ seek: [], trade: [] });
 
-  const isOwner = user?.username === router.query.username
+  const isOwner = user?.username === router.query.username;
 
-  const color = Color(undefined ?? '#4A5568')
-  const rgb = color.rgb().array()
+  const color = Color(undefined ?? '#4A5568');
+  const rgb = color.rgb().array();
 
   useEffect(() => {
     if (!authLoading && router.isReady && !lists) {
-      init()
+      init();
     }
-  }, [authLoading, router.isReady])
+  }, [authLoading, router.isReady]);
 
   useEffect(() => {
-    return () => toast.closeAll()
-  }, [])
+    return () => toast.closeAll();
+  }, []);
 
   const init = async () => {
-    setLists({})
-    const targetUsername = router.query.username
-    if (!targetUsername) return
+    setLists({});
+    const targetUsername = router.query.username;
+    if (!targetUsername) return;
 
-    const token = await getIdToken()
+    const token = await getIdToken();
 
     const listsRes = await axios.get(
       `/api/lists/getUserLists?username=${targetUsername}`,
@@ -82,14 +82,14 @@ const UserListsPage = () => {
           authorization: `Bearer ${token}`,
         },
       }
-    )
+    );
 
-    if (user?.username === targetUsername) setOwner(user)
+    if (user?.username === targetUsername) setOwner(user);
     else {
       const userRes = await axios.get(
         `/api/users/getUser?username=${targetUsername}`
-      )
-      setOwner(userRes.data)
+      );
+      setOwner(userRes.data);
     }
 
     if (user) {
@@ -110,62 +110,62 @@ const UserListsPage = () => {
             },
           }
         ),
-      ])
+      ]);
 
       setMatches({
         seek: seekRes.data,
         trade: tradeRes.data,
-      })
+      });
     }
 
-    const listsData = listsRes.data
-    const listsIds = listsData.map((list: UserList) => list.internal_id)
-    setListsIds(listsIds)
+    const listsData = listsRes.data;
+    const listsIds = listsData.map((list: UserList) => list.internal_id);
+    setListsIds(listsIds);
 
-    const listsObj: { [list_id: number]: UserList } = {}
+    const listsObj: { [list_id: number]: UserList } = {};
 
     listsData.forEach((list: UserList) => {
-      listsObj[list.internal_id] = list
-    })
+      listsObj[list.internal_id] = list;
+    });
 
-    setLists(listsObj)
-  }
+    setLists(listsObj);
+  };
 
   const selectItem = (id: number) => {
-    if (!isEdit) return
+    if (!isEdit) return;
     if (selectedLists.includes(id))
-      setSelectedLists(selectedLists.filter((list) => list !== id))
-    else setSelectedLists([...selectedLists, id])
-  }
+      setSelectedLists(selectedLists.filter((list) => list !== id));
+    else setSelectedLists([...selectedLists, id]);
+  };
 
   const handleSelectCheckbox = (checkAll: boolean) => {
-    if (checkAll) setSelectedLists(listsIds)
-    else setSelectedLists([])
-  }
+    if (checkAll) setSelectedLists(listsIds);
+    else setSelectedLists([]);
+  };
 
   const toggleEdit = () => {
-    if (isEdit) setSelectedLists([])
+    if (isEdit) setSelectedLists([]);
 
-    setEdit(!isEdit)
-  }
+    setEdit(!isEdit);
+  };
 
   const handleSort = (newOrder: number[]) => {
-    const newLists = { ...lists }
+    const newLists = { ...lists };
 
     for (let i = 0; i < newOrder.length; i++) {
-      if (newLists[newOrder[i]].order === i) continue
+      if (newLists[newOrder[i]].order === i) continue;
 
-      newLists[newOrder[i]].order = i
-      newLists[newOrder[i]].hasChanged = true
-      setHasChanges()
+      newLists[newOrder[i]].order = i;
+      newLists[newOrder[i]].hasChanged = true;
+      setHasChanges();
     }
 
-    setListsIds(newOrder)
-    setLists(newLists)
-  }
+    setListsIds(newOrder);
+    setLists(newLists);
+  };
 
   const setHasChanges = () => {
-    if (toast.isActive('unsavedChanges')) return
+    if (toast.isActive('unsavedChanges')) return;
 
     toast({
       title: 'You have unsaved changes',
@@ -184,21 +184,23 @@ const UserListsPage = () => {
       ),
       status: 'info',
       duration: null,
-    })
-  }
+    });
+  };
 
   const handleSaveChanges = async () => {
-    toast.closeAll()
+    toast.closeAll();
 
     const x = toast({
       title: 'Saving changes...',
       status: 'info',
       duration: null,
-    })
+    });
 
     try {
-      const token = await getIdToken()
-      const listsToSave = Object.values(lists).filter((list) => list.hasChanged)
+      const token = await getIdToken();
+      const listsToSave = Object.values(lists).filter(
+        (list) => list.hasChanged
+      );
 
       const res = await axios.post(
         '/api/lists/updateListOrder',
@@ -208,28 +210,28 @@ const UserListsPage = () => {
             authorization: `Bearer ${token}`,
           },
         }
-      )
+      );
 
       if (res.data.success) {
         toast.update(x, {
           title: 'Changes saved',
           status: 'success',
           duration: 5000,
-        })
+        });
 
-        setEdit(false)
+        setEdit(false);
       }
     } catch (err) {
-      console.log(err)
+      console.log(err);
 
       toast.update(x, {
         title: 'An error occurred',
         description: 'Please try again later',
         status: 'error',
         duration: 5000,
-      })
+      });
     }
-  }
+  };
 
   if (!owner)
     return (
@@ -238,7 +240,7 @@ const UserListsPage = () => {
           <Text>Loading...</Text>
         </Center>
       </Layout>
-    )
+    );
 
   return (
     <Layout>
@@ -440,7 +442,7 @@ const UserListsPage = () => {
         />
       </Flex>
     </Layout>
-  )
-}
+  );
+};
 
-export default UserListsPage
+export default UserListsPage;

@@ -6,22 +6,22 @@ import {
   Select,
   Skeleton,
   Text,
-} from '@chakra-ui/react'
-import React, { useEffect, useState } from 'react'
-import Layout from '../components/Layout'
-import ItemCard from '../components/Items/ItemCard'
-import { SearchStats } from '../types'
-import { useRouter } from 'next/router'
-import CardBase from '../components/Card/CardBase'
-import SearchFilters from '../components/Search/SearchFilters'
-import axios from 'axios'
-import { SearchFilters as SearchFiltersType, SearchResults } from '../types'
-import Pagination from '../components/Input/Pagination'
-import qs from 'qs'
+} from '@chakra-ui/react';
+import React, { useEffect, useState } from 'react';
+import Layout from '../components/Layout';
+import ItemCard from '../components/Items/ItemCard';
+import { SearchStats } from '../types';
+import { useRouter } from 'next/router';
+import CardBase from '../components/Card/CardBase';
+import SearchFilters from '../components/Search/SearchFilters';
+import axios from 'axios';
+import { SearchFilters as SearchFiltersType, SearchResults } from '../types';
+import Pagination from '../components/Input/Pagination';
+import qs from 'qs';
 
 const Axios = axios.create({
   baseURL: '/api/',
-})
+});
 
 const defaultFilters: SearchFiltersType = {
   category: [],
@@ -36,66 +36,66 @@ const defaultFilters: SearchFiltersType = {
   sortDir: 'asc',
   limit: 30,
   page: 1,
-}
+};
 
 const SearchPage = () => {
-  const [searchResult, setResult] = useState<SearchResults | null>(null)
-  const [searchStatus, setStatus] = useState<SearchStats | null>(null)
-  const [filters, setFilters] = useState<SearchFiltersType>(defaultFilters)
-  const [isColorSearch, setIsColorSearch] = useState<boolean>(false)
+  const [searchResult, setResult] = useState<SearchResults | null>(null);
+  const [searchStatus, setStatus] = useState<SearchStats | null>(null);
+  const [filters, setFilters] = useState<SearchFiltersType>(defaultFilters);
+  const [isColorSearch, setIsColorSearch] = useState<boolean>(false);
 
-  const router = useRouter()
+  const router = useRouter();
 
   useEffect(() => {
     if (router.isReady) {
-      const custom = parseQueryString()
-      init(custom)
+      const custom = parseQueryString();
+      init(custom);
     }
-  }, [router.isReady])
+  }, [router.isReady]);
 
   useEffect(() => {
-    if (!router.isReady) return
-    setResult(null)
-    setStatus(null)
+    if (!router.isReady) return;
+    setResult(null);
+    setStatus(null);
 
-    const custom = parseQueryString()
-    init(custom, true)
-  }, [router.query.s])
+    const custom = parseQueryString();
+    init(custom, true);
+  }, [router.query.s]);
 
   const init = async (
     customFilters?: SearchFiltersType,
     forceStats = false
   ) => {
-    const query = (router.query.s as string) ?? ''
+    const query = (router.query.s as string) ?? '';
 
     // if(!query) return;
 
     if (query.match(/^#[0-9A-Fa-f]{6}$/)) {
-      setIsColorSearch(true)
+      setIsColorSearch(true);
 
       if (!searchResult) {
-        setFilters({ ...filters, sortBy: 'color' })
+        setFilters({ ...filters, sortBy: 'color' });
         customFilters = {
           ...(customFilters ?? filters),
           sortBy: 'color',
-        }
+        };
       }
-    } else setIsColorSearch(false)
+    } else setIsColorSearch(false);
 
-    const params = getDifference({ ...(customFilters ?? filters) })
+    const params = getDifference({ ...(customFilters ?? filters) });
 
     let paramsString = qs.stringify(params, {
       arrayFormat: 'brackets',
       encode: false,
-    })
-    paramsString = paramsString ? '&' + paramsString : ''
+    });
+    paramsString = paramsString ? '&' + paramsString : '';
 
     if (filters)
       router.replace(
         router.pathname + '?s=' + encodeURIComponent(query) + paramsString
-      )
+      );
 
-    setResult(null)
+    setResult(null);
 
     const [resSearch, resStats] = await Promise.all([
       Axios.get('search?s=' + encodeURIComponent(query), {
@@ -105,30 +105,30 @@ const SearchPage = () => {
       !searchStatus || forceStats
         ? Axios.get('search/stats?s=' + encodeURIComponent(query))
         : null,
-    ])
+    ]);
 
-    setResult(resSearch.data)
-    if (resStats) setStatus(resStats.data)
-  }
+    setResult(resSearch.data);
+    if (resStats) setStatus(resStats.data);
+  };
 
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newFilter = {
       ...filters,
       [e.target.name]: e.target.value,
       page: 1,
-    }
+    };
 
-    setFilters(newFilter)
-    init(newFilter)
-  }
+    setFilters(newFilter);
+    init(newFilter);
+  };
 
   const handleFilterChange = (newFilter: SearchFiltersType) => {
     setFilters({
       ...filters,
       ...newFilter,
       page: 1,
-    })
-  }
+    });
+  };
 
   const resetFilters = () => {
     const newFilter = {
@@ -136,34 +136,34 @@ const SearchPage = () => {
       sortBy: filters.sortBy,
       sortDir: filters.sortDir,
       page: 1,
-    }
+    };
 
-    setFilters(newFilter)
-    init(newFilter)
-  }
+    setFilters(newFilter);
+    init(newFilter);
+  };
 
   const changePage = (page: number) => {
-    setFilters({ ...filters, page: page })
-    init({ ...filters, page: page })
-  }
+    setFilters({ ...filters, page: page });
+    init({ ...filters, page: page });
+  };
 
   const parseQueryString = () => {
     const queryStrings = qs.parse(router.asPath, {
       ignoreQueryPrefix: true,
-    })
-    const queryFilters = getDifference(queryStrings, filters)
+    });
+    const queryFilters = getDifference(queryStrings, filters);
 
-    let customFilters = filters
+    let customFilters = filters;
     if (JSON.stringify(queryFilters) !== '{}') {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
-      customFilters = { ...filters, ...queryFilters }
+      customFilters = { ...filters, ...queryFilters };
     }
 
-    setFilters(customFilters)
+    setFilters(customFilters);
 
-    return customFilters
-  }
+    return customFilters;
+  };
 
   return (
     <Layout>
@@ -252,22 +252,22 @@ const SearchPage = () => {
         </Box>
       </Flex>
     </Layout>
-  )
-}
+  );
+};
 
 const getDifference = (a: { [id: string]: any }, b?: SearchFiltersType) => {
-  if (!b) b = defaultFilters
-  const keys = Object.keys(b) as (keyof SearchFiltersType)[]
+  if (!b) b = defaultFilters;
+  const keys = Object.keys(b) as (keyof SearchFiltersType)[];
   const diff = {} as {
-    [key in keyof SearchFiltersType]: string | string[] | number
-  }
+    [key in keyof SearchFiltersType]: string | string[] | number;
+  };
 
   for (const key of keys) {
     if (a[key] && JSON.stringify(a[key]) !== JSON.stringify(b[key]))
-      diff[key] = a[key]
+      diff[key] = a[key];
   }
 
-  return diff
-}
+  return diff;
+};
 
-export default SearchPage
+export default SearchPage;

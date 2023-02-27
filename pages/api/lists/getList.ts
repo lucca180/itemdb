@@ -1,7 +1,7 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
-import prisma from '../../../utils/prisma'
-import { CheckAuth } from '../../../utils/googleCloud'
-import { UserList } from '../../../types'
+import type { NextApiRequest, NextApiResponse } from 'next';
+import prisma from '../../../utils/prisma';
+import { CheckAuth } from '../../../utils/googleCloud';
+import { UserList } from '../../../types';
 
 export default async function handle(
   req: NextApiRequest,
@@ -10,18 +10,18 @@ export default async function handle(
   if (req.method !== 'GET')
     throw new Error(
       `The HTTP ${req.method} method is not supported at this route.`
-    )
+    );
 
-  const username = req.query.username as string
-  const list_id = req.query.list_id as string
+  const username = req.query.username as string;
+  const list_id = req.query.list_id as string;
 
   if (!username || !list_id)
-    return res.status(400).json({ success: false, message: 'Bad Request' })
+    return res.status(400).json({ success: false, message: 'Bad Request' });
 
-  let user = null
+  let user = null;
 
   try {
-    user = (await CheckAuth(req)).user
+    user = (await CheckAuth(req)).user;
   } catch (e) {}
 
   try {
@@ -35,19 +35,21 @@ export default async function handle(
       include: {
         items: true,
       },
-    })
+    });
 
     if (
       !listRaw ||
       (listRaw.visibility === 'private' && listRaw.user_id !== user?.id)
     )
-      return res.status(400).json({ success: false, message: 'List Not Found' })
+      return res
+        .status(400)
+        .json({ success: false, message: 'List Not Found' });
 
     const owner = await prisma.user.findUnique({
       where: {
         username: username,
       },
-    })
+    });
 
     const list: UserList = {
       internal_id: listRaw.internal_id,
@@ -81,14 +83,14 @@ export default async function handle(
           imported: item.imported,
           order: item.order,
           isHighlight: item.isHighlight,
-        }
+        };
       }),
-    }
+    };
 
-    return res.status(200).json(list)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return res.status(200).json(list);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
-    console.error(e)
-    res.status(500).json({ error: 'Internal Server Error' })
+    console.error(e);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 }

@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { NextApiRequest, NextApiResponse } from 'next'
-import prisma from '../../../utils/prisma'
-import { getItemFindAtLinks, isMissingInfo } from '../../../utils/utils'
-import { ItemData } from '../../../types'
-import Color from 'color'
+import type { NextApiRequest, NextApiResponse } from 'next';
+import prisma from '../../../utils/prisma';
+import { getItemFindAtLinks, isMissingInfo } from '../../../utils/utils';
+import { ItemData } from '../../../types';
+import Color from 'color';
 
 export default async function handle(
   req: NextApiRequest,
@@ -12,9 +12,9 @@ export default async function handle(
   if (req.method !== 'GET')
     throw new Error(
       `The HTTP ${req.method} method is not supported at this route.`
-    )
+    );
 
-  const id = req.query.id
+  const id = req.query.id;
 
   const resultRaw = (await prisma.$queryRaw`
         SELECT a.*, b.l, b.a, b.b, b.population, c.addedAt as priceAdded, c.price, c.noInflation_id 
@@ -29,12 +29,12 @@ export default async function handle(
         )
         WHERE b.type = "Vibrant" AND a.internal_id = ${id}
         
-    `) as any[]
+    `) as any[];
 
-  if (resultRaw.length === 0) res.json(null)
+  if (resultRaw.length === 0) res.json(null);
 
-  const result = resultRaw[0]
-  const colorlab = Color.lab(result.l, result.a, result.b)
+  const result = resultRaw[0];
+  const colorlab = Color.lab(result.l, result.a, result.b);
 
   const item: ItemData = {
     internal_id: result.internal_id,
@@ -68,10 +68,10 @@ export default async function handle(
       inflated: !!result.noInflation_id,
     },
     comment: result.comment ?? null,
-  }
+  };
 
-  item.findAt = getItemFindAtLinks(item) // does have all the info we need :)
-  item.isMissingInfo = isMissingInfo(item)
+  item.findAt = getItemFindAtLinks(item); // does have all the info we need :)
+  item.isMissingInfo = isMissingInfo(item);
 
-  res.json(item)
+  res.json(item);
 }

@@ -1,6 +1,6 @@
-import prisma from '../../../utils/prisma'
-import type { NextApiRequest, NextApiResponse } from 'next'
-import { CheckAuth } from '../../../utils/googleCloud'
+import prisma from '../../../utils/prisma';
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { CheckAuth } from '../../../utils/googleCloud';
 
 export default async function handle(
   req: NextApiRequest,
@@ -9,47 +9,48 @@ export default async function handle(
   if (req.method !== 'POST')
     throw new Error(
       `The HTTP ${req.method} method is not supported at this route.`
-    )
+    );
 
-  const itemData = req.body.itemData
-  const itemCats = (req.body.itemCats as string[]) ?? []
-  const itemTags = (req.body.itemTags as string[]) ?? []
+  const itemData = req.body.itemData;
+  const itemCats = (req.body.itemCats as string[]) ?? [];
+  const itemTags = (req.body.itemTags as string[]) ?? [];
 
-  if (!itemData) return res.status(400).json({ error: 'Invalid Request' })
+  if (!itemData) return res.status(400).json({ error: 'Invalid Request' });
 
   try {
-    const { user } = await CheckAuth(req)
-    if (!user) throw new Error('User not found')
+    const { user } = await CheckAuth(req);
+    if (!user) throw new Error('User not found');
 
-    if (user.role !== 'ADMIN') throw new Error('Unauthorized Permission')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (user.role !== 'ADMIN') throw new Error('Unauthorized Permission');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
-    console.error(e)
-    return res.status(401).json({ error: 'Unauthorized' })
+    console.error(e);
+    return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const { internal_id } = itemData
+  const { internal_id } = itemData;
 
-  if (!itemData.image) return res.status(400).json({ error: 'Invalid Request' })
+  if (!itemData.image)
+    return res.status(400).json({ error: 'Invalid Request' });
 
-  const imageId = itemData.image.match(/[^\.\/]+(?=\.gif)/)?.[0] ?? undefined
+  const imageId = itemData.image.match(/[^\.\/]+(?=\.gif)/)?.[0] ?? undefined;
 
   const rarity =
     itemData.rarity === '' || isNaN(Number(itemData.rarity))
       ? null
-      : Number(itemData.rarity)
+      : Number(itemData.rarity);
   const estVal =
     itemData.est_val === '' || isNaN(Number(itemData.est_val))
       ? null
-      : Number(itemData.est_val)
+      : Number(itemData.est_val);
   const weight =
     itemData.weight === '' || isNaN(Number(itemData.weight))
       ? null
-      : Number(itemData.weight)
+      : Number(itemData.weight);
   const itemId =
     itemData.item_id === '' || isNaN(Number(itemData.item_id))
       ? null
-      : Number(itemData.item_id)
+      : Number(itemData.item_id);
 
   await prisma.items.update({
     where: { internal_id },
@@ -69,11 +70,11 @@ export default async function handle(
       comment: itemData.comment,
       status: itemData.status,
     },
-  })
+  });
 
-  await processTags(itemTags, itemCats, internal_id)
+  await processTags(itemTags, itemCats, internal_id);
 
-  return res.status(200).json({ success: true })
+  return res.status(200).json({ success: true });
 }
 
 export const processTags = async (
@@ -95,17 +96,17 @@ export const processTags = async (
         },
       },
     },
-  })
+  });
 
   const tagsStr = tagRaw
     .filter((x) => x.tag.type === 'tag')
-    .map((raw) => raw.tag.name)
+    .map((raw) => raw.tag.name);
   const catsStr = tagRaw
     .filter((x) => x.tag.type === 'category')
-    .map((raw) => raw.tag.name)
+    .map((raw) => raw.tag.name);
 
-  const newTags = itemTags.filter((x) => !tagsStr.includes(x))
-  const newCats = itemCats.filter((x) => !catsStr.includes(x))
+  const newTags = itemTags.filter((x) => !tagsStr.includes(x));
+  const newCats = itemCats.filter((x) => !catsStr.includes(x));
 
   for (const tag of newTags) {
     await prisma.itemTags.create({
@@ -131,7 +132,7 @@ export const processTags = async (
         tag: true,
         item: true,
       },
-    })
+    });
   }
 
   for (const cat of newCats) {
@@ -158,11 +159,11 @@ export const processTags = async (
         tag: true,
         item: true,
       },
-    })
+    });
   }
 
-  const delTags = tagsStr.filter((x) => !itemTags.includes(x))
-  const delCats = catsStr.filter((x) => !itemCats.includes(x))
+  const delTags = tagsStr.filter((x) => !itemTags.includes(x));
+  const delCats = catsStr.filter((x) => !itemCats.includes(x));
 
   await prisma.itemTags.deleteMany({
     where: {
@@ -173,5 +174,5 @@ export const processTags = async (
         },
       },
     },
-  })
-}
+  });
+};

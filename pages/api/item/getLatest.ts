@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { NextApiRequest, NextApiResponse } from 'next'
-import prisma from '../../../utils/prisma'
-import { ItemData } from '../../../types'
-import { getItemFindAtLinks, isMissingInfo } from '../../../utils/utils'
-import Color from 'color'
+import type { NextApiRequest, NextApiResponse } from 'next';
+import prisma from '../../../utils/prisma';
+import { ItemData } from '../../../types';
+import { getItemFindAtLinks, isMissingInfo } from '../../../utils/utils';
+import Color from 'color';
 
 export default async function handle(
   req: NextApiRequest,
@@ -12,7 +12,7 @@ export default async function handle(
   if (req.method !== 'GET')
     throw new Error(
       `The HTTP ${req.method} method is not supported at this route.`
-    )
+    );
 
   const resultRaw = (await prisma.$queryRaw`
         SELECT a.*, b.l, b.a, b.b, b.population, c.addedAt as priceAdded, c.price, c.noInflation_id 
@@ -28,14 +28,14 @@ export default async function handle(
         WHERE b.type = "Vibrant"
         ORDER BY a.addedAt DESC
         LIMIT 300
-    `) as any
+    `) as any;
 
   // const ids = resultRaw.map((o: { internal_id: any; }) => o.internal_id)
-  const filteredResult = resultRaw
+  const filteredResult = resultRaw;
   // .sort((a:any, b:any) =>  Math.floor(b.l) - Math.floor(a.l) || Math.floor(b.a) - Math.floor(a.a) || Math.floor(b.b) - Math.floor(a.b))
 
   const itemList: ItemData[] = filteredResult.map((result: any) => {
-    const color = Color.lab(result.l, result.a, result.b)
+    const color = Color.lab(result.l, result.a, result.b);
 
     const item: ItemData = {
       internal_id: result.internal_id,
@@ -69,13 +69,13 @@ export default async function handle(
         inflated: !!result.noInflation_id,
       },
       comment: result.comment ?? null,
-    }
+    };
 
-    item.findAt = getItemFindAtLinks(item) // does have all the info we need :)
-    item.isMissingInfo = isMissingInfo(item)
+    item.findAt = getItemFindAtLinks(item); // does have all the info we need :)
+    item.isMissingInfo = isMissingInfo(item);
 
-    return item
-  })
+    return item;
+  });
 
-  res.json(itemList)
+  res.json(itemList);
 }

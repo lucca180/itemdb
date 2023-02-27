@@ -27,79 +27,79 @@ import {
   Spinner,
   Center,
   FormHelperText,
-} from '@chakra-ui/react'
-import axios from 'axios'
-import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
-import { EditItemFeedbackJSON, ItemData, ItemTag } from '../../types'
-import { useAuth } from '../../utils/auth'
-import ItemStatusSelect from '../Input/ItemStatusSelect'
-import TagSelect from '../Input/TagsSelect'
+} from '@chakra-ui/react';
+import axios from 'axios';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import { EditItemFeedbackJSON, ItemData, ItemTag } from '../../types';
+import { useAuth } from '../../utils/auth';
+import ItemStatusSelect from '../Input/ItemStatusSelect';
+import TagSelect from '../Input/TagsSelect';
 
 type Props = {
-  isOpen: boolean
-  onClose: () => void
-  item: ItemData
-  tags: ItemTag[]
-}
+  isOpen: boolean;
+  onClose: () => void;
+  item: ItemData;
+  tags: ItemTag[];
+};
 
 const EditItemModal = (props: Props) => {
-  const { getIdToken, user } = useAuth()
-  const { isOpen, onClose, item: itemProps, tags: tagsProps } = props
-  const [item, setItem] = useState<ItemData>(itemProps)
-  const [tags, setTags] = useState<string[]>([])
-  const [categories, setCategories] = useState<string[]>([])
-  const [isLoading, setLoading] = useState<boolean>(false)
-  const [isSuccess, setIsSuccess] = useState<boolean>(false)
-  const [error, setError] = useState<boolean>(false)
-  const router = useRouter()
+  const { getIdToken, user } = useAuth();
+  const { isOpen, onClose, item: itemProps, tags: tagsProps } = props;
+  const [item, setItem] = useState<ItemData>(itemProps);
+  const [tags, setTags] = useState<string[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [isLoading, setLoading] = useState<boolean>(false);
+  const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(false);
+  const router = useRouter();
 
-  const isAdmin = user?.role === 'ADMIN'
+  const isAdmin = user?.role === 'ADMIN';
 
   useEffect(() => {
-    setTags(tagsProps.filter((t) => t.type === 'tag').map((t) => t.name))
+    setTags(tagsProps.filter((t) => t.type === 'tag').map((t) => t.name));
     setCategories(
       tagsProps.filter((t) => t.type === 'category').map((t) => t.name)
-    )
-  }, [tagsProps])
+    );
+  }, [tagsProps]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { name, value } = e.target
-    setItem((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setItem((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleTagsChange = (
     tags: string[],
     type: 'tags' | 'categories' | 'special'
   ) => {
-    if (type === 'tags') setTags(tags)
-    else if (type === 'categories') setCategories(tags)
+    if (type === 'tags') setTags(tags);
+    else if (type === 'categories') setCategories(tags);
     else if (type === 'special') {
-      const itemCopy = { ...item }
-      console.log(tags)
-      if (tags.includes('nc')) itemCopy.isNC = true
-      else itemCopy.isNC = false
+      const itemCopy = { ...item };
+      console.log(tags);
+      if (tags.includes('nc')) itemCopy.isNC = true;
+      else itemCopy.isNC = false;
 
-      if (tags.includes('wearable')) itemCopy.isWearable = true
-      else itemCopy.isWearable = false
+      if (tags.includes('wearable')) itemCopy.isWearable = true;
+      else itemCopy.isWearable = false;
 
-      if (tags.includes('neohome')) itemCopy.isNeohome = true
-      else itemCopy.isNeohome = false
+      if (tags.includes('neohome')) itemCopy.isNeohome = true;
+      else itemCopy.isNeohome = false;
 
-      setItem(itemCopy)
+      setItem(itemCopy);
     }
-  }
+  };
 
   const saveChanges = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const token = await getIdToken()
-      if (!token) return
+      const token = await getIdToken();
+      if (!token) return;
 
       const res = await axios.patch(
-        '/api/v1/items/'+item.internal_id,
+        '/api/v1/items/' + item.internal_id,
         {
           itemData: item,
           itemCats: categories,
@@ -108,25 +108,25 @@ const EditItemModal = (props: Props) => {
         {
           headers: { Authorization: `Bearer ${token}` },
         }
-      )
+      );
 
-      setLoading(false)
+      setLoading(false);
 
-      if (res.data.success) setIsSuccess(true)
-      else throw res.data
+      if (res.data.success) setIsSuccess(true);
+      else throw res.data;
     } catch (err) {
-      console.log(err)
-      setLoading(false)
-      setError(true)
+      console.log(err);
+      setLoading(false);
+      setError(true);
     }
-  }
+  };
 
   const sendFeedback = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
       const feedbackJSON: EditItemFeedbackJSON = {
         itemTags: tags,
-      }
+      };
 
       const res = await axios.post('/api/feedback/send', {
         pageInfo: router.asPath,
@@ -135,27 +135,27 @@ const EditItemModal = (props: Props) => {
         email: user?.email,
         type: 'itemChange',
         json: JSON.stringify(feedbackJSON),
-      })
+      });
 
-      setLoading(false)
+      setLoading(false);
 
-      if (res.data.success) setIsSuccess(true)
-      else throw res.data
+      if (res.data.success) setIsSuccess(true);
+      else throw res.data;
     } catch (err) {
-      console.log(err)
-      setLoading(false)
-      setError(true)
+      console.log(err);
+      setLoading(false);
+      setError(true);
     }
-  }
+  };
 
   const handleCancel = () => {
-    setItem(itemProps)
-    setTags([])
-    setCategories([])
-    setIsSuccess(false)
-    setError(false)
-    onClose()
-  }
+    setItem(itemProps);
+    setTags([]);
+    setCategories([]);
+    setIsSuccess(false);
+    setError(false);
+    onClose();
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={handleCancel} isCentered>
@@ -234,21 +234,21 @@ const EditItemModal = (props: Props) => {
         </ModalFooter>
       </ModalContent>
     </Modal>
-  )
-}
+  );
+};
 
-export default EditItemModal
+export default EditItemModal;
 
 type TabProps = {
-  item: ItemData
-  itemProps: ItemData
+  item: ItemData;
+  itemProps: ItemData;
   onChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => void
-}
+  ) => void;
+};
 
 const InfoTab = (props: TabProps) => {
-  const { item, itemProps, onChange: handleChange } = props
+  const { item, itemProps, onChange: handleChange } = props;
 
   return (
     <Flex flexFlow="column" gap={4}>
@@ -367,52 +367,52 @@ const InfoTab = (props: TabProps) => {
         />
       </FormControl>
     </Flex>
-  )
-}
+  );
+};
 
 type TagSelectProps = {
-  item: ItemData
-  itemProps: ItemData
-  categories: string[]
-  tags: string[]
-  onChange: (tags: string[], type: 'categories' | 'tags' | 'special') => void
-}
+  item: ItemData;
+  itemProps: ItemData;
+  categories: string[];
+  tags: string[];
+  onChange: (tags: string[], type: 'categories' | 'tags' | 'special') => void;
+};
 
 const CategoriesTab = (props: TagSelectProps) => {
-  const { item, categories, tags, onChange: handleChange } = props
-  const [specialTags, setSpecialTags] = useState<string[]>([])
-  const { user } = useAuth()
+  const { item, categories, tags, onChange: handleChange } = props;
+  const [specialTags, setSpecialTags] = useState<string[]>([]);
+  const { user } = useAuth();
 
-  const isAdmin = user?.role == 'ADMIN'
+  const isAdmin = user?.role == 'ADMIN';
 
   useEffect(() => {
-    const tempTags = []
+    const tempTags = [];
 
-    if (item.isNC) tempTags.push('nc')
-    else tempTags.push('np')
+    if (item.isNC) tempTags.push('nc');
+    else tempTags.push('np');
 
-    if (item.isWearable) tempTags.push('wearable')
+    if (item.isWearable) tempTags.push('wearable');
 
-    if (item.isNeohome) tempTags.push('neohome')
+    if (item.isNeohome) tempTags.push('neohome');
 
-    console.log(tempTags, specialTags)
-    setSpecialTags(tempTags)
-  }, [item])
+    console.log(tempTags, specialTags);
+    setSpecialTags(tempTags);
+  }, [item]);
 
   const handleSpecialTags = (newTags: string[]) => {
-    let tempTags = [...specialTags]
+    let tempTags = [...specialTags];
 
     if (newTags.includes('nc') && !specialTags.includes('nc')) {
-      tempTags.push('nc')
-      tempTags = tempTags.filter((tag) => tag !== 'np')
+      tempTags.push('nc');
+      tempTags = tempTags.filter((tag) => tag !== 'np');
     } else if (newTags.includes('np') && !specialTags.includes('np')) {
-      tempTags.push('np')
-      tempTags = tempTags.filter((tag) => tag !== 'nc')
-    } else tempTags = newTags
+      tempTags.push('np');
+      tempTags = tempTags.filter((tag) => tag !== 'nc');
+    } else tempTags = newTags;
 
-    handleChange(tempTags, 'special')
-    setSpecialTags(tempTags)
-  }
+    handleChange(tempTags, 'special');
+    setSpecialTags(tempTags);
+  };
 
   return (
     <Stack flexFlow="column" gap={4}>
@@ -465,5 +465,5 @@ const CategoriesTab = (props: TagSelectProps) => {
         </FormHelperText>
       </FormControl>
     </Stack>
-  )
-}
+  );
+};

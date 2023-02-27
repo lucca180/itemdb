@@ -1,6 +1,6 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
-import prisma from '../../../utils/prisma'
-import requestIp from 'request-ip'
+import type { NextApiRequest, NextApiResponse } from 'next';
+import prisma from '../../../utils/prisma';
+import requestIp from 'request-ip';
 
 export default async function handle(
   req: NextApiRequest,
@@ -9,14 +9,14 @@ export default async function handle(
   if (req.method !== 'POST')
     throw new Error(
       `The HTTP ${req.method} method is not supported at this route.`
-    )
+    );
 
-  const data = JSON.parse(req.body)
+  const data = JSON.parse(req.body);
 
-  const items = data.items
-  const lang = data.lang
+  const items = data.items;
+  const lang = data.lang;
 
-  const dataList = []
+  const dataList = [];
   for (const item of items) {
     let {
       itemId,
@@ -29,38 +29,38 @@ export default async function handle(
       subText,
       type,
       weight,
-    } = item
-    let imageId: string | null = null
+    } = item;
+    let imageId: string | null = null;
 
-    rarity = isNaN(Number(rarity)) ? undefined : Number(rarity)
-    estVal = isNaN(Number(estVal)) ? undefined : Number(estVal)
-    weight = isNaN(Number(weight)) ? undefined : Number(weight)
-    itemId = isNaN(Number(itemId)) ? undefined : Number(itemId)
+    rarity = isNaN(Number(rarity)) ? undefined : Number(rarity);
+    estVal = isNaN(Number(estVal)) ? undefined : Number(estVal);
+    weight = isNaN(Number(weight)) ? undefined : Number(weight);
+    itemId = isNaN(Number(itemId)) ? undefined : Number(itemId);
 
-    if (!name || !img) continue
+    if (!name || !img) continue;
 
-    if (img) img = (img as string).replace(/^[^\/\/\s]*\/\//gim, 'https://')
+    if (img) img = (img as string).replace(/^[^\/\/\s]*\/\//gim, 'https://');
 
-    if (img) imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? null
+    if (img) imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? null;
 
     if (category === 'Neocash') {
-      category = undefined
-      type = 'nc'
+      category = undefined;
+      type = 'nc';
     }
 
-    let specialTypes = []
+    let specialTypes = [];
 
     if (subText) {
-      if (subText.toLowerCase().includes('neocash')) type = 'nc'
-      specialTypes = subText.match(/(?<=\().+?(?=\))/gm)
+      if (subText.toLowerCase().includes('neocash')) type = 'nc';
+      specialTypes = subText.match(/(?<=\().+?(?=\))/gm);
     }
 
-    let status = 'active'
+    let status = 'active';
 
-    if (specialTypes.includes('no trade')) status = 'no trade'
+    if (specialTypes.includes('no trade')) status = 'no trade';
 
     specialTypes =
-      specialTypes?.length > 0 ? specialTypes?.toString() : undefined
+      specialTypes?.length > 0 ? specialTypes?.toString() : undefined;
 
     const x = {
       item_id: itemId,
@@ -78,15 +78,15 @@ export default async function handle(
       isWearable: !!specialTypes?.includes('wearable'),
       language: lang,
       ip_address: requestIp.getClientIp(req),
-    }
+    };
 
-    dataList.push(x)
+    dataList.push(x);
   }
 
   const result = await prisma.itemProcess.createMany({
     data: dataList,
     skipDuplicates: true,
-  })
+  });
 
-  res.json(result)
+  res.json(result);
 }

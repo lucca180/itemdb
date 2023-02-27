@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react'
+import React, { useEffect, useCallback } from 'react';
 import {
   AutoComplete,
   AutoCompleteInput,
@@ -6,34 +6,34 @@ import {
   AutoCompleteList,
   AutoCompleteTag,
   AutoCompleteCreatable,
-} from '@choc-ui/chakra-autocomplete'
+} from '@choc-ui/chakra-autocomplete';
 
-import axios from 'axios'
-import { ItemTag } from '../../types'
-import debounce from 'lodash/debounce'
+import axios from 'axios';
+import { ItemTag } from '../../types';
+import debounce from 'lodash/debounce';
 
 type Props = {
-  value: string[]
-  type: 'tags' | 'categories'
-  onChange: (newVals: string[]) => void
-  disabled?: boolean
-}
+  value: string[];
+  type: 'tags' | 'categories';
+  onChange: (newVals: string[]) => void;
+  disabled?: boolean;
+};
 
 const TagSelect = (props: Props) => {
-  const { value: valueProps, onChange, type, disabled } = props
-  const [inputVal, setInputVal] = React.useState<string>('')
-  const [options, setOptions] = React.useState<string[]>([])
+  const { value: valueProps, onChange, type, disabled } = props;
+  const [inputVal, setInputVal] = React.useState<string>('');
+  const [options, setOptions] = React.useState<string[]>([]);
 
   useEffect(() => {
-    debouncedLoad(inputVal)
-  }, [])
+    debouncedLoad(inputVal);
+  }, []);
 
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target
-    setInputVal(value)
+    const { value } = e.target;
+    setInputVal(value);
 
-    debouncedLoad(value)
-  }
+    debouncedLoad(value);
+  };
 
   const loadOptions = async (search: string) => {
     const res = await axios.get(`/api/search/tags`, {
@@ -41,14 +41,14 @@ const TagSelect = (props: Props) => {
         s: search,
         type: type === 'categories' ? 'category' : 'tag',
       },
-    })
+    });
 
-    const data = res.data as ItemTag[]
-    const newOptions = data.map((d) => d.name)
-    setOptions(newOptions)
-  }
+    const data = res.data as ItemTag[];
+    const newOptions = data.map((d) => d.name);
+    setOptions(newOptions);
+  };
 
-  const debouncedLoad = useCallback(debounce(loadOptions, 250), [])
+  const debouncedLoad = useCallback(debounce(loadOptions, 250), []);
 
   return (
     <AutoComplete
@@ -102,7 +102,7 @@ const TagSelect = (props: Props) => {
           )}
       </AutoCompleteList>
     </AutoComplete>
-  )
-}
+  );
+};
 
-export default TagSelect
+export default TagSelect;

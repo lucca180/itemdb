@@ -1,17 +1,17 @@
-import { AspectRatio, Box, Flex, Link, Skeleton, Text } from '@chakra-ui/react'
-import React, { useState } from 'react'
-import Image from 'next/image'
-import { ItemData } from '../../types'
-import { ExternalLinkIcon } from '@chakra-ui/icons'
+import { AspectRatio, Box, Flex, Link, Skeleton, Text } from '@chakra-ui/react';
+import React, { useState } from 'react';
+import Image from 'next/image';
+import { ItemData } from '../../types';
+import { ExternalLinkIcon } from '@chakra-ui/icons';
 
 type Props = {
-  item: ItemData
-}
+  item: ItemData;
+};
 
 const ItemPreview = (props: Props) => {
-  const [isLoaded, setIsLoaded] = useState(false)
-  const { item } = props
-  const color = item.color.rgb
+  const [isLoaded, setIsLoaded] = useState(false);
+  const { item } = props;
+  const color = item.color.rgb;
 
   return (
     <Flex
@@ -70,7 +70,7 @@ const ItemPreview = (props: Props) => {
         </Text>
       </Box>
     </Flex>
-  )
-}
+  );
+};
 
-export default ItemPreview
+export default ItemPreview;

@@ -1,4 +1,4 @@
-import { ChevronDownIcon } from '@chakra-ui/icons'
+import { ChevronDownIcon } from '@chakra-ui/icons';
 import {
   Menu,
   MenuButton,
@@ -7,44 +7,44 @@ import {
   MenuItem,
   MenuGroup,
   MenuDivider,
-} from '@chakra-ui/react'
-import axios from 'axios'
-import { useEffect, useState } from 'react'
-import { UserList } from '../../types'
-import { useAuth } from '../../utils/auth'
+} from '@chakra-ui/react';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
+import { UserList } from '../../types';
+import { useAuth } from '../../utils/auth';
 
 type Props = {
-  onChange?: (list: UserList) => void
-  defaultValue?: UserList
-}
+  onChange?: (list: UserList) => void;
+  defaultValue?: UserList;
+};
 
 const ListSelect = (props: Props) => {
-  const { user, getIdToken, authLoading } = useAuth()
-  const [lists, setLists] = useState<UserList[]>([])
+  const { user, getIdToken, authLoading } = useAuth();
+  const [lists, setLists] = useState<UserList[]>([]);
   const [selectedList, setSelected] = useState<UserList | undefined>(
     props.defaultValue
-  )
+  );
 
   const seeking = lists
     .filter((list) => list.purpose === 'seeking')
-    .sort((a, b) => SortListByChange(a, b))
+    .sort((a, b) => SortListByChange(a, b));
   const trading = lists
     .filter((list) => list.purpose === 'trading')
-    .sort((a, b) => SortListByChange(a, b))
+    .sort((a, b) => SortListByChange(a, b));
   const none = lists
     .filter((list) => list.purpose === 'none')
-    .sort((a, b) => SortListByChange(a, b))
+    .sort((a, b) => SortListByChange(a, b));
 
   useEffect(() => {
     if (!authLoading && user) {
-      init()
+      init();
     }
-  }, [authLoading, user])
+  }, [authLoading, user]);
 
   const init = async () => {
-    if (!user) return
+    if (!user) return;
     try {
-      const token = await getIdToken()
+      const token = await getIdToken();
 
       const res = await axios.get(
         `/api/lists/getUserLists?username=${user.username}`,
@@ -53,18 +53,18 @@ const ListSelect = (props: Props) => {
             authorization: `Bearer ${token}`,
           },
         }
-      )
+      );
 
-      setLists(res.data)
+      setLists(res.data);
     } catch (err) {
-      console.log(err)
+      console.log(err);
     }
-  }
+  };
 
   const handleSelect = (list: UserList) => {
-    setSelected(list)
-    if (props.onChange) props.onChange(list)
-  }
+    setSelected(list);
+    if (props.onChange) props.onChange(list);
+  };
 
   return (
     <Menu>
@@ -133,14 +133,14 @@ const ListSelect = (props: Props) => {
         )}
       </MenuList>
     </Menu>
-  )
-}
+  );
+};
 
-export default ListSelect
+export default ListSelect;
 
 function SortListByChange(a: UserList, b: UserList) {
-  const dateA = new Date(a.updatedAt)
-  const dateB = new Date(b.updatedAt)
+  const dateA = new Date(a.updatedAt);
+  const dateB = new Date(b.updatedAt);
 
-  return dateB.getTime() - dateA.getTime()
+  return dateB.getTime() - dateA.getTime();
 }

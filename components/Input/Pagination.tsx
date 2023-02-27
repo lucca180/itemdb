@@ -1,17 +1,17 @@
-import { HStack, Button, Select, Box } from '@chakra-ui/react'
+import { HStack, Button, Select, Box } from '@chakra-ui/react';
 
 type Props = {
-  currentPage?: number
-  totalPages?: number
-  setPage?: (page: number) => void
-}
+  currentPage?: number;
+  totalPages?: number;
+  setPage?: (page: number) => void;
+};
 
 const Pagination = (props: Props) => {
-  const { currentPage, totalPages, setPage } = props
+  const { currentPage, totalPages, setPage } = props;
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    if (setPage) setPage(parseInt(e.target.value))
-  }
+    if (setPage) setPage(parseInt(e.target.value));
+  };
 
   if (!currentPage || !totalPages || !setPage)
     return (
@@ -34,7 +34,7 @@ const Pagination = (props: Props) => {
         </Box>
         <Button disabled>Next</Button>
       </HStack>
-    )
+    );
 
   return (
     <HStack mt={4} justifyContent="center">
@@ -65,7 +65,7 @@ const Pagination = (props: Props) => {
         Next
       </Button>
     </HStack>
-  )
-}
+  );
+};
 
-export default Pagination
+export default Pagination;

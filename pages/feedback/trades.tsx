@@ -9,9 +9,9 @@ import {
   ListItem,
   Spinner,
   Text,
-} from '@chakra-ui/react'
-import axios from 'axios'
-import { useEffect, useState } from 'react'
+} from '@chakra-ui/react';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
 import {
   BsCheck2,
   BsArrowLeftRight,
@@ -19,41 +19,41 @@ import {
   BsXCircleFill,
   BsCheckCircleFill,
   BsCheckLg,
-} from 'react-icons/bs'
-import CardBase from '../../components/Card/CardBase'
-import FeedbackTrade from '../../components/FeebackCards/FeedbackTrade'
-import Layout from '../../components/Layout'
-import { TradeData } from '../../types'
-import { useAuth } from '../../utils/auth'
+} from 'react-icons/bs';
+import CardBase from '../../components/Card/CardBase';
+import FeedbackTrade from '../../components/FeebackCards/FeedbackTrade';
+import Layout from '../../components/Layout';
+import { TradeData } from '../../types';
+import { useAuth } from '../../utils/auth';
 
 const FeedbackSuggest = () => {
-  const { user, authLoading, getIdToken } = useAuth({ redirect: '/login' })
-  const [trades, setTrades] = useState<TradeData[]>([])
-  const [currentTrade, setCurrentTrade] = useState<TradeData>()
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string>('')
+  const { user, authLoading, getIdToken } = useAuth({ redirect: '/login' });
+  const [trades, setTrades] = useState<TradeData[]>([]);
+  const [currentTrade, setCurrentTrade] = useState<TradeData>();
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
-    if (!authLoading && user) init()
-  }, [authLoading])
+    if (!authLoading && user) init();
+  }, [authLoading]);
 
   const init = async () => {
-    setIsLoading(true)
-    const res = await axios.get('/api/trades/getLatest')
+    setIsLoading(true);
+    const res = await axios.get('/api/trades/getLatest');
 
-    setTrades(res.data)
-    setCurrentTrade(res.data[0])
-    setIsLoading(false)
-  }
+    setTrades(res.data);
+    setCurrentTrade(res.data[0]);
+    setIsLoading(false);
+  };
 
   const handleChange = (newTrade: TradeData) => {
-    setCurrentTrade(newTrade)
-  }
+    setCurrentTrade(newTrade);
+  };
 
   const handleSubmitAdmin = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
 
-    const token = await getIdToken()
+    const token = await getIdToken();
     try {
       const res = await axios.post(
         '/api/trades/setPrice',
@@ -65,30 +65,29 @@ const FeedbackSuggest = () => {
             authorization: `Bearer ${token}`,
           },
         }
-      )
+      );
 
-      if (res.data.success) handleSkip()
-      else throw res.data
+      if (res.data.success) handleSkip();
+      else throw res.data;
 
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (e: any) {
-      console.error(e)
-      setError(e.message)
-      setIsLoading(false)
+      console.error(e);
+      setError(e.message);
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleSubmit = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
 
-    if (!currentTrade || !user) return
+    if (!currentTrade || !user) return;
 
-    if(user.role === 'ADMIN')
-        return handleSubmitAdmin();
+    if (user.role === 'ADMIN') return handleSubmitAdmin();
 
     const feedbackJSON = {
       trade: currentTrade,
-    }
+    };
 
     try {
       const res = await axios.post('/api/feedback/send', {
@@ -97,27 +96,27 @@ const FeedbackSuggest = () => {
         user_id: user.id,
         type: 'tradePrice',
         json: JSON.stringify(feedbackJSON),
-      })
+      });
 
-      if (res.data.success) handleSkip()
-      else throw res.data
+      if (res.data.success) handleSkip();
+      else throw res.data;
 
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (e: any) {
-      console.error(e)
-      setError(e.message)
-      setIsLoading(false)
+      console.error(e);
+      setError(e.message);
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleSkip = () => {
     const newTrades = trades.filter(
       (trade) => trade.trade_id !== currentTrade?.trade_id
-    )
-    setTrades(newTrades)
-    setCurrentTrade(newTrades[0])
-    console.log(newTrades[0])
-  }
+    );
+    setTrades(newTrades);
+    setCurrentTrade(newTrades[0]);
+    console.log(newTrades[0]);
+  };
 
   return (
     <Layout>
@@ -183,10 +182,10 @@ const FeedbackSuggest = () => {
         </Flex>
       </Flex>
     </Layout>
-  )
-}
+  );
+};
 
-export default FeedbackSuggest
+export default FeedbackSuggest;
 
 export const TradeGuidelines = () => {
   return (
@@ -289,5 +288,5 @@ export const TradeGuidelines = () => {
         </ListItem>
       </List>
     </>
-  )
-}
+  );
+};

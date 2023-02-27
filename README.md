@@ -171,7 +171,7 @@ const profile = await prisma.profile.create({
       connect: { email: 'alice@prisma.io' },
     },
   },
-})
+});
 ```
 
 #### Create a new user with a new profile
@@ -187,7 +187,7 @@ const user = await prisma.user.create({
       },
     },
   },
-})
+});
 ```
 
 #### Update the profile of an existing user
@@ -202,7 +202,7 @@ const userWithUpdatedProfile = await prisma.user.update({
       },
     },
   },
-})
+});
 ```
 
 ### 3. Build new UI features in React

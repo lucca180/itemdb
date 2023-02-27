@@ -6,27 +6,27 @@ import {
   Text,
   Link,
   Tooltip,
-} from '@chakra-ui/react'
-import React from 'react'
-import Image from 'next/image'
-import { ItemData } from '../../types'
-import NextLink from 'next/link'
-import { AiFillInfoCircle, AiFillWarning } from 'react-icons/ai'
+} from '@chakra-ui/react';
+import React from 'react';
+import Image from 'next/image';
+import { ItemData } from '../../types';
+import NextLink from 'next/link';
+import { AiFillInfoCircle, AiFillWarning } from 'react-icons/ai';
 
 type Props = {
-  item?: ItemData
-  isLoading?: boolean
-  selected?: boolean
-  disableLink?: boolean
-  capValue?: number | null
-  quantity?: number
-}
+  item?: ItemData;
+  isLoading?: boolean;
+  selected?: boolean;
+  disableLink?: boolean;
+  capValue?: number | null;
+  quantity?: number;
+};
 
-const intl = new Intl.NumberFormat()
+const intl = new Intl.NumberFormat();
 
 const ItemCard = (props: Props) => {
-  const { item, isLoading, selected, disableLink, capValue, quantity } = props
-  const color = item?.color.rgb
+  const { item, isLoading, selected, disableLink, capValue, quantity } = props;
+  const color = item?.color.rgb;
 
   if (!item || isLoading || !color)
     return (
@@ -48,7 +48,7 @@ const ItemCard = (props: Props) => {
         <Skeleton w="80px" h="80px" />
         <Skeleton w="80px" h="12px" mt={2} />
       </Box>
-    )
+    );
 
   return (
     <Link
@@ -123,7 +123,7 @@ const ItemCard = (props: Props) => {
         )}
       </Box>
     </Link>
-  )
-}
+  );
+};
 
-export default ItemCard
+export default ItemCard;

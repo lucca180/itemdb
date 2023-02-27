@@ -1,6 +1,6 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
-import prisma from '../../../utils/prisma'
-import requestIp from 'request-ip'
+import type { NextApiRequest, NextApiResponse } from 'next';
+import prisma from '../../../utils/prisma';
+import requestIp from 'request-ip';
 
 export default async function handle(
   req: NextApiRequest,
@@ -9,38 +9,39 @@ export default async function handle(
   if (req.method !== 'POST')
     throw new Error(
       `The HTTP ${req.method} method is not supported at this route.`
-    )
+    );
 
-  const data = JSON.parse(req.body)
+  const data = JSON.parse(req.body);
 
-  const tradeLots = data.tradeLots
-  const lang = data.lang
+  const tradeLots = data.tradeLots;
+  const lang = data.lang;
 
-  if (lang !== 'en') return res.json('nope')
+  if (lang !== 'en') return res.json('nope');
 
-  const promiseArr = []
+  const promiseArr = [];
 
   for (const lot of tradeLots) {
-    const itemList = []
+    const itemList = [];
 
     for (const item of lot.items) {
-      let { name, img, order } = item
-      let imageId
+      let { name, img, order } = item;
+      let imageId;
 
-      if (!name || !img) continue
+      if (!name || !img) continue;
 
-      if (img) img = (img as string).replace(/^[^\/\/\s]*\/\//gim, 'https://')
+      if (img) img = (img as string).replace(/^[^\/\/\s]*\/\//gim, 'https://');
 
-      if (img) imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? null
+      if (img)
+        imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? null;
 
       const x = {
         name: name,
         image: img,
         image_id: imageId as string,
         order: order,
-      }
+      };
 
-      itemList.push(x)
+      itemList.push(x);
     }
 
     const prom = prisma.trades.create({
@@ -55,12 +56,12 @@ export default async function handle(
           create: [...itemList],
         },
       },
-    })
+    });
 
-    promiseArr.push(prom)
+    promiseArr.push(prom);
   }
 
-  const result = await Promise.allSettled(promiseArr)
+  const result = await Promise.allSettled(promiseArr);
 
-  res.json(result)
+  res.json(result);
 }

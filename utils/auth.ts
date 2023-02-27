@@ -1,97 +1,97 @@
-import React, { useEffect } from 'react'
-import { atom, useRecoilState } from 'recoil'
-import { recoilPersist } from 'recoil-persist'
-import axios from 'axios'
-import { getAuth, User as FirebaseUser } from 'firebase/auth'
-import { useRouter } from 'next/router'
-import { User } from '../types'
+import React, { useEffect } from 'react';
+import { atom, useRecoilState } from 'recoil';
+import { recoilPersist } from 'recoil-persist';
+import axios from 'axios';
+import { getAuth, User as FirebaseUser } from 'firebase/auth';
+import { useRouter } from 'next/router';
+import { User } from '../types';
 
 const { persistAtom } = recoilPersist({
   storage: typeof window !== 'undefined' ? sessionStorage : undefined,
-})
+});
 
 export const UserState = atom<User | null>({
   key: 'UserState',
   default: null,
   effects_UNSTABLE: [persistAtom],
-})
+});
 
 type UseAuthProps = {
-  redirect?: string
-}
+  redirect?: string;
+};
 
 export const useAuth = (props?: UseAuthProps) => {
-  const redirect = props?.redirect
-  const [isLoading, setIsLoading] = React.useState(true)
-  const [user, setUser] = useRecoilState(UserState)
-  const auth = getAuth()
-  const router = useRouter()
+  const redirect = props?.redirect;
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [user, setUser] = useRecoilState(UserState);
+  const auth = getAuth();
+  const router = useRouter();
 
   useEffect(() => {
     const unsub = auth.onAuthStateChanged(async (fireUser) => {
       if (!fireUser) {
-        setUser(null)
+        setUser(null);
 
-        if (redirect) router.push(redirect)
+        if (redirect) router.push(redirect);
 
-        setIsLoading(false)
-        return
+        setIsLoading(false);
+        return;
       }
 
       if (user && user.id === fireUser.uid) {
-        setIsLoading(false)
-        return
+        setIsLoading(false);
+        return;
       }
 
-      doLogin(fireUser)
-    })
+      doLogin(fireUser);
+    });
 
-    return () => unsub()
-  }, [])
+    return () => unsub();
+  }, []);
 
   const doLogin = async (user: FirebaseUser) => {
     try {
       if (!user) {
-        setIsLoading(false)
-        if (redirect) router.push(redirect)
-        throw 'No user found'
+        setIsLoading(false);
+        if (redirect) router.push(redirect);
+        throw 'No user found';
       }
 
-      const token = await user.getIdToken()
-      if (!token) throw 'No token found'
+      const token = await user.getIdToken();
+      if (!token) throw 'No token found';
 
       const userRes = await axios.post('/api/auth/login', null, {
         headers: { Authorization: `Bearer ${token}` },
-      })
-      const userData = userRes.data as User
-      userData.isAdmin = userData.role === 'ADMIN'
+      });
+      const userData = userRes.data as User;
+      userData.isAdmin = userData.role === 'ADMIN';
 
-      setUser(userData)
-      setIsLoading(false)
+      setUser(userData);
+      setIsLoading(false);
     } catch (e: any) {
-      console.log(e)
+      console.log(e);
     }
-  }
+  };
 
   const getIdToken = async () => {
     try {
-      if (!auth.currentUser) return null
+      if (!auth.currentUser) return null;
 
-      const token = await auth.currentUser.getIdToken()
-      if (!token) return null
+      const token = await auth.currentUser.getIdToken();
+      if (!token) return null;
 
-      return token
+      return token;
     } catch (e) {
-      console.log(e)
-      return null
+      console.log(e);
+      return null;
     }
-  }
+  };
 
   const signout = () => {
-    auth.signOut()
-    setUser(null)
-    location.reload()
-  }
+    auth.signOut();
+    setUser(null);
+    location.reload();
+  };
 
   return {
     authLoading: isLoading,
@@ -99,5 +99,5 @@ export const useAuth = (props?: UseAuthProps) => {
     signout,
     getIdToken,
     firebaseUser: auth.currentUser,
-  }
-}
+  };
+};

@@ -9,50 +9,50 @@ import {
   FormHelperText,
   FormLabel,
   useDisclosure,
-} from '@chakra-ui/react'
-import React, { useEffect, useState } from 'react'
-import Layout from '../components/Layout'
-import { useRouter } from 'next/router'
+} from '@chakra-ui/react';
+import React, { useEffect, useState } from 'react';
+import Layout from '../components/Layout';
+import { useRouter } from 'next/router';
 import {
   getAuth,
   isSignInWithEmailLink,
   signInWithEmailLink,
-} from 'firebase/auth'
-import Image from 'next/image'
-import logoIcon from '../public/logo_white.svg'
-import axios from 'axios'
-import { User } from '@prisma/client'
-import { useAuth } from '../utils/auth'
-import LoginModal from '../components/Modal/LoginModal'
+} from 'firebase/auth';
+import Image from 'next/image';
+import logoIcon from '../public/logo_white.svg';
+import axios from 'axios';
+import { User } from '@prisma/client';
+import { useAuth } from '../utils/auth';
+import LoginModal from '../components/Modal/LoginModal';
 
-const mailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const mailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const LoginPage = () => {
-  const auth = getAuth()
-  const router = useRouter()
-  const [email, setEmail] = useState<string>('')
-  const [error, setError] = useState<string>('')
-  const [isLoading, setIsLoading] = useState<boolean>(true)
-  const [needInfo, setNeedInfo] = useState<boolean>(false)
-  const [neopetsUser, setNeopetsUser] = useState<string>('')
-  const [username, setUsername] = useState<string>('')
-  const { user, authLoading } = useAuth()
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  const auth = getAuth();
+  const router = useRouter();
+  const [email, setEmail] = useState<string>('');
+  const [error, setError] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [needInfo, setNeedInfo] = useState<boolean>(false);
+  const [neopetsUser, setNeopetsUser] = useState<string>('');
+  const [username, setUsername] = useState<string>('');
+  const { user, authLoading } = useAuth();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
-    if (!router.isReady || authLoading) return
-    init()
-  }, [router, authLoading])
+    if (!router.isReady || authLoading) return;
+    init();
+  }, [router, authLoading]);
 
   const init = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     if (isSignInWithEmailLink(auth, window.location.href) && !user) {
-      let mailAddr = window.localStorage.getItem('emailForSignIn')
+      let mailAddr = window.localStorage.getItem('emailForSignIn');
 
-      if (!mailAddr) mailAddr = email
+      if (!mailAddr) mailAddr = email;
       if (!mailAddr) {
-        setIsLoading(false)
-        return
+        setIsLoading(false);
+        return;
       }
 
       try {
@@ -60,72 +60,72 @@ const LoginPage = () => {
           auth,
           mailAddr,
           window.location.href
-        )
-        window.localStorage.removeItem('emailForSignIn')
+        );
+        window.localStorage.removeItem('emailForSignIn');
 
-        const token = await userCred.user.getIdToken()
+        const token = await userCred.user.getIdToken();
         const userRes = await axios.post('/api/auth/login', null, {
           headers: { Authorization: `Bearer ${token}` },
-        })
+        });
 
-        const user = userRes.data as User
+        const user = userRes.data as User;
 
         if (!user.neo_user || !user.username) {
-          setNeopetsUser(user.neo_user || '')
-          setUsername(user.username || '')
-          setIsLoading(false)
-          return setNeedInfo(true)
+          setNeopetsUser(user.neo_user || '');
+          setUsername(user.username || '');
+          setIsLoading(false);
+          return setNeedInfo(true);
         }
 
-        router.replace((router.query.redirect as string) || '/')
+        router.replace((router.query.redirect as string) || '/');
       } catch (e: any) {
-        setError(e.message)
-        console.log(error)
+        setError(e.message);
+        console.log(error);
       }
     } else if (user) {
       if (!user.neo_user || !user.username) {
-        setNeopetsUser(user.neo_user || '')
-        setUsername(user.username || '')
-        setIsLoading(false)
-        return setNeedInfo(true)
+        setNeopetsUser(user.neo_user || '');
+        setUsername(user.username || '');
+        setIsLoading(false);
+        return setNeedInfo(true);
       }
 
-      router.replace('/')
-    } else onOpen()
-  }
+      router.replace('/');
+    } else onOpen();
+  };
 
   const doConfirm = () => {
     if (!email.match(mailRegex)) {
-      setError('Invalid email address')
-      return
+      setError('Invalid email address');
+      return;
     }
 
-    init()
-  }
+    init();
+  };
 
   const onEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value)
-    setError('')
-  }
+    setEmail(e.target.value);
+    setError('');
+  };
 
   const saveChanges = async () => {
-    setError('')
+    setError('');
     if (!neopetsUser || !username) {
-      setError('Please fill all fields')
-      return
+      setError('Please fill all fields');
+      return;
     }
 
     if (
       !neopetsUser.match(/^[a-zA-Z0-9_]+$/) ||
       !username.match(/^[a-zA-Z0-9_]+$/)
     ) {
-      setError('Only letters, numbers and underlines are allowed')
-      return
+      setError('Only letters, numbers and underlines are allowed');
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const token = await auth.currentUser?.getIdToken()
+      const token = await auth.currentUser?.getIdToken();
       const userRes = await axios.post(
         '/api/auth/alterUser',
         {
@@ -135,28 +135,28 @@ const LoginPage = () => {
         {
           headers: { Authorization: `Bearer ${token}` },
         }
-      )
+      );
 
-      const user = userRes.data as User
+      const user = userRes.data as User;
 
       if (!user.neo_user || !user.username) {
-        setIsLoading(false)
-        return setNeedInfo(true)
+        setIsLoading(false);
+        return setNeedInfo(true);
       }
 
-      console.log(user)
+      console.log(user);
 
-      router.replace((router.query.redirect as string) || '/')
+      router.replace((router.query.redirect as string) || '/');
     } catch (e: any) {
-      setError(e.message)
-      console.log(error)
+      setError(e.message);
+      console.log(error);
     }
-  }
+  };
 
   const closeLogin = () => {
-    onClose()
-    router.replace('/')
-  }
+    onClose();
+    router.replace('/');
+  };
 
   return (
     <Layout>
@@ -241,7 +241,7 @@ const LoginPage = () => {
         )}
       </Center>
     </Layout>
-  )
-}
+  );
+};
 
-export default LoginPage
+export default LoginPage;

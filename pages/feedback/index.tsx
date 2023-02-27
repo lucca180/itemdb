@@ -6,10 +6,10 @@ import {
   ListItem,
   Text,
   UnorderedList,
-} from '@chakra-ui/react'
-import { BsCheckAll, BsPencilFill } from 'react-icons/bs'
-import CardBase from '../../components/Card/CardBase'
-import Layout from '../../components/Layout'
+} from '@chakra-ui/react';
+import { BsCheckAll, BsPencilFill } from 'react-icons/bs';
+import CardBase from '../../components/Card/CardBase';
+import Layout from '../../components/Layout';
 
 const FeedbackPage = () => {
   return (
@@ -95,7 +95,7 @@ const FeedbackPage = () => {
         </Flex>
       </Flex>
     </Layout>
-  )
-}
+  );
+};
 
-export default FeedbackPage
+export default FeedbackPage;

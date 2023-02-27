@@ -1,9 +1,9 @@
-import { Box, Flex, Link, SimpleGrid, Text } from '@chakra-ui/react'
-import React from 'react'
-import { FullItemColors } from '../../types'
+import { Box, Flex, Link, SimpleGrid, Text } from '@chakra-ui/react';
+import React from 'react';
+import { FullItemColors } from '../../types';
 type Props = {
-  colors: FullItemColors
-}
+  colors: FullItemColors;
+};
 
 const colorKeysOrder: (keyof FullItemColors)[] = [
   'vibrant',
@@ -12,11 +12,11 @@ const colorKeysOrder: (keyof FullItemColors)[] = [
   'muted',
   'lightmuted',
   'darkmuted',
-]
+];
 
 const ColorInfoCard = (props: Props) => {
-  const { colors } = props
-  const color = colors.vibrant.rgb
+  const { colors } = props;
+  const color = colors.vibrant.rgb;
 
   return (
     <Flex
@@ -78,7 +78,7 @@ const ColorInfoCard = (props: Props) => {
         </SimpleGrid>
       </Flex>
     </Flex>
-  )
-}
+  );
+};
 
-export default ColorInfoCard
+export default ColorInfoCard;

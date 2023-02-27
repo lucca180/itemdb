@@ -1,6 +1,6 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
-import prisma from '../../../../utils/prisma'
-import { TradeData } from '../../../../types'
+import type { NextApiRequest, NextApiResponse } from 'next';
+import prisma from '../../../../utils/prisma';
+import { TradeData } from '../../../../types';
 
 export default async function handle(
   req: NextApiRequest,
@@ -9,10 +9,10 @@ export default async function handle(
   if (req.method !== 'GET')
     throw new Error(
       `The HTTP ${req.method} method is not supported at this route.`
-    )
+    );
 
-  const limit = (req.query.limit as string) ?? '15'
-  const includeProcessed = req.query.includeProcessed === 'true'
+  const limit = (req.query.limit as string) ?? '15';
+  const includeProcessed = req.query.includeProcessed === 'true';
 
   const tradeRaw = await prisma.trades.findMany({
     where: {
@@ -21,7 +21,7 @@ export default async function handle(
     include: { items: true },
     orderBy: { addedAt: 'asc' },
     take: parseInt(limit),
-  })
+  });
 
   const trades: TradeData[] = tradeRaw.map((t) => {
     return {
@@ -41,10 +41,10 @@ export default async function handle(
           order: i.order,
           price: i.price,
           addedAt: i.addedAt.toJSON(),
-        }
+        };
       }),
-    }
-  })
+    };
+  });
 
-  res.json(trades)
+  res.json(trades);
 }

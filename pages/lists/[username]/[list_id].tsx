@@ -16,72 +16,72 @@ import {
   Switch,
   useToast,
   Icon,
-} from '@chakra-ui/react'
-import axios from 'axios'
-import React, { useEffect, useState } from 'react'
-import Layout from '../../../components/Layout'
-import CreateListModal from '../../../components/Modal/CreateListModal'
-import { ItemData, ListItemInfo, UserList } from '../../../types'
-import { useAuth } from '../../../utils/auth'
-import { useRouter } from 'next/router'
-import icon from '../../../public/logo_icon.svg'
-import Image from 'next/image'
-import ItemCard from '../../../components/Items/ItemCard'
-import Color from 'color'
-import NextLink from 'next/link'
-import { SortableArea } from '../../../components/Sortable/SortableArea'
-import { SelectItemsCheckbox } from '../../../components/Input/SelectItemsCheckbox'
-import ItemActionModal from '../../../components/Modal/ItemActionModal'
-import { BiLinkExternal } from 'react-icons/bi'
+} from '@chakra-ui/react';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import Layout from '../../../components/Layout';
+import CreateListModal from '../../../components/Modal/CreateListModal';
+import { ItemData, ListItemInfo, UserList } from '../../../types';
+import { useAuth } from '../../../utils/auth';
+import { useRouter } from 'next/router';
+import icon from '../../../public/logo_icon.svg';
+import Image from 'next/image';
+import ItemCard from '../../../components/Items/ItemCard';
+import Color from 'color';
+import NextLink from 'next/link';
+import { SortableArea } from '../../../components/Sortable/SortableArea';
+import { SelectItemsCheckbox } from '../../../components/Input/SelectItemsCheckbox';
+import ItemActionModal from '../../../components/Modal/ItemActionModal';
+import { BiLinkExternal } from 'react-icons/bi';
 
-type ExtendedListItemInfo = ListItemInfo & { hasChanged?: boolean }
+type ExtendedListItemInfo = ListItemInfo & { hasChanged?: boolean };
 
 const ListPage = () => {
-  const router = useRouter()
-  const toast = useToast()
+  const router = useRouter();
+  const toast = useToast();
 
-  const { user, getIdToken, authLoading } = useAuth()
-  const [list, setList] = useState<UserList>()
-  const [openCreateModal, setOpenCreateModal] = useState<boolean>(false)
+  const { user, getIdToken, authLoading } = useAuth();
+  const [list, setList] = useState<UserList>();
+  const [openCreateModal, setOpenCreateModal] = useState<boolean>(false);
 
-  const [itemInfoIds, setItemInfoIds] = useState<number[]>([])
+  const [itemInfoIds, setItemInfoIds] = useState<number[]>([]);
   const [itemInfo, setItemInfo] = useState<{
-    [itemInfoId: number]: ExtendedListItemInfo
-  }>({})
+    [itemInfoId: number]: ExtendedListItemInfo;
+  }>({});
   const [sortInfo, setSortInfo] = useState<{
-    sortBy: string
-    sortDir: string
-  }>({ sortBy: 'name', sortDir: 'asc' })
-  const [items, setItems] = useState<{ [item_iid: string]: ItemData }>({})
-  const [itemSelect, setItemSelect] = useState<number[]>([])
+    sortBy: string;
+    sortDir: string;
+  }>({ sortBy: 'name', sortDir: 'asc' });
+  const [items, setItems] = useState<{ [item_iid: string]: ItemData }>({});
+  const [itemSelect, setItemSelect] = useState<number[]>([]);
 
-  const [isEdit, setEdit] = useState<boolean>(false)
-  const [lockSort, setLockSort] = useState<boolean>(true)
-  const [selectionAction, setSelectionAction] = useState<string>('')
+  const [isEdit, setEdit] = useState<boolean>(false);
+  const [lockSort, setLockSort] = useState<boolean>(true);
+  const [selectionAction, setSelectionAction] = useState<string>('');
 
-  const [matches, setMatches] = useState<ListItemInfo[]>([])
+  const [matches, setMatches] = useState<ListItemInfo[]>([]);
 
-  const isOwner = user?.username === router.query.username
-  const color = Color(list?.colorHex ?? '#4A5568')
-  const rgb = color.rgb().array()
+  const isOwner = user?.username === router.query.username;
+  const color = Color(list?.colorHex ?? '#4A5568');
+  const rgb = color.rgb().array();
 
   useEffect(() => {
     if (!authLoading && router.isReady && !list) {
-      init()
+      init();
     }
-  }, [authLoading, list, router.isReady])
+  }, [authLoading, list, router.isReady]);
 
   useEffect(() => {
-    return () => toast.closeAll()
-  }, [])
+    return () => toast.closeAll();
+  }, []);
 
   useEffect(() => {
-    if (user && list) getMatches()
-  }, [user, list])
+    if (user && list) getMatches();
+  }, [user, list]);
 
   const init = async () => {
-    const { username, list_id } = router.query
-    const token = await getIdToken()
+    const { username, list_id } = router.query;
+    const token = await getIdToken();
 
     const res = await axios.get(
       `/api/lists/getList?username=${username}&list_id=${list_id}`,
@@ -90,28 +90,28 @@ const ListPage = () => {
           authorization: `Bearer ${token}`,
         },
       }
-    )
+    );
 
-    const listData = res.data as UserList
+    const listData = res.data as UserList;
 
-    const itensId: number[] = listData.itemInfo.map((item) => item.item_iid)
+    const itensId: number[] = listData.itemInfo.map((item) => item.item_iid);
 
     if (itensId.length === 0) {
-      setItemSelect([])
-      setItemInfoIds([])
-      setItemInfo({})
-      setMatches([])
-      setSortInfo({ sortBy: listData.sortBy, sortDir: listData.sortDir })
-      setList(res.data)
-      setItems({})
-      return
+      setItemSelect([]);
+      setItemInfoIds([]);
+      setItemInfo({});
+      setMatches([]);
+      setSortInfo({ sortBy: listData.sortBy, sortDir: listData.sortDir });
+      setList(res.data);
+      setItems({});
+      return;
     }
 
     const itemRes = await axios.post(`/api/v1/items/many`, {
       id: itensId,
-    })
+    });
 
-    const itemInfos = listData.itemInfo
+    const itemInfos = listData.itemInfo;
 
     const sortedItemInfo = itemInfos.sort((a, b) =>
       sortItems(
@@ -121,32 +121,32 @@ const ListPage = () => {
         listData.sortDir,
         itemRes.data as { [id: string]: ItemData }
       )
-    )
-    const infoIds = []
-    const itemMap: { [id: number]: ListItemInfo } = {}
+    );
+    const infoIds = [];
+    const itemMap: { [id: number]: ListItemInfo } = {};
 
     for (const itemInfo of sortedItemInfo) {
-      infoIds.push(itemInfo.internal_id)
-      itemMap[itemInfo.internal_id] = itemInfo
+      infoIds.push(itemInfo.internal_id);
+      itemMap[itemInfo.internal_id] = itemInfo;
     }
 
-    setItemSelect([])
-    setSortInfo({ sortBy: listData.sortBy, sortDir: listData.sortDir })
-    setItemInfoIds(infoIds)
-    setItemInfo(itemMap)
-    setList(res.data)
-    setItems(itemRes.data)
-  }
+    setItemSelect([]);
+    setSortInfo({ sortBy: listData.sortBy, sortDir: listData.sortDir });
+    setItemInfoIds(infoIds);
+    setItemInfo(itemMap);
+    setList(res.data);
+    setItems(itemRes.data);
+  };
 
   const getMatches = async () => {
-    if (!list || !user || list.purpose === 'none') return
+    if (!list || !user || list.purpose === 'none') return;
 
     const seeker =
-      list.purpose === 'seeking' ? list.user_username : user.username
+      list.purpose === 'seeking' ? list.user_username : user.username;
     const offerer =
-      list.purpose === 'trading' ? list.user_username : user.username
+      list.purpose === 'trading' ? list.user_username : user.username;
 
-    const token = await getIdToken()
+    const token = await getIdToken();
 
     const res = await axios.get(`/api/lists/match`, {
       params: {
@@ -157,77 +157,77 @@ const ListPage = () => {
       headers: {
         authorization: `Bearer ${token}`,
       },
-    })
+    });
 
-    setMatches(res.data)
-  }
+    setMatches(res.data);
+  };
 
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    if (!list) return
-    const name = e.target.name
+    if (!list) return;
+    const name = e.target.name;
 
     if (name === 'sortBy') {
-      const sortBy = e.target.value
+      const sortBy = e.target.value;
       const sortedItemInfo = list.itemInfo.sort((a, b) =>
         sortItems(a, b, sortBy, sortInfo.sortDir, items)
-      )
-      setSortInfo({ sortBy, sortDir: sortInfo.sortDir })
-      if (sortBy === 'custom') setSortInfo({ sortBy, sortDir: 'asc' })
+      );
+      setSortInfo({ sortBy, sortDir: sortInfo.sortDir });
+      if (sortBy === 'custom') setSortInfo({ sortBy, sortDir: 'asc' });
 
-      setItemInfoIds(sortedItemInfo.map((item) => item.internal_id))
+      setItemInfoIds(sortedItemInfo.map((item) => item.internal_id));
     }
 
     if (name === 'sortDir') {
-      const sortDir = e.target.value
+      const sortDir = e.target.value;
       const sortedItemInfo = list.itemInfo.sort((a, b) =>
         sortItems(a, b, sortInfo.sortBy, sortDir, items)
-      )
-      setSortInfo({ sortBy: sortInfo.sortBy, sortDir: sortDir })
-      setItemInfoIds(sortedItemInfo.map((item) => item.internal_id))
+      );
+      setSortInfo({ sortBy: sortInfo.sortBy, sortDir: sortDir });
+      setItemInfoIds(sortedItemInfo.map((item) => item.internal_id));
     }
-  }
+  };
 
   const toggleEdit = () => {
     if (isEdit) {
-      setItemSelect([])
-      setLockSort(true)
+      setItemSelect([]);
+      setLockSort(true);
     }
 
-    setEdit(!isEdit)
-  }
+    setEdit(!isEdit);
+  };
 
   const selectItem = (id: number) => {
     if (itemSelect.includes(id)) {
-      setItemSelect(itemSelect.filter((item) => item !== id))
+      setItemSelect(itemSelect.filter((item) => item !== id));
     } else {
-      setItemSelect([...itemSelect, id])
+      setItemSelect([...itemSelect, id]);
     }
-  }
+  };
 
   const handleSelectCheckbox = (checkAll: boolean) => {
-    if (checkAll) setItemSelect(itemInfoIds)
-    else setItemSelect([])
-  }
+    if (checkAll) setItemSelect(itemInfoIds);
+    else setItemSelect([]);
+  };
 
   const handleSort = (newOrder: number[]) => {
-    const newInfo = { ...itemInfo }
+    const newInfo = { ...itemInfo };
 
-    const highlights = itemInfoIds.filter((a) => itemInfo[a].isHighlight)
+    const highlights = itemInfoIds.filter((a) => itemInfo[a].isHighlight);
 
     for (let i = 0; i < newOrder.length; i++) {
-      if (newInfo[newOrder[i]].order === i) continue
+      if (newInfo[newOrder[i]].order === i) continue;
 
-      newInfo[newOrder[i]].order = i
-      newInfo[newOrder[i]].hasChanged = true
-      setHasChanges()
+      newInfo[newOrder[i]].order = i;
+      newInfo[newOrder[i]].hasChanged = true;
+      setHasChanges();
     }
 
-    setItemInfoIds([...newOrder, ...highlights])
-    setItemInfo(newInfo)
-  }
+    setItemInfoIds([...newOrder, ...highlights]);
+    setItemInfo(newInfo);
+  };
 
   const setHasChanges = () => {
-    if (toast.isActive('unsavedChanges')) return
+    if (toast.isActive('unsavedChanges')) return;
 
     toast({
       title: 'You have unsaved changes',
@@ -247,25 +247,25 @@ const ListPage = () => {
       status: 'info',
       duration: null,
       // isClosable: true,
-    })
-  }
+    });
+  };
 
   const saveChanges = async () => {
-    if (!list) return
+    if (!list) return;
 
-    toast.closeAll()
+    toast.closeAll();
 
     const x = toast({
       title: 'Saving changes...',
       status: 'info',
       duration: null,
-    })
+    });
 
-    const token = await getIdToken()
+    const token = await getIdToken();
 
     const changedItems = Object.values(itemInfo).filter(
       (item) => item.hasChanged
-    )
+    );
 
     try {
       const res = await axios.post(
@@ -283,44 +283,44 @@ const ListPage = () => {
             authorization: `Bearer ${token}`,
           },
         }
-      )
+      );
 
       if (res.data.success) {
         toast.update(x, {
           title: 'Changes saved',
           status: 'success',
           duration: 5000,
-        })
+        });
 
-        setEdit(false)
-        init()
-      } else throw res.data.message
+        setEdit(false);
+        init();
+      } else throw res.data.message;
     } catch (err) {
-      console.log(err)
+      console.log(err);
       toast.update(x, {
         title: 'An error occurred',
         description: 'Please try again later',
         status: 'error',
         duration: 5000,
-      })
+      });
     }
-  }
+  };
 
   const handleItemInfoChange = (
     id: number,
     value: number,
     field: 'amount' | 'capValue' | 'isHighlight'
   ) => {
-    const newInfo = { ...itemInfo }
+    const newInfo = { ...itemInfo };
 
-    if (field === 'isHighlight') newInfo[id][field] = !!value
-    else newInfo[id][field] = value
+    if (field === 'isHighlight') newInfo[id][field] = !!value;
+    else newInfo[id][field] = value;
 
-    newInfo[id].hasChanged = true
+    newInfo[id].hasChanged = true;
 
-    setItemInfo(newInfo)
-    setHasChanges()
-  }
+    setItemInfo(newInfo);
+    setHasChanges();
+  };
 
   if (!list)
     return (
@@ -329,7 +329,7 @@ const ListPage = () => {
           <Text>Loading...</Text>
         </Center>
       </Layout>
-    )
+    );
 
   return (
     <Layout>
@@ -634,10 +634,10 @@ const ListPage = () => {
         </Flex>
       </Flex>
     </Layout>
-  )
-}
+  );
+};
 
-export default ListPage
+export default ListPage;
 
 const sortItems = (
   a: ListItemInfo,
@@ -646,35 +646,35 @@ const sortItems = (
   sortDir: string,
   items: { [id: string]: ItemData }
 ) => {
-  const itemA = items[a.item_iid]
-  const itemB = items[b.item_iid]
+  const itemA = items[a.item_iid];
+  const itemB = items[b.item_iid];
 
   if (sortBy === 'name') {
-    if (sortDir === 'asc') return itemA.name.localeCompare(itemB.name)
-    else return itemB.name.localeCompare(itemA.name)
+    if (sortDir === 'asc') return itemA.name.localeCompare(itemB.name);
+    else return itemB.name.localeCompare(itemA.name);
   } else if (sortBy === 'price') {
     if (sortDir === 'asc')
-      return (itemA.price.value ?? 0) - (itemB.price.value ?? 0)
-    else return (itemB.price.value ?? 0) - (itemA.price.value ?? 0)
+      return (itemA.price.value ?? 0) - (itemB.price.value ?? 0);
+    else return (itemB.price.value ?? 0) - (itemA.price.value ?? 0);
   } else if (sortBy === 'addedAt') {
-    const dateA = new Date(a.addedAt)
-    const dateB = new Date(b.addedAt)
+    const dateA = new Date(a.addedAt);
+    const dateB = new Date(b.addedAt);
 
-    if (sortDir === 'asc') return dateA.getTime() - dateB.getTime()
-    else return dateB.getTime() - dateA.getTime()
+    if (sortDir === 'asc') return dateA.getTime() - dateB.getTime();
+    else return dateB.getTime() - dateA.getTime();
   } else if (sortBy === 'color') {
-    const colorA = new Color(itemA.color.hex)
-    const colorB = new Color(itemB.color.hex)
-    const hsvA = colorA.hsv().array()
-    const hsvB = colorB.hsv().array()
+    const colorA = new Color(itemA.color.hex);
+    const colorB = new Color(itemB.color.hex);
+    const hsvA = colorA.hsv().array();
+    const hsvB = colorB.hsv().array();
 
     if (sortDir === 'asc')
-      return hsvB[0] - hsvA[0] || hsvB[1] - hsvA[1] || hsvB[2] - hsvA[2]
-    else return hsvA[0] - hsvB[0] || hsvA[1] - hsvB[1] || hsvA[2] - hsvB[2]
+      return hsvB[0] - hsvA[0] || hsvB[1] - hsvA[1] || hsvB[2] - hsvA[2];
+    else return hsvA[0] - hsvB[0] || hsvA[1] - hsvB[1] || hsvA[2] - hsvB[2];
   } else if (sortBy === 'custom') {
-    if (sortDir === 'asc') return (a.order ?? -1) - (b.order ?? -1)
-    else return (b.order ?? -1) - (a.order ?? -1)
+    if (sortDir === 'asc') return (a.order ?? -1) - (b.order ?? -1);
+    else return (b.order ?? -1) - (a.order ?? -1);
   }
 
-  return 0
-}
+  return 0;
+};

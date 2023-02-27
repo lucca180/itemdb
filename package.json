@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "next",
     "build": "next build",
-    "start": "next start",
+    "start": "PORT=4000 next start",
     "lint": "next lint",
     "lint-fix": "next lint --fix"
   },

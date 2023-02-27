@@ -1,6 +1,6 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
-import prisma from '../../../utils/prisma'
-import Color from 'color'
+import type { NextApiRequest, NextApiResponse } from 'next';
+import prisma from '../../../utils/prisma';
+import Color from 'color';
 
 export default async function handle(
   req: NextApiRequest,
@@ -9,14 +9,14 @@ export default async function handle(
   if (req.method !== 'GET')
     throw new Error(
       `The HTTP ${req.method} method is not supported at this route.`
-    )
+    );
 
-  const colors = await prisma.itemColor.findMany()
+  const colors = await prisma.itemColor.findMany();
 
-  const newColors = []
+  const newColors = [];
 
   for (const color of colors) {
-    const lab = Color.hsl(color.h, color.s, color.l).lab().array()
+    const lab = Color.hsl(color.h, color.s, color.l).lab().array();
     // const rgb = HSLToRGB(color.h, color.s, color.l);
     // const lab = rgb2lab(rgb[0], rgb[1], rgb[2]);
 
@@ -28,12 +28,12 @@ export default async function handle(
       b: lab[2],
       population: color.population,
       type: color.type,
-    })
+    });
   }
 
   const result = await prisma.itemColorLab.createMany({
     data: newColors,
-  })
+  });
 
-  res.json(result)
+  res.json(result);
 }

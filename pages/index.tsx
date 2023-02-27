@@ -1,24 +1,24 @@
-import { Box, Flex, Heading, Highlight, Link } from '@chakra-ui/react'
-import React, { useEffect, useState } from 'react'
-import Layout from '../components/Layout'
-import logo from '../public/logo_white.svg'
-import Image from 'next/image'
-import ItemCard from '../components/Items/ItemCard'
-import { ItemData } from '../types'
+import { Box, Flex, Heading, Highlight, Link } from '@chakra-ui/react';
+import React, { useEffect, useState } from 'react';
+import Layout from '../components/Layout';
+import logo from '../public/logo_white.svg';
+import Image from 'next/image';
+import ItemCard from '../components/Items/ItemCard';
+import { ItemData } from '../types';
 
 const HomePage = () => {
-  const [items, setItems] = useState<ItemData[]>([])
+  const [items, setItems] = useState<ItemData[]>([]);
 
   useEffect(() => {
-    init()
-  }, [])
+    init();
+  }, []);
 
   const init = async () => {
-    const res = await fetch('/api/v1/items/')
-    const itemData = (await res.json()) as ItemData[]
+    const res = await fetch('/api/v1/items/');
+    const itemData = (await res.json()) as ItemData[];
 
-    setItems(itemData)
-  }
+    setItems(itemData);
+  };
 
   return (
     <Layout>
@@ -56,7 +56,7 @@ const HomePage = () => {
         </Flex>
       </Box>
     </Layout>
-  )
-}
+  );
+};
 
-export default HomePage
+export default HomePage;

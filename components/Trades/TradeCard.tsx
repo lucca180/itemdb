@@ -1,19 +1,19 @@
-import { Badge, Box, Flex, Text } from '@chakra-ui/react'
-import React from 'react'
-import { ItemData, TradeData } from '../../types'
-import TradeTable from './TradeTable'
+import { Badge, Box, Flex, Text } from '@chakra-ui/react';
+import React from 'react';
+import { ItemData, TradeData } from '../../types';
+import TradeTable from './TradeTable';
 
 type Props = {
-  trades: TradeData[]
-  item?: ItemData
-}
+  trades: TradeData[];
+  item?: ItemData;
+};
 
 const TradeCard = (props: Props) => {
-  const { trades, item } = props
-  const color = item?.color.rgb
+  const { trades, item } = props;
+  const color = item?.color.rgb;
   const colorString = color
     ? `rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`
-    : 'gray.600'
+    : 'gray.600';
   return (
     <Flex
       flex={1}
@@ -38,7 +38,7 @@ const TradeCard = (props: Props) => {
         )}
       </Box>
     </Flex>
-  )
-}
+  );
+};
 
-export default TradeCard
+export default TradeCard;

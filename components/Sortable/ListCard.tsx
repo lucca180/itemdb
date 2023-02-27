@@ -1,20 +1,20 @@
-import React from 'react'
-import { useSortable } from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
-import { UserList } from '../../types'
-import UserListCard from '../UserLists/ListCard'
+import React from 'react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { UserList } from '../../types';
+import UserListCard from '../UserLists/ListCard';
 
 type Props = {
-  id: number
-  list: UserList
-  editMode?: boolean
-  selected?: boolean
-  onClick?: () => void
-}
+  id: number;
+  list: UserList;
+  editMode?: boolean;
+  selected?: boolean;
+  onClick?: () => void;
+};
 
 export function SortableListCard(props: Props) {
   const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: props.id })
+    useSortable({ id: props.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -22,7 +22,7 @@ export function SortableListCard(props: Props) {
     touchAction: 'manipulation',
     height: '100%',
     cursor: props.editMode ? undefined : 'default',
-  }
+  };
 
   return (
     <div
@@ -38,5 +38,5 @@ export function SortableListCard(props: Props) {
         disableLink={props.editMode}
       />
     </div>
-  )
+  );
 }

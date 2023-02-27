@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -9,45 +9,45 @@ import {
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
-} from '@dnd-kit/core'
+} from '@dnd-kit/core';
 import {
   arrayMove,
   SortableContext,
   rectSortingStrategy,
-} from '@dnd-kit/sortable'
-import { UserList } from '../../types'
-import { SortableListCard } from './ListCard'
+} from '@dnd-kit/sortable';
+import { UserList } from '../../types';
+import { SortableListCard } from './ListCard';
 
 type Props = {
-  ids: number[]
-  lists: { [id: number]: UserList }
-  listSelect?: number[]
-  activateSort?: boolean
-  editMode?: boolean
-  onClick?: (id: number) => void
-  onSort?: (ids: number[]) => void
+  ids: number[];
+  lists: { [id: number]: UserList };
+  listSelect?: number[];
+  activateSort?: boolean;
+  editMode?: boolean;
+  onClick?: (id: number) => void;
+  onSort?: (ids: number[]) => void;
   onChange?: (
     id: number,
     value: number,
     field: 'amount' | 'capValue' | 'isHighlight'
-  ) => void
-}
+  ) => void;
+};
 
 export function SortableLists(props: Props) {
-  const { activateSort, editMode, lists, listSelect } = props
-  const [activeId, setActiveId] = useState<number | null>(null)
-  const [ids, setIds] = useState(props.ids)
+  const { activateSort, editMode, lists, listSelect } = props;
+  const [activeId, setActiveId] = useState<number | null>(null);
+  const [ids, setIds] = useState(props.ids);
 
   useEffect(() => {
-    setIds(props.ids)
-  }, [props.ids])
+    setIds(props.ids);
+  }, [props.ids]);
 
   const sensors = useSensors(
     useSensor(TouchSensor, {
       activationConstraint: { delay: 250, tolerance: 5 },
     }),
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } })
-  )
+  );
 
   return (
     <DndContext
@@ -82,30 +82,30 @@ export function SortableLists(props: Props) {
         ) : null}
       </DragOverlay>
     </DndContext>
-  )
+  );
 
   function handleDragStart(event: DragStartEvent) {
-    const { active } = event
+    const { active } = event;
 
-    setActiveId(Number(active.id))
+    setActiveId(Number(active.id));
   }
 
   function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event
-    if (!over) return
+    const { active, over } = event;
+    if (!over) return;
 
     if (active.id !== over?.id) {
       setIds((ids) => {
-        const oldIndex = ids.indexOf(Number(active.id))
-        const newIndex = ids.indexOf(Number(over.id))
+        const oldIndex = ids.indexOf(Number(active.id));
+        const newIndex = ids.indexOf(Number(over.id));
 
-        const newIds = arrayMove(ids, oldIndex, newIndex)
-        props.onSort?.(newIds)
+        const newIds = arrayMove(ids, oldIndex, newIndex);
+        props.onSort?.(newIds);
 
-        return newIds
-      })
+        return newIds;
+      });
     }
 
-    setActiveId(null)
+    setActiveId(null);
   }
 }

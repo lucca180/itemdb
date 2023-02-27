@@ -9,35 +9,35 @@ import {
   StatLabel,
   StatNumber,
   Text,
-} from '@chakra-ui/react'
-import React, { useEffect, useState } from 'react'
-import { ItemData, ItemLastSeen, PriceData } from '../../types'
-import ChartComponent from '../Charts/PriceChart'
-import { AiOutlineAreaChart, AiOutlineTable } from 'react-icons/ai'
-import PriceTable from './PriceTable'
-import { format, formatDistanceToNow } from 'date-fns'
+} from '@chakra-ui/react';
+import React, { useEffect, useState } from 'react';
+import { ItemData, ItemLastSeen, PriceData } from '../../types';
+import ChartComponent from '../Charts/PriceChart';
+import { AiOutlineAreaChart, AiOutlineTable } from 'react-icons/ai';
+import PriceTable from './PriceTable';
+import { format, formatDistanceToNow } from 'date-fns';
 
 type Props = {
-  item: ItemData
-  prices: PriceData[]
-  lastSeen: ItemLastSeen
-}
+  item: ItemData;
+  prices: PriceData[];
+  lastSeen: ItemLastSeen;
+};
 
-const intl = new Intl.NumberFormat()
+const intl = new Intl.NumberFormat();
 
 const ItemPriceCard = (props: Props) => {
-  const [displayState, setDisplay] = useState('table')
-  const [priceDiff, setDiff] = useState<number | null>(null)
+  const [displayState, setDisplay] = useState('table');
+  const [priceDiff, setDiff] = useState<number | null>(null);
 
-  const { item, prices, lastSeen } = props
-  const color = item.color.rgb
+  const { item, prices, lastSeen } = props;
+  const color = item.color.rgb;
 
   useEffect(() => {
     if (prices.length >= 2) {
-      const diff = (prices.at(0)?.value ?? 0) - (prices.at(1)?.value ?? 0)
-      setDiff(diff)
+      const diff = (prices.at(0)?.value ?? 0) - (prices.at(1)?.value ?? 0);
+      setDiff(diff);
     }
-  }, [prices])
+  }, [prices]);
 
   return (
     <Flex
@@ -172,7 +172,7 @@ const ItemPriceCard = (props: Props) => {
         </Flex>
       </Flex>
     </Flex>
-  )
-}
+  );
+};
 
-export default ItemPriceCard
+export default ItemPriceCard;

@@ -7,20 +7,20 @@ import {
   Td,
   Tr,
   Text,
-} from '@chakra-ui/react'
-import React from 'react'
-import { PriceData } from '../../types'
-import { format } from 'date-fns'
+} from '@chakra-ui/react';
+import React from 'react';
+import { PriceData } from '../../types';
+import { format } from 'date-fns';
 
-const intl = new Intl.NumberFormat()
+const intl = new Intl.NumberFormat();
 
 type Props = {
-  data: PriceData[]
-}
+  data: PriceData[];
+};
 
 const PriceTable = (props: Props) => {
-  const { data } = props
-  const sortedData = data
+  const { data } = props;
+  const sortedData = data;
 
   return (
     <TableContainer minH={200}>
@@ -63,7 +63,7 @@ const PriceTable = (props: Props) => {
         </Tbody>
       </Table>
     </TableContainer>
-  )
-}
+  );
+};
 
-export default PriceTable
+export default PriceTable;

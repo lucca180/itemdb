@@ -1,5 +1,5 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
-import prisma from '../../../../../utils/prisma'
+import type { NextApiRequest, NextApiResponse } from 'next';
+import prisma from '../../../../../utils/prisma';
 
 export default async function handle(
   req: NextApiRequest,
@@ -8,9 +8,9 @@ export default async function handle(
   if (req.method !== 'GET')
     throw new Error(
       `The HTTP ${req.method} method is not supported at this route.`
-    )
+    );
 
-  const id = req.query.id as string
+  const id = req.query.id as string;
 
   const tagRaw = await prisma.itemTags.findMany({
     where: {
@@ -26,9 +26,9 @@ export default async function handle(
         },
       },
     },
-  })
+  });
 
-  const tags = tagRaw.map((raw) => raw.tag)
+  const tags = tagRaw.map((raw) => raw.tag);
 
-  res.json(tags)
+  res.json(tags);
 }

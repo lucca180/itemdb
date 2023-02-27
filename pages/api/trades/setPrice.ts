@@ -1,8 +1,8 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
-import prisma from '../../../utils/prisma'
-import { TradeData } from '../../../types'
-import { CheckAuth } from '../../../utils/googleCloud'
-import requestIp from 'request-ip'
+import type { NextApiRequest, NextApiResponse } from 'next';
+import prisma from '../../../utils/prisma';
+import { TradeData } from '../../../types';
+import { CheckAuth } from '../../../utils/googleCloud';
+import requestIp from 'request-ip';
 
 export default async function handle(
   req: NextApiRequest,
@@ -11,27 +11,27 @@ export default async function handle(
   if (req.method !== 'POST')
     throw new Error(
       `The HTTP ${req.method} method is not supported at this route.`
-    )
+    );
 
-  const trade = req.body.trade as TradeData
+  const trade = req.body.trade as TradeData;
   try {
-    const { user } = await CheckAuth(req)
+    const { user } = await CheckAuth(req);
 
-    if (!user) throw new Error('User not found')
+    if (!user) throw new Error('User not found');
 
-    if (user.role !== 'ADMIN') throw new Error('User doenst have privileges')
+    if (user.role !== 'ADMIN') throw new Error('User doenst have privileges');
   } catch (e) {
-    console.error(e)
-    res.status(401).json({ error: 'Unauthorized' })
-    return
+    console.error(e);
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
   }
 
   try {
-    await processTradePrice(trade)
-    res.status(200).json({ success: true, message: false })
+    await processTradePrice(trade);
+    res.status(200).json({ success: true, message: false });
   } catch (e) {
-    console.error(e)
-    res.status(500).json({ success: false, message: 'error' })
+    console.error(e);
+    res.status(500).json({ success: false, message: 'error' });
   }
 }
 
@@ -45,7 +45,7 @@ export const processTradePrice = async (
       priced: true,
       processed: true,
     },
-  })
+  });
 
   const updateItems = trade.items.map((item) => {
     return prisma.tradeItems.update({
@@ -53,8 +53,8 @@ export const processTradePrice = async (
       data: {
         price: item.price,
       },
-    })
-  })
+    });
+  });
 
   const addPriceProcess = trade.items
     .filter((x) => x.price)
@@ -69,13 +69,13 @@ export const processTradePrice = async (
         addedAt: trade.addedAt,
         language: 'en',
         ip_address: req ? requestIp.getClientIp(req) : undefined,
-      }
-    })
+      };
+    });
 
   const priceProcess = prisma.priceProcess.createMany({
     data: addPriceProcess,
     skipDuplicates: true,
-  })
+  });
 
-  return await prisma.$transaction([updateTrade, ...updateItems, priceProcess])
-}
+  return await prisma.$transaction([updateTrade, ...updateItems, priceProcess]);
+};

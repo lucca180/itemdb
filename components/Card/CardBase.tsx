@@ -1,17 +1,17 @@
-import { Box, Flex, FlexProps } from '@chakra-ui/react'
-import React from 'react'
+import { Box, Flex, FlexProps } from '@chakra-ui/react';
+import React from 'react';
 
 type Props = {
-  children?: React.ReactNode
-  title?: React.ReactNode
-  color?: [number, number, number] | number[]
-  noPadding?: boolean
-  chakra?: FlexProps
-  chakraWrapper?: FlexProps
-}
+  children?: React.ReactNode;
+  title?: React.ReactNode;
+  color?: [number, number, number] | number[];
+  noPadding?: boolean;
+  chakra?: FlexProps;
+  chakraWrapper?: FlexProps;
+};
 
 const CardBase = (props: Props) => {
-  const color = props.color || [74, 85, 104]
+  const color = props.color || [74, 85, 104];
 
   return (
     <Flex
@@ -43,7 +43,7 @@ const CardBase = (props: Props) => {
         {props.children}
       </Box>
     </Flex>
-  )
-}
+  );
+};
 
-export default CardBase
+export default CardBase;

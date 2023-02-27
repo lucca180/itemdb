@@ -10,28 +10,28 @@ import {
   Text,
   Spinner,
   Center,
-} from '@chakra-ui/react'
-import axios from 'axios'
-import { useState } from 'react'
-import { useAuth } from '../../utils/auth'
+} from '@chakra-ui/react';
+import axios from 'axios';
+import { useState } from 'react';
+import { useAuth } from '../../utils/auth';
 
 type Props = {
-  isOpen: boolean
-  selectedLists: number[]
-  onClose: () => void
-  refresh: () => void
-}
+  isOpen: boolean;
+  selectedLists: number[];
+  onClose: () => void;
+  refresh: () => void;
+};
 
 const DeleteListModal = (props: Props) => {
-  const { getIdToken } = useAuth()
-  const { isOpen, onClose, selectedLists: listsIds, refresh } = props
-  const [isLoading, setLoading] = useState<boolean>(false)
-  const [error, setError] = useState<boolean>(false)
+  const { getIdToken } = useAuth();
+  const { isOpen, onClose, selectedLists: listsIds, refresh } = props;
+  const [isLoading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(false);
 
   const confirmDelete = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const token = await getIdToken()
+      const token = await getIdToken();
 
       const res = await axios.post(
         '/api/lists/delete',
@@ -43,25 +43,25 @@ const DeleteListModal = (props: Props) => {
             authorization: `Bearer ${token}`,
           },
         }
-      )
+      );
 
       if (res.data.success) {
-        refresh()
-        handleClose()
-        setLoading(false)
-      } else throw res.data
+        refresh();
+        handleClose();
+        setLoading(false);
+      } else throw res.data;
     } catch (e) {
-      console.log(e)
-      setLoading(false)
-      setError(true)
+      console.log(e);
+      setLoading(false);
+      setError(true);
     }
-  }
+  };
 
   const handleClose = () => {
-    onClose()
-    setError(false)
-    setLoading(false)
-  }
+    onClose();
+    setError(false);
+    setLoading(false);
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} isCentered>
@@ -103,7 +103,7 @@ const DeleteListModal = (props: Props) => {
         </ModalFooter>
       </ModalContent>
     </Modal>
-  )
-}
+  );
+};
 
-export default DeleteListModal
+export default DeleteListModal;

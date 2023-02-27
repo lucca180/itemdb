@@ -1,14 +1,14 @@
-import { Box, Flex, HStack, Tag, Text, Tooltip } from '@chakra-ui/react'
-import React from 'react'
-import { ItemData } from '../../types'
-import { MdHelp } from 'react-icons/md'
+import { Box, Flex, HStack, Tag, Text, Tooltip } from '@chakra-ui/react';
+import React from 'react';
+import { ItemData } from '../../types';
+import { MdHelp } from 'react-icons/md';
 type Props = {
-  item: ItemData
-}
+  item: ItemData;
+};
 
 const ItemInfoCard = (props: Props) => {
-  const { item } = props
-  const color = item.color.rgb
+  const { item } = props;
+  const color = item.color.rgb;
 
   return (
     <Flex
@@ -97,7 +97,7 @@ const ItemInfoCard = (props: Props) => {
         </HStack>
       </Flex>
     </Flex>
-  )
-}
+  );
+};
 
-export default ItemInfoCard
+export default ItemInfoCard;

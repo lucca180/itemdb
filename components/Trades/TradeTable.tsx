@@ -1,20 +1,20 @@
-import { Box, Text, Divider, Flex } from '@chakra-ui/react'
-import React from 'react'
-import { ItemData, TradeData } from '../../types'
-import { format } from 'date-fns'
-import Image from 'next/image'
-import { genItemKey } from '../../utils/utils'
+import { Box, Text, Divider, Flex } from '@chakra-ui/react';
+import React from 'react';
+import { ItemData, TradeData } from '../../types';
+import { format } from 'date-fns';
+import Image from 'next/image';
+import { genItemKey } from '../../utils/utils';
 
 type Props = {
-  data: TradeData
-  featuredItem?: ItemData
-}
+  data: TradeData;
+  featuredItem?: ItemData;
+};
 
-const intl = new Intl.NumberFormat()
+const intl = new Intl.NumberFormat();
 
 const TradeTable = (props: Props) => {
-  const { data, featuredItem } = props
-  console.log(data)
+  const { data, featuredItem } = props;
+  console.log(data);
   return (
     <Flex flexFlow="column" w="100%" flex={1} mb={3}>
       <Flex flexFlow="column">
@@ -77,7 +77,7 @@ const TradeTable = (props: Props) => {
       </Flex>
       <Divider mt={4} />
     </Flex>
-  )
-}
+  );
+};
 
-export default TradeTable
+export default TradeTable;

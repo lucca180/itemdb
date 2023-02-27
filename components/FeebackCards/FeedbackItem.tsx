@@ -6,42 +6,42 @@ import {
   Spinner,
   Tag,
   Text,
-} from '@chakra-ui/react'
-import axios from 'axios'
-import Image from 'next/image'
-import { useEffect, useState } from 'react'
-import { ItemData, ItemTag } from '../../types'
+} from '@chakra-ui/react';
+import axios from 'axios';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
+import { ItemData, ItemTag } from '../../types';
 
 type Props = {
-  item_iid: number
-  itemTags: string[]
-}
+  item_iid: number;
+  itemTags: string[];
+};
 
 const FeedbackItem = (props: Props) => {
-  const { item_iid, itemTags } = props
-  const [item, setItem] = useState<ItemData | undefined>()
-  const [tags, setTags] = useState<ItemTag[]>([])
+  const { item_iid, itemTags } = props;
+  const [item, setItem] = useState<ItemData | undefined>();
+  const [tags, setTags] = useState<ItemTag[]>([]);
 
-  const tagsStr = tags.map((tag) => tag.name)
+  const tagsStr = tags.map((tag) => tag.name);
 
   useEffect(() => {
-    if (item_iid) fetchItem()
-  }, [item_iid])
+    if (item_iid) fetchItem();
+  }, [item_iid]);
 
   const fetchItem = async () => {
-    const itemPromise = axios.get('/api/v1/items/'+item_iid)
+    const itemPromise = axios.get('/api/v1/items/' + item_iid);
 
-    const tagPromise = axios.get('/api/v1/items/'+item_iid+'/tags');
+    const tagPromise = axios.get('/api/v1/items/' + item_iid + '/tags');
 
-    const [itemRes, tagsRes] = await Promise.all([itemPromise, tagPromise])
+    const [itemRes, tagsRes] = await Promise.all([itemPromise, tagPromise]);
 
     const tagsFiltered = tagsRes.data.filter(
       (tag: ItemTag) => tag.type === 'tag'
-    )
+    );
 
-    setItem(itemRes.data)
-    setTags(tagsFiltered)
-  }
+    setItem(itemRes.data);
+    setTags(tagsFiltered);
+  };
 
   return (
     <Flex flexFlow="column" gap={3}>
@@ -121,7 +121,7 @@ const FeedbackItem = (props: Props) => {
         </>
       )}
     </Flex>
-  )
-}
+  );
+};
 
-export default FeedbackItem
+export default FeedbackItem;
