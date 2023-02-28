@@ -40,7 +40,7 @@ const Layout = (props: Props) => {
   useEffect(() => {
     if (!router.isReady) return;
     setSearch((router.query.s as string) ?? '');
-    if(isProd && router.asPath !== '/') router.push('/');
+    // if(isProd && router.asPath !== '/') router.push('/');
   }, [router.isReady]);
 
   const onSubmit = (e: any) => {
