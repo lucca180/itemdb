@@ -23,6 +23,7 @@
 const isBeta = !!$('#container__2020').length;
 
 // Some variables we will need later
+let alreadyCalled = false;
 const itemsObj = {};
 const priceList = [];
 const tradeList = [];
@@ -480,7 +481,6 @@ async function submitTrades() {
 }
 
 // here we check if we have any new data, if so, we send it to the server right before the page is closed :)
-const alreadyCalled = false;
 function hasNewData() {
   if (alreadyCalled) return;
   alreadyCalled = true;

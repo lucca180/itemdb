@@ -57,27 +57,28 @@ export default async function handle(
   )
     .flat()
     .filter((x) => !!x) as ItemColor[];
+  
 
-  const [resultItem, resultColor] = await Promise.allSettled([
+  const result = await prisma.$transaction([
     prisma.items.createMany({ data: itemAddList, skipDuplicates: true }),
+
     prisma.itemColor.createMany({
       data: itemColorAddList,
       skipDuplicates: true,
     }),
-  ]);
-
-  // update processed items
-  await prisma.itemProcess.updateMany({
-    where: {
-      internal_id: { in: deleteIds },
-      manual_check: null,
-    },
-    data:{
-      processed: true
-    }
-  });
-
-  return res.json({ items: resultItem, colors: resultColor });
+    
+    prisma.itemProcess.updateMany({
+      where: {
+        internal_id: { in: deleteIds },
+        manual_check: null,
+      },
+      data:{
+        processed: true
+      }
+    })
+  ])
+  
+  return res.json(result);
 }
 
 // If a item does not exist in the DB we use "createMany" but
