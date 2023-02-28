@@ -189,7 +189,7 @@ export default async function handle(
 
     const colorFilter = Color(vibrantColorFilter);
     const [l, a, b] = colorFilter.lab().array();
-    colorSql = Prisma.sql`(POWER(b.l-${l},2)+POWER(b.a-${a},2)+POWER(b.b-${b},2))`;
+    colorSql = Prisma.sql`(POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2))`;
   }
 
   let sortSQL;

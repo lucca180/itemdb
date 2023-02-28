@@ -35,7 +35,7 @@ export default async function handle(
                     having dist <= 750
                 )
             )
-            WHERE (POWER(l-${l},2)+POWER(a-${a},2)+POWER(b-${b},2)) <= 750  
+            WHERE (POWER(lab_l-${l},2)+POWER(lab_a-${a},2)+POWER(lab_b-${b},2)) <= 750  
         `) as any[];
 
     includeIds.push(...resultRaw.map((a) => a.internal_id));

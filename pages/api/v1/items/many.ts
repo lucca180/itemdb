@@ -12,9 +12,7 @@ export default async function handle(
   res: NextApiResponse
 ) {
   if (req.method !== 'GET' && req.method !== 'POST')
-    throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
-    );
+    return res.status(405).json({ error: 'Method not allowed' });
 
   let reqData;
 

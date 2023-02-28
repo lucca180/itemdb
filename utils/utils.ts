@@ -1,10 +1,9 @@
 import { ItemProcess, Items, PriceProcess } from '@prisma/client';
 import { mean, sampleStandardDeviation } from 'simple-statistics';
 import { ItemData, ItemFindAt, TradeData } from '../types';
-import Color from 'color';
 
 export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
-  let findAt: ItemFindAt = {
+  const findAt: ItemFindAt = {
     safetyDeposit: `https://www.neopets.com/safetydeposit.phtml?obj_name=${cleanItem(
       item
     )}&category=0`,
@@ -52,7 +51,7 @@ export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
 
 // Borrowed from Dice's Search Helper - https://github.com/diceroll123/NeoSearchHelper/
 function cleanItem(item: ItemData | Items | string) {
-  let itemName = typeof item != 'string' ? item.name : item;
+  const itemName = typeof item != 'string' ? item.name : item;
   return itemName
     .replaceAll('!', '%21')
     .replaceAll('#', '%23')
@@ -73,6 +72,7 @@ export function genItemKey(
   ignoreID = false
 ) {
   const image_id = item.image_id ?? '';
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   //@ts-ignore
   const item_id = item?.item_id ?? '';
 
@@ -300,7 +300,7 @@ export const shopIDToCategory: { [id: string]: string } = {
 
 export const isMissingInfo = (item: ItemData) => {
   for (const [key, val] of Object.entries(item)) {
-    if (['comment'].includes(key)) continue;
+    if (['comment', 'specialType'].includes(key)) continue;
 
     if (val === null) return true;
   }
