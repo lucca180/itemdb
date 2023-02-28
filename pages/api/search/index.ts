@@ -217,10 +217,10 @@ export default async function handle(
             SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, c.addedAt as priceAdded, c.price, c.noInflation_id, 
             (POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) as dist,  count(*) OVER() AS full_count 
             FROM Items as a
-            LEFT JOIN ItemColorLab as b on a.image_id = b.image_id and (b.image_id, POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) IN (
+            LEFT JOIN ItemColor as b on a.image_id = b.image_id and (b.image_id, POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) IN (
                 (
                     SELECT image_id, min((POWER(lab_l-${l},2)+POWER(lab_a-${a},2)+POWER(lab_b-${b},2))) as dist
-                    FROM ItemColorLab
+                    FROM ItemColor
                     GROUP BY image_id 
                     having dist <= 750
                 )
@@ -265,7 +265,7 @@ export default async function handle(
             SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, c.addedAt as priceAdded, c.price, c.noInflation_id,  count(*) OVER() AS full_count
             ${colorSql ? Prisma.sql`, ${colorSql} as dist` : Prisma.empty}
             FROM Items as a
-            LEFT JOIN ItemColorLab as b on a.image_id = b.image_id
+            LEFT JOIN ItemColor as b on a.image_id = b.image_id
             LEFT JOIN ItemPrices as c on c.internal_id = (
                 SELECT internal_id
                 FROM ItemPrices

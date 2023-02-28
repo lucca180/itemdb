@@ -63,7 +63,7 @@ export default async function handle(
   const resultRaw = (await prisma.$queryRaw`
         SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, c.addedAt as priceAdded, c.price, c.noInflation_id 
         FROM Items as a
-        LEFT JOIN ItemColorLab as b on a.image_id = b.image_id
+        LEFT JOIN ItemColor as b on a.image_id = b.image_id
         LEFT JOIN ItemPrices as c on c.internal_id = (
             SELECT internal_id
             FROM ItemPrices

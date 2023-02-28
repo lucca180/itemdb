@@ -27,10 +27,10 @@ export default async function handle(
     const resultRaw = (await prisma.$queryRaw`
             SELECT a.internal_id
             FROM Items as a
-            LEFT JOIN ItemColorLab as b on a.image_id = b.image_id and (POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) IN (
+            LEFT JOIN ItemColor as b on a.image_id = b.image_id and (POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) IN (
                 (
                     SELECT min((POWER(lab_l-${l},2)+POWER(lab_a-${a},2)+POWER(lab_b-${b},2))) as dist
-                    FROM ItemColorLab
+                    FROM ItemColor
                     GROUP BY image_id 
                     having dist <= 750
                 )

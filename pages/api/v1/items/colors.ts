@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
-import { ItemColorLab } from '@prisma/client';
+import { ItemColor } from '@prisma/client';
 import { ColorType, FullItemColors } from '../../../../types';
 import Color from 'color';
 
@@ -17,9 +17,9 @@ export default async function handle(
 
   const result = (await prisma.$queryRaw`
       SELECT *
-      FROM ItemColorLab
+      FROM ItemColor
       WHERE image_id = ${image_id}
-  `) as ItemColorLab[];
+  `) as ItemColor[];
 
   const types = result.map((o) => o.type);
 
