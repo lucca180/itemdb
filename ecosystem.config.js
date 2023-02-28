@@ -5,5 +5,7 @@ module.exports = {
     args: "start -p 4000",
     instances: 'max',
     exec_mode: 'cluster',
+    time: true,
+    merge_logs: true
   }]
 }
