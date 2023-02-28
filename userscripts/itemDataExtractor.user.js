@@ -4,17 +4,10 @@
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
 // @website      https://itemdb.com.br
-// @match      *://*.neopets.com/inventory.phtml*
-// @match      *://*.neopets.com/safetydeposit.phtml*
-// @match      *://*.neopets.com/island/tradingpost.phtml*
-// @match      *://*.neopets.com/market_your.phtml*
-// @match      *://*.neopets.com/market.phtml*
-// @match      *://*.neopets.com/objects.phtml?type=shop&obj_type=*
-// @match      *://*.neopets.com/objects.phtml?obj_type=*
-// @match      *://*.neopets.com/shops/wizard.phtml*
-// @match      *://*.neopets.com/genie.phtml*
-// @match      *://*.neopets.com/auctions.phtml*
-// @match      *://*.neopets.com/gallery/*
+// @match        *://*.neopets.com/*
+// @exclude      *://*.neopets.com/login/*
+// @exclude      *://*.nc.neopets.com/*
+// @exclude      *://*images.neopets.com/*
 // @icon         https://itemdb.com.br/favicon.ico
 // @grant        none
 // ==/UserScript==
@@ -23,10 +16,11 @@
 const isBeta = !!$('#container__2020').length;
 
 // Some variables we will need later
-let alreadyCalled = false;
+const hasSSW = !!($('#ssw__2020').length || $('#sswmenu').length);
 const itemsObj = {};
 const priceList = [];
 const tradeList = [];
+let alreadyCalled = false;
 
 // Loads some history so we can check if we already sended the info to the server
 const itemsHistory = JSON.parse(localStorage?.getItem('idb_itemHistory')) ?? {};
@@ -306,7 +300,7 @@ function handleSWPrices() {
   $(document).ajaxSuccess(() => {
     const itemName = $('.wizard-results-text h3').text();
     const items = $('.wizard-results-grid-shop li').clone().slice(1);
-
+    
     items.each(function (i) {
       const shopOwner = $(this).find('a').text();
       const stock = $(this).find('p').text();
@@ -334,22 +328,77 @@ function handleSWPrices() {
   });
 }
 
+function handleSSWPrices(){
+  $(document).ajaxSuccess(() => {
+    const resultTrs = isBeta ? $(".ssw-results-grid li").slice(1) : $("#ssw-tabs-2 #results_table tr").slice(1)
+    if(resultTrs.length === 0) return;
+
+    const itemName = $("#search_for").text().match(/'(.*?)'/gm)?.[1] 
+
+    if(isBeta){
+      resultTrs.each(function (i) {
+        const shopOwner = $(this).find('div').eq(0).text();
+        const itemID = $(this).find('div a').eq(0).attr('href').match(/(?<=obj_info_id\=)\d+/)?.[0];
+        const price = $(this).find('div a').eq(0).attr('href').match(/(?<=buy_cost_neopoints\=)\d+/)?.[0];
+        const stock = $(this).find('div').eq(1).text();
+
+        const itemPriceInfo = {
+          item_id: itemID,
+          name: itemName.slice(1,-1),
+          owner: shopOwner.slice(0, 3).padEnd(6, '*'),
+          stock: parseInt(stock),
+          value: parseInt(price),
+          type: 'ssw',
+        };
+
+        priceList.push(itemPriceInfo);
+        hasNewData();
+      });
+    }
+    else {
+      resultTrs.each(function (i) {
+        const shopOwner = $(this).find('td').eq(0).text();
+        const itemID = $(this).find('td a').eq(0).attr('href').match(/(?<=obj_info_id\=)\d+/)?.[0];
+        const price = $(this).find('td a').eq(0).attr('href').match(/(?<=buy_cost_neopoints\=)\d+/)?.[0];
+        const stock = $(this).find('td').eq(2).text();
+
+        const itemPriceInfo = {
+          item_id: itemID,
+          name: itemName.slice(1,-1),
+          owner: shopOwner.slice(0, 3).padEnd(6, '*'),
+          stock: parseInt(stock),
+          value: parseInt(price),
+          type: 'ssw',
+        };
+
+        priceList.push(itemPriceInfo);
+        hasNewData();
+      });
+    }
+  });
+}
+
 function handleAuctionPrices() {
   let auctions;
+  
   if (URLHas('genie.phtml'))
     auctions = $('.content > table tr').clone().slice(1);
+
   if (URLHas('auctions.phtml'))
     auctions = $('.content > center table tr').clone().slice(1);
 
   auctions.each(function (i) {
     const tds = $(this).find('td');
+    const auction_id = tds.eq(1).find('a').attr('href').match(/(?<=auction_id\=)\d+/)?.[0];
     const img = tds.eq(1).find('img').attr('src');
     const itemName = tds.eq(2).find('a').first().text();
     const owner = tds.eq(3).find('.sf').text();
     const isNF = tds.eq(3).find('b')?.text() ? 'NF' : '';
     const timeLeft = tds.eq(4).find('b').text();
     const lastBid = tds.eq(5).find('b').text();
-    const bidder = tds.eq(-1).text().trim();
+    let bidder = tds.eq(-1).text().trim();
+
+    bidder = bidder === 'nobody' ? bidder : bidder.slice(0, 3).padEnd(6, '*');
 
     const otherInfo = [isNF, timeLeft, bidder];
 
@@ -361,14 +410,13 @@ function handleAuctionPrices() {
       value: parseInt(lastBid),
       otherInfo: otherInfo,
       type: 'auction',
+      neo_id: auction_id,
     };
 
     priceList.push(itemPriceInfo);
     hasNewData();
   });
 }
-
-// ------ logging ------ //
 
 function handleRestock() {
   const items = $('.shop-item');
@@ -378,13 +426,12 @@ function handleRestock() {
     const itemName = info.dataset.name;
     const price = info.dataset.price.replace(',', '');
     const id = info.dataset.link.match(/(?<=obj_info_id\=)\d+/)?.[0];
-    const stock = $(this).find('.item-stock').first().text().match(/d+/)?.[0];
+    const stock = $(this).find('.item-stock').first().text().match(/\d+/)?.[0];
+    const stockId = info.dataset.link.match(/(?<=stock_id\=)\d+/)?.[0];
 
-    const now = new Date();
+    if (restockHistory[id] === stockId) return;
 
-    if (restockHistory[id] == now.getDate()) return;
-
-    restockHistory[id] = now.getDate();
+    restockHistory[id] = stockId;
 
     const itemInfo = {
       item_id: id,
@@ -393,6 +440,7 @@ function handleRestock() {
       stock: parseInt(stock),
       value: parseInt(price),
       type: 'restock',
+      neo_id: stockId,
     };
 
     priceList.push(itemInfo);
@@ -403,6 +451,7 @@ function handleRestock() {
 // ------------- //
 
 // Here we check if the page has the url we want and then call the respective function
+// and we also check if you have SSW so we can call the SSW handler
 
 if (URLHas('inventory')) handleInventory();
 if (URLHas('safetydeposit')) handleSDB();
@@ -413,14 +462,14 @@ if (URLHas('obj_type')) handleRestock();
 if (URLHas('wizard.phtml')) handleSWPrices();
 if (URLHas('genie.phtml') || URLHas('auctions.phtml')) handleAuctionPrices();
 if (URLHas('gallery/index.phtml')) handleGallery();
-if (URLHas('gallery/quickremove.phtml') || URLHas('gallery/quickcat.phtml'))
-  handleGalleryAdmin();
+if (URLHas('gallery/quickremove.phtml') || URLHas('gallery/quickcat.phtml')) handleGalleryAdmin();
+if (hasSSW) handleSSWPrices();
 
 // ----------- //
 
 // Here we send the data to the server
 // We send the items and prices separately because the items are sent only once
-// Again - no Personal Identifiable Information is sent to the server. Only item data.
+// Again - no personal information is sent to the server. Only item data.
 
 async function submitItems() {
   const itemsList = Object.values(itemsObj);
@@ -480,9 +529,13 @@ async function submitTrades() {
     localStorage?.setItem('idb_tradeHistory', JSON.stringify(tradeHistory));
 }
 
+// ----------- //
+
 // here we check if we have any new data, if so, we send it to the server right before the page is closed :)
+// this function is userful so we don't block your browser with "beforeunload" event unecessarily
 function hasNewData() {
   if (alreadyCalled) return;
+
   alreadyCalled = true;
   window.addEventListener('beforeunload', () => {
     try {

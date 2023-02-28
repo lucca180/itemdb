@@ -22,6 +22,7 @@ jobs:
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             yarn
+            npx prisma migrate deploy
             BUILD_DIR=temp yarn build || exit
             if [ ! -d "temp" ]; then
               echo '\033[31m temp directory does not exist!\033[0m'  

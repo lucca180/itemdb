@@ -15,7 +15,7 @@ export default async function handle(
     );
 
   const processList = await prisma.itemProcess.findMany({
-    where: { language: 'en', manual_check: null },
+    where: { language: 'en', manual_check: null, processed: false },
     take: 300,
   });
 

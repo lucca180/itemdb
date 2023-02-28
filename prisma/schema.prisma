@@ -155,9 +155,10 @@ model PriceProcess {
 	language	  String
 
 	hash		  String? @unique
-
+	neo_id		  Int?
 	processed 	  Boolean @default(false)
 	
+	@@unique([type, neo_id])
 	@@index([name, image_id])
 }
 
@@ -209,7 +210,7 @@ model ItemTags {
 
 model User {
 	id        	String   @id
-	username  	String?   @unique
+	username  	String?  @unique
 	neo_user 	String?    
 	email     	String   @unique
 	role      	String   @default("USER")
