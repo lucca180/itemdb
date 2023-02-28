@@ -26,7 +26,7 @@ export default async function handle(
   );
 
   const deleteIds: number[] = [];
-  const itemAddPromises: Promise<Items | undefined>[] = [];
+  const itemAddPromises: Promise<Partial<Items> | undefined>[] = [];
 
   // for each unique entry we get the repeated ones and "merge" all the data we have
   for (const item of uniqueNames) {
@@ -57,7 +57,6 @@ export default async function handle(
   )
     .flat()
     .filter((x) => !!x) as ItemColor[];
-  
 
   const result = await prisma.$transaction([
     prisma.items.createMany({ data: itemAddList, skipDuplicates: true }),
@@ -66,24 +65,26 @@ export default async function handle(
       data: itemColorAddList,
       skipDuplicates: true,
     }),
-    
+
     prisma.itemProcess.updateMany({
       where: {
         internal_id: { in: deleteIds },
         manual_check: null,
       },
-      data:{
-        processed: true
-      }
-    })
-  ])
-  
+      data: {
+        processed: true,
+      },
+    }),
+  ]);
+
   return res.json(result);
 }
 
 // If a item does not exist in the DB we use "createMany" but
 // there is not a "updateMany" so we update here and return undefined
-async function updateOrAddDB(item: ItemProcess): Promise<Items | undefined> {
+async function updateOrAddDB(
+  item: ItemProcess
+): Promise<Partial<Item> | undefined> {
   try {
     if (!item.image_id || !item.image || !item.name) throw 'invalid data';
 
@@ -99,17 +100,23 @@ async function updateOrAddDB(item: ItemProcess): Promise<Items | undefined> {
         item.item_id &&
         dbItemList[0].item_id !== item.item_id)
     ) {
-      // delete some useless internal fields
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const newItem = { ...item } as any;
-      delete newItem.internal_id;
-      delete newItem.updatedAt;
-      delete newItem.addedAt;
-      delete newItem.language;
-      delete newItem.manual_check;
-      delete newItem.ip_address;
-
-      return newItem;
+      return {
+        name: item.name,
+        description: item.description,
+        image_id: item.image_id,
+        image: item.image,
+        item_id: item.item_id,
+        specialType: item.specialType,
+        category: item.category,
+        rarity: item.rarity,
+        weight: item.weight,
+        isNC: item.isNC,
+        isWearable: item.isWearable,
+        isNeohome: !!item.specialType?.toLowerCase().includes('neohome'),
+        est_val: item.est_val,
+        status: item.status,
+        addedAt: item.addedAt,
+      };
     }
 
     // db has more than one -> manual check
@@ -151,8 +158,26 @@ async function updateOrAddDB(item: ItemProcess): Promise<Items | undefined> {
     if (!hasChange) return undefined;
 
     // yay new data
+    const updatedItem = {
+      item_id: dbItem.item_id,
+      name: dbItem.name,
+      description: dbItem.description,
+      image_id: dbItem.image_id,
+      image: dbItem.image,
+      specialType: dbItem.specialType,
+      category: dbItem.category,
+      rarity: dbItem.rarity,
+      weight: dbItem.weight,
+      isNC: dbItem.isNC,
+      isWearable: dbItem.isWearable,
+      isNeohome: !!dbItem.specialType?.toLowerCase().includes('neohome'),
+      est_val: dbItem.est_val,
+      status: dbItem.status,
+      updatedAt: new Date(),
+    };
+
     await prisma.items.update({
-      data: dbItem,
+      data: updatedItem,
       where: { internal_id: dbItem.internal_id },
     });
 

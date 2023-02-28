@@ -4,8 +4,6 @@
   "description": "Neopets Open Source Item Database",
   "keywords": [],
   "license": "MIT",
-  "author": "",
-  "main": "index.js",
   "scripts": {
     "dev": "next",
     "build": "next build",
@@ -36,7 +34,7 @@
     "common-tags": "^1.8.2",
     "date-fns": "^2.29.3",
     "firebase": "^9.15.0",
-    "firebase-admin": "^11.4.1",
+    "firebase-admin": "^11.5.0",
     "framer-motion": "^6",
     "lightweight-charts": "^3.8.0",
     "lodash": "^4.17.21",
@@ -52,6 +50,7 @@
     "recoil": "^0.7.6",
     "recoil-persist": "^4.2.0",
     "request-ip": "^3.3.0",
+    "sharp": "^0.31.3",
     "simple-statistics": "^7.8.0"
   },
   "devDependencies": {
@@ -67,8 +66,5 @@
     "prisma": "^4.11.0",
     "ts-node": "10.9.1",
     "typescript": "4.8.4"
-  },
-  "prisma": {
-    "seed": "ts-node prisma/seed.ts"
   }
 }
