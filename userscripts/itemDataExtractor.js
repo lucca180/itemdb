@@ -1,8 +1,9 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
 // @version      1.0.0
-// @namespace    neopets
+// @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
+// @website      https://itemdb.com.br
 // @match      *://*.neopets.com/inventory.phtml*
 // @match      *://*.neopets.com/safetydeposit.phtml*
 // @match      *://*.neopets.com/island/tradingpost.phtml*
@@ -14,9 +15,8 @@
 // @match      *://*.neopets.com/genie.phtml*
 // @match      *://*.neopets.com/auctions.phtml*
 // @match      *://*.neopets.com/gallery/*
-
-// @icon         https://www.neopets.com/favicon.ico
-
+// @icon         https://itemdb.com.br/favicon.ico
+// @grant        none
 // ==/UserScript==
 
 // Check if we are on the beta site
@@ -31,7 +31,8 @@ const tradeList = [];
 const itemsHistory = JSON.parse(localStorage?.getItem('idb_itemHistory')) ?? {};
 const restockHistory =
   JSON.parse(localStorage?.getItem('idb_restockHistory')) ?? {};
-const tradeHistory = JSON.parse(localStorage?.getItem('idb_tradeHistory')) ?? {};
+const tradeHistory =
+  JSON.parse(localStorage?.getItem('idb_tradeHistory')) ?? {};
 
 // check the page language (default as english)
 const pageLang = nl ?? 'en';
@@ -43,11 +44,11 @@ function URLHas(string) {
 
 // ------------ HANDLERS -------------- //
 
-/*  
+/*
     Handlers are functions that detect the items on some pages and add the data to the itemsObj.
     We have handlers for different pages as the items are displayed differently on each page.
-    No personal data is collected - except for the trade, shop and auctions pages where 
-    the item owner username is collected but only the first 3 letters are sent to the db 
+    No personal data is collected - except for the trade, shop and auctions pages where
+    the item owner username is collected but only the first 3 letters are sent to the db
     and the rest is replaced with *
 
     :)
@@ -436,8 +437,8 @@ async function submitItems() {
     }),
   });
 
-  if(res.ok)
-  localStorage?.setItem('idb_itemHistory', JSON.stringify(itemsHistory));
+  if (res.ok)
+    localStorage?.setItem('idb_itemHistory', JSON.stringify(itemsHistory));
 }
 
 async function submitPrices() {
@@ -455,8 +456,8 @@ async function submitPrices() {
     }),
   });
 
-  if(res.ok)
-  localStorage?.setItem('idb_restockHistory', JSON.stringify(restockHistory));
+  if (res.ok)
+    localStorage?.setItem('idb_restockHistory', JSON.stringify(restockHistory));
 }
 
 async function submitTrades() {
@@ -474,23 +475,23 @@ async function submitTrades() {
     }),
   });
 
-  if(res.ok)
-  localStorage?.setItem('idb_tradeHistory', JSON.stringify(tradeHistory));
+  if (res.ok)
+    localStorage?.setItem('idb_tradeHistory', JSON.stringify(tradeHistory));
 }
 
 // here we check if we have any new data, if so, we send it to the server right before the page is closed :)
 const alreadyCalled = false;
-function hasNewData(){
-  if(alreadyCalled) return;
+function hasNewData() {
+  if (alreadyCalled) return;
   alreadyCalled = true;
   window.addEventListener('beforeunload', () => {
-      try {
-        submitItems();
-        submitPrices();
-        submitTrades();
-      } catch (e) {
-        //console.error(e)
-      }
+    try {
+      submitItems();
+      submitPrices();
+      submitTrades();
+    } catch (e) {
+      //console.error(e)
+    }
   });
 }
 
