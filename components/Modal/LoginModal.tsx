@@ -21,6 +21,7 @@ import { useState } from 'react';
 import logoIcon from '../../public/logo_white.svg';
 
 const mailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const isProd = process.env.NODE_ENV === 'production';
 
 type Props = {
   isOpen: boolean;
@@ -49,7 +50,9 @@ const LoginModal = (props: Props) => {
     try {
       await sendSignInLinkToEmail(auth, email, {
         url:
-          'http://localhost:3000/login?redirect=' +
+          (isProd
+            ? 'https://itemdb.com.br/login?redirect='
+            : 'http://localhost:3000/login?redirect=') +
           encodeURIComponent(router.pathname),
         handleCodeInApp: true,
       });

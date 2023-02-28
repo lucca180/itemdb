@@ -7,24 +7,22 @@ export default async function handle(
   res: NextApiResponse
 ) {
   if (req.method !== 'POST')
-    throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
-    );
+    return res.status(405).json({ error: 'Method not allowed' });
 
   const { email, json, user_id, type, subject_id } = req.body;
   let { pageInfo } = req.body;
 
-  if (!json || !type) return res.status(401).send('Missing required fields');
+  if (!json || !type) return res.status(400).send('Missing required fields');
 
   if (type === 'tradePrice') {
     if (!subject_id || isNaN(parseInt(subject_id)) || !user_id)
-      return res.status(401).send('Missing required fields');
+      return res.status(400).send('Missing required fields');
   }
 
   const parsed = JSON.parse(json ?? '{}');
 
   if (!pageInfo) pageInfo = req.headers.referer;
-  if (!pageInfo) return res.status(401).send('Missing required fields');
+  if (!pageInfo) return res.status(400).send('Missing required fields');
 
   const ip = requestIp.getClientIp(req);
   const obj = {
@@ -40,7 +38,7 @@ export default async function handle(
 
   if (!shoudContinue)
     return res
-      .status(401)
+      .status(400)
       .json({ success: false, message: 'already processed' });
 
   const result = await prisma.feedbacks.create({

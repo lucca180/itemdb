@@ -5,18 +5,15 @@ import CardBase from '../Card/CardBase';
 
 type Props = {
   item: ItemData;
-  tags: ItemTag[];
-  toggleModal: () => void;
 };
 
-const ItemCats = (props: Props) => {
-  const { item, tags, toggleModal } = props;
-  const tagsFiltered = tags.filter((a) => a.type == 'category');
+const ItemOfficialLists = (props: Props) => {
+  const { item } = props;
 
   return (
-    <CardBase title="Categories" color={item.color.rgb}>
+    <CardBase title="Official Lists" color={item.color.rgb}>
       <Flex gap={3} flexFlow="column">
-        {tagsFiltered.map((tag, i) => (
+        {/* {tagsFiltered.map((tag, i) => (
           <Flex alignItems="center" key={i} gap={1}>
             <Tag variant="subtle" size="lg" fontWeight="bold">
               {tag.name}
@@ -36,16 +33,14 @@ const ItemCats = (props: Props) => {
             alignItems="center"
           >
             <Text fontSize="sm" color="gray.200">
-              This item doesn&apos;t have any categories yet :(
+              This item is not on any official list yet.
+              
             </Text>
-            <Button size="sm" variant="solid" onClick={toggleModal}>
-              Add New Categories
-            </Button>
           </Flex>
-        )}
+        )} */}
       </Flex>
     </CardBase>
   );
 };
 
-export default ItemCats;
+export default ItemOfficialLists;

@@ -29,7 +29,7 @@ import ItemPriceCard from '../../components/Price/ItemPriceCard';
 import axios from 'axios';
 import TradeCard from '../../components/Trades/TradeCard';
 import ItemTags from '../../components/Items/ItemTags';
-import ItemCats from '../../components/Items/CategoryCard';
+import ItemOfficialLists from '../../components/Items/ItemOfficialList';
 import { FiSend, FiEdit3 } from 'react-icons/fi';
 import EditItemModal from '../../components/Modal/EditItemModal';
 import FeedbackModal from '../../components/Modal/FeedbackModal';
@@ -199,11 +199,11 @@ const ItemPage = () => {
               lastSeen={seenStats}
               prices={prices ?? []}
             />
-            <ItemCats
+            {/* <ItemOfficialLists
               toggleModal={() => setIsEditModalOpen(true)}
               item={item}
               tags={tags}
-            />
+            /> */}
           </Flex>
           <Flex w="300px" flexFlow="column" gap={6}>
             {item.isWearable && <ItemPreview item={item} />}

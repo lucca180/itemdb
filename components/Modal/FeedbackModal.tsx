@@ -47,6 +47,7 @@ const FeedbackModal = (props: Props) => {
         json: JSON.stringify({
           message: message,
         }),
+        type: 'feedback',
         pageInfo: router.asPath,
       });
 
