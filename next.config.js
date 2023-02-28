@@ -8,6 +8,7 @@ const nextConfig = {
   images: {
     domains: ['images.neopets.com', 'magnetismotimes.com'],
   },
+  distDir: process.env.BUILD_DIR || '.next',
 };
 
 const withTM = require('next-transpile-modules')([
