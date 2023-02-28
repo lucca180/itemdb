@@ -112,19 +112,6 @@ model ItemColor {
 	@@unique([image_id, type])
 }
 
-model ItemColorLab {
-	internal_id   Int      	@id @default(autoincrement())
-	image_id	  String
-	image		  String	
-	lab_l		  Float
-	lab_a		  Float
-	lab_b		  Float
-	type          String
-	population	  Float
-
-	@@unique([image_id, type])
-}
-
 model ItemPrices {
 	internal_id 	Int 	@id @default(autoincrement())
 	item_id			Int?

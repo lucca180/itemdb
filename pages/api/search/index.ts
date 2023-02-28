@@ -318,7 +318,7 @@ export default async function handle(
   // .sort((a:any, b:any) =>  Math.floor(b.h) - Math.floor(a.h) || Math.floor(b.s) - Math.floor(a.s) || Math.floor(b.l) - Math.floor(a.l))
 
   const itemList: ItemData[] = filteredResult.map((result: any) => {
-    const color = Color.lab(result.l, result.a, result.b);
+    const color = Color.lab(result.lab_l, result.lab_a, result.lab_b);
 
     const item: ItemData = {
       internal_id: result.internal_id,
