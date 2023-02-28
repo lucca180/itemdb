@@ -102,7 +102,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       data: {
         trade_id: Number(lot.tradeID),
         wishlist: lot.wishList,
-        owner: lot.owner.slice(0, 3).padEnd(6, '*'),
+        owner: lot.owner,
         ip_address: requestIp.getClientIp(req),
         priced: lot.wishList === 'none',
         processed: lot.wishList === 'none',

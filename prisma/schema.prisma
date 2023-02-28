@@ -82,6 +82,8 @@ model ItemProcess {
 
 	manual_check  String?
 
+	processed	  Boolean @default(false)
+
 	@@index([name, image_id])
 }
 

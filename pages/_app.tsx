@@ -4,6 +4,7 @@ import theme from '../utils/theme';
 import '../utils/global.css';
 import { initializeApp } from 'firebase/app';
 import { RecoilRoot } from 'recoil';
+import Head from 'next/head';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyBt6150dQ4dqt2UXgLMjR7Nf92m5jMBcCw',
@@ -21,6 +22,11 @@ function MyApp({ Component, pageProps }: any) {
   return (
     <RecoilRoot>
       <ChakraProvider theme={theme}>
+        <Head>
+          <link rel="icon" href="/favicon.ico" />
+          <link rel="icon" href="/favicon.svg" type="image/svg+xml"/>
+          <title>itemdb - Open Source Neopets Item Database</title>
+        </Head>
         <Component {...pageProps} />
       </ChakraProvider>
     </RecoilRoot>

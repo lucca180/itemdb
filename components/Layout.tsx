@@ -25,6 +25,8 @@ import SearchMenu from './Menus/SearchMenu';
 import LoginModal from './Modal/LoginModal';
 import { useAuth } from '../utils/auth';
 
+const isProd = process.env.NODE_ENV === 'production';
+
 type Props = {
   children: ReactNode;
 };
@@ -38,6 +40,7 @@ const Layout = (props: Props) => {
   useEffect(() => {
     if (!router.isReady) return;
     setSearch((router.query.s as string) ?? '');
+    if(isProd && router.asPath !== '/') router.push('/');
   }, [router.isReady]);
 
   const onSubmit = (e: any) => {

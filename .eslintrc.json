@@ -17,5 +17,6 @@
     ],
     // wrongly assuming that you will type things correcly :pray:
     "@typescript-eslint/no-explicit-any": "off"
-  }
+  },
+  "ignorePatterns": ["userscripts/*"]
 }

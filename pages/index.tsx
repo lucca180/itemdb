@@ -1,10 +1,12 @@
-import { Box, Flex, Heading, Highlight, Link } from '@chakra-ui/react';
+import { Box, Center, Flex, Heading, Highlight, Link } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import logo from '../public/logo_white.svg';
 import Image from 'next/image';
 import ItemCard from '../components/Items/ItemCard';
 import { ItemData } from '../types';
+
+const isProd = process.env.NODE_ENV === 'production';
 
 const HomePage = () => {
   const [items, setItems] = useState<ItemData[]>([]);
@@ -19,6 +21,13 @@ const HomePage = () => {
 
     setItems(itemData);
   };
+
+  if(isProd) return (
+    <Center h="100vh" flexFlow="column">
+      <Image src={logo} alt="itemdb logo" width={500} quality="100" />
+      <Heading size="sm" mt={4}>Coming Soon™</Heading>
+    </Center>
+    )
 
   return (
     <Layout>

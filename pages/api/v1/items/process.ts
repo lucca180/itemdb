@@ -66,12 +66,15 @@ export default async function handle(
     }),
   ]);
 
-  // // // delete processed items
-  await prisma.itemProcess.deleteMany({
+  // update processed items
+  await prisma.itemProcess.updateMany({
     where: {
       internal_id: { in: deleteIds },
       manual_check: null,
     },
+    data:{
+      processed: true
+    }
   });
 
   return res.json({ items: resultItem, colors: resultColor });

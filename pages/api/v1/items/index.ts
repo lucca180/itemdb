@@ -18,6 +18,9 @@ export default async function handle(
 }
 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
+  let limit = req.query.limit ? Number(req.query.limit) : 50;
+  limit = Math.min(limit, 100);
+  
   const resultRaw = (await prisma.$queryRaw`
     SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, c.addedAt as priceAdded, c.price, c.noInflation_id 
     FROM Items as a
@@ -31,7 +34,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     )
     WHERE b.type = "Vibrant"
     ORDER BY a.addedAt DESC
-    LIMIT 50
+    LIMIT ${limit}
   `) as any;
 
   // const ids = resultRaw.map((o: { internal_id: any; }) => o.internal_id)

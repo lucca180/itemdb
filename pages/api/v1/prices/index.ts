@@ -73,7 +73,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       item_id: item_id,
       image: img,
       image_id: imageId,
-      owner: owner.slice(0, 3).padEnd(6, '*'),
+      owner: owner,
       type: type,
       stock: stock,
       price: value,

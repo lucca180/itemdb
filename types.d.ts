@@ -1,5 +1,3 @@
-import { ItemColor, Items } from '@prisma/client';
-
 export type ItemData = {
   internal_id: number;
   item_id: number | null;
@@ -16,20 +14,10 @@ export type ItemData = {
   est_val: number | null;
   specialType: string | null;
   status: string | null;
-  color: {
-    lab: [number, number, number] | number[];
-    rgb: [number, number, number] | number[];
-    hex: string;
-    type: 'vibrant';
-    population: number;
-  };
+  color: ItemColorData;
   findAt: ItemFindAt;
   isMissingInfo: boolean;
-  price: {
-    addedAt: string | null;
-    value: number | null;
-    inflated: boolean;
-  };
+  price: ItemPriceData;
   comment: string | null;
 };
 
@@ -53,6 +41,20 @@ export type ColorData = {
   population: number;
   type: ColorType;
 };
+
+export type ItemColorData = {
+  lab: [number, number, number] | number[];
+  rgb: [number, number, number] | number[];
+  hex: string;
+  type: 'vibrant';
+  population: number;
+}
+
+export type ItemPriceData = {
+  addedAt: string | null;
+  value: number | null;
+  inflated: boolean;
+}
 
 export type ColorType =
   | 'vibrant'
