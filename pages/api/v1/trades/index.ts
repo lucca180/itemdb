@@ -13,6 +13,11 @@ export default async function handle(
     if (req.method === 'POST') return POST(req, res);
     if (req.method === 'PATCH') return PATCH(req, res);
 
+    if (req.method == "OPTIONS") {
+      res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH");
+      return res.status(200).json({});
+    }
+
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (e) {
     console.error(e);
@@ -65,7 +70,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
-  const data = JSON.parse(req.body);
+  const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
 
   const tradeLots = data.tradeLots;
   const lang = data.lang;

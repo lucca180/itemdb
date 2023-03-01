@@ -12,6 +12,11 @@ export default async function handle(
   if (req.method === 'GET') return GET(req, res);
   if (req.method === 'PATCH') return PATCH(req, res);
 
+  if (req.method == "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Methods", "GET, PATCH");
+    return res.status(200).json({});
+  }
+
   return res.status(405).json({ error: 'Method not allowed' });
 }
 

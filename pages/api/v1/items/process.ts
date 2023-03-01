@@ -12,9 +12,13 @@ export default async function handle(
   if (req.method !== 'POST')
     return res.status(405).json({ error: 'Method not allowed' });
 
+  let limit = Number(req.body.limit) ?? 300;  
+  limit = isNaN(limit) ? 300 : limit;
+  limit = Math.min(limit, 1000);
+
   const processList = await prisma.itemProcess.findMany({
     where: { language: 'en', manual_check: null, processed: false },
-    take: 300,
+    take: limit,
   });
 
   // list of unique entries

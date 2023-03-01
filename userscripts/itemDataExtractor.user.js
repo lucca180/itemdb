@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.0.0
+// @version      1.0.1
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
 // @website      https://itemdb.com.br
@@ -17,16 +17,16 @@ const isBeta = !!$('#container__2020').length;
 
 // Some variables we will need later
 const hasSSW = !!($('#ssw__2020').length || $('#sswmenu').length);
-const itemsObj = {};
-const priceList = [];
-const tradeList = [];
+let itemsObj = {};
+let priceList = [];
+let tradeList = [];
 let alreadyCalled = false;
 
 // Loads some history so we can check if we already sended the info to the server
-const itemsHistory = JSON.parse(localStorage?.getItem('idb_itemHistory')) ?? {};
-const restockHistory =
+let itemsHistory = JSON.parse(localStorage?.getItem('idb_itemHistory')) ?? {};
+let restockHistory =
   JSON.parse(localStorage?.getItem('idb_restockHistory')) ?? {};
-const tradeHistory =
+let tradeHistory =
   JSON.parse(localStorage?.getItem('idb_tradeHistory')) ?? {};
 
 // check the page language (default as english)
@@ -35,6 +35,16 @@ const pageLang = nl ?? 'en';
 // function to check if the current url contains a word
 function URLHas(string) {
   return window.location.href.includes(string);
+}
+
+if(URLHas('idb_clear')){
+  localStorage.removeItem('idb_itemHistory');
+  localStorage.removeItem('idb_restockHistory');
+  localStorage.removeItem('idb_tradeHistory');
+  
+  itemsHistory = {};
+  restockHistory = {};
+  tradeHistory = {};
 }
 
 // ------------ HANDLERS -------------- //
@@ -72,16 +82,16 @@ function handleInventory() {
           itemsObj[itemKey] = item;
           itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
           itemsHistory[itemKey].inventory = true;
-          hasNewData();
+          ;
         }
       });
+
+      submitItems();
     });
   }
 }
 
 function handleSDB() {
-  if (isBeta) return;
-
   const trs = $('form table').eq(2).find('tr').clone().slice(1, -1);
   trs.each(function (i) {
     const tds = $(this).find('td');
@@ -116,14 +126,14 @@ function handleSDB() {
       itemsObj[itemKey] = item;
       itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
       itemsHistory[itemKey].sdb = true;
-      hasNewData();
+      ;
     }
   });
+
+  submitItems();
 }
 
 function handleTrades() {
-  if (isBeta) return;
-
   const lots = $('.content td > table td table');
   lots.each(function (i) {
     const link = $(this).prevAll('a').eq(0).attr('href');
@@ -172,17 +182,18 @@ function handleTrades() {
           itemsObj[itemKey] = item;
           itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
           itemsHistory[itemKey].trades = true;
-          hasNewData();
+          ;
         }
       });
 
     tradeList.push(trade);
   });
+
+  submitItems();
+  submitTrades()
 }
 
 function handleMyShop() {
-  if (isBeta) return;
-
   const itemsTr = $('form table').first().find('tr').slice(1, -3);
 
   itemsTr.each(function (i) {
@@ -209,9 +220,11 @@ function handleMyShop() {
       itemsObj[itemKey] = item;
       itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
       itemsHistory[itemKey].myshop = true;
-      hasNewData();
+      
     }
   });
+
+  submitItems();
 }
 
 function handleGeneralShops() {
@@ -236,9 +249,11 @@ function handleGeneralShops() {
       itemsObj[itemKey] = item;
       itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
       itemsHistory[itemKey].generalshop = true;
-      hasNewData();
+      
     }
   });
+
+  submitItems();
 }
 
 function handleGallery() {
@@ -262,9 +277,11 @@ function handleGallery() {
       itemsObj[itemKey] = item;
       itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
       itemsHistory[itemKey].gallery = true;
-      hasNewData();
+      
     }
   });
+
+  submitItems();
 }
 
 function handleGalleryAdmin() {
@@ -289,9 +306,11 @@ function handleGalleryAdmin() {
       itemsObj[itemKey] = item;
       itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
       itemsHistory[itemKey].galleryAdmin = true;
-      hasNewData();
+      
     }
   });
+
+  submitItems();
 }
 
 // ------ prices ------ //
@@ -323,8 +342,9 @@ function handleSWPrices() {
       };
 
       priceList.push(itemPriceInfo);
-      hasNewData();
     });
+
+    submitPrices();
   });
 }
 
@@ -352,7 +372,7 @@ function handleSSWPrices(){
         };
 
         priceList.push(itemPriceInfo);
-        hasNewData();
+        
       });
     }
     else {
@@ -372,9 +392,11 @@ function handleSSWPrices(){
         };
 
         priceList.push(itemPriceInfo);
-        hasNewData();
+        
       });
     }
+
+    submitPrices();
   });
 }
 
@@ -414,8 +436,10 @@ function handleAuctionPrices() {
     };
 
     priceList.push(itemPriceInfo);
-    hasNewData();
+    
   });
+
+  submitPrices();
 }
 
 function handleRestock() {
@@ -444,8 +468,10 @@ function handleRestock() {
     };
 
     priceList.push(itemInfo);
-    hasNewData();
+    
   });
+
+  submitPrices();
 }
 
 // ------------- //
@@ -477,7 +503,7 @@ async function submitItems() {
 
   const res = await fetch('https://itemdb.com.br/api/v1/items', {
     method: 'POST',
-    mode: 'no-cors',
+    keepalive: true,
     headers: {
       'Content-Type': 'application/json',
     },
@@ -487,8 +513,13 @@ async function submitItems() {
     }),
   });
 
-  if (res.ok)
+  if (res.ok){
     localStorage?.setItem('idb_itemHistory', JSON.stringify(itemsHistory));
+    itemsObj = {};
+  }
+  else {
+    console.error('[itemdb] submitItems error:', res);
+  }
 }
 
 async function submitPrices() {
@@ -496,7 +527,7 @@ async function submitPrices() {
 
   const res = await fetch('https://itemdb.com.br/api/v1/prices', {
     method: 'POST',
-    mode: 'no-cors',
+    keepalive: true,
     headers: {
       'Content-Type': 'application/json',
     },
@@ -506,8 +537,13 @@ async function submitPrices() {
     }),
   });
 
-  if (res.ok)
+  if (res.ok){
     localStorage?.setItem('idb_restockHistory', JSON.stringify(restockHistory));
+    priceList = [];
+  }
+  else {
+    console.error('[itemdb] submitPrices error:', res);
+  }
 }
 
 async function submitTrades() {
@@ -515,7 +551,7 @@ async function submitTrades() {
 
   const res = await fetch('https://itemdb.com.br/api/v1/trades', {
     method: 'POST',
-    mode: 'no-cors',
+    keepalive: true,
     headers: {
       'Content-Type': 'application/json',
     },
@@ -525,27 +561,13 @@ async function submitTrades() {
     }),
   });
 
-  if (res.ok)
+  if (res.ok){
     localStorage?.setItem('idb_tradeHistory', JSON.stringify(tradeHistory));
-}
-
-// ----------- //
-
-// here we check if we have any new data, if so, we send it to the server right before the page is closed :)
-// this function is userful so we don't block your browser with "beforeunload" event unecessarily
-function hasNewData() {
-  if (alreadyCalled) return;
-
-  alreadyCalled = true;
-  window.addEventListener('beforeunload', () => {
-    try {
-      submitItems();
-      submitPrices();
-      submitTrades();
-    } catch (e) {
-      //console.error(e)
-    }
-  });
+    tradeList = [];
+  }
+  else {
+    console.error('[itemdb] submitTrades error:', res);
+  }
 }
 
 // this function is used to generate a unique key for each item based on its name, image and id

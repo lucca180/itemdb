@@ -9,10 +9,20 @@ export default async function handle(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+
+  if (req.method == "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Methods", "POST");
+    return res.status(200).json({});
+  }
+
   if (req.method !== 'POST')
     return res.status(405).json({ error: 'Method not allowed' });
 
   const itemName = req.body.itemName as string;
+
+  let limit = Number(req.body.limit) ?? 300;  
+  limit = isNaN(limit) ? 300 : limit;
+  limit = Math.min(limit, 1000);
 
   const processList = await prisma.priceProcess.findMany({
     where: {
@@ -23,7 +33,7 @@ export default async function handle(
     orderBy: {
       addedAt: 'desc',
     },
-    take: 300,
+    take: limit,
   });
 
   const priceAddPromises: Promise<ItemPrices | undefined>[] = [];
