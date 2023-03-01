@@ -115,7 +115,6 @@ const FeedbackSuggest = () => {
     );
     setTrades(newTrades);
     setCurrentTrade(newTrades[0]);
-    console.log(newTrades[0]);
   };
 
   return (

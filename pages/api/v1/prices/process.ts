@@ -108,9 +108,7 @@ export default async function handle(
         finalPrice = Math.round(harmonicMean(out) / 500) * 500;
       if (finalPrice > 1000000)
         finalPrice = Math.round(harmonicMean(out) / 50000) * 50000;
-
-      console.log(finalPrice);
-
+        
       priceAddPromises.push(
         updateOrAddDB(item, finalPrice, usedIDs, latestDate).then((_) => {
           if (_) processedIDs.push(...allIDs);

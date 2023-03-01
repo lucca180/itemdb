@@ -62,7 +62,7 @@ const ItemActionModal = (props: Props) => {
         setLoading(false);
       } else throw res.data;
     } catch (e) {
-      console.log(e);
+      console.error(e);
       setLoading(false);
       setError(true);
     }

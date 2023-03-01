@@ -56,7 +56,7 @@ const FeedbackModal = (props: Props) => {
       if (res.data.success) setIsSuccess(true);
       else throw res.data;
     } catch (err) {
-      console.log(err);
+      console.error(err);
       setLoading(false);
       setError(true);
     }

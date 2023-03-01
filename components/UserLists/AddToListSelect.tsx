@@ -29,7 +29,6 @@ const AddToListSelect = (props: Props) => {
   const seeking = lists
     .filter((list) => list.purpose === 'seeking')
     .sort((a, b) => SortListByItem(a, b, item));
-  console.log(seeking);
   const trading = lists.filter((list) => list.purpose === 'trading');
   const none = lists.filter((list) => list.purpose === 'none');
 
@@ -55,7 +54,7 @@ const AddToListSelect = (props: Props) => {
 
       setLists(res.data);
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
@@ -86,7 +85,7 @@ const AddToListSelect = (props: Props) => {
         init();
       }
     } catch (err) {
-      console.log(err);
+      console.error(err);
 
       toast({
         title: 'An error occurred',

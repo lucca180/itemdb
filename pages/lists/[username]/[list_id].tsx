@@ -296,7 +296,7 @@ const ListPage = () => {
         init();
       } else throw res.data.message;
     } catch (err) {
-      console.log(err);
+      console.error(err);
       toast.update(x, {
         title: 'An error occurred',
         description: 'Please try again later',

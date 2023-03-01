@@ -77,10 +77,10 @@ const LoginPage = () => {
           return setNeedInfo(true);
         }
 
-        router.replace((router.query.redirect as string) || '/');
+        router.replace('/');
       } catch (e: any) {
         setError(e.message);
-        console.log(error);
+        console.error(error);
       }
     } else if (user) {
       if (!user.neo_user || !user.username) {
@@ -144,12 +144,10 @@ const LoginPage = () => {
         return setNeedInfo(true);
       }
 
-      console.log(user);
-
       router.replace((router.query.redirect as string) || '/');
     } catch (e: any) {
       setError(e.message);
-      console.log(error);
+      console.error(error);
     }
   };
 

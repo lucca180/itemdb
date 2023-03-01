@@ -59,10 +59,10 @@ const UserListsPage = () => {
   const rgb = color.rgb().array();
 
   useEffect(() => {
-    if (!authLoading && router.isReady && !lists) {
+    if (!authLoading && router.isReady && listsIds.length === 0) {
       init();
     }
-  }, [authLoading, router.isReady]);
+  }, [authLoading, router.isReady, listsIds]);
 
   useEffect(() => {
     return () => toast.closeAll();
@@ -71,6 +71,7 @@ const UserListsPage = () => {
   const init = async () => {
     setLists({});
     const targetUsername = router.query.username;
+
     if (!targetUsername) return;
 
     const token = await getIdToken();
@@ -222,7 +223,7 @@ const UserListsPage = () => {
         setEdit(false);
       }
     } catch (err) {
-      console.log(err);
+      console.error(err);
 
       toast.update(x, {
         title: 'An error occurred',

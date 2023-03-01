@@ -78,7 +78,6 @@ const EditItemModal = (props: Props) => {
     else if (type === 'categories') setCategories(tags);
     else if (type === 'special') {
       const itemCopy = { ...item };
-      console.log(tags);
       if (tags.includes('nc')) itemCopy.isNC = true;
       else itemCopy.isNC = false;
 
@@ -115,7 +114,7 @@ const EditItemModal = (props: Props) => {
       if (res.data.success) setIsSuccess(true);
       else throw res.data;
     } catch (err) {
-      console.log(err);
+      console.error(err);
       setLoading(false);
       setError(true);
     }
@@ -142,7 +141,7 @@ const EditItemModal = (props: Props) => {
       if (res.data.success) setIsSuccess(true);
       else throw res.data;
     } catch (err) {
-      console.log(err);
+      console.error(err);
       setLoading(false);
       setError(true);
     }
@@ -395,7 +394,6 @@ const CategoriesTab = (props: TagSelectProps) => {
 
     if (item.isNeohome) tempTags.push('neohome');
 
-    console.log(tempTags, specialTags);
     setSpecialTags(tempTags);
   }, [item]);
 

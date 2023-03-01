@@ -14,7 +14,6 @@ const intl = new Intl.NumberFormat();
 
 const TradeTable = (props: Props) => {
   const { data, featuredItem } = props;
-  console.log(data);
   return (
     <Flex flexFlow="column" w="100%" flex={1} mb={3}>
       <Flex flexFlow="column">

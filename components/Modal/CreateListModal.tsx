@@ -92,7 +92,7 @@ const CreateListModal = (props: Props) => {
         onClose();
       } else throw res.data;
     } catch (err) {
-      console.log(err);
+      console.error(err);
       setLoading(false);
       setError(true);
     }

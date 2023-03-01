@@ -6,8 +6,10 @@ import { initializeApp } from 'firebase/app';
 import { RecoilRoot } from 'recoil';
 import Head from 'next/head';
 
+const isProd = process.env.NODE_ENV === 'production';
+
 const firebaseConfig = {
-  apiKey: 'AIzaSyBt6150dQ4dqt2UXgLMjR7Nf92m5jMBcCw',
+  apiKey: isProd ? process.env.NEXT_PUBLIC_FIREBASE_KEY_PROD : process.env.NEXT_PUBLIC_FIREBASE_KEY_DEV,
   authDomain: 'itemdb-1db58.firebaseapp.com',
   projectId: 'itemdb-1db58',
   storageBucket: 'itemdb-1db58.appspot.com',

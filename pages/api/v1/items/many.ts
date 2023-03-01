@@ -77,7 +77,7 @@ export default async function handle(
   const items: { [identifier: string]: ItemData } = {};
 
   for (const result of resultRaw) {
-    const colorlab = Color.lab(result.l, result.a, result.b);
+    const colorlab = Color.lab(result.lab_l, result.lab_a, result.lab_b);
 
     const x: ItemData = {
       internal_id: result.internal_id,

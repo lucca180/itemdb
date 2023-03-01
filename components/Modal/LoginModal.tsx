@@ -61,7 +61,7 @@ const LoginModal = (props: Props) => {
       setIsSent(true);
     } catch (e: any) {
       setError(e.message);
-      console.log(error);
+      console.error(error);
     }
 
     setIsLoading(false);

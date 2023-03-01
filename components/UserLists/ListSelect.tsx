@@ -57,7 +57,7 @@ const ListSelect = (props: Props) => {
 
       setLists(res.data);
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 

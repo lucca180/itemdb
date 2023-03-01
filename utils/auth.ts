@@ -69,7 +69,7 @@ export const useAuth = (props?: UseAuthProps) => {
       setUser(userData);
       setIsLoading(false);
     } catch (e: any) {
-      console.log(e);
+      console.error(e);
     }
   };
 
@@ -82,7 +82,7 @@ export const useAuth = (props?: UseAuthProps) => {
 
       return token;
     } catch (e) {
-      console.log(e);
+      console.error(e);
       return null;
     }
   };
