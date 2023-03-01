@@ -5,6 +5,7 @@ import '../utils/global.css';
 import { initializeApp } from 'firebase/app';
 import { RecoilRoot } from 'recoil';
 import Head from 'next/head';
+import {init} from "@sentry/nextjs";
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -19,7 +20,16 @@ const firebaseConfig = {
 
 initializeApp(firebaseConfig);
 
-//eslint-disable-next-line @typescript-eslint/no-explicit-any
+init({
+  dsn: "https://d093bca7709346a6a45966764e1b1988@o1042114.ingest.sentry.io/4504761196216321",
+
+  // Set tracesSampleRate to 1.0 to capture 100%
+  // of transactions for performance monitoring.
+  // We recommend adjusting this value in production
+  tracesSampleRate: 0.45,
+});
+
+
 function MyApp({ Component, pageProps }: any) {
   return (
     <RecoilRoot>

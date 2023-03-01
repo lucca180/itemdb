@@ -6,6 +6,7 @@ module.exports = {
     instances: 'max',
     exec_mode: 'cluster',
     time: true,
-    merge_logs: true
+    merge_logs: true,
+    max_memory_restart: '400M'
   }]
 }

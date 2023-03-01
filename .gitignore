@@ -3,3 +3,5 @@ node_modules/
 
 firebase-key.json
 .env
+# Sentry
+.sentryclirc

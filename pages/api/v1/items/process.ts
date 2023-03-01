@@ -24,7 +24,7 @@ export default async function handle(
   // list of unique entries
   const uniqueNames = [...processList].filter(
     (value, index, self) =>
-      index === self.findIndex((t) => genItemKey(t) === genItemKey(value))
+      index === self.findIndex((t) => genItemKey(t, true) === genItemKey(value, true))
   );
 
   const deleteIds: number[] = [];
@@ -33,7 +33,7 @@ export default async function handle(
   // for each unique entry we get the repeated ones and "merge" all the data we have
   for (const item of uniqueNames) {
     const allItemData = processList.filter(
-      (x) => genItemKey(x) === genItemKey(item)
+      (x) => genItemKey(x, true) === genItemKey(item, true)
     );
     const itemData = { ...item };
 

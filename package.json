@@ -23,6 +23,7 @@
     "@hello-pangea/color-picker": "^3.2.2",
     "@next/font": "^13.0.3",
     "@prisma/client": "^4.11.0",
+    "@sentry/nextjs": "^7.39.0",
     "@types/color": "^3.0.3",
     "@types/qs": "^6.9.7",
     "@types/request-ip": "^0.0.37",
