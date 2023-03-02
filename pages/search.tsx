@@ -20,7 +20,7 @@ import Pagination from '../components/Input/Pagination';
 import qs from 'qs';
 import SearchFilterCard from '../components/Search/SearchFiltersCard';
 import SearchFilterModal from '../components/Search/SearchFiltersModal';
-import { BsFilterSquareFill } from 'react-icons/bs';
+import { BsFilter } from 'react-icons/bs';
 
 const Axios = axios.create({
   baseURL: '/api/',
@@ -65,7 +65,7 @@ const SearchPage = () => {
 
     const custom = parseQueryString();
     init(custom, true);
-  }, [router.query.s]);
+  }, [router.query]);
 
   const init = async (
     customFilters?: SearchFiltersType,
@@ -95,10 +95,16 @@ const SearchPage = () => {
     });
     paramsString = paramsString ? '&' + paramsString : '';
 
-    if (filters)
-      router.replace(
-        router.pathname + '?s=' + encodeURIComponent(query) + paramsString
+    // changing route will call useEffect again, so we return here
+    if (filters && searchResult){
+      router.push(
+        router.pathname + '?s=' + encodeURIComponent(query) + paramsString,
+        undefined,
+        { shallow: true }
       );
+
+      return;
+    }
 
     setResult(null);
 
@@ -185,7 +191,7 @@ const SearchPage = () => {
               isColorSearch={isColorSearch}
               onChange={handleFilterChange}
               resetFilters={resetFilters}
-              applyFilters={init}
+              applyFilters={() => init()}
             />
           </Box>
         )}
@@ -198,7 +204,7 @@ const SearchPage = () => {
             isColorSearch={isColorSearch}
             onChange={handleFilterChange}
             resetFilters={resetFilters}
-            applyFilters={init}
+            applyFilters={() => init()}
           />
         )}
         <Box flex="1">
@@ -221,7 +227,7 @@ const SearchPage = () => {
                 <IconButton
                   aria-label="search filters"
                   onClick={onOpen}
-                  icon={<BsFilterSquareFill />}
+                  icon={<BsFilter />}
                 />
               )}
             </HStack>

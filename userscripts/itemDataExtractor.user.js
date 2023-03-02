@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.0.1
+// @version      1.0.2
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
 // @website      https://itemdb.com.br
@@ -49,13 +49,13 @@ if (URLHas('idb_clear')) {
 // ------------ HANDLERS -------------- //
 
 /*
-    Handlers are functions that detect the items on some pages and add the data to the itemsObj.
-    We have handlers for different pages as the items are displayed differently on each page.
-    No personal data is collected - except for the trade, shop and auctions pages where
-    the item owner username is collected but only the first 3 letters are sent to the db
-    and the rest is replaced with *
+  Handlers are functions that detect the items on some pages and add the data to the itemsObj.
+  We have handlers for different pages as the items are displayed differently on each page.
+  No personal data is collected - except for the trade, shop and auctions pages where
+  the item owner username is collected but only the first 3 letters are sent to the db
+  and the rest is replaced with *
 
-    :)
+  :)
 */
 
 function handleInventory() {
@@ -247,6 +247,54 @@ function handleGeneralShops() {
     }
   });
 
+  submitItems();
+}
+
+function handleUserShops() {
+  const allTds = $('.content table td');
+
+  allTds.each(function (i) {
+    const link = $(this).find('a').first().attr('href');
+    if (!link || !link.includes('buy_item.phtml')) return;
+
+    const itemID = link.match(/(?<=obj_info_id\=)\d+/)?.[0];
+    const itemName = $(this).find('b').first().text();
+    const img = $(this).find('img').attr('src');
+    const description = $(this).find('img').attr('title');
+    const price = link.match(/(?<=old_price\=)\d+/)?.[0];
+    const owner = link.match(/(?<=owner\=)[^=&]+/gi)?.[0];
+    const stock = $(this)
+      .text()
+      .match(/(\d+)(?= in stock)/gm)?.[0];
+
+    const item = {
+      name: itemName,
+      img: img,
+      description: description,
+      itemId: itemID,
+    };
+
+    const itemKey = genItemKey(item);
+    // has the exact info as items in general shop
+    if (!itemsHistory[itemKey]?.generalshop) {
+      itemsObj[itemKey] = item;
+      itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
+      itemsHistory[itemKey].generalshop = true;
+    }
+
+    const itemPriceInfo = {
+      item_id: itemID,
+      name: itemName,
+      value: price,
+      owner: owner.slice(0, 3).padEnd(6, '*'),
+      stock: stock,
+      type: 'usershop',
+    };
+
+    priceList.push(itemPriceInfo);
+  });
+
+  submitPrices();
   submitItems();
 }
 
@@ -496,6 +544,7 @@ if (URLHas('trading')) handleTrades();
 if (URLHas('market')) handleMyShop();
 if (URLHas('obj_type')) handleGeneralShops();
 if (URLHas('obj_type')) handleRestock();
+if (URLHas('browseshop.phtml')) handleUserShops();
 if (URLHas('wizard.phtml')) handleSWPrices();
 if (URLHas('genie.phtml') || URLHas('auctions.phtml')) handleAuctionPrices();
 if (URLHas('gallery/index.phtml')) handleGallery();

@@ -65,7 +65,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     value = isNaN(Number(value)) ? undefined : Number(value);
     item_id = isNaN(Number(item_id)) ? undefined : Number(item_id);
     neo_id = isNaN(Number(neo_id)) ? undefined : Number(neo_id);
-
+    
     if (!name || !value) continue;
 
     if (img) img = (img as string).replace(/^[^\/\/\s]*\/\//gim, 'https://');
@@ -104,10 +104,26 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     dataList.push(x);
   }
 
-  const result = await prisma.priceProcess.createMany({
-    data: dataList,
-    skipDuplicates: true,
-  });
+  let tries = 0;
+  while(tries <= 3){
+    try{
+      const result = await prisma.priceProcess.createMany({
+        data: dataList,
+        skipDuplicates: true,
+      });
 
-  return res.json(result);
+      return res.json(result);
+    }catch(e:any){
+
+      // write conflict or a deadlock
+      if(e.code !== 'P2034'){
+        console.log(e)
+        tries++;
+        continue;
+      }
+
+      return res.status(500).json({error: 'Internal Server Error'});
+    }
+  }
+
 };
