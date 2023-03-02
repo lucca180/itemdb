@@ -3,6 +3,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { UserList } from '../../types';
 import UserListCard from '../UserLists/ListCard';
+import { Box } from '@chakra-ui/react';
 
 type Props = {
   id: number;
@@ -13,8 +14,9 @@ type Props = {
 };
 
 export function SortableListCard(props: Props) {
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: props.id });
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+    id: props.id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -25,18 +27,15 @@ export function SortableListCard(props: Props) {
   };
 
   return (
-    <div
+    <Box
       ref={setNodeRef}
       onClick={props.onClick}
       style={style}
       {...attributes}
       {...listeners}
+      w={{ base: '100%', sm: 'auto' }}
     >
-      <UserListCard
-        list={props.list}
-        isSelected={props.selected}
-        disableLink={props.editMode}
-      />
-    </div>
+      <UserListCard list={props.list} isSelected={props.selected} disableLink={props.editMode} />
+    </Box>
   );
 }

@@ -5,14 +5,9 @@ import { harmonicMean, standardDeviation } from 'simple-statistics';
 import { ItemPrices, PriceProcess } from '@prisma/client';
 import { differenceInCalendarDays } from 'date-fns';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
-    throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
-    );
+    throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
   const itemName = req.body.itemName as string;
 
@@ -33,15 +28,12 @@ export default async function handle(
 
   // list of unique entries
   const uniqueNames = [...processList].filter(
-    (value, index, self) =>
-      index === self.findIndex((t) => genItemKey(t) === genItemKey(value))
+    (value, index, self) => index === self.findIndex((t) => genItemKey(t) === genItemKey(value))
   );
 
   for (const item of uniqueNames) {
     try {
-      const allItemData = processList.filter(
-        (x) => genItemKey(x) === genItemKey(item)
-      );
+      const allItemData = processList.filter((x) => genItemKey(x) === genItemKey(item));
       const owners = allItemData.map((o) => o.owner);
 
       if (allItemData.length === 0) continue;
@@ -59,8 +51,7 @@ export default async function handle(
         .filter(
           (a, index) =>
             !owners.includes(a.owner, index + 1) &&
-            (a.type !== 'auction' ||
-              !a.otherInfo?.split(',').includes('nobody'))
+            (a.type !== 'auction' || !a.otherInfo?.split(',').includes('nobody'))
         )
         .sort((a, b) => a.price - b.price)
         .slice(0, 20);
@@ -73,10 +64,7 @@ export default async function handle(
         return o.internal_id;
       });
 
-      if (
-        filteredResult.length < 5 &&
-        differenceInCalendarDays(Date.now(), latestDate) < 30
-      )
+      if (filteredResult.length < 5 && differenceInCalendarDays(Date.now(), latestDate) < 30)
         continue;
 
       const prices = filteredResult.map((x) => x.price);
@@ -86,30 +74,23 @@ export default async function handle(
 
       let oldPrices = prices;
 
-      let out = prices.filter(
-        (x) => x <= priceMean + priceSTD && x >= priceMean - priceSTD * 3
-      );
+      let out = prices.filter((x) => x <= priceMean + priceSTD && x >= priceMean - priceSTD * 3);
 
       while (out.length > 3 && out.length < oldPrices.length) {
         oldPrices = out;
         priceMean = Math.round(harmonicMean(out));
         priceSTD = standardDeviation(out);
 
-        out = prices.filter(
-          (x) => x <= priceMean + priceSTD && x >= priceMean - priceSTD * 3
-        );
+        out = prices.filter((x) => x <= priceMean + priceSTD && x >= priceMean - priceSTD * 3);
       }
 
       let finalPrice =
         harmonicMean(out) < 5
           ? Math.round(harmonicMean(out))
           : Math.round(harmonicMean(out) / 5) * 5;
-      if (finalPrice > 10000)
-        finalPrice = Math.round(harmonicMean(out) / 50) * 50;
-      if (finalPrice > 100000)
-        finalPrice = Math.round(harmonicMean(out) / 500) * 500;
-      if (finalPrice > 1000000)
-        finalPrice = Math.round(harmonicMean(out) / 50000) * 50000;
+      if (finalPrice > 10000) finalPrice = Math.round(harmonicMean(out) / 50) * 50;
+      if (finalPrice > 100000) finalPrice = Math.round(harmonicMean(out) / 500) * 500;
+      if (finalPrice > 1000000) finalPrice = Math.round(harmonicMean(out) / 50000) * 50000;
 
       priceAddPromises.push(
         updateOrAddDB(item, finalPrice, usedIDs, latestDate).then((_) => {
@@ -123,9 +104,7 @@ export default async function handle(
     }
   }
 
-  const priceAddList = (await Promise.all(priceAddPromises)).filter(
-    (x) => !!x
-  ) as ItemPrices[];
+  const priceAddList = (await Promise.all(priceAddPromises)).filter((x) => !!x) as ItemPrices[];
   const result = await prisma.itemPrices.createMany({ data: priceAddList });
 
   const resultUpdate = await prisma.priceProcess.updateMany({
@@ -155,8 +134,7 @@ async function updateOrAddDB(
   } as ItemPrices;
 
   try {
-    if (!priceData.image_id && !priceData.name && !priceData.item_id)
-      throw 'invalid data';
+    if (!priceData.image_id && !priceData.name && !priceData.item_id) throw 'invalid data';
 
     const oldPrice = await prisma.itemPrices.findFirst({
       where: {
@@ -173,10 +151,7 @@ async function updateOrAddDB(
 
     if (!oldPrice) return newPriceData;
 
-    const daysSinceLastUpdate = differenceInCalendarDays(
-      Date.now(),
-      oldPrice.addedAt
-    );
+    const daysSinceLastUpdate = differenceInCalendarDays(Date.now(), oldPrice.addedAt);
 
     // last update less than 1 week ago or data is older than current
     if (daysSinceLastUpdate < 7) return undefined;
@@ -195,11 +170,7 @@ async function updateOrAddDB(
         throw 'inflation';
       }
 
-      if (
-        oldPrice.price < priceValue &&
-        priceValue > 100000 &&
-        variation >= 50
-      ) {
+      if (oldPrice.price < priceValue && priceValue > 100000 && variation >= 50) {
         newPriceData.noInflation_id = oldPrice.internal_id;
         throw 'inflation';
       }
@@ -210,14 +181,8 @@ async function updateOrAddDB(
       const lastNormalPrice = await prisma.itemPrices.findUniqueOrThrow({
         where: { internal_id: oldPrice.noInflation_id },
       });
-      const daysWithInflation = differenceInCalendarDays(
-        Date.now(),
-        lastNormalPrice.addedAt
-      );
-      const inflationVariation = coefficientOfVariation([
-        lastNormalPrice.price,
-        priceValue,
-      ]);
+      const daysWithInflation = differenceInCalendarDays(Date.now(), lastNormalPrice.addedAt);
+      const inflationVariation = coefficientOfVariation([lastNormalPrice.price, priceValue]);
 
       newPriceData.noInflation_id = oldPrice.noInflation_id;
 

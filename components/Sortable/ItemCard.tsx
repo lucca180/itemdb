@@ -15,8 +15,9 @@ type Props = {
 };
 
 export function SortableItem(props: Props) {
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: props.id });
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+    id: props.id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -26,20 +27,12 @@ export function SortableItem(props: Props) {
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      onClick={props.onClick}
-      style={style}
-      {...attributes}
-      {...listeners}
-    >
+    <div ref={setNodeRef} onClick={props.onClick} style={style} {...attributes} {...listeners}>
       <ItemCard
         item={props.item}
         disableLink={props.editMode}
         selected={props.selected}
-        capValue={
-          props.isTrading ? props.itemInfo?.capValue ?? undefined : undefined
-        }
+        capValue={props.isTrading ? props.itemInfo?.capValue ?? undefined : undefined}
         quantity={props.itemInfo?.amount ?? undefined}
       />
     </div>

@@ -18,13 +18,7 @@ const FindAtCard = (props: Props) => {
   const color = item.color.rgb;
 
   return (
-    <Flex
-      minW="200px"
-      borderRadius="md"
-      overflow="hidden"
-      flexFlow="column"
-      boxShadow="sm"
-    >
+    <Flex minW="200px" borderRadius="md" overflow="hidden" flexFlow="column" boxShadow="sm">
       <Box
         p={2}
         textAlign="center"
@@ -44,13 +38,7 @@ const FindAtCard = (props: Props) => {
       >
         {item.findAt.shopWizard && (
           <a href={item.findAt.shopWizard} target="_blank" rel="noopener">
-            <Image
-              src={SWIcon}
-              alt="Shop Wizard"
-              title="Shop Wizard"
-              height={32}
-              quality="100"
-            />
+            <Image src={SWIcon} alt="Shop Wizard" title="Shop Wizard" height={32} quality="100" />
           </a>
         )}
         {item.findAt.auction && (
@@ -66,13 +54,7 @@ const FindAtCard = (props: Props) => {
         )}
         {item.findAt.trading && (
           <a href={item.findAt.trading} target="_blank" rel="noopener">
-            <Image
-              src={TPIcon}
-              alt="Trading Post"
-              title="Trading Post"
-              height={32}
-              quality="100"
-            />
+            <Image src={TPIcon} alt="Trading Post" title="Trading Post" height={32} quality="100" />
           </a>
         )}
         {item.findAt.safetyDeposit && (
@@ -88,13 +70,7 @@ const FindAtCard = (props: Props) => {
         )}
         {item.findAt.closet && (
           <a href={item.findAt.closet} target="_blank" rel="noopener">
-            <Image
-              src={ClosetIcon}
-              alt="Closet"
-              title="Closet"
-              height={32}
-              quality="100"
-            />
+            <Image src={ClosetIcon} alt="Closet" title="Closet" height={32} quality="100" />
           </a>
         )}
         {item.findAt.restockShop && (

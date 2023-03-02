@@ -2,14 +2,9 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../utils/prisma';
 import { TradeData } from '../../../types';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET')
-    throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
-    );
+    throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
   const limit = (req.query.limit as string) ?? '15';
   const includeProcessed = req.query.includeProcessed === 'true';

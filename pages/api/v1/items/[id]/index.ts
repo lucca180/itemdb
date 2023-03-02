@@ -5,10 +5,7 @@ import { getItemFindAtLinks, isMissingInfo } from '../../../../../utils/utils';
 import prisma from '../../../../../utils/prisma';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
   if (req.method === 'PATCH') return PATCH(req, res);
 
@@ -58,8 +55,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     status: result.status,
     category: result.category,
     isNeohome: !!result.isNeohome,
-    isWearable:
-      !!result.specialType?.includes('wearable') || !!result.isWearable,
+    isWearable: !!result.specialType?.includes('wearable') || !!result.isWearable,
     color: {
       rgb: colorlab.rgb().round().array(),
       lab: colorlab.round().array(),
@@ -105,27 +101,18 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 
-  if (!itemData.image)
-    return res.status(400).json({ error: 'Invalid Request' });
+  if (!itemData.image) return res.status(400).json({ error: 'Invalid Request' });
 
   const imageId = itemData.image.match(/[^\.\/]+(?=\.gif)/)?.[0] ?? undefined;
 
   const rarity =
-    itemData.rarity === '' || isNaN(Number(itemData.rarity))
-      ? null
-      : Number(itemData.rarity);
+    itemData.rarity === '' || isNaN(Number(itemData.rarity)) ? null : Number(itemData.rarity);
   const estVal =
-    itemData.est_val === '' || isNaN(Number(itemData.est_val))
-      ? null
-      : Number(itemData.est_val);
+    itemData.est_val === '' || isNaN(Number(itemData.est_val)) ? null : Number(itemData.est_val);
   const weight =
-    itemData.weight === '' || isNaN(Number(itemData.weight))
-      ? null
-      : Number(itemData.weight);
+    itemData.weight === '' || isNaN(Number(itemData.weight)) ? null : Number(itemData.weight);
   const itemId =
-    itemData.item_id === '' || isNaN(Number(itemData.item_id))
-      ? null
-      : Number(itemData.item_id);
+    itemData.item_id === '' || isNaN(Number(itemData.item_id)) ? null : Number(itemData.item_id);
 
   await prisma.items.update({
     where: { internal_id },
@@ -152,11 +139,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
   return res.status(200).json({ success: true });
 };
 
-export const processTags = async (
-  itemTags: string[],
-  itemCats: string[],
-  internal_id: number
-) => {
+export const processTags = async (itemTags: string[], itemCats: string[], internal_id: number) => {
   const tagRaw = await prisma.itemTags.findMany({
     where: {
       item_iid: internal_id,
@@ -173,12 +156,8 @@ export const processTags = async (
     },
   });
 
-  const tagsStr = tagRaw
-    .filter((x) => x.tag.type === 'tag')
-    .map((raw) => raw.tag.name);
-  const catsStr = tagRaw
-    .filter((x) => x.tag.type === 'category')
-    .map((raw) => raw.tag.name);
+  const tagsStr = tagRaw.filter((x) => x.tag.type === 'tag').map((raw) => raw.tag.name);
+  const catsStr = tagRaw.filter((x) => x.tag.type === 'category').map((raw) => raw.tag.name);
 
   const newTags = itemTags.filter((x) => !tagsStr.includes(x));
   const newCats = itemCats.filter((x) => !catsStr.includes(x));

@@ -4,10 +4,7 @@ import { PriceData } from '../../../../types';
 import requestIp from 'request-ip';
 import hash from 'object-hash';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
   if (req.method === 'POST') return POST(req, res);
 
@@ -56,8 +53,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const dataList = [];
   for (const priceInfo of itemPrices) {
-    let { name, img, owner, stock, value, otherInfo, type, item_id, neo_id } =
-      priceInfo;
+    let { name, img, owner, stock, value, otherInfo, type, item_id, neo_id } = priceInfo;
 
     let imageId: string | null = null;
 
@@ -65,7 +61,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     value = isNaN(Number(value)) ? undefined : Number(value);
     item_id = isNaN(Number(item_id)) ? undefined : Number(item_id);
     neo_id = isNaN(Number(neo_id)) ? undefined : Number(neo_id);
-    
+
     if (!name || !value) continue;
 
     if (img) img = (img as string).replace(/^[^\/\/\s]*\/\//gim, 'https://');
@@ -73,20 +69,20 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     if (img) imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? null;
 
     const x = {
-      name: name,
-      item_id: item_id,
-      image: img,
-      image_id: imageId,
-      owner: owner,
-      type: type,
-      stock: stock,
-      price: value,
-      otherInfo: otherInfo?.toString(),
+      name: name as string,
+      item_id: item_id as number | undefined,
+      image: img as string | null,
+      image_id: imageId as string | null,
+      owner: owner as string | undefined,
+      type: type as string,
+      stock: stock as number | undefined,
+      price: value as number,
+      otherInfo: otherInfo?.toString() as string | undefined,
 
-      language: lang,
-      ip_address: requestIp.getClientIp(req),
+      language: lang as string,
+      ip_address: requestIp.getClientIp(req) as string | undefined,
 
-      neo_id: neo_id,
+      neo_id: neo_id as number | undefined,
 
       hash: '',
     };
@@ -96,8 +92,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     x.hash = hash(
       { ...x, dateHash },
       {
-        excludeKeys: (key: string) =>
-          ['ip_address', 'hash', 'stock'].includes(key),
+        excludeKeys: (key: string) => ['ip_address', 'hash', 'stock'].includes(key),
       }
     );
 
@@ -105,25 +100,25 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   let tries = 0;
-  while(tries <= 3){
-    try{
+  while (tries <= 3) {
+    try {
       const result = await prisma.priceProcess.createMany({
         data: dataList,
         skipDuplicates: true,
       });
 
       return res.json(result);
-    }catch(e:any){
-
+    } catch (e: any) {
       // write conflict or a deadlock
-      if(e.code !== 'P2034'){
-        console.log(e)
+      if (e.code == 'P2034' && tries < 3) {
         tries++;
         continue;
       }
 
-      return res.status(500).json({error: 'Internal Server Error'});
+      console.error(e);
+      return res.status(500).json({ error: 'Internal Server Error' });
     }
   }
 
+  return res.status(500).json({ error: 'Internal Server Error' });
 };

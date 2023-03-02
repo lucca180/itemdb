@@ -3,18 +3,12 @@ import prisma from '../../../utils/prisma';
 import { CheckAuth } from '../../../utils/googleCloud';
 import { UserList } from '../../../types';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET')
-    throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
-    );
+    throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
   const username = req.query.username as string;
-  if (!username)
-    return res.status(400).json({ success: false, message: 'Bad Request' });
+  if (!username) return res.status(400).json({ success: false, message: 'Bad Request' });
 
   let user = null;
 
@@ -84,11 +78,7 @@ export default async function handle(
           }),
         };
       })
-      .sort(
-        (a, b) =>
-          (a.order ?? 0) - (b.order ?? 0) ||
-          (a.createdAt < b.createdAt ? -1 : 1)
-      );
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || (a.createdAt < b.createdAt ? -1 : 1));
 
     return res.status(200).json(lists);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -3,21 +3,15 @@ import prisma from '../../../utils/prisma';
 import { UserList } from '../../../types';
 import { CheckAuth } from '../../../utils/googleCloud';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
-    throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
-    );
+    throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
   const lists = req.body.lists as UserList[];
 
   try {
     const { user } = await CheckAuth(req);
-    if (!user)
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    if (!user) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
     const updateLists = lists.map((list) =>
       prisma.userList.update({

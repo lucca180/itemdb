@@ -58,22 +58,15 @@ const EditItemModal = (props: Props) => {
 
   useEffect(() => {
     setTags(tagsProps.filter((t) => t.type === 'tag').map((t) => t.name));
-    setCategories(
-      tagsProps.filter((t) => t.type === 'category').map((t) => t.name)
-    );
+    setCategories(tagsProps.filter((t) => t.type === 'category').map((t) => t.name));
   }, [tagsProps]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setItem((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleTagsChange = (
-    tags: string[],
-    type: 'tags' | 'categories' | 'special'
-  ) => {
+  const handleTagsChange = (tags: string[], type: 'tags' | 'categories' | 'special') => {
     if (type === 'tags') setTags(tags);
     else if (type === 'categories') setCategories(tags);
     else if (type === 'special') {
@@ -174,11 +167,7 @@ const EditItemModal = (props: Props) => {
               <TabPanels>
                 {isAdmin && (
                   <TabPanel>
-                    <InfoTab
-                      item={item}
-                      itemProps={itemProps}
-                      onChange={handleChange}
-                    />
+                    <InfoTab item={item} itemProps={itemProps} onChange={handleChange} />
                   </TabPanel>
                 )}
                 <TabPanel>
@@ -204,8 +193,7 @@ const EditItemModal = (props: Props) => {
               <Text fontSize="sm" textAlign="center">
                 Thank you!
                 <br />
-                We have received your suggestion and it will be reviewed by our
-                team.
+                We have received your suggestion and it will be reviewed by our team.
               </Text>
             </Center>
           )}
@@ -241,9 +229,7 @@ export default EditItemModal;
 type TabProps = {
   item: ItemData;
   itemProps: ItemData;
-  onChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => void;
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 };
 
 const InfoTab = (props: TabProps) => {
@@ -267,9 +253,7 @@ const InfoTab = (props: TabProps) => {
         <FormControl>
           <FormLabel color="gray.300">Description</FormLabel>
           <Textarea
-            color={
-              item.description === itemProps.description ? 'gray.400' : '#fff'
-            }
+            color={item.description === itemProps.description ? 'gray.400' : '#fff'}
             value={item.description}
             variant="filled"
             name="description"
@@ -418,12 +402,7 @@ const CategoriesTab = (props: TagSelectProps) => {
         <FormControl>
           <FormLabel color="gray.300">Special Tags</FormLabel>
           <CheckboxGroup value={specialTags} onChange={handleSpecialTags}>
-            <Stack
-              spacing={3}
-              direction="row"
-              wrap="wrap"
-              justifyContent="center"
-            >
+            <Stack spacing={3} direction="row" wrap="wrap" justifyContent="center">
               <Checkbox value="np">
                 <Badge colorScheme="green">NP</Badge>
               </Checkbox>
@@ -458,9 +437,7 @@ const CategoriesTab = (props: TagSelectProps) => {
           type="tags"
           disabled={categories.length >= 15}
         />
-        <FormHelperText>
-          Prefer to use existing tags instead of creating new ones
-        </FormHelperText>
+        <FormHelperText>Prefer to use existing tags instead of creating new ones</FormHelperText>
       </FormControl>
     </Stack>
   );

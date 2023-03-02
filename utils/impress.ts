@@ -28,8 +28,7 @@ export class dti {
     const allPetCombos: DTIColor[] = DTI_ALL_COLORS.data.allColors;
 
     let color = chance.pickone(allPetCombos);
-    while (!color.isStandard && color.name !== 'Baby')
-      color = chance.pickone(allPetCombos);
+    while (!color.isStandard && color.name !== 'Baby') color = chance.pickone(allPetCombos);
 
     const specie = chance.pickone(color.appliedToAllCompatibleSpecies).species;
     return {

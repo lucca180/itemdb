@@ -7,10 +7,7 @@ import Color from 'color';
 import { Prisma } from '@prisma/client';
 import qs from 'qs';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
     return res.status(200).json({});
@@ -28,11 +25,9 @@ export default async function handle(
       image_id: req.body.image_id,
       name: req.body.name,
     };
-  else if (req.method == 'GET' && req.url)
-    reqData = qs.parse(req.url.split('?')[1]);
+  else if (req.method == 'GET' && req.url) reqData = qs.parse(req.url.split('?')[1]);
 
-  if (!reqData)
-    return res.status(400).json({ success: false, message: 'Invalid request' });
+  if (!reqData) return res.status(400).json({ success: false, message: 'Invalid request' });
 
   const ids = reqData.id as string[];
   const item_id = reqData.item_id as string[];
@@ -42,26 +37,16 @@ export default async function handle(
   if (!ids && !item_id && !image_id && !name)
     return res.status(400).json({ success: false, message: 'Invalid request' });
 
-  if (
-    ids?.length === 0 &&
-    item_id?.length === 0 &&
-    image_id?.length === 0 &&
-    name?.length === 0
-  )
+  if (ids?.length === 0 && item_id?.length === 0 && image_id?.length === 0 && name?.length === 0)
     return res.status(400).json({ success: false, message: 'Invalid request' });
 
   let query;
-  if (ids?.length > 0)
-    query = Prisma.sql`a.internal_id IN (${Prisma.join(ids)})`;
-  else if (item_id?.length > 0)
-    query = Prisma.sql`a.item_id IN (${Prisma.join(item_id)})`;
-  else if (image_id?.length > 0)
-    query = Prisma.sql`a.image_id IN (${Prisma.join(image_id)})`;
-  else if (name?.length > 0)
-    query = Prisma.sql`a.name IN (${Prisma.join(name)})`;
+  if (ids?.length > 0) query = Prisma.sql`a.internal_id IN (${Prisma.join(ids)})`;
+  else if (item_id?.length > 0) query = Prisma.sql`a.item_id IN (${Prisma.join(item_id)})`;
+  else if (image_id?.length > 0) query = Prisma.sql`a.image_id IN (${Prisma.join(image_id)})`;
+  else if (name?.length > 0) query = Prisma.sql`a.name IN (${Prisma.join(name)})`;
 
-  if (!query)
-    return res.status(400).json({ success: false, message: 'Invalid request' });
+  if (!query) return res.status(400).json({ success: false, message: 'Invalid request' });
 
   const resultRaw = (await prisma.$queryRaw`
         SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, c.addedAt as priceAdded, c.price, c.noInflation_id 
@@ -99,8 +84,7 @@ export default async function handle(
       status: result.status,
       category: result.category,
       isNeohome: !!result.isNeohome,
-      isWearable:
-        !!result.specialType?.includes('wearable') || !!result.isWearable,
+      isWearable: !!result.specialType?.includes('wearable') || !!result.isWearable,
       color: {
         rgb: colorlab.rgb().round().array(),
         lab: colorlab.round().array(),

@@ -7,10 +7,7 @@ import Color from 'color';
 import requestIp from 'request-ip';
 import hash from 'object-hash';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
   if (req.method === 'POST') return POST(req, res);
 
@@ -64,8 +61,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       category: result.category,
       status: result.status,
       isNeohome: !!result.isNeohome,
-      isWearable:
-        !!result.specialType?.includes('wearable') || !!result.isWearable,
+      isWearable: !!result.specialType?.includes('wearable') || !!result.isWearable,
       color: {
         rgb: color.rgb().round().array(),
         lab: color.lab().round().array(),
@@ -99,18 +95,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const dataList = [];
   for (const item of items) {
-    let {
-      itemId,
-      name,
-      description,
-      img,
-      category,
-      rarity,
-      estVal,
-      subText,
-      type,
-      weight,
-    } = item;
+    let { itemId, name, description, img, category, rarity, estVal, subText, type, weight } = item;
     let imageId: string | undefined = undefined;
 
     rarity = isNaN(Number(rarity)) ? undefined : Number(rarity);
@@ -140,8 +125,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (specialTypes.includes('no trade')) status = 'no trade';
 
-    specialTypes =
-      specialTypes?.length > 0 ? specialTypes?.toString() : undefined;
+    specialTypes = specialTypes?.length > 0 ? specialTypes?.toString() : undefined;
 
     const x = {
       item_id: itemId,

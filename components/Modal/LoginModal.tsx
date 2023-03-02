@@ -52,8 +52,7 @@ const LoginModal = (props: Props) => {
         url:
           (isProd
             ? 'https://itemdb.com.br/login?redirect='
-            : 'http://localhost:3000/login?redirect=') +
-          encodeURIComponent(router.pathname),
+            : 'http://localhost:3000/login?redirect=') + encodeURIComponent(router.pathname),
         handleCodeInApp: true,
       });
 
@@ -84,8 +83,7 @@ const LoginModal = (props: Props) => {
             {/* <Heading my={2} color="gray.200"  size='lg'>Welcome</Heading> */}
             {!isSent && (
               <Text color="gray.200" mt={4} fontSize="sm">
-                Use your email to <b>sign in</b> or to{' '}
-                <b>create a new account</b>
+                Use your email to <b>sign in</b> or to <b>create a new account</b>
               </Text>
             )}
           </Center>
@@ -107,8 +105,7 @@ const LoginModal = (props: Props) => {
           )}
           {isSent && (
             <Text color="gray.200" mt={6} fontSize="sm" textAlign="center">
-              We&apos;ve sent you an email with a link to sign in. Please check
-              your inbox.
+              We&apos;ve sent you an email with a link to sign in. Please check your inbox.
             </Text>
           )}
         </ModalBody>

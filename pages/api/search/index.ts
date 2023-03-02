@@ -7,14 +7,9 @@ import Color from 'color';
 import { Prisma } from '@prisma/client';
 import qs from 'qs';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET' || !req.url)
-    throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
-    );
+    throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
   const reqQuery = qs.parse(req.url.split('?')[1]);
   let query = (reqQuery.s as string)?.trim() ?? '';
@@ -42,11 +37,9 @@ export default async function handle(
   const sortBy = (reqQuery.sortBy as string) ?? 'name';
   const sortDir = (reqQuery.sortDir as string) ?? 'asc';
 
-  if (categoryFilters && !Array.isArray(categoryFilters))
-    categoryFilters = [categoryFilters];
+  if (categoryFilters && !Array.isArray(categoryFilters)) categoryFilters = [categoryFilters];
   if (typeFilters && !Array.isArray(typeFilters)) typeFilters = [typeFilters];
-  if (statusFilters && !Array.isArray(statusFilters))
-    statusFilters = [statusFilters];
+  if (statusFilters && !Array.isArray(statusFilters)) statusFilters = [statusFilters];
 
   const catFiltersSQL = [];
 
@@ -58,24 +51,18 @@ export default async function handle(
 
     if (catNeg.length > 0 && !catNeg.includes('Unknown'))
       catFiltersSQL.push(
-        Prisma.sql`(a.category NOT IN (${Prisma.join(
-          catNeg
-        )}) OR a.category IS NULL)`
+        Prisma.sql`(a.category NOT IN (${Prisma.join(catNeg)}) OR a.category IS NULL)`
       );
     else if (catNeg.length > 0)
       catFiltersSQL.push(
-        Prisma.sql`(a.category NOT IN (${Prisma.join(
-          catNeg
-        )}) AND a.category IS NOT NULL)`
+        Prisma.sql`(a.category NOT IN (${Prisma.join(catNeg)}) AND a.category IS NOT NULL)`
       );
 
     if (catTrue.length > 0 && !catTrue.includes('Unknown'))
       catFiltersSQL.push(Prisma.sql`a.category IN (${Prisma.join(catTrue)})`);
     else if (catTrue.length > 0)
       catFiltersSQL.push(
-        Prisma.sql`(a.category IN (${Prisma.join(
-          catTrue
-        )}) OR a.category IS NULL)`
+        Prisma.sql`(a.category IN (${Prisma.join(catTrue)}) OR a.category IS NULL)`
       );
   }
 
@@ -94,12 +81,9 @@ export default async function handle(
       if (typeNeg.includes('np')) notInNC.push(0);
 
       if (notInNC.length > 0)
-        typeFiltersSQL.push(
-          Prisma.sql`a.isNC NOT IN (${Prisma.join(notInNC)})`
-        );
+        typeFiltersSQL.push(Prisma.sql`a.isNC NOT IN (${Prisma.join(notInNC)})`);
 
-      if (typeNeg.includes('wearable'))
-        typeFiltersSQL.push(Prisma.sql`a.isWearable NOT IN (1)`);
+      if (typeNeg.includes('wearable')) typeFiltersSQL.push(Prisma.sql`a.isWearable NOT IN (1)`);
     }
 
     if (typeTrue.length > 0) {
@@ -109,11 +93,9 @@ export default async function handle(
 
       if (typeTrue.includes('np')) inNC.push(0);
 
-      if (inNC.length > 0)
-        typeFiltersSQL.push(Prisma.sql`a.isNC IN (${Prisma.join(inNC)})`);
+      if (inNC.length > 0) typeFiltersSQL.push(Prisma.sql`a.isNC IN (${Prisma.join(inNC)})`);
 
-      if (typeTrue.includes('wearable'))
-        typeFiltersSQL.push(Prisma.sql`a.isWearable IN (1)`);
+      if (typeTrue.includes('wearable')) typeFiltersSQL.push(Prisma.sql`a.isWearable IN (1)`);
     }
   }
 
@@ -127,26 +109,18 @@ export default async function handle(
 
     if (statusNeg.length > 0 && !statusNeg.includes('Unknown'))
       statusFiltersSQL.push(
-        Prisma.sql`(a.status NOT IN (${Prisma.join(
-          statusNeg
-        )}) OR a.status IS NULL)`
+        Prisma.sql`(a.status NOT IN (${Prisma.join(statusNeg)}) OR a.status IS NULL)`
       );
     else if (statusNeg.length > 0)
       statusFiltersSQL.push(
-        Prisma.sql`(a.status NOT IN (${Prisma.join(
-          statusNeg
-        )}) AND a.status IS NOT NULL)`
+        Prisma.sql`(a.status NOT IN (${Prisma.join(statusNeg)}) AND a.status IS NOT NULL)`
       );
 
     if (statusTrue.length > 0 && !statusTrue.includes('Unknown'))
-      statusFiltersSQL.push(
-        Prisma.sql`a.status IN (${Prisma.join(statusTrue)})`
-      );
+      statusFiltersSQL.push(Prisma.sql`a.status IN (${Prisma.join(statusTrue)})`);
     else if (statusTrue.length > 0)
       statusFiltersSQL.push(
-        Prisma.sql`(a.status IN (${Prisma.join(
-          statusTrue
-        )}) OR a.status IS NULL)`
+        Prisma.sql`(a.status IN (${Prisma.join(statusTrue)}) OR a.status IS NULL)`
       );
   }
 
@@ -197,15 +171,11 @@ export default async function handle(
   if (sortBy === 'name') sortSQL = Prisma.sql`ORDER BY a.name`;
   else if (sortBy === 'price') sortSQL = Prisma.sql`ORDER BY c.price`;
   else if (sortBy === 'added') sortSQL = Prisma.sql`ORDER BY a.addedAt`;
-  else if (sortBy === 'color' && isColorSearch)
-    sortSQL = Prisma.sql`ORDER BY dist`;
+  else if (sortBy === 'color' && isColorSearch) sortSQL = Prisma.sql`ORDER BY dist`;
   else if (sortBy === 'weight') sortSQL = Prisma.sql`ORDER BY a.weight`;
   else if (sortBy === 'estVal') sortSQL = Prisma.sql`ORDER BY a.est_val`;
   else if (sortBy === 'id') sortSQL = Prisma.sql`ORDER BY a.item_id`;
-  else
-    sortSQL = isColorSearch
-      ? Prisma.sql`ORDER BY dist`
-      : Prisma.sql`ORDER BY a.name`;
+  else sortSQL = isColorSearch ? Prisma.sql`ORDER BY dist` : Prisma.sql`ORDER BY a.name`;
 
   let resultRaw;
 
@@ -295,16 +265,8 @@ export default async function handle(
                 ? Prisma.sql` AND ${Prisma.join(numberFilters, ' AND ')}`
                 : Prisma.empty
             }
-            ${
-              colorSql && !isColorNeg
-                ? Prisma.sql` AND ${colorSql} <= 750`
-                : Prisma.empty
-            }
-            ${
-              colorSql && isColorNeg
-                ? Prisma.sql` AND ${colorSql} > 750`
-                : Prisma.empty
-            }
+            ${colorSql && !isColorNeg ? Prisma.sql` AND ${colorSql} <= 750` : Prisma.empty}
+            ${colorSql && isColorNeg ? Prisma.sql` AND ${colorSql} > 750` : Prisma.empty}
 
             ${sortSQL} 
             ${sortDir === 'desc' ? Prisma.sql`DESC` : Prisma.sql`ASC`}
@@ -335,8 +297,7 @@ export default async function handle(
       category: result.category,
       status: result.status,
       isNeohome: !!result.isNeohome,
-      isWearable:
-        !!result.specialType?.includes('wearable') || !!result.isWearable,
+      isWearable: !!result.specialType?.includes('wearable') || !!result.isWearable,
       color: {
         rgb: color.rgb().round().array(),
         lab: color.round().array(),

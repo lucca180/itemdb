@@ -70,8 +70,7 @@ const ItemInfoCard = (props: Props) => {
             color="white"
           >
             <Tag size="lg" fontWeight="bold">
-              Est. Val{' '}
-              <MdHelp size={'0.8rem'} style={{ marginLeft: '0.2rem' }} />
+              Est. Val <MdHelp size={'0.8rem'} style={{ marginLeft: '0.2rem' }} />
             </Tag>
           </Tooltip>
 

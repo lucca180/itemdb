@@ -49,10 +49,7 @@ const ColorInfoCard = (props: Props) => {
       >
         <SimpleGrid columns={3} gap={3}>
           {colorKeysOrder.map((key) => (
-            <Link
-              key={colors[key].type}
-              href={'/search?s=' + encodeURIComponent(colors[key].hex)}
-            >
+            <Link key={colors[key].type} href={'/search?s=' + encodeURIComponent(colors[key].hex)}>
               <Flex
                 minW="50px"
                 h="50px"
@@ -65,11 +62,7 @@ const ColorInfoCard = (props: Props) => {
                 <Text fontSize="xs" textShadow="0px 0px 4px #000">
                   {colors[key].hex}
                 </Text>
-                <Text
-                  fontSize="0.6rem"
-                  fontWeight="bold"
-                  textShadow="0px 0px 4px #000"
-                >
+                <Text fontSize="0.6rem" fontWeight="bold" textShadow="0px 0px 4px #000">
                   {colors[key].type}
                 </Text>
               </Flex>

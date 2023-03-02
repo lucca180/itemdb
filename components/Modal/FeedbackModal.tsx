@@ -81,16 +81,10 @@ const FeedbackModal = (props: Props) => {
             <Stack gap={3}>
               <FormControl>
                 <FormLabel color="gray.300">Email Address (opcional)</FormLabel>
-                <Input
-                  variant="filled"
-                  onChange={(e) => setEmail(e.target.value)}
-                  value={email}
-                />
+                <Input variant="filled" onChange={(e) => setEmail(e.target.value)} value={email} />
               </FormControl>
               <FormControl>
-                <FormLabel color="gray.300">
-                  Write your feedback, comments and ideas :)
-                </FormLabel>
+                <FormLabel color="gray.300">Write your feedback, comments and ideas :)</FormLabel>
                 <Textarea
                   variant="filled"
                   onChange={(e) => setMessage(e.target.value)}

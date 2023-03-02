@@ -89,25 +89,21 @@ const ItemActionModal = (props: Props) => {
               <FormLabel color="gray.300">Destination</FormLabel>
               <ListSelect onChange={setDest} />
               <FormHelperText>
-                Items that already exist in the destination list will not be
-                modified and the item will be deleted from the current list
+                Items that already exist in the destination list will not be modified and the item
+                will be deleted from the current list
               </FormHelperText>
             </FormControl>
           )}
 
           {!isLoading && !error && action === 'delete' && (
             <Text color="gray.300">
-              Are you sure you want to delete{' '}
-              <b>{selectedItems.length} items</b> from <b>{list.name}</b>?<br />
+              Are you sure you want to delete <b>{selectedItems.length} items</b> from{' '}
+              <b>{list.name}</b>?<br />
               This action cannot be undone.
             </Text>
           )}
 
-          {error && (
-            <Text color="red.500">
-              An error occured, please try again later
-            </Text>
-          )}
+          {error && <Text color="red.500">An error occured, please try again later</Text>}
           {isLoading && (
             <Center>
               <Spinner />
@@ -119,10 +115,7 @@ const ItemActionModal = (props: Props) => {
             Cancel
           </Button>
           {!isLoading && !error && (
-            <Button
-              onClick={saveChanges}
-              isDisabled={action === 'move' && !dest}
-            >
+            <Button onClick={saveChanges} isDisabled={action === 'move' && !dest}>
               Confirm
             </Button>
           )}

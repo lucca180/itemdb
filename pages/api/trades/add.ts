@@ -2,14 +2,9 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../utils/prisma';
 import requestIp from 'request-ip';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
-    throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
-    );
+    throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
   const data = JSON.parse(req.body);
 
@@ -31,8 +26,7 @@ export default async function handle(
 
       if (img) img = (img as string).replace(/^[^\/\/\s]*\/\//gim, 'https://');
 
-      if (img)
-        imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? null;
+      if (img) imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? null;
 
       const x = {
         name: name,

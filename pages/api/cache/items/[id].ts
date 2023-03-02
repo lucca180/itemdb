@@ -3,14 +3,9 @@ import { createCanvas, loadImage } from 'canvas';
 import { ImageBucket } from '../../../../utils/googleCloud';
 import axios from 'axios';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET')
-    throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
-    );
+    throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
   const { id, refresh } = req.query;
 
@@ -34,10 +29,9 @@ export default async function handle(
       res.setHeader('Cache-Control', 'public, max-age=604800');
       return res.send(data);
     } else {
-      const img = await axios.get(
-        `https://images.neopets.com/items/${img_id}.gif`,
-        { responseType: 'arraybuffer' }
-      );
+      const img = await axios.get(`https://images.neopets.com/items/${img_id}.gif`, {
+        responseType: 'arraybuffer',
+      });
 
       if (!img) throw 'Image not found';
 

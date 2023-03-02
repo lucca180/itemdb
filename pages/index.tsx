@@ -34,13 +34,7 @@ const HomePage = () => {
 
   return (
     <Layout>
-      <Box
-        textAlign="center"
-        display="flex"
-        flexFlow="column"
-        alignItems="center"
-        mt="50px"
-      >
+      <Box textAlign="center" display="flex" flexFlow="column" alignItems="center" mt="50px">
         <Image src={logo} alt="itemdb logo" width={500} quality="100" />
         <Heading size="sm" mt={4}>
           <Highlight

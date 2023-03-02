@@ -1,12 +1,5 @@
 import { ChevronDownIcon } from '@chakra-ui/icons';
-import {
-  Menu,
-  MenuButton,
-  IconButton,
-  MenuList,
-  MenuItem,
-  Portal,
-} from '@chakra-ui/react';
+import { Menu, MenuButton, IconButton, MenuList, MenuItem, Portal } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 
 const SearchMenu = () => {

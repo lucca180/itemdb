@@ -10,11 +10,7 @@ import {
   DragOverlay,
   DragStartEvent,
 } from '@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  rectSortingStrategy,
-} from '@dnd-kit/sortable';
+import { arrayMove, SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import { UserList } from '../../types';
 import { SortableListCard } from './ListCard';
 
@@ -26,11 +22,7 @@ type Props = {
   editMode?: boolean;
   onClick?: (id: number) => void;
   onSort?: (ids: number[]) => void;
-  onChange?: (
-    id: number,
-    value: number,
-    field: 'amount' | 'capValue' | 'isHighlight'
-  ) => void;
+  onChange?: (id: number, value: number, field: 'amount' | 'capValue' | 'isHighlight') => void;
 };
 
 export function SortableLists(props: Props) {
@@ -44,7 +36,7 @@ export function SortableLists(props: Props) {
 
   const sensors = useSensors(
     useSensor(TouchSensor, {
-      activationConstraint: { delay: 250, tolerance: 5 },
+      activationConstraint: { delay: 200, tolerance: 5 },
     }),
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } })
   );
@@ -56,11 +48,7 @@ export function SortableLists(props: Props) {
       onDragEnd={handleDragEnd}
       onDragStart={handleDragStart}
     >
-      <SortableContext
-        items={ids}
-        disabled={!activateSort}
-        strategy={rectSortingStrategy}
-      >
+      <SortableContext items={ids} disabled={!activateSort} strategy={rectSortingStrategy}>
         {ids.map((id) => (
           <SortableListCard
             onClick={() => props.onClick?.(id)}
@@ -74,11 +62,7 @@ export function SortableLists(props: Props) {
       </SortableContext>
       <DragOverlay>
         {activeId ? (
-          <SortableListCard
-            editMode={editMode}
-            list={lists[activeId]}
-            id={activeId}
-          />
+          <SortableListCard editMode={editMode} list={lists[activeId]} id={activeId} />
         ) : null}
       </DragOverlay>
     </DndContext>

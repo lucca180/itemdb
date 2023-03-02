@@ -107,19 +107,14 @@ const FeedbackVotingPage = () => {
     <Layout>
       <Heading>The Feedback System</Heading>
       <Text>
-        Most of our content is collected and categorized automatically but there
-        are some things our machines can&apos;t do. And you can help it!
+        Most of our content is collected and categorized automatically but there are some things our
+        machines can&apos;t do. And you can help it!
       </Text>
       <Flex mt={12} gap={12} alignItems="flex-start">
-        <CardBase
-          chakraWrapper={{ flex: 2 }}
-          title="Voting"
-          chakra={{ bg: 'gray.700' }}
-        >
+        <CardBase chakraWrapper={{ flex: 2 }} title="Voting" chakra={{ bg: 'gray.700' }}>
           <Text>
-            Either way, the more you contribute correctly the more our systems
-            will trust your information - meaning your suggestions will be live
-            faster.
+            Either way, the more you contribute correctly the more our systems will trust your
+            information - meaning your suggestions will be live faster.
           </Text>
           <Accordion allowMultiple mt={4}>
             <AccordionItem>
@@ -138,12 +133,7 @@ const FeedbackVotingPage = () => {
             I love democracy - Sheev
           </Center>
         </CardBase>
-        <Flex
-          flex="1"
-          flexFlow="column"
-          alignItems="center"
-          justifyContent="flex-start"
-        >
+        <Flex flex="1" flexFlow="column" alignItems="center" justifyContent="flex-start">
           {isLoading && (
             <Center>
               <Spinner size="lg" />
@@ -155,8 +145,8 @@ const FeedbackVotingPage = () => {
               <Text>Thanks for helping out! Want more?</Text>
               <Button onClick={init}>YES I NEED IT!!!!!</Button>
               <Text fontSize="xs" color="gray.400" textAlign="center">
-                If you click the button and nothing happens you really vote for
-                everything... impressive.
+                If you click the button and nothing happens you really vote for everything...
+                impressive.
               </Text>
             </Center>
           )}
@@ -169,15 +159,11 @@ const FeedbackVotingPage = () => {
                 chakra={{ bg: 'gray.700' }}
               >
                 {currentFeedback.type === 'tradePrice' && (
-                  <TradeTable
-                    data={currentFeedback.parsed?.content.trade as TradeData}
-                  />
+                  <TradeTable data={currentFeedback.parsed?.content.trade as TradeData} />
                 )}
                 {currentFeedback.type === 'itemChange' && (
                   <FeedbackItem
-                    itemTags={
-                      currentFeedback.parsed?.content.itemTags as string[]
-                    }
+                    itemTags={currentFeedback.parsed?.content.itemTags as string[]}
                     item_iid={currentFeedback.subject_id as number}
                   />
                 )}

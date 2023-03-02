@@ -5,8 +5,7 @@ import prisma from './prisma';
 import { Storage } from '@google-cloud/storage';
 import { User } from '../types';
 
-if (!getApps().length)
-  initializeApp({ credential: cert('./firebase-key.json') });
+if (!getApps().length) initializeApp({ credential: cert('./firebase-key.json') });
 
 const Auth = getAuth();
 

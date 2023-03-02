@@ -1,12 +1,4 @@
-import {
-  Badge,
-  Box,
-  Icon,
-  Skeleton,
-  Text,
-  Link,
-  Tooltip,
-} from '@chakra-ui/react';
+import { Badge, Box, Icon, Skeleton, Text, Link, Tooltip } from '@chakra-ui/react';
 import React from 'react';
 import Image from 'next/image';
 import { ItemData } from '../../types';
@@ -86,14 +78,10 @@ const ItemCard = (props: Props) => {
         <Text fontSize={{ base: 'xs', md: 'sm' }}>{item.name}</Text>
 
         {item.price.value && item.price.inflated && (
-          <Tooltip
-            label="Inflated!"
-            aria-label="Inflation Tooltip"
-            placement="top"
-          >
+          <Tooltip label="Inflated!" aria-label="Inflation Tooltip" placement="top">
             <Badge colorScheme="red">
-              <Icon as={AiFillWarning} verticalAlign="text-top" />{' '}
-              {intl.format(item.price.value)} NP
+              <Icon as={AiFillWarning} verticalAlign="text-top" /> {intl.format(item.price.value)}{' '}
+              NP
             </Badge>
           </Tooltip>
         )}
@@ -110,8 +98,7 @@ const ItemCard = (props: Props) => {
             placement="top"
           >
             <Badge colorScheme="purple">
-              <Icon as={AiFillInfoCircle} verticalAlign="middle" /> NC -{' '}
-              {capValue} CAPS
+              <Icon as={AiFillInfoCircle} verticalAlign="middle" /> NC - {capValue} CAPS
             </Badge>
           </Tooltip>
         )}

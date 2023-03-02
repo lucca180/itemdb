@@ -1,7 +1,7 @@
-import { Badge, Flex, Link, Text } from '@chakra-ui/react';
+import { Badge, Flex, Link, Text, Image } from '@chakra-ui/react';
 import { ListItemInfo, UserList } from '../../types';
 import icon from '../../public/logo_icon.svg';
-import Image from 'next/image';
+import NextImage from 'next/image';
 import Color from 'color';
 import NextLink from 'next/link';
 import { useEffect, useState } from 'react';
@@ -29,16 +29,12 @@ const UserListCard = (props: Props) => {
     const listItemsMap = new Set(list.itemInfo.map((item) => item.item_iid));
 
     if (list.purpose === 'trading' && matches?.seek.length) {
-      const count = matches.seek.filter((item) =>
-        listItemsMap.has(item.item_iid)
-      ).length;
+      const count = matches.seek.filter((item) => listItemsMap.has(item.item_iid)).length;
       setMatchCount(count);
     }
 
     if (list.purpose === 'seeking' && matches?.trade.length) {
-      const count = matches.trade.filter((item) =>
-        listItemsMap.has(item.item_iid)
-      ).length;
+      const count = matches.trade.filter((item) => listItemsMap.has(item.item_iid)).length;
       setMatchCount(count);
     }
   }, [list, matches]);
@@ -46,11 +42,12 @@ const UserListCard = (props: Props) => {
   return (
     <Flex
       bg="gray.700"
-      p={3}
+      p={{ base: 2, md: 3 }}
       borderRadius="md"
       overflow="visible"
       minH="150px"
-      w="375px"
+      maxWidth="375px"
+      w={{ base: 'auto', sm: '375px' }}
       gap={3}
       ml="40px"
       boxShadow={isSelected ? 'outline' : undefined}
@@ -64,8 +61,8 @@ const UserListCard = (props: Props) => {
       >
         <Flex
           position="relative"
-          w="150px"
-          h="150px"
+          w={{ base: '100px', sm: '150px' }}
+          h={{ base: '100px', sm: '150px' }}
           ml="-50px"
           bg="gray.700"
           bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, .75) 0%)`}
@@ -77,21 +74,16 @@ const UserListCard = (props: Props) => {
           alignItems="center"
         >
           {!list.cover_url && (
-            <Image
-              src={icon}
-              width={75}
-              style={{ opacity: 0.85 }}
-              alt={'List Cover'}
-            />
+            <NextImage src={icon} width={75} style={{ opacity: 0.85 }} alt={'List Cover'} />
           )}
 
           {list.cover_url && (
             <Image
               src={list.cover_url}
-              width={150}
-              height={150}
+              width={140}
+              height={140}
               alt={'List Cover'}
-              quality={100}
+              borderRadius="md"
             />
           )}
         </Flex>
@@ -102,10 +94,7 @@ const UserListCard = (props: Props) => {
           noOfLines={2}
           color={color.isLight() ? 'blackAlpha.800' : undefined}
         >
-          <Link
-            as={NextLink}
-            href={`/lists/${list.user_username}/${list.internal_id}`}
-          >
+          <Link as={NextLink} href={`/lists/${list.user_username}/${list.internal_id}`}>
             {list.name}
           </Link>
         </Text>
@@ -125,14 +114,10 @@ const UserListCard = (props: Props) => {
           )}
 
           {!list.official && list.purpose !== 'none' && (
-            <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>
-              {list.purpose}
-            </Badge>
+            <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>{list.purpose}</Badge>
           )}
 
-          <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>
-            {list.itemCount} items
-          </Badge>
+          <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>{list.itemCount} items</Badge>
 
           {!list.official && list.purpose === 'trading' && !!matchCount && (
             <Badge colorScheme="green" variant="solid">

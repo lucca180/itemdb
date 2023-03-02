@@ -12,14 +12,7 @@ import {
 import React, { useEffect, useState } from 'react';
 import Layout from '../../components/Layout';
 import Image from 'next/image';
-import {
-  FullItemColors,
-  ItemData,
-  ItemLastSeen,
-  ItemTag,
-  PriceData,
-  TradeData,
-} from '../../types';
+import { FullItemColors, ItemData, ItemLastSeen, ItemTag, PriceData, TradeData } from '../../types';
 import { useRouter } from 'next/router';
 import FindAtCard from '../../components/Items/FindAtCard';
 import ItemInfoCard from '../../components/Items/InfoCard';
@@ -71,24 +64,21 @@ const ItemPage = () => {
 
     setItem(itemData);
 
-    const [resColor, resPrice, resStats, resTrades, resTags] =
-      await Promise.all([
-        axios.get('/api/v1/items/colors?image_id=' + itemData.image_id),
-        axios.get(
-          `/api/prices/get?item_id=${itemData.item_id ?? -1}&name=${
-            itemData.name
-          }&image_id=${itemData.image_id}`
-        ),
-        axios.get(
-          `/api/prices/stats?item_id=${itemData.item_id ?? -1}&name=${
-            itemData.name
-          }&image_id=${itemData.image_id}`
-        ),
-        axios.get(
-          `/api/trades/get?name=${itemData.name}&image_id=${itemData.image_id}`
-        ),
-        axios.get(`/api/v1/items/${id}/tags`),
-      ]);
+    const [resColor, resPrice, resStats, resTrades, resTags] = await Promise.all([
+      axios.get('/api/v1/items/colors?image_id=' + itemData.image_id),
+      axios.get(
+        `/api/prices/get?item_id=${itemData.item_id ?? -1}&name=${itemData.name}&image_id=${
+          itemData.image_id
+        }`
+      ),
+      axios.get(
+        `/api/prices/stats?item_id=${itemData.item_id ?? -1}&name=${itemData.name}&image_id=${
+          itemData.image_id
+        }`
+      ),
+      axios.get(`/api/trades/get?name=${itemData.name}&image_id=${itemData.image_id}`),
+      axios.get(`/api/v1/items/${id}/tags`),
+    ]);
 
     setColors(resColor.data);
     setPrices(resPrice.data ?? []);
@@ -109,10 +99,7 @@ const ItemPage = () => {
           tags={tags}
         />
       )}
-      <FeedbackModal
-        isOpen={feedbackModalOpen}
-        onClose={() => setFeedbackModalOpen(false)}
-      />
+      <FeedbackModal isOpen={feedbackModalOpen} onClose={() => setFeedbackModalOpen(false)} />
       <Box>
         <Box
           position="absolute"
@@ -138,7 +125,7 @@ const ItemPage = () => {
             minW="100px"
             minH="100px"
           >
-            <Image src={item.image} width={80} height={80} alt={item.name} />
+            <Image src={item.image} width={80} height={80} alt={item.name} unoptimized/>
           </Flex>
           <Box>
             <Stack direction="row" mb={1}>
@@ -160,9 +147,7 @@ const ItemPage = () => {
               )}
             </Stack>
             <Heading size={{ base: 'lg', md: undefined }}>{item.name}</Heading>
-            <Text fontSize={{ base: 'sm', md: 'inherit' }}>
-              {item.description}
-            </Text>
+            <Text fontSize={{ base: 'sm', md: 'inherit' }}>{item.description}</Text>
           </Box>
         </Flex>
       </Box>
@@ -190,33 +175,17 @@ const ItemPage = () => {
           )}
           <ItemInfoCard item={item} />
           {colors && <ColorInfoCard colors={colors} />}
-          <ItemTags
-            toggleModal={() => setIsEditModalOpen(true)}
-            item={item}
-            tags={tags}
-          />
+          <ItemTags toggleModal={() => setIsEditModalOpen(true)} item={item} tags={tags} />
           <Flex justifyContent="center" gap={3}>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setFeedbackModalOpen(true)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setFeedbackModalOpen(true)}>
               <Icon as={FiSend} mr={1} /> Feedback
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsEditModalOpen(true)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setIsEditModalOpen(true)}>
               <Icon as={FiEdit3} mr={1} /> Edit
             </Button>
           </Flex>
         </Flex>
-        <Flex
-          flex="3"
-          gap={{ base: 4, md: 6 }}
-          flexFlow={{ base: 'column', lg: 'row' }}
-        >
+        <Flex flex="3" gap={{ base: 4, md: 6 }} flexFlow={{ base: 'column', lg: 'row' }}>
           <Flex flex="2" flexFlow="column" gap={{ base: 4, md: 6 }}>
             {item.isMissingInfo && <MissingInfoCard />}
             {!isLargerThanMD && (
@@ -225,11 +194,7 @@ const ItemPage = () => {
                 <FindAtCard item={item} />
               </>
             )}
-            <ItemPriceCard
-              item={item}
-              lastSeen={seenStats}
-              prices={prices ?? []}
-            />
+            <ItemPriceCard item={item} lastSeen={seenStats} prices={prices ?? []} />
             {/* <ItemOfficialLists
               toggleModal={() => setIsEditModalOpen(true)}
               item={item}

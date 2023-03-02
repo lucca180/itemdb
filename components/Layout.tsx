@@ -60,15 +60,7 @@ const Layout = (props: Props) => {
     <>
       <LoginModal isOpen={isOpen} onClose={onClose} />
       <Flex flexFlow="column" minH="100vh">
-        <Flex
-          as="header"
-          w="full"
-          maxW="8xl"
-          marginX="auto"
-          gap={{ base: 2, md: 4 }}
-          px={4}
-          py={6}
-        >
+        <Flex as="header" w="full" maxW="8xl" marginX="auto" gap={{ base: 2, md: 4 }} px={4} py={6}>
           <Flex as={Link} href="/" flex={'0 0 auto'}>
             <Image
               as={NextImage}
@@ -88,20 +80,8 @@ const Layout = (props: Props) => {
               display={{ base: 'none', md: 'inherit' }}
             />
           </Flex>
-          <Box
-            flex="1 1 auto"
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-          >
-            <InputGroup
-              as="form"
-              onSubmit={onSubmit}
-              maxW="700px"
-              w="100%"
-              h="100%"
-              maxH="50px"
-            >
+          <Box flex="1 1 auto" display="flex" justifyContent="center" alignItems="center">
+            <InputGroup as="form" onSubmit={onSubmit} maxW="700px" w="100%" h="100%" maxH="50px">
               <InputLeftElement
                 pointerEvents="none"
                 children={<SearchIcon color="gray.300" />}
@@ -125,12 +105,7 @@ const Layout = (props: Props) => {
               <InputRightElement mr={1} children={<SearchMenu />} h="100%" />
             </InputGroup>
           </Box>
-          <Box
-            display="flex"
-            gap={{ base: 2, md: 3 }}
-            alignItems="center"
-            maxW="30%"
-          >
+          <Box display="flex" gap={{ base: 2, md: 3 }} alignItems="center" maxW="30%">
             <Button
               as="a"
               href="http://magnetismotimes.com/"
@@ -155,12 +130,7 @@ const Layout = (props: Props) => {
                     onClick={onOpen}
                     px={{ base: 0, md: 4 }}
                   >
-                    <Icon
-                      as={BsBoxArrowInRight}
-                      boxSize="18px"
-                      mr={2}
-                      verticalAlign="text-top"
-                    />
+                    <Icon as={BsBoxArrowInRight} boxSize="18px" mr={2} verticalAlign="text-top" />
                     <Box as="span" display={{ base: 'none', md: 'inline' }}>
                       Login
                     </Box>
@@ -175,9 +145,7 @@ const Layout = (props: Props) => {
                         px={{ base: 2, md: 4 }}
                         textAlign="center"
                       >
-                        {isLargerThanMD && (
-                          <Box as="span">Hi, {user.username}</Box>
-                        )}
+                        {isLargerThanMD && <Box as="span">Hi, {user.username}</Box>}
                         <Icon
                           as={BsFillPersonFill}
                           display={{ base: 'inherit', md: 'none' }}
@@ -185,13 +153,7 @@ const Layout = (props: Props) => {
                         />
                       </MenuButton>
                       <MenuList>
-                        <MenuGroup
-                          title={
-                            !isLargerThanMD
-                              ? `Hello, ${user.username}`
-                              : undefined
-                          }
-                        >
+                        <MenuGroup title={!isLargerThanMD ? `Hello, ${user.username}` : undefined}>
                           <MenuItem as={Link} href={`/lists/${user.username}`}>
                             My Lists
                           </MenuItem>
@@ -207,23 +169,14 @@ const Layout = (props: Props) => {
             )}
           </Box>
         </Flex>
-        <Box
-          as="main"
-          flex="1"
-          w="full"
-          maxW="8xl"
-          marginX="auto"
-          px={4}
-          pb={6}
-          h="100%"
-        >
+        <Box as="main" flex="1" w="full" maxW="8xl" marginX="auto" px={4} pb={6} h="100%">
           {props.children}
         </Box>
         <Box as="footer" textAlign={'center'} p={2}>
           <Text fontSize="xs" color="gray.500">
             © 2009-{new Date().getFullYear()} Magnetismo Times
-            <br />© 1999-{new Date().getFullYear()} NeoPets, Inc. All rights
-            reserved. Used with permission.
+            <br />© 1999-{new Date().getFullYear()} NeoPets, Inc. All rights reserved. Used with
+            permission.
           </Text>
         </Box>
       </Flex>

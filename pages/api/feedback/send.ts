@@ -2,12 +2,8 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../utils/prisma';
 import requestIp from 'request-ip';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method !== 'POST')
-    return res.status(405).json({ error: 'Method not allowed' });
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { email, json, user_id, type, subject_id } = req.body;
   let { pageInfo } = req.body;
@@ -33,13 +29,9 @@ export default async function handle(
 
   let shoudContinue = true;
 
-  if (type === 'tradePrice')
-    shoudContinue = await processTradePrice(parseInt(subject_id));
+  if (type === 'tradePrice') shoudContinue = await processTradePrice(parseInt(subject_id));
 
-  if (!shoudContinue)
-    return res
-      .status(400)
-      .json({ success: false, message: 'already processed' });
+  if (!shoudContinue) return res.status(400).json({ success: false, message: 'already processed' });
 
   const result = await prisma.feedbacks.create({
     data: {

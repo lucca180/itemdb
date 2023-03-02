@@ -13,11 +13,7 @@ import {
 import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import { useRouter } from 'next/router';
-import {
-  getAuth,
-  isSignInWithEmailLink,
-  signInWithEmailLink,
-} from 'firebase/auth';
+import { getAuth, isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
 import Image from 'next/image';
 import logoIcon from '../public/logo_white.svg';
 import axios from 'axios';
@@ -56,11 +52,7 @@ const LoginPage = () => {
       }
 
       try {
-        const userCred = await signInWithEmailLink(
-          auth,
-          mailAddr,
-          window.location.href
-        );
+        const userCred = await signInWithEmailLink(auth, mailAddr, window.location.href);
         window.localStorage.removeItem('emailForSignIn');
 
         const token = await userCred.user.getIdToken();
@@ -115,10 +107,7 @@ const LoginPage = () => {
       return;
     }
 
-    if (
-      !neopetsUser.match(/^[a-zA-Z0-9_]+$/) ||
-      !username.match(/^[a-zA-Z0-9_]+$/)
-    ) {
+    if (!neopetsUser.match(/^[a-zA-Z0-9_]+$/) || !username.match(/^[a-zA-Z0-9_]+$/)) {
       setError('Only letters, numbers and underlines are allowed');
       return;
     }
@@ -168,12 +157,7 @@ const LoginPage = () => {
         )}
 
         {!isLoading && !needInfo && (
-          <Flex
-            flexFlow="column"
-            gap={4}
-            justifyContent="center"
-            alignItems="center"
-          >
+          <Flex flexFlow="column" gap={4} justifyContent="center" alignItems="center">
             <Image src={logoIcon} alt="itemdb logo" width={300} quality={100} />
             <Text mt={4} textAlign="center">
               Please confirm your email address
@@ -191,12 +175,7 @@ const LoginPage = () => {
         )}
 
         {!isLoading && needInfo && (
-          <Flex
-            flexFlow="column"
-            gap={4}
-            justifyContent="center"
-            alignItems="center"
-          >
+          <Flex flexFlow="column" gap={4} justifyContent="center" alignItems="center">
             <Image src={logoIcon} alt="itemdb logo" width={300} quality={100} />
             <Text mt={4} textAlign="center">
               Heey, we need some info to complete your signup
@@ -217,9 +196,7 @@ const LoginPage = () => {
                 onChange={(e) => setUsername(e.target.value)}
                 variant="filled"
               />
-              <FormHelperText>
-                Only letters, numbers and underlines
-              </FormHelperText>
+              <FormHelperText>Only letters, numbers and underlines</FormHelperText>
             </FormControl>
             <FormControl>
               <FormLabel>Neopets Username</FormLabel>
@@ -230,8 +207,7 @@ const LoginPage = () => {
                 variant="filled"
               />
               <FormHelperText>
-                We need this info so other users can reach you about NC Trades
-                etc
+                We need this info so other users can reach you about NC Trades etc
               </FormHelperText>
             </FormControl>
             <Button onClick={saveChanges}>Continue</Button>

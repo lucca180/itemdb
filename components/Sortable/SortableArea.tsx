@@ -10,11 +10,7 @@ import {
   DragOverlay,
   DragStartEvent,
 } from '@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  rectSortingStrategy,
-} from '@dnd-kit/sortable';
+import { arrayMove, SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import { ListItemInfo, ItemData, UserList } from '../../types';
 import { SortableItem } from './ItemCard';
 import {
@@ -41,11 +37,7 @@ type Props = {
   activateSort?: boolean;
   onClick?: (id: number) => void;
   onSort?: (ids: number[]) => void;
-  onChange?: (
-    id: number,
-    value: number,
-    field: 'amount' | 'capValue' | 'isHighlight'
-  ) => void;
+  onChange?: (id: number, value: number, field: 'amount' | 'capValue' | 'isHighlight') => void;
 };
 
 export function SortableArea(props: Props) {
@@ -66,11 +58,8 @@ export function SortableArea(props: Props) {
 
   const debouncedOnChange = useCallback(
     debounce(
-      (
-        id: number,
-        value: number,
-        field: 'amount' | 'capValue' | 'isHighlight'
-      ) => props.onChange?.(id, value, field),
+      (id: number, value: number, field: 'amount' | 'capValue' | 'isHighlight') =>
+        props.onChange?.(id, value, field),
       250
     ),
     [props.onChange]
@@ -83,11 +72,7 @@ export function SortableArea(props: Props) {
       onDragEnd={handleDragEnd}
       onDragStart={handleDragStart}
     >
-      <SortableContext
-        items={ids}
-        disabled={!activateSort}
-        strategy={rectSortingStrategy}
-      >
+      <SortableContext items={ids} disabled={!activateSort} strategy={rectSortingStrategy}>
         {ids.map((id) => {
           const item = items[itemInfo[id]?.item_iid];
           if (!item) return null;
@@ -113,9 +98,7 @@ export function SortableArea(props: Props) {
                       min={1}
                       variant="filled"
                       defaultValue={listItem.amount}
-                      onChange={(value) =>
-                        debouncedOnChange(id, Number(value || 0), 'amount')
-                      }
+                      onChange={(value) => debouncedOnChange(id, Number(value || 0), 'amount')}
                     >
                       <NumberInputField />
                       <NumberInputStepper>
@@ -132,9 +115,7 @@ export function SortableArea(props: Props) {
                         min={0}
                         max={99}
                         variant="filled"
-                        onChange={(value) =>
-                          debouncedOnChange(id, Number(value || 0), 'capValue')
-                        }
+                        onChange={(value) => debouncedOnChange(id, Number(value || 0), 'capValue')}
                       >
                         <NumberInputField />
                         <NumberInputStepper>
@@ -148,11 +129,7 @@ export function SortableArea(props: Props) {
                     defaultChecked={listItem.isHighlight}
                     size="sm"
                     onChange={(value) =>
-                      props.onChange?.(
-                        id,
-                        Number(value.target.checked),
-                        'isHighlight'
-                      )
+                      props.onChange?.(id, Number(value.target.checked), 'isHighlight')
                     }
                   >
                     <Text fontSize="xs">Highlight?</Text>
@@ -164,12 +141,7 @@ export function SortableArea(props: Props) {
         })}
       </SortableContext>
       <DragOverlay>
-        {activeId ? (
-          <SortableItem
-            id={activeId}
-            item={items[itemInfo[activeId].item_iid]}
-          />
-        ) : null}
+        {activeId ? <SortableItem id={activeId} item={items[itemInfo[activeId].item_iid]} /> : null}
       </DragOverlay>
     </DndContext>
   );

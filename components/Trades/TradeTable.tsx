@@ -21,9 +21,7 @@ const TradeTable = (props: Props) => {
           <Text color="gray.200">
             <b>Lot {data.trade_id}</b> | Owned by {data.owner}
           </Text>
-          <Text color="gray.300">
-            Seen at {format(new Date(data.addedAt), 'PPP')}
-          </Text>
+          <Text color="gray.300">Seen at {format(new Date(data.addedAt), 'PPP')}</Text>
         </Box>
         {data.items.map((item) => (
           <Flex
@@ -32,8 +30,7 @@ const TradeTable = (props: Props) => {
             gap={2}
             key={item.order}
             bg={
-              featuredItem &&
-              genItemKey(featuredItem, true) === genItemKey(item, true)
+              featuredItem && genItemKey(featuredItem, true) === genItemKey(item, true)
                 ? 'gray.700'
                 : ''
             }
@@ -42,11 +39,7 @@ const TradeTable = (props: Props) => {
               <Image src={item.image} width={50} height={50} alt={item.name} />
             </Flex>
             <Flex flexFlow="column" justifyContent="center">
-              <Text
-                wordBreak={'break-word'}
-                whiteSpace={'pre-line'}
-                fontSize="sm"
-              >
+              <Text wordBreak={'break-word'} whiteSpace={'pre-line'} fontSize="sm">
                 {item.name}
               </Text>
               {item.price && (

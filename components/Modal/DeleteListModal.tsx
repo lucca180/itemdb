@@ -67,9 +67,7 @@ const DeleteListModal = (props: Props) => {
     <Modal isOpen={isOpen} onClose={handleClose} isCentered>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader textTransform="capitalize">
-          Delete {listsIds.length} lists?
-        </ModalHeader>
+        <ModalHeader textTransform="capitalize">Delete {listsIds.length} lists?</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           {!isLoading && !error && (
@@ -80,11 +78,7 @@ const DeleteListModal = (props: Props) => {
             </Text>
           )}
 
-          {error && (
-            <Text color="red.500">
-              An error occured, please try again later
-            </Text>
-          )}
+          {error && <Text color="red.500">An error occured, please try again later</Text>}
           {isLoading && (
             <Center>
               <Spinner />

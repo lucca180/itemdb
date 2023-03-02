@@ -106,9 +106,7 @@ const CreateListModal = (props: Props) => {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     setList({
       ...list,
@@ -132,14 +130,11 @@ const CreateListModal = (props: Props) => {
         <ModalBody>
           {!isLoading && !error && (
             <Stack gap={3}>
-              {props.list &&
-                user?.id !== props.list?.user_id &&
-                user?.isAdmin && (
-                  <Text textAlign="center" color="red.300">
-                    You are editing another user&apos;s list as admin. Be
-                    careful.
-                  </Text>
-                )}
+              {props.list && user?.id !== props.list?.user_id && user?.isAdmin && (
+                <Text textAlign="center" color="red.300">
+                  You are editing another user&apos;s list as admin. Be careful.
+                </Text>
+              )}
               <FormControl>
                 {user?.isAdmin && (
                   <Checkbox
@@ -157,12 +152,7 @@ const CreateListModal = (props: Props) => {
               </FormControl>
               <FormControl>
                 <FormLabel color="gray.300">List Name</FormLabel>
-                <Input
-                  variant="filled"
-                  name="name"
-                  onChange={handleChange}
-                  value={list.name}
-                />
+                <Input variant="filled" name="name" onChange={handleChange} value={list.name} />
                 <FormHelperText>Required</FormHelperText>
               </FormControl>
 
@@ -176,9 +166,7 @@ const CreateListModal = (props: Props) => {
                 />
               </FormControl>
               <FormControl>
-                <FormLabel color="gray.300">
-                  Cover Image URL (150x150)
-                </FormLabel>
+                <FormLabel color="gray.300">Cover Image URL (150x150)</FormLabel>
                 <Input
                   variant="filled"
                   name="cover_url"
@@ -223,8 +211,8 @@ const CreateListModal = (props: Props) => {
                   <option value="trading">Trading these items</option>
                 </Select>
                 <FormHelperText>
-                  If you are seeking or trading these items, we may show your
-                  list to other users who may be interested.
+                  If you are seeking or trading these items, we may show your list to other users
+                  who may be interested.
                 </FormHelperText>
               </FormControl>
             </Stack>

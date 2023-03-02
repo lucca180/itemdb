@@ -55,30 +55,22 @@ const ItemPriceCard = (props: Props) => {
       >
         Price Overview
       </Box>
-      <Flex
-        p={2}
-        bg="gray.600"
-        boxShadow="md"
-        gap={4}
-        flexFlow="column"
-        borderBottomRadius="md"
-      >
+      <Flex p={2} bg="gray.600" boxShadow="md" gap={4} flexFlow="column" borderBottomRadius="md">
         <Flex gap={3} flexFlow="column">
-          <Flex flexFlow={{ base: 'column', md: 'row' }} alignItems="center">
+          <Flex
+            flexFlow={{ base: 'column', md: 'row' }}
+            alignItems={{ base: 'inherit', md: 'center' }}
+          >
             <Stat flex="initial" textAlign="center" minW="20%">
               {item.price.inflated && (
                 <Text fontWeight="bold" color="red.300">
                   Inflation
                 </Text>
               )}
-              {item.price.value && (
-                <StatNumber>{intl.format(item.price.value)} NP</StatNumber>
-              )}
+              {item.price.value && <StatNumber>{intl.format(item.price.value)} NP</StatNumber>}
               {!item.price.value && <StatNumber>??? NP</StatNumber>}
               {item.price.addedAt && (
-                <StatLabel>
-                  on {format(new Date(item.price.addedAt), 'PP')}
-                </StatLabel>
+                <StatLabel>on {format(new Date(item.price.addedAt), 'PP')}</StatLabel>
               )}
               {!item.price.addedAt && <StatHelpText>No Info</StatHelpText>}
               {priceDiff !== null && (
@@ -109,9 +101,7 @@ const ItemPriceCard = (props: Props) => {
                       />
                     )}
                   </HStack>
-                  {displayState === 'chart' && (
-                    <ChartComponent color={item.color} data={prices} />
-                  )}
+                  {displayState === 'chart' && <ChartComponent color={item.color} data={prices} />}
                   {displayState === 'table' && <PriceTable data={prices} />}
                 </>
               )}
@@ -124,10 +114,7 @@ const ItemPriceCard = (props: Props) => {
               )}
             </Flex>
           </Flex>
-          <HStack
-            justifyContent={{ base: 'space-between', md: 'space-around' }}
-            textAlign="center"
-          >
+          <HStack justifyContent={{ base: 'space-between', md: 'space-around' }} textAlign="center">
             <Stat flex="initial">
               <StatLabel>Last SW</StatLabel>
               <StatHelpText>
@@ -161,9 +148,7 @@ const ItemPriceCard = (props: Props) => {
             <Stat flex="initial">
               <StatLabel>Last Restock</StatLabel>
               <StatHelpText>
-                {!lastSeen.restock &&
-                  !item.findAt.restockShop &&
-                  'Does not restock'}
+                {!lastSeen.restock && !item.findAt.restockShop && 'Does not restock'}
                 {lastSeen.restock &&
                   formatDistanceToNow(new Date(lastSeen.restock), {
                     addSuffix: true,

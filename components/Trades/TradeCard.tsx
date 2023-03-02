@@ -11,9 +11,7 @@ type Props = {
 const TradeCard = (props: Props) => {
   const { trades, item } = props;
   const color = item?.color.rgb;
-  const colorString = color
-    ? `rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`
-    : 'gray.600';
+  const colorString = color ? `rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)` : 'gray.600';
   return (
     <Flex
       flex={1}

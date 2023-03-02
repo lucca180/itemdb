@@ -2,21 +2,15 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../utils/prisma';
 import { CheckAuth } from '../../../utils/googleCloud';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
-    throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
-    );
+    throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
   const { list_id, item_iid, capValue, amount, imported } = req.body;
 
   try {
     const { user } = await CheckAuth(req);
-    if (!user)
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    if (!user) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
     if (!list_id || !item_iid)
       return res.status(400).json({ success: false, message: 'Bad Request' });
@@ -27,10 +21,7 @@ export default async function handle(
       },
     });
 
-    if (!list)
-      return res
-        .status(400)
-        .json({ success: false, message: 'List Not Found' });
+    if (!list) return res.status(400).json({ success: false, message: 'List Not Found' });
 
     if (list.user_id !== user.id)
       return res.status(401).json({ success: false, message: 'Unauthorized' });

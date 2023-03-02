@@ -67,10 +67,7 @@ const SearchPage = () => {
     init(custom, true);
   }, [router.query]);
 
-  const init = async (
-    customFilters?: SearchFiltersType,
-    forceStats = false
-  ) => {
+  const init = async (customFilters?: SearchFiltersType, forceStats = false) => {
     const query = (router.query.s as string) ?? '';
 
     // if(!query) return;
@@ -96,12 +93,10 @@ const SearchPage = () => {
     paramsString = paramsString ? '&' + paramsString : '';
 
     // changing route will call useEffect again, so we return here
-    if (filters && searchResult){
-      router.push(
-        router.pathname + '?s=' + encodeURIComponent(query) + paramsString,
-        undefined,
-        { shallow: true }
-      );
+    if (filters && searchResult) {
+      router.push(router.pathname + '?s=' + encodeURIComponent(query) + paramsString, undefined, {
+        shallow: true,
+      });
 
       return;
     }
@@ -113,9 +108,7 @@ const SearchPage = () => {
         params: params,
       }),
 
-      !searchStatus || forceStats
-        ? Axios.get('search/stats?s=' + encodeURIComponent(query))
-        : null,
+      !searchStatus || forceStats ? Axios.get('search/stats?s=' + encodeURIComponent(query)) : null,
     ]);
 
     setResult(resSearch.data);
@@ -215,20 +208,12 @@ const SearchPage = () => {
             gap={3}
           >
             <HStack justifyContent={'space-between'} w="100%">
-              <Text
-                as="div"
-                textColor={'gray.300'}
-                fontSize={{ base: 'xs', sm: 'sm' }}
-              >
+              <Text as="div" textColor={'gray.300'} fontSize={{ base: 'xs', sm: 'sm' }}>
                 {searchResult && <>{searchResult?.total_results} results</>}
                 {!searchResult && <Skeleton width="100px" h="15px" />}
               </Text>
               {!isLargerThanLG && (
-                <IconButton
-                  aria-label="search filters"
-                  onClick={onOpen}
-                  icon={<BsFilter />}
-                />
+                <IconButton aria-label="search filters" onClick={onOpen} icon={<BsFilter />} />
               )}
             </HStack>
             <Flex
@@ -239,11 +224,7 @@ const SearchPage = () => {
               gap={2}
               alignItems="center"
             >
-              <Text
-                flex="0 0 auto"
-                textColor={'gray.300'}
-                fontSize={{ base: 'xs', sm: 'sm' }}
-              >
+              <Text flex="0 0 auto" textColor={'gray.300'} fontSize={{ base: 'xs', sm: 'sm' }}>
                 Sort By
               </Text>
               <Select
@@ -273,24 +254,16 @@ const SearchPage = () => {
               </Select>
             </Flex>
           </Flex>
-          <Flex
-            mt={4}
-            flexWrap="wrap"
-            gap={{ base: 3, md: 4 }}
-            justifyContent="center"
-          >
+          <Flex mt={4} flexWrap="wrap" gap={{ base: 3, md: 4 }} justifyContent="center">
             {searchResult?.content.map((item) => (
               <ItemCard item={item} key={item.internal_id} />
             ))}
-            {!searchResult &&
-              [...Array(24)].map((_, i) => <ItemCard key={i} />)}
+            {!searchResult && [...Array(24)].map((_, i) => <ItemCard key={i} />)}
           </Flex>
           {searchResult && (
             <Pagination
               currentPage={searchResult.page}
-              totalPages={Math.ceil(
-                searchResult.total_results / searchResult.results_per_page
-              )}
+              totalPages={Math.ceil(searchResult.total_results / searchResult.results_per_page)}
               setPage={changePage}
             />
           )}
@@ -310,8 +283,7 @@ const getDifference = (a: { [id: string]: any }, b?: SearchFiltersType) => {
   };
 
   for (const key of keys) {
-    if (a[key] && JSON.stringify(a[key]) !== JSON.stringify(b[key]))
-      diff[key] = a[key];
+    if (a[key] && JSON.stringify(a[key]) !== JSON.stringify(b[key])) diff[key] = a[key];
   }
 
   return diff;

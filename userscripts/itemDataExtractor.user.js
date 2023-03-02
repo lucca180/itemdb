@@ -24,8 +24,7 @@ let alreadyCalled = false;
 
 // Loads some history so we can check if we already sended the info to the server
 let itemsHistory = JSON.parse(localStorage?.getItem('idb_itemHistory')) ?? {};
-let restockHistory =
-  JSON.parse(localStorage?.getItem('idb_restockHistory')) ?? {};
+let restockHistory = JSON.parse(localStorage?.getItem('idb_restockHistory')) ?? {};
 let tradeHistory = JSON.parse(localStorage?.getItem('idb_tradeHistory')) ?? {};
 
 // check the page language (default as english)
@@ -95,15 +94,7 @@ function handleSDB() {
     const tds = $(this).find('td');
     const img = tds.first().find('img').first().attr('src');
 
-    const itemName = tds
-      .eq(1)
-      .find('b')
-      .first()
-      .clone()
-      .children()
-      .remove()
-      .end()
-      .text();
+    const itemName = tds.eq(1).find('b').first().clone().children().remove().end().text();
 
     const subText = tds.eq(1).find('.medText').text();
     const description = tds.eq(2).text();
@@ -233,9 +224,7 @@ function handleGeneralShops() {
     const item = {
       name: itemEl.dataset.name,
       description: itemData.attr('title'),
-      img: itemData
-        .css('background-image')
-        .replace(/^url\(['"](.+)['"]\)/, '$1'),
+      img: itemData.css('background-image').replace(/^url\(['"](.+)['"]\)/, '$1'),
       itemId: itemID,
     };
 
@@ -460,11 +449,9 @@ function handleSSWPrices() {
 function handleAuctionPrices() {
   let auctions;
 
-  if (URLHas('genie.phtml'))
-    auctions = $('.content > table tr').clone().slice(1);
+  if (URLHas('genie.phtml')) auctions = $('.content > table tr').clone().slice(1);
 
-  if (URLHas('auctions.phtml'))
-    auctions = $('.content > center table tr').clone().slice(1);
+  if (URLHas('auctions.phtml')) auctions = $('.content > center table tr').clone().slice(1);
 
   auctions.each(function (i) {
     const tds = $(this).find('td');
@@ -548,8 +535,7 @@ if (URLHas('browseshop.phtml')) handleUserShops();
 if (URLHas('wizard.phtml')) handleSWPrices();
 if (URLHas('genie.phtml') || URLHas('auctions.phtml')) handleAuctionPrices();
 if (URLHas('gallery/index.phtml')) handleGallery();
-if (URLHas('gallery/quickremove.phtml') || URLHas('gallery/quickcat.phtml'))
-  handleGalleryAdmin();
+if (URLHas('gallery/quickremove.phtml') || URLHas('gallery/quickcat.phtml')) handleGalleryAdmin();
 if (hasSSW) handleSSWPrices();
 
 // ----------- //

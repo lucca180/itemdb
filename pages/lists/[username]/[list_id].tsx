@@ -16,6 +16,8 @@ import {
   Switch,
   useToast,
   Icon,
+  Image,
+  useMediaQuery,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
@@ -25,7 +27,7 @@ import { ItemData, ListItemInfo, UserList } from '../../../types';
 import { useAuth } from '../../../utils/auth';
 import { useRouter } from 'next/router';
 import icon from '../../../public/logo_icon.svg';
-import Image from 'next/image';
+import NextImage from 'next/image';
 import ItemCard from '../../../components/Items/ItemCard';
 import Color from 'color';
 import NextLink from 'next/link';
@@ -60,6 +62,7 @@ const ListPage = () => {
   const [selectionAction, setSelectionAction] = useState<string>('');
 
   const [matches, setMatches] = useState<ListItemInfo[]>([]);
+  const [isLargerThanSM] = useMediaQuery('(min-width: 30em)');
 
   const isOwner = user?.username === router.query.username;
   const color = Color(list?.colorHex ?? '#4A5568');
@@ -80,17 +83,15 @@ const ListPage = () => {
   }, [user, list]);
 
   const init = async () => {
+    toast.closeAll();
     const { username, list_id } = router.query;
     const token = await getIdToken();
 
-    const res = await axios.get(
-      `/api/lists/getList?username=${username}&list_id=${list_id}`,
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const res = await axios.get(`/api/lists/getList?username=${username}&list_id=${list_id}`, {
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+    });
 
     const listData = res.data as UserList;
 
@@ -114,13 +115,7 @@ const ListPage = () => {
     const itemInfos = listData.itemInfo;
 
     const sortedItemInfo = itemInfos.sort((a, b) =>
-      sortItems(
-        a,
-        b,
-        listData.sortBy,
-        listData.sortDir,
-        itemRes.data as { [id: string]: ItemData }
-      )
+      sortItems(a, b, listData.sortBy, listData.sortDir, itemRes.data as { [id: string]: ItemData })
     );
     const infoIds = [];
     const itemMap: { [id: number]: ListItemInfo } = {};
@@ -141,10 +136,8 @@ const ListPage = () => {
   const getMatches = async () => {
     if (!list || !user || list.purpose === 'none') return;
 
-    const seeker =
-      list.purpose === 'seeking' ? list.user_username : user.username;
-    const offerer =
-      list.purpose === 'trading' ? list.user_username : user.username;
+    const seeker = list.purpose === 'seeking' ? list.user_username : user.username;
+    const offerer = list.purpose === 'trading' ? list.user_username : user.username;
 
     const token = await getIdToken();
 
@@ -233,16 +226,14 @@ const ListPage = () => {
       title: 'You have unsaved changes',
       id: 'unsavedChanges',
       description: (
-        <>
-          <Button
-            variant="solid"
-            onClick={saveChanges}
-            colorScheme="blackAlpha"
-            size="sm"
-          >
+        <Flex gap={2}>
+          <Button variant="solid" onClick={saveChanges} colorScheme="blackAlpha" size="sm">
             Save Changes
           </Button>
-        </>
+          <Button variant="solid" onClick={init} colorScheme="blackAlpha" size="sm">
+            Cancel
+          </Button>
+        </Flex>
       ),
       status: 'info',
       duration: null,
@@ -263,9 +254,7 @@ const ListPage = () => {
 
     const token = await getIdToken();
 
-    const changedItems = Object.values(itemInfo).filter(
-      (item) => item.hasChanged
-    );
+    const changedItems = Object.values(itemInfo).filter((item) => item.hasChanged);
 
     try {
       const res = await axios.post(
@@ -356,10 +345,10 @@ const ListPage = () => {
           bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.6) 80%)`}
           zIndex={-1}
         />
-        <Flex gap={8} pt={6} alignItems="center">
+        <Flex gap={{ base: 3, md: 6 }} pt={6} alignItems="center">
           <Flex
             position="relative"
-            p={2}
+            p={{ base: 1, md: 2 }}
             bg={`rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.75)`}
             borderRadius="md"
             flexFlow="column"
@@ -367,14 +356,15 @@ const ListPage = () => {
             alignItems="center"
             boxShadow="sm"
             textAlign="center"
-            w="150px"
-            h="150px"
+            minW={{ base: '100px', md: '150px' }}
+            minH={{ base: '100px', md: '150px' }}
             flex="0 0 auto"
           >
             {!list.cover_url && (
               <Image
+                as={NextImage}
                 src={icon}
-                width={80}
+                width={{ base: '50px', md: '80px' }}
                 style={{ opacity: 0.85, flex: 1 }}
                 alt={'List Cover'}
               />
@@ -382,10 +372,10 @@ const ListPage = () => {
             {list.cover_url && (
               <Image
                 src={list.cover_url}
-                width={150}
-                height={150}
+                width={{ base: '100px', md: '150px' }}
+                height={{ base: '100px', md: '150px' }}
+                borderRadius="md"
                 alt={'List Cover'}
-                quality={100}
               />
             )}
             {(isOwner || user?.isAdmin) && (
@@ -403,10 +393,7 @@ const ListPage = () => {
           <Box>
             <Stack direction="row" mb={1} alignItems="center">
               {!list.official && list.purpose !== 'none' && (
-                <Badge
-                  borderRadius="md"
-                  colorScheme={color.isLight() ? 'black' : 'gray'}
-                >
+                <Badge borderRadius="md" colorScheme={color.isLight() ? 'black' : 'gray'}>
                   {list.purpose}
                 </Badge>
               )}
@@ -416,92 +403,85 @@ const ListPage = () => {
                 </Badge>
               )}
             </Stack>
-            <Heading>{list.name}</Heading>
-            <Stack direction="row" mb={1} alignItems="center">
-              <Text fontSize="sm">
+            <Heading size={{ base: 'lg', md: undefined }}>{list.name}</Heading>
+            <Stack direction="row" mb={1} alignItems="center" flexWrap="wrap">
+              <Text fontSize={{ base: 'xs', md: 'sm' }}>
                 by{' '}
-                <Link
-                  as={NextLink}
-                  fontWeight="bold"
-                  href={'/lists/' + list.user_username}
-                >
+                <Link as={NextLink} fontWeight="bold" href={'/lists/' + list.user_username}>
                   {list.user_username}
                 </Link>
               </Text>
-              {!list.official && list.user_neouser && (
+              {!list.official && list.user_neouser && isLargerThanSM && (
                 <>
                   <Link
                     isExternal
                     href={`http://www.neopets.com/userlookup.phtml?user=${list.user_neouser}`}
                   >
-                    <Badge
-                      borderRadius="md"
-                      colorScheme={color.isLight() ? 'black' : 'gray'}
-                    >
-                      Userlookup{' '}
-                      <Icon as={BiLinkExternal} verticalAlign="text-top" />
+                    <Badge borderRadius="md" colorScheme={color.isLight() ? 'black' : 'gray'}>
+                      Userlookup <Icon as={BiLinkExternal} verticalAlign="text-top" />
                     </Badge>
                   </Link>
                   <Link
                     isExternal
                     href={`http://www.neopets.com/neomessages.phtml?type=send&recipient=${list.user_neouser}`}
                   >
-                    <Badge
-                      borderRadius="md"
-                      colorScheme={color.isLight() ? 'black' : 'gray'}
-                    >
-                      Neomail{' '}
-                      <Icon as={BiLinkExternal} verticalAlign="text-top" />
+                    <Badge borderRadius="md" colorScheme={color.isLight() ? 'black' : 'gray'}>
+                      Neomail <Icon as={BiLinkExternal} verticalAlign="text-top" />
                     </Badge>
                   </Link>
                 </>
               )}
             </Stack>
-            <Text mt={3}>{list.description}</Text>
+            <Text mt={{ base: 2, md: 3 }} fontSize={{ base: 'sm', md: 'md' }}>
+              {list.description}
+            </Text>
           </Box>
         </Flex>
       </Box>
       <Flex mt={5} gap={6} flexFlow="column">
-        <Box>
-          <Heading size="lg">
-            You + {list.name}{' '}
-            <Badge fontSize="lg" verticalAlign="middle">
-              {matches.length}
-            </Badge>
-          </Heading>
-          <Text color="gray.400">
-            aka. items you {list.purpose === 'seeking' ? 'have' : 'seek'} that
-            are on this list
-          </Text>
-        </Box>
-        <Flex gap={3} flexWrap="wrap" w="100%" justifyContent="center">
-          {matches
-            .sort((a, b) => sortItems(a, b, 'name', 'asc', items))
-            .map((itemMatch) => (
-              <ItemCard
-                item={items[itemMatch.item_iid]}
-                key={itemMatch.item_iid}
-                capValue={itemMatch.capValue}
-                quantity={itemMatch.amount}
-              />
-            ))}
-        </Flex>
+        {!isOwner && (
+          <>
+            <Box>
+              <Heading size={{ base: 'md', md: 'lg' }}>
+                You + {list.name}{' '}
+                <Badge fontSize={{ base: 'md', md: 'lg' }} verticalAlign="middle">
+                  {matches.length}
+                </Badge>
+              </Heading>
+              <Text color="gray.400" fontSize={{ base: 'sm', md: 'md' }}>
+                aka. items you {list.purpose === 'seeking' ? 'have' : 'seek'} that are on this list
+              </Text>
+            </Box>
+            <Flex gap={3} flexWrap="wrap" w="100%" justifyContent="center">
+              {matches
+                .sort((a, b) => sortItems(a, b, 'name', 'asc', items))
+                .map((itemMatch) => (
+                  <ItemCard
+                    item={items[itemMatch.item_iid]}
+                    key={itemMatch.item_iid}
+                    capValue={itemMatch.capValue}
+                    quantity={itemMatch.amount}
+                  />
+                ))}
+            </Flex>
 
-        <Divider />
-
-        <HStack justifyContent={'space-between'} alignItems="center">
+            <Divider />
+          </>
+        )}
+        <Flex
+          justifyContent={'space-between'}
+          alignItems="center"
+          gap={3}
+          flexFlow={{ base: 'column-reverse', md: 'row' }}
+        >
           {!isEdit && (
             <Text as="div" textColor={'gray.300'} fontSize="sm">
               {list.itemCount} items
             </Text>
           )}
           {isEdit && (
-            <Flex gap={3}>
-              <Box
-                bg={`rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.35)`}
-                p={2}
-                borderRadius="md"
-              >
+            <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
+              <Box bg={`rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.35)`} p={2} borderRadius="md">
                 <SelectItemsCheckbox
                   checked={itemSelect}
                   allChecked={itemSelect.length === list.itemInfo.length}
@@ -523,28 +503,30 @@ const ListPage = () => {
             </Flex>
           )}
 
-          <HStack flex="0 0 auto" minW={400}>
+          <HStack flex="0 0 auto" minW={{ base: 'none', md: 400 }}>
             {isOwner && (
-              <FormControl display="flex" alignItems="center">
+              <FormControl display="flex" alignItems="center" justifyContent="center">
                 <FormLabel mb="0" textColor={'gray.300'} fontSize="sm">
                   Edit Mode
                 </FormLabel>
-                <Switch
-                  colorScheme="whiteAlpha"
-                  isChecked={isEdit}
-                  onChange={toggleEdit}
-                />
+                <Switch colorScheme="whiteAlpha" isChecked={isEdit} onChange={toggleEdit} />
               </FormControl>
             )}
-            <Text flex="0 0 auto" textColor={'gray.300'} fontSize="sm">
+            <Text
+              flex="0 0 auto"
+              textColor={'gray.300'}
+              fontSize="sm"
+              display={{ base: 'none', md: 'inherit' }}
+            >
               Sort By
             </Text>
             <Select
-              minW="150px"
+              minW={{ base: 'none', sm: '150px' }}
               name="sortBy"
               variant="filled"
               value={sortInfo.sortBy}
               onChange={handleSortChange}
+              size={{ base: 'sm', md: 'md' }}
             >
               <option value="name">Name</option>
               <option value="price">Price</option>
@@ -553,25 +535,22 @@ const ListPage = () => {
               <option value="addedAt">Added At</option>
             </Select>
             <Select
-              minW="150px"
+              minW={{ base: 'none', sm: '150px' }}
               name="sortDir"
               variant="filled"
               value={sortInfo.sortDir}
               onChange={handleSortChange}
+              size={{ base: 'sm', md: 'md' }}
             >
               <option value="asc">Ascending</option>
               <option value="desc">Descending</option>
             </Select>
           </HStack>
-        </HStack>
+        </Flex>
 
         {isEdit && sortInfo.sortBy === 'custom' && (
           <Center>
-            <FormControl
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-            >
+            <FormControl display="flex" alignItems="center" justifyContent="center">
               <FormLabel mb="0" textColor={'gray.300'}>
                 Lock Sort
               </FormLabel>
@@ -602,9 +581,7 @@ const ListPage = () => {
                 ids={itemInfoIds
                   .filter((a) => itemInfo[a].isHighlight)
                   .sort((a, b) =>
-                    items[itemInfo[a].item_iid].name.localeCompare(
-                      items[itemInfo[b].item_iid].name
-                    )
+                    items[itemInfo[a].item_iid].name.localeCompare(items[itemInfo[b].item_iid].name)
                   )}
                 list={list}
                 itemInfo={itemInfo}
@@ -653,8 +630,7 @@ const sortItems = (
     if (sortDir === 'asc') return itemA.name.localeCompare(itemB.name);
     else return itemB.name.localeCompare(itemA.name);
   } else if (sortBy === 'price') {
-    if (sortDir === 'asc')
-      return (itemA.price.value ?? 0) - (itemB.price.value ?? 0);
+    if (sortDir === 'asc') return (itemA.price.value ?? 0) - (itemB.price.value ?? 0);
     else return (itemB.price.value ?? 0) - (itemA.price.value ?? 0);
   } else if (sortBy === 'addedAt') {
     const dateA = new Date(a.addedAt);
@@ -668,8 +644,7 @@ const sortItems = (
     const hsvA = colorA.hsv().array();
     const hsvB = colorB.hsv().array();
 
-    if (sortDir === 'asc')
-      return hsvB[0] - hsvA[0] || hsvB[1] - hsvA[1] || hsvB[2] - hsvA[2];
+    if (sortDir === 'asc') return hsvB[0] - hsvA[0] || hsvB[1] - hsvA[1] || hsvB[2] - hsvA[2];
     else return hsvA[0] - hsvB[0] || hsvA[1] - hsvB[1] || hsvA[2] - hsvB[2];
   } else if (sortBy === 'custom') {
     if (sortDir === 'asc') return (a.order ?? -1) - (b.order ?? -1);

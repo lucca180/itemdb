@@ -43,14 +43,11 @@ const AddToListSelect = (props: Props) => {
     try {
       const token = await getIdToken();
 
-      const res = await axios.get(
-        `/api/lists/getUserLists?username=${user.username}`,
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await axios.get(`/api/lists/getUserLists?username=${user.username}`, {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      });
 
       setLists(res.data);
     } catch (err) {
@@ -95,6 +92,42 @@ const AddToListSelect = (props: Props) => {
     }
   };
 
+  const createNewList = async () => {
+    const token = await getIdToken();
+    try {
+      const res = await axios.post(
+        '/api/lists/create',
+        {
+          name: 'New List',
+          description: '',
+          cover_url: '',
+          visibility: 'public',
+          purpose: 'none',
+          colorHex: '#fff',
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res.data.success) {
+        const list = res.data.message;
+        addItemToList(list.internal_id);
+        init();
+      } else throw new Error(res.data.message);
+    } catch (err) {
+      console.error(err);
+
+      toast({
+        title: 'An error occurred',
+        status: 'error',
+        duration: 5000,
+      });
+    }
+  };
+
   return (
     <Menu>
       <MenuButton as={Button} variant="solid">
@@ -105,22 +138,11 @@ const AddToListSelect = (props: Props) => {
           <>
             <MenuGroup title="Seeking" />
             {seeking.map((list) => (
-              <MenuItem
-                key={list.internal_id}
-                onClick={() => addItemToList(list.internal_id)}
-              >
+              <MenuItem key={list.internal_id} onClick={() => addItemToList(list.internal_id)}>
                 {list.itemInfo.some((i) => i.item_iid === item.internal_id) && (
-                  <Tooltip
-                    label="Already in this list"
-                    fontSize="sm"
-                    placement="top"
-                  >
+                  <Tooltip label="Already in this list" fontSize="sm" placement="top">
                     <span>
-                      <Icon
-                        verticalAlign="middle"
-                        as={BsBookmarkCheckFill}
-                        mr={2}
-                      />
+                      <Icon verticalAlign="middle" as={BsBookmarkCheckFill} mr={2} />
                     </span>
                   </Tooltip>
                 )}
@@ -135,22 +157,11 @@ const AddToListSelect = (props: Props) => {
           <>
             <MenuGroup title="Trading" />
             {trading.map((list) => (
-              <MenuItem
-                key={list.internal_id}
-                onClick={() => addItemToList(list.internal_id)}
-              >
+              <MenuItem key={list.internal_id} onClick={() => addItemToList(list.internal_id)}>
                 {list.itemInfo.some((i) => i.item_iid === item.internal_id) && (
-                  <Tooltip
-                    label="Already in this list"
-                    fontSize="sm"
-                    placement="top"
-                  >
+                  <Tooltip label="Already in this list" fontSize="sm" placement="top">
                     <span>
-                      <Icon
-                        verticalAlign="middle"
-                        as={BsBookmarkCheckFill}
-                        mr={2}
-                      />
+                      <Icon verticalAlign="middle" as={BsBookmarkCheckFill} mr={2} />
                     </span>
                   </Tooltip>
                 )}
@@ -164,22 +175,11 @@ const AddToListSelect = (props: Props) => {
         {none.length !== 0 && (
           <>
             {none.map((list) => (
-              <MenuItem
-                key={list.internal_id}
-                onClick={() => addItemToList(list.internal_id)}
-              >
+              <MenuItem key={list.internal_id} onClick={() => addItemToList(list.internal_id)}>
                 {list.itemInfo.some((i) => i.item_iid === item.internal_id) && (
-                  <Tooltip
-                    label="Already in this list"
-                    fontSize="sm"
-                    placement="top"
-                  >
+                  <Tooltip label="Already in this list" fontSize="sm" placement="top">
                     <span>
-                      <Icon
-                        verticalAlign="middle"
-                        as={BsBookmarkCheckFill}
-                        mr={2}
-                      />
+                      <Icon verticalAlign="middle" as={BsBookmarkCheckFill} mr={2} />
                     </span>
                   </Tooltip>
                 )}
@@ -190,11 +190,7 @@ const AddToListSelect = (props: Props) => {
           </>
         )}
 
-        {user && !authLoading && lists.length === 0 && (
-          <MenuItem justifyContent="center" disabled>
-            No lists found
-          </MenuItem>
-        )}
+        {user && !authLoading && <MenuItem onClick={createNewList}>+ Create New List</MenuItem>}
 
         {authLoading && (
           <MenuItem justifyContent="center" disabled>

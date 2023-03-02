@@ -4,10 +4,7 @@ import { TradeData } from '../../../../types';
 import requestIp from 'request-ip';
 import { CheckAuth } from '../../../../utils/googleCloud';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   try {
     if (req.method === 'GET') return GET(req, res);
     if (req.method === 'POST') return POST(req, res);
@@ -90,8 +87,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
       if (img) img = (img as string).replace(/^[^\/\/\s]*\/\//gim, 'https://');
 
-      if (img)
-        imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? null;
+      if (img) imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? null;
 
       const x = {
         name: name,
@@ -135,18 +131,14 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
-  if (user.role !== 'ADMIN')
-    return res.status(403).json({ error: 'Forbidden' });
+  if (user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
 
   const result = await processTradePrice(trade, req);
 
   return res.json(result);
 };
 
-export const processTradePrice = async (
-  trade: TradeData,
-  req?: NextApiRequest
-) => {
+export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) => {
   const updateTrade = prisma.trades.update({
     where: { trade_id: trade.trade_id },
     data: {

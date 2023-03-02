@@ -52,16 +52,9 @@ const SearchFilters = (props: Props) => {
     defaultValue: string
   ) => {
     if (
-      [
-        'price',
-        'rarity',
-        'weight',
-        'estVal',
-        'sortBy',
-        'order',
-        'page',
-        'limit',
-      ].includes(filterType)
+      ['price', 'rarity', 'weight', 'estVal', 'sortBy', 'order', 'page', 'limit'].includes(
+        filterType
+      )
     )
       return;
 
@@ -81,8 +74,7 @@ const SearchFilters = (props: Props) => {
 
     setFilters({ ...filters, [filterType]: newFilters });
 
-    if (props.onChange)
-      props.onChange({ ...filters, [filterType]: newFilters });
+    if (props.onChange) props.onChange({ ...filters, [filterType]: newFilters });
   };
 
   const handleNumberChange = (
@@ -105,17 +97,8 @@ const SearchFilters = (props: Props) => {
       <AccordionItem>
         <h2>
           <AccordionButton>
-            <Box
-              as="span"
-              flex="1"
-              textAlign="left"
-              fontSize="sm"
-              color="gray.300"
-            >
-              Category{' '}
-              {filters.category.length > 0 && (
-                <Badge>{filters.category.length}</Badge>
-              )}
+            <Box as="span" flex="1" textAlign="left" fontSize="sm" color="gray.300">
+              Category {filters.category.length > 0 && <Badge>{filters.category.length}</Badge>}
             </Box>
             <AccordionIcon />
           </AccordionButton>
@@ -130,9 +113,7 @@ const SearchFilters = (props: Props) => {
                   <NegCheckbox
                     key={cat[0]}
                     value={cat[0]}
-                    onChange={(val) =>
-                      handleCheckChange(val, 'category', cat[0])
-                    }
+                    onChange={(val) => handleCheckChange(val, 'category', cat[0])}
                     checklist={filters.category}
                   >
                     <Text fontSize={'sm'}>
@@ -152,25 +133,15 @@ const SearchFilters = (props: Props) => {
               </Text>
             )}
 
-            {!stats &&
-              [...Array(5)].map((_, i) => (
-                <Skeleton key={i} w="100%" h="25px" />
-              ))}
+            {!stats && [...Array(5)].map((_, i) => <Skeleton key={i} w="100%" h="25px" />)}
           </VStack>
         </AccordionPanel>
       </AccordionItem>
       <AccordionItem>
         <h2>
           <AccordionButton>
-            <Box
-              as="span"
-              flex="1"
-              fontSize="sm"
-              textAlign="left"
-              color="gray.300"
-            >
-              Type{' '}
-              {filters.type.length > 0 && <Badge>{filters.type.length}</Badge>}
+            <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
+              Type {filters.type.length > 0 && <Badge>{filters.type.length}</Badge>}
             </Box>
             <AccordionIcon />
           </AccordionButton>
@@ -193,8 +164,7 @@ const SearchFilters = (props: Props) => {
               checklist={filters.type}
             >
               <Text fontSize={'sm'}>
-                <Badge colorScheme="purple">NC</Badge>{' '}
-                <Badge>{stats?.isNC.true ?? 0}</Badge>
+                <Badge colorScheme="purple">NC</Badge> <Badge>{stats?.isNC.true ?? 0}</Badge>
               </Text>
             </NegCheckbox>
             <NegCheckbox
@@ -203,8 +173,7 @@ const SearchFilters = (props: Props) => {
               checklist={filters.type}
             >
               <Text fontSize={'sm'}>
-                <Badge colorScheme="green">NP</Badge>{' '}
-                <Badge>{stats?.isNC.false ?? 0}</Badge>
+                <Badge colorScheme="green">NP</Badge> <Badge>{stats?.isNC.false ?? 0}</Badge>
               </Text>
             </NegCheckbox>
           </VStack>
@@ -213,17 +182,8 @@ const SearchFilters = (props: Props) => {
       <AccordionItem>
         <h2>
           <AccordionButton>
-            <Box
-              as="span"
-              flex="1"
-              fontSize="sm"
-              textAlign="left"
-              color="gray.300"
-            >
-              Status{' '}
-              {filters.status.length > 0 && (
-                <Badge>{filters.status.length}</Badge>
-              )}
+            <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
+              Status {filters.status.length > 0 && <Badge>{filters.status.length}</Badge>}
             </Box>
             <AccordionIcon />
           </AccordionButton>
@@ -237,9 +197,7 @@ const SearchFilters = (props: Props) => {
                   <NegCheckbox
                     key={stat[0]}
                     value={stat[0]}
-                    onChange={(val) =>
-                      handleCheckChange(val, 'status', stat[0])
-                    }
+                    onChange={(val) => handleCheckChange(val, 'status', stat[0])}
                     checklist={filters.status}
                   >
                     <Text fontSize={'sm'} textTransform="capitalize">
@@ -247,28 +205,17 @@ const SearchFilters = (props: Props) => {
                     </Text>
                   </NegCheckbox>
                 ))}
-            {!stats &&
-              [...Array(5)].map((_, i) => (
-                <Skeleton key={i} w="100%" h="25px" />
-              ))}
+            {!stats && [...Array(5)].map((_, i) => <Skeleton key={i} w="100%" h="25px" />)}
           </VStack>
         </AccordionPanel>
       </AccordionItem>
       <AccordionItem>
         <h2>
           <AccordionButton>
-            <Box
-              as="span"
-              flex="1"
-              fontSize="sm"
-              textAlign="left"
-              color="gray.300"
-            >
+            <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
               Price Range{' '}
               {filters.price.filter((a) => a || a === '0').length > 0 && (
-                <Badge>
-                  {filters.price.filter((a) => a || a === '0').length}
-                </Badge>
+                <Badge>{filters.price.filter((a) => a || a === '0').length}</Badge>
               )}
             </Box>
             <AccordionIcon />
@@ -293,18 +240,10 @@ const SearchFilters = (props: Props) => {
       <AccordionItem>
         <h2>
           <AccordionButton>
-            <Box
-              as="span"
-              flex="1"
-              fontSize="sm"
-              textAlign="left"
-              color="gray.300"
-            >
+            <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
               Rarity{' '}
               {filters.rarity.filter((a) => a || a === '0').length > 0 && (
-                <Badge>
-                  {filters.rarity.filter((a) => a || a === '0').length}
-                </Badge>
+                <Badge>{filters.rarity.filter((a) => a || a === '0').length}</Badge>
               )}
             </Box>
             <AccordionIcon />
@@ -329,18 +268,10 @@ const SearchFilters = (props: Props) => {
       <AccordionItem>
         <h2>
           <AccordionButton>
-            <Box
-              as="span"
-              flex="1"
-              fontSize="sm"
-              textAlign="left"
-              color="gray.300"
-            >
+            <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
               Weight{' '}
               {filters.weight.filter((a) => a || a === '0').length > 0 && (
-                <Badge>
-                  {filters.weight.filter((a) => a || a === '0').length}
-                </Badge>
+                <Badge>{filters.weight.filter((a) => a || a === '0').length}</Badge>
               )}
             </Box>
             <AccordionIcon />
@@ -365,18 +296,10 @@ const SearchFilters = (props: Props) => {
       <AccordionItem>
         <h2>
           <AccordionButton>
-            <Box
-              as="span"
-              flex="1"
-              fontSize="sm"
-              textAlign="left"
-              color="gray.300"
-            >
+            <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
               Est. Val{' '}
               {filters.estVal.filter((a) => a || a === '0').length > 0 && (
-                <Badge>
-                  {filters.estVal.filter((a) => a || a === '0').length}
-                </Badge>
+                <Badge>{filters.estVal.filter((a) => a || a === '0').length}</Badge>
               )}
             </Box>
             <AccordionIcon />
@@ -401,13 +324,7 @@ const SearchFilters = (props: Props) => {
       <AccordionItem>
         <h2>
           <AccordionButton>
-            <Box
-              as="span"
-              flex="1"
-              fontSize="sm"
-              textAlign="left"
-              color="gray.300"
-            >
+            <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
               Vibrant Color {filters.color.length > 0 && <Badge>1</Badge>}
             </Box>
             <AccordionIcon />

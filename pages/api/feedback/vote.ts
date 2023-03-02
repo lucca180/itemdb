@@ -6,20 +6,14 @@ import { Feedbacks } from '@prisma/client';
 import { processTradePrice } from '../trades/setPrice';
 import { processTags } from '../v1/items/[id]/index';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
-    throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
-    );
+    throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
   const feedback_id = req.body.feedback_id as string;
   const action = req.body.action as string;
 
-  if (!feedback_id || !action)
-    return res.status(400).json({ error: 'Missing required fields' });
+  if (!feedback_id || !action) return res.status(400).json({ error: 'Missing required fields' });
 
   let user_id;
 
@@ -40,9 +34,7 @@ export default async function handle(
     });
 
     if (feedbackRaw.user_id === user_id && !isAdmin)
-      return res
-        .status(401)
-        .json({ error: 'You cannot vote on your own feedback' });
+      return res.status(401).json({ error: 'You cannot vote on your own feedback' });
 
     let votesIncrementDecrement;
 
@@ -77,10 +69,7 @@ export default async function handle(
 
     const [feedbacks] = await prisma.$transaction([feedback, votingUser]);
 
-    if (
-      !feedbacks.processed &&
-      (feedbacks.votes >= 5 || feedbacks.votes <= -5)
-    ) {
+    if (!feedbacks.processed && (feedbacks.votes >= 5 || feedbacks.votes <= -5)) {
       await commitChanges(feedbacks, req);
     }
 
@@ -99,8 +88,7 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
   if (feedback.votes <= -5) {
     // ------- Handlers -------- //
 
-    if (feedback.type === 'tradePrice')
-      await commitTradePrice(feedback, false, req);
+    if (feedback.type === 'tradePrice') await commitTradePrice(feedback, false, req);
 
     if (feedback.type === 'itemChange') await commitItemChange(feedback, false);
 
@@ -135,8 +123,7 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
   if (feedback.votes >= 5) {
     // ------- Handlers -------- //
 
-    if (feedback.type === 'tradePrice')
-      await commitTradePrice(feedback, true, req);
+    if (feedback.type === 'tradePrice') await commitTradePrice(feedback, true, req);
 
     if (feedback.type === 'itemChange') await commitItemChange(feedback, true);
 
@@ -167,11 +154,7 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
   }
 };
 
-const commitTradePrice = (
-  feedback: Feedbacks,
-  approved: boolean,
-  req?: NextApiRequest
-) => {
+const commitTradePrice = (feedback: Feedbacks, approved: boolean, req?: NextApiRequest) => {
   if (feedback.type !== 'tradePrice') return;
 
   const json = feedback.json as string;

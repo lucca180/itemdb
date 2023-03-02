@@ -10,24 +10,20 @@ type Props = {
   wrapperProps?: any;
 };
 
-const format = (val: number | string) =>
-  val || val === 0 ? intl.format(Number(val)) : '';
-const parse = (val: string) =>
-  val ? parseInt(val.replace(/[\.\,]+/g, '')) : '';
+const format = (val: number | string) => (val || val === 0 ? intl.format(Number(val)) : '');
+const parse = (val: string) => (val ? parseInt(val.replace(/[\.\,]+/g, '')) : '');
 
 const CustomNumberInput = (props: Props) => {
   const [value, setValue] = useState<number | string>('');
 
   useEffect(() => {
-    if (typeof props.value !== 'undefined' && props.value !== value)
-      setValue(props.value);
+    if (typeof props.value !== 'undefined' && props.value !== value) setValue(props.value);
     if (typeof props.value === 'undefined') setValue('');
   }, [props.value]);
 
   const onChange = (val: string) => {
     if (props.onChange) {
-      if (val !== value)
-        props.onChange(val || val === '0' ? val.replace(/[\.\,]+/g, '') : '');
+      if (val !== value) props.onChange(val || val === '0' ? val.replace(/[\.\,]+/g, '') : '');
     }
 
     if (typeof props.value === 'undefined') setValue(parse(val));
@@ -42,12 +38,7 @@ const CustomNumberInput = (props: Props) => {
       value={format(value)}
       {...props.wrapperProps}
     >
-      <NumberInputField
-        paddingEnd={1}
-        paddingStart={1}
-        textAlign="center"
-        {...props.inputProps}
-      />
+      <NumberInputField paddingEnd={1} paddingStart={1} textAlign="center" {...props.inputProps} />
       {/* <NumberInputStepper>
                 <NumberIncrementStepper />
                 <NumberDecrementStepper />

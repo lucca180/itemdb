@@ -7,12 +7,8 @@ import Color from 'color';
 
 type ValueOf<T> = T[keyof T];
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method !== 'POST')
-    return res.status(405).json({ error: 'Method not allowed' });
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   let limit = Number(req.body.limit) ?? 300;
   limit = isNaN(limit) ? 300 : limit;
@@ -26,8 +22,7 @@ export default async function handle(
   // list of unique entries
   const uniqueNames = [...processList].filter(
     (value, index, self) =>
-      index ===
-      self.findIndex((t) => genItemKey(t, true) === genItemKey(value, true))
+      index === self.findIndex((t) => genItemKey(t, true) === genItemKey(value, true))
   );
 
   const deleteIds: number[] = [];
@@ -35,13 +30,11 @@ export default async function handle(
 
   // for each unique entry we get the repeated ones and "merge" all the data we have
   for (const item of uniqueNames) {
-    const allItemData = processList.filter(
-      (x) => genItemKey(x, true) === genItemKey(item, true)
-    );
+    const allItemData = processList.filter((x) => genItemKey(x, true) === genItemKey(item, true));
     const itemData = { ...item } as ItemProcess;
 
     for (const itemOtherData of allItemData) {
-      for (const key of Object.keys(itemData) as Array<keyof ItemProcess>){
+      for (const key of Object.keys(itemData) as Array<keyof ItemProcess>) {
         (itemData as Record<keyof ItemProcess, ValueOf<ItemProcess>>)[key] ??= itemOtherData[key];
       }
 
@@ -52,13 +45,9 @@ export default async function handle(
   }
 
   // remove the 'undefined' and add new items to db
-  const itemAddList = (await Promise.all(itemAddPromises)).filter(
-    (x) => !!x
-  ) as Item[];
+  const itemAddList = (await Promise.all(itemAddPromises)).filter((x) => !!x) as Item[];
 
-  const itemColorAddList = (
-    await Promise.all(itemAddList.map((i) => getPallete(i)))
-  )
+  const itemColorAddList = (await Promise.all(itemAddList.map((i) => getPallete(i))))
     .flat()
     .filter((x) => !!x) as ItemColor[];
 
@@ -86,9 +75,7 @@ export default async function handle(
 
 // If a item does not exist in the DB we use "createMany" but
 // there is not a "updateMany" so we update here and return undefined
-async function updateOrAddDB(
-  item: ItemProcess
-): Promise<Partial<Item> | undefined> {
+async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefined> {
   try {
     if (!item.image_id || !item.image || !item.name) throw 'invalid data';
 
@@ -96,7 +83,7 @@ async function updateOrAddDB(
       where: { name: item.name, image_id: item.image_id },
     });
 
-    // db has no entry -> add 
+    // db has no entry -> add
     // db has one entry but it's not the same -> add
     if (
       dbItemList.length === 0 ||
@@ -125,8 +112,7 @@ async function updateOrAddDB(
     }
 
     // db has more than one -> manual check
-    if (dbItemList.length > 1)
-      throw 'More than one entry exists with the same name.';
+    if (dbItemList.length > 1) throw 'More than one entry exists with the same name.';
 
     const dbItem = dbItemList[0];
 
@@ -155,9 +141,7 @@ async function updateOrAddDB(
           const itemArr = item.specialType?.split(',') ?? [];
           if (dbArr.length > itemArr.length)
             throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
-        } 
-        
-        else throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
+        } else throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
       }
     }
 
@@ -191,7 +175,7 @@ async function updateOrAddDB(
     return undefined;
   } catch (e) {
     if (typeof e !== 'string') {
-      console.error(e)
+      console.error(e);
       throw e;
     }
 

@@ -2,14 +2,9 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../utils/prisma';
 import requestIp from 'request-ip';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
-    throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
-    );
+    throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
   const data = JSON.parse(req.body);
 
@@ -18,8 +13,7 @@ export default async function handle(
 
   const dataList = [];
   for (const priceInfo of itemPrices) {
-    let { name, img, owner, stock, value, otherInfo, type, item_id } =
-      priceInfo;
+    let { name, img, owner, stock, value, otherInfo, type, item_id } = priceInfo;
     let imageId: string | null = null;
 
     stock = isNaN(Number(stock)) ? undefined : Number(stock);

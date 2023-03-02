@@ -3,22 +3,16 @@ import prisma from '../../../utils/prisma';
 import { CheckAuth } from '../../../utils/googleCloud';
 import { ListItemInfo } from '../../../types';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
-    throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
-    );
+    throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
   const { list_id } = req.body;
   const action = req.body.action ?? 'update';
 
   try {
     const { user } = await CheckAuth(req);
-    if (!user)
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    if (!user) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
     const list = await prisma.userList.findUnique({
       where: {
@@ -26,10 +20,7 @@ export default async function handle(
       },
     });
 
-    if (!list)
-      return res
-        .status(400)
-        .json({ success: false, message: 'List not found' });
+    if (!list) return res.status(400).json({ success: false, message: 'List not found' });
 
     if (list.user_id !== user.id && !user.isAdmin)
       return res.status(401).json({ success: false, message: 'Unauthorized' });
@@ -76,9 +67,7 @@ export default async function handle(
       const listDestId = req.body.listDestId as string;
 
       if (!listDestId)
-        return res
-          .status(400)
-          .json({ success: false, message: 'listDestId is required' });
+        return res.status(400).json({ success: false, message: 'listDestId is required' });
 
       const listDest = await prisma.userList.findUnique({
         where: {
@@ -86,15 +75,10 @@ export default async function handle(
         },
       });
 
-      if (!listDest)
-        return res
-          .status(400)
-          .json({ success: false, message: 'List not found' });
+      if (!listDest) return res.status(400).json({ success: false, message: 'List not found' });
 
       if (listDest.user_id !== user.id && !user.isAdmin)
-        return res
-          .status(401)
-          .json({ success: false, message: 'Unauthorized' });
+        return res.status(401).json({ success: false, message: 'Unauthorized' });
 
       const ids = itemInfo.map((item) => item.internal_id);
 

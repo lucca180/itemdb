@@ -3,14 +3,9 @@ import prisma from '../../../utils/prisma';
 import { CheckAuth } from '../../../utils/googleCloud';
 import { UserList } from '../../../types';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET')
-    throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
-    );
+    throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
   const username = req.query.username as string;
   const list_id = req.query.list_id as string;
@@ -37,13 +32,8 @@ export default async function handle(
       },
     });
 
-    if (
-      !listRaw ||
-      (listRaw.visibility === 'private' && listRaw.user_id !== user?.id)
-    )
-      return res
-        .status(400)
-        .json({ success: false, message: 'List Not Found' });
+    if (!listRaw || (listRaw.visibility === 'private' && listRaw.user_id !== user?.id))
+      return res.status(400).json({ success: false, message: 'List Not Found' });
 
     const owner = await prisma.user.findUnique({
       where: {

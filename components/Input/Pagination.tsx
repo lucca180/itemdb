@@ -26,19 +26,11 @@ const Pagination = (props: Props) => {
 
   return (
     <HStack mt={4} justifyContent="center">
-      <Button
-        isDisabled={currentPage <= 1}
-        onClick={() => setPage(currentPage - 1)}
-      >
+      <Button isDisabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)}>
         Back
       </Button>
       <Box>
-        <Select
-          name="sortBy"
-          variant="filled"
-          value={currentPage}
-          onChange={handleChange}
-        >
+        <Select name="sortBy" variant="filled" value={currentPage} onChange={handleChange}>
           {[...Array(props.totalPages)].map((_, i) => (
             <option key={i + 1} value={i + 1}>
               {i + 1}
@@ -46,10 +38,7 @@ const Pagination = (props: Props) => {
           ))}
         </Select>
       </Box>
-      <Button
-        isDisabled={currentPage >= totalPages}
-        onClick={() => setPage(currentPage + 1)}
-      >
+      <Button isDisabled={currentPage >= totalPages} onClick={() => setPage(currentPage + 1)}>
         Next
       </Button>
     </HStack>

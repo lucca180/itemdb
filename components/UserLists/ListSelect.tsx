@@ -21,9 +21,7 @@ type Props = {
 const ListSelect = (props: Props) => {
   const { user, getIdToken, authLoading } = useAuth();
   const [lists, setLists] = useState<UserList[]>([]);
-  const [selectedList, setSelected] = useState<UserList | undefined>(
-    props.defaultValue
-  );
+  const [selectedList, setSelected] = useState<UserList | undefined>(props.defaultValue);
 
   const seeking = lists
     .filter((list) => list.purpose === 'seeking')
@@ -46,14 +44,11 @@ const ListSelect = (props: Props) => {
     try {
       const token = await getIdToken();
 
-      const res = await axios.get(
-        `/api/lists/getUserLists?username=${user.username}`,
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await axios.get(`/api/lists/getUserLists?username=${user.username}`, {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      });
 
       setLists(res.data);
     } catch (err) {
@@ -76,10 +71,7 @@ const ListSelect = (props: Props) => {
           <>
             <MenuGroup title="Seeking" />
             {seeking.map((list) => (
-              <MenuItem
-                key={list.internal_id}
-                onClick={() => handleSelect(list)}
-              >
+              <MenuItem key={list.internal_id} onClick={() => handleSelect(list)}>
                 {list.name}
               </MenuItem>
             ))}
@@ -91,10 +83,7 @@ const ListSelect = (props: Props) => {
           <>
             <MenuGroup title="Trading" />
             {trading.map((list) => (
-              <MenuItem
-                key={list.internal_id}
-                onClick={() => handleSelect(list)}
-              >
+              <MenuItem key={list.internal_id} onClick={() => handleSelect(list)}>
                 {list.name}
               </MenuItem>
             ))}
@@ -105,10 +94,7 @@ const ListSelect = (props: Props) => {
         {none.length !== 0 && (
           <>
             {none.map((list) => (
-              <MenuItem
-                key={list.internal_id}
-                onClick={() => handleSelect(list)}
-              >
+              <MenuItem key={list.internal_id} onClick={() => handleSelect(list)}>
                 {list.name}
               </MenuItem>
             ))}

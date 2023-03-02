@@ -9,7 +9,8 @@
     "build": "next build",
     "start": "PORT=4000 next start",
     "lint": "next lint",
-    "lint-fix": "next lint --fix"
+    "lint-fix": "next lint --fix",
+    "prettier": "prettier --write ."
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.0.12",

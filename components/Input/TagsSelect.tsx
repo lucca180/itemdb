@@ -51,12 +51,7 @@ const TagSelect = (props: Props) => {
   const debouncedLoad = useCallback(debounce(loadOptions, 250), []);
 
   return (
-    <AutoComplete
-      defaultValues={valueProps}
-      multiple
-      onChange={(vals) => onChange(vals)}
-      creatable
-    >
+    <AutoComplete defaultValues={valueProps} multiple onChange={(vals) => onChange(vals)} creatable>
       <AutoCompleteInput
         variant="filled"
         value={inputVal}
@@ -67,11 +62,7 @@ const TagSelect = (props: Props) => {
       >
         {({ tags }) =>
           tags.map((tag, tid) => (
-            <AutoCompleteTag
-              key={tid}
-              label={tag.label}
-              onRemove={tag.onRemove}
-            />
+            <AutoCompleteTag key={tid} label={tag.label} onRemove={tag.onRemove} />
           ))
         }
       </AutoCompleteInput>
@@ -89,8 +80,7 @@ const TagSelect = (props: Props) => {
           </AutoCompleteItem>
         ))}
 
-        {!options.filter((x) => x.toLowerCase() === inputVal.toLowerCase())
-          .length &&
+        {!options.filter((x) => x.toLowerCase() === inputVal.toLowerCase()).length &&
           inputVal.length >= 3 && (
             <AutoCompleteCreatable>
               {({ value }) => (

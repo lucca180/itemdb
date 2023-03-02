@@ -4,14 +4,9 @@ import { TradeData } from '../../../types';
 import { CheckAuth } from '../../../utils/googleCloud';
 import requestIp from 'request-ip';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
-    throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
-    );
+    throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
   const trade = req.body.trade as TradeData;
   try {
@@ -35,10 +30,7 @@ export default async function handle(
   }
 }
 
-export const processTradePrice = async (
-  trade: TradeData,
-  req?: NextApiRequest
-) => {
+export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) => {
   const updateTrade = prisma.trades.update({
     where: { trade_id: trade.trade_id },
     data: {

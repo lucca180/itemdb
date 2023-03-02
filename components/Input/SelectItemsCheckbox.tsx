@@ -1,4 +1,4 @@
-import { Checkbox } from '@chakra-ui/react';
+import { Checkbox, Text } from '@chakra-ui/react';
 
 type Props = {
   allChecked?: boolean;
@@ -14,9 +14,8 @@ export const SelectItemsCheckbox = (props: Props) => {
       isChecked={!!checked?.length}
       isIndeterminate={!!checked?.length && !allChecked}
       onChange={() => onClick?.(!allChecked)}
-      fontSize={'sm'}
     >
-      {checked?.length ?? 0} Items Selected
+      <Text fontSize={{ base: 'sm', md: 'md' }}>{checked?.length ?? 0} Items Selected</Text>
     </Checkbox>
   );
 };

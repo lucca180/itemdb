@@ -18,8 +18,7 @@ const FeedbackTrade = (props: Props) => {
   const [trade, setTrade] = useState<TradeData | undefined>(tradeProps);
 
   useEffect(() => {
-    if ((!trade && tradeProps) || tradeProps?.trade_id !== trade?.trade_id)
-      setTrade(tradeProps);
+    if ((!trade && tradeProps) || tradeProps?.trade_id !== trade?.trade_id) setTrade(tradeProps);
   }, [tradeProps]);
 
   const handleChange = (item: TradeItems, index: number) => {
@@ -37,11 +36,7 @@ const FeedbackTrade = (props: Props) => {
   );
 
   return (
-    <CardBase
-      chakraWrapper={{ flex: 1 }}
-      title="Trade Pricing"
-      chakra={{ bg: 'gray.700' }}
-    >
+    <CardBase chakraWrapper={{ flex: 1 }} title="Trade Pricing" chakra={{ bg: 'gray.700' }}>
       <Flex flexFlow="column" gap={6}>
         <Flex
           textAlign="center"
@@ -108,9 +103,7 @@ const ItemTrade = (props: ItemTradeProps) => {
             value={item.price?.toString()}
             onChange={handleChange}
           />
-          <FormHelperText fontSize="xs">
-            Leave empty if price is not specified
-          </FormHelperText>
+          <FormHelperText fontSize="xs">Leave empty if price is not specified</FormHelperText>
         </FormControl>
       </Flex>
     </Flex>

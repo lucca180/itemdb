@@ -36,12 +36,6 @@ const sentryWebpackPluginOptions = {
   // https://github.com/getsentry/sentry-webpack-plugin#options.
 };
 
-const withTM = require('next-transpile-modules')([
-  'lightweight-charts',
-  'fancy-canvas',
-]);
+const withTM = require('next-transpile-modules')(['lightweight-charts', 'fancy-canvas']);
 
-module.exports = withSentryConfig(
-  withTM(nextConfig),
-  sentryWebpackPluginOptions
-);
+module.exports = withSentryConfig(withTM(nextConfig), sentryWebpackPluginOptions);

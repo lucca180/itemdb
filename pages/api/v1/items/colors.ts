@@ -4,12 +4,8 @@ import { ItemColor } from '@prisma/client';
 import { ColorType, FullItemColors } from '../../../../types';
 import Color from 'color';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method !== 'GET')
-    return res.status(405).json({ error: 'Method not allowed' });
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   const image_id = req.query.image_id;
 
@@ -24,9 +20,7 @@ export default async function handle(
   const types = result.map((o) => o.type);
 
   //preventing duplicate colors (yes we could do this in the query but...)
-  const filteredResult = result.filter(
-    ({ type }, index) => !types.includes(type, index + 1)
-  );
+  const filteredResult = result.filter(({ type }, index) => !types.includes(type, index + 1));
 
   const colorsData: Partial<FullItemColors> = {};
 

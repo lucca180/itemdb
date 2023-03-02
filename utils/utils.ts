@@ -10,17 +10,15 @@ export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
   };
 
   if (item.isWearable)
-    findAt.closet = `https://www.neopets.com/closet.phtml?obj_name=${cleanItem(
-      item
-    )}`;
+    findAt.closet = `https://www.neopets.com/closet.phtml?obj_name=${cleanItem(item)}`;
 
   if (item.isWearable) {
-    if (item.item_id)
-      findAt.dti = `http://impress-2020.openneo.net/items/${item.item_id}`;
+    if (item.item_id) findAt.dti = `http://impress-2020.openneo.net/items/${item.item_id}`;
     else
-      findAt.dti = `http://impress-2020.openneo.net/items/search/${cleanItem(
-        item
-      ).replaceAll('+', '%20')}`;
+      findAt.dti = `http://impress-2020.openneo.net/items/search/${cleanItem(item).replaceAll(
+        '+',
+        '%20'
+      )}`;
   }
 
   if (item.isNC) return findAt;
@@ -28,9 +26,7 @@ export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
   findAt.auction = `https://www.neopets.com/genie.phtml?type=process_genie&criteria=exact&auctiongenie=${cleanItem(
     item
   )}`;
-  findAt.shopWizard = `https://www.neopets.com/shops/wizard.phtml?string=${cleanItem(
-    item
-  )}`;
+  findAt.shopWizard = `https://www.neopets.com/shops/wizard.phtml?string=${cleanItem(item)}`;
   findAt.trading = `https://www.neopets.com/island/tradingpost.phtml?type=browse&criteria=item_exact&search_string=${cleanItem(
     item
   )}`;

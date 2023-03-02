@@ -2,25 +2,18 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../utils/prisma';
 import { CheckAuth } from '../../../utils/googleCloud';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
-    throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
-    );
+    throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
   let listsIds = req.body.listIds;
 
-  if (!listsIds)
-    return res.status(400).json({ success: false, message: 'Bad Request' });
+  if (!listsIds) return res.status(400).json({ success: false, message: 'Bad Request' });
   listsIds = listsIds.map((id: string) => Number(id)) as number[];
 
   try {
     const { user } = await CheckAuth(req);
-    if (!user)
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    if (!user) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
     const result = await prisma.userList.deleteMany({
       where: {

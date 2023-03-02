@@ -13,14 +13,7 @@ type Props = {
 };
 
 const SearchFilterCard = (props: Props) => {
-  const {
-    filters,
-    stats,
-    isColorSearch,
-    onChange,
-    resetFilters,
-    applyFilters,
-  } = props;
+  const { filters, stats, isColorSearch, onChange, resetFilters, applyFilters } = props;
   return (
     <CardBase title="Search Filters" noPadding>
       <SearchFilters
@@ -30,20 +23,10 @@ const SearchFilterCard = (props: Props) => {
         isColorSearch={isColorSearch}
       />
       <HStack justifyContent="center" my={3}>
-        <Button
-          variant="outline"
-          onClick={resetFilters}
-          colorScheme="gray"
-          size="sm"
-        >
+        <Button variant="outline" onClick={resetFilters} colorScheme="gray" size="sm">
           Reset
         </Button>
-        <Button
-          variant="outline"
-          colorScheme="green"
-          size="sm"
-          onClick={applyFilters}
-        >
+        <Button variant="outline" colorScheme="green" size="sm" onClick={applyFilters}>
           Apply Filters
         </Button>
       </HStack>

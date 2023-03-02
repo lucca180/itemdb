@@ -4,14 +4,9 @@ import prisma from '../../../utils/prisma';
 import { Items } from '@prisma/client';
 import Color from 'color';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET')
-    throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
-    );
+    throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
   const query = (req.query.s as string)?.trim() ?? '';
 
@@ -41,12 +36,7 @@ export default async function handle(
     includeIds.push(...resultRaw.map((a) => a.internal_id));
   }
 
-  const groups = [
-    'category',
-    'isNC',
-    'isWearable',
-    'status',
-  ] as (keyof Items)[];
+  const groups = ['category', 'isNC', 'isWearable', 'status'] as (keyof Items)[];
 
   const promises = [];
 
@@ -57,10 +47,7 @@ export default async function handle(
         _all: true,
       },
       where: {
-        OR: [
-          { name: { contains: query } },
-          { internal_id: { in: includeIds } },
-        ],
+        OR: [{ name: { contains: query } }, { internal_id: { in: includeIds } }],
       },
     });
 
@@ -78,7 +65,7 @@ export default async function handle(
 
     for (const data of groupData) {
       const name = data[group]?.toString() || 'Unknown';
-      x[name] = data._count._all;
+      x[name] = x[name] ? data._count._all : x[name] + data._count._all;
     }
 
     result[group] = x;

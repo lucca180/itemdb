@@ -2,19 +2,13 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../utils/prisma';
 import { CheckAuth } from '../../../utils/googleCloud';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET')
-    throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
-    );
+    throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
   const { offerer, seeker, list_id } = req.query;
 
-  if (!offerer || !seeker)
-    return res.status(400).json({ success: false, message: 'Bad Request' });
+  if (!offerer || !seeker) return res.status(400).json({ success: false, message: 'Bad Request' });
 
   let requestUser = null;
 
@@ -35,9 +29,7 @@ export default async function handle(
     });
 
     if (!seeker_res || !offerer_res)
-      return res
-        .status(400)
-        .json({ success: false, message: 'User Not Found' });
+      return res.status(400).json({ success: false, message: 'User Not Found' });
 
     const seeker_id = seeker_res.id;
     const offerer_id = offerer_res.id;
@@ -54,18 +46,13 @@ export default async function handle(
 
       if (
         !initialList ||
-        (initialList.visibility === 'private' &&
-          initialList.user_id !== requestUser?.id) ||
-        (initialList.purpose == 'seeking' &&
-          initialList.user_id != seeker_id) ||
+        (initialList.visibility === 'private' && initialList.user_id !== requestUser?.id) ||
+        (initialList.purpose == 'seeking' && initialList.user_id != seeker_id) ||
         (initialList.purpose == 'trading' && initialList.user_id != offerer_id)
       )
-        return res
-          .status(400)
-          .json({ success: false, message: 'List Not Found' });
+        return res.status(400).json({ success: false, message: 'List Not Found' });
 
-      const target_id =
-        initialList.purpose == 'seeking' ? offerer_id : seeker_id;
+      const target_id = initialList.purpose == 'seeking' ? offerer_id : seeker_id;
 
       const matchList = await prisma.userList.findMany({
         where: {
@@ -79,13 +66,9 @@ export default async function handle(
         },
       });
 
-      const matchListSet = new Set(
-        matchList.flatMap((list) => list.items.map((i) => i.item_iid))
-      );
+      const matchListSet = new Set(matchList.flatMap((list) => list.items.map((i) => i.item_iid)));
 
-      const matchedItems = initialList.items.filter((a) =>
-        matchListSet.has(a.item_iid)
-      );
+      const matchedItems = initialList.items.filter((a) => matchListSet.has(a.item_iid));
 
       return res.status(200).json(matchedItems);
     }
@@ -121,9 +104,7 @@ export default async function handle(
 
     const matchedItems = offererLists.flatMap((list) => {
       const x = list.items.filter(
-        (item) =>
-          seekerItemsSet.has(item.item_iid) &&
-          !alreadyMatched.has(item.item_iid)
+        (item) => seekerItemsSet.has(item.item_iid) && !alreadyMatched.has(item.item_iid)
       );
       x.forEach((item) => alreadyMatched.add(item.item_iid));
       return x;

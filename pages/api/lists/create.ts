@@ -2,22 +2,15 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../utils/prisma';
 import { CheckAuth } from '../../../utils/googleCloud';
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
-    throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
-    );
+    throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
-  const { name, description, cover_url, purpose, visibility, colorHex } =
-    req.body;
+  const { name, description, cover_url, purpose, visibility, colorHex } = req.body;
 
   try {
     const { user } = await CheckAuth(req);
-    if (!user)
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    if (!user) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
     if (!name || !purpose || !visibility)
       return res.status(400).json({ success: false, message: 'Bad Request' });

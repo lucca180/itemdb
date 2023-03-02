@@ -18,11 +18,7 @@ const ItemTags = (props: Props) => {
     <CardBase title="Tags" color={item.color.rgb}>
       <Flex wrap="wrap" gap={2} justifyContent="center">
         {tagsFiltered.map((tag, i) => (
-          <Tag
-            variant="subtle"
-            key={i}
-            bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .45)`}
-          >
+          <Tag variant="subtle" key={i} bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .45)`}>
             {tag.name}
           </Tag>
         ))}

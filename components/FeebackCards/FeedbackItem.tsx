@@ -1,12 +1,4 @@
-import {
-  Center,
-  Divider,
-  Flex,
-  Heading,
-  Spinner,
-  Tag,
-  Text,
-} from '@chakra-ui/react';
+import { Center, Divider, Flex, Heading, Spinner, Tag, Text } from '@chakra-ui/react';
 import axios from 'axios';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
@@ -35,9 +27,7 @@ const FeedbackItem = (props: Props) => {
 
     const [itemRes, tagsRes] = await Promise.all([itemPromise, tagPromise]);
 
-    const tagsFiltered = tagsRes.data.filter(
-      (tag: ItemTag) => tag.type === 'tag'
-    );
+    const tagsFiltered = tagsRes.data.filter((tag: ItemTag) => tag.type === 'tag');
 
     setItem(itemRes.data);
     setTags(tagsFiltered);
@@ -53,12 +43,7 @@ const FeedbackItem = (props: Props) => {
 
       {item && (
         <>
-          <Flex
-            flexFlow="column"
-            justifyContent="center"
-            alignItems="center"
-            textAlign="center"
-          >
+          <Flex flexFlow="column" justifyContent="center" alignItems="center" textAlign="center">
             <Image src={item.image} alt={item.name} width={60} height={60} />
             <Text>{item.name}</Text>
             <Text fontSize={'xs'} color="gray.400">
@@ -79,10 +64,7 @@ const FeedbackItem = (props: Props) => {
             textAlign="center"
           >
             {tags.map((tag) => (
-              <Tag
-                key={tag.tag_id}
-                colorScheme={!itemTags.includes(tag.name) ? 'red' : undefined}
-              >
+              <Tag key={tag.tag_id} colorScheme={!itemTags.includes(tag.name) ? 'red' : undefined}>
                 {tag.name}
               </Tag>
             ))}
@@ -105,10 +87,7 @@ const FeedbackItem = (props: Props) => {
             textAlign="center"
           >
             {itemTags.map((tag, i) => (
-              <Tag
-                key={i}
-                colorScheme={!tagsStr.includes(tag) ? 'green' : undefined}
-              >
+              <Tag key={i} colorScheme={!tagsStr.includes(tag) ? 'green' : undefined}>
                 {tag}
               </Tag>
             ))}

@@ -24,16 +24,8 @@ type Props = {
 };
 
 const SearchFilterModal = (props: Props) => {
-  const {
-    filters,
-    stats,
-    isColorSearch,
-    isOpen,
-    onClose,
-    onChange,
-    resetFilters,
-    applyFilters,
-  } = props;
+  const { filters, stats, isColorSearch, isOpen, onClose, onChange, resetFilters, applyFilters } =
+    props;
 
   const applyFiltersAndClose = () => {
     applyFilters();
@@ -60,20 +52,10 @@ const SearchFilterModal = (props: Props) => {
           />
         </ModalBody>
         <ModalFooter as={Flex} gap={3}>
-          <Button
-            variant="outline"
-            onClick={resetFiltersAndClose}
-            colorScheme="gray"
-            size="sm"
-          >
+          <Button variant="outline" onClick={resetFiltersAndClose} colorScheme="gray" size="sm">
             Reset
           </Button>
-          <Button
-            variant="outline"
-            colorScheme="green"
-            size="sm"
-            onClick={applyFiltersAndClose}
-          >
+          <Button variant="outline" colorScheme="green" size="sm" onClick={applyFiltersAndClose}>
             Apply Filters
           </Button>
         </ModalFooter>

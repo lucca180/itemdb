@@ -1,13 +1,4 @@
-import {
-  Stat,
-  StatArrow,
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Tr,
-  Text,
-} from '@chakra-ui/react';
+import { Stat, StatArrow, Table, TableContainer, Tbody, Td, Tr, Text } from '@chakra-ui/react';
 import React from 'react';
 import { PriceData } from '../../types';
 import { format } from 'date-fns';
@@ -48,9 +39,7 @@ const PriceTable = (props: Props) => {
                   <Stat>
                     <StatArrow
                       type={
-                        price.value - sortedData[index + 1]?.value > 0
-                          ? 'increase'
-                          : 'decrease'
+                        price.value - sortedData[index + 1]?.value > 0 ? 'increase' : 'decrease'
                       }
                     />
                     {intl.format(price.value - sortedData[index + 1]?.value)} NP
