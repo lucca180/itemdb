@@ -103,6 +103,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       itemList.push(x);
     }
 
+    // its not possible to use createMany with multiple related records
+    // so we have to try to create the trade and then create the items
     const prom = prisma.trades.create({
       data: {
         trade_id: Number(lot.tradeID),
@@ -120,7 +122,9 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     promiseArr.push(prom);
   }
 
-  const result = prisma.$transaction(promiseArr);
+  // we have to use Promise.allSettled because we dont want to fail the whole request if one trade fails
+  // (and it will fail, because we cant create the same trade twice)
+  const result = await Promise.allSettled(promiseArr);
 
   res.json(result);
 };

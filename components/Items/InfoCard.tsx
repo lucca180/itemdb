@@ -58,7 +58,7 @@ const ItemInfoCard = (props: Props) => {
             Weight
           </Tag>
           <Text flex="1" textAlign="right">
-            {item.weight ?? '???'}
+            {item.weight ?? '???'} lbs
           </Text>
         </HStack>
         <HStack>

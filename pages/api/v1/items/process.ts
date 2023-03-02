@@ -5,6 +5,8 @@ import Vibrant from 'node-vibrant';
 import { genItemKey } from '../../../../utils/utils';
 import Color from 'color';
 
+type ValueOf<T> = T[keyof T];
+
 export default async function handle(
   req: NextApiRequest,
   res: NextApiResponse
@@ -36,13 +38,12 @@ export default async function handle(
     const allItemData = processList.filter(
       (x) => genItemKey(x, true) === genItemKey(item, true)
     );
-    const itemData = { ...item };
+    const itemData = { ...item } as ItemProcess;
 
     for (const itemOtherData of allItemData) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      //@ts-ignore
-      for (const key of Object.keys(itemData))
-        itemData[key] ??= itemOtherData[key];
+      for (const key of Object.keys(itemData) as Array<keyof ItemProcess>){
+        (itemData as Record<keyof ItemProcess, ValueOf<ItemProcess>>)[key] ??= itemOtherData[key];
+      }
 
       deleteIds.push(itemOtherData.internal_id);
     }
@@ -95,7 +96,8 @@ async function updateOrAddDB(
       where: { name: item.name, image_id: item.image_id },
     });
 
-    // db has none or two items with same name/image_id combo but different ids -> create
+    // db has no entry -> add 
+    // db has one entry but it's not the same -> add
     if (
       dbItemList.length === 0 ||
       (dbItemList.length === 1 &&
@@ -153,7 +155,9 @@ async function updateOrAddDB(
           const itemArr = item.specialType?.split(',') ?? [];
           if (dbArr.length > itemArr.length)
             throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
-        } else throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
+        } 
+        
+        else throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
       }
     }
 
@@ -186,7 +190,10 @@ async function updateOrAddDB(
 
     return undefined;
   } catch (e) {
-    if (typeof e !== 'string') throw e;
+    if (typeof e !== 'string') {
+      console.error(e)
+      throw e;
+    }
 
     await prisma.itemProcess.update({
       data: { manual_check: e },

@@ -144,7 +144,7 @@ const LoginPage = () => {
         return setNeedInfo(true);
       }
 
-      router.replace((router.query.redirect as string) || '/');
+      router.replace('/');
     } catch (e: any) {
       setError(e.message);
       console.error(error);
