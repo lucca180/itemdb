@@ -13,9 +13,9 @@ export default async function handle(
 ) {
   if (req.method === 'GET') return GET(req, res);
   if (req.method === 'POST') return POST(req, res);
-  
-  if (req.method == "OPTIONS") {
-    res.setHeader("Access-Control-Allow-Methods", "POST, GET");
+
+  if (req.method == 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Methods', 'POST, GET');
     return res.status(200).json({});
   }
 
@@ -25,7 +25,7 @@ export default async function handle(
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   let limit = req.query.limit ? Number(req.query.limit) : 50;
   limit = Math.min(limit, 100);
-  
+
   const resultRaw = (await prisma.$queryRaw`
     SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, c.addedAt as priceAdded, c.price, c.noInflation_id 
     FROM Items as a
@@ -93,7 +93,6 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
-  
   const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
   const items = data.items;
   const lang = data.lang;

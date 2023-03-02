@@ -7,7 +7,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Update and Restart Node Server
         uses: appleboy/ssh-action@master
@@ -32,4 +32,4 @@ jobs:
             rm -rf .next
             # rename `temp` folder to `.next`
             mv temp .next
-            pm2 reload itemdb-web
+            pm2 reload ecosystem.config.js

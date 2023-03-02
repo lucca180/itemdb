@@ -251,7 +251,7 @@ const CreateListModal = (props: Props) => {
               <Button variant="ghost" onClick={handleCancel} mr={3}>
                 Cancel
               </Button>
-              <Button onClick={saveChanges} disabled={!list.name}>
+              <Button onClick={saveChanges} isDisabled={!list.name}>
                 {props.list ? 'Save' : 'Create'}
               </Button>
             </>

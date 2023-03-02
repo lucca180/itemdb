@@ -7,6 +7,7 @@ import {
   Icon,
   Stack,
   Text,
+  useMediaQuery,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import Layout from '../../components/Layout';
@@ -29,7 +30,7 @@ import ItemPriceCard from '../../components/Price/ItemPriceCard';
 import axios from 'axios';
 import TradeCard from '../../components/Trades/TradeCard';
 import ItemTags from '../../components/Items/ItemTags';
-import ItemOfficialLists from '../../components/Items/ItemOfficialList';
+// import ItemOfficialLists from '../../components/Items/ItemOfficialList';
 import { FiSend, FiEdit3 } from 'react-icons/fi';
 import EditItemModal from '../../components/Modal/EditItemModal';
 import FeedbackModal from '../../components/Modal/FeedbackModal';
@@ -51,6 +52,7 @@ const ItemPage = () => {
   const [tags, setTags] = useState<ItemTag[]>([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [isLargerThanMD] = useMediaQuery('(min-width: 48em)');
 
   const color = item?.color.rgb ?? [255, 255, 255];
   const router = useRouter();
@@ -120,7 +122,7 @@ const ItemPage = () => {
           bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${color[0]},${color[1]}, ${color[2]},.4) 80%)`}
           zIndex={-1}
         />
-        <Flex gap={8} pt={6} alignItems="center">
+        <Flex gap={{ base: 4, md: 8 }} pt={6} alignItems="center">
           <Flex
             position="relative"
             p={2}
@@ -157,16 +159,35 @@ const ItemPage = () => {
                 </Badge>
               )}
             </Stack>
-            <Heading>{item.name}</Heading>
-            <Text>{item.description}</Text>
+            <Heading size={{ base: 'lg', md: undefined }}>{item.name}</Heading>
+            <Text fontSize={{ base: 'sm', md: 'inherit' }}>
+              {item.description}
+            </Text>
           </Box>
         </Flex>
       </Box>
 
-      <Flex minH="500px" gap={6} mt={5}>
-        <Flex flex="1" maxW="275px" flexFlow="column" gap={5}>
-          <AddToListSelect item={item} />
-          <FindAtCard item={item} />
+      <Flex
+        minH="500px"
+        gap={6}
+        mt={5}
+        flexFlow={{ base: 'column-reverse', md: 'row' }}
+        alignItems={{ base: 'center', md: 'inherit' }}
+      >
+        <Flex
+          flex="1"
+          maxW={{ base: '100vh', md: '275px' }}
+          w={{ base: '100%', md: 'auto' }}
+          minW="200px"
+          flexFlow="column"
+          gap={5}
+        >
+          {isLargerThanMD && (
+            <>
+              <AddToListSelect item={item} />
+              <FindAtCard item={item} />
+            </>
+          )}
           <ItemInfoCard item={item} />
           {colors && <ColorInfoCard colors={colors} />}
           <ItemTags
@@ -191,9 +212,19 @@ const ItemPage = () => {
             </Button>
           </Flex>
         </Flex>
-        <Flex flex="1" gap={6}>
-          <Flex flex="2" flexFlow="column" gap={6}>
+        <Flex
+          flex="3"
+          gap={{ base: 4, md: 6 }}
+          flexFlow={{ base: 'column', lg: 'row' }}
+        >
+          <Flex flex="2" flexFlow="column" gap={{ base: 4, md: 6 }}>
             {item.isMissingInfo && <MissingInfoCard />}
+            {!isLargerThanMD && (
+              <>
+                <AddToListSelect item={item} />
+                <FindAtCard item={item} />
+              </>
+            )}
             <ItemPriceCard
               item={item}
               lastSeen={seenStats}
@@ -205,7 +236,7 @@ const ItemPage = () => {
               tags={tags}
             /> */}
           </Flex>
-          <Flex w="300px" flexFlow="column" gap={6}>
+          <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>
             {item.isWearable && <ItemPreview item={item} />}
             {!item.isNC && <TradeCard item={item} trades={trades} />}
           </Flex>

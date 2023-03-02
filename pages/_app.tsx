@@ -5,12 +5,14 @@ import '../utils/global.css';
 import { initializeApp } from 'firebase/app';
 import { RecoilRoot } from 'recoil';
 import Head from 'next/head';
-import {init} from "@sentry/nextjs";
+import { init } from '@sentry/nextjs';
 
 const isProd = process.env.NODE_ENV === 'production';
 
 const firebaseConfig = {
-  apiKey: isProd ? process.env.NEXT_PUBLIC_FIREBASE_KEY_PROD : process.env.NEXT_PUBLIC_FIREBASE_KEY_DEV,
+  apiKey: isProd
+    ? process.env.NEXT_PUBLIC_FIREBASE_KEY_PROD
+    : process.env.NEXT_PUBLIC_FIREBASE_KEY_DEV,
   authDomain: 'itemdb-1db58.firebaseapp.com',
   projectId: 'itemdb-1db58',
   storageBucket: 'itemdb-1db58.appspot.com',
@@ -20,15 +22,11 @@ const firebaseConfig = {
 
 initializeApp(firebaseConfig);
 
-init({
-  dsn: "https://d093bca7709346a6a45966764e1b1988@o1042114.ingest.sentry.io/4504761196216321",
-
-  // Set tracesSampleRate to 1.0 to capture 100%
-  // of transactions for performance monitoring.
-  // We recommend adjusting this value in production
-  tracesSampleRate: 0.45,
-});
-
+if (isProd)
+  init({
+    dsn: 'https://d093bca7709346a6a45966764e1b1988@o1042114.ingest.sentry.io/4504761196216321',
+    tracesSampleRate: 0.45,
+  });
 
 function MyApp({ Component, pageProps }: any) {
   return (
@@ -36,7 +34,7 @@ function MyApp({ Component, pageProps }: any) {
       <ChakraProvider theme={theme}>
         <Head>
           <link rel="icon" href="/favicon.ico" />
-          <link rel="icon" href="/favicon.svg" type="image/svg+xml"/>
+          <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
           <title>itemdb - Open Source Neopets Item Database</title>
         </Head>
         <Component {...pageProps} />

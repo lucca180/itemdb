@@ -9,9 +9,8 @@ export default async function handle(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-
-  if (req.method == "OPTIONS") {
-    res.setHeader("Access-Control-Allow-Methods", "POST");
+  if (req.method == 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Methods', 'POST');
     return res.status(200).json({});
   }
 
@@ -20,7 +19,7 @@ export default async function handle(
 
   const itemName = req.body.itemName as string;
 
-  let limit = Number(req.body.limit) ?? 300;  
+  let limit = Number(req.body.limit) ?? 300;
   limit = isNaN(limit) ? 300 : limit;
   limit = Math.min(limit, 1000);
 
@@ -118,7 +117,7 @@ export default async function handle(
         finalPrice = Math.round(harmonicMean(out) / 500) * 500;
       if (finalPrice > 1000000)
         finalPrice = Math.round(harmonicMean(out) / 50000) * 50000;
-        
+
       priceAddPromises.push(
         updateOrAddDB(item, finalPrice, usedIDs, latestDate).then((_) => {
           if (_) processedIDs.push(...allIDs);

@@ -1,23 +1,26 @@
 import {
   Box,
-  Button,
   Flex,
   HStack,
+  IconButton,
   Select,
   Skeleton,
   Text,
+  useDisclosure,
+  useMediaQuery,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import ItemCard from '../components/Items/ItemCard';
 import { SearchStats } from '../types';
 import { useRouter } from 'next/router';
-import CardBase from '../components/Card/CardBase';
-import SearchFilters from '../components/Search/SearchFilters';
 import axios from 'axios';
 import { SearchFilters as SearchFiltersType, SearchResults } from '../types';
 import Pagination from '../components/Input/Pagination';
 import qs from 'qs';
+import SearchFilterCard from '../components/Search/SearchFiltersCard';
+import SearchFilterModal from '../components/Search/SearchFiltersModal';
+import { BsFilterSquareFill } from 'react-icons/bs';
 
 const Axios = axios.create({
   baseURL: '/api/',
@@ -43,6 +46,8 @@ const SearchPage = () => {
   const [searchStatus, setStatus] = useState<SearchStats | null>(null);
   const [filters, setFilters] = useState<SearchFiltersType>(defaultFilters);
   const [isColorSearch, setIsColorSearch] = useState<boolean>(false);
+  const [isLargerThanLG] = useMediaQuery('(min-width: 62em)');
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const router = useRouter();
 
@@ -167,43 +172,72 @@ const SearchPage = () => {
 
   return (
     <Layout>
-      <Flex gap={8}>
-        <Box width="20%">
-          <CardBase title="Search Filters" noPadding>
-            <SearchFilters
-              onChange={handleFilterChange}
+      <Flex
+        gap={4}
+        flexFlow={{ base: 'column', lg: 'row' }}
+        alignItems={{ base: 'center', lg: 'flex-start' }}
+      >
+        {isLargerThanLG && (
+          <Box flex="1 0 auto" maxW={{ base: 'none', md: '275px' }} w="100%">
+            <SearchFilterCard
               filters={filters}
               stats={searchStatus}
               isColorSearch={isColorSearch}
+              onChange={handleFilterChange}
+              resetFilters={resetFilters}
+              applyFilters={init}
             />
-            <HStack justifyContent="center" my={3}>
-              <Button
-                variant="outline"
-                onClick={resetFilters}
-                colorScheme="gray"
-                size="sm"
+          </Box>
+        )}
+        {!isLargerThanLG && (
+          <SearchFilterModal
+            isOpen={isOpen}
+            onClose={onClose}
+            filters={filters}
+            stats={searchStatus}
+            isColorSearch={isColorSearch}
+            onChange={handleFilterChange}
+            resetFilters={resetFilters}
+            applyFilters={init}
+          />
+        )}
+        <Box flex="1">
+          <Flex
+            justifyContent={'space-between'}
+            alignItems="center"
+            flexFlow={{ base: 'column-reverse', lg: 'row' }}
+            gap={3}
+          >
+            <HStack justifyContent={'space-between'} w="100%">
+              <Text
+                as="div"
+                textColor={'gray.300'}
+                fontSize={{ base: 'xs', sm: 'sm' }}
               >
-                Reset
-              </Button>
-              <Button
-                variant="outline"
-                colorScheme="green"
-                size="sm"
-                onClick={() => init()}
-              >
-                Apply Filters
-              </Button>
+                {searchResult && <>{searchResult?.total_results} results</>}
+                {!searchResult && <Skeleton width="100px" h="15px" />}
+              </Text>
+              {!isLargerThanLG && (
+                <IconButton
+                  aria-label="search filters"
+                  onClick={onOpen}
+                  icon={<BsFilterSquareFill />}
+                />
+              )}
             </HStack>
-          </CardBase>
-        </Box>
-        <Box width="80%">
-          <HStack justifyContent={'space-between'} alignItems="center">
-            <Text as="div" textColor={'gray.300'} fontSize="sm">
-              {searchResult && <>{searchResult?.total_results} results</>}
-              {!searchResult && <Skeleton width="100px" h="15px" />}
-            </Text>
-            <HStack flex="0 0 auto" minW={350}>
-              <Text flex="0 0 auto" textColor={'gray.300'} fontSize="sm">
+            <Flex
+              flex="0 1 auto"
+              mx={0}
+              minW={{ base: 'none', sm: 350 }}
+              w={{ base: '100%', sm: 'auto' }}
+              gap={2}
+              alignItems="center"
+            >
+              <Text
+                flex="0 0 auto"
+                textColor={'gray.300'}
+                fontSize={{ base: 'xs', sm: 'sm' }}
+              >
                 Sort By
               </Text>
               <Select
@@ -211,6 +245,7 @@ const SearchPage = () => {
                 variant="filled"
                 value={filters.sortBy}
                 onChange={handleSelectChange}
+                size={{ base: 'sm', sm: 'md' }}
               >
                 <option value="name">Name</option>
                 <option value="price">Price</option>
@@ -225,13 +260,19 @@ const SearchPage = () => {
                 variant="filled"
                 value={filters.sortDir}
                 onChange={handleSelectChange}
+                size={{ base: 'sm', sm: 'md' }}
               >
                 <option value="asc">Ascending</option>
                 <option value="desc">Descending</option>
               </Select>
-            </HStack>
-          </HStack>
-          <Flex mt={4} flexWrap="wrap" gap={5}>
+            </Flex>
+          </Flex>
+          <Flex
+            mt={4}
+            flexWrap="wrap"
+            gap={{ base: 3, md: 4 }}
+            justifyContent="center"
+          >
             {searchResult?.content.map((item) => (
               <ItemCard item={item} key={item.internal_id} />
             ))}

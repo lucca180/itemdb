@@ -11,8 +11,8 @@ export default async function handle(
   if (req.method === 'GET') return GET(req, res);
   if (req.method === 'POST') return POST(req, res);
 
-  if (req.method == "OPTIONS") {
-    res.setHeader("Access-Control-Allow-Methods", "POST, GET");
+  if (req.method == 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Methods', 'POST, GET');
     return res.status(200).json({});
   }
 
@@ -50,20 +50,21 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-
   const itemPrices = data.itemPrices;
+
   const lang = data.lang;
 
   const dataList = [];
   for (const priceInfo of itemPrices) {
     let { name, img, owner, stock, value, otherInfo, type, item_id, neo_id } =
       priceInfo;
-      
+
     let imageId: string | null = null;
 
     stock = isNaN(Number(stock)) ? undefined : Number(stock);
     value = isNaN(Number(value)) ? undefined : Number(value);
     item_id = isNaN(Number(item_id)) ? undefined : Number(item_id);
+    neo_id = isNaN(Number(neo_id)) ? undefined : Number(neo_id);
 
     if (!name || !value) continue;
 
@@ -90,12 +91,15 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       hash: '',
     };
 
-    const dateHash = new Date().toISOString().slice(0, 10);
+    const dateHash = neo_id ? undefined : new Date().toISOString().slice(0, 10);
 
-    x.hash = hash({...x, dateHash}, {
-      excludeKeys: (key: string) =>
-        ['ip_address', 'hash', 'stock'].includes(key),
-    });
+    x.hash = hash(
+      { ...x, dateHash },
+      {
+        excludeKeys: (key: string) =>
+          ['ip_address', 'hash', 'stock'].includes(key),
+      }
+    );
 
     dataList.push(x);
   }

@@ -26,8 +26,7 @@ let alreadyCalled = false;
 let itemsHistory = JSON.parse(localStorage?.getItem('idb_itemHistory')) ?? {};
 let restockHistory =
   JSON.parse(localStorage?.getItem('idb_restockHistory')) ?? {};
-let tradeHistory =
-  JSON.parse(localStorage?.getItem('idb_tradeHistory')) ?? {};
+let tradeHistory = JSON.parse(localStorage?.getItem('idb_tradeHistory')) ?? {};
 
 // check the page language (default as english)
 const pageLang = nl ?? 'en';
@@ -37,11 +36,11 @@ function URLHas(string) {
   return window.location.href.includes(string);
 }
 
-if(URLHas('idb_clear')){
+if (URLHas('idb_clear')) {
   localStorage.removeItem('idb_itemHistory');
   localStorage.removeItem('idb_restockHistory');
   localStorage.removeItem('idb_tradeHistory');
-  
+
   itemsHistory = {};
   restockHistory = {};
   tradeHistory = {};
@@ -82,7 +81,6 @@ function handleInventory() {
           itemsObj[itemKey] = item;
           itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
           itemsHistory[itemKey].inventory = true;
-          ;
         }
       });
 
@@ -126,7 +124,6 @@ function handleSDB() {
       itemsObj[itemKey] = item;
       itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
       itemsHistory[itemKey].sdb = true;
-      ;
     }
   });
 
@@ -182,7 +179,6 @@ function handleTrades() {
           itemsObj[itemKey] = item;
           itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
           itemsHistory[itemKey].trades = true;
-          ;
         }
       });
 
@@ -190,7 +186,7 @@ function handleTrades() {
   });
 
   submitItems();
-  submitTrades()
+  submitTrades();
 }
 
 function handleMyShop() {
@@ -220,7 +216,6 @@ function handleMyShop() {
       itemsObj[itemKey] = item;
       itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
       itemsHistory[itemKey].myshop = true;
-      
     }
   });
 
@@ -249,7 +244,6 @@ function handleGeneralShops() {
       itemsObj[itemKey] = item;
       itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
       itemsHistory[itemKey].generalshop = true;
-      
     }
   });
 
@@ -277,7 +271,6 @@ function handleGallery() {
       itemsObj[itemKey] = item;
       itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
       itemsHistory[itemKey].gallery = true;
-      
     }
   });
 
@@ -306,7 +299,6 @@ function handleGalleryAdmin() {
       itemsObj[itemKey] = item;
       itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
       itemsHistory[itemKey].galleryAdmin = true;
-      
     }
   });
 
@@ -319,7 +311,7 @@ function handleSWPrices() {
   $(document).ajaxSuccess(() => {
     const itemName = $('.wizard-results-text h3').text();
     const items = $('.wizard-results-grid-shop li').clone().slice(1);
-    
+
     items.each(function (i) {
       const shopOwner = $(this).find('a').text();
       const stock = $(this).find('p').text();
@@ -348,23 +340,35 @@ function handleSWPrices() {
   });
 }
 
-function handleSSWPrices(){
+function handleSSWPrices() {
   $(document).ajaxSuccess(() => {
-    const resultTrs = isBeta ? $(".ssw-results-grid li").slice(1) : $("#ssw-tabs-2 #results_table tr").slice(1)
-    if(resultTrs.length === 0) return;
+    const resultTrs = isBeta
+      ? $('.ssw-results-grid li').slice(1)
+      : $('#ssw-tabs-2 #results_table tr').slice(1);
+    if (resultTrs.length === 0) return;
 
-    const itemName = $("#search_for").text().match(/'(.*?)'/gm)?.[1] 
+    const itemName = $('#search_for')
+      .text()
+      .match(/'(.*?)'/gm)?.[1];
 
-    if(isBeta){
+    if (isBeta) {
       resultTrs.each(function (i) {
         const shopOwner = $(this).find('div').eq(0).text();
-        const itemID = $(this).find('div a').eq(0).attr('href').match(/(?<=obj_info_id\=)\d+/)?.[0];
-        const price = $(this).find('div a').eq(0).attr('href').match(/(?<=buy_cost_neopoints\=)\d+/)?.[0];
+        const itemID = $(this)
+          .find('div a')
+          .eq(0)
+          .attr('href')
+          .match(/(?<=obj_info_id\=)\d+/)?.[0];
+        const price = $(this)
+          .find('div a')
+          .eq(0)
+          .attr('href')
+          .match(/(?<=buy_cost_neopoints\=)\d+/)?.[0];
         const stock = $(this).find('div').eq(1).text();
 
         const itemPriceInfo = {
           item_id: itemID,
-          name: itemName.slice(1,-1),
+          name: itemName.slice(1, -1),
           owner: shopOwner.slice(0, 3).padEnd(6, '*'),
           stock: parseInt(stock),
           value: parseInt(price),
@@ -372,19 +376,25 @@ function handleSSWPrices(){
         };
 
         priceList.push(itemPriceInfo);
-        
       });
-    }
-    else {
+    } else {
       resultTrs.each(function (i) {
         const shopOwner = $(this).find('td').eq(0).text();
-        const itemID = $(this).find('td a').eq(0).attr('href').match(/(?<=obj_info_id\=)\d+/)?.[0];
-        const price = $(this).find('td a').eq(0).attr('href').match(/(?<=buy_cost_neopoints\=)\d+/)?.[0];
+        const itemID = $(this)
+          .find('td a')
+          .eq(0)
+          .attr('href')
+          .match(/(?<=obj_info_id\=)\d+/)?.[0];
+        const price = $(this)
+          .find('td a')
+          .eq(0)
+          .attr('href')
+          .match(/(?<=buy_cost_neopoints\=)\d+/)?.[0];
         const stock = $(this).find('td').eq(2).text();
 
         const itemPriceInfo = {
           item_id: itemID,
-          name: itemName.slice(1,-1),
+          name: itemName.slice(1, -1),
           owner: shopOwner.slice(0, 3).padEnd(6, '*'),
           stock: parseInt(stock),
           value: parseInt(price),
@@ -392,7 +402,6 @@ function handleSSWPrices(){
         };
 
         priceList.push(itemPriceInfo);
-        
       });
     }
 
@@ -402,7 +411,7 @@ function handleSSWPrices(){
 
 function handleAuctionPrices() {
   let auctions;
-  
+
   if (URLHas('genie.phtml'))
     auctions = $('.content > table tr').clone().slice(1);
 
@@ -411,7 +420,11 @@ function handleAuctionPrices() {
 
   auctions.each(function (i) {
     const tds = $(this).find('td');
-    const auction_id = tds.eq(1).find('a').attr('href').match(/(?<=auction_id\=)\d+/)?.[0];
+    const auction_id = tds
+      .eq(1)
+      .find('a')
+      .attr('href')
+      .match(/(?<=auction_id\=)\d+/)?.[0];
     const img = tds.eq(1).find('img').attr('src');
     const itemName = tds.eq(2).find('a').first().text();
     const owner = tds.eq(3).find('.sf').text();
@@ -436,7 +449,6 @@ function handleAuctionPrices() {
     };
 
     priceList.push(itemPriceInfo);
-    
   });
 
   submitPrices();
@@ -468,7 +480,6 @@ function handleRestock() {
     };
 
     priceList.push(itemInfo);
-    
   });
 
   submitPrices();
@@ -488,7 +499,8 @@ if (URLHas('obj_type')) handleRestock();
 if (URLHas('wizard.phtml')) handleSWPrices();
 if (URLHas('genie.phtml') || URLHas('auctions.phtml')) handleAuctionPrices();
 if (URLHas('gallery/index.phtml')) handleGallery();
-if (URLHas('gallery/quickremove.phtml') || URLHas('gallery/quickcat.phtml')) handleGalleryAdmin();
+if (URLHas('gallery/quickremove.phtml') || URLHas('gallery/quickcat.phtml'))
+  handleGalleryAdmin();
 if (hasSSW) handleSSWPrices();
 
 // ----------- //
@@ -513,11 +525,10 @@ async function submitItems() {
     }),
   });
 
-  if (res.ok){
+  if (res.ok) {
     localStorage?.setItem('idb_itemHistory', JSON.stringify(itemsHistory));
     itemsObj = {};
-  }
-  else {
+  } else {
     console.error('[itemdb] submitItems error:', res);
   }
 }
@@ -537,11 +548,10 @@ async function submitPrices() {
     }),
   });
 
-  if (res.ok){
+  if (res.ok) {
     localStorage?.setItem('idb_restockHistory', JSON.stringify(restockHistory));
     priceList = [];
-  }
-  else {
+  } else {
     console.error('[itemdb] submitPrices error:', res);
   }
 }
@@ -561,11 +571,10 @@ async function submitTrades() {
     }),
   });
 
-  if (res.ok){
+  if (res.ok) {
     localStorage?.setItem('idb_tradeHistory', JSON.stringify(tradeHistory));
     tradeList = [];
-  }
-  else {
+  } else {
     console.error('[itemdb] submitTrades error:', res);
   }
 }

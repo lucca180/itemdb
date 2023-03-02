@@ -13,8 +13,8 @@ export default async function handle(
     if (req.method === 'POST') return POST(req, res);
     if (req.method === 'PATCH') return PATCH(req, res);
 
-    if (req.method == "OPTIONS") {
-      res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH");
+    if (req.method == 'OPTIONS') {
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH');
       return res.status(200).json({});
     }
 

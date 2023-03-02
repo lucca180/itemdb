@@ -48,13 +48,13 @@ export type ItemColorData = {
   hex: string;
   type: 'vibrant';
   population: number;
-}
+};
 
 export type ItemPriceData = {
   addedAt: string | null;
   value: number | null;
   inflated: boolean;
-}
+};
 
 export type ColorType =
   | 'vibrant'

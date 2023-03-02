@@ -64,7 +64,7 @@ const ItemPriceCard = (props: Props) => {
         borderBottomRadius="md"
       >
         <Flex gap={3} flexFlow="column">
-          <HStack>
+          <Flex flexFlow={{ base: 'column', md: 'row' }} alignItems="center">
             <Stat flex="initial" textAlign="center" minW="20%">
               {item.price.inflated && (
                 <Text fontWeight="bold" color="red.300">
@@ -123,8 +123,11 @@ const ItemPriceCard = (props: Props) => {
                 </Flex>
               )}
             </Flex>
-          </HStack>
-          <HStack justifyContent="space-around">
+          </Flex>
+          <HStack
+            justifyContent={{ base: 'space-between', md: 'space-around' }}
+            textAlign="center"
+          >
             <Stat flex="initial">
               <StatLabel>Last SW</StatLabel>
               <StatHelpText>

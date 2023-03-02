@@ -12,7 +12,7 @@ export default async function handle(
   if (req.method !== 'POST')
     return res.status(405).json({ error: 'Method not allowed' });
 
-  let limit = Number(req.body.limit) ?? 300;  
+  let limit = Number(req.body.limit) ?? 300;
   limit = isNaN(limit) ? 300 : limit;
   limit = Math.min(limit, 1000);
 
@@ -24,7 +24,8 @@ export default async function handle(
   // list of unique entries
   const uniqueNames = [...processList].filter(
     (value, index, self) =>
-      index === self.findIndex((t) => genItemKey(t, true) === genItemKey(value, true))
+      index ===
+      self.findIndex((t) => genItemKey(t, true) === genItemKey(value, true))
   );
 
   const deleteIds: number[] = [];
@@ -38,9 +39,9 @@ export default async function handle(
     const itemData = { ...item };
 
     for (const itemOtherData of allItemData) {
-      for (const key of Object.keys(itemData))
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
+      for (const key of Object.keys(itemData))
         itemData[key] ??= itemOtherData[key];
 
       deleteIds.push(itemOtherData.internal_id);

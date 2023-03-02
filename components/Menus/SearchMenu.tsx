@@ -5,6 +5,7 @@ import {
   IconButton,
   MenuList,
   MenuItem,
+  Portal,
 } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 
@@ -17,12 +18,14 @@ const SearchMenu = () => {
 
   return (
     <Menu>
-      <MenuButton as={IconButton}>
-        <ChevronDownIcon />
+      <MenuButton size="sm" as={IconButton}>
+        <ChevronDownIcon boxSize="20px" />
       </MenuButton>
-      <MenuList>
-        <MenuItem onClick={() => goTo('/search')}>Advanced Search</MenuItem>
-      </MenuList>
+      <Portal>
+        <MenuList>
+          <MenuItem onClick={() => goTo('/search')}>Advanced Search</MenuItem>
+        </MenuList>
+      </Portal>
     </Menu>
   );
 };

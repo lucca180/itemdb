@@ -11,17 +11,17 @@ const nextConfig = {
     domains: ['images.neopets.com', 'magnetismotimes.com'],
   },
   distDir: process.env.BUILD_DIR || '.next',
-  async headers(){
+  async headers() {
     return [
       {
         source: '/api/v1/(.*)',
         headers: [
-          {key: "Access-Control-Allow-Origin", value: "*"},
-          {key: "Access-Control-Allow-Headers", value: "Content-Type"}
-        ]
-      }
-    ]
-  }
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Headers', value: 'Content-Type' },
+        ],
+      },
+    ];
+  },
 };
 
 const sentryWebpackPluginOptions = {
@@ -41,4 +41,7 @@ const withTM = require('next-transpile-modules')([
   'fancy-canvas',
 ]);
 
-module.exports = withSentryConfig(withTM(nextConfig), sentryWebpackPluginOptions);
+module.exports = withSentryConfig(
+  withTM(nextConfig),
+  sentryWebpackPluginOptions
+);

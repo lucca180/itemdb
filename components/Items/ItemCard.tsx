@@ -31,10 +31,10 @@ const ItemCard = (props: Props) => {
   if (!item || isLoading || !color)
     return (
       <Box
-        py={4}
+        w={{ base: 100, md: 150 }}
+        py={{ base: 2, md: 4 }}
         px={2}
         bg="gray.700"
-        w={150}
         h="100%"
         borderRadius="md"
         display="flex"
@@ -58,11 +58,11 @@ const ItemCard = (props: Props) => {
       pointerEvents={disableLink ? 'none' : 'initial'}
     >
       <Box
-        py={4}
+        w={{ base: 100, md: 150 }}
+        py={{ base: 2, md: 4 }}
         px={2}
         bg="gray.700"
         bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${color[0]},${color[1]}, ${color[2]},.4) 50%)`}
-        w={150}
         h="100%"
         borderRadius="md"
         display="flex"
@@ -83,7 +83,7 @@ const ItemCard = (props: Props) => {
           alt={item.name}
           title={item.description}
         />
-        <Text fontSize="sm">{item.name}</Text>
+        <Text fontSize={{ base: 'xs', md: 'sm' }}>{item.name}</Text>
 
         {item.price.value && item.price.inflated && (
           <Tooltip

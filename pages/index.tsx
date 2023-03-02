@@ -22,12 +22,15 @@ const HomePage = () => {
     setItems(itemData);
   };
 
-  if(isProd) return (
-    <Center h="100vh" flexFlow="column">
-      <Image src={logo} alt="itemdb logo" width={500} quality="100" />
-      <Heading size="sm" mt={4}>Coming Soon™</Heading>
-    </Center>
-    )
+  if (isProd)
+    return (
+      <Center h="100vh" flexFlow="column">
+        <Image src={logo} alt="itemdb logo" width={500} quality="100" />
+        <Heading size="sm" mt={4}>
+          Coming Soon™
+        </Heading>
+      </Center>
+    );
 
   return (
     <Layout>

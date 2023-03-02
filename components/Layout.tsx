@@ -14,16 +14,23 @@ import {
   MenuList,
   Text,
   useDisclosure,
+  Image,
+  Icon,
+  useMediaQuery,
+  MenuGroup,
 } from '@chakra-ui/react';
 
-import Image from 'next/image';
+import NextImage from 'next/image';
 import logo from '../public/logo_white.svg';
+import logo_icon from '../public/logo_icon.svg';
 import { ChevronDownIcon, SearchIcon } from '@chakra-ui/icons';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import SearchMenu from './Menus/SearchMenu';
 import LoginModal from './Modal/LoginModal';
 import { useAuth } from '../utils/auth';
+import { AiFillHeart } from 'react-icons/ai';
+import { BsBoxArrowInRight, BsFillPersonFill } from 'react-icons/bs';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -36,6 +43,7 @@ const Layout = (props: Props) => {
   const [search, setSearch] = React.useState<string>('');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { user, authLoading, signout } = useAuth();
+  const [isLargerThanMD] = useMediaQuery('(min-width: 48em)');
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -52,78 +60,143 @@ const Layout = (props: Props) => {
     <>
       <LoginModal isOpen={isOpen} onClose={onClose} />
       <Flex flexFlow="column" minH="100vh">
-        <Box
+        <Flex
           as="header"
           w="full"
           maxW="8xl"
           marginX="auto"
-          display="flex"
-          gap={4}
-          justifyContent="space-between"
+          gap={{ base: 2, md: 4 }}
           px={4}
           py={6}
         >
-          <Link href="/">
-            <Image src={logo} alt="itemdb logo" width={175} quality={100} />
-          </Link>
-          <Box flex="1 0 auto" display="flex" justifyContent="center">
+          <Flex as={Link} href="/" flex={'0 0 auto'}>
+            <Image
+              as={NextImage}
+              src={logo_icon}
+              alt="itemdb logo"
+              height="50px"
+              width="auto"
+              quality={100}
+              display={{ base: 'inherit', md: 'none' }}
+            />
+            <Image
+              as={NextImage}
+              src={logo}
+              alt="itemdb logo"
+              width={175}
+              quality={100}
+              display={{ base: 'none', md: 'inherit' }}
+            />
+          </Flex>
+          <Box
+            flex="1 1 auto"
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+          >
             <InputGroup
               as="form"
               onSubmit={onSubmit}
               maxW="700px"
               w="100%"
               h="100%"
+              maxH="50px"
             >
               <InputLeftElement
                 pointerEvents="none"
-                h="100%"
                 children={<SearchIcon color="gray.300" />}
+                h="100%"
               />
               <Input
-                h="100%"
                 variant="filled"
                 bg="gray.700"
                 type="text"
+                fontSize={{ base: 'sm', md: 'md' }}
                 onChange={(e) => setSearch(e.target.value)}
                 value={search}
-                placeholder="Search by name or hex color (eg: #fff000)"
+                placeholder={
+                  isLargerThanMD
+                    ? 'Search by name or hex color (eg: #fff000)'
+                    : 'Search the database'
+                }
                 _focus={{ bg: 'gray.700' }}
+                h="100%"
               />
-              <InputRightElement h="100%" mr={1} children={<SearchMenu />} />
+              <InputRightElement mr={1} children={<SearchMenu />} h="100%" />
             </InputGroup>
           </Box>
-          <Box display="flex" gap={3} alignItems="center" maxW="30%">
-            {authLoading && <Text>Loading...</Text>}
+          <Box
+            display="flex"
+            gap={{ base: 2, md: 3 }}
+            alignItems="center"
+            maxW="30%"
+          >
+            <Button
+              as="a"
+              href="http://magnetismotimes.com/"
+              target="_blank"
+              colorScheme="whiteAlpha"
+              bg="gray.100"
+              _hover={{ color: 'red.400' }}
+              _active={{ bg: 'gray.200' }}
+              color="red.500"
+              display={{ base: 'none', sm: 'inherit' }}
+            >
+              <Icon as={AiFillHeart} boxSize="18px" />
+            </Button>
+            {authLoading && <Button isLoading />}
             {!authLoading && (
               <>
                 {!user && (
                   <Button
-                    as="a"
-                    href="http://magnetismotimes.com/"
-                    target="_blank"
-                    colorScheme="whiteAlpha"
-                    bg="gray.200"
-                    _hover={{ bg: 'gray.200' }}
-                    _active={{ bg: 'gray.200' }}
-                    fontSize="sm"
+                    variant="filled"
+                    bg="gray.700"
+                    _hover={{ bg: 'gray.600' }}
+                    onClick={onOpen}
+                    px={{ base: 0, md: 4 }}
                   >
-                    How to Contribute
-                  </Button>
-                )}
-                {!user && (
-                  <Button variant="ghost" fontSize="sm" onClick={onOpen}>
-                    Login
+                    <Icon
+                      as={BsBoxArrowInRight}
+                      boxSize="18px"
+                      mr={2}
+                      verticalAlign="text-top"
+                    />
+                    <Box as="span" display={{ base: 'none', md: 'inline' }}>
+                      Login
+                    </Box>
                   </Button>
                 )}
                 {user && (
                   <>
                     <Menu>
-                      <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
-                        Hi, {user.username}
+                      <MenuButton
+                        as={Button}
+                        rightIcon={<ChevronDownIcon />}
+                        px={{ base: 2, md: 4 }}
+                        textAlign="center"
+                      >
+                        {isLargerThanMD && (
+                          <Box as="span">Hi, {user.username}</Box>
+                        )}
+                        <Icon
+                          as={BsFillPersonFill}
+                          display={{ base: 'inherit', md: 'none' }}
+                          boxSize="18px"
+                        />
                       </MenuButton>
                       <MenuList>
-                        <MenuItem>My Lists</MenuItem>
-                        <MenuItem>How to Contribute</MenuItem>
+                        <MenuGroup
+                          title={
+                            !isLargerThanMD
+                              ? `Hello, ${user.username}`
+                              : undefined
+                          }
+                        >
+                          <MenuItem as={Link} href={`/lists/${user.username}`}>
+                            My Lists
+                          </MenuItem>
+                          <MenuItem>How to Contribute</MenuItem>
+                        </MenuGroup>
                         <MenuDivider />
                         <MenuItem onClick={signout}>Logout</MenuItem>
                       </MenuList>
@@ -133,7 +206,7 @@ const Layout = (props: Props) => {
               </>
             )}
           </Box>
-        </Box>
+        </Flex>
         <Box
           as="main"
           flex="1"
@@ -146,7 +219,7 @@ const Layout = (props: Props) => {
         >
           {props.children}
         </Box>
-        <Box as="footer" textAlign={'center'} py={2}>
+        <Box as="footer" textAlign={'center'} p={2}>
           <Text fontSize="xs" color="gray.500">
             © 2009-{new Date().getFullYear()} Magnetismo Times
             <br />© 1999-{new Date().getFullYear()} NeoPets, Inc. All rights

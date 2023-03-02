@@ -23,7 +23,7 @@ const PriceTable = (props: Props) => {
   const sortedData = data;
 
   return (
-    <TableContainer minH={200}>
+    <TableContainer minH={{ base: 100, md: 200 }}>
       <Table h="100%" variant="striped" colorScheme="gray" size="sm">
         {/* <TableCaption>Imperial to metric conversion factors</TableCaption> */}
         {/* <Thead>
