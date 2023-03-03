@@ -125,7 +125,7 @@ const ItemPage = () => {
             minW="100px"
             minH="100px"
           >
-            <Image src={item.image} width={80} height={80} alt={item.name} unoptimized/>
+            <Image src={item.image} width={80} height={80} alt={item.name} unoptimized />
           </Flex>
           <Box>
             <Stack direction="row" mb={1}>
@@ -185,7 +185,13 @@ const ItemPage = () => {
             </Button>
           </Flex>
         </Flex>
-        <Flex flex="3" gap={{ base: 4, md: 6 }} flexFlow={{ base: 'column', lg: 'row' }}>
+        <Flex
+          flex="3"
+          gap={{ base: 4, md: 6 }}
+          flexFlow={{ base: 'column', lg: 'row' }}
+          maxW={{ base: '100vh', md: 'none' }}
+          w={{ base: '100%', md: 'auto' }}
+        >
           <Flex flex="2" flexFlow="column" gap={{ base: 4, md: 6 }}>
             {item.isMissingInfo && <MissingInfoCard />}
             {!isLargerThanMD && (

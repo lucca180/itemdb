@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Items as Item, ItemProcess, Items, ItemColor } from '@prisma/client';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
@@ -35,7 +36,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     for (const itemOtherData of allItemData) {
       for (const key of Object.keys(itemData) as Array<keyof ItemProcess>) {
-        (itemData as Record<keyof ItemProcess, ValueOf<ItemProcess>>)[key] ??= itemOtherData[key];
+        (itemData as Record<keyof ItemProcess, ValueOf<ItemProcess>>)[key] ||= itemOtherData[key];
       }
 
       deleteIds.push(itemOtherData.internal_id);
@@ -119,21 +120,18 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
 
     // merge the data we're missing
     let hasChange = false;
+    const forceMerge = ['type', 'isNC', 'isWearable', 'status'];
     for (const key of Object.keys(dbItem) as Array<keyof typeof dbItem>) {
       if (['internal_id', 'addedAt', 'updatedAt'].includes(key)) continue;
 
       if (!dbItem[key]) {
         const temp = dbItem[key];
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        dbItem[key] ??= item[key];
+        dbItem[key] ||= item[key];
         hasChange ||= dbItem[key] !== temp;
-
-        //yeah two weird operators in the same block \o/
       }
 
       // merge conflict
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       if (dbItem[key] && item[key] && dbItem[key] !== item[key]) {
         // check if we're gaining info with specialType
@@ -142,6 +140,16 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
           const itemArr = item.specialType?.split(',') ?? [];
           if (dbArr.length > itemArr.length)
             throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
+        } else if (forceMerge.includes(key)) {
+          if (
+            (key == 'status' && dbItem.status == 'active') ||
+            (key == 'type' && dbItem.type == 'np')
+          )
+            //@ts-ignore
+            dbItem[key] = item[key];
+
+          // @ts-ignore
+          dbItem[key] ||= item[key];
         } else throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
       }
     }

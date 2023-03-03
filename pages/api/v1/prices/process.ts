@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { genItemKey, coefficientOfVariation } from '../../../../utils/utils';
-import { harmonicMean, standardDeviation } from 'simple-statistics';
+import { geometricMean, standardDeviation } from 'simple-statistics';
 import { ItemPrices, PriceProcess } from '@prisma/client';
 import { differenceInCalendarDays } from 'date-fns';
 
@@ -48,12 +49,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
       // merge all reports data
       for (const itemOtherData of allItemData) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         //@ts-ignore
-        for (const key of Object.keys(item)) item[key] ??= itemOtherData[key];
+        for (const key of Object.keys(item)) item[key] ||= itemOtherData[key];
       }
-
-      const allIDs = allItemData.map((x) => x.internal_id);
 
       const filteredResult = allItemData
         .filter(
@@ -72,13 +70,15 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         return o.internal_id;
       });
 
-      if (filteredResult.length < 5 && differenceInCalendarDays(Date.now(), latestDate) < 30)
+      const allIDs = allItemData.filter((x) => x.addedAt <= latestDate).map((x) => x.internal_id);
+
+      if (filteredResult.length < 5 && differenceInCalendarDays(Date.now(), latestDate) < 14)
         continue;
 
       const prices = filteredResult.map((x) => x.price);
 
       let priceSTD = standardDeviation(prices);
-      let priceMean = Math.round(harmonicMean(prices));
+      let priceMean = Math.round(geometricMean(prices));
 
       let oldPrices = prices;
 
@@ -86,19 +86,19 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
       while (out.length > 5 && out.length < oldPrices.length) {
         oldPrices = out;
-        priceMean = Math.round(harmonicMean(out));
+        priceMean = Math.round(geometricMean(out));
         priceSTD = standardDeviation(out);
 
         out = prices.filter((x) => x <= priceMean + priceSTD && x >= priceMean - priceSTD * 3);
       }
 
       let finalPrice =
-        harmonicMean(out) < 5
-          ? Math.round(harmonicMean(out))
-          : Math.round(harmonicMean(out) / 5) * 5;
-      if (finalPrice > 10000) finalPrice = Math.round(harmonicMean(out) / 50) * 50;
-      if (finalPrice > 100000) finalPrice = Math.round(harmonicMean(out) / 500) * 500;
-      if (finalPrice > 1000000) finalPrice = Math.round(harmonicMean(out) / 50000) * 50000;
+        geometricMean(out) < 5
+          ? Math.round(geometricMean(out))
+          : Math.round(geometricMean(out) / 5) * 5;
+      if (finalPrice > 10000) finalPrice = Math.round(geometricMean(out) / 50) * 50;
+      if (finalPrice > 100000) finalPrice = Math.round(geometricMean(out) / 500) * 500;
+      if (finalPrice > 1000000) finalPrice = Math.round(geometricMean(out) / 50000) * 50000;
 
       priceAddPromises.push(
         updateOrAddDB(item, finalPrice, usedIDs, latestDate).then((_) => {
@@ -113,16 +113,18 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 
   const priceAddList = (await Promise.all(priceAddPromises)).filter((x) => !!x) as ItemPrices[];
-  const result = await prisma.itemPrices.createMany({ data: priceAddList });
 
-  const resultUpdate = await prisma.priceProcess.updateMany({
-    data: { processed: true },
-    where: {
-      internal_id: { in: processedIDs },
-    },
-  });
+  const result = await prisma.$transaction([
+    prisma.itemPrices.createMany({ data: priceAddList }),
+    prisma.priceProcess.updateMany({
+      data: { processed: true },
+      where: {
+        internal_id: { in: processedIDs },
+      },
+    }),
+  ]);
 
-  return res.send({ priceUpdate: result, priceProcessed: resultUpdate });
+  return res.send({ priceUpdate: result[0], priceProcessed: result[1] });
 }
 
 async function updateOrAddDB(
@@ -163,7 +165,6 @@ async function updateOrAddDB(
 
     // last update less than 1 week ago or data is older than current
     if (daysSinceLastUpdate < 7) return undefined;
-
     if (latestDate < oldPrice.addedAt) {
       throw 'old data';
     }
