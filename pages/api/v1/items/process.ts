@@ -134,13 +134,17 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
       // merge conflict
       // @ts-ignore
       if (dbItem[key] && item[key] && dbItem[key] !== item[key]) {
+
         // check if we're gaining info with specialType
         if (key === 'specialType') {
           const dbArr = dbItem.specialType?.split(',') ?? [];
           const itemArr = item.specialType?.split(',') ?? [];
           if (dbArr.length > itemArr.length)
             throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
-        } else if (forceMerge.includes(key)) {
+        } 
+        
+        // check some default values
+        else if (forceMerge.includes(key)) {
           if (
             (key == 'status' && dbItem.status == 'active') ||
             (key == 'type' && dbItem.type == 'np')
@@ -150,7 +154,21 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
 
           // @ts-ignore
           dbItem[key] ||= item[key];
-        } else throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
+        } 
+        
+        // check if we're gaining info with description
+        else if(key === 'description'){
+          if((dbItem.description?.length ?? 0) < (item.description?.length ?? 0)){
+            dbItem.description = item.description;
+          }
+        }
+
+        // sdb sometimes calls things "special" when they're not (this sounded mean)
+        else if(key === 'category' && dbItem.category === 'special'){
+          dbItem.category = item.category;
+        }
+
+        else throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
       }
     }
 
