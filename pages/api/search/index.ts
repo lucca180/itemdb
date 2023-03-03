@@ -289,6 +289,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       item_id: result.item_id,
       rarity: result.rarity,
       name: result.name,
+      type: result.type,
       specialType: result.specialType,
       isNC: !!result.isNC,
       est_val: result.est_val,
