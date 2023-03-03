@@ -54,6 +54,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       rarity: result.rarity,
       name: result.name,
       specialType: result.specialType,
+      type: result.type,
       isNC: !!result.isNC,
       est_val: result.est_val,
       weight: result.weight,
@@ -95,7 +96,19 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const dataList = [];
   for (const item of items) {
-    let { itemId, name, description, img, category, rarity, estVal, subText, type, weight } = item;
+    let {
+      itemId,
+      name,
+      description,
+      img,
+      category,
+      rarity,
+      estVal,
+      subText,
+      status,
+      type,
+      weight,
+    } = item;
     let imageId: string | undefined = undefined;
 
     rarity = isNaN(Number(rarity)) ? undefined : Number(rarity);
@@ -114,18 +127,27 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       type = 'nc';
     }
 
-    let specialTypes = [];
+    let specialTypes: string[] | string | undefined = [];
 
     if (subText) {
-      if (subText.toLowerCase().includes('neocash')) type = 'nc';
-      specialTypes = subText.match(/(?<=\().+?(?=\))/gm);
+      if (
+        subText.toLowerCase().includes('neocash') ||
+        subText.toLowerCase().includes('artifact - 500')
+      )
+        type = 'nc';
+
+      if (subText.toLowerCase().includes('no trade')) status = 'no trade';
+
+      specialTypes = (subText as string).match(/(?<=\().+?(?=\))/gm) ?? [];
     }
 
-    let status = 'active';
+    if (type === 'pb') status = 'no trade';
 
-    if (specialTypes.includes('no trade')) status = 'no trade';
+    status = status ?? 'active';
 
     specialTypes = specialTypes?.length > 0 ? specialTypes?.toString() : undefined;
+
+    if (rarity === 500) type = 'nc';
 
     const x = {
       item_id: itemId,
@@ -138,6 +160,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       est_val: estVal,
       weight: weight,
       status: status,
+      type: type ?? 'np',
       isNC: type === 'nc' || rarity === 500,
       specialType: specialTypes,
       isWearable: !!specialTypes?.includes('wearable'),

@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "next",
-    "build": "next build",
+    "build": "npx prisma generate && next build",
     "start": "PORT=4000 next start",
     "lint": "next lint",
     "lint-fix": "next lint --fix",

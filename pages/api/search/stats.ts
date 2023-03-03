@@ -65,7 +65,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     for (const data of groupData) {
       const name = data[group]?.toString() || 'Unknown';
-      x[name] = x[name] ? data._count._all : x[name] + data._count._all;
+      x[name] = x[name] ? x[name] + data._count._all : data._count._all;
     }
 
     result[group] = x;

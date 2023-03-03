@@ -19,6 +19,7 @@ model Items {
 	rarity        Int?
 	weight        Int?
 	isNC          Boolean
+	type		  ItemType @default(np)
 	isWearable    Boolean @default(false)
 	isNeohome	  Boolean @default(false)
 	est_val       Int?
@@ -67,6 +68,7 @@ model ItemProcess {
 	rarity        Int?
 	weight        Int?
 	isNC          Boolean
+	type		  ItemType @default(np)
 	est_val       Int?
 	specialType   String?
 	status		  String?
@@ -85,6 +87,12 @@ model ItemProcess {
 	processed	  Boolean @default(false)
 
 	@@index([name, image_id])
+}
+
+enum ItemType {
+	np
+	nc
+	pb
 }
 
 model ItemColor {

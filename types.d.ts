@@ -8,6 +8,7 @@ export type ItemData = {
   category: string | null;
   rarity: number | null;
   weight: number | null;
+  type: 'np' | 'nc' | 'pb';
   isNC: boolean;
   isWearable: boolean;
   isNeohome: boolean;
@@ -109,6 +110,7 @@ export type SearchStats = {
   total: number;
   category: Record<string, number>;
   isNC: Record<string, number>;
+  type: Record<string, number>;
   isWearable: Record<string, number>;
   status: Record<string, number>;
 };

@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.0.2
+// @version      1.0.3
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
 // @website      https://itemdb.com.br
@@ -342,6 +342,48 @@ function handleGalleryAdmin() {
   submitItems();
 }
 
+function handleCloset() {
+  const trs = $('form table').eq(2).find('tr').slice(1, -1);
+  
+  trs.each(function (i) {
+    const tds = $(this).find('td');
+    const img = tds.first().find('img').first().attr('src');
+
+    let itemName = tds.eq(1).find('b').first().clone().children().remove().end().text();
+    if(!itemName) itemName = tds.eq(1).clone().children().remove().end().text();
+    let subText = tds.eq(1).find('.medText').text();
+    const description = tds.eq(2).text().trim();
+    const category = tds.eq(3).text();
+    let itemId = tds.last().find('input').attr('name').match(/\d+/)?.[0];
+
+    let type;
+
+    if(!itemId) {
+      itemId = tds.last().find('.delete_pb')[0].dataset.item_id;
+      type = 'pb';
+    }
+
+    const item = {
+      name: itemName,
+      img: img,
+      description: description,
+      subText: subText,
+      category: category,
+      itemId: itemId,
+      type: type,
+    };
+
+    const itemKey = genItemKey(item);
+    if (!itemsHistory[itemKey]?.closet) {
+      itemsObj[itemKey] = item;
+      itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
+      itemsHistory[itemKey].closet = true;
+    }
+  });
+  
+  submitItems();
+}
+
 // ------ prices ------ //
 
 function handleSWPrices() {
@@ -527,6 +569,7 @@ function handleRestock() {
 
 if (URLHas('inventory')) handleInventory();
 if (URLHas('safetydeposit')) handleSDB();
+if (URLHas('closet.phtml')) handleCloset();
 if (URLHas('trading')) handleTrades();
 if (URLHas('market')) handleMyShop();
 if (URLHas('obj_type')) handleGeneralShops();
