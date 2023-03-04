@@ -23,7 +23,7 @@ const HomePage = () => {
     setItems(itemData);
   };
 
-  if (!isProd)
+  if (isProd)
     return (
       <Layout>
         <Center h="80vh" flexFlow="column">
