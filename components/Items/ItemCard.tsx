@@ -91,6 +91,7 @@ const ItemCard = (props: Props) => {
         )}
 
         {item.isNC && !capValue && <Badge colorScheme="purple">NC</Badge>}
+        {item.type === 'pb' && <Badge colorScheme="yellow">PB</Badge>}
         {item.isNC && Number(capValue) > 0 && (
           <Tooltip
             label="User Asking Price in GBCs - Not Official"

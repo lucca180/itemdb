@@ -68,11 +68,26 @@ const EditItemModal = (props: Props) => {
 
   const handleTagsChange = (tags: string[], type: 'tags' | 'categories' | 'special') => {
     if (type === 'tags') setTags(tags);
+    
     else if (type === 'categories') setCategories(tags);
+    
     else if (type === 'special') {
       const itemCopy = { ...item };
-      if (tags.includes('nc')) itemCopy.isNC = true;
-      else itemCopy.isNC = false;
+
+      if (tags.includes('nc')) {
+        itemCopy.isNC = true;
+        itemCopy.type = 'nc';
+      }
+
+      else if(tags.includes('np')) {
+        itemCopy.isNC = false;
+        itemCopy.type = 'np';
+      }
+
+      else if(tags.includes('pb')) {
+        itemCopy.isNC = false;
+        itemCopy.type = 'pb';
+      }
 
       if (tags.includes('wearable')) itemCopy.isWearable = true;
       else itemCopy.isWearable = false;
@@ -371,8 +386,7 @@ const CategoriesTab = (props: TagSelectProps) => {
   useEffect(() => {
     const tempTags = [];
 
-    if (item.isNC) tempTags.push('nc');
-    else tempTags.push('np');
+    tempTags.push(item.type);
 
     if (item.isWearable) tempTags.push('wearable');
 
@@ -386,11 +400,20 @@ const CategoriesTab = (props: TagSelectProps) => {
 
     if (newTags.includes('nc') && !specialTags.includes('nc')) {
       tempTags.push('nc');
-      tempTags = tempTags.filter((tag) => tag !== 'np');
-    } else if (newTags.includes('np') && !specialTags.includes('np')) {
+      tempTags = tempTags.filter((tag) => !['np', 'pb'].includes(tag));
+    } 
+    
+    else if (newTags.includes('np') && !specialTags.includes('np')) {
       tempTags.push('np');
-      tempTags = tempTags.filter((tag) => tag !== 'nc');
-    } else tempTags = newTags;
+      tempTags = tempTags.filter((tag) => !['nc', 'pb'].includes(tag));
+    } 
+
+    else if (newTags.includes('pb') && !specialTags.includes('pb')) {
+      tempTags.push('pb');
+      tempTags = tempTags.filter((tag) => !['np', 'nc'].includes(tag));
+    } 
+    
+    else tempTags = newTags;
 
     handleChange(tempTags, 'special');
     setSpecialTags(tempTags);
@@ -408,6 +431,9 @@ const CategoriesTab = (props: TagSelectProps) => {
               </Checkbox>
               <Checkbox value="nc">
                 <Badge colorScheme="purple">NC</Badge>
+              </Checkbox>
+              <Checkbox value="pb">
+                <Badge colorScheme="yellow">PB</Badge>
               </Checkbox>
               <Checkbox value="wearable">
                 <Badge colorScheme="blue">Wearable</Badge>

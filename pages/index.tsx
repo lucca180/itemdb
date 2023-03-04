@@ -5,6 +5,7 @@ import logo from '../public/logo_white.svg';
 import Image from 'next/image';
 import ItemCard from '../components/Items/ItemCard';
 import { ItemData } from '../types';
+import BetaStatsCard from '../components/Beta/BetaStatsCard';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -22,14 +23,14 @@ const HomePage = () => {
     setItems(itemData);
   };
 
-  if (isProd)
+  if (!isProd)
     return (
-      <Center h="100vh" flexFlow="column">
-        <Image src={logo} alt="itemdb logo" width={500} quality="100" />
-        <Heading size="sm" mt={4}>
-          Coming Soon™
-        </Heading>
-      </Center>
+      <Layout>
+        <Center h="80vh" flexFlow="column">
+          <Image src={logo} alt="itemdb logo" width={300} quality="100" />
+          <BetaStatsCard/>
+        </Center>
+      </Layout>
     );
 
   return (

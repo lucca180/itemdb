@@ -73,30 +73,21 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       .filter((o: string) => o.startsWith('!'))
       .map((o: string) => o.slice(1));
     const typeTrue = typeFilters.filter((o: string) => !o.startsWith('!'));
-
+    
     if (typeNeg.length > 0) {
-      const notInNC = [];
-      if (typeNeg.includes('nc')) notInNC.push(1);
-
-      if (typeNeg.includes('np')) notInNC.push(0);
-
-      if (notInNC.length > 0)
-        typeFiltersSQL.push(Prisma.sql`a.isNC NOT IN (${Prisma.join(notInNC)})`);
-
+      typeFiltersSQL.push(Prisma.sql`a.type NOT IN (${Prisma.join(typeNeg)})`);
       if (typeNeg.includes('wearable')) typeFiltersSQL.push(Prisma.sql`a.isWearable NOT IN (1)`);
+      if (typeNeg.includes('neohome')) typeFiltersSQL.push(Prisma.sql`a.isNeohome NOT IN (1)`);
     }
 
     if (typeTrue.length > 0) {
-      const inNC = [];
-
-      if (typeTrue.includes('nc')) inNC.push(1);
-
-      if (typeTrue.includes('np')) inNC.push(0);
-
-      if (inNC.length > 0) typeFiltersSQL.push(Prisma.sql`a.isNC IN (${Prisma.join(inNC)})`);
+      typeFiltersSQL.push(Prisma.sql`a.type IN (${Prisma.join(typeTrue)})`);
 
       if (typeTrue.includes('wearable')) typeFiltersSQL.push(Prisma.sql`a.isWearable IN (1)`);
+      if (typeTrue.includes('neohome')) typeFiltersSQL.push(Prisma.sql`a.isNeohome IN (1)`);
     }
+
+    console.log(typeFiltersSQL)
   }
 
   const statusFiltersSQL = [];

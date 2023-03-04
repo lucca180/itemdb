@@ -1,5 +1,6 @@
 import {
   Box,
+  Center,
   Flex,
   HStack,
   IconButton,
@@ -259,6 +260,13 @@ const SearchPage = () => {
               <ItemCard item={item} key={item.internal_id} />
             ))}
             {!searchResult && [...Array(24)].map((_, i) => <ItemCard key={i} />)}
+            {searchResult && searchResult.content.length === 0 && 
+              <Center>
+                <Text color="gray.400">
+                  No results found
+                </Text>
+              </Center>
+            }
           </Flex>
           {searchResult && (
             <Pagination
@@ -267,7 +275,6 @@ const SearchPage = () => {
               setPage={changePage}
             />
           )}
-
           {!searchResult && <Pagination />}
         </Box>
       </Flex>

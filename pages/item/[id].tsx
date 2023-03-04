@@ -28,6 +28,8 @@ import { FiSend, FiEdit3 } from 'react-icons/fi';
 import EditItemModal from '../../components/Modal/EditItemModal';
 import FeedbackModal from '../../components/Modal/FeedbackModal';
 import AddToListSelect from '../../components/UserLists/AddToListSelect';
+import { GetStaticPropsContext } from 'next';
+import { getItem, getSomeItemIDs } from '../api/v1/items/[id]';
 
 const defaultLastSeen: ItemLastSeen = {
   sw: null,
@@ -36,8 +38,12 @@ const defaultLastSeen: ItemLastSeen = {
   restock: null,
 };
 
-const ItemPage = () => {
-  const [item, setItem] = useState<ItemData | null>(null);
+type Props = {
+  item: ItemData;
+}
+
+const ItemPage = (props: Props) => {
+  const { item } = props;
   const [colors, setColors] = useState<FullItemColors | null>(null);
   const [prices, setPrices] = useState<PriceData[] | null>(null);
   const [seenStats, setSeen] = useState<ItemLastSeen>(defaultLastSeen);
@@ -59,24 +65,30 @@ const ItemPage = () => {
 
     if (!id) return;
 
-    const resItem = await axios.get('/api/v1/items/' + id);
-    const itemData = resItem.data as ItemData;
-
-    setItem(itemData);
-
     const [resColor, resPrice, resStats, resTrades, resTags] = await Promise.all([
-      axios.get('/api/v1/items/colors?image_id=' + itemData.image_id),
-      axios.get(
-        `/api/prices/get?item_id=${itemData.item_id ?? -1}&name=${itemData.name}&image_id=${
-          itemData.image_id
-        }`
+      axios.get('/api/v1/items/colors?image_id=' + item.image_id),
+      axios.get(`/api/v1/prices/`, {
+          params: {
+            item_id: item.item_id ?? -1,
+            name: item.name,
+            image_id: item.image_id,
+          }
+        }
       ),
-      axios.get(
-        `/api/prices/stats?item_id=${itemData.item_id ?? -1}&name=${itemData.name}&image_id=${
-          itemData.image_id
-        }`
+      axios.get(`/api/v1/prices/stats/`, {
+          params: {
+            item_id: item.item_id ?? -1,
+            name: item.name,
+            image_id: item.image_id,
+          }
+        }
       ),
-      axios.get(`/api/trades/get?name=${itemData.name}&image_id=${itemData.image_id}`),
+      axios.get(`/api/v1/trades/`,{
+        params: {
+          name: item.name,
+          image_id: item.image_id
+        }
+      }),
       axios.get(`/api/v1/items/${id}/tags`),
     ]);
 
@@ -86,8 +98,6 @@ const ItemPage = () => {
     setTrades(resTrades.data);
     setTags(resTags.data);
   };
-
-  if (!item) return null;
 
   return (
     <Layout>
@@ -125,24 +135,34 @@ const ItemPage = () => {
             minW="100px"
             minH="100px"
           >
-            <Image src={item.image} width={80} height={80} alt={item.name} unoptimized />
+            <Image src={item.image} width={80} height={80} alt={item.name} unoptimized/>
           </Flex>
           <Box>
             <Stack direction="row" mb={1}>
               {<Badge borderRadius="md">{item.category ?? '???'}</Badge>}
-              {!item.isNC && (
+              {item.type === 'np' && (
                 <Badge colorScheme="green" borderRadius="md">
                   NP
                 </Badge>
               )}
-              {item.isNC && (
+              {item.type === 'nc' && (
                 <Badge colorScheme="purple" borderRadius="md">
                   NC
+                </Badge>
+              )}
+              {item.type === 'pb' && (
+                <Badge colorScheme="yellow" borderRadius="md">
+                  PB
                 </Badge>
               )}
               {item.isWearable && (
                 <Badge colorScheme="blue" borderRadius="md">
                   Wearable
+                </Badge>
+              )}
+              {item.isNeohome && (
+                <Badge colorScheme="true" borderRadius="md">
+                  Neohome
                 </Badge>
               )}
             </Stack>
@@ -185,13 +205,8 @@ const ItemPage = () => {
             </Button>
           </Flex>
         </Flex>
-        <Flex
-          flex="3"
-          gap={{ base: 4, md: 6 }}
-          flexFlow={{ base: 'column', lg: 'row' }}
-          maxW={{ base: '100vh', md: 'none' }}
-          w={{ base: '100%', md: 'auto' }}
-        >
+        <Flex flex="3" gap={{ base: 4, md: 6 }} flexFlow={{ base: 'column', lg: 'row' }} maxW={{ base: '100vh', md: 'none' }}
+          w={{ base: '100%', md: 'auto' }}>
           <Flex flex="2" flexFlow="column" gap={{ base: 4, md: 6 }}>
             {item.isMissingInfo && <MissingInfoCard />}
             {!isLargerThanMD && (
@@ -218,3 +233,33 @@ const ItemPage = () => {
 };
 
 export default ItemPage;
+
+
+export async function getStaticProps(context: GetStaticPropsContext) {
+  console.log(context)
+  const id = context.params?.id as string | undefined ;
+  if(!id) return { notFound: true };
+
+  const item = await getItem(Number(id));
+  if(!item) return { notFound: true };
+  return {
+    props: {
+      item,
+    },
+    revalidate: 60, // In seconds
+  }
+}
+
+export async function getStaticPaths() {
+  const items = await getSomeItemIDs();
+
+  // Get the paths we want to pre-render
+  const paths = items.map((item) => ({
+    params: { id: item.internal_id.toString() },
+  }))
+
+  // We'll pre-render only these paths at build time.
+  // { fallback: 'blocking' } will server-render pages
+  // on-demand if the path doesn't exist.
+  return { paths, fallback: 'blocking' }
+}

@@ -149,6 +149,33 @@ const SearchFilters = (props: Props) => {
         <AccordionPanel pb={4}>
           <VStack alignItems="flex-start">
             <NegCheckbox
+              value="np"
+              onChange={(val) => handleCheckChange(val, 'type', 'np')}
+              checklist={filters.type}
+            >
+              <Text fontSize={'sm'}>
+                <Badge colorScheme="green">NP</Badge> <Badge>{stats?.type.np ?? 0}</Badge>
+              </Text>
+            </NegCheckbox>
+            <NegCheckbox
+              value="nc"
+              onChange={(val) => handleCheckChange(val, 'type', 'nc')}
+              checklist={filters.type}
+            >
+              <Text fontSize={'sm'}>
+                <Badge colorScheme="purple">NC</Badge> <Badge>{stats?.type.nc ?? 0}</Badge>
+              </Text>
+            </NegCheckbox>
+            <NegCheckbox
+              value="pb"
+              onChange={(val) => handleCheckChange(val, 'type', 'pb')}
+              checklist={filters.type}
+            >
+              <Text fontSize={'sm'}>
+                <Badge colorScheme="yellow">PB</Badge> <Badge>{stats?.type.pb ?? 0}</Badge>
+              </Text>
+            </NegCheckbox>
+            <NegCheckbox
               value="wearable"
               onChange={(val) => handleCheckChange(val, 'type', 'wearable')}
               checklist={filters.type}
@@ -159,21 +186,13 @@ const SearchFilters = (props: Props) => {
               </Text>
             </NegCheckbox>
             <NegCheckbox
-              value="nc"
-              onChange={(val) => handleCheckChange(val, 'type', 'nc')}
+              value="neohome"
+              onChange={(val) => handleCheckChange(val, 'type', 'neohome')}
               checklist={filters.type}
             >
               <Text fontSize={'sm'}>
-                <Badge colorScheme="purple">NC</Badge> <Badge>{stats?.isNC.true ?? 0}</Badge>
-              </Text>
-            </NegCheckbox>
-            <NegCheckbox
-              value="np"
-              onChange={(val) => handleCheckChange(val, 'type', 'np')}
-              checklist={filters.type}
-            >
-              <Text fontSize={'sm'}>
-                <Badge colorScheme="green">NP</Badge> <Badge>{stats?.isNC.false ?? 0}</Badge>
+                <Badge colorScheme="blue">Neohome</Badge>{' '}
+                <Badge>{stats?.isNeohome?.true ?? 0}</Badge>
               </Text>
             </NegCheckbox>
           </VStack>

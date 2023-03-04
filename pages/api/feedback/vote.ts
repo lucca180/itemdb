@@ -34,7 +34,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     });
 
     if (feedbackRaw.user_id === user_id && !isAdmin)
-      return res.status(401).json({ error: 'You cannot vote on your own feedback' });
+      return res.status(403).json({ error: 'You cannot vote on your own feedback' });
 
     let votesIncrementDecrement;
 
@@ -100,7 +100,7 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
       },
       data: {
         processed: true,
-        approved: true,
+        approved: false,
         processedAt: new Date(),
       },
     });

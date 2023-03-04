@@ -1,3 +1,4 @@
+import { ExternalLinkIcon } from '@chakra-ui/icons';
 import {
   Accordion,
   AccordionButton,
@@ -14,6 +15,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 import axios from 'axios';
+import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { BsArrowDownCircleFill, BsArrowUpCircleFill } from 'react-icons/bs';
 import CardBase from '../../components/Card/CardBase';
@@ -110,7 +112,7 @@ const FeedbackVotingPage = () => {
         Most of our content is collected and categorized automatically but there are some things our
         machines can&apos;t do. And you can help it!
       </Text>
-      <Flex mt={12} gap={12} alignItems="flex-start">
+      <Flex mt={12} gap={6} alignItems={{base: 'center', md: "flex-start"}} flexFlow={{base: 'column', md: 'row'}}>
         <CardBase chakraWrapper={{ flex: 2 }} title="Voting" chakra={{ bg: 'gray.700' }}>
           <Text>
             Either way, the more you contribute correctly the more our systems will trust your
@@ -133,7 +135,7 @@ const FeedbackVotingPage = () => {
             I love democracy - Sheev
           </Center>
         </CardBase>
-        <Flex flex="1" flexFlow="column" alignItems="center" justifyContent="flex-start">
+        <Flex flex="1" flexFlow="column" alignItems="center" justifyContent="flex-start" h="100%" w="100%">
           {isLoading && (
             <Center>
               <Spinner size="lg" />
@@ -144,10 +146,15 @@ const FeedbackVotingPage = () => {
             <Center flexFlow="column" gap={4}>
               <Text>Thanks for helping out! Want more?</Text>
               <Button onClick={init}>YES I NEED IT!!!!!</Button>
-              <Text fontSize="xs" color="gray.400" textAlign="center">
-                If you click the button and nothing happens you really vote for everything...
-                impressive.
-              </Text>
+              <Box>
+                <Text fontSize="xs" color="gray.400" textAlign="center">
+                  If you click the button and nothing happens you really vote for everything...
+                  impressive.
+                </Text>
+                <Text fontSize="xs" color="gray.200" textAlign="center">
+                  <Link href="/feedback/trades">You can also price some trades <ExternalLinkIcon verticalAlign={"center"}/></Link>
+                </Text>
+              </Box>
             </Center>
           )}
 

@@ -112,6 +112,7 @@ export type SearchStats = {
   isNC: Record<string, number>;
   type: Record<string, number>;
   isWearable: Record<string, number>;
+  isNeohome: Record<string, number>;
   status: Record<string, number>;
 };
 

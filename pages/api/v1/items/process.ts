@@ -36,7 +36,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     for (const itemOtherData of allItemData) {
       for (const key of Object.keys(itemData) as Array<keyof ItemProcess>) {
-        (itemData as Record<keyof ItemProcess, ValueOf<ItemProcess>>)[key] ||= itemOtherData[key];
+        (itemData as Record<keyof ItemProcess, ValueOf<ItemProcess>>)[key] ||= itemOtherData[key] ?? itemData[key];
       }
 
       deleteIds.push(itemOtherData.internal_id);
@@ -109,14 +109,18 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
         isNeohome: !!item.specialType?.toLowerCase().includes('neohome'),
         est_val: item.est_val,
         status: item.status,
-        addedAt: item.addedAt,
       };
     }
 
-    // db has more than one -> manual check
-    if (dbItemList.length > 1) throw 'More than one entry exists with the same name.';
+    let dbItem = dbItemList[0];
 
-    const dbItem = dbItemList[0];
+    // db has more than one -> manual check
+    if (dbItemList.length > 1) {
+      //check if we have the same item_id
+      const sameItemId = dbItemList.filter((x) => x.item_id === item.item_id);
+      if (sameItemId.length === 1) dbItem = sameItemId[0];
+      else throw 'More than one entry exists with the same name.';
+    }
 
     // merge the data we're missing
     let hasChange = false;
@@ -127,22 +131,24 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
       if (!dbItem[key]) {
         const temp = dbItem[key];
         // @ts-ignore
-        dbItem[key] ||= item[key];
+        dbItem[key] ||= item[key] ?? dbItem[key];
         hasChange ||= dbItem[key] !== temp;
       }
 
       // merge conflict
       // @ts-ignore
       if (dbItem[key] && item[key] && dbItem[key] !== item[key]) {
-
         // check if we're gaining info with specialType
         if (key === 'specialType') {
           const dbArr = dbItem.specialType?.split(',') ?? [];
           const itemArr = item.specialType?.split(',') ?? [];
+
           if (dbArr.length > itemArr.length)
             throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
-        } 
-        
+          
+          dbItem.specialType = item.specialType;
+        }
+
         // check some default values
         else if (forceMerge.includes(key)) {
           if (
@@ -153,22 +159,20 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
             dbItem[key] = item[key];
 
           // @ts-ignore
-          dbItem[key] ||= item[key];
-        } 
-        
+          dbItem[key] ||= item[key] ?? dbItem[key];
+        }
+
         // check if we're gaining info with description
-        else if(key === 'description'){
-          if((dbItem.description?.length ?? 0) < (item.description?.length ?? 0)){
+        else if (key === 'description') {
+          if ((dbItem.description?.length ?? 0) < (item.description?.length ?? 0)) {
             dbItem.description = item.description;
           }
         }
 
         // sdb sometimes calls things "special" when they're not (this sounded mean)
-        else if(key === 'category' && dbItem.category === 'special'){
+        else if (key === 'category' && dbItem.category === 'special') {
           dbItem.category = item.category;
-        }
-
-        else throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
+        } else throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
       }
     }
 

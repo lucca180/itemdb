@@ -63,9 +63,17 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   };
 
   stats.map((s) => {
+    if (!s._max.addedAt) return;
+
+    const type = s.type;
+
+    if (['sw', 'ssw', 'usershop'].includes(type) && s._max.addedAt) {
+      if (!lastSeen.sw) lastSeen.sw = s._max.addedAt.toJSON();
+      else if (s._max.addedAt > new Date(lastSeen.sw)) lastSeen.sw = s._max.addedAt.toJSON();
+    }
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
-    lastSeen[s.type] = s._max.addedAt;
+    else lastSeen[s.type] = s._max.addedAt.toJSON();
   });
 
   res.json(lastSeen);
