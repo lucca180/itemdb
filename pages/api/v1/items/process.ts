@@ -36,7 +36,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     for (const itemOtherData of allItemData) {
       for (const key of Object.keys(itemData) as Array<keyof ItemProcess>) {
-        (itemData as Record<keyof ItemProcess, ValueOf<ItemProcess>>)[key] ||= itemOtherData[key] ?? itemData[key];
+        (itemData as Record<keyof ItemProcess, ValueOf<ItemProcess>>)[key] ||=
+          itemOtherData[key] ?? itemData[key];
       }
 
       deleteIds.push(itemOtherData.internal_id);
@@ -145,7 +146,7 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
 
           if (dbArr.length > itemArr.length)
             throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
-          
+
           dbItem.specialType = item.specialType;
         }
 

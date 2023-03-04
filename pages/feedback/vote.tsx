@@ -112,7 +112,12 @@ const FeedbackVotingPage = () => {
         Most of our content is collected and categorized automatically but there are some things our
         machines can&apos;t do. And you can help it!
       </Text>
-      <Flex mt={12} gap={6} alignItems={{base: 'center', md: "flex-start"}} flexFlow={{base: 'column', md: 'row'}}>
+      <Flex
+        mt={12}
+        gap={6}
+        alignItems={{ base: 'center', md: 'flex-start' }}
+        flexFlow={{ base: 'column', md: 'row' }}
+      >
         <CardBase chakraWrapper={{ flex: 2 }} title="Voting" chakra={{ bg: 'gray.700' }}>
           <Text>
             Either way, the more you contribute correctly the more our systems will trust your
@@ -135,7 +140,14 @@ const FeedbackVotingPage = () => {
             I love democracy - Sheev
           </Center>
         </CardBase>
-        <Flex flex="1" flexFlow="column" alignItems="center" justifyContent="flex-start" h="100%" w="100%">
+        <Flex
+          flex="1"
+          flexFlow="column"
+          alignItems="center"
+          justifyContent="flex-start"
+          h="100%"
+          w="100%"
+        >
           {isLoading && (
             <Center>
               <Spinner size="lg" />
@@ -152,7 +164,9 @@ const FeedbackVotingPage = () => {
                   impressive.
                 </Text>
                 <Text fontSize="xs" color="gray.200" textAlign="center">
-                  <Link href="/feedback/trades">You can also price some trades <ExternalLinkIcon verticalAlign={"center"}/></Link>
+                  <Link href="/feedback/trades">
+                    You can also price some trades <ExternalLinkIcon verticalAlign={'center'} />
+                  </Link>
                 </Text>
               </Box>
             </Center>

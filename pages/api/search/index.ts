@@ -73,7 +73,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       .filter((o: string) => o.startsWith('!'))
       .map((o: string) => o.slice(1));
     const typeTrue = typeFilters.filter((o: string) => !o.startsWith('!'));
-    
+
     if (typeNeg.length > 0) {
       typeFiltersSQL.push(Prisma.sql`a.type NOT IN (${Prisma.join(typeNeg)})`);
       if (typeNeg.includes('wearable')) typeFiltersSQL.push(Prisma.sql`a.isWearable NOT IN (1)`);
@@ -87,7 +87,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       if (typeTrue.includes('neohome')) typeFiltersSQL.push(Prisma.sql`a.isNeohome IN (1)`);
     }
 
-    console.log(typeFiltersSQL)
+    console.log(typeFiltersSQL);
   }
 
   const statusFiltersSQL = [];

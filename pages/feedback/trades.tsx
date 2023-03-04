@@ -125,7 +125,12 @@ const FeedbackSuggest = () => {
         Most of our content is collected and categorized automatically but there are some things our
         machines can&apos;t do. And you can help it!
       </Text>
-      <Flex mt={12} gap={6} alignItems={{base: 'center', md: "flex-start"}} flexFlow={{base: 'column', md: 'row'}}>
+      <Flex
+        mt={12}
+        gap={6}
+        alignItems={{ base: 'center', md: 'flex-start' }}
+        flexFlow={{ base: 'column', md: 'row' }}
+      >
         <CardBase
           chakraWrapper={{ flex: 2 }}
           title="Trade Pricing Guidelines"
@@ -133,7 +138,13 @@ const FeedbackSuggest = () => {
         >
           <TradeGuidelines />
         </CardBase>
-        <Flex flex="1" flexFlow={{base: "column-reverse", md: 'column'}} h="100%" w="100%" gap={4}>
+        <Flex
+          flex="1"
+          flexFlow={{ base: 'column-reverse', md: 'column' }}
+          h="100%"
+          w="100%"
+          gap={4}
+        >
           {!isLoading && currentTrade && (
             <>
               <Flex justifyContent="center" gap={4}>
@@ -173,7 +184,9 @@ const FeedbackSuggest = () => {
                   impressive.
                 </Text>
                 <Text fontSize="xs" color="gray.200" textAlign="center">
-                  <Link href="/feedback/vote">You can also vote some suggestions <ExternalLinkIcon verticalAlign={"center"}/></Link>
+                  <Link href="/feedback/vote">
+                    You can also vote some suggestions <ExternalLinkIcon verticalAlign={'center'} />
+                  </Link>
                 </Text>
               </Box>
             </Center>

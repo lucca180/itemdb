@@ -68,23 +68,17 @@ const EditItemModal = (props: Props) => {
 
   const handleTagsChange = (tags: string[], type: 'tags' | 'categories' | 'special') => {
     if (type === 'tags') setTags(tags);
-    
     else if (type === 'categories') setCategories(tags);
-    
     else if (type === 'special') {
       const itemCopy = { ...item };
 
       if (tags.includes('nc')) {
         itemCopy.isNC = true;
         itemCopy.type = 'nc';
-      }
-
-      else if(tags.includes('np')) {
+      } else if (tags.includes('np')) {
         itemCopy.isNC = false;
         itemCopy.type = 'np';
-      }
-
-      else if(tags.includes('pb')) {
+      } else if (tags.includes('pb')) {
         itemCopy.isNC = false;
         itemCopy.type = 'pb';
       }
@@ -401,19 +395,13 @@ const CategoriesTab = (props: TagSelectProps) => {
     if (newTags.includes('nc') && !specialTags.includes('nc')) {
       tempTags.push('nc');
       tempTags = tempTags.filter((tag) => !['np', 'pb'].includes(tag));
-    } 
-    
-    else if (newTags.includes('np') && !specialTags.includes('np')) {
+    } else if (newTags.includes('np') && !specialTags.includes('np')) {
       tempTags.push('np');
       tempTags = tempTags.filter((tag) => !['nc', 'pb'].includes(tag));
-    } 
-
-    else if (newTags.includes('pb') && !specialTags.includes('pb')) {
+    } else if (newTags.includes('pb') && !specialTags.includes('pb')) {
       tempTags.push('pb');
       tempTags = tempTags.filter((tag) => !['np', 'nc'].includes(tag));
-    } 
-    
-    else tempTags = newTags;
+    } else tempTags = newTags;
 
     handleChange(tempTags, 'special');
     setSpecialTags(tempTags);

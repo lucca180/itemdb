@@ -30,7 +30,13 @@ const Pagination = (props: Props) => {
         Back
       </Button>
       <Box>
-        <Select name="sortBy" variant="filled" value={currentPage} onChange={handleChange} disabled={!props.totalPages}>
+        <Select
+          name="sortBy"
+          variant="filled"
+          value={currentPage}
+          onChange={handleChange}
+          disabled={!props.totalPages}
+        >
           {[...Array(props.totalPages || 1)].map((_, i) => (
             <option key={i + 1} value={i + 1}>
               {i + 1}

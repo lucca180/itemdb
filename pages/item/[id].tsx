@@ -40,7 +40,7 @@ const defaultLastSeen: ItemLastSeen = {
 
 type Props = {
   item: ItemData;
-}
+};
 
 const ItemPage = (props: Props) => {
   const { item } = props;
@@ -68,26 +68,24 @@ const ItemPage = (props: Props) => {
     const [resColor, resPrice, resStats, resTrades, resTags] = await Promise.all([
       axios.get('/api/v1/items/colors?image_id=' + item.image_id),
       axios.get(`/api/v1/prices/`, {
-          params: {
-            item_id: item.item_id ?? -1,
-            name: item.name,
-            image_id: item.image_id,
-          }
-        }
-      ),
+        params: {
+          item_id: item.item_id ?? -1,
+          name: item.name,
+          image_id: item.image_id,
+        },
+      }),
       axios.get(`/api/v1/prices/stats/`, {
-          params: {
-            item_id: item.item_id ?? -1,
-            name: item.name,
-            image_id: item.image_id,
-          }
-        }
-      ),
-      axios.get(`/api/v1/trades/`,{
+        params: {
+          item_id: item.item_id ?? -1,
+          name: item.name,
+          image_id: item.image_id,
+        },
+      }),
+      axios.get(`/api/v1/trades/`, {
         params: {
           name: item.name,
-          image_id: item.image_id
-        }
+          image_id: item.image_id,
+        },
       }),
       axios.get(`/api/v1/items/${id}/tags`),
     ]);
@@ -135,7 +133,7 @@ const ItemPage = (props: Props) => {
             minW="100px"
             minH="100px"
           >
-            <Image src={item.image} width={80} height={80} alt={item.name} unoptimized/>
+            <Image src={item.image} width={80} height={80} alt={item.name} unoptimized />
           </Flex>
           <Box>
             <Stack direction="row" mb={1}>
@@ -205,8 +203,13 @@ const ItemPage = (props: Props) => {
             </Button>
           </Flex>
         </Flex>
-        <Flex flex="3" gap={{ base: 4, md: 6 }} flexFlow={{ base: 'column', lg: 'row' }} maxW={{ base: '100vh', md: 'none' }}
-          w={{ base: '100%', md: 'auto' }}>
+        <Flex
+          flex="3"
+          gap={{ base: 4, md: 6 }}
+          flexFlow={{ base: 'column', lg: 'row' }}
+          maxW={{ base: '100vh', md: 'none' }}
+          w={{ base: '100%', md: 'auto' }}
+        >
           <Flex flex="2" flexFlow="column" gap={{ base: 4, md: 6 }}>
             {item.isMissingInfo && <MissingInfoCard />}
             {!isLargerThanMD && (
@@ -234,20 +237,19 @@ const ItemPage = (props: Props) => {
 
 export default ItemPage;
 
-
 export async function getStaticProps(context: GetStaticPropsContext) {
-  console.log(context)
-  const id = context.params?.id as string | undefined ;
-  if(!id) return { notFound: true };
+  console.log(context);
+  const id = context.params?.id as string | undefined;
+  if (!id) return { notFound: true };
 
   const item = await getItem(Number(id));
-  if(!item) return { notFound: true };
+  if (!item) return { notFound: true };
   return {
     props: {
       item,
     },
     revalidate: 60, // In seconds
-  }
+  };
 }
 
 export async function getStaticPaths() {
@@ -256,10 +258,10 @@ export async function getStaticPaths() {
   // Get the paths we want to pre-render
   const paths = items.map((item) => ({
     params: { id: item.internal_id.toString() },
-  }))
+  }));
 
   // We'll pre-render only these paths at build time.
   // { fallback: 'blocking' } will server-render pages
   // on-demand if the path doesn't exist.
-  return { paths, fallback: 'blocking' }
+  return { paths, fallback: 'blocking' };
 }

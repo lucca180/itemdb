@@ -28,7 +28,7 @@ const HomePage = () => {
       <Layout>
         <Center h="80vh" flexFlow="column">
           <Image src={logo} alt="itemdb logo" width={300} quality="100" />
-          <BetaStatsCard/>
+          <BetaStatsCard />
         </Center>
       </Layout>
     );

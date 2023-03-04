@@ -196,8 +196,7 @@ export const getItem = async (id: number) => {
     WHERE b.type = "Vibrant" AND a.internal_id = ${id};
   `) as any[] | null;
 
-  if (!resultRaw || resultRaw.length === 0) 
-    return null;
+  if (!resultRaw || resultRaw.length === 0) return null;
 
   const result = resultRaw[0];
   const colorlab = Color.lab(result.lab_l, result.lab_a, result.lab_b);
@@ -251,4 +250,4 @@ export const getSomeItemIDs = async () => {
   });
 
   return result;
-}
+};

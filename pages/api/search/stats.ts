@@ -36,7 +36,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     includeIds.push(...resultRaw.map((a) => a.internal_id));
   }
 
-  const groups = ['category', 'isNC', 'isWearable', 'status', 'type', 'isNeohome'] as (keyof Items)[];
+  const groups = [
+    'category',
+    'isNC',
+    'isWearable',
+    'status',
+    'type',
+    'isNeohome',
+  ] as (keyof Items)[];
 
   const promises = [];
 
