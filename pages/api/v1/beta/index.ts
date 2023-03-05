@@ -31,7 +31,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
 
   const tradePricing = prisma.trades.count({
     where: {
-      processed: false,
+      processed: true,
     },
   });
 

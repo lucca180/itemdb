@@ -30,6 +30,7 @@ import FeedbackModal from '../../components/Modal/FeedbackModal';
 import AddToListSelect from '../../components/UserLists/AddToListSelect';
 import { GetStaticPropsContext } from 'next';
 import { getItem, getSomeItemIDs } from '../api/v1/items/[id]';
+import { getItemColor } from '../api/v1/items/colors';
 
 const defaultLastSeen: ItemLastSeen = {
   sw: null,
@@ -40,11 +41,11 @@ const defaultLastSeen: ItemLastSeen = {
 
 type Props = {
   item: ItemData;
+  colors: FullItemColors
 };
 
 const ItemPage = (props: Props) => {
-  const { item } = props;
-  const [colors, setColors] = useState<FullItemColors | null>(null);
+  const { item, colors} = props;
   const [prices, setPrices] = useState<PriceData[] | null>(null);
   const [seenStats, setSeen] = useState<ItemLastSeen>(defaultLastSeen);
   const [trades, setTrades] = useState<TradeData[]>([]);
@@ -65,8 +66,7 @@ const ItemPage = (props: Props) => {
 
     if (!id) return;
 
-    const [resColor, resPrice, resStats, resTrades, resTags] = await Promise.all([
-      axios.get('/api/v1/items/colors?image_id=' + item.image_id),
+    const [ resPrice, resStats, resTrades, resTags] = await Promise.all([
       axios.get(`/api/v1/prices/`, {
         params: {
           item_id: item.item_id ?? -1,
@@ -90,7 +90,6 @@ const ItemPage = (props: Props) => {
       axios.get(`/api/v1/items/${id}/tags`),
     ]);
 
-    setColors(resColor.data);
     setPrices(resPrice.data ?? []);
     setSeen(resStats.data);
     setTrades(resTrades.data);
@@ -238,15 +237,18 @@ const ItemPage = (props: Props) => {
 export default ItemPage;
 
 export async function getStaticProps(context: GetStaticPropsContext) {
-  console.log(context);
   const id = context.params?.id as string | undefined;
   if (!id) return { notFound: true };
 
   const item = await getItem(Number(id));
   if (!item) return { notFound: true };
+  
+  const colors = await getItemColor(item.image_id);
+  
   return {
     props: {
       item,
+      colors
     },
     revalidate: 60, // In seconds
   };

@@ -11,6 +11,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   if (!image_id) return res.status(400).json({ error: 'Missing image_id' });
 
+  const colorsData = await getItemColor(image_id as string);
+
+  return res.json(colorsData);
+}
+
+export const getItemColor = async (image_id: string) => {
   const result = (await prisma.$queryRaw`
       SELECT *
       FROM ItemColor
@@ -40,5 +46,5 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     };
   }
 
-  res.json(colorsData);
+  return colorsData;
 }

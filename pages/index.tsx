@@ -23,14 +23,12 @@ const HomePage = () => {
     setItems(itemData);
   };
 
-  if (isProd)
+  if (!isProd)
     return (
-      <Layout>
-        <Center h="80vh" flexFlow="column">
-          <Image src={logo} alt="itemdb logo" width={300} quality="100" />
-          <BetaStatsCard />
-        </Center>
-      </Layout>
+      <Center h="100vh" flexFlow="column">
+        <Image src={logo} alt="itemdb logo" width={300} quality="100" />
+        <BetaStatsCard />
+      </Center>
     );
 
   return (
