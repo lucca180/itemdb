@@ -23,7 +23,7 @@ const HomePage = () => {
     setItems(itemData);
   };
 
-  if (!isProd)
+  if (isProd)
     return (
       <Center h="100vh" flexFlow="column">
         <Image src={logo} alt="itemdb logo" width={300} quality="100" />
