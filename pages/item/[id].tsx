@@ -247,7 +247,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
   
   return {
     props: {
-      item,
+      item: JSON.parse(JSON.stringify(item)),
       colors
     },
     revalidate: 60, // In seconds

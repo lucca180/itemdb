@@ -22,7 +22,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const groupBy = await prisma.priceProcess.groupBy({
     by: ['name'],
     where: {
-      NOT: { type: 'restock' },
+      NOT: { type: {in: ['restock', 'auction']}},
       processed: false,
     },
     _count: {
@@ -56,7 +56,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const processList = await prisma.priceProcess.findMany({
     where: {
       processed: false,
-      NOT: { type: 'restock' },
+      NOT: { type: {in: ['restock', 'auction']}},
       name: { in: names },
     },
     orderBy: {

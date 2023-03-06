@@ -51,18 +51,18 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     if (catNeg.length > 0 && !catNeg.includes('Unknown'))
       catFiltersSQL.push(
-        Prisma.sql`(a.category NOT IN (${Prisma.join(catNeg)}) OR a.category IS NULL)`
+        Prisma.sql`(temp.category NOT IN (${Prisma.join(catNeg)}) OR temp.category IS NULL)`
       );
     else if (catNeg.length > 0)
       catFiltersSQL.push(
-        Prisma.sql`(a.category NOT IN (${Prisma.join(catNeg)}) AND a.category IS NOT NULL)`
+        Prisma.sql`(temp.category NOT IN (${Prisma.join(catNeg)}) AND temp.category IS NOT NULL)`
       );
 
     if (catTrue.length > 0 && !catTrue.includes('Unknown'))
-      catFiltersSQL.push(Prisma.sql`a.category IN (${Prisma.join(catTrue)})`);
+      catFiltersSQL.push(Prisma.sql`temp.category IN (${Prisma.join(catTrue)})`);
     else if (catTrue.length > 0)
       catFiltersSQL.push(
-        Prisma.sql`(a.category IN (${Prisma.join(catTrue)}) OR a.category IS NULL)`
+        Prisma.sql`(temp.category IN (${Prisma.join(catTrue)}) OR temp.category IS NULL)`
       );
   }
 
@@ -75,16 +75,16 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const typeTrue = typeFilters.filter((o: string) => !o.startsWith('!'));
 
     if (typeNeg.length > 0) {
-      typeFiltersSQL.push(Prisma.sql`a.type NOT IN (${Prisma.join(typeNeg)})`);
-      if (typeNeg.includes('wearable')) typeFiltersSQL.push(Prisma.sql`a.isWearable = 0`);
-      if (typeNeg.includes('neohome')) typeFiltersSQL.push(Prisma.sql`a.isNeohome = 0`);
+      typeFiltersSQL.push(Prisma.sql`temp.type NOT IN (${Prisma.join(typeNeg)})`);
+      if (typeNeg.includes('wearable')) typeFiltersSQL.push(Prisma.sql`temp.isWearable = 0`);
+      if (typeNeg.includes('neohome')) typeFiltersSQL.push(Prisma.sql`temp.isNeohome = 0`);
     }
 
     if (typeTrue.length > 0) {
-      typeFiltersSQL.push(Prisma.sql`a.type IN (${Prisma.join(typeTrue)})`);
+      typeFiltersSQL.push(Prisma.sql`temp.type IN (${Prisma.join(typeTrue)})`);
 
-      if (typeTrue.includes('wearable')) typeFiltersSQL.push(Prisma.sql`a.isWearable = 1`);
-      if (typeTrue.includes('neohome')) typeFiltersSQL.push(Prisma.sql`a.isNeohome = 1`);
+      if (typeTrue.includes('wearable')) typeFiltersSQL.push(Prisma.sql`temp.isWearable = 1`);
+      if (typeTrue.includes('neohome')) typeFiltersSQL.push(Prisma.sql`temp.isNeohome = 1`);
     }
 
     console.log(typeFiltersSQL);
@@ -100,48 +100,48 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     if (statusNeg.length > 0 && !statusNeg.includes('Unknown'))
       statusFiltersSQL.push(
-        Prisma.sql`(a.status NOT IN (${Prisma.join(statusNeg)}) OR a.status IS NULL)`
+        Prisma.sql`(temp.status NOT IN (${Prisma.join(statusNeg)}) OR temp.status IS NULL)`
       );
     else if (statusNeg.length > 0)
       statusFiltersSQL.push(
-        Prisma.sql`(a.status NOT IN (${Prisma.join(statusNeg)}) AND a.status IS NOT NULL)`
+        Prisma.sql`(temp.status NOT IN (${Prisma.join(statusNeg)}) AND temp.status IS NOT NULL)`
       );
 
     if (statusTrue.length > 0 && !statusTrue.includes('Unknown'))
       statusFiltersSQL.push(Prisma.sql`a.status IN (${Prisma.join(statusTrue)})`);
     else if (statusTrue.length > 0)
       statusFiltersSQL.push(
-        Prisma.sql`(a.status IN (${Prisma.join(statusTrue)}) OR a.status IS NULL)`
+        Prisma.sql`(temp.status IN (${Prisma.join(statusTrue)}) OR temp.status IS NULL)`
       );
   }
 
   const numberFilters = [];
   if (priceFilter.length > 0) {
     if (priceFilter[0] !== '')
-      numberFilters.push(Prisma.sql`c.price >= ${parseInt(priceFilter[0])}`);
+      numberFilters.push(Prisma.sql`temp.price >= ${parseInt(priceFilter[0])}`);
     if (priceFilter[1] !== '')
-      numberFilters.push(Prisma.sql`c.price <= ${parseInt(priceFilter[1])}`);
+      numberFilters.push(Prisma.sql`temp.price <= ${parseInt(priceFilter[1])}`);
   }
 
   if (weightFilter.length > 0) {
     if (weightFilter[0] !== '')
-      numberFilters.push(Prisma.sql`a.weight >= ${parseInt(weightFilter[0])}`);
+      numberFilters.push(Prisma.sql`temp.weight >= ${parseInt(weightFilter[0])}`);
     if (weightFilter[1] !== '')
-      numberFilters.push(Prisma.sql`a.weight <= ${parseInt(weightFilter[1])}`);
+      numberFilters.push(Prisma.sql`temp.weight <= ${parseInt(weightFilter[1])}`);
   }
 
   if (estValFilter.length > 0) {
     if (estValFilter[0] !== '')
-      numberFilters.push(Prisma.sql`a.est_val >= ${parseInt(estValFilter[0])}`);
+      numberFilters.push(Prisma.sql`temp.est_val >= ${parseInt(estValFilter[0])}`);
     if (estValFilter[1] !== '')
-      numberFilters.push(Prisma.sql`a.est_val <= ${parseInt(estValFilter[1])}`);
+      numberFilters.push(Prisma.sql`temp.est_val <= ${parseInt(estValFilter[1])}`);
   }
 
   if (rarityFilter.length > 0) {
     if (rarityFilter[0] !== '')
-      numberFilters.push(Prisma.sql`a.rarity >= ${parseInt(rarityFilter[0])}`);
+      numberFilters.push(Prisma.sql`temp.rarity >= ${parseInt(rarityFilter[0])}`);
     if (rarityFilter[1] !== '')
-      numberFilters.push(Prisma.sql`a.rarity <= ${parseInt(rarityFilter[1])}`);
+      numberFilters.push(Prisma.sql`temp.rarity <= ${parseInt(rarityFilter[1])}`);
   }
 
   let colorSql;
@@ -159,14 +159,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   let sortSQL;
 
-  if (sortBy === 'name') sortSQL = Prisma.sql`ORDER BY a.name`;
-  else if (sortBy === 'price') sortSQL = Prisma.sql`ORDER BY c.price`;
-  else if (sortBy === 'added') sortSQL = Prisma.sql`ORDER BY a.addedAt`;
+  if (sortBy === 'name') sortSQL = Prisma.sql`ORDER BY temp.name`;
+  else if (sortBy === 'price') sortSQL = Prisma.sql`ORDER BY temp.price`;
+  else if (sortBy === 'added') sortSQL = Prisma.sql`ORDER BY temp.addedAt`;
   else if (sortBy === 'color' && isColorSearch) sortSQL = Prisma.sql`ORDER BY dist`;
-  else if (sortBy === 'weight') sortSQL = Prisma.sql`ORDER BY a.weight`;
-  else if (sortBy === 'estVal') sortSQL = Prisma.sql`ORDER BY a.est_val`;
-  else if (sortBy === 'id') sortSQL = Prisma.sql`ORDER BY a.item_id`;
-  else sortSQL = isColorSearch ? Prisma.sql`ORDER BY dist` : Prisma.sql`ORDER BY a.name`;
+  else if (sortBy === 'weight') sortSQL = Prisma.sql`ORDER BY temp.weight`;
+  else if (sortBy === 'estVal') sortSQL = Prisma.sql`ORDER BY temp.est_val`;
+  else if (sortBy === 'id') sortSQL = Prisma.sql`ORDER BY temp.item_id`;
+  else sortSQL = isColorSearch ? Prisma.sql`ORDER BY dist` : Prisma.sql`ORDER BY temp.name`;
 
   let resultRaw;
 
@@ -175,91 +175,116 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const [l, a, b] = colorQuery.lab().array();
 
     resultRaw = (await prisma.$queryRaw`
-            SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, c.addedAt as priceAdded, c.price, c.noInflation_id, 
-            (POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) as dist,  count(*) OVER() AS full_count 
-            FROM Items as a
-            LEFT JOIN ItemColor as b on a.image_id = b.image_id and (b.image_id, POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) IN (
-                (
-                    SELECT image_id, min((POWER(lab_l-${l},2)+POWER(lab_a-${a},2)+POWER(lab_b-${b},2))) as dist
-                    FROM ItemColor
-                    GROUP BY image_id 
-                    having dist <= 750
-                )
-            )
-            LEFT JOIN ItemPrices as c on c.internal_id = (
-                SELECT internal_id
-                FROM ItemPrices
-                WHERE (item_id = a.item_id OR (name = a.name AND image_id = a.image_id))
-                ORDER BY addedAT DESC
-                LIMIT 1
-            )
-            WHERE (POWER(lab_l-${l},2)+POWER(lab_a-${a},2)+POWER(lab_b-${b},2)) <= 750
 
-            ${
-              catFiltersSQL.length > 0
-                ? Prisma.sql` AND ${Prisma.join(catFiltersSQL, ' AND ')}`
-                : Prisma.empty
-            }
-            ${
-              typeFiltersSQL.length > 0
-                ? Prisma.sql` AND ${Prisma.join(typeFiltersSQL, ' AND ')}`
-                : Prisma.empty
-            }
-            ${
-              statusFiltersSQL.length > 0
-                ? Prisma.sql` AND ${Prisma.join(statusFiltersSQL, ' AND ')}`
-                : Prisma.empty
-            }
-            ${
-              numberFilters.length > 0
-                ? Prisma.sql` AND ${Prisma.join(numberFilters, ' AND ')}`
-                : Prisma.empty
-            }
-            
-            ${sortSQL}
-            ${sortDir === 'desc' ? Prisma.sql`DESC` : Prisma.sql`ASC`}
-            LIMIT ${limit} OFFSET ${page * limit}
+      SELECT DISTINCT *,  count(*) OVER() AS full_count FROM (
+        SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex,
+          c.addedAt as priceAdded, c.price, c.noInflation_id,
+          (POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) as dist
+        FROM Items as a
+        LEFT JOIN ItemColor as b on a.image_id = b.image_id and (b.image_id, POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) IN (
+            (
+                SELECT image_id, min((POWER(lab_l-${l},2)+POWER(lab_a-${a},2)+POWER(lab_b-${b},2))) as dist
+                FROM ItemColor
+                GROUP BY image_id 
+                having dist <= 750
+            )
+        )
+        LEFT JOIN (
+          SELECT *
+          FROM ItemPrices
+          WHERE (internal_id, addedAt) IN (
+              SELECT MAX(internal_id), MAX(addedAt)
+              FROM ItemPrices
+              GROUP BY item_id, name, image_id
+          )
+        ) as c on (c.name = a.name AND c.image_id = a.image_id)
+        UNION
+        SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex,
+          c.addedAt as priceAdded, c.price, c.noInflation_id,
+          (POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) as dist
+        FROM Items as a
+        LEFT JOIN ItemColor as b on a.image_id = b.image_id and (b.image_id, POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) IN (
+            (
+                SELECT image_id, min((POWER(lab_l-${l},2)+POWER(lab_a-${a},2)+POWER(lab_b-${b},2))) as dist
+                FROM ItemColor
+                GROUP BY image_id 
+                having dist <= 750
+            )
+        )
+        LEFT JOIN (
+            SELECT *
+            FROM ItemPrices
+            WHERE (internal_id, addedAt) IN (
+                SELECT MAX(internal_id), MAX(addedAt)
+                FROM ItemPrices
+                GROUP BY item_id, name, image_id
+            )
+        ) as c on c.item_id = a.item_id
+      ) as temp
+        
+        WHERE (POWER(temp.lab_l-${l},2)+POWER(temp.lab_a-${a},2)+POWER(temp.lab_b-${b},2)) <= 750
+
+        ${
+          catFiltersSQL.length > 0
+            ? Prisma.sql` AND ${Prisma.join(catFiltersSQL, ' AND ')}`
+            : Prisma.empty
+        }
+        ${
+          typeFiltersSQL.length > 0
+            ? Prisma.sql` AND ${Prisma.join(typeFiltersSQL, ' AND ')}`
+            : Prisma.empty
+        }
+        ${
+          statusFiltersSQL.length > 0
+            ? Prisma.sql` AND ${Prisma.join(statusFiltersSQL, ' AND ')}`
+            : Prisma.empty
+        }
+        ${
+          numberFilters.length > 0
+            ? Prisma.sql` AND ${Prisma.join(numberFilters, ' AND ')}`
+            : Prisma.empty
+        }
+        
+        ${sortSQL}
+        ${sortDir === 'desc' ? Prisma.sql`DESC` : Prisma.sql`ASC`}
+        LIMIT ${limit} OFFSET ${page * limit}
         `) as any[];
   } else {
     query = `%${query}%`;
     resultRaw = (await prisma.$queryRaw`
-      SELECT * FROM (
-        (
-          SELECT A.*, b.lab_l, b.lab_a, b.lab_b, b.population, c.addedAt as priceAdded, c.price, c.noInflation_id, 
-            count(*) OVER() AS full_count
-            ${colorSql ? Prisma.sql`, ${colorSql} as dist` : Prisma.empty}
-          FROM Items as A
-          LEFT JOIN ItemColor as b on A.image_id = b.image_id and b.type = 'Vibrant'
-          LEFT JOIN (
-              SELECT *
+      SELECT *,  count(*) OVER() AS full_count FROM (
+        SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex,
+          c.addedAt as priceAdded, c.price, c.noInflation_id
+          ${colorSql ? Prisma.sql`, ${colorSql} as dist` : Prisma.empty}
+        FROM Items as a
+        LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
+        LEFT JOIN (
+          SELECT *
+          FROM ItemPrices
+          WHERE (internal_id, addedAt) IN (
+              SELECT MAX(internal_id), MAX(addedAt)
               FROM ItemPrices
-              WHERE (internal_id, addedAt) IN (
-                  SELECT MAX(internal_id), MAX(addedAt)
-                  FROM ItemPrices
-                  GROUP BY item_id, name, image_id
-              )
-          ) as c on c.item_id = A.item_id
-        )
+              GROUP BY item_id, name, image_id
+          )
+        ) as c on (c.name = a.name AND c.image_id = a.image_id)
         UNION
-        (
-          SELECT A.*, b.lab_l, b.lab_a, b.lab_b, b.population, c.addedAt as priceAdded, c.price, c.noInflation_id,
-            count(*) OVER() AS full_count
-            ${colorSql ? Prisma.sql`, ${colorSql} as dist` : Prisma.empty}
-          FROM Items as A
-          LEFT JOIN ItemColor as b on A.image_id = b.image_id and b.type = 'Vibrant'
-          LEFT JOIN (
-              SELECT *
-              FROM ItemPrices
-              WHERE (internal_id, addedAt) IN (
-                  SELECT MAX(internal_id), MAX(addedAt)
-                  FROM ItemPrices
-                  GROUP BY item_id, name, image_id
-              )
-          ) as c on c.name = A.name and c.image_id = A.image_id
-          WHERE c.item_id IS NULL
-        )
-      ) as temp
+        SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex,
+          c.addedAt as priceAdded, c.price, c.noInflation_id
+          ${colorSql ? Prisma.sql`, ${colorSql} as dist` : Prisma.empty}
+        FROM Items as a
+        LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
+        LEFT JOIN (
+            SELECT *
+            FROM ItemPrices
+            WHERE (internal_id, addedAt) IN (
+                SELECT MAX(internal_id), MAX(addedAt)
+                FROM ItemPrices
+                GROUP BY item_id, name, image_id
+            )
+      ) as c on c.item_id = a.item_id) as temp
+            
       WHERE (temp.name LIKE ${query})
+
       ${
         catFiltersSQL.length > 0
           ? Prisma.sql` AND ${Prisma.join(catFiltersSQL, ' AND ')}`
