@@ -41,6 +41,8 @@ model Items {
 	tags 		  ItemTags[]
 
 	@@index([name, image_id])
+	@@index([image_id])
+	@@index([item_id])
 }
 
 model ItemTranslation {
@@ -118,6 +120,7 @@ model ItemColor {
 	population	  Float
 
 	@@unique([image_id, type])
+	@@index([hsv_h])
 }
 
 model ItemPrices {
@@ -132,6 +135,8 @@ model ItemPrices {
 	usedProcessIDs	String @db.Text
 
 	@@index([name, image_id])
+	@@index([item_id])
+	@@index([addedAt])
 }
 
 model PriceProcess {
@@ -155,6 +160,8 @@ model PriceProcess {
 	
 	@@unique([type, neo_id])
 	@@index([name, image_id])
+	@@index([item_id])
+	@@index([addedAt])
 }
 
 model Trades {

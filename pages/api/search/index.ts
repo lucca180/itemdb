@@ -271,8 +271,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   // .sort((a:any, b:any) =>  Math.floor(b.h) - Math.floor(a.h) || Math.floor(b.s) - Math.floor(a.s) || Math.floor(b.l) - Math.floor(a.l))
 
   const itemList: ItemData[] = filteredResult.map((result: any) => {
-    const color = Color.lab(result.lab_l, result.lab_a, result.lab_b);
-
     const item: ItemData = {
       internal_id: result.internal_id,
       image: result.image ?? '',
@@ -291,9 +289,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       isNeohome: !!result.isNeohome,
       isWearable: !!result.specialType?.includes('wearable') || !!result.isWearable,
       color: {
-        rgb: color.rgb().round().array(),
-        lab: color.round().array(),
-        hex: color.hex(),
+        rgb: [result.rgb_r, result.rgb_g, result.rgb_b],
+        lab: [result.lab_l, result.lab_a, result.lab_b],
+        hex: result.hex,
         type: 'vibrant',
         population: result.population,
       },
