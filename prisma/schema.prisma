@@ -134,9 +134,10 @@ model ItemPrices {
 	noInflation_id	Int?
 	usedProcessIDs	String @db.Text
 
+	@@index([item_id, name, image_id])
 	@@index([name, image_id])
 	@@index([item_id])
-	@@index([addedAt])
+	@@index([price(sort: Asc), addedAt(sort: Desc)])
 }
 
 model PriceProcess {
@@ -161,7 +162,7 @@ model PriceProcess {
 	@@unique([type, neo_id])
 	@@index([name, image_id])
 	@@index([item_id])
-	@@index([addedAt])
+	@@index([addedAt(sort: Desc)])
 }
 
 model Trades {

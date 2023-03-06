@@ -223,46 +223,70 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   } else {
     query = `%${query}%`;
     resultRaw = (await prisma.$queryRaw`
-            SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, c.addedAt as priceAdded, c.price, c.noInflation_id,  count(*) OVER() AS full_count
+      SELECT * FROM (
+        (
+          SELECT A.*, b.lab_l, b.lab_a, b.lab_b, b.population, c.addedAt as priceAdded, c.price, c.noInflation_id, 
+            count(*) OVER() AS full_count
             ${colorSql ? Prisma.sql`, ${colorSql} as dist` : Prisma.empty}
-            FROM Items as a
-            LEFT JOIN ItemColor as b on a.image_id = b.image_id
-            LEFT JOIN ItemPrices as c on c.internal_id = (
-                SELECT internal_id
-                FROM ItemPrices
-                WHERE (item_id = a.item_id OR (name = a.name AND image_id = a.image_id))
-                ORDER BY addedAT DESC
-                LIMIT 1
-            )
-            WHERE b.type = "Vibrant" AND (a.name LIKE ${query})
+          FROM Items as A
+          LEFT JOIN ItemColor as b on A.image_id = b.image_id and b.type = 'Vibrant'
+          LEFT JOIN (
+              SELECT *
+              FROM ItemPrices
+              WHERE (internal_id, addedAt) IN (
+                  SELECT MAX(internal_id), MAX(addedAt)
+                  FROM ItemPrices
+                  GROUP BY item_id, name, image_id
+              )
+          ) as c on c.item_id = A.item_id
+        )
+        UNION
+        (
+          SELECT A.*, b.lab_l, b.lab_a, b.lab_b, b.population, c.addedAt as priceAdded, c.price, c.noInflation_id,
+            count(*) OVER() AS full_count
+            ${colorSql ? Prisma.sql`, ${colorSql} as dist` : Prisma.empty}
+          FROM Items as A
+          LEFT JOIN ItemColor as b on A.image_id = b.image_id and b.type = 'Vibrant'
+          LEFT JOIN (
+              SELECT *
+              FROM ItemPrices
+              WHERE (internal_id, addedAt) IN (
+                  SELECT MAX(internal_id), MAX(addedAt)
+                  FROM ItemPrices
+                  GROUP BY item_id, name, image_id
+              )
+          ) as c on c.name = A.name and c.image_id = A.image_id
+          WHERE c.item_id IS NULL
+        )
+      ) as temp
+      WHERE (temp.name LIKE ${query})
+      ${
+        catFiltersSQL.length > 0
+          ? Prisma.sql` AND ${Prisma.join(catFiltersSQL, ' AND ')}`
+          : Prisma.empty
+      }
+      ${
+        typeFiltersSQL.length > 0
+          ? Prisma.sql` AND ${Prisma.join(typeFiltersSQL, ' AND ')}`
+          : Prisma.empty
+      }
+      ${
+        statusFiltersSQL.length > 0
+          ? Prisma.sql` AND ${Prisma.join(statusFiltersSQL, ' AND ')}`
+          : Prisma.empty
+      }
+      ${
+        numberFilters.length > 0
+          ? Prisma.sql` AND ${Prisma.join(numberFilters, ' AND ')}`
+          : Prisma.empty
+      }
+      ${colorSql && !isColorNeg ? Prisma.sql` AND ${colorSql} <= 750` : Prisma.empty}
+      ${colorSql && isColorNeg ? Prisma.sql` AND ${colorSql} > 750` : Prisma.empty}
 
-            ${
-              catFiltersSQL.length > 0
-                ? Prisma.sql` AND ${Prisma.join(catFiltersSQL, ' AND ')}`
-                : Prisma.empty
-            }
-            ${
-              typeFiltersSQL.length > 0
-                ? Prisma.sql` AND ${Prisma.join(typeFiltersSQL, ' AND ')}`
-                : Prisma.empty
-            }
-            ${
-              statusFiltersSQL.length > 0
-                ? Prisma.sql` AND ${Prisma.join(statusFiltersSQL, ' AND ')}`
-                : Prisma.empty
-            }
-            ${
-              numberFilters.length > 0
-                ? Prisma.sql` AND ${Prisma.join(numberFilters, ' AND ')}`
-                : Prisma.empty
-            }
-            ${colorSql && !isColorNeg ? Prisma.sql` AND ${colorSql} <= 750` : Prisma.empty}
-            ${colorSql && isColorNeg ? Prisma.sql` AND ${colorSql} > 750` : Prisma.empty}
-
-            ${sortSQL} 
-            ${sortDir === 'desc' ? Prisma.sql`DESC` : Prisma.sql`ASC`}
-            LIMIT ${limit} OFFSET ${page * limit}
-        `) as any[];
+      ${sortSQL} 
+      ${sortDir === 'desc' ? Prisma.sql`DESC` : Prisma.sql`ASC`}
+      LIMIT ${limit} OFFSET ${page * limit}
+    `) as any[];
   }
 
   // const ids = resultRaw.map((o: { internal_id: any; }) => o.internal_id)
