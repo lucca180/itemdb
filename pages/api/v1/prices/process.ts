@@ -94,7 +94,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         .sort((a, b) => a.price - b.price)
         .slice(0, 20);
 
-      if (filteredResult.length === 0) continue;
+      if (filteredResult.length <= 1) continue;
       let latestDate = new Date(0);
 
       const usedIDs = filteredResult.map((o) => {
