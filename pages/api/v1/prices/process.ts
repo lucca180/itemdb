@@ -6,6 +6,8 @@ import { geometricMean, standardDeviation } from 'simple-statistics';
 import { ItemPrices, PriceProcess } from '@prisma/client';
 import { differenceInCalendarDays } from 'date-fns';
 
+const MAX_DAYS = 15;
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Methods', 'POST');
@@ -14,22 +16,52 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const itemName = req.body.itemName as string;
+  const limitDate = Date.now() - MAX_DAYS * 24 * 60 * 60 * 1000;
+  const limitDateFormated = new Date(limitDate).toISOString();
 
-  let limit = Number(req.body.limit) ?? 300;
-  limit = isNaN(limit) ? 300 : limit;
-  limit = Math.min(limit, 1000);
+  const groupBy = await prisma.priceProcess.groupBy({
+    by: ['name'],
+    where: {
+      NOT: { type: 'restock' },
+      processed: false,
+    },
+    _count: {
+      name: true,
+    },
+    _max: {
+      addedAt: true,
+    },
+    having: {
+      OR: [
+        {
+          name: {
+            _count: {
+              gt: 3,
+            },
+          },
+        },
+        {
+          addedAt: {
+            _max: {
+              lt: limitDateFormated,
+            },
+          },
+        },
+      ],
+    }
+  });
+
+  const names = groupBy.map((x) => x.name);
 
   const processList = await prisma.priceProcess.findMany({
     where: {
       processed: false,
       NOT: { type: 'restock' },
-      name: itemName ?? undefined,
+      name: { in: names },
     },
     orderBy: {
       addedAt: 'desc',
     },
-    take: limit,
   });
 
   const priceAddPromises: Promise<ItemPrices | undefined>[] = [];
@@ -71,8 +103,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       });
 
       const allIDs = allItemData.filter((x) => x.addedAt <= latestDate).map((x) => x.internal_id);
-      
-      if (filteredResult.length < 3 && differenceInCalendarDays(Date.now(), latestDate) < 15)
+
+      if (filteredResult.length < 3 && differenceInCalendarDays(Date.now(), latestDate) < MAX_DAYS)
         continue;
 
       const prices = filteredResult.map((x) => x.price);
