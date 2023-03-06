@@ -124,13 +124,15 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         out = prices.filter((x) => x <= priceMean + priceSTD && x >= priceMean - priceSTD * 2.5);
       }
 
+      const finalMean = out.length >= 2 ? geometricMean(out) : out[0];
+
       let finalPrice =
-        geometricMean(out) < 5
-          ? Math.round(geometricMean(out))
-          : Math.round(geometricMean(out) / 5) * 5;
-      if (finalPrice > 10000) finalPrice = Math.round(geometricMean(out) / 50) * 50;
-      if (finalPrice > 100000) finalPrice = Math.round(geometricMean(out) / 500) * 500;
-      if (finalPrice > 1000000) finalPrice = Math.round(geometricMean(out) / 50000) * 50000;
+        finalMean < 5
+          ? Math.round(finalMean)
+          : Math.round(finalMean / 5) * 5;
+      if (finalPrice > 10000) finalPrice = Math.round(finalMean / 50) * 50;
+      if (finalPrice > 100000) finalPrice = Math.round(finalMean / 500) * 500;
+      if (finalPrice > 1000000) finalPrice = Math.round(finalMean / 50000) * 50000;
 
       priceAddPromises.push(
         updateOrAddDB(item, finalPrice, usedIDs, latestDate).then((_) => {

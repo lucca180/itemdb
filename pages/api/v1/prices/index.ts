@@ -65,11 +65,15 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     item_id = isNaN(Number(item_id)) ? undefined : Number(item_id);
     neo_id = isNaN(Number(neo_id)) ? undefined : Number(neo_id);
 
-    if (!name || !value) continue;
+    if (!name || !value || value <= 0) continue;
 
     if (img) img = (img as string).replace(/^[^\/\/\s]*\/\//gim, 'https://');
 
     if (img) imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? null;
+
+    // sw, ssw and usershop items have a max value of 999.999
+    if(['sw', 'ssw', 'usershop'].includes(type) && value > 999999) 
+      continue;
 
     const x = {
       name: name as string,
