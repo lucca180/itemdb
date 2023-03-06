@@ -16,6 +16,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
   const itemProcess = prisma.itemProcess.count({
     where: {
       processed: false,
+      manual_check: null,
     },
   });
 

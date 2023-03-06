@@ -33,7 +33,7 @@ const BetaStatsCard = () => {
         <Text color="gray.300">Items Added</Text>
         <Progress w="100%" value={(stats.itemsTotal / 60000) * 100} />
         <Text fontSize="sm" textAlign={'center'}>
-          {stats.itemsTotal}/60000
+          {stats.itemsTotal}/~60000
         </Text>
       </VStack>
       <VStack justifyContent={'center'} alignItems="center" w="100%">

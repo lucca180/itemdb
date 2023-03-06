@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.0.4
+// @version      1.0.5
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
 // @website      https://itemdb.com.br
@@ -367,6 +367,9 @@ function handleCloset() {
       name: itemName,
       img: img,
       description: description,
+      rarity: type === 'pb' ? 101 : undefined,
+      weight: type === 'pb' ? 1 : undefined,
+      est_val: type === 'pb' ? 0 : undefined,
       subText: subText + " (wearable) ",
       category: category,
       itemId: itemId,

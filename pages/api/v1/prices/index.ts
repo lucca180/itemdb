@@ -3,6 +3,7 @@ import prisma from '../../../../utils/prisma';
 import { PriceData } from '../../../../types';
 import requestIp from 'request-ip';
 import hash from 'object-hash';
+import { Prisma } from '@prisma/client';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -52,11 +53,13 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const lang = data.lang;
 
   const dataList = [];
+  let isAuction = false;
+
   for (const priceInfo of itemPrices) {
     let { name, img, owner, stock, value, otherInfo, type, item_id, neo_id } = priceInfo;
 
     let imageId: string | null = null;
-
+    if(type == 'auction') isAuction = true;
     stock = isNaN(Number(stock)) ? undefined : Number(stock);
     value = isNaN(Number(value)) ? undefined : Number(value);
     item_id = isNaN(Number(item_id)) ? undefined : Number(item_id);
@@ -102,6 +105,11 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   let tries = 0;
   while (tries <= 3) {
     try {
+      if(isAuction){
+        const result = await handleAuction(dataList);
+        return res.json(result);
+      }
+
       const result = await prisma.priceProcess.createMany({
         data: dataList,
         skipDuplicates: true,
@@ -122,3 +130,21 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   return res.status(500).json({ error: 'Internal Server Error' });
 };
+
+const handleAuction = async (dataList: Prisma.PriceProcessCreateInput[]) => {
+  const auctionData = dataList.map((auction) => 
+    prisma.priceProcess.upsert({
+      where: {
+        type_neo_id:{
+          type: auction.type,
+          neo_id: auction.neo_id as number
+        },
+        processed: false
+      },
+      create: auction,
+      update: auction
+    })
+  );
+
+  return prisma.$transaction(auctionData);
+}

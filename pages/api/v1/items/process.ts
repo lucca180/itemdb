@@ -125,7 +125,7 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
 
     // merge the data we're missing
     let hasChange = false;
-    const forceMerge = ['type', 'isNC', 'isWearable', 'status'];
+    const forceMerge = ['type', 'isNC', 'isWearable', 'status', 'est_val'];
     for (const key of Object.keys(dbItem) as Array<keyof typeof dbItem>) {
       if (['internal_id', 'addedAt', 'updatedAt'].includes(key)) continue;
 
@@ -151,10 +151,12 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
         }
 
         // check some default values
+        // neopets sometimes changes est_val randomly
         else if (forceMerge.includes(key)) {
           if (
             (key == 'status' && dbItem.status == 'active') ||
-            (key == 'type' && dbItem.type == 'np')
+            (key == 'type' && dbItem.type == 'np') ||
+            (key == 'est_val' && dbItem.est_val)
           )
             //@ts-ignore
             dbItem[key] = item[key];

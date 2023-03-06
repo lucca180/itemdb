@@ -50,7 +50,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       // merge all reports data
       for (const itemOtherData of allItemData) {
         //@ts-ignore
-        for (const key of Object.keys(item)) item[key] ||= itemOtherData[key];
+        for (const key of Object.keys(item)) item[key] ||= itemOtherData[key] ?? item[key];
       }
 
       const filteredResult = allItemData
@@ -71,8 +71,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       });
 
       const allIDs = allItemData.filter((x) => x.addedAt <= latestDate).map((x) => x.internal_id);
-
-      if (filteredResult.length < 5 && differenceInCalendarDays(Date.now(), latestDate) < 14)
+      
+      if (filteredResult.length < 3 && differenceInCalendarDays(Date.now(), latestDate) < 15)
         continue;
 
       const prices = filteredResult.map((x) => x.price);
@@ -82,14 +82,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
       let oldPrices = prices;
 
-      let out = prices.filter((x) => x <= priceMean + priceSTD && x >= priceMean - priceSTD * 3);
+      let out = prices.filter((x) => x <= priceMean + priceSTD && x >= priceMean - priceSTD * 2.5);
 
-      while (out.length > 5 && out.length < oldPrices.length) {
+      while (out.length > 10 && out.length < oldPrices.length) {
         oldPrices = out;
         priceMean = Math.round(geometricMean(out));
         priceSTD = standardDeviation(out);
 
-        out = prices.filter((x) => x <= priceMean + priceSTD && x >= priceMean - priceSTD * 3);
+        out = prices.filter((x) => x <= priceMean + priceSTD && x >= priceMean - priceSTD * 2.5);
       }
 
       let finalPrice =

@@ -76,15 +76,15 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     if (typeNeg.length > 0) {
       typeFiltersSQL.push(Prisma.sql`a.type NOT IN (${Prisma.join(typeNeg)})`);
-      if (typeNeg.includes('wearable')) typeFiltersSQL.push(Prisma.sql`a.isWearable NOT IN (1)`);
-      if (typeNeg.includes('neohome')) typeFiltersSQL.push(Prisma.sql`a.isNeohome NOT IN (1)`);
+      if (typeNeg.includes('wearable')) typeFiltersSQL.push(Prisma.sql`a.isWearable = 0`);
+      if (typeNeg.includes('neohome')) typeFiltersSQL.push(Prisma.sql`a.isNeohome = 0`);
     }
 
     if (typeTrue.length > 0) {
       typeFiltersSQL.push(Prisma.sql`a.type IN (${Prisma.join(typeTrue)})`);
 
-      if (typeTrue.includes('wearable')) typeFiltersSQL.push(Prisma.sql`a.isWearable IN (1)`);
-      if (typeTrue.includes('neohome')) typeFiltersSQL.push(Prisma.sql`a.isNeohome IN (1)`);
+      if (typeTrue.includes('wearable')) typeFiltersSQL.push(Prisma.sql`a.isWearable = 1`);
+      if (typeTrue.includes('neohome')) typeFiltersSQL.push(Prisma.sql`a.isNeohome = 1`);
     }
 
     console.log(typeFiltersSQL);
