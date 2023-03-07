@@ -175,8 +175,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const [l, a, b] = colorQuery.lab().array();
 
     resultRaw = (await prisma.$queryRaw`
-
-      SELECT DISTINCT *,  count(*) OVER() AS full_count FROM (
+      SELECT *,  count(*) OVER() AS full_count FROM (
         SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex,
           c.addedAt as priceAdded, c.price, c.noInflation_id,
           (POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) as dist
@@ -195,31 +194,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           WHERE (internal_id, addedAt) IN (
               SELECT MAX(internal_id), MAX(addedAt)
               FROM ItemPrices
-              GROUP BY item_id, name, image_id
+              GROUP BY item_iid
           )
-        ) as c on (c.name = a.name AND c.image_id = a.image_id)
-        UNION
-        SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex,
-          c.addedAt as priceAdded, c.price, c.noInflation_id,
-          (POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) as dist
-        FROM Items as a
-        LEFT JOIN ItemColor as b on a.image_id = b.image_id and (b.image_id, POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) IN (
-            (
-                SELECT image_id, min((POWER(lab_l-${l},2)+POWER(lab_a-${a},2)+POWER(lab_b-${b},2))) as dist
-                FROM ItemColor
-                GROUP BY image_id 
-                having dist <= 750
-            )
-        )
-        LEFT JOIN (
-            SELECT *
-            FROM ItemPrices
-            WHERE (internal_id, addedAt) IN (
-                SELECT MAX(internal_id), MAX(addedAt)
-                FROM ItemPrices
-                GROUP BY item_id, name, image_id
-            )
-        ) as c on c.item_id = a.item_id
+        ) as c on c.item_iid = a.internal_id
       ) as temp
         
         WHERE (POWER(temp.lab_l-${l},2)+POWER(temp.lab_a-${a},2)+POWER(temp.lab_b-${b},2)) <= 750
@@ -264,24 +241,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           WHERE (internal_id, addedAt) IN (
               SELECT MAX(internal_id), MAX(addedAt)
               FROM ItemPrices
-              GROUP BY item_id, name, image_id
+              GROUP BY item_iid
           )
-        ) as c on (c.name = a.name AND c.image_id = a.image_id)
-        UNION
-        SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex,
-          c.addedAt as priceAdded, c.price, c.noInflation_id
-          ${colorSql ? Prisma.sql`, ${colorSql} as dist` : Prisma.empty}
-        FROM Items as a
-        LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
-        LEFT JOIN (
-            SELECT *
-            FROM ItemPrices
-            WHERE (internal_id, addedAt) IN (
-                SELECT MAX(internal_id), MAX(addedAt)
-                FROM ItemPrices
-                GROUP BY item_id, name, image_id
-            )
-      ) as c on c.item_id = a.item_id) as temp
+        ) as c on c.item_iid = a.internal_id
+      ) as temp
             
       WHERE (temp.name LIKE ${query})
 

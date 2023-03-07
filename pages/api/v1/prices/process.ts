@@ -181,15 +181,15 @@ async function updateOrAddDB(
   } as ItemPrices;
 
   try {
-    if (!priceData.image_id && !priceData.name && !priceData.item_id) throw 'invalid data';
+    if ((!priceData.image_id && !priceData.name) && !priceData.item_id) throw 'invalid data';
 
     const item = await prisma.items.findFirst({
       where: {
         OR: [
-          { item_id: priceData.item_id ?? -1 },
+          { item_id: priceData.item_id ?? undefined },
           {
             name: priceData.name,
-            image_id: priceData.image_id ?? '-1',
+            image_id: priceData.image_id ?? undefined,
           },
         ],
       },
@@ -202,13 +202,7 @@ async function updateOrAddDB(
 
     const oldPrice = await prisma.itemPrices.findFirst({
       where: {
-        OR: [
-          { item_id: priceData.item_id ?? -1 },
-          {
-            name: priceData.name,
-            image_id: priceData.image_id ?? '-1',
-          },
-        ],
+        item_iid: item.internal_id,
       },
       orderBy: { addedAt: 'desc' },
     });

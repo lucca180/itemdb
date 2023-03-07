@@ -139,9 +139,7 @@ model ItemPrices {
 	item_iid		Int?
 	item 			Items?  @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
 
-	@@index([item_id, name, image_id])
 	@@index([name, image_id])
-	@@index([item_id])
 }
 
 model PriceProcess {

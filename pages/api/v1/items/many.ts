@@ -51,15 +51,17 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const resultRaw = (await prisma.$queryRaw`
         SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, c.addedAt as priceAdded, c.price, c.noInflation_id 
         FROM Items as a
-        LEFT JOIN ItemColor as b on a.image_id = b.image_id
-        LEFT JOIN ItemPrices as c on c.internal_id = (
-            SELECT internal_id
-            FROM ItemPrices
-            WHERE (item_id = a.item_id OR (name = a.name AND image_id = a.image_id))
-            ORDER BY addedAT DESC
-            LIMIT 1
-        )
-        WHERE b.type = "Vibrant" AND ${query}
+        LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
+        LEFT JOIN (
+          SELECT *
+          FROM ItemPrices
+          WHERE (internal_id, addedAt) IN (
+              SELECT MAX(internal_id), MAX(addedAt)
+              FROM ItemPrices
+              GROUP BY item_iid
+          )
+        ) as c on c.item_iid = a.internal_id
+        WHERE ${query}
     `) as any[];
 
   if (resultRaw.length === 0) res.json([]);
