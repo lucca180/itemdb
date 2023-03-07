@@ -69,12 +69,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   // list of unique entries
   const uniqueNames = [...processList].filter(
-    (value, index, self) => index === self.findIndex((t) => genItemKey(t) === genItemKey(value))
+    (value, index, self) => index === self.findIndex((t) => genItemKey(t, true) === genItemKey(value, true))
   );
 
   for (const item of uniqueNames) {
     try {
-      const allItemData = processList.filter((x) => genItemKey(x) === genItemKey(item));
+      const allItemData = processList.filter((x) => genItemKey(x, true) === genItemKey(item, true));
       const owners = allItemData.map((o) => o.owner);
 
       if (allItemData.length === 0) continue;
@@ -145,7 +145,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       throw e;
     }
   }
-
+  
   const priceAddList = (await Promise.all(priceAddPromises)).filter((x) => !!x) as ItemPrices[];
 
   const result = await prisma.$transaction([
@@ -179,6 +179,23 @@ async function updateOrAddDB(
 
   try {
     if (!priceData.image_id && !priceData.name && !priceData.item_id) throw 'invalid data';
+
+    const item = await prisma.items.findFirst({
+      where: {
+        OR: [
+          { item_id: priceData.item_id ?? -1 },
+          {
+            name: priceData.name,
+            image_id: priceData.image_id ?? '-1',
+          },
+        ],
+      },
+    });
+
+    if (!item) 
+      return undefined;
+
+    newPriceData.item_iid = item.internal_id;
 
     const oldPrice = await prisma.itemPrices.findFirst({
       where: {

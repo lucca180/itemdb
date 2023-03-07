@@ -35,6 +35,8 @@ model Items {
 	translation   ItemTranslation[]
 	child_itens	  OpenableItems[] @relation("parentItem")
 	inside_at	  OpenableItems[] @relation("childItem")
+	
+	prices 		  ItemPrices[]
 
 	atLists 	  ListItems[]
 
@@ -134,10 +136,12 @@ model ItemPrices {
 	noInflation_id	Int?
 	usedProcessIDs	String @db.Text
 
+	item_iid		Int?
+	item 			Items?  @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+
 	@@index([item_id, name, image_id])
 	@@index([name, image_id])
 	@@index([item_id])
-	@@index([price(sort: Asc), addedAt(sort: Desc)])
 }
 
 model PriceProcess {
