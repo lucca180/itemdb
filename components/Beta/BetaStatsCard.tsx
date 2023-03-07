@@ -38,14 +38,17 @@ const BetaStatsCard = () => {
       </VStack>
       <VStack justifyContent={'center'} alignItems="center" w="100%">
         <Text color="gray.300">Items Completed</Text>
-        <Progress w="100%" value={((stats.itemsTotal-stats.itemsMissingInfo) / stats.itemsTotal) * 100} />
+        <Progress
+          w="100%"
+          value={((stats.itemsTotal - stats.itemsMissingInfo) / stats.itemsTotal) * 100}
+        />
         <Text fontSize="sm" textAlign={'center'}>
-          {(stats.itemsTotal-stats.itemsMissingInfo)}/{stats.itemsTotal}
+          {stats.itemsTotal - stats.itemsMissingInfo}/{stats.itemsTotal}
         </Text>
       </VStack>
       <VStack justifyContent={'center'} alignItems="center" w="100%">
         <Text color="gray.300">Data Waiting Processing</Text>
-        <Progress w="100%" value={(stats.itemToProcess / stats.itemProcess)} />
+        <Progress w="100%" value={stats.itemToProcess / stats.itemProcess} />
         <Text fontSize="sm" textAlign={'center'}>
           {stats.itemToProcess}/{stats.itemProcess}
         </Text>

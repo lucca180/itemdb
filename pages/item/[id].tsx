@@ -41,11 +41,11 @@ const defaultLastSeen: ItemLastSeen = {
 
 type Props = {
   item: ItemData;
-  colors: FullItemColors
+  colors: FullItemColors;
 };
 
 const ItemPage = (props: Props) => {
-  const { item, colors} = props;
+  const { item, colors } = props;
   const [prices, setPrices] = useState<PriceData[] | null>(null);
   const [seenStats, setSeen] = useState<ItemLastSeen>(defaultLastSeen);
   const [trades, setTrades] = useState<TradeData[]>([]);
@@ -66,7 +66,7 @@ const ItemPage = (props: Props) => {
 
     if (!id) return;
 
-    const [ resPrice, resStats, resTrades, resTags] = await Promise.all([
+    const [resPrice, resStats, resTrades, resTags] = await Promise.all([
       axios.get(`/api/v1/items/${item.internal_id}/prices`),
       axios.get(`/api/v1/prices/stats/`, {
         params: {
@@ -236,14 +236,14 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 
   const item = await getItem(Number(id));
   if (!item) return { notFound: true };
-  
+
   const colors = await getItemColor(item.image_id);
-  if(!colors) return { notFound: true };
-  
+  if (!colors) return { notFound: true };
+
   return {
     props: {
       item: JSON.parse(JSON.stringify(item)),
-      colors
+      colors,
     },
     revalidate: 60, // In seconds
   };

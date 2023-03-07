@@ -22,7 +22,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const groupBy = await prisma.priceProcess.groupBy({
     by: ['name'],
     where: {
-      NOT: { type: {in: ['restock', 'auction']}},
+      NOT: { type: { in: ['restock', 'auction'] } },
       processed: false,
     },
     _count: {
@@ -48,7 +48,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           },
         },
       ],
-    }
+    },
   });
 
   const names = groupBy.map((x) => x.name);
@@ -56,7 +56,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const processList = await prisma.priceProcess.findMany({
     where: {
       processed: false,
-      NOT: { type: {in: ['restock', 'auction']}},
+      NOT: { type: { in: ['restock', 'auction'] } },
       name: { in: names },
     },
     orderBy: {
@@ -69,7 +69,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   // list of unique entries
   const uniqueNames = [...processList].filter(
-    (value, index, self) => index === self.findIndex((t) => genItemKey(t, true) === genItemKey(value, true))
+    (value, index, self) =>
+      index === self.findIndex((t) => genItemKey(t, true) === genItemKey(value, true))
   );
 
   for (const item of uniqueNames) {
@@ -125,13 +126,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       }
 
       const finalMean = out.length >= 2 ? geometricMean(out) : out[0];
-     
-      if(isNaN(finalMean)) throw 'NaN price';
 
-      let finalPrice =
-        finalMean < 5
-          ? Math.round(finalMean)
-          : Math.round(finalMean / 5) * 5;
+      if (isNaN(finalMean)) throw 'NaN price';
+
+      let finalPrice = finalMean < 5 ? Math.round(finalMean) : Math.round(finalMean / 5) * 5;
       if (finalPrice > 10000) finalPrice = Math.round(finalMean / 50) * 50;
       if (finalPrice > 100000) finalPrice = Math.round(finalMean / 500) * 500;
       if (finalPrice > 1000000) finalPrice = Math.round(finalMean / 50000) * 50000;
@@ -144,11 +142,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       );
     } catch (e) {
       console.error(e, item);
-      if(e === 'NaN price') continue;
+      if (e === 'NaN price') continue;
       throw e;
     }
   }
-  
+
   const priceAddList = (await Promise.all(priceAddPromises)).filter((x) => !!x) as ItemPrices[];
 
   const result = await prisma.$transaction([
@@ -181,7 +179,7 @@ async function updateOrAddDB(
   } as ItemPrices;
 
   try {
-    if ((!priceData.image_id && !priceData.name) && !priceData.item_id) throw 'invalid data';
+    if (!priceData.image_id && !priceData.name && !priceData.item_id) throw 'invalid data';
 
     const item = await prisma.items.findFirst({
       where: {
@@ -195,8 +193,7 @@ async function updateOrAddDB(
       },
     });
 
-    if (!item) 
-      return undefined;
+    if (!item) return undefined;
 
     newPriceData.item_iid = item.internal_id;
 

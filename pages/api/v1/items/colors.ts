@@ -47,4 +47,4 @@ export const getItemColor = async (image_id: string) => {
   }
 
   return colorsData;
-}
+};

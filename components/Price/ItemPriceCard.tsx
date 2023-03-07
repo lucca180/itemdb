@@ -77,7 +77,7 @@ const ItemPriceCard = (props: Props) => {
               {priceDiff !== null && (
                 <StatHelpText>
                   {!!priceDiff && <StatArrow type={priceDiff > 0 ? 'increase' : 'decrease'} />}
-                  {priceDiff === 0 && <MinusIcon mr={1} boxSize="16px"/>}
+                  {priceDiff === 0 && <MinusIcon mr={1} boxSize="16px" />}
                   {intl.format(priceDiff)} NP
                 </StatHelpText>
               )}

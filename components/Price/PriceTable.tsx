@@ -31,12 +31,16 @@ const PriceTable = (props: Props) => {
               <Td>
                 {!!sortedData[index + 1]?.value && (
                   <Stat>
-                    {!!(price.value - sortedData[index + 1]?.value) && <StatArrow
-                      type={
-                        price.value - sortedData[index + 1]?.value > 0 ? 'increase' : 'decrease'
-                      }
-                    />}
-                    {!(price.value - sortedData[index + 1]?.value) && <MinusIcon mr={1} boxSize="16px"/>}
+                    {!!(price.value - sortedData[index + 1]?.value) && (
+                      <StatArrow
+                        type={
+                          price.value - sortedData[index + 1]?.value > 0 ? 'increase' : 'decrease'
+                        }
+                      />
+                    )}
+                    {!(price.value - sortedData[index + 1]?.value) && (
+                      <MinusIcon mr={1} boxSize="16px" />
+                    )}
                     {intl.format(price.value - sortedData[index + 1]?.value)} NP
                   </Stat>
                 )}

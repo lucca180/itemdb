@@ -60,7 +60,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     let { name, img, owner, stock, value, otherInfo, type, item_id, neo_id } = priceInfo;
 
     let imageId: string | null = null;
-    if(type == 'auction') isAuction = true;
+    if (type == 'auction') isAuction = true;
     stock = isNaN(Number(stock)) ? undefined : Number(stock);
     value = isNaN(Number(value)) ? undefined : Number(value);
     item_id = isNaN(Number(item_id)) ? undefined : Number(item_id);
@@ -73,8 +73,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     if (img) imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? null;
 
     // sw, ssw and usershop items have a max value of 999.999
-    if(['sw', 'ssw', 'usershop'].includes(type) && value > 999999) 
-      continue;
+    if (['sw', 'ssw', 'usershop'].includes(type) && value > 999999) continue;
 
     const x = {
       name: name as string,
@@ -110,7 +109,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   let tries = 0;
   while (tries <= 3) {
     try {
-      if(isAuction){
+      if (isAuction) {
         const result = await handleAuction(dataList);
         return res.json(result);
       }
@@ -137,19 +136,19 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 const handleAuction = async (dataList: Prisma.PriceProcessCreateInput[]) => {
-  const auctionData = dataList.map((auction) => 
+  const auctionData = dataList.map((auction) =>
     prisma.priceProcess.upsert({
       where: {
-        type_neo_id:{
+        type_neo_id: {
           type: auction.type,
-          neo_id: auction.neo_id as number
+          neo_id: auction.neo_id as number,
         },
-        processed: false
+        processed: false,
       },
       create: auction,
-      update: auction
+      update: auction,
     })
   );
 
   return prisma.$transaction(auctionData);
-}
+};
