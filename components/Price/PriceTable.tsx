@@ -2,6 +2,7 @@ import { Stat, StatArrow, Table, TableContainer, Tbody, Td, Tr, Text } from '@ch
 import React from 'react';
 import { PriceData } from '../../types';
 import { format } from 'date-fns';
+import { MinusIcon } from '@chakra-ui/icons';
 
 const intl = new Intl.NumberFormat();
 
@@ -16,13 +17,6 @@ const PriceTable = (props: Props) => {
   return (
     <TableContainer minH={{ base: 100, md: 200 }}>
       <Table h="100%" variant="striped" colorScheme="gray" size="sm">
-        {/* <TableCaption>Imperial to metric conversion factors</TableCaption> */}
-        {/* <Thead>
-                <Tr>
-                    <Th>Price</Th>
-                    <Th>at</Th>
-                </Tr>
-                </Thead> */}
         <Tbody>
           {sortedData.map((price, index) => (
             <Tr key={price.addedAt}>
@@ -37,11 +31,12 @@ const PriceTable = (props: Props) => {
               <Td>
                 {!!sortedData[index + 1]?.value && (
                   <Stat>
-                    <StatArrow
+                    {!!(price.value - sortedData[index + 1]?.value) && <StatArrow
                       type={
                         price.value - sortedData[index + 1]?.value > 0 ? 'increase' : 'decrease'
                       }
-                    />
+                    />}
+                    {!(price.value - sortedData[index + 1]?.value) && <MinusIcon mr={1} boxSize="16px"/>}
                     {intl.format(price.value - sortedData[index + 1]?.value)} NP
                   </Stat>
                 )}

@@ -16,6 +16,7 @@ import ChartComponent from '../Charts/PriceChart';
 import { AiOutlineAreaChart, AiOutlineTable } from 'react-icons/ai';
 import PriceTable from './PriceTable';
 import { format, formatDistanceToNow } from 'date-fns';
+import { MinusIcon } from '@chakra-ui/icons';
 
 type Props = {
   item: ItemData;
@@ -75,7 +76,8 @@ const ItemPriceCard = (props: Props) => {
               {!item.price.addedAt && <StatHelpText>No Info</StatHelpText>}
               {priceDiff !== null && (
                 <StatHelpText>
-                  <StatArrow type={priceDiff > 0 ? 'increase' : 'decrease'} />
+                  {!!priceDiff && <StatArrow type={priceDiff > 0 ? 'increase' : 'decrease'} />}
+                  {priceDiff === 0 && <MinusIcon mr={1} boxSize="16px"/>}
                   {intl.format(priceDiff)} NP
                 </StatHelpText>
               )}

@@ -189,8 +189,8 @@ export const getItem = async (id: number) => {
     LEFT JOIN (
       SELECT *
       FROM ItemPrices
-      WHERE (internal_id, addedAt) IN (
-          SELECT MAX(internal_id), MAX(addedAt)
+      WHERE (item_iid, addedAt) IN (
+          SELECT item_iid, MAX(addedAt)
           FROM ItemPrices
           GROUP BY item_iid
       )

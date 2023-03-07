@@ -67,13 +67,7 @@ const ItemPage = (props: Props) => {
     if (!id) return;
 
     const [ resPrice, resStats, resTrades, resTags] = await Promise.all([
-      axios.get(`/api/v1/prices/`, {
-        params: {
-          item_id: item.item_id ?? -1,
-          name: item.name,
-          image_id: item.image_id,
-        },
-      }),
+      axios.get(`/api/v1/items/${item.internal_id}/prices`),
       axios.get(`/api/v1/prices/stats/`, {
         params: {
           item_id: item.item_id ?? -1,
