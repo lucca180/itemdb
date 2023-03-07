@@ -24,6 +24,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const pricesRaw = await prisma.itemPrices.findMany({
     where: {
+      manual_check: null,
       OR: [
         { item_id: item_id ? Number(item_id) : undefined },
         {

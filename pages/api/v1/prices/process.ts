@@ -209,7 +209,7 @@ async function updateOrAddDB(
 
     if (!oldPrice) return newPriceData;
 
-    const daysSinceLastUpdate = differenceInCalendarDays(Date.now(), oldPrice.addedAt);
+    const daysSinceLastUpdate = differenceInCalendarDays(latestDate, oldPrice.addedAt);
 
     // last update less than 1 week ago or data is older than current
     if (daysSinceLastUpdate < 7) return undefined;

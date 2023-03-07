@@ -238,6 +238,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
   if (!item) return { notFound: true };
   
   const colors = await getItemColor(item.image_id);
+  if(!colors) return { notFound: true };
   
   return {
     props: {

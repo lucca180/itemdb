@@ -59,7 +59,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
               SELECT item_iid, MAX(addedAt)
               FROM ItemPrices
               GROUP BY item_iid
-          )
+          ) AND manual_check IS null
         ) as c on c.item_iid = a.internal_id
         WHERE ${query}
     `) as any[];

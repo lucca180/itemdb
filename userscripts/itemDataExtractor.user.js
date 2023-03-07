@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.0.6
+// @version      1.0.7
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
 // @website      https://itemdb.com.br
@@ -27,8 +27,8 @@ let itemsHistory = JSON.parse(localStorage?.getItem('idb_itemHistory')) ?? {};
 let restockHistory = JSON.parse(localStorage?.getItem('idb_restockHistory')) ?? {};
 let tradeHistory = JSON.parse(localStorage?.getItem('idb_tradeHistory')) ?? {};
 
-// check the page language (default as english)
-const pageLang = nl ?? 'en';
+// check the page language
+const pageLang = nl ?? 'unknown';
 
 // function to check if the current url contains a word
 function URLHas(string) {
@@ -418,6 +418,39 @@ function handleSearch() {
   submitItems();
 }
 
+function handleStorageShed() {
+  const trs = $('form table').eq(1).find('tr').slice(1, -1);
+
+  trs.each(function (i) {
+    const tds = $(this).find('td');
+    const img = tds.first().find('img').first().attr('src');
+
+    let itemName = tds.eq(1).find('strong').first().clone().children().remove().end().text();
+    let subText = tds.eq(1).find('.medText').text();
+    const description = tds.eq(2).text().trim();
+    const category = tds.eq(3).text();
+    let itemId = tds.last().find('input').attr('name').match(/\d+/)?.[0];
+
+    const item = {
+      name: itemName,
+      img: img,
+      description: description,
+      subText: subText + " (neohome) ",
+      category: category,
+      itemId: itemId,
+    };
+
+    const itemKey = genItemKey(item);
+    if (!itemsHistory[itemKey]?.shed) {
+      itemsObj[itemKey] = item;
+      itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
+      itemsHistory[itemKey].shed = true;
+    }
+  });
+
+  submitItems();
+}
+
 // ------ prices ------ //
 
 function handleSWPrices() {
@@ -614,6 +647,8 @@ if (URLHas('genie.phtml') || URLHas('auctions.phtml')) handleAuctionPrices();
 if (URLHas('gallery/index.phtml')) handleGallery();
 if (URLHas('gallery/quickremove.phtml') || URLHas('gallery/quickcat.phtml')) handleGalleryAdmin();
 if (URLHas('search.phtml') && URLHas('selected_type=object')) handleSearch();
+if (URLHas('neohome/shed')) handleStorageShed();
+
 if (hasSSW) handleSSWPrices();
 
 // ----------- //
