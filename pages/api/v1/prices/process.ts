@@ -125,6 +125,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       }
 
       const finalMean = out.length >= 2 ? geometricMean(out) : out[0];
+     
+      if(isNaN(finalMean)) throw 'NaN price';
 
       let finalPrice =
         finalMean < 5
@@ -142,6 +144,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       );
     } catch (e) {
       console.error(e, item);
+      if(e === 'NaN price') continue;
       throw e;
     }
   }
