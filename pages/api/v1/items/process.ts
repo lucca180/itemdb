@@ -146,8 +146,7 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
 
           if (dbArr.length > itemArr.length && !checker(dbArr, itemArr))
             throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
-          
-          else if(dbArr.length < itemArr.length && checker(itemArr, dbArr))
+          else if (dbArr.length < itemArr.length && checker(itemArr, dbArr))
             dbItem.specialType = item.specialType;
         }
 
@@ -179,7 +178,7 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
           const itemCategory = item.category?.toLowerCase() ?? '';
 
           if (
-            (dbCatetory === 'special' && itemCategory !== 'special') ||
+            (genericCats.includes(dbCatetory) && !genericCats.includes(itemCategory)) ||
             (!categoryToShopID[dbCatetory] && categoryToShopID[itemCategory])
           )
             dbItem.category = item.category;
@@ -279,4 +278,6 @@ async function getPallete(item: Items) {
 }
 
 // check if all elements in target are in arr
-const checker = (arr: any[], target: any[]) => target.every(v => arr.includes(v));
+const checker = (arr: any[], target: any[]) => target.every((v) => arr.includes(v));
+
+const genericCats = ['special', 'gift', 'food', 'clothes'];

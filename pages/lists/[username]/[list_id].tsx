@@ -139,7 +139,7 @@ const ListPage = () => {
     let seeker = list.purpose === 'seeking' ? list.user_username : user.username;
     let offerer = list.purpose === 'trading' ? list.user_username : user.username;
 
-    if(list.official){
+    if (list.official) {
       seeker = user.username;
       offerer = list.user_username;
     }
@@ -454,7 +454,8 @@ const ListPage = () => {
                 </Badge>
               </Heading>
               <Text color="gray.400" fontSize={{ base: 'sm', md: 'md' }}>
-                aka. items you {!list.official && list.purpose === 'trading' ? 'have' : 'seek'} that are on this list
+                aka. items you {!list.official && list.purpose === 'trading' ? 'have' : 'seek'} that
+                are on this list
               </Text>
             </Box>
             <Flex gap={3} flexWrap="wrap" w="100%" justifyContent="center">

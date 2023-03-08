@@ -10,7 +10,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const username = req.query.username as string;
   const list_id = req.query.list_id as string;
   const isOfficial = username === 'official';
-  
+
   if (!username || !list_id)
     return res.status(400).json({ success: false, message: 'Bad Request' });
 
@@ -24,6 +24,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const listRaw = await prisma.userList.findUnique({
       where: {
         internal_id: parseInt(list_id),
+        official: isOfficial || undefined,
         user: {
           username: isOfficial ? undefined : username,
         },
@@ -33,7 +34,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       },
     });
 
-    if (!listRaw || (!listRaw.official && listRaw.visibility === 'private' && listRaw.user_id !== user?.id))
+    if (
+      !listRaw ||
+      (!listRaw.official && listRaw.visibility === 'private' && listRaw.user_id !== user?.id)
+    )
       return res.status(400).json({ success: false, message: 'List Not Found' });
 
     const owner = await prisma.user.findUnique({
@@ -77,7 +81,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         };
       }),
     };
-
 
     return res.status(200).json(list);
   } catch (e: any) {

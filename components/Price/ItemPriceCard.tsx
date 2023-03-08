@@ -9,7 +9,7 @@ import {
   StatLabel,
   StatNumber,
   Text,
-  Center
+  Center,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import { ItemData, ItemLastSeen, PriceData } from '../../types';
@@ -44,17 +44,15 @@ const ItemPriceCard = (props: Props) => {
     }
   }, [prices]);
 
-  if(isNoTrade)
-  return (
-    <CardBase color={color} title="Price Overview">
-      <Center>
-        <Icon as={MdMoneyOff} boxSize="100px" opacity={0.4}/>
-      </Center>
-      <Text textAlign="center">
-        This item is not tradeable.
-      </Text>
-    </CardBase>
-  )
+  if (isNoTrade)
+    return (
+      <CardBase color={color} title="Price Overview">
+        <Center>
+          <Icon as={MdMoneyOff} boxSize="100px" opacity={0.4} />
+        </Center>
+        <Text textAlign="center">This item is not tradeable.</Text>
+      </CardBase>
+    );
 
   return (
     <CardBase color={color} title="Price Overview">

@@ -22,19 +22,11 @@ const ItemOfficialLists = (props: Props) => {
                 {list.name}
               </Tag>
             </Link>
-            <Text>
-              -{' '}
-              {list.description || "This list doesn't have a description yet"}
-            </Text>
+            <Text>- {list.description || "This list doesn't have a description yet"}</Text>
           </Flex>
         ))}
         {lists.length === 0 && (
-          <Flex
-            flexFlow="column"
-            gap={2}
-            justifyContent="center"
-            alignItems="center"
-          >
+          <Flex flexFlow="column" gap={2} justifyContent="center" alignItems="center">
             <Text fontSize="sm" color="gray.200">
               This item is not on any official list yet.
             </Text>

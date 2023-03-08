@@ -302,7 +302,7 @@ const UserListsPage = () => {
                 {listsIds.length}
               </Badge>
             </Heading>
-            {isOwner && (
+            {!isOwner && (
               <Stack mt={2} gap={1}>
                 <Text fontSize={{ base: 'xs', md: 'sm' }} fontWeight="bold">
                   {owner.username} has{' '}
@@ -324,7 +324,7 @@ const UserListsPage = () => {
                 </Text>
               </Stack>
             )}
-            {!isOwner && (
+            {isOwner && (
               <Text mt={2} fontSize={{ base: 'xs', md: 'sm' }} fontWeight="bold">
                 Oh, that&apos;s you!
               </Text>

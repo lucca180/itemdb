@@ -125,8 +125,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
         out = prices.filter((x) => x <= priceMean + priceSTD && x >= priceMean - priceSTD * 2.5);
       }
-      
-      if(out.length === 0) out = oldPrices;
+
+      if (out.length === 0) out = oldPrices;
       const finalMean = out.length >= 2 ? geometricMean(out) : out[0];
 
       if (isNaN(finalMean)) throw 'NaN price';

@@ -149,7 +149,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       numberFilters.push(Prisma.sql`temp.rarity <= ${parseInt(rarityFilter[1])}`);
   }
 
-  let colorSql;
+  let colorSql_inside;
+  let colorSql_outside;
   let isColorNeg = false;
   if (vibrantColorFilter.match(/#[0-9A-Fa-f]{6}$/gm)) {
     if (vibrantColorFilter.startsWith('!')) {
@@ -159,7 +160,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     const colorFilter = Color(vibrantColorFilter);
     const [l, a, b] = colorFilter.lab().array();
-    colorSql = Prisma.sql`(POWER(temp.lab_l-${l},2)+POWER(temp.lab_a-${a},2)+POWER(temp.lab_b-${b},2))`;
+    colorSql_inside = Prisma.sql`(POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2))`;
+    colorSql_outside = Prisma.sql`(POWER(temp.lab_l-${l},2)+POWER(temp.lab_a-${a},2)+POWER(temp.lab_b-${b},2))`;
   }
 
   let sortSQL;
@@ -237,7 +239,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       SELECT *,  count(*) OVER() AS full_count FROM (
         SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex,
           c.addedAt as priceAdded, c.price, c.noInflation_id
-          ${colorSql ? Prisma.sql`, ${colorSql} as dist` : Prisma.empty}
+          ${colorSql_inside ? Prisma.sql`, ${colorSql_inside} as dist` : Prisma.empty}
         FROM Items as a
         LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
         LEFT JOIN (
@@ -273,8 +275,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           ? Prisma.sql` AND ${Prisma.join(numberFilters, ' AND ')}`
           : Prisma.empty
       }
-      ${colorSql && !isColorNeg ? Prisma.sql` AND ${colorSql} <= 750` : Prisma.empty}
-      ${colorSql && isColorNeg ? Prisma.sql` AND ${colorSql} > 750` : Prisma.empty}
+      ${
+        colorSql_outside && !isColorNeg ? Prisma.sql` AND ${colorSql_outside} <= 750` : Prisma.empty
+      }
+      ${colorSql_outside && isColorNeg ? Prisma.sql` AND ${colorSql_outside} > 750` : Prisma.empty}
 
       ${sortSQL} 
       ${sortDir === 'desc' ? Prisma.sql`DESC` : Prisma.sql`ASC`}

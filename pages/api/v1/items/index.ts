@@ -179,10 +179,26 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     dataList.push(x);
   }
 
-  const result = await prisma.itemProcess.createMany({
-    data: dataList,
-    skipDuplicates: true,
-  });
+  let tries = 0;
+  while (tries <= 3) {
+    try {
+      const result = await prisma.itemProcess.createMany({
+        data: dataList,
+        skipDuplicates: true,
+      });
 
-  return res.json(result);
+      return res.json(result);
+    } catch (e: any) {
+      // prevent race condition
+      if (['P2002', 'P2034'].includes(e.code) && tries < 3) {
+        tries++;
+        continue;
+      }
+
+      console.error(e);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
+
+  return res.status(500).json({ error: 'Internal Server Error' });
 };
