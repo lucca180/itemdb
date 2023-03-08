@@ -11,14 +11,21 @@ type ValueOf<T> = T[keyof T];
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  let limit = Number(req.body.limit) ?? 300;
+  let limit = Number(req.body.limit);
   limit = isNaN(limit) ? 300 : limit;
   limit = Math.min(limit, 5000);
-  const offset = Number(req.body.offset) ?? 0;
-  const checkAll = req.body.checkAll === 'true';
+  
+  let offset = Number(req.body.offset);
+  offset = isNaN(offset) ? 0 : offset;
 
+  const checkAll = req.body.checkAll === 'true';
+  
   const processList = await prisma.itemProcess.findMany({
-    where: { language: 'en', processed: checkAll ? undefined : false, manual_check: checkAll ? undefined : null },
+    where: {
+      language: 'en',
+      processed: checkAll ? undefined : false,
+      manual_check: checkAll ? undefined : null,
+    },
     take: limit,
     skip: offset * limit,
   });
@@ -141,7 +148,6 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
       // merge conflict
       // @ts-ignore
       if (dbItem[key] && item[key] && dbItem[key] !== item[key]) {
-
         // check if we're gaining info with specialType
         if (key === 'specialType') {
           const dbArr = dbItem.specialType?.split(',') ?? [];
@@ -185,11 +191,17 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
             (!categoryToShopID[dbCatetory] && categoryToShopID[itemCategory])
           )
             dbItem.category = item.category;
-          else
+          else if (
+            itemCategory !== dbCatetory &&
+            !genericCats.includes(itemCategory) &&
+            !genericCats.includes(dbCatetory) &&
+            categoryToShopID[itemCategory] &&
+            categoryToShopID[dbCatetory]
+          )
             throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
         } else throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
       }
-      
+
       hasChange ||= dbItem[key] !== temp;
     }
 
@@ -281,4 +293,4 @@ async function getPallete(item: Items) {
 // check if all elements in target are in arr
 const checker = (arr: any[], target: any[]) => target.every((v) => arr.includes(v));
 
-const genericCats = ['special', 'gift', 'food', 'clothes'];
+const genericCats = ['special', 'gift', 'food', 'clothes', 'neogarden', 'neohome'];
