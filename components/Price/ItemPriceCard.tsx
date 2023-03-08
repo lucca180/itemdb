@@ -1,5 +1,5 @@
 import {
-  Box,
+  Icon,
   Flex,
   HStack,
   IconButton,
@@ -9,6 +9,7 @@ import {
   StatLabel,
   StatNumber,
   Text,
+  Center
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import { ItemData, ItemLastSeen, PriceData } from '../../types';
@@ -17,6 +18,8 @@ import { AiOutlineAreaChart, AiOutlineTable } from 'react-icons/ai';
 import PriceTable from './PriceTable';
 import { format, formatDistanceToNow } from 'date-fns';
 import { MinusIcon } from '@chakra-ui/icons';
+import CardBase from '../Card/CardBase';
+import { MdMoneyOff } from 'react-icons/md';
 
 type Props = {
   item: ItemData;
@@ -27,10 +30,11 @@ type Props = {
 const intl = new Intl.NumberFormat();
 
 const ItemPriceCard = (props: Props) => {
+  const { item, prices, lastSeen } = props;
   const [displayState, setDisplay] = useState('table');
   const [priceDiff, setDiff] = useState<number | null>(null);
+  const isNoTrade = item.status?.toLowerCase() === 'no trade';
 
-  const { item, prices, lastSeen } = props;
   const color = item.color.rgb;
 
   useEffect(() => {
@@ -40,23 +44,21 @@ const ItemPriceCard = (props: Props) => {
     }
   }, [prices]);
 
+  if(isNoTrade)
   return (
-    <Flex
-      // height='100%'
-      borderTopRadius="md"
-      overflow="hidden"
-      flexFlow="column"
-      boxShadow="sm"
-    >
-      <Box
-        p={2}
-        textAlign="center"
-        fontWeight="bold"
-        bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}
-      >
-        Price Overview
-      </Box>
-      <Flex p={2} bg="gray.600" boxShadow="md" gap={4} flexFlow="column" borderBottomRadius="md">
+    <CardBase color={color} title="Price Overview">
+      <Center>
+        <Icon as={MdMoneyOff} boxSize="100px" opacity={0.4}/>
+      </Center>
+      <Text textAlign="center">
+        This item is not tradeable.
+      </Text>
+    </CardBase>
+  )
+
+  return (
+    <CardBase color={color} title="Price Overview">
+      <Flex gap={4} flexFlow="column">
         <Flex gap={3} flexFlow="column">
           <Flex
             flexFlow={{ base: 'column', md: 'row' }}
@@ -161,7 +163,7 @@ const ItemPriceCard = (props: Props) => {
           </HStack>
         </Flex>
       </Flex>
-    </Flex>
+    </CardBase>
   );
 };
 

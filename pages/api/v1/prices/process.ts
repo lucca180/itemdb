@@ -89,11 +89,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       const filteredResult = allItemData
         .filter(
           (a, index) =>
+            a.price > 0 &&
             !owners.includes(a.owner, index + 1) &&
             (a.type !== 'auction' || !a.otherInfo?.split(',').includes('nobody'))
         )
         .sort((a, b) => a.price - b.price)
-        .slice(0, 20);
+        .slice(0, 30);
 
       if (filteredResult.length <= 1) continue;
       let latestDate = new Date(0);
@@ -117,14 +118,15 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
       let out = prices.filter((x) => x <= priceMean + priceSTD && x >= priceMean - priceSTD * 2.5);
 
-      while (out.length > 10 && out.length < oldPrices.length) {
+      while (out.length > 5 && out.length < oldPrices.length) {
         oldPrices = out;
         priceMean = Math.round(geometricMean(out));
         priceSTD = standardDeviation(out);
 
         out = prices.filter((x) => x <= priceMean + priceSTD && x >= priceMean - priceSTD * 2.5);
       }
-
+      
+      if(out.length === 0) out = oldPrices;
       const finalMean = out.length >= 2 ? geometricMean(out) : out[0];
 
       if (isNaN(finalMean)) throw 'NaN price';

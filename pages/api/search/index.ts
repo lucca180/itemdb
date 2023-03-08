@@ -85,7 +85,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     }
 
     if (typeTrue.length > 0) {
-      const type_column = typeNeg.filter((o: string) => o !== 'wearable' && o !== 'neohome');
+      const type_column = typeTrue.filter((o: string) => o !== 'wearable' && o !== 'neohome');
 
       if (type_column.length > 0)
         typeFiltersSQL.push(Prisma.sql`temp.type IN (${Prisma.join(type_column)})`);
@@ -113,7 +113,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       );
 
     if (statusTrue.length > 0 && !statusTrue.includes('Unknown'))
-      statusFiltersSQL.push(Prisma.sql`a.status IN (${Prisma.join(statusTrue)})`);
+      statusFiltersSQL.push(Prisma.sql`temp.status IN (${Prisma.join(statusTrue)})`);
     else if (statusTrue.length > 0)
       statusFiltersSQL.push(
         Prisma.sql`(temp.status IN (${Prisma.join(statusTrue)}) OR temp.status IS NULL)`
@@ -159,7 +159,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     const colorFilter = Color(vibrantColorFilter);
     const [l, a, b] = colorFilter.lab().array();
-    colorSql = Prisma.sql`(POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2))`;
+    colorSql = Prisma.sql`(POWER(temp.lab_l-${l},2)+POWER(temp.lab_a-${a},2)+POWER(temp.lab_b-${b},2))`;
   }
 
   let sortSQL;

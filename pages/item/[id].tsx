@@ -12,7 +12,15 @@ import {
 import React, { useEffect, useState } from 'react';
 import Layout from '../../components/Layout';
 import Image from 'next/image';
-import { FullItemColors, ItemData, ItemLastSeen, ItemTag, PriceData, TradeData } from '../../types';
+import {
+  FullItemColors,
+  ItemData,
+  ItemLastSeen,
+  ItemTag,
+  PriceData,
+  TradeData,
+  UserList,
+} from '../../types';
 import { useRouter } from 'next/router';
 import FindAtCard from '../../components/Items/FindAtCard';
 import ItemInfoCard from '../../components/Items/InfoCard';
@@ -31,6 +39,8 @@ import AddToListSelect from '../../components/UserLists/AddToListSelect';
 import { GetStaticPropsContext } from 'next';
 import { getItem, getSomeItemIDs } from '../api/v1/items/[id]';
 import { getItemColor } from '../api/v1/items/colors';
+import ItemOfficialLists from '../../components/Items/ItemOfficialList';
+import { getItemLists } from '../api/v1/items/[id]/lists';
 
 const defaultLastSeen: ItemLastSeen = {
   sw: null,
@@ -42,10 +52,11 @@ const defaultLastSeen: ItemLastSeen = {
 type Props = {
   item: ItemData;
   colors: FullItemColors;
+  lists?: UserList[];
 };
 
 const ItemPage = (props: Props) => {
-  const { item, colors } = props;
+  const { item, colors, lists } = props;
   const [prices, setPrices] = useState<PriceData[] | null>(null);
   const [seenStats, setSeen] = useState<ItemLastSeen>(defaultLastSeen);
   const [trades, setTrades] = useState<TradeData[]>([]);
@@ -212,11 +223,7 @@ const ItemPage = (props: Props) => {
               </>
             )}
             <ItemPriceCard item={item} lastSeen={seenStats} prices={prices ?? []} />
-            {/* <ItemOfficialLists
-              toggleModal={() => setIsEditModalOpen(true)}
-              item={item}
-              tags={tags}
-            /> */}
+            {lists && <ItemOfficialLists item={item} lists={lists} />}
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>
             {item.isWearable && <ItemPreview item={item} />}
@@ -237,12 +244,17 @@ export async function getStaticProps(context: GetStaticPropsContext) {
   const item = await getItem(Number(id));
   if (!item) return { notFound: true };
 
-  const colors = await getItemColor(item.image_id);
+  const [colors, lists] = await Promise.all([
+    getItemColor(item.image_id),
+    getItemLists(item.internal_id, !item.isNC),
+  ]);
+
   if (!colors) return { notFound: true };
 
   return {
     props: {
       item: JSON.parse(JSON.stringify(item)),
+      lists: JSON.parse(JSON.stringify(lists)),
       colors,
     },
     revalidate: 60, // In seconds

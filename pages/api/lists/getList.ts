@@ -9,7 +9,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   const username = req.query.username as string;
   const list_id = req.query.list_id as string;
-
+  const isOfficial = username === 'official';
+  
   if (!username || !list_id)
     return res.status(400).json({ success: false, message: 'Bad Request' });
 
@@ -24,7 +25,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       where: {
         internal_id: parseInt(list_id),
         user: {
-          username: username,
+          username: isOfficial ? undefined : username,
         },
       },
       include: {
@@ -32,12 +33,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       },
     });
 
-    if (!listRaw || (listRaw.visibility === 'private' && listRaw.user_id !== user?.id))
+    if (!listRaw || (!listRaw.official && listRaw.visibility === 'private' && listRaw.user_id !== user?.id))
       return res.status(400).json({ success: false, message: 'List Not Found' });
 
     const owner = await prisma.user.findUnique({
       where: {
-        username: username,
+        id: listRaw.user_id,
       },
     });
 
@@ -77,8 +78,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       }),
     };
 
+
     return res.status(200).json(list);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     console.error(e);
     res.status(500).json({ error: 'Internal Server Error' });

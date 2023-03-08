@@ -3,7 +3,7 @@ import { Items as Item, ItemProcess, Items, ItemColor } from '@prisma/client';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import Vibrant from 'node-vibrant';
-import { genItemKey } from '../../../../utils/utils';
+import { categoryToShopID, genItemKey } from '../../../../utils/utils';
 import Color from 'color';
 
 type ValueOf<T> = T[keyof T];
@@ -144,10 +144,11 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
           const dbArr = dbItem.specialType?.split(',') ?? [];
           const itemArr = item.specialType?.split(',') ?? [];
 
-          if (dbArr.length > itemArr.length)
+          if (dbArr.length > itemArr.length && !checker(dbArr, itemArr))
             throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
-
-          dbItem.specialType = item.specialType;
+          
+          else if(dbArr.length < itemArr.length && checker(itemArr, dbArr))
+            dbItem.specialType = item.specialType;
         }
 
         // check some default values
@@ -173,8 +174,21 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
         }
 
         // sdb sometimes calls things "special" when they're not (this sounded mean)
-        else if (key === 'category' && dbItem.category === 'special') {
-          dbItem.category = item.category;
+        else if (key === 'category') {
+          const dbCatetory = dbItem.category?.toLowerCase() ?? '';
+          const itemCategory = item.category?.toLowerCase() ?? '';
+
+          if (
+            (dbCatetory === 'special' && itemCategory !== 'special') ||
+            (!categoryToShopID[dbCatetory] && categoryToShopID[itemCategory])
+          )
+            dbItem.category = item.category;
+          else if (
+            dbCatetory !== itemCategory &&
+            categoryToShopID[dbCatetory] &&
+            categoryToShopID[itemCategory]
+          )
+            throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
         } else throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
       }
     }
@@ -263,3 +277,6 @@ async function getPallete(item: Items) {
 
   return colors;
 }
+
+// check if all elements in target are in arr
+const checker = (arr: any[], target: any[]) => target.every(v => arr.includes(v));

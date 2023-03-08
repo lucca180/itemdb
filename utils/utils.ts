@@ -21,7 +21,7 @@ export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
       )}`;
   }
 
-  if (item.type !== 'np') return findAt;
+  if (item.type !== 'np' || item.status?.toLowerCase() === 'no trade') return findAt;
 
   findAt.auction = `https://www.neopets.com/genie.phtml?type=process_genie&criteria=exact&auctiongenie=${cleanItem(
     item

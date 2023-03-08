@@ -121,8 +121,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
       return res.json(result);
     } catch (e: any) {
-      // write conflict or a deadlock
-      if (e.code == 'P2034' && tries < 3) {
+      // prevent race condition
+      if (['P2002','P2034'].includes(e.code) && tries < 3) {
         tries++;
         continue;
       }
