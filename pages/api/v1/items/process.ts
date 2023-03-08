@@ -13,11 +13,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   let limit = Number(req.body.limit) ?? 300;
   limit = isNaN(limit) ? 300 : limit;
-  limit = Math.min(limit, 1000);
+  limit = Math.min(limit, 5000);
+  const offset = Number(req.body.offset) ?? 0;
+  const checkAll = req.body.checkAll === 'true';
 
   const processList = await prisma.itemProcess.findMany({
-    where: { language: 'en', manual_check: null, processed: false },
+    where: { language: 'en', processed: checkAll ? undefined : false, manual_check: checkAll ? undefined : null },
     take: limit,
+    skip: offset * limit,
   });
 
   // list of unique entries
@@ -128,17 +131,17 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
     const forceMerge = ['type', 'isNC', 'isWearable', 'status', 'est_val'];
     for (const key of Object.keys(dbItem) as Array<keyof typeof dbItem>) {
       if (['internal_id', 'addedAt', 'updatedAt'].includes(key)) continue;
+      const temp = dbItem[key];
 
       if (!dbItem[key]) {
-        const temp = dbItem[key];
         // @ts-ignore
         dbItem[key] ||= item[key] ?? dbItem[key];
-        hasChange ||= dbItem[key] !== temp;
       }
 
       // merge conflict
       // @ts-ignore
       if (dbItem[key] && item[key] && dbItem[key] !== item[key]) {
+
         // check if we're gaining info with specialType
         if (key === 'specialType') {
           const dbArr = dbItem.specialType?.split(',') ?? [];
@@ -182,14 +185,12 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
             (!categoryToShopID[dbCatetory] && categoryToShopID[itemCategory])
           )
             dbItem.category = item.category;
-          else if (
-            dbCatetory !== itemCategory &&
-            categoryToShopID[dbCatetory] &&
-            categoryToShopID[itemCategory]
-          )
+          else
             throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
         } else throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
       }
+      
+      hasChange ||= dbItem[key] !== temp;
     }
 
     // no new data
