@@ -80,6 +80,15 @@ export type ItemLastSeen = {
   restock: string | null;
 };
 
+export type ItemRestockData = {
+  internal_id: number;
+  item: ItemData;
+  type: string;
+  stock: number;
+  price: number;
+  addedAt: string;
+};
+
 export type TradeData = {
   trade_id: number;
   owner: string;
@@ -97,6 +106,18 @@ export type TradeData = {
     addedAt: string;
     price: number | null;
   }[];
+};
+
+export type ItemAuctionData = {
+  internal_id: number;
+  auction_id: number | null;
+  item: ItemData;
+  price: number;
+  addedAt: string;
+  owner: string;
+  isNF: boolean;
+  hasBuyer: boolean;
+  timeLeft: string | null;
 };
 
 export type SearchResults = {

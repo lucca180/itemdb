@@ -37,10 +37,10 @@ import EditItemModal from '../../components/Modal/EditItemModal';
 import FeedbackModal from '../../components/Modal/FeedbackModal';
 import AddToListSelect from '../../components/UserLists/AddToListSelect';
 import { GetStaticPropsContext } from 'next';
-import { getItem, getSomeItemIDs } from '../api/v1/items/[id]';
+import { getItem, getSomeItemIDs } from '../api/v1/items/[id_name]';
 import { getItemColor } from '../api/v1/items/colors';
 import ItemOfficialLists from '../../components/Items/ItemOfficialList';
-import { getItemLists } from '../api/v1/items/[id]/lists';
+import { getItemLists } from '../api/v1/items/[id_name]/lists';
 
 const defaultLastSeen: ItemLastSeen = {
   sw: null,

@@ -1,8 +1,8 @@
-import Color from 'color';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { ItemData } from '../../../../../types';
 import { getItemFindAtLinks, isMissingInfo } from '../../../../../utils/utils';
 import prisma from '../../../../../utils/prisma';
+import { Prisma } from '@prisma/client';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
@@ -18,19 +18,20 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { id } = req.query;
-  if (!id) return res.status(400).json({ error: 'Invalid Request' });
+  const { id_name } = req.query;
+  if (!id_name) return res.status(400).json({ error: 'Invalid Request' });
 
-  const internal_id = Number(id);
-  if (isNaN(internal_id)) return res.status(400).json({ error: 'Invalid Request' });
+  const internal_id = Number(id_name);
+  const name = isNaN(internal_id) ? (id_name as string) : undefined;
 
-  const item = await getItem(internal_id);
+  const item = await getItem(name ?? internal_id);
 
   return res.json(item);
 };
 
 const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
-  const internal_id = Number(req.query.id);
+  const internal_id = Number(req.query.id_name);
+  if (isNaN(internal_id)) return res.status(400).json({ error: 'Invalid Request' });
 
   const itemData = req.body.itemData;
   const itemCats = (req.body.itemCats as string[]) ?? [];
@@ -181,9 +182,16 @@ export const processTags = async (itemTags: string[], itemCats: string[], intern
   });
 };
 
-export const getItem = async (id: number) => {
+export const getItem = async (id_name: number | string) => {
+  const isID = typeof id_name === 'number';
+
+  let query;
+  if (isID) query = Prisma.sql`a.internal_id = ${id_name}`;
+  else query = Prisma.sql`a.name LIKE ${id_name}`;
+
   const resultRaw = (await prisma.$queryRaw`
-    SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, c.addedAt as priceAdded, c.price, c.noInflation_id 
+    SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex, 
+      c.addedAt as priceAdded, c.price, c.noInflation_id 
     FROM Items as a
     LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
     LEFT JOIN (
@@ -195,13 +203,12 @@ export const getItem = async (id: number) => {
           GROUP BY item_iid
       )
     ) as c on c.item_iid = a.internal_id
-    WHERE a.internal_id = ${id};
+    WHERE ${query}
   `) as any[] | null;
 
   if (!resultRaw || resultRaw.length === 0) return null;
 
   const result = resultRaw[0];
-  const colorlab = Color.lab(result.lab_l, result.lab_a, result.lab_b);
 
   const item: ItemData = {
     internal_id: result.internal_id,
@@ -221,9 +228,9 @@ export const getItem = async (id: number) => {
     isNeohome: !!result.isNeohome,
     isWearable: !!result.specialType?.includes('wearable') || !!result.isWearable,
     color: {
-      rgb: colorlab.rgb().round().array(),
-      lab: colorlab.round().array(),
-      hex: colorlab.hex(),
+      rgb: [result.rgb_r, result.rgb_g, result.rgb_b],
+      lab: [result.lab_l, result.lab_a, result.lab_b],
+      hex: result.hex,
       type: 'vibrant',
       population: result.population,
     },

@@ -14,12 +14,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   let limit = Number(req.body.limit);
   limit = isNaN(limit) ? 300 : limit;
   limit = Math.min(limit, 5000);
-  
+
   let offset = Number(req.body.offset);
   offset = isNaN(offset) ? 0 : offset;
 
   const checkAll = req.body.checkAll === 'true';
-  
+
   const processList = await prisma.itemProcess.findMany({
     where: {
       language: 'en',

@@ -3,7 +3,6 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { ItemData } from '../../../../types';
 import { getItemFindAtLinks, isMissingInfo } from '../../../../utils/utils';
-import Color from 'color';
 import requestIp from 'request-ip';
 import hash from 'object-hash';
 
@@ -24,7 +23,8 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   limit = Math.min(limit, 100);
 
   const resultRaw = (await prisma.$queryRaw`
-    SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, c.addedAt as priceAdded, c.price, c.noInflation_id 
+    SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex, 
+    c.addedAt as priceAdded, c.price, c.noInflation_id 
     FROM Items as a
     LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
     LEFT JOIN (
@@ -40,13 +40,9 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     LIMIT ${limit}
   `) as any;
 
-  // const ids = resultRaw.map((o: { internal_id: any; }) => o.internal_id)
   const filteredResult = resultRaw;
-  // .sort((a:any, b:any) =>  Math.floor(b.l) - Math.floor(a.l) || Math.floor(b.a) - Math.floor(a.a) || Math.floor(b.b) - Math.floor(a.b))
 
   const itemList: ItemData[] = filteredResult.map((result: any) => {
-    const color = Color.lab(result.lab_l, result.lab_a, result.lab_b);
-
     const item: ItemData = {
       internal_id: result.internal_id,
       image: result.image ?? '',
@@ -65,9 +61,9 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       isNeohome: !!result.isNeohome,
       isWearable: !!result.specialType?.includes('wearable') || !!result.isWearable,
       color: {
-        rgb: color.rgb().round().array(),
-        lab: color.lab().round().array(),
-        hex: color.hex(),
+        rgb: [result.rgb_r, result.rgb_g, result.rgb_b],
+        lab: [result.lab_l, result.lab_a, result.lab_b],
+        hex: result.hex,
         type: 'vibrant',
         population: result.population,
       },
