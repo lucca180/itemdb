@@ -42,7 +42,7 @@ const ItemActionModal = (props: Props) => {
       const token = await getIdToken();
 
       const res = await axios.post(
-        '/api/lists/update',
+        `/api/v1/lists/${list.user_username}/${list.internal_id}`,
         {
           list_id: list.internal_id,
           itemInfo: selectedItems,

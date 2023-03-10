@@ -1,14 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import prisma from '../../../utils/prisma';
-import { CheckAuth } from '../../../utils/googleCloud';
+import { CheckAuth } from '../../../../../utils/googleCloud';
+import prisma from '../../../../../utils/prisma';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET')
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
-  const { offerer, seeker, list_id } = req.query;
+  const { usernames, list_id } = req.query;
 
-  if (!offerer || !seeker) return res.status(400).json({ success: false, message: 'Bad Request' });
+  if (!Array.isArray(usernames) || usernames.length < 2)
+    return res.status(400).json({ success: false, message: 'Bad Request' });
+
+  const [seeker, offerer] = usernames;
 
   let requestUser = null;
 
@@ -28,8 +31,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       },
     });
 
-    if (!seeker_res || !offerer_res)
-      return res.status(400).json({ success: false, message: 'User Not Found' });
+    if (!seeker_res || !offerer_res) return res.status(400).json({ error: 'User Not Found' });
 
     const seeker_id = seeker_res.id;
     const offerer_id = offerer_res.id;
@@ -50,7 +52,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         (initialList.purpose == 'seeking' && initialList.user_id != seeker_id) ||
         (initialList.purpose == 'trading' && initialList.user_id != offerer_id)
       )
-        return res.status(400).json({ success: false, message: 'List Not Found' });
+        return res.status(400).json({ error: 'List Not Found' });
 
       const target_id = initialList.purpose == 'seeking' ? offerer_id : seeker_id;
 
@@ -111,7 +113,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     });
 
     return res.status(200).json(matchedItems);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     console.error(e);
     return res.status(500).json({ error: 'Internal Server Error' });

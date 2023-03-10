@@ -18,6 +18,8 @@ import {
   Icon,
   useMediaQuery,
   MenuGroup,
+  Center,
+  Spinner,
 } from '@chakra-ui/react';
 
 import NextImage from 'next/image';
@@ -32,10 +34,9 @@ import { useAuth } from '../utils/auth';
 import { AiFillHeart } from 'react-icons/ai';
 import { BsBoxArrowInRight, BsFillPersonFill } from 'react-icons/bs';
 
-const isProd = process.env.NODE_ENV === 'production';
-
 type Props = {
-  children: ReactNode;
+  children?: ReactNode;
+  loading?: boolean;
 };
 
 const Layout = (props: Props) => {
@@ -170,7 +171,13 @@ const Layout = (props: Props) => {
           </Box>
         </Flex>
         <Box as="main" flex="1" w="full" maxW="8xl" marginX="auto" px={4} pb={6} h="100%">
-          {props.children}
+          {!props.loading && props.children}
+          {props.loading && (
+            <Center h="80vh" flexFlow="column" gap={3}>
+              <Spinner size="lg" />
+              <Text>Loading</Text>
+            </Center>
+          )}
         </Box>
         <Box as="footer" textAlign={'center'} p={2}>
           <Text fontSize="xs" color="gray.500">

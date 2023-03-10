@@ -18,13 +18,14 @@ import { useAuth } from '../../utils/auth';
 type Props = {
   isOpen: boolean;
   selectedLists: number[];
+  username: string;
   onClose: () => void;
   refresh: () => void;
 };
 
 const DeleteListModal = (props: Props) => {
   const { getIdToken } = useAuth();
-  const { isOpen, onClose, selectedLists: listsIds, refresh } = props;
+  const { isOpen, onClose, selectedLists: listsIds, refresh, username } = props;
   const [isLoading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
 
@@ -33,17 +34,14 @@ const DeleteListModal = (props: Props) => {
     try {
       const token = await getIdToken();
 
-      const res = await axios.post(
-        '/api/lists/delete',
-        {
+      const res = await axios.delete(`/api/v1/lists/${username}`, {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+        data: {
           listIds: listsIds,
         },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      });
 
       if (res.data.success) {
         refresh();

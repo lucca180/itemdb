@@ -51,72 +51,85 @@ const UserListsPage = () => {
   const [owner, setOwner] = useState<User>();
   const [matches, setMatches] = useState({ seek: [], trade: [] });
 
-  const isOwner = user?.username === router.query.username;
+  const isOwner = user?.username && user?.username === router.query.username;
 
   const color = Color(undefined ?? '#4A5568');
   const rgb = color.rgb().array();
 
   useEffect(() => {
-    if (!authLoading && router.isReady && listsIds.length === 0) {
+    if (!authLoading && router.isReady && !owner) {
       init();
     }
-  }, [authLoading, router.isReady, listsIds]);
+  }, [authLoading, router.isReady, owner]);
 
   useEffect(() => {
+    if (owner) setOwner(undefined);
+
     return () => toast.closeAll();
-  }, []);
+  }, [router.query]);
 
   const init = async () => {
     setLists({});
     const targetUsername = router.query.username;
+    try {
+      if (!targetUsername) throw 'Invalid Username';
 
-    if (!targetUsername) return;
+      const token = await getIdToken();
 
-    const token = await getIdToken();
+      const listsRes = await axios.get(`/api/v1/lists/${targetUsername}`, {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      });
 
-    const listsRes = await axios.get(`/api/lists/getUserLists?username=${targetUsername}`, {
-      headers: {
-        authorization: `Bearer ${token}`,
-      },
-    });
+      if (user?.username && user.username === targetUsername) setOwner(user);
+      else {
+        const userRes = await axios.get(`/api/v1/users/${targetUsername}`);
+        setOwner(userRes.data);
+        if (!userRes.data) throw 'This user does not exist';
+      }
 
-    if (user?.username === targetUsername) setOwner(user);
-    else {
-      const userRes = await axios.get(`/api/users/getUser?username=${targetUsername}`);
-      setOwner(userRes.data);
-    }
+      if (user) {
+        const [seekRes, tradeRes] = await Promise.all([
+          axios.get(`/api/v1/lists/match/${user.username}/${targetUsername}`, {
+            headers: {
+              authorization: `Bearer ${token}`,
+            },
+          }),
+          axios.get(`/api/v1/lists/match/${targetUsername}/${user.username}`, {
+            headers: {
+              authorization: `Bearer ${token}`,
+            },
+          }),
+        ]);
 
-    if (user) {
-      const [seekRes, tradeRes] = await Promise.all([
-        axios.get(`/api/lists/match?offerer=${targetUsername}&seeker=${user.username}`, {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        }),
-        axios.get(`/api/lists/match?offerer=${user.username}&seeker=${targetUsername}`, {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        }),
-      ]);
+        setMatches({
+          seek: seekRes.data,
+          trade: tradeRes.data,
+        });
+      }
 
-      setMatches({
-        seek: seekRes.data,
-        trade: tradeRes.data,
+      const listsData = listsRes.data;
+      const listsIds = listsData.map((list: UserList) => list.internal_id);
+      setListsIds(listsIds);
+
+      const listsObj: { [list_id: number]: UserList } = {};
+
+      listsData.forEach((list: UserList) => {
+        listsObj[list.internal_id] = list;
+      });
+
+      setLists(listsObj);
+    } catch (err) {
+      console.error(err);
+
+      toast({
+        title: 'An error occurred',
+        description: typeof err === 'string' ? err : 'Please try again later',
+        status: 'error',
+        duration: null,
       });
     }
-
-    const listsData = listsRes.data;
-    const listsIds = listsData.map((list: UserList) => list.internal_id);
-    setListsIds(listsIds);
-
-    const listsObj: { [list_id: number]: UserList } = {};
-
-    listsData.forEach((list: UserList) => {
-      listsObj[list.internal_id] = list;
-    });
-
-    setLists(listsObj);
   };
 
   const selectItem = (id: number) => {
@@ -182,8 +195,10 @@ const UserListsPage = () => {
       const token = await getIdToken();
       const listsToSave = Object.values(lists).filter((list) => list.hasChanged);
 
-      const res = await axios.post(
-        '/api/lists/updateListOrder',
+      if (!user) return;
+
+      const res = await axios.put(
+        `/api/v1/lists/${user.username}`,
         { lists: listsToSave },
         {
           headers: {
@@ -213,22 +228,16 @@ const UserListsPage = () => {
     }
   };
 
-  if (!owner)
-    return (
-      <Layout>
-        <Center>
-          <Text>Loading...</Text>
-        </Center>
-      </Layout>
-    );
+  if (!owner) return <Layout loading />;
 
   return (
     <Layout>
       {isOwner && (
         <CreateListModal isOpen={openCreateModal} onClose={() => setOpenCreateModal(false)} />
       )}
-      {isOwner && (
+      {isOwner && router.query.username && (
         <DeleteListModal
+          username={router.query.username as string}
           selectedLists={selectedLists}
           isOpen={openDeleteModal}
           onClose={() => setOpenDeleteModal(false)}

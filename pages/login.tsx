@@ -113,6 +113,13 @@ const LoginPage = () => {
     }
 
     setIsLoading(true);
+
+    if (!(await checkUsername())) {
+      setIsLoading(false);
+      setError('Username already taken');
+      return;
+    }
+
     try {
       const token = await auth.currentUser?.getIdToken();
       const userRes = await axios.post(
@@ -143,6 +150,21 @@ const LoginPage = () => {
   const closeLogin = () => {
     onClose();
     router.replace('/');
+  };
+
+  const checkUsername = async (): Promise<boolean> => {
+    if (!username) return false;
+    if (!username.match(/^[a-zA-Z0-9_]+$/)) return false;
+
+    try {
+      const res = await axios.get(`/api/v1/users/${username}`);
+      if (res.data) return false;
+      else return true;
+    } catch (e: any) {
+      setError(e.message);
+      console.error(error);
+      return false;
+    }
   };
 
   return (

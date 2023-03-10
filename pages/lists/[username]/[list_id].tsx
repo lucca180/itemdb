@@ -75,8 +75,10 @@ const ListPage = () => {
   }, [authLoading, list, router.isReady]);
 
   useEffect(() => {
+    if (list) setList(undefined);
+
     return () => toast.closeAll();
-  }, []);
+  }, [router.query]);
 
   useEffect(() => {
     if (user && list) getMatches();
@@ -85,52 +87,71 @@ const ListPage = () => {
   const init = async () => {
     toast.closeAll();
     const { username, list_id } = router.query;
-    const token = await getIdToken();
+    try {
+      const token = await getIdToken();
 
-    const res = await axios.get(`/api/lists/getList?username=${username}&list_id=${list_id}`, {
-      headers: {
-        authorization: `Bearer ${token}`,
-      },
-    });
+      const res = await axios.get(`/api/v1/lists/${username}/${list_id}`, {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      });
 
-    const listData = res.data as UserList;
+      const listData = res.data as UserList | null;
 
-    const itensId: number[] = listData.itemInfo.map((item) => item.item_iid);
+      if (!listData) throw 'List does not exist';
 
-    if (itensId.length === 0) {
+      const itensId: number[] = listData.itemInfo.map((item) => item.item_iid);
+
+      if (itensId.length === 0) {
+        setItemSelect([]);
+        setItemInfoIds([]);
+        setItemInfo({});
+        setMatches([]);
+        setSortInfo({ sortBy: listData.sortBy, sortDir: listData.sortDir });
+        setList(res.data);
+        setItems({});
+        return;
+      }
+
+      const itemRes = await axios.post(`/api/v1/items/many`, {
+        id: itensId,
+      });
+
+      const itemInfos = listData.itemInfo;
+
+      const sortedItemInfo = itemInfos.sort((a, b) =>
+        sortItems(
+          a,
+          b,
+          listData.sortBy,
+          listData.sortDir,
+          itemRes.data as { [id: string]: ItemData }
+        )
+      );
+      const infoIds = [];
+      const itemMap: { [id: number]: ListItemInfo } = {};
+
+      for (const itemInfo of sortedItemInfo) {
+        infoIds.push(itemInfo.internal_id);
+        itemMap[itemInfo.internal_id] = itemInfo;
+      }
+
       setItemSelect([]);
-      setItemInfoIds([]);
-      setItemInfo({});
-      setMatches([]);
       setSortInfo({ sortBy: listData.sortBy, sortDir: listData.sortDir });
+      setItemInfoIds(infoIds);
+      setItemInfo(itemMap);
       setList(res.data);
-      setItems({});
-      return;
+      setItems(itemRes.data);
+    } catch (err) {
+      console.error(err);
+
+      toast({
+        title: 'An error occurred',
+        description: typeof err === 'string' ? err : 'Please try again later',
+        status: 'error',
+        duration: null,
+      });
     }
-
-    const itemRes = await axios.post(`/api/v1/items/many`, {
-      id: itensId,
-    });
-
-    const itemInfos = listData.itemInfo;
-
-    const sortedItemInfo = itemInfos.sort((a, b) =>
-      sortItems(a, b, listData.sortBy, listData.sortDir, itemRes.data as { [id: string]: ItemData })
-    );
-    const infoIds = [];
-    const itemMap: { [id: number]: ListItemInfo } = {};
-
-    for (const itemInfo of sortedItemInfo) {
-      infoIds.push(itemInfo.internal_id);
-      itemMap[itemInfo.internal_id] = itemInfo;
-    }
-
-    setItemSelect([]);
-    setSortInfo({ sortBy: listData.sortBy, sortDir: listData.sortDir });
-    setItemInfoIds(infoIds);
-    setItemInfo(itemMap);
-    setList(res.data);
-    setItems(itemRes.data);
   };
 
   const getMatches = async () => {
@@ -146,11 +167,9 @@ const ListPage = () => {
 
     const token = await getIdToken();
 
-    const res = await axios.get(`/api/lists/match`, {
+    const res = await axios.get(`/api/v1/lists/match/${seeker}/${offerer}`, {
       params: {
         list_id: list.internal_id,
-        seeker,
-        offerer,
       },
       headers: {
         authorization: `Bearer ${token}`,
@@ -195,6 +214,7 @@ const ListPage = () => {
   };
 
   const selectItem = (id: number) => {
+    if (!isEdit) return;
     if (itemSelect.includes(id)) {
       setItemSelect(itemSelect.filter((item) => item !== id));
     } else {
@@ -257,13 +277,14 @@ const ListPage = () => {
       duration: null,
     });
 
+    const { username, list_id } = router.query;
     const token = await getIdToken();
 
     const changedItems = Object.values(itemInfo).filter((item) => item.hasChanged);
 
     try {
       const res = await axios.post(
-        `/api/lists/update`,
+        `/api/v1/lists/${username}/${list_id}`,
         {
           list_id: list.internal_id,
           itemInfo: changedItems,
@@ -288,7 +309,7 @@ const ListPage = () => {
 
         setEdit(false);
         init();
-      } else throw res.data.message;
+      } else throw res.data.error;
     } catch (err) {
       console.error(err);
       toast.update(x, {
@@ -316,14 +337,7 @@ const ListPage = () => {
     setHasChanges();
   };
 
-  if (!list)
-    return (
-      <Layout>
-        <Center>
-          <Text>Loading...</Text>
-        </Center>
-      </Layout>
-    );
+  if (!list) return <Layout loading />;
 
   return (
     <Layout>
@@ -407,11 +421,20 @@ const ListPage = () => {
                   ✓ Official
                 </Badge>
               )}
+              {list.visibility !== 'public' && (
+                <Badge
+                  borderRadius="md"
+                  colorScheme={color.isLight() ? 'black' : 'gray'}
+                  variant="solid"
+                >
+                  {list.visibility}
+                </Badge>
+              )}
             </Stack>
             <Heading size={{ base: 'lg', md: undefined }}>{list.name}</Heading>
             <Stack direction="row" mb={1} alignItems="center" flexWrap="wrap">
               <Text fontSize={{ base: 'xs', md: 'sm' }}>
-                by{' '}
+                {list.official ? 'curated' : ''} by{' '}
                 <Link as={NextLink} fontWeight="bold" href={'/lists/' + list.user_username}>
                   {list.user_username}
                 </Link>

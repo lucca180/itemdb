@@ -43,7 +43,7 @@ const AddToListSelect = (props: Props) => {
     try {
       const token = await getIdToken();
 
-      const res = await axios.get(`/api/lists/getUserLists?username=${user.username}`, {
+      const res = await axios.get(`/api/v1/lists/${user.username}`, {
         headers: {
           authorization: `Bearer ${token}`,
         },
@@ -60,8 +60,8 @@ const AddToListSelect = (props: Props) => {
     try {
       const token = await getIdToken();
 
-      const res = await axios.post(
-        `/api/lists/addItem`,
+      const res = await axios.put(
+        `/api/v1/lists/${user.username}/${list_id}`,
         {
           list_id: list_id,
           item_iid: item.internal_id,
@@ -93,10 +93,11 @@ const AddToListSelect = (props: Props) => {
   };
 
   const createNewList = async () => {
+    if (!user) return;
     const token = await getIdToken();
     try {
       const res = await axios.post(
-        '/api/lists/create',
+        `/api/v1/lists/${user.username}`,
         {
           name: 'New List',
           description: '',

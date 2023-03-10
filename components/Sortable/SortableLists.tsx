@@ -49,16 +49,18 @@ export function SortableLists(props: Props) {
       onDragStart={handleDragStart}
     >
       <SortableContext items={ids} disabled={!activateSort} strategy={rectSortingStrategy}>
-        {ids.map((id) => (
-          <SortableListCard
-            onClick={() => props.onClick?.(id)}
-            editMode={editMode}
-            selected={listSelect?.includes(id)}
-            list={lists[id]}
-            id={id}
-            key={id}
-          />
-        ))}
+        {ids.map((id) =>
+          lists[id] ? (
+            <SortableListCard
+              onClick={() => props.onClick?.(id)}
+              editMode={editMode}
+              selected={listSelect?.includes(id)}
+              list={lists[id]}
+              id={id}
+              key={id}
+            />
+          ) : null
+        )}
       </SortableContext>
       <DragOverlay>
         {activeId ? (

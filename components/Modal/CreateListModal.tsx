@@ -66,24 +66,28 @@ const CreateListModal = (props: Props) => {
     setLoading(true);
     try {
       const token = await getIdToken();
-      const res = await axios.post(
-        props.list ? '/api/lists/update' : '/api/lists/create',
-        {
-          list_id: list.internal_id,
-          name: list.name,
-          description: list.description,
-          cover_url: list.cover_url,
-          visibility: list.visibility,
-          purpose: list.purpose,
-          colorHex: list.colorHex,
-          official: list.official,
+
+      const data = {
+        list_id: list.internal_id,
+        name: list.name,
+        description: list.description,
+        cover_url: list.cover_url,
+        visibility: list.visibility,
+        purpose: list.purpose,
+        colorHex: list.colorHex,
+        official: list.official,
+      };
+
+      const configs = {
+        headers: {
+          authorization: `Bearer ${token}`,
         },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      };
+
+      // if list exists then update, else create
+      const res = await (props.list
+        ? axios.post(`/api/v1/lists/${list.user_username}/${list.internal_id}`, data, configs)
+        : axios.post(`/api/v1/lists/${list.user_username}`, data, configs));
 
       setLoading(false);
 
@@ -122,7 +126,7 @@ const CreateListModal = (props: Props) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleCancel} isCentered>
+    <Modal isOpen={isOpen} onClose={handleCancel} isCentered scrollBehavior="inside">
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>{props.list ? 'Edit' : 'Create'} List</ModalHeader>
@@ -199,14 +203,14 @@ const CreateListModal = (props: Props) => {
                 </Select>
               </FormControl>
               <FormControl>
-                <FormLabel color="gray.300">NC Purpose</FormLabel>
+                <FormLabel color="gray.300">Purpose</FormLabel>
                 <Select
                   variant="filled"
                   name="purpose"
                   onChange={handleChange}
                   value={list.purpose}
                 >
-                  <option value="none">Not a NC List</option>
+                  <option value="none">None</option>
                   <option value="seeking">Seeking these items</option>
                   <option value="trading">Trading these items</option>
                 </Select>

@@ -44,7 +44,7 @@ const ListSelect = (props: Props) => {
     try {
       const token = await getIdToken();
 
-      const res = await axios.get(`/api/lists/getUserLists?username=${user.username}`, {
+      const res = await axios.get(`/api/v1/lists/${user.username}`, {
         headers: {
           authorization: `Bearer ${token}`,
         },
