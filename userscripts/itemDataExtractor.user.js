@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.0.7
+// @version      1.0.8
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
 // @website      https://itemdb.com.br
@@ -218,6 +218,7 @@ function handleMyShop() {
 }
 
 function handleGeneralShops() {
+  const shopID = window.location.href.match(/(?<=obj_type\=)\d+/)?.[0];
   const items = $('.shop-item');
 
   items.each(function (i) {
@@ -228,15 +229,16 @@ function handleGeneralShops() {
     const item = {
       name: itemEl.dataset.name,
       description: itemData.attr('title'),
+      category: shopID ? shopIDToCategory[shopID] : undefined,
       img: itemData.css('background-image').replace(/^url\(['"](.+)['"]\)/, '$1'),
       itemId: itemID,
     };
 
     const itemKey = genItemKey(item);
-    if (!itemsHistory[itemKey]?.generalshop) {
+    if (!itemsHistory[itemKey]?.restockShop) {
       itemsObj[itemKey] = item;
       itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
-      itemsHistory[itemKey].generalshop = true;
+      itemsHistory[itemKey].restockShop = true;
     }
   });
 

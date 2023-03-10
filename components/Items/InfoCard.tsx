@@ -82,7 +82,7 @@ const ItemInfoCard = (props: Props) => {
           <Tag size="lg" fontWeight="bold">
             Category
           </Tag>
-          <Text flex="1" textAlign="right">
+          <Text flex="1" textAlign="right" textTransform="capitalize">
             {item.category ?? '???'}
           </Text>
         </HStack>
