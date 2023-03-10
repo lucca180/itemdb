@@ -9,7 +9,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const { usernames, list_id } = req.query;
 
   if (!Array.isArray(usernames) || usernames.length < 2)
-    return res.status(400).json({ success: false, message: 'Bad Request' });
+    return res.status(400).json({ error: 'Bad Request' });
 
   const [seeker, offerer] = usernames;
 

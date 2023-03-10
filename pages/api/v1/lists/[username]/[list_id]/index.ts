@@ -106,7 +106,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   try {
     const { user } = await CheckAuth(req);
-    if (!user) return res.status(401).json({ success: false, message: 'Unauthorized' });
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
     const list = await prisma.userList.findUnique({
       where: {
@@ -114,10 +114,10 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       },
     });
 
-    if (!list) return res.status(400).json({ success: false, message: 'List not found' });
+    if (!list) return res.status(400).json({ error: 'List not found' });
 
     if (list.user_id !== user.id && !user.isAdmin)
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
+      return res.status(401).json({ error: 'Unauthorized' });
 
     const itemInfo = req.body.itemInfo as ListItemInfo[];
 
@@ -160,8 +160,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     if (itemInfo?.length && action === 'move') {
       const listDestId = req.body.listDestId as string;
 
-      if (!listDestId)
-        return res.status(400).json({ success: false, message: 'listDestId is required' });
+      if (!listDestId) return res.status(400).json({ error: 'listDestId is required' });
 
       const listDest = await prisma.userList.findUnique({
         where: {
@@ -169,10 +168,10 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         },
       });
 
-      if (!listDest) return res.status(400).json({ success: false, message: 'List not found' });
+      if (!listDest) return res.status(400).json({ error: 'List not found' });
 
       if (listDest.user_id !== user.id && !user.isAdmin)
-        return res.status(401).json({ success: false, message: 'Unauthorized' });
+        return res.status(401).json({ error: 'Unauthorized' });
 
       const ids = itemInfo.map((item) => item.internal_id);
 

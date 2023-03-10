@@ -26,7 +26,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       name: req.body.name,
     };
   else if (req.method == 'GET' && req.url) reqData = qs.parse(req.url.split('?')[1]);
-  if (!reqData) return res.status(400).json({ success: false, message: 'Invalid request' });
+  if (!reqData) return res.status(400).json({ error: 'Invalid request' });
 
   const ids = reqData.id as string[];
   const item_id = reqData.item_id as string[];
@@ -35,7 +35,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const name = reqData.name as string[];
 
   if (!ids && !item_id && !image_id && !name && !name_image_id)
-    return res.status(400).json({ success: false, message: 'Invalid request' });
+    return res.status(400).json({ error: 'Invalid request' });
 
   if (
     ids?.length === 0 &&
@@ -44,7 +44,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     name?.length === 0 &&
     name_image_id?.length === 0
   )
-    return res.status(400).json({ success: false, message: 'Invalid request' });
+    return res.status(400).json({ error: 'Invalid request' });
 
   const items = await getManyItems({
     id: ids,
