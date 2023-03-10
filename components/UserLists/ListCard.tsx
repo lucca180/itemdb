@@ -80,8 +80,8 @@ const UserListCard = (props: Props) => {
           {list.cover_url && (
             <Image
               src={list.cover_url}
-              width={140}
-              height={140}
+              w={{ base: '95px', sm: '140px' }}
+              h={{ base: '95px', sm: '140px' }}
               alt={'List Cover'}
               borderRadius="md"
             />

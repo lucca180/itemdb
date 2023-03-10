@@ -170,6 +170,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   else if (sortBy === 'price') sortSQL = Prisma.sql`ORDER BY temp.price`;
   else if (sortBy === 'added') sortSQL = Prisma.sql`ORDER BY temp.addedAt`;
   else if (sortBy === 'color' && isColorSearch) sortSQL = Prisma.sql`ORDER BY dist`;
+  else if (sortBy === 'color')
+    sortSQL = Prisma.sql`ORDER BY temp.hsv_h ${
+      sortDir === 'desc' ? Prisma.sql`DESC` : Prisma.sql`ASC`
+    }, temp.hsv_s ${sortDir === 'desc' ? Prisma.sql`DESC` : Prisma.sql`ASC`}, temp.hsv_v`;
   else if (sortBy === 'weight') sortSQL = Prisma.sql`ORDER BY temp.weight`;
   else if (sortBy === 'estVal') sortSQL = Prisma.sql`ORDER BY temp.est_val`;
   else if (sortBy === 'id') sortSQL = Prisma.sql`ORDER BY temp.item_id`;
@@ -183,7 +187,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     resultRaw = (await prisma.$queryRaw`
       SELECT *,  count(*) OVER() AS full_count FROM (
-        SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex,
+        SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex, b.hsv_h, b.hsv_s, b.hsv_v,
           c.addedAt as priceAdded, c.price, c.noInflation_id,
           (POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) as dist
         FROM Items as a
@@ -237,7 +241,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     query = `%${query}%`;
     resultRaw = (await prisma.$queryRaw`
       SELECT *,  count(*) OVER() AS full_count FROM (
-        SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex,
+        SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex, b.hsv_h, b.hsv_s, b.hsv_v,
           c.addedAt as priceAdded, c.price, c.noInflation_id
           ${colorSql_inside ? Prisma.sql`, ${colorSql_inside} as dist` : Prisma.empty}
         FROM Items as a

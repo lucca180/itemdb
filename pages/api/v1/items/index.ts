@@ -121,6 +121,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (img) imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? '';
 
+    if(!imageId) continue;
+
     if (category === 'Neocash') {
       category = undefined;
       type = 'nc';
@@ -147,20 +149,20 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     specialTypes = specialTypes?.length > 0 ? specialTypes?.toString() : undefined;
 
     if (rarity === 500) type = 'nc';
-
+    const isNC = type === 'nc' || rarity === 500;
     const x = {
       item_id: itemId,
       name: name.trim(),
       description: description?.trim(),
       category: category,
       image: img,
-      image_id: imageId ?? '',
+      image_id: imageId,
       rarity: rarity,
-      est_val: estVal,
+      est_val: isNC && !estVal ? 0 : estVal,
       weight: weight,
       status: status,
       type: type ?? 'np',
-      isNC: type === 'nc' || rarity === 500,
+      isNC: isNC,
       specialType: specialTypes,
       isWearable: !!specialTypes?.includes('wearable'),
       language: lang as string,

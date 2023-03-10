@@ -137,7 +137,7 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
     let hasChange = false;
     const forceMerge = ['type', 'isNC', 'isWearable', 'status', 'est_val'];
     for (const key of Object.keys(dbItem) as Array<keyof typeof dbItem>) {
-      if (['internal_id', 'addedAt', 'updatedAt'].includes(key)) continue;
+      if (['internal_id', 'addedAt', 'updatedAt', 'hash'].includes(key)) continue;
       const temp = dbItem[key];
 
       if (!dbItem[key]) {
@@ -249,15 +249,15 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
   }
 }
 
-async function getPallete(item: Items) {
+export async function getPallete(item: Items) {
   if (!item.image || !item.image_id) return undefined;
   const pallete = await Vibrant.from(item.image).getPalette();
 
   const colors = [];
 
   for (const [key, val] of Object.entries(pallete)) {
-    if (!val) continue;
-    const color = Color.rgb(val.rgb);
+
+    const color = Color.rgb(val?.rgb  ?? [255,255,255]);
     const lab = color.lab().array();
     const hsv = color.hsv().array();
     const hex = color.hex();
@@ -274,14 +274,14 @@ async function getPallete(item: Items) {
       hsv_s: hsv[1],
       hsv_v: hsv[2],
 
-      rgb_r: val.rgb[0],
-      rgb_g: val.rgb[1],
-      rgb_b: val.rgb[2],
+      rgb_r: val?.rgb[0] ?? 255,
+      rgb_g: val?.rgb[1] ?? 255,
+      rgb_b: val?.rgb[2] ?? 255,
 
       hex: hex,
 
       type: key.toLowerCase(),
-      population: val.population,
+      population: val?.population ?? 0,
     };
 
     colors.push(colorData);

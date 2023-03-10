@@ -1,5 +1,6 @@
-import { Box, Flex, Link, SimpleGrid, Text } from '@chakra-ui/react';
+import { Box, Center, Flex, Icon, Link, SimpleGrid, Text } from '@chakra-ui/react';
 import React from 'react';
+import { AiFillEyeInvisible } from 'react-icons/ai';
 import { FullItemColors } from '../../types';
 type Props = {
   colors: FullItemColors;
@@ -17,6 +18,8 @@ const colorKeysOrder: (keyof FullItemColors)[] = [
 const ColorInfoCard = (props: Props) => {
   const { colors } = props;
   const color = colors.vibrant.rgb;
+  console.log(colors)
+  const isInvisible = Object.values(colors).every((color) => color.population === 0 && color.hex === '#FFFFFF');
 
   return (
     <Flex
@@ -47,7 +50,7 @@ const ColorInfoCard = (props: Props) => {
         h="100%"
         borderBottomRadius="md"
       >
-        <SimpleGrid columns={3} gap={3}>
+        {!isInvisible && <SimpleGrid columns={3} gap={3}>
           {colorKeysOrder.map((key) => (
             <Link key={colors[key].type} href={'/search?s=' + encodeURIComponent(colors[key].hex)}>
               <Flex
@@ -68,7 +71,12 @@ const ColorInfoCard = (props: Props) => {
               </Flex>
             </Link>
           ))}
-        </SimpleGrid>
+        </SimpleGrid>}
+        {isInvisible && <Center flexFlow='column' gap={1}>
+          <Icon as={AiFillEyeInvisible} boxSize="32px" opacity={0.4}/>
+          <Text fontSize='xs' color="gray.200">Looking for colors in an Invisible Item?</Text>
+          
+        </Center>}
       </Flex>
     </Flex>
   );

@@ -73,10 +73,9 @@ const SearchPage = () => {
 
     // if(!query) return;
 
-    if (query.match(/^#[0-9A-Fa-f]{6}$/)) {
-      setIsColorSearch(true);
-
-      if (!searchResult) {
+    if (query.match(/^#[0-9A-Fa-f]{6}$/)) {      
+      if (!searchResult && !isColorSearch) {
+        setIsColorSearch(true);
         setFilters({ ...filters, sortBy: 'color' });
         customFilters = {
           ...(customFilters ?? filters),
@@ -238,7 +237,7 @@ const SearchPage = () => {
                 <option value="name">Name</option>
                 <option value="price">Price</option>
                 <option value="rarity">Rarity</option>
-                {isColorSearch && <option value="color">Color</option>}
+                <option value="color">Color</option>
                 <option value="weight">Weight</option>
                 <option value="estVal">Est. Val</option>
                 <option value="id">ID</option>
