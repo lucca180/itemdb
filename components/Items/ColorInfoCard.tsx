@@ -18,7 +18,7 @@ const colorKeysOrder: (keyof FullItemColors)[] = [
 const ColorInfoCard = (props: Props) => {
   const { colors } = props;
   const color = colors.vibrant.rgb;
-  console.log(colors)
+
   const isInvisible = Object.values(colors).every((color) => color.population === 0 && color.hex === '#FFFFFF');
 
   return (

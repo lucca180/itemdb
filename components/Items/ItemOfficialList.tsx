@@ -1,4 +1,4 @@
-import { Button, Flex, Link, Tag, Text } from '@chakra-ui/react';
+import { Flex, Link, Tag, Text } from '@chakra-ui/react';
 import React from 'react';
 import { ItemData, UserList } from '../../types';
 import CardBase from '../Card/CardBase';

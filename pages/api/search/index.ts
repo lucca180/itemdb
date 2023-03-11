@@ -14,7 +14,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const reqQuery = qs.parse(req.url.split('?')[1]);
   let query = (reqQuery.s as string)?.trim() ?? '';
   let page = (parseInt(reqQuery.page as string) || 1) - 1;
-  let limit = parseInt(reqQuery.limit as string) || 30;
+  let limit = parseInt(reqQuery.limit as string) || 48;
 
   // if(!query) return res.status(400).json({error: 'invalid search query'});
 

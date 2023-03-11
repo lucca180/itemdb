@@ -1,4 +1,5 @@
-import { HStack, Button, Select, Box } from '@chakra-ui/react';
+import { HStack, Button, Select, Box, IconButton } from '@chakra-ui/react';
+import { BiFirstPage, BiLastPage } from 'react-icons/bi';
 
 type Props = {
   currentPage?: number;
@@ -16,16 +17,34 @@ const Pagination = (props: Props) => {
   if (currentPage == null || totalPages == null || !setPage)
     return (
       <HStack mt={4} justifyContent="center">
+        <IconButton
+          isDisabled
+          aria-label="Jump to first page button"
+          color="gray.300"
+          icon={<BiFirstPage size="24px" />}
+        />
         <Button isDisabled>Back</Button>
         <Box>
           <Button isLoading />
         </Box>
         <Button isDisabled>Next</Button>
+        <IconButton
+          isDisabled
+          aria-label="Jump to last page button"
+          icon={<BiLastPage size="24px" />}
+        />
       </HStack>
     );
 
   return (
     <HStack mt={4} justifyContent="center">
+      <IconButton
+        isDisabled={currentPage <= 1}
+        onClick={() => setPage(1)}
+        aria-label="Jump to first page button"
+        color="gray.300"
+        icon={<BiFirstPage size="24px" />}
+      />
       <Button isDisabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)}>
         Back
       </Button>
@@ -47,6 +66,13 @@ const Pagination = (props: Props) => {
       <Button isDisabled={currentPage >= totalPages} onClick={() => setPage(currentPage + 1)}>
         Next
       </Button>
+      <IconButton
+        isDisabled={currentPage >= totalPages}
+        onClick={() => setPage(totalPages)}
+        aria-label="Jump to last page button"
+        color="gray.300"
+        icon={<BiLastPage size="24px" />}
+      />
     </HStack>
   );
 };

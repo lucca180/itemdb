@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.0.8
+// @version      1.0.9
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
 // @website      https://itemdb.com.br
@@ -10,6 +10,7 @@
 // @exclude      *://*images.neopets.com/*
 // @icon         https://itemdb.com.br/favicon.ico
 // @grant        none
+// @noframes
 // ==/UserScript==
 
 // Check if we are on the beta site
@@ -453,6 +454,35 @@ function handleStorageShed() {
   submitItems();
 }
 
+function handleNCMall() {
+  window.addEventListener('hashchange', () => {
+    const filteredItems = desc_arr.filter(n => n);
+    for(const itemData of filteredItems){
+      let subText = ''
+      if(itemData.isWearable) subText += ' (wearable) '
+      if(itemData.isNeohome) subText += ' (neohome) '
+
+      const item = {
+        itemId: itemData.id,
+        name: itemData.name,
+        subText: subText,
+        img: `https://images.neopets.com/items/${itemData.imageFile}.gif`,
+        description: itemData.description,
+        type: 'nc',
+      }
+
+      const itemKey = genItemKey(item);
+      if (!itemsHistory[itemKey]?.ncmall) {
+        itemsObj[itemKey] = item;
+        itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
+        itemsHistory[itemKey].ncmall = true;
+      }
+    }
+
+    submitItems();
+  })
+}
+
 // ------ prices ------ //
 
 function handleSWPrices() {
@@ -650,6 +680,7 @@ if (URLHas('gallery/index.phtml')) handleGallery();
 if (URLHas('gallery/quickremove.phtml') || URLHas('gallery/quickcat.phtml')) handleGalleryAdmin();
 if (URLHas('search.phtml') && URLHas('selected_type=object')) handleSearch();
 if (URLHas('neohome/shed')) handleStorageShed();
+if (URLHas('/mall/shop.phtml')) handleNCMall();
 
 if (hasSSW) handleSSWPrices();
 

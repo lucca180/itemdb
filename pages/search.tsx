@@ -38,11 +38,12 @@ const defaultFilters: SearchFiltersType = {
   estVal: ['', ''],
   sortBy: 'name',
   sortDir: 'asc',
-  limit: 30,
+  limit: 48,
   page: 1,
 };
 
 const SearchPage = () => {
+  const [searchQuery, setQuery] = useState<string>('');
   const [searchResult, setResult] = useState<SearchResults | null>(null);
   const [searchStatus, setStatus] = useState<SearchStats | null>(null);
   const [filters, setFilters] = useState<SearchFiltersType>(defaultFilters);
@@ -54,26 +55,16 @@ const SearchPage = () => {
 
   useEffect(() => {
     if (router.isReady) {
-      const custom = parseQueryString();
-      init(custom);
+      const [custom, forceRefresh] = parseQueryString();
+      init(custom, forceRefresh);
     }
-  }, [router.isReady]);
-
-  useEffect(() => {
-    if (!router.isReady) return;
-    setResult(null);
-    setStatus(null);
-
-    const custom = parseQueryString();
-    init(custom, true);
-  }, [router.query]);
+  }, [router.isReady, router.query]);
 
   const init = async (customFilters?: SearchFiltersType, forceStats = false) => {
     const query = (router.query.s as string) ?? '';
+    setQuery(query);
 
-    // if(!query) return;
-
-    if (query.match(/^#[0-9A-Fa-f]{6}$/)) {      
+    if (query.match(/^#[0-9A-Fa-f]{6}$/)) {
       if (!searchResult && !isColorSearch) {
         setIsColorSearch(true);
         setFilters({ ...filters, sortBy: 'color' });
@@ -85,21 +76,6 @@ const SearchPage = () => {
     } else setIsColorSearch(false);
 
     const params = getDifference({ ...(customFilters ?? filters) });
-
-    let paramsString = qs.stringify(params, {
-      arrayFormat: 'brackets',
-      encode: false,
-    });
-    paramsString = paramsString ? '&' + paramsString : '';
-
-    // changing route will call useEffect again, so we return here
-    if (filters && searchResult) {
-      router.push(router.pathname + '?s=' + encodeURIComponent(query) + paramsString, undefined, {
-        shallow: true,
-      });
-
-      return;
-    }
 
     setResult(null);
 
@@ -123,7 +99,7 @@ const SearchPage = () => {
     };
 
     setFilters(newFilter);
-    init(newFilter);
+    changeQueryString(newFilter);
   };
 
   const handleFilterChange = (newFilter: SearchFiltersType) => {
@@ -143,30 +119,52 @@ const SearchPage = () => {
     };
 
     setFilters(newFilter);
-    init(newFilter);
+    changeQueryString(newFilter);
   };
 
   const changePage = (page: number) => {
     setFilters({ ...filters, page: page });
-    init({ ...filters, page: page });
+    changeQueryString({ ...filters, page: page });
   };
 
-  const parseQueryString = () => {
+  const parseQueryString = (): [SearchFiltersType, boolean] => {
     const queryStrings = qs.parse(router.asPath, {
       ignoreQueryPrefix: true,
     });
-    const queryFilters = getDifference(queryStrings, filters);
 
-    let customFilters = filters;
-    if (JSON.stringify(queryFilters) !== '{}') {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      //@ts-ignore
-      customFilters = { ...filters, ...queryFilters };
-    }
+    const queryFilters = getDifference(queryStrings);
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-ignore
+    let customFilters: SearchFiltersType = { ...defaultFilters, ...queryFilters };
+
+    if (Object.keys(queryStrings).length == 1) customFilters = defaultFilters;
+
+    if (searchQuery !== router.query.s) setStatus(null);
     setFilters(customFilters);
 
-    return customFilters;
+    return [customFilters, searchQuery !== router.query.s];
+  };
+
+  const changeQueryString = (customFilters?: SearchFiltersType) => {
+    const query = (router.query.s as string) ?? '';
+
+    const params = getDifference({ ...(customFilters ?? filters) });
+
+    let paramsString = qs.stringify(params, {
+      arrayFormat: 'brackets',
+      encode: false,
+    });
+    paramsString = paramsString ? '&' + paramsString : '';
+
+    // changing route will call useEffect again, so we return here
+    if (filters && searchResult) {
+      router.push(router.pathname + '?s=' + encodeURIComponent(query) + paramsString, undefined, {
+        shallow: true,
+      });
+
+      return;
+    }
   };
 
   return (
@@ -184,7 +182,7 @@ const SearchPage = () => {
               isColorSearch={isColorSearch}
               onChange={handleFilterChange}
               resetFilters={resetFilters}
-              applyFilters={() => init()}
+              applyFilters={() => changeQueryString()}
             />
           </Box>
         )}
@@ -197,7 +195,7 @@ const SearchPage = () => {
             isColorSearch={isColorSearch}
             onChange={handleFilterChange}
             resetFilters={resetFilters}
-            applyFilters={() => init()}
+            applyFilters={() => changeQueryString()}
           />
         )}
         <Box flex="1">
@@ -209,7 +207,16 @@ const SearchPage = () => {
           >
             <HStack justifyContent={'space-between'} w="100%">
               <Text as="div" textColor={'gray.300'} fontSize={{ base: 'xs', sm: 'sm' }}>
-                {searchResult && <>{searchResult?.total_results} results</>}
+                {searchResult && (
+                  <>
+                    Showing {searchResult.results_per_page * (searchResult.page - 1) + 1} -{' '}
+                    {Math.min(
+                      searchResult.results_per_page * searchResult.page,
+                      searchResult.total_results
+                    )}{' '}
+                    of {searchResult.total_results} results
+                  </>
+                )}
                 {!searchResult && <Skeleton width="100px" h="15px" />}
               </Text>
               {!isLargerThanLG && (
