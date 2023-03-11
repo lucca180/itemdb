@@ -36,14 +36,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         {
           name: {
             _count: {
-              gt: 3,
+              gte: 5,
             },
           },
         },
         {
           addedAt: {
             _max: {
-              lt: limitDateFormated,
+              lte: limitDateFormated,
             },
           },
         },
@@ -106,7 +106,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
       const allIDs = allItemData.filter((x) => x.addedAt <= latestDate).map((x) => x.internal_id);
 
-      if (filteredResult.length < 3 && differenceInCalendarDays(Date.now(), latestDate) < MAX_DAYS)
+      if (filteredResult.length < 5 && differenceInCalendarDays(Date.now(), latestDate) < MAX_DAYS)
         continue;
 
       const prices = filteredResult.map((x) => x.price);
@@ -210,23 +210,23 @@ async function updateOrAddDB(
 
     const daysSinceLastUpdate = differenceInCalendarDays(latestDate, oldPrice.addedAt);
 
-    // last update less than 1 week ago or data is older than current
-    if (daysSinceLastUpdate < 7) return undefined;
+    // last update less than 2 week ago or data is older than current
+    if (daysSinceLastUpdate <= 15) return undefined;
     if (latestDate < oldPrice.addedAt) {
       throw 'old data';
     }
 
     const variation = coefficientOfVariation([oldPrice.price, priceValue]);
 
-    if (variation < 4 && daysSinceLastUpdate < 15) return undefined;
+    if (variation <= 5 && daysSinceLastUpdate <= 30) return undefined;
 
-    if (!oldPrice.noInflation_id && priceValue > 20000) {
+    if (!oldPrice.noInflation_id && priceValue > 50000) {
       if (oldPrice.price < priceValue && variation >= 65) {
         newPriceData.noInflation_id = oldPrice.internal_id;
         throw 'inflation';
       }
 
-      if (oldPrice.price < priceValue && priceValue > 100000 && variation >= 50) {
+      if (oldPrice.price < priceValue && priceValue >= 100000 && variation >= 50) {
         newPriceData.noInflation_id = oldPrice.internal_id;
         throw 'inflation';
       }
@@ -237,7 +237,7 @@ async function updateOrAddDB(
       const lastNormalPrice = await prisma.itemPrices.findUniqueOrThrow({
         where: { internal_id: oldPrice.noInflation_id },
       });
-      const daysWithInflation = differenceInCalendarDays(Date.now(), lastNormalPrice.addedAt);
+      const daysWithInflation = differenceInCalendarDays(latestDate, lastNormalPrice.addedAt);
       const inflationVariation = coefficientOfVariation([lastNormalPrice.price, priceValue]);
 
       newPriceData.noInflation_id = oldPrice.noInflation_id;

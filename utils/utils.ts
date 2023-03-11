@@ -1,5 +1,5 @@
 import { ItemProcess, Items, PriceProcess } from '@prisma/client';
-import { mean, sampleStandardDeviation } from 'simple-statistics';
+import { mean, sampleStandardDeviation, standardDeviation } from 'simple-statistics';
 import { ItemData, ItemFindAt, TradeData } from '../types';
 
 export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
@@ -78,7 +78,7 @@ export function genItemKey(
 }
 
 export function coefficientOfVariation(x: number[]) {
-  return (sampleStandardDeviation(x) / mean(x)) * 100;
+  return (standardDeviation(x) / mean(x)) * 100;
 }
 
 export const categoryToShopID: { [id: string]: string } = {
