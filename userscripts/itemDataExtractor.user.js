@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.0.9
+// @version      1.0.10
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
 // @website      https://itemdb.com.br
@@ -396,7 +396,7 @@ function handleCloset() {
 
 function handleSearch() {
   const itemInfo = $('.search-iteminfo');
-  const img = itemInfo.find('img').attr('src');
+  let img = itemInfo.find('img').attr('src');
   const name = itemInfo.find('.search-item-name strong').text();
   const weight = itemInfo.find('.search-item-weight strong').text().match(/\d+/)?.[0];
   const rarity = itemInfo.find('.search-item-rarity strong').text().match(/\d+/)?.[0];
@@ -404,6 +404,9 @@ function handleSearch() {
   const description = itemInfo.find('.search-item-desc').text().trim();
 
   const restockShop = $('.search-buttongrid form input[name="obj_type"]').val();
+
+  if(!img.includes('images.neopets.com/items')) 
+    img = null;
 
   const item = {
     name: name,
@@ -414,7 +417,7 @@ function handleSearch() {
     estVal: estVal,
     category: shopIDToCategory[restockShop]
   }
-
+  
   const itemKey = genItemKey(item);
   itemsObj[itemKey] = item;
 

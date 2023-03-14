@@ -118,10 +118,11 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     if (!name || !img) continue;
 
     if (img) img = (img as string).replace(/^[^\/\/\s]*\/\//gim, 'https://');
+    if (!img.includes('images.neopets.com/items/')) continue;
 
     if (img) imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? '';
 
-    if(!imageId) continue;
+    if (!imageId) continue;
 
     if (category === 'Neocash') {
       category = undefined;

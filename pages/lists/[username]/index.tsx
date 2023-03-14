@@ -30,6 +30,7 @@ import { SelectItemsCheckbox } from '../../../components/Input/SelectItemsCheckb
 import { FaTrash } from 'react-icons/fa';
 import DeleteListModal from '../../../components/Modal/DeleteListModal';
 import { BiLinkExternal } from 'react-icons/bi';
+import EditProfileModal from '../../../components/Modal/EditProfileModal';
 
 type ExtendedUserList = UserList & {
   hasChanged?: boolean;
@@ -41,6 +42,7 @@ const UserListsPage = () => {
   const { user, getIdToken, authLoading } = useAuth();
   const [openCreateModal, setOpenCreateModal] = useState<boolean>(false);
   const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false);
+  const [openEditProfileModal, setOpenEditProfileModal] = useState<boolean>(false);
 
   const [lists, setLists] = useState<{ [list_id: number]: ExtendedUserList }>({});
   const [listsIds, setListsIds] = useState<number[]>([]);
@@ -53,7 +55,7 @@ const UserListsPage = () => {
 
   const isOwner = user?.username && user?.username === router.query.username;
 
-  const color = Color(undefined ?? '#4A5568');
+  const color = Color(owner?.profile_color ?? '#4A5568');
   const rgb = color.rgb().array();
 
   useEffect(() => {
@@ -228,12 +230,24 @@ const UserListsPage = () => {
     }
   };
 
+  const refresh = () => {
+    setOwner(undefined);
+    init();
+  };
+
   if (!owner) return <Layout loading />;
 
   return (
     <Layout>
       {isOwner && (
-        <CreateListModal isOpen={openCreateModal} onClose={() => setOpenCreateModal(false)} />
+        <>
+          <CreateListModal isOpen={openCreateModal} onClose={() => setOpenCreateModal(false)} />
+          <EditProfileModal
+            isOpen={openEditProfileModal}
+            onClose={() => setOpenEditProfileModal(false)}
+            refresh={refresh}
+          />
+        </>
       )}
       {isOwner && router.query.username && (
         <DeleteListModal
@@ -268,21 +282,24 @@ const UserListsPage = () => {
             flex="0 0 auto"
           >
             <Image
-              src={'https://magnetismotimes.com/wp-content/uploads/2022/09/seller_avy.jpg'}
+              src={
+                owner.profile_image ??
+                'https://magnetismotimes.com/wp-content/uploads/2022/09/seller_avy.jpg'
+              }
               borderRadius="md"
               width={{ base: 100, md: 150 }}
               height={{ base: 100, md: 150 }}
-              alt={'wishseller'}
+              alt={`${owner.username}'s avatar`}
             />
             {isOwner && (
               <Button
                 variant="solid"
                 mt={2}
-                onClick={() => setOpenCreateModal(true)}
+                onClick={() => setOpenEditProfileModal(true)}
                 colorScheme={color.isLight() ? 'blackAlpha' : 'gray'}
                 size="sm"
               >
-                + New List
+                Edit Profile
               </Button>
             )}
           </Box>
@@ -345,33 +362,37 @@ const UserListsPage = () => {
       <Divider mt={5} />
 
       <Flex justifyContent={'space-between'} flexWrap="wrap" gap={3} alignItems="center" py={3}>
-        {!isEdit && (
-          <Text as="div" textColor={'gray.300'} fontSize="sm">
-            {listsIds.length} lists
-          </Text>
-        )}
-        {isEdit && (
-          <Flex gap={3}>
-            <Box bg={`rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.35)`} p={2} borderRadius="md">
-              <SelectItemsCheckbox
-                checked={selectedLists}
-                allChecked={selectedLists.length === listsIds.length}
-                onClick={handleSelectCheckbox}
-              />
-            </Box>
-            <Button
-              isDisabled={!selectedLists.length}
-              colorScheme="red"
-              leftIcon={<FaTrash />}
-              variant="ghost"
-              onClick={() => setOpenDeleteModal(true)}
-            >
-              Delete
-            </Button>
-            <Box></Box>
-          </Flex>
-        )}
-
+        <HStack>
+          <Button variant="solid" onClick={() => setOpenCreateModal(true)}>
+            + New List
+          </Button>
+          {!isEdit && (
+            <Text as="div" textColor={'gray.300'} fontSize="sm">
+              {listsIds.length} lists
+            </Text>
+          )}
+          {isEdit && (
+            <Flex gap={3}>
+              <Box bg={`rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.35)`} p={2} borderRadius="md">
+                <SelectItemsCheckbox
+                  checked={selectedLists}
+                  allChecked={selectedLists.length === listsIds.length}
+                  onClick={handleSelectCheckbox}
+                />
+              </Box>
+              <Button
+                isDisabled={!selectedLists.length}
+                colorScheme="red"
+                leftIcon={<FaTrash />}
+                variant="ghost"
+                onClick={() => setOpenDeleteModal(true)}
+              >
+                Delete
+              </Button>
+              <Box></Box>
+            </Flex>
+          )}
+        </HStack>
         <HStack flex="0 0 auto">
           {isOwner && (
             <FormControl display="flex" alignItems="center">

@@ -1,4 +1,5 @@
 import { Box } from '@chakra-ui/react';
+import Color from 'color';
 import { createChart, ColorType, LineStyle } from 'lightweight-charts';
 import React, { useEffect, useRef } from 'react';
 import { ColorData, ItemData, PriceData } from '../../types';
@@ -12,7 +13,7 @@ type Props = {
 
 const ChartComponent = (props: Props) => {
   const { data, color } = props;
-  const RBG = color.rgb;
+  const RBG = Color.rgb(color.rgb).round().array();
   const backgroundColor = 'transparent';
   const lineColor = `rgb(${RBG[0]}, ${RBG[1]}, ${RBG[2]})`;
   const textColor = 'white';

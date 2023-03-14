@@ -98,6 +98,7 @@ export const useAuth = (props?: UseAuthProps) => {
     user,
     signout,
     getIdToken,
+    setUser,
     firebaseUser: auth.currentUser,
   };
 };

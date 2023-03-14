@@ -163,7 +163,7 @@ const ItemPage = (props: Props) => {
                 </Badge>
               )}
               {item.isNeohome && (
-                <Badge colorScheme="true" borderRadius="md">
+                <Badge colorScheme="cyan" borderRadius="md">
                   Neohome
                 </Badge>
               )}

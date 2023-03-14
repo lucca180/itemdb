@@ -256,8 +256,7 @@ export async function getPallete(item: Items) {
   const colors = [];
 
   for (const [key, val] of Object.entries(pallete)) {
-
-    const color = Color.rgb(val?.rgb  ?? [255,255,255]);
+    const color = Color.rgb(val?.rgb ?? [255, 255, 255]);
     const lab = color.lab().array();
     const hsv = color.hsv().array();
     const hex = color.hex();

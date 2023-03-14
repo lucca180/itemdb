@@ -30,14 +30,14 @@ const BetaStatsCard = () => {
   return (
     <Flex flexFlow="column" mt={5} gap={3} w="100%" maxW="300px">
       <VStack justifyContent={'center'} alignItems="center" w="100%">
-        <Text color="gray.300">Items Added</Text>
+        <Text color="gray.300">Total Items Added</Text>
         <Progress w="100%" value={(stats.itemsTotal / 60000) * 100} />
         <Text fontSize="sm" textAlign={'center'}>
           {stats.itemsTotal}
         </Text>
       </VStack>
       <VStack justifyContent={'center'} alignItems="center" w="100%">
-        <Text color="gray.300">Items Completed</Text>
+        <Text color="gray.300">Complete Items</Text>
         <Progress
           w="100%"
           value={((stats.itemsTotal - stats.itemsMissingInfo) / stats.itemsTotal) * 100}
@@ -47,10 +47,13 @@ const BetaStatsCard = () => {
         </Text>
       </VStack>
       <VStack justifyContent={'center'} alignItems="center" w="100%">
-        <Text color="gray.300">Data Waiting Processing</Text>
+        <Text color="gray.300">Processing Queue</Text>
         <Progress w="100%" value={stats.itemToProcess / stats.itemProcess} />
         <Text fontSize="sm" textAlign={'center'}>
           {stats.itemToProcess}/{stats.itemProcess}
+        </Text>
+        <Text fontSize="xs" textAlign={'center'} color="gray.400">
+          Items are processed every 15 minutes (or less)
         </Text>
       </VStack>
       <VStack justifyContent={'center'} alignItems="center" w="100%">

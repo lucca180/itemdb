@@ -191,7 +191,7 @@ const SearchFilters = (props: Props) => {
               checklist={filters.type}
             >
               <Text fontSize={'sm'}>
-                <Badge colorScheme="blue">Neohome</Badge>{' '}
+                <Badge colorScheme="cyan">Neohome</Badge>{' '}
                 <Badge>{stats?.isNeohome?.true ?? 0}</Badge>
               </Text>
             </NegCheckbox>

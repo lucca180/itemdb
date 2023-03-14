@@ -73,7 +73,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       return res.end(buffer);
     }
   } catch (e) {
-    console.error(e);
     const img = await loadImage('./public/oops.jpg');
 
     if (!canvas || !ctx) {
@@ -88,7 +87,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     res.writeHead(200, {
       'Content-Type': 'image/jpeg',
       'Content-Length': buffer.length,
-      'Cache-Control': 'no-cache',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      Expires: 0,
     });
 
     return res.end(buffer);

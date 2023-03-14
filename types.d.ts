@@ -169,6 +169,10 @@ export type User = {
   createdAt: Date;
   last_login: Date;
   last_ip: string | null;
+  profile_color: string | null;
+  profile_image: string | null;
+  description: string | null;
+
   xp: number;
 };
 

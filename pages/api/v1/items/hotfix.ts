@@ -1,8 +1,15 @@
-import Color from "color";
-import { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../../../utils/prisma";
+import Color from 'color';
+import { NextApiRequest, NextApiResponse } from 'next';
+import prisma from '../../../../utils/prisma';
 
-const colorsPalletes = ['Vibrant', 'DarkVibrant', 'LightVibrant', 'Muted', 'DarkMuted', 'LightMuted'];
+const colorsPalletes = [
+  'Vibrant',
+  'DarkVibrant',
+  'LightVibrant',
+  'Muted',
+  'DarkMuted',
+  'LightMuted',
+];
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
@@ -12,19 +19,21 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     where image_id not in (
     select image_id from ItemColor)
     and image_id is not null
-  `) as {
-    name: string;
-    image: string;
-    image_id: string;
-  }[] | null;
-  
+  `) as
+    | {
+        name: string;
+        image: string;
+        image_id: string;
+      }[]
+    | null;
+
   if (!invisibleItems) return res.status(500).json({ error: 'Error while fetching data' });
 
-  const itemColorAddList = []
+  const itemColorAddList = [];
 
-  for(const item of invisibleItems) {
-    for(const type of colorsPalletes) {
-      const color = Color.rgb([255,255,255]);
+  for (const item of invisibleItems) {
+    for (const type of colorsPalletes) {
+      const color = Color.rgb([255, 255, 255]);
       const lab = color.lab().array();
       const hsv = color.hsv().array();
       const hex = color.hex();
