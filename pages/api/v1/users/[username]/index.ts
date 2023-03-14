@@ -34,14 +34,14 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     const cleanedUser: User = {
       id: user.id,
       username: user.username,
-      neo_user: user.neo_user,
+      neopetsUser: user.neo_user,
       isAdmin: user.role === 'ADMIN',
       email: '',
-      profile_color: user.profile_color,
-      profile_image: user.profile_image,
+      profileColor: user.profile_color,
+      profileImage: user.profile_image,
       description: user.description,
       role: user.role as UserRoles,
-      last_login: new Date(0),
+      lastLogin: new Date(0),
       last_ip: null,
       createdAt: user.createdAt,
       xp: user.xp,
@@ -55,7 +55,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { neo_user, username, profile_color, profile_image, description } = req.body;
+  const { neopetsUser, username, profile_color, profile_image, description } = req.body;
 
   try {
     const authRes = await CheckAuth(req);
@@ -86,18 +86,18 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       }
     }
 
-    if (!username || !neo_user) {
+    if (!username || !neopetsUser) {
       return res.status(400).json({ error: 'Invalid Request' });
     }
 
-    if (!neo_user.match(/^[a-zA-Z0-9_]+$/) || !username.match(/^[a-zA-Z0-9_]+$/)) {
-      return res.status(400).json({ error: 'Invalid username or neo_user' });
+    if (!neopetsUser.match(/^[a-zA-Z0-9_]+$/) || !username.match(/^[a-zA-Z0-9_]+$/)) {
+      return res.status(400).json({ error: 'Invalid username or neopetsUser' });
     }
 
     const tempUser = await prisma.user.update({
       where: { id: decodedToken.uid },
       data: {
-        neo_user: neo_user,
+        neo_user: neopetsUser,
         username: username,
         profile_color: profile_color,
         profile_image: profile_image,

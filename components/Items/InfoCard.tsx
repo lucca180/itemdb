@@ -75,7 +75,7 @@ const ItemInfoCard = (props: Props) => {
           </Tooltip>
 
           <Text flex="1" textAlign="right">
-            {item.est_val ?? '???'} NP
+            {item.estVal ?? '???'} NP
           </Text>
         </HStack>
         <HStack>

@@ -73,13 +73,13 @@ const UserListCard = (props: Props) => {
           justifyContent="center"
           alignItems="center"
         >
-          {!list.cover_url && (
+          {!list.coverURL && (
             <NextImage src={icon} width={75} style={{ opacity: 0.85 }} alt={'List Cover'} />
           )}
 
-          {list.cover_url && (
+          {list.coverURL && (
             <Image
-              src={list.cover_url}
+              src={list.coverURL}
               w={{ base: '95px', sm: '140px' }}
               h={{ base: '95px', sm: '140px' }}
               alt={'List Cover'}

@@ -36,7 +36,7 @@ type Props = {
 const defaultList: Partial<UserList> = {
   name: '',
   description: '',
-  cover_url: '',
+  coverURL: '',
   colorHex: '',
   visibility: 'public',
   purpose: 'none',
@@ -71,7 +71,7 @@ const CreateListModal = (props: Props) => {
         list_id: list.internal_id,
         name: list.name,
         description: list.description,
-        cover_url: list.cover_url,
+        cover_url: list.coverURL,
         visibility: list.visibility,
         purpose: list.purpose,
         colorHex: list.colorHex,
@@ -175,7 +175,7 @@ const CreateListModal = (props: Props) => {
                   variant="filled"
                   name="cover_url"
                   onChange={handleChange}
-                  value={list.cover_url ?? ''}
+                  value={list.coverURL ?? ''}
                 />
               </FormControl>
               <FormControl>

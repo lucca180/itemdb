@@ -17,9 +17,9 @@ import { getAuth, isSignInWithEmailLink, signInWithEmailLink } from 'firebase/au
 import Image from 'next/image';
 import logoIcon from '../public/logo_white.svg';
 import axios from 'axios';
-import { User } from '@prisma/client';
 import { useAuth } from '../utils/auth';
 import LoginModal from '../components/Modal/LoginModal';
+import { User } from '../types';
 
 const mailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -62,8 +62,8 @@ const LoginPage = () => {
 
         const user = userRes.data as User;
 
-        if (!user.neo_user || !user.username) {
-          setNeopetsUser(user.neo_user || '');
+        if (!user.neopetsUser || !user.username) {
+          setNeopetsUser(user.neopetsUser || '');
           setUsername(user.username || '');
           setIsLoading(false);
           return setNeedInfo(true);
@@ -75,8 +75,8 @@ const LoginPage = () => {
         console.error(error);
       }
     } else if (user) {
-      if (!user.neo_user || !user.username) {
-        setNeopetsUser(user.neo_user || '');
+      if (!user.neopetsUser || !user.username) {
+        setNeopetsUser(user.neopetsUser || '');
         setUsername(user.username || '');
         setIsLoading(false);
         return setNeedInfo(true);
@@ -125,7 +125,7 @@ const LoginPage = () => {
       const userRes = await axios.post(
         '/api/auth/alterUser',
         {
-          neo_user: neopetsUser,
+          neopetsUser: neopetsUser,
           username: username,
         },
         {
@@ -135,7 +135,7 @@ const LoginPage = () => {
 
       const user = userRes.data as User;
 
-      if (!user.neo_user || !user.username) {
+      if (!user.neopetsUser || !user.username) {
         setIsLoading(false);
         return setNeedInfo(true);
       }

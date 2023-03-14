@@ -16,7 +16,7 @@ type Props = {
 
 const ItemStatusSelect = (props: Props) => {
   const { value, onChange, name, color } = props;
-  const options = ['active', 'unreleased', 'no-trade'];
+  const options = ['active', 'unreleased', 'no trade'];
 
   const onSelectOption = ({ item }: { item: Item }) => {
     onChange({

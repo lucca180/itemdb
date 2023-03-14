@@ -30,9 +30,9 @@ type Props = {
 
 const defaultUser: Partial<User> = {
   username: '',
-  neo_user: '',
-  profile_color: '',
-  profile_image: '',
+  neopetsUser: '',
+  profileColor: '',
+  profileImage: '',
   description: '',
 };
 
@@ -66,14 +66,14 @@ const EditProfileModal = (props: Props) => {
     try {
       const token = await getIdToken();
 
-      if (!userProfile.username || !userProfile.neo_user) {
+      if (!userProfile.username || !userProfile.neopetsUser) {
         setLoading(false);
         setError('Fill out all required fields');
         return;
       }
 
       if (
-        !userProfile.neo_user.match(/^[a-zA-Z0-9_]+$/) ||
+        !userProfile.neopetsUser.match(/^[a-zA-Z0-9_]+$/) ||
         !userProfile.username.match(/^[a-zA-Z0-9_]+$/)
       ) {
         setLoading(false);
@@ -87,9 +87,9 @@ const EditProfileModal = (props: Props) => {
         return;
       }
 
-      if (userProfile.profile_image) {
+      if (userProfile.profileImage) {
         try {
-          const domain = new URL(userProfile.profile_image);
+          const domain = new URL(userProfile.profileImage);
           const hostname = domain.hostname;
           if (
             ![
@@ -104,7 +104,7 @@ const EditProfileModal = (props: Props) => {
           )
             throw 'Invalid domain';
 
-          if (!userProfile.profile_image.match(/\.(jpeg|jpg|gif|png)$/))
+          if (!userProfile.profileImage.match(/\.(jpeg|jpg|gif|png)$/))
             throw 'Invalid image format';
         } catch (e) {
           setLoading(false);
@@ -150,7 +150,7 @@ const EditProfileModal = (props: Props) => {
   const handleColorChange = (color: ColorResult) => {
     setUserProfile({
       ...userProfile,
-      profile_color: color.hex,
+      profileColor: color.hex,
     });
   };
 
@@ -201,9 +201,9 @@ const EditProfileModal = (props: Props) => {
                 <FormLabel color="gray.300">Neopets Username</FormLabel>
                 <Input
                   variant="filled"
-                  name="neo_user"
+                  name="neopetsUser"
                   onChange={handleChange}
-                  value={userProfile.neo_user ?? ''}
+                  value={userProfile.neopetsUser ?? ''}
                 />
               </FormControl>
 
@@ -222,7 +222,7 @@ const EditProfileModal = (props: Props) => {
                   variant="filled"
                   name="profile_image"
                   onChange={handleChange}
-                  value={userProfile.profile_image ?? ''}
+                  value={userProfile.profileImage ?? ''}
                 />
                 <FormHelperText>
                   Only images from neopets.com, magnetismotimes.com and itemdb.com.br are allowed
@@ -234,7 +234,7 @@ const EditProfileModal = (props: Props) => {
                   <TwitterPicker
                     styles={colorPickerStyles}
                     triangle="hide"
-                    color={userProfile.profile_color ?? undefined}
+                    color={userProfile.profileColor ?? undefined}
                     onChangeComplete={handleColorChange}
                   />
                 </Center>

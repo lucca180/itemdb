@@ -55,7 +55,7 @@ const UserListsPage = () => {
 
   const isOwner = user?.username && user?.username === router.query.username;
 
-  const color = Color(owner?.profile_color ?? '#4A5568');
+  const color = Color(owner?.profileColor ?? '#4A5568');
   const rgb = color.rgb().array();
 
   useEffect(() => {
@@ -283,7 +283,7 @@ const UserListsPage = () => {
           >
             <Image
               src={
-                owner.profile_image ??
+                owner.profileImage ??
                 'https://magnetismotimes.com/wp-content/uploads/2022/09/seller_avy.jpg'
               }
               borderRadius="md"
@@ -307,7 +307,7 @@ const UserListsPage = () => {
             <Stack direction="row" mb={1} flexWrap="wrap">
               <Link
                 isExternal
-                href={`http://www.neopets.com/userlookup.phtml?user=${owner.neo_user}`}
+                href={`http://www.neopets.com/userlookup.phtml?user=${owner.neopetsUser}`}
               >
                 <Badge borderRadius="md" colorScheme={color.isLight() ? 'black' : 'gray'}>
                   Userlookup <Icon as={BiLinkExternal} verticalAlign="text-top" />
@@ -315,7 +315,7 @@ const UserListsPage = () => {
               </Link>
               <Link
                 isExternal
-                href={`http://www.neopets.com/neomessages.phtml?type=send&recipient=${owner.neo_user}`}
+                href={`http://www.neopets.com/neomessages.phtml?type=send&recipient=${owner.neopetsUser}`}
               >
                 <Badge borderRadius="md" colorScheme={color.isLight() ? 'black' : 'gray'}>
                   Neomail <Icon as={BiLinkExternal} verticalAlign="text-top" />
@@ -363,9 +363,11 @@ const UserListsPage = () => {
 
       <Flex justifyContent={'space-between'} flexWrap="wrap" gap={3} alignItems="center" py={3}>
         <HStack>
-          <Button variant="solid" onClick={() => setOpenCreateModal(true)}>
-            + New List
-          </Button>
+          {isOwner && (
+            <Button variant="solid" onClick={() => setOpenCreateModal(true)}>
+              + New List
+            </Button>
+          )}
           {!isEdit && (
             <Text as="div" textColor={'gray.300'} fontSize="sm">
               {listsIds.length} lists

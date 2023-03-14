@@ -306,7 +306,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       type: result.type,
       specialType: result.specialType,
       isNC: !!result.isNC,
-      est_val: result.est_val,
+      estVal: result.est_val,
       weight: result.weight,
       description: result.description ?? '',
       category: result.category,

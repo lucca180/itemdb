@@ -60,7 +60,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       internal_id: listRaw.internal_id,
       name: listRaw.name,
       description: listRaw.description,
-      cover_url: listRaw.cover_url,
+      coverURL: listRaw.cover_url,
       colorHex: listRaw.colorHex,
       purpose: listRaw.purpose,
       official: listRaw.official,

@@ -316,11 +316,11 @@ const InfoTab = (props: TabProps) => {
           <Input
             variant="filled"
             type="text"
-            name="est_val"
+            name="estVal"
             size="sm"
-            value={item.est_val ?? ''}
+            value={item.estVal ?? ''}
             onChange={handleChange}
-            color={item.est_val == itemProps.est_val ? 'gray.400' : '#fff'}
+            color={item.estVal == itemProps.estVal ? 'gray.400' : '#fff'}
           />
         </FormControl>
         <FormControl>

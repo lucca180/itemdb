@@ -1,32 +1,46 @@
 import prisma from '../../../utils/prisma';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { CheckAuth } from '../../../utils/googleCloud';
+import { User, UserRoles } from '../../../types';
+import { User as dbUser } from '@prisma/client';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
-  const { neo_user, username } = req.body;
+  const { neopetsUser, username } = req.body;
 
   try {
     const authRes = await CheckAuth(req);
     const decodedToken = authRes.decodedToken;
-    let user = authRes.user;
-    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    const authUser = authRes.user;
+    if (!authUser) return res.status(401).json({ error: 'Unauthorized' });
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //@ts-ignore
-    user = await prisma.user.update({
+    const dbUser = (await prisma.user.update({
       where: { id: decodedToken.uid },
       data: {
-        neo_user: neo_user,
+        neo_user: neopetsUser,
         username: username,
       },
-    });
+    })) as dbUser;
 
-    if (!user) return res.status(400).json({ error: 'user not found' });
+    if (!dbUser) return res.status(400).json({ error: 'user not found' });
 
-    user.isAdmin = user?.role === 'ADMIN';
+    const user: Partial<User> = {
+      id: dbUser.id,
+      username: dbUser.username,
+      neopetsUser: dbUser.neo_user,
+      isAdmin: dbUser.role === 'ADMIN',
+      email: '',
+      profileColor: dbUser.profile_color,
+      profileImage: dbUser.profile_image,
+      description: dbUser.description,
+      role: dbUser.role as UserRoles,
+      lastLogin: new Date(0),
+      last_ip: null,
+      createdAt: dbUser.createdAt,
+      xp: dbUser.xp,
+    };
 
     res.json(user);
 

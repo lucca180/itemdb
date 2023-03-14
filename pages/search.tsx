@@ -209,12 +209,12 @@ const SearchPage = () => {
               <Text as="div" textColor={'gray.300'} fontSize={{ base: 'xs', sm: 'sm' }}>
                 {searchResult && (
                   <>
-                    Showing {searchResult.results_per_page * (searchResult.page - 1) + 1} -{' '}
+                    Showing {searchResult.resultsPerPage * (searchResult.page - 1) + 1} -{' '}
                     {Math.min(
-                      searchResult.results_per_page * searchResult.page,
-                      searchResult.total_results
+                      searchResult.resultsPerPage * searchResult.page,
+                      searchResult.totalResults
                     )}{' '}
-                    of {searchResult.total_results} results
+                    of {searchResult.totalResults} results
                   </>
                 )}
                 {!searchResult && <Skeleton width="100px" h="15px" />}
@@ -275,7 +275,7 @@ const SearchPage = () => {
           {searchResult && (
             <Pagination
               currentPage={searchResult.page}
-              totalPages={Math.ceil(searchResult.total_results / searchResult.results_per_page)}
+              totalPages={Math.ceil(searchResult.totalResults / searchResult.resultsPerPage)}
               setPage={changePage}
             />
           )}

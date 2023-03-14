@@ -48,9 +48,19 @@ const Layout = (props: Props) => {
 
   useEffect(() => {
     if (!router.isReady) return;
-    setSearch((router.query.s as string) ?? '');
-    // if(isProd && router.asPath !== '/') router.push('/');
+    checkLogin();
   }, [router.isReady]);
+
+  useEffect(() => {
+    if (!router.isReady) return;
+    setSearch((router.query.s as string) ?? '');
+  }, [router.query.s]);
+
+  const checkLogin = () => {
+    if (!user) return;
+
+    if (!user.username && !['/', '/login'].includes(router.asPath)) router.push('/login');
+  };
 
   const onSubmit = (e: any) => {
     e.preventDefault();

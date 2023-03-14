@@ -16,6 +16,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  let limit = Number(req.body.limit);
+  limit = isNaN(limit) ? 300 : limit;
+  limit = Math.min(limit, 5000);
+
   const limitDate = Date.now() - MAX_DAYS * 24 * 60 * 60 * 1000;
   const limitDateFormated = new Date(limitDate).toISOString();
 
@@ -49,9 +53,21 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         },
       ],
     },
+    orderBy: {
+      _max: {
+        addedAt: 'asc',
+      },
+    },
   });
 
-  const names = groupBy.map((x) => x.name);
+  let total = 0;
+  const names: string[] = [];
+
+  for (const itemNames of groupBy) {
+    if (total >= limit) break;
+    names.push(itemNames.name);
+    total += itemNames._count.name;
+  }
 
   const processList = await prisma.priceProcess.findMany({
     where: {

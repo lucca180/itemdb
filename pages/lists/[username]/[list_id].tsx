@@ -379,7 +379,7 @@ const ListPage = () => {
             minH={{ base: '100px', md: '150px' }}
             flex="0 0 auto"
           >
-            {!list.cover_url && (
+            {!list.coverURL && (
               <Image
                 as={NextImage}
                 src={icon}
@@ -388,9 +388,9 @@ const ListPage = () => {
                 alt={'List Cover'}
               />
             )}
-            {list.cover_url && (
+            {list.coverURL && (
               <Image
-                src={list.cover_url}
+                src={list.coverURL}
                 width={{ base: '100px', md: '150px' }}
                 height={{ base: '100px', md: '150px' }}
                 borderRadius="md"

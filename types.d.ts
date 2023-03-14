@@ -12,9 +12,9 @@ export type ItemData = {
   isNC: boolean;
   isWearable: boolean;
   isNeohome: boolean;
-  est_val: number | null;
+  estVal: number | null;
   specialType: string | null;
-  status: string | null;
+  status: 'active' | 'no trade' | null;
   color: ItemColorData;
   findAt: ItemFindAt;
   isMissingInfo: boolean;
@@ -123,8 +123,8 @@ export type ItemAuctionData = {
 export type SearchResults = {
   content: ItemData[];
   page: number;
-  total_results: number;
-  results_per_page: number;
+  totalResults: number;
+  resultsPerPage: number;
 };
 
 export type SearchStats = {
@@ -162,15 +162,15 @@ export type ItemTag = {
 export type User = {
   id: string;
   username: string | null;
-  neo_user: string | null;
+  neopetsUser: string | null;
   email: string;
   role: UserRoles;
   isAdmin: boolean;
   createdAt: Date;
-  last_login: Date;
+  lastLogin: Date;
   last_ip: string | null;
-  profile_color: string | null;
-  profile_image: string | null;
+  profileColor: string | null;
+  profileImage: string | null;
   description: string | null;
 
   xp: number;
@@ -186,7 +186,7 @@ export type UserList = {
   user_username: string;
   user_neouser: string;
 
-  cover_url: string | null;
+  coverURL: string | null;
   official: boolean;
 
   purpose: 'none' | 'seeking' | 'trading';
