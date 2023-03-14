@@ -1,5 +1,5 @@
 import { ItemProcess, Items, PriceProcess } from '@prisma/client';
-import { mean, sampleStandardDeviation, standardDeviation } from 'simple-statistics';
+import { mean, standardDeviation } from 'simple-statistics';
 import { ItemData, ItemFindAt, TradeData } from '../types';
 
 export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {

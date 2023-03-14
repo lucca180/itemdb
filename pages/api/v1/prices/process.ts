@@ -17,7 +17,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   let limit = Number(req.body.limit);
-  limit = isNaN(limit) ? 300 : limit;
+  limit = isNaN(limit) ? 500 : limit;
   limit = Math.min(limit, 5000);
 
   const limitDate = new Date(Date.now() - MAX_DAYS * 24 * 60 * 60 * 1000);
@@ -105,7 +105,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       const lastWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
       let lastWeekPrices = allItemData.filter((x) => x.addedAt >= lastWeek);
-      if(lastWeekPrices.length < 5 && allItemData.length > 5) 
+      if(lastWeekPrices.length < 10 && allItemData.length > 10) 
         lastWeekPrices = allItemData;
 
       const filteredResult = lastWeekPrices
@@ -238,7 +238,7 @@ async function updateOrAddDB(
 
     const variation = coefficientOfVariation([oldPrice.price, priceValue]);
 
-    if (variation < 5 && daysSinceLastUpdate <= 30) return undefined;
+    if ((variation < 5 || priceValue < 5000) && daysSinceLastUpdate <= 15) return undefined;
 
     if (!oldPrice.noInflation_id && priceValue > 50000) {
       if (oldPrice.price < priceValue && variation >= 65) {

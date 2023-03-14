@@ -339,8 +339,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   res.json({
     content: itemList,
     page: page + 1,
-    total_results: parseInt(resultRaw?.[0]?.full_count ?? 0),
-    results_per_page: limit,
+    totalResults: parseInt(resultRaw?.[0]?.full_count ?? 0),
+    resultsPerPage: limit,
   });
 }
 
