@@ -20,8 +20,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   limit = isNaN(limit) ? 300 : limit;
   limit = Math.min(limit, 5000);
 
-  const limitDate = Date.now() - MAX_DAYS * 24 * 60 * 60 * 1000;
-  const limitDateFormated = new Date(limitDate).toISOString();
+  const limitDate = new Date(Date.now() - MAX_DAYS * 24 * 60 * 60 * 1000);
+  const limitDateFormated = limitDate.toISOString();
 
   const groupBy = await prisma.priceProcess.groupBy({
     by: ['name'],
@@ -40,7 +40,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         {
           name: {
             _count: {
-              gte: 5,
+              gte: 10,
             },
           },
         },
@@ -102,7 +102,13 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         for (const key of Object.keys(item)) item[key] ||= itemOtherData[key] ?? item[key];
       }
 
-      const filteredResult = allItemData
+      const lastWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+      let lastWeekPrices = allItemData.filter((x) => x.addedAt >= lastWeek);
+      if(lastWeekPrices.length < 5 && allItemData.length > 5) 
+        lastWeekPrices = allItemData;
+
+      const filteredResult = lastWeekPrices
         .filter(
           (a, index) =>
             a.price > 0 &&
@@ -122,7 +128,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
       const allIDs = allItemData.filter((x) => x.addedAt <= latestDate).map((x) => x.internal_id);
 
-      if (filteredResult.length < 5 && differenceInCalendarDays(Date.now(), latestDate) < MAX_DAYS)
+      if (filteredResult.length < 10 && differenceInCalendarDays(Date.now(), latestDate) < MAX_DAYS)
         continue;
 
       const prices = filteredResult.map((x) => x.price);
@@ -226,15 +232,13 @@ async function updateOrAddDB(
 
     const daysSinceLastUpdate = differenceInCalendarDays(latestDate, oldPrice.addedAt);
 
-    // last update less than 2 week ago or data is older than current
-    if (daysSinceLastUpdate <= 15) return undefined;
     if (latestDate < oldPrice.addedAt) {
       throw 'old data';
     }
 
     const variation = coefficientOfVariation([oldPrice.price, priceValue]);
 
-    if (variation <= 5 && daysSinceLastUpdate <= 30) return undefined;
+    if (variation < 5 && daysSinceLastUpdate <= 30) return undefined;
 
     if (!oldPrice.noInflation_id && priceValue > 50000) {
       if (oldPrice.price < priceValue && variation >= 65) {
