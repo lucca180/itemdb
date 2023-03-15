@@ -6,7 +6,7 @@ import { geometricMean, standardDeviation } from 'simple-statistics';
 import { ItemPrices, PriceProcess } from '@prisma/client';
 import { differenceInCalendarDays } from 'date-fns';
 
-const MAX_DAYS = 15;
+const MAX_DAYS = 30;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -17,56 +17,42 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   let limit = Number(req.body.limit);
-  limit = isNaN(limit) ? 500 : limit;
+  limit = isNaN(limit) ? 1000 : limit;
   limit = Math.min(limit, 5000);
 
   const limitDate = new Date(Date.now() - MAX_DAYS * 24 * 60 * 60 * 1000);
-  const limitDateFormated = limitDate.toISOString();
+  const limitDateFormated = limitDate.toISOString().split('T')[0];
+  const lastWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const lastWeekFormated = lastWeek.toISOString().split('T')[0];
 
-  const groupBy = await prisma.priceProcess.groupBy({
-    by: ['name'],
-    where: {
-      NOT: { type: { in: ['restock', 'auction'] } },
-      processed: false,
-    },
-    _count: {
-      name: true,
-    },
-    _max: {
-      addedAt: true,
-    },
-    having: {
-      OR: [
-        {
-          name: {
-            _count: {
-              gte: 10,
-            },
-          },
-        },
-        {
-          addedAt: {
-            _max: {
-              lte: limitDateFormated,
-            },
-          },
-        },
-      ],
-    },
-    orderBy: {
-      _max: {
-        addedAt: 'asc',
-      },
-    },
-  });
+const groupBy2 = await prisma.$queryRaw`
+    SELECT name, COUNT(*) as count, MAX(addedAt) as addedAt FROM PriceProcess
+    WHERE 
+        type not in ("restock", "auction") AND
+        processed = 0 AND
+        name not in (
+            SELECT name FROM ItemPrices WHERE addedAt <= DATE(${lastWeekFormated})
+            and name not in (select name from ItemPrices GROUP by name having count(DISTINCT item_iid) > 1)
+        )
+    GROUP BY name
+    HAVING 
+    (count >= 10 OR
+    addedAt <= DATE(${limitDateFormated}))
+  ` as any;
+
+  const convertedGroupBy: {name: string, count: number, addedAt: Date}[] = groupBy2.map((x: any) => ({
+    name: x.name,
+    count: Number(x.count),
+    addedAt: new Date(x.addedAt),
+  }));
 
   let total = 0;
   const names: string[] = [];
 
-  for (const itemNames of groupBy) {
+  for (const itemNames of convertedGroupBy) {
     if (total >= limit) break;
     names.push(itemNames.name);
-    total += itemNames._count.name;
+    total += itemNames.count;
   }
 
   const processList = await prisma.priceProcess.findMany({
@@ -102,10 +88,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         for (const key of Object.keys(item)) item[key] ||= itemOtherData[key] ?? item[key];
       }
 
-      const lastWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-
       let lastWeekPrices = allItemData.filter((x) => x.addedAt >= lastWeek);
-      if(lastWeekPrices.length < 10 && allItemData.length > 10) 
+      if(lastWeekPrices.length < 10 && allItemData.length >= 10) 
         lastWeekPrices = allItemData;
 
       const filteredResult = lastWeekPrices
@@ -118,7 +102,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         .sort((a, b) => a.price - b.price)
         .slice(0, 30);
 
-      if (filteredResult.length <= 1) continue;
+      if (filteredResult.length <= 1) continue
+    
       let latestDate = new Date(0);
 
       const usedIDs = filteredResult.map((o) => {
@@ -128,8 +113,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
       const allIDs = allItemData.filter((x) => x.addedAt <= latestDate).map((x) => x.internal_id);
 
-      if (filteredResult.length < 10 && differenceInCalendarDays(Date.now(), latestDate) < MAX_DAYS)
-        continue;
+      if (filteredResult.length < 10 && differenceInCalendarDays(Date.now(), latestDate) < MAX_DAYS) continue;
 
       const prices = filteredResult.map((x) => x.price);
 
