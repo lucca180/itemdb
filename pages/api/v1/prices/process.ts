@@ -20,31 +20,40 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   limit = isNaN(limit) ? 1000 : limit;
   limit = Math.min(limit, 5000);
 
+  let groupByLimit = Number(req.body.groupByLimit);
+  groupByLimit = isNaN(groupByLimit) ? 1000 : groupByLimit;
+
+  let page = Number(req.body.page);
+  page = isNaN(page) ? 0 : page;
+
   const limitDate = new Date(Date.now() - MAX_DAYS * 24 * 60 * 60 * 1000);
   const limitDateFormated = limitDate.toISOString().split('T')[0];
   const lastWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const lastWeekFormated = lastWeek.toISOString().split('T')[0];
 
-const groupBy2 = await prisma.$queryRaw`
+  const groupBy2 = (await prisma.$queryRaw`
     SELECT name, COUNT(*) as count, MAX(addedAt) as addedAt FROM PriceProcess
     WHERE 
-        type not in ("restock", "auction") AND
-        processed = 0 AND
-        name not in (
-            SELECT name FROM ItemPrices WHERE addedAt <= DATE(${lastWeekFormated})
-            and name not in (select name from ItemPrices GROUP by name having count(DISTINCT item_iid) > 1)
-        )
+      type not in ("restock", "auction") AND
+      processed = 0 AND
+      name not in (
+        SELECT name FROM ItemPrices WHERE 
+        name not in (select name from ItemPrices GROUP by name having count(DISTINCT item_iid) > 1)
+        group by name 
+        having MAX(addedAt) >= DATE(${lastWeekFormated})
+      )
     GROUP BY name
-    HAVING 
-    (count >= 10 OR
-    addedAt <= DATE(${limitDateFormated}))
-  ` as any;
+    HAVING count >= 10 OR addedAt <= DATE(${limitDateFormated})
+    LIMIT ${groupByLimit} OFFSET ${page * groupByLimit}
+  `) as any;
 
-  const convertedGroupBy: {name: string, count: number, addedAt: Date}[] = groupBy2.map((x: any) => ({
-    name: x.name,
-    count: Number(x.count),
-    addedAt: new Date(x.addedAt),
-  }));
+  const convertedGroupBy: { name: string; count: number; addedAt: Date }[] = groupBy2.map(
+    (x: any) => ({
+      name: x.name,
+      count: Number(x.count),
+      addedAt: new Date(x.addedAt),
+    })
+  );
 
   let total = 0;
   const names: string[] = [];
@@ -89,8 +98,7 @@ const groupBy2 = await prisma.$queryRaw`
       }
 
       let lastWeekPrices = allItemData.filter((x) => x.addedAt >= lastWeek);
-      if(lastWeekPrices.length < 10 && allItemData.length >= 10) 
-        lastWeekPrices = allItemData;
+      if (lastWeekPrices.length < 10 && allItemData.length >= 10) lastWeekPrices = allItemData;
 
       const filteredResult = lastWeekPrices
         .filter(
@@ -102,8 +110,8 @@ const groupBy2 = await prisma.$queryRaw`
         .sort((a, b) => a.price - b.price)
         .slice(0, 30);
 
-      if (filteredResult.length <= 1) continue
-    
+      if (filteredResult.length <= 1) continue;
+
       let latestDate = new Date(0);
 
       const usedIDs = filteredResult.map((o) => {
@@ -113,7 +121,8 @@ const groupBy2 = await prisma.$queryRaw`
 
       const allIDs = allItemData.filter((x) => x.addedAt <= latestDate).map((x) => x.internal_id);
 
-      if (filteredResult.length < 10 && differenceInCalendarDays(Date.now(), latestDate) < MAX_DAYS) continue;
+      if (filteredResult.length < 10 && differenceInCalendarDays(Date.now(), latestDate) < MAX_DAYS)
+        continue;
 
       const prices = filteredResult.map((x) => x.price);
 
