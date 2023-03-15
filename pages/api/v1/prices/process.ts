@@ -44,6 +44,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       )
     GROUP BY name
     HAVING count >= 10 OR addedAt <= DATE(${limitDateFormated})
+    ORDER BY addedAt asc
     LIMIT ${groupByLimit} OFFSET ${page * groupByLimit}
   `) as any;
 
