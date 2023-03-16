@@ -31,8 +31,8 @@ const FeedbackTrade = (props: Props) => {
 
   //debounce props onChange call
   const debouncedOnChange = useCallback(
-    debounce((newValue: TradeData) => props.onChange?.(newValue), 750),
-    []
+    debounce((newValue: TradeData) => props.onChange?.(newValue), 250),
+    [props.onChange]
   );
 
   return (
