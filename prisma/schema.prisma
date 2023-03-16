@@ -133,6 +133,8 @@ model ItemPrices {
   image_id       String?
   price          Int
   addedAt        DateTime @default(now())
+  processedAt    DateTime? @default(now())
+  
   manual_check   String?
   noInflation_id Int?
   usedProcessIDs String   @db.Text

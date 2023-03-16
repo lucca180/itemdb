@@ -1,11 +1,13 @@
 import { NumberInput, NumberInputField } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import debounce from 'lodash/debounce';
 
 const intl = new Intl.NumberFormat('en-US', { style: 'decimal' });
 
 type Props = {
-  value?: string;
-  onChange?: (newValue: string) => void;
+  value?: string[];
+  index: 0 | 1;
+  onChange?: (newValue: string[]) => void;
   inputProps?: any;
   wrapperProps?: any;
 };
@@ -17,16 +19,23 @@ const CustomNumberInput = (props: Props) => {
   const [value, setValue] = useState<number | string>('');
 
   useEffect(() => {
-    if (typeof props.value !== 'undefined' && props.value !== value) setValue(props.value);
-    if (typeof props.value === 'undefined') setValue('');
+    const propsVal = props.value?.[props.index] ?? '';
+
+    if (typeof propsVal !== 'undefined' && propsVal !== value) setValue(propsVal);
+    if (typeof propsVal === 'undefined') setValue('');
   }, [props.value]);
 
-  const onChange = (val: string) => {
-    if (props.onChange) {
-      if (val !== value) props.onChange(val || val === '0' ? val.replace(/[\.\,]+/g, '') : '');
-    }
+  const debouncedOnChange = useCallback(
+    debounce((newValue: string[]) => props.onChange?.(newValue), 250),
+    [props.onChange]
+  );
 
-    if (typeof props.value === 'undefined') setValue(parse(val));
+  const onChange = (val: string) => {
+    const parsedVal = val || val === '0' ? val.replace(/[\.\,]+/g, '') : '';
+    const newValue = [...(props.value ?? ['', ''])];
+    newValue[props.index] = parsedVal;
+    debouncedOnChange(newValue);
+    setValue(parse(val));
   };
 
   return (

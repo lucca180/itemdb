@@ -16,7 +16,6 @@ import { useEffect, useState } from 'react';
 import { SearchStats, SearchFilters } from '../../types';
 import CustomNumberInput from '../Input/CustomNumber';
 import NegCheckbox from '../Input/NegCheckbox';
-import debounce from 'lodash/debounce';
 
 type Props = {
   stats?: SearchStats | null;
@@ -45,6 +44,10 @@ const SearchFilters = (props: Props) => {
   useEffect(() => {
     setFilters(props.filters);
   }, [props.filters]);
+
+  // useEffect(() => {
+  //   console.log('opa, setou', filters)
+  // }, [filters])
 
   const handleCheckChange = (
     newFilter: string,
@@ -78,19 +81,13 @@ const SearchFilters = (props: Props) => {
   };
 
   const handleNumberChange = (
-    newNumber: string,
-    index: 0 | 1,
+    newVal: string[],
     filterType: 'price' | 'rarity' | 'weight' | 'estVal'
   ) => {
-    const tuple = [...filters[filterType]];
-    tuple[index] = newNumber;
-
-    setFilters({ ...filters, [filterType]: tuple });
-
-    if (props.onChange) props.onChange({ ...filters, [filterType]: tuple });
+    const newFilters = { ...filters, [filterType]: newVal };
+    setFilters(newFilters);
+    props.onChange?.(newFilters);
   };
-
-  const debouncedPriceChange = debounce(handleNumberChange, 200);
 
   return (
     <Accordion defaultIndex={[0]} allowToggle>
@@ -116,7 +113,7 @@ const SearchFilters = (props: Props) => {
                     onChange={(val) => handleCheckChange(val, 'category', cat[0])}
                     checklist={filters.category}
                   >
-                    <Text fontSize={'sm'}>
+                    <Text fontSize={'sm'} textTransform="capitalize">
                       {cat[0]} <Badge>{cat[1]}</Badge>
                     </Text>
                   </NegCheckbox>
@@ -243,15 +240,17 @@ const SearchFilters = (props: Props) => {
         <AccordionPanel pb={4}>
           <HStack>
             <CustomNumberInput
-              onChange={(val) => debouncedPriceChange(val, 0, 'price')}
-              value={filters.price[0]}
+              onChange={(val) => handleNumberChange(val, 'price')}
+              value={filters.price}
+              index={0}
             />
             <Text fontSize="sm" color="gray.300">
               to
             </Text>
             <CustomNumberInput
-              onChange={(val) => debouncedPriceChange(val, 1, 'price')}
-              value={filters.price[1]}
+              onChange={(val) => handleNumberChange(val, 'price')}
+              value={filters.price}
+              index={1}
             />
           </HStack>
         </AccordionPanel>
@@ -271,15 +270,17 @@ const SearchFilters = (props: Props) => {
         <AccordionPanel pb={4}>
           <HStack>
             <CustomNumberInput
-              onChange={(val) => debouncedPriceChange(val, 0, 'rarity')}
-              value={filters.rarity[0]}
+              onChange={(val) => handleNumberChange(val, 'rarity')}
+              value={filters.rarity}
+              index={0}
             />
             <Text fontSize="sm" color="gray.300">
               to
             </Text>
             <CustomNumberInput
-              onChange={(val) => debouncedPriceChange(val, 1, 'rarity')}
-              value={filters.rarity[1]}
+              onChange={(val) => handleNumberChange(val, 'rarity')}
+              value={filters.rarity}
+              index={1}
             />
           </HStack>
         </AccordionPanel>
@@ -299,15 +300,17 @@ const SearchFilters = (props: Props) => {
         <AccordionPanel pb={4}>
           <HStack>
             <CustomNumberInput
-              onChange={(val) => debouncedPriceChange(val, 0, 'weight')}
-              value={filters.weight[0]}
+              onChange={(val) => handleNumberChange(val, 'weight')}
+              value={filters.weight}
+              index={0}
             />
             <Text fontSize="sm" color="gray.300">
               to
             </Text>
             <CustomNumberInput
-              onChange={(val) => debouncedPriceChange(val, 1, 'weight')}
-              value={filters.weight[1]}
+              onChange={(val) => handleNumberChange(val, 'weight')}
+              value={filters.weight}
+              index={1}
             />
           </HStack>
         </AccordionPanel>
@@ -327,15 +330,17 @@ const SearchFilters = (props: Props) => {
         <AccordionPanel pb={4}>
           <HStack>
             <CustomNumberInput
-              onChange={(val) => debouncedPriceChange(val, 0, 'estVal')}
-              value={filters.estVal[0]}
+              onChange={(val) => handleNumberChange(val, 'estVal')}
+              value={filters.estVal}
+              index={0}
             />
             <Text fontSize="sm" color="gray.300">
               to
             </Text>
             <CustomNumberInput
-              onChange={(val) => debouncedPriceChange(val, 1, 'estVal')}
-              value={filters.estVal[1]}
+              onChange={(val) => handleNumberChange(val, 'estVal')}
+              value={filters.estVal}
+              index={1}
             />
           </HStack>
         </AccordionPanel>

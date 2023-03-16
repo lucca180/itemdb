@@ -17,7 +17,7 @@ export const CheckAuth = async (req: NextApiRequest) => {
   const decodedToken = await Auth.verifyIdToken(token);
 
   const dbUser = (await prisma.user.findUnique({
-    where: { id: decodedToken.uid },
+    where: { id: decodedToken.uid, email: decodedToken.email },
   })) as dbUser | null;
 
   if (!dbUser) return { decodedToken: decodedToken, user: null };

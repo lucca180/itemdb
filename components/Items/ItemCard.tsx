@@ -54,7 +54,7 @@ const ItemCard = (props: Props) => {
         py={{ base: 2, md: 4 }}
         px={2}
         bg="gray.700"
-        bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${color[0]},${color[1]}, ${color[2]},.4) 50%)`}
+        bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${color[0]},${color[1]}, ${color[2]},.45) 35%)`}
         h="100%"
         borderRadius="md"
         display="flex"

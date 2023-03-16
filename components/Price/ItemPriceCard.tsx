@@ -10,6 +10,7 @@ import {
   StatNumber,
   Text,
   Center,
+  SkeletonText,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import { ItemData, ItemLastSeen, PriceData } from '../../types';
@@ -25,17 +26,19 @@ type Props = {
   item: ItemData;
   prices: PriceData[];
   lastSeen: ItemLastSeen;
+  isLoading?: boolean;
 };
 
 const intl = new Intl.NumberFormat();
 
 const ItemPriceCard = (props: Props) => {
-  const { item, prices, lastSeen } = props;
+  const { item, prices, lastSeen, isLoading } = props;
   const [displayState, setDisplay] = useState('table');
   const [priceDiff, setDiff] = useState<number | null>(null);
   const isNoTrade = item.status?.toLowerCase() === 'no trade';
 
   const color = item.color.rgb;
+  const price = prices.at(0);
 
   useEffect(() => {
     if (prices.length >= 2) {
@@ -43,6 +46,63 @@ const ItemPriceCard = (props: Props) => {
       setDiff(diff);
     }
   }, [prices]);
+
+  if (isLoading)
+    return (
+      <CardBase color={color} title="Price Overview">
+        <Flex gap={4} flexFlow="column">
+          <Flex gap={3} flexFlow="column">
+            <Flex
+              flexFlow={{ base: 'column', md: 'row' }}
+              alignItems={{ base: 'inherit', md: 'center' }}
+            >
+              <Stat flex="initial" textAlign="center" minW="20%">
+                <StatNumber>
+                  <SkeletonText skeletonHeight="5" noOfLines={1} />
+                </StatNumber>
+                <StatLabel>
+                  <SkeletonText mt={3} skeletonHeight="3" noOfLines={1} />
+                </StatLabel>
+              </Stat>
+              <Flex flexFlow="column" flex="1">
+                <Flex justifyContent="center" alignItems="center" minH={150}>
+                  <SkeletonText skeletonHeight="3" noOfLines={1} w="50%" />
+                </Flex>
+              </Flex>
+            </Flex>
+            <HStack
+              justifyContent={{ base: 'space-between', md: 'space-around' }}
+              textAlign="center"
+            >
+              <Stat flex="initial">
+                <StatLabel>Last SW</StatLabel>
+                <StatHelpText>
+                  <SkeletonText mt={1} skeletonHeight="3" noOfLines={1} />
+                </StatHelpText>
+              </Stat>
+              <Stat flex="initial">
+                <StatLabel>Last TP</StatLabel>
+                <StatHelpText>
+                  <SkeletonText mt={1} skeletonHeight="3" noOfLines={1} />
+                </StatHelpText>
+              </Stat>
+              <Stat flex="initial">
+                <StatLabel>Last Auction</StatLabel>
+                <StatHelpText>
+                  <SkeletonText mt={1} skeletonHeight="3" noOfLines={1} />
+                </StatHelpText>
+              </Stat>
+              <Stat flex="initial">
+                <StatLabel>Last Restock</StatLabel>
+                <StatHelpText>
+                  <SkeletonText mt={1} skeletonHeight="3" noOfLines={1} />
+                </StatHelpText>
+              </Stat>
+            </HStack>
+          </Flex>
+        </Flex>
+      </CardBase>
+    );
 
   if (isNoTrade)
     return (
@@ -63,17 +123,15 @@ const ItemPriceCard = (props: Props) => {
             alignItems={{ base: 'inherit', md: 'center' }}
           >
             <Stat flex="initial" textAlign="center" minW="20%">
-              {item.price.inflated && (
+              {price?.inflated && (
                 <Text fontWeight="bold" color="red.300">
                   Inflation
                 </Text>
               )}
-              {item.price.value && <StatNumber>{intl.format(item.price.value)} NP</StatNumber>}
-              {!item.price.value && <StatNumber>??? NP</StatNumber>}
-              {item.price.addedAt && (
-                <StatLabel>on {format(new Date(item.price.addedAt), 'PP')}</StatLabel>
-              )}
-              {!item.price.addedAt && <StatHelpText>No Info</StatHelpText>}
+              {price?.value && <StatNumber>{intl.format(price.value)} NP</StatNumber>}
+              {!price?.value && <StatNumber>??? NP</StatNumber>}
+              {price?.addedAt && <StatLabel>on {format(new Date(price.addedAt), 'PP')}</StatLabel>}
+              {!price?.addedAt && <StatHelpText>No Info</StatHelpText>}
               {priceDiff !== null && (
                 <StatHelpText>
                   {!!priceDiff && <StatArrow type={priceDiff > 0 ? 'increase' : 'decrease'} />}

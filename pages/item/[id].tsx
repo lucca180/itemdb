@@ -61,10 +61,11 @@ const ItemPage = (props: Props) => {
   const [seenStats, setSeen] = useState<ItemLastSeen>(defaultLastSeen);
   const [trades, setTrades] = useState<TradeData[]>([]);
   const [tags, setTags] = useState<ItemTag[]>([]);
+  const [isLoading, setLoading] = useState(true);
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
-  const [isLargerThanMD] = useMediaQuery('(min-width: 48em)');
-
+  const [isLargerThanMD] = useMediaQuery('(min-width: 48em)', { fallback: true });
   const color = item?.color.rgb ?? [255, 255, 255];
   const router = useRouter();
 
@@ -99,6 +100,7 @@ const ItemPage = (props: Props) => {
     setSeen(resStats.data);
     setTrades(resTrades.data);
     setTags(resTags.data);
+    setLoading(false);
   };
 
   return (
@@ -222,12 +224,17 @@ const ItemPage = (props: Props) => {
                 <FindAtCard item={item} />
               </>
             )}
-            <ItemPriceCard item={item} lastSeen={seenStats} prices={prices ?? []} />
+            <ItemPriceCard
+              item={item}
+              lastSeen={seenStats}
+              prices={prices ?? []}
+              isLoading={isLoading}
+            />
             {lists && <ItemOfficialLists item={item} lists={lists} />}
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>
             {item.isWearable && <ItemPreview item={item} />}
-            {!item.isNC && <TradeCard item={item} trades={trades} />}
+            {!item.isNC && <TradeCard item={item} trades={trades} isLoading={isLoading} />}
           </Flex>
         </Flex>
       </Flex>

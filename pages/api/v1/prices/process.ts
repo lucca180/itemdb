@@ -10,12 +10,51 @@ const MAX_DAYS = 30;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Methods', 'POST');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, GET');
     return res.status(200).json({});
   }
 
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method === 'GET') return GET(req, res);
+  if (req.method === 'POST') return POST(req, res);
 
+  return res.status(405).json({ error: 'Method not allowed' });
+}
+
+const GET = async (req: NextApiRequest, res: NextApiResponse) => {
+  const limitDate = new Date(Date.now() - MAX_DAYS * 24 * 60 * 60 * 1000);
+  const limitDateFormated = limitDate.toISOString().split('T')[0];
+  const lastWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const lastWeekFormated = lastWeek.toISOString().split('T')[0];
+
+  const groupBy2 = (await prisma.$queryRaw`
+    SELECT name, COUNT(*) as count, MAX(addedAt) as addedAt, count(*) OVER() AS full_count FROM PriceProcess
+    WHERE 
+      type not in ("restock", "auction") AND
+      processed = 0 AND
+      name not in (
+        SELECT name FROM ItemPrices WHERE 
+        name not in (select name from ItemPrices GROUP by name having count(DISTINCT item_iid) > 1)
+        group by name 
+        having MAX(addedAt) >= DATE(${lastWeekFormated})
+      )
+    GROUP BY name
+    HAVING count >= 10 OR addedAt <= DATE(${limitDateFormated})
+    ORDER BY addedAt asc
+    LIMIT 1
+  `) as any;
+
+  const convertedGroupBy: { name: string; count: number; addedAt: Date; totalCount: number }[] =
+    groupBy2.map((x: any) => ({
+      name: x.name,
+      count: Number(x.count),
+      addedAt: new Date(x.addedAt),
+      totalCount: Number(x.full_count),
+    }));
+
+  return res.status(200).json({ totalQueue: convertedGroupBy[0].totalCount });
+};
+
+const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   let limit = Number(req.body.limit);
   limit = isNaN(limit) ? 1000 : limit;
   limit = Math.min(limit, 5000);
@@ -178,7 +217,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   ]);
 
   return res.send({ priceUpdate: result[0], priceProcessed: result[1] });
-}
+};
 
 async function updateOrAddDB(
   priceData: PriceProcess,

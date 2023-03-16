@@ -4,11 +4,13 @@ import {
   Flex,
   HStack,
   IconButton,
+  Image,
   Select,
   Skeleton,
   Text,
   useDisclosure,
   useMediaQuery,
+  useToast,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
@@ -43,6 +45,7 @@ const defaultFilters: SearchFiltersType = {
 };
 
 const SearchPage = () => {
+  const toast = useToast();
   const [searchQuery, setQuery] = useState<string>('');
   const [searchResult, setResult] = useState<SearchResults | null>(null);
   const [searchStatus, setStatus] = useState<SearchStats | null>(null);
@@ -78,17 +81,28 @@ const SearchPage = () => {
     const params = getDifference({ ...(customFilters ?? filters) });
 
     setResult(null);
+    try {
+      const [resSearch, resStats] = await Promise.all([
+        Axios.get('search?s=' + encodeURIComponent(query), {
+          params: params,
+        }),
 
-    const [resSearch, resStats] = await Promise.all([
-      Axios.get('search?s=' + encodeURIComponent(query), {
-        params: params,
-      }),
+        !searchStatus || forceStats
+          ? Axios.get('search/stats?s=' + encodeURIComponent(query))
+          : null,
+      ]);
 
-      !searchStatus || forceStats ? Axios.get('search/stats?s=' + encodeURIComponent(query)) : null,
-    ]);
-
-    setResult(resSearch.data);
-    if (resStats) setStatus(resStats.data);
+      setResult(resSearch.data);
+      if (resStats) setStatus(resStats.data);
+    } catch (err) {
+      toast({
+        title: 'An Error Occurred',
+        description: 'Please try again',
+        status: 'error',
+        duration: null,
+        isClosable: true,
+      });
+    }
   };
 
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -157,14 +171,9 @@ const SearchPage = () => {
     });
     paramsString = paramsString ? '&' + paramsString : '';
 
-    // changing route will call useEffect again, so we return here
-    if (filters && searchResult) {
-      router.push(router.pathname + '?s=' + encodeURIComponent(query) + paramsString, undefined, {
-        shallow: true,
-      });
-
-      return;
-    }
+    router.push(router.pathname + '?s=' + encodeURIComponent(query) + paramsString, undefined, {
+      shallow: true,
+    });
   };
 
   return (
@@ -240,6 +249,7 @@ const SearchPage = () => {
                 value={filters.sortBy}
                 onChange={handleSelectChange}
                 size={{ base: 'sm', sm: 'md' }}
+                isDisabled={!searchResult}
               >
                 <option value="name">Name</option>
                 <option value="price">Price</option>
@@ -255,6 +265,7 @@ const SearchPage = () => {
                 value={filters.sortDir}
                 onChange={handleSelectChange}
                 size={{ base: 'sm', sm: 'md' }}
+                isDisabled={!searchResult}
               >
                 <option value="asc">Ascending</option>
                 <option value="desc">Descending</option>
@@ -267,8 +278,13 @@ const SearchPage = () => {
             ))}
             {!searchResult && [...Array(24)].map((_, i) => <ItemCard key={i} />)}
             {searchResult && searchResult.content.length === 0 && (
-              <Center>
-                <Text color="gray.400">No results found</Text>
+              <Center h="60vh" flexFlow="column" gap={3}>
+                <Image
+                  src="https://images.neopets.com/halloween/tot/2020/1_5WhOgu.png"
+                  alt="no results found coltzan"
+                  maxW="75%"
+                />
+                <Text color="gray.400">No results found :(</Text>
               </Center>
             )}
           </Flex>
