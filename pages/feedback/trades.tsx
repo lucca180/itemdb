@@ -50,13 +50,11 @@ const FeedbackSuggest = () => {
   };
 
   const handleChange = (newTrade: TradeData) => {
-    if(newTrade.trade_id === currentTrade?.trade_id)
+    if(newTrade.trade_id === currentTrade?.trade_id && !isLoading)
       setCurrentTrade(newTrade);
   };
 
   const handleSubmitAdmin = async () => {
-    if (!currentTrade) return;
-
     setIsLoading(true);
 
     const token = await getIdToken();
@@ -85,12 +83,12 @@ const FeedbackSuggest = () => {
   };
 
   const handleSubmit = async () => {
-    if (!currentTrade || !user) return;
-    
-    if (user.role === 'ADMIN') return handleSubmitAdmin();
-    
     setIsLoading(true);
-    
+
+    if (!currentTrade || !user) return;
+
+    if (user.role === 'ADMIN') return handleSubmitAdmin();
+
     const feedbackJSON = {
       trade: currentTrade,
     };
@@ -116,7 +114,7 @@ const FeedbackSuggest = () => {
   };
 
   const handleSkip = () => {
-    const newTrades = [...trades].filter((trade) => trade.trade_id !== currentTrade?.trade_id);
+    const newTrades = trades.filter((trade) => trade.trade_id !== currentTrade?.trade_id);
     setTrades(newTrades);
     setCurrentTrade(newTrades[0]);
   };

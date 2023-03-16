@@ -3,8 +3,6 @@ import { TradeData } from '../../types';
 import CardBase from '../Card/CardBase';
 import Image from 'next/image';
 import CustomNumberInput from '../Input/CustomNumber';
-import { useCallback, useEffect, useState } from 'react';
-import debounce from 'lodash/debounce';
 
 type Props = {
   trade?: TradeData;
@@ -14,26 +12,14 @@ type Props = {
 type TradeItems = TradeData['items'][0];
 
 const FeedbackTrade = (props: Props) => {
-  const { trade: tradeProps } = props;
-  const [trade, setTrade] = useState<TradeData | undefined>(tradeProps);
-
-  useEffect(() => {
-    if ((!trade && tradeProps) || tradeProps?.trade_id !== trade?.trade_id) setTrade(tradeProps);
-  }, [tradeProps]);
+  const { trade } = props;
 
   const handleChange = (item: TradeItems, index: number) => {
-    if (!trade) return;
+    if(!trade) return;
     const tempTrade = { ...trade };
     tempTrade.items[index] = item;
-    setTrade(tempTrade);
-    debouncedOnChange(tempTrade);
+    props.onChange?.(tempTrade);
   };
-
-  //debounce props onChange call
-  const debouncedOnChange = useCallback(
-    debounce((newValue: TradeData) => props.onChange?.(newValue), 750),
-    [props.onChange]
-  );
 
   return (
     <CardBase chakraWrapper={{ flex: 1 }} title="Trade Pricing" chakra={{ bg: 'gray.700' }}>
@@ -100,9 +86,8 @@ const ItemTrade = (props: ItemTradeProps) => {
               textAlign: 'left',
               name: item.trade_id + item.name + item.order,
             }}
-            value={[item.price?.toString() ?? '']}
-            onChange={(val) => handleChange(val[0])}
-            index={0}
+            value={item.price?.toString()}
+            onChange={(val) => handleChange(val)}
           />
           <FormHelperText fontSize="xs">Leave empty if price is not specified</FormHelperText>
         </FormControl>

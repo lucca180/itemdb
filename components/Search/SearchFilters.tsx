@@ -75,16 +75,24 @@ const SearchFilters = (props: Props) => {
 
     if (newFilter) newFilters.push(newFilter);
 
-    setFilters({ ...filters, [filterType]: newFilters });
+    setFilters({ 
+      ...filters, 
+      [filterType]: newFilters 
+    });
 
     if (props.onChange) props.onChange({ ...filters, [filterType]: newFilters });
   };
 
   const handleNumberChange = (
-    newVal: string[],
+    newVal: string,
+    index: number,
     filterType: 'price' | 'rarity' | 'weight' | 'estVal'
   ) => {
-    const newFilters = { ...filters, [filterType]: newVal };
+    
+    const tuple = [...filters[filterType]];
+    tuple[index] = newVal;
+    const newFilters = { ...filters, [filterType]: tuple };
+
     setFilters(newFilters);
     props.onChange?.(newFilters);
   };
@@ -240,17 +248,15 @@ const SearchFilters = (props: Props) => {
         <AccordionPanel pb={4}>
           <HStack>
             <CustomNumberInput
-              onChange={(val) => handleNumberChange(val, 'price')}
-              value={filters.price}
-              index={0}
+              onChange={(val) => handleNumberChange(val, 0, 'price')}
+              value={filters.price[0]}
             />
             <Text fontSize="sm" color="gray.300">
               to
             </Text>
             <CustomNumberInput
-              onChange={(val) => handleNumberChange(val, 'price')}
-              value={filters.price}
-              index={1}
+              onChange={(val) => handleNumberChange(val, 1, 'price')}
+              value={filters.price[1]}
             />
           </HStack>
         </AccordionPanel>
@@ -270,17 +276,15 @@ const SearchFilters = (props: Props) => {
         <AccordionPanel pb={4}>
           <HStack>
             <CustomNumberInput
-              onChange={(val) => handleNumberChange(val, 'rarity')}
-              value={filters.rarity}
-              index={0}
+              onChange={(val) => handleNumberChange(val, 0, 'rarity')}
+              value={filters.rarity[0]}
             />
             <Text fontSize="sm" color="gray.300">
               to
             </Text>
             <CustomNumberInput
-              onChange={(val) => handleNumberChange(val, 'rarity')}
-              value={filters.rarity}
-              index={1}
+              onChange={(val) => handleNumberChange(val, 1, 'rarity')}
+              value={filters.rarity[1]}
             />
           </HStack>
         </AccordionPanel>
@@ -300,17 +304,15 @@ const SearchFilters = (props: Props) => {
         <AccordionPanel pb={4}>
           <HStack>
             <CustomNumberInput
-              onChange={(val) => handleNumberChange(val, 'weight')}
-              value={filters.weight}
-              index={0}
+              onChange={(val) => handleNumberChange(val, 0, 'weight')}
+              value={filters.weight[0]}
             />
             <Text fontSize="sm" color="gray.300">
               to
             </Text>
             <CustomNumberInput
-              onChange={(val) => handleNumberChange(val, 'weight')}
-              value={filters.weight}
-              index={1}
+              onChange={(val) => handleNumberChange(val, 1, 'weight')}
+              value={filters.weight[1]}
             />
           </HStack>
         </AccordionPanel>
@@ -330,17 +332,15 @@ const SearchFilters = (props: Props) => {
         <AccordionPanel pb={4}>
           <HStack>
             <CustomNumberInput
-              onChange={(val) => handleNumberChange(val, 'estVal')}
-              value={filters.estVal}
-              index={0}
+              onChange={(val) => handleNumberChange(val, 0, 'estVal')}
+              value={filters.estVal[0]}
             />
             <Text fontSize="sm" color="gray.300">
               to
             </Text>
             <CustomNumberInput
-              onChange={(val) => handleNumberChange(val, 'estVal')}
-              value={filters.estVal}
-              index={1}
+              onChange={(val) => handleNumberChange(val, 1, 'estVal')}
+              value={filters.estVal[1]}
             />
           </HStack>
         </AccordionPanel>
