@@ -100,8 +100,9 @@ const ItemTrade = (props: ItemTradeProps) => {
               textAlign: 'left',
               name: item.trade_id + item.name + item.order,
             }}
-            value={item.price?.toString()}
-            onChange={handleChange}
+            value={[item.price?.toString() ?? '']}
+            onChange={(val) => handleChange(val[0])}
+            index={0}
           />
           <FormHelperText fontSize="xs">Leave empty if price is not specified</FormHelperText>
         </FormControl>
