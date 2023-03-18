@@ -2,7 +2,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { genItemKey, coefficientOfVariation } from '../../../../utils/utils';
-import { geometricMean, standardDeviation } from 'simple-statistics';
+import { mean, standardDeviation } from 'simple-statistics';
 import { ItemPrices, PriceProcess } from '@prisma/client';
 import { differenceInCalendarDays } from 'date-fns';
 
@@ -167,7 +167,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       const prices = filteredResult.map((x) => x.price);
 
       let priceSTD = standardDeviation(prices);
-      let priceMean = Math.round(geometricMean(prices));
+      let priceMean = Math.round(mean(prices));
 
       let oldPrices = prices;
 
@@ -175,21 +175,24 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
       while (out.length > 5 && out.length < oldPrices.length) {
         oldPrices = out;
-        priceMean = Math.round(geometricMean(out));
+        priceMean = Math.round(mean(out));
         priceSTD = standardDeviation(out);
 
         out = prices.filter((x) => x <= priceMean + priceSTD && x >= priceMean - priceSTD * 2.5);
       }
 
       if (out.length === 0) out = oldPrices;
-      const finalMean = out.length >= 2 ? geometricMean(out) : out[0];
+      const finalMean = out.length >= 2 ? mean(out) : out[0];
 
       if (isNaN(finalMean)) throw 'NaN price';
 
       let finalPrice = finalMean < 5 ? Math.round(finalMean) : Math.round(finalMean / 5) * 5;
-      if (finalPrice > 10000) finalPrice = Math.round(finalMean / 50) * 50;
-      if (finalPrice > 100000) finalPrice = Math.round(finalMean / 500) * 500;
-      if (finalPrice > 1000000) finalPrice = Math.round(finalMean / 50000) * 50000;
+      
+      if (finalPrice > 100000000) finalPrice = Math.round(finalMean / 5000000) * 5000000;
+      else if (finalPrice > 10000000) finalPrice = Math.round(finalMean / 500000) * 500000;
+      else if (finalPrice > 1000000) finalPrice = Math.round(finalMean / 50000) * 50000;
+      else if (finalPrice > 100000) finalPrice = Math.round(finalMean / 500) * 500;
+      else if (finalPrice > 10000) finalPrice = Math.round(finalMean / 50) * 50;
 
       priceAddPromises.push(
         updateOrAddDB(item, finalPrice, usedIDs, latestDate).then((_) => {
