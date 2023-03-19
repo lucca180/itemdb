@@ -37,7 +37,6 @@ type Props = {
 
 const ImportPage = (props: Props) => {
   const { items } = props;
-  console.log(items);
   return (
     <Layout>
       <HeaderCard
@@ -78,8 +77,6 @@ export default ImportPage;
 export async function getServerSideProps(context: any) {
   const body = await parseBody(context.req, '1mb');
   const items = JSON.parse(body?.itemDataJson ?? 'null');
-  console.log(items);
-
   return {
     props: {
       items: items,
@@ -130,8 +127,6 @@ const ImportItems = (props: ImportItemsProps) => {
     const nullItems = Object.values(items).length - Object.values(data).length;
     setNotFound(nullItems);
     setItemData(data);
-
-    console.log(data);
   };
 
   const handleImport = async () => {
@@ -211,7 +206,7 @@ const ImportItems = (props: ImportItemsProps) => {
         isClosable: true,
       });
     } catch (e) {
-      console.log(e);
+      console.error(e);
       toast.update(toastInfo, {
         title: 'Error',
         description: `There was an error ${

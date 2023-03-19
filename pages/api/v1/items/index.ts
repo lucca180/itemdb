@@ -158,7 +158,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       category: category,
       image: img,
       image_id: imageId,
-      rarity: rarity,
+      rarity: rarity ?? (isNC ? 500 : undefined),
       est_val: isNC && !estVal ? 0 : estVal,
       weight: weight,
       status: status,
