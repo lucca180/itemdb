@@ -55,7 +55,7 @@ const UserListsPage = () => {
 
   const isOwner = user?.username && user?.username === router.query.username;
 
-  const color = Color(owner?.profileColor ?? '#4A5568');
+  const color = Color(owner?.profileColor || '#4A5568');
   const rgb = color.rgb().array();
 
   useEffect(() => {
@@ -231,6 +231,8 @@ const UserListsPage = () => {
   };
 
   const refresh = () => {
+    setSelectedLists([]);
+    setEdit(false);
     setOwner(undefined);
     init();
   };
@@ -241,7 +243,7 @@ const UserListsPage = () => {
     <Layout>
       {isOwner && (
         <>
-          <CreateListModal isOpen={openCreateModal} onClose={() => setOpenCreateModal(false)} />
+          <CreateListModal isOpen={openCreateModal} onClose={() => setOpenCreateModal(false)} refresh={refresh}/>
           <EditProfileModal
             isOpen={openEditProfileModal}
             onClose={() => setOpenEditProfileModal(false)}
@@ -255,7 +257,7 @@ const UserListsPage = () => {
           selectedLists={selectedLists}
           isOpen={openDeleteModal}
           onClose={() => setOpenDeleteModal(false)}
-          refresh={init}
+          refresh={refresh}
         />
       )}
       <Box>

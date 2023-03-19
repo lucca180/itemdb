@@ -65,7 +65,7 @@ const ListPage = () => {
   const [isLargerThanSM] = useMediaQuery('(min-width: 30em)');
 
   const isOwner = user?.username === router.query.username;
-  const color = Color(list?.colorHex ?? '#4A5568');
+  const color = Color(list?.colorHex || '#4A5568');
   const rgb = color.rgb().array();
 
   useEffect(() => {

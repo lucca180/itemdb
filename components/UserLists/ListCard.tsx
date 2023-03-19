@@ -19,8 +19,7 @@ type Props = {
 const UserListCard = (props: Props) => {
   const { list, matches, isSelected, disableLink } = props;
   const [matchCount, setMatchCount] = useState(0);
-
-  const color = Color(list?.colorHex ?? '#4A5568');
+  const color = Color(list?.colorHex || '#4A5568');
   const rgb = color.rgb().array();
 
   useEffect(() => {
