@@ -11,6 +11,9 @@ const nextConfig = {
     domains: ['images.neopets.com', 'magnetismotimes.com'],
   },
   distDir: process.env.BUILD_DIR || '.next',
+  experimental: {
+    isrMemoryCacheSize: 0,
+  },
   async headers() {
     return [
       {

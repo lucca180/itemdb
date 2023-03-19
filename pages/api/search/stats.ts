@@ -30,7 +30,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
                     having dist <= 750
                 )
             )
-            WHERE (POWER(lab_l-${l},2)+POWER(lab_a-${a},2)+POWER(lab_b-${b},2)) <= 750  
+            WHERE (POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) <= 750  
         `) as any[];
 
     includeIds.push(...resultRaw.map((a) => a.internal_id));
@@ -61,7 +61,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     promises.push(x);
   }
 
-  const promiseResult = await Promise.all(promises);
+  const promiseResult = await prisma.$transaction(promises);
 
   const result: { [id: string]: { [id: string]: number } | number } = {};
 

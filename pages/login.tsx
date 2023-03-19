@@ -44,6 +44,7 @@ const LoginPage = () => {
     setIsLoading(true);
     if (isSignInWithEmailLink(auth, window.location.href) && !user) {
       let mailAddr = window.localStorage.getItem('emailForSignIn');
+      window.localStorage.removeItem('emailForSignIn');
 
       if (!mailAddr) mailAddr = email;
       if (!mailAddr) {
@@ -53,7 +54,6 @@ const LoginPage = () => {
 
       try {
         const userCred = await signInWithEmailLink(auth, mailAddr, window.location.href);
-        window.localStorage.removeItem('emailForSignIn');
 
         const token = await userCred.user.getIdToken();
         const userRes = await axios.post('/api/auth/login', null, {
