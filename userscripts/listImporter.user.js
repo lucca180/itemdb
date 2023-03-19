@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - List Importer
-// @version      1.0.0
+// @version      1.0.1
 // @namespace    itemdb
 // @description  Imports items to your wishlists
 // @website      https://itemdb.com.br
@@ -20,7 +20,7 @@ function URLHas(string) {
 
 function idbButton(){
   return `
-    <form target="_blank" action="http://localhost:3000/lists/import" method="POST">
+    <form target="_blank" action="https://itemdb.com.br/lists/import" method="POST">
       <button type="send" style="padding: 5px;display: inline-flex;background: #2D3748;border-radius: 3px;justify-content: center;align-items: center;gap: 5px;color: white;border: none;cursor: pointer;">
         <img
           src="https://itemdb.com.br/logo_icon.svg"
