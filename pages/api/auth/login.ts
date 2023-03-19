@@ -2,7 +2,7 @@ import prisma from '../../../utils/prisma';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { CheckAuth } from '../../../utils/googleCloud';
 import requestIp from 'request-ip';
-import { UserRoles } from '../../../types';
+import { User, UserRoles } from '../../../types';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
@@ -11,7 +11,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   try {
     const authRes = await CheckAuth(req);
     const decodedToken = authRes.decodedToken;
-    let user = authRes.user;
+    const user = authRes.user;
     let dbUser;
     if (!decodedToken.email) return res.status(401).json({ error: 'Unauthorized' });
 
@@ -35,13 +35,23 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     if (!dbUser) return res.status(401).json({ error: 'Unauthorized' });
 
-    user = {
-      ...dbUser,
-      role: dbUser.role as UserRoles,
+    const finalUser: User = {
+      id: dbUser.id,
+      username: dbUser.username,
+      neopetsUser: dbUser.neo_user,
       isAdmin: dbUser.role === 'ADMIN',
+      email: '',
+      profileColor: dbUser.profile_color,
+      profileImage: dbUser.profile_image,
+      description: dbUser.description,
+      role: dbUser.role as UserRoles,
+      lastLogin: new Date(0),
+      last_ip: null,
+      createdAt: dbUser.createdAt,
+      xp: dbUser.xp,
     };
 
-    res.json(user);
+    res.json(finalUser);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {

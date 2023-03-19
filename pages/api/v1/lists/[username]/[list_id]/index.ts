@@ -212,7 +212,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     const {
       name,
       description,
-      cover_url,
+      coverURL,
       purpose,
       visibility,
       colorHex,
@@ -222,7 +222,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     } = req.body as {
       name?: string;
       description?: string;
-      cover_url?: string;
+      coverURL?: string;
       purpose?: 'none' | 'trading' | 'seeking';
       visibility?: 'public' | 'private' | 'unlisted';
       colorHex?: string;
@@ -234,7 +234,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     if (
       name ||
       description ||
-      cover_url ||
+      coverURL ||
       purpose ||
       visibility ||
       colorHex ||
@@ -249,7 +249,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         data: {
           name,
           description,
-          cover_url,
+          cover_url: coverURL,
           colorHex,
           official: user.isAdmin ? official : undefined,
           order: order ? Number(order) : undefined,

@@ -71,7 +71,7 @@ const CreateListModal = (props: Props) => {
         list_id: list.internal_id,
         name: list.name,
         description: list.description,
-        cover_url: list.coverURL,
+        coverURL: list.coverURL,
         visibility: list.visibility,
         purpose: list.purpose,
         colorHex: list.colorHex,
@@ -173,7 +173,7 @@ const CreateListModal = (props: Props) => {
                 <FormLabel color="gray.300">Cover Image URL (150x150)</FormLabel>
                 <Input
                   variant="filled"
-                  name="cover_url"
+                  name="coverURL"
                   onChange={handleChange}
                   value={list.coverURL ?? ''}
                 />

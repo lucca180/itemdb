@@ -1,5 +1,5 @@
-import { UserList } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { UserList } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 
@@ -63,7 +63,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
           internal_id: list.internal_id,
           name: list.name,
           description: list.description,
-          cover_url: list.cover_url,
+          coverURL: list.cover_url,
           colorHex: list.colorHex,
           purpose: list.purpose,
           official: list.official,
@@ -110,7 +110,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 // creates a new list
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const { username } = req.query;
-  const { name, description, cover_url, purpose, visibility, colorHex } = req.body;
+  const { name, description, coverURL, purpose, visibility, colorHex } = req.body;
 
   try {
     const { user } = await CheckAuth(req);
@@ -131,7 +131,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       data: {
         name,
         description,
-        cover_url,
+        cover_url: coverURL,
         colorHex,
         purpose: purpose as 'none' | 'trading' | 'seeking',
         visibility: visibility as 'public' | 'private' | 'unlisted',
