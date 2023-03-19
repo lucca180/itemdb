@@ -65,6 +65,7 @@ const CreateListModal = (props: Props) => {
   const saveChanges = async () => {
     setLoading(true);
     try {
+      if(!user) return;
       const token = await getIdToken();
 
       const data = {
@@ -84,10 +85,12 @@ const CreateListModal = (props: Props) => {
         },
       };
 
+      const username = list.user_username ?? user.username;
+
       // if list exists then update, else create
       const res = await (props.list
-        ? axios.post(`/api/v1/lists/${list.user_username}/${list.internal_id}`, data, configs)
-        : axios.post(`/api/v1/lists/${list.user_username}`, data, configs));
+        ? axios.post(`/api/v1/lists/${username}/${list.internal_id}`, data, configs)
+        : axios.post(`/api/v1/lists/${username}`, data, configs));
 
       setLoading(false);
 
