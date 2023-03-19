@@ -24,15 +24,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const forceRefresh = refresh === 'true';
 
     if (exists && !forceRefresh) {
-      const [buffer] = await file.download();
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Cache-Control', 'public, max-age=604800');
 
-      res.writeHead(200, {
-        'Content-Type': 'image/png',
-        'Content-Length': buffer.length,
-        'Cache-Control': 'public, max-age=604800',
-      });
-
-      return res.end(buffer);
+      return res.redirect(file.publicUrl())
     } else {
       const item = await prisma.items.findFirst({
         where: {

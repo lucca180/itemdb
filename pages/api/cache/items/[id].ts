@@ -23,11 +23,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const forceRefresh = refresh === 'true';
 
     if (exists && !forceRefresh) {
-      const [data] = await file.download();
-
       res.setHeader('Content-Type', 'image/gif');
       res.setHeader('Cache-Control', 'public, max-age=604800');
-      return res.send(data);
+
+      return res.redirect(file.publicUrl())
     } else {
       const img = await axios.get(`https://images.neopets.com/items/${img_id}.gif`, {
         responseType: 'arraybuffer',
