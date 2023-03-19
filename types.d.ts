@@ -130,7 +130,7 @@ export type SearchResults = {
 export type SearchStats = {
   total: number;
   category: Record<string, number>;
-  isNC: Record<string, number>;
+  // isNC: Record<string, number>;
   type: Record<string, number>;
   isWearable: Record<string, number>;
   isNeohome: Record<string, number>;

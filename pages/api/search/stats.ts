@@ -20,25 +20,23 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const [l, a, b] = x.lab().array();
 
     const resultRaw = (await prisma.$queryRaw`
-            SELECT a.internal_id
-            FROM Items as a
-            LEFT JOIN ItemColor as b on a.image_id = b.image_id and (POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) IN (
-                (
-                    SELECT min((POWER(lab_l-${l},2)+POWER(lab_a-${a},2)+POWER(lab_b-${b},2))) as dist
-                    FROM ItemColor
-                    GROUP BY image_id 
-                    having dist <= 750
-                )
-            )
-            WHERE (POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) <= 750  
-        `) as any[];
+      SELECT a.internal_id
+      FROM Items as a
+      LEFT JOIN (
+          SELECT image_id, min((POWER(lab_l-${l},2)+POWER(lab_a-${a},2)+POWER(lab_b-${b},2))) as dist
+          FROM ItemColor
+          GROUP BY image_id 
+          having dist <= 750
+      ) as d on a.image_id = d.image_id
+      where d.dist is not null 
+    `) as any[];
 
     includeIds.push(...resultRaw.map((a) => a.internal_id));
   }
 
   const groups = [
     'category',
-    'isNC',
+    // 'isNC',
     'isWearable',
     'status',
     'type',
