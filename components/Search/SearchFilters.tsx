@@ -75,9 +75,9 @@ const SearchFilters = (props: Props) => {
 
     if (newFilter) newFilters.push(newFilter);
 
-    setFilters({ 
-      ...filters, 
-      [filterType]: newFilters 
+    setFilters({
+      ...filters,
+      [filterType]: newFilters,
     });
 
     if (props.onChange) props.onChange({ ...filters, [filterType]: newFilters });
@@ -88,7 +88,6 @@ const SearchFilters = (props: Props) => {
     index: number,
     filterType: 'price' | 'rarity' | 'weight' | 'estVal'
   ) => {
-    
     const tuple = [...filters[filterType]];
     tuple[index] = newVal;
     const newFilters = { ...filters, [filterType]: tuple };

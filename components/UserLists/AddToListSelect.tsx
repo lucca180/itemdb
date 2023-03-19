@@ -5,16 +5,17 @@ import {
   MenuList,
   MenuItem,
   Icon,
-  MenuGroup,
   MenuDivider,
   Tooltip,
   useToast,
+  Badge,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { BsBookmarkCheckFill } from 'react-icons/bs';
 import { ItemData, UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
+import { getRandomName } from '../../utils/randomName';
 
 type Props = {
   item: ItemData;
@@ -26,11 +27,7 @@ const AddToListSelect = (props: Props) => {
   const [lists, setLists] = useState<UserList[]>([]);
   const toast = useToast();
 
-  const seeking = lists
-    .filter((list) => list.purpose === 'seeking')
-    .sort((a, b) => SortListByItem(a, b, item));
-  const trading = lists.filter((list) => list.purpose === 'trading');
-  const none = lists.filter((list) => list.purpose === 'none');
+  const sorted = lists.sort((a, b) => SortListByChange(a, b));
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -63,8 +60,12 @@ const AddToListSelect = (props: Props) => {
       const res = await axios.put(
         `/api/v1/lists/${user.username}/${list_id}`,
         {
-          list_id: list_id,
-          item_iid: item.internal_id,
+          items: [
+            {
+              list_id: list_id,
+              item_iid: item.internal_id,
+            },
+          ],
         },
         {
           headers: {
@@ -99,7 +100,7 @@ const AddToListSelect = (props: Props) => {
       const res = await axios.post(
         `/api/v1/lists/${user.username}`,
         {
-          name: 'New List',
+          name: getRandomName(),
           description: '',
           cover_url: '',
           visibility: 'public',
@@ -135,10 +136,9 @@ const AddToListSelect = (props: Props) => {
         Add To List
       </MenuButton>
       <MenuList maxH="50vh" overflow="auto">
-        {seeking.length !== 0 && (
+        {sorted.length !== 0 && (
           <>
-            <MenuGroup title="Seeking" />
-            {seeking.map((list) => (
+            {sorted.map((list) => (
               <MenuItem key={list.internal_id} onClick={() => addItemToList(list.internal_id)}>
                 {list.itemInfo.some((i) => i.item_iid === item.internal_id) && (
                   <Tooltip label="Already in this list" fontSize="sm" placement="top">
@@ -148,43 +148,18 @@ const AddToListSelect = (props: Props) => {
                   </Tooltip>
                 )}
                 {list.name}
-              </MenuItem>
-            ))}
-            <MenuDivider />
-          </>
-        )}
-
-        {trading.length !== 0 && (
-          <>
-            <MenuGroup title="Trading" />
-            {trading.map((list) => (
-              <MenuItem key={list.internal_id} onClick={() => addItemToList(list.internal_id)}>
-                {list.itemInfo.some((i) => i.item_iid === item.internal_id) && (
-                  <Tooltip label="Already in this list" fontSize="sm" placement="top">
-                    <span>
-                      <Icon verticalAlign="middle" as={BsBookmarkCheckFill} mr={2} />
-                    </span>
+                {list.purpose !== 'none' && !list.official && (
+                  <Tooltip label={`${list.purpose}`} fontSize="sm" placement="top">
+                    <Badge ml={1}>{list.purpose === 'seeking' ? 's' : 't'}</Badge>
                   </Tooltip>
                 )}
-                {list.name}
-              </MenuItem>
-            ))}
-            <MenuDivider />
-          </>
-        )}
-
-        {none.length !== 0 && (
-          <>
-            {none.map((list) => (
-              <MenuItem key={list.internal_id} onClick={() => addItemToList(list.internal_id)}>
-                {list.itemInfo.some((i) => i.item_iid === item.internal_id) && (
-                  <Tooltip label="Already in this list" fontSize="sm" placement="top">
-                    <span>
-                      <Icon verticalAlign="middle" as={BsBookmarkCheckFill} mr={2} />
-                    </span>
+                {list.official && (
+                  <Tooltip label={`official`} fontSize="sm" placement="top">
+                    <Badge ml={1} colorScheme="blue">
+                      ✓
+                    </Badge>
                   </Tooltip>
                 )}
-                {list.name}
               </MenuItem>
             ))}
             <MenuDivider />
@@ -210,14 +185,9 @@ const AddToListSelect = (props: Props) => {
 
 export default AddToListSelect;
 
-function SortListByItem(a: UserList, b: UserList, item: ItemData) {
-  const aHasItem = a.itemInfo.some((i) => i.item_iid === item.internal_id);
-  const bHasItem = b.itemInfo.some((i) => i.item_iid === item.internal_id);
+function SortListByChange(a: UserList, b: UserList) {
+  const dateA = new Date(a.updatedAt);
+  const dateB = new Date(b.updatedAt);
 
-  if (aHasItem && !bHasItem) return 1;
-  if (!aHasItem && bHasItem) return -1;
-  return (
-    (a.order ?? 0) - (b.order ?? 0) ||
-    new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-  );
+  return dateB.getTime() - dateA.getTime();
 }

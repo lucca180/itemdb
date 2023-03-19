@@ -5,5 +5,3 @@ firebase-key.json
 .env
 # Sentry
 .sentryclirc
-
-userscripts/itemImporter.user.js

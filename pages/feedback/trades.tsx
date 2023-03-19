@@ -50,8 +50,7 @@ const FeedbackSuggest = () => {
   };
 
   const handleChange = (newTrade: TradeData) => {
-    if(newTrade.trade_id === currentTrade?.trade_id && !isLoading)
-      setCurrentTrade(newTrade);
+    if (newTrade.trade_id === currentTrade?.trade_id && !isLoading) setCurrentTrade(newTrade);
   };
 
   const handleSubmitAdmin = async () => {

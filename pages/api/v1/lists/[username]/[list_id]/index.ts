@@ -7,6 +7,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (req.method === 'GET') return GET(req, res);
   if (req.method === 'POST') return POST(req, res);
   if (req.method === 'PUT') return PUT(req, res);
+  if (req.method === 'DELETE') return DELETE(req, res);
 
   if (req.method == 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT');
@@ -101,8 +102,10 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 
 // updates a list / move items to another list / delete items
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { list_id } = req.body;
+  const { list_id } = req.query;
   const action = req.body.action ?? 'update';
+
+  if (!list_id || Array.isArray(list_id)) return res.status(400).json({ error: 'Bad Request' });
 
   try {
     const { user } = await CheckAuth(req);
@@ -110,7 +113,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
     const list = await prisma.userList.findUnique({
       where: {
-        internal_id: list_id,
+        internal_id: Number(list_id),
       },
     });
 
@@ -241,7 +244,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     ) {
       await prisma.userList.update({
         where: {
-          internal_id: list_id,
+          internal_id: Number(list_id),
         },
         data: {
           name,
@@ -273,9 +276,14 @@ const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
   if (!username || !list_id || Array.isArray(username) || Array.isArray(list_id))
     return res.status(400).json({ error: 'Bad Request' });
 
-  const { item_iid, capValue, amount, imported } = req.body;
+  const items = req.body.items as {
+    item_iid: string;
+    capValue: string | undefined;
+    amount: string | undefined;
+    imported: boolean;
+  }[];
 
-  if (!list_id || !item_iid) return res.status(400).json({ error: 'Bad Request' });
+  if (!items) return res.status(400).json({ error: 'Bad Request' });
 
   try {
     const { user } = await CheckAuth(req);
@@ -294,30 +302,38 @@ const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (list.user_id !== user.id) return res.status(403).json({ error: 'Forbidden' });
 
-    const listItem = await prisma.listItems.upsert({
-      where: {
-        list_id_item_iid: {
+    const transactions = [];
+
+    for (const item of items) {
+      const { item_iid, capValue, amount, imported } = item;
+
+      const listItem = prisma.listItems.upsert({
+        where: {
+          list_id_item_iid: {
+            list_id: parseInt(list_id),
+            item_iid: parseInt(item_iid),
+          },
+        },
+        create: {
           list_id: parseInt(list_id),
           item_iid: parseInt(item_iid),
+          capValue: capValue ? parseInt(capValue) : undefined,
+          amount: amount ? parseInt(amount) : undefined,
+          imported: imported,
         },
-      },
-      create: {
-        list_id: parseInt(list_id),
-        item_iid: parseInt(item_iid),
-        capValue: capValue ? parseInt(capValue) : undefined,
-        amount: amount ? parseInt(amount) : undefined,
-        imported: imported,
-      },
-      update: {
-        list_id: parseInt(list_id),
-        item_iid: parseInt(item_iid),
-        capValue: capValue ? parseInt(capValue) : undefined,
-        amount: amount ? parseInt(amount) : undefined,
-        imported: imported,
-      },
-    });
+        update: {
+          list_id: parseInt(list_id),
+          item_iid: parseInt(item_iid),
+          capValue: capValue ? parseInt(capValue) : undefined,
+          amount: amount ? parseInt(amount) : undefined,
+          imported: imported,
+        },
+      });
 
-    await prisma.userList.update({
+      transactions.push(listItem);
+    }
+
+    const updateList = prisma.userList.update({
       where: {
         internal_id: parseInt(list_id),
       },
@@ -326,9 +342,65 @@ const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
       },
     });
 
-    return res.status(200).json({ success: true, message: listItem });
+    const result = await prisma.$transaction([...transactions, updateList]);
+
+    return res.status(200).json({ success: true, message: result });
   } catch (e: any) {
     console.error(e);
     return res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
+  const { list_id } = req.query;
+
+  if (!list_id || Array.isArray(list_id)) return res.status(400).json({ error: 'Bad Request' });
+
+  try {
+    const { user } = await CheckAuth(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+    const list = await prisma.userList.findUnique({
+      where: {
+        internal_id: Number(list_id),
+      },
+    });
+
+    if (!list) return res.status(400).json({ error: 'List not found' });
+
+    if (list.user_id !== user.id && !user.isAdmin)
+      return res.status(401).json({ error: 'Unauthorized' });
+
+    const item_internal_ids = req.body.item_iid as string[];
+
+    if (!item_internal_ids || !item_internal_ids.length)
+      return res.status(400).json({ error: 'Bad Request' });
+
+    const deleted = prisma.listItems.deleteMany({
+      where: {
+        item_iid: {
+          in: item_internal_ids.map((iid) => Number(iid)),
+        },
+      },
+    });
+
+    const updateList = prisma.userList.update({
+      where: {
+        internal_id: parseInt(list_id),
+      },
+      data: {
+        updatedAt: new Date(),
+      },
+    });
+
+    const result = await prisma.$transaction([deleted, updateList]);
+
+    return res.status(200).json({
+      success: true,
+      message: `deleted ${result[0].count} items`,
+    });
+  } catch (e: any) {
+    console.error(e);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 };

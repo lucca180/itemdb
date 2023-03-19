@@ -22,24 +22,26 @@ const ItemCard = (props: Props) => {
 
   if (!item || isLoading || !color)
     return (
-      <Box
-        w={{ base: 100, md: 150 }}
-        py={{ base: 2, md: 4 }}
-        px={2}
-        bg="gray.700"
-        h="100%"
-        borderRadius="md"
-        display="flex"
-        flexFlow="column"
-        justifyContent="center"
-        alignItems="center"
-        boxShadow="sm"
-        textAlign="center"
-        cursor="pointer"
-      >
-        <Skeleton w="80px" h="80px" />
-        <Skeleton w="80px" h="12px" mt={2} />
-      </Box>
+      <Link as={NextLink} href={'#'} _hover={{ textDecoration: 'none' }} pointerEvents="none">
+        <Box
+          w={{ base: 100, md: 150 }}
+          py={{ base: 2, md: 4 }}
+          px={2}
+          bg="gray.700"
+          h="100%"
+          borderRadius="md"
+          display="flex"
+          flexFlow="column"
+          justifyContent="center"
+          alignItems="center"
+          boxShadow="sm"
+          textAlign="center"
+          cursor="pointer"
+        >
+          <Skeleton w="80px" h="80px" />
+          <Skeleton w="80px" h="12px" mt={2} />
+        </Box>
+      </Link>
     );
 
   return (

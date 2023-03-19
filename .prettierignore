@@ -6,3 +6,4 @@ node_modules
 **/.next/**
 **/_next/**
 userscripts
+utils/randomName.ts

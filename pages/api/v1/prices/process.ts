@@ -187,7 +187,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       if (isNaN(finalMean)) throw 'NaN price';
 
       let finalPrice = finalMean < 5 ? Math.round(finalMean) : Math.round(finalMean / 5) * 5;
-      
+
       if (finalPrice > 100000000) finalPrice = Math.round(finalMean / 5000000) * 5000000;
       else if (finalPrice > 10000000) finalPrice = Math.round(finalMean / 500000) * 500000;
       else if (finalPrice > 1000000) finalPrice = Math.round(finalMean / 50000) * 50000;

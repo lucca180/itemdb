@@ -503,11 +503,18 @@ const ListPage = () => {
           gap={3}
           flexFlow={{ base: 'column-reverse', md: 'row' }}
         >
-          {!isEdit && (
-            <Text as="div" textColor={'gray.300'} fontSize="sm">
-              {list.itemCount} items
-            </Text>
-          )}
+          <HStack>
+            {isOwner && (
+              <Button variant="solid" onClick={() => router.push('/lists/import')}>
+                Import Items
+              </Button>
+            )}
+            {!isEdit && (
+              <Text as="div" textColor={'gray.300'} fontSize="sm">
+                {list.itemCount} items
+              </Text>
+            )}
+          </HStack>
           {isEdit && (
             <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
               <Box bg={`rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.35)`} p={2} borderRadius="md">

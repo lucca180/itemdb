@@ -15,7 +15,7 @@ const FeedbackTrade = (props: Props) => {
   const { trade } = props;
 
   const handleChange = (item: TradeItems, index: number) => {
-    if(!trade) return;
+    if (!trade) return;
     const tempTrade = { ...trade };
     tempTrade.items[index] = item;
     props.onChange?.(tempTrade);
