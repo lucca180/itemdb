@@ -1,6 +1,6 @@
   // ==UserScript==
   // @name         itemdb - Sort Gallery
-  // @version      1.0.0
+  // @version      1.0.1
   // @author       itemdb
   // @namespace    itemdb
   // @description  Sorts your gallery by color
@@ -20,7 +20,7 @@
   function idbButton(){
     return `
     <div style="background-color:white;padding:4px;border-style:solid;border-width:1px;">
-      <p style="display: inline-flex;bjustify-content: center;align-items: center;gap: 5px;"> 
+      <p style="display: inline-flex;bjustify-content: center;align-items: center;gap: 5px; text-align: center;"> 
         <a href="http://itemdb.com.br/" target="_blank">  
         <img
             src="https://itemdb.com.br/logo_icon.svg"
@@ -39,6 +39,15 @@
         <button class="itemdb-sort" id="lightmuted">Light Muted</button>
         <button class="itemdb-sort" id="population">Population</button>
       </div>
+      <div style="display: inline-flex;justify-content: center;flex-wrap: wrap;gap: 5px; margin-top: 20px;">
+        <button class="itemdb-sort" id="vibrant-reverse">Vibrant Reverse</button>
+        <button class="itemdb-sort" id="darkvibrant-reverse">Dark Vibrant Reverse</button>
+        <button class="itemdb-sort" id="lightvibrant-reverse">Light Vibrant Reverse</button>
+        <button class="itemdb-sort" id="muted-reverse">Muted Reverse</button>
+        <button class="itemdb-sort" id="darkmuted-reverse">Dark Muted Reverse</button>
+        <button class="itemdb-sort" id="lightmuted-reverse">Light Muted Reverse</button>
+        <button class="itemdb-sort" id="population-reverse">Population Reverse</button>
+      </div>
     </div>
     `
   };
@@ -50,7 +59,7 @@
   let colorFetched = false;
 
   function addButtons() {
-    $('#content > table > tbody > tr > td.content > div > div > table > tbody > tr > td > div > b').before(idbButton());
+    $('#gallery_form').parent().before(idbButton());
     $('.itemdb-sort').click(function(){
       sortGallery(this.id);
     });
@@ -97,17 +106,27 @@
   }
 
   function sortImageIds(sortType){
+    const isReverse = sortType.includes('reverse');
+    if(isReverse)
+      sortType = sortType.replace('-reverse', '');
+
     images_ids.sort((a,b) => {
+      let aColor, bColor;
+
       if(sortType !== 'population'){
-        const aColor = image_colors[a][sortType];
-        const bColor = image_colors[b][sortType];
-        return aColor.hsv[0] - bColor.hsv[0] || aColor.hsv[1] - bColor.hsv[1] || aColor.hsv[2] - bColor.hsv[2];
+        aColor = image_colors[a][sortType];
+        bColor = image_colors[b][sortType];
       }
+
       else{
-        const aColor = findMaxPopulation(image_colors[a]);
-        const bColor = findMaxPopulation(image_colors[b]);
-        return aColor.hsv[0] - bColor.hsv[0] || aColor.hsv[1] - bColor.hsv[1] || aColor.hsv[2] - bColor.hsv[2];
+        aColor = findMaxPopulation(image_colors[a]);
+        bColor = findMaxPopulation(image_colors[b]);
       }
+
+      if(isReverse)
+      return bColor.hsv[0] - aColor.hsv[0] || bColor.hsv[1] - aColor.hsv[1] || bColor.hsv[2] - aColor.hsv[2];
+
+      return aColor.hsv[0] - bColor.hsv[0] || aColor.hsv[1] - bColor.hsv[1] || aColor.hsv[2] - bColor.hsv[2];
     })
   }
 
