@@ -44,6 +44,7 @@
     "lodash": "^4.17.21",
     "next": "^13.0.3",
     "next-transpile-modules": "^10.0.0",
+    "nextjs-google-analytics": "^2.3.3",
     "node-vibrant": "^3.2.1-alpha.1",
     "object-hash": "^3.0.0",
     "qs": "^6.11.0",
