@@ -252,7 +252,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
   if (!item) return { notFound: true };
 
   const [colors, lists] = await Promise.all([
-    getItemColor(item.image_id),
+    getItemColor([item.image_id]),
     getItemLists(item.internal_id, !item.isNC),
   ]);
 
@@ -262,7 +262,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     props: {
       item: JSON.parse(JSON.stringify(item)),
       lists: JSON.parse(JSON.stringify(lists)),
-      colors,
+      colors: colors[item.image_id],
     },
     revalidate: 60, // In seconds
   };

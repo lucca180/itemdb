@@ -38,6 +38,7 @@ export type ColorData = {
   image_id: string;
   lab: [number, number, number] | number[];
   rgb: [number, number, number] | number[];
+  hsv: [number, number, number] | number[];
   hex: string;
   population: number;
   type: ColorType;

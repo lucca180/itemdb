@@ -1,6 +1,7 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
 // @version      1.0.10
+// @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
 // @website      https://itemdb.com.br
