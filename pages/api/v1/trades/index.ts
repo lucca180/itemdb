@@ -3,6 +3,8 @@ import prisma from '../../../../utils/prisma';
 import { TradeData } from '../../../../types';
 import requestIp from 'request-ip';
 import { CheckAuth } from '../../../../utils/googleCloud';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import checkHash from '../../../../userscripts/hash.esm.min';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -71,6 +73,10 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const tradeLots = data.tradeLots;
   const lang = data.lang;
+  //const dataHash = data.hash;
+
+  // if(!checkHash(dataHash, {tradeLots: tradeLots})) 
+  //   return res.status(400).json({ error: 'Invalid hash' });
 
   if (lang !== 'en') return res.status(400).json('Language must be english');
 
