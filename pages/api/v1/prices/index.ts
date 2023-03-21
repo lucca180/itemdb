@@ -4,6 +4,8 @@ import { PriceData } from '../../../../types';
 import requestIp from 'request-ip';
 import hash from 'object-hash';
 import { Prisma } from '@prisma/client';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import checkHash from '../../../../userscripts/hash.esm.min';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -52,6 +54,10 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const itemPrices = data.itemPrices;
 
   const lang = data.lang;
+  //const dataHash = data.hash;
+
+  // if(!checkHash(dataHash, {itemPrices: itemPrices})) 
+  //   return res.status(400).json({ error: 'Invalid hash' });
 
   const dataList = [];
   let isAuction = false;
