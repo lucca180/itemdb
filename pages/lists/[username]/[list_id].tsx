@@ -64,7 +64,7 @@ const ListPage = () => {
   const [matches, setMatches] = useState<ListItemInfo[]>([]);
   const [isLargerThanSM] = useMediaQuery('(min-width: 30em)');
 
-  const isOwner = user?.username === router.query.username || user?.username === list?.user_id;
+  const isOwner = user?.username === router.query.username || user?.id === list?.user_id;
   const color = Color(list?.colorHex || '#4A5568');
   const rgb = color.rgb().array();
 
@@ -100,6 +100,9 @@ const ListPage = () => {
 
       if (!listData) throw 'List does not exist';
 
+      if (listData.official)
+        router.replace('/lists/official/' + listData.internal_id);
+      
       const itensId: number[] = listData.itemInfo.map((item) => item.item_iid);
 
       if (itensId.length === 0) {
