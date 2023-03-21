@@ -64,7 +64,7 @@ const ListPage = () => {
   const [matches, setMatches] = useState<ListItemInfo[]>([]);
   const [isLargerThanSM] = useMediaQuery('(min-width: 30em)');
 
-  const isOwner = user?.username === router.query.username;
+  const isOwner = user?.username === router.query.username || user?.username === list?.user_id;
   const color = Color(list?.colorHex || '#4A5568');
   const rgb = color.rgb().array();
 
@@ -467,7 +467,7 @@ const ListPage = () => {
         </Flex>
       </Box>
       <Flex mt={5} gap={6} flexFlow="column">
-        {!isOwner && (
+        {!isOwner && user && (
           <>
             <Box>
               <Heading size={{ base: 'md', md: 'lg' }}>
