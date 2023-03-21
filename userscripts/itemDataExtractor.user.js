@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.0.10
+// @version      1.1.0
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -10,9 +10,24 @@
 // @exclude      *://*.nc.neopets.com/*
 // @exclude      *://*images.neopets.com/*
 // @icon         https://itemdb.com.br/favicon.ico
+// @require      https://raw.githubusercontent.com/lucca180/itemdb/216081001e7a492c21ae85ab17514b9aa4fab619/userscripts/hash.min.js#sha256-6LadAUKhZ3TZa2t1wNiL9/oqyexbkMF6pDDEsjqM4ek=
 // @grant        none
 // @noframes
 // ==/UserScript==
+
+/* 
+We are loading an external script (@require) that is only used to generate the cryptographic hash 
+that ensures that the data sent to the server has not been altered.
+
+This external script is accompanied by a SHA256 key. If any changes occur in this file, 
+its key will change, and if this userscript is not updated with the new key, 
+tampermonkey will not load the external script.
+
+This ensures that no one will modify this external script without your knowledge.
+
+The code of the external script has been obfuscated to prevent malicious actors from 
+replicating the hash and inserting false information into the itemdb.
+*/
 
 // Check if we are on the beta site
 const isBeta = !!$('#container__2020').length;
@@ -46,7 +61,6 @@ if (URLHas('idb_clear')) {
   restockHistory = {};
   tradeHistory = {};
 }
-
 
 // this is used to convert shop ids to item categories
 const shopIDToCategory={'1':'food','2':'magic item','3':'toy','4':'clothes','5':'grooming','7':'book','8':'collectable card','9':'battle magic','10':'defence magic','12':'gardening','13':'medicine','14':'candy','15':'baked','16':'healthy food','17':'gift','18':'smoothie','20':'tropical food','21':'island merchandise','22':'space food','23':'space battle','24':'space defence','25':'petpet','26':'robot petpet','27':'aquatic petpet','30':'spooky food','31':'spooky petpet','34':'coffee','35':'slushie','36':'ice crystal','37':'snow food','38':'faerie book','39':'faerie food','40':'faerie petpet','41':'furniture','42':'tyrannian food','43':'tyrannian furniture','44':'tyrannian petpet','45':'tyrannian weaponry','46':'hot dog','47':'pizza','48':'usuki doll','49':'desert food','50':'desert petpet','51':'desert scroll','53':'school','54':'desert weapon','55':'desert pottery','56':'medieval food','57':'medieval petpet','58':'stamp','59':'haunted weaponry','60':'spooky furniture','61':'wintery petpet','62':'jelly food','63':'refreshments','66':'kiko lake food','67':'kiko lake carpentry','68':'collectibles','69':'petpet supplies','70':'booktastic book','71':'kreludan furniture','72':'kreludan food','73':'meridell potion','74':'darigan toy','75':'faerie furniture','76':'roo island merchandise','77':'brightvale books','78':'brightvale scroll','79':'brightvale windows','80':'brightvale armour','81':'brightvale fruit','82':'brightvale motes','83':'brightvale potions','84':'instrument','85':'medical cures','86':'sea shells','87':'maractite weaponry','88':'maraquan petpets','89':'geraptiku petpet','90':'qasalan food','91':'qasalan weaponry','92':'qasalan tablets','93':'faerie weapon shop','94':'altadorian armour','95':'altadorian food','96':'altadorian magic','97':'altadorian petpets','98':'plushies','100':'wonderous weaponry','101':'exotic foods','102':'remarkable restoratives','103':'fanciful fauna','104':'neovian antiques','105':'neovian pastries','106':'neovian press','107':'neovian attire','108':'mystical surroundings','110':"lampwyck's lights fantastic",'111':"cog's togs",'112':'molten morsels','113':'moltaran petpets','114':'moltaran books','116':'springy things','117':'ugga shinies',};
@@ -406,7 +420,7 @@ function handleSearch() {
 
   const restockShop = $('.search-buttongrid form input[name="obj_type"]').val();
 
-  if(!img.includes('images.neopets.com/items')) 
+  if(!img.includes('images.neopets.com/items'))
     img = null;
 
   const item = {
@@ -418,7 +432,7 @@ function handleSearch() {
     estVal: estVal,
     category: shopIDToCategory[restockShop]
   }
-  
+
   const itemKey = genItemKey(item);
   itemsObj[itemKey] = item;
 
@@ -698,6 +712,8 @@ async function submitItems() {
   const itemsList = Object.values(itemsObj);
   if (itemsList.length === 0) return;
 
+  const hash = getItemsHash(itemsObj);
+
   const res = await fetch('https://itemdb.com.br/api/v1/items', {
     method: 'POST',
     keepalive: true,
@@ -707,12 +723,14 @@ async function submitItems() {
     body: JSON.stringify({
       lang: pageLang,
       items: Object.values(itemsObj),
+      hash: hash
     }),
   });
 
   if (res.ok) {
     localStorage?.setItem('idb_itemHistory', JSON.stringify(itemsHistory));
     itemsObj = {};
+    resetHash();
   } else {
     console.error('[itemdb] submitItems error:', res);
   }
@@ -720,6 +738,8 @@ async function submitItems() {
 
 async function submitPrices() {
   if (priceList.length === 0) return;
+
+  const hash = getPricesHash(priceList);
 
   const res = await fetch('https://itemdb.com.br/api/v1/prices', {
     method: 'POST',
@@ -730,12 +750,14 @@ async function submitPrices() {
     body: JSON.stringify({
       lang: pageLang,
       itemPrices: priceList,
+      hash: hash
     }),
   });
 
   if (res.ok) {
     localStorage?.setItem('idb_restockHistory', JSON.stringify(restockHistory));
     priceList = [];
+    resetHash();
   } else {
     console.error('[itemdb] submitPrices error:', res);
   }
@@ -743,6 +765,8 @@ async function submitPrices() {
 
 async function submitTrades() {
   if (tradeList.length === 0) return;
+
+  const hash = getTradesHash(tradeList);
 
   const res = await fetch('https://itemdb.com.br/api/v1/trades', {
     method: 'POST',
@@ -753,12 +777,14 @@ async function submitTrades() {
     body: JSON.stringify({
       lang: pageLang,
       tradeLots: tradeList,
+      hash: hash
     }),
   });
 
   if (res.ok) {
     localStorage?.setItem('idb_tradeHistory', JSON.stringify(tradeHistory));
     tradeList = [];
+    resetHash();
   } else {
     console.error('[itemdb] submitTrades error:', res);
   }
