@@ -55,7 +55,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { neopetsUser, username, profile_color, profile_image, description } = req.body;
+  const { neopetsUser, username, profileColor, profileImage, description } = req.body;
 
   try {
     const authRes = await CheckAuth(req);
@@ -63,9 +63,9 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     let user = authRes.user;
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
-    if (profile_image) {
+    if (profileImage) {
       try {
-        const domain = new URL(profile_image);
+        const domain = new URL(profileImage);
         const hostname = domain.hostname;
         if (
           ![
@@ -80,7 +80,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         )
           throw 'Invalid domain';
 
-        if (!profile_image.match(/\.(jpeg|jpg|gif|png)$/)) throw 'Invalid image format';
+        if (!profileImage.match(/\.(jpeg|jpg|gif|png)$/)) throw 'Invalid image format';
       } catch (e) {
         return res.status(400).json({ error: 'Invalid image url' });
       }
@@ -99,8 +99,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       data: {
         neo_user: neopetsUser,
         username: username,
-        profile_color: profile_color,
-        profile_image: profile_image,
+        profile_color: profileColor,
+        profile_image: profileImage,
         description: description,
       },
     });
