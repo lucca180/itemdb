@@ -121,12 +121,12 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   // list of unique entries
   const uniqueNames = [...processList].filter(
     (value, index, self) =>
-      index === self.findIndex((t) => genItemKey(t, true) === genItemKey(value, true))
+      index === self.findIndex((t) => genItemKey(t) === genItemKey(value))
   );
 
   for (const item of uniqueNames) {
     try {
-      const allItemData = processList.filter((x) => genItemKey(x, true) === genItemKey(item, true));
+      const allItemData = processList.filter((x) => genItemKey(x, true) === genItemKey(item, true) || (genItemKey(x) === genItemKey(item) && !x.item_id && x.image_id));
       const owners = allItemData.map((o) => o.owner);
 
       if (allItemData.length === 0) continue;
@@ -247,7 +247,7 @@ async function updateOrAddDB(
           { item_id: priceData.item_id ?? undefined },
           {
             name: priceData.image_id ? priceData.name : '-1',
-            image_id: priceData.image_id,
+            image_id: priceData.image_id ?? '-1',
           },
         ],
       },
@@ -274,9 +274,11 @@ async function updateOrAddDB(
 
     const variation = coefficientOfVariation([oldPrice.price, priceValue]);
 
-    if ((variation < 5 || priceValue < 5000) && daysSinceLastUpdate <= 15) return undefined;
+    if (daysSinceLastUpdate <= 3) return undefined;
 
-    if (!oldPrice.noInflation_id && priceValue > 50000) {
+    if ((variation < 5 || priceValue < 10000) && daysSinceLastUpdate <= 15) return undefined;
+
+    if (!oldPrice.noInflation_id && priceValue > 75000) {
       if (oldPrice.price < priceValue && variation >= 65) {
         newPriceData.noInflation_id = oldPrice.internal_id;
         throw 'inflation';
