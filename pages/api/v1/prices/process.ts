@@ -126,7 +126,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   for (const item of uniqueNames) {
     try {
-      const allItemData = processList.filter((x) => genItemKey(x, true) === genItemKey(item, true) || (genItemKey(x) === genItemKey(item) && !x.item_id && x.image_id));
+      const allItemData = processList.filter((x) => genItemKey(x) === genItemKey(item) || (genItemKey(x, true) === genItemKey(item, true) && !x.item_id && x.image_id));
       const owners = allItemData.map((o) => o.owner);
 
       if (allItemData.length === 0) continue;
