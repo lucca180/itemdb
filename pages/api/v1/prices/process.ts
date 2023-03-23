@@ -246,8 +246,8 @@ async function updateOrAddDB(
         OR: [
           { item_id: priceData.item_id ?? undefined },
           {
-            name: priceData.name,
-            image_id: priceData.image_id ?? undefined,
+            name: priceData.image_id ? priceData.name : '-1',
+            image_id: priceData.image_id,
           },
         ],
       },
