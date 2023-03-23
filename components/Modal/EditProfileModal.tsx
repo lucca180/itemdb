@@ -220,7 +220,7 @@ const EditProfileModal = (props: Props) => {
                 <FormLabel color="gray.300">Profile Image URL (150x150)</FormLabel>
                 <Input
                   variant="filled"
-                  name="profile_image"
+                  name="profileImage"
                   onChange={handleChange}
                   value={userProfile.profileImage ?? ''}
                 />
