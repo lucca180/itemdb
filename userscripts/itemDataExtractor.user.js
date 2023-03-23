@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.1.0
+// @version      1.1.1
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -507,6 +507,9 @@ function handleSWPrices() {
   $(document).ajaxSuccess(() => {
     const itemName = $('.wizard-results-text h3').text();
     const items = $('.wizard-results-grid-shop li').clone().slice(1);
+    const minVal = $('input[name="rs_min_price"]').val();
+
+    if(minVal > 1) return;
 
     items.each(function (i) {
       const shopOwner = $(this).find('a').text();
@@ -542,6 +545,10 @@ function handleSSWPrices() {
       ? $('.ssw-results-grid li').slice(1)
       : $('#ssw-tabs-2 #results_table tr').slice(1);
     if (resultTrs.length === 0) return;
+
+    const minVal = $(':input[name="min_price"]').val()
+
+    if(minVal > 1) return;
 
     const itemName = $('#search_for')
       .text()
