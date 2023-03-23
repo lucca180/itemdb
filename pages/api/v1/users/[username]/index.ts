@@ -56,11 +56,10 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const { neopetsUser, username, profileColor, profileImage, description } = req.body;
-
   try {
     const authRes = await CheckAuth(req);
     const decodedToken = authRes.decodedToken;
-    let user = authRes.user;
+    const user = authRes.user;
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
     if (profileImage) {
@@ -107,13 +106,23 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (!tempUser) return res.status(400).json({ error: 'user not found' });
 
-    user = {
-      ...tempUser,
-      role: tempUser.role as UserRoles,
+    const updatedUser:User = {
+      id: tempUser.id,
+      username: tempUser.username,
+      neopetsUser: tempUser.neo_user,
       isAdmin: tempUser.role === 'ADMIN',
-    };
-
-    return res.json(user);
+      email: '',
+      profileColor: tempUser.profile_color,
+      profileImage: tempUser.profile_image,
+      description: tempUser.description,
+      role: tempUser.role as UserRoles,
+      lastLogin: new Date(0),
+      last_ip: null,
+      createdAt: tempUser.createdAt,
+      xp: tempUser.xp,
+    }
+    
+    return res.json(updatedUser);
   } catch (e: any) {
     console.error(e);
     return res.status(400).json({ error: e?.message ?? 'Something went wrong' });
