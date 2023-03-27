@@ -6,7 +6,7 @@ import { getItemFindAtLinks, isMissingInfo } from '../../../../utils/utils';
 import requestIp from 'request-ip';
 import hash from 'object-hash';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import checkHash from '../../../../userscripts/hash.esm.min';
+import { checkHash } from '../../../../utils/hash';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -92,7 +92,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
   const items = data.items;
   const lang = data.lang;
-  //const dataHash = data.hash;
+  // const dataHash = data.hash;
 
   // if(!checkHash(dataHash, {items: items})) 
   //   return res.status(400).json({ error: 'Invalid hash' });

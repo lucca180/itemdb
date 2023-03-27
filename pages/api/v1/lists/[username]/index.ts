@@ -1,3 +1,4 @@
+import { startOfDay } from 'date-fns';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { UserList } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
@@ -45,17 +46,14 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
           },
       include: {
         items: true,
+        user: true,
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
 
-    const owner = await prisma.user.findUnique({
-      where: {
-        username: username,
-      },
-    });
+    const owner = listsRaw[0].user;
 
     const lists: UserList[] = listsRaw
       .map((list) => {
@@ -72,6 +70,13 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
           user_id: list.user_id,
           user_username: owner?.username ?? '',
           user_neouser: owner?.neo_user ?? '',
+
+          owner: {
+            id: owner.id,
+            username: owner.username,
+            neopetsUser: owner.neo_user,
+            lastSeen: startOfDay(owner.last_login).toJSON(),
+          },
 
           createdAt: list.createdAt,
           updatedAt: list.updatedAt,

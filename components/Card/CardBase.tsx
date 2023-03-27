@@ -1,17 +1,18 @@
 import { Box, Flex, FlexProps } from '@chakra-ui/react';
+import Color from 'color';
 import React from 'react';
 
 type Props = {
   children?: React.ReactNode;
   title?: React.ReactNode;
-  color?: [number, number, number] | number[];
+  color?: [number, number, number] | number[] | string;
   noPadding?: boolean;
   chakra?: FlexProps;
   chakraWrapper?: FlexProps;
 };
 
 const CardBase = (props: Props) => {
-  const color = props.color || [74, 85, 104];
+  const color = typeof props.color === 'string' ? Color(props.color).rgb().round().array() : props.color || [74, 85, 104];
 
   return (
     <Flex

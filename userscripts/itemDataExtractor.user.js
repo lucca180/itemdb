@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.1.1
+// @version      1.1.2
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -10,7 +10,7 @@
 // @exclude      *://*.nc.neopets.com/*
 // @exclude      *://*images.neopets.com/*
 // @icon         https://itemdb.com.br/favicon.ico
-// @require      https://raw.githubusercontent.com/lucca180/itemdb/216081001e7a492c21ae85ab17514b9aa4fab619/userscripts/hash.min.js#sha256-6LadAUKhZ3TZa2t1wNiL9/oqyexbkMF6pDDEsjqM4ek=
+// @require      https://raw.githubusercontent.com/lucca180/itemdb/d1a76e6e02e50735eca39f2c8a6216af2e9206f4/userscripts/hash.min.js#sha256-gjPhCNosCL3gGu+NGG/VZI4wjlkDpokJYciz4mceoxY=
 // @grant        none
 // @noframes
 // ==/UserScript==
@@ -748,7 +748,7 @@ async function submitPrices() {
 
   const hash = getPricesHash(priceList);
 
-  const res = await fetch('https://itemdb.com.br/api/v1/prices', {
+  const res = await fetch('http://localhost:3000/api/v1/prices', {
     method: 'POST',
     keepalive: true,
     headers: {

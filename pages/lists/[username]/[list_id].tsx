@@ -480,7 +480,7 @@ const ListPage = () => {
                 </Badge>
               </Heading>
               <Text color="gray.400" fontSize={{ base: 'sm', md: 'md' }}>
-                aka. items you {!list.official && list.purpose === 'trading' ? 'have' : 'seek'} that
+                aka. items you {!list.official && list.purpose === 'trading' ? 'seek' : 'have'} that
                 are on this list
               </Text>
             </Box>

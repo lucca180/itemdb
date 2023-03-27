@@ -1,4 +1,4 @@
-import { Box, Center, Flex, Heading, Highlight, Link } from '@chakra-ui/react';
+import { Box, Center, Flex, Heading, Highlight } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import logo from '../public/logo_white.svg';
@@ -6,21 +6,34 @@ import Image from 'next/image';
 import ItemCard from '../components/Items/ItemCard';
 import { ItemData } from '../types';
 import BetaStatsCard from '../components/Beta/BetaStatsCard';
+import axios from 'axios';
 
 const isProd = process.env.NODE_ENV === 'production';
 
 const HomePage = () => {
-  const [items, setItems] = useState<ItemData[]>([]);
+  const [latestItems, setItems] = useState<ItemData[]>([]);
+  const [latestPrices, setPrices] = useState<ItemData[]>([]);
 
   useEffect(() => {
     init();
   }, []);
 
   const init = async () => {
-    const res = await fetch('/api/v1/items/');
-    const itemData = (await res.json()) as ItemData[];
+    const [itemRes, priceRes] = await  Promise.all([
+      axios.get('api/v1/items', {
+        params:{
+          limit: 16,
+        }
+      }),
+      axios.get('api/v1/prices', {
+        params:{
+          limit: 16,
+        }
+      }),
+    ]);
 
-    setItems(itemData);
+    setItems(itemRes.data);
+    setPrices(priceRes.data);
   };
 
   if (isProd)
@@ -49,19 +62,30 @@ const HomePage = () => {
           >
             Your open source of Neopets item info.
           </Highlight>{' '}
-          <Link color="purple.300" href="#">
+          {/* <Link color="purple.300" href="#">
             Why us?
-          </Link>
+          </Link> */}
         </Heading>
       </Box>
-      <Box mt={8}>
+      <Flex mt={8} gap={4} flexFlow="column">
         <Heading size="md">Latest Discoveries</Heading>
-        <Flex mt={4} flexWrap="wrap" gap={4}>
-          {items.map((item) => (
+        <Flex flexWrap="wrap" gap={4}>
+          {latestItems.map((item) => (
             <ItemCard item={item} key={item.internal_id} />
           ))}
         </Flex>
-      </Box>
+        <Heading size="md">Latest Prices</Heading>
+        <Flex flexWrap="wrap" gap={4}>
+          {latestPrices.map((item) => (
+            <ItemCard item={item} key={item.internal_id} />
+          ))}
+        </Flex>
+        <Center flexFlow="column" mt={8}>
+        <Heading size="md">Stats</Heading>
+          {/* <Image src={logo} alt="itemdb logo" width={300} quality="100" /> */}
+          <BetaStatsCard />
+        </Center>
+      </Flex>
     </Layout>
   );
 };

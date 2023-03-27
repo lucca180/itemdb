@@ -1,11 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
-import { PriceData } from '../../../../types';
 import requestIp from 'request-ip';
 import hash from 'object-hash';
 import { Prisma } from '@prisma/client';
+import { getManyItems } from '../items/many';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import checkHash from '../../../../userscripts/hash.esm.min';
+import { checkHash } from '../../../../utils/hash';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -20,33 +20,22 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
-  const item_id = req.query.item_id as string;
-  const name = req.query.name as string;
-  const image_id = req.query.image_id as string;
+  const limit = Number(req.query.limit) || 25;
 
   const pricesRaw = await prisma.itemPrices.findMany({
     where: {
       manual_check: null,
-      OR: [
-        { item_id: item_id ? Number(item_id) : undefined },
-        {
-          name: name,
-          image_id: image_id,
-        },
-      ],
     },
     orderBy: { addedAt: 'desc' },
+    take: limit
   });
+  const ids = pricesRaw.filter(p => p.item_iid).map((p) => p.item_iid?.toString()) as string[];
 
-  const prices: PriceData[] = pricesRaw.map((p) => {
-    return {
-      value: p.price,
-      addedAt: p.addedAt.toJSON(),
-      inflated: !!p.noInflation_id,
-    };
-  });
+  const items = await getManyItems({
+    id: ids,
+  })
 
-  return res.json(prices);
+  return res.json(Object.values(items));
 };
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -54,7 +43,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const itemPrices = data.itemPrices;
 
   const lang = data.lang;
-  //const dataHash = data.hash;
+  // const dataHash = data.hash;
 
   // if(!checkHash(dataHash, {itemPrices: itemPrices})) 
   //   return res.status(400).json({ error: 'Invalid hash' });

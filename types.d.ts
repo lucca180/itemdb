@@ -183,9 +183,17 @@ export type UserList = {
   internal_id: number;
   name: string;
   description: string | null;
+  
   user_id: string;
   user_username: string;
   user_neouser: string;
+
+  owner: {
+    id: string;
+    username: string | null;
+    neopetsUser: string | null;
+    lastSeen: string;
+  };
 
   coverURL: string | null;
   official: boolean;

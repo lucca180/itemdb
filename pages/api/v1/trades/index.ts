@@ -4,7 +4,7 @@ import { TradeData } from '../../../../types';
 import requestIp from 'request-ip';
 import { CheckAuth } from '../../../../utils/googleCloud';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import checkHash from '../../../../userscripts/hash.esm.min';
+import { checkHash } from '../../../../utils/hash';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   try {
