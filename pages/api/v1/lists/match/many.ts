@@ -1,6 +1,6 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import { CheckAuth } from "../../../../../utils/googleCloud";
-import prisma from "../../../../../utils/prisma";
+import { NextApiRequest, NextApiResponse } from 'next';
+import { CheckAuth } from '../../../../../utils/googleCloud';
+import prisma from '../../../../../utils/prisma';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -9,9 +9,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   // users: array of usernames of users whose lists we want to match
   // targetType: 'seeker' or 'offerer', defaults to 'seeker'
   let { target, users, targetType } = req.body;
-  if(!targetType) targetType = 'seeker';
+  if (!targetType) targetType = 'seeker';
 
-  if(!target || !users || !Array.isArray(users) || Array.isArray(target)) 
+  if (!target || !users || !Array.isArray(users) || Array.isArray(target))
     return res.status(400).json({ error: 'Bad Request' });
 
   let user = null;
@@ -22,56 +22,58 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   // If the user is not the target, they can only see public lists
   const reqIsTarget = user?.username === target;
-  
+
   const lists = await prisma.userList.findMany({
     where: {
       user: {
         username: {
           in: users,
-          not: target
-        }
+          not: target,
+        },
       },
       official: false,
       purpose: targetType === 'seeker' ? 'trading' : 'seeking',
-      visibility: 'public'
+      visibility: 'public',
     },
     include: {
       items: {
         include: {
-          item: true
-        }
+          item: true,
+        },
       },
-      user: true
-    }
-  })
+      user: true,
+    },
+  });
 
   const targetLists = await prisma.userList.findMany({
     where: {
       user: {
-        username: target
+        username: target,
       },
       official: false,
       purpose: targetType === 'seeker' ? 'seeking' : 'trading',
-      visibility: reqIsTarget ? undefined : 'public'
+      visibility: reqIsTarget ? undefined : 'public',
     },
     include: {
       items: {
         include: {
-          item: true
-        }
-      }
-    }
+          item: true,
+        },
+      },
+    },
   });
 
   const targetItemsSet = new Set(
-    targetLists.flatMap((list) => list.items.filter(i => i.item.isNC).map((item) => item.item_iid))
+    targetLists.flatMap((list) =>
+      list.items.filter((i) => i.item.isNC).map((item) => item.item_iid)
+    )
   );
-  
-  const userMatch: {[username: string]: number[]} = {};
 
-  for(const list of lists) {
+  const userMatch: { [username: string]: number[] } = {};
+
+  for (const list of lists) {
     const match = list.items.filter((item) => targetItemsSet.has(item.item_iid));
-    if(match.length > 0) {
+    if (match.length > 0) {
       userMatch[list.user.username ?? list.user_id] = match.map((item) => item.item_iid);
     }
   }

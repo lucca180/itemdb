@@ -13,35 +13,24 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   // if(!query) return res.status(400).json({error: 'invalid search query'});
 
   const isColorSearch = query.match(/#[0-9A-Fa-f]{6}$/gm);
-  
-  const groups = [
-    'category',
-    'isWearable',
-    'status',
-    'type',
-    'isNeohome',
-  ] as (keyof Items)[];
+
+  const groups = ['category', 'isWearable', 'status', 'type', 'isNeohome'] as (keyof Items)[];
 
   if (isColorSearch) {
     const color = Color(query);
     const [l, a, b] = color.lab().array();
 
-    const queries = []
+    const queries = [];
 
-    for(const group of groups) {
+    for (const group of groups) {
       let column;
-      if(group === 'isWearable')
-        column = Prisma.sql`a.isWearable`;
-      else if(group === 'isNeohome')
-        column = Prisma.sql`a.isNeohome`;
-      else if(group === 'status')
-        column = Prisma.sql`a.status`;
-      else if(group === 'type')
-        column = Prisma.sql`a.type`;
-      else
-        column = Prisma.sql`a.category`;
+      if (group === 'isWearable') column = Prisma.sql`a.isWearable`;
+      else if (group === 'isNeohome') column = Prisma.sql`a.isNeohome`;
+      else if (group === 'status') column = Prisma.sql`a.status`;
+      else if (group === 'type') column = Prisma.sql`a.type`;
+      else column = Prisma.sql`a.category`;
 
-      const sqlQuery = (prisma.$queryRaw`
+      const sqlQuery = prisma.$queryRaw`
         SELECT ${column}, count(*) as count
         FROM Items as a
         LEFT JOIN (
@@ -52,9 +41,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         ) as d on a.image_id = d.image_id
         where d.dist is not null
         group by ${column}
-      `)
+      `;
 
-      queries.push(sqlQuery)
+      queries.push(sqlQuery);
     }
 
     const resultRaw = await Promise.all(queries);
@@ -70,14 +59,13 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         name = name === '0' ? 'false' : name === '1' ? 'true' : name;
         x[name] = x[name] ? x[name] + Number(data.count) : Number(data.count);
       }
-  
+
       result[group] = x;
     }
 
     return res.json(result);
   }
 
- 
   const promises = [];
 
   for (const group of groups) {
@@ -87,7 +75,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         _all: true,
       },
       where: {
-        name: { contains: query } 
+        name: { contains: query },
       },
     });
 

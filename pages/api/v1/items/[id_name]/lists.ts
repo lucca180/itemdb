@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { UserList } from '../../../../../types';
 import prisma from '../../../../../utils/prisma';
-import { startOfDay } from 'date-fns'
+import { startOfDay } from 'date-fns';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
@@ -32,14 +32,13 @@ export const getItemLists = async (id: number, onlyOfficial: boolean): Promise<U
     },
     include: {
       items: true,
-      user: true
+      user: true,
     },
   });
 
-  
   return listsRaw.map((list) => {
     const owner = list.user;
-    
+
     return {
       internal_id: list.internal_id,
       name: list.name,
@@ -82,6 +81,6 @@ export const getItemLists = async (id: number, onlyOfficial: boolean): Promise<U
           isHighlight: item.isHighlight,
         };
       }),
-    }
+    };
   });
 };

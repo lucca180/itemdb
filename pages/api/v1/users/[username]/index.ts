@@ -106,7 +106,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (!tempUser) return res.status(400).json({ error: 'user not found' });
 
-    const updatedUser:User = {
+    const updatedUser: User = {
       id: tempUser.id,
       username: tempUser.username,
       neopetsUser: tempUser.neo_user,
@@ -120,8 +120,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       last_ip: null,
       createdAt: tempUser.createdAt,
       xp: tempUser.xp,
-    }
-    
+    };
+
     return res.json(updatedUser);
   } catch (e: any) {
     console.error(e);

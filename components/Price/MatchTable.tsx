@@ -1,13 +1,4 @@
-import {
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Tr,
-  Th,
-  Thead,
-  Badge,
-} from '@chakra-ui/react';
+import { Table, TableContainer, Tbody, Td, Tr, Th, Thead, Badge } from '@chakra-ui/react';
 import { formatDistanceToNow, isToday } from 'date-fns';
 import Link from 'next/link';
 import React from 'react';
@@ -31,8 +22,8 @@ const MatchTable = (props: Props) => {
       maxH={{ base: 200, md: 300 }}
       w="100%"
       borderRadius="sm"
-      overflowX='auto'
-      overflowY='auto'
+      overflowX="auto"
+      overflowY="auto"
     >
       <Table h="100%" variant="striped" colorScheme="gray" size="sm">
         <Thead>
@@ -44,7 +35,13 @@ const MatchTable = (props: Props) => {
           </Tr>
         </Thead>
         <Tbody>
-          {!data.length && <Tr><Td colSpan={4} textAlign="center">No lists found :(</Td></Tr>}
+          {!data.length && (
+            <Tr>
+              <Td colSpan={4} textAlign="center">
+                No lists found :(
+              </Td>
+            </Tr>
+          )}
           {sortedData.map((list) => (
             <Tr key={list.internal_id}>
               <Td>

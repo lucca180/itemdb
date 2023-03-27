@@ -7,3 +7,4 @@ node_modules
 **/_next/**
 userscripts
 utils/randomName.ts
+utils/hash.ts

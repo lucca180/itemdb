@@ -19,16 +19,16 @@ const HomePage = () => {
   }, []);
 
   const init = async () => {
-    const [itemRes, priceRes] = await  Promise.all([
+    const [itemRes, priceRes] = await Promise.all([
       axios.get('api/v1/items', {
-        params:{
+        params: {
           limit: 16,
-        }
+        },
       }),
       axios.get('api/v1/prices', {
-        params:{
+        params: {
           limit: 16,
-        }
+        },
       }),
     ]);
 
@@ -81,7 +81,7 @@ const HomePage = () => {
           ))}
         </Flex>
         <Center flexFlow="column" mt={8}>
-        <Heading size="md">Stats</Heading>
+          <Heading size="md">Stats</Heading>
           {/* <Image src={logo} alt="itemdb logo" width={300} quality="100" /> */}
           <BetaStatsCard />
         </Center>

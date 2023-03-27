@@ -27,7 +27,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       res.setHeader('Content-Type', 'image/png');
       res.setHeader('Cache-Control', 'public, max-age=604800');
 
-      return res.redirect(file.publicUrl())
+      return res.redirect(file.publicUrl());
     } else {
       const item = await prisma.items.findFirst({
         where: {

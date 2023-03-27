@@ -243,7 +243,11 @@ const UserListsPage = () => {
     <Layout>
       {isOwner && (
         <>
-          <CreateListModal isOpen={openCreateModal} onClose={() => setOpenCreateModal(false)} refresh={refresh}/>
+          <CreateListModal
+            isOpen={openCreateModal}
+            onClose={() => setOpenCreateModal(false)}
+            refresh={refresh}
+          />
           <EditProfileModal
             isOpen={openEditProfileModal}
             onClose={() => setOpenEditProfileModal(false)}

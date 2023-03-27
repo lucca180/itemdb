@@ -27,13 +27,13 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       manual_check: null,
     },
     orderBy: { addedAt: 'desc' },
-    take: limit
+    take: limit,
   });
-  const ids = pricesRaw.filter(p => p.item_iid).map((p) => p.item_iid?.toString()) as string[];
+  const ids = pricesRaw.filter((p) => p.item_iid).map((p) => p.item_iid?.toString()) as string[];
 
   const items = await getManyItems({
     id: ids,
-  })
+  });
 
   return res.json(Object.values(items));
 };
@@ -45,7 +45,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const lang = data.lang;
   // const dataHash = data.hash;
 
-  // if(!checkHash(dataHash, {itemPrices: itemPrices})) 
+  // if(!checkHash(dataHash, {itemPrices: itemPrices}))
   //   return res.status(400).json({ error: 'Invalid hash' });
 
   const dataList = [];

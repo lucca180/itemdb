@@ -225,13 +225,15 @@ const ItemPage = (props: Props) => {
                 <FindAtCard item={item} />
               </>
             )}
-            {!item.isNC && <ItemPriceCard
-              item={item}
-              lastSeen={seenStats}
-              prices={prices ?? []}
-              isLoading={isLoading}
-            />}
-            {item.isNC && <ItemMatch item={item} lists={lists}/>}
+            {!item.isNC && (
+              <ItemPriceCard
+                item={item}
+                lastSeen={seenStats}
+                prices={prices ?? []}
+                isLoading={isLoading}
+              />
+            )}
+            {item.isNC && <ItemMatch item={item} lists={lists} />}
             {lists && <ItemOfficialLists item={item} lists={lists} />}
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>

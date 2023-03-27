@@ -12,7 +12,10 @@ type Props = {
 };
 
 const CardBase = (props: Props) => {
-  const color = typeof props.color === 'string' ? Color(props.color).rgb().round().array() : props.color || [74, 85, 104];
+  const color =
+    typeof props.color === 'string'
+      ? Color(props.color).rgb().round().array()
+      : props.color || [74, 85, 104];
 
   return (
     <Flex

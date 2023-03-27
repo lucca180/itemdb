@@ -65,7 +65,7 @@ const CreateListModal = (props: Props) => {
   const saveChanges = async () => {
     setLoading(true);
     try {
-      if(!user) return;
+      if (!user) return;
       const token = await getIdToken();
 
       const data = {

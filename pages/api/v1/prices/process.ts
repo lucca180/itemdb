@@ -120,13 +120,16 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   // list of unique entries
   const uniqueNames = [...processList].filter(
-    (value, index, self) =>
-      index === self.findIndex((t) => genItemKey(t) === genItemKey(value))
+    (value, index, self) => index === self.findIndex((t) => genItemKey(t) === genItemKey(value))
   );
 
   for (const item of uniqueNames) {
     try {
-      const allItemData = processList.filter((x) => genItemKey(x) === genItemKey(item) || (genItemKey(x, true) === genItemKey(item, true) && !x.item_id && x.image_id));
+      const allItemData = processList.filter(
+        (x) =>
+          genItemKey(x) === genItemKey(item) ||
+          (genItemKey(x, true) === genItemKey(item, true) && !x.item_id && x.image_id)
+      );
       const owners = allItemData.map((o) => o.owner);
 
       if (allItemData.length === 0) continue;

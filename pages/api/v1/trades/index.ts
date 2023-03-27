@@ -75,7 +75,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const lang = data.lang;
   //const dataHash = data.hash;
 
-  // if(!checkHash(dataHash, {tradeLots: tradeLots})) 
+  // if(!checkHash(dataHash, {tradeLots: tradeLots}))
   //   return res.status(400).json({ error: 'Invalid hash' });
 
   if (lang !== 'en') return res.status(400).json('Language must be english');

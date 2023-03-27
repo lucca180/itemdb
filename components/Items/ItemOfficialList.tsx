@@ -11,7 +11,7 @@ type Props = {
 
 const ItemOfficialLists = (props: Props) => {
   const { item, lists } = props;
-  const officialLists = lists.filter(list => list.official);
+  const officialLists = lists.filter((list) => list.official);
 
   return (
     <CardBase title="Official Lists" color={item.color.rgb}>

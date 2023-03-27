@@ -100,9 +100,8 @@ const ListPage = () => {
 
       if (!listData) throw 'List does not exist';
 
-      if (listData.official)
-        router.replace('/lists/official/' + listData.internal_id);
-      
+      if (listData.official) router.replace('/lists/official/' + listData.internal_id);
+
       const itensId: number[] = listData.itemInfo.map((item) => item.item_iid);
 
       if (itensId.length === 0) {
