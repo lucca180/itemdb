@@ -140,9 +140,9 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
 
-  const result = await processTradePrice(trade, req);
+  await processTradePrice(trade, req);
 
-  return res.json(result);
+  return res.status(200).json({ success: true, message: false });
 };
 
 export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) => {

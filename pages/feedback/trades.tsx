@@ -35,7 +35,7 @@ const FeedbackSuggest = () => {
 
   const init = async () => {
     setIsLoading(true);
-    const res = await axios.get('/api/trades/getLatest');
+    const res = await axios.get('/api/v1/trades/');
 
     setTrades(res.data);
     setCurrentTrade(res.data[0]);
@@ -47,8 +47,8 @@ const FeedbackSuggest = () => {
 
     const token = await getIdToken();
     try {
-      const res = await axios.post(
-        '/api/trades/setPrice',
+      const res = await axios.patch(
+        '/api/v1/trades',
         {
           trade: trade,
         },

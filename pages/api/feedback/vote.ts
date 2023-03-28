@@ -3,8 +3,8 @@ import prisma from '../../../utils/prisma';
 import { FeedbackParsed, TradeData } from '../../../types';
 import { CheckAuth } from '../../../utils/googleCloud';
 import { Feedbacks } from '@prisma/client';
-import { processTradePrice } from '../trades/setPrice';
 import { processTags } from '../v1/items/[id_name]/index';
+import { processTradePrice } from '../v1/trades';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
