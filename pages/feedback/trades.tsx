@@ -15,12 +15,7 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import {
-  BsXLg,
-  BsXCircleFill,
-  BsCheckCircleFill,
-  BsCheckLg,
-} from 'react-icons/bs';
+import { BsXLg, BsXCircleFill, BsCheckCircleFill, BsCheckLg } from 'react-icons/bs';
 import CardBase from '../../components/Card/CardBase';
 import FeedbackTrade from '../../components/FeebackCards/FeedbackTrade';
 import Layout from '../../components/Layout';
@@ -140,7 +135,11 @@ const FeedbackSuggest = () => {
           gap={4}
         >
           {!isLoading && currentTrade && (
-            <FeedbackTrade trade={currentTrade} handleSubmit={handleSubmit} handleSkip={handleSkip} />
+            <FeedbackTrade
+              trade={currentTrade}
+              handleSubmit={handleSubmit}
+              handleSkip={handleSkip}
+            />
           )}
           {isLoading && (
             <Center>

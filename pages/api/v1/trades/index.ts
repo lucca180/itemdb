@@ -163,7 +163,7 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
     });
   });
 
-  const addPriceProcess:Prisma.PriceProcessCreateInput[] = [];
+  const addPriceProcess: Prisma.PriceProcessCreateInput[] = [];
 
   for (const item of trade.items.filter((x) => x.price)) {
     if (!item.image_id || !item.name) throw 'processTradePrice: Missing image_id or name';
@@ -186,7 +186,7 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
       addedAt: trade.addedAt,
       language: 'en',
       ip_address: req ? requestIp.getClientIp(req) : undefined,
-    })
+    });
   }
 
   const priceProcess = prisma.priceProcess.createMany({

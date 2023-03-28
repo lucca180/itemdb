@@ -13,6 +13,7 @@ import axios from 'axios';
 const HomePage = () => {
   const [latestItems, setItems] = useState<ItemData[]>([]);
   const [latestPrices, setPrices] = useState<ItemData[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     init();
@@ -31,7 +32,7 @@ const HomePage = () => {
         },
       }),
     ]);
-
+    setIsLoaded(true);
     setItems(itemRes.data);
     setPrices(priceRes.data);
   };
@@ -73,12 +74,14 @@ const HomePage = () => {
           {latestItems.map((item) => (
             <ItemCard item={item} key={item.internal_id} />
           ))}
+          {!isLoaded && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
         </Flex>
         <Heading size="md">Latest Prices</Heading>
         <Flex flexWrap="wrap" gap={4} justifyContent="center">
           {latestPrices.map((item) => (
             <ItemCard item={item} key={item.internal_id} />
           ))}
+          {!isLoaded && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
         </Flex>
         <Center flexFlow="column" mt={8}>
           <Heading size="md">Stats</Heading>

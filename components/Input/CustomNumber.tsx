@@ -35,10 +35,8 @@ const CustomNumberInput = (props: Props) => {
   const onChange = (val: string) => {
     const parsedVal = val || val === '0' ? val.replace(/[\.\,]+/g, '') : '';
     setValue(parse(val));
-    if(!props.skipDebounce) 
-      debouncedOnChange(parsedVal);
-    else
-      props.onChange?.(parsedVal);
+    if (!props.skipDebounce) debouncedOnChange(parsedVal);
+    else props.onChange?.(parsedVal);
   };
 
   return (

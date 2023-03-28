@@ -48,7 +48,7 @@ const DeleteListModal = (props: Props) => {
       if (res.data.success) {
         refresh();
         handleClose();
-        setRecoilLists(null)
+        setRecoilLists(null);
         setLoading(false);
       } else throw res.data;
     } catch (e) {
