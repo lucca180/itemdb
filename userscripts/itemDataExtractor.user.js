@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.1.3
+// @version      1.1.4
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -546,8 +546,8 @@ async function handleCustomization () {
       let type = itemData.is_paid ? 'nc' : undefined;
 
       if(!type) 
-        type = pbitems.includes(itemData.obj_info_id) ? 'pb' : 'np';
-
+        type = pbitems.includes(itemData.obj_info_id.toString()) ? 'pb' : 'np';
+      
       const item = {
         name: itemData.name,
         description: itemData.description,
@@ -562,10 +562,10 @@ async function handleCustomization () {
       }
 
       const itemKey = genItemKey(item);
-      if (!itemsHistory[itemKey]?.customization) {
+      if (!itemsHistory[itemKey]?.customizationFix) {
         itemsObj[itemKey] = item;
         itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
-        itemsHistory[itemKey].customization = true;
+        itemsHistory[itemKey].customizationFix = true;
       }
     }
   }
