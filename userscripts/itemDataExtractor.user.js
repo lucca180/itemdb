@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.1.2
+// @version      1.1.3
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -10,7 +10,7 @@
 // @exclude      *://*.nc.neopets.com/*
 // @exclude      *://*images.neopets.com/*
 // @icon         https://itemdb.com.br/favicon.ico
-// @require      https://raw.githubusercontent.com/lucca180/itemdb/d1a76e6e02e50735eca39f2c8a6216af2e9206f4/userscripts/hash.min.js#sha256-gjPhCNosCL3gGu+NGG/VZI4wjlkDpokJYciz4mceoxY=
+// @require      https://raw.githubusercontent.com/lucca180/itemdb/3f250b7472d2f87a88bcbfbea9dc39cef1ab2820/userscripts/hash.min.js#sha256-VT88NfsZPTv2NOX1lzP3xZvHApYvWQhz+HiBbkOACDs=
 // @grant        none
 // @noframes
 // ==/UserScript==
@@ -501,6 +501,78 @@ function handleNCMall() {
   })
 }
 
+// This function uses your neopets username and pet names to 
+// get the data of all your customization items.
+// Your username and pet name ARE NOT sent to itemdb server.
+// If you dont feel comfortable with this, 
+// You can comment out the return (erase the "//" from "// return;") 
+// and it will not get these data.
+
+async function handleCustomization () {
+  // return;
+
+  const username = appInsightsUserName;
+  const petServiceData = new FormData();
+  petServiceData.append('method', 'getpets');
+  petServiceData.append('username', username);
+
+  const petRes = await fetch('https://www.neopets.com/amfphp/services/jss/apiservices.phtml/amfphp/services/jss/apiservices.phtml', {
+    method: 'POST',
+    body: petServiceData,
+  });
+
+  const petData = await petRes.json();
+  const petNames = petData.userpets.map(pet => pet.name);
+
+  for(const petName of petNames){
+    const bodyData = new FormData();
+    bodyData.append('method', 'custompeteditordata');
+    bodyData.append('username', username);
+    bodyData.append('petname', petName);
+    bodyData.append('skip', '0');
+    bodyData.append('take', '1000');
+
+    const editorRes = await fetch('https://www.neopets.com/amfphp/services/jss/apiservices.phtml/amfphp/services/jss/apiservices.phtml', {
+      method: 'POST',
+      body: bodyData,
+    })
+
+    const customData = await editorRes.json();
+    const itemsRawData = customData.editordata.object_info_registry;
+    const pbitems = customData.pbitems;
+
+    for(const itemData of Object.values(itemsRawData)){
+      let subText = '(wearable)';
+      let type = itemData.is_paid ? 'nc' : undefined;
+
+      if(!type) 
+        type = pbitems.includes(itemData.obj_info_id) ? 'pb' : 'np';
+
+      const item = {
+        name: itemData.name,
+        description: itemData.description,
+        subText: subText,
+        img: itemData.thumbnail_url,
+        itemId: itemData.obj_info_id,
+        estVal: itemData.price,
+        rarity: itemData.rarity_index,
+        category: itemData.category,
+        type: type,
+        weight: itemData.weight_lbs,
+      }
+
+      const itemKey = genItemKey(item);
+      if (!itemsHistory[itemKey]?.customization) {
+        itemsObj[itemKey] = item;
+        itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
+        itemsHistory[itemKey].customization = true;
+      }
+    }
+  }
+
+  submitItems();;
+}
+
 // ------ prices ------ //
 
 function handleSWPrices() {
@@ -706,6 +778,7 @@ if (URLHas('gallery/quickremove.phtml') || URLHas('gallery/quickcat.phtml')) han
 if (URLHas('search.phtml') && URLHas('selected_type=object')) handleSearch();
 if (URLHas('neohome/shed')) handleStorageShed();
 if (URLHas('/mall/shop.phtml')) handleNCMall();
+if (URLHas('customise')) handleCustomization();
 
 if (hasSSW) handleSSWPrices();
 
@@ -748,7 +821,7 @@ async function submitPrices() {
 
   const hash = getPricesHash(priceList);
 
-  const res = await fetch('http://localhost:3000/api/v1/prices', {
+  const res = await fetch('https://itemdb.com.br/api/v1/prices', {
     method: 'POST',
     keepalive: true,
     headers: {
