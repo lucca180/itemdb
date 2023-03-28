@@ -23,8 +23,9 @@ import {
 import axios from 'axios';
 import { useState } from 'react';
 import { UserList } from '../../types';
-import { useAuth } from '../../utils/auth';
+import { useAuth, UserLists } from '../../utils/auth';
 import { ColorResult, TwitterPicker } from '@hello-pangea/color-picker';
+import { useRecoilState } from 'recoil';
 
 type Props = {
   list?: UserList;
@@ -61,6 +62,7 @@ const CreateListModal = (props: Props) => {
   const [isLoading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
   const [list, setList] = useState(props.list ?? defaultList);
+  const [, setRecoilLists] = useRecoilState(UserLists);
 
   const saveChanges = async () => {
     setLoading(true);
@@ -96,6 +98,7 @@ const CreateListModal = (props: Props) => {
 
       if (res.data.success) {
         props.refresh?.();
+        setRecoilLists(null);
         onClose();
       } else throw res.data;
     } catch (err) {

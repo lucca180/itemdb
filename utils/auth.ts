@@ -4,7 +4,7 @@ import { recoilPersist } from 'recoil-persist';
 import axios from 'axios';
 import { getAuth, User as FirebaseUser } from 'firebase/auth';
 import { useRouter } from 'next/router';
-import { User } from '../types';
+import { User, UserList } from '../types';
 
 const { persistAtom } = recoilPersist({
   storage: typeof window !== 'undefined' ? sessionStorage : undefined,
@@ -14,6 +14,11 @@ export const UserState = atom<User | null>({
   key: 'UserState',
   default: null,
   effects_UNSTABLE: [persistAtom],
+});
+
+export const UserLists = atom<UserList[] | null>({
+  key: 'UserLists',
+  default: null,
 });
 
 type UseAuthProps = {

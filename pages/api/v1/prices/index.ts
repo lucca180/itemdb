@@ -26,9 +26,10 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     where: {
       manual_check: null,
     },
-    orderBy: { addedAt: 'desc' },
+    orderBy: { processedAt: 'desc' },
     take: limit,
   });
+
   const ids = pricesRaw.filter((p) => p.item_iid).map((p) => p.item_iid?.toString()) as string[];
 
   const items = await getManyItems({

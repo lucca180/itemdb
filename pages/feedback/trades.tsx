@@ -16,8 +16,6 @@ import {
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import {
-  BsCheck2,
-  BsArrowLeftRight,
   BsXLg,
   BsXCircleFill,
   BsCheckCircleFill,
@@ -49,11 +47,7 @@ const FeedbackSuggest = () => {
     setIsLoading(false);
   };
 
-  const handleChange = (newTrade: TradeData) => {
-    if (newTrade.trade_id === currentTrade?.trade_id && !isLoading) setCurrentTrade(newTrade);
-  };
-
-  const handleSubmitAdmin = async () => {
+  const handleSubmitAdmin = async (trade: TradeData) => {
     setIsLoading(true);
 
     const token = await getIdToken();
@@ -61,7 +55,7 @@ const FeedbackSuggest = () => {
       const res = await axios.post(
         '/api/trades/setPrice',
         {
-          trade: currentTrade,
+          trade: trade,
         },
         {
           headers: {
@@ -81,21 +75,21 @@ const FeedbackSuggest = () => {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (trade: TradeData) => {
     setIsLoading(true);
 
-    if (!currentTrade || !user) return;
+    if (!trade || !user) return;
 
-    if (user.role === 'ADMIN') return handleSubmitAdmin();
+    if (user.role === 'ADMIN') return handleSubmitAdmin(trade);
 
     const feedbackJSON = {
-      trade: currentTrade,
+      trade: trade,
     };
 
     try {
       const res = await axios.post('/api/feedback/send', {
         pageInfo: '/feedback/trades',
-        subject_id: currentTrade.trade_id,
+        subject_id: trade.trade_id,
         user_id: user.id,
         type: 'tradePrice',
         json: JSON.stringify(feedbackJSON),
@@ -146,28 +140,7 @@ const FeedbackSuggest = () => {
           gap={4}
         >
           {!isLoading && currentTrade && (
-            <>
-              <Flex justifyContent="center" gap={4}>
-                <Button
-                  leftIcon={<Icon as={BsArrowLeftRight} />}
-                  colorScheme="gray"
-                  variant="outline"
-                  onClick={handleSkip}
-                >
-                  Skip
-                </Button>
-                <Button
-                  leftIcon={<Icon as={BsCheck2} />}
-                  colorScheme="green"
-                  variant="solid"
-                  mr={2}
-                  onClick={handleSubmit}
-                >
-                  Submit
-                </Button>
-              </Flex>
-              <FeedbackTrade trade={currentTrade} onChange={handleChange} />
-            </>
+            <FeedbackTrade trade={currentTrade} handleSubmit={handleSubmit} handleSkip={handleSkip} />
           )}
           {isLoading && (
             <Center>

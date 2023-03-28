@@ -5,6 +5,7 @@ import requestIp from 'request-ip';
 import { CheckAuth } from '../../../../utils/googleCloud';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { checkHash } from '../../../../utils/hash';
+import { Prisma } from '.prisma/client';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -162,21 +163,31 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
     });
   });
 
-  const addPriceProcess = trade.items
-    .filter((x) => x.price)
-    .map((item) => {
-      return {
+  const addPriceProcess:Prisma.PriceProcessCreateInput[] = [];
+
+  for (const item of trade.items.filter((x) => x.price)) {
+    if (!item.image_id || !item.name) throw 'processTradePrice: Missing image_id or name';
+
+    const dbItem = await prisma.items.findFirst({
+      where: {
         name: item.name,
-        price: item.price as number,
-        image: item.image,
         image_id: item.image_id,
-        type: 'trade',
-        owner: trade.owner,
-        addedAt: trade.addedAt,
-        language: 'en',
-        ip_address: req ? requestIp.getClientIp(req) : undefined,
-      };
+      },
     });
+
+    addPriceProcess.push({
+      name: item.name,
+      price: item.price as number,
+      image: item.image,
+      image_id: item.image_id,
+      item_id: dbItem ? dbItem.item_id : undefined,
+      type: 'trade',
+      owner: trade.owner,
+      addedAt: trade.addedAt,
+      language: 'en',
+      ip_address: req ? requestIp.getClientIp(req) : undefined,
+    })
+  }
 
   const priceProcess = prisma.priceProcess.createMany({
     data: addPriceProcess,

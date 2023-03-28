@@ -13,8 +13,9 @@ import {
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { BsBookmarkCheckFill } from 'react-icons/bs';
+import { useRecoilState } from 'recoil';
 import { ItemData, UserList } from '../../types';
-import { useAuth } from '../../utils/auth';
+import { useAuth, UserLists } from '../../utils/auth';
 import { getRandomName } from '../../utils/randomName';
 
 type Props = {
@@ -25,6 +26,8 @@ const AddToListSelect = (props: Props) => {
   const { item } = props;
   const { user, getIdToken, authLoading } = useAuth();
   const [lists, setLists] = useState<UserList[]>([]);
+  const [, setRecoilLists] = useRecoilState(UserLists);
+
   const toast = useToast();
 
   const sorted = lists.sort((a, b) => SortListByChange(a, b));
@@ -117,6 +120,7 @@ const AddToListSelect = (props: Props) => {
       if (res.data.success) {
         const list = res.data.message;
         addItemToList(list.internal_id);
+        setRecoilLists(null);
         init();
       } else throw new Error(res.data.message);
     } catch (err) {

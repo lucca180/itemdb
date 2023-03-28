@@ -1,9 +1,10 @@
-import { Badge, Box, Icon, Skeleton, Text, Link, Tooltip } from '@chakra-ui/react';
+import { Badge, Box, Icon, Skeleton, Text, Link, Tooltip, useMediaQuery } from '@chakra-ui/react';
 import React from 'react';
 import Image from 'next/image';
 import { ItemData } from '../../types';
 import NextLink from 'next/link';
 import { AiFillInfoCircle, AiFillWarning } from 'react-icons/ai';
+import ItemCtxMenu, { CtxTrigger } from '../Modal/ItemCtxMenu';
 
 type Props = {
   item?: ItemData;
@@ -18,6 +19,8 @@ const intl = new Intl.NumberFormat();
 
 const ItemCard = (props: Props) => {
   const { item, isLoading, selected, disableLink, capValue, quantity } = props;
+  const [isMobile] = useMediaQuery('(hover: none)');
+
   const color = item?.color.rgb;
 
   if (!item || isLoading || !color)
@@ -45,6 +48,15 @@ const ItemCard = (props: Props) => {
     );
 
   return (
+    <>
+    <ItemCtxMenu item={item} />  
+    <CtxTrigger
+      id={item.internal_id.toString()}
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-ignore
+      disableWhileShiftPressed
+      disable={isMobile}
+      >
     <Link
       as={NextLink}
       href={'/item/' + item.internal_id}
@@ -113,6 +125,8 @@ const ItemCard = (props: Props) => {
         )}
       </Box>
     </Link>
+    </CtxTrigger>
+    </>
   );
 };
 

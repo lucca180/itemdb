@@ -9,6 +9,7 @@ type Props = {
   onChange?: (newValue: string) => void;
   inputProps?: any;
   wrapperProps?: any;
+  skipDebounce?: boolean;
 };
 
 const format = (val: number | string) => (val || val === 0 ? intl.format(Number(val)) : '');
@@ -34,7 +35,10 @@ const CustomNumberInput = (props: Props) => {
   const onChange = (val: string) => {
     const parsedVal = val || val === '0' ? val.replace(/[\.\,]+/g, '') : '';
     setValue(parse(val));
-    debouncedOnChange(parsedVal);
+    if(!props.skipDebounce) 
+      debouncedOnChange(parsedVal);
+    else
+      props.onChange?.(parsedVal);
   };
 
   return (

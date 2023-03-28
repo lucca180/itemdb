@@ -1,50 +1,85 @@
-import { Box, Flex, FormControl, FormHelperText, Text } from '@chakra-ui/react';
+import { Box, Button, Flex, FormControl, FormHelperText, Icon, Text } from '@chakra-ui/react';
 import { TradeData } from '../../types';
 import CardBase from '../Card/CardBase';
 import Image from 'next/image';
 import CustomNumberInput from '../Input/CustomNumber';
+import { useState, useEffect } from 'react';
+import { BsArrowLeftRight, BsCheck2 } from 'react-icons/bs';
 
 type Props = {
   trade?: TradeData;
   onChange?: (newValue: TradeData) => void;
+  handleSkip?: () => void;
+  handleSubmit?: (trade: TradeData) => void;
 };
 
 type TradeItems = TradeData['items'][0];
 
 const FeedbackTrade = (props: Props) => {
-  const { trade } = props;
+  const { handleSkip, handleSubmit } = props;
+  const [trade, setTrade] = useState<TradeData | undefined>(props.trade);
+
+  useEffect(() => {
+    setTrade(props.trade);
+  }, [props.trade]);
 
   const handleChange = (item: TradeItems, index: number) => {
     if (!trade) return;
     const tempTrade = { ...trade };
     tempTrade.items[index] = item;
-    props.onChange?.(tempTrade);
+    setTrade(tempTrade);
+  };
+
+  const doSubmit = () => {
+    if (!trade) return;
+    handleSubmit?.(trade);
   };
 
   return (
-    <CardBase chakraWrapper={{ flex: 1 }} title="Trade Pricing" chakra={{ bg: 'gray.700' }}>
-      <Flex flexFlow="column" gap={6}>
-        <Flex
-          textAlign="center"
-          fontSize="sm"
-          wordBreak={'break-word'}
-          whiteSpace={'pre-line'}
-          flexFlow="column"
-          p={2}
+    <Flex flexFlow={{ base: 'column-reverse', md: 'column' }} gap={4}>
+      <Flex justifyContent="center" gap={4}>
+        <Button
+          leftIcon={<Icon as={BsArrowLeftRight} />}
+          colorScheme="gray"
+          variant="outline"
+          onClick={handleSkip}
         >
-          <b>Wishlist</b>
-          <Text>{trade?.wishlist}</Text>
-        </Flex>
-
-        {trade?.items.map((item) => (
-          <ItemTrade
-            onChange={(item) => handleChange(item, item.order)}
-            item={item}
-            key={item.order}
-          />
-        ))}
+          Skip
+        </Button>
+        <Button
+          leftIcon={<Icon as={BsCheck2} />}
+          colorScheme="green"
+          variant="solid"
+          mr={2}
+          onClick={doSubmit}
+        >
+          Submit
+        </Button>
       </Flex>
-    </CardBase>
+      <CardBase chakraWrapper={{ flex: 1 }} title="Trade Pricing" chakra={{ bg: 'gray.700' }}>
+        <Flex flexFlow="column" gap={6}>
+          <Flex
+            textAlign="center"
+            fontSize="sm"
+            wordBreak={'break-word'}
+            whiteSpace={'pre-line'}
+            flexFlow="column"
+            p={2}
+          >
+            <b>Wishlist</b>
+            <Text>{trade?.wishlist}</Text>
+          </Flex>
+
+          {trade?.items.map((item) => (
+            <ItemTrade
+              onChange={(item) => handleChange(item, item.order)}
+              item={item}
+              key={item.order}
+            />
+          ))}
+        </Flex>
+      </CardBase>
+    </Flex>
   );
 };
 
@@ -76,6 +111,7 @@ const ItemTrade = (props: ItemTradeProps) => {
         </Text>
         <FormControl>
           <CustomNumberInput
+            skipDebounce
             wrapperProps={{
               variant: 'filled',
               size: 'sm',

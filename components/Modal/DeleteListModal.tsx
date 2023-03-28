@@ -13,7 +13,8 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useState } from 'react';
-import { useAuth } from '../../utils/auth';
+import { useRecoilState } from 'recoil';
+import { useAuth, UserLists } from '../../utils/auth';
 
 type Props = {
   isOpen: boolean;
@@ -28,6 +29,7 @@ const DeleteListModal = (props: Props) => {
   const { isOpen, onClose, selectedLists: listsIds, refresh, username } = props;
   const [isLoading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
+  const [, setRecoilLists] = useRecoilState(UserLists);
 
   const confirmDelete = async () => {
     setLoading(true);
@@ -46,6 +48,7 @@ const DeleteListModal = (props: Props) => {
       if (res.data.success) {
         refresh();
         handleClose();
+        setRecoilLists(null)
         setLoading(false);
       } else throw res.data;
     } catch (e) {
