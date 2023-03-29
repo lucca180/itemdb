@@ -5,7 +5,7 @@ import Layout from '../../components/Layout';
 
 const FeedbackPage = () => {
   return (
-    <Layout>
+    <Layout SEO={{ title: 'Feedback' }}>
       <Heading>The Feedback System</Heading>
       <Text>
         Most of our content is collected and categorized automatically but there are some things our

@@ -7,6 +7,8 @@ import { RecoilRoot } from 'recoil';
 import Head from 'next/head';
 import { GoogleAnalytics, event } from 'nextjs-google-analytics';
 import type { NextWebVitalsMetric } from 'next/app';
+import { DefaultSeo } from 'next-seo';
+import SEOConfig from '../utils/SEO';
 
 export function reportWebVitals({ id, name, label, value }: NextWebVitalsMetric) {
   event(name, {
@@ -36,10 +38,10 @@ function MyApp({ Component, pageProps }: any) {
   return (
     <RecoilRoot>
       <ChakraProvider theme={theme}>
+        <DefaultSeo {...SEOConfig} />
         <Head>
           <link rel="icon" href="/favicon.ico" />
           <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-          <title>itemdb - Open Source Neopets Item Database</title>
         </Head>
         <GoogleAnalytics trackPageViews />
         <Component {...pageProps} />

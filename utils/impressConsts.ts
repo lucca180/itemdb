@@ -1,7 +1,5 @@
 // I don't remember if i got all of this of somewhere or if i did it myself
 // if that's your code reach me out for credits :)
-//@ts-ignore
-import { oneLineTrim } from 'common-tags';
 
 export const FRAGMENT_ITEM_PROPERTIES = `fragment ItemProperties on Item {
   id

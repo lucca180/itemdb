@@ -105,7 +105,7 @@ const ItemPage = (props: Props) => {
   };
 
   return (
-    <Layout>
+    <Layout SEO={{ title: item.name, themeColor: item.color.hex }}>
       {item && (
         <EditItemModal
           isOpen={isEditModalOpen}

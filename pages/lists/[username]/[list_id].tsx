@@ -342,7 +342,9 @@ const ListPage = () => {
   if (!list) return <Layout loading />;
 
   return (
-    <Layout>
+    <Layout
+      SEO={{ title: `${list.name} - List`, nofollow: !list.official, noindex: !list.official }}
+    >
       <CreateListModal
         refresh={init}
         isOpen={openCreateModal}

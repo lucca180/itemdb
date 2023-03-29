@@ -38,7 +38,7 @@ type Props = {
 const ImportPage = (props: Props) => {
   const { items } = props;
   return (
-    <Layout>
+    <Layout SEO={{ title: 'Importing Items' }}>
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/caption/sm_caption_831.gif',

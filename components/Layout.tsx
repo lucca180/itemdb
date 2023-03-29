@@ -20,6 +20,7 @@ import {
   MenuGroup,
   Center,
   Spinner,
+  Link as ChakraLink,
 } from '@chakra-ui/react';
 
 import NextImage from 'next/image';
@@ -33,10 +34,12 @@ import LoginModal from './Modal/LoginModal';
 import { useAuth } from '../utils/auth';
 import { AiFillHeart } from 'react-icons/ai';
 import { BsBoxArrowInRight, BsFillPersonFill } from 'react-icons/bs';
+import { NextSeo, NextSeoProps } from 'next-seo';
 
 type Props = {
   children?: ReactNode;
   loading?: boolean;
+  SEO?: NextSeoProps;
 };
 
 const Layout = (props: Props) => {
@@ -69,6 +72,7 @@ const Layout = (props: Props) => {
 
   return (
     <>
+      <NextSeo {...props.SEO} />
       <LoginModal isOpen={isOpen} onClose={onClose} />
       <Flex flexFlow="column" minH="100vh">
         <Flex as="header" w="full" maxW="8xl" marginX="auto" gap={{ base: 2, md: 4 }} px={4} py={6}>
@@ -118,9 +122,8 @@ const Layout = (props: Props) => {
           </Box>
           <Box display="flex" gap={{ base: 2, md: 3 }} alignItems="center" maxW="30%">
             <Button
-              as="a"
-              href="http://magnetismotimes.com/"
-              target="_blank"
+              as={Link}
+              href="/contribute"
               colorScheme="whiteAlpha"
               bg="gray.100"
               _hover={{ color: 'red.400' }}
@@ -168,7 +171,9 @@ const Layout = (props: Props) => {
                           <MenuItem as={Link} href={`/lists/${user.username}`}>
                             My Lists
                           </MenuItem>
-                          <MenuItem>How to Contribute</MenuItem>
+                          <MenuItem as={Link} href={`/contribute`}>
+                            How to Contribute
+                          </MenuItem>
                         </MenuGroup>
                         <MenuDivider />
                         <MenuItem onClick={signout}>Logout</MenuItem>
@@ -189,13 +194,19 @@ const Layout = (props: Props) => {
             </Center>
           )}
         </Box>
-        <Box as="footer" textAlign={'center'} p={2}>
+        <Flex as="footer" textAlign={'center'} p={3} flexFlow="column" gap={2}>
+          <Text fontSize="xs" color="gray.400">
+            <ChakraLink href="https://github.com/lucca180/itemdb/" isExternal>
+              Source Code
+            </ChakraLink>{' '}
+            | <ChakraLink href="/privacy">Privacy Policy</ChakraLink>
+          </Text>
           <Text fontSize="xs" color="gray.500">
             © 2009-{new Date().getFullYear()} Magnetismo Times
             <br />© 1999-{new Date().getFullYear()} NeoPets, Inc. All rights reserved. Used with
             permission.
           </Text>
-        </Box>
+        </Flex>
       </Flex>
     </>
   );

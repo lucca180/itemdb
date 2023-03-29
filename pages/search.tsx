@@ -177,7 +177,7 @@ const SearchPage = () => {
   };
 
   return (
-    <Layout>
+    <Layout SEO={{ title: `${router.query.s ? `${router.query.s} -` : ''} Search` }}>
       <Flex
         gap={4}
         flexFlow={{ base: 'column', lg: 'row' }}

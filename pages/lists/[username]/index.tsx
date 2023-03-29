@@ -240,7 +240,7 @@ const UserListsPage = () => {
   if (!owner) return <Layout loading />;
 
   return (
-    <Layout>
+    <Layout SEO={{ title: `${router.query.username}'s Lists`, nofollow: true, noindex: true }}>
       {isOwner && (
         <>
           <CreateListModal

@@ -1,4 +1,5 @@
 import { Alert, AlertDescription, AlertIcon, AlertTitle, Button } from '@chakra-ui/react';
+import Link from 'next/link';
 import React from 'react';
 
 const MissingInfoCard = () => {
@@ -7,7 +8,7 @@ const MissingInfoCard = () => {
       <AlertIcon />
       <AlertTitle>We&apos;re missing some item info!</AlertTitle>
       <AlertDescription>
-        <Button size="sm" verticalAlign="baseline">
+        <Button as={Link} href="/contribute" size="sm" verticalAlign="baseline">
           Learn how to help!
         </Button>
       </AlertDescription>
