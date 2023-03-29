@@ -52,7 +52,7 @@ const UserListsPage = () => {
 
   const [owner, setOwner] = useState<User>();
   const [matches, setMatches] = useState({ seek: [], trade: [] });
-
+  const [loading, setLoading] = useState<boolean>(true);
   const isOwner = user?.username && user?.username === router.query.username;
 
   const color = Color(owner?.profileColor || '#4A5568');
@@ -72,6 +72,7 @@ const UserListsPage = () => {
 
   const init = async () => {
     setLists({});
+    setLoading(true);
     const targetUsername = router.query.username;
     try {
       if (!targetUsername) throw 'Invalid Username';
@@ -122,6 +123,7 @@ const UserListsPage = () => {
       });
 
       setLists(listsObj);
+      setLoading(false)
     } catch (err) {
       console.error(err);
 
@@ -237,7 +239,7 @@ const UserListsPage = () => {
     init();
   };
 
-  if (!owner) return <Layout loading />;
+  if (!owner || loading) return <Layout loading />;
 
   return (
     <Layout SEO={{ title: `${router.query.username}'s Lists`, nofollow: true, noindex: true }}>

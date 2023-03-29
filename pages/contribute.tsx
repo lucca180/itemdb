@@ -35,7 +35,7 @@ const ContributePage = () => {
       <Flex flexFlow="column" gap={3} sx={{ a: { color: '#ffee71' }, b: { color: '#8ea7f1' } }}>
         <Divider />
         <Flex flexFlow="column" gap={3} maxW="1000px">
-          <Heading size="lg">1. Using the Item Data Extractor</Heading>
+          <Heading size="lg">Using the Item Data Extractor</Heading>
           {!isLargerThanMD && (
             <Text fontSize="sm" color="red.400">
               This may not work on mobile devices!

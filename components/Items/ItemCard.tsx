@@ -25,7 +25,7 @@ const ItemCard = (props: Props) => {
 
   if (!item || isLoading || !color)
     return (
-      <Link as={NextLink} href={'#'} _hover={{ textDecoration: 'none' }} pointerEvents="none">
+      <Link as={'a'} _hover={{ textDecoration: 'none' }} pointerEvents="none">
         <Box
           w={{ base: 100, md: 150 }}
           py={{ base: 2, md: 4 }}

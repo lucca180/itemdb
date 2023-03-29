@@ -9,6 +9,7 @@ import { GoogleAnalytics, event } from 'nextjs-google-analytics';
 import type { NextWebVitalsMetric } from 'next/app';
 import { DefaultSeo } from 'next-seo';
 import SEOConfig from '../utils/SEO';
+import NextNProgress from 'nextjs-progressbar';
 
 export function reportWebVitals({ id, name, label, value }: NextWebVitalsMetric) {
   event(name, {
@@ -38,6 +39,7 @@ function MyApp({ Component, pageProps }: any) {
   return (
     <RecoilRoot>
       <ChakraProvider theme={theme}>
+        <NextNProgress color="#718096" showOnShallow={true} />
         <DefaultSeo {...SEOConfig} />
         <Head>
           <link rel="icon" href="/favicon.ico" />
