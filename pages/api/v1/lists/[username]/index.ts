@@ -18,7 +18,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   return res.status(405).json({ error: 'Method not allowed' });
 }
 
-// gets all list of a user
+// gets all lists of a user
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const { username } = req.query;
   if (!username || typeof username !== 'string')
@@ -53,7 +53,9 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       },
     });
 
-    const owner = listsRaw[0].user;
+    if (!listsRaw || listsRaw.length === 0) return res.status(200).json([]);
+
+    const owner = listsRaw[0]?.user;
 
     const lists: UserList[] = listsRaw
       .map((list) => {
