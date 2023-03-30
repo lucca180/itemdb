@@ -79,6 +79,8 @@
     "typescript": "4.8.4"
   },
   "lint-staged": {
-    "**/*.ts": "tsc-files --noEmit"
+    "**/*.{js,jsx,ts,tsx}":[
+      "npx prettier --write"
+    ]
   }
 }

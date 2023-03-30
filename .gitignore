@@ -7,3 +7,4 @@ firebase-key.json
 .sentryclirc
 
 userscripts/hash.js
+*.tsbuildinfo
