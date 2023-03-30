@@ -31,12 +31,20 @@ import { FaTrash } from 'react-icons/fa';
 import DeleteListModal from '../../../components/Modal/DeleteListModal';
 import { BiLinkExternal } from 'react-icons/bi';
 import EditProfileModal from '../../../components/Modal/EditProfileModal';
+import { NextPageContext } from 'next';
+import { getUser } from '../../api/v1/users/[username]';
+import NextImage from 'next/image';
+import icon from '../../../public/logo_icon.svg';
 
 type ExtendedUserList = UserList & {
   hasChanged?: boolean;
 };
 
-const UserListsPage = () => {
+type Props = {
+  owner: User;
+};
+
+const UserListsPage = (props: Props) => {
   const router = useRouter();
   const toast = useToast();
   const { user, getIdToken, authLoading } = useAuth();
@@ -50,7 +58,7 @@ const UserListsPage = () => {
   const [selectedLists, setSelectedLists] = useState<number[]>([]);
   const [isEdit, setEdit] = useState<boolean>(false);
 
-  const [owner, setOwner] = useState<User>();
+  const [owner, setOwner] = useState<User | undefined>(props.owner);
   const [matches, setMatches] = useState({ seek: [], trade: [] });
   const [loading, setLoading] = useState<boolean>(true);
   const isOwner = user?.username && user?.username === router.query.username;
@@ -59,18 +67,18 @@ const UserListsPage = () => {
   const rgb = color.rgb().array();
 
   useEffect(() => {
-    if (!authLoading && router.isReady && !owner) {
+    if (!authLoading && router.isReady && loading) {
       init();
     }
-  }, [authLoading, router.isReady, owner]);
+  }, [authLoading, router.isReady]);
 
   useEffect(() => {
-    if (owner) setOwner(undefined);
+    // if (owner) setOwner(undefined);
 
     return () => toast.closeAll();
   }, [router.query]);
 
-  const init = async () => {
+  const init = async (force = false) => {
     setLists({});
     setLoading(true);
     const targetUsername = router.query.username;
@@ -85,11 +93,11 @@ const UserListsPage = () => {
         },
       });
 
-      if (user?.username && user.username === targetUsername) setOwner(user);
-      else {
+      if (force) {
         const userRes = await axios.get(`/api/v1/users/${targetUsername}`);
-        setOwner(userRes.data);
         if (!userRes.data) throw 'This user does not exist';
+        setOwner(userRes.data);
+        console.log(userRes.data);
       }
 
       if (user) {
@@ -123,7 +131,7 @@ const UserListsPage = () => {
       });
 
       setLists(listsObj);
-      setLoading(false)
+      setLoading(false);
     } catch (err) {
       console.error(err);
 
@@ -236,10 +244,20 @@ const UserListsPage = () => {
     setSelectedLists([]);
     setEdit(false);
     setOwner(undefined);
-    init();
+    init(true);
   };
 
-  if (!owner || loading) return <Layout loading />;
+  if (!owner || loading)
+    return (
+      <Layout
+        SEO={{
+          title: `${owner?.username + "'s" ?? 'Loading'} Lists`,
+          nofollow: true,
+          noindex: true,
+        }}
+        loading
+      />
+    );
 
   return (
     <Layout SEO={{ title: `${router.query.username}'s Lists`, nofollow: true, noindex: true }}>
@@ -288,8 +306,28 @@ const UserListsPage = () => {
             boxShadow="sm"
             textAlign="center"
             flex="0 0 auto"
+            minW={{ base: '100px', md: '150px' }}
+            minH={{ base: '100px', md: '150px' }}
           >
-            <Image
+            {!owner.profileImage && (
+              <Image
+                as={NextImage}
+                src={icon}
+                width={{ base: '50px', md: '80px' }}
+                style={{ opacity: 0.85, flex: 1 }}
+                alt={'List Cover'}
+              />
+            )}
+            {owner.profileImage && (
+              <Image
+                src={owner.profileImage}
+                width={{ base: '100px', md: '150px' }}
+                height={{ base: '100px', md: '150px' }}
+                borderRadius="md"
+                alt={'List Cover'}
+              />
+            )}
+            {/* <Image
               src={
                 owner.profileImage ??
                 'https://magnetismotimes.com/wp-content/uploads/2022/09/seller_avy.jpg'
@@ -298,7 +336,7 @@ const UserListsPage = () => {
               width={{ base: 100, md: 150 }}
               height={{ base: 100, md: 150 }}
               alt={`${owner.username}'s avatar`}
-            />
+            /> */}
             {isOwner && (
               <Button
                 variant="solid"
@@ -436,5 +474,19 @@ const UserListsPage = () => {
     </Layout>
   );
 };
+
+export async function getServerSideProps(context: NextPageContext) {
+  const { username } = context.query;
+  if (!username || Array.isArray(username)) return { notFound: true };
+
+  const owner = await getUser(username as string);
+  if (!owner) return { notFound: true };
+
+  return {
+    props: {
+      owner,
+    }, // will be passed to the page component as props
+  };
+}
 
 export default UserListsPage;

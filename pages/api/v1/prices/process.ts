@@ -279,7 +279,7 @@ async function updateOrAddDB(
 
     if (daysSinceLastUpdate <= 3) return undefined;
 
-    if ((variation < 5 || priceValue < 10000) && daysSinceLastUpdate <= 15) return undefined;
+    if ((variation < 5 || priceValue < 2500) && daysSinceLastUpdate <= 30) return undefined;
 
     if (!oldPrice.noInflation_id && priceValue > 75000) {
       if (oldPrice.price < priceValue && variation >= 65) {

@@ -35,15 +35,23 @@ import { SortableArea } from '../../../components/Sortable/SortableArea';
 import { SelectItemsCheckbox } from '../../../components/Input/SelectItemsCheckbox';
 import ItemActionModal from '../../../components/Modal/ItemActionModal';
 import { BiLinkExternal } from 'react-icons/bi';
+import { NextPageContext } from 'next';
+import { getList } from '../../api/v1/lists/[username]/[list_id]';
+import { getManyItems } from '../../api/v1/items/many';
 
 type ExtendedListItemInfo = ListItemInfo & { hasChanged?: boolean };
 
-const ListPage = () => {
+type Props = {
+  list: UserList;
+  items: { [item_iid: string]: ItemData };
+};
+
+const ListPage = (props: Props) => {
   const router = useRouter();
   const toast = useToast();
 
   const { user, getIdToken, authLoading } = useAuth();
-  const [list, setList] = useState<UserList>();
+  const [list, setList] = useState<UserList>(props.list);
   const [openCreateModal, setOpenCreateModal] = useState<boolean>(false);
 
   const [itemInfoIds, setItemInfoIds] = useState<number[]>([]);
@@ -62,6 +70,8 @@ const ListPage = () => {
   const [selectionAction, setSelectionAction] = useState<string>('');
 
   const [matches, setMatches] = useState<ListItemInfo[]>([]);
+  const [isLoading, setLoading] = useState<boolean>(true);
+
   const [isLargerThanSM] = useMediaQuery('(min-width: 30em)');
 
   const isOwner = user?.username === router.query.username || user?.id === list?.user_id;
@@ -69,13 +79,13 @@ const ListPage = () => {
   const rgb = color.rgb().array();
 
   useEffect(() => {
-    if (!authLoading && router.isReady && !list) {
+    if (!authLoading && router.isReady) {
       init();
     }
-  }, [authLoading, list, router.isReady]);
+  }, [authLoading, router.isReady]);
 
   useEffect(() => {
-    if (list) setList(undefined);
+    // if (list) setList(undefined);
 
     return () => toast.closeAll();
   }, [router.query]);
@@ -84,19 +94,23 @@ const ListPage = () => {
     if (user && list) getMatches();
   }, [user, list]);
 
-  const init = async () => {
+  const init = async (force = false) => {
+    setLoading(true);
     toast.closeAll();
-    const { username, list_id } = router.query;
     try {
-      const token = await getIdToken();
+      let res;
+      if (force) {
+        const { username, list_id } = router.query;
+        const token = await getIdToken();
 
-      const res = await axios.get(`/api/v1/lists/${username}/${list_id}`, {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      });
+        res = await axios.get(`/api/v1/lists/${username}/${list_id}`, {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        });
+      }
 
-      const listData = res.data as UserList | null;
+      const listData: UserList = res?.data ?? list;
 
       if (!listData) throw 'List does not exist';
 
@@ -110,25 +124,24 @@ const ListPage = () => {
         setItemInfo({});
         setMatches([]);
         setSortInfo({ sortBy: listData.sortBy, sortDir: listData.sortDir });
-        setList(res.data);
+        if (force && res) setList(res.data);
         setItems({});
+        setLoading(false);
         return;
       }
 
-      const itemRes = await axios.post(`/api/v1/items/many`, {
-        id: itensId,
-      });
+      let itemRes: any;
+
+      if (force)
+        itemRes = await axios.post(`/api/v1/items/many`, {
+          id: itensId,
+        });
 
       const itemInfos = listData.itemInfo;
+      const itemData: { [id: string]: ItemData } = itemRes?.data ?? props.items;
 
       const sortedItemInfo = itemInfos.sort((a, b) =>
-        sortItems(
-          a,
-          b,
-          listData.sortBy,
-          listData.sortDir,
-          itemRes.data as { [id: string]: ItemData }
-        )
+        sortItems(a, b, listData.sortBy, listData.sortDir, itemData)
       );
       const infoIds = [];
       const itemMap: { [id: number]: ListItemInfo } = {};
@@ -142,8 +155,11 @@ const ListPage = () => {
       setSortInfo({ sortBy: listData.sortBy, sortDir: listData.sortDir });
       setItemInfoIds(infoIds);
       setItemInfo(itemMap);
-      setList(res.data);
-      setItems(itemRes.data);
+
+      if (force && res) setList(res.data);
+      setItems(itemData);
+
+      setLoading(false);
     } catch (err) {
       console.error(err);
 
@@ -257,7 +273,7 @@ const ListPage = () => {
           <Button variant="solid" onClick={saveChanges} colorScheme="blackAlpha" size="sm">
             Save Changes
           </Button>
-          <Button variant="solid" onClick={init} colorScheme="blackAlpha" size="sm">
+          <Button variant="solid" onClick={() => init(true)} colorScheme="blackAlpha" size="sm">
             Cancel
           </Button>
         </Flex>
@@ -310,7 +326,7 @@ const ListPage = () => {
         });
 
         setEdit(false);
-        init();
+        init(true);
       } else throw res.data.error;
     } catch (err) {
       console.error(err);
@@ -339,20 +355,26 @@ const ListPage = () => {
     setHasChanges();
   };
 
-  if (!list) return <Layout loading />;
+  if (isLoading)
+    return (
+      <Layout
+        SEO={{ title: `${list.name} - List`, nofollow: !list.official, noindex: !list.official }}
+        loading
+      />
+    );
 
   return (
     <Layout
       SEO={{ title: `${list.name} - List`, nofollow: !list.official, noindex: !list.official }}
     >
       <CreateListModal
-        refresh={init}
+        refresh={() => init(true)}
         isOpen={openCreateModal}
         list={list}
         onClose={() => setOpenCreateModal(false)}
       />
       <ItemActionModal
-        refresh={init}
+        refresh={() => init(true)}
         isOpen={!!selectionAction}
         onClose={() => setSelectionAction('')}
         selectedItems={itemSelect.map((id) => itemInfo[id])}
@@ -655,6 +677,28 @@ const ListPage = () => {
 };
 
 export default ListPage;
+
+export async function getServerSideProps(context: NextPageContext) {
+  const { list_id, username } = context.query;
+  if (!username || !list_id || Array.isArray(username) || Array.isArray(list_id))
+    return { notFound: true };
+
+  const list = await getList(username, parseInt(list_id), null, username === 'official');
+
+  if (!list) return { notFound: true };
+
+  const items_id = list.itemInfo.map((a) => a.item_iid.toString());
+  const items = await getManyItems({
+    id: items_id,
+  });
+
+  return {
+    props: {
+      list,
+      items,
+    }, // will be passed to the page component as props
+  };
+}
 
 const sortItems = (
   a: ListItemInfo,

@@ -70,13 +70,16 @@ const SearchPage = () => {
     if (query.match(/^#[0-9A-Fa-f]{6}$/)) {
       if (!searchResult && !isColorSearch) {
         setIsColorSearch(true);
-        console.log(customFilters?.sortBy)
+        console.log(customFilters?.sortBy);
         customFilters = {
           ...(customFilters ?? filters),
-          sortBy: (customFilters ?? filters).sortBy !== 'name' ? (customFilters ?? filters).sortBy : 'color',
+          sortBy:
+            (customFilters ?? filters).sortBy !== 'name'
+              ? (customFilters ?? filters).sortBy
+              : 'color',
         };
 
-        setFilters( customFilters );
+        setFilters(customFilters);
       }
     } else setIsColorSearch(false);
 

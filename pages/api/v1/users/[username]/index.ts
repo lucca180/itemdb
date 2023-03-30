@@ -22,32 +22,9 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(400).json({ error: 'Invalid Request' });
 
   try {
-    const user = await prisma.user.findFirst({
-      where: {
-        username: username,
-      },
-    });
+    const user = await getUser(username);
 
-    if (!user) return res.status(200).json(null);
-
-    // remove sensitive data
-    const cleanedUser: User = {
-      id: user.id,
-      username: user.username,
-      neopetsUser: user.neo_user,
-      isAdmin: user.role === 'ADMIN',
-      email: '',
-      profileColor: user.profile_color,
-      profileImage: user.profile_image,
-      description: user.description,
-      role: user.role as UserRoles,
-      lastLogin: new Date(0),
-      last_ip: null,
-      createdAt: user.createdAt,
-      xp: user.xp,
-    };
-
-    return res.status(200).json(cleanedUser);
+    return res.status(200).json(user);
   } catch (e: any) {
     console.error(e);
     return res.status(500).json({ error: 'Internal Server Error' });
@@ -116,9 +93,9 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       profileImage: tempUser.profile_image,
       description: tempUser.description,
       role: tempUser.role as UserRoles,
-      lastLogin: new Date(0),
+      lastLogin: new Date(0).toJSON(),
       last_ip: null,
-      createdAt: tempUser.createdAt,
+      createdAt: tempUser.createdAt.toJSON(),
       xp: tempUser.xp,
     };
 
@@ -127,4 +104,35 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     console.error(e);
     return res.status(400).json({ error: e?.message ?? 'Something went wrong' });
   }
+};
+
+// ------------------------------ //
+
+export const getUser = async (username: string) => {
+  const user = await prisma.user.findFirst({
+    where: {
+      username: username,
+    },
+  });
+
+  if (!user) return null;
+
+  // remove sensitive data
+  const cleanedUser: User = {
+    id: user.id,
+    username: user.username,
+    neopetsUser: user.neo_user,
+    isAdmin: user.role === 'ADMIN',
+    email: '',
+    profileColor: user.profile_color,
+    profileImage: user.profile_image,
+    description: user.description,
+    role: user.role as UserRoles,
+    lastLogin: new Date(0).toJSON(),
+    last_ip: null,
+    createdAt: user.createdAt.toJSON(),
+    xp: user.xp,
+  };
+
+  return cleanedUser;
 };

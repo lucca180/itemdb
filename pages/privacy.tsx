@@ -14,7 +14,7 @@ const PrivacyPolicyPage = () => {
         color="#7AB92A"
       >
         <Heading size="lg">Privacy Policy (April 2023)</Heading>
-        <Text>
+        <Text size={{ base: 'sm', md: undefined }}>
           itemdb collects some personal data during its use. No information is sold or used for
           advertising.
           <br />
@@ -23,7 +23,7 @@ const PrivacyPolicyPage = () => {
       </HeaderCard>
       <Flex flexFlow="column" gap={3} sx={{ a: { color: '#7AB92A' }, b: { color: '#7AB92A' } }}>
         <Flex flexFlow="column" gap={3} maxW="1000px">
-          <Heading size="md">What data do we collect and how we use it?</Heading>
+          <Heading size="lg">What data do we collect and how we use it?</Heading>
           <Text>
             We collect your email address when you choose to create an account. This info is used to
             power features such as user lists. We may also collect your IP address when you visit
@@ -70,7 +70,7 @@ const PrivacyPolicyPage = () => {
               </Text>
             </ListItem>
           </UnorderedList>
-          <Heading size="md">Your Contributions and Creations</Heading>
+          <Heading size="lg">Your Contributions and Creations</Heading>
           <Text>
             You may choose to contribute to the site by using our Item Data Extractor script. This
             script will allow you to extract data from the Neopets and upload it to the itemdb. This
@@ -91,6 +91,13 @@ const PrivacyPolicyPage = () => {
             Neopets username from our database at any time. We may also track and display the last
             time you used the site. This is done to help other users to find active users to trade
             with.
+          </Text>
+          <Text>
+            We can also label your items in a list as "imported", this means that the item was
+            imported to your list from Neopets using an importer tool. This is done to Pensure that
+            any cap price you set for an NC Item is legit and a fake price to inflate the item
+            market price. We currently do not display publicly this information and the Neopets
+            account username where the item was imported from is not collected or stored.
           </Text>
           <Text>
             Your lists may be labed as "official" by the itemdb staff. This means that the list

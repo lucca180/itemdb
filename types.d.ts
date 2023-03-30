@@ -167,8 +167,8 @@ export type User = {
   email: string;
   role: UserRoles;
   isAdmin: boolean;
-  createdAt: Date;
-  lastLogin: Date;
+  createdAt: string;
+  lastLogin: string;
   last_ip: string | null;
   profileColor: string | null;
   profileImage: string | null;
@@ -207,8 +207,8 @@ export type UserList = {
   sortDir: string;
   order: number | null;
 
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 
   itemInfo: ListItemInfo[];
   itemCount: number;
@@ -218,8 +218,8 @@ export type ListItemInfo = {
   internal_id: number;
   list_id: number;
   item_iid: number;
-  addedAt: Date;
-  updatedAt: Date;
+  addedAt: string;
+  updatedAt: string;
   amount: number;
   capValue: number | null;
   imported: boolean;

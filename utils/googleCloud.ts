@@ -22,7 +22,7 @@ export const CheckAuth = async (req: NextApiRequest) => {
 
   if (!dbUser) return { decodedToken: decodedToken, user: null };
 
-  const user: Partial<User> = {
+  const user: User = {
     id: dbUser.id,
     username: dbUser.username,
     neopetsUser: dbUser.neo_user,

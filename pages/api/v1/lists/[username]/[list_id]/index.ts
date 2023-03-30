@@ -1,6 +1,6 @@
 import { startOfDay } from 'date-fns';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { ListItemInfo, UserList } from '../../../../../../types';
+import { ListItemInfo, UserList, User } from '../../../../../../types';
 import { CheckAuth } from '../../../../../../utils/googleCloud';
 import prisma from '../../../../../../utils/prisma';
 
@@ -33,71 +33,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   } catch (e) {}
 
   try {
-    const listRaw = await prisma.userList.findUnique({
-      where: {
-        internal_id: parseInt(list_id),
-        official: isOfficial || undefined,
-        user: {
-          username: isOfficial ? undefined : username,
-        },
-      },
-      include: {
-        items: true,
-        user: true,
-      },
-    });
-
-    if (
-      !listRaw ||
-      (!listRaw.official && listRaw.visibility === 'private' && listRaw.user_id !== user?.id)
-    )
-      return res.json(null);
-
-    const owner = listRaw.user;
-
-    const list: UserList = {
-      internal_id: listRaw.internal_id,
-      name: listRaw.name,
-      description: listRaw.description,
-      coverURL: listRaw.cover_url,
-      colorHex: listRaw.colorHex,
-      purpose: listRaw.purpose,
-      official: listRaw.official,
-      visibility: listRaw.visibility,
-      user_id: listRaw.user_id,
-      user_username: owner?.username ?? '',
-      user_neouser: owner?.neo_user ?? '',
-
-      owner: {
-        id: owner.id,
-        username: owner.username,
-        neopetsUser: owner.neo_user,
-        lastSeen: startOfDay(owner.last_login).toJSON(),
-      },
-
-      createdAt: listRaw.createdAt,
-      updatedAt: listRaw.updatedAt,
-
-      sortBy: listRaw.sortBy,
-      sortDir: listRaw.sortDir,
-      order: listRaw.order ?? 0,
-
-      itemCount: listRaw.items.length,
-      itemInfo: listRaw.items.map((item) => {
-        return {
-          internal_id: item.internal_id,
-          list_id: item.list_id,
-          item_iid: item.item_iid,
-          addedAt: item.addedAt,
-          updatedAt: item.updatedAt,
-          amount: item.amount,
-          capValue: item.capValue,
-          imported: item.imported,
-          order: item.order,
-          isHighlight: item.isHighlight,
-        };
-      }),
-    };
+    const list = await getList(username, parseInt(list_id), user, isOfficial);
 
     return res.status(200).json(list);
   } catch (e: any) {
@@ -409,4 +345,79 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
     console.error(e);
     res.status(500).json({ error: 'Internal Server Error' });
   }
+};
+
+export const getList = async (
+  username: string,
+  list_id: number,
+  user?: User | null,
+  isOfficial = false
+) => {
+  const listRaw = await prisma.userList.findUnique({
+    where: {
+      internal_id: list_id,
+      official: isOfficial || undefined,
+      user: {
+        username: isOfficial ? undefined : username,
+      },
+    },
+    include: {
+      items: true,
+      user: true,
+    },
+  });
+
+  if (
+    !listRaw ||
+    (!listRaw.official && listRaw.visibility === 'private' && listRaw.user_id !== user?.id)
+  )
+    return null;
+
+  const owner = listRaw.user;
+
+  const list: UserList = {
+    internal_id: listRaw.internal_id,
+    name: listRaw.name,
+    description: listRaw.description,
+    coverURL: listRaw.cover_url,
+    colorHex: listRaw.colorHex,
+    purpose: listRaw.purpose,
+    official: listRaw.official,
+    visibility: listRaw.visibility,
+    user_id: listRaw.user_id,
+    user_username: owner?.username ?? '',
+    user_neouser: owner?.neo_user ?? '',
+
+    owner: {
+      id: owner.id,
+      username: owner.username,
+      neopetsUser: owner.neo_user,
+      lastSeen: startOfDay(owner.last_login).toJSON(),
+    },
+
+    createdAt: listRaw.createdAt.toJSON(),
+    updatedAt: listRaw.updatedAt.toJSON(),
+
+    sortBy: listRaw.sortBy,
+    sortDir: listRaw.sortDir,
+    order: listRaw.order ?? 0,
+
+    itemCount: listRaw.items.length,
+    itemInfo: listRaw.items.map((item) => {
+      return {
+        internal_id: item.internal_id,
+        list_id: item.list_id,
+        item_iid: item.item_iid,
+        addedAt: item.addedAt.toJSON(),
+        updatedAt: item.updatedAt.toJSON(),
+        amount: item.amount,
+        capValue: item.capValue,
+        imported: item.imported,
+        order: item.order,
+        isHighlight: item.isHighlight,
+      };
+    }),
+  };
+
+  return list;
 };
