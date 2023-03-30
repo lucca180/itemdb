@@ -74,9 +74,10 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const tradeLots = data.tradeLots;
   const lang = data.lang;
-  //const dataHash = data.hash;
+  const dataHash = data.hash;
 
-  // if(!checkHash(dataHash, {tradeLots: tradeLots}))
+  if (!checkHash(dataHash, { tradeLots: tradeLots })) console.error('[TRADE ADD] Invalid hash');
+
   //   return res.status(400).json({ error: 'Invalid hash' });
 
   if (lang !== 'en') return res.status(400).json('Language must be english');

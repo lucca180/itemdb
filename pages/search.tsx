@@ -51,7 +51,7 @@ const SearchPage = () => {
   const [searchStatus, setStatus] = useState<SearchStats | null>(null);
   const [filters, setFilters] = useState<SearchFiltersType>(defaultFilters);
   const [isColorSearch, setIsColorSearch] = useState<boolean>(false);
-  const [isLargerThanLG] = useMediaQuery('(min-width: 62em)');
+  const [isLargerThanLG] = useMediaQuery('(min-width: 62em)', { fallback: true });
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const router = useRouter();

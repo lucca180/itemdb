@@ -42,6 +42,7 @@ import { getItemColor } from '../api/v1/items/colors';
 import ItemOfficialLists from '../../components/Items/ItemOfficialList';
 import { getItemLists } from '../api/v1/items/[id_name]/lists';
 import ItemMatch from '../../components/Price/ItemMatch';
+import Link from 'next/link';
 
 const defaultLastSeen: ItemLastSeen = {
   sw: null,
@@ -144,29 +145,47 @@ const ItemPage = (props: Props) => {
           </Flex>
           <Box>
             <Stack direction="row" mb={1}>
-              {<Badge borderRadius="md">{item.category ?? '???'}</Badge>}
+              {
+                <Badge
+                  as={Link}
+                  borderRadius="md"
+                  href={`/search?s=&category[]=${item.category ?? 'Unknown'}`}
+                >
+                  {item.category ?? '???'}
+                </Badge>
+              }
               {item.type === 'np' && (
-                <Badge colorScheme="green" borderRadius="md">
+                <Badge colorScheme="green" borderRadius="md" as={Link} href="/search?s=&type[]=np">
                   NP
                 </Badge>
               )}
               {item.type === 'nc' && (
-                <Badge colorScheme="purple" borderRadius="md">
+                <Badge colorScheme="purple" borderRadius="md" as={Link} href="/search?s=&type[]=nc">
                   NC
                 </Badge>
               )}
               {item.type === 'pb' && (
-                <Badge colorScheme="yellow" borderRadius="md">
+                <Badge colorScheme="yellow" borderRadius="md" as={Link} href="/search?s=&type[]=pb">
                   PB
                 </Badge>
               )}
               {item.isWearable && (
-                <Badge colorScheme="blue" borderRadius="md">
+                <Badge
+                  colorScheme="blue"
+                  borderRadius="md"
+                  as={Link}
+                  href="/search?s=&type[]=wearable"
+                >
                   Wearable
                 </Badge>
               )}
               {item.isNeohome && (
-                <Badge colorScheme="cyan" borderRadius="md">
+                <Badge
+                  colorScheme="cyan"
+                  borderRadius="md"
+                  as={Link}
+                  href="/search?s=&type[]=neohome"
+                >
                   Neohome
                 </Badge>
               )}

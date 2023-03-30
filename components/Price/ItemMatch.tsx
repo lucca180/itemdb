@@ -1,6 +1,7 @@
-import { Button, ButtonGroup, Flex } from '@chakra-ui/react';
+import { Button, ButtonGroup, Center, Flex, Icon, Text } from '@chakra-ui/react';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { MdMoneyOff } from 'react-icons/md';
 import { ItemData, UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import CardBase from '../Card/CardBase';
@@ -54,6 +55,17 @@ const ItemMatch = (props: Props) => {
   };
 
   const color = item.color.rgb;
+
+  if (item.status === 'no trade')
+    return (
+      <CardBase color={color} title="NC Trade">
+        <Center>
+          <Icon as={MdMoneyOff} boxSize="100px" opacity={0.4} />
+        </Center>
+        <Text textAlign="center">This item is not tradeable.</Text>
+      </CardBase>
+    );
+
   return (
     <CardBase title="NC Trade" color={color}>
       <Flex flexFlow="column" minH="200px">

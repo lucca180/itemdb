@@ -44,9 +44,9 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const itemPrices = data.itemPrices;
 
   const lang = data.lang;
-  // const dataHash = data.hash;
+  const dataHash = data.hash;
 
-  // if(!checkHash(dataHash, {itemPrices: itemPrices}))
+  if (!checkHash(dataHash, { itemPrices: itemPrices })) console.error('[PRICE ADD] Invalid hash');
   //   return res.status(400).json({ error: 'Invalid hash' });
 
   const dataList = [];
