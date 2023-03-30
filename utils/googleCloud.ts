@@ -32,9 +32,9 @@ export const CheckAuth = async (req: NextApiRequest) => {
     profileImage: dbUser.profile_image,
     description: dbUser.description,
     role: dbUser.role as UserRoles,
-    lastLogin: new Date(0),
+    lastLogin: new Date(0).toJSON(),
     last_ip: null,
-    createdAt: dbUser.createdAt,
+    createdAt: dbUser.createdAt.toJSON(),
     xp: dbUser.xp,
   };
 

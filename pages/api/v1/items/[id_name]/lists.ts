@@ -59,8 +59,8 @@ export const getItemLists = async (id: number, onlyOfficial: boolean): Promise<U
         lastSeen: startOfDay(owner.last_login).toJSON(),
       },
 
-      createdAt: list.createdAt,
-      updatedAt: list.updatedAt,
+      createdAt: list.createdAt.toJSON(),
+      updatedAt: list.updatedAt.toJSON(),
 
       sortBy: list.sortBy,
       sortDir: list.sortDir,
@@ -72,8 +72,8 @@ export const getItemLists = async (id: number, onlyOfficial: boolean): Promise<U
           internal_id: item.internal_id,
           list_id: item.list_id,
           item_iid: item.item_iid,
-          addedAt: item.addedAt,
-          updatedAt: item.updatedAt,
+          addedAt: item.addedAt.toJSON(),
+          updatedAt: item.updatedAt.toJSON(),
           amount: item.amount,
           capValue: item.capValue,
           imported: item.imported,
