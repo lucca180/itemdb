@@ -1,3 +1,4 @@
+import { startOfDay } from 'date-fns';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { User, UserRoles } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
@@ -93,8 +94,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       profileImage: tempUser.profile_image,
       description: tempUser.description,
       role: tempUser.role as UserRoles,
-      lastLogin: new Date(0).toJSON(),
-      last_ip: null,
+      lastLogin: startOfDay(tempUser.last_login).toJSON(),
       createdAt: tempUser.createdAt.toJSON(),
       xp: tempUser.xp,
     };
@@ -128,8 +128,7 @@ export const getUser = async (username: string) => {
     profileImage: user.profile_image,
     description: user.description,
     role: user.role as UserRoles,
-    lastLogin: new Date(0).toJSON(),
-    last_ip: null,
+    lastLogin: startOfDay(user.last_login).toJSON(),
     createdAt: user.createdAt.toJSON(),
     xp: user.xp,
   };

@@ -23,13 +23,13 @@ export type ItemData = {
 };
 
 export type ItemFindAt = {
-  shopWizard?: string;
-  auction?: string;
-  trading?: string;
-  closet?: string;
-  safetyDeposit: string;
-  restockShop?: string;
-  dti?: string;
+  shopWizard?: string | null;
+  auction?: string | null;
+  trading?: string | null;
+  closet?: string | null;
+  safetyDeposit?: string | null;
+  restockShop?: string | null;
+  dti?: string | null;
 };
 
 export type ColorData = {
@@ -47,6 +47,7 @@ export type ColorData = {
 export type ItemColorData = {
   lab: [number, number, number] | number[];
   rgb: [number, number, number] | number[];
+  hsv: [number, number, number] | number[];
   hex: string;
   type: 'vibrant';
   population: number;
@@ -131,7 +132,6 @@ export type SearchResults = {
 export type SearchStats = {
   total: number;
   category: Record<string, number>;
-  // isNC: Record<string, number>;
   type: Record<string, number>;
   isWearable: Record<string, number>;
   isNeohome: Record<string, number>;
@@ -144,9 +144,9 @@ export type SearchFilters = {
   status: string[];
   color: string;
   price: string[]; // [min, max]
-  rarity: string[];
-  weight: string[];
-  estVal: string[];
+  rarity: string[]; // [min, max]
+  weight: string[]; // [min, max]
+  estVal: string[]; // [min, max]
   sortBy: string;
   sortDir: string;
   limit: number;
@@ -157,7 +157,7 @@ export type ItemTag = {
   tag_id: number;
   name: string;
   description: string | null;
-  type: 'category' | 'tag';
+  type: 'tag';
 };
 
 export type User = {
@@ -169,7 +169,6 @@ export type User = {
   isAdmin: boolean;
   createdAt: string;
   lastLogin: string;
-  last_ip: string | null;
   profileColor: string | null;
   profileImage: string | null;
   description: string | null;
@@ -184,8 +183,11 @@ export type UserList = {
   name: string;
   description: string | null;
 
+  /** @deprecated use owner field instead */
   user_id: string;
+  /** @deprecated use owner field instead */
   user_username: string;
+  /** @deprecated use owner field instead */
   user_neouser: string;
 
   owner: {

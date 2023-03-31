@@ -313,6 +313,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       isNeohome: !!result.isNeohome,
       isWearable: !!result.specialType?.includes('wearable') || !!result.isWearable,
       color: {
+        hsv: [result.hsv_h, result.hsv_s, result.hsv_v],
         rgb: [result.rgb_r, result.rgb_g, result.rgb_b],
         lab: [result.lab_l, result.lab_a, result.lab_b],
         hex: result.hex,

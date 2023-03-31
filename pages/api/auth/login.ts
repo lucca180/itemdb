@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { CheckAuth } from '../../../utils/googleCloud';
 import requestIp from 'request-ip';
 import { User, UserRoles } from '../../../types';
+import { startOfDay } from 'date-fns';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
@@ -45,8 +46,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       profileImage: dbUser.profile_image,
       description: dbUser.description,
       role: dbUser.role as UserRoles,
-      lastLogin: new Date(0).toJSON(),
-      last_ip: null,
+      lastLogin: startOfDay(dbUser.last_login).toJSON(),
       createdAt: dbUser.createdAt.toJSON(),
       xp: dbUser.xp,
     };

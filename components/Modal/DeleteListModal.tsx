@@ -65,7 +65,7 @@ const DeleteListModal = (props: Props) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} isCentered>
+    <Modal isOpen={isOpen} onClose={handleClose} isCentered scrollBehavior="inside">
       <ModalOverlay />
       <ModalContent>
         <ModalHeader textTransform="capitalize">Delete {listsIds.length} lists?</ModalHeader>

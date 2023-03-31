@@ -71,7 +71,7 @@ const FeedbackModal = (props: Props) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleCancel} isCentered>
+    <Modal isOpen={isOpen} onClose={handleCancel} isCentered scrollBehavior="inside">
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Feedback</ModalHeader>

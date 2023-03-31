@@ -63,7 +63,7 @@ const ItemPreview = (props: Props) => {
       >
         <Text fontSize="small">
           Powered by{' '}
-          <Link href={item.findAt.dti} isExternal>
+          <Link href={item.findAt.dti ?? undefined} isExternal>
             Dress To Impress <ExternalLinkIcon mx="1px" verticalAlign="baseline" />
           </Link>
         </Text>

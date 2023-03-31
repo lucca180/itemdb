@@ -7,6 +7,12 @@ export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
     safetyDeposit: `https://www.neopets.com/safetydeposit.phtml?obj_name=${cleanItem(
       item
     )}&category=0`,
+    shopWizard: null,
+    auction: null,
+    trading: null,
+    closet: null,
+    restockShop: null,
+    dti: null,
   };
 
   if (item.isWearable)

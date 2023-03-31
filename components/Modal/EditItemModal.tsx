@@ -58,7 +58,7 @@ const EditItemModal = (props: Props) => {
 
   useEffect(() => {
     setTags(tagsProps.filter((t) => t.type === 'tag').map((t) => t.name));
-    setCategories(tagsProps.filter((t) => t.type === 'category').map((t) => t.name));
+    // setCategories(tagsProps.filter((t) => t.type === 'category').map((t) => t.name));
   }, [tagsProps]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -159,7 +159,7 @@ const EditItemModal = (props: Props) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleCancel} isCentered>
+    <Modal isOpen={isOpen} onClose={handleCancel} isCentered scrollBehavior="inside">
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
