@@ -9,7 +9,7 @@ import { startOfDay } from 'date-fns';
 
 if (!getApps().length) initializeApp({ credential: cert('./firebase-key.json') });
 
-const Auth = getAuth();
+export const Auth = getAuth();
 
 export const CheckAuth = async (req: NextApiRequest) => {
   const token = req.headers.authorization?.split('Bearer ')[1];

@@ -8,3 +8,4 @@ node_modules
 userscripts
 utils/randomName.ts
 utils/hash.ts
+utils/views/*

@@ -14,14 +14,15 @@ import {
   FormErrorMessage,
   Spinner,
 } from '@chakra-ui/react';
-import { getAuth, sendSignInLinkToEmail } from 'firebase/auth';
+import axios from 'axios';
 import Image from 'next/image';
-import { useRouter } from 'next/router';
 import { useState } from 'react';
 import logoIcon from '../../public/logo_white.svg';
+// import { useRouter } from 'next/router';
+// import { getAuth, sendSignInLinkToEmail } from 'firebase/auth';
 
 const mailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const isProd = process.env.NODE_ENV === 'production';
+// const isProd = process.env.NODE_ENV === 'production';
 
 type Props = {
   isOpen: boolean;
@@ -34,8 +35,8 @@ const LoginModal = (props: Props) => {
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isSent, setIsSent] = useState<boolean>(false);
-  const auth = getAuth();
-  const router = useRouter();
+  // const auth = getAuth();
+  // const router = useRouter();
 
   const doLogin = async () => {
     if (isSent) return onClose();
@@ -48,13 +49,17 @@ const LoginModal = (props: Props) => {
     setIsLoading(true);
 
     try {
-      await sendSignInLinkToEmail(auth, email, {
-        url:
-          (isProd
-            ? 'https://itemdb.com.br/login?redirect='
-            : 'http://localhost:3000/login?redirect=') + encodeURIComponent(router.pathname),
-        handleCodeInApp: true,
-      });
+      // If you are building locally, comment out `await sendEmail(email);` and uncomment the code below and the respective imports
+
+      // await sendSignInLinkToEmail(auth, email, {
+      //   url:
+      //     (isProd
+      //       ? 'https://itemdb.com.br/login'
+      //       : 'http://localhost:3000/login'),
+      //   handleCodeInApp: true,
+      // });
+
+      await sendEmail(email);
 
       window.localStorage.setItem('emailForSignIn', email);
       setIsSent(true);
@@ -64,6 +69,14 @@ const LoginModal = (props: Props) => {
     }
 
     setIsLoading(false);
+  };
+
+  const sendEmail = async (email: string) => {
+    const res = await axios.post('/api/auth/sendLink', {
+      email,
+    });
+
+    return res.data;
   };
 
   const onEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,7 +93,6 @@ const LoginModal = (props: Props) => {
         <ModalBody>
           <Center flexFlow="column">
             <Image src={logoIcon} alt="itemdb logo" width={225} quality={100} />
-            {/* <Heading my={2} color="gray.200"  size='lg'>Welcome</Heading> */}
             {!isSent && (
               <Text color="gray.200" mt={4} fontSize="sm">
                 Use your email to <b>sign in</b> or to <b>create a new account</b>
@@ -110,7 +122,7 @@ const LoginModal = (props: Props) => {
           )}
         </ModalBody>
         <ModalFooter>
-          {!isSent && (
+          {!isSent && !isLoading && (
             <>
               <Button onClick={onClose} variant="ghost" mr={3}>
                 Cancel
@@ -119,7 +131,7 @@ const LoginModal = (props: Props) => {
             </>
           )}
 
-          {isSent && <Button onClick={onClose}>Close</Button>}
+          {isSent && !isLoading && <Button onClick={onClose}>Close</Button>}
         </ModalFooter>
       </ModalContent>
     </Modal>
