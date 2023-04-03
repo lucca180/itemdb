@@ -3,6 +3,11 @@ import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method == 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Methods', 'POST');
+    return res.status(200).json({});
+  }
+
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   // target: username of the user whose list we want to match against

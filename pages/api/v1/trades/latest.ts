@@ -3,6 +3,11 @@ import prisma from '../../../../utils/prisma';
 import { TradeData } from '../../../../types';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method == 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Methods', 'GET');
+    return res.status(200).json({});
+  }
+
   if (req.method !== 'GET')
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 

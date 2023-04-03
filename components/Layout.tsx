@@ -199,7 +199,8 @@ const Layout = (props: Props) => {
             <ChakraLink href="https://github.com/lucca180/itemdb/" isExternal>
               Source Code
             </ChakraLink>{' '}
-            | <ChakraLink href="/terms">Terms of Use</ChakraLink> |{' '}
+            | <ChakraLink href="https://itemdb.stoplight.io/docs/itemdb-api">API</ChakraLink> |{' '}
+            <ChakraLink href="/terms">Terms of Use</ChakraLink> |{' '}
             <ChakraLink href="/privacy">Privacy Policy</ChakraLink>
           </Text>
           <Text fontSize="xs" color="gray.500">

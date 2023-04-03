@@ -85,7 +85,6 @@ export type ItemLastSeen = {
 export type ItemRestockData = {
   internal_id: number;
   item: ItemData;
-  type: string;
   stock: number;
   price: number;
   addedAt: string;

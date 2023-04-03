@@ -63,7 +63,7 @@ export const getManyItems = async (queryObj: {
   name_image_id?: [string, string][];
   image_id?: string[];
   name?: string[];
-}) => {
+}): Promise<{ [identifier: string]: ItemData }> => {
   const { id, item_id, name_image_id, image_id, name } = queryObj;
 
   let query;
@@ -79,7 +79,8 @@ export const getManyItems = async (queryObj: {
 
   if (!query) return {};
   const resultRaw = (await prisma.$queryRaw`
-    SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex, 
+    SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex,
+      b.hsv_h, b.hsv_s, b.hsv_v,
       c.addedAt as priceAdded, c.price, c.noInflation_id
     FROM Items as a
     LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
@@ -129,7 +130,7 @@ export const getManyItems = async (queryObj: {
       isMissingInfo: false,
       price: {
         value: result.price,
-        addedAt: result.priceAdded?.toString() ?? null,
+        addedAt: (result.priceAdded as Date | null)?.toJSON() ?? null,
         inflated: !!result.noInflation_id,
       },
       comment: result.comment ?? null,
