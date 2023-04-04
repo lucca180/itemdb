@@ -44,7 +44,6 @@ const ContributePage = () => {
           <TabList>
             <Tab>Item Data Extractor</Tab>
             <Tab>Feedback System</Tab>
-            <Tab>Three</Tab>
           </TabList>
 
           <TabPanels>
@@ -53,9 +52,6 @@ const ContributePage = () => {
             </TabPanel>
             <TabPanel>
               <FeedbackSystem />
-            </TabPanel>
-            <TabPanel>
-              <p>three!</p>
             </TabPanel>
           </TabPanels>
         </Tabs>
