@@ -234,9 +234,9 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
     });
 
     return undefined;
-  } catch (e) {
+  } catch (e: any) {
     if (typeof e !== 'string') {
-      console.error(e);
+      console.error(e, item);
       throw e;
     }
 
