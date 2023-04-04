@@ -43,6 +43,7 @@ import ItemOfficialLists from '../../components/Items/ItemOfficialList';
 import { getItemLists } from '../api/v1/items/[id_name]/lists';
 import ItemMatch from '../../components/Price/ItemMatch';
 import Link from 'next/link';
+import ItemComments from '../../components/Items/ItemComments';
 
 const defaultLastSeen: ItemLastSeen = {
   sw: null,
@@ -254,6 +255,7 @@ const ItemPage = (props: Props) => {
             )}
             {item.isNC && <ItemMatch item={item} lists={lists} />}
             {lists && <ItemOfficialLists item={item} lists={lists} />}
+            {item.comment && <ItemComments item={item} />}
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>
             {item.isWearable && <ItemPreview item={item} />}

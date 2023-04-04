@@ -246,6 +246,7 @@ export type FeedbackType = 'tradePrice' | 'itemChange';
 
 export type EditItemFeedbackJSON = {
   itemTags: string[];
+  itemNotes?: string;
 };
 
 export type FeedbackParsed = {

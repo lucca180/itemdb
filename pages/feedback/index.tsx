@@ -1,17 +1,27 @@
 import { Button, Flex, Heading, Icon, ListItem, Text, UnorderedList } from '@chakra-ui/react';
+import Link from 'next/link';
 import { BsCheckAll, BsPencilFill } from 'react-icons/bs';
 import CardBase from '../../components/Card/CardBase';
+import HeaderCard from '../../components/Card/HeaderCard';
 import Layout from '../../components/Layout';
 
 const FeedbackPage = () => {
   return (
     <Layout SEO={{ title: 'Feedback' }}>
-      <Heading>The Feedback System</Heading>
-      <Text>
-        Most of our content is collected and categorized automatically but there are some things our
-        machines can&apos;t do. And you can help it!
-      </Text>
-      <Flex mt={12}>
+      <HeaderCard
+        image={{
+          src: 'https://images.neopets.com/altador/altadorcup/link_images/2008/help_me_decide.gif',
+          alt: 'quiz-giver thumbnail',
+        }}
+        // color="#7AB92A"
+      >
+        <Heading size="lg">The Feedback System</Heading>
+        <Text size={{ base: 'sm', md: undefined }}>
+          Most of our content is collected and categorized automatically but there are some things
+          our machines can&apos;t do. And you can help it!
+        </Text>
+      </HeaderCard>
+      <Flex mt={8}>
         <CardBase chakraWrapper={{ flex: 1 }} title="How it works?" chakra={{ bg: 'gray.700' }}>
           <Text>
             You can contribute by manually completing missing data or by validating the suggestions
@@ -44,6 +54,8 @@ const FeedbackPage = () => {
           <Flex flex="1" justifyContent="center" alignItems="center" gap={12}>
             <Button
               bg="gray.700"
+              as={Link}
+              href="/feedback/trades"
               w={200}
               h={200}
               gap={6}
@@ -55,11 +67,13 @@ const FeedbackPage = () => {
             >
               <Icon boxSize={10} as={BsPencilFill} color="purple.200" />
               <Text fontSize="md" fontWeight="bold">
-                Suggest
+                Price Trades
               </Text>
             </Button>
             <Button
               bg="gray.700"
+              as={Link}
+              href="/feedback/vote"
               w={200}
               h={200}
               gap={6}

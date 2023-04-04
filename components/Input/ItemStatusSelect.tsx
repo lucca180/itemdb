@@ -11,6 +11,7 @@ type Props = {
   value: string;
   name: string;
   color?: string;
+  isDisabled?: boolean;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
@@ -27,6 +28,7 @@ const ItemStatusSelect = (props: Props) => {
   return (
     <AutoComplete rollNavigation onSelectOption={onSelectOption}>
       <AutoCompleteInput
+        isDisabled={props.isDisabled}
         variant="filled"
         value={value}
         onChange={onChange}

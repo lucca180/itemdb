@@ -27,6 +27,7 @@ import {
   Spinner,
   Center,
   FormHelperText,
+  Link,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
@@ -127,7 +128,14 @@ const EditItemModal = (props: Props) => {
     try {
       const feedbackJSON: EditItemFeedbackJSON = {
         itemTags: tags,
+        itemNotes: item.comment ?? undefined,
       };
+
+      let hasChanges = false;
+      hasChanges = !tags.every((t) => tagsProps.map((t) => t.name).includes(t));
+      hasChanges = hasChanges || item.comment !== itemProps.comment;
+
+      if (!hasChanges) throw 'No changes made';
 
       const res = await axios.post('/api/feedback/send', {
         pageInfo: router.asPath,
@@ -170,15 +178,13 @@ const EditItemModal = (props: Props) => {
           {!isLoading && !isSuccess && !error && (
             <Tabs variant="line" colorScheme="gray" isLazy>
               <TabList>
-                {isAdmin && <Tab>Item Info</Tab>}
+                <Tab>Item Info</Tab>
                 <Tab>Categories and Tags</Tab>
               </TabList>
               <TabPanels>
-                {isAdmin && (
-                  <TabPanel>
-                    <InfoTab item={item} itemProps={itemProps} onChange={handleChange} />
-                  </TabPanel>
-                )}
+                <TabPanel>
+                  <InfoTab item={item} itemProps={itemProps} onChange={handleChange} />
+                </TabPanel>
                 <TabPanel>
                   <CategoriesTab
                     categories={categories}
@@ -191,7 +197,6 @@ const EditItemModal = (props: Props) => {
               </TabPanels>
             </Tabs>
           )}
-
           {isLoading && (
             <Center>
               <Spinner />
@@ -243,110 +248,141 @@ type TabProps = {
 
 const InfoTab = (props: TabProps) => {
   const { item, itemProps, onChange: handleChange } = props;
+  const { user } = useAuth();
+
+  const isAdmin = user?.role === 'ADMIN';
 
   return (
     <Flex flexFlow="column" gap={4}>
-      <Stack>
-        <FormControl>
-          <FormLabel color="gray.300">Item Name</FormLabel>
-          <Input
-            variant="filled"
-            type="text"
-            name="name"
-            size="sm"
-            value={item.name}
-            onChange={handleChange}
-            color={item.name === itemProps.name ? 'gray.400' : '#fff'}
-          />
-        </FormControl>
-        <FormControl>
-          <FormLabel color="gray.300">Description</FormLabel>
-          <Textarea
-            color={item.description === itemProps.description ? 'gray.400' : '#fff'}
-            value={item.description}
-            variant="filled"
-            name="description"
-            onChange={handleChange}
-            size="sm"
-          />
-        </FormControl>
-        <FormControl>
-          <FormLabel color="gray.300">Image URL</FormLabel>
-          <Input
-            variant="filled"
-            type="text"
-            name="image"
-            size="sm"
-            value={item.image}
-            onChange={handleChange}
-            color={item.image === itemProps.image ? 'gray.400' : '#fff'}
-          />
-        </FormControl>
-      </Stack>
-      <Divider />
-      <HStack>
-        <FormControl>
-          <FormLabel color="gray.300">Item ID</FormLabel>
-          <Input
-            variant="filled"
-            type="text"
-            name="item_id"
-            size="sm"
-            value={item.item_id ?? ''}
-            onChange={handleChange}
-            color={item.item_id == itemProps.item_id ? 'gray.400' : '#fff'}
-          />
-        </FormControl>
-        <FormControl>
-          <FormLabel color="gray.300">Rarity</FormLabel>
-          <Input
-            variant="filled"
-            type="text"
-            name="rarity"
-            size="sm"
-            value={item.rarity ?? ''}
-            onChange={handleChange}
-            color={item.rarity == itemProps.rarity ? 'gray.400' : '#fff'}
-          />
-        </FormControl>
-      </HStack>
-      <HStack>
-        <FormControl>
-          <FormLabel color="gray.300">Est. Val</FormLabel>
-          <Input
-            variant="filled"
-            type="text"
-            name="estVal"
-            size="sm"
-            value={item.estVal ?? ''}
-            onChange={handleChange}
-            color={item.estVal == itemProps.estVal ? 'gray.400' : '#fff'}
-          />
-        </FormControl>
-        <FormControl>
-          <FormLabel color="gray.300">Weight</FormLabel>
-          <Input
-            variant="filled"
-            type="text"
-            name="weight"
-            size="sm"
-            value={item.weight ?? ''}
-            onChange={handleChange}
-            color={item.weight == itemProps.weight ? 'gray.400' : '#fff'}
-          />
-        </FormControl>
-      </HStack>
-      <HStack>
-        <FormControl>
-          <FormLabel color="gray.300">Status</FormLabel>
-          <ItemStatusSelect
-            name="status"
-            value={item.status ?? ''}
-            onChange={handleChange}
-            color={item.status == itemProps.status ? 'gray.400' : '#fff'}
-          />
-        </FormControl>
-      </HStack>
+      {!isAdmin && (
+        <>
+          <Text fontSize="sm" sx={{ a: { color: 'blue.300' } }}>
+            You can correct most of an item&apos;s information using the{' '}
+            <Link href="/contribute" isExternal>
+              Item Data Extractor Script
+            </Link>
+            .
+          </Text>
+          <Text fontSize="sm">
+            If you feel you have already submitted the correct information with the script and too
+            much time has passed and the correct information is still not live, let us know using
+            the <b>feedback button</b>
+          </Text>
+        </>
+      )}
+      {isAdmin && (
+        <>
+          <Stack>
+            <FormControl>
+              <FormLabel color="gray.300">Item Name</FormLabel>
+              <Input
+                variant="filled"
+                type="text"
+                name="name"
+                size="sm"
+                value={item.name}
+                onChange={handleChange}
+                isDisabled={!isAdmin}
+                color={item.name === itemProps.name ? 'gray.400' : '#fff'}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel color="gray.300">Description</FormLabel>
+              <Textarea
+                color={item.description === itemProps.description ? 'gray.400' : '#fff'}
+                value={item.description}
+                variant="filled"
+                name="description"
+                onChange={handleChange}
+                isDisabled={!isAdmin}
+                size="sm"
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel color="gray.300">Image URL</FormLabel>
+              <Input
+                variant="filled"
+                type="text"
+                name="image"
+                size="sm"
+                value={item.image}
+                onChange={handleChange}
+                isDisabled={!isAdmin}
+                color={item.image === itemProps.image ? 'gray.400' : '#fff'}
+              />
+            </FormControl>
+          </Stack>
+          <Divider />
+          <HStack>
+            <FormControl>
+              <FormLabel color="gray.300">Item ID</FormLabel>
+              <Input
+                variant="filled"
+                type="text"
+                name="item_id"
+                size="sm"
+                value={item.item_id ?? ''}
+                onChange={handleChange}
+                isDisabled={!isAdmin}
+                color={item.item_id == itemProps.item_id ? 'gray.400' : '#fff'}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel color="gray.300">Rarity</FormLabel>
+              <Input
+                variant="filled"
+                type="text"
+                name="rarity"
+                size="sm"
+                value={item.rarity ?? ''}
+                onChange={handleChange}
+                isDisabled={!isAdmin}
+                color={item.rarity == itemProps.rarity ? 'gray.400' : '#fff'}
+              />
+            </FormControl>
+          </HStack>
+          <HStack>
+            <FormControl>
+              <FormLabel color="gray.300">Est. Val</FormLabel>
+              <Input
+                variant="filled"
+                type="text"
+                name="estVal"
+                size="sm"
+                value={item.estVal ?? ''}
+                onChange={handleChange}
+                isDisabled={!isAdmin}
+                color={item.estVal == itemProps.estVal ? 'gray.400' : '#fff'}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel color="gray.300">Weight</FormLabel>
+              <Input
+                variant="filled"
+                type="text"
+                name="weight"
+                size="sm"
+                value={item.weight ?? ''}
+                onChange={handleChange}
+                isDisabled={!isAdmin}
+                color={item.weight == itemProps.weight ? 'gray.400' : '#fff'}
+              />
+            </FormControl>
+          </HStack>
+          <HStack>
+            <FormControl>
+              <FormLabel color="gray.300">Status</FormLabel>
+              <ItemStatusSelect
+                name="status"
+                value={item.status ?? ''}
+                onChange={handleChange}
+                isDisabled={!isAdmin}
+                color={item.status == itemProps.status ? 'gray.400' : '#fff'}
+              />
+            </FormControl>
+          </HStack>
+        </>
+      )}
       <FormControl>
         <FormLabel color="gray.300">Notes</FormLabel>
         <Textarea
@@ -357,6 +393,7 @@ const InfoTab = (props: TabProps) => {
           onChange={handleChange}
           size="sm"
         />
+        <FormHelperText>Please do not copy information from other fan sites.</FormHelperText>
       </FormControl>
     </Flex>
   );
@@ -451,7 +488,15 @@ const CategoriesTab = (props: TagSelectProps) => {
           type="tags"
           disabled={categories.length >= 15}
         />
-        <FormHelperText>Prefer to use existing tags instead of creating new ones</FormHelperText>
+        <FormHelperText>
+          Prefer to use existing tags instead of creating new ones.
+          <br />
+          <br />
+          Tags should describe the item itself and not meta information (like how/where to get it){' '}
+          <br />
+          <br />
+          Tags must not contain words that are in the item name
+        </FormHelperText>
       </FormControl>
     </Stack>
   );

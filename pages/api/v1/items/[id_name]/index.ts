@@ -90,6 +90,89 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
   return res.status(200).json({ success: true });
 };
 
+export const getItem = async (id_name: number | string) => {
+  const isID = typeof id_name === 'number';
+
+  let query;
+  if (isID) query = Prisma.sql`a.internal_id = ${id_name}`;
+  else query = Prisma.sql`a.name LIKE ${id_name}`;
+
+  const resultRaw = (await prisma.$queryRaw`
+    SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex,
+    b.hsv_h, b.hsv_s, b.hsv_v,
+      c.addedAt as priceAdded, c.price, c.noInflation_id 
+    FROM Items as a
+    LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
+    LEFT JOIN (
+      SELECT *
+      FROM ItemPrices
+      WHERE (item_iid, addedAt) IN (
+          SELECT item_iid, MAX(addedAt)
+          FROM ItemPrices
+          GROUP BY item_iid
+      )
+    ) as c on c.item_iid = a.internal_id
+    WHERE ${query}
+  `) as any[] | null;
+
+  if (!resultRaw || resultRaw.length === 0) return null;
+
+  const result = resultRaw[0];
+
+  const item: ItemData = {
+    internal_id: result.internal_id,
+    image: result.image,
+    image_id: result.image_id,
+    item_id: result.item_id,
+    rarity: result.rarity,
+    name: result.name,
+    specialType: result.specialType,
+    isNC: !!result.isNC,
+    type: result.type,
+    estVal: result.est_val,
+    weight: result.weight,
+    description: result.description ?? '',
+    status: result.status,
+    category: result.category,
+    isNeohome: !!result.isNeohome,
+    isWearable: !!result.specialType?.includes('wearable') || !!result.isWearable,
+    color: {
+      hsv: [result.hsv_h, result.hsv_s, result.hsv_v],
+      rgb: [result.rgb_r, result.rgb_g, result.rgb_b],
+      lab: [result.lab_l, result.lab_a, result.lab_b],
+      hex: result.hex,
+      type: 'vibrant',
+      population: result.population,
+    },
+    findAt: getItemFindAtLinks(result), // doesnt have all the info we need :(
+    isMissingInfo: false,
+    price: {
+      value: result.price,
+      addedAt: result.priceAdded,
+      inflated: !!result.noInflation_id,
+    },
+    comment: result.comment ?? null,
+  };
+
+  item.findAt = getItemFindAtLinks(item); // does have all the info we need :)
+  item.isMissingInfo = isMissingInfo(item);
+
+  return item;
+};
+
+export const getSomeItemIDs = async () => {
+  const result = await prisma.items.findMany({
+    orderBy: {
+      addedAt: 'desc',
+    },
+    take: 15,
+  });
+
+  return result;
+};
+
+// ------------------------------ //
+
 export const processTags = async (itemTags: string[], itemCats: string[], internal_id: number) => {
   const tagRaw = await prisma.itemTags.findMany({
     where: {
@@ -180,85 +263,4 @@ export const processTags = async (itemTags: string[], itemCats: string[], intern
       },
     },
   });
-};
-
-export const getItem = async (id_name: number | string) => {
-  const isID = typeof id_name === 'number';
-
-  let query;
-  if (isID) query = Prisma.sql`a.internal_id = ${id_name}`;
-  else query = Prisma.sql`a.name LIKE ${id_name}`;
-
-  const resultRaw = (await prisma.$queryRaw`
-    SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex,
-    b.hsv_h, b.hsv_s, b.hsv_v,
-      c.addedAt as priceAdded, c.price, c.noInflation_id 
-    FROM Items as a
-    LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
-    LEFT JOIN (
-      SELECT *
-      FROM ItemPrices
-      WHERE (item_iid, addedAt) IN (
-          SELECT item_iid, MAX(addedAt)
-          FROM ItemPrices
-          GROUP BY item_iid
-      )
-    ) as c on c.item_iid = a.internal_id
-    WHERE ${query}
-  `) as any[] | null;
-
-  if (!resultRaw || resultRaw.length === 0) return null;
-
-  const result = resultRaw[0];
-
-  const item: ItemData = {
-    internal_id: result.internal_id,
-    image: result.image,
-    image_id: result.image_id,
-    item_id: result.item_id,
-    rarity: result.rarity,
-    name: result.name,
-    specialType: result.specialType,
-    isNC: !!result.isNC,
-    type: result.type,
-    estVal: result.est_val,
-    weight: result.weight,
-    description: result.description ?? '',
-    status: result.status,
-    category: result.category,
-    isNeohome: !!result.isNeohome,
-    isWearable: !!result.specialType?.includes('wearable') || !!result.isWearable,
-    color: {
-      hsv: [result.hsv_h, result.hsv_s, result.hsv_v],
-      rgb: [result.rgb_r, result.rgb_g, result.rgb_b],
-      lab: [result.lab_l, result.lab_a, result.lab_b],
-      hex: result.hex,
-      type: 'vibrant',
-      population: result.population,
-    },
-    findAt: getItemFindAtLinks(result), // doesnt have all the info we need :(
-    isMissingInfo: false,
-    price: {
-      value: result.price,
-      addedAt: result.priceAdded,
-      inflated: !!result.noInflation_id,
-    },
-    comment: result.comment ?? null,
-  };
-
-  item.findAt = getItemFindAtLinks(item); // does have all the info we need :)
-  item.isMissingInfo = isMissingInfo(item);
-
-  return item;
-};
-
-export const getSomeItemIDs = async () => {
-  const result = await prisma.items.findMany({
-    orderBy: {
-      addedAt: 'desc',
-    },
-    take: 15,
-  });
-
-  return result;
 };

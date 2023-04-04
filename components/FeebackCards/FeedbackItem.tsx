@@ -7,12 +7,15 @@ import { ItemData, ItemTag } from '../../types';
 type Props = {
   item_iid: number;
   itemTags: string[];
+  itemNotes?: string;
 };
 
 const FeedbackItem = (props: Props) => {
   const { item_iid, itemTags } = props;
   const [item, setItem] = useState<ItemData | undefined>();
   const [tags, setTags] = useState<ItemTag[]>([]);
+  const [shouldHideTags, setShouldHideTags] = useState(false);
+  const [shouldHideNotes, setShouldHideNotes] = useState(false);
 
   const tagsStr = tags.map((tag) => tag.name);
 
@@ -29,8 +32,20 @@ const FeedbackItem = (props: Props) => {
 
     const tagsFiltered = tagsRes.data.filter((tag: ItemTag) => tag.type === 'tag');
 
+    //check if tags are the same
+    let hideTags = true;
+    if (tagsFiltered.length !== itemTags.length) hideTags = false;
+    else {
+      hideTags = tagsFiltered.every((tag: ItemTag) => itemTags.includes(tag.name));
+    }
+
+    let hideNotes = true;
+    if (itemRes.data.comment !== props.itemNotes) hideNotes = false;
+
     setItem(itemRes.data);
     setTags(tagsFiltered);
+    setShouldHideTags(hideTags);
+    setShouldHideNotes(hideNotes);
   };
 
   return (
@@ -51,52 +66,86 @@ const FeedbackItem = (props: Props) => {
             </Text>
           </Flex>
           <Divider />
-          <Center>
-            <Heading size="sm">
-              Current Tags <Tag size="sm">{tags.length}</Tag>
-            </Heading>
-          </Center>
-          <Flex
-            flexFlow="row"
-            flexWrap="wrap"
-            justifyContent="center"
-            alignItems="center"
-            textAlign="center"
-          >
-            {tags.map((tag) => (
-              <Tag key={tag.tag_id} colorScheme={!itemTags.includes(tag.name) ? 'red' : undefined}>
-                {tag.name}
-              </Tag>
-            ))}
-            {tags.length === 0 && (
-              <Text fontSize={'xs'} color="gray.400">
-                No tags
+          <Heading size="md" textAlign="center">
+            Now
+          </Heading>
+          {!shouldHideTags && (
+            <>
+              <Heading size="sm" textAlign="center">
+                Tags <Tag size="sm">{tags.length}</Tag>
+              </Heading>
+              <Flex
+                flexFlow="row"
+                flexWrap="wrap"
+                justifyContent="center"
+                alignItems="center"
+                textAlign="center"
+              >
+                {tags.map((tag) => (
+                  <Tag
+                    key={tag.tag_id}
+                    colorScheme={!itemTags.includes(tag.name) ? 'red' : undefined}
+                  >
+                    {tag.name}
+                  </Tag>
+                ))}
+                {tags.length === 0 && (
+                  <Text fontSize={'xs'} color="gray.400">
+                    No tags
+                  </Text>
+                )}
+              </Flex>
+            </>
+          )}
+          {!shouldHideNotes && (
+            <>
+              <Heading size="sm" textAlign="center">
+                Notes
+              </Heading>
+              <Text fontSize="sm" textAlign="center">
+                {item.comment ?? 'none'}
               </Text>
-            )}
-          </Flex>
-          <Center>
-            <Heading size="sm">
-              After Change <Tag size="sm">{itemTags.length}</Tag>
-            </Heading>
-          </Center>
-          <Flex
-            flexFlow="row"
-            flexWrap="wrap"
-            justifyContent="center"
-            alignItems="center"
-            textAlign="center"
-          >
-            {itemTags.map((tag, i) => (
-              <Tag key={i} colorScheme={!tagsStr.includes(tag) ? 'green' : undefined}>
-                {tag}
-              </Tag>
-            ))}
-            {itemTags.length === 0 && (
-              <Text fontSize={'xs'} color="gray.400">
-                No tags
+            </>
+          )}
+          <Divider />
+          <Heading size="md" textAlign="center">
+            Suggested Changes
+          </Heading>
+          {!shouldHideTags && (
+            <>
+              <Heading size="sm" textAlign="center">
+                Tags <Tag size="sm">{itemTags.length}</Tag>
+              </Heading>
+              <Flex
+                flexFlow="row"
+                flexWrap="wrap"
+                justifyContent="center"
+                alignItems="center"
+                textAlign="center"
+              >
+                {itemTags.map((tag, i) => (
+                  <Tag key={i} colorScheme={!tagsStr.includes(tag) ? 'green' : undefined}>
+                    {tag}
+                  </Tag>
+                ))}
+                {itemTags.length === 0 && (
+                  <Text fontSize={'xs'} color="gray.400">
+                    No tags
+                  </Text>
+                )}
+              </Flex>
+            </>
+          )}
+          {!shouldHideNotes && (
+            <>
+              <Heading size="sm" textAlign="center">
+                Notes
+              </Heading>
+              <Text fontSize="sm" textAlign="center">
+                {props.itemNotes}
               </Text>
-            )}
-          </Flex>
+            </>
+          )}
         </>
       )}
     </Flex>

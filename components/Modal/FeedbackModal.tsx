@@ -15,6 +15,7 @@ import {
   Textarea,
   Spinner,
   Center,
+  FormHelperText,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
@@ -82,6 +83,9 @@ const FeedbackModal = (props: Props) => {
               <FormControl>
                 <FormLabel color="gray.300">Email Address (opcional)</FormLabel>
                 <Input variant="filled" onChange={(e) => setEmail(e.target.value)} value={email} />
+                <FormHelperText>
+                  If you want to receive a response, please enter your email address
+                </FormHelperText>
               </FormControl>
               <FormControl>
                 <FormLabel color="gray.300">Write your feedback, comments and ideas :)</FormLabel>

@@ -19,6 +19,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { BsArrowDownCircleFill, BsArrowUpCircleFill } from 'react-icons/bs';
 import CardBase from '../../components/Card/CardBase';
+import HeaderCard from '../../components/Card/HeaderCard';
 import FeedbackItem from '../../components/FeebackCards/FeedbackItem';
 import Layout from '../../components/Layout';
 import TradeTable from '../../components/Trades/TradeTable';
@@ -107,16 +108,25 @@ const FeedbackVotingPage = () => {
 
   return (
     <Layout SEO={{ title: 'Voting - Feedback' }}>
-      <Heading>The Feedback System</Heading>
-      <Text>
-        Most of our content is collected and categorized automatically but there are some things our
-        machines can&apos;t do. And you can help it!
-      </Text>
+      <HeaderCard
+        image={{
+          src: 'https://images.neopets.com/altador/altadorcup/link_images/2008/help_me_decide.gif',
+          alt: 'quiz-giver thumbnail',
+        }}
+        // color="#7AB92A"
+      >
+        <Heading size="lg">The Feedback System</Heading>
+        <Text size={{ base: 'sm', md: undefined }}>
+          Most of our content is collected and categorized automatically but there are some things
+          our machines can&apos;t do. And you can help it!
+        </Text>
+      </HeaderCard>
       <Flex
-        mt={12}
+        mt={8}
         gap={6}
         alignItems={{ base: 'center', md: 'flex-start' }}
         flexFlow={{ base: 'column', md: 'row' }}
+        sx={{ b: { color: 'blue.200' } }}
       >
         <CardBase chakraWrapper={{ flex: 2 }} title="Voting" chakra={{ bg: 'gray.700' }}>
           <Text>
@@ -133,6 +143,17 @@ const FeedbackVotingPage = () => {
               </AccordionButton>
               <AccordionPanel pb={4}>
                 <TradeGuidelines />
+              </AccordionPanel>
+            </AccordionItem>
+            <AccordionItem>
+              <AccordionButton>
+                <Box as="span" flex="1" textAlign="left">
+                  <Text fontWeight={'bold'}>Item Tags and Notes</Text>
+                </Box>
+                <AccordionIcon />
+              </AccordionButton>
+              <AccordionPanel pb={4}>
+                <TagAndNotesGuidelines />
               </AccordionPanel>
             </AccordionItem>
           </Accordion>
@@ -176,7 +197,7 @@ const FeedbackVotingPage = () => {
             <>
               <CardBase
                 chakraWrapper={{ flex: 1, width: '100%' }}
-                title="Trade Pricing"
+                title="Feedback Voting"
                 chakra={{ bg: 'gray.700' }}
               >
                 {currentFeedback.type === 'tradePrice' && (
@@ -184,6 +205,7 @@ const FeedbackVotingPage = () => {
                 )}
                 {currentFeedback.type === 'itemChange' && (
                   <FeedbackItem
+                    itemNotes={currentFeedback.parsed?.content.itemNotes as string | undefined}
                     itemTags={currentFeedback.parsed?.content.itemTags as string[]}
                     item_iid={currentFeedback.subject_id as number}
                   />
@@ -224,3 +246,23 @@ const FeedbackVotingPage = () => {
 };
 
 export default FeedbackVotingPage;
+
+const TagAndNotesGuidelines = () => {
+  return (
+    <Box>
+      <Text>
+        <b>Tags</b> are used to help you find items. They should be used to describe the{' '}
+        <b>item&apos;s appearance or function</b>.<br />
+        Tags <b>should not contain any meta-information</b> about the item such as method of
+        acquisition.
+        <br />
+        Tags <b>should not contain any word of the item&apos;s name</b>.
+      </Text>
+      <Text mt={4}>
+        <b>Item Notes</b> are used to provide additional information about the item such as
+        it&apos;s functions or effects. Please be sure to check the veracity of the information
+        provided before upvoting it :)
+      </Text>
+    </Box>
+  );
+};

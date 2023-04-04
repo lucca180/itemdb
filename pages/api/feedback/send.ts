@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../utils/prisma';
 import requestIp from 'request-ip';
+import nodemailer from 'nodemailer';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -52,6 +53,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     },
   });
 
+  if (type === 'feedback')
+    await submitMailFeedback(obj, subject_id, email ?? '', result.feedback_id);
+
   return res.status(200).json({ success: true, message: result });
 }
 
@@ -70,4 +74,36 @@ const processTradePrice = async (trade_id?: number) => {
   });
 
   return true;
+};
+
+const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
+
+const submitMailFeedback = async (data: any, subject_id: string, email: string, id: number) => {
+  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS)
+    return console.error('Missing SMTP config');
+  // create reusable transporter object using the default SMTP transport
+  const transporter = nodemailer.createTransport({
+    host: SMTP_HOST,
+    port: parseInt(SMTP_PORT),
+    secure: true,
+    auth: {
+      user: SMTP_USER,
+      pass: SMTP_PASS,
+    },
+  });
+
+  await transporter.sendMail({
+    from: '"itemdb" <noreply@itemdb.com.br>',
+    to: 'lucca@itemdb.com.br',
+    subject: 'itemdb Feedback',
+    html: `
+      <b>feedback_id</b>: ${id}<br/>
+      <b>sender email</b>: ${email}<br/>
+      <b>subject_id</b>: ${subject_id}<br/>
+      <b>ip</b>: ${data.ip}<br/>
+      <b>pageRef</b>: ${data.pageRef}<br/>
+      <b>data</b>: ${data.content.message}<br/><br/>
+      <b>rawData</b>: ${JSON.stringify(data)}
+    `,
+  });
 };

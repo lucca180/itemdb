@@ -27,9 +27,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const feedbackRaw = await prisma.feedbacks.findMany({
     where: {
       processed: includeProcessed,
-      user_id: {
-        not: user_id,
-      },
+      OR: [{ user_id: { not: user_id } }, { user_id: null }],
       type: {
         in: ['tradePrice', 'itemChange'],
       },
@@ -39,7 +37,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   });
 
   const feedbacks = [];
-
   for (const feedback of feedbackRaw) {
     const json = feedback.json as string;
     const parsed = JSON.parse(json) as FeedbackParsed;

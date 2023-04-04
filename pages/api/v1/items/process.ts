@@ -235,13 +235,13 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
 
     return undefined;
   } catch (e: any) {
-    if (typeof e !== 'string') {
-      console.error(e, item);
-      throw e;
+    if (!['P2002'].includes(e?.code) && typeof e !== 'string') {
+      console.error({ error: e, item });
+      throw { error: e, item };
     }
 
     await prisma.itemProcess.update({
-      data: { manual_check: e },
+      data: { manual_check: typeof e == 'string' ? e : e.code },
       where: { internal_id: item.internal_id },
     });
 

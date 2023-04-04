@@ -174,12 +174,24 @@ const commitTradePrice = (feedback: Feedbacks, approved: boolean, req?: NextApiR
   });
 };
 
-const commitItemChange = (feedback: Feedbacks, approved: boolean) => {
+const commitItemChange = async (feedback: Feedbacks, approved: boolean) => {
   if (feedback.type !== 'itemChange' || !feedback.subject_id) return;
 
   const json = feedback.json as string;
   const parsed = JSON.parse(json) as FeedbackParsed;
   const itemTags = parsed.content.itemTags as string[];
+  const itemNotes = parsed.content.itemNotes as string | undefined;
 
-  if (approved) return processTags(itemTags, [], feedback.subject_id);
+  if (approved) {
+    processTags(itemTags, [], feedback.subject_id);
+
+    await prisma.items.update({
+      where: {
+        internal_id: feedback.subject_id,
+      },
+      data: {
+        comment: itemNotes ?? undefined,
+      },
+    });
+  }
 };

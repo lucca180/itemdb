@@ -17,6 +17,7 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { BsXLg, BsXCircleFill, BsCheckCircleFill, BsCheckLg } from 'react-icons/bs';
 import CardBase from '../../components/Card/CardBase';
+import HeaderCard from '../../components/Card/HeaderCard';
 import FeedbackTrade from '../../components/FeebackCards/FeedbackTrade';
 import Layout from '../../components/Layout';
 import { TradeData } from '../../types';
@@ -109,13 +110,20 @@ const FeedbackSuggest = () => {
 
   return (
     <Layout SEO={{ title: 'Trade Pricing - Feedback' }}>
-      <Heading>The Feedback System</Heading>
-      <Text>
-        Most of our content is collected and categorized automatically but there are some things our
-        machines can&apos;t do. And you can help it!
-      </Text>
+      <HeaderCard
+        image={{
+          src: 'https://images.neopets.com/altador/altadorcup/link_images/2008/help_me_decide.gif',
+          alt: 'quiz-giver thumbnail',
+        }}
+      >
+        <Heading size="lg">The Feedback System</Heading>
+        <Text size={{ base: 'sm', md: undefined }}>
+          Most of our content is collected and categorized automatically but there are some things
+          our machines can&apos;t do. And you can help it!
+        </Text>
+      </HeaderCard>
       <Flex
-        mt={12}
+        mt={8}
         gap={6}
         alignItems={{ base: 'center', md: 'flex-start' }}
         flexFlow={{ base: 'column', md: 'row' }}
