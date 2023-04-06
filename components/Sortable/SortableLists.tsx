@@ -23,6 +23,9 @@ type Props = {
   onClick?: (id: number) => void;
   onSort?: (ids: number[]) => void;
   onChange?: (id: number, value: number, field: 'amount' | 'capValue' | 'isHighlight') => void;
+  cardProps?: {
+    [key: string]: any;
+  };
 };
 
 export function SortableLists(props: Props) {
@@ -58,6 +61,7 @@ export function SortableLists(props: Props) {
               list={lists[id]}
               id={id}
               key={id}
+              cardProps={props.cardProps}
             />
           ) : null
         )}

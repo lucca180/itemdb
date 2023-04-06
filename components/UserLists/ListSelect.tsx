@@ -17,8 +17,10 @@ import { getRandomName } from '../../utils/randomName';
 
 type Props = {
   onChange?: (list: UserList) => void;
+  defaultText?: string;
   defaultValue?: UserList;
   createNew?: boolean;
+  size?: 'sm' | 'md' | 'lg';
 };
 
 const ListSelect = (props: Props) => {
@@ -87,7 +89,7 @@ const ListSelect = (props: Props) => {
 
   return (
     <Menu>
-      <MenuButton as={Button} variant="solid" rightIcon={<ChevronDownIcon />}>
+      <MenuButton as={Button} variant="solid" rightIcon={<ChevronDownIcon />} size={props.size}>
         {selectedList && (
           <>
             {selectedList.name}
@@ -101,7 +103,7 @@ const ListSelect = (props: Props) => {
             )}
           </>
         )}
-        {!selectedList && 'Select List'}
+        {!selectedList && (props.defaultText ?? 'Select List')}
       </MenuButton>
       <MenuList maxH="50vh" overflow="auto">
         {sorted.length !== 0 && (

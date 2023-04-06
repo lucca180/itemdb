@@ -306,10 +306,6 @@ const ListPage = (props: Props) => {
         {
           list_id: list.internal_id,
           itemInfo: changedItems,
-          sortInfo: {
-            sortBy: sortInfo.sortBy,
-            sortDir: sortInfo.sortDir,
-          },
         },
         {
           headers: {
@@ -529,18 +525,19 @@ const ListPage = (props: Props) => {
           gap={3}
           flexFlow={{ base: 'column-reverse', md: 'row' }}
         >
-          <HStack>
-            {isOwner && (
-              <Button variant="solid" onClick={() => router.push('/lists/import')}>
-                Import Items
-              </Button>
-            )}
-            {!isEdit && (
+          {!isEdit && (
+            <HStack>
+              {isOwner && (
+                <Button variant="solid" onClick={() => router.push('/lists/import')}>
+                  Import Items
+                </Button>
+              )}
+
               <Text as="div" textColor={'gray.300'} fontSize="sm">
                 {list.itemCount} items
               </Text>
-            )}
-          </HStack>
+            </HStack>
+          )}
           {isEdit && (
             <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
               <Box bg={`rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.35)`} p={2} borderRadius="md">

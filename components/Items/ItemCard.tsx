@@ -13,6 +13,7 @@ type Props = {
   disableLink?: boolean;
   capValue?: number | null;
   quantity?: number;
+  onSelect?: () => void;
 };
 
 const intl = new Intl.NumberFormat();
@@ -49,7 +50,7 @@ const ItemCard = (props: Props) => {
 
   return (
     <>
-      <ItemCtxMenu item={item} />
+      <ItemCtxMenu item={item} onSelect={props.onSelect} />
       <CtxTrigger
         id={item.internal_id.toString()}
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -58,10 +59,10 @@ const ItemCard = (props: Props) => {
         disable={isMobile}
       >
         <Link
-          as={NextLink}
-          href={'/item/' + item.internal_id}
+          as={disableLink ? undefined : NextLink}
+          href={disableLink ? undefined : '/item/' + item.internal_id}
           _hover={{ textDecoration: 'none' }}
-          pointerEvents={disableLink ? 'none' : 'initial'}
+          // pointerEvents={disableLink ? 'none' : 'initial'}
         >
           <Box
             w={{ base: 100, md: 150 }}

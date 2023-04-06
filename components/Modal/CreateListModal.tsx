@@ -79,6 +79,10 @@ const CreateListModal = (props: Props) => {
         purpose: list.purpose,
         colorHex: list.colorHex,
         official: list.official,
+        sortInfo: {
+          sortBy: list.sortBy,
+          sortDir: list.sortDir,
+        },
       };
 
       const configs = {
@@ -224,6 +228,32 @@ const CreateListModal = (props: Props) => {
                   If you are seeking or trading these items, we may show your list to other users
                   who may be interested.
                 </FormHelperText>
+              </FormControl>
+              <FormControl>
+                <FormLabel color="gray.300">Default Sorting</FormLabel>
+                <Select variant="filled" name="sortBy" onChange={handleChange} value={list.sortBy}>
+                  <option value="name">Name</option>
+                  <option value="price">Price</option>
+                  <option value="color">Color</option>
+                  <option value="custom">Custom</option>
+                  <option value="addedAt">Added At</option>
+                </Select>
+                <FormHelperText>
+                  {list.sortBy === 'custom' &&
+                    'You can change the order of items in your list by dragging and dropping them.'}
+                </FormHelperText>
+              </FormControl>
+              <FormControl>
+                <FormLabel color="gray.300">Sort Direction</FormLabel>
+                <Select
+                  variant="filled"
+                  name="sortDir"
+                  onChange={handleChange}
+                  value={list.sortDir}
+                >
+                  <option value="asc">Ascending</option>
+                  <option value="desc">Descending</option>
+                </Select>
               </FormControl>
             </Stack>
           )}

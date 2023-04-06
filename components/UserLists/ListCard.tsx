@@ -112,6 +112,10 @@ const UserListCard = (props: Props) => {
             </Badge>
           )}
 
+          {list.visibility !== 'public' && (
+            <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>{list.visibility}</Badge>
+          )}
+
           {!list.official && list.purpose !== 'none' && (
             <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>{list.purpose}</Badge>
           )}
@@ -119,12 +123,12 @@ const UserListCard = (props: Props) => {
           <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>{list.itemCount} items</Badge>
 
           {!list.official && list.purpose === 'trading' && !!matchCount && (
-            <Badge colorScheme="green" variant="solid">
+            <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>
               You want {matchCount} items from this list
             </Badge>
           )}
           {!list.official && list.purpose === 'seeking' && !!matchCount && (
-            <Badge colorScheme="blue" variant="solid">
+            <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>
               You have {matchCount} items from this list
             </Badge>
           )}

@@ -25,6 +25,15 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: '/api/v1/cache/:slug*',
+        destination: '/api/cache/:slug*',
+        permanent: false,
+      },
+    ];
+  },
 };
 
 const sentryWebpackPluginOptions = {

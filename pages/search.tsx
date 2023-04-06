@@ -24,6 +24,9 @@ import qs from 'qs';
 import SearchFilterCard from '../components/Search/SearchFiltersCard';
 import SearchFilterModal from '../components/Search/SearchFiltersModal';
 import { BsFilter } from 'react-icons/bs';
+import { SelectItemsCheckbox } from '../components/Input/SelectItemsCheckbox';
+import ListSelect from '../components/UserLists/ListSelect';
+import { useAuth } from '../utils/auth';
 
 const Axios = axios.create({
   baseURL: '/api/',
@@ -46,14 +49,16 @@ const defaultFilters: SearchFiltersType = {
 
 const SearchPage = () => {
   const toast = useToast();
+  const { user, getIdToken } = useAuth();
   const [searchQuery, setQuery] = useState<string>('');
   const [searchResult, setResult] = useState<SearchResults | null>(null);
   const [searchStatus, setStatus] = useState<SearchStats | null>(null);
   const [filters, setFilters] = useState<SearchFiltersType>(defaultFilters);
   const [isColorSearch, setIsColorSearch] = useState<boolean>(false);
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
+
   const [isLargerThanLG] = useMediaQuery('(min-width: 62em)', { fallback: true });
   const { isOpen, onOpen, onClose } = useDisclosure();
-
   const router = useRouter();
 
   useEffect(() => {
@@ -66,6 +71,7 @@ const SearchPage = () => {
   const init = async (customFilters?: SearchFiltersType, forceStats = false) => {
     const query = (router.query.s as string) ?? '';
     setQuery(query);
+    setSelectedItems([]);
 
     if (query.match(/^#[0-9A-Fa-f]{6}$/)) {
       if (!searchResult && !isColorSearch) {
@@ -181,6 +187,65 @@ const SearchPage = () => {
     });
   };
 
+  const selectItem = (id?: number, checkAll?: boolean) => {
+    if (!id && !checkAll) setSelectedItems([]);
+    else if (checkAll) {
+      const ids = searchResult?.content.map((item) => item.internal_id) ?? [];
+      setSelectedItems(ids);
+    } else if (id && !checkAll) {
+      if (selectedItems.includes(id)) setSelectedItems(selectedItems.filter((i) => i !== id));
+      else setSelectedItems([...selectedItems, id]);
+    }
+  };
+
+  const addItemToList = async (list_id: number) => {
+    if (!user) return;
+
+    const toastId = toast({
+      title: 'Adding items to list...',
+      description: 'This may take a while, please wait...',
+      status: 'info',
+      duration: null,
+      isClosable: true,
+    });
+
+    try {
+      const token = await getIdToken();
+
+      const items = selectedItems.map((id) => ({ item_iid: id }));
+
+      const res = await axios.put(
+        `/api/v1/lists/${user.username}/${list_id}`,
+        {
+          items: items,
+        },
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (res.data.success) {
+        toast.update(toastId, {
+          title: 'Items added to list',
+          status: 'success',
+          duration: 5000,
+        });
+        setSelectedItems([]);
+      }
+    } catch (err) {
+      console.error(err);
+
+      toast.update(toastId, {
+        title: 'Oops!',
+        description:
+          'An error occurred while adding the items to the list, please try again later.',
+        status: 'error',
+        duration: 5000,
+      });
+    }
+  };
+
   return (
     <Layout SEO={{ title: `${router.query.s ? `${router.query.s} -` : ''} Search` }}>
       <Flex
@@ -220,19 +285,32 @@ const SearchPage = () => {
             gap={3}
           >
             <HStack justifyContent={'space-between'} w="100%">
-              <Text as="div" textColor={'gray.300'} fontSize={{ base: 'xs', sm: 'sm' }}>
+              <Flex textColor={'gray.300'} fontSize={{ base: 'xs', sm: 'sm' }} gap={3}>
                 {searchResult && (
-                  <>
-                    Showing {searchResult.resultsPerPage * (searchResult.page - 1) + 1} -{' '}
-                    {Math.min(
-                      searchResult.resultsPerPage * searchResult.page,
-                      searchResult.totalResults
-                    )}{' '}
-                    of {searchResult.totalResults} results
-                  </>
+                  <SelectItemsCheckbox
+                    checked={selectedItems}
+                    allChecked={selectedItems.length === searchResult.content.length}
+                    onClick={(checkAll) => selectItem(undefined, checkAll)}
+                    defaultText={`
+                      Showing ${searchResult.resultsPerPage * (searchResult.page - 1) + 1} -${' '}
+                      ${Math.min(
+                        searchResult.resultsPerPage * searchResult.page,
+                        searchResult.totalResults
+                      )}${' '}
+                      of ${searchResult.totalResults} results
+                    `}
+                  />
                 )}
                 {!searchResult && <Skeleton width="100px" h="15px" />}
-              </Text>
+                {selectedItems.length > 0 && (
+                  <ListSelect
+                    defaultText="Add to List"
+                    size="sm"
+                    createNew
+                    onChange={(list) => addItemToList(list.internal_id)}
+                  />
+                )}
+              </Flex>
               {!isLargerThanLG && (
                 <IconButton aria-label="search filters" onClick={onOpen} icon={<BsFilter />} />
               )}
@@ -279,7 +357,18 @@ const SearchPage = () => {
           </Flex>
           <Flex mt={4} flexWrap="wrap" gap={{ base: 3, md: 4 }} justifyContent="center">
             {searchResult?.content.map((item) => (
-              <ItemCard item={item} key={item.internal_id} />
+              <Box
+                key={item.internal_id}
+                onClick={selectedItems.length > 0 ? () => selectItem(item.internal_id) : undefined}
+                cursor={selectedItems.length > 0 ? 'pointer' : 'default'}
+              >
+                <ItemCard
+                  item={item}
+                  onSelect={() => selectItem(item.internal_id)}
+                  disableLink={selectedItems.length > 0}
+                  selected={selectedItems.includes(item.internal_id)}
+                />
+              </Box>
             ))}
             {!searchResult && [...Array(24)].map((_, i) => <ItemCard key={i} />)}
             {searchResult && searchResult.content.length === 0 && (

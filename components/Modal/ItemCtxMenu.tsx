@@ -54,6 +54,7 @@ export const CtxTrigger = chakra(ContextMenuTrigger, {
 
 type Props = {
   item: ItemData;
+  onSelect?: () => void;
 };
 
 const ItemCtxMenu = (props: Props) => {
@@ -120,7 +121,6 @@ const ItemCtxMenu = (props: Props) => {
         {
           items: [
             {
-              list_id: list_id,
               item_iid: item.internal_id,
             },
           ],
@@ -157,6 +157,7 @@ const ItemCtxMenu = (props: Props) => {
       preventHideOnResize
       preventHideOnScroll
     >
+      {props.onSelect ? <CtxMenuItem onClick={props.onSelect}>Select Item</CtxMenuItem> : <></>}
       <CtxMenuItem onClick={handleOpenInNewTab}>Open in a New Tab</CtxMenuItem>
       <CtxSubmenu title="Add to List">
         {lists &&
@@ -181,7 +182,7 @@ const ItemCtxMenu = (props: Props) => {
         {!lists && user && <CtxMenuItem disabled>Loading...</CtxMenuItem>}
       </CtxSubmenu>
       <Divider />
-      <CtxMenuItem onClick={() => handleCopy(item.image)}>Copy Image</CtxMenuItem>
+      <CtxMenuItem onClick={() => handleCopy(item.image)}>Copy Image URL</CtxMenuItem>
       <CtxMenuItem onClick={() => handleCopy(`https://itemdb.com.br/item/${item.internal_id}`)}>
         Copy Link
       </CtxMenuItem>

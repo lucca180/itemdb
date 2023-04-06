@@ -4,10 +4,11 @@ type Props = {
   allChecked?: boolean;
   checked?: any[];
   onClick?: (checkAll: boolean) => void;
+  defaultText?: string;
 };
 
 export const SelectItemsCheckbox = (props: Props) => {
-  const { allChecked, checked, onClick } = props;
+  const { allChecked, checked, onClick, defaultText } = props;
   return (
     <Checkbox
       colorScheme={'gray'}
@@ -15,7 +16,11 @@ export const SelectItemsCheckbox = (props: Props) => {
       isIndeterminate={!!checked?.length && !allChecked}
       onChange={() => onClick?.(!allChecked)}
     >
-      <Text fontSize={{ base: 'sm', md: 'md' }}>{checked?.length ?? 0} Items Selected</Text>
+      <Text fontSize={{ base: 'sm' }}>
+        {!defaultText || checked?.length
+          ? `${checked?.length ?? 0} Items Selected`
+          : `${defaultText}`}
+      </Text>
     </Checkbox>
   );
 };

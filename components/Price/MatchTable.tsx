@@ -1,6 +1,6 @@
-import { Table, TableContainer, Tbody, Td, Tr, Th, Thead, Badge } from '@chakra-ui/react';
+import { Table, TableContainer, Tbody, Td, Tr, Th, Thead, Badge, Link } from '@chakra-ui/react';
 import { formatDistanceToNow, isToday } from 'date-fns';
-import Link from 'next/link';
+import NextLink from 'next/link';
 import React from 'react';
 import { UserList } from '../../types';
 
@@ -45,10 +45,14 @@ const MatchTable = (props: Props) => {
           {sortedData.map((list) => (
             <Tr key={list.internal_id}>
               <Td>
-                <Link href={`/lists/${list.owner.username}/${list.internal_id}`}>{list.name}</Link>
+                <Link as={NextLink} href={`/lists/${list.owner.username}/${list.internal_id}`}>
+                  {list.name}
+                </Link>
               </Td>
               <Td>
-                <Link href={`/lists/${list.owner.username}`}>{list.owner.username}</Link>
+                <Link as={NextLink} href={`/lists/${list.owner.username}`}>
+                  {list.owner.username}
+                </Link>
               </Td>
               {matches && (
                 <Td>

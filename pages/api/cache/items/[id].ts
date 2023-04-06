@@ -64,6 +64,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       'Content-Type': 'image/jpeg',
       'Content-Length': buffer.length,
       'Cache-Control': 'no-cache',
+      'Error-Image': 'true',
     });
 
     return res.end(buffer);

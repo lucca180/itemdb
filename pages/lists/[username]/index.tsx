@@ -21,7 +21,7 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Layout from '../../../components/Layout';
 import CreateListModal from '../../../components/Modal/CreateListModal';
-import { User, UserList } from '../../../types';
+import { ListItemInfo, User, UserList } from '../../../types';
 import { useAuth } from '../../../utils/auth';
 import { useRouter } from 'next/router';
 import { SortableLists } from '../../../components/Sortable/SortableLists';
@@ -59,7 +59,10 @@ const UserListsPage = (props: Props) => {
   const [isEdit, setEdit] = useState<boolean>(false);
 
   const [owner, setOwner] = useState<User | undefined>(props.owner);
-  const [matches, setMatches] = useState({ seek: [], trade: [] });
+  const [matches, setMatches] = useState<{ seek: ListItemInfo[]; trade: ListItemInfo[] }>({
+    seek: [],
+    trade: [],
+  });
   const [loading, setLoading] = useState<boolean>(true);
   const isOwner = user?.username && user?.username === router.query.username;
 
@@ -462,6 +465,7 @@ const UserListsPage = (props: Props) => {
       )}
       <Flex mt={5} gap={4} flexWrap="wrap" justifyContent={'center'}>
         <SortableLists
+          cardProps={{ matches }}
           lists={lists}
           ids={listsIds}
           listSelect={selectedLists}

@@ -11,6 +11,9 @@ type Props = {
   editMode?: boolean;
   selected?: boolean;
   onClick?: () => void;
+  cardProps?: {
+    [key: string]: any;
+  };
 };
 
 export function SortableListCard(props: Props) {
@@ -35,7 +38,12 @@ export function SortableListCard(props: Props) {
       {...listeners}
       w={{ base: '100%', sm: 'auto' }}
     >
-      <UserListCard list={props.list} isSelected={props.selected} disableLink={props.editMode} />
+      <UserListCard
+        list={props.list}
+        isSelected={props.selected}
+        disableLink={props.editMode}
+        {...props.cardProps}
+      />
     </Box>
   );
 }

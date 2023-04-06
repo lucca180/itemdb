@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { ListItemInfo } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 
@@ -75,7 +76,13 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
       const matchListSet = new Set(matchList.flatMap((list) => list.items.map((i) => i.item_iid)));
 
-      const matchedItems = initialList.items.filter((a) => matchListSet.has(a.item_iid));
+      const matchedItems: ListItemInfo[] = initialList.items
+        .filter((a) => matchListSet.has(a.item_iid))
+        .map((item) => ({
+          ...item,
+          addedAt: item.addedAt.toISOString(),
+          updatedAt: item.updatedAt.toISOString(),
+        }));
 
       return res.status(200).json(matchedItems);
     }
@@ -109,12 +116,16 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     );
     const alreadyMatched = new Set();
 
-    const matchedItems = offererLists.flatMap((list) => {
+    const matchedItems: ListItemInfo[] = offererLists.flatMap((list) => {
       const x = list.items.filter(
         (item) => seekerItemsSet.has(item.item_iid) && !alreadyMatched.has(item.item_iid)
       );
-      x.forEach((item) => alreadyMatched.add(item.item_iid));
-      return x;
+
+      return x.map((item): ListItemInfo => {
+        alreadyMatched.add(item.item_iid);
+
+        return { ...item, addedAt: item.addedAt.toJSON(), updatedAt: item.updatedAt.toJSON() };
+      });
     });
 
     return res.status(200).json(matchedItems);

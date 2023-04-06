@@ -69,16 +69,16 @@ const HomePage = () => {
         </Heading>
       </Box>
       <Flex mt={8} gap={4} flexFlow="column">
-        <Heading size="md">Latest Discoveries</Heading>
+        <Heading size="md">Latest Prices</Heading>
         <Flex flexWrap="wrap" gap={4} justifyContent="center">
-          {latestItems.map((item) => (
+          {latestPrices.map((item) => (
             <ItemCard item={item} key={item.internal_id} />
           ))}
           {!isLoaded && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
         </Flex>
-        <Heading size="md">Latest Prices</Heading>
+        <Heading size="md">Latest Discoveries</Heading>
         <Flex flexWrap="wrap" gap={4} justifyContent="center">
-          {latestPrices.map((item) => (
+          {latestItems.map((item) => (
             <ItemCard item={item} key={item.internal_id} />
           ))}
           {!isLoaded && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
