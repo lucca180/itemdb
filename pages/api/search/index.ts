@@ -18,7 +18,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   // if(!query) return res.status(400).json({error: 'invalid search query'});
 
-  const isColorSearch = query.match(/^#[0-9A-Fa-f]{6}$/);
+  const isColorSearch = !!query.match(/^#[0-9A-Fa-f]{6}$/);
 
   if (page < 0) page = 0;
   if (limit < 1) limit = 1;
