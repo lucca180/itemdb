@@ -38,7 +38,22 @@ type Props = {
 const ImportPage = (props: Props) => {
   const { items } = props;
   return (
-    <Layout SEO={{ title: 'Importing Items' }}>
+    <Layout
+      SEO={{
+        title: 'Importing Items',
+        description:
+          'Import items from your closet, gallery, or even your safety deposit box directly into your itemdb list easily!',
+        openGraph: {
+          images: [
+            {
+              url: 'https://images.neopets.com/caption/sm_caption_831.gif',
+              width: 150,
+              height: 150,
+            },
+          ],
+        },
+      }}
+    >
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/caption/sm_caption_831.gif',

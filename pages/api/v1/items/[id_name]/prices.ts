@@ -19,6 +19,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     where: {
       item_iid: !isNaN(id) ? id : undefined,
       name: name,
+      manual_check: null,
     },
     orderBy: { addedAt: 'desc' },
     take: 100,

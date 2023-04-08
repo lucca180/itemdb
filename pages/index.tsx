@@ -1,4 +1,4 @@
-import { Box, Center, Flex, Heading, Highlight } from '@chakra-ui/react';
+import { Box, Center, Flex, Heading, Highlight, Link } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import logo from '../public/logo_white.svg';
@@ -48,7 +48,12 @@ const HomePage = () => {
   //   );
 
   return (
-    <Layout>
+    <Layout
+      SEO={{
+        description:
+          'Find all the data about Neopets items including the most updated prices, wearable previews, restock history, color search, and more! Create your item lists easily and share around Neopia!',
+      }}
+    >
       <Box textAlign="center" display="flex" flexFlow="column" alignItems="center" mt="50px">
         <Image src={logo} alt="itemdb logo" width={500} quality="100" />
         <Heading size="sm" mt={4}>
@@ -63,9 +68,9 @@ const HomePage = () => {
           >
             Your open source of Neopets item info.
           </Highlight>{' '}
-          {/* <Link color="purple.300" href="#">
+          <Link color="cyan.300" href="/faq">
             Why us?
-          </Link> */}
+          </Link>
         </Heading>
       </Box>
       <Flex mt={8} gap={4} flexFlow="column">

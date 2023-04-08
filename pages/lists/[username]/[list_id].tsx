@@ -361,7 +361,21 @@ const ListPage = (props: Props) => {
 
   return (
     <Layout
-      SEO={{ title: `${list.name} - List`, nofollow: !list.official, noindex: !list.official }}
+      SEO={{
+        title: `${list.name} - List`,
+        nofollow: !list.official,
+        noindex: !list.official,
+        description: list.description || undefined,
+        openGraph: {
+          images: [
+            {
+              url: list.coverURL ?? 'https://itemdb.com.br/logo_icon.png',
+              width: 150,
+              height: 150,
+            },
+          ],
+        },
+      }}
     >
       <CreateListModal
         refresh={() => init(true)}

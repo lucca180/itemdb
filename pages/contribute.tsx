@@ -25,7 +25,22 @@ import { FiEdit3, FiSend } from 'react-icons/fi';
 
 const ContributePage = () => {
   return (
-    <Layout SEO={{ title: 'How to Contribute' }}>
+    <Layout
+      SEO={{
+        title: 'How to Contribute',
+        description:
+          'Itemdb is an open-source website and needs your contribution to become even more awesome. And there are several ways to help!',
+        openGraph: {
+          images: [
+            {
+              url: 'https://images.neopets.com/games/betterthanyou/contestant435.gif',
+              width: 150,
+              height: 150,
+            },
+          ],
+        },
+      }}
+    >
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/games/betterthanyou/contestant435.gif',

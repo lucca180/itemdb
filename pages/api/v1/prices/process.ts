@@ -31,14 +31,15 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     WHERE 
       type not in ("restock", "auction") AND
       processed = 0 AND
-      name not in (
-        SELECT name FROM ItemPrices WHERE 
-        name not in (select name from ItemPrices GROUP by name having count(DISTINCT item_iid) > 1)
-        group by name 
-        having MAX(addedAt) >= DATE(${lastWeekFormated})
+      NOT EXISTS (
+        SELECT 1 FROM ItemPrices a WHERE 
+        PriceProcess.name = a.name
+        and a.addedAt >= DATE(${lastWeekFormated})
+        and a.name
+         not in (select name from ItemPrices GROUP by name having count(DISTINCT item_iid) > 1)
       )
     GROUP BY name
-    HAVING count >= 10 OR addedAt <= DATE(${limitDateFormated})
+    HAVING count >= 10 OR (addedAt <= DATE(${limitDateFormated}) and count >= 3)
     ORDER BY addedAt asc
     LIMIT 1
   `) as any;
@@ -75,14 +76,15 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     WHERE 
       type not in ("restock", "auction") AND
       processed = 0 AND
-      name not in (
-        SELECT name FROM ItemPrices WHERE 
-        name not in (select name from ItemPrices GROUP by name having count(DISTINCT item_iid) > 1)
-        group by name 
-        having MAX(addedAt) >= DATE(${lastWeekFormated})
+      NOT EXISTS (
+        SELECT 1 FROM ItemPrices a WHERE 
+        PriceProcess.name = a.name
+        and a.addedAt >= DATE(${lastWeekFormated})
+        and a.name
+         not in (select name from ItemPrices GROUP by name having count(DISTINCT item_iid) > 1)
       )
     GROUP BY name
-    HAVING count >= 10 OR addedAt <= DATE(${limitDateFormated})
+    HAVING count >= 10 OR (addedAt <= DATE(${limitDateFormated}) and count >= 3)
     ORDER BY addedAt asc
     LIMIT ${groupByLimit} OFFSET ${page * groupByLimit}
   `) as any;
@@ -153,7 +155,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         .sort((a, b) => a.price - b.price)
         .slice(0, 30);
 
-      if (filteredResult.length <= 1) continue;
+      if (filteredResult.length < 3) continue;
 
       let latestDate = new Date(0);
 
@@ -279,10 +281,10 @@ async function updateOrAddDB(
 
     if (daysSinceLastUpdate <= 3) return undefined;
 
-    if ((variation < 5 || priceValue < 5000) && daysSinceLastUpdate <= 30) return undefined;
+    if ((variation <= 5 || priceValue < 5000) && daysSinceLastUpdate <= 30) return undefined;
 
     if (!oldPrice.noInflation_id && priceValue > 75000) {
-      if (oldPrice.price < priceValue && variation >= 65) {
+      if (oldPrice.price < priceValue && variation >= 70) {
         newPriceData.noInflation_id = oldPrice.internal_id;
         throw 'inflation';
       }

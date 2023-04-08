@@ -5,7 +5,12 @@ import Layout from '../components/Layout';
 
 const TermsPage = () => {
   return (
-    <Layout SEO={{ title: 'Terms of Use' }}>
+    <Layout
+      SEO={{
+        title: 'Terms of Use',
+        description: 'This page outlines the terms of use for itemdb, its features, and API.',
+      }}
+    >
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/caption/sm_caption_1252.gif',

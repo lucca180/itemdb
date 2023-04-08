@@ -107,7 +107,14 @@ const ItemPage = (props: Props) => {
   };
 
   return (
-    <Layout SEO={{ title: item.name, themeColor: item.color.hex }}>
+    <Layout
+      SEO={{
+        title: item.name,
+        themeColor: item.color.hex,
+        description: item.description,
+        openGraph: { images: [{ url: item.image, width: 80, height: 80, alt: item.name }] },
+      }}
+    >
       {item && (
         <EditItemModal
           isOpen={isEditModalOpen}

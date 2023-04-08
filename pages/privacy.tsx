@@ -5,7 +5,13 @@ import Layout from '../components/Layout';
 
 const PrivacyPolicyPage = () => {
   return (
-    <Layout SEO={{ title: 'Privacy Policy' }}>
+    <Layout
+      SEO={{
+        title: 'Privacy Policy',
+        description:
+          'itemdb collects some personal data during its use. Here we will detail more about how we collect, process, and use your data.',
+      }}
+    >
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/nt/ntimages/441_xweetok_agent.gif',

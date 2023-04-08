@@ -17,7 +17,22 @@ const OfficialListsPage = (props: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
-    <Layout SEO={{ title: 'Official Lists' }}>
+    <Layout
+      SEO={{
+        title: 'Official Lists',
+        description:
+          'Official lists are especially useful lists for the entire neopia community. They may contain the prize pool of some daily link or event, for example, and deserve to be highlighted!',
+        openGraph: {
+          images: [
+            {
+              url: 'https://images.neopets.com/games/tradingcards/premium/0911.gif',
+              width: 150,
+              height: 150,
+            },
+          ],
+        },
+      }}
+    >
       <ApplyListModal isOpen={isOpen} onClose={onClose} />
       <HeaderCard
         image={{
