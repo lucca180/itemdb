@@ -44,14 +44,17 @@ const ContributePage = () => {
           <TabList>
             <Tab>Item Data Extractor</Tab>
             <Tab>Feedback System</Tab>
+            <Tab>Creating Official Lists</Tab>
           </TabList>
-
           <TabPanels>
             <TabPanel>
               <ItemDataExtractor />
             </TabPanel>
             <TabPanel>
               <FeedbackSystem />
+            </TabPanel>
+            <TabPanel>
+              <OfficialLists />
             </TabPanel>
           </TabPanels>
         </Tabs>
@@ -246,5 +249,30 @@ const FeedbackSystem = () => {
         </Text>
       </Flex>
     </>
+  );
+};
+
+const OfficialLists = () => {
+  return (
+    <Flex flexFlow="column" gap={3} maxW="1000px">
+      <Heading size="lg">Creating Official Lists</Heading>
+      <Text>
+        Want to track every prize of a certain event or daily? Or maybe you have a list that could
+        be useful to other neopians? You can <Link href="/lists/official">apply your list</Link> to
+        become an <b>official list</b> on itemdb!
+      </Text>
+      <Text>
+        As an official list, your list will receive <b>a special badge</b> and will be{' '}
+        <b>featured on its item's pages</b>, so that other neopians can easily find it. You will be
+        listed as the curator of the list, and it will be your task to keep it up to date and
+        complete!
+      </Text>
+      <Text>
+        Before applying, please make sure your list is complete and up to date. You can also check
+        the <Link href="/lists/official">official lists</Link> to see other examples of cool
+        official lists! Also check our <Link href="/terms">Terms and Conditions</Link> for more
+        information on official lists.
+      </Text>
+    </Flex>
   );
 };

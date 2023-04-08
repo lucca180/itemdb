@@ -27,7 +27,7 @@ const ListSelect = (props: Props) => {
   const { user, getIdToken, authLoading } = useAuth();
   const [lists, setLists] = useState<UserList[]>([]);
   const [selectedList, setSelected] = useState<UserList | undefined>(props.defaultValue);
-
+  const [isLoading, setLoading] = useState<boolean>(true);
   const sorted = lists.sort((a, b) => SortListByChange(a, b));
 
   useEffect(() => {
@@ -48,6 +48,7 @@ const ListSelect = (props: Props) => {
       });
 
       setLists(res.data);
+      setLoading(false);
     } catch (err) {
       console.error(err);
     }
@@ -105,7 +106,7 @@ const ListSelect = (props: Props) => {
         )}
         {!selectedList && (props.defaultText ?? 'Select List')}
       </MenuButton>
-      <MenuList maxH="50vh" overflow="auto">
+      <MenuList maxH="30vh" overflow="auto">
         {sorted.length !== 0 && (
           <>
             {sorted.map((list) => (
@@ -129,25 +130,26 @@ const ListSelect = (props: Props) => {
           </>
         )}
 
-        {user && !authLoading && props.createNew && (
-          <MenuItem onClick={createNewList}>+ Create New List</MenuItem>
-        )}
-
-        {user && !authLoading && lists.length === 0 && (
+        {user && !isLoading && lists.length === 0 && (
           <MenuItem justifyContent="center" disabled>
             No lists found
           </MenuItem>
         )}
 
-        {authLoading && (
+        {isLoading && (
           <MenuItem justifyContent="center" disabled>
             Loading....
           </MenuItem>
         )}
+
         {!user && !authLoading && (
           <MenuItem justifyContent="center" disabled>
             Login to use lists
           </MenuItem>
+        )}
+
+        {user && !isLoading && props.createNew && (
+          <MenuItem onClick={createNewList}>+ Create New List</MenuItem>
         )}
       </MenuList>
     </Menu>

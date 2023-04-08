@@ -1,6 +1,6 @@
 import { startOfDay } from 'date-fns';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { UserList } from '../../../../../types';
+import { User, UserList } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 
@@ -24,8 +24,6 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   if (!username || typeof username !== 'string')
     return res.status(400).json({ error: 'Bad Request' });
 
-  const isOfficial = username === 'official';
-
   let user = null;
 
   try {
@@ -33,78 +31,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   } catch (e) {}
 
   try {
-    const listsRaw = await prisma.userList.findMany({
-      where: !isOfficial
-        ? {
-            visibility: user?.username === username ? undefined : 'public',
-            user: {
-              username: username,
-            },
-          }
-        : {
-            official: true,
-          },
-      include: {
-        items: true,
-        user: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
-
-    if (!listsRaw || listsRaw.length === 0) return res.status(200).json([]);
-
-    const owner = listsRaw[0]?.user;
-
-    const lists: UserList[] = listsRaw
-      .map((list) => {
-        return {
-          internal_id: list.internal_id,
-          name: list.name,
-          description: list.description,
-          coverURL: list.cover_url,
-          colorHex: list.colorHex,
-          purpose: list.purpose,
-          official: list.official,
-          visibility: list.visibility,
-
-          user_id: list.user_id,
-          user_username: owner?.username ?? '',
-          user_neouser: owner?.neo_user ?? '',
-
-          owner: {
-            id: owner.id,
-            username: owner.username,
-            neopetsUser: owner.neo_user,
-            lastSeen: startOfDay(owner.last_login).toJSON(),
-          },
-
-          createdAt: list.createdAt.toJSON(),
-          updatedAt: list.updatedAt.toJSON(),
-
-          sortDir: list.sortDir,
-          sortBy: list.sortBy,
-          order: list.order ?? 0,
-
-          itemCount: list.items.length,
-          itemInfo: list.items.map((item) => {
-            return {
-              internal_id: item.internal_id,
-              list_id: item.list_id,
-              item_iid: item.item_iid,
-              addedAt: item.addedAt.toJSON(),
-              updatedAt: item.updatedAt.toJSON(),
-              amount: item.amount,
-              capValue: item.capValue,
-              imported: item.imported,
-              order: item.order,
-              isHighlight: item.isHighlight,
-            };
-          }),
-        };
-      })
-      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || (a.createdAt < b.createdAt ? -1 : 1));
+    const lists = await getUserLists(username, user);
 
     return res.status(200).json(lists);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -228,3 +155,82 @@ const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 // ----------- //
+
+export const getUserLists = async (username: string, user?: User | null) => {
+  const isOfficial = username === 'official';
+
+  const listsRaw = await prisma.userList.findMany({
+    where: !isOfficial
+      ? {
+          visibility: user?.username === username ? undefined : 'public',
+          user: {
+            username: username,
+          },
+        }
+      : {
+          official: true,
+        },
+    include: {
+      items: true,
+      user: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  if (!listsRaw || listsRaw.length === 0) return [];
+
+  const owner = listsRaw[0]?.user;
+
+  const lists: UserList[] = listsRaw
+    .map((list) => {
+      return {
+        internal_id: list.internal_id,
+        name: list.name,
+        description: list.description,
+        coverURL: list.cover_url,
+        colorHex: list.colorHex,
+        purpose: list.purpose,
+        official: list.official,
+        visibility: list.visibility,
+
+        user_id: list.user_id,
+        user_username: owner?.username ?? '',
+        user_neouser: owner?.neo_user ?? '',
+
+        owner: {
+          id: owner.id,
+          username: owner.username,
+          neopetsUser: owner.neo_user,
+          lastSeen: startOfDay(owner.last_login).toJSON(),
+        },
+
+        createdAt: list.createdAt.toJSON(),
+        updatedAt: list.updatedAt.toJSON(),
+
+        sortDir: list.sortDir,
+        sortBy: list.sortBy,
+        order: list.order ?? 0,
+
+        itemCount: list.items.length,
+        itemInfo: list.items.map((item) => {
+          return {
+            internal_id: item.internal_id,
+            list_id: item.list_id,
+            item_iid: item.item_iid,
+            addedAt: item.addedAt.toJSON(),
+            updatedAt: item.updatedAt.toJSON(),
+            amount: item.amount,
+            capValue: item.capValue,
+            imported: item.imported,
+            order: item.order,
+            isHighlight: item.isHighlight,
+          };
+        }),
+      };
+    })
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || (a.createdAt < b.createdAt ? -1 : 1));
+
+  return lists;
+};
