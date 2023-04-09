@@ -13,7 +13,7 @@ const PrivacyPolicyPage = () => {
         }}
         color="#4bbde0"
       >
-        <Heading size="lg">Frequent Asked Question</Heading>
+        <Heading size="lg">Frequent Asked Questions</Heading>
         <Text size={{ base: 'sm', md: undefined }}>
           Here you can find the most frequent asked questions about the itemdb.
         </Text>

@@ -247,7 +247,12 @@ const SearchPage = () => {
   };
 
   return (
-    <Layout SEO={{ title: `${router.query.s ? `${router.query.s} -` : ''} Search` }}>
+    <Layout
+      SEO={{
+        title: `${router.query.s ? `${router.query.s} -` : ''} Search`,
+        canonical: 'https://itemdb.com.br/search',
+      }}
+    >
       <Flex
         gap={4}
         flexFlow={{ base: 'column', lg: 'row' }}

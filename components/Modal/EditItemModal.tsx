@@ -34,6 +34,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { EditItemFeedbackJSON, ItemData, ItemTag } from '../../types';
 import { useAuth } from '../../utils/auth';
+import ItemCatSelect from '../Input/ItemCategorySelect';
 import ItemStatusSelect from '../Input/ItemStatusSelect';
 import TagSelect from '../Input/TagsSelect';
 
@@ -202,12 +203,21 @@ const EditItemModal = (props: Props) => {
               <Spinner />
             </Center>
           )}
-          {isSuccess && (
+          {isSuccess && !isAdmin && (
             <Center>
               <Text fontSize="sm" textAlign="center">
                 Thank you!
                 <br />
                 We have received your suggestion and it will be reviewed by our team.
+              </Text>
+            </Center>
+          )}
+          {isSuccess && isAdmin && (
+            <Center>
+              <Text fontSize="sm" textAlign="center">
+                Changes saved!
+                <br />
+                They might take a few minutes to appear due to caching.
               </Text>
             </Center>
           )}
@@ -378,6 +388,18 @@ const InfoTab = (props: TabProps) => {
                 onChange={handleChange}
                 isDisabled={!isAdmin}
                 color={item.status == itemProps.status ? 'gray.400' : '#fff'}
+              />
+            </FormControl>
+          </HStack>
+          <HStack>
+            <FormControl>
+              <FormLabel color="gray.300">Category</FormLabel>
+              <ItemCatSelect
+                name="category"
+                value={item.category ?? ''}
+                onChange={handleChange}
+                isDisabled={!isAdmin}
+                color={item.category == itemProps.category ? 'gray.400' : '#fff'}
               />
             </FormControl>
           </HStack>

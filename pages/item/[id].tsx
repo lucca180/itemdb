@@ -111,7 +111,7 @@ const ItemPage = (props: Props) => {
       SEO={{
         title: item.name,
         themeColor: item.color.hex,
-        description: item.description,
+        description: generateMetaDescription(item),
         openGraph: { images: [{ url: item.image, width: 80, height: 80, alt: item.name }] },
       }}
     >
@@ -198,7 +198,9 @@ const ItemPage = (props: Props) => {
                 </Badge>
               )}
             </Stack>
-            <Heading size={{ base: 'lg', md: undefined }}>{item.name}</Heading>
+            <Heading as="h1" size={{ base: 'lg', md: undefined }}>
+              {item.name}
+            </Heading>
             <Text fontSize={{ base: 'sm', md: 'inherit' }}>{item.description}</Text>
           </Box>
         </Flex>
@@ -313,3 +315,20 @@ export async function getStaticPaths() {
   // on-demand if the path doesn't exist.
   return { paths, fallback: 'blocking' };
 }
+
+const generateMetaDescription = (item: ItemData) => {
+  let metaDescription = ``;
+
+  if (item.price.value)
+    metaDescription = `${item.description} | Market Price: ${item.price.value} NP | Rarity: r${
+      item.rarity
+    } | Category: ${item.category} ${item.isWearable ? '| Wearable' : ''}  ${
+      item.isNeohome ? ' | Neohome' : ''
+    }`;
+  else
+    metaDescription = `${item.description} | Rarity: r${item.rarity} | Category: ${item.category} ${
+      item.isWearable ? '| Wearable' : ''
+    }  ${item.isNeohome ? ' | Neohome' : ''}`;
+
+  return metaDescription;
+};

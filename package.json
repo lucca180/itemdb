@@ -24,7 +24,6 @@
     "@emotion/styled": "^11",
     "@google-cloud/storage": "^6.9.3",
     "@hello-pangea/color-picker": "^3.2.2",
-    "@next/font": "^13.0.3",
     "@prisma/client": "^4.11.0",
     "@sentry/integrations": "^7.40.0",
     "@sentry/nextjs": "^7.39.0",
