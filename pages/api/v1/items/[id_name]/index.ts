@@ -59,7 +59,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
   const rarity =
     itemData.rarity === '' || isNaN(Number(itemData.rarity)) ? null : Number(itemData.rarity);
   const estVal =
-    itemData.est_val === '' || isNaN(Number(itemData.est_val)) ? null : Number(itemData.est_val);
+    itemData.estVal === '' || isNaN(Number(itemData.estVal)) ? null : Number(itemData.estVal);
   const weight =
     itemData.weight === '' || isNaN(Number(itemData.weight)) ? null : Number(itemData.weight);
   const itemId =

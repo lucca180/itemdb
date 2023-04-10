@@ -317,18 +317,16 @@ export async function getStaticPaths() {
 }
 
 const generateMetaDescription = (item: ItemData) => {
-  let metaDescription = ``;
+  let metaDescription = `${item.description}`;
 
-  if (item.price.value)
-    metaDescription = `${item.description} | Market Price: ${item.price.value} NP | Rarity: r${
-      item.rarity
-    } | Category: ${item.category} ${item.isWearable ? '| Wearable' : ''}  ${
-      item.isNeohome ? ' | Neohome' : ''
-    }`;
-  else
-    metaDescription = `${item.description} | Rarity: r${item.rarity} | Category: ${item.category} ${
+  if (item.price.value) metaDescription += ` | Market Price: ${item.price.value} NP`;
+  if (!item.isMissingInfo)
+    metaDescription += ` | Rarity: r${item.rarity} | Category: ${item.category} ${
       item.isWearable ? '| Wearable' : ''
     }  ${item.isNeohome ? ' | Neohome' : ''}`;
+
+  if (!item.price.value && item.isMissingInfo)
+    metaDescription += ` | Find out more about this item on itemdb.`;
 
   return metaDescription;
 };
