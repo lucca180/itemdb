@@ -44,7 +44,7 @@ const ItemPriceCard = (props: Props) => {
     if (prices.length >= 2) {
       const diff = (prices.at(0)?.value ?? 0) - (prices.at(1)?.value ?? 0);
       setDiff(diff);
-    }
+    } else setDiff(null);
   }, [prices]);
 
   if (isLoading)

@@ -15,7 +15,14 @@ const PriceTable = (props: Props) => {
   const sortedData = data;
 
   return (
-    <TableContainer minH={{ base: 100, md: 200 }}>
+    <TableContainer
+      minH={{ base: 100, md: 200 }}
+      maxH={{ base: 200, md: 300 }}
+      w="100%"
+      borderRadius="sm"
+      overflowX="auto"
+      overflowY="auto"
+    >
       <Table h="100%" variant="striped" colorScheme="gray" size="sm">
         <Tbody>
           {sortedData.map((price, index) => (

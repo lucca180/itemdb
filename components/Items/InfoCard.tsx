@@ -6,6 +6,8 @@ type Props = {
   item: ItemData;
 };
 
+const intl = new Intl.NumberFormat();
+
 const ItemInfoCard = (props: Props) => {
   const { item } = props;
   const color = item.color.rgb;
@@ -75,7 +77,7 @@ const ItemInfoCard = (props: Props) => {
           </Tooltip>
 
           <Text flex="1" textAlign="right">
-            {item.estVal ?? '???'} NP
+            {item.estVal != null ? intl.format(item.estVal) : '???'} NP
           </Text>
         </HStack>
         <HStack>

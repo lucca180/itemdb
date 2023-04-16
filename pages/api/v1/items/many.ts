@@ -54,7 +54,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     name: name,
   });
 
-  res.json(items);
+  return res.json(items);
 }
 
 export const getManyItems = async (queryObj: {

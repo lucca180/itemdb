@@ -31,7 +31,6 @@ import ItemPriceCard from '../../components/Price/ItemPriceCard';
 import axios from 'axios';
 import TradeCard from '../../components/Trades/TradeCard';
 import ItemTags from '../../components/Items/ItemTags';
-// import ItemOfficialLists from '../../components/Items/ItemOfficialList';
 import { FiSend, FiEdit3 } from 'react-icons/fi';
 import EditItemModal from '../../components/Modal/EditItemModal';
 import FeedbackModal from '../../components/Modal/FeedbackModal';
@@ -76,11 +75,12 @@ const ItemPage = (props: Props) => {
   const router = useRouter();
 
   useEffect(() => {
-    init();
+    if (router.isReady) init();
   }, [router]);
 
   const init = async () => {
     const id = router.query.id;
+    setLoading(true);
 
     if (!id) return;
 
@@ -311,28 +311,21 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 export async function getStaticPaths() {
   const items = await getSomeItemIDs();
 
-  // Get the paths we want to pre-render
   const paths = items.map((item) => ({
     params: { id: item.internal_id.toString() },
   }));
 
-  // We'll pre-render only these paths at build time.
-  // { fallback: 'blocking' } will server-render pages
-  // on-demand if the path doesn't exist.
   return { paths, fallback: 'blocking' };
 }
 
 const generateMetaDescription = (item: ItemData) => {
-  let metaDescription = truncateString(item.description, 80);
+  let metaDescription = truncateString(item.description, 130);
 
-  if (item.price.value) metaDescription += ` - Market Price: ${item.price.value} NP`;
+  if (item.price.value) metaDescription += ` Market Price: ${item.price.value} NP - `;
   if (!item.isMissingInfo)
-    metaDescription += ` - Rarity: r${item.rarity} - Category: ${item.category} ${
-      item.isWearable ? '- Wearable' : ''
-    }  ${item.isNeohome ? ' - Neohome' : ''}`;
+    metaDescription += `Rarity: r${item.rarity} - Category: ${item.category}`;
 
-  if (!item.price.value && item.isMissingInfo)
-    metaDescription += ` - Find out more about this item on itemdb.`;
+  metaDescription += `Find out more about this item on itemdb.`;
 
   return metaDescription;
 };

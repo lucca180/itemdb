@@ -30,13 +30,17 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     take: limit,
   });
 
-  const ids = pricesRaw.filter((p) => p.item_iid).map((p) => p.item_iid?.toString()) as string[];
+  const ids = pricesRaw.map((p) => p.item_iid?.toString()) as string[];
 
   const items = await getManyItems({
     id: ids,
   });
 
-  return res.json(Object.values(items));
+  const sortedItems = Object.values(items).sort(
+    (a, b) => ids.indexOf(a.internal_id.toString()) - ids.indexOf(b.internal_id.toString())
+  );
+
+  return res.json(sortedItems);
 };
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
