@@ -259,7 +259,12 @@ const SearchPage = () => {
         alignItems={{ base: 'center', lg: 'flex-start' }}
       >
         {isLargerThanLG && (
-          <Box flex="1 0 auto" maxW={{ base: 'none', md: '275px' }} w="100%">
+          <Box
+            flex="1 0 auto"
+            display={{ base: 'none', lg: 'block' }}
+            maxW={{ base: 'none', md: '275px' }}
+            w="100%"
+          >
             <SearchFilterCard
               filters={filters}
               stats={searchStatus}

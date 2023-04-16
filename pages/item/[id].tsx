@@ -44,6 +44,8 @@ import { getItemLists } from '../api/v1/items/[id_name]/lists';
 import ItemMatch from '../../components/Price/ItemMatch';
 import Link from 'next/link';
 import ItemComments from '../../components/Items/ItemComments';
+import { getSimilarItems } from '../api/v1/items/[id_name]/similar';
+import SimilarItemsCard from '../../components/Items/SimilarItemsCard';
 
 const defaultLastSeen: ItemLastSeen = {
   sw: null,
@@ -55,6 +57,7 @@ const defaultLastSeen: ItemLastSeen = {
 type Props = {
   item: ItemData;
   colors: FullItemColors;
+  similarItems: ItemData[];
   lists?: UserList[];
 };
 
@@ -152,7 +155,7 @@ const ItemPage = (props: Props) => {
             <Image src={item.image} width={80} height={80} alt={item.name} unoptimized />
           </Flex>
           <Box>
-            <Stack direction="row" mb={1}>
+            <Stack direction="row" mb={1} wrap="wrap" gap={0.5}>
               {
                 <Badge
                   as={Link}
@@ -265,6 +268,7 @@ const ItemPage = (props: Props) => {
             {item.isNC && <ItemMatch item={item} lists={lists} />}
             {lists && <ItemOfficialLists item={item} lists={lists} />}
             {item.comment && <ItemComments item={item} />}
+            <SimilarItemsCard item={item} similarItems={props.similarItems} />
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>
             {item.isWearable && <ItemPreview item={item} />}
@@ -285,17 +289,19 @@ export async function getStaticProps(context: GetStaticPropsContext) {
   const item = await getItem(Number(id));
   if (!item) return { notFound: true };
 
-  const [colors, lists] = await Promise.all([
+  const [colors, lists, similarItems] = await Promise.all([
     getItemColor([item.image_id]),
     getItemLists(item.internal_id, !item.isNC),
+    getSimilarItems(item.internal_id.toString()),
   ]);
 
   if (!colors) return { notFound: true };
 
   return {
     props: {
-      item: JSON.parse(JSON.stringify(item)),
-      lists: JSON.parse(JSON.stringify(lists)),
+      item: item,
+      lists: lists,
+      similarItems: similarItems,
       colors: colors[item.image_id],
     },
     revalidate: 60, // In seconds
@@ -317,16 +323,23 @@ export async function getStaticPaths() {
 }
 
 const generateMetaDescription = (item: ItemData) => {
-  let metaDescription = `${item.description}`;
+  let metaDescription = truncateString(item.description, 80);
 
-  if (item.price.value) metaDescription += ` | Market Price: ${item.price.value} NP`;
+  if (item.price.value) metaDescription += ` - Market Price: ${item.price.value} NP`;
   if (!item.isMissingInfo)
-    metaDescription += ` | Rarity: r${item.rarity} | Category: ${item.category} ${
-      item.isWearable ? '| Wearable' : ''
-    }  ${item.isNeohome ? ' | Neohome' : ''}`;
+    metaDescription += ` - Rarity: r${item.rarity} - Category: ${item.category} ${
+      item.isWearable ? '- Wearable' : ''
+    }  ${item.isNeohome ? ' - Neohome' : ''}`;
 
   if (!item.price.value && item.isMissingInfo)
-    metaDescription += ` | Find out more about this item on itemdb.`;
+    metaDescription += ` - Find out more about this item on itemdb.`;
 
   return metaDescription;
 };
+
+function truncateString(str: string, num: number) {
+  if (str.length <= num) {
+    return str;
+  }
+  return str.slice(0, num) + '...';
+}

@@ -46,7 +46,7 @@ const CtxSubmenu = chakra(Submenu, {
   },
 });
 
-export const CtxTrigger = chakra(ContextMenuTrigger, {
+export const CtxTrigger = chakra(typeof window === 'undefined' ? 'div' : ContextMenuTrigger, {
   baseStyle: {
     display: 'inline',
   },
@@ -149,6 +149,8 @@ const ItemCtxMenu = (props: Props) => {
       });
     }
   };
+
+  if (typeof window === 'undefined') return <></>;
 
   return (
     <CtxMenu

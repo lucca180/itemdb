@@ -131,7 +131,7 @@ export const getItem = async (id_name: number | string) => {
     type: result.type,
     estVal: result.est_val,
     weight: result.weight,
-    description: result.description ?? '',
+    description: result.description || null,
     status: result.status,
     category: result.category,
     isNeohome: !!result.isNeohome,
@@ -148,7 +148,7 @@ export const getItem = async (id_name: number | string) => {
     isMissingInfo: false,
     price: {
       value: result.price,
-      addedAt: result.priceAdded,
+      addedAt: (result.priceAdded as Date | null)?.toJSON() ?? null,
       inflated: !!result.noInflation_id,
     },
     comment: result.comment ?? null,

@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["extendedWhereUnique"]
+  previewFeatures = ["extendedWhereUnique", "fullTextIndex", "fullTextSearch"]
 }
 
 datasource db {
@@ -42,7 +42,10 @@ model Items {
   atLists ListItems[]
 
   tags ItemTags[]
-
+  
+  @@fulltext([name])
+  @@fulltext([description])
+  @@fulltext([name, description])
   @@index([name, image_id])
   @@index([image_id])
   @@index([item_id])
