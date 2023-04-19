@@ -319,13 +319,15 @@ export async function getStaticPaths() {
 }
 
 const generateMetaDescription = (item: ItemData) => {
+  const intl = new Intl.NumberFormat();
+
   let metaDescription = truncateString(item.description, 130);
 
-  if (item.price.value) metaDescription += ` Market Price: ${item.price.value} NP - `;
+  if (item.price.value) metaDescription += ` | Market Price: ${intl.format(item.price.value)} NP`;
   if (!item.isMissingInfo)
-    metaDescription += `Rarity: r${item.rarity} - Category: ${item.category}`;
+    metaDescription += ` - Rarity: r${item.rarity} - Category: ${item.category}`;
 
-  metaDescription += `Find out more about this item on itemdb.`;
+  metaDescription += ` | Find out more about this item on itemdb.`;
 
   return metaDescription;
 };

@@ -46,7 +46,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
     const { user } = await CheckAuth(req);
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
-    if (user.role !== 'ADMIN') res.status(403).json({ error: 'Forbidden' });
+    if (user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
   } catch (e: any) {
     console.error(e);
     return res.status(500).json({ error: 'Internal Server Error' });
@@ -73,6 +73,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
       description: itemData.description,
       image: itemData.image,
       image_id: imageId,
+      type: itemData.type,
       rarity: rarity,
       est_val: estVal,
       weight: weight,
@@ -89,6 +90,8 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 
   return res.status(200).json({ success: true });
 };
+
+// ------------- //
 
 export const getItem = async (id_name: number | string) => {
   const isID = typeof id_name === 'number';
