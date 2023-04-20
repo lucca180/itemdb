@@ -113,7 +113,7 @@ export const getManyItems = async (queryObj: {
       type: result.type,
       estVal: result.est_val,
       weight: result.weight,
-      description: result.description || null,
+      description: result.description ?? '',
       status: result.status,
       category: result.category,
       isNeohome: !!result.isNeohome,
