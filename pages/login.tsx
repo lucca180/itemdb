@@ -32,7 +32,7 @@ const LoginPage = () => {
   const [needInfo, setNeedInfo] = useState<boolean>(false);
   const [neopetsUser, setNeopetsUser] = useState<string>('');
   const [username, setUsername] = useState<string>('');
-  const { user, authLoading } = useAuth();
+  const { user, authLoading, setUser } = useAuth();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
@@ -68,6 +68,8 @@ const LoginPage = () => {
           setIsLoading(false);
           return setNeedInfo(true);
         }
+
+        setUser(user);
 
         router.replace('/');
       } catch (e: any) {
@@ -139,6 +141,8 @@ const LoginPage = () => {
         setIsLoading(false);
         return setNeedInfo(true);
       }
+
+      setUser(user);
 
       router.replace('/');
     } catch (e: any) {
