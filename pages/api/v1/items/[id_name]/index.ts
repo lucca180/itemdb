@@ -33,7 +33,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
   const internal_id = Number(req.query.id_name);
   if (isNaN(internal_id)) return res.status(400).json({ error: 'Invalid Request' });
 
-  const itemData = req.body.itemData;
+  const itemData = req.body.itemData as ItemData;
   const itemCats = (req.body.itemCats as string[]) ?? [];
   const itemTags = (req.body.itemTags as string[]) ?? [];
 
@@ -55,18 +55,27 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
   if (!itemData.image) return res.status(400).json({ error: 'Invalid Request' });
 
   const imageId = itemData.image.match(/[^\.\/]+(?=\.gif)/)?.[0] ?? undefined;
+  if (!imageId) return res.status(400).json({ error: 'Invalid Request' });
 
   const rarity =
-    itemData.rarity === '' || isNaN(Number(itemData.rarity)) ? null : Number(itemData.rarity);
+    (!itemData.rarity && itemData.rarity !== 0) || isNaN(Number(itemData.rarity))
+      ? null
+      : Number(itemData.rarity);
   const estVal =
-    itemData.estVal === '' || isNaN(Number(itemData.estVal)) ? null : Number(itemData.estVal);
+    (!itemData.estVal && itemData.estVal !== 0) || isNaN(Number(itemData.estVal))
+      ? null
+      : Number(itemData.estVal);
   const weight =
-    itemData.weight === '' || isNaN(Number(itemData.weight)) ? null : Number(itemData.weight);
+    (!itemData.weight && itemData.weight !== 0) || isNaN(Number(itemData.weight))
+      ? null
+      : Number(itemData.weight);
   const itemId =
-    itemData.item_id === '' || isNaN(Number(itemData.item_id)) ? null : Number(itemData.item_id);
+    (!itemData.item_id && itemData.item_id !== 0) || isNaN(Number(itemData.item_id))
+      ? null
+      : Number(itemData.item_id);
 
   await prisma.items.update({
-    where: { internal_id },
+    where: { internal_id: internal_id },
     data: {
       item_id: itemId,
       name: itemData.name,
