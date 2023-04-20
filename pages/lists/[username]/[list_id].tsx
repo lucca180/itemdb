@@ -503,7 +503,7 @@ const ListPage = (props: Props) => {
         </Flex>
       </Box>
       <Flex mt={5} gap={6} flexFlow="column">
-        {!isOwner && user && (
+        {!isOwner && user && list.purpose !== 'none' && (
           <>
             <Box>
               <Heading size={{ base: 'md', md: 'lg' }}>

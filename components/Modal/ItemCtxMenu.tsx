@@ -65,7 +65,7 @@ const ItemCtxMenu = (props: Props) => {
   const { item } = props;
 
   const fetchLists = async () => {
-    if (!user || lists?.length) return;
+    if (!user || lists !== null) return;
     try {
       const token = await getIdToken();
 

@@ -55,7 +55,7 @@ const UserListCard = (props: Props) => {
     >
       <Link
         as={NextLink}
-        href={`/lists/${list.user_username}/${list.internal_id}`}
+        href={`/lists/${list.official ? 'official' : list.user_username}/${list.internal_id}`}
         _hover={{ textDecoration: 'none' }}
       >
         <Flex
@@ -93,7 +93,10 @@ const UserListCard = (props: Props) => {
           noOfLines={2}
           color={color.isLight() ? 'blackAlpha.800' : undefined}
         >
-          <Link as={NextLink} href={`/lists/${list.user_username}/${list.internal_id}`}>
+          <Link
+            as={NextLink}
+            href={`/lists/${list.official ? 'official' : list.user_username}/${list.internal_id}`}
+          >
             {list.name}
           </Link>
         </Text>
