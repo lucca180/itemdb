@@ -150,14 +150,17 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       specialTypes = (subText as string).match(/(?<=\().+?(?=\))/gm) ?? [];
     }
 
+    if (rarity === 500) type = 'nc';
+    const isNC = type === 'nc' || rarity === 500;
+
+    if (description.includes('deluxe paint brush set')) type = 'pb';
+
     if (type === 'pb') status = 'no trade';
 
     status = status ?? 'active';
 
     specialTypes = specialTypes?.length > 0 ? specialTypes?.toString() : undefined;
 
-    if (rarity === 500) type = 'nc';
-    const isNC = type === 'nc' || rarity === 500;
     const x = {
       item_id: itemId,
       name: name.trim(),

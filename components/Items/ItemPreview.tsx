@@ -1,17 +1,22 @@
 import { AspectRatio, Box, Flex, Link, Skeleton, Text } from '@chakra-ui/react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { ItemData } from '../../types';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 
 type Props = {
   item: ItemData;
+  isLoading?: boolean;
 };
 
 const ItemPreview = (props: Props) => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const { item } = props;
+  const { item, isLoading } = props;
   const color = item.color.rgb;
+
+  useEffect(() => {
+    if (isLoading) setIsLoaded(true);
+  }, [isLoading]);
 
   return (
     <Flex
