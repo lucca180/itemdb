@@ -362,7 +362,7 @@ const ListPage = (props: Props) => {
   return (
     <Layout
       SEO={{
-        title: `${list.name} - ${list.official ? 'Official' : list.owner.username} List`,
+        title: `${list.name} - ${list.official ? 'Official' : list.owner.username + "'s"} List`,
         nofollow: !list.official,
         noindex: !list.official,
         description: list.description || undefined,

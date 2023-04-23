@@ -35,7 +35,7 @@ const TradeTable = (props: Props) => {
                 : ''
             }
           >
-            <Flex maxW={50}>
+            <Flex w={50} flexShrink="0" justifyContent="center" alignItems="center">
               <Image src={item.image} width={50} height={50} alt={item.name} />
             </Flex>
             <Flex flexFlow="column" justifyContent="center">

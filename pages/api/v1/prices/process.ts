@@ -58,7 +58,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   let limit = Number(req.body.limit);
   limit = isNaN(limit) ? 1000 : limit;
-  limit = Math.min(limit, 5000);
+  limit = Math.min(limit, 10000);
 
   let groupByLimit = Number(req.body.groupByLimit);
   groupByLimit = isNaN(groupByLimit) ? 1000 : groupByLimit;
@@ -307,7 +307,8 @@ async function updateOrAddDB(
 
       if (
         (daysWithInflation >= 60 && variation < 30) ||
-        inflationVariation < 50 ||
+        (priceValue > 75000 && inflationVariation < 70) ||
+        (priceValue >= 100000 && inflationVariation < 50) ||
         lastNormalPrice.price >= priceValue
       )
         newPriceData.noInflation_id = null;
