@@ -30,6 +30,8 @@ model Items {
   status      String?
   comment     String?   @db.Text
 
+  slug        String?   @unique
+
   addedAt   DateTime @default(now())
   updatedAt DateTime @updatedAt
 
