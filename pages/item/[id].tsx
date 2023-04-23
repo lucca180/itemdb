@@ -316,7 +316,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
       similarItems: similarItems,
       colors: colors[item.image_id],
     },
-    revalidate: 60, // In seconds
+    revalidate: 15, // In seconds
   };
 }
 
@@ -324,7 +324,7 @@ export async function getStaticPaths() {
   const items = await getSomeItemIDs();
 
   const paths = items.map((item) => ({
-    params: { id: item.internal_id.toString() },
+    params: { id: item.slug ?? item.internal_id.toString() },
   }));
 
   return { paths, fallback: 'blocking' };
