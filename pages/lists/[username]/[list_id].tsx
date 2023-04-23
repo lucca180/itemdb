@@ -362,7 +362,7 @@ const ListPage = (props: Props) => {
   return (
     <Layout
       SEO={{
-        title: `${list.name} - List`,
+        title: `${list.name} - ${list.official ? 'Official' : list.owner.username} List`,
         nofollow: !list.official,
         noindex: !list.official,
         description: list.description || undefined,
@@ -453,7 +453,13 @@ const ListPage = (props: Props) => {
                 </Badge>
               )}
               {list.official && (
-                <Badge borderRadius="md" colorScheme="blue" variant="solid">
+                <Badge
+                  as={NextLink}
+                  href="/lists/official"
+                  borderRadius="md"
+                  colorScheme="blue"
+                  variant="solid"
+                >
                   ✓ Official
                 </Badge>
               )}

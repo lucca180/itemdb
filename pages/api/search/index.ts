@@ -328,6 +328,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         inflated: !!result.noInflation_id,
       },
       comment: result.comment ?? null,
+      slug: result.slug ?? null,
     };
 
     item.findAt = getItemFindAtLinks(item); // does have all the info we need :)

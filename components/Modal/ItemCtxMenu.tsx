@@ -185,7 +185,9 @@ const ItemCtxMenu = (props: Props) => {
       </CtxSubmenu>
       <Divider />
       <CtxMenuItem onClick={() => handleCopy(item.image)}>Copy Image URL</CtxMenuItem>
-      <CtxMenuItem onClick={() => handleCopy(`https://itemdb.com.br/item/${item.internal_id}`)}>
+      <CtxMenuItem
+        onClick={() => handleCopy(`https://itemdb.com.br/item/${item.slug ?? item.internal_id}`)}
+      >
         Copy Link
       </CtxMenuItem>
       <CtxMenuItem onClick={() => handleCopy(item.name)}>Copy Text</CtxMenuItem>

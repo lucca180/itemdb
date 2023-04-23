@@ -107,7 +107,7 @@ export const getItem = async (id_name: number | string) => {
 
   let query;
   if (isID) query = Prisma.sql`a.internal_id = ${id_name}`;
-  else query = Prisma.sql`a.name LIKE ${id_name}`;
+  else query = Prisma.sql`a.slug = ${id_name} or a.name LIKE ${id_name}`;
 
   const resultRaw = (await prisma.$queryRaw`
     SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex,
@@ -164,6 +164,7 @@ export const getItem = async (id_name: number | string) => {
       inflated: !!result.noInflation_id,
     },
     comment: result.comment ?? null,
+    slug: result.slug ?? null,
   };
 
   item.findAt = getItemFindAtLinks(item); // does have all the info we need :)

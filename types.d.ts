@@ -19,6 +19,7 @@ export type ItemData = {
   findAt: ItemFindAt;
   isMissingInfo: boolean;
   price: ItemPriceData;
+  slug: string | null;
   comment: string | null;
 };
 

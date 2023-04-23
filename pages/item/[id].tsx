@@ -79,10 +79,7 @@ const ItemPage = (props: Props) => {
   }, [router]);
 
   const init = async () => {
-    const id = router.query.id;
     setLoading(true);
-
-    if (!id) return;
 
     const [resPrice, resStats, resTrades, resTags] = await Promise.all([
       axios.get(`/api/v1/items/${item.internal_id}/prices`),
@@ -99,7 +96,7 @@ const ItemPage = (props: Props) => {
           image_id: item.image_id,
         },
       }),
-      axios.get(`/api/v1/items/${id}/tags`),
+      axios.get(`/api/v1/items/${item.internal_id}/tags`),
     ]);
 
     setPrices(resPrice.data ?? []);
@@ -271,7 +268,7 @@ const ItemPage = (props: Props) => {
             <SimilarItemsCard item={item} similarItems={props.similarItems} />
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>
-            {item.isWearable && <ItemPreview item={item} />}
+            {item.isWearable && <ItemPreview item={item} isLoading={isLoading} />}
             {!item.isNC && <TradeCard item={item} trades={trades} isLoading={isLoading} />}
           </Flex>
         </Flex>
@@ -285,8 +282,23 @@ export default ItemPage;
 export async function getStaticProps(context: GetStaticPropsContext) {
   const id = context.params?.id as string | undefined;
   if (!id) return { notFound: true };
+  let item;
 
-  const item = await getItem(Number(id));
+  const isIdNumber = !isNaN(Number(id));
+
+  if (isIdNumber) {
+    item = await getItem(Number(id));
+    if (!item) return { notFound: true };
+
+    if (item.slug)
+      return {
+        redirect: {
+          destination: `/item/${item.slug}`,
+          permanent: true,
+        },
+      };
+  } else item = await getItem(id);
+
   if (!item) return { notFound: true };
 
   const [colors, lists, similarItems] = await Promise.all([

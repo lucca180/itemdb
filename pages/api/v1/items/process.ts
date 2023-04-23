@@ -3,7 +3,7 @@ import { Items as Item, ItemProcess, Items, ItemColor } from '@prisma/client';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import Vibrant from 'node-vibrant';
-import { categoryToShopID, genItemKey } from '../../../../utils/utils';
+import { categoryToShopID, genItemKey, slugify } from '../../../../utils/utils';
 import Color from 'color';
 
 type ValueOf<T> = T[keyof T];
@@ -91,9 +91,31 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
   try {
     if (!item.image_id || !item.image || !item.name) throw 'invalid data';
 
-    const dbItemList = await prisma.items.findMany({
-      where: { name: item.name, image_id: item.image_id },
+    let itemSlug = slugify(item.name);
+    const dbItemListPromise = prisma.items.findMany({
+      where: {
+        name: item.name,
+        image_id: item.image_id,
+      },
     });
+
+    const dbSlugItemsPromise = prisma.items.findMany({
+      where: {
+        slug: {
+          startsWith: itemSlug,
+        },
+      },
+    });
+
+    const [dbItemList, dbSlugItems] = await Promise.all([dbItemListPromise, dbSlugItemsPromise]);
+
+    // check if we have same slug
+    if (dbSlugItems.length > 0) {
+      const sameSlug = dbSlugItems.filter((x) => x.slug?.includes(itemSlug));
+      if (sameSlug.length > 0) {
+        itemSlug = `${itemSlug}-${sameSlug.length + 1}`;
+      }
+    }
 
     // db has no entry -> add
     // db has one entry but it's not the same -> add
@@ -116,6 +138,7 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
         weight: item.weight,
         type: item.type,
         isNC: item.isNC,
+        slug: itemSlug,
         isWearable: item.isWearable,
         isNeohome: !!item.specialType?.toLowerCase().includes('neohome'),
         est_val: item.est_val,

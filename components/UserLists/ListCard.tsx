@@ -110,7 +110,7 @@ const UserListCard = (props: Props) => {
         </Text>
         <Flex gap={1} flexWrap="wrap">
           {list.official && (
-            <Badge colorScheme="blue" variant="solid">
+            <Badge as={NextLink} href="/lists/official" colorScheme="blue" variant="solid">
               ✓ Official
             </Badge>
           )}

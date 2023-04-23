@@ -134,6 +134,7 @@ export const getManyItems = async (queryObj: {
         inflated: !!result.noInflation_id,
       },
       comment: result.comment ?? null,
+      slug: result.slug ?? null,
     };
     x.findAt = getItemFindAtLinks(x); // does have all the info we need :)
     x.isMissingInfo = isMissingInfo(x);

@@ -60,7 +60,7 @@ const ItemCard = (props: Props) => {
       >
         <Link
           as={disableLink ? undefined : NextLink}
-          href={disableLink ? undefined : '/item/' + item.internal_id}
+          href={disableLink ? undefined : '/item/' + (item.slug ?? item.internal_id)}
           _hover={{ textDecoration: 'none' }}
           // pointerEvents={disableLink ? 'none' : 'initial'}
         >
