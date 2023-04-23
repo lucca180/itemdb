@@ -40,7 +40,7 @@ const ItemInfoCard = (props: Props) => {
         borderBottomRadius="md"
       >
         <HStack>
-          <Tag size="lg" fontWeight="bold">
+          <Tag size="lg" fontWeight="bold" as="h3">
             Item ID
           </Tag>
           <Text flex="1" textAlign="right">
@@ -48,7 +48,7 @@ const ItemInfoCard = (props: Props) => {
           </Text>
         </HStack>
         <HStack>
-          <Tag size="lg" fontWeight="bold">
+          <Tag size="lg" fontWeight="bold" as="h3">
             Rarity
           </Tag>
           <Text flex="1" textAlign="right">
@@ -56,7 +56,7 @@ const ItemInfoCard = (props: Props) => {
           </Text>
         </HStack>
         <HStack>
-          <Tag size="lg" fontWeight="bold">
+          <Tag size="lg" fontWeight="bold" as="h3">
             Weight
           </Tag>
           <Text flex="1" textAlign="right">
@@ -71,7 +71,7 @@ const ItemInfoCard = (props: Props) => {
             placement="top"
             color="white"
           >
-            <Tag size="lg" fontWeight="bold">
+            <Tag size="lg" fontWeight="bold" as="h3">
               Est. Val <MdHelp size={'0.8rem'} style={{ marginLeft: '0.2rem' }} />
             </Tag>
           </Tooltip>
@@ -81,7 +81,7 @@ const ItemInfoCard = (props: Props) => {
           </Text>
         </HStack>
         <HStack>
-          <Tag size="lg" fontWeight="bold">
+          <Tag size="lg" fontWeight="bold" as="h3">
             Category
           </Tag>
           <Text flex="1" textAlign="right" textTransform="capitalize">
@@ -89,7 +89,7 @@ const ItemInfoCard = (props: Props) => {
           </Text>
         </HStack>
         <HStack>
-          <Tag size="lg" fontWeight="bold">
+          <Tag size="lg" fontWeight="bold" as="h3">
             Status
           </Tag>
           <Text flex="1" textAlign="right" textTransform="capitalize">

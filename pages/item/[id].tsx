@@ -201,7 +201,9 @@ const ItemPage = (props: Props) => {
             <Heading as="h1" size={{ base: 'lg', md: undefined }}>
               {item.name}
             </Heading>
-            <Text fontSize={{ base: 'sm', md: 'inherit' }}>{item.description}</Text>
+            <Text fontSize={{ base: 'sm', md: 'inherit' }} as="h2">
+              {item.description}
+            </Text>
           </Box>
         </Flex>
       </Box>

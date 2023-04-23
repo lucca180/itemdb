@@ -207,7 +207,10 @@ const Layout = (props: Props) => {
             <ChakraLink href="/privacy">Privacy Policy</ChakraLink>
           </Text>
           <Text fontSize="xs" color="gray.500">
-            © 2009-{new Date().getFullYear()} Magnetismo Times
+            © 2009-{new Date().getFullYear()}{' '}
+            <ChakraLink href="https://magnetismotimes.com/" isExternal>
+              Magnetismo Times
+            </ChakraLink>
             <br />© 1999-{new Date().getFullYear()} NeoPets, Inc. All rights reserved. Used with
             permission.
           </Text>

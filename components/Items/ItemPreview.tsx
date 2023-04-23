@@ -15,7 +15,7 @@ const ItemPreview = (props: Props) => {
   const color = item.color.rgb;
 
   useEffect(() => {
-    if (isLoading) setIsLoaded(true);
+    if (isLoading) setIsLoaded(false);
   }, [isLoading]);
 
   return (
@@ -60,15 +60,10 @@ const ItemPreview = (props: Props) => {
           </AspectRatio>
         </Skeleton>
       </Flex>
-      <Box
-        p={1}
-        textAlign="center"
-        fontWeight="bold"
-        bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}
-      >
+      <Box p={1} textAlign="center" bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}>
         <Text fontSize="small">
           Powered by{' '}
-          <Link href={item.findAt.dti ?? undefined} isExternal>
+          <Link href={item.findAt.dti ?? undefined} isExternal fontWeight="bold">
             Dress To Impress <ExternalLinkIcon mx="1px" verticalAlign="baseline" />
           </Link>
         </Text>

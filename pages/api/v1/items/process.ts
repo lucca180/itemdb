@@ -111,7 +111,10 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
 
     // check if we have same slug
     if (dbSlugItems.length > 0) {
-      const sameSlug = dbSlugItems.filter((x) => x.slug?.includes(itemSlug));
+      const regex = new RegExp(`^${itemSlug}-\\d+$`);
+
+      const sameSlug = dbSlugItems.filter((x) => regex.test(x.slug ?? ''));
+
       if (sameSlug.length > 0) {
         itemSlug = `${itemSlug}-${sameSlug.length + 1}`;
       }

@@ -14,7 +14,7 @@ const ItemOfficialLists = (props: Props) => {
   const officialLists = lists.filter((list) => list.official);
 
   return (
-    <CardBase title="Official Lists" color={item.color.rgb}>
+    <CardBase title={<Link href="/lists/official">Official Lists</Link>} color={item.color.rgb}>
       <Flex gap={3} flexFlow="column">
         {officialLists.map((list, i) => (
           <Flex alignItems="center" key={i} gap={1}>
