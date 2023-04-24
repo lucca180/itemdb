@@ -5,6 +5,7 @@ import prisma from '../../../../utils/prisma';
 import Vibrant from 'node-vibrant';
 import { categoryToShopID, genItemKey, slugify } from '../../../../utils/utils';
 import Color from 'color';
+import { detectWearable } from '../../../../utils/detectWearable';
 
 type ValueOf<T> = T[keyof T];
 
@@ -129,6 +130,8 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
         item.item_id &&
         dbItemList[0].item_id !== item.item_id)
     ) {
+      if (!item.isWearable) item.isWearable = await detectWearable(item.image);
+
       return {
         name: item.name,
         description: item.description,
