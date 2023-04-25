@@ -155,6 +155,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         .sort((a, b) => a.price - b.price)
         .slice(0, 30);
 
+      if (filteredResult.length < 3) continue;
+
       let latestDate = new Date(0);
 
       const usedIDs = filteredResult.map((o) => {
