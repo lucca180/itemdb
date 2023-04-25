@@ -48,6 +48,9 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const itemPrices = data.itemPrices;
 
   const lang = data.lang;
+
+  if (lang !== 'en') return res.status(400).json({ error: 'Invalid language' });
+
   const dataHash = data.hash;
 
   if (!checkHash(dataHash, { itemPrices: itemPrices }))
