@@ -7,6 +7,8 @@ import { CheckAuth } from '../../../../utils/googleCloud';
 import { checkHash } from '../../../../utils/hash';
 import { Prisma } from '.prisma/client';
 
+const TARNUM_KEY = process.env.TARNUM_KEY;
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   try {
     if (req.method === 'GET') return GET(req, res);
@@ -71,12 +73,13 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+  const tarnumkey = req.headers['tarnumkey'] as string | undefined;
 
   const tradeLots = data.tradeLots;
   const lang = data.lang;
   const dataHash = data.hash;
 
-  if (!checkHash(dataHash, { tradeLots: tradeLots }))
+  if (!checkHash(dataHash, { tradeLots: tradeLots }) && tarnumkey !== TARNUM_KEY)
     return res.status(400).json({ error: 'Invalid hash' });
 
   if (lang !== 'en') return res.status(400).json('Language must be english');

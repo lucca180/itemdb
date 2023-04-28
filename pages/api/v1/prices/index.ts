@@ -7,6 +7,8 @@ import { getManyItems } from '../items/many';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { checkHash } from '../../../../utils/hash';
 
+const TARNUM_KEY = process.env.TARNUM_KEY;
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
   if (req.method === 'POST') return POST(req, res);
@@ -47,13 +49,15 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
   const itemPrices = data.itemPrices;
 
+  const tarnumkey = req.headers['tarnumkey'] as string | undefined;
+
   const lang = data.lang;
 
   if (lang !== 'en') return res.status(400).json({ error: 'Invalid language' });
 
   const dataHash = data.hash;
 
-  if (!checkHash(dataHash, { itemPrices: itemPrices }))
+  if (!checkHash(dataHash, { itemPrices: itemPrices }) && tarnumkey !== TARNUM_KEY)
     return res.status(400).json({ error: 'Invalid hash' });
 
   const dataList = [];
