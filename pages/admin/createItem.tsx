@@ -112,6 +112,14 @@ const CreateItem = () => {
       category: item.category ?? undefined,
       type: item.type,
     };
+
+    const toastID = toast({
+      title: 'Creating item...',
+      status: 'info',
+      duration: null,
+      isClosable: false,
+    });
+
     try {
       const res = await fetch('/api/v1/items', {
         method: 'POST',
@@ -127,7 +135,7 @@ const CreateItem = () => {
 
       if (res.status === 200) {
         await axios.post('/api/v1/items/process');
-        toast({
+        toast.update(toastID, {
           title: 'Item created.',
           description: 'The item was successfully created.',
           status: 'success',
@@ -137,7 +145,7 @@ const CreateItem = () => {
       }
     } catch (err) {
       console.error(err);
-      toast({
+      toast.update(toastID, {
         title: 'Error creating item.',
         description: 'There was an error creating the item.',
         status: 'error',
