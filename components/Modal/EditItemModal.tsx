@@ -256,7 +256,7 @@ type TabProps = {
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 };
 
-const InfoTab = (props: TabProps) => {
+export const InfoTab = (props: TabProps) => {
   const { item, itemProps, onChange: handleChange } = props;
   const { user } = useAuth();
 
@@ -429,7 +429,7 @@ type TagSelectProps = {
   onChange: (tags: string[], type: 'categories' | 'tags' | 'special') => void;
 };
 
-const CategoriesTab = (props: TagSelectProps) => {
+export const CategoriesTab = (props: TagSelectProps) => {
   const { item, categories, tags, onChange: handleChange } = props;
   const [specialTags, setSpecialTags] = useState<string[]>([]);
   const { user } = useAuth();
