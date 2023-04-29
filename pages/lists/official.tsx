@@ -1,4 +1,4 @@
-import { Flex, Heading, Text, Divider, Button, useDisclosure } from '@chakra-ui/react';
+import { Flex, Heading, Text, Divider, Button, useDisclosure, Box } from '@chakra-ui/react';
 import HeaderCard from '../../components/Card/HeaderCard';
 import Layout from '../../components/Layout';
 import ApplyListModal from '../../components/Modal/OfficialListApply';
@@ -63,7 +63,9 @@ const OfficialListsPage = (props: Props) => {
         </Flex>
         <Flex mt={5} gap={4} flexWrap="wrap" justifyContent={'center'}>
           {lists.map((list) => (
-            <UserListCard key={list.internal_id} list={list} />
+            <Box key={list.internal_id} flex="1">
+              <UserListCard list={list} />
+            </Box>
           ))}
         </Flex>
       </Flex>

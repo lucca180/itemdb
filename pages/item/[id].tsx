@@ -271,7 +271,9 @@ const ItemPage = (props: Props) => {
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>
             {item.isWearable && <ItemPreview item={item} isLoading={isLoading} />}
-            {!item.isNC && <TradeCard item={item} trades={trades} isLoading={isLoading} />}
+            {!item.isNC && item.status === 'active' && (
+              <TradeCard item={item} trades={trades} isLoading={isLoading} />
+            )}
           </Flex>
         </Flex>
       </Flex>
@@ -318,7 +320,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
       similarItems: similarItems,
       colors: colors[item.image_id],
     },
-    revalidate: 15, // In seconds
+    revalidate: 10, // In seconds
   };
 }
 

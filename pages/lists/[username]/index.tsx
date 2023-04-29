@@ -328,18 +328,9 @@ const UserListsPage = (props: Props) => {
                 height={{ base: '100px', md: '150px' }}
                 borderRadius="md"
                 alt={'List Cover'}
+                objectFit="cover"
               />
             )}
-            {/* <Image
-              src={
-                owner.profileImage ??
-                'https://magnetismotimes.com/wp-content/uploads/2022/09/seller_avy.jpg'
-              }
-              borderRadius="md"
-              width={{ base: 100, md: 150 }}
-              height={{ base: 100, md: 150 }}
-              alt={`${owner.username}'s avatar`}
-            /> */}
             {isOwner && (
               <Button
                 variant="solid"

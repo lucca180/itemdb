@@ -82,6 +82,7 @@ const UserListCard = (props: Props) => {
               w={{ base: '95px', sm: '140px' }}
               h={{ base: '95px', sm: '140px' }}
               alt={'List Cover'}
+              objectFit="cover"
               borderRadius="md"
             />
           )}

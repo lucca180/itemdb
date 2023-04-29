@@ -427,6 +427,7 @@ const ListPage = (props: Props) => {
             {list.coverURL && (
               <Image
                 src={list.coverURL}
+                objectFit="cover"
                 width={{ base: '100px', md: '150px' }}
                 height={{ base: '100px', md: '150px' }}
                 borderRadius="md"
