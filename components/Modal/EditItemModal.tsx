@@ -59,6 +59,10 @@ const EditItemModal = (props: Props) => {
   const isAdmin = user?.role === 'ADMIN';
 
   useEffect(() => {
+    setItem(itemProps);
+  }, [itemProps]);
+
+  useEffect(() => {
     setTags(tagsProps.filter((t) => t.type === 'tag').map((t) => t.name));
     // setCategories(tagsProps.filter((t) => t.type === 'category').map((t) => t.name));
   }, [tagsProps]);

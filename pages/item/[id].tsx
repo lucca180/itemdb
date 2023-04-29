@@ -58,10 +58,11 @@ type Props = {
   colors: FullItemColors;
   similarItems: ItemData[];
   lists?: UserList[];
+  tradeLists?: UserList[];
 };
 
 const ItemPage = (props: Props) => {
-  const { item, colors, lists } = props;
+  const { item, colors, lists, tradeLists } = props;
   const [prices, setPrices] = useState<PriceData[] | null>(null);
   const [seenStats, setSeen] = useState<ItemLastSeen>(defaultLastSeen);
   const [trades, setTrades] = useState<TradeData[]>([]);
@@ -80,6 +81,14 @@ const ItemPage = (props: Props) => {
 
   const init = async () => {
     setLoading(true);
+
+    if (item.isNC || item.status === 'no trade') {
+      const [resTags] = await Promise.all([axios.get(`/api/v1/items/${item.internal_id}/tags`)]);
+
+      setTags(resTags.data);
+      setLoading(false);
+      return;
+    }
 
     const [resPrice, resStats, resTrades, resTags] = await Promise.all([
       axios.get(`/api/v1/items/${item.internal_id}/prices`),
@@ -264,7 +273,7 @@ const ItemPage = (props: Props) => {
                 isLoading={isLoading}
               />
             )}
-            {item.isNC && <ItemMatch item={item} lists={lists} />}
+            {item.isNC && <ItemMatch item={item} lists={tradeLists} />}
             {lists && <ItemOfficialLists item={item} lists={lists} />}
             {item.comment && <ItemComments item={item} />}
             <SimilarItemsCard item={item} similarItems={props.similarItems} />
@@ -305,10 +314,11 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 
   if (!item) return { notFound: true };
 
-  const [colors, lists, similarItems] = await Promise.all([
+  const [colors, lists, similarItems, tradeLists] = await Promise.all([
     getItemColor([item.image_id]),
-    getItemLists(item.internal_id, !item.isNC),
+    getItemLists(item.internal_id, true),
     getSimilarItems(item.internal_id.toString()),
+    item.isNC ? getItemLists(item.internal_id, false) : [],
   ]);
 
   if (!colors) return { notFound: true };
@@ -319,6 +329,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
       lists: lists,
       similarItems: similarItems,
       colors: colors[item.image_id],
+      tradeLists: tradeLists,
     },
     revalidate: 10, // In seconds
   };

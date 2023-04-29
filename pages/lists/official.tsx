@@ -63,7 +63,7 @@ const OfficialListsPage = (props: Props) => {
         </Flex>
         <Flex mt={5} gap={4} flexWrap="wrap" justifyContent={'center'}>
           {lists.map((list) => (
-            <Box key={list.internal_id} flex="1">
+            <Box key={list.internal_id} flex={{ base: 1, md: 'initial' }}>
               <UserListCard list={list} />
             </Box>
           ))}
