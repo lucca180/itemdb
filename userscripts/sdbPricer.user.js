@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Safety Deposit Box Pricer
+// @name         itemdb - Safety Deposit Box Pricer
 // @version      1.0.0
 // @author       itemdb
 // @namespace    itemdb
