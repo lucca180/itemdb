@@ -177,6 +177,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   else if (sortBy === 'weight') sortSQL = Prisma.sql`ORDER BY temp.weight`;
   else if (sortBy === 'estVal') sortSQL = Prisma.sql`ORDER BY temp.est_val`;
   else if (sortBy === 'id') sortSQL = Prisma.sql`ORDER BY temp.item_id`;
+  else if (sortBy === 'rarity') sortSQL = Prisma.sql`ORDER BY temp.rarity`;
   else sortSQL = isColorSearch ? Prisma.sql`ORDER BY dist` : Prisma.sql`ORDER BY temp.name`;
 
   let resultRaw;
