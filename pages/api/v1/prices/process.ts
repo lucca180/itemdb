@@ -158,16 +158,20 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       if (filteredResult.length < 3) continue;
 
       let latestDate = new Date(0);
+      let userShopCount = 0;
 
       const usedIDs = filteredResult.map((o) => {
         if (o.addedAt > latestDate) latestDate = o.addedAt;
+        if (o.type === 'usershop') userShopCount += 1;
         return o.internal_id;
       });
 
       const allIDs = allItemData.filter((x) => x.addedAt <= latestDate).map((x) => x.internal_id);
 
-      if (filteredResult.length < 10 && differenceInCalendarDays(Date.now(), latestDate) < MAX_DAYS)
+      if (filteredResult.length < 5 && differenceInCalendarDays(Date.now(), latestDate) < MAX_DAYS)
         continue;
+
+      if (filteredResult.length <= 15 && userShopCount >= (filteredResult.length / 3) * 2) continue;
 
       const prices = filteredResult.map((x) => x.price);
 

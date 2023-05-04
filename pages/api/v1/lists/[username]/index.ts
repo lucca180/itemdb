@@ -175,13 +175,11 @@ export const getUserLists = async (username: string, user?: User | null) => {
       user: true,
     },
     orderBy: {
-      createdAt: 'desc',
+      updatedAt: 'desc',
     },
   });
 
   if (!listsRaw || listsRaw.length === 0) return [];
-
-  const owner = listsRaw[0]?.user;
 
   const lists: UserList[] = listsRaw
     .map((list) => {
@@ -196,14 +194,14 @@ export const getUserLists = async (username: string, user?: User | null) => {
         visibility: list.visibility,
 
         user_id: list.user_id,
-        user_username: owner?.username ?? '',
-        user_neouser: owner?.neo_user ?? '',
+        user_username: list.user.username ?? '',
+        user_neouser: list.user.neo_user ?? '',
 
         owner: {
-          id: owner.id,
-          username: owner.username,
-          neopetsUser: owner.neo_user,
-          lastSeen: startOfDay(owner.last_login).toJSON(),
+          id: list.user.id,
+          username: list.user.username,
+          neopetsUser: list.user.neo_user,
+          lastSeen: startOfDay(list.user.last_login).toJSON(),
         },
 
         createdAt: list.createdAt.toJSON(),
@@ -230,7 +228,7 @@ export const getUserLists = async (username: string, user?: User | null) => {
         }),
       };
     })
-    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || (a.createdAt < b.createdAt ? -1 : 1));
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || (a.updatedAt < b.updatedAt ? -1 : 1));
 
   return lists;
 };

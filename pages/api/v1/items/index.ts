@@ -105,6 +105,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   for (const item of items) {
     let {
       itemId,
+      item_id,
       name,
       description,
       img,
@@ -117,6 +118,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       weight,
     } = item;
     let imageId: string | undefined = undefined;
+
+    itemId = item_id ?? itemId;
 
     rarity = isNaN(Number(rarity)) ? undefined : Number(rarity);
     estVal = isNaN(Number(estVal)) ? undefined : Number(estVal);
