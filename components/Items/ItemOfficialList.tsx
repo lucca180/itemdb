@@ -18,7 +18,7 @@ const ItemOfficialLists = (props: Props) => {
       <Flex gap={3} flexFlow="column">
         {officialLists.map((list, i) => (
           <Flex alignItems="center" key={i} gap={1}>
-            <Link as={NextLink} href={`/lists/official/${list.internal_id}`}>
+            <Link as={NextLink} href={`/lists/official/${list.internal_id}`} whiteSpace="nowrap">
               <Tag variant="subtle" size="lg" fontWeight="bold">
                 {list.name}
               </Tag>

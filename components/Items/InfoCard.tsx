@@ -2,6 +2,7 @@ import { Box, Flex, HStack, Tag, Text, Tooltip } from '@chakra-ui/react';
 import React from 'react';
 import { ItemData } from '../../types';
 import { MdHelp } from 'react-icons/md';
+import { rarityStr } from '../../utils/utils';
 type Props = {
   item: ItemData;
 };
@@ -53,6 +54,19 @@ const ItemInfoCard = (props: Props) => {
           </Tag>
           <Text flex="1" textAlign="right">
             r{item.rarity ?? '???'}
+            {item.rarity && rarityStr(item.rarity) && (
+              <>
+                <Text
+                  as="span"
+                  fontWeight="bold"
+                  fontSize="sm"
+                  color={rarityStr(item.rarity)!.color}
+                >
+                  {' '}
+                  ({rarityStr(item.rarity)!.text})
+                </Text>
+              </>
+            )}
           </Text>
         </HStack>
         <HStack>

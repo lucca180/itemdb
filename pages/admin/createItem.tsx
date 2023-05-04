@@ -102,6 +102,7 @@ const CreateItem = () => {
     if (item.isNeohome) subtext += '(neohome)';
 
     const itemData = {
+      itemid: item.item_id ?? undefined,
       name: item.name,
       description: item.description,
       img: item.image,
@@ -142,6 +143,7 @@ const CreateItem = () => {
           title: 'Item created.',
           description: 'The item was successfully created.',
           status: 'success',
+          duration: 5000,
         });
         setItem(defaultItem);
         setTags([]);
@@ -152,6 +154,7 @@ const CreateItem = () => {
         title: 'Error creating item.',
         description: 'There was an error creating the item.',
         status: 'error',
+        duration: 10000,
       });
     }
   };

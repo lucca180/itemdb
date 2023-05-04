@@ -321,3 +321,33 @@ export const slugify = (text: string) => {
     .replace(/[^\w-]+/g, '')
     .replace(/--+/g, '-');
 };
+
+export const rarityStr = (rarity: number) => {
+  if (rarity <= 74) return null;
+
+  if (rarity <= 84) return { text: 'uncommon', color: '#089d08' };
+
+  if (rarity <= 89) return { text: 'rare', color: '#089d08' };
+
+  if (rarity <= 94) return { text: 'very rare', color: '#089d08' };
+
+  if (rarity <= 98) return { text: 'ultra rare', color: '#089d08' };
+
+  if (rarity <= 99) return { text: 'super rare', color: '#089d08' };
+
+  if (rarity <= 100) return { text: 'ultra rare', color: '#089d08' };
+
+  if (rarity <= 104) return { text: 'special', color: '#d16778' };
+
+  if (rarity <= 110) return { text: 'MEGA RARE', color: 'orange' };
+
+  if (rarity <= 179) return { text: `RARITY ${rarity}`, color: '#fb4444' };
+
+  if (rarity === 180) return { text: 'retired', color: '#a1a1a1' };
+
+  if (rarity === 200 || rarity === 250) return { text: `Artifact - ${rarity}`, color: '#fb4444' };
+
+  if (rarity === 500) return { text: 'Neocash', color: '#ec69ff' };
+
+  return null;
+};
