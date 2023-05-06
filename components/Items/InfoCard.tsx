@@ -3,6 +3,7 @@ import React from 'react';
 import { ItemData } from '../../types';
 import { MdHelp } from 'react-icons/md';
 import { rarityStr } from '../../utils/utils';
+
 type Props = {
   item: ItemData;
 };
@@ -12,6 +13,7 @@ const intl = new Intl.NumberFormat();
 const ItemInfoCard = (props: Props) => {
   const { item } = props;
   const color = item.color.rgb;
+  const rarityString = rarityStr(item.rarity ?? 0);
 
   return (
     <Flex
@@ -54,16 +56,11 @@ const ItemInfoCard = (props: Props) => {
           </Tag>
           <Text flex="1" textAlign="right">
             r{item.rarity ?? '???'}
-            {item.rarity && rarityStr(item.rarity) && (
+            {item.rarity && rarityString && (
               <>
-                <Text
-                  as="span"
-                  fontWeight="bold"
-                  fontSize="sm"
-                  color={rarityStr(item.rarity)!.color}
-                >
-                  {' '}
-                  ({rarityStr(item.rarity)!.text})
+                <br />
+                <Text as="span" fontWeight="bold" fontSize="sm" color={rarityString.color}>
+                  ({rarityString.text})
                 </Text>
               </>
             )}

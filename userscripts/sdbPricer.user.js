@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Safety Deposit Box Pricer
-// @version      1.0.0
+// @version      1.0.1
 // @author       itemdb
 // @namespace    itemdb
 // @description  Shows the market price for your sdb items
@@ -38,7 +38,7 @@ async function handleSDB() {
   $('#content > table > tbody > tr > td.content > form > table:nth-child(3) > tbody > tr:nth-child(1) > td:nth-child(5)')
   .before('<td align="center" class="contentModuleHeaderAlt" style="text-align: center; width: 70px;" noWrap><img src="https://itemdb.com.br/logo_icon.svg" style="vertical-align: middle;" width="25px" height="auto"/> <b>Price</b></td>');
 
-  $('#content > table > tbody > tr > td.content > form > table:nth-child(3) > tbody > tr:nth-child(34) > td').before("<td></td>");
+  $('#content > table > tbody > tr > td.content > form > table:nth-child(3) > tbody > tr:last-child > td').before("<td></td>");
 
   const intl = new Intl.NumberFormat();
 

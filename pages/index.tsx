@@ -37,16 +37,6 @@ const HomePage = () => {
     setPrices(priceRes.data);
   };
 
-  // if (isProd)
-  //   return (
-  //     <Layout>
-  //       <Center h="80vh" flexFlow="column">
-  //         <Image src={logo} alt="itemdb logo" width={300} quality="100" />
-  //         <BetaStatsCard />
-  //       </Center>
-  //     </Layout>
-  //   );
-
   return (
     <Layout
       SEO={{
@@ -90,7 +80,6 @@ const HomePage = () => {
         </Flex>
         <Center flexFlow="column" mt={8}>
           <Heading size="md">Stats</Heading>
-          {/* <Image src={logo} alt="itemdb logo" width={300} quality="100" /> */}
           <BetaStatsCard />
         </Center>
       </Flex>

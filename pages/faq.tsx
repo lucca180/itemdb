@@ -43,10 +43,7 @@ const PrivacyPolicyPage = () => {
             As a <b>community-supported project</b>, we think it's fair that everyone can use our
             data for their projects (read our <Link href="/terms">terms</Link> first!). Want to{' '}
             <b>calculate neopia inflation</b> in an almost scientifically accurate way? Or{' '}
-            <Link
-              href="https://github.com/lucca180/itemdb/raw/main/userscripts/sortGallery.user.js"
-              isExternal
-            >
+            <Link href="/articles/sortGallery" isExternal>
               sort your gallery by color
             </Link>
             ? Just take a look at our{' '}

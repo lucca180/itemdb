@@ -228,7 +228,10 @@ export const getUserLists = async (username: string, user?: User | null) => {
         }),
       };
     })
-    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || (a.updatedAt < b.updatedAt ? -1 : 1));
+    .sort(
+      (a, b) =>
+        (a.order ?? 0) - (b.order ?? 0) || (new Date(b.updatedAt) < new Date(a.updatedAt) ? -1 : 1)
+    );
 
   return lists;
 };
