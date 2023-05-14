@@ -157,7 +157,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     if (rarity === 500) type = 'nc';
     const isNC = type === 'nc' || rarity === 500;
 
-    if (description.includes('deluxe paint brush set')) type = 'pb';
+    if (description?.includes('deluxe paint brush set')) type = 'pb';
 
     if (type === 'pb') status = 'no trade';
 
