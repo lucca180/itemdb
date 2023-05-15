@@ -6,7 +6,7 @@ import NextLink from 'next/link';
 import { AiFillInfoCircle, AiFillWarning } from 'react-icons/ai';
 import ItemCtxMenu, { CtxTrigger } from '../Modal/ItemCtxMenu';
 
-type Props = {
+export type ItemProps = {
   item?: ItemData;
   isLoading?: boolean;
   selected?: boolean;
@@ -14,11 +14,12 @@ type Props = {
   capValue?: number | null;
   quantity?: number;
   onSelect?: () => void;
+  style?: React.CSSProperties;
 };
 
 const intl = new Intl.NumberFormat();
 
-const ItemCard = (props: Props) => {
+const ItemCardBase = (props: ItemProps) => {
   const { item, isLoading, selected, disableLink, capValue, quantity } = props;
   const [isMobile] = useMediaQuery('(hover: none)');
 
@@ -26,7 +27,7 @@ const ItemCard = (props: Props) => {
 
   if (!item || isLoading || !color)
     return (
-      <Link as={'a'} _hover={{ textDecoration: 'none' }} pointerEvents="none">
+      <Link as={'a'} _hover={{ textDecoration: 'none' }} pointerEvents="none" style={props.style}>
         <Box
           w={{ base: 100, md: 150 }}
           py={{ base: 2, md: 4 }}
@@ -57,9 +58,11 @@ const ItemCard = (props: Props) => {
         //@ts-ignore
         disableWhileShiftPressed
         disable={isMobile}
+        style={props.style}
       >
         <Link
           as={disableLink ? undefined : NextLink}
+          style={props.style}
           href={disableLink ? undefined : '/item/' + (item.slug ?? item.internal_id)}
           _hover={{ textDecoration: 'none' }}
           // pointerEvents={disableLink ? 'none' : 'initial'}
@@ -130,5 +133,7 @@ const ItemCard = (props: Props) => {
     </>
   );
 };
+
+const ItemCard = React.memo(ItemCardBase);
 
 export default ItemCard;

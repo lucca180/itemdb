@@ -158,6 +158,7 @@ const ItemCtxMenu = (props: Props) => {
       onShow={fetchLists}
       preventHideOnResize
       preventHideOnScroll
+      appendTo="body"
     >
       {props.onSelect ? <CtxMenuItem onClick={props.onSelect}>Select Item</CtxMenuItem> : <></>}
       <CtxMenuItem onClick={handleOpenInNewTab}>Open in a New Tab</CtxMenuItem>

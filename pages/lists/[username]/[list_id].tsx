@@ -20,7 +20,7 @@ import {
   useMediaQuery,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Layout from '../../../components/Layout';
 import CreateListModal from '../../../components/Modal/CreateListModal';
 import { ItemData, ListItemInfo, UserList } from '../../../types';
@@ -231,36 +231,45 @@ const ListPage = (props: Props) => {
     setEdit(!isEdit);
   };
 
-  const selectItem = (id: number) => {
-    if (!isEdit) return;
-    if (itemSelect.includes(id)) {
-      setItemSelect(itemSelect.filter((item) => item !== id));
-    } else {
-      setItemSelect([...itemSelect, id]);
-    }
-  };
+  const selectItem = useCallback(
+    (id: number) => {
+      if (!isEdit) return;
+      if (itemSelect.includes(id)) {
+        setItemSelect(itemSelect.filter((item) => item !== id));
+      } else {
+        setItemSelect([...itemSelect, id]);
+      }
+    },
+    [isEdit, itemSelect]
+  );
 
-  const handleSelectCheckbox = (checkAll: boolean) => {
-    if (checkAll) setItemSelect(itemInfoIds);
-    else setItemSelect([]);
-  };
+  const handleSelectCheckbox = useCallback(
+    (checkAll: boolean) => {
+      if (checkAll) setItemSelect(itemInfoIds);
+      else setItemSelect([]);
+    },
+    [itemInfoIds]
+  );
 
-  const handleSort = (newOrder: number[]) => {
-    const newInfo = { ...itemInfo };
+  const handleSort = useCallback(
+    (newOrder: number[]) => {
+      const newInfo = { ...itemInfo };
 
-    const highlights = itemInfoIds.filter((a) => itemInfo[a].isHighlight);
+      const highlights = itemInfoIds.filter((a) => itemInfo[a].isHighlight);
 
-    for (let i = 0; i < newOrder.length; i++) {
-      if (newInfo[newOrder[i]].order === i) continue;
+      for (let i = 0; i < newOrder.length; i++) {
+        if (newInfo[newOrder[i]].order === i) continue;
 
-      newInfo[newOrder[i]].order = i;
-      newInfo[newOrder[i]].hasChanged = true;
-      setHasChanges();
-    }
+        newInfo[newOrder[i]].order = i;
+        newInfo[newOrder[i]].hasChanged = true;
+        setHasChanges();
+      }
 
-    setItemInfoIds([...newOrder, ...highlights]);
-    setItemInfo(newInfo);
-  };
+      setItemInfoIds([...newOrder, ...highlights]);
+      setItemInfo(newInfo);
+    },
+    [itemInfo, itemInfoIds]
+  );
 
   const setHasChanges = () => {
     if (toast.isActive('unsavedChanges')) return;
@@ -335,21 +344,20 @@ const ListPage = (props: Props) => {
     }
   };
 
-  const handleItemInfoChange = (
-    id: number,
-    value: number,
-    field: 'amount' | 'capValue' | 'isHighlight'
-  ) => {
-    const newInfo = { ...itemInfo };
+  const handleItemInfoChange = useCallback(
+    (id: number, value: number, field: 'amount' | 'capValue' | 'isHighlight') => {
+      const newInfo = { ...itemInfo };
 
-    if (field === 'isHighlight') newInfo[id][field] = !!value;
-    else newInfo[id][field] = value;
+      if (field === 'isHighlight') newInfo[id][field] = !!value;
+      else newInfo[id][field] = value;
 
-    newInfo[id].hasChanged = true;
+      newInfo[id].hasChanged = true;
 
-    setItemInfo(newInfo);
-    setHasChanges();
-  };
+      setItemInfo(newInfo);
+      setHasChanges();
+    },
+    [itemInfo]
+  );
 
   if (isLoading)
     return (

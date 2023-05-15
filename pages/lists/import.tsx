@@ -269,11 +269,14 @@ const ImportItems = (props: ImportItemsProps) => {
         <Flex flex="2" sx={{ a: { color: 'initial' } }} flexFlow="column">
           <Flex flexWrap="wrap" gap={3} justifyContent="center">
             {itemData &&
-              Object.entries(itemData).map((item) => (
-                <ItemCard key={item[0]} item={item[1]} quantity={items[item[0]]} />
-              ))}
+              Object.entries(itemData)
+                .slice(0, 50)
+                .map((item) => <ItemCard key={item[0]} item={item[1]} quantity={items[item[0]]} />)}
             {!itemData && [...Array(20)].map((_, i) => <ItemCard key={i} />)}
           </Flex>
+          {itemData && Object.entries(itemData).length > 50 && (
+            <Text textAlign="center">...and {Object.entries(itemData).length - 50} more</Text>
+          )}
         </Flex>
         <Flex flex="1" flexFlow="column" gap={3} alignItems={{ base: 'center', md: 'flex-start' }}>
           <FormControl>

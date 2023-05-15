@@ -13,18 +13,6 @@ import {
 import { arrayMove, SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import { ListItemInfo, ItemData, UserList } from '../../types';
 import { SortableItem } from './ItemCard';
-import {
-  InputGroup,
-  InputLeftAddon,
-  VStack,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  Checkbox,
-  Text,
-} from '@chakra-ui/react';
 import debounce from 'lodash/debounce';
 
 type Props = {
@@ -47,7 +35,7 @@ export function SortableArea(props: Props) {
 
   useEffect(() => {
     setIds(props.ids);
-  }, [props.ids]);
+  }, [props.ids.length]);
 
   const sensors = useSensors(
     useSensor(TouchSensor, {
@@ -73,72 +61,19 @@ export function SortableArea(props: Props) {
       onDragStart={handleDragStart}
     >
       <SortableContext items={ids} disabled={!activateSort} strategy={rectSortingStrategy}>
-        {ids.map((id) => {
-          const item = items[itemInfo[id]?.item_iid];
-          if (!item) return null;
-
-          const listItem = itemInfo[id];
-          return (
-            <VStack mb={3} key={id}>
-              <SortableItem
-                isTrading={list?.purpose === 'trading'}
-                selected={props.itemSelect?.includes(id)}
-                onClick={() => props.onClick?.(id)}
-                editMode={editMode}
-                id={id}
-                itemInfo={listItem}
-                item={item}
-              />
-              {editMode && !activateSort && (
-                <VStack maxW="150px">
-                  <InputGroup size="xs">
-                    <InputLeftAddon children="Quantity" />
-                    <NumberInput
-                      max={999}
-                      min={1}
-                      variant="filled"
-                      defaultValue={listItem.amount}
-                      onChange={(value) => debouncedOnChange(id, Number(value || 0), 'amount')}
-                    >
-                      <NumberInputField />
-                      <NumberInputStepper>
-                        <NumberIncrementStepper />
-                        <NumberDecrementStepper />
-                      </NumberInputStepper>
-                    </NumberInput>
-                  </InputGroup>
-                  {item.isNC && list?.purpose === 'trading' && (
-                    <InputGroup size="xs">
-                      <InputLeftAddon children="Cap Value" />
-                      <NumberInput
-                        defaultValue={listItem.capValue ?? undefined}
-                        min={0}
-                        max={99}
-                        variant="filled"
-                        onChange={(value) => debouncedOnChange(id, Number(value || 0), 'capValue')}
-                      >
-                        <NumberInputField />
-                        <NumberInputStepper>
-                          <NumberIncrementStepper />
-                          <NumberDecrementStepper />
-                        </NumberInputStepper>
-                      </NumberInput>
-                    </InputGroup>
-                  )}
-                  <Checkbox
-                    defaultChecked={listItem.isHighlight}
-                    size="sm"
-                    onChange={(value) =>
-                      props.onChange?.(id, Number(value.target.checked), 'isHighlight')
-                    }
-                  >
-                    <Text fontSize="xs">Highlight?</Text>
-                  </Checkbox>
-                </VStack>
-              )}
-            </VStack>
-          );
-        })}
+        {ids.map((id) => (
+          <SortableItem
+            key={id}
+            id={id}
+            onClick={props.onClick}
+            itemInfo={itemInfo[id]}
+            onChange={debouncedOnChange}
+            isTrading={list?.purpose === 'trading'}
+            selected={props.itemSelect?.includes(id)}
+            editMode={editMode && !activateSort}
+            item={items[itemInfo[id]?.item_iid]}
+          />
+        ))}
       </SortableContext>
       <DragOverlay>
         {activeId ? <SortableItem id={activeId} item={items[itemInfo[activeId].item_iid]} /> : null}
