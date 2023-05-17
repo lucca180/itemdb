@@ -102,7 +102,7 @@ const CreateItem = () => {
     if (item.isNeohome) subtext += '(neohome)';
 
     const itemData = {
-      itemid: item.item_id ?? undefined,
+      item_id: item.item_id ?? undefined,
       name: item.name,
       description: item.description,
       img: item.image,
