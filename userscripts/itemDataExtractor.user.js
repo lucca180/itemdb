@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.1.4
+// @version      1.1.5
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -11,7 +11,9 @@
 // @exclude      *://*images.neopets.com/*
 // @icon         https://itemdb.com.br/favicon.ico
 // @require      https://raw.githubusercontent.com/lucca180/itemdb/3f250b7472d2f87a88bcbfbea9dc39cef1ab2820/userscripts/hash.min.js#sha256-VT88NfsZPTv2NOX1lzP3xZvHApYvWQhz+HiBbkOACDs=
-// @grant        none
+// @connect      itemdb.com.br
+// @connect      neopets.com
+// @grant        GM_xmlhttpRequest
 // @noframes
 // ==/UserScript==
 
@@ -793,27 +795,29 @@ async function submitItems() {
   if (itemsList.length === 0) return;
 
   const hash = getItemsHash(itemsObj);
-
-  const res = await fetch('https://itemdb.com.br/api/v1/items', {
+  
+  GM_xmlhttpRequest({
     method: 'POST',
-    keepalive: true,
+    url: 'https://itemdb.com.br/api/v1/items',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
+    data: JSON.stringify({
       lang: pageLang,
-      items: Object.values(itemsObj),
+      items: itemsList,
       hash: hash
     }),
-  });
-
-  if (res.ok) {
-    localStorage?.setItem('idb_itemHistory', JSON.stringify(itemsHistory));
-    itemsObj = {};
-    resetHash();
-  } else {
-    console.error('[itemdb] submitItems error:', res);
-  }
+    onload: function (res) {
+      if (res.status === 200) {
+        console.log(`[itemdb] ${itemsList.length} items data sent`);
+        localStorage?.setItem('idb_itemHistory', JSON.stringify(itemsHistory));
+        itemsObj = {};
+        resetHash();
+      } else {
+        console.error('[itemdb] submitItems error:', res);
+      }
+    },
+  })
 }
 
 async function submitPrices() {
@@ -821,26 +825,28 @@ async function submitPrices() {
 
   const hash = getPricesHash(priceList);
 
-  const res = await fetch('https://itemdb.com.br/api/v1/prices', {
+  GM_xmlhttpRequest({
     method: 'POST',
-    keepalive: true,
+    url: 'https://itemdb.com.br/api/v1/prices',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
+    data: JSON.stringify({
       lang: pageLang,
       itemPrices: priceList,
       hash: hash
     }),
-  });
-
-  if (res.ok) {
-    localStorage?.setItem('idb_restockHistory', JSON.stringify(restockHistory));
-    priceList = [];
-    resetHash();
-  } else {
-    console.error('[itemdb] submitPrices error:', res);
-  }
+    onload: function (res) {
+      if (res.status === 200) {
+        console.log(`[itemdb] ${priceList.length} price data sent`);
+        localStorage?.setItem('idb_restockHistory', JSON.stringify(restockHistory));
+        priceList = [];
+        resetHash();
+      } else {
+        console.error('[itemdb] submitPrices error:', res);
+      }
+    },
+  })
 }
 
 async function submitTrades() {
@@ -848,26 +854,28 @@ async function submitTrades() {
 
   const hash = getTradesHash(tradeList);
 
-  const res = await fetch('https://itemdb.com.br/api/v1/trades', {
+  GM_xmlhttpRequest({
     method: 'POST',
-    keepalive: true,
+    url: 'https://itemdb.com.br/api/v1/prices',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
+    data: JSON.stringify({
       lang: pageLang,
       tradeLots: tradeList,
       hash: hash
     }),
-  });
-
-  if (res.ok) {
-    localStorage?.setItem('idb_tradeHistory', JSON.stringify(tradeHistory));
-    tradeList = [];
-    resetHash();
-  } else {
-    console.error('[itemdb] submitTrades error:', res);
-  }
+    onload: function (res) {
+      if (res.status === 200) {
+        console.log(`[itemdb] ${tradeHistory.length} trade data sent`);
+        localStorage?.setItem('idb_tradeHistory', JSON.stringify(tradeHistory));
+        tradeList = [];
+        resetHash();
+      } else {
+        console.error('[itemdb] submitTrades error:', res);
+      }
+    },
+  })
 }
 
 // this function is used to generate a unique key for each item based on its name, image and id

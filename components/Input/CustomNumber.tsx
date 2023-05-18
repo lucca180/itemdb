@@ -1,4 +1,9 @@
-import { NumberInput, NumberInputField } from '@chakra-ui/react';
+import {
+  NumberInput,
+  NumberInputField,
+  NumberInputFieldProps,
+  NumberInputProps,
+} from '@chakra-ui/react';
 import { useCallback, useEffect, useState } from 'react';
 import debounce from 'lodash/debounce';
 
@@ -7,8 +12,8 @@ const intl = new Intl.NumberFormat('en-US', { style: 'decimal' });
 type Props = {
   value?: string;
   onChange?: (newValue: string) => void;
-  inputProps?: any;
-  wrapperProps?: any;
+  inputProps?: NumberInputFieldProps;
+  wrapperProps?: NumberInputProps;
   skipDebounce?: boolean;
 };
 
