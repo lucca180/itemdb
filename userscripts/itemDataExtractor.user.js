@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.1.5
+// @version      1.1.6
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -856,7 +856,7 @@ async function submitTrades() {
 
   GM_xmlhttpRequest({
     method: 'POST',
-    url: 'https://itemdb.com.br/api/v1/prices',
+    url: 'https://itemdb.com.br/api/v1/trades',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -867,7 +867,7 @@ async function submitTrades() {
     }),
     onload: function (res) {
       if (res.status === 200) {
-        console.log(`[itemdb] ${tradeHistory.length} trade data sent`);
+        console.log(`[itemdb] ${tradeList.length} trade data sent`);
         localStorage?.setItem('idb_tradeHistory', JSON.stringify(tradeHistory));
         tradeList = [];
         resetHash();
