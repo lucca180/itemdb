@@ -795,18 +795,19 @@ async function submitItems() {
   if (itemsList.length === 0) return;
 
   const hash = getItemsHash(itemsObj);
-  
+  const rawData = {
+    lang: pageLang,
+    items: itemsList,
+    hash: hash
+  }
+
   GM_xmlhttpRequest({
     method: 'POST',
     url: 'https://itemdb.com.br/api/v1/items',
     headers: {
       'Content-Type': 'application/json',
     },
-    data: JSON.stringify({
-      lang: pageLang,
-      items: itemsList,
-      hash: hash
-    }),
+    data: JSON.stringify(rawData),
     onload: function (res) {
       if (res.status === 200) {
         console.log(`[itemdb] ${itemsList.length} items data sent`);
@@ -814,7 +815,7 @@ async function submitItems() {
         itemsObj = {};
         resetHash();
       } else {
-        console.error('[itemdb] submitItems error:', res);
+        console.error('[itemdb] submitItems error:', res, rawData);
       }
     },
   })
@@ -824,6 +825,11 @@ async function submitPrices() {
   if (priceList.length === 0) return;
 
   const hash = getPricesHash(priceList);
+  const rawData = {
+    lang: pageLang,
+    itemPrices: priceList,
+    hash: hash
+  }
 
   GM_xmlhttpRequest({
     method: 'POST',
@@ -831,11 +837,7 @@ async function submitPrices() {
     headers: {
       'Content-Type': 'application/json',
     },
-    data: JSON.stringify({
-      lang: pageLang,
-      itemPrices: priceList,
-      hash: hash
-    }),
+    data: JSON.stringify(rawData),
     onload: function (res) {
       if (res.status === 200) {
         console.log(`[itemdb] ${priceList.length} price data sent`);
@@ -843,7 +845,7 @@ async function submitPrices() {
         priceList = [];
         resetHash();
       } else {
-        console.error('[itemdb] submitPrices error:', res);
+        console.error('[itemdb] submitPrices error:', res, rawData);
       }
     },
   })
@@ -853,6 +855,12 @@ async function submitTrades() {
   if (tradeList.length === 0) return;
 
   const hash = getTradesHash(tradeList);
+  
+  const rawData = {
+    lang: pageLang,
+    tradeLots: tradeList,
+    hash: hash
+  }
 
   GM_xmlhttpRequest({
     method: 'POST',
@@ -860,11 +868,7 @@ async function submitTrades() {
     headers: {
       'Content-Type': 'application/json',
     },
-    data: JSON.stringify({
-      lang: pageLang,
-      tradeLots: tradeList,
-      hash: hash
-    }),
+    data: JSON.stringify(rawData),
     onload: function (res) {
       if (res.status === 200) {
         console.log(`[itemdb] ${tradeList.length} trade data sent`);
@@ -872,7 +876,7 @@ async function submitTrades() {
         tradeList = [];
         resetHash();
       } else {
-        console.error('[itemdb] submitTrades error:', res);
+        console.error('[itemdb] submitTrades error:', res, rawData);
       }
     },
   })
