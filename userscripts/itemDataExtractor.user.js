@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.1.6
+// @version      1.1.7
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -10,7 +10,7 @@
 // @exclude      *://*.nc.neopets.com/*
 // @exclude      *://*images.neopets.com/*
 // @icon         https://itemdb.com.br/favicon.ico
-// @require      https://raw.githubusercontent.com/lucca180/itemdb/3f250b7472d2f87a88bcbfbea9dc39cef1ab2820/userscripts/hash.min.js#sha256-VT88NfsZPTv2NOX1lzP3xZvHApYvWQhz+HiBbkOACDs=
+// @require      https://raw.githubusercontent.com/lucca180/itemdb/c227bb858ba751521780ce5bb6da86391a42033f/userscripts/hash.min.js#sha256-Na6EzrlI7/YCHJ2IPSd1bIinNrlz0zhva9Hg9/Um/Us=
 // @connect      itemdb.com.br
 // @connect      neopets.com
 // @grant        GM_xmlhttpRequest
@@ -739,10 +739,12 @@ function handleRestock() {
     const id = info.dataset.link.match(/(?<=obj_info_id\=)\d+/)?.[0];
     const stock = $(this).find('.item-stock').first().text().match(/\d+/)?.[0];
     const stockId = info.dataset.link.match(/(?<=stock_id\=)\d+/)?.[0];
+    
+    const today = new Date().getDate();
 
-    if (restockHistory[id] === stockId) return;
+    if (restockHistory[id] === stockId+today) return;
 
-    restockHistory[id] = stockId;
+    restockHistory[id] = stockId+today;
 
     const itemInfo = {
       item_id: id,
@@ -756,6 +758,33 @@ function handleRestock() {
 
     priceList.push(itemInfo);
   });
+
+  submitPrices();
+}
+
+function handleRestockHaggle(){
+  const itemName = $('#container__2020 > h2').first().text().match(/(?<=Haggle for ).+/)?.[0];
+  const url = window.location.href;
+  const id = url.match(/(?<=obj_info_id\=)\d+/)?.[0];
+  const stockId = url.match(/(?<=stock_id\=)\d+/)?.[0];
+  const hours = new Date().getHours();
+
+  if (restockHistory[id] === stockId+hours) return;
+
+  // we can get better data from the shop page
+  // restockHistory[id] = stockId+hours;
+
+  const itemInfo = {
+    item_id: id,
+    name: itemName,
+    owner: 'restock-haggle',
+    stock: 1,
+    value: 1,
+    type: 'restock',
+    neo_id: stockId,
+  };
+
+  priceList.push(itemInfo);
 
   submitPrices();
 }
@@ -781,6 +810,7 @@ if (URLHas('search.phtml') && URLHas('selected_type=object')) handleSearch();
 if (URLHas('neohome/shed')) handleStorageShed();
 if (URLHas('/mall/shop.phtml')) handleNCMall();
 if (URLHas('customise')) handleCustomization();
+if (URLHas('haggle.phtml')) handleRestockHaggle();
 
 if (hasSSW) handleSSWPrices();
 

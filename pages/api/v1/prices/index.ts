@@ -82,6 +82,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     // sw, ssw and usershop items have a max value of 999.999
     if (['sw', 'ssw', 'usershop'].includes(type) && value > 999999) continue;
 
+    const excludeNeoId = ['sw', 'ssw', 'usershop', 'restock'];
+
     const x = {
       name: name as string,
       item_id: item_id as number | undefined,
@@ -96,15 +98,15 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       language: lang as string,
       ip_address: requestIp.getClientIp(req) as string | undefined,
 
-      neo_id: neo_id as number | undefined,
+      neo_id: excludeNeoId.includes(type) ? undefined : (neo_id as number | undefined),
 
       hash: '',
     };
 
-    const dateHash = neo_id ? undefined : new Date().toISOString().slice(0, 10);
+    const dateHash = new Date().toISOString().slice(0, 10);
 
     x.hash = hash(
-      { ...x, dateHash },
+      { ...x, dateHash, neo_id: neo_id },
       {
         excludeKeys: (key: string) => ['ip_address', 'hash', 'stock'].includes(key),
       }
