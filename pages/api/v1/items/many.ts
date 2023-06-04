@@ -144,7 +144,11 @@ export const getManyItems = async (queryObj: {
         inflated: !!result.noInflation_id,
       },
       owls: result.owlsValue
-        ? { value: result.owlsValue, pricedAt: result.owlsPriced, valueMin: result.owlsValueMin }
+        ? {
+            value: result.owlsValue,
+            pricedAt: result.owlsPriced.toJSON(),
+            valueMin: result.owlsValueMin,
+          }
         : null,
       comment: result.comment ?? null,
       slug: result.slug ?? null,

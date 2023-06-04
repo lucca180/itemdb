@@ -35,7 +35,7 @@ export function SortableArea(props: Props) {
 
   useEffect(() => {
     setIds(props.ids);
-  }, [props.ids.length]);
+  }, [props.ids]);
 
   const sensors = useSensors(
     useSensor(TouchSensor, {

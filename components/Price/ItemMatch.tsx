@@ -99,10 +99,12 @@ const ItemMatch = (props: Props) => {
               {trading.length} Trading
             </Button>
           </ButtonGroup>
-          {/* <Badge colorScheme='cyan' fontSize="xs">{seeking.length} Seeking</Badge><br/>
-          <Badge colorScheme='purple'>{trading.length} Trading</Badge> */}
         </Flex>
-        <Flex alignItems={{ base: 'inherit', md: 'center' }} gap={3}>
+        <Flex
+          alignItems={{ base: 'inherit', md: 'center' }}
+          flexFlow={{ base: 'column', md: 'row' }}
+          gap={3}
+        >
           {item.owls && (
             <Badge colorScheme="purple" fontSize="xs" minW="15%" textTransform="initial">
               <Stat flex="initial" textAlign="center">
