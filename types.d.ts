@@ -19,6 +19,7 @@ export type ItemData = {
   findAt: ItemFindAt;
   isMissingInfo: boolean;
   price: ItemPriceData;
+  owls: OwlsPriceData | null;
   slug: string | null;
   comment: string | null;
 };
@@ -58,6 +59,12 @@ export type ItemPriceData = {
   addedAt: string | null;
   value: number | null;
   inflated: boolean;
+};
+
+export type OwlsPriceData = {
+  pricedAt: string;
+  valueMin: number;
+  value: string;
 };
 
 export type ColorType =

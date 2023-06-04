@@ -190,7 +190,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       SELECT *,  count(*) OVER() AS full_count FROM (
         SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, 
         b.rgb_g, b.rgb_b, b.hex, b.hsv_h, b.hsv_s, b.hsv_v, d.dist,
-        c.addedAt as priceAdded, c.price, c.noInflation_id
+        c.addedAt as priceAdded, c.price, c.noInflation_id, 
+        d.pricedAt as owlsPriced, d.value as owlsValue, d.valueMin as owlsValueMin
         FROM Items as a
         LEFT JOIN (
                 SELECT image_id, min((POWER(lab_l-${l},2)+POWER(lab_a-${a},2)+POWER(lab_b-${b},2))) as dist
@@ -208,6 +209,15 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
               GROUP BY item_iid
           ) AND manual_check IS null
         ) as c on c.item_iid = a.internal_id
+        LEFT JOIN (
+          SELECT *
+          FROM OwlsPrice
+          WHERE (item_iid, pricedAt) IN (
+              SELECT item_iid, MAX(pricedAt)
+              FROM OwlsPrice
+              GROUP BY item_iid
+          )
+        ) as d on d.item_iid = a.internal_id
       ) as temp
         
         WHERE temp.dist is not null
@@ -242,7 +252,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     resultRaw = (await prisma.$queryRaw`
       SELECT *,  count(*) OVER() AS full_count FROM (
         SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex, b.hsv_h, b.hsv_s, b.hsv_v,
-          c.addedAt as priceAdded, c.price, c.noInflation_id
+          c.addedAt as priceAdded, c.price, c.noInflation_id, 
+          d.pricedAt as owlsPriced, d.value as owlsValue, d.valueMin as owlsValueMin
           ${colorSql_inside ? Prisma.sql`, ${colorSql_inside} as dist` : Prisma.empty}
         FROM Items as a
         LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
@@ -255,6 +266,15 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
               GROUP BY item_iid
           ) AND manual_check IS null
         ) as c on c.item_iid = a.internal_id
+        LEFT JOIN (
+          SELECT *
+          FROM OwlsPrice
+          WHERE (item_iid, pricedAt) IN (
+              SELECT item_iid, MAX(pricedAt)
+              FROM OwlsPrice
+              GROUP BY item_iid
+          )
+        ) as d on d.item_iid = a.internal_id
       ) as temp
             
       WHERE (temp.name LIKE ${query})
@@ -328,6 +348,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         addedAt: result.priceAdded,
         inflated: !!result.noInflation_id,
       },
+      owls: result.owlsValue
+        ? { value: result.owlsValue, pricedAt: result.owlsPriced, valueMin: result.owlsValueMin }
+        : null,
       comment: result.comment ?? null,
       slug: result.slug ?? null,
     };

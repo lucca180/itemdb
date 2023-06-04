@@ -108,8 +108,12 @@ const ItemCardBase = (props: ItemProps) => {
               <Badge>{intl.format(item.price.value)} NP</Badge>
             )}
 
-            {item.isNC && !capValue && <Badge colorScheme="purple">NC</Badge>}
             {item.type === 'pb' && <Badge colorScheme="yellow">PB</Badge>}
+
+            {item.isNC && !capValue && !item.owls && <Badge colorScheme="purple">NC</Badge>}
+            {item.isNC && item.owls && !capValue && (
+              <Badge colorScheme="purple">{item.owls.value} Owls</Badge>
+            )}
             {item.isNC && Number(capValue) > 0 && (
               <Tooltip
                 label="User Asking Price in GBCs - Not Official"

@@ -1,9 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { ItemData } from '../../../../../types';
+import { ItemData, OwlsPriceData } from '../../../../../types';
 import { getItemFindAtLinks, isMissingInfo } from '../../../../../utils/utils';
 import prisma from '../../../../../utils/prisma';
 import { Prisma } from '@prisma/client';
 import { CheckAuth } from '../../../../../utils/googleCloud';
+import axios from 'axios';
+import { differenceInCalendarDays, isSameDay } from 'date-fns';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -163,9 +165,12 @@ export const getItem = async (id_name: number | string) => {
       addedAt: (result.priceAdded as Date | null)?.toJSON() ?? null,
       inflated: !!result.noInflation_id,
     },
+    owls: null,
     comment: result.comment ?? null,
     slug: result.slug ?? null,
   };
+
+  if (item.isNC && item.status !== 'no trade') item.owls = await fetchOwlsData(item.name, item);
 
   item.findAt = getItemFindAtLinks(item); // does have all the info we need :)
   item.isMissingInfo = isMissingInfo(item);
@@ -276,4 +281,82 @@ export const processTags = async (itemTags: string[], itemCats: string[], intern
       },
     },
   });
+};
+
+// ---------------------------- //
+
+export const fetchOwlsData = async (
+  itemName: string,
+  item?: ItemData
+): Promise<OwlsPriceData | null> => {
+  let lastOwls;
+  if (item) {
+    const owls = await prisma.owlsPrice.findFirst({
+      where: {
+        item_iid: item.internal_id,
+      },
+      orderBy: {
+        pricedAt: 'desc',
+      },
+    });
+
+    lastOwls = owls;
+    // check if last check was in the last 3 days
+    if (owls && differenceInCalendarDays(new Date(), owls.lastChecked) < 3) {
+      return {
+        value: owls.value,
+        valueMin: owls.valueMin,
+        pricedAt: owls.pricedAt.toJSON(),
+      };
+    }
+  }
+
+  try {
+    const res = await axios.get(`https://neo-owls.net/itemdata/${encodeURIComponent(itemName)}`);
+    const data = res.data as { last_updated: string; owls_value: string } | null;
+
+    if (!data || !data.owls_value) return null;
+
+    let price = Number(data.owls_value.split('-')[0]);
+    if (isNaN(price)) price = 0;
+    const lastUpdated = data.last_updated ? new Date(data.last_updated) : new Date();
+
+    if ((!lastOwls && item) || (lastOwls && item && !isSameDay(lastOwls.pricedAt, lastUpdated))) {
+      await prisma.owlsPrice.create({
+        data: {
+          item: {
+            connect: {
+              internal_id: item.internal_id,
+            },
+          },
+          value: data.owls_value,
+          valueMin: price,
+          pricedAt: lastUpdated,
+        },
+      });
+    } else if (lastOwls && isSameDay(lastOwls.pricedAt, lastUpdated)) {
+      await prisma.owlsPrice.update({
+        where: {
+          internal_id: lastOwls.internal_id,
+        },
+        data: {
+          lastChecked: new Date(),
+        },
+      });
+    }
+
+    return {
+      value: data.owls_value,
+      valueMin: price,
+      pricedAt: lastUpdated.toJSON(),
+    };
+  } catch (e) {
+    return lastOwls
+      ? {
+          value: lastOwls.value,
+          valueMin: lastOwls.valueMin,
+          pricedAt: lastOwls.pricedAt.toJSON(),
+        }
+      : null;
+  }
 };

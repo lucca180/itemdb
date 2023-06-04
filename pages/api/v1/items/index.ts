@@ -7,6 +7,7 @@ import requestIp from 'request-ip';
 import hash from 'object-hash';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { checkHash } from '../../../../utils/hash';
+import { fetchOwlsData } from './[id_name]';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -26,7 +27,8 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const resultRaw = (await prisma.$queryRaw`
     SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex, 
-    c.addedAt as priceAdded, c.price, c.noInflation_id 
+    c.addedAt as priceAdded, c.price, c.noInflation_id, 
+    d.pricedAt as owlsPriced, d.value as owlsValue, d.valueMin as owlsValueMin
     FROM Items as a
     LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
     LEFT JOIN (
@@ -38,10 +40,18 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
           GROUP BY item_iid
       ) AND manual_check IS null
     ) as c on c.item_iid = a.internal_id
+    LEFT JOIN (
+      SELECT *
+      FROM OwlsPrice
+      WHERE (item_iid, pricedAt) IN (
+          SELECT item_iid, MAX(pricedAt)
+          FROM OwlsPrice
+          GROUP BY item_iid
+      )
+    ) as d on d.item_iid = a.internal_id
     ORDER BY a.addedAt DESC
     LIMIT ${limit}
   `) as any;
-
   const filteredResult = resultRaw;
 
   const itemList: ItemData[] = filteredResult.map((result: any) => {
@@ -77,6 +87,9 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
         addedAt: result.priceAdded,
         inflated: !!result.noInflation_id,
       },
+      owls: result.owlsValue
+        ? { value: result.owlsValue, pricedAt: result.owlsPriced, valueMin: result.owlsValueMin }
+        : null,
       comment: result.comment ?? null,
       slug: result.slug ?? null,
     };

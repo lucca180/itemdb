@@ -1,5 +1,18 @@
-import { Button, ButtonGroup, Center, Flex, Icon, Text } from '@chakra-ui/react';
+import {
+  Badge,
+  Button,
+  ButtonGroup,
+  Center,
+  Flex,
+  Icon,
+  Stat,
+  StatHelpText,
+  StatLabel,
+  StatNumber,
+  Text,
+} from '@chakra-ui/react';
 import axios from 'axios';
+import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { MdMoneyOff } from 'react-icons/md';
 import { ItemData, UserList } from '../../types';
@@ -89,11 +102,18 @@ const ItemMatch = (props: Props) => {
           {/* <Badge colorScheme='cyan' fontSize="xs">{seeking.length} Seeking</Badge><br/>
           <Badge colorScheme='purple'>{trading.length} Trading</Badge> */}
         </Flex>
-        <Flex alignItems={{ base: 'inherit', md: 'center' }}>
-          {/* <Stat flex="initial" textAlign="center" minW="20%">
-            <StatNumber>2~3</StatNumber>
-            <StatHelpText>Cap Value</StatHelpText>
-          </Stat> */}
+        <Flex alignItems={{ base: 'inherit', md: 'center' }} gap={3}>
+          {item.owls && (
+            <Badge colorScheme="purple" fontSize="xs" minW="15%" textTransform="initial">
+              <Stat flex="initial" textAlign="center">
+                <StatNumber>{item.owls.value}</StatNumber>
+                <StatHelpText mb={0}>Owls Value</StatHelpText>
+                <StatLabel fontSize="xs">
+                  on {format(new Date(item.owls.pricedAt), 'PP')}{' '}
+                </StatLabel>
+              </Stat>
+            </Badge>
+          )}
           <Flex flexFlow="column" flex="1" overflow="hidden">
             <Flex justifyContent="center" alignItems={'center'} gap={3}>
               <MatchTable

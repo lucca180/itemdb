@@ -4,8 +4,8 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider  = "mysql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -30,7 +30,7 @@ model Items {
   status      String?
   comment     String?   @db.Text
 
-  slug        String?   @unique
+  slug String? @unique
 
   addedAt   DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -39,18 +39,19 @@ model Items {
   child_itens OpenableItems[]   @relation("parentItem")
   inside_at   OpenableItems[]   @relation("childItem")
 
-  prices ItemPrices[]
+  prices    ItemPrices[]
+  owlsPrice OwlsPrice[]
 
   atLists ListItems[]
 
   tags ItemTags[]
-  
-  @@fulltext([name])
-  @@fulltext([description])
-  @@fulltext([name, description])
+
   @@index([name, image_id])
   @@index([image_id])
   @@index([item_id])
+  @@fulltext([name])
+  @@fulltext([description])
+  @@fulltext([name, description])
 }
 
 model ItemTranslation {
@@ -132,22 +133,23 @@ model ItemColor {
 }
 
 model ItemPrices {
-  internal_id    Int      @id @default(autoincrement())
-  item_id        Int?
-  name           String
-  image_id       String?
-  price          Int
-  addedAt        DateTime @default(now())
-  processedAt    DateTime? @default(now())
-  
+  internal_id Int       @id @default(autoincrement())
+  item_id     Int?
+  name        String
+  image_id    String?
+  price       Int
+  addedAt     DateTime  @default(now())
+  processedAt DateTime? @default(now())
+
   manual_check   String?
   noInflation_id Int?
-  usedProcessIDs String   @db.Text
+  usedProcessIDs String  @db.Text
 
   item_iid Int?
   item     Items? @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
 
   @@index([name, image_id])
+  @@index([item_iid, addedAt(sort: Desc)])
 }
 
 model PriceProcess {
@@ -233,7 +235,7 @@ model User {
 
   profile_color String?
   profile_image String?
-	description String? @db.Text
+  description   String? @db.Text
 
   xp Int @default(0)
 
@@ -322,4 +324,19 @@ model ListItems {
   isHighlight Boolean  @default(false)
 
   @@unique([list_id, item_iid])
+}
+
+model OwlsPrice {
+  internal_id Int       @id @default(autoincrement())
+  value       String
+  valueMin    Int
+  pricedAt    DateTime
+  addedAt     DateTime  @default(now())
+
+  lastChecked DateTime @default(now())
+
+  item_iid Int
+  item     Items @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([item_iid, pricedAt(sort: Desc)])
 }

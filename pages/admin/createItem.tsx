@@ -40,6 +40,7 @@ const defaultItem: ItemData = {
   isMissingInfo: true,
   slug: null,
   comment: null,
+  owls: null,
   price: null as any,
   color: null as any,
   findAt: null as any,
