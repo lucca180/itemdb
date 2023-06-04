@@ -111,16 +111,19 @@ const ItemCardBase = (props: ItemProps) => {
             {item.type === 'pb' && <Badge colorScheme="yellow">PB</Badge>}
 
             {item.isNC && !capValue && !item.owls && <Badge colorScheme="purple">NC</Badge>}
-            {item.isNC && item.owls && !capValue && (
-              <Badge colorScheme="purple">
-                {item.owls.value.toLowerCase().includes('buyable') && 'NC -'} {item.owls.value}{' '}
-                {!item.owls.value.toLowerCase().includes('buyable') && 'Owls'}
-              </Badge>
+
+            {item.isNC && item.owls && !capValue && !item.owls.buyable && (
+              <Badge colorScheme="purple">{item.owls.value}</Badge>
             )}
+
+            {item.isNC && item.owls && !capValue && item.owls.buyable && (
+              <Badge colorScheme="purple">NC - Buyable</Badge>
+            )}
+
             {item.isNC && Number(capValue) > 0 && (
               <Tooltip
                 label="User Asking Price in GBCs - Not Official"
-                aria-label="Inflation Tooltip"
+                aria-label="Not Official NC Price Tooltip"
                 placement="top"
               >
                 <Badge colorScheme="purple">

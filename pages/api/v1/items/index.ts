@@ -88,7 +88,12 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
         inflated: !!result.noInflation_id,
       },
       owls: result.owlsValue
-        ? { value: result.owlsValue, pricedAt: result.owlsPriced, valueMin: result.owlsValueMin }
+        ? {
+            value: result.owlsValue,
+            pricedAt: result.owlsPriced,
+            valueMin: result.owlsValueMin,
+            buyable: result.owlsValue.toLowerCase().includes('buyable'),
+          }
         : null,
       comment: result.comment ?? null,
       slug: result.slug ?? null,

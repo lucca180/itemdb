@@ -171,7 +171,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       if (filteredResult.length < 5 && differenceInCalendarDays(Date.now(), latestDate) < MAX_DAYS)
         continue;
 
-      if (filteredResult.length <= 15 && userShopCount >= (filteredResult.length / 3) * 2) continue;
+      if (filteredResult.length <= 20 && userShopCount >= (filteredResult.length / 3) * 2) continue;
 
       const prices = filteredResult.map((x) => x.price);
 

@@ -65,6 +65,7 @@ export type OwlsPriceData = {
   pricedAt: string;
   valueMin: number;
   value: string;
+  buyable: boolean;
 };
 
 export type ColorType =

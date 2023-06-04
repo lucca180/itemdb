@@ -743,12 +743,12 @@ const sortItems = (
     if (sortDir === 'asc')
       return (
         (itemA.price.value ?? 0) - (itemB.price.value ?? 0) ||
-        (itemA.owls?.valueMin ?? 0) - (itemB.owls?.valueMin ?? 0)
+        (itemA.owls?.valueMin ?? -1) - (itemB.owls?.valueMin ?? -1)
       );
     else
       return (
         (itemB.price.value ?? 0) - (itemA.price.value ?? 0) ||
-        (itemB.owls?.valueMin ?? 0) - (itemA.owls?.valueMin ?? 0)
+        (itemB.owls?.valueMin ?? -1) - (itemA.owls?.valueMin ?? -1)
       );
   } else if (sortBy === 'addedAt') {
     const dateA = new Date(a.addedAt);

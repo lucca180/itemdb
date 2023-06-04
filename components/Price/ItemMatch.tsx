@@ -108,7 +108,7 @@ const ItemMatch = (props: Props) => {
           {item.owls && (
             <Badge colorScheme="purple" fontSize="xs" minW="15%" textTransform="initial">
               <Stat flex="initial" textAlign="center">
-                <StatNumber>{item.owls.value}</StatNumber>
+                <StatNumber>{item.owls.buyable ? 'Buyable' : item.owls.value}</StatNumber>
                 <StatHelpText mb={0}>Owls Value</StatHelpText>
                 <StatLabel fontSize="xs">
                   on {format(new Date(item.owls.pricedAt), 'PP')}{' '}

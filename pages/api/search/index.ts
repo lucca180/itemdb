@@ -189,7 +189,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     resultRaw = (await prisma.$queryRaw`
       SELECT *,  count(*) OVER() AS full_count FROM (
         SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, 
-        b.rgb_g, b.rgb_b, b.hex, b.hsv_h, b.hsv_s, b.hsv_v, d.dist,
+        b.rgb_g, b.rgb_b, b.hex, b.hsv_h, b.hsv_s, b.hsv_v, f.dist,
         c.addedAt as priceAdded, c.price, c.noInflation_id, 
         d.pricedAt as owlsPriced, d.value as owlsValue, d.valueMin as owlsValueMin
         FROM Items as a
@@ -198,8 +198,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
                 FROM ItemColor
                 GROUP BY image_id 
                 having dist <= 750
-            ) as d on a.image_id = d.image_id
-        LEFT JOIN ItemColor as b on a.image_id = b.image_id and (POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) = d.dist
+            ) as f on a.image_id = f.image_id
+        LEFT JOIN ItemColor as b on a.image_id = b.image_id and (POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) = f.dist
         LEFT JOIN (
           SELECT *
           FROM ItemPrices
@@ -349,7 +349,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         inflated: !!result.noInflation_id,
       },
       owls: result.owlsValue
-        ? { value: result.owlsValue, pricedAt: result.owlsPriced, valueMin: result.owlsValueMin }
+        ? {
+            value: result.owlsValue,
+            pricedAt: result.owlsPriced,
+            valueMin: result.owlsValueMin,
+            buyable: result.owlsValue.toLowerCase().includes('buyable'),
+          }
         : null,
       comment: result.comment ?? null,
       slug: result.slug ?? null,

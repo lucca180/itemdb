@@ -307,6 +307,7 @@ export const fetchOwlsData = async (
         value: owls.value,
         valueMin: owls.valueMin,
         pricedAt: owls.pricedAt.toJSON(),
+        buyable: owls.value.toLowerCase().includes('buyable'),
       };
     }
   }
@@ -349,6 +350,7 @@ export const fetchOwlsData = async (
       value: data.owls_value,
       valueMin: price,
       pricedAt: lastUpdated.toJSON(),
+      buyable: data.owls_value.toLowerCase().includes('buyable'),
     };
   } catch (e) {
     return lastOwls
@@ -356,6 +358,7 @@ export const fetchOwlsData = async (
           value: lastOwls.value,
           valueMin: lastOwls.valueMin,
           pricedAt: lastOwls.pricedAt.toJSON(),
+          buyable: lastOwls.value.toLowerCase().includes('buyable'),
         }
       : null;
   }
