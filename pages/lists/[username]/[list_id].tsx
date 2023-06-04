@@ -740,8 +740,16 @@ const sortItems = (
     if (sortDir === 'asc') return itemA.name.localeCompare(itemB.name);
     else return itemB.name.localeCompare(itemA.name);
   } else if (sortBy === 'price') {
-    if (sortDir === 'asc') return (itemA.price.value ?? 0) - (itemB.price.value ?? 0);
-    else return (itemB.price.value ?? 0) - (itemA.price.value ?? 0);
+    if (sortDir === 'asc')
+      return (
+        (itemA.price.value ?? 0) - (itemB.price.value ?? 0) ||
+        (itemA.owls?.valueMin ?? 0) - (itemB.owls?.valueMin ?? 0)
+      );
+    else
+      return (
+        (itemB.price.value ?? 0) - (itemA.price.value ?? 0) ||
+        (itemB.owls?.valueMin ?? 0) - (itemA.owls?.valueMin ?? 0)
+      );
   } else if (sortBy === 'addedAt') {
     const dateA = new Date(a.addedAt);
     const dateB = new Date(b.addedAt);
