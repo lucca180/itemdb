@@ -113,7 +113,7 @@ const ItemCardBase = (props: ItemProps) => {
             {item.isNC && !capValue && !item.owls && <Badge colorScheme="purple">NC</Badge>}
 
             {item.isNC && item.owls && !capValue && !item.owls.buyable && (
-              <Badge colorScheme="purple">{item.owls.value}</Badge>
+              <Badge colorScheme="purple">{item.owls.value} Owls</Badge>
             )}
 
             {item.isNC && item.owls && !capValue && item.owls.buyable && (
