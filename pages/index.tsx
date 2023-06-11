@@ -1,4 +1,4 @@
-import { Box, Center, Flex, Heading, Highlight, Link } from '@chakra-ui/react';
+import { Box, Center, Flex, Heading, Highlight, Link, Stack } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import logo from '../public/logo_white.svg';
@@ -7,10 +7,15 @@ import ItemCard from '../components/Items/ItemCard';
 import { ItemData } from '../types';
 import BetaStatsCard from '../components/Beta/BetaStatsCard';
 import axios from 'axios';
+import { getLatestOwls } from './api/v1/items/owls';
 
 // const isProd = process.env.NODE_ENV === 'production';
+type Props = {
+  latestOwls: ItemData[];
+};
 
-const HomePage = () => {
+const HomePage = (props: Props) => {
+  const { latestOwls } = props;
   const [latestItems, setItems] = useState<ItemData[]>([]);
   const [latestPrices, setPrices] = useState<ItemData[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -71,13 +76,29 @@ const HomePage = () => {
           ))}
           {!isLoaded && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
         </Flex>
-        <Heading size="md">Latest Discoveries</Heading>
-        <Flex flexWrap="wrap" gap={4} justifyContent="center">
-          {latestItems.map((item) => (
-            <ItemCard item={item} key={item.internal_id} />
-          ))}
-          {!isLoaded && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
-        </Flex>
+        <Stack direction={{ base: 'column', lg: 'row' }}>
+          <Flex gap={4} flexFlow="column" flex="1">
+            <Heading size="md" textAlign={{ base: 'left', lg: 'center' }}>
+              Latest Discoveries
+            </Heading>
+            <Flex flexWrap="wrap" gap={4} justifyContent="center" h="100%">
+              {latestItems.map((item) => (
+                <ItemCard item={item} key={item.internal_id} />
+              ))}
+              {!isLoaded && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
+            </Flex>
+          </Flex>
+          <Flex gap={4} flexFlow="column" flex="1">
+            <Heading size="md" textAlign={{ base: 'left', lg: 'center' }}>
+              Latest Owls
+            </Heading>
+            <Flex flexWrap="wrap" gap={4} justifyContent="center" h="100%">
+              {isLoaded &&
+                latestOwls.map((item) => <ItemCard item={item} key={item.internal_id} />)}
+              {!isLoaded && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
+            </Flex>
+          </Flex>
+        </Stack>
         <Center flexFlow="column" mt={8}>
           <Heading size="md">Stats</Heading>
           <BetaStatsCard />
@@ -88,3 +109,13 @@ const HomePage = () => {
 };
 
 export default HomePage;
+
+export async function getStaticProps() {
+  const latestOwls = await getLatestOwls(16);
+  return {
+    props: {
+      latestOwls,
+    },
+    revalidate: 60, // In seconds
+  };
+}
