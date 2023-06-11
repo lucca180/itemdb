@@ -41,6 +41,7 @@ const defaultFilters: SearchFiltersType = {
   rarity: ['', ''],
   weight: ['', ''],
   estVal: ['', ''],
+  owlsValue: ['', ''],
   sortBy: 'name',
   sortDir: 'asc',
   limit: 48,
@@ -76,7 +77,7 @@ const SearchPage = () => {
     if (query.match(/^#[0-9A-Fa-f]{6}$/)) {
       if (!searchResult && !isColorSearch) {
         setIsColorSearch(true);
-        console.log(customFilters?.sortBy);
+
         customFilters = {
           ...(customFilters ?? filters),
           sortBy:
@@ -346,6 +347,7 @@ const SearchPage = () => {
               >
                 <option value="name">Name</option>
                 <option value="price">Price</option>
+                <option value="owls">Owls Value</option>
                 <option value="rarity">Rarity</option>
                 <option value="color">Color</option>
                 <option value="weight">Weight</option>

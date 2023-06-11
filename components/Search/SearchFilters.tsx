@@ -55,9 +55,17 @@ const SearchFilters = (props: Props) => {
     defaultValue: string
   ) => {
     if (
-      ['price', 'rarity', 'weight', 'estVal', 'sortBy', 'order', 'page', 'limit'].includes(
-        filterType
-      )
+      [
+        'price',
+        'owlsValue',
+        'rarity',
+        'weight',
+        'estVal',
+        'sortBy',
+        'order',
+        'page',
+        'limit',
+      ].includes(filterType)
     )
       return;
 
@@ -86,7 +94,7 @@ const SearchFilters = (props: Props) => {
   const handleNumberChange = (
     newVal: string,
     index: number,
-    filterType: 'price' | 'rarity' | 'weight' | 'estVal'
+    filterType: 'price' | 'rarity' | 'weight' | 'estVal' | 'owlsValue'
   ) => {
     const tuple = [...filters[filterType]];
     tuple[index] = newVal;
@@ -206,37 +214,7 @@ const SearchFilters = (props: Props) => {
         <h2>
           <AccordionButton>
             <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              Status {filters.status.length > 0 && <Badge>{filters.status.length}</Badge>}
-            </Box>
-            <AccordionIcon />
-          </AccordionButton>
-        </h2>
-        <AccordionPanel pb={4}>
-          <VStack alignItems="flex-start">
-            {stats &&
-              Object.entries(stats.status)
-                .sort((a, b) => b[1] - a[1])
-                .map((stat) => (
-                  <NegCheckbox
-                    key={stat[0]}
-                    value={stat[0]}
-                    onChange={(val) => handleCheckChange(val, 'status', stat[0])}
-                    checklist={filters.status}
-                  >
-                    <Text fontSize={'sm'} textTransform="capitalize">
-                      {stat[0]} <Badge>{stat[1]}</Badge>
-                    </Text>
-                  </NegCheckbox>
-                ))}
-            {!stats && [...Array(5)].map((_, i) => <Skeleton key={i} w="100%" h="25px" />)}
-          </VStack>
-        </AccordionPanel>
-      </AccordionItem>
-      <AccordionItem>
-        <h2>
-          <AccordionButton>
-            <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              Price Range{' '}
+              <Badge colorScheme="green">NP</Badge> Price Range{' '}
               {filters.price.filter((a) => a || a === '0').length > 0 && (
                 <Badge>{filters.price.filter((a) => a || a === '0').length}</Badge>
               )}
@@ -256,6 +234,34 @@ const SearchFilters = (props: Props) => {
             <CustomNumberInput
               onChange={(val) => handleNumberChange(val, 1, 'price')}
               value={filters.price[1]}
+            />
+          </HStack>
+        </AccordionPanel>
+      </AccordionItem>
+      <AccordionItem>
+        <h2>
+          <AccordionButton>
+            <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
+              <Badge colorScheme="purple">NC</Badge> Owls Value{' '}
+              {filters.owlsValue.filter((a) => a || a === '0').length > 0 && (
+                <Badge>{filters.owlsValue.filter((a) => a || a === '0').length}</Badge>
+              )}
+            </Box>
+            <AccordionIcon />
+          </AccordionButton>
+        </h2>
+        <AccordionPanel pb={4}>
+          <HStack>
+            <CustomNumberInput
+              onChange={(val) => handleNumberChange(val, 0, 'owlsValue')}
+              value={filters.owlsValue[0]}
+            />
+            <Text fontSize="sm" color="gray.300">
+              to
+            </Text>
+            <CustomNumberInput
+              onChange={(val) => handleNumberChange(val, 1, 'owlsValue')}
+              value={filters.owlsValue[1]}
             />
           </HStack>
         </AccordionPanel>
@@ -342,6 +348,36 @@ const SearchFilters = (props: Props) => {
               value={filters.estVal[1]}
             />
           </HStack>
+        </AccordionPanel>
+      </AccordionItem>
+      <AccordionItem>
+        <h2>
+          <AccordionButton>
+            <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
+              Status {filters.status.length > 0 && <Badge>{filters.status.length}</Badge>}
+            </Box>
+            <AccordionIcon />
+          </AccordionButton>
+        </h2>
+        <AccordionPanel pb={4}>
+          <VStack alignItems="flex-start">
+            {stats &&
+              Object.entries(stats.status)
+                .sort((a, b) => b[1] - a[1])
+                .map((stat) => (
+                  <NegCheckbox
+                    key={stat[0]}
+                    value={stat[0]}
+                    onChange={(val) => handleCheckChange(val, 'status', stat[0])}
+                    checklist={filters.status}
+                  >
+                    <Text fontSize={'sm'} textTransform="capitalize">
+                      {stat[0]} <Badge>{stat[1]}</Badge>
+                    </Text>
+                  </NegCheckbox>
+                ))}
+            {!stats && [...Array(5)].map((_, i) => <Skeleton key={i} w="100%" h="25px" />)}
+          </VStack>
         </AccordionPanel>
       </AccordionItem>
       <AccordionItem>

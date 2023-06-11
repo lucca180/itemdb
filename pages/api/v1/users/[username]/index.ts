@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { User, UserRoles } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
+import { getImagePalette } from '../../lists/[username]';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -71,12 +72,19 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       return res.status(400).json({ error: 'Invalid username or neopetsUser' });
     }
 
+    let colorHexVar = profileColor;
+
+    if ((!colorHexVar || colorHexVar === '#000000') && profileImage) {
+      const colors = await getImagePalette(profileImage);
+      colorHexVar = colors.vibrant.hex;
+    }
+
     const tempUser = await prisma.user.update({
       where: { id: decodedToken.uid },
       data: {
         neo_user: neopetsUser,
         username: username,
-        profile_color: profileColor,
+        profile_color: colorHexVar,
         profile_image: profileImage,
         description: description,
       },

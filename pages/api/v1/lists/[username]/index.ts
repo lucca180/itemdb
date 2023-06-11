@@ -1,5 +1,7 @@
+import Color from 'color';
 import { startOfDay } from 'date-fns';
 import { NextApiRequest, NextApiResponse } from 'next';
+import Vibrant from 'node-vibrant';
 import { User, UserList } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
@@ -44,7 +46,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 // creates a new list
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const { username } = req.query;
-  const { name, description, coverURL, purpose, visibility, colorHex } = req.body;
+  const { name, description, coverURL, purpose, visibility, colorHex, official } = req.body;
 
   try {
     const { user } = await CheckAuth(req);
@@ -61,12 +63,20 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     if (!['none', 'trading', 'seeking'].includes(purpose))
       return res.status(400).json({ error: 'Bad Request' });
 
+    let colorHexVar = colorHex;
+
+    if ((!colorHexVar || colorHexVar === '#000000') && coverURL) {
+      const colors = await getImagePalette(coverURL);
+      colorHexVar = colors.vibrant.hex;
+    }
+
     const list = await prisma.userList.create({
       data: {
         name,
         description,
         cover_url: coverURL,
-        colorHex,
+        colorHex: colorHexVar,
+        official: user.isAdmin ? official : undefined,
         purpose: purpose as 'none' | 'trading' | 'seeking',
         visibility: visibility as 'public' | 'private' | 'unlisted',
         user: {
@@ -238,4 +248,55 @@ export const getUserLists = async (username: string, user?: User | null) => {
     );
 
   return lists;
+};
+
+// ---- COLORS ---- //
+
+export const getImagePalette = async (image_url: string) => {
+  CHECK_IMG_URL(image_url);
+
+  const pallete = await Vibrant.from(image_url).getPalette();
+
+  const colors: any = {};
+
+  for (const [key, val] of Object.entries(pallete)) {
+    const color = Color.rgb(val?.rgb ?? [255, 255, 255]);
+    const lab = color.lab().round().array();
+    const hsv = color.hsv().round().array();
+    const hex = color.hex();
+
+    const colorData = {
+      lab: lab,
+      hsv: hsv,
+      rgb: color.rgb().round().array(),
+
+      hex: hex,
+
+      type: key.toLowerCase(),
+      population: val?.population ?? 0,
+    };
+
+    colors[key.toLowerCase()] = colorData;
+  }
+
+  return colors;
+};
+
+export const CHECK_IMG_URL = (image_url: string) => {
+  const domain = new URL(image_url);
+  const hostname = domain.hostname;
+  if (
+    ![
+      'itemdb.com.br',
+      'magnetismotimes.com',
+      'images.neopets.com',
+      'pets.neopets.com',
+      'neopets.com',
+      'www.neopets.com',
+      'uploads.neopets.com',
+    ].includes(hostname)
+  )
+    throw 'Invalid domain';
+
+  if (!image_url.match(/\.(jpeg|jpg|gif|png)$/)) throw 'Invalid image format';
 };

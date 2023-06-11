@@ -30,10 +30,10 @@ const BetaStatsCard = () => {
   return (
     <Flex flexFlow="column" mt={5} gap={3} w="100%" maxW="300px">
       <VStack justifyContent={'center'} alignItems="center" w="100%">
-        <Text color="gray.300">Total Items Added</Text>
-        <Progress w="100%" value={(stats.itemsTotal / 60000) * 100} />
+        <Text color="gray.300">Items Missing</Text>
+        <Progress w="100%" value={(stats.itemsTotal / 62000) * 100} />
         <Text fontSize="sm" textAlign={'center'}>
-          {stats.itemsTotal}
+          ~{62000 - stats.itemsTotal}
         </Text>
       </VStack>
       <VStack justifyContent={'center'} alignItems="center" w="100%">
@@ -43,28 +43,18 @@ const BetaStatsCard = () => {
           value={((stats.itemsTotal - stats.itemsMissingInfo) / stats.itemsTotal) * 100}
         />
         <Text fontSize="sm" textAlign={'center'}>
-          {stats.itemsTotal - stats.itemsMissingInfo}/{stats.itemsTotal}
-        </Text>
-      </VStack>
-      <VStack justifyContent={'center'} alignItems="center" w="100%">
-        <Text color="gray.300">Processing Queue</Text>
-        <Progress w="100%" value={stats.itemToProcess / stats.itemProcess} />
-        <Text fontSize="sm" textAlign={'center'}>
-          {stats.itemToProcess}/{stats.itemProcess}
-        </Text>
-        <Text fontSize="xs" textAlign={'center'} color="gray.400">
-          Items are processed every 15 minutes (or less)
+          {(((stats.itemsTotal - stats.itemsMissingInfo) / stats.itemsTotal) * 100).toFixed(0)}%
         </Text>
       </VStack>
       <VStack justifyContent={'center'} alignItems="center" w="100%">
         <Text color="gray.300">
           <Link href="/feedback/trades">
-            Trades Priced <ExternalLinkIcon verticalAlign="center" />
+            Trades to be priced <ExternalLinkIcon verticalAlign="center" />
           </Link>
         </Text>
-        <Progress w="100%" value={(stats.tradePricing / stats.tradeTotal) * 100} />
+        <Progress w="100%" value={((stats.tradeTotal - stats.tradePricing) / 1000) * 100} />
         <Text fontSize="sm" textAlign={'center'}>
-          {stats.tradePricing}/{stats.tradeTotal}
+          {stats.tradeTotal - stats.tradePricing} / {stats.tradeTotal}
         </Text>
       </VStack>
     </Flex>

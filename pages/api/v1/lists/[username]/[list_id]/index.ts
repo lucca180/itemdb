@@ -1,5 +1,6 @@
 import { startOfDay } from 'date-fns';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { getImagePalette } from '..';
 import { ListItemInfo, UserList, User } from '../../../../../../types';
 import { CheckAuth } from '../../../../../../utils/googleCloud';
 import prisma from '../../../../../../utils/prisma';
@@ -184,6 +185,13 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       sortInfo ||
       order
     ) {
+      let colorHexVar = colorHex;
+
+      if ((!colorHexVar || colorHexVar === '#000000') && coverURL) {
+        const colors = await getImagePalette(coverURL);
+        colorHexVar = colors.vibrant.hex;
+      }
+
       await prisma.userList.update({
         where: {
           internal_id: Number(list_id),
@@ -192,7 +200,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
           name,
           description,
           cover_url: coverURL,
-          colorHex,
+          colorHex: colorHexVar,
           official: user.isAdmin ? official : undefined,
           order: order ? Number(order) : undefined,
           purpose: purpose,

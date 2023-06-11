@@ -100,7 +100,6 @@ const UserListsPage = (props: Props) => {
         const userRes = await axios.get(`/api/v1/users/${targetUsername}`);
         if (!userRes.data) throw 'This user does not exist';
         setOwner(userRes.data);
-        console.log(userRes.data);
       }
 
       if (user) {

@@ -37,13 +37,11 @@ import ItemActionModal from '../../../components/Modal/ItemActionModal';
 import { BiLinkExternal } from 'react-icons/bi';
 import { NextPageContext } from 'next';
 import { getList } from '../../api/v1/lists/[username]/[list_id]';
-import { getManyItems } from '../../api/v1/items/many';
 
 type ExtendedListItemInfo = ListItemInfo & { hasChanged?: boolean };
 
 type Props = {
   list: UserList;
-  items: { [item_iid: string]: ItemData };
 };
 
 const ListPage = (props: Props) => {
@@ -130,15 +128,12 @@ const ListPage = (props: Props) => {
         return;
       }
 
-      let itemRes: any;
-
-      if (force)
-        itemRes = await axios.post(`/api/v1/items/many`, {
-          id: itensId,
-        });
+      const itemRes = await axios.post(`/api/v1/items/many`, {
+        id: itensId,
+      });
 
       const itemInfos = listData.itemInfo;
-      const itemData: { [id: string]: ItemData } = itemRes?.data ?? props.items;
+      const itemData: { [id: string]: ItemData } = itemRes?.data;
 
       const sortedItemInfo = itemInfos.sort((a, b) =>
         sortItems(a, b, listData.sortBy, listData.sortDir, itemData)
@@ -713,16 +708,10 @@ export async function getServerSideProps(context: NextPageContext) {
 
   if (!list) return { notFound: true };
 
-  const items_id = list.itemInfo.map((a) => a.item_iid.toString());
-  const items = await getManyItems({
-    id: items_id,
-  });
-
   return {
     props: {
       list,
-      items,
-    }, // will be passed to the page component as props
+    },
   };
 }
 

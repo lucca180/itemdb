@@ -155,6 +155,7 @@ export type SearchFilters = {
   rarity: string[]; // [min, max]
   weight: string[]; // [min, max]
   estVal: string[]; // [min, max]
+  owlsValue: string[]; // [min, max]
   sortBy: string;
   sortDir: string;
   limit: number;

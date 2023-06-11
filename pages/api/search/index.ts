@@ -32,6 +32,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const weightFilter = (reqQuery.weight as string[]) ?? [];
   const rarityFilter = (reqQuery.rarity as string[]) ?? [];
   const estValFilter = (reqQuery.estVal as string[]) ?? [];
+  const owlsFilter = (reqQuery.owlsValue as string[]) ?? [];
   let vibrantColorFilter = (reqQuery.color as string) ?? '';
 
   const sortBy = (reqQuery.sortBy as string) ?? 'name';
@@ -149,6 +150,13 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       numberFilters.push(Prisma.sql`temp.rarity <= ${parseInt(rarityFilter[1])}`);
   }
 
+  if (owlsFilter.length > 0) {
+    if (owlsFilter[0] !== '')
+      numberFilters.push(Prisma.sql`temp.owlsValueMin >= ${parseInt(owlsFilter[0])}`);
+    if (owlsFilter[1] !== '')
+      numberFilters.push(Prisma.sql`temp.owlsValueMin <= ${parseInt(owlsFilter[1])}`);
+  }
+
   let colorSql_inside;
   let colorSql_outside;
   let isColorNeg = false;
@@ -169,6 +177,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (sortBy === 'name') sortSQL = Prisma.sql`ORDER BY temp.name`;
   else if (sortBy === 'price') sortSQL = Prisma.sql`ORDER BY temp.price`;
   else if (sortBy === 'added') sortSQL = Prisma.sql`ORDER BY temp.addedAt`;
+  else if (sortBy === 'owls') sortSQL = Prisma.sql`ORDER BY temp.owlsValueMin`;
   else if (sortBy === 'color' && isColorSearch) sortSQL = Prisma.sql`ORDER BY dist`;
   else if (sortBy === 'color')
     sortSQL = Prisma.sql`ORDER BY temp.hsv_h ${

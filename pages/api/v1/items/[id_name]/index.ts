@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { ItemData, OwlsPriceData } from '../../../../../types';
-import { getItemFindAtLinks, isMissingInfo } from '../../../../../utils/utils';
+import { getItemFindAtLinks, isMissingInfo, slugify } from '../../../../../utils/utils';
 import prisma from '../../../../../utils/prisma';
 import { Prisma } from '@prisma/client';
 import { CheckAuth } from '../../../../../utils/googleCloud';
@@ -10,6 +10,7 @@ import { differenceInCalendarDays, isSameDay } from 'date-fns';
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
   if (req.method === 'PATCH') return PATCH(req, res);
+  if (req.method === 'DELETE') return DELETE(req, res);
 
   if (req.method == 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Methods', 'GET, PATCH');
@@ -59,6 +60,8 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
   const imageId = itemData.image.match(/[^\.\/]+(?=\.gif)/)?.[0] ?? undefined;
   if (!imageId) return res.status(400).json({ error: 'Invalid Request' });
 
+  const originalItem = await getItem(internal_id);
+
   const rarity =
     (!itemData.rarity && itemData.rarity !== 0) || isNaN(Number(itemData.rarity))
       ? null
@@ -75,6 +78,33 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
     (!itemData.item_id && itemData.item_id !== 0) || isNaN(Number(itemData.item_id))
       ? null
       : Number(itemData.item_id);
+
+  let itemSlug: string | undefined = undefined;
+
+  if (originalItem && itemData.name !== originalItem.name) {
+    itemSlug = slugify(itemData.name);
+
+    const dbSlugItems = await prisma.items.findMany({
+      where: {
+        slug: {
+          startsWith: itemSlug,
+        },
+        NOT: {
+          internal_id: internal_id,
+        },
+      },
+    });
+
+    if (dbSlugItems.length > 0) {
+      const regex = new RegExp(`^${itemSlug}-\\d+$`);
+
+      const sameSlug = dbSlugItems.filter((x) => regex.test(x.slug ?? ''));
+
+      if (sameSlug.length > 0) {
+        itemSlug = `${itemSlug}-${sameSlug.length + 1}`;
+      }
+    }
+  }
 
   await prisma.items.update({
     where: { internal_id: internal_id },
@@ -94,6 +124,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
       category: itemData.category,
       comment: itemData.comment,
       status: itemData.status,
+      slug: itemSlug,
     },
   });
 
@@ -102,6 +133,26 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
   return res.status(200).json({ success: true });
 };
 
+const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
+  const internal_id = Number(req.query.id_name);
+  if (isNaN(internal_id)) return res.status(400).json({ error: 'Invalid Request' });
+
+  try {
+    const { user } = await CheckAuth(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+    if (user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
+  } catch (e: any) {
+    console.error(e);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+
+  await prisma.items.delete({
+    where: { internal_id: internal_id },
+  });
+
+  return res.status(200).json({ success: true });
+};
 // ------------- //
 
 export const getItem = async (id_name: number | string) => {
