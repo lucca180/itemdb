@@ -112,6 +112,7 @@ const CreateItem = () => {
       rarity: item.rarity ?? undefined,
       weight: item.weight ?? undefined,
       category: item.category ?? undefined,
+      status: item.status ?? undefined,
       type: item.type,
     };
 
