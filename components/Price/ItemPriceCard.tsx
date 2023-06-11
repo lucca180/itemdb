@@ -38,11 +38,11 @@ const ItemPriceCard = (props: Props) => {
   const isNoTrade = item.status?.toLowerCase() === 'no trade';
 
   const color = item.color.rgb;
-  const price = prices.at(0);
+  const price = prices[0];
 
   useEffect(() => {
     if (prices.length >= 2) {
-      const diff = (prices.at(0)?.value ?? 0) - (prices.at(1)?.value ?? 0);
+      const diff = (prices[0]?.value ?? 0) - (prices[1]?.value ?? 0);
       setDiff(diff);
     } else setDiff(null);
   }, [prices]);

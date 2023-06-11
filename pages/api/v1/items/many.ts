@@ -146,7 +146,7 @@ export const getManyItems = async (queryObj: {
       owls: result.owlsValue
         ? {
             value: result.owlsValue,
-            pricedAt: result.owlsPriced,
+            pricedAt: result.owlsPriced?.toJSON() ?? null,
             valueMin: result.owlsValueMin,
             buyable: result.owlsValue.toLowerCase().includes('buyable'),
           }
