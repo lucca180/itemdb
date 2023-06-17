@@ -113,6 +113,7 @@ const CreateItem = () => {
       weight: item.weight ?? undefined,
       category: item.category ?? undefined,
       status: item.status ?? undefined,
+      comment: item.comment ?? undefined,
       type: item.type,
     };
 

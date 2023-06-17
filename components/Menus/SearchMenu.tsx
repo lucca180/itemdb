@@ -18,6 +18,7 @@ const SearchMenu = () => {
         <MenuList>
           <MenuItem onClick={() => goTo('/search')}>Advanced Search</MenuItem>
           <MenuItem onClick={() => goTo('/lists/official')}>Official Lists</MenuItem>
+          <MenuItem onClick={() => goTo('/articles')}>Articles</MenuItem>
         </MenuList>
       </Portal>
     </Menu>

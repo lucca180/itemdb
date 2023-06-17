@@ -238,6 +238,26 @@ export type ListItemInfo = {
   isHighlight: boolean;
 };
 
+export type Pallete = {
+  lab: number[];
+  hsv: number[];
+  rgb: number[];
+  hex: string;
+  type: string;
+  population: number;
+};
+
+export type WP_Article = {
+  id: number;
+  title: string;
+  content: string;
+  excerpt: string;
+  slug: string;
+  date: string;
+  thumbnail: string | null;
+  palette: Record<ColorType, Pallete> | null;
+};
+
 // ------- FEEDBACKS JSON -------- //
 export type Feedback = {
   feedback_id: number;

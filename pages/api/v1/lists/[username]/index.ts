@@ -2,7 +2,7 @@ import Color from 'color';
 import { startOfDay } from 'date-fns';
 import { NextApiRequest, NextApiResponse } from 'next';
 import Vibrant from 'node-vibrant';
-import { User, UserList } from '../../../../../types';
+import { ColorType, User, UserList } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 
@@ -252,8 +252,20 @@ export const getUserLists = async (username: string, user?: User | null) => {
 
 // ---- COLORS ---- //
 
-export const getImagePalette = async (image_url: string) => {
-  CHECK_IMG_URL(image_url);
+type Pallete = {
+  lab: number[];
+  hsv: number[];
+  rgb: number[];
+  hex: string;
+  type: string;
+  population: number;
+};
+
+export const getImagePalette = async (
+  image_url: string,
+  skipCheck = false
+): Promise<Record<ColorType, Pallete>> => {
+  if (!skipCheck) CHECK_IMG_URL(image_url);
 
   const pallete = await Vibrant.from(image_url).getPalette();
 

@@ -3,10 +3,6 @@ import {
   Box,
   Button,
   Flex,
-  Input,
-  InputGroup,
-  InputLeftElement,
-  InputRightElement,
   Menu,
   MenuButton,
   MenuDivider,
@@ -26,15 +22,15 @@ import {
 import NextImage from 'next/image';
 import logo from '../public/logo_white.svg';
 import logo_icon from '../public/logo_icon.svg';
-import { ChevronDownIcon, SearchIcon } from '@chakra-ui/icons';
+import { ChevronDownIcon } from '@chakra-ui/icons';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import SearchMenu from './Menus/SearchMenu';
 import LoginModal from './Modal/LoginModal';
 import { useAuth } from '../utils/auth';
 import { AiFillHeart } from 'react-icons/ai';
 import { BsBoxArrowInRight, BsFillPersonFill } from 'react-icons/bs';
 import { NextSeo, NextSeoProps } from 'next-seo';
+import { SearchBar } from './Search/SearchBar';
 
 type Props = {
   children?: ReactNode;
@@ -44,7 +40,6 @@ type Props = {
 
 const Layout = (props: Props) => {
   const router = useRouter();
-  const [search, setSearch] = React.useState<string>('');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { user, authLoading, signout } = useAuth();
   const [isLargerThanMD] = useMediaQuery('(min-width: 48em)');
@@ -54,18 +49,13 @@ const Layout = (props: Props) => {
     checkLogin();
   }, [router.isReady]);
 
-  useEffect(() => {
-    if (!router.isReady) return;
-    setSearch((router.query.s as string) ?? '');
-  }, [router.query.s]);
-
   const checkLogin = () => {
     if (!user) return;
 
     if (!user.username && !['/', '/login'].includes(router.asPath)) router.push('/login');
   };
 
-  const onSubmit = (e: any) => {
+  const onSubmit = (e: any, search: string) => {
     e.preventDefault();
     router.push(`/search?s=${encodeURIComponent(search)}`);
   };
@@ -96,29 +86,7 @@ const Layout = (props: Props) => {
             />
           </Flex>
           <Box flex="1 1 auto" display="flex" justifyContent="center" alignItems="center">
-            <InputGroup as="form" onSubmit={onSubmit} maxW="700px" w="100%" h="100%" maxH="50px">
-              <InputLeftElement
-                pointerEvents="none"
-                children={<SearchIcon color="gray.300" />}
-                h="100%"
-              />
-              <Input
-                variant="filled"
-                bg="gray.700"
-                type="text"
-                fontSize={{ base: 'sm', md: 'md' }}
-                onChange={(e) => setSearch(e.target.value)}
-                value={search}
-                placeholder={
-                  isLargerThanMD
-                    ? 'Search by name or hex color (eg: #fff000)'
-                    : 'Search the database'
-                }
-                _focus={{ bg: 'gray.700' }}
-                h="100%"
-              />
-              <InputRightElement mr={1} children={<SearchMenu />} h="100%" />
-            </InputGroup>
+            <SearchBar onSubmit={onSubmit} />
           </Box>
           <Box display="flex" gap={{ base: 2, md: 3 }} alignItems="center" maxW="30%">
             <Button

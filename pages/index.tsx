@@ -1,21 +1,25 @@
-import { Box, Center, Flex, Heading, Highlight, Link, Stack } from '@chakra-ui/react';
+import { Box, Flex, Heading, Highlight, Link, Stack } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import logo from '../public/logo_white.svg';
 import Image from 'next/image';
 import ItemCard from '../components/Items/ItemCard';
-import { ItemData } from '../types';
+import { ItemData, WP_Article } from '../types';
 import BetaStatsCard from '../components/Beta/BetaStatsCard';
 import axios from 'axios';
 import { getLatestOwls } from './api/v1/items/owls';
+import { ArticleCard } from '../components/Articles/ArticlesCard';
+import { wp_getLatestPosts } from './api/wp/posts';
+import NextLink from 'next/link';
+import { QuestionIcon } from '@chakra-ui/icons';
 
-// const isProd = process.env.NODE_ENV === 'production';
 type Props = {
   latestOwls: ItemData[];
+  latestPosts: WP_Article[];
 };
 
 const HomePage = (props: Props) => {
-  const { latestOwls } = props;
+  const { latestOwls, latestPosts } = props;
   const [latestItems, setItems] = useState<ItemData[]>([]);
   const [latestPrices, setPrices] = useState<ItemData[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -88,21 +92,41 @@ const HomePage = (props: Props) => {
               {!isLoaded && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
             </Flex>
           </Flex>
-          <Flex gap={4} flexFlow="column" flex="1">
-            <Heading size="md" textAlign={{ base: 'left', lg: 'center' }}>
-              Latest Owls
+          {!isLoaded ||
+            (isLoaded && !!latestOwls.length && (
+              <Flex gap={4} flexFlow="column" flex="1">
+                <Heading size="md" textAlign={{ base: 'left', lg: 'center' }}>
+                  Latest Owls{' '}
+                  <NextLink href="/articles/owls">
+                    <QuestionIcon verticalAlign="middle" boxSize={4} />
+                  </NextLink>
+                </Heading>
+                <Flex flexWrap="wrap" gap={4} justifyContent="center" h="100%">
+                  {isLoaded &&
+                    latestOwls.map((item) => <ItemCard item={item} key={item.internal_id} />)}
+                  {!isLoaded && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
+                </Flex>
+              </Flex>
+            ))}
+        </Stack>
+        <Stack direction={{ base: 'column', lg: 'row' }} mt={8} gap={{ base: 8, lg: 3 }}>
+          <Flex flexFlow="column" flex={1} alignItems="center" h="100%">
+            <Heading size="md">Stats</Heading>
+            <BetaStatsCard />
+          </Flex>
+          <Flex flex={1} flexFlow={'column'}>
+            <Heading size="md" textAlign="center" mb={5}>
+              <Link as={NextLink} href="/articles">
+                Latest Articles
+              </Link>
             </Heading>
-            <Flex flexWrap="wrap" gap={4} justifyContent="center" h="100%">
-              {isLoaded &&
-                latestOwls.map((item) => <ItemCard item={item} key={item.internal_id} />)}
-              {!isLoaded && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
+            <Flex flexFlow={'column'} gap={2}>
+              {latestPosts.map((post) => (
+                <ArticleCard key={post.id} article={post} />
+              ))}
             </Flex>
           </Flex>
         </Stack>
-        <Center flexFlow="column" mt={8}>
-          <Heading size="md">Stats</Heading>
-          <BetaStatsCard />
-        </Center>
       </Flex>
     </Layout>
   );
@@ -111,11 +135,24 @@ const HomePage = (props: Props) => {
 export default HomePage;
 
 export async function getStaticProps() {
-  const latestOwls = await getLatestOwls(16);
-  return {
-    props: {
-      latestOwls,
-    },
-    revalidate: 60, // In seconds
-  };
+  try {
+    const [latestOwls, latestPosts] = await Promise.all([getLatestOwls(16), wp_getLatestPosts(3)]);
+
+    return {
+      props: {
+        latestOwls,
+        latestPosts,
+      },
+      revalidate: 60, // In seconds
+    };
+  } catch (e) {
+    console.error(e);
+    return {
+      props: {
+        latestOwls: [],
+        latestPosts: [],
+      },
+      revalidate: 60, // In seconds
+    };
+  }
 }

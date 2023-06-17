@@ -19,6 +19,8 @@ import { ItemData, UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import CardBase from '../Card/CardBase';
 import MatchTable from './MatchTable';
+import NextLink from 'next/link';
+import { ExternalLinkIcon } from '@chakra-ui/icons';
 
 type Props = {
   item: ItemData;
@@ -109,7 +111,9 @@ const ItemMatch = (props: Props) => {
             <Badge colorScheme="purple" fontSize="xs" minW="15%" textTransform="initial">
               <Stat flex="initial" textAlign="center">
                 <StatNumber>{item.owls.buyable ? 'Buyable' : item.owls.value}</StatNumber>
-                <StatHelpText mb={0}>Owls Value</StatHelpText>
+                <StatHelpText mb={0} as={NextLink} href="/articles/owls">
+                  Owls Value <ExternalLinkIcon boxSize={3} verticalAlign="center" />
+                </StatHelpText>
                 <StatLabel fontSize="xs">
                   on {format(new Date(item.owls.pricedAt), 'PP')}{' '}
                 </StatLabel>

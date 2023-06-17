@@ -11,6 +11,7 @@ import {
   HStack,
   Badge,
   Skeleton,
+  Input,
 } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { SearchStats, SearchFilters } from '../../types';
@@ -40,6 +41,7 @@ const SearchFilters = (props: Props) => {
   const { stats, isColorSearch } = props;
   const [showMoreCat, setCat] = useBoolean();
   const [filters, setFilters] = useState<SearchFilters>(props.filters);
+  const [colorVal, setColorVal] = useState<string>('#c4bce4');
 
   useEffect(() => {
     setFilters(props.filters);
@@ -404,6 +406,24 @@ const SearchFilters = (props: Props) => {
                 </Text>
               </NegCheckbox>
             ))}
+            <HStack justifyContent={'center'}>
+              <NegCheckbox
+                disabled={isColorSearch}
+                value={colorVal}
+                onChange={(val) => handleCheckChange(val, 'color', colorVal)}
+                checklist={[filters.color]}
+              >
+                <ColorBox color={colorVal} />
+              </NegCheckbox>
+              <Input
+                placeholder="Custom Color"
+                defaultValue={colorVal}
+                size="xs"
+                variant="filled"
+                onChange={(e) => setColorVal(e.target.value)}
+                maxLength={7}
+              />
+            </HStack>
           </VStack>
         </AccordionPanel>
       </AccordionItem>
