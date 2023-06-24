@@ -8,19 +8,19 @@ type Props = {
 
 export const ArticleCard = (props: Props) => {
   const { article } = props;
-  const rgb = article.palette?.vibrant.rgb ?? [0, 0, 0];
+  const rgb = article.palette?.lightvibrant.rgb ?? [0, 0, 0];
   return (
     <Link
       as={NextLink}
       display="flex"
       href={`/articles/${article.slug}`}
-      bg={'gray.700'}
       p={3}
       gap={3}
       // maxW="500px"
       w="100%"
       alignItems="center"
       borderRadius="md"
+      bg={`rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},.15)`}
       _hover={{
         textDecoration: 'none',
         bg: `rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},.5)`,

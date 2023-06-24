@@ -245,11 +245,12 @@ model User {
 
 model OpenableItems {
   internal_id Int      @id @default(autoincrement())
+  opening_id  String   @unique
   item_iid    Int
   parent_iid  Int?
   notes       String?
+  limitedEdition Boolean @default(false)
   addedAt     DateTime @default(now())
-  updatedAt   DateTime @updatedAt
   item        Items    @relation("childItem", fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
   parent_item Items?   @relation("parentItem", fields: [parent_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
 }

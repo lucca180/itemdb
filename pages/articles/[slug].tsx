@@ -51,7 +51,7 @@ const ArticlePage = (props: Props) => {
           'b,strong': { color: post.palette?.vibrant.hex ?? 'blue.300' },
         }}
       >
-        <Flex flexFlow="column" gap={3} maxW="85%">
+        <Flex flexFlow="column" gap={3} px={3} maxW={1000}>
           {parse(post.content, options)}
         </Flex>
       </Flex>

@@ -4,19 +4,21 @@ import CardBase from '../Card/CardBase';
 import Image from 'next/image';
 import CustomNumberInput from '../Input/CustomNumber';
 import { useState, useEffect } from 'react';
-import { BsArrowLeftRight, BsCheck2 } from 'react-icons/bs';
+import { BsArrowLeft, BsArrowLeftRight, BsCheck2 } from 'react-icons/bs';
 
 type Props = {
   trade?: TradeData;
   onChange?: (newValue: TradeData) => void;
   handleSkip?: () => void;
+  hasUndo?: boolean;
+  handleUndo: () => void;
   handleSubmit?: (trade: TradeData) => void;
 };
 
 type TradeItems = TradeData['items'][0];
 
 const FeedbackTrade = (props: Props) => {
-  const { handleSkip, handleSubmit } = props;
+  const { handleSkip, handleSubmit, handleUndo, hasUndo } = props;
   const [trade, setTrade] = useState<TradeData | undefined>(props.trade);
 
   useEffect(() => {
@@ -38,6 +40,15 @@ const FeedbackTrade = (props: Props) => {
   return (
     <Flex flexFlow={{ base: 'column-reverse', md: 'column' }} gap={4}>
       <Flex justifyContent="center" gap={4}>
+        <Button
+          leftIcon={<Icon as={BsArrowLeft} />}
+          colorScheme="gray"
+          variant="solid"
+          isDisabled={!hasUndo}
+          onClick={handleUndo}
+        >
+          Back
+        </Button>
         <Button
           leftIcon={<Icon as={BsArrowLeftRight} />}
           colorScheme="gray"

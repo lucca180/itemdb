@@ -136,7 +136,7 @@ export default HomePage;
 
 export async function getStaticProps() {
   try {
-    const [latestOwls, latestPosts] = await Promise.all([getLatestOwls(16), wp_getLatestPosts(3)]);
+    const [latestOwls, latestPosts] = await Promise.all([getLatestOwls(16), wp_getLatestPosts(4)]);
 
     return {
       props: {

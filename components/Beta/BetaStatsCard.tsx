@@ -47,6 +47,13 @@ const BetaStatsCard = () => {
         </Text>
       </VStack>
       <VStack justifyContent={'center'} alignItems="center" w="100%">
+        <Text color="gray.300">Process Queue</Text>
+        <Progress w="100%" value={(stats.itemToProcess / 500) * 100} />
+        <Text fontSize="sm" textAlign={'center'}>
+          {stats.itemToProcess}
+        </Text>
+      </VStack>
+      <VStack justifyContent={'center'} alignItems="center" w="100%">
         <Text color="gray.300">
           <Link href="/feedback/trades">
             Trades to be priced <ExternalLinkIcon verticalAlign="center" />

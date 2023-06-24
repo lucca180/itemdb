@@ -26,6 +26,7 @@ import { useAuth } from '../../utils/auth';
 const FeedbackSuggest = () => {
   const { user, authLoading, getIdToken } = useAuth({ redirect: '/login' });
   const [trades, setTrades] = useState<TradeData[]>([]);
+  const [prevTrades, setPrev] = useState<TradeData[]>([]);
   const [currentTrade, setCurrentTrade] = useState<TradeData>();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
@@ -103,9 +104,17 @@ const FeedbackSuggest = () => {
   };
 
   const handleSkip = () => {
+    if (currentTrade) setPrev([...prevTrades, currentTrade]);
     const newTrades = trades.filter((trade) => trade.trade_id !== currentTrade?.trade_id);
     setTrades(newTrades);
     setCurrentTrade(newTrades[0]);
+  };
+
+  const handleUndo = () => {
+    const newTrades = [prevTrades[prevTrades.length - 1], ...trades];
+    setTrades(newTrades);
+    setCurrentTrade(newTrades[0]);
+    setPrev(prevTrades.slice(0, prevTrades.length - 1));
   };
 
   return (
@@ -144,6 +153,8 @@ const FeedbackSuggest = () => {
         >
           {!isLoading && currentTrade && (
             <FeedbackTrade
+              hasUndo={prevTrades.length > 0}
+              handleUndo={handleUndo}
               trade={currentTrade}
               handleSubmit={handleSubmit}
               handleSkip={handleSkip}
