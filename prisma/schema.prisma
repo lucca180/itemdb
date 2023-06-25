@@ -245,7 +245,7 @@ model User {
 
 model OpenableItems {
   internal_id Int      @id @default(autoincrement())
-  opening_id  String   @unique
+  opening_id  String
   item_iid    Int
   parent_iid  Int?
   notes       String?
