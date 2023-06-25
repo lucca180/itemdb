@@ -247,6 +247,7 @@ model OpenableItems {
   internal_id Int      @id @default(autoincrement())
   opening_id  String
   item_iid    Int
+  ip_address  String?
   parent_iid  Int?
   notes       String?
   limitedEdition Boolean @default(false)

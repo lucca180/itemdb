@@ -3,6 +3,7 @@ import Chance from 'chance';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { getManyItems } from './many';
+import requestIp from 'request-ip';
 
 const chance = new Chance();
 
@@ -62,6 +63,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   if (!parentData) return res.status(400).json({ error: 'unknown parent' });
   const opening_id = chance.hash({ length: 15 });
 
+  const ip_address = requestIp.getClientIp(req);
+
   const openableItems: Prisma.OpenableItemsUncheckedCreateInput[] = items
     .map((item: any): Prisma.OpenableItemsUncheckedCreateInput | undefined => {
       const itemData = Object.values(itemsData).find((data: any) => data.name === item.name);
@@ -72,6 +75,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         item_iid: itemData.internal_id,
         parent_iid: parentData.internal_id,
         limitedEdition: item.isLE || false,
+        notes: item.notes || null,
+        ip_address: ip_address,
       };
     })
     .filter((a: any) => !!a);

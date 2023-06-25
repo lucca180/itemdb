@@ -16,12 +16,17 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (isNaN(id)) return res.status(400).json({ error: 'Invalid Request' });
 
   const onlyOfficial = req.query.official === 'true';
-  const listsRaw = await getItemLists(id, onlyOfficial);
+  const includeItems = req.query.includeItems !== 'false';
+  const listsRaw = await getItemLists(id, onlyOfficial, includeItems);
 
   res.json(listsRaw);
 }
 
-export const getItemLists = async (id: number, onlyOfficial: boolean): Promise<UserList[]> => {
+export const getItemLists = async (
+  id: number,
+  onlyOfficial: boolean,
+  includeItems = true
+): Promise<UserList[]> => {
   const listsRaw = await prisma.userList.findMany({
     where: {
       official: onlyOfficial || undefined,
@@ -74,20 +79,22 @@ export const getItemLists = async (id: number, onlyOfficial: boolean): Promise<U
       order: list.order ?? 0,
 
       itemCount: list.items.length,
-      itemInfo: list.items.map((item) => {
-        return {
-          internal_id: item.internal_id,
-          list_id: item.list_id,
-          item_iid: item.item_iid,
-          addedAt: item.addedAt.toJSON(),
-          updatedAt: item.updatedAt.toJSON(),
-          amount: item.amount,
-          capValue: item.capValue,
-          imported: item.imported,
-          order: item.order,
-          isHighlight: item.isHighlight,
-        };
-      }),
+      itemInfo: !includeItems
+        ? []
+        : list.items.map((item) => {
+            return {
+              internal_id: item.internal_id,
+              list_id: item.list_id,
+              item_iid: item.item_iid,
+              addedAt: item.addedAt.toJSON(),
+              updatedAt: item.updatedAt.toJSON(),
+              amount: item.amount,
+              capValue: item.capValue,
+              imported: item.imported,
+              order: item.order,
+              isHighlight: item.isHighlight,
+            };
+          }),
     };
   });
 };

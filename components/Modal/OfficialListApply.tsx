@@ -50,6 +50,7 @@ const ApplyListModal = (props: Props) => {
 
     const jsonObj = {
       list_id: list_id,
+      username: user.username,
       justification: justification,
     };
 

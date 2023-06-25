@@ -53,8 +53,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     },
   });
 
-  if (type === 'feedback')
-    await submitMailFeedback(obj, subject_id, email ?? '', result.feedback_id);
+  if (type === 'feedback' || type === 'officialApply')
+    await submitMailFeedback(obj, subject_id, email ?? '', result.feedback_id, type);
 
   return res.status(200).json({ success: true, message: result });
 }
@@ -78,7 +78,13 @@ const processTradePrice = async (trade_id?: number) => {
 
 const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
 
-const submitMailFeedback = async (data: any, subject_id: string, email: string, id: number) => {
+const submitMailFeedback = async (
+  data: any,
+  subject_id: string,
+  email: string,
+  id: number,
+  type: string
+) => {
   if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS)
     return console.error('Missing SMTP config');
   // create reusable transporter object using the default SMTP transport
@@ -92,17 +98,20 @@ const submitMailFeedback = async (data: any, subject_id: string, email: string, 
     },
   });
 
+  if (type === 'officialApply')
+    subject_id = `https://itemdb.com.br/lists/${data.content.username}/${subject_id}`;
+
   await transporter.sendMail({
     from: '"itemdb" <noreply@itemdb.com.br>',
     to: 'lucca@itemdb.com.br',
-    subject: 'itemdb Feedback',
+    subject: `[itemdb] ${type}`,
     html: `
       <b>feedback_id</b>: ${id}<br/>
       <b>sender email</b>: ${email}<br/>
       <b>subject_id</b>: ${subject_id}<br/>
       <b>ip</b>: ${data.ip}<br/>
       <b>pageRef</b>: ${data.pageRef}<br/>
-      <b>data</b>: ${data.content.message}<br/><br/>
+      <b>data</b>: ${data.content.message ?? data.content.justification}<br/><br/>
       <b>rawData</b>: ${JSON.stringify(data)}
     `,
   });

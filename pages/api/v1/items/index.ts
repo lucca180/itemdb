@@ -7,7 +7,6 @@ import requestIp from 'request-ip';
 import hash from 'object-hash';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { checkHash } from '../../../../utils/hash';
-import { fetchOwlsData } from './[id_name]';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);

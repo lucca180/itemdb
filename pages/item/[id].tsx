@@ -330,9 +330,9 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 
   const [colors, lists, similarItems, tradeLists] = await Promise.all([
     getItemColor([item.image_id]),
-    getItemLists(item.internal_id, true),
+    getItemLists(item.internal_id, true, false),
     getSimilarItems(item.internal_id.toString()),
-    item.isNC ? getItemLists(item.internal_id, false) : [],
+    item.isNC ? getItemLists(item.internal_id, false, false) : [],
   ]);
 
   if (!colors) return { notFound: true };

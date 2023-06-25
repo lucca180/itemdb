@@ -166,7 +166,7 @@ const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
 
 // ----------- //
 
-export const getUserLists = async (username: string, user?: User | null) => {
+export const getUserLists = async (username: string, user?: User | null, includeItems = true) => {
   const isOfficial = username === 'official';
 
   const listsRaw = await prisma.userList.findMany({
@@ -222,20 +222,22 @@ export const getUserLists = async (username: string, user?: User | null) => {
         order: list.order ?? 0,
 
         itemCount: list.items.length,
-        itemInfo: list.items.map((item) => {
-          return {
-            internal_id: item.internal_id,
-            list_id: item.list_id,
-            item_iid: item.item_iid,
-            addedAt: item.addedAt.toJSON(),
-            updatedAt: item.updatedAt.toJSON(),
-            amount: item.amount,
-            capValue: item.capValue,
-            imported: item.imported,
-            order: item.order,
-            isHighlight: item.isHighlight,
-          };
-        }),
+        itemInfo: !includeItems
+          ? []
+          : list.items.map((item) => {
+              return {
+                internal_id: item.internal_id,
+                list_id: item.list_id,
+                item_iid: item.item_iid,
+                addedAt: item.addedAt.toJSON(),
+                updatedAt: item.updatedAt.toJSON(),
+                amount: item.amount,
+                capValue: item.capValue,
+                imported: item.imported,
+                order: item.order,
+                isHighlight: item.isHighlight,
+              };
+            }),
       };
     })
     .sort((a, b) =>

@@ -97,7 +97,7 @@ const ItemCardBase = (props: ItemProps) => {
 
             {item.price.value && item.price.inflated && (
               <Tooltip label="Inflated!" aria-label="Inflation Tooltip" placement="top">
-                <Badge colorScheme="red">
+                <Badge colorScheme="red" whiteSpace="pre-wrap">
                   <Icon as={AiFillWarning} verticalAlign="text-top" />{' '}
                   {intl.format(item.price.value)} NP
                 </Badge>
@@ -105,7 +105,7 @@ const ItemCardBase = (props: ItemProps) => {
             )}
 
             {item.price.value && !item.price.inflated && (
-              <Badge>{intl.format(item.price.value)} NP</Badge>
+              <Badge whiteSpace="pre-wrap">{intl.format(item.price.value)} NP</Badge>
             )}
 
             {item.type === 'pb' && <Badge colorScheme="yellow">PB</Badge>}
@@ -113,7 +113,9 @@ const ItemCardBase = (props: ItemProps) => {
             {item.isNC && !capValue && !item.owls && <Badge colorScheme="purple">NC</Badge>}
 
             {item.isNC && item.owls && !capValue && !item.owls.buyable && (
-              <Badge colorScheme="purple">{item.owls.value} Owls</Badge>
+              <Badge colorScheme="purple" whiteSpace="pre-wrap">
+                {item.owls.value} Owls
+              </Badge>
             )}
 
             {item.isNC && item.owls && !capValue && item.owls.buyable && (
