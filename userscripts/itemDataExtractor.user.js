@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.1.7
+// @version      1.2.0
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -45,6 +45,7 @@ let alreadyCalled = false;
 let itemsHistory = JSON.parse(localStorage?.getItem('idb_itemHistory')) ?? {};
 let restockHistory = JSON.parse(localStorage?.getItem('idb_restockHistory')) ?? {};
 let tradeHistory = JSON.parse(localStorage?.getItem('idb_tradeHistory')) ?? {};
+let prevInventory = JSON.parse(localStorage?.getItem('idb_prevInventory')) ?? {};
 
 // check the page language
 const pageLang = nl ?? 'unknown';
@@ -58,10 +59,12 @@ if (URLHas('idb_clear')) {
   localStorage.removeItem('idb_itemHistory');
   localStorage.removeItem('idb_restockHistory');
   localStorage.removeItem('idb_tradeHistory');
+  localStorage.removeItem('idb_prevInventory');
 
   itemsHistory = {};
   restockHistory = {};
   tradeHistory = {};
+  prevInventory = {};
 }
 
 // this is used to convert shop ids to item categories
@@ -789,12 +792,180 @@ function handleRestockHaggle(){
   submitPrices();
 }
 
+// ------ openables ------ //
+
+function handleNCCapsule(){
+  $(document).on('ajaxSuccess.gashapon', () => {
+    const isGacha = !!$('#iteminfo_select_action option[value="gashapon"]').length;
+    if(!isGacha) return;
+
+    const itemName = $("#invItemName").text();
+    const image = $("#invItemImg").css("background-image").replace(/^url\(['"](.+)['"]\)/, '$1')
+    
+    const parentItem = {
+      name: itemName,
+      img: image
+    }
+    const submitButton = $('#iteminfo_select_action > div');
+    if(!submitButton.length) return;
+
+    let note = '';
+
+    $(document).off(`ajaxSuccess.gashapon`);
+    
+    const JQUERY3 = jQuery;
+    const J$ = $;
+    let _interval;
+    submitButton.on(`click.action`, function(){
+      const selectedAction = $('#iteminfo_select_action select').find(":selected").val();
+      if(selectedAction !== "gashapon") return;
+
+      submitButton.off(`click.action`);
+
+      $(document).on(`ajaxSuccess.actionSuccess`, () => {
+        const results = $('.gashapon_display');
+
+        // neopets changes the jquery object and breaks everything.
+        if(_interval) clearInterval(_interval);
+        _interval = setInterval(() => {$ = J$; jQuery = JQUERY3;}, 500);
+
+        if(!results.length) return;
+
+        if(typeof selected !== 'undefined') 
+          note = note || selected.toString()
+
+        const items = [];
+
+        results.find("img").each(function (i) {
+          const parent = $(this).parent()
+          const name = parent.find('b').first().text();
+          const imgsrc = $(this).attr('src');
+
+          const isLE = $(this).css('border-width') !== '0px';
+
+          items.push({
+            name: name,
+            img: imgsrc,
+            isLE: isLE,
+            notes: note
+          })
+        })
+
+        if(!items.length) return;
+        $(document).off(`ajaxSuccess.actionSuccess`);
+        submitOpenable(items, parentItem)
+      })
+    })
+  });
+}
+
+function handleNPOpenables(){
+  $(document).ajaxSuccess(() => {
+    const isNP = $("#invDisplay")[0].dataset?.type === "np";
+    
+    if(!isNP) return;
+    const selectInput = $('#iteminfo_select_action select');
+    if(!selectInput.length) return;
+
+    const itemName = $("#invItemName").text();
+    const image = $("#invItemImg").css("background-image").replace(/^url\(['"](.+)['"]\)/, '$1')
+    
+    const parentItem = {
+      name: itemName,
+      img: image
+    }
+
+    const ignoreEvents = ["safetydeposit", "donate", "drop", "stockshop", "stockgallery", "give", "auction"];
+
+    const submitButton = $('#iteminfo_select_action > div');
+
+    submitButton.on("click", function(){
+      const selectedAction = $('#iteminfo_select_action select').find(":selected").val();
+      if(ignoreEvents.includes(selectedAction)) return;
+      
+      const allItems = {};
+     
+      $('.grid-item').each(function (i) {
+        const itemEl = $(this).find('.item-img')[0];
+        const item = {
+          name: itemEl.dataset.itemname,
+          img: itemEl.dataset.image,
+          quantity: parseInt(itemEl.dataset.itemquantity),
+        };
+        const itemKey = genItemKey(item);
+        allItems[itemKey] = item;
+     });
+
+      const inventoryOpenable = {
+        allItems: allItems,
+        parentItem: parentItem,
+        now: Date.now()
+      };
+
+      console.log(inventoryOpenable)
+
+      localStorage?.setItem('idb_prevInventory', JSON.stringify(inventoryOpenable));
+    });
+  });
+}
+
+function handleNPRefresh(){
+  $(document).ajaxSuccess(() => {
+    if(Object.values(prevInventory).length === 0 || !prevInventory.parentItem) return;
+
+    const isNP = $("#invDisplay")[0].dataset?.type === "np";
+    if(!isNP) return;
+
+    //check if time is more than 5 minutes
+    const now = Date.now();
+    const diff = now - prevInventory.now;
+    const minutes = Math.floor(diff / 1000 / 60);
+    if(minutes > 5) return localStorage.removeItem('idb_prevInventory');
+
+    const items = [];
+    
+    const grid = $('.grid-item');
+    if(grid.length === 0) return;
+
+    grid.each(function (i) {
+      const itemEl = $(this).find('.item-img')[0];
+      const item = {
+        name: itemEl.dataset.itemname,
+        img: itemEl.dataset.image,
+        quantity: parseInt(itemEl.dataset.itemquantity),
+      };
+      const itemKey = genItemKey(item);
+      
+      if(!prevInventory.allItems[itemKey] || prevInventory.allItems[itemKey].quantity < item.quantity){
+        items.push({
+          name: item.name,
+          img: item.img,
+          isLE: false
+        });
+      }
+    });
+
+    console.log(items, prevInventory.parentItem);
+
+    if(items.length !== 0)
+      submitOpenable(items, {...prevInventory.parentItem});
+    
+    localStorage.removeItem('idb_prevInventory');
+    prevInventory = {};
+  })
+}
+
 // ------------- //
 
 // Here we check if the page has the url we want and then call the respective function
 // and we also check if you have SSW so we can call the SSW handler
 
-if (URLHas('inventory')) handleInventory();
+if (URLHas('inventory')) {
+  handleInventory();
+  handleNCCapsule();
+  handleNPOpenables();
+  handleNPRefresh();
+}
 if (URLHas('safetydeposit')) handleSDB();
 if (URLHas('closet.phtml')) handleCloset();
 if (URLHas('trading')) handleTrades();
@@ -811,6 +982,8 @@ if (URLHas('neohome/shed')) handleStorageShed();
 if (URLHas('/mall/shop.phtml')) handleNCMall();
 if (URLHas('customise')) handleCustomization();
 if (URLHas('haggle.phtml')) handleRestockHaggle();
+
+
 
 if (hasSSW) handleSSWPrices();
 
@@ -907,6 +1080,30 @@ async function submitTrades() {
         resetHash();
       } else {
         console.error('[itemdb] submitTrades error:', res, rawData);
+      }
+    },
+  })
+}
+
+async function submitOpenable(items, parentItem) {
+  const rawData = {
+    lang: pageLang,
+    items: items,
+    parentItem: parentItem,
+  }
+
+  GM_xmlhttpRequest({
+    method: 'POST',
+    url: 'https://itemdb.com.br/api/v1/items/open',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: JSON.stringify(rawData),
+    onload: function (res) {
+      if (res.status === 200) {
+        console.log(`[itemdb] ${parentItem.name} open result sent`);
+      } else {
+        console.error('[itemdb] openable result error:', res, rawData);
       }
     },
   })

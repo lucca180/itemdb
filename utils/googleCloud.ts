@@ -11,8 +11,8 @@ if (!getApps().length) initializeApp({ credential: cert('./firebase-key.json') }
 
 export const Auth = getAuth();
 
-export const CheckAuth = async (req: NextApiRequest) => {
-  const token = req.headers.authorization?.split('Bearer ')[1];
+export const CheckAuth = async (req: NextApiRequest | null, token?: string) => {
+  token = token || req?.headers.authorization?.split('Bearer ')[1];
   if (!token) throw new Error('No token provided');
 
   const decodedToken = await Auth.verifyIdToken(token);

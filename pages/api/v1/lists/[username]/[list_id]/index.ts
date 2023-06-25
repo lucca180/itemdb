@@ -358,7 +358,7 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
 export const getList = async (
   username: string,
   list_id: number,
-  user?: User | null,
+  userOrToken?: User | null | string,
   isOfficial = false
 ) => {
   const listRaw = await prisma.userList.findUnique({
@@ -374,6 +374,12 @@ export const getList = async (
       user: true,
     },
   });
+
+  let user = userOrToken as User | null;
+
+  if (typeof userOrToken === 'string') {
+    user = (await CheckAuth(null, userOrToken)).user;
+  }
 
   if (
     !listRaw ||

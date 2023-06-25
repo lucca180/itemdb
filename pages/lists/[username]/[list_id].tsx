@@ -37,6 +37,7 @@ import ItemActionModal from '../../../components/Modal/ItemActionModal';
 import { BiLinkExternal } from 'react-icons/bi';
 import { NextPageContext } from 'next';
 import { getList } from '../../api/v1/lists/[username]/[list_id]';
+import { getCookie } from 'cookies-next';
 
 type ExtendedListItemInfo = ListItemInfo & { hasChanged?: boolean };
 
@@ -700,11 +701,16 @@ const ListPage = (props: Props) => {
 export default ListPage;
 
 export async function getServerSideProps(context: NextPageContext) {
+  const token = getCookie('userToken', { req: context.req, res: context.res }) as
+    | string
+    | undefined
+    | null;
+
   const { list_id, username } = context.query;
   if (!username || !list_id || Array.isArray(username) || Array.isArray(list_id))
     return { notFound: true };
 
-  const list = await getList(username, parseInt(list_id), null, username === 'official');
+  const list = await getList(username, parseInt(list_id), token, username === 'official');
 
   if (!list) return { notFound: true };
 

@@ -36,6 +36,7 @@
     "chance": "^1.1.9",
     "color": "^4.2.3",
     "common-tags": "^1.8.2",
+    "cookies-next": "^2.1.2",
     "date-fns": "^2.29.3",
     "ejs": "^3.1.9",
     "exponential-backoff": "^3.1.1",
