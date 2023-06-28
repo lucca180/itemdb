@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.2.0
+// @version      1.2.1
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -860,7 +860,10 @@ function handleNCCapsule(){
 }
 
 function handleNPOpenables(){
+  const pageLoad = Date.now();
   $(document).ajaxSuccess(() => {
+    if(Date.now() - pageLoad > 2*60*1000) return;
+
     const isNP = $("#invDisplay")[0].dataset?.type === "np";
     
     if(!isNP) return;
@@ -902,8 +905,6 @@ function handleNPOpenables(){
         now: Date.now()
       };
 
-      console.log(inventoryOpenable)
-
       localStorage?.setItem('idb_prevInventory', JSON.stringify(inventoryOpenable));
     });
   });
@@ -916,11 +917,9 @@ function handleNPRefresh(){
     const isNP = $("#invDisplay")[0].dataset?.type === "np";
     if(!isNP) return;
 
-    //check if time is more than 5 minutes
-    const now = Date.now();
-    const diff = now - prevInventory.now;
-    const minutes = Math.floor(diff / 1000 / 60);
-    if(minutes > 5) return localStorage.removeItem('idb_prevInventory');
+    //check if time is more than 2 minutes
+    if(Date.now() - prevInventory.now > 2*60*1000) 
+      return localStorage.removeItem('idb_prevInventory');;
 
     const items = [];
     
@@ -944,8 +943,6 @@ function handleNPRefresh(){
         });
       }
     });
-
-    console.log(items, prevInventory.parentItem);
 
     if(items.length !== 0)
       submitOpenable(items, {...prevInventory.parentItem});
