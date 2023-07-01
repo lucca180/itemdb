@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.2.1
+// @version      1.2.2
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -578,6 +578,34 @@ async function handleCustomization () {
   submitItems();;
 }
 
+function handleNCJournal(){
+  const items = $(".content table td");
+  items.each(function (i) {
+    const img = $(this).find('img').attr('src');
+    if(!img) return;
+
+    const div = $(this).find('div > div');
+    if(!div.length) return;
+    const itemID = div.attr("id").split("item_div_")[1];
+    const name = div.find('b').first().text();
+
+    const item = {
+      name: name,
+      img: img,
+      itemId: itemID,
+      type: 'nc',
+    };
+
+    const itemKey = genItemKey(item);
+    if (!itemsHistory[itemKey]?.ncjournal) {
+      itemsObj[itemKey] = item;
+      itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
+      itemsHistory[itemKey].ncjournal = true;
+    }
+  })
+
+  submitItems();
+}
 // ------ prices ------ //
 
 function handleSWPrices() {
@@ -979,7 +1007,7 @@ if (URLHas('neohome/shed')) handleStorageShed();
 if (URLHas('/mall/shop.phtml')) handleNCMall();
 if (URLHas('customise')) handleCustomization();
 if (URLHas('haggle.phtml')) handleRestockHaggle();
-
+if (URLHas('/ncma/index.phtml')) handleNCJournal();
 
 
 if (hasSSW) handleSSWPrices();

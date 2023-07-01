@@ -258,6 +258,14 @@ export type WP_Article = {
   palette: Record<ColorType, Pallete> | null;
 };
 
+export type ItemDrop = {
+  item_iid: number;
+  dropRate: number;
+  notes: string | null;
+  isLE: boolean;
+  openings: number;
+};
+
 // ------- FEEDBACKS JSON -------- //
 export type Feedback = {
   feedback_id: number;

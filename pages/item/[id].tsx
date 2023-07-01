@@ -16,6 +16,7 @@ import Image from 'next/image';
 import {
   FullItemColors,
   ItemData,
+  ItemDrop,
   ItemLastSeen,
   ItemTag,
   PriceData,
@@ -48,6 +49,9 @@ import { getSimilarItems } from '../api/v1/items/[id_name]/similar';
 import SimilarItemsCard from '../../components/Items/SimilarItemsCard';
 import { useAuth } from '../../utils/auth';
 import { ConfirmDeleteItem } from '../../components/Modal/ConfirmDeleteItem';
+import { getItemDrops, getItemParent } from '../api/v1/items/[id_name]/drops';
+import ItemDrops from '../../components/Items/ItemDrops';
+import ItemParent from '../../components/Items/ItemParent';
 
 const defaultLastSeen: ItemLastSeen = {
   sw: null,
@@ -62,10 +66,12 @@ type Props = {
   similarItems: ItemData[];
   lists?: UserList[];
   tradeLists?: UserList[];
+  itemDrops: ItemDrop[];
+  itemParent: number[];
 };
 
 const ItemPage = (props: Props) => {
-  const { item, colors, lists, tradeLists } = props;
+  const { item, colors, lists, tradeLists, itemDrops, itemParent } = props;
   const [prices, setPrices] = useState<PriceData[] | null>(null);
   const [seenStats, setSeen] = useState<ItemLastSeen>(defaultLastSeen);
   const [trades, setTrades] = useState<TradeData[]>([]);
@@ -290,6 +296,7 @@ const ItemPage = (props: Props) => {
             {item.isNC && <ItemMatch item={item} lists={tradeLists} />}
             {lists && <ItemOfficialLists item={item} lists={lists} />}
             {item.comment && <ItemComments item={item} />}
+            {itemDrops.length > 0 && <ItemDrops item={item} itemDrops={itemDrops} />}
             <SimilarItemsCard item={item} similarItems={props.similarItems} />
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>
@@ -297,6 +304,7 @@ const ItemPage = (props: Props) => {
             {!item.isNC && item.status === 'active' && (
               <TradeCard item={item} trades={trades} isLoading={isLoading} />
             )}
+            {itemParent.length > 0 && <ItemParent item={item} parentItems={itemParent} />}
           </Flex>
         </Flex>
       </Flex>
@@ -328,11 +336,13 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 
   if (!item) return { notFound: true };
 
-  const [colors, lists, similarItems, tradeLists] = await Promise.all([
+  const [colors, lists, similarItems, tradeLists, itemDrops, itemParent] = await Promise.all([
     getItemColor([item.image_id]),
     getItemLists(item.internal_id, true, false),
     getSimilarItems(item.internal_id.toString()),
     item.isNC ? getItemLists(item.internal_id, false, false) : [],
+    getItemDrops(item.internal_id, item.isNC),
+    getItemParent(item.internal_id),
   ]);
 
   if (!colors) return { notFound: true };
@@ -344,6 +354,8 @@ export async function getStaticProps(context: GetStaticPropsContext) {
       similarItems: similarItems,
       colors: colors[item.image_id],
       tradeLists: tradeLists,
+      itemDrops: itemDrops,
+      itemParent: itemParent,
     },
     revalidate: 10, // In seconds
   };

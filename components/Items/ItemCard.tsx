@@ -15,12 +15,15 @@ export type ItemProps = {
   quantity?: number;
   onSelect?: () => void;
   style?: React.CSSProperties;
+  small?: boolean;
+  odds?: number;
+  isLE?: boolean;
 };
 
 const intl = new Intl.NumberFormat();
 
 const ItemCardBase = (props: ItemProps) => {
-  const { item, isLoading, selected, disableLink, capValue, quantity } = props;
+  const { item, isLoading, selected, disableLink, capValue, quantity, small, odds, isLE } = props;
   const [isMobile] = useMediaQuery('(hover: none)');
 
   const color = item?.color.rgb;
@@ -29,8 +32,8 @@ const ItemCardBase = (props: ItemProps) => {
     return (
       <Link as={'a'} _hover={{ textDecoration: 'none' }} pointerEvents="none" style={props.style}>
         <Box
-          w={{ base: 100, md: 150 }}
-          py={{ base: 2, md: 4 }}
+          w={{ base: 100, md: small ? 100 : 150 }}
+          py={{ base: 2, md: small ? 2 : 4 }}
           px={2}
           bg="gray.700"
           h="100%"
@@ -68,9 +71,9 @@ const ItemCardBase = (props: ItemProps) => {
           // pointerEvents={disableLink ? 'none' : 'initial'}
         >
           <Box
-            w={{ base: 100, md: 150 }}
-            py={{ base: 2, md: 4 }}
-            px={2}
+            w={{ base: 100, md: small ? 100 : 150 }}
+            py={{ base: 2, md: small ? 2 : 4 }}
+            px={1}
             bg="gray.700"
             bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${color[0]},${color[1]}, ${color[2]},.45) 35%)`}
             h="100%"
@@ -93,7 +96,7 @@ const ItemCardBase = (props: ItemProps) => {
               alt={item.name}
               title={item.description}
             />
-            <Text fontSize={{ base: 'xs', md: 'sm' }}>{item.name}</Text>
+            <Text fontSize={{ base: 'xs', md: small ? 'xs' : 'sm' }}>{item.name}</Text>
 
             {item.price.value && item.price.inflated && (
               <Tooltip label="Inflated!" aria-label="Inflation Tooltip" placement="top">
@@ -110,13 +113,22 @@ const ItemCardBase = (props: ItemProps) => {
 
             {item.type === 'pb' && <Badge colorScheme="yellow">PB</Badge>}
 
-            {item.isNC && !capValue && !item.owls && <Badge colorScheme="purple">NC</Badge>}
+            {item.isNC &&
+              !capValue &&
+              (!item.owls ||
+                (isNaN(Number(item.owls.value.split('-')[0])) && !item.owls.buyable)) && (
+                <Badge colorScheme="purple">NC</Badge>
+              )}
 
-            {item.isNC && item.owls && !capValue && !item.owls.buyable && (
-              <Badge colorScheme="purple" whiteSpace="pre-wrap">
-                {item.owls.value} Owls
-              </Badge>
-            )}
+            {item.isNC &&
+              item.owls &&
+              !capValue &&
+              !item.owls.buyable &&
+              !isNaN(Number(item.owls.value.split('-')[0])) && (
+                <Badge colorScheme="purple" whiteSpace="pre-wrap">
+                  {item.owls.value} Owls
+                </Badge>
+              )}
 
             {item.isNC && item.owls && !capValue && item.owls.buyable && (
               <Badge colorScheme="purple">NC - Buyable</Badge>
@@ -132,6 +144,16 @@ const ItemCardBase = (props: ItemProps) => {
                   <Icon as={AiFillInfoCircle} verticalAlign="middle" /> NC - {capValue} CAPS
                 </Badge>
               </Tooltip>
+            )}
+
+            {odds && (
+              <Badge
+                colorScheme={isLE ? 'green' : 'white'}
+                whiteSpace="pre-wrap"
+                textAlign={'center'}
+              >
+                {isLE ? 'LE' : ''} {odds}%
+              </Badge>
             )}
 
             {(quantity ?? 0) > 1 && (
