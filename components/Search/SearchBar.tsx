@@ -15,9 +15,11 @@ import {
   Spinner,
   Image,
   Link,
+  Flex,
   PopoverFooter,
   Kbd,
   useOutsideClick,
+  Badge,
 } from '@chakra-ui/react';
 import React, { useCallback } from 'react';
 import SearchMenu from '../Menus/SearchMenu';
@@ -34,6 +36,7 @@ const Axios = axios.create({
 type Props = {
   onSubmit: (e: any, search: string) => void;
 };
+const intl = new Intl.NumberFormat();
 
 export const SearchBar = (props: Props) => {
   const [search, setSearch] = React.useState<string>('');
@@ -158,7 +161,11 @@ export const SearchBar = (props: Props) => {
                   alt={item.description}
                   borderRadius="sm"
                 />
-                {item.name}
+                <Flex flexFlow="column" alignItems="flex-start">
+                  {item.name}
+                  {item.price.value && <Badge>{intl.format(item.price.value)} NP</Badge>}
+                  {item.isNC && <Badge colorScheme="purple">NC</Badge>}
+                </Flex>
               </Link>
             ))}
         </PopoverBody>
