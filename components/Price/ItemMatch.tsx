@@ -46,7 +46,7 @@ const ItemMatch = (props: Props) => {
   }, [lists, user]);
 
   const init = async () => {
-    if (!user || !user.username) return;
+    if (!user || !user.username || (!seeking.length && !trading.length)) return;
     const seekingUsers = seeking.map((list) => list.owner?.username);
     const tradingUsers = trading.map((list) => list.owner?.username);
 

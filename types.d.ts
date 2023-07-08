@@ -264,6 +264,7 @@ export type ItemDrop = {
   notes: string | null;
   isLE: boolean;
   openings: number;
+  isCategoryCap: boolean;
 };
 
 // ------- FEEDBACKS JSON -------- //

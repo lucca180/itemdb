@@ -26,6 +26,8 @@ type UseAuthProps = {
   redirect?: string;
 };
 
+let isRequesting = false;
+
 export const useAuth = (props?: UseAuthProps) => {
   const redirect = props?.redirect;
   const [isLoading, setIsLoading] = React.useState(true);
@@ -34,6 +36,7 @@ export const useAuth = (props?: UseAuthProps) => {
   const router = useRouter();
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     const unsub = auth.onAuthStateChanged(async (fireUser) => {
       if (!fireUser) {
         setUser(null);
@@ -49,8 +52,10 @@ export const useAuth = (props?: UseAuthProps) => {
         setIsLoading(false);
         return;
       }
-
-      doLogin(fireUser);
+      if (!isRequesting) {
+        isRequesting = true;
+        doLogin(fireUser);
+      }
     });
 
     return () => unsub();
@@ -77,6 +82,7 @@ export const useAuth = (props?: UseAuthProps) => {
 
       setUser(userData);
       setIsLoading(false);
+      isRequesting = false;
     } catch (e: any) {
       console.error(e);
     }
