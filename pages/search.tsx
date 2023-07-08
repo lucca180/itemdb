@@ -247,6 +247,17 @@ const SearchPage = () => {
     }
   };
 
+  const onItemClick = (e: React.MouseEvent<any>, id: number) => {
+    if (selectedItems.length <= 0 && !e.ctrlKey) return;
+
+    if (e?.ctrlKey) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    selectItem(id);
+  };
+
   return (
     <Layout
       SEO={{
@@ -367,11 +378,16 @@ const SearchPage = () => {
               </Select>
             </Flex>
           </Flex>
+          {isLargerThanLG && (
+            <Text textAlign={'center'} fontSize="xs" color="gray.500">
+              Tip: you can use right click or ctrl+click to select multiple items
+            </Text>
+          )}
           <Flex mt={4} flexWrap="wrap" gap={{ base: 3, md: 4 }} justifyContent="center">
             {searchResult?.content.map((item) => (
               <Box
                 key={item.internal_id}
-                onClick={selectedItems.length > 0 ? () => selectItem(item.internal_id) : undefined}
+                onClick={(e) => onItemClick(e, item.internal_id)}
                 cursor={selectedItems.length > 0 ? 'pointer' : 'default'}
               >
                 <ItemCard

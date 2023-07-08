@@ -28,6 +28,7 @@ import axios from 'axios';
 import { SearchResults } from '../../types';
 import NextLink from 'next/link';
 import debounce from 'lodash/debounce';
+import ItemCtxMenu, { CtxTrigger } from '../Modal/ItemCtxMenu';
 
 const Axios = axios.create({
   baseURL: '/api/',
@@ -46,6 +47,7 @@ export const SearchBar = (props: Props) => {
   const [isLoading, setLoading] = React.useState<boolean>(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const [isMobile] = useMediaQuery('(hover: none)');
 
   useOutsideClick({
     ref: inputRef,
@@ -139,34 +141,48 @@ export const SearchBar = (props: Props) => {
             searchResult &&
             searchResult.content.length > 0 &&
             searchResult.content.map((item) => (
-              <Link
-                as={NextLink}
-                display="flex"
-                href={`/item/${item.slug}`}
-                key={item.internal_id}
-                px={{ base: 1, md: 2 }}
-                py={2}
-                alignItems="center"
-                cursor={'pointer'}
-                _hover={{
-                  bg: `rgba(${item.color.rgb[0]},${item.color.rgb[1]}, ${item.color.rgb[2]},.35)`,
-                }}
-                fontSize={{ base: 'xs', sm: 'sm', md: 'md' }}
-                onClick={onClose}
-              >
-                <Image
-                  src={item.image}
-                  boxSize="35px"
-                  mr={2}
-                  alt={item.description}
-                  borderRadius="sm"
-                />
-                <Flex flexFlow="column" alignItems="flex-start">
-                  {item.name}
-                  {item.price.value && <Badge>{intl.format(item.price.value)} NP</Badge>}
-                  {item.isNC && <Badge colorScheme="purple">NC</Badge>}
-                </Flex>
-              </Link>
+              <>
+                <ItemCtxMenu item={item} />
+                <CtxTrigger
+                  id={item.internal_id.toString()}
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  //@ts-ignore
+                  disableWhileShiftPressed
+                  disable={isMobile}
+                >
+                  <Link
+                    as={NextLink}
+                    display="flex"
+                    href={`/item/${item.slug}`}
+                    key={item.internal_id}
+                    px={{ base: 1, md: 2 }}
+                    py={2}
+                    alignItems="center"
+                    cursor={'pointer'}
+                    _hover={{
+                      bg: `rgba(${item.color.rgb[0]},${item.color.rgb[1]}, ${item.color.rgb[2]},.35)`,
+                    }}
+                    _focus={{
+                      bg: `rgba(${item.color.rgb[0]},${item.color.rgb[1]}, ${item.color.rgb[2]},.35)`,
+                    }}
+                    fontSize={{ base: 'xs', sm: 'sm', md: 'md' }}
+                    onClick={onClose}
+                  >
+                    <Image
+                      src={item.image}
+                      boxSize="35px"
+                      mr={2}
+                      alt={item.description}
+                      borderRadius="sm"
+                    />
+                    <Flex flexFlow="column" alignItems="flex-start">
+                      {item.name}
+                      {item.price.value && <Badge>{intl.format(item.price.value)} NP</Badge>}
+                      {item.isNC && <Badge colorScheme="purple">NC</Badge>}
+                    </Flex>
+                  </Link>
+                </CtxTrigger>
+              </>
             ))}
         </PopoverBody>
         {!isLoading && searchResult && searchResult.content.length > 0 && (

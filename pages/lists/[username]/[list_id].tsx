@@ -206,6 +206,8 @@ const ListPage = (props: Props) => {
       if (sortBy === 'custom') setSortInfo({ sortBy, sortDir: 'asc' });
 
       setItemInfoIds(sortedItemInfo.map((item) => item.internal_id));
+
+      setLockSort(true);
     }
 
     if (name === 'sortDir') {
@@ -221,15 +223,18 @@ const ListPage = (props: Props) => {
   const toggleEdit = () => {
     if (isEdit) {
       setItemSelect([]);
-      setLockSort(true);
     }
 
+    setLockSort(true);
     setEdit(!isEdit);
   };
 
   const selectItem = useCallback(
-    (id: number) => {
-      if (!isEdit) return;
+    (id: number, force = false) => {
+      if (!isEdit && !force) return;
+
+      if (force) setEdit(true);
+
       if (itemSelect.includes(id)) {
         setItemSelect(itemSelect.filter((item) => item !== id));
       } else {
@@ -446,7 +451,7 @@ const ListPage = (props: Props) => {
                 onClick={() => setOpenCreateModal(true)}
                 size="sm"
               >
-                Edit list
+                Edit list info
               </Button>
             )}
           </Flex>
@@ -573,6 +578,25 @@ const ListPage = (props: Props) => {
                 />
               </Box>
               <Box>
+                <Button
+                  isDisabled={!!!itemSelect.length}
+                  colorScheme="red"
+                  variant="outline"
+                  onClick={() => setSelectionAction('delete')}
+                >
+                  Delete Items
+                </Button>
+              </Box>
+              <Box>
+                <Button
+                  isDisabled={!!!itemSelect.length}
+                  variant="outline"
+                  onClick={() => setSelectionAction('move')}
+                >
+                  Move Items
+                </Button>
+              </Box>
+              {/* <Box>
                 <Select
                   variant="filled"
                   disabled={!!!itemSelect.length}
@@ -583,7 +607,7 @@ const ListPage = (props: Props) => {
                   <option value="delete">Delete</option>
                   <option value="move">Move to List</option>
                 </Select>
-              </Box>
+              </Box> */}
             </Flex>
           )}
 
@@ -631,7 +655,11 @@ const ListPage = (props: Props) => {
             </Select>
           </HStack>
         </Flex>
-
+        {!isEdit && isOwner && isLargerThanSM && (
+          <Text textAlign={'center'} fontSize="xs" color="gray.500">
+            Tip: you can use right click or ctrl+click to select multiple items
+          </Text>
+        )}
         {isEdit && sortInfo.sortBy === 'custom' && (
           <Center>
             <FormControl display="flex" alignItems="center" justifyContent="center">

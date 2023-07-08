@@ -23,7 +23,7 @@ type Props = {
   itemSelect?: number[];
   editMode?: boolean;
   activateSort?: boolean;
-  onClick?: (id: number) => void;
+  onClick?: (id: number, force?: boolean) => void;
   onSort?: (ids: number[]) => void;
   onChange?: (id: number, value: number, field: 'amount' | 'capValue' | 'isHighlight') => void;
 };

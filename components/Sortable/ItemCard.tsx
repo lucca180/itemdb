@@ -26,7 +26,7 @@ type Props = {
   editMode?: boolean;
   selected?: boolean;
   onChange?: (id: number, value: number, field: 'amount' | 'capValue' | 'isHighlight') => void;
-  onClick?: (id: number) => void;
+  onClick?: (id: number, force?: boolean) => void;
 };
 
 function SortableItem1(props: Props) {
@@ -63,9 +63,14 @@ function SortableItem1(props: Props) {
     props.onChange?.(id, value, field);
   };
 
-  const onClick = () => {
+  const onClick = (e: React.MouseEvent<any> | null, force = false) => {
     setSelected(!isSelected);
-    props.onClick?.(id);
+    if (e?.ctrlKey) {
+      force = true;
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    props.onClick?.(id, force);
   };
 
   const setRefs = useCallback(
@@ -88,10 +93,11 @@ function SortableItem1(props: Props) {
 
   return (
     <VStack mb={3} ref={setRefs} style={style} {...attributes} {...listeners}>
-      <Box onClick={onClick} style={{ height: '100%' }}>
+      <Box onClick={(e) => onClick(e)} style={{ height: '100%' }}>
         <ItemCard
           item={item}
           disableLink={editMode}
+          onSelect={() => onClick(null, true)}
           selected={isSelected}
           capValue={isTrading ? itemInfo?.capValue ?? undefined : undefined}
           quantity={itemInfo?.amount ?? undefined}

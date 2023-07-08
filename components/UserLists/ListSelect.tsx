@@ -8,6 +8,7 @@ import {
   Badge,
   Tooltip,
   MenuDivider,
+  Portal,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -106,52 +107,54 @@ const ListSelect = (props: Props) => {
         )}
         {!selectedList && (props.defaultText ?? 'Select List')}
       </MenuButton>
-      <MenuList maxH="30vh" overflow="auto">
-        {sorted.length !== 0 && (
-          <>
-            {sorted.map((list) => (
-              <MenuItem key={list.internal_id} onClick={() => handleSelect(list)}>
-                {list.name}
-                {list.purpose !== 'none' && !list.official && (
-                  <Tooltip label={`${list.purpose}`} fontSize="sm" placement="top">
-                    <Badge ml={1}>{list.purpose === 'seeking' ? 's' : 't'}</Badge>
-                  </Tooltip>
-                )}
-                {list.official && (
-                  <Tooltip label={`official`} fontSize="sm" placement="top">
-                    <Badge ml={1} colorScheme="blue">
-                      ✓
-                    </Badge>
-                  </Tooltip>
-                )}
-              </MenuItem>
-            ))}
-            {props.createNew && <MenuDivider />}
-          </>
-        )}
+      <Portal>
+        <MenuList zIndex={2000} maxH="30vh" overflow="auto">
+          {sorted.length !== 0 && (
+            <>
+              {sorted.map((list) => (
+                <MenuItem key={list.internal_id} onClick={() => handleSelect(list)}>
+                  {list.name}
+                  {list.purpose !== 'none' && !list.official && (
+                    <Tooltip label={`${list.purpose}`} fontSize="sm" placement="top">
+                      <Badge ml={1}>{list.purpose === 'seeking' ? 's' : 't'}</Badge>
+                    </Tooltip>
+                  )}
+                  {list.official && (
+                    <Tooltip label={`official`} fontSize="sm" placement="top">
+                      <Badge ml={1} colorScheme="blue">
+                        ✓
+                      </Badge>
+                    </Tooltip>
+                  )}
+                </MenuItem>
+              ))}
+              {props.createNew && <MenuDivider />}
+            </>
+          )}
 
-        {user && !isLoading && lists.length === 0 && (
-          <MenuItem justifyContent="center" disabled>
-            No lists found
-          </MenuItem>
-        )}
+          {user && !isLoading && lists.length === 0 && (
+            <MenuItem justifyContent="center" disabled>
+              No lists found
+            </MenuItem>
+          )}
 
-        {isLoading && (
-          <MenuItem justifyContent="center" disabled>
-            Loading....
-          </MenuItem>
-        )}
+          {isLoading && (
+            <MenuItem justifyContent="center" disabled>
+              Loading....
+            </MenuItem>
+          )}
 
-        {!user && !authLoading && (
-          <MenuItem justifyContent="center" disabled>
-            Login to use lists
-          </MenuItem>
-        )}
+          {!user && !authLoading && (
+            <MenuItem justifyContent="center" disabled>
+              Login to use lists
+            </MenuItem>
+          )}
 
-        {user && !isLoading && props.createNew && (
-          <MenuItem onClick={createNewList}>+ Create New List</MenuItem>
-        )}
-      </MenuList>
+          {user && !isLoading && props.createNew && (
+            <MenuItem onClick={createNewList}>+ Create New List</MenuItem>
+          )}
+        </MenuList>
+      </Portal>
     </Menu>
   );
 };
