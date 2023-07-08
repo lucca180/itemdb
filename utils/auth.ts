@@ -6,6 +6,7 @@ import { getAuth, User as FirebaseUser } from 'firebase/auth';
 import { useRouter } from 'next/router';
 import { User, UserList } from '../types';
 import { getCookie, setCookie } from 'cookies-next';
+import { useMutex } from 'react-context-mutex';
 
 const { persistAtom } = recoilPersist({
   storage: typeof window !== 'undefined' ? sessionStorage : undefined,
@@ -26,17 +27,16 @@ type UseAuthProps = {
   redirect?: string;
 };
 
-let isRequesting = false;
-
 export const useAuth = (props?: UseAuthProps) => {
   const redirect = props?.redirect;
   const [isLoading, setIsLoading] = React.useState(true);
   const [user, setUser] = useRecoilState(UserState);
   const auth = getAuth();
   const router = useRouter();
+  const MutexRunner = useMutex();
+  const mutex = new MutexRunner('authMutex');
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
     const unsub = auth.onAuthStateChanged(async (fireUser) => {
       if (!fireUser) {
         setUser(null);
@@ -52,16 +52,20 @@ export const useAuth = (props?: UseAuthProps) => {
         setIsLoading(false);
         return;
       }
-      if (!isRequesting) {
-        isRequesting = true;
-        doLogin(fireUser);
-      }
+
+      mutex.run(() => doLogin(fireUser));
     });
 
     return () => unsub();
   }, []);
 
+  useEffect(() => {
+    if (!user) return;
+    setIsLoading(false);
+  }, [user]);
+
   const doLogin = async (user: FirebaseUser) => {
+    mutex.lock();
     try {
       if (!user) {
         setIsLoading(false);
@@ -82,10 +86,10 @@ export const useAuth = (props?: UseAuthProps) => {
 
       setUser(userData);
       setIsLoading(false);
-      isRequesting = false;
     } catch (e: any) {
       console.error(e);
     }
+    mutex.unlock();
   };
 
   const checkCookie = async () => {

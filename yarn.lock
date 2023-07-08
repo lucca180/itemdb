@@ -7072,6 +7072,11 @@ react-clientside-effect@^1.2.6:
   dependencies:
     "@babel/runtime" "^7.12.13"
 
+react-context-mutex@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/react-context-mutex/-/react-context-mutex-2.0.0.tgz#4060bc8fbced6d2680ab093139c727201d402b88"
+  integrity sha512-Qss0YfJAKQ/+CYdVjHB3w7wRLdeetSrp2IMEEouXEpoTdohaCXIKZtFyNMMKDytLVWqHiiXg0RDA2kj/DQbeMQ==
+
 react-dom@18.2.0:
   version "18.2.0"
   resolved "https://registry.npmjs.org/react-dom/-/react-dom-18.2.0.tgz"
