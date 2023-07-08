@@ -15,6 +15,7 @@ import {
   Tabs,
   Button,
   Icon,
+  UnorderedList,
 } from '@chakra-ui/react';
 import { BsCheckCircleFill, BsXCircleFill } from 'react-icons/bs';
 import HeaderCard from '../components/Card/HeaderCard';
@@ -60,6 +61,7 @@ const ContributePage = () => {
             <Tab>Item Data Extractor</Tab>
             <Tab>Feedback System</Tab>
             <Tab>Creating Official Lists</Tab>
+            <Tab>Where to Find Info</Tab>
           </TabList>
           <TabPanels>
             <TabPanel>
@@ -70,6 +72,9 @@ const ContributePage = () => {
             </TabPanel>
             <TabPanel>
               <OfficialLists />
+            </TabPanel>
+            <TabPanel>
+              <WhereToFindInfo />
             </TabPanel>
           </TabPanels>
         </Tabs>
@@ -288,6 +293,99 @@ const OfficialLists = () => {
         official lists! Also check our <Link href="/terms">Terms and Conditions</Link> for more
         information on official lists.
       </Text>
+    </Flex>
+  );
+};
+
+const WhereToFindInfo = () => {
+  return (
+    <Flex flexFlow="column" gap={3} maxW="1000px">
+      <Heading size="lg">Where to find the info</Heading>
+      <Text>
+        When using the <b>Item Data Extractor Script</b>, the script will automatically collect the
+        all available information from the items on the current page. Each page has a different set
+        of info available. Here is a list of the pages and the info available on each one:
+      </Text>
+      <UnorderedList spacing={2}>
+        <ListItem>
+          <Link href="https://www.neopets.com/inventory.phtml" isExternal>
+            Inventory
+          </Link>{' '}
+          - Name, Description, Image, Category, Rarity, Est. Val, Weight
+        </ListItem>
+        <ListItem>
+          <Link href="https://www.neopets.com/safetydeposit.phtml" isExternal>
+            Safety Deposit Box
+          </Link>{' '}
+          - Item ID, Name, Description, Image, Category (except for NC Items)
+        </ListItem>
+        <ListItem>
+          <Link href="https://www.neopets.com/island/tradingpost.phtml" isExternal>
+            Trading Post
+          </Link>{' '}
+          - Name, Description, Image
+        </ListItem>
+        <ListItem>
+          <Link href="https://www.neopets.com/market.phtml?type=your" isExternal>
+            Shops (your shop or restock)
+          </Link>{' '}
+          - Item ID, Name, Description, Image, Category
+        </ListItem>
+        <ListItem>
+          <Link href="https://www.neopets.com/market_map.phtml" isExternal>
+            User Shops
+          </Link>{' '}
+          - Item ID, Name, Description, Image
+        </ListItem>
+        <ListItem>
+          <Link href="https://www.neopets.com/gallery/" isExternal>
+            Gallery front page
+          </Link>{' '}
+          - Name, Description, Image
+        </ListItem>
+        <ListItem>
+          <Link href="https://www.neopets.com/gallery/quickremove.phtml" isExternal>
+            Gallery Admin Page
+          </Link>{' '}
+          - Item ID, Name, Image
+        </ListItem>
+        <ListItem>
+          <Link href="https://www.neopets.com/closet.phtml" isExternal>
+            Closet
+          </Link>{' '}
+          - Item ID, Name, Description, Image, Category
+        </ListItem>
+        <ListItem>
+          <Link href="https://www.neopets.com/search.phtml" isExternal>
+            Search Page
+          </Link>{' '}
+          - Name, Description, Image, Category, Rarity, Est. Val, Weight
+        </ListItem>
+        <ListItem>
+          <Link href="https://www.neopets.com/neohome/shed" isExternal>
+            Storage Shed
+          </Link>{' '}
+          - Item ID, Name, Description, Image, Category
+        </ListItem>
+        <ListItem>
+          <Link href="http://ncmall.neopets.com/mall/shop.phtml?page=&cat=" isExternal>
+            NC Mall
+          </Link>{' '}
+          - Item ID, Name, Description, Image
+        </ListItem>
+        <ListItem>
+          <Link href="https://www.neopets.com/customise/" isExternal>
+            Customization Page
+          </Link>{' '}
+          - (everything) Item ID, Name, Description, Image, Category, Rarity, Est. Val, Weight
+        </ListItem>
+        <ListItem>
+          <Link href="https://www.neopets.com/ncma/" isExternal>
+            NC Journal
+          </Link>{' '}
+          - Item ID, Name, Image
+        </ListItem>
+      </UnorderedList>
     </Flex>
   );
 };

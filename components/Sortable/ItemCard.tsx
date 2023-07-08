@@ -64,12 +64,14 @@ function SortableItem1(props: Props) {
   };
 
   const onClick = (e: React.MouseEvent<any> | null, force = false) => {
-    setSelected(!isSelected);
+    if (!editMode && !e?.ctrlKey && !force) return;
+
     if (e?.ctrlKey) {
       force = true;
       e.preventDefault();
       e.stopPropagation();
     }
+    setSelected(!isSelected);
     props.onClick?.(id, force);
   };
 
