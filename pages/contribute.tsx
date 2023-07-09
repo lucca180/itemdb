@@ -61,7 +61,7 @@ const ContributePage = () => {
             <Tab>Item Data Extractor</Tab>
             <Tab>Feedback System</Tab>
             <Tab>Creating Official Lists</Tab>
-            <Tab>Where to Find Info</Tab>
+            <Tab>Where to Find Data</Tab>
           </TabList>
           <TabPanels>
             <TabPanel>
@@ -300,7 +300,7 @@ const OfficialLists = () => {
 const WhereToFindInfo = () => {
   return (
     <Flex flexFlow="column" gap={3} maxW="1000px">
-      <Heading size="lg">Where to find the info</Heading>
+      <Heading size="lg">Where to find data</Heading>
       <Text>
         When using the <b>Item Data Extractor Script</b>, the script will automatically collect the
         all available information from the items on the current page. Each page has a different set

@@ -49,6 +49,7 @@ const ArticlePage = (props: Props) => {
         sx={{
           a: { color: post.palette?.lightvibrant.hex ?? 'cyan.300' },
           'b,strong': { color: post.palette?.vibrant.hex ?? 'blue.300' },
+          img: { my: 2 },
         }}
       >
         <Flex flexFlow="column" gap={3} px={3} maxW={1000}>
@@ -88,7 +89,7 @@ const options: HTMLReactParserOptions = {
   replace: (domNode) => {
     if (domNode instanceof Element && domNode.name === 'h3')
       return (
-        <Heading size="md" as="h3">
+        <Heading size="md" as="h3" my={2}>
           {domToReact(domNode.children, options)}
         </Heading>
       );
@@ -101,7 +102,7 @@ const options: HTMLReactParserOptions = {
       );
 
     if (domNode instanceof Element && domNode.name === 'ul')
-      return <UnorderedList>{domToReact(domNode.children, options)}</UnorderedList>;
+      return <UnorderedList spacing={1}>{domToReact(domNode.children, options)}</UnorderedList>;
 
     if (domNode instanceof Element && domNode.name === 'li')
       return <ListItem>{domToReact(domNode.children, options)}</ListItem>;
