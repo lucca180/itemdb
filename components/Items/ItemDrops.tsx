@@ -11,14 +11,16 @@ type Props = {
   itemDrops: ItemDrop[];
 };
 
-const catType = ['trinkets', 'accessories', 'clothing'];
-
 const ItemDrops = (props: Props) => {
   const [isLoading, setLoading] = React.useState(true);
   const [dropData, setDropData] = React.useState<ItemData[]>([]);
   const { item, itemDrops } = props;
   const color = item.color.rgb;
   const isCat = itemDrops[0].isCategoryCap;
+
+  const allCats = new Set(
+    itemDrops[0].isCategoryCap ? itemDrops.filter((a) => a.notes).map((a) => a.notes) : []
+  ) as Set<string>;
 
   useEffect(() => {
     init();
@@ -94,40 +96,39 @@ const ItemDrops = (props: Props) => {
           </Flex>
         </>
       )}
-      {catType.map((cat) => (
-        <Flex alignItems="center" key={cat} flexFlow="column" my={8}>
-          <Image
-            h={'60px'}
-            w={'269px'}
-            objectFit="cover"
-            src={
-              cat != 'trinkets'
-                ? `https://images.neopets.com/ncmall/buttons/${cat}.png`
-                : `https://images.neopets.com/ncmall/buttons/bg_${cat}.png`
-            }
-            alt={`${cat} image`}
-            mb={3}
-          />
-          <Flex gap={3} wrap="wrap" justifyContent="center">
-            {itemDrops
-              .filter((a) => a.notes === cat && !a.isLE)
-              .sort((a, b) => b.dropRate - a.dropRate)
-              .map((drop) => {
-                const item = dropData.find((a) => drop.item_iid === a.internal_id);
-                if (!item) return null;
-                return (
-                  <ItemCard
-                    key={item.internal_id}
-                    item={item}
-                    small
-                    odds={drop.dropRate}
-                    isLE={drop.isLE}
-                  />
-                );
-              })}
+      {[...allCats.values()]
+        .filter((a) => !['LE', 'unknown'].includes(a))
+        .sort((a, b) => a.localeCompare(b))
+        .map((cat) => (
+          <Flex alignItems="center" key={cat} flexFlow="column" my={8}>
+            <Image
+              h={'60px'}
+              w={'269px'}
+              objectFit="cover"
+              src={getCatImage(cat)}
+              alt={`${cat} image`}
+              mb={3}
+            />
+            <Flex gap={3} wrap="wrap" justifyContent="center">
+              {itemDrops
+                .filter((a) => a.notes === cat && !a.isLE)
+                .sort((a, b) => b.dropRate - a.dropRate)
+                .map((drop) => {
+                  const item = dropData.find((a) => drop.item_iid === a.internal_id);
+                  if (!item) return null;
+                  return (
+                    <ItemCard
+                      key={item.internal_id}
+                      item={item}
+                      small
+                      odds={drop.dropRate}
+                      isLE={drop.isLE}
+                    />
+                  );
+                })}
+            </Flex>
           </Flex>
-        </Flex>
-      ))}
+        ))}
 
       {itemDrops.filter((a) => a.notes === 'unknown').length > 0 && (
         <>
@@ -166,3 +167,16 @@ const ItemDrops = (props: Props) => {
 };
 
 export default ItemDrops;
+
+const getCatImage = (cat: string) => {
+  if (cat === 'trinkets') return `https://images.neopets.com/ncmall/buttons/bg_${cat}.png`;
+  else if (['accessories', 'clothing'].includes(cat))
+    return `https://images.neopets.com/ncmall/buttons/${cat}.png`;
+
+  if (cat.match(/cat\d+y\d+/gim)) {
+    const [catId, catY] = cat.toLowerCase().split('y');
+    return `https://images.neopets.com/ncmall/buttons/altador_years_${catId}_y${catY}.png`;
+  }
+
+  return '';
+};

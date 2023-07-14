@@ -62,11 +62,13 @@ export const getItemDrops = async (item_iid: number, isNC = false) => {
     notesList.map((note) => {
       let val = 1;
 
-      if (notesList.length === 1) val = 5;
+      if (notesList.length === 1) val = 10;
 
-      if (catType.includes(note)) {
+      if (catType.includes(note) || note.match(/cat\d+y\d+/gim)) {
         isCatCap = true;
+
         if (!catsData[drop.item_iid]) catsData[drop.item_iid] = {};
+
         catsData[drop.item_iid][note] = catsData[drop.item_iid][note]
           ? catsData[drop.item_iid][note] + val
           : val;
@@ -79,24 +81,31 @@ export const getItemDrops = async (item_iid: number, isNC = false) => {
   // check witch note are more commum for each item
   if (isCatCap)
     Object.values(dropsData).map((drop) => {
-      const sortedCats = Object.entries(catsData[drop.item_iid] ?? {}).sort((a, b) => b[1] - a[1]);
+      const sortedCats = Object.entries(catsData[drop.item_iid] ?? {})
+        .filter((a) => !!a[0] && !!a[1])
+        .sort((a, b) => b[1] - a[1]);
 
-      const moreCommonCat = sortedCats[0][1] <= sortedCats[1]?.[1] ? 'unknown' : sortedCats[0][0];
+      const moreCommonCat = sortedCats[0]?.[1] <= sortedCats[1]?.[1] ? 'unknown' : sortedCats[0][0];
 
       drop.notes = moreCommonCat;
       dropsData[drop.item_iid] = drop;
       dropsCountByType[moreCommonCat] = dropsCountByType[moreCommonCat]
-        ? dropsCountByType[moreCommonCat] + 1
-        : 1;
+        ? dropsCountByType[moreCommonCat] + drop.dropRate
+        : drop.dropRate;
     });
 
   const dropsArray = Object.values(dropsData)
     .filter((a) => a.dropRate >= (isNC ? 1 : 2))
     .map((drop) => {
-      let itemDropCount =
-        dropsCountByType[drop.notes ?? ''] ?? (drop.isLE ? openingCount : dropsCount);
-      if (drop.notes === 'unknown') itemDropCount = drop.isLE ? openingCount : dropsCount;
-      if (drop.isLE) drop.notes = 'LE';
+      let itemDropCount = dropsCountByType[drop.notes ?? ''] ?? dropsCount;
+
+      if (drop.notes === 'unknown') itemDropCount = dropsCount;
+
+      if (drop.isLE) {
+        drop.notes = 'LE';
+        itemDropCount = openingCount;
+      }
+
       return {
         ...drop,
         isCategoryCap: isCatCap,
