@@ -55,7 +55,7 @@ export const getLatestOwls = async (limit = 20) => {
 
     const pricedAt = new Date(owlsItem.date_of_last_update);
 
-    if (!item.owls || item.owls.pricedAt !== pricedAt.toJSON()) {
+    if ((!item.owls || item.owls.pricedAt !== pricedAt.toJSON()) && owlsItem.owls_value) {
       let price = Number(owlsItem.owls_value.split('-')[0]);
       if (isNaN(price)) price = 0;
 

@@ -52,6 +52,7 @@ import { ConfirmDeleteItem } from '../../components/Modal/ConfirmDeleteItem';
 import { getItemDrops, getItemParent } from '../api/v1/items/[id_name]/drops';
 import ItemDrops from '../../components/Items/ItemDrops';
 import ItemParent from '../../components/Items/ItemParent';
+// import TradeModal from '../../components/TradeModal/TradeModal'
 
 const defaultLastSeen: ItemLastSeen = {
   sw: null,
@@ -130,7 +131,7 @@ const ItemPage = (props: Props) => {
       SEO={{
         title: item.name,
         themeColor: item.color.hex,
-        description: generateMetaDescription(item),
+        description: generateMetaDescription(item, !!itemDrops.length),
         openGraph: { images: [{ url: item.image, width: 80, height: 80, alt: item.name }] },
       }}
     >
@@ -142,6 +143,7 @@ const ItemPage = (props: Props) => {
           tags={tags}
         />
       )}
+      {/* <TradeModal isOpen={true} onClose={() => {}} /> */}
       <FeedbackModal isOpen={feedbackModalOpen} onClose={() => setFeedbackModalOpen(false)} />
       <ConfirmDeleteItem isOpen={isOpen} onClose={onClose} item={item} />
       <Box>
@@ -371,12 +373,15 @@ export async function getStaticPaths() {
   return { paths, fallback: 'blocking' };
 }
 
-const generateMetaDescription = (item: ItemData) => {
+const generateMetaDescription = (item: ItemData, hasDrops = false) => {
   const intl = new Intl.NumberFormat();
 
   let metaDescription = truncateString(item.description, 130);
 
+  if (hasDrops) metaDescription += ` | Check out drop rates`;
+
   if (item.price.value) metaDescription += ` | Market Price: ${intl.format(item.price.value)} NP`;
+
   if (!item.isMissingInfo)
     metaDescription += ` - Rarity: r${item.rarity} - Category: ${item.category}`;
 

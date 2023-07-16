@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.2.2
+// @version      1.2.3
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -980,6 +980,12 @@ function handleNPRefresh(){
   })
 }
 
+function discardPrevInventory(){
+  // in case of a refesh that is not a inventory refresh
+  // we need to discard the opening data
+
+  return localStorage.removeItem('idb_prevInventory');;
+}
 // ------------- //
 
 // Here we check if the page has the url we want and then call the respective function
@@ -991,6 +997,7 @@ if (URLHas('inventory')) {
   handleNPOpenables();
   handleNPRefresh();
 }
+if (!URLHas('inventory')) discardPrevInventory();
 if (URLHas('safetydeposit')) handleSDB();
 if (URLHas('closet.phtml')) handleCloset();
 if (URLHas('trading')) handleTrades();
@@ -1007,8 +1014,7 @@ if (URLHas('neohome/shed')) handleStorageShed();
 if (URLHas('/mall/shop.phtml')) handleNCMall();
 if (URLHas('customise')) handleCustomization();
 if (URLHas('haggle.phtml')) handleRestockHaggle();
-if (URLHas('/ncma/index.phtml')) handleNCJournal();
-
+if (URLHas('/ncma/')) handleNCJournal();
 
 if (hasSSW) handleSSWPrices();
 
