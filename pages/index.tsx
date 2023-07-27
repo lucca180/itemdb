@@ -50,7 +50,7 @@ const HomePage = (props: Props) => {
     <Layout
       SEO={{
         description:
-          'Find all the data about Neopets items such as the most updated prices, wearable previews, restock history, color search, and more! Create your item lists easily and share around Neopia!',
+          'Find all the data about Neopets items such as the most updated prices, wearable previews, restock history, color search, capsules drop rates and more! Create your item lists easily and share around Neopia!',
       }}
     >
       <Box textAlign="center" display="flex" flexFlow="column" alignItems="center" mt="50px">

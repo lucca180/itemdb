@@ -256,6 +256,21 @@ model OpenableItems {
   parent_item Items?   @relation("parentItem", fields: [parent_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
 }
 
+model OpenableQueue {
+  internal_id Int      @id @default(autoincrement())
+  parent_name String
+  parent_image String
+  name        String
+  image       String
+  limitedEdition Boolean @default(false)
+  notes       String?
+  ip_address  String?
+  opening_id  String
+  manual_check String?
+  processed   Boolean @default(false)
+  addedAt     DateTime @default(now())
+}
+
 model Feedbacks {
   feedback_id Int      @id @default(autoincrement())
   type        String   @default("feedback")

@@ -6,6 +6,7 @@ import Vibrant from 'node-vibrant';
 import { categoryToShopID, genItemKey, slugify } from '../../../../utils/utils';
 import Color from 'color';
 import { detectWearable } from '../../../../utils/detectWearable';
+import { processOpenableItems } from './open';
 
 type ValueOf<T> = T[keyof T];
 
@@ -83,6 +84,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     }),
   ]);
 
+  await processOpenables();
   return res.json(result);
 }
 
@@ -316,6 +318,44 @@ export async function getPallete(item: Items) {
   }
 
   return colors;
+}
+
+async function processOpenables() {
+  const queue = await prisma.openableQueue.findMany({
+    where: {
+      processed: false,
+      manual_check: null,
+    },
+  });
+
+  const processPromises = queue.map(async (openable) => {
+    try {
+      await processOpenableItems(openable);
+      await prisma.openableQueue.update({
+        data: {
+          processed: true,
+        },
+        where: {
+          internal_id: openable.internal_id,
+        },
+      });
+    } catch (e: any) {
+      if (typeof e === 'string' && e.includes('unknown')) return;
+
+      await prisma.openableQueue.update({
+        data: {
+          manual_check: typeof e === 'string' ? e : e.message,
+        },
+        where: {
+          internal_id: openable.internal_id,
+        },
+      });
+
+      console.error(e);
+    }
+  });
+
+  await Promise.all(processPromises);
 }
 
 // check if all elements in target are in arr

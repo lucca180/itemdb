@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { OpenableQueue, Prisma } from '@prisma/client';
 import Chance from 'chance';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
@@ -59,16 +59,27 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     name_image_id: [...name_image_id, parent_name_image_id],
   });
 
-  const parentData = Object.values(itemsData).find((data: any) => data.name === parentItem.name);
-  if (!parentData) return res.status(400).json({ error: 'unknown parent' });
   const opening_id = chance.hash({ length: 15 });
 
   const ip_address = requestIp.getClientIp(req);
 
-  const openableItems: Prisma.OpenableItemsUncheckedCreateInput[] = items
-    .map((item: any): Prisma.OpenableItemsUncheckedCreateInput | undefined => {
+  const parentData = Object.values(itemsData).find((data: any) => data.name === parentItem.name);
+
+  if (!parentData) {
+    items.map(async (item: any) => {
+      await addToQueue(item, parentItem, opening_id, ip_address);
+    });
+
+    return res.status(400).json({ error: 'unknown parent' });
+  }
+
+  const openableItemsPromise: Promise<Prisma.OpenableItemsUncheckedCreateInput | undefined>[] =
+    items.map(async (item: any): Promise<Prisma.OpenableItemsUncheckedCreateInput | undefined> => {
       const itemData = Object.values(itemsData).find((data: any) => data.name === item.name);
-      if (!itemData) return undefined;
+      if (!itemData) {
+        await addToQueue(item, parentItem, opening_id, ip_address);
+        return undefined;
+      }
 
       return {
         opening_id: opening_id,
@@ -78,12 +89,110 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         notes: item.notes || null,
         ip_address: ip_address,
       };
-    })
-    .filter((a: any) => !!a);
+    });
+
+  const openableItems = (await Promise.all(openableItemsPromise)).filter(
+    (item) => item
+  ) as Prisma.OpenableItemsUncheckedCreateInput[];
 
   const openableItemData = await prisma.openableItems.createMany({
     data: openableItems,
   });
 
   return res.status(200).json(openableItemData);
+};
+
+export const processOpenableItems = async (openableItem: OpenableQueue) => {
+  const { opening_id, ip_address } = openableItem;
+  const item = {
+    name: openableItem.name,
+    img: openableItem.image,
+    notes: openableItem.notes,
+    isLE: openableItem.limitedEdition,
+  };
+
+  const parentItem = {
+    name: openableItem.parent_name,
+    img: openableItem.parent_image,
+  };
+
+  let { name, img } = item;
+  let imageId: string | undefined = undefined;
+
+  if (img) img = (img as string).replace(/^[^\/\/\s]*\/\//gim, 'https://');
+  if (!img.includes('images.neopets.com/items/')) throw 'invalid item';
+  if (img) imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? '';
+  if (!imageId) throw 'invalid item';
+
+  const name_image_id: [string, string] = [name, imageId];
+
+  let parent_name_image_id: [string, string] | undefined = undefined;
+  if (parentItem) {
+    let { name, img } = parentItem;
+    let imageId: string | undefined = undefined;
+
+    if (img) img = (img as string).replace(/^[^\/\/\s]*\/\//gim, 'https://');
+    if (!img.includes('images.neopets.com/items/')) throw 'invalid parent';
+    if (img) imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? '';
+    if (!imageId) throw 'invalid parent';
+
+    parent_name_image_id = [name, imageId];
+  }
+  if (!parent_name_image_id) throw 'invalid parent';
+
+  const itemsData = await getManyItems({
+    name_image_id: [name_image_id, parent_name_image_id],
+  });
+
+  const parentData = Object.values(itemsData).find((data: any) => data.name === parentItem.name);
+
+  if (!parentData) throw 'unknown parent';
+
+  const openableItemsPromise: Promise<Prisma.OpenableItemsUncheckedCreateInput | undefined>[] = [
+    item,
+  ].map(async (item: any): Promise<Prisma.OpenableItemsUncheckedCreateInput | undefined> => {
+    const itemData = Object.values(itemsData).find((data: any) => data.name === item.name);
+    if (!itemData) {
+      throw 'unknown item';
+    }
+
+    return {
+      opening_id: opening_id,
+      item_iid: itemData.internal_id,
+      parent_iid: parentData.internal_id,
+      limitedEdition: item.isLE || false,
+      notes: item.notes || null,
+      ip_address: ip_address,
+    };
+  });
+
+  const openableItems = (await Promise.all(openableItemsPromise)).filter(
+    (item) => item
+  ) as Prisma.OpenableItemsUncheckedCreateInput[];
+
+  const openableItemData = await prisma.openableItems.createMany({
+    data: openableItems,
+  });
+
+  return openableItemData;
+};
+
+const addToQueue = async (
+  item: any,
+  parent: any,
+  opening_id: string,
+  ip_address: string | null
+) => {
+  return prisma.openableQueue.create({
+    data: {
+      parent_name: parent.name,
+      parent_image: parent.img,
+      name: item.name,
+      image: item.img,
+      notes: item.notes,
+      opening_id: opening_id,
+      limitedEdition: item.isLE || false,
+      ip_address: ip_address,
+    },
+  });
 };
