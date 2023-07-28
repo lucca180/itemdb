@@ -171,7 +171,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       if (filteredResult.length < 5 && differenceInCalendarDays(Date.now(), latestDate) < MAX_DAYS)
         continue;
 
-      if (filteredResult.length <= 20 && userShopCount >= (filteredResult.length / 3) * 2) continue;
+      if (filteredResult.length <= 20 && userShopCount >= (filteredResult.length / 4) * 3) continue;
 
       const prices = filteredResult.map((x) => x.price);
 
@@ -180,14 +180,14 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
       let oldPrices = prices;
 
-      let out = prices.filter((x) => x <= priceMean + priceSTD && x >= priceMean - priceSTD * 2.5);
+      let out = prices.filter((x) => x <= priceMean + priceSTD && x >= priceMean - priceSTD * 2);
 
       while (out.length > 5 && out.length < oldPrices.length) {
         oldPrices = out;
         priceMean = Math.round(mean(out));
         priceSTD = standardDeviation(out);
 
-        out = prices.filter((x) => x <= priceMean + priceSTD && x >= priceMean - priceSTD * 2.5);
+        out = prices.filter((x) => x <= priceMean + priceSTD && x >= priceMean - priceSTD * 2);
       }
 
       if (out.length === 0) out = oldPrices;
@@ -228,7 +228,13 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     }),
   ]);
 
-  return res.send({ priceUpdate: result[0], priceProcessed: result[1] });
+  const hasManualCheck = priceAddList.some((x) => x.manual_check);
+
+  return res.send({
+    priceUpdate: result[0],
+    priceProcessed: result[1],
+    manualCheck: hasManualCheck,
+  });
 };
 
 async function updateOrAddDB(
