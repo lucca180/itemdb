@@ -66,10 +66,11 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const parentData = Object.values(itemsData).find((data: any) => data.name === parentItem.name);
 
   if (!parentData) {
-    items.map(async (item: any) => {
+    const queueProm = items.map(async (item: any) => {
       await addToQueue(item, parentItem, opening_id, ip_address);
     });
 
+    await Promise.all(queueProm);
     return res.status(400).json({ error: 'unknown parent' });
   }
 

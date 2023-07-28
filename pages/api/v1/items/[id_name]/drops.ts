@@ -78,12 +78,14 @@ export const getItemDrops = async (item_iid: number, isNC = false) => {
     dropsData[drop.item_iid] = dropData;
   });
 
-  // check witch note are more commum for each item
+  // check which notes are more commum for each item
   if (isCatCap)
     Object.values(dropsData).map((drop) => {
       const sortedCats = Object.entries(catsData[drop.item_iid] ?? {})
         .filter((a) => !!a[0] && !!a[1])
         .sort((a, b) => b[1] - a[1]);
+
+      if (!sortedCats.length) return;
 
       const moreCommonCat = sortedCats[0]?.[1] <= sortedCats[1]?.[1] ? 'unknown' : sortedCats[0][0];
 
