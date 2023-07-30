@@ -86,8 +86,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   await processOpenables();
   return res.json(result);
+  // return res.json(null);
 }
 
+const usedSlugs = new Set<string>();
 // If a item does not exist in the DB we use "createMany" but
 // there is not a "updateMany" so we update here and return undefined
 async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefined> {
@@ -113,16 +115,17 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
     const [dbItemList, dbSlugItems] = await Promise.all([dbItemListPromise, dbSlugItemsPromise]);
 
     // check if we have same slug
-    if (dbSlugItems.length > 0) {
-      const regex = new RegExp(`^${itemSlug}-\\d+$`);
+    if (dbSlugItems.length > 0 || usedSlugs.has(itemSlug)) {
+      const regex = new RegExp(`^${itemSlug}(-\\d+)?$`);
 
-      const sameSlug = dbSlugItems.filter((x) => regex.test(x.slug ?? ''));
+      const allSlugs = [...dbSlugItems.map((x) => x.slug), ...usedSlugs.values()];
+
+      const sameSlug = allSlugs.filter((x) => regex.test(x ?? ''));
 
       if (sameSlug.length > 0) {
         itemSlug = `${itemSlug}-${sameSlug.length + 1}`;
       }
     }
-
     // db has no entry -> add
     // db has one entry but it's not the same -> add
     if (
@@ -133,7 +136,7 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
         dbItemList[0].item_id !== item.item_id)
     ) {
       if (!item.isWearable) item.isWearable = await detectWearable(item.image);
-
+      usedSlugs.add(itemSlug);
       return {
         name: item.name,
         description: item.description,
