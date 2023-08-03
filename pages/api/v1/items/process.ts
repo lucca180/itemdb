@@ -86,7 +86,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   await processOpenables();
   return res.json(result);
-  // return res.json(null);
 }
 
 const usedSlugs = new Set<string>();
@@ -126,6 +125,7 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
         itemSlug = `${itemSlug}-${sameSlug.length + 1}`;
       }
     }
+
     // db has no entry -> add
     // db has one entry but it's not the same -> add
     if (

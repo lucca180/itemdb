@@ -22,7 +22,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
 // gets all lists of a user
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { username } = req.query;
+  const { username, includeItems } = req.query;
   if (!username || typeof username !== 'string')
     return res.status(400).json({ error: 'Bad Request' });
 
@@ -33,7 +33,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   } catch (e) {}
 
   try {
-    const lists = await getUserLists(username, user);
+    const lists = await getUserLists(username, user, includeItems !== 'false');
 
     return res.status(200).json(lists);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

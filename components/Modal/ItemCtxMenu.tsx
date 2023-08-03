@@ -1,4 +1,4 @@
-import { Badge, chakra, Divider, Tooltip, useToast } from '@chakra-ui/react';
+import { Badge, chakra, Divider, Tooltip, useToast, Box } from '@chakra-ui/react';
 import { ContextMenu, ContextMenuItem, Submenu, ContextMenuTrigger } from 'rctx-contextmenu';
 import { ItemData, UserList } from '../../types';
 import { useAuth, UserLists } from '../../utils/auth';
@@ -29,6 +29,8 @@ const CtxSubmenu = chakra(Submenu, {
       },
     },
     '.submenu__item': {
+      maxH: 420,
+      overflowY: 'auto',
       background: 'gray.800 !important',
       borderColor: 'gray.600 !important',
       '.contextmenu__item': {
@@ -55,6 +57,7 @@ export const CtxTrigger = chakra(typeof window === 'undefined' ? 'div' : Context
 type Props = {
   item: ItemData;
   onSelect?: () => void;
+  onListAction?: (item: ItemData, action: 'move' | 'delete') => any;
 };
 
 const ItemCtxMenu = (props: Props) => {
@@ -62,14 +65,14 @@ const ItemCtxMenu = (props: Props) => {
   const { user, getIdToken } = useAuth();
   const [lists, setLists] = useRecoilState(UserLists);
 
-  const { item } = props;
+  const { item, onListAction } = props;
 
   const fetchLists = async () => {
     if (!user || lists !== null) return;
     try {
       const token = await getIdToken();
 
-      const res = await axios.get(`/api/v1/lists/${user.username}`, {
+      const res = await axios.get(`/api/v1/lists/${user.username}?includeItems=false`, {
         headers: {
           authorization: `Bearer ${token}`,
         },
@@ -164,7 +167,7 @@ const ItemCtxMenu = (props: Props) => {
       <CtxMenuItem onClick={handleOpenInNewTab}>Open in a New Tab</CtxMenuItem>
       <CtxSubmenu title="Add to List">
         {lists &&
-          lists.slice(0, 10).map((list) => (
+          lists.map((list) => (
             <CtxMenuItem onClick={() => addItemToList(list.internal_id)} key={list.internal_id}>
               {list.name}
               {list.purpose !== 'none' && !list.official && (
@@ -192,6 +195,13 @@ const ItemCtxMenu = (props: Props) => {
         Copy Link
       </CtxMenuItem>
       <CtxMenuItem onClick={() => handleCopy(item.name)}>Copy Text</CtxMenuItem>
+      <Box display={onListAction ? 'inherit' : 'none'}>
+        <Divider />
+        <CtxMenuItem onClick={() => onListAction?.(item, 'move')}>Move to List</CtxMenuItem>
+        <CtxMenuItem onClick={() => onListAction?.(item, 'delete')} color="red.400">
+          Delete from this list
+        </CtxMenuItem>
+      </Box>
     </CtxMenu>
   );
 };

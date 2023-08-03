@@ -27,6 +27,7 @@ type Props = {
   selected?: boolean;
   onChange?: (id: number, value: number, field: 'amount' | 'capValue' | 'isHighlight') => void;
   onClick?: (id: number, force?: boolean) => void;
+  onListAction?: (item: ItemData, action: 'move' | 'delete') => any;
 };
 
 function SortableItem1(props: Props) {
@@ -100,6 +101,7 @@ function SortableItem1(props: Props) {
           item={item}
           disableLink={editMode}
           onSelect={() => onClick(null, true)}
+          onListAction={props.onListAction}
           selected={isSelected}
           capValue={isTrading ? itemInfo?.capValue ?? undefined : undefined}
           quantity={itemInfo?.amount ?? undefined}

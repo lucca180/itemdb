@@ -26,6 +26,7 @@ type Props = {
   onClick?: (id: number, force?: boolean) => void;
   onSort?: (ids: number[]) => void;
   onChange?: (id: number, value: number, field: 'amount' | 'capValue' | 'isHighlight') => void;
+  onListAction?: (item: ItemData, action: 'move' | 'delete') => void;
 };
 
 export function SortableArea(props: Props) {
@@ -71,6 +72,7 @@ export function SortableArea(props: Props) {
             isTrading={list?.purpose === 'trading'}
             selected={props.itemSelect?.includes(id)}
             editMode={editMode && !activateSort}
+            onListAction={props.onListAction}
             item={items[itemInfo[id]?.item_iid]}
           />
         ))}

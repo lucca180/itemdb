@@ -14,6 +14,7 @@ export type ItemProps = {
   capValue?: number | null;
   quantity?: number;
   onSelect?: () => void;
+  onListAction?: (item: ItemData, action: 'move' | 'delete') => any;
   style?: React.CSSProperties;
   small?: boolean;
   odds?: number;
@@ -23,7 +24,18 @@ export type ItemProps = {
 const intl = new Intl.NumberFormat();
 
 const ItemCardBase = (props: ItemProps) => {
-  const { item, isLoading, selected, disableLink, capValue, quantity, small, odds, isLE } = props;
+  const {
+    item,
+    isLoading,
+    selected,
+    disableLink,
+    capValue,
+    quantity,
+    small,
+    odds,
+    isLE,
+    onListAction,
+  } = props;
   const [isMobile] = useMediaQuery('(hover: none)');
 
   const color = item?.color.rgb;
@@ -54,7 +66,7 @@ const ItemCardBase = (props: ItemProps) => {
 
   return (
     <>
-      <ItemCtxMenu item={item} onSelect={props.onSelect} />
+      <ItemCtxMenu item={item} onSelect={props.onSelect} onListAction={onListAction} />
       <CtxTrigger
         id={item.internal_id.toString()}
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment

@@ -360,6 +360,11 @@ const ListPage = (props: Props) => {
     [itemInfo]
   );
 
+  const cntxAction = useCallback((item: ItemData, action: 'move' | 'delete') => {
+    setItemSelect([item.internal_id]);
+    setSelectionAction(action);
+  }, []);
+
   if (isLoading)
     return (
       <Layout
@@ -719,6 +724,7 @@ const ListPage = (props: Props) => {
             activateSort={isEdit && !lockSort}
             onSort={handleSort}
             onChange={handleItemInfoChange}
+            onListAction={cntxAction}
           />
         </Flex>
       </Flex>
