@@ -22,6 +22,7 @@ import MatchTable from './MatchTable';
 import NextLink from 'next/link';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import OwlsTradeHistory from './OwlsTradeHistory';
+import Color from 'color';
 
 type Props = {
   item: ItemData;
@@ -32,6 +33,7 @@ const NCTrade = (props: Props) => {
   const { user } = useAuth();
   const { item, lists } = props;
   const color = item.color.rgb;
+  const textColor = Color.rgb(color).lighten(0.3).hex();
 
   const seeking = lists?.filter((list) => list.purpose === 'seeking' && !list.official) ?? [];
   const trading = lists?.filter((list) => list.purpose === 'trading' && !list.official) ?? [];
@@ -78,12 +80,9 @@ const NCTrade = (props: Props) => {
   };
 
   const getOwlsTrade = async () => {
-    const res = await axios.get(
-      'https://neo-owls.net/itemdata/profile/' + encodeURIComponent(item.name)
-    );
+    const res = await axios.get('/api/v1/items/' + encodeURIComponent(item.name) + '/owls');
 
-    if (res.data?.trade_reports) setTradeHistory(res.data.trade_reports);
-    else setTradeHistory([]);
+    setTradeHistory(res.data);
   };
 
   if (item.status === 'no trade')
@@ -116,7 +115,12 @@ const NCTrade = (props: Props) => {
               {trading.length} Trading
             </Button>
             <Button
-              colorScheme={tableType === 'owlsTrading' ? 'yellow' : ''}
+              colorScheme={''}
+              _active={{
+                bg: `rgba(${color[0]},${color[1]}, ${color[2]},.24)`,
+                borderColor: `rgba(${color[0]},${color[1]}, ${color[2]},1)`,
+                color: textColor,
+              }}
               isActive={tableType === 'owlsTrading'}
               onClick={() => setTableType('owlsTrading')}
             >

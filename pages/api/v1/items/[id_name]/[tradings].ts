@@ -1,3 +1,4 @@
+import axios from 'axios';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { ItemAuctionData, ItemRestockData, TradeData } from '../../../../../types';
 import prisma from '../../../../../utils/prisma';
@@ -31,6 +32,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (type === 'auction') {
     const auction = await getAuctionData(name);
     return res.json(auction);
+  }
+
+  if (type === 'owls') {
+    const owls = await getOwlsTradeData(name);
+    return res.json(owls);
   }
 
   return res.status(400).json({ error: 'Invalid Request' });
@@ -133,4 +139,17 @@ const getAuctionData = async (name: string) => {
   });
 
   return auctions;
+};
+
+const getOwlsTradeData = async (name: string) => {
+  try {
+    const res = await axios.get(
+      'https://neo-owls.net/itemdata/profile/' + encodeURIComponent(name)
+    );
+
+    if (res.data?.trade_reports) return res.data.trade_reports;
+    else return [];
+  } catch (e) {
+    return [];
+  }
 };

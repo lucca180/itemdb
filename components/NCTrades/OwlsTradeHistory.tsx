@@ -45,7 +45,7 @@ const OwlsTradeHistory = (props: Props) => {
   return (
     <Flex flexFlow="column" maxH={300} overflow="auto" gap={3} px={1} w="100%">
       {tradeHistory.map((trade, i) => (
-        <Card key={i}>
+        <Card key={i} bg={`rgba(${color[0]},${color[1]}, ${color[2]},.35)`}>
           <CardBody>
             <Heading size="sm" mb={3} opacity="0.75">
               {isValidDate(new Date(trade.ds)) && format(new Date(trade.ds), 'PPP')}
