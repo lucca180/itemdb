@@ -6,7 +6,10 @@ module.exports = {
   changefreq: 'weekly',
   exclude: ['/sitemaps/*', '/admin/*'], // <= exclude here
   robotsTxtOptions: {
-    additionalSitemaps: ['https://itemdb.com.br/sitemaps/index.xml'],
+    additionalSitemaps: [
+      'https://itemdb.com.br/sitemaps/index.xml',
+      ...Array.from({ length: 80 }, (_, i) => `https://itemdb.com.br/sitemaps/${i}.xml`),
+    ],
   },
   // ...other options
 };
