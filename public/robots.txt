@@ -1,0 +1,11 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://itemdb.com.br
+
+# Sitemaps
+Sitemap: https://itemdb.com.br/sitemap.xml
+Sitemap: https://itemdb.com.br/server-sitemap-index.xml
+Sitemap: https://itemdb.com.br/server-sitemap.xml

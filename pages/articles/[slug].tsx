@@ -7,6 +7,7 @@ import { WP_Article } from '../../types';
 import { wp_getBySlug } from '../api/wp/posts/[slug]';
 import parse, { HTMLReactParserOptions, Element, domToReact } from 'html-react-parser';
 import NextLink from 'next/link';
+import { wp_getLatestPosts } from '../api/wp/posts';
 type Props = {
   post: WP_Article;
 };
@@ -79,8 +80,10 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 }
 
 export async function getStaticPaths() {
+  const posts = await wp_getLatestPosts(100);
+
   return {
-    paths: [],
+    paths: posts.map((post) => ({ params: { slug: post.slug } })),
     fallback: 'blocking',
   };
 }

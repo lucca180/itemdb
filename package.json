@@ -12,7 +12,8 @@
     "lint": "next lint",
     "lint-fix": "next lint --fix",
     "prettier": "prettier --write .",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "postbuild": "next-sitemap"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.0.12",
@@ -49,6 +50,7 @@
     "lodash": "^4.17.21",
     "next": "^13.4.12",
     "next-seo": "^5.15.0",
+    "next-sitemap": "^4.1.8",
     "next-transpile-modules": "^10.0.0",
     "nextjs-google-analytics": "^2.3.3",
     "nextjs-progressbar": "^0.0.16",
