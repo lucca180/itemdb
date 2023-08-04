@@ -9,6 +9,7 @@ import {
   StackDivider,
   Text,
   UnorderedList,
+  Center,
 } from '@chakra-ui/react';
 import { format } from 'date-fns';
 import Link from 'next/link';
@@ -23,7 +24,23 @@ const OwlsTradeHistory = (props: Props) => {
   const { item, tradeHistory } = props;
   const color = item.color.rgb;
 
-  if (!tradeHistory) return <Flex>Loading...</Flex>;
+  if (!tradeHistory)
+    return (
+      <Center>
+        <Text fontSize="sm" opacity="0.75">
+          Loading...
+        </Text>
+      </Center>
+    );
+
+  if (!tradeHistory.length)
+    return (
+      <Center>
+        <Text fontSize="sm" opacity="0.75">
+          No trade history found.
+        </Text>
+      </Center>
+    );
 
   return (
     <Flex flexFlow="column" maxH={300} overflow="auto" gap={3} px={1} w="100%">

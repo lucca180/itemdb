@@ -42,7 +42,7 @@ import { getItem, getSomeItemIDs } from '../api/v1/items/[id_name]';
 import { getItemColor } from '../api/v1/items/colors';
 import ItemOfficialLists from '../../components/Items/ItemOfficialList';
 import { getItemLists } from '../api/v1/items/[id_name]/lists';
-import ItemMatch from '../../components/NCTrades/ItemMatch';
+import NCTrade from '../../components/NCTrades';
 import Link from 'next/link';
 import ItemComments from '../../components/Items/ItemComments';
 import { getSimilarItems } from '../api/v1/items/[id_name]/similar';
@@ -295,7 +295,7 @@ const ItemPage = (props: Props) => {
                 isLoading={isLoading}
               />
             )}
-            {item.isNC && <ItemMatch item={item} lists={tradeLists} />}
+            {item.isNC && <NCTrade item={item} lists={tradeLists} />}
             {lists && <ItemOfficialLists item={item} lists={lists} />}
             {item.comment && <ItemComments item={item} />}
             {itemDrops.length > 0 && <ItemDrops item={item} itemDrops={itemDrops} />}

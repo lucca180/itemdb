@@ -28,9 +28,10 @@ type Props = {
   lists?: UserList[];
 };
 
-const ItemMatch = (props: Props) => {
+const NCTrade = (props: Props) => {
   const { user } = useAuth();
   const { item, lists } = props;
+  const color = item.color.rgb;
 
   const seeking = lists?.filter((list) => list.purpose === 'seeking' && !list.official) ?? [];
   const trading = lists?.filter((list) => list.purpose === 'trading' && !list.official) ?? [];
@@ -42,11 +43,12 @@ const ItemMatch = (props: Props) => {
   const [tradeHistory, setTradeHistory] = useState<OwlsTrade[] | null>(null);
 
   useEffect(() => {
+    if (item.status === 'no trade') return;
     getOwlsTrade();
   }, []);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || item.status === 'no trade') return;
 
     init();
   }, [lists, user]);
@@ -81,9 +83,8 @@ const ItemMatch = (props: Props) => {
     );
 
     if (res.data?.trade_reports) setTradeHistory(res.data.trade_reports);
+    else setTradeHistory([]);
   };
-
-  const color = item.color.rgb;
 
   if (item.status === 'no trade')
     return (
@@ -161,4 +162,4 @@ const ItemMatch = (props: Props) => {
   );
 };
 
-export default ItemMatch;
+export default NCTrade;
