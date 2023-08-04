@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-empty-function */
 /** @type {import('next-sitemap').IConfig} */
-import { getServerSideSitemapLegacy, ISitemapField } from 'next-sitemap';
+import {
+  getServerSideSitemapLegacy,
+  getServerSideSitemapIndexLegacy,
+  ISitemapField,
+} from 'next-sitemap';
 import { GetServerSideProps } from 'next';
 import prisma from '../../utils/prisma';
 
@@ -10,13 +14,9 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const siteURL = 'https://itemdb.com.br';
 
   if (!page || isNaN(parseInt(page)))
-    return getServerSideSitemapLegacy(
+    return getServerSideSitemapIndexLegacy(
       ctx,
-      [...Array(80)].map((_, i) => ({
-        loc: `${siteURL}/sitemaps/${i}.xml`,
-        lastmod: new Date().toISOString(),
-        changefreq: 'daily',
-      }))
+      [...Array(80)].map((_, i) => `${siteURL}/sitemaps/${i}.xml`)
     );
 
   const [itemInfo, officialLists] = await Promise.all([
