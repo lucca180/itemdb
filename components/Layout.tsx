@@ -172,7 +172,7 @@ const Layout = (props: Props) => {
               API
             </ChakraLink>{' '}
             | <ChakraLink href="/terms">Terms of Use</ChakraLink> |{' '}
-            <ChakraLink href="/privacy">Privacy Policy</ChakraLink>
+            <ChakraLink href="/privacy">Privacy Policy (Aug 2023)</ChakraLink>
           </Text>
           <Text fontSize="xs" color="gray.500">
             © 2009-{new Date().getFullYear()}{' '}

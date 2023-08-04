@@ -42,7 +42,7 @@ import { getItem, getSomeItemIDs } from '../api/v1/items/[id_name]';
 import { getItemColor } from '../api/v1/items/colors';
 import ItemOfficialLists from '../../components/Items/ItemOfficialList';
 import { getItemLists } from '../api/v1/items/[id_name]/lists';
-import ItemMatch from '../../components/Price/ItemMatch';
+import ItemMatch from '../../components/NCTrades/ItemMatch';
 import Link from 'next/link';
 import ItemComments from '../../components/Items/ItemComments';
 import { getSimilarItems } from '../api/v1/items/[id_name]/similar';

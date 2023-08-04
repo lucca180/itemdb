@@ -25,7 +25,10 @@ const TradeCard = (props: Props) => {
       boxShadow="sm"
     >
       <Box p={2} textAlign="center" fontWeight="bold" bg={colorString}>
-        Trade History <Badge>{trades.length}</Badge>
+        Trade History{' '}
+        <Badge>
+          {trades.length} {trades.length === 20 && '+'}
+        </Badge>
       </Box>
       <Box bg="gray.600" boxShadow="md" overflow="auto" borderBottomRadius="md">
         {isLoading && (

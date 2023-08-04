@@ -31,6 +31,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       res.setHeader('Content-Type', 'image/gif');
       res.setHeader('Cache-Control', 'public, max-age=604800');
 
+      file.setMetadata({ 'Cache-Control': 'public, max-age=604800' });
+
       return res.redirect(file.publicUrl());
     } else {
       const img = await axios.get(`https://images.neopets.com/items/${img_id}.gif`, {
@@ -40,6 +42,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       if (!img) throw 'Image not found';
 
       const buffer = Buffer.from(new Uint8Array(img.data));
+
+      file.setMetadata({ 'Cache-Control': 'public, max-age=604800' });
 
       await file.save(buffer);
 

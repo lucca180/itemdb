@@ -19,7 +19,7 @@ const PrivacyPolicyPage = () => {
         }}
         color="#7AB92A"
       >
-        <Heading size="lg">Privacy Policy (April 2023)</Heading>
+        <Heading size="lg">Privacy Policy (August 2023)</Heading>
         <Text size={{ base: 'sm', md: undefined }}>
           itemdb collects some personal data during its use. No information is sold or used for
           advertising.
@@ -93,14 +93,13 @@ const PrivacyPolicyPage = () => {
           </Text>
           <Text>
             Your Neopets username, if you set one, may be visible to all users of the site. This is
-            done to allow and facilitate item trades between itemdb users. You can remove your
-            Neopets username from our database at any time. We may also track and display the last
-            time you used the site. This is done to help other users to find active users to trade
-            with.
+            done to allow and facilitate item trades between itemdb users. We may also track and
+            display the last time you used the site. This is done to help other users to find active
+            users to trade with.
           </Text>
           <Text>
             We can also label your items in a list as "imported", this means that the item was
-            imported to your list from Neopets using an importer tool. This is done to Pensure that
+            imported to your list from Neopets using an importer tool. This is done to ensure that
             any cap price you set for an NC Item is legit and a fake price to inflate the item
             market price. We currently do not display publicly this information and the Neopets
             account username where the item was imported from is not collected or stored.

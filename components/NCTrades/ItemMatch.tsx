@@ -15,12 +15,13 @@ import axios from 'axios';
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { MdMoneyOff } from 'react-icons/md';
-import { ItemData, UserList } from '../../types';
+import { ItemData, OwlsTrade, UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import CardBase from '../Card/CardBase';
 import MatchTable from './MatchTable';
 import NextLink from 'next/link';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
+import OwlsTradeHistory from './OwlsTradeHistory';
 
 type Props = {
   item: ItemData;
@@ -35,9 +36,14 @@ const ItemMatch = (props: Props) => {
   const trading = lists?.filter((list) => list.purpose === 'trading' && !list.official) ?? [];
 
   const [match, setMatch] = useState({ seeking: {}, trading: {} });
-  const [tableType, setTableType] = useState<'seeking' | 'trading'>(
+  const [tableType, setTableType] = useState<'seeking' | 'trading' | 'owlsTrading'>(
     seeking.length ? 'seeking' : 'trading'
   );
+  const [tradeHistory, setTradeHistory] = useState<OwlsTrade[] | null>(null);
+
+  useEffect(() => {
+    getOwlsTrade();
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -67,6 +73,14 @@ const ItemMatch = (props: Props) => {
       seeking: seekingRes.data,
       trading: tradingRes.data,
     });
+  };
+
+  const getOwlsTrade = async () => {
+    const res = await axios.get(
+      'https://neo-owls.net/itemdata/profile/' + encodeURIComponent(item.name)
+    );
+
+    if (res.data?.trade_reports) setTradeHistory(res.data.trade_reports);
   };
 
   const color = item.color.rgb;
@@ -100,6 +114,13 @@ const ItemMatch = (props: Props) => {
             >
               {trading.length} Trading
             </Button>
+            <Button
+              colorScheme={tableType === 'owlsTrading' ? 'yellow' : ''}
+              isActive={tableType === 'owlsTrading'}
+              onClick={() => setTableType('owlsTrading')}
+            >
+              {tradeHistory?.length} Owls Trades
+            </Button>
           </ButtonGroup>
         </Flex>
         <Flex
@@ -122,11 +143,16 @@ const ItemMatch = (props: Props) => {
           )}
           <Flex flexFlow="column" flex="1" overflow="hidden">
             <Flex justifyContent="center" alignItems={'center'} gap={3}>
-              <MatchTable
-                data={tableType === 'seeking' ? seeking : trading}
-                matches={tableType === 'seeking' ? match.seeking : match.trading}
-                type={tableType}
-              />
+              {tableType !== 'owlsTrading' && (
+                <MatchTable
+                  data={tableType === 'seeking' ? seeking : trading}
+                  matches={tableType === 'seeking' ? match.seeking : match.trading}
+                  type={tableType}
+                />
+              )}
+              {tableType === 'owlsTrading' && (
+                <OwlsTradeHistory item={item} tradeHistory={tradeHistory} />
+              )}
             </Flex>
           </Flex>
         </Flex>

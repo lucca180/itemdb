@@ -294,6 +294,13 @@ export type FeedbackParsed = {
   content: any;
 };
 
+export type OwlsTrade = {
+  ds: string;
+  traded: string;
+  traded_for: string;
+  notes: string;
+};
+
 // ------- DTI -------- //
 
 export type DTISpecies = {
