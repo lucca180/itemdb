@@ -4,7 +4,7 @@ module.exports = {
   generateRobotsTxt: true, // (optional)
   sitemapSize: 1000,
   changefreq: 'weekly',
-  exclude: ['/sitemaps/index.xml', '/admin/*'], // <= exclude here
+  exclude: ['/sitemaps/*', '/admin/*'], // <= exclude here
   robotsTxtOptions: {
     additionalSitemaps: ['https://itemdb.com.br/sitemaps/index.xml'],
   },
