@@ -5,6 +5,7 @@ import {
   Center,
   Flex,
   Icon,
+  Skeleton,
   Stat,
   StatHelpText,
   StatLabel,
@@ -33,7 +34,7 @@ const NCTrade = (props: Props) => {
   const { user } = useAuth();
   const { item, lists } = props;
   const color = item.color.rgb;
-  const textColor = Color.rgb(color).lighten(0.3).hex();
+  const textColor = Color.rgb(color).lighten(0.65).hex();
 
   const seeking = lists?.filter((list) => list.purpose === 'seeking' && !list.official) ?? [];
   const trading = lists?.filter((list) => list.purpose === 'trading' && !list.official) ?? [];
@@ -124,7 +125,10 @@ const NCTrade = (props: Props) => {
               isActive={tableType === 'owlsTrading'}
               onClick={() => setTableType('owlsTrading')}
             >
-              {tradeHistory?.length} Owls Trades
+              <Skeleton isLoaded={tradeHistory !== null} startColor={item.color.hex} mr={1}>
+                <span>{tradeHistory?.length ?? '00'}</span>
+              </Skeleton>{' '}
+              Owls Trades
             </Button>
           </ButtonGroup>
         </Flex>

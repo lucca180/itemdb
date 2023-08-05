@@ -1,9 +1,11 @@
-import { Badge, chakra, Divider, Tooltip, useToast, Box } from '@chakra-ui/react';
+import { Badge, chakra, Divider, Tooltip, useToast, Box, useDisclosure } from '@chakra-ui/react';
 import { ContextMenu, ContextMenuItem, Submenu, ContextMenuTrigger } from 'rctx-contextmenu';
-import { ItemData, UserList } from '../../types';
+import { ItemData, ListItemInfo, UserList } from '../../types';
 import { useAuth, UserLists } from '../../utils/auth';
 import { useRecoilState } from 'recoil';
 import axios from 'axios';
+import { useState } from 'react';
+import DuplicatedItemModal from './DuplicatedItemModal';
 
 const CtxMenu = chakra(ContextMenu, {
   baseStyle: {
@@ -64,6 +66,9 @@ const ItemCtxMenu = (props: Props) => {
   const toast = useToast();
   const { user, getIdToken } = useAuth();
   const [lists, setLists] = useRecoilState(UserLists);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [selectedList, setSelectedList] = useState<UserList | undefined>();
+  const [duplicatedItem, setDuplicatedItem] = useState<ListItemInfo | undefined>();
 
   const { item, onListAction } = props;
 
@@ -120,7 +125,7 @@ const ItemCtxMenu = (props: Props) => {
       const token = await getIdToken();
 
       const res = await axios.put(
-        `/api/v1/lists/${user.username}/${list_id}`,
+        `/api/v1/lists/${user.username}/${list_id}?alertDuplicates=true`,
         {
           items: [
             {
@@ -141,8 +146,16 @@ const ItemCtxMenu = (props: Props) => {
           duration: 5000,
         });
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+
+      if (err.response.data.error === 'Duplicate Items') {
+        toast.close(toastId);
+        setSelectedList(lists?.find((list) => list.internal_id === list_id));
+        setDuplicatedItem(err.response.data.data[0]);
+        onOpen();
+        return;
+      }
 
       toast.update(toastId, {
         title: 'An error occurred',
@@ -156,53 +169,66 @@ const ItemCtxMenu = (props: Props) => {
   if (typeof window === 'undefined') return <></>;
 
   return (
-    <CtxMenu
-      id={item.internal_id.toString()}
-      onShow={fetchLists}
-      preventHideOnResize
-      preventHideOnScroll
-      appendTo="body"
-    >
-      {props.onSelect ? <CtxMenuItem onClick={props.onSelect}>Select Item</CtxMenuItem> : <></>}
-      <CtxMenuItem onClick={handleOpenInNewTab}>Open in a New Tab</CtxMenuItem>
-      <CtxSubmenu title="Add to List">
-        {lists &&
-          lists.map((list) => (
-            <CtxMenuItem onClick={() => addItemToList(list.internal_id)} key={list.internal_id}>
-              {list.name}
-              {list.purpose !== 'none' && !list.official && (
-                <Tooltip label={`${list.purpose}`} fontSize="sm" placement="top">
-                  <Badge ml={1}>{list.purpose === 'seeking' ? 's' : 't'}</Badge>
-                </Tooltip>
-              )}
-              {list.official && (
-                <Tooltip label={`official`} fontSize="sm" placement="top">
-                  <Badge ml={1} colorScheme="blue">
-                    ✓
-                  </Badge>
-                </Tooltip>
-              )}
-            </CtxMenuItem>
-          ))}
-        {(!user || (lists && !lists.length)) && <CtxMenuItem disabled>No lists found</CtxMenuItem>}
-        {!lists && user && <CtxMenuItem disabled>Loading...</CtxMenuItem>}
-      </CtxSubmenu>
-      <Divider />
-      <CtxMenuItem onClick={() => handleCopy(item.image)}>Copy Image URL</CtxMenuItem>
-      <CtxMenuItem
-        onClick={() => handleCopy(`https://itemdb.com.br/item/${item.slug ?? item.internal_id}`)}
+    <>
+      {isOpen && (
+        <DuplicatedItemModal
+          isOpen={isOpen}
+          item={item}
+          list={selectedList}
+          onClose={onClose}
+          itemInfo={duplicatedItem}
+        />
+      )}
+      <CtxMenu
+        id={item.internal_id.toString()}
+        onShow={fetchLists}
+        preventHideOnResize
+        preventHideOnScroll
+        appendTo="body"
       >
-        Copy Link
-      </CtxMenuItem>
-      <CtxMenuItem onClick={() => handleCopy(item.name)}>Copy Text</CtxMenuItem>
-      <Box display={onListAction ? 'inherit' : 'none'}>
+        {props.onSelect ? <CtxMenuItem onClick={props.onSelect}>Select Item</CtxMenuItem> : <></>}
+        <CtxMenuItem onClick={handleOpenInNewTab}>Open in a New Tab</CtxMenuItem>
+        <CtxSubmenu title="Add to List">
+          {lists &&
+            lists.map((list) => (
+              <CtxMenuItem onClick={() => addItemToList(list.internal_id)} key={list.internal_id}>
+                {list.name}
+                {list.purpose !== 'none' && !list.official && (
+                  <Tooltip label={`${list.purpose}`} fontSize="sm" placement="top">
+                    <Badge ml={1}>{list.purpose === 'seeking' ? 's' : 't'}</Badge>
+                  </Tooltip>
+                )}
+                {list.official && (
+                  <Tooltip label={`official`} fontSize="sm" placement="top">
+                    <Badge ml={1} colorScheme="blue">
+                      ✓
+                    </Badge>
+                  </Tooltip>
+                )}
+              </CtxMenuItem>
+            ))}
+          {(!user || (lists && !lists.length)) && (
+            <CtxMenuItem disabled>No lists found</CtxMenuItem>
+          )}
+          {!lists && user && <CtxMenuItem disabled>Loading...</CtxMenuItem>}
+        </CtxSubmenu>
         <Divider />
-        <CtxMenuItem onClick={() => onListAction?.(item, 'move')}>Move to List</CtxMenuItem>
-        <CtxMenuItem onClick={() => onListAction?.(item, 'delete')} color="red.400">
-          Delete from this list
+        <CtxMenuItem onClick={() => handleCopy(item.image)}>Copy Image URL</CtxMenuItem>
+        <CtxMenuItem
+          onClick={() => handleCopy(`https://itemdb.com.br/item/${item.slug ?? item.internal_id}`)}
+        >
+          Copy Link
         </CtxMenuItem>
-      </Box>
-    </CtxMenu>
+        <CtxMenuItem onClick={() => handleCopy(item.name)}>Copy Text</CtxMenuItem>
+        <Box display={onListAction ? 'inherit' : 'none'}>
+          <Divider />
+          <CtxMenuItem onClick={() => onListAction?.(item, 'move')}>Move to List</CtxMenuItem>
+          <CtxMenuItem onClick={() => onListAction?.(item, 'delete')} color="red.400">
+            Delete from this list
+          </CtxMenuItem>
+        </Box>
+      </CtxMenu>
+    </>
   );
 };
 

@@ -221,7 +221,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
 // add item to list
 const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { username, list_id } = req.query;
+  const { username, list_id, alertDuplicates } = req.query;
 
   if (!username || !list_id || Array.isArray(username) || Array.isArray(list_id))
     return res.status(400).json({ error: 'Bad Request' });
@@ -246,11 +246,23 @@ const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
       where: {
         internal_id: parseInt(list_id),
       },
+      include: {
+        items: alertDuplicates === 'true',
+      },
     });
 
     if (!list) return res.status(400).json({ error: 'List Not Found' });
 
     if (list.user_id !== user.id) return res.status(403).json({ error: 'Forbidden' });
+
+    if (alertDuplicates === 'true') {
+      const itemIids = new Set(items.map((item) => parseInt(item.item_iid)));
+      const hasDuplicates = list.items.filter((item) => itemIids.has(item.item_iid));
+
+      if (hasDuplicates.length) {
+        return res.status(400).json({ error: 'Duplicate Items', data: hasDuplicates });
+      }
+    }
 
     const transactions = [];
 
