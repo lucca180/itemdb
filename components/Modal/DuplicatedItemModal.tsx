@@ -100,7 +100,7 @@ const DuplicatedItemModal = (props: Props) => {
                 Do you want to add it again?
               </Text>
               <InputGroup size="sm" mt={3}>
-                <InputLeftAddon children="Quantity" />
+                <InputLeftAddon children="New Quantity" />
                 <NumberInput
                   max={999}
                   min={1}
