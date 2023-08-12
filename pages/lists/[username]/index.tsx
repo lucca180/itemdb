@@ -35,6 +35,7 @@ import { NextPageContext } from 'next';
 import { getUser } from '../../api/v1/users/[username]';
 import NextImage from 'next/image';
 import icon from '../../../public/logo_icon.svg';
+import UserAchiev from '../../../components/Achievements/UserAchiev';
 
 type ExtendedUserList = UserList & {
   hasChanged?: boolean;
@@ -394,6 +395,9 @@ const UserListsPage = (props: Props) => {
                 Oh, that&apos;s you!
               </Text>
             )}
+            <Stack mt={2} alignItems="flex-start">
+              {owner.username && <UserAchiev username={owner.username} />}
+            </Stack>
           </Box>
         </Flex>
       </Box>

@@ -275,6 +275,11 @@ export type ItemDrop = {
   isLE: boolean;
 };
 
+export type UserAchievement = {
+  name: string;
+  image: string;
+};
+
 // ------- FEEDBACKS JSON -------- //
 export type Feedback = {
   feedback_id: number;
