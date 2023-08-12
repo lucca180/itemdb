@@ -107,6 +107,14 @@ const ItemInfoCard = (props: Props) => {
             {item.status ?? 'Active'}
           </Text>
         </HStack>
+        <HStack>
+          <Tag size="lg" fontWeight="bold" as="h3">
+            itemdb ID
+          </Tag>
+          <Text flex="1" textAlign="right" textTransform="capitalize">
+            {item.internal_id}
+          </Text>
+        </HStack>
       </Flex>
     </Flex>
   );

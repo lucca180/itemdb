@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getItem } from '.';
-import { ItemDrop } from '../../../../../types';
+import { ItemDrop, ItemOpenable } from '../../../../../types';
 import prisma from '../../../../../utils/prisma';
 
 const catType = ['trinkets', 'accessories', 'clothing'];
@@ -29,7 +29,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   return res.status(200).json({ drops: drops, parents: parents });
 }
 
-export const getItemDrops = async (item_iid: number, isNC = false) => {
+export const getItemDrops = async (
+  item_iid: number,
+  isNC = false
+): Promise<ItemOpenable | null> => {
   const drops = await prisma.openableItems.findMany({
     where: {
       parent_iid: item_iid,
@@ -37,16 +40,32 @@ export const getItemDrops = async (item_iid: number, isNC = false) => {
   });
 
   const dropsCount = drops.length;
-  const openingSet = new Set();
-  drops.map((drop) => openingSet.add(drop.opening_id));
-  const openingCount = openingSet.size;
+  const openingSet: { [id: string]: number } = {};
+  drops.map(
+    (drop) =>
+      (openingSet[drop.opening_id] = openingSet[drop.opening_id]
+        ? openingSet[drop.opening_id] + 1
+        : 1)
+  );
+  const openingCount = Object.keys(openingSet).length;
 
-  if (openingCount < 5) return [];
+  if (openingCount < 5) return null;
+
+  const minDrop = Math.min(...Object.values(openingSet));
+
+  const openableData: ItemOpenable = {
+    openings: openingCount,
+    isCategoryCap: false,
+    hasLE: false,
+    notes: null,
+    drops: [],
+    minDrop: minDrop,
+    isGBC: false,
+  };
 
   const dropsData: { [id: number]: ItemDrop } = {};
   const catsData: { [id: number]: { [noteType: string]: number } } = {};
   const dropsCountByType: { [noteType: string]: number } = {};
-  let isCatCap = false;
 
   drops.map((drop) => {
     const dropData: ItemDrop = {
@@ -54,8 +73,6 @@ export const getItemDrops = async (item_iid: number, isNC = false) => {
       dropRate: dropsData[drop.item_iid]?.dropRate ? dropsData[drop.item_iid].dropRate + 1 : 1,
       notes: drop.notes,
       isLE: drop.limitedEdition,
-      openings: openingCount,
-      isCategoryCap: false,
     };
 
     const notesList = drop.notes?.toLowerCase().split(',') ?? [];
@@ -65,7 +82,7 @@ export const getItemDrops = async (item_iid: number, isNC = false) => {
       if (notesList.length === 1) val = 10;
 
       if (catType.includes(note) || note.match(/cat\d+y\d+/gim)) {
-        isCatCap = true;
+        openableData.isCategoryCap = true;
 
         if (!catsData[drop.item_iid]) catsData[drop.item_iid] = {};
 
@@ -79,7 +96,7 @@ export const getItemDrops = async (item_iid: number, isNC = false) => {
   });
 
   // check which notes are more commum for each item
-  if (isCatCap)
+  if (openableData.isCategoryCap) {
     Object.values(dropsData).map((drop) => {
       const sortedCats = Object.entries(catsData[drop.item_iid] ?? {})
         .filter((a) => !!a[0] && !!a[1])
@@ -95,27 +112,44 @@ export const getItemDrops = async (item_iid: number, isNC = false) => {
         ? dropsCountByType[moreCommonCat] + drop.dropRate
         : drop.dropRate;
     });
+  }
 
-  const dropsArray = Object.values(dropsData)
+  // checks if any item are granted to be 100% drop rate, then remove from the total
+  const newDropsCount =
+    dropsCount -
+    Object.values(dropsData)
+      .filter((a) => a.dropRate / openingCount >= 1)
+      .reduce((a, b) => a + b.dropRate, 0);
+
+  const dropsArray: ItemDrop[] = Object.values(dropsData)
     .filter((a) => a.dropRate >= (isNC ? 1 : 2))
     .map((drop) => {
-      let itemDropCount = dropsCountByType[drop.notes ?? ''] ?? dropsCount;
+      let itemDropCount = dropsCountByType[drop.notes ?? ''] ?? newDropsCount;
 
-      if (drop.notes === 'unknown') itemDropCount = dropsCount;
+      if (drop.notes === 'unknown') itemDropCount = newDropsCount;
 
       if (drop.isLE) {
         drop.notes = 'LE';
+        openableData.hasLE = true;
         itemDropCount = openingCount;
+      }
+
+      let dropRate = (drop.dropRate / itemDropCount) * 100;
+
+      if (drop.dropRate / openingCount >= 1) {
+        if (drop.item_iid === 17434) openableData.isGBC = true;
+        dropRate = 100;
       }
 
       return {
         ...drop,
-        isCategoryCap: isCatCap,
-        dropRate: ((drop.dropRate / itemDropCount) * 100).toFixed(2),
+        dropRate: dropRate,
       };
     });
 
-  return dropsArray;
+  openableData.drops = dropsArray;
+
+  return openableData;
 };
 
 export const getItemParent = async (item_iid: number) => {

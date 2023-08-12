@@ -127,13 +127,10 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
     }
 
     // db has no entry -> add
-    // db has one entry but it's not the same -> add
+    // db has other entries but it's not the same item_id-> add
     if (
       dbItemList.length === 0 ||
-      (dbItemList.length === 1 &&
-        dbItemList[0].item_id &&
-        item.item_id &&
-        dbItemList[0].item_id !== item.item_id)
+      (item.item_id && dbItemList.every((x) => x.item_id && x.item_id !== item.item_id))
     ) {
       if (!item.isWearable) item.isWearable = await detectWearable(item.image);
       usedSlugs.add(itemSlug);
@@ -215,7 +212,7 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
           }
         }
 
-        // sdb sometimes calls things "special" when they're not (this sounded mean)
+        // sdb sometimes calls things "special" when they're not
         else if (key === 'category') {
           const dbCatetory = dbItem.category?.toLowerCase() ?? '';
           const itemCategory = item.category?.toLowerCase() ?? '';

@@ -7,7 +7,6 @@ import {
   Icon,
   Stack,
   Text,
-  useDisclosure,
   useMediaQuery,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
@@ -16,9 +15,9 @@ import Image from 'next/image';
 import {
   FullItemColors,
   ItemData,
-  ItemDrop,
   ItemLastSeen,
-  ItemTag,
+  ItemOpenable,
+  // ItemTag,
   PriceData,
   TradeData,
   UserList,
@@ -32,8 +31,8 @@ import ItemPreview from '../../components/Items/ItemPreview';
 import ItemPriceCard from '../../components/Price/ItemPriceCard';
 import axios from 'axios';
 import TradeCard from '../../components/Trades/TradeCard';
-import ItemTags from '../../components/Items/ItemTags';
-import { FiSend, FiEdit3, FiTrash } from 'react-icons/fi';
+// import ItemTags from '../../components/Items/ItemTags';
+import { FiSend, FiEdit3 } from 'react-icons/fi';
 import EditItemModal from '../../components/Modal/EditItemModal';
 import FeedbackModal from '../../components/Modal/FeedbackModal';
 import AddToListSelect from '../../components/UserLists/AddToListSelect';
@@ -47,8 +46,6 @@ import Link from 'next/link';
 import ItemComments from '../../components/Items/ItemComments';
 import { getSimilarItems } from '../api/v1/items/[id_name]/similar';
 import SimilarItemsCard from '../../components/Items/SimilarItemsCard';
-import { useAuth } from '../../utils/auth';
-import { ConfirmDeleteItem } from '../../components/Modal/ConfirmDeleteItem';
 import { getItemDrops, getItemParent } from '../api/v1/items/[id_name]/drops';
 import ItemDrops from '../../components/Items/ItemDrops';
 import ItemParent from '../../components/Items/ItemParent';
@@ -67,24 +64,22 @@ type Props = {
   similarItems: ItemData[];
   lists?: UserList[];
   tradeLists?: UserList[];
-  itemDrops: ItemDrop[];
+  itemOpenable: ItemOpenable | null;
   itemParent: number[];
 };
 
 const ItemPage = (props: Props) => {
-  const { item, colors, lists, tradeLists, itemDrops, itemParent } = props;
+  const { item, colors, lists, tradeLists, itemOpenable, itemParent } = props;
   const [prices, setPrices] = useState<PriceData[] | null>(null);
   const [seenStats, setSeen] = useState<ItemLastSeen>(defaultLastSeen);
   const [trades, setTrades] = useState<TradeData[]>([]);
-  const [tags, setTags] = useState<ItemTag[]>([]);
+  // const [tags, setTags] = useState<ItemTag[]>([]);
   const [isLoading, setLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [isLargerThanMD] = useMediaQuery('(min-width: 48em)', { fallback: true });
-  const { onOpen, isOpen, onClose } = useDisclosure();
   const color = item?.color.rgb ?? [255, 255, 255];
   const router = useRouter();
-  const { user } = useAuth();
 
   useEffect(() => {
     if (router.isReady) init();
@@ -94,14 +89,14 @@ const ItemPage = (props: Props) => {
     setLoading(true);
 
     if (item.isNC || item.status === 'no trade') {
-      const [resTags] = await Promise.all([axios.get(`/api/v1/items/${item.internal_id}/tags`)]);
+      // const [resTags] = await Promise.all([axios.get(`/api/v1/items/${item.internal_id}/tags`)]);
 
-      setTags(resTags.data);
+      // setTags(resTags.data);
       setLoading(false);
       return;
     }
 
-    const [resPrice, resStats, resTrades, resTags] = await Promise.all([
+    const [resPrice, resStats, resTrades] = await Promise.all([
       axios.get(`/api/v1/items/${item.internal_id}/prices`),
       axios.get(`/api/v1/prices/stats/`, {
         params: {
@@ -116,13 +111,13 @@ const ItemPage = (props: Props) => {
           image_id: item.image_id,
         },
       }),
-      axios.get(`/api/v1/items/${item.internal_id}/tags`),
+      // axios.get(`/api/v1/items/${item.internal_id}/tags`),
     ]);
 
     setPrices(resPrice.data ?? []);
     setSeen(resStats.data);
     setTrades(resTrades.data);
-    setTags(resTags.data);
+    // setTags(resTags.data);
     setLoading(false);
   };
 
@@ -131,7 +126,7 @@ const ItemPage = (props: Props) => {
       SEO={{
         title: item.name,
         themeColor: item.color.hex,
-        description: generateMetaDescription(item, !!itemDrops.length),
+        description: generateMetaDescription(item, !!itemOpenable),
         openGraph: { images: [{ url: item.image, width: 80, height: 80, alt: item.name }] },
       }}
     >
@@ -140,12 +135,11 @@ const ItemPage = (props: Props) => {
           isOpen={isEditModalOpen}
           item={item}
           onClose={() => setIsEditModalOpen(false)}
-          tags={tags}
+          tags={[]}
         />
       )}
       {/* <TradeModal isOpen={true} onClose={() => {}} /> */}
       <FeedbackModal isOpen={feedbackModalOpen} onClose={() => setFeedbackModalOpen(false)} />
-      <ConfirmDeleteItem isOpen={isOpen} onClose={onClose} item={item} />
       <Box>
         <Box
           position="absolute"
@@ -253,22 +247,13 @@ const ItemPage = (props: Props) => {
           )}
           <ItemInfoCard item={item} />
           {colors && <ColorInfoCard colors={colors} />}
-          <ItemTags toggleModal={() => setIsEditModalOpen(true)} item={item} tags={tags} />
+          {/* <ItemTags toggleModal={() => setIsEditModalOpen(true)} item={item} tags={tags} /> */}
           <Flex justifyContent="center" gap={1}>
             <Button variant="outline" size="sm" onClick={() => setFeedbackModalOpen(true)}>
               <Icon as={FiSend} mr={1} /> Feedback
             </Button>
             <Button variant="outline" size="sm" onClick={() => setIsEditModalOpen(true)}>
               <Icon as={FiEdit3} mr={1} /> Edit
-            </Button>
-            <Button
-              variant="outline"
-              colorScheme="red"
-              size="sm"
-              onClick={onOpen}
-              display={user?.isAdmin ? 'inherit' : 'none'}
-            >
-              <Icon as={FiTrash} mr={1} /> Delete
             </Button>
           </Flex>
         </Flex>
@@ -298,7 +283,7 @@ const ItemPage = (props: Props) => {
             {item.isNC && <NCTrade item={item} lists={tradeLists} />}
             {lists && <ItemOfficialLists item={item} lists={lists} />}
             {item.comment && <ItemComments item={item} />}
-            {itemDrops.length > 0 && <ItemDrops item={item} itemDrops={itemDrops} />}
+            {itemOpenable && <ItemDrops item={item} itemOpenable={itemOpenable} />}
             <SimilarItemsCard item={item} similarItems={props.similarItems} />
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>
@@ -338,7 +323,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 
   if (!item) return { notFound: true };
 
-  const [colors, lists, similarItems, tradeLists, itemDrops, itemParent] = await Promise.all([
+  const [colors, lists, similarItems, tradeLists, itemOpenable, itemParent] = await Promise.all([
     getItemColor([item.image_id]),
     getItemLists(item.internal_id, true, false),
     getSimilarItems(item.internal_id.toString()),
@@ -356,7 +341,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
       similarItems: similarItems,
       colors: colors[item.image_id],
       tradeLists: tradeLists,
-      itemDrops: itemDrops,
+      itemOpenable: itemOpenable,
       itemParent: itemParent,
     },
     revalidate: 10, // In seconds
@@ -374,13 +359,13 @@ export async function getStaticPaths() {
 }
 
 const generateMetaDescription = (item: ItemData, hasDrops = false) => {
-  const intl = new Intl.NumberFormat();
+  // const intl = new Intl.NumberFormat();
 
   let metaDescription = truncateString(item.description, 130);
 
   if (hasDrops) metaDescription += ` | Check out drop rates`;
 
-  if (item.price.value) metaDescription += ` | Market Price: ${intl.format(item.price.value)} NP`;
+  // if (item.price.value) metaDescription += ` | Market Price: ${intl.format(item.price.value)} NP`;
 
   if (!item.isMissingInfo)
     metaDescription += ` - Rarity: r${item.rarity} - Category: ${item.category}`;

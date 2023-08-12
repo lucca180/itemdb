@@ -30,7 +30,7 @@ const ArticlePage = (props: Props) => {
               }
             : undefined
         }
-        color={post.palette?.vibrant.hex ?? '#05B7E8'}
+        color={post.palette?.lightvibrant.hex ?? '#05B7E8'}
       >
         <Text fontSize="xs">
           <Link as={NextLink} href="/articles">
@@ -48,8 +48,8 @@ const ArticlePage = (props: Props) => {
         flexFlow="column"
         gap={3}
         sx={{
-          a: { color: post.palette?.lightvibrant.hex ?? 'cyan.300' },
-          'b,strong': { color: post.palette?.vibrant.hex ?? 'blue.300' },
+          a: { color: post.palette?.vibrant.hex ?? 'cyan.300' },
+          'b,strong': { color: post.palette?.lightvibrant.hex ?? 'blue.300' },
           img: { my: 2 },
         }}
       >

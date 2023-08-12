@@ -164,7 +164,7 @@ const ItemCardBase = (props: ItemProps) => {
                 whiteSpace="pre-wrap"
                 textAlign={'center'}
               >
-                {isLE ? 'LE' : ''} {odds}%
+                {isLE ? 'LE' : ''} {odds.toFixed(2)}%
               </Badge>
             )}
 

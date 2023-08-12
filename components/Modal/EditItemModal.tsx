@@ -28,6 +28,8 @@ import {
   Center,
   FormHelperText,
   Link,
+  Icon,
+  useDisclosure,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
@@ -37,6 +39,8 @@ import { useAuth } from '../../utils/auth';
 import ItemCatSelect from '../Input/ItemCategorySelect';
 import ItemStatusSelect from '../Input/ItemStatusSelect';
 import TagSelect from '../Input/TagsSelect';
+import { ConfirmDeleteItem } from './ConfirmDeleteItem';
+import { FiTrash } from 'react-icons/fi';
 
 type Props = {
   isOpen: boolean;
@@ -54,6 +58,7 @@ const EditItemModal = (props: Props) => {
   const [isLoading, setLoading] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
+  const { onOpen: onDeleteOpen, isOpen: isDeleteOpen, onClose: onDeleteClose } = useDisclosure();
   const router = useRouter();
 
   const isAdmin = user?.role === 'ADMIN';
@@ -172,83 +177,94 @@ const EditItemModal = (props: Props) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleCancel} isCentered scrollBehavior="inside">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>
-          {isAdmin ? 'Edit' : 'Suggest Changes'} - {itemProps.name}
-        </ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          {!isLoading && !isSuccess && !error && (
-            <Tabs variant="line" colorScheme="gray" isLazy>
-              <TabList>
-                <Tab>Item Info</Tab>
-                <Tab>Categories and Tags</Tab>
-              </TabList>
-              <TabPanels>
-                <TabPanel>
-                  <InfoTab item={item} itemProps={itemProps} onChange={handleChange} />
-                </TabPanel>
-                <TabPanel>
-                  <CategoriesTab
-                    categories={categories}
-                    tags={tags}
-                    item={item}
-                    itemProps={itemProps}
-                    onChange={handleTagsChange}
-                  />
-                </TabPanel>
-              </TabPanels>
-            </Tabs>
-          )}
-          {isLoading && (
-            <Center>
-              <Spinner />
-            </Center>
-          )}
-          {isSuccess && !isAdmin && (
-            <Center>
-              <Text fontSize="sm" textAlign="center">
-                Thank you!
-                <br />
-                We have received your suggestion and it will be reviewed by our team.
-              </Text>
-            </Center>
-          )}
-          {isSuccess && isAdmin && (
-            <Center>
-              <Text fontSize="sm" textAlign="center">
-                Changes saved!
-                <br />
-                They might take a few minutes to appear due to caching.
-              </Text>
-            </Center>
-          )}
-          {error && (
-            <Center>
-              <Text fontSize="sm" textAlign="center" color="red.400">
-                An error has occurred!
-                <br />
-                Please refresh the page and try again later
-              </Text>
-            </Center>
-          )}
-        </ModalBody>
-        <ModalFooter>
-          {!isLoading && !isSuccess && !error && (
-            <>
-              <Button onClick={handleCancel} variant="ghost" mr={3}>
-                Cancel
-              </Button>
-              <Button onClick={isAdmin ? saveChanges : sendFeedback}>
-                {isAdmin ? 'Save' : 'Send'}
-              </Button>
-            </>
-          )}
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+    <>
+      <ConfirmDeleteItem isOpen={isDeleteOpen} onClose={onDeleteClose} item={item} />
+      <Modal isOpen={isOpen} onClose={handleCancel} isCentered scrollBehavior="inside">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>
+            {isAdmin ? 'Edit' : 'Suggest Changes'} - {itemProps.name}
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {!isLoading && !isSuccess && !error && (
+              <Tabs variant="line" colorScheme="gray" isLazy>
+                <TabList>
+                  <Tab>Item Info</Tab>
+                  <Tab>Categories and Tags</Tab>
+                </TabList>
+                <TabPanels>
+                  <TabPanel>
+                    <InfoTab item={item} itemProps={itemProps} onChange={handleChange} />
+                  </TabPanel>
+                  <TabPanel>
+                    <CategoriesTab
+                      categories={categories}
+                      tags={tags}
+                      item={item}
+                      itemProps={itemProps}
+                      onChange={handleTagsChange}
+                    />
+                  </TabPanel>
+                </TabPanels>
+              </Tabs>
+            )}
+            {isLoading && (
+              <Center>
+                <Spinner />
+              </Center>
+            )}
+            {isSuccess && !isAdmin && (
+              <Center>
+                <Text fontSize="sm" textAlign="center">
+                  Thank you!
+                  <br />
+                  We have received your suggestion and it will be reviewed by our team.
+                </Text>
+              </Center>
+            )}
+            {isSuccess && isAdmin && (
+              <Center>
+                <Text fontSize="sm" textAlign="center">
+                  Changes saved!
+                  <br />
+                  They might take a few minutes to appear due to caching.
+                </Text>
+              </Center>
+            )}
+            {error && (
+              <Center>
+                <Text fontSize="sm" textAlign="center" color="red.400">
+                  An error has occurred!
+                  <br />
+                  Please refresh the page and try again later
+                </Text>
+              </Center>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            {!isLoading && !isSuccess && !error && (
+              <>
+                <Button
+                  variant="outline"
+                  colorScheme="red"
+                  onClick={onDeleteOpen}
+                  display={isAdmin ? 'inherit' : 'none'}
+                >
+                  <Icon as={FiTrash} mr={1} /> Delete Item
+                </Button>
+                <Button onClick={handleCancel} variant="ghost" mx={3}>
+                  Cancel
+                </Button>
+                <Button onClick={isAdmin ? saveChanges : sendFeedback}>
+                  {isAdmin ? 'Save' : 'Send'}
+                </Button>
+              </>
+            )}
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
   );
 };
 

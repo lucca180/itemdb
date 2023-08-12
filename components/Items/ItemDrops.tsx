@@ -1,25 +1,27 @@
 /* eslint-disable react/no-unescaped-entities */
-import { Flex, Text, Image, Badge, Center } from '@chakra-ui/react';
+import { Flex, Text, Image, Badge, Center, Alert, AlertIcon } from '@chakra-ui/react';
 import axios from 'axios';
 import React, { useEffect } from 'react';
-import { ItemData, ItemDrop } from '../../types';
+import { ItemData, ItemOpenable } from '../../types';
 import CardBase from '../Card/CardBase';
 import ItemCard from './ItemCard';
 
 type Props = {
   item: ItemData;
-  itemDrops: ItemDrop[];
+  itemOpenable: ItemOpenable;
 };
 
 const ItemDrops = (props: Props) => {
   const [isLoading, setLoading] = React.useState(true);
   const [dropData, setDropData] = React.useState<ItemData[]>([]);
-  const { item, itemDrops } = props;
+  const { item, itemOpenable } = props;
+
   const color = item.color.rgb;
-  const isCat = itemDrops[0].isCategoryCap;
+  const isCat = itemOpenable.isCategoryCap;
+  const itemDrops = itemOpenable.drops;
 
   const allCats = new Set(
-    itemDrops[0].isCategoryCap ? itemDrops.filter((a) => a.notes).map((a) => a.notes) : []
+    itemOpenable.isCategoryCap ? itemDrops.filter((a) => a.notes).map((a) => a.notes) : []
   ) as Set<string>;
 
   useEffect(() => {
@@ -49,6 +51,20 @@ const ItemDrops = (props: Props) => {
   if (!isCat)
     return (
       <CardBase title="This item can drop" color={color}>
+        {itemOpenable.isGBC && (
+          <Alert borderRadius={5} mb={3}>
+            <AlertIcon />
+            <Text fontSize="sm">
+              <b>Gift Box Mystery Capsules</b> can drop any item <b>currently</b> for sale at the NC
+              Mall for <b>at least 150NC</b>
+            </Text>
+          </Alert>
+        )}
+        {itemOpenable.minDrop > 1 && (
+          <Text textAlign={'center'} mb={3} fontSize="sm" color="gray.200">
+            This will drop <b>at least {itemOpenable.minDrop} items</b> of the following:
+          </Text>
+        )}
         <Flex gap={3} wrap="wrap" justifyContent="center">
           {itemDrops
             .sort((a, b) => b.dropRate - a.dropRate)
@@ -67,7 +83,7 @@ const ItemDrops = (props: Props) => {
             })}
         </Flex>
         <Text textAlign={'center'} mt={3} fontSize="xs" color="gray.300">
-          Odds on {itemDrops[0].openings} openings reports
+          Odds on {itemOpenable.openings} openings reports
         </Text>
       </CardBase>
     );
@@ -160,7 +176,7 @@ const ItemDrops = (props: Props) => {
         </>
       )}
       <Text textAlign={'center'} mt={3} fontSize="xs" color="gray.300">
-        Data on {itemDrops[0].openings} openings reports
+        Data on {itemOpenable.openings} openings reports
       </Text>
     </CardBase>
   );

@@ -258,13 +258,21 @@ export type WP_Article = {
   palette: Record<ColorType, Pallete> | null;
 };
 
+export type ItemOpenable = {
+  openings: number;
+  isCategoryCap: boolean;
+  notes: string | null;
+  drops: ItemDrop[];
+  hasLE: boolean;
+  minDrop: number;
+  isGBC: boolean;
+};
+
 export type ItemDrop = {
   item_iid: number;
   dropRate: number;
   notes: string | null;
   isLE: boolean;
-  openings: number;
-  isCategoryCap: boolean;
 };
 
 // ------- FEEDBACKS JSON -------- //
