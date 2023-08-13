@@ -8,12 +8,16 @@ import { wp_getBySlug } from '../api/wp/posts/[slug]';
 import parse, { HTMLReactParserOptions, Element, domToReact } from 'html-react-parser';
 import NextLink from 'next/link';
 import { wp_getLatestPosts } from '../api/wp/posts';
+import { ArticleCard } from '../../components/Articles/ArticlesCard';
+import { Chance } from 'chance';
+
 type Props = {
   post: WP_Article;
+  recomendations: WP_Article[];
 };
 
 const ArticlePage = (props: Props) => {
-  const { post } = props;
+  const { post, recomendations } = props;
   return (
     <Layout
       SEO={{
@@ -57,6 +61,18 @@ const ArticlePage = (props: Props) => {
           {parse(post.content, options)}
         </Flex>
       </Flex>
+      {recomendations.length > 0 && (
+        <>
+          <Heading size="md" as="h3" my={2} mt={16}>
+            Recommended Articles
+          </Heading>
+          <Flex gap={3}>
+            {recomendations.slice(0, 3).map((article) => (
+              <ArticleCard key={article.id} article={article} vertical />
+            ))}
+          </Flex>
+        </>
+      )}
     </Layout>
   );
 };
@@ -71,9 +87,15 @@ export async function getStaticProps(context: GetStaticPropsContext) {
   const post = await wp_getBySlug(slug);
   if (!post) return { notFound: true };
 
+  let recommended = await wp_getLatestPosts(100, 1, true);
+  //shuffle
+  const chance = new Chance();
+  recommended = chance.shuffle(recommended);
+
   return {
     props: {
       post,
+      recomendations: recommended.filter((x) => x.id !== post.id),
     },
     revalidate: 60,
   };

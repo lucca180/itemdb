@@ -1,14 +1,46 @@
-import { Flex, Heading, Image, Text, Link } from '@chakra-ui/react';
+import { Flex, Heading, Image, Text, Link, Card, CardBody, Stack } from '@chakra-ui/react';
 import { WP_Article } from '../../types';
 import NextLink from 'next/link';
 
 type Props = {
   article: WP_Article;
+  vertical?: boolean;
 };
 
 export const ArticleCard = (props: Props) => {
-  const { article } = props;
+  const { article, vertical } = props;
   const rgb = article.palette?.lightvibrant.rgb ?? [0, 0, 0];
+
+  if (vertical)
+    return (
+      <Link
+        as={NextLink}
+        href={`/articles/${article.slug}`}
+        borderRadius="md"
+        _hover={{
+          textDecoration: 'none',
+          bg: `rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},.5)`,
+        }}
+      >
+        <Card w="200px" h="300px" bg={`rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},.3)`}>
+          <CardBody>
+            <Image
+              h="125px"
+              src={article.thumbnail ?? '/logo.png'}
+              alt={article.title}
+              borderRadius="lg"
+            />
+            <Stack mt="3" spacing="3">
+              <Heading size="sm">{article.title}</Heading>
+              <Text fontSize="xs" noOfLines={4}>
+                {article.excerpt}
+              </Text>
+            </Stack>
+          </CardBody>
+        </Card>
+      </Link>
+    );
+
   return (
     <Link
       as={NextLink}

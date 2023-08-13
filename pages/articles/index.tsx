@@ -36,7 +36,7 @@ const ArticlesPage = (props: Props) => {
       <Flex flexFlow="column" gap={3}>
         <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
           {allPosts.map((article) => (
-            <ArticleCard key={article.id} article={article} />
+            <ArticleCard vertical key={article.id} article={article} />
           ))}
         </Flex>
       </Flex>
