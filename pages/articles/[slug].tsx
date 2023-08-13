@@ -66,7 +66,7 @@ const ArticlePage = (props: Props) => {
           <Heading size="md" as="h3" my={2} mt={16}>
             Recommended Articles
           </Heading>
-          <Flex gap={3}>
+          <Flex gap={[2, 3]} overflow="auto" pb={3}>
             {recomendations.slice(0, 3).map((article) => (
               <ArticleCard key={article.id} article={article} vertical />
             ))}

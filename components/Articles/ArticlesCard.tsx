@@ -14,6 +14,7 @@ export const ArticleCard = (props: Props) => {
   if (vertical)
     return (
       <Link
+        // flex={1}
         as={NextLink}
         href={`/articles/${article.slug}`}
         borderRadius="md"
@@ -22,16 +23,23 @@ export const ArticleCard = (props: Props) => {
           bg: `rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},.5)`,
         }}
       >
-        <Card w="200px" h="300px" bg={`rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},.3)`}>
+        <Card
+          w={['150px', '200px']}
+          h="100%"
+          maxH="300px"
+          bg={`rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},.3)`}
+        >
           <CardBody>
             <Image
-              h="125px"
+              maxH={'125px'}
               src={article.thumbnail ?? '/logo.png'}
               alt={article.title}
               borderRadius="lg"
             />
-            <Stack mt="3" spacing="3">
-              <Heading size="sm">{article.title}</Heading>
+            <Stack mt={['2', '3']} spacing={['1', '3']}>
+              <Heading size="sm" noOfLines={3}>
+                {article.title}
+              </Heading>
               <Text fontSize="xs" noOfLines={4}>
                 {article.excerpt}
               </Text>
