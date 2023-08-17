@@ -6,7 +6,7 @@ import { mean, standardDeviation } from 'simple-statistics';
 import { ItemPrices, PriceProcess } from '@prisma/client';
 import { differenceInCalendarDays } from 'date-fns';
 
-const MAX_DAYS = 30;
+const MAX_DAYS = 15;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {

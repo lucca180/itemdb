@@ -29,7 +29,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     if (exists && !forceRefresh) {
       res.setHeader('Content-Type', 'image/gif');
-      res.setHeader('Cache-Control', 'public, max-age=604800');
+      res.setHeader('Cache-Control', 'public, s-maxage=604800');
 
       if (file.metadata.cacheControl !== 'public, max-age=604800') {
         await file.setMetadata({ cacheControl: 'public, max-age=604800' });
@@ -55,7 +55,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         .writeHead(200, {
           'Content-Type': 'image/gif',
           'Content-Length': buffer.length,
-          'Cache-Control': 'public, max-age=604800',
+          'Cache-Control': 'public, s-maxage=604800',
         })
         .end(buffer);
 
@@ -70,8 +70,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     }
 
     ctx.drawImage(img, 0, 0);
-
-    res.setHeader('Content-Type', 'image/jpeg');
 
     const buffer = canvas.toBuffer();
 
