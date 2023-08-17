@@ -14,7 +14,12 @@ import { FiSend } from 'react-icons/fi';
 import CardBase from '../../components/Card/CardBase';
 import HeaderCard from '../../components/Card/HeaderCard';
 import Layout from '../../components/Layout';
-import FeedbackModal from '../../components/Modal/FeedbackModal';
+import { FeedbackModalProps } from '../../components/Modal/FeedbackModal';
+import dynamic from 'next/dynamic';
+
+const FeedbackModal = dynamic<FeedbackModalProps>(
+  () => import('../../components/Modal/FeedbackModal')
+);
 
 const FeedbackPage = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();

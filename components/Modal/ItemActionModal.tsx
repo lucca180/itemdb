@@ -20,7 +20,7 @@ import { ListItemInfo, UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import ListSelect from '../UserLists/ListSelect';
 
-type Props = {
+export type ItemActionModalProps = {
   list: UserList;
   isOpen: boolean;
   action: string;
@@ -29,7 +29,7 @@ type Props = {
   refresh: () => void;
 };
 
-const ItemActionModal = (props: Props) => {
+const ItemActionModal = (props: ItemActionModalProps) => {
   const { getIdToken } = useAuth();
   const { isOpen, onClose, action, selectedItems, list, refresh } = props;
   const [isLoading, setLoading] = useState<boolean>(false);

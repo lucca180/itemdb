@@ -24,7 +24,7 @@ import { useState } from 'react';
 import { ItemData, UserList, ListItemInfo } from '../../types';
 import { useAuth } from '../../utils/auth';
 
-type Props = {
+export type DuplicatedItemModalProps = {
   isOpen: boolean;
   onClose: () => void;
   item: ItemData;
@@ -32,7 +32,7 @@ type Props = {
   itemInfo?: ListItemInfo;
 };
 
-const DuplicatedItemModal = (props: Props) => {
+const DuplicatedItemModal = (props: DuplicatedItemModalProps) => {
   const { user, getIdToken } = useAuth();
   const { isOpen, onClose, item, list, itemInfo } = props;
   const [isLoading, setLoading] = useState<boolean>(false);

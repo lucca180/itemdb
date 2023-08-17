@@ -33,8 +33,8 @@ import axios from 'axios';
 import TradeCard from '../../components/Trades/TradeCard';
 // import ItemTags from '../../components/Items/ItemTags';
 import { FiSend, FiEdit3 } from 'react-icons/fi';
-import EditItemModal from '../../components/Modal/EditItemModal';
-import FeedbackModal from '../../components/Modal/FeedbackModal';
+import { EditItemModalProps } from '../../components/Modal/EditItemModal';
+import { FeedbackModalProps } from '../../components/Modal/FeedbackModal';
 import AddToListSelect from '../../components/UserLists/AddToListSelect';
 import { GetStaticPropsContext } from 'next';
 import { getItem, getSomeItemIDs } from '../api/v1/items/[id_name]';
@@ -50,6 +50,14 @@ import { getItemDrops, getItemParent } from '../api/v1/items/[id_name]/drops';
 import ItemDrops from '../../components/Items/ItemDrops';
 import ItemParent from '../../components/Items/ItemParent';
 // import TradeModal from '../../components/TradeModal/TradeModal'
+import dynamic from 'next/dynamic';
+
+const EditItemModal = dynamic<EditItemModalProps>(
+  () => import('../../components/Modal/EditItemModal')
+);
+const FeedbackModal = dynamic<FeedbackModalProps>(
+  () => import('../../components/Modal/FeedbackModal')
+);
 
 const defaultLastSeen: ItemLastSeen = {
   sw: null,

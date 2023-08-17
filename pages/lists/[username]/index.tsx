@@ -20,7 +20,7 @@ import {
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Layout from '../../../components/Layout';
-import CreateListModal from '../../../components/Modal/CreateListModal';
+import { CreateListModalProps } from '../../../components/Modal/CreateListModal';
 import { ListItemInfo, User, UserList } from '../../../types';
 import { useAuth } from '../../../utils/auth';
 import { useRouter } from 'next/router';
@@ -28,14 +28,27 @@ import { SortableLists } from '../../../components/Sortable/SortableLists';
 import Color from 'color';
 import { SelectItemsCheckbox } from '../../../components/Input/SelectItemsCheckbox';
 import { FaTrash } from 'react-icons/fa';
-import DeleteListModal from '../../../components/Modal/DeleteListModal';
+import { DeleteListModalProps } from '../../../components/Modal/DeleteListModal';
 import { BiLinkExternal } from 'react-icons/bi';
-import EditProfileModal from '../../../components/Modal/EditProfileModal';
+import { EditProfileModalProps } from '../../../components/Modal/EditProfileModal';
 import { NextPageContext } from 'next';
 import { getUser } from '../../api/v1/users/[username]';
 import NextImage from 'next/image';
 import icon from '../../../public/logo_icon.svg';
 import UserAchiev from '../../../components/Achievements/UserAchiev';
+import dynamic from 'next/dynamic';
+
+const CreateListModal = dynamic<CreateListModalProps>(
+  () => import('../../../components/Modal/CreateListModal')
+);
+
+const DeleteListModal = dynamic<DeleteListModalProps>(
+  () => import('../../../components/Modal/DeleteListModal')
+);
+
+const EditProfileModal = dynamic<EditProfileModalProps>(
+  () => import('../../../components/Modal/EditProfileModal')
+);
 
 type ExtendedUserList = UserList & {
   hasChanged?: boolean;

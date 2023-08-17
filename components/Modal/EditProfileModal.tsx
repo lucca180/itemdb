@@ -22,7 +22,7 @@ import { User } from '../../types';
 import { useAuth } from '../../utils/auth';
 import { ColorResult, TwitterPicker } from '@hello-pangea/color-picker';
 
-type Props = {
+export type EditProfileModalProps = {
   isOpen: boolean;
   onClose: () => void;
   refresh?: () => void;
@@ -48,7 +48,7 @@ const colorPickerStyles = {
   },
 };
 
-const EditProfileModal = (props: Props) => {
+const EditProfileModal = (props: EditProfileModalProps) => {
   const { user, setUser, getIdToken } = useAuth();
   const [userProfile, setUserProfile] = useState(user ?? defaultUser);
   const { isOpen, onClose } = props;

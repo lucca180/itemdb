@@ -55,6 +55,7 @@ const ItemPreview = (props: Props) => {
               alt="Item Preview"
               unoptimized
               fill
+              priority
               onLoadingComplete={() => setIsLoaded(true)}
             />
           </AspectRatio>

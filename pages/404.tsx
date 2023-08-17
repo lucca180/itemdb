@@ -1,8 +1,13 @@
 /* eslint-disable react/no-unescaped-entities */
 import { Heading, Text, Link, Center, Image, Button, Icon, useDisclosure } from '@chakra-ui/react';
+import dynamic from 'next/dynamic';
 import { FiSend } from 'react-icons/fi';
 import Layout from '../components/Layout';
-import FeedbackModal from '../components/Modal/FeedbackModal';
+import { FeedbackModalProps } from '../components/Modal/FeedbackModal';
+
+const FeedbackModal = dynamic<FeedbackModalProps>(
+  () => import('../components/Modal/FeedbackModal')
+);
 
 const Error404Page = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();

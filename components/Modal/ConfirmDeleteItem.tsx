@@ -19,7 +19,7 @@ type Props = {
   item: ItemData;
 };
 
-export const ConfirmDeleteItem = (props: Props) => {
+const ConfirmDeleteItem = (props: Props) => {
   const { isOpen, onClose, item } = props;
   const cancelRef = React.useRef(null);
   const { getIdToken } = useAuth();
@@ -113,3 +113,5 @@ export const ConfirmDeleteItem = (props: Props) => {
     </AlertDialog>
   );
 };
+
+export default ConfirmDeleteItem;

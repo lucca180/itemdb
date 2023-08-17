@@ -39,17 +39,25 @@ import { useAuth } from '../../utils/auth';
 import ItemCatSelect from '../Input/ItemCategorySelect';
 import ItemStatusSelect from '../Input/ItemStatusSelect';
 import TagSelect from '../Input/TagsSelect';
-import { ConfirmDeleteItem } from './ConfirmDeleteItem';
 import { FiTrash } from 'react-icons/fi';
+import dynamic from 'next/dynamic';
 
-type Props = {
+const ConfirmDeleteItem = dynamic<{
+  isOpen: boolean;
+  onClose: () => void;
+  item: ItemData;
+}>(() => import('./ConfirmDeleteItem'), {
+  loading: () => <Spinner />,
+});
+
+export type EditItemModalProps = {
   isOpen: boolean;
   onClose: () => void;
   item: ItemData;
   tags: ItemTag[];
 };
 
-const EditItemModal = (props: Props) => {
+const EditItemModal = (props: EditItemModalProps) => {
   const { getIdToken, user } = useAuth();
   const { isOpen, onClose, item: itemProps, tags: tagsProps } = props;
   const [item, setItem] = useState<ItemData>(itemProps);

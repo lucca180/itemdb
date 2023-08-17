@@ -6,12 +6,12 @@ import { ColorData, ItemData, PriceData } from '../../types';
 
 const intl = new Intl.NumberFormat();
 
-type Props = {
+export type ChartComponentProps = {
   color: ItemData['color'] | ColorData;
   data: PriceData[];
 };
 
-const ChartComponent = (props: Props) => {
+const ChartComponent = (props: ChartComponentProps) => {
   const { data, color } = props;
   const RBG = Color.rgb(color.rgb).round().array();
   const backgroundColor = 'transparent';

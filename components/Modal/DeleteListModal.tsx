@@ -16,7 +16,7 @@ import { useState } from 'react';
 import { useRecoilState } from 'recoil';
 import { useAuth, UserLists } from '../../utils/auth';
 
-type Props = {
+export type DeleteListModalProps = {
   isOpen: boolean;
   selectedLists: number[];
   username: string;
@@ -24,7 +24,7 @@ type Props = {
   refresh: () => void;
 };
 
-const DeleteListModal = (props: Props) => {
+const DeleteListModal = (props: DeleteListModalProps) => {
   const { getIdToken } = useAuth();
   const { isOpen, onClose, selectedLists: listsIds, refresh, username } = props;
   const [isLoading, setLoading] = useState<boolean>(false);

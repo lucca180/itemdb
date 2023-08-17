@@ -5,7 +5,12 @@ import { useAuth, UserLists } from '../../utils/auth';
 import { useRecoilState } from 'recoil';
 import axios from 'axios';
 import { useState } from 'react';
-import DuplicatedItemModal from './DuplicatedItemModal';
+import { DuplicatedItemModalProps } from './DuplicatedItemModal';
+import dynamic from 'next/dynamic';
+
+const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
+  () => import('./DuplicatedItemModal')
+);
 
 const CtxMenu = chakra(ContextMenu, {
   baseStyle: {

@@ -23,13 +23,13 @@ import { useState } from 'react';
 import { ItemData } from '../../types';
 import { useAuth } from '../../utils/auth';
 
-type Props = {
+export type FeedbackModalProps = {
   isOpen: boolean;
   onClose: () => void;
   item?: ItemData;
 };
 
-const FeedbackModal = (props: Props) => {
+const FeedbackModal = (props: FeedbackModalProps) => {
   const { user } = useAuth();
   const router = useRouter();
   const { isOpen, onClose, item } = props;

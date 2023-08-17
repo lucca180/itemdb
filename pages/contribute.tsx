@@ -21,8 +21,13 @@ import { BsCheckCircleFill, BsXCircleFill } from 'react-icons/bs';
 import HeaderCard from '../components/Card/HeaderCard';
 import Layout from '../components/Layout';
 import { useDisclosure } from '@chakra-ui/react';
-import FeedbackModal from '../components/Modal/FeedbackModal';
+import { FeedbackModalProps } from '../components/Modal/FeedbackModal';
 import { FiEdit3, FiSend } from 'react-icons/fi';
+import dynamic from 'next/dynamic';
+
+const FeedbackModal = dynamic<FeedbackModalProps>(
+  () => import('../components/Modal/FeedbackModal')
+);
 
 const ContributePage = () => {
   return (

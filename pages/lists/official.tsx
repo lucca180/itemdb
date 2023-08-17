@@ -1,11 +1,16 @@
 import { Flex, Heading, Text, Divider, Button, useDisclosure, Box } from '@chakra-ui/react';
 import HeaderCard from '../../components/Card/HeaderCard';
 import Layout from '../../components/Layout';
-import ApplyListModal from '../../components/Modal/OfficialListApply';
+import { ApplyListModalProps } from '../../components/Modal/OfficialListApply';
 import UserListCard from '../../components/UserLists/ListCard';
 import { UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import { getUserLists } from '../api/v1/lists/[username]';
+import dynamic from 'next/dynamic';
+
+const ApplyListModal = dynamic<ApplyListModalProps>(
+  () => import('../../components/Modal/OfficialListApply')
+);
 
 type Props = {
   lists: UserList[];

@@ -14,13 +14,16 @@ import {
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import { ItemData, ItemLastSeen, PriceData } from '../../types';
-import ChartComponent from '../Charts/PriceChart';
+import { ChartComponentProps } from '../Charts/PriceChart';
 import { AiOutlineAreaChart, AiOutlineTable } from 'react-icons/ai';
 import PriceTable from './PriceTable';
 import { format, formatDistanceToNow } from 'date-fns';
 import { MinusIcon } from '@chakra-ui/icons';
 import CardBase from '../Card/CardBase';
 import { MdMoneyOff } from 'react-icons/md';
+import dynamic from 'next/dynamic';
+
+const ChartComponent = dynamic<ChartComponentProps>(() => import('../Charts/PriceChart'));
 
 type Props = {
   item: ItemData;

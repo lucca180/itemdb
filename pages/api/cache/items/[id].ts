@@ -31,7 +31,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       res.setHeader('Content-Type', 'image/gif');
       res.setHeader('Cache-Control', 'public, max-age=604800');
 
-      file.setMetadata({ 'Cache-Control': 'public, max-age=604800' });
+      if (file.metadata.cacheControl !== 'public, max-age=604800') {
+        await file.setMetadata({ cacheControl: 'public, max-age=604800' });
+      }
 
       return res.redirect(file.publicUrl());
     } else {
@@ -43,17 +45,21 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
       const buffer = Buffer.from(new Uint8Array(img.data));
 
-      file.setMetadata({ 'Cache-Control': 'public, max-age=604800' });
-
-      await file.save(buffer);
-
-      res.writeHead(200, {
-        'Content-Type': 'image/gif',
-        'Content-Length': buffer.length,
-        'Cache-Control': 'public, max-age=604800',
+      await file.save(buffer, {
+        metadata: {
+          cacheControl: 'public, max-age=604800',
+        },
       });
 
-      return res.end(buffer);
+      res
+        .writeHead(200, {
+          'Content-Type': 'image/gif',
+          'Content-Length': buffer.length,
+          'Cache-Control': 'public, max-age=604800',
+        })
+        .end(buffer);
+
+      return;
     }
   } catch (e) {
     const img = await loadImage('./public/oops.jpg');
@@ -69,13 +75,15 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     const buffer = canvas.toBuffer();
 
-    res.writeHead(200, {
-      'Content-Type': 'image/jpeg',
-      'Content-Length': buffer.length,
-      'Cache-Control': 'no-cache',
-      'Error-Image': 'true',
-    });
+    res
+      .writeHead(200, {
+        'Content-Type': 'image/jpeg',
+        'Content-Length': buffer.length,
+        'Cache-Control': 'no-cache',
+        'Error-Image': 'true',
+      })
+      .end(buffer);
 
-    return res.end(buffer);
+    return;
   }
 }

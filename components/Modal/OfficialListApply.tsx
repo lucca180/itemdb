@@ -23,12 +23,12 @@ import { useState } from 'react';
 import { useAuth } from '../../utils/auth';
 import ListSelect from '../UserLists/ListSelect';
 
-type Props = {
+export type ApplyListModalProps = {
   isOpen: boolean;
   onClose: () => void;
 };
 
-const ApplyListModal = (props: Props) => {
+const ApplyListModal = (props: ApplyListModalProps) => {
   const { user } = useAuth();
   const { isOpen, onClose } = props;
   const [list_id, setListId] = useState<number>();

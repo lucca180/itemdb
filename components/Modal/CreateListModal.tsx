@@ -27,7 +27,7 @@ import { useAuth, UserLists } from '../../utils/auth';
 import { ColorResult, TwitterPicker } from '@hello-pangea/color-picker';
 import { useRecoilState } from 'recoil';
 
-type Props = {
+export type CreateListModalProps = {
   list?: UserList;
   isOpen: boolean;
   onClose: () => void;
@@ -56,7 +56,7 @@ const colorPickerStyles = {
   },
 };
 
-const CreateListModal = (props: Props) => {
+const CreateListModal = (props: CreateListModalProps) => {
   const { user, getIdToken } = useAuth();
   const { isOpen, onClose } = props;
   const [isLoading, setLoading] = useState<boolean>(false);

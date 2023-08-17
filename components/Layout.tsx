@@ -20,7 +20,7 @@ import {
 } from '@chakra-ui/react';
 
 import NextImage from 'next/image';
-import logo from '../public/logo_white.svg';
+import logo from '../public/logo_white_compressed.svg';
 import logo_icon from '../public/logo_icon.svg';
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import Link from 'next/link';

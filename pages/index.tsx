@@ -1,7 +1,7 @@
 import { Box, Flex, Heading, Highlight, Link, Stack } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
-import logo from '../public/logo_white.svg';
+import logo from '../public/logo_white_compressed.svg';
 import Image from 'next/image';
 import ItemCard from '../components/Items/ItemCard';
 import { ItemData, WP_Article } from '../types';
@@ -54,7 +54,7 @@ const HomePage = (props: Props) => {
       }}
     >
       <Box textAlign="center" display="flex" flexFlow="column" alignItems="center" mt="50px">
-        <Image src={logo} alt="itemdb logo" width={500} quality="100" />
+        <Image src={logo} alt="itemdb logo" width={500} quality="100" priority />
         <Heading size="sm" mt={4}>
           <Highlight
             query="open source"

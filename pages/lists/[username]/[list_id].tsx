@@ -22,7 +22,6 @@ import {
 import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
 import Layout from '../../../components/Layout';
-import CreateListModal from '../../../components/Modal/CreateListModal';
 import { ItemData, ListItemInfo, UserList } from '../../../types';
 import { useAuth } from '../../../utils/auth';
 import { useRouter } from 'next/router';
@@ -33,11 +32,23 @@ import Color from 'color';
 import NextLink from 'next/link';
 import { SortableArea } from '../../../components/Sortable/SortableArea';
 import { SelectItemsCheckbox } from '../../../components/Input/SelectItemsCheckbox';
-import ItemActionModal from '../../../components/Modal/ItemActionModal';
+import { ItemActionModalProps } from '../../../components/Modal/ItemActionModal';
 import { BiLinkExternal } from 'react-icons/bi';
 import { NextPageContext } from 'next';
 import { getList } from '../../api/v1/lists/[username]/[list_id]';
 import { getCookie } from 'cookies-next';
+
+import { CreateListModalProps } from '../../../components/Modal/CreateListModal';
+
+import dynamic from 'next/dynamic';
+
+const CreateListModal = dynamic<CreateListModalProps>(
+  () => import('../../../components/Modal/CreateListModal')
+);
+
+const ItemActionModal = dynamic<ItemActionModalProps>(
+  () => import('../../../components/Modal/ItemActionModal')
+);
 
 type ExtendedListItemInfo = ListItemInfo & { hasChanged?: boolean };
 
