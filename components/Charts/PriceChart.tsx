@@ -50,7 +50,7 @@ const ChartComponent = (props: ChartComponentProps) => {
     });
 
     chart.timeScale().fitContent();
-    chart.priceScale().applyOptions({ borderColor: 'white', autoScale: false });
+    chart.priceScale('right').applyOptions({ borderColor: 'white', autoScale: false });
     chart.timeScale().applyOptions({ borderColor: 'white' });
 
     chart.applyOptions({
@@ -67,7 +67,7 @@ const ChartComponent = (props: ChartComponentProps) => {
 
     const dataClone = data.map((p) => {
       return {
-        time: p.addedAt,
+        time: p.addedAt.split('T')[0],
         value: p.value,
       };
     });

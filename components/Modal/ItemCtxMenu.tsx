@@ -2,7 +2,7 @@ import { Badge, chakra, Divider, Tooltip, useToast, Box, useDisclosure } from '@
 import { ContextMenu, ContextMenuItem, Submenu, ContextMenuTrigger } from 'rctx-contextmenu';
 import { ItemData, ListItemInfo, UserList } from '../../types';
 import { useAuth, UserLists } from '../../utils/auth';
-import { useRecoilState } from 'recoil';
+import { useAtom } from 'jotai';
 import axios from 'axios';
 import { useState } from 'react';
 import { DuplicatedItemModalProps } from './DuplicatedItemModal';
@@ -70,7 +70,7 @@ type Props = {
 const ItemCtxMenu = (props: Props) => {
   const toast = useToast();
   const { user, getIdToken } = useAuth();
-  const [lists, setLists] = useRecoilState(UserLists);
+  const [lists, setLists] = useAtom(UserLists);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedList, setSelectedList] = useState<UserList | undefined>();
   const [duplicatedItem, setDuplicatedItem] = useState<ListItemInfo | undefined>();

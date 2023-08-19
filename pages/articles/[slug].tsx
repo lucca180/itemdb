@@ -9,7 +9,6 @@ import parse, { HTMLReactParserOptions, Element, domToReact } from 'html-react-p
 import NextLink from 'next/link';
 import { wp_getLatestPosts } from '../api/wp/posts';
 import { ArticleCard } from '../../components/Articles/ArticlesCard';
-import { Chance } from 'chance';
 
 type Props = {
   post: WP_Article;
@@ -88,7 +87,9 @@ export async function getStaticProps(context: GetStaticPropsContext) {
   if (!post) return { notFound: true };
 
   let recommended = await wp_getLatestPosts(100, 1, true);
+
   //shuffle
+  const Chance = (await import('chance')).default;
   const chance = new Chance();
   recommended = chance.shuffle(recommended);
 

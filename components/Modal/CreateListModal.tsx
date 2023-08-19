@@ -25,7 +25,7 @@ import { useState } from 'react';
 import { UserList } from '../../types';
 import { useAuth, UserLists } from '../../utils/auth';
 import { ColorResult, TwitterPicker } from '@hello-pangea/color-picker';
-import { useRecoilState } from 'recoil';
+import { useAtom } from 'jotai';
 
 export type CreateListModalProps = {
   list?: UserList;
@@ -62,7 +62,7 @@ const CreateListModal = (props: CreateListModalProps) => {
   const [isLoading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
   const [list, setList] = useState(props.list ?? defaultList);
-  const [, setRecoilLists] = useRecoilState(UserLists);
+  const [, setStorageLists] = useAtom(UserLists);
 
   const saveChanges = async () => {
     setLoading(true);
@@ -102,7 +102,7 @@ const CreateListModal = (props: CreateListModalProps) => {
 
       if (res.data.success) {
         props.refresh?.();
-        setRecoilLists(null);
+        setStorageLists(null);
         onClose();
       } else throw res.data;
     } catch (err) {

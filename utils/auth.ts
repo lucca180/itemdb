@@ -1,27 +1,34 @@
 import React, { useEffect } from 'react';
-import { atom, useRecoilState } from 'recoil';
-import { recoilPersist } from 'recoil-persist';
+
 import axios from 'axios';
 import { getAuth, User as FirebaseUser } from 'firebase/auth';
 import { useRouter } from 'next/router';
 import { User, UserList } from '../types';
 import { getCookie, setCookie } from 'cookies-next';
 import { useMutex } from 'react-context-mutex';
+import { useAtom } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
 
-const { persistAtom } = recoilPersist({
-  storage: typeof window !== 'undefined' ? sessionStorage : undefined,
-});
+const storage =
+  typeof window !== 'undefined'
+    ? {
+        getItem: (key: string) => JSON.parse(sessionStorage.getItem(key) ?? 'null'),
+        setItem: (key: string, value: any) => sessionStorage.setItem(key, JSON.stringify(value)),
+        removeItem: (key: string) => sessionStorage.removeItem(key),
+        subscribe: (key: string, callback: (value: any) => void, initialValue: any) => {
+          const listener = (e: StorageEvent) => {
+            if (e.key === key) {
+              callback(e.newValue ? JSON.parse(e.newValue) : initialValue);
+            }
+          };
+          window.addEventListener('storage', listener);
+          return () => window.removeEventListener('storage', listener);
+        },
+      }
+    : undefined;
 
-export const UserState = atom<User | null>({
-  key: 'UserState',
-  default: null,
-  effects_UNSTABLE: [persistAtom],
-});
-
-export const UserLists = atom<UserList[] | null>({
-  key: 'UserLists',
-  default: null,
-});
+export const UserState = atomWithStorage<User | null>('UserState', null, storage as any);
+export const UserLists = atomWithStorage<UserList[] | null>('UserLists', null, storage as any);
 
 type UseAuthProps = {
   redirect?: string;
@@ -30,7 +37,8 @@ type UseAuthProps = {
 export const useAuth = (props?: UseAuthProps) => {
   const redirect = props?.redirect;
   const [isLoading, setIsLoading] = React.useState(true);
-  const [user, setUser] = useRecoilState(UserState);
+  const [user, setUser] = useAtom(UserState);
+  const [, setLists] = useAtom(UserLists);
   const auth = getAuth();
   const router = useRouter();
   const MutexRunner = useMutex();
@@ -95,14 +103,14 @@ export const useAuth = (props?: UseAuthProps) => {
   const checkCookie = async () => {
     const cookie = getCookie('userToken');
     if (cookie) return;
-    await getIdToken();
+    await getIdToken(true);
   };
 
-  const getIdToken = async () => {
+  const getIdToken = async (forceRefresh = false) => {
     try {
       if (!auth.currentUser) return null;
 
-      const token = await auth.currentUser.getIdToken();
+      const token = await auth.currentUser.getIdToken(forceRefresh);
 
       if (!token) return null;
       setCookie('userToken', token, { secure: true });
@@ -117,6 +125,7 @@ export const useAuth = (props?: UseAuthProps) => {
   const signout = () => {
     auth.signOut();
     setUser(null);
+    setLists(null);
     location.reload();
   };
 

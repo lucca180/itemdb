@@ -31,6 +31,7 @@ import { AiFillHeart } from 'react-icons/ai';
 import { BsBoxArrowInRight, BsFillPersonFill } from 'react-icons/bs';
 import { NextSeo, NextSeoProps } from 'next-seo';
 import { SearchBar } from './Search/SearchBar';
+import ClientOnly from './Utils/ClientOnly';
 
 type Props = {
   children?: ReactNode;
@@ -41,7 +42,7 @@ type Props = {
 const Layout = (props: Props) => {
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { user, authLoading, signout } = useAuth();
+  const { user, signout } = useAuth();
   const [isLargerThanMD] = useMediaQuery('(min-width: 48em)');
 
   useEffect(() => {
@@ -90,7 +91,13 @@ const Layout = (props: Props) => {
           <Box flex="1 1 auto" display="flex" justifyContent="center" alignItems="center">
             <SearchBar onSubmit={onSubmit} />
           </Box>
-          <Box display="flex" gap={{ base: 2, md: 3 }} alignItems="center" maxW="30%">
+          <Box
+            as={ClientOnly}
+            display="flex"
+            gap={{ base: 2, md: 3 }}
+            alignItems="center"
+            maxW="30%"
+          >
             <Button
               as={Link}
               href="/contribute"
@@ -103,57 +110,52 @@ const Layout = (props: Props) => {
             >
               <Icon as={AiFillHeart} boxSize="18px" />
             </Button>
-            {authLoading && <Button isLoading />}
-            {!authLoading && (
+            {!user && (
+              <Button
+                variant="filled"
+                bg="gray.700"
+                _hover={{ bg: 'gray.600' }}
+                onClick={onOpen}
+                px={{ base: 0, md: 4 }}
+              >
+                <Icon as={BsBoxArrowInRight} boxSize="18px" mr={2} verticalAlign="text-top" />
+                <Box as="span" display={{ base: 'none', md: 'inline' }}>
+                  Login
+                </Box>
+              </Button>
+            )}
+            {user && (
               <>
-                {!user && (
-                  <Button
-                    variant="filled"
-                    bg="gray.700"
-                    _hover={{ bg: 'gray.600' }}
-                    onClick={onOpen}
-                    px={{ base: 0, md: 4 }}
+                <Menu>
+                  <MenuButton
+                    as={Button}
+                    rightIcon={<ChevronDownIcon />}
+                    px={{ base: 2, md: 4 }}
+                    textAlign="center"
                   >
-                    <Icon as={BsBoxArrowInRight} boxSize="18px" mr={2} verticalAlign="text-top" />
-                    <Box as="span" display={{ base: 'none', md: 'inline' }}>
-                      Login
-                    </Box>
-                  </Button>
-                )}
-                {user && (
-                  <>
-                    <Menu>
-                      <MenuButton
-                        as={Button}
-                        rightIcon={<ChevronDownIcon />}
-                        px={{ base: 2, md: 4 }}
-                        textAlign="center"
-                      >
-                        {isLargerThanMD && <Box as="span">Hi, {user.username}</Box>}
-                        <Icon
-                          as={BsFillPersonFill}
-                          display={{ base: 'inherit', md: 'none' }}
-                          boxSize="18px"
-                        />
-                      </MenuButton>
-                      <MenuList>
-                        <MenuGroup title={!isLargerThanMD ? `Hello, ${user.username}` : undefined}>
-                          <MenuItem as={Link} href={`/lists/${user.username}`}>
-                            My Lists
-                          </MenuItem>
-                          <MenuItem as={Link} href={`/feedback`}>
-                            Feedback
-                          </MenuItem>
-                          <MenuItem as={Link} href={`/contribute`}>
-                            How to Contribute
-                          </MenuItem>
-                        </MenuGroup>
-                        <MenuDivider />
-                        <MenuItem onClick={signout}>Logout</MenuItem>
-                      </MenuList>
-                    </Menu>
-                  </>
-                )}
+                    {isLargerThanMD && <Box as="span">Hi, {user.username}</Box>}
+                    <Icon
+                      as={BsFillPersonFill}
+                      display={{ base: 'inherit', md: 'none' }}
+                      boxSize="18px"
+                    />
+                  </MenuButton>
+                  <MenuList>
+                    <MenuGroup title={!isLargerThanMD ? `Hello, ${user.username}` : undefined}>
+                      <MenuItem as={Link} href={`/lists/${user.username}`}>
+                        My Lists
+                      </MenuItem>
+                      <MenuItem as={Link} href={`/feedback`}>
+                        Feedback
+                      </MenuItem>
+                      <MenuItem as={Link} href={`/contribute`}>
+                        How to Contribute
+                      </MenuItem>
+                    </MenuGroup>
+                    <MenuDivider />
+                    <MenuItem onClick={signout}>Logout</MenuItem>
+                  </MenuList>
+                </Menu>
               </>
             )}
           </Box>

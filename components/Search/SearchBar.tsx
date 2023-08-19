@@ -150,14 +150,14 @@ export const SearchBar = (props: Props) => {
             searchResult &&
             searchResult.content.length > 0 &&
             searchResult.content.map((item) => (
-              <>
+              <React.Fragment key={item.internal_id}>
                 <ItemCtxMenu item={item} />
                 <CtxTrigger
                   id={item.internal_id.toString()}
                   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                   //@ts-ignore
                   disableWhileShiftPressed
-                  disable={isMobile}
+                  disable={isMobile ? 'true' : undefined}
                 >
                   <Link
                     as={NextLink}
@@ -191,7 +191,7 @@ export const SearchBar = (props: Props) => {
                     </Flex>
                   </Link>
                 </CtxTrigger>
-              </>
+              </React.Fragment>
             ))}
         </PopoverBody>
         {!isLoading && searchResult && searchResult.content.length > 0 && (

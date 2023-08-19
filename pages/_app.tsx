@@ -3,7 +3,7 @@ import { ChakraProvider } from '@chakra-ui/react';
 import theme from '../utils/theme';
 import '../utils/global.css';
 import { initializeApp } from 'firebase/app';
-import { RecoilRoot } from 'recoil';
+import { Provider } from 'jotai';
 import Head from 'next/head';
 import { GoogleAnalytics, event } from 'nextjs-google-analytics';
 import type { NextWebVitalsMetric } from 'next/app';
@@ -37,7 +37,7 @@ initializeApp(firebaseConfig);
 
 function MyApp({ Component, pageProps }: any) {
   return (
-    <RecoilRoot>
+    <Provider>
       <ChakraProvider theme={theme}>
         <NextNProgress color="#718096" showOnShallow={true} />
         <DefaultSeo {...SEOConfig} />
@@ -48,7 +48,7 @@ function MyApp({ Component, pageProps }: any) {
         <GoogleAnalytics trackPageViews />
         <Component {...pageProps} />
       </ChakraProvider>
-    </RecoilRoot>
+    </Provider>
   );
 }
 
