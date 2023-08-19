@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import {
   Badge,
   Box,
@@ -18,9 +19,10 @@ import {
   Icon,
   Image,
   useMediaQuery,
+  Tooltip,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Layout from '../../../components/Layout';
 import { ItemData, ListItemInfo, UserList } from '../../../types';
 import { useAuth } from '../../../utils/auth';
@@ -37,6 +39,9 @@ import { BiLinkExternal } from 'react-icons/bi';
 import { NextPageContext } from 'next';
 import { getList } from '../../api/v1/lists/[username]/[list_id]';
 import { getCookie } from 'cookies-next';
+import GiftBox from '../../../public/icons/giftbox.png';
+import NPBag from '../../../public/icons/npbag.png';
+import { MdWarning } from 'react-icons/md';
 
 import { CreateListModalProps } from '../../../components/Modal/CreateListModal';
 
@@ -55,6 +60,8 @@ type ExtendedListItemInfo = ListItemInfo & { hasChanged?: boolean };
 type Props = {
   list: UserList;
 };
+
+const intl = new Intl.NumberFormat();
 
 const ListPage = (props: Props) => {
   const router = useRouter();
@@ -87,6 +94,41 @@ const ListPage = (props: Props) => {
   const isOwner = user?.username === router.query.username || user?.id === list?.user_id;
   const color = Color(list?.colorHex || '#4A5568');
   const rgb = color.rgb().array();
+
+  const unpricedItems = useMemo(() => {
+    if (!list) return 0;
+
+    return list.itemInfo.reduce((acc, item) => {
+      const itemData = items[item.item_iid];
+      if (!itemData) return acc + 1;
+
+      if (!itemData.isNC && !itemData.price.value) return acc + 1;
+
+      return acc;
+    }, 0);
+  }, [items.length]);
+
+  const NPPrice = useMemo(() => {
+    if (!list) return 0;
+
+    return list.itemInfo.reduce((acc, item) => {
+      const itemData = items[item.item_iid];
+      if (!itemData || !itemData.price || !itemData.price.value) return acc;
+
+      return acc + itemData.price.value * item.amount;
+    }, 0);
+  }, [items, itemInfo]);
+
+  const NCPrice = useMemo(() => {
+    if (!list) return 0;
+
+    return list.itemInfo.reduce((acc, item) => {
+      const itemData = items[item.item_iid];
+      if (!itemData || !itemData.owls || !itemData.owls.valueMin) return acc;
+
+      return acc + itemData.owls.valueMin * item.amount;
+    }, 0);
+  }, [items, itemInfo]);
 
   useEffect(() => {
     if (!authLoading && router.isReady) {
@@ -503,11 +545,11 @@ const ListPage = (props: Props) => {
             <Stack direction="row" mb={1} alignItems="center" flexWrap="wrap">
               <Text fontSize={{ base: 'xs', md: 'sm' }}>
                 {list.official ? 'curated' : ''} by{' '}
-                <Link as={NextLink} fontWeight="bold" href={'/lists/' + list.user_username}>
-                  {list.user_username}
+                <Link as={NextLink} fontWeight="bold" href={'/lists/' + list.owner.username}>
+                  {list.owner.username}
                 </Link>
               </Text>
-              {!list.official && list.user_neouser && isLargerThanSM && (
+              {!list.official && list.owner.neopetsUser && isLargerThanSM && (
                 <>
                   <Link
                     isExternal
@@ -528,9 +570,69 @@ const ListPage = (props: Props) => {
                 </>
               )}
             </Stack>
-            <Text mt={{ base: 2, md: 3 }} fontSize={{ base: 'sm', md: 'md' }}>
-              {list.description}
-            </Text>
+            {list.description && (
+              <Text mt={{ base: 2, md: 3 }} fontSize={{ base: 'sm', md: 'md' }}>
+                {list.description}
+              </Text>
+            )}
+            {(!!NPPrice || !!NCPrice) && (
+              <Flex
+                display={'inline-flex'}
+                mt={{ base: 2, md: 3 }}
+                py={1}
+                px={2}
+                bg="blackAlpha.300"
+                borderRadius={'md'}
+                alignItems="flex-start"
+              >
+                <Tooltip
+                  hasArrow
+                  label={`There are ${unpricedItems} items without a price`}
+                  placement="top"
+                  isDisabled={!unpricedItems}
+                >
+                  <Text fontSize="sm">
+                    {!!unpricedItems && (
+                      <span>
+                        <Icon as={MdWarning} boxSize={'1rem'} mr="0.2rem" verticalAlign="middle" />
+                      </span>
+                    )}
+                    This list costs aprox.{' '}
+                    {!!NPPrice && (
+                      <>
+                        <b>{intl.format(NPPrice)} NP</b>
+                        <Image
+                          as={NextImage}
+                          display="inline"
+                          verticalAlign="bottom"
+                          //@ts-ignore
+                          src={NPBag}
+                          width="24px"
+                          height="24px"
+                          alt="gift box icon"
+                        />
+                      </>
+                    )}{' '}
+                    {!!NPPrice && !!NCPrice && 'and'}{' '}
+                    {!!NCPrice && (
+                      <>
+                        <b>{intl.format(NCPrice)} Caps</b>{' '}
+                        <Image
+                          as={NextImage}
+                          display="inline"
+                          verticalAlign="bottom"
+                          //@ts-ignore
+                          src={GiftBox}
+                          width="24px"
+                          height="24px"
+                          alt="gift box icon"
+                        />
+                      </>
+                    )}
+                  </Text>
+                </Tooltip>
+              </Flex>
+            )}
           </Box>
         </Flex>
       </Box>

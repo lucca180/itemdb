@@ -24,7 +24,7 @@ const UserAchiev = (props: UserAchievProps) => {
   if (!achievements.length) return <></>;
 
   return (
-    <Flex bg="blackAlpha.200" gap={3} borderRadius={4} px={1} py={1}>
+    <Flex bg="blackAlpha.200" gap={3} borderRadius={4} p={1}>
       {achievements.map((achiev, i) => (
         <AchievBadge key={i} name={achiev.name} src={achiev.image} />
       ))}

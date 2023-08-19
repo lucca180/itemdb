@@ -41,6 +41,7 @@ const HomePage = (props: Props) => {
         },
       }),
     ]);
+
     setIsLoaded(true);
     setItems(itemRes.data);
     setPrices(priceRes.data);

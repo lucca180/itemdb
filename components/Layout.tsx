@@ -74,6 +74,7 @@ const Layout = (props: Props) => {
               height="50px"
               width="auto"
               quality={100}
+              priority
               display={{ base: 'inherit', md: 'none' }}
             />
             <Image
@@ -82,6 +83,7 @@ const Layout = (props: Props) => {
               alt="itemdb logo"
               width={175}
               quality={100}
+              priority
               display={{ base: 'none', md: 'inherit' }}
             />
           </Flex>
@@ -138,6 +140,9 @@ const Layout = (props: Props) => {
                         <MenuGroup title={!isLargerThanMD ? `Hello, ${user.username}` : undefined}>
                           <MenuItem as={Link} href={`/lists/${user.username}`}>
                             My Lists
+                          </MenuItem>
+                          <MenuItem as={Link} href={`/feedback`}>
+                            Feedback
                           </MenuItem>
                           <MenuItem as={Link} href={`/contribute`}>
                             How to Contribute

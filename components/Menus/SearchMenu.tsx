@@ -1,14 +1,8 @@
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import { Menu, MenuButton, IconButton, MenuList, MenuItem, Portal } from '@chakra-ui/react';
-import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 const SearchMenu = () => {
-  const router = useRouter();
-
-  const goTo = (path: string) => {
-    router.push(path);
-  };
-
   return (
     <Menu>
       <MenuButton size="sm" as={IconButton}>
@@ -16,9 +10,15 @@ const SearchMenu = () => {
       </MenuButton>
       <Portal>
         <MenuList>
-          <MenuItem onClick={() => goTo('/search')}>Advanced Search</MenuItem>
-          <MenuItem onClick={() => goTo('/lists/official')}>Official Lists</MenuItem>
-          <MenuItem onClick={() => goTo('/articles')}>Articles</MenuItem>
+          <MenuItem as={Link} href="/search">
+            Advanced Search
+          </MenuItem>
+          <MenuItem as={Link} href="/lists/official">
+            Official Lists
+          </MenuItem>
+          <MenuItem as={Link} href="/articles">
+            Articles
+          </MenuItem>
         </MenuList>
       </Portal>
     </Menu>

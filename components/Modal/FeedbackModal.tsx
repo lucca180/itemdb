@@ -16,8 +16,10 @@ import {
   Spinner,
   Center,
   FormHelperText,
+  Link,
 } from '@chakra-ui/react';
 import axios from 'axios';
+import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { ItemData } from '../../types';
@@ -95,6 +97,12 @@ const FeedbackModal = (props: FeedbackModalProps) => {
                   value={message}
                 />
               </FormControl>
+              <Text fontSize="sm" color="gray.400">
+                Missing items? Outdated prices?{' '}
+                <Link as={NextLink} href="/contribute" color="gray.200">
+                  Check this instead
+                </Link>
+              </Text>
             </Stack>
           )}
 

@@ -51,7 +51,15 @@ export const SearchBar = (props: Props) => {
 
   useOutsideClick({
     ref: inputRef,
-    handler: () => onClose(),
+    handler: (e: any) => {
+      let isRightMB;
+      if ('which' in e) isRightMB = e.which == 3;
+      else if ('button' in e) isRightMB = e.button == 2;
+
+      if (isRightMB) return;
+
+      onClose();
+    },
   });
 
   const submit = (e: any) => {
@@ -101,6 +109,7 @@ export const SearchBar = (props: Props) => {
       isLazy
       matchWidth
       closeOnEsc
+      closeOnBlur={false}
       autoFocus={false}
     >
       <PopoverTrigger>
