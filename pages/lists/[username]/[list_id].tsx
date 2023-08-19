@@ -98,22 +98,21 @@ const ListPage = (props: Props) => {
   const unpricedItems = useMemo(() => {
     if (!list) return 0;
 
-    return list.itemInfo.reduce((acc, item) => {
-      const itemData = items[item.item_iid];
-      if (!itemData) return acc + 1;
+    return Object.values(items).reduce((acc, item) => {
+      if (!item) return acc + 1;
 
-      if (!itemData.isNC && !itemData.price.value) return acc + 1;
+      if (!item.isNC && !item.price.value) return acc + 1;
 
       return acc;
     }, 0);
-  }, [items.length]);
+  }, [items]);
 
   const NPPrice = useMemo(() => {
     if (!list) return 0;
 
     return list.itemInfo.reduce((acc, item) => {
       const itemData = items[item.item_iid];
-      if (!itemData || !itemData.price || !itemData.price.value) return acc;
+      if (!itemData || !itemData.price.value) return acc;
 
       return acc + itemData.price.value * item.amount;
     }, 0);
