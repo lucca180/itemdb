@@ -12,6 +12,7 @@ import { ArticleCard } from '../components/Articles/ArticlesCard';
 import { wp_getLatestPosts } from './api/wp/posts';
 import NextLink from 'next/link';
 import { QuestionIcon } from '@chakra-ui/icons';
+import Color from 'color';
 
 type Props = {
   latestOwls: ItemData[];
@@ -23,6 +24,9 @@ const HomePage = (props: Props) => {
   const [latestItems, setItems] = useState<ItemData[]>([]);
   const [latestPrices, setPrices] = useState<ItemData[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+
+  const color = Color('#4A5568');
+  const rgb = color.rgb().round().array();
 
   useEffect(() => {
     init();
@@ -55,6 +59,15 @@ const HomePage = (props: Props) => {
       }}
     >
       <Box textAlign="center" display="flex" flexFlow="column" alignItems="center" mt="50px">
+        <Box
+          position="absolute"
+          h="40vh"
+          left="0"
+          width="100%"
+          mt="-50px"
+          bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.6) 80%)`}
+          zIndex={-1}
+        />
         <Image src={logo} alt="itemdb logo" width={500} quality="100" priority />
         <Heading size="sm" mt={4}>
           <Highlight

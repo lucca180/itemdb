@@ -4,7 +4,7 @@ import axios from 'axios';
 import { getAuth, User as FirebaseUser } from 'firebase/auth';
 import { useRouter } from 'next/router';
 import { User, UserList } from '../types';
-import { getCookie, setCookie } from 'cookies-next';
+import { setCookie, deleteCookie } from 'cookies-next';
 import { useMutex } from 'react-context-mutex';
 import { useAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
@@ -56,7 +56,6 @@ export const useAuth = (props?: UseAuthProps) => {
       }
 
       if (user && user.id === fireUser.uid) {
-        checkCookie();
         setIsLoading(false);
         return;
       }
@@ -64,7 +63,23 @@ export const useAuth = (props?: UseAuthProps) => {
       mutex.run(() => doLogin(fireUser));
     });
 
-    return () => unsub();
+    const unsubToken = auth.onIdTokenChanged(async (fireUser) => {
+      if (fireUser) {
+        const token = await fireUser.getIdToken();
+
+        if (!token) {
+          deleteCookie('userToken');
+          return;
+        }
+
+        setCookie('userToken', token, { secure: true });
+      }
+    });
+
+    return () => {
+      unsub();
+      unsubToken();
+    };
   }, []);
 
   useEffect(() => {
@@ -100,12 +115,6 @@ export const useAuth = (props?: UseAuthProps) => {
     mutex.unlock();
   };
 
-  const checkCookie = async () => {
-    const cookie = getCookie('userToken');
-    if (cookie) return;
-    await getIdToken(true);
-  };
-
   const getIdToken = async (forceRefresh = false) => {
     try {
       if (!auth.currentUser) return null;
@@ -113,7 +122,6 @@ export const useAuth = (props?: UseAuthProps) => {
       const token = await auth.currentUser.getIdToken(forceRefresh);
 
       if (!token) return null;
-      setCookie('userToken', token, { secure: true });
 
       return token;
     } catch (e) {

@@ -22,6 +22,7 @@ import {
 import NextImage from 'next/image';
 import logo from '../public/logo_white_compressed.svg';
 import logo_icon from '../public/logo_icon.svg';
+import mt_logo from '../public/magnetismo-logo.png';
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -32,6 +33,7 @@ import { BsBoxArrowInRight, BsFillPersonFill } from 'react-icons/bs';
 import { NextSeo, NextSeoProps } from 'next-seo';
 import { SearchBar } from './Search/SearchBar';
 import ClientOnly from './Utils/ClientOnly';
+import Color from 'color';
 
 type Props = {
   children?: ReactNode;
@@ -44,6 +46,9 @@ const Layout = (props: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { user, signout } = useAuth();
   const [isLargerThanMD] = useMediaQuery('(min-width: 48em)');
+
+  const color = Color('#4A5568');
+  const rgb = color.rgb().round().array();
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -169,27 +174,77 @@ const Layout = (props: Props) => {
             </Center>
           )}
         </Box>
-        <Flex as="footer" textAlign={'center'} p={3} flexFlow="column" gap={2}>
-          <Text fontSize="xs" color="gray.400">
-            <ChakraLink href="https://github.com/lucca180/itemdb/" isExternal>
-              Source Code
-            </ChakraLink>{' '}
-            |{' '}
-            <ChakraLink href="https://itemdb.stoplight.io/docs/itemdb-api" isExternal>
-              API
-            </ChakraLink>{' '}
-            | <ChakraLink href="/terms">Terms of Use</ChakraLink> |{' '}
-            <ChakraLink href="/privacy">Privacy Policy (Aug 2023)</ChakraLink>
-          </Text>
-          <Text fontSize="xs" color="gray.500">
-            © 2009-{new Date().getFullYear()}{' '}
-            <ChakraLink href="https://magnetismotimes.com/" isExternal>
-              Magnetismo Times
-            </ChakraLink>
-            <br />© 1999-{new Date().getFullYear()} NeoPets, Inc. All rights reserved. Used with
-            permission.
-          </Text>
-        </Flex>
+        <Box
+          as="footer"
+          // textAlign={'center'}
+          p={3}
+          pt={10}
+          mt={8}
+          bgGradient={`linear-gradient(to bottom,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.6) 80%)`}
+        >
+          <Flex
+            w="full"
+            maxW="8xl"
+            marginX="auto"
+            py={3}
+            justifyContent="space-evenly"
+            flexFlow={['column', 'row']}
+            gap={[6, 20]}
+          >
+            <Flex
+              flexFlow={'column'}
+              textAlign={['center', 'right']}
+              gap={8}
+              justifyContent="center"
+              alignItems={['center', 'flex-end']}
+            >
+              <ChakraLink href="https://magnetismotimes.com/" isExternal>
+                <NextImage src={mt_logo} width={202} height={50} alt="Magnetismo Times logo" />
+              </ChakraLink>
+              <Text fontSize="xs" color="gray.500">
+                © 2009-{new Date().getFullYear()}{' '}
+                <ChakraLink href="https://magnetismotimes.com/" isExternal>
+                  Magnetismo Times
+                </ChakraLink>
+                <br />© 1999-{new Date().getFullYear()} NeoPets, Inc. All rights reserved. Used with
+                permission.
+              </Text>
+            </Flex>
+            <Flex flexFlow={['row']} gap={[3, 12]} justifyContent="center">
+              <Flex flex="1" flexFlow={'column'} fontSize="xs" gap={2} color="gray.300">
+                <Text fontSize="xs" mb={2} textTransform="uppercase" color="gray.500">
+                  <b>Resources</b>
+                </Text>
+                <ChakraLink href="/articles">Articles</ChakraLink>
+                <ChakraLink href="/lists/official">Official Lists</ChakraLink>
+                <ChakraLink href="/articles/owls">Owls</ChakraLink>
+                <ChakraLink href="/articles/userscripts">Userscripts</ChakraLink>
+              </Flex>
+              <Flex flex="1" flexFlow={'column'} fontSize="xs" gap={2} color="gray.300">
+                <Text fontSize="xs" mb={2} textTransform="uppercase" color="gray.500">
+                  <b>Contribute</b>
+                </Text>
+                <ChakraLink href="/contribute">Item Data Extractor</ChakraLink>
+                <ChakraLink href="/feedback">Feedback</ChakraLink>
+                <ChakraLink href="/feedback/trades">Trade Pricing</ChakraLink>
+                <ChakraLink href="/contribute">+ More</ChakraLink>
+              </Flex>
+              <Flex flex="1" flexFlow={'column'} fontSize="xs" gap={2} color="gray.300">
+                <Text fontSize="xs" mb={2} textTransform="uppercase" color="gray.500">
+                  <b>itemdb</b>
+                </Text>
+                <ChakraLink href="https://itemdb.stoplight.io/docs/itemdb-api" isExternal>
+                  Developers
+                </ChakraLink>
+                <ChakraLink href="/privacy">Privacy Policy (Aug 2023)</ChakraLink>
+                <ChakraLink href="/terms">Terms of Use</ChakraLink>
+                <ChakraLink href="https://github.com/lucca180/itemdb/" isExternal>
+                  Source Code
+                </ChakraLink>
+              </Flex>
+            </Flex>
+          </Flex>
+        </Box>
       </Flex>
     </>
   );
