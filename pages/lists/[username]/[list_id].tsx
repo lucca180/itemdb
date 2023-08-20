@@ -282,15 +282,15 @@ const ListPage = (props: Props) => {
   };
 
   const selectItem = useCallback(
-    (id: number, force = false) => {
+    (infoId: number, force = false) => {
       if (!isEdit && !force) return;
 
       if (force) setEdit(true);
 
-      if (itemSelect.includes(id)) {
-        setItemSelect(itemSelect.filter((item) => item !== id));
+      if (itemSelect.includes(infoId)) {
+        setItemSelect(itemSelect.filter((item) => item !== infoId));
       } else {
-        setItemSelect([...itemSelect, id]);
+        setItemSelect([...itemSelect, infoId]);
       }
     },
     [isEdit, itemSelect]
@@ -413,7 +413,9 @@ const ListPage = (props: Props) => {
   );
 
   const cntxAction = useCallback((item: ItemData, action: 'move' | 'delete') => {
-    setItemSelect([item.internal_id]);
+    const infoId = itemInfoIds.find((id) => itemInfo[id].item_iid === item.internal_id);
+    if (!infoId) return;
+    setItemSelect([infoId]);
     setSelectionAction(action);
   }, []);
 
