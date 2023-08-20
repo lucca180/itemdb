@@ -52,9 +52,12 @@ export const SearchBar = (props: Props) => {
   const router = useRouter();
   const [isMobile] = useMediaQuery('(hover: none)');
 
+  let disableListener = false;
+
   useOutsideClick({
     ref: inputRef,
     handler: (e: any) => {
+      if (disableListener) return;
       let isRightMB;
       if ('which' in e) isRightMB = e.which == 3;
       else if ('button' in e) isRightMB = e.button == 2;
@@ -166,7 +169,11 @@ export const SearchBar = (props: Props) => {
             searchResult.content.length > 0 &&
             searchResult.content.map((item) => (
               <React.Fragment key={item.internal_id}>
-                <ItemCtxMenu item={item} />
+                <ItemCtxMenu
+                  item={item}
+                  onShow={() => (disableListener = true)}
+                  onHide={() => (disableListener = false)}
+                />
                 <CtxTrigger
                   id={item.internal_id.toString()}
                   // eslint-disable-next-line @typescript-eslint/ban-ts-comment

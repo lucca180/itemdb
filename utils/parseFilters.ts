@@ -36,7 +36,7 @@ const parsableFilters = [
 export const parseFilters = (query: string): [SearchFilters, string] => {
   query = query.toLowerCase();
   const filters: SearchFilters = { ...defaultFilters };
-  console.log(defaultFilters);
+
   for (const filterName of parsableFilters) {
     if (filterName === 'category') {
       const posCategory = matchRegex(query, `cat`);

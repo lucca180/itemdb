@@ -20,7 +20,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const [queryFilters, querySanitezed] = parseFilters(query);
 
   query = querySanitezed.trim() ?? '';
-  console.log(queryFilters, querySanitezed);
+
   const filters = { ...queryFilters, ...reqQuery };
 
   const isColorSearch = !!query.match(/^#[0-9A-Fa-f]{6}$/);

@@ -65,6 +65,8 @@ type Props = {
   item: ItemData;
   onSelect?: () => void;
   onListAction?: (item: ItemData, action: 'move' | 'delete') => any;
+  onShow?: () => void;
+  onHide?: () => void;
 };
 
 const ItemCtxMenu = (props: Props) => {
@@ -78,6 +80,7 @@ const ItemCtxMenu = (props: Props) => {
   const { item, onListAction } = props;
 
   const fetchLists = async () => {
+    props.onShow?.();
     if (!user || lists !== null) return;
     try {
       const token = await getIdToken();
@@ -187,13 +190,14 @@ const ItemCtxMenu = (props: Props) => {
       <CtxMenu
         id={item.internal_id.toString()}
         onShow={fetchLists}
+        onHide={props.onHide}
         preventHideOnResize
         preventHideOnScroll
         appendTo="body"
       >
         {props.onSelect ? <CtxMenuItem onClick={props.onSelect}>Select Item</CtxMenuItem> : <></>}
         <CtxMenuItem onClick={handleOpenInNewTab}>Open in a New Tab</CtxMenuItem>
-        <CtxSubmenu title="Add to List">
+        <CtxSubmenu title="Add Item to List">
           {lists &&
             lists.map((list) => (
               <CtxMenuItem onClick={() => addItemToList(list.internal_id)} key={list.internal_id}>
