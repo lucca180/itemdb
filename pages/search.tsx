@@ -27,26 +27,11 @@ import { BsFilter } from 'react-icons/bs';
 import { SelectItemsCheckbox } from '../components/Input/SelectItemsCheckbox';
 import ListSelect from '../components/UserLists/ListSelect';
 import { useAuth } from '../utils/auth';
+import { defaultFilters } from '../utils/parseFilters';
 
 const Axios = axios.create({
-  baseURL: '/api/',
+  baseURL: '/api/v1/',
 });
-
-const defaultFilters: SearchFiltersType = {
-  category: [],
-  type: [],
-  status: [],
-  color: '',
-  price: ['', ''],
-  rarity: ['', ''],
-  weight: ['', ''],
-  estVal: ['', ''],
-  owlsValue: ['', ''],
-  sortBy: 'name',
-  sortDir: 'asc',
-  limit: 48,
-  page: 1,
-};
 
 const SearchPage = () => {
   const toast = useToast();
@@ -90,7 +75,7 @@ const SearchPage = () => {
       }
     } else setIsColorSearch(false);
 
-    const params = getDifference({ ...(customFilters ?? filters) });
+    const params = getFiltersDiff({ ...(customFilters ?? filters) });
 
     setResult(null);
     try {
@@ -158,7 +143,7 @@ const SearchPage = () => {
       ignoreQueryPrefix: true,
     });
 
-    const queryFilters = getDifference(queryStrings);
+    const queryFilters = getFiltersDiff(queryStrings);
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
@@ -175,7 +160,7 @@ const SearchPage = () => {
   const changeQueryString = (customFilters?: SearchFiltersType) => {
     const query = (router.query.s as string) ?? '';
 
-    const params = getDifference({ ...(customFilters ?? filters) });
+    const params = getFiltersDiff({ ...(customFilters ?? filters) });
 
     let paramsString = qs.stringify(params, {
       arrayFormat: 'brackets',
@@ -424,7 +409,7 @@ const SearchPage = () => {
   );
 };
 
-const getDifference = (a: { [id: string]: any }, b?: SearchFiltersType) => {
+export const getFiltersDiff = (a: { [id: string]: any }, b?: SearchFiltersType) => {
   if (!b) b = defaultFilters;
   const keys = Object.keys(b) as (keyof SearchFiltersType)[];
   const diff = {} as {

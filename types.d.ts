@@ -158,6 +158,7 @@ export type SearchFilters = {
   owlsValue: string[]; // [min, max]
   sortBy: string;
   sortDir: string;
+  mode: 'name' | 'description' | 'all';
   limit: number;
   page: number;
 };

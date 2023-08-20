@@ -36,11 +36,6 @@ const nextConfig = {
         destination: '/api/cache/:slug*',
         permanent: false,
       },
-      {
-        source: '/api/v1/search/:slug*',
-        destination: '/api/search/:slug*',
-        permanent: false,
-      },
     ];
   },
   transpilePackages: ['lightweight-charts', 'fancy-canvas'],

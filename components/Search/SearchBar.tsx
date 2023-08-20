@@ -29,13 +29,16 @@ import { SearchResults } from '../../types';
 import NextLink from 'next/link';
 import debounce from 'lodash/debounce';
 import ItemCtxMenu, { CtxTrigger } from '../Modal/ItemCtxMenu';
+import qs from 'qs';
+import { getFiltersDiff } from '../../pages/search';
+import { parseFilters } from '../../utils/parseFilters';
 
 const Axios = axios.create({
-  baseURL: '/api/',
+  baseURL: '/api/v1/',
 });
 
 type Props = {
-  onSubmit: (e: any, search: string) => void;
+  onSubmit: (e: any, search: string, params: string) => void;
 };
 const intl = new Intl.NumberFormat();
 
@@ -64,7 +67,19 @@ export const SearchBar = (props: Props) => {
 
   const submit = (e: any) => {
     e.preventDefault();
-    props.onSubmit(e, search);
+
+    const [filters, query] = parseFilters(search);
+
+    const params = getFiltersDiff({ ...filters });
+
+    let paramsString = qs.stringify(params, {
+      arrayFormat: 'brackets',
+      encode: false,
+    });
+
+    paramsString = paramsString ? '&' + paramsString : '';
+
+    props.onSubmit(e, query, paramsString);
     onClose();
   };
 

@@ -61,9 +61,9 @@ const Layout = (props: Props) => {
     if (!user.username && !['/', '/login'].includes(router.asPath)) router.push('/login');
   };
 
-  const onSubmit = (e: any, search: string) => {
+  const onSubmit = (e: any, search: string, params: string) => {
     e.preventDefault();
-    router.push(`/search?s=${encodeURIComponent(search)}`);
+    router.push(`/search?s=${encodeURIComponent(search)}${params}`);
   };
 
   return (
@@ -149,9 +149,6 @@ const Layout = (props: Props) => {
                     <MenuGroup title={!isLargerThanMD ? `Hello, ${user.username}` : undefined}>
                       <MenuItem as={Link} href={`/lists/${user.username}`}>
                         My Lists
-                      </MenuItem>
-                      <MenuItem as={Link} href={`/feedback`}>
-                        Feedback
                       </MenuItem>
                       <MenuItem as={Link} href={`/contribute`}>
                         How to Contribute
