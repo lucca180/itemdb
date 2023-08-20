@@ -12,7 +12,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   let query = (req.query.s as string)?.trim() ?? '';
 
   // if(!query) return res.status(400).json({error: 'invalid search query'});
-  const [filters, newQuery] = parseFilters(query);
+  const [filters, newQuery] = parseFilters(query, false);
 
   query = newQuery;
 

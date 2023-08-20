@@ -33,7 +33,7 @@ const parsableFilters = [
 ];
 
 // This function will parse the query string and return an object with the filters
-export const parseFilters = (query: string): [SearchFilters, string] => {
+export const parseFilters = (query: string, skipBoolean = true): [SearchFilters, string] => {
   query = query.toLowerCase();
   const filters: SearchFilters = { ...defaultFilters };
 
@@ -195,16 +195,9 @@ export const parseFilters = (query: string): [SearchFilters, string] => {
     }
   }
 
-  const newQuery = query.split(' ').map((q) => {
-    q = q.trim();
+  const newQuery = skipBoolean ? query : addPlusToWords(query);
 
-    if (!q) return q;
-
-    if (!q.startsWith('-') && !q.startsWith('+') && !q.startsWith('#')) return `+${q}`;
-    else return q;
-  });
-
-  return [filters, newQuery.join(' ')];
+  return [filters, newQuery];
 };
 
 const matchRegex = (query: string, filterName: string): string | null => {
@@ -227,3 +220,56 @@ const sanitizeQuery = (query: string, filterName: string): string => {
 
   return query.replace(result, '');
 };
+
+const shouldAddPlusPrefix = (str: string): boolean => {
+  // Check if a string meets the criteria for adding the '+' prefix
+  return (
+    !str.startsWith('-') &&
+    !str.startsWith('+') &&
+    !str.startsWith('#') &&
+    !str.startsWith('@') &&
+    !str.startsWith('<') &&
+    !str.startsWith('>') &&
+    !str.startsWith('~') &&
+    !str.startsWith('!') &&
+    !str.startsWith('*')
+  );
+};
+
+function addPlusToWords(input: string): string {
+  let result = '';
+  let isInQuotes = false;
+  let isInParentheses = 0;
+  let lastWasEmpty = true;
+  for (let i = 0; i < input.length; i++) {
+    const char = input[i];
+
+    if (char === '"') {
+      isInQuotes = !isInQuotes;
+    }
+
+    if (!isInQuotes) {
+      if (char === '(') {
+        isInParentheses++;
+      } else if (char === ')') {
+        isInParentheses--;
+      }
+
+      if (!isInParentheses && lastWasEmpty && shouldAddPlusPrefix(char)) {
+        result += '+' + char;
+      } else {
+        result += char;
+      }
+    } else {
+      result += char;
+    }
+
+    if (char === ' ') {
+      lastWasEmpty = true;
+    } else {
+      lastWasEmpty = false;
+    }
+  }
+
+  return result;
+}

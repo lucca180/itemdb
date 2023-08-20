@@ -17,7 +17,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   let page = (parseInt(reqQuery.page as string) || 1) - 1;
   let limit = parseInt(reqQuery.limit as string) || 48;
 
-  const [queryFilters, querySanitezed] = parseFilters(query);
+  const [queryFilters, querySanitezed] = parseFilters(query, false);
 
   query = querySanitezed.trim() ?? '';
 
