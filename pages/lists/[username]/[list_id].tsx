@@ -412,12 +412,15 @@ const ListPage = (props: Props) => {
     [itemInfo]
   );
 
-  const cntxAction = useCallback((item: ItemData, action: 'move' | 'delete') => {
-    const infoId = itemInfoIds.find((id) => itemInfo[id].item_iid === item.internal_id);
-    if (!infoId) return;
-    setItemSelect([infoId]);
-    setSelectionAction(action);
-  }, []);
+  const cntxAction = useCallback(
+    (item: ItemData, action: 'move' | 'delete') => {
+      const infoId = itemInfoIds.find((id) => itemInfo[id].item_iid === item.internal_id);
+      if (!infoId) return;
+      setItemSelect([infoId]);
+      setSelectionAction(action);
+    },
+    [itemInfoIds]
+  );
 
   if (isLoading)
     return (

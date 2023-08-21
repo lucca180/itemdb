@@ -149,24 +149,20 @@ const HomePage = (props: Props) => {
 export default HomePage;
 
 export async function getStaticProps() {
-  try {
-    const [latestOwls, latestPosts] = await Promise.all([getLatestOwls(16), wp_getLatestPosts(4)]);
+  const [latestOwls, latestPosts] = await Promise.all([
+    getLatestOwls(16)
+      .then((p) => p)
+      .catch(() => []),
+    wp_getLatestPosts(4)
+      .then((p) => p)
+      .catch(() => []),
+  ]);
 
-    return {
-      props: {
-        latestOwls,
-        latestPosts,
-      },
-      revalidate: 60, // In seconds
-    };
-  } catch (e) {
-    console.error(e);
-    return {
-      props: {
-        latestOwls: [],
-        latestPosts: [],
-      },
-      revalidate: 60, // In seconds
-    };
-  }
+  return {
+    props: {
+      latestOwls,
+      latestPosts,
+    },
+    revalidate: 60, // In seconds
+  };
 }

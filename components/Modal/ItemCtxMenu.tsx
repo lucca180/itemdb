@@ -178,7 +178,7 @@ const ItemCtxMenu = (props: Props) => {
 
   return (
     <>
-      {isOpen && (
+      {isOpen && duplicatedItem && (
         <DuplicatedItemModal
           isOpen={isOpen}
           item={item}

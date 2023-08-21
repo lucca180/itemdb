@@ -232,7 +232,9 @@ const shouldAddPlusPrefix = (str: string): boolean => {
     !str.startsWith('>') &&
     !str.startsWith('~') &&
     !str.startsWith('!') &&
-    !str.startsWith('*')
+    !str.startsWith('*') &&
+    !str.startsWith('(') &&
+    !str.startsWith(')')
   );
 };
 
@@ -255,7 +257,7 @@ function addPlusToWords(input: string): string {
         isInParentheses--;
       }
 
-      if (!isInParentheses && lastWasEmpty && shouldAddPlusPrefix(char)) {
+      if (!isInParentheses && lastWasEmpty && shouldAddPlusPrefix(char) && checkWord(input, i)) {
         result += '+' + char;
       } else {
         result += char;
@@ -273,3 +275,60 @@ function addPlusToWords(input: string): string {
 
   return result;
 }
+
+// adding "+" to these words will cause the search to fail
+const stopwords = [
+  'a',
+  'about',
+  'an',
+  'are',
+  'as',
+  'at',
+  'be',
+  'by',
+  'com',
+  'de',
+  'en',
+  'for',
+  'from',
+  'how',
+  'i',
+  'in',
+  'is',
+  'it',
+  'la',
+  'of',
+  'on',
+  'or',
+  'that',
+  'the',
+  'this',
+  'to',
+  'was',
+  'what',
+  'when',
+  'where',
+  'who',
+  'will',
+  'with',
+  'und',
+  'the',
+  'www',
+];
+
+// check if a word is a stopword or has less than 3 characters
+const checkWord = (input: string, startIndex: number): boolean => {
+  let word = '';
+
+  for (let i = startIndex; i < input.length; i++) {
+    const char = input[i];
+
+    if (char === ' ') {
+      break;
+    }
+
+    word += char;
+  }
+
+  return !stopwords.includes(word) && word.length > 2;
+};

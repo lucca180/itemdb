@@ -150,13 +150,15 @@ const AddToListSelect = (props: Props) => {
 
   return (
     <>
-      <DuplicatedItemModal
-        isOpen={isOpen}
-        item={item}
-        list={selectedList}
-        onClose={onClose}
-        itemInfo={duplicatedItem}
-      />
+      {duplicatedItem && (
+        <DuplicatedItemModal
+          isOpen={isOpen}
+          item={item}
+          list={selectedList}
+          onClose={onClose}
+          itemInfo={duplicatedItem}
+        />
+      )}
       <Menu>
         <MenuButton as={Button} variant="solid">
           Add To List

@@ -29,7 +29,7 @@ export type DuplicatedItemModalProps = {
   onClose: () => void;
   item: ItemData;
   list?: UserList;
-  itemInfo?: ListItemInfo;
+  itemInfo: ListItemInfo;
 };
 
 const DuplicatedItemModal = (props: DuplicatedItemModalProps) => {
@@ -37,7 +37,7 @@ const DuplicatedItemModal = (props: DuplicatedItemModalProps) => {
   const { isOpen, onClose, item, list, itemInfo } = props;
   const [isLoading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
-  const [amount, setAmount] = useState<number>(itemInfo?.amount ? itemInfo.amount + 1 : 2);
+  const [amount, setAmount] = useState<number>(itemInfo.amount + 1);
   const toast = useToast();
 
   const confirmAdd = async () => {
