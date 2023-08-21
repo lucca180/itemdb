@@ -155,7 +155,10 @@ export async function getStaticProps() {
       .catch(() => []),
     wp_getLatestPosts(4)
       .then((p) => p)
-      .catch(() => []),
+      .catch((e) => {
+        console.error(e);
+        return [];
+      }),
   ]);
 
   return {

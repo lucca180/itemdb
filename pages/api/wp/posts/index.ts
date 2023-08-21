@@ -8,7 +8,7 @@ import { WP_Article } from '../../../../types';
 import he from 'he';
 
 export const wp = Axios.create({
-  baseURL: process.env.WORDPRESS_URL + '/wp-json/wp/v2',
+  baseURL: process.env.WORDPRESS_URL + '/',
 });
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
@@ -38,6 +38,7 @@ export const wp_getLatestPosts = async (
 ): Promise<WP_Article[]> => {
   const posts_res = await wp.get('/posts', {
     params: {
+      _embed: true,
       per_page: limit,
       page: page,
       categories_exclude: ignorePatch ? 5 : undefined,
@@ -45,6 +46,8 @@ export const wp_getLatestPosts = async (
   });
 
   const posts = posts_res.data.map(async (post: WP_REST_API_Post) => {
+    const thumburl: string | null =
+      (post._embedded?.['wp:featuredmedia']?.[0] as any)?.source_url || null;
     return {
       id: post.id,
       title: he.decode(post.title.rendered),
@@ -52,8 +55,8 @@ export const wp_getLatestPosts = async (
       excerpt: he.decode(post.excerpt.rendered.replace(/<[^>]+>/g, '')),
       slug: post.slug,
       date: post.date_gmt,
-      thumbnail: post.fimg_url || null,
-      palette: post.fimg_url ? await getImagePalette(post.fimg_url as string, true) : null,
+      thumbnail: thumburl || null,
+      palette: thumburl ? await getImagePalette(thumburl, true) : null,
     };
   });
 
