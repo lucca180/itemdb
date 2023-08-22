@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../utils/prisma';
 import requestIp from 'request-ip';
-import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -76,7 +76,7 @@ const processTradePrice = async (trade_id?: number) => {
   return true;
 };
 
-const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
+const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 
 const submitMailFeedback = async (
   data: any,
@@ -85,24 +85,15 @@ const submitMailFeedback = async (
   id: number,
   type: string
 ) => {
-  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS)
-    return console.error('Missing SMTP config');
-  // create reusable transporter object using the default SMTP transport
-  const transporter = nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: parseInt(SMTP_PORT),
-    secure: true,
-    auth: {
-      user: SMTP_USER,
-      pass: SMTP_PASS,
-    },
-  });
+  if (!SENDGRID_API_KEY) return console.error('Missing SENDGRID config');
+
+  sgMail.setApiKey(SENDGRID_API_KEY);
 
   if (type === 'officialApply')
     subject_id = `https://itemdb.com.br/lists/${data.content.username}/${subject_id}`;
 
-  await transporter.sendMail({
-    from: '"itemdb" <noreply@itemdb.com.br>',
+  await sgMail.send({
+    from: 'itemdb <noreply@itemdb.com.br>',
     to: 'lucca@itemdb.com.br',
     subject: `[itemdb] ${type}`,
     html: `
