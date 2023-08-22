@@ -5,6 +5,8 @@ import { backOff } from 'exponential-backoff';
 import { TradeData } from '../../../../types';
 import prisma from '../../../../utils/prisma';
 
+const TARNUM_KEY = process.env.TARNUM_KEY;
+
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_KEY,
 });
@@ -15,6 +17,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     res.setHeader('Access-Control-Allow-Methods', 'POST');
     return res.status(200).json({});
   }
+
+  if (!req.headers.authorization || req.headers.authorization !== TARNUM_KEY)
+    return res.status(401).json({ error: 'Unauthorized' });
 
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 

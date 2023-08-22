@@ -7,12 +7,18 @@ import { ItemPrices, PriceProcess } from '@prisma/client';
 import { differenceInCalendarDays } from 'date-fns';
 
 const MAX_DAYS = 15;
+const MAX_PAST_DAYS = 60;
+
+const TARNUM_KEY = process.env.TARNUM_KEY;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Methods', 'POST, GET');
     return res.status(200).json({});
   }
+
+  if (!req.headers.authorization || req.headers.authorization !== TARNUM_KEY)
+    return res.status(401).json({ error: 'Unauthorized' });
 
   if (req.method === 'GET') return GET(req, res);
   if (req.method === 'POST') return POST(req, res);
@@ -21,15 +27,20 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
-  const limitDate = new Date(Date.now() - MAX_DAYS * 24 * 60 * 60 * 1000);
-  const limitDateFormated = limitDate.toISOString().split('T')[0];
+  const maxDate = new Date(Date.now() - MAX_DAYS * 24 * 60 * 60 * 1000);
+  const maxDateFormated = maxDate.toISOString().split('T')[0];
+
+  const maxPast = new Date(Date.now() - MAX_PAST_DAYS * 24 * 60 * 60 * 1000);
+  const maxPastFormated = maxPast.toISOString().split('T')[0];
+
   const lastWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const lastWeekFormated = lastWeek.toISOString().split('T')[0];
 
   const groupBy2 = (await prisma.$queryRaw`
-    SELECT name, COUNT(*) as count, MAX(addedAt) as addedAt, count(*) OVER() AS full_count FROM PriceProcess
+    SELECT name, COUNT(*) as count, MAX(addedAt) as MAX_addedAt, count(*) OVER() AS full_count FROM PriceProcess
     WHERE 
       type not in ("restock", "auction") AND
+      addedAt >= DATE(${maxPastFormated}) AND
       processed = 0 AND
       NOT EXISTS (
         SELECT 1 FROM ItemPrices a WHERE 
@@ -39,8 +50,8 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
          not in (select name from ItemPrices GROUP by name having count(DISTINCT item_iid) > 1)
       )
     GROUP BY name
-    HAVING count >= 10 OR (addedAt <= DATE(${limitDateFormated}) and count >= 3)
-    ORDER BY addedAt asc
+    HAVING count >= 10 OR (MAX_addedAt <= DATE(${maxDateFormated}) and count >= 5)
+    ORDER BY MAX_addedAt asc
     LIMIT 1
   `) as any;
 
@@ -66,8 +77,12 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   let page = Number(req.body.page);
   page = isNaN(page) ? 0 : page;
 
-  const limitDate = new Date(Date.now() - MAX_DAYS * 24 * 60 * 60 * 1000);
-  const limitDateFormated = limitDate.toISOString().split('T')[0];
+  const maxDate = new Date(Date.now() - MAX_DAYS * 24 * 60 * 60 * 1000);
+  const maxDateFormated = maxDate.toISOString().split('T')[0];
+
+  const maxPast = new Date(Date.now() - MAX_PAST_DAYS * 24 * 60 * 60 * 1000);
+  const maxPastFormated = maxPast.toISOString().split('T')[0];
+
   const lastWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const lastWeekFormated = lastWeek.toISOString().split('T')[0];
 
@@ -75,6 +90,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     SELECT name, COUNT(*) as count, MAX(addedAt) as addedAt FROM PriceProcess
     WHERE 
       type not in ("restock", "auction") AND
+      addedAt >= DATE(${maxPastFormated}) AND
       processed = 0 AND
       NOT EXISTS (
         SELECT 1 FROM ItemPrices a WHERE 
@@ -84,7 +100,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
          not in (select name from ItemPrices GROUP by name having count(DISTINCT item_iid) > 1)
       )
     GROUP BY name
-    HAVING count >= 10 OR (addedAt <= DATE(${limitDateFormated}) and count >= 5)
+    HAVING count >= 10 OR (addedAt <= DATE(${maxDateFormated}) and count >= 5)
     ORDER BY addedAt asc
     LIMIT ${groupByLimit} OFFSET ${page * groupByLimit}
   `) as any;
@@ -132,7 +148,6 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
           genItemKey(x) === genItemKey(item) ||
           (genItemKey(x, true) === genItemKey(item, true) && !x.item_id && x.image_id)
       );
-      const owners = allItemData.map((o) => o.owner);
 
       if (allItemData.length === 0) continue;
 
@@ -142,16 +157,11 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         for (const key of Object.keys(item)) item[key] ||= itemOtherData[key] ?? item[key];
       }
 
-      let lastWeekPrices = allItemData.filter((x) => x.addedAt >= lastWeek);
-      if (lastWeekPrices.length < 10 && allItemData.length >= 10) lastWeekPrices = allItemData;
+      const mostRecentPrices = filterMostRecents(allItemData);
+      const owners = mostRecentPrices.map((o) => o.owner);
 
-      const filteredResult = lastWeekPrices
-        .filter(
-          (a, index) =>
-            a.price > 0 &&
-            !owners.includes(a.owner, index + 1) &&
-            (a.type !== 'auction' || !a.otherInfo?.split(',').includes('nobody'))
-        )
+      const filteredResult = mostRecentPrices
+        .filter((a, index) => a.price > 0 && !owners.includes(a.owner, index + 1))
         .sort((a, b) => a.price - b.price)
         .slice(0, 30);
 
@@ -166,12 +176,12 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         return o.internal_id;
       });
 
-      const allIDs = allItemData.filter((x) => x.addedAt <= latestDate).map((x) => x.internal_id);
+      if (filteredResult.length <= 20 && userShopCount >= (filteredResult.length / 4) * 3) continue;
 
       if (filteredResult.length < 5 && differenceInCalendarDays(Date.now(), latestDate) < MAX_DAYS)
         continue;
 
-      if (filteredResult.length <= 20 && userShopCount >= (filteredResult.length / 4) * 3) continue;
+      const allIDs = allItemData.filter((x) => x.addedAt <= latestDate).map((x) => x.internal_id);
 
       const prices = filteredResult.map((x) => x.price);
 
@@ -333,4 +343,19 @@ async function updateOrAddDB(
       manual_check: e,
     };
   }
+}
+
+const MIN_ITEMS_THRESHOLD = 10;
+
+function filterMostRecents(priceProcessList: PriceProcess[]) {
+  const daysThreshold = [7, 15, 30];
+
+  for (const days of daysThreshold) {
+    const filtered = priceProcessList.filter(
+      (x) => differenceInCalendarDays(Date.now(), x.addedAt) <= days
+    );
+    if (filtered.length >= MIN_ITEMS_THRESHOLD) return filtered;
+  }
+
+  return priceProcessList;
 }

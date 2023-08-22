@@ -10,8 +10,13 @@ import { processOpenableItems } from './open';
 
 type ValueOf<T> = T[keyof T];
 
+const TARNUM_KEY = process.env.TARNUM_KEY;
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  if (!req.headers.authorization || req.headers.authorization !== TARNUM_KEY)
+    return res.status(401).json({ error: 'Unauthorized' });
 
   let limit = Number(req.body.limit);
   limit = isNaN(limit) ? 300 : limit;
