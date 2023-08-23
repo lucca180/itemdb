@@ -87,7 +87,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const lastWeekFormated = lastWeek.toISOString().split('T')[0];
 
   const groupBy2 = (await prisma.$queryRaw`
-    SELECT name, COUNT(*) as count, MAX(addedAt) as addedAt FROM PriceProcess
+    SELECT name, COUNT(*) as count, MAX(addedAt) as MAX_addedAt FROM PriceProcess
     WHERE 
       type not in ("restock", "auction") AND
       addedAt >= DATE(${maxPastFormated}) AND
@@ -100,8 +100,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
          not in (select name from ItemPrices GROUP by name having count(DISTINCT item_iid) > 1)
       )
     GROUP BY name
-    HAVING count >= 10 OR (addedAt <= DATE(${maxDateFormated}) and count >= 5)
-    ORDER BY addedAt asc
+    HAVING count >= 10 OR (MAX_addedAt <= DATE(${maxDateFormated}) and count >= 5)
+    ORDER BY MAX_addedAt asc
     LIMIT ${groupByLimit} OFFSET ${page * groupByLimit}
   `) as any;
 
@@ -127,6 +127,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       processed: false,
       NOT: { type: { in: ['restock', 'auction'] } },
       name: { in: names },
+      addedAt: { gte: maxPast },
     },
     orderBy: {
       addedAt: 'desc',
