@@ -22,7 +22,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   let query = querySanitezed.trim() ?? '';
 
   const filters = { ...queryFilters, ...reqQuery };
-
+  console.log(filters);
   const isColorSearch = !!query.match(/^#[0-9A-Fa-f]{6}$/);
 
   if (page < 0) page = 0;
@@ -301,7 +301,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         ) as d on d.item_iid = a.internal_id
       ) as temp
             
-      WHERE ${fulltext} OR temp.name LIKE ${`%${originalQuery}%`}
+      WHERE (${fulltext} OR temp.name LIKE ${`%${originalQuery}%`})
 
       ${
         catFiltersSQL.length > 0
