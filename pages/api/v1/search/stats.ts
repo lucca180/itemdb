@@ -9,12 +9,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (req.method !== 'GET')
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
-  let query = (req.query.s as string)?.trim() ?? '';
-
+  const originalQuery = (req.query.s as string)?.trim() ?? '';
   // if(!query) return res.status(400).json({error: 'invalid search query'});
-  const [filters, newQuery] = parseFilters(query, false);
+  const [filters, newQuery] = parseFilters(originalQuery, false);
 
-  query = newQuery;
+  const query = newQuery;
 
   const isColorSearch = query.match(/#[0-9A-Fa-f]{6}$/gm);
 
@@ -79,16 +78,24 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         _all: true,
       },
       where: {
-        name: {
-          search: filters.mode !== 'description' && query ? query : undefined,
-          contains: !query ? '' : undefined,
-        },
-        description:
-          filters.mode !== 'name' && query
-            ? {
-                search: query,
-              }
-            : undefined,
+        OR: [
+          {
+            name: {
+              search: filters.mode !== 'description' && query ? query : undefined,
+            },
+            description:
+              filters.mode !== 'name' && query
+                ? {
+                    search: query,
+                  }
+                : undefined,
+          },
+          {
+            name: {
+              contains: originalQuery,
+            },
+          },
+        ],
       },
     });
 

@@ -6,6 +6,7 @@ import { CheckAuth } from '../../../../utils/googleCloud';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { checkHash } from '../../../../utils/hash';
 import { Prisma } from '.prisma/client';
+import { stringHasNumber } from '../../../../utils/utils';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
@@ -117,8 +118,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         wishlist: lot.wishList,
         owner: lot.owner,
         ip_address: requestIp.getClientIp(req),
-        priced: lot.wishList === 'none',
-        processed: lot.wishList === 'none',
+        priced: lot.wishList === 'none' || stringHasNumber(lot.wishList),
+        processed: lot.wishList === 'none' || stringHasNumber(lot.wishList),
         items: {
           create: [...itemList],
         },

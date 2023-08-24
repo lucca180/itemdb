@@ -240,6 +240,19 @@ const shouldAddPlusPrefix = (str: string): boolean => {
 
 function addPlusToWords(input: string): string {
   input = removeInvalidParentheses(input);
+
+  if (input.endsWith('-') || input.endsWith('+')) input = input.slice(0, -1);
+  else if (input.endsWith('-"') || input.endsWith('+"')) input = input.slice(0, -2) + '"';
+
+  input = input.replaceAll('+-', '-');
+  input = input.replaceAll('-+', '+');
+  input = input.replaceAll('++', '+');
+  input = input.replaceAll('--', '-');
+
+  if (input.includes('@') && !input.includes('@distance')) input = input.replaceAll('@', '');
+
+  input = input.replaceAll(/(?<=.)[-+](?=\s)/gim, '');
+
   let result = '';
   let isInQuotes = false;
   let isInParentheses = 0;

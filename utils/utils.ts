@@ -351,3 +351,19 @@ export const rarityStr = (rarity: number) => {
 
   return null;
 };
+
+export const stringHasNumber = (string: string) => {
+  // Regular expression to check for a digit in the string
+  const digitRegex = /\d/;
+
+  // Regular expression to check for a number written out in English
+  const englishNumberRegex =
+    /\bone\b|\btwo\b|\bthree\b|\bfour\b|\bfive\b|\bsix\b|\bseven\b|\beight\b|\bnine\b|\bten\b|\beleven\b|\btwelve\b|\bthirteen\b|\bfourteen\b|\bfifteen\b|\bsixteen\b|\bseventeen\b|\beighteen\b|\bnineteen\b|\btwenty\b|\bthirty\b|\bforty\b|\bfifty\b|\bsixty\b|\bseventy\b|\beighty\b|\bninety\b/;
+
+  // Check if the string contains a digit or a number written out in English
+  if (digitRegex.test(string) || englishNumberRegex.test(string.toLowerCase())) {
+    return true;
+  } else {
+    return false;
+  }
+};

@@ -13,13 +13,13 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
   const reqQuery = qs.parse(req.url.split('?')[1]);
-  let query = (reqQuery.s as string)?.trim() ?? '';
+  const originalQuery = (reqQuery.s as string)?.trim() ?? '';
   let page = (parseInt(reqQuery.page as string) || 1) - 1;
   let limit = parseInt(reqQuery.limit as string) || 48;
 
-  const [queryFilters, querySanitezed] = parseFilters(query, false);
+  const [queryFilters, querySanitezed] = parseFilters(originalQuery, false);
 
-  query = querySanitezed.trim() ?? '';
+  let query = querySanitezed.trim() ?? '';
 
   const filters = { ...queryFilters, ...reqQuery };
 
@@ -301,7 +301,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         ) as d on d.item_iid = a.internal_id
       ) as temp
             
-      WHERE ${fulltext}
+      WHERE ${fulltext} OR temp.name LIKE ${`%${originalQuery}%`}
 
       ${
         catFiltersSQL.length > 0
