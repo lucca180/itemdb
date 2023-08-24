@@ -118,8 +118,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         wishlist: lot.wishList,
         owner: lot.owner,
         ip_address: requestIp.getClientIp(req),
-        priced: lot.wishList === 'none' || stringHasNumber(lot.wishList),
-        processed: lot.wishList === 'none' || stringHasNumber(lot.wishList),
+        priced: lot.wishList === 'none' || !stringHasNumber(lot.wishList),
+        processed: lot.wishList === 'none' || !stringHasNumber(lot.wishList),
         items: {
           create: [...itemList],
         },
