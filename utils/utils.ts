@@ -13,6 +13,7 @@ export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
     closet: null,
     restockShop: null,
     dti: null,
+    neosearch: null,
   };
 
   if (item.isWearable)
@@ -46,6 +47,12 @@ export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
     findAt.restockShop = `https://www.neopets.com/objects.phtml?type=shop&obj_type=${
       categoryToShopID[item.category.toLowerCase()]
     }`;
+  }
+
+  if (item.rarity && item.rarity <= 98) {
+    findAt.neosearch = `https://www.neopets.com/search.phtml?selected_type=object&string=${cleanItem(
+      item
+    )}`;
   }
 
   return findAt;

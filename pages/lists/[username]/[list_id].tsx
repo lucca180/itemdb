@@ -99,9 +99,9 @@ const ListPage = (props: Props) => {
     if (!list) return 0;
 
     return Object.values(items).reduce((acc, item) => {
-      if (!item) return acc + 1;
+      if (!item) return acc;
 
-      if (!item.isNC && !item.price.value) return acc + 1;
+      if (!item.isNC && !item.price.value && item.status === 'active') return acc + 1;
 
       return acc;
     }, 0);
@@ -425,7 +425,22 @@ const ListPage = (props: Props) => {
   if (isLoading)
     return (
       <Layout
-        SEO={{ title: `${list.name} - List`, nofollow: !list.official, noindex: !list.official }}
+        SEO={{
+          title: `${list.name} - ${list.official ? 'Official' : list.owner.username + "'s"} List`,
+          nofollow: !list.official,
+          noindex: !list.official,
+          themeColor: list.colorHex ?? '#4A5568',
+          description: list.description || undefined,
+          openGraph: {
+            images: [
+              {
+                url: list.coverURL ?? 'https://itemdb.com.br/logo_icon.png',
+                width: 150,
+                height: 150,
+              },
+            ],
+          },
+        }}
         loading
       />
     );
@@ -436,6 +451,7 @@ const ListPage = (props: Props) => {
         title: `${list.name} - ${list.official ? 'Official' : list.owner.username + "'s"} List`,
         nofollow: !list.official,
         noindex: !list.official,
+        themeColor: list.colorHex ?? '#4A5568',
         description: list.description || undefined,
         openGraph: {
           images: [

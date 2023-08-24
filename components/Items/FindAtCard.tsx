@@ -8,6 +8,7 @@ import SDBIcon from '../../public/icons/safetydeposit.svg';
 import SWIcon from '../../public/icons/shopwizard.png';
 import TPIcon from '../../public/icons/tradingpost.png';
 import ClosetIcon from '../../public/icons/closet.svg';
+import NeosearchIcon from '../../public/icons/neosearch.svg';
 
 type Props = {
   item: ItemData;
@@ -79,6 +80,17 @@ const FindAtCard = (props: Props) => {
               src={ShopIcon}
               alt="Restock Shop"
               title="Restock Shop"
+              height={32}
+              quality="100"
+            />
+          </a>
+        )}
+        {item.findAt.neosearch && (
+          <a href={item.findAt.neosearch} target="_blank" rel="noopener">
+            <Image
+              src={NeosearchIcon}
+              alt="Neopets Search"
+              title="Neopets Search"
               height={32}
               quality="100"
             />

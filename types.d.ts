@@ -32,6 +32,7 @@ export type ItemFindAt = {
   safetyDeposit?: string | null;
   restockShop?: string | null;
   dti?: string | null;
+  neosearch?: string | null;
 };
 
 export type ColorData = {
