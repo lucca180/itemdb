@@ -17,6 +17,17 @@ const ArticlesPage = (props: Props) => {
     <Layout
       SEO={{
         title: 'All Articles',
+        themeColor: '#E4DA0A',
+        openGraph: {
+          images: [
+            {
+              url: 'https://images.neopets.com/nt/ntimages/94_acara_type.gif' ?? '',
+              width: 150,
+              height: 150,
+              alt: 'All Articles',
+            },
+          ],
+        },
       }}
     >
       <HeaderCard

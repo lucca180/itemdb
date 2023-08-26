@@ -35,6 +35,10 @@ const ArticlePage = (props: Props) => {
       SEO={{
         title: post.title,
         description: post.excerpt,
+        themeColor: post.palette?.lightvibrant.hex ?? '#05B7E8',
+        openGraph: {
+          images: [{ url: post.thumbnail ?? '', width: 150, height: 150, alt: post.title }],
+        },
       }}
     >
       <HeaderCard
