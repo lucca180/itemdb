@@ -41,7 +41,7 @@ export const wp_getLatestPosts = async (
       _embed: true,
       per_page: limit,
       page: page,
-      categories_exclude: ignorePatch ? 5 : undefined,
+      categories_exclude: ignorePatch ? 1814914 : undefined,
     },
   });
 

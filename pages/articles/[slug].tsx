@@ -100,7 +100,6 @@ export async function getStaticProps(context: GetStaticPropsContext) {
   if (!post) return { notFound: true };
 
   let recommended = await wp_getLatestPosts(100, 1, true);
-
   //shuffle
   const Chance = (await import('chance')).default;
   const chance = new Chance();

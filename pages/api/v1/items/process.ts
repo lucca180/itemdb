@@ -18,8 +18,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   if (
     !req.headers.authorization ||
-    req.headers.authorization !== TARNUM_KEY ||
-    !req.headers.authorization.includes('Bearer')
+    (req.headers.authorization !== TARNUM_KEY && !req.headers.authorization.includes('Bearer'))
   )
     return res.status(401).json({ error: 'Unauthorized' });
 
