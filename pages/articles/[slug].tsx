@@ -1,5 +1,18 @@
 /* eslint-disable react/no-unescaped-entities */
-import { Flex, Heading, Text, Link, ListItem, UnorderedList } from '@chakra-ui/react';
+import {
+  Flex,
+  Heading,
+  Text,
+  Link,
+  ListItem,
+  UnorderedList,
+  Table,
+  TableContainer,
+  Td,
+  Tr,
+  Tbody,
+  Code,
+} from '@chakra-ui/react';
 import { GetStaticPropsContext } from 'next';
 import HeaderCard from '../../components/Card/HeaderCard';
 import Layout from '../../components/Layout';
@@ -132,5 +145,24 @@ const options: HTMLReactParserOptions = {
 
     if (domNode instanceof Element && domNode.name === 'li')
       return <ListItem>{domToReact(domNode.children, options)}</ListItem>;
+
+    if (domNode instanceof Element && domNode.name === 'table')
+      return (
+        <TableContainer my={3} border="1px solid rgba(255,255,255,0.3)" borderRadius={'sm'}>
+          <Table variant="striped">{domToReact(domNode.children, options)}</Table>
+        </TableContainer>
+      );
+
+    if (domNode instanceof Element && domNode.name === 'tbody')
+      return <Tbody>{domToReact(domNode.children, options)}</Tbody>;
+
+    if (domNode instanceof Element && domNode.name === 'tr')
+      return <Tr>{domToReact(domNode.children, options)}</Tr>;
+
+    if (domNode instanceof Element && domNode.name === 'td')
+      return <Td whiteSpace={'normal'}>{domToReact(domNode.children, options)}</Td>;
+
+    if (domNode instanceof Element && domNode.name === 'code')
+      return <Code>{domToReact(domNode.children, options)}</Code>;
   },
 };

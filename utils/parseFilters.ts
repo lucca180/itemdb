@@ -201,17 +201,19 @@ export const parseFilters = (query: string, skipBoolean = true): [SearchFilters,
 };
 
 const matchRegex = (query: string, filterName: string): string | null => {
-  const regex = new RegExp(`(${filterName}):("([^"]*)"|(\\S+))`, 'gi');
+  // const regex = new RegExp(`(${filterName}):("([^"]*)"|(\\S+))`, 'gi');
+  const regex = new RegExp(`(${filterName}):(([^\\s"])|("([^"]*)"))+`, 'gi');
 
   const match = regex.exec(query);
   if (!match) return null;
-  const [, , result] = match;
+
+  const result = match[0].replace(`${filterName}:`, '');
 
   return result.replaceAll('"', '');
 };
 
 const sanitizeQuery = (query: string, filterName: string): string => {
-  const regex = new RegExp(`(${filterName}):("([^"]*)"|(\\S+))`, 'gi');
+  const regex = new RegExp(`(${filterName}):(([^\\s"])|("([^"]*)"))+`, 'gi');
 
   const match = regex.exec(query);
   if (!match) return query;
@@ -233,7 +235,6 @@ const shouldAddPlusPrefix = (str: string): boolean => {
     !str.startsWith('~') &&
     !str.startsWith('!') &&
     !str.startsWith('*') &&
-    !str.startsWith('(') &&
     !str.startsWith(')')
   );
 };

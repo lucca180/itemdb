@@ -7,6 +7,7 @@ import { categoryToShopID, genItemKey, slugify } from '../../../../utils/utils';
 import Color from 'color';
 import { detectWearable } from '../../../../utils/detectWearable';
 import { processOpenableItems } from './open';
+import { CheckAuth } from '../../../../utils/googleCloud';
 
 type ValueOf<T> = T[keyof T];
 
@@ -15,8 +16,21 @@ const TARNUM_KEY = process.env.TARNUM_KEY;
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  if (!req.headers.authorization || req.headers.authorization !== TARNUM_KEY)
+  if (
+    !req.headers.authorization ||
+    req.headers.authorization !== TARNUM_KEY ||
+    !req.headers.authorization.includes('Bearer')
+  )
     return res.status(401).json({ error: 'Unauthorized' });
+
+  if (req.headers.authorization.includes('Bearer')) {
+    try {
+      const user = (await CheckAuth(req)).user;
+      if (!user || !user.isAdmin) return res.status(403).json({ error: 'Forbidden' });
+    } catch (e) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+  }
 
   let limit = Number(req.body.limit);
   limit = isNaN(limit) ? 300 : limit;

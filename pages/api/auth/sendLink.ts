@@ -20,6 +20,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       url: isDev ? 'http://localhost:3000/login' : 'https://itemdb.com.br/login',
     });
 
+    if (isDev) console.log(actionLink);
+
     sgMail.setApiKey(SENDGRID_API_KEY);
 
     const template = await ejs.renderFile('utils/views/signinLink.ejs', {

@@ -141,7 +141,12 @@ const CreateItem = () => {
       });
 
       if (res.status === 200) {
-        await axios.post('/api/v1/items/process');
+        await axios.post('/api/v1/items/process', undefined, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
         toast.update(toastID, {
           title: 'Item created.',
           description: 'The item was successfully created.',
