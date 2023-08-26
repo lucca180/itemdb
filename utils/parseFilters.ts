@@ -272,7 +272,12 @@ function addPlusToWords(input: string): string {
         isInParentheses--;
       }
 
-      if (!isInParentheses && lastWasEmpty && shouldAddPlusPrefix(char) && checkWord(input, i)) {
+      if (
+        (!isInParentheses || (isInParentheses === 1 && char === '(')) &&
+        lastWasEmpty &&
+        shouldAddPlusPrefix(char) &&
+        checkWord(input, i)
+      ) {
         result += '+' + char;
       } else {
         result += char;
