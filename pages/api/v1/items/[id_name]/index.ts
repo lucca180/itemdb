@@ -130,7 +130,11 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 
   await processTags(itemTags, itemCats, internal_id);
 
-  await res.revalidate(`/item/${itemSlug ?? itemData.slug}`);
+  try {
+    await res.revalidate(`/item/${itemSlug ?? itemData.slug}`, { unstable_onlyGenerated: true });
+  } catch (e) {
+    console.error('edit revalidate error', e);
+  }
 
   return res.status(200).json({ success: true });
 };
