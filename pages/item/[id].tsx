@@ -1,14 +1,4 @@
-import {
-  Badge,
-  Box,
-  Button,
-  Flex,
-  Heading,
-  Icon,
-  Stack,
-  Text,
-  useMediaQuery,
-} from '@chakra-ui/react';
+import { Badge, Box, Button, Flex, Heading, Icon, Stack, Text } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import Layout from '../../components/Layout';
 import Image from 'next/image';
@@ -51,6 +41,8 @@ import ItemDrops from '../../components/Items/ItemDrops';
 import ItemParent from '../../components/Items/ItemParent';
 // import TradeModal from '../../components/TradeModal/TradeModal'
 import dynamic from 'next/dynamic';
+import { getItemPrices } from '../api/v1/items/[id_name]/prices';
+import { getItemTrades } from '../api/v1/trades';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -59,14 +51,7 @@ const FeedbackModal = dynamic<FeedbackModalProps>(
   () => import('../../components/Modal/FeedbackModal')
 );
 
-const defaultLastSeen: ItemLastSeen = {
-  sw: null,
-  tp: null,
-  auction: null,
-  restock: null,
-};
-
-type Props = {
+type ItemPageProps = {
   item: ItemData;
   colors: FullItemColors;
   similarItems: ItemData[];
@@ -74,18 +59,29 @@ type Props = {
   tradeLists?: UserList[];
   itemOpenable: ItemOpenable | null;
   itemParent: number[];
+
+  NPTrades: TradeData[];
+  NPPrices: PriceData[];
 };
 
-const ItemPage = (props: Props) => {
-  const { item, colors, lists, tradeLists, itemOpenable, itemParent } = props;
-  const [prices, setPrices] = useState<PriceData[] | null>(null);
-  const [seenStats, setSeen] = useState<ItemLastSeen>(defaultLastSeen);
-  const [trades, setTrades] = useState<TradeData[]>([]);
+const ItemPage = (props: ItemPageProps) => {
+  const {
+    item,
+    colors,
+    lists,
+    tradeLists,
+    itemOpenable,
+    itemParent,
+    NPPrices: prices,
+    NPTrades: trades,
+  } = props;
+  // const [prices, setPrices] = useState<PriceData[] | null>(null);
+  const [seenStats, setSeen] = useState<ItemLastSeen | null>(null);
+  // const [trades, setTrades] = useState<TradeData[]>([]);
   // const [tags, setTags] = useState<ItemTag[]>([]);
   const [isLoading, setLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
-  const [isLargerThanMD] = useMediaQuery('(min-width: 48em)', { fallback: true });
   const color = item?.color.rgb ?? [255, 255, 255];
   const router = useRouter();
 
@@ -104,8 +100,8 @@ const ItemPage = (props: Props) => {
       return;
     }
 
-    const [resPrice, resStats, resTrades] = await Promise.all([
-      axios.get(`/api/v1/items/${item.internal_id}/prices`),
+    const [resStats] = await Promise.all([
+      // axios.get(`/api/v1/items/${item.internal_id}/prices`),
       axios.get(`/api/v1/prices/stats/`, {
         params: {
           item_id: item.item_id ?? -1,
@@ -113,18 +109,18 @@ const ItemPage = (props: Props) => {
           image_id: item.image_id,
         },
       }),
-      axios.get(`/api/v1/trades/`, {
-        params: {
-          name: item.name,
-          image_id: item.image_id,
-        },
-      }),
+      // axios.get(`/api/v1/trades/`, {
+      //   params: {
+      //     name: item.name,
+      //     image_id: item.image_id,
+      //   },
+      // }),
       // axios.get(`/api/v1/items/${item.internal_id}/tags`),
     ]);
 
-    setPrices(resPrice.data ?? []);
+    // setPrices(resPrice.data ?? []);
     setSeen(resStats.data);
-    setTrades(resTrades.data);
+    // setTrades(resTrades.data);
     // setTags(resTags.data);
     setLoading(false);
   };
@@ -138,7 +134,7 @@ const ItemPage = (props: Props) => {
         openGraph: { images: [{ url: item.image, width: 80, height: 80, alt: item.name }] },
       }}
     >
-      {item && (
+      {item && isEditModalOpen && (
         <EditItemModal
           isOpen={isEditModalOpen}
           item={item}
@@ -147,7 +143,9 @@ const ItemPage = (props: Props) => {
         />
       )}
       {/* <TradeModal isOpen={true} onClose={() => {}} /> */}
-      <FeedbackModal isOpen={feedbackModalOpen} onClose={() => setFeedbackModalOpen(false)} />
+      {feedbackModalOpen && (
+        <FeedbackModal isOpen={feedbackModalOpen} onClose={() => setFeedbackModalOpen(false)} />
+      )}
       <Box>
         <Box
           position="absolute"
@@ -247,12 +245,11 @@ const ItemPage = (props: Props) => {
           flexFlow="column"
           gap={5}
         >
-          {isLargerThanMD && (
-            <>
-              <AddToListSelect item={item} />
-              <FindAtCard item={item} />
-            </>
-          )}
+          <Flex flexFlow="column" display={{ base: 'none', md: 'flex' }} gap={5}>
+            <AddToListSelect item={item} />
+            <FindAtCard item={item} />
+          </Flex>
+
           <ItemInfoCard item={item} />
           {colors && <ColorInfoCard colors={colors} />}
           {/* <ItemTags toggleModal={() => setIsEditModalOpen(true)} item={item} tags={tags} /> */}
@@ -274,20 +271,13 @@ const ItemPage = (props: Props) => {
         >
           <Flex flex="2" flexFlow="column" gap={{ base: 4, md: 6 }}>
             {item.isMissingInfo && <MissingInfoCard />}
-            {!isLargerThanMD && (
-              <>
-                <AddToListSelect item={item} />
-                <FindAtCard item={item} />
-              </>
-            )}
-            {!item.isNC && (
-              <ItemPriceCard
-                item={item}
-                lastSeen={seenStats}
-                prices={prices ?? []}
-                isLoading={isLoading}
-              />
-            )}
+
+            <Flex flexFlow="column" gap={{ base: 4, md: 6 }} display={{ base: 'flex', md: 'none' }}>
+              <AddToListSelect item={item} />
+              <FindAtCard item={item} />
+            </Flex>
+
+            {!item.isNC && <ItemPriceCard item={item} lastSeen={seenStats} prices={prices ?? []} />}
             {item.isNC && <NCTrade item={item} lists={tradeLists} />}
             {lists && <ItemOfficialLists item={item} lists={lists} />}
             {item.comment && <ItemComments item={item} />}
@@ -296,9 +286,7 @@ const ItemPage = (props: Props) => {
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>
             {item.isWearable && <ItemPreview item={item} isLoading={isLoading} />}
-            {!item.isNC && item.status === 'active' && (
-              <TradeCard item={item} trades={trades} isLoading={isLoading} />
-            )}
+            {!item.isNC && item.status === 'active' && <TradeCard item={item} trades={trades} />}
             {itemParent.length > 0 && <ItemParent item={item} parentItems={itemParent} />}
           </Flex>
         </Flex>
@@ -331,27 +319,34 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 
   if (!item) return { notFound: true };
 
-  const [colors, lists, similarItems, tradeLists, itemOpenable, itemParent] = await Promise.all([
-    getItemColor([item.image_id]),
-    getItemLists(item.internal_id, true, false),
-    getSimilarItems(item.internal_id.toString()),
-    item.isNC ? getItemLists(item.internal_id, false, false) : [],
-    getItemDrops(item.internal_id, item.isNC),
-    getItemParent(item.internal_id),
-  ]);
+  const [colors, lists, similarItems, tradeLists, itemOpenable, itemParent, itemPrices, NPTrades] =
+    await Promise.all([
+      getItemColor([item.image_id]),
+      getItemLists(item.internal_id, true, false),
+      getSimilarItems(item.internal_id.toString()),
+      item.isNC ? getItemLists(item.internal_id, false, false) : [],
+      getItemDrops(item.internal_id, item.isNC),
+      getItemParent(item.internal_id),
+      getItemPrices({ iid: item.internal_id }),
+      getItemTrades({ name: item.name, image_id: item.image_id }),
+    ]);
 
   if (!colors) return { notFound: true };
 
+  const props: ItemPageProps = {
+    item: item,
+    lists: lists,
+    similarItems: similarItems,
+    colors: colors[item.image_id] as FullItemColors,
+    tradeLists: tradeLists,
+    itemOpenable: itemOpenable,
+    itemParent: itemParent,
+    NPTrades: NPTrades,
+    NPPrices: itemPrices,
+  };
+
   return {
-    props: {
-      item: item,
-      lists: lists,
-      similarItems: similarItems,
-      colors: colors[item.image_id],
-      tradeLists: tradeLists,
-      itemOpenable: itemOpenable,
-      itemParent: itemParent,
-    },
+    props,
     revalidate: 10, // In seconds
   };
 }
@@ -375,8 +370,8 @@ const generateMetaDescription = (item: ItemData, hasDrops = false) => {
 
   // if (item.price.value) metaDescription += ` | Market Price: ${intl.format(item.price.value)} NP`;
 
-  if (!item.isMissingInfo)
-    metaDescription += ` - Rarity: r${item.rarity} - Category: ${item.category}`;
+  // if (!item.isMissingInfo)
+  //   metaDescription += ` - Rarity: r${item.rarity} - Category: ${item.category}`;
 
   metaDescription += ` | Find out more about this item on itemdb.`;
 

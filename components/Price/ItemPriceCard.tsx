@@ -28,7 +28,7 @@ const ChartComponent = dynamic<ChartComponentProps>(() => import('../Charts/Pric
 type Props = {
   item: ItemData;
   prices: PriceData[];
-  lastSeen: ItemLastSeen;
+  lastSeen: ItemLastSeen | null;
   isLoading?: boolean;
 };
 
@@ -177,49 +177,85 @@ const ItemPriceCard = (props: Props) => {
               )}
             </Flex>
           </Flex>
-          <HStack justifyContent={{ base: 'space-between', md: 'space-around' }} textAlign="center">
-            <Stat flex="initial">
-              <StatLabel>Last SW</StatLabel>
-              <StatHelpText>
-                {lastSeen.sw &&
-                  formatDistanceToNow(new Date(lastSeen.sw), {
-                    addSuffix: true,
-                  })}
-                {!lastSeen.sw && 'Never'}
-              </StatHelpText>
-            </Stat>
-            <Stat flex="initial">
-              <StatLabel>Last TP</StatLabel>
-              <StatHelpText>
-                {lastSeen.tp &&
-                  formatDistanceToNow(new Date(lastSeen.tp), {
-                    addSuffix: true,
-                  })}
-                {!lastSeen.tp && 'Never'}
-              </StatHelpText>
-            </Stat>
-            <Stat flex="initial">
-              <StatLabel>Last Auction</StatLabel>
-              <StatHelpText>
-                {lastSeen.auction &&
-                  formatDistanceToNow(new Date(lastSeen.auction), {
-                    addSuffix: true,
-                  })}
-                {!lastSeen.auction && 'Never'}
-              </StatHelpText>
-            </Stat>
-            <Stat flex="initial">
-              <StatLabel>Last Restock</StatLabel>
-              <StatHelpText>
-                {!lastSeen.restock && !item.findAt.restockShop && 'Does not restock'}
-                {lastSeen.restock &&
-                  formatDistanceToNow(new Date(lastSeen.restock), {
-                    addSuffix: true,
-                  })}
-                {!lastSeen.restock && item.findAt.restockShop && 'Never'}
-              </StatHelpText>
-            </Stat>
-          </HStack>
+          {lastSeen !== null && (
+            <HStack
+              justifyContent={{ base: 'space-between', md: 'space-around' }}
+              textAlign="center"
+            >
+              <Stat flex="initial">
+                <StatLabel>Last SW</StatLabel>
+                <StatHelpText>
+                  {lastSeen.sw &&
+                    formatDistanceToNow(new Date(lastSeen.sw), {
+                      addSuffix: true,
+                    })}
+                  {!lastSeen.sw && 'Never'}
+                </StatHelpText>
+              </Stat>
+              <Stat flex="initial">
+                <StatLabel>Last TP</StatLabel>
+                <StatHelpText>
+                  {lastSeen.tp &&
+                    formatDistanceToNow(new Date(lastSeen.tp), {
+                      addSuffix: true,
+                    })}
+                  {!lastSeen.tp && 'Never'}
+                </StatHelpText>
+              </Stat>
+              <Stat flex="initial">
+                <StatLabel>Last Auction</StatLabel>
+                <StatHelpText>
+                  {lastSeen.auction &&
+                    formatDistanceToNow(new Date(lastSeen.auction), {
+                      addSuffix: true,
+                    })}
+                  {!lastSeen.auction && 'Never'}
+                </StatHelpText>
+              </Stat>
+              <Stat flex="initial">
+                <StatLabel>Last Restock</StatLabel>
+                <StatHelpText>
+                  {!lastSeen.restock && !item.findAt.restockShop && 'Does not restock'}
+                  {lastSeen.restock &&
+                    formatDistanceToNow(new Date(lastSeen.restock), {
+                      addSuffix: true,
+                    })}
+                  {!lastSeen.restock && item.findAt.restockShop && 'Never'}
+                </StatHelpText>
+              </Stat>
+            </HStack>
+          )}
+          {!lastSeen && (
+            <HStack
+              justifyContent={{ base: 'space-between', md: 'space-around' }}
+              textAlign="center"
+            >
+              <Stat flex="initial">
+                <StatLabel>Last SW</StatLabel>
+                <StatHelpText>
+                  <SkeletonText mt={1} skeletonHeight="3" noOfLines={1} />
+                </StatHelpText>
+              </Stat>
+              <Stat flex="initial">
+                <StatLabel>Last TP</StatLabel>
+                <StatHelpText>
+                  <SkeletonText mt={1} skeletonHeight="3" noOfLines={1} />
+                </StatHelpText>
+              </Stat>
+              <Stat flex="initial">
+                <StatLabel>Last Auction</StatLabel>
+                <StatHelpText>
+                  <SkeletonText mt={1} skeletonHeight="3" noOfLines={1} />
+                </StatHelpText>
+              </Stat>
+              <Stat flex="initial">
+                <StatLabel>Last Restock</StatLabel>
+                <StatHelpText>
+                  <SkeletonText mt={1} skeletonHeight="3" noOfLines={1} />
+                </StatHelpText>
+              </Stat>
+            </HStack>
+          )}
         </Flex>
       </Flex>
     </CardBase>

@@ -15,9 +15,20 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   const name = isNaN(id) ? id_name : undefined;
 
+  const prices = await getItemPrices({ iid: id, name });
+
+  res.json(prices);
+}
+
+type ItemPricesArgs = {
+  iid?: number | undefined;
+  name?: string;
+};
+export const getItemPrices = async (args: ItemPricesArgs) => {
+  const { iid, name } = args;
   const pricesRaw = await prisma.itemPrices.findMany({
     where: {
-      item_iid: !isNaN(id) ? id : undefined,
+      item_iid: iid,
       name: name,
       manual_check: null,
     },
@@ -33,5 +44,5 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     };
   });
 
-  res.json(prices);
-}
+  return prices;
+};

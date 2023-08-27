@@ -32,43 +32,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const name = req.query.name as string;
   const image_id = req.query.image_id as string | undefined;
 
-  const tradeRaw = await prisma.trades.findMany({
-    where: {
-      items: {
-        some: {
-          name: name,
-          image_id: image_id || undefined,
-        },
-      },
-    },
-    include: { items: true },
-    orderBy: { trade_id: 'desc' },
-    take: 20,
-  });
-
-  const trades: TradeData[] = tradeRaw.map((t) => {
-    return {
-      trade_id: t.trade_id,
-      owner: t.owner,
-      wishlist: t.wishlist,
-      addedAt: t.addedAt.toJSON(),
-      processed: t.processed,
-      priced: t.priced,
-      items: t.items.map((i) => {
-        return {
-          internal_id: i.internal_id,
-          trade_id: i.trade_id,
-          name: i.name,
-          image: i.image,
-          image_id: i.image_id,
-          price: i.price,
-          order: i.order,
-          addedAt: i.addedAt.toJSON(),
-        };
-      }),
-    };
-  });
-
+  const trades = await getItemTrades({ name, image_id });
   return res.json(trades);
 };
 
@@ -199,4 +163,52 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
   });
 
   return await prisma.$transaction([updateTrade, ...updateItems, priceProcess]);
+};
+
+type getItemTradesArgs = {
+  name: string;
+  image_id?: string;
+};
+
+export const getItemTrades = async (args: getItemTradesArgs) => {
+  const { name, image_id } = args;
+
+  const tradeRaw = await prisma.trades.findMany({
+    where: {
+      items: {
+        some: {
+          name: name,
+          image_id: image_id || undefined,
+        },
+      },
+    },
+    include: { items: true },
+    orderBy: { trade_id: 'desc' },
+    take: 20,
+  });
+
+  const trades: TradeData[] = tradeRaw.map((t) => {
+    return {
+      trade_id: t.trade_id,
+      owner: t.owner,
+      wishlist: t.wishlist,
+      addedAt: t.addedAt.toJSON(),
+      processed: t.processed,
+      priced: t.priced,
+      items: t.items.map((i) => {
+        return {
+          internal_id: i.internal_id,
+          trade_id: i.trade_id,
+          name: i.name,
+          image: i.image,
+          image_id: i.image_id,
+          price: i.price,
+          order: i.order,
+          addedAt: i.addedAt.toJSON(),
+        };
+      }),
+    };
+  });
+
+  return trades;
 };
