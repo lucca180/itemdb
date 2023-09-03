@@ -15,7 +15,7 @@ import { ListItemInfo, ItemData, UserList } from '../../types';
 import { SortableItem } from './ItemCard';
 import debounce from 'lodash/debounce';
 
-type Props = {
+export type SortableAreaProps = {
   ids: number[];
   list?: UserList;
   itemInfo: { [id: string]: ListItemInfo };
@@ -29,7 +29,7 @@ type Props = {
   onListAction?: (item: ItemData, action: 'move' | 'delete') => void;
 };
 
-export function SortableArea(props: Props) {
+export default function SortableArea(props: SortableAreaProps) {
   const { itemInfo, items, editMode, activateSort, list } = props;
   const [activeId, setActiveId] = useState<number | null>(null);
   const [ids, setIds] = useState(props.ids);

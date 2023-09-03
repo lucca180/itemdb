@@ -4,8 +4,6 @@ import {
   Box,
   Flex,
   Heading,
-  Link,
-  Stack,
   Text,
   Button,
   Center,
@@ -16,36 +14,26 @@ import {
   FormLabel,
   Switch,
   useToast,
-  Icon,
-  Image,
-  useMediaQuery,
-  Tooltip,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Layout from '../../../components/Layout';
 import { ItemData, ListItemInfo, UserList } from '../../../types';
 import { useAuth } from '../../../utils/auth';
 import { useRouter } from 'next/router';
-import icon from '../../../public/logo_icon.svg';
-import NextImage from 'next/image';
 import ItemCard from '../../../components/Items/ItemCard';
 import Color from 'color';
-import NextLink from 'next/link';
-import { SortableArea } from '../../../components/Sortable/SortableArea';
+import { SortableAreaProps } from '../../../components/Sortable/SortableArea';
 import { SelectItemsCheckbox } from '../../../components/Input/SelectItemsCheckbox';
 import { ItemActionModalProps } from '../../../components/Modal/ItemActionModal';
-import { BiLinkExternal } from 'react-icons/bi';
 import { NextPageContext } from 'next';
 import { getList } from '../../api/v1/lists/[username]/[list_id]';
 import { getCookie } from 'cookies-next';
-import GiftBox from '../../../public/icons/giftbox.png';
-import NPBag from '../../../public/icons/npbag.png';
-import { MdWarning } from 'react-icons/md';
 
 import { CreateListModalProps } from '../../../components/Modal/CreateListModal';
 
 import dynamic from 'next/dynamic';
+import ListHeader from '../../../components/Lists/ListHeader';
 
 const CreateListModal = dynamic<CreateListModalProps>(
   () => import('../../../components/Modal/CreateListModal')
@@ -55,13 +43,15 @@ const ItemActionModal = dynamic<ItemActionModalProps>(
   () => import('../../../components/Modal/ItemActionModal')
 );
 
+const SortableArea = dynamic<SortableAreaProps>(
+  () => import('../../../components/Sortable/SortableArea')
+);
+
 type ExtendedListItemInfo = ListItemInfo & { hasChanged?: boolean };
 
 type Props = {
   list: UserList;
 };
-
-const intl = new Intl.NumberFormat();
 
 const ListPage = (props: Props) => {
   const router = useRouter();
@@ -89,45 +79,9 @@ const ListPage = (props: Props) => {
   const [matches, setMatches] = useState<ListItemInfo[]>([]);
   const [isLoading, setLoading] = useState<boolean>(true);
 
-  const [isLargerThanSM] = useMediaQuery('(min-width: 30em)');
-
-  const isOwner = user?.username === router.query.username || user?.id === list?.user_id;
+  const isOwner = user?.username === router.query.username || user?.id === list?.owner.id;
   const color = Color(list?.colorHex || '#4A5568');
   const rgb = color.rgb().array();
-
-  const unpricedItems = useMemo(() => {
-    if (!list) return 0;
-
-    return Object.values(items).reduce((acc, item) => {
-      if (!item) return acc;
-
-      if (!item.isNC && !item.price.value && item.status === 'active') return acc + 1;
-
-      return acc;
-    }, 0);
-  }, [items]);
-
-  const NPPrice = useMemo(() => {
-    if (!list) return 0;
-
-    return list.itemInfo.reduce((acc, item) => {
-      const itemData = items[item.item_iid];
-      if (!itemData || !itemData.price.value) return acc;
-
-      return acc + itemData.price.value * item.amount;
-    }, 0);
-  }, [items, itemInfo]);
-
-  const NCPrice = useMemo(() => {
-    if (!list) return 0;
-
-    return list.itemInfo.reduce((acc, item) => {
-      const itemData = items[item.item_iid];
-      if (!itemData || !itemData.owls || !itemData.owls.valueMin) return acc;
-
-      return acc + itemData.owls.valueMin * item.amount;
-    }, 0);
-  }, [items, itemInfo]);
 
   useEffect(() => {
     if (!authLoading && router.isReady) {
@@ -221,14 +175,14 @@ const ListPage = (props: Props) => {
   };
 
   const getMatches = async () => {
-    if (!list || !user || list.purpose === 'none') return;
+    if (!list || !user || list.purpose === 'none' || isOwner) return;
 
-    let seeker = list.purpose === 'seeking' ? list.user_username : user.username;
-    let offerer = list.purpose === 'trading' ? list.user_username : user.username;
+    let seeker = list.purpose === 'seeking' ? list.owner.id : user.username;
+    let offerer = list.purpose === 'trading' ? list.owner.id : user.username;
 
     if (list.official) {
       seeker = user.username;
-      offerer = list.user_username;
+      offerer = list.owner.id;
     }
 
     const token = await getIdToken();
@@ -478,184 +432,14 @@ const ListPage = (props: Props) => {
         action={selectionAction}
         list={list}
       />
-      <Box>
-        <Box
-          position="absolute"
-          h="30vh"
-          left="0"
-          width="100%"
-          bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.6) 80%)`}
-          zIndex={-1}
-        />
-        <Flex gap={{ base: 3, md: 6 }} pt={6} alignItems="center">
-          <Flex
-            position="relative"
-            p={{ base: 1, md: 2 }}
-            bg={`rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.75)`}
-            borderRadius="md"
-            flexFlow="column"
-            justifyContent="center"
-            alignItems="center"
-            boxShadow="sm"
-            textAlign="center"
-            minW={{ base: '100px', md: '150px' }}
-            minH={{ base: '100px', md: '150px' }}
-            flex="0 0 auto"
-          >
-            {!list.coverURL && (
-              <Image
-                as={NextImage}
-                src={icon}
-                width={{ base: '50px', md: '80px' }}
-                style={{ opacity: 0.85, flex: 1 }}
-                alt={'List Cover'}
-              />
-            )}
-            {list.coverURL && (
-              <Image
-                src={list.coverURL}
-                objectFit="cover"
-                width={{ base: '100px', md: '150px' }}
-                height={{ base: '100px', md: '150px' }}
-                borderRadius="md"
-                alt={'List Cover'}
-              />
-            )}
-            {(isOwner || user?.isAdmin) && (
-              <Button
-                variant="solid"
-                mt={3}
-                colorScheme={color.isLight() ? 'blackAlpha' : 'gray'}
-                onClick={() => setOpenCreateModal(true)}
-                size="sm"
-              >
-                Edit list info
-              </Button>
-            )}
-          </Flex>
-          <Box>
-            <Stack direction="row" mb={1} alignItems="center">
-              {!list.official && list.purpose !== 'none' && (
-                <Badge borderRadius="md" colorScheme={color.isLight() ? 'black' : 'gray'}>
-                  {list.purpose}
-                </Badge>
-              )}
-              {list.official && (
-                <Badge
-                  as={NextLink}
-                  href="/lists/official"
-                  borderRadius="md"
-                  colorScheme="blue"
-                  variant="solid"
-                >
-                  ✓ Official
-                </Badge>
-              )}
-              {list.visibility !== 'public' && (
-                <Badge
-                  borderRadius="md"
-                  colorScheme={color.isLight() ? 'black' : 'gray'}
-                  variant="solid"
-                >
-                  {list.visibility}
-                </Badge>
-              )}
-            </Stack>
-            <Heading size={{ base: 'lg', md: undefined }}>{list.name}</Heading>
-            <Stack direction="row" mb={1} alignItems="center" flexWrap="wrap">
-              <Text fontSize={{ base: 'xs', md: 'sm' }}>
-                {list.official ? 'curated' : ''} by{' '}
-                <Link as={NextLink} fontWeight="bold" href={'/lists/' + list.owner.username}>
-                  {list.owner.username}
-                </Link>
-              </Text>
-              {!list.official && list.owner.neopetsUser && isLargerThanSM && (
-                <>
-                  <Link
-                    isExternal
-                    href={`http://www.neopets.com/userlookup.phtml?user=${list.user_neouser}`}
-                  >
-                    <Badge borderRadius="md" colorScheme={color.isLight() ? 'black' : 'gray'}>
-                      Userlookup <Icon as={BiLinkExternal} verticalAlign="text-top" />
-                    </Badge>
-                  </Link>
-                  <Link
-                    isExternal
-                    href={`http://www.neopets.com/neomessages.phtml?type=send&recipient=${list.user_neouser}`}
-                  >
-                    <Badge borderRadius="md" colorScheme={color.isLight() ? 'black' : 'gray'}>
-                      Neomail <Icon as={BiLinkExternal} verticalAlign="text-top" />
-                    </Badge>
-                  </Link>
-                </>
-              )}
-            </Stack>
-            {list.description && (
-              <Text mt={{ base: 2, md: 3 }} fontSize={{ base: 'sm', md: 'md' }}>
-                {list.description}
-              </Text>
-            )}
-            {(!!NPPrice || !!NCPrice) && (
-              <Flex
-                display={'inline-flex'}
-                mt={{ base: 2, md: 3 }}
-                py={1}
-                px={2}
-                bg="blackAlpha.300"
-                borderRadius={'md'}
-                alignItems="flex-start"
-              >
-                <Tooltip
-                  hasArrow
-                  label={`There are ${unpricedItems} items without a price`}
-                  placement="top"
-                  isDisabled={!unpricedItems}
-                >
-                  <Text fontSize="sm">
-                    {!!unpricedItems && (
-                      <span>
-                        <Icon as={MdWarning} boxSize={'1rem'} mr="0.2rem" verticalAlign="middle" />
-                      </span>
-                    )}
-                    This list costs aprox.{' '}
-                    {!!NPPrice && (
-                      <>
-                        <b>{intl.format(NPPrice)} NP</b>
-                        <Image
-                          as={NextImage}
-                          display="inline"
-                          verticalAlign="bottom"
-                          //@ts-ignore
-                          src={NPBag}
-                          width="24px"
-                          height="24px"
-                          alt="gift box icon"
-                        />
-                      </>
-                    )}{' '}
-                    {!!NPPrice && !!NCPrice && 'and'}{' '}
-                    {!!NCPrice && (
-                      <>
-                        <b>{intl.format(NCPrice)} Caps</b>{' '}
-                        <Image
-                          as={NextImage}
-                          display="inline"
-                          verticalAlign="bottom"
-                          //@ts-ignore
-                          src={GiftBox}
-                          width="24px"
-                          height="24px"
-                          alt="gift box icon"
-                        />
-                      </>
-                    )}
-                  </Text>
-                </Tooltip>
-              </Flex>
-            )}
-          </Box>
-        </Flex>
-      </Box>
+      <ListHeader
+        list={list}
+        isOwner={isOwner}
+        color={color}
+        items={items}
+        itemInfo={itemInfo}
+        setOpenCreateModal={setOpenCreateModal}
+      />
       <Flex mt={5} gap={6} flexFlow="column">
         {!isOwner && user && list.purpose !== 'none' && (
           <>
@@ -793,8 +577,13 @@ const ListPage = (props: Props) => {
             </Select>
           </HStack>
         </Flex>
-        {!isEdit && isOwner && isLargerThanSM && (
-          <Text textAlign={'center'} fontSize="xs" color="gray.500">
+        {!isEdit && isOwner && (
+          <Text
+            textAlign={'center'}
+            fontSize="xs"
+            color="gray.500"
+            display={{ base: 'none', md: 'inline' }}
+          >
             Tip: you can use right click or ctrl+click to select multiple items
           </Text>
         )}

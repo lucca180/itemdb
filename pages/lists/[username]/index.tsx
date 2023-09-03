@@ -24,7 +24,7 @@ import { CreateListModalProps } from '../../../components/Modal/CreateListModal'
 import { ListItemInfo, User, UserList } from '../../../types';
 import { useAuth } from '../../../utils/auth';
 import { useRouter } from 'next/router';
-import { SortableLists } from '../../../components/Sortable/SortableLists';
+import { SortableListsProps } from '../../../components/Sortable/SortableLists';
 import Color from 'color';
 import { SelectItemsCheckbox } from '../../../components/Input/SelectItemsCheckbox';
 import { FaTrash } from 'react-icons/fa';
@@ -48,6 +48,10 @@ const DeleteListModal = dynamic<DeleteListModalProps>(
 
 const EditProfileModal = dynamic<EditProfileModalProps>(
   () => import('../../../components/Modal/EditProfileModal')
+);
+
+const SortableLists = dynamic<SortableListsProps>(
+  () => import('../../../components/Sortable/SortableLists')
 );
 
 type ExtendedUserList = UserList & {
