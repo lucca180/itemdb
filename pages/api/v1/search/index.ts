@@ -2,7 +2,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { getItemFindAtLinks, isMissingInfo } from '../../../../utils/utils';
-import { ItemData } from '../../../../types';
+import { ItemData, SearchFilters } from '../../../../types';
 import Color from 'color';
 import { Prisma } from '@prisma/client';
 import qs from 'qs';
@@ -12,22 +12,41 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (req.method !== 'GET' || !req.url)
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
-  const reqQuery = qs.parse(req.url.split('?')[1]);
-  const originalQuery = (reqQuery.s as string)?.trim() ?? '';
-  let page = (parseInt(reqQuery.page as string) || 1) - 1;
-  let limit = parseInt(reqQuery.limit as string) || 48;
+  const reqQuery = qs.parse(req.url.split('?')[1]) as any;
+  const query = (reqQuery.s as string)?.trim() ?? '';
 
+  // const [queryFilters, querySanitezed] = parseFilters(originalQuery, false);
+
+  // const query = querySanitezed.trim() ?? '';
+
+  reqQuery.page = parseInt(reqQuery.page as string) || 1;
+  reqQuery.limit = parseInt(reqQuery.limit as string) || 48;
+
+  // const filters = { ...queryFilters, ...reqQuery };
+
+  const result = await doSearch(query, reqQuery);
+  res.json(result);
+}
+
+export async function doSearch(query: string, filters: SearchFilters) {
+  const originalQuery = query;
   const [queryFilters, querySanitezed] = parseFilters(originalQuery, false);
 
-  let query = querySanitezed.trim() ?? '';
+  query = querySanitezed.trim() ?? '';
 
-  const filters = { ...queryFilters, ...reqQuery };
+  filters = { ...queryFilters, ...filters };
+
+  console.log(filters);
+
+  let { page, limit } = filters;
+
+  page = page - 1;
 
   const isColorSearch = !!query.match(/^#[0-9A-Fa-f]{6}$/);
 
   if (page < 0) page = 0;
   if (limit < 1) limit = 1;
-  if (limit > 100) limit = 100;
+  if (limit > 3000) limit = 3000;
 
   let categoryFilters = (filters.category as string[]) ?? [];
   let typeFilters = (filters.type as string[]) ?? [];
@@ -338,7 +357,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const filteredResult = resultRaw;
   // .filter(({internal_id}: any, index: number) => !ids.includes(internal_id, index + 1))
   // .sort((a:any, b:any) =>  Math.floor(b.h) - Math.floor(a.h) || Math.floor(b.s) - Math.floor(a.s) || Math.floor(b.l) - Math.floor(a.l))
-
   const itemList: ItemData[] = filteredResult.map((result: any) => {
     const item: ItemData = {
       internal_id: result.internal_id,
@@ -390,14 +408,13 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     return item;
   });
 
-  res.json({
+  return {
     content: itemList,
     page: page + 1,
     totalResults: parseInt(resultRaw?.[0]?.full_count ?? 0),
     resultsPerPage: limit,
-  });
+  };
 }
-
 // SELECT *,
 // (POWER(h-15,2)+POWER(s-100,2)+POWER(l-45,2)) as dist
 // FROM ItemColor

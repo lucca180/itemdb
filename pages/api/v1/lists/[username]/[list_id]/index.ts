@@ -19,7 +19,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   return res.status(405).json({ error: 'Method not allowed' });
 }
 
-// gets a list
+// get a list
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const { username, list_id } = req.query;
   const isOfficial = username === 'official';

@@ -164,6 +164,10 @@ export type SearchFilters = {
   page: number;
 };
 
+export type ExtendedSearchFilters = SearchFilters & {
+  s: string;
+};
+
 export type ItemTag = {
   tag_id: number;
   name: string;

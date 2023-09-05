@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Center,
   Flex,
   HStack,
@@ -32,6 +33,8 @@ import { defaultFilters } from '../utils/parseFilters';
 const Axios = axios.create({
   baseURL: '/api/v1/',
 });
+
+const intl = new Intl.NumberFormat();
 
 const SearchPage = () => {
   const toast = useToast();
@@ -248,6 +251,7 @@ const SearchPage = () => {
       SEO={{
         title: `${router.query.s ? `${router.query.s} -` : ''} Search`,
         canonical: 'https://itemdb.com.br/search',
+        noindex: true,
       }}
     >
       <Flex
@@ -255,24 +259,36 @@ const SearchPage = () => {
         flexFlow={{ base: 'column', lg: 'row' }}
         alignItems={{ base: 'center', lg: 'flex-start' }}
       >
-        {isLargerThanLG && (
-          <Box
-            flex="1 0 auto"
-            display={{ base: 'none', lg: 'block' }}
-            maxW={{ base: 'none', md: '275px' }}
-            w="100%"
-          >
-            <SearchFilterCard
-              filters={filters}
-              stats={searchStatus}
-              isColorSearch={isColorSearch}
-              onChange={handleFilterChange}
-              resetFilters={resetFilters}
-              applyFilters={() => changeQueryString()}
-            />
-          </Box>
-        )}
-        {!isLargerThanLG && (
+        <Box
+          flex="1 0 auto"
+          display={{ base: 'none', lg: 'block' }}
+          maxW={{ base: 'none', md: '275px' }}
+          w="100%"
+        >
+          <SearchFilterCard
+            filters={filters}
+            stats={searchStatus}
+            isColorSearch={isColorSearch}
+            onChange={handleFilterChange}
+            resetFilters={resetFilters}
+            applyFilters={() => changeQueryString()}
+          />
+
+          <Flex justifyContent={'center'}>
+            <Button
+              variant="ghost"
+              textAlign={'center'}
+              colorScheme="orange"
+              size="sm"
+              // onClick={applyFilters}
+              mt={3}
+            >
+              Create ⚡Dynamic List
+            </Button>
+          </Flex>
+        </Box>
+
+        {isOpen && (
           <SearchFilterModal
             isOpen={isOpen}
             onClose={onClose}
@@ -299,12 +315,16 @@ const SearchPage = () => {
                     allChecked={selectedItems.length === searchResult.content.length}
                     onClick={(checkAll) => selectItem(undefined, checkAll)}
                     defaultText={`
-                      Showing ${searchResult.resultsPerPage * (searchResult.page - 1) + 1} -${' '}
-                      ${Math.min(
-                        searchResult.resultsPerPage * searchResult.page,
-                        searchResult.totalResults
+                      Showing ${intl.format(
+                        searchResult.resultsPerPage * (searchResult.page - 1) + 1
+                      )} -${' '}
+                      ${intl.format(
+                        Math.min(
+                          searchResult.resultsPerPage * searchResult.page,
+                          searchResult.totalResults
+                        )
                       )}${' '}
-                      of ${searchResult.totalResults} results
+                      of ${intl.format(searchResult.totalResults)} results
                     `}
                   />
                 )}
@@ -319,7 +339,12 @@ const SearchPage = () => {
                 )}
               </Flex>
               {!isLargerThanLG && (
-                <IconButton aria-label="search filters" onClick={onOpen} icon={<BsFilter />} />
+                <IconButton
+                  aria-label="search filters"
+                  onClick={onOpen}
+                  icon={<BsFilter />}
+                  display={{ base: 'inherit', lg: 'none' }}
+                />
               )}
             </HStack>
             <Flex
@@ -363,11 +388,16 @@ const SearchPage = () => {
               </Select>
             </Flex>
           </Flex>
-          {isLargerThanLG && (
-            <Text textAlign={'center'} fontSize="xs" color="gray.500">
-              Tip: you can use right click or ctrl+click to select multiple items
-            </Text>
-          )}
+
+          <Text
+            textAlign={'center'}
+            fontSize="xs"
+            color="gray.500"
+            display={{ base: 'none', lg: 'block' }}
+          >
+            Tip: you can use right click or ctrl+click to select multiple items
+          </Text>
+
           <Flex mt={4} flexWrap="wrap" gap={{ base: 3, md: 4 }} justifyContent="center">
             {searchResult?.content.map((item) => (
               <Box
@@ -383,7 +413,7 @@ const SearchPage = () => {
                 />
               </Box>
             ))}
-            {!searchResult && [...Array(24)].map((_, i) => <ItemCard key={i} />)}
+            {!searchResult && [...Array(48)].map((_, i) => <ItemCard key={i} />)}
             {searchResult && searchResult.content.length === 0 && (
               <Center h="60vh" flexFlow="column" gap={3}>
                 <Image

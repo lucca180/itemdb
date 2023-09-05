@@ -244,31 +244,31 @@ model User {
 }
 
 model OpenableItems {
-  internal_id Int      @id @default(autoincrement())
-  opening_id  String
-  item_iid    Int
-  ip_address  String?
-  parent_iid  Int?
-  notes       String?
-  limitedEdition Boolean @default(false)
-  addedAt     DateTime @default(now())
-  item        Items    @relation("childItem", fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
-  parent_item Items?   @relation("parentItem", fields: [parent_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+  internal_id    Int      @id @default(autoincrement())
+  opening_id     String
+  item_iid       Int
+  ip_address     String?
+  parent_iid     Int?
+  notes          String?
+  limitedEdition Boolean  @default(false)
+  addedAt        DateTime @default(now())
+  item           Items    @relation("childItem", fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+  parent_item    Items?   @relation("parentItem", fields: [parent_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model OpenableQueue {
-  internal_id Int      @id @default(autoincrement())
-  parent_name String
-  parent_image String
-  name        String
-  image       String
-  limitedEdition Boolean @default(false)
-  notes       String?
-  ip_address  String?
-  opening_id  String
-  manual_check String?
-  processed   Boolean @default(false)
-  addedAt     DateTime @default(now())
+  internal_id    Int      @id @default(autoincrement())
+  parent_name    String
+  parent_image   String
+  name           String
+  image          String
+  limitedEdition Boolean  @default(false)
+  notes          String?
+  ip_address     String?
+  opening_id     String
+  manual_check   String?
+  processed      Boolean  @default(false)
+  addedAt        DateTime @default(now())
 }
 
 model Feedbacks {
@@ -311,7 +311,24 @@ model UserList {
   sortDir String @default("asc")
   order   Int?
 
+  dynamicQuery    Json?
+  lastDynamicSync DateTime?
+
+  dynamicType DynamicListType?
+
+  linkedListId   Int?
+  linkedList     UserList? @relation("linkedLists", fields: [linkedListId], references: [internal_id], onDelete: SetNull, onUpdate: Cascade)
+  lastLinkedSync DateTime?
+
+  linkedLists UserList[] @relation("linkedLists")
+
   items ListItems[]
+}
+
+enum DynamicListType {
+  addOnly
+  removeOnly
+  fullSync
 }
 
 enum UserListPurpose {
@@ -340,15 +357,17 @@ model ListItems {
   order       Int?
   isHighlight Boolean  @default(false)
 
+  isHidden Boolean @default(false)
+
   @@unique([list_id, item_iid])
 }
 
 model OwlsPrice {
-  internal_id Int       @id @default(autoincrement())
+  internal_id Int      @id @default(autoincrement())
   value       String
   valueMin    Int
   pricedAt    DateTime
-  addedAt     DateTime  @default(now())
+  addedAt     DateTime @default(now())
 
   lastChecked DateTime @default(now())
 

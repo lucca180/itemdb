@@ -15,22 +15,24 @@ type Props = {
 const SearchFilterCard = (props: Props) => {
   const { filters, stats, isColorSearch, onChange, resetFilters, applyFilters } = props;
   return (
-    <CardBase title="Search Filters" noPadding>
-      <SearchFilters
-        onChange={onChange}
-        filters={filters}
-        stats={stats}
-        isColorSearch={isColorSearch}
-      />
-      <HStack justifyContent="center" my={3}>
-        <Button variant="outline" onClick={resetFilters} colorScheme="gray" size="sm">
-          Reset
-        </Button>
-        <Button variant="outline" colorScheme="green" size="sm" onClick={applyFilters}>
-          Apply Filters
-        </Button>
-      </HStack>
-    </CardBase>
+    <>
+      <CardBase title="Search Filters" noPadding>
+        <SearchFilters
+          onChange={onChange}
+          filters={filters}
+          stats={stats}
+          isColorSearch={isColorSearch}
+        />
+        <HStack justifyContent="center" my={3} px={2}>
+          <Button variant="ghost" onClick={resetFilters} colorScheme="gray" size="sm">
+            Reset
+          </Button>
+          <Button variant="ghost" colorScheme="green" size="sm" onClick={applyFilters}>
+            Apply Filters
+          </Button>
+        </HStack>
+      </CardBase>
+    </>
   );
 };
 
