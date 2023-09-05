@@ -149,6 +149,9 @@ model ItemPrices {
   item     Items? @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
 
   @@index([name, image_id])
+  @@index([name, addedAt])
+  @@index([name])
+  @@index([name, item_iid])
   @@index([item_iid, addedAt(sort: Desc)])
 }
 
@@ -173,6 +176,9 @@ model PriceProcess {
 
   @@unique([type, neo_id])
   @@index([name, image_id])
+  @@index([name, addedAt])
+  @@index([name, addedAt, type])
+  @@index([name])
   @@index([item_id])
   @@index([addedAt(sort: Desc)])
 }
