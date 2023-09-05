@@ -1,7 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createCanvas, loadImage } from 'canvas';
+// import { createCanvas, loadImage } from 'canvas';
 import { ImageBucket } from '../../../../utils/googleCloud';
 import axios from 'axios';
+
+// const ISDEV = process.env.NODE_ENV === 'development';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -62,6 +64,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       return;
     }
   } catch (e) {
+    const { createCanvas, loadImage } = await import('canvas');
     const img = await loadImage('./public/oops.jpg');
 
     if (!canvas || !ctx) {

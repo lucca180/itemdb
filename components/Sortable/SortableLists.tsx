@@ -14,7 +14,7 @@ import { arrayMove, SortableContext, rectSortingStrategy } from '@dnd-kit/sortab
 import { UserList } from '../../types';
 import { SortableListCard } from './ListCard';
 
-type Props = {
+export type SortableListsProps = {
   ids: number[];
   lists: { [id: number]: UserList };
   listSelect?: number[];
@@ -28,7 +28,7 @@ type Props = {
   };
 };
 
-export function SortableLists(props: Props) {
+export default function SortableLists(props: SortableListsProps) {
   const { activateSort, editMode, lists, listSelect } = props;
   const [activeId, setActiveId] = useState<number | null>(null);
   const [ids, setIds] = useState(props.ids);
