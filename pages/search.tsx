@@ -1,6 +1,6 @@
 import {
   Box,
-  Button,
+  // Button,
   Center,
   Flex,
   HStack,
@@ -274,7 +274,7 @@ const SearchPage = () => {
             applyFilters={() => changeQueryString()}
           />
 
-          <Flex justifyContent={'center'}>
+          {/* <Flex justifyContent={'center'}>
             <Button
               variant="ghost"
               textAlign={'center'}
@@ -285,7 +285,7 @@ const SearchPage = () => {
             >
               Create ⚡Dynamic List
             </Button>
-          </Flex>
+          </Flex> */}
         </Box>
 
         {isOpen && (

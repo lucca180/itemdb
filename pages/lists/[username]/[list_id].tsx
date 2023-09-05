@@ -23,7 +23,7 @@ import { useAuth } from '../../../utils/auth';
 import { useRouter } from 'next/router';
 import ItemCard from '../../../components/Items/ItemCard';
 import Color from 'color';
-import { SortableAreaProps } from '../../../components/Sortable/SortableArea';
+import SortableArea from '../../../components/Sortable/SortableArea';
 import { SelectItemsCheckbox } from '../../../components/Input/SelectItemsCheckbox';
 import { ItemActionModalProps } from '../../../components/Modal/ItemActionModal';
 import { NextPageContext } from 'next';
@@ -41,10 +41,6 @@ const CreateListModal = dynamic<CreateListModalProps>(
 
 const ItemActionModal = dynamic<ItemActionModalProps>(
   () => import('../../../components/Modal/ItemActionModal')
-);
-
-const SortableArea = dynamic<SortableAreaProps>(
-  () => import('../../../components/Sortable/SortableArea')
 );
 
 type ExtendedListItemInfo = ListItemInfo & { hasChanged?: boolean };
