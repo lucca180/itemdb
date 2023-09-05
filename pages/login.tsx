@@ -13,7 +13,7 @@ import {
 import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import { useRouter } from 'next/router';
-import { getAuth, isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
+// import { getAuth, isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
 import Image from 'next/image';
 import logoIcon from '../public/logo_white.svg';
 import axios from 'axios';
@@ -23,8 +23,10 @@ import { User } from '../types';
 
 const mailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const getAuth = () => import('../utils/firebase/auth');
+
 const LoginPage = () => {
-  const auth = getAuth();
+  // const auth = getAuth();
   const router = useRouter();
   const [email, setEmail] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -42,6 +44,8 @@ const LoginPage = () => {
 
   const init = async () => {
     setIsLoading(true);
+    const { auth, isSignInWithEmailLink, signInWithEmailLink } = await getAuth();
+
     if (isSignInWithEmailLink(auth, window.location.href) && !user) {
       let mailAddr = window.localStorage.getItem('emailForSignIn');
       window.localStorage.removeItem('emailForSignIn');
@@ -123,6 +127,7 @@ const LoginPage = () => {
     }
 
     try {
+      const { auth } = await getAuth();
       const token = await auth.currentUser?.getIdToken();
       const userRes = await axios.post(
         '/api/auth/alterUser',
