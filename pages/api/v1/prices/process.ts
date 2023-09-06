@@ -245,8 +245,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const hasManualCheck = priceAddList.some((x) => x.manual_check);
 
   await prisma.priceProcessHistory.createMany({
-    data: priceAddList.map((x) => ({
-      name: x.name,
+    data: names.map((x) => ({
+      name: x,
     })),
   });
 
