@@ -227,7 +227,8 @@ export const getItem = async (id_name: number | string) => {
     slug: result.slug ?? null,
   };
 
-  if (item.isNC && item.status !== 'no trade') item.owls = await fetchOwlsData(item.name, item);
+  if (item.isNC && item.status !== 'no trade' && item.isWearable)
+    item.owls = await fetchOwlsData(item.name, item);
 
   item.findAt = getItemFindAtLinks(item); // does have all the info we need :)
   item.isMissingInfo = isMissingInfo(item);
@@ -353,13 +354,13 @@ export const fetchOwlsData = async (
         item_iid: item.internal_id,
       },
       orderBy: {
-        pricedAt: 'desc',
+        addedAt: 'desc',
       },
     });
 
     lastOwls = owls;
     // check if last check was in the last 3 days
-    if (owls && differenceInCalendarDays(new Date(), owls.lastChecked) < 3) {
+    if (owls && differenceInCalendarDays(new Date(), owls.lastChecked) < 15) {
       return {
         value: owls.value,
         valueMin: owls.valueMin,

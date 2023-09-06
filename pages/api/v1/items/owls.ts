@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { isSameDay } from 'date-fns';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { getManyItems } from './many';
@@ -54,8 +55,9 @@ export const getLatestOwls = async (limit = 20) => {
     }
 
     const pricedAt = new Date(owlsItem.date_of_last_update);
+    const itemdbPricedAt = new Date(item.owls?.pricedAt ?? 0);
 
-    if ((!item.owls || item.owls.pricedAt !== pricedAt.toJSON()) && owlsItem.owls_value) {
+    if ((!item.owls || !isSameDay(pricedAt, itemdbPricedAt)) && owlsItem.owls_value) {
       let price = Number(owlsItem.owls_value.split('-')[0]);
       if (isNaN(price)) price = 0;
 
@@ -89,11 +91,13 @@ export const getLatestOwls = async (limit = 20) => {
           rarity: 500,
           type: 'nc',
           isNC: true,
+          isWearable: true,
         },
       });
 
       item.isNC = true;
       item.type = 'nc';
+      item.isWearable = true;
       item.rarity = 500;
     }
 

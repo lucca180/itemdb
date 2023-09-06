@@ -65,6 +65,8 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       totalCount: Number(x.full_count),
     }));
 
+  if (convertedGroupBy.length === 0) return res.status(200).json({ totalQueue: 0 });
+
   return res.status(200).json({ totalQueue: convertedGroupBy[0].totalCount });
 };
 
