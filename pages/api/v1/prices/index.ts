@@ -128,6 +128,14 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         skipDuplicates: true,
       });
 
+      if (!['restock', 'auction'].includes(dataList[0].type)) {
+        await prisma.priceProcessHistory.deleteMany({
+          where: {
+            name: dataList[0].name,
+          },
+        });
+      }
+
       return res.json(result);
     } catch (e: any) {
       // prevent race condition

@@ -162,7 +162,15 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
     skipDuplicates: true,
   });
 
-  return await prisma.$transaction([updateTrade, ...updateItems, priceProcess]);
+  const priceHistory = prisma.priceProcessHistory.deleteMany({
+    where: {
+      name: {
+        in: addPriceProcess.map((x) => x.name),
+      },
+    },
+  });
+
+  return await prisma.$transaction([updateTrade, ...updateItems, priceProcess, priceHistory]);
 };
 
 type getItemTradesArgs = {

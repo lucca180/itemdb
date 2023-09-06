@@ -22,6 +22,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   if (req.method === 'GET') return GET(req, res);
   if (req.method === 'POST') return POST(req, res);
+  if (req.method === 'DELETE') return DELETE(req, res);
 
   return res.status(405).json({ error: 'Method not allowed' });
 }
@@ -40,17 +41,18 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     SELECT name, COUNT(*) as count, MAX(addedAt) as MAX_addedAt, count(*) OVER() AS full_count FROM PriceProcess
     WHERE 
       type not in ("restock", "auction") AND
-      addedAt >= DATE(${maxPastFormated}) AND
+      name not in (select name from PriceProcessHistory) AND
+      addedAt >= ${maxPastFormated} AND
       processed = 0 AND
       NOT EXISTS (
         SELECT 1 FROM ItemPrices a WHERE 
         PriceProcess.name = a.name
-        and a.addedAt >= DATE(${lastWeekFormated})
+        and a.addedAt >= ${lastWeekFormated}
         and a.name
          not in (select name from ItemPrices GROUP by name having count(DISTINCT item_iid) > 1)
       )
     GROUP BY name
-    HAVING count >= 10 OR (MAX_addedAt <= DATE(${maxDateFormated}) and count >= 5)
+    HAVING count >= 10 OR (MAX_addedAt <= ${maxDateFormated} and count >= 5)
     ORDER BY MAX_addedAt asc
     LIMIT 1
   `) as any;
@@ -90,17 +92,18 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     SELECT name, COUNT(*) as count, MAX(addedAt) as MAX_addedAt FROM PriceProcess
     WHERE 
       type not in ("restock", "auction") AND
-      addedAt >= DATE(${maxPastFormated}) AND
+      name not in (select name from PriceProcessHistory) AND
+      addedAt >= ${maxPastFormated} AND
       processed = 0 AND
       NOT EXISTS (
         SELECT 1 FROM ItemPrices a WHERE 
         PriceProcess.name = a.name
-        and a.addedAt >= DATE(${lastWeekFormated})
+        and a.addedAt >= ${lastWeekFormated}
         and a.name
          not in (select name from ItemPrices GROUP by name having count(DISTINCT item_iid) > 1)
       )
     GROUP BY name
-    HAVING count >= 10 OR (MAX_addedAt <= DATE(${maxDateFormated}) and count >= 5)
+    HAVING count >= 10 OR (MAX_addedAt <= ${maxDateFormated} and count >= 5)
     ORDER BY MAX_addedAt asc
     LIMIT ${groupByLimit} OFFSET ${page * groupByLimit}
   `) as any;
@@ -177,7 +180,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         return o.internal_id;
       });
 
-      if (filteredResult.length <= 20 && userShopCount >= (filteredResult.length / 4) * 3) continue;
+      if (userShopCount >= (filteredResult.length / 4) * 3) continue;
 
       if (filteredResult.length < 5 && differenceInCalendarDays(Date.now(), latestDate) < MAX_DAYS)
         continue;
@@ -241,6 +244,12 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const hasManualCheck = priceAddList.some((x) => x.manual_check);
 
+  await prisma.priceProcessHistory.createMany({
+    data: priceAddList.map((x) => ({
+      name: x.name,
+    })),
+  });
+
   // try {
   //   await Promise.all(
   //     priceAddList.map((x) =>
@@ -256,6 +265,12 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     priceProcessed: result[1],
     manualCheck: hasManualCheck,
   });
+};
+
+const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
+  const result = await prisma.priceProcessHistory.deleteMany({});
+
+  return res.send(result);
 };
 
 async function updateOrAddDB(

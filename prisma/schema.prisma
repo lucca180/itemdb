@@ -185,6 +185,15 @@ model PriceProcess {
   @@index([addedAt(sort: Desc)])
 }
 
+model PriceProcessHistory {
+  internal_id Int      @id @default(autoincrement())
+  name        String
+  checkedAt   DateTime @default(now())
+
+  @@index([name])
+  @@index([name, checkedAt])
+}
+
 model Trades {
   trade_id   Int      @id
   owner      String
