@@ -129,6 +129,8 @@ model ItemColor {
   population Float
 
   @@unique([image_id, type])
+  @@index([lab_l, lab_a, lab_b])
+  @@index([image_id, lab_l, lab_a, lab_b])
   @@index([hsv_h])
 }
 
@@ -380,5 +382,6 @@ model OwlsPrice {
   item_iid Int
   item     Items @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
 
+  @@index([item_iid])
   @@index([item_iid, pricedAt(sort: Desc)])
 }

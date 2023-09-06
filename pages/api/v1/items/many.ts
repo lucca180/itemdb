@@ -46,24 +46,30 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   )
     return res.status(400).json({ error: 'Invalid request' });
 
-  const items = await getManyItems({
-    id: ids,
-    item_id: item_id,
-    name_image_id: name_image_id,
-    image_id: image_id,
-    name: name,
-  });
+  const items = await getManyItems(
+    {
+      id: ids,
+      item_id: item_id,
+      name_image_id: name_image_id,
+      image_id: image_id,
+      name: name,
+    },
+    300
+  );
 
   return res.json(items);
 }
 
-export const getManyItems = async (queryObj: {
-  id?: string[];
-  item_id?: string[];
-  name_image_id?: [string, string][];
-  image_id?: string[];
-  name?: string[];
-}): Promise<{ [identifier: string]: ItemData }> => {
+export const getManyItems = async (
+  queryObj: {
+    id?: string[];
+    item_id?: string[];
+    name_image_id?: [string, string][];
+    image_id?: string[];
+    name?: string[];
+  },
+  limit = 300000
+): Promise<{ [identifier: string]: ItemData }> => {
   const { id, item_id, name_image_id, image_id, name } = queryObj;
 
   let query;
@@ -104,6 +110,7 @@ export const getManyItems = async (queryObj: {
       )
     ) as d on d.item_iid = a.internal_id
     WHERE ${query}
+    LIMIT ${limit}
     `) as any[];
 
   if (!resultRaw || resultRaw.length === 0) return {};

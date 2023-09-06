@@ -21,7 +21,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   reqQuery.page = parseInt(reqQuery.page as string) || 1;
   reqQuery.limit = parseInt(reqQuery.limit as string) || 48;
-
+  reqQuery.limit = Math.min(reqQuery.limit, 100);
   // const filters = { ...queryFilters, ...reqQuery };
 
   const result = await doSearch(query, reqQuery);

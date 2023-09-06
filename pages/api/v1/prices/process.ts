@@ -241,15 +241,15 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const hasManualCheck = priceAddList.some((x) => x.manual_check);
 
-  try {
-    await Promise.all(
-      priceAddList.map((x) =>
-        res.revalidate(`/item/${x.item_iid}`, { unstable_onlyGenerated: true })
-      )
-    );
-  } catch (e) {
-    console.error('process revalidate Error', e);
-  }
+  // try {
+  //   await Promise.all(
+  //     priceAddList.map((x) =>
+  //       res.revalidate(`/item/${x.item_iid}`, { unstable_onlyGenerated: true })
+  //     )
+  //   );
+  // } catch (e) {
+  //   console.error('process revalidate Error', e);
+  // }
 
   return res.send({
     priceUpdate: result[0],

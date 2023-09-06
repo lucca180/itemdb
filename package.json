@@ -54,7 +54,6 @@
     "next-seo": "^5.15.0",
     "next-sitemap": "^4.1.8",
     "next-transpile-modules": "^10.0.0",
-    "nextjs-google-analytics": "^2.3.3",
     "nextjs-progressbar": "^0.0.16",
     "node-vibrant": "^3.2.1-alpha.1",
     "nodemailer": "^6.9.1",

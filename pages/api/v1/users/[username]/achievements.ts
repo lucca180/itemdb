@@ -36,14 +36,14 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   // itemdb admin
   if (user.isAdmin) {
     achievements.push({
-      name: 'itemDB admin',
+      name: 'itemdb admin',
       image: 'https://itemdb.com.br/favicon.svg',
     });
   }
 
   if (['Ty0G4IOIm4dr3IYJpMx8bIFMs433'].includes(user.id)) {
     achievements.push({
-      name: 'itemDB developer',
+      name: 'itemdb developer',
       image:
         'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 640 512"%3E%3Cstyle%3Esvg%7Bfill:%2338a169%7D%3C/style%3E%3Cpath d="M392.8 1.2c-17-4.9-34.7 5-39.6 22l-128 448c-4.9 17 5 34.7 22 39.6s34.7-5 39.6-22l128-448c4.9-17-5-34.7-22-39.6zm80.6 120.1c-12.5 12.5-12.5 32.8 0 45.3L562.7 256l-89.4 89.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l112-112c12.5-12.5 12.5-32.8 0-45.3l-112-112c-12.5-12.5-32.8-12.5-45.3 0zm-306.7 0c-12.5-12.5-32.8-12.5-45.3 0l-112 112c-12.5 12.5-12.5 32.8 0 45.3l112 112c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L77.3 256l89.4-89.4c12.5-12.5 12.5-32.8 0-45.3z"/%3E%3C/svg%3E',
     });
@@ -53,7 +53,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   if (new Date(user.createdAt) < new Date('2023-10-01T00:00:00.000Z')) {
     achievements.push({
       // format user.createdAt to dd-mm-yyyy
-      name: `itemDB early adopter (${format(new Date(user.createdAt), 'MM/yyyy')})`,
+      name: `itemdb early adopter (${format(new Date(user.createdAt), 'MM/yyyy')})`,
       image: 'https://images.neopets.com/themes/h5/basic/images/bookmark-icon.svg',
     });
   }
