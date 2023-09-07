@@ -221,8 +221,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         LEFT JOIN (
           SELECT *
           FROM OwlsPrice
-          WHERE (item_iid, pricedAt) IN (
-              SELECT item_iid, MAX(pricedAt)
+          WHERE (item_iid, addedAt) IN (
+              SELECT item_iid, MAX(addedAt)
               FROM OwlsPrice
               GROUP BY item_iid
           )
@@ -278,8 +278,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         LEFT JOIN (
           SELECT *
           FROM OwlsPrice
-          WHERE (item_iid, pricedAt) IN (
-              SELECT item_iid, MAX(pricedAt)
+          WHERE (item_iid, addedAt) IN (
+              SELECT item_iid, MAX(addedAt)
               FROM OwlsPrice
               GROUP BY item_iid
           )

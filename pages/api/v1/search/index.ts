@@ -255,8 +255,8 @@ export async function doSearch(query: string, filters: SearchFilters) {
         LEFT JOIN (
           SELECT *
           FROM OwlsPrice
-          WHERE (item_iid, pricedAt) IN (
-              SELECT item_iid, MAX(pricedAt)
+          WHERE (item_iid, addedAt) IN (
+              SELECT item_iid, MAX(addedAt)
               FROM OwlsPrice
               GROUP BY item_iid
           )
@@ -312,8 +312,8 @@ export async function doSearch(query: string, filters: SearchFilters) {
         LEFT JOIN (
           SELECT *
           FROM OwlsPrice
-          WHERE (item_iid, pricedAt) IN (
-              SELECT item_iid, MAX(pricedAt)
+          WHERE (item_iid, addedAt) IN (
+              SELECT item_iid, MAX(addedAt)
               FROM OwlsPrice
               GROUP BY item_iid
           )
