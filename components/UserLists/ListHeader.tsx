@@ -161,24 +161,31 @@ const ListHeader = (props: ListHeaderProps) => {
           </Stack>
           <Heading size={{ base: 'lg', md: undefined }}>
             {list.name}
-            <Flex
-              display={'inline-flex'}
-              ml={1}
-              // mt={{ base: 2, md: 3 }}
-              p={1}
-              bg="blackAlpha.300"
-              borderRadius={'md'}
-              alignItems="flex-start"
-            >
-              <Tooltip hasArrow label={`Dynamic List`} placement="top" isDisabled={!unpricedItems}>
-                <NextImage
-                  src={DynamicIcon}
-                  alt="lightning bolt"
-                  width={12}
-                  style={{ display: 'inline' }}
-                />
-              </Tooltip>
-            </Flex>
+            {!!list.dynamicType && (
+              <Flex
+                display={'inline-flex'}
+                ml={1}
+                // mt={{ base: 2, md: 3 }}
+                p={1}
+                bg="blackAlpha.300"
+                borderRadius={'md'}
+                alignItems="flex-start"
+              >
+                <Tooltip
+                  hasArrow
+                  label={`Dynamic List`}
+                  placement="top"
+                  isDisabled={!unpricedItems}
+                >
+                  <NextImage
+                    src={DynamicIcon}
+                    alt="lightning bolt"
+                    width={12}
+                    style={{ display: 'inline' }}
+                  />
+                </Tooltip>
+              </Flex>
+            )}
           </Heading>
           <Stack direction="row" mb={1} alignItems="center" flexWrap="wrap">
             <Text fontSize={{ base: 'xs', md: 'sm' }}>
