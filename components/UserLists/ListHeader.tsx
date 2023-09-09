@@ -15,7 +15,6 @@ import {
 import Color from 'color';
 import { BiLinkExternal } from 'react-icons/bi';
 import { MdWarning } from 'react-icons/md';
-import NextImage from 'next/image';
 import NextLink from 'next/link';
 import { ItemData, ListItemInfo, UserList } from '../../types';
 import { useMemo } from 'react';
@@ -23,6 +22,8 @@ import { useAuth } from '../../utils/auth';
 import icon from '../../public/logo_icon.svg';
 import GiftBox from '../../public/icons/giftbox.png';
 import NPBag from '../../public/icons/npbag.png';
+import DynamicIcon from '../../public/icons/dynamic.png';
+import NextImage from 'next/image';
 
 type ListHeaderProps = {
   list: UserList;
@@ -158,7 +159,27 @@ const ListHeader = (props: ListHeaderProps) => {
               </Badge>
             )}
           </Stack>
-          <Heading size={{ base: 'lg', md: undefined }}>{list.name}</Heading>
+          <Heading size={{ base: 'lg', md: undefined }}>
+            {list.name}
+            <Flex
+              display={'inline-flex'}
+              ml={1}
+              // mt={{ base: 2, md: 3 }}
+              p={1}
+              bg="blackAlpha.300"
+              borderRadius={'md'}
+              alignItems="flex-start"
+            >
+              <Tooltip hasArrow label={`Dynamic List`} placement="top" isDisabled={!unpricedItems}>
+                <NextImage
+                  src={DynamicIcon}
+                  alt="lightning bolt"
+                  width={12}
+                  style={{ display: 'inline' }}
+                />
+              </Tooltip>
+            </Flex>
+          </Heading>
           <Stack direction="row" mb={1} alignItems="center" flexWrap="wrap">
             <Text fontSize={{ base: 'xs', md: 'sm' }}>
               {list.official ? 'curated' : ''} by{' '}

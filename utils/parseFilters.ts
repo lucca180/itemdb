@@ -202,25 +202,25 @@ export const parseFilters = (query: string, skipBoolean = true): [SearchFilters,
 
 const matchRegex = (query: string, filterName: string): string | null => {
   // const regex = new RegExp(`(${filterName}):("([^"]*)"|(\\S+))`, 'gi');
-  const regex = new RegExp(`(${filterName}):(([^\\s"])|("([^"]*)"))+`, 'gi');
+  const regex = new RegExp(`(\\s|^)(${filterName}):(([^\\s"])|("([^"]*)"))+`, 'gi');
 
   const match = regex.exec(query);
   if (!match) return null;
 
   const result = match[0].replace(`${filterName}:`, '');
 
-  return result.replaceAll('"', '');
+  return result.replaceAll('"', '').trim();
 };
 
 const sanitizeQuery = (query: string, filterName: string): string => {
-  const regex = new RegExp(`(${filterName}):(([^\\s"])|("([^"]*)"))+`, 'gi');
+  const regex = new RegExp(`(\\s|^)(${filterName}):(([^\\s"])|("([^"]*)"))+`, 'gi');
 
   const match = regex.exec(query);
   if (!match) return query;
 
   const [result] = match;
 
-  return query.replace(result, '');
+  return query.replace(result, '').trim();
 };
 
 const shouldAddPlusPrefix = (str: string): boolean => {

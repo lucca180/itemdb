@@ -72,10 +72,12 @@ export async function doSearch(query: string, filters: SearchFilters) {
   if (categoryFilters.length > 0) {
     const catNeg = categoryFilters
       .filter((o: string) => o.startsWith('!'))
-      .map((o: string) => o.slice(1));
-    const catTrue = categoryFilters.filter((o: string) => !o.startsWith('!'));
+      .map((o: string) => o.slice(1).toLowerCase());
+    const catTrue = categoryFilters
+      .filter((o: string) => !o.startsWith('!'))
+      .map((a) => a.toLowerCase());
 
-    if (catNeg.length > 0 && !catNeg.includes('Unknown'))
+    if (catNeg.length > 0 && !catNeg.includes('unknown'))
       catFiltersSQL.push(
         Prisma.sql`(temp.category NOT IN (${Prisma.join(catNeg)}) OR temp.category IS NULL)`
       );
@@ -84,7 +86,7 @@ export async function doSearch(query: string, filters: SearchFilters) {
         Prisma.sql`(temp.category NOT IN (${Prisma.join(catNeg)}) AND temp.category IS NOT NULL)`
       );
 
-    if (catTrue.length > 0 && !catTrue.includes('Unknown'))
+    if (catTrue.length > 0 && !catTrue.includes('unknown'))
       catFiltersSQL.push(Prisma.sql`temp.category IN (${Prisma.join(catTrue)})`);
     else if (catTrue.length > 0)
       catFiltersSQL.push(

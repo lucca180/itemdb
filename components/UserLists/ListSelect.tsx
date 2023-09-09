@@ -15,6 +15,8 @@ import { useEffect, useState } from 'react';
 import { UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import { getRandomName } from '../../utils/randomName';
+import DynamicIcon from '../../public/icons/dynamic.png';
+import NextImage from 'next/image';
 
 type Props = {
   onChange?: (list: UserList) => void;
@@ -103,6 +105,22 @@ const ListSelect = (props: Props) => {
                 ✓
               </Badge>
             )}
+            {selectedList.dynamicType && (
+              <Badge
+                ml={1}
+                colorScheme="orange"
+                display={'inline-flex'}
+                alignItems="center"
+                p={'2px'}
+              >
+                <NextImage
+                  src={DynamicIcon}
+                  alt="lightning bolt"
+                  width={8}
+                  style={{ display: 'inline' }}
+                />
+              </Badge>
+            )}
           </>
         )}
         {!selectedList && (props.defaultText ?? 'Select List')}
@@ -123,6 +141,28 @@ const ListSelect = (props: Props) => {
                     <Tooltip label={`official`} fontSize="sm" placement="top">
                       <Badge ml={1} colorScheme="blue">
                         ✓
+                      </Badge>
+                    </Tooltip>
+                  )}
+                  {list.dynamicType && (
+                    <Tooltip
+                      label={`${list.dynamicType} Dynamic List`}
+                      fontSize="sm"
+                      placement="top"
+                    >
+                      <Badge
+                        ml={1}
+                        colorScheme="orange"
+                        display={'inline-flex'}
+                        alignItems="center"
+                        p={'2px'}
+                      >
+                        <NextImage
+                          src={DynamicIcon}
+                          alt="lightning bolt"
+                          width={8}
+                          style={{ display: 'inline' }}
+                        />
                       </Badge>
                     </Tooltip>
                   )}

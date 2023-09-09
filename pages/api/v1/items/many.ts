@@ -54,7 +54,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       image_id: image_id,
       name: name,
     },
-    300
+    3000
   );
 
   return res.json(items);

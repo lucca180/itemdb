@@ -1,6 +1,7 @@
 import { Badge, Flex, Link, Text, Image } from '@chakra-ui/react';
 import { ListItemInfo, UserList } from '../../types';
 import icon from '../../public/logo_icon.svg';
+import DynamicIcon from '../../public/icons/dynamic.png';
 import NextImage from 'next/image';
 import Color from 'color';
 import NextLink from 'next/link';
@@ -110,6 +111,17 @@ const UserListCard = (props: Props) => {
           {list.description}
         </Text>
         <Flex gap={1} flexWrap="wrap">
+          {!!list.dynamicType && (
+            <Badge
+              colorScheme={color.isLight() ? 'black' : 'orange'}
+              display="inline-flex"
+              ml={1}
+              p={'2px'}
+              alignItems={'center'}
+            >
+              <NextImage src={DynamicIcon} alt="Dynamic List" width={8} />
+            </Badge>
+          )}
           {list.official && (
             <Badge as={NextLink} href="/lists/official" colorScheme="blue" variant="solid">
               ✓ Official

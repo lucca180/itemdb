@@ -48,7 +48,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           internal_id: Number(list_id),
         },
         include: {
-          items: true,
+          items: {
+            where: {
+              isHidden: false,
+            },
+          },
         },
       });
 
@@ -70,7 +74,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           official: false,
         },
         include: {
-          items: true,
+          items: {
+            where: {
+              isHidden: false,
+            },
+          },
         },
       });
 
@@ -95,7 +103,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         official: false,
       },
       include: {
-        items: true,
+        items: {
+          where: {
+            isHidden: false,
+          },
+        },
       },
     });
 
@@ -107,7 +119,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         official: false,
       },
       include: {
-        items: true,
+        items: {
+          where: {
+            isHidden: false,
+          },
+        },
       },
     });
 

@@ -25,7 +25,11 @@ export type SortableAreaProps = {
   activateSort?: boolean;
   onClick?: (id: number, force?: boolean) => void;
   onSort?: (ids: number[]) => void;
-  onChange?: (id: number, value: number, field: 'amount' | 'capValue' | 'isHighlight') => void;
+  onChange?: (
+    id: number,
+    value: number,
+    field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden'
+  ) => void;
   onListAction?: (item: ItemData, action: 'move' | 'delete') => void;
 };
 
@@ -47,7 +51,7 @@ export default function SortableArea(props: SortableAreaProps) {
 
   const debouncedOnChange = useCallback(
     debounce(
-      (id: number, value: number, field: 'amount' | 'capValue' | 'isHighlight') =>
+      (id: number, value: number, field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden') =>
         props.onChange?.(id, value, field),
       250
     ),

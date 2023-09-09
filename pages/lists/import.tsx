@@ -112,7 +112,7 @@ const DefaultImportInfo = {
     imported: boolean;
   }[],
   ignore: [] as ('np' | 'nc' | 'quantity')[],
-  action: 'add' as 'add' | 'remove',
+  action: 'add' as 'add' | 'remove' | 'hide',
 };
 
 const ImportItems = (props: ImportItemsProps) => {
@@ -200,10 +200,13 @@ const ImportItems = (props: ImportItemsProps) => {
         );
       }
 
-      if (importInfo.action === 'remove') {
+      if (importInfo.action === 'remove' || importInfo.action === 'hide') {
         await axios.delete(`/api/v1/lists/${user.username}/${importInfo.list.internal_id}/`, {
           data: {
             item_iid: importData.map((item) => item.item_iid),
+          },
+          params: {
+            hide: importInfo.action === 'hide',
           },
           headers: {
             Authorization: `Bearer ${await getIdToken()}`,
@@ -214,7 +217,11 @@ const ImportItems = (props: ImportItemsProps) => {
       toast.update(toastInfo, {
         title: 'Success',
         description: `Your items have been ${
-          importInfo.action === 'add' ? 'imported' : 'removed'
+          importInfo.action === 'add'
+            ? 'imported'
+            : importInfo.action === 'hide'
+            ? 'hidden'
+            : 'removed'
         }!`,
         status: 'success',
         duration: 10000,
@@ -225,7 +232,11 @@ const ImportItems = (props: ImportItemsProps) => {
       toast.update(toastInfo, {
         title: 'Error',
         description: `There was an error ${
-          importInfo.action === 'add' ? 'importing' : 'removing'
+          importInfo.action === 'add'
+            ? 'importing'
+            : importInfo.action === 'hide'
+            ? 'hidding'
+            : 'removing'
         } your items. Please try again later.`,
         status: 'error',
         duration: null,
@@ -235,8 +246,19 @@ const ImportItems = (props: ImportItemsProps) => {
   };
 
   const handleListChange = (list: UserList) => {
+    let action = importInfo.action;
+
+    if (list.dynamicType === 'fullSync' && ['remove', 'add'].includes(importInfo.action)) {
+      action = 'hide';
+    }
+
+    if (list.dynamicType && list.dynamicType !== 'addOnly' && importInfo.action == 'add') {
+      action = 'hide';
+    }
+
     setImportInfo({
       ...importInfo,
+      action,
       list,
     });
   };
@@ -249,7 +271,7 @@ const ImportItems = (props: ImportItemsProps) => {
   };
 
   const handleActionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const action = e.target.value as 'add' | 'remove';
+    const action = e.target.value as 'add' | 'remove' | 'hide';
     setImportInfo({
       ...importInfo,
       action,
@@ -291,8 +313,23 @@ const ImportItems = (props: ImportItemsProps) => {
               maxW="220px"
               onChange={handleActionChange}
             >
-              <option value="add">Add these items</option>
-              <option value="remove">Remove these items</option>
+              <option
+                value="add"
+                disabled={
+                  !!importInfo.list?.dynamicType && importInfo.list?.dynamicType !== 'addOnly'
+                }
+              >
+                Add these items
+              </option>
+              <option
+                value="remove"
+                disabled={
+                  !!importInfo.list?.dynamicType && importInfo.list?.dynamicType === 'fullSync'
+                }
+              >
+                Remove these items
+              </option>
+              <option value="hide">Mark as hidden</option>
             </Select>
           </FormControl>
           <FormControl>

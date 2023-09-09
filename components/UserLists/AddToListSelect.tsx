@@ -19,6 +19,9 @@ import { ItemData, ListItemInfo, UserList } from '../../types';
 import { useAuth, UserLists } from '../../utils/auth';
 import { getRandomName } from '../../utils/randomName';
 import DuplicatedItemModal from '../Modal/DuplicatedItemModal';
+import DynamicIcon from '../../public/icons/dynamic.png';
+
+import NextImage from 'next/image';
 
 type Props = {
   item: ItemData;
@@ -167,7 +170,11 @@ const AddToListSelect = (props: Props) => {
           {sorted.length !== 0 && (
             <>
               {sorted.map((list) => (
-                <MenuItem key={list.internal_id} onClick={() => addItemToList(list.internal_id)}>
+                <MenuItem
+                  key={list.internal_id}
+                  onClick={() => addItemToList(list.internal_id)}
+                  isDisabled={!!list.dynamicType && list.dynamicType !== 'addOnly'}
+                >
                   {list.itemInfo.some((i) => i.item_iid === item.internal_id) && (
                     <Tooltip label="Already in this list" fontSize="sm" placement="top">
                       <span>
@@ -185,6 +192,28 @@ const AddToListSelect = (props: Props) => {
                     <Tooltip label={`official`} fontSize="sm" placement="top">
                       <Badge ml={1} colorScheme="blue">
                         ✓
+                      </Badge>
+                    </Tooltip>
+                  )}
+                  {list.dynamicType && (
+                    <Tooltip
+                      label={`${list.dynamicType} Dynamic List`}
+                      fontSize="sm"
+                      placement="top"
+                    >
+                      <Badge
+                        ml={1}
+                        colorScheme="orange"
+                        display={'inline-flex'}
+                        alignItems="center"
+                        p={'2px'}
+                      >
+                        <NextImage
+                          src={DynamicIcon}
+                          alt="lightning bolt"
+                          width={8}
+                          style={{ display: 'inline' }}
+                        />
                       </Badge>
                     </Tooltip>
                   )}

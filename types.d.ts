@@ -164,7 +164,7 @@ export type SearchFilters = {
   page: number;
 };
 
-export type ExtendedSearchFilters = SearchFilters & {
+export type ExtendedSearchQuery = SearchFilters & {
   s: string;
 };
 
@@ -229,6 +229,10 @@ export type UserList = {
 
   itemInfo: ListItemInfo[];
   itemCount: number;
+
+  dynamicType: 'addOnly' | 'removeOnly' | 'fullSync' | null;
+  lastSync: string | null;
+  linkedListId: number | null;
 };
 
 export type ListItemInfo = {
@@ -242,6 +246,7 @@ export type ListItemInfo = {
   imported: boolean;
   order: number | null;
   isHighlight: boolean;
+  isHidden: boolean;
 };
 
 export type Pallete = {

@@ -1,12 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { ExtendedSearchFilters } from '../../../../../../types';
+import { ExtendedSearchQuery } from '../../../../../../types';
 import { CheckAuth } from '../../../../../../utils/googleCloud';
 import prisma from '../../../../../../utils/prisma';
 import { doSearch } from '../../../search';
 import { Prisma } from '@prisma/client';
+import { isSameHour } from 'date-fns';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
-  return res.status(405).json({ error: 'Method not allowed' });
+  // return res.status(405).json({ error: 'Method not allowed' });
 
   if (req.method === 'GET') return GET(req, res);
   if (req.method === 'POST') return POST(req, res);
@@ -22,8 +23,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { username, list_id } = req.query;
-  await syncDynamicList(parseInt(list_id as string));
+  const { list_id } = req.query;
+  await syncDynamicList(parseInt(list_id as string), true);
   res.send('ok');
   return null;
 };
@@ -41,7 +42,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   try {
     const { user } = await CheckAuth(req);
-    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+    if (!user || user.username !== username) return res.status(401).json({ error: 'Unauthorized' });
   } catch (e) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
@@ -77,7 +79,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     if (linkedList.visibility === 'private' && linkedList.user.username !== username)
       return res.status(403).json({ error: 'Unauthorized' });
 
-    await prisma.userList.update({
+    const newList = await prisma.userList.update({
       where: {
         internal_id: parseInt(list_id),
       },
@@ -87,17 +89,15 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       },
     });
 
-    // TODO
-
-    await syncDynamicList(parseInt(list_id));
-    return res.status(200).json(true);
+    await syncDynamicList(parseInt(list_id), true);
+    return res.status(200).json(newList);
   }
 
   // ---------- handle dynamic list ---------- //
 
   if (!queryData) return res.status(400).json({ error: 'Missing query data' });
 
-  await prisma.userList.update({
+  const newList = await prisma.userList.update({
     where: {
       internal_id: parseInt(list_id),
     },
@@ -107,11 +107,11 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     },
   });
 
-  await syncDynamicList(parseInt(list_id));
-  return res.status(200).json(true);
+  await syncDynamicList(parseInt(list_id), true);
+  return res.status(200).json(newList);
 };
 
-const syncDynamicList = async (list_id: number, force = false) => {
+export const syncDynamicList = async (list_id: number, force = false) => {
   const targetList = await prisma.userList.findFirst({
     where: {
       internal_id: list_id,
@@ -125,11 +125,15 @@ const syncDynamicList = async (list_id: number, force = false) => {
   )
     return null;
 
+  if (targetList.lastSync && isSameHour(targetList.lastSync, new Date()) && !force) return null;
+
+  const firstSync = !targetList.lastSync;
+
   const { linkedListId, dynamicType } = targetList;
-  const dynamicQuery = targetList.dynamicQuery as ExtendedSearchFilters;
+  const dynamicQuery = targetList.dynamicQuery as ExtendedSearchQuery;
 
   if (linkedListId) {
-    if (dynamicType === 'addOnly' || dynamicType === 'fullSync') {
+    if (dynamicType === 'addOnly' || dynamicType === 'fullSync' || firstSync) {
       const res = (await prisma.$queryRaw`
         select item_iid from listitems where list_id = ${linkedListId} and item_iid not in (select item_iid from listitems where list_id = ${list_id})
       `) as any;
@@ -148,7 +152,7 @@ const syncDynamicList = async (list_id: number, force = false) => {
       });
     }
 
-    if (dynamicType === 'removeOnly' || dynamicType === 'fullSync') {
+    if (dynamicType === 'removeOnly' || dynamicType === 'fullSync' || firstSync) {
       const res = (await prisma.$queryRaw`
         select internal_id from listitems where list_id = ${list_id} and item_iid not in (select item_iid from listitems where list_id = ${linkedListId})
       `) as any;
@@ -172,7 +176,7 @@ const syncDynamicList = async (list_id: number, force = false) => {
         internal_id: list_id,
       },
       data: {
-        lastLinkedSync: new Date(),
+        lastSync: new Date(),
       },
     });
 
@@ -187,11 +191,11 @@ const syncDynamicList = async (list_id: number, force = false) => {
 
     const item_iids = searchRes.content.map((item) => item.internal_id);
 
-    if (dynamicType === 'addOnly' || dynamicType === 'fullSync') {
+    if (dynamicType === 'addOnly' || dynamicType === 'fullSync' || firstSync) {
       const res = (await prisma.$queryRaw`
-      select internal_id from items where internal_id in (${Prisma.join(item_iids)})
-      and internal_id not in (select item_iid from listitems where list_id = ${list_id})
-    `) as any;
+        select internal_id from items where internal_id in (${Prisma.join(item_iids)})
+        and internal_id not in (select item_iid from listitems where list_id = ${list_id})
+      `) as any;
 
       const addData: { list_id: number; item_iid: number }[] = res.map(
         (item: { internal_id: number }) => {
@@ -207,7 +211,7 @@ const syncDynamicList = async (list_id: number, force = false) => {
       });
     }
 
-    if (dynamicType === 'removeOnly' || dynamicType === 'fullSync') {
+    if (dynamicType === 'removeOnly' || dynamicType === 'fullSync' || firstSync) {
       const res = (await prisma.$queryRaw`
         select item_iid from listitems where list_id = ${list_id} 
         and item_iid not in (${Prisma.join(item_iids)})
@@ -232,7 +236,7 @@ const syncDynamicList = async (list_id: number, force = false) => {
         internal_id: list_id,
       },
       data: {
-        lastDynamicSync: new Date(),
+        lastSync: new Date(),
       },
     });
   }

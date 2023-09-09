@@ -71,6 +71,10 @@ export const getItemLists = async (
         lastSeen: startOfDay(owner.last_login).toJSON(),
       },
 
+      dynamicType: list.dynamicType,
+      lastSync: list.lastSync?.toJSON() ?? null,
+      linkedListId: list.linkedListId,
+
       createdAt: list.createdAt.toJSON(),
       updatedAt: list.updatedAt.toJSON(),
 
@@ -78,7 +82,7 @@ export const getItemLists = async (
       sortDir: list.sortDir,
       order: list.order ?? 0,
 
-      itemCount: list.items.length,
+      itemCount: list.items.filter((x) => !x.isHidden).length,
       itemInfo: !includeItems
         ? []
         : list.items.map((item) => {
@@ -93,6 +97,7 @@ export const getItemLists = async (
               imported: item.imported,
               order: item.order,
               isHighlight: item.isHighlight,
+              isHidden: item.isHidden,
             };
           }),
     };

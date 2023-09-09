@@ -217,11 +217,15 @@ export const getUserLists = async (username: string, user?: User | null, include
         createdAt: list.createdAt.toJSON(),
         updatedAt: list.updatedAt.toJSON(),
 
+        dynamicType: list.dynamicType,
+        lastSync: list.lastSync?.toJSON() ?? null,
+        linkedListId: list.linkedListId,
+
         sortDir: list.sortDir,
         sortBy: list.sortBy,
         order: list.order ?? 0,
 
-        itemCount: list.items.length,
+        itemCount: list.items.filter((x) => !x.isHidden).length,
         itemInfo: !includeItems
           ? []
           : list.items.map((item) => {
@@ -236,6 +240,7 @@ export const getUserLists = async (username: string, user?: User | null, include
                 imported: item.imported,
                 order: item.order,
                 isHighlight: item.isHighlight,
+                isHidden: item.isHidden,
               };
             }),
       };

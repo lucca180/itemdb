@@ -25,7 +25,11 @@ type Props = {
   itemInfo?: ListItemInfo;
   editMode?: boolean;
   selected?: boolean;
-  onChange?: (id: number, value: number, field: 'amount' | 'capValue' | 'isHighlight') => void;
+  onChange?: (
+    id: number,
+    value: number,
+    field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden'
+  ) => void;
   onClick?: (id: number, force?: boolean) => void;
   onListAction?: (item: ItemData, action: 'move' | 'delete') => any;
 };
@@ -85,6 +89,8 @@ function SortableItem1(props: Props) {
     [inViewRef, setNodeRef]
   );
 
+  if (!editMode && itemInfo?.isHidden) return null;
+
   if (!inView)
     return (
       <VStack mb={3} ref={setRefs} style={style} {...attributes} {...listeners}>
@@ -95,7 +101,14 @@ function SortableItem1(props: Props) {
     );
 
   return (
-    <VStack mb={3} ref={setRefs} style={style} {...attributes} {...listeners}>
+    <VStack
+      mb={3}
+      ref={setRefs}
+      style={style}
+      {...attributes}
+      {...listeners}
+      opacity={itemInfo?.isHidden ? 0.5 : 1}
+    >
       <Box onClick={(e) => onClick(e)} style={{ height: '100%' }}>
         <ItemCard
           item={item}
@@ -149,6 +162,13 @@ function SortableItem1(props: Props) {
             onChange={(value) => props.onChange?.(id, Number(value.target.checked), 'isHighlight')}
           >
             <Text fontSize="xs">Highlight?</Text>
+          </Checkbox>
+          <Checkbox
+            defaultChecked={itemInfo?.isHidden}
+            size="sm"
+            onChange={(value) => props.onChange?.(id, Number(value.target.checked), 'isHidden')}
+          >
+            <Text fontSize="xs">Hidden?</Text>
           </Checkbox>
         </VStack>
       )}

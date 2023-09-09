@@ -4,6 +4,7 @@ import { getImagePalette } from '..';
 import { ListItemInfo, UserList, User } from '../../../../../../types';
 import { CheckAuth } from '../../../../../../utils/googleCloud';
 import prisma from '../../../../../../utils/prisma';
+import { syncDynamicList } from './dynamic';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -78,6 +79,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
             updatedAt: new Date(),
             order: item.order,
             isHighlight: item.isHighlight,
+            isHidden: item.isHidden,
             amount: item.amount,
           },
         });
@@ -128,6 +130,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
             item_iid: item.item_iid,
             capValue: item.capValue,
             isHighlight: item.isHighlight,
+            isHidden: item.isHidden,
             amount: item.amount,
           };
         }),
@@ -314,9 +317,10 @@ const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { list_id } = req.query;
-
+  const { list_id, hide } = req.query;
   if (!list_id || Array.isArray(list_id)) return res.status(400).json({ error: 'Bad Request' });
+
+  let justHide = hide === 'true';
 
   try {
     const { user } = await CheckAuth(req);
@@ -338,13 +342,29 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
     if (!item_internal_ids || !item_internal_ids.length)
       return res.status(400).json({ error: 'Bad Request' });
 
-    const deleted = prisma.listItems.deleteMany({
-      where: {
-        item_iid: {
-          in: item_internal_ids.map((iid) => Number(iid)),
+    if (list.dynamicType === 'fullSync') justHide = true;
+
+    let operation;
+    if (justHide) {
+      operation = prisma.listItems.updateMany({
+        where: {
+          item_iid: {
+            in: item_internal_ids.map((iid) => Number(iid)),
+          },
         },
-      },
-    });
+        data: {
+          isHidden: true,
+        },
+      });
+    } else {
+      operation = prisma.listItems.deleteMany({
+        where: {
+          item_iid: {
+            in: item_internal_ids.map((iid) => Number(iid)),
+          },
+        },
+      });
+    }
 
     const updateList = prisma.userList.update({
       where: {
@@ -355,11 +375,11 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
       },
     });
 
-    const result = await prisma.$transaction([deleted, updateList]);
+    await prisma.$transaction([operation, updateList]);
 
     return res.status(200).json({
       success: true,
-      message: `deleted ${result[0].count} items`,
+      message: `deleted items`,
     });
   } catch (e: any) {
     console.error(e);
@@ -399,6 +419,8 @@ export const getList = async (
   )
     return null;
 
+  if (listRaw.dynamicType) await syncDynamicList(listRaw.internal_id);
+
   const owner = listRaw.user;
 
   const list: UserList = {
@@ -428,7 +450,11 @@ export const getList = async (
     sortDir: listRaw.sortDir,
     order: listRaw.order ?? 0,
 
-    itemCount: listRaw.items.length,
+    dynamicType: listRaw.dynamicType,
+    lastSync: listRaw.lastSync?.toJSON() ?? null,
+    linkedListId: listRaw.linkedListId ?? null,
+
+    itemCount: listRaw.items.filter((x) => !x.isHidden).length,
     itemInfo: listRaw.items.map((item) => {
       return {
         internal_id: item.internal_id,
@@ -441,6 +467,7 @@ export const getList = async (
         imported: item.imported,
         order: item.order,
         isHighlight: item.isHighlight,
+        isHidden: item.isHidden,
       };
     }),
   };

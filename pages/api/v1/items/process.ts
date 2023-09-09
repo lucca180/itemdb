@@ -12,6 +12,7 @@ import { CheckAuth } from '../../../../utils/googleCloud';
 type ValueOf<T> = T[keyof T];
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
+const usedSlugs = new Set<string>();
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -31,6 +32,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     }
   }
 
+  usedSlugs.clear();
   let limit = Number(req.body.limit);
   limit = isNaN(limit) ? 300 : limit;
   limit = Math.min(limit, 5000);
@@ -106,7 +108,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   return res.json(result);
 }
 
-const usedSlugs = new Set<string>();
 // If a item does not exist in the DB we use "createMany" but
 // there is not a "updateMany" so we update here and return undefined
 async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefined> {

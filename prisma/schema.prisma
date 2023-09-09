@@ -329,13 +329,13 @@ model UserList {
   order   Int?
 
   dynamicQuery    Json?
-  lastDynamicSync DateTime?
 
   dynamicType DynamicListType?
 
   linkedListId   Int?
   linkedList     UserList? @relation("linkedLists", fields: [linkedListId], references: [internal_id], onDelete: SetNull, onUpdate: Cascade)
-  lastLinkedSync DateTime?
+
+  lastSync DateTime?
 
   linkedLists UserList[] @relation("linkedLists")
 

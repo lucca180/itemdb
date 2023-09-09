@@ -16,8 +16,10 @@ const NegCheckbox = (props: Props) => {
   useEffect(() => {
     if (!props.checklist || !props.value) return;
 
-    if (props.checklist?.includes(props.value)) setValue(true);
-    else if (props.checklist?.includes(`!${props.value}`)) {
+    const checklist = props.checklist.map((i) => i.toLowerCase());
+
+    if (checklist.includes(props.value.toLowerCase())) setValue(true);
+    else if (checklist?.includes(`!${props.value.toLowerCase()}`)) {
       setValue(true);
       setIsIndefinite(true);
     } else {

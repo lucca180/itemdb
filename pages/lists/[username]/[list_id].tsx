@@ -16,7 +16,7 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Layout from '../../../components/Layout';
 import { ItemData, ListItemInfo, UserList } from '../../../types';
 import { useAuth } from '../../../utils/auth';
@@ -33,7 +33,7 @@ import { getCookie } from 'cookies-next';
 import { CreateListModalProps } from '../../../components/Modal/CreateListModal';
 
 import dynamic from 'next/dynamic';
-import ListHeader from '../../../components/Lists/ListHeader';
+import ListHeader from '../../../components/UserLists/ListHeader';
 
 const CreateListModal = dynamic<CreateListModalProps>(
   () => import('../../../components/Modal/CreateListModal')
@@ -78,6 +78,12 @@ const ListPage = (props: Props) => {
   const isOwner = user?.username === router.query.username || user?.id === list?.owner.id;
   const color = Color(list?.colorHex || '#4A5568');
   const rgb = color.rgb().array();
+
+  const itemCount = useMemo(() => {
+    if (!list) return 0;
+
+    return Object.values(itemInfo).filter((x) => !x.isHidden).length;
+  }, [itemInfo]);
 
   useEffect(() => {
     if (!authLoading && router.isReady) {
@@ -348,10 +354,10 @@ const ListPage = (props: Props) => {
   };
 
   const handleItemInfoChange = useCallback(
-    (id: number, value: number, field: 'amount' | 'capValue' | 'isHighlight') => {
+    (id: number, value: number, field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden') => {
       const newInfo = { ...itemInfo };
 
-      if (field === 'isHighlight') newInfo[id][field] = !!value;
+      if (field === 'isHidden' || field === 'isHighlight') newInfo[id][field] = !!value;
       else newInfo[id][field] = value;
 
       newInfo[id].hasChanged = true;
@@ -482,7 +488,7 @@ const ListPage = (props: Props) => {
               )}
 
               <Text as="div" textColor={'gray.300'} fontSize="sm">
-                {list.itemCount} items
+                {itemCount} items
               </Text>
             </HStack>
           )}
@@ -497,7 +503,7 @@ const ListPage = (props: Props) => {
               </Box>
               <Box>
                 <Button
-                  isDisabled={!!!itemSelect.length}
+                  isDisabled={!!!itemSelect.length || list.dynamicType === 'fullSync'}
                   colorScheme="red"
                   variant="outline"
                   onClick={() => setSelectionAction('delete')}
@@ -507,25 +513,13 @@ const ListPage = (props: Props) => {
               </Box>
               <Box>
                 <Button
-                  isDisabled={!!!itemSelect.length}
+                  isDisabled={!!!itemSelect.length || !!list.dynamicType}
                   variant="outline"
                   onClick={() => setSelectionAction('move')}
                 >
                   Move Items
                 </Button>
               </Box>
-              {/* <Box>
-                <Select
-                  variant="filled"
-                  disabled={!!!itemSelect.length}
-                  value={selectionAction}
-                  onChange={(event) => setSelectionAction(event.target.value)}
-                >
-                  <option value="">Select an action</option>
-                  <option value="delete">Delete</option>
-                  <option value="move">Move to List</option>
-                </Select>
-              </Box> */}
             </Flex>
           )}
 
@@ -682,7 +676,11 @@ const sortItems = (
 ) => {
   const itemA = items[a.item_iid];
   const itemB = items[b.item_iid];
-
+  if (!itemA || !itemB) {
+    console.log('itemA', itemA, a.item_iid);
+    console.log('itemB', itemB, b.item_iid);
+    return 0;
+  }
   if (sortBy === 'name') {
     if (sortDir === 'asc') return itemA.name.localeCompare(itemB.name);
     else return itemB.name.localeCompare(itemA.name);

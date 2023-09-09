@@ -7,6 +7,8 @@ import axios from 'axios';
 import { useState } from 'react';
 import { DuplicatedItemModalProps } from './DuplicatedItemModal';
 import dynamic from 'next/dynamic';
+import DynamicIcon from '../../public/icons/dynamic.png';
+import NextImage from 'next/image';
 
 const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
   () => import('./DuplicatedItemModal')
@@ -200,7 +202,11 @@ const ItemCtxMenu = (props: Props) => {
         <CtxSubmenu title="Add Item to List">
           {lists &&
             lists.map((list) => (
-              <CtxMenuItem onClick={() => addItemToList(list.internal_id)} key={list.internal_id}>
+              <CtxMenuItem
+                onClick={() => addItemToList(list.internal_id)}
+                key={list.internal_id}
+                disabled={!!list.dynamicType && list.dynamicType !== 'addOnly'}
+              >
                 {list.name}
                 {list.purpose !== 'none' && !list.official && (
                   <Tooltip label={`${list.purpose}`} fontSize="sm" placement="top">
@@ -211,6 +217,24 @@ const ItemCtxMenu = (props: Props) => {
                   <Tooltip label={`official`} fontSize="sm" placement="top">
                     <Badge ml={1} colorScheme="blue">
                       ✓
+                    </Badge>
+                  </Tooltip>
+                )}
+                {list.dynamicType && (
+                  <Tooltip label={`${list.dynamicType} Dynamic List`} fontSize="sm" placement="top">
+                    <Badge
+                      ml={1}
+                      colorScheme="orange"
+                      display={'inline-flex'}
+                      alignItems="center"
+                      p={'2px'}
+                    >
+                      <NextImage
+                        src={DynamicIcon}
+                        alt="lightning bolt"
+                        width={8}
+                        style={{ display: 'inline' }}
+                      />
                     </Badge>
                   </Tooltip>
                 )}

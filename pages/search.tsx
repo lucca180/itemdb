@@ -29,6 +29,7 @@ import { SelectItemsCheckbox } from '../components/Input/SelectItemsCheckbox';
 import ListSelect from '../components/UserLists/ListSelect';
 import { useAuth } from '../utils/auth';
 import { defaultFilters } from '../utils/parseFilters';
+import { CreateDynamicListButton } from '../components/DynamicLists/CreateButton';
 
 const Axios = axios.create({
   baseURL: '/api/v1/',
@@ -274,18 +275,14 @@ const SearchPage = () => {
             applyFilters={() => changeQueryString()}
           />
 
-          {/* <Flex justifyContent={'center'}>
-            <Button
-              variant="ghost"
-              textAlign={'center'}
-              colorScheme="orange"
-              size="sm"
-              // onClick={applyFilters}
-              mt={3}
-            >
-              Create ⚡Dynamic List
-            </Button>
-          </Flex> */}
+          <Flex justifyContent={'center'}>
+            <CreateDynamicListButton
+              resultCount={searchResult?.totalResults}
+              isLoading={!searchResult}
+              filters={filters}
+              query={searchQuery}
+            />
+          </Flex>
         </Box>
 
         {isOpen && (
