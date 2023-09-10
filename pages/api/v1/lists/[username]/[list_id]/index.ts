@@ -348,7 +348,7 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
     if (justHide) {
       operation = prisma.listItems.updateMany({
         where: {
-          list_id: Number(list_id),
+          list_id: list.internal_id,
           item_iid: {
             in: item_internal_ids.map((iid) => Number(iid)),
           },

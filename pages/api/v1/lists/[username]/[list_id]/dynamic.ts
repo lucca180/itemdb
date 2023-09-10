@@ -135,7 +135,10 @@ export const syncDynamicList = async (list_id: number, force = false) => {
   if (linkedListId) {
     if (dynamicType === 'addOnly' || dynamicType === 'fullSync' || firstSync) {
       const res = (await prisma.$queryRaw`
-        select item_iid from listitems where list_id = ${linkedListId} and item_iid not in (select item_iid from listitems where list_id = ${list_id})
+        select item_iid from listitems 
+        where list_id = ${linkedListId} 
+        and item_iid not in (select item_iid from listitems where list_id = ${list_id}) 
+        and isHidden = 0
       `) as any;
 
       const addData: { list_id: number; item_iid: number }[] = res.map(
@@ -154,7 +157,9 @@ export const syncDynamicList = async (list_id: number, force = false) => {
 
     if (dynamicType === 'removeOnly' || dynamicType === 'fullSync' || firstSync) {
       const res = (await prisma.$queryRaw`
-        select internal_id from listitems where list_id = ${list_id} and item_iid not in (select item_iid from listitems where list_id = ${linkedListId})
+        select internal_id from listitems 
+        where list_id = ${list_id} 
+        and item_iid not in (select item_iid from listitems where list_id = ${linkedListId} and isHidden = 0)
       `) as any;
 
       const removeData: number[] = res.map((item: { internal_id: number }) => {

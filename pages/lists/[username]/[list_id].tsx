@@ -34,6 +34,7 @@ import { CreateListModalProps } from '../../../components/Modal/CreateListModal'
 
 import dynamic from 'next/dynamic';
 import ListHeader from '../../../components/UserLists/ListHeader';
+import { CreateLinkedListButton } from '../../../components/DynamicLists/CreateLinkedList';
 
 const CreateListModal = dynamic<CreateListModalProps>(
   () => import('../../../components/Modal/CreateListModal')
@@ -486,7 +487,9 @@ const ListPage = (props: Props) => {
                   Import Items
                 </Button>
               )}
-
+              {(isOwner || list.official) && !list.linkedListId && (
+                <CreateLinkedListButton list={list} />
+              )}
               <Text as="div" textColor={'gray.300'} fontSize="sm">
                 {itemCount} items
               </Text>
