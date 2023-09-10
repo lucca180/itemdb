@@ -14,11 +14,12 @@ type CreateDynamicListButtonProps = {
   isLoading?: boolean;
   filters?: SearchFilters;
   query?: string;
+  isMobile?: boolean;
 };
 
 export const CreateDynamicListButton = (props: CreateDynamicListButtonProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { resultCount, isLoading, filters, query } = props;
+  const { resultCount, isLoading, filters, query, isMobile } = props;
 
   return (
     <>
@@ -30,19 +31,36 @@ export const CreateDynamicListButton = (props: CreateDynamicListButtonProps) => 
           searchQuery={{ ...filters!, s: query ?? '' }}
         />
       )}
-      <Button
-        variant="ghost"
-        textAlign={'center'}
-        colorScheme="orange"
-        size="sm"
-        onClick={onOpen}
-        isLoading={isLoading}
-        mt={3}
-      >
-        Create{' '}
-        <Image src={DynamicIcon} alt="lightning bolt" width={12} style={{ margin: '0 5px' }} />{' '}
-        Dynamic List
-      </Button>
+      {!isMobile && (
+        <Button
+          variant="ghost"
+          textAlign={'center'}
+          colorScheme="orange"
+          size="sm"
+          onClick={onOpen}
+          isLoading={isLoading}
+          mt={3}
+        >
+          Create{' '}
+          <Image src={DynamicIcon} alt="lightning bolt" width={12} style={{ margin: '0 5px' }} />{' '}
+          Dynamic List
+        </Button>
+      )}
+      {isMobile && (
+        <Button
+          variant="solid"
+          // textAlign={'center'}
+          colorScheme="orange"
+          size="sm"
+          onClick={onOpen}
+          isLoading={isLoading}
+          h={10}
+          minW={10}
+          // mt={3}
+        >
+          <Image src={DynamicIcon} alt="lightning bolt" width={12} />
+        </Button>
+      )}
     </>
   );
 };

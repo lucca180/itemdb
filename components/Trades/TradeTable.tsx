@@ -4,6 +4,7 @@ import { ItemData, TradeData } from '../../types';
 import { format } from 'date-fns';
 import Image from 'next/image';
 import { genItemKey, slugify } from '../../utils/utils';
+import NextLink from 'next/link';
 
 type Props = {
   data: TradeData;
@@ -36,13 +37,15 @@ const TradeTable = (props: Props) => {
             }
           >
             <Flex w={50} flexShrink="0" justifyContent="center" alignItems="center">
-              <Link href={`/item/${slugify(item.name)}`}>
+              <Link as={NextLink} href={`/item/${slugify(item.name)}`}>
                 <Image src={item.image} width={50} height={50} alt={item.name} />
               </Link>
             </Flex>
             <Flex flexFlow="column" justifyContent="center">
               <Text wordBreak={'break-word'} whiteSpace={'pre-line'} fontSize="sm">
-                <Link href={`/item/${slugify(item.name)}`}>{item.name}</Link>
+                <Link as={NextLink} href={`/item/${slugify(item.name)}`}>
+                  {item.name}
+                </Link>
               </Text>
               {item.price && (
                 <Text fontSize="xs" opacity="0.8">

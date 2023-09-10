@@ -336,12 +336,21 @@ const SearchPage = () => {
                 )}
               </Flex>
               {!isLargerThanLG && (
-                <IconButton
-                  aria-label="search filters"
-                  onClick={onOpen}
-                  icon={<BsFilter />}
-                  display={{ base: 'inherit', lg: 'none' }}
-                />
+                <HStack gap={3}>
+                  <CreateDynamicListButton
+                    resultCount={searchResult?.totalResults}
+                    isLoading={!searchResult}
+                    filters={filters}
+                    query={searchQuery}
+                    isMobile
+                  />
+                  <IconButton
+                    aria-label="search filters"
+                    onClick={onOpen}
+                    icon={<BsFilter />}
+                    display={{ base: 'inherit', lg: 'none' }}
+                  />
+                </HStack>
               )}
             </HStack>
             <Flex

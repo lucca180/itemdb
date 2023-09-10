@@ -676,11 +676,8 @@ const sortItems = (
 ) => {
   const itemA = items[a.item_iid];
   const itemB = items[b.item_iid];
-  if (!itemA || !itemB) {
-    console.log('itemA', itemA, a.item_iid);
-    console.log('itemB', itemB, b.item_iid);
-    return 0;
-  }
+  if (!itemA || !itemB) return 0;
+
   if (sortBy === 'name') {
     if (sortDir === 'asc') return itemA.name.localeCompare(itemB.name);
     else return itemB.name.localeCompare(itemA.name);

@@ -241,7 +241,7 @@ export const getSomeItemIDs = async () => {
     orderBy: {
       addedAt: 'desc',
     },
-    take: 15,
+    take: 16,
   });
 
   return result;

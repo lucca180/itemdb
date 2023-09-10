@@ -36,8 +36,6 @@ export async function doSearch(query: string, filters: SearchFilters) {
 
   filters = { ...queryFilters, ...filters };
 
-  console.log(filters);
-
   let { page, limit } = filters;
 
   page = page - 1;

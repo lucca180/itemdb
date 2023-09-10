@@ -157,7 +157,6 @@ export const syncDynamicList = async (list_id: number, force = false) => {
         select internal_id from listitems where list_id = ${list_id} and item_iid not in (select item_iid from listitems where list_id = ${linkedListId})
       `) as any;
 
-      console.log('removeRes', res);
       const removeData: number[] = res.map((item: { internal_id: number }) => {
         return item.internal_id;
       });
