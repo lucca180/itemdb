@@ -171,12 +171,7 @@ const ListHeader = (props: ListHeaderProps) => {
                 borderRadius={'md'}
                 alignItems="flex-start"
               >
-                <Tooltip
-                  hasArrow
-                  label={`Dynamic List`}
-                  placement="top"
-                  isDisabled={!unpricedItems}
-                >
+                <Tooltip hasArrow label={`Dynamic List`} placement="top">
                   <NextImage
                     src={DynamicIcon}
                     alt="lightning bolt"
