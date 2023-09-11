@@ -129,9 +129,23 @@ export async function getStaticPaths() {
 
 const options: HTMLReactParserOptions = {
   replace: (domNode) => {
+    if (domNode instanceof Element && domNode.name === 'h2')
+      return (
+        <Heading size="lg" as="h2" my={3}>
+          {domToReact(domNode.children, options)}
+        </Heading>
+      );
+
     if (domNode instanceof Element && domNode.name === 'h3')
       return (
         <Heading size="md" as="h3" my={2}>
+          {domToReact(domNode.children, options)}
+        </Heading>
+      );
+
+    if (domNode instanceof Element && domNode.name === 'h4')
+      return (
+        <Heading size="sm" as="h4" my={2}>
           {domToReact(domNode.children, options)}
         </Heading>
       );
