@@ -43,7 +43,12 @@ const ItemOfficialLists = (props: Props) => {
               </Link>
               <Text display="inline" verticalAlign="middle">
                 {' '}
-                - {list.description || "This list doesn't have a description yet"}
+                -{' '}
+                {
+                  (list.description || "This list doesn't have a description yet").split(
+                    /[\r\n]+/
+                  )[0]
+                }
               </Text>
             </ListItem>
           ))}
