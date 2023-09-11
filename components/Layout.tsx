@@ -233,7 +233,7 @@ const Layout = (props: Props) => {
                 <ChakraLink href="https://itemdb.stoplight.io/docs/itemdb-api" isExternal>
                   Developers
                 </ChakraLink>
-                <ChakraLink href="/privacy">Privacy Policy (Aug 2023)</ChakraLink>
+                <ChakraLink href="/privacy">Privacy Policy</ChakraLink>
                 <ChakraLink href="/terms">Terms of Use</ChakraLink>
                 <ChakraLink href="https://github.com/lucca180/itemdb/" isExternal>
                   Source Code

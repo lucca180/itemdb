@@ -374,3 +374,13 @@ export const stringHasNumber = (string: string) => {
     return false;
   }
 };
+
+export function getDateNST(timestamp?: number) {
+  const todayNST = (
+    typeof timestamp === 'number' ? new Date(timestamp) : new Date()
+  ).toLocaleString('en-US', {
+    timeZone: 'America/Los_Angeles',
+  });
+
+  return new Date(todayNST);
+}

@@ -157,6 +157,7 @@ export type SearchFilters = {
   weight: string[]; // [min, max]
   estVal: string[]; // [min, max]
   owlsValue: string[]; // [min, max]
+  restockProfit: string; // min profit %
   sortBy: string;
   sortDir: string;
   mode: 'name' | 'description' | 'all';

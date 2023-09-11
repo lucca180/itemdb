@@ -10,6 +10,7 @@ export const defaultFilters: SearchFilters = {
   weight: ['', ''],
   estVal: ['', ''],
   owlsValue: ['', ''],
+  restockProfit: '',
   sortBy: 'name',
   sortDir: 'asc',
   mode: 'name',

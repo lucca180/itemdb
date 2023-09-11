@@ -153,9 +153,7 @@ const LinkedListModal = (props: LinkedListModalProps) => {
                 <option value="addOnly">Add Only</option>
                 <option value="removeOnly">Remove Only</option>
               </Select>
-              <FormHelperText>
-                You&apos;ll not be able to change this or the linked list later.
-              </FormHelperText>
+              <FormHelperText>You&apos;ll not be able to change this later.</FormHelperText>
             </FormControl>
             <List spacing={2}>
               <ListItem fontSize={'sm'} color="gray.400">

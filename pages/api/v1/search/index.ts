@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
-import { getItemFindAtLinks, isMissingInfo } from '../../../../utils/utils';
+import { getDateNST, getItemFindAtLinks, isMissingInfo } from '../../../../utils/utils';
 import { ItemData, SearchFilters } from '../../../../types';
 import Color from 'color';
 import { Prisma } from '@prisma/client';
@@ -55,6 +55,9 @@ export async function doSearch(query: string, filters: SearchFilters) {
   const rarityFilter = (filters.rarity as string[]) ?? [];
   const estValFilter = (filters.estVal as string[]) ?? [];
   const owlsFilter = (filters.owlsValue as string[]) ?? [];
+
+  const restockProfit = (filters.restockProfit as string) ?? '';
+
   let vibrantColorFilter = (filters.color as string) ?? '';
 
   const sortBy = (filters.sortBy as string) ?? 'name';
@@ -180,6 +183,22 @@ export async function doSearch(query: string, filters: SearchFilters) {
       numberFilters.push(Prisma.sql`temp.owlsValueMin >= ${parseInt(owlsFilter[0])}`);
     if (owlsFilter[1] !== '')
       numberFilters.push(Prisma.sql`temp.owlsValueMin <= ${parseInt(owlsFilter[1])}`);
+  }
+
+  if (restockProfit !== '' && !isNaN(Number(restockProfit))) {
+    const minProfit = Number(restockProfit) / 100 + 1;
+
+    const todayNST = getDateNST();
+
+    if (todayNST.getDate() !== 3) {
+      numberFilters.push(Prisma.sql`
+        (temp.est_val * 1.6) <= (temp.price * ${minProfit})
+      `);
+    } else {
+      numberFilters.push(Prisma.sql`
+        (temp.est_val * 1.6)/2 <= (temp.price * ${minProfit})
+      `);
+    }
   }
 
   let colorSql_inside;

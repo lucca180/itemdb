@@ -3,6 +3,8 @@ import React from 'react';
 import { ItemData, UserList } from '../../types';
 import CardBase from '../Card/CardBase';
 import NextLink from 'next/link';
+import Image from 'next/image';
+import DynamicIcon from '../../public/icons/dynamic.png';
 
 type Props = {
   item: ItemData;
@@ -20,8 +22,23 @@ const ItemOfficialLists = (props: Props) => {
           {officialLists.map((list, i) => (
             <ListItem key={i}>
               <Link as={NextLink} href={`/lists/official/${list.internal_id}`} whiteSpace="nowrap">
-                <Tag variant="subtle" size="lg" fontWeight="bold" verticalAlign="middle">
+                <Tag
+                  variant="subtle"
+                  size="lg"
+                  fontWeight="bold"
+                  verticalAlign="middle"
+                  display={'inline-flex'}
+                  alignItems="center"
+                >
                   {list.name}
+                  {list.dynamicType && (
+                    <Image
+                      src={DynamicIcon}
+                      alt="dynamic list"
+                      width={10}
+                      style={{ marginLeft: '5px' }}
+                    />
+                  )}
                 </Tag>
               </Link>
               <Text display="inline" verticalAlign="middle">

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Button, useDisclosure, Text } from '@chakra-ui/react';
+import { Button, useDisclosure, Text, Box } from '@chakra-ui/react';
 import Dynamic from 'next/dynamic';
 
 import Image from 'next/image';
@@ -27,7 +27,9 @@ export const CreateLinkedListButton = (props: CreateLinkedListButtonProps) => {
         colorScheme="orange"
         onClick={onOpen}
       >
-        <Image src={DynamicIcon} alt="lightning bolt" width={12} style={{ marginRight: '5px' }} />{' '}
+        <Box display="inline" mr={[0, '5px']}>
+          <Image src={DynamicIcon} alt="lightning bolt" width={12} />
+        </Box>
         <Text display={['none', 'inline']}>Create Checklist</Text>
       </Button>
     </>
