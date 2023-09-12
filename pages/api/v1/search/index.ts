@@ -186,17 +186,17 @@ export async function doSearch(query: string, filters: SearchFilters) {
   }
 
   if (restockProfit !== '' && !isNaN(Number(restockProfit))) {
-    const minProfit = Number(restockProfit) / 100 + 1;
+    const minProfit = Number(restockProfit);
 
     const todayNST = getDateNST();
 
     if (todayNST.getDate() !== 3) {
       numberFilters.push(Prisma.sql`
-        (temp.est_val * 1.6) <= (temp.price * ${minProfit})
+        temp.price - (temp.est_val * 1.6) <= ${minProfit}
       `);
     } else {
       numberFilters.push(Prisma.sql`
-        (temp.est_val * 1.6)/2 <= (temp.price * ${minProfit})
+        temp.price - ((temp.est_val * 1.6)/2) <= ${minProfit}
       `);
     }
   }
