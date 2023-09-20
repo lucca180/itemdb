@@ -214,6 +214,14 @@ const ItemDataExtractor = () => {
         </ListItem>
         <ListItem>
           <ListIcon as={BsCheckCircleFill} color="green.300" />
+          Openable Drops
+          <Text fontSize="sm" color="gray.400">
+            When you open items like Mystery Capsules or a Goodie Bags, the script will collect the
+            items you received.
+          </Text>
+        </ListItem>
+        <ListItem>
+          <ListIcon as={BsCheckCircleFill} color="green.300" />
           Your IP address
           <Text fontSize="sm" color="gray.400">
             This is used to prevent abuse, spam and false information. It's never public available

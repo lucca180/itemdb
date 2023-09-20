@@ -322,7 +322,7 @@ async function updateOrAddDB(
     const daysSinceLastUpdate = differenceInCalendarDays(latestDate, oldPrice.addedAt);
 
     if (latestDate < oldPrice.addedAt) {
-      throw 'old data';
+      return undefined;
     }
 
     const variation = coefficientOfVariation([oldPrice.price, priceValue]);

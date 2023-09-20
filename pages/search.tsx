@@ -140,6 +140,8 @@ const SearchPage = () => {
   const changePage = (page: number) => {
     setFilters({ ...filters, page: page });
     changeQueryString({ ...filters, page: page });
+
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
   };
 
   const parseQueryString = (): [SearchFiltersType, boolean] => {

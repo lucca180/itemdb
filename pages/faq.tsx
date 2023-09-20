@@ -1,9 +1,19 @@
 /* eslint-disable react/no-unescaped-entities */
-import { Flex, Heading, Text, Link } from '@chakra-ui/react';
+import { Flex, Heading, Text, Link, Grid } from '@chakra-ui/react';
+import {
+  MdAttachMoney,
+  MdDescription,
+  MdImage,
+  MdOutlineSearch,
+  MdShowChart,
+} from 'react-icons/md';
+import FeatureCard from '../components/Card/FeatureCard';
 import HeaderCard from '../components/Card/HeaderCard';
 import Layout from '../components/Layout';
+import DynamicIcon from '../public/icons/dynamic.png';
+import NextImage from 'next/image';
 
-const PrivacyPolicyPage = () => {
+const WhyUsPage = () => {
   return (
     <Layout SEO={{ title: 'Frequent Asked Questions' }}>
       <HeaderCard
@@ -13,7 +23,7 @@ const PrivacyPolicyPage = () => {
         }}
         color="#4bbde0"
       >
-        <Heading size="lg">Frequent Asked Questions</Heading>
+        <Heading size="lg">Why itemdb?</Heading>
         <Text size={{ base: 'sm', md: undefined }}>
           Here you can find the most frequent asked questions about the itemdb.
         </Text>
@@ -52,6 +62,62 @@ const PrivacyPolicyPage = () => {
             </Link>
             .
           </Text>
+          <Heading size="md">Why use itemdb?</Heading>
+          <Text>We have a lot of cool features, such as:</Text>
+          <Grid templateColumns="repeat(3, 2fr)" gap={6}>
+            <FeatureCard
+              title="Dynamic Lists"
+              icon={
+                <NextImage
+                  src={DynamicIcon}
+                  alt="lightning bolt"
+                  width={14}
+                  style={{ display: 'inline' }}
+                />
+              }
+            >
+              <>
+                Create <Link href="/articles/checklists-and-dynamic-lists">dynamic lists</Link> that
+                update automatically as new items are released.
+              </>
+            </FeatureCard>
+            <FeatureCard title="Drop Odds" icon={<MdShowChart fontSize={'24px'} />}>
+              See the odds of getting an item from Mystery Capsules, Goodie Bags and other
+              openables.
+            </FeatureCard>
+            <FeatureCard title="Owls Integration" icon={<MdAttachMoney fontSize={'24px'} />}>
+              <>
+                Search, sort and filter NC Wearables by{' '}
+                <Link href="/articles/owls">Owls Value</Link>. You can also see the Trade Report
+                History for each item.
+              </>
+            </FeatureCard>
+            <FeatureCard title="Powerful Search" icon={<MdOutlineSearch fontSize={'24px'} />}>
+              <>
+                {' '}
+                Use our <Link href="/articles/advanced-search-queries">
+                  operators and filters
+                </Link>{' '}
+                to find the perfect item for your gallery or outfit. You can even search for items
+                by color pallete!
+              </>
+            </FeatureCard>
+            <FeatureCard title="Wearable Preview" icon={<MdImage fontSize={'24px'} />}>
+              <>
+                Preview how a wearable looks on your pet before buying it. Powered by{' '}
+                <Link href="https://impress.openneo.net/" isExternal>
+                  Dress to Impress
+                </Link>
+                .
+              </>
+            </FeatureCard>
+            <FeatureCard title="Userscripts" icon={<MdDescription fontSize={'24px'} />}>
+              <>
+                Price your SDB? Sort your gallery by color? We have a lot of{' '}
+                <Link href="/articles/userscripts">userscripts</Link> to make your life easier.
+              </>
+            </FeatureCard>
+          </Grid>
           <Heading size="md" mt={5}>
             How can I help?
           </Heading>
@@ -90,4 +156,4 @@ const PrivacyPolicyPage = () => {
   );
 };
 
-export default PrivacyPolicyPage;
+export default WhyUsPage;
