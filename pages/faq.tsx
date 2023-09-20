@@ -64,7 +64,7 @@ const WhyUsPage = () => {
           </Text>
           <Heading size="md">Why use itemdb?</Heading>
           <Text>We have a lot of cool features, such as:</Text>
-          <Grid templateColumns="repeat(3, 2fr)" gap={6}>
+          <Grid templateColumns={['1', 'repeat(2, 2fr)', 'repeat(3, 2fr)']} gap={[2, 3, 6]}>
             <FeatureCard
               title="Dynamic Lists"
               icon={
