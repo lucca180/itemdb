@@ -132,9 +132,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 
   try {
     await res.revalidate(`/item/${itemSlug ?? itemData.slug}`, { unstable_onlyGenerated: true });
-  } catch (e) {
-    console.error('edit revalidate error', e);
-  }
+  } catch (e) {}
 
   return res.status(200).json({ success: true });
 };

@@ -72,10 +72,10 @@ const ItemPage = (props: ItemPageProps) => {
     tradeLists,
     itemOpenable,
     itemParent,
-    NPPrices: prices,
+    NPPrices,
     NPTrades: trades,
   } = props;
-  // const [prices, setPrices] = useState<PriceData[] | null>(null);
+  const [prices, setPrices] = useState<PriceData[] | null>(NPPrices);
   const [seenStats, setSeen] = useState<ItemLastSeen | null>(null);
   // const [trades, setTrades] = useState<TradeData[]>([]);
   // const [tags, setTags] = useState<ItemTag[]>([]);
@@ -100,8 +100,8 @@ const ItemPage = (props: ItemPageProps) => {
       return;
     }
 
-    const [resStats] = await Promise.all([
-      // axios.get(`/api/v1/items/${item.internal_id}/prices`),
+    const [resPrice, resStats] = await Promise.all([
+      axios.get(`/api/v1/items/${item.internal_id}/prices`),
       axios.get(`/api/v1/prices/stats/`, {
         params: {
           item_id: item.item_id ?? -1,
@@ -118,7 +118,7 @@ const ItemPage = (props: ItemPageProps) => {
       // axios.get(`/api/v1/items/${item.internal_id}/tags`),
     ]);
 
-    // setPrices(resPrice.data ?? []);
+    setPrices(resPrice.data ?? []);
     setSeen(resStats.data);
     // setTrades(resTrades.data);
     // setTags(resTags.data);
