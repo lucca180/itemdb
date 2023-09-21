@@ -7,6 +7,7 @@ import Head from 'next/head';
 import { DefaultSeo } from 'next-seo';
 import SEOConfig from '../utils/SEO';
 import NextNProgress from 'nextjs-progressbar';
+import Script from 'next/script';
 
 function MyApp({ Component, pageProps }: any) {
   return (
@@ -19,6 +20,15 @@ function MyApp({ Component, pageProps }: any) {
           <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         </Head>
         <Component {...pageProps} />
+        <Script src="https://sa.itemdb.com.br/latest.js" />
+        <noscript>
+          {/* eslint-disable @next/next/no-img-element */}
+          <img
+            src="https://sa.itemdb.com.br/noscript.gif"
+            alt=""
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </noscript>
       </ChakraProvider>
     </Provider>
   );

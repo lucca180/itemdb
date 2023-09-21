@@ -87,7 +87,11 @@ const ItemPage = (props: ItemPageProps) => {
 
   useEffect(() => {
     if (router.isReady) init();
-  }, [router]);
+  }, [router, router.pathname]);
+
+  useEffect(() => {
+    setPrices(NPPrices);
+  }, [NPPrices]);
 
   const init = async () => {
     setLoading(true);

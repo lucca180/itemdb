@@ -44,8 +44,8 @@ const PrivacyPolicyPage = () => {
           </Text>
           <UnorderedList spacing={3}>
             <ListItem>
-              <Link href="https://www.google.com/analytics/" isExternal>
-                Google Analytics
+              <Link href="https://simpleanalytics.com" isExternal>
+                SimpleAnalytics
               </Link>
               <Text fontSize="sm" color="gray.400">
                 We need this data to understand how you use our website so we can improve its design

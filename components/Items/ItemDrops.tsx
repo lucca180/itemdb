@@ -1,10 +1,11 @@
 /* eslint-disable react/no-unescaped-entities */
-import { Flex, Text, Image, Badge, Center, Alert, AlertIcon } from '@chakra-ui/react';
+import { Flex, Text, Image, Badge, Center, Alert, AlertIcon, Link } from '@chakra-ui/react';
 import axios from 'axios';
 import React, { useEffect } from 'react';
 import { ItemData, ItemOpenable } from '../../types';
 import CardBase from '../Card/CardBase';
 import ItemCard from './ItemCard';
+import NextLink from 'next/link';
 
 type Props = {
   item: ItemData;
@@ -83,7 +84,10 @@ const ItemDrops = (props: Props) => {
             })}
         </Flex>
         <Text textAlign={'center'} mt={3} fontSize="xs" color="gray.300">
-          Odds on {itemOpenable.openings} openings reports
+          Odds on {itemOpenable.openings} openings reports.{' '}
+          <Link as={NextLink} href="/contribute" color="gray.400">
+            Learn How To Help
+          </Link>
         </Text>
       </CardBase>
     );
