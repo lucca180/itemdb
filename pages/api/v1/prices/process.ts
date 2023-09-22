@@ -155,7 +155,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
           (genItemKey(x, true) === genItemKey(item, true) && !x.item_id && x.image_id)
       );
 
-      if (allItemData.length === 0) continue;
+      if (allItemData.length < 3) continue;
 
       // merge all reports data
       for (const itemOtherData of allItemData) {
@@ -171,9 +171,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         .sort((a, b) => a.price - b.price)
         .slice(0, 30);
 
-      if (filteredResult.length < 3) continue;
-
       let latestDate = new Date(0);
+      const oldestDate = mostRecentPrices.reduce((a, b) => (a.addedAt < b.addedAt ? a : b)).addedAt;
       let userShopCount = 0;
 
       const usedIDs = filteredResult.map((o) => {
@@ -184,7 +183,11 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
       if (userShopCount >= (filteredResult.length / 4) * 3) continue;
 
-      if (filteredResult.length < 5 && differenceInCalendarDays(Date.now(), latestDate) < MAX_DAYS)
+      if (
+        filteredResult.length < 5 &&
+        differenceInCalendarDays(Date.now(), latestDate) < MAX_DAYS &&
+        differenceInCalendarDays(latestDate, oldestDate) < MAX_DAYS * 2
+      )
         continue;
 
       const allIDs = allItemData.filter((x) => x.addedAt <= latestDate).map((x) => x.internal_id);
@@ -251,16 +254,6 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       name: x,
     })),
   });
-
-  // try {
-  //   await Promise.all(
-  //     priceAddList.map((x) =>
-  //       res.revalidate(`/item/${x.item_iid}`, { unstable_onlyGenerated: true })
-  //     )
-  //   );
-  // } catch (e) {
-  //   console.error('process revalidate Error', e);
-  // }
 
   return res.send({
     priceUpdate: result[0],
@@ -354,7 +347,7 @@ async function updateOrAddDB(
       newPriceData.noInflation_id = oldPrice.noInflation_id;
 
       if (
-        (daysWithInflation >= 60 && variation < 30) ||
+        (daysWithInflation >= 30 && variation < 30) ||
         (priceValue > 75000 && inflationVariation < 70) ||
         (priceValue >= 100000 && inflationVariation < 50) ||
         lastNormalPrice.price >= priceValue
