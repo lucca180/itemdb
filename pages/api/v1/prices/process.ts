@@ -163,13 +163,17 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         for (const key of Object.keys(item)) item[key] ||= itemOtherData[key] ?? item[key];
       }
 
-      const mostRecentPrices = filterMostRecents(allItemData);
-      const owners = mostRecentPrices.map((o) => o.owner);
+      const mostRecentPrices = filterMostRecents(allItemData).sort((a, b) => a.price - b.price);
+      const owners = new Set<string>();
 
       const filteredResult = mostRecentPrices
-        .filter((a, index) => a.price > 0 && !owners.includes(a.owner, index + 1))
-        .sort((a, b) => a.price - b.price)
-        .slice(0, 30);
+        .map((x) => {
+          if (x.owner && !owners.has(x.owner)) owners.add(x.owner);
+          else return undefined;
+          return x;
+        })
+        .filter((x) => !!x)
+        .slice(0, 30) as PriceProcess[];
 
       let latestDate = new Date(0);
       const oldestDate = mostRecentPrices.reduce((a, b) => (a.addedAt < b.addedAt ? a : b)).addedAt;
