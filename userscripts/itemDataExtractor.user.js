@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.2.3
+// @version      1.2.4
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -855,7 +855,7 @@ function handleNCCapsule(){
 
         // neopets changes the jquery object and breaks everything.
         if(_interval) clearInterval(_interval);
-        _interval = setInterval(() => {$ = J$; jQuery = JQUERY3;}, 500);
+        _interval = setInterval(() => {$ = J$; jQuery = JQUERY3;}, 100);
 
         if(!results.length) return;
 
@@ -923,8 +923,10 @@ function handleNPOpenables(){
           img: itemEl.dataset.image,
           quantity: parseInt(itemEl.dataset.itemquantity),
         };
+
         const itemKey = genItemKey(item);
-        allItems[itemKey] = item;
+        if(allItems[itemKey]) allItems[itemKey].quantity += item.quantity;
+        else allItems[itemKey] = item;
      });
 
       const inventoryOpenable = {
@@ -950,20 +952,29 @@ function handleNPRefresh(){
       return localStorage.removeItem('idb_prevInventory');;
 
     const items = [];
-    
+    const sumItems = {};
     const grid = $('.grid-item');
     if(grid.length === 0) return;
 
     grid.each(function (i) {
       const itemEl = $(this).find('.item-img')[0];
+
       const item = {
         name: itemEl.dataset.itemname,
         img: itemEl.dataset.image,
         quantity: parseInt(itemEl.dataset.itemquantity),
       };
+
       const itemKey = genItemKey(item);
       
-      if(!prevInventory.allItems[itemKey] || prevInventory.allItems[itemKey].quantity < item.quantity){
+      if(sumItems[itemKey]) sumItems[itemKey].quantity += item.quantity;
+      else sumItems[itemKey] = item;
+
+      if(
+        !prevInventory.allItems[itemKey] || 
+        prevInventory.allItems[itemKey].quantity < item.quantity || 
+        prevInventory.allItems[itemKey].quantity < sumItems[itemKey].quantity
+      ){
         items.push({
           name: item.name,
           img: item.img,
