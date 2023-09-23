@@ -61,9 +61,15 @@ const ItemDrops = (props: Props) => {
             </Text>
           </Alert>
         )}
-        {itemOpenable.minDrop > 1 && (
+        {(itemOpenable.minDrop > 1 || itemOpenable.maxDrop > 1) && (
           <Text textAlign={'center'} mb={3} fontSize="sm" color="gray.200">
-            This will drop <b>at least {itemOpenable.minDrop} items</b> of the following:
+            This item will drop{' '}
+            {itemOpenable.minDrop > 1 && <b>at least {itemOpenable.minDrop} items</b>}
+            {itemOpenable.minDrop > 1 && itemOpenable.maxDrop !== itemOpenable.minDrop && ' and '}
+            {itemOpenable.maxDrop > 1 && itemOpenable.maxDrop !== itemOpenable.minDrop && (
+              <b>up to {itemOpenable.maxDrop} items</b>
+            )}{' '}
+            of the following:
           </Text>
         )}
         <Flex gap={3} wrap="wrap" justifyContent="center">
@@ -94,6 +100,17 @@ const ItemDrops = (props: Props) => {
 
   return (
     <CardBase title="This item can drop" color={color}>
+      {(itemOpenable.minDrop > 1 || itemOpenable.maxDrop > 1) && (
+        <Text textAlign={'center'} mb={3} fontSize="sm" color="gray.200">
+          This item will drop{' '}
+          {itemOpenable.minDrop > 1 && <b>at least {itemOpenable.minDrop} items</b>}
+          {itemOpenable.minDrop > 1 && itemOpenable.maxDrop !== itemOpenable.minDrop && ' and '}
+          {itemOpenable.maxDrop > 1 && itemOpenable.maxDrop !== itemOpenable.minDrop && (
+            <b>up to {itemOpenable.maxDrop} items</b>
+          )}{' '}
+          of the following:
+        </Text>
+      )}
       {itemDrops.filter((a) => a.isLE).length > 0 && (
         <>
           <Flex gap={3} wrap="wrap" justifyContent="center" my={3}>
@@ -120,7 +137,7 @@ const ItemDrops = (props: Props) => {
         .filter((a) => !['LE', 'unknown'].includes(a))
         .sort((a, b) => a.localeCompare(b))
         .map((cat) => (
-          <Flex alignItems="center" key={cat} flexFlow="column" my={8}>
+          <Flex alignItems="center" key={cat} flexFlow="column" mb={8}>
             <Image
               h={'60px'}
               w={'269px'}
@@ -179,8 +196,11 @@ const ItemDrops = (props: Props) => {
           </Flex>
         </>
       )}
-      <Text textAlign={'center'} mt={3} fontSize="xs" color="gray.300">
-        Data on {itemOpenable.openings} openings reports
+      <Text textAlign={'center'} mt={4} fontSize="xs" color="gray.300">
+        Odds on {itemOpenable.openings} openings reports.{' '}
+        <Link as={NextLink} href="/contribute" color="gray.400">
+          Learn How To Help
+        </Link>
       </Text>
     </CardBase>
   );

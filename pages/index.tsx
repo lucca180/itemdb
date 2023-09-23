@@ -23,6 +23,8 @@ const HomePage = (props: Props) => {
   const { latestOwls, latestPosts } = props;
   const [latestItems, setItems] = useState<ItemData[]>([]);
   const [latestPrices, setPrices] = useState<ItemData[]>([]);
+  const [trendingItems, setTrending] = useState<ItemData[]>([]);
+
   const [isLoaded, setIsLoaded] = useState(false);
 
   const color = Color('#4A5568');
@@ -33,7 +35,7 @@ const HomePage = (props: Props) => {
   }, []);
 
   const init = async () => {
-    const [itemRes, priceRes] = await Promise.all([
+    const [itemRes, priceRes, trendingRes] = await Promise.all([
       axios.get('api/v1/items', {
         params: {
           limit: 16,
@@ -44,11 +46,17 @@ const HomePage = (props: Props) => {
           limit: 16,
         },
       }),
+      axios.get('api/v1/beta/trending', {
+        params: {
+          limit: 8,
+        },
+      }),
     ]);
 
-    setIsLoaded(true);
+    setTrending(trendingRes.data);
     setItems(itemRes.data);
     setPrices(priceRes.data);
+    setIsLoaded(true);
   };
 
   return (
@@ -93,6 +101,13 @@ const HomePage = (props: Props) => {
             <ItemCard item={item} key={item.internal_id} />
           ))}
           {!isLoaded && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
+        </Flex>
+        <Heading size="md">Trending Items</Heading>
+        <Flex flexWrap="wrap" gap={4} justifyContent="center">
+          {trendingItems.map((item) => (
+            <ItemCard item={item} key={item.internal_id} />
+          ))}
+          {!isLoaded && [...Array(8)].map((_, i) => <ItemCard key={i} />)}
         </Flex>
         <Stack direction={{ base: 'column', lg: 'row' }}>
           <Flex gap={4} flexFlow="column" flex="1">

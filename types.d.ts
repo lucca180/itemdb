@@ -277,6 +277,7 @@ export type ItemOpenable = {
   drops: ItemDrop[];
   hasLE: boolean;
   minDrop: number;
+  maxDrop: number;
   isGBC: boolean;
 };
 

@@ -56,7 +56,7 @@ const BetaStatsCard = () => {
       <VStack justifyContent={'center'} alignItems="center" w="100%">
         <Text color="gray.300">
           <Link href="/feedback/trades">
-            Trades to be priced <ExternalLinkIcon verticalAlign="center" />
+            Trades Queue <ExternalLinkIcon verticalAlign="center" />
           </Link>
         </Text>
         <Progress w="100%" value={((stats.tradeTotal - stats.tradePricing) / 1000) * 100} />

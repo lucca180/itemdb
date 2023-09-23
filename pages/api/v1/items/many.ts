@@ -24,6 +24,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       name_image_id: req.body.name_image_id,
       image_id: req.body.image_id,
       name: req.body.name,
+      slug: req.body.slug,
     };
   else if (req.method == 'GET' && req.url) reqData = qs.parse(req.url.split('?')[1]);
   if (!reqData) return res.status(400).json({ error: 'Invalid request' });
@@ -33,8 +34,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const name_image_id = reqData.name_image_id as [string, string][];
   const image_id = reqData.image_id as string[];
   const name = reqData.name as string[];
+  const slug = reqData.slug as string[];
 
-  if (!ids && !item_id && !image_id && !name && !name_image_id)
+  if (!ids && !item_id && !image_id && !name && !name_image_id && !slug)
     return res.status(400).json({ error: 'Invalid request' });
 
   if (
@@ -42,7 +44,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     item_id?.length === 0 &&
     image_id?.length === 0 &&
     name?.length === 0 &&
-    name_image_id?.length === 0
+    name_image_id?.length === 0 &&
+    slug?.length === 0
   )
     return res.status(400).json({ error: 'Invalid request' });
 
@@ -53,6 +56,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       name_image_id: name_image_id,
       image_id: image_id,
       name: name,
+      slug: slug,
     },
     3000
   );
@@ -67,10 +71,11 @@ export const getManyItems = async (
     name_image_id?: [string, string][];
     image_id?: string[];
     name?: string[];
+    slug?: string[];
   },
   limit = 300000
 ): Promise<{ [identifier: string]: ItemData }> => {
-  const { id, item_id, name_image_id, image_id, name } = queryObj;
+  const { id, item_id, name_image_id, image_id, name, slug } = queryObj;
 
   let query;
   if (id && id.length > 0) query = Prisma.sql`a.internal_id IN (${Prisma.join(id)})`;
@@ -82,6 +87,7 @@ export const getManyItems = async (
   } else if (image_id && image_id.length > 0)
     query = Prisma.sql`a.image_id IN (${Prisma.join(image_id)})`;
   else if (name && name.length > 0) query = Prisma.sql`a.name IN (${Prisma.join(name)})`;
+  else if (slug && slug.length > 0) query = Prisma.sql`a.slug IN (${Prisma.join(slug)})`;
 
   if (!query) return {};
   const resultRaw = (await prisma.$queryRaw`
@@ -169,6 +175,7 @@ export const getManyItems = async (
     else if (name_image_id) items[`${encodeURI(result.name.toLowerCase())}_${result.image_id}`] = x;
     else if (image_id) items[result.image_id] = x;
     else if (name) items[result.name] = x;
+    else if (slug) items[result.slug] = x;
   }
 
   return items;

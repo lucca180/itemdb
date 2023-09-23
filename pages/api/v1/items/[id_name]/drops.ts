@@ -52,6 +52,7 @@ export const getItemDrops = async (
   if (openingCount < 5) return null;
 
   const minDrop = Math.min(...Object.values(openingSet));
+  const maxDrop = Math.max(...Object.values(openingSet));
 
   const openableData: ItemOpenable = {
     openings: openingCount,
@@ -60,6 +61,7 @@ export const getItemDrops = async (
     notes: null,
     drops: [],
     minDrop: minDrop,
+    maxDrop: maxDrop,
     isGBC: false,
   };
 
