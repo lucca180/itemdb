@@ -393,7 +393,8 @@ export const getList = async (
   username: string,
   list_id: number,
   userOrToken?: User | null | string,
-  isOfficial = false
+  isOfficial = false,
+  excludeItems = false
 ) => {
   const listRaw = await prisma.userList.findUnique({
     where: {
@@ -457,21 +458,23 @@ export const getList = async (
     linkedListId: listRaw.linkedListId ?? null,
 
     itemCount: listRaw.items.filter((x) => !x.isHidden).length,
-    itemInfo: listRaw.items.map((item) => {
-      return {
-        internal_id: item.internal_id,
-        list_id: item.list_id,
-        item_iid: item.item_iid,
-        addedAt: item.addedAt.toJSON(),
-        updatedAt: item.updatedAt.toJSON(),
-        amount: item.amount,
-        capValue: item.capValue,
-        imported: item.imported,
-        order: item.order,
-        isHighlight: item.isHighlight,
-        isHidden: item.isHidden,
-      };
-    }),
+    itemInfo: excludeItems
+      ? []
+      : listRaw.items.map((item) => {
+          return {
+            internal_id: item.internal_id,
+            list_id: item.list_id,
+            item_iid: item.item_iid,
+            addedAt: item.addedAt.toJSON(),
+            updatedAt: item.updatedAt.toJSON(),
+            amount: item.amount,
+            capValue: item.capValue,
+            imported: item.imported,
+            order: item.order,
+            isHighlight: item.isHighlight,
+            isHidden: item.isHidden,
+          };
+        }),
   };
 
   return list;

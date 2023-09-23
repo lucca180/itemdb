@@ -39,6 +39,12 @@ const ListSelect = (props: Props) => {
     }
   }, [authLoading, user]);
 
+  useEffect(() => {
+    if (props.defaultValue) {
+      setSelected(props.defaultValue);
+    }
+  }, [props.defaultValue]);
+
   const init = async () => {
     if (!user) return;
     try {

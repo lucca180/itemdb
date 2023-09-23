@@ -30,17 +30,17 @@ import { BsCheckCircleFill, BsExclamationCircleFill, BsXCircleFill } from 'react
 import DynamicIcon from '../../public/icons/dynamic.png';
 import { UserList } from '../../types';
 import { useAuth, UserLists } from '../../utils/auth';
-import { getRandomName } from '../../utils/randomName';
 
 export type LinkedListModalProps = {
   isOpen: boolean;
   onClose: () => void;
   list: UserList;
+  onCreate?: (newList: UserList) => void;
 };
 
 const LinkedListModal = (props: LinkedListModalProps) => {
   const toast = useToast();
-  const { isOpen, onClose, list } = props;
+  const { isOpen, onClose, list, onCreate } = props;
   const { user, getIdToken } = useAuth();
   const [, setStorageLists] = useAtom(UserLists);
   const [loading, setLoading] = useState<boolean>(false);
@@ -69,6 +69,7 @@ const LinkedListModal = (props: LinkedListModalProps) => {
         }
       );
 
+      onCreate?.({ ...newList, dynamicType: dynamicType, linkedListId: list.internal_id });
       toast({
         title: 'Linked List created!',
         status: 'success',
@@ -88,12 +89,12 @@ const LinkedListModal = (props: LinkedListModalProps) => {
     const res = await axios.post(
       `/api/v1/lists/${user.username}`,
       {
-        name: getRandomName(),
+        name: list.name + ' (Checklist)',
         description: '',
-        cover_url: '',
+        coverURL: list.coverURL,
         visibility: 'public',
         purpose: 'none',
-        colorHex: '#fff',
+        colorHex: list.colorHex,
       },
       {
         headers: {

@@ -130,6 +130,7 @@ const ItemPriceCard = (props: Props) => {
             <Flex
               flexFlow={{ base: 'column', md: 'row' }}
               alignItems={{ base: 'inherit', md: 'center' }}
+              gap={1}
             >
               <Stat flex="initial" textAlign="center" minW="20%">
                 {price?.inflated && (

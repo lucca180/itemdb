@@ -111,10 +111,10 @@ const ItemCardBase = (props: ItemProps) => {
             <Text fontSize={{ base: 'xs', md: small ? 'xs' : 'sm' }}>{item.name}</Text>
 
             {item.price.value && item.price.inflated && (
-              <Tooltip label="Inflated!" aria-label="Inflation Tooltip" placement="top">
+              <Tooltip label="Inflation!" aria-label="Inflation Tooltip" placement="top">
                 <Badge colorScheme="red" whiteSpace="pre-wrap">
-                  <Icon as={AiFillWarning} verticalAlign="text-top" />{' '}
-                  {intl.format(item.price.value)} NP
+                  <Icon as={AiFillWarning} verticalAlign="middle" /> {intl.format(item.price.value)}{' '}
+                  NP
                 </Badge>
               </Tooltip>
             )}

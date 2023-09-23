@@ -30,7 +30,7 @@ const PriceTable = (props: Props) => {
               <Td>
                 {price.inflated && (
                   <Text fontWeight="bold" color="red.400">
-                    Inflated!
+                    Inflation!
                   </Text>
                 )}
                 {intl.format(price.value)} NP

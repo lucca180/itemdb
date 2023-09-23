@@ -17,6 +17,8 @@ import {
   Button,
   useToast,
   useMediaQuery,
+  HStack,
+  UnorderedList,
 } from '@chakra-ui/react';
 import Image from 'next/image';
 import { AiFillWarning } from 'react-icons/ai';
@@ -30,19 +32,24 @@ import { useEffect, useState } from 'react';
 import { ItemData, UserList } from '../../types';
 import ItemCard from '../../components/Items/ItemCard';
 import { useAuth } from '../../utils/auth';
-
+import { getList } from '../api/v1/lists/[username]/[list_id]';
+import { CreateLinkedListButton } from '../../components/DynamicLists/CreateLinkedList';
+import { useRouter } from 'next/router';
+import DynamicIcon from '../../public/icons/dynamic.png';
+import NextLink from 'next/link';
 type Props = {
-  items?: { [item_id: number]: number };
+  items?: { [index: number | string]: number };
+  indexType?: string;
+  recomended_list?: UserList | null;
 };
 
 const ImportPage = (props: Props) => {
-  const { items } = props;
+  const { items, indexType, recomended_list } = props;
   return (
     <Layout
       SEO={{
-        title: 'Importing Items',
-        description:
-          'Import items from your closet, gallery, or even your safety deposit box directly into your itemdb list easily!',
+        title: 'Checklists and Importing Items',
+        description: 'Import items and create your checklists easily with itemdb!',
         openGraph: {
           images: [
             {
@@ -61,27 +68,17 @@ const ImportPage = (props: Props) => {
         }}
         color="#65855B"
       >
-        <Heading size="lg">Importing Items</Heading>
+        <Heading size="lg">Checklists and Importing Items</Heading>
         <Text as="div" sx={{ a: { color: '#b8e9a9' } }}>
-          Import items from your{' '}
-          <Link href="https://www.neopets.com/closet.phtml" isExternal>
-            closet
-          </Link>
-          ,{' '}
-          <Link href="https://www.neopets.com/gallery/quickremove.phtml" isExternal>
-            gallery
-          </Link>
-          , or even your{' '}
-          <Link href="https://www.neopets.com/safetydeposit.phtml" isExternal>
-            safety deposit box
-          </Link>{' '}
-          directly into your itemdb list easily!
+          Import items and create your checklists easily with itemdb!
         </Text>
       </HeaderCard>
       <Flex flexFlow="column" gap={3} sx={{ a: { color: '#b8e9a9' } }}>
         <Divider />
         {!items && <ImportInfo />}
-        {items && <ImportItems items={items} />}
+        {items && !!indexType && (
+          <ImportItems items={items} indexType={indexType} recomended_list={recomended_list} />
+        )}
       </Flex>
     </Layout>
   );
@@ -90,17 +87,26 @@ const ImportPage = (props: Props) => {
 export default ImportPage;
 
 export async function getServerSideProps(context: any) {
-  const body = await parseBody(context.req, '1mb');
+  const body = await parseBody(context.req, '4mb');
   const items = JSON.parse(body?.itemDataJson ?? 'null');
+  const indexType = body?.indexType ?? 'item_id';
+  const list_id = body?.list_id ?? null;
+
+  const list = list_id ? await getList('official', Number(list_id), null, true, true) : null;
+
   return {
     props: {
       items: items,
+      indexType: indexType,
+      recomended_list: list,
     }, // will be passed to the page component as props
   };
 }
 
 type ImportItemsProps = {
   items: { [item_id: number | string]: number };
+  indexType: string;
+  recomended_list?: UserList | null;
 };
 
 const DefaultImportInfo = {
@@ -117,8 +123,9 @@ const DefaultImportInfo = {
 
 const ImportItems = (props: ImportItemsProps) => {
   const { user, getIdToken } = useAuth();
+  const router = useRouter();
   const toast = useToast();
-  const { items } = props;
+  const { items, indexType, recomended_list } = props;
   const [itemData, setItemData] = useState<{ [identifier: string | number]: ItemData } | null>(
     null
   );
@@ -135,7 +142,7 @@ const ImportItems = (props: ImportItemsProps) => {
 
   const init = async () => {
     const itemRes = await axios.post(`/api/v1/items/many`, {
-      item_id: Object.keys(items),
+      [indexType]: Object.keys(items),
     });
 
     const data: { [identifier: string | number]: ItemData } = itemRes.data;
@@ -179,7 +186,7 @@ const ImportItems = (props: ImportItemsProps) => {
     const toastInfo = toast({
       title: `${importInfo.action === 'add' ? 'Importing' : 'Removing'} Items`,
       description: `Please wait while we ${
-        importInfo.action === 'add' ? 'import' : 'remove'
+        importInfo.action === 'add' ? 'import' : importInfo.action === 'hide' ? 'hide' : 'remove'
       } your items.`,
       status: 'info',
       duration: null,
@@ -227,6 +234,8 @@ const ImportItems = (props: ImportItemsProps) => {
         duration: 10000,
         isClosable: true,
       });
+
+      router.push(`/lists/${user.username}/${importInfo.list.internal_id}`);
     } catch (e) {
       console.error(e);
       toast.update(toastInfo, {
@@ -278,6 +287,14 @@ const ImportItems = (props: ImportItemsProps) => {
     });
   };
 
+  const handleLinkedList = (list: UserList) => {
+    setImportInfo({
+      ...importInfo,
+      action: 'hide',
+      list,
+    });
+  };
+
   return (
     <>
       <Heading size="lg">Importing {Object.values(itemData ?? items).length} Items</Heading>
@@ -292,18 +309,18 @@ const ImportItems = (props: ImportItemsProps) => {
           <Flex flexWrap="wrap" gap={3} justifyContent="center">
             {itemData &&
               Object.entries(itemData)
-                .slice(0, 50)
+                .slice(0, 25)
                 .map((item) => <ItemCard key={item[0]} item={item[1]} quantity={items[item[0]]} />)}
             {!itemData && [...Array(20)].map((_, i) => <ItemCard key={i} />)}
           </Flex>
-          {itemData && Object.entries(itemData).length > 50 && (
-            <Text textAlign="center">...and {Object.entries(itemData).length - 50} more</Text>
+          {itemData && Object.entries(itemData).length > 25 && (
+            <Text textAlign="center">...and {Object.entries(itemData).length - 25} more</Text>
           )}
         </Flex>
         <Flex flex="1" flexFlow="column" gap={3} alignItems={{ base: 'center', md: 'flex-start' }}>
           <FormControl>
             <FormLabel color="gray.300">Target List</FormLabel>
-            <ListSelect onChange={handleListChange} createNew />
+            <ListSelect defaultValue={importInfo.list} onChange={handleListChange} createNew />
           </FormControl>
           <FormControl>
             <FormLabel color="gray.300">Action</FormLabel>
@@ -346,9 +363,14 @@ const ImportItems = (props: ImportItemsProps) => {
               </VStack>
             </CheckboxGroup>
           </FormControl>
-          <Button mt={3} onClick={handleImport} isDisabled={!importInfo.list}>
-            Submit
-          </Button>
+          <HStack mt={3}>
+            <Button onClick={handleImport} isDisabled={!importInfo.list}>
+              Submit
+            </Button>
+            {recomended_list && (
+              <CreateLinkedListButton list={recomended_list} isImport onCreate={handleLinkedList} />
+            )}
+          </HStack>
         </Flex>
       </Flex>
     </>
@@ -400,37 +422,89 @@ const ImportInfo = () => {
           </Text>
         </ListItem>
         <ListItem>
-          Open your{' '}
-          <Link href="https://www.neopets.com/closet.phtml" isExternal>
-            closet
-          </Link>
-          ,{' '}
-          <Link href="https://www.neopets.com/safetydeposit.phtml" isExternal>
-            sdb
-          </Link>
-          , or your{' '}
-          <Link href="https://www.neopets.com/gallery/quickremove.phtml" isExternal>
-            gallery quick remove
-          </Link>{' '}
-          page and click the <ImportButton /> button
+          Open one of the supported pages:{' '}
+          <UnorderedList>
+            <ListItem>
+              <Link href="https://www.neopets.com/closet.phtml" isExternal>
+                Closet
+              </Link>
+            </ListItem>
+            <ListItem>
+              <Link href="https://www.neopets.com/gallery/quickremove.phtml" isExternal>
+                Gallery Quick Remove
+              </Link>
+            </ListItem>
+            <ListItem>
+              <Link href="https://www.neopets.com/safetydeposit.phtml" isExternal>
+                Safety Deposit Box
+              </Link>
+            </ListItem>
+            <ListItem>
+              <Link href="https://www.neopets.com/gourmet_club.phtml" isExternal>
+                <Image
+                  src={DynamicIcon}
+                  alt="lightning bolt"
+                  width={8}
+                  style={{ display: 'inline' }}
+                />{' '}
+                Gourmet Club - Checklist
+              </Link>
+            </ListItem>
+            <ListItem>
+              <Link href="https://www.neopets.com/games/neodeck/index.phtml" isExternal>
+                <Image
+                  src={DynamicIcon}
+                  alt="lightning bolt"
+                  width={8}
+                  style={{ display: 'inline' }}
+                />{' '}
+                NeoDeck - Checklist
+              </Link>
+            </ListItem>
+            <ListItem>
+              <Link
+                href="https://www.neopets.com/stamps.phtml?type=album&page_id=1&owner="
+                isExternal
+              >
+                <Image
+                  src={DynamicIcon}
+                  alt="lightning bolt"
+                  width={8}
+                  style={{ display: 'inline' }}
+                />{' '}
+                Stamp Album - Checklist
+              </Link>
+            </ListItem>
+          </UnorderedList>
+        </ListItem>
+        <ListItem>
+          Click the <ImportButton /> button
         </ListItem>
         <ListItem>
           A new tab will open with a list of items that can be imported. Then you choose your target
-          list and if you want to import or remove the items from that list
+          list and if you want to import, remove or hide the items from that list
+          <Text fontSize="sm">
+            <Image src={DynamicIcon} alt="lightning bolt" width={8} style={{ display: 'inline' }} />{' '}
+            You can also make a{' '}
+            <Link as={NextLink} href={'/articles/checklists-and-dynamic-lists'}>
+              Dynamic Checklist
+            </Link>{' '}
+            based on one of our{' '}
+            <Link as={NextLink} href={'/lists/official'}>
+              Official Lists
+            </Link>
+            !
+          </Text>
         </ListItem>
       </OrderedList>
-      <Heading size="lg" mt={3}>
+      <Heading size="md" mt={3}>
         Is it safe?
       </Heading>
       <Text>
         The script will only send the data of the items you want to import. No data from your
         neopets account <i>(or the page source code)</i> is sent to our servers.
         <br />
-        Don&apos;t trust us? itemdb is{' '}
-        <Box as="span" bg="gray.600" p={1} borderRadius="md">
-          open source
-        </Box>{' '}
-        and you can always take a{' '}
+        Don&apos;t trust us? itemdb is <b>open source</b> and you can always take a{' '}
         <Link href="https://github.com/lucca180/itemdb/" isExternal>
           look at our code
         </Link>
@@ -454,7 +528,7 @@ const ImportButton = () => {
       verticalAlign="middle"
     >
       <Image src={icon} alt="itemdb logo" width={25} quality="100" />
-      <Text fontSize="sm">Import to itemdb list</Text>
+      <Text fontSize="sm">Import to itemdb</Text>
     </Box>
   );
 };

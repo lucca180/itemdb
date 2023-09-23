@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Button, useDisclosure, Text, Box } from '@chakra-ui/react';
+import { Button, useDisclosure, Text, Box, VStack } from '@chakra-ui/react';
 import Dynamic from 'next/dynamic';
 
 import Image from 'next/image';
@@ -11,18 +11,22 @@ const LinkedListModal = Dynamic<LinkedListModalProps>(() => import('./LinkedList
 
 type CreateLinkedListButtonProps = {
   list: UserList;
+  isImport?: boolean;
+  onCreate?: (list: UserList) => void;
 };
 
 export const CreateLinkedListButton = (props: CreateLinkedListButtonProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { list } = props;
+  const { list, isImport, onCreate } = props;
 
   return (
     <>
-      {isOpen && <LinkedListModal isOpen={isOpen} onClose={onClose} list={list} />}
+      {isOpen && (
+        <LinkedListModal isOpen={isOpen} onClose={onClose} list={list} onCreate={onCreate} />
+      )}
 
       <Button
-        variant={['solid', 'ghost']}
+        variant={!isImport ? ['solid', 'ghost'] : 'solid'}
         textAlign={'center'}
         colorScheme="orange"
         onClick={onOpen}
@@ -30,7 +34,10 @@ export const CreateLinkedListButton = (props: CreateLinkedListButtonProps) => {
         <Box display="inline" mr={[0, '5px']}>
           <Image src={DynamicIcon} alt="lightning bolt" width={12} />
         </Box>
-        <Text display={['none', 'inline']}>Create Checklist</Text>
+        <VStack spacing={0} display={!isImport ? ['none', 'inline'] : undefined}>
+          <Text>Create Checklist</Text>
+          {isImport && <Text fontSize={'xs'}>{list.name}</Text>}
+        </VStack>
       </Button>
     </>
   );

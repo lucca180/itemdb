@@ -236,7 +236,7 @@ const ListHeader = (props: ListHeaderProps) => {
                 <Text fontSize="sm">
                   {!!unpricedItems && (
                     <span>
-                      <Icon as={MdWarning} boxSize={'1rem'} mr="0.2rem" verticalAlign="middle" />
+                      <Icon as={MdWarning} boxSize={'1rem'} mr="0.2rem" verticalAlign="text-top" />
                     </span>
                   )}
                   This list costs aprox.{' '}
@@ -252,6 +252,8 @@ const ListHeader = (props: ListHeaderProps) => {
                         width="24px"
                         height="24px"
                         alt="gift box icon"
+                        mt="-7px"
+                        ml="3px"
                       />
                     </>
                   )}{' '}
