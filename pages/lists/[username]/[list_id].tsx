@@ -553,9 +553,11 @@ const ListPage = (props: Props) => {
             >
               <option value="name">Name</option>
               <option value="price">Price</option>
+              <option value="rarity">rarity</option>
               <option value="color">Color</option>
               <option value="custom">Custom</option>
               <option value="addedAt">Added At</option>
+              <option value="item_id">Item ID</option>
             </Select>
             <Select
               minW={{ base: 'none', sm: '150px' }}
@@ -684,6 +686,12 @@ const sortItems = (
   if (sortBy === 'name') {
     if (sortDir === 'asc') return itemA.name.localeCompare(itemB.name);
     else return itemB.name.localeCompare(itemA.name);
+  } else if (sortBy === 'rarity') {
+    if (sortDir === 'asc') {
+      return (itemA.rarity ?? 0) - (itemB.rarity ?? 0);
+    }
+
+    return (itemB.rarity ?? 0) - (itemA.rarity ?? 0);
   } else if (sortBy === 'price') {
     if (sortDir === 'asc')
       return (
@@ -695,6 +703,10 @@ const sortItems = (
         (itemB.price.value ?? 0) - (itemA.price.value ?? 0) ||
         (itemB.owls?.valueMin ?? -1) - (itemA.owls?.valueMin ?? -1)
       );
+  } else if (sortBy === 'item_id') {
+    if (sortDir === 'asc') return (itemA.item_id ?? 0) - (itemB.item_id ?? 0);
+
+    return (itemB.item_id ?? 0) - (itemA.item_id ?? 0);
   } else if (sortBy === 'addedAt') {
     const dateA = new Date(a.addedAt);
     const dateB = new Date(b.addedAt);

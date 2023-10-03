@@ -234,9 +234,11 @@ const CreateListModal = (props: CreateListModalProps) => {
                 <Select variant="filled" name="sortBy" onChange={handleChange} value={list.sortBy}>
                   <option value="name">Name</option>
                   <option value="price">Price</option>
+                  <option value="rarity">Rarity</option>
                   <option value="color">Color</option>
                   <option value="custom">Custom</option>
                   <option value="addedAt">Added At</option>
+                  <option value="item_id">Item ID</option>
                 </Select>
                 <FormHelperText>
                   {list.sortBy === 'custom' &&
