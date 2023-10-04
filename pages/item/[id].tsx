@@ -43,6 +43,7 @@ import ItemParent from '../../components/Items/ItemParent';
 import dynamic from 'next/dynamic';
 import { getItemPrices } from '../api/v1/items/[id_name]/prices';
 import { getItemTrades } from '../api/v1/trades';
+import FF_PointsCard from '../../components/Hubs/FaerieFest2023/PointsCard';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -252,6 +253,7 @@ const ItemPage = (props: ItemPageProps) => {
           <Flex flexFlow="column" display={{ base: 'none', md: 'flex' }} gap={5}>
             <AddToListSelect item={item} />
             <FindAtCard item={item} />
+            <FF_PointsCard item={item} />
           </Flex>
 
           <ItemInfoCard item={item} />

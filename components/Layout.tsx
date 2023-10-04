@@ -35,6 +35,8 @@ import { SearchBar } from './Search/SearchBar';
 import ClientOnly from './Utils/ClientOnly';
 import Color from 'color';
 
+import FaerieFestLogo from '../public/hub/faeriefest2023-logo.png';
+
 type Props = {
   children?: ReactNode;
   loading?: boolean;
@@ -46,9 +48,15 @@ const Layout = (props: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { user, signout } = useAuth();
   const [isLargerThanMD] = useMediaQuery('(min-width: 48em)');
+  const [shouldShowFaerie, setShouldShowFaerie] = React.useState(false);
 
   const color = Color('#4A5568');
   const rgb = color.rgb().round().array();
+
+  useEffect(() => {
+    const hideFaerieStorage = localStorage.getItem('hideFaerieFest2023');
+    if (!hideFaerieStorage) setShouldShowFaerie(true);
+  }, []);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -66,10 +74,55 @@ const Layout = (props: Props) => {
     router.push(`/search?s=${encodeURIComponent(search)}${params}`);
   };
 
+  const hideFaerie = () => {
+    localStorage.setItem('hideFaerieFest2023', 'true');
+    setShouldShowFaerie(false);
+  };
+
   return (
     <>
       <NextSeo {...props.SEO} />
       <LoginModal isOpen={isOpen} onClose={onClose} />
+      {shouldShowFaerie && (
+        <Flex h="38px" bg={'#ddaadf'}>
+          <Flex
+            w="full"
+            maxW="8xl"
+            marginX="auto"
+            gap={{ base: 2, md: 4 }}
+            alignItems="center"
+            justifyContent={['center', 'flex-start']}
+            px={3}
+          >
+            <Link href="/hub/faeriefestival2023">
+              <Image
+                as={NextImage}
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                //@ts-ignore
+                src={FaerieFestLogo}
+                height="35px"
+                width={'auto'}
+                quality={100}
+                alt="Faeries Festival 2023 logo"
+                dropShadow="lg"
+              />
+            </Link>
+            <Link href="/hub/faeriefestival2023">
+              <Text
+                color="blackAlpha.800"
+                lineHeight={'15px'}
+                fontSize={['sm', 'md']}
+                textAlign={['center', 'left']}
+              >
+                Check out our Faerie Festival Hub
+              </Text>
+            </Link>
+            <Text color="blackAlpha.800" marginLeft={'auto'} onClick={hideFaerie} cursor="pointer">
+              X
+            </Text>
+          </Flex>
+        </Flex>
+      )}
       <Flex flexFlow="column" minH="100vh">
         <Flex as="header" w="full" maxW="8xl" marginX="auto" gap={{ base: 2, md: 4 }} px={4} py={6}>
           <Flex as={Link} href="/" flex={'0 0 auto'}>

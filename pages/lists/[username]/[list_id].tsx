@@ -35,6 +35,7 @@ import { CreateListModalProps } from '../../../components/Modal/CreateListModal'
 import dynamic from 'next/dynamic';
 import ListHeader from '../../../components/UserLists/ListHeader';
 import { CreateLinkedListButton } from '../../../components/DynamicLists/CreateLinkedList';
+import { rarityToCCPoints } from '../../../utils/utils';
 
 const CreateListModal = dynamic<CreateListModalProps>(
   () => import('../../../components/Modal/CreateListModal')
@@ -553,10 +554,11 @@ const ListPage = (props: Props) => {
             >
               <option value="name">Name</option>
               <option value="price">Price</option>
-              <option value="rarity">rarity</option>
+              <option value="rarity">Rarity</option>
               <option value="color">Color</option>
               <option value="custom">Custom</option>
               <option value="addedAt">Added At</option>
+              <option value="faerieFest">Recycling Points</option>
               <option value="item_id">Item ID</option>
             </Select>
             <Select
@@ -724,6 +726,12 @@ const sortItems = (
   } else if (sortBy === 'custom') {
     if (sortDir === 'asc') return (a.order ?? -1) - (b.order ?? -1);
     else return (b.order ?? -1) - (a.order ?? -1);
+  } else if (sortBy === 'faerieFest') {
+    const ffA = rarityToCCPoints(itemA);
+    const ffB = rarityToCCPoints(itemB);
+
+    if (sortDir === 'asc') return ffA - ffB;
+    else return ffB - ffA;
   }
 
   return 0;

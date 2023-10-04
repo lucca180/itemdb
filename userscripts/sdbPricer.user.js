@@ -1,6 +1,6 @@
   // ==UserScript==
   // @name         itemdb - Safety Deposit Box Pricer
-  // @version      1.1.0
+  // @version      1.2.0
   // @author       itemdb
   // @namespace    itemdb
   // @description  Shows the market price for your sdb items
@@ -73,9 +73,31 @@
         priceStr = `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">${intl.format(item.price.value)} NP</a>`;
       }
       
+      if(item && item.rarity && (item.rarity !== 180 && item.rarity !== 500)) {
+        priceStr += `<br/><small><i>${item.internal_id === 289 ? 1 : rarityToCCPoints(item.rarity)}  Point${rarityToCCPoints(item.rarity) > 1 && item.internal_id !== 289 ? 's' : ''}</i></small>`
+      }
+
+      if(item && !item.rarity){
+        priceStr += `<br/><small><a href="https://itemdb.com.br/contribute" target="_blank"><i>Unknown Rarity<br/>Learn how to Help</i></a></small>`
+      } 
+      else if (item.isMissingInfo){
+        priceStr += `<br/><small><a href="https://itemdb.com.br/contribute" target="_blank"><i>We need some info about this item<br/>Learn how to Help</i></a></small>`
+
+      }
 
       tds.eq( -2 ).before(`<td align="center" noWrap>${priceStr}</td>`);
     })
   }
 
   fetchPriceData();
+
+  function rarityToCCPoints(rarity) {
+    if (rarity <= 79 || rarity === 101) return 1;
+    if (rarity <= 89) return 2;
+    if (rarity <= 97) return 6;
+    if (rarity <= 100) return 8;
+    if (rarity <= 179) return 4;
+    if (rarity === 200) return 15;
+  
+    return 0;
+  }

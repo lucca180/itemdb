@@ -238,6 +238,7 @@ const CreateListModal = (props: CreateListModalProps) => {
                   <option value="color">Color</option>
                   <option value="custom">Custom</option>
                   <option value="addedAt">Added At</option>
+                  <option value="faerieFest">Recycling Points</option>
                   <option value="item_id">Item ID</option>
                 </Select>
                 <FormHelperText>
