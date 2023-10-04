@@ -393,9 +393,8 @@ export function rarityToCCPoints(item: ItemData) {
   if (rarity <= 79 || rarity === 101) return 1;
   if (rarity <= 89) return 2;
   if (rarity <= 97) return 6;
-  if (rarity <= 100) return 8;
-  if (rarity <= 179) return 4;
-  if (rarity === 200) return 15;
+  if (rarity <= 100) return 4;
+  if (rarity <= 179) return 8;
 
   return 0;
 }

@@ -5,6 +5,7 @@ import { ItemData } from '../../types';
 import NextLink from 'next/link';
 import { AiFillInfoCircle, AiFillWarning } from 'react-icons/ai';
 import ItemCtxMenu, { CtxTrigger } from '../Modal/ItemCtxMenu';
+import { rarityToCCPoints } from '../../utils/utils';
 
 export type ItemProps = {
   item?: ItemData;
@@ -19,6 +20,7 @@ export type ItemProps = {
   small?: boolean;
   odds?: number;
   isLE?: boolean;
+  sortType?: string;
 };
 
 const intl = new Intl.NumberFormat();
@@ -35,6 +37,7 @@ const ItemCardBase = (props: ItemProps) => {
     odds,
     isLE,
     onListAction,
+    sortType,
   } = props;
   const [isMobile] = useMediaQuery('(hover: none)');
 
@@ -171,6 +174,16 @@ const ItemCardBase = (props: ItemProps) => {
             {(quantity ?? 0) > 1 && (
               <Text fontSize={'xs'} fontWeight="bold">
                 {quantity}x
+              </Text>
+            )}
+
+            {['faerieFest', 'item_id', 'rarity'].includes(sortType ?? '') && (
+              <Text fontSize={'xs'} fontWeight="bold">
+                {sortType === 'rarity' && item.rarity && `r${item.rarity}`}
+                {sortType === 'item_id' && item.item_id && `#${item.item_id}`}
+                {sortType === 'faerieFest' &&
+                  !!rarityToCCPoints(item) &&
+                  `${rarityToCCPoints(item)} point${rarityToCCPoints(item) > 1 ? 's' : ''}`}
               </Text>
             )}
           </Box>

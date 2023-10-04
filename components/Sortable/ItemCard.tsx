@@ -25,6 +25,7 @@ type Props = {
   itemInfo?: ListItemInfo;
   editMode?: boolean;
   selected?: boolean;
+  sortType?: string;
   onChange?: (
     id: number,
     value: number,
@@ -36,11 +37,11 @@ type Props = {
 
 function SortableItem1(props: Props) {
   const ref = useRef<Element | null | undefined>();
-  const { id, item, editMode, isTrading, selected } = props;
+  const { id, item, editMode, isTrading, selected, sortType } = props;
   const [itemInfo, setItemInfo] = useState<ListItemInfo | undefined>(props.itemInfo);
   const [isSelected, setSelected] = useState<boolean>(selected ?? false);
   const { ref: inViewRef, inView } = useInView();
-
+  console.log(sortType);
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: props.id,
   });
@@ -95,7 +96,7 @@ function SortableItem1(props: Props) {
     return (
       <VStack mb={3} ref={setRefs} style={style} {...attributes} {...listeners}>
         <Box style={{ height: '100%' }}>
-          <ItemCard item={item} />
+          <ItemCard item={item} sortType={sortType} />
         </Box>
       </VStack>
     );
@@ -112,6 +113,7 @@ function SortableItem1(props: Props) {
       <Box onClick={(e) => onClick(e)} style={{ height: '100%' }}>
         <ItemCard
           item={item}
+          sortType={sortType}
           disableLink={editMode}
           onSelect={() => onClick(null, true)}
           onListAction={props.onListAction}

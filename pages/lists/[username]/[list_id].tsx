@@ -634,6 +634,7 @@ const ListPage = (props: Props) => {
         <Flex gap={3} px={3} flexWrap="wrap" justifyContent="center">
           <SortableArea
             list={list}
+            sortType={sortInfo.sortBy}
             onClick={selectItem}
             ids={itemInfoIds.filter((a) => !itemInfo[a].isHighlight)}
             itemInfo={itemInfo}
@@ -730,7 +731,7 @@ const sortItems = (
     const ffA = rarityToCCPoints(itemA);
     const ffB = rarityToCCPoints(itemB);
 
-    if (sortDir === 'asc') return ffA - ffB;
+    if (sortDir === 'asc') return (ffA || 1000) - (ffB || 1000);
     else return ffB - ffA;
   }
 

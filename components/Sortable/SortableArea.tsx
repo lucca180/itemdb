@@ -20,6 +20,7 @@ export type SortableAreaProps = {
   list?: UserList;
   itemInfo: { [id: string]: ListItemInfo };
   items: { [id: string]: ItemData };
+  sortType?: string;
   itemSelect?: number[];
   editMode?: boolean;
   activateSort?: boolean;
@@ -70,6 +71,7 @@ export default function SortableArea(props: SortableAreaProps) {
           <SortableItem
             key={id}
             id={id}
+            sortType={props.sortType}
             onClick={props.onClick}
             itemInfo={itemInfo[id]}
             onChange={debouncedOnChange}
