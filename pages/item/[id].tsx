@@ -281,6 +281,7 @@ const ItemPage = (props: ItemPageProps) => {
             <Flex flexFlow="column" gap={{ base: 4, md: 6 }} display={{ base: 'flex', md: 'none' }}>
               <AddToListSelect item={item} />
               <FindAtCard item={item} />
+              <FF_PointsCard item={item} />
             </Flex>
 
             {!item.isNC && <ItemPriceCard item={item} lastSeen={seenStats} prices={prices ?? []} />}

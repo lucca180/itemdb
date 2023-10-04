@@ -11,8 +11,8 @@ const FaeriesFest2023 = () => {
   return (
     <Layout
       SEO={{
-        title: 'Faeries Festival 2023 Hub',
-        description: 'Find the best items to recycle for the Faeries Festival 2023 event!',
+        title: 'Faerie Festival 2023 Hub',
+        description: 'Find the best items to recycle for the Faerie Festival 2023 event!',
         themeColor: '#9b65c0',
         openGraph: {
           images: [

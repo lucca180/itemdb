@@ -58,7 +58,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       name: name,
       slug: slug,
     },
-    3000
+    10000
   );
 
   return res.json(items);
