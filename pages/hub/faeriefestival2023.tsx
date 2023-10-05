@@ -74,20 +74,12 @@ const FaeriesFest2023 = () => {
         </Center>
         <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
           <SearchCard
-            title="15 points"
-            description="All items that give you 15 points to spend at the Prize Shop"
-            link="/search?s=&rarity[]=200&rarity[]=200"
-            color="#B4FCF4"
-            coverURL="https://images.neopets.com/items/babypaintbrush.gif"
-            footerText="r200"
-          />
-          <SearchCard
             title="8 points"
             description="All items that give you 8 points to spend at the Prize Shop"
-            link="/search?s=&rarity[]=98&rarity[]=100"
-            color="#515C66"
-            coverURL="https://images.neopets.com/items/toy_faerie_grey.gif"
-            footerText="r98 - r100"
+            link="/search?s=&rarity[]=102&rarity[]=179"
+            color="#40A464"
+            coverURL="https://images.neopets.com/items/om_peppers2.gif"
+            footerText="r102 - r179"
           />
           <SearchCard
             title="6 points"
@@ -100,10 +92,10 @@ const FaeriesFest2023 = () => {
           <SearchCard
             title="4 points"
             description="All items that give you 4 points to spend at the Prize Shop"
-            link="/search?s=&rarity[]=102&rarity[]=179"
-            color="#40A464"
-            coverURL="https://images.neopets.com/items/om_peppers2.gif"
-            footerText="r102 - r179"
+            link="/search?s=&rarity[]=98&rarity[]=100"
+            color="#515C66"
+            coverURL="https://images.neopets.com/items/toy_faerie_grey.gif"
+            footerText="r98 - r100"
           />
           <SearchCard
             title="2 points"
