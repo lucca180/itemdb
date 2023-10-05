@@ -7760,6 +7760,11 @@ react-transition-group@^4.4.5:
     loose-envify "^1.4.0"
     prop-types "^15.6.2"
 
+react-viewport-list@^7.1.1:
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/react-viewport-list/-/react-viewport-list-7.1.1.tgz#2f36ad1db8124e8a960bc006b95228b696cc81d6"
+  integrity sha512-O3gxykg3DgpcyYH+/X2kFwWFaZjckJ0FK3UBb4vFhZe+CsGLcX8OVJb0VSYI+IupEuQ9pl8dvJak8JRkIuvNjw==
+
 react@^18.2.0:
   version "18.2.0"
   resolved "https://registry.yarnpkg.com/react/-/react-18.2.0.tgz#555bd98592883255fa00de14f1151a917b5d77d5"

@@ -41,7 +41,7 @@ function SortableItem1(props: Props) {
   const [itemInfo, setItemInfo] = useState<ListItemInfo | undefined>(props.itemInfo);
   const [isSelected, setSelected] = useState<boolean>(selected ?? false);
   const { ref: inViewRef, inView } = useInView();
-  console.log(sortType);
+
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: props.id,
   });

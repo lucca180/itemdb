@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -14,6 +14,8 @@ import { arrayMove, SortableContext, rectSortingStrategy } from '@dnd-kit/sortab
 import { ListItemInfo, ItemData, UserList } from '../../types';
 import { SortableItem } from './ItemCard';
 import debounce from 'lodash/debounce';
+import { ViewportList } from 'react-viewport-list';
+import { Flex } from '@chakra-ui/react';
 
 export type SortableAreaProps = {
   ids: number[];
@@ -59,6 +61,18 @@ export default function SortableArea(props: SortableAreaProps) {
     [props.onChange]
   );
 
+  // create groups of 8 items
+  const groupedIds = useMemo(
+    () =>
+      ids.reduce((acc, cur, i) => {
+        const groupIndex = Math.floor(i / 8);
+        if (!acc[groupIndex]) acc[groupIndex] = [];
+        acc[groupIndex].push(cur);
+        return acc;
+      }, [] as number[][]),
+    [ids]
+  );
+
   return (
     <DndContext
       sensors={sensors}
@@ -67,21 +81,27 @@ export default function SortableArea(props: SortableAreaProps) {
       onDragStart={handleDragStart}
     >
       <SortableContext items={ids} disabled={!activateSort} strategy={rectSortingStrategy}>
-        {ids.map((id) => (
-          <SortableItem
-            key={id}
-            id={id}
-            sortType={props.sortType}
-            onClick={props.onClick}
-            itemInfo={itemInfo[id]}
-            onChange={debouncedOnChange}
-            isTrading={list?.purpose === 'trading'}
-            selected={props.itemSelect?.includes(id)}
-            editMode={editMode && !activateSort}
-            onListAction={props.onListAction}
-            item={items[itemInfo[id]?.item_iid]}
-          />
-        ))}
+        <ViewportList items={groupedIds} viewportRef={null} initialPrerender={4} overscan={2}>
+          {(group, index) => (
+            <Flex gap={3} key={index} justifyContent="center" flexWrap={'wrap'}>
+              {group.map((id) => (
+                <SortableItem
+                  key={id}
+                  id={id}
+                  sortType={props.sortType}
+                  onClick={props.onClick}
+                  itemInfo={itemInfo[id]}
+                  onChange={debouncedOnChange}
+                  isTrading={list?.purpose === 'trading'}
+                  selected={props.itemSelect?.includes(id)}
+                  editMode={editMode && !activateSort}
+                  onListAction={props.onListAction}
+                  item={items[itemInfo[id]?.item_iid]}
+                />
+              ))}
+            </Flex>
+          )}
+        </ViewportList>
       </SortableContext>
       <DragOverlay>
         {activeId ? <SortableItem id={activeId} item={items[itemInfo[activeId].item_iid]} /> : null}

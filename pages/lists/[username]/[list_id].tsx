@@ -631,7 +631,7 @@ const ListPage = (props: Props) => {
             </Flex>
           </Flex>
         )}
-        <Flex gap={3} px={3} flexWrap="wrap" justifyContent="center">
+        <Flex gap={3} px={3} flexFlow="column">
           <SortableArea
             list={list}
             sortType={sortInfo.sortBy}
