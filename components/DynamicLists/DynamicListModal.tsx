@@ -134,7 +134,8 @@ const DynamicListModal = (props: DynamicListModalProps) => {
         {!error && !loading && (
           <ModalBody>
             <Text fontSize="sm" color="gray.400">
-              Dynamic Lists are special lists that are automatically updated based a search query.
+              Dynamic Lists are special lists that are automatically updated (once per hour) based a
+              search query.
             </Text>
             <Alert size="sm" status="warning" mt={5} borderRadius={'md'}>
               <AlertIcon />

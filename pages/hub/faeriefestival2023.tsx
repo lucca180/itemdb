@@ -132,7 +132,7 @@ const FaeriesFest2023 = () => {
           <SearchCard
             title="SDB Importer"
             description="Import all your sdb items to itemdb and sort them by Recycling Points to find the best items to recycle"
-            link="/articles/userscripts"
+            link="/lists/import"
             color="#6A7895"
             coverURL="https://images.neopets.com/items/bak_chained_vault.gif"
             footerText="Userscript"

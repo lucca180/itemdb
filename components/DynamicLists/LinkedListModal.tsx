@@ -133,7 +133,8 @@ const LinkedListModal = (props: LinkedListModalProps) => {
         {!error && !loading && (
           <ModalBody>
             <Text fontSize="sm" color="gray.400">
-              Linked Lists are special lists that are automatically updated based on another list.
+              Linked Lists are special lists that are automatically updated (once per hour) based on
+              another list.
             </Text>
             <Alert size="sm" status="warning" mt={5} borderRadius={'md'}>
               <AlertIcon />

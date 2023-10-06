@@ -71,14 +71,22 @@ export const SearchBar = (props: Props) => {
   const submit = (e: any) => {
     e.preventDefault();
 
+    const queryStrings = qs.parse(router.asPath, {
+      ignoreQueryPrefix: true,
+    });
+    const queryFilters = getFiltersDiff(queryStrings);
+
     const [filters, query] = parseFilters(search);
 
-    const params = getFiltersDiff({ ...filters });
+    const params = getFiltersDiff(filters);
 
-    let paramsString = qs.stringify(params, {
-      arrayFormat: 'brackets',
-      encode: false,
-    });
+    let paramsString = qs.stringify(
+      { ...queryFilters, ...params },
+      {
+        arrayFormat: 'brackets',
+        encode: false,
+      }
+    );
 
     paramsString = paramsString ? '&' + paramsString : '';
 

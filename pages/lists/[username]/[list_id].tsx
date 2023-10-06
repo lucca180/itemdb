@@ -125,6 +125,7 @@ const ListPage = (props: Props) => {
       const listData: UserList = res.data;
 
       if (!listData) throw 'List does not exist';
+      setList(listData);
 
       if (listData.official) router.replace('/lists/official/' + listData.internal_id);
 
@@ -244,6 +245,7 @@ const ListPage = (props: Props) => {
 
   const selectItem = useCallback(
     (infoId: number, force = false) => {
+      if (!isOwner) return;
       if (!isEdit && !force) return;
 
       if (force) setEdit(true);
@@ -254,7 +256,7 @@ const ListPage = (props: Props) => {
         setItemSelect([...itemSelect, infoId]);
       }
     },
-    [isEdit, itemSelect]
+    [isEdit, itemSelect, isOwner]
   );
 
   const handleSelectCheckbox = useCallback(
@@ -486,7 +488,7 @@ const ListPage = (props: Props) => {
           justifyContent={'space-between'}
           alignItems="center"
           gap={3}
-          flexFlow={{ base: 'column-reverse', md: 'row' }}
+          flexFlow={{ base: 'column-reverse', lg: 'row' }}
         >
           {!isEdit && (
             <HStack>
