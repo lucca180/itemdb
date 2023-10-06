@@ -14,6 +14,7 @@ import {
   FormLabel,
   Switch,
   useToast,
+  Spinner,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -56,17 +57,22 @@ const ListPage = (props: Props) => {
   const toast = useToast();
 
   const { user, getIdToken, authLoading } = useAuth();
+
   const [list, setList] = useState<UserList>(props.list);
+
   const [openCreateModal, setOpenCreateModal] = useState<boolean>(false);
 
   const [itemInfoIds, setItemInfoIds] = useState<number[]>([]);
+
   const [itemInfo, setItemInfo] = useState<{
     [itemInfoId: number]: ExtendedListItemInfo;
   }>({});
+
   const [sortInfo, setSortInfo] = useState<{
     sortBy: string;
     sortDir: string;
   }>({ sortBy: 'name', sortDir: 'asc' });
+
   const [items, setItems] = useState<{ [item_iid: string]: ItemData }>({});
   const [itemSelect, setItemSelect] = useState<number[]>([]);
 
@@ -107,19 +113,16 @@ const ListPage = (props: Props) => {
     setLoading(true);
     toast.closeAll();
     try {
-      let res;
-      if (force) {
-        const { username, list_id } = router.query;
-        const token = await getIdToken();
+      const { username, list_id } = router.query;
+      const token = await getIdToken();
 
-        res = await axios.get(`/api/v1/lists/${username}/${list_id}`, {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        });
-      }
+      const res = await axios.get(`/api/v1/lists/${username}/${list_id}`, {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      });
 
-      const listData: UserList = res?.data ?? list;
+      const listData: UserList = res.data;
 
       if (!listData) throw 'List does not exist';
 
@@ -399,8 +402,12 @@ const ListPage = (props: Props) => {
             ],
           },
         }}
-        loading
-      />
+      >
+        <ListHeader list={list} isOwner={false} color={color} items={{}} itemInfo={{}} />
+        <Center mt={5} gap={6}>
+          <Spinner size={'lg'} color={color.hex()} />
+        </Center>
+      </Layout>
     );
 
   return (
@@ -631,7 +638,7 @@ const ListPage = (props: Props) => {
             </Flex>
           </Flex>
         )}
-        <Flex gap={3} px={3} flexFlow="column">
+        <Flex px={[1, 3]} flexFlow="column">
           <SortableArea
             list={list}
             sortType={sortInfo.sortBy}
@@ -664,7 +671,7 @@ export async function getServerSideProps(context: NextPageContext) {
   if (!username || !list_id || Array.isArray(username) || Array.isArray(list_id))
     return { notFound: true };
 
-  const list = await getList(username, parseInt(list_id), token, username === 'official');
+  const list = await getList(username, parseInt(list_id), token, username === 'official', true);
 
   if (!list) return { notFound: true };
 

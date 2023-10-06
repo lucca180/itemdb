@@ -31,7 +31,7 @@ type ListHeaderProps = {
   items: { [item_iid: string]: ItemData };
   itemInfo: { [itemInfoId: number]: ListItemInfo & { hasChanged?: boolean } };
   isOwner: boolean;
-  setOpenCreateModal: (value: boolean) => void;
+  setOpenCreateModal?: (value: boolean) => void;
 };
 
 const intl = new Intl.NumberFormat();
@@ -124,7 +124,7 @@ const ListHeader = (props: ListHeaderProps) => {
               variant="solid"
               mt={3}
               colorScheme={color.isLight() ? 'blackAlpha' : 'gray'}
-              onClick={() => setOpenCreateModal(true)}
+              onClick={() => setOpenCreateModal?.(true)}
               size="sm"
             >
               Edit list info

@@ -37,7 +37,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         await file.setMetadata({ cacheControl: 'public, max-age=2592000' });
       }
 
-      return res.redirect(file.publicUrl());
+      return res.redirect(301, file.publicUrl());
     } else {
       const img = await axios.get(`https://images.neopets.com/items/${img_id}.gif`, {
         responseType: 'arraybuffer',

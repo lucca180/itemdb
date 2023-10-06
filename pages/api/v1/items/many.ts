@@ -6,6 +6,12 @@ import { ItemData } from '../../../../types';
 import { Prisma } from '@prisma/client';
 import qs from 'qs';
 
+export const config = {
+  api: {
+    responseLimit: false,
+  },
+};
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST');

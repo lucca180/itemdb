@@ -83,7 +83,7 @@ export default function SortableArea(props: SortableAreaProps) {
       <SortableContext items={ids} disabled={!activateSort} strategy={rectSortingStrategy}>
         <ViewportList items={groupedIds} viewportRef={null} initialPrerender={4} overscan={2}>
           {(group, index) => (
-            <Flex gap={3} key={index} justifyContent="center" flexWrap={'wrap'}>
+            <Flex gap={[1, 3]} key={index} justifyContent="center" flexWrap={'wrap'}>
               {group.map((id) => (
                 <SortableItem
                   key={id}
