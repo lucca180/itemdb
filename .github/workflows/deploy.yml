@@ -23,7 +23,7 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             yarn
             npx prisma migrate deploy
-            # pm2 stop ecosystem.config.js
+            pm2 stop ecosystem.config.js
             BUILD_DIR=temp yarn build || exit
             if [ ! -d "temp" ]; then
               echo '\033[31m temp directory does not exist!\033[0m'  

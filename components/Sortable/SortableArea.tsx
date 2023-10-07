@@ -64,13 +64,18 @@ export default function SortableArea(props: SortableAreaProps) {
   // create groups of 8 items
   const groupedIds = useMemo(
     () =>
-      ids.reduce((acc, cur, i) => {
-        const groupIndex = Math.floor(i / 8);
-        if (!acc[groupIndex]) acc[groupIndex] = [];
-        acc[groupIndex].push(cur);
-        return acc;
-      }, [] as number[][]),
-    [ids]
+      ids
+        .filter((i) => {
+          const item = itemInfo[i];
+          return !item.isHidden || editMode;
+        })
+        .reduce((acc, cur, i) => {
+          const groupIndex = Math.floor(i / 8);
+          if (!acc[groupIndex]) acc[groupIndex] = [];
+          acc[groupIndex].push(cur);
+          return acc;
+        }, [] as number[][]),
+    [ids, editMode]
   );
 
   return (
