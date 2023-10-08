@@ -160,11 +160,13 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
       where: {
         OR: [
           {
-            trade: {
-              hash: tradeHash,
-              processed: false,
-              priced: false,
-            },
+            trade: tradeHash
+              ? {
+                  hash: tradeHash,
+                  processed: false,
+                  priced: false,
+                }
+              : {},
           },
           {
             trade_id: trade.trade_id,
@@ -175,7 +177,7 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
     ...updateItems,
   ]);
 
-  const tradesIDs = itemUpdate.map((x) => x.trade_id);
+  const tradesIDs = [...new Set(itemUpdate.map((x) => x.trade_id))];
 
   const tradeUpdate = prisma.trades.updateMany({
     where: {
