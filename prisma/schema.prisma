@@ -128,6 +128,9 @@ model ItemColor {
   type       String
   population Float
 
+  isMaxPopulation Boolean @default(false)
+
+  @@index([image_id, isMaxPopulation])
   @@unique([image_id, type])
   @@index([lab_l, lab_a, lab_b])
   @@index([image_id, lab_l, lab_a, lab_b])
@@ -171,7 +174,7 @@ model PriceProcess {
   addedAt     DateTime @default(now())
   ip_address  String?
   language    String
-
+  
   hash      String? @unique
   neo_id    Int?
   processed Boolean @default(false)
@@ -203,6 +206,9 @@ model Trades {
 
   processed Boolean @default(false)
   priced    Boolean @default(false)
+
+  hash      String? 
+  tradesUpdated String? @db.Text
 
   items TradeItems[]
 }
@@ -328,12 +334,12 @@ model UserList {
   sortDir String @default("asc")
   order   Int?
 
-  dynamicQuery    Json?
+  dynamicQuery Json?
 
   dynamicType DynamicListType?
 
-  linkedListId   Int?
-  linkedList     UserList? @relation("linkedLists", fields: [linkedListId], references: [internal_id], onDelete: SetNull, onUpdate: Cascade)
+  linkedListId Int?
+  linkedList   UserList? @relation("linkedLists", fields: [linkedListId], references: [internal_id], onDelete: SetNull, onUpdate: Cascade)
 
   lastSync DateTime?
 

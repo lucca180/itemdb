@@ -81,6 +81,7 @@ const getTradeData = async (name: string) => {
       trade_id: p.trade_id,
       owner: p.owner,
       priced: p.priced,
+      hash: p.hash,
       items: p.items.map((i) => ({
         internal_id: i.internal_id,
         trade_id: i.trade_id,

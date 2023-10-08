@@ -107,6 +107,7 @@ export type TradeData = {
   addedAt: string;
   processed: boolean;
   priced: boolean;
+  hash: string | null;
   items: {
     internal_id: number;
     trade_id: number;

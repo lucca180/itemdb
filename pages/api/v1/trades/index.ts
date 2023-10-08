@@ -7,6 +7,7 @@ import { CheckAuth } from '../../../../utils/googleCloud';
 import { checkHash } from '../../../../utils/hash';
 import { Prisma } from '.prisma/client';
 import { stringHasNumber } from '../../../../utils/utils';
+import hash from 'object-hash';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
@@ -74,6 +75,11 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       itemList.push(x);
     }
 
+    const tradeHash = hash({
+      wishlist: lot.wishList,
+      items: itemList,
+    });
+
     // its not possible to use createMany with multiple related records
     // so we have to try to create the trade and then create the items
     const prom = prisma.trades.create({
@@ -84,6 +90,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         ip_address: requestIp.getClientIp(req),
         priced: lot.wishList === 'none' || !stringHasNumber(lot.wishList),
         processed: lot.wishList === 'none' || !stringHasNumber(lot.wishList),
+        hash: tradeHash,
         items: {
           create: [...itemList],
         },
@@ -114,26 +121,97 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) => {
-  const updateTrade = prisma.trades.update({
-    where: { trade_id: trade.trade_id },
-    data: {
-      priced: true,
-      processed: true,
+  const tradeHash = trade.hash;
+  const originalTrade = await prisma.trades.findFirst({
+    where: {
+      trade_id: trade.trade_id,
     },
   });
 
+  const isUpdate = !!originalTrade?.processed;
+
   const updateItems = trade.items.map((item) => {
-    return prisma.tradeItems.update({
-      where: { internal_id: item.internal_id },
+    return prisma.tradeItems.updateMany({
+      where: {
+        OR: [
+          {
+            internal_id: item.internal_id,
+          },
+          tradeHash
+            ? {
+                order: item.order,
+                trade: {
+                  hash: tradeHash,
+                  processed: false,
+                  priced: false,
+                },
+              }
+            : {},
+        ],
+      },
       data: {
         price: item.price,
       },
     });
   });
 
+  const [itemUpdate] = await prisma.$transaction([
+    prisma.tradeItems.findMany({
+      where: {
+        OR: [
+          {
+            trade: {
+              hash: tradeHash,
+              processed: false,
+              priced: false,
+            },
+          },
+          {
+            trade_id: trade.trade_id,
+          },
+        ],
+      },
+    }),
+    ...updateItems,
+  ]);
+
+  const tradesIDs = itemUpdate.map((x) => x.trade_id);
+
+  const tradeUpdate = prisma.trades.updateMany({
+    where: {
+      OR: [
+        {
+          trade_id: trade.trade_id,
+        },
+        tradeHash
+          ? {
+              hash: tradeHash,
+              priced: false,
+              processed: false,
+            }
+          : {},
+      ],
+    },
+    data: {
+      priced: true,
+      tradesUpdated: tradesIDs.toString(),
+      processed: true,
+    },
+  });
+
+  if (isUpdate) {
+    const ids = originalTrade.tradesUpdated?.split(',').map((x) => Number(x)) ?? [];
+    await prisma.priceProcess.deleteMany({
+      where: {
+        neo_id: { in: ids },
+        type: 'trade',
+      },
+    });
+  }
+
   const addPriceProcess: Prisma.PriceProcessCreateInput[] = [];
 
-  for (const item of trade.items.filter((x) => x.price)) {
+  for (const item of itemUpdate.filter((x) => x.price)) {
     if (!item.image_id || !item.name) throw 'processTradePrice: Missing image_id or name';
 
     const dbItem = await prisma.items.findFirst({
@@ -149,6 +227,7 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
       image: item.image,
       image_id: item.image_id,
       item_id: dbItem ? dbItem.item_id : undefined,
+      neo_id: item.trade_id,
       type: 'trade',
       owner: trade.owner,
       addedAt: trade.addedAt,
@@ -170,7 +249,7 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
     },
   });
 
-  return await prisma.$transaction([updateTrade, ...updateItems, priceProcess, priceHistory]);
+  return await prisma.$transaction([tradeUpdate, priceProcess, priceHistory]);
 };
 
 type getItemTradesArgs = {
@@ -203,6 +282,7 @@ export const getItemTrades = async (args: getItemTradesArgs) => {
       addedAt: t.addedAt.toJSON(),
       processed: t.processed,
       priced: t.priced,
+      hash: t.hash,
       items: t.items.map((i) => {
         return {
           internal_id: i.internal_id,

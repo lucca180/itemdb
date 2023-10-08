@@ -30,6 +30,7 @@ import ListSelect from '../components/UserLists/ListSelect';
 import { useAuth } from '../utils/auth';
 import { defaultFilters } from '../utils/parseFilters';
 import { CreateDynamicListButton } from '../components/DynamicLists/CreateButton';
+import Color from 'color';
 
 const Axios = axios.create({
   baseURL: '/api/v1/',
@@ -50,6 +51,9 @@ const SearchPage = () => {
   const [isLargerThanLG] = useMediaQuery('(min-width: 62em)', { fallback: true });
   const { isOpen, onOpen, onClose } = useDisclosure();
   const router = useRouter();
+
+  const color = Color('#4A5568');
+  const rgb = color.rgb().round().array();
 
   useEffect(() => {
     if (router.isReady) {
@@ -257,10 +261,19 @@ const SearchPage = () => {
         noindex: true,
       }}
     >
+      <Box
+        position="absolute"
+        h="50vh"
+        left="0"
+        width="100%"
+        bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.6) 80%)`}
+        zIndex={-1}
+      />
       <Flex
         gap={4}
         flexFlow={{ base: 'column', lg: 'row' }}
         alignItems={{ base: 'center', lg: 'flex-start' }}
+        pt={3}
       >
         <Box
           flex="1 0 auto"

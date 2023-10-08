@@ -40,6 +40,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       addedAt: t.addedAt.toJSON(),
       processed: t.processed,
       priced: t.priced,
+      hash: t.hash,
       items: t.items.map((i) => {
         return {
           internal_id: i.internal_id,
