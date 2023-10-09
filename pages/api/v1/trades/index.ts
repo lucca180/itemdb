@@ -5,7 +5,7 @@ import requestIp from 'request-ip';
 import { CheckAuth } from '../../../../utils/googleCloud';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { checkHash } from '../../../../utils/hash';
-import { Prisma } from '.prisma/client';
+import { Items, Prisma } from '.prisma/client';
 import { stringHasNumber } from '../../../../utils/utils';
 import hash from 'object-hash';
 
@@ -155,27 +155,27 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
     });
   });
 
-  const [itemUpdate] = await prisma.$transaction([
-    prisma.tradeItems.findMany({
-      where: {
-        OR: [
-          {
-            trade: tradeHash
-              ? {
-                  hash: tradeHash,
-                  processed: false,
-                  priced: false,
-                }
-              : {},
-          },
-          {
-            trade_id: trade.trade_id,
-          },
-        ],
-      },
-    }),
-    ...updateItems,
-  ]);
+  const itemUpdate = await prisma.tradeItems.findMany({
+    where: {
+      OR: [
+        {
+          trade: tradeHash
+            ? {
+                hash: tradeHash,
+                processed: false,
+                priced: false,
+              }
+            : {},
+        },
+        {
+          trade_id: trade.trade_id,
+        },
+      ],
+    },
+    include: {
+      trade: true,
+    },
+  });
 
   const tradesIDs = [...new Set(itemUpdate.map((x) => x.trade_id))];
 
@@ -213,15 +213,23 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
 
   const addPriceProcess: Prisma.PriceProcessCreateInput[] = [];
 
+  const itemHistory: { [id: string]: Items } = {};
+
   for (const item of itemUpdate.filter((x) => x.price)) {
     if (!item.image_id || !item.name) throw 'processTradePrice: Missing image_id or name';
 
-    const dbItem = await prisma.items.findFirst({
-      where: {
-        name: item.name,
-        image_id: item.image_id,
-      },
-    });
+    let dbItem: Items | null = itemHistory[`${item.name}-${item.image_id}`];
+
+    if (!dbItem) {
+      dbItem = await prisma.items.findFirst({
+        where: {
+          name: item.name,
+          image_id: item.image_id,
+        },
+      });
+
+      if (dbItem) itemHistory[`${item.name}-${item.image_id}`] = dbItem;
+    }
 
     addPriceProcess.push({
       name: item.name,
@@ -231,8 +239,8 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
       item_id: dbItem ? dbItem.item_id : undefined,
       neo_id: item.trade_id,
       type: 'trade',
-      owner: trade.owner,
-      addedAt: trade.addedAt,
+      owner: item.trade.owner,
+      addedAt: item.trade.addedAt,
       language: 'en',
       ip_address: req ? requestIp.getClientIp(req) : undefined,
     });
@@ -251,7 +259,7 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
     },
   });
 
-  return await prisma.$transaction([tradeUpdate, priceProcess, priceHistory]);
+  return await prisma.$transaction([...updateItems, tradeUpdate, priceProcess, priceHistory]);
 };
 
 type getItemTradesArgs = {
