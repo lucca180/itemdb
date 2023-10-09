@@ -130,30 +130,34 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
 
   const isUpdate = !!originalTrade?.processed;
 
-  const updateItems = trade.items.map((item) => {
-    return prisma.tradeItems.updateMany({
-      where: {
-        OR: [
-          {
-            internal_id: item.internal_id,
-          },
-          tradeHash
-            ? {
-                order: item.order,
-                trade: {
-                  hash: tradeHash,
-                  processed: false,
-                  priced: false,
-                },
-              }
-            : {},
-        ],
-      },
-      data: {
-        price: item.price,
-      },
+  const updateItems = trade.items
+    .filter((x) => x.price)
+    .map((item) => {
+      return prisma.tradeItems.updateMany({
+        where: {
+          OR: [
+            {
+              internal_id: item.internal_id,
+            },
+            tradeHash
+              ? {
+                  order: item.order,
+                  trade: {
+                    hash: tradeHash,
+                    processed: false,
+                    priced: false,
+                  },
+                }
+              : {},
+          ],
+        },
+        data: {
+          price: item.price,
+        },
+      });
     });
-  });
+
+  await Promise.all(updateItems);
 
   const itemUpdate = await prisma.tradeItems.findMany({
     where: {
@@ -259,7 +263,7 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
     },
   });
 
-  return await prisma.$transaction([...updateItems, tradeUpdate, priceProcess, priceHistory]);
+  return await prisma.$transaction([tradeUpdate, priceProcess, priceHistory]);
 };
 
 type getItemTradesArgs = {
