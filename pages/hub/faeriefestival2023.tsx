@@ -122,7 +122,64 @@ const FaeriesFest2023 = () => {
             footerText="r101"
           />
         </Flex>
-        <Center flexFlow="column" gap={1}>
+        <Center flexFlow="column" gap={1} mt={5}>
+          <Heading color="whiteAlpha.900">📦Faerie Recycling Capsule</Heading>
+          <Heading as="h3" size="sm" color="whiteAlpha.700">
+            All drops from the Faerie Recycling Capsule
+          </Heading>
+        </Center>
+        <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
+          <SearchCard
+            title="r99"
+            description="All r99 items that you can get from the Faerie Recycling Capsule"
+            link="/search?s=&rarity[]=99&rarity[]=99"
+            color="#EC5CDC"
+            coverURL="https://images.neopets.com/items/sta_queen_fyora.gif"
+            footerText="15% odds"
+          />
+          <SearchCard
+            title="r96 - r98"
+            description="All r96 - r98 items that you can get from the Faerie Recycling Capsule"
+            link="/search?s=&rarity[]=96&rarity[]=98"
+            color="#F70808"
+            coverURL="https://images.neopets.com/items/sta_sloth_charm.gif"
+            footerText="25% odds"
+          />
+          <SearchCard
+            title="r90 - r95"
+            description="All r90 - r95 items that you can get from the Faerie Recycling Capsule"
+            link="/search?s=&rarity[]=90&rarity[]=95"
+            color="#F4C412"
+            coverURL="https://images.neopets.com/items/toy_faerie_siyana.gif"
+            footerText="60% odds"
+          />
+        </Flex>
+        <Center flexFlow="column" gap={1} mt={5}>
+          <Heading color="whiteAlpha.900">🛍️Prize Shop</Heading>
+          <Heading as="h3" size="sm" color="whiteAlpha.700">
+            All items you can buy at each team&apos;s prize shop
+          </Heading>
+        </Center>
+        <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
+          <SearchCard
+            title="Jhudora's Team"
+            description="All items from Jhudora's Team prize shop"
+            link="/lists/official/325"
+            color="#ae3baf"
+            coverURL="https://images.neopets.com/faeriefestival/2023/np/jhudora-happy-face.png"
+            footerText="Lists"
+          />
+          <SearchCard
+            title="Illusen's Team"
+            description="Create your own lists that update automatically based on your criteria"
+            link="/lists/official/326"
+            color="#84B12A"
+            coverURL="https://images.neopets.com/faeriefestival/2023/np/illusen-happy-face.png"
+            footerText="Lists"
+          />
+        </Flex>
+
+        <Center flexFlow="column" gap={1} mt={5}>
           <Heading color="whiteAlpha.900">🔧Utilities</Heading>
           <Heading as="h3" size="sm" color="whiteAlpha.700">
             itemdb Tools to make your life easier

@@ -54,7 +54,7 @@ const Layout = (props: Props) => {
   const rgb = color.rgb().round().array();
 
   useEffect(() => {
-    const hideFaerieStorage = localStorage.getItem('hideFaerieFest2023');
+    const hideFaerieStorage = localStorage.getItem('hideFaerieFest2023-2');
     if (!hideFaerieStorage) setShouldShowFaerie(true);
   }, []);
 
@@ -75,7 +75,7 @@ const Layout = (props: Props) => {
   };
 
   const hideFaerie = () => {
-    localStorage.setItem('hideFaerieFest2023', 'true');
+    localStorage.setItem('hideFaerieFest2023-2', 'true');
     setShouldShowFaerie(false);
   };
 
