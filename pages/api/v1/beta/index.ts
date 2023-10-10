@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 
@@ -30,27 +31,21 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
 
   const itemsTotal = prisma.items.count();
 
-  const tradePricing = prisma.trades.count({
-    where: {
-      processed: true,
-    },
-  });
-
-  const tradeTotal = prisma.trades.count();
+  const tradeQueueRaw = prisma.$queryRaw<{ count: number }[]>(
+    Prisma.sql`SELECT COUNT(DISTINCT "hash") as "count" FROM trades`
+  );
 
   const [
     itemToProcessCount,
     itemsMissingInfoCount,
     itemsTotalCount,
-    tradeProcessCount,
-    tradeTotalCount,
+    tradeQueueCount,
     itemProcessCount,
   ] = await Promise.all([
     itemProcess,
     itemsMissingInfo,
     itemsTotal,
-    tradePricing,
-    tradeTotal,
+    tradeQueueRaw,
     itemProcessTotal,
   ]);
 
@@ -59,7 +54,6 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
     itemToProcess: itemToProcessCount,
     itemsMissingInfo: itemsMissingInfoCount,
     itemsTotal: itemsTotalCount,
-    tradePricing: tradeProcessCount,
-    tradeTotal: tradeTotalCount,
+    tradeQueue: tradeQueueCount[0].count.toString(),
   });
 }

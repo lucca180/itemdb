@@ -12,6 +12,8 @@ type Props = {
   itemOpenable: ItemOpenable;
 };
 
+const SKIP_ITEMS = [61696];
+
 const ItemDrops = (props: Props) => {
   const [isLoading, setLoading] = React.useState(true);
   const [dropData, setDropData] = React.useState<ItemData[]>([]);
@@ -26,8 +28,10 @@ const ItemDrops = (props: Props) => {
   ) as Set<string>;
 
   useEffect(() => {
+    if (SKIP_ITEMS.includes(item.internal_id)) return;
+
     init();
-  }, []);
+  }, [item.internal_id]);
 
   const init = async () => {
     const itemRes = await axios.post(`/api/v1/items/many`, {
@@ -37,6 +41,8 @@ const ItemDrops = (props: Props) => {
     setDropData(Object.values(itemRes.data));
     setLoading(false);
   };
+
+  if (SKIP_ITEMS.includes(item.internal_id)) return null;
 
   if (isLoading)
     return (

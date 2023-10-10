@@ -9,8 +9,7 @@ type BetaStats = {
   itemToProcess: number;
   itemsMissingInfo: number;
   itemsTotal: number;
-  tradePricing: number;
-  tradeTotal: number;
+  tradeQueue: number;
 };
 
 const BetaStatsCard = () => {
@@ -59,9 +58,9 @@ const BetaStatsCard = () => {
             Trade Pricing Queue <ExternalLinkIcon verticalAlign="center" />
           </Link>
         </Text>
-        <Progress w="100%" value={((stats.tradeTotal - stats.tradePricing) / 1000) * 100} />
+        <Progress w="100%" value={(stats.tradeQueue / 1000) * 100} />
         <Text fontSize="sm" textAlign={'center'}>
-          {stats.tradeTotal - stats.tradePricing} / {stats.tradeTotal}
+          {stats.tradeQueue}
         </Text>
       </VStack>
     </Flex>

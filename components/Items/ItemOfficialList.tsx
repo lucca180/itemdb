@@ -5,6 +5,9 @@ import CardBase from '../Card/CardBase';
 import NextLink from 'next/link';
 import Image from 'next/image';
 import DynamicIcon from '../../public/icons/dynamic.png';
+import dynamic from 'next/dynamic';
+import Color from 'color';
+const Markdown = dynamic(() => import('../Utils/Markdown'));
 
 type Props = {
   item: ItemData;
@@ -14,6 +17,7 @@ type Props = {
 const ItemOfficialLists = (props: Props) => {
   const { item, lists } = props;
   const officialLists = lists.filter((list) => list.official);
+  const color = Color(item.color.hex);
 
   return (
     <CardBase title={<Link href="/lists/official">Official Lists</Link>} color={item.color.rgb}>
@@ -41,14 +45,20 @@ const ItemOfficialLists = (props: Props) => {
                   )}
                 </Tag>
               </Link>
-              <Text display="inline" verticalAlign="middle">
+              <Text
+                display="inline"
+                verticalAlign="middle"
+                sx={{ p: { display: 'inline' }, a: { color: color.lightness(70).hex() } }}
+              >
                 {' '}
                 -{' '}
-                {
-                  (list.description || "This list doesn't have a description yet").split(
-                    /[\r\n]+/
-                  )[0]
-                }
+                <Markdown>
+                  {
+                    (list.description || "This list doesn't have a description yet").split(
+                      /[\r\n]+/
+                    )[0]
+                  }
+                </Markdown>
               </Text>
             </ListItem>
           ))}

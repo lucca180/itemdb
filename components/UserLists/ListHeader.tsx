@@ -24,6 +24,8 @@ import GiftBox from '../../public/icons/giftbox.png';
 import NPBag from '../../public/icons/npbag.png';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import NextImage from 'next/image';
+import dynamic from 'next/dynamic';
+const Markdown = dynamic(() => import('../Utils/Markdown'));
 
 type ListHeaderProps = {
   list: UserList;
@@ -213,8 +215,12 @@ const ListHeader = (props: ListHeaderProps) => {
             )}
           </Stack>
           {list.description && (
-            <Text mt={{ base: 2, md: 3 }} fontSize={{ base: 'sm', md: 'md' }}>
-              {list.description}
+            <Text
+              mt={{ base: 2, md: 3 }}
+              fontSize={{ base: 'sm', md: 'md' }}
+              sx={{ a: { color: color.lightness(70).hex() } }}
+            >
+              <Markdown>{list.description}</Markdown>
             </Text>
           )}
           {(!!NPPrice || !!NCPrice) && (
