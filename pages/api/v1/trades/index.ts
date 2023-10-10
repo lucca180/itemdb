@@ -80,6 +80,16 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       items: itemList,
     });
 
+    const similarTrades = await prisma.trades.findFirst({
+      where: {
+        owner: lot.owner,
+        hash: tradeHash,
+        priced: false,
+      },
+    });
+
+    if (similarTrades) continue;
+
     // its not possible to use createMany with multiple related records
     // so we have to try to create the trade and then create the items
     const prom = prisma.trades.create({

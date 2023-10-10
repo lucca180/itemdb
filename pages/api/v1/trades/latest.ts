@@ -19,6 +19,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       processed: includeProcessed,
     },
     include: { items: true },
+    distinct: 'hash',
     orderBy: { addedAt: 'asc' },
     take: parseInt(limit),
   });
