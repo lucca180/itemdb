@@ -11,6 +11,9 @@ const MAX_PAST_DAYS = 60;
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
+const EVENT_MODE = true;
+const MIN_LAST_UPDATE = EVENT_MODE ? 2 : 7;
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Methods', 'POST, GET');
@@ -34,8 +37,8 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const maxPast = new Date(Date.now() - MAX_PAST_DAYS * 24 * 60 * 60 * 1000);
   const maxPastFormated = maxPast.toISOString().split('T')[0];
 
-  const last3Days = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
-  const last3DaysFormated = last3Days.toISOString().split('T')[0];
+  const lastDays = new Date(Date.now() - MIN_LAST_UPDATE * 24 * 60 * 60 * 1000);
+  const lastDaysFormated = lastDays.toISOString().split('T')[0];
 
   const groupBy2 = (await prisma.$queryRaw`
     SELECT name, COUNT(*) as count, MAX(addedAt) as MAX_addedAt, count(*) OVER() AS full_count FROM PriceProcess
@@ -47,7 +50,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       NOT EXISTS (
         SELECT 1 FROM ItemPrices a WHERE 
         PriceProcess.name = a.name
-        and a.addedAt >= ${last3DaysFormated}
+        and a.addedAt >= ${lastDaysFormated}
         and a.name
          not in (select name from ItemPrices GROUP by name having count(DISTINCT item_iid) > 1)
       )
@@ -87,8 +90,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const maxPast = new Date(Date.now() - MAX_PAST_DAYS * 24 * 60 * 60 * 1000);
   const maxPastFormated = maxPast.toISOString().split('T')[0];
 
-  const last3Days = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
-  const last3DaysFormated = last3Days.toISOString().split('T')[0];
+  const lastDays = new Date(Date.now() - MIN_LAST_UPDATE * 24 * 60 * 60 * 1000);
+  const lastDaysFormated = lastDays.toISOString().split('T')[0];
 
   const groupBy2 = (await prisma.$queryRaw`
     SELECT name, COUNT(*) as count, MAX(addedAt) as MAX_addedAt FROM PriceProcess
@@ -100,7 +103,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       NOT EXISTS (
         SELECT 1 FROM ItemPrices a WHERE 
         PriceProcess.name = a.name
-        and a.addedAt >= ${last3DaysFormated}
+        and a.addedAt >= ${lastDaysFormated}
         and a.name
          not in (select name from ItemPrices GROUP by name having count(DISTINCT item_iid) > 1)
       )
@@ -324,9 +327,9 @@ async function updateOrAddDB(
 
     const variation = coefficientOfVariation([oldPrice.price, priceValue]);
 
-    if (daysSinceLastUpdate < 3) return undefined;
+    if (daysSinceLastUpdate < MIN_LAST_UPDATE) return undefined;
 
-    if ((variation <= 5 || priceValue < 5000) && daysSinceLastUpdate <= 30) return undefined;
+    if ((variation <= 5 || priceValue < 5000) && daysSinceLastUpdate <= 15) return undefined;
 
     if (!oldPrice.noInflation_id && priceValue > 75000) {
       if (oldPrice.price < priceValue && variation >= 70) {

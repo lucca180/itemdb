@@ -1,6 +1,6 @@
   // ==UserScript==
   // @name         itemdb - Safety Deposit Box Pricer
-  // @version      1.2.1
+  // @version      1.2.2
   // @author       itemdb
   // @namespace    itemdb
   // @description  Shows the market price for your sdb items
@@ -59,6 +59,7 @@
       const itemId = tds.last().find('input').attr('name').match(/\d+/)[0];
 
       const item = itemData[itemId];
+
       let priceStr = '';
 
       if(!item || (item && !item.price.value && !item.isNC)){
@@ -80,7 +81,7 @@
       if(item && !item.rarity){
         priceStr += `<br/><small><a href="https://itemdb.com.br/contribute" target="_blank"><i>Unknown Rarity<br/>Learn how to Help</i></a></small>`
       } 
-      else if (item.isMissingInfo){
+      else if (item && item.isMissingInfo){
         priceStr += `<br/><small><a href="https://itemdb.com.br/contribute" target="_blank"><i>We need some info about this item<br/>Learn how to Help</i></a></small>`
 
       }
