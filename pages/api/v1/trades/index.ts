@@ -84,7 +84,9 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       where: {
         owner: lot.owner,
         hash: tradeHash,
-        priced: false,
+        addedAt: {
+          gte: new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 3),
+        },
       },
     });
 
