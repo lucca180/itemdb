@@ -13,6 +13,8 @@ type MarkdownProps = {
 export default function Markdown(props: MarkdownProps) {
   return (
     <MarkdownLib
+      urlTransform={(url) => decodeURI(url)}
+      disallowedElements={['img']}
       components={{
         a: (props) => {
           if (checkURL(props.href ?? ''))
@@ -30,7 +32,6 @@ export default function Markdown(props: MarkdownProps) {
                 )}
               </Link>
             );
-
           return <>{props.children}</>;
         },
       }}
