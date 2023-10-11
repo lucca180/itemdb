@@ -329,7 +329,8 @@ async function updateOrAddDB(
 
     if (daysSinceLastUpdate < MIN_LAST_UPDATE) return undefined;
 
-    if ((variation <= 5 || priceValue < 5000) && daysSinceLastUpdate <= 15) return undefined;
+    if (!EVENT_MODE && (variation <= 5 || priceValue < 5000) && daysSinceLastUpdate <= 15)
+      return undefined;
 
     if (!oldPrice.noInflation_id && priceValue > 75000) {
       if (oldPrice.price < priceValue && variation >= 70) {
@@ -365,6 +366,8 @@ async function updateOrAddDB(
     return newPriceData;
   } catch (e) {
     if (typeof e !== 'string') throw e;
+
+    if (EVENT_MODE && e === 'inflation') return newPriceData;
 
     return {
       ...newPriceData,

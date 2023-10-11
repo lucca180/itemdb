@@ -398,3 +398,28 @@ export function rarityToCCPoints(item: ItemData) {
 
   return 0;
 }
+
+export function stripMarkdown(markdownText: string) {
+  // Remove headings
+  markdownText = markdownText.replace(/#+\s/g, '');
+
+  // Remove bold and italic formatting
+  markdownText = markdownText.replace(/(\*{1,2}|_{1,2})(.*?)\1/g, '$2');
+
+  // Remove links
+  markdownText = markdownText.replace(/\[([^\]]+)\]\(.*?\)/g, '$1');
+
+  // Remove inline code
+  markdownText = markdownText.replace(/`([^`]+)`/g, '$1');
+
+  // Remove block code
+  markdownText = markdownText.replace(/```[\s\S]*?```/g, '');
+
+  // Remove unordered lists
+  markdownText = markdownText.replace(/(\*|-|\+)\s/g, '');
+
+  // Remove ordered lists
+  markdownText = markdownText.replace(/\d+\.\s/g, '');
+
+  return markdownText;
+}

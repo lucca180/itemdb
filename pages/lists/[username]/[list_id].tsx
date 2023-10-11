@@ -36,7 +36,7 @@ import { CreateListModalProps } from '../../../components/Modal/CreateListModal'
 import dynamic from 'next/dynamic';
 import ListHeader from '../../../components/UserLists/ListHeader';
 import { CreateLinkedListButton } from '../../../components/DynamicLists/CreateLinkedList';
-import { rarityToCCPoints } from '../../../utils/utils';
+import { rarityToCCPoints, stripMarkdown } from '../../../utils/utils';
 
 const CreateListModal = dynamic<CreateListModalProps>(
   () => import('../../../components/Modal/CreateListModal')
@@ -393,7 +393,7 @@ const ListPage = (props: Props) => {
           nofollow: !list.official,
           noindex: !list.official,
           themeColor: list.colorHex ?? '#4A5568',
-          description: list.description || undefined,
+          description: stripMarkdown(list.description ?? '') || undefined,
           openGraph: {
             images: [
               {
@@ -419,7 +419,7 @@ const ListPage = (props: Props) => {
         nofollow: !list.official,
         noindex: !list.official,
         themeColor: list.colorHex ?? '#4A5568',
-        description: list.description || undefined,
+        description: stripMarkdown(list.description ?? '') || undefined,
         openGraph: {
           images: [
             {
