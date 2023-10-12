@@ -6,6 +6,7 @@ import NextImage from 'next/image';
 import Color from 'color';
 import NextLink from 'next/link';
 import { useEffect, useState } from 'react';
+import { stripMarkdown } from '../../utils/utils';
 
 type Props = {
   list: UserList;
@@ -108,7 +109,7 @@ const UserListCard = (props: Props) => {
           flex={1}
           noOfLines={4}
         >
-          {list.description}
+          {stripMarkdown(list.description ?? '')}
         </Text>
         <Flex gap={1} flexWrap="wrap">
           {!!list.dynamicType && (

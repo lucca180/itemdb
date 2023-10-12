@@ -41,6 +41,15 @@ export default function SortableArea(props: SortableAreaProps) {
   const [activeId, setActiveId] = useState<number | null>(null);
   const [ids, setIds] = useState(props.ids);
 
+  const visibleIds = useMemo(
+    () =>
+      ids.filter((i) => {
+        const item = itemInfo[i];
+        return !item.isHidden || editMode;
+      }),
+    [ids, editMode]
+  );
+
   useEffect(() => {
     setIds(props.ids);
   }, [props.ids]);
@@ -86,27 +95,48 @@ export default function SortableArea(props: SortableAreaProps) {
       onDragStart={handleDragStart}
     >
       <SortableContext items={ids} disabled={!activateSort} strategy={rectSortingStrategy}>
-        <ViewportList items={groupedIds} viewportRef={null} initialPrerender={4} overscan={2}>
-          {(group, index) => (
-            <Flex gap={[1, 3]} key={index} justifyContent="center" flexWrap={'wrap'}>
-              {group.map((id) => (
-                <SortableItem
-                  key={id}
-                  id={id}
-                  sortType={props.sortType}
-                  onClick={props.onClick}
-                  itemInfo={itemInfo[id]}
-                  onChange={debouncedOnChange}
-                  isTrading={list?.purpose === 'trading'}
-                  selected={props.itemSelect?.includes(id)}
-                  editMode={editMode && !activateSort}
-                  onListAction={props.onListAction}
-                  item={items[itemInfo[id]?.item_iid]}
-                />
-              ))}
-            </Flex>
-          )}
-        </ViewportList>
+        {visibleIds.length > 200 && (
+          <ViewportList items={groupedIds} viewportRef={null} initialPrerender={4} overscan={2}>
+            {(group, index) => (
+              <Flex gap={[1, 3]} key={index} justifyContent="center" flexWrap={'wrap'}>
+                {group.map((id) => (
+                  <SortableItem
+                    key={id}
+                    id={id}
+                    sortType={props.sortType}
+                    onClick={props.onClick}
+                    itemInfo={itemInfo[id]}
+                    onChange={debouncedOnChange}
+                    isTrading={list?.purpose === 'trading'}
+                    selected={props.itemSelect?.includes(id)}
+                    editMode={editMode && !activateSort}
+                    onListAction={props.onListAction}
+                    item={items[itemInfo[id]?.item_iid]}
+                  />
+                ))}
+              </Flex>
+            )}
+          </ViewportList>
+        )}
+        {visibleIds.length <= 200 && (
+          <Flex gap={[1, 3]} justifyContent="center" flexWrap={'wrap'}>
+            {ids.map((id) => (
+              <SortableItem
+                key={id}
+                id={id}
+                sortType={props.sortType}
+                onClick={props.onClick}
+                itemInfo={itemInfo[id]}
+                onChange={debouncedOnChange}
+                isTrading={list?.purpose === 'trading'}
+                selected={props.itemSelect?.includes(id)}
+                editMode={editMode && !activateSort}
+                onListAction={props.onListAction}
+                item={items[itemInfo[id]?.item_iid]}
+              />
+            ))}
+          </Flex>
+        )}
       </SortableContext>
       <DragOverlay>
         {activeId ? <SortableItem id={activeId} item={items[itemInfo[activeId].item_iid]} /> : null}
