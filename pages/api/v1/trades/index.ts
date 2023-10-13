@@ -75,6 +75,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       itemList.push(x);
     }
 
+    if (itemList.length === 0) continue;
+
     const tradeHash = hash({
       wishlist: lot.wishList,
       items: itemList,
