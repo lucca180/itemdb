@@ -8,6 +8,7 @@ import { checkHash } from '../../../../utils/hash';
 import { Items, Prisma } from '.prisma/client';
 import { stringHasNumber } from '../../../../utils/utils';
 import hash from 'object-hash';
+import { autoPriceTrades2 } from './autoPrice2';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
@@ -117,6 +118,20 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   // we have to use Promise.allSettled because we dont want to fail the whole request if one trade fails
   // (and it will fail, because we cant create the same trade twice)
   const result = await Promise.allSettled(promiseArr);
+
+  const allTrades = await prisma.trades.findMany({
+    where: {
+      trade_id: {
+        in: result.filter((x) => x.status === 'fulfilled').map((x: any) => x.value.trade_id),
+      },
+      processed: false,
+    },
+    include: {
+      items: true,
+    },
+  });
+
+  await autoPriceTrades2(allTrades);
 
   res.json(result);
 };
