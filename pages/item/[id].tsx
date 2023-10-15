@@ -380,7 +380,7 @@ const generateMetaDescription = (item: ItemData, hasDrops = false) => {
   // if (!item.isMissingInfo)
   //   metaDescription += ` - Rarity: r${item.rarity} - Category: ${item.category}`;
 
-  metaDescription += ` | Find out more about this item on itemdb.`;
+  // metaDescription += ` | Find out more about this item on itemdb.`;
 
   return metaDescription;
 };

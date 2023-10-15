@@ -8,12 +8,15 @@ const SEOConfig: DefaultSeoProps = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
+    images: [
+      { url: 'https://itemdb.com.br/logo_icon.png', width: 128, height: 128, alt: 'itemdb logo' },
+    ],
     url: 'http://itemdb.com.br/',
     siteName: 'itemdb',
   },
   twitter: {
     site: '@magnetismotimes',
-    cardType: 'summary_large_image',
+    cardType: 'summary',
   },
 };
 
