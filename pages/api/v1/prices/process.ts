@@ -11,7 +11,7 @@ const MAX_PAST_DAYS = 60;
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
-const EVENT_MODE = true;
+const EVENT_MODE = false;
 const MIN_LAST_UPDATE = EVENT_MODE ? 2 : 7;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {

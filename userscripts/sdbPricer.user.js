@@ -1,6 +1,6 @@
   // ==UserScript==
   // @name         itemdb - Safety Deposit Box Pricer
-  // @version      1.2.2
+  // @version      1.2.3
   // @author       itemdb
   // @namespace    itemdb
   // @description  Shows the market price for your sdb items
@@ -93,6 +93,8 @@
   fetchPriceData();
 
   function rarityToCCPoints(rarity) {
+    return 0;
+    
     if (rarity <= 79 || rarity === 101) return 1;
     if (rarity <= 89) return 2;
     if (rarity <= 97) return 6;
