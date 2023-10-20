@@ -28,7 +28,7 @@ import { useAuth } from '../../utils/auth';
 import { TradeGuidelines } from './trades';
 
 const FeedbackVotingPage = () => {
-  const { user, authLoading, getIdToken } = useAuth();
+  const { user, getIdToken } = useAuth();
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [currentFeedback, setCurrentFeedback] = useState<Feedback>();
   const [isLoading, setIsLoading] = useState(true);
@@ -37,8 +37,8 @@ const FeedbackVotingPage = () => {
   const isAdmin = user?.role === 'ADMIN';
 
   useEffect(() => {
-    if (!authLoading && user) init();
-  }, [authLoading, user]);
+    if (!user) init();
+  }, [user]);
 
   const init = async () => {
     setError('');

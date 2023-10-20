@@ -30,7 +30,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   let shoudContinue = true;
 
-  if (type === 'tradePrice') shoudContinue = await processTradePrice(parseInt(subject_id));
+  if (type === 'tradePrice') shoudContinue = await processTradePrice(parseInt(subject_id), user_id);
 
   if (!shoudContinue) return res.status(400).json({ success: true, message: 'already processed' });
 
@@ -59,7 +59,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   return res.status(200).json({ success: true, message: result });
 }
 
-const processTradePrice = async (trade_id?: number) => {
+const processTradePrice = async (trade_id?: number, user_id?: string) => {
   const tradeFeedback = await prisma.feedbacks.findFirst({
     where: { type: 'tradePrice', subject_id: trade_id },
   });
@@ -71,7 +71,17 @@ const processTradePrice = async (trade_id?: number) => {
     },
   });
 
-  if (tradeFeedback) return false;
+  if (tradeFeedback) {
+    if (tradeFeedback.user_id === user_id) {
+      await prisma.feedbacks.delete({
+        where: { feedback_id: tradeFeedback.feedback_id },
+      });
+
+      return true;
+    }
+
+    return false;
+  }
 
   return true;
 };

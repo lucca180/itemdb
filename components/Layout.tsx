@@ -35,6 +35,8 @@ import { SearchBar } from './Search/SearchBar';
 import ClientOnly from './Utils/ClientOnly';
 import Color from 'color';
 
+import Brazil from '../public/icons/brazil.png';
+
 type Props = {
   children?: ReactNode;
   loading?: boolean;
@@ -185,24 +187,30 @@ const Layout = (props: Props) => {
             marginX="auto"
             py={3}
             justifyContent="space-evenly"
-            flexFlow={['column', 'row']}
+            flexFlow={['column', 'column', 'row']}
             gap={[6, 20]}
           >
             <Flex
               flexFlow={'column'}
-              textAlign={['center', 'right']}
+              textAlign={['center', 'center', 'right']}
               gap={8}
               justifyContent="center"
-              alignItems={['center', 'flex-end']}
+              alignItems={['center', 'center', 'flex-end']}
             >
               <ChakraLink href="https://magnetismotimes.com/" isExternal>
                 <NextImage src={mt_logo} width={202} height={50} alt="Magnetismo Times logo" />
               </ChakraLink>
-              <Text fontSize="xs" color="gray.500">
+              <Text fontSize="xs" color="gray.500" position={'relative'}>
                 © 2009-{new Date().getFullYear()}{' '}
                 <ChakraLink href="https://magnetismotimes.com/" isExternal>
                   Magnetismo Times
                 </ChakraLink>
+                <NextImage
+                  src={Brazil}
+                  alt="Brazil Flag"
+                  width={18}
+                  style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '5px' }}
+                />
                 <br />© 1999-{new Date().getFullYear()} NeoPets, Inc. All rights reserved. Used with
                 permission.
               </Text>
