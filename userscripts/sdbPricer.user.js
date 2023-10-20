@@ -1,6 +1,6 @@
   // ==UserScript==
   // @name         itemdb - Safety Deposit Box Pricer
-  // @version      1.2.3
+  // @version      1.2.4
   // @author       itemdb
   // @namespace    itemdb
   // @description  Shows the market price for your sdb items
@@ -62,8 +62,12 @@
 
       let priceStr = '';
 
-      if(!item || (item && !item.price.value && !item.isNC)){
-        priceStr = '<a href="https://itemdb.com.br/contribute" target="_blank" title="Learn how to help!">???</a></small>'
+      if(!item || (item && item.status !== 'no trade' && !item.price.value && !item.isNC)){
+        priceStr = `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">???</a></small>`;
+      }
+
+      if(item && item.status === 'no trade'){
+        priceStr = `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">No Trade</a></small>`;
       }
 
       if(item && item.isNC){
@@ -74,15 +78,8 @@
         priceStr = `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">${intl.format(item.price.value)} NP</a>`;
       }
       
-      if(item && item.rarity && rarityToCCPoints(item.rarity)) {
-        priceStr += `<br/><small><i>${item.internal_id === 289 ? 1 : rarityToCCPoints(item.rarity)}  Point${rarityToCCPoints(item.rarity) > 1 && item.internal_id !== 289 ? 's' : ''}</i></small>`
-      }
-
-      if(item && !item.rarity){
-        priceStr += `<br/><small><a href="https://itemdb.com.br/contribute" target="_blank"><i>Unknown Rarity<br/>Learn how to Help</i></a></small>`
-      } 
-      else if (item && item.isMissingInfo){
-        priceStr += `<br/><small><a href="https://itemdb.com.br/contribute" target="_blank"><i>We need some info about this item<br/>Learn how to Help</i></a></small>`
+      if (item && item.isMissingInfo){
+        priceStr += `<br/><small><a href="https://itemdb.com.br/contribute" target="_blank"><i>We need info about this item<br/>Learn how to Help</i></a></small>`
 
       }
 
@@ -92,14 +89,3 @@
 
   fetchPriceData();
 
-  function rarityToCCPoints(rarity) {
-    return 0;
-    
-    if (rarity <= 79 || rarity === 101) return 1;
-    if (rarity <= 89) return 2;
-    if (rarity <= 97) return 6;
-    if (rarity <= 100) return 4;
-    if (rarity <= 179) return 8;
-
-    return 0;
-  }

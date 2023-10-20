@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.2.4
+// @version      1.2.5
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -91,7 +91,7 @@ function handleInventory() {
         const item = {
           name: itemEl.dataset.itemname,
           description: itemEl.dataset.itemdesc,
-          estVal: itemEl.dataset.itemvalue.split(' ')[0]?.replace(',', ''),
+          estVal: itemEl.dataset.itemvalue.split(' ')[0]?.replaceAll(',', ''),
           rarity: itemEl.dataset.rarity,
           category: itemEl.dataset.itemtype,
           img: itemEl.dataset.image,
