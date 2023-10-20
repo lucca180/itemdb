@@ -130,8 +130,8 @@ model ItemColor {
 
   isMaxPopulation Boolean @default(false)
 
-  @@index([image_id, isMaxPopulation])
   @@unique([image_id, type])
+  @@index([image_id, isMaxPopulation])
   @@index([lab_l, lab_a, lab_b])
   @@index([image_id, lab_l, lab_a, lab_b])
   @@index([hsv_h])
@@ -174,7 +174,7 @@ model PriceProcess {
   addedAt     DateTime @default(now())
   ip_address  String?
   language    String
-  
+
   hash      String? @unique
   neo_id    Int?
   processed Boolean @default(false)
@@ -207,7 +207,7 @@ model Trades {
   processed Boolean @default(false)
   priced    Boolean @default(false)
 
-  hash      String? 
+  hash          String?
   tradesUpdated String? @db.Text
 
   items TradeItems[]
@@ -264,6 +264,7 @@ model User {
 
   feedbacks Feedbacks[]
   itemLists UserList[]
+  votes     FeedbackVotes[]
 }
 
 model OpenableItems {
@@ -309,6 +310,22 @@ model Feedbacks {
 
   user_id String?
   user    User?   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  vote FeedbackVotes[]
+}
+
+model FeedbackVotes {
+  vote_id     Int       @id @default(autoincrement())
+  feedback_id Int
+  feedback    Feedbacks @relation(fields: [feedback_id], references: [feedback_id], onDelete: Cascade, onUpdate: Cascade)
+
+  user_id String?
+  user    User?   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  voteWeight Int @default(1)
+
+  approve Boolean
+  addedAt DateTime @default(now())
 }
 
 model UserList {

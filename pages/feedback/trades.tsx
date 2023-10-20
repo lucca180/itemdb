@@ -32,7 +32,9 @@ const FeedbackSuggest = () => {
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
-    if (!authLoading && user) init();
+    if (!authLoading && user) {
+      init();
+    }
   }, [authLoading]);
 
   const init = async () => {

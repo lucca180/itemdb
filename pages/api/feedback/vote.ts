@@ -26,10 +26,16 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const isAdmin = user.role === 'ADMIN';
 
     if (isAdmin) voteMultiplier = 10;
+    else voteMultiplier = Math.max(1, Math.min(user.xp % 1000, 8));
 
     const feedbackRaw = await prisma.feedbacks.findUniqueOrThrow({
       where: {
         feedback_id: parseInt(feedback_id),
+        vote: {
+          none: {
+            user_id: user_id,
+          },
+        },
       },
     });
 
@@ -56,6 +62,15 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       },
     });
 
+    const vote = prisma.feedbackVotes.create({
+      data: {
+        feedback_id: parseInt(feedback_id),
+        user_id: user_id,
+        approve: action === 'upvote',
+        voteWeight: voteMultiplier,
+      },
+    });
+
     const votingUser = prisma.user.update({
       where: {
         id: user_id,
@@ -67,7 +82,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       },
     });
 
-    const [feedbacks] = await prisma.$transaction([feedback, votingUser]);
+    const [feedbacks] = await prisma.$transaction([feedback, vote, votingUser]);
 
     if (!feedbacks.processed && (feedbacks.votes >= 5 || feedbacks.votes <= -5)) {
       await commitChanges(feedbacks, req);

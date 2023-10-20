@@ -31,6 +31,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       type: {
         in: ['tradePrice', 'itemChange'],
       },
+      vote: {
+        none: {
+          user_id: user_id,
+        },
+      },
     },
     orderBy: { addedAt: 'asc' },
     take: parseInt(limit),
