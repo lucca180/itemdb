@@ -10,6 +10,7 @@ type BetaStats = {
   itemsMissingInfo: number;
   itemsTotal: number;
   tradeQueue: number;
+  feedbackVoting: number;
 };
 
 const BetaStatsCard = () => {
@@ -61,6 +62,17 @@ const BetaStatsCard = () => {
         <Progress w="100%" value={(stats.tradeQueue / 1000) * 100} />
         <Text fontSize="sm" textAlign={'center'}>
           {stats.tradeQueue}
+        </Text>
+      </VStack>
+      <VStack justifyContent={'center'} alignItems="center" w="100%">
+        <Text color="gray.300">
+          <Link href="/feedback/vote">
+            Feedback Voting Queue <ExternalLinkIcon verticalAlign="center" />
+          </Link>
+        </Text>
+        <Progress w="100%" value={(stats.feedbackVoting / 1000) * 100} />
+        <Text fontSize="sm" textAlign={'center'}>
+          {stats.feedbackVoting}
         </Text>
       </VStack>
     </Flex>

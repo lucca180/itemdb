@@ -8,7 +8,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (req.method !== 'GET')
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
-  const limit = (req.query.limit as string) ?? '15';
+  const limit = (req.query.limit as string) ?? '30';
 
   const ip_address = requestIp.getClientIp(req);
 

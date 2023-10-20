@@ -35,18 +35,27 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
     Prisma.sql`SELECT COUNT(DISTINCT hash) as "count" FROM trades where processed = 0`
   );
 
+  const feedbackVoting = prisma.feedbacks.count({
+    where: {
+      type: 'tradePrice',
+      processed: false,
+    },
+  });
+
   const [
     itemToProcessCount,
     itemsMissingInfoCount,
     itemsTotalCount,
     tradeQueueCount,
     itemProcessCount,
+    feedbackVotingCount,
   ] = await Promise.all([
     itemProcess,
     itemsMissingInfo,
     itemsTotal,
     tradeQueueRaw,
     itemProcessTotal,
+    feedbackVoting,
   ]);
 
   return res.status(200).json({
@@ -55,5 +64,6 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
     itemsMissingInfo: itemsMissingInfoCount,
     itemsTotal: itemsTotalCount,
     tradeQueue: Number(tradeQueueCount[0].count.toString()),
+    feedbackVoting: feedbackVotingCount,
   });
 }

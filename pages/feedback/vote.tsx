@@ -184,8 +184,8 @@ const FeedbackVotingPage = () => {
               <Button onClick={init}>YES I NEED IT!!!!!</Button>
               <Box>
                 <Text fontSize="xs" color="gray.400" textAlign="center">
-                  If you click the button and nothing happens you really vote for everything...
-                  impressive.
+                  If you click the button and nothing happens you really vote for everything you
+                  could... impressive.
                 </Text>
                 <Text fontSize="xs" color="gray.200" textAlign="center">
                   <Link href="/feedback/trades">

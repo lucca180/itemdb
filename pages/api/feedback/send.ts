@@ -29,6 +29,20 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   };
 
   let shoudContinue = true;
+  let voteMultiplier = 0;
+
+  if (user_id) {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: user_id,
+      },
+    });
+
+    if (user) {
+      if (user.role === 'ADMIN') voteMultiplier = 10;
+      else voteMultiplier = Math.max(1, Math.min(Math.round(user.xp / 1000), 8));
+    }
+  }
 
   if (type === 'tradePrice') shoudContinue = await processTradePrice(parseInt(subject_id), user_id);
 
@@ -40,6 +54,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       subject_id: subject_id ? parseInt(subject_id) : undefined,
       json: JSON.stringify(obj),
       type: type ?? 'feedback',
+      votes: voteMultiplier,
       user: user_id
         ? {
             connect: {

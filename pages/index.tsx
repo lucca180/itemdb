@@ -1,4 +1,16 @@
-import { Box, Flex, Heading, Highlight, Link, Stack } from '@chakra-ui/react';
+import {
+  Box,
+  Flex,
+  Heading,
+  Highlight,
+  Link,
+  Stack,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+} from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import logo from '../public/logo_white_compressed.svg';
@@ -11,7 +23,6 @@ import { getLatestOwls } from './api/v1/items/owls';
 import { ArticleCard } from '../components/Articles/ArticlesCard';
 import { wp_getLatestPosts } from './api/wp/posts';
 import NextLink from 'next/link';
-import { QuestionIcon } from '@chakra-ui/icons';
 import Color from 'color';
 
 type Props = {
@@ -24,6 +35,7 @@ const HomePage = (props: Props) => {
   const [latestItems, setItems] = useState<ItemData[]>([]);
   const [latestPrices, setPrices] = useState<ItemData[]>([]);
   const [trendingItems, setTrending] = useState<ItemData[]>([]);
+  const [hottestRestock, setHottest] = useState<ItemData[]>([]);
 
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -35,7 +47,7 @@ const HomePage = (props: Props) => {
   }, []);
 
   const init = async () => {
-    const [itemRes, priceRes, trendingRes] = await Promise.all([
+    const [itemRes, priceRes, trendingRes, hottestRes] = await Promise.all([
       axios.get('api/v1/items', {
         params: {
           limit: 16,
@@ -48,7 +60,12 @@ const HomePage = (props: Props) => {
       }),
       axios.get('api/v1/beta/trending', {
         params: {
-          limit: 8,
+          limit: 16,
+        },
+      }),
+      axios.get('api/v1/beta/restock', {
+        params: {
+          limit: 16,
         },
       }),
     ]);
@@ -56,6 +73,7 @@ const HomePage = (props: Props) => {
     setTrending(trendingRes.data);
     setItems(itemRes.data);
     setPrices(priceRes.data);
+    setHottest(hottestRes.data);
     setIsLoaded(true);
   };
 
@@ -102,13 +120,6 @@ const HomePage = (props: Props) => {
           ))}
           {!isLoaded && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
         </Flex>
-        <Heading size="md">Trending Items</Heading>
-        <Flex flexWrap="wrap" gap={4} justifyContent="center">
-          {trendingItems.map((item) => (
-            <ItemCard item={item} key={item.internal_id} />
-          ))}
-          {!isLoaded && [...Array(8)].map((_, i) => <ItemCard key={i} />)}
-        </Flex>
         <Stack direction={{ base: 'column', lg: 'row' }}>
           <Flex gap={4} flexFlow="column" flex="1">
             <Heading size="md" textAlign={{ base: 'left', lg: 'center' }}>
@@ -121,24 +132,45 @@ const HomePage = (props: Props) => {
               {!isLoaded && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
             </Flex>
           </Flex>
-          {!isLoaded ||
-            (isLoaded && !!latestOwls.length && (
-              <Flex gap={4} flexFlow="column" flex="1">
-                <Heading size="md" textAlign={{ base: 'left', lg: 'center' }}>
-                  Latest Owls{' '}
-                  <NextLink href="/articles/owls">
-                    <QuestionIcon verticalAlign="middle" boxSize={4} />
-                  </NextLink>
-                </Heading>
-                <Flex flexWrap="wrap" gap={4} justifyContent="center" h="100%">
-                  {isLoaded &&
-                    latestOwls.map((item) => <ItemCard item={item} key={item.internal_id} />)}
-                  {!isLoaded && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
-                </Flex>
-              </Flex>
-            ))}
+          <Flex gap={4} flexFlow="column" flex="1">
+            <Tabs flex={1} colorScheme="gray" variant={'line'}>
+              <TabList>
+                <Tab>Trending Items</Tab>
+                {latestOwls.length && <Tab>Latest Owls</Tab>}
+                <Tab>7-Day Hottest Restock</Tab>
+              </TabList>
+              <TabPanels>
+                <TabPanel>
+                  <Flex flexWrap="wrap" gap={4} justifyContent="center">
+                    {trendingItems.map((item) => (
+                      <ItemCard item={item} key={item.internal_id} />
+                    ))}
+                    {!isLoaded && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
+                  </Flex>
+                </TabPanel>
+                {latestOwls.length && (
+                  <TabPanel>
+                    <Flex flexWrap="wrap" gap={4} justifyContent="center" h="100%">
+                      {isLoaded &&
+                        latestOwls.length &&
+                        latestOwls.map((item) => <ItemCard item={item} key={item.internal_id} />)}
+                      {!isLoaded && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
+                    </Flex>
+                  </TabPanel>
+                )}
+                <TabPanel>
+                  <Flex flexWrap="wrap" gap={4} justifyContent="center">
+                    {hottestRestock.map((item) => (
+                      <ItemCard item={item} key={item.internal_id} />
+                    ))}
+                    {!isLoaded && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
+                  </Flex>
+                </TabPanel>
+              </TabPanels>
+            </Tabs>
+          </Flex>
         </Stack>
-        <Stack direction={{ base: 'column', lg: 'row' }} mt={8} gap={{ base: 8, lg: 3 }}>
+        <Stack direction={{ base: 'column', lg: 'row' }} mt={2} gap={{ base: 8, lg: 3 }}>
           <Flex flexFlow="column" flex={1} alignItems="center" h="100%">
             <Heading size="md">Stats</Heading>
             <BetaStatsCard />
@@ -168,7 +200,7 @@ export async function getStaticProps() {
     getLatestOwls(16)
       .then((p) => p)
       .catch(() => []),
-    wp_getLatestPosts(4)
+    wp_getLatestPosts(5)
       .then((p) => p)
       .catch((e) => {
         console.error(e);
