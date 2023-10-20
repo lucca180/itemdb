@@ -37,7 +37,7 @@ const FeedbackSuggest = () => {
 
   const init = async () => {
     setIsLoading(true);
-    const res = await axios.get('/api/v1/trades/latest');
+    const res = await axios.get('/api/v1/trades/latest?random=true');
 
     setTrades(res.data);
     setCurrentTrade(res.data[0]);

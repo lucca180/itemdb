@@ -1,6 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { TradeData } from '../../../../types';
+import Chance from 'chance';
+const chance = new Chance();
+import { Prisma } from '@prisma/client';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -13,6 +16,26 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   const limit = (req.query.limit as string) ?? '15';
   const includeProcessed = req.query.includeProcessed === 'true';
+  const random = req.query.random === 'true';
+
+  let order: Prisma.TradesOrderByWithRelationAndSearchRelevanceInput = { addedAt: 'asc' };
+
+  // to prevent multiple people from pricing the same trade at the same time
+  if (random) {
+    const dir = chance.bool() ? 'asc' : 'desc';
+    const field = chance.pickone([
+      'addedAt',
+      'trade_id',
+      'owner',
+      'wishlist',
+      'ip_address',
+      'hash',
+    ]);
+
+    order = {
+      [field]: dir,
+    };
+  }
 
   const tradeRaw = await prisma.trades.findMany({
     where: {
@@ -20,7 +43,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     },
     include: { items: true },
     distinct: 'hash',
-    orderBy: { addedAt: 'asc' },
+    orderBy: order,
     take: parseInt(limit),
   });
 

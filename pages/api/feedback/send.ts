@@ -32,7 +32,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   if (type === 'tradePrice') shoudContinue = await processTradePrice(parseInt(subject_id));
 
-  if (!shoudContinue) return res.status(400).json({ success: false, message: 'already processed' });
+  if (!shoudContinue) return res.status(400).json({ success: true, message: 'already processed' });
 
   const result = await prisma.feedbacks.create({
     data: {
@@ -64,14 +64,14 @@ const processTradePrice = async (trade_id?: number) => {
     where: { type: 'tradePrice', subject_id: trade_id },
   });
 
-  if (tradeFeedback) return false;
-
   await prisma.trades.update({
     where: { trade_id: trade_id },
     data: {
       processed: true,
     },
   });
+
+  if (tradeFeedback) return false;
 
   return true;
 };
