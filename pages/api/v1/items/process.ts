@@ -12,7 +12,10 @@ import { CheckAuth } from '../../../../utils/googleCloud';
 type ValueOf<T> = T[keyof T];
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
+
 const usedSlugs = new Set<string>();
+
+let manualChecks: any = [];
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -33,6 +36,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 
   usedSlugs.clear();
+  manualChecks = [];
+
   let limit = Number(req.body.limit);
   limit = isNaN(limit) ? 300 : limit;
   limit = Math.min(limit, 5000);
@@ -105,7 +110,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   ]);
 
   await processOpenables();
-  return res.json(result);
+  return res.json({ ...result, manualChecks });
 }
 
 // If a item does not exist in the DB we use "createMany" but
@@ -294,6 +299,8 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
       data: { manual_check: typeof e == 'string' ? e : e.code },
       where: { internal_id: item.internal_id },
     });
+
+    manualChecks.push({ error: e, item });
 
     return undefined;
   }

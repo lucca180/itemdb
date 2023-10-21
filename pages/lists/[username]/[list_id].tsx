@@ -9,7 +9,6 @@ import {
   Center,
   Divider,
   HStack,
-  Select,
   FormControl,
   FormLabel,
   Switch,
@@ -17,7 +16,7 @@ import {
   Spinner,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Layout from '../../../components/Layout';
 import { ItemData, ListItemInfo, UserList } from '../../../types';
 import { useAuth } from '../../../utils/auth';
@@ -37,6 +36,8 @@ import dynamic from 'next/dynamic';
 import ListHeader from '../../../components/UserLists/ListHeader';
 import { CreateLinkedListButton } from '../../../components/DynamicLists/CreateLinkedList';
 import { rarityToCCPoints, stripMarkdown } from '../../../utils/utils';
+import { SearchList } from '../../../components/Search/SearchLists';
+import { SortSelect } from '../../../components/Input/SortSelect';
 
 const CreateListModal = dynamic<CreateListModalProps>(
   () => import('../../../components/Modal/CreateListModal')
@@ -50,6 +51,17 @@ type ExtendedListItemInfo = ListItemInfo & { hasChanged?: boolean };
 
 type Props = {
   list: UserList;
+};
+
+const sortTypes = {
+  name: 'Name',
+  price: 'Price',
+  rarity: 'Rarity',
+  color: 'Color',
+  custom: 'Custom',
+  addedAt: 'Added At',
+  faerieFest: 'Recycling Points',
+  item_id: 'Item ID',
 };
 
 const ListPage = (props: Props) => {
@@ -82,6 +94,9 @@ const ListPage = (props: Props) => {
 
   const [matches, setMatches] = useState<ListItemInfo[]>([]);
   const [isLoading, setLoading] = useState<boolean>(true);
+  const [searchItemInfoIds, setSearchItemInfoIds] = useState<number[] | null>(null);
+
+  const searchQuery = useRef('');
 
   const isOwner = user?.username === router.query.username || user?.id === list?.owner.id;
   const color = Color(list?.colorHex || '#4A5568');
@@ -207,31 +222,39 @@ const ListPage = (props: Props) => {
     setMatches(res.data);
   };
 
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleSortChange = (sortBy: string, sortDir: string) => {
     if (!list) return;
-    const name = e.target.name;
+    if (searchItemInfoIds) {
+      const itemInfoIds = list.itemInfo
+        .filter((a) => items[a.item_iid]?.name.toLowerCase().includes(searchQuery.current))
+        .sort((a, b) => sortItems(a, b, sortBy, sortDir, items))
+        .map((item) => item.internal_id);
 
-    if (name === 'sortBy') {
-      const sortBy = e.target.value;
-      const sortedItemInfo = list.itemInfo.sort((a, b) =>
-        sortItems(a, b, sortBy, sortInfo.sortDir, items)
-      );
-      setSortInfo({ sortBy, sortDir: sortInfo.sortDir });
-      if (sortBy === 'custom') setSortInfo({ sortBy, sortDir: 'asc' });
-
-      setItemInfoIds(sortedItemInfo.map((item) => item.internal_id));
-
-      setLockSort(true);
+      setSearchItemInfoIds(itemInfoIds);
     }
 
-    if (name === 'sortDir') {
-      const sortDir = e.target.value;
-      const sortedItemInfo = list.itemInfo.sort((a, b) =>
-        sortItems(a, b, sortInfo.sortBy, sortDir, items)
-      );
-      setSortInfo({ sortBy: sortInfo.sortBy, sortDir: sortDir });
-      setItemInfoIds(sortedItemInfo.map((item) => item.internal_id));
+    const sortedItemInfo = list.itemInfo.sort((a, b) => sortItems(a, b, sortBy, sortDir, items));
+    setSortInfo({ sortBy, sortDir });
+    setItemInfoIds(sortedItemInfo.map((item) => item.internal_id));
+    setLockSort(true);
+  };
+
+  const handleSearch = (query: string) => {
+    if (!list) return;
+
+    searchQuery.current = query.toLowerCase();
+
+    if (!query) {
+      setSearchItemInfoIds(null);
+      return;
     }
+
+    const itemInfoIds = list.itemInfo
+      .filter((a) => items[a.item_iid]?.name.toLowerCase().includes(searchQuery.current))
+      .sort((a, b) => sortItems(a, b, sortInfo.sortBy, sortInfo.sortDir, items))
+      .map((item) => item.internal_id);
+
+    setSearchItemInfoIds(itemInfoIds);
   };
 
   const toggleEdit = () => {
@@ -536,51 +559,37 @@ const ListPage = (props: Props) => {
             </Flex>
           )}
 
-          <HStack flex="0 0 auto" minW={{ base: 'none', md: 400 }}>
+          <HStack
+            flex="0 0 auto"
+            minW={{ base: 'none', md: 400 }}
+            justifyContent={['center', 'flex-end']}
+            flexWrap={'wrap'}
+          >
             {isOwner && (
-              <FormControl display="flex" alignItems="center" justifyContent="center">
+              <FormControl display="flex" alignItems="center" justifyContent="center" w={'auto'}>
                 <FormLabel mb="0" textColor={'gray.300'} fontSize="sm">
                   Edit Mode
                 </FormLabel>
                 <Switch colorScheme="whiteAlpha" isChecked={isEdit} onChange={toggleEdit} />
               </FormControl>
             )}
-            <Text
-              flex="0 0 auto"
-              textColor={'gray.300'}
-              fontSize="sm"
-              display={{ base: 'none', md: 'inherit' }}
-            >
-              Sort By
-            </Text>
-            <Select
-              minW={{ base: 'none', sm: '150px' }}
-              name="sortBy"
-              variant="filled"
-              value={sortInfo.sortBy}
-              onChange={handleSortChange}
-              size={{ base: 'sm', md: 'md' }}
-            >
-              <option value="name">Name</option>
-              <option value="price">Price</option>
-              <option value="rarity">Rarity</option>
-              <option value="color">Color</option>
-              <option value="custom">Custom</option>
-              <option value="addedAt">Added At</option>
-              <option value="faerieFest">Recycling Points</option>
-              <option value="item_id">Item ID</option>
-            </Select>
-            <Select
-              minW={{ base: 'none', sm: '150px' }}
-              name="sortDir"
-              variant="filled"
-              value={sortInfo.sortDir}
-              onChange={handleSortChange}
-              size={{ base: 'sm', md: 'md' }}
-            >
-              <option value="asc">Ascending</option>
-              <option value="desc">Descending</option>
-            </Select>
+            <SearchList onChange={handleSearch} />
+            <HStack>
+              <Text
+                flex="0 0 auto"
+                textColor={'gray.300'}
+                fontSize="sm"
+                display={{ base: 'none', md: 'inherit' }}
+              >
+                Sort By
+              </Text>
+              <SortSelect
+                sortTypes={sortTypes}
+                sortBy={sortInfo.sortBy}
+                onClick={handleSortChange}
+                sortDir={sortInfo.sortDir}
+              />
+            </HStack>
           </HStack>
         </Flex>
         {!isEdit && isOwner && (
@@ -645,7 +654,7 @@ const ListPage = (props: Props) => {
             list={list}
             sortType={sortInfo.sortBy}
             onClick={selectItem}
-            ids={itemInfoIds.filter((a) => !itemInfo[a].isHighlight)}
+            ids={searchItemInfoIds ?? itemInfoIds.filter((a) => !itemInfo[a].isHighlight)}
             itemInfo={itemInfo}
             items={items}
             itemSelect={itemSelect}
