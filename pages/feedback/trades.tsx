@@ -14,6 +14,8 @@ import {
   Text,
 } from '@chakra-ui/react';
 import axios from 'axios';
+import { getCookie } from 'cookies-next';
+import { NextApiRequest, NextPageContext } from 'next';
 import { useEffect, useState } from 'react';
 import { BsXLg, BsXCircleFill, BsCheckCircleFill, BsCheckLg } from 'react-icons/bs';
 import CardBase from '../../components/Card/CardBase';
@@ -22,9 +24,10 @@ import FeedbackTrade from '../../components/FeebackCards/FeedbackTrade';
 import Layout from '../../components/Layout';
 import { TradeData } from '../../types';
 import { useAuth } from '../../utils/auth';
+import { CheckAuth } from '../../utils/googleCloud';
 
 const FeedbackSuggest = () => {
-  const { user, authLoading, getIdToken } = useAuth({ redirect: '/login' });
+  const { user, authLoading, getIdToken } = useAuth();
   const [trades, setTrades] = useState<TradeData[]>([]);
   const [prevTrades, setPrev] = useState<TradeData[]>([]);
   const [currentTrade, setCurrentTrade] = useState<TradeData>();
@@ -293,3 +296,27 @@ export const TradeGuidelines = () => {
     </>
   );
 };
+
+export async function getServerSideProps(context: NextPageContext) {
+  try {
+    const token = getCookie('userToken', { req: context.req, res: context.res }) as
+      | string
+      | undefined
+      | null;
+
+    if (!token) throw new Error('No token found');
+
+    await CheckAuth(context.req as NextApiRequest, token);
+
+    return {
+      props: {},
+    };
+  } catch (e) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    };
+  }
+}

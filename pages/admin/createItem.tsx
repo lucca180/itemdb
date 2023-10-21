@@ -13,12 +13,15 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import axios from 'axios';
+import { getCookie } from 'cookies-next';
+import { NextPageContext, NextApiRequest } from 'next';
 import React, { useState } from 'react';
 import HeaderCard from '../../components/Card/HeaderCard';
 import Layout from '../../components/Layout';
 import { InfoTab, CategoriesTab } from '../../components/Modal/EditItemModal';
 import { ItemData } from '../../types';
 import { useAuth } from '../../utils/auth';
+import { CheckAuth } from '../../utils/googleCloud';
 
 const defaultItem: ItemData = {
   internal_id: -1,
@@ -236,3 +239,29 @@ const CreateItem = () => {
 };
 
 export default CreateItem;
+
+export async function getServerSideProps(context: NextPageContext) {
+  try {
+    const token = getCookie('userToken', { req: context.req, res: context.res }) as
+      | string
+      | undefined
+      | null;
+
+    if (!token) throw new Error('No token found');
+
+    const res = await CheckAuth(context.req as NextApiRequest, token);
+
+    if (!res || !res.user || !res.user?.isAdmin) throw new Error('User is not an admin');
+
+    return {
+      props: {},
+    };
+  } catch (e) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+}
