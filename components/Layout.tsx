@@ -188,7 +188,7 @@ const Layout = (props: Props) => {
             py={3}
             justifyContent="space-evenly"
             flexFlow={['column', 'column', 'row']}
-            gap={[6, 20]}
+            gap={[6, 6, 20]}
           >
             <Flex
               flexFlow={'column'}
@@ -201,16 +201,17 @@ const Layout = (props: Props) => {
                 <NextImage src={mt_logo} width={202} height={50} alt="Magnetismo Times logo" />
               </ChakraLink>
               <Text fontSize="xs" color="gray.500" position={'relative'}>
-                © 2009-{new Date().getFullYear()}{' '}
-                <ChakraLink href="https://magnetismotimes.com/" isExternal>
-                  Magnetismo Times
-                </ChakraLink>
+                Made in{' '}
                 <NextImage
                   src={Brazil}
                   alt="Brazil Flag"
                   width={18}
-                  style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '5px' }}
-                />
+                  style={{ display: 'inline', verticalAlign: 'middle', margin: '0 0px' }}
+                />{' '}
+                by{' '}
+                <ChakraLink href="https://magnetismotimes.com/" isExternal>
+                  Magnetismo Times
+                </ChakraLink>
                 <br />© 1999-{new Date().getFullYear()} NeoPets, Inc. All rights reserved. Used with
                 permission.
               </Text>
