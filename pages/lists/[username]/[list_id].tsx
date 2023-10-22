@@ -565,6 +565,7 @@ const ListPage = (props: Props) => {
             justifyContent={['center', 'flex-end']}
             flexWrap={'wrap'}
           >
+            <SearchList onChange={handleSearch} />
             {isOwner && (
               <FormControl display="flex" alignItems="center" justifyContent="center" w={'auto'}>
                 <FormLabel mb="0" textColor={'gray.300'} fontSize="sm">
@@ -573,7 +574,6 @@ const ListPage = (props: Props) => {
                 <Switch colorScheme="whiteAlpha" isChecked={isEdit} onChange={toggleEdit} />
               </FormControl>
             )}
-            <SearchList onChange={handleSearch} />
             <HStack>
               <Text
                 flex="0 0 auto"

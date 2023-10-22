@@ -20,13 +20,25 @@ export const SearchList = (props: Props) => {
     inputRef.current?.focus();
   };
 
+  const captureKey = (e: KeyboardEvent) => {
+    if (e.key === 'F3' || (e.ctrlKey && e.key === 'f')) {
+      e.preventDefault();
+      setFocus();
+    }
+
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      reset();
+      inputRef.current?.blur();
+    }
+  };
+
   useEffect(() => {
-    window.addEventListener('keydown', function (e) {
-      if (e.key === 'F3' || (e.ctrlKey && e.key === 'f')) {
-        e.preventDefault();
-        setFocus();
-      }
-    });
+    window.addEventListener('keydown', captureKey);
+
+    return () => {
+      window.removeEventListener('keydown', captureKey);
+    };
   }, []);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
