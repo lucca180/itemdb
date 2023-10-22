@@ -12,6 +12,7 @@ import {
   Center,
   SkeletonText,
   useDisclosure,
+  Link,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import { ItemData, ItemLastSeen, PriceData } from '../../types';
@@ -24,6 +25,7 @@ import CardBase from '../Card/CardBase';
 import { MdHelp, MdMoneyOff } from 'react-icons/md';
 import dynamic from 'next/dynamic';
 import { LastSeenModalProps } from '../Modal/LastSeenModal';
+import NextLink from 'next/link';
 
 const ChartComponent = dynamic<ChartComponentProps>(() => import('../Charts/PriceChart'));
 const LastSeenModal = dynamic<LastSeenModalProps>(() => import('../Modal/LastSeenModal'));
@@ -181,8 +183,11 @@ const ItemPriceCard = (props: Props) => {
                 )}
                 {prices.length == 0 && (
                   <Flex justifyContent="center" alignItems="center" minH={150}>
-                    <Text fontSize="xs" color="gray.200">
-                      We don&apos;t have enough price data
+                    <Text fontSize="xs" color="gray.200" textAlign={'center'}>
+                      We don&apos;t have enough price data <br />
+                      <Link as={NextLink} href="/contribute" color="gray.400">
+                        Learn how to help
+                      </Link>
                     </Text>
                   </Flex>
                 )}

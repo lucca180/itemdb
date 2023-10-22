@@ -170,6 +170,12 @@ const ItemDrops = (props: Props) => {
                   );
                 })}
             </Flex>
+            <Text textAlign={'center'} mt={4} fontSize="xs" color="gray.300">
+              Odds on {itemOpenable.categories[cat]} opening reports.{' '}
+              <Link as={NextLink} href="/contribute" color="gray.400">
+                Learn How To Help
+              </Link>
+            </Text>
           </Flex>
         ))}
 
@@ -202,12 +208,6 @@ const ItemDrops = (props: Props) => {
           </Flex>
         </>
       )}
-      <Text textAlign={'center'} mt={4} fontSize="xs" color="gray.300">
-        Odds on {itemOpenable.openings} openings reports.{' '}
-        <Link as={NextLink} href="/contribute" color="gray.400">
-          Learn How To Help
-        </Link>
-      </Text>
     </CardBase>
   );
 };

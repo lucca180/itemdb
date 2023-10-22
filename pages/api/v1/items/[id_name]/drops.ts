@@ -56,6 +56,7 @@ export const getItemDrops = async (
 
   const openableData: ItemOpenable = {
     openings: openingCount,
+    categories: {},
     isCategoryCap: false,
     hasLE: false,
     notes: null,
@@ -67,7 +68,6 @@ export const getItemDrops = async (
 
   const dropsData: { [id: number]: ItemDrop } = {};
   const catsData: { [id: number]: { [noteType: string]: number } } = {};
-  const dropsCountByType: { [noteType: string]: number } = {};
 
   drops.map((drop) => {
     const dropData: ItemDrop = {
@@ -110,8 +110,8 @@ export const getItemDrops = async (
 
       drop.notes = moreCommonCat;
       dropsData[drop.item_iid] = drop;
-      dropsCountByType[moreCommonCat] = dropsCountByType[moreCommonCat]
-        ? dropsCountByType[moreCommonCat] + drop.dropRate
+      openableData.categories[moreCommonCat] = openableData.categories[moreCommonCat]
+        ? openableData.categories[moreCommonCat] + drop.dropRate
         : drop.dropRate;
     });
   }
@@ -126,7 +126,7 @@ export const getItemDrops = async (
   const dropsArray: ItemDrop[] = Object.values(dropsData)
     .filter((a) => a.dropRate >= (isNC ? 1 : 2))
     .map((drop) => {
-      let itemDropCount = dropsCountByType[drop.notes ?? ''] ?? newDropsCount;
+      let itemDropCount = openableData.categories[drop.notes ?? ''] ?? newDropsCount;
 
       if (drop.notes === 'unknown') itemDropCount = newDropsCount;
 

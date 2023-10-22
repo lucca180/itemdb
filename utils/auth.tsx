@@ -60,11 +60,8 @@ export function AuthProvider({ children }: any) {
       const { auth } = res;
 
       return auth.onIdTokenChanged(async (newUser) => {
-        console.log(`token changed!`);
         if (!newUser) {
-          console.log(`no token found...`);
           deleteCookie('userToken');
-          setCookie('userToken', '', { secure: true });
           setUserToken(null);
           setAuthLoading(false);
           return;

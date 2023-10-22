@@ -130,7 +130,6 @@ const ItemDataExtractor = () => {
         </b>
         .
         <br />
-        <br />
         You and your account are absolutely safe. Don't trust us? The entire code of itemdb is
         freely available,{' '}
         <Link href="https://github.com/lucca180/itemdb" isExternal>
@@ -139,56 +138,30 @@ const ItemDataExtractor = () => {
         . <br /> Also, the script code is commented so that you can understand everything that is
         happening.
       </Text>
-      <Text>
-        The usernames of item sellers (shops, auctions, and trades) are collected, but{' '}
-        <b>only the first 3 characters</b> are stored in our database.
-      </Text>
-      <Heading size="md" mt={3}>
-        TL;DR
-      </Heading>
-      <Text>
-        All of our data comes from the{' '}
-        <Link
-          href="https://github.com/lucca180/itemdb/raw/main/userscripts/itemDataExtractor.user.js"
-          isExternal
-        >
-          script
-        </Link>
-        . It is secure, and the code is open-source (in fact, all of our code is). With the script,
-        you can help us complete missing information and keep prices up to date!
-        <br />
-        <br />
-        You just need to{' '}
-        <Link
-          href="https://github.com/lucca180/itemdb/raw/main/userscripts/itemDataExtractor.user.js"
-          isExternal
-        >
-          install it
-        </Link>{' '}
-        and browse Neopia, and we'll take care of the rest :)
-      </Text>
       <Heading size="md" mt={3}>
         How to Install
       </Heading>
-      <Text>
-        Installing the script is easy.
-        <br />
-        <br />
-        First you will need the{' '}
-        <Link href="https://www.tampermonkey.net/" isExternal>
-          Tampermonkey
-        </Link>{' '}
-        extension for your browser if you don't have it already.
-        <br />
-        Then you just need to{' '}
-        <Link
-          href="https://github.com/lucca180/itemdb/raw/main/userscripts/itemDataExtractor.user.js"
-          isExternal
-        >
-          click here
-        </Link>{' '}
-        to install the script and it's done!
-      </Text>
+      <UnorderedList spacing={3}>
+        <ListItem>
+          {/* <ListIcon as={BsCheckCircleFill} color="green.300" /> */}
+          First you will need the{' '}
+          <Link href="https://www.tampermonkey.net/" isExternal>
+            Tampermonkey
+          </Link>{' '}
+          extension for your browser if you don't have it already.
+        </ListItem>
+        <ListItem>
+          {/* <ListIcon as={BsCheckCircleFill} color="green.300" /> */}
+          Then you just need to{' '}
+          <Link
+            href="https://github.com/lucca180/itemdb/raw/main/userscripts/itemDataExtractor.user.js"
+            isExternal
+          >
+            click here
+          </Link>{' '}
+          to install the script and it's done!
+        </ListItem>
+      </UnorderedList>
       <Heading size="md" mt={3}>
         What is sent to itemdb
       </Heading>
@@ -201,8 +174,8 @@ const ItemDataExtractor = () => {
           <ListIcon as={BsCheckCircleFill} color="green.300" />
           Item prices from shops, auctions, and trades.
           <Text fontSize="sm" color="gray.400">
-            The usernames of item sellers (shops, auctions, and trades) and bidders are collected,
-            but <b>only the first 3 characters</b> are stored in our database.
+            The owners and bidders usernames are collected, but <b>only the first 3 characters</b>{' '}
+            are stored in our database.
           </Text>
         </ListItem>
         <ListItem>

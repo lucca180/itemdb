@@ -40,7 +40,7 @@ const LoginPage = () => {
   useEffect(() => {
     if (!router.isReady || authLoading) return;
     init();
-  }, [router, authLoading]);
+  }, [router.isReady, authLoading]);
 
   const init = async () => {
     setIsLoading(true);

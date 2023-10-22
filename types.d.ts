@@ -273,6 +273,7 @@ export type WP_Article = {
 
 export type ItemOpenable = {
   openings: number;
+  categories: { [id: string]: number };
   isCategoryCap: boolean;
   notes: string | null;
   drops: ItemDrop[];
