@@ -32,12 +32,10 @@ type Props = {
 
 const HomePage = (props: Props) => {
   const { latestOwls, latestPosts } = props;
-  const [latestItems, setItems] = useState<ItemData[]>([]);
-  const [latestPrices, setPrices] = useState<ItemData[]>([]);
-  const [trendingItems, setTrending] = useState<ItemData[]>([]);
-  const [hottestRestock, setHottest] = useState<ItemData[]>([]);
-
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [latestItems, setItems] = useState<ItemData[] | null>(null);
+  const [latestPrices, setPrices] = useState<ItemData[] | null>(null);
+  const [trendingItems, setTrending] = useState<ItemData[] | null>(null);
+  const [hottestRestock, setHottest] = useState<ItemData[] | null>(null);
 
   const color = Color('#4A5568');
   const rgb = color.rgb().round().array();
@@ -47,7 +45,7 @@ const HomePage = (props: Props) => {
   }, []);
 
   const init = async () => {
-    const [itemRes, priceRes, trendingRes, hottestRes] = await Promise.all([
+    const [itemRes, priceRes, trendingRes, hottestRes] = (await Promise.allSettled([
       axios.get('api/v1/items', {
         params: {
           limit: 16,
@@ -68,13 +66,12 @@ const HomePage = (props: Props) => {
           limit: 16,
         },
       }),
-    ]);
+    ])) as { status: 'fulfilled' | 'rejected'; value?: any }[];
 
-    setTrending(trendingRes.data);
-    setItems(itemRes.data);
-    setPrices(priceRes.data);
-    setHottest(hottestRes.data);
-    setIsLoaded(true);
+    setItems(itemRes.value?.data || null);
+    setPrices(priceRes.value?.data || null);
+    setTrending(trendingRes.value?.data || null);
+    setHottest(hottestRes.value?.data || null);
   };
 
   return (
@@ -115,10 +112,9 @@ const HomePage = (props: Props) => {
       <Flex mt={8} gap={4} flexFlow="column">
         <Heading size="md">Latest Prices</Heading>
         <Flex flexWrap="wrap" gap={4} justifyContent="center">
-          {latestPrices.map((item) => (
-            <ItemCard item={item} key={item.internal_id} />
-          ))}
-          {!isLoaded && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
+          {latestPrices !== null &&
+            latestPrices.map((item) => <ItemCard item={item} key={item.internal_id} />)}
+          {!latestPrices && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
         </Flex>
         <Stack direction={{ base: 'column', lg: 'row' }}>
           <Flex gap={4} flexFlow="column" flex="1">
@@ -126,44 +122,40 @@ const HomePage = (props: Props) => {
               Latest Discoveries
             </Heading>
             <Flex flexWrap="wrap" gap={4} justifyContent="center" h="100%">
-              {latestItems.map((item) => (
-                <ItemCard item={item} key={item.internal_id} />
-              ))}
-              {!isLoaded && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
+              {latestItems &&
+                latestItems.map((item) => <ItemCard item={item} key={item.internal_id} />)}
+              {!latestItems && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
             </Flex>
           </Flex>
           <Flex gap={4} flexFlow="column" flex="1">
             <Tabs flex={1} colorScheme="gray" variant={'line'}>
               <TabList>
                 <Tab>Trending Items</Tab>
-                {latestOwls.length && <Tab>Latest Owls</Tab>}
+                {!latestOwls || (!!latestOwls.length && <Tab>Latest Owls</Tab>)}
                 <Tab>7-Day Hottest Restock</Tab>
               </TabList>
               <TabPanels>
                 <TabPanel>
                   <Flex flexWrap="wrap" gap={4} justifyContent="center">
-                    {trendingItems.map((item) => (
-                      <ItemCard item={item} key={item.internal_id} />
-                    ))}
-                    {!isLoaded && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
+                    {trendingItems !== null &&
+                      trendingItems.map((item) => <ItemCard item={item} key={item.internal_id} />)}
+                    {!trendingItems && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
                   </Flex>
                 </TabPanel>
                 {latestOwls.length && (
                   <TabPanel>
                     <Flex flexWrap="wrap" gap={4} justifyContent="center" h="100%">
-                      {isLoaded &&
-                        latestOwls.length &&
+                      {latestOwls &&
                         latestOwls.map((item) => <ItemCard item={item} key={item.internal_id} />)}
-                      {!isLoaded && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
+                      {!latestOwls && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
                     </Flex>
                   </TabPanel>
                 )}
                 <TabPanel>
                   <Flex flexWrap="wrap" gap={4} justifyContent="center">
-                    {hottestRestock.map((item) => (
-                      <ItemCard item={item} key={item.internal_id} />
-                    ))}
-                    {!isLoaded && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
+                    {hottestRestock &&
+                      hottestRestock.map((item) => <ItemCard item={item} key={item.internal_id} />)}
+                    {!hottestRestock && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
                   </Flex>
                 </TabPanel>
               </TabPanels>

@@ -25,7 +25,7 @@ import { AiFillWarning } from 'react-icons/ai';
 import HeaderCard from '../../components/Card/HeaderCard';
 import Layout from '../../components/Layout';
 import icon from '../../public/logo_icon.svg';
-import { parseBody } from 'next/dist/server/api-utils/node';
+import { parseBody } from 'next/dist/server/api-utils/node/parse-body';
 import ListSelect from '../../components/UserLists/ListSelect';
 import axios from 'axios';
 import { useEffect, useState } from 'react';

@@ -18,6 +18,11 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
   let { limit } = req.query;
   if (!limit) limit = '8';
 
+  const sorted = await getTrendingItems(parseInt(limit as string));
+  return res.status(200).json(sorted);
+}
+
+export const getTrendingItems = async (limit: number) => {
   const statsRes = await axios.get(
     'https://simpleanalytics.com/itemdb.com.br.json?version=5&fields=pages&start=today-3d&pages=/item*&limit=' +
       limit,
@@ -46,5 +51,6 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
     if (popularItemsStats[a.slug!].pageviews < popularItemsStats[b.slug!].pageviews) return 1;
     return 0;
   });
-  return res.status(200).json(sorted);
-}
+
+  return sorted;
+};
