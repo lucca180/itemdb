@@ -303,14 +303,20 @@ export default ItemPage;
 
 export async function getStaticProps(context: GetStaticPropsContext) {
   const id = context.params?.id as string | undefined;
-  if (!id) return { notFound: true };
+  if (!id) {
+    console.error('No id provided');
+    return { notFound: true };
+  }
   let item;
 
   const isIdNumber = !isNaN(Number(id));
 
   if (isIdNumber) {
     item = await getItem(Number(id));
-    if (!item) return { notFound: true };
+    if (!item) {
+      console.error('Failed to fetch item with number id', id);
+      return { notFound: true };
+    }
 
     if (item.slug)
       return {
@@ -321,7 +327,10 @@ export async function getStaticProps(context: GetStaticPropsContext) {
       };
   } else item = await getItem(id);
 
-  if (!item) return { notFound: true };
+  if (!item) {
+    console.error('Failed to fetch item with id', id);
+    return { notFound: true };
+  }
 
   const [colors, lists, similarItems, tradeLists, itemOpenable, itemParent, itemPrices, NPTrades] =
     await Promise.all([
@@ -335,7 +344,10 @@ export async function getStaticProps(context: GetStaticPropsContext) {
       getItemTrades({ name: item.name, image_id: item.image_id }),
     ]);
 
-  if (!colors) return { notFound: true };
+  if (!colors) {
+    console.error('Failed to fetch colors for item', item);
+    return { notFound: true };
+  }
 
   const props: ItemPageProps = {
     item: item,
