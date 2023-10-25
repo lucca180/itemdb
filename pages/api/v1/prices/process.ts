@@ -11,7 +11,7 @@ const MAX_PAST_DAYS = 60;
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
-const EVENT_MODE = false;
+const EVENT_MODE = true;
 const MIN_LAST_UPDATE = EVENT_MODE ? 2 : 7;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
@@ -329,8 +329,7 @@ async function updateOrAddDB(
 
     if (daysSinceLastUpdate < MIN_LAST_UPDATE) return undefined;
 
-    if (!EVENT_MODE && (variation <= 5 || priceValue < 5000) && daysSinceLastUpdate <= 15)
-      return undefined;
+    if ((variation <= 5 || priceValue < 5000) && daysSinceLastUpdate <= 15) return undefined;
 
     if (!oldPrice.noInflation_id && priceValue > 75000) {
       if (oldPrice.price < priceValue && variation >= 70) {
