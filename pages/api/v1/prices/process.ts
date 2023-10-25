@@ -367,7 +367,7 @@ async function updateOrAddDB(
   } catch (e) {
     if (typeof e !== 'string') throw e;
 
-    if (EVENT_MODE && e === 'inflation') return newPriceData;
+    if (e === 'inflation') return newPriceData;
 
     return {
       ...newPriceData,
