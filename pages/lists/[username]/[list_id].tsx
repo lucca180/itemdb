@@ -200,12 +200,12 @@ const ListPage = (props: Props) => {
   const getMatches = async () => {
     if (!list || !user || list.purpose === 'none' || isOwner) return;
 
-    let seeker = list.purpose === 'seeking' ? list.owner.id : user.username;
-    let offerer = list.purpose === 'trading' ? list.owner.id : user.username;
+    let seeker = list.purpose === 'seeking' ? list.owner.username : user.username;
+    let offerer = list.purpose === 'trading' ? list.owner.username : user.username;
 
     if (list.official) {
       seeker = user.username;
-      offerer = list.owner.id;
+      offerer = list.owner.username;
     }
 
     const token = await getIdToken();

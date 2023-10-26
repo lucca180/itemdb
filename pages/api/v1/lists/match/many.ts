@@ -42,6 +42,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     },
     include: {
       items: {
+        where: {
+          isHidden: false,
+        },
         include: {
           item: true,
         },
@@ -61,6 +64,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     },
     include: {
       items: {
+        where: {
+          isHidden: reqIsTarget ? undefined : false,
+        },
         include: {
           item: true,
         },
