@@ -367,7 +367,7 @@ async function updateOrAddDB(
   } catch (e) {
     if (typeof e !== 'string') throw e;
 
-    if (e === 'inflation') return newPriceData;
+    // if (e === 'inflation') return newPriceData;
 
     return {
       ...newPriceData,
