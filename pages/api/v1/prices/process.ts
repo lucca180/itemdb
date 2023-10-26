@@ -376,10 +376,10 @@ async function updateOrAddDB(
   }
 }
 
-const MIN_ITEMS_THRESHOLD = 5;
+const MIN_ITEMS_THRESHOLD = EVENT_MODE ? 7 : 5;
 
 function filterMostRecents(priceProcessList: PriceProcess[]) {
-  const daysThreshold = [7, 15, 30];
+  const daysThreshold = EVENT_MODE ? [3, 7, 15, 30] : [7, 15, 30];
 
   for (const days of daysThreshold) {
     const filtered = priceProcessList.filter(

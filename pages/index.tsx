@@ -24,10 +24,12 @@ import { ArticleCard } from '../components/Articles/ArticlesCard';
 import { wp_getLatestPosts } from './api/wp/posts';
 import NextLink from 'next/link';
 import Color from 'color';
+import { getTrendingItems } from './api/v1/beta/trending';
 
 type Props = {
   latestOwls: ItemData[];
   latestPosts: WP_Article[];
+  trendingItems: ItemData[];
 };
 
 const HomePage = (props: Props) => {
@@ -45,18 +47,13 @@ const HomePage = (props: Props) => {
   }, []);
 
   const init = async () => {
-    const [itemRes, priceRes, trendingRes, hottestRes] = (await Promise.allSettled([
+    const [itemRes, priceRes, hottestRes] = (await Promise.allSettled([
       axios.get('api/v1/items', {
         params: {
           limit: 16,
         },
       }),
       axios.get('api/v1/prices', {
-        params: {
-          limit: 16,
-        },
-      }),
-      axios.get('api/v1/beta/trending', {
         params: {
           limit: 16,
         },
@@ -70,7 +67,7 @@ const HomePage = (props: Props) => {
 
     setItems(itemRes.value?.data || null);
     setPrices(priceRes.value?.data || null);
-    setTrending(trendingRes.value?.data || null);
+    setTrending(props.trendingItems || null);
     setHottest(hottestRes.value?.data || null);
   };
 
@@ -135,7 +132,7 @@ const HomePage = (props: Props) => {
                 <Tab>7-Day Hottest Restock</Tab>
               </TabList>
               <TabPanels>
-                <TabPanel>
+                <TabPanel px={0}>
                   <Flex flexWrap="wrap" gap={4} justifyContent="center">
                     {trendingItems !== null &&
                       trendingItems.map((item) => <ItemCard item={item} key={item.internal_id} />)}
@@ -143,7 +140,7 @@ const HomePage = (props: Props) => {
                   </Flex>
                 </TabPanel>
                 {latestOwls.length && (
-                  <TabPanel>
+                  <TabPanel px={0}>
                     <Flex flexWrap="wrap" gap={4} justifyContent="center" h="100%">
                       {latestOwls &&
                         latestOwls.map((item) => <ItemCard item={item} key={item.internal_id} />)}
@@ -151,7 +148,7 @@ const HomePage = (props: Props) => {
                     </Flex>
                   </TabPanel>
                 )}
-                <TabPanel>
+                <TabPanel px={0}>
                   <Flex flexWrap="wrap" gap={4} justifyContent="center">
                     {hottestRestock &&
                       hottestRestock.map((item) => <ItemCard item={item} key={item.internal_id} />)}
@@ -188,22 +185,20 @@ const HomePage = (props: Props) => {
 export default HomePage;
 
 export async function getStaticProps() {
-  const [latestOwls, latestPosts] = await Promise.all([
-    getLatestOwls(16)
-      .then((p) => p)
-      .catch(() => []),
-    wp_getLatestPosts(5)
-      .then((p) => p)
-      .catch((e) => {
-        console.error(e);
-        return [];
-      }),
+  const [latestOwls, latestPosts, trendingItems] = await Promise.all([
+    getLatestOwls(16).catch(() => []),
+    wp_getLatestPosts(5).catch((e) => {
+      console.error(e);
+      return [];
+    }),
+    getTrendingItems(16).catch(() => []),
   ]);
 
   return {
     props: {
       latestOwls,
       latestPosts,
+      trendingItems,
     },
     revalidate: 60, // In seconds
   };
