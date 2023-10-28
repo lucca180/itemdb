@@ -30,17 +30,19 @@ import {
   Link,
   Icon,
   useDisclosure,
+  Image,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { EditItemFeedbackJSON, ItemData, ItemTag } from '../../types';
+import { EditItemFeedbackJSON, ItemData, ItemOpenable, ItemTag, PrizePoolData } from '../../types';
 import { useAuth } from '../../utils/auth';
 import ItemCatSelect from '../Input/ItemCategorySelect';
 import ItemStatusSelect from '../Input/ItemStatusSelect';
-import TagSelect from '../Input/TagsSelect';
+// import TagSelect from '../Input/TagsSelect';
 import { FiTrash } from 'react-icons/fi';
 import dynamic from 'next/dynamic';
+import ItemSelect from '../Input/ItemSelect';
 
 const ConfirmDeleteItem = dynamic<{
   isOpen: boolean;
@@ -55,11 +57,12 @@ export type EditItemModalProps = {
   onClose: () => void;
   item: ItemData;
   tags: ItemTag[];
+  itemOpenable: ItemOpenable | null;
 };
 
 const EditItemModal = (props: EditItemModalProps) => {
   const { getIdToken, user } = useAuth();
-  const { isOpen, onClose, item: itemProps, tags: tagsProps } = props;
+  const { isOpen, onClose, item: itemProps, tags: tagsProps, itemOpenable } = props;
   const [item, setItem] = useState<ItemData>(itemProps);
   const [tags, setTags] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -199,21 +202,29 @@ const EditItemModal = (props: EditItemModalProps) => {
               <Tabs variant="line" colorScheme="gray" isLazy>
                 <TabList>
                   <Tab>Item Info</Tab>
-                  <Tab>Categories and Tags</Tab>
+                  {isAdmin && <Tab>Categories</Tab>}
+                  {isAdmin && <Tab>Drops</Tab>}
                 </TabList>
                 <TabPanels>
                   <TabPanel>
                     <InfoTab item={item} itemProps={itemProps} onChange={handleChange} />
                   </TabPanel>
-                  <TabPanel>
-                    <CategoriesTab
-                      categories={categories}
-                      tags={tags}
-                      item={item}
-                      itemProps={itemProps}
-                      onChange={handleTagsChange}
-                    />
-                  </TabPanel>
+                  {isAdmin && (
+                    <TabPanel>
+                      <CategoriesTab
+                        categories={categories}
+                        tags={tags}
+                        item={item}
+                        itemProps={itemProps}
+                        onChange={handleTagsChange}
+                      />
+                    </TabPanel>
+                  )}
+                  {isAdmin && (
+                    <TabPanel>
+                      <OpenableTab itemOpenable={itemOpenable} item={item} />
+                    </TabPanel>
+                  )}
                 </TabPanels>
               </Tabs>
             )}
@@ -278,13 +289,15 @@ const EditItemModal = (props: EditItemModalProps) => {
 
 export default EditItemModal;
 
-type TabProps = {
+// ------- Info Tab ------- //
+
+type infoTabProps = {
   item: ItemData;
   itemProps: ItemData;
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 };
 
-export const InfoTab = (props: TabProps) => {
+export const InfoTab = (props: infoTabProps) => {
   const { item, itemProps, onChange: handleChange } = props;
   const { user } = useAuth();
 
@@ -449,6 +462,8 @@ export const InfoTab = (props: TabProps) => {
   );
 };
 
+// ------- Categories and Tags Tab ------- //
+
 type TagSelectProps = {
   item: ItemData;
   itemProps: ItemData;
@@ -530,7 +545,7 @@ export const CategoriesTab = (props: TagSelectProps) => {
                 />
                 <FormHelperText>Prefer to use existing categories instead of creating new ones</FormHelperText>
             </FormControl> */}
-      <FormControl>
+      {/* <FormControl>
         <FormLabel color="gray.300">Tags (max. 15)</FormLabel>
         <TagSelect
           value={tags}
@@ -547,7 +562,142 @@ export const CategoriesTab = (props: TagSelectProps) => {
           <br />
           Tags must not contain words that are in the item name
         </FormHelperText>
-      </FormControl>
+      </FormControl> */}
     </Stack>
+  );
+};
+
+// ------- Openable Tab ------- //
+
+type OpenableTabProps = {
+  itemOpenable: ItemOpenable | null;
+  item: ItemData;
+};
+
+export const OpenableTab = (props: OpenableTabProps) => {
+  const { itemOpenable: itemOpenableProps, item } = props;
+  const [itemOpenable, setItemOpenable] = useState<ItemOpenable | null>(itemOpenableProps);
+  const { getIdToken } = useAuth();
+  const [dropData, setDropData] = useState<{ [id: number]: ItemData }>({});
+  const [isLoading, setLoading] = useState<boolean>(false);
+  const [newPoolName, setNewPoolName] = useState<string>('');
+
+  useEffect(() => {
+    if (!itemOpenable) return;
+    init();
+  }, [itemOpenable]);
+
+  const init = async () => {
+    if (!itemOpenable) return;
+    setLoading(true);
+    const itemRes = await axios.post(`/api/v1/items/many`, {
+      id: Object.keys(itemOpenable.drops),
+    });
+
+    setDropData(itemRes.data);
+    setLoading(false);
+  };
+
+  const updatePool = async (poolName: string, newItem: ItemData, action: 'add' | 'remove') => {
+    const token = await getIdToken();
+    if (!token) return;
+    setLoading(true);
+
+    const res = await axios.patch(
+      `/api/v1/items/${item.slug}/drops`,
+      {
+        drop_id: newItem.internal_id,
+        poolName: poolName,
+        action: action,
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    setItemOpenable(res.data.dropUpdate);
+  };
+
+  const onSelect = (newItem: ItemData, poolName: string) => {
+    updatePool(poolName, newItem, 'add');
+  };
+
+  const createPool = () => {
+    if (!itemOpenable || !newPoolName) return;
+    const newPool: PrizePoolData = {
+      name: newPoolName,
+      items: [],
+      openings: 0,
+      maxDrop: 0,
+      minDrop: 0,
+      totalDrops: 0,
+    };
+
+    const newOpenable: ItemOpenable = {
+      ...itemOpenable,
+      pools: {
+        [newPoolName]: newPool,
+        ...itemOpenable.pools,
+      },
+    };
+
+    setItemOpenable(newOpenable);
+  };
+
+  return (
+    <Flex flexFlow="column" gap={3}>
+      <Flex flexFlow={'column'} bg="blackAlpha.300" p={2} gap={3}>
+        <Input
+          size="sm"
+          variant="filled"
+          placeholder="Pool Name"
+          onChange={(e) => setNewPoolName(e.target.value)}
+        />
+        <Button size="sm" onClick={createPool} isDisabled={!newPoolName}>
+          Create New Pool
+        </Button>
+      </Flex>
+      {itemOpenable &&
+        Object.values(itemOpenable.pools).map((pool) => (
+          <Flex flexFlow={'column'} key={pool.name} bg="blackAlpha.300" p={2}>
+            <Text fontSize={'sm'} textTransform="capitalize" textAlign={'center'} fontWeight="bold">
+              Prize Pool - {pool.name}
+            </Text>
+            {!isLoading && (
+              <Flex flexFlow={'column'} gap={3} mt={3}>
+                {pool.items.map((item) => {
+                  const itemData = dropData[item];
+                  if (!itemData) return null;
+                  return (
+                    <Flex key={itemData.internal_id} alignItems="center" gap={2}>
+                      <Image
+                        src={itemData.image}
+                        width="30px"
+                        height="30px"
+                        alt={itemData.description}
+                      />
+                      <Text fontSize={'sm'}>{itemData.name}</Text>
+                      <Button
+                        size="xs"
+                        colorScheme="red"
+                        onClick={() => updatePool(pool.name, itemData, 'remove')}
+                        variant="ghost"
+                      >
+                        X
+                      </Button>
+                    </Flex>
+                  );
+                })}
+                <ItemSelect onChange={(item) => onSelect(item, pool.name)} />
+              </Flex>
+            )}
+            {isLoading && (
+              <Center>
+                <Spinner />
+              </Center>
+            )}
+          </Flex>
+        ))}
+    </Flex>
   );
 };

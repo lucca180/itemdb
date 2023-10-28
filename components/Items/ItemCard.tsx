@@ -161,7 +161,7 @@ const ItemCardBase = (props: ItemProps) => {
               </Tooltip>
             )}
 
-            {odds && (
+            {!!odds && (
               <Badge
                 colorScheme={isLE ? 'green' : 'white'}
                 whiteSpace="pre-wrap"

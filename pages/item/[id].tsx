@@ -141,6 +141,7 @@ const ItemPage = (props: ItemPageProps) => {
       {item && isEditModalOpen && (
         <EditItemModal
           isOpen={isEditModalOpen}
+          itemOpenable={itemOpenable}
           item={item}
           onClose={() => setIsEditModalOpen(false)}
           tags={[]}

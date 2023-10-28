@@ -273,14 +273,23 @@ export type WP_Article = {
 
 export type ItemOpenable = {
   openings: number;
-  categories: { [id: string]: number };
-  isCategoryCap: boolean;
+  pools: { [name: string]: PrizePoolData };
   notes: string | null;
-  drops: ItemDrop[];
+  drops: { [id: number]: ItemDrop };
   hasLE: boolean;
-  minDrop: number;
-  maxDrop: number;
   isGBC: boolean;
+  isChoice: boolean;
+  maxDrop: number;
+  minDrop: number;
+};
+
+export type PrizePoolData = {
+  name: string;
+  items: number[];
+  openings: number;
+  maxDrop: number;
+  minDrop: number;
+  totalDrops: number;
 };
 
 export type ItemDrop = {
@@ -288,6 +297,7 @@ export type ItemDrop = {
   dropRate: number;
   notes: string | null;
   isLE: boolean;
+  pool: string | null;
 };
 
 export type UserAchievement = {

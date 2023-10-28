@@ -18,7 +18,7 @@
   "dependencies": {
     "@chakra-ui/icons": "^2.0.12",
     "@chakra-ui/react": "^2.8.0",
-    "@choc-ui/chakra-autocomplete": "^5.1.4",
+    "@choc-ui/chakra-autocomplete": "^5.2.8",
     "@dnd-kit/core": "^6.0.7",
     "@dnd-kit/sortable": "^7.0.2",
     "@emotion/react": "^11.11.1",
