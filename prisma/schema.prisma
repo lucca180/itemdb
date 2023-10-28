@@ -278,7 +278,7 @@ model OpenableItems {
   addedAt        DateTime @default(now())
 
   isManual Boolean @default(false)
-  prize    String?
+  prizePool    String?
 
   item        Items  @relation("childItem", fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
   parent_item Items? @relation("parentItem", fields: [parent_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
