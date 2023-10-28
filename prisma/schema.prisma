@@ -276,8 +276,12 @@ model OpenableItems {
   notes          String?
   limitedEdition Boolean  @default(false)
   addedAt        DateTime @default(now())
-  item           Items    @relation("childItem", fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
-  parent_item    Items?   @relation("parentItem", fields: [parent_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+
+  isManual Boolean @default(false)
+  prize    String?
+
+  item        Items  @relation("childItem", fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+  parent_item Items? @relation("parentItem", fields: [parent_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model OpenableQueue {
