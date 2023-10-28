@@ -103,6 +103,9 @@ export const getItemDrops = async (
   const poolsData: { [id: string]: { [note: string]: number } } = {};
 
   const openingSet: { [id: string]: number[] } = {};
+
+  const confimedDrops = new Set<string>();
+
   let hasManual = false;
 
   drops.map((drop) => {
@@ -227,9 +230,10 @@ export const getItemDrops = async (
       max: { val: 0, repeat: 0, prev: 0, prevRepeat: 0 },
     };
 
-    Object.values(openingSet).map((opening) => {
+    Object.entries(openingSet).map(([id, opening]) => {
       let drops = 0;
       for (const item of opening) {
+        if (ignoreItems.includes(item)) continue;
         if (pool.items.includes(item)) drops++;
       }
 
@@ -242,11 +246,13 @@ export const getItemDrops = async (
 
       pool.openings++;
       pool.totalDrops += drops;
+      confimedDrops.add(id);
 
       if (pool.name === 'unknown' && drops > 1) console.log(drops, opening);
 
       minMax = getMinMax(drops, minMax);
     });
+
     pool.minDrop =
       minMax.min.repeat > 1 || !minMax.min.prevRepeat ? minMax.min.val : minMax.min.prev;
     pool.maxDrop =
@@ -295,6 +301,7 @@ export const getItemDrops = async (
       };
     });
 
+  openableData.openings = confimedDrops.size;
   return openableData;
 };
 
@@ -310,6 +317,7 @@ export const getItemParent = async (item_iid: number) => {
   drops.map((drop) => {
     if (!drop.parent_iid) return;
     parents[drop.parent_iid] = parents[drop.parent_iid] ? parents[drop.parent_iid] + 1 : 1;
+    if (drop.prizePool) parents[drop.parent_iid] += 10;
   });
 
   //discard parents with less than 3 drops

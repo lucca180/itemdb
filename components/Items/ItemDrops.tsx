@@ -237,9 +237,9 @@ const getDropText = (pool: PrizePoolData | null, itemOpenable: ItemOpenable, isL
         of these items:
       </>
     );
-  console.log(pool);
+
   const hasChance =
-    pool.openings / itemOpenable.openings <= 0.98 &&
+    pool.openings / itemOpenable.openings <= 0.9 &&
     (!itemOpenable.isChoice || ['le', 'bonus'].includes(pool.name));
 
   if (hasChance) {

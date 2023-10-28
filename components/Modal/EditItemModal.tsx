@@ -473,7 +473,7 @@ type TagSelectProps = {
 };
 
 export const CategoriesTab = (props: TagSelectProps) => {
-  const { item, categories, tags, onChange: handleChange } = props;
+  const { item, onChange: handleChange } = props;
   const [specialTags, setSpecialTags] = useState<string[]>([]);
   const { user } = useAuth();
 
