@@ -1,9 +1,11 @@
 import prisma from '../../../utils/prisma';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { CheckAuth } from '../../../utils/googleCloud';
+import { Auth, CheckAuth } from '../../../utils/googleCloud';
 import requestIp from 'request-ip';
 import { User, UserRoles } from '../../../types';
 import { startOfDay } from 'date-fns';
+
+const expiresIn = 5 * 24 * 60 * 60 * 1000; // 5 days in milliseconds;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
@@ -35,6 +37,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       });
 
     if (!dbUser) return res.status(401).json({ error: 'Unauthorized' });
+
+    const token = req.headers.authorization?.split('Bearer ')[1];
+
+    if (token) {
+      const sessionCookie = await Auth.createSessionCookie(token, { expiresIn: expiresIn });
+      res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
+      res.setHeader('Set-Cookie', `session=${sessionCookie};Path=/;HttpOnly;Max-Age=${expiresIn};`);
+    }
 
     const finalUser: User = {
       id: dbUser.id,

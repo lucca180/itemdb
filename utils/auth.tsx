@@ -127,6 +127,7 @@ export function AuthProvider({ children }: any) {
   const signout = async () => {
     const auth = (await getAuth()).auth;
     auth.signOut();
+    await axios.get('/api/auth/logout');
     setUser(null);
     setLists(null);
     location.reload();

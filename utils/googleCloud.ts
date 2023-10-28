@@ -1,5 +1,5 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
+import { DecodedIdToken, getAuth } from 'firebase-admin/auth';
 import type { NextApiRequest } from 'next';
 import prisma from './prisma';
 import { Storage } from '@google-cloud/storage';
@@ -13,9 +13,16 @@ export const Auth = getAuth();
 
 export const CheckAuth = async (req: NextApiRequest | null, token?: string) => {
   token = token || req?.headers.authorization?.split('Bearer ')[1];
-  if (!token) throw new Error('No token provided');
 
-  const decodedToken = await Auth.verifyIdToken(token);
+  let decodedToken: DecodedIdToken;
+  try {
+    if (!token) throw new Error('No token provided');
+    decodedToken = await Auth.verifyIdToken(token);
+  } catch (err) {
+    if (!req || !req.cookies.session) throw err;
+
+    decodedToken = await Auth.verifySessionCookie(req.cookies.session, true);
+  }
 
   const dbUser = (await prisma.user.findUnique({
     where: { id: decodedToken.uid, email: decodedToken.email },
