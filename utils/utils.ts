@@ -423,3 +423,88 @@ export function stripMarkdown(markdownText: string) {
 
   return markdownText;
 }
+
+export const tyrannianShops = [
+  'Tyrannian Food',
+  'Tyrannian Furniture',
+  'Tyrannian Petpet',
+  'Tyrannian Weaponry',
+];
+export const faerielandShops = ['Faerie Book', 'Faerie Food', 'Faerie Petpet'];
+export const halloweenShops = [
+  'Spooky Food',
+  'Spooky Furniture',
+  'Spooky Petpet',
+  'Haunted Weaponry',
+  'Neovian Antiques',
+  'Neovian Attire',
+  'Neovian Pastries',
+  'Neovian Press',
+];
+
+export const getRestockPrice = (item: ItemData, ignoreSpecialDays = false): number[] | null => {
+  if (!item.category || !item.rarity || !item.estVal) return null;
+
+  const todayNST = getDateNST();
+
+  let minPrice = Math.round(item.estVal * 1.44);
+  let maxPrice = Math.round(item.estVal * 1.92);
+
+  if (item.rarity <= 84) {
+    minPrice = Math.max(minPrice, 100);
+    maxPrice = Math.max(maxPrice, 100);
+  } else if (item.rarity <= 89) {
+    minPrice = Math.max(minPrice, 2500);
+    maxPrice = Math.max(maxPrice, 2500);
+  } else if (item.rarity <= 94) {
+    minPrice = Math.max(minPrice, 5000);
+    maxPrice = Math.max(maxPrice, 5000);
+  } else if (item.rarity <= 99) {
+    minPrice = Math.max(minPrice, 10000);
+    maxPrice = Math.max(maxPrice, 10000);
+  }
+
+  if (ignoreSpecialDays) return [minPrice, maxPrice];
+
+  if (todayNST.getDate() === 3) {
+    return [minPrice * 0.5, maxPrice * 0.5].map((x) => Math.round(x));
+  }
+
+  // may 12
+  else if (
+    todayNST.getMonth() === 4 &&
+    todayNST.getDate() === 12 &&
+    tyrannianShops.map((x) => x.toLowerCase()).includes(item.category.toLowerCase())
+  ) {
+    return [minPrice * 0.2, maxPrice * 0.2].map((x) => Math.round(x));
+  }
+
+  //aug 20
+  else if (
+    todayNST.getMonth() === 7 &&
+    todayNST.getDate() === 20 &&
+    item.category.toLowerCase() === 'usuki doll'
+  ) {
+    return [minPrice * 0.33, maxPrice * 0.33].map((x) => Math.round(x));
+  }
+
+  // sept 20
+  else if (
+    todayNST.getMonth() === 8 &&
+    todayNST.getDate() === 20 &&
+    faerielandShops.map((x) => x.toLowerCase()).includes(item.category.toLowerCase())
+  ) {
+    return [minPrice * 0.33, maxPrice * 0.33].map((x) => Math.round(x));
+  }
+
+  // oct 31
+  else if (
+    todayNST.getMonth() === 9 &&
+    todayNST.getDate() === 31 &&
+    halloweenShops.map((x) => x.toLowerCase()).includes(item.category.toLowerCase())
+  ) {
+    return [minPrice * 0.33, maxPrice * 0.33].map((x) => Math.round(x));
+  }
+
+  return [minPrice, maxPrice];
+};

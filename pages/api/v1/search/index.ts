@@ -1,7 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
-import { getDateNST, getItemFindAtLinks, isMissingInfo } from '../../../../utils/utils';
+import {
+  faerielandShops,
+  getDateNST,
+  getItemFindAtLinks,
+  halloweenShops,
+  isMissingInfo,
+  tyrannianShops,
+} from '../../../../utils/utils';
 import { ItemData, SearchFilters } from '../../../../types';
 import Color from 'color';
 import { Prisma } from '@prisma/client';
@@ -190,14 +197,38 @@ export async function doSearch(query: string, filters: SearchFilters) {
 
     const todayNST = getDateNST();
 
-    if (todayNST.getDate() !== 3) {
+    if (todayNST.getDate() === 3) {
+      numberFilters.push(getRestockQuery(0.5, minProfit));
+    }
+
+    // may 12
+    else if (todayNST.getMonth() === 4 && todayNST.getDate() === 12) {
       numberFilters.push(Prisma.sql`
-        temp.price - (temp.est_val * 1.6) >= ${minProfit}
+        temp.category in (${Prisma.join(tyrannianShops)}) AND ${getRestockQuery(0.2, minProfit)}
+      `);
+    }
+
+    //aug 20
+    else if (todayNST.getMonth() === 7 && todayNST.getDate() === 20) {
+      numberFilters.push(Prisma.sql`
+        temp.category = 'usuki doll' AND ${getRestockQuery(0.33, minProfit)}
+      `);
+    }
+
+    // sept 20
+    else if (todayNST.getMonth() === 8 && todayNST.getDate() === 20) {
+      numberFilters.push(Prisma.sql`
+        temp.category in (${Prisma.join(faerielandShops)}) AND ${getRestockQuery(0.5, minProfit)}
+      `);
+    }
+
+    // oct 31
+    else if (todayNST.getMonth() === 9 && todayNST.getDate() === 31) {
+      numberFilters.push(Prisma.sql`
+        temp.category in (${Prisma.join(halloweenShops)}) AND t${getRestockQuery(0.5, minProfit)}
       `);
     } else {
-      numberFilters.push(Prisma.sql`
-        temp.price - ((temp.est_val * 1.6)/2) >= ${minProfit}
-      `);
+      numberFilters.push(getRestockQuery(1, minProfit));
     }
   }
 
@@ -439,3 +470,12 @@ export async function doSearch(query: string, filters: SearchFilters) {
 // FROM ItemColor
 // WHERE (POWER(h-15,2)+POWER(s-100,2)+POWER(l-45,2)) <= 750
 // ORDER BY dist
+
+const getRestockQuery = (multiplier: number, minProfit: number) => Prisma.sql`
+(
+  (temp.rarity <= 84 AND temp.price - GREATEST(100, temp.est_val * 1.9) * ${multiplier} >= ${minProfit} ) OR
+  (temp.rarity >= 85 AND temp.rarity <= 89 AND temp.price - GREATEST(2500, temp.est_val * 1.9) * ${multiplier} >= ${minProfit} ) OR
+  (temp.rarity >= 90 AND temp.rarity <= 94 AND temp.price - GREATEST(5000, temp.est_val * 1.9) * ${multiplier} >= ${minProfit} ) OR
+  (temp.rarity >= 95 AND temp.rarity <= 99 AND temp.price - GREATEST(1000, temp.est_val * 1.9) * ${multiplier} >= ${minProfit} )
+)
+`;

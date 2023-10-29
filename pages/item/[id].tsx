@@ -43,6 +43,7 @@ import ItemParent from '../../components/Items/ItemParent';
 import dynamic from 'next/dynamic';
 import { getItemPrices } from '../api/v1/items/[id_name]/prices';
 import { getItemTrades } from '../api/v1/trades';
+import ItemRestock from '../../components/Items/ItemRestockInfo';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -291,6 +292,7 @@ const ItemPage = (props: ItemPageProps) => {
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>
             {item.isWearable && <ItemPreview item={item} isLoading={isLoading} />}
+            {item.findAt.restockShop && <ItemRestock item={item} lastSeen={seenStats} />}
             {!item.isNC && item.status === 'active' && <TradeCard item={item} trades={trades} />}
             {itemParent.length > 0 && <ItemParent item={item} parentItems={itemParent} />}
           </Flex>

@@ -574,9 +574,23 @@ type OpenableTabProps = {
   item: ItemData;
 };
 
+const defaultItemOpenable: ItemOpenable = {
+  openings: 0,
+  pools: {},
+  drops: {},
+  notes: null,
+  hasLE: false,
+  isGBC: false,
+  isChoice: false,
+  maxDrop: 0,
+  minDrop: 0,
+};
+
 export const OpenableTab = (props: OpenableTabProps) => {
   const { itemOpenable: itemOpenableProps, item } = props;
-  const [itemOpenable, setItemOpenable] = useState<ItemOpenable | null>(itemOpenableProps);
+  const [itemOpenable, setItemOpenable] = useState<ItemOpenable | null>(
+    itemOpenableProps ?? defaultItemOpenable
+  );
   const { getIdToken } = useAuth();
   const [dropData, setDropData] = useState<{ [id: number]: ItemData }>({});
   const [isLoading, setLoading] = useState<boolean>(false);

@@ -96,7 +96,7 @@ const SearchFilters = (props: Props) => {
   const handleNumberChange = (
     newVal: string,
     index: number,
-    filterType: 'price' | 'rarity' | 'weight' | 'estVal' | 'owlsValue'
+    filterType: 'price' | 'rarity' | 'weight' | 'estVal' | 'owlsValue' | 'restockProfit'
   ) => {
     const tuple = [...filters[filterType]];
     tuple[index] = newVal;
@@ -348,6 +348,24 @@ const SearchFilters = (props: Props) => {
             <CustomNumberInput
               onChange={(val) => handleNumberChange(val, 1, 'estVal')}
               value={filters.estVal[1]}
+            />
+          </HStack>
+        </AccordionPanel>
+      </AccordionItem>
+      <AccordionItem>
+        <h2>
+          <AccordionButton>
+            <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
+              Min Restock Profit {filters.restockProfit && <Badge>1</Badge>}
+            </Box>
+            <AccordionIcon />
+          </AccordionButton>
+        </h2>
+        <AccordionPanel pb={4}>
+          <HStack>
+            <CustomNumberInput
+              onChange={(val) => handleNumberChange(val, 0, 'restockProfit')}
+              value={filters.restockProfit[0]}
             />
           </HStack>
         </AccordionPanel>
