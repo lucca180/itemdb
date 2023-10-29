@@ -31,6 +31,7 @@ const CardBase = (props: Props) => {
         p={2}
         textAlign="center"
         fontWeight="bold"
+        as={'h3'}
         bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}
       >
         {props.title}

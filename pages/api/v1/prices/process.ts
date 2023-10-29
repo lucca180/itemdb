@@ -147,7 +147,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   // list of unique entries
   const uniqueNames = [...processList].filter(
-    (value, index, self) => index === self.findIndex((t) => genItemKey(t) === genItemKey(value))
+    (value, index, self) =>
+      index === self.findIndex((t) => genItemKey(t, true) === genItemKey(value, true))
   );
 
   for (const item of uniqueNames) {
