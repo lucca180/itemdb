@@ -11,8 +11,22 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   const item_id = req.query.item_id as string | undefined;
-  let name = req.query.name as string | undefined;
-  let image_id = req.query.image_id as string | undefined;
+  const name = req.query.name as string | undefined;
+  const image_id = req.query.image_id as string | undefined;
+
+  const lastSeen = await getLastSeen({ item_id, name, image_id });
+
+  res.json(lastSeen);
+}
+
+type getLastSeenParams = {
+  item_id?: string | number | null;
+  name?: string;
+  image_id?: string;
+};
+
+export const getLastSeen = async (params: getLastSeenParams) => {
+  let { item_id, name, image_id } = params;
 
   const stats = await prisma.priceProcess.groupBy({
     by: ['type'],
@@ -76,5 +90,5 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     else lastSeen[s.type] = s._max.addedAt.toJSON();
   });
 
-  res.json(lastSeen);
-}
+  return lastSeen;
+};

@@ -1,4 +1,4 @@
-import { Center, Flex, HStack, Image, Tag, Text, Link } from '@chakra-ui/react';
+import { Center, Flex, HStack, Tag, Text, Link } from '@chakra-ui/react';
 import React from 'react';
 import { ItemData, ItemLastSeen } from '../../types';
 import {
@@ -9,6 +9,7 @@ import {
   tyrannianShops,
 } from '../../utils/utils';
 import CardBase from '../Card/CardBase';
+import Image from 'next/image';
 
 type Props = {
   item: ItemData;
@@ -67,8 +68,10 @@ const ItemRestock = (props: Props) => {
               src={`https://images.neopets.com/shopkeepers/w${
                 categoryToShopID[item.category.toLowerCase()]
               }.gif`}
-              alt={item.name}
-              maxH={'95px'}
+              priority
+              alt={item.category.toLowerCase() + ' shop'}
+              width={276}
+              height={92}
             />
           </Link>
           {specialDay === 'hpd' && <Tag colorScheme={'green'}>Half Price Day - 50% off</Tag>}
@@ -83,7 +86,14 @@ const ItemRestock = (props: Props) => {
           <Tag size="md" fontWeight="bold" as="h3">
             Est. Profit
           </Tag>
-          <Text flex="1" fontSize="xs" textAlign="right">
+          <Text
+            flex="1"
+            fontSize="xs"
+            textAlign="right"
+            color={
+              item.price.value && item.price.value - restockPrice[0] <= 0 ? 'red.300' : undefined
+            }
+          >
             {!item.price.value && '???'}
             {item.price.value && <>{intl.format(item.price.value - restockPrice[0])} NP</>}
           </Text>

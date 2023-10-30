@@ -44,6 +44,7 @@ import dynamic from 'next/dynamic';
 import { getItemPrices } from '../api/v1/items/[id_name]/prices';
 import { getItemTrades } from '../api/v1/trades';
 import ItemRestock from '../../components/Items/ItemRestockInfo';
+import { getLastSeen } from '../api/v1/prices/stats';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -60,7 +61,7 @@ type ItemPageProps = {
   tradeLists?: UserList[];
   itemOpenable: ItemOpenable | null;
   itemParent: number[];
-
+  lastSeen: ItemLastSeen;
   NPTrades: TradeData[];
   NPPrices: PriceData[];
 };
@@ -75,9 +76,10 @@ const ItemPage = (props: ItemPageProps) => {
     itemParent,
     NPPrices,
     NPTrades: trades,
+    lastSeen: seenProps,
   } = props;
   const [prices, setPrices] = useState<PriceData[] | null>(NPPrices);
-  const [seenStats, setSeen] = useState<ItemLastSeen | null>(null);
+  const [seenStats, setSeen] = useState<ItemLastSeen | null>(seenProps);
   // const [trades, setTrades] = useState<TradeData[]>([]);
   // const [tags, setTags] = useState<ItemTag[]>([]);
   const [isLoading, setLoading] = useState(true);
@@ -326,17 +328,27 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 
   if (!item) return { notFound: true };
 
-  const [colors, lists, similarItems, tradeLists, itemOpenable, itemParent, itemPrices, NPTrades] =
-    await Promise.all([
-      getItemColor([item.image_id]),
-      getItemLists(item.internal_id, true, false),
-      getSimilarItems(item.internal_id.toString()),
-      item.isNC ? getItemLists(item.internal_id, false, false) : [],
-      getItemDrops(item.internal_id, item.isNC),
-      getItemParent(item.internal_id),
-      getItemPrices({ iid: item.internal_id }),
-      getItemTrades({ name: item.name, image_id: item.image_id }),
-    ]);
+  const [
+    colors,
+    lists,
+    similarItems,
+    tradeLists,
+    itemOpenable,
+    itemParent,
+    itemPrices,
+    NPTrades,
+    lastSeen,
+  ] = await Promise.all([
+    getItemColor([item.image_id]),
+    getItemLists(item.internal_id, true, false),
+    getSimilarItems(item.internal_id.toString()),
+    item.isNC ? getItemLists(item.internal_id, false, false) : [],
+    getItemDrops(item.internal_id, item.isNC),
+    getItemParent(item.internal_id),
+    getItemPrices({ iid: item.internal_id }),
+    getItemTrades({ name: item.name, image_id: item.image_id }),
+    getLastSeen({ item_id: item.item_id, name: item.name, image_id: item.image_id }),
+  ]);
 
   if (!colors) return { notFound: true };
 
@@ -350,6 +362,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     itemParent: itemParent,
     NPTrades: NPTrades,
     NPPrices: itemPrices,
+    lastSeen: lastSeen,
   };
 
   return {
