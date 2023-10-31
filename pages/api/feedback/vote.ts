@@ -26,7 +26,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const isAdmin = user.role === 'ADMIN';
 
     if (isAdmin) voteMultiplier = 10;
-    else voteMultiplier = Math.max(1, Math.min(Math.round(user.xp / 1000), 8));
+    else voteMultiplier = Math.max(1, Math.min(Math.round(user.xp / 1000), 9));
 
     const feedbackRaw = await prisma.feedbacks.findUniqueOrThrow({
       where: {

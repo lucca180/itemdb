@@ -1,6 +1,7 @@
 import { Prisma, TradeItems, Trades } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
+import { processTradePrice } from '.';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
@@ -110,9 +111,28 @@ const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
 
   if (!similar) return null;
 
-  const updatedItems = [...trade.items];
+  const updatedItems: any[] = [...trade.items];
+
   for (const similarItem of similar.items) {
     updatedItems[similarItem.order].price = similarItem.price;
+    updatedItems[similarItem.order].addedAt = similarItem.addedAt.toJSON();
+  }
+
+  const isAllEmpty = updatedItems.every((item) => !item.price);
+
+  if (
+    (isAllEmpty &&
+      (trade.wishlist.includes('+') ||
+        trade.wishlist.toLowerCase().includes('pb') ||
+        trade.wishlist.toLowerCase().includes('baby'))) ||
+    (!isAllItemsTheSame && isAllEmpty) ||
+    (isAllEmpty && trade.items.length > 1 && !isNaN(Number(trade.wishlist.trim())))
+  ) {
+    await processTradePrice({
+      ...trade,
+      items: updatedItems,
+    } as any);
+    return null;
   }
 
   return {

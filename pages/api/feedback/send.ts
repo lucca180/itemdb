@@ -40,7 +40,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     if (user) {
       if (user.role === 'ADMIN') voteMultiplier = 10;
-      else voteMultiplier = Math.max(1, Math.min(Math.round(user.xp / 1000), 8));
+      else voteMultiplier = Math.max(1, Math.min(Math.round(user.xp / 1000), 9));
     }
   }
 
