@@ -260,7 +260,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     }),
   ]);
 
-  const hasManualCheck = priceAddList.some((x) => x.manual_check);
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const manualCheckList = priceAddList.filter((x) => x.manual_check).map((x) => x.item_iid!);
 
   await prisma.priceProcessHistory.createMany({
     data: names.map((x) => ({
@@ -271,7 +272,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   return res.send({
     priceUpdate: result[0],
     priceProcessed: result[1],
-    manualCheck: hasManualCheck,
+    manualCheck: manualCheckList,
   });
 };
 
