@@ -62,25 +62,34 @@
 
       let priceStr = '';
 
-      if(!item || (item && item.status !== 'no trade' && !item.price.value && !item.isNC)){
-        priceStr = `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">???</a></small>`;
-      }
-
-      if(item && item.status === 'no trade'){
-        priceStr = `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">No Trade</a></small>`;
-      }
-
-      if(item && item.isNC){
-        priceStr = `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">NC</a>`;
-      }
-
-      if(item && item.price.value){
-        priceStr = `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">${intl.format(item.price.value)} NP</a>`;
-      }
-      
-      if (item && item.isMissingInfo){
+      /*
+       * If items are missing from the DB, wrap the conditions inside a try -> catch.
+       * With this approach, the execution of the script is not interrupted in case an "item.slug" is not parseable.
+       * This error happened specifically with the item "Chomby Transmogrification Potion".
+       */
+      try {
+        if(!item || (item && item.status !== 'no trade' && !item.price.value && !item.isNC)){
+          priceStr = `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">???</a></small>`;
+        }
+  
+        if(item && item.status === 'no trade'){
+          priceStr = `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">No Trade</a></small>`;
+        }
+  
+        if(item && item.isNC){
+          priceStr = `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">NC</a>`;
+        }
+  
+        if(item && item.price.value){
+          priceStr = `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">≈ ${intl.format(item.price.value)} NP</a>`;
+        }
+        
+        if (item && item.isMissingInfo){
+          priceStr += `<br/><small><a href="https://itemdb.com.br/contribute" target="_blank"><i>We need info about this item<br/>Learn how to Help</i></a></small>`
+        }
+      } catch { // We're not catching any specific error, as any error that may surface it will be handled with the "We need more info" referral link.
+        priceStr = `<a>Not Found</a></small>`;
         priceStr += `<br/><small><a href="https://itemdb.com.br/contribute" target="_blank"><i>We need info about this item<br/>Learn how to Help</i></a></small>`
-
       }
 
       tds.eq( -2 ).before(`<td align="center" noWrap>${priceStr}</td>`);
