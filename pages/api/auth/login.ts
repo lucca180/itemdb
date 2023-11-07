@@ -5,7 +5,7 @@ import requestIp from 'request-ip';
 import { User, UserRoles } from '../../../types';
 import { startOfDay } from 'date-fns';
 
-const expiresIn = 5 * 24 * 60 * 60 * 1000; // 5 days in milliseconds;
+const expiresIn = 14 * 24 * 60 * 60 * 1000; // 31 days in milliseconds;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')

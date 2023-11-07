@@ -109,6 +109,7 @@ export const getManyItems = async (
       WHERE (item_iid, addedAt) IN (
           SELECT item_iid, MAX(addedAt)
           FROM ItemPrices
+          where manual_check is null
           GROUP BY item_iid
       ) AND manual_check IS null
     ) as c on c.item_iid = a.internal_id
