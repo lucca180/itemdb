@@ -8,6 +8,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     if (!user || !user.isAdmin) throw new Error('Unauthorized');
   } catch (e) {
     res.status(401).json({ error: 'Unauthorized' });
+    return;
   }
 
   if (req.method === 'GET') return GET(req, res);
