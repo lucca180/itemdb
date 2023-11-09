@@ -29,6 +29,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     const forceRefresh = refresh === 'true';
 
+    if (exists && forceRefresh) {
+      await file.delete();
+    }
+
     if (exists && !forceRefresh) {
       res.setHeader('Content-Type', 'image/gif');
       res.setHeader('Cache-Control', 'public, s-maxage=2592000');

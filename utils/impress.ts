@@ -10,6 +10,7 @@ const request = Axios.create({
   timeout: 10000,
   headers: {
     'accept-encoding': '*',
+    'User-Agent': 'itemdb/1.0 (+https://itemdb.com.br)',
   },
 });
 

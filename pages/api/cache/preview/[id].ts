@@ -28,6 +28,13 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     const forceRefresh = refresh === 'true';
 
+    // if(exists && new Date(file.metadata.updated) < new Date('2023-11-09'))
+    //   forceRefresh = true;
+
+    if (exists && forceRefresh) {
+      await file.delete();
+    }
+
     if (exists && !forceRefresh) {
       res.setHeader('Content-Type', 'image/png');
       res.setHeader('Cache-Control', 'public, max-age=2592000');
@@ -51,10 +58,33 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
       const itemPreviewData = await dti.fetchItemPreview(item.name);
 
+      const itemRestrictedZoneIds = new Set(
+        itemPreviewData.canonicalAppearance.restrictedZones.map((z) => z.id)
+      );
+      const petRestrictedZoneIds = new Set(
+        itemPreviewData.canonicalAppearance.body.canonicalAppearance.restrictedZones
+      );
+
       const layers = [
-        ...itemPreviewData.canonicalAppearance.layers,
-        ...itemPreviewData.canonicalAppearance.body.canonicalAppearance.layers,
-      ].sort((a, b) => a.zone.depth - b.zone.depth);
+        ...itemPreviewData.canonicalAppearance.layers.map((l) => ({ ...l, source: 'item' })),
+        ...itemPreviewData.canonicalAppearance.body.canonicalAppearance.layers.map((l) => ({
+          ...l,
+          source: 'pet',
+        })),
+      ]
+        .filter((layer) => {
+          if (layer.source === 'pet' && itemRestrictedZoneIds.has(layer.zone.id)) {
+            return false;
+          }
+          if (layer.source === 'pet' && petRestrictedZoneIds.has(layer.zone.id)) {
+            return false;
+          }
+
+          return true;
+        })
+        .sort((a, b) => a.zone.depth - b.zone.depth);
+
+      if (layers.length === 0) throw 'No layers found';
 
       const imagesPromises = [];
 
