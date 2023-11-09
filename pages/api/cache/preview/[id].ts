@@ -26,10 +26,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const file = ImageBucket.file('preview/' + img_id + '.png');
     const [exists] = await file.exists();
 
-    const forceRefresh = refresh === 'true';
+    let forceRefresh = refresh === 'true';
 
-    // if(exists && new Date(file.metadata.updated) < new Date('2023-11-09'))
-    //   forceRefresh = true;
+    if (exists && new Date(file.metadata.updated) < new Date('2023-11-09')) forceRefresh = true;
 
     if (exists && forceRefresh) {
       await file.delete();
@@ -93,7 +92,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       }
       const images = await Promise.all(imagesPromises);
 
-      for (const img of images) ctx.drawImage(img, 0, 0);
+      for (const img of images) ctx.drawImage(img, 0, 0, 600, 600);
 
       const buffer = canvas.toBuffer();
       await file.save(buffer, {
