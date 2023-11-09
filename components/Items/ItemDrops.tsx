@@ -239,14 +239,16 @@ const getDropText = (pool: PrizePoolData | null, itemOpenable: ItemOpenable, isL
     );
 
   const hasChance =
-    pool.openings / itemOpenable.openings <= 0.9 &&
-    (!itemOpenable.isChoice || ['le', 'bonus'].includes(pool.name));
+    (pool.openings / itemOpenable.openings <= 0.9 &&
+      (!itemOpenable.isChoice || ['le', 'bonus'].includes(pool.name))) ||
+    pool.name.includes('chance');
 
   if (hasChance) {
     text = (
       <>
-        You have a <b>{((pool.openings / itemOpenable.openings) * 100).toFixed(2)}%</b> chance of
-        getting {pool.minDrop === 1 && pool.maxDrop === 1 && <b>one</b>}
+        You have a{' '}
+        {pool.openings > 0 && <b>{((pool.openings / itemOpenable.openings) * 100).toFixed(2)}%</b>}{' '}
+        chance of getting {pool.minDrop === 1 && pool.maxDrop === 1 && <b>one</b>}
         {pool.minDrop >= 1 && pool.maxDrop > 1 && <b>at least {pool.minDrop}</b>}
         {pool.minDrop >= 1 && pool.maxDrop !== pool.minDrop && ' and '}
         {pool.maxDrop > 1 && pool.maxDrop !== pool.minDrop && <b>up to {pool.maxDrop}</b>} of these{' '}

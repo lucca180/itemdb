@@ -137,7 +137,7 @@ export const getItemDrops = async (
 
     const pool = drop.prizePool?.toLowerCase();
     if (pool) {
-      if (!prizePools[pool])
+      if (!prizePools[pool]) {
         prizePools[pool] = {
           name: pool,
           items: [],
@@ -146,6 +146,7 @@ export const getItemDrops = async (
           minDrop: 0,
           totalDrops: 0,
         };
+      }
 
       prizePools[pool].items.push(drop.item_iid);
       manualItems.push(drop.item_iid);
@@ -259,6 +260,13 @@ export const getItemDrops = async (
       minMax.max.repeat > 1 || !minMax.max.prevRepeat ? minMax.max.val : minMax.max.prev;
 
     if (pool.minDrop === 1000) pool.minDrop = 0;
+
+    const manualMinMax = pool.name.match(/\d+-\d+/);
+    if (manualMinMax) {
+      const [min, max] = manualMinMax[0].split('-');
+      pool.minDrop = Number(min);
+      pool.maxDrop = Number(max);
+    }
   });
 
   openableData.minDrop =
