@@ -249,8 +249,6 @@ export const getItemDrops = async (
       pool.totalDrops += drops;
       confimedDrops.add(id);
 
-      if (pool.name === 'unknown' && drops > 1) console.log(drops, opening);
-
       minMax = getMinMax(drops, minMax);
     });
 

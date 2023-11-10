@@ -18,7 +18,7 @@ const redis = new Redis({
 });
 
 const userKeyCache = new LRUCache({
-  max: 500,
+  max: 100,
 });
 
 const LIMIT_PERIOD = 1 * 60 * 1000;
