@@ -5,7 +5,7 @@
   "keywords": [],
   "license": "MIT",
   "scripts": {
-    "dev": "next",
+    "dev": "next dev --turbo",
     "build": "npx prisma generate && next build",
     "build-proxy": "npx prisma generate --data-proxy && next build",
     "start": "PORT=4000 next start",
@@ -53,7 +53,7 @@
     "lightweight-charts": "^4.0.1",
     "lodash": "^4.17.21",
     "lru-cache": "^10.0.1",
-    "next": "^13.5.6",
+    "next": "^14.0.2",
     "next-seo": "^5.15.0",
     "next-sitemap": "^4.1.8",
     "next-transpile-modules": "^10.0.0",

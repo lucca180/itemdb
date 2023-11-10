@@ -80,8 +80,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // Rate limit
-  const ip = requestIp.getClientIp(request as any) ?? 'ffff';
-
+  const ip =
+    requestIp.getClientIp(request as any) ?? request.headers.get('x-forwarded-for') ?? request.ip;
   if (!ip) {
     return NextResponse.next();
   }
