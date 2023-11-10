@@ -11,7 +11,12 @@ if (!getApps().length) initializeApp({ credential: cert('./firebase-key.json') }
 
 export const Auth = getAuth();
 
-export const CheckAuth = async (req: NextApiRequest | null, token?: string) => {
+export const CheckAuth = async (
+  req: NextApiRequest | null,
+  token?: string,
+  session?: string,
+  skipUser = false
+) => {
   token = token || req?.headers.authorization?.split('Bearer ')[1];
 
   let decodedToken: DecodedIdToken;
@@ -19,10 +24,13 @@ export const CheckAuth = async (req: NextApiRequest | null, token?: string) => {
     if (!token) throw new Error('No token provided');
     decodedToken = await Auth.verifyIdToken(token);
   } catch (err) {
-    if (!req || !req.cookies.session) throw err;
+    if ((!req || !req.cookies.session) && !session) throw err;
 
-    decodedToken = await Auth.verifySessionCookie(req.cookies.session, true);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    decodedToken = await Auth.verifySessionCookie((session ?? req?.cookies.session)!, !skipUser);
   }
+
+  if (skipUser) return { decodedToken: decodedToken, user: null };
 
   const dbUser = (await prisma.user.findUnique({
     where: { id: decodedToken.uid, email: decodedToken.email },
