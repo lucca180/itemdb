@@ -5,30 +5,25 @@ import { User } from './types';
 import * as jose from 'jose';
 import { LRUCache } from 'lru-cache';
 import requestIp from 'request-ip';
+import { Redis } from '@upstash/redis';
 
 const API_SKIPS: { [method: string]: string[] } = {
   GET: ['api/auth', 'api/cache'],
   POST: ['api/auth', '/v1/prices', '/v1/trades', '/v1/items', '/v1/items/open'],
 };
 
+const redis = new Redis({
+  url: 'https://us1-enough-halibut-38437.upstash.io',
+  token: process.env.REDIS_TOKEN ?? '',
+});
+
 const userKeyCache = new LRUCache({
   max: 500,
 });
 
-const rateLimitCache = new LRUCache<string, RateLimit>({
-  max: 500,
-});
-
-type RateLimit = {
-  count: number;
-  lastRequest: number;
-  reset: number;
-  limitedUntil: number;
-};
-
 const LIMIT_PERIOD = 1 * 60 * 1000;
 const LIMIT_COUNT = 60;
-const LIMIT_BAN = 5 * 60 * 1000;
+const LIMIT_BAN = 3 * 60 * 1000;
 
 // This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
@@ -85,35 +80,24 @@ export async function middleware(request: NextRequest) {
   }
 
   // Rate limit
-  const ip = requestIp.getClientIp(request as any);
+  const ip = requestIp.getClientIp(request as any) ?? 'ffff';
 
   if (!ip) {
     return NextResponse.next();
   }
 
-  let rateLimit = rateLimitCache.get(ip) ?? { count: 0, lastRequest: 0, reset: 0, limitedUntil: 0 };
-  const now = Date.now();
+  const requests = await redis.incr(ip);
+  if (requests === 1) await redis.pexpire(ip, LIMIT_PERIOD);
 
-  rateLimit.lastRequest = now;
-  rateLimit.count++;
-
-  if (rateLimit.limitedUntil > now) {
+  if (requests > LIMIT_COUNT) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
 
-  if (rateLimit.reset < now) {
-    rateLimit = { count: 0, lastRequest: 0, reset: now + LIMIT_PERIOD, limitedUntil: 0 };
-  }
-
-  if (rateLimit.count >= LIMIT_COUNT) {
-    rateLimit.limitedUntil = now + LIMIT_BAN;
-    console.error(`Rate limit exceeded for ${ip}`);
-    rateLimitCache.set(ip, rateLimit);
-
+  if (requests + 1 >= LIMIT_COUNT) {
+    await redis.pexpire(ip, LIMIT_BAN);
+    console.error(`Banned IP ${ip} for ${LIMIT_BAN}ms`);
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
-
-  rateLimitCache.set(ip, rateLimit);
 
   return NextResponse.next();
 }

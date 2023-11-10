@@ -2811,6 +2811,13 @@
   resolved "https://registry.npmjs.org/@ungap/structured-clone/-/structured-clone-1.0.2.tgz"
   integrity sha512-06PHwE0K24Wi8FBmC8MuMi/+nQ3DTpcXYL3y/IaZz2ScY2GOJXOe8fyMykVXyLOKxpL2Y0frAnJZmm65OxzMLQ==
 
+"@upstash/redis@^1.25.0":
+  version "1.25.0"
+  resolved "https://registry.yarnpkg.com/@upstash/redis/-/redis-1.25.0.tgz#d99a55f82e7ef3d4314f10e2da6af5e64cda471b"
+  integrity sha512-CEGLUN98G2UGe19mnX4WOFWBprMmAbAEFWfV0D157jaGLnxpbRqaMgKcfnq2AQ8GmETJ6I+Hz2D/eer9GfrY/g==
+  dependencies:
+    crypto-js "^4.2.0"
+
 "@vibrant/color@^3.2.1-alpha.1":
   version "3.2.1-alpha.1"
   resolved "https://registry.npmjs.org/@vibrant/color/-/color-3.2.1-alpha.1.tgz"
@@ -3726,6 +3733,11 @@ cross-spawn@^7.0.2, cross-spawn@^7.0.3:
     path-key "^3.1.0"
     shebang-command "^2.0.0"
     which "^2.0.1"
+
+crypto-js@^4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/crypto-js/-/crypto-js-4.2.0.tgz#4d931639ecdfd12ff80e8186dba6af2c2e856631"
+  integrity sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==
 
 css-box-model@1.2.1:
   version "1.2.1"
