@@ -63,7 +63,7 @@ const RestockHub = () => {
     <Layout
       SEO={{
         title: `Neopets Restock Helper`,
-        description: `Find the most profitable items to buy from!`,
+        description: `Find the most profitable items to buy from each shop in Neopia and earn a lot of neopoints!`,
         themeColor: '#A5DAE9',
       }}
     >

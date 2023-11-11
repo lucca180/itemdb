@@ -180,7 +180,7 @@ const RestockShop = (props: RestockShopPageProps) => {
     <Layout
       SEO={{
         title: `${shopInfo.name} | Neopets Restock Helper`,
-        description: `Find the most profitable items to buy from ${shopInfo.name}!`,
+        description: `Find the most profitable items to buy from ${shopInfo.name} and earn neopoints!`,
         themeColor: shopInfo.color,
       }}
     >
