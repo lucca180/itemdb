@@ -27,6 +27,7 @@ const LIMIT_BAN = 3 * 60 * 1000;
 
 // This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
+  if (process.env.NODE_ENV === 'development') return NextResponse.next();
   // Skip rate limit if key is provided
   if (request.headers.get('x-tarnum-skip') === process.env.TARNUM_KEY) {
     return NextResponse.next();

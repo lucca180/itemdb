@@ -1,4 +1,4 @@
-import { Badge, Flex, Link, Text, Image } from '@chakra-ui/react';
+import { Flex, Link, Text, Image } from '@chakra-ui/react';
 import icon from '../../../public/logo_icon.svg';
 import NextImage from 'next/image';
 import Color from 'color';

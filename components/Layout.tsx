@@ -73,7 +73,7 @@ const Layout = (props: Props) => {
       <NextSeo {...props.SEO} />
       <LoginModal isOpen={isOpen} onClose={onClose} />
       <Flex flexFlow="column" minH="100vh">
-        <Flex as="header" w="full" maxW="8xl" marginX="auto" gap={{ base: 2, md: 4 }} px={4} py={6}>
+        <Flex as="header" w="full" maxW="8xl" marginX="auto" gap={{ base: 2, md: 4 }} px={4} py={4}>
           <Flex as={Link} href="/" flex={'0 0 auto'}>
             <Image
               as={NextImage}

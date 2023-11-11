@@ -8,7 +8,17 @@ const { withSentryConfig } = require('@sentry/nextjs');
 
 const nextConfig = {
   images: {
-    domains: ['images.neopets.com', 'magnetismotimes.com'],
+    // domains: ['images.neopets.com', 'magnetismotimes.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'magnetismotimes.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.neopets.com',
+      },
+    ],
     minimumCacheTTL: 2592000,
   },
   distDir: process.env.BUILD_DIR || '.next',

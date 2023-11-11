@@ -28,7 +28,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   reqQuery.page = parseInt(reqQuery.page as string) || 1;
   reqQuery.limit = parseInt(reqQuery.limit as string) || 48;
-  reqQuery.limit = Math.min(reqQuery.limit, 1000);
+  reqQuery.limit = Math.min(reqQuery.limit, 3000);
   // const filters = { ...queryFilters, ...reqQuery };
 
   const result = await doSearch(query, reqQuery);
@@ -439,7 +439,7 @@ export async function doSearch(query: string, filters: SearchFilters) {
       isMissingInfo: false,
       price: {
         value: result.price,
-        addedAt: result.priceAdded,
+        addedAt: result.priceAdded?.toJSON(),
         inflated: !!result.noInflation_id,
       },
       owls: result.owlsValue

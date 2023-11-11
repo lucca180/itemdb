@@ -15,11 +15,12 @@ type CreateDynamicListButtonProps = {
   filters?: SearchFilters;
   query?: string;
   isMobile?: boolean;
+  removeMargin?: boolean;
 };
 
 export const CreateDynamicListButton = (props: CreateDynamicListButtonProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { resultCount, isLoading, filters, query, isMobile } = props;
+  const { resultCount, isLoading, filters, query, isMobile, removeMargin } = props;
 
   return (
     <>
@@ -39,7 +40,7 @@ export const CreateDynamicListButton = (props: CreateDynamicListButtonProps) => 
           size="sm"
           onClick={onOpen}
           isLoading={isLoading}
-          mt={3}
+          mt={removeMargin ? undefined : 3}
         >
           Create{' '}
           <Image src={DynamicIcon} alt="lightning bolt" width={12} style={{ margin: '0 5px' }} />{' '}

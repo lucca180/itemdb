@@ -5,11 +5,15 @@ import {
   categoryToShopID,
   faerielandShops,
   getRestockPrice,
+  getRestockProfit,
   halloweenShops,
+  restockShopInfo,
+  slugify,
   tyrannianShops,
 } from '../../utils/utils';
 import CardBase from '../Card/CardBase';
 import Image from 'next/image';
+import NextLink from 'next/link';
 
 type Props = {
   item: ItemData;
@@ -57,13 +61,20 @@ const ItemRestock = (props: Props) => {
   }, []);
 
   const restockPrice = getRestockPrice(item);
+  const originalRestockPrice = getRestockPrice(item, true);
+  const restockProfit = getRestockProfit(item);
+  const restockOriginalProfit = getRestockProfit(item, true);
+
+  const shopInfo = item.category
+    ? restockShopInfo[categoryToShopID[item.category.toLowerCase()]]
+    : null;
   if (!item.category || !item.estVal || !restockPrice) return null;
 
   return (
     <CardBase title="Restock Info" color={item.color.rgb}>
       <Flex flexFlow={'column'} gap={2}>
         <Center flexFlow="column" gap={2}>
-          <Link href={item.findAt.restockShop ?? ''} isExternal>
+          <Link as={NextLink} href={`/restock/${slugify(shopInfo?.name ?? '')}`}>
             <Image
               src={`https://images.neopets.com/shopkeepers/w${
                 categoryToShopID[item.category.toLowerCase()]
@@ -86,26 +97,47 @@ const ItemRestock = (props: Props) => {
           <Tag size="md" fontWeight="bold" as="h3">
             Est. Profit
           </Tag>
-          <Text
-            flex="1"
-            fontSize="xs"
-            textAlign="right"
-            color={
-              item.price.value && item.price.value - restockPrice[0] <= 0 ? 'red.300' : undefined
-            }
-          >
-            {!item.price.value && '???'}
-            {item.price.value && <>{intl.format(item.price.value - restockPrice[0])} NP</>}
-          </Text>
+          <Flex flexFlow={'column'} flex="1">
+            <Text
+              flex="1"
+              fontSize="xs"
+              textAlign="right"
+              color={
+                restockProfit && restockProfit <= 0
+                  ? 'red.300'
+                  : specialDay
+                  ? 'green.200'
+                  : undefined
+              }
+            >
+              {!restockProfit && '???'}
+              {restockProfit && <>{intl.format(restockProfit)} NP</>}
+            </Text>
+            {!!specialDay && restockOriginalProfit && (
+              <Text fontSize="xs" textAlign="right" textDecoration={'line-through'}>
+                {intl.format(restockOriginalProfit)} NP{' '}
+              </Text>
+            )}
+          </Flex>
         </HStack>
         <HStack>
           <Tag size="md" fontWeight="bold" as="h3">
             Restock Price
           </Tag>
-          <Text flex="1" fontSize="xs" textAlign="right">
-            {intl.format(restockPrice[0])} NP{' '}
-            {restockPrice[0] !== restockPrice[1] ? `- ${intl.format(restockPrice[1])} NP` : ''}
-          </Text>
+          <Flex flexFlow={'column'} flex="1">
+            <Text fontSize="xs" textAlign="right" color={specialDay ? 'green.200' : undefined}>
+              {intl.format(restockPrice[0])} NP{' '}
+              {restockPrice[0] !== restockPrice[1] ? `- ${intl.format(restockPrice[1])} NP` : ''}
+            </Text>
+            {!!specialDay && originalRestockPrice && (
+              <Text fontSize="xs" textAlign="right" textDecoration={'line-through'}>
+                {intl.format(originalRestockPrice[0])} NP{' '}
+                {originalRestockPrice[0] !== originalRestockPrice[1]
+                  ? `- ${intl.format(originalRestockPrice[1])} NP`
+                  : ''}
+              </Text>
+            )}
+          </Flex>
         </HStack>
         <HStack>
           <Tag size="md" fontWeight="bold" as="h3">

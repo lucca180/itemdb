@@ -178,6 +178,7 @@ export const getItem = async (id_name: number | string) => {
       WHERE (item_iid, addedAt) IN (
           SELECT item_iid, MAX(addedAt)
           FROM ItemPrices
+          where manual_check is null
           GROUP BY item_iid
       )
     ) as c on c.item_iid = a.internal_id

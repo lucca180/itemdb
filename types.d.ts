@@ -305,6 +305,14 @@ export type UserAchievement = {
   image: string;
 };
 
+export type ShopInfo = {
+  name: string;
+  id: string;
+  category: string;
+  difficulty: string;
+  color: string;
+};
+
 // ------- FEEDBACKS JSON -------- //
 export type Feedback = {
   feedback_id: number;
