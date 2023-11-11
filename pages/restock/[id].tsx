@@ -365,8 +365,8 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 }
 
 export async function getStaticPaths() {
-  const paths = Object.keys(restockShopInfo).map((id) => ({
-    params: { id: id },
+  const paths = Object.values(restockShopInfo).map((shop) => ({
+    params: { id: slugify(shop.name) },
   }));
 
   return { paths, fallback: 'blocking' };
