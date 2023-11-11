@@ -11,7 +11,7 @@ const MAX_PAST_DAYS = 60;
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
-const EVENT_MODE = true;
+const EVENT_MODE = process.env.EVENT_MODE === 'true';
 const MIN_LAST_UPDATE = EVENT_MODE ? 2 : 7;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
@@ -386,7 +386,7 @@ async function updateOrAddDB(
 const MIN_ITEMS_THRESHOLD = EVENT_MODE ? 7 : 5;
 
 function filterMostRecents(priceProcessList: PriceProcess[]) {
-  const daysThreshold = EVENT_MODE ? [3, 7, 15, 30] : [7, 15, 30];
+  const daysThreshold = [3, 7, 15, 30];
 
   for (const days of daysThreshold) {
     const filtered = priceProcessList.filter(
