@@ -131,9 +131,9 @@ const RestockShop = (props: RestockShopPageProps) => {
   };
 
   const handleSort = (sortBy: string, sortDir: string) => {
-    if (!itemList) return;
+    if (!filteredItems) return;
     setSortInfo({ sortBy: sortBy, sortDir: sortDir });
-    setItemList([...itemList].sort((a, b) => sortItems(a, b, sortBy, sortDir)));
+    setFilteredItems([...filteredItems].sort((a, b) => sortItems(a, b, sortBy, sortDir)));
   };
 
   const handleSearch = (query: string) => {
@@ -164,7 +164,7 @@ const RestockShop = (props: RestockShopPageProps) => {
 
   const groupedItems = useMemo(
     () =>
-      (filteredItems ?? itemList ?? []).reduce((acc, cur, i) => {
+      (filteredItems ?? []).reduce((acc, cur, i) => {
         const itemSize = dimensions && dimensions.borderBox.width >= 768 ? 160 : 110;
         const groupSize = dimensions ? Math.floor(dimensions.borderBox.width / itemSize) : 8;
 
@@ -173,7 +173,7 @@ const RestockShop = (props: RestockShopPageProps) => {
         acc[groupIndex].push(cur);
         return acc;
       }, [] as ItemData[][]),
-    [itemList, filteredItems, dimensions?.borderBox.width]
+    [filteredItems, dimensions?.borderBox.width]
   );
 
   return (

@@ -17,6 +17,7 @@ import {
   Center,
   Spinner,
   Link as ChakraLink,
+  Badge,
 } from '@chakra-ui/react';
 
 import NextImage from 'next/image';
@@ -32,7 +33,6 @@ import { AiFillHeart } from 'react-icons/ai';
 import { BsBoxArrowInRight, BsFillPersonFill } from 'react-icons/bs';
 import { NextSeo, NextSeoProps } from 'next-seo';
 import { SearchBar } from './Search/SearchBar';
-import ClientOnly from './Utils/ClientOnly';
 import Color from 'color';
 
 import Brazil from '../public/icons/brazil.png';
@@ -73,6 +73,39 @@ const Layout = (props: Props) => {
       <NextSeo {...props.SEO} />
       <LoginModal isOpen={isOpen} onClose={onClose} />
       <Flex flexFlow="column" minH="100vh">
+        <Flex
+          as="nav"
+          w="full"
+          maxW="8xl"
+          marginX="auto"
+          gap={{ base: 3, md: 4 }}
+          px={4}
+          // pt={4}
+          // py={1}
+          h="26px"
+          alignItems="center"
+          color="whiteAlpha.700"
+          fontSize={'xs'}
+        >
+          <Box w="100%" bg="blackAlpha.400" position={'absolute'} h="26px" left="0" zIndex={-1} />
+          <ChakraLink as={Link} href="/articles">
+            Articles
+          </ChakraLink>
+          <ChakraLink as={Link} href="/list/import">
+            Checklists
+          </ChakraLink>
+          <Text display="inline-flex" alignItems={'center'} gap={1}>
+            <ChakraLink as={Link} href="/restock">
+              Restock Hub
+            </ChakraLink>{' '}
+            <Badge fontSize={'0.5rem'} colorScheme="green">
+              new
+            </Badge>
+          </Text>
+          <ChakraLink as={Link} href="/articles/userscript">
+            SDB Pricer
+          </ChakraLink>
+        </Flex>
         <Flex as="header" w="full" maxW="8xl" marginX="auto" gap={{ base: 2, md: 4 }} px={4} py={4}>
           <Flex as={Link} href="/" flex={'0 0 auto'}>
             <Image
@@ -95,15 +128,19 @@ const Layout = (props: Props) => {
               display={{ base: 'none', md: 'inherit' }}
             />
           </Flex>
-          <Box flex="1 1 auto" display="flex" justifyContent="center" alignItems="center">
-            <SearchBar onSubmit={onSubmit} />
-          </Box>
+          <Flex flex="1 1 auto" justifyContent="center" alignItems="center">
+            <Box maxW="650px" h="100%" flex="1">
+              <SearchBar onSubmit={onSubmit} />
+            </Box>
+          </Flex>
           <Box
-            as={ClientOnly}
+            // as={ClientOnly}
             display="flex"
             gap={{ base: 2, md: 3 }}
             alignItems="center"
+            justifyContent="flex-end"
             maxW="30%"
+            minW="15%"
           >
             <Button
               as={Link}
@@ -164,6 +201,7 @@ const Layout = (props: Props) => {
             )}
           </Box>
         </Flex>
+
         <Box as="main" flex="1" w="full" maxW="8xl" marginX="auto" px={4} pb={6} h="100%">
           {!props.loading && props.children}
           {props.loading && (

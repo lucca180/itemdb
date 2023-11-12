@@ -16,9 +16,6 @@ const SearchMenu = () => {
           <MenuItem as={Link} href="/lists/official">
             Official Lists
           </MenuItem>
-          <MenuItem as={Link} href="/articles">
-            Articles
-          </MenuItem>
         </MenuList>
       </Portal>
     </Menu>

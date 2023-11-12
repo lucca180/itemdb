@@ -68,6 +68,7 @@ export default function SortableArea(props: SortableAreaProps) {
     () =>
       ids
         .filter((i) => {
+          if (!i) return false;
           const item = itemInfo[i];
           return !item.isHidden || editMode;
         })

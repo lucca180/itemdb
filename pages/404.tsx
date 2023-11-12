@@ -1,5 +1,15 @@
 /* eslint-disable react/no-unescaped-entities */
-import { Heading, Text, Link, Center, Image, Button, Icon, useDisclosure } from '@chakra-ui/react';
+import {
+  Heading,
+  Text,
+  Link,
+  Center,
+  Image,
+  Button,
+  Icon,
+  useDisclosure,
+  Box,
+} from '@chakra-ui/react';
 import dynamic from 'next/dynamic';
 import { FiSend } from 'react-icons/fi';
 import Layout from '../components/Layout';
@@ -14,6 +24,14 @@ const Error404Page = () => {
 
   return (
     <Layout SEO={{ title: 'Page not Found', noindex: true }}>
+      <Box
+        position="absolute"
+        h="650px"
+        left="0"
+        width="100%"
+        bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(255,100,100,.7) 70%)`}
+        zIndex={-1}
+      />
       <FeedbackModal isOpen={isOpen} onClose={onClose} />
       <Center
         height="75vh"

@@ -193,7 +193,8 @@ export const syncDynamicList = async (list_id: number, force = false) => {
 
     const searchRes = await doSearch(dynamicQuery.s, dynamicQuery);
 
-    const item_iids = searchRes.content.map((item) => item.internal_id);
+    let item_iids = searchRes.content.map((item) => item.internal_id);
+    item_iids = item_iids.length > 0 ? item_iids : [-1]; // join() throws an error if the array is empty
 
     if (dynamicType === 'addOnly' || dynamicType === 'fullSync' || firstSync) {
       const res = (await prisma.$queryRaw`
