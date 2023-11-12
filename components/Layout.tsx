@@ -91,7 +91,7 @@ const Layout = (props: Props) => {
           <ChakraLink as={Link} href="/articles">
             Articles
           </ChakraLink>
-          <ChakraLink as={Link} href="/list/import">
+          <ChakraLink as={Link} href="/lists/import">
             Checklists
           </ChakraLink>
           <Text display="inline-flex" alignItems={'center'} gap={1}>
@@ -102,7 +102,7 @@ const Layout = (props: Props) => {
               new
             </Badge>
           </Text>
-          <ChakraLink as={Link} href="/articles/userscript">
+          <ChakraLink as={Link} href="/articles/userscripts">
             SDB Pricer
           </ChakraLink>
         </Flex>

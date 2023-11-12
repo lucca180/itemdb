@@ -40,7 +40,7 @@ export const ArticleCard = (props: Props) => {
               <Heading size="sm" noOfLines={3}>
                 {article.title}
               </Heading>
-              <Text fontSize="xs" noOfLines={4}>
+              <Text fontSize="xs" noOfLines={3}>
                 {article.excerpt}
               </Text>
             </Stack>
