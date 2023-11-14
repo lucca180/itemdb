@@ -11,10 +11,20 @@ import {
   Tag,
 } from '@chakra-ui/react';
 import Color from 'color';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Fragment } from 'react';
 import ShopCard from '../../components/Hubs/Restock/ShopCard';
 import Layout from '../../components/Layout';
 import { restockShopInfo } from '../../utils/utils';
+
+const allCats = [
+  ...new Set(
+    Object.values(restockShopInfo)
+      .map((shop) => shop.category)
+      .flat()
+  ),
+].sort((a, b) => a.localeCompare(b));
+
+const color = Color('#A5DAE9').rgb().array();
 
 const RestockHub = () => {
   const [selCats, setSelCats] = useState<string[]>([]);
@@ -33,15 +43,6 @@ const RestockHub = () => {
 
     if (todayNST.getMonth() === 9 && todayNST.getDate() === 31) setSpecialDay('halloween');
   }, []);
-
-  const color = Color('#A5DAE9').rgb().array();
-  const allCats = [
-    ...new Set(
-      Object.values(restockShopInfo)
-        .map((shop) => shop.category)
-        .flat()
-    ),
-  ].sort((a, b) => a.localeCompare(b));
 
   const handleCat = (cat: string) => {
     if (selCats.includes(cat)) {
@@ -152,21 +153,16 @@ const RestockHub = () => {
           );
           if (shops.length === 0) return null;
           return (
-            <>
-              <Heading as="h2" size="lg" key={cat}>
+            <Fragment key={cat}>
+              <Heading as="h2" size="lg">
                 {cat}
               </Heading>
-              <Flex
-                flexFlow="row"
-                flexWrap="wrap"
-                gap={5}
-                justifyContent={{ base: 'center', xl: 'flex-start' }}
-              >
+              <Flex flexFlow="row" flexWrap="wrap" gap={3} justifyContent={'center'}>
                 {shops.map((shop) => (
                   <ShopCard key={shop.id} shop={shop} />
                 ))}
               </Flex>
-            </>
+            </Fragment>
           );
         })}
       </Flex>

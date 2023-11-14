@@ -38,7 +38,6 @@ const FeedbackVotingPage = () => {
 
   useEffect(() => {
     if (!authLoading && user) {
-      console.log(authLoading, user);
       init();
     }
   }, [authLoading, user]);
