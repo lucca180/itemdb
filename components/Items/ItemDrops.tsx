@@ -100,7 +100,7 @@ const ItemDrops = (props: Props) => {
       {Object.values(pools)
         .filter((a) => !['le', 'unknown'].includes(a.name))
         .sort((a, b) => a.name.localeCompare(b.name))
-        .map((pool) => (
+        .map((pool, i) => (
           <Flex alignItems="center" key={pool.name} flexFlow="column" mb={8}>
             {getCatImage(pool.name) && (
               <Image
@@ -121,7 +121,7 @@ const ItemDrops = (props: Props) => {
             )}
             {!isChoice && pool.name !== 'bonus' && (
               <Text textAlign={'center'} fontSize="sm" flex="1" mb={3}>
-                {getDropText(pool, itemOpenable)}
+                {getDropText(pool, itemOpenable, i === 0)}
               </Text>
             )}
             <Flex gap={3} wrap="wrap" justifyContent="center">
@@ -170,7 +170,7 @@ const ItemDrops = (props: Props) => {
           {!isChoice &&
             (pools['unknown'].minDrop > 0 || pools['unknown'].maxDrop > 1 || multiplePools) && (
               <Text textAlign={'center'} mb={3} fontSize="sm" color="gray.200">
-                {getDropText(pools['unknown'], itemOpenable, multiplePools)}
+                {getDropText(pools['unknown'], itemOpenable, !multiplePools)}
               </Text>
             )}
           <Flex gap={3} wrap="wrap" justifyContent="center">
@@ -220,7 +220,7 @@ const getCatImage = (cat: string) => {
   return '';
 };
 
-const getDropText = (pool: PrizePoolData | null, itemOpenable: ItemOpenable, isLast?: boolean) => {
+const getDropText = (pool: PrizePoolData | null, itemOpenable: ItemOpenable, isFirst?: boolean) => {
   let text = <></>;
 
   if (!pool)
@@ -238,12 +238,7 @@ const getDropText = (pool: PrizePoolData | null, itemOpenable: ItemOpenable, isL
       </>
     );
 
-  const hasChance =
-    (pool.openings / itemOpenable.openings <= 0.9 &&
-      (!itemOpenable.isChoice || ['le', 'bonus'].includes(pool.name))) ||
-    pool.name.includes('chance');
-
-  if (hasChance) {
+  if (pool.isChance) {
     text = (
       <>
         You have a{' '}
@@ -258,10 +253,10 @@ const getDropText = (pool: PrizePoolData | null, itemOpenable: ItemOpenable, isL
     );
   }
 
-  if (!hasChance) {
+  if (!pool.isChance) {
     text = (
       <>
-        This item will {isLast ? 'also ' : ''} drop{' '}
+        This item will {!isFirst ? 'also ' : ''} drop{' '}
         {pool.minDrop === 1 && pool.maxDrop === 1 && <b>one</b>}
         {pool.minDrop >= 1 && pool.maxDrop > 1 && <b>at least {pool.minDrop}</b>}
         {pool.minDrop >= 1 && pool.maxDrop !== pool.minDrop && ' and '}

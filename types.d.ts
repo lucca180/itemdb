@@ -291,6 +291,7 @@ export type PrizePoolData = {
   maxDrop: number;
   minDrop: number;
   totalDrops: number;
+  isChance: boolean;
 };
 
 export type ItemDrop = {

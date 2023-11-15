@@ -140,6 +140,7 @@ export const getItemDrops = async (
       if (!prizePools[pool]) {
         prizePools[pool] = {
           name: pool,
+          isChance: pool.includes('chance'),
           items: [],
           openings: 0,
           maxDrop: 0,
@@ -205,6 +206,7 @@ export const getItemDrops = async (
         prizePools[moreCommonCat] = {
           name: moreCommonCat,
           items: [],
+          isChance: false,
           openings: 0,
           maxDrop: 0,
           minDrop: 0,
@@ -265,6 +267,9 @@ export const getItemDrops = async (
       pool.minDrop = Number(min);
       pool.maxDrop = Number(max);
     }
+
+    if (!pool.isChance && pool.openings / openingCount <= 0.9 && !openableData.isChoice)
+      pool.isChance = true;
   });
 
   openableData.minDrop =
