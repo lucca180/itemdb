@@ -167,7 +167,7 @@ const ImportItems = (props: ImportItemsProps) => {
         return true;
       })
       .map((item: ItemData) => ({
-        item_iid: item.internal_id,
+        item_iid: item.canonical_id ?? item.internal_id,
         amount: importInfo.ignore.includes('quantity') ? 1 : items[item.item_id ?? -1] ?? 1,
         imported: true,
       }));

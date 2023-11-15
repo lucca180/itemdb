@@ -26,6 +26,7 @@ export const getSimilarItems = async (id_name: string) => {
 
   const rawTreco = (await prisma.$queryRaw`
     SELECT internal_id FROM Items where ${match} and internal_id != ${item.internal_id}
+    and canonical_id is null
     order by ${match} desc limit 4
   `) as any;
 

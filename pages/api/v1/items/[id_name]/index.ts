@@ -79,6 +79,11 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
       ? null
       : Number(itemData.item_id);
 
+  const canonical_id =
+    (!itemData.canonical_id && itemData.canonical_id !== 0) || isNaN(Number(itemData.canonical_id))
+      ? null
+      : Number(itemData.item_id);
+
   let itemSlug: string | undefined = undefined;
 
   if (originalItem && itemData.name !== originalItem.name) {
@@ -110,6 +115,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
     where: { internal_id: internal_id },
     data: {
       item_id: itemId,
+      canonical_id: canonical_id,
       name: itemData.name,
       description: itemData.description,
       image: itemData.image,
@@ -191,6 +197,7 @@ export const getItem = async (id_name: number | string) => {
 
   const item: ItemData = {
     internal_id: result.internal_id,
+    canonical_id: result.canonical_id ?? null,
     image: result.image,
     image_id: result.image_id,
     item_id: result.item_id,

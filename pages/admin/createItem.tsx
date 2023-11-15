@@ -25,6 +25,7 @@ import { CheckAuth } from '../../utils/googleCloud';
 
 const defaultItem: ItemData = {
   internal_id: -1,
+  canonical_id: null,
   item_id: null,
   name: '',
   description: '',

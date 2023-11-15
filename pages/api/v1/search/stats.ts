@@ -42,7 +42,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
             GROUP BY image_id 
             having dist <= 750
         ) as d on a.image_id = d.image_id
-        where d.dist is not null
+        where d.dist is not null and a.canonical_id is null
         group by ${column}
       `;
 
@@ -96,6 +96,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
             },
           },
         ],
+        canonical_id: null,
       },
     });
 

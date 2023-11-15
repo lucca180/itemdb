@@ -327,6 +327,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const itemList: ItemData[] = filteredResult.map((result: any) => {
     const item: ItemData = {
       internal_id: result.internal_id,
+      canonical_id: result.canonical_id ?? null,
       image: result.image ?? '',
       image_id: result.image_id ?? '',
       item_id: result.item_id,

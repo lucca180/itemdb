@@ -46,6 +46,10 @@ model Items {
 
   tags ItemTags[]
 
+  canonical_id Int?
+  canonical    Items?  @relation("canonical", fields: [canonical_id], references: [internal_id], onDelete: SetNull, onUpdate: Cascade)
+  clone        Items[] @relation("canonical")
+
   @@index([name, image_id])
   @@index([image_id])
   @@index([item_id])
@@ -277,8 +281,8 @@ model OpenableItems {
   limitedEdition Boolean  @default(false)
   addedAt        DateTime @default(now())
 
-  isManual Boolean @default(false)
-  prizePool    String?
+  isManual  Boolean @default(false)
+  prizePool String?
 
   item        Items  @relation("childItem", fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
   parent_item Items? @relation("parentItem", fields: [parent_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)

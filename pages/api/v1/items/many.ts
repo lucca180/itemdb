@@ -133,6 +133,7 @@ export const getManyItems = async (
   for (const result of resultRaw) {
     const x: ItemData = {
       internal_id: result.internal_id,
+      canonical_id: result.canonical_id ?? null,
       image: result.image,
       image_id: result.image_id,
       item_id: result.item_id,

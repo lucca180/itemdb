@@ -314,7 +314,7 @@ export async function doSearch(query: string, filters: SearchFilters) {
         ) as d on d.item_iid = a.internal_id
       ) as temp
         
-        WHERE temp.dist is not null
+        WHERE temp.dist is not null and temp.canonical_id is null
 
         ${
           catFiltersSQL.length > 0
@@ -372,7 +372,7 @@ export async function doSearch(query: string, filters: SearchFilters) {
         ) as d on d.item_iid = a.internal_id
       ) as temp
             
-      WHERE (${fulltext} OR temp.name LIKE ${`%${originalQuery}%`})
+      WHERE (${fulltext} OR temp.name LIKE ${`%${originalQuery}%`}) and temp.canonical_id is null
 
       ${
         catFiltersSQL.length > 0
@@ -412,6 +412,7 @@ export async function doSearch(query: string, filters: SearchFilters) {
   const itemList: ItemData[] = filteredResult.map((result: any) => {
     const item: ItemData = {
       internal_id: result.internal_id,
+      canonical_id: result.canonical_id ?? null,
       image: result.image ?? '',
       image_id: result.image_id ?? '',
       item_id: result.item_id,

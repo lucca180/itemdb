@@ -48,6 +48,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
           GROUP BY item_iid
       )
     ) as d on d.item_iid = a.internal_id
+    where a.canonical_id is null
     ORDER BY a.addedAt DESC
     LIMIT ${limit}
   `) as any;
@@ -56,6 +57,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const itemList: ItemData[] = filteredResult.map((result: any) => {
     const item: ItemData = {
       internal_id: result.internal_id,
+      canonical_id: result.canonical_id ?? null,
       image: result.image ?? '',
       image_id: result.image_id ?? '',
       item_id: result.item_id,

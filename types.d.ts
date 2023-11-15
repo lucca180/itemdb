@@ -22,6 +22,7 @@ export type ItemData = {
   owls: OwlsPriceData | null;
   slug: string | null;
   comment: string | null;
+  canonical_id: number | null;
 };
 
 export type ItemFindAt = {

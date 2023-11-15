@@ -362,6 +362,19 @@ export const InfoTab = (props: infoTabProps) => {
                 color={item.image === itemProps.image ? 'gray.400' : '#fff'}
               />
             </FormControl>
+            <FormControl>
+              <FormLabel color="gray.300">Canonical ID</FormLabel>
+              <Input
+                variant="filled"
+                type="text"
+                name="canonical_id"
+                size="sm"
+                value={item.canonical_id ?? ''}
+                onChange={handleChange}
+                isDisabled={!isAdmin}
+                color={item.canonical_id == itemProps.canonical_id ? 'gray.400' : '#fff'}
+              />
+            </FormControl>
           </Stack>
           <Divider />
           <HStack>
