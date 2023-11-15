@@ -82,7 +82,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
   const canonical_id =
     (!itemData.canonical_id && itemData.canonical_id !== 0) || isNaN(Number(itemData.canonical_id))
       ? null
-      : Number(itemData.item_id);
+      : Number(itemData.canonical_id);
 
   let itemSlug: string | undefined = undefined;
 
