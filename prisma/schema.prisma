@@ -162,6 +162,7 @@ model ItemPrices {
   @@index([name])
   @@index([name, item_iid])
   @@index([item_iid, addedAt(sort: Desc)])
+  @@index([item_iid])
 }
 
 model PriceProcess {
@@ -189,6 +190,7 @@ model PriceProcess {
   @@index([name, addedAt, type])
   @@index([name])
   @@index([item_id])
+  @@index([type, name, addedAt, processed])
   @@index([addedAt(sort: Desc)])
 }
 

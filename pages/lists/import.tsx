@@ -153,7 +153,7 @@ const ImportItems = (props: ImportItemsProps) => {
 
   const handleImport = async () => {
     if (!itemData || !user || !importInfo.list) return;
-
+    const canonicalAmount = {} as { [canonical_id: number]: number };
     const importData: {
       item_iid: number;
       capValue?: number;
@@ -164,11 +164,20 @@ const ImportItems = (props: ImportItemsProps) => {
         if (item == null) return false;
         if (importInfo.ignore.includes('np') && item.type === 'np') return false;
         if (importInfo.ignore.includes('nc') && item.type === 'nc') return false;
+
+        if (item.canonical_id) {
+          canonicalAmount[item.canonical_id] = (canonicalAmount[item.canonical_id] ?? 0) + 1;
+        }
+
         return true;
       })
       .map((item: ItemData) => ({
         item_iid: item.canonical_id ?? item.internal_id,
-        amount: importInfo.ignore.includes('quantity') ? 1 : items[item.item_id ?? -1] ?? 1,
+        amount: importInfo.ignore.includes('quantity')
+          ? 1
+          : item.canonical_id
+          ? canonicalAmount[item.canonical_id]
+          : items[item.item_id ?? -1] ?? 1,
         imported: true,
       }));
 
