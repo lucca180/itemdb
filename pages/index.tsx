@@ -47,7 +47,7 @@ const HomePage = (props: Props) => {
   }, []);
 
   const init = async () => {
-    const [itemRes, priceRes, hottestRes] = (await Promise.allSettled([
+    const [itemRes, priceRes] = (await Promise.allSettled([
       axios.get('api/v1/items', {
         params: {
           limit: 16,
@@ -58,17 +58,21 @@ const HomePage = (props: Props) => {
           limit: 16,
         },
       }),
-      axios.get('api/v1/beta/restock', {
-        params: {
-          limit: 16,
-        },
-      }),
     ])) as { status: 'fulfilled' | 'rejected'; value?: any }[];
 
     setItems(itemRes.value?.data || null);
     setPrices(priceRes.value?.data || null);
     setTrending(props.trendingItems || null);
-    setHottest(hottestRes.value?.data || null);
+
+    axios
+      .get('api/v1/beta/restock', {
+        params: {
+          limit: 16,
+        },
+      })
+      .then((res) => {
+        setHottest(res.data);
+      });
   };
 
   return (
