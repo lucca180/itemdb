@@ -190,7 +190,6 @@ model PriceProcess {
   @@index([name, addedAt, type])
   @@index([name])
   @@index([item_id])
-  @@index([type, name, addedAt, processed])
   @@index([addedAt(sort: Desc)])
 }
 

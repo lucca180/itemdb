@@ -79,9 +79,7 @@ export async function middleware(request: NextRequest) {
     try {
       await checkSessionLocal(sessionCookie.value);
       return NextResponse.next();
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) {}
   }
 
   // Rate limit
