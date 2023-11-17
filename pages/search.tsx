@@ -13,7 +13,7 @@ import {
   useMediaQuery,
   useToast,
 } from '@chakra-ui/react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Layout from '../components/Layout';
 import ItemCard from '../components/Items/ItemCard';
 import { SearchStats } from '../types';
@@ -37,6 +37,7 @@ const Axios = axios.create({
 });
 
 const intl = new Intl.NumberFormat();
+let ABORT_CONTROLER = new AbortController();
 
 const SearchPage = () => {
   const toast = useToast();
@@ -47,6 +48,8 @@ const SearchPage = () => {
   const [filters, setFilters] = useState<SearchFiltersType>(defaultFilters);
   const [isColorSearch, setIsColorSearch] = useState<boolean>(false);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [totalResults, setTotalResults] = useState<number | null>(null);
+  const __isNewPage = useRef(false);
 
   const [isLargerThanLG] = useMediaQuery('(min-width: 62em)', { fallback: true });
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -86,14 +89,33 @@ const SearchPage = () => {
     const params = getFiltersDiff({ ...(customFilters ?? filters) });
 
     setResult(null);
+    if (!__isNewPage.current) setTotalResults(null);
     try {
+      ABORT_CONTROLER.abort();
+      ABORT_CONTROLER = new AbortController();
+
+      console.log(__isNewPage.current, totalResults);
+      if (!totalResults || !__isNewPage.current) {
+        Axios.get('search?s=' + encodeURIComponent(query), {
+          signal: ABORT_CONTROLER.signal,
+          params: { ...params },
+        }).then((res) => {
+          setTotalResults(res.data.totalResults);
+        });
+      }
+
+      __isNewPage.current = false;
+
       const [resSearch, resStats] = await Promise.all([
         Axios.get('search?s=' + encodeURIComponent(query), {
-          params: params,
+          signal: ABORT_CONTROLER.signal,
+          params: { ...params, skipStats: true },
         }),
 
         !searchStatus || forceStats
-          ? Axios.get('search/stats?s=' + encodeURIComponent(query))
+          ? Axios.get('search/stats?s=' + encodeURIComponent(query), {
+              signal: ABORT_CONTROLER.signal,
+            })
           : null,
       ]);
 
@@ -144,7 +166,7 @@ const SearchPage = () => {
   const changePage = (page: number) => {
     setFilters({ ...filters, page: page });
     changeQueryString({ ...filters, page: page });
-
+    __isNewPage.current = true;
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
   };
 
@@ -292,7 +314,7 @@ const SearchPage = () => {
 
           <Flex justifyContent={'center'}>
             <CreateDynamicListButton
-              resultCount={searchResult?.totalResults}
+              resultCount={totalResults ?? undefined}
               isLoading={!searchResult}
               filters={filters}
               query={searchQuery}
@@ -321,7 +343,7 @@ const SearchPage = () => {
           >
             <HStack justifyContent={'space-between'} w="100%">
               <Flex textColor={'gray.300'} fontSize={{ base: 'xs', sm: 'sm' }} gap={3}>
-                {searchResult && (
+                {totalResults !== null && searchResult && (
                   <SelectItemsCheckbox
                     checked={selectedItems}
                     allChecked={selectedItems.length === searchResult.content.length}
@@ -331,16 +353,13 @@ const SearchPage = () => {
                         searchResult.resultsPerPage * (searchResult.page - 1) + 1
                       )} -${' '}
                       ${intl.format(
-                        Math.min(
-                          searchResult.resultsPerPage * searchResult.page,
-                          searchResult.totalResults
-                        )
+                        Math.min(searchResult.resultsPerPage * searchResult.page, totalResults)
                       )}${' '}
-                      of ${intl.format(searchResult.totalResults)} results
+                      of ${intl.format(totalResults)} results
                     `}
                   />
                 )}
-                {!searchResult && <Skeleton width="100px" h="15px" />}
+                {(!searchResult || totalResults === null) && <Skeleton width="100px" h="15px" />}
                 {selectedItems.length > 0 && (
                   <ListSelect
                     defaultText="Add to List"
@@ -449,7 +468,7 @@ const SearchPage = () => {
           {searchResult && (
             <Pagination
               currentPage={searchResult.page}
-              totalPages={Math.ceil(searchResult.totalResults / searchResult.resultsPerPage)}
+              totalPages={Math.ceil((totalResults ?? 0) / searchResult.resultsPerPage)}
               setPage={changePage}
             />
           )}

@@ -25,19 +25,20 @@ import { wp_getLatestPosts } from './api/wp/posts';
 import NextLink from 'next/link';
 import Color from 'color';
 import { getTrendingItems } from './api/v1/beta/trending';
+import { getHotestRestock } from './api/v1/beta/restock';
 
 type Props = {
   latestOwls: ItemData[];
   latestPosts: WP_Article[];
   trendingItems: ItemData[];
+  hottestRestock: ItemData[];
 };
 
 const HomePage = (props: Props) => {
-  const { latestOwls, latestPosts } = props;
+  const { latestOwls, latestPosts, hottestRestock } = props;
   const [latestItems, setItems] = useState<ItemData[] | null>(null);
   const [latestPrices, setPrices] = useState<ItemData[] | null>(null);
   const [trendingItems, setTrending] = useState<ItemData[] | null>(null);
-  const [hottestRestock, setHottest] = useState<ItemData[] | null>(null);
 
   const color = Color('#4A5568');
   const rgb = color.rgb().round().array();
@@ -63,16 +64,6 @@ const HomePage = (props: Props) => {
     setItems(itemRes.value?.data || null);
     setPrices(priceRes.value?.data || null);
     setTrending(props.trendingItems || null);
-
-    axios
-      .get('api/v1/beta/restock', {
-        params: {
-          limit: 16,
-        },
-      })
-      .then((res) => {
-        setHottest(res.data);
-      });
   };
 
   return (
@@ -189,13 +180,14 @@ const HomePage = (props: Props) => {
 export default HomePage;
 
 export async function getStaticProps() {
-  const [latestOwls, latestPosts, trendingItems] = await Promise.all([
+  const [latestOwls, latestPosts, trendingItems, hottestRestock] = await Promise.all([
     getLatestOwls(16).catch(() => []),
     wp_getLatestPosts(5).catch((e) => {
       console.error(e);
       return [];
     }),
     getTrendingItems(16).catch(() => []),
+    getHotestRestock(16).catch(() => []),
   ]);
 
   return {
@@ -203,6 +195,7 @@ export async function getStaticProps() {
       latestOwls,
       latestPosts,
       trendingItems,
+      hottestRestock,
     },
     revalidate: 60, // In seconds
   };

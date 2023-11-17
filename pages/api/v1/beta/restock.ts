@@ -19,7 +19,13 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
   let { limit } = req.query;
   if (!limit) limit = '16';
 
-  const lastDays = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const items = await getHotestRestock(Number(limit));
+
+  return res.status(200).json(items);
+}
+
+export const getHotestRestock = async (limit: number, days = 7) => {
+  const lastDays = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
   const lastDaysFormated = lastDays.toISOString().split('T')[0];
 
   const hotestRestockRes = (await prisma.$queryRaw(Prisma.sql`
@@ -47,5 +53,5 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
     .sort((a, b) => (b.price.value ?? 0) - (a.price.value ?? 0))
     .splice(0, Number(limit));
 
-  return res.status(200).json(items);
-}
+  return items;
+};

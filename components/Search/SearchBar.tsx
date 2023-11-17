@@ -113,6 +113,7 @@ export const SearchBar = (props: Props) => {
     const searchRes = await Axios.get('search?s=' + encodeURIComponent(newSearch.trim()), {
       params: {
         limit: 5,
+        skipStats: true,
       },
     });
 

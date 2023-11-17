@@ -121,7 +121,10 @@ const RestockShop = (props: RestockShopPageProps) => {
     };
 
     const res = await axios.get('/api/v1/search', {
-      params: getFiltersDiff(filters),
+      params: {
+        ...getFiltersDiff(filters),
+        skipStats: true,
+      },
     });
 
     const searchResult = res.data;

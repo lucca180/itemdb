@@ -21,7 +21,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   const reqQuery = qs.parse(req.url.split('?')[1]) as any;
   const query = (reqQuery.s as string)?.trim() ?? '';
-
+  const skipStats = reqQuery.skipStats === 'true';
   // const [queryFilters, querySanitezed] = parseFilters(originalQuery, false);
 
   // const query = querySanitezed.trim() ?? '';
@@ -31,11 +31,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   reqQuery.limit = Math.min(reqQuery.limit, 3000);
   // const filters = { ...queryFilters, ...reqQuery };
 
-  const result = await doSearch(query, reqQuery);
+  const result = await doSearch(query, reqQuery, !skipStats);
   res.json(result);
 }
 
-export async function doSearch(query: string, filters: SearchFilters) {
+export async function doSearch(query: string, filters: SearchFilters, includeStats = true) {
   const originalQuery = query;
   const [queryFilters, querySanitezed] = parseFilters(originalQuery, false);
 
@@ -275,12 +275,14 @@ export async function doSearch(query: string, filters: SearchFilters) {
 
   let resultRaw;
 
+  const statsQuery = !includeStats ? Prisma.sql`` : Prisma.sql`,count(*) OVER() AS full_count`;
+
   if (isColorSearch) {
     const colorQuery = Color(query);
     const [l, a, b] = colorQuery.lab().array();
 
     resultRaw = (await prisma.$queryRaw`
-      SELECT *,  count(*) OVER() AS full_count FROM (
+      SELECT * ${statsQuery} FROM (
         SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, 
         b.rgb_g, b.rgb_b, b.hex, b.hsv_h, b.hsv_s, b.hsv_v, f.dist,
         c.addedAt as priceAdded, c.price, c.noInflation_id, 
@@ -344,7 +346,7 @@ export async function doSearch(query: string, filters: SearchFilters) {
   } else {
     query = `%${query}%`;
     resultRaw = (await prisma.$queryRaw`
-      SELECT *,  count(*) OVER() AS full_count FROM (
+      SELECT * ${statsQuery} FROM (
         SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex, b.hsv_h, b.hsv_s, b.hsv_v,
           c.addedAt as priceAdded, c.price, c.noInflation_id, 
           d.pricedAt as owlsPriced, d.value as owlsValue, d.valueMin as owlsValueMin
@@ -464,7 +466,7 @@ export async function doSearch(query: string, filters: SearchFilters) {
   return {
     content: itemList,
     page: page + 1,
-    totalResults: parseInt(resultRaw?.[0]?.full_count ?? 0),
+    totalResults: parseInt(resultRaw?.[0]?.full_count ?? resultRaw.length),
     resultsPerPage: limit,
   };
 }

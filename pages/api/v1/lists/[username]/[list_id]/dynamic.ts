@@ -191,7 +191,7 @@ export const syncDynamicList = async (list_id: number, force = false) => {
     dynamicQuery.limit = 3000;
     dynamicQuery.page = 0;
 
-    const searchRes = await doSearch(dynamicQuery.s, dynamicQuery);
+    const searchRes = await doSearch(dynamicQuery.s, dynamicQuery, false);
 
     let item_iids = searchRes.content.map((item) => item.internal_id);
     item_iids = item_iids.length > 0 ? item_iids : [-1]; // join() throws an error if the array is empty
