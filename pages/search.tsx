@@ -94,7 +94,6 @@ const SearchPage = () => {
       ABORT_CONTROLER.abort();
       ABORT_CONTROLER = new AbortController();
 
-      console.log(__isNewPage.current, totalResults);
       if (!totalResults || !__isNewPage.current) {
         Axios.get('search?s=' + encodeURIComponent(query), {
           signal: ABORT_CONTROLER.signal,
@@ -449,6 +448,7 @@ const SearchPage = () => {
                   item={item}
                   onSelect={() => selectItem(item.internal_id)}
                   disableLink={selectedItems.length > 0}
+                  disablePrefetch
                   selected={selectedItems.includes(item.internal_id)}
                 />
               </Box>

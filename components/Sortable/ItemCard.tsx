@@ -118,6 +118,7 @@ function SortableItem1(props: Props) {
           onSelect={() => onClick(null, true)}
           onListAction={props.onListAction}
           selected={isSelected}
+          disablePrefetch
           capValue={isTrading ? itemInfo?.capValue ?? undefined : undefined}
           quantity={itemInfo?.amount ?? undefined}
         />

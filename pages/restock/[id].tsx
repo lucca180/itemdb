@@ -323,7 +323,7 @@ const RestockShop = (props: RestockShopPageProps) => {
                   flexWrap={'wrap'}
                 >
                   {group.map((item) => (
-                    <ItemCard key={item.internal_id} item={item} />
+                    <ItemCard key={item.internal_id} item={item} disablePrefetch />
                   ))}
                 </Flex>
               )}

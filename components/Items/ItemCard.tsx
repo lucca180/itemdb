@@ -21,6 +21,7 @@ export type ItemProps = {
   odds?: number;
   isLE?: boolean;
   sortType?: string;
+  disablePrefetch?: boolean;
 };
 
 const intl = new Intl.NumberFormat();
@@ -38,11 +39,11 @@ const ItemCardBase = (props: ItemProps) => {
     isLE,
     onListAction,
     sortType,
+    disablePrefetch,
   } = props;
   const [isMobile] = useMediaQuery('(hover: none)');
 
   const color = item?.color.rgb;
-
   if (!item || isLoading || !color)
     return (
       <Link as={'a'} _hover={{ textDecoration: 'none' }} pointerEvents="none" style={props.style}>
@@ -81,6 +82,7 @@ const ItemCardBase = (props: ItemProps) => {
         <Link
           as={disableLink ? undefined : NextLink}
           style={props.style}
+          prefetch={!disableLink && !disablePrefetch ? undefined : false}
           href={disableLink ? undefined : '/item/' + (item.slug ?? item.internal_id)}
           _hover={{ textDecoration: 'none' }}
           // pointerEvents={disableLink ? 'none' : 'initial'}
