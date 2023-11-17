@@ -97,7 +97,7 @@ const SearchPage = () => {
       if (!totalResults || !__isNewPage.current) {
         Axios.get('search?s=' + encodeURIComponent(query), {
           signal: ABORT_CONTROLER.signal,
-          params: { ...params },
+          params: { ...params, limit: 1, sortBy: 'name', sortDir: 'asc' },
         }).then((res) => {
           setTotalResults(res.data.totalResults);
         });
@@ -468,7 +468,7 @@ const SearchPage = () => {
           {searchResult && (
             <Pagination
               currentPage={searchResult.page}
-              totalPages={Math.ceil((totalResults ?? 0) / searchResult.resultsPerPage)}
+              totalPages={Math.ceil((totalResults ?? 1000) / searchResult.resultsPerPage)}
               setPage={changePage}
             />
           )}

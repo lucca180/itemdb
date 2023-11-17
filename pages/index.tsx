@@ -187,7 +187,7 @@ export async function getStaticProps() {
       return [];
     }),
     getTrendingItems(16).catch(() => []),
-    getHotestRestock(16, 14).catch(() => []),
+    getHotestRestock(16, 15).catch(() => []),
   ]);
 
   return {

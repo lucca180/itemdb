@@ -96,7 +96,7 @@ function SortableItem1(props: Props) {
     return (
       <VStack mb={3} ref={setRefs} style={style} {...attributes} {...listeners}>
         <Box style={{ height: '100%' }}>
-          <ItemCard item={item} sortType={sortType} />
+          <ItemCard item={item} sortType={sortType} disablePrefetch />
         </Box>
       </VStack>
     );
