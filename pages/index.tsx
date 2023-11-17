@@ -124,7 +124,7 @@ const HomePage = (props: Props) => {
               <TabList>
                 <Tab>Trending Items</Tab>
                 {!latestOwls || (!!latestOwls.length && <Tab>Latest Owls</Tab>)}
-                <Tab>7-Day Hottest Restock</Tab>
+                <Tab>14-Day Hottest Restock</Tab>
               </TabList>
               <TabPanels>
                 <TabPanel px={0}>
@@ -187,7 +187,7 @@ export async function getStaticProps() {
       return [];
     }),
     getTrendingItems(16).catch(() => []),
-    getHotestRestock(16).catch(() => []),
+    getHotestRestock(16, 14).catch(() => []),
   ]);
 
   return {
