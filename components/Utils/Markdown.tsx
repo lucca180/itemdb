@@ -1,9 +1,6 @@
 import { Link } from '@chakra-ui/react';
-import dynamic from 'next/dynamic';
 import Image from 'next/image';
-const MarkdownLib = dynamic(() => import('react-markdown'), {
-  ssr: false,
-});
+import MarkdownLib from 'react-markdown';
 
 type MarkdownProps = {
   // components?: any

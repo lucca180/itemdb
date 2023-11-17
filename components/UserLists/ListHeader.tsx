@@ -25,7 +25,7 @@ import NPBag from '../../public/icons/npbag.png';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import NextImage from 'next/image';
 import dynamic from 'next/dynamic';
-const Markdown = dynamic(() => import('../Utils/Markdown'));
+const Markdown = dynamic(() => import('../Utils/Markdown'), { ssr: false });
 
 type ListHeaderProps = {
   list: UserList;

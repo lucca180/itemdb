@@ -7,7 +7,7 @@ import Image from 'next/image';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import dynamic from 'next/dynamic';
 import Color from 'color';
-const Markdown = dynamic(() => import('../Utils/Markdown'));
+const Markdown = dynamic(() => import('../Utils/Markdown'), { ssr: false });
 
 type Props = {
   item: ItemData;
