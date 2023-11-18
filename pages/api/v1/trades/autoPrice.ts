@@ -65,7 +65,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const feedbackArray: Prisma.FeedbacksCreateInput[] = pricedTrades.map((t) => ({
     type: 'tradePrice',
     subject_id: t.trade_id,
-    user_id: 'ZiF0QYgueGgQhFwroQv4cjMXJ0C3',
+    user_id: 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1',
     json: JSON.stringify({
       ip: 'auto',
       pageRef: 'auto',

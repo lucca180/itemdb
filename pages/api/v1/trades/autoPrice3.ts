@@ -34,7 +34,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     where: {
       processed: false,
       type: 'tradePrice',
-      // user_id: 'ZiF0QYgueGgQhFwroQv4cjMXJ0C3',
+      // user_id: 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1',
     },
     take: take,
     skip: skip,

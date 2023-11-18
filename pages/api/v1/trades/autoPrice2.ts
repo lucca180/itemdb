@@ -59,7 +59,7 @@ export const autoPriceTrades2 = async (tradeRaw: (Trades & { items: TradeItems[]
   const feedbackArray: Prisma.FeedbacksCreateInput[] = filteredTrades.map((t) => ({
     type: 'tradePrice',
     subject_id: t.trade_id,
-    user_id: 'ZiF0QYgueGgQhFwroQv4cjMXJ0C3',
+    user_id: 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1',
     json: JSON.stringify({
       ip: 'auto',
       pageRef: 'auto',
