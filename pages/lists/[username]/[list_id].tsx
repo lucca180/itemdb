@@ -38,6 +38,7 @@ import { CreateLinkedListButton } from '../../../components/DynamicLists/CreateL
 import { rarityToCCPoints, stripMarkdown } from '../../../utils/utils';
 import { SearchList } from '../../../components/Search/SearchLists';
 import { SortSelect } from '../../../components/Input/SortSelect';
+import { CheckAuth } from '../../../utils/googleCloud';
 
 const CreateListModal = dynamic<CreateListModalProps>(
   () => import('../../../components/Modal/CreateListModal')
@@ -673,16 +674,30 @@ const ListPage = (props: Props) => {
 export default ListPage;
 
 export async function getServerSideProps(context: NextPageContext) {
-  const token = getCookie('userToken', { req: context.req, res: context.res }) as
-    | string
-    | undefined
-    | null;
-
   const { list_id, username } = context.query;
   if (!username || !list_id || Array.isArray(username) || Array.isArray(list_id))
     return { notFound: true };
 
-  const list = await getList(username, parseInt(list_id), token, username === 'official', true);
+  let userOrToken = null;
+
+  try {
+    const res = await CheckAuth((context.req ?? null) as any);
+    userOrToken = res?.user;
+  } catch (err) {
+    console.log(err);
+    userOrToken = getCookie('userToken', { req: context.req, res: context.res }) as
+      | string
+      | undefined
+      | null;
+  }
+
+  const list = await getList(
+    username,
+    parseInt(list_id),
+    userOrToken,
+    username === 'official',
+    true
+  );
 
   if (!list) return { notFound: true };
 

@@ -191,15 +191,15 @@ const ItemDrops = (props: Props) => {
                 );
               })}
           </Flex>
-          {!isChoice && !!itemOpenable.openings && (
-            <Text textAlign={'center'} mt={4} fontSize="xs" color="gray.300">
-              {item.name} drop odds on {itemOpenable.openings} opening reports.{' '}
-              <Link as={NextLink} href="/contribute" color="gray.400">
-                Learn How To Help
-              </Link>
-            </Text>
-          )}
         </>
+      )}
+      {!isChoice && !!itemOpenable.openings && (
+        <Text textAlign={'center'} mt={4} fontSize="xs" color="gray.300">
+          {item.name} drop odds on {itemOpenable.openings} opening reports.{' '}
+          <Link as={NextLink} href="/contribute" color="gray.400">
+            Learn How To Help
+          </Link>
+        </Text>
       )}
     </CardBase>
   );

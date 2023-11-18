@@ -412,9 +412,11 @@ export const getList = async (
 
   let user = userOrToken as User | null;
 
-  if (typeof userOrToken === 'string') {
-    user = (await CheckAuth(null, userOrToken)).user;
-  }
+  try {
+    if (typeof userOrToken === 'string') {
+      user = (await CheckAuth(null, userOrToken)).user;
+    }
+  } catch (e) {}
 
   if (
     !listRaw ||
