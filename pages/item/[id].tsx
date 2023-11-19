@@ -39,7 +39,6 @@ import SimilarItemsCard from '../../components/Items/SimilarItemsCard';
 import { getItemDrops, getItemParent } from '../api/v1/items/[id_name]/drops';
 import ItemDrops from '../../components/Items/ItemDrops';
 import ItemParent from '../../components/Items/ItemParent';
-// import TradeModal from '../../components/TradeModal/TradeModal'
 import dynamic from 'next/dynamic';
 import { getItemPrices } from '../api/v1/items/[id_name]/prices';
 import { getItemTrades } from '../api/v1/trades';
@@ -151,7 +150,6 @@ const ItemPage = (props: ItemPageProps) => {
           tags={[]}
         />
       )}
-      {/* <TradeModal isOpen={true} onClose={() => {}} /> */}
       {feedbackModalOpen && (
         <FeedbackModal isOpen={feedbackModalOpen} onClose={() => setFeedbackModalOpen(false)} />
       )}
@@ -386,9 +384,9 @@ export async function getStaticPaths() {
 const generateMetaDescription = (item: ItemData, hasDrops = false) => {
   // const intl = new Intl.NumberFormat();
 
-  let metaDescription = truncateString(item.description, 130);
+  const metaDescription = truncateString(item.description, 130);
 
-  if (hasDrops) metaDescription += ` | Check out drop rates`;
+  // if (hasDrops) metaDescription += ` | Check out drop rates`;
 
   // if (item.price.value) metaDescription += ` | Market Price: ${intl.format(item.price.value)} NP`;
 
