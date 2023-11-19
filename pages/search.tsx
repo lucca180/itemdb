@@ -12,6 +12,7 @@ import {
   useDisclosure,
   useMediaQuery,
   useToast,
+  Link,
 } from '@chakra-ui/react';
 import React, { useEffect, useRef, useState } from 'react';
 import Layout from '../components/Layout';
@@ -31,6 +32,7 @@ import { useAuth } from '../utils/auth';
 import { defaultFilters } from '../utils/parseFilters';
 import { CreateDynamicListButton } from '../components/DynamicLists/CreateButton';
 import Color from 'color';
+import NextLink from 'next/link';
 
 const Axios = axios.create({
   baseURL: '/api/v1/',
@@ -50,6 +52,8 @@ const SearchPage = () => {
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [totalResults, setTotalResults] = useState<number | null>(null);
   const __isNewPage = useRef(false);
+
+  const searchTip = searchTips[new Date().getHours() % searchTips.length];
 
   const [isLargerThanLG] = useMediaQuery('(min-width: 62em)', { fallback: true });
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -434,7 +438,7 @@ const SearchPage = () => {
             color="gray.500"
             display={{ base: 'none', lg: 'block' }}
           >
-            Tip: you can use right click or ctrl+click to select multiple items
+            Tip: {searchTip}
           </Text>
 
           <Flex mt={4} flexWrap="wrap" gap={{ base: 3, md: 4 }} justifyContent="center">
@@ -494,3 +498,21 @@ export const getFiltersDiff = (a: { [id: string]: any }, b?: SearchFiltersType) 
 };
 
 export default SearchPage;
+
+const searchTips = [
+  <>
+    you can use{' '}
+    <Link as={NextLink} href="/articles/advanced-search-queries" color="gray.400">
+      Advanced Operators
+    </Link>{' '}
+    to supercharge your search
+  </>,
+  <>
+    you can create a{' '}
+    <Link as={NextLink} href="/articles/checklists-and-dynamic-lists" color="gray.400">
+      Dynamic List
+    </Link>{' '}
+    to keep it always up to date with your search
+  </>,
+  <>you can use right click or ctrl+click to select multiple items</>,
+];
