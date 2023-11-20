@@ -38,14 +38,25 @@ const ALL_COLORS = [
   ['#808080', 'Gray'],
 ];
 
+const ALL_COLORS_CODE = ALL_COLORS.map(([hex]) => hex);
+
 const SearchFilters = (props: Props) => {
   const { stats, isColorSearch } = props;
   const [showMoreCat, setCat] = useBoolean();
   const [filters, setFilters] = useState<SearchFilters>(props.filters);
-  const [colorVal, setColorVal] = useState<string>('#c4bce4');
+  const [colorVal, setColorVal] = useState<string>(
+    props.filters.color && !ALL_COLORS_CODE.includes(props.filters.color.toLowerCase())
+      ? props.filters.color
+      : '#c4bce4'
+  );
 
   useEffect(() => {
     setFilters(props.filters);
+    setColorVal(
+      props.filters.color && !ALL_COLORS_CODE.includes(props.filters.color.toLowerCase())
+        ? props.filters.color
+        : '#c4bce4'
+    );
   }, [props.filters]);
 
   // useEffect(() => {
@@ -433,7 +444,7 @@ const SearchFilters = (props: Props) => {
                 key={hex}
                 value={hex}
                 onChange={(val) => handleCheckChange(val, 'color', hex)}
-                checklist={[filters.color]}
+                checklist={[filters.color.toLowerCase()]}
               >
                 <Text as="div" fontSize={'sm'}>
                   <ColorBox color={hex} /> {name}
