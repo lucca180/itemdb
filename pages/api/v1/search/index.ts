@@ -22,18 +22,24 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const reqQuery = qs.parse(req.url.split('?')[1]) as any;
   const query = (reqQuery.s as string)?.trim() ?? '';
   const skipStats = reqQuery.skipStats === 'true';
-  // const [queryFilters, querySanitezed] = parseFilters(originalQuery, false);
-
-  // const query = querySanitezed.trim() ?? '';
 
   reqQuery.page = parseInt(reqQuery.page as string) || 1;
   reqQuery.limit = parseInt(reqQuery.limit as string) || 48;
   reqQuery.limit = Math.min(reqQuery.limit, 3000);
-  // const filters = { ...queryFilters, ...reqQuery };
 
   const result = await doSearch(query, reqQuery, !skipStats);
   res.json(result);
 }
+
+const validColorTypes = [
+  'vibrant',
+  'darkvibrant',
+  'lightvibrant',
+  'muted',
+  'darkmuted',
+  'lightmuted',
+  'population',
+];
 
 export async function doSearch(query: string, filters: SearchFilters, includeStats = true) {
   const originalQuery = query;
@@ -57,6 +63,14 @@ export async function doSearch(query: string, filters: SearchFilters, includeSta
   let typeFilters = (filters.type as string[]) ?? [];
   let statusFilters = (filters.status as string[]) ?? [];
 
+  const colorTolerance = isNaN(Number(filters.colorTolerance as string))
+    ? 750
+    : Number(filters.colorTolerance);
+  const colorType =
+    (filters.colorType as string) && validColorTypes.includes(filters.colorType.toLowerCase())
+      ? filters.colorType
+      : 'vibrant';
+
   const priceFilter = (filters.price as string[]) ?? [];
   const weightFilter = (filters.weight as string[]) ?? [];
   const rarityFilter = (filters.rarity as string[]) ?? [];
@@ -64,8 +78,9 @@ export async function doSearch(query: string, filters: SearchFilters, includeSta
   const owlsFilter = (filters.owlsValue as string[]) ?? [];
 
   const restockProfit = (filters.restockProfit as string) ?? '';
+  console.log(restockProfit);
 
-  let vibrantColorFilter = (filters.color as string) ?? '';
+  let colorFilter = (filters.color as string) ?? '';
 
   const sortBy = (filters.sortBy as string) ?? 'name';
   const sortDir = (filters.sortDir as string) ?? 'asc';
@@ -194,7 +209,7 @@ export async function doSearch(query: string, filters: SearchFilters, includeSta
 
   if (restockProfit !== '' && !isNaN(Number(restockProfit))) {
     const minProfit = Number(restockProfit);
-
+    console.log(minProfit);
     const todayNST = getDateNST();
 
     if (todayNST.getDate() === 3) {
@@ -235,17 +250,21 @@ export async function doSearch(query: string, filters: SearchFilters, includeSta
   let colorSql_inside;
   let colorSql_outside;
   let isColorNeg = false;
-  if (vibrantColorFilter.match(/#[0-9A-Fa-f]{6}$/gm)) {
-    if (vibrantColorFilter.startsWith('!')) {
+  if (colorFilter.match(/#[0-9A-Fa-f]{6}$/gm)) {
+    if (colorFilter.startsWith('!')) {
       isColorNeg = true;
-      vibrantColorFilter = vibrantColorFilter.slice(1);
+      colorFilter = colorFilter.slice(1);
     }
 
-    const colorFilter = Color(vibrantColorFilter);
-    const [l, a, b] = colorFilter.lab().array();
+    const parsedColor = Color(colorFilter);
+    const [l, a, b] = parsedColor.lab().array();
     colorSql_inside = Prisma.sql`(POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2))`;
     colorSql_outside = Prisma.sql`(POWER(temp.lab_l-${l},2)+POWER(temp.lab_a-${a},2)+POWER(temp.lab_b-${b},2))`;
   }
+
+  let colorTypeSQL;
+  if (colorType === 'population') colorTypeSQL = Prisma.sql`b.isMaxPopulation = 1`;
+  else colorTypeSQL = Prisma.sql`b.type = ${colorType}`;
 
   let sortSQL;
 
@@ -292,7 +311,7 @@ export async function doSearch(query: string, filters: SearchFilters, includeSta
                 SELECT image_id, min((POWER(lab_l-${l},2)+POWER(lab_a-${a},2)+POWER(lab_b-${b},2))) as dist
                 FROM ItemColor
                 GROUP BY image_id 
-                having dist <= 750
+                having dist <= ${colorTolerance}
             ) as f on a.image_id = f.image_id
         LEFT JOIN ItemColor as b on a.image_id = b.image_id and (POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) = f.dist
         LEFT JOIN (
@@ -352,7 +371,9 @@ export async function doSearch(query: string, filters: SearchFilters, includeSta
           d.pricedAt as owlsPriced, d.value as owlsValue, d.valueMin as owlsValueMin
           ${colorSql_inside ? Prisma.sql`, ${colorSql_inside} as dist` : Prisma.empty}
         FROM Items as a
-        LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
+        LEFT JOIN ItemColor as b on a.image_id = b.image_id and ${colorTypeSQL} ${
+      colorSql_inside ? Prisma.sql`and b.population > 0` : Prisma.empty
+    }
         LEFT JOIN (
           SELECT *
           FROM ItemPrices
@@ -397,9 +418,15 @@ export async function doSearch(query: string, filters: SearchFilters, includeSta
           : Prisma.empty
       }
       ${
-        colorSql_outside && !isColorNeg ? Prisma.sql` AND ${colorSql_outside} <= 750` : Prisma.empty
+        colorSql_outside && !isColorNeg
+          ? Prisma.sql` AND ${colorSql_outside} <= ${colorTolerance}`
+          : Prisma.empty
       }
-      ${colorSql_outside && isColorNeg ? Prisma.sql` AND ${colorSql_outside} > 750` : Prisma.empty}
+      ${
+        colorSql_outside && isColorNeg
+          ? Prisma.sql` AND ${colorSql_outside} > ${colorTolerance}`
+          : Prisma.empty
+      }
 
       ${sortSQL} 
       ${sortDir === 'desc' ? Prisma.sql`DESC` : Prisma.sql`ASC`}
@@ -407,10 +434,8 @@ export async function doSearch(query: string, filters: SearchFilters, includeSta
     `) as any[];
   }
 
-  // const ids = resultRaw.map((o: { internal_id: any; }) => o.internal_id)
   const filteredResult = resultRaw;
-  // .filter(({internal_id}: any, index: number) => !ids.includes(internal_id, index + 1))
-  // .sort((a:any, b:any) =>  Math.floor(b.h) - Math.floor(a.h) || Math.floor(b.s) - Math.floor(a.s) || Math.floor(b.l) - Math.floor(a.l))
+
   const itemList: ItemData[] = filteredResult.map((result: any) => {
     const item: ItemData = {
       internal_id: result.internal_id,

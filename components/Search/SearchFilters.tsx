@@ -12,6 +12,7 @@ import {
   Badge,
   Skeleton,
   Input,
+  Select,
 } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { SearchStats, SearchFilters } from '../../types';
@@ -96,14 +97,29 @@ const SearchFilters = (props: Props) => {
   const handleNumberChange = (
     newVal: string,
     index: number,
-    filterType: 'price' | 'rarity' | 'weight' | 'estVal' | 'owlsValue' | 'restockProfit'
+    filterType:
+      | 'price'
+      | 'rarity'
+      | 'weight'
+      | 'estVal'
+      | 'owlsValue'
+      | 'restockProfit'
+      | 'colorTolerance'
   ) => {
-    const tuple = [...filters[filterType]];
-    tuple[index] = newVal;
-    const newFilters = { ...filters, [filterType]: tuple };
+    let newFilters = filters;
+    if (!['restockProfit', 'colorTolerance'].includes(filterType)) {
+      const tuple = [...filters[filterType]];
+      tuple[index] = newVal;
+      newFilters = { ...filters, [filterType]: tuple };
+    } else newFilters = { ...filters, [filterType]: newVal };
 
     setFilters(newFilters);
     props.onChange?.(newFilters);
+  };
+
+  const handleSelectChange = (newVal: string, filterType: 'colorType') => {
+    setFilters({ ...filters, [filterType]: newVal });
+    props.onChange?.({ ...filters, [filterType]: newVal });
   };
 
   return (
@@ -365,7 +381,7 @@ const SearchFilters = (props: Props) => {
           <HStack>
             <CustomNumberInput
               onChange={(val) => handleNumberChange(val, 0, 'restockProfit')}
-              value={filters.restockProfit[0]}
+              value={filters.restockProfit}
             />
           </HStack>
         </AccordionPanel>
@@ -404,7 +420,7 @@ const SearchFilters = (props: Props) => {
         <h2>
           <AccordionButton>
             <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              Vibrant Color {filters.color.length > 0 && <Badge>1</Badge>}
+              Color {filters.color.length > 0 && <Badge>1</Badge>}
             </Box>
             <AccordionIcon />
           </AccordionButton>
@@ -435,11 +451,45 @@ const SearchFilters = (props: Props) => {
               </NegCheckbox>
               <Input
                 placeholder="Custom Color"
+                disabled={isColorSearch}
                 defaultValue={colorVal}
                 size="xs"
                 variant="filled"
+                bg="whiteAlpha.200"
                 onChange={(e) => setColorVal(e.target.value)}
                 maxLength={7}
+              />
+            </HStack>
+            <HStack>
+              <Text flex="1 0 auto" fontSize={'xs'}>
+                Color Type
+              </Text>
+              <Select
+                variant={'filled'}
+                bg={'whiteAlpha.200'}
+                size="sm"
+                value={filters.colorType}
+                disabled={isColorSearch}
+                onChange={(e) => handleSelectChange(e.target.value, 'colorType')}
+              >
+                <option value="vibrant">Vibrant</option>
+                <option value="darkvibrant">Dark Vibrant</option>
+                <option value="lightvibrant">Light Vibrant</option>
+                <option value="muted">Muted</option>
+                <option value="darkmuted">Dark Muted</option>
+                <option value="lightmuted">Light Muted</option>
+                <option value="population">Most Prominent</option>
+              </Select>
+            </HStack>
+            <HStack>
+              <Text flex="1 0 auto" fontSize={'xs'}>
+                Tolerance
+              </Text>
+              <CustomNumberInput
+                wrapperProps={{ size: 'sm' }}
+                inputProps={{ textAlign: 'left' }}
+                onChange={(val) => handleNumberChange(val, 0, 'colorTolerance')}
+                value={filters.colorTolerance}
               />
             </HStack>
           </VStack>

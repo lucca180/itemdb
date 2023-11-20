@@ -52,6 +52,8 @@ const CustomNumberInput = (props: Props) => {
       onChange={onChange}
       value={format(value)}
       {...props.wrapperProps}
+      variant="filled"
+      bg={'whiteAlpha.200'}
     >
       <NumberInputField paddingEnd={1} paddingStart={1} textAlign="center" {...props.inputProps} />
     </NumberInput>

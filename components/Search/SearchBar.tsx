@@ -110,14 +110,19 @@ export const SearchBar = (props: Props) => {
     setLoading(true);
     if (!isOpen) onToggle();
 
-    const searchRes = await Axios.get('search?s=' + encodeURIComponent(newSearch.trim()), {
-      params: {
-        limit: 5,
-        skipStats: true,
-      },
-    });
+    try {
+      const searchRes = await Axios.get('search?s=' + encodeURIComponent(newSearch.trim()), {
+        params: {
+          limit: 5,
+          skipStats: true,
+        },
+      });
 
-    setResult(searchRes.data);
+      setResult(searchRes.data);
+    } catch (e) {
+      console.error(e);
+    }
+
     setLoading(false);
   };
 

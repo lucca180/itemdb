@@ -160,6 +160,8 @@ export type SearchFilters = {
   estVal: string[]; // [min, max]
   owlsValue: string[]; // [min, max]
   restockProfit: string; // min profit %
+  colorTolerance: string; // color tolerance
+  colorType: string;
   sortBy: string;
   sortDir: string;
   mode: 'name' | 'description' | 'all';

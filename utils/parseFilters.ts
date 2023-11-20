@@ -11,6 +11,8 @@ export const defaultFilters: SearchFilters = {
   estVal: ['', ''],
   owlsValue: ['', ''],
   restockProfit: '',
+  colorTolerance: '750',
+  colorType: 'vibrant',
   sortBy: 'name',
   sortDir: 'asc',
   mode: 'name',
@@ -31,6 +33,8 @@ const parsableFilters = [
   'sortBy',
   'sortDir',
   'mode',
+  'colorTolerance',
+  'colorType',
 ];
 
 // This function will parse the query string and return an object with the filters
@@ -193,6 +197,30 @@ export const parseFilters = (query: string, skipBoolean = true): [SearchFilters,
 
       if (mode && ['name', 'description', 'all'].includes(mode))
         filters.mode = mode as 'name' | 'description' | 'all';
+    }
+
+    if (filterName === 'colorTolerance') {
+      const tolerance = matchRegex(query, `tolerance`);
+
+      query = sanitizeQuery(query, `tolerance`);
+
+      if (tolerance) filters.colorTolerance = tolerance;
+    }
+
+    if (filterName === 'colorType') {
+      const colorType = matchRegex(query, `colorType`);
+
+      query = sanitizeQuery(query, `colorType`);
+
+      if (colorType) filters.colorType = colorType;
+    }
+  }
+
+  if (!query.match(/^#[0-9A-Fa-f]{6}$/) && query.match(/#[0-9A-Fa-f]{6}/)) {
+    const hex = query.match(/#[0-9A-Fa-f]{6}/)?.[0];
+    if (hex) {
+      query = query.replaceAll(/#[0-9A-Fa-f]{6}/g, '');
+      filters.color = hex;
     }
   }
 

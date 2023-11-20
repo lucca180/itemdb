@@ -308,9 +308,10 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
 
 export async function getPallete(item: Items) {
   if (!item.image || !item.image_id) return undefined;
-  const pallete = await Vibrant.from(item.image).getPalette();
+  const pallete = await Vibrant.from(item.image).quality(1).getPalette();
 
   const colors = [];
+  let maxPop = ['', 0];
 
   for (const [key, val] of Object.entries(pallete)) {
     const color = Color.rgb(val?.rgb ?? [255, 255, 255]);
@@ -338,10 +339,16 @@ export async function getPallete(item: Items) {
 
       type: key.toLowerCase(),
       population: val?.population ?? 0,
+      isMaxPopulation: false,
     };
+
+    if (colorData.population > maxPop[1]) maxPop = [colorData.type, colorData.population];
 
     colors.push(colorData);
   }
+
+  const i = colors.findIndex((x) => x.type === maxPop[0]);
+  colors[i].isMaxPopulation = true;
 
   return colors;
 }
