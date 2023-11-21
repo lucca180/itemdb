@@ -478,18 +478,18 @@ const SearchFilters = (props: Props) => {
               <Select
                 variant={'filled'}
                 bg={'whiteAlpha.200'}
-                size="sm"
+                size="xs"
                 value={filters.colorType}
                 disabled={isColorSearch}
                 onChange={(e) => handleSelectChange(e.target.value, 'colorType')}
               >
+                <option value="population">Most Prominent</option>
                 <option value="vibrant">Vibrant</option>
                 <option value="darkvibrant">Dark Vibrant</option>
                 <option value="lightvibrant">Light Vibrant</option>
                 <option value="muted">Muted</option>
                 <option value="darkmuted">Dark Muted</option>
                 <option value="lightmuted">Light Muted</option>
-                <option value="population">Most Prominent</option>
               </Select>
             </HStack>
             <HStack>
@@ -497,7 +497,7 @@ const SearchFilters = (props: Props) => {
                 Tolerance
               </Text>
               <CustomNumberInput
-                wrapperProps={{ size: 'sm' }}
+                wrapperProps={{ size: 'xs' }}
                 inputProps={{ textAlign: 'left' }}
                 onChange={(val) => handleNumberChange(val, 0, 'colorTolerance')}
                 value={filters.colorTolerance}
