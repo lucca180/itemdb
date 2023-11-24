@@ -319,7 +319,14 @@ const ImportItems = (props: ImportItemsProps) => {
             {itemData &&
               Object.entries(itemData)
                 .slice(0, 25)
-                .map((item) => <ItemCard key={item[0]} item={item[1]} quantity={items[item[0]]} />)}
+                .map((item) => (
+                  <ItemCard
+                    disablePrefetch={true}
+                    key={item[0]}
+                    item={item[1]}
+                    quantity={items[item[0]]}
+                  />
+                ))}
             {!itemData && [...Array(20)].map((_, i) => <ItemCard key={i} />)}
           </Flex>
           {itemData && Object.entries(itemData).length > 25 && (

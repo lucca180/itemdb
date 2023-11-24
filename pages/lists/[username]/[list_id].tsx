@@ -684,7 +684,6 @@ export async function getServerSideProps(context: NextPageContext) {
     const res = await CheckAuth((context.req ?? null) as any);
     userOrToken = res?.user;
   } catch (err) {
-    console.log(err);
     userOrToken = getCookie('userToken', { req: context.req, res: context.res }) as
       | string
       | undefined
