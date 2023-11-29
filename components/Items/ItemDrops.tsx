@@ -260,7 +260,12 @@ const getDropText = (pool: PrizePoolData | null, itemOpenable: ItemOpenable, isF
       <>
         This item will {!isFirst ? 'also ' : ''} drop{' '}
         {pool.minDrop === 1 && pool.maxDrop === 1 && <b>one</b>}
-        {pool.minDrop >= 1 && pool.maxDrop > 1 && <b>at least {pool.minDrop}</b>}
+        {pool.minDrop >= 1 && pool.maxDrop > 1 && pool.maxDrop !== pool.minDrop && (
+          <b>at least {pool.minDrop}</b>
+        )}
+        {pool.minDrop >= 1 && pool.maxDrop > 1 && pool.maxDrop === pool.minDrop && (
+          <b>exactly {pool.minDrop}</b>
+        )}
         {pool.minDrop >= 1 && pool.maxDrop !== pool.minDrop && ' and '}
         {pool.maxDrop > 1 && pool.maxDrop !== pool.minDrop && <b>up to {pool.maxDrop}</b>} of the
         following items:
