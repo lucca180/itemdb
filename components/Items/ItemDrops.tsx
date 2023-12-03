@@ -264,7 +264,7 @@ const getDropText = (pool: PrizePoolData | null, itemOpenable: ItemOpenable, isF
           <b>at least {pool.minDrop}</b>
         )}
         {pool.minDrop >= 1 && pool.maxDrop > 1 && pool.maxDrop === pool.minDrop && (
-          <b>exactly {pool.minDrop}</b>
+          <b>{pool.minDrop}</b>
         )}
         {pool.minDrop >= 1 && pool.maxDrop !== pool.minDrop && ' and '}
         {pool.maxDrop > 1 && pool.maxDrop !== pool.minDrop && <b>up to {pool.maxDrop}</b>} of the
