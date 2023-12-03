@@ -37,11 +37,9 @@ export const getItemLists = async (
             not: 'none',
           },
       items: {
-        every: {
-          isHidden: false,
-        },
         some: {
           item_iid: id,
+          isHidden: false,
         },
       },
     },
