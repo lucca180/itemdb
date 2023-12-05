@@ -16,7 +16,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       host: '127.0.0.1',
       password: process.env.REDIS_PASSWORD,
       enableAutoPipelining: true,
-    }).on('connect', () => console.log('Redis connected'));
+    });
   }
 
   if (!ip) return res.status(200).json('ok');

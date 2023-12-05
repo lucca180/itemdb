@@ -79,9 +79,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  console.time('checkRedis - ' + request.nextUrl.pathname);
   const banned = await checkRedis(ip, host);
-  console.timeEnd('checkRedis - ' + request.nextUrl.pathname);
   if (banned) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
