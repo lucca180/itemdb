@@ -5,25 +5,15 @@ import { User } from './types';
 import * as jose from 'jose';
 import { LRUCache } from 'lru-cache';
 import requestIp from 'request-ip';
-import { Redis } from '@upstash/redis';
 
 const API_SKIPS: { [method: string]: string[] } = {
   GET: ['api/auth', 'api/cache'],
   POST: ['api/auth', '/v1/prices', '/v1/trades', '/v1/items', '/v1/items/open'],
 };
 
-const redis = new Redis({
-  url: 'https://us1-enough-halibut-38437.upstash.io',
-  token: process.env.REDIS_TOKEN ?? '',
-});
-
 const userKeyCache = new LRUCache({
   max: 100,
 });
-
-const LIMIT_PERIOD = 1 * 60 * 1000;
-const LIMIT_COUNT = 60;
-const LIMIT_BAN = 3 * 60 * 1000;
 
 // This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
@@ -89,16 +79,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const requests = await redis.incr(ip);
-  if (requests === 1) await redis.pexpire(ip, LIMIT_PERIOD);
-
-  if (requests > LIMIT_COUNT) {
-    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
-  }
-
-  if (requests + 1 >= LIMIT_COUNT) {
-    await redis.pexpire(ip, LIMIT_BAN);
-    console.error(`Banned IP ${ip} for ${LIMIT_BAN}ms`);
+  const banned = await checkRedis(ip, host);
+  if (banned) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
 
@@ -160,4 +142,20 @@ const checkSessionLocal = async (jwt: string) => {
   });
 
   return jwtDecoded.payload.user_id as string;
+};
+
+const checkRedis = async (ip: string, host: string) => {
+  const res = await fetch(`http://${host}/api/auth/checkSession`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-forwarded-for': ip,
+    },
+  });
+
+  if (res.status === 429) {
+    return false;
+  }
+
+  return true;
 };
