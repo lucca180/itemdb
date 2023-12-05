@@ -79,7 +79,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  console.time('checkRedis - ' + request.nextUrl.pathname);
   const banned = await checkRedis(ip, host);
+  console.timeEnd('checkRedis - ' + request.nextUrl.pathname);
   if (banned) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
@@ -145,7 +147,7 @@ const checkSessionLocal = async (jwt: string) => {
 };
 
 const checkRedis = async (ip: string, host: string) => {
-  const res = await fetch(`http://${host}/api/auth/checkSession`, {
+  const res = await fetch(`http://${host}/api/redis/checkapi`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

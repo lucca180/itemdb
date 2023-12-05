@@ -7,13 +7,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   try {
     const { session, skipUser } = req.body;
-    console.time('checkSession');
     const authRes = await CheckAuth(null, undefined, session, !!skipUser);
-    console.timeEnd('checkSession');
 
     return res.json({ authRes });
   } catch (e: any) {
-    console.error(e);
     res.json(null);
   }
 }

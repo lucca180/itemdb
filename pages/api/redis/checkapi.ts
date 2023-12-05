@@ -1,12 +1,23 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { redis } from '../../../utils/redis';
+import { Redis } from 'ioredis';
 
 const LIMIT_PERIOD = 1 * 60 * 1000;
 const LIMIT_COUNT = 60;
 const LIMIT_BAN = 5 * 60 * 1000;
 
+let redis: Redis;
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   const ip = req.headers['x-forwarded-for'] as string;
+
+  if (!redis) {
+    redis = new Redis({
+      port: 6379,
+      host: '142.44.252.243',
+      password: process.env.REDIS_PASSWORD,
+      enableAutoPipelining: true,
+    }).on('connect', () => console.log('Redis connected'));
+  }
 
   if (!ip) return res.status(200).json('ok');
 
