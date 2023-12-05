@@ -154,8 +154,8 @@ const checkRedis = async (ip: string, host: string) => {
   });
 
   if (res.status === 429) {
-    return false;
+    return true;
   }
 
-  return true;
+  return false;
 };
