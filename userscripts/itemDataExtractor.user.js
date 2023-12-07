@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.2.5
+// @version      1.2.6
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
 // @website      https://itemdb.com.br
 // @match        *://*.neopets.com/*
+// @match        *://*.itemdb.com.br/*
 // @exclude      *://*.neopets.com/login/*
 // @exclude      *://*.nc.neopets.com/*
 // @exclude      *://*images.neopets.com/*
@@ -890,7 +891,7 @@ function handleNCCapsule(){
 function handleNPOpenables(){
   const pageLoad = Date.now();
   $(document).ajaxSuccess(() => {
-    if(Date.now() - pageLoad > 2*60*1000) return;
+    if(Date.now() - pageLoad > 1*60*1000) return;
 
     const isNP = $("#invDisplay")[0].dataset?.type === "np";
     
@@ -999,6 +1000,14 @@ function discardPrevInventory(){
 }
 // ------------- //
 
+
+// this function only tells itemdb that you're using this script
+function handle_itemdb() {
+  sessionStorage.setItem('itemDataExtractor', true);
+}
+
+// ------------- //
+
 // Here we check if the page has the url we want and then call the respective function
 // and we also check if you have SSW so we can call the SSW handler
 
@@ -1026,6 +1035,7 @@ if (URLHas('/mall/shop.phtml')) handleNCMall();
 if (URLHas('customise')) handleCustomization();
 if (URLHas('haggle.phtml')) handleRestockHaggle();
 if (URLHas('/ncma/')) handleNCJournal();
+if (URLHas('itemdb.com.br')) handle_itemdb();
 
 if (hasSSW) handleSSWPrices();
 
@@ -1036,6 +1046,7 @@ if (hasSSW) handleSSWPrices();
 // Again - no personal information is sent to the server. Only item data.
 
 async function submitItems() {
+  if(checkTranslation()) return;
   const itemsList = Object.values(itemsObj);
   if (itemsList.length === 0) return;
 
@@ -1067,6 +1078,7 @@ async function submitItems() {
 }
 
 async function submitPrices() {
+  if(checkTranslation()) return;
   if (priceList.length === 0) return;
 
   const hash = getPricesHash(priceList);
@@ -1097,6 +1109,7 @@ async function submitPrices() {
 }
 
 async function submitTrades() {
+  if(checkTranslation()) return;
   if (tradeList.length === 0) return;
 
   const hash = getTradesHash(tradeList);
@@ -1128,6 +1141,7 @@ async function submitTrades() {
 }
 
 async function submitOpenable(items, parentItem) {
+  if(checkTranslation()) return;
   const rawData = {
     lang: pageLang,
     items: items,
@@ -1151,9 +1165,18 @@ async function submitOpenable(items, parentItem) {
   })
 }
 
+// ----------- //
+
 // this function is used to generate a unique key for each item based on its name, image and id
 function genItemKey(item) {
   const imgId = item.img?.match(/[^\.\/]+(?=\.gif)/)?.[0] ?? '';
   const id = item.itemId ?? '';
   return (item.name + imgId + id).replace(/\s/g, '');
+}
+
+// this function is used to detect if the page is translated using google translate or similar
+function checkTranslation() {
+  return !!document.querySelector(
+    "html.translated-ltr, html.translated-rtl, ya-tr-span, *[_msttexthash], *[x-bergamot-translated]"
+  );
 }
