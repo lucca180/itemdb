@@ -1,9 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Redis } from 'ioredis';
 
-const LIMIT_PERIOD = 1 * 60 * 1000;
-const LIMIT_COUNT = 60;
-const LIMIT_BAN = 5 * 60 * 1000;
+const LIMIT_PERIOD = 30 * 1000;
+const LIMIT_COUNT = 30;
+const LIMIT_BAN = 2 * 60 * 1000;
 
 let redis: Redis;
 
