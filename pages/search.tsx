@@ -288,6 +288,7 @@ const SearchPage = () => {
         title: `${router.query.s ? `${router.query.s} -` : ''} Search`,
         canonical: 'https://itemdb.com.br/search',
         noindex: true,
+        nofollow: true,
       }}
     >
       <Box
