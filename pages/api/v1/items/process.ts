@@ -375,6 +375,8 @@ async function processOpenables() {
     } catch (e: any) {
       if (typeof e === 'string' && e.includes('unknown')) return;
 
+      console.error(e);
+
       await prisma.openableQueue.update({
         data: {
           manual_check: typeof e === 'string' ? e : e.message,
@@ -383,8 +385,6 @@ async function processOpenables() {
           internal_id: openable.internal_id,
         },
       });
-
-      console.error(e);
     }
   });
 
