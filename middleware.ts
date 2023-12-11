@@ -145,17 +145,21 @@ const checkSessionLocal = async (jwt: string) => {
 };
 
 const checkRedis = async (ip: string, host: string) => {
-  const res = await fetch(`http://${host}/api/redis/checkapi`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-forwarded-for': ip,
-    },
-  });
+  try {
+    const res = await fetch(`http://${host}/api/redis/checkapi`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-forwarded-for': ip,
+      },
+    });
 
-  if (res.status === 429) {
-    return true;
+    if (res.status === 429) {
+      return true;
+    }
+
+    return false;
+  } catch (e) {
+    return false;
   }
-
-  return false;
 };

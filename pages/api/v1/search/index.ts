@@ -78,7 +78,6 @@ export async function doSearch(query: string, filters: SearchFilters, includeSta
   const owlsFilter = (filters.owlsValue as string[]) ?? [];
 
   const restockProfit = (filters.restockProfit as string) ?? '';
-  console.log(restockProfit);
 
   let colorFilter = (filters.color as string) ?? '';
 
@@ -209,7 +208,6 @@ export async function doSearch(query: string, filters: SearchFilters, includeSta
 
   if (restockProfit !== '' && !isNaN(Number(restockProfit))) {
     const minProfit = Number(restockProfit);
-    console.log(minProfit);
     const todayNST = getDateNST();
 
     if (todayNST.getDate() === 3) {
