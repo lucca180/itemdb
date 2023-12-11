@@ -334,7 +334,12 @@ async function updateOrAddDB(
 
     const variation = coefficientOfVariation([oldPrice.price, priceValue]);
 
-    if (daysSinceLastUpdate < MIN_LAST_UPDATE && variation < 30) return undefined;
+    if (
+      daysSinceLastUpdate < MIN_LAST_UPDATE &&
+      variation < 30 &&
+      Math.abs(oldPrice.price - priceValue) >= 50000
+    )
+      return undefined;
 
     if ((variation <= 5 || priceValue < 5000) && daysSinceLastUpdate <= 15) return undefined;
 
