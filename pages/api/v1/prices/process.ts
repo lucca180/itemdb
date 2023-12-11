@@ -37,7 +37,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const maxPast = new Date(Date.now() - MAX_PAST_DAYS * 24 * 60 * 60 * 1000);
   const maxPastFormated = maxPast.toISOString().split('T')[0];
 
-  const lastDays = new Date(Date.now() - MIN_LAST_UPDATE * 24 * 60 * 60 * 1000);
+  const lastDays = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
   const lastDaysFormated = lastDays.toISOString().split('T')[0];
 
   const groupBy2 = (await prisma.$queryRaw`
@@ -90,7 +90,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const maxPast = new Date(Date.now() - MAX_PAST_DAYS * 24 * 60 * 60 * 1000);
   const maxPastFormated = maxPast.toISOString().split('T')[0];
 
-  const lastDays = new Date(Date.now() - MIN_LAST_UPDATE * 24 * 60 * 60 * 1000);
+  const lastDays = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
   const lastDaysFormated = lastDays.toISOString().split('T')[0];
 
   const groupBy2 = (await prisma.$queryRaw`
@@ -334,7 +334,7 @@ async function updateOrAddDB(
 
     const variation = coefficientOfVariation([oldPrice.price, priceValue]);
 
-    if (daysSinceLastUpdate < MIN_LAST_UPDATE) return undefined;
+    if (daysSinceLastUpdate < MIN_LAST_UPDATE && variation < 30) return undefined;
 
     if ((variation <= 5 || priceValue < 5000) && daysSinceLastUpdate <= 15) return undefined;
 
