@@ -1,12 +1,11 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.2.6
+// @version      1.2.7
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
 // @website      https://itemdb.com.br
 // @match        *://*.neopets.com/*
-// @match        *://*.itemdb.com.br/*
 // @exclude      *://*.neopets.com/login/*
 // @exclude      *://*.nc.neopets.com/*
 // @exclude      *://*images.neopets.com/*
@@ -998,13 +997,6 @@ function discardPrevInventory(){
 
   return localStorage.removeItem('idb_prevInventory');;
 }
-// ------------- //
-
-
-// this function only tells itemdb that you're using this script
-function handle_itemdb() {
-  sessionStorage.setItem('itemDataExtractor', true);
-}
 
 // ------------- //
 
@@ -1035,7 +1027,6 @@ if (URLHas('/mall/shop.phtml')) handleNCMall();
 if (URLHas('customise')) handleCustomization();
 if (URLHas('haggle.phtml')) handleRestockHaggle();
 if (URLHas('/ncma/')) handleNCJournal();
-if (URLHas('itemdb.com.br')) handle_itemdb();
 
 if (hasSSW) handleSSWPrices();
 
