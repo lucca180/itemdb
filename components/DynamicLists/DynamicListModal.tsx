@@ -139,7 +139,7 @@ const DynamicListModal = (props: DynamicListModalProps) => {
             </Text>
             <Alert size="sm" status="warning" mt={5} borderRadius={'md'}>
               <AlertIcon />
-              Dynamic Lists are limited to 3.000 items
+              Dynamic Lists are limited to 4.000 items
             </Alert>
 
             <FormControl my={5}>
@@ -307,7 +307,7 @@ const DynamicListModal = (props: DynamicListModalProps) => {
               variant="ghost"
               colorScheme={'orange'}
               onClick={createDynamic}
-              isDisabled={!!resultCount && resultCount > 3000}
+              isDisabled={!!resultCount && resultCount > 4000}
             >
               <Image
                 src={DynamicIcon}

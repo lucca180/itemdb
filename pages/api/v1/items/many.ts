@@ -89,10 +89,13 @@ export const getManyItems = async (
     query = Prisma.sql`a.item_id IN (${Prisma.join(item_id)})`;
   else if (name_image_id && name_image_id.length > 0) {
     const convertToTuple = name_image_id.map((x) => Prisma.sql`(${x[0]}, ${x[1]})`);
-    query = Prisma.sql`(a.name, a.image_id) IN (${Prisma.join(convertToTuple)})`;
+    query = Prisma.sql`(a.name, a.image_id) IN (${Prisma.join(
+      convertToTuple
+    )}) AND a.canonical_id is null`;
   } else if (image_id && image_id.length > 0)
-    query = Prisma.sql`a.image_id IN (${Prisma.join(image_id)})`;
-  else if (name && name.length > 0) query = Prisma.sql`a.name IN (${Prisma.join(name)})`;
+    query = Prisma.sql`a.image_id IN (${Prisma.join(image_id)}) AND a.canonical_id is null`;
+  else if (name && name.length > 0)
+    query = Prisma.sql`a.name IN (${Prisma.join(name)}) AND a.canonical_id is null`;
   else if (slug && slug.length > 0) query = Prisma.sql`a.slug IN (${Prisma.join(slug)})`;
 
   if (!query) return {};

@@ -439,7 +439,7 @@ const ImportInfo = () => {
         </ListItem>
         <ListItem>
           Open one of the supported pages:{' '}
-          <UnorderedList>
+          <UnorderedList spacing={1} mb={3}>
             <ListItem>
               <Link href="https://www.neopets.com/closet.phtml" isExternal>
                 Closet
@@ -490,6 +490,37 @@ const ImportInfo = () => {
                 />{' '}
                 Stamp Album - Checklist
               </Link>
+            </ListItem>
+            <ListItem>
+              <Link href="https://www.neopets.com/quickref.phtml" isExternal>
+                <Image
+                  src={DynamicIcon}
+                  alt="lightning bolt"
+                  width={8}
+                  style={{ display: 'inline' }}
+                />{' '}
+                Book Award - Checklist
+              </Link>{' '}
+              <Text fontSize={'sm'} pl={3} mb={1} color="gray.400">
+                {' '}
+                - click on your pet&apos;s intelligence number
+              </Text>
+            </ListItem>
+            <ListItem>
+              <Link href="https://www.neopets.com/quickref.phtml" isExternal>
+                <Image
+                  src={DynamicIcon}
+                  alt="lightning bolt"
+                  width={8}
+                  style={{ display: 'inline' }}
+                />{' '}
+                Booktastic Books Award - Checklist
+              </Link>{' '}
+              <Text fontSize={'sm'} pl={3} mb={1} color="gray.400">
+                {' '}
+                - click on your pet&apos;s intelligence number
+                <br />- then click the Booktastic Books read list link
+              </Text>
             </ListItem>
           </UnorderedList>
         </ListItem>

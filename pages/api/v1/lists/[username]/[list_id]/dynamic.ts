@@ -188,7 +188,7 @@ export const syncDynamicList = async (list_id: number, force = false) => {
   }
 
   if (dynamicQuery) {
-    dynamicQuery.limit = 3000;
+    dynamicQuery.limit = 4000;
     dynamicQuery.page = 0;
 
     const searchRes = await doSearch(dynamicQuery.s, dynamicQuery, false);

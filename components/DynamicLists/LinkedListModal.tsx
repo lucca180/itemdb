@@ -138,7 +138,7 @@ const LinkedListModal = (props: LinkedListModalProps) => {
             </Text>
             <Alert size="sm" status="warning" mt={5} borderRadius={'md'}>
               <AlertIcon />
-              Dynamic Lists are limited to 3.000 items
+              Dynamic Lists are limited to 4.000 items
             </Alert>
 
             <FormControl my={5}>
@@ -303,7 +303,7 @@ const LinkedListModal = (props: LinkedListModalProps) => {
               variant="ghost"
               colorScheme={'orange'}
               onClick={createDynamic}
-              isDisabled={list.itemCount > 3000}
+              isDisabled={list.itemCount > 4000}
             >
               <Image
                 src={DynamicIcon}

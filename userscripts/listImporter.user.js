@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - List Importer
-// @version      1.1.0
+// @version      1.2.0
 // @author       itemdb
 // @namespace    itemdb
 // @description  Imports items to your wishlists
@@ -11,6 +11,8 @@
 // @match        *://*.neopets.com/stamps.phtml*
 // @match        *://*.neopets.com/gourmet_club.phtml*
 // @match        *://*.neopets.com/games/neodeck/index.phtml*
+// @match        *://*.neopets.com/books_read.phtml*
+// @match        *://*.neopets.com/moon/books_read.phtml*
 // @icon         https://itemdb.com.br/favicon.ico
 // @grant        none
 // @noframes
@@ -144,9 +146,26 @@ function handleNeoDeck(){
   $(".content table").eq(0).before("<center>"+idbButton()+"</center>")
 }
 
+function handleBooks(){
+  const imgs = $(".content table img");
+  imgs.each(function () {
+    const image_id = getImageID($(this).attr('src'));
+    items[image_id] = 1;
+  });
+
+  indexType = 'image_id';
+  
+  list_id = URLHas('moon') ? 663 : 664;
+  if(URLHas('moon'))
+    $(".content table").eq(0).before("<center>"+idbButton()+"</center><br/>")
+  else
+    $(".content > div").eq(0).before("<center>"+idbButton()+"</center><br/>")
+}
+
 if (URLHas('safetydeposit')) handleSDB();
 if (URLHas('gallery/quickremove.phtml')) handleGalleryRemovePage();
 if (URLHas('closet.phtml')) handleCloset();
 if (URLHas('stamps.phtml')) handleStamps();
 if (URLHas('gourmet_club.phtml')) handleGourmet();
 if (URLHas('neodeck/index.phtml')) handleNeoDeck();
+if (URLHas('books_read.phtml')) handleBooks();
