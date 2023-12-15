@@ -138,7 +138,14 @@ const NCTrade = (props: Props) => {
           gap={3}
         >
           {item.owls && (
-            <Badge colorScheme="purple" fontSize="xs" minW="15%" textTransform="initial">
+            <Badge
+              colorScheme="purple"
+              fontSize="xs"
+              minW="15%"
+              maxW="25%"
+              whiteSpace={'normal'}
+              textTransform="initial"
+            >
               <Stat flex="initial" textAlign="center">
                 <StatNumber>{item.owls.buyable ? 'Buyable' : item.owls.value}</StatNumber>
                 <StatHelpText mb={0} as={NextLink} href="/articles/owls">

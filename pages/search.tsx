@@ -186,7 +186,7 @@ const SearchPage = () => {
 
     if (Object.keys(queryStrings).length == 1) customFilters = defaultFilters;
 
-    if (searchQuery !== router.query.s) {
+    if (searchQuery && searchQuery !== router.query.s) {
       setStatus(null);
       customFilters.page = 1;
     }

@@ -17,8 +17,9 @@ const ItemParent = (props: Props) => {
   const color = item.color.rgb;
 
   useEffect(() => {
+    setLoading(true);
     init();
-  }, []);
+  }, [parentItems]);
 
   const init = async () => {
     const itemRes = await axios.post(`/api/v1/items/many`, {

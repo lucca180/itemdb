@@ -137,7 +137,7 @@ const ItemPage = (props: ItemPageProps) => {
       SEO={{
         title: item.name,
         themeColor: item.color.hex,
-        description: generateMetaDescription(item, !!itemOpenable),
+        description: generateMetaDescription(item),
         openGraph: { images: [{ url: item.image, width: 80, height: 80, alt: item.name }] },
       }}
     >
@@ -381,7 +381,7 @@ export async function getStaticPaths() {
   return { paths, fallback: 'blocking' };
 }
 
-const generateMetaDescription = (item: ItemData, hasDrops = false) => {
+const generateMetaDescription = (item: ItemData) => {
   // const intl = new Intl.NumberFormat();
 
   const metaDescription = truncateString(item.description, 130);
