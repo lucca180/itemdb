@@ -13,6 +13,8 @@ type BetaStats = {
   feedbackVoting: number;
 };
 
+const intl = new Intl.NumberFormat();
+
 const BetaStatsCard = () => {
   const [stats, setStats] = useState<BetaStats>();
 
@@ -30,10 +32,10 @@ const BetaStatsCard = () => {
   return (
     <Flex flexFlow="column" mt={5} gap={3} w="100%" maxW="300px">
       <VStack justifyContent={'center'} alignItems="center" w="100%">
-        <Text color="gray.300">Items Missing</Text>
+        <Text color="gray.300">Items in the database</Text>
         <Progress w="100%" value={(stats.itemsTotal / 62000) * 100} />
         <Text fontSize="sm" textAlign={'center'}>
-          ~{62000 - stats.itemsTotal}
+          {intl.format(stats.itemsTotal)}
         </Text>
       </VStack>
       <VStack justifyContent={'center'} alignItems="center" w="100%">
