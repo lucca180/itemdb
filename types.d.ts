@@ -317,6 +317,63 @@ export type ShopInfo = {
   color: string;
 };
 
+type RestockSession = {
+  startDate: number;
+  lastRefresh: number;
+  shopId: number;
+  refreshes: number[];
+  items: {
+    [restock_id: number]: {
+      item_id: number;
+      timestamp: number;
+    };
+  };
+  clicks: {
+    item_id: number;
+    restock_id: number;
+    soldOut_timestamp: number | null;
+    haggle_timestamp: number | null;
+    buy_timestamp: number | null;
+  }[];
+
+  isActive?: boolean;
+
+  version: number;
+};
+
+type RestockStats = {
+  durationCount: number;
+  mostPopularShop: {
+    shopId: number;
+    durationCount: number;
+  };
+
+  totalSessions: number;
+  mostExpensiveBought?: ItemData;
+  mostExpensiveLost?: ItemData;
+  totalRefreshes: number;
+  totalLost: {
+    count: number;
+    value: number;
+  };
+  totalBought: {
+    count: number;
+    value: number;
+  };
+  estRevenue: number;
+  avgRefreshTime: number;
+  avgReactionTime: number;
+
+  hottestRestocks: ItemData[];
+  hottestBought: {
+    item: ItemData;
+    click: RestockSession['clicks'][0];
+    restockItem: RestockSession['items'][0];
+  }[];
+
+  unknownPrices: number;
+};
+
 // ------- FEEDBACKS JSON -------- //
 export type Feedback = {
   feedback_id: number;

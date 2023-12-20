@@ -267,9 +267,10 @@ model User {
 
   xp Int @default(0)
 
-  feedbacks Feedbacks[]
-  itemLists UserList[]
-  votes     FeedbackVotes[]
+  feedbacks      Feedbacks[]
+  itemLists      UserList[]
+  votes          FeedbackVotes[]
+  restockSession RestockSession[]
 }
 
 model OpenableItems {
@@ -425,4 +426,20 @@ model OwlsPrice {
 
   @@index([item_iid])
   @@index([item_iid, pricedAt(sort: Desc)])
+}
+
+model RestockSession {
+  session_id String   @id @default(uuid())
+  user_id    String
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  addedAt    DateTime @default(now())
+
+  modelVersion Int
+  startedAt DateTime
+  endedAt   DateTime
+
+  shop_id Int
+
+  session Json
 }
