@@ -370,7 +370,10 @@ const RestockDashboard = () => {
             <ListItem>
               <Text>
                 Install{' '}
-                <Link href="https://www.tampermonkey.net/" isExternal>
+                <Link
+                  href="https://github.com/lucca180/itemdb/raw/main/userscripts/restockTracker.user.js"
+                  isExternal
+                >
                   itemdb Restock Tracker Script
                 </Link>{' '}
               </Text>
