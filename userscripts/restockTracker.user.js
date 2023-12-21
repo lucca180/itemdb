@@ -1,11 +1,13 @@
 // ==UserScript==
 // @name         itemdb - Restock Tracker
-// @version      1.0.0
+// @version      1.0.1
 // @author       itemdb
 // @namespace    itemdb
 // @description  Tracks your restock metrics
 // @website      https://itemdb.com.br
-// @match        *://*.neopets.com/*
+// @match        *://*.neopets.com/objects.phtml?type=shop&obj_type=*
+// @match        *://*.neopets.com/objects.phtml?obj_type=*
+// @match        *://*.neopets.com/haggle.phtml*
 // @match        *://itemdb.com.br/*
 // @icon         https://itemdb.com.br/favicon.ico
 // @connect      itemdb.com.br
@@ -193,4 +195,4 @@ unsafeWindow.itemdb_restock_cleanAll = cleanAll;
 
 if (URLHas('obj_type')) handleGeneralShops();
 if (URLHas('haggle.phtml')) handleRestockHaggle();
-if (URLHas('itemdb.com.br') || URLHas('localhost:3000')) handleitemdb();
+if (URLHas('itemdb.com.br')) handleitemdb();
