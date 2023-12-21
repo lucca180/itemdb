@@ -36,7 +36,7 @@ const ImportRestockModal = (props: FeedbackModalProps) => {
 
   useEffect(() => {
     init();
-  }, []);
+  }, [isOpen]);
 
   const init = async () => {
     const current = sessionStorage.getItem('current_sessions');
