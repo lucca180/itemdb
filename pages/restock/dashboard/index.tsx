@@ -15,6 +15,8 @@ import {
   AlertDescription,
   AlertTitle,
   Button,
+  Icon,
+  useDisclosure,
 } from '@chakra-ui/react';
 import Color from 'color';
 import { ReactElement, useEffect, useState } from 'react';
@@ -30,6 +32,8 @@ import { RestockSession as RawRestockSession } from '@prisma/client';
 import { differenceInMilliseconds } from 'date-fns';
 import { msIntervalFormated, removeOutliers, restockShopInfo } from '../../../utils/utils';
 import RestockItem from '../../../components/Hubs/Restock/RestockItemCard';
+import { FiSend } from 'react-icons/fi';
+import FeedbackModal from '../../../components/Modal/FeedbackModal';
 
 const color = Color('#599379').rgb().array();
 
@@ -45,6 +49,7 @@ const intl = new Intl.NumberFormat();
 
 const RestockDashboard = () => {
   const { user, authLoading } = useAuth();
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const [openImport, setOpenImport] = useState<boolean>(false);
   const [sessionStats, setSessionStats] = useState<RestockStats | null>(null);
   const [alertMsg, setAlertMsg] = useState<AlertMsg | null>(null);
@@ -241,7 +246,7 @@ const RestockDashboard = () => {
 
     stats.hottestBought = allBought
       .sort((a, b) => (b.item.price.value ?? 0) - (a.item.price.value ?? 0))
-      .splice(0, 16);
+      .splice(0, 10);
 
     setShopList(Object.keys(allShops).map((x) => parseInt(x)));
     return stats;
@@ -262,6 +267,7 @@ const RestockDashboard = () => {
       }}
     >
       <ImportRestockModal isOpen={openImport} onClose={handleClose} refresh={refresh} />
+      <FeedbackModal isOpen={isOpen} onClose={onClose} />
       <Box
         position="absolute"
         h="650px"
@@ -275,7 +281,7 @@ const RestockDashboard = () => {
           ← Back to Restock Hub
         </Link>
       </Text>
-      <Flex gap={2} alignItems="center" mt={3}>
+      <Flex gap={2} alignItems="center" justifyContent={['center', 'center', 'flex-start']} mt={3}>
         <Select
           maxW="150px"
           variant={'filled'}
@@ -442,7 +448,7 @@ const RestockDashboard = () => {
             <Heading size="sm">with {intl.format(sessionStats.totalBought.count)} items</Heading>
           </Center>
           <Divider />
-          <SimpleGrid mt={3} columns={5} spacing={4}>
+          <SimpleGrid mt={3} columns={[2, 3, 3, 5]} spacing={[1, 1, 4]}>
             <StatsCard
               label="Time Spent Restocking"
               stat={msIntervalFormated(sessionStats.durationCount, true)}
@@ -471,7 +477,7 @@ const RestockDashboard = () => {
               helpText={sessionStats.mostExpensiveLost?.name ?? 'undefined'}
             />
           </SimpleGrid>
-          <Flex mt={6} w="100%" gap={3}>
+          <Flex mt={6} w="100%" gap={3} flexFlow={['column', 'column', 'row']}>
             <Flex flexFlow={'column'} textAlign={'center'} gap={3} flex={1}>
               <Heading size="md">Hottest Buys</Heading>
               <Flex gap={3} flexFlow="column" justifyContent={'center'}>
@@ -493,6 +499,15 @@ const RestockDashboard = () => {
                 ))}
               </Flex>
             </Flex>
+          </Flex>
+          <Flex mt={6} flexFlow="column" justifyContent={'center'} alignItems={'center'} gap={2}>
+            <Text fontSize={'xs'} color="gray.400">
+              All values are based on current itemdb&apos;s price
+            </Text>
+
+            <Button variant="outline" size="sm" onClick={onOpen}>
+              <Icon as={FiSend} mr={1} /> Feedback
+            </Button>
           </Flex>
         </>
       )}

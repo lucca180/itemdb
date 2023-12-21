@@ -14,9 +14,9 @@ export const StatsCard = (props: StatsCardProps) => {
     <Card variant="outline" bg="blackAlpha.500">
       <CardBody>
         <Stat>
-          <StatLabel>{label}</StatLabel>
-          <StatNumber>{stat}</StatNumber>
-          <StatHelpText>{helpText}</StatHelpText>
+          <StatLabel fontSize={['xs', 'sm']}>{label}</StatLabel>
+          <StatNumber fontSize={['xl', '2xl']}>{stat}</StatNumber>
+          <StatHelpText fontSize={['xs', 'sm']}>{helpText}</StatHelpText>
         </Stat>
       </CardBody>
     </Card>

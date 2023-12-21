@@ -43,6 +43,7 @@ import ItemStatusSelect from '../Input/ItemStatusSelect';
 import { FiTrash } from 'react-icons/fi';
 import dynamic from 'next/dynamic';
 import ItemSelect from '../Input/ItemSelect';
+import NextLink from 'next/link';
 
 const ConfirmDeleteItem = dynamic<{
   isOpen: boolean;
@@ -469,7 +470,14 @@ export const InfoTab = (props: infoTabProps) => {
           onChange={handleChange}
           size="sm"
         />
-        <FormHelperText>Please do not copy information from other fan sites.</FormHelperText>
+        <FormHelperText>
+          Please do not copy information from other fan sites.
+          <br />
+          Wrong info? Outdated prices?{' '}
+          <Link as={NextLink} href="/contribute" color="gray.300">
+            Check this instead
+          </Link>
+        </FormHelperText>
       </FormControl>
     </Flex>
   );
