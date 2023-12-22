@@ -9,12 +9,14 @@ import {
   HStack,
   Button,
   Tag,
+  Link,
 } from '@chakra-ui/react';
 import Color from 'color';
 import { useEffect, useState, Fragment } from 'react';
 import ShopCard from '../../components/Hubs/Restock/ShopCard';
 import Layout from '../../components/Layout';
 import { restockShopInfo } from '../../utils/utils';
+import NextLink from 'next/link';
 
 const allCats = [
   ...new Set(
@@ -86,6 +88,13 @@ const RestockHub = () => {
         <Heading as="h1">Restock Hub</Heading>
         <Text>
           Find the most profitable items to buy from <b>each shop</b> in Neopia!
+        </Text>
+        <Text fontSize={'sm'}>
+          <Tag colorScheme={'green'}>NEW!</Tag> - Checkout the{' '}
+          <Link as={NextLink} href="/restock/dashboard" color="blue.200">
+            Restock Dashboard
+          </Link>{' '}
+          and track your restock metrics
         </Text>
         {specialDay === 'hpd' && (
           <Tag colorScheme={'green'}>Half Price Day - All Shops with 50% off</Tag>

@@ -23,6 +23,16 @@ const RestockItem = (props: Props) => {
     new Date(restockItem.timestamp)
   );
 
+  const lostHaggle = differenceInMilliseconds(
+    new Date(clickData.haggle_timestamp ?? 0),
+    new Date(restockItem.timestamp)
+  );
+
+  const lostNoHaggle = differenceInMilliseconds(
+    new Date(clickData.soldOut_timestamp ?? 0),
+    new Date(restockItem.timestamp)
+  );
+
   return (
     <Link
       as={NextLink}
@@ -50,11 +60,28 @@ const RestockItem = (props: Props) => {
             <Text>{item.name}</Text>
             {item.price.value && <Badge>{intl.format(item.price.value)} NP</Badge>}
           </HStack>
-          <Text fontSize={'xs'}>
-            Bought in <b>{msIntervalFormated(boughtTime, true, 2)}</b> at{' '}
-            {format(clickData.buy_timestamp ?? 0, 'PPPp')}
-          </Text>
+
+          {boughtTime > 0 && (
+            <Text fontSize={'xs'}>
+              Bought in <b>{msIntervalFormated(boughtTime, true, 2)}</b> at{' '}
+              {format(clickData.buy_timestamp ?? 0, 'PPPp')}
+            </Text>
+          )}
+
+          {lostHaggle > 0 && (
+            <Text fontSize={'xs'}>
+              Lost haggling in <b>{msIntervalFormated(lostHaggle, true, 2)}</b> at{' '}
+              {format(clickData.haggle_timestamp ?? 0, 'PPPp')}
+            </Text>
+          )}
         </Flex>
+
+        {lostNoHaggle > 0 && (
+          <Text fontSize={'xs'}>
+            Lost - no haggle - in <b>{msIntervalFormated(lostNoHaggle, true, 2)}</b> at{' '}
+            {format(clickData.soldOut_timestamp ?? 0, 'PPPp')}
+          </Text>
+        )}
       </Flex>
     </Link>
   );

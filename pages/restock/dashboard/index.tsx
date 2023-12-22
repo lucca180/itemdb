@@ -17,6 +17,11 @@ import {
   Button,
   Icon,
   useDisclosure,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
 } from '@chakra-ui/react';
 import Color from 'color';
 import { ReactElement, useEffect, useState } from 'react';
@@ -90,7 +95,7 @@ const RestockDashboard = () => {
         });
         return;
       }
-      const stats = await calculateStats(sessionsData);
+      const stats = await calculateStats(sessionsData, customFilter);
       setSessionStats(stats);
       setAlertMsg(null);
     } catch (err) {
@@ -132,7 +137,7 @@ const RestockDashboard = () => {
     init();
   };
 
-  const calculateStats = async (rawSessions: RawRestockSession[]) => {
+  const calculateStats = async (rawSessions: RawRestockSession[], customFilter: PeriodFilter) => {
     const stats = JSON.parse(JSON.stringify(defaultStats));
     const sessions: RestockSession[] = [];
     const allShops: { [id: string]: number } = {};
@@ -205,6 +210,7 @@ const RestockDashboard = () => {
     const allItemsData = itemRes.data as { [id: string]: ItemData };
 
     sessions.map((session) => {
+      console.log(session);
       session.clicks.map((click) => {
         const item = allItemsData[click.item_id];
         const restockItem = session.items[click.restock_id];
@@ -248,7 +254,12 @@ const RestockDashboard = () => {
       .sort((a, b) => (b.item.price.value ?? 0) - (a.item.price.value ?? 0))
       .splice(0, 10);
 
-    setShopList(Object.keys(allShops).map((x) => parseInt(x)));
+    stats.hottestLost = allLost
+      .sort((a, b) => (b.item.price.value ?? 0) - (a.item.price.value ?? 0))
+      .splice(0, 10);
+
+    if (customFilter.shops === 'all') setShopList(Object.keys(allShops).map((x) => parseInt(x)));
+
     return stats;
   };
 
@@ -262,7 +273,7 @@ const RestockDashboard = () => {
     <Layout
       SEO={{
         title: `Neopets Restock Dashboard`,
-        description: `Keep an track on your restock metrics, profit, response time, and check out the items you missed haggling`,
+        description: `Keep track on your restock metrics, profit, response time, check out the items you missed haggling and more!`,
         themeColor: '#599379',
       }}
     >
@@ -281,7 +292,7 @@ const RestockDashboard = () => {
           ← Back to Restock Hub
         </Link>
       </Text>
-      <Flex gap={2} alignItems="center" justifyContent={['center', 'center', 'flex-start']} mt={3}>
+      <Flex gap={2} alignItems="center" justifyContent={['center', 'center', 'flex-start']} my={2}>
         <Select
           maxW="150px"
           variant={'filled'}
@@ -319,7 +330,9 @@ const RestockDashboard = () => {
         {!!importCount && (
           <Button
             size="xs"
-            bg="blackAlpha.300"
+            // bg="blackAlpha.300"
+            colorScheme="green"
+            boxShadow={'md'}
             borderRadius={'sm'}
             onClick={() => setOpenImport(true)}
           >
@@ -333,8 +346,8 @@ const RestockDashboard = () => {
           <Center flexFlow={'column'} gap={2}>
             <Heading size="lg">itemdb&apos;s Restock Dashboard</Heading>
             <Text>
-              Keep an track on your restock metrics, profit, response time, and check out the items
-              you missed haggling
+              Keep track on your restock metrics, profit, response time, and check out the items you
+              missed haggling
             </Text>
           </Center>
           <Divider my={6} />
@@ -452,14 +465,14 @@ const RestockDashboard = () => {
             <StatsCard
               label="Time Spent Restocking"
               stat={msIntervalFormated(sessionStats.durationCount, true)}
-              helpText={`${msIntervalFormated(sessionStats.mostPopularShop.durationCount)} on ${
+              helpText={`${msIntervalFormated(sessionStats.mostPopularShop.durationCount)} at ${
                 restockShopInfo[sessionStats.mostPopularShop.shopId].name
               }`}
             />
             <StatsCard
               label="Most Expensive Item Bought"
               stat={`${intl.format(sessionStats.mostExpensiveBought?.price.value ?? 0)} NP`}
-              helpText={sessionStats.mostExpensiveBought?.name ?? 'undefined'}
+              helpText={sessionStats.mostExpensiveBought?.name ?? 'none'}
             />
             <StatsCard
               label="Avg Refresh Time"
@@ -467,14 +480,14 @@ const RestockDashboard = () => {
               helpText={`based on ${sessionStats.totalRefreshes} refreshs`}
             />
             <StatsCard
-              label="Total Lost in Haggle"
+              label="Total Clicked and Lost"
               stat={`${intl.format(sessionStats.totalLost?.value ?? 0)} NP`}
               helpText={`${intl.format(sessionStats.totalLost.count)} items`}
             />
             <StatsCard
-              label="Most Expensive Lost in Haggle"
+              label="Most Expensive Clicked and Lost"
               stat={`${intl.format(sessionStats.mostExpensiveLost?.price.value ?? 0)} NP`}
-              helpText={sessionStats.mostExpensiveLost?.name ?? 'undefined'}
+              helpText={sessionStats.mostExpensiveLost?.name ?? 'none'}
             />
           </SimpleGrid>
           <Flex mt={6} w="100%" gap={3} flexFlow={['column', 'column', 'row']}>
@@ -492,12 +505,38 @@ const RestockDashboard = () => {
               </Flex>
             </Flex>
             <Flex flexFlow={'column'} textAlign={'center'} gap={3} flex={1}>
-              <Heading size="md">Hottest Restocks</Heading>
-              <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
-                {sessionStats.hottestRestocks.map((item, i) => (
-                  <ItemCard item={item} key={i} />
-                ))}
-              </Flex>
+              <Tabs flex={1} colorScheme="gray" variant={'line'}>
+                <TabList>
+                  <Tab>Hottest Restocks</Tab>
+                  <Tab>Worst Losses</Tab>
+                </TabList>
+                <TabPanels>
+                  <TabPanel px={0}>
+                    <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
+                      {sessionStats.hottestRestocks.map((item, i) => (
+                        <ItemCard item={item} key={i} />
+                      ))}
+                    </Flex>
+                  </TabPanel>
+                  <TabPanel px={0}>
+                    <Flex gap={3} flexFlow="column" justifyContent={'center'}>
+                      {sessionStats.hottestLost.map((lost, i) => (
+                        <RestockItem
+                          item={lost.item}
+                          clickData={lost.click}
+                          restockItem={lost.restockItem}
+                          key={i}
+                        />
+                      ))}
+                      {sessionStats.hottestLost.length === 0 && (
+                        <Text fontSize={'xs'} color="gray.400">
+                          You didn&apos;t lose anything. You&apos;re awesome!
+                        </Text>
+                      )}
+                    </Flex>
+                  </TabPanel>
+                </TabPanels>
+              </Tabs>
             </Flex>
           </Flex>
           <Flex mt={6} flexFlow="column" justifyContent={'center'} alignItems={'center'} gap={2}>
@@ -540,5 +579,6 @@ const defaultStats: RestockStats = {
   avgReactionTime: 0,
   hottestRestocks: [],
   hottestBought: [],
+  hottestLost: [],
   unknownPrices: 0,
 };

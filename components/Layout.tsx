@@ -81,11 +81,13 @@ const Layout = (props: Props) => {
           gap={{ base: 3, md: 4 }}
           px={4}
           // pt={4}
-          // py={1}
-          h="26px"
+          py={1}
+          // h="26px"
           alignItems="center"
           color="whiteAlpha.700"
           fontSize={'xs'}
+          overflow={'auto'}
+          whiteSpace={'nowrap'}
         >
           <Box w="100%" bg="blackAlpha.400" position={'absolute'} h="26px" left="0" zIndex={-1} />
           <ChakraLink as={Link} href="/articles">
@@ -95,13 +97,16 @@ const Layout = (props: Props) => {
             Checklists
           </ChakraLink>
           <Text display="inline-flex" alignItems={'center'} gap={1}>
-            <ChakraLink as={Link} href="/restock">
-              Restock Hub
+            <ChakraLink as={Link} href="/restock/dashboard">
+              Dashboard
             </ChakraLink>{' '}
-            <Badge fontSize={'0.5rem'} colorScheme="green">
+            <Badge fontSize={'0.5rem'} colorScheme="yellow">
               new
             </Badge>
           </Text>
+          <ChakraLink as={Link} href="/restock">
+            Restock Hub
+          </ChakraLink>{' '}
           <ChakraLink as={Link} href="/articles/userscripts">
             SDB Pricer
           </ChakraLink>
