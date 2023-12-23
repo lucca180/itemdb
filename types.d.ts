@@ -483,3 +483,18 @@ export type DTIPetAppearance = {
     name: string;
   };
 };
+
+//
+
+declare global {
+  interface Window {
+    itemdb_restock: {
+      getSessions: () => {
+        unsync_sessions: RestockSession[];
+        current_sessions: { [shopId: number]: restockSession };
+      };
+      cleanAll: () => void;
+    };
+    itemdb_restock_cleanAll: () => void; //backwards compatibility
+  }
+}

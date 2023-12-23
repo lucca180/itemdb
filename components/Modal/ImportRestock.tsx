@@ -35,15 +35,20 @@ const ImportRestockModal = (props: FeedbackModalProps) => {
   const isIndeterminate = !!selectedSessions.length && !allChecked;
 
   useEffect(() => {
+    if (!isOpen) return;
     init();
   }, [isOpen]);
 
   const init = async () => {
-    const current = sessionStorage.getItem('current_sessions');
-    const unsync = sessionStorage.getItem('unsync_sessions');
+    if (!window) return;
+    let currentParsed: RestockSession[] = [];
+    let unsyncParsed: RestockSession[] = [];
 
-    let currentParsed = current ? (Object.values(JSON.parse(current)) as RestockSession[]) : [];
-    const unsyncParsed = unsync ? (JSON.parse(unsync) as RestockSession[]) : [];
+    if (window.itemdb_restock) {
+      const { current_sessions, unsync_sessions } = window.itemdb_restock.getSessions();
+      currentParsed = Object.values(current_sessions);
+      unsyncParsed = unsync_sessions;
+    }
 
     currentParsed = currentParsed.map((x) => {
       x.isActive = true;
@@ -71,10 +76,9 @@ const ImportRestockModal = (props: FeedbackModalProps) => {
     const sessions = allSessions.filter((x, i) => selectedSessions.includes(i.toString()));
     await axios.post('/api/v1/restock', { sessionList: sessions });
 
-    // @ts-expect-error
-    if (window && window.itemdb_restock_cleanAll)
-      // @ts-expect-error
-      window.itemdb_restock_cleanAll();
+    if (window && window.itemdb_restock) {
+      window.itemdb_restock.cleanAll();
+    }
 
     handleClose();
     refresh();
@@ -83,11 +87,13 @@ const ImportRestockModal = (props: FeedbackModalProps) => {
   const doThings = () => {
     if (confirmImport === 'import') {
       handleImport();
-    } else if (confirmImport === 'discard') {
-      // @ts-expect-error
-      if (window && window.itemdb_restock_cleanAll)
-        // @ts-expect-error
-        window.itemdb_restock_cleanAll();
+    }
+
+    if (confirmImport === 'discard') {
+      if (window && window.itemdb_restock) {
+        window.itemdb_restock.cleanAll();
+      }
+
       handleClose();
     }
   };

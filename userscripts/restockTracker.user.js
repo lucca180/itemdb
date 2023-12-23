@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Restock Tracker
-// @version      1.0.1
+// @version      1.0.2
 // @author       itemdb
 // @namespace    itemdb
 // @description  Tracks your restock metrics
@@ -46,6 +46,7 @@ const SESSION_TIMEOUT = 60 // how many minutes since the last refresh to conside
 
 
 // ------------------------------------- //
+unsafeWindow.itemdb_restock = {}; // this is used to expose functions to itemdb
 let itemsObj = {};
 let priceList = [];
 
@@ -167,16 +168,17 @@ function handleRestockHaggle(){
   GM_setValue('current_sessions', current_sessions);
 }
 
-function handleitemdb(){
+function getSessions() {
   Object.entries(current_sessions).forEach(([shopId, session]) => {
     if(session.lastRefresh < Date.now() - SESSION_TIMEOUT * 60 * 1000) return;
     else 
       getSession(shopId);
   });
-
-  sessionStorage.setItem('unsync_sessions', JSON.stringify(unsync_sessions));
-  sessionStorage.setItem('current_sessions', JSON.stringify(current_sessions));
+  
+  return {unsync_sessions, current_sessions};
 }
+
+unsafeWindow.itemdb_restock.getSessions = getSessions;
 
 function cleanAll(){
   GM_setValue('unsync_sessions', []);
@@ -191,8 +193,8 @@ function cleanAll(){
   console.log('cleaned all');
 }
 
-unsafeWindow.itemdb_restock_cleanAll = cleanAll;
+unsafeWindow.itemdb_restock.cleanAll = cleanAll;
+
 
 if (URLHas('obj_type')) handleGeneralShops();
 if (URLHas('haggle.phtml')) handleRestockHaggle();
-if (URLHas('itemdb.com.br')) handleitemdb();

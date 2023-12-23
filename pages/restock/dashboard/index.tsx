@@ -22,6 +22,7 @@ import {
   TabPanel,
   TabPanels,
   Tabs,
+  CloseButton,
 } from '@chakra-ui/react';
 import Color from 'color';
 import { ReactElement, useEffect, useState } from 'react';
@@ -60,13 +61,17 @@ const RestockDashboard = () => {
   const [alertMsg, setAlertMsg] = useState<AlertMsg | null>(null);
   const [importCount, setImportCount] = useState<number>(0);
   const [shopList, setShopList] = useState<number[]>([]);
+  const [noScript, setNoScript] = useState<boolean>(false);
   const [filter, setFilter] = useState<PeriodFilter>({
     timePeriod: 30,
     shops: 'all',
   });
 
   useEffect(() => {
-    if (!authLoading && user) init();
+    if (!authLoading && user) {
+      handleImport();
+      init();
+    }
   }, [user, authLoading]);
 
   const init = async (customFilter?: PeriodFilter) => {
@@ -80,7 +85,6 @@ const RestockDashboard = () => {
         },
       });
       const sessionsData = res.data.sessions as RawRestockSession[];
-      handleImport();
 
       if (!sessionsData.length) {
         setAlertMsg({
@@ -114,11 +118,18 @@ const RestockDashboard = () => {
   };
 
   const handleImport = () => {
-    const current = sessionStorage.getItem('current_sessions');
-    const unsync = sessionStorage.getItem('unsync_sessions');
+    if (!window) return;
+    let currentParsed: RestockSession[] = [];
+    let unsyncParsed: RestockSession[] = [];
 
-    const currentParsed = current ? (Object.values(JSON.parse(current)) as RestockSession[]) : [];
-    const unsyncParsed = unsync ? (JSON.parse(unsync) as RestockSession[]) : [];
+    if (window.itemdb_restock) {
+      const { current_sessions, unsync_sessions } = window.itemdb_restock.getSessions();
+      currentParsed = Object.values(current_sessions);
+      unsyncParsed = unsync_sessions;
+    } else {
+      console.log('itemdb_restock not found');
+      setNoScript(true);
+    }
 
     const validSessions = [...currentParsed, ...unsyncParsed].filter(
       (x) => x.clicks.length && Object.keys(x.items).length
@@ -340,7 +351,33 @@ const RestockDashboard = () => {
           </Button>
         )}
       </Flex>
-
+      {noScript && (
+        <Center flexFlow={'column'} my={3}>
+          <Alert status={'warning'} maxW="500px" variant="subtle" borderRadius={'md'}>
+            <AlertIcon />
+            <Box w="100%">
+              <AlertDescription fontSize="sm">
+                We detected that you don&apos;t have the most updated version of the{' '}
+                <Link
+                  href="https://github.com/lucca180/itemdb/raw/main/userscripts/restockTracker.user.js"
+                  color="yellow.100"
+                  isExternal
+                >
+                  Restock Tracker Script
+                </Link>
+                .
+              </AlertDescription>
+            </Box>
+            <CloseButton
+              alignSelf="flex-start"
+              position="relative"
+              right={0}
+              top={-1}
+              onClick={() => setNoScript(false)}
+            />
+          </Alert>
+        </Center>
+      )}
       {!sessionStats && (
         <>
           <Center flexFlow={'column'} gap={2}>
