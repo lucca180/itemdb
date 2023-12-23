@@ -70,7 +70,7 @@ export default function SortableArea(props: SortableAreaProps) {
         .filter((i) => {
           if (!i) return false;
           const item = itemInfo[i];
-          return !item.isHidden || editMode;
+          return !item?.isHidden || editMode;
         })
         .reduce((acc, cur, i) => {
           const itemSize = dimensions && dimensions.borderBox.width >= 768 ? 160 : 110;
