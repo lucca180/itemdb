@@ -311,7 +311,7 @@ export async function getPallete(item: Items) {
   const pallete = await Vibrant.from(item.image).quality(1).getPalette();
 
   const colors = [];
-  let maxPop = ['', 0];
+  let maxPop: [string, number] = ['', 0];
 
   for (const [key, val] of Object.entries(pallete)) {
     const color = Color.rgb(val?.rgb ?? [255, 255, 255]);

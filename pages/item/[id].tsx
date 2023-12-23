@@ -44,7 +44,7 @@ import { getItemPrices } from '../api/v1/items/[id_name]/prices';
 import { getItemTrades } from '../api/v1/trades';
 import ItemRestock from '../../components/Items/ItemRestockInfo';
 import { getLastSeen } from '../api/v1/prices/stats';
-import PriceManualCheck from '../../components/Price/ManualCheckCard';
+import ManualCheckCard from '../../components/Items/ManualCheckCard';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -277,7 +277,7 @@ const ItemPage = (props: ItemPageProps) => {
           w={{ base: '100%', md: 'auto' }}
         >
           <Flex flex="2" flexFlow="column" gap={{ base: 4, md: 6 }}>
-            <PriceManualCheck item={item} />
+            <ManualCheckCard item={item} />
             {item.isMissingInfo && <MissingInfoCard />}
 
             <Flex flexFlow="column" gap={{ base: 4, md: 6 }} display={{ base: 'flex', md: 'none' }}>
