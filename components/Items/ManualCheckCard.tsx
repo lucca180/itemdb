@@ -47,7 +47,7 @@ const ManualCheckCard = (props: Props) => {
     }
   };
 
-  const submitAction = async (action: 'approve' | 'reprove' | 'not_inflated') => {
+  const submitAction = async (action: 'approve' | 'reprove' | 'not_inflated' | 'correct') => {
     if (!user || !user.isAdmin || !manualCheck) return;
 
     const promise = axios
@@ -55,6 +55,13 @@ const ManualCheckCard = (props: Props) => {
         action,
         type: type,
         checkID: manualCheck.internal_id,
+        correctInfo:
+          action === 'correct' && conflictField
+            ? {
+                field: conflictField,
+                value: item[conflictField as keyof ItemData],
+              }
+            : undefined,
       })
       .then(() => setManualCheck(null));
 
@@ -114,6 +121,9 @@ const ManualCheckCard = (props: Props) => {
           <Flex mt={3} justifyContent="space-between">
             <Button colorScheme={'red'} variant="ghost" onClick={() => submitAction('reprove')}>
               Ignore
+            </Button>
+            <Button colorScheme={'orange'} variant="ghost" onClick={() => submitAction('correct')}>
+              Current is correct
             </Button>
             <Button colorScheme={'green'} variant="ghost" onClick={() => submitAction('approve')}>
               Mark as Solved

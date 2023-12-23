@@ -34,13 +34,11 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     },
   });
 
-  console.log(info);
-
   return res.json({ inflation, info });
 };
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { type, action, checkID } = req.body;
+  const { type, action, checkID, correctInfo } = req.body;
   const id = req.query.id as string;
 
   if (type === 'inflation') {
@@ -106,6 +104,20 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         },
         data: {
           processed: true,
+        },
+      });
+
+      return res.json({ success: true });
+    }
+
+    if (action === 'correct') {
+      await prisma.itemProcess.update({
+        where: {
+          internal_id: checkID,
+        },
+        data: {
+          [correctInfo.field]: correctInfo.value,
+          manual_check: null,
         },
       });
 
