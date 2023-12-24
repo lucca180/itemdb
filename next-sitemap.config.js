@@ -10,6 +10,12 @@ module.exports = {
       'https://itemdb.com.br/sitemaps/index.xml',
       ...Array.from({ length: 80 }, (_, i) => `https://itemdb.com.br/sitemaps/${i}.xml`),
     ],
+    policies: [
+      {
+        userAgent: '*',
+        disallow: ['/admin/*', '/search/*', '/api/*'],
+      },
+    ],
   },
   // ...other options
 };
