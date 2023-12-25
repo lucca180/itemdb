@@ -68,7 +68,7 @@ const RestockItem = (props: Props) => {
             </Text>
           )}
 
-          {lostHaggle > 0 && (
+          {boughtTime < 0 && lostHaggle > 0 && (
             <Text fontSize={'xs'}>
               Lost haggling in <b>{msIntervalFormated(lostHaggle, true, 2)}</b> at{' '}
               {format(clickData.haggle_timestamp ?? 0, 'PPPp')}
@@ -76,7 +76,7 @@ const RestockItem = (props: Props) => {
           )}
         </Flex>
 
-        {lostNoHaggle > 0 && (
+        {boughtTime < 0 && lostHaggle < 0 && lostNoHaggle > 0 && (
           <Text fontSize={'xs'}>
             Lost - no haggle - in <b>{msIntervalFormated(lostNoHaggle, true, 2)}</b> at{' '}
             {format(clickData.soldOut_timestamp ?? 0, 'PPPp')}
