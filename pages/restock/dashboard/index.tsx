@@ -126,6 +126,11 @@ const RestockDashboard = () => {
       const { current_sessions, unsync_sessions } = window.itemdb_restock.getSessions();
       currentParsed = Object.values(current_sessions);
       unsyncParsed = unsync_sessions;
+
+      if (!window.itemdb_restock.scriptVersion || window.itemdb_restock.scriptVersion < 103) {
+        console.log('itemdb_restock version outdated');
+        setNoScript(true);
+      }
     } else {
       console.log('itemdb_restock not found');
       setNoScript(true);

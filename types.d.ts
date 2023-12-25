@@ -489,6 +489,7 @@ export type DTIPetAppearance = {
 declare global {
   interface Window {
     itemdb_restock: {
+      scriptVersion: number;
       getSessions: () => {
         unsync_sessions: RestockSession[];
         current_sessions: { [shopId: number]: restockSession };
