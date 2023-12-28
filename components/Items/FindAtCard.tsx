@@ -9,12 +9,14 @@ import SWIcon from '../../public/icons/shopwizard.png';
 import TPIcon from '../../public/icons/tradingpost.png';
 import ClosetIcon from '../../public/icons/closet.svg';
 import NeosearchIcon from '../../public/icons/neosearch.svg';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   item: ItemData;
 };
 
 const FindAtCard = (props: Props) => {
+  const t = useTranslations('ItemPage');
   const { item } = props;
   const color = item.color.rgb;
 
@@ -26,7 +28,7 @@ const FindAtCard = (props: Props) => {
         fontWeight="bold"
         bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}
       >
-        Find At
+        {t('find-at')}
       </Box>
       <Flex
         py={3}

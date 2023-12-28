@@ -24,6 +24,7 @@ import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { ItemData } from '../../types';
 import { useAuth } from '../../utils/auth';
+import { useTranslations } from 'next-intl';
 
 export type FeedbackModalProps = {
   isOpen: boolean;
@@ -32,6 +33,7 @@ export type FeedbackModalProps = {
 };
 
 const FeedbackModal = (props: FeedbackModalProps) => {
+  const t = useTranslations();
   const { user } = useAuth();
   const router = useRouter();
   const { isOpen, onClose, item } = props;
@@ -83,14 +85,14 @@ const FeedbackModal = (props: FeedbackModalProps) => {
           {!isLoading && !isSuccess && !error && (
             <Stack gap={3}>
               <FormControl>
-                <FormLabel color="gray.300">Email Address (opcional)</FormLabel>
+                <FormLabel color="gray.300">
+                  {t('General.email-address')} ({t('General.optional')})
+                </FormLabel>
                 <Input variant="filled" onChange={(e) => setEmail(e.target.value)} value={email} />
-                <FormHelperText>
-                  If you want to receive a response, please enter your email address
-                </FormHelperText>
+                <FormHelperText>{t('Feedback.modalHelper')}</FormHelperText>
               </FormControl>
               <FormControl>
-                <FormLabel color="gray.300">Write your feedback, comments and ideas :)</FormLabel>
+                <FormLabel color="gray.300">{t('Feedback.modalLabel')} :)</FormLabel>
                 <Textarea
                   variant="filled"
                   onChange={(e) => setMessage(e.target.value)}
@@ -98,10 +100,13 @@ const FeedbackModal = (props: FeedbackModalProps) => {
                 />
               </FormControl>
               <Text fontSize="sm" color="gray.400">
-                Missing items? Outdated prices?{' '}
-                <Link as={NextLink} href="/contribute" color="gray.200">
-                  Check this instead
-                </Link>
+                {t.rich('Feedback.modalContributeCallback', {
+                  Link: (chunks) => (
+                    <Link as={NextLink} href="/contribute" color="gray.200">
+                      {chunks}
+                    </Link>
+                  ),
+                })}
               </Text>
             </Stack>
           )}
@@ -114,18 +119,18 @@ const FeedbackModal = (props: FeedbackModalProps) => {
           {isSuccess && (
             <Center>
               <Text fontSize="sm" textAlign="center">
-                Done!
+                {t('Feedback.done')}
                 <br />
-                We appreciate your comments and feedback :)
+                {t('Feedback.thanks')} :)
               </Text>
             </Center>
           )}
           {error && (
             <Center>
               <Text fontSize="sm" textAlign="center" color="red.400">
-                An error has occurred!
+                {t('General.an-error-has-occurred')}!
                 <br />
-                Please refresh the page and try again later
+                {t('General.refreshPage')}
               </Text>
             </Center>
           )}
@@ -134,10 +139,10 @@ const FeedbackModal = (props: FeedbackModalProps) => {
           {!isLoading && !isSuccess && !error && (
             <>
               <Button variant="ghost" onClick={handleCancel} mr={3}>
-                Cancel
+                {t('General.cancel')}
               </Button>
               <Button onClick={saveChanges} disabled={!message}>
-                Send
+                {t('General.send')}
               </Button>
             </>
           )}

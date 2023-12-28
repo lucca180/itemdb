@@ -2,6 +2,7 @@ import { Box, Center, Flex, Icon, Link, SimpleGrid, Text } from '@chakra-ui/reac
 import React from 'react';
 import { AiFillEyeInvisible } from 'react-icons/ai';
 import { FullItemColors } from '../../types';
+import { useTranslations } from 'next-intl';
 type Props = {
   colors: FullItemColors;
 };
@@ -16,6 +17,7 @@ const colorKeysOrder: (keyof FullItemColors)[] = [
 ];
 
 const ColorInfoCard = (props: Props) => {
+  const t = useTranslations('ItemPage');
   const { colors } = props;
   const color = colors.vibrant.rgb;
 
@@ -38,7 +40,7 @@ const ColorInfoCard = (props: Props) => {
         fontWeight="bold"
         bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}
       >
-        Color Palette
+        {t('color-palette')}
       </Box>
       <Flex
         p={3}
@@ -83,7 +85,7 @@ const ColorInfoCard = (props: Props) => {
           <Center flexFlow="column" gap={1}>
             <Icon as={AiFillEyeInvisible} boxSize="32px" opacity={0.4} />
             <Text fontSize="xs" color="gray.200">
-              Looking for colors in an Invisible Item?
+              {t('invisible-item')}
             </Text>
           </Center>
         )}

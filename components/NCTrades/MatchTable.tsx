@@ -3,6 +3,7 @@ import { formatDistanceToNow, isToday } from 'date-fns';
 import NextLink from 'next/link';
 import React from 'react';
 import { UserList } from '../../types';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   data: UserList[];
@@ -11,6 +12,7 @@ type Props = {
 };
 
 const MatchTable = (props: Props) => {
+  const t = useTranslations();
   const { data, matches, type } = props;
   const sortedData = data.sort(
     (a, b) => new Date(b.owner.lastSeen).getTime() - new Date(a.owner.lastSeen).getTime()
@@ -28,17 +30,17 @@ const MatchTable = (props: Props) => {
       <Table h="100%" variant="striped" colorScheme="gray" size="sm">
         <Thead>
           <Tr>
-            <Th>List Name</Th>
-            <Th>Owner</Th>
-            {matches && <Th>Match</Th>}
-            <Th>Last Seen</Th>
+            <Th>{t('ItemPage.list-name')}</Th>
+            <Th>{t('ItemPage.owner')}</Th>
+            {matches && <Th>{t('ItemPage.match')}</Th>}
+            <Th>{t('ItemPage.last-seen')}</Th>
           </Tr>
         </Thead>
         <Tbody>
           {!data.length && (
             <Tr>
               <Td colSpan={4} textAlign="center">
-                No lists found :(
+                {t('ItemPage.no-lists-found')} :(
               </Td>
             </Tr>
           )}
@@ -58,16 +60,19 @@ const MatchTable = (props: Props) => {
                 <Td>
                   {matches[list.owner.username ?? '']?.length && (
                     <Badge colorScheme="green">
-                      {matches[list.owner.username ?? '']?.length || 'none'} items{' '}
-                      {type === 'seeking' ? 'they' : 'you'} can offer
+                      {matches[list.owner.username ?? '']?.length || 'none'} {t('General.items')}{' '}
+                      {type === 'seeking' ? t('General.they') : t('General.you')}{' '}
+                      {t('ItemPage.can-offer')}
                     </Badge>
                   )}
-                  {!matches[list.owner.username ?? '']?.length && <Badge>no matches</Badge>}
+                  {!matches[list.owner.username ?? '']?.length && (
+                    <Badge>{t('ItemPage.no-matches')}</Badge>
+                  )}
                 </Td>
               )}
               <Td>
                 {isToday(new Date(list.owner.lastSeen))
-                  ? 'Today'
+                  ? t('General.today')
                   : formatDistanceToNow(new Date(list.owner.lastSeen), { addSuffix: true })}
               </Td>
             </Tr>

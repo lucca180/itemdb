@@ -7,6 +7,7 @@ import Image from 'next/image';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import dynamic from 'next/dynamic';
 import Color from 'color';
+import { useTranslations } from 'next-intl';
 const Markdown = dynamic(() => import('../Utils/Markdown'), { ssr: false });
 
 type Props = {
@@ -15,12 +16,16 @@ type Props = {
 };
 
 const ItemOfficialLists = (props: Props) => {
+  const t = useTranslations();
   const { item, lists } = props;
   const officialLists = lists.filter((list) => list.official);
   const color = Color(item.color.hex);
 
   return (
-    <CardBase title={<Link href="/lists/official">Official Lists</Link>} color={item.color.rgb}>
+    <CardBase
+      title={<Link href="/lists/official">{t('General.official-lists')}</Link>}
+      color={item.color.rgb}
+    >
       <Flex gap={3} flexFlow="column">
         <List spacing={3}>
           {officialLists.map((list, i) => (
@@ -53,11 +58,7 @@ const ItemOfficialLists = (props: Props) => {
                 {' '}
                 -{' '}
                 <Markdown>
-                  {
-                    (list.description || "This list doesn't have a description yet").split(
-                      /[\r\n]+/
-                    )[0]
-                  }
+                  {(list.description || t('ItemPage.list-no-description')).split(/[\r\n]+/)[0]}
                 </Markdown>
               </Text>
             </ListItem>
@@ -65,7 +66,7 @@ const ItemOfficialLists = (props: Props) => {
           {officialLists.length === 0 && (
             <Flex flexFlow="column" gap={2} justifyContent="center" alignItems="center">
               <Text fontSize="sm" color="gray.200">
-                This item is not on any official list yet.
+                {t('ItemPage.no-official-list')}
               </Text>
             </Flex>
           )}

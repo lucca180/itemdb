@@ -3,6 +3,7 @@ import React from 'react';
 import { ItemData } from '../../types';
 import { MdHelp } from 'react-icons/md';
 import { rarityStr } from '../../utils/utils';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   item: ItemData;
@@ -11,6 +12,7 @@ type Props = {
 const intl = new Intl.NumberFormat();
 
 const ItemInfoCard = (props: Props) => {
+  const t = useTranslations();
   const { item } = props;
   const color = item.color.rgb;
   const rarityString = rarityStr(item.rarity ?? 0);
@@ -30,7 +32,7 @@ const ItemInfoCard = (props: Props) => {
         fontWeight="bold"
         bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}
       >
-        Item Info
+        {t('ItemPage.item-info')}
       </Box>
       <Flex
         p={3}
@@ -44,7 +46,7 @@ const ItemInfoCard = (props: Props) => {
       >
         <HStack>
           <Tag size="lg" fontWeight="bold" as="h3">
-            Item ID
+            {t('General.item-id')}
           </Tag>
           <Text flex="1" textAlign="right">
             {item.item_id ?? '???'}
@@ -52,7 +54,7 @@ const ItemInfoCard = (props: Props) => {
         </HStack>
         <HStack>
           <Tag size="lg" fontWeight="bold" as="h3">
-            Rarity
+            {t('General.rarity')}
           </Tag>
           <Text flex="1" textAlign="right">
             r{item.rarity ?? '???'}
@@ -68,7 +70,7 @@ const ItemInfoCard = (props: Props) => {
         </HStack>
         <HStack>
           <Tag size="lg" fontWeight="bold" as="h3">
-            Weight
+            {t('General.weight')}
           </Tag>
           <Text flex="1" textAlign="right">
             {item.weight ?? '???'} lbs
@@ -77,13 +79,13 @@ const ItemInfoCard = (props: Props) => {
         <HStack>
           <Tooltip
             hasArrow
-            label="Does not reflect the actual price"
+            label={t('ItemPage.est-val-warning')}
             bg="gray.700"
             placement="top"
             color="white"
           >
             <Tag size="lg" fontWeight="bold" as="h3">
-              Est. Val <MdHelp size={'0.8rem'} style={{ marginLeft: '0.2rem' }} />
+              {t('General.est-val')} <MdHelp size={'0.8rem'} style={{ marginLeft: '0.2rem' }} />
             </Tag>
           </Tooltip>
 
@@ -93,7 +95,7 @@ const ItemInfoCard = (props: Props) => {
         </HStack>
         <HStack>
           <Tag size="lg" fontWeight="bold" as="h3">
-            Category
+            {t('General.category')}
           </Tag>
           <Text flex="1" textAlign="right" textTransform="capitalize">
             {item.category ?? '???'}
@@ -101,7 +103,7 @@ const ItemInfoCard = (props: Props) => {
         </HStack>
         <HStack>
           <Tag size="lg" fontWeight="bold" as="h3">
-            Status
+            {t('General.status')}
           </Tag>
           <Text flex="1" textAlign="right" textTransform="capitalize">
             {item.status ?? 'Active'}
@@ -109,7 +111,7 @@ const ItemInfoCard = (props: Props) => {
         </HStack>
         <HStack>
           <Tag size="lg" fontWeight="bold" as="h3">
-            itemdb ID
+            {t('General.itemdb-id')}
           </Tag>
           <Text flex="1" textAlign="right" textTransform="capitalize">
             {item.internal_id}

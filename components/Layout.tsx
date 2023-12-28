@@ -36,6 +36,7 @@ import { SearchBar } from './Search/SearchBar';
 import Color from 'color';
 
 import Brazil from '../public/icons/brazil.png';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   children?: ReactNode;
@@ -44,6 +45,7 @@ type Props = {
 };
 
 const Layout = (props: Props) => {
+  const t = useTranslations('Layout');
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { user, signout } = useAuth();
@@ -91,24 +93,24 @@ const Layout = (props: Props) => {
         >
           <Box w="100%" bg="blackAlpha.400" position={'absolute'} h="26px" left="0" zIndex={-1} />
           <ChakraLink as={Link} href="/articles">
-            Articles
+            {t('articles')}
           </ChakraLink>
           <ChakraLink as={Link} href="/lists/import">
-            Checklists
+            {t('checklists')}
           </ChakraLink>
           <Text display="inline-flex" alignItems={'center'} gap={1}>
             <ChakraLink as={Link} href="/restock/dashboard">
-              Dashboard
+              {t('dashboard')}
             </ChakraLink>{' '}
             <Badge fontSize={'0.5rem'} colorScheme="yellow">
-              new
+              {t('new')}
             </Badge>
           </Text>
           <ChakraLink as={Link} href="/restock">
-            Restock Hub
+            {t('restock-hub')}
           </ChakraLink>{' '}
           <ChakraLink as={Link} href="/articles/userscripts">
-            SDB Pricer
+            {t('sdb-pricer')}
           </ChakraLink>
         </Flex>
         <Flex as="header" w="full" maxW="8xl" marginX="auto" gap={{ base: 2, md: 4 }} px={4} py={4}>
@@ -169,7 +171,7 @@ const Layout = (props: Props) => {
               >
                 <Icon as={BsBoxArrowInRight} boxSize="18px" mr={2} verticalAlign="text-top" />
                 <Box as="span" display={{ base: 'none', md: 'inline' }}>
-                  Login
+                  {t('login')}
                 </Box>
               </Button>
             )}
@@ -182,7 +184,7 @@ const Layout = (props: Props) => {
                     px={{ base: 2, md: 4 }}
                     textAlign="center"
                   >
-                    {isLargerThanMD && <Box as="span">Hi, {user.username}</Box>}
+                    {isLargerThanMD && <Box as="span">{t('hi-user', { name: user.username })}</Box>}
                     <Icon
                       as={BsFillPersonFill}
                       display={{ base: 'inherit', md: 'none' }}
@@ -190,16 +192,20 @@ const Layout = (props: Props) => {
                     />
                   </MenuButton>
                   <MenuList>
-                    <MenuGroup title={!isLargerThanMD ? `Hello, ${user.username}` : undefined}>
+                    <MenuGroup
+                      title={
+                        !isLargerThanMD ? `${t('hello-user', { name: user.username })}` : undefined
+                      }
+                    >
                       <MenuItem as={Link} href={`/lists/${user.username}`}>
-                        My Lists
+                        {t('my-lists')}
                       </MenuItem>
                       <MenuItem as={Link} href={`/contribute`}>
-                        How to Contribute
+                        {t('how-to-contribute')}
                       </MenuItem>
                     </MenuGroup>
                     <MenuDivider />
-                    <MenuItem onClick={signout}>Logout</MenuItem>
+                    <MenuItem onClick={signout}>{t('logout')}</MenuItem>
                   </MenuList>
                 </Menu>
               </>
@@ -212,7 +218,7 @@ const Layout = (props: Props) => {
           {props.loading && (
             <Center h="80vh" flexFlow="column" gap={3}>
               <Spinner size="lg" />
-              <Text>Loading</Text>
+              <Text>{t('loading')}</Text>
             </Center>
           )}
         </Box>
@@ -244,14 +250,14 @@ const Layout = (props: Props) => {
                 <NextImage src={mt_logo} width={202} height={50} alt="Magnetismo Times logo" />
               </ChakraLink>
               <Text fontSize="xs" color="gray.500" position={'relative'}>
-                Made in{' '}
+                {t('made-in')}{' '}
                 <NextImage
                   src={Brazil}
                   alt="Brazil Flag"
                   width={18}
                   style={{ display: 'inline', verticalAlign: 'middle', margin: '0 0px' }}
                 />{' '}
-                by{' '}
+                {t('by')}{' '}
                 <ChakraLink href="https://magnetismotimes.com/" isExternal>
                   Magnetismo Times
                 </ChakraLink>
@@ -262,33 +268,33 @@ const Layout = (props: Props) => {
             <Flex flexFlow={['row']} gap={[3, 12]} justifyContent="center">
               <Flex flex="1" flexFlow={'column'} fontSize="xs" gap={2} color="gray.300">
                 <Text fontSize="xs" mb={2} textTransform="uppercase" color="gray.500">
-                  <b>Resources</b>
+                  <b>{t('resources')}</b>
                 </Text>
-                <ChakraLink href="/articles">Articles</ChakraLink>
-                <ChakraLink href="/lists/official">Official Lists</ChakraLink>
+                <ChakraLink href="/articles">{t('articles')}</ChakraLink>
+                <ChakraLink href="/lists/official">{t('official-lists')}</ChakraLink>
                 <ChakraLink href="/articles/owls">Owls</ChakraLink>
-                <ChakraLink href="/articles/userscripts">Userscripts</ChakraLink>
+                <ChakraLink href="/articles/userscripts">{t('userscripts')}</ChakraLink>
               </Flex>
               <Flex flex="1" flexFlow={'column'} fontSize="xs" gap={2} color="gray.300">
                 <Text fontSize="xs" mb={2} textTransform="uppercase" color="gray.500">
-                  <b>Contribute</b>
+                  <b>{t('contribute')}</b>
                 </Text>
                 <ChakraLink href="/contribute">Item Data Extractor</ChakraLink>
-                <ChakraLink href="/feedback">Feedback</ChakraLink>
-                <ChakraLink href="/feedback/trades">Trade Pricing</ChakraLink>
-                <ChakraLink href="/contribute">+ More</ChakraLink>
+                <ChakraLink href="/feedback">{t('feedback')}</ChakraLink>
+                <ChakraLink href="/feedback/trades">{t('trade-pricing')}</ChakraLink>
+                <ChakraLink href="/contribute">+ {t('more')}</ChakraLink>
               </Flex>
               <Flex flex="1" flexFlow={'column'} fontSize="xs" gap={2} color="gray.300">
                 <Text fontSize="xs" mb={2} textTransform="uppercase" color="gray.500">
                   <b>itemdb</b>
                 </Text>
                 <ChakraLink href="https://itemdb.stoplight.io/docs/itemdb-api" isExternal>
-                  Developers
+                  {t('developers')}
                 </ChakraLink>
-                <ChakraLink href="/privacy">Privacy Policy</ChakraLink>
-                <ChakraLink href="/terms">Terms of Use</ChakraLink>
+                <ChakraLink href="/privacy">{t('privacy-policy')}</ChakraLink>
+                <ChakraLink href="/terms">{t('terms-of-use')}</ChakraLink>
                 <ChakraLink href="https://github.com/lucca180/itemdb/" isExternal>
-                  Source Code
+                  {t('source-code')}
                 </ChakraLink>
               </Flex>
             </Flex>

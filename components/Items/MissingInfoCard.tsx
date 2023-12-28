@@ -7,10 +7,13 @@ import {
   Box,
   Text,
 } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import React from 'react';
 
 const MissingInfoCard = () => {
+  const t = useTranslations();
+
   return (
     <Alert
       status="error"
@@ -23,13 +26,11 @@ const MissingInfoCard = () => {
     >
       <AlertIcon />
       <Box>
-        <AlertTitle>We&apos;re missing data!</AlertTitle>
+        <AlertTitle>{t('ItemPage.missingInfoTitle')}</AlertTitle>
         <AlertDescription>
-          <Text fontSize="sm">
-            Some information may be wrong as we don&apos;t have enough data about this item
-          </Text>
+          <Text fontSize="sm">{t('ItemPage.missingInfoDescription')}</Text>
           <Button mt={2} as={Link} href="/contribute" size="sm">
-            Learn how to help!
+            {t('General.learnHelp')}!
           </Button>
         </AlertDescription>
       </Box>

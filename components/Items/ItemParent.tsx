@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import { ItemData } from '../../types';
 import CardBase from '../Card/CardBase';
 import ItemCard from './ItemCard';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   item: ItemData;
@@ -11,6 +12,7 @@ type Props = {
 };
 
 const ItemParent = (props: Props) => {
+  const t = useTranslations();
   const [isLoading, setLoading] = React.useState(true);
   const [parentData, setParentData] = React.useState<ItemData[]>([]);
   const { item, parentItems } = props;
@@ -32,7 +34,7 @@ const ItemParent = (props: Props) => {
 
   if (isLoading)
     return (
-      <CardBase title="Found Inside" color={color}>
+      <CardBase title={t('ItemPage.found-inside')} color={color}>
         <Flex gap={3} wrap="wrap" justifyContent="center">
           {parentItems.map((id) => (
             <ItemCard key={id} isLoading small />
@@ -42,7 +44,7 @@ const ItemParent = (props: Props) => {
     );
 
   return (
-    <CardBase title="Found Inside" color={color}>
+    <CardBase title={t('ItemPage.found-inside')} color={color}>
       <Flex gap={3} wrap="wrap" justifyContent="center">
         {parentData.map((item) => {
           return <ItemCard key={item.internal_id} item={item} small />;

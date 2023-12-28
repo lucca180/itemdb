@@ -1,8 +1,10 @@
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import { Menu, MenuButton, IconButton, MenuList, MenuItem, Portal } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 const SearchMenu = () => {
+  const t = useTranslations('Layout');
   return (
     <Menu>
       <MenuButton size="sm" as={IconButton}>
@@ -11,10 +13,10 @@ const SearchMenu = () => {
       <Portal>
         <MenuList>
           <MenuItem as={Link} href="/search">
-            Advanced Search
+            {t('advanced-search')}
           </MenuItem>
           <MenuItem as={Link} href="/lists/official">
-            Official Lists
+            {t('official-lists')}
           </MenuItem>
         </MenuList>
       </Portal>

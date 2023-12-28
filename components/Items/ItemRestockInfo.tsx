@@ -14,6 +14,7 @@ import {
 import CardBase from '../Card/CardBase';
 import Image from 'next/image';
 import NextLink from 'next/link';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   item: ItemData;
@@ -23,6 +24,7 @@ type Props = {
 const intl = new Intl.NumberFormat();
 
 const ItemRestock = (props: Props) => {
+  const t = useTranslations();
   const { item, lastSeen } = props;
   const [specialDay, setSpecialDay] = React.useState('');
 
@@ -71,7 +73,7 @@ const ItemRestock = (props: Props) => {
   if (!item.category || !item.estVal || !restockPrice) return null;
 
   return (
-    <CardBase title="Restock Info" color={item.color.rgb}>
+    <CardBase title={t('Restock.restock-info')} color={item.color.rgb}>
       <Flex flexFlow={'column'} gap={2}>
         <Center flexFlow="column" gap={2}>
           <Link as={NextLink} href={`/restock/${slugify(shopInfo?.name ?? '')}`}>
@@ -85,17 +87,19 @@ const ItemRestock = (props: Props) => {
               height={92}
             />
           </Link>
-          {specialDay === 'hpd' && <Tag colorScheme={'green'}>Half Price Day - 50% off</Tag>}
+          {specialDay === 'hpd' && <Tag colorScheme={'green'}>{t('Restock.half-price-day')}</Tag>}
           {specialDay === 'tyrannia' && (
-            <Tag colorScheme={'orange'}>Tyrannian Victory Day - 80% off</Tag>
+            <Tag colorScheme={'orange'}>{t('Restock.tyrannian-victory-day')}</Tag>
           )}
-          {specialDay === 'usukicon' && <Tag colorScheme={'pink'}>Usuki Day - 66.6% off</Tag>}
-          {specialDay === 'festival' && <Tag colorScheme={'purple'}>Faerie Festival - 50% off</Tag>}
-          {specialDay === 'halloween' && <Tag colorScheme={'orange'}>Halloween - 50% off</Tag>}
+          {specialDay === 'usukicon' && <Tag colorScheme={'pink'}>{t('Restock.usuki-day')}</Tag>}
+          {specialDay === 'festival' && (
+            <Tag colorScheme={'purple'}>{t('Restock.faerie-festival')}</Tag>
+          )}
+          {specialDay === 'halloween' && <Tag colorScheme={'orange'}>{t('Restock.halloween')}</Tag>}
         </Center>
         <HStack>
           <Tag size="md" fontWeight="bold" as="h3">
-            Est. Profit
+            {t('Restock.est-profit')}
           </Tag>
           <Flex flexFlow={'column'} flex="1">
             <Text
@@ -122,7 +126,7 @@ const ItemRestock = (props: Props) => {
         </HStack>
         <HStack>
           <Tag size="md" fontWeight="bold" as="h3">
-            Restock Price
+            {t('Restock.restock-price')}
           </Tag>
           <Flex flexFlow={'column'} flex="1">
             <Text fontSize="xs" textAlign="right" color={specialDay ? 'green.200' : undefined}>
@@ -141,7 +145,7 @@ const ItemRestock = (props: Props) => {
         </HStack>
         <HStack>
           <Tag size="md" fontWeight="bold" as="h3">
-            Latest Restock
+            {t('Restock.latest-restock')}
           </Tag>
           <Text flex="1" fontSize="xs" textAlign="right">
             {lastSeen?.restock && (

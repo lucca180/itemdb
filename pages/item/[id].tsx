@@ -45,6 +45,7 @@ import { getItemTrades } from '../api/v1/trades';
 import ItemRestock from '../../components/Items/ItemRestockInfo';
 import { getLastSeen } from '../api/v1/prices/stats';
 import ManualCheckCard from '../../components/Items/ManualCheckCard';
+import { useTranslations } from 'next-intl';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -64,9 +65,11 @@ type ItemPageProps = {
   lastSeen: ItemLastSeen;
   NPTrades: TradeData[];
   NPPrices: PriceData[];
+  messages: any;
 };
 
 const ItemPage = (props: ItemPageProps) => {
+  const t = useTranslations();
   const {
     item,
     colors,
@@ -213,7 +216,7 @@ const ItemPage = (props: ItemPageProps) => {
                   as={Link}
                   href="/search?s=&type[]=wearable"
                 >
-                  Wearable
+                  {t('General.wearable')}
                 </Badge>
               )}
               {item.isNeohome && (
@@ -223,7 +226,7 @@ const ItemPage = (props: ItemPageProps) => {
                   as={Link}
                   href="/search?s=&type[]=neohome"
                 >
-                  Neohome
+                  {t('General.neohome')}
                 </Badge>
               )}
             </Stack>
@@ -262,10 +265,10 @@ const ItemPage = (props: ItemPageProps) => {
           {/* <ItemTags toggleModal={() => setIsEditModalOpen(true)} item={item} tags={tags} /> */}
           <Flex justifyContent="center" gap={1}>
             <Button variant="outline" size="sm" onClick={() => setFeedbackModalOpen(true)}>
-              <Icon as={FiSend} mr={1} /> Feedback
+              <Icon as={FiSend} mr={1} /> {t('Button.feedback')}
             </Button>
             <Button variant="outline" size="sm" onClick={() => setIsEditModalOpen(true)}>
-              <Icon as={FiEdit3} mr={1} /> Edit
+              <Icon as={FiEdit3} mr={1} /> {t('Button.edit')}
             </Button>
           </Flex>
         </Flex>
@@ -363,6 +366,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     NPTrades: NPTrades,
     NPPrices: itemPrices,
     lastSeen: lastSeen,
+    messages: (await import(`../../translation/${context.locale}.json`)).default,
   };
 
   return {

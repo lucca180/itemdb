@@ -22,12 +22,14 @@ import DuplicatedItemModal from '../Modal/DuplicatedItemModal';
 import DynamicIcon from '../../public/icons/dynamic.png';
 
 import NextImage from 'next/image';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   item: ItemData;
 };
 
 const AddToListSelect = (props: Props) => {
+  const t = useTranslations();
   const { item } = props;
   const { user, getIdToken, authLoading } = useAuth();
   const [lists, setLists] = useState<UserList[]>([]);
@@ -88,7 +90,7 @@ const AddToListSelect = (props: Props) => {
       );
       if (res.data.success) {
         toast({
-          title: 'Item added to list',
+          title: t('Lists.item-added-to-list'),
           status: 'success',
           duration: 5000,
         });
@@ -106,7 +108,7 @@ const AddToListSelect = (props: Props) => {
       }
 
       toast({
-        title: 'An error occurred',
+        title: t('General.an-error-occurred'),
         status: 'error',
         duration: 5000,
       });
@@ -144,7 +146,7 @@ const AddToListSelect = (props: Props) => {
       console.error(err);
 
       toast({
-        title: 'An error occurred',
+        title: t('General.an-error-occurred'),
         status: 'error',
         duration: 5000,
       });
@@ -164,7 +166,7 @@ const AddToListSelect = (props: Props) => {
       )}
       <Menu>
         <MenuButton as={Button} variant="solid">
-          Add To List
+          {t('Lists.add-to-list')}
         </MenuButton>
         <MenuList maxH="50vh" overflow="auto">
           {sorted.length !== 0 && (
@@ -176,7 +178,7 @@ const AddToListSelect = (props: Props) => {
                   isDisabled={!!list.dynamicType && list.dynamicType !== 'addOnly'}
                 >
                   {list.itemInfo.some((i) => i.item_iid === item.internal_id) && (
-                    <Tooltip label="Already in this list" fontSize="sm" placement="top">
+                    <Tooltip label={t('Lists.already-in-this-list')} fontSize="sm" placement="top">
                       <span>
                         <Icon verticalAlign="middle" as={BsBookmarkCheckFill} mr={2} />
                       </span>
@@ -197,7 +199,7 @@ const AddToListSelect = (props: Props) => {
                   )}
                   {list.dynamicType && (
                     <Tooltip
-                      label={`${list.dynamicType} Dynamic List`}
+                      label={`${list.dynamicType} ${t('General.dynamic-list')}`}
                       fontSize="sm"
                       placement="top"
                     >
@@ -224,17 +226,17 @@ const AddToListSelect = (props: Props) => {
           )}
 
           {user && !authLoading && !isLoading && (
-            <MenuItem onClick={createNewList}>+ Create New List</MenuItem>
+            <MenuItem onClick={createNewList}>+ {t('Lists.create-new-list')}</MenuItem>
           )}
 
           {(authLoading || isLoading) && (
             <MenuItem justifyContent="center" disabled>
-              Loading....
+              {t('Layout.loading')}....
             </MenuItem>
           )}
           {!user && !authLoading && (
             <MenuItem justifyContent="center" disabled>
-              Login to use lists
+              {t('Lists.login-to-use-lists')}
             </MenuItem>
           )}
         </MenuList>

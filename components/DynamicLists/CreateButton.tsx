@@ -6,6 +6,7 @@ import Dynamic from 'next/dynamic';
 import Image from 'next/image';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import { SearchFilters } from '../../types';
+import { useTranslations } from 'next-intl';
 
 const DynamicListModal = Dynamic<DynamicListModalProps>(() => import('./DynamicListModal'));
 
@@ -19,9 +20,9 @@ type CreateDynamicListButtonProps = {
 };
 
 export const CreateDynamicListButton = (props: CreateDynamicListButtonProps) => {
+  const t = useTranslations();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { resultCount, isLoading, filters, query, isMobile, removeMargin } = props;
-
   return (
     <>
       {isOpen && (
@@ -42,9 +43,9 @@ export const CreateDynamicListButton = (props: CreateDynamicListButtonProps) => 
           isLoading={isLoading}
           mt={removeMargin ? undefined : 3}
         >
-          Create{' '}
+          {t('General.create')}{' '}
           <Image src={DynamicIcon} alt="lightning bolt" width={12} style={{ margin: '0 5px' }} />{' '}
-          Dynamic List
+          {t('General.dynamic-list')}
         </Button>
       )}
       {isMobile && (

@@ -7,6 +7,11 @@
 const { withSentryConfig } = require('@sentry/nextjs');
 
 const nextConfig = {
+  i18n: {
+    locales: ['en', 'pt'],
+    defaultLocale: 'en',
+    localeDetection: false,
+  },
   images: {
     // domains: ['images.neopets.com', 'magnetismotimes.com'],
     remotePatterns: [

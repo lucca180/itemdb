@@ -24,6 +24,7 @@ import NextLink from 'next/link';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import OwlsTradeHistory from './OwlsTradeHistory';
 import Color from 'color';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   item: ItemData;
@@ -31,6 +32,7 @@ type Props = {
 };
 
 const NCTrade = (props: Props) => {
+  const t = useTranslations();
   const { user } = useAuth();
   const { item, lists } = props;
   const color = item.color.rgb;
@@ -88,16 +90,16 @@ const NCTrade = (props: Props) => {
 
   if (item.status === 'no trade')
     return (
-      <CardBase color={color} title="NC Trade">
+      <CardBase color={color} title={t('ItemPage.nc-trade')}>
         <Center>
           <Icon as={MdMoneyOff} boxSize="100px" opacity={0.4} />
         </Center>
-        <Text textAlign="center">This item is not tradeable.</Text>
+        <Text textAlign="center">{t('ItemPage.not-tradeable')}</Text>
       </CardBase>
     );
 
   return (
-    <CardBase title="NC Trade" color={color}>
+    <CardBase title={t('ItemPage.nc-trade')} color={color}>
       <Flex flexFlow="column" minH="200px">
         <Flex justifyContent="center" gap={2} alignItems="center" mb={3}>
           <ButtonGroup size="sm" isAttached variant="outline">
@@ -106,14 +108,14 @@ const NCTrade = (props: Props) => {
               isActive={tableType === 'seeking'}
               onClick={() => setTableType('seeking')}
             >
-              {seeking.length} Seeking
+              {seeking.length} {t('ItemPage.seeking')}
             </Button>
             <Button
               colorScheme={tableType === 'trading' ? 'purple' : ''}
               isActive={tableType === 'trading'}
               onClick={() => setTableType('trading')}
             >
-              {trading.length} Trading
+              {trading.length} {t('ItemPage.trading')}
             </Button>
             <Button
               colorScheme={''}
@@ -128,7 +130,7 @@ const NCTrade = (props: Props) => {
               <Skeleton isLoaded={tradeHistory !== null} startColor={item.color.hex} mr={1}>
                 <span>{tradeHistory?.length ?? '00'}</span>
               </Skeleton>{' '}
-              Owls Trades
+              {t('ItemPage.owls-trades')}
             </Button>
           </ButtonGroup>
         </Flex>
@@ -147,9 +149,11 @@ const NCTrade = (props: Props) => {
               textTransform="initial"
             >
               <Stat flex="initial" textAlign="center">
-                <StatNumber>{item.owls.buyable ? 'Buyable' : item.owls.value}</StatNumber>
+                <StatNumber>
+                  {item.owls.buyable ? t('ItemPage.buyable') : item.owls.value}
+                </StatNumber>
                 <StatHelpText mb={0} as={NextLink} href="/articles/owls">
-                  Owls Value <ExternalLinkIcon boxSize={3} verticalAlign="center" />
+                  {t('ItemPage.owls-value')} <ExternalLinkIcon boxSize={3} verticalAlign="center" />
                 </StatHelpText>
                 <StatLabel fontSize="xs">
                   on {format(new Date(item.owls.pricedAt), 'PP')}{' '}

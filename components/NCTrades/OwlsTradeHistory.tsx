@@ -14,6 +14,7 @@ import {
 import { format } from 'date-fns';
 import Link from 'next/link';
 import { OwlsTrade, ItemData } from '../../types';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   item: ItemData;
@@ -21,6 +22,7 @@ type Props = {
 };
 
 const OwlsTradeHistory = (props: Props) => {
+  const t = useTranslations();
   const { item, tradeHistory } = props;
   const color = item.color.rgb;
 
@@ -28,7 +30,7 @@ const OwlsTradeHistory = (props: Props) => {
     return (
       <Center>
         <Text fontSize="sm" opacity="0.75">
-          Loading...
+          {t('Layout.loading')}...
         </Text>
       </Center>
     );
@@ -37,7 +39,7 @@ const OwlsTradeHistory = (props: Props) => {
     return (
       <Center>
         <Text fontSize="sm" opacity="0.75">
-          No trade history found.
+          {t('ItemPage.no-trade-history')}.
         </Text>
       </Center>
     );
@@ -49,12 +51,12 @@ const OwlsTradeHistory = (props: Props) => {
           <CardBody>
             <Heading size="sm" mb={3} opacity="0.75">
               {isValidDate(new Date(trade.ds)) && format(new Date(trade.ds), 'PPP')}
-              {!isValidDate(new Date(trade.ds)) && 'Unknown Date'}
+              {!isValidDate(new Date(trade.ds)) && t('General.unknown-date')}
             </Heading>
             <Stack divider={<StackDivider />} spacing="3">
               <Box>
                 <Heading size="xs" textTransform="uppercase" mb={2}>
-                  Traded
+                  {t('ItemPage.traded')}
                 </Heading>
                 <UnorderedList>
                   {trade.traded.split('+').map((traded, i) => (
@@ -76,7 +78,7 @@ const OwlsTradeHistory = (props: Props) => {
               </Box>
               <Box>
                 <Heading size="xs" textTransform="uppercase" mb={2}>
-                  Traded For
+                  {t('ItemPage.traded-for')}
                 </Heading>
                 <UnorderedList>
                   {trade.traded_for.split('+').map((traded, i) => (
@@ -99,7 +101,7 @@ const OwlsTradeHistory = (props: Props) => {
               {trade.notes && (
                 <Box>
                   <Heading size="xs" textTransform="uppercase">
-                    Notes
+                    {t('ItemPage.notes')}
                   </Heading>
                   <Text pt="2" fontSize="xs">
                     {trade.notes}
