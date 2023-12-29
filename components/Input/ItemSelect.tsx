@@ -34,7 +34,6 @@ const ItemSelect = (props: Props) => {
   const loadItems = async () => {
     const res = await axios.get('/api/v1/search?s=' + query + '&limit=5' + '&skipStats=true');
     const data = res.data as SearchResults;
-
     setItems(data.content);
     setIsLoading(false);
   };
@@ -44,7 +43,12 @@ const ItemSelect = (props: Props) => {
   };
 
   return (
-    <AutoComplete rollNavigation onSelectOption={onSelectOption} isLoading={isLoading}>
+    <AutoComplete
+      rollNavigation
+      onSelectOption={onSelectOption}
+      isLoading={isLoading}
+      disableFilter
+    >
       <AutoCompleteInput
         placeholder="Add Item"
         isDisabled={props.isDisabled}
@@ -57,17 +61,20 @@ const ItemSelect = (props: Props) => {
         _hover={{ bg: 'whiteAlpha.100' }}
       />
       <AutoCompleteList>
-        {items.map((option, oid) => (
-          <AutoCompleteItem
-            key={`option-${oid}`}
-            value={option}
-            label={option.name}
-            textTransform="capitalize"
-          >
-            <Image src={option.image} boxSize="30px" mr="2" alt={option.description} />
-            {option.name}
-          </AutoCompleteItem>
-        ))}
+        {items.map((option, oid) => {
+          console.log(option, oid);
+          return (
+            <AutoCompleteItem
+              key={`option-${option.internal_id}`}
+              value={option}
+              label={option.name}
+              textTransform="capitalize"
+            >
+              <Image src={option.image} boxSize="30px" mr="2" alt={option.description} />
+              {option.name}
+            </AutoCompleteItem>
+          );
+        })}
       </AutoCompleteList>
     </AutoComplete>
   );
