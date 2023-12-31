@@ -37,6 +37,7 @@ import NextImage from 'next/image';
 import icon from '../../../public/logo_icon.svg';
 import UserAchiev from '../../../components/Achievements/UserAchiev';
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
 
 const CreateListModal = dynamic<CreateListModalProps>(
   () => import('../../../components/Modal/CreateListModal')
@@ -59,6 +60,7 @@ type Props = {
 };
 
 const UserListsPage = (props: Props) => {
+  const t = useTranslations();
   const router = useRouter();
   const toast = useToast();
   const { user, getIdToken, authLoading } = useAuth();
@@ -196,12 +198,12 @@ const UserListsPage = (props: Props) => {
     if (toast.isActive('unsavedChanges')) return;
 
     toast({
-      title: 'You have unsaved changes',
+      title: t('General.you-have-unsaved-changes'),
       id: 'unsavedChanges',
       description: (
         <>
           <Button variant="solid" colorScheme="blackAlpha" onClick={handleSaveChanges} size="sm">
-            Save Changes
+            {t('General.save-changes')}
           </Button>
         </>
       ),
@@ -214,7 +216,7 @@ const UserListsPage = (props: Props) => {
     toast.closeAll();
 
     const x = toast({
-      title: 'Saving changes...',
+      title: `${t('General.saving-changes')}...`,
       status: 'info',
       duration: null,
     });
@@ -237,7 +239,7 @@ const UserListsPage = (props: Props) => {
 
       if (res.data.success) {
         toast.update(x, {
-          title: 'Changes saved',
+          title: t('Feedback.changes-saved'),
           status: 'success',
           duration: 5000,
         });
@@ -248,8 +250,8 @@ const UserListsPage = (props: Props) => {
       console.error(err);
 
       toast.update(x, {
-        title: 'An error occurred',
-        description: 'Please try again later',
+        title: t('General.an-error-occurred'),
+        description: t('General.try-again-later'),
         status: 'error',
         duration: 5000,
       });
@@ -267,7 +269,11 @@ const UserListsPage = (props: Props) => {
     return (
       <Layout
         SEO={{
-          title: `${owner?.username + "'s" ?? 'Loading'} Lists`,
+          title: `${
+            owner?.username
+              ? t('Lists.owner-username-s-lists', { username: owner.username as string })
+              : t('Layout.loading')
+          }`,
           nofollow: true,
           noindex: true,
         }}
@@ -276,7 +282,13 @@ const UserListsPage = (props: Props) => {
     );
 
   return (
-    <Layout SEO={{ title: `${router.query.username}'s Lists`, nofollow: true, noindex: true }}>
+    <Layout
+      SEO={{
+        title: t('Lists.owner-username-s-lists', { username: router.query.username as string }),
+        nofollow: true,
+        noindex: true,
+      }}
+    >
       {isOwner && (
         <>
           <CreateListModal
@@ -352,7 +364,7 @@ const UserListsPage = (props: Props) => {
                 colorScheme={color.isLight() ? 'blackAlpha' : 'gray'}
                 size="sm"
               >
-                Edit Profile
+                {t('Lists.edit-profile')}
               </Button>
             )}
           </Box>
@@ -363,7 +375,7 @@ const UserListsPage = (props: Props) => {
                 href={`http://www.neopets.com/userlookup.phtml?user=${owner.neopetsUser}`}
               >
                 <Badge borderRadius="md" colorScheme={color.isLight() ? 'black' : 'gray'}>
-                  Userlookup <Icon as={BiLinkExternal} verticalAlign="text-top" />
+                  {t('General.userlookup')} <Icon as={BiLinkExternal} verticalAlign="text-top" />
                 </Badge>
               </Link>
               <Link
@@ -371,12 +383,12 @@ const UserListsPage = (props: Props) => {
                 href={`http://www.neopets.com/neomessages.phtml?type=send&recipient=${owner.neopetsUser}`}
               >
                 <Badge borderRadius="md" colorScheme={color.isLight() ? 'black' : 'gray'}>
-                  Neomail <Icon as={BiLinkExternal} verticalAlign="text-top" />
+                  {t('General.neomail')} <Icon as={BiLinkExternal} verticalAlign="text-top" />
                 </Badge>
               </Link>
             </Stack>
             <Heading size={{ base: 'lg', md: undefined }}>
-              {owner.username}&apos;s Lists{' '}
+              {t('Lists.owner-username-s-lists', { username: owner.username })}{' '}
               <Badge fontSize="lg" verticalAlign="middle">
                 {listsIds.length}
               </Badge>
@@ -384,28 +396,36 @@ const UserListsPage = (props: Props) => {
             {!isOwner && (
               <Stack mt={2} gap={1}>
                 <Text fontSize={{ base: 'xs', md: 'sm' }} fontWeight="bold">
-                  {owner.username} has{' '}
-                  <Badge borderRadius="md" verticalAlign="middle" colorScheme="green">
-                    {matches.seek.length} items
-                  </Badge>{' '}
-                  that you want
+                  {t.rich('Lists.profile-match-want', {
+                    Badge: (chunk) => (
+                      <Badge borderRadius="md" verticalAlign="middle" colorScheme="green">
+                        {chunk}
+                      </Badge>
+                    ),
+                    username: owner.username,
+                    items: matches.seek.length,
+                  })}
                 </Text>
                 <Text
                   fontSize={{ base: 'xs', md: 'sm' }}
                   fontWeight="bold"
                   sx={{ marginTop: '0 !important' }}
                 >
-                  You have{' '}
-                  <Badge borderRadius="md" verticalAlign="middle" colorScheme="blue">
-                    {matches.trade.length} items
-                  </Badge>{' '}
-                  that {owner.username} wants
+                  {t.rich('Lists.profile-match-have', {
+                    Badge: (chunk) => (
+                      <Badge borderRadius="md" verticalAlign="middle" colorScheme="blue">
+                        {chunk}
+                      </Badge>
+                    ),
+                    username: owner.username,
+                    items: matches.trade.length,
+                  })}
                 </Text>
               </Stack>
             )}
             {isOwner && (
               <Text mt={2} fontSize={{ base: 'xs', md: 'sm' }} fontWeight="bold">
-                Oh, that&apos;s you!
+                {t('Lists.oh-thats-you')}
               </Text>
             )}
             <Stack mt={2} alignItems="flex-start">
@@ -421,12 +441,12 @@ const UserListsPage = (props: Props) => {
         <HStack>
           {isOwner && (
             <Button variant="solid" onClick={() => setOpenCreateModal(true)}>
-              + New List
+              + {t('Lists.new-list')}
             </Button>
           )}
           {!isEdit && (
             <Text as="div" textColor={'gray.300'} fontSize="sm">
-              {listsIds.length} lists
+              {listsIds.length} {t('General.lists')}
             </Text>
           )}
           {isEdit && (
@@ -445,7 +465,7 @@ const UserListsPage = (props: Props) => {
                 variant="ghost"
                 onClick={() => setOpenDeleteModal(true)}
               >
-                Delete
+                {t('General.delete')}
               </Button>
               <Box></Box>
             </Flex>
@@ -455,7 +475,7 @@ const UserListsPage = (props: Props) => {
           {isOwner && (
             <FormControl display="flex" alignItems="center">
               <FormLabel mb="0" textColor={'gray.300'} fontSize="sm">
-                Edit Mode
+                {t('General.edit-mode')}
               </FormLabel>
               <Switch colorScheme="whiteAlpha" isChecked={isEdit} onChange={toggleEdit} />
             </FormControl>
@@ -466,7 +486,7 @@ const UserListsPage = (props: Props) => {
       {isEdit && (
         <Center>
           <Text fontSize="sm" opacity="0.8">
-            Tip: Drag and drop to reorder lists
+            {t('General.tip')}: {t('Lists.drag-and-drop-to-reorder-lists')}
           </Text>
         </Center>
       )}
@@ -496,6 +516,7 @@ export async function getServerSideProps(context: NextPageContext) {
   return {
     props: {
       owner,
+      messages: (await import(`../../../translation/${context.locale}.json`)).default,
     }, // will be passed to the page component as props
   };
 }

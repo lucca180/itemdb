@@ -7,6 +7,7 @@ import { UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import { getUserLists } from '../api/v1/lists/[username]';
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
 
 const ApplyListModal = dynamic<ApplyListModalProps>(
   () => import('../../components/Modal/OfficialListApply')
@@ -17,6 +18,7 @@ type Props = {
 };
 
 const OfficialListsPage = (props: Props) => {
+  const t = useTranslations();
   const { lists } = props;
   const { user, authLoading } = useAuth();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -24,9 +26,8 @@ const OfficialListsPage = (props: Props) => {
   return (
     <Layout
       SEO={{
-        title: 'Official Lists',
-        description:
-          'Official lists are especially useful lists for the entire neopia community. They may contain the prize pool of some daily link or event, for example, and deserve to be highlighted!',
+        title: t('General.official-lists'),
+        description: t('Lists.officialList-description'),
         openGraph: {
           images: [
             {
@@ -46,24 +47,21 @@ const OfficialListsPage = (props: Props) => {
         }}
         color="#4962ec"
       >
-        <Heading size="lg">Official Lists</Heading>
+        <Heading size="lg">{t('General.official-lists')}</Heading>
         <Text size={{ base: 'sm', md: undefined }}>
-          Official lists are especially useful lists for the entire neopia community. <br />
-          They may contain the prize pool of some daily link or event, for example, and deserve to
-          be highlighted!
-          <br />
-          <br />
-          Anyone can nominate their list to be official! It just needs to be very, very useful!
+          {t.rich('Lists.officialList-subheader', {
+            br: () => <br />,
+          })}
         </Text>
       </HeaderCard>
       <Divider />
       <Flex flexFlow="column" gap={3}>
         <Flex flexFlow="row" py={3} gap={3} flexWrap="wrap" alignItems="center">
           <Button variant="solid" isLoading={authLoading} onClick={onOpen} isDisabled={!user}>
-            + Apply List
+            + {t('Lists.official-apply-list')}
           </Button>
           <Text as="div" textColor={'gray.300'} fontSize="sm">
-            {lists.length} lists
+            {lists.length} {t('General.lists')}
           </Text>
         </Flex>
         <Flex mt={5} gap={4} flexWrap="wrap" justifyContent={'center'}>
@@ -80,12 +78,13 @@ const OfficialListsPage = (props: Props) => {
 
 export default OfficialListsPage;
 
-export async function getServerSideProps() {
+export async function getServerSideProps(context: any) {
   const lists = await getUserLists('official', null, false);
 
   return {
     props: {
       lists,
+      messages: (await import(`../../translation/${context.locale}.json`)).default,
     },
   };
 }

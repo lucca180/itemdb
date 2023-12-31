@@ -39,6 +39,7 @@ import { rarityToCCPoints, stripMarkdown } from '../../../utils/utils';
 import { SearchList } from '../../../components/Search/SearchLists';
 import { SortSelect } from '../../../components/Input/SortSelect';
 import { CheckAuth } from '../../../utils/googleCloud';
+import { useTranslations } from 'next-intl';
 
 const CreateListModal = dynamic<CreateListModalProps>(
   () => import('../../../components/Modal/CreateListModal')
@@ -66,6 +67,7 @@ const sortTypes = {
 };
 
 const ListPage = (props: Props) => {
+  const t = useTranslations();
   const router = useRouter();
   const toast = useToast();
 
@@ -190,8 +192,8 @@ const ListPage = (props: Props) => {
       console.error(err);
 
       toast({
-        title: 'An error occurred',
-        description: typeof err === 'string' ? err : 'Please try again later',
+        title: t('General.an-error-occurred'),
+        description: typeof err === 'string' ? err : t('General.try-again-later'),
         status: 'error',
         duration: null,
       });
@@ -315,15 +317,15 @@ const ListPage = (props: Props) => {
     if (toast.isActive('unsavedChanges')) return;
 
     toast({
-      title: 'You have unsaved changes',
+      title: t('General.you-have-unsaved-changes'),
       id: 'unsavedChanges',
       description: (
         <Flex gap={2}>
           <Button variant="solid" onClick={saveChanges} colorScheme="blackAlpha" size="sm">
-            Save Changes
+            {t('General.save-changes')}
           </Button>
           <Button variant="solid" onClick={() => init(true)} colorScheme="blackAlpha" size="sm">
-            Cancel
+            {t('General.cancel')}
           </Button>
         </Flex>
       ),
@@ -339,7 +341,7 @@ const ListPage = (props: Props) => {
     toast.closeAll();
 
     const x = toast({
-      title: 'Saving changes...',
+      title: `${t('General.saving-changes')}...`,
       status: 'info',
       duration: null,
     });
@@ -365,7 +367,7 @@ const ListPage = (props: Props) => {
 
       if (res.data.success) {
         toast.update(x, {
-          title: 'Changes saved',
+          title: t('Feedback.changes-saved'),
           status: 'success',
           duration: 5000,
         });
@@ -376,8 +378,8 @@ const ListPage = (props: Props) => {
     } catch (err) {
       console.error(err);
       toast.update(x, {
-        title: 'An error occurred',
-        description: 'Please try again later',
+        title: t('General.an-error-occurred'),
+        description: t('General.try-again-later'),
         status: 'error',
         duration: 5000,
       });
@@ -413,7 +415,11 @@ const ListPage = (props: Props) => {
     return (
       <Layout
         SEO={{
-          title: `${list.name} - ${list.official ? 'Official' : list.owner.username + "'s"} List`,
+          title: `${list.name} - ${
+            list.official
+              ? t('General.official-list')
+              : t('Lists.owner-username-s-lists', { username: list.owner.username })
+          }`,
           nofollow: !list.official,
           noindex: !list.official,
           themeColor: list.colorHex ?? '#4A5568',
@@ -439,7 +445,11 @@ const ListPage = (props: Props) => {
   return (
     <Layout
       SEO={{
-        title: `${list.name} - ${list.official ? 'Official' : list.owner.username + "'s"} List`,
+        title: `${list.name} - ${
+          list.official
+            ? t('General.official-list')
+            : t('Lists.owner-username-s-lists', { username: list.owner.username })
+        }`,
         nofollow: !list.official,
         noindex: !list.official,
         themeColor: list.colorHex ?? '#4A5568',
@@ -518,7 +528,7 @@ const ListPage = (props: Props) => {
             <HStack>
               {isOwner && (
                 <Button variant="solid" onClick={() => router.push('/lists/import')}>
-                  Import Items
+                  {t('Lists.import-items')}
                 </Button>
               )}
               {(isOwner || list.official) && !list.linkedListId && (
@@ -545,7 +555,7 @@ const ListPage = (props: Props) => {
                   variant="outline"
                   onClick={() => setSelectionAction('delete')}
                 >
-                  Delete Items
+                  {t('Lists.delete-items')}
                 </Button>
               </Box>
               <Box>
@@ -554,7 +564,7 @@ const ListPage = (props: Props) => {
                   variant="outline"
                   onClick={() => setSelectionAction('move')}
                 >
-                  Move Items
+                  {t('Lists.move-items')}
                 </Button>
               </Box>
             </Flex>
@@ -570,7 +580,7 @@ const ListPage = (props: Props) => {
             {isOwner && (
               <FormControl display="flex" alignItems="center" justifyContent="center" w={'auto'}>
                 <FormLabel mb="0" textColor={'gray.300'} fontSize="sm">
-                  Edit Mode
+                  {t('General.edit-mode')}
                 </FormLabel>
                 <Switch colorScheme="whiteAlpha" isChecked={isEdit} onChange={toggleEdit} />
               </FormControl>
@@ -582,7 +592,7 @@ const ListPage = (props: Props) => {
                 fontSize="sm"
                 display={{ base: 'none', md: 'inherit' }}
               >
-                Sort By
+                {t('General.sort-by')}
               </Text>
               <SortSelect
                 sortTypes={sortTypes}
@@ -600,14 +610,14 @@ const ListPage = (props: Props) => {
             color="gray.500"
             display={{ base: 'none', md: 'inline' }}
           >
-            Tip: you can use right click or ctrl+click to select multiple items
+            {t('General.tip')}: {t('Lists.user-list-tip-1')}
           </Text>
         )}
         {isEdit && sortInfo.sortBy === 'custom' && (
           <Center>
             <FormControl display="flex" alignItems="center" justifyContent="center">
               <FormLabel mb="0" textColor={'gray.300'}>
-                Lock Sort
+                {t('Lists.lock-sort')}
               </FormLabel>
               <Switch
                 colorScheme="whiteAlpha"
@@ -622,11 +632,11 @@ const ListPage = (props: Props) => {
           <Flex gap={3} flexFlow="column" p={3} bg="gray.700" borderRadius="md">
             <Center flexFlow="column">
               <Heading size="lg" mb={3}>
-                Highlights
+                {t('Lists.highlights')}
               </Heading>
               {isEdit && (
                 <Text fontSize="xs" fontStyle="italic">
-                  Highlights are only sorted by name
+                  {t('Lists.highlights-text')}
                 </Text>
               )}
             </Center>
@@ -703,6 +713,7 @@ export async function getServerSideProps(context: NextPageContext) {
   return {
     props: {
       list,
+      messages: (await import(`../../../translation/${context.locale}.json`)).default,
     },
   };
 }
