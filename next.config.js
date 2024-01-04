@@ -25,7 +25,7 @@ const nextConfig = {
   experimental:
     process.env.NODE_ENV === 'production'
       ? {
-          isrMemoryCacheSize: 50,
+          // isrMemoryCacheSize: 50,
         }
       : {},
   async headers() {
