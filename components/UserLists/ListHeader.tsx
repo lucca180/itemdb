@@ -25,6 +25,7 @@ import NPBag from '../../public/icons/npbag.png';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import NextImage from 'next/image';
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
 const Markdown = dynamic(() => import('../Utils/Markdown'), { ssr: false });
 
 type ListHeaderProps = {
@@ -39,6 +40,7 @@ type ListHeaderProps = {
 const intl = new Intl.NumberFormat();
 
 const ListHeader = (props: ListHeaderProps) => {
+  const t = useTranslations();
   const { list, color, items, itemInfo, isOwner, setOpenCreateModal } = props;
   const { user } = useAuth();
   const rgb = color.rgb().array();
@@ -129,7 +131,7 @@ const ListHeader = (props: ListHeaderProps) => {
               onClick={() => setOpenCreateModal?.(true)}
               size="sm"
             >
-              Edit list info
+              {t('Lists.edit-list-info')}
             </Button>
           )}
         </Flex>
@@ -137,7 +139,7 @@ const ListHeader = (props: ListHeaderProps) => {
           <Stack direction="row" mb={1} alignItems="center">
             {!list.official && list.purpose !== 'none' && (
               <Badge borderRadius="md" colorScheme={color.isLight() ? 'black' : 'gray'}>
-                {list.purpose}
+                {t('Lists.' + list.purpose)}
               </Badge>
             )}
             {list.official && (
@@ -148,7 +150,7 @@ const ListHeader = (props: ListHeaderProps) => {
                 colorScheme="blue"
                 variant="solid"
               >
-                ✓ Official
+                ✓ {t('General.official')}
               </Badge>
             )}
             {list.visibility !== 'public' && (
@@ -157,7 +159,7 @@ const ListHeader = (props: ListHeaderProps) => {
                 colorScheme={color.isLight() ? 'black' : 'gray'}
                 variant="solid"
               >
-                {list.visibility}
+                {t('Lists.' + list.visibility)}
               </Badge>
             )}
           </Stack>
@@ -186,10 +188,14 @@ const ListHeader = (props: ListHeaderProps) => {
           </Heading>
           <Stack direction="row" mb={1} alignItems="center" flexWrap="wrap">
             <Text fontSize={{ base: 'xs', md: 'sm' }}>
-              {list.official ? 'curated' : ''} by{' '}
-              <Link as={NextLink} fontWeight="bold" href={'/lists/' + list.owner.username}>
-                {list.owner.username}
-              </Link>
+              {t.rich(list.official ? 'Lists.curatedBy' : 'Lists.by', {
+                Link: (chunk) => (
+                  <Link as={NextLink} fontWeight="bold" href={'/lists/' + list.owner.username}>
+                    {chunk}
+                  </Link>
+                ),
+                username: list.owner.username,
+              })}
             </Text>
             {!list.official && list.owner.neopetsUser && (
               <>
@@ -199,7 +205,7 @@ const ListHeader = (props: ListHeaderProps) => {
                   href={`http://www.neopets.com/userlookup.phtml?user=${list.user_neouser}`}
                 >
                   <Badge borderRadius="md" colorScheme={color.isLight() ? 'black' : 'gray'}>
-                    Userlookup <Icon as={BiLinkExternal} verticalAlign="text-top" />
+                    {t('General.userlookup')} <Icon as={BiLinkExternal} verticalAlign="text-top" />
                   </Badge>
                 </Link>
                 <Link
@@ -208,7 +214,7 @@ const ListHeader = (props: ListHeaderProps) => {
                   href={`http://www.neopets.com/neomessages.phtml?type=send&recipient=${list.user_neouser}`}
                 >
                   <Badge borderRadius="md" colorScheme={color.isLight() ? 'black' : 'gray'}>
-                    Neomail <Icon as={BiLinkExternal} verticalAlign="text-top" />
+                    {t('General.neomail')} <Icon as={BiLinkExternal} verticalAlign="text-top" />
                   </Badge>
                 </Link>
               </>
@@ -235,7 +241,7 @@ const ListHeader = (props: ListHeaderProps) => {
             >
               <Tooltip
                 hasArrow
-                label={`There are ${unpricedItems} items without a price`}
+                label={t('Lists.unpricedItems', { unpricedItems })}
                 placement="top"
                 isDisabled={!unpricedItems}
               >
@@ -245,7 +251,7 @@ const ListHeader = (props: ListHeaderProps) => {
                       <Icon as={MdWarning} boxSize={'1rem'} mr="0.2rem" verticalAlign="text-top" />
                     </span>
                   )}
-                  This list costs aprox.{' '}
+                  {t('Lists.this-list-costs-aprox')}{' '}
                   {!!NPPrice && (
                     <>
                       <b>{intl.format(NPPrice)} NP</b>
@@ -263,10 +269,12 @@ const ListHeader = (props: ListHeaderProps) => {
                       />
                     </>
                   )}{' '}
-                  {!!NPPrice && !!NCPrice && 'and'}{' '}
+                  {!!NPPrice && !!NCPrice && t('General.and')}{' '}
                   {!!NCPrice && (
                     <>
-                      <b>{intl.format(NCPrice)} Caps</b>{' '}
+                      <b>
+                        {intl.format(NCPrice)} {t('General.caps')}
+                      </b>{' '}
                       <Image
                         as={NextImage}
                         display="inline"

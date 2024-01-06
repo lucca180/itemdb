@@ -30,6 +30,7 @@ import { BsCheckCircleFill, BsExclamationCircleFill, BsXCircleFill } from 'react
 import DynamicIcon from '../../public/icons/dynamic.png';
 import { UserList } from '../../types';
 import { useAuth, UserLists } from '../../utils/auth';
+import { useTranslations } from 'next-intl';
 
 export type LinkedListModalProps = {
   isOpen: boolean;
@@ -39,6 +40,7 @@ export type LinkedListModalProps = {
 };
 
 const LinkedListModal = (props: LinkedListModalProps) => {
+  const t = useTranslations();
   const toast = useToast();
   const { isOpen, onClose, list, onCreate } = props;
   const { user, getIdToken } = useAuth();
@@ -71,7 +73,7 @@ const LinkedListModal = (props: LinkedListModalProps) => {
 
       onCreate?.({ ...newList, dynamicType: dynamicType, linkedListId: list.internal_id });
       toast({
-        title: 'Linked List created!',
+        title: t('Lists.linked-list-created'),
         status: 'success',
         duration: 5000,
       });

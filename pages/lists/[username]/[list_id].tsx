@@ -56,14 +56,14 @@ type Props = {
 };
 
 const sortTypes = {
-  name: 'Name',
-  price: 'Price',
-  rarity: 'Rarity',
-  color: 'Color',
-  custom: 'Custom',
-  addedAt: 'Added At',
-  faerieFest: 'Recycling Points',
-  item_id: 'Item ID',
+  name: 'General.name',
+  price: 'General.price',
+  rarity: 'General.rarity',
+  color: 'General.color',
+  custom: 'General.custom',
+  addedAt: 'General.added-at',
+  faerieFest: 'General.recycling-points',
+  item_id: 'General.item-id',
 };
 
 const ListPage = (props: Props) => {
@@ -93,7 +93,7 @@ const ListPage = (props: Props) => {
 
   const [isEdit, setEdit] = useState<boolean>(false);
   const [lockSort, setLockSort] = useState<boolean>(true);
-  const [selectionAction, setSelectionAction] = useState<string>('');
+  const [selectionAction, setSelectionAction] = useState<'move' | 'delete' | ''>('');
 
   const [matches, setMatches] = useState<ListItemInfo[]>([]);
   const [isLoading, setLoading] = useState<boolean>(true);
@@ -492,14 +492,19 @@ const ListPage = (props: Props) => {
           <>
             <Box>
               <Heading size={{ base: 'md', md: 'lg' }}>
-                You + {list.name}{' '}
-                <Badge fontSize={{ base: 'md', md: 'lg' }} verticalAlign="middle">
-                  {matches.length}
-                </Badge>
+                {t.rich('Lists.you-plus-list', {
+                  badge: (chunk) => (
+                    <Badge fontSize={0} verticalAlign="middle">
+                      {chunk}
+                    </Badge>
+                  ),
+                  matches: matches.length,
+                })}
               </Heading>
               <Text color="gray.400" fontSize={{ base: 'sm', md: 'md' }}>
-                aka. items you {!list.official && list.purpose === 'trading' ? 'seek' : 'have'} that
-                are on this list
+                {!list.official && list.purpose === 'trading'
+                  ? t('Lists.aka-seek')
+                  : t('Lists.aka-have')}
               </Text>
             </Box>
             <Flex gap={3} flexWrap="wrap" w="100%" justifyContent="center">
@@ -535,7 +540,7 @@ const ListPage = (props: Props) => {
                 <CreateLinkedListButton list={list} />
               )}
               <Text as="div" textColor={'gray.300'} fontSize="sm">
-                {itemCount} items
+                {t('Lists.itemcount-items', { itemCount })}
               </Text>
             </HStack>
           )}

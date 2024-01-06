@@ -212,7 +212,10 @@
     "visibility": "Visibilidade",
     "error-saving-changes": "Erro ao salvar as alterações",
     "an-error-occured-please-try-again-later": "Ocorreu um erro, por favor tente novamente mais tarde",
-    "official-list": "Lista Oficial"
+    "official-list": "Lista Oficial",
+    "and": "e",
+    "caps": "Capsulas",
+    "confirm": "Confirmar"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",
@@ -317,7 +320,27 @@
     "import-items": "Importar Itens",
     "lock-sort": "Bloquear Ordenação",
     "move-items": "Mover Itens",
-    "user-list-tip-1": "você pode clicar com o botão direito ou ctrl+clique para selecionar vários itens"
+    "user-list-tip-1": "você pode clicar com o botão direito ou ctrl+clique para selecionar vários itens",
+    "list-have": "Você tem {matchCount} itens desta lista",
+    "list-want": "Você quer {matchCount} itens desta lista",
+    "private": "privado",
+    "seeking": "buscando",
+    "trading": "trocando",
+    "unlisted": "não-listado",
+    "aka-have": "itens que você tem e estão nesta lista",
+    "aka-seek": "itens que você procura e estão nesta lista",
+    "by": "por <Link>{username}</Link>",
+    "curatedBy": "curadoria de <Link>{username}</Link>",
+    "edit-list-info": "Editar Info da Lista",
+    "itemcount-items": "{itemCount} itens",
+    "you-plus-list": "Você + {listName} <Badge>{matches}</Badge>",
+    "this-list-costs-aprox": "Essa lista custa aprox.",
+    "delete-items-confirmation": "Tem certeza de que deseja excluir <b>{items} itens</b> de <b>{listName}</b>?<br></br>Essa ação não pode ser desfeita.",
+    "delete-items-items": "Excluir {items} itens?",
+    "destination": "Destino",
+    "move-n-items": "Mover {items} itens?",
+    "move-text": "Itens que já existem na lista de destino não serão modificados e o item será excluído da lista atual",
+    "unpricedItems": "Existem {0} itens sem preço"
   },
   "Restock": {
     "est-profit": "Lucro Est.",
@@ -371,9 +394,6 @@
     "username-already-taken": "Nome de Usuário já utilizado",
     "email-sent": "Nós te enviamos um email com o link para entrar. Por favor cheque sua caixa de entrada.",
     "login-modal-text": "Use seu email para <b>entrar</b> ou para <b>criar uma nova conta</b>"
-  },
-  "List": {
-    "purpose": "Propósito"
   },
   "Profile": {
     "allowedDomains": "Somente imagens de neopets.com, magnetismotimes.com e itemdb.com.br são permitidas",

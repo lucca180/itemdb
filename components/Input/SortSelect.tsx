@@ -1,5 +1,6 @@
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import { Menu, MenuButton, Button, MenuList, MenuItem } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 import { AiOutlineArrowUp } from 'react-icons/ai';
 
 type Props = {
@@ -10,6 +11,7 @@ type Props = {
 };
 
 export const SortSelect = (props: Props) => {
+  const t = useTranslations();
   const { sortTypes, sortBy } = props;
 
   const arrow =
@@ -30,12 +32,12 @@ export const SortSelect = (props: Props) => {
   return (
     <Menu>
       <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
-        {sortTypes[sortBy]}
+        {t(sortTypes[sortBy])}
       </MenuButton>
       <MenuList>
         {Object.entries(sortTypes).map(([key, val]) => (
           <MenuItem key={key} value={key} onClick={() => onclick(key)}>
-            {val} {key === sortBy && arrow}
+            {t(val)} {key === sortBy && arrow}
           </MenuItem>
         ))}
       </MenuList>

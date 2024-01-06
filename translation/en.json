@@ -116,7 +116,8 @@
   },
   "Button": {
     "feedback": "Feedback",
-    "edit": "Edit"
+    "edit": "Edit",
+    "items-selected": "{items} Items Selected"
   },
   "General": {
     "wearable": "Wearable",
@@ -212,7 +213,11 @@
     "sort-direction": "Sort Direction",
     "error-saving-changes": "Error saving changes",
     "an-error-occured-please-try-again-later": "An error occured, please try again later",
-    "official-list": "Official List"
+    "official-list": "Official List",
+    "and": "and",
+    "caps": "Caps",
+    "confirm": "Confirm",
+    "create-checklist": "Create Checklist"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",
@@ -304,7 +309,28 @@
     "lock-sort": "Lock Sort",
     "highlights": "Highlights",
     "highlights-text": "Highlights are only sorted by name",
-    "user-list-tip-1": "you can use right click or ctrl+click to select multiple items"
+    "user-list-tip-1": "you can use right click or ctrl+click to select multiple items",
+    "list-want": "You want {matchCount} items from this list",
+    "list-have": "You have {matchCount} items from this list",
+    "trading": "trading",
+    "seeking": "seeking",
+    "unlisted": "unlisted",
+    "private": "private",
+    "itemcount-items": "{itemCount} items",
+    "you-plus-list": "You + {listName} <Badge>{matches}</Badge>",
+    "aka-have": "aka. items you have that are on this list",
+    "aka-seek": "aka. items you seek that are on this list",
+    "edit-list-info": "Edit list info",
+    "curatedBy": "curated by <Link>{username}</Link>",
+    "by": "by <Link>{username}</Link>",
+    "this-list-costs-aprox": "This list costs aprox.",
+    "destination": "Destination",
+    "move-text": "Items that already exist in the destination list will not be modified and the item will be deleted from the current list",
+    "delete-items-confirmation": "Are you sure you want to delete <b>{items} items</b> from <b>{listName}</b>?<br></br>This action cannot be undone.",
+    "unpricedItems": "There are {0} items without a price",
+    "move-n-items": "Move {items} items?",
+    "delete-items-items": "Delete {items} items?",
+    "linked-list-created": "Linked List created!"
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",

@@ -1,4 +1,5 @@
 import { Checkbox, Text } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   allChecked?: boolean;
@@ -8,6 +9,7 @@ type Props = {
 };
 
 export const SelectItemsCheckbox = (props: Props) => {
+  const t = useTranslations();
   const { allChecked, checked, onClick, defaultText } = props;
   return (
     <Checkbox
@@ -18,7 +20,7 @@ export const SelectItemsCheckbox = (props: Props) => {
     >
       <Text fontSize={{ base: 'sm' }}>
         {!defaultText || checked?.length
-          ? `${checked?.length ?? 0} Items Selected`
+          ? t('Buttom.items-selected', { items: checked?.length ?? 0 })
           : `${defaultText}`}
       </Text>
     </Checkbox>

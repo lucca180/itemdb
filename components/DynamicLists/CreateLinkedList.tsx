@@ -6,6 +6,7 @@ import Image from 'next/image';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import { UserList } from '../../types';
 import { LinkedListModalProps } from './LinkedListModal';
+import { useTranslations } from 'next-intl';
 
 const LinkedListModal = Dynamic<LinkedListModalProps>(() => import('./LinkedListModal'));
 
@@ -16,6 +17,7 @@ type CreateLinkedListButtonProps = {
 };
 
 export const CreateLinkedListButton = (props: CreateLinkedListButtonProps) => {
+  const t = useTranslations();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { list, isImport, onCreate } = props;
 
@@ -35,7 +37,7 @@ export const CreateLinkedListButton = (props: CreateLinkedListButtonProps) => {
           <Image src={DynamicIcon} alt="lightning bolt" width={12} />
         </Box>
         <VStack spacing={0} display={!isImport ? ['none', 'inline'] : undefined}>
-          <Text>Create Checklist</Text>
+          <Text>{t('General.create-checklist')}</Text>
           {isImport && <Text fontSize={'xs'}>{list.name}</Text>}
         </VStack>
       </Button>

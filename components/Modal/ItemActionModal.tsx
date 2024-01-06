@@ -19,17 +19,19 @@ import { useState } from 'react';
 import { ListItemInfo, UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import ListSelect from '../UserLists/ListSelect';
+import { useTranslations } from 'next-intl';
 
 export type ItemActionModalProps = {
   list: UserList;
   isOpen: boolean;
-  action: string;
+  action: 'move' | 'delete' | '';
   selectedItems: ListItemInfo[];
   onClose: () => void;
   refresh: () => void;
 };
 
 const ItemActionModal = (props: ItemActionModalProps) => {
+  const t = useTranslations();
   const { getIdToken } = useAuth();
   const { isOpen, onClose, action, selectedItems, list, refresh } = props;
   const [isLoading, setLoading] = useState<boolean>(false);
@@ -80,30 +82,33 @@ const ItemActionModal = (props: ItemActionModalProps) => {
       <ModalOverlay />
       <ModalContent>
         <ModalHeader textTransform="capitalize">
-          {action} {selectedItems.length} items?
+          {action === 'move' && t('Lists.move-n-items', { items: selectedItems.length })}
+          {action === 'delete' && t('Lists.delete-items-items', { items: selectedItems.length })}
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           {!isLoading && !error && action === 'move' && (
             <FormControl>
-              <FormLabel color="gray.300">Destination</FormLabel>
+              <FormLabel color="gray.300">{t('Lists.destination')}</FormLabel>
               <ListSelect onChange={setDest} />
-              <FormHelperText>
-                Items that already exist in the destination list will not be modified and the item
-                will be deleted from the current list
-              </FormHelperText>
+              <FormHelperText>{t('Lists.move-text')}</FormHelperText>
             </FormControl>
           )}
 
           {!isLoading && !error && action === 'delete' && (
             <Text color="gray.300">
-              Are you sure you want to delete <b>{selectedItems.length} items</b> from{' '}
-              <b>{list.name}</b>?<br />
-              This action cannot be undone.
+              {t.rich('Lists.delete-items-confirmation', {
+                b: (chunk) => <b>{chunk}</b>,
+                br: () => <br />,
+                listName: list.name,
+                items: selectedItems.length,
+              })}
             </Text>
           )}
 
-          {error && <Text color="red.500">An error occured, please try again later</Text>}
+          {error && (
+            <Text color="red.500">{t('General.an-error-occured-please-try-again-later')}</Text>
+          )}
           {isLoading && (
             <Center>
               <Spinner />
@@ -112,11 +117,11 @@ const ItemActionModal = (props: ItemActionModalProps) => {
         </ModalBody>
         <ModalFooter>
           <Button variant="ghost" mr={3} onClick={handleClose}>
-            Cancel
+            {t('General.cancel')}
           </Button>
           {!isLoading && !error && (
             <Button onClick={saveChanges} isDisabled={action === 'move' && !dest}>
-              Confirm
+              {t('General.confirm')}
             </Button>
           )}
         </ModalFooter>
