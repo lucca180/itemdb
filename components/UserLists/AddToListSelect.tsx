@@ -18,10 +18,15 @@ import { useAtom } from 'jotai';
 import { ItemData, ListItemInfo, UserList } from '../../types';
 import { useAuth, UserLists } from '../../utils/auth';
 import { getRandomName } from '../../utils/randomName';
-import DuplicatedItemModal from '../Modal/DuplicatedItemModal';
 import DynamicIcon from '../../public/icons/dynamic.png';
-
+import dynamic from 'next/dynamic';
 import NextImage from 'next/image';
+import { isDynamicActionDisabled } from '../../utils/utils';
+import { DuplicatedItemModalProps } from '../Modal/DuplicatedItemModal';
+
+const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
+  () => import('../Modal/DuplicatedItemModal')
+);
 
 type Props = {
   item: ItemData;
@@ -173,7 +178,7 @@ const AddToListSelect = (props: Props) => {
                 <MenuItem
                   key={list.internal_id}
                   onClick={() => addItemToList(list.internal_id)}
-                  isDisabled={!!list.dynamicType && list.dynamicType !== 'addOnly'}
+                  isDisabled={isDynamicActionDisabled('add', list.dynamicType)}
                 >
                   {list.itemInfo.some((i) => i.item_iid === item.internal_id) && (
                     <Tooltip label="Already in this list" fontSize="sm" placement="top">

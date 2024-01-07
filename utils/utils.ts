@@ -1253,3 +1253,26 @@ export const msIntervalFormated = (ms: number, long = false, precision = 0) => {
     long ? ' days' : 'd'
   }`;
 };
+
+export const isDynamicActionDisabled = (
+  action: 'move' | 'add' | 'remove',
+  dynamicType: 'addOnly' | 'removeOnly' | 'fullSync' | null
+) => {
+  if (!dynamicType) return false;
+
+  if (dynamicType === 'fullSync') return true;
+
+  if (dynamicType === 'addOnly') {
+    if (action === 'remove') return true;
+    if (action === 'move') return true;
+    if (action === 'add') return false;
+  }
+
+  if (dynamicType === 'removeOnly') {
+    if (action === 'remove') return false;
+    if (action === 'move') return false;
+    if (action === 'add') return true;
+  }
+
+  return false;
+};

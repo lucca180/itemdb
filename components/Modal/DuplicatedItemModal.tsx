@@ -21,20 +21,21 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useState } from 'react';
-import { ItemData, UserList, ListItemInfo } from '../../types';
+import { ItemData, UserList, ListItemInfo, ReducedUserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 
 export type DuplicatedItemModalProps = {
   isOpen: boolean;
   onClose: () => void;
+  onChange?: () => void;
   item: ItemData;
-  list?: UserList;
+  list?: UserList | ReducedUserList;
   itemInfo: ListItemInfo;
 };
 
 const DuplicatedItemModal = (props: DuplicatedItemModalProps) => {
   const { user, getIdToken } = useAuth();
-  const { isOpen, onClose, item, list, itemInfo } = props;
+  const { isOpen, onClose, item, list, itemInfo, onChange } = props;
   const [isLoading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
   const [amount, setAmount] = useState<number>(itemInfo.amount + 1);
@@ -65,10 +66,11 @@ const DuplicatedItemModal = (props: DuplicatedItemModalProps) => {
       );
       if (res.data.success) {
         toast({
-          title: 'Item added to list',
+          title: 'Item updated!',
           status: 'success',
           duration: 5000,
         });
+        onChange?.();
         handleClose();
       }
     } catch (err: any) {
@@ -88,7 +90,7 @@ const DuplicatedItemModal = (props: DuplicatedItemModalProps) => {
     <Modal isOpen={isOpen} onClose={handleClose} isCentered scrollBehavior="inside">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader textTransform="capitalize">Already added</ModalHeader>
+        <ModalHeader textTransform="capitalize">Change Quantity</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           {!isLoading && !error && (
@@ -97,7 +99,7 @@ const DuplicatedItemModal = (props: DuplicatedItemModalProps) => {
                 <b>{item.name}</b> is already in <b>{list?.name}</b>
                 <br />
                 <br />
-                Do you want to add it again?
+                Do you want to change its quantity?
               </Text>
               <InputGroup size="sm" mt={3}>
                 <InputLeftAddon children="New Quantity" />
@@ -134,7 +136,7 @@ const DuplicatedItemModal = (props: DuplicatedItemModalProps) => {
           </Button>
           {!isLoading && !error && (
             <Button onClick={confirmAdd} colorScheme="green">
-              Add
+              Save
             </Button>
           )}
         </ModalFooter>

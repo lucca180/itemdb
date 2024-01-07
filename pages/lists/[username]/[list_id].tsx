@@ -618,7 +618,7 @@ const ListPage = (props: Props) => {
           </Center>
         )}
 
-        {itemInfoIds.filter((a) => itemInfo[a].isHighlight).length > 0 && (
+        {itemInfoIds.filter((a) => itemInfo[a].isHighlight && !itemInfo[a].isHidden).length > 0 && (
           <Flex gap={3} flexFlow="column" p={3} bg="gray.700" borderRadius="md">
             <Center flexFlow="column">
               <Heading size="lg" mb={3}>

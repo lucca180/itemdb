@@ -16,12 +16,12 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useState } from 'react';
-import { ListItemInfo, UserList } from '../../types';
+import { ListItemInfo, ReducedUserList, UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import ListSelect from '../UserLists/ListSelect';
 
 export type ItemActionModalProps = {
-  list: UserList;
+  list: UserList | ReducedUserList;
   isOpen: boolean;
   action: string;
   selectedItems: ListItemInfo[];
@@ -42,7 +42,7 @@ const ItemActionModal = (props: ItemActionModalProps) => {
       const token = await getIdToken();
 
       const res = await axios.post(
-        `/api/v1/lists/${list.user_username}/${list.internal_id}`,
+        `/api/v1/lists/${list.owner.username}/${list.internal_id}`,
         {
           list_id: list.internal_id,
           itemInfo: selectedItems,

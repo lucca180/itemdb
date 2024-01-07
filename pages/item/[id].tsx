@@ -45,6 +45,7 @@ import { getItemTrades } from '../api/v1/trades';
 import ItemRestock from '../../components/Items/ItemRestockInfo';
 import { getLastSeen } from '../api/v1/prices/stats';
 import ManualCheckCard from '../../components/Items/ManualCheckCard';
+import ItemMyLists from '../../components/Items/MyListsCard';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -288,6 +289,7 @@ const ItemPage = (props: ItemPageProps) => {
             {!item.isNC && <ItemPriceCard item={item} lastSeen={seenStats} prices={prices ?? []} />}
             {item.isNC && <NCTrade item={item} lists={tradeLists} />}
             {lists && <ItemOfficialLists item={item} lists={lists} />}
+            <ItemMyLists item={item} />
             {item.comment && <ItemComments item={item} />}
             {itemOpenable && <ItemDrops item={item} itemOpenable={itemOpenable} />}
             <SimilarItemsCard item={item} similarItems={props.similarItems} />
