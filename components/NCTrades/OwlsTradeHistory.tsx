@@ -10,9 +10,10 @@ import {
   Text,
   UnorderedList,
   Center,
+  Link,
 } from '@chakra-ui/react';
 import { format } from 'date-fns';
-import Link from 'next/link';
+import NextLink from 'next/link';
 import { OwlsTrade, ItemData } from '../../types';
 
 type Props = {
@@ -35,9 +36,15 @@ const OwlsTradeHistory = (props: Props) => {
 
   if (!tradeHistory.length)
     return (
-      <Center>
+      <Center flexFlow="column">
         <Text fontSize="sm" opacity="0.75">
-          No trade history found.
+          No trade history found
+        </Text>
+        <Text fontSize="xs" color="whiteAlpha.600">
+          NC Trade data provided by{' '}
+          <Link href="/Owls" as={NextLink} color="whiteAlpha.700" isExternal>
+            Owls
+          </Link>
         </Text>
       </Center>
     );
@@ -67,9 +74,9 @@ const OwlsTradeHistory = (props: Props) => {
                           : undefined
                       }
                     >
-                      <Link href={getSearchLink(traded)} target="_blank">
+                      <NextLink href={getSearchLink(traded)} target="_blank">
                         {traded}
-                      </Link>
+                      </NextLink>
                     </ListItem>
                   ))}
                 </UnorderedList>
@@ -89,9 +96,9 @@ const OwlsTradeHistory = (props: Props) => {
                           : undefined
                       }
                     >
-                      <Link href={getSearchLink(traded)} target="_blank">
+                      <NextLink href={getSearchLink(traded)} target="_blank">
                         {traded}
-                      </Link>
+                      </NextLink>
                     </ListItem>
                   ))}
                 </UnorderedList>
@@ -110,6 +117,14 @@ const OwlsTradeHistory = (props: Props) => {
           </CardBody>
         </Card>
       ))}
+      <Center>
+        <Text fontSize="xs" color="whiteAlpha.600">
+          NC Trade data provided by{' '}
+          <Link href="/Owls" as={NextLink} color="whiteAlpha.700" isExternal>
+            Owls
+          </Link>
+        </Text>
+      </Center>
     </Flex>
   );
 };

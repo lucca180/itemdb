@@ -115,21 +115,23 @@ const NCTrade = (props: Props) => {
             >
               {trading.length} Trading
             </Button>
-            <Button
-              colorScheme={''}
-              _active={{
-                bg: `rgba(${color[0]},${color[1]}, ${color[2]},.24)`,
-                borderColor: `rgba(${color[0]},${color[1]}, ${color[2]},1)`,
-                color: textColor,
-              }}
-              isActive={tableType === 'owlsTrading'}
-              onClick={() => setTableType('owlsTrading')}
-            >
-              <Skeleton isLoaded={tradeHistory !== null} startColor={item.color.hex} mr={1}>
-                <span>{tradeHistory?.length ?? '00'}</span>
-              </Skeleton>{' '}
-              Owls Trades
-            </Button>
+            {item.isWearable && (
+              <Button
+                colorScheme={''}
+                _active={{
+                  bg: `rgba(${color[0]},${color[1]}, ${color[2]},.24)`,
+                  borderColor: `rgba(${color[0]},${color[1]}, ${color[2]},1)`,
+                  color: textColor,
+                }}
+                isActive={tableType === 'owlsTrading'}
+                onClick={() => setTableType('owlsTrading')}
+              >
+                <Skeleton isLoaded={tradeHistory !== null} startColor={item.color.hex} mr={1}>
+                  <span>{tradeHistory?.length ?? '00'}</span>
+                </Skeleton>{' '}
+                Owls Trades
+              </Button>
+            )}
           </ButtonGroup>
         </Flex>
         <Flex
