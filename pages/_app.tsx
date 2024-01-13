@@ -20,7 +20,8 @@ function MyApp({ Component, pageProps }: any) {
       <NextIntlClientProvider
         locale={router.locale}
         messages={pageProps.messages}
-        timeZone={Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'America/Los_Angeles'}
+        timeZone={'America/Los_Angeles'}
+        now={new Date()}
       >
         <AuthProvider>
           <ChakraProvider theme={theme}>
