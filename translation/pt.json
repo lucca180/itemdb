@@ -261,7 +261,8 @@
     "new-quantity": "Nova Quantidade",
     "changes-saved": "Alterações Salvas!",
     "saving": "Salvando",
-    "are-you-sure-you-cant-undo-this-action-afterwards": "Tem certeza? Você não pode desfazer esta ação depois."
+    "are-you-sure-you-cant-undo-this-action-afterwards": "Tem certeza? Você não pode desfazer esta ação depois.",
+    "language": "Idioma"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",
@@ -484,7 +485,8 @@
     "hidden": "Oculto",
     "highlight": "Destaque",
     "delete-item-name": "Excluir {x}",
-    "item-deleted-successfully-you-can-close-this-page-now": "Item excluído com sucesso. Você pode fechar esta página agora"
+    "item-deleted-successfully-you-can-close-this-page-now": "Item excluído com sucesso. Você pode fechar esta página agora",
+    "change-lang-helper": "Você precisará atualizar a página para que esta alteração entre em vigor"
   },
   "Restock": {
     "est-profit": "Lucro Est.",

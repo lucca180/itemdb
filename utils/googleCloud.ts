@@ -48,6 +48,7 @@ export const CheckAuth = async (
     profileImage: dbUser.profile_image,
     description: dbUser.description,
     role: dbUser.role as UserRoles,
+    prefLang: dbUser.pref_lang,
     lastLogin: startOfDay(dbUser.last_login).toJSON(),
     createdAt: dbUser.createdAt.toJSON(),
     xp: dbUser.xp,

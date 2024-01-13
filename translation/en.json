@@ -261,7 +261,8 @@
     "new-quantity": "New Quantity",
     "changes-saved": "Changes Saved!",
     "saving": "Saving",
-    "are-you-sure-you-cant-undo-this-action-afterwards": "Are you sure? You can't undo this action afterwards."
+    "are-you-sure-you-cant-undo-this-action-afterwards": "Are you sure? You can't undo this action afterwards.",
+    "language": "Language"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",
@@ -378,7 +379,8 @@
     "highlight": "Highlight",
     "hidden": "Hidden",
     "item-deleted-successfully-you-can-close-this-page-now": "Item deleted successfully. You can close this page now",
-    "delete-item-name": "Delete {x}"
+    "delete-item-name": "Delete {x}",
+    "change-lang-helper": "You'll need to refresh the page to this change to take effect"
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",

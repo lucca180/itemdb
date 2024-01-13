@@ -15,6 +15,7 @@ import {
   Spinner,
   Center,
   FormHelperText,
+  Select,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -22,6 +23,7 @@ import { User } from '../../types';
 import { useAuth } from '../../utils/auth';
 import { ColorResult, TwitterPicker } from '@hello-pangea/color-picker';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/router';
 
 export type EditProfileModalProps = {
   isOpen: boolean;
@@ -56,6 +58,7 @@ const EditProfileModal = (props: EditProfileModalProps) => {
   const { isOpen, onClose } = props;
   const [isLoading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const router = useRouter();
   // const [list, setList] = useState(props.list ?? defaultUser);
 
   useEffect(() => {
@@ -227,6 +230,19 @@ const EditProfileModal = (props: EditProfileModalProps) => {
                   value={userProfile.profileImage ?? ''}
                 />
                 <FormHelperText>{t('Profile.allowedDomains')}</FormHelperText>
+              </FormControl>
+              <FormControl>
+                <FormLabel color="gray.300">{t('General.language')}</FormLabel>
+                <Select
+                  onChange={handleChange}
+                  value={userProfile.prefLang ?? router.locale ?? 'en'}
+                  variant={'filled'}
+                  name="prefLang"
+                >
+                  <option value={'en'}>English</option>
+                  <option value={'pt'}>Português</option>
+                </Select>
+                <FormHelperText>{t('Lists.change-lang-helper')}</FormHelperText>
               </FormControl>
               <FormControl>
                 <FormLabel color="gray.300">{t('General.color')}</FormLabel>

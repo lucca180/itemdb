@@ -9,7 +9,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (req.method !== 'POST')
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
-  const { neopetsUser, username } = req.body;
+  const { neopetsUser, prefLang } = req.body as { neopetsUser: string; prefLang: string };
 
   try {
     const authRes = await CheckAuth(req);
@@ -21,7 +21,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       where: { id: decodedToken.uid },
       data: {
         neo_user: neopetsUser,
-        username: username,
+        // username: username,
+        pref_lang: prefLang,
       },
     })) as dbUser;
 
@@ -39,6 +40,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       role: dbUser.role as UserRoles,
       lastLogin: startOfDay(dbUser.last_login).toJSON(),
       createdAt: dbUser.createdAt.toJSON(),
+      prefLang: dbUser.pref_lang,
       xp: dbUser.xp,
     };
 

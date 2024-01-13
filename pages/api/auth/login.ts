@@ -39,12 +39,18 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     if (!dbUser) return res.status(401).json({ error: 'Unauthorized' });
 
     const token = req.headers.authorization?.split('Bearer ')[1];
-
+    const cookies = [];
     if (token) {
       const sessionCookie = await Auth.createSessionCookie(token, { expiresIn: expiresIn });
       res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
-      res.setHeader('Set-Cookie', `session=${sessionCookie};Path=/;HttpOnly;Max-Age=${expiresIn};`);
+      cookies.push(`session=${sessionCookie};Path=/;HttpOnly;Max-Age=${expiresIn};`);
     }
+
+    if (dbUser.pref_lang) {
+      cookies.push(`NEXT_LOCALE=${dbUser.pref_lang};Path=/;HttpOnly;Max-Age=2147483647;`);
+    }
+
+    if (cookies.length) res.setHeader('Set-Cookie', cookies);
 
     const finalUser: User = {
       id: dbUser.id,
@@ -58,6 +64,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       role: dbUser.role as UserRoles,
       lastLogin: startOfDay(dbUser.last_login).toJSON(),
       createdAt: dbUser.createdAt.toJSON(),
+      prefLang: dbUser.pref_lang,
       xp: dbUser.xp,
     };
 
