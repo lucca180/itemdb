@@ -25,8 +25,10 @@ import Layout from '../../components/Layout';
 import { TradeData } from '../../types';
 import { useAuth } from '../../utils/auth';
 import { CheckAuth } from '../../utils/googleCloud';
+import { useTranslations } from 'next-intl';
 
 const FeedbackSuggest = () => {
+  const t = useTranslations();
   const { user, authLoading, getIdToken } = useAuth();
   const [trades, setTrades] = useState<TradeData[]>([]);
   const [prevTrades, setPrev] = useState<TradeData[]>([]);
@@ -123,17 +125,21 @@ const FeedbackSuggest = () => {
   };
 
   return (
-    <Layout SEO={{ title: 'Trade Pricing - Feedback' }}>
+    <Layout
+      SEO={{
+        title: t('Feedback.trade-pricing-feedback'),
+        description: t('Feedback.feedback-system-description'),
+      }}
+    >
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/altador/altadorcup/link_images/2008/help_me_decide.gif',
           alt: 'quiz-giver thumbnail',
         }}
       >
-        <Heading size="lg">The Feedback System</Heading>
+        <Heading size="lg">{t('Feedback.the-feedback-system')}</Heading>
         <Text size={{ base: 'sm', md: undefined }}>
-          Most of our content is collected and categorized automatically but there are some things
-          our machines can&apos;t do. And you can help it!
+          {t('Feedback.feedback-system-description')}
         </Text>
       </HeaderCard>
       <Flex
@@ -144,7 +150,7 @@ const FeedbackSuggest = () => {
       >
         <CardBase
           chakraWrapper={{ flex: 2 }}
-          title="Trade Pricing Guidelines"
+          title={t('Feedback.trade-pricing-guidelines')}
           chakra={{ bg: 'gray.700' }}
         >
           <TradeGuidelines />
@@ -172,16 +178,16 @@ const FeedbackSuggest = () => {
           )}
           {!isLoading && !currentTrade && (
             <Center flexFlow="column" gap={4}>
-              <Text>Thanks for helping out! Want more trades?</Text>
-              <Button onClick={init}>YES I NEED IT!!!!!</Button>
+              <Text>{t('Feedback.thanks-for-helping-out-want-more-trades')}</Text>
+              <Button onClick={init}>{t('Feedback.yes-i-need-it')}</Button>
               <Box>
                 <Text fontSize="xs" color="gray.400" textAlign="center">
-                  If you click the button and nothing happens you really vote for everything...
-                  impressive.
+                  {t('Feedback.nothing-happens')}
                 </Text>
                 <Text fontSize="xs" color="gray.200" textAlign="center">
                   <Link href="/feedback/vote">
-                    You can also vote some suggestions <ExternalLinkIcon verticalAlign={'center'} />
+                    {t('Feedback.you-can-also-vote-some-suggestions')}{' '}
+                    <ExternalLinkIcon verticalAlign={'center'} />
                   </Link>
                 </Text>
               </Box>
@@ -189,8 +195,8 @@ const FeedbackSuggest = () => {
           )}
           {error && (
             <Center flexFlow="column" gap={4}>
-              <Text>Something went wrong :(</Text>
-              <Button onClick={init}>Try again</Button>
+              <Text>{t('General.something-went-wrong')} :(</Text>
+              <Button onClick={init}>{t('General.try-again')}</Button>
             </Center>
           )}
         </Flex>
@@ -202,94 +208,90 @@ const FeedbackSuggest = () => {
 export default FeedbackSuggest;
 
 export const TradeGuidelines = () => {
+  const t = useTranslations();
   return (
     <>
       <Text>
-        Pricing trade lots is very simple (and therapeutic, some would say), but to ensure that all
-        information is correct we have some <b>do&apos;s and don&apos;ts</b>:
+        {t.rich('Feedback.pt-1', {
+          b: (chunk) => <b>{chunk}</b>,
+        })}
       </Text>
       <Heading size="md" mt={6} color="red.300">
-        <Icon as={BsXLg} verticalAlign="middle" /> Don&apos;ts
+        <Icon as={BsXLg} verticalAlign="middle" /> {t('Feedback.donts')}
       </Heading>
-      <Text>Ground Rule is: if the wishlist leaves doubts about the price, leave it blank.</Text>
+      <Text>{t('Feedback.pt-2')}</Text>
       <List mt={3} spacing={3}>
         <ListItem>
           <ListIcon as={BsXCircleFill} color="red.300" />
-          Assume prices that are not explicitly described.
+          {t('Feedback.pt-3')}
           <br />
           <Text fontSize="sm" color="gray.400">
-            Eg: a lot with junk items and only one &quot;valuable&quot; item and the owner asks only
-            one price for the whole lot
+            {t('Feedback.pt-4')}
           </Text>
           <Text fontSize="sm" color="gray.400">
-            However if the &quot;valuable item&quot; is WAY more valuable than the others you can
-            assume the wishlist is referring to it.
+            {t('Feedback.pt-5')}
           </Text>
         </ListItem>
         <ListItem>
           <ListIcon as={BsXCircleFill} color="red.300" />
-          Divide the lot unique price by the number of items if the items are different
+          {t('Feedback.pt-6')}
           <br />
           <Text fontSize="sm" color="gray.400">
-            Eg: &quot;paperclip trade - 10 items 100np&quot; -{'>'} it&apos;s not right to assume
-            that each item costs 10NP
+            {t('Feedback.pt-7')}
           </Text>
         </ListItem>
         <ListItem>
           <ListIcon as={BsXCircleFill} color="red.300" />
-          Use other item&apos;s price to compose the lot price
+          {t('Feedback.pt-8')}
           <br />
           <Text fontSize="sm" color="gray.400">
-            Eg: &quot;6 baby pb + 100k&quot; or &quot;2m + HTS&quot; -{'>'} leave it blank
+            {t('Feedback.pt-9')}
           </Text>
           <Text fontSize="sm" color="gray.400">
-            However if the other item&apos;s price is negligible, you can just assume the value in
-            pure
+            {t('Feedback.pt-10')}
           </Text>
         </ListItem>
         <ListItem>
           <ListIcon as={BsXCircleFill} color="red.300" />
-          Precify &quot;1NP&quot; or &quot;paperclip&quot; kind of trades
+          {t('Feedback.pt-11')}
           <br />
           <Text fontSize="sm" color="gray.400">
-            Eg: &quot;baby pb for 1np merry christmas&quot; -{'>'} leave it blank
+            {t('Feedback.pt-12')}{' '}
           </Text>
         </ListItem>
       </List>
       <Heading size="md" mt={6} color="green.300">
-        <Icon as={BsCheckLg} verticalAlign="middle" /> Do&apos;s
+        <Icon as={BsCheckLg} verticalAlign="middle" /> {t('Feedback.dos')}
       </Heading>
       <List mt={3} spacing={3}>
         <ListItem>
           <ListIcon as={BsCheckCircleFill} color="green.300" />
-          Price only items with explicit price
+          {t('Feedback.pt-13')}
           <br />
           <Text fontSize="sm" color="gray.400">
-            Eg: &quot;10m | 5m | nm | 10m&quot; -{'>'} leave the &quot;nm&quot; item blank and
-            precify the others
+            {t('Feedback.pt-14')}
           </Text>
           <Text fontSize="sm" color="gray.400">
-            However if the &quot;valuable item&quot; is WAY more valuable than the others you can
-            assume the wishlist is referring to it.
+            {t('Feedback.pt-15')}
           </Text>
         </ListItem>
         <ListItem>
           <ListIcon as={BsCheckCircleFill} color="green.300" />
-          Always use individual item prices
+          {t('Feedback.pt-16')}
           <br />
           {/* <Text fontSize='sm' color="gray.400">Eg: "6 baby pb + 100k" or "2m + HTS" -{">"} leave it blank</Text> */}
         </ListItem>
         <ListItem>
           <ListIcon as={BsCheckCircleFill} color="green.300" />
-          Divide the lot unique price by the number of items if items are equal
+          {t('Feedback.pt-17')}
           <br />
           <Text fontSize="sm" color="gray.400">
-            Round the value to the nearest integer
+            {t('Feedback.pt-18')}
           </Text>
         </ListItem>
         <ListItem>
           <ListIcon as={BsCheckCircleFill} color="green.300" />
-          &quot;At least 500k&quot;, &quot;500k OBO&quot;, &quot;Around 500k&quot; -{'>'} use 500k
+          {t('Feedback.pt-19')}
           <br />
         </ListItem>
       </List>
@@ -309,7 +311,9 @@ export async function getServerSideProps(context: NextPageContext) {
     await CheckAuth(context.req as NextApiRequest, token);
 
     return {
-      props: {},
+      props: {
+        messages: (await import(`../../translation/${context.locale}.json`)).default,
+      },
     };
   } catch (e) {
     return {

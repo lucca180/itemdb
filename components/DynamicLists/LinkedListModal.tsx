@@ -8,15 +8,6 @@ import {
   ModalFooter,
   Button,
   Text,
-  Select,
-  FormControl,
-  FormLabel,
-  List,
-  ListIcon,
-  ListItem,
-  FormHelperText,
-  Alert,
-  AlertIcon,
   Spinner,
   Center,
   useToast,
@@ -26,11 +17,11 @@ import { useAtom } from 'jotai';
 
 import Image from 'next/image';
 import { useState } from 'react';
-import { BsCheckCircleFill, BsExclamationCircleFill, BsXCircleFill } from 'react-icons/bs';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import { UserList } from '../../types';
 import { useAuth, UserLists } from '../../utils/auth';
 import { useTranslations } from 'next-intl';
+import { DynamicListInfo } from './DynamicListModal';
 
 export type LinkedListModalProps = {
   isOpen: boolean;
@@ -135,153 +126,22 @@ const LinkedListModal = (props: LinkedListModalProps) => {
         {!error && !loading && (
           <ModalBody>
             <Text fontSize="sm" color="gray.400">
-              Linked Lists are special lists that are automatically updated (once per hour) based on
-              another list.
+              {t('DynamicList.linkedLists-desc')}
             </Text>
-            <Alert size="sm" status="warning" mt={5} borderRadius={'md'}>
-              <AlertIcon />
-              Dynamic Lists are limited to 4.000 items
-            </Alert>
-
-            <FormControl my={5}>
-              <FormLabel>Dynamic Type</FormLabel>
-              <Select
-                value={dynamicType}
-                variant="solid"
-                bg={'blackAlpha.300'}
-                onChange={(e) =>
-                  setDynamicType(e.target.value as 'addOnly' | 'removeOnly' | 'fullSync')
-                }
-              >
-                <option value="fullSync">Full Sync</option>
-                <option value="addOnly">Add Only</option>
-                <option value="removeOnly">Remove Only</option>
-              </Select>
-              <FormHelperText>You&apos;ll not be able to change this later.</FormHelperText>
-            </FormControl>
-            <List spacing={2}>
-              <ListItem fontSize={'sm'} color="gray.400">
-                <ListIcon as={BsCheckCircleFill} color="green.300" />
-                All items ({list.itemCount}) from the current list will be added to the new list.
-              </ListItem>
-              {dynamicType === 'addOnly' && (
-                <>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon as={BsCheckCircleFill} color="green.300" />
-                    New items added to the original list{' '}
-                    <Text fontWeight={'bold'} as="b" color="green.200">
-                      will be added
-                    </Text>{' '}
-                    to the new list.
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon as={BsCheckCircleFill} color="green.300" />
-                    You&apos;ll be able to{' '}
-                    <Text fontWeight={'bold'} as="b" color="green.200">
-                      add new items
-                    </Text>{' '}
-                    to the list manually.
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon as={BsExclamationCircleFill} color="orange.300" />
-                    Items that are no longer on the original list{' '}
-                    <Text fontWeight={'bold'} as="b" color="orange.200">
-                      won&apos;t be removed
-                    </Text>{' '}
-                    from the new list.
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon as={BsXCircleFill} color="red.300" />
-                    You won&apos;t be able to{' '}
-                    <Text fontWeight={'bold'} as="b" color="red.200">
-                      remove items
-                    </Text>{' '}
-                    from the new list that are on the original list - <i>but you can hide them</i>.
-                  </ListItem>
-                </>
-              )}
-              {dynamicType === 'removeOnly' && (
-                <>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon as={BsExclamationCircleFill} color="orange.300" />
-                    New items added to the original list{' '}
-                    <Text fontWeight={'bold'} as="b" color="orange.200">
-                      won&apos;t be added
-                    </Text>{' '}
-                    to the new list.
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon as={BsXCircleFill} color="red.300" />
-                    You&apos;ll not be able to{' '}
-                    <Text fontWeight={'bold'} as="b" color="red.200">
-                      add new items
-                    </Text>{' '}
-                    to the list manually.
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon as={BsCheckCircleFill} color="green.300" />
-                    Items that are no longer on the original list{' '}
-                    <Text fontWeight={'bold'} as="b" color="green.200">
-                      will be removed
-                    </Text>{' '}
-                    from the new list.
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon as={BsCheckCircleFill} color="green.300" />
-                    You will be able to{' '}
-                    <Text fontWeight={'bold'} as="b" color="green.200">
-                      remove items
-                    </Text>{' '}
-                    from the new list.
-                  </ListItem>
-                </>
-              )}
-              {dynamicType === 'fullSync' && (
-                <>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon as={BsCheckCircleFill} color="green.300" />
-                    New items added to the original list{' '}
-                    <Text fontWeight={'bold'} as="b" color="green.200">
-                      will be added
-                    </Text>{' '}
-                    to the new list.
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon as={BsXCircleFill} color="red.300" />
-                    You&apos;ll not be able to{' '}
-                    <Text fontWeight={'bold'} as="b" color="red.200">
-                      add new items
-                    </Text>{' '}
-                    to the new list manually.
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon as={BsCheckCircleFill} color="green.300" />
-                    Items that are no longer on the original list{' '}
-                    <Text fontWeight={'bold'} as="b" color="green.200">
-                      will be removed
-                    </Text>{' '}
-                    from the new list.
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon as={BsXCircleFill} color="red.300" />
-                    You&apos;ll not be able to{' '}
-                    <Text fontWeight={'bold'} as="b" color="red.200">
-                      remove items
-                    </Text>{' '}
-                    from the new list - <i>but you can hide them</i>.
-                  </ListItem>
-                </>
-              )}
-            </List>
+            <DynamicListInfo
+              resultCount={list.itemCount}
+              dynamicType={dynamicType}
+              setDynamicType={setDynamicType}
+            />
           </ModalBody>
         )}
 
         {error && (
           <ModalBody>
             <Text color="red.300" textAlign={'center'}>
-              Something went wrong
+              {t('General.something-went-wrong')}
               <br />
-              Please refresh the page and try again later.
+              {t('General.refreshPage')}
             </Text>
           </ModalBody>
         )}
@@ -297,7 +157,7 @@ const LinkedListModal = (props: LinkedListModalProps) => {
         <ModalFooter>
           {!loading && (
             <Button variant="ghost" mr={3} onClick={doClose}>
-              Close
+              {t('General.close')}
             </Button>
           )}
           {!error && !loading && (
@@ -313,7 +173,7 @@ const LinkedListModal = (props: LinkedListModalProps) => {
                 width={12}
                 style={{ margin: '0 5px', display: 'inline' }}
               />{' '}
-              Create
+              {t('General.create')}
             </Button>
           )}
         </ModalFooter>

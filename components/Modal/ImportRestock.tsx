@@ -14,11 +14,12 @@ import {
   Checkbox,
   Button,
 } from '@chakra-ui/react';
-import { format, formatDistance } from 'date-fns';
+import { formatDistance } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { RestockSession } from '../../types';
 import { restockShopInfo } from '../../utils/utils';
 import axios from 'axios';
+import { useFormatter, useTranslations } from 'next-intl';
 
 export type FeedbackModalProps = {
   isOpen: boolean;
@@ -27,6 +28,8 @@ export type FeedbackModalProps = {
 };
 
 const ImportRestockModal = (props: FeedbackModalProps) => {
+  const t = useTranslations();
+  const format = useFormatter();
   const { isOpen, onClose, refresh } = props;
   const [allSessions, setSessions] = useState<RestockSession[]>([]);
   const [selectedSessions, setSelectedSessions] = useState<string[]>([]);
@@ -110,37 +113,39 @@ const ImportRestockModal = (props: FeedbackModalProps) => {
       <ModalOverlay />
       {confirmImport && (
         <ModalContent>
-          <ModalHeader>Import Sessions</ModalHeader>
+          <ModalHeader>{t('Restock.import-sessions')}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             {confirmImport === 'import' && (
               <Text fontSize="sm" sx={{ b: { color: 'green.200' } }}>
-                You&apos;re about to import <b>{selectedSessions.length} restock sessions</b> to
-                itemdb. All other unsynced sessions will be discarded.
+                {t.rich('Restock.import-modal-1', {
+                  b: (chunk) => <b>{chunk}</b>,
+                  x: selectedSessions.length,
+                })}
                 <br />
                 <Text fontSize="xs" mt={3} color="whiteAlpha.500">
-                  By doing this you&apos;re sending your data and it&apos;s subject to our Privacy
-                  Policy and Terms of Service.
+                  {t('Restock.import-modal-2')}
                 </Text>
               </Text>
             )}
             {confirmImport === 'discard' && (
               <Text fontSize="sm" sx={{ b: { color: 'red.300' } }}>
-                You&apos;re about to <b>discard all restock sessions</b> saved in your device. You
-                will not be able to import them later.
+                {t.rich('Restock.import-modal-3', {
+                  b: (chunk) => <b>{chunk}</b>,
+                })}
               </Text>
             )}
           </ModalBody>
           <ModalFooter>
             <Button size="sm" variant={'ghost'} mr={3} onClick={() => setConfirmImport(null)}>
-              Back
+              {t('General.back')}
             </Button>
             <Button
               size="sm"
               colorScheme={confirmImport === 'import' ? 'green' : 'red'}
               onClick={doThings}
             >
-              Confirm {confirmImport === 'import' ? 'Import' : 'Discard'}
+              {t('General.confirm')}
             </Button>
           </ModalFooter>
         </ModalContent>
@@ -148,13 +153,13 @@ const ImportRestockModal = (props: FeedbackModalProps) => {
 
       {!confirmImport && (
         <ModalContent>
-          <ModalHeader>Import Sessions</ModalHeader>
+          <ModalHeader>{t('Restock.import-sessions')}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Text fontSize="sm">
-              You have a few restock sessions saved in your device.
+              {t('Restock.import-modal-4')}
               <br />
-              Would you like to import them to itemdb?
+              {t('Restock.import-modal-5')}
             </Text>
             <Flex mt={3} maxH="300px" overflow={'auto'} direction="column" px={1}>
               <Checkbox
@@ -168,7 +173,7 @@ const ImportRestockModal = (props: FeedbackModalProps) => {
                     : setSelectedSessions([])
                 }
               >
-                Import All ({allSessions.length} sessions)
+                {t('Restock.import-modal-import-all-x', { x: allSessions.length })}
               </Checkbox>
               <CheckboxGroup colorScheme="green" value={selectedSessions}>
                 <Stack pl={3} spacing={3} direction="column">
@@ -176,16 +181,27 @@ const ImportRestockModal = (props: FeedbackModalProps) => {
                     <Checkbox value={i.toString()} key={i} onChange={handleCheckboxChange}>
                       <Flex flexFlow="column">
                         <Text color="whiteAlpha.700">
-                          {formatDistance(session.lastRefresh, session.startDate)} at{' '}
-                          {restockShopInfo[session.shopId].name}
+                          {t('Restock.import-modal-x-time-at-y-store', {
+                            x: formatDistance(session.lastRefresh, session.startDate),
+                            y: restockShopInfo[session.shopId].name,
+                          })}
                         </Text>
                         <Text as="span" fontSize={'xs'} color="whiteAlpha.500">
                           {' '}
-                          {Object.keys(session.items).length} items restocked |{' '}
-                          {session.clicks.filter((x) => x.buy_timestamp).length} bought{' '}
+                          {t('Restock.import-modal-x-items-restocked', {
+                            x: Object.keys(session.items).length,
+                          })}{' '}
+                          |{' '}
+                          {t('Restock.import-modal-x-bought', {
+                            x: session.clicks.filter((x) => x.buy_timestamp).length,
+                          })}{' '}
                         </Text>
                         <Text fontSize="xs" color="whiteAlpha.500">
-                          {format(session.startDate, 'PPPPpp')}
+                          {format.dateTime(session.startDate, {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          })}
                         </Text>
                       </Flex>
                     </Checkbox>
@@ -207,7 +223,7 @@ const ImportRestockModal = (props: FeedbackModalProps) => {
               mr={3}
               onClick={() => setConfirmImport('discard')}
             >
-              Discard All
+              {t('Restock.import-modal-discard-all')}
             </Button>
             <Button
               size="sm"
@@ -215,7 +231,7 @@ const ImportRestockModal = (props: FeedbackModalProps) => {
               onClick={() => setConfirmImport('import')}
               isDisabled={!selectedSessions.length}
             >
-              Import {selectedSessions.length} Sessions
+              {t('Restock.import-modal-import-x-sessions', { x: selectedSessions.length })}
             </Button>
           </ModalFooter>
         </ModalContent>

@@ -1,7 +1,6 @@
 import { Box, Text, Divider, Flex, Link } from '@chakra-ui/react';
 import React from 'react';
 import { ItemData, TradeData } from '../../types';
-import { format } from 'date-fns';
 import Image from 'next/image';
 import { genItemKey, slugify } from '../../utils/utils';
 import NextLink from 'next/link';

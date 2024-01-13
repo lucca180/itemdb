@@ -23,6 +23,7 @@ import axios from 'axios';
 import { useState } from 'react';
 import { ItemData, UserList, ListItemInfo } from '../../types';
 import { useAuth } from '../../utils/auth';
+import { useTranslations } from 'next-intl';
 
 export type DuplicatedItemModalProps = {
   isOpen: boolean;
@@ -33,6 +34,7 @@ export type DuplicatedItemModalProps = {
 };
 
 const DuplicatedItemModal = (props: DuplicatedItemModalProps) => {
+  const t = useTranslations();
   const { user, getIdToken } = useAuth();
   const { isOpen, onClose, item, list, itemInfo } = props;
   const [isLoading, setLoading] = useState<boolean>(false);
@@ -65,7 +67,7 @@ const DuplicatedItemModal = (props: DuplicatedItemModalProps) => {
       );
       if (res.data.success) {
         toast({
-          title: 'Item added to list',
+          title: t('Lists.item-added-to-list'),
           status: 'success',
           duration: 5000,
         });
@@ -88,7 +90,7 @@ const DuplicatedItemModal = (props: DuplicatedItemModalProps) => {
     <Modal isOpen={isOpen} onClose={handleClose} isCentered scrollBehavior="inside">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader textTransform="capitalize">Already added</ModalHeader>
+        <ModalHeader textTransform="capitalize">Duplicated Item</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           {!isLoading && !error && (

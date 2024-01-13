@@ -22,6 +22,7 @@ import parse, { HTMLReactParserOptions, Element, domToReact, DOMNode } from 'htm
 import NextLink from 'next/link';
 import { wp_getLatestPosts } from '../api/wp/posts';
 import { ArticleCard } from '../../components/Articles/ArticlesCard';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   post: WP_Article;
@@ -29,6 +30,7 @@ type Props = {
 };
 
 const ArticlePage = (props: Props) => {
+  const t = useTranslations();
   const { post, recomendations } = props;
   return (
     <Layout
@@ -54,7 +56,7 @@ const ArticlePage = (props: Props) => {
       >
         <Text fontSize="xs">
           <Link as={NextLink} href="/articles">
-            Articles
+            {t('Layout.articles')}
           </Link>
         </Text>
         <Heading size="lg" as="h1">
@@ -80,7 +82,7 @@ const ArticlePage = (props: Props) => {
       {recomendations.length > 0 && (
         <>
           <Heading size="md" as="h3" my={2} mt={16}>
-            Recommended Articles
+            {t('Articles.recommended-articles')}
           </Heading>
           <Flex gap={[2, 3]} overflow="auto" pb={3}>
             {recomendations.slice(0, 3).map((article) => (
@@ -112,6 +114,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
   return {
     props: {
       post,
+      messages: (await import(`../../translation/${context.locale}.json`)).default,
       recomendations: recommended.filter((x) => x.id !== post.id),
     },
     revalidate: 60,

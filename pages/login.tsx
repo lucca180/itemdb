@@ -250,3 +250,11 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+
+export async function getStaticProps(context: any) {
+  return {
+    props: {
+      messages: (await import(`../translation/${context.locale}.json`)).default,
+    },
+  };
+}

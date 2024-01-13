@@ -17,6 +17,7 @@ import {
   Box,
 } from '@chakra-ui/react';
 import { useInView } from 'react-intersection-observer';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   id: number;
@@ -36,6 +37,7 @@ type Props = {
 };
 
 function SortableItem1(props: Props) {
+  const t = useTranslations();
   const ref = useRef<Element | null | undefined>();
   const { id, item, editMode, isTrading, selected, sortType } = props;
   const [itemInfo, setItemInfo] = useState<ListItemInfo | undefined>(props.itemInfo);
@@ -126,7 +128,7 @@ function SortableItem1(props: Props) {
       {editMode && (
         <VStack maxW="150px">
           <InputGroup size="xs">
-            <InputLeftAddon children="Quantity" />
+            <InputLeftAddon children={t('General.quantity')} />
             <NumberInput
               max={999}
               min={1}
@@ -143,7 +145,7 @@ function SortableItem1(props: Props) {
           </InputGroup>
           {item.isNC && isTrading && (
             <InputGroup size="xs">
-              <InputLeftAddon children="Cap Value" />
+              <InputLeftAddon children={t('General.cap-value')} />
               <NumberInput
                 defaultValue={itemInfo?.capValue ?? undefined}
                 min={0}
@@ -164,14 +166,14 @@ function SortableItem1(props: Props) {
             size="sm"
             onChange={(value) => props.onChange?.(id, Number(value.target.checked), 'isHighlight')}
           >
-            <Text fontSize="xs">Highlight?</Text>
+            <Text fontSize="xs">{t('Lists.highlight')}?</Text>
           </Checkbox>
           <Checkbox
             defaultChecked={itemInfo?.isHidden}
             size="sm"
             onChange={(value) => props.onChange?.(id, Number(value.target.checked), 'isHidden')}
           >
-            <Text fontSize="xs">Hidden?</Text>
+            <Text fontSize="xs">{t('Lists.hidden')}?</Text>
           </Checkbox>
         </VStack>
       )}

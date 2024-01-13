@@ -14,16 +14,18 @@ import dynamic from 'next/dynamic';
 import { FiSend } from 'react-icons/fi';
 import Layout from '../components/Layout';
 import { FeedbackModalProps } from '../components/Modal/FeedbackModal';
+import { useTranslations } from 'next-intl';
 
 const FeedbackModal = dynamic<FeedbackModalProps>(
   () => import('../components/Modal/FeedbackModal')
 );
 
 const Error404Page = () => {
+  const t = useTranslations();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
-    <Layout SEO={{ title: 'Page not Found', noindex: true }}>
+    <Layout SEO={{ title: t('Error.page-not-found'), noindex: true }}>
       <Box
         position="absolute"
         h="650px"
@@ -40,18 +42,20 @@ const Error404Page = () => {
         sx={{ a: { color: 'blue.300' } }}
         textAlign="center"
       >
-        <Heading mb={3}>Error 404</Heading>
+        <Heading mb={3}>{t('Error.error-404')}</Heading>
         <Image
           src="https://images.neopets.com/themes/h5/grey/images/npc-left.png"
           alt="sad wocky 404"
         />
-        <Text>The page you are looking for does not exist :(</Text>
-        <Text>If you think it should exist, please use the button below to let us know.</Text>
+        <Text>{t('Error.404-text-1')}</Text>
+        <Text>{t('Error.404-text-2')}</Text>
         <Button variant="outline" size="sm" onClick={onOpen}>
-          <Icon as={FiSend} mr={1} /> Feedback
+          <Icon as={FiSend} mr={1} /> {t('Button.feedback')}
         </Button>
         <Text fontSize="xs" opacity={0.87}>
-          We think <Link href="/item/6543">this page</Link> might be appropriate instead...
+          {t.rich('Error.404-text-3', {
+            Link: (chunk) => <Link href="/item/6543">{chunk}</Link>,
+          })}
         </Text>
       </Center>
     </Layout>
@@ -59,3 +63,11 @@ const Error404Page = () => {
 };
 
 export default Error404Page;
+
+export async function getStaticProps(context: any) {
+  return {
+    props: {
+      messages: (await import(`../translation/${context.locale}.json`)).default,
+    },
+  };
+}

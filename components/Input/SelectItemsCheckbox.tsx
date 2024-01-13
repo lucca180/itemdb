@@ -20,7 +20,7 @@ export const SelectItemsCheckbox = (props: Props) => {
     >
       <Text fontSize={{ base: 'sm' }}>
         {!defaultText || checked?.length
-          ? t('Buttom.items-selected', { items: checked?.length ?? 0 })
+          ? t('Button.items-selected', { items: checked?.length ?? 0 })
           : `${defaultText}`}
       </Text>
     </Checkbox>

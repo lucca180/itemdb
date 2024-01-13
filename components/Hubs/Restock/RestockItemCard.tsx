@@ -3,7 +3,8 @@ import Color from 'color';
 import NextLink from 'next/link';
 import { ItemData, RestockSession } from '../../../types';
 import { msIntervalFormated } from '../../../utils/utils';
-import { differenceInMilliseconds, format } from 'date-fns';
+import { differenceInMilliseconds } from 'date-fns';
+import { useFormatter, useTranslations } from 'next-intl';
 
 type Props = {
   item: ItemData;
@@ -15,6 +16,9 @@ type Props = {
 const intl = new Intl.NumberFormat();
 
 const RestockItem = (props: Props) => {
+  const t = useTranslations();
+  const format = useFormatter();
+
   const { item, clickData, restockItem, disablePrefetch } = props;
   const rgb = Color(item.color.hex).rgb().array();
 
@@ -63,23 +67,44 @@ const RestockItem = (props: Props) => {
 
           {boughtTime > 0 && (
             <Text fontSize={'xs'}>
-              Bought in <b>{msIntervalFormated(boughtTime, true, 2)}</b> at{' '}
-              {format(clickData.buy_timestamp ?? 0, 'PPPp')}
+              {t.rich('Restock.bought-in-x-at-y', {
+                b: (children) => <b>{children}</b>,
+                x: msIntervalFormated(boughtTime, true, 2),
+                y: format.dateTime(clickData.buy_timestamp ?? 0, {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                }),
+              })}
             </Text>
           )}
 
           {boughtTime < 0 && lostHaggle > 0 && (
             <Text fontSize={'xs'}>
-              Lost haggling in <b>{msIntervalFormated(lostHaggle, true, 2)}</b> at{' '}
-              {format(clickData.haggle_timestamp ?? 0, 'PPPp')}
+              {t.rich('Restock.lost-haggling', {
+                b: (children) => <b>{children}</b>,
+                x: msIntervalFormated(lostHaggle, true, 2),
+                y: format.dateTime(clickData.haggle_timestamp ?? 0, {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                }),
+              })}
             </Text>
           )}
         </Flex>
 
         {boughtTime < 0 && lostHaggle < 0 && lostNoHaggle > 0 && (
           <Text fontSize={'xs'}>
-            Lost - no haggle - in <b>{msIntervalFormated(lostNoHaggle, true, 2)}</b> at{' '}
-            {format(clickData.soldOut_timestamp ?? 0, 'PPPp')}
+            {t.rich('Restock.lost-no-haggle', {
+              b: (children) => <b>{children}</b>,
+              x: msIntervalFormated(lostNoHaggle, true, 2),
+              y: format.dateTime(clickData.soldOut_timestamp ?? 0, {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              }),
+            })}
           </Text>
         )}
       </Flex>

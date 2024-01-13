@@ -17,6 +17,7 @@ import ShopCard from '../../components/Hubs/Restock/ShopCard';
 import Layout from '../../components/Layout';
 import { restockShopInfo } from '../../utils/utils';
 import NextLink from 'next/link';
+import { useTranslations } from 'next-intl';
 
 const allCats = [
   ...new Set(
@@ -29,6 +30,7 @@ const allCats = [
 const color = Color('#A5DAE9').rgb().array();
 
 const RestockHub = () => {
+  const t = useTranslations();
   const [selCats, setSelCats] = useState<string[]>([]);
   const [selDiff, setSelDiff] = useState<string[]>([]);
   const [specialDay, setSpecialDay] = useState('');
@@ -65,8 +67,8 @@ const RestockHub = () => {
   return (
     <Layout
       SEO={{
-        title: `Neopets Restock Helper`,
-        description: `Find the most profitable items to buy from each shop in Neopia and earn a lot of neopoints!`,
+        title: t('Restock.neopets-restock-helper'),
+        description: t('Restock.restock-description'),
         themeColor: '#A5DAE9',
       }}
     >
@@ -85,42 +87,40 @@ const RestockHub = () => {
           borderRadius="md"
           boxShadow={'md'}
         />
-        <Heading as="h1">Restock Hub</Heading>
+        <Heading as="h1">{t('Layout.restock-hub')}</Heading>
         <Text>
-          Find the most profitable items to buy from <b>each shop</b> in Neopia!
+          {t.rich('Restock.call-to-action', {
+            b: (children) => <b>{children}</b>,
+          })}
         </Text>
         <Text fontSize={'sm'}>
-          <Tag colorScheme={'green'}>NEW!</Tag> - Checkout the{' '}
-          <Link as={NextLink} href="/restock/dashboard" color="blue.200">
-            Restock Dashboard
-          </Link>{' '}
-          and track your restock metrics
+          <Tag colorScheme={'green'}>{t('General.new')}</Tag> -{' '}
+          {t.rich('Restock.dashboard-cta', {
+            Link: (chunk) => (
+              <Link as={NextLink} href="/restock/dashboard" color="blue.200">
+                {chunk}
+              </Link>
+            ),
+          })}
         </Text>
         {specialDay === 'hpd' && (
-          <Tag colorScheme={'green'}>Half Price Day - All Shops with 50% off</Tag>
+          <Tag colorScheme={'green'}>{t('Restock.half-price-day-all-shops-with-50-off')}</Tag>
         )}
         {specialDay === 'tyrannia' && (
-          <Tag colorScheme={'orange'}>
-            Tyrannian Victory Day - All Tyrannian Shops with 80% off (except Ugga Shinies)
-          </Tag>
+          <Tag colorScheme={'orange'}>{t('Restock.tyrannian-hub')}</Tag>
         )}
-        {specialDay === 'usukicon' && (
-          <Tag colorScheme={'pink'}>Usuki Day - Usukiland with 66.6% off</Tag>
-        )}
+        {specialDay === 'usukicon' && <Tag colorScheme={'pink'}>{t('Restock.hub-usuki-day')}</Tag>}
         {specialDay === 'festival' && (
-          <Tag colorScheme={'purple'}>
-            Faerie Festival - Faerieland Shops with 50% off (except Faerie Furniture and Faerie
-            Weapon)
-          </Tag>
+          <Tag colorScheme={'purple'}>{t('Restock.faerie-festival-hub')}</Tag>
         )}
         {specialDay === 'halloween' && (
-          <Tag colorScheme={'orange'}>Halloween - Haunted Woods Shops with 50% off</Tag>
+          <Tag colorScheme={'orange'}>{t('Restock.halloween-hub')}</Tag>
         )}
       </Center>
       <Divider />
       <HStack my={3} justifyContent="space-between" flexWrap={'wrap'}>
         <HStack flexWrap={'wrap'}>
-          <Text fontSize={'sm'}>Categories:</Text>
+          <Text fontSize={'sm'}>{t('ItemPage.categories')}:</Text>
           {allCats.map((cat) => (
             <Button
               size="sm"
@@ -133,7 +133,7 @@ const RestockHub = () => {
           ))}
         </HStack>
         <HStack flexWrap="wrap">
-          <Text fontSize={'sm'}>Difficulty:</Text>
+          <Text fontSize={'sm'}>{t('Restock.difficulty')}:</Text>
           {['Beginner', 'Medium', 'Advanced'].map((diff) => (
             <Button
               size="sm"
@@ -180,3 +180,11 @@ const RestockHub = () => {
 };
 
 export default RestockHub;
+
+export async function getStaticProps(context: any) {
+  return {
+    props: {
+      messages: (await import(`../../translation/${context.locale}.json`)).default,
+    },
+  };
+}

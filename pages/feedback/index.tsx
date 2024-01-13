@@ -16,16 +16,18 @@ import HeaderCard from '../../components/Card/HeaderCard';
 import Layout from '../../components/Layout';
 import { FeedbackModalProps } from '../../components/Modal/FeedbackModal';
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
 
 const FeedbackModal = dynamic<FeedbackModalProps>(
   () => import('../../components/Modal/FeedbackModal')
 );
 
 const FeedbackPage = () => {
+  const t = useTranslations();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
-    <Layout SEO={{ title: 'Feedback' }}>
+    <Layout SEO={{ title: 'Feedback', description: t('Feedback.feedback-system-description') }}>
       <FeedbackModal isOpen={isOpen} onClose={onClose} />
       <HeaderCard
         image={{
@@ -34,10 +36,9 @@ const FeedbackPage = () => {
         }}
         // color="#7AB92A"
       >
-        <Heading size="lg">The Feedback System</Heading>
+        <Heading size="lg">{t('Feedback.the-feedback-system')}</Heading>
         <Text size={{ base: 'sm', md: undefined }}>
-          Most of our content is collected and categorized automatically but there are some things
-          our machines can&apos;t do. And you can help it!
+          {t('Feedback.feedback-system-description')}
         </Text>
       </HeaderCard>
       <Flex
@@ -46,35 +47,37 @@ const FeedbackPage = () => {
         alignItems={{ base: 'center', md: 'flex-start' }}
         flexFlow={{ base: 'column', md: 'row' }}
       >
-        <CardBase chakraWrapper={{ flex: 1 }} title="How it works?" chakra={{ bg: 'gray.700' }}>
+        <CardBase
+          chakraWrapper={{ flex: 1 }}
+          title={t('Feedback.how-it-works')}
+          chakra={{ bg: 'gray.700' }}
+        >
           <Text>
-            You can contribute by manually completing missing data or by validating the suggestions
-            of other neopians like you!
+            {t('Feedback.fds-pg-1')}
             <br />
             <br />
-            Either way, the more you contribute correctly the more our systems will trust your
-            information - meaning your suggestions will be live faster.
+            {t('Feedback.fds-pg-2')}
           </Text>
           <Heading size="md" mt={6}>
-            Suggesting
+            {t('Feedback.suggesting')}
           </Heading>
-          <Text>As suggesting you can be asked to:</Text>
+          <Text>{t('Feedback.as-suggesting-you-can-be-asked-to')}</Text>
           <UnorderedList mt={3}>
-            <ListItem>Price Trade Lots</ListItem>
-            <ListItem>Search and fill missing data</ListItem>
+            <ListItem>{t('Feedback.price-trade-lots')}</ListItem>
+            {/* <ListItem>Search and fill missing data</ListItem> */}
           </UnorderedList>
           <Heading size="md" mt={6}>
-            Voting
+            {t('Feedback.voting')}
           </Heading>
-          <Text>As voting you can be asked to:</Text>
+          <Text>{t('Feedback.as-voting-you-can-be-asked-to')}</Text>
           <UnorderedList mt={3}>
-            <ListItem>Perform fact-checking on the suggested information</ListItem>
-            <ListItem>Upvote suggestions with correct and relevant information</ListItem>
-            <ListItem>Downvote fraudulent suggestions or spam</ListItem>
+            <ListItem>{t('Feedback.perform-fact-checking-on-the-suggested-information')}</ListItem>
+            <ListItem>{t('Feedback.upvote-suggestions')}</ListItem>
+            <ListItem>{t('Feedback.downvote-fraudulent-suggestions-or-spam')}</ListItem>
           </UnorderedList>
         </CardBase>
         <Flex flex="1" flexFlow="column" alignSelf="stretch" alignItems="center" gap={6}>
-          <Heading size="md">I want to</Heading>
+          <Heading size="md">{t('Feedback.i-want-to')}</Heading>
           <Flex flex="1" gap={3} flexFlow="column" justifyContent="center">
             <Button
               bg="gray.700"
@@ -87,7 +90,7 @@ const FeedbackPage = () => {
               leftIcon={<Icon boxSize={5} as={BsPencilFill} color="purple.200" />}
             >
               <Text fontSize="md" fontWeight="bold">
-                Price Trades
+                {t('Feedback.price-trades')}
               </Text>
             </Button>
             <Button
@@ -100,7 +103,7 @@ const FeedbackPage = () => {
               leftIcon={<Icon boxSize={10} as={BsCheckAll} color="green.200" />}
             >
               <Text fontSize="md" fontWeight="bold">
-                Vote Suggestions
+                {t('Feedback.vote-suggestions')}
               </Text>
             </Button>
             <Button
@@ -112,7 +115,7 @@ const FeedbackPage = () => {
               leftIcon={<Icon boxSize={6} as={FiSend} />}
             >
               <Text fontSize="md" fontWeight="bold">
-                Send Feedback
+                {t('Feedback.send-feedback')}
               </Text>
             </Button>
           </Flex>
@@ -123,3 +126,11 @@ const FeedbackPage = () => {
 };
 
 export default FeedbackPage;
+
+export async function getStaticProps(context: any) {
+  return {
+    props: {
+      messages: (await import(`../../translation/${context.locale}.json`)).default,
+    },
+  };
+}

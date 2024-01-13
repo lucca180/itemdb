@@ -138,125 +138,11 @@ const DynamicListModal = (props: DynamicListModalProps) => {
             <Text fontSize="sm" color="gray.400">
               {t('Lists.dynamic-listModalText')}
             </Text>
-            <Alert size="sm" status="warning" mt={5} borderRadius={'md'}>
-              <AlertIcon />
-              {t('Lists.dynamic-listsModalLimit')}
-            </Alert>
-
-            <FormControl my={5}>
-              <FormLabel>{t('Lists.dynamic-type')}</FormLabel>
-              <Select
-                value={dynamicType}
-                variant="solid"
-                bg={'blackAlpha.300'}
-                onChange={(e) =>
-                  setDynamicType(e.target.value as 'addOnly' | 'removeOnly' | 'fullSync')
-                }
-              >
-                <option value="addOnly">{t('Lists.add-only')}</option>
-                <option value="removeOnly">{t('Lists.remove-only')}</option>
-                <option value="fullSync">{t('Lists.full-sync')}</option>
-              </Select>
-              <FormHelperText>{t('Lists.dynamic-listModalChange')}</FormHelperText>
-            </FormControl>
-            <List spacing={2}>
-              <ListItem fontSize={'sm'} color="gray.400">
-                <ListIcon as={BsCheckCircleFill} color="green.300" />
-                {t('Lists.dynamic-listModalCurrentSearch', {
-                  resultCount: resultCount,
-                })}
-              </ListItem>
-              {dynamicType === 'addOnly' && (
-                <>
-                  <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'green.200' } }}>
-                    <ListIcon as={BsCheckCircleFill} color="green.300" />
-                    {t.rich('DynamicList.addOnly-1', {
-                      b: (text) => <b>{text}</b>,
-                    })}
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'green.200' } }}>
-                    <ListIcon as={BsCheckCircleFill} color="green.300" />
-                    {t.rich('DynamicList.addOnly-2', {
-                      b: (text) => <b>{text}</b>,
-                    })}
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'orange.200' } }}>
-                    <ListIcon as={BsExclamationCircleFill} color="orange.300" />
-                    {t.rich('DynamicList.addOnly-3', {
-                      b: (text) => <b>{text}</b>,
-                    })}
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'red.200' } }}>
-                    <ListIcon as={BsXCircleFill} color="red.300" />
-                    {t.rich('DynamicList.addOnly-4', {
-                      b: (text) => <b>{text}</b>,
-                      i: (text) => <i>{text}</i>,
-                    })}
-                  </ListItem>
-                </>
-              )}
-              {dynamicType === 'removeOnly' && (
-                <>
-                  <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'orange.200' } }}>
-                    <ListIcon as={BsExclamationCircleFill} color="orange.300" />
-                    {t.rich('DynamicList.removeOnly-1', {
-                      b: (text) => <b>{text}</b>,
-                    })}
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'red.200' } }}>
-                    <ListIcon as={BsXCircleFill} color="red.300" />
-                    {t.rich('DynamicList.removeOnly-2', {
-                      b: (text) => <b>{text}</b>,
-                    })}
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'green.200' } }}>
-                    <ListIcon as={BsCheckCircleFill} color="green.300" />
-                    {t.rich('DynamicList.removeOnly-3', {
-                      b: (text) => <b>{text}</b>,
-                    })}
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'green.200' } }}>
-                    <ListIcon as={BsCheckCircleFill} color="green.300" />
-                    {t.rich('DynamicList.removeOnly-4', {
-                      b: (text) => <b>{text}</b>,
-                    })}
-                  </ListItem>
-                </>
-              )}
-              {dynamicType === 'fullSync' && (
-                <>
-                  <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'green.200' } }}>
-                    <ListIcon as={BsCheckCircleFill} color="green.300" />
-                    {t.rich('DynamicList.fullSync-1', {
-                      b: (text) => <b>{text}</b>,
-                    })}
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'red.200' } }}>
-                    <ListIcon as={BsXCircleFill} color="red.300" />
-                    {t.rich('DynamicList.fullSync-2', {
-                      b: (text) => <b>{text}</b>,
-                    })}
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon
-                      as={BsCheckCircleFill}
-                      color="green.300"
-                      sx={{ b: { color: 'green.200' } }}
-                    />
-                    {t.rich('DynamicList.fullSync-3', {
-                      b: (text) => <b>{text}</b>,
-                    })}
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'red.200' } }}>
-                    <ListIcon as={BsXCircleFill} color="red.300" />
-                    {t.rich('DynamicList.fullSync-4', {
-                      b: (text) => <b>{text}</b>,
-                      i: (text) => <i>{text}</i>,
-                    })}
-                  </ListItem>
-                </>
-              )}
-            </List>
+            <DynamicListInfo
+              dynamicType={dynamicType}
+              setDynamicType={setDynamicType}
+              resultCount={resultCount}
+            />
           </ModalBody>
         )}
 
@@ -303,6 +189,137 @@ const DynamicListModal = (props: DynamicListModalProps) => {
         </ModalFooter>
       </ModalContent>
     </Modal>
+  );
+};
+
+type DynamicListModalInfoProps = {
+  resultCount?: number;
+  dynamicType: 'addOnly' | 'removeOnly' | 'fullSync';
+  setDynamicType: (type: 'addOnly' | 'removeOnly' | 'fullSync') => void;
+};
+export const DynamicListInfo = (props: DynamicListModalInfoProps) => {
+  const { resultCount, dynamicType, setDynamicType } = props;
+  const t = useTranslations();
+  return (
+    <>
+      <Alert size="sm" status="warning" mt={5} borderRadius={'md'}>
+        <AlertIcon />
+        {t('Lists.dynamic-listsModalLimit')}
+      </Alert>
+
+      <FormControl my={5}>
+        <FormLabel>{t('Lists.dynamic-type')}</FormLabel>
+        <Select
+          value={dynamicType}
+          variant="solid"
+          bg={'blackAlpha.300'}
+          onChange={(e) => setDynamicType(e.target.value as 'addOnly' | 'removeOnly' | 'fullSync')}
+        >
+          <option value="addOnly">{t('Lists.add-only')}</option>
+          <option value="removeOnly">{t('Lists.remove-only')}</option>
+          <option value="fullSync">{t('Lists.full-sync')}</option>
+        </Select>
+        <FormHelperText>{t('Lists.dynamic-listModalChange')}</FormHelperText>
+      </FormControl>
+      <List spacing={2}>
+        <ListItem fontSize={'sm'} color="gray.400">
+          <ListIcon as={BsCheckCircleFill} color="green.300" />
+          {t('Lists.dynamic-listModalCurrentSearch', {
+            resultCount: resultCount,
+          })}
+        </ListItem>
+        {dynamicType === 'addOnly' && (
+          <>
+            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'green.200' } }}>
+              <ListIcon as={BsCheckCircleFill} color="green.300" />
+              {t.rich('DynamicList.addOnly-1', {
+                b: (text) => <b>{text}</b>,
+              })}
+            </ListItem>
+            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'green.200' } }}>
+              <ListIcon as={BsCheckCircleFill} color="green.300" />
+              {t.rich('DynamicList.addOnly-2', {
+                b: (text) => <b>{text}</b>,
+              })}
+            </ListItem>
+            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'orange.200' } }}>
+              <ListIcon as={BsExclamationCircleFill} color="orange.300" />
+              {t.rich('DynamicList.addOnly-3', {
+                b: (text) => <b>{text}</b>,
+              })}
+            </ListItem>
+            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'red.200' } }}>
+              <ListIcon as={BsXCircleFill} color="red.300" />
+              {t.rich('DynamicList.addOnly-4', {
+                b: (text) => <b>{text}</b>,
+                i: (text) => <i>{text}</i>,
+              })}
+            </ListItem>
+          </>
+        )}
+        {dynamicType === 'removeOnly' && (
+          <>
+            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'orange.200' } }}>
+              <ListIcon as={BsExclamationCircleFill} color="orange.300" />
+              {t.rich('DynamicList.removeOnly-1', {
+                b: (text) => <b>{text}</b>,
+              })}
+            </ListItem>
+            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'red.200' } }}>
+              <ListIcon as={BsXCircleFill} color="red.300" />
+              {t.rich('DynamicList.removeOnly-2', {
+                b: (text) => <b>{text}</b>,
+              })}
+            </ListItem>
+            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'green.200' } }}>
+              <ListIcon as={BsCheckCircleFill} color="green.300" />
+              {t.rich('DynamicList.removeOnly-3', {
+                b: (text) => <b>{text}</b>,
+              })}
+            </ListItem>
+            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'green.200' } }}>
+              <ListIcon as={BsCheckCircleFill} color="green.300" />
+              {t.rich('DynamicList.removeOnly-4', {
+                b: (text) => <b>{text}</b>,
+              })}
+            </ListItem>
+          </>
+        )}
+        {dynamicType === 'fullSync' && (
+          <>
+            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'green.200' } }}>
+              <ListIcon as={BsCheckCircleFill} color="green.300" />
+              {t.rich('DynamicList.fullSync-1', {
+                b: (text) => <b>{text}</b>,
+              })}
+            </ListItem>
+            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'red.200' } }}>
+              <ListIcon as={BsXCircleFill} color="red.300" />
+              {t.rich('DynamicList.fullSync-2', {
+                b: (text) => <b>{text}</b>,
+              })}
+            </ListItem>
+            <ListItem fontSize={'sm'} color="gray.400">
+              <ListIcon
+                as={BsCheckCircleFill}
+                color="green.300"
+                sx={{ b: { color: 'green.200' } }}
+              />
+              {t.rich('DynamicList.fullSync-3', {
+                b: (text) => <b>{text}</b>,
+              })}
+            </ListItem>
+            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'red.200' } }}>
+              <ListIcon as={BsXCircleFill} color="red.300" />
+              {t.rich('DynamicList.fullSync-4', {
+                b: (text) => <b>{text}</b>,
+                i: (text) => <i>{text}</i>,
+              })}
+            </ListItem>
+          </>
+        )}
+      </List>
+    </>
   );
 };
 
