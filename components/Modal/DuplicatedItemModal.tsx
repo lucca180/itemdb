@@ -92,19 +92,23 @@ const DuplicatedItemModal = (props: DuplicatedItemModalProps) => {
     <Modal isOpen={isOpen} onClose={handleClose} isCentered scrollBehavior="inside">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader textTransform="capitalize">Change Quantity</ModalHeader>
+        <ModalHeader textTransform="capitalize">{t('ItemPage.change-quantity')}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           {!isLoading && !error && (
             <>
               <Text color="gray.300">
-                <b>{item.name}</b> is already in <b>{list?.name}</b>
+                {t.rich('ItemPage.x-is-already-in-y', {
+                  x: item.name,
+                  y: list?.name,
+                  b: (chunk) => <b>{chunk}</b>,
+                })}
                 <br />
                 <br />
-                Do you want to change its quantity?
+                {t('ItemPage.do-you-want-to-change-its-quantity')}
               </Text>
               <InputGroup size="sm" mt={3}>
-                <InputLeftAddon children="New Quantity" />
+                <InputLeftAddon children={t('General.new-quantity')} />
                 <NumberInput
                   max={999}
                   min={1}
@@ -120,12 +124,14 @@ const DuplicatedItemModal = (props: DuplicatedItemModalProps) => {
                 </NumberInput>
               </InputGroup>
               <Text fontSize="xs" color="gray.400">
-                This will overwrite the existing quantity on the list
+                {t('ItemPage.this-will-overwrite-the-existing-quantity-on-the-list')}
               </Text>
             </>
           )}
 
-          {error && <Text color="red.500">An error occured, please try again later</Text>}
+          {error && (
+            <Text color="red.500">{t('General.an-error-occured-please-try-again-later')}</Text>
+          )}
           {isLoading && (
             <Center>
               <Spinner />
@@ -134,11 +140,11 @@ const DuplicatedItemModal = (props: DuplicatedItemModalProps) => {
         </ModalBody>
         <ModalFooter>
           <Button variant="ghost" mr={3} onClick={handleClose}>
-            Cancel
+            {t('General.cancel')}
           </Button>
           {!isLoading && !error && (
             <Button onClick={confirmAdd} colorScheme="green">
-              Save
+              {t('General.save')}
             </Button>
           )}
         </ModalFooter>

@@ -2,7 +2,7 @@ import { Stat, StatArrow, Table, TableContainer, Tbody, Td, Tr, Text } from '@ch
 import React from 'react';
 import { PriceData } from '../../types';
 import { MinusIcon } from '@chakra-ui/icons';
-import { useFormatter } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 
 const intl = new Intl.NumberFormat();
 
@@ -13,6 +13,7 @@ type Props = {
 const PriceTable = (props: Props) => {
   const { data } = props;
   const sortedData = data;
+  const t = useTranslations();
   const format = useFormatter();
 
   return (
@@ -31,7 +32,7 @@ const PriceTable = (props: Props) => {
               <Td>
                 {price.inflated && (
                   <Text fontWeight="bold" color="red.400">
-                    Inflation!
+                    {t('General.inflation')}!
                   </Text>
                 )}
                 {intl.format(price.value)} NP

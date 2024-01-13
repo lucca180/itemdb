@@ -12,6 +12,7 @@ import axios from 'axios';
 import React from 'react';
 import { ItemData } from '../../types';
 import { useAuth } from '../../utils/auth';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   isOpen: boolean;
@@ -20,6 +21,7 @@ type Props = {
 };
 
 const ConfirmDeleteItem = (props: Props) => {
+  const t = useTranslations();
   const { isOpen, onClose, item } = props;
   const cancelRef = React.useRef(null);
   const { getIdToken } = useAuth();
@@ -39,11 +41,11 @@ const ConfirmDeleteItem = (props: Props) => {
       });
 
       if (res.status === 200) {
-        setMsg('Item deleted successfully. You can close this page now');
+        setMsg(t('Lists.item-deleted-successfully-you-can-close-this-page-now'));
         setLoading(false);
       }
     } catch (err) {
-      setMsg('Something went wrong. Please try again later');
+      setMsg(t('General.something-went-wrong-please-try-again-later'));
       setLoading(false);
     }
   };
@@ -54,12 +56,12 @@ const ConfirmDeleteItem = (props: Props) => {
         <AlertDialogOverlay>
           <AlertDialogContent>
             <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Delete {item.name}?
+              {t('Lists.delete-item-name', { x: item.name })}?
             </AlertDialogHeader>
             <AlertDialogBody>{msg}</AlertDialogBody>
             <AlertDialogFooter>
               <Button ref={cancelRef} onClick={onClose}>
-                Close
+                {t('General.close')}
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -78,7 +80,7 @@ const ConfirmDeleteItem = (props: Props) => {
         <AlertDialogOverlay>
           <AlertDialogContent>
             <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Delete {item.name}?
+              {t('Lists.delete-item-name', { x: item.name })}?
             </AlertDialogHeader>
             <AlertDialogBody>
               <Spinner />
@@ -93,19 +95,19 @@ const ConfirmDeleteItem = (props: Props) => {
       <AlertDialogOverlay>
         <AlertDialogContent>
           <AlertDialogHeader fontSize="lg" fontWeight="bold">
-            Delete {item.name}?
+            {t('Lists.delete-item-name', { x: item.name })}??
           </AlertDialogHeader>
 
           <AlertDialogBody>
-            Are you sure? You can&apos;t undo this action afterwards.
+            {t('General.are-you-sure-you-cant-undo-this-action-afterwards')}
           </AlertDialogBody>
 
           <AlertDialogFooter>
             <Button ref={cancelRef} onClick={onClose}>
-              Cancel
+              {t('General.cancel')}
             </Button>
             <Button colorScheme="red" onClick={onConfirm} ml={3}>
-              Delete
+              {t('General.delete')}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

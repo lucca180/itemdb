@@ -125,7 +125,17 @@
     "unspecified-price": "Unspecified Price",
     "wishlist": "Wishlist",
     "nc-buyable": "NC - Buyable",
-    "error-fetching-lists": "An error occurred while fetching your lists, please try again later."
+    "error-fetching-lists": "An error occurred while fetching your lists, please try again later.",
+    "owls-credits": "NC Trade data provided by <Link>Owls</Link>",
+    "unmark-as-hidden": "Unmark as Hidden",
+    "mark-as-hidden": "Mark as Hidden",
+    "unmark-as-highlight": "Unmark as Highlight",
+    "mark-as-highlight": "Mark as Highlight",
+    "change-quantity": "Change Quantity",
+    "x-is-already-in-y": "<b>{x}</b> is already in <b>{y}</b>",
+    "do-you-want-to-change-its-quantity": "Do you want to change its quantity?",
+    "this-will-overwrite-the-existing-quantity-on-the-list": "This will overwrite the existing quantity on the list",
+    "delete-from-list": "Delete from list"
   },
   "Button": {
     "feedback": "Feedback",
@@ -247,7 +257,11 @@
     "profit": "Profit",
     "min-profit": "Min Profit",
     "last-x-hours": "Last {x} hours",
-    "last-x-days": "Last {x} days"
+    "last-x-days": "Last {x} days",
+    "new-quantity": "New Quantity",
+    "changes-saved": "Changes Saved!",
+    "saving": "Saving",
+    "are-you-sure-you-cant-undo-this-action-afterwards": "Are you sure? You can't undo this action afterwards."
   },
   "Lists": {
     "item-added-to-list": "Item added to list",
@@ -362,7 +376,9 @@
     "delete-items-items": "Delete {items} items?",
     "linked-list-created": "Linked List created!",
     "highlight": "Highlight",
-    "hidden": "Hidden"
+    "hidden": "Hidden",
+    "item-deleted-successfully-you-can-close-this-page-now": "Item deleted successfully. You can close this page now",
+    "delete-item-name": "Delete {x}"
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",

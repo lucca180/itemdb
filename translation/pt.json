@@ -125,7 +125,17 @@
     "unspecified-price": "Preço Não Especificado",
     "wishlist": "Lista de Desejos",
     "error-fetching-lists": "Ocorreu um erro ao buscar suas listas. Tente novamente mais tarde.",
-    "nc-buyable": "NC – Comprável"
+    "nc-buyable": "NC – Comprável",
+    "owls-credits": "Dados de Trocas NC fornecidos por <Link>Owls</Link>",
+    "mark-as-hidden": "Marcar como oculto",
+    "mark-as-highlight": "Marcar como destaque",
+    "unmark-as-hidden": "Desmarcar como oculto",
+    "unmark-as-highlight": "Desmarcar como destaque",
+    "change-quantity": "Alterar quantidade",
+    "delete-from-list": "Excluir da lista",
+    "do-you-want-to-change-its-quantity": "Deseja alterar sua quantidade?",
+    "this-will-overwrite-the-existing-quantity-on-the-list": "Isso substituirá a quantidade existente na lista",
+    "x-is-already-in-y": "<b>{x}</b> já está em <b>{y}</b>"
   },
   "Button": {
     "feedback": "Feedback",
@@ -247,7 +257,11 @@
     "profit": "Lucro",
     "restock-order": "Ordem de Restock",
     "last-x-days": "Últimos {x} dias",
-    "last-x-hours": "Últimas {x} horas"
+    "last-x-hours": "Últimas {x} horas",
+    "new-quantity": "Nova Quantidade",
+    "changes-saved": "Alterações Salvas!",
+    "saving": "Salvando",
+    "are-you-sure-you-cant-undo-this-action-afterwards": "Tem certeza? Você não pode desfazer esta ação depois."
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",
@@ -468,7 +482,9 @@
     "unpricedItems": "Existem {0} itens sem preço",
     "linked-list-created": "Linked List criada!",
     "hidden": "Oculto",
-    "highlight": "Destaque"
+    "highlight": "Destaque",
+    "delete-item-name": "Excluir {x}",
+    "item-deleted-successfully-you-can-close-this-page-now": "Item excluído com sucesso. Você pode fechar esta página agora"
   },
   "Restock": {
     "est-profit": "Lucro Est.",

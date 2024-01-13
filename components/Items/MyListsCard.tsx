@@ -29,6 +29,7 @@ import { BsThreeDotsVertical } from 'react-icons/bs';
 import { isDynamicActionDisabled } from '../../utils/utils';
 import { DuplicatedItemModalProps } from '../Modal/DuplicatedItemModal';
 import { ItemActionModalProps } from '../Modal/ItemActionModal';
+import { useTranslations } from 'next-intl';
 
 const Markdown = dynamic(() => import('../Utils/Markdown'), { ssr: false });
 
@@ -44,6 +45,7 @@ type Props = {
 };
 
 const ItemMyLists = (props: Props) => {
+  const t = useTranslations();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isActionOpen, onOpen: onActionOpen, onClose: onActionClose } = useDisclosure();
 
@@ -74,9 +76,12 @@ const ItemMyLists = (props: Props) => {
       .then(() => mutate());
 
     toast.promise(promise, {
-      success: { title: 'Changes Saved!' },
-      error: { title: 'Something went wrong', description: 'Please try again later' },
-      loading: { title: 'Saving...' },
+      success: { title: t('General.changes-saved') },
+      error: {
+        title: t('General.something-went-wrong'),
+        description: t('General.try-again-later'),
+      },
+      loading: { title: `${t('General.saving')}...` },
     });
   };
 
@@ -115,7 +120,7 @@ const ItemMyLists = (props: Props) => {
           list={selectedList}
         />
       )}
-      <CardBase title="My Lists" color={item.color.rgb}>
+      <CardBase title={t('Layout.my-lists')} color={item.color.rgb}>
         <Flex gap={3} flexFlow="column">
           <List spacing={3}>
             {lists.map((list, i) => (
@@ -150,10 +155,12 @@ const ItemMyLists = (props: Props) => {
                       <Badge fontSize={'0.7rem'} textTransform={'none'}>
                         {list.itemInfo[0].amount}x
                       </Badge>
-                      {list.itemInfo[0].isHidden && <Badge fontSize={'0.7rem'}>Hidden</Badge>}
+                      {list.itemInfo[0].isHidden && (
+                        <Badge fontSize={'0.7rem'}>{t('Lists.hidden')}</Badge>
+                      )}
                       {list.itemInfo[0].isHighlight && (
                         <Badge fontSize={'0.7rem'} colorScheme="orange">
-                          Highlight
+                          {t('Lists.highlight')}
                         </Badge>
                       )}
                     </HStack>
@@ -166,7 +173,7 @@ const ItemMyLists = (props: Props) => {
                       -{' '}
                       <Markdown>
                         {
-                          (list.description || "This list doesn't have a description yet").split(
+                          (list.description || t('ItemPage.list-no-description')).split(
                             /[\r\n]+/
                           )[0]
                         }
@@ -183,13 +190,17 @@ const ItemMyLists = (props: Props) => {
                     />
                     <MenuList>
                       <MenuItem fontSize={'sm'} onClick={() => doAction(list, 'hide')}>
-                        {list.itemInfo[0].isHidden ? 'Unmark as Hidden' : 'Mark as Hidden'}
+                        {list.itemInfo[0].isHidden
+                          ? t('ItemPage.unmark-as-hidden')
+                          : t('ItemPage.mark-as-hidden')}
                       </MenuItem>
                       <MenuItem fontSize={'sm'} onClick={() => doAction(list, 'highlight')}>
-                        {list.itemInfo[0].isHighlight ? 'Unmark as Highlight' : 'Mark as Highlight'}
+                        {list.itemInfo[0].isHighlight
+                          ? t('ItemPage.unmark-as-highlight')
+                          : t('ItemPage.mark-as-highlight')}
                       </MenuItem>
                       <MenuItem onClick={() => handleOpen(list)} fontSize={'sm'}>
-                        Change Quantity
+                        {t('ItemPage.change-quantity')}
                       </MenuItem>
                       <MenuItem
                         onClick={() => handleActionOpen(list)}
@@ -197,7 +208,7 @@ const ItemMyLists = (props: Props) => {
                         color="red.300"
                         isDisabled={isDynamicActionDisabled('remove', list.dynamicType)}
                       >
-                        Delete from list
+                        {t('ItemPage.delete-from-list')}
                       </MenuItem>
                     </MenuList>
                   </Menu>
