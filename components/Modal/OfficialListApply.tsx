@@ -22,6 +22,7 @@ import axios from 'axios';
 import { useState } from 'react';
 import { useAuth } from '../../utils/auth';
 import ListSelect from '../UserLists/ListSelect';
+import { useTranslations } from 'next-intl';
 
 export type ApplyListModalProps = {
   isOpen: boolean;
@@ -29,6 +30,7 @@ export type ApplyListModalProps = {
 };
 
 const ApplyListModal = (props: ApplyListModalProps) => {
+  const t = useTranslations();
   const { user } = useAuth();
   const { isOpen, onClose } = props;
   const [list_id, setListId] = useState<number>();
@@ -77,7 +79,7 @@ const ApplyListModal = (props: ApplyListModalProps) => {
     <Modal isOpen={isOpen} onClose={handleClose} isCentered>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader textTransform="capitalize">Apply your list</ModalHeader>
+        <ModalHeader textTransform="capitalize">{t('Lists.apply-your-list')}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           {isLoading && (
@@ -87,50 +89,48 @@ const ApplyListModal = (props: ApplyListModalProps) => {
           )}
           {error && (
             <Text fontSize="sm" textAlign="center" color="red.500">
-              Something went wrong, please try again later
+              {t('General.something-went-wrong-please-try-again-later')}
             </Text>
           )}
           {success && (
             <Text fontSize="sm" textAlign="center" color="green.200">
-              Your list has been submitted. <br />
-              <br />
-              We will review it and if it&apos;s approved, it will receive the official badge and
-              will be available for everyone to use \o/
+              {t.rich('Lists.official-apply-list-success', {
+                br: () => <br />,
+              })}
             </Text>
           )}
           {!isLoading && !error && !success && (
             <>
               <Text fontSize="sm" textAlign="center">
-                You think your list is cool and useful for the community? <br />
-                <br />
-                You can apply it to be an official list filling the form below. <br />
-                <br />
-                If your list is approved, it will be available for everyone to use and you will be
-                listed as list curator!
-                <br />
+                {t.rich('Lists.official-apply-list-text', {
+                  br: () => <br />,
+                })}
               </Text>
               <Divider my={3} />
               <Stack gap={3}>
                 <FormControl>
-                  <FormLabel color="gray.300">Select your list</FormLabel>
+                  <FormLabel color="gray.300">{t('Lists.select-your-list')}</FormLabel>
                   <ListSelect onChange={(list) => setListId(list.internal_id)} />
                 </FormControl>
                 <FormControl>
-                  <FormLabel color="gray.300">What your list is about?</FormLabel>
+                  <FormLabel color="gray.300">
+                    {t('Lists.official-what-your-list-is-about')}
+                  </FormLabel>
                   <Textarea
                     variant="filled"
                     value={justification}
                     onChange={(e) => setJustification(e.target.value)}
                   />
-                  <FormHelperText>
-                    A short summary of what your list is about and why the list is useful
-                  </FormHelperText>
+                  <FormHelperText>{t('Lists.official-apply-helper-text')}</FormHelperText>
                 </FormControl>
                 <Text fontSize="sm" textAlign="center" color="whiteAlpha.800">
-                  By applying your list, you agree to the{' '}
-                  <Link href="/terms" color="green.200" isExternal>
-                    Terms of Service
-                  </Link>
+                  {t.rich('Lists.official-agree-terms', {
+                    Link: (chunk) => (
+                      <Link href="/terms" color="green.200" isExternal>
+                        {chunk}
+                      </Link>
+                    ),
+                  })}
                 </Text>
               </Stack>
             </>
@@ -140,9 +140,9 @@ const ApplyListModal = (props: ApplyListModalProps) => {
           {!isLoading && !error && !success && (
             <>
               <Button variant="ghost" mr={3} onClick={handleClose}>
-                Cancel
+                {t('General.cancel')}
               </Button>
-              <Button onClick={handleSubmit}>Submit</Button>
+              <Button onClick={handleSubmit}>{t('General.submit')}</Button>
             </>
           )}
         </ModalFooter>

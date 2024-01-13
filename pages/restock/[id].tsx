@@ -37,18 +37,20 @@ import { CollapseNumber } from '../../components/Input/CollapseNumber';
 import axios from 'axios';
 import { getFiltersDiff } from '../search';
 import NextLink from 'next/link';
+import { useTranslations } from 'next-intl';
 
 type RestockShopPageProps = {
   shopInfo: ShopInfo;
+  messages: any;
 };
 
 const sortTypes = {
-  name: 'Name',
-  price: 'Price',
-  profit: 'Profit',
-  rarity: 'Rarity',
-  color: 'Color',
-  item_id: 'Restock Order',
+  name: 'General.name',
+  price: 'General.price',
+  profit: 'General.profit',
+  rarity: 'General.rarity',
+  color: 'General.color',
+  item_id: 'General.restock-order',
 };
 
 type ItemFilter = {
@@ -57,6 +59,7 @@ type ItemFilter = {
 };
 
 const RestockShop = (props: RestockShopPageProps) => {
+  const t = useTranslations();
   const { shopInfo } = props;
   const [filteredItems, setFilteredItems] = useState<ItemData[]>();
   const [itemList, setItemList] = useState<ItemData[]>();
@@ -182,8 +185,8 @@ const RestockShop = (props: RestockShopPageProps) => {
   return (
     <Layout
       SEO={{
-        title: `${shopInfo.name} | Neopets Restock Helper`,
-        description: `Find the most profitable items to buy from ${shopInfo.name} and earn neopoints!`,
+        title: `${shopInfo.name} | ${t('Restock.neopets-restock-helper')}`,
+        description: t('Restock.shop-desc', { 0: shopInfo.name }),
         themeColor: shopInfo.color,
       }}
     >
@@ -197,7 +200,7 @@ const RestockShop = (props: RestockShopPageProps) => {
       />
       <Text fontSize="xs" mt={2}>
         <Link as={NextLink} href="/restock">
-          ← Back to Restock Hub
+          ← {t('Restock.back-to-restock-hub')}
         </Link>
       </Text>
       <Center mt={2} mb={6} flexFlow="column" gap={2}>
@@ -228,28 +231,34 @@ const RestockShop = (props: RestockShopPageProps) => {
         </Link>
         <Heading as="h1">{shopInfo.name}</Heading>
         <Text as="h2" sx={{ a: { color: Color(shopInfo.color).lightness(70).hex() } }}>
-          Profitable items from{' '}
-          <Link
-            href={`https://www.neopets.com/objects.phtml?type=shop&obj_type=${shopInfo.id}`}
-            isExternal
-          >
-            {shopInfo.name}
-            <Image
-              src={'/icons/neopets.png'}
-              width={'16px'}
-              height={'16px'}
-              style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '0.2rem' }}
-              alt="link icon"
-            />
-          </Link>
+          {t.rich('Restock.profitable-items-from', {
+            Link: (chunk) => (
+              <Link
+                href={`https://www.neopets.com/objects.phtml?type=shop&obj_type=${shopInfo.id}`}
+                isExternal
+              >
+                {chunk}
+                <Image
+                  src={'/icons/neopets.png'}
+                  width={'16px'}
+                  height={'16px'}
+                  style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '0.2rem' }}
+                  alt="link icon"
+                />
+              </Link>
+            ),
+            shopname: shopInfo.name,
+          })}
         </Text>
-        {specialDay === 'hpd' && <Tag colorScheme={'green'}>Half Price Day - 50% off</Tag>}
+        {specialDay === 'hpd' && <Tag colorScheme={'green'}>{t('Restock.half-price-day')}</Tag>}
         {specialDay === 'tyrannia' && (
-          <Tag colorScheme={'orange'}>Tyrannian Victory Day - 80% off</Tag>
+          <Tag colorScheme={'orange'}>{t('Restock.tyrannian-victory-day')}</Tag>
         )}
-        {specialDay === 'usukicon' && <Tag colorScheme={'pink'}>Usuki Day - 66.6% off</Tag>}
-        {specialDay === 'festival' && <Tag colorScheme={'purple'}>Faerie Festival - 50% off</Tag>}
-        {specialDay === 'halloween' && <Tag colorScheme={'orange'}>Halloween - 50% off</Tag>}
+        {specialDay === 'usukicon' && <Tag colorScheme={'pink'}>{t('Restock.usuki-day')}</Tag>}
+        {specialDay === 'festival' && (
+          <Tag colorScheme={'purple'}>{t('Restock.faerie-festival')}</Tag>
+        )}
+        {specialDay === 'halloween' && <Tag colorScheme={'orange'}>{t('Restock.halloween')}</Tag>}
       </Center>
       <Divider my={3} />
       {loading && (
@@ -282,7 +291,7 @@ const RestockShop = (props: RestockShopPageProps) => {
                 }}
               />
               <Text as="div" textColor={'gray.300'} fontSize="sm">
-                {filteredItems?.length ?? itemList?.length ?? 0} items
+                {filteredItems?.length ?? itemList?.length ?? 0} {t('General.items')}
               </Text>
             </HStack>
 
@@ -301,7 +310,7 @@ const RestockShop = (props: RestockShopPageProps) => {
                   fontSize="sm"
                   display={{ base: 'none', md: 'inherit' }}
                 >
-                  Sort By
+                  {t('General.sort-by')}
                 </Text>
                 <SortSelect
                   sortTypes={sortTypes}
@@ -359,6 +368,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 
   const props: RestockShopPageProps = {
     shopInfo: shopInfo,
+    messages: (await import(`../../translation/${context.locale}.json`)).default,
   };
 
   return {

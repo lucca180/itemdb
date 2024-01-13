@@ -40,6 +40,7 @@ import { msIntervalFormated, removeOutliers, restockShopInfo } from '../../../ut
 import RestockItem from '../../../components/Hubs/Restock/RestockItemCard';
 import { FiSend } from 'react-icons/fi';
 import FeedbackModal from '../../../components/Modal/FeedbackModal';
+import { useTranslations } from 'next-intl';
 
 const color = Color('#599379').rgb().array();
 
@@ -56,6 +57,7 @@ type PeriodFilter = { timePeriod: number; shops: number | string };
 const intl = new Intl.NumberFormat();
 
 const RestockDashboard = () => {
+  const t = useTranslations();
   const { user, authLoading } = useAuth();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [openImport, setOpenImport] = useState<boolean>(false);
@@ -78,7 +80,7 @@ const RestockDashboard = () => {
 
   const init = async (customFilter?: PeriodFilter) => {
     customFilter = customFilter ?? filter;
-    setAlertMsg({ type: 'loading', title: 'Loading your restock sessions...' });
+    setAlertMsg({ type: 'loading', title: t('Restock.loading-your-restock-sessions') });
     try {
       const res = await axios.get('/api/v1/restock', {
         params: {
@@ -93,9 +95,9 @@ const RestockDashboard = () => {
           type: 'warning',
           description: (
             <>
-              You have no restock sessions for the selected period
+              {t('Restock.you-have-no-restock-sessions-for-the-selected-period')}
               <br />
-              Try another period or import your sessions
+              {t('Restock.try-another-period-or-import-your-sessions')}
             </>
           ),
         });
@@ -110,9 +112,9 @@ const RestockDashboard = () => {
         type: 'error',
         description: (
           <>
-            Something went wrong while loading your restock sessions
+            {t('Restock.something-went-wrong-while-loading-your-restock-sessions')}
             <br />
-            Try again later.
+            {t('General.try-again-later')}
           </>
         ),
       });
@@ -293,8 +295,8 @@ const RestockDashboard = () => {
   return (
     <Layout
       SEO={{
-        title: `Neopets Restock Dashboard`,
-        description: `Keep track on your restock metrics, profit, response time, check out the items you missed haggling and more!`,
+        title: t('Restock.neopets-restock-dashboard'),
+        description: t('Restock.restock-dashboard-desc'),
         themeColor: '#599379',
       }}
     >
@@ -310,7 +312,7 @@ const RestockDashboard = () => {
       />
       <Text fontSize="xs" mt={2}>
         <Link as={NextLink} href="/restock">
-          ← Back to Restock Hub
+          ← {t('Restock.back-to-restock-hub')}
         </Link>
       </Text>
       <Flex gap={2} alignItems="center" justifyContent={['center', 'center', 'flex-start']} my={2}>
@@ -325,10 +327,10 @@ const RestockDashboard = () => {
           value={filter.timePeriod}
           onChange={handleSelectChange}
         >
-          <option value={1}>Last 24 hours</option>
-          <option value={7}>Last 7 days</option>
-          <option value={30}>Last 30 days</option>
-          <option value={90}>Last 90 days</option>
+          <option value={1}>{t('General.last-x-hours', { x: 24 })}</option>
+          <option value={7}>{t('General.last-x-days', { x: 7 })}</option>
+          <option value={30}>{t('General.last-x-days', { x: 30 })}</option>
+          <option value={90}>{t('General.last-x-days', { x: 90 })}</option>
           {/* <option>All Time</option> */}
         </Select>
         <Select
@@ -341,7 +343,7 @@ const RestockDashboard = () => {
           value={filter.shops}
           onChange={handleSelectChange}
         >
-          <option value="all">All Shops</option>
+          <option value="all">{t('Restock.all-shops')}</option>
           {shopList.map((shopId) => (
             <option key={shopId} value={shopId}>
               {restockShopInfo[shopId].name}
@@ -357,7 +359,7 @@ const RestockDashboard = () => {
             borderRadius={'sm'}
             onClick={() => setOpenImport(true)}
           >
-            Import {importCount} sessions
+            {t('Restock.import-x-sessions', { x: importCount })}
           </Button>
         )}
       </Flex>
@@ -367,15 +369,17 @@ const RestockDashboard = () => {
             <AlertIcon />
             <Box w="100%">
               <AlertDescription fontSize="sm">
-                We detected that you don&apos;t have the most updated version of the{' '}
-                <Link
-                  href="https://github.com/lucca180/itemdb/raw/main/userscripts/restockTracker.user.js"
-                  color="yellow.100"
-                  isExternal
-                >
-                  Restock Tracker Script
-                </Link>
-                .
+                {t.rich('Restock.outdated-script', {
+                  Link: (chunk) => (
+                    <Link
+                      href="https://github.com/lucca180/itemdb/raw/main/userscripts/restockTracker.user.js"
+                      color="yellow.100"
+                      isExternal
+                    >
+                      {chunk}
+                    </Link>
+                  ),
+                })}
               </AlertDescription>
             </Box>
             <CloseButton
@@ -391,11 +395,8 @@ const RestockDashboard = () => {
       {!sessionStats && (
         <>
           <Center flexFlow={'column'} gap={2}>
-            <Heading size="lg">itemdb&apos;s Restock Dashboard</Heading>
-            <Text>
-              Keep track on your restock metrics, profit, response time, and check out the items you
-              missed haggling
-            </Text>
+            <Heading size="lg">{t('Restock.itemdbs-restock-dashboard')}</Heading>
+            <Text>{t('Restock.text-1')}</Text>
           </Center>
           <Divider my={6} />
 
@@ -413,68 +414,84 @@ const RestockDashboard = () => {
             </Center>
           )}
 
-          <Heading size="md">How to Use</Heading>
+          <Heading size="md">{t('Restock.how-to-use')}</Heading>
           <UnorderedList mt={3} pl={3} sx={{ a: { color: 'green.200' } }} spacing={2}>
             {!user && (
               <ListItem>
                 <Text>
-                  You will need a{' '}
-                  <Link as={NextLink} href="/login">
-                    itemdb account
-                  </Link>{' '}
-                  to sync your restock data with our servers
+                  {t.rich('Restock.text-2', {
+                    Link: (chunk) => (
+                      <Link as={NextLink} href="/login">
+                        {chunk}
+                      </Link>
+                    ),
+                  })}
                 </Text>
               </ListItem>
             )}
             <ListItem>
-              Install{' '}
-              <Link href="https://www.tampermonkey.net/" isExternal>
-                Tampermonkey
-              </Link>{' '}
-              extension for your browser if you don&apos;t have it already.
+              {t.rich('Restock.text-3', {
+                Link: (chunk) => (
+                  <Link as={NextLink} href="https://www.tampermonkey.net/" isExternal>
+                    {chunk}
+                  </Link>
+                ),
+              })}
             </ListItem>
             <ListItem>
               <Text>
-                Install{' '}
-                <Link
-                  href="https://github.com/lucca180/itemdb/raw/main/userscripts/restockTracker.user.js"
-                  isExternal
-                >
-                  itemdb Restock Tracker Script
-                </Link>{' '}
+                {t.rich('Restock.text-4', {
+                  Link: (chunk) => (
+                    <Link
+                      as={NextLink}
+                      href="https://github.com/lucca180/itemdb/raw/main/userscripts/restockTracker.user.js"
+                      isExternal
+                    >
+                      {chunk}
+                    </Link>
+                  ),
+                })}
               </Text>
               <Text fontSize="sm" color="gray.400">
-                The script will automatically track your restock sessions and save them in your
-                device.
+                {t('Restock.text-5')}
                 <br />
-                No data will be sent to our servers without your input.
+                {t('Restock.text-6')}{' '}
               </Text>
             </ListItem>
             <ListItem>
               <Text>
-                Install{' '}
-                <Link
-                  href="https://github.com/lucca180/itemdb/raw/main/userscripts/itemDataExtractor.user.js"
-                  isExternal
-                >
-                  itemdb Item Data Extractor Script
-                </Link>{' '}
+                {t.rich('Restock.text-7', {
+                  Link: (chunk) => (
+                    <Link
+                      as={NextLink}
+                      href="https://github.com/lucca180/itemdb/raw/main/userscripts/itemDataExtractor.user.js"
+                      isExternal
+                    >
+                      {chunk}
+                    </Link>
+                  ),
+                })}
               </Text>
               <Text fontSize="sm" color="gray.400">
-                Optional but will greatly help us to improve our data.{' '}
-                <Link href="/contribute" isExternal>
-                  Learn More
-                </Link>
+                {t.rich('Restock.text-8', {
+                  Link: (chunk) => (
+                    <Link as={NextLink} href="/contribute">
+                      {chunk}
+                    </Link>
+                  ),
+                })}
               </Text>
             </ListItem>
             <ListItem>
-              <Text>Go restock! </Text>
+              <Text>{t('Restock.go-restock')} </Text>
               <Text fontSize="sm" color="gray.400">
-                We have a{' '}
-                <Link as={NextLink} href="/restock">
-                  handful guide
-                </Link>{' '}
-                to help you find the most profitable items from each neopian shop
+                {t.rich('Restock.text-9', {
+                  Link: (chunk) => (
+                    <Link as={NextLink} href="/restock">
+                      {chunk}
+                    </Link>
+                  ),
+                })}
               </Text>
             </ListItem>
           </UnorderedList>
@@ -497,7 +514,7 @@ const RestockDashboard = () => {
             </Center>
           )}
           <Center my={6} flexFlow="column" gap={2}>
-            <Heading size="md">Your est. revenue</Heading>
+            <Heading size="md">{t('Restock.your-est-revenue')}</Heading>
             <Heading
               size="2xl"
               bgGradient="linear(to-r, green.400, green.200, green.400)"
@@ -505,41 +522,45 @@ const RestockDashboard = () => {
             >
               {intl.format(sessionStats.estRevenue)} NP
             </Heading>
-            <Heading size="sm">with {intl.format(sessionStats.totalBought.count)} items</Heading>
+            <Heading size="sm">
+              {t('Restock.with-x-items', {
+                x: intl.format(sessionStats.totalBought.count),
+              })}
+            </Heading>
           </Center>
           <Divider />
           <SimpleGrid mt={3} columns={[2, 3, 3, 5]} spacing={[1, 1, 4]}>
             <StatsCard
-              label="Time Spent Restocking"
+              label={t('Restock.time-spent-restocking')}
               stat={msIntervalFormated(sessionStats.durationCount, true)}
-              helpText={`${msIntervalFormated(sessionStats.mostPopularShop.durationCount)} at ${
-                restockShopInfo[sessionStats.mostPopularShop.shopId].name
-              }`}
+              helpText={`${msIntervalFormated(sessionStats.mostPopularShop.durationCount)} ${t(
+                'Restock.at'
+              )} ${restockShopInfo[sessionStats.mostPopularShop.shopId].name}`}
             />
             <StatsCard
-              label="Most Expensive Item Bought"
+              label={t('Restock.most-expensive-item-bought')}
               stat={`${intl.format(sessionStats.mostExpensiveBought?.price.value ?? 0)} NP`}
-              helpText={sessionStats.mostExpensiveBought?.name ?? 'none'}
+              helpText={sessionStats.mostExpensiveBought?.name ?? t('Restock.none')}
             />
             <StatsCard
-              label="Avg Refresh Time"
+              label={t('Restock.avg-refresh-time')}
               stat={msIntervalFormated(sessionStats.avgRefreshTime, false, 1)}
-              helpText={`based on ${sessionStats.totalRefreshes} refreshs`}
+              helpText={t('Restock.based-on-x-refreshs', { x: sessionStats.totalRefreshes })}
             />
             <StatsCard
-              label="Total Clicked and Lost"
+              label={t('Restock.total-clicked-and-lost')}
               stat={`${intl.format(sessionStats.totalLost?.value ?? 0)} NP`}
-              helpText={`${intl.format(sessionStats.totalLost.count)} items`}
+              helpText={`${intl.format(sessionStats.totalLost.count)} ${t('General.items')}`}
             />
             <StatsCard
-              label="Most Expensive Clicked and Lost"
+              label={t('Restock.most-expensive-clicked-and-lost')}
               stat={`${intl.format(sessionStats.mostExpensiveLost?.price.value ?? 0)} NP`}
-              helpText={sessionStats.mostExpensiveLost?.name ?? 'none'}
+              helpText={sessionStats.mostExpensiveLost?.name ?? t('Restock.none')}
             />
           </SimpleGrid>
           <Flex mt={6} w="100%" gap={3} flexFlow={['column', 'column', 'row']}>
             <Flex flexFlow={'column'} textAlign={'center'} gap={3} flex={1}>
-              <Heading size="md">Hottest Buys</Heading>
+              <Heading size="md">{t('Restock.hottest-buys')}</Heading>
               <Flex gap={3} flexFlow="column" justifyContent={'center'}>
                 {sessionStats.hottestBought.map((bought, i) => (
                   <RestockItem
@@ -554,8 +575,8 @@ const RestockDashboard = () => {
             <Flex flexFlow={'column'} textAlign={'center'} gap={3} flex={1}>
               <Tabs flex={1} colorScheme="gray" variant={'line'}>
                 <TabList>
-                  <Tab>Hottest Restocks</Tab>
-                  <Tab>Worst Losses</Tab>
+                  <Tab>{t('Restock.hottest-restocks')}</Tab>
+                  <Tab>{t('Restock.worst-losses')}</Tab>
                 </TabList>
                 <TabPanels>
                   <TabPanel px={0}>
@@ -577,7 +598,7 @@ const RestockDashboard = () => {
                       ))}
                       {sessionStats.hottestLost.length === 0 && (
                         <Text fontSize={'xs'} color="gray.400">
-                          You didn&apos;t lose anything. You&apos;re awesome!
+                          {t('Restock.you-didnt-lose-anything-youre-awesome')}
                         </Text>
                       )}
                     </Flex>
@@ -588,11 +609,11 @@ const RestockDashboard = () => {
           </Flex>
           <Flex mt={6} flexFlow="column" justifyContent={'center'} alignItems={'center'} gap={2}>
             <Text fontSize={'xs'} color="gray.400">
-              All values are based on current itemdb&apos;s price
+              {t('Restock.all-values-are-based-on-current-itemdbs-price')}
             </Text>
 
             <Button variant="outline" size="sm" onClick={onOpen}>
-              <Icon as={FiSend} mr={1} /> Feedback
+              <Icon as={FiSend} mr={1} /> {t('Button.feedback')}
             </Button>
           </Flex>
         </>
@@ -602,6 +623,14 @@ const RestockDashboard = () => {
 };
 
 export default RestockDashboard;
+
+export async function getStaticProps(context: any) {
+  return {
+    props: {
+      messages: (await import(`../../../translation/${context.locale}.json`)).default,
+    },
+  };
+}
 
 const defaultStats: RestockStats = {
   durationCount: 0,

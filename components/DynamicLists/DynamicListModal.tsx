@@ -31,6 +31,7 @@ import DynamicIcon from '../../public/icons/dynamic.png';
 import { ExtendedSearchQuery, UserList } from '../../types';
 import { useAuth, UserLists } from '../../utils/auth';
 import { getRandomName } from '../../utils/randomName';
+import { useTranslations } from 'next-intl';
 
 export type DynamicListModalProps = {
   isOpen: boolean;
@@ -40,6 +41,7 @@ export type DynamicListModalProps = {
 };
 
 const DynamicListModal = (props: DynamicListModalProps) => {
+  const t = useTranslations();
   const toast = useToast();
   const { isOpen, onClose, resultCount, searchQuery } = props;
   const { user, getIdToken } = useAuth();
@@ -72,7 +74,7 @@ const DynamicListModal = (props: DynamicListModalProps) => {
 
       console.log(res.data);
       toast({
-        title: 'Dynamic List created!',
+        title: t('Lists.dynamic-list-created'),
         status: 'success',
         duration: 5000,
       });
@@ -128,162 +130,28 @@ const DynamicListModal = (props: DynamicListModalProps) => {
             width={16}
             style={{ margin: '0 5px', display: 'inline' }}
           />{' '}
-          Dynamic List
+          {t('General.dynamic-list')}
         </ModalHeader>
         <ModalCloseButton />
         {!error && !loading && (
           <ModalBody>
             <Text fontSize="sm" color="gray.400">
-              Dynamic Lists are special lists that are automatically updated (once per hour) based
-              on a search query.
+              {t('Lists.dynamic-listModalText')}
             </Text>
-            <Alert size="sm" status="warning" mt={5} borderRadius={'md'}>
-              <AlertIcon />
-              Dynamic Lists are limited to 4.000 items
-            </Alert>
-
-            <FormControl my={5}>
-              <FormLabel>Dynamic Type</FormLabel>
-              <Select
-                value={dynamicType}
-                variant="solid"
-                bg={'blackAlpha.300'}
-                onChange={(e) =>
-                  setDynamicType(e.target.value as 'addOnly' | 'removeOnly' | 'fullSync')
-                }
-              >
-                <option value="addOnly">Add Only</option>
-                <option value="removeOnly">Remove Only</option>
-                <option value="fullSync">Full Sync</option>
-              </Select>
-              <FormHelperText>
-                You&apos;ll not be able to change this or the search query later.
-              </FormHelperText>
-            </FormControl>
-            <List spacing={2}>
-              <ListItem fontSize={'sm'} color="gray.400">
-                <ListIcon as={BsCheckCircleFill} color="green.300" />
-                All items ({resultCount}) that match the current search query will be added to the
-                list.
-              </ListItem>
-              {dynamicType === 'addOnly' && (
-                <>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon as={BsCheckCircleFill} color="green.300" />
-                    New items that match the search query{' '}
-                    <Text fontWeight={'bold'} as="b" color="green.200">
-                      will be added
-                    </Text>{' '}
-                    to the list.
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon as={BsCheckCircleFill} color="green.300" />
-                    You&apos;ll be able to{' '}
-                    <Text fontWeight={'bold'} as="b" color="green.200">
-                      add new items
-                    </Text>{' '}
-                    to the list manually.
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon as={BsExclamationCircleFill} color="orange.300" />
-                    Items that no longer match the search query{' '}
-                    <Text fontWeight={'bold'} as="b" color="orange.200">
-                      won&apos;t be removed
-                    </Text>{' '}
-                    from the list.
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon as={BsXCircleFill} color="red.300" />
-                    You won&apos;t be able to{' '}
-                    <Text fontWeight={'bold'} as="b" color="red.200">
-                      remove items that match
-                    </Text>{' '}
-                    the search query - <i>but you can hide them</i>.
-                  </ListItem>
-                </>
-              )}
-              {dynamicType === 'removeOnly' && (
-                <>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon as={BsExclamationCircleFill} color="orange.300" />
-                    New items that match the search query{' '}
-                    <Text fontWeight={'bold'} as="b" color="orange.200">
-                      won&apos;t be added
-                    </Text>{' '}
-                    to the list.
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon as={BsXCircleFill} color="red.300" />
-                    You&apos;ll not be able to{' '}
-                    <Text fontWeight={'bold'} as="b" color="red.200">
-                      add new items
-                    </Text>{' '}
-                    to the list manually.
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon as={BsCheckCircleFill} color="green.300" />
-                    Items that no longer match the search query{' '}
-                    <Text fontWeight={'bold'} as="b" color="green.200">
-                      will be removed
-                    </Text>{' '}
-                    from the list.
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon as={BsCheckCircleFill} color="green.300" />
-                    You will be able to{' '}
-                    <Text fontWeight={'bold'} as="b" color="green.200">
-                      remove items
-                    </Text>{' '}
-                    from the list.
-                  </ListItem>
-                </>
-              )}
-              {dynamicType === 'fullSync' && (
-                <>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon as={BsCheckCircleFill} color="green.300" />
-                    New items that match the search query{' '}
-                    <Text fontWeight={'bold'} as="b" color="green.200">
-                      will be added
-                    </Text>{' '}
-                    to the list.
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon as={BsXCircleFill} color="red.300" />
-                    You&apos;ll not be able to{' '}
-                    <Text fontWeight={'bold'} as="b" color="red.200">
-                      add new items
-                    </Text>{' '}
-                    to the list manually.
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon as={BsCheckCircleFill} color="green.300" />
-                    Items that no longer match the search query{' '}
-                    <Text fontWeight={'bold'} as="b" color="green.200">
-                      will be removed
-                    </Text>{' '}
-                    from the list.
-                  </ListItem>
-                  <ListItem fontSize={'sm'} color="gray.400">
-                    <ListIcon as={BsXCircleFill} color="red.300" />
-                    You&apos;ll not be able to{' '}
-                    <Text fontWeight={'bold'} as="b" color="red.200">
-                      remove items
-                    </Text>{' '}
-                    from the list - <i>but you can hide them</i>.
-                  </ListItem>
-                </>
-              )}
-            </List>
+            <DynamicListInfo
+              dynamicType={dynamicType}
+              setDynamicType={setDynamicType}
+              resultCount={resultCount}
+            />
           </ModalBody>
         )}
 
         {error && (
           <ModalBody>
             <Text color="red.300" textAlign={'center'}>
-              Something went wrong
+              {t('General.something-went-wrong')}
               <br />
-              Please refresh the page and try again later.
+              {t('General.refreshPage')}.
             </Text>
           </ModalBody>
         )}
@@ -299,7 +167,7 @@ const DynamicListModal = (props: DynamicListModalProps) => {
         <ModalFooter>
           {!loading && (
             <Button variant="ghost" mr={3} onClick={doClose}>
-              Close
+              {t('General.close')}
             </Button>
           )}
           {!error && !loading && (
@@ -315,12 +183,143 @@ const DynamicListModal = (props: DynamicListModalProps) => {
                 width={12}
                 style={{ margin: '0 5px', display: 'inline' }}
               />{' '}
-              Create
+              {t('General.create')}
             </Button>
           )}
         </ModalFooter>
       </ModalContent>
     </Modal>
+  );
+};
+
+type DynamicListModalInfoProps = {
+  resultCount?: number;
+  dynamicType: 'addOnly' | 'removeOnly' | 'fullSync';
+  setDynamicType: (type: 'addOnly' | 'removeOnly' | 'fullSync') => void;
+};
+export const DynamicListInfo = (props: DynamicListModalInfoProps) => {
+  const { resultCount, dynamicType, setDynamicType } = props;
+  const t = useTranslations();
+  return (
+    <>
+      <Alert size="sm" status="warning" mt={5} borderRadius={'md'}>
+        <AlertIcon />
+        {t('Lists.dynamic-listsModalLimit')}
+      </Alert>
+
+      <FormControl my={5}>
+        <FormLabel>{t('Lists.dynamic-type')}</FormLabel>
+        <Select
+          value={dynamicType}
+          variant="solid"
+          bg={'blackAlpha.300'}
+          onChange={(e) => setDynamicType(e.target.value as 'addOnly' | 'removeOnly' | 'fullSync')}
+        >
+          <option value="addOnly">{t('Lists.add-only')}</option>
+          <option value="removeOnly">{t('Lists.remove-only')}</option>
+          <option value="fullSync">{t('Lists.full-sync')}</option>
+        </Select>
+        <FormHelperText>{t('Lists.dynamic-listModalChange')}</FormHelperText>
+      </FormControl>
+      <List spacing={2}>
+        <ListItem fontSize={'sm'} color="gray.400">
+          <ListIcon as={BsCheckCircleFill} color="green.300" />
+          {t('Lists.dynamic-listModalCurrentSearch', {
+            resultCount: resultCount,
+          })}
+        </ListItem>
+        {dynamicType === 'addOnly' && (
+          <>
+            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'green.200' } }}>
+              <ListIcon as={BsCheckCircleFill} color="green.300" />
+              {t.rich('DynamicList.addOnly-1', {
+                b: (text) => <b>{text}</b>,
+              })}
+            </ListItem>
+            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'green.200' } }}>
+              <ListIcon as={BsCheckCircleFill} color="green.300" />
+              {t.rich('DynamicList.addOnly-2', {
+                b: (text) => <b>{text}</b>,
+              })}
+            </ListItem>
+            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'orange.200' } }}>
+              <ListIcon as={BsExclamationCircleFill} color="orange.300" />
+              {t.rich('DynamicList.addOnly-3', {
+                b: (text) => <b>{text}</b>,
+              })}
+            </ListItem>
+            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'red.200' } }}>
+              <ListIcon as={BsXCircleFill} color="red.300" />
+              {t.rich('DynamicList.addOnly-4', {
+                b: (text) => <b>{text}</b>,
+                i: (text) => <i>{text}</i>,
+              })}
+            </ListItem>
+          </>
+        )}
+        {dynamicType === 'removeOnly' && (
+          <>
+            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'orange.200' } }}>
+              <ListIcon as={BsExclamationCircleFill} color="orange.300" />
+              {t.rich('DynamicList.removeOnly-1', {
+                b: (text) => <b>{text}</b>,
+              })}
+            </ListItem>
+            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'red.200' } }}>
+              <ListIcon as={BsXCircleFill} color="red.300" />
+              {t.rich('DynamicList.removeOnly-2', {
+                b: (text) => <b>{text}</b>,
+              })}
+            </ListItem>
+            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'green.200' } }}>
+              <ListIcon as={BsCheckCircleFill} color="green.300" />
+              {t.rich('DynamicList.removeOnly-3', {
+                b: (text) => <b>{text}</b>,
+              })}
+            </ListItem>
+            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'green.200' } }}>
+              <ListIcon as={BsCheckCircleFill} color="green.300" />
+              {t.rich('DynamicList.removeOnly-4', {
+                b: (text) => <b>{text}</b>,
+              })}
+            </ListItem>
+          </>
+        )}
+        {dynamicType === 'fullSync' && (
+          <>
+            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'green.200' } }}>
+              <ListIcon as={BsCheckCircleFill} color="green.300" />
+              {t.rich('DynamicList.fullSync-1', {
+                b: (text) => <b>{text}</b>,
+              })}
+            </ListItem>
+            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'red.200' } }}>
+              <ListIcon as={BsXCircleFill} color="red.300" />
+              {t.rich('DynamicList.fullSync-2', {
+                b: (text) => <b>{text}</b>,
+              })}
+            </ListItem>
+            <ListItem fontSize={'sm'} color="gray.400">
+              <ListIcon
+                as={BsCheckCircleFill}
+                color="green.300"
+                sx={{ b: { color: 'green.200' } }}
+              />
+              {t.rich('DynamicList.fullSync-3', {
+                b: (text) => <b>{text}</b>,
+              })}
+            </ListItem>
+            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'red.200' } }}>
+              <ListIcon as={BsXCircleFill} color="red.300" />
+              {t.rich('DynamicList.fullSync-4', {
+                b: (text) => <b>{text}</b>,
+                i: (text) => <i>{text}</i>,
+              })}
+            </ListItem>
+          </>
+        )}
+      </List>
+    </>
   );
 };
 

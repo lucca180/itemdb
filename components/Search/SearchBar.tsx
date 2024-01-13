@@ -32,6 +32,7 @@ import ItemCtxMenu, { CtxTrigger } from '../Modal/ItemCtxMenu';
 import qs from 'qs';
 import { getFiltersDiff } from '../../pages/search';
 import { parseFilters } from '../../utils/parseFilters';
+import { useTranslations } from 'next-intl';
 
 const Axios = axios.create({
   baseURL: '/api/v1/',
@@ -43,6 +44,7 @@ type Props = {
 const intl = new Intl.NumberFormat();
 
 export const SearchBar = (props: Props) => {
+  const t = useTranslations('Layout');
   const [search, setSearch] = React.useState<string>('');
   const [isLargerThanMD] = useMediaQuery('(min-width: 48em)');
   const [searchResult, setResult] = React.useState<SearchResults | null>(null);
@@ -159,9 +161,7 @@ export const SearchBar = (props: Props) => {
             onChange={(e) => setSearch(e.target.value)}
             value={search}
             ref={inputRef}
-            placeholder={
-              isLargerThanMD ? 'Search by name or hex color (eg: #fff000)' : 'Search the database'
-            }
+            placeholder={isLargerThanMD ? t('search-by') : t('search-the-database')}
             _focus={{ bg: 'gray.700' }}
             h="100%"
           />
@@ -176,7 +176,7 @@ export const SearchBar = (props: Props) => {
             </Center>
           )}
           {!isLoading && searchResult && searchResult.content.length === 0 && (
-            <Text textAlign="center">No results found</Text>
+            <Text textAlign="center">{t('no-results-found')}</Text>
           )}
           {!isLoading &&
             searchResult &&
@@ -233,7 +233,7 @@ export const SearchBar = (props: Props) => {
         {!isLoading && searchResult && searchResult.content.length > 0 && (
           <PopoverFooter textAlign={'center'}>
             <Text fontSize="sm">
-              or just press <Kbd verticalAlign={'middle'}>enter</Kbd>
+              {t('or-just-press')} <Kbd verticalAlign={'middle'}>{t('key-enter')}</Kbd>
             </Text>
           </PopoverFooter>
         )}

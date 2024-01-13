@@ -44,6 +44,7 @@ import { FiTrash } from 'react-icons/fi';
 import dynamic from 'next/dynamic';
 import ItemSelect from '../Input/ItemSelect';
 import NextLink from 'next/link';
+import { useTranslations } from 'next-intl';
 
 const ConfirmDeleteItem = dynamic<{
   isOpen: boolean;
@@ -62,6 +63,7 @@ export type EditItemModalProps = {
 };
 
 const EditItemModal = (props: EditItemModalProps) => {
+  const t = useTranslations();
   const { getIdToken, user } = useAuth();
   const { isOpen, onClose, item: itemProps, tags: tagsProps, itemOpenable } = props;
   const [item, setItem] = useState<ItemData>(itemProps);
@@ -195,16 +197,16 @@ const EditItemModal = (props: EditItemModalProps) => {
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>
-            {isAdmin ? 'Edit' : 'Suggest Changes'} - {itemProps.name}
+            {isAdmin ? t('Button.edit') : t('Feedback.suggest-changes')} - {itemProps.name}
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             {!isLoading && !isSuccess && !error && (
               <Tabs variant="line" colorScheme="gray" isLazy>
                 <TabList>
-                  <Tab>Item Info</Tab>
-                  {isAdmin && <Tab>Categories</Tab>}
-                  {isAdmin && <Tab>Drops</Tab>}
+                  <Tab>{t('ItemPage.item-info')}</Tab>
+                  {isAdmin && <Tab>{t('ItemPage.categories')}</Tab>}
+                  {isAdmin && <Tab>{t('ItemPage.drops')}</Tab>}
                 </TabList>
                 <TabPanels>
                   <TabPanel>
@@ -237,27 +239,27 @@ const EditItemModal = (props: EditItemModalProps) => {
             {isSuccess && !isAdmin && (
               <Center>
                 <Text fontSize="sm" textAlign="center">
-                  Thank you!
+                  {t('Feedback.thank-you')}!
                   <br />
-                  We have received your suggestion and it will be reviewed by our team.
+                  {t('Feedback.receivedSuggestion')}
                 </Text>
               </Center>
             )}
             {isSuccess && isAdmin && (
               <Center>
                 <Text fontSize="sm" textAlign="center">
-                  Changes saved!
+                  {t('Feedback.changes-saved')}!
                   <br />
-                  They might take a few minutes to appear due to caching.
+                  {t('Feedback.caching')}
                 </Text>
               </Center>
             )}
             {error && (
               <Center>
                 <Text fontSize="sm" textAlign="center" color="red.400">
-                  An error has occurred!
+                  {t('General.an-error-has-occurred')}!
                   <br />
-                  Please refresh the page and try again later
+                  {t('General.refreshPage')}
                 </Text>
               </Center>
             )}
@@ -271,13 +273,13 @@ const EditItemModal = (props: EditItemModalProps) => {
                   onClick={onDeleteOpen}
                   display={isAdmin ? 'inherit' : 'none'}
                 >
-                  <Icon as={FiTrash} mr={1} /> Delete Item
+                  <Icon as={FiTrash} mr={1} /> {t('ItemPage.delete-item')}
                 </Button>
                 <Button onClick={handleCancel} variant="ghost" mx={3}>
-                  Cancel
+                  {t('General.cancel')}
                 </Button>
                 <Button onClick={isAdmin ? saveChanges : sendFeedback}>
-                  {isAdmin ? 'Save' : 'Send'}
+                  {isAdmin ? t('General.save') : t('General.send')}
                 </Button>
               </>
             )}
@@ -299,6 +301,7 @@ type infoTabProps = {
 };
 
 export const InfoTab = (props: infoTabProps) => {
+  const t = useTranslations();
   const { item, itemProps, onChange: handleChange } = props;
   const { user } = useAuth();
 
@@ -309,16 +312,18 @@ export const InfoTab = (props: infoTabProps) => {
       {!isAdmin && (
         <>
           <Text fontSize="sm" sx={{ a: { color: 'blue.300' } }}>
-            You can correct most of an item&apos;s information using the{' '}
-            <Link href="/contribute" isExternal>
-              Item Data Extractor Script
-            </Link>
-            .
+            {t.rich('Feedback.correctItemInfo', {
+              Link: (chunks) => (
+                <Link as={NextLink} href="/contribute" color="gray.200">
+                  {chunks}
+                </Link>
+              ),
+            })}
           </Text>
           <Text fontSize="sm">
-            If you feel you have already submitted the correct information with the script and too
-            much time has passed and the correct information is still not live, let us know using
-            the <b>feedback button</b>
+            {t.rich('modalFeedbackCallback', {
+              b: (chunks) => <b>{chunks}</b>,
+            })}
           </Text>
         </>
       )}
@@ -326,7 +331,7 @@ export const InfoTab = (props: infoTabProps) => {
         <>
           <Stack>
             <FormControl>
-              <FormLabel color="gray.300">Item Name</FormLabel>
+              <FormLabel color="gray.300">{t('General.item-name')}</FormLabel>
               <Input
                 variant="filled"
                 type="text"
@@ -339,7 +344,7 @@ export const InfoTab = (props: infoTabProps) => {
               />
             </FormControl>
             <FormControl>
-              <FormLabel color="gray.300">Description</FormLabel>
+              <FormLabel color="gray.300">{t('General.description')}</FormLabel>
               <Textarea
                 color={item.description === itemProps.description ? 'gray.400' : '#fff'}
                 value={item.description}
@@ -351,7 +356,7 @@ export const InfoTab = (props: infoTabProps) => {
               />
             </FormControl>
             <FormControl>
-              <FormLabel color="gray.300">Image URL</FormLabel>
+              <FormLabel color="gray.300">{t('General.image-url')}</FormLabel>
               <Input
                 variant="filled"
                 type="text"
@@ -364,7 +369,7 @@ export const InfoTab = (props: infoTabProps) => {
               />
             </FormControl>
             <FormControl>
-              <FormLabel color="gray.300">Canonical ID</FormLabel>
+              <FormLabel color="gray.300">{t('General.canonical-id')}</FormLabel>
               <Input
                 variant="filled"
                 type="text"
@@ -380,7 +385,7 @@ export const InfoTab = (props: infoTabProps) => {
           <Divider />
           <HStack>
             <FormControl>
-              <FormLabel color="gray.300">Item ID</FormLabel>
+              <FormLabel color="gray.300">{t('General.item-id')}</FormLabel>
               <Input
                 variant="filled"
                 type="text"
@@ -393,7 +398,7 @@ export const InfoTab = (props: infoTabProps) => {
               />
             </FormControl>
             <FormControl>
-              <FormLabel color="gray.300">Rarity</FormLabel>
+              <FormLabel color="gray.300">{t('General.rarity')}</FormLabel>
               <Input
                 variant="filled"
                 type="text"
@@ -408,7 +413,7 @@ export const InfoTab = (props: infoTabProps) => {
           </HStack>
           <HStack>
             <FormControl>
-              <FormLabel color="gray.300">Est. Val</FormLabel>
+              <FormLabel color="gray.300">{t('General.est-val')}</FormLabel>
               <Input
                 variant="filled"
                 type="text"
@@ -421,7 +426,7 @@ export const InfoTab = (props: infoTabProps) => {
               />
             </FormControl>
             <FormControl>
-              <FormLabel color="gray.300">Weight</FormLabel>
+              <FormLabel color="gray.300">{t('General.weight')}</FormLabel>
               <Input
                 variant="filled"
                 type="text"
@@ -436,7 +441,7 @@ export const InfoTab = (props: infoTabProps) => {
           </HStack>
           <HStack>
             <FormControl>
-              <FormLabel color="gray.300">Status</FormLabel>
+              <FormLabel color="gray.300">{t('General.status')}</FormLabel>
               <ItemStatusSelect
                 name="status"
                 value={item.status ?? ''}
@@ -448,7 +453,7 @@ export const InfoTab = (props: infoTabProps) => {
           </HStack>
           <HStack>
             <FormControl>
-              <FormLabel color="gray.300">Category</FormLabel>
+              <FormLabel color="gray.300">{t('General.category')}</FormLabel>
               <ItemCatSelect
                 name="category"
                 value={item.category ?? ''}
@@ -461,7 +466,7 @@ export const InfoTab = (props: infoTabProps) => {
         </>
       )}
       <FormControl>
-        <FormLabel color="gray.300">Notes</FormLabel>
+        <FormLabel color="gray.300">{t('ItemPage.notes')}</FormLabel>
         <Textarea
           color={item.comment === itemProps.comment ? 'gray.400' : '#fff'}
           value={item.comment ?? ''}
@@ -471,12 +476,15 @@ export const InfoTab = (props: infoTabProps) => {
           size="sm"
         />
         <FormHelperText>
-          Please do not copy information from other fan sites.
+          {t('ItemPage.modalDoNotCopy')}
           <br />
-          Wrong info? Outdated prices?{' '}
-          <Link as={NextLink} href="/contribute" color="gray.300">
-            Check this instead
-          </Link>
+          {t.rich('Feedback.modalContributeCallback', {
+            Link: (chunks) => (
+              <Link as={NextLink} href="/contribute" color="gray.300">
+                {chunks}
+              </Link>
+            ),
+          })}
         </FormHelperText>
       </FormControl>
     </Flex>
@@ -494,6 +502,7 @@ type TagSelectProps = {
 };
 
 export const CategoriesTab = (props: TagSelectProps) => {
+  const t = useTranslations();
   const { item, onChange: handleChange } = props;
   const [specialTags, setSpecialTags] = useState<string[]>([]);
   const { user } = useAuth();
@@ -534,7 +543,7 @@ export const CategoriesTab = (props: TagSelectProps) => {
     <Stack flexFlow="column" gap={4}>
       {isAdmin && (
         <FormControl>
-          <FormLabel color="gray.300">Special Tags</FormLabel>
+          <FormLabel color="gray.300">{t('ItemPage.special-tags')}</FormLabel>
           <CheckboxGroup value={specialTags} onChange={handleSpecialTags}>
             <Stack spacing={3} direction="row" wrap="wrap" justifyContent="center">
               <Checkbox value="np">
@@ -547,10 +556,10 @@ export const CategoriesTab = (props: TagSelectProps) => {
                 <Badge colorScheme="yellow">PB</Badge>
               </Checkbox>
               <Checkbox value="wearable">
-                <Badge colorScheme="blue">Wearable</Badge>
+                <Badge colorScheme="blue">{t('General.wearable')}</Badge>
               </Checkbox>
               <Checkbox value="neohome">
-                <Badge colorScheme="cyan">Neohome</Badge>
+                <Badge colorScheme="cyan">{t('General.neohome')}</Badge>
               </Checkbox>
             </Stack>
           </CheckboxGroup>

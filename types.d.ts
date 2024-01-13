@@ -193,6 +193,8 @@ export type User = {
   profileImage: string | null;
   description: string | null;
 
+  prefLang: string | null;
+
   xp: number;
 };
 

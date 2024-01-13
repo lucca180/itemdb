@@ -108,3 +108,11 @@ const SortGalleryPage = () => {
 };
 
 export default SortGalleryPage;
+
+export async function getStaticProps(context: any) {
+  return {
+    props: {
+      messages: (await import(`../../translation/${context.locale}.json`)).default,
+    },
+  };
+}

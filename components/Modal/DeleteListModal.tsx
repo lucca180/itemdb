@@ -15,6 +15,7 @@ import axios from 'axios';
 import { useState } from 'react';
 import { useAuth, UserLists } from '../../utils/auth';
 import { useAtom } from 'jotai';
+import { useTranslations } from 'next-intl';
 
 export type DeleteListModalProps = {
   isOpen: boolean;
@@ -25,6 +26,7 @@ export type DeleteListModalProps = {
 };
 
 const DeleteListModal = (props: DeleteListModalProps) => {
+  const t = useTranslations();
   const { getIdToken } = useAuth();
   const { isOpen, onClose, selectedLists: listsIds, refresh, username } = props;
   const [isLoading, setLoading] = useState<boolean>(false);
@@ -68,18 +70,24 @@ const DeleteListModal = (props: DeleteListModalProps) => {
     <Modal isOpen={isOpen} onClose={handleClose} isCentered scrollBehavior="inside">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader textTransform="capitalize">Delete {listsIds.length} lists?</ModalHeader>
+        <ModalHeader textTransform="capitalize">
+          {t('Lists.delete-length-lists', { lists: listsIds.length })}
+        </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           {!isLoading && !error && (
             <Text color="gray.300">
-              Are you sure you want to delete <b>{listsIds.length} lists</b>?
-              <br />
-              This action CANNOT be undone.
+              {t.rich('Lists.delete-lists-confirmation', {
+                b: (chunk) => <b>{chunk}</b>,
+                br: () => <br />,
+                lists: listsIds.length,
+              })}
             </Text>
           )}
 
-          {error && <Text color="red.500">An error occured, please try again later</Text>}
+          {error && (
+            <Text color="red.500">{t('General.an-error-occured-please-try-again-later')}</Text>
+          )}
           {isLoading && (
             <Center>
               <Spinner />
@@ -88,11 +96,11 @@ const DeleteListModal = (props: DeleteListModalProps) => {
         </ModalBody>
         <ModalFooter>
           <Button variant="ghost" mr={3} onClick={handleClose}>
-            Cancel
+            {t('General.cancel')}
           </Button>
           {!isLoading && !error && (
             <Button onClick={confirmDelete} colorScheme="red">
-              Delete
+              {t('General.delete')}
             </Button>
           )}
         </ModalFooter>

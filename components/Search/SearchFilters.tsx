@@ -18,6 +18,7 @@ import { useEffect, useState } from 'react';
 import { SearchStats, SearchFilters } from '../../types';
 import CustomNumberInput from '../Input/CustomNumber';
 import NegCheckbox from '../Input/NegCheckbox';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   stats?: SearchStats | null;
@@ -41,6 +42,7 @@ const ALL_COLORS = [
 const ALL_COLORS_CODE = ALL_COLORS.map(([hex]) => hex);
 
 const SearchFilters = (props: Props) => {
+  const t = useTranslations();
   const { stats, isColorSearch } = props;
   const [showMoreCat, setCat] = useBoolean();
   const [filters, setFilters] = useState<SearchFilters>(props.filters);
@@ -139,7 +141,8 @@ const SearchFilters = (props: Props) => {
         <h2>
           <AccordionButton>
             <Box as="span" flex="1" textAlign="left" fontSize="sm" color="gray.300">
-              Category {filters.category.length > 0 && <Badge>{filters.category.length}</Badge>}
+              {t('General.category')}{' '}
+              {filters.category.length > 0 && <Badge>{filters.category.length}</Badge>}
             </Box>
             <AccordionIcon />
           </AccordionButton>
@@ -170,7 +173,7 @@ const SearchFilters = (props: Props) => {
                 onClick={setCat.toggle}
                 textAlign="center"
               >
-                {showMoreCat ? 'Show less' : 'Show more'}
+                {showMoreCat ? t('Search.show-less') : t('Search.show-more')}
               </Text>
             )}
 
@@ -182,7 +185,7 @@ const SearchFilters = (props: Props) => {
         <h2>
           <AccordionButton>
             <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              Type {filters.type.length > 0 && <Badge>{filters.type.length}</Badge>}
+              {t('General.type')} {filters.type.length > 0 && <Badge>{filters.type.length}</Badge>}
             </Box>
             <AccordionIcon />
           </AccordionButton>
@@ -222,7 +225,7 @@ const SearchFilters = (props: Props) => {
               checklist={filters.type}
             >
               <Text fontSize={'sm'}>
-                <Badge colorScheme="blue">Wearable</Badge>{' '}
+                <Badge colorScheme="blue">{t('General.wearable')}</Badge>{' '}
                 <Badge>{stats?.isWearable.true ?? 0}</Badge>
               </Text>
             </NegCheckbox>
@@ -232,7 +235,7 @@ const SearchFilters = (props: Props) => {
               checklist={filters.type}
             >
               <Text fontSize={'sm'}>
-                <Badge colorScheme="cyan">Neohome</Badge>{' '}
+                <Badge colorScheme="cyan">{t('General.neohome')}</Badge>{' '}
                 <Badge>{stats?.isNeohome?.true ?? 0}</Badge>
               </Text>
             </NegCheckbox>
@@ -243,7 +246,7 @@ const SearchFilters = (props: Props) => {
         <h2>
           <AccordionButton>
             <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              <Badge colorScheme="green">NP</Badge> Price Range{' '}
+              <Badge colorScheme="green">NP</Badge> {t('General.price-range')}{' '}
               {filters.price.filter((a) => a || a === '0').length > 0 && (
                 <Badge>{filters.price.filter((a) => a || a === '0').length}</Badge>
               )}
@@ -258,7 +261,7 @@ const SearchFilters = (props: Props) => {
               value={filters.price[0]}
             />
             <Text fontSize="sm" color="gray.300">
-              to
+              {t('General.to')}
             </Text>
             <CustomNumberInput
               onChange={(val) => handleNumberChange(val, 1, 'price')}
@@ -271,7 +274,7 @@ const SearchFilters = (props: Props) => {
         <h2>
           <AccordionButton>
             <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              <Badge colorScheme="purple">NC</Badge> Owls Value{' '}
+              <Badge colorScheme="purple">NC</Badge> {t('ItemPage.owls-value')}{' '}
               {filters.owlsValue.filter((a) => a || a === '0').length > 0 && (
                 <Badge>{filters.owlsValue.filter((a) => a || a === '0').length}</Badge>
               )}
@@ -286,7 +289,7 @@ const SearchFilters = (props: Props) => {
               value={filters.owlsValue[0]}
             />
             <Text fontSize="sm" color="gray.300">
-              to
+              {t('General.to')}
             </Text>
             <CustomNumberInput
               onChange={(val) => handleNumberChange(val, 1, 'owlsValue')}
@@ -299,7 +302,7 @@ const SearchFilters = (props: Props) => {
         <h2>
           <AccordionButton>
             <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              Rarity{' '}
+              {t('General.rarity')}{' '}
               {filters.rarity.filter((a) => a || a === '0').length > 0 && (
                 <Badge>{filters.rarity.filter((a) => a || a === '0').length}</Badge>
               )}
@@ -314,7 +317,7 @@ const SearchFilters = (props: Props) => {
               value={filters.rarity[0]}
             />
             <Text fontSize="sm" color="gray.300">
-              to
+              {t('General.to')}
             </Text>
             <CustomNumberInput
               onChange={(val) => handleNumberChange(val, 1, 'rarity')}
@@ -327,7 +330,7 @@ const SearchFilters = (props: Props) => {
         <h2>
           <AccordionButton>
             <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              Weight{' '}
+              {t('General.weight')}{' '}
               {filters.weight.filter((a) => a || a === '0').length > 0 && (
                 <Badge>{filters.weight.filter((a) => a || a === '0').length}</Badge>
               )}
@@ -342,7 +345,7 @@ const SearchFilters = (props: Props) => {
               value={filters.weight[0]}
             />
             <Text fontSize="sm" color="gray.300">
-              to
+              {t('General.to')}
             </Text>
             <CustomNumberInput
               onChange={(val) => handleNumberChange(val, 1, 'weight')}
@@ -355,7 +358,7 @@ const SearchFilters = (props: Props) => {
         <h2>
           <AccordionButton>
             <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              Est. Val{' '}
+              {t('General.est-val')}{' '}
               {filters.estVal.filter((a) => a || a === '0').length > 0 && (
                 <Badge>{filters.estVal.filter((a) => a || a === '0').length}</Badge>
               )}
@@ -370,7 +373,7 @@ const SearchFilters = (props: Props) => {
               value={filters.estVal[0]}
             />
             <Text fontSize="sm" color="gray.300">
-              to
+              {t('General.to')}
             </Text>
             <CustomNumberInput
               onChange={(val) => handleNumberChange(val, 1, 'estVal')}
@@ -383,7 +386,7 @@ const SearchFilters = (props: Props) => {
         <h2>
           <AccordionButton>
             <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              Min Restock Profit {filters.restockProfit && <Badge>1</Badge>}
+              {t('Search.min-restock-profit')} {filters.restockProfit && <Badge>1</Badge>}
             </Box>
             <AccordionIcon />
           </AccordionButton>
@@ -401,7 +404,8 @@ const SearchFilters = (props: Props) => {
         <h2>
           <AccordionButton>
             <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              Status {filters.status.length > 0 && <Badge>{filters.status.length}</Badge>}
+              {t('General.status')}{' '}
+              {filters.status.length > 0 && <Badge>{filters.status.length}</Badge>}
             </Box>
             <AccordionIcon />
           </AccordionButton>
@@ -431,7 +435,7 @@ const SearchFilters = (props: Props) => {
         <h2>
           <AccordionButton>
             <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              Color {filters.color.length > 0 && <Badge>1</Badge>}
+              {t('General.color')} {filters.color.length > 0 && <Badge>1</Badge>}
             </Box>
             <AccordionIcon />
           </AccordionButton>
@@ -461,7 +465,7 @@ const SearchFilters = (props: Props) => {
                 <ColorBox color={colorVal} />
               </NegCheckbox>
               <Input
-                placeholder="Custom Color"
+                placeholder={t('Search.custom-color')}
                 disabled={isColorSearch}
                 defaultValue={colorVal}
                 size="xs"
@@ -473,7 +477,7 @@ const SearchFilters = (props: Props) => {
             </HStack>
             <HStack>
               <Text flex="1 0 auto" fontSize={'xs'}>
-                Color Type
+                {t('Search.color-type')}
               </Text>
               <Select
                 variant={'filled'}
@@ -483,7 +487,7 @@ const SearchFilters = (props: Props) => {
                 disabled={isColorSearch}
                 onChange={(e) => handleSelectChange(e.target.value, 'colorType')}
               >
-                <option value="population">Most Prominent</option>
+                <option value="population">{t('Search.most-prominent')}</option>
                 <option value="vibrant">Vibrant</option>
                 <option value="darkvibrant">Dark Vibrant</option>
                 <option value="lightvibrant">Light Vibrant</option>
@@ -494,7 +498,7 @@ const SearchFilters = (props: Props) => {
             </HStack>
             <HStack>
               <Text flex="1 0 auto" fontSize={'xs'}>
-                Tolerance
+                {t('Search.tolerance')}
               </Text>
               <CustomNumberInput
                 wrapperProps={{ size: 'xs' }}

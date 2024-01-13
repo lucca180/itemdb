@@ -4,6 +4,7 @@ import { ItemData } from '../../types';
 import CardBase from '../Card/CardBase';
 import dynamic from 'next/dynamic';
 import Color from 'color';
+import { useTranslations } from 'next-intl';
 
 const Markdown = dynamic(() => import('../Utils/Markdown'), { ssr: false });
 
@@ -12,12 +13,13 @@ type Props = {
 };
 
 const ItemComments = (props: Props) => {
+  const t = useTranslations();
   const { item } = props;
   const color = Color(item.color.hex);
   if (!item.comment) return null;
 
   return (
-    <CardBase title="Notes" color={item.color.rgb}>
+    <CardBase title={t('ItemPage.notes')} color={item.color.rgb}>
       <Flex
         gap={3}
         flexFlow="column"

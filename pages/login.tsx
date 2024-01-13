@@ -20,12 +20,14 @@ import axios from 'axios';
 import { useAuth } from '../utils/auth';
 import LoginModal from '../components/Modal/LoginModal';
 import { User } from '../types';
+import { useTranslations } from 'next-intl';
 
 const mailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const getAuth = () => import('../utils/firebase/auth');
 
 const LoginPage = () => {
+  const t = useTranslations();
   // const auth = getAuth();
   const router = useRouter();
   const [email, setEmail] = useState<string>('');
@@ -94,7 +96,7 @@ const LoginPage = () => {
 
   const doConfirm = () => {
     if (!email.match(mailRegex)) {
-      setError('Invalid email address');
+      setError(t('Login.invalid-email-address'));
       return;
     }
 
@@ -109,12 +111,12 @@ const LoginPage = () => {
   const saveChanges = async () => {
     setError('');
     if (!neopetsUser || !username) {
-      setError('Please fill all fields');
+      setError(t('Login.please-fill-all-fields'));
       return;
     }
 
     if (!neopetsUser.match(/^[a-zA-Z0-9_]+$/) || !username.match(/^[a-zA-Z0-9_]+$/)) {
-      setError('Only letters, numbers and underlines are allowed');
+      setError(t('Login.only-letters-numbers'));
       return;
     }
 
@@ -122,7 +124,7 @@ const LoginPage = () => {
 
     if (!(await checkUsername())) {
       setIsLoading(false);
-      setError('Username already taken');
+      setError(t('Login.username-already-taken'));
       return;
     }
 
@@ -191,17 +193,17 @@ const LoginPage = () => {
           <Flex flexFlow="column" gap={4} justifyContent="center" alignItems="center">
             <Image src={logoIcon} alt="itemdb logo" width={300} quality={100} />
             <Text mt={4} textAlign="center">
-              Please confirm your email address
+              {t('Login.please-confirm-your-email-address')}
             </Text>
             <FormControl isInvalid={!!error}>
               <Input
-                placeholder="Email Address"
+                placeholder={t('General.email-address')}
                 type="email"
                 value={email}
                 onChange={onEmailChange}
               />
             </FormControl>
-            <Button onClick={doConfirm}>Continue</Button>
+            <Button onClick={doConfirm}>{t('General.continue')}</Button>
           </Flex>
         )}
 
@@ -209,10 +211,10 @@ const LoginPage = () => {
           <Flex flexFlow="column" gap={4} justifyContent="center" alignItems="center">
             <Image src={logoIcon} alt="itemdb logo" width={300} quality={100} />
             <Text mt={4} textAlign="center">
-              Heey, we need some info to complete your signup
+              {t('Login.moreInfo')}
             </Text>
             <Text fontSize="sm" color="gray.400">
-              We need this info so other users can reach you about NC Trades etc
+              {t('Login.neopetsUsernameReason')}
             </Text>
             {!!error && (
               <Text color="red.400" textAlign="center">
@@ -220,28 +222,26 @@ const LoginPage = () => {
               </Text>
             )}
             <FormControl>
-              <FormLabel>itemdb Username</FormLabel>
+              <FormLabel>{t('Login.itemdb-username')}</FormLabel>
               <Input
-                placeholder="Username"
+                placeholder={t('Login.username')}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 variant="filled"
               />
-              <FormHelperText>Only letters, numbers and underlines</FormHelperText>
+              <FormHelperText>{t('Login.only-letters-numbers-and-underlines')}</FormHelperText>
             </FormControl>
             <FormControl>
-              <FormLabel>Neopets Username</FormLabel>
+              <FormLabel>{t('Login.neopets-username')}</FormLabel>
               <Input
-                placeholder="Neopets Username"
+                placeholder={t('Login.neopets-username')}
                 value={neopetsUser}
                 onChange={(e) => setNeopetsUser(e.target.value)}
                 variant="filled"
               />
-              <FormHelperText>
-                We need this info so other users can reach you about NC Trades etc
-              </FormHelperText>
+              <FormHelperText>{t('Login.neopetsUsernameReason')}</FormHelperText>
             </FormControl>
-            <Button onClick={saveChanges}>Continue</Button>
+            <Button onClick={saveChanges}>{t('General.continue')}</Button>
           </Flex>
         )}
       </Center>
@@ -250,3 +250,11 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+
+export async function getStaticProps(context: any) {
+  return {
+    props: {
+      messages: (await import(`../translation/${context.locale}.json`)).default,
+    },
+  };
+}

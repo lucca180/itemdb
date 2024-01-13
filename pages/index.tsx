@@ -26,6 +26,7 @@ import NextLink from 'next/link';
 import Color from 'color';
 import { getTrendingItems } from './api/v1/beta/trending';
 import { getHotestRestock } from './api/v1/beta/restock';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   latestOwls: ItemData[];
@@ -35,6 +36,7 @@ type Props = {
 };
 
 const HomePage = (props: Props) => {
+  const t = useTranslations('HomePage');
   const { latestOwls, latestPosts, hottestRestock } = props;
   const [latestItems, setItems] = useState<ItemData[] | null>(null);
   const [latestPrices, setPrices] = useState<ItemData[] | null>(null);
@@ -69,8 +71,7 @@ const HomePage = (props: Props) => {
   return (
     <Layout
       SEO={{
-        description:
-          'Find all the data about Neopets items such as the most updated prices, wearable previews, restock history, color search, capsules drop rates and more! Create your item lists easily and share around Neopia!',
+        description: t('seo-description'),
       }}
     >
       <Box textAlign="center" display="flex" flexFlow="column" alignItems="center" mt="50px">
@@ -86,7 +87,7 @@ const HomePage = (props: Props) => {
         <Image src={logo} alt="itemdb logo" width={500} quality="100" priority />
         <Heading size="sm" mt={4}>
           <Highlight
-            query="open source"
+            query={t('open-source')}
             styles={{
               px: '2',
               py: '1',
@@ -94,15 +95,15 @@ const HomePage = (props: Props) => {
               bg: 'gray.100',
             }}
           >
-            Your open source of Neopets item info.
+            {t('title')}
           </Highlight>{' '}
           <Link color="cyan.300" href="/faq">
-            Why us?
+            {t('why-us')}
           </Link>
         </Heading>
       </Box>
       <Flex mt={8} gap={4} flexFlow="column">
-        <Heading size="md">Latest Prices</Heading>
+        <Heading size="md">{t('latest-prices')}</Heading>
         <Flex flexWrap="wrap" gap={4} justifyContent="center">
           {latestPrices !== null &&
             latestPrices.map((item) => <ItemCard item={item} key={item.internal_id} />)}
@@ -111,7 +112,7 @@ const HomePage = (props: Props) => {
         <Stack direction={{ base: 'column', lg: 'row' }}>
           <Flex gap={4} flexFlow="column" flex="1">
             <Heading size="md" textAlign={{ base: 'left', lg: 'center' }}>
-              Latest Discoveries
+              {t('latest-discoveries')}
             </Heading>
             <Flex flexWrap="wrap" gap={4} justifyContent="center" h="100%">
               {latestItems &&
@@ -122,9 +123,11 @@ const HomePage = (props: Props) => {
           <Flex gap={4} flexFlow="column" flex="1">
             <Tabs flex={1} colorScheme="gray" variant={'line'}>
               <TabList>
-                <Tab>Trending Items</Tab>
-                {!latestOwls || (!!latestOwls.length && <Tab>Latest Owls</Tab>)}
-                <Tab>14-Day Hottest Restock</Tab>
+                <Tab>{t('trending-items')}</Tab>
+                {!latestOwls || (!!latestOwls.length && <Tab>{t('latest-owls')}</Tab>)}
+                <Tab>
+                  {t('hottest-restock-period')} {t('hottest-restock')}
+                </Tab>
               </TabList>
               <TabPanels>
                 <TabPanel px={0}>
@@ -156,13 +159,13 @@ const HomePage = (props: Props) => {
         </Stack>
         <Stack direction={{ base: 'column', lg: 'row' }} mt={2} gap={{ base: 8, lg: 3 }}>
           <Flex flexFlow="column" flex={1} alignItems="center" h="100%">
-            <Heading size="md">Stats</Heading>
+            <Heading size="md">{t('stats')}</Heading>
             <BetaStatsCard />
           </Flex>
           <Flex flex={1} flexFlow={'column'}>
             <Heading size="md" textAlign="center" mb={5}>
               <Link as={NextLink} href="/articles">
-                Latest Articles
+                {t('latest-articles')}
               </Link>
             </Heading>
             <Flex flexFlow={'column'} gap={2}>
@@ -179,7 +182,7 @@ const HomePage = (props: Props) => {
 
 export default HomePage;
 
-export async function getStaticProps() {
+export async function getStaticProps(context: any) {
   const [latestOwls, latestPosts, trendingItems, hottestRestock] = await Promise.all([
     getLatestOwls(16).catch(() => []),
     wp_getLatestPosts(5).catch((e) => {
@@ -196,6 +199,7 @@ export async function getStaticProps() {
       latestPosts,
       trendingItems,
       hottestRestock,
+      messages: (await import(`../translation/${context.locale}.json`)).default,
     },
     revalidate: 60, // In seconds
   };

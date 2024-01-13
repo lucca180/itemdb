@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { ItemData } from '../../types';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   item: ItemData;
@@ -10,6 +11,7 @@ type Props = {
 };
 
 const ItemPreview = (props: Props) => {
+  const t = useTranslations();
   const [isLoaded, setIsLoaded] = useState(false);
   const { item, isLoading } = props;
   const color = item.color.rgb;
@@ -35,7 +37,7 @@ const ItemPreview = (props: Props) => {
         fontWeight="bold"
         bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}
       >
-        <Text>Item Preview</Text>
+        <Text>{t('ItemPage.item-preview')}</Text>
       </Box>
       <Flex
         // p={3}
@@ -64,7 +66,7 @@ const ItemPreview = (props: Props) => {
       </Flex>
       <Box p={1} textAlign="center" bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}>
         <Text fontSize="small">
-          Powered by{' '}
+          {t('ItemPage.powered-by')}{' '}
           <Link href={item.findAt.dti ?? undefined} isExternal fontWeight="bold">
             Dress To Impress <ExternalLinkIcon mx="1px" verticalAlign="baseline" />
           </Link>

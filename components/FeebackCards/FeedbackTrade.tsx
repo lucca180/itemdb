@@ -5,6 +5,7 @@ import Image from 'next/image';
 import CustomNumberInput from '../Input/CustomNumber';
 import { useState, useEffect } from 'react';
 import { BsArrowLeft, BsArrowLeftRight, BsCheck2 } from 'react-icons/bs';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   trade?: TradeData;
@@ -18,6 +19,7 @@ type Props = {
 type TradeItems = TradeData['items'][0];
 
 const FeedbackTrade = (props: Props) => {
+  const t = useTranslations();
   const { handleSkip, handleSubmit, handleUndo, hasUndo } = props;
   const [trade, setTrade] = useState<TradeData | undefined>(props.trade);
 
@@ -47,7 +49,7 @@ const FeedbackTrade = (props: Props) => {
           isDisabled={!hasUndo}
           onClick={handleUndo}
         >
-          Back
+          {t('General.back')}
         </Button>
         <Button
           leftIcon={<Icon as={BsArrowLeftRight} />}
@@ -55,7 +57,7 @@ const FeedbackTrade = (props: Props) => {
           variant="outline"
           onClick={handleSkip}
         >
-          Skip
+          {t('General.skip')}
         </Button>
         <Button
           leftIcon={<Icon as={BsCheck2} />}
@@ -64,10 +66,14 @@ const FeedbackTrade = (props: Props) => {
           mr={2}
           onClick={doSubmit}
         >
-          Submit
+          {t('General.submit')}
         </Button>
       </Flex>
-      <CardBase chakraWrapper={{ flex: 1 }} title="Trade Pricing" chakra={{ bg: 'gray.700' }}>
+      <CardBase
+        chakraWrapper={{ flex: 1 }}
+        title={t('Layout.trade-pricing')}
+        chakra={{ bg: 'gray.700' }}
+      >
         <Flex flexFlow="column" gap={6}>
           <Flex
             textAlign="center"
@@ -77,7 +83,7 @@ const FeedbackTrade = (props: Props) => {
             flexFlow="column"
             p={2}
           >
-            <b>Wishlist</b>
+            <b>{t('ItemPage.wishlist')}</b>
             <Text>{trade?.wishlist}</Text>
           </Flex>
 
@@ -102,6 +108,7 @@ type ItemTradeProps = {
 };
 
 const ItemTrade = (props: ItemTradeProps) => {
+  const t = useTranslations();
   const { item } = props;
 
   const handleChange = (val: string) => {
@@ -126,17 +133,19 @@ const ItemTrade = (props: ItemTradeProps) => {
             wrapperProps={{
               variant: 'filled',
               size: 'sm',
-              placeholder: 'NP Price',
+              placeholder: t('General.np-price'),
             }}
             inputProps={{
-              placeholder: 'NP Price',
+              placeholder: t('General.np-price'),
               textAlign: 'left',
               name: item.trade_id + item.name + item.order,
             }}
             value={item.price?.toString()}
             onChange={(val) => handleChange(val)}
           />
-          <FormHelperText fontSize="xs">Leave empty if price is not specified</FormHelperText>
+          <FormHelperText fontSize="xs">
+            {t('Feedback.leave-empty-if-price-is-not-specified')}
+          </FormHelperText>
         </FormControl>
       </Flex>
     </Flex>

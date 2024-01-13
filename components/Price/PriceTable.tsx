@@ -1,8 +1,8 @@
 import { Stat, StatArrow, Table, TableContainer, Tbody, Td, Tr, Text } from '@chakra-ui/react';
 import React from 'react';
 import { PriceData } from '../../types';
-import { format } from 'date-fns';
 import { MinusIcon } from '@chakra-ui/icons';
+import { useFormatter, useTranslations } from 'next-intl';
 
 const intl = new Intl.NumberFormat();
 
@@ -13,6 +13,8 @@ type Props = {
 const PriceTable = (props: Props) => {
   const { data } = props;
   const sortedData = data;
+  const t = useTranslations();
+  const format = useFormatter();
 
   return (
     <TableContainer
@@ -30,7 +32,7 @@ const PriceTable = (props: Props) => {
               <Td>
                 {price.inflated && (
                   <Text fontWeight="bold" color="red.400">
-                    Inflation!
+                    {t('General.inflation')}!
                   </Text>
                 )}
                 {intl.format(price.value)} NP
@@ -52,7 +54,13 @@ const PriceTable = (props: Props) => {
                   </Stat>
                 )}
               </Td>
-              <Td>{format(new Date(price.addedAt), 'PPP')}</Td>
+              <Td>
+                {format.dateTime(new Date(price.addedAt), {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </Td>
             </Tr>
           ))}
         </Tbody>

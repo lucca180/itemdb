@@ -6,7 +6,6 @@ import {
   ListItem,
   OrderedList,
   Text,
-  Icon,
   Box,
   FormControl,
   FormLabel,
@@ -21,7 +20,6 @@ import {
   UnorderedList,
 } from '@chakra-ui/react';
 import Image from 'next/image';
-import { AiFillWarning } from 'react-icons/ai';
 import HeaderCard from '../../components/Card/HeaderCard';
 import Layout from '../../components/Layout';
 import icon from '../../public/logo_icon.svg';
@@ -37,6 +35,7 @@ import { CreateLinkedListButton } from '../../components/DynamicLists/CreateLink
 import { useRouter } from 'next/router';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import NextLink from 'next/link';
+import { useTranslations } from 'next-intl';
 type Props = {
   items?: { [index: number | string]: number };
   indexType?: string;
@@ -44,12 +43,13 @@ type Props = {
 };
 
 const ImportPage = (props: Props) => {
+  const t = useTranslations();
   const { items, indexType, recomended_list } = props;
   return (
     <Layout
       SEO={{
-        title: 'Checklists and Importing Items',
-        description: 'Import items and create your checklists easily with itemdb!',
+        title: t('Lists.checklists-and-importing-items'),
+        description: t('Lists.import-page-description'),
         openGraph: {
           images: [
             {
@@ -68,9 +68,9 @@ const ImportPage = (props: Props) => {
         }}
         color="#65855B"
       >
-        <Heading size="lg">Checklists and Importing Items</Heading>
+        <Heading size="lg">{t('Lists.checklists-and-importing-items')}</Heading>
         <Text as="div" sx={{ a: { color: '#b8e9a9' } }}>
-          Import items and create your checklists easily with itemdb!
+          {t('Lists.import-page-description')}
         </Text>
       </HeaderCard>
       <Flex flexFlow="column" gap={3} sx={{ a: { color: '#b8e9a9' } }}>
@@ -99,6 +99,7 @@ export async function getServerSideProps(context: any) {
       items: items,
       indexType: indexType,
       recomended_list: list,
+      messages: (await import(`../../translation/${context.locale}.json`)).default,
     }, // will be passed to the page component as props
   };
 }
@@ -122,6 +123,7 @@ const DefaultImportInfo = {
 };
 
 const ImportItems = (props: ImportItemsProps) => {
+  const t = useTranslations();
   const { user, getIdToken } = useAuth();
   const router = useRouter();
   const toast = useToast();
@@ -183,8 +185,8 @@ const ImportItems = (props: ImportItemsProps) => {
 
     if (!importData.length) {
       toast({
-        title: 'Error',
-        description: `There were no items to import. Please check your "ignore" fields.`,
+        title: t('General.error'),
+        description: t('Lists.import-error'),
         status: 'error',
         duration: 10000,
       });
@@ -193,10 +195,17 @@ const ImportItems = (props: ImportItemsProps) => {
     }
 
     const toastInfo = toast({
-      title: `${importInfo.action === 'add' ? 'Importing' : 'Removing'} Items`,
-      description: `Please wait while we ${
-        importInfo.action === 'add' ? 'import' : importInfo.action === 'hide' ? 'hide' : 'remove'
-      } your items.`,
+      title: t('Lists.import-toast-title', {
+        action: importInfo.action === 'add' ? t('General.importing') : t('General.removing'),
+      }),
+      description: t('Lists.import-please-wait', {
+        action:
+          importInfo.action === 'add'
+            ? t('Lists.toast-import')
+            : importInfo.action === 'hide'
+            ? t('Lists.toast-hide')
+            : t('Lists.toast-remove'),
+      }),
       status: 'info',
       duration: null,
     });
@@ -231,14 +240,15 @@ const ImportItems = (props: ImportItemsProps) => {
       }
 
       toast.update(toastInfo, {
-        title: 'Success',
-        description: `Your items have been ${
-          importInfo.action === 'add'
-            ? 'imported'
-            : importInfo.action === 'hide'
-            ? 'hidden'
-            : 'removed'
-        }!`,
+        title: t('General.success'),
+        description: t('Lists.import-success', {
+          action:
+            importInfo.action === 'add'
+              ? t('Lists.toast-imported')
+              : importInfo.action === 'hide'
+              ? t('Lists.toast-hidden')
+              : t('Lists.toast-removed'),
+        }),
         status: 'success',
         duration: 10000,
         isClosable: true,
@@ -248,14 +258,15 @@ const ImportItems = (props: ImportItemsProps) => {
     } catch (e) {
       console.error(e);
       toast.update(toastInfo, {
-        title: 'Error',
-        description: `There was an error ${
-          importInfo.action === 'add'
-            ? 'importing'
-            : importInfo.action === 'hide'
-            ? 'hidding'
-            : 'removing'
-        } your items. Please try again later.`,
+        title: t('General.error'),
+        description: t('Lists.import-error-action', {
+          action:
+            importInfo.action === 'add'
+              ? t('Lists.toast-importing')
+              : importInfo.action === 'hide'
+              ? t('Lists.toast-hidding')
+              : t('Lists.toast-removing'),
+        }),
         status: 'error',
         duration: null,
         isClosable: true,
@@ -309,8 +320,11 @@ const ImportItems = (props: ImportItemsProps) => {
       <Heading size="lg">Importing {Object.values(itemData ?? items).length} Items</Heading>
       {notFound > 0 && (
         <Text fontSize="sm" color="red.400">
-          Could not find <b>{notFound} items</b> in the database. Please visit the How To Contribute
-          to add these items to our database.
+          {t.rich('Lists.import-notFound', {
+            b: (children) => <b>{children}</b>,
+            notFound: notFound,
+          })}
+          ;
         </Text>
       )}
       <Flex flexFlow={{ base: 'column-reverse', md: 'row' }} gap={6}>
@@ -330,16 +344,18 @@ const ImportItems = (props: ImportItemsProps) => {
             {!itemData && [...Array(20)].map((_, i) => <ItemCard key={i} />)}
           </Flex>
           {itemData && Object.entries(itemData).length > 25 && (
-            <Text textAlign="center">...and {Object.entries(itemData).length - 25} more</Text>
+            <Text textAlign="center">
+              {t('Lists.import-and-more', { value: Object.entries(itemData).length - 25 })}
+            </Text>
           )}
         </Flex>
         <Flex flex="1" flexFlow="column" gap={3} alignItems={{ base: 'center', md: 'flex-start' }}>
           <FormControl>
-            <FormLabel color="gray.300">Target List</FormLabel>
+            <FormLabel color="gray.300">{t('Lists.import-target-list')}</FormLabel>
             <ListSelect defaultValue={importInfo.list} onChange={handleListChange} createNew />
           </FormControl>
           <FormControl>
-            <FormLabel color="gray.300">Action</FormLabel>
+            <FormLabel color="gray.300">{t('General.action')}</FormLabel>
             <Select
               value={importInfo.action}
               variant="filled"
@@ -352,7 +368,7 @@ const ImportItems = (props: ImportItemsProps) => {
                   !!importInfo.list?.dynamicType && importInfo.list?.dynamicType !== 'addOnly'
                 }
               >
-                Add these items
+                {t('Lists.add-these-items')}
               </option>
               <option
                 value="remove"
@@ -360,28 +376,28 @@ const ImportItems = (props: ImportItemsProps) => {
                   !!importInfo.list?.dynamicType && importInfo.list?.dynamicType === 'fullSync'
                 }
               >
-                Remove these items
+                {t('Lists.remove-these-items')}
               </option>
-              <option value="hide">Mark as hidden</option>
+              <option value="hide">{t('Lists.mark-as-hidden')}</option>
             </Select>
           </FormControl>
           <FormControl>
-            <FormLabel color="gray.300">Ignore</FormLabel>
+            <FormLabel color="gray.300">{t('General.ignore')}</FormLabel>
             <CheckboxGroup
               colorScheme="green"
               value={importInfo.ignore}
               onChange={handleIgnoreChange}
             >
               <VStack justifyContent="flex-start" alignItems="flex-start">
-                <Checkbox value="np">NP Items</Checkbox>
-                <Checkbox value="nc">NC Items</Checkbox>
-                <Checkbox value="quantity">Quantities</Checkbox>
+                <Checkbox value="np">{t('General.np-items')}</Checkbox>
+                <Checkbox value="nc">{t('General.nc-items')}</Checkbox>
+                <Checkbox value="quantity">{t('General.quantities')}</Checkbox>
               </VStack>
             </CheckboxGroup>
           </FormControl>
           <HStack mt={3}>
             <Button onClick={handleImport} isDisabled={!importInfo.list}>
-              Submit
+              {t('General.submit')}
             </Button>
             {recomended_list && (
               <CreateLinkedListButton list={recomended_list} isImport onCreate={handleLinkedList} />
@@ -394,65 +410,55 @@ const ImportItems = (props: ImportItemsProps) => {
 };
 
 const ImportInfo = () => {
+  const t = useTranslations();
   const [isLargerThanMD] = useMediaQuery('(min-width: 48em)', { fallback: true });
 
   return (
     <>
-      <Heading size="lg">Step by Step</Heading>
+      <Heading size="lg">{t('Lists.import-step-by-step')}</Heading>
       {!isLargerThanMD && (
         <Text fontSize="sm" color="red.400">
-          This guide may not work on mobile devices!
+          {t('Lists.import-this-guide-may-not-work-on-mobile-devices')}
         </Text>
       )}
       <OrderedList spacing={2}>
         <ListItem>
-          Install{' '}
-          <Link href="https://www.tampermonkey.net/" isExternal>
-            Tampermonkey
-          </Link>{' '}
-          extension for your browser if you don&apos;t have it already.
+          {t.rich('Lists.import-text-1', {
+            Link: (chunk) => (
+              <Link href="https://www.tampermonkey.net/" isExternal>
+                {chunk}
+              </Link>
+            ),
+          })}
         </ListItem>
         <ListItem>
-          Install the{' '}
-          <Link href="https://github.com/lucca180/itemdb/raw/main/userscripts/listImporter.user.js">
-            itemdb List Importer
-          </Link>{' '}
-          script{' '}
-          <i>
-            (not to be confused with the{' '}
-            <Link
-              href="https://github.com/lucca180/itemdb/raw/main/userscripts/itemDataExtractor.user.js"
-              isExternal
-            >
-              ItemData Extractor
-            </Link>{' '}
-            script!)
-          </i>
-          <Text fontSize="sm">
-            <Icon as={AiFillWarning} color="yellow.400" verticalAlign="middle" /> If you encounter
-            compatibility issues with other scripts, take a look at this{' '}
-            <Link isExternal href="https://www.tampermonkey.net/faq.php?locale=en#Q208">
-              troubleshooting guide
-            </Link>
-            .
-          </Text>
+          {t.rich('Lists.import-text-2', {
+            Link: (chunk) => (
+              <Link
+                href="https://github.com/lucca180/itemdb/raw/main/userscripts/listImporter.user.js"
+                isExternal
+              >
+                {chunk}
+              </Link>
+            ),
+          })}
         </ListItem>
         <ListItem>
-          Open one of the supported pages:{' '}
+          {t('Lists.importer-text-3')}
           <UnorderedList spacing={1} mb={3}>
             <ListItem>
               <Link href="https://www.neopets.com/closet.phtml" isExternal>
-                Closet
+                {t('General.closet')}
               </Link>
             </ListItem>
             <ListItem>
               <Link href="https://www.neopets.com/gallery/quickremove.phtml" isExternal>
-                Gallery Quick Remove
+                {t('General.gallery-quick-remove')}
               </Link>
             </ListItem>
             <ListItem>
               <Link href="https://www.neopets.com/safetydeposit.phtml" isExternal>
-                Safety Deposit Box
+                {t('General.safety-deposit-box')}
               </Link>
             </ListItem>
             <ListItem>
@@ -463,7 +469,7 @@ const ImportInfo = () => {
                   width={8}
                   style={{ display: 'inline' }}
                 />{' '}
-                Gourmet Club - Checklist
+                {t('General.gourmet-club')} - {t('General.checklist')}
               </Link>
             </ListItem>
             <ListItem>
@@ -474,7 +480,7 @@ const ImportInfo = () => {
                   width={8}
                   style={{ display: 'inline' }}
                 />{' '}
-                NeoDeck - Checklist
+                {t('General.neodeck')} - {t('General.checklist')}
               </Link>
             </ListItem>
             <ListItem>
@@ -488,7 +494,7 @@ const ImportInfo = () => {
                   width={8}
                   style={{ display: 'inline' }}
                 />{' '}
-                Stamp Album - Checklist
+                {t('General.stamp-album')} - {t('General.checklist')}
               </Link>
             </ListItem>
             <ListItem>
@@ -499,11 +505,11 @@ const ImportInfo = () => {
                   width={8}
                   style={{ display: 'inline' }}
                 />{' '}
-                Book Award - Checklist
+                {t('General.book-award')} - {t('General.checklist')}
               </Link>{' '}
               <Text fontSize={'sm'} pl={3} mb={1} color="gray.400">
                 {' '}
-                - click on your pet&apos;s intelligence number
+                - {t('Lists.import-click-pets-intelligence-number')}
               </Text>
             </ListItem>
             <ListItem>
@@ -514,48 +520,56 @@ const ImportInfo = () => {
                   width={8}
                   style={{ display: 'inline' }}
                 />{' '}
-                Booktastic Books Award - Checklist
+                {t('General.booktastic-books-award')} - Checklist
               </Link>{' '}
               <Text fontSize={'sm'} pl={3} mb={1} color="gray.400">
                 {' '}
-                - click on your pet&apos;s intelligence number
-                <br />- then click the Booktastic Books read list link
+                - {t('Lists.import-click-pets-intelligence-number')}
+                <br />- {t('Lists.import-then-click-the-booktastic-books-read-list-link')}
               </Text>
             </ListItem>
           </UnorderedList>
         </ListItem>
         <ListItem>
-          Click the <ImportButton /> button
+          {t.rich('Lists.click-import-button', {
+            ImportButton: () => <ImportButton />,
+          })}
         </ListItem>
         <ListItem>
-          A new tab will open with a list of items that can be imported. Then you choose your target
-          list and if you want to import, remove or hide the items from that list
+          {t('Lists.import-text-3')}
           <Text fontSize="sm">
             <Image src={DynamicIcon} alt="lightning bolt" width={8} style={{ display: 'inline' }} />{' '}
-            You can also make a{' '}
-            <Link as={NextLink} href={'/articles/checklists-and-dynamic-lists'}>
-              Dynamic Checklist
-            </Link>{' '}
-            based on one of our{' '}
-            <Link as={NextLink} href={'/lists/official'}>
-              Official Lists
-            </Link>
-            !
+            {t.rich('Lists.import-text-4', {
+              Dynamic: (chunk) => (
+                <Link as={NextLink} href={'/articles/checklists-and-dynamic-lists'}>
+                  {chunk}
+                </Link>
+              ),
+              Official: (chunk) => (
+                <Link as={NextLink} href={'/lists/official'}>
+                  {chunk}
+                </Link>
+              ),
+            })}
           </Text>
         </ListItem>
       </OrderedList>
       <Heading size="md" mt={3}>
-        Is it safe?
+        {t('Lists.import-is-it-safe')}
       </Heading>
       <Text>
-        The script will only send the data of the items you want to import. No data from your
-        neopets account <i>(or the page source code)</i> is sent to our servers.
+        {t.rich('Lists.import-text-5', {
+          i: (chunk) => <i>{chunk}</i>,
+        })}
         <br />
-        Don&apos;t trust us? itemdb is <b>open source</b> and you can always take a{' '}
-        <Link href="https://github.com/lucca180/itemdb/" isExternal>
-          look at our code
-        </Link>
-        !
+        {t.rich('Lists.import-text-6', {
+          b: (chunk) => <b>{chunk}</b>,
+          Link: (chunk) => (
+            <Link href="https://github.com/lucca180/itemdb/" isExternal>
+              {chunk}
+            </Link>
+          ),
+        })}
       </Text>
     </>
   );

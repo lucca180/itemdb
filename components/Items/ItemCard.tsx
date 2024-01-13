@@ -6,6 +6,7 @@ import NextLink from 'next/link';
 import { AiFillInfoCircle, AiFillWarning } from 'react-icons/ai';
 import ItemCtxMenu, { CtxTrigger } from '../Modal/ItemCtxMenu';
 import { rarityToCCPoints } from '../../utils/utils';
+import { useTranslations } from 'next-intl';
 
 export type ItemProps = {
   item?: ItemData;
@@ -27,6 +28,7 @@ export type ItemProps = {
 const intl = new Intl.NumberFormat();
 
 const ItemCardBase = (props: ItemProps) => {
+  const t = useTranslations();
   const {
     item,
     isLoading,
@@ -116,7 +118,11 @@ const ItemCardBase = (props: ItemProps) => {
             <Text fontSize={{ base: 'xs', md: small ? 'xs' : 'sm' }}>{item.name}</Text>
 
             {item.price.value && item.price.inflated && (
-              <Tooltip label="Inflation!" aria-label="Inflation Tooltip" placement="top">
+              <Tooltip
+                label={t('General.inflation')}
+                aria-label="Inflation Tooltip"
+                placement="top"
+              >
                 <Badge colorScheme="red" whiteSpace="pre-wrap">
                   <Icon as={AiFillWarning} verticalAlign="middle" /> {intl.format(item.price.value)}{' '}
                   NP
@@ -148,7 +154,7 @@ const ItemCardBase = (props: ItemProps) => {
               )}
 
             {item.isNC && item.owls && !capValue && item.owls.buyable && (
-              <Badge colorScheme="purple">NC - Buyable</Badge>
+              <Badge colorScheme="purple">{t('ItemPage.nc-buyable')}</Badge>
             )}
 
             {item.isNC && Number(capValue) > 0 && (

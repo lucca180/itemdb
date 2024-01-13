@@ -5,18 +5,20 @@ import HeaderCard from '../../components/Card/HeaderCard';
 import Layout from '../../components/Layout';
 import { WP_Article } from '../../types';
 import { wp_getLatestPosts } from '../api/wp/posts';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   allPosts: WP_Article[];
 };
 
 const ArticlesPage = (props: Props) => {
+  const t = useTranslations();
   const { allPosts } = props;
 
   return (
     <Layout
       SEO={{
-        title: 'All Articles',
+        title: t('Articles.all-articles'),
         themeColor: '#E4DA0A',
         openGraph: {
           images: [
@@ -24,7 +26,7 @@ const ArticlesPage = (props: Props) => {
               url: 'https://images.neopets.com/nt/ntimages/94_acara_type.gif' ?? '',
               width: 150,
               height: 150,
-              alt: 'All Articles',
+              alt: t('Articles.all-articles'),
             },
           ],
         },
@@ -38,7 +40,7 @@ const ArticlesPage = (props: Props) => {
         color="#E4DA0A"
       >
         <Heading size="lg" as="h1">
-          All Articles
+          {t('Articles.all-articles')}
         </Heading>
         <Text size={{ base: 'sm', md: undefined }} as="h2">
           {/* Check out all itemdb articles */}
@@ -57,11 +59,12 @@ const ArticlesPage = (props: Props) => {
 
 export default ArticlesPage;
 
-export async function getStaticProps() {
+export async function getStaticProps(context: any) {
   const allPosts = await wp_getLatestPosts(100);
 
   return {
     props: {
+      messages: (await import(`../../translation/${context.locale}.json`)).default,
       allPosts,
     },
     revalidate: 60, // In seconds

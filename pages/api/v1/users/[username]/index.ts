@@ -5,6 +5,8 @@ import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 import { getImagePalette } from '../../lists/[username]';
 
+const VALID_LANGS = ['en', 'pt'];
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
   if (req.method === 'POST') return POST(req, res);
@@ -34,7 +36,10 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { neopetsUser, username, profileColor, profileImage, description } = req.body;
+  let { neopetsUser, username, profileColor, profileImage, description, prefLang } = req.body;
+
+  if (!prefLang || !VALID_LANGS.includes(prefLang)) prefLang = undefined;
+
   try {
     const authRes = await CheckAuth(req);
     const decodedToken = authRes.decodedToken;
@@ -87,6 +92,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         profile_color: colorHexVar,
         profile_image: profileImage,
         description: description,
+        pref_lang: prefLang,
       },
     });
 
@@ -102,10 +108,17 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       profileImage: tempUser.profile_image,
       description: tempUser.description,
       role: tempUser.role as UserRoles,
+      prefLang: tempUser.pref_lang,
       lastLogin: startOfDay(tempUser.last_login).toJSON(),
       createdAt: tempUser.createdAt.toJSON(),
       xp: tempUser.xp,
     };
+
+    if (updatedUser.prefLang)
+      res.setHeader(
+        'Set-Cookie',
+        `NEXT_LOCALE=${updatedUser.prefLang};Path=/;HttpOnly;Max-Age=2147483647;`
+      );
 
     return res.json(updatedUser);
   } catch (e: any) {
@@ -136,6 +149,7 @@ export const getUser = async (username: string) => {
     profileImage: user.profile_image,
     description: user.description,
     role: user.role as UserRoles,
+    prefLang: user.pref_lang,
     lastLogin: startOfDay(user.last_login).toJSON(),
     createdAt: user.createdAt.toJSON(),
     xp: user.xp,

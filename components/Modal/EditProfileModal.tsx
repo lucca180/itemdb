@@ -15,12 +15,15 @@ import {
   Spinner,
   Center,
   FormHelperText,
+  Select,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { User } from '../../types';
 import { useAuth } from '../../utils/auth';
 import { ColorResult, TwitterPicker } from '@hello-pangea/color-picker';
+import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/router';
 
 export type EditProfileModalProps = {
   isOpen: boolean;
@@ -49,11 +52,13 @@ const colorPickerStyles = {
 };
 
 const EditProfileModal = (props: EditProfileModalProps) => {
+  const t = useTranslations();
   const { user, setUser, getIdToken } = useAuth();
   const [userProfile, setUserProfile] = useState(user ?? defaultUser);
   const { isOpen, onClose } = props;
   const [isLoading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const router = useRouter();
   // const [list, setList] = useState(props.list ?? defaultUser);
 
   useEffect(() => {
@@ -68,7 +73,7 @@ const EditProfileModal = (props: EditProfileModalProps) => {
 
       if (!userProfile.username || !userProfile.neopetsUser) {
         setLoading(false);
-        setError('Fill out all required fields');
+        setError(t('Profile.fill-required-fields'));
         return;
       }
 
@@ -77,13 +82,13 @@ const EditProfileModal = (props: EditProfileModalProps) => {
         !userProfile.username.match(/^[a-zA-Z0-9_]+$/)
       ) {
         setLoading(false);
-        setError('Only letters, numbers and underlines are allowed');
+        setError(t('Login.only-letters-numbers'));
         return;
       }
 
       if (userProfile.username !== user?.username && !checkUsername(userProfile.username)) {
         setLoading(false);
-        setError('Username already taken');
+        setError(t('Login.username-already-taken'));
         return;
       }
 
@@ -108,7 +113,7 @@ const EditProfileModal = (props: EditProfileModalProps) => {
             throw 'Invalid image format';
         } catch (e) {
           setLoading(false);
-          setError('Enter a valid image url');
+          setError(t('Profile.enter-a-valid-image-url'));
           return;
         }
       }
@@ -128,7 +133,7 @@ const EditProfileModal = (props: EditProfileModalProps) => {
     } catch (err) {
       console.error(err);
       setLoading(false);
-      setError('Error saving changes');
+      setError(t('General.error-saving-changes'));
     }
   };
 
@@ -173,7 +178,7 @@ const EditProfileModal = (props: EditProfileModalProps) => {
     <Modal isOpen={isOpen} onClose={handleCancel} isCentered scrollBehavior="inside">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Edit Profile</ModalHeader>
+        <ModalHeader>{t('Lists.edit-profile')}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           {error && (
@@ -198,7 +203,7 @@ const EditProfileModal = (props: EditProfileModalProps) => {
               </FormControl> */}
 
               <FormControl>
-                <FormLabel color="gray.300">Neopets Username</FormLabel>
+                <FormLabel color="gray.300">{t('Login.neopets-username')}</FormLabel>
                 <Input
                   variant="filled"
                   name="neopetsUser"
@@ -217,19 +222,30 @@ const EditProfileModal = (props: EditProfileModalProps) => {
                 />
               </FormControl> */}
               <FormControl>
-                <FormLabel color="gray.300">Profile Image URL (150x150)</FormLabel>
+                <FormLabel color="gray.300">{t('Profile.profile-image-url')} (150x150)</FormLabel>
                 <Input
                   variant="filled"
                   name="profileImage"
                   onChange={handleChange}
                   value={userProfile.profileImage ?? ''}
                 />
-                <FormHelperText>
-                  Only images from neopets.com, magnetismotimes.com and itemdb.com.br are allowed
-                </FormHelperText>
+                <FormHelperText>{t('Profile.allowedDomains')}</FormHelperText>
               </FormControl>
               <FormControl>
-                <FormLabel color="gray.300">Color</FormLabel>
+                <FormLabel color="gray.300">{t('General.language')}</FormLabel>
+                <Select
+                  onChange={handleChange}
+                  value={userProfile.prefLang ?? router.locale ?? 'en'}
+                  variant={'filled'}
+                  name="prefLang"
+                >
+                  <option value={'en'}>English</option>
+                  <option value={'pt'}>Português</option>
+                </Select>
+                <FormHelperText>{t('Lists.change-lang-helper')}</FormHelperText>
+              </FormControl>
+              <FormControl>
+                <FormLabel color="gray.300">{t('General.color')}</FormLabel>
                 <Center>
                   <TwitterPicker
                     styles={colorPickerStyles}
@@ -252,9 +268,9 @@ const EditProfileModal = (props: EditProfileModalProps) => {
           {!isLoading && (
             <>
               <Button variant="ghost" onClick={handleCancel} mr={3}>
-                Cancel
+                {t('General.cancel')}
               </Button>
-              <Button onClick={saveChanges}>Save</Button>
+              <Button onClick={saveChanges}>{t('General.save')}</Button>
             </>
           )}
         </ModalFooter>

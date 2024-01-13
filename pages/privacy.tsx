@@ -117,3 +117,11 @@ const PrivacyPolicyPage = () => {
 };
 
 export default PrivacyPolicyPage;
+
+export async function getStaticProps(context: any) {
+  return {
+    props: {
+      messages: (await import(`../translation/${context.locale}.json`)).default,
+    },
+  };
+}

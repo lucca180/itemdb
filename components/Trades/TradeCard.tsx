@@ -2,6 +2,7 @@ import { Badge, Box, Flex, Skeleton, Text } from '@chakra-ui/react';
 import React from 'react';
 import { ItemData, TradeData } from '../../types';
 import TradeTable from './TradeTable';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   trades: TradeData[];
@@ -10,6 +11,7 @@ type Props = {
 };
 
 const TradeCard = (props: Props) => {
+  const t = useTranslations();
   const { trades, item, isLoading } = props;
   const color = item?.color.rgb;
   const colorString = color ? `rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)` : 'gray.600';
@@ -25,7 +27,7 @@ const TradeCard = (props: Props) => {
       boxShadow="sm"
     >
       <Box p={2} textAlign="center" fontWeight="bold" bg={colorString}>
-        Trade History{' '}
+        {t('ItemPage.trade-history')}{' '}
         <Badge>
           {trades.length} {trades.length === 20 && '+'}
         </Badge>
@@ -43,7 +45,7 @@ const TradeCard = (props: Props) => {
             ))}
             {trades.length === 0 && (
               <Text p={3} textAlign="center" fontSize="sm">
-                We haven&apos;t seen this item at the trading post yet :(
+                {t('ItemPage.no-trade-history-card')} :(
               </Text>
             )}
           </>

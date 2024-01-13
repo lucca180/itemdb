@@ -7,6 +7,7 @@ import Color from 'color';
 import NextLink from 'next/link';
 import { useEffect, useState } from 'react';
 import { stripMarkdown } from '../../utils/utils';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   list: UserList;
@@ -19,6 +20,7 @@ type Props = {
 };
 
 const UserListCard = (props: Props) => {
+  const t = useTranslations();
   const { list, matches, isSelected, disableLink } = props;
   const [matchCount, setMatchCount] = useState(0);
   const color = Color(list?.colorHex || '#4A5568');
@@ -125,28 +127,34 @@ const UserListCard = (props: Props) => {
           )}
           {list.official && (
             <Badge as={NextLink} href="/lists/official" colorScheme="blue" variant="solid">
-              ✓ Official
+              ✓ {t('General.official')}
             </Badge>
           )}
 
           {list.visibility !== 'public' && (
-            <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>{list.visibility}</Badge>
+            <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>
+              {t('Lists.' + list.visibility)}
+            </Badge>
           )}
 
           {!list.official && list.purpose !== 'none' && (
-            <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>{list.purpose}</Badge>
+            <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>
+              {t('Lists.' + list.purpose)}
+            </Badge>
           )}
 
-          <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>{list.itemCount} items</Badge>
+          <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>
+            {list.itemCount} {t('General.items')}
+          </Badge>
 
           {!list.official && list.purpose === 'trading' && !!matchCount && (
             <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>
-              You want {matchCount} items from this list
+              {t('Lists.list-want', { matchCount })}
             </Badge>
           )}
           {!list.official && list.purpose === 'seeking' && !!matchCount && (
             <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>
-              You have {matchCount} items from this list
+              {t('Lists.list-have', { matchCount })}
             </Badge>
           )}
         </Flex>

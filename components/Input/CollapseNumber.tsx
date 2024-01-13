@@ -6,6 +6,7 @@ import {
   InputLeftElement,
   InputRightElement,
 } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 import { useState, useRef, useEffect } from 'react';
 import { MdOutlineAttachMoney } from 'react-icons/md';
 
@@ -20,6 +21,7 @@ const format = (val: number | string | undefined) =>
 const parse = (val: string) => (val ? parseInt(val.replace(/[\.\,]+/g, '')) : '');
 
 export const CollapseNumber = (props: Props) => {
+  const t = useTranslations();
   const [value, setVal] = useState<number>();
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -74,7 +76,7 @@ export const CollapseNumber = (props: Props) => {
         variant={'solid'}
         bg="transparent"
         maxW="175px"
-        placeholder="Min Profit"
+        placeholder={t('General.min-profit')}
         fontSize={'sm'}
         onChange={onChange}
         value={format(value)}

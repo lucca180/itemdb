@@ -225,3 +225,11 @@ const FaeriesFest2023 = () => {
 };
 
 export default FaeriesFest2023;
+
+export async function getStaticProps(context: any) {
+  return {
+    props: {
+      messages: (await import(`../translation/${context.locale}.json`)).default,
+    },
+  };
+}

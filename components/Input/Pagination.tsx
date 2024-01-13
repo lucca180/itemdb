@@ -1,4 +1,5 @@
 import { HStack, Button, Select, Box, IconButton } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 import { BiFirstPage, BiLastPage } from 'react-icons/bi';
 
 type Props = {
@@ -8,6 +9,7 @@ type Props = {
 };
 
 const Pagination = (props: Props) => {
+  const t = useTranslations();
   const { currentPage, totalPages, setPage } = props;
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -23,11 +25,11 @@ const Pagination = (props: Props) => {
           color="gray.300"
           icon={<BiFirstPage size="24px" />}
         />
-        <Button isDisabled>Back</Button>
+        <Button isDisabled>{t('General.back')}</Button>
         <Box>
           <Button isLoading />
         </Box>
-        <Button isDisabled>Next</Button>
+        <Button isDisabled>{t('General.next')}</Button>
         <IconButton
           isDisabled
           aria-label="Jump to last page button"
@@ -46,7 +48,7 @@ const Pagination = (props: Props) => {
         icon={<BiFirstPage size="24px" />}
       />
       <Button isDisabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)}>
-        Back
+        {t('General.back')}
       </Button>
       <Box>
         <Select
@@ -64,7 +66,7 @@ const Pagination = (props: Props) => {
         </Select>
       </Box>
       <Button isDisabled={currentPage >= totalPages} onClick={() => setPage(currentPage + 1)}>
-        Next
+        {t('General.next')}
       </Button>
       <IconButton
         isDisabled={currentPage >= totalPages}

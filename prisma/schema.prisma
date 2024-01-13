@@ -261,6 +261,8 @@ model User {
   last_login DateTime @default(now())
   last_ip    String?
 
+  pref_lang  String?
+
   profile_color String?
   profile_image String?
   description   String? @db.Text

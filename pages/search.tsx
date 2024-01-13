@@ -33,6 +33,7 @@ import { defaultFilters } from '../utils/parseFilters';
 import { CreateDynamicListButton } from '../components/DynamicLists/CreateButton';
 import Color from 'color';
 import NextLink from 'next/link';
+import { useTranslations } from 'next-intl';
 
 const Axios = axios.create({
   baseURL: '/api/v1/',
@@ -42,6 +43,7 @@ const intl = new Intl.NumberFormat();
 let ABORT_CONTROLER = new AbortController();
 
 const SearchPage = () => {
+  const t = useTranslations();
   const toast = useToast();
   const { user, getIdToken } = useAuth();
   const [searchQuery, setQuery] = useState<string>('');
@@ -227,8 +229,8 @@ const SearchPage = () => {
     if (!user) return;
 
     const toastId = toast({
-      title: 'Adding items to list...',
-      description: 'This may take a while, please wait...',
+      title: `${t('Lists.adding-items-to-list')}...`,
+      description: `${t('Lists.this-may-take-a-while-please-wait')}...`,
       status: 'info',
       duration: null,
       isClosable: true,
@@ -252,7 +254,7 @@ const SearchPage = () => {
       );
       if (res.data.success) {
         toast.update(toastId, {
-          title: 'Items added to list',
+          title: t('Lists.items-added-to-list'),
           status: 'success',
           duration: 5000,
         });
@@ -262,9 +264,8 @@ const SearchPage = () => {
       console.error(err);
 
       toast.update(toastId, {
-        title: 'Oops!',
-        description:
-          'An error occurred while adding the items to the list, please try again later.',
+        title: t('General.oops'),
+        description: t('Lists.errorOccurred'),
         status: 'error',
         duration: 5000,
       });
@@ -285,7 +286,7 @@ const SearchPage = () => {
   return (
     <Layout
       SEO={{
-        title: `${router.query.s ? `${router.query.s} -` : ''} Search`,
+        title: `${router.query.s ? `${router.query.s} -` : ''} ${t('Search.search')}`,
         canonical: 'https://itemdb.com.br/search',
         noindex: true,
         nofollow: true,
@@ -356,21 +357,19 @@ const SearchPage = () => {
                     checked={selectedItems}
                     allChecked={selectedItems.length === searchResult.content.length}
                     onClick={(checkAll) => selectItem(undefined, checkAll)}
-                    defaultText={`
-                      Showing ${intl.format(
-                        searchResult.resultsPerPage * (searchResult.page - 1) + 1
-                      )} -${' '}
-                      ${intl.format(
+                    defaultText={t('Search.showing', {
+                      val1: intl.format(searchResult.resultsPerPage * (searchResult.page - 1) + 1),
+                      val2: intl.format(
                         Math.min(searchResult.resultsPerPage * searchResult.page, totalResults)
-                      )}${' '}
-                      of ${intl.format(totalResults)} results
-                    `}
+                      ),
+                      val3: intl.format(totalResults),
+                    })}
                   />
                 )}
                 {(!searchResult || totalResults === null) && <Skeleton width="100px" h="15px" />}
                 {selectedItems.length > 0 && (
                   <ListSelect
-                    defaultText="Add to List"
+                    defaultText={t('Lists.add-to-list')}
                     size="sm"
                     createNew
                     onChange={(list) => addItemToList(list.internal_id)}
@@ -404,7 +403,7 @@ const SearchPage = () => {
               alignItems="center"
             >
               <Text flex="0 0 auto" textColor={'gray.300'} fontSize={{ base: 'xs', sm: 'sm' }}>
-                Sort By
+                {t('General.sort-by')}
               </Text>
               <Select
                 name="sortBy"
@@ -414,14 +413,14 @@ const SearchPage = () => {
                 size={{ base: 'sm', sm: 'md' }}
                 isDisabled={!searchResult}
               >
-                <option value="name">Name</option>
-                <option value="price">Price</option>
-                <option value="owls">Owls Value</option>
-                <option value="rarity">Rarity</option>
-                <option value="color">Color</option>
-                <option value="weight">Weight</option>
-                <option value="estVal">Est. Val</option>
-                <option value="id">ID</option>
+                <option value="name">{t('General.name')}</option>
+                <option value="price">{t('General.price')}</option>
+                <option value="owls">{t('ItemPage.owls-value')}</option>
+                <option value="rarity">{t('General.rarity')}</option>
+                <option value="color">{t('General.color')}</option>
+                <option value="weight">{t('General.weight')}</option>
+                <option value="estVal">{t('General.est-val')}</option>
+                <option value="id">{t('General.id')}</option>
               </Select>
               <Select
                 name="sortDir"
@@ -431,8 +430,8 @@ const SearchPage = () => {
                 size={{ base: 'sm', sm: 'md' }}
                 isDisabled={!searchResult}
               >
-                <option value="asc">Ascending</option>
-                <option value="desc">Descending</option>
+                <option value="asc">{t('General.ascending')}</option>
+                <option value="desc">{t('General.descending')}</option>
               </Select>
             </Flex>
           </Flex>
@@ -443,7 +442,7 @@ const SearchPage = () => {
             color="gray.500"
             display={{ base: 'none', lg: 'block' }}
           >
-            Tip: {searchTip}
+            {t('General.tip')}: {searchTip}
           </Text>
 
           <Flex mt={4} flexWrap="wrap" gap={{ base: 3, md: 4 }} justifyContent="center">
@@ -470,7 +469,7 @@ const SearchPage = () => {
                   alt="no results found coltzan"
                   maxW="75%"
                 />
-                <Text color="gray.400">No results found :(</Text>
+                <Text color="gray.400">{t('Layout.no-results-found')} :(</Text>
               </Center>
             )}
           </Flex>
@@ -503,6 +502,14 @@ export const getFiltersDiff = (a: { [id: string]: any }, b?: SearchFiltersType) 
 };
 
 export default SearchPage;
+
+export async function getStaticProps(context: any) {
+  return {
+    props: {
+      messages: (await import(`../translation/${context.locale}.json`)).default,
+    },
+  };
+}
 
 const searchTips = [
   <>

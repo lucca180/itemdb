@@ -18,6 +18,7 @@ import axios from 'axios';
 import Image from 'next/image';
 import { useState } from 'react';
 import logoIcon from '../../public/logo_white.svg';
+import { useTranslations } from 'next-intl';
 // import { useRouter } from 'next/router';
 // import { getAuth, sendSignInLinkToEmail } from 'firebase/auth';
 
@@ -30,6 +31,7 @@ type Props = {
 };
 
 const LoginModal = (props: Props) => {
+  const t = useTranslations();
   const { isOpen, onClose } = props;
   const [email, setEmail] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -42,7 +44,7 @@ const LoginModal = (props: Props) => {
     if (isSent) return onClose();
 
     if (!email.match(mailRegex)) {
-      setError('Invalid email address');
+      setError(t('Login.invalid-email-address'));
       return;
     }
 
@@ -95,7 +97,9 @@ const LoginModal = (props: Props) => {
             <Image src={logoIcon} alt="itemdb logo" width={225} quality={100} />
             {!isSent && (
               <Text color="gray.200" mt={4} fontSize="sm">
-                Use your email to <b>sign in</b> or to <b>create a new account</b>
+                {t.rich('Login.login-modal-text', {
+                  b: (children) => <b>{children}</b>,
+                })}
               </Text>
             )}
           </Center>
@@ -107,7 +111,7 @@ const LoginModal = (props: Props) => {
           {!isLoading && !isSent && (
             <FormControl isInvalid={!!error} mt={4}>
               <Input
-                placeholder="Email Address"
+                placeholder={t('General.email-address')}
                 type="email"
                 value={email}
                 onChange={onEmailChange}
@@ -117,7 +121,7 @@ const LoginModal = (props: Props) => {
           )}
           {isSent && (
             <Text color="gray.200" mt={6} fontSize="sm" textAlign="center">
-              We&apos;ve sent you an email with a link to sign in. Please check your inbox.
+              {t('Login.email-sent')}
             </Text>
           )}
         </ModalBody>
@@ -125,9 +129,9 @@ const LoginModal = (props: Props) => {
           {!isSent && !isLoading && (
             <>
               <Button onClick={onClose} variant="ghost" mr={3}>
-                Cancel
+                {t('General.cancel')}
               </Button>
-              <Button onClick={doLogin}>Continue</Button>
+              <Button onClick={doLogin}>{t('General.continue')}</Button>
             </>
           )}
 

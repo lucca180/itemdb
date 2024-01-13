@@ -24,18 +24,19 @@ import { useDisclosure } from '@chakra-ui/react';
 import { FeedbackModalProps } from '../components/Modal/FeedbackModal';
 import { FiEdit3, FiSend } from 'react-icons/fi';
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
 
 const FeedbackModal = dynamic<FeedbackModalProps>(
   () => import('../components/Modal/FeedbackModal')
 );
 
 const ContributePage = () => {
+  const t = useTranslations();
   return (
     <Layout
       SEO={{
-        title: 'How to Contribute',
-        description:
-          'Itemdb is an open-source website and needs your contribution to become even more awesome. And there are several ways to help!',
+        title: t('Layout.how-to-contribute'),
+        description: t('Feedback.contribute-description'),
         openGraph: {
           images: [
             {
@@ -54,19 +55,16 @@ const ContributePage = () => {
         }}
         color="#4974F5"
       >
-        <Heading size="lg">How to Contribute</Heading>
-        <Text>
-          Itemdb is an open-source website and needs your contribution to become even more awesome.
-          And there are several ways to help!
-        </Text>
+        <Heading size="lg">{t('Layout.how-to-contribute')}</Heading>
+        <Text>{t('Feedback.contribute-description')}</Text>
       </HeaderCard>
       <Flex flexFlow="column" gap={3} sx={{ a: { color: '#ffee71' }, b: { color: '#8ea7f1' } }}>
         <Tabs colorScheme="yellow">
           <TabList>
-            <Tab>Item Data Extractor</Tab>
-            <Tab>Feedback System</Tab>
-            <Tab>Creating Official Lists</Tab>
-            <Tab>Where to Find Data</Tab>
+            <Tab>{t('Feedback.item-data-extractor')}</Tab>
+            <Tab>{t('Feedback.feedback-system')}</Tab>
+            <Tab>{t('Feedback.creating-official-lists')}</Tab>
+            <Tab>{t('Feedback.where-to-find-data')}</Tab>
           </TabList>
           <TabPanels>
             <TabPanel>
@@ -91,129 +89,142 @@ const ContributePage = () => {
 export default ContributePage;
 
 const ItemDataExtractor = () => {
+  const t = useTranslations();
   const [isLargerThanMD] = useMediaQuery('(min-width: 48em)', { fallback: true });
   return (
     <Flex flexFlow="column" gap={3} maxW="1000px">
-      <Heading size="lg">The Item Data Extractor</Heading>
+      <Heading size="lg">{t('Feedback.the-item-data-extractor')}</Heading>
       {!isLargerThanMD && (
         <Text fontSize="sm" color="red.400">
-          This may not work on mobile devices!
+          {t('General.this-may-not-work-on-mobile-devices')}
         </Text>
       )}
       <Text>
-        All information on itemdb comes directly from users, like you, who are using the{' '}
-        <Link
-          href="https://github.com/lucca180/itemdb/raw/main/userscripts/itemDataExtractor.user.js"
-          isExternal
-        >
-          {' '}
-          Item Data Extractor script
-        </Link>
-        .
+        {t.rich('Feedback.ide-1', {
+          Link: (chunk) => (
+            <Link
+              href="https://github.com/lucca180/itemdb/raw/main/userscripts/itemDataExtractor.user.js"
+              isExternal
+            >
+              {chunk}
+            </Link>
+          ),
+        })}
       </Text>
       <Text>
-        The{' '}
-        <Link
-          href="https://github.com/lucca180/itemdb/raw/main/userscripts/itemDataExtractor.user.js"
-          isExternal
-        >
-          Item Data Extractor
-        </Link>{' '}
-        will collect data from all items you come across during your adventures in Neopia. Whether
-        you're searching for something on the <b>Shop Wizard</b>, browsing through your{' '}
-        <b>Safety Deposit Box</b>, or restocking on <b>Half Price Day</b>.
+        {t.rich('Feedback.ide-2', {
+          Link: (chunk) => (
+            <Link
+              href="https://github.com/lucca180/itemdb/raw/main/userscripts/itemDataExtractor.user.js"
+              isExternal
+            >
+              {chunk}
+            </Link>
+          ),
+          b: (chunk) => <b>{chunk}</b>,
+        })}
       </Text>
       <Text>
-        <b>
-          No information linking you (or your Neopets account) to the collected data is sent,
-          processed, or stored by our servers
-        </b>
-        .
-        <br />
-        You and your account are absolutely safe. Don't trust us? The entire code of itemdb is
-        freely available,{' '}
-        <Link href="https://github.com/lucca180/itemdb" isExternal>
-          take a look
-        </Link>
-        . <br /> Also, the script code is commented so that you can understand everything that is
-        happening.
+        {t.rich('Feedback.ide-3', {
+          Link: (chunk) => (
+            <Link href="https://github.com/lucca180/itemdb" isExternal>
+              {chunk}
+            </Link>
+          ),
+          b: (chunk) => <b>{chunk}</b>,
+          br: () => <br />,
+        })}
       </Text>
       <Heading size="md" mt={3}>
-        How to Install
+        {t('Feedback.how-to-install')}
       </Heading>
       <UnorderedList spacing={3}>
         <ListItem>
-          {/* <ListIcon as={BsCheckCircleFill} color="green.300" /> */}
-          First you will need the{' '}
-          <Link href="https://www.tampermonkey.net/" isExternal>
-            Tampermonkey
-          </Link>{' '}
-          extension for your browser if you don't have it already.
+          {t.rich('Feedback.ide-4', {
+            Link: (chunk) => (
+              <Link href="https://www.tampermonkey.net/" isExternal>
+                {chunk}
+              </Link>
+            ),
+          })}
         </ListItem>
         <ListItem>
-          {/* <ListIcon as={BsCheckCircleFill} color="green.300" /> */}
-          Then you just need to{' '}
-          <Link
-            href="https://github.com/lucca180/itemdb/raw/main/userscripts/itemDataExtractor.user.js"
-            isExternal
-          >
-            click here
-          </Link>{' '}
-          to install the script and it's done!
+          {t.rich('Feedback.ide-5', {
+            Link: (chunk) => (
+              <Link
+                href="https://github.com/lucca180/itemdb/raw/main/userscripts/itemDataExtractor.user.js"
+                isExternal
+              >
+                {chunk}
+              </Link>
+            ),
+          })}
         </ListItem>
       </UnorderedList>
       <Heading size="md" mt={3}>
-        What is sent to itemdb
+        {t('Feedback.what-is-sent-to-itemdb')}
       </Heading>
       <List spacing={3}>
         <ListItem>
           <ListIcon as={BsCheckCircleFill} color="green.300" />
-          Item info such as name, description, rarity, etc.
+          {t('Feedback.ide-6')}
         </ListItem>
         <ListItem>
           <ListIcon as={BsCheckCircleFill} color="green.300" />
-          Item prices from shops, auctions, and trades.
-          <Text fontSize="sm" color="gray.400">
-            The owners and bidders usernames are collected, but <b>only the first 3 characters</b>{' '}
-            are stored in our database.
-          </Text>
+          {t.rich('Feedback.ide-7', {
+            Text: (chunk) => (
+              <Text fontSize="sm" color="gray.400">
+                {chunk}
+              </Text>
+            ),
+            b: (chunk) => <b>{chunk}</b>,
+          })}
         </ListItem>
         <ListItem>
           <ListIcon as={BsCheckCircleFill} color="green.300" />
-          Restock info
-          <Text fontSize="sm" color="gray.400">
-            When an item is in stock at a shop, the script will collect that information.
-          </Text>
+          {t.rich('Feedback.ide-8', {
+            Text: (chunk) => (
+              <Text fontSize="sm" color="gray.400">
+                {chunk}
+              </Text>
+            ),
+          })}
         </ListItem>
         <ListItem>
           <ListIcon as={BsCheckCircleFill} color="green.300" />
-          Openable Drops
-          <Text fontSize="sm" color="gray.400">
-            When you open items like Mystery Capsules or a Goodie Bags, the script will collect the
-            items you received.
-          </Text>
+          {t.rich('Feedback.ide-9', {
+            Text: (chunk) => (
+              <Text fontSize="sm" color="gray.400">
+                {chunk}
+              </Text>
+            ),
+          })}
         </ListItem>
         <ListItem>
           <ListIcon as={BsCheckCircleFill} color="green.300" />
-          Your IP address
-          <Text fontSize="sm" color="gray.400">
-            This is used to prevent abuse, spam and false information. It's never public available
-            and cannot be used to identify you.
-          </Text>
+          {t.rich('Feedback.ide-10', {
+            Text: (chunk) => (
+              <Text fontSize="sm" color="gray.400">
+                {chunk}
+              </Text>
+            ),
+          })}
         </ListItem>
       </List>
       <Heading size="md" mt={3}>
-        What is NOT sent to itemdb
+        {t('Feedback.what-is-not-sent-to-itemdb')}
       </Heading>
       <List spacing={3}>
         <ListItem>
           <ListIcon as={BsXCircleFill} color="red.300" />
-          Your username, password, or any other personal information from you or your Neopets
-          account.
-          <Text fontSize="sm" color="gray.400">
-            Only the first 3 characters of your username may, sometimes, be collected in the
-            situations mentioned above.
-          </Text>
+
+          {t.rich('Feedback.ide-11', {
+            Text: (chunk) => (
+              <Text fontSize="sm" color="gray.400">
+                {chunk}
+              </Text>
+            ),
+          })}
         </ListItem>
       </List>
     </Flex>
@@ -221,37 +232,40 @@ const ItemDataExtractor = () => {
 };
 
 const FeedbackSystem = () => {
+  const t = useTranslations();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
     <>
       <FeedbackModal isOpen={isOpen} onClose={onClose} />
       <Flex flexFlow="column" gap={3} maxW="1000px">
-        <Heading size="lg">Feedback System</Heading>
+        <Heading size="lg">{t('Feedback.feedback-system')}</Heading>
         <Text>
-          The <Link href="/feedback">Feedback System</Link> is a way for you to help us improve
-          itemdb.You can contribute by <b>manually completing</b> missing data or by{' '}
-          <b>validating the suggestions</b> of other neopians like you! Either way, the more you
-          contribute correctly the more our systems will trust your information - meaning your
-          suggestions will be live faster.
+          {t.rich('Feedback.fds-1', {
+            Link: (chunk) => <Link href="/feedback">{chunk}</Link>,
+            b: (chunk) => <b>{chunk}</b>,
+          })}
         </Text>
         <Text>
-          You can also help by <Link href="/feedback/trades">pricing trading lots</Link> (aka
-          translating the wishlist into Neopoints values) and{' '}
-          <Link href="/feedback/vote">voting on community suggestions</Link> to ensure they are
-          accurate and correct, and should be incorporated into the itemdb.
+          {t.rich('Feedback.fds-2', {
+            Link1: (chunk) => <Link href="/feedback/trades">{chunk}</Link>,
+            Link2: (chunk) => <Link href="/feedback/vote">{chunk}</Link>,
+          })}
         </Text>
         <Text as="div">
-          Also, on every item page you can <b>suggest new tags</b> or <b>insert additional notes</b>{' '}
-          to enrich the information we have available using the{' '}
-          <Button variant="outline" size="sm">
-            <Icon as={FiEdit3} mr={1} /> Edit
-          </Button>{' '}
-          button. You can also send comments, report bugs or suggest new features using the{' '}
-          <Button variant="outline" size="sm" onClick={onOpen}>
-            <Icon as={FiSend} mr={1} /> Feedback
-          </Button>{' '}
-          button
+          {t.rich('Feedback.fds-3', {
+            Edit: (chunk) => (
+              <Button variant="outline" size="sm">
+                <Icon as={FiEdit3} mr={1} /> {chunk}
+              </Button>
+            ),
+            Feedback: (chunk) => (
+              <Button variant="outline" size="sm" onClick={onOpen}>
+                <Icon as={FiSend} mr={1} /> {chunk}
+              </Button>
+            ),
+            b: (chunk) => <b>{chunk}</b>,
+          })}
         </Text>
       </Flex>
     </>
@@ -259,119 +273,141 @@ const FeedbackSystem = () => {
 };
 
 const OfficialLists = () => {
+  const t = useTranslations();
   return (
     <Flex flexFlow="column" gap={3} maxW="1000px">
-      <Heading size="lg">Creating Official Lists</Heading>
+      <Heading size="lg">{t('Feedback.creating-official-lists')}</Heading>
       <Text>
-        Want to track every prize of a certain event or daily? Or maybe you have a list that could
-        be useful to other neopians? You can <Link href="/lists/official">apply your list</Link> to
-        become an <b>official list</b> on itemdb!
+        {t.rich('Feedback.ol-1', {
+          Link: (chunk) => <Link href="/lists/official">{chunk}</Link>,
+          b: (chunk) => <b>{chunk}</b>,
+        })}
       </Text>
       <Text>
-        As an official list, your list will receive <b>a special badge</b> and will be{' '}
-        <b>featured on its item's pages</b>, so that other neopians can easily find it. You will be
-        listed as the curator of the list, and it will be your task to keep it up to date and
-        complete!
+        {t.rich('Feedback.ol-2', {
+          b: (chunk) => <b>{chunk}</b>,
+        })}
       </Text>
       <Text>
-        Before applying, please make sure your list is complete and up to date. You can also check
-        the <Link href="/lists/official">official lists</Link> to see other examples of cool
-        official lists! Also check our <Link href="/terms">Terms and Conditions</Link> for more
-        information on official lists.
+        {t.rich('Feedback.ol-3', {
+          Link1: (chunk) => <Link href="/lists/official">{chunk}</Link>,
+          Link2: (chunk) => <Link href="/terms">{chunk}</Link>,
+        })}
       </Text>
     </Flex>
   );
 };
 
 const WhereToFindInfo = () => {
+  const t = useTranslations();
   return (
     <Flex flexFlow="column" gap={3} maxW="1000px">
-      <Heading size="lg">Where to find data</Heading>
+      <Heading size="lg">{t('Feedback.where-to-find-data')}</Heading>
       <Text>
-        When using the <b>Item Data Extractor Script</b>, the script will automatically collect the
-        all available information from the items on the current page. Each page has a different set
-        of info available. Here is a list of the pages and the info available on each one:
+        {t.rich('Feedback.wdf-1', {
+          b: (chunk) => <b>{chunk}</b>,
+        })}
       </Text>
       <UnorderedList spacing={2}>
         <ListItem>
           <Link href="https://www.neopets.com/inventory.phtml" isExternal>
-            Inventory
+            {t('General.Inventory')}
           </Link>{' '}
-          - Name, Description, Image, Category, Rarity, Est. Val, Weight
+          - {t('General.name')}, {t('General.description')}, {t('General.Image')},{' '}
+          {t('General.category')}, {t('General.rarity')}, {t('General.est-val')},{' '}
+          {t('General.weight')}
         </ListItem>
         <ListItem>
           <Link href="https://www.neopets.com/safetydeposit.phtml" isExternal>
-            Safety Deposit Box
+            {t('General.safety-deposit-box')}
           </Link>{' '}
-          - Item ID, Name, Description, Image, Category (except for NC Items)
+          - {t('General.item-id')}, {t('General.name')}, {t('General.description')},{' '}
+          {t('General.Image')}, {t('General.category')} {t('Feedback.except-for-nc-items')}
         </ListItem>
         <ListItem>
           <Link href="https://www.neopets.com/island/tradingpost.phtml" isExternal>
-            Trading Post
+            {t('General.trading-post')}
           </Link>{' '}
-          - Name, Description, Image
+          - {t('General.name')}, {t('General.description')}, {t('General.Image')}
         </ListItem>
         <ListItem>
           <Link href="https://www.neopets.com/market.phtml?type=your" isExternal>
-            Shops (your shop or restock)
+            {t('Feedback.shops-your-shop-or-restock')}
           </Link>{' '}
-          - Item ID, Name, Description, Image, Category
+          - {t('General.item-id')}, {t('General.name')}, {t('General.description')},{' '}
+          {t('General.Image')}, {t('General.category')}
         </ListItem>
         <ListItem>
           <Link href="https://www.neopets.com/market_map.phtml" isExternal>
-            User Shops
+            {t('Feedback.user-shops')}
           </Link>{' '}
-          - Item ID, Name, Description, Image
+          - {t('General.item-id')}, {t('General.name')}, {t('General.description')},{' '}
+          {t('General.Image')}
         </ListItem>
         <ListItem>
           <Link href="https://www.neopets.com/gallery/" isExternal>
-            Gallery front page
+            {t('Feedback.gallery-front-page')}
           </Link>{' '}
-          - Name, Description, Image
+          - {t('General.name')}, {t('General.description')}, {t('General.Image')}
         </ListItem>
         <ListItem>
           <Link href="https://www.neopets.com/gallery/quickremove.phtml" isExternal>
-            Gallery Admin Page
+            {t('Feedback.gallery-admin-page')}
           </Link>{' '}
-          - Item ID, Name, Image
+          - {t('General.item-id')}, {t('General.name')}, {t('General.Image')}
         </ListItem>
         <ListItem>
           <Link href="https://www.neopets.com/closet.phtml" isExternal>
-            Closet
+            {t('General.closet')}
           </Link>{' '}
-          - Item ID, Name, Description, Image, Category
+          - {t('General.item-id')}, {t('General.name')}, {t('General.description')},{' '}
+          {t('General.Image')}, {t('General.category')}
         </ListItem>
         <ListItem>
           <Link href="https://www.neopets.com/search.phtml" isExternal>
-            Search Page
+            {t('Feedback.search-page')}
           </Link>{' '}
-          - Name, Description, Image, Category, Rarity, Est. Val, Weight
+          - {t('General.name')}, {t('General.description')}, {t('General.Image')},{' '}
+          {t('General.category')}, {t('General.rarity')}, {t('General.est-val')},{' '}
+          {t('General.weight')}
         </ListItem>
         <ListItem>
           <Link href="https://www.neopets.com/neohome/shed" isExternal>
-            Storage Shed
+            {t('Feedback.storage-shed')}
           </Link>{' '}
-          - Item ID, Name, Description, Image, Category
+          - {t('General.item-id')}, {t('General.name')}, {t('General.description')},{' '}
+          {t('General.Image')}, {t('General.category')}
         </ListItem>
         <ListItem>
           <Link href="http://ncmall.neopets.com/mall/shop.phtml?page=&cat=" isExternal>
-            NC Mall
+            {t('General.nc-mall')}
           </Link>{' '}
-          - Item ID, Name, Description, Image
+          - {t('General.item-id')}, {t('General.name')}, {t('General.description')},{' '}
+          {t('General.Image')}
         </ListItem>
         <ListItem>
           <Link href="https://www.neopets.com/customise/" isExternal>
-            Customization Page
+            {t('Feedback.customization-page')}
           </Link>{' '}
-          - (everything) Item ID, Name, Description, Image, Category, Rarity, Est. Val, Weight
+          - {t('Feedback.everything')} {t('General.item-id')}, {t('General.name')},{' '}
+          {t('General.description')}, {t('General.Image')}, {t('General.category')},{' '}
+          {t('General.rarity')}, {t('General.est-val')}, {t('General.weight')}
         </ListItem>
         <ListItem>
           <Link href="https://www.neopets.com/ncma/" isExternal>
-            NC Journal
+            {t('Feedback.nc-journal')}
           </Link>{' '}
-          - Item ID, Name, Image
+          - {t('General.item-id')}, {t('General.name')}, {t('General.Image')}
         </ListItem>
       </UnorderedList>
     </Flex>
   );
 };
+
+export async function getStaticProps(context: any) {
+  return {
+    props: {
+      messages: (await import(`../translation/${context.locale}.json`)).default,
+    },
+  };
+}

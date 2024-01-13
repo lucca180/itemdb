@@ -5,7 +5,7 @@ import { User } from './types';
 import * as jose from 'jose';
 import { LRUCache } from 'lru-cache';
 import requestIp from 'request-ip';
-
+import parser from 'accept-language-parser';
 const API_SKIPS: { [method: string]: string[] } = {
   GET: ['api/auth', 'api/cache'],
   POST: ['api/auth', '/v1/prices', '/v1/trades', '/v1/items', '/v1/items/open'],
@@ -15,8 +15,50 @@ const userKeyCache = new LRUCache({
   max: 100,
 });
 
-// This function can be marked `async` if using `await` inside
+const PUBLIC_FILE = /\.(.*)$/;
+const VALID_LOCALES = ['en', 'pt'];
+
 export async function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname.startsWith('/_next') || PUBLIC_FILE.test(request.nextUrl.pathname)) {
+    return NextResponse.next();
+  }
+
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    return apiMiddleware(request);
+  }
+
+  const prefLang = parser.pick(VALID_LOCALES, request.headers.get('accept-language') ?? '', {
+    loose: true,
+  });
+
+  if (request.nextUrl.locale === 'en') {
+    const locale = request.cookies.get('NEXT_LOCALE')?.value || prefLang || 'en';
+
+    if (locale === 'en' || !VALID_LOCALES.includes(locale)) return NextResponse.next();
+
+    return NextResponse.redirect(
+      new URL(`/${locale}${request.nextUrl.pathname}${request.nextUrl.search}`, request.url)
+    );
+  } else {
+    const locale = request.cookies.get('NEXT_LOCALE')?.value || prefLang || 'en';
+
+    if (locale === request.nextUrl.locale) return NextResponse.next();
+
+    return NextResponse.redirect(
+      new URL(`${request.nextUrl.pathname}${request.nextUrl.search}`, request.url)
+    );
+  }
+
+  // return NextResponse.next();
+}
+
+export const config = {
+  matcher: ['/api/:path*', '/:path*'],
+};
+
+// ---------- API Middleware ---------- //
+
+const apiMiddleware = async (request: NextRequest) => {
   if (process.env.NODE_ENV === 'development') return NextResponse.next();
   // Skip rate limit if key is provided
   if (request.headers.get('x-tarnum-skip') === process.env.TARNUM_KEY) {
@@ -85,10 +127,6 @@ export async function middleware(request: NextRequest) {
   }
 
   return NextResponse.next();
-}
-
-export const config = {
-  matcher: '/api/:path*',
 };
 
 const checkSession = async (session: string, host: string, skipUser: boolean) => {

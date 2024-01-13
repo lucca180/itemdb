@@ -26,6 +26,7 @@ import { UserList } from '../../types';
 import { useAuth, UserLists } from '../../utils/auth';
 import { ColorResult, TwitterPicker } from '@hello-pangea/color-picker';
 import { useAtom } from 'jotai';
+import { useTranslations } from 'next-intl';
 
 export type CreateListModalProps = {
   list?: UserList;
@@ -57,6 +58,7 @@ const colorPickerStyles = {
 };
 
 const CreateListModal = (props: CreateListModalProps) => {
+  const t = useTranslations();
   const { user, getIdToken } = useAuth();
   const { isOpen, onClose } = props;
   const [isLoading, setLoading] = useState<boolean>(false);
@@ -139,14 +141,16 @@ const CreateListModal = (props: CreateListModalProps) => {
     <Modal isOpen={isOpen} onClose={handleCancel} isCentered scrollBehavior="inside">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>{props.list ? 'Edit' : 'Create'} List</ModalHeader>
+        <ModalHeader>
+          {props.list ? t('Button.edit') : t('General.create')} {t('Lists.List')}
+        </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           {!isLoading && !error && (
             <Stack gap={3}>
               {props.list && user?.id !== props.list?.user_id && user?.isAdmin && (
                 <Text textAlign="center" color="red.300">
-                  You are editing another user&apos;s list as admin. Be careful.
+                  {t('Lists.admin-edit-msg')}
                 </Text>
               )}
               <FormControl>
@@ -160,18 +164,18 @@ const CreateListModal = (props: CreateListModalProps) => {
                       })
                     }
                   >
-                    <Badge colorScheme="blue">✓ Official</Badge>
+                    <Badge colorScheme="blue">✓ {t('General.official')}</Badge>
                   </Checkbox>
                 )}
               </FormControl>
               <FormControl>
-                <FormLabel color="gray.300">List Name</FormLabel>
+                <FormLabel color="gray.300">{t('ItemPage.list-name')}</FormLabel>
                 <Input variant="filled" name="name" onChange={handleChange} value={list.name} />
-                <FormHelperText>Required</FormHelperText>
+                <FormHelperText>{t('General.required')}</FormHelperText>
               </FormControl>
 
               <FormControl>
-                <FormLabel color="gray.300">Description</FormLabel>
+                <FormLabel color="gray.300">{t('General.description')}</FormLabel>
                 <Textarea
                   variant="filled"
                   name="description"
@@ -180,7 +184,7 @@ const CreateListModal = (props: CreateListModalProps) => {
                 />
               </FormControl>
               <FormControl>
-                <FormLabel color="gray.300">Cover Image URL (150x150)</FormLabel>
+                <FormLabel color="gray.300">{t('Lists.cover-image-url')} (150x150)</FormLabel>
                 <Input
                   variant="filled"
                   name="coverURL"
@@ -189,7 +193,7 @@ const CreateListModal = (props: CreateListModalProps) => {
                 />
               </FormControl>
               <FormControl>
-                <FormLabel color="gray.300">Color</FormLabel>
+                <FormLabel color="gray.300">{t('General.color')}</FormLabel>
                 <Center>
                   <TwitterPicker
                     styles={colorPickerStyles}
@@ -200,62 +204,58 @@ const CreateListModal = (props: CreateListModalProps) => {
                 </Center>
               </FormControl>
               <FormControl>
-                <FormLabel color="gray.300">Visibility</FormLabel>
+                <FormLabel color="gray.300">{t('General.visibility')}</FormLabel>
                 <Select
                   variant="filled"
                   name="visibility"
                   onChange={handleChange}
                   value={list.visibility}
                 >
-                  <option value="public">Public</option>
-                  <option value="unlisted">Unlisted</option>
-                  <option value="private">Private</option>
+                  <option value="public">{t('General.public')}</option>
+                  <option value="unlisted">{t('General.unlisted')}</option>
+                  <option value="private">{t('General.private')}</option>
                 </Select>
               </FormControl>
               <FormControl>
-                <FormLabel color="gray.300">Purpose</FormLabel>
+                <FormLabel color="gray.300">{t('Lists.purpose')}</FormLabel>
                 <Select
                   variant="filled"
                   name="purpose"
                   onChange={handleChange}
                   value={list.purpose}
                 >
-                  <option value="none">None</option>
-                  <option value="seeking">Seeking these items</option>
-                  <option value="trading">Trading these items</option>
+                  <option value="none">{t('Lists.none')}</option>
+                  <option value="seeking">{t('Lists.seeking-these-items')}</option>
+                  <option value="trading">{t('Lists.trading-these-items')}</option>
                 </Select>
-                <FormHelperText>
-                  If you are seeking or trading these items, we may show your list to other users
-                  who may be interested.
-                </FormHelperText>
+                <FormHelperText>{t('Lists.seeking-trading-msg')}</FormHelperText>
               </FormControl>
               <FormControl>
-                <FormLabel color="gray.300">Default Sorting</FormLabel>
+                <FormLabel color="gray.300">{t('Lists.default-sorting')}</FormLabel>
                 <Select variant="filled" name="sortBy" onChange={handleChange} value={list.sortBy}>
-                  <option value="name">Name</option>
-                  <option value="price">Price</option>
-                  <option value="rarity">Rarity</option>
-                  <option value="color">Color</option>
-                  <option value="custom">Custom</option>
-                  <option value="addedAt">Added At</option>
-                  <option value="faerieFest">Recycling Points</option>
-                  <option value="item_id">Item ID</option>
+                  <option value="name">{t('General.name')}</option>
+                  <option value="price">{t('General.price')}</option>
+                  <option value="rarity">{t('General.rarity')}</option>
+                  <option value="color">{t('General.color')}</option>
+                  <option value="custom">{t('General.custom')}</option>
+                  <option value="addedAt">{t('General.added-at')}</option>
+                  <option value="faerieFest">{t('General.recycling-points')}</option>
+                  <option value="item_id">{t('General.item-id')}</option>
                 </Select>
                 <FormHelperText>
-                  {list.sortBy === 'custom' &&
-                    'You can change the order of items in your list by dragging and dropping them.'}
+                  {list.sortBy === 'custom' && t('Lists.custom-sort-msg')}
                 </FormHelperText>
               </FormControl>
               <FormControl>
-                <FormLabel color="gray.300">Sort Direction</FormLabel>
+                <FormLabel color="gray.300">{t('General.sort-direction')}</FormLabel>
                 <Select
                   variant="filled"
                   name="sortDir"
                   onChange={handleChange}
                   value={list.sortDir}
                 >
-                  <option value="asc">Ascending</option>
-                  <option value="desc">Descending</option>
+                  <option value="asc">{t('General.ascending')}</option>
+                  <option value="desc">{t('General.descending')}</option>
                 </Select>
               </FormControl>
             </Stack>
@@ -269,9 +269,9 @@ const CreateListModal = (props: CreateListModalProps) => {
           {error && (
             <Center>
               <Text fontSize="sm" textAlign="center" color="red.400">
-                An error has occurred!
+                {t('General.an-error-has-occurred')}!
                 <br />
-                Please refresh the page and try again later
+                {t('General.refreshPage')}
               </Text>
             </Center>
           )}
@@ -280,10 +280,10 @@ const CreateListModal = (props: CreateListModalProps) => {
           {!isLoading && !error && (
             <>
               <Button variant="ghost" onClick={handleCancel} mr={3}>
-                Cancel
+                {t('General.cancel')}
               </Button>
               <Button onClick={saveChanges} isDisabled={!list.name}>
-                {props.list ? 'Save' : 'Create'}
+                {props.list ? t('General.save') : t('General.create')}
               </Button>
             </>
           )}

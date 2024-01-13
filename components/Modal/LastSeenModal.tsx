@@ -10,6 +10,7 @@ import {
   Link,
   Icon,
 } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 import NextLink from 'next/link';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 export type LastSeenModalProps = {
@@ -18,47 +19,55 @@ export type LastSeenModalProps = {
 };
 
 export default function LastSeenModal(props: LastSeenModalProps) {
+  const t = useTranslations();
+
   const { isOpen, onClose } = props;
   return (
     <>
       <Modal isOpen={isOpen} onClose={onClose} isCentered>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>How &#34;Last Seen&#34; works?</ModalHeader>
+          <ModalHeader>{t('ItemPage.how-last-seen-works')}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            &#34;Last Seen&#34; works thanks to users using the itemdb&apos;s{' '}
-            <Link as={NextLink} href="/contribute" target="_blank" color={'gray.400'}>
-              Item Data Extractor script
-            </Link>
+            {t.rich('ItemPage.last-seen-works', {
+              Link: (chunks) => (
+                <Link as={NextLink} href="/contribute" target="_blank" color={'gray.400'}>
+                  {chunks}
+                </Link>
+              ),
+            })}
             <br />
             <br />
-            Every time a user with the script stumble across an item, the script will log and send
-            this data to our database.
+            {t('ItemPage.last-seen-works-2')}
             <br />
             <br />
-            Rest assured that we do not collect any personal data - you can review our{' '}
-            <Link as={NextLink} href="/privacy" target="_blank" color={'gray.400'}>
-              Privacy Policy
-            </Link>{' '}
-            (and our{' '}
-            <Link
-              as={NextLink}
-              href="https://github.com/lucca180/itemdb"
-              isExternal
-              color={'gray.400'}
-            >
-              Source Code
-            </Link>
-            ) for more information.
+            {t.rich('ItemPage.last-seen-works-3', {
+              Privacy: (chunks) => (
+                <Link as={NextLink} href="/privacy" target="_blank" color={'gray.400'}>
+                  {chunks}
+                </Link>
+              ),
+              Source: (chunks) => (
+                <Link
+                  as={NextLink}
+                  href="https://github.com/lucca180/itemdb"
+                  isExternal
+                  color={'gray.400'}
+                >
+                  {chunks}
+                </Link>
+              ),
+            })}
           </ModalBody>
 
           <ModalFooter>
             <Button variant="ghost" onClick={onClose}>
-              Close
+              {t('General.close')}
             </Button>
             <Button as={NextLink} href="/contribute" target="_blank" colorScheme="gray" ml={3}>
-              Contribute with itemdb <Icon boxSize="12px" as={FaExternalLinkAlt} ml={1} />
+              {t('General.contribute-with-itemdb')}{' '}
+              <Icon boxSize="12px" as={FaExternalLinkAlt} ml={1} />
             </Button>
           </ModalFooter>
         </ModalContent>

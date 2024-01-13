@@ -1,10 +1,10 @@
 import { Box, Text, Divider, Flex, Link } from '@chakra-ui/react';
 import React from 'react';
 import { ItemData, TradeData } from '../../types';
-import { format } from 'date-fns';
 import Image from 'next/image';
 import { genItemKey, slugify } from '../../utils/utils';
 import NextLink from 'next/link';
+import { useFormatter, useTranslations } from 'next-intl';
 
 type Props = {
   data: TradeData;
@@ -14,15 +14,27 @@ type Props = {
 const intl = new Intl.NumberFormat();
 
 const TradeTable = (props: Props) => {
+  const t = useTranslations();
+  const format = useFormatter();
   const { data, featuredItem } = props;
   return (
     <Flex flexFlow="column" w="100%" flex={1} mb={3}>
       <Flex flexFlow="column">
         <Box fontSize="xs" px={3} py={2}>
           <Text color="gray.200">
-            <b>Lot {data.trade_id}</b> | Owned by {data.owner}
+            <b>
+              {t('ItemPage.lot')} {data.trade_id}
+            </b>{' '}
+            | {t('ItemPage.owned-by')} {data.owner}
           </Text>
-          <Text color="gray.300">Seen at {format(new Date(data.addedAt), 'PPP')}</Text>
+          <Text color="gray.300">
+            {t('ItemPage.seen-at')}{' '}
+            {format.dateTime(new Date(data.addedAt), {
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric',
+            })}
+          </Text>
         </Box>
         {data.items.map((item) => (
           <Flex
@@ -54,7 +66,7 @@ const TradeTable = (props: Props) => {
               )}
               {data.priced && !item.price && (
                 <Text fontSize="xs" opacity="0.8" fontStyle="italic">
-                  Unspecified Price
+                  {t('ItemPage.unspecified-price')}
                 </Text>
               )}
             </Flex>
@@ -68,7 +80,7 @@ const TradeTable = (props: Props) => {
           flexFlow="column"
           p={2}
         >
-          <b>Wishlist</b>
+          <b>{t('ItemPage.wishlist')}</b>
           <Text>{data.wishlist}</Text>
         </Flex>
       </Flex>

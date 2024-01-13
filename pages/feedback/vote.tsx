@@ -26,8 +26,13 @@ import TradeTable from '../../components/Trades/TradeTable';
 import { Feedback, TradeData } from '../../types';
 import { useAuth } from '../../utils/auth';
 import { TradeGuidelines } from './trades';
+import { getCookie } from 'cookies-next';
+import { NextPageContext, NextApiRequest } from 'next';
+import { CheckAuth } from '../../utils/googleCloud';
+import { useTranslations } from 'next-intl';
 
 const FeedbackVotingPage = () => {
+  const t = useTranslations();
   const { user, authLoading, getIdToken } = useAuth();
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [currentFeedback, setCurrentFeedback] = useState<Feedback>();
@@ -109,7 +114,12 @@ const FeedbackVotingPage = () => {
   };
 
   return (
-    <Layout SEO={{ title: 'Voting - Feedback' }}>
+    <Layout
+      SEO={{
+        title: t('Feedback.voting-feedback'),
+        description: t('Feedback.feedback-system-description'),
+      }}
+    >
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/altador/altadorcup/link_images/2008/help_me_decide.gif',
@@ -117,10 +127,9 @@ const FeedbackVotingPage = () => {
         }}
         // color="#7AB92A"
       >
-        <Heading size="lg">The Feedback System</Heading>
+        <Heading size="lg">{t('Feedback.the-feedback-system')}</Heading>
         <Text size={{ base: 'sm', md: undefined }}>
-          Most of our content is collected and categorized automatically but there are some things
-          our machines can&apos;t do. And you can help it!
+          {t('Feedback.feedback-system-description')}
         </Text>
       </HeaderCard>
       <Flex
@@ -130,16 +139,17 @@ const FeedbackVotingPage = () => {
         flexFlow={{ base: 'column', md: 'row' }}
         sx={{ b: { color: 'blue.200' } }}
       >
-        <CardBase chakraWrapper={{ flex: 2 }} title="Voting" chakra={{ bg: 'gray.700' }}>
-          <Text>
-            Either way, the more you contribute correctly the more our systems will trust your
-            information - meaning your suggestions will be live faster.
-          </Text>
+        <CardBase
+          chakraWrapper={{ flex: 2 }}
+          title={t('Feedback.voting')}
+          chakra={{ bg: 'gray.700' }}
+        >
+          <Text>{t('Feedback.fds-pg-2')}</Text>
           <Accordion allowMultiple mt={4}>
             <AccordionItem>
               <AccordionButton>
                 <Box as="span" flex="1" textAlign="left">
-                  <Text fontWeight={'bold'}>Trade Pricing</Text>
+                  <Text fontWeight={'bold'}>{t('Layout.trade-pricing')}</Text>
                 </Box>
                 <AccordionIcon />
               </AccordionButton>
@@ -150,7 +160,7 @@ const FeedbackVotingPage = () => {
             <AccordionItem>
               <AccordionButton>
                 <Box as="span" flex="1" textAlign="left">
-                  <Text fontWeight={'bold'}>Item Tags and Notes</Text>
+                  <Text fontWeight={'bold'}>{t('Feedback.item-notes')}</Text>
                 </Box>
                 <AccordionIcon />
               </AccordionButton>
@@ -159,9 +169,9 @@ const FeedbackVotingPage = () => {
               </AccordionPanel>
             </AccordionItem>
           </Accordion>
-          <Center mt={4} fontStyle="italic" fontSize="sm">
+          {/* <Center mt={4} fontStyle="italic" fontSize="sm">
             I love democracy - Sheev
-          </Center>
+          </Center> */}
         </CardBase>
         <Flex
           flex="1"
@@ -179,16 +189,16 @@ const FeedbackVotingPage = () => {
 
           {!isLoading && !currentFeedback && !error && (
             <Center flexFlow="column" gap={4}>
-              <Text>Thanks for helping out! Want more?</Text>
-              <Button onClick={init}>YES I NEED IT!!!!!</Button>
+              <Text>{t('Feedback.thanks-for-helping-out-want-more')}</Text>
+              <Button onClick={init}>{t('Feedback.yes-i-need-it')}</Button>
               <Box>
                 <Text fontSize="xs" color="gray.400" textAlign="center">
-                  If you click the button and nothing happens you really vote for everything you
-                  could... impressive.
+                  {t('Feedback.vote-everything')}
                 </Text>
                 <Text fontSize="xs" color="gray.200" textAlign="center">
                   <Link href="/feedback/trades">
-                    You can also price some trades <ExternalLinkIcon verticalAlign={'center'} />
+                    {t('Feedback.you-can-also-price-some-trades')}{' '}
+                    <ExternalLinkIcon verticalAlign={'center'} />
                   </Link>
                 </Text>
               </Box>
@@ -199,7 +209,7 @@ const FeedbackVotingPage = () => {
             <>
               <CardBase
                 chakraWrapper={{ flex: 1, width: '100%' }}
-                title="Feedback Voting"
+                title={t('Feedback.feedback-voting')}
                 chakra={{ bg: 'gray.700' }}
               >
                 {currentFeedback.type === 'tradePrice' && (
@@ -220,7 +230,7 @@ const FeedbackVotingPage = () => {
                   onClick={() => handleVote('downvote')}
                   variant="solid"
                 >
-                  {isAdmin ? 'Reprove' : 'Downvote'}
+                  {isAdmin ? t('Feedback.reprove') : t('Feedback.downvote')}
                 </Button>
                 <Button
                   leftIcon={<Icon as={BsArrowUpCircleFill} />}
@@ -229,7 +239,7 @@ const FeedbackVotingPage = () => {
                   onClick={() => handleVote('upvote')}
                   mr={2}
                 >
-                  {isAdmin ? 'Approve' : 'Upvote'}
+                  {isAdmin ? t('Feedback.approve') : t('Feedback.upvote')}
                 </Button>
               </Flex>
             </>
@@ -237,8 +247,8 @@ const FeedbackVotingPage = () => {
 
           {!isLoading && error && (
             <Center flexFlow="column" gap={4}>
-              <Text>Something went wrong :(</Text>
-              <Button onClick={init}>Try again</Button>
+              <Text>{t('General.something-went-wrong')} :(</Text>
+              <Button onClick={init}>{t('General.try-again')}</Button>
             </Center>
           )}
         </Flex>
@@ -250,21 +260,48 @@ const FeedbackVotingPage = () => {
 export default FeedbackVotingPage;
 
 const TagAndNotesGuidelines = () => {
+  const t = useTranslations();
   return (
     <Box>
-      <Text>
+      {/* <Text>
         <b>Tags</b> are used to help you find items. They should be used to describe the{' '}
         <b>item&apos;s appearance or function</b>.<br />
         Tags <b>should not contain any meta-information</b> about the item such as method of
         acquisition.
         <br />
         Tags <b>should not contain any word of the item&apos;s name</b>.
-      </Text>
-      <Text mt={4}>
-        <b>Item Notes</b> are used to provide additional information about the item such as
-        it&apos;s functions or effects. Please be sure to check the veracity of the information
-        provided before upvoting it :)
+      </Text> */}
+      <Text>
+        {t.rich('Feedback.in-1', {
+          b: (chunks) => <b>{chunks}</b>,
+        })}
       </Text>
     </Box>
   );
 };
+
+export async function getServerSideProps(context: NextPageContext) {
+  try {
+    const token = getCookie('userToken', { req: context.req, res: context.res }) as
+      | string
+      | undefined
+      | null;
+
+    if (!token) throw new Error('No token found');
+
+    await CheckAuth(context.req as NextApiRequest, token);
+
+    return {
+      props: {
+        messages: (await import(`../../translation/${context.locale}.json`)).default,
+      },
+    };
+  } catch (e) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    };
+  }
+}

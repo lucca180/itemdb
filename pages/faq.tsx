@@ -12,10 +12,12 @@ import HeaderCard from '../components/Card/HeaderCard';
 import Layout from '../components/Layout';
 import DynamicIcon from '../public/icons/dynamic.png';
 import NextImage from 'next/image';
+import { useTranslations } from 'next-intl';
 
 const WhyUsPage = () => {
+  const t = useTranslations();
   return (
-    <Layout SEO={{ title: 'Frequent Asked Questions' }}>
+    <Layout SEO={{ title: t('FAQ.frequent-asked-questions') }}>
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/desert/usurper_clue.gif',
@@ -23,50 +25,57 @@ const WhyUsPage = () => {
         }}
         color="#4bbde0"
       >
-        <Heading size="lg">Why itemdb?</Heading>
-        <Text size={{ base: 'sm', md: undefined }}>
-          Here you can find the most frequent asked questions about the itemdb.
-        </Text>
+        <Heading size="lg">{t('FAQ.why-itemdb')}</Heading>
+        <Text size={{ base: 'sm', md: undefined }}>{t('FAQ.text-1')}</Text>
       </HeaderCard>
       <Flex flexFlow="column" gap={3} sx={{ a: { color: 'cyan.400' }, b: { color: 'blue.300' } }}>
         <Flex flexFlow="column" gap={3} maxW="1000px">
-          <Heading size="md">What is the itemdb?</Heading>
+          <Heading size="md">{t('FAQ.what-is-the-itemdb')}</Heading>
           <Text>
-            The itemdb is a{' '}
-            <Link href="https://github.com/lucca180/itemdb/" isExternal>
-              open source
-            </Link>{' '}
-            database for neopets items. It is a community driven project where everyone can{' '}
-            <Link href="/contribute" isExternal>
-              contribute
-            </Link>
-            .<br />
-            <br />
-            Our goal is to provide as much <b>information</b> as possible about neopets items and
-            make it easy for you to find <b>new and interesting items</b> whether it be for your{' '}
-            <Text as="span" color="pink.300" fontWeight="bold">
-              pink themed gallery
-            </Text>{' '}
-            or putting together a <b>cool outfit for your pet</b>.
+            {t.rich('FAQ.text-2', {
+              Link1: (chunk) => (
+                <Link href="https://github.com/lucca180/itemdb/" isExternal>
+                  {chunk}
+                </Link>
+              ),
+              Link2: (chunk) => (
+                <Link href="/contribute" isExternal>
+                  {chunk}
+                </Link>
+              ),
+            })}
             <br />
             <br />
-            As a <b>community-supported project</b>, we think it's fair that everyone can use our
-            data for their projects (read our <Link href="/terms">terms</Link> first!). Want to{' '}
-            <b>calculate neopia inflation</b> in an almost scientifically accurate way? Or{' '}
-            <Link href="/articles/sortGallery" isExternal>
-              sort your gallery by color
-            </Link>
-            ? Just take a look at our{' '}
-            <Link href="https://itemdb.stoplight.io/docs/itemdb-api" isExternal>
-              API
-            </Link>
-            .
+            {t.rich('FAQ.text-3', {
+              b: (chunk) => <b>{chunk}</b>,
+              Text: (chunk) => (
+                <Text as="span" color="pink.300" fontWeight="bold">
+                  {chunk}
+                </Text>
+              ),
+            })}
+            <br />
+            <br />
+            {t.rich('FAQ.text-4', {
+              Link: (chunk) => <Link href="/terms">{chunk}</Link>,
+              Link1: (chunk) => (
+                <Link href="/articles/sortGallery" isExternal>
+                  {chunk}
+                </Link>
+              ),
+              Link2: (chunk) => (
+                <Link href="https://itemdb.stoplight.io/docs/itemdb-api" isExternal>
+                  {chunk}
+                </Link>
+              ),
+              b: (chunk) => <b>{chunk}</b>,
+            })}
           </Text>
-          <Heading size="md">Why use itemdb?</Heading>
-          <Text>We have a lot of cool features, such as:</Text>
+          <Heading size="md">{t('FAQ.why-use-itemdb')}</Heading>
+          <Text>{t('FAQ.we-have-a-lot-of-cool-features-such-as')}</Text>
           <Grid templateColumns={['1', 'repeat(2, 2fr)', 'repeat(3, 2fr)']} gap={[2, 3, 6]}>
             <FeatureCard
-              title="Dynamic Lists"
+              title={t('General.dynamic-lists')}
               icon={
                 <NextImage
                   src={DynamicIcon}
@@ -77,78 +86,87 @@ const WhyUsPage = () => {
               }
             >
               <>
-                Create <Link href="/articles/checklists-and-dynamic-lists">dynamic lists</Link> that
-                update automatically as new items are released.
+                {t.rich('FAQ.text-5', {
+                  Link: (chunk) => (
+                    <Link href="/articles/checklists-and-dynamic-lists">{chunk}</Link>
+                  ),
+                })}
               </>
             </FeatureCard>
-            <FeatureCard title="Drop Odds" icon={<MdShowChart fontSize={'24px'} />}>
-              See the odds of getting an item from Mystery Capsules, Goodie Bags and other
-              openables.
+            <FeatureCard title={t('FAQ.drop-odds')} icon={<MdShowChart fontSize={'24px'} />}>
+              {t('FAQ.text-6')}
             </FeatureCard>
-            <FeatureCard title="Owls Integration" icon={<MdAttachMoney fontSize={'24px'} />}>
+            <FeatureCard
+              title={t('FAQ.owls-integration')}
+              icon={<MdAttachMoney fontSize={'24px'} />}
+            >
               <>
-                Search, sort and filter NC Wearables by{' '}
-                <Link href="/articles/owls">Owls Value</Link>. You can also see the Trade Report
-                History for each item.
+                {t.rich('FAQ.text-7', {
+                  Link: (chunk) => <Link href="/articles/owls">{chunk}</Link>,
+                })}
               </>
             </FeatureCard>
-            <FeatureCard title="Powerful Search" icon={<MdOutlineSearch fontSize={'24px'} />}>
+            <FeatureCard
+              title={t('FAQ.powerful-search')}
+              icon={<MdOutlineSearch fontSize={'24px'} />}
+            >
               <>
-                {' '}
-                Use our <Link href="/articles/advanced-search-queries">
-                  operators and filters
-                </Link>{' '}
-                to find the perfect item for your gallery or outfit. You can even search for items
-                by color pallete!
+                {t.rich('FAQ.text-8', {
+                  Link: (chunk) => <Link href="/articles/advanced-search-queries">{chunk}</Link>,
+                })}
               </>
             </FeatureCard>
-            <FeatureCard title="Wearable Preview" icon={<MdImage fontSize={'24px'} />}>
+            <FeatureCard title={t('FAQ.wearable-preview')} icon={<MdImage fontSize={'24px'} />}>
               <>
-                Preview how a wearable looks on your pet before buying it. Powered by{' '}
-                <Link href="https://impress.openneo.net/" isExternal>
-                  Dress to Impress
-                </Link>
-                .
+                {t.rich('FAQ.text-9', {
+                  Link: (chunk) => (
+                    <Link href="https://impress.openneo.net/" isExternal>
+                      {chunk}
+                    </Link>
+                  ),
+                })}
               </>
             </FeatureCard>
-            <FeatureCard title="Userscripts" icon={<MdDescription fontSize={'24px'} />}>
+            <FeatureCard title={t('Layout.userscripts')} icon={<MdDescription fontSize={'24px'} />}>
               <>
-                Price your SDB? Sort your gallery by color? We have a lot of{' '}
-                <Link href="/articles/userscripts">userscripts</Link> to make your life easier.
+                {t.rich('FAQ.text-10', {
+                  Link: (chunk) => <Link href="/articles/userscripts">{chunk}</Link>,
+                })}
               </>
             </FeatureCard>
           </Grid>
           <Heading size="md" mt={5}>
-            How can I help?
+            {t('FAQ.how-can-i-help')}
           </Heading>
           <Text>
-            We have a page dedicated to the different ways you can{' '}
-            <Link href="/contribute">contribute to the itemdb</Link>.
+            {t.rich('FAQ.text-11', {
+              Link: (chunk) => <Link href="/contribute">{chunk}</Link>,
+            })}
           </Text>
           <Heading size="md" mt={5}>
-            Can i talk about itemdb on Neopets?
+            {t('FAQ.can-i-talk-about-itemdb-on-neopets')}
           </Heading>
           <Text>
-            itemdb is a{' '}
-            <Link href="http://magnetismotimes.com/" isExternal>
-              Magnetismo Times
-            </Link>{' '}
-            project and, as Certified Site, you should be able to talk about it on Neopets - but you
-            cannot link to it. Yet.
+            {t.rich('FAQ.text-12', {
+              Link: (chunk) => (
+                <Link href="http://magnetismotimes.com/" isExternal>
+                  {chunk}
+                </Link>
+              ),
+            })}
           </Text>
           <Heading size="md" mt={5}>
-            You have a lot of missing or wrong info...
+            {t('FAQ.you-have-a-lot-of-missing-or-wrong-info')}
           </Heading>
           <Text>
-            All the information on the itemdb is provided by users like you using our{' '}
-            <Link href="/contribute">Item Data Extractor Script</Link>. Most of the time, as soon
-            the correct information hits our database, it will be automatically updated on the site
-            and you should not worry about it.
+            {t.rich('FAQ.text-13', {
+              Link: (chunk) => <Link href="/contribute">{chunk}</Link>,
+            })}
             <br />
             <br />
-            But sometimes, when TNT changes something, our algorithm will fall into a merge conflict
-            and we will need to give it a check manually. If that is the case, you can help us by
-            reporting the issue using the <b>Feedback Button</b> on each item's pages.
+            {t.rich('FAQ.text-14', {
+              b: (chunk) => <b>{chunk}</b>,
+            })}
           </Text>
         </Flex>
       </Flex>
@@ -157,3 +175,11 @@ const WhyUsPage = () => {
 };
 
 export default WhyUsPage;
+
+export async function getStaticProps(context: any) {
+  return {
+    props: {
+      messages: (await import(`../translation/${context.locale}.json`)).default,
+    },
+  };
+}

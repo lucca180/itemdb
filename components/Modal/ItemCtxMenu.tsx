@@ -9,6 +9,7 @@ import { DuplicatedItemModalProps } from './DuplicatedItemModal';
 import dynamic from 'next/dynamic';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import NextImage from 'next/image';
+import { useTranslations } from 'next-intl';
 
 const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
   () => import('./DuplicatedItemModal')
@@ -72,6 +73,7 @@ type Props = {
 };
 
 const ItemCtxMenu = (props: Props) => {
+  const t = useTranslations();
   const toast = useToast();
   const { user, getIdToken } = useAuth();
   const [lists, setLists] = useAtom(UserLists);
@@ -98,8 +100,8 @@ const ItemCtxMenu = (props: Props) => {
     } catch (err) {
       console.error(err);
       toast({
-        title: 'Error',
-        description: 'An error occurred while fetching your lists, please try again later.',
+        title: t('General.error'),
+        description: t('ItemPage.error-fetching-lists'),
         status: 'error',
         duration: 2000,
       });
@@ -113,7 +115,7 @@ const ItemCtxMenu = (props: Props) => {
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({
-      title: 'Copied to Clipboard',
+      title: t('Layout.copied-to-clipboard'),
       description: text,
       status: 'success',
       duration: 2000,
@@ -125,7 +127,7 @@ const ItemCtxMenu = (props: Props) => {
     if (!user) return;
 
     const toastId = toast({
-      title: 'Adding item to list...',
+      title: t('Layout.adding-item-to-list'),
       status: 'info',
       duration: null,
       isClosable: true,
@@ -151,7 +153,7 @@ const ItemCtxMenu = (props: Props) => {
       );
       if (res.data.success) {
         toast.update(toastId, {
-          title: 'Item added to list',
+          title: t('Lists.item-added-to-list'),
           status: 'success',
           duration: 5000,
         });
@@ -168,8 +170,8 @@ const ItemCtxMenu = (props: Props) => {
       }
 
       toast.update(toastId, {
-        title: 'An error occurred',
-        description: 'An error occurred while adding the item to the list, please try again later.',
+        title: t('General.an-error-occurred'),
+        description: t('Layout.error-adding-item-to-list'),
         status: 'error',
         duration: 5000,
       });
@@ -197,9 +199,13 @@ const ItemCtxMenu = (props: Props) => {
         preventHideOnScroll
         appendTo="body"
       >
-        {props.onSelect ? <CtxMenuItem onClick={props.onSelect}>Select Item</CtxMenuItem> : <></>}
-        <CtxMenuItem onClick={handleOpenInNewTab}>Open in a New Tab</CtxMenuItem>
-        <CtxSubmenu title="Add Item to List">
+        {props.onSelect ? (
+          <CtxMenuItem onClick={props.onSelect}>{t('Layout.select-item')}</CtxMenuItem>
+        ) : (
+          <></>
+        )}
+        <CtxMenuItem onClick={handleOpenInNewTab}>{t('Layout.open-in-a-new-tab')}</CtxMenuItem>
+        <CtxSubmenu title={t('Layout.add-item-to-list')}>
           {lists &&
             lists.map((list) => (
               <CtxMenuItem
@@ -241,23 +247,27 @@ const ItemCtxMenu = (props: Props) => {
               </CtxMenuItem>
             ))}
           {(!user || (lists && !lists.length)) && (
-            <CtxMenuItem disabled>No lists found</CtxMenuItem>
+            <CtxMenuItem disabled>{t('ItemPage.no-lists-found')}</CtxMenuItem>
           )}
-          {!lists && user && <CtxMenuItem disabled>Loading...</CtxMenuItem>}
+          {!lists && user && <CtxMenuItem disabled>{t('Layout.loading')}...</CtxMenuItem>}
         </CtxSubmenu>
         <Divider />
-        <CtxMenuItem onClick={() => handleCopy(item.image)}>Copy Image URL</CtxMenuItem>
+        <CtxMenuItem onClick={() => handleCopy(item.image)}>
+          {t('Layout.copy-image-url')}
+        </CtxMenuItem>
         <CtxMenuItem
           onClick={() => handleCopy(`https://itemdb.com.br/item/${item.slug ?? item.internal_id}`)}
         >
-          Copy Link
+          {t('Layout.copy-link')}
         </CtxMenuItem>
-        <CtxMenuItem onClick={() => handleCopy(item.name)}>Copy Text</CtxMenuItem>
+        <CtxMenuItem onClick={() => handleCopy(item.name)}>{t('Layout.copy-text')}</CtxMenuItem>
         <Box display={onListAction ? 'inherit' : 'none'}>
           <Divider />
-          <CtxMenuItem onClick={() => onListAction?.(item, 'move')}>Move to List</CtxMenuItem>
+          <CtxMenuItem onClick={() => onListAction?.(item, 'move')}>
+            {t('Layout.move-to-list')}
+          </CtxMenuItem>
           <CtxMenuItem onClick={() => onListAction?.(item, 'delete')} color="red.400">
-            Delete from this list
+            {t('Layout.delete-from-this-list')}
           </CtxMenuItem>
         </Box>
       </CtxMenu>
