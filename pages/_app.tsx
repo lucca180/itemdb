@@ -17,7 +17,11 @@ function MyApp({ Component, pageProps }: any) {
 
   return (
     <Provider>
-      <NextIntlClientProvider locale={router.locale} messages={pageProps.messages}>
+      <NextIntlClientProvider
+        locale={router.locale}
+        messages={pageProps.messages}
+        timeZone={Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'America/Los_Angeles'}
+      >
         <AuthProvider>
           <ChakraProvider theme={theme}>
             <NextNProgress color="#718096" showOnShallow={true} />
