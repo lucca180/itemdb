@@ -24,13 +24,5 @@ jobs:
             yarn
             npx prisma migrate deploy
             pm2 stop ecosystem.config.js
-            BUILD_DIR=temp yarn build || exit
-            if [ ! -d "temp" ]; then
-              echo '\033[31m temp directory does not exist!\033[0m'  
-              exit 1;
-            fi
-            # delete `.next` folder
-            rm -rf .next
-            # rename `temp` folder to `.next`
-            mv temp .next
+            yarn build || exit
             pm2 reload ecosystem.config.js

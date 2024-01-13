@@ -44,6 +44,8 @@ import { useTranslations } from 'next-intl';
 
 const color = Color('#599379').rgb().array();
 
+const MIN_SCRIPT_VERSION = 104;
+
 type AlertMsg = {
   title?: ReactElement | string;
   description?: ReactElement | string;
@@ -129,7 +131,10 @@ const RestockDashboard = () => {
       currentParsed = Object.values(current_sessions);
       unsyncParsed = unsync_sessions;
 
-      if (!window.itemdb_restock.scriptVersion || window.itemdb_restock.scriptVersion < 103) {
+      if (
+        !window.itemdb_restock.scriptVersion ||
+        window.itemdb_restock.scriptVersion < MIN_SCRIPT_VERSION
+      ) {
         console.log('itemdb_restock version outdated');
         setNoScript(true);
       }

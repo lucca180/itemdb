@@ -240,6 +240,40 @@ export type UserList = {
   linkedListId: number | null;
 };
 
+export type ReducedUserList = {
+  internal_id: number;
+  name: string;
+  description: string | null;
+
+  owner: {
+    id: string;
+    username: string | null;
+    neopetsUser: string | null;
+    lastSeen: string;
+  };
+
+  coverURL: string | null;
+  official: boolean;
+
+  purpose: 'none' | 'seeking' | 'trading';
+  visibility: 'public' | 'private' | 'unlisted';
+
+  colorHex: string | null;
+
+  sortBy: string;
+  sortDir: string;
+  order: number | null;
+
+  createdAt: string;
+  updatedAt: string;
+
+  itemInfo: ListItemInfo[];
+
+  dynamicType: 'addOnly' | 'removeOnly' | 'fullSync' | null;
+  lastSync: string | null;
+  linkedListId: number | null;
+};
+
 export type ListItemInfo = {
   internal_id: number;
   list_id: number;

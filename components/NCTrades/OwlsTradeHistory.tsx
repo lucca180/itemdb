@@ -10,9 +10,10 @@ import {
   Text,
   UnorderedList,
   Center,
+  Link,
 } from '@chakra-ui/react';
 import { format } from 'date-fns';
-import Link from 'next/link';
+import NextLink from 'next/link';
 import { OwlsTrade, ItemData } from '../../types';
 import { useTranslations } from 'next-intl';
 
@@ -37,9 +38,18 @@ const OwlsTradeHistory = (props: Props) => {
 
   if (!tradeHistory.length)
     return (
-      <Center>
+      <Center flexFlow="column">
         <Text fontSize="sm" opacity="0.75">
           {t('ItemPage.no-trade-history')}.
+        </Text>
+        <Text fontSize="xs" color="whiteAlpha.600">
+          {t.rich('ItemPage.owls-credits', {
+            Link: (chunk) => (
+              <Link href="/Owls" as={NextLink} color="whiteAlpha.700" isExternal>
+                {chunk}
+              </Link>
+            ),
+          })}
         </Text>
       </Center>
     );
@@ -69,9 +79,9 @@ const OwlsTradeHistory = (props: Props) => {
                           : undefined
                       }
                     >
-                      <Link href={getSearchLink(traded)} target="_blank">
+                      <NextLink href={getSearchLink(traded)} target="_blank">
                         {traded}
-                      </Link>
+                      </NextLink>
                     </ListItem>
                   ))}
                 </UnorderedList>
@@ -91,9 +101,9 @@ const OwlsTradeHistory = (props: Props) => {
                           : undefined
                       }
                     >
-                      <Link href={getSearchLink(traded)} target="_blank">
+                      <NextLink href={getSearchLink(traded)} target="_blank">
                         {traded}
-                      </Link>
+                      </NextLink>
                     </ListItem>
                   ))}
                 </UnorderedList>
@@ -112,6 +122,17 @@ const OwlsTradeHistory = (props: Props) => {
           </CardBody>
         </Card>
       ))}
+      <Center>
+        <Text fontSize="xs" color="whiteAlpha.600">
+          {t.rich('ItemPage.owls-credits', {
+            Link: (chunk) => (
+              <Link href="/Owls" as={NextLink} color="whiteAlpha.700" isExternal>
+                {chunk}
+              </Link>
+            ),
+          })}
+        </Text>
+      </Center>
     </Flex>
   );
 };
