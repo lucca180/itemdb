@@ -24,7 +24,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
 
 export const getTrendingItems = async (limit: number) => {
   const statsRes = await axios.get(
-    'https://simpleanalytics.com/itemdb.com.br.json?version=5&fields=pages&start=today-3d&pages=/item*&limit=' +
+    'https://simpleanalytics.com/itemdb.com.br.json?version=5&fields=pages&start=today-7d&pages=/item*&limit=' +
       (limit + 10),
     {
       headers: {
