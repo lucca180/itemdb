@@ -32,7 +32,17 @@ function MyApp({ Component, pageProps }: any) {
               <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
             </Head>
             <Component {...pageProps} />
-            <Script src="https://sa.itemdb.com.br/latest.js" />
+            <Script id="pathOverwriter">
+              {`function myPathOverwriter({ path }) {
+                  if (path.startsWith("/pt")) path = path.replace("/pt", "");
+                  return path;
+                }
+                `}
+            </Script>
+            <Script
+              data-path-overwriter="myPathOverwriter"
+              src="https://sa.itemdb.com.br/latest.js"
+            />
             <noscript>
               {/* eslint-disable @next/next/no-img-element */}
               <img
