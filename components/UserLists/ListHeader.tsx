@@ -241,7 +241,7 @@ const ListHeader = (props: ListHeaderProps) => {
             >
               <Tooltip
                 hasArrow
-                label={t('Lists.unpricedItems', { unpricedItems })}
+                label={t('Lists.unpricedItems', { 0: unpricedItems })}
                 placement="top"
                 isDisabled={!unpricedItems}
               >
