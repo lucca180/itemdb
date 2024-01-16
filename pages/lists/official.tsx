@@ -8,6 +8,10 @@ import { useAuth } from '../../utils/auth';
 import { getUserLists } from '../api/v1/lists/[username]';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
+import useSWRImmutable from 'swr/immutable';
+import axios from 'axios';
+
+const fetcher = (url: string) => axios.get(url).then((res) => res.data as UserList[]);
 
 const ApplyListModal = dynamic<ApplyListModalProps>(
   () => import('../../components/Modal/OfficialListApply')
@@ -19,7 +23,10 @@ type Props = {
 
 const OfficialListsPage = (props: Props) => {
   const t = useTranslations();
-  const { lists } = props;
+  const { lists: propLists } = props;
+  const { data: lists } = useSWRImmutable(`/api/v1/lists/official?includeItems=false`, fetcher, {
+    shouldRetryOnError: false,
+  });
   const { user, authLoading } = useAuth();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -61,11 +68,15 @@ const OfficialListsPage = (props: Props) => {
             + {t('Lists.official-apply-list')}
           </Button>
           <Text as="div" textColor={'gray.300'} fontSize="sm">
-            {lists.length} {t('General.lists')}
+            {lists && (
+              <>
+                {lists.length} {t('General.lists')}
+              </>
+            )}
           </Text>
         </Flex>
         <Flex mt={5} gap={4} flexWrap="wrap" justifyContent={'center'}>
-          {lists.map((list) => (
+          {(lists ?? propLists).map((list) => (
             <Box key={list.internal_id} flex={{ base: 1, md: 'initial' }}>
               <UserListCard list={list} />
             </Box>
@@ -79,7 +90,7 @@ const OfficialListsPage = (props: Props) => {
 export default OfficialListsPage;
 
 export async function getServerSideProps(context: any) {
-  const lists = await getUserLists('official', null, false);
+  const lists = await getUserLists('official', null, false, 15);
 
   return {
     props: {

@@ -166,7 +166,12 @@ const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
 
 // ----------- //
 
-export const getUserLists = async (username: string, user?: User | null, includeItems = true) => {
+export const getUserLists = async (
+  username: string,
+  user?: User | null,
+  includeItems = true,
+  limit = -1
+) => {
   const isOfficial = username === 'official';
 
   const listsRaw = await prisma.userList.findMany({
@@ -185,8 +190,9 @@ export const getUserLists = async (username: string, user?: User | null, include
       user: true,
     },
     orderBy: {
-      updatedAt: 'desc',
+      createdAt: 'desc',
     },
+    take: limit > 0 ? limit : undefined,
   });
 
   if (!listsRaw || listsRaw.length === 0) return [];
