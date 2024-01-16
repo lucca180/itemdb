@@ -652,5 +652,8 @@
     "page-not-found": "Página Não Encontrada",
     "500-text-1": "Este erro foi relatado e nossos meepits estarão trabalhando nisso o mais rápido possível.",
     "internal-server-error": "Erro Interno do Servidor"
+  },
+  "Temp": {
+    "yahoo-mail-error": "Os usuários do Yahoo podem ter dificuldades para receber e-mails no momento"
   }
 }

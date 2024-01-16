@@ -652,5 +652,8 @@
     "404-text-3": "We think <Link>this page</Link> might be appropriate instead...",
     "internal-server-error": "Internal Server Error",
     "500-text-1": "This error has been reported and our meepits will be working on it as soon as possible."
+  },
+  "Temp": {
+    "yahoo-mail-error": "Yahoo users may experience difficulties receiving emails at the moment"
   }
 }

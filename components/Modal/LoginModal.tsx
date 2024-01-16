@@ -124,6 +124,11 @@ const LoginModal = (props: Props) => {
               {t('Login.email-sent')}
             </Text>
           )}
+          {email.includes('yahoo') && (
+            <Text color="gray.400" mt={2} fontSize="sm">
+              {t('Temp.yahoo-mail-error')}
+            </Text>
+          )}
         </ModalBody>
         <ModalFooter>
           {!isSent && !isLoading && (
