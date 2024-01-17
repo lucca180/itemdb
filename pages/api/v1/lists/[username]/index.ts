@@ -253,7 +253,7 @@ export const getUserLists = async (
     })
     .sort((a, b) =>
       isOfficial
-        ? new Date(b.updatedAt) < new Date(a.updatedAt)
+        ? new Date(b.createdAt) < new Date(a.createdAt)
           ? -1
           : 1
         : (a.order ?? 0) - (b.order ?? 0) ||
