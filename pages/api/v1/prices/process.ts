@@ -6,7 +6,7 @@ import { mean, standardDeviation } from 'simple-statistics';
 import { ItemPrices, PriceProcess } from '@prisma/client';
 import { differenceInCalendarDays } from 'date-fns';
 
-const MAX_DAYS = 15;
+const MAX_DAYS = 30;
 const MAX_PAST_DAYS = 60;
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
@@ -37,7 +37,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const maxPast = new Date(Date.now() - MAX_PAST_DAYS * 24 * 60 * 60 * 1000);
   const maxPastFormated = maxPast.toISOString().split('T')[0];
 
-  const lastDays = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
+  const lastDays = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const lastDaysFormated = lastDays.toISOString().split('T')[0];
 
   const groupBy2 = (await prisma.$queryRaw`
@@ -90,7 +90,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const maxPast = new Date(Date.now() - MAX_PAST_DAYS * 24 * 60 * 60 * 1000);
   const maxPastFormated = maxPast.toISOString().split('T')[0];
 
-  const lastDays = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
+  const lastDays = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const lastDaysFormated = lastDays.toISOString().split('T')[0];
 
   const groupBy2 = (await prisma.$queryRaw`
@@ -344,7 +344,7 @@ async function updateOrAddDB(
     if ((variation <= 5 || priceValue < 5000) && daysSinceLastUpdate <= 15) return undefined;
 
     if (!oldPrice.noInflation_id && priceValue > 75000) {
-      if (oldPrice.price < priceValue && variation >= 70) {
+      if (oldPrice.price < priceValue && variation >= 75) {
         newPriceData.noInflation_id = oldPrice.internal_id;
         throw 'inflation';
       }
@@ -367,8 +367,8 @@ async function updateOrAddDB(
 
       if (
         priceValue <= 75000 ||
-        (daysWithInflation >= 30 && variation < 30) ||
-        (priceValue > 75000 && inflationVariation < 70) ||
+        (daysWithInflation >= 60 && variation < 30) ||
+        (priceValue > 75000 && inflationVariation < 75) ||
         (priceValue >= 100000 && inflationVariation < 50) ||
         lastNormalPrice.price >= priceValue
       )
@@ -388,7 +388,7 @@ async function updateOrAddDB(
   }
 }
 
-const MIN_ITEMS_THRESHOLD = EVENT_MODE ? 7 : 5;
+const MIN_ITEMS_THRESHOLD = EVENT_MODE ? 7 : 10;
 
 function filterMostRecents(priceProcessList: PriceProcess[]) {
   const daysThreshold = [3, 7, 15, 30];
