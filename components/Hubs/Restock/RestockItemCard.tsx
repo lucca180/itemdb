@@ -92,21 +92,21 @@ const RestockItem = (props: Props) => {
               })}
             </Text>
           )}
-        </Flex>
 
-        {boughtTime < 0 && lostHaggle < 0 && lostNoHaggle > 0 && (
-          <Text fontSize={'xs'}>
-            {t.rich('Restock.lost-no-haggle', {
-              b: (children) => <b>{children}</b>,
-              x: msIntervalFormated(lostNoHaggle, true, 2),
-              y: format.dateTime(clickData.soldOut_timestamp ?? 0, {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              }),
-            })}
-          </Text>
-        )}
+          {boughtTime < 0 && lostHaggle < 0 && lostNoHaggle > 0 && (
+            <Text fontSize={'xs'}>
+              {t.rich('Restock.lost-no-haggle', {
+                b: (children) => <b>{children}</b>,
+                x: msIntervalFormated(lostNoHaggle, true, 2),
+                y: format.dateTime(clickData.soldOut_timestamp ?? 0, {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                }),
+              })}
+            </Text>
+          )}
+        </Flex>
       </Flex>
     </Link>
   );

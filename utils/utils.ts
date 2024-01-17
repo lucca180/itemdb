@@ -1237,18 +1237,22 @@ export const removeOutliers = (arr: number[], n: number) => {
 
 export const msIntervalFormated = (ms: number, long = false, precision = 0) => {
   if (ms < 1000) return `${ms}${long ? ' milliseconds' : 'ms'}`;
+
   if (ms < 60 * 1000)
     return `${!precision ? Math.round(ms / 1000) : (ms / 1000).toFixed(precision)}${
       long ? ' seconds' : 's'
     }`;
+
   if (ms < 60 * 60 * 1000)
     return `${!precision ? Math.round(ms / 60000) : (ms / 60000).toFixed(precision)}${
       long ? ' minutes' : 'm'
     }`;
+
   if (ms < 24 * 60 * 60 * 1000)
-    `${!precision ? Math.round(ms / 3600000) : (ms / 3600000).toFixed(precision)}${
+    return `${!precision ? Math.round(ms / 3600000) : (ms / 3600000).toFixed(precision)}${
       long ? ' hours' : 'h'
     }`;
+
   return `${!precision ? Math.round(ms / 86400000) : (ms / 86400000).toFixed(precision)}${
     long ? ' days' : 'd'
   }`;
