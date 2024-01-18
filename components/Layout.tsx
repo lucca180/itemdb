@@ -34,9 +34,9 @@ import { BsBoxArrowInRight, BsFillPersonFill } from 'react-icons/bs';
 import { NextSeo, NextSeoProps } from 'next-seo';
 import { SearchBar } from './Search/SearchBar';
 import Color from 'color';
-
 import Brazil from '../public/icons/brazil.png';
 import { useTranslations } from 'next-intl';
+import { LanguageToast } from './Modal/LanguageToast';
 
 type Props = {
   children?: ReactNode;
@@ -74,6 +74,7 @@ const Layout = (props: Props) => {
     <>
       <NextSeo {...props.SEO} />
       <LoginModal isOpen={isOpen} onClose={onClose} />
+      <LanguageToast />
       <Flex flexFlow="column" minH="100vh">
         <Flex
           as="nav"

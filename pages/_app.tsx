@@ -12,6 +12,12 @@ import { AuthProvider } from '../utils/auth';
 import { NextIntlClientProvider } from 'next-intl';
 import { useRouter } from 'next/router';
 
+const VALID_LOCALES = {
+  en: '',
+  pt: '/pt',
+  'pt-BR': '/pt',
+};
+
 function MyApp({ Component, pageProps }: any) {
   const router = useRouter();
 
@@ -30,6 +36,9 @@ function MyApp({ Component, pageProps }: any) {
             <Head>
               <link rel="icon" href="/favicon.ico" />
               <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+              {Object.entries(VALID_LOCALES).map(([key, value]) => (
+                <link rel="alternate" key={key} hrefLang={key} href={`${value}${router.asPath}`} />
+              ))}
             </Head>
             <Component {...pageProps} />
             <Script id="pathOverwriter">

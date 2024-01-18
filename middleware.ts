@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextRequest } from 'next/server';
 import type { DecodedIdToken } from 'firebase-admin/auth';
 import { User } from './types';
 import * as jose from 'jose';
 import { LRUCache } from 'lru-cache';
 import requestIp from 'request-ip';
-import parser from 'accept-language-parser';
 const API_SKIPS: { [method: string]: string[] } = {
   GET: ['api/auth', 'api/cache'],
   POST: ['api/auth', '/v1/prices', '/v1/trades', '/v1/items', '/v1/items/open'],
@@ -27,29 +26,26 @@ export async function middleware(request: NextRequest) {
     return apiMiddleware(request);
   }
 
-  const prefLang = parser.pick(VALID_LOCALES, request.headers.get('accept-language') ?? '', {
-    loose: true,
-  });
+  const cookies = {
+    name: 'idb_accept-language',
+    value: request.headers.get('accept-language') ?? '',
+    expires: Date.now() + 1000000,
+  };
+  const response = NextResponse.next();
 
-  if (request.nextUrl.locale === 'en') {
-    const locale = request.cookies.get('NEXT_LOCALE')?.value || prefLang || 'en';
+  response.cookies.set(cookies);
 
-    if (locale === 'en' || !VALID_LOCALES.includes(locale)) return NextResponse.next();
+  const locale = request.cookies.get('NEXT_LOCALE')?.value;
 
-    return NextResponse.redirect(
-      new URL(`/${locale}${request.nextUrl.pathname}${request.nextUrl.search}`, request.url)
-    );
-  } else {
-    const locale = request.cookies.get('NEXT_LOCALE')?.value || prefLang || 'en';
+  if (!locale || locale === request.nextUrl.locale || !VALID_LOCALES.includes(locale))
+    return response;
 
-    if (locale === request.nextUrl.locale) return NextResponse.next();
+  const redirectResponse = NextResponse.redirect(
+    new URL(`/${locale}${request.nextUrl.pathname}${request.nextUrl.search}`, request.url)
+  );
 
-    return NextResponse.redirect(
-      new URL(`${request.nextUrl.pathname}${request.nextUrl.search}`, request.url)
-    );
-  }
-
-  // return NextResponse.next();
+  redirectResponse.cookies.set(cookies);
+  return redirectResponse;
 }
 
 export const config = {

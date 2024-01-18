@@ -63,7 +63,8 @@
     "copy-link": "Copy Link",
     "copy-text": "Copy Text",
     "move-to-list": "Move to List",
-    "delete-from-this-list": "Delete from this list"
+    "delete-from-this-list": "Delete from this list",
+    "you-can-change-lang": "You can change the language at any time on your profile settings"
   },
   "ItemPage": {
     "item-info": "Item Info",

@@ -63,7 +63,8 @@
     "error-adding-item-to-list": "Ocorreu um erro ao adicionar o item à lista. Tente novamente mais tarde.",
     "move-to-list": "Mover para Lista",
     "open-in-a-new-tab": "Abrir em Nova Aba",
-    "select-item": "Selecionar Item"
+    "select-item": "Selecionar Item",
+    "you-can-change-lang": "Você pode alterar o idioma a qualquer momento nas configurações do seu perfil"
   },
   "ItemPage": {
     "item-info": "Item Info",

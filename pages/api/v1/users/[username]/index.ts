@@ -115,10 +115,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     };
 
     if (updatedUser.prefLang)
-      res.setHeader(
-        'Set-Cookie',
-        `NEXT_LOCALE=${updatedUser.prefLang};Path=/;HttpOnly;Max-Age=2147483647;`
-      );
+      res.setHeader('Set-Cookie', `NEXT_LOCALE=${updatedUser.prefLang};Path=/;Max-Age=2147483647;`);
 
     return res.json(updatedUser);
   } catch (e: any) {
