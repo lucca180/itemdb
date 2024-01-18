@@ -21,7 +21,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       where: { id: decodedToken.uid },
       data: {
         neo_user: neopetsUser,
-        // username: username,
+        username: username,
         pref_lang: prefLang,
       },
     })) as dbUser;
