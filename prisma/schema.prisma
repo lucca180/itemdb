@@ -50,6 +50,10 @@ model Items {
   canonical    Items?  @relation("canonical", fields: [canonical_id], references: [internal_id], onDelete: SetNull, onUpdate: Cascade)
   clone        Items[] @relation("canonical")
 
+  lastSeen LastSeen[]
+  priceProcess PriceProcess2[]
+  restockAuctionHistory RestockAuctionHistory[]
+  
   @@index([name, image_id])
   @@index([image_id])
   @@index([item_id])
@@ -444,4 +448,71 @@ model RestockSession {
   shop_id Int
 
   session Json
+}
+
+// -------- DISMANTELING PRICE PROCESS --------- //
+
+// this is for the last time each item appeared on the price process for each type
+model LastSeen {
+  internal_id Int      @id @default(autoincrement())
+  item_iid    Int
+  item        Items    @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+  type        String
+  lastSeen    DateTime @default(now())
+
+  @@unique([item_iid, type])
+  @@index([item_iid])
+}
+
+// this is only for price data we actually use (ssw, sw, trades and maybe usershop)
+// ideally we should clean this table every now and then
+model PriceProcess2 {
+  internal_id Int      @id @default(autoincrement())
+
+  item_iid    Int
+  item        Items    @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+
+  owner       String?
+  type        String
+  otherInfo   String?
+  stock       Int      @default(1)
+  price       Int
+  addedAt     DateTime @default(now())
+  ip_address  String?
+  language    String
+
+  hash      String? @unique
+  neo_id    Int?
+  processed Boolean @default(false)
+
+  @@unique([type, neo_id])
+
+  @@index([item_iid])
+  @@index([item_iid, addedAt])
+  @@index([item_iid, addedAt, type])
+}
+
+// this is mostly for auction and restock data
+model RestockAuctionHistory {
+  internal_id Int      @id @default(autoincrement())
+
+  item_iid    Int
+  item        Items    @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+
+  owner       String?
+  type        String
+  otherInfo   String?
+  stock       Int      @default(1)
+  price       Int
+  addedAt     DateTime @default(now())
+  ip_address  String?
+  language    String
+
+  hash      String? @unique
+  neo_id    Int?
+
+  @@unique([type, neo_id])
+  @@index([item_iid])
+  @@index([item_iid, addedAt])
+  @@index([item_iid, addedAt, type])
 }
