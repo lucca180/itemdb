@@ -645,7 +645,7 @@ const ListPage = (props: Props) => {
                 </Text>
               )}
             </Center>
-            <Flex gap={3} flexWrap="wrap" justifyContent="center">
+            <Flex px={[1, 3]} flexFlow="column">
               <SortableArea
                 onClick={selectItem}
                 ids={itemInfoIds

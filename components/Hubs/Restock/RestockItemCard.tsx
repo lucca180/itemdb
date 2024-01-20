@@ -22,20 +22,26 @@ const RestockItem = (props: Props) => {
   const { item, clickData, restockItem, disablePrefetch } = props;
   const rgb = Color(item.color.hex).rgb().array();
 
-  const boughtTime = differenceInMilliseconds(
-    new Date(clickData.buy_timestamp ?? 0),
-    new Date(restockItem.timestamp)
-  );
+  const boughtTime = restockItem
+    ? differenceInMilliseconds(
+        new Date(clickData.buy_timestamp ?? 0),
+        new Date(restockItem.timestamp)
+      )
+    : -1;
 
-  const lostHaggle = differenceInMilliseconds(
-    new Date(clickData.haggle_timestamp ?? 0),
-    new Date(restockItem.timestamp)
-  );
+  const lostHaggle = restockItem
+    ? differenceInMilliseconds(
+        new Date(clickData.haggle_timestamp ?? 0),
+        new Date(restockItem.timestamp)
+      )
+    : -1;
 
-  const lostNoHaggle = differenceInMilliseconds(
-    new Date(clickData.soldOut_timestamp ?? 0),
-    new Date(restockItem.timestamp)
-  );
+  const lostNoHaggle = restockItem
+    ? differenceInMilliseconds(
+        new Date(clickData.soldOut_timestamp ?? 0),
+        new Date(restockItem.timestamp)
+      )
+    : -1;
 
   return (
     <Link
