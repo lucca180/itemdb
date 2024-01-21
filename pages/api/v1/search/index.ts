@@ -57,7 +57,7 @@ export async function doSearch(query: string, filters: SearchFilters, includeSta
 
   if (page < 0) page = 0;
   if (limit < 1) limit = 1;
-  if (limit > 3000) limit = 3000;
+  if (limit > 4000) limit = 4000;
 
   let categoryFilters = (filters.category as string[]) ?? [];
   let typeFilters = (filters.type as string[]) ?? [];
