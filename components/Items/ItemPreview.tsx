@@ -15,6 +15,9 @@ const ItemPreview = (props: Props) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const { item, isLoading } = props;
   const color = item.color.rgb;
+  const isNCUC = item.description.includes(
+    'Prepare to take flight with this blast from the past! This item gives your pet the nostalgic'
+  );
 
   useEffect(() => {
     if (isLoading) setIsLoaded(false);
@@ -50,19 +53,28 @@ const ItemPreview = (props: Props) => {
         alignItems="center"
         h="100%"
       >
-        <Skeleton minW={300} minH={300} h="100%" w="100%" isLoaded={isLoaded}>
-          <AspectRatio ratio={1}>
-            <Image
-              src={'/api/cache/preview/' + item.image_id + '.png'}
-              alt="Item Preview"
-              unoptimized
-              fill
-              priority
-              onLoadStart={() => setIsLoaded(false)}
-              onLoad={() => setIsLoaded(true)}
-            />
-          </AspectRatio>
-        </Skeleton>
+        {!isNCUC && (
+          <Skeleton minW={300} minH={300} h="100%" w="100%" isLoaded={isLoaded}>
+            <AspectRatio ratio={1}>
+              <Image
+                src={'/api/cache/preview/' + item.image_id + '.png'}
+                alt="Item Preview"
+                unoptimized
+                fill
+                priority
+                onLoadStart={() => setIsLoaded(false)}
+                onLoad={() => setIsLoaded(true)}
+              />
+            </AspectRatio>
+          </Skeleton>
+        )}
+        {isNCUC && (
+          <Text fontSize={'xs'} my={6} color="gray.300">
+            <Link isExternal href="https://impress.openneo.net/alt-styles">
+              NC UC Preview is not yet available
+            </Link>
+          </Text>
+        )}
       </Flex>
       <Box p={1} textAlign="center" bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}>
         <Text fontSize="small">

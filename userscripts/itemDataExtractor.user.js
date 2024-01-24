@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.2.7
+// @version      1.3.0
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -506,9 +506,9 @@ function handleNCMall() {
   })
 }
 
-// This function uses your neopets username and pet names to 
-// get the data of all your customization items.
-// Your username and pet name ARE NOT sent to itemdb server.
+// The next 3 functions might use neopets username and/or pet names to 
+// get the data from customization items.
+// Usernames and pet names ARE NOT sent to itemdb server.
 // If you dont feel comfortable with this, 
 // You can comment out the return (erase the "//" from "// return;") 
 // and it will not get these data.
@@ -575,7 +575,125 @@ async function handleCustomization () {
     }
   }
 
-  submitItems();;
+  submitItems();
+}
+
+async function handlePetLookup() {
+  // return;
+
+  const bodyData = new FormData();
+  bodyData.append('method', 'custompetviewdata');
+  bodyData.append('username', cust_config.username);
+  bodyData.append('petname', cust_config.petname);
+  bodyData.append('petsci', cust_config.petsci);
+
+  const editorRes = await fetch('https://www.neopets.com'+cust_config.baseDomain, {
+    method: 'POST',
+    body: bodyData,
+  })
+
+  const customData = await editorRes.json();
+  const itemsRawData = customData.viewdata.object_info_registry;
+
+  for(const itemData of Object.values(itemsRawData)){
+    let subText = '(wearable)';
+    let type = itemData.is_paid ? 'nc' : undefined;
+    
+    const item = {
+      name: itemData.name,
+      description: itemData.description,
+      subText: subText,
+      img: itemData.thumbnail_url,
+      itemId: itemData.obj_info_id,
+      estVal: itemData.price,
+      rarity: itemData.rarity_index,
+      category: itemData.category,
+      type: type,
+      weight: itemData.weight_lbs,
+    }
+
+    const itemKey = genItemKey(item);
+    if (!itemsHistory[itemKey]?.petLookup) {
+      itemsObj[itemKey] = item;
+      itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
+      itemsHistory[itemKey].petLookup = true;
+    }
+  }
+
+  submitItems();
+}
+
+async function handleUCChamber() {
+  // return;
+
+  const bodyData = new FormData();
+  bodyData.append('mode', 'initiateChamber');
+
+  const editorRes = await fetch('https://www.neopets.com/np-templates/ajax/stylechamber/chamber.php', {
+    method: 'POST',
+    headers:{"x-requested-with":"XMLHttpRequest"},
+    body: bodyData,
+  })
+
+  const customData = await editorRes.json();
+  const styles = customData.userStyles.closet_items;
+
+  // NC UC DATA
+  for(const rawItem of Object.values(styles)){
+    const itemData = rawItem.object_info;
+    
+    let subText = '(wearable)';
+    let type = itemData.obj_rarity === "500" ? 'nc' : undefined;
+    
+    const item = {
+      name: itemData.obj_name,
+      description: itemData.obj_desc,
+      subText: subText,
+      img: 'https://images.neopets.com/items/'+itemData.obj_filename,
+      itemId: itemData.obj_info_id,
+      estVal: itemData.obj_price,
+      rarity: itemData.obj_rarity,
+      // category: itemData.category,
+      type: type,
+      weight: itemData.obj_weight_lbs,
+    }
+
+    const itemKey = genItemKey(item);
+    if (!itemsHistory[itemKey]?.ncchamber) {
+      itemsObj[itemKey] = item;
+      itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
+      itemsHistory[itemKey].ncchamber = true;
+    }
+  }
+
+  // other items
+  const itemsRawData = customData.petView.object_info_registry;
+  for(const itemData of Object.values(itemsRawData)){
+    let subText = '(wearable)';
+    let type = itemData.is_paid ? 'nc' : undefined;
+    
+    const item = {
+      name: itemData.name,
+      description: itemData.description,
+      subText: subText,
+      img: itemData.thumbnail_url,
+      itemId: itemData.obj_info_id,
+      estVal: itemData.price,
+      rarity: itemData.rarity_index,
+      category: itemData.category,
+      type: type,
+      weight: itemData.weight_lbs,
+    }
+
+    const itemKey = genItemKey(item);
+    if (!itemsHistory[itemKey]?.ncchamber) {
+      itemsObj[itemKey] = item;
+      itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
+      itemsHistory[itemKey].ncchamber = true;
+    }
+  }
+
+  submitItems();
 }
 
 function handleNCJournal(){
@@ -1027,7 +1145,8 @@ if (URLHas('/mall/shop.phtml')) handleNCMall();
 if (URLHas('customise')) handleCustomization();
 if (URLHas('haggle.phtml')) handleRestockHaggle();
 if (URLHas('/ncma/')) handleNCJournal();
-
+if (URLHas('petlookup.phtml')) handlePetLookup();
+if (URLHas('/stylingchamber/')) handleUCChamber();
 if (hasSSW) handleSSWPrices();
 
 // ----------- //
