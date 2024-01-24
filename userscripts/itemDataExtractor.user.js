@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.3.0
+// @version      1.3.1
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -619,6 +619,26 @@ async function handlePetLookup() {
       itemsHistory[itemKey].petLookup = true;
     }
   }
+
+
+  // handle nc uc
+  $(".worn-item img").each(function(){
+    const img = $(this).attr('src');
+    const name = $(this).attr('alt');
+    if(!img || !name || !name.includes("Nostalgic")) return;
+
+    const item = {
+      name: name,
+      img: img,
+    }
+
+    const itemKey = genItemKey(item);
+    if (!itemsHistory[itemKey]?.petLookup) {
+      itemsObj[itemKey] = item;
+      itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
+      itemsHistory[itemKey].petLookup = true;
+    }
+  })
 
   submitItems();
 }
