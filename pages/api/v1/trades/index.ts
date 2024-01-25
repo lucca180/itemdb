@@ -10,6 +10,8 @@ import { stringHasNumber } from '../../../../utils/utils';
 import hash from 'object-hash';
 import { autoPriceTrades2 } from './autoPrice2';
 import { newCreatePriceProcessFlow } from '../prices';
+import { TradeItems, Trades } from '@prisma/client';
+import { getManyItems } from '../items/many';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
@@ -111,6 +113,9 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
           create: [...itemList],
         },
       },
+      include: {
+        items: true,
+      },
     });
 
     promiseArr.push(prom);
@@ -120,10 +125,17 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   // (and it will fail, because we cant create the same trade twice)
   const result = await Promise.allSettled(promiseArr);
 
+  const tradesFulfilled = result.filter((x) => x.status === 'fulfilled') as any as Trades &
+    {
+      items: TradeItems[];
+    }[];
+
+  await updateLastSeenTrades(tradesFulfilled);
+
   const allTrades = await prisma.trades.findMany({
     where: {
       trade_id: {
-        in: result.filter((x) => x.status === 'fulfilled').map((x: any) => x.value.trade_id),
+        in: tradesFulfilled.map((x: any) => x.value.trade_id),
       },
       processed: false,
     },
@@ -281,7 +293,7 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
   }
 
   const result = await prisma.$transaction([tradeUpdate]);
-  await newCreatePriceProcessFlow(addPriceProcess);
+  await newCreatePriceProcessFlow(addPriceProcess, true);
 
   return result;
 };
@@ -333,4 +345,48 @@ export const getItemTrades = async (args: getItemTradesArgs) => {
   });
 
   return trades;
+};
+
+const updateLastSeenTrades = async (
+  trades: Trades &
+    {
+      items: TradeItems[];
+    }[]
+) => {
+  const itemNameImage: any = {};
+
+  trades
+    .map((t) => t.items)
+    .flat()
+    .map((i) => {
+      itemNameImage[`${i.name}_${i.image_id}`] = [i.name, i.image_id];
+    });
+
+  const itemsData = getManyItems({
+    name_image_id: Object.values(itemNameImage),
+  });
+
+  const items_iid = Object.values(itemsData).map((x) => x.internal_id);
+
+  const createMany = items_iid.map((iid) => ({
+    item_iid: iid,
+    type: 'trade',
+    lastSeen: new Date(),
+  }));
+
+  await prisma.lastSeen.updateMany({
+    where: {
+      item_iid: {
+        in: items_iid,
+      },
+    },
+    data: {
+      lastSeen: new Date(),
+    },
+  });
+
+  await prisma.lastSeen.createMany({
+    data: createMany,
+    skipDuplicates: true,
+  });
 };

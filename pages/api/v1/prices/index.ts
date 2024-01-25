@@ -248,7 +248,7 @@ const createPriceProcess = async (dataList: Prisma.PriceProcess2CreateManyInput[
         continue;
       }
       console.error(e);
-      break;
+      throw e;
     }
   }
 };
@@ -271,43 +271,77 @@ const createRestockHistory = async (dataList: Prisma.RestockAuctionHistoryCreate
         continue;
       }
       console.error(e);
-      break;
+      throw e;
     }
   }
 };
 
 const processLastSeen = async (lastSeen: { [key: string]: { [id: number]: Date } }) => {
-  const lastSeenData = Object.keys(lastSeen).map((type) =>
-    Object.entries(lastSeen[type]).map(([x, date]) =>
-      prisma.lastSeen.upsert({
-        where: {
-          item_iid_type: {
-            type: type,
-            item_iid: Number(x),
-          },
-        },
-        create: {
-          type: type,
-          item_iid: Number(x),
-          lastSeen: date,
-        },
-        update: {
-          lastSeen: date,
-        },
-      })
-    )
+  const allIds = new Set(
+    ...Object.values(lastSeen)
+      .map((x) => Object.keys(x))
+      .flat()
   );
 
-  return prisma
-    .$transaction(lastSeenData.flat())
-    .then((x) => x)
-    .catch((e) => {
-      if (['P2002', 'P2034'].includes(e.code)) {
-        console.error(e);
+  const lastSeenItems = await prisma.lastSeen.findMany({
+    where: {
+      item_iid: {
+        in: Array.from(allIds).map((x) => Number(x)),
+      },
+    },
+  });
+
+  const createData: Prisma.LastSeenCreateManyInput[] = [];
+  const updatePromises: any[] = [];
+
+  Object.keys(lastSeen).map((type) =>
+    Object.entries(lastSeen[type]).map(([x, date]) => {
+      const lastSeen = lastSeenItems.find((y) => y.item_iid === Number(x) && y.type === type);
+
+      if (!lastSeen) {
+        createData.push({
+          item_iid: Number(x),
+          type: type,
+          lastSeen: date,
+        });
+
         return;
       }
+
+      if (lastSeen.lastSeen > date) return;
+
+      updatePromises.push(
+        prisma.lastSeen.update({
+          where: {
+            internal_id: lastSeen.internal_id,
+          },
+          data: {
+            lastSeen: date,
+          },
+        })
+      );
+    })
+  );
+
+  await prisma.lastSeen.createMany({
+    data: createData,
+  });
+
+  let tries = 0;
+  while (tries < 3) {
+    try {
+      const x = await prisma.$transaction(updatePromises);
+      return x;
+    } catch (e: any) {
+      if (['P2002', 'P2034'].includes(e.code) && tries < 3) {
+        tries++;
+        console.error(e);
+        continue;
+      }
       console.error(e);
-    });
+      throw e;
+    }
+  }
 };
 
 const newHandleAuction = async (dataList: Prisma.RestockAuctionHistoryCreateManyInput[]) => {
@@ -325,17 +359,20 @@ const newHandleAuction = async (dataList: Prisma.RestockAuctionHistoryCreateMany
     })
   );
 
-  return prisma
-    .$transaction(auctionData)
-    .then((x) => x)
-    .catch((e) => {
+  while (tries < 3) {
+    try {
+      const x = await prisma.$transaction(auctionData);
+      return x;
+    } catch (e: any) {
       if (['P2002', 'P2034'].includes(e.code) && tries < 3) {
         tries++;
         console.error(e);
-        return prisma.$transaction(auctionData);
+        continue;
       }
       console.error(e);
-    });
+      throw e;
+    }
+  }
 };
 
 const findItem = (
