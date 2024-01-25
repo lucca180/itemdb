@@ -325,6 +325,7 @@ const processLastSeen = async (lastSeen: { [key: string]: { [id: number]: Date }
 
   await prisma.lastSeen.createMany({
     data: createData,
+    skipDuplicates: true,
   });
 
   let tries = 0;

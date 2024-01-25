@@ -259,6 +259,7 @@ async function updateOrAddDB(
   latestDate: Date
 ): Promise<ItemPrices | undefined> {
   const newPriceData = {
+    name: 'priceprocess2',
     item_iid: priceData.item_iid,
     price: priceValue,
     manual_check: null,
