@@ -9,6 +9,7 @@ import { Items, Prisma } from '.prisma/client';
 import { stringHasNumber } from '../../../../utils/utils';
 import hash from 'object-hash';
 import { autoPriceTrades2 } from './autoPrice2';
+import { newCreatePriceProcessFlow } from '../prices';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
@@ -279,20 +280,10 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
     });
   }
 
-  const priceProcess = prisma.priceProcess.createMany({
-    data: addPriceProcess,
-    skipDuplicates: true,
-  });
+  const result = await prisma.$transaction([tradeUpdate]);
+  await newCreatePriceProcessFlow(addPriceProcess);
 
-  const priceHistory = prisma.priceProcessHistory.deleteMany({
-    where: {
-      name: {
-        in: addPriceProcess.map((x) => x.name),
-      },
-    },
-  });
-
-  return await prisma.$transaction([tradeUpdate, priceProcess, priceHistory]);
+  return result;
 };
 
 type getItemTradesArgs = {

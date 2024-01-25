@@ -43,9 +43,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 const getRestockData = async (name: string) => {
-  const restockRaw = await prisma.priceProcess.findMany({
+  const restockRaw = await prisma.restockAuctionHistory.findMany({
     where: {
-      name: name,
+      item: {
+        name: name,
+      },
       type: 'restock',
     },
     orderBy: { addedAt: 'desc' },
@@ -53,13 +55,13 @@ const getRestockData = async (name: string) => {
   });
 
   const items = await getManyItems({
-    item_id: restockRaw.map((p) => p.item_id?.toString() ?? ''),
+    id: restockRaw.map((p) => p.item_iid?.toString() ?? ''),
   });
 
   const restock: ItemRestockData[] = restockRaw.map((p): ItemRestockData => {
     return {
       internal_id: p.internal_id,
-      item: items[p.item_id?.toString() ?? ''],
+      item: items[p.item_iid?.toString() ?? ''],
       stock: p.stock,
       price: p.price,
       addedAt: p.addedAt.toJSON(),
@@ -111,9 +113,11 @@ const getTradeData = async (name: string) => {
 };
 
 const getAuctionData = async (name: string) => {
-  const auctionRaw = await prisma.priceProcess.findMany({
+  const auctionRaw = await prisma.restockAuctionHistory.findMany({
     where: {
-      name: name,
+      item: {
+        name: name,
+      },
       type: 'auction',
     },
     orderBy: { addedAt: 'desc' },
@@ -121,15 +125,14 @@ const getAuctionData = async (name: string) => {
   });
 
   const items = await getManyItems({
-    name_image_id: auctionRaw.map((p) => [p.name, p.image_id] as [string, string]),
+    id: auctionRaw.map((p) => p.item_iid.toString()),
   });
 
   const auctions: ItemAuctionData[] = auctionRaw.map((p) => {
-    const name_image_id = `${encodeURI(p.name.toLowerCase())}_${p.image_id}`;
     return {
       auction_id: p.neo_id,
       internal_id: p.internal_id,
-      item: items[name_image_id],
+      item: items[p.item_iid?.toString() ?? ''],
       price: p.price,
       owner: p.owner ?? 'unknown',
       isNF: !!p.otherInfo?.split(',').includes('nf'),

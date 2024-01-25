@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
-import { genItemKey, coefficientOfVariation } from '../../../../utils/utils';
+import { coefficientOfVariation } from '../../../../utils/utils';
 import { mean, standardDeviation } from 'simple-statistics';
-import { ItemPrices, PriceProcess } from '@prisma/client';
+import { ItemPrices, PriceProcess2 } from '@prisma/client';
 import { differenceInCalendarDays } from 'date-fns';
 
 const MAX_DAYS = 30;
@@ -41,22 +41,16 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const lastDaysFormated = lastDays.toISOString().split('T')[0];
 
   const groupBy2 = (await prisma.$queryRaw`
-    SELECT name, COUNT(*) as count, MAX(addedAt) as MAX_addedAt, count(*) OVER() AS full_count FROM PriceProcess
+    SELECT item_iid, COUNT(*) as count, MAX(addedAt) as MAX_addedAt, count(*) OVER() AS full_count FROM PriceProcess2 p
     WHERE 
-      type not in ("restock", "auction") AND
-      name not in (select name from PriceProcessHistory) AND
       addedAt >= ${maxPastFormated} AND
-      processed = 0 AND
       NOT EXISTS (
         SELECT 1 FROM ItemPrices a WHERE 
-        PriceProcess.name = a.name
-        and a.addedAt >= ${lastDaysFormated}
-        and a.name
-         not in (select name from ItemPrices GROUP by name having count(DISTINCT item_iid) > 1)
+        a.addedAt >= ${lastDaysFormated}
+        and a.item_iid = p.item_iid 
       )
-    GROUP BY name
+    GROUP BY item_iid 
     HAVING count >= 10 OR (MAX_addedAt <= ${maxDateFormated} and count >= 5)
-    ORDER BY MAX_addedAt asc
     LIMIT 1
   `) as any;
 
@@ -94,47 +88,41 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const lastDaysFormated = lastDays.toISOString().split('T')[0];
 
   const groupBy2 = (await prisma.$queryRaw`
-    SELECT name, COUNT(*) as count, MAX(addedAt) as MAX_addedAt FROM PriceProcess
+    SELECT item_iid, COUNT(*) as count, MAX(addedAt) as MAX_addedAt FROM PriceProcess2 p
     WHERE 
-      type not in ("restock", "auction") AND
-      name not in (select name from PriceProcessHistory) AND
       addedAt >= ${maxPastFormated} AND
-      processed = 0 AND
       NOT EXISTS (
         SELECT 1 FROM ItemPrices a WHERE 
-        PriceProcess.name = a.name
-        and a.addedAt >= ${lastDaysFormated}
-        and a.name
-         not in (select name from ItemPrices GROUP by name having count(DISTINCT item_iid) > 1)
+        a.addedAt >= ${lastDaysFormated}
+        and a.item_iid = p.item_iid 
       )
-    GROUP BY name
+    GROUP BY item_iid 
     HAVING count >= 10 OR (MAX_addedAt <= ${maxDateFormated} and count >= 5)
     ORDER BY MAX_addedAt asc
     LIMIT ${groupByLimit} OFFSET ${page * groupByLimit}
   `) as any;
 
-  const convertedGroupBy: { name: string; count: number; addedAt: Date }[] = groupBy2.map(
+  const convertedGroupBy: { item_iid: number; count: number; addedAt: Date }[] = groupBy2.map(
     (x: any) => ({
-      name: x.name,
+      item_iid: x.item_iid,
       count: Number(x.count),
       addedAt: new Date(x.addedAt),
     })
   );
 
   let total = 0;
-  const names: string[] = [];
+  const ids: number[] = [];
 
-  for (const itemNames of convertedGroupBy) {
+  for (const rawItem of convertedGroupBy) {
     if (total >= limit) break;
-    names.push(itemNames.name);
-    total += itemNames.count;
+    ids.push(rawItem.item_iid);
+    total += rawItem.count;
   }
 
-  const processList = await prisma.priceProcess.findMany({
+  const processList = await prisma.priceProcess2.findMany({
     where: {
       processed: false,
-      NOT: { type: { in: ['restock', 'auction'] } },
-      name: { in: names },
+      item_iid: { in: ids },
       addedAt: { gte: maxPast },
     },
     orderBy: {
@@ -146,31 +134,14 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const processedIDs: number[] = [];
 
   // list of unique entries
-  const uniqueNames = [...processList].filter(
-    (value, index, self) =>
-      index ===
-      self.findIndex(
-        (t) =>
-          genItemKey(t, true) === genItemKey(value, true) ||
-          (value.item_id === t.item_id && value.item_id !== null)
-      )
-  );
+  const uniqueIDs = new Set<number>([...processList.map((x) => x.item_iid)]);
 
-  for (const item of uniqueNames) {
+  for (const itemId of uniqueIDs) {
+    const allItemData = processList.filter((x) => x.item_iid === itemId);
+    const item = allItemData[0];
+
     try {
-      const allItemData = processList.filter(
-        (x) =>
-          genItemKey(x) === genItemKey(item) ||
-          (genItemKey(x, true) === genItemKey(item, true) && !x.item_id && x.image_id)
-      );
-
       if (allItemData.length < 3) continue;
-
-      // merge all reports data
-      for (const itemOtherData of allItemData) {
-        //@ts-ignore
-        for (const key of Object.keys(item)) item[key] ||= itemOtherData[key] ?? item[key];
-      }
 
       const mostRecentPrices = filterMostRecents(allItemData).sort((a, b) => a.price - b.price);
       const owners = new Set<string>();
@@ -182,7 +153,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
           return x;
         })
         .filter((x) => !!x)
-        .slice(0, 30) as PriceProcess[];
+        .slice(0, 30) as PriceProcess2[];
 
       let latestDate = new Date(0);
       const oldestDate = mostRecentPrices.reduce((a, b) => (a.addedAt < b.addedAt ? a : b)).addedAt;
@@ -252,7 +223,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const result = await prisma.$transaction([
     prisma.itemPrices.createMany({ data: priceAddList }),
-    prisma.priceProcess.updateMany({
+    prisma.priceProcess2.updateMany({
       data: { processed: true },
       where: {
         internal_id: { in: processedIDs },
@@ -260,14 +231,13 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     }),
   ]);
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const manualCheckList = priceAddList.filter((x) => x.manual_check).map((x) => x.item_iid!);
+  const manualCheckList = priceAddList.filter((x) => x.manual_check).map((x) => x.item_iid);
 
-  await prisma.priceProcessHistory.createMany({
-    data: names.map((x) => ({
-      name: x,
-    })),
-  });
+  // await prisma.priceProcessHistory.createMany({
+  //   data: ids.map((x) => ({
+  //     name: x,
+  //   })),
+  // });
 
   return res.send({
     priceUpdate: result[0],
@@ -283,15 +253,13 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 async function updateOrAddDB(
-  priceData: PriceProcess,
+  priceData: PriceProcess2,
   priceValue: number,
   usedIDs: number[],
   latestDate: Date
 ): Promise<ItemPrices | undefined> {
   const newPriceData = {
-    name: priceData.name,
-    item_id: priceData.item_id,
-    image_id: priceData.image_id,
+    item_iid: priceData.item_iid,
     price: priceValue,
     manual_check: null,
     addedAt: latestDate,
@@ -299,27 +267,11 @@ async function updateOrAddDB(
   } as ItemPrices;
 
   try {
-    if (!priceData.image_id && !priceData.name && !priceData.item_id) throw 'invalid data';
-
-    const item = await prisma.items.findFirst({
-      where: {
-        OR: [
-          { item_id: priceData.item_id ?? undefined },
-          {
-            name: priceData.image_id ? priceData.name : '-1',
-            image_id: priceData.image_id ?? '-1',
-          },
-        ],
-      },
-    });
-
-    if (!item) return undefined;
-
-    newPriceData.item_iid = item.internal_id;
+    if (!priceData.item_iid) throw 'invalid data';
 
     const oldPrice = await prisma.itemPrices.findFirst({
       where: {
-        item_iid: item.internal_id,
+        item_iid: newPriceData.item_iid,
       },
       orderBy: { addedAt: 'desc' },
     });
@@ -390,7 +342,7 @@ async function updateOrAddDB(
 
 const MIN_ITEMS_THRESHOLD = EVENT_MODE ? 7 : 10;
 
-function filterMostRecents(priceProcessList: PriceProcess[]) {
+function filterMostRecents(priceProcessList: PriceProcess2[]) {
   const daysThreshold = [3, 7, 15, 30];
 
   for (const days of daysThreshold) {

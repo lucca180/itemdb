@@ -1,11 +1,12 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import requestIp from 'request-ip';
 import hash from 'object-hash';
-import { Prisma } from '@prisma/client';
+import { PriceProcess, Prisma } from '@prisma/client';
 import { getManyItems } from '../items/many';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { checkHash } from '../../../../utils/hash';
+import { ItemData } from '../../../../types';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
@@ -61,13 +62,12 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(400).json({ error: 'Invalid hash' });
 
   const dataList = [];
-  let isAuction = false;
 
   for (const priceInfo of itemPrices) {
     let { name, img, owner, stock, value, otherInfo, type, item_id, neo_id } = priceInfo;
 
     let imageId: string | null = null;
-    if (type == 'auction') isAuction = true;
+
     stock = isNaN(Number(stock)) ? undefined : Number(stock);
     value = isNaN(Number(value)) ? undefined : Number(value);
     item_id = isNaN(Number(item_id)) ? undefined : Number(item_id);
@@ -115,57 +115,254 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     dataList.push(x);
   }
 
-  let tries = 0;
-  while (tries <= 3) {
-    try {
-      if (isAuction) {
-        const result = await handleAuction(dataList);
-        return res.json(result);
+  const x = await newCreatePriceProcessFlow(dataList);
+
+  return res.json(x);
+};
+
+export const newCreatePriceProcessFlow = async (
+  dataList: Prisma.PriceProcessCreateInput[] | PriceProcess[],
+  skipLastSeen = false,
+  skipProcessed = false
+) => {
+  const itemInfo: { [id: string]: Set<string | string[]> } = {
+    id: new Set(),
+    item_id: new Set(),
+    name_image_id: new Set(),
+    image_id: new Set(),
+    name: new Set(),
+  };
+
+  dataList.map((item) => {
+    if (item.item_id) {
+      itemInfo['item_id'].add(item.item_id.toString());
+    } else if (item.image_id && item.name) {
+      itemInfo['name_image_id'].add([item.name, item.image_id]);
+    } else if (item.image_id) {
+      itemInfo['image_id'].add(item.image_id);
+    } else if (item.name) {
+      itemInfo['name'].add(item.name);
+    }
+  });
+
+  const allItemsFull = await Promise.all(
+    Object.keys(itemInfo).map((key: any) => getManyItems({ [key]: Array.from(itemInfo[key]) }))
+  );
+
+  const allItems = Object.assign({}, ...allItemsFull) as { [identifier: string]: ItemData };
+
+  const lastSeen: { [type: string]: { [id: number]: Date } } = {
+    restock: {},
+    auction: {},
+    trades: {},
+    sw: {},
+  };
+
+  const newPriceData = dataList
+    .map((raw): Prisma.PriceProcess2CreateManyInput | null => {
+      if (['restock', 'auction'].includes(raw.type) || (raw.processed && skipProcessed))
+        return null;
+      const itemData = findItem(raw, allItems);
+      if (!itemData) return null;
+
+      if (['sw', 'ssw', 'usershop'].includes(raw.type)) {
+        const last = lastSeen.sw[itemData.internal_id];
+        if (!last || last < new Date(raw.addedAt ?? Date.now()))
+          lastSeen.sw[itemData.internal_id] = new Date(raw.addedAt ?? Date.now());
       }
 
-      const result = await prisma.priceProcess.createMany({
+      if (raw.type === 'trade') {
+        const last = lastSeen.trades[itemData.internal_id];
+        if (!last || last < new Date(raw.addedAt ?? Date.now()))
+          lastSeen.trades[itemData.internal_id] = new Date(raw.addedAt ?? Date.now());
+      }
+
+      return {
+        owner: raw.owner,
+        stock: raw.stock,
+        price: raw.price,
+        otherInfo: raw.otherInfo,
+        language: raw.language,
+        ip_address: raw.ip_address,
+        addedAt: raw.addedAt ?? new Date(),
+        processed: raw.processed ?? false,
+        type: raw.type,
+        hash: raw.hash,
+        neo_id: raw.neo_id,
+        item_iid: itemData.internal_id,
+      };
+    })
+    .filter((x) => x !== null) as Prisma.PriceProcess2CreateManyInput[];
+
+  const newRestockAuction = dataList
+    .map((raw): Prisma.RestockAuctionHistoryCreateManyInput | null => {
+      if (!['restock', 'auction'].includes(raw.type)) return null;
+      const itemData = findItem(raw, allItems);
+      if (!itemData) return null;
+
+      const last = lastSeen[raw.type][itemData.internal_id];
+      if (!last || last < new Date(raw.addedAt ?? Date.now()))
+        lastSeen[raw.type][itemData.internal_id] = new Date(raw.addedAt ?? Date.now());
+
+      return {
+        owner: raw.owner,
+        stock: raw.stock,
+        price: raw.price,
+        otherInfo: raw.otherInfo,
+        language: raw.language,
+        ip_address: raw.ip_address,
+        addedAt: raw.addedAt ?? new Date(),
+        type: raw.type,
+        hash: raw.hash,
+        item_iid: itemData.internal_id,
+        neo_id: raw.neo_id,
+      };
+    })
+    .filter((x) => x !== null) as Prisma.RestockAuctionHistoryCreateManyInput[];
+
+  const x = await Promise.all([
+    createPriceProcess(newPriceData),
+    createRestockHistory(newRestockAuction.filter((x) => x.type === 'restock')),
+    newHandleAuction(newRestockAuction.filter((x) => x.type === 'auction' && x.neo_id)),
+    !skipLastSeen ? processLastSeen(lastSeen) : null,
+  ]);
+
+  return x;
+};
+
+const createPriceProcess = async (dataList: Prisma.PriceProcess2CreateManyInput[]) => {
+  let tries = 0;
+
+  while (tries < 3) {
+    try {
+      const x = await prisma.priceProcess2.createMany({
         data: dataList,
         skipDuplicates: true,
       });
 
-      if (!['restock', 'auction'].includes(dataList[0].type)) {
-        await prisma.priceProcessHistory.deleteMany({
-          where: {
-            name: dataList[0].name,
-          },
-        });
-      }
-
-      return res.json(result);
+      return x;
     } catch (e: any) {
-      // prevent race condition
       if (['P2002', 'P2034'].includes(e.code) && tries < 3) {
+        console.error(e);
         tries++;
         continue;
       }
-
       console.error(e);
-      return res.status(500).json({ error: 'Internal Server Error' });
+      break;
     }
   }
-
-  return res.status(500).json({ error: 'Internal Server Error' });
 };
 
-const handleAuction = async (dataList: Prisma.PriceProcessCreateInput[]) => {
+const createRestockHistory = async (dataList: Prisma.RestockAuctionHistoryCreateManyInput[]) => {
+  let tries = 0;
+
+  while (tries < 3) {
+    try {
+      const x = await prisma.restockAuctionHistory.createMany({
+        data: dataList,
+        skipDuplicates: true,
+      });
+
+      return x;
+    } catch (e: any) {
+      if (['P2002', 'P2034'].includes(e.code) && tries < 3) {
+        console.error(e);
+        tries++;
+        continue;
+      }
+      console.error(e);
+      break;
+    }
+  }
+};
+
+const processLastSeen = async (lastSeen: { [key: string]: { [id: number]: Date } }) => {
+  const lastSeenData = Object.keys(lastSeen).map((type) =>
+    Object.entries(lastSeen[type]).map(([x, date]) =>
+      prisma.lastSeen.upsert({
+        where: {
+          item_iid_type: {
+            type: type,
+            item_iid: Number(x),
+          },
+        },
+        create: {
+          type: type,
+          item_iid: Number(x),
+          lastSeen: date,
+        },
+        update: {
+          lastSeen: date,
+        },
+      })
+    )
+  );
+
+  return prisma
+    .$transaction(lastSeenData.flat())
+    .then((x) => x)
+    .catch((e) => {
+      if (['P2002', 'P2034'].includes(e.code)) {
+        console.error(e);
+        return;
+      }
+      console.error(e);
+    });
+};
+
+const newHandleAuction = async (dataList: Prisma.RestockAuctionHistoryCreateManyInput[]) => {
+  let tries = 0;
   const auctionData = dataList.map((auction) =>
-    prisma.priceProcess.upsert({
+    prisma.restockAuctionHistory.upsert({
       where: {
         type_neo_id: {
           type: auction.type,
           neo_id: auction.neo_id as number,
         },
-        processed: false,
       },
       create: auction,
       update: auction,
     })
   );
 
-  return prisma.$transaction(auctionData);
+  return prisma
+    .$transaction(auctionData)
+    .then((x) => x)
+    .catch((e) => {
+      if (['P2002', 'P2034'].includes(e.code) && tries < 3) {
+        tries++;
+        console.error(e);
+        return prisma.$transaction(auctionData);
+      }
+      console.error(e);
+    });
+};
+
+const findItem = (
+  rawInput: Prisma.PriceProcessCreateInput,
+  list: { [identifier: string]: ItemData }
+) => {
+  const { name, image_id, item_id } = rawInput;
+
+  if (item_id) {
+    const item = list[item_id.toString()];
+    if (item) return item;
+  }
+
+  if (name && image_id) {
+    const item = list[`${encodeURI(name.toLowerCase())}_${image_id}`];
+    if (item) return item;
+  }
+
+  if (image_id) {
+    const item = list[image_id];
+    if (item) return item;
+  }
+
+  if (name) {
+    const item = list[name];
+    if (item) return item;
+  }
+
+  return null;
 };

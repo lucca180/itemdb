@@ -10,84 +10,76 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
+  const item_iid = req.query.item_iid as string | undefined;
   const item_id = req.query.item_id as string | undefined;
   const name = req.query.name as string | undefined;
   const image_id = req.query.image_id as string | undefined;
 
-  const lastSeen = await getLastSeen({ item_id, name, image_id });
+  const lastSeen = await getLastSeen({ item_iid, item_id, name, image_id });
 
   res.json(lastSeen);
 }
 
 type getLastSeenParams = {
+  item_iid?: string | number | null;
   item_id?: string | number | null;
   name?: string;
   image_id?: string;
 };
 
 export const getLastSeen = async (params: getLastSeenParams) => {
-  let { item_id, name, image_id } = params;
+  let { item_iid, item_id, name, image_id } = params;
 
-  const stats = await prisma.priceProcess.groupBy({
-    by: ['type'],
-    _max: {
-      addedAt: true,
-    },
-    where: {
-      OR: [
-        { item_id: item_id ? Number(item_id) : undefined },
-        {
-          name: name,
-          image_id: image_id,
-        },
-      ],
-    },
-  });
-
-  if ((!name || !image_id) && item_id) {
-    const itemData = await prisma.items.findUnique({
-      where: { item_id: Number(item_id) },
+  if (!item_iid) {
+    const itemData = await prisma.items.findFirst({
+      where: {
+        OR: [
+          {
+            item_id: item_id ? Number(item_id) : undefined,
+          },
+          {
+            name: name,
+            image_id: image_id,
+          },
+        ],
+      },
     });
 
-    name = itemData?.name;
-    image_id = itemData?.image_id as string | undefined;
+    if (!itemData)
+      return {
+        sw: null,
+        tp: null,
+        auction: null,
+        restock: null,
+      };
+
+    item_iid = itemData?.internal_id;
   }
 
-  const tradeStats = await prisma.tradeItems.groupBy({
-    by: ['name'],
-    _max: {
-      addedAt: true,
-    },
+  const stats = await prisma.lastSeen.findMany({
     where: {
-      OR: [
-        { item_id: item_id ? Number(item_id) : undefined },
-        {
-          name: name,
-          image_id: image_id,
-        },
-      ],
+      item_iid: Number(item_iid),
     },
   });
 
   const lastSeen: ItemLastSeen = {
     sw: null,
-    tp: tradeStats[0]?._max.addedAt?.toJSON() ?? null,
+    tp: null,
     auction: null,
     restock: null,
   };
 
   stats.map((s) => {
-    if (!s._max.addedAt) return;
-
     const type = s.type;
 
-    if (['sw', 'ssw', 'usershop'].includes(type) && s._max.addedAt) {
-      if (!lastSeen.sw) lastSeen.sw = s._max.addedAt.toJSON();
-      else if (s._max.addedAt > new Date(lastSeen.sw)) lastSeen.sw = s._max.addedAt.toJSON();
+    if (['sw', 'ssw', 'usershop'].includes(type)) {
+      if (!lastSeen.sw) lastSeen.sw = s.lastSeen.toJSON();
+      else if (s.lastSeen > new Date(lastSeen.sw)) lastSeen.sw = s.lastSeen.toJSON();
     }
+
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
-    else lastSeen[s.type] = s._max.addedAt.toJSON();
+    else lastSeen[s.type] = s.lastSeen.toJSON();
   });
 
   return lastSeen;
