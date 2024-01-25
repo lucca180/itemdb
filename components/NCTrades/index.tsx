@@ -49,15 +49,15 @@ const NCTrade = (props: Props) => {
 
   useEffect(() => {
     if (item.status === 'no trade') return;
-    reset();
+    setTradeHistory(null);
     getOwlsTrade();
   }, [item.internal_id]);
 
   useEffect(() => {
     if (!user || item.status === 'no trade') return;
-    reset();
+    setMatch({ seeking: {}, trading: {} });
     init();
-  }, [lists, user, item.internal_id]);
+  }, [lists, user]);
 
   const init = async () => {
     if (!user || !user.username || (!seeking.length && !trading.length)) return;
@@ -87,11 +87,6 @@ const NCTrade = (props: Props) => {
     const res = await axios.get('/api/v1/items/' + encodeURIComponent(item.name) + '/owls');
 
     setTradeHistory(res.data);
-  };
-
-  const reset = () => {
-    setMatch({ seeking: {}, trading: {} });
-    setTradeHistory(null);
   };
 
   if (item.status === 'no trade')
