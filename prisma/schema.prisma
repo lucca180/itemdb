@@ -448,6 +448,9 @@ model RestockSession {
   shop_id Int
 
   session Json
+
+  @@index([user_id, startedAt])
+  @@index([user_id, startedAt, shop_id])
 }
 
 // -------- DISMANTELING PRICE PROCESS --------- //
