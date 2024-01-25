@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.3.1
+// @version      1.3.2
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -594,6 +594,8 @@ async function handlePetLookup() {
 
   const customData = await editorRes.json();
   const itemsRawData = customData.viewdata.object_info_registry;
+  
+  const skipNames = [];
 
   for(const itemData of Object.values(itemsRawData)){
     let subText = '(wearable)';
@@ -612,6 +614,8 @@ async function handlePetLookup() {
       weight: itemData.weight_lbs,
     }
 
+    skipNames.push(item.name);
+
     const itemKey = genItemKey(item);
     if (!itemsHistory[itemKey]?.petLookup) {
       itemsObj[itemKey] = item;
@@ -625,18 +629,23 @@ async function handlePetLookup() {
   $(".worn-item img").each(function(){
     const img = $(this).attr('src');
     const name = $(this).attr('alt');
-    if(!img || !name || !name.includes("Nostalgic")) return;
+    if(!img || !name || !name.includes("Nostalgic") || skipNames.includes(name)) return;
 
     const item = {
       name: name,
       img: img,
+      rarity: 500,
+      type: 'nc',
+      category: 'Special',
+      estVal: 0,
+      weight: 1,
     }
 
     const itemKey = genItemKey(item);
-    if (!itemsHistory[itemKey]?.petLookup) {
+    if (!itemsHistory[itemKey]?.petLookupFixed) {
       itemsObj[itemKey] = item;
       itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
-      itemsHistory[itemKey].petLookup = true;
+      itemsHistory[itemKey].petLookupFixed = true;
     }
   })
 
@@ -673,7 +682,7 @@ async function handleUCChamber() {
       itemId: itemData.obj_info_id,
       estVal: itemData.obj_price,
       rarity: itemData.obj_rarity,
-      // category: itemData.category,
+      category: 'Special', // assuming all are special
       type: type,
       weight: itemData.obj_weight_lbs,
     }
