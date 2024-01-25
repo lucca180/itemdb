@@ -8,6 +8,7 @@ let lastID = page * take;
 let retry = 0;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+  return res.status(200).json(null);
   while (page < 1000 && retry <= 3) {
     try {
       const t = new Date().getTime();
