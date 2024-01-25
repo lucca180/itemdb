@@ -77,6 +77,10 @@ export const getLastSeen = async (params: getLastSeenParams) => {
       else if (s.lastSeen > new Date(lastSeen.sw)) lastSeen.sw = s.lastSeen.toJSON();
     }
 
+    if (type === 'trade') {
+      if (!lastSeen.tp) lastSeen.tp = s.lastSeen.toJSON();
+      else if (s.lastSeen > new Date(lastSeen.tp)) lastSeen.tp = s.lastSeen.toJSON();
+    }
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
     else lastSeen[s.type] = s.lastSeen.toJSON();

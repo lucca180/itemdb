@@ -154,7 +154,7 @@ export const newCreatePriceProcessFlow = async (
   const lastSeen: { [type: string]: { [id: number]: Date } } = {
     restock: {},
     auction: {},
-    trades: {},
+    trade: {},
     sw: {},
   };
 
@@ -172,9 +172,9 @@ export const newCreatePriceProcessFlow = async (
       }
 
       if (raw.type === 'trade') {
-        const last = lastSeen.trades[itemData.internal_id];
+        const last = lastSeen.trade[itemData.internal_id];
         if (!last || last < new Date(raw.addedAt ?? Date.now()))
-          lastSeen.trades[itemData.internal_id] = new Date(raw.addedAt ?? Date.now());
+          lastSeen.trade[itemData.internal_id] = new Date(raw.addedAt ?? Date.now());
       }
 
       return {

@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Prisma } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { getManyItems } from '../items/many';
@@ -28,7 +27,7 @@ export const getHotestRestock = async (limit: number, days = 7) => {
   const lastDays = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
   const lastDaysFormated = lastDays.toISOString().split('T')[0];
 
-  const hotestRestockRes = (await prisma.$queryRaw(Prisma.sql`
+  const hotestRestockRes = (await prisma.$queryRaw`
   select a.internal_id, c.lastSeen, b.price from items as a
     LEFT JOIN (
           SELECT *
@@ -39,16 +38,15 @@ export const getHotestRestock = async (limit: number, days = 7) => {
               GROUP BY item_iid
           ) AND manual_check IS null
         ) as b on b.item_iid = a.internal_id
-    left join lastseen as c on c.item_iid = a.item_id
+    left join lastseen as c on c.item_iid = a.internal_id
     where c.type = 'restock' and c.lastSeen >= ${lastDaysFormated}
     and b.price is not null
     order by b.price desc
     limit 100
-    `)) as any[];
+    `) as any[];
 
   const uniqueSet = new Set(hotestRestockRes.map((x) => x.internal_id.toString()));
   const uniqueIds = [...uniqueSet.values()] as string[];
-
   const items = Object.values(await getManyItems({ id: uniqueIds }))
     .sort((a, b) => (b.price.value ?? 0) - (a.price.value ?? 0))
     .splice(0, Number(limit));
