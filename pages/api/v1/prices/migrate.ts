@@ -5,28 +5,28 @@ import { Prisma } from '@prisma/client';
 import { getManyItems } from '../items/many';
 
 const take = 25000;
-let page = 976;
+let page = 1004;
 let lastID = page * take;
-// let retry = 0;
+let retry = 0;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   return res.status(200).json(null);
-  // while (page < 1000 && retry <= 3) {
-  //   try {
-  //     const t = new Date().getTime();
+  while (page < 1100 && retry <= 3) {
+    try {
+      const t = new Date().getTime();
 
-  //     await timeout(processPage(), 1000 * 60 * 5);
+      await timeout(processPage(), 1000 * 60 * 5);
 
-  //     console.log(`page ${page} time: ${new Date().getTime() - t}`);
-  //   } catch (e) {
-  //     console.error(e);
-  //     retry++;
-  //     await wait(1000 * 20 * retry);
-  //   }
-  // }
+      console.log(`page ${page} time: ${new Date().getTime() - t}`);
+    } catch (e) {
+      console.error(e);
+      retry++;
+      await wait(1000 * 20 * retry);
+    }
+  }
 
-  await migrateLastSeen1();
-  await Promise.all([migrateLastSeen2(), lastSeenTrades()]);
+  // await migrateLastSeen1();
+  // await Promise.all([migrateLastSeen2(), lastSeenTrades()]);
   res.status(200).json('success');
 }
 

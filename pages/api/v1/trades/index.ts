@@ -356,7 +356,7 @@ const updateLastSeenTrades = async (
     }[]
 ) => {
   const itemNameImage: any = {};
-  console.log(trades);
+
   trades
     .map((t) => t.items)
     .flat()
@@ -365,7 +365,7 @@ const updateLastSeenTrades = async (
       itemNameImage[`${i.name}_${i.image_id}`] = [i.name, i.image_id];
     });
 
-  const itemsData = getManyItems({
+  const itemsData = await getManyItems({
     name_image_id: Object.values(itemNameImage),
   });
 
@@ -382,6 +382,7 @@ const updateLastSeenTrades = async (
       item_iid: {
         in: items_iid,
       },
+      type: 'trade',
     },
     data: {
       lastSeen: new Date(),

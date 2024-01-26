@@ -20,7 +20,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     return res.status(200).json({});
   }
 
-  if (!req.headers.authorization || req.headers.authorization !== TARNUM_KEY)
+  if (
+    process.env.NODE_ENV !== 'development' &&
+    (!req.headers.authorization || req.headers.authorization !== TARNUM_KEY)
+  )
     return res.status(401).json({ error: 'Unauthorized' });
 
   if (req.method === 'GET') return GET(req, res);

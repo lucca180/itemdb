@@ -277,11 +277,9 @@ const createRestockHistory = async (dataList: Prisma.RestockAuctionHistoryCreate
 };
 
 const processLastSeen = async (lastSeen: { [key: string]: { [id: number]: Date } }) => {
-  const allIds = new Set(
-    ...Object.values(lastSeen)
-      .map((x) => Object.keys(x))
-      .flat()
-  );
+  const allIdsRaw = Object.values(lastSeen).map((x) => Object.keys(x));
+
+  const allIds = new Set(allIdsRaw.flat());
 
   const lastSeenItems = await prisma.lastSeen.findMany({
     where: {
@@ -297,7 +295,6 @@ const processLastSeen = async (lastSeen: { [key: string]: { [id: number]: Date }
   Object.keys(lastSeen).map((type) =>
     Object.entries(lastSeen[type]).map(([x, date]) => {
       const lastSeen = lastSeenItems.find((y) => y.item_iid === Number(x) && y.type === type);
-
       if (!lastSeen) {
         createData.push({
           item_iid: Number(x),
