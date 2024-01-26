@@ -17,7 +17,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (!isNaN(id)) return res.status(400).json({ error: 'Invalid Request' });
 
   const name = id_name;
-  const type = req.query.tradings as string;
+  const type = (req.query.type as string) ?? 'restock';
 
   if (type === 'restock') {
     const restock = await getRestockData(name);
