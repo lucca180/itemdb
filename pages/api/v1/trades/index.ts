@@ -125,7 +125,9 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   // (and it will fail, because we cant create the same trade twice)
   const result = await Promise.allSettled(promiseArr);
 
-  const tradesFulfilled = result.filter((x) => x.status === 'fulfilled') as any as Trades &
+  const tradesFulfilled = result
+    .filter((x) => x.status === 'fulfilled')
+    .map((x: any) => x.value) as any as Trades &
     {
       items: TradeItems[];
     }[];
@@ -135,7 +137,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const allTrades = await prisma.trades.findMany({
     where: {
       trade_id: {
-        in: tradesFulfilled.map((x: any) => x.value.trade_id),
+        in: tradesFulfilled.map((x: any) => x.trade_id),
       },
       processed: false,
     },
@@ -354,11 +356,12 @@ const updateLastSeenTrades = async (
     }[]
 ) => {
   const itemNameImage: any = {};
-
+  console.log(trades);
   trades
     .map((t) => t.items)
     .flat()
     .map((i) => {
+      if (!i) return;
       itemNameImage[`${i.name}_${i.image_id}`] = [i.name, i.image_id];
     });
 
