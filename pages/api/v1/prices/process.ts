@@ -47,6 +47,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     SELECT item_iid, COUNT(*) as count, MAX(addedAt) as MAX_addedAt, count(*) OVER() AS full_count FROM PriceProcess2 p
     WHERE 
       addedAt >= ${maxPastFormated} AND
+      processed = 0 AND
       NOT EXISTS (
         SELECT 1 FROM ItemPrices a WHERE 
         a.addedAt >= ${lastDaysFormated}
@@ -94,6 +95,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     SELECT item_iid, COUNT(*) as count, MAX(addedAt) as MAX_addedAt FROM PriceProcess2 p
     WHERE 
       addedAt >= ${maxPastFormated} AND
+      processed = 0 AND
       NOT EXISTS (
         SELECT 1 FROM ItemPrices a WHERE 
         a.addedAt >= ${lastDaysFormated}
@@ -105,11 +107,11 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     LIMIT ${groupByLimit} OFFSET ${page * groupByLimit}
   `) as any;
 
-  const convertedGroupBy: { item_iid: number; count: number; addedAt: Date }[] = groupBy2.map(
+  const convertedGroupBy: { item_iid: number; count: number; MAX_addedAt: Date }[] = groupBy2.map(
     (x: any) => ({
       item_iid: x.item_iid,
       count: Number(x.count),
-      addedAt: new Date(x.addedAt),
+      addedAt: new Date(x.MAX_addedAt),
     })
   );
 
@@ -118,6 +120,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   for (const rawItem of convertedGroupBy) {
     if (total >= limit) break;
+
     ids.push(rawItem.item_iid);
     total += rawItem.count;
   }
@@ -137,15 +140,13 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const processedIDs: number[] = [];
 
   // list of unique entries
-  const uniqueIDs = new Set<number>([...processList.map((x) => x.item_iid)]);
 
-  for (const itemId of uniqueIDs) {
+  for (const itemId of ids) {
     const allItemData = processList.filter((x) => x.item_iid === itemId);
     const item = allItemData[0];
 
     try {
       if (allItemData.length < 3) continue;
-
       const mostRecentPrices = filterMostRecents(allItemData).sort((a, b) => a.price - b.price);
       const owners = new Set<string>();
 
