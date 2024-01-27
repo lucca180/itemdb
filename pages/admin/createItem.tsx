@@ -255,7 +255,9 @@ export async function getServerSideProps(context: NextPageContext) {
     if (!res || !res.user || !res.user?.isAdmin) throw new Error('User is not an admin');
 
     return {
-      props: {},
+      props: {
+        messages: (await import(`../../translation/${context.locale}.json`)).default,
+      },
     };
   } catch (e) {
     return {

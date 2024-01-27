@@ -72,7 +72,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
 export const getManyItems = async (
   queryObj: FindManyQuery,
-  limit = 300000
+  limit = 60000
 ): Promise<{ [identifier: string]: ItemData }> => {
   const { id, item_id, name_image_id, image_id, name, slug } = queryObj;
 
