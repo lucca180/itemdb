@@ -25,6 +25,7 @@
     "@emotion/styled": "^11.11.0",
     "@google-cloud/storage": "^6.9.3",
     "@hello-pangea/color-picker": "^3.2.2",
+    "@napi-rs/canvas": "^0.1.44",
     "@prisma/client": "^5.7.1",
     "@sendgrid/mail": "^7.7.0",
     "@sentry/integrations": "^7.91.0",

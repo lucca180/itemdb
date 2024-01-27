@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { dti } from '../../../../utils/impress';
-import { createCanvas, loadImage } from 'canvas';
+import { createCanvas, loadImage } from '@napi-rs/canvas';
 import { ImageBucket } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
 import altStyles from '../../../../utils/altStyles.json';
@@ -75,7 +75,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
       for (const img of images) ctx.drawImage(img, 0, 0, 600, 600);
 
-      const buffer = canvas.toBuffer();
+      const buffer = await canvas.encode('png');
       await file.save(buffer, {
         metadata: {
           cacheControl: 'public, max-age=2592000',
@@ -100,7 +100,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     ctx.drawImage(img, 0, 0);
 
-    const buffer = canvas.toBuffer();
+    const buffer = await canvas.encode('png');
 
     res.writeHead(400, {
       'Content-Type': 'image/jpeg',
@@ -157,8 +157,7 @@ const handleRegularStyle = async (itemName: string) => {
 // using data from DTI again. Thanks DTI!
 const handleAltStyle = async (itemName: string): Promise<string[]> => {
   if (!itemName.includes('Nostalgic')) return [];
-  const styleName = itemName.split(' ')[0];
-
+  const styleName = itemName.replace('Nostalgic ', '');
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-expect-error
   const style = altStyles[styleName];
