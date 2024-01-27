@@ -448,7 +448,8 @@ model RestockSession {
   shop_id Int
 
   session Json
-
+  
+  @@index([user_id])
   @@index([user_id, startedAt])
   @@index([user_id, startedAt, shop_id])
 }
@@ -465,6 +466,7 @@ model LastSeen {
 
   @@unique([item_iid, type])
   @@index([item_iid])
+  @@index([type, lastSeen])
 }
 
 // this is only for price data we actually use (ssw, sw, trades and maybe usershop)
