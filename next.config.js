@@ -31,6 +31,7 @@ const nextConfig = {
     process.env.NODE_ENV === 'production'
       ? {
           isrMemoryCacheSize: 0,
+          largePageDataBytes: 512 * 1000,
         }
       : {},
   async headers() {

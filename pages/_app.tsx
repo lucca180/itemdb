@@ -11,6 +11,7 @@ import Script from 'next/script';
 import { AuthProvider } from '../utils/auth';
 import { NextIntlClientProvider } from 'next-intl';
 import { useRouter } from 'next/router';
+import type { AppProps } from 'next/app';
 
 const VALID_LOCALES = {
   en: '',
@@ -18,7 +19,7 @@ const VALID_LOCALES = {
   'pt-BR': '/pt',
 };
 
-function MyApp({ Component, pageProps }: any) {
+function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
 
   return (
