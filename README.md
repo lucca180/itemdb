@@ -7,7 +7,7 @@
 First of all, you will need:
 
 - MySQL 8
-- Node.js 16
+- Node.js 18
 - Yarn
 - [Firebase](https://console.firebase.google.com/u/0/)
 
@@ -21,4 +21,4 @@ With all set, run `npx prisma migrate dev` to sync itemdb schema with your MySQL
 
 But it will be empty :(
 
-To populate your database, install the [Item Data Extractor Script](https://github.com/lucca180/itemdb/blob/main/userscripts/itemDataExtractor.user.js) and change the `fetch` urls at the end of the file from `https://itemdb.com.br` to `http://localhost:3000` and browse Neopia a little :)
+To populate your database, install the [Item Data Extractor Script](https://github.com/lucca180/itemdb/blob/main/userscripts/itemDataExtractor.user.js) and change the `GM_xmlhttpRequest` urls at the end of the file from `https://itemdb.com.br` to `http://localhost:3000` and browse Neopia a little :)
