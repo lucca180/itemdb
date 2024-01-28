@@ -123,7 +123,7 @@ const ItemCardBase = (props: ItemProps) => {
                 aria-label="Inflation Tooltip"
                 placement="top"
               >
-                <Badge colorScheme="red" whiteSpace="pre-wrap">
+                <Badge colorScheme="red" whiteSpace="normal">
                   <Icon as={AiFillWarning} verticalAlign="middle" /> {intl.format(item.price.value)}{' '}
                   NP
                 </Badge>
@@ -131,7 +131,7 @@ const ItemCardBase = (props: ItemProps) => {
             )}
 
             {item.price.value && !item.price.inflated && (
-              <Badge whiteSpace="pre-wrap">{intl.format(item.price.value)} NP</Badge>
+              <Badge whiteSpace="normal">{intl.format(item.price.value)} NP</Badge>
             )}
 
             {item.type === 'pb' && <Badge colorScheme="yellow">PB</Badge>}
@@ -148,13 +148,15 @@ const ItemCardBase = (props: ItemProps) => {
               !capValue &&
               !item.owls.buyable &&
               !isNaN(Number(item.owls.value.split('-')[0])) && (
-                <Badge colorScheme="purple" whiteSpace="pre-wrap">
+                <Badge colorScheme="purple" whiteSpace="normal">
                   {item.owls.value} Owls
                 </Badge>
               )}
 
             {item.isNC && item.owls && !capValue && item.owls.buyable && (
-              <Badge colorScheme="purple">{t('ItemPage.nc-buyable')}</Badge>
+              <Badge colorScheme="purple" whiteSpace="normal">
+                {t('ItemPage.nc-buyable')}
+              </Badge>
             )}
 
             {item.isNC && Number(capValue) > 0 && (
@@ -163,7 +165,7 @@ const ItemCardBase = (props: ItemProps) => {
                 aria-label="Not Official NC Price Tooltip"
                 placement="top"
               >
-                <Badge colorScheme="purple">
+                <Badge colorScheme="purple" whiteSpace="normal">
                   <Icon as={AiFillInfoCircle} verticalAlign="middle" /> NC - {capValue} CAPS
                 </Badge>
               </Tooltip>

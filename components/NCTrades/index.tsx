@@ -147,7 +147,7 @@ const NCTrade = (props: Props) => {
               colorScheme="purple"
               fontSize="xs"
               minW="15%"
-              maxW="25%"
+              maxW={{ base: '100%', md: '25%' }}
               whiteSpace={'normal'}
               textTransform="initial"
             >

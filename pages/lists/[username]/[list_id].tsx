@@ -488,17 +488,18 @@ const ListPage = (props: Props) => {
         setOpenCreateModal={setOpenCreateModal}
       />
       <Flex mt={5} gap={6} flexFlow="column">
-        {!isOwner && user && list.purpose !== 'none' && (
+        {!isOwner && user && list.purpose !== 'none' && matches.length > 0 && (
           <>
             <Box>
               <Heading size={{ base: 'md', md: 'lg' }}>
                 {t.rich('Lists.you-plus-list', {
-                  badge: (chunk) => (
+                  Badge: (chunk) => (
                     <Badge fontSize={0} verticalAlign="middle">
                       {chunk}
                     </Badge>
                   ),
                   matches: matches.length,
+                  listName: list.name,
                 })}
               </Heading>
               <Text color="gray.400" fontSize={{ base: 'sm', md: 'md' }}>

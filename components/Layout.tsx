@@ -17,7 +17,6 @@ import {
   Center,
   Spinner,
   Link as ChakraLink,
-  Badge,
 } from '@chakra-ui/react';
 
 import NextImage from 'next/image';
@@ -103,9 +102,6 @@ const Layout = (props: Props) => {
             <ChakraLink as={Link} href="/restock/dashboard">
               {t('dashboard')}
             </ChakraLink>{' '}
-            <Badge fontSize={'0.5rem'} colorScheme="yellow">
-              {t('new')}
-            </Badge>
           </Text>
           <ChakraLink as={Link} href="/restock">
             {t('restock-hub')}
