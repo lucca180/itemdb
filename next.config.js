@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 // next.config.js
 
-/**
- * @type {import('next').NextConfig}
- */
 const { withSentryConfig } = require('@sentry/nextjs');
 
+/** @type {import('next').NextConfig} */
 const nextConfig = {
+  cacheMaxMemorySize: 0,
   i18n: {
     locales: ['en', 'pt'],
     defaultLocale: 'en',
@@ -27,13 +26,9 @@ const nextConfig = {
     minimumCacheTTL: 2592000,
   },
   distDir: process.env.BUILD_DIR || '.next',
-  experimental:
-    process.env.NODE_ENV === 'production'
-      ? {
-          isrMemoryCacheSize: 0,
-          largePageDataBytes: 512 * 1000,
-        }
-      : {},
+  experimental: {
+    largePageDataBytes: 512 * 1000,
+  },
   async headers() {
     return [
       {
