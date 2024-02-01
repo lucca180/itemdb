@@ -42,7 +42,8 @@ const HomePage = (props: Props) => {
   const [latestPrices, setPrices] = useState<ItemData[] | null>(null);
   const [trendingItems, setTrending] = useState<ItemData[] | null>(null);
 
-  const color = Color('#4A5568');
+  // const color = Color('#4A5568');
+  const color = Color('#CB3F5D');
   const rgb = color.rgb().round().array();
 
   useEffect(() => {
@@ -97,7 +98,7 @@ const HomePage = (props: Props) => {
           >
             {t('title')}
           </Highlight>{' '}
-          <Link color="cyan.300" href="/faq">
+          <Link color={color.lighten(0.5).hex()} href="/faq">
             {t('why-us')}
           </Link>
         </Heading>
