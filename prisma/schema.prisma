@@ -53,7 +53,8 @@ model Items {
   lastSeen LastSeen[]
   priceProcess PriceProcess2[]
   restockAuctionHistory RestockAuctionHistory[]
-  
+  processHistory PriceProcessHistory[]
+
   @@index([name, image_id])
   @@index([image_id])
   @@index([item_id])
@@ -169,6 +170,7 @@ model ItemPrices {
   @@index([item_iid])
 }
 
+// @deprecated
 model PriceProcess {
   internal_id Int      @id @default(autoincrement())
   name        String
@@ -199,8 +201,10 @@ model PriceProcess {
 
 model PriceProcessHistory {
   internal_id Int      @id @default(autoincrement())
-  name        String
+  name        String?
   checkedAt   DateTime @default(now())
+  item_iid    Int?
+  item        Items?   @relation(fields: [item_iid], references: [internal_id], onDelete: SetNull, onUpdate: Cascade)
 
   @@index([name])
   @@index([name, checkedAt])

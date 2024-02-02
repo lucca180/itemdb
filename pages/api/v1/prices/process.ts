@@ -52,6 +52,10 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
         SELECT 1 FROM ItemPrices a WHERE 
         a.addedAt >= ${lastDaysFormated}
         and a.item_iid = p.item_iid 
+      ) AND
+      NOT EXISTS (
+        SELECT 1 FROM PriceProcessHistory b WHERE
+        b.item_iid = p.item_iid
       )
     GROUP BY item_iid 
     HAVING count >= 10 OR (MAX_addedAt <= ${maxDateFormated} and count >= 5)
@@ -100,6 +104,10 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         SELECT 1 FROM ItemPrices a WHERE 
         a.addedAt >= ${lastDaysFormated}
         and a.item_iid = p.item_iid 
+      ) AND
+      NOT EXISTS (
+        SELECT 1 FROM PriceProcessHistory b WHERE
+        b.item_iid = p.item_iid
       )
     GROUP BY item_iid 
     HAVING count >= 10 OR (MAX_addedAt <= ${maxDateFormated} and count >= 5)
@@ -237,11 +245,13 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const manualCheckList = priceAddList.filter((x) => x.manual_check).map((x) => x.item_iid);
 
-  // await prisma.priceProcessHistory.createMany({
-  //   data: ids.map((x) => ({
-  //     name: x,
-  //   })),
-  // });
+  await prisma.priceProcessHistory.createMany({
+    data: ids.map((x) => ({
+      item_iid: x,
+    })),
+
+    skipDuplicates: true,
+  });
 
   return res.send({
     priceUpdate: result[0],
