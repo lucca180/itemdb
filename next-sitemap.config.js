@@ -4,6 +4,7 @@ module.exports = {
   generateRobotsTxt: true, // (optional)
   sitemapSize: 1000,
   changefreq: 'weekly',
+  alternateRefs: [{ href: 'https://itemdb.com.br/pt', hrefLang: 'pt-BR' }],
   exclude: ['/sitemaps/*', '/admin/*'], // <= exclude here
   robotsTxtOptions: {
     additionalSitemaps: [
@@ -13,7 +14,7 @@ module.exports = {
     policies: [
       {
         userAgent: '*',
-        disallow: ['/admin/*', '/search/*', '/api/*'],
+        disallow: ['*/admin/*', '*/search/*', '*/api/*'],
       },
     ],
   },

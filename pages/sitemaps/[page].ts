@@ -23,6 +23,17 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     prisma.items.findMany({
       select: {
         slug: true,
+        updatedAt: true,
+        prices: {
+          select: {
+            addedAt: true,
+          },
+        },
+        owlsPrice: {
+          select: {
+            addedAt: true,
+          },
+        },
       },
       orderBy: {
         name: 'asc',
@@ -36,6 +47,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       },
       select: {
         internal_id: true,
+        updatedAt: true,
       },
       take: 50,
       skip: parseInt(page) * 50,
@@ -44,15 +56,45 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
   const officialListsPaths: ISitemapField[] = officialLists.map((list) => ({
     loc: `${siteURL}/lists/official/${list.internal_id}`,
-    lastmod: new Date().toISOString(),
-    changefreq: 'weekly',
+    alternateRefs: [
+      {
+        href: `${siteURL}/pt/lists/official/${list.internal_id}`,
+        hreflang: 'pt-br',
+      },
+    ],
+    lastmod: list.updatedAt.toISOString(),
   }));
 
-  const itemPaths: ISitemapField[] = itemInfo.map((item) => ({
-    loc: `${siteURL}/item/${item.slug}`,
-    lastmod: new Date().toISOString(),
-    changefreq: 'weekly',
-  }));
+  const itemPaths: ISitemapField[] = itemInfo.map((item) => {
+    let lastMod = item.updatedAt;
+
+    if (item.prices.length > 0) {
+      const priceChange = item.prices.reduce((prev, current) => {
+        return prev.addedAt > current.addedAt ? prev : current;
+      }).addedAt;
+
+      if (priceChange > lastMod) lastMod = priceChange;
+    }
+
+    if (item.owlsPrice.length > 0) {
+      const owlsChange = item.owlsPrice.reduce((prev, current) => {
+        return prev.addedAt > current.addedAt ? prev : current;
+      }).addedAt;
+
+      if (owlsChange > lastMod) lastMod = owlsChange;
+    }
+
+    return {
+      loc: `${siteURL}/item/${item.slug}`,
+      alternateRefs: [
+        {
+          href: `${siteURL}/pt/item/${item.slug}`,
+          hreflang: 'pt-br',
+        },
+      ],
+      lastmod: lastMod.toISOString(),
+    };
+  });
 
   return getServerSideSitemapLegacy(ctx, [...officialListsPaths, ...itemPaths]);
 };
