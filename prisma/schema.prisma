@@ -498,6 +498,7 @@ model PriceProcess2 {
 
   @@index([item_iid])
   @@index([item_iid, addedAt])
+  @@index([addedAt, processed])
   @@index([item_iid, addedAt, type])
 }
 
