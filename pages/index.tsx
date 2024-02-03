@@ -98,7 +98,7 @@ const HomePage = (props: Props) => {
           >
             {t('title')}
           </Highlight>{' '}
-          <Link color={color.lighten(0.5).hex()} href="/faq">
+          <Link color={color.lightness(70).hex()} href="/faq">
             {t('why-us')}
           </Link>
         </Heading>

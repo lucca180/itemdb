@@ -1,6 +1,8 @@
 import { Prisma } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
+import { CheckAuth } from '../../../../utils/googleCloud';
+import { User } from '../../../../types';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -14,6 +16,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
+  let user: User | null = null;
+
+  try {
+    user = (await CheckAuth(req)).user;
+  } catch (e) {}
+
   const itemProcess = prisma.itemProcess.count({
     where: {
       processed: false,
@@ -39,6 +47,11 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
     where: {
       type: 'tradePrice',
       processed: false,
+      vote: {
+        none: {
+          user_id: user?.id ?? '-1',
+        },
+      },
     },
   });
 

@@ -80,6 +80,8 @@ const RestockItem = (props: Props) => {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
+                  hour: 'numeric',
+                  minute: 'numeric',
                 }),
               })}
             </Text>
@@ -94,6 +96,8 @@ const RestockItem = (props: Props) => {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
+                  hour: 'numeric',
+                  minute: 'numeric',
                 }),
               })}
             </Text>
@@ -108,6 +112,8 @@ const RestockItem = (props: Props) => {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
+                  hour: 'numeric',
+                  minute: 'numeric',
                 }),
               })}
             </Text>

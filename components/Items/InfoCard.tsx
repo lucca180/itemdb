@@ -1,9 +1,10 @@
-import { Box, Flex, HStack, Tag, Text, Tooltip } from '@chakra-ui/react';
+import { Box, Flex, HStack, Link, Tag, Text, Tooltip } from '@chakra-ui/react';
 import React from 'react';
 import { ItemData } from '../../types';
 import { MdHelp } from 'react-icons/md';
 import { rarityStr } from '../../utils/utils';
 import { useTranslations } from 'next-intl';
+import Color from 'color';
 
 type Props = {
   item: ItemData;
@@ -14,7 +15,8 @@ const intl = new Intl.NumberFormat();
 const ItemInfoCard = (props: Props) => {
   const t = useTranslations();
   const { item } = props;
-  const color = item.color.rgb;
+  const color = Color(item.color.hex);
+  const rgb = item.color.rgb;
   const rarityString = rarityStr(item.rarity ?? 0);
 
   return (
@@ -30,7 +32,7 @@ const ItemInfoCard = (props: Props) => {
         p={2}
         textAlign="center"
         fontWeight="bold"
-        bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}
+        bg={`rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, .6)`}
       >
         {t('ItemPage.item-info')}
       </Box>
@@ -98,7 +100,12 @@ const ItemInfoCard = (props: Props) => {
             {t('General.category')}
           </Tag>
           <Text flex="1" textAlign="right" textTransform="capitalize">
-            {item.category ?? '???'}
+            <Link
+              color={color.lightness(70).hex()}
+              href={`/search?s=&category[]=${item.category ?? 'Unknown'}`}
+            >
+              {item.category ?? '???'}
+            </Link>
           </Text>
         </HStack>
         <HStack>
