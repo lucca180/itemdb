@@ -26,7 +26,7 @@ import DynamicIcon from '../../public/icons/dynamic.png';
 import NextImage from 'next/image';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
-const Markdown = dynamic(() => import('../Utils/Markdown'), { ssr: false });
+const Markdown = dynamic(() => import('../Utils/Markdown'));
 
 type ListHeaderProps = {
   list: UserList;
@@ -225,6 +225,7 @@ const ListHeader = (props: ListHeaderProps) => {
               mt={{ base: 2, md: 3 }}
               fontSize={{ base: 'sm', md: 'md' }}
               sx={{ a: { color: color.lightness(70).hex() } }}
+              as="div"
             >
               <Markdown>{list.description}</Markdown>
             </Text>

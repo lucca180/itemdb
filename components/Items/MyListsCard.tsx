@@ -31,7 +31,7 @@ import { DuplicatedItemModalProps } from '../Modal/DuplicatedItemModal';
 import { ItemActionModalProps } from '../Modal/ItemActionModal';
 import { useTranslations } from 'next-intl';
 
-const Markdown = dynamic(() => import('../Utils/Markdown'), { ssr: false });
+const Markdown = dynamic(() => import('../Utils/Markdown'));
 
 const ItemActionModal = dynamic<ItemActionModalProps>(() => import('../Modal/ItemActionModal'));
 const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
@@ -168,6 +168,7 @@ const ItemMyLists = (props: Props) => {
                       display="inline"
                       verticalAlign="middle"
                       fontSize={'xs'}
+                      as="div"
                       sx={{ p: { display: 'inline' }, a: { color: color.lightness(70).hex() } }}
                     >
                       -{' '}

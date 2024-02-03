@@ -6,8 +6,9 @@ import NextImage from 'next/image';
 import Color from 'color';
 import NextLink from 'next/link';
 import { useEffect, useState } from 'react';
-import { stripMarkdown } from '../../utils/utils';
 import { useTranslations } from 'next-intl';
+import dynamic from 'next/dynamic';
+const Markdown = dynamic(() => import('../Utils/Markdown'));
 
 type Props = {
   list: UserList;
@@ -110,8 +111,12 @@ const UserListCard = (props: Props) => {
           color={color.isLight() ? 'blackAlpha.700' : undefined}
           flex={1}
           noOfLines={4}
+          as="div"
+          sx={{ a: { fontWeight: 'bold' } }}
         >
-          {stripMarkdown(list.description ?? '')}
+          <Markdown>
+            {(list.description || t('ItemPage.list-no-description')).split(/[\r\n]+/)[0]}
+          </Markdown>
         </Text>
         <Flex gap={1} flexWrap="wrap">
           {!!list.dynamicType && (

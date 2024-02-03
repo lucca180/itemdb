@@ -8,7 +8,7 @@ import DynamicIcon from '../../public/icons/dynamic.png';
 import dynamic from 'next/dynamic';
 import Color from 'color';
 import { useTranslations } from 'next-intl';
-const Markdown = dynamic(() => import('../Utils/Markdown'), { ssr: false });
+const Markdown = dynamic(() => import('../Utils/Markdown'));
 
 type Props = {
   item: ItemData;
@@ -53,6 +53,7 @@ const ItemOfficialLists = (props: Props) => {
               <Text
                 display="inline"
                 verticalAlign="middle"
+                as="div"
                 sx={{ p: { display: 'inline' }, a: { color: color.lightness(70).hex() } }}
               >
                 {' '}
