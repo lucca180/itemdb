@@ -333,6 +333,14 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 
   if (!item) return { notFound: true };
 
+  if (id !== item.slug)
+    return {
+      redirect: {
+        destination: `/item/${item.slug}`,
+        permanent: true,
+      },
+    };
+
   const [
     colors,
     lists,
