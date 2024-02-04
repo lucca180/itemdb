@@ -50,18 +50,28 @@ const ManualCheckCard = (props: Props) => {
   const submitAction = async (action: 'approve' | 'reprove' | 'not_inflated' | 'correct') => {
     if (!user || !user.isAdmin || !manualCheck) return;
 
+    let correctInfo = undefined;
+
+    if (action === 'correct' && conflictField) {
+      correctInfo = {
+        field: conflictField,
+        value: item[conflictField as keyof ItemData],
+      };
+    }
+
+    if (action === 'approve' && conflictField) {
+      correctInfo = {
+        field: conflictField,
+        value: (manualCheck as ItemProcess)[conflictField as keyof ItemProcess],
+      };
+    }
+
     const promise = axios
       .post(`/api/admin/manual/${item.internal_id}`, {
         action,
         type: type,
         checkID: manualCheck.internal_id,
-        correctInfo:
-          action === 'correct' && conflictField
-            ? {
-                field: conflictField,
-                value: item[conflictField as keyof ItemData],
-              }
-            : undefined,
+        correctInfo: correctInfo,
       })
       .then(() => setManualCheck(null));
 
@@ -126,7 +136,7 @@ const ManualCheckCard = (props: Props) => {
               Current is correct
             </Button>
             <Button colorScheme={'green'} variant="ghost" onClick={() => submitAction('approve')}>
-              Mark as Solved
+              Approve
             </Button>
           </Flex>
         </AlertDescription>

@@ -81,7 +81,19 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   if (type === 'info') {
+    if ((!correctInfo.field || !correctInfo.value) && action !== 'reprove')
+      return res.status(400).json({ error: 'Bad Request' });
+
     if (action === 'approve') {
+      await prisma.items.update({
+        where: {
+          internal_id: Number(id),
+        },
+        data: {
+          [correctInfo.field]: correctInfo.value,
+        },
+      });
+
       await prisma.itemProcess.updateMany({
         where: {
           processed: false,
