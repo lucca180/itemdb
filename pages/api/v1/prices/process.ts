@@ -261,7 +261,26 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
-  const result = await prisma.priceProcessHistory.deleteMany({});
+  const result = await Promise.all([
+    prisma.priceProcessHistory.deleteMany({}),
+    prisma.priceProcess2.deleteMany({
+      where: {
+        OR: [
+          {
+            processed: true,
+            addedAt: {
+              lt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
+            },
+          },
+          {
+            addedAt: {
+              lt: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000),
+            },
+          },
+        ],
+      },
+    }),
+  ]);
 
   return res.send(result);
 };
