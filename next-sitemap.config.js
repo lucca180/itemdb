@@ -14,7 +14,7 @@ module.exports = {
     policies: [
       {
         userAgent: '*',
-        disallow: ['*/admin/*', '*/search/*', '*/api/*'],
+        disallow: ['*/admin*', '*/search*', '*/api*'],
       },
     ],
   },
