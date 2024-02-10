@@ -99,6 +99,15 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         },
       });
 
+      await prisma.userList.update({
+        where: {
+          internal_id: Number(list_id),
+        },
+        data: {
+          updatedAt: new Date(),
+        },
+      });
+
       return res.status(200).json({
         success: true,
         message: `deleted ${deleted.count} items`,
@@ -145,7 +154,18 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         },
       });
 
-      const result = await prisma.$transaction([create, update]);
+      const updateList = prisma.userList.updateMany({
+        where: {
+          internal_id: {
+            in: [listDest.internal_id, Number(list_id)],
+          },
+        },
+        data: {
+          updatedAt: new Date(),
+        },
+      });
+
+      const result = await prisma.$transaction([create, update, updateList]);
 
       return res.status(200).json({
         success: true,
@@ -202,6 +222,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         data: {
           name,
           description,
+          updatedAt: new Date(),
           cover_url: coverURL,
           colorHex: colorHexVar,
           official: user.isAdmin ? official : undefined,
