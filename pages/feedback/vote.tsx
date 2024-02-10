@@ -5,6 +5,7 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
+  Badge,
   Box,
   Button,
   Center,
@@ -52,11 +53,11 @@ const FeedbackVotingPage = () => {
       const targetName = (e.target as any).nodeName;
 
       if (['INPUT', 'TEXTAREA'].includes(targetName) || isLoading) return;
-      console.log(e.key);
-      if (e.key === 'd') {
+
+      if (e.key.toLowerCase() === 'd') {
         handleVote('upvote');
       }
-      if (e.key === 'a') {
+      if (e.key.toLowerCase() === 'a') {
         handleVote('downvote');
       }
     };
@@ -170,7 +171,10 @@ const FeedbackVotingPage = () => {
             <AccordionItem>
               <AccordionButton>
                 <Box as="span" flex="1" textAlign="left">
-                  <Text fontWeight={'bold'}>{t('Layout.trade-pricing')}</Text>
+                  <Text fontWeight={'bold'}>
+                    {t('Layout.trade-pricing')}{' '}
+                    <Badge colorScheme="orange">{t('Layout.new')}</Badge>
+                  </Text>
                 </Box>
                 <AccordionIcon />
               </AccordionButton>

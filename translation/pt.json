@@ -348,7 +348,7 @@
     "pt-5": "No entanto, se o 'item valioso' for MUITO mais valioso do que os outros, você pode presumir que a lista de desejos se refere a ele.",
     "pt-6": "Dividir o preço único do lote pelo número de itens, se os itens forem diferentes",
     "pt-7": "Ex.: 'paperclip trade - 10 items 100np' -> não é correto presumir que cada item custa 10NP",
-    "pt-8": "Utilizar o preço de outro item para compor o preço do lote",
+    "pt-8": "Utilizar o preço de outro item para compor o preço do lote (exceto baby pb - a partir de 10/02/2024)",
     "pt-9": "Ex: '6 baby pb + 100k' ou '2m + HTS' -> deixe em branco",
     "trade-pricing-guidelines": "Diretrizes de Precificação de Trocas",
     "dos": "O que fazer",
@@ -370,7 +370,10 @@
     "voting-feedback": "Votação - Feedback",
     "you-can-also-price-some-trades": "Você também pode precificar algumas trocas",
     "in-1": "<b>Notas de item</b> são usadas para fornecer informações adicionais sobre o item, como funções ou efeitos. Certifique-se de verificar a veracidade das informações fornecidas antes de votá-las :)",
-    "keyboard-submit": "Você pode apertar <Kbd>ENTER</Kbd> na ultima caixa de preço para enviar"
+    "keyboard-submit": "Você pode apertar <Kbd>ENTER</Kbd> na última caixa de preço para enviar",
+    "10-02-2024-policy-changes": "[10/02/2024] Mudanças nas Políticas",
+    "new-policy-1": "Entendemos que os Pincéis Bebê são um fator importante para a venda de itens no posto de trocas.  Portanto, a partir de agora, você pode considerar o preço dos <b>Pincéis Bebê como 600k</b> quando especificado como <b>parte do pagamento</b> na lista de desejos.",
+    "new-policy-2": "Porém, priorize o preço listado em Neopontos \"a vista\" se ambos estiverem listados. Esta nova diretriz se aplica <b>SOMENTE ao Pincel Bebê (baby pb)</b>. Atualizaremos esta diretriz em caso de flutuações futuras no mercado."
   },
   "Lists": {
     "add-to-list": "Adicionar a Lista",

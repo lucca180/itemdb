@@ -1,5 +1,9 @@
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  AlertTitle,
   Box,
   Button,
   Center,
@@ -229,6 +233,22 @@ export const TradeGuidelines = () => {
           b: (chunk) => <b>{chunk}</b>,
         })}
       </Text>
+      <Alert status={'info'} my={6} variant="subtle" borderRadius={'md'}>
+        <AlertIcon />
+        <Box w="100%">
+          <AlertTitle>{t('Feedback.10-02-2024-policy-changes')}</AlertTitle>
+          <AlertDescription fontSize="sm">
+            {t.rich('Feedback.new-policy-1', {
+              b: (chunk) => <b>{chunk}</b>,
+            })}
+            <br />
+            <br />
+            {t.rich('Feedback.new-policy-2', {
+              b: (chunk) => <b>{chunk}</b>,
+            })}
+          </AlertDescription>
+        </Box>
+      </Alert>
       <Heading size="md" mt={6} color="red.300">
         <Icon as={BsXLg} verticalAlign="middle" /> {t('Feedback.donts')}
       </Heading>
