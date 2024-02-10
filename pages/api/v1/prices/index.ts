@@ -252,7 +252,6 @@ const createPriceProcess = async (dataList: Prisma.PriceProcess2CreateManyInput[
       return x;
     } catch (e: any) {
       if (['P2002', 'P2034'].includes(e.code) && tries < 3) {
-        console.error(e);
         tries++;
         continue;
       }
@@ -275,7 +274,6 @@ const createRestockHistory = async (dataList: Prisma.RestockAuctionHistoryCreate
       return x;
     } catch (e: any) {
       if (['P2002', 'P2034'].includes(e.code) && tries < 3) {
-        console.error(e);
         tries++;
         continue;
       }
@@ -342,7 +340,6 @@ const processLastSeen = async (lastSeen: { [key: string]: { [id: number]: Date }
     } catch (e: any) {
       if (['P2002', 'P2034'].includes(e.code) && tries < 3) {
         tries++;
-        console.error(e);
         continue;
       }
       console.error(e);
@@ -373,7 +370,6 @@ const newHandleAuction = async (dataList: Prisma.RestockAuctionHistoryCreateMany
     } catch (e: any) {
       if (['P2002', 'P2034'].includes(e.code) && tries < 3) {
         tries++;
-        console.error(e);
         continue;
       }
       console.error(e);

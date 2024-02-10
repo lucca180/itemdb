@@ -381,7 +381,8 @@
     "hidden": "Hidden",
     "item-deleted-successfully-you-can-close-this-page-now": "Item deleted successfully. You can close this page now",
     "delete-item-name": "Delete {x}",
-    "change-lang-helper": "You'll need to refresh the page to this change to take effect"
+    "change-lang-helper": "You'll need to refresh the page to this change to take effect",
+    "color-helper": "Leave as #000000 and we will choose one for you based on your cover image"
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",
@@ -612,7 +613,8 @@
     "fill-required-fields": "Fill out all required fields",
     "enter-a-valid-image-url": "Enter a valid image url",
     "profile-image-url": "Profile Image URL",
-    "allowedDomains": "Only images from neopets.com, magnetismotimes.com and itemdb.com.br are allowed"
+    "allowedDomains": "Only images from neopets.com, magnetismotimes.com and itemdb.com.br are allowed",
+    "color-helper": "Leave as #000000 and we will choose one for you based on your profile image"
   },
   "FAQ": {
     "why-itemdb": "Why itemdb?",

@@ -254,6 +254,7 @@ const EditProfileModal = (props: EditProfileModalProps) => {
                     onChangeComplete={handleColorChange}
                   />
                 </Center>
+                <FormHelperText>{t('Profile.color-helper')}</FormHelperText>
               </FormControl>
             </Stack>
           )}

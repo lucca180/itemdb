@@ -202,6 +202,7 @@ const CreateListModal = (props: CreateListModalProps) => {
                     onChangeComplete={handleColorChange}
                   />
                 </Center>
+                <FormHelperText>{t('Lists.color-helper')}</FormHelperText>
               </FormControl>
               <FormControl>
                 <FormLabel color="gray.300">{t('General.visibility')}</FormLabel>
