@@ -134,6 +134,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
           )
         GROUP BY item_iid 
         HAVING count >= 30
+        ORDER BY count desc
         LIMIT ${groupByLimit} OFFSET ${page * groupByLimit}
     ` as any;
 
