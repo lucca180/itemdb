@@ -39,6 +39,16 @@ const Axios = axios.create({
   baseURL: '/api/v1/',
 });
 
+Axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.code === 'ERR_CANCELED') {
+      return Promise.reject({ status: 499 });
+    }
+    return Promise.reject((error.response && error.response.data) || 'Error');
+  }
+);
+
 const intl = new Intl.NumberFormat();
 let ABORT_CONTROLER = new AbortController();
 
@@ -410,7 +420,7 @@ const SearchPage = () => {
                 variant="filled"
                 value={filters.sortBy}
                 onChange={handleSelectChange}
-                size={{ base: 'sm', sm: 'md' }}
+                size="sm"
                 isDisabled={!searchResult}
               >
                 <option value="name">{t('General.name')}</option>
@@ -427,7 +437,7 @@ const SearchPage = () => {
                 variant="filled"
                 value={filters.sortDir}
                 onChange={handleSelectChange}
-                size={{ base: 'sm', sm: 'md' }}
+                size="sm"
                 isDisabled={!searchResult}
               >
                 <option value="asc">{t('General.ascending')}</option>
@@ -444,6 +454,15 @@ const SearchPage = () => {
           >
             {t('General.tip')}: {searchTip}
           </Text>
+
+          {searchResult && (
+            <Pagination
+              currentPage={searchResult.page}
+              totalPages={Math.ceil((totalResults ?? 1000) / searchResult.resultsPerPage)}
+              setPage={changePage}
+            />
+          )}
+          {!searchResult && <Pagination />}
 
           <Flex mt={4} flexWrap="wrap" gap={{ base: 3, md: 4 }} justifyContent="center">
             {searchResult?.content.map((item) => (

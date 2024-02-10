@@ -130,7 +130,7 @@ const SearchFilters = (props: Props) => {
     props.onChange?.(newFilters);
   };
 
-  const handleSelectChange = (newVal: string, filterType: 'colorType') => {
+  const handleSelectChange = (newVal: string, filterType: 'colorType' | 'mode') => {
     setFilters({ ...filters, [filterType]: newVal });
     props.onChange?.({ ...filters, [filterType]: newVal });
   };
@@ -151,7 +151,7 @@ const SearchFilters = (props: Props) => {
           <VStack alignItems="flex-start">
             {stats &&
               Object.entries(stats.category)
-                .sort((a, b) => b[1] - a[1])
+                .sort((a, b) => sortCategories(a[0], b[0], filters.category, !showMoreCat))
                 .slice(0, showMoreCat ? undefined : 5)
                 .map((cat) => (
                   <NegCheckbox
@@ -510,6 +510,31 @@ const SearchFilters = (props: Props) => {
           </VStack>
         </AccordionPanel>
       </AccordionItem>
+      <AccordionItem>
+        <h2>
+          <AccordionButton>
+            <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
+              Search Mode
+            </Box>
+            <AccordionIcon />
+          </AccordionButton>
+        </h2>
+        <AccordionPanel pb={4}>
+          <HStack>
+            <Select
+              size="sm"
+              variant={'filled'}
+              bg={'whiteAlpha.200'}
+              value={filters.mode}
+              onChange={(e) => handleSelectChange(e.target.value, 'mode')}
+            >
+              <option value="name">Item Name</option>
+              <option value="description">Item Description</option>
+              <option value="all">Item Name and Description</option>
+            </Select>
+          </HStack>
+        </AccordionPanel>
+      </AccordionItem>
     </Accordion>
   );
 };
@@ -525,3 +550,16 @@ const ColorBox = (props: { color: string }) => (
     height="15px"
   ></Box>
 );
+
+const sortCategories = (a: string, b: string, selected: string[], selectedFirst = false) => {
+  if (selectedFirst) {
+    const includesA = selected.includes(a) || selected.includes(`!${a}`);
+    const includesB = selected.includes(b) || selected.includes(`!${b}`);
+
+    if (includesA && !includesB) return -1;
+    if (!includesA && includesB) return 1;
+    if (includesA && includesB) return a.localeCompare(b);
+  }
+
+  return a.localeCompare(b);
+};

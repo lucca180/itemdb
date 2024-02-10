@@ -285,10 +285,11 @@ export async function doSearch(query: string, filters: SearchFilters, includeSta
 
   if (query === '') fulltext = Prisma.sql`1`;
   else if (mode === 'all')
-    fulltext = Prisma.sql`MATCH (temp.name, temp.description) AGAINST (${query} IN BOOLEAN MODE)`;
+    fulltext = Prisma.sql`MATCH (temp.name, temp.description) AGAINST (${query} IN BOOLEAN MODE) OR temp.name LIKE ${`%${originalQuery}%`} OR temp.description LIKE ${`%${originalQuery}%`}`;
   else if (mode === 'description')
-    fulltext = Prisma.sql`MATCH (temp.description) AGAINST (${query} IN BOOLEAN MODE)`;
-  else fulltext = Prisma.sql`MATCH (temp.name) AGAINST (${query} IN BOOLEAN MODE)`;
+    fulltext = Prisma.sql`MATCH (temp.description) AGAINST (${query} IN BOOLEAN MODE) OR temp.description LIKE ${`%${originalQuery}%`}`;
+  else
+    fulltext = Prisma.sql`MATCH (temp.name) AGAINST (${query} IN BOOLEAN MODE) OR temp.name LIKE ${`%${originalQuery}%`}`;
 
   let resultRaw;
 
@@ -393,7 +394,7 @@ export async function doSearch(query: string, filters: SearchFilters, includeSta
         ) as d on d.item_iid = a.internal_id
       ) as temp
             
-      WHERE (${fulltext} OR temp.name LIKE ${`%${originalQuery}%`}) and temp.canonical_id is null
+      WHERE (${fulltext}) and temp.canonical_id is null
 
       ${
         catFiltersSQL.length > 0

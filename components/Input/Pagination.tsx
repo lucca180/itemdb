@@ -20,17 +20,23 @@ const Pagination = (props: Props) => {
     return (
       <HStack mt={4} justifyContent="center">
         <IconButton
+          size="sm"
           isDisabled
           aria-label="Jump to first page button"
           color="gray.300"
           icon={<BiFirstPage size="24px" />}
         />
-        <Button isDisabled>{t('General.back')}</Button>
+        <Button size="sm" isDisabled>
+          {t('General.back')}
+        </Button>
         <Box>
-          <Button isLoading />
+          <Button size="sm" isLoading />
         </Box>
-        <Button isDisabled>{t('General.next')}</Button>
+        <Button size="sm" isDisabled>
+          {t('General.next')}
+        </Button>
         <IconButton
+          size="sm"
           isDisabled
           aria-label="Jump to last page button"
           icon={<BiLastPage size="24px" />}
@@ -41,17 +47,19 @@ const Pagination = (props: Props) => {
   return (
     <HStack mt={4} justifyContent="center">
       <IconButton
+        size="sm"
         isDisabled={currentPage <= 1}
         onClick={() => setPage(1)}
         aria-label="Jump to first page button"
         color="gray.300"
         icon={<BiFirstPage size="24px" />}
       />
-      <Button isDisabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)}>
+      <Button size="sm" isDisabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)}>
         {t('General.back')}
       </Button>
       <Box>
         <Select
+          size="sm"
           name="sortBy"
           variant="filled"
           value={currentPage}
@@ -65,10 +73,15 @@ const Pagination = (props: Props) => {
           ))}
         </Select>
       </Box>
-      <Button isDisabled={currentPage >= totalPages} onClick={() => setPage(currentPage + 1)}>
+      <Button
+        size="sm"
+        isDisabled={currentPage >= totalPages}
+        onClick={() => setPage(currentPage + 1)}
+      >
         {t('General.next')}
       </Button>
       <IconButton
+        size="sm"
         isDisabled={currentPage >= totalPages}
         onClick={() => setPage(totalPages)}
         aria-label="Jump to last page button"
