@@ -487,7 +487,8 @@
     "reprove": "Reprove",
     "approve": "Approve",
     "upvote": "Upvote",
-    "in-1": "<b>Item Notes</b> are used to provide additional information about the item such as it's functions or effects. Please be sure to check the veracity of the information provided before upvoting it :)"
+    "in-1": "<b>Item Notes</b> are used to provide additional information about the item such as it's functions or effects. Please be sure to check the veracity of the information provided before upvoting it :)",
+    "keyboard-submit": "You can hit <Kbd>ENTER</Kbd> in the last price box to submit"
   },
   "Restock": {
     "restock-info": "Restock Info",

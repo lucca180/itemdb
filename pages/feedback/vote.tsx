@@ -47,6 +47,27 @@ const FeedbackVotingPage = () => {
     }
   }, [authLoading, user]);
 
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      const targetName = (e.target as any).nodeName;
+
+      if (['INPUT', 'TEXTAREA'].includes(targetName) || isLoading) return;
+      console.log(e.key);
+      if (e.key === 'd') {
+        handleVote('upvote');
+      }
+      if (e.key === 'a') {
+        handleVote('downvote');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [isLoading]);
+
   const init = async () => {
     setError('');
     setIsLoading(true);
@@ -230,7 +251,7 @@ const FeedbackVotingPage = () => {
                   onClick={() => handleVote('downvote')}
                   variant="solid"
                 >
-                  {isAdmin ? t('Feedback.reprove') : t('Feedback.downvote')}
+                  {isAdmin ? t('Feedback.reprove') : t('Feedback.downvote')} (A)
                 </Button>
                 <Button
                   leftIcon={<Icon as={BsArrowUpCircleFill} />}
@@ -239,7 +260,7 @@ const FeedbackVotingPage = () => {
                   onClick={() => handleVote('upvote')}
                   mr={2}
                 >
-                  {isAdmin ? t('Feedback.approve') : t('Feedback.upvote')}
+                  {isAdmin ? t('Feedback.approve') : t('Feedback.upvote')} (D)
                 </Button>
               </Flex>
             </>

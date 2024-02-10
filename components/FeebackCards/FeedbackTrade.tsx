@@ -87,8 +87,10 @@ const FeedbackTrade = (props: Props) => {
             <Text>{trade?.wishlist}</Text>
           </Flex>
 
-          {trade?.items.map((item) => (
+          {trade?.items.map((item, i) => (
             <ItemTrade
+              isLast={i === trade.items.length - 1}
+              doSubmit={doSubmit}
               onChange={(item) => handleChange(item, item.order)}
               item={item}
               key={item.order}
@@ -104,6 +106,8 @@ export default FeedbackTrade;
 
 type ItemTradeProps = {
   item: TradeItems;
+  isLast?: boolean;
+  doSubmit?: () => void;
   onChange?: (newValue: TradeItems) => void;
 };
 
@@ -116,6 +120,13 @@ const ItemTrade = (props: ItemTradeProps) => {
     tempItem.price = val ? parseInt(val) : null;
 
     props.onChange?.(tempItem);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!props.doSubmit || !props.isLast) return;
+    if (e.key === 'Enter') {
+      props.doSubmit?.();
+    }
   };
 
   return (
@@ -138,6 +149,7 @@ const ItemTrade = (props: ItemTradeProps) => {
             inputProps={{
               placeholder: t('General.np-price'),
               textAlign: 'left',
+              onKeyDown: handleKeyDown,
               name: item.trade_id + item.name + item.order,
             }}
             value={item.price?.toString()}

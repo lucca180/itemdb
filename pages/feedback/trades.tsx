@@ -6,6 +6,7 @@ import {
   Flex,
   Heading,
   Icon,
+  Kbd,
   Link,
   List,
   ListIcon,
@@ -163,13 +164,25 @@ const FeedbackSuggest = () => {
           gap={4}
         >
           {!isLoading && currentTrade && (
-            <FeedbackTrade
-              hasUndo={prevTrades.length > 0}
-              handleUndo={handleUndo}
-              trade={currentTrade}
-              handleSubmit={handleSubmit}
-              handleSkip={handleSkip}
-            />
+            <>
+              <FeedbackTrade
+                hasUndo={prevTrades.length > 0}
+                handleUndo={handleUndo}
+                trade={currentTrade}
+                handleSubmit={handleSubmit}
+                handleSkip={handleSkip}
+              />
+              <Text
+                fontSize={'xs'}
+                color={'gray.400'}
+                textAlign={'center'}
+                display={{ base: 'none', md: 'initial' }}
+              >
+                {t.rich('Feedback.keyboard-submit', {
+                  Kbd: (chunk) => <Kbd>{chunk}</Kbd>,
+                })}
+              </Text>
+            </>
           )}
           {isLoading && (
             <Center>

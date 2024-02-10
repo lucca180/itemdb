@@ -17,7 +17,7 @@
     "items-in-db": "Itens no banco de dados",
     "complete-items": "Itens Completos",
     "process-queue": "Fila de Processamento",
-    "trade-pricing-queue": "Trocas a serem Preficicadas",
+    "trade-pricing-queue": "Trocas a serem Precificadas",
     "feedback-voting-queue": "Feedbacks Esperando Votos"
   },
   "Layout": {
@@ -369,7 +369,8 @@
     "vote-everything": "Se você clicar no botão e nada acontecer, você realmente votou em tudo que pode... impressionante.",
     "voting-feedback": "Votação - Feedback",
     "you-can-also-price-some-trades": "Você também pode precificar algumas trocas",
-    "in-1": "<b>Notas de item</b> são usadas para fornecer informações adicionais sobre o item, como funções ou efeitos. Certifique-se de verificar a veracidade das informações fornecidas antes de votá-las :)"
+    "in-1": "<b>Notas de item</b> são usadas para fornecer informações adicionais sobre o item, como funções ou efeitos. Certifique-se de verificar a veracidade das informações fornecidas antes de votá-las :)",
+    "keyboard-submit": "Você pode apertar <Kbd>ENTER</Kbd> na ultima caixa de preço para enviar"
   },
   "Lists": {
     "add-to-list": "Adicionar a Lista",
