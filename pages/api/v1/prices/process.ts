@@ -40,7 +40,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const maxPast = new Date(Date.now() - MAX_PAST_DAYS * 24 * 60 * 60 * 1000);
   const maxPastFormated = maxPast.toISOString().split('T')[0];
 
-  const lastDays = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const lastDays = new Date(Date.now() - MIN_LAST_UPDATE * 24 * 60 * 60 * 1000);
   const lastDaysFormated = lastDays.toISOString().split('T')[0];
 
   const groupBy2 = (await prisma.$queryRaw`
@@ -80,6 +80,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   limit = isNaN(limit) ? 1000 : limit;
   limit = Math.min(limit, 10000);
 
+  const checkPopular = req.body.checkPopular === 'true';
+
   let groupByLimit = Number(req.body.groupByLimit);
   groupByLimit = isNaN(groupByLimit) ? 1000 : groupByLimit;
 
@@ -92,10 +94,10 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const maxPast = new Date(Date.now() - MAX_PAST_DAYS * 24 * 60 * 60 * 1000);
   const maxPastFormated = maxPast.toISOString().split('T')[0];
 
-  const lastDays = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const lastDays = new Date(Date.now() - MIN_LAST_UPDATE * 24 * 60 * 60 * 1000);
   const lastDaysFormated = lastDays.toISOString().split('T')[0];
 
-  const groupBy2 = (await prisma.$queryRaw`
+  let query = prisma.$queryRaw`
     SELECT item_iid, COUNT(*) as count, MAX(addedAt) as MAX_addedAt FROM PriceProcess2 p
     WHERE 
       addedAt >= ${maxPastFormated} AND
@@ -113,7 +115,29 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     HAVING count >= 10 OR (MAX_addedAt <= ${maxDateFormated} and count >= 5)
     ORDER BY MAX_addedAt asc
     LIMIT ${groupByLimit} OFFSET ${page * groupByLimit}
-  `) as any;
+  ` as any;
+
+  if (checkPopular)
+    query = prisma.$queryRaw`
+      SELECT item_iid, COUNT(*) as count FROM PriceProcess2 p
+        WHERE 
+          addedAt >= ${lastDaysFormated} AND
+          processed = 0 AND
+          EXISTS (
+            SELECT 1 FROM ItemPrices a WHERE 
+            a.addedAt >= ${lastDaysFormated}
+            and a.item_iid = p.item_iid 
+          ) AND
+          NOT EXISTS (
+            SELECT 1 FROM PriceProcessHistory b WHERE
+            b.item_iid = p.item_iid
+          )
+        GROUP BY item_iid 
+        HAVING count >= 30
+        LIMIT ${groupByLimit} OFFSET ${page * groupByLimit}
+    ` as any;
+
+  const groupBy2 = await query;
 
   const convertedGroupBy: { item_iid: number; count: number; MAX_addedAt: Date }[] = groupBy2.map(
     (x: any) => ({
@@ -323,13 +347,13 @@ async function updateOrAddDB(
     if (
       daysSinceLastUpdate < MIN_LAST_UPDATE &&
       variation < 30 &&
-      Math.abs(oldPrice.price - priceValue) >= 50000
+      Math.abs(oldPrice.price - priceValue) < 25000
     )
       return undefined;
 
     if ((variation <= 5 || priceValue < 5000) && daysSinceLastUpdate <= 15) return undefined;
 
-    if (!oldPrice.noInflation_id && priceValue > 75000) {
+    if (!oldPrice.noInflation_id && priceValue - oldPrice.price >= 75000) {
       if (oldPrice.price < priceValue && variation >= 75) {
         newPriceData.noInflation_id = oldPrice.internal_id;
         throw 'inflation';
