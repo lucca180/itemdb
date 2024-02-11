@@ -34,6 +34,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
+  const checkPopular = req.query.checkPopular === 'true';
+
   const maxDate = new Date(Date.now() - MAX_DAYS * 24 * 60 * 60 * 1000);
   const maxDateFormated = maxDate.toISOString().split('T')[0];
 
@@ -43,7 +45,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const lastDays = new Date(Date.now() - MIN_LAST_UPDATE * 24 * 60 * 60 * 1000);
   const lastDaysFormated = lastDays.toISOString().split('T')[0];
 
-  const groupBy2 = (await prisma.$queryRaw`
+  let query = prisma.$queryRaw`
     SELECT item_iid, COUNT(*) as count, MAX(addedAt) as MAX_addedAt, count(*) OVER() AS full_count FROM PriceProcess2 p
     WHERE 
       addedAt >= ${maxPastFormated} AND
@@ -60,7 +62,29 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     GROUP BY item_iid 
     HAVING count >= 10 OR (MAX_addedAt <= ${maxDateFormated} and count >= 5)
     LIMIT 1
-  `) as any;
+  ` as any;
+
+  if (checkPopular)
+    query = prisma.$queryRaw`
+      SELECT item_iid, COUNT(*) as count, count(*) OVER() AS full_count FROM PriceProcess2 p
+      WHERE 
+        addedAt >= ${lastDaysFormated} AND
+        processed = 0 AND
+        EXISTS (
+          SELECT 1 FROM ItemPrices a WHERE 
+          a.addedAt >= ${lastDaysFormated}
+          and a.item_iid = p.item_iid 
+        ) AND
+        NOT EXISTS (
+          SELECT 1 FROM PriceProcessHistory b WHERE
+          b.item_iid = p.item_iid
+        )
+      GROUP BY item_iid 
+      HAVING count >= 30
+      LIMIT 1
+  ` as any;
+
+  const groupBy2 = await query;
 
   const convertedGroupBy: { name: string; count: number; addedAt: Date; totalCount: number }[] =
     groupBy2.map((x: any) => ({
@@ -77,8 +101,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   let limit = Number(req.body.limit);
-  limit = isNaN(limit) ? 1000 : limit;
-  limit = Math.min(limit, 10000);
+  limit = isNaN(limit) ? 10000 : limit;
 
   const checkPopular = req.body.checkPopular === 'true';
 
