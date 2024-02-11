@@ -367,17 +367,13 @@ async function updateOrAddDB(
     }
 
     const variation = coefficientOfVariation([oldPrice.price, priceValue]);
-
-    if (
-      daysSinceLastUpdate < MIN_LAST_UPDATE &&
-      variation < 30 &&
-      Math.abs(oldPrice.price - priceValue) < 25000
-    )
+    const priceDiff = Math.abs(oldPrice.price - priceValue);
+    if (daysSinceLastUpdate < MIN_LAST_UPDATE && variation < 30 && priceDiff < 25000)
       return undefined;
 
-    if ((variation <= 5 || priceValue < 5000) && daysSinceLastUpdate <= 15) return undefined;
+    if ((variation <= 5 || priceDiff < 5000) && daysSinceLastUpdate <= 15) return undefined;
 
-    if (!oldPrice.noInflation_id && priceValue - oldPrice.price >= 75000) {
+    if (!oldPrice.noInflation_id && priceDiff >= 75000) {
       if (oldPrice.price < priceValue && variation >= 75) {
         newPriceData.noInflation_id = oldPrice.internal_id;
         throw 'inflation';
