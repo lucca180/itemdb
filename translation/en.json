@@ -382,7 +382,10 @@
     "item-deleted-successfully-you-can-close-this-page-now": "Item deleted successfully. You can close this page now",
     "delete-item-name": "Delete {x}",
     "change-lang-helper": "You'll need to refresh the page to this change to take effect",
-    "color-helper": "Leave as #000000 and we will choose one for you based on your cover image"
+    "color-helper": "Leave as #000000 and we will choose one for you based on your cover image",
+    "official-tag": "Official Tag",
+    "show-all": "Show All",
+    "filter-by-type": "Filter by Type"
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",

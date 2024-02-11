@@ -19,6 +19,7 @@ import {
   Center,
   FormHelperText,
   Select,
+  Divider,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useState } from 'react';
@@ -81,6 +82,7 @@ const CreateListModal = (props: CreateListModalProps) => {
         purpose: list.purpose,
         colorHex: list.colorHex,
         official: list.official,
+        officialTag: list.officialTag,
         sortInfo: {
           sortBy: list.sortBy,
           sortDir: list.sortDir,
@@ -153,27 +155,41 @@ const CreateListModal = (props: CreateListModalProps) => {
                   {t('Lists.admin-edit-msg')}
                 </Text>
               )}
-              <FormControl>
-                {user?.isAdmin && (
-                  <Checkbox
-                    isChecked={list.official}
-                    onChange={(value) =>
-                      setList({
-                        ...list,
-                        official: value.target.checked,
-                      })
-                    }
-                  >
-                    <Badge colorScheme="blue">✓ {t('General.official')}</Badge>
-                  </Checkbox>
-                )}
-              </FormControl>
+              {user?.isAdmin && (
+                <Stack gap={3} mb={3}>
+                  <FormControl>
+                    <Checkbox
+                      isChecked={list.official}
+                      onChange={(value) =>
+                        setList({
+                          ...list,
+                          official: value.target.checked,
+                        })
+                      }
+                    >
+                      <Badge colorScheme="blue">✓ {t('General.official')}</Badge>
+                    </Checkbox>
+                  </FormControl>
+                  {list.official && (
+                    <FormControl>
+                      <FormLabel color="gray.300">{t('Lists.official-tag')}</FormLabel>
+                      <Input
+                        variant="filled"
+                        name="officialTag"
+                        onChange={handleChange}
+                        value={list.officialTag ?? ''}
+                      />
+                    </FormControl>
+                  )}
+                  <Divider />
+                </Stack>
+              )}
+
               <FormControl>
                 <FormLabel color="gray.300">{t('ItemPage.list-name')}</FormLabel>
                 <Input variant="filled" name="name" onChange={handleChange} value={list.name} />
                 <FormHelperText>{t('General.required')}</FormHelperText>
               </FormControl>
-
               <FormControl>
                 <FormLabel color="gray.300">{t('General.description')}</FormLabel>
                 <Textarea

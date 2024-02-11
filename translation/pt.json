@@ -492,7 +492,10 @@
     "delete-item-name": "Excluir {x}",
     "item-deleted-successfully-you-can-close-this-page-now": "Item excluído com sucesso. Você pode fechar esta página agora",
     "change-lang-helper": "Você precisará atualizar a página para que esta alteração entre em vigor",
-    "color-helper": "Deixe #000000 e nós vamos escolher uma cor para você com base na imagem de capa"
+    "color-helper": "Deixe #000000 e nós vamos escolher uma cor para você com base na imagem de capa",
+    "official-tag": "Tag Oficial",
+    "filter-by-type": "Filtrar por Tipo",
+    "show-all": "Mostrar Tudo"
   },
   "Restock": {
     "est-profit": "Lucro Est.",

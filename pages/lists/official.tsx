@@ -1,4 +1,13 @@
-import { Flex, Heading, Text, Divider, Button, useDisclosure, Box } from '@chakra-ui/react';
+import {
+  Flex,
+  Heading,
+  Text,
+  Divider,
+  Button,
+  useDisclosure,
+  Select,
+  useBreakpointValue,
+} from '@chakra-ui/react';
 import HeaderCard from '../../components/Card/HeaderCard';
 import Layout from '../../components/Layout';
 import { ApplyListModalProps } from '../../components/Modal/OfficialListApply';
@@ -10,6 +19,8 @@ import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import useSWRImmutable from 'swr/immutable';
 import axios from 'axios';
+import { useEffect, useMemo, useState } from 'react';
+import { ViewportList } from 'react-viewport-list';
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data as UserList[]);
 
@@ -23,12 +34,47 @@ type Props = {
 
 const OfficialListsPage = (props: Props) => {
   const t = useTranslations();
-  const { lists: propLists } = props;
-  const { data: lists } = useSWRImmutable(`/api/v1/lists/official?includeItems=false`, fetcher, {
-    shouldRetryOnError: false,
-  });
   const { user, authLoading } = useAuth();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [lists, setLists] = useState<UserList[]>(props.lists);
+  const [categories, setCategories] = useState<string[]>([]);
+  const rowSize = useBreakpointValue({ base: 2, xl: 3 }, { fallback: 'xl' });
+
+  const { data } = useSWRImmutable(`/api/v1/lists/official?includeItems=false`, fetcher, {
+    shouldRetryOnError: false,
+  });
+
+  useEffect(() => {
+    if (data) {
+      setLists(data);
+      console.log(data.filter((x) => x.officialTag).map((list) => list.officialTag));
+      setCategories([
+        ...new Set(data.filter((x) => x.officialTag).map((list) => list.officialTag!)),
+      ]);
+    }
+  }, [data]);
+
+  const handleFilter = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    if (!data) return;
+
+    if (value === 'all') {
+      setLists(data);
+    } else {
+      setLists(data.filter((x) => x.officialTag === value));
+    }
+  };
+
+  const groupedLists = useMemo(
+    () =>
+      lists.reduce((acc, cur, i) => {
+        const groupIndex = Math.floor(i / (rowSize ?? 3));
+        if (!acc[groupIndex]) acc[groupIndex] = [];
+        acc[groupIndex].push(cur);
+        return acc;
+      }, [] as UserList[][]),
+    [lists, rowSize]
+  );
 
   return (
     <Layout
@@ -63,24 +109,55 @@ const OfficialListsPage = (props: Props) => {
       </HeaderCard>
       <Divider />
       <Flex flexFlow="column" gap={3}>
-        <Flex flexFlow="row" py={3} gap={3} flexWrap="wrap" alignItems="center">
-          <Button variant="solid" isLoading={authLoading} onClick={onOpen} isDisabled={!user}>
-            + {t('Lists.official-apply-list')}
-          </Button>
-          <Text as="div" textColor={'gray.300'} fontSize="sm">
-            {lists && (
-              <>
-                {lists.length} {t('General.lists')}
-              </>
-            )}
-          </Text>
+        <Flex
+          flexFlow={{ base: 'column', sm: 'row' }}
+          py={3}
+          gap={3}
+          flexWrap="wrap"
+          alignItems="center"
+        >
+          <Flex alignItems="center" gap={3}>
+            <Button
+              variant="solid"
+              isLoading={authLoading}
+              onClick={onOpen}
+              size="sm"
+              isDisabled={!user}
+            >
+              + {t('Lists.official-apply-list')}
+            </Button>
+            <Text as="div" textColor={'gray.300'} fontSize="sm">
+              {lists && (
+                <>
+                  {lists.length} {t('General.lists')}
+                </>
+              )}
+            </Text>
+          </Flex>
+          <Flex flex="1" justifyContent="flex-end" alignItems={'center'} gap={3}>
+            <Text as="div" textColor={'gray.300'} flex="0 0 auto" fontSize="sm">
+              {t('Lists.filter-by-type')}
+            </Text>
+            <Select onChange={handleFilter} maxW="150px" variant="outlined" size="sm">
+              <option value="all">{t('Lists.show-all')}</option>
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </Select>
+          </Flex>
         </Flex>
-        <Flex mt={5} gap={4} flexWrap="wrap" justifyContent={'center'}>
-          {(lists ?? propLists).map((list) => (
-            <Box key={list.internal_id} flex={{ base: 1, md: 'initial' }}>
-              <UserListCard list={list} />
-            </Box>
-          ))}
+        <Flex mt={0} gap={4} flexFlow="column">
+          <ViewportList items={groupedLists} viewportRef={null} initialPrerender={3} overscan={3}>
+            {(group, index) => (
+              <Flex gap={[3]} key={index} justifyContent="center" flexWrap={'wrap'}>
+                {group.map((list) => (
+                  <UserListCard key={list.internal_id} list={list} />
+                ))}
+              </Flex>
+            )}
+          </ViewportList>
         </Flex>
       </Flex>
     </Layout>

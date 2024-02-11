@@ -79,6 +79,8 @@ export const getItemLists = async (
       createdAt: list.createdAt.toJSON(),
       updatedAt: list.updatedAt.toJSON(),
 
+      officialTag: list.official_tag,
+
       sortBy: list.sortBy,
       sortDir: list.sortDir,
       order: list.order ?? 0,

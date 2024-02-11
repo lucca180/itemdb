@@ -223,6 +223,8 @@ export const getUserLists = async (
         createdAt: list.createdAt.toJSON(),
         updatedAt: list.updatedAt.toJSON(),
 
+        officialTag: list.official_tag,
+
         dynamicType: list.dynamicType,
         lastSync: list.lastSync?.toJSON() ?? null,
         linkedListId: list.linkedListId,

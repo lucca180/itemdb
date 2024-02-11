@@ -61,10 +61,10 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       },
     });
 
-    if (!list) return res.status(400).json({ error: 'List not found' });
+    if (!list) return res.status(404).json({ error: 'List not found' });
 
     if (list.user_id !== user.id && !user.isAdmin)
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(404).json({ error: 'List not found' });
 
     const itemInfo = req.body.itemInfo as ListItemInfo[];
 
@@ -185,6 +185,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       official,
       sortInfo,
       order,
+      officialTag,
     } = req.body as {
       name?: string;
       description?: string;
@@ -194,6 +195,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       colorHex?: string;
       official?: boolean;
       order?: string;
+      officialTag?: string;
       sortInfo?: { sortBy: string; sortDir: string };
     };
 
@@ -206,7 +208,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       colorHex ||
       official ||
       sortInfo ||
-      order
+      order ||
+      officialTag
     ) {
       let colorHexVar = colorHex;
 
@@ -229,6 +232,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
           order: order ? Number(order) : undefined,
           purpose: purpose,
           visibility: visibility,
+          official_tag: officialTag,
           sortBy: sortInfo?.sortBy,
           sortDir: sortInfo?.sortDir,
         },
@@ -479,6 +483,8 @@ export const getList = async (
     dynamicType: listRaw.dynamicType,
     lastSync: listRaw.lastSync?.toJSON() ?? null,
     linkedListId: listRaw.linkedListId ?? null,
+
+    officialTag: listRaw.official_tag ?? null,
 
     itemCount: listRaw.items.filter((x) => !x.isHidden).length,
     itemInfo: excludeItems

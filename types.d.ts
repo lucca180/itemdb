@@ -237,6 +237,8 @@ export type UserList = {
   itemInfo: ListItemInfo[];
   itemCount: number;
 
+  officialTag: string | null;
+
   dynamicType: 'addOnly' | 'removeOnly' | 'fullSync' | null;
   lastSync: string | null;
   linkedListId: number | null;
