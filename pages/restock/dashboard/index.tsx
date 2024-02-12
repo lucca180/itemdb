@@ -391,7 +391,7 @@ const RestockDashboard = () => {
               fontSize="16px"
               size="sm"
             />
-            <Text fontSize={'xs'}>
+            <Text onClick={toggleMisses} fontSize={'xs'} cursor="pointer">
               {hideMisses ? t('Restock.show-misses') : t('Restock.hide-misses')}
             </Text>
           </HStack>
