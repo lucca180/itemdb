@@ -573,7 +573,9 @@
     "import-modal-import-x-sessions": "Import {x} Sessions",
     "import-modal-x-items-restocked": "{x} items restocked",
     "import-modal-x-bought": "{x} bought",
-    "import-modal-x-time-at-y-store": "{x} at {y}"
+    "import-modal-x-time-at-y-store": "{x} at {y}",
+    "show-misses": "Show Misses",
+    "hide-misses": "Hide Misses"
   },
   "Search": {
     "search": "Search",

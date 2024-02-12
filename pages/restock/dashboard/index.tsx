@@ -23,6 +23,8 @@ import {
   TabPanels,
   Tabs,
   CloseButton,
+  IconButton,
+  HStack,
 } from '@chakra-ui/react';
 import Color from 'color';
 import { ReactElement, useEffect, useState } from 'react';
@@ -41,6 +43,7 @@ import RestockItem from '../../../components/Hubs/Restock/RestockItemCard';
 import { FiSend } from 'react-icons/fi';
 import FeedbackModal from '../../../components/Modal/FeedbackModal';
 import { useTranslations } from 'next-intl';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const color = Color('#599379').rgb().array();
 
@@ -66,6 +69,7 @@ const RestockDashboard = () => {
   const [importCount, setImportCount] = useState<number>(0);
   const [shopList, setShopList] = useState<number[]>([]);
   const [noScript, setNoScript] = useState<boolean>(false);
+  const [hideMisses, setHideMisses] = useState<boolean>(false);
   const [filter, setFilter] = useState<PeriodFilter>({
     timePeriod: 30,
     shops: 'all',
@@ -77,6 +81,14 @@ const RestockDashboard = () => {
       init();
     }
   }, [user, authLoading]);
+
+  useEffect(() => {
+    const hideMisses = localStorage.getItem('hideMisses');
+    if (hideMisses) setHideMisses(hideMisses === 'true');
+
+    const storageFilter = localStorage.getItem('restockFilter');
+    if (storageFilter) setFilter({ ...filter, ...JSON.parse(storageFilter) });
+  }, []);
 
   const init = async (customFilter?: PeriodFilter) => {
     customFilter = customFilter ?? filter;
@@ -290,6 +302,13 @@ const RestockDashboard = () => {
     const { name, value } = e.target;
     init({ ...filter, [name]: value });
     setFilter((prev) => ({ ...prev, [name]: value }));
+    localStorage.setItem('restockFilter', JSON.stringify({ ...filter, [name]: value }));
+  };
+
+  const toggleMisses = () => {
+    const newMisses = !hideMisses;
+    setHideMisses(newMisses);
+    localStorage.setItem('hideMisses', newMisses.toString());
   };
 
   return (
@@ -361,6 +380,21 @@ const RestockDashboard = () => {
           >
             {t('Restock.import-x-sessions', { x: importCount })}
           </Button>
+        )}
+        {sessionStats && (
+          <HStack gap={1}>
+            <IconButton
+              bg="blackAlpha.300"
+              aria-label="toggle visibility"
+              icon={hideMisses ? <FaEyeSlash /> : <FaEye />}
+              onClick={toggleMisses}
+              fontSize="16px"
+              size="sm"
+            />
+            <Text fontSize={'xs'}>
+              {hideMisses ? t('Restock.show-misses') : t('Restock.hide-misses')}
+            </Text>
+          </HStack>
         )}
       </Flex>
       {noScript && (
@@ -551,11 +585,13 @@ const RestockDashboard = () => {
               label={t('Restock.total-clicked-and-lost')}
               stat={`${intl.format(sessionStats.totalLost?.value ?? 0)} NP`}
               helpText={`${intl.format(sessionStats.totalLost.count)} ${t('General.items')}`}
+              blur={hideMisses}
             />
             <StatsCard
               label={t('Restock.most-expensive-clicked-and-lost')}
               stat={`${intl.format(sessionStats.mostExpensiveLost?.price.value ?? 0)} NP`}
               helpText={sessionStats.mostExpensiveLost?.name ?? t('Restock.none')}
+              blur={hideMisses}
             />
           </SimpleGrid>
           <Flex mt={6} w="100%" gap={3} flexFlow={['column', 'column', 'row']}>
@@ -581,22 +617,35 @@ const RestockDashboard = () => {
                 <TabPanels>
                   <TabPanel px={0}>
                     <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
-                      {sessionStats.hottestRestocks.map((item, i) => (
-                        <ItemCard item={item} key={i} />
-                      ))}
+                      {hideMisses && (
+                        <Center flexFlow="column" h="300px">
+                          <Icon as={FaEyeSlash} fontSize="50px" color="gray.600" />
+                          <Text fontSize={'sm'} color="gray.400"></Text>
+                        </Center>
+                      )}
+                      {!hideMisses &&
+                        sessionStats.hottestRestocks.map((item, i) => (
+                          <ItemCard item={item} key={i} />
+                        ))}
                     </Flex>
                   </TabPanel>
                   <TabPanel px={0}>
                     <Flex gap={3} flexFlow="column" justifyContent={'center'}>
-                      {sessionStats.hottestLost.map((lost, i) => (
-                        <RestockItem
-                          item={lost.item}
-                          clickData={lost.click}
-                          restockItem={lost.restockItem}
-                          key={i}
-                        />
-                      ))}
-                      {sessionStats.hottestLost.length === 0 && (
+                      {hideMisses && (
+                        <Center flexFlow="column" h="300px">
+                          <Icon as={FaEyeSlash} fontSize="50px" color="gray.600" />
+                        </Center>
+                      )}
+                      {!hideMisses &&
+                        sessionStats.hottestLost.map((lost, i) => (
+                          <RestockItem
+                            item={lost.item}
+                            clickData={lost.click}
+                            restockItem={lost.restockItem}
+                            key={i}
+                          />
+                        ))}
+                      {!hideMisses && sessionStats.hottestLost.length === 0 && (
                         <Text fontSize={'xs'} color="gray.400">
                           {t('Restock.you-didnt-lose-anything-youre-awesome')}
                         </Text>

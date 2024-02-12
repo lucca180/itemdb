@@ -5,6 +5,7 @@ type StatsCardProps = {
   label: string | ReactNode;
   stat: string | ReactNode;
   helpText?: string | ReactNode;
+  blur?: boolean;
 };
 
 export const StatsCard = (props: StatsCardProps) => {
@@ -12,7 +13,7 @@ export const StatsCard = (props: StatsCardProps) => {
 
   return (
     <Card variant="outline" bg="blackAlpha.500">
-      <CardBody>
+      <CardBody filter={props.blur ? 'blur(10px)' : undefined}>
         <Stat>
           <StatLabel fontSize={['xs', 'sm']}>{label}</StatLabel>
           <StatNumber fontSize={['xl', '2xl']}>{stat}</StatNumber>

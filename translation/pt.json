@@ -573,7 +573,9 @@
     "import-sessions": "Importar Sessões",
     "import-modal-x-bought": "{x} compras",
     "import-modal-x-items-restocked": "{x} itens restocados",
-    "import-modal-x-time-at-y-store": "{x} em {y}"
+    "import-modal-x-time-at-y-store": "{x} em {y}",
+    "hide-misses": "Ocultar Perdas",
+    "show-misses": "Mostrar Perdas"
   },
   "Search": {
     "search": "Pesquisa",
