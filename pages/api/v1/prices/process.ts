@@ -12,7 +12,7 @@ const MAX_PAST_DAYS = 60;
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
 const EVENT_MODE = process.env.EVENT_MODE === 'true';
-const MIN_LAST_UPDATE = EVENT_MODE ? 2 : 7;
+const MIN_LAST_UPDATE = EVENT_MODE ? 3 : 7;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -245,7 +245,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
       let out = prices.filter((x) => x <= priceMean + priceSTD && x >= priceMean - priceSTD * 2);
 
-      while (out.length > 5 && out.length < oldPrices.length) {
+      while (out.length > 3 && out.length < oldPrices.length) {
         oldPrices = out;
         priceMean = Math.round(mean(out));
         priceSTD = standardDeviation(out);
