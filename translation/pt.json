@@ -263,7 +263,10 @@
     "changes-saved": "Alterações Salvas!",
     "saving": "Salvando",
     "are-you-sure-you-cant-undo-this-action-afterwards": "Tem certeza? Você não pode desfazer esta ação depois.",
-    "language": "Idioma"
+    "language": "Idioma",
+    "item-description": "Descrição",
+    "item-name-and-description": "Nome e Descrição",
+    "search-mode": "Modo de Pesquisa"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",

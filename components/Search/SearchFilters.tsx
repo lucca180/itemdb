@@ -514,7 +514,7 @@ const SearchFilters = (props: Props) => {
         <h2>
           <AccordionButton>
             <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              Search Mode
+              {t('General.search-mode')}
             </Box>
             <AccordionIcon />
           </AccordionButton>
@@ -528,9 +528,9 @@ const SearchFilters = (props: Props) => {
               value={filters.mode}
               onChange={(e) => handleSelectChange(e.target.value, 'mode')}
             >
-              <option value="name">Item Name</option>
-              <option value="description">Item Description</option>
-              <option value="all">Item Name and Description</option>
+              <option value="name">{t('General.item-name')}</option>
+              <option value="description">{t('General.item-description')}</option>
+              <option value="all">{t('General.item-name-and-description')}</option>
             </Select>
           </HStack>
         </AccordionPanel>

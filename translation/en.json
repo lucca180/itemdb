@@ -263,7 +263,10 @@
     "changes-saved": "Changes Saved!",
     "saving": "Saving",
     "are-you-sure-you-cant-undo-this-action-afterwards": "Are you sure? You can't undo this action afterwards.",
-    "language": "Language"
+    "language": "Language",
+    "search-mode": "Search Mode",
+    "item-description": "Item Description",
+    "item-name-and-description": "Item Name and Description"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",
