@@ -21,6 +21,7 @@ import useSWRImmutable from 'swr/immutable';
 import axios from 'axios';
 import { useEffect, useMemo, useState } from 'react';
 import { ViewportList } from 'react-viewport-list';
+import { SearchList } from '../../components/Search/SearchLists';
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data as UserList[]);
 
@@ -38,6 +39,7 @@ const OfficialListsPage = (props: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [lists, setLists] = useState<UserList[]>(props.lists);
   const [categories, setCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const rowSize = useBreakpointValue({ base: 2, xl: 3 }, { fallback: 'xl' });
 
   const { data } = useSWRImmutable(`/api/v1/lists/official?includeItems=false`, fetcher, {
@@ -46,23 +48,49 @@ const OfficialListsPage = (props: Props) => {
 
   useEffect(() => {
     if (data) {
-      setLists(data);
-      console.log(data.filter((x) => x.officialTag).map((list) => list.officialTag));
-      setCategories([
+      const newCats = [
         ...new Set(data.filter((x) => x.officialTag).map((list) => list.officialTag!)),
-      ]);
+      ].sort((a, b) => a.localeCompare(b));
+
+      setLists(data);
+      setCategories(newCats);
     }
   }, [data]);
 
   const handleFilter = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     if (!data) return;
+    setSelectedCategory(value);
 
     if (value === 'all') {
       setLists(data);
     } else {
-      setLists(data.filter((x) => x.officialTag === value));
+      setLists(
+        data.filter((x) => x.officialTag === value).sort((a, b) => a.name.localeCompare(b.name))
+      );
     }
+  };
+
+  const handleSearch = (search: string) => {
+    if (!data) return;
+    let filteredLists = data;
+
+    if (selectedCategory != 'all')
+      filteredLists = data.filter((x) => x.officialTag === selectedCategory);
+
+    if (!search) {
+      setLists(filteredLists);
+      return;
+    }
+
+    const searchLower = search.toLowerCase();
+    setLists(
+      filteredLists.filter(
+        (x) =>
+          x.name.toLowerCase().includes(searchLower) ||
+          (x.description ?? '').toLowerCase().includes(searchLower)
+      )
+    );
   };
 
   const groupedLists = useMemo(
@@ -117,13 +145,7 @@ const OfficialListsPage = (props: Props) => {
           alignItems="center"
         >
           <Flex alignItems="center" gap={3}>
-            <Button
-              variant="solid"
-              isLoading={authLoading}
-              onClick={onOpen}
-              size="sm"
-              isDisabled={!user}
-            >
+            <Button variant="solid" isLoading={authLoading} onClick={onOpen} isDisabled={!user}>
               + {t('Lists.official-apply-list')}
             </Button>
             <Text as="div" textColor={'gray.300'} fontSize="sm">
@@ -135,6 +157,7 @@ const OfficialListsPage = (props: Props) => {
             </Text>
           </Flex>
           <Flex flex="1" justifyContent="flex-end" alignItems={'center'} gap={3}>
+            <SearchList onChange={handleSearch} />
             <Text as="div" textColor={'gray.300'} flex="0 0 auto" fontSize="sm">
               {t('Lists.filter-by-type')}
             </Text>
