@@ -1,6 +1,6 @@
   // ==UserScript==
   // @name         itemdb - Safety Deposit Box Pricer
-  // @version      1.2.4
+  // @version      1.2.5
   // @author       itemdb
   // @namespace    itemdb
   // @description  Shows the market price for your sdb items
@@ -38,7 +38,7 @@
           const itemData = JSON.parse(res.responseText);
           priceSDB(itemData);
         }
-        
+
         else return console.error('[itemdb] Failed to fetch price data', res);
       }
     });
@@ -59,31 +59,33 @@
       const itemId = tds.last().find('input').attr('name').match(/\d+/)[0];
 
       const item = itemData[itemId];
-
       let priceStr = '';
 
       /*
        * If items are missing from the DB, wrap the conditions inside a try -> catch.
        * With this approach, the execution of the script is not interrupted in case an "item.slug" is not parseable.
-       * This error happened specifically with the item "Chomby Transmogrification Potion".
        */
       try {
         if(!item || (item && item.status !== 'no trade' && !item.price.value && !item.isNC)){
           priceStr = `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">???</a></small>`;
         }
-  
+
         if(item && item.status === 'no trade'){
           priceStr = `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">No Trade</a></small>`;
         }
-  
-        if(item && item.isNC){
+
+        if(item && item.isNC && !item.owls){
           priceStr = `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">NC</a>`;
         }
-  
+
+        if(item && item.isNC && item.owls){
+          priceStr = `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">${item.owls.value}</a><small><br/><a href="https://itemdb.com.br/articles/owls" target="_blank">Owls</a></small>`;
+        }
+
         if(item && item.price.value){
           priceStr = `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">≈ ${intl.format(item.price.value)} NP</a>`;
         }
-        
+
         if (item && item.isMissingInfo){
           priceStr += `<br/><small><a href="https://itemdb.com.br/contribute" target="_blank"><i>We need info about this item<br/>Learn how to Help</i></a></small>`
         }
@@ -92,9 +94,8 @@
         priceStr += `<br/><small><a href="https://itemdb.com.br/contribute" target="_blank"><i>We need info about this item<br/>Learn how to Help</i></a></small>`
       }
 
-      tds.eq( -2 ).before(`<td align="center" noWrap>${priceStr}</td>`);
+      tds.eq( -2 ).before(`<td align="center" width="150px">${priceStr}</td>`);
     })
   }
 
   fetchPriceData();
-
