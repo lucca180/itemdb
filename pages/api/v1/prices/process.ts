@@ -362,6 +362,8 @@ async function updateOrAddDB(
 
     const daysSinceLastUpdate = differenceInCalendarDays(latestDate, oldPrice.addedAt);
 
+    if (daysSinceLastUpdate <= 1) return undefined;
+
     if (latestDate < oldPrice.addedAt) {
       return undefined;
     }
