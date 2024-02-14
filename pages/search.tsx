@@ -114,9 +114,11 @@ const SearchPage = () => {
         Axios.get('search?s=' + encodeURIComponent(query), {
           signal: ABORT_CONTROLER.signal,
           params: { ...params, limit: 1, sortBy: 'name', sortDir: 'asc' },
-        }).then((res) => {
-          setTotalResults(res.data.totalResults);
-        });
+        })
+          .then((res) => {
+            setTotalResults(res.data.totalResults);
+          })
+          .catch(() => {});
       }
 
       __isNewPage.current = false;
