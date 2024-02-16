@@ -359,11 +359,14 @@ export const rarityStr = (rarity: number) => {
   return null;
 };
 
-export const stringHasNumber = (string: string) => {
+export const checkAutoSkipTrade = (wishlist: string) => {
+  wishlist = wishlist.replaceAll('-no tags here-3', '');
+  wishlist = wishlist.replaceAll(':3', '');
+
   // Regular expression to check for a digit in the string
   const digitRegex = /\d/;
 
-  return digitRegex.test(string);
+  return digitRegex.test(wishlist);
 };
 
 export function getDateNST(timestamp?: number) {
