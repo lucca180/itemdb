@@ -58,7 +58,7 @@ const CtxSubmenu = chakra(Submenu, {
   },
 });
 
-export const CtxTrigger = chakra(typeof window === 'undefined' ? 'div' : ContextMenuTrigger, {
+export const CtxTrigger = chakra(ContextMenuTrigger, {
   baseStyle: {
     display: 'inline',
   },
@@ -109,7 +109,7 @@ const ItemCtxMenu = (props: Props) => {
   };
 
   const handleOpenInNewTab = () => {
-    window.open('/item/' + item.internal_id, '_blank');
+    window.open('/item/' + item.slug, '_blank');
   };
 
   const handleCopy = (text: string) => {

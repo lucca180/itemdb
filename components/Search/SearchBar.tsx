@@ -193,7 +193,7 @@ export const SearchBar = (props: Props) => {
                   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                   //@ts-ignore
                   disableWhileShiftPressed
-                  disable={isMobile ? 'true' : undefined}
+                  disable={isMobile ? true : undefined}
                 >
                   <Link
                     as={NextLink}

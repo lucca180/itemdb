@@ -78,7 +78,7 @@ const ItemCardBase = (props: ItemProps) => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         //@ts-ignore
         disableWhileShiftPressed
-        disable={isMobile ? 'true' : undefined}
+        disable={isMobile ? true : undefined}
         style={props.style}
       >
         <Link
