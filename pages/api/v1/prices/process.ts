@@ -4,7 +4,7 @@ import prisma from '../../../../utils/prisma';
 import { coefficientOfVariation } from '../../../../utils/utils';
 import { mean, standardDeviation } from 'simple-statistics';
 import { ItemPrices, PriceProcess2 } from '@prisma/client';
-import { differenceInCalendarDays } from 'date-fns';
+import { differenceInCalendarDays, differenceInDays } from 'date-fns';
 
 const MAX_DAYS = 30;
 const MAX_PAST_DAYS = 60;
@@ -361,6 +361,8 @@ async function updateOrAddDB(
     if (!oldPrice) return newPriceData;
 
     const daysSinceLastUpdate = differenceInCalendarDays(latestDate, oldPrice.addedAt);
+    const variation = coefficientOfVariation([oldPrice.price, priceValue]);
+    const priceDiff = Math.abs(oldPrice.price - priceValue);
 
     if (daysSinceLastUpdate <= 1) return undefined;
 
@@ -368,10 +370,7 @@ async function updateOrAddDB(
       return undefined;
     }
 
-    const variation = coefficientOfVariation([oldPrice.price, priceValue]);
-    const priceDiff = Math.abs(oldPrice.price - priceValue);
-
-    if (daysSinceLastUpdate < 3 && variation < 30 && priceDiff < 100000) return undefined;
+    if (daysSinceLastUpdate < 3 && priceDiff < 100000) return undefined;
 
     if (daysSinceLastUpdate < MIN_LAST_UPDATE && variation < 30 && priceDiff < 25000)
       return undefined;
@@ -426,11 +425,17 @@ async function updateOrAddDB(
 const MIN_ITEMS_THRESHOLD = EVENT_MODE ? 7 : 10;
 
 function filterMostRecents(priceProcessList: PriceProcess2[]) {
+  const firstFiltered = priceProcessList.filter(
+    (x) => differenceInDays(Date.now(), x.addedAt) <= 0
+  );
+
+  if (firstFiltered.length >= MIN_ITEMS_THRESHOLD * 3) return firstFiltered;
+
   const daysThreshold = [3, 7, 15, 30];
 
   for (const days of daysThreshold) {
     const filtered = priceProcessList.filter(
-      (x) => differenceInCalendarDays(Date.now(), x.addedAt) <= days
+      (x) => differenceInDays(Date.now(), x.addedAt) <= days
     );
     if (filtered.length >= MIN_ITEMS_THRESHOLD) return filtered;
   }
