@@ -330,6 +330,15 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
     }),
   ]);
 
+  const formatedErase = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+  await prisma.$executeRaw`
+    delete from priceprocess2 p 
+    where 
+      exists (select 1 from itemprices i where i.addedAt > p.addedAt and i.item_iid = p.item_iid) and
+      addedAt < ${formatedErase}
+  `;
+
   return res.send(result);
 };
 
