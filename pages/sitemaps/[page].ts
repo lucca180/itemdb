@@ -54,55 +54,91 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     }),
   ]);
 
-  const officialListsPaths: ISitemapField[] = officialLists.map((list) => ({
-    loc: `${siteURL}/lists/official/${list.internal_id}`,
-    alternateRefs: [
+  const officialListsPaths: ISitemapField[] = officialLists
+    .map((list) => [
       {
-        href: `${siteURL}/pt/lists/official/${list.internal_id}`,
-        hreflang: 'pt-br',
+        loc: `${siteURL}/lists/official/${list.internal_id}`,
+        alternateRefs: [
+          {
+            href: `${siteURL}/pt/lists/official/${list.internal_id}`,
+            hreflang: 'pt',
+          },
+          {
+            href: `${siteURL}/lists/official/${list.internal_id}`,
+            hreflang: 'en',
+          },
+        ],
+        lastmod: list.updatedAt.toISOString(),
       },
       {
-        href: `${siteURL}/lists/official/${list.internal_id}`,
-        hreflang: 'en',
+        loc: `${siteURL}/pt/lists/official/${list.internal_id}`,
+        alternateRefs: [
+          {
+            href: `${siteURL}/pt/lists/official/${list.internal_id}`,
+            hreflang: 'pt',
+          },
+          {
+            href: `${siteURL}/lists/official/${list.internal_id}`,
+            hreflang: 'en',
+          },
+        ],
+        lastmod: list.updatedAt.toISOString(),
       },
-    ],
-    lastmod: list.updatedAt.toISOString(),
-  }));
+    ])
+    .flat();
 
-  const itemPaths: ISitemapField[] = itemInfo.map((item) => {
-    let lastMod = item.updatedAt;
+  const itemPaths: ISitemapField[] = itemInfo
+    .map((item) => {
+      let lastMod = item.updatedAt;
 
-    if (item.prices.length > 0) {
-      const priceChange = item.prices.reduce((prev, current) => {
-        return prev.addedAt > current.addedAt ? prev : current;
-      }).addedAt;
+      if (item.prices.length > 0) {
+        const priceChange = item.prices.reduce((prev, current) => {
+          return prev.addedAt > current.addedAt ? prev : current;
+        }).addedAt;
 
-      if (priceChange > lastMod) lastMod = priceChange;
-    }
+        if (priceChange > lastMod) lastMod = priceChange;
+      }
 
-    if (item.owlsPrice.length > 0) {
-      const owlsChange = item.owlsPrice.reduce((prev, current) => {
-        return prev.addedAt > current.addedAt ? prev : current;
-      }).addedAt;
+      if (item.owlsPrice.length > 0) {
+        const owlsChange = item.owlsPrice.reduce((prev, current) => {
+          return prev.addedAt > current.addedAt ? prev : current;
+        }).addedAt;
 
-      if (owlsChange > lastMod) lastMod = owlsChange;
-    }
+        if (owlsChange > lastMod) lastMod = owlsChange;
+      }
 
-    return {
-      loc: `${siteURL}/item/${item.slug}`,
-      alternateRefs: [
+      return [
         {
-          href: `${siteURL}/pt/item/${item.slug}`,
-          hreflang: 'pt-br',
+          loc: `${siteURL}/item/${item.slug}`,
+          alternateRefs: [
+            {
+              href: `${siteURL}/pt/item/${item.slug}`,
+              hreflang: 'pt',
+            },
+            {
+              href: `${siteURL}/item/${item.slug}`,
+              hreflang: 'en',
+            },
+          ],
+          lastmod: lastMod.toISOString(),
         },
         {
-          href: `${siteURL}/item/${item.slug}`,
-          hreflang: 'en',
+          loc: `${siteURL}/pt/item/${item.slug}`,
+          alternateRefs: [
+            {
+              href: `${siteURL}/pt/item/${item.slug}`,
+              hreflang: 'pt',
+            },
+            {
+              href: `${siteURL}/item/${item.slug}`,
+              hreflang: 'en',
+            },
+          ],
+          lastmod: lastMod.toISOString(),
         },
-      ],
-      lastmod: lastMod.toISOString(),
-    };
-  });
+      ];
+    })
+    .flat();
 
   return getServerSideSitemapLegacy(ctx, [...officialListsPaths, ...itemPaths]);
 };

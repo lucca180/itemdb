@@ -2,9 +2,9 @@
 module.exports = {
   siteUrl: process.env.SITE_URL || 'https://itemdb.com.br',
   generateRobotsTxt: true, // (optional)
-  sitemapSize: 1000,
+  sitemapSize: 2000,
   changefreq: 'weekly',
-  alternateRefs: [{ href: 'https://itemdb.com.br/pt', hrefLang: 'pt-BR' }],
+  alternateRefs: [{ href: 'https://itemdb.com.br/pt', hrefLang: 'pt' }],
   exclude: ['/sitemaps/*', '/admin/*'], // <= exclude here
   robotsTxtOptions: {
     additionalSitemaps: [
