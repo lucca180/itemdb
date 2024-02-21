@@ -10,12 +10,12 @@ import { AuthProvider } from '../utils/auth';
 import { NextIntlClientProvider } from 'next-intl';
 import { useRouter } from 'next/router';
 import type { AppProps } from 'next/app';
+import Head from 'next/head';
 
-// const VALID_LOCALES = {
-//   en: '',
-//   pt: '/pt',
-//   'pt-BR': '/pt',
-// };
+const VALID_LOCALES = {
+  en: '',
+  pt: '/pt',
+};
 
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -30,6 +30,18 @@ function MyApp({ Component, pageProps }: AppProps) {
             timeZone={'America/Los_Angeles'}
             now={new Date()}
           >
+            <Head>
+              {Object.entries(VALID_LOCALES)
+                .filter((x) => x[0] !== router.locale)
+                .map(([key, value]) => (
+                  <link
+                    rel="alternate"
+                    key={key}
+                    hrefLang={key}
+                    href={`${value}${router.asPath}`}
+                  />
+                ))}
+            </Head>
             <NextNProgress color="#718096" showOnShallow={true} />
             <DefaultSeo {...SEOConfig} />
             <Component {...pageProps} />

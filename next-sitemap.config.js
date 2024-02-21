@@ -9,7 +9,7 @@ module.exports = {
   robotsTxtOptions: {
     additionalSitemaps: [
       'https://itemdb.com.br/sitemaps/index.xml',
-      ...Array.from({ length: 80 }, (_, i) => `https://itemdb.com.br/sitemaps/${i}.xml`),
+      ...Array.from({ length: 70 }, (_, i) => `https://itemdb.com.br/sitemaps/${i}.xml`),
     ],
     policies: [
       {

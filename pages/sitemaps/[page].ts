@@ -16,7 +16,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   if (!page || isNaN(parseInt(page)))
     return getServerSideSitemapIndexLegacy(
       ctx,
-      [...Array(80)].map((_, i) => `${siteURL}/sitemaps/${i}.xml`)
+      [...Array(70)].map((_, i) => `${siteURL}/sitemaps/${i}.xml`)
     );
 
   const [itemInfo, officialLists] = await Promise.all([
@@ -38,8 +38,8 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       orderBy: {
         name: 'asc',
       },
-      take: 950,
-      skip: parseInt(page) * 950,
+      take: 990,
+      skip: parseInt(page) * 990,
     }),
     prisma.userList.findMany({
       where: {
@@ -49,8 +49,8 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
         internal_id: true,
         updatedAt: true,
       },
-      take: 50,
-      skip: parseInt(page) * 50,
+      take: 10,
+      skip: parseInt(page) * 10,
     }),
   ]);
 
@@ -60,6 +60,10 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       {
         href: `${siteURL}/pt/lists/official/${list.internal_id}`,
         hreflang: 'pt-br',
+      },
+      {
+        href: `${siteURL}/lists/official/${list.internal_id}`,
+        hreflang: 'en',
       },
     ],
     lastmod: list.updatedAt.toISOString(),
@@ -90,6 +94,10 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
         {
           href: `${siteURL}/pt/item/${item.slug}`,
           hreflang: 'pt-br',
+        },
+        {
+          href: `${siteURL}/item/${item.slug}`,
+          hreflang: 'en',
         },
       ],
       lastmod: lastMod.toISOString(),
