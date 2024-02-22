@@ -120,6 +120,8 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
     if (!item.image_id || !item.image || !item.name) throw 'invalid data';
 
     let itemSlug = slugify(item.name);
+    if (!itemSlug) throw 'invalid data';
+
     const dbItemListPromise = prisma.items.findMany({
       where: {
         name: item.name,
@@ -230,9 +232,11 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
         }
 
         // check if we're gaining info with description
-        else if (key === 'description') {
-          if ((dbItem.description?.length ?? 0) < (item.description?.length ?? 0)) {
-            dbItem.description = item.description;
+        else if (key === 'description' && item.description && dbItem.description) {
+          if (dbItem.description.length < item.description.length) {
+            if (item.description.includes(dbItem.description))
+              dbItem.description = item.description;
+            else throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
           }
         }
 
