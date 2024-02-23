@@ -121,10 +121,6 @@ const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
   const isAllEmpty = updatedItems.every((item) => !item.price);
 
   if (
-    (isAllEmpty &&
-      (trade.wishlist.includes('+') ||
-        trade.wishlist.toLowerCase().includes('pb') ||
-        trade.wishlist.toLowerCase().includes('baby'))) ||
     (!isAllItemsTheSame && isAllEmpty) ||
     (isAllEmpty && trade.items.length > 1 && !isNaN(Number(trade.wishlist.trim())))
   ) {

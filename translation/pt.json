@@ -376,7 +376,8 @@
     "keyboard-submit": "Você pode apertar <Kbd>ENTER</Kbd> na última caixa de preço para enviar",
     "10-02-2024-policy-changes": "[10/02/2024] Mudanças nas Políticas",
     "new-policy-1": "Entendemos que os Pincéis Bebê são um fator importante para a venda de itens no posto de trocas.  Portanto, a partir de agora, você pode considerar o preço dos <b>Pincéis Bebê como 600k</b> quando especificado como <b>parte do pagamento</b> na lista de desejos.",
-    "new-policy-2": "Porém, priorize o preço listado em Neopontos \"a vista\" se ambos estiverem listados. Esta nova diretriz se aplica <b>SOMENTE ao Pincel Bebê (baby pb)</b>. Atualizaremos esta diretriz em caso de flutuações futuras no mercado."
+    "new-policy-2": "Porém, priorize o preço listado em Neopontos \"a vista\" se ambos estiverem listados. Esta nova diretriz se aplica <b>SOMENTE ao Pincel Bebê (baby pb)</b>. Atualizaremos esta diretriz em caso de flutuações futuras no mercado.",
+    "this-trade-was-auto-priced": "Esta troca foi precificada automaticamente"
   },
   "Lists": {
     "add-to-list": "Adicionar a Lista",

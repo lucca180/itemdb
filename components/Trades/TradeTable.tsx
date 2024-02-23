@@ -1,4 +1,4 @@
-import { Box, Text, Divider, Flex, Link } from '@chakra-ui/react';
+import { Box, Text, Divider, Flex, Link, Badge, Tooltip } from '@chakra-ui/react';
 import React from 'react';
 import { ItemData, TradeData } from '../../types';
 import Image from 'next/image';
@@ -9,6 +9,7 @@ import { useFormatter, useTranslations } from 'next-intl';
 type Props = {
   data: TradeData;
   featuredItem?: ItemData;
+  isAuto?: boolean;
 };
 
 const intl = new Intl.NumberFormat();
@@ -21,7 +22,20 @@ const TradeTable = (props: Props) => {
     <Flex flexFlow="column" w="100%" flex={1} mb={3}>
       <Flex flexFlow="column">
         <Box fontSize="xs" px={3} py={2}>
-          <Text color="gray.200">
+          {props.isAuto && (
+            <Tooltip label={t('Feedback.this-trade-was-auto-priced')} placement="top" hasArrow>
+              <Badge colorScheme="blue" fontSize={'11px'} size="xs" mr={1}>
+                Auto
+              </Badge>
+            </Tooltip>
+          )}
+          <Text
+            color="gray.200"
+            display="inline-flex"
+            justifyContent={'center'}
+            alignItems={'center'}
+            gap={1}
+          >
             <b>
               {t('ItemPage.lot')} {data.trade_id}
             </b>{' '}

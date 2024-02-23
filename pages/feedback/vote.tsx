@@ -247,7 +247,7 @@ const FeedbackVotingPage = () => {
                 chakra={{ bg: 'gray.700' }}
               >
                 {currentFeedback.type === 'tradePrice' && (
-                  <TradeTable data={currentFeedback.parsed?.content.trade as TradeData} />
+                  <TradeTable isAuto data={currentFeedback.parsed?.content.trade as TradeData} />
                 )}
                 {currentFeedback.type === 'itemChange' && (
                   <FeedbackItem

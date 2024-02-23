@@ -48,9 +48,9 @@ const OfficialListsPage = (props: Props) => {
 
   useEffect(() => {
     if (data) {
-      const newCats = [
-        ...new Set(data.filter((x) => x.officialTag).map((list) => list.officialTag!)),
-      ].sort((a, b) => a.localeCompare(b));
+      const newCats = [...new Set(data.map((list) => list.officialTag || 'Uncategorized'))].sort(
+        (a, b) => a.localeCompare(b)
+      );
 
       setLists(data);
       setCategories(newCats);
@@ -64,6 +64,8 @@ const OfficialListsPage = (props: Props) => {
 
     if (value === 'all') {
       setLists(data);
+    } else if (value === 'Uncategorized') {
+      setLists(data.filter((x) => !x.officialTag).sort((a, b) => a.name.localeCompare(b.name)));
     } else {
       setLists(
         data.filter((x) => x.officialTag === value).sort((a, b) => a.name.localeCompare(b.name))
