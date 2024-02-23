@@ -401,7 +401,7 @@ type RestockStats = {
   estRevenue: number;
   avgRefreshTime: number;
   avgReactionTime: number;
-
+  totalClicks: number;
   hottestRestocks: ItemData[];
   hottestBought: {
     item: ItemData;

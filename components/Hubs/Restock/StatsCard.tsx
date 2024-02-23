@@ -13,7 +13,11 @@ export const StatsCard = (props: StatsCardProps) => {
 
   return (
     <Card variant="outline" bg="blackAlpha.500">
-      <CardBody filter={props.blur ? 'blur(10px)' : undefined}>
+      <CardBody
+        filter={props.blur ? 'blur(10px)' : undefined}
+        display={'flex'}
+        alignItems={'center'}
+      >
         <Stat>
           <StatLabel fontSize={['xs', 'sm']}>{label}</StatLabel>
           <StatNumber fontSize={['xl', '2xl']}>{stat}</StatNumber>

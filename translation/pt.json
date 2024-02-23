@@ -575,7 +575,9 @@
     "import-modal-x-items-restocked": "{x} itens restocados",
     "import-modal-x-time-at-y-store": "{x} em {y}",
     "hide-misses": "Ocultar Perdas",
-    "show-misses": "Mostrar Perdas"
+    "show-misses": "Mostrar Perdas",
+    "avg-reaction-time": "Tempo Médio de Reação ",
+    "based-on-x-clicks": "com base em {x} cliques"
   },
   "Search": {
     "search": "Pesquisa",

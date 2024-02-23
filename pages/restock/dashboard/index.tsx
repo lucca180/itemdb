@@ -87,7 +87,8 @@ const RestockDashboard = () => {
     if (hideMisses) setHideMisses(hideMisses === 'true');
 
     const storageFilter = localStorage.getItem('restockFilter');
-    if (storageFilter) setFilter({ ...filter, ...JSON.parse(storageFilter) });
+    const timePeriod = storageFilter ? JSON.parse(storageFilter)?.timePeriod || 30 : 30;
+    if (storageFilter) setFilter({ ...filter, timePeriod: timePeriod });
   }, []);
 
   const init = async (customFilter?: PeriodFilter) => {
@@ -199,26 +200,38 @@ const RestockDashboard = () => {
       stats.totalRefreshes += session.refreshes.length;
       stats.totalSessions++;
 
+      let sessionRefreshTime: number[] = [];
       session.refreshes.map((x, i) => {
         if (i === 0) return;
-        refreshTotalTime.push(
+        sessionRefreshTime.push(
           differenceInMilliseconds(new Date(x), new Date(session.refreshes[i - 1]))
         );
       });
 
+      sessionRefreshTime = removeOutliers(sessionRefreshTime, 0.5);
+      if (sessionRefreshTime.length) refreshTotalTime.push(...sessionRefreshTime);
+
+      const sessionReactionTime: number[] = [];
       session.clicks.map((click) => {
         const item = session.items[click.restock_id];
         const time = click.haggle_timestamp || click.soldOut_timestamp;
         if (!item || !time) return;
-
-        reactionTotalTime.push(
+        sessionReactionTime.push(
           Math.abs(differenceInMilliseconds(new Date(time), new Date(item.timestamp)))
         );
       });
 
+      if (sessionReactionTime.length) {
+        const sessionReactionTime2 = removeOutliers(sessionReactionTime, 1);
+        const avgRt2 =
+          sessionReactionTime2.reduce((a, b) => a + b, 0) / sessionReactionTime2.length;
+        reactionTotalTime.push(...sessionReactionTime.filter((x) => x < avgRt2));
+      }
+
       allItems.push(...Object.values(session.items));
 
       stats.totalRefreshes += session.refreshes.length;
+      stats.totalClicks += session.clicks.length;
     });
 
     const morePopularShop = Object.keys(allShops).reduce((a, b) =>
@@ -245,7 +258,6 @@ const RestockDashboard = () => {
     const allItemsData = itemRes.data as { [id: string]: ItemData };
 
     sessions.map((session) => {
-      console.log(session);
       session.clicks.map((click) => {
         const item = allItemsData[click.item_id];
         const restockItem = session.items[click.restock_id];
@@ -565,12 +577,19 @@ const RestockDashboard = () => {
           <Divider />
           <SimpleGrid mt={3} columns={[2, 3, 3, 5]} spacing={[1, 1, 4]}>
             <StatsCard
+              label={t('Restock.avg-reaction-time')}
+              stat={msIntervalFormated(sessionStats.avgReactionTime, true, 2)}
+              helpText={t('Restock.based-on-x-clicks', {
+                x: intl.format(sessionStats.totalClicks),
+              })}
+            />
+            {/* <StatsCard
               label={t('Restock.time-spent-restocking')}
               stat={msIntervalFormated(sessionStats.durationCount, true)}
               helpText={`${msIntervalFormated(sessionStats.mostPopularShop.durationCount)} ${t(
                 'Restock.at'
               )} ${restockShopInfo[sessionStats.mostPopularShop.shopId].name}`}
-            />
+            /> */}
             <StatsCard
               label={t('Restock.most-expensive-item-bought')}
               stat={`${intl.format(sessionStats.mostExpensiveBought?.price.value ?? 0)} NP`}
@@ -579,7 +598,9 @@ const RestockDashboard = () => {
             <StatsCard
               label={t('Restock.avg-refresh-time')}
               stat={msIntervalFormated(sessionStats.avgRefreshTime, false, 1)}
-              helpText={t('Restock.based-on-x-refreshs', { x: sessionStats.totalRefreshes })}
+              helpText={t('Restock.based-on-x-refreshs', {
+                x: intl.format(sessionStats.totalRefreshes),
+              })}
             />
             <StatsCard
               label={t('Restock.total-clicked-and-lost')}
@@ -691,6 +712,7 @@ const defaultStats: RestockStats = {
   mostExpensiveBought: undefined,
   mostExpensiveLost: undefined,
   totalRefreshes: 0,
+  totalClicks: 0,
   totalLost: {
     count: 0,
     value: 0,

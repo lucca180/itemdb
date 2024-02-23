@@ -575,7 +575,9 @@
     "import-modal-x-bought": "{x} bought",
     "import-modal-x-time-at-y-store": "{x} at {y}",
     "show-misses": "Show Misses",
-    "hide-misses": "Hide Misses"
+    "hide-misses": "Hide Misses",
+    "avg-reaction-time": "Avg Reaction Time",
+    "based-on-x-clicks": "based on {x} clicks"
   },
   "Search": {
     "search": "Search",
