@@ -55,9 +55,18 @@ const FeedbackVotingPage = () => {
       if (['INPUT', 'TEXTAREA'].includes(targetName) || isLoading) return;
 
       if (e.key.toLowerCase() === 'd') {
+        if (!currentFeedback) {
+          return init();
+        }
+
         handleVote('upvote');
       }
+
       if (e.key.toLowerCase() === 'a') {
+        if (!currentFeedback) {
+          return init();
+        }
+
         handleVote('downvote');
       }
     };
@@ -215,7 +224,7 @@ const FeedbackVotingPage = () => {
           {!isLoading && !currentFeedback && !error && (
             <Center flexFlow="column" gap={4}>
               <Text>{t('Feedback.thanks-for-helping-out-want-more')}</Text>
-              <Button onClick={init}>{t('Feedback.yes-i-need-it')}</Button>
+              <Button onClick={init}>{t('Feedback.yes-i-need-it')} (D)</Button>
               <Box>
                 <Text fontSize="xs" color="gray.400" textAlign="center">
                   {t('Feedback.vote-everything')}

@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { CheckAuth } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
+import { ItemPrices } from '@prisma/client';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -56,9 +57,28 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     if (action === 'reprove') {
+      const check = (await prisma.itemPrices.findFirst({
+        where: {
+          internal_id: checkID,
+        },
+      })) as ItemPrices;
+
+      const processIds = check.usedProcessIDs.split(',').map(Number);
+
       await prisma.itemPrices.delete({
         where: {
           internal_id: checkID,
+        },
+      });
+
+      await prisma.priceProcess2.updateMany({
+        where: {
+          internal_id: {
+            in: processIds,
+          },
+        },
+        data: {
+          processed: false,
         },
       });
 
