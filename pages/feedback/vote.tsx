@@ -32,6 +32,8 @@ import { NextPageContext, NextApiRequest } from 'next';
 import { CheckAuth } from '../../utils/googleCloud';
 import { useTranslations } from 'next-intl';
 
+const AUTO_PRICE_UID = 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1';
+
 const FeedbackVotingPage = () => {
   const t = useTranslations();
   const { user, authLoading, getIdToken } = useAuth();
@@ -247,7 +249,10 @@ const FeedbackVotingPage = () => {
                 chakra={{ bg: 'gray.700' }}
               >
                 {currentFeedback.type === 'tradePrice' && (
-                  <TradeTable isAuto data={currentFeedback.parsed?.content.trade as TradeData} />
+                  <TradeTable
+                    isAuto={currentFeedback.user_id === AUTO_PRICE_UID}
+                    data={currentFeedback.parsed?.content.trade as TradeData}
+                  />
                 )}
                 {currentFeedback.type === 'itemChange' && (
                   <FeedbackItem
