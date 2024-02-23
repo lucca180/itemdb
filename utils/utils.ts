@@ -1226,7 +1226,11 @@ export const removeOutliers = (arr: number[], n: number) => {
   const stdDev = standardDeviation(arr);
   const meanval = mean(arr);
 
-  return arr.filter((x) => Math.abs(x - meanval) < n * stdDev);
+  const newArr = arr.filter((x) => Math.abs(x - meanval) < n * stdDev);
+
+  if (newArr.length < 2) return arr;
+
+  return newArr;
 };
 
 export const msIntervalFormated = (ms: number, long = false, precision = 0) => {

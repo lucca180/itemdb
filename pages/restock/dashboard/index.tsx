@@ -225,7 +225,7 @@ const RestockDashboard = () => {
         const sessionReactionTime2 = removeOutliers(sessionReactionTime, 1);
         const avgRt2 =
           sessionReactionTime2.reduce((a, b) => a + b, 0) / sessionReactionTime2.length;
-        reactionTotalTime.push(...sessionReactionTime.filter((x) => x < avgRt2));
+        reactionTotalTime.push(...sessionReactionTime.filter((x) => x <= avgRt2));
       }
 
       allItems.push(...Object.values(session.items));
