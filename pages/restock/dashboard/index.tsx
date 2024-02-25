@@ -621,6 +621,7 @@ const RestockDashboard = () => {
               <Flex gap={3} flexFlow="column" justifyContent={'center'}>
                 {sessionStats.hottestBought.map((bought, i) => (
                   <RestockItem
+                    disablePrefetch
                     item={bought.item}
                     clickData={bought.click}
                     restockItem={bought.restockItem}
@@ -646,7 +647,7 @@ const RestockDashboard = () => {
                       )}
                       {!hideMisses &&
                         sessionStats.hottestRestocks.map((item, i) => (
-                          <ItemCard item={item} key={i} />
+                          <ItemCard disablePrefetch item={item} key={i} />
                         ))}
                     </Flex>
                   </TabPanel>
@@ -660,6 +661,7 @@ const RestockDashboard = () => {
                       {!hideMisses &&
                         sessionStats.hottestLost.map((lost, i) => (
                           <RestockItem
+                            disablePrefetch
                             item={lost.item}
                             clickData={lost.click}
                             restockItem={lost.restockItem}

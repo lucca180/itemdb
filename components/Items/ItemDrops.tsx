@@ -86,6 +86,7 @@ const ItemDrops = (props: Props) => {
                 if (!item) return null;
                 return (
                   <ItemCard
+                    disablePrefetch
                     key={item.internal_id}
                     item={item}
                     small
@@ -135,7 +136,7 @@ const ItemDrops = (props: Props) => {
                     <ItemCard
                       key={item.internal_id}
                       item={item}
-                      disablePrefetch={pool.items.length > 10}
+                      disablePrefetch
                       small
                       odds={drop.dropRate}
                       isLE={drop.isLE}
@@ -184,7 +185,7 @@ const ItemDrops = (props: Props) => {
                 return (
                   <ItemCard
                     key={item.internal_id}
-                    disablePrefetch={pools['unknown'].items.length > 10}
+                    disablePrefetch
                     item={item}
                     small
                     odds={multiplePools && isChoice ? undefined : drop.dropRate ?? undefined}

@@ -198,6 +198,7 @@ export const SearchBar = (props: Props) => {
                   <Link
                     as={NextLink}
                     display="flex"
+                    prefetch={false}
                     href={`/item/${item.slug}`}
                     key={item.internal_id}
                     px={{ base: 1, md: 2 }}
