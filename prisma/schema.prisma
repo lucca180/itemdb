@@ -224,6 +224,9 @@ model Trades {
   tradesUpdated String? @db.Text
 
   items TradeItems[]
+
+  @@index([hash])
+  @@index([wishlist(length: 200)])
 }
 
 model TradeItems {
@@ -237,6 +240,8 @@ model TradeItems {
   price       Int?
   addedAt     DateTime @default(now())
   item_id     Int?
+
+  @@index([name, image_id])
 }
 
 model Tags {
