@@ -187,7 +187,7 @@ async function updateOrAddDB(
       newPriceData.noInflation_id = oldPrice.noInflation_id;
 
       if (
-        (daysWithInflation >= 60 && variation < 30) ||
+        (daysWithInflation >= 90 && variation < 30) ||
         inflationVariation < 50 ||
         lastNormalPrice.price >= priceValue
       )
