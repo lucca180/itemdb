@@ -250,7 +250,7 @@ const EditProfileModal = (props: EditProfileModalProps) => {
                   <TwitterPicker
                     styles={colorPickerStyles}
                     triangle="hide"
-                    color={userProfile.profileColor ?? undefined}
+                    color={userProfile.profileColor || '#000000'}
                     onChangeComplete={handleColorChange}
                   />
                 </Center>

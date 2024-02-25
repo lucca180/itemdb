@@ -214,7 +214,7 @@ const CreateListModal = (props: CreateListModalProps) => {
                   <TwitterPicker
                     styles={colorPickerStyles}
                     triangle="hide"
-                    color={list.colorHex ?? undefined}
+                    color={list.colorHex ?? '#000000'}
                     onChangeComplete={handleColorChange}
                   />
                 </Center>
