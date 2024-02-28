@@ -87,14 +87,13 @@ const RestockHub = () => {
           borderRadius="md"
           boxShadow={'md'}
         />
-        <Heading as="h1">{t('Layout.restock-hub')}</Heading>
+        <Heading as="h1">{t('Restock.restock-hub')}</Heading>
         <Text>
           {t.rich('Restock.call-to-action', {
             b: (children) => <b>{children}</b>,
           })}
         </Text>
         <Text fontSize={'sm'}>
-          <Tag colorScheme={'green'}>{t('General.new')}</Tag> -{' '}
           {t.rich('Restock.dashboard-cta', {
             Link: (chunk) => (
               <Link as={NextLink} href="/restock/dashboard" color="blue.200">

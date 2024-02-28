@@ -31,16 +31,9 @@ function MyApp({ Component, pageProps }: AppProps) {
             now={new Date()}
           >
             <Head>
-              {Object.entries(VALID_LOCALES)
-                .filter((x) => x[0] !== router.locale)
-                .map(([key, value]) => (
-                  <link
-                    rel="alternate"
-                    key={key}
-                    hrefLang={key}
-                    href={`${value}${router.asPath}`}
-                  />
-                ))}
+              {Object.entries(VALID_LOCALES).map(([key, value]) => (
+                <link rel="alternate" key={key} hrefLang={key} href={`${value}${router.asPath}`} />
+              ))}
             </Head>
             <NextNProgress color="#718096" showOnShallow={true} />
             <DefaultSeo {...SEOConfig} />

@@ -186,7 +186,9 @@ const RestockShop = (props: RestockShopPageProps) => {
     <Layout
       SEO={{
         title: `${shopInfo.name} | ${t('Restock.neopets-restock-helper')}`,
-        description: t('Restock.shop-desc', { 0: shopInfo.name }),
+        description: t('Restock.shop-desc', {
+          0: shopInfo.name + (!shopInfo.name.includes('shop') ? 'Shop' : ''),
+        }),
         themeColor: shopInfo.color,
       }}
     >
@@ -229,7 +231,9 @@ const RestockShop = (props: RestockShopPageProps) => {
             boxShadow={'md'}
           />
         </Link>
-        <Heading as="h1">{shopInfo.name}</Heading>
+        <Heading as="h1">
+          {shopInfo.name} {!shopInfo.name.includes('shop') ? 'Shop' : ''}
+        </Heading>
         <Text as="h2" sx={{ a: { color: Color(shopInfo.color).lightness(70).hex() } }}>
           {t.rich('Restock.profitable-items-from', {
             Link: (chunk) => (

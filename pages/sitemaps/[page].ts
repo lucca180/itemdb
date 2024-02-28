@@ -8,6 +8,7 @@ import {
 } from 'next-sitemap';
 import { GetServerSideProps } from 'next';
 import prisma from '../../utils/prisma';
+import { restockShopInfo, slugify } from '../../utils/utils';
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const page = ctx.query.page as string;
@@ -140,7 +141,42 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     })
     .flat();
 
-  return getServerSideSitemapLegacy(ctx, [...officialListsPaths, ...itemPaths]);
+  const restockPaths: ISitemapField[] = Object.values(restockShopInfo)
+    .splice(parseInt(page) * 10, 10)
+    .map((shop) => {
+      const shopSlug = slugify(shop.name);
+      return [
+        {
+          loc: `${siteURL}/restock/${shopSlug}`,
+          alternateRefs: [
+            {
+              href: `${siteURL}/pt/restock/${shopSlug}`,
+              hreflang: 'pt',
+            },
+            {
+              href: `${siteURL}/restock/${shopSlug}`,
+              hreflang: 'en',
+            },
+          ],
+        },
+        {
+          loc: `${siteURL}/pt/restock/${shopSlug}`,
+          alternateRefs: [
+            {
+              href: `${siteURL}/pt/restock/${shopSlug}`,
+              hreflang: 'pt',
+            },
+            {
+              href: `${siteURL}/restock/${shopSlug}`,
+              hreflang: 'en',
+            },
+          ],
+        },
+      ];
+    })
+    .flat();
+
+  return getServerSideSitemapLegacy(ctx, [...restockPaths, ...officialListsPaths, ...itemPaths]);
 };
 
 // Default export to prevent next.js errors

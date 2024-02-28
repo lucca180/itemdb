@@ -518,12 +518,12 @@
     "half-price-day-all-shops-with-50-off": "Dia de Metade do Preço - Todas as lojas com 50% de desconto",
     "halloween-hub": "Halloween - Lojas dos Bosques Assombrados com 50% de desconto",
     "hub-usuki-day": "Dia de Usuki - Usukiland com 66,6% de desconto",
-    "neopets-restock-helper": "Neopets Restock Helper",
-    "restock-description": "Encontre os itens mais lucrativos para comprar em cada loja de Neopia e ganhe muitos neopontos!",
+    "neopets-restock-helper": "Guia de Restock no Neopets",
+    "restock-description": "Encontre os melhores itens para comprar em cada loja de Neopia e ganhe muitos neopontos!",
     "tyrannian-hub": "Dia da Vitória Tyranniana - Todas as Lojas de Tyranniana com 80% de desconto (exceto Ugga Shinies)",
     "back-to-restock-hub": "Voltar ao Restock Hub",
-    "profitable-items-from": "Itens lucrativos para comprar em <Link>{shopname}</Link>",
-    "shop-desc": "Encontre os itens mais lucrativos para comprar em {0} e ganhar neopontos!",
+    "profitable-items-from": "Encontre os melhores itens para comprar em <Link>{shopname}</Link>",
+    "shop-desc": "Encontre os itens mais lucrativos para comprar em {0} para ganhar neopontos!",
     "all-shops": "Todas as lojas",
     "how-to-use": "Como Usar",
     "import-x-sessions": "Importar {x} sessões",
@@ -578,7 +578,8 @@
     "hide-misses": "Ocultar Perdas",
     "show-misses": "Mostrar Perdas",
     "avg-reaction-time": "Tempo Médio de Reação ",
-    "based-on-x-clicks": "com base em {x} cliques"
+    "based-on-x-clicks": "com base em {x} cliques",
+    "restock-hub": "Restock Hub"
   },
   "Search": {
     "search": "Pesquisa",
