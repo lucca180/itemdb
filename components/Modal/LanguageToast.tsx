@@ -21,7 +21,7 @@ export const LanguageToast = () => {
     checkLanguage();
   }, [router.isReady, authLoading]);
 
-  const handleAction = (action: 'dismiss' | 'change', prefLang: string) => {
+  const handleAction = async (action: 'dismiss' | 'change', prefLang: string) => {
     const { pathname, asPath, query } = router;
 
     if (action === 'dismiss') {
@@ -30,25 +30,28 @@ export const LanguageToast = () => {
         duration: 5000,
         isClosable: true,
       });
+
+      prefLang = router.locale || 'en';
+
+      setCookie('NEXT_LOCALE', prefLang, { expires: new Date('2030-01-01') });
+      await saveLang(prefLang);
     } else {
       toast.close('language-toast');
+
+      setCookie('NEXT_LOCALE', prefLang, { expires: new Date('2030-01-01') });
+      await saveLang(prefLang);
+
       router.push({ pathname, query }, asPath, { locale: prefLang });
     }
-
-    setCookie('NEXT_LOCALE', prefLang, { expires: new Date('2030-01-01') });
-    saveLang(prefLang);
   };
 
   const saveLang = async (prefLang: string) => {
-    console.log(user);
     if (!user) return;
-    const res = await axios.post(`/api/v1/users/${user.username}`, {
+    await axios.post(`/api/v1/users/${user.username}`, {
       prefLang: prefLang,
       neopetsUser: user.neopetsUser,
       username: user.username,
     });
-
-    console.log(res);
   };
 
   const checkLanguage = () => {
