@@ -64,7 +64,8 @@
     "copy-text": "Copy Text",
     "move-to-list": "Move to List",
     "delete-from-this-list": "Delete from this list",
-    "you-can-change-lang": "You can change the language at any time on your profile settings"
+    "you-can-change-lang": "You can change the language at any time on your profile settings",
+    "itemdb-survey": "itemdb is turning one! We want your opinion in this quick survey (takes 30s!)"
   },
   "ItemPage": {
     "item-info": "Item Info",

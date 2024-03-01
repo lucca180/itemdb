@@ -76,6 +76,27 @@ const Layout = (props: Props) => {
       <LanguageToast />
       <Flex flexFlow="column" minH="100vh">
         <Flex
+          w="full"
+          maxW="8xl"
+          marginX="auto"
+          gap={1}
+          px={4}
+          // pt={4}
+          py={1}
+          // h="26px"
+          alignItems="center"
+          color="whiteAlpha.700"
+          fontSize={'xs'}
+          overflow={'auto'}
+          whiteSpace={'nowrap'}
+        >
+          <Box w="100%" bg="whiteAlpha.200" position={'absolute'} h="26px" left="0" zIndex={-1} />
+          <Text fontSize={'sm'}>🎂</Text>
+          <ChakraLink href="https://rekuv1fw58s.typeform.com/to/fZJfzDuQ" isExternal>
+            {t('itemdb-survey')}
+          </ChakraLink>
+        </Flex>
+        <Flex
           as="nav"
           w="full"
           maxW="8xl"

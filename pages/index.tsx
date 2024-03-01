@@ -42,8 +42,8 @@ const HomePage = (props: Props) => {
   const [latestPrices, setPrices] = useState<ItemData[] | null>(null);
   const [trendingItems, setTrending] = useState<ItemData[] | null>(null);
 
-  // const color = Color('#4A5568');
-  const color = Color('#CB3F5D');
+  const color = Color('#4A5568');
+  // const color = Color('#CB3F5D');
   const rgb = color.rgb().round().array();
 
   useEffect(() => {
@@ -86,7 +86,7 @@ const HomePage = (props: Props) => {
           zIndex={-1}
         />
         <Image src={logo} alt="itemdb logo" width={500} quality="100" priority />
-        <Heading size="sm" mt={4}>
+        <Heading size="sm" mt={4} lineHeight={1.5}>
           <Highlight
             query={t('open-source')}
             styles={{
