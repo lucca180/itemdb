@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.3.2
+// @version      1.4.0
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -10,7 +10,7 @@
 // @exclude      *://*.nc.neopets.com/*
 // @exclude      *://*images.neopets.com/*
 // @icon         https://itemdb.com.br/favicon.ico
-// @require      https://raw.githubusercontent.com/lucca180/itemdb/c227bb858ba751521780ce5bb6da86391a42033f/userscripts/hash.min.js#sha256-Na6EzrlI7/YCHJ2IPSd1bIinNrlz0zhva9Hg9/Um/Us=
+// @require      https://raw.githubusercontent.com/lucca180/itemdb/ffe547f351f0ff5638f29e6b3a4393f073075d95/userscripts/hash.min.js#sha256-qpCPrGKFYR6lCPsUKy7ZBtNuSJ+eycwbRTdlJ+vrPEk=
 // @connect      itemdb.com.br
 // @connect      neopets.com
 // @grant        GM_xmlhttpRequest
@@ -42,7 +42,7 @@ let tradeList = [];
 let alreadyCalled = false;
 
 // Loads some history so we can check if we already sended the info to the server
-let itemsHistory = JSON.parse(localStorage?.getItem('idb_itemHistory')) ?? {};
+let itemsHistory = JSON.parse(localStorage?.getItem('idb_newItemHistory')) ?? {};
 let restockHistory = JSON.parse(localStorage?.getItem('idb_restockHistory')) ?? {};
 let tradeHistory = JSON.parse(localStorage?.getItem('idb_tradeHistory')) ?? {};
 let prevInventory = JSON.parse(localStorage?.getItem('idb_prevInventory')) ?? {};
@@ -60,6 +60,7 @@ if (URLHas('idb_clear')) {
   localStorage.removeItem('idb_restockHistory');
   localStorage.removeItem('idb_tradeHistory');
   localStorage.removeItem('idb_prevInventory');
+  localStorage.removeItem('idb_newItemHistory');
 
   itemsHistory = {};
   restockHistory = {};
@@ -101,10 +102,9 @@ function handleInventory() {
         };
 
         const itemKey = genItemKey(item);
-        if (!itemsHistory[itemKey]?.inventory) {
+        if (!itemsHistory[itemKey]) {
           itemsObj[itemKey] = item;
-          itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
-          itemsHistory[itemKey].inventory = true;
+          itemsHistory[itemKey] = true;
         }
       });
 
@@ -136,10 +136,9 @@ function handleSDB() {
     };
 
     const itemKey = genItemKey(item);
-    if (!itemsHistory[itemKey]?.sdb) {
+    if (!itemsHistory[itemKey]) {
       itemsObj[itemKey] = item;
-      itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
-      itemsHistory[itemKey].sdb = true;
+      itemsHistory[itemKey] = true;
     }
   });
 
@@ -191,10 +190,9 @@ function handleTrades() {
         });
 
         const itemKey = genItemKey(item);
-        if (!itemsHistory[itemKey]?.trades) {
+        if (!itemsHistory[itemKey]) {
           itemsObj[itemKey] = item;
-          itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
-          itemsHistory[itemKey].trades = true;
+          itemsHistory[itemKey] = true;
         }
       });
 
@@ -228,10 +226,9 @@ function handleMyShop() {
     };
 
     const itemKey = genItemKey(item);
-    if (!itemsHistory[itemKey]?.myshop) {
+    if (!itemsHistory[itemKey]) {
       itemsObj[itemKey] = item;
-      itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
-      itemsHistory[itemKey].myshop = true;
+      itemsHistory[itemKey] = true;
     }
   });
 
@@ -256,10 +253,9 @@ function handleGeneralShops() {
     };
 
     const itemKey = genItemKey(item);
-    if (!itemsHistory[itemKey]?.restockShop) {
+    if (!itemsHistory[itemKey]) {
       itemsObj[itemKey] = item;
-      itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
-      itemsHistory[itemKey].restockShop = true;
+      itemsHistory[itemKey] = true;
     }
   });
 
@@ -292,10 +288,9 @@ function handleUserShops() {
 
     const itemKey = genItemKey(item);
     // has the exact info as items in general shop
-    if (!itemsHistory[itemKey]?.generalshop) {
+    if (!itemsHistory[itemKey]) {
       itemsObj[itemKey] = item;
-      itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
-      itemsHistory[itemKey].generalshop = true;
+      itemsHistory[itemKey] = true;
     }
 
     const itemPriceInfo = {
@@ -331,10 +326,9 @@ function handleGallery() {
     };
 
     const itemKey = genItemKey(item);
-    if (!itemsHistory[itemKey]?.gallery) {
+    if (!itemsHistory[itemKey]) {
       itemsObj[itemKey] = item;
-      itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
-      itemsHistory[itemKey].gallery = true;
+      itemsHistory[itemKey] = true;
     }
   });
 
@@ -359,10 +353,9 @@ function handleGalleryAdmin() {
     };
 
     const itemKey = genItemKey(item);
-    if (!itemsHistory[itemKey]?.galleryAdmin) {
+    if (!itemsHistory[itemKey]) {
       itemsObj[itemKey] = item;
-      itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
-      itemsHistory[itemKey].galleryAdmin = true;
+      itemsHistory[itemKey] = true;
     }
   });
 
@@ -404,10 +397,9 @@ function handleCloset() {
     };
 
     const itemKey = genItemKey(item);
-    if (!itemsHistory[itemKey]?.closet) {
+    if (!itemsHistory[itemKey]) {
       itemsObj[itemKey] = item;
-      itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
-      itemsHistory[itemKey].closet = true;
+      itemsHistory[itemKey] = true;
     }
   });
 
@@ -439,7 +431,11 @@ function handleSearch() {
   }
 
   const itemKey = genItemKey(item);
-  itemsObj[itemKey] = item;
+  
+  if (!itemsHistory[itemKey]) {
+    itemsObj[itemKey] = item;
+    itemsHistory[itemKey] = true;
+  }
 
   submitItems();
 }
@@ -467,10 +463,9 @@ function handleStorageShed() {
     };
 
     const itemKey = genItemKey(item);
-    if (!itemsHistory[itemKey]?.shed) {
+    if (!itemsHistory[itemKey]) {
       itemsObj[itemKey] = item;
-      itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
-      itemsHistory[itemKey].shed = true;
+      itemsHistory[itemKey] = true;
     }
   });
 
@@ -495,15 +490,42 @@ function handleNCMall() {
       }
 
       const itemKey = genItemKey(item);
-      if (!itemsHistory[itemKey]?.ncmall) {
+      if (!itemsHistory[itemKey]) {
         itemsObj[itemKey] = item;
-        itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
-        itemsHistory[itemKey].ncmall = true;
+        itemsHistory[itemKey] = true;
       }
     }
 
     submitItems();
   })
+}
+
+function handleNCJournal(){
+  const items = $(".content table td");
+  items.each(function (i) {
+    const img = $(this).find('img').attr('src');
+    if(!img) return;
+
+    const div = $(this).find('div > div');
+    if(!div.length) return;
+    const itemID = div.attr("id").split("item_div_")[1];
+    const name = div.find('b').first().text();
+
+    const item = {
+      name: name,
+      img: img,
+      itemId: itemID,
+      type: 'nc',
+    };
+
+    const itemKey = genItemKey(item);
+    if (!itemsHistory[itemKey]) {
+      itemsObj[itemKey] = item;
+      itemsHistory[itemKey] = true;
+    }
+  })
+
+  submitItems();
 }
 
 // The next 3 functions might use neopets username and/or pet names to 
@@ -567,10 +589,9 @@ async function handleCustomization () {
       }
 
       const itemKey = genItemKey(item);
-      if (!itemsHistory[itemKey]?.customizationFix) {
+      if (!itemsHistory[itemKey]) {
         itemsObj[itemKey] = item;
-        itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
-        itemsHistory[itemKey].customizationFix = true;
+        itemsHistory[itemKey] = true;
       }
     }
   }
@@ -617,10 +638,9 @@ async function handlePetLookup() {
     skipNames.push(item.name);
 
     const itemKey = genItemKey(item);
-    if (!itemsHistory[itemKey]?.petLookup) {
+    if (!itemsHistory[itemKey]) {
       itemsObj[itemKey] = item;
-      itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
-      itemsHistory[itemKey].petLookup = true;
+      itemsHistory[itemKey] = true;
     }
   }
 
@@ -642,10 +662,9 @@ async function handlePetLookup() {
     }
 
     const itemKey = genItemKey(item);
-    if (!itemsHistory[itemKey]?.petLookupFixed) {
+    if (!itemsHistory[itemKey]) {
       itemsObj[itemKey] = item;
-      itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
-      itemsHistory[itemKey].petLookupFixed = true;
+      itemsHistory[itemKey] = true;
     }
   })
 
@@ -688,10 +707,9 @@ async function handleUCChamber() {
     }
 
     const itemKey = genItemKey(item);
-    if (!itemsHistory[itemKey]?.ncchamber) {
+    if (!itemsHistory[itemKey]) {
       itemsObj[itemKey] = item;
-      itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
-      itemsHistory[itemKey].ncchamber = true;
+      itemsHistory[itemKey] = true;
     }
   }
 
@@ -715,44 +733,15 @@ async function handleUCChamber() {
     }
 
     const itemKey = genItemKey(item);
-    if (!itemsHistory[itemKey]?.ncchamber) {
+    if (!itemsHistory[itemKey]) {
       itemsObj[itemKey] = item;
-      itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
-      itemsHistory[itemKey].ncchamber = true;
+      itemsHistory[itemKey] = true;
     }
   }
 
   submitItems();
 }
 
-function handleNCJournal(){
-  const items = $(".content table td");
-  items.each(function (i) {
-    const img = $(this).find('img').attr('src');
-    if(!img) return;
-
-    const div = $(this).find('div > div');
-    if(!div.length) return;
-    const itemID = div.attr("id").split("item_div_")[1];
-    const name = div.find('b').first().text();
-
-    const item = {
-      name: name,
-      img: img,
-      itemId: itemID,
-      type: 'nc',
-    };
-
-    const itemKey = genItemKey(item);
-    if (!itemsHistory[itemKey]?.ncjournal) {
-      itemsObj[itemKey] = item;
-      itemsHistory[itemKey] = { ...itemsHistory[itemKey] };
-      itemsHistory[itemKey].ncjournal = true;
-    }
-  })
-
-  submitItems();
-}
 // ------ prices ------ //
 
 function handleSWPrices() {
@@ -1189,7 +1178,7 @@ async function submitItems() {
   const itemsList = Object.values(itemsObj);
   if (itemsList.length === 0) return;
 
-  const hash = getItemsHash(itemsObj);
+  const hash = idb.getItemsHash(itemsObj);
   const rawData = {
     lang: pageLang,
     items: itemsList,
@@ -1206,9 +1195,9 @@ async function submitItems() {
     onload: function (res) {
       if (res.status === 200) {
         console.log(`[itemdb] ${itemsList.length} items data sent`);
-        localStorage?.setItem('idb_itemHistory', JSON.stringify(itemsHistory));
+        localStorage?.setItem('idb_newItemHistory', JSON.stringify(itemsHistory));
         itemsObj = {};
-        resetHash();
+        idb.resetHash();
       } else {
         console.error('[itemdb] submitItems error:', res, rawData);
       }
@@ -1220,7 +1209,7 @@ async function submitPrices() {
   if(checkTranslation()) return;
   if (priceList.length === 0) return;
 
-  const hash = getPricesHash(priceList);
+  const hash = idb.getPricesHash(priceList);
   const rawData = {
     lang: pageLang,
     itemPrices: priceList,
@@ -1239,7 +1228,7 @@ async function submitPrices() {
         console.log(`[itemdb] ${priceList.length} price data sent`);
         localStorage?.setItem('idb_restockHistory', JSON.stringify(restockHistory));
         priceList = [];
-        resetHash();
+        idb.resetHash();
       } else {
         console.error('[itemdb] submitPrices error:', res, rawData);
       }
@@ -1251,7 +1240,7 @@ async function submitTrades() {
   if(checkTranslation()) return;
   if (tradeList.length === 0) return;
 
-  const hash = getTradesHash(tradeList);
+  const hash = idb.getTradesHash(tradeList);
   
   const rawData = {
     lang: pageLang,
@@ -1271,7 +1260,7 @@ async function submitTrades() {
         console.log(`[itemdb] ${tradeList.length} trade data sent`);
         localStorage?.setItem('idb_tradeHistory', JSON.stringify(tradeHistory));
         tradeList = [];
-        resetHash();
+        idb.resetHash();
       } else {
         console.error('[itemdb] submitTrades error:', res, rawData);
       }
@@ -1306,11 +1295,9 @@ async function submitOpenable(items, parentItem) {
 
 // ----------- //
 
-// this function is used to generate a unique key for each item based on its name, image and id
+// this function is used to generate a unique key for each item based on the information we got for it
 function genItemKey(item) {
-  const imgId = item.img?.match(/[^\.\/]+(?=\.gif)/)?.[0] ?? '';
-  const id = item.itemId ?? '';
-  return (item.name + imgId + id).replace(/\s/g, '');
+  return idb?.hashKey(item);
 }
 
 // this function is used to detect if the page is translated using google translate or similar
