@@ -20,12 +20,8 @@ export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
     findAt.closet = `https://www.neopets.com/closet.phtml?obj_name=${cleanItem(item)}`;
 
   if (item.isWearable) {
-    if (item.item_id) findAt.dti = `http://impress-2020.openneo.net/items/${item.item_id}`;
-    else
-      findAt.dti = `http://impress-2020.openneo.net/items/search/${cleanItem(item).replaceAll(
-        '+',
-        '%20'
-      )}`;
+    if (item.item_id) findAt.dti = `http://impress.openneo.net/items/${item.item_id}`;
+    else findAt.dti = `https://impress.openneo.net/items?q=${cleanItem(item)}`;
   }
 
   if (item.type !== 'np' || item.status?.toLowerCase() === 'no trade') return findAt;
