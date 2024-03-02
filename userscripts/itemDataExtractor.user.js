@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.4.0
+// @version      1.4.1
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -583,7 +583,7 @@ async function handleCustomization () {
         itemId: itemData.obj_info_id,
         estVal: itemData.price,
         rarity: itemData.rarity_index,
-        category: itemData.category,
+        category: itemData.type,
         type: type,
         weight: itemData.weight_lbs,
       }
@@ -630,7 +630,7 @@ async function handlePetLookup() {
       itemId: itemData.obj_info_id,
       estVal: itemData.price,
       rarity: itemData.rarity_index,
-      category: itemData.category,
+      category: itemData.type,
       type: type,
       weight: itemData.weight_lbs,
     }
@@ -727,7 +727,7 @@ async function handleUCChamber() {
       itemId: itemData.obj_info_id,
       estVal: itemData.price,
       rarity: itemData.rarity_index,
-      category: itemData.category,
+      category: itemData.type,
       type: type,
       weight: itemData.weight_lbs,
     }
