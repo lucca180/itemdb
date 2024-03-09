@@ -137,7 +137,17 @@
     "x-is-already-in-y": "<b>{x}</b> is already in <b>{y}</b>",
     "do-you-want-to-change-its-quantity": "Do you want to change its quantity?",
     "this-will-overwrite-the-existing-quantity-on-the-list": "This will overwrite the existing quantity on the list",
-    "delete-from-list": "Delete from list"
+    "delete-from-list": "Delete from list",
+    "wrongPriceHeader": "Wrong Price? You can fix it!",
+    "wrongPrice-0": "itemdb is a community-driven database, and we rely on the community to keep the prices updated.",
+    "wrongPrice-1": "If you think the price for this item is wrong you can follow simple steps to update it:",
+    "wrongPrice-2": "Install the <Link>Item Data Extractor Script</Link>",
+    "wrongPrice-3": "Browse Neopets and find the item for sale",
+    "wrongPrice-4": "Tip: You can use the quick links at the \"Find At\" session",
+    "wrongPrice-5": "If the item is only available at the Trading Post, you can <Link1>precify it</Link1> or <Link2>vote on the price suggestions</Link2>",
+    "wrongPrice-6": "✨Wait for our algorithm to do their magic✨",
+    "wrongPrice-7": "Our pricing algorithm run every hour and will update the price if we have enough data!",
+    "report-wrong-price": "Report Wrong Price"
   },
   "Button": {
     "feedback": "Feedback",
