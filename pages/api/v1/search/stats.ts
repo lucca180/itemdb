@@ -80,9 +80,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       where: {
         OR: [
           {
-            name: {
-              search: filters.mode !== 'description' && query ? query : undefined,
-            },
+            name:
+              filters.mode !== 'description' && query
+                ? {
+                    search: query,
+                  }
+                : undefined,
             description:
               filters.mode !== 'name' && query
                 ? {
@@ -91,9 +94,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
                 : undefined,
           },
           {
-            name: {
-              contains: originalQuery,
-            },
+            name:
+              filters.mode === 'description'
+                ? undefined
+                : {
+                    contains: originalQuery,
+                  },
           },
         ],
         canonical_id: null,

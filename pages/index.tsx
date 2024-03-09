@@ -124,20 +124,24 @@ const HomePage = (props: Props) => {
           <Flex gap={4} flexFlow="column" flex="1">
             <Tabs flex={1} colorScheme="gray" variant={'line'}>
               <TabList>
-                <Tab>{t('trending-items')}</Tab>
+                {props.trendingItems.length > 0 && <Tab>{t('trending-items')}</Tab>}
                 {!latestOwls || (!!latestOwls.length && <Tab>{t('latest-owls')}</Tab>)}
                 <Tab>
                   {t('hottest-restock-period')} {t('hottest-restock')}
                 </Tab>
               </TabList>
               <TabPanels>
-                <TabPanel px={0}>
-                  <Flex flexWrap="wrap" gap={4} justifyContent="center">
-                    {trendingItems !== null &&
-                      trendingItems.map((item) => <ItemCard item={item} key={item.internal_id} />)}
-                    {!trendingItems && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
-                  </Flex>
-                </TabPanel>
+                {props.trendingItems.length > 0 && (
+                  <TabPanel px={0}>
+                    <Flex flexWrap="wrap" gap={4} justifyContent="center">
+                      {trendingItems !== null &&
+                        trendingItems.map((item) => (
+                          <ItemCard item={item} key={item.internal_id} />
+                        ))}
+                      {!trendingItems && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
+                    </Flex>
+                  </TabPanel>
+                )}
                 {latestOwls.length && (
                   <TabPanel px={0}>
                     <Flex flexWrap="wrap" gap={4} justifyContent="center" h="100%">
