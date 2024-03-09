@@ -381,6 +381,7 @@ type RestockSession = {
 
 type RestockStats = {
   durationCount: number;
+  shopList: number[];
   mostPopularShop: {
     shopId: number;
     durationCount: number;

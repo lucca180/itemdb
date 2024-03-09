@@ -33,12 +33,10 @@ import NextLink from 'next/link';
 import { StatsCard } from '../../../components/Hubs/Restock/StatsCard';
 import ItemCard from '../../../components/Items/ItemCard';
 import ImportRestockModal from '../../../components/Modal/ImportRestock';
-import { ItemData, RestockSession, RestockStats } from '../../../types';
+import { RestockSession, RestockStats } from '../../../types';
 import { useAuth } from '../../../utils/auth';
 import axios from 'axios';
-import { RestockSession as RawRestockSession } from '@prisma/client';
-import { differenceInMilliseconds } from 'date-fns';
-import { msIntervalFormated, removeOutliers, restockShopInfo } from '../../../utils/utils';
+import { msIntervalFormated, restockShopInfo } from '../../../utils/utils';
 import RestockItem from '../../../components/Hubs/Restock/RestockItemCard';
 import { FiSend } from 'react-icons/fi';
 import FeedbackModal from '../../../components/Modal/FeedbackModal';
@@ -55,9 +53,10 @@ type AlertMsg = {
   type: 'loading' | 'info' | 'warning' | 'success' | 'error' | undefined;
 };
 
-type ValueOf<T> = T[keyof T];
 type PeriodFilter = { timePeriod: number; shops: number | string };
 const intl = new Intl.NumberFormat();
+
+const defaultFilter = { timePeriod: 30, shops: 'all' };
 
 const RestockDashboard = () => {
   const t = useTranslations();
@@ -70,17 +69,14 @@ const RestockDashboard = () => {
   const [shopList, setShopList] = useState<number[]>([]);
   const [noScript, setNoScript] = useState<boolean>(false);
   const [hideMisses, setHideMisses] = useState<boolean>(false);
-  const [filter, setFilter] = useState<PeriodFilter>({
-    timePeriod: 30,
-    shops: 'all',
-  });
+  const [filter, setFilter] = useState<PeriodFilter | null>(null);
 
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading && user && !!filter) {
       handleImport();
       init();
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, !!filter]);
 
   useEffect(() => {
     const hideMisses = localStorage.getItem('hideMisses');
@@ -88,11 +84,11 @@ const RestockDashboard = () => {
 
     const storageFilter = localStorage.getItem('restockFilter');
     const timePeriod = storageFilter ? JSON.parse(storageFilter)?.timePeriod || 30 : 30;
-    if (storageFilter) setFilter({ ...filter, timePeriod: timePeriod });
+    if (storageFilter) setFilter({ ...defaultFilter, timePeriod: timePeriod });
   }, []);
 
   const init = async (customFilter?: PeriodFilter) => {
-    customFilter = customFilter ?? filter;
+    customFilter = customFilter ?? filter ?? defaultFilter;
     setAlertMsg({ type: 'loading', title: t('Restock.loading-your-restock-sessions') });
     try {
       const res = await axios.get('/api/v1/restock', {
@@ -101,9 +97,9 @@ const RestockDashboard = () => {
           shopId: customFilter.shops === 'all' ? undefined : customFilter.shops,
         },
       });
-      const sessionsData = res.data.sessions as RawRestockSession[];
+      const statsData = res.data as RestockStats;
 
-      if (!sessionsData.length) {
+      if (!statsData) {
         setAlertMsg({
           type: 'warning',
           description: (
@@ -116,8 +112,10 @@ const RestockDashboard = () => {
         });
         return;
       }
-      const stats = await calculateStats(sessionsData, customFilter);
-      setSessionStats(stats);
+
+      if (customFilter.shops === 'all') setShopList(statsData.shopList);
+
+      setSessionStats(statsData);
       setAlertMsg(null);
     } catch (err) {
       console.error(err);
@@ -173,147 +171,10 @@ const RestockDashboard = () => {
     init();
   };
 
-  const calculateStats = async (rawSessions: RawRestockSession[], customFilter: PeriodFilter) => {
-    const stats = JSON.parse(JSON.stringify(defaultStats));
-    const sessions: RestockSession[] = [];
-    const allShops: { [id: string]: number } = {};
-    const allBought: RestockStats['hottestBought'] = [];
-    const allLost: RestockStats['hottestBought'] = [];
-    const allItems: ValueOf<RestockSession['items']>[] = [];
-
-    let refreshTotalTime: number[] = [];
-    let reactionTotalTime: number[] = [];
-
-    rawSessions.map((rawSession) => {
-      if (!rawSession.session) return;
-      const session = JSON.parse(rawSession.session as string) as RestockSession;
-      sessions.push(session);
-
-      const duration = differenceInMilliseconds(
-        new Date(rawSession.endedAt),
-        new Date(rawSession.startedAt)
-      );
-      stats.durationCount += duration;
-      allShops[rawSession.shop_id] = allShops[rawSession.shop_id]
-        ? allShops[rawSession.shop_id] + duration
-        : duration;
-      stats.totalRefreshes += session.refreshes.length;
-      stats.totalSessions++;
-
-      let sessionRefreshTime: number[] = [];
-      session.refreshes.map((x, i) => {
-        if (i === 0) return;
-        sessionRefreshTime.push(
-          differenceInMilliseconds(new Date(x), new Date(session.refreshes[i - 1]))
-        );
-      });
-
-      sessionRefreshTime = removeOutliers(sessionRefreshTime, 0.5);
-      if (sessionRefreshTime.length) refreshTotalTime.push(...sessionRefreshTime);
-
-      const sessionReactionTime: number[] = [];
-      session.clicks.map((click) => {
-        const item = session.items[click.restock_id];
-        const time = click.haggle_timestamp || click.soldOut_timestamp;
-        if (!item || !time) return;
-        sessionReactionTime.push(
-          Math.abs(differenceInMilliseconds(new Date(time), new Date(item.timestamp)))
-        );
-      });
-
-      if (sessionReactionTime.length) {
-        const sessionReactionTime2 = removeOutliers(sessionReactionTime, 1);
-        const avgRt2 =
-          sessionReactionTime2.reduce((a, b) => a + b, 0) / sessionReactionTime2.length;
-        reactionTotalTime.push(...sessionReactionTime.filter((x) => x <= avgRt2));
-      }
-
-      allItems.push(...Object.values(session.items));
-
-      stats.totalRefreshes += session.refreshes.length;
-      stats.totalClicks += session.clicks.length;
-    });
-
-    const morePopularShop = Object.keys(allShops).reduce((a, b) =>
-      allShops[a] > allShops[b] ? a : b
-    );
-    stats.mostPopularShop = {
-      shopId: parseInt(morePopularShop),
-      durationCount: allShops[morePopularShop] ?? 0,
-    };
-
-    // remove outliers
-    refreshTotalTime = removeOutliers(refreshTotalTime, 1);
-    stats.avgRefreshTime = refreshTotalTime.reduce((a, b) => a + b, 0) / refreshTotalTime.length;
-
-    reactionTotalTime = removeOutliers(reactionTotalTime, 1);
-    stats.avgReactionTime = reactionTotalTime.reduce((a, b) => a + b, 0) / reactionTotalTime.length;
-
-    const allItemsID = new Set(allItems.map((x) => x.item_id.toString()));
-
-    const itemRes = await axios.post('/api/v1/items/many', {
-      item_id: [...allItemsID],
-    });
-
-    const allItemsData = itemRes.data as { [id: string]: ItemData };
-
-    sessions.map((session) => {
-      session.clicks.map((click) => {
-        const item = allItemsData[click.item_id];
-        const restockItem = session.items[click.restock_id];
-        if (!item) return;
-
-        if (!item.price.value) stats.unknownPrices++;
-
-        if (click.buy_timestamp) {
-          stats.totalBought.count++;
-          stats.totalBought.value += item.price.value ?? 0;
-
-          stats.mostExpensiveBought =
-            stats.mostExpensiveBought &&
-            (stats.mostExpensiveBought.price.value ?? 0) > (item.price.value ?? 0)
-              ? stats.mostExpensiveBought
-              : item;
-
-          allBought.push({ item, click, restockItem });
-
-          stats.estRevenue += item.price.value ?? 0;
-        } else {
-          stats.totalLost.count++;
-          stats.totalLost.value += item.price.value ?? 0;
-
-          stats.mostExpensiveLost =
-            stats.mostExpensiveLost &&
-            (stats.mostExpensiveLost.price.value ?? 0) > (item.price.value ?? 0)
-              ? stats.mostExpensiveLost
-              : item;
-
-          allLost.push({ item, click, restockItem });
-        }
-      });
-    });
-
-    stats.hottestRestocks = Object.values(allItemsData)
-      .sort((a, b) => (b.price.value ?? 0) - (a.price.value ?? 0))
-      .splice(0, 16);
-
-    stats.hottestBought = allBought
-      .sort((a, b) => (b.item.price.value ?? 0) - (a.item.price.value ?? 0))
-      .splice(0, 10);
-
-    stats.hottestLost = allLost
-      .sort((a, b) => (b.item.price.value ?? 0) - (a.item.price.value ?? 0))
-      .splice(0, 10);
-
-    if (customFilter.shops === 'all') setShopList(Object.keys(allShops).map((x) => parseInt(x)));
-
-    return stats;
-  };
-
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
-    init({ ...filter, [name]: value });
-    setFilter((prev) => ({ ...prev, [name]: value }));
+    init({ ...(filter ?? defaultFilter), [name]: value });
+    setFilter((prev) => ({ ...(prev ?? defaultFilter), [name]: value }));
     localStorage.setItem('restockFilter', JSON.stringify({ ...filter, [name]: value }));
   };
 
@@ -355,7 +216,7 @@ const RestockDashboard = () => {
           borderRadius={'sm'}
           defaultValue={30}
           name="timePeriod"
-          value={filter.timePeriod}
+          value={(filter ?? defaultFilter).timePeriod}
           onChange={handleSelectChange}
         >
           <option value={1}>{t('General.last-x-hours', { x: 24 })}</option>
@@ -371,7 +232,7 @@ const RestockDashboard = () => {
           size="xs"
           borderRadius={'sm'}
           name="shops"
-          value={filter.shops}
+          value={(filter ?? defaultFilter).shops}
           onChange={handleSelectChange}
         >
           <option value="all">{t('Restock.all-shops')}</option>
@@ -703,31 +564,3 @@ export async function getStaticProps(context: any) {
     },
   };
 }
-
-const defaultStats: RestockStats = {
-  durationCount: 0,
-  mostPopularShop: {
-    shopId: 0,
-    durationCount: 0,
-  },
-  totalSessions: 0,
-  mostExpensiveBought: undefined,
-  mostExpensiveLost: undefined,
-  totalRefreshes: 0,
-  totalClicks: 0,
-  totalLost: {
-    count: 0,
-    value: 0,
-  },
-  totalBought: {
-    count: 0,
-    value: 0,
-  },
-  estRevenue: 0,
-  avgRefreshTime: 0,
-  avgReactionTime: 0,
-  hottestRestocks: [],
-  hottestBought: [],
-  hottestLost: [],
-  unknownPrices: 0,
-};
