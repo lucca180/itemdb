@@ -25,7 +25,7 @@
     "checklists": "Checklists",
     "dashboard": "Dashboard",
     "new": "new",
-    "restock-hub": "Restock Guide",
+    "restock-hub": "Restocking Guide",
     "sdb-pricer": "SDB Pricer",
     "login": "Login",
     "my-lists": "My Lists",
@@ -522,7 +522,7 @@
     "est-profit": "Est. Profit",
     "restock-price": "Restock Price",
     "latest-restock": "Latest Restock",
-    "neopets-restock-helper": "Neopets Restock Guide",
+    "neopets-restock-helper": "Neopets Restocking Guide",
     "restock-description": "Find the best items to buy when restocking on each shop in Neopia and earn a lot of neopoints easily!",
     "call-to-action": "Find the best items to buy from <b>each shop</b> in Neopia!",
     "dashboard-cta": "Check out the <Link>Restock Dashboard</Link> and track your restock metrics",
@@ -533,7 +533,7 @@
     "halloween-hub": "Halloween - Haunted Woods Shops with 50% off",
     "difficulty": "Difficulty",
     "shop-desc": "Find the best items to buy when restocking at {0} and earn a lot of neopoints easily!",
-    "back-to-restock-hub": "Back to Restock Guide Hub",
+    "back-to-restock-hub": "Back to Restocking Guide Hub",
     "profitable-items-from": "Find the best items to buy when restocking at <Link>{shopname}</Link>",
     "loading-your-restock-sessions": "Loading your restock sessions...",
     "you-have-no-restock-sessions-for-the-selected-period": "You have no restock sessions for the selected period",
@@ -590,7 +590,7 @@
     "hide-misses": "Hide Misses",
     "avg-reaction-time": "Avg Reaction Time",
     "based-on-x-clicks": "based on {x} clicks",
-    "restock-hub": "Restock Hub"
+    "restock-hub": "Restocking Hub"
   },
   "Search": {
     "search": "Search",
