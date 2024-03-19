@@ -6,6 +6,7 @@ import { ItemData, ItemOpenable, PrizePoolData } from '../../types';
 import CardBase from '../Card/CardBase';
 import ItemCard from './ItemCard';
 import NextLink from 'next/link';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   item: ItemData;
@@ -15,6 +16,7 @@ type Props = {
 const SKIP_ITEMS = [61696];
 
 const ItemDrops = (props: Props) => {
+  const t = useTranslations();
   const [isLoading, setLoading] = React.useState(true);
   const [dropData, setDropData] = React.useState<ItemData[]>([]);
   const { item, itemOpenable } = props;
@@ -44,7 +46,7 @@ const ItemDrops = (props: Props) => {
 
   if (isLoading)
     return (
-      <CardBase title="Item Drops" color={color}>
+      <CardBase title={t('Drops.item-drops')} color={color}>
         <Flex gap={3} wrap="wrap" justifyContent="center">
           {Object.values(itemDrops).map((item) => (
             <ItemCard key={item.item_iid} isLoading small />
@@ -54,27 +56,24 @@ const ItemDrops = (props: Props) => {
     );
 
   return (
-    <CardBase title="Item Drops" color={color}>
+    <CardBase title={t('Drops.item-drops')} color={color}>
       {itemOpenable.isGBC && (
         <Alert borderRadius={5} mb={3}>
           <AlertIcon />
-          <Text fontSize="sm">
-            <b>Gift Box Mystery Capsules</b> can drop any item <b>currently</b> for sale at the NC
-            Mall for <b>at least 150NC</b>
-          </Text>
+          <Text fontSize="sm">{t.rich('Drops.gbc', { b: (text) => <b>{text}</b> })}</Text>
         </Alert>
       )}
 
       {isChoice && (itemOpenable.minDrop > 1 || itemOpenable.maxDrop > 1) && (
         <Text textAlign={'center'} mb={3} fontSize="sm" color="gray.200">
-          {getDropText(null, itemOpenable)}
+          <DropText pool={null} itemOpenable={itemOpenable} />
         </Text>
       )}
       {pools['le'] && pools['le'].items.length > 0 && (
         <>
           <Alert status="success" variant="subtle" textAlign={'center'}>
             <Text textAlign={'center'} fontSize="sm" flex="1">
-              {getDropText(pools['le'], itemOpenable)}
+              <DropText pool={pools['le']} itemOpenable={itemOpenable} />
             </Text>
           </Alert>
           <Flex gap={3} wrap="wrap" justifyContent="center" my={3}>
@@ -103,26 +102,17 @@ const ItemDrops = (props: Props) => {
         .sort((a, b) => a.name.localeCompare(b.name))
         .map((pool, i) => (
           <Flex alignItems="center" key={pool.name} flexFlow="column" mb={8}>
-            {getCatImage(pool.name) && (
-              <Image
-                h={'60px'}
-                w={'269px'}
-                objectFit="cover"
-                src={getCatImage(pool.name)}
-                alt={`${pool} image`}
-                mb={3}
-              />
-            )}
+            {getCatImage(pool.name, item.internal_id)}
             {!isChoice && pool.name === 'bonus' && (
               <Alert status="success" variant="subtle" textAlign={'center'} mb={3}>
                 <Text textAlign={'center'} fontSize="sm" flex="1">
-                  {getDropText(pool, itemOpenable)}
+                  <DropText pool={pool} itemOpenable={itemOpenable} />
                 </Text>
               </Alert>
             )}
             {!isChoice && pool.name !== 'bonus' && (
               <Text textAlign={'center'} fontSize="sm" flex="1" mb={3}>
-                {getDropText(pool, itemOpenable, i === 0)}
+                <DropText pool={pool} itemOpenable={itemOpenable} isFirst={i === 0} />
               </Text>
             )}
             <Flex gap={3} wrap="wrap" justifyContent="center">
@@ -146,10 +136,15 @@ const ItemDrops = (props: Props) => {
             </Flex>
             {isChoice && (
               <Text textAlign={'center'} mt={4} fontSize="xs" color="gray.300">
-                Odds on {pool.openings} opening reports.{' '}
-                <Link as={NextLink} href="/contribute" color="gray.400">
-                  Learn How To Help
-                </Link>
+                {t.rich('Drops.pool-opening-reports', {
+                  b: (text) => <b>{text}</b>,
+                  openings: pool.openings,
+                  Link: (text) => (
+                    <Link as={NextLink} href="/contribute" color="gray.400">
+                      {text}
+                    </Link>
+                  ),
+                })}
               </Text>
             )}
           </Flex>
@@ -161,18 +156,21 @@ const ItemDrops = (props: Props) => {
             <>
               {' '}
               <Center>
-                <Badge fontSize="md">Unknown Categories</Badge>
+                <Badge fontSize="md">{t('Drops.unknown-categories')}</Badge>
               </Center>
               <Text textAlign={'center'} my={3} fontSize="xs" color="gray.300">
-                We couldn't precise the category of the following items, so we cannot provide the
-                odds correctly.
+                {t('Drops.unknown-text')}
               </Text>
             </>
           )}
           {!isChoice &&
             (pools['unknown'].minDrop > 0 || pools['unknown'].maxDrop > 1 || multiplePools) && (
               <Text textAlign={'center'} mb={3} fontSize="sm" color="gray.200">
-                {getDropText(pools['unknown'], itemOpenable, !multiplePools)}
+                <DropText
+                  pool={pools['unknown']}
+                  itemOpenable={itemOpenable}
+                  isFirst={!multiplePools}
+                />
               </Text>
             )}
           <Flex gap={3} wrap="wrap" justifyContent="center">
@@ -198,10 +196,15 @@ const ItemDrops = (props: Props) => {
       )}
       {!isChoice && !!itemOpenable.openings && (
         <Text textAlign={'center'} mt={4} fontSize="xs" color="gray.300">
-          {item.name} drop odds on {itemOpenable.openings} opening reports.{' '}
-          <Link as={NextLink} href="/contribute" color="gray.400">
-            Learn How To Help
-          </Link>
+          {t.rich('Drops.item-opening-reports', {
+            openings: itemOpenable.openings,
+            itemName: item.name,
+            Link: (text) => (
+              <Link as={NextLink} href="/contribute" color="gray.400">
+                {text}
+              </Link>
+            ),
+          })}
         </Text>
       )}
     </CardBase>
@@ -210,69 +213,101 @@ const ItemDrops = (props: Props) => {
 
 export default ItemDrops;
 
-const getCatImage = (cat: string) => {
-  if (cat === 'trinkets') return `https://images.neopets.com/ncmall/buttons/bg_${cat}.png`;
+const getCatImage = (cat: string, item_iid: number) => {
+  let url = '';
+
+  if (cat === 'trinkets') url = `https://images.neopets.com/ncmall/buttons/bg_${cat}.png`;
   else if (['accessories', 'clothing'].includes(cat))
-    return `https://images.neopets.com/ncmall/buttons/${cat}.png`;
+    url = `https://images.neopets.com/ncmall/buttons/${cat}.png`;
 
   if (cat.match(/cat\d+y\d+/gim)) {
     const [catId, catY] = cat.toLowerCase().split('y');
-    return `https://images.neopets.com/ncmall/buttons/altador_years_${catId}_y${catY}.png`;
+    url = `https://images.neopets.com/ncmall/buttons/altador_years_${catId}_y${catY}.png`;
   }
 
-  return '';
+  if (url)
+    return <Image h={'60px'} w={'269px'} objectFit="cover" src={url} alt={`${cat} image`} mb={3} />;
+
+  // figure out a better way to handle this
+  if (item_iid === 63977) {
+    if (cat.toLowerCase() === 'cat1') url = '2007-2010';
+
+    if (cat.toLowerCase() === 'cat2') url = '2011-2012';
+
+    if (cat.toLowerCase() === 'cat3') url = '2013-2014';
+  }
+
+  if (url)
+    return (
+      <Badge as="h3" fontSize="lg" mb={3}>
+        {url}
+      </Badge>
+    );
+
+  return null;
 };
 
-const getDropText = (pool: PrizePoolData | null, itemOpenable: ItemOpenable, isFirst?: boolean) => {
-  let text = <></>;
+type DropTextProps = {
+  pool: PrizePoolData | null;
+  itemOpenable: ItemOpenable;
+  isFirst?: boolean;
+};
 
-  if (!pool)
+const DropText = ({ pool, itemOpenable, isFirst }: DropTextProps) => {
+  const t = useTranslations();
+
+  if (!pool || !pool.isChance) {
+    const openable = pool ?? itemOpenable;
+    if (openable.maxDrop > 1 && openable.maxDrop !== openable.minDrop)
+      return (
+        <>
+          {t.rich('Drops.multiple', {
+            b: (text) => <b>{text}</b>,
+            isFirst: isFirst,
+            min: openable.minDrop,
+            max: openable.maxDrop,
+          })}
+        </>
+      );
+
     return (
       <>
-        This item will drop {itemOpenable.minDrop === 1 && itemOpenable.maxDrop === 1 && <b>one</b>}
-        {itemOpenable.minDrop >= 1 && itemOpenable.maxDrop > 1 && (
-          <b>at least {itemOpenable.minDrop}</b>
-        )}
-        {itemOpenable.minDrop >= 1 && itemOpenable.maxDrop !== itemOpenable.minDrop && ' and '}
-        {itemOpenable.maxDrop > 1 && itemOpenable.maxDrop !== itemOpenable.minDrop && (
-          <b>up to {itemOpenable.maxDrop}</b>
-        )}{' '}
-        of these items:
+        {t.rich('Drops.single', {
+          b: (text) => <b>{text}</b>,
+          isFirst: isFirst,
+          min: openable.minDrop || openable.maxDrop,
+        })}
       </>
     );
+  }
 
   if (pool.isChance) {
-    text = (
+    if (pool.maxDrop > 1 && pool.maxDrop !== pool.minDrop)
+      return (
+        <>
+          {t.rich('Drops.chance-multiple', {
+            b: (text) => <b>{text}</b>,
+            isFirst: isFirst,
+            min: pool.minDrop,
+            max: pool.maxDrop,
+            type: pool.name,
+            chance: pool.openings ? ((pool.openings / itemOpenable.openings) * 100).toFixed(2) : 0,
+          })}
+        </>
+      );
+
+    return (
       <>
-        You have a{' '}
-        {pool.openings > 0 && <b>{((pool.openings / itemOpenable.openings) * 100).toFixed(2)}%</b>}{' '}
-        chance of getting {pool.minDrop === 1 && pool.maxDrop === 1 && <b>one</b>}
-        {pool.minDrop >= 1 && pool.maxDrop > 1 && <b>at least {pool.minDrop}</b>}
-        {pool.minDrop >= 1 && pool.maxDrop !== pool.minDrop && ' and '}
-        {pool.maxDrop > 1 && pool.maxDrop !== pool.minDrop && <b>up to {pool.maxDrop}</b>} of these{' '}
-        {pool.name === 'bonus' ? <b>bonus</b> : pool.name === 'le' ? <b>Limited Edition</b> : ''}{' '}
-        items:
+        {t.rich('Drops.chance-single', {
+          b: (text) => <b>{text}</b>,
+          isFirst: isFirst,
+          min: pool.minDrop || pool.maxDrop,
+          type: pool.name,
+          chance: pool.openings ? ((pool.openings / itemOpenable.openings) * 100).toFixed(2) : 0,
+        })}
       </>
     );
   }
 
-  if (!pool.isChance) {
-    text = (
-      <>
-        This item will {!isFirst ? 'also ' : ''} drop{' '}
-        {pool.minDrop === 1 && pool.maxDrop === 1 && <b>one</b>}
-        {pool.minDrop >= 1 && pool.maxDrop > 1 && pool.maxDrop !== pool.minDrop && (
-          <b>at least {pool.minDrop}</b>
-        )}
-        {pool.minDrop >= 1 && pool.maxDrop > 1 && pool.maxDrop === pool.minDrop && (
-          <b>{pool.minDrop}</b>
-        )}
-        {pool.minDrop >= 1 && pool.maxDrop !== pool.minDrop && ' and '}
-        {pool.maxDrop > 1 && pool.maxDrop !== pool.minDrop && <b>up to {pool.maxDrop}</b>} of the
-        following items:
-      </>
-    );
-  }
-
-  return text;
+  return null;
 };

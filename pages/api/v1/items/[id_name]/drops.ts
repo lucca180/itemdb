@@ -4,7 +4,7 @@ import { ItemDrop, ItemOpenable, PrizePoolData } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 
-const catType = ['trinkets', 'accessories', 'clothing', 'le'];
+const catType = ['trinkets', 'accessories', 'clothing', 'le', 'choice'];
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -162,7 +162,7 @@ export const getItemDrops = async (
 
       if (notesList.length === 1) val = 10;
 
-      if (catType.includes(note) || note.match(/cat\d+y\d+/gim)) {
+      if (catType.includes(note) || note.match(/cat\d+y\d+/gim) || note.match(/cat\d+/gim)) {
         if (note !== 'le') isChoice = true;
 
         if (!poolsData[drop.item_iid]) poolsData[drop.item_iid] = {};
