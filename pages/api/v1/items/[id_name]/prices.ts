@@ -38,6 +38,7 @@ export const getItemPrices = async (args: ItemPricesArgs) => {
 
   const prices: PriceData[] = pricesRaw.map((p) => {
     return {
+      price_id: p.internal_id,
       value: p.price,
       addedAt: p.addedAt.toJSON(),
       inflated: !!p.noInflation_id,

@@ -81,6 +81,7 @@ export type ColorType =
 export type FullItemColors = Record<ColorType, ColorData>;
 
 export type PriceData = {
+  price_id: number;
   value: number;
   addedAt: string;
   inflated: boolean;

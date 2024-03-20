@@ -26,10 +26,15 @@ import dynamic from 'next/dynamic';
 import { LastSeenModalProps } from '../Modal/LastSeenModal';
 import { useFormatter, useTranslations } from 'next-intl';
 import { WrongPriceModalProps } from '../Modal/WrongPriceModal';
+import { AdminEditPriceModalProps } from '../Modal/AdminEditPriceModal';
+import { useAuth } from '../../utils/auth';
 
 const ChartComponent = dynamic<ChartComponentProps>(() => import('../Charts/PriceChart'));
 const LastSeenModal = dynamic<LastSeenModalProps>(() => import('../Modal/LastSeenModal'));
 const WrongPriceModal = dynamic<WrongPriceModalProps>(() => import('../Modal/WrongPriceModal'));
+const AdminEditPriceModal = dynamic<AdminEditPriceModalProps>(
+  () => import('../Modal/AdminEditPriceModal')
+);
 
 type Props = {
   item: ItemData;
@@ -43,13 +48,15 @@ const intl = new Intl.NumberFormat();
 const ItemPriceCard = (props: Props) => {
   const t = useTranslations();
   const format = useFormatter();
+  const { user } = useAuth();
   const lastSeenModal = useDisclosure();
   const wrongPriceModal = useDisclosure();
   const { item, prices, lastSeen, isLoading } = props;
   const [displayState, setDisplay] = useState('table');
   const [priceDiff, setDiff] = useState<number | null>(null);
   const isNoTrade = item.status?.toLowerCase() === 'no trade';
-
+  const [selectedPrice, setSelectedPrice] = useState<PriceData | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const rgbColor = item.color.rgb;
   const price = prices[0];
 
@@ -59,6 +66,11 @@ const ItemPriceCard = (props: Props) => {
       setDiff(diff);
     } else setDiff(null);
   }, [prices]);
+
+  useEffect(() => {
+    if (user && user.isAdmin) setIsAdmin(true);
+    else setIsAdmin(false);
+  }, [user]);
 
   if (isLoading)
     return (
@@ -129,6 +141,12 @@ const ItemPriceCard = (props: Props) => {
 
   return (
     <>
+      <AdminEditPriceModal
+        isOpen={true}
+        itemPrice={selectedPrice}
+        onClose={() => setSelectedPrice(null)}
+        item={item}
+      />
       <LastSeenModal isOpen={lastSeenModal.isOpen} onClose={lastSeenModal.onClose} />
       <WrongPriceModal isOpen={wrongPriceModal.isOpen} onClose={wrongPriceModal.onClose} />
       <CardBase color={rgbColor} title={t('ItemPage.price-overview')}>
@@ -196,7 +214,13 @@ const ItemPriceCard = (props: Props) => {
                     {displayState === 'chart' && (
                       <ChartComponent color={item.color} data={prices} />
                     )}
-                    {displayState === 'table' && <PriceTable data={prices} />}
+                    {displayState === 'table' && (
+                      <PriceTable
+                        data={prices}
+                        isAdmin={isAdmin}
+                        onEdit={(data) => setSelectedPrice(data)}
+                      />
+                    )}
                   </>
                 )}
                 {prices.length == 0 && (

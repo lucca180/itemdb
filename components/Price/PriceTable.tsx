@@ -1,17 +1,30 @@
-import { Stat, StatArrow, Table, TableContainer, Tbody, Td, Tr, Text } from '@chakra-ui/react';
+import {
+  Stat,
+  StatArrow,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Tr,
+  Text,
+  IconButton,
+} from '@chakra-ui/react';
 import React from 'react';
 import { PriceData } from '../../types';
 import { MinusIcon } from '@chakra-ui/icons';
 import { useFormatter, useTranslations } from 'next-intl';
+import { FiEdit } from 'react-icons/fi';
 
 const intl = new Intl.NumberFormat();
 
 type Props = {
   data: PriceData[];
+  isAdmin?: boolean;
+  onEdit?: (price: PriceData) => void;
 };
 
 const PriceTable = (props: Props) => {
-  const { data } = props;
+  const { data, isAdmin, onEdit } = props;
   const sortedData = data;
   const t = useTranslations();
   const format = useFormatter();
@@ -61,6 +74,17 @@ const PriceTable = (props: Props) => {
                   day: 'numeric',
                 })}
               </Td>
+              {isAdmin && (
+                <Td>
+                  {' '}
+                  <IconButton
+                    onClick={() => onEdit?.(price)}
+                    size="xs"
+                    aria-label="Edit"
+                    icon={<FiEdit />}
+                  />
+                </Td>
+              )}
             </Tr>
           ))}
         </Tbody>
