@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../utils/prisma';
 import requestIp from 'request-ip';
 import sgMail from '@sendgrid/mail';
+import { FEEDBACK_VOTE_TARGET } from './vote';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -39,8 +40,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     });
 
     if (user) {
-      if (user.role === 'ADMIN') voteMultiplier = 10;
-      else voteMultiplier = Math.max(1, Math.min(Math.round(user.xp / 1000), 9));
+      if (user.role === 'ADMIN') voteMultiplier = FEEDBACK_VOTE_TARGET * 2;
+      else
+        voteMultiplier = Math.max(
+          1,
+          Math.min(Math.round(user.xp / 1000), Math.floor(FEEDBACK_VOTE_TARGET * 0.7))
+        );
     }
   }
 

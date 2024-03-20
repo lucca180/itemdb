@@ -2,6 +2,7 @@ import { Prisma, TradeItems, Trades } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { processTradePrice } from '.';
+import { FEEDBACK_VOTE_TARGET } from '../../feedback/vote';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
@@ -65,6 +66,7 @@ export const autoPriceTrades2 = async (tradeRaw: (Trades & { items: TradeItems[]
       pageRef: 'auto',
       content: { trade: t },
     }),
+    votes: Math.floor(FEEDBACK_VOTE_TARGET * 0.7),
   }));
 
   const feedbacks = prisma.feedbacks.createMany({

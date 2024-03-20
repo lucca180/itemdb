@@ -6,6 +6,8 @@ import { Feedbacks } from '@prisma/client';
 import { processTags } from '../v1/items/[id_name]/index';
 import { processTradePrice } from '../v1/trades';
 
+export const FEEDBACK_VOTE_TARGET = 5;
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
@@ -25,8 +27,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     user_id = user.id;
     const isAdmin = user.role === 'ADMIN';
 
-    if (isAdmin) voteMultiplier = 10;
-    else voteMultiplier = Math.max(1, Math.min(Math.round(user.xp / 1000), 9));
+    if (isAdmin) voteMultiplier = FEEDBACK_VOTE_TARGET * 2;
+    else
+      voteMultiplier = Math.max(
+        1,
+        Math.min(Math.round(user.xp / 1000), Math.floor(FEEDBACK_VOTE_TARGET * 0.7))
+      );
 
     const feedbackRaw = await prisma.feedbacks.findUniqueOrThrow({
       where: {
@@ -77,14 +83,17 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       },
       data: {
         xp: {
-          increment: 3,
+          increment: FEEDBACK_VOTE_TARGET,
         },
       },
     });
 
     const [feedbacks] = await prisma.$transaction([feedback, vote, votingUser]);
 
-    if (!feedbacks.processed && (feedbacks.votes >= 5 || feedbacks.votes <= -5)) {
+    if (
+      !feedbacks.processed &&
+      (feedbacks.votes >= FEEDBACK_VOTE_TARGET || feedbacks.votes <= -FEEDBACK_VOTE_TARGET)
+    ) {
       await commitChanges(feedbacks, req);
     }
 
@@ -100,7 +109,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
 // so, race conditions could make this exec twice, but it's not a big deal (i guess)
 const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
-  if (feedback.votes <= -5) {
+  if (feedback.votes <= -FEEDBACK_VOTE_TARGET) {
     // ------- Handlers -------- //
 
     if (feedback.type === 'tradePrice') await commitTradePrice(feedback, false, req);
@@ -127,7 +136,7 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
         },
         data: {
           xp: {
-            decrement: 10,
+            decrement: FEEDBACK_VOTE_TARGET * 2,
           },
         },
       });
@@ -135,7 +144,7 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
     return;
   }
 
-  if (feedback.votes >= 5) {
+  if (feedback.votes >= FEEDBACK_VOTE_TARGET) {
     // ------- Handlers -------- //
 
     if (feedback.type === 'tradePrice') await commitTradePrice(feedback, true, req);
@@ -162,7 +171,7 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
         },
         data: {
           xp: {
-            increment: 10,
+            increment: FEEDBACK_VOTE_TARGET * 3,
           },
         },
       });
