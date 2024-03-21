@@ -88,7 +88,7 @@ const AdminEditPriceModal = (props: AdminEditPriceModalProps) => {
 
   if (msg)
     return (
-      <AlertDialog isOpen leastDestructiveRef={cancelRef} onClose={onClose}>
+      <AlertDialog isOpen leastDestructiveRef={cancelRef} onClose={onClose} isCentered>
         <AlertDialogOverlay>
           <AlertDialogContent>
             <AlertDialogHeader fontSize="lg" fontWeight="bold">
@@ -112,6 +112,7 @@ const AdminEditPriceModal = (props: AdminEditPriceModalProps) => {
         leastDestructiveRef={cancelRef}
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         onClose={() => {}}
+        isCentered
       >
         <AlertDialogOverlay>
           <AlertDialogContent>
