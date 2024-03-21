@@ -383,7 +383,7 @@ async function processOpenables() {
 
       await prisma.openableQueue.update({
         data: {
-          manual_check: typeof e === 'string' ? e : e.message,
+          manual_check: typeof e === 'string' ? e.slice(0, 140) : e.message.slice(0, 140),
         },
         where: {
           internal_id: openable.internal_id,
