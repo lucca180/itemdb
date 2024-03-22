@@ -99,7 +99,7 @@ const getTradeData = async (name: string) => {
         name: i.name,
         image: i.image,
         image_id: i.image_id,
-        price: i.price,
+        price: i.price?.toNumber() || null,
         order: i.order,
         addedAt: i.addedAt.toJSON(),
       })),

@@ -3,8 +3,9 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { coefficientOfVariation } from '../../../../utils/utils';
 import { mean, standardDeviation } from 'simple-statistics';
-import { ItemPrices, PriceProcess2 } from '@prisma/client';
+import { ItemPrices, PriceProcess2, Prisma } from '@prisma/client';
 import { differenceInCalendarDays, differenceInDays } from 'date-fns';
+import { processPrices2 } from '../../../../utils/pricing';
 
 const MAX_DAYS = 30;
 const MAX_PAST_DAYS = 60;
@@ -192,7 +193,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     },
   });
 
-  const priceAddPromises: Promise<ItemPrices | undefined>[] = [];
+  const priceAddPromises: Promise<Prisma.ItemPricesUncheckedCreateInput | undefined>[] = [];
   const processedIDs: number[] = [];
 
   // list of unique entries
@@ -202,6 +203,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     const item = allItemData[0];
 
     try {
+      const newPriceAlgorithm = processPrices2(allItemData);
       if (allItemData.length < 3) continue;
       const mostRecentPrices = filterMostRecents(allItemData).sort((a, b) => a.price - b.price);
       const owners = new Set<string>();
@@ -267,7 +269,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       else if (finalPrice > 10000) finalPrice = Math.round(finalMean / 50) * 50;
 
       priceAddPromises.push(
-        updateOrAddDB(item, finalPrice, usedIDs, latestDate).then((_) => {
+        updateOrAddDB(item, finalPrice, usedIDs, latestDate, newPriceAlgorithm?.price).then((_) => {
           if (_) processedIDs.push(...allIDs);
           return _;
         })
@@ -346,16 +348,18 @@ async function updateOrAddDB(
   priceData: PriceProcess2,
   priceValue: number,
   usedIDs: number[],
-  latestDate: Date
-): Promise<ItemPrices | undefined> {
+  latestDate: Date,
+  priceValue2?: number
+): Promise<Prisma.ItemPricesUncheckedCreateInput | undefined> {
   const newPriceData = {
     name: 'priceprocess2',
     item_iid: priceData.item_iid,
-    price: priceValue,
+    price: priceValue >= Math.pow(2, 31) ? Math.pow(2, 31) - 1 : priceValue,
+    newPrice: priceValue2 ?? priceValue,
     manual_check: null,
     addedAt: latestDate,
     usedProcessIDs: usedIDs.toString(),
-  } as ItemPrices;
+  } as Prisma.ItemPricesUncheckedCreateInput;
 
   try {
     if (!priceData.item_iid) throw 'invalid data';

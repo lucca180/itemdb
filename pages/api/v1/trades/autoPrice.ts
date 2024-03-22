@@ -49,7 +49,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           image: i.image,
           image_id: i.image_id,
           order: i.order,
-          price: i.price,
+          price: i.price?.toNumber() || null,
           addedAt: i.addedAt.toJSON(),
         };
       }),

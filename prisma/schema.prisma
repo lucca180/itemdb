@@ -152,6 +152,7 @@ model ItemPrices {
   name        String
   image_id    String?
   price       Int
+  newPrice    Decimal?  @db.Decimal(11, 0)
   addedAt     DateTime  @default(now())
   processedAt DateTime? @default(now())
 
@@ -237,7 +238,7 @@ model TradeItems {
   image       String
   image_id    String
   order       Int
-  price       Int?
+  price       Decimal?  @db.Decimal(11, 0)
   addedAt     DateTime @default(now())
   item_id     Int?
 
@@ -501,6 +502,7 @@ model PriceProcess2 {
   otherInfo  String?
   stock      Int      @default(1)
   price      Int
+  price2     Decimal? @db.Decimal(11, 0) 
   addedAt    DateTime @default(now())
   ip_address String?
   language   String

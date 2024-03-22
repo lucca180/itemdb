@@ -175,7 +175,7 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
   const isUpdate = !!originalTrade?.processed;
 
   const updateItems = trade.items
-    .filter((x) => x.price && x.price > 0 && x.price < Math.pow(2, 31)) // max int32
+    .filter((x) => x.price && x.price > 0)
     .map((item) => {
       return prisma.tradeItems.updateMany({
         where: {
@@ -281,7 +281,7 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
 
     addPriceProcess.push({
       name: item.name,
-      price: item.price as number,
+      price: item.price!.toNumber(),
       image: item.image,
       image_id: item.image_id,
       item_id: dbItem ? dbItem.item_id : undefined,
@@ -338,7 +338,7 @@ export const getItemTrades = async (args: getItemTradesArgs) => {
           name: i.name,
           image: i.image,
           image_id: i.image_id,
-          price: i.price,
+          price: i.price?.toNumber() || null,
           order: i.order,
           addedAt: i.addedAt.toJSON(),
         };
