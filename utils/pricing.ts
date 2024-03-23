@@ -27,7 +27,7 @@ export const processPrices2 = (allItemData: PriceProcess2[]) => {
 
   mostRecents.map((x, i) => {
     if (i <= 4) {
-      const stock = Math.min(x.stock, 3);
+      const stock = Math.min(x.stock, 2);
       prices.push(...Array(stock).fill(x.price));
     } else prices.push(x.price);
   });
@@ -36,7 +36,9 @@ export const processPrices2 = (allItemData: PriceProcess2[]) => {
   const priceMean = mean(prices);
   const priceSTD = standardDeviation(prices);
 
-  let out = prices.filter((x) => x <= priceMean + priceSTD && x >= priceMean - priceSTD * 2.5);
+  let out = prices.filter(
+    (x) => x <= priceMean + priceSTD * 0.5 && x >= priceMean - priceSTD * 2.5
+  );
   out = out.splice(0, 5);
 
   const finalMean = out.length >= 2 ? mean(out) : out[0];
