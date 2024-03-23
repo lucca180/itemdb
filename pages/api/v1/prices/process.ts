@@ -355,7 +355,7 @@ async function updateOrAddDB(
     name: 'priceprocess2',
     item_iid: priceData.item_iid,
     price: priceValue >= Math.pow(2, 31) ? Math.pow(2, 31) - 1 : priceValue,
-    newPrice: priceValue2 ?? priceValue,
+    newPrice: priceValue2 ?? null,
     manual_check: null,
     addedAt: latestDate,
     usedProcessIDs: usedIDs.toString(),
@@ -407,14 +407,14 @@ async function updateOrAddDB(
       const lastNormalPrice = await prisma.itemPrices.findUniqueOrThrow({
         where: { internal_id: oldPrice.noInflation_id },
       });
-      const daysWithInflation = differenceInCalendarDays(latestDate, lastNormalPrice.addedAt);
+      // const daysWithInflation = differenceInCalendarDays(latestDate, lastNormalPrice.addedAt);
       const inflationVariation = coefficientOfVariation([lastNormalPrice.price, priceValue]);
 
       newPriceData.noInflation_id = oldPrice.noInflation_id;
 
       if (
         priceValue <= 75000 ||
-        (daysWithInflation >= 60 && variation < 30) ||
+        // (daysWithInflation >= 60 && variation < 30) ||
         (priceValue > 75000 && inflationVariation < 75) ||
         (priceValue >= 100000 && inflationVariation < 50) ||
         lastNormalPrice.price >= priceValue
