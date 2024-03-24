@@ -1,5 +1,5 @@
 import { PriceProcess2 } from '@prisma/client';
-import { differenceInDays } from 'date-fns';
+import { differenceInCalendarDays } from 'date-fns';
 import { mean, standardDeviation } from 'simple-statistics';
 
 export const processPrices2 = (allItemData: PriceProcess2[]) => {
@@ -60,7 +60,7 @@ function filterMostRecents(priceProcessList: PriceProcess2[]) {
   };
 
   const firstFiltered = priceProcessList.filter(
-    (x) => differenceInDays(Date.now(), x.addedAt) <= 0
+    (x) => differenceInCalendarDays(Date.now(), x.addedAt) <= 0
   );
 
   if (firstFiltered.filter((x) => x.type !== 'usershop').length >= daysThreshold[3] * 3)
@@ -75,8 +75,8 @@ function filterMostRecents(priceProcessList: PriceProcess2[]) {
 
     const filtered = priceProcessList.filter(
       (x) =>
-        differenceInDays(Date.now(), x.addedAt) <= days &&
-        differenceInDays(Date.now(), x.addedAt) > prevDays
+        differenceInCalendarDays(Date.now(), x.addedAt) <= days &&
+        differenceInCalendarDays(Date.now(), x.addedAt) >= prevDays
     );
 
     if (filtered.filter((x) => x.type !== 'usershop').length >= goal) return filtered;
