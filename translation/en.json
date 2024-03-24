@@ -687,7 +687,7 @@
     "yahoo-mail-error": "Yahoo users may experience difficulties receiving emails at the moment"
   },
   "Drops": {
-    "single": "This item will {isFirst, select, false {also} other {}} drop <b>{min, plural, =1 {um} other {#}}</b> of the following items:",
+    "single": "This item will {isFirst, select, false {also} other {}} drop {min, plural, =0{} =1 {<b>one</b> of} other {<b>#</b> of}}</b> the following items:",
     "multiple": "This item will {isFirst, select, false {also} other {}} drop {min, plural, =0 {} other {<b>at least #</b>}} and <b>up to {max}</b> of the these items:",
     "chance-single": "You {isFirst, select, false {also} other {}} have {chance, plural, =0 {chances of} other {<b>#% chance</b> of}} getting <b>{min, plural, =1 {one} other {#}}</b> of these {type, select, le {<b>Limited Edition Items</b> } bonus {<b>Bonus Items</b>} other {items}}:",
     "chance-multiple": "You {isFirst, select, false {also} other {}} have {chance, plural, =0 {chances of} other {<b>#% chance</b> of}} getting {min, plural, =0 {} other {<b>at least #</b> and}} <b>up to {max}</b> of these {type, select, le {itens <b>Limited Edition Items</b> } bonus {<b>Bonus Items</b>} other {items}}:",
