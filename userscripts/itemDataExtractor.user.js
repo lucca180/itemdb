@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.4.1
+// @version      1.4.2
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -834,7 +834,7 @@ function handleSSWPrices() {
           .eq(0)
           .attr('href')
           .match(/(?<=buy_cost_neopoints\=)\d+/)?.[0];
-        const stock = $(this).find('td').eq(2).text();
+        const stock = $(this).find('td').eq(1).text();
 
         const itemPriceInfo = {
           item_id: itemID,
