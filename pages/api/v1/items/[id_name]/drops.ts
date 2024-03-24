@@ -167,6 +167,17 @@ export const getItemDrops = async (
 
         if (!poolsData[drop.item_iid]) poolsData[drop.item_iid] = {};
 
+        // there's a better place to do this, but it's a quick fix
+        if (notesList.length === 2) {
+          const oppening = openingSet[drop.opening_id];
+          const otherItem = oppening.find((a) => a !== drop.item_iid);
+
+          if (otherItem && poolsData[otherItem]) {
+            const maxNoteVal = Math.max(...Object.values(poolsData[otherItem]));
+            if (maxNoteVal >= 10 && poolsData[otherItem][note] < maxNoteVal) val = 10;
+          }
+        }
+
         poolsData[drop.item_iid][note] = poolsData[drop.item_iid][note]
           ? poolsData[drop.item_iid][note] + val
           : val;
