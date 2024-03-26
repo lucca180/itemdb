@@ -124,68 +124,70 @@ export const getItemDrops = async (
   const manualItems: number[] = [];
   let isChoice = false;
 
-  drops.map((drop) => {
-    const dropData: ItemDrop = {
-      item_iid: drop.item_iid,
-      dropRate: dropsData[drop.item_iid]?.dropRate ?? 0,
-      notes: drop.notes,
-      isLE: drop.limitedEdition,
-      pool: dropsData[drop.item_iid]?.pool ?? null,
-    };
+  drops
+    .sort((a, b) => (a.notes?.length ?? 0) - (b.notes?.length ?? 0))
+    .map((drop) => {
+      const dropData: ItemDrop = {
+        item_iid: drop.item_iid,
+        dropRate: dropsData[drop.item_iid]?.dropRate ?? 0,
+        notes: drop.notes,
+        isLE: drop.limitedEdition,
+        pool: dropsData[drop.item_iid]?.pool ?? null,
+      };
 
-    if (!drop.isManual) dropData.dropRate += 1;
+      if (!drop.isManual) dropData.dropRate += 1;
 
-    const pool = drop.prizePool?.toLowerCase();
-    if (pool) {
-      if (!prizePools[pool]) {
-        prizePools[pool] = {
-          name: pool,
-          isChance: pool.includes('chance'),
-          items: [],
-          openings: 0,
-          maxDrop: 0,
-          minDrop: 0,
-          totalDrops: 0,
-        };
-      }
-
-      prizePools[pool].items.push(drop.item_iid);
-      manualItems.push(drop.item_iid);
-      dropData.pool = pool;
-    }
-
-    if (dropData.isLE) drop.notes = 'LE';
-
-    const notesList = drop.notes?.toLowerCase().split(',') ?? [];
-    notesList.map((note) => {
-      let val = 1;
-
-      if (notesList.length === 1) val = 10;
-
-      if (catType.includes(note) || note.match(/cat\d+y\d+/gim) || note.match(/cat\d+/gim)) {
-        if (note !== 'le') isChoice = true;
-
-        if (!poolsData[drop.item_iid]) poolsData[drop.item_iid] = {};
-
-        // there's a better place to do this, but it's a quick fix
-        if (notesList.length === 2) {
-          const oppening = openingSet[drop.opening_id];
-          const otherItem = oppening.find((a) => a !== drop.item_iid);
-
-          if (otherItem && poolsData[otherItem]) {
-            const maxNoteVal = Math.max(...Object.values(poolsData[otherItem]));
-            if (maxNoteVal >= 10 && poolsData[otherItem][note] < maxNoteVal) val = 10;
-          }
+      const pool = drop.prizePool?.toLowerCase();
+      if (pool) {
+        if (!prizePools[pool]) {
+          prizePools[pool] = {
+            name: pool,
+            isChance: pool.includes('chance'),
+            items: [],
+            openings: 0,
+            maxDrop: 0,
+            minDrop: 0,
+            totalDrops: 0,
+          };
         }
 
-        poolsData[drop.item_iid][note] = poolsData[drop.item_iid][note]
-          ? poolsData[drop.item_iid][note] + val
-          : val;
+        prizePools[pool].items.push(drop.item_iid);
+        manualItems.push(drop.item_iid);
+        dropData.pool = pool;
       }
-    });
 
-    dropsData[drop.item_iid] = dropData;
-  });
+      if (dropData.isLE) drop.notes = 'LE';
+
+      const notesList = drop.notes?.toLowerCase().split(',') ?? [];
+      notesList.map((note) => {
+        let val = 1;
+
+        if (notesList.length === 1) val = 10;
+
+        if (catType.includes(note) || note.match(/cat\d+y\d+/gim) || note.match(/cat\d+/gim)) {
+          if (note !== 'le') isChoice = true;
+
+          if (!poolsData[drop.item_iid]) poolsData[drop.item_iid] = {};
+
+          // there's a better place to do this, but it's a quick fix
+          if (notesList.length === 2) {
+            const oppening = openingSet[drop.opening_id];
+            const otherItem = oppening.find((a) => a !== drop.item_iid);
+
+            if (otherItem && poolsData[otherItem]) {
+              const maxNoteVal = Math.max(...Object.values(poolsData[otherItem]));
+              if (maxNoteVal >= 10 && poolsData[otherItem][note] < maxNoteVal) val = 10;
+            }
+          }
+
+          poolsData[drop.item_iid][note] = poolsData[drop.item_iid][note]
+            ? poolsData[drop.item_iid][note] + val
+            : val;
+        }
+      });
+
+      dropsData[drop.item_iid] = dropData;
+    });
 
   const openableData: ItemOpenable = {
     openings: Object.values(openingSet).length,
