@@ -63,8 +63,7 @@ function filterMostRecents(priceProcessList: PriceProcess2[]) {
     (x) => differenceInCalendarDays(Date.now(), x.addedAt) <= 0
   );
 
-  if (firstFiltered.filter((x) => x.type !== 'usershop').length >= daysThreshold[3] * 2)
-    return firstFiltered;
+  if (checkFiltered(firstFiltered, daysThreshold[3] * 2)) return firstFiltered;
 
   let count = 0;
 
@@ -79,13 +78,21 @@ function filterMostRecents(priceProcessList: PriceProcess2[]) {
         differenceInCalendarDays(Date.now(), x.addedAt) >= prevDays
     );
 
-    if (filtered.filter((x) => x.type !== 'usershop').length >= goal) return filtered;
+    if (checkFiltered(filtered, goal)) return filtered;
 
     count += filtered.filter((x) => x.type !== 'usershop').length;
     if (count >= goal) return [];
   }
 
   return [];
+}
+
+function checkFiltered(filtered: PriceProcess2[], goal: number) {
+  if (filtered.filter((x) => x.type !== 'usershop').length >= goal) return true;
+
+  if (filtered.filter((x) => x.type === 'ssw').length >= 5) return true;
+
+  return false;
 }
 
 function logRound(value: number) {
