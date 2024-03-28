@@ -17,6 +17,7 @@ import {
   Center,
   Spinner,
   Link as ChakraLink,
+  Select,
 } from '@chakra-ui/react';
 
 import NextImage from 'next/image';
@@ -36,6 +37,8 @@ import Color from 'color';
 import Brazil from '../public/icons/brazil.png';
 import { useTranslations } from 'next-intl';
 import { LanguageToast } from './Modal/LanguageToast';
+import axios from 'axios';
+import { setCookie } from 'cookies-next';
 
 type Props = {
   children?: ReactNode;
@@ -64,6 +67,21 @@ const Layout = (props: Props) => {
     if (!user.username && !['/', '/login'].includes(router.asPath)) router.push('/login');
   };
 
+  const saveLang = async (prefLang: string) => {
+    setCookie('NEXT_LOCALE', prefLang, { expires: new Date('2030-01-01') });
+    if (!user) return;
+    await axios.post(`/api/v1/users/${user.username}`, {
+      prefLang: prefLang,
+      neopetsUser: user.neopetsUser,
+      username: user.username,
+    });
+  };
+
+  const changeLang = async (prefLang: string) => {
+    await saveLang(prefLang);
+    router.push(router.asPath, router.asPath, { locale: prefLang });
+  };
+
   const onSubmit = (e: any, search: string, params: string) => {
     e.preventDefault();
     router.push(`/search?s=${encodeURIComponent(search)}${params}`);
@@ -73,29 +91,8 @@ const Layout = (props: Props) => {
     <>
       <NextSeo {...props.SEO} />
       <LoginModal isOpen={isOpen} onClose={onClose} />
-      <LanguageToast />
+      <LanguageToast saveLang={saveLang} />
       <Flex flexFlow="column" minH="100vh">
-        {/* <Flex
-          w="full"
-          maxW="8xl"
-          marginX="auto"
-          gap={1}
-          px={4}
-          // pt={4}
-          py={1}
-          // h="26px"
-          alignItems="center"
-          color="whiteAlpha.700"
-          fontSize={'xs'}
-          overflow={'auto'}
-          whiteSpace={'nowrap'}
-        >
-          <Box w="100%" bg="whiteAlpha.200" position={'absolute'} h="26px" left="0" zIndex={-1} />
-          <Text fontSize={'sm'}>🎂</Text>
-          <ChakraLink href="https://rekuv1fw58s.typeform.com/to/fZJfzDuQ" isExternal>
-            {t('itemdb-survey')}
-          </ChakraLink>
-        </Flex> */}
         <Flex
           as="nav"
           w="full"
@@ -260,7 +257,7 @@ const Layout = (props: Props) => {
             <Flex
               flexFlow={'column'}
               textAlign={['center', 'center', 'right']}
-              gap={8}
+              gap={4}
               justifyContent="center"
               alignItems={['center', 'center', 'flex-end']}
             >
@@ -282,6 +279,17 @@ const Layout = (props: Props) => {
                 <br />© 1999-{new Date().getFullYear()} NeoPets, Inc. All rights reserved. Used with
                 permission.
               </Text>
+              <Box>
+                <Select
+                  size="xs"
+                  variant="filled"
+                  defaultValue={router.locale ?? 'en'}
+                  onChange={(e) => changeLang(e.target.value)}
+                >
+                  <option value="en">English</option>
+                  <option value="pt">Português</option>
+                </Select>
+              </Box>
             </Flex>
             <Flex flexFlow={['row']} gap={[3, 12]} justifyContent="center">
               <Flex flex="1" flexFlow={'column'} fontSize="xs" gap={2} color="gray.300">

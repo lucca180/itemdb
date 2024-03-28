@@ -1,25 +1,27 @@
 import { Flex, useToast, Text, Button } from '@chakra-ui/react';
-import { getCookies, setCookie } from 'cookies-next';
+import { getCookies } from 'cookies-next';
 import alParser from 'accept-language-parser';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { useAuth } from '../../utils/auth';
-import axios from 'axios';
 
 const VALID_LOCALES = ['en', 'pt'];
 
-export const LanguageToast = () => {
+type LanguageToastProps = {
+  saveLang: (prefLang: string) => Promise<void>;
+};
+
+export const LanguageToast = (props: LanguageToastProps) => {
+  const { saveLang } = props;
   const t = useTranslations();
-  const { user, authLoading } = useAuth();
   const toast = useToast();
   const router = useRouter();
 
   useEffect(() => {
-    if (!router.isReady || authLoading) return;
+    if (!router.isReady) return;
 
     checkLanguage();
-  }, [router.isReady, authLoading]);
+  }, [router.isReady]);
 
   const handleAction = async (action: 'dismiss' | 'change', prefLang: string) => {
     const { pathname, asPath, query } = router;
@@ -33,25 +35,13 @@ export const LanguageToast = () => {
 
       prefLang = router.locale || 'en';
 
-      setCookie('NEXT_LOCALE', prefLang, { expires: new Date('2030-01-01') });
       await saveLang(prefLang);
     } else {
       toast.close('language-toast');
 
-      setCookie('NEXT_LOCALE', prefLang, { expires: new Date('2030-01-01') });
       await saveLang(prefLang);
-
       router.push({ pathname, query }, asPath, { locale: prefLang });
     }
-  };
-
-  const saveLang = async (prefLang: string) => {
-    if (!user) return;
-    await axios.post(`/api/v1/users/${user.username}`, {
-      prefLang: prefLang,
-      neopetsUser: user.neopetsUser,
-      username: user.username,
-    });
   };
 
   const checkLanguage = () => {
