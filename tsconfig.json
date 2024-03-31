@@ -15,13 +15,15 @@
     "jsx": "preserve",
     "incremental": true,
     "noEmit": true,
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "types": []
   },
-  "exclude": ["node_modules", "userscripts"],
+  "exclude": ["node_modules",  "./node_modules/*",  "./node_modules", "userscripts"],
   "include": ["next-env.d.ts", "types.d.ts", "**/*.ts", "**/*.tsx"],
   "ts-node": {
     "compilerOptions": {
-      "module": "commonjs"
+      "module": "commonjs",
+      "skipLibCheck": true,
     }
   }
 }

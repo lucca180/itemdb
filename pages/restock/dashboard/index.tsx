@@ -33,15 +33,18 @@ import NextLink from 'next/link';
 import { StatsCard } from '../../../components/Hubs/Restock/StatsCard';
 import ItemCard from '../../../components/Items/ItemCard';
 import ImportRestockModal from '../../../components/Modal/ImportRestock';
-import { RestockSession, RestockStats } from '../../../types';
+import { RestockChart, RestockSession, RestockStats } from '../../../types';
 import { useAuth } from '../../../utils/auth';
 import axios from 'axios';
 import { msIntervalFormated, restockShopInfo } from '../../../utils/utils';
 import RestockItem from '../../../components/Hubs/Restock/RestockItemCard';
 import { FiSend } from 'react-icons/fi';
 import FeedbackModal from '../../../components/Modal/FeedbackModal';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import CalendarHeatmap from '../../../components/Charts/CalHeatmap';
+import { endOfDay } from 'date-fns';
+import { UTCDate } from '@date-fns/utc';
 
 const color = Color('#599379').rgb().array();
 
@@ -53,13 +56,14 @@ type AlertMsg = {
   type: 'loading' | 'info' | 'warning' | 'success' | 'error' | undefined;
 };
 
-type PeriodFilter = { timePeriod: number; shops: number | string };
+type PeriodFilter = { timePeriod: number; shops: number | string; timestamp?: number };
 const intl = new Intl.NumberFormat();
 
-const defaultFilter = { timePeriod: 30, shops: 'all' };
+const defaultFilter: PeriodFilter = { timePeriod: 30, shops: 'all', timestamp: undefined };
 
 const RestockDashboard = () => {
   const t = useTranslations();
+  const formatter = useFormatter();
   const { user, authLoading } = useAuth();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [openImport, setOpenImport] = useState<boolean>(false);
@@ -70,6 +74,7 @@ const RestockDashboard = () => {
   const [noScript, setNoScript] = useState<boolean>(false);
   const [hideMisses, setHideMisses] = useState<boolean>(false);
   const [filter, setFilter] = useState<PeriodFilter | null>(null);
+  const [chartData, setChartData] = useState<RestockChart | null>(null);
 
   useEffect(() => {
     if (!authLoading && user && !!filter) {
@@ -91,13 +96,25 @@ const RestockDashboard = () => {
     customFilter = customFilter ?? filter ?? defaultFilter;
     setAlertMsg({ type: 'loading', title: t('Restock.loading-your-restock-sessions') });
     try {
-      const res = await axios.get('/api/v1/restock', {
+      const dataProm = axios.get('/api/v1/restock', {
         params: {
-          startDate: Date.now() - customFilter.timePeriod * 24 * 60 * 60 * 1000,
+          startDate:
+            customFilter.timestamp ?? Date.now() - customFilter.timePeriod * 24 * 60 * 60 * 1000,
+          endDate: customFilter.timestamp
+            ? endOfDay(new UTCDate(customFilter.timestamp)).getTime()
+            : undefined,
           shopId: customFilter.shops === 'all' ? undefined : customFilter.shops,
         },
       });
+
+      const chartProm = !chartData ? axios.get('/api/v1/restock/chart') : undefined;
+
+      const [res, chartRes] = await Promise.all([dataProm, chartProm]);
+
       const statsData = res.data as RestockStats;
+      const chartsData = chartRes?.data as RestockChart;
+
+      if (chartsData) setChartData(chartsData);
 
       if (!statsData) {
         setAlertMsg({
@@ -173,15 +190,24 @@ const RestockDashboard = () => {
 
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
-    init({ ...(filter ?? defaultFilter), [name]: value });
-    setFilter((prev) => ({ ...(prev ?? defaultFilter), [name]: value }));
-    localStorage.setItem('restockFilter', JSON.stringify({ ...filter, [name]: value }));
+    init({ ...(filter ?? defaultFilter), [name]: value, timestamp: undefined });
+    setFilter((prev) => ({ ...(prev ?? defaultFilter), [name]: value, timestamp: undefined }));
+    localStorage.setItem(
+      'restockFilter',
+      JSON.stringify({ ...filter, [name]: value, timestamp: undefined })
+    );
   };
 
   const toggleMisses = () => {
     const newMisses = !hideMisses;
     setHideMisses(newMisses);
     localStorage.setItem('hideMisses', newMisses.toString());
+  };
+
+  const setCustomTimestamp = (timestamp: number) => {
+    init({ ...defaultFilter, timestamp });
+    setFilter({ ...defaultFilter, timestamp });
+    window.scroll({ top: 0, left: 0, behavior: 'smooth' });
   };
 
   return (
@@ -219,6 +245,9 @@ const RestockDashboard = () => {
           value={(filter ?? defaultFilter).timePeriod}
           onChange={handleSelectChange}
         >
+          {filter?.timestamp && (
+            <option value={filter.timePeriod}>{formatter.dateTime(filter.timestamp)}</option>
+          )}
           <option value={1}>{t('General.last-x-hours', { x: 24 })}</option>
           <option value={7}>{t('General.last-x-days', { x: 7 })}</option>
           <option value={30}>{t('General.last-x-days', { x: 30 })}</option>
@@ -540,6 +569,7 @@ const RestockDashboard = () => {
               </Tabs>
             </Flex>
           </Flex>
+          {chartData && <CalendarHeatmap onClick={setCustomTimestamp} chartData={chartData} />}
           <Flex mt={6} flexFlow="column" justifyContent={'center'} alignItems={'center'} gap={2}>
             <Text fontSize={'xs'} color="gray.400">
               {t('Restock.all-values-are-based-on-current-itemdbs-price')}

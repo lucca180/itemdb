@@ -277,7 +277,9 @@
     "language": "Language",
     "search-mode": "Search Mode",
     "item-description": "Item Description",
-    "item-name-and-description": "Item Name and Description"
+    "item-name-and-description": "Item Name and Description",
+    "less": "Less",
+    "more": "More"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",
@@ -590,7 +592,11 @@
     "hide-misses": "Hide Misses",
     "avg-reaction-time": "Avg Reaction Time",
     "based-on-x-clicks": "based on {x} clicks",
-    "restock-hub": "Restocking Hub"
+    "restock-hub": "Restocking Hub",
+    "chart-tip": "Tip: You can click to see the data from that day",
+    "revenue-per-day": "Revenue per day",
+    "losses-per-day": "Losses per day",
+    "refreshes-per-day": "Refreshes per day"
   },
   "Search": {
     "search": "Search",

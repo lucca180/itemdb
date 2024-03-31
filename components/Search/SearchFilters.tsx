@@ -15,16 +15,16 @@ import {
   Select,
 } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
-import { SearchStats, SearchFilters } from '../../types';
+import { SearchStats, SearchFilters as SearchFiltersType } from '../../types';
 import CustomNumberInput from '../Input/CustomNumber';
 import NegCheckbox from '../Input/NegCheckbox';
 import { useTranslations } from 'next-intl';
 
 type Props = {
   stats?: SearchStats | null;
-  filters: SearchFilters;
+  filters: SearchFiltersType;
   isColorSearch?: boolean;
-  onChange?: (newFilters: SearchFilters) => void;
+  onChange?: (newFilters: SearchFiltersType) => void;
 };
 
 const ALL_COLORS = [
@@ -45,7 +45,7 @@ const SearchFilters = (props: Props) => {
   const t = useTranslations();
   const { stats, isColorSearch } = props;
   const [showMoreCat, setCat] = useBoolean();
-  const [filters, setFilters] = useState<SearchFilters>(props.filters);
+  const [filters, setFilters] = useState<SearchFiltersType>(props.filters);
   const [colorVal, setColorVal] = useState<string>(
     props.filters.color && !ALL_COLORS_CODE.includes(props.filters.color.toLowerCase())
       ? props.filters.color

@@ -1,0 +1,18 @@
+diff --git a/node_modules/cal-heatmap/src/options/Options.ts b/node_modules/cal-heatmap/src/options/Options.ts
+index 0e36431..1fe1ded 100644
+--- a/node_modules/cal-heatmap/src/options/Options.ts
++++ b/node_modules/cal-heatmap/src/options/Options.ts
+@@ -1,3 +1,4 @@
++//@ts-nocheck
+ import mergeWith from 'lodash-es/mergeWith';
+ import isEqual from 'lodash-es/isEqual';
+ import has from 'lodash-es/has';
+diff --git a/node_modules/cal-heatmap/src/options/OptionsPreProcessors.ts b/node_modules/cal-heatmap/src/options/OptionsPreProcessors.ts
+index 6ef675c..a9e8d66 100644
+--- a/node_modules/cal-heatmap/src/options/OptionsPreProcessors.ts
++++ b/node_modules/cal-heatmap/src/options/OptionsPreProcessors.ts
+@@ -1,3 +1,4 @@
++//@ts-nocheck
+ import castArray from 'lodash-es/castArray';
+ import isFunction from 'lodash-es/isFunction';
+ import isString from 'lodash-es/isString';

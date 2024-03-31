@@ -1,11 +1,12 @@
 import { Prisma, RestockSession as RawRestockSession } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { RestockSession, RestockStats } from '../../../../types';
+import { RestockChart, RestockSession, RestockStats } from '../../../../types';
 import { CheckAuth } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
 import { differenceInMilliseconds } from 'date-fns';
 import { removeOutliers } from '../../../../utils/utils';
 import { getManyItems } from '../items/many';
+import { UTCDate } from '@date-fns/utc';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -48,7 +49,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (!sessions.length) return res.status(200).json(null);
 
-    const stats = await calculateStats(sessions);
+    const [stats] = await calculateStats(sessions);
 
     return res.status(200).json(stats);
   } catch (e) {
@@ -94,13 +95,20 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 // --------- //
 
 type ValueOf<T> = T[keyof T];
-const calculateStats = async (rawSessions: RawRestockSession[]) => {
+export const calculateStats = async (
+  rawSessions: RawRestockSession[]
+): Promise<[RestockStats, RestockChart]> => {
   const stats: RestockStats = JSON.parse(JSON.stringify(defaultStats));
   const sessions: RestockSession[] = [];
   const allShops: { [id: string]: number } = {};
   const allBought: RestockStats['hottestBought'] = [];
   const allLost: RestockStats['hottestBought'] = [];
   const allItems: ValueOf<RestockSession['items']>[] = [];
+
+  const chart: RestockChart = JSON.parse(JSON.stringify(defaultCharts));
+  const revenuePerDay: { [date: string]: number } = {};
+  const lostPerDay: { [date: string]: number } = {};
+  const refreshesPerDay: { [date: string]: number } = {};
 
   let refreshTotalTime: number[] = [];
   let reactionTotalTime: number[] = [];
@@ -149,6 +157,10 @@ const calculateStats = async (rawSessions: RawRestockSession[]) => {
     }
 
     allItems.push(...Object.values(session.items));
+    const date = formatDate(session.startDate);
+    refreshesPerDay[date] = refreshesPerDay[date]
+      ? refreshesPerDay[date] + session.refreshes.length
+      : session.refreshes.length;
 
     stats.totalRefreshes += session.refreshes.length;
     stats.totalClicks += session.clicks.length;
@@ -196,9 +208,20 @@ const calculateStats = async (rawSessions: RawRestockSession[]) => {
         allBought.push({ item, click, restockItem });
 
         stats.estRevenue += item.price.value ?? 0;
+        const date = formatDate(click.buy_timestamp);
+        revenuePerDay[date] = revenuePerDay[date]
+          ? revenuePerDay[date] + (item.price.value ?? 0)
+          : item.price.value ?? 0;
       } else {
         stats.totalLost.count++;
         stats.totalLost.value += item.price.value ?? 0;
+
+        if (click.soldOut_timestamp) {
+          const date = formatDate(click.soldOut_timestamp);
+          lostPerDay[date] = lostPerDay[date]
+            ? lostPerDay[date] + (item.price.value ?? 0)
+            : item.price.value ?? 0;
+        }
 
         stats.mostExpensiveLost =
           stats.mostExpensiveLost &&
@@ -225,7 +248,22 @@ const calculateStats = async (rawSessions: RawRestockSession[]) => {
 
   stats.shopList = Object.keys(allShops).map((x) => parseInt(x));
 
-  return stats;
+  chart.revenuePerDay = Object.keys(revenuePerDay).map((date) => ({
+    date,
+    value: revenuePerDay[date],
+  }));
+
+  chart.lossesPerDay = Object.keys(lostPerDay).map((date) => ({
+    date,
+    value: lostPerDay[date],
+  }));
+
+  chart.refreshesPerDay = Object.keys(refreshesPerDay).map((date) => ({
+    date,
+    value: refreshesPerDay[date],
+  }));
+
+  return [stats, chart];
 };
 
 const defaultStats: RestockStats = {
@@ -255,4 +293,16 @@ const defaultStats: RestockStats = {
   hottestBought: [],
   hottestLost: [],
   unknownPrices: 0,
+};
+
+const defaultCharts: RestockChart = {
+  revenuePerDay: [],
+  lossesPerDay: [],
+  refreshesPerDay: [],
+};
+
+// format a timestamp to yyyy-mm-dd
+const formatDate = (date: number) => {
+  const d = new UTCDate(date);
+  return d.toISOString().split('T')[0];
 };

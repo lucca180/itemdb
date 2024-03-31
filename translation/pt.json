@@ -277,7 +277,9 @@
     "language": "Idioma",
     "item-description": "Descrição",
     "item-name-and-description": "Nome e Descrição",
-    "search-mode": "Modo de Pesquisa"
+    "search-mode": "Modo de Pesquisa",
+    "less": "Menos",
+    "more": "Mais"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",
@@ -590,7 +592,11 @@
     "show-misses": "Mostrar Perdas",
     "avg-reaction-time": "Tempo Médio de Reação ",
     "based-on-x-clicks": "com base em {x} cliques",
-    "restock-hub": "Restock Hub"
+    "restock-hub": "Restock Hub",
+    "chart-tip": "Dica: você pode clicar para ver os dados daquele dia",
+    "losses-per-day": "Perdas por dia",
+    "refreshes-per-day": "Atualizações por dia",
+    "revenue-per-day": "Receita por dia"
   },
   "Search": {
     "search": "Pesquisa",

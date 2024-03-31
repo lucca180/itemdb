@@ -420,6 +420,12 @@ type RestockStats = {
   unknownPrices: number;
 };
 
+type RestockChart = {
+  revenuePerDay: { date: string; value: number }[];
+  lossesPerDay: { date: string; value: number }[];
+  refreshesPerDay: { date: string; value: number }[];
+};
+
 // ------- FEEDBACKS JSON -------- //
 export type Feedback = {
   feedback_id: number;
