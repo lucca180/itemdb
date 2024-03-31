@@ -26,7 +26,6 @@ export default function CalendarHeatmap(props: CalendarHeatmapProps) {
   const formater = useFormatter();
   const calRef = useRef(new CalHeatmap());
   const router = useRouter();
-  const isMounted = useRef(false);
   const [chartType, setChartType] = useState<ChartTypes>('revenuePerDay');
 
   useEffect(() => {
@@ -35,10 +34,20 @@ export default function CalendarHeatmap(props: CalendarHeatmapProps) {
       if (!value) return;
       onClick?.(timestamp);
     });
+
+    return () => {
+      cal.destroy();
+      calRef.current = null;
+    };
   }, []);
 
   useEffect(() => {
-    const cal = calRef.current;
+    let cal = calRef.current;
+    if (!cal) {
+      calRef.current = new CalHeatmap();
+      cal = calRef.current;
+    }
+
     const data = chartData[chartType];
     const startOfTheYear = new Date(new Date().getFullYear(), 0, 1);
     let scaleDomain = [25000, 100000, 500000];
@@ -51,70 +60,60 @@ export default function CalendarHeatmap(props: CalendarHeatmapProps) {
       scaleDomain = [500000, 1000000, 5000000];
     }
 
-    cal
-      .paint(
-        {
-          theme: 'dark',
-          data: { source: data, x: 'date', y: 'value', groupY: 'sum' },
-          date: { start: startOfTheYear, locale: router.locale },
-          range: 12,
-          scale: {
-            color: {
-              type: 'threshold',
-              interpolate: 'hcl',
-              range: ['#14432a', '#166b34', '#37a446', '#4dd05a'],
-              domain: scaleDomain,
-            },
+    cal.paint(
+      {
+        theme: 'dark',
+        data: { source: data, x: 'date', y: 'value', groupY: 'sum' },
+        date: { start: startOfTheYear, locale: router.locale },
+        range: 12,
+        scale: {
+          color: {
+            type: 'threshold',
+            interpolate: 'hcl',
+            range: ['#14432a', '#166b34', '#37a446', '#4dd05a'],
+            domain: scaleDomain,
           },
-
-          domain: {
-            type: 'month',
-
-            gutter: 4,
-            label: { text: 'MMM', textAlign: 'start', position: 'top' },
-          },
-          subDomain: { type: 'ghDay', radius: 2, width: 11, height: 11, gutter: 4 },
-          itemSelector: '#cal-heatmap',
         },
+
+        domain: {
+          type: 'month',
+
+          gutter: 4,
+          label: { text: 'MMM', textAlign: 'start', position: 'top' },
+        },
+        subDomain: { type: 'ghDay', radius: 2, width: 11, height: 11, gutter: 4 },
+        itemSelector: '#cal-heatmap',
+      },
+      [
         [
-          [
-            LegendLite,
-            {
-              includeBlank: true,
-              itemSelector: '#ex-ghDay-legend',
-              radius: 2,
-              width: 11,
-              height: 11,
-              gutter: 4,
-            },
-          ],
-          [
-            CalendarLabel,
-            {
-              width: 30,
-              textAlign: 'start',
-              text: () => daysForLocale().map((d, i) => (i % 2 == 0 ? '' : d)),
-              padding: [25, 0, 0, 0],
-            },
-          ],
-          [
-            Tooltip,
-            {
-              text: (date, value) => tooltipText(date, value, chartType, formater),
-            },
-          ],
-        ]
-      )
-      .then(() => (isMounted.current = true));
+          LegendLite,
+          {
+            includeBlank: true,
+            itemSelector: '#ex-ghDay-legend',
+            radius: 2,
+            width: 11,
+            height: 11,
+            gutter: 4,
+          },
+        ],
+        [
+          CalendarLabel,
+          {
+            width: 30,
+            textAlign: 'start',
+            text: () => daysForLocale().map((d, i) => (i % 2 == 0 ? '' : d)),
+            padding: [25, 0, 0, 0],
+          },
+        ],
+        [
+          Tooltip,
+          {
+            text: (date, value) => tooltipText(date, value, chartType, formater),
+          },
+        ],
+      ]
+    );
   }, [chartData, chartType]);
-
-  // useEffect(() => {
-  //   console.log(isMounted.current);
-  //   if (!isMounted.current) return;
-  //   const cal = calRef.current;
-
-  //   cal.fill(chartData[chartType]);
-  // }, [chartData, chartType]);
 
   return (
     <Center flexFlow="column" gap={3} mt={8} overflow="auto">
