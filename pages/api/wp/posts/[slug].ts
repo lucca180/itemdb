@@ -31,7 +31,11 @@ export const wp_getBySlug = async (slug: string): Promise<WP_Article | null> => 
 
   const posts = posts_res.data.map(async (post: WP_REST_API_Post) => {
     const thumburl: string | null =
-      (post._embedded?.['wp:featuredmedia']?.[0] as any)?.source_url || null;
+      ((post._embedded?.['wp:featuredmedia']?.[0] as any)?.source_url || '').replace(
+        'https://',
+        'https://i0.wp.com/'
+      ) || null;
+
     return {
       id: post.id,
       title: he.decode(post.title.rendered),

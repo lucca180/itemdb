@@ -48,11 +48,11 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
       type: 'tradePrice',
       processed: false,
       user_id: {
-        not: user?.id ?? '-1',
+        not: user?.id,
       },
       vote: {
         none: {
-          user_id: user?.id ?? '-1',
+          user_id: user?.id,
         },
       },
     },
