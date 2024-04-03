@@ -47,6 +47,9 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
     where: {
       type: 'tradePrice',
       processed: false,
+      user_id: {
+        not: user?.id ?? '-1',
+      },
       vote: {
         none: {
           user_id: user?.id ?? '-1',
