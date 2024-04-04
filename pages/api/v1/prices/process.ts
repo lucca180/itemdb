@@ -340,12 +340,12 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
           {
             processed: true,
             addedAt: {
-              lt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
+              lt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
             },
           },
           {
             addedAt: {
-              lt: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000),
+              lt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
             },
           },
         ],
