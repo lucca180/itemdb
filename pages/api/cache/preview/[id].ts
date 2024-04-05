@@ -3,7 +3,7 @@ import { dti } from '../../../../utils/impress';
 import { createCanvas, loadImage } from '@napi-rs/canvas';
 import { ImageBucket } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
-import altStyles from '../../../../utils/altStyles.json';
+import axios from 'axios';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -61,7 +61,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         imagesURLs = await handleRegularStyle(item.name);
         if (imagesURLs.length === 0) throw new Error('No layers found');
       } catch (e) {
-        imagesURLs = await handleAltStyle(item.name);
+        imagesURLs = await handleAltStyle(item.image_id!);
         if (imagesURLs.length === 0) throw e;
       }
 
@@ -155,13 +155,16 @@ const handleRegularStyle = async (itemName: string) => {
 };
 
 // using data from DTI again. Thanks DTI!
-const handleAltStyle = async (itemName: string): Promise<string[]> => {
-  if (!itemName.includes('Nostalgic')) return [];
-  const styleName = itemName.replace('Nostalgic ', '');
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
-  const style = altStyles[styleName];
+const handleAltStyle = async (image_id: string): Promise<string[]> => {
+  if (!image_id.includes('nostalgic')) return [];
+  const dtiRes = await axios.get('https://impress.openneo.net/alt-styles.json');
+  const dtiData = dtiRes.data as any[];
+
+  const style = dtiData.find((x) => x.thumbnail_url.includes(image_id));
+
   if (!style) return [];
 
-  return [style];
+  const url = style.swf_assets[0].urls.png;
+
+  return [url];
 };
