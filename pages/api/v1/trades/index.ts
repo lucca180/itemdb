@@ -6,7 +6,7 @@ import { CheckAuth } from '../../../../utils/googleCloud';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { checkHash } from '../../../../utils/hash';
 import { Items, Prisma } from '.prisma/client';
-import { checkAutoSkipTrade } from '../../../../utils/utils';
+import { shouldSkipTrade } from '../../../../utils/utils';
 import hash from 'object-hash';
 import { autoPriceTrades2 } from './autoPrice2';
 import { newCreatePriceProcessFlow } from '../prices';
@@ -106,8 +106,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         wishlist: lot.wishList,
         owner: lot.owner,
         ip_address: requestIp.getClientIp(req),
-        priced: lot.wishList === 'none' || !checkAutoSkipTrade(lot.wishList),
-        processed: lot.wishList === 'none' || !checkAutoSkipTrade(lot.wishList),
+        priced: lot.wishList === 'none' || shouldSkipTrade(lot.wishList),
+        processed: lot.wishList === 'none' || shouldSkipTrade(lot.wishList),
         hash: tradeHash,
         items: {
           create: [...itemList],

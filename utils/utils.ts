@@ -355,14 +355,16 @@ export const rarityStr = (rarity: number) => {
   return null;
 };
 
-export const checkAutoSkipTrade = (wishlist: string) => {
+export const shouldSkipTrade = (wishlist: string) => {
+  if (wishlist.includes('paperclip')) return true;
+
   wishlist = wishlist.replaceAll('-no tags here-3', '');
   wishlist = wishlist.replaceAll(':3', '');
 
   // Regular expression to check for a digit in the string
   const digitRegex = /\d/;
 
-  return digitRegex.test(wishlist);
+  return !digitRegex.test(wishlist);
 };
 
 export function getDateNST(timestamp?: number) {
