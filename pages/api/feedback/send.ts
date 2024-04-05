@@ -3,6 +3,8 @@ import prisma from '../../../utils/prisma';
 import requestIp from 'request-ip';
 import sgMail from '@sendgrid/mail';
 import { FEEDBACK_VOTE_TARGET } from './vote';
+import { TradeData } from '../../../types';
+import { processTradePrice } from '../v1/trades';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -49,7 +51,13 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     }
   }
 
-  if (type === 'tradePrice') shoudContinue = await processTradePrice(parseInt(subject_id), user_id);
+  if (type === 'tradePrice')
+    shoudContinue = await processTradeFeedback(
+      parsed.trade as TradeData,
+      parseInt(subject_id),
+      user_id,
+      voteMultiplier >= FEEDBACK_VOTE_TARGET * 0.7
+    );
 
   if (!shoudContinue) return res.status(400).json({ success: true, message: 'already processed' });
 
@@ -79,7 +87,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   return res.status(200).json({ success: true, message: result });
 }
 
-const processTradePrice = async (trade_id?: number, user_id?: string) => {
+const processTradeFeedback = async (
+  trade: TradeData,
+  trade_id: number,
+  user_id: string,
+  trust: boolean
+) => {
   const tradeFeedback = await prisma.feedbacks.findFirst({
     where: { type: 'tradePrice', subject_id: trade_id },
   });
@@ -100,6 +113,21 @@ const processTradePrice = async (trade_id?: number, user_id?: string) => {
       return true;
     }
 
+    return false;
+  }
+
+  if (!trust || trade.items.length === 1) return true;
+
+  const isAllItemsTheSame = trade.items.every(
+    (t) => t.name === trade.items[0].name && t.image_id === trade.items[0].image_id
+  );
+
+  const isAllSamePrice = trade.items.every((i) => i.price === trade.items[0].price && !!i.price);
+
+  const isAllEmpty = trade.items.every((item) => !item.price);
+
+  if ((isAllEmpty && !isAllItemsTheSame) || (isAllItemsTheSame && isAllSamePrice)) {
+    await processTradePrice(trade);
     return false;
   }
 

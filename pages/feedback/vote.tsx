@@ -5,7 +5,6 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
-  Badge,
   Box,
   Button,
   Center,
@@ -182,10 +181,7 @@ const FeedbackVotingPage = () => {
             <AccordionItem>
               <AccordionButton>
                 <Box as="span" flex="1" textAlign="left">
-                  <Text fontWeight={'bold'}>
-                    {t('Layout.trade-pricing')}{' '}
-                    <Badge colorScheme="orange">{t('Layout.new')}</Badge>
-                  </Text>
+                  <Text fontWeight={'bold'}>{t('Layout.trade-pricing')} </Text>
                 </Box>
                 <AccordionIcon />
               </AccordionButton>
@@ -193,7 +189,7 @@ const FeedbackVotingPage = () => {
                 <TradeGuidelines />
               </AccordionPanel>
             </AccordionItem>
-            <AccordionItem>
+            {/* <AccordionItem>
               <AccordionButton>
                 <Box as="span" flex="1" textAlign="left">
                   <Text fontWeight={'bold'}>{t('Feedback.item-notes')}</Text>
@@ -203,11 +199,11 @@ const FeedbackVotingPage = () => {
               <AccordionPanel pb={4}>
                 <TagAndNotesGuidelines />
               </AccordionPanel>
-            </AccordionItem>
+            </AccordionItem> */}
           </Accordion>
-          {/* <Center mt={4} fontStyle="italic" fontSize="sm">
-            I love democracy - Sheev
-          </Center> */}
+          <Center mt={4} fontStyle="italic" fontSize="sm">
+            {/* I love democracy - Sheev */}
+          </Center>
         </CardBase>
         <Flex
           flex="1"
@@ -298,26 +294,26 @@ const FeedbackVotingPage = () => {
 
 export default FeedbackVotingPage;
 
-const TagAndNotesGuidelines = () => {
-  const t = useTranslations();
-  return (
-    <Box>
-      {/* <Text>
-        <b>Tags</b> are used to help you find items. They should be used to describe the{' '}
-        <b>item&apos;s appearance or function</b>.<br />
-        Tags <b>should not contain any meta-information</b> about the item such as method of
-        acquisition.
-        <br />
-        Tags <b>should not contain any word of the item&apos;s name</b>.
-      </Text> */}
-      <Text>
-        {t.rich('Feedback.in-1', {
-          b: (chunks) => <b>{chunks}</b>,
-        })}
-      </Text>
-    </Box>
-  );
-};
+// const TagAndNotesGuidelines = () => {
+//   const t = useTranslations();
+//   return (
+//     <Box>
+//       {/* <Text>
+//         <b>Tags</b> are used to help you find items. They should be used to describe the{' '}
+//         <b>item&apos;s appearance or function</b>.<br />
+//         Tags <b>should not contain any meta-information</b> about the item such as method of
+//         acquisition.
+//         <br />
+//         Tags <b>should not contain any word of the item&apos;s name</b>.
+//       </Text> */}
+//       <Text>
+//         {t.rich('Feedback.in-1', {
+//           b: (chunks) => <b>{chunks}</b>,
+//         })}
+//       </Text>
+//     </Box>
+//   );
+// };
 
 export async function getServerSideProps(context: NextPageContext) {
   try {

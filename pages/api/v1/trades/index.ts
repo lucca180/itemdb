@@ -251,7 +251,7 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
 
   if (isUpdate) {
     const ids = originalTrade.tradesUpdated?.split(',').map((x) => Number(x)) ?? [];
-    await prisma.priceProcess.deleteMany({
+    await prisma.priceProcess2.deleteMany({
       where: {
         neo_id: { in: ids },
         type: 'trade',

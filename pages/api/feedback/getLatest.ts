@@ -14,8 +14,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   const includeProcessed = req.query.includeProcessed === 'true';
   let user_id;
+  let user;
   try {
-    const { user } = await CheckAuth(req);
+    user = (await CheckAuth(req))?.user;
     if (!user) throw new Error('User not found');
     user_id = user.id;
   } catch (e) {
@@ -29,7 +30,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       processed: includeProcessed,
       OR: [{ user_id: { not: user_id } }, { user_id: null }],
       type: {
-        in: ['tradePrice', 'itemChange'],
+        in: ['tradePrice', user.isAdmin ? 'itemChange' : 'neverWillBeAType'],
       },
       vote: {
         none: {
