@@ -59,7 +59,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       voteMultiplier >= FEEDBACK_VOTE_TARGET * 0.7
     );
 
-  if (!shoudContinue) return res.status(400).json({ success: true, message: 'already processed' });
+  if (!shoudContinue) return res.status(200).json({ success: true, message: 'already processed' });
 
   const result = await prisma.feedbacks.create({
     data: {
