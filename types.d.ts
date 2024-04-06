@@ -411,6 +411,12 @@ type RestockStats = {
     restockItem: RestockSession['items'][0];
   }[];
 
+  worstBaits: {
+    item: ItemData;
+    click: RestockSession['clicks'][0];
+    restockItem: RestockSession['items'][0];
+  }[];
+
   hottestLost: {
     item: ItemData;
     click: RestockSession['clicks'][0];

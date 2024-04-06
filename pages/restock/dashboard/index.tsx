@@ -525,6 +525,7 @@ const RestockDashboard = () => {
                 <TabList>
                   <Tab>{t('Restock.hottest-restocks')}</Tab>
                   <Tab>{t('Restock.worst-losses')}</Tab>
+                  <Tab>{t('Restock.worst-baits')}</Tab>
                 </TabList>
                 <TabPanels>
                   <TabPanel px={0}>
@@ -561,6 +562,30 @@ const RestockDashboard = () => {
                       {!hideMisses && sessionStats.hottestLost.length === 0 && (
                         <Text fontSize={'xs'} color="gray.400">
                           {t('Restock.you-didnt-lose-anything-youre-awesome')}
+                        </Text>
+                      )}
+                    </Flex>
+                  </TabPanel>
+                  <TabPanel px={0}>
+                    <Flex gap={3} flexFlow="column" justifyContent={'center'}>
+                      {hideMisses && (
+                        <Center flexFlow="column" h="300px">
+                          <Icon as={FaEyeSlash} fontSize="50px" color="gray.600" />
+                        </Center>
+                      )}
+                      {!hideMisses &&
+                        sessionStats.worstBaits.map((bait, i) => (
+                          <RestockItem
+                            disablePrefetch
+                            item={bait.item}
+                            clickData={bait.click}
+                            restockItem={bait.restockItem}
+                            key={i}
+                          />
+                        ))}
+                      {!hideMisses && sessionStats.worstBaits.length === 0 && (
+                        <Text fontSize={'xs'} color="gray.400">
+                          {t('Restock.you-didnt-fall-for-any-bait-items')}
                         </Text>
                       )}
                     </Flex>

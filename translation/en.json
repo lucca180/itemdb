@@ -597,7 +597,11 @@
     "chart-tip": "Tip: You can click to see the data from that day",
     "revenue-per-day": "Revenue per day",
     "losses-per-day": "Losses per day",
-    "refreshes-per-day": "Refreshes per day"
+    "refreshes-per-day": "Refreshes per day",
+    "worst-baits": "Worst Baits",
+    "you-didnt-fall-for-any-bait-items": "You didn't fall for any bait items! 🎣",
+    "estimated-loss": "Estimated Loss",
+    "estimated-profit-is-less-than": "Estimated profit is less than 1000 NP"
   },
   "Search": {
     "search": "Search",

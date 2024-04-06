@@ -597,7 +597,11 @@
     "chart-tip": "Dica: você pode clicar para ver os dados daquele dia",
     "losses-per-day": "Perdas por dia",
     "refreshes-per-day": "Atualizações por dia",
-    "revenue-per-day": "Receita por dia"
+    "revenue-per-day": "Receita por dia",
+    "estimated-loss": "Perda Estimada",
+    "estimated-profit-is-less-than": "Lucro estimado é inferior a 1000 NP",
+    "worst-baits": "Piores Armadilhas",
+    "you-didnt-fall-for-any-bait-items": "Você não caiu em nenhuma armadilha! 🎣"
   },
   "Search": {
     "search": "Pesquisa",

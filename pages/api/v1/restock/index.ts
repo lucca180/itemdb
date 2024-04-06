@@ -4,7 +4,7 @@ import { RestockChart, RestockSession, RestockStats } from '../../../../types';
 import { CheckAuth } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
 import { differenceInMilliseconds } from 'date-fns';
-import { removeOutliers } from '../../../../utils/utils';
+import { getRestockProfitOnDate, removeOutliers } from '../../../../utils/utils';
 import { getManyItems } from '../items/many';
 import { UTCDate } from '@date-fns/utc';
 
@@ -104,6 +104,7 @@ export const calculateStats = async (
   const allBought: RestockStats['hottestBought'] = [];
   const allLost: RestockStats['hottestBought'] = [];
   const allItems: ValueOf<RestockSession['items']>[] = [];
+  const allBaits: RestockStats['worstBaits'] = [];
 
   const chart: RestockChart = JSON.parse(JSON.stringify(defaultCharts));
   const revenuePerDay: { [date: string]: number } = {};
@@ -191,11 +192,13 @@ export const calculateStats = async (
     session.clicks.map((click) => {
       const item = allItemsData[click.item_id];
       const restockItem = session.items[click.restock_id];
-      if (!item) return;
+      if (!item || !restockItem) return;
 
       if (!item.price.value) stats.unknownPrices++;
 
       if (click.buy_timestamp) {
+        if (click.buy_timestamp < restockItem.timestamp) return;
+
         stats.totalBought.count++;
         stats.totalBought.value += item.price.value ?? 0;
 
@@ -206,6 +209,9 @@ export const calculateStats = async (
             : item;
 
         allBought.push({ item, click, restockItem });
+        const profit = getRestockProfitOnDate(item, click.buy_timestamp);
+
+        if (profit && profit < 1000) allBaits.push({ item, click, restockItem });
 
         stats.estRevenue += item.price.value ?? 0;
         const date = formatDate(click.buy_timestamp);
@@ -217,6 +223,7 @@ export const calculateStats = async (
         stats.totalLost.value += item.price.value ?? 0;
 
         if (click.soldOut_timestamp) {
+          if (click.soldOut_timestamp < restockItem.timestamp) return;
           const date = formatDate(click.soldOut_timestamp);
           lostPerDay[date] = lostPerDay[date]
             ? lostPerDay[date] + (item.price.value ?? 0)
@@ -244,6 +251,14 @@ export const calculateStats = async (
 
   stats.hottestLost = allLost
     .sort((a, b) => (b.item.price.value ?? 0) - (a.item.price.value ?? 0))
+    .splice(0, 10);
+
+  stats.worstBaits = allBaits
+    .sort(
+      (a, b) =>
+        (getRestockProfitOnDate(a.item, a.click.buy_timestamp!) ?? 0) -
+        (getRestockProfitOnDate(b.item, b.click.buy_timestamp!) ?? 0)
+    )
     .splice(0, 10);
 
   stats.shopList = Object.keys(allShops).map((x) => parseInt(x));
@@ -292,6 +307,7 @@ const defaultStats: RestockStats = {
   hottestRestocks: [],
   hottestBought: [],
   hottestLost: [],
+  worstBaits: [],
   unknownPrices: 0,
 };
 

@@ -1,10 +1,11 @@
-import { Badge, Flex, Link, Text, Image, HStack } from '@chakra-ui/react';
+import { Badge, Flex, Link, Text, Image, HStack, Tooltip } from '@chakra-ui/react';
 import Color from 'color';
 import NextLink from 'next/link';
 import { ItemData, RestockSession } from '../../../types';
-import { msIntervalFormated } from '../../../utils/utils';
+import { getRestockProfitOnDate, msIntervalFormated } from '../../../utils/utils';
 import { differenceInMilliseconds } from 'date-fns';
 import { useFormatter, useTranslations } from 'next-intl';
+import { MdHelp } from 'react-icons/md';
 
 type Props = {
   item: ItemData;
@@ -21,6 +22,12 @@ const RestockItem = (props: Props) => {
 
   const { item, clickData, restockItem, disablePrefetch } = props;
   const rgb = Color(item.color.hex).rgb().array();
+
+  const profit =
+    clickData.buy_timestamp && item.price.value
+      ? getRestockProfitOnDate(item, clickData.buy_timestamp!)
+      : null;
+  const isBait = profit && profit < 1000;
 
   const boughtTime = restockItem
     ? differenceInMilliseconds(
@@ -42,6 +49,8 @@ const RestockItem = (props: Props) => {
         new Date(restockItem.timestamp)
       )
     : -1;
+
+  if (isBait) console.log(props.item.name, profit, isBait, boughtTime, lostHaggle, lostNoHaggle);
 
   return (
     <Link
@@ -69,6 +78,23 @@ const RestockItem = (props: Props) => {
           <HStack>
             <Text>{item.name}</Text>
             {item.price.value && <Badge>{intl.format(item.price.value)} NP</Badge>}
+            {isBait && (
+              <Tooltip
+                hasArrow
+                label={
+                  profit > 0
+                    ? t('Restock.estimated-profit-is-less-than')
+                    : t('Restock.estimated-loss')
+                }
+                // bg="gray.700"
+                placement="top"
+                // color="white"
+              >
+                <Badge colorScheme="red" display="flex" alignItems={'center'} gap={1}>
+                  {intl.format(profit)} NP <MdHelp size={'0.7rem'} />
+                </Badge>
+              </Tooltip>
+            )}
           </HStack>
 
           {boughtTime > 0 && (
