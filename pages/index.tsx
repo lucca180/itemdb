@@ -206,6 +206,6 @@ export async function getStaticProps(context: any) {
       hottestRestock,
       messages: (await import(`../translation/${context.locale}.json`)).default,
     },
-    revalidate: 60, // In seconds
+    revalidate: 180, // In seconds
   };
 }

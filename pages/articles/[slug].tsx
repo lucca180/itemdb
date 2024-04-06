@@ -122,7 +122,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 }
 
 export async function getStaticPaths() {
-  const posts = await wp_getLatestPosts(100);
+  const posts = await wp_getLatestPosts(5);
 
   return {
     paths: posts.map((post) => ({ params: { slug: post.slug } })),
