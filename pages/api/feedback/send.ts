@@ -56,7 +56,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       parsed.trade as TradeData,
       parseInt(subject_id),
       user_id,
-      voteMultiplier >= FEEDBACK_VOTE_TARGET * 0.7
+      voteMultiplier >= Math.floor(FEEDBACK_VOTE_TARGET * 0.7)
     );
 
   if (!shoudContinue) return res.status(200).json({ success: true, message: 'already processed' });
