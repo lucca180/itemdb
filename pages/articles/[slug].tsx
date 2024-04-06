@@ -22,7 +22,7 @@ import parse, { HTMLReactParserOptions, Element, domToReact, DOMNode } from 'htm
 import NextLink from 'next/link';
 import { wp_getLatestPosts } from '../api/wp/posts';
 import { ArticleCard } from '../../components/Articles/ArticlesCard';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 
 type Props = {
   post: WP_Article;
@@ -31,6 +31,7 @@ type Props = {
 
 const ArticlePage = (props: Props) => {
   const t = useTranslations();
+  const formatter = useFormatter();
   const { post, recomendations } = props;
   return (
     <Layout
@@ -48,7 +49,7 @@ const ArticlePage = (props: Props) => {
           post.thumbnail
             ? {
                 src: post.thumbnail,
-                alt: 'rainbow pets',
+                alt: 'post thumbnail',
               }
             : undefined
         }
@@ -64,6 +65,15 @@ const ArticlePage = (props: Props) => {
         </Heading>
         <Text size={{ base: 'sm', md: undefined }} as="h2">
           {post.excerpt}
+        </Text>
+        <Text fontSize="xs" mt={1}>
+          {t('Articles.posted-at-date', {
+            date: formatter.dateTime(new Date(post.date), {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            }),
+          })}
         </Text>
       </HeaderCard>
       <Flex

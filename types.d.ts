@@ -432,6 +432,11 @@ type RestockChart = {
   refreshesPerDay: { date: string; value: number }[];
 };
 
+type UserPreferences = {
+  labs_feedbackCopyEquals?: boolean;
+  labs_feedbackShortcuts?: boolean;
+};
+
 // ------- FEEDBACKS JSON -------- //
 export type Feedback = {
   feedback_id: number;

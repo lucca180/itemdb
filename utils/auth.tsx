@@ -3,7 +3,7 @@ import { setCookie, deleteCookie } from 'cookies-next';
 import type { User as FirebaseUser } from 'firebase/auth';
 import { useAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
-import { User, UserList } from '../types';
+import { User, UserList, UserPreferences } from '../types';
 import axios from 'axios';
 
 const getAuth = () => import('./firebase/auth');
@@ -15,6 +15,8 @@ type AuthContextType = {
   getIdToken: () => string | null;
   authLoading: boolean;
   setUser: (user: User) => void;
+  updatePref: (key: keyof UserPreferences, value: UserPreferences[keyof UserPreferences]) => void;
+  userPref: UserPreferences | null;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -26,6 +28,8 @@ const AuthContext = createContext<AuthContextType>({
   authLoading: true,
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   setUser: () => {},
+  updatePref: () => {},
+  userPref: null,
 });
 
 const storage =
@@ -48,11 +52,13 @@ const storage =
 
 export const UserState = atomWithStorage<User | null>('UserState', null, storage as any);
 export const UserLists = atomWithStorage<UserList[] | null>('UserLists', null, storage as any);
+export const UserPrefs = atomWithStorage<UserPreferences | null>('UserPrefs', null, storage as any);
 
 export function AuthProvider({ children }: any) {
   const [, setLists] = useAtom(UserLists);
-  const [userToken, setUserToken] = useState<string | null>(null);
   const [user, setUser] = useAtom(UserState);
+  const [userPref, setUserPref] = useAtom(UserPrefs);
+  const [userToken, setUserToken] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -133,9 +139,26 @@ export function AuthProvider({ children }: any) {
     location.reload();
   };
 
+  const updatePref = async (
+    key: keyof UserPreferences,
+    value: UserPreferences[keyof UserPreferences]
+  ) => {
+    const newPref = { ...(userPref ?? undefined), [key]: value };
+    setUserPref(newPref);
+  };
+
   return (
     <AuthContext.Provider
-      value={{ user: user, userToken: userToken, signout, getIdToken, authLoading, setUser }}
+      value={{
+        user: user,
+        userToken: userToken,
+        signout,
+        getIdToken,
+        authLoading,
+        setUser,
+        updatePref,
+        userPref,
+      }}
     >
       {children}
     </AuthContext.Provider>

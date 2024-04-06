@@ -513,7 +513,12 @@
     "10-02-2024-policy-changes": "[10/02/2024] Policy Changes",
     "new-policy-1": "We understand that Baby Paint Brushes are an important factor for selling items in the trading post. Therefore, from now on, you can consider the price of <b>Baby Paint Brushes as 600k</b> when specified as <b>part of the payment</b> in the wishlist.",
     "new-policy-2": "However, prioritize the price listed in pure Neopoints if both are listed. This new guideline applies <b>ONLY to the Baby Paint Brush</b>. We will update this guideline in the event of future fluctuations in the market.",
-    "this-trade-was-auto-priced": "This trade was auto-priced"
+    "this-trade-was-auto-priced": "This trade was auto-priced",
+    "sync-price-for-equal-items": "Sync price for equal items",
+    "equal-items-helper": "All equal items bellow the current input will have their price sync",
+    "multiplier-shortcuts": "Multiplier Shortcuts",
+    "multiplier-shortcuts-helper": "Type <Kbd>k</Kbd> to multiply the current input by 1000, <Kbd>m</Kbd> for a million and <Kbd>b</Kbd> for a billion",
+    "experiments": "Experiments"
   },
   "Restock": {
     "restock-info": "Restock Info",
@@ -683,7 +688,8 @@
   },
   "Articles": {
     "all-articles": "All Articles",
-    "recommended-articles": "Recommended Articles"
+    "recommended-articles": "Recommended Articles",
+    "posted-at-date": "Posted at {date}"
   },
   "Error": {
     "page-not-found": "Page not Found",

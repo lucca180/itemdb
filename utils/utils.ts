@@ -357,10 +357,10 @@ export const rarityStr = (rarity: number) => {
 };
 
 export const shouldSkipTrade = (wishlist: string) => {
-  if (wishlist.includes('paperclip')) return true;
+  if (wishlist.toLowerCase().includes('paperclip')) return true;
 
   wishlist = wishlist.replaceAll('-no tags here-3', '');
-  wishlist = wishlist.replaceAll(':3', '');
+  wishlist = wishlist.replaceAll(/:3[\s]|:3$/g, ' ');
 
   // Regular expression to check for a digit in the string
   const digitRegex = /\d/;

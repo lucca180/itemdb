@@ -391,7 +391,12 @@
     "10-02-2024-policy-changes": "[10/02/2024] Mudanças nas Políticas",
     "new-policy-1": "Entendemos que os Pincéis Bebê são um fator importante para a venda de itens no posto de trocas.  Portanto, a partir de agora, você pode considerar o preço dos <b>Pincéis Bebê como 600k</b> quando especificado como <b>parte do pagamento</b> na lista de desejos.",
     "new-policy-2": "Porém, priorize o preço listado em Neopontos \"a vista\" se ambos estiverem listados. Esta nova diretriz se aplica <b>SOMENTE ao Pincel Bebê (baby pb)</b>. Atualizaremos esta diretriz em caso de flutuações futuras no mercado.",
-    "this-trade-was-auto-priced": "Esta troca foi precificada automaticamente"
+    "this-trade-was-auto-priced": "Esta troca foi precificada automaticamente",
+    "equal-items-helper": "Todos os itens iguais abaixo do input atual terão seus preços sincronizados",
+    "multiplier-shortcuts": "Atalhos de Multiplicação",
+    "multiplier-shortcuts-helper": "Digite <Kbd>k</Kbd> para multiplicar a entrada atual por 1000, <Kbd>m</Kbd> para um milhão e <Kbd>b</Kbd> para um bilhão",
+    "sync-price-for-equal-items": "Sincronizar preço para itens iguais",
+    "experiments": "Experimentos"
   },
   "Lists": {
     "add-to-list": "Adicionar a Lista",
@@ -683,7 +688,8 @@
   },
   "Articles": {
     "all-articles": "Todos os Artigos",
-    "recommended-articles": "Artigos Recomendados"
+    "recommended-articles": "Artigos Recomendados",
+    "posted-at-date": "Postado em {date}"
   },
   "Error": {
     "404-text-1": "A página que você procura não existe :(",
