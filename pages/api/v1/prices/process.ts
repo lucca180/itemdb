@@ -61,7 +61,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
         b.item_iid = p.item_iid
       )
     GROUP BY item_iid 
-    HAVING count >= 10 OR (MAX_addedAt <= ${maxDateFormated} and count >= 5)
+    HAVING count >= 10 OR (MAX_addedAt <= ${maxDateFormated} and count >= 3)
     LIMIT 1
   ` as any;
 
@@ -136,7 +136,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         b.item_iid = p.item_iid
       )
     GROUP BY item_iid 
-    HAVING count >= 10 OR (MAX_addedAt <= ${maxDateFormated} and count >= 5)
+    HAVING count >= 10 OR (MAX_addedAt <= ${maxDateFormated} and count >= 3)
     ORDER BY MAX_addedAt asc
     LIMIT ${groupByLimit} OFFSET ${page * groupByLimit}
   ` as any;
