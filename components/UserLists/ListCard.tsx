@@ -1,4 +1,4 @@
-import { Badge, Flex, Link, Text, Image } from '@chakra-ui/react';
+import { Badge, Flex, Link, Text, Image, IconButton, HStack, useToast } from '@chakra-ui/react';
 import { ListItemInfo, UserList } from '../../types';
 import icon from '../../public/logo_icon.svg';
 import DynamicIcon from '../../public/icons/dynamic.png';
@@ -8,6 +8,7 @@ import NextLink from 'next/link';
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
+import { FaShareAlt } from 'react-icons/fa';
 const Markdown = dynamic(() => import('../Utils/Markdown'));
 
 type Props = {
@@ -22,6 +23,7 @@ type Props = {
 
 const UserListCard = (props: Props) => {
   const t = useTranslations();
+  const toast = useToast();
   const { list, matches, isSelected, disableLink } = props;
   const [matchCount, setMatchCount] = useState(0);
   const color = Color(list?.colorHex || '#4A5568');
@@ -43,6 +45,19 @@ const UserListCard = (props: Props) => {
     }
   }, [list, matches]);
 
+  const copyLink = () => {
+    const userName = list.official ? 'official' : list.owner.username;
+    navigator.clipboard.writeText(
+      `${window.location.origin}/lists/${userName}/${list.internal_id}`
+    );
+    toast({
+      title: t('General.link-copied'),
+      status: 'success',
+      duration: 3000,
+      isClosable: true,
+    });
+  };
+
   return (
     <Flex
       bg="gray.700"
@@ -61,7 +76,7 @@ const UserListCard = (props: Props) => {
     >
       <Link
         as={NextLink}
-        href={`/lists/${list.official ? 'official' : list.user_username}/${list.internal_id}`}
+        href={`/lists/${list.official ? 'official' : list.owner.username}/${list.internal_id}`}
         _hover={{ textDecoration: 'none' }}
       >
         <Flex
@@ -94,19 +109,29 @@ const UserListCard = (props: Props) => {
           )}
         </Flex>
       </Link>
-      <Flex flexFlow="column" gap={2}>
-        <Text
-          fontWeight="bold"
-          noOfLines={2}
-          color={color.isLight() ? 'blackAlpha.800' : undefined}
-        >
-          <Link
-            as={NextLink}
-            href={`/lists/${list.official ? 'official' : list.user_username}/${list.internal_id}`}
+      <Flex flexFlow="column" gap={2} w="100%">
+        <HStack justifyContent={'space-between'} alignItems={'flex-start'}>
+          <Text
+            fontWeight="bold"
+            noOfLines={2}
+            color={color.isLight() ? 'blackAlpha.800' : undefined}
           >
-            {list.name}
-          </Link>
-        </Text>
+            <Link
+              as={NextLink}
+              href={`/lists/${list.official ? 'official' : list.user_username}/${list.internal_id}`}
+            >
+              {list.name}
+            </Link>
+          </Text>
+          {list.visibility !== 'private' && (
+            <IconButton
+              onClick={copyLink}
+              size="xs"
+              aria-label="Share Link"
+              icon={<FaShareAlt />}
+            />
+          )}
+        </HStack>
         <Text
           fontSize="xs"
           color={color.isLight() ? 'blackAlpha.700' : undefined}

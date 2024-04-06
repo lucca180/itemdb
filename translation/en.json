@@ -279,7 +279,8 @@
     "item-description": "Item Description",
     "item-name-and-description": "Item Name and Description",
     "less": "Less",
-    "more": "More"
+    "more": "More",
+    "link-copied": "Link Copied"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",

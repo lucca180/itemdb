@@ -11,6 +11,8 @@ import {
   Box,
   Link,
   Image,
+  IconButton,
+  useToast,
 } from '@chakra-ui/react';
 import Color from 'color';
 import { BiLinkExternal } from 'react-icons/bi';
@@ -26,6 +28,7 @@ import DynamicIcon from '../../public/icons/dynamic.png';
 import NextImage from 'next/image';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
+import { FaShareAlt } from 'react-icons/fa';
 const Markdown = dynamic(() => import('../Utils/Markdown'));
 
 type ListHeaderProps = {
@@ -41,6 +44,7 @@ const intl = new Intl.NumberFormat();
 
 const ListHeader = (props: ListHeaderProps) => {
   const t = useTranslations();
+  const toast = useToast();
   const { list, color, items, itemInfo, isOwner, setOpenCreateModal } = props;
   const { user } = useAuth();
   const rgb = color.rgb().array();
@@ -78,6 +82,19 @@ const ListHeader = (props: ListHeaderProps) => {
       return acc + itemData.owls.valueMin * item.amount;
     }, 0);
   }, [items, itemInfo]);
+
+  const copyLink = () => {
+    const userName = list.official ? 'official' : list.owner.username;
+    navigator.clipboard.writeText(
+      `${window.location.origin}/lists/${userName}/${list.internal_id}`
+    );
+    toast({
+      title: t('General.link-copied'),
+      status: 'success',
+      duration: 3000,
+      isClosable: true,
+    });
+  };
 
   return (
     <Box>
@@ -163,27 +180,46 @@ const ListHeader = (props: ListHeaderProps) => {
               </Badge>
             )}
           </Stack>
-          <Heading size={{ base: 'lg', md: undefined }}>
+          <Heading
+            size={{ base: 'lg', md: undefined }}
+            display="inline-flex"
+            alignItems={'center'}
+            gap={1}
+          >
             {list.name}
+
             {!!list.dynamicType && (
-              <Flex
-                display={'inline-flex'}
-                ml={1}
-                // mt={{ base: 2, md: 3 }}
-                p={1}
+              <IconButton
+                aria-label="Share Link"
+                size="sm"
+                icon={
+                  <Tooltip hasArrow label={`Dynamic List`} placement="top">
+                    <NextImage
+                      src={DynamicIcon}
+                      alt="lightning bolt"
+                      width={12}
+                      style={{ display: 'inline' }}
+                    />
+                  </Tooltip>
+                }
                 bg="blackAlpha.300"
                 borderRadius={'md'}
-                alignItems="flex-start"
-              >
-                <Tooltip hasArrow label={`Dynamic List`} placement="top">
-                  <NextImage
-                    src={DynamicIcon}
-                    alt="lightning bolt"
-                    width={12}
-                    style={{ display: 'inline' }}
-                  />
-                </Tooltip>
-              </Flex>
+              />
+            )}
+            {list.visibility !== 'private' && (
+              <IconButton
+                onClick={copyLink}
+                bg="blackAlpha.300"
+                size="sm"
+                aria-label={t('Layout.copy-link')}
+                icon={
+                  <Tooltip hasArrow label={t('Layout.copy-link')} placement="top">
+                    <span>
+                      <FaShareAlt />
+                    </span>
+                  </Tooltip>
+                }
+              />
             )}
           </Heading>
           <Stack direction="row" mb={1} alignItems="center" flexWrap="wrap">
