@@ -32,7 +32,7 @@ const AuthContext = createContext<AuthContextType>({
   userPref: null,
 });
 
-const storage =
+const storageSession =
   typeof window !== 'undefined'
     ? {
         getItem: (key: string) => JSON.parse(sessionStorage.getItem(key) ?? 'null'),
@@ -50,9 +50,35 @@ const storage =
       }
     : undefined;
 
-export const UserState = atomWithStorage<User | null>('UserState', null, storage as any);
-export const UserLists = atomWithStorage<UserList[] | null>('UserLists', null, storage as any);
-export const UserPrefs = atomWithStorage<UserPreferences | null>('UserPrefs', null, storage as any);
+const storageLocal =
+  typeof window !== 'undefined'
+    ? {
+        getItem: (key: string) => JSON.parse(localStorage.getItem(key) ?? 'null'),
+        setItem: (key: string, value: any) => localStorage.setItem(key, JSON.stringify(value)),
+        removeItem: (key: string) => localStorage.removeItem(key),
+        subscribe: (key: string, callback: (value: any) => void, initialValue: any) => {
+          const listener = (e: StorageEvent) => {
+            if (e.key === key) {
+              callback(e.newValue ? JSON.parse(e.newValue) : initialValue);
+            }
+          };
+          window.addEventListener('storage', listener);
+          return () => window.removeEventListener('storage', listener);
+        },
+      }
+    : undefined;
+
+export const UserState = atomWithStorage<User | null>('UserState', null, storageSession as any);
+export const UserLists = atomWithStorage<UserList[] | null>(
+  'UserLists',
+  null,
+  storageSession as any
+);
+export const UserPrefs = atomWithStorage<UserPreferences | null>(
+  'UserPrefs',
+  null,
+  storageLocal as any
+);
 
 export function AuthProvider({ children }: any) {
   const [, setLists] = useAtom(UserLists);
