@@ -2,9 +2,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { coefficientOfVariation } from '../../../../utils/utils';
-import { mean, standardDeviation } from 'simple-statistics';
 import { ItemPrices, PriceProcess2, Prisma } from '@prisma/client';
-import { differenceInCalendarDays, differenceInDays } from 'date-fns';
+import { differenceInCalendarDays } from 'date-fns';
 import { processPrices2 } from '../../../../utils/pricing';
 
 const MAX_DAYS = 30;
@@ -223,78 +222,6 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
           return _;
         })
       );
-
-      // --------- OLD ALGORITHM ------------ //
-      // if (allItemData.length < 3) continue;
-      // const mostRecentPrices = filterMostRecents(allItemData).sort((a, b) => a.price - b.price);
-      // const owners = new Set<string>();
-
-      // const filteredResult = mostRecentPrices
-      //   .map((x) => {
-      //     if (x.owner && !owners.has(x.owner)) owners.add(x.owner);
-      //     else return undefined;
-      //     return x;
-      //   })
-      //   .filter((x) => !!x)
-      //   .slice(0, 30) as PriceProcess2[];
-
-      // let latestDate = new Date(0);
-      // const oldestDate = mostRecentPrices.reduce((a, b) => (a.addedAt < b.addedAt ? a : b)).addedAt;
-      // let userShopCount = 0;
-
-      // const usedIDs = filteredResult.map((o) => {
-      //   if (o.addedAt > latestDate) latestDate = o.addedAt;
-      //   if (o.type === 'usershop') userShopCount += 1;
-      //   return o.internal_id;
-      // });
-
-      // if (userShopCount >= (filteredResult.length / 4) * 3) continue;
-
-      // if (
-      //   filteredResult.length < 5 &&
-      //   differenceInCalendarDays(Date.now(), latestDate) < MAX_DAYS &&
-      //   differenceInCalendarDays(latestDate, oldestDate) < MAX_DAYS * 2
-      // )
-      //   continue;
-
-      // const allIDs = allItemData.filter((x) => x.addedAt <= latestDate).map((x) => x.internal_id);
-
-      // const prices = filteredResult.map((x) => x.price);
-
-      // let priceSTD = standardDeviation(prices);
-      // let priceMean = Math.round(mean(prices));
-
-      // let oldPrices = prices;
-
-      // let out = prices.filter((x) => x <= priceMean + priceSTD && x >= priceMean - priceSTD * 2);
-
-      // while (out.length > 3 && out.length < oldPrices.length) {
-      //   oldPrices = out;
-      //   priceMean = Math.round(mean(out));
-      //   priceSTD = standardDeviation(out);
-
-      //   out = prices.filter((x) => x <= priceMean + priceSTD && x >= priceMean - priceSTD * 2);
-      // }
-
-      // if (out.length === 0) out = oldPrices;
-      // const finalMean = out.length >= 2 ? mean(out) : out[0];
-
-      // if (isNaN(finalMean)) throw 'NaN price';
-
-      // let finalPrice = finalMean < 5 ? Math.round(finalMean) : Math.round(finalMean / 5) * 5;
-
-      // if (finalPrice > 100000000) finalPrice = Math.round(finalMean / 5000000) * 5000000;
-      // else if (finalPrice > 10000000) finalPrice = Math.round(finalMean / 500000) * 500000;
-      // else if (finalPrice > 1000000) finalPrice = Math.round(finalMean / 50000) * 50000;
-      // else if (finalPrice > 100000) finalPrice = Math.round(finalMean / 500) * 500;
-      // else if (finalPrice > 10000) finalPrice = Math.round(finalMean / 50) * 50;
-
-      // priceAddPromises.push(
-      //   updateOrAddDB(item, finalPrice, usedIDs, latestDate, newPriceAlgorithm?.price).then((_) => {
-      //     if (_) processedIDs.push(...allIDs);
-      //     return _;
-      //   })
-      // );
     } catch (e) {
       console.error(e, item);
       if (e === 'NaN price') continue;
@@ -454,25 +381,4 @@ async function updateOrAddDB(
       manual_check: e,
     };
   }
-}
-
-const MIN_ITEMS_THRESHOLD = EVENT_MODE ? 7 : 10;
-
-function filterMostRecents(priceProcessList: PriceProcess2[]) {
-  const firstFiltered = priceProcessList.filter(
-    (x) => differenceInDays(Date.now(), x.addedAt) <= 0
-  );
-
-  if (firstFiltered.length >= MIN_ITEMS_THRESHOLD * 3) return firstFiltered;
-
-  const daysThreshold = [3, 7, 15, 30];
-
-  for (const days of daysThreshold) {
-    const filtered = priceProcessList.filter(
-      (x) => differenceInDays(Date.now(), x.addedAt) <= days
-    );
-    if (filtered.length >= MIN_ITEMS_THRESHOLD) return filtered;
-  }
-
-  return priceProcessList;
 }

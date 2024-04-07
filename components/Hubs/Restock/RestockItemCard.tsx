@@ -50,8 +50,6 @@ const RestockItem = (props: Props) => {
       )
     : -1;
 
-  if (isBait) console.log(props.item.name, profit, isBait, boughtTime, lostHaggle, lostNoHaggle);
-
   return (
     <Link
       as={NextLink}
