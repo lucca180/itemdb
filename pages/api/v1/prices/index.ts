@@ -221,7 +221,7 @@ export const newCreatePriceProcessFlow = async (
     })
     .filter((x) => x !== null) as Prisma.RestockAuctionHistoryCreateManyInput[];
 
-  const deleteAll = await prisma.priceProcessHistory.deleteMany({
+  const deleteAll = prisma.priceProcessHistory.deleteMany({
     where: {
       item_iid: {
         in: newPriceData.map((x) => x.item_iid),

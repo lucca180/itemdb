@@ -174,6 +174,7 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
 
   const isUpdate = !!originalTrade?.processed;
 
+  // this is the worst
   const updateItems = trade.items
     .filter((x) => x.price && x.price > 0)
     .map((item) => {
@@ -203,27 +204,7 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
 
   await Promise.all(updateItems);
 
-  const itemUpdate = await prisma.tradeItems.findMany({
-    where: {
-      OR: [
-        {
-          trade: tradeHash
-            ? {
-                hash: tradeHash,
-                processed: false,
-                priced: false,
-              }
-            : {},
-        },
-        {
-          trade_id: trade.trade_id,
-        },
-      ],
-    },
-    include: {
-      trade: true,
-    },
-  });
+  const itemUpdate = await getTradeItems(trade.trade_id, tradeHash);
 
   const tradesIDs = [...new Set(itemUpdate.map((x) => x.trade_id))];
 
@@ -294,8 +275,10 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
     });
   }
 
-  const result = await prisma.$transaction([tradeUpdate]);
-  await newCreatePriceProcessFlow(addPriceProcess, true);
+  const [result] = await Promise.all([
+    prisma.$transaction([tradeUpdate]),
+    newCreatePriceProcessFlow(addPriceProcess, true),
+  ]);
 
   return result;
 };
@@ -393,4 +376,35 @@ const updateLastSeenTrades = async (
     data: createMany,
     skipDuplicates: true,
   });
+};
+
+const getTradeItems = async (trade_id: number, hash: string | null) => {
+  const res = (await prisma.$queryRaw`
+    select * from tradeitems ti left join trades t on ti.trade_id = t.trade_id 
+    where (t.hash = ${
+      hash ?? '-1'
+    } and t.processed = 0 and t.priced = 0) or t.trade_id = ${trade_id}
+  `) as (TradeItems & Trades)[];
+
+  return res.map((x) => ({
+    internal_id: x.internal_id,
+    trade_id: x.trade_id,
+    name: x.name,
+    image: x.image,
+    image_id: x.image_id,
+    order: x.order,
+    price: x.price,
+    item_id: x.item_id,
+    addedAt: x.addedAt,
+    trade: {
+      trade_id: x.trade_id,
+      owner: x.owner,
+      wishlist: x.wishlist,
+      addedAt: x.addedAt,
+      processed: x.processed,
+      priced: x.priced,
+      hash: x.hash,
+      tradesUpdated: x.tradesUpdated,
+    },
+  }));
 };

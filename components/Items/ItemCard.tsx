@@ -2,11 +2,11 @@ import { Badge, Box, Icon, Skeleton, Text, Link, Tooltip, useMediaQuery } from '
 import React from 'react';
 import Image from 'next/image';
 import { ItemData } from '../../types';
-import NextLink from 'next/link';
 import { AiFillInfoCircle, AiFillWarning } from 'react-icons/ai';
 import ItemCtxMenu, { CtxTrigger } from '../Modal/ItemCtxMenu';
 import { rarityToCCPoints } from '../../utils/utils';
 import { useTranslations } from 'next-intl';
+import MainLink from '../Utils/MainLink';
 
 export type ItemProps = {
   item?: ItemData;
@@ -82,7 +82,7 @@ const ItemCardBase = (props: ItemProps) => {
         style={props.style}
       >
         <Link
-          as={disableLink ? undefined : NextLink}
+          as={disableLink ? undefined : MainLink}
           style={props.style}
           prefetch={!disableLink && !disablePrefetch ? undefined : false}
           href={disableLink ? undefined : '/item/' + (item.slug ?? item.internal_id)}
