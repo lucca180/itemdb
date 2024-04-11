@@ -28,7 +28,7 @@
     "@google-cloud/storage": "^6.9.3",
     "@hello-pangea/color-picker": "^3.2.2",
     "@napi-rs/canvas": "^0.1.44",
-    "@prisma/client": "^5.11.0",
+    "@prisma/client": "^5.12.1",
     "@sendgrid/mail": "^7.7.0",
     "@sentry/integrations": "^7.101.0",
     "@sentry/nextjs": "^7.101.0",
@@ -103,7 +103,7 @@
     "husky": "^8.0.0",
     "lint-staged": "13.0.3",
     "prettier": "2.8.4",
-    "prisma": "^5.11.0",
+    "prisma": "^5.12.1",
     "ts-node": "10.9.2",
     "typescript": "^5.4.3",
     "wp-types": "^3.64.0"

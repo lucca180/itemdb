@@ -57,7 +57,7 @@ model Items {
 
   @@index([name, image_id])
   @@index([image_id])
-  @@index([item_id])
+  // @@index([item_id])
   @@fulltext([name])
   @@fulltext([description])
   @@fulltext([name, description])
@@ -165,10 +165,8 @@ model ItemPrices {
 
   @@index([name, image_id])
   @@index([name, addedAt])
-  @@index([name])
   @@index([name, item_iid])
   @@index([item_iid, addedAt(sort: Desc)])
-  @@index([item_iid])
 }
 
 // @deprecated
@@ -207,7 +205,7 @@ model PriceProcessHistory {
   item_iid    Int?
   item        Items?   @relation(fields: [item_iid], references: [internal_id], onDelete: SetNull, onUpdate: Cascade)
 
-  @@index([name])
+  // @@index([name])
   @@index([name, checkedAt])
 }
 
@@ -321,7 +319,6 @@ model OpenableQueue {
   processed      Boolean  @default(false)
   addedAt        DateTime @default(now())
 }
-
 model Feedbacks {
   feedback_id Int      @id @default(autoincrement())
   type        String   @default("feedback")
@@ -340,7 +337,6 @@ model Feedbacks {
 
   vote FeedbackVotes[]
 }
-
 model FeedbackVotes {
   vote_id     Int       @id @default(autoincrement())
   feedback_id Int
@@ -450,7 +446,7 @@ model OwlsPrice {
   item_iid Int
   item     Items @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
 
-  @@index([item_iid])
+  // @@index([item_iid])
   @@index([item_iid, pricedAt(sort: Desc)])
 }
 
@@ -469,8 +465,8 @@ model RestockSession {
 
   session Json
 
-  @@index([user_id])
-  @@index([user_id, startedAt])
+  // @@index([user_id])
+  // @@index([user_id, startedAt])
   @@index([user_id, startedAt, shop_id])
 }
 
@@ -485,7 +481,7 @@ model LastSeen {
   lastSeen    DateTime @default(now())
 
   @@unique([item_iid, type])
-  @@index([item_iid])
+  // @@index([item_iid])
   @@index([type, lastSeen])
 }
 
@@ -512,8 +508,8 @@ model PriceProcess2 {
   processed Boolean @default(false)
 
   @@unique([type, neo_id])
-  @@index([item_iid])
-  @@index([item_iid, addedAt])
+  // @@index([item_iid])
+  // @@index([item_iid, addedAt])
   @@index([addedAt, processed])
   @@index([item_iid, addedAt, type])
 }
@@ -538,7 +534,7 @@ model RestockAuctionHistory {
   neo_id Int?
 
   @@unique([type, neo_id])
-  @@index([item_iid])
-  @@index([item_iid, addedAt])
+  // @@index([item_iid])
+  // @@index([item_iid, addedAt])
   @@index([item_iid, addedAt, type])
 }
