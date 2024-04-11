@@ -47,6 +47,7 @@ import { getLastSeen } from '../api/v1/prices/stats';
 import ManualCheckCard from '../../components/Items/ManualCheckCard';
 import { useTranslations } from 'next-intl';
 import ItemMyLists from '../../components/Items/MyListsCard';
+import { useAuth } from '../../utils/auth';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -89,6 +90,8 @@ const ItemPage = (props: ItemPageProps) => {
   const [isLoading, setLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const { user } = useAuth();
+
   const color = item?.color.rgb ?? [255, 255, 255];
   const router = useRouter();
 
@@ -292,7 +295,7 @@ const ItemPage = (props: ItemPageProps) => {
             {!item.isNC && <ItemPriceCard item={item} lastSeen={seenStats} prices={prices ?? []} />}
             {item.isNC && <NCTrade item={item} lists={tradeLists} />}
             {lists && <ItemOfficialLists item={item} lists={lists} />}
-            <ItemMyLists item={item} />
+            {!!user && <ItemMyLists item={item} />}
             {item.comment && <ItemComments item={item} />}
             {itemOpenable && <ItemDrops item={item} itemOpenable={itemOpenable} />}
             <SimilarItemsCard item={item} similarItems={props.similarItems} />
