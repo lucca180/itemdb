@@ -58,7 +58,7 @@
     "lightweight-charts": "^4.1.2",
     "lodash": "^4.17.21",
     "lru-cache": "^10.2.0",
-    "next": "^14.1.4",
+    "next": "^14.2.1",
     "next-intl": "^3.5.2",
     "next-seo": "^6.4.0",
     "next-sitemap": "^4.2.3",
@@ -73,14 +73,14 @@
     "react": "^18.2.0",
     "react-context-mutex": "^2.0.0",
     "react-dom": "^18.2.0",
-    "react-icons": "^4.12.0",
+    "react-icons": "^5.0.1",
     "react-intersection-observer": "^9.5.3",
     "react-markdown": "^9.0.1",
     "react-viewport-list": "^7.1.2",
     "request-ip": "^3.3.0",
     "sharp": "^0.31.3",
     "simple-statistics": "^7.8.3",
-    "swr": "^2.2.4"
+    "swr": "^2.2.5"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.8.1",
