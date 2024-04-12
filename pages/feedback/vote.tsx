@@ -44,10 +44,10 @@ const FeedbackVotingPage = () => {
   const isAdmin = user?.role === 'ADMIN';
 
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading) {
       init();
     }
-  }, [authLoading, user]);
+  }, [authLoading]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {

@@ -29,8 +29,6 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
     },
   });
 
-  const itemProcessTotal = prisma.itemProcess.count();
-
   const itemsMissingInfo = prisma.items.count({
     where: {
       OR: [{ item_id: null }, { category: null }, { rarity: null }],
@@ -63,19 +61,10 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
     itemsMissingInfoCount,
     itemsTotalCount,
     tradeQueueCount,
-    itemProcessCount,
     feedbackVotingCount,
-  ] = await Promise.all([
-    itemProcess,
-    itemsMissingInfo,
-    itemsTotal,
-    tradeQueueRaw,
-    itemProcessTotal,
-    feedbackVoting,
-  ]);
+  ] = await Promise.all([itemProcess, itemsMissingInfo, itemsTotal, tradeQueueRaw, feedbackVoting]);
 
   return res.status(200).json({
-    itemProcess: itemProcessCount,
     itemToProcess: itemToProcessCount,
     itemsMissingInfo: itemsMissingInfoCount,
     itemsTotal: itemsTotalCount,

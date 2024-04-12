@@ -163,7 +163,7 @@ const HomePage = (props: Props) => {
           </Flex>
         </Stack>
         <Stack direction={{ base: 'column', lg: 'row' }} mt={2} gap={{ base: 8, lg: 3 }}>
-          <Flex flexFlow="column" flex={1} alignItems="center" h="100%">
+          <Flex flexFlow="column" flex={1} alignItems="center">
             <Heading size="md">{t('stats')}</Heading>
             <BetaStatsCard />
           </Flex>
