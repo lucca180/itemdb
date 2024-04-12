@@ -259,6 +259,14 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
+  const today = new Date().getDate();
+
+  // only clean up every 15 days
+  if ((today % 15) - 1 !== 0) {
+    const result = await prisma.priceProcessHistory.deleteMany({});
+    return res.send(result);
+  }
+
   const result = await Promise.all([
     prisma.priceProcessHistory.deleteMany({}),
     prisma.priceProcess2.deleteMany({
