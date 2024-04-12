@@ -65,7 +65,7 @@
     "move-to-list": "Move to List",
     "delete-from-this-list": "Delete from this list",
     "you-can-change-lang": "You can switch languages at any time in the footer",
-    "itemdb-survey": "itemdb is turning one! We want your opinion in this quick survey (takes 30s!)"
+    "server-upgrade": "We have a scheduled maintenance next Sunday (14) and itemdb may be unavailable for a few hours"
   },
   "ItemPage": {
     "item-info": "Item Info",
