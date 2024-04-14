@@ -22,9 +22,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // if (request.nextUrl.pathname.startsWith('/api/')) {
-  //   return apiMiddleware(request);
-  // }
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    return NextResponse.next();
+    // return apiMiddleware(request);
+  }
 
   const cookies = {
     name: 'idb_accept-language',
