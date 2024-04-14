@@ -93,7 +93,7 @@ const Layout = (props: Props) => {
       <LoginModal isOpen={isOpen} onClose={onClose} />
       <LanguageToast saveLang={saveLang} />
       <Flex flexFlow="column" minH="100vh">
-        <Flex
+        {/* <Flex
           w="full"
           maxW="8xl"
           marginX="auto"
@@ -111,7 +111,7 @@ const Layout = (props: Props) => {
           <Box w="100%" bg="whiteAlpha.200" position={'absolute'} h="26px" left="0" zIndex={-1} />
           <Text fontSize={'sm'}>⚠️</Text>
           {t('server-upgrade')}
-        </Flex>
+        </Flex> */}
         <Flex
           as="nav"
           w="full"
