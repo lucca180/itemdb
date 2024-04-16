@@ -111,7 +111,9 @@ const Layout = (props: Props) => {
           <Box w="100%" bg="green.500" position={'absolute'} h="26px" left="0" zIndex={-1} />
           <Text fontSize={'sm'}>⚠️</Text>
           <ChakraLink href="https://magnetismotimes.com/mt15/" isExternal>
-            {t('mt15')}
+            {t.rich('mt15', {
+              b: (chunks) => <b>{chunks}</b>,
+            })}
           </ChakraLink>
         </Flex>
         <Flex
