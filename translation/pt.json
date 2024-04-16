@@ -66,7 +66,8 @@
     "select-item": "Selecionar Item",
     "you-can-change-lang": "Você pode alterar o idioma a qualquer momento no rodapé da página",
     "itemdb-survey": "itemdb está completando um ano! Queremos sua opinião nesta pesquisa rápida (leva 30s!)",
-    "server-upgrade": "Nós teremos uma manutenção programada no próximo Domingo (14) e o itemdb pode ficar indisponível por algumas horas"
+    "server-upgrade": "Nós teremos uma manutenção programada no próximo Domingo (14) e o itemdb pode ficar indisponível por algumas horas",
+    "mt15": "<b>O MT PRECISA DE VOCÊ</b> - Clique aqui e saiba mais"
   },
   "ItemPage": {
     "item-info": "Item Info",

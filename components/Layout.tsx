@@ -93,7 +93,7 @@ const Layout = (props: Props) => {
       <LoginModal isOpen={isOpen} onClose={onClose} />
       <LanguageToast saveLang={saveLang} />
       <Flex flexFlow="column" minH="100vh">
-        {/* <Flex
+        <Flex
           w="full"
           maxW="8xl"
           marginX="auto"
@@ -103,15 +103,17 @@ const Layout = (props: Props) => {
           py={1}
           // h="26px"
           alignItems="center"
-          color="whiteAlpha.700"
+          color="blackAlpha.800"
           fontSize={'xs'}
           overflow={'auto'}
           whiteSpace={'nowrap'}
         >
-          <Box w="100%" bg="whiteAlpha.200" position={'absolute'} h="26px" left="0" zIndex={-1} />
+          <Box w="100%" bg="green.500" position={'absolute'} h="26px" left="0" zIndex={-1} />
           <Text fontSize={'sm'}>⚠️</Text>
-          {t('server-upgrade')}
-        </Flex> */}
+          <ChakraLink href="https://magnetismotimes.com/mt15/" isExternal>
+            {t('mt15')}
+          </ChakraLink>
+        </Flex>
         <Flex
           as="nav"
           w="full"
