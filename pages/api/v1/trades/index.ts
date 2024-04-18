@@ -165,16 +165,20 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) => {
-  const tradeHash = trade.hash;
+  let tradeHash = trade.hash;
+
   const originalTrade = await prisma.trades.findFirst({
     where: {
       trade_id: trade.trade_id,
     },
   });
 
+  if (!tradeHash && originalTrade) tradeHash = originalTrade.hash;
+  if (!tradeHash) throw 'processTradePrice: Missing tradeHash';
+
   const isUpdate = !!originalTrade?.processed;
 
-  // this is the worst
+  // this is the worst (or is it?)
   const updateItems = trade.items
     .filter((x) => x.price && x.price > 0)
     .map((item) => {
@@ -182,15 +186,17 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
         where: {
           OR: [
             {
-              internal_id: item.internal_id,
+              order: item.order,
+              trade: {
+                hash: tradeHash,
+                processed: false,
+                priced: false,
+              },
             },
-            tradeHash
+            isUpdate && originalTrade.tradesUpdated
               ? {
-                  order: item.order,
-                  trade: {
-                    hash: tradeHash,
-                    processed: false,
-                    priced: false,
+                  internal_id: {
+                    in: originalTrade.tradesUpdated?.split(',').map((x) => Number(x)),
                   },
                 }
               : {},
