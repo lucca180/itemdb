@@ -14,7 +14,7 @@ import { TradeData } from '../../types';
 import CardBase from '../Card/CardBase';
 import Image from 'next/image';
 import CustomNumberInput from '../Input/CustomNumber';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { BsArrowLeft, BsArrowLeftRight, BsCheck2 } from 'react-icons/bs';
 import { useTranslations } from 'next-intl';
 import { FeedbackExperimentsModalProps } from '../Modal/FeedbackExperimentsModal';
@@ -172,7 +172,16 @@ type ItemTradeProps = {
 
 const ItemTrade = (props: ItemTradeProps) => {
   const t = useTranslations();
+  const ref = useRef<HTMLInputElement>(null);
   const { item } = props;
+
+  useEffect(() => {
+    if (item.order !== 0) return;
+
+    if (ref.current) {
+      ref.current.focus();
+    }
+  }, [ref.current]);
 
   const handleChange = (val: string) => {
     const tempItem = { ...item };
@@ -219,6 +228,7 @@ const ItemTrade = (props: ItemTradeProps) => {
               placeholder: t('General.np-price'),
             }}
             inputProps={{
+              ref: ref,
               placeholder: t('General.np-price'),
               textAlign: 'left',
               onKeyDown: handleKeyDown,
