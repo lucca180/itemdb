@@ -187,9 +187,6 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       item_iid: { in: ids },
       addedAt: { gte: maxPast },
     },
-    orderBy: {
-      addedAt: 'desc',
-    },
   });
 
   const priceAddPromises: Promise<Prisma.ItemPricesUncheckedCreateInput | undefined>[] = [];
