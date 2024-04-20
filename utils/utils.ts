@@ -357,7 +357,17 @@ export const rarityStr = (rarity: number) => {
 };
 
 export const shouldSkipTrade = (wishlist: string) => {
-  if (wishlist.toLowerCase().includes('paperclip')) return true;
+  if (wishlist.toLowerCase().includes('paperclip') || wishlist.toLowerCase().includes('paper clip'))
+    return true;
+
+  const wishCpy = wishlist.toLowerCase().replaceAll(/nps?/g, '');
+
+  if (!isNaN(Number(wishCpy))) {
+    if (!Number.isInteger(Number(wishCpy))) return false;
+    if (Number(wishCpy) < 50000) return true;
+
+    return false;
+  }
 
   wishlist = wishlist.replaceAll('-no tags here-3', '');
   wishlist = wishlist.replaceAll(/:3[\s]|:3$/g, ' ');

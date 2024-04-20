@@ -195,8 +195,11 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
             },
             isUpdate && originalTrade.tradesUpdated
               ? {
-                  internal_id: {
-                    in: originalTrade.tradesUpdated?.split(',').map((x) => Number(x)),
+                  order: item.order,
+                  trade: {
+                    trade_id: {
+                      in: originalTrade.tradesUpdated?.split(',').map((x) => Number(x)),
+                    },
                   },
                 }
               : {},
