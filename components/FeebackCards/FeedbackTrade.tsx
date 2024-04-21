@@ -173,13 +173,15 @@ type ItemTradeProps = {
 const ItemTrade = (props: ItemTradeProps) => {
   const t = useTranslations();
   const ref = useRef<HTMLInputElement>(null);
+  const setFocus = useRef(false);
   const { item } = props;
 
   useEffect(() => {
-    if (item.order !== 0) return;
+    if (item.order !== 0 || setFocus.current) return;
 
     if (ref.current) {
       ref.current.focus();
+      setFocus.current = true;
     }
   }, [ref.current]);
 

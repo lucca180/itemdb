@@ -107,8 +107,7 @@ const RestockDashboard = () => {
         },
       });
 
-      // temp disable chart
-      const chartProm = !chartData && false ? axios.get('/api/v1/restock/chart') : undefined;
+      const chartProm = !chartData ? axios.get('/api/v1/restock/chart') : undefined;
 
       const [res, chartRes] = await Promise.all([dataProm, chartProm]);
 
