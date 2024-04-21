@@ -3,6 +3,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { processTradePrice } from '.';
 import { FEEDBACK_VOTE_TARGET } from '../../feedback/vote';
+import { getManyItems } from '../items/many';
+import { differenceInCalendarDays } from 'date-fns';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
@@ -97,11 +99,14 @@ const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
     include: { items: true },
   });
 
+  if (similarList.length === 0) {
+    await checkTradeEstPrice(trade);
+    return null;
+  }
+
   const isAllItemsTheSame = trade.items.every(
     (t) => t.name === trade.items[0].name && t.image_id === trade.items[0].image_id
   );
-
-  if (similarList.length === 0) return null;
 
   const similar = similarList.find((t) => {
     const isTheSame = t.items.every(
@@ -111,7 +116,10 @@ const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
     return t.items.length === trade.items.length && isTheSame === isAllItemsTheSame;
   });
 
-  if (!similar) return null;
+  if (!similar) {
+    await checkTradeEstPrice(trade);
+    return null;
+  }
 
   const updatedItems: any[] = [...trade.items];
 
@@ -137,4 +145,35 @@ const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
     ...trade,
     items: updatedItems,
   };
+};
+
+// this will skip trade pricing if the trade is est price is less than 100k
+const checkTradeEstPrice = async (trade: Trades & { items: TradeItems[] }) => {
+  const itemsQuery = trade.items.map((item) => [item.name, item.image_id]) as [string, string][];
+
+  const itemsData = await getManyItems({ name_image_id: itemsQuery });
+
+  let priceSum = 0;
+
+  for (const item of trade.items) {
+    const itemData = itemsData[`${encodeURI(item.name.toLowerCase())}_${item.image_id}`];
+
+    if (!itemData) return false;
+
+    if (!itemData.price.value) return false;
+
+    if (
+      itemData.price.addedAt &&
+      differenceInCalendarDays(new Date(), new Date(itemData.price.addedAt)) > 30
+    )
+      return false;
+
+    priceSum += itemData.price.value;
+  }
+
+  if (priceSum >= 100000) return false;
+
+  await processTradePrice(trade as any);
+
+  return true;
 };
