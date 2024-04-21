@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.4.2
+// @version      1.4.3
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -14,6 +14,9 @@
 // @connect      itemdb.com.br
 // @connect      neopets.com
 // @grant        GM_xmlhttpRequest
+// @grant        GM_setValue
+// @grant        GM_getValue
+// @grant        GM_deleteValue
 // @noframes
 // ==/UserScript==
 
@@ -45,10 +48,12 @@ let alreadyCalled = false;
 let itemsHistory = JSON.parse(localStorage?.getItem('idb_newItemHistory')) ?? {};
 let restockHistory = JSON.parse(localStorage?.getItem('idb_restockHistory')) ?? {};
 let tradeHistory = JSON.parse(localStorage?.getItem('idb_tradeHistory')) ?? {};
-let prevInventory = JSON.parse(localStorage?.getItem('idb_prevInventory')) ?? {};
+let prevInventory = GM_getValue('prevInventory', {});
 
 // check the page language
-const pageLang = nl ?? 'unknown';
+if(nl) {
+  GM_setValue('pageLang', nl);
+}
 
 // function to check if the current url contains a word
 function URLHas(string) {
@@ -59,8 +64,7 @@ if (URLHas('idb_clear')) {
   localStorage.removeItem('idb_itemHistory');
   localStorage.removeItem('idb_restockHistory');
   localStorage.removeItem('idb_tradeHistory');
-  localStorage.removeItem('idb_prevInventory');
-  localStorage.removeItem('idb_newItemHistory');
+  GM_deleteValue("prevInventory");
 
   itemsHistory = {};
   restockHistory = {};
@@ -1071,7 +1075,7 @@ function handleNPOpenables(){
         now: Date.now()
       };
 
-      localStorage?.setItem('idb_prevInventory', JSON.stringify(inventoryOpenable));
+      GM_setValue('prevInventory', inventoryOpenable);
     });
   });
 }
@@ -1083,9 +1087,9 @@ function handleNPRefresh(){
     const isNP = $("#invDisplay")[0].dataset?.type === "np";
     if(!isNP) return;
 
-    //check if time is more than 2 minutes
-    if(Date.now() - prevInventory.now > 2*60*1000) 
-      return localStorage.removeItem('idb_prevInventory');;
+    //check if time is more than 1 minute
+    if(Date.now() - prevInventory.now > 1*60*1000) 
+      return GM_deleteValue('prevInventory');
 
     const items = [];
     const sumItems = {};
@@ -1122,7 +1126,7 @@ function handleNPRefresh(){
     if(items.length !== 0)
       submitOpenable(items, {...prevInventory.parentItem});
     
-    localStorage.removeItem('idb_prevInventory');
+    GM_deleteValue('prevInventory');
     prevInventory = {};
   })
 }
@@ -1131,7 +1135,7 @@ function discardPrevInventory(){
   // in case of a refesh that is not a inventory refresh
   // we need to discard the opening data
 
-  return localStorage.removeItem('idb_prevInventory');;
+  return GM_deleteValue('prevInventory');
 }
 
 // ------------- //
@@ -1177,8 +1181,9 @@ async function submitItems() {
   if(checkTranslation()) return;
   const itemsList = Object.values(itemsObj);
   if (itemsList.length === 0) return;
-
+  
   const hash = idb.getItemsHash(itemsObj);
+  const pageLang = GM_getValue('pageLang', 'unknown');
   const rawData = {
     lang: pageLang,
     items: itemsList,
@@ -1210,6 +1215,8 @@ async function submitPrices() {
   if (priceList.length === 0) return;
 
   const hash = idb.getPricesHash(priceList);
+  
+  const pageLang = GM_getValue('pageLang', 'unknown');
   const rawData = {
     lang: pageLang,
     itemPrices: priceList,
@@ -1241,7 +1248,8 @@ async function submitTrades() {
   if (tradeList.length === 0) return;
 
   const hash = idb.getTradesHash(tradeList);
-  
+
+  const pageLang = GM_getValue('pageLang', 'unknown');
   const rawData = {
     lang: pageLang,
     tradeLots: tradeList,
@@ -1270,6 +1278,8 @@ async function submitTrades() {
 
 async function submitOpenable(items, parentItem) {
   if(checkTranslation()) return;
+
+  const pageLang = GM_getValue('pageLang', 'unknown');
   const rawData = {
     lang: pageLang,
     items: items,
