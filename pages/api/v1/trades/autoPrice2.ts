@@ -149,6 +149,8 @@ const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
 
 // this will skip trade pricing if the trade is est price is less than 100k
 const checkTradeEstPrice = async (trade: Trades & { items: TradeItems[] }) => {
+  if (trade.items.length === 1) return false;
+
   const itemsQuery = trade.items.map((item) => [item.name, item.image_id]) as [string, string][];
 
   const itemsData = await getManyItems({ name_image_id: itemsQuery });
