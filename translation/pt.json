@@ -608,7 +608,15 @@
     "estimated-loss": "Perda Estimada",
     "estimated-profit-is-less-than": "Lucro estimado é inferior a 1000 NP",
     "worst-baits": "Piores Armadilhas",
-    "you-didnt-fall-for-any-bait-items": "Você não caiu em nenhuma armadilha! 🎣"
+    "you-didnt-fall-for-any-bait-items": "Você não caiu em nenhuma armadilha! 🎣",
+    "rarity-range": "Raridade {range}",
+    "rarity-range-1": "Esses itens são bastante comuns e podem aparecer com várias unidades em estoque",
+    "rarity-range-2": "Esses itens não são tão comuns e restocam com apenas 1 unidade em estoque",
+    "rarity-range-3": "Esses itens são bastante raros e restocam com apenas 1 unidade em estoque",
+    "use-classic-view": "Visão Clássica",
+    "use-rarity-view": "Visão de Raridade",
+    "info-up-to-date-warning": "Estas informações são baseadas nos dados disponíveis no momento no itemdb. Esses dados podem não estar totalmente atualizados.",
+    "view-all-items-from-this-shop": "Ver todos os itens desta loja"
   },
   "Search": {
     "search": "Pesquisa",

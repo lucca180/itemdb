@@ -1,6 +1,7 @@
 import {
   Badge,
   Box,
+  Button,
   Center,
   Divider,
   Flex,
@@ -11,7 +12,6 @@ import {
   Spinner,
   Tag,
   Text,
-  useDimensions,
 } from '@chakra-ui/react';
 import Color from 'color';
 import { GetStaticPropsContext } from 'next';
@@ -28,16 +28,17 @@ import {
   tyrannianShops,
 } from '../../utils/utils';
 import { defaultFilters } from '../../utils/parseFilters';
-import ItemCard from '../../components/Items/ItemCard';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { SortSelect } from '../../components/Input/SortSelect';
 import { SearchList } from '../../components/Search/SearchLists';
-import { ViewportList } from 'react-viewport-list';
 import { CollapseNumber } from '../../components/Input/CollapseNumber';
 import axios from 'axios';
 import { getFiltersDiff } from '../search';
 import NextLink from 'next/link';
 import { useTranslations } from 'next-intl';
+import { RarityView } from '../../components/Hubs/Restock/RarityViewl';
+import { VirtualizedItemList } from '../../components/Utils/VirtualizedItemList';
+import { useAuth } from '../../utils/auth';
 
 type RestockShopPageProps = {
   shopInfo: ShopInfo;
@@ -61,15 +62,16 @@ type ItemFilter = {
 const RestockShop = (props: RestockShopPageProps) => {
   const t = useTranslations();
   const { shopInfo } = props;
+  const { userPref, updatePref } = useAuth();
   const [filteredItems, setFilteredItems] = useState<ItemData[]>();
   const [itemList, setItemList] = useState<ItemData[]>();
   const [sortInfo, setSortInfo] = useState({ sortBy: 'price', sortDir: 'desc' });
   const [loading, setLoading] = useState(true);
   const [itemFilter, setItemFilter] = useState<ItemFilter>({ query: undefined, minProfit: 5000 });
   const [specialDay, setSpecialDay] = useState('');
-
-  const elementRef = useRef(null);
-  const dimensions = useDimensions(elementRef, true);
+  const [viewType, setViewType] = useState<'default' | 'rarity'>(
+    userPref?.restock_prefView ?? 'rarity'
+  );
 
   const color = Color(shopInfo.color).rgb().round().array();
 
@@ -168,19 +170,11 @@ const RestockShop = (props: RestockShopPageProps) => {
     setFilteredItems(filtered);
   };
 
-  const groupedItems = useMemo(
-    () =>
-      (filteredItems ?? []).reduce((acc, cur, i) => {
-        const itemSize = dimensions && dimensions.borderBox.width >= 768 ? 160 : 110;
-        const groupSize = dimensions ? Math.floor(dimensions.borderBox.width / itemSize) : 8;
-
-        const groupIndex = Math.floor(i / groupSize);
-        if (!acc[groupIndex]) acc[groupIndex] = [];
-        acc[groupIndex].push(cur);
-        return acc;
-      }, [] as ItemData[][]),
-    [filteredItems, dimensions?.borderBox.width]
-  );
+  const toggleView = () => {
+    const newView = viewType === 'default' ? 'rarity' : 'default';
+    setViewType(newView);
+    updatePref('restock_prefView', newView);
+  };
 
   return (
     <Layout
@@ -190,6 +184,9 @@ const RestockShop = (props: RestockShopPageProps) => {
           0: shopInfo.name,
         }),
         themeColor: shopInfo.color,
+        twitter: {
+          cardType: 'summary_large_image',
+        },
         openGraph: {
           images: [
             {
@@ -242,7 +239,11 @@ const RestockShop = (props: RestockShopPageProps) => {
           />
         </Link>
         <Heading as="h1">{shopInfo.name}</Heading>
-        <Text as="h2" sx={{ a: { color: Color(shopInfo.color).lightness(70).hex() } }}>
+        <Text
+          as="h2"
+          sx={{ a: { color: Color(shopInfo.color).lightness(70).hex() } }}
+          textAlign={'center'}
+        >
           {t.rich('Restock.profitable-items-from', {
             Link: (chunk) => (
               <Link
@@ -261,6 +262,19 @@ const RestockShop = (props: RestockShopPageProps) => {
             ),
             shopname: shopInfo.name,
           })}
+          <br />
+          <Link
+            href={`/search?s=&category[]=${shopIDToCategory[shopInfo.id]}&rarity[]=1&rarity[]=99`}
+          >
+            {t('Restock.view-all-items-from-this-shop')}
+            <Image
+              src={'/favicon.svg'}
+              width={'18px'}
+              height={'18px'}
+              style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '0.2rem' }}
+              alt="link icon"
+            />
+          </Link>
         </Text>
         {specialDay === 'hpd' && <Tag colorScheme={'green'}>{t('Restock.half-price-day')}</Tag>}
         {specialDay === 'tyrannia' && (
@@ -313,6 +327,11 @@ const RestockShop = (props: RestockShopPageProps) => {
               justifyContent={['center', 'flex-end']}
               flexWrap={'wrap'}
             >
+              <Button onClick={toggleView}>
+                {viewType === 'rarity'
+                  ? t('Restock.use-classic-view')
+                  : t('Restock.use-rarity-view')}
+              </Button>
               <CollapseNumber onChange={(val) => handleProfitChange(val ?? 5000)} />
               <SearchList onChange={handleSearch} />
               <HStack>
@@ -333,23 +352,19 @@ const RestockShop = (props: RestockShopPageProps) => {
               </HStack>
             </HStack>
           </Flex>
-          <Flex px={[1, 3]} flexFlow="column" gap={3}>
-            <ViewportList items={groupedItems} viewportRef={null} initialPrerender={4} overscan={2}>
-              {(group, index) => (
-                <Flex
-                  ref={elementRef}
-                  gap={[1, 3]}
-                  key={index}
-                  justifyContent="center"
-                  flexWrap={'wrap'}
-                >
-                  {group.map((item) => (
-                    <ItemCard key={item.internal_id} item={item} disablePrefetch />
-                  ))}
-                </Flex>
-              )}
-            </ViewportList>
-          </Flex>
+          {viewType === 'default' && <VirtualizedItemList items={filteredItems ?? []} />}
+          {viewType === 'rarity' && (
+            <>
+              <RarityView itemList={filteredItems} />
+            </>
+          )}
+          <Text textAlign={'center'} mt={8} fontSize="xs">
+            {t('Restock.info-up-to-date-warning')}
+            <br />
+            <Link href="/contribute" color="gray.400">
+              {t('General.learnHelp')}
+            </Link>
+          </Text>
         </>
       )}
     </Layout>

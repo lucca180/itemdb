@@ -607,7 +607,15 @@
     "worst-baits": "Worst Baits",
     "you-didnt-fall-for-any-bait-items": "You didn't fall for any bait items! 🎣",
     "estimated-loss": "Estimated Loss",
-    "estimated-profit-is-less-than": "Estimated profit is less than 1000 NP"
+    "estimated-profit-is-less-than": "Estimated profit is less than 1000 NP",
+    "use-classic-view": "Use Classic View",
+    "use-rarity-view": "Use Rarity View",
+    "rarity-range": "Rarity {range}",
+    "rarity-range-1": "These items are quite common and can appear with multiple units in stock",
+    "rarity-range-2": "These items are not so common and restock with only 1 unit in stock",
+    "rarity-range-3": "These items are quite rare and restock with only 1 unit in stock",
+    "info-up-to-date-warning": "These information are based on the data available at the moment on itemdb. This data may not be fully up-to-date.",
+    "view-all-items-from-this-shop": "View all items from this shop"
   },
   "Search": {
     "search": "Search",

@@ -435,6 +435,8 @@ type RestockChart = {
 type UserPreferences = {
   labs_feedbackCopyEquals?: boolean;
   labs_feedbackShortcuts?: boolean;
+
+  restock_prefView?: 'default' | 'rarity';
 };
 
 // ------- FEEDBACKS JSON -------- //
