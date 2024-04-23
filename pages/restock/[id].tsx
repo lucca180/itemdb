@@ -36,7 +36,7 @@ import axios from 'axios';
 import { getFiltersDiff } from '../search';
 import NextLink from 'next/link';
 import { useTranslations } from 'next-intl';
-import { RarityView } from '../../components/Hubs/Restock/RarityViewl';
+import { RarityView } from '../../components/Hubs/Restock/RarityView';
 import { VirtualizedItemList } from '../../components/Utils/VirtualizedItemList';
 import { useAuth } from '../../utils/auth';
 

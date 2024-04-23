@@ -6,11 +6,10 @@ import ItemCard from '../Items/ItemCard';
 
 type VirtualizedItemListProps = {
   items: ItemData[];
-  key?: string | number;
 };
 
 export const VirtualizedItemList = (props: VirtualizedItemListProps) => {
-  const { items, key } = props;
+  const { items } = props;
   const elementRef = useRef(null);
   const dimensions = useDimensions(elementRef, true);
 
@@ -32,13 +31,7 @@ export const VirtualizedItemList = (props: VirtualizedItemListProps) => {
     <Flex px={[1, 3]} flexFlow="column" gap={3}>
       <ViewportList items={groupedItems} viewportRef={null} initialPrerender={4} overscan={2}>
         {(group, index) => (
-          <Flex
-            ref={elementRef}
-            gap={[1, 3]}
-            key={key ? key + index.toString() : index}
-            justifyContent="center"
-            flexWrap={'wrap'}
-          >
+          <Flex ref={elementRef} gap={[1, 3]} key={index} justifyContent="center" flexWrap={'wrap'}>
             {group.map((item) => (
               <ItemCard key={item.internal_id} item={item} disablePrefetch />
             ))}

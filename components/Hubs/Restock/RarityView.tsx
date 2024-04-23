@@ -36,9 +36,7 @@ export const RarityView = (props: Props) => {
               {t('Restock.rarity-range', { range })}
             </Heading>
             <Text textAlign={'center'}>{t(rarityText[range])}</Text>
-            <Flex flex="1" flexWrap={'wrap'} gap={[1, 3]} justifyContent="center">
-              <VirtualizedItemList key={range} items={items} />
-            </Flex>
+            <VirtualizedItemList key={range} items={items} />
           </Flex>
         ))}
     </Flex>
