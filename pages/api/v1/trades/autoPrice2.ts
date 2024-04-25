@@ -108,13 +108,25 @@ const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
     (t) => t.name === trade.items[0].name && t.image_id === trade.items[0].image_id
   );
 
-  const similar = similarList.find((t) => {
+  let unpriced = null;
+
+  let similar = similarList.find((t) => {
     const isTheSame = t.items.every(
       (t2) => t2.name === t.items[0].name && t2.image_id === t.items[0].image_id
     );
 
+    const isSimilar = t.items.length === trade.items.length && isTheSame === isAllItemsTheSame;
+    const isAllEmpty = t.items.every((item) => !item.price);
+
+    if (isAllEmpty && isSimilar) {
+      unpriced = t;
+      return false;
+    }
+
     return t.items.length === trade.items.length && isTheSame === isAllItemsTheSame;
   });
+
+  if (!similar && unpriced) similar = unpriced;
 
   if (!similar) {
     await checkTradeEstPrice(trade);
@@ -125,7 +137,7 @@ const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
 
   for (const similarItem of similar.items) {
     updatedItems[similarItem.order].price = similarItem.price;
-    updatedItems[similarItem.order].addedAt = similarItem.addedAt.toJSON();
+    updatedItems[similarItem.order].addedAt = similarItem.addedAt.toJSON(); //why is this needed?
   }
 
   const isAllEmpty = updatedItems.every((item) => !item.price);
