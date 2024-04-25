@@ -519,7 +519,9 @@
     "equal-items-helper": "All equal items bellow the current input will have their price sync",
     "multiplier-shortcuts": "Multiplier Shortcuts",
     "multiplier-shortcuts-helper": "Type <Kbd>k</Kbd> to multiply the current input by 1000, <Kbd>m</Kbd> for a million and <Kbd>b</Kbd> for a billion",
-    "experiments": "Experiments"
+    "experiments": "Experiments",
+    "all-equal": "All Equal",
+    "x-items": "{x, plural, =0 {} =1 {# item} other {# items}}"
   },
   "Restock": {
     "restock-info": "Restock Info",

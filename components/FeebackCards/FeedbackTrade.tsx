@@ -92,14 +92,6 @@ const FeedbackTrade = (props: Props) => {
       <FeedbackExperimentsModal isOpen={isOpen} onClose={onClose} />
       <Flex flexFlow={{ base: 'column-reverse', md: 'column' }} gap={4}>
         <Flex alignItems="center">
-          <IconButton
-            // just to keep the layout consistent
-            aria-label="experiments"
-            icon={<AiOutlineExperiment />}
-            size="sm"
-            visibility={'hidden'}
-            // onClick={onOpen}
-          />
           <HStack gap={4} flex="1" justifyContent="center">
             <Button
               leftIcon={<Icon as={BsArrowLeft} />}
@@ -142,9 +134,9 @@ const FeedbackTrade = (props: Props) => {
         >
           <Center gap={1}>
             {isAllEqual && trade && trade.items.length > 1 && (
-              <Badge colorScheme="yellow">All Equal</Badge>
+              <Badge colorScheme="yellow">{t('Feedback.all-equal')}</Badge>
             )}
-            <Badge colorScheme="blue">{trade?.items.length} items</Badge>
+            <Badge colorScheme="blue">{t('Feedback.x-items', { x: trade?.items.length })}</Badge>
           </Center>
           <Flex flexFlow="column" gap={6}>
             <Flex

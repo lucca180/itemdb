@@ -398,7 +398,9 @@
     "multiplier-shortcuts": "Atalhos de Multiplicação",
     "multiplier-shortcuts-helper": "Digite <Kbd>k</Kbd> para multiplicar a entrada atual por 1000, <Kbd>m</Kbd> para um milhão e <Kbd>b</Kbd> para um bilhão",
     "sync-price-for-equal-items": "Sincronizar preço para itens iguais",
-    "experiments": "Experimentos"
+    "experiments": "Experimentos",
+    "all-equal": "Todos Iguais",
+    "x-items": " {x, plural, =0 {} =1 {# item} other {# itens}}"
   },
   "Lists": {
     "add-to-list": "Adicionar a Lista",
