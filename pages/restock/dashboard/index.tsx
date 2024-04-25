@@ -90,6 +90,7 @@ const RestockDashboard = () => {
     const storageFilter = localStorage.getItem('restockFilter');
     const timePeriod = storageFilter ? JSON.parse(storageFilter)?.timePeriod || 30 : 30;
     if (storageFilter) setFilter({ ...defaultFilter, timePeriod: timePeriod });
+    else setFilter(defaultFilter);
   }, []);
 
   const init = async (customFilter?: PeriodFilter) => {
@@ -163,11 +164,11 @@ const RestockDashboard = () => {
         !window.itemdb_restock.scriptVersion ||
         window.itemdb_restock.scriptVersion < MIN_SCRIPT_VERSION
       ) {
-        console.log('itemdb_restock version outdated');
+        console.warn('itemdb_restock version outdated');
         setNoScript(true);
       }
     } else {
-      console.log('itemdb_restock not found');
+      console.warn('itemdb_restock not found');
       setNoScript(true);
     }
 
