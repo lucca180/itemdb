@@ -1,6 +1,8 @@
 import {
+  Badge,
   Box,
   Button,
+  Center,
   Flex,
   FormControl,
   FormHelperText,
@@ -73,9 +75,17 @@ const FeedbackTrade = (props: Props) => {
     handleSubmit?.(trade);
   };
 
-  const isAllPriced = useMemo(() => {
-    return trade?.items.every((item) => !!item.price);
-  }, [trade]);
+  const isAllPriced = useMemo(() => trade?.items.every((item) => !!item.price), [trade]);
+
+  const isAllEqual = useMemo(
+    () =>
+      trade?.items.every(
+        (item) => item.name === trade.items[0].name && item.image_id === trade.items[0].image_id
+      ),
+    [trade]
+  );
+
+  const isAllEmpty = useMemo(() => trade?.items.every((item) => !item.price), [trade]);
 
   return (
     <>
@@ -130,6 +140,12 @@ const FeedbackTrade = (props: Props) => {
           title={t('Layout.trade-pricing')}
           chakra={{ bg: 'gray.700' }}
         >
+          <Center gap={1}>
+            {isAllEqual && trade && trade.items.length > 1 && (
+              <Badge colorScheme="yellow">All Equal</Badge>
+            )}
+            <Badge colorScheme="blue">{trade?.items.length} items</Badge>
+          </Center>
           <Flex flexFlow="column" gap={6}>
             <Flex
               textAlign="center"
@@ -146,7 +162,7 @@ const FeedbackTrade = (props: Props) => {
             {trade?.items.map((item, i) => (
               <ItemTrade
                 useShortcuts={userPref?.labs_feedbackShortcuts || false}
-                isLast={i === trade.items.length - 1 || isAllPriced}
+                canSubmit={i === trade.items.length - 1 || isAllPriced || (i === 0 && isAllEmpty)}
                 doSubmit={doSubmit}
                 onChange={(item) => handleChange(item, item.order)}
                 item={item}
@@ -164,7 +180,7 @@ export default FeedbackTrade;
 
 type ItemTradeProps = {
   item: TradeItems;
-  isLast?: boolean;
+  canSubmit?: boolean;
   useShortcuts?: boolean;
   doSubmit?: () => void;
   onChange?: (newValue: TradeItems) => void;
@@ -193,7 +209,7 @@ const ItemTrade = (props: ItemTradeProps) => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && props.isLast) {
+    if (e.key === 'Enter' && props.canSubmit) {
       props.doSubmit?.();
     }
 
