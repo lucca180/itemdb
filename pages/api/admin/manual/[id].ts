@@ -101,7 +101,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   if (type === 'info') {
-    if ((!correctInfo.field || !correctInfo.value) && action !== 'reprove')
+    if ((!correctInfo || !correctInfo.field || !correctInfo.value) && action !== 'reprove')
       return res.status(400).json({ error: 'Bad Request' });
 
     if (action === 'approve') {
