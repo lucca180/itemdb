@@ -179,39 +179,50 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
   const isUpdate = !!originalTrade?.processed;
 
   // this is the worst (or is it?)
+  // update: (its getting worse and worse)
   const updateItems = trade.items
     .filter((x) => x.price && x.price > 0)
     .map((item) => {
-      return prisma.tradeItems.updateMany({
-        where: {
-          OR: [
-            {
-              order: item.order,
-              trade: {
-                hash: tradeHash,
-                processed: false,
-                priced: false,
+      return [
+        prisma.tradeItems.update({
+          where: {
+            internal_id: item.internal_id,
+          },
+          data: {
+            price: item.price,
+          },
+        }),
+        prisma.tradeItems.updateMany({
+          where: {
+            OR: [
+              {
+                order: item.order,
+                trade: {
+                  hash: tradeHash,
+                  processed: false,
+                  priced: false,
+                },
               },
-            },
-            isUpdate && originalTrade.tradesUpdated
-              ? {
-                  order: item.order,
-                  trade: {
-                    trade_id: {
-                      in: originalTrade.tradesUpdated?.split(',').map((x) => Number(x)),
+              isUpdate && originalTrade.tradesUpdated
+                ? {
+                    order: item.order,
+                    trade: {
+                      trade_id: {
+                        in: originalTrade.tradesUpdated?.split(',').map((x) => Number(x)),
+                      },
                     },
-                  },
-                }
-              : {},
-          ],
-        },
-        data: {
-          price: item.price,
-        },
-      });
+                  }
+                : {},
+            ],
+          },
+          data: {
+            price: item.price,
+          },
+        }),
+      ];
     });
 
-  await Promise.all(updateItems);
+  await Promise.all(updateItems.flat());
 
   const itemUpdate = await getTradeItems(trade.trade_id, tradeHash);
 
