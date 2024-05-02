@@ -67,7 +67,7 @@ type ItemPageProps = {
   tradeLists?: UserList[];
   itemOpenable: ItemOpenable | null;
   itemParent: number[];
-  lastSeen: ItemLastSeen;
+  lastSeen: ItemLastSeen | null;
   NPTrades: TradeData[];
   NPPrices: PriceData[];
   itemEffects: ItemEffect[];
@@ -369,9 +369,11 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     item.isNC ? getItemLists(item.internal_id, false, false) : [],
     getItemDrops(item.internal_id, item.isNC),
     getItemParent(item.internal_id),
-    getItemPrices({ iid: item.internal_id }),
-    getItemTrades({ name: item.name, image_id: item.image_id }),
-    getLastSeen({ item_id: item.item_id, name: item.name, image_id: item.image_id }),
+    !item.isNC ? getItemPrices({ iid: item.internal_id }) : [],
+    !item.isNC ? getItemTrades({ name: item.name, image_id: item.image_id }) : [],
+    !item.isNC
+      ? getLastSeen({ item_id: item.item_id, name: item.name, image_id: item.image_id })
+      : null,
     getItemEffects(item.internal_id),
   ]);
 

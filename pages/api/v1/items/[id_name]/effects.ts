@@ -123,7 +123,7 @@ export const getItemEffects = async (id_name: string | number) => {
 
   // some custom effects
 
-  if (item.name.toLowerCase().split(' ').includes('cheese')) {
+  if (item.name.toLowerCase().includes('cheese')) {
     effects.push({
       internal_id: -1,
       type: 'disease',
@@ -133,7 +133,7 @@ export const getItemEffects = async (id_name: string | number) => {
     });
   }
 
-  if (item.name.toLowerCase().split(' ').includes('negg')) {
+  if (item.name.toLowerCase().includes('negg')) {
     effects.push({
       internal_id: -1,
       type: 'disease',
@@ -143,7 +143,7 @@ export const getItemEffects = async (id_name: string | number) => {
     });
   }
 
-  if (item.name.toLowerCase().split(' ').includes('cream')) {
+  if (item.name.toLowerCase().includes('cream')) {
     effects.push({
       internal_id: -1,
       type: 'disease',
@@ -153,7 +153,7 @@ export const getItemEffects = async (id_name: string | number) => {
     });
   }
 
-  if (item.name.toLowerCase().split(' ').includes('apple')) {
+  if (item.name.toLowerCase().includes('apple')) {
     effects.push({
       internal_id: -1,
       type: 'disease',
@@ -162,8 +162,6 @@ export const getItemEffects = async (id_name: string | number) => {
       isChance: false,
     });
   }
-
-  console.log(effects);
 
   return effects as ItemEffect[];
 };
