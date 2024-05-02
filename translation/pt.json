@@ -149,7 +149,12 @@
     "wrongPrice-6": "✨Aguarde nosso algoritmo fazer sua mágica✨",
     "wrongPrice-7": "Nosso algoritmo de preços é executado a cada hora e atualizará o preço se tivermos dados suficientes!",
     "wrongPriceHeader": "Preço errado? Você pode consertar!",
-    "report-wrong-price": "Informar Preço Errado"
+    "report-wrong-price": "Informar Preço Errado",
+    "effects-cure-disease": "Esse item {random, select, true {tem uma chance de curar} other{cura}} <Disease></Disease> {species, select, true {em <Neopet></Neopet>} other {}}",
+    "effects-disease": "Esse item {random, select, true {tem uma chance de causar} other{causa}} <Disease></Disease> {species, select, true {em <Neopet></Neopet>} other {}}",
+    "effects-heal": "Esse item {random, select, true {tem uma chance de curar} other{cura}} a vida do seu {species, select, true {<Neopet></Neopet>} other {pet}} em <StrVal></StrVal> {minVal, plural, =0{} other{<b>#HP</b>}} {maxVal, plural, =0{} other{chegando em <b>até <b>#HP</b></b>}}",
+    "effects-stats": "Esse item {random, select, true {tem a chance de mudar} other{muda}} o valor de <Name></Name> do seu {species, select, true {<Neopet></Neopet>} other {pet}} em <StrVal></StrVal> {minVal, plural, =0{} =1{<b>+1 ponto</b>} other{<b>{minVal, number, ::+?} pontos</b>}} {maxVal, plural, =0{} other{podendo chegar em <b>até {maxVal, number, ::+?} pontos</b>}}",
+    "item-effects": "Efeitos do Item"
   },
   "Button": {
     "feedback": "Feedback",

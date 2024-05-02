@@ -5,6 +5,7 @@ import Image from 'next/image';
 import {
   FullItemColors,
   ItemData,
+  ItemEffect,
   ItemLastSeen,
   ItemOpenable,
   // ItemTag,
@@ -48,6 +49,8 @@ import ManualCheckCard from '../../components/Items/ManualCheckCard';
 import { useTranslations } from 'next-intl';
 import ItemMyLists from '../../components/Items/MyListsCard';
 import { useAuth } from '../../utils/auth';
+import ItemEffectsCard from '../../components/Items/ItemEffectsCard';
+import { getItemEffects } from '../api/v1/items/[id_name]/effects';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -67,6 +70,7 @@ type ItemPageProps = {
   lastSeen: ItemLastSeen;
   NPTrades: TradeData[];
   NPPrices: PriceData[];
+  itemEffects: ItemEffect[];
   messages: any;
 };
 
@@ -82,6 +86,7 @@ const ItemPage = (props: ItemPageProps) => {
     NPPrices,
     NPTrades: trades,
     lastSeen: seenProps,
+    itemEffects,
   } = props;
   const [prices, setPrices] = useState<PriceData[] | null>(NPPrices);
   const [seenStats, setSeen] = useState<ItemLastSeen | null>(seenProps);
@@ -152,6 +157,7 @@ const ItemPage = (props: ItemPageProps) => {
         <EditItemModal
           isOpen={isEditModalOpen}
           itemOpenable={itemOpenable}
+          itemEffects={itemEffects}
           item={item}
           onClose={() => setIsEditModalOpen(false)}
           tags={[]}
@@ -294,6 +300,7 @@ const ItemPage = (props: ItemPageProps) => {
 
             {!item.isNC && <ItemPriceCard item={item} lastSeen={seenStats} prices={prices ?? []} />}
             {item.isNC && <NCTrade item={item} lists={tradeLists} />}
+            {itemEffects.length > 0 && <ItemEffectsCard item={item} effects={itemEffects} />}
             {lists && <ItemOfficialLists item={item} lists={lists} />}
             {!!user && <ItemMyLists item={item} />}
             {item.comment && <ItemComments item={item} />}
@@ -354,6 +361,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     itemPrices,
     NPTrades,
     lastSeen,
+    itemEffects,
   ] = await Promise.all([
     getItemColor([item.image_id]),
     getItemLists(item.internal_id, true, false),
@@ -364,6 +372,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     getItemPrices({ iid: item.internal_id }),
     getItemTrades({ name: item.name, image_id: item.image_id }),
     getLastSeen({ item_id: item.item_id, name: item.name, image_id: item.image_id }),
+    getItemEffects(item.internal_id),
   ]);
 
   if (!colors) return { notFound: true };
@@ -379,6 +388,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     NPTrades: NPTrades,
     NPPrices: itemPrices,
     lastSeen: lastSeen,
+    itemEffects: itemEffects,
     messages: (await import(`../../translation/${context.locale}.json`)).default,
   };
 

@@ -8,7 +8,7 @@ module.exports = {
       exec_mode: 'cluster',
       time: true,
       merge_logs: true,
-      max_memory_restart: '650M',
+      max_memory_restart: '600M',
     },
   ],
 };

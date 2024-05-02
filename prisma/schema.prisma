@@ -54,6 +54,7 @@ model Items {
   priceProcess          PriceProcess2[]
   restockAuctionHistory RestockAuctionHistory[]
   processHistory        PriceProcessHistory[]
+  effects           ItemEffect[]
 
   @@index([name, image_id])
   @@index([image_id])
@@ -469,6 +470,26 @@ model RestockSession {
   // @@index([user_id])
   // @@index([user_id, startedAt])
   @@index([user_id, startedAt, shop_id])
+}
+
+model ItemEffect {
+  internal_id Int    @id @default(autoincrement())
+  item_iid    Int
+  type        String
+  name        String
+  species     String? @db.Text
+  minVal      Int?
+  maxVal      Int?
+  strVal      String?
+  text        String?  @db.Text
+  isChance    Boolean  @default(false)
+
+  addedAt     DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  item Items? @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([type, item_iid])
 }
 
 // -------- DISMANTELING PRICE PROCESS --------- //

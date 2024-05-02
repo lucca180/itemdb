@@ -31,11 +31,20 @@ import {
   Icon,
   useDisclosure,
   Image,
+  Select,
+  VStack,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { EditItemFeedbackJSON, ItemData, ItemOpenable, ItemTag, PrizePoolData } from '../../types';
+import {
+  EditItemFeedbackJSON,
+  ItemData,
+  ItemEffect,
+  ItemOpenable,
+  ItemTag,
+  PrizePoolData,
+} from '../../types';
 import { useAuth } from '../../utils/auth';
 import ItemCatSelect from '../Input/ItemCategorySelect';
 import ItemStatusSelect from '../Input/ItemStatusSelect';
@@ -45,6 +54,8 @@ import dynamic from 'next/dynamic';
 import ItemSelect from '../Input/ItemSelect';
 import NextLink from 'next/link';
 import { useTranslations } from 'next-intl';
+import SpeciesSelect from '../Input/SpeciesSelect';
+import { deseaseList_en } from '../../utils/utils';
 
 const ConfirmDeleteItem = dynamic<{
   isOpen: boolean;
@@ -60,12 +71,13 @@ export type EditItemModalProps = {
   item: ItemData;
   tags: ItemTag[];
   itemOpenable: ItemOpenable | null;
+  itemEffects: ItemEffect[];
 };
 
 const EditItemModal = (props: EditItemModalProps) => {
   const t = useTranslations();
   const { getIdToken, user } = useAuth();
-  const { isOpen, onClose, item: itemProps, tags: tagsProps, itemOpenable } = props;
+  const { isOpen, onClose, item: itemProps, tags: tagsProps, itemOpenable, itemEffects } = props;
   const [item, setItem] = useState<ItemData>(itemProps);
   const [tags, setTags] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -193,7 +205,7 @@ const EditItemModal = (props: EditItemModalProps) => {
   return (
     <>
       <ConfirmDeleteItem isOpen={isDeleteOpen} onClose={onDeleteClose} item={item} />
-      <Modal isOpen={isOpen} onClose={handleCancel} isCentered scrollBehavior="inside">
+      <Modal isOpen={isOpen} onClose={handleCancel} isCentered size="lg" scrollBehavior="inside">
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>
@@ -207,6 +219,7 @@ const EditItemModal = (props: EditItemModalProps) => {
                   <Tab>{t('ItemPage.item-info')}</Tab>
                   {isAdmin && <Tab>{t('ItemPage.categories')}</Tab>}
                   {isAdmin && <Tab>{t('ItemPage.drops')}</Tab>}
+                  {isAdmin && <Tab>Item Effects</Tab>}
                 </TabList>
                 <TabPanels>
                   <TabPanel>
@@ -226,6 +239,11 @@ const EditItemModal = (props: EditItemModalProps) => {
                   {isAdmin && (
                     <TabPanel>
                       <OpenableTab itemOpenable={itemOpenable} item={item} />
+                    </TabPanel>
+                  )}
+                  {isAdmin && (
+                    <TabPanel>
+                      <EffectsTab item={item} itemEffects={itemEffects} />
                     </TabPanel>
                   )}
                 </TabPanels>
@@ -744,5 +762,213 @@ export const OpenableTab = (props: OpenableTabProps) => {
           </Flex>
         ))}
     </Flex>
+  );
+};
+
+// ------- Item Effects Tab ------- //
+
+type EffectsTabProps = {
+  item: ItemData;
+  itemEffects: ItemEffect[];
+};
+
+const statsType = ['HP', 'Strength', 'Level', 'Defence', 'Movement', 'Intelligence'];
+
+const defaultEffect: ItemEffect = {
+  type: 'other',
+  name: '',
+  isChance: false,
+};
+
+export const EffectsTab = (props: EffectsTabProps) => {
+  const { item } = props;
+  const [effects, setEffects] = useState<ItemEffect[]>(props.itemEffects);
+  const [unsavedChanges, setUnsavedChanges] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+
+  const saveChanges = async () => {
+    try {
+      const create = effects.filter((effect) => !effect.internal_id);
+      const update = effects.filter((effect) => effect.internal_id && effect.internal_id > 0);
+
+      const createProm = create.map((effect) => {
+        return axios.post(`/api/v1/items/${item.internal_id}/effects`, {
+          effect,
+        });
+      });
+
+      const updateProm = update.map((effect) => {
+        return axios.patch(`/api/v1/items/${item.internal_id}/effects`, {
+          effect,
+          effect_id: effect.internal_id,
+        });
+      });
+
+      const res = await Promise.all([...createProm, ...updateProm]);
+      const newEffects = res.map((r) => r.data);
+      setEffects(newEffects);
+
+      setUnsavedChanges(false);
+    } catch (e: any) {
+      console.error(e);
+      setError(
+        'An error occurred while saving the effects. Please REFRESH the page and try later.'
+      );
+    }
+  };
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    index: number
+  ) => {
+    const name = e.target.name as keyof ItemEffect;
+    const value = e.target.value;
+
+    setEffects((prev) => {
+      const newEffects = [...prev];
+
+      let effect = newEffects[index] ?? defaultEffect;
+      if (name === 'type') effect = defaultEffect;
+
+      effect.internal_id = newEffects[index]?.internal_id;
+
+      //@ts-expect-error ts is dumb
+      effect[name] = value;
+
+      if (name === 'isChance') effect[name] = value === 'true';
+
+      return newEffects;
+    });
+
+    setUnsavedChanges(true);
+  };
+
+  const addEffect = () => {
+    setUnsavedChanges(true);
+    setEffects((prev) => [...prev, defaultEffect]);
+  };
+
+  const removeEffect = async (index: number) => {
+    const deleteId = effects[index].internal_id;
+
+    if (deleteId)
+      await axios.delete(`/api/v1/items/${item.internal_id}/effects?effect_id=${deleteId}`);
+
+    setEffects((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  return (
+    <Stack flexFlow="column" gap={4}>
+      {error && (
+        <Text color="red.400" textAlign={'center'}>
+          {error}
+        </Text>
+      )}
+      {effects.map((effect, i) => (
+        <VStack key={i} bg="blackAlpha.300" p={2} borderRadius={'sm'}>
+          <HStack>
+            <Select
+              value={effect.type}
+              name="type"
+              onChange={(e) => handleChange(e, i)}
+              variant="filled"
+            >
+              <option value="cureDisease">Cure Disease</option>
+              <option value="disease">Cause Disease</option>
+              <option value="heal">Heal HP</option>
+              <option value="stats">Stats</option>
+              <option value="other">Other</option>
+            </Select>
+            {['disease', 'cureDisease'].includes(effect.type) && (
+              <Select
+                name="name"
+                variant="filled"
+                value={effect.name}
+                onChange={(e) => handleChange(e, i)}
+              >
+                {deseaseList_en
+                  .sort((a, b) => a.localeCompare(b))
+                  .map((disease) => (
+                    <option key={disease} value={disease}>
+                      {disease}
+                    </option>
+                  ))}
+              </Select>
+            )}
+            {effect.type === 'stats' && (
+              <Select
+                name="name"
+                variant="filled"
+                value={effect.name}
+                onChange={(e) => handleChange(e, i)}
+              >
+                {statsType.map((stat) => (
+                  <option key={stat} value={stat}>
+                    {stat}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </HStack>
+          {['heal', 'stats'].includes(effect.type) && (
+            <HStack>
+              <Input
+                onChange={(e) => handleChange(e, i)}
+                value={effect.minVal}
+                name="minVal"
+                type="number"
+                placeholder="Min Value"
+                variant="filled"
+              />
+              <Input
+                onChange={(e) => handleChange(e, i)}
+                value={effect.maxVal}
+                name="maxVal"
+                type="number"
+                placeholder="Max Value"
+                variant="filled"
+              />
+              <Input
+                onChange={(e) => handleChange(e, i)}
+                value={effect.strVal}
+                name="strVal"
+                type="input"
+                placeholder="strVal (text)"
+                variant="filled"
+              />
+            </HStack>
+          )}
+          <SpeciesSelect value={effect.species} placeHolder="Required Species (optional)" />
+          <Input
+            name="text"
+            value={effect.text}
+            onChange={(e) => handleChange(e, i)}
+            placeholder="Notes (accept markdown - optional)"
+            variant="filled"
+            autoComplete="off"
+          />
+          <Select
+            name="isChance"
+            value={effect.isChance.toString()}
+            onChange={(e) => handleChange(e, i)}
+            variant="filled"
+          >
+            <option value="false">Not Random</option>
+            <option value="true">Random</option>
+          </Select>
+          <HStack>
+            <Button onClick={() => removeEffect(i)} colorScheme="red" variant={'ghost'}>
+              Delete Effect
+            </Button>
+          </HStack>
+        </VStack>
+      ))}
+      <Button onClick={addEffect}>Add New Effect</Button>
+      {unsavedChanges && (
+        <Button onClick={saveChanges} colorScheme="green" variant={'outline'}>
+          Save Effects
+        </Button>
+      )}
+    </Stack>
   );
 };

@@ -439,6 +439,18 @@ type UserPreferences = {
   restock_prefView?: 'default' | 'rarity';
 };
 
+type ItemEffect = {
+  internal_id?: number;
+  type: 'disease' | 'cureDisease' | 'heal' | 'stats' | 'other';
+  name: string;
+  species?: string[];
+  minVal?: number;
+  maxVal?: number;
+  strVal?: string;
+  text?: string;
+  isChance: boolean;
+};
+
 // ------- FEEDBACKS JSON -------- //
 export type Feedback = {
   feedback_id: number;

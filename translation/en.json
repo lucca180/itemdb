@@ -148,7 +148,12 @@
     "wrongPrice-5": "If the item is only available at the Trading Post, you can <Link1>precify it</Link1> or <Link2>vote on the price suggestions</Link2>",
     "wrongPrice-6": "✨Wait for our algorithm to do their magic✨",
     "wrongPrice-7": "Our pricing algorithm run every hour and will update the price if we have enough data!",
-    "report-wrong-price": "Report Wrong Price"
+    "report-wrong-price": "Report Wrong Price",
+    "effects-disease": "This item {random, select, true {can cause} other{causes}} <Disease></Disease> {species, select, true {to <Neopet></Neopet>} other {}}",
+    "effects-cure-disease": "This item {random, select, true {has a chance of cure} other{cures}} <Disease></Disease> {species, select, true {from your <Neopet></Neopet>} other {}}",
+    "effects-heal": "This item {random, select, true {has a chance of healing} other{will heal}} <StrVal></StrVal> {minVal, plural, =0{} other{<b>#HP</b>}} {maxVal, plural, =0{} other{and <b>up to <b>#HP</b></b>}} of your {species, select, true {<Neopet></Neopet>} other {pets health}}",
+    "effects-stats": "This item {random, select, true {has a chance of changing} other{will change}} your {species, select, true {<Neopet></Neopet>} other {pet's}} <Name></Name> by <StrVal></StrVal> {minVal, plural, =0{} other{<b>{minVal, number, ::+?} points</b>}} {maxVal, plural, =0{} other{and <b>up to {maxVal, number, ::+?} points</b>}}",
+    "item-effects": "Item Effects"
   },
   "Button": {
     "feedback": "Feedback",

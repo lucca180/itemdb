@@ -1,0 +1,190 @@
+import { Flex, Link, Text, Avatar, Image, Box, Badge } from '@chakra-ui/react';
+import React from 'react';
+import { ItemData, ItemEffect } from '../../types';
+import CardBase from '../Card/CardBase';
+import dynamic from 'next/dynamic';
+import Color from 'color';
+import { useLocale, useTranslations } from 'next-intl';
+import { getDiseaseTranslation } from '../../utils/utils';
+const Markdown = dynamic(() => import('../Utils/Markdown'));
+
+type Props = {
+  item: ItemData;
+  effects: ItemEffect[];
+};
+
+const ItemEffectsCard = (props: Props) => {
+  const t = useTranslations();
+  const { item, effects } = props;
+  const color = Color(item.color.hex);
+  return (
+    <CardBase title={t('ItemPage.item-effects')} color={color.hex()}>
+      <Flex
+        gap={3}
+        flexFlow="row"
+        justifyContent="center"
+        flexWrap={'wrap'}
+        sx={{ a: { color: color.lightness(70).hex() } }}
+      >
+        {effects.map((effect, i) => (
+          <EffectCard key={i} effect={effect} />
+        ))}
+      </Flex>
+    </CardBase>
+  );
+};
+
+export default ItemEffectsCard;
+
+const EffectTypes = {
+  disease: {
+    name_en: 'Disease',
+    name_pt: 'Doença',
+    img: '/icons/effects-disease.gif',
+  },
+  cureDisease: {
+    name_en: 'Cure',
+    name_pt: 'Cura',
+    img: '/icons/effects-cure.gif',
+  },
+  heal: {
+    name_en: 'Heal',
+    name_pt: 'Cura',
+    img: '/icons/effects-health.png',
+  },
+  stats: {
+    name_en: 'Stats Change',
+    name_pt: 'Alteração de Stats',
+    img: '/icons/effects-shield.png',
+  },
+  other: {
+    name_en: 'Other',
+    name_pt: 'Outro',
+    img: '/icons/effects-other.gif',
+  },
+};
+
+type EffectCardProps = {
+  effect: ItemEffect;
+};
+
+const EffectCard = (props: EffectCardProps) => {
+  const effectType = props.effect.type;
+  const locale = useLocale();
+  //@ts-expect-error ts is dumb
+  const name = EffectTypes[effectType][`name_${locale}`];
+  return (
+    <Flex
+      py={2}
+      px={3}
+      bg="blackAlpha.500"
+      flexFlow={'column'}
+      mt="13px"
+      w="200px"
+      borderRadius={'md'}
+      gap={1}
+      boxShadow={'sm'}
+    >
+      <Flex mt="-20px" justifyContent={'center'}>
+        <Avatar
+          bg="white"
+          name={name}
+          src={EffectTypes[effectType].img}
+          size="sm"
+          borderRadius={'lg'}
+        />
+      </Flex>
+      <Text textAlign="center" fontSize="sm" fontWeight="bold">
+        {name}
+      </Text>
+      <Text
+        textAlign="center"
+        fontSize="sm"
+        color="whiteAlpha.800"
+        sx={{ b: { color: 'white' } }}
+        as="div"
+      >
+        <EffectText effect={props.effect} />
+      </Text>
+    </Flex>
+  );
+};
+
+type EffectTextProps = {
+  effect: ItemEffect;
+};
+
+const EffectText = (props: EffectTextProps) => {
+  const { name, type, species, isChance, text, strVal, minVal, maxVal } = props.effect;
+  const t = useTranslations();
+  const locale = useLocale() as 'en' | 'pt';
+
+  if (text) return <Markdown>{text}</Markdown>;
+
+  return (
+    <>
+      {['disease', 'cureDisease'].includes(type) &&
+        t.rich(`ItemPage.effects-${type === 'disease' ? 'disease' : 'cure-disease'}`, {
+          Disease: () => (
+            <Link href="https://www.neopets.com/hospital.phtml" whiteSpace={'pre'} isExternal>
+              {getDiseaseTranslation(name, locale)}
+              <Image
+                src={'/icons/neopets.png'}
+                width={'16px'}
+                height={'16px'}
+                style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '0.2rem' }}
+                alt="link icon"
+              />
+            </Link>
+          ),
+          random: isChance,
+          species: species && species.length > 0 ? 'true' : 'false',
+          Neopet: () => (
+            <>
+              {species?.map((a, i) => (
+                <PetImage pet={a} key={a} comma={i !== species.length - 1} />
+              ))}
+            </>
+          ),
+        })}
+
+      {['heal', 'stats'].includes(type) && (
+        <>
+          {t.rich(`ItemPage.effects-${type}`, {
+            b: (chunk) => <b>{chunk}</b>,
+            Name: () => <Badge>{name}</Badge>,
+            minVal: minVal ?? 0,
+            maxVal: maxVal ?? 0,
+            StrVal: () => (strVal ? <b>{strVal}</b> : <></>),
+            random: isChance,
+            species: species && species.length > 0 ? 'true' : 'false',
+            Neopet: () => (
+              <>
+                {species?.map((a, i) => (
+                  <PetImage pet={a} key={a} comma={i !== species.length - 1} />
+                ))}
+              </>
+            ),
+          })}
+        </>
+      )}
+    </>
+  );
+};
+
+const PetImage = ({ pet, comma }: { pet: string; comma?: boolean }) => {
+  return (
+    <Box display={'inline'} textTransform={'capitalize'} whiteSpace={'pre'}>
+      <b>{pet}</b>{' '}
+      <Image
+        verticalAlign={'sub'}
+        display="inline"
+        src={`https://images.neopets.com/community/hub/calendar/events/${pet.toLowerCase()}.png`}
+        width={'18px'}
+        height={'18px'}
+        alt={pet}
+      />
+      {comma && ','}{' '}
+    </Box>
+  );
+};

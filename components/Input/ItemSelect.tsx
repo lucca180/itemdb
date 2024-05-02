@@ -61,8 +61,7 @@ const ItemSelect = (props: Props) => {
         _hover={{ bg: 'whiteAlpha.100' }}
       />
       <AutoCompleteList>
-        {items.map((option, oid) => {
-          console.log(option, oid);
+        {items.map((option) => {
           return (
             <AutoCompleteItem
               key={`option-${option.internal_id}`}
