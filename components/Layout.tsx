@@ -93,7 +93,7 @@ const Layout = (props: Props) => {
       <LoginModal isOpen={isOpen} onClose={onClose} />
       <LanguageToast saveLang={saveLang} />
       <Flex flexFlow="column" minH="100vh">
-        <Flex
+        {/* <Flex
           w="full"
           maxW="8xl"
           marginX="auto"
@@ -115,7 +115,7 @@ const Layout = (props: Props) => {
               b: (chunks) => <b>{chunks}</b>,
             })}
           </ChakraLink>
-        </Flex>
+        </Flex> */}
         <Flex
           as="nav"
           w="full"
