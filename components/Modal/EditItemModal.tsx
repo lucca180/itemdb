@@ -862,6 +862,16 @@ export const EffectsTab = (props: EffectsTabProps) => {
     setUnsavedChanges(true);
   };
 
+  const handleSpeciesChange = (species: string[], index: number) => {
+    setEffects((prev) => {
+      const newEffects = [...prev];
+      newEffects[index].species = species;
+      return newEffects;
+    });
+
+    setUnsavedChanges(true);
+  };
+
   const addEffect = () => {
     setUnsavedChanges(true);
     setEffects((prev) => [...prev, defaultEffect]);
@@ -960,7 +970,11 @@ export const EffectsTab = (props: EffectsTabProps) => {
               />
             </HStack>
           )}
-          <SpeciesSelect value={effect.species} placeHolder="Required Species (optional)" />
+          <SpeciesSelect
+            onChange={(v) => handleSpeciesChange(v, i)}
+            value={effect.species}
+            placeHolder="Required Species (optional)"
+          />
           <Input
             name="text"
             value={effect.text}

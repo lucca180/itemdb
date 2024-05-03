@@ -124,8 +124,13 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
 
     const dbItemListPromise = prisma.items.findMany({
       where: {
-        name: item.name,
-        image_id: item.image_id,
+        OR: [
+          {
+            name: item.name,
+            image_id: item.image_id,
+          },
+          item.item_id ? { item_id: item.item_id } : {},
+        ],
       },
     });
 
@@ -233,8 +238,8 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
 
         // check if we're gaining info with description
         else if (key === 'description' && item.description && dbItem.description) {
-          if (dbItem.description.length < item.description.length) {
-            if (item.description.includes(dbItem.description))
+          if (dbItem.description.trim().length < item.description.trim().length) {
+            if (item.description.trim().includes(dbItem.description.trim()))
               dbItem.description = item.description;
             else throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
           }
