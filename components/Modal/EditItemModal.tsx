@@ -895,6 +895,7 @@ export const EffectsTab = (props: EffectsTabProps) => {
                 value={effect.name}
                 onChange={(e) => handleChange(e, i)}
               >
+                <option>Select Disease</option>
                 {deseaseList_en
                   .slice()
                   .sort((a, b) => a.localeCompare(b))
@@ -912,6 +913,7 @@ export const EffectsTab = (props: EffectsTabProps) => {
                 value={effect.name}
                 onChange={(e) => handleChange(e, i)}
               >
+                <option>Select Stats</option>
                 {statsType.map((stat) => (
                   <option key={stat} value={stat}>
                     {stat}
