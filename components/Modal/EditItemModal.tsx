@@ -778,7 +778,16 @@ type EffectsTabProps = {
   itemEffects: ItemEffect[];
 };
 
-const statsType = ['HP', 'Strength', 'Level', 'Defence', 'Movement', 'Intelligence'];
+const statsType = [
+  'Max HP',
+  'Strength',
+  'Level',
+  'Defence',
+  'Movement',
+  'Intelligence',
+  'Weight',
+  'Height',
+];
 
 const defaultEffect: ItemEffect = {
   type: 'other',
@@ -835,9 +844,10 @@ export const EffectsTab = (props: EffectsTabProps) => {
 
     setEffects((prev) => {
       const newEffects = [...prev];
+      const defaultCpy = JSON.parse(JSON.stringify(defaultEffect));
 
-      let effect = newEffects[index] ?? { ...defaultEffect };
-      if (name === 'type') effect = { ...defaultEffect };
+      let effect = newEffects[index] ?? defaultCpy;
+      if (name === 'type') effect = defaultCpy;
 
       effect.internal_id = newEffects[index]?.internal_id;
 
@@ -845,7 +855,7 @@ export const EffectsTab = (props: EffectsTabProps) => {
       effect[name] = value;
 
       if (name === 'isChance') effect[name] = value === 'true';
-      newEffects[index] = effect;
+      newEffects[index] = JSON.parse(JSON.stringify(effect));
       return newEffects;
     });
 

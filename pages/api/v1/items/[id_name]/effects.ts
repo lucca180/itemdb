@@ -4,6 +4,7 @@ import { ItemEffect } from '../../../../../types';
 import prisma from '../../../../../utils/prisma';
 import { getItem } from '.';
 import { ItemEffect as PrimsaItemEffect } from '@prisma/client';
+import { allFoodsCats } from '../../../../../utils/utils';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -46,8 +47,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       name: effect.name,
       species: effect.species?.toString(),
       isChance: effect.isChance,
-      minVal: effect.minVal,
-      maxVal: effect.maxVal,
+      minVal: effect.minVal ? Number(effect.minVal) : undefined,
+      maxVal: effect.maxVal ? Number(effect.maxVal) : undefined,
       strVal: effect.strVal,
       text: effect.text,
     },
@@ -77,8 +78,8 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
       name: effect.name,
       species: effect.species?.toString(),
       isChance: effect.isChance,
-      minVal: effect.minVal,
-      maxVal: effect.maxVal,
+      minVal: effect.minVal ? Number(effect.minVal) : undefined,
+      maxVal: effect.maxVal ? Number(effect.maxVal) : undefined,
       strVal: effect.strVal,
       text: effect.text,
     },
@@ -131,48 +132,52 @@ export const getItemEffects = async (id_name: string | number) => {
   });
 
   const effects = effectsRaw.map((effect) => formatEffect(effect));
+  const isFood =
+    item.category &&
+    allFoodsCats.map((cat) => cat.toLowerCase()).includes(item.category.toLowerCase());
 
   // some custom effects
+  if (!isFood) return effects;
 
-  // if (item.name.toLowerCase().includes('cheese')) {
-  //   effects.push({
-  //     internal_id: -1,
-  //     type: 'disease',
-  //     name: 'Neezles',
-  //     species: ['Skeith'],
-  //     isChance: false,
-  //   });
-  // }
+  if (item.name.toLowerCase().includes('cheese')) {
+    effects.push({
+      internal_id: -1,
+      type: 'disease',
+      name: 'Neezles',
+      species: ['Skeith'],
+      isChance: false,
+    });
+  }
 
-  // if (item.name.toLowerCase().includes('negg')) {
-  //   effects.push({
-  //     internal_id: -1,
-  //     type: 'disease',
-  //     name: 'Neezles',
-  //     species: ['Tonu'],
-  //     isChance: false,
-  //   });
-  // }
+  if (item.name.toLowerCase().includes('negg')) {
+    effects.push({
+      internal_id: -1,
+      type: 'disease',
+      name: 'Neezles',
+      species: ['Tonu'],
+      isChance: false,
+    });
+  }
 
-  // if (item.name.toLowerCase().includes('cream')) {
-  //   effects.push({
-  //     internal_id: -1,
-  //     type: 'disease',
-  //     name: 'Neezles',
-  //     species: ['Quiggle'],
-  //     isChance: false,
-  //   });
-  // }
+  if (item.name.toLowerCase().includes('cream')) {
+    effects.push({
+      internal_id: -1,
+      type: 'disease',
+      name: 'Neezles',
+      species: ['Quiggle'],
+      isChance: false,
+    });
+  }
 
-  // if (item.name.toLowerCase().includes('apple')) {
-  //   effects.push({
-  //     internal_id: -1,
-  //     type: 'disease',
-  //     name: 'Itchy Scratchies',
-  //     species: ['Kyrii'],
-  //     isChance: false,
-  //   });
-  // }
+  if (item.name.toLowerCase().includes('apple')) {
+    effects.push({
+      internal_id: -1,
+      type: 'disease',
+      name: 'Itchy Scratchies',
+      species: ['Kyrii'],
+      isChance: false,
+    });
+  }
 
   return effects as ItemEffect[];
 };

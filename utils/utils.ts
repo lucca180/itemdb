@@ -1387,3 +1387,35 @@ export const getDiseaseTranslation = (disease: string, lang: 'en' | 'pt') => {
 
   return index === -1 ? disease : lang === 'pt' ? deseaseList_pt[index] : deseaseList_en[index];
 };
+
+export const allFoodsCats = [
+  'Altadorian Food',
+  'Aquatic Food',
+  'Baked',
+  'Brightvale Fruit',
+  'Candy',
+  'Coffee',
+  'Desert Food',
+  'Exotic Foods',
+  'Faerie Food',
+  'Food',
+  'Gross Food',
+  'Healthy Food',
+  'Hot Dog',
+  'Jelly Food',
+  'Kiko Lake Food',
+  'Kreludan Food',
+  'Medieval Food',
+  'Molten Morsels',
+  'Neovian Pastries',
+  'Pizza',
+  'Qasalan Food',
+  'Refreshments',
+  'Slushie',
+  'Smoothie',
+  'Snow Food',
+  'Space Food',
+  'Spooky Food',
+  'Tropical Food',
+  'Tyrannian Food',
+];
