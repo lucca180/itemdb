@@ -134,45 +134,45 @@ export const getItemEffects = async (id_name: string | number) => {
 
   // some custom effects
 
-  if (item.name.toLowerCase().includes('cheese')) {
-    effects.push({
-      internal_id: -1,
-      type: 'disease',
-      name: 'Neezles',
-      species: ['Skeith'],
-      isChance: false,
-    });
-  }
+  // if (item.name.toLowerCase().includes('cheese')) {
+  //   effects.push({
+  //     internal_id: -1,
+  //     type: 'disease',
+  //     name: 'Neezles',
+  //     species: ['Skeith'],
+  //     isChance: false,
+  //   });
+  // }
 
-  if (item.name.toLowerCase().includes('negg')) {
-    effects.push({
-      internal_id: -1,
-      type: 'disease',
-      name: 'Neezles',
-      species: ['Tonu'],
-      isChance: false,
-    });
-  }
+  // if (item.name.toLowerCase().includes('negg')) {
+  //   effects.push({
+  //     internal_id: -1,
+  //     type: 'disease',
+  //     name: 'Neezles',
+  //     species: ['Tonu'],
+  //     isChance: false,
+  //   });
+  // }
 
-  if (item.name.toLowerCase().includes('cream')) {
-    effects.push({
-      internal_id: -1,
-      type: 'disease',
-      name: 'Neezles',
-      species: ['Quiggle'],
-      isChance: false,
-    });
-  }
+  // if (item.name.toLowerCase().includes('cream')) {
+  //   effects.push({
+  //     internal_id: -1,
+  //     type: 'disease',
+  //     name: 'Neezles',
+  //     species: ['Quiggle'],
+  //     isChance: false,
+  //   });
+  // }
 
-  if (item.name.toLowerCase().includes('apple')) {
-    effects.push({
-      internal_id: -1,
-      type: 'disease',
-      name: 'Itchy Scratchies',
-      species: ['Kyrii'],
-      isChance: false,
-    });
-  }
+  // if (item.name.toLowerCase().includes('apple')) {
+  //   effects.push({
+  //     internal_id: -1,
+  //     type: 'disease',
+  //     name: 'Itchy Scratchies',
+  //     species: ['Kyrii'],
+  //     isChance: false,
+  //   });
+  // }
 
   return effects as ItemEffect[];
 };
