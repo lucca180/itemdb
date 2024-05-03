@@ -84,6 +84,7 @@ const EditItemModal = (props: EditItemModalProps) => {
   const [isLoading, setLoading] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
+  const [tabIndex, setTabIndex] = useState(0);
   const { onOpen: onDeleteOpen, isOpen: isDeleteOpen, onClose: onDeleteClose } = useDisclosure();
   const router = useRouter();
 
@@ -214,7 +215,12 @@ const EditItemModal = (props: EditItemModalProps) => {
           <ModalCloseButton />
           <ModalBody>
             {!isLoading && !isSuccess && !error && (
-              <Tabs variant="line" colorScheme="gray" isLazy>
+              <Tabs
+                variant="line"
+                colorScheme="gray"
+                isLazy
+                onChange={(index) => setTabIndex(index)}
+              >
                 <TabList>
                   <Tab>{t('ItemPage.item-info')}</Tab>
                   {isAdmin && <Tab>{t('ItemPage.categories')}</Tab>}
@@ -283,7 +289,7 @@ const EditItemModal = (props: EditItemModalProps) => {
             )}
           </ModalBody>
           <ModalFooter>
-            {!isLoading && !isSuccess && !error && (
+            {!isLoading && !isSuccess && !error && tabIndex <= 1 && (
               <>
                 <Button
                   variant="outline"
@@ -785,9 +791,11 @@ export const EffectsTab = (props: EffectsTabProps) => {
   const [effects, setEffects] = useState<ItemEffect[]>(props.itemEffects);
   const [unsavedChanges, setUnsavedChanges] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [isLoading, setLoading] = useState<boolean>(false);
 
   const saveChanges = async () => {
     try {
+      setLoading(true);
       const create = effects.filter((effect) => !effect.internal_id);
       const update = effects.filter((effect) => effect.internal_id && effect.internal_id > 0);
 
@@ -809,6 +817,7 @@ export const EffectsTab = (props: EffectsTabProps) => {
       setEffects(newEffects);
 
       setUnsavedChanges(false);
+      setLoading(false);
     } catch (e: any) {
       console.error(e);
       setError(
@@ -827,8 +836,8 @@ export const EffectsTab = (props: EffectsTabProps) => {
     setEffects((prev) => {
       const newEffects = [...prev];
 
-      let effect = newEffects[index] ?? defaultEffect;
-      if (name === 'type') effect = defaultEffect;
+      let effect = newEffects[index] ?? { ...defaultEffect };
+      if (name === 'type') effect = { ...defaultEffect };
 
       effect.internal_id = newEffects[index]?.internal_id;
 
@@ -836,7 +845,7 @@ export const EffectsTab = (props: EffectsTabProps) => {
       effect[name] = value;
 
       if (name === 'isChance') effect[name] = value === 'true';
-
+      newEffects[index] = effect;
       return newEffects;
     });
 
@@ -887,6 +896,7 @@ export const EffectsTab = (props: EffectsTabProps) => {
                 onChange={(e) => handleChange(e, i)}
               >
                 {deseaseList_en
+                  .slice()
                   .sort((a, b) => a.localeCompare(b))
                   .map((disease) => (
                     <option key={disease} value={disease}>
@@ -965,7 +975,7 @@ export const EffectsTab = (props: EffectsTabProps) => {
       ))}
       <Button onClick={addEffect}>Add New Effect</Button>
       {unsavedChanges && (
-        <Button onClick={saveChanges} colorScheme="green" variant={'outline'}>
+        <Button onClick={saveChanges} colorScheme="green" variant={'outline'} isLoading={isLoading}>
           Save Effects
         </Button>
       )}

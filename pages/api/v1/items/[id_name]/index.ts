@@ -166,7 +166,7 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
 // ------------- //
 
 export const getItem = async (id_name: number | string) => {
-  const isID = typeof id_name === 'number';
+  const isID = !isNaN(Number(id_name));
 
   let query;
   if (isID) query = Prisma.sql`a.internal_id = ${id_name}`;

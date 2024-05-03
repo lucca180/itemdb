@@ -1,4 +1,4 @@
-import { Flex, Link, Text, Avatar, Image, Box, Badge } from '@chakra-ui/react';
+import { Flex, Link, Text, Image, Box, Badge } from '@chakra-ui/react';
 import React from 'react';
 import { ItemData, ItemEffect } from '../../types';
 import CardBase from '../Card/CardBase';
@@ -6,6 +6,8 @@ import dynamic from 'next/dynamic';
 import Color from 'color';
 import { useLocale, useTranslations } from 'next-intl';
 import { getDiseaseTranslation } from '../../utils/utils';
+import NextImage from 'next/image';
+
 const Markdown = dynamic(() => import('../Utils/Markdown'));
 
 type Props = {
@@ -86,13 +88,15 @@ const EffectCard = (props: EffectCardProps) => {
       boxShadow={'sm'}
     >
       <Flex mt="-20px" justifyContent={'center'}>
-        <Avatar
-          bg="white"
-          name={name}
-          src={EffectTypes[effectType].img}
-          size="sm"
-          borderRadius={'lg'}
-        />
+        <Flex width={'32px'} height={'32px'} bg="white" borderRadius={'lg'} overflow={'hidden'}>
+          <NextImage
+            width={32}
+            height={32}
+            src={EffectTypes[effectType].img}
+            alt={name}
+            quality={100}
+          />
+        </Flex>
       </Flex>
       <Text textAlign="center" fontSize="sm" fontWeight="bold">
         {name}
@@ -101,7 +105,7 @@ const EffectCard = (props: EffectCardProps) => {
         textAlign="center"
         fontSize="sm"
         color="whiteAlpha.800"
-        sx={{ b: { color: 'white' } }}
+        sx={{ 'b, strong': { color: 'white' } }}
         as="div"
       >
         <EffectText effect={props.effect} />
@@ -128,10 +132,10 @@ const EffectText = (props: EffectTextProps) => {
           Disease: () => (
             <Link href="https://www.neopets.com/hospital.phtml" whiteSpace={'pre'} isExternal>
               {getDiseaseTranslation(name, locale)}
-              <Image
+              <NextImage
                 src={'/icons/neopets.png'}
-                width={'16px'}
-                height={'16px'}
+                width={16}
+                height={16}
                 style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '0.2rem' }}
                 alt="link icon"
               />

@@ -31,20 +31,17 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   } catch (e) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
-  const { id_name } = req.query;
-  let id = Number(id_name);
 
-  if (isNaN(id)) {
-    const item = await getItem(id_name as string);
-    if (!item) return res.status(400).json({ error: 'Item not found' });
-    id = item.internal_id;
-  }
+  const { id_name } = req.query;
+
+  const item = await getItem(id_name as string | number);
+  if (!item) return res.status(400).json({ error: 'Item not found' });
 
   const { effect } = req.body as { effect: ItemEffect };
 
   const newEffect = await prisma.itemEffect.create({
     data: {
-      item_iid: id,
+      item_iid: item.internal_id,
       type: effect.type,
       name: effect.name,
       species: effect.species?.toString(),
@@ -52,9 +49,11 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       minVal: effect.minVal,
       maxVal: effect.maxVal,
       strVal: effect.strVal,
+      text: effect.text,
     },
   });
 
+  await revalidate(item.slug!, res);
   return res.status(200).json(formatEffect(newEffect));
 };
 
@@ -85,6 +84,12 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
     },
   });
 
+  const { id_name } = req.query;
+  const item = await getItem(id_name as string);
+  if (item) {
+    await revalidate(item.slug!, res);
+  }
+
   return res.status(200).json(formatEffect(updated));
 };
 
@@ -105,6 +110,12 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
       internal_id: Number(effect_id),
     },
   });
+
+  const { id_name } = req.query;
+  const item = await getItem(id_name as string);
+  if (item) {
+    await revalidate(item.slug!, res);
+  }
 
   return res.status(200).json({});
 };
@@ -180,4 +191,8 @@ const formatEffect = (effect: PrimsaItemEffect) => {
   };
 
   return JSON.parse(JSON.stringify(obj)) as ItemEffect;
+};
+
+const revalidate = async (slug: string, res: NextApiResponse) => {
+  Promise.allSettled([res.revalidate(`/item/${slug}`), res.revalidate('/pt/item/${slug}')]);
 };
