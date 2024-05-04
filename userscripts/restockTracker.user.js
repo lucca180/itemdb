@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Restock Tracker
-// @version      1.0.4
+// @version      1.0.5
 // @author       itemdb
 // @namespace    itemdb
 // @description  Tracks your restock metrics
@@ -47,7 +47,7 @@ const SESSION_TIMEOUT = 60 // how many minutes since the last refresh to conside
 // ------------------------------------- //
  // this is used to expose functions to itemdb
 unsafeWindow.itemdb_restock = {
-  scriptVersion: 104,
+  scriptVersion: 105,
 };
 
 function getCurrentSessions() {
@@ -70,7 +70,10 @@ function getSession(shopId) {
   let unsync_sessions = getUnsyncSessions();
 
   if (current_sessions[shopId]) {
-    if(current_sessions[shopId].lastRefresh >= Date.now() - SESSION_TIMEOUT * 60 * 1000)
+    if(
+      current_sessions[shopId].lastRefresh >= Date.now() - SESSION_TIMEOUT * 60 * 1000 &&
+      JSON.stringify(current_sessions[shopId]).length < 100000
+    )
       return current_sessions[shopId];
 
     else {
@@ -177,7 +180,10 @@ function getSessions() {
   let current_sessions = getCurrentSessions();
   
   Object.entries(current_sessions).forEach(([shopId, session]) => {
-    if(session.lastRefresh > Date.now() - SESSION_TIMEOUT * 60 * 1000) return;
+    if(
+      session.lastRefresh >= Date.now() - SESSION_TIMEOUT * 60 * 1000 &&
+      JSON.stringify(session).length < 100000
+    ) return;
     else 
       getSession(shopId);
   });
@@ -194,16 +200,11 @@ function cleanAll(){
   GM_setValue('unsync_sessions', []);
   GM_setValue('current_sessions', {});
 
-  let unsync_sessions = [];
-  let current_sessions = {};
-
-  sessionStorage.setItem('unsync_sessions', JSON.stringify(unsync_sessions));
-  sessionStorage.setItem('current_sessions', JSON.stringify(current_sessions));
-
-  console.log('cleaned all');
+  console.log('[idb_restockTracker] cleaned all');
 }
 
 unsafeWindow.itemdb_restock.cleanAll = cleanAll;
 
 if (URLHas('obj_type')) handleGeneralShops();
 if (URLHas('haggle.phtml')) handleRestockHaggle();
+if (URLHas('idb_clear')) cleanAll();
