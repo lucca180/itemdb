@@ -129,6 +129,7 @@ const EffectText = (props: EffectTextProps) => {
     <>
       {['disease', 'cureDisease'].includes(type) &&
         t.rich(`ItemPage.effects-${type === 'disease' ? 'disease' : 'cure-disease'}`, {
+          b: (chunk) => <b>{chunk}</b>,
           Disease: () => (
             <Link href="https://www.neopets.com/hospital.phtml" whiteSpace={'pre'} isExternal>
               {getDiseaseTranslation(name, locale)}
