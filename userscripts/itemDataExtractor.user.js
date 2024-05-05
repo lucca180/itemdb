@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.4.4
+// @version      1.4.5
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -1064,7 +1064,7 @@ function handleNPOpenables(){
           quantity: parseInt(itemEl.dataset.itemquantity),
         };
 
-        const itemKey = genItemKey(item);
+        const itemKey = genItemKey({name: item.name, img: item.img});
         if(allItems[itemKey]) allItems[itemKey].quantity += item.quantity;
         else allItems[itemKey] = item;
      });
@@ -1105,8 +1105,7 @@ function handleNPRefresh(){
         quantity: parseInt(itemEl.dataset.itemquantity),
       };
 
-      const itemKey = genItemKey(item);
-      
+      const itemKey = genItemKey({name: item.name, img: item.img});
       if(sumItems[itemKey]) sumItems[itemKey].quantity += item.quantity;
       else sumItems[itemKey] = item;
 
