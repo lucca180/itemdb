@@ -622,7 +622,13 @@
     "rarity-range-2": "These items are not so common and restock with only 1 unit in stock",
     "rarity-range-3": "These items are quite rare and restock with only 1 unit in stock",
     "info-up-to-date-warning": "These information are based on the data available at the moment on itemdb. This data may not be fully up-to-date.",
-    "view-all-items-from-this-shop": "View all items from this shop"
+    "view-all-items-from-this-shop": "View all items from this shop",
+    "enjoying-restock-dashboard": "Enjoying Restock Dashboard?",
+    "cta-1": "If you can spare 5 minutes to help us make our prices more accurate, we need your help with:",
+    "pricing-trade-lots": "Pricing Trade Lots",
+    "vote-on-pricing-suggestions": "Vote on Pricing Suggestions",
+    "item-data-extractor-script": "Item Data Extractor Script",
+    "cta-2": "This way, not only will your data here on the dashboard become more accurate, but it also helps us keep the prices always updated!"
   },
   "Search": {
     "search": "Search",

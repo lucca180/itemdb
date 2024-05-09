@@ -42,7 +42,7 @@ import { FiSend } from 'react-icons/fi';
 import FeedbackModal from '../../../components/Modal/FeedbackModal';
 import { useFormatter, useTranslations } from 'next-intl';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import CalendarHeatmap from '../../../components/Charts/CalHeatmap';
+// import CalendarHeatmap from '../../../components/Charts/CalHeatmap';
 import { endOfDay } from 'date-fns';
 import { UTCDate } from '@date-fns/utc';
 
@@ -207,11 +207,11 @@ const RestockDashboard = () => {
     localStorage.setItem('hideMisses', newMisses.toString());
   };
 
-  const setCustomTimestamp = (timestamp: number) => {
-    init({ ...defaultFilter, timestamp });
-    setFilter({ ...defaultFilter, timestamp });
-    window.scroll({ top: 0, left: 0, behavior: 'smooth' });
-  };
+  // const setCustomTimestamp = (timestamp: number) => {
+  //   init({ ...defaultFilter, timestamp });
+  //   setFilter({ ...defaultFilter, timestamp });
+  //   window.scroll({ top: 0, left: 0, behavior: 'smooth' });
+  // };
 
   return (
     <Layout
@@ -529,6 +529,7 @@ const RestockDashboard = () => {
                   <Tab>{t('Restock.hottest-restocks')}</Tab>
                   <Tab>{t('Restock.worst-losses')}</Tab>
                   <Tab>{t('Restock.worst-baits')}</Tab>
+                  <Tab>❤️</Tab>
                 </TabList>
                 <TabPanels>
                   <TabPanel px={0}>
@@ -593,11 +594,35 @@ const RestockDashboard = () => {
                       )}
                     </Flex>
                   </TabPanel>
+                  <TabPanel px={0}>
+                    <Flex
+                      gap={3}
+                      px={4}
+                      flexFlow="column"
+                      textAlign={'center'}
+                      alignItems={'center'}
+                      sx={{ a: { color: 'green.200' } }}
+                    >
+                      <Heading size="md">❤️</Heading>
+                      <Heading size="sm">{t('Restock.enjoying-restock-dashboard')}</Heading>
+                      <Text fontSize={'sm'}>{t('Restock.cta-1')}</Text>
+                      <Link fontSize={'sm'} href="/feedback/trades" isExternal>
+                        {t('Restock.pricing-trade-lots')}
+                      </Link>
+                      <Link fontSize={'sm'} href="/feedback/vote" isExternal>
+                        {t('Restock.vote-on-pricing-suggestions')}
+                      </Link>
+                      <Link fontSize={'sm'} href="/contribute" isExternal>
+                        {t('Restock.item-data-extractor-script')}
+                      </Link>
+                      <Text fontSize={'sm'}>{t('Restock.cta-2')}</Text>
+                    </Flex>
+                  </TabPanel>
                 </TabPanels>
               </Tabs>
             </Flex>
           </Flex>
-          {chartData && <CalendarHeatmap onClick={setCustomTimestamp} chartData={chartData} />}
+          {/* {chartData && <CalendarHeatmap onClick={setCustomTimestamp} chartData={chartData} />} */}
           <Flex mt={6} flexFlow="column" justifyContent={'center'} alignItems={'center'} gap={2}>
             <Text fontSize={'xs'} color="gray.400">
               {t('Restock.all-values-are-based-on-current-itemdbs-price')}

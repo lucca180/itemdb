@@ -20,6 +20,8 @@ import { RestockSession } from '../../types';
 import { restockShopInfo } from '../../utils/utils';
 import axios from 'axios';
 import { useFormatter, useTranslations } from 'next-intl';
+import { useRef } from 'react';
+import { ViewportList } from 'react-viewport-list';
 
 export type FeedbackModalProps = {
   isOpen: boolean;
@@ -30,6 +32,7 @@ export type FeedbackModalProps = {
 const ImportRestockModal = (props: FeedbackModalProps) => {
   const t = useTranslations();
   const format = useFormatter();
+  const ref = useRef<HTMLDivElement | null>(null);
   const { isOpen, onClose, refresh } = props;
   const [allSessions, setSessions] = useState<RestockSession[]>([]);
   const [selectedSessions, setSelectedSessions] = useState<string[]>([]);
@@ -157,11 +160,9 @@ const ImportRestockModal = (props: FeedbackModalProps) => {
           <ModalCloseButton />
           <ModalBody>
             <Text fontSize="sm">
-              {t('Restock.import-modal-4')}
-              <br />
-              {t('Restock.import-modal-5')}
+              {t('Restock.import-modal-4')} {t('Restock.import-modal-5')}
             </Text>
-            <Flex mt={3} maxH="300px" overflow={'auto'} direction="column" px={1}>
+            <Flex mt={3} maxH="300px" overflow={'auto'} direction="column" px={1} ref={ref}>
               <Checkbox
                 mb={1}
                 isChecked={allChecked}
@@ -177,35 +178,37 @@ const ImportRestockModal = (props: FeedbackModalProps) => {
               </Checkbox>
               <CheckboxGroup colorScheme="green" value={selectedSessions}>
                 <Stack pl={3} spacing={3} direction="column">
-                  {allSessions.map((session, i) => (
-                    <Checkbox value={i.toString()} key={i} onChange={handleCheckboxChange}>
-                      <Flex flexFlow="column">
-                        <Text color="whiteAlpha.700">
-                          {t('Restock.import-modal-x-time-at-y-store', {
-                            x: formatDistance(session.lastRefresh, session.startDate),
-                            y: restockShopInfo[session.shopId].name,
-                          })}
-                        </Text>
-                        <Text as="span" fontSize={'xs'} color="whiteAlpha.500">
-                          {' '}
-                          {t('Restock.import-modal-x-items-restocked', {
-                            x: Object.keys(session.items).length,
-                          })}{' '}
-                          |{' '}
-                          {t('Restock.import-modal-x-bought', {
-                            x: session.clicks.filter((x) => x.buy_timestamp).length,
-                          })}{' '}
-                        </Text>
-                        <Text fontSize="xs" color="whiteAlpha.500">
-                          {format.dateTime(session.startDate, {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                          })}
-                        </Text>
-                      </Flex>
-                    </Checkbox>
-                  ))}
+                  <ViewportList viewportRef={ref} items={allSessions}>
+                    {(session, i) => (
+                      <Checkbox value={i.toString()} key={i} onChange={handleCheckboxChange}>
+                        <Flex flexFlow="column">
+                          <Text color="whiteAlpha.700">
+                            {t('Restock.import-modal-x-time-at-y-store', {
+                              x: formatDistance(session.lastRefresh, session.startDate),
+                              y: restockShopInfo[session.shopId].name,
+                            })}
+                          </Text>
+                          <Text as="span" fontSize={'xs'} color="whiteAlpha.500">
+                            {' '}
+                            {t('Restock.import-modal-x-items-restocked', {
+                              x: Object.keys(session.items).length,
+                            })}{' '}
+                            |{' '}
+                            {t('Restock.import-modal-x-bought', {
+                              x: session.clicks.filter((x) => x.buy_timestamp).length,
+                            })}{' '}
+                          </Text>
+                          <Text fontSize="xs" color="whiteAlpha.500">
+                            {format.dateTime(session.startDate, {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            })}
+                          </Text>
+                        </Flex>
+                      </Checkbox>
+                    )}
+                  </ViewportList>
                 </Stack>
               </CheckboxGroup>
             </Flex>
