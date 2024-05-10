@@ -4,9 +4,10 @@ import Image from 'next/image';
 import { ItemData } from '../../types';
 import { AiFillInfoCircle, AiFillWarning } from 'react-icons/ai';
 import ItemCtxMenu, { CtxTrigger } from '../Modal/ItemCtxMenu';
-import { rarityToCCPoints } from '../../utils/utils';
+import { getRestockProfit, rarityToCCPoints } from '../../utils/utils';
 import { useTranslations } from 'next-intl';
 import MainLink from '../Utils/MainLink';
+import { MdHelp } from 'react-icons/md';
 
 export type ItemProps = {
   item?: ItemData;
@@ -46,6 +47,7 @@ const ItemCardBase = (props: ItemProps) => {
   const [isMobile] = useMediaQuery('(hover: none)');
 
   const color = item?.color.rgb;
+
   if (!item || isLoading || !color)
     return (
       <Link as={'a'} _hover={{ textDecoration: 'none' }} pointerEvents="none" style={props.style}>
@@ -69,6 +71,8 @@ const ItemCardBase = (props: ItemProps) => {
         </Box>
       </Link>
     );
+
+  const profit = getRestockProfit(item);
 
   return (
     <>
@@ -185,6 +189,37 @@ const ItemCardBase = (props: ItemProps) => {
               <Text fontSize={'xs'} fontWeight="bold">
                 {quantity}x
               </Text>
+            )}
+
+            {sortType === 'profit' && !!profit && (
+              <>
+                {profit <= 1000 && (
+                  <>
+                    <Tooltip
+                      hasArrow
+                      label={
+                        profit > 0
+                          ? t('Restock.estimated-profit-is-less-than')
+                          : t('Restock.estimated-loss')
+                      }
+                      placement="top"
+                    >
+                      <Badge colorScheme="red" display="flex" alignItems={'center'} gap={1}>
+                        {intl.format(profit)} NP <MdHelp size={'0.7rem'} />
+                      </Badge>
+                    </Tooltip>
+                  </>
+                )}
+                {profit > 1000 && (
+                  <>
+                    <Tooltip hasArrow label={t('Restock.estimated-profit')} placement="top">
+                      <Badge colorScheme="green" display="flex" alignItems={'center'} gap={1}>
+                        {intl.format(profit)} NP <MdHelp size={'0.7rem'} />
+                      </Badge>
+                    </Tooltip>
+                  </>
+                )}
+              </>
             )}
 
             {['faerieFest', 'item_id', 'rarity'].includes(sortType ?? '') && (

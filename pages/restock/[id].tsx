@@ -352,10 +352,12 @@ const RestockShop = (props: RestockShopPageProps) => {
               </HStack>
             </HStack>
           </Flex>
-          {viewType === 'default' && <VirtualizedItemList items={filteredItems ?? []} />}
+          {viewType === 'default' && (
+            <VirtualizedItemList sortType={sortInfo.sortBy} items={filteredItems ?? []} />
+          )}
           {viewType === 'rarity' && (
             <>
-              <RarityView itemList={filteredItems} />
+              <RarityView itemList={filteredItems} sortType={sortInfo.sortBy} />
             </>
           )}
           <Text textAlign={'center'} mt={8} fontSize="xs">

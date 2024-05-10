@@ -6,11 +6,12 @@ import { useTranslations } from 'next-intl';
 
 type Props = {
   itemList: ItemData[] | undefined;
+  sortType?: string;
 };
 
 export const RarityView = (props: Props) => {
   const t = useTranslations();
-  const { itemList } = props;
+  const { itemList, sortType } = props;
   const [groupedItems, setGroupedItems] = useState<{ [range: string]: ItemData[] }>({});
 
   useEffect(() => {
@@ -36,7 +37,7 @@ export const RarityView = (props: Props) => {
               {t('Restock.rarity-range', { range })}
             </Heading>
             <Text textAlign={'center'}>{t(rarityText[range])}</Text>
-            <VirtualizedItemList key={range} items={items} />
+            <VirtualizedItemList sortType={sortType} key={range} items={items} />
           </Flex>
         ))}
     </Flex>

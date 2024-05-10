@@ -6,10 +6,11 @@ import ItemCard from '../Items/ItemCard';
 
 type VirtualizedItemListProps = {
   items: ItemData[];
+  sortType?: string;
 };
 
 export const VirtualizedItemList = (props: VirtualizedItemListProps) => {
-  const { items } = props;
+  const { items, sortType } = props;
   const elementRef = useRef(null);
   const dimensions = useDimensions(elementRef, true);
 
@@ -33,7 +34,7 @@ export const VirtualizedItemList = (props: VirtualizedItemListProps) => {
         {(group, index) => (
           <Flex ref={elementRef} gap={[1, 3]} key={index} justifyContent="center" flexWrap={'wrap'}>
             {group.map((item) => (
-              <ItemCard key={item.internal_id} item={item} disablePrefetch />
+              <ItemCard sortType={sortType} key={item.internal_id} item={item} disablePrefetch />
             ))}
           </Flex>
         )}

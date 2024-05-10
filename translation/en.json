@@ -628,7 +628,8 @@
     "pricing-trade-lots": "Pricing Trade Lots",
     "vote-on-pricing-suggestions": "Vote on Pricing Suggestions",
     "item-data-extractor-script": "Item Data Extractor Script",
-    "cta-2": "This way, not only will your data here on the dashboard become more accurate, but it also helps us keep the prices always updated!"
+    "cta-2": "This way, not only will your data here on the dashboard become more accurate, but it also helps us keep the prices always updated!",
+    "estimated-profit": "Estimated Profit"
   },
   "Search": {
     "search": "Search",

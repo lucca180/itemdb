@@ -130,6 +130,7 @@ const ListPage = (props: Props) => {
   const init = async (force = false) => {
     setLoading(true);
     toast.closeAll();
+    searchQuery.current = '';
     try {
       const { username, list_id } = router.query;
       const token = await getIdToken();
@@ -253,7 +254,7 @@ const ListPage = (props: Props) => {
     }
 
     const itemInfoIds = list.itemInfo
-      .filter((a) => items[a.item_iid]?.name.toLowerCase().includes(searchQuery.current))
+      .filter((a) => items[a.item_iid]?.name.toLowerCase().includes(searchQuery.current.trim()))
       .sort((a, b) => sortItems(a, b, sortInfo.sortBy, sortInfo.sortDir, items))
       .map((item) => item.internal_id);
 
