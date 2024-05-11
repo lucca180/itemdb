@@ -288,12 +288,7 @@ const ListHeader = (props: ListHeaderProps) => {
               <Markdown>{list.description}</Markdown>
             </Text>
           )}
-          <Stack
-            mt={{ base: 2, md: 3 }}
-            flexFlow={'row'}
-            justifyContent={'center'}
-            alignItems={'center'}
-          >
+          <Stack mt={{ base: 2, md: 3 }} flexFlow={'row'} alignItems={'center'}>
             {(!!NPPrice || !!NCPrice) && (
               <Flex
                 display={'inline-flex'}
