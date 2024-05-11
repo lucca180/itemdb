@@ -38,8 +38,6 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     if (!price.item_iid) return;
     if (!pricesByIid[price.item_iid]) pricesByIid[price.item_iid] = [];
 
-    if (price.item_iid === 6337) console.log(price);
-
     pricesByIid[price.item_iid].push({
       price_id: price.internal_id,
       value: price.price,
