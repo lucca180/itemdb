@@ -527,7 +527,11 @@
     "color-helper": "Deixe #000000 e nós vamos escolher uma cor para você com base na imagem de capa",
     "official-tag": "Tag Oficial",
     "filter-by-type": "Filtrar por Tipo",
-    "show-all": "Mostrar Tudo"
+    "show-all": "Mostrar Tudo",
+    "graph-warning": "É possível que em algum momento não tivéssemos dados de preços para todos os itens da lista. Tenha em mente que este gráfico é apenas para fins de curiosidade e não é preciso de nenhuma forma.",
+    "list-price-history": "Histórico de Preços da Lista",
+    "no-price-history": "Não temos o histórico de preços desta lista.",
+    "price-history-max": "O histórico de preços só pode ser exibido para listas com {MAX_ITEMS} itens NP ou menos."
   },
   "Restock": {
     "est-profit": "Lucro Est.",

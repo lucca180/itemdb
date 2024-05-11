@@ -408,7 +408,11 @@
     "color-helper": "Leave as #000000 and we will choose one for you based on your cover image",
     "official-tag": "Official Tag",
     "show-all": "Show All",
-    "filter-by-type": "Filter by Type"
+    "filter-by-type": "Filter by Type",
+    "graph-warning": "It's possible that at some point, we didn't have price data for all items on the list. Keep in mind that this graph is solely for curiosity purposes and is not accurate in any form.",
+    "list-price-history": "List Price History",
+    "price-history-max": "The price history can only be displayed for lists with {MAX_ITEMS} NP items or less.",
+    "no-price-history": "We don't have the price history for this list."
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",

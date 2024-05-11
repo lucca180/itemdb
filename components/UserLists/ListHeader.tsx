@@ -13,6 +13,7 @@ import {
   Image,
   IconButton,
   useToast,
+  useDisclosure,
 } from '@chakra-ui/react';
 import Color from 'color';
 import { BiLinkExternal } from 'react-icons/bi';
@@ -29,7 +30,13 @@ import NextImage from 'next/image';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { FaShareAlt } from 'react-icons/fa';
+import { MAX_ITEMS_LIST_PRICE, ListPriceHistoryModalProps } from '../Modal/ListPriceHistoryModal';
+import { AiOutlineAreaChart } from 'react-icons/ai';
+
 const Markdown = dynamic(() => import('../Utils/Markdown'));
+const ListPriceHistoryModal = dynamic<ListPriceHistoryModalProps>(
+  () => import('../Modal/ListPriceHistoryModal')
+);
 
 type ListHeaderProps = {
   list: UserList;
@@ -46,6 +53,7 @@ const ListHeader = (props: ListHeaderProps) => {
   const t = useTranslations();
   const toast = useToast();
   const { list, color, items, itemInfo, isOwner, setOpenCreateModal } = props;
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const { user } = useAuth();
   const rgb = color.rgb().array();
 
@@ -96,8 +104,22 @@ const ListHeader = (props: ListHeaderProps) => {
     });
   };
 
+  const item_iids = useMemo(() => {
+    return Object.values(items)
+      .filter((item) => !item.isNC)
+      .map((item) => item.internal_id);
+  }, [list.itemInfo]);
+
   return (
     <Box>
+      {isOpen && (
+        <ListPriceHistoryModal
+          listColor={color}
+          isOpen={isOpen}
+          onClose={onClose}
+          item_iids={item_iids}
+        />
+      )}
       <Box
         position="absolute"
         h="30vh"
@@ -266,68 +288,89 @@ const ListHeader = (props: ListHeaderProps) => {
               <Markdown>{list.description}</Markdown>
             </Text>
           )}
-          {(!!NPPrice || !!NCPrice) && (
-            <Flex
-              display={'inline-flex'}
-              mt={{ base: 2, md: 3 }}
-              py={1}
-              px={2}
-              bg="blackAlpha.300"
-              borderRadius={'md'}
-              alignItems="flex-start"
-            >
-              <Tooltip
-                hasArrow
-                label={t('Lists.unpricedItems', { 0: unpricedItems })}
-                placement="top"
-                isDisabled={!unpricedItems}
+          <Stack
+            mt={{ base: 2, md: 3 }}
+            flexFlow={'row'}
+            justifyContent={'center'}
+            alignItems={'center'}
+          >
+            {(!!NPPrice || !!NCPrice) && (
+              <Flex
+                display={'inline-flex'}
+                py={1}
+                px={2}
+                bg="blackAlpha.300"
+                borderRadius={'md'}
+                alignItems="flex-start"
               >
-                <Text fontSize="sm">
-                  {!!unpricedItems && (
-                    <span>
-                      <Icon as={MdWarning} boxSize={'1rem'} mr="0.2rem" verticalAlign="text-top" />
-                    </span>
-                  )}
-                  {t('Lists.this-list-costs-aprox')}{' '}
-                  {!!NPPrice && (
-                    <>
-                      <b>{intl.format(NPPrice)} NP</b>
-                      <Image
-                        as={NextImage}
-                        display="inline"
-                        verticalAlign="bottom"
-                        //@ts-ignore
-                        src={NPBag}
-                        width="24px"
-                        height="24px"
-                        alt="gift box icon"
-                        mt="-7px"
-                        ml="3px"
-                      />
-                    </>
-                  )}{' '}
-                  {!!NPPrice && !!NCPrice && t('General.and')}{' '}
-                  {!!NCPrice && (
-                    <>
-                      <b>
-                        {intl.format(NCPrice)} {t('General.caps')}
-                      </b>{' '}
-                      <Image
-                        as={NextImage}
-                        display="inline"
-                        verticalAlign="bottom"
-                        //@ts-ignore
-                        src={GiftBox}
-                        width="24px"
-                        height="24px"
-                        alt="gift box icon"
-                      />
-                    </>
-                  )}
-                </Text>
-              </Tooltip>
-            </Flex>
-          )}
+                <Tooltip
+                  hasArrow
+                  label={t('Lists.unpricedItems', { 0: unpricedItems })}
+                  placement="top"
+                  isDisabled={!unpricedItems}
+                >
+                  <Text fontSize="sm">
+                    {!!unpricedItems && (
+                      <span>
+                        <Icon
+                          as={MdWarning}
+                          boxSize={'1rem'}
+                          mr="0.2rem"
+                          verticalAlign="text-top"
+                        />
+                      </span>
+                    )}
+                    {t('Lists.this-list-costs-aprox')}{' '}
+                    {!!NPPrice && (
+                      <>
+                        <b>{intl.format(NPPrice)} NP</b>
+                        <Image
+                          as={NextImage}
+                          display="inline"
+                          verticalAlign="bottom"
+                          //@ts-ignore
+                          src={NPBag}
+                          width="24px"
+                          height="24px"
+                          alt="gift box icon"
+                          mt="-7px"
+                          ml="3px"
+                        />
+                      </>
+                    )}{' '}
+                    {!!NPPrice && !!NCPrice && t('General.and')}{' '}
+                    {!!NCPrice && (
+                      <>
+                        <b>
+                          {intl.format(NCPrice)} {t('General.caps')}
+                        </b>{' '}
+                        <Image
+                          as={NextImage}
+                          display="inline"
+                          verticalAlign="bottom"
+                          //@ts-ignore
+                          src={GiftBox}
+                          width="24px"
+                          height="24px"
+                          alt="gift box icon"
+                        />
+                      </>
+                    )}
+                  </Text>
+                </Tooltip>
+              </Flex>
+            )}
+            {item_iids.length > 0 && item_iids.length < MAX_ITEMS_LIST_PRICE && (
+              <IconButton
+                onClick={onOpen}
+                size="sm"
+                py={1}
+                bg="blackAlpha.300"
+                aria-label="Chart"
+                icon={<AiOutlineAreaChart />}
+              />
+            )}
+          </Stack>
         </Box>
       </Flex>
     </Box>
