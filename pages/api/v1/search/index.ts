@@ -217,28 +217,40 @@ export async function doSearch(query: string, filters: SearchFilters, includeSta
     // may 12
     else if (todayNST.getMonth() === 4 && todayNST.getDate() === 12) {
       numberFilters.push(Prisma.sql`
-        temp.category in (${Prisma.join(tyrannianShops)}) AND ${getRestockQuery(0.2, minProfit)}
+        ((temp.category in (${Prisma.join(tyrannianShops)}) AND ${getRestockQuery(
+        0.2,
+        minProfit
+      )}) OR (${getRestockQuery(1, minProfit)}))
       `);
     }
 
     //aug 20
     else if (todayNST.getMonth() === 7 && todayNST.getDate() === 20) {
       numberFilters.push(Prisma.sql`
-        temp.category = 'usuki doll' AND ${getRestockQuery(0.33, minProfit)}
+        ((temp.category = 'usuki doll' AND ${getRestockQuery(
+          0.33,
+          minProfit
+        )}) OR (${getRestockQuery(1, minProfit)}))
       `);
     }
 
     // sept 20
     else if (todayNST.getMonth() === 8 && todayNST.getDate() === 20) {
       numberFilters.push(Prisma.sql`
-        temp.category in (${Prisma.join(faerielandShops)}) AND ${getRestockQuery(0.5, minProfit)}
+        ((temp.category in (${Prisma.join(faerielandShops)}) AND ${getRestockQuery(
+        0.5,
+        minProfit
+      )}) OR (${getRestockQuery(1, minProfit)}))
       `);
     }
 
     // oct 31
     else if (todayNST.getMonth() === 9 && todayNST.getDate() === 31) {
       numberFilters.push(Prisma.sql`
-        temp.category in (${Prisma.join(halloweenShops)}) AND t${getRestockQuery(0.5, minProfit)}
+        ((temp.category in (${Prisma.join(halloweenShops)}) AND t${getRestockQuery(
+        0.5,
+        minProfit
+      )}) OR (${getRestockQuery(1, minProfit)}))
       `);
     } else {
       numberFilters.push(getRestockQuery(1, minProfit));
