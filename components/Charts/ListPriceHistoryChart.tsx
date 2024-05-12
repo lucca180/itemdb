@@ -13,7 +13,7 @@ export type ListChartComponentProps = {
 
 const ListChartComponent = (props: ListChartComponentProps) => {
   const { priceData, color } = props;
-  const RBG = color.rgb().round().array();
+  const RBG = color.lightness(50).rgb().round().array();
   const backgroundColor = 'transparent';
   const lineColor = `rgb(${RBG[0]}, ${RBG[1]}, ${RBG[2]})`;
   const textColor = 'white';
