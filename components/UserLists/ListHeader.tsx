@@ -116,7 +116,7 @@ const ListHeader = (props: ListHeaderProps) => {
       .filter((item) => {
         const itemData = items[item.item_iid];
         if (!itemData) return false;
-        return !itemData.isNC && item.isHidden;
+        return !itemData.isNC && !item.isHidden;
       })
       .map((item) => item.item_iid);
   }, [list.itemInfo]);
