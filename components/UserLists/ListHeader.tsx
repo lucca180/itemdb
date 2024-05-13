@@ -63,7 +63,13 @@ const ListHeader = (props: ListHeaderProps) => {
     return list.itemInfo.reduce((acc, item) => {
       const itemData = items[item.item_iid];
 
-      if (!itemData.isNC && !itemData.price.value && itemData.status === 'active' && !item.isHidden)
+      if (
+        itemData &&
+        !itemData.isNC &&
+        !itemData.price.value &&
+        itemData.status === 'active' &&
+        !item.isHidden
+      )
         return acc + 1;
 
       return acc;
