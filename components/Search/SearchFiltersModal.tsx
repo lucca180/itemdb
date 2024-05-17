@@ -15,17 +15,27 @@ import { SearchFilters as SearchFiltersType, SearchStats } from '../../types';
 type Props = {
   filters: SearchFiltersType;
   stats: SearchStats | null;
-  isColorSearch: boolean;
+  isColorSearch?: boolean;
   onChange: (filters: SearchFiltersType) => void;
   resetFilters: () => void;
   applyFilters: () => void;
   onClose: () => void;
-  isOpen: boolean;
+  isOpen?: boolean;
+  isLists?: boolean;
 };
 
 const SearchFilterModal = (props: Props) => {
-  const { filters, stats, isColorSearch, isOpen, onClose, onChange, resetFilters, applyFilters } =
-    props;
+  const {
+    filters,
+    stats,
+    isColorSearch,
+    isOpen,
+    onClose,
+    onChange,
+    resetFilters,
+    applyFilters,
+    isLists,
+  } = props;
 
   const applyFiltersAndClose = () => {
     applyFilters();
@@ -38,7 +48,7 @@ const SearchFilterModal = (props: Props) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered scrollBehavior="inside">
+    <Modal isOpen={!!isOpen} onClose={onClose} isCentered scrollBehavior="inside">
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Search Filters</ModalHeader>
@@ -46,6 +56,7 @@ const SearchFilterModal = (props: Props) => {
         <ModalBody>
           <SearchFilters
             onChange={onChange}
+            isLists={isLists}
             filters={filters}
             stats={stats}
             isColorSearch={isColorSearch}

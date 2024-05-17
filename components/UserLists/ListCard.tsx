@@ -29,21 +29,21 @@ const UserListCard = (props: Props) => {
   const color = Color(list?.colorHex || '#4A5568');
   const rgb = color.rgb().array();
 
-  useEffect(() => {
-    if (!matches) return;
+  // useEffect(() => {
+  //   if (!matches) return;
 
-    const listItemsMap = new Set(list.itemInfo.map((item) => item.item_iid));
+  //   const listItemsMap = new Set(list.itemInfo.map((item) => item.item_iid));
 
-    if (list.purpose === 'trading' && matches?.seek.length) {
-      const count = matches.seek.filter((item) => listItemsMap.has(item.item_iid)).length;
-      setMatchCount(count);
-    }
+  //   if (list.purpose === 'trading' && matches?.seek.length) {
+  //     const count = matches.seek.filter((item) => listItemsMap.has(item.item_iid)).length;
+  //     setMatchCount(count);
+  //   }
 
-    if (list.purpose === 'seeking' && matches?.trade.length) {
-      const count = matches.trade.filter((item) => listItemsMap.has(item.item_iid)).length;
-      setMatchCount(count);
-    }
-  }, [list, matches]);
+  //   if (list.purpose === 'seeking' && matches?.trade.length) {
+  //     const count = matches.trade.filter((item) => listItemsMap.has(item.item_iid)).length;
+  //     setMatchCount(count);
+  //   }
+  // }, [list, matches]);
 
   const copyLink = () => {
     const userName = list.official ? 'official' : list.owner.username;

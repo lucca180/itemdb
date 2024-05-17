@@ -14,11 +14,19 @@ import {
   Switch,
   useToast,
   Spinner,
+  IconButton,
+  useDisclosure,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Layout from '../../../components/Layout';
-import { ItemData, ListItemInfo, UserList } from '../../../types';
+import {
+  ItemData,
+  ListItemInfo,
+  UserList,
+  SearchFilters as SearchFiltersType,
+  SearchStats,
+} from '../../../types';
 import { useAuth } from '../../../utils/auth';
 import { useRouter } from 'next/router';
 import ItemCard from '../../../components/Items/ItemCard';
@@ -40,6 +48,10 @@ import { SearchList } from '../../../components/Search/SearchLists';
 import { SortSelect } from '../../../components/Input/SortSelect';
 import { CheckAuth } from '../../../utils/googleCloud';
 import { useTranslations } from 'next-intl';
+import { BsFilter } from 'react-icons/bs';
+import SearchFilterModal from '../../../components/Search/SearchFiltersModal';
+import { defaultFilters } from '../../../utils/parseFilters';
+import { getFiltersDiff } from '../../search';
 
 const CreateListModal = dynamic<CreateListModalProps>(
   () => import('../../../components/Modal/CreateListModal')
@@ -70,6 +82,7 @@ const ListPage = (props: Props) => {
   const t = useTranslations();
   const router = useRouter();
   const toast = useToast();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const { user, getIdToken, authLoading } = useAuth();
 
@@ -78,7 +91,7 @@ const ListPage = (props: Props) => {
   const [openCreateModal, setOpenCreateModal] = useState<boolean>(false);
 
   const [itemInfoIds, setItemInfoIds] = useState<number[]>([]);
-
+  const [rawItemInfo, setRawItemInfo] = useState<ListItemInfo[]>([]);
   const [itemInfo, setItemInfo] = useState<{
     [itemInfoId: number]: ExtendedListItemInfo;
   }>({});
@@ -99,6 +112,8 @@ const ListPage = (props: Props) => {
   const [isLoading, setLoading] = useState<boolean>(true);
   const [searchItemInfoIds, setSearchItemInfoIds] = useState<number[] | null>(null);
 
+  const [listStats, setListStats] = useState<SearchStats | null>(null);
+  const [filters, setFilters] = useState<SearchFiltersType>(defaultFilters);
   const searchQuery = useRef('');
 
   const isOwner = user?.username === router.query.username || user?.id === list?.owner.id;
@@ -108,8 +123,12 @@ const ListPage = (props: Props) => {
   const itemCount = useMemo(() => {
     if (!list) return 0;
 
+    if (searchItemInfoIds) {
+      return searchItemInfoIds.length;
+    }
+
     return Object.values(itemInfo).filter((x) => !x.isHidden).length;
-  }, [itemInfo]);
+  }, [itemInfo, searchItemInfoIds]);
 
   useEffect(() => {
     if (!authLoading && router.isReady) {
@@ -127,47 +146,50 @@ const ListPage = (props: Props) => {
     if (user && list) getMatches();
   }, [user, list]);
 
+  const isFiltered = useMemo(() => {
+    return rawItemInfo.length !== Object.keys(itemInfo).length;
+  }, [itemInfo]);
+
   const init = async (force = false) => {
     setLoading(true);
     toast.closeAll();
     searchQuery.current = '';
+    setSearchItemInfoIds(null);
+    setFilters(defaultFilters);
     try {
       const { username, list_id } = router.query;
-      const token = await getIdToken();
 
-      const res = await axios.get(`/api/v1/lists/${username}/${list_id}`, {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      });
+      let listData = props.list;
 
-      const listData: UserList = res.data;
+      if (force || !list) {
+        const res = await axios.get(`/api/v1/lists/${username}/${list_id}`);
 
-      if (!listData) throw 'List does not exist';
-      setList(listData);
+        listData = res.data;
+
+        if (!listData) throw 'List does not exist';
+        setList(listData);
+      }
 
       if (listData.official) router.replace('/lists/official/' + listData.internal_id);
 
-      const itensId: number[] = listData.itemInfo.map((item) => item.item_iid);
+      const [itemData, itemInfos] = await getItems();
+
+      const itensId: number[] = itemInfos.map((item) => item.item_iid);
 
       if (itensId.length === 0) {
+        setRawItemInfo([]);
         setItemSelect([]);
         setItemInfoIds([]);
         setItemInfo({});
         setMatches([]);
         setSortInfo({ sortBy: listData.sortBy, sortDir: listData.sortDir });
-        if (force && res) setList(res.data);
+        if (force) setList(listData);
         setItems({});
         setLoading(false);
         return;
       }
 
-      const itemRes = await axios.post(`/api/v1/items/many`, {
-        id: itensId,
-      });
-
-      const itemInfos = listData.itemInfo;
-      const itemData: { [id: string]: ItemData } = itemRes?.data;
+      setRawItemInfo([...itemInfos]);
 
       const sortedItemInfo = itemInfos.sort((a, b) =>
         sortItems(a, b, listData.sortBy, listData.sortDir, itemData)
@@ -185,7 +207,7 @@ const ListPage = (props: Props) => {
       setItemInfoIds(infoIds);
       setItemInfo(itemMap);
 
-      if (force && res) setList(res.data);
+      if (force) setList(listData);
       setItems(itemData);
 
       setLoading(false);
@@ -199,6 +221,34 @@ const ListPage = (props: Props) => {
         duration: null,
       });
     }
+  };
+
+  const getItems = async (): Promise<[{ [id: string]: ItemData }, ListItemInfo[]]> => {
+    if (!list) return [{}, []];
+
+    const itemInfoRes = await axios.get(
+      `/api/v1/lists/${list.owner.username}/${list.internal_id}/items`
+    );
+    const itemInfoData: ListItemInfo[] = itemInfoRes.data;
+
+    const itensId: number[] = itemInfoData.map((item) => item.item_iid);
+
+    if (itensId.length === 0) {
+      return [{}, itemInfoData];
+    }
+
+    const [itemRes, searchRes] = await Promise.all([
+      axios.post(`/api/v1/items/many`, {
+        id: itensId,
+      }),
+      axios.get(`/api/v1/lists/${list.owner.username}/${list.internal_id}/stats`),
+    ]);
+
+    const itemDataRaw: { [id: string]: ItemData } = itemRes?.data;
+
+    setListStats(searchRes.data);
+
+    return [itemDataRaw, itemInfoData];
   };
 
   const getMatches = async () => {
@@ -229,7 +279,7 @@ const ListPage = (props: Props) => {
   const handleSortChange = (sortBy: string, sortDir: string) => {
     if (!list) return;
     if (searchItemInfoIds) {
-      const itemInfoIds = list.itemInfo
+      const itemInfoIds = Object.values(itemInfo)
         .filter((a) => items[a.item_iid]?.name.toLowerCase().includes(searchQuery.current))
         .sort((a, b) => sortItems(a, b, sortBy, sortDir, items))
         .map((item) => item.internal_id);
@@ -237,7 +287,9 @@ const ListPage = (props: Props) => {
       setSearchItemInfoIds(itemInfoIds);
     }
 
-    const sortedItemInfo = list.itemInfo.sort((a, b) => sortItems(a, b, sortBy, sortDir, items));
+    const sortedItemInfo = Object.values(itemInfo).sort((a, b) =>
+      sortItems(a, b, sortBy, sortDir, items)
+    );
     setSortInfo({ sortBy, sortDir });
     setItemInfoIds(sortedItemInfo.map((item) => item.internal_id));
     setLockSort(true);
@@ -253,12 +305,47 @@ const ListPage = (props: Props) => {
       return;
     }
 
-    const itemInfoIds = list.itemInfo
+    const itemInfoIds = Object.values(itemInfo)
       .filter((a) => items[a.item_iid]?.name.toLowerCase().includes(searchQuery.current.trim()))
       .sort((a, b) => sortItems(a, b, sortInfo.sortBy, sortInfo.sortDir, items))
       .map((item) => item.internal_id);
 
     setSearchItemInfoIds(itemInfoIds);
+  };
+
+  const applyFilters = async (customFilters?: SearchFiltersType) => {
+    const params = getFiltersDiff({ ...(customFilters ?? filters) });
+
+    if (customFilters) {
+      setFilters(customFilters);
+    }
+    setLoading(true);
+    const itemRes = await axios.get(
+      `/api/v1/lists/${list.owner.username}/${list.internal_id}/items`,
+      {
+        params,
+      }
+    );
+
+    const itemInfoData = itemRes.data as ListItemInfo[];
+
+    const sortedItemInfo = itemInfoData.sort((a, b) =>
+      sortItems(a, b, list.sortBy, list.sortDir, items)
+    );
+
+    const itemMap: { [id: number]: ListItemInfo } = {};
+    const infoIds = [];
+    for (const itemInfo of sortedItemInfo) {
+      infoIds.push(itemInfo.internal_id);
+      itemMap[itemInfo.internal_id] = itemInfo;
+    }
+
+    searchQuery.current = '';
+    setSearchItemInfoIds(null);
+    setItemSelect([]);
+    setItemInfoIds(infoIds);
+    setItemInfo(itemMap);
+    setLoading(false);
   };
 
   const toggleEdit = () => {
@@ -466,6 +553,18 @@ const ListPage = (props: Props) => {
         },
       }}
     >
+      {isOpen && (
+        <SearchFilterModal
+          isLists
+          isOpen={isOpen}
+          onClose={onClose}
+          filters={filters}
+          stats={listStats}
+          onChange={(filters) => setFilters(filters)}
+          resetFilters={() => applyFilters(defaultFilters)}
+          applyFilters={() => applyFilters()}
+        />
+      )}
       <CreateListModal
         refresh={() => init(true)}
         isOpen={openCreateModal}
@@ -551,7 +650,7 @@ const ListPage = (props: Props) => {
               <Box bg={`rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.35)`} p={2} borderRadius="md">
                 <SelectItemsCheckbox
                   checked={itemSelect}
-                  allChecked={itemSelect.length === list.itemInfo.length}
+                  allChecked={itemSelect.length === Object.values(itemInfo).length}
                   onClick={handleSelectCheckbox}
                 />
               </Box>
@@ -583,6 +682,12 @@ const ListPage = (props: Props) => {
             justifyContent={['center', 'flex-end']}
             flexWrap={'wrap'}
           >
+            <IconButton
+              aria-label="search filters"
+              onClick={onOpen}
+              icon={<BsFilter />}
+              colorScheme={isFiltered ? 'blue' : undefined}
+            />
             <SearchList onChange={handleSearch} />
             {isOwner && (
               <FormControl display="flex" alignItems="center" justifyContent="center" w={'auto'}>
@@ -635,7 +740,8 @@ const ListPage = (props: Props) => {
           </Center>
         )}
 
-        {itemInfoIds.filter((a) => itemInfo[a].isHighlight && !itemInfo[a].isHidden).length > 0 && (
+        {itemInfoIds.filter((a) => !!itemInfo && itemInfo[a].isHighlight && !itemInfo[a].isHidden)
+          .length > 0 && (
           <Flex gap={3} flexFlow="column" p={3} bg="gray.700" borderRadius="md">
             <Center flexFlow="column">
               <Heading size="lg" mb={3}>
@@ -707,13 +813,7 @@ export async function getServerSideProps(context: NextPageContext) {
       | null;
   }
 
-  const list = await getList(
-    username,
-    parseInt(list_id),
-    userOrToken,
-    username === 'official',
-    true
-  );
+  const list = await getList(username, parseInt(list_id), userOrToken, username === 'official');
 
   if (!list) return { notFound: true };
 

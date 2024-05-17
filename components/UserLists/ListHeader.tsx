@@ -60,7 +60,7 @@ const ListHeader = (props: ListHeaderProps) => {
   const unpricedItems = useMemo(() => {
     if (!list) return 0;
 
-    return list.itemInfo.reduce((acc, item) => {
+    return Object.values(itemInfo).reduce((acc, item) => {
       const itemData = items[item.item_iid];
 
       if (
@@ -79,7 +79,7 @@ const ListHeader = (props: ListHeaderProps) => {
   const NPPrice = useMemo(() => {
     if (!list) return 0;
 
-    return list.itemInfo.reduce((acc, item) => {
+    return Object.values(itemInfo).reduce((acc, item) => {
       const itemData = items[item.item_iid];
       if (!itemData || !itemData.price.value || item.isHidden) return acc;
 
@@ -90,7 +90,7 @@ const ListHeader = (props: ListHeaderProps) => {
   const NCPrice = useMemo(() => {
     if (!list) return 0;
 
-    return list.itemInfo.reduce((acc, item) => {
+    return Object.values(itemInfo).reduce((acc, item) => {
       const itemData = items[item.item_iid];
       if (!itemData || !itemData.owls || !itemData.owls.valueMin || item.isHidden) return acc;
 
@@ -112,14 +112,14 @@ const ListHeader = (props: ListHeaderProps) => {
   };
 
   const item_iids = useMemo(() => {
-    return list.itemInfo
+    return Object.values(itemInfo)
       .filter((item) => {
         const itemData = items[item.item_iid];
         if (!itemData) return false;
         return !itemData.isNC && !item.isHidden;
       })
       .map((item) => item.item_iid);
-  }, [list.itemInfo]);
+  }, [itemInfo]);
 
   return (
     <Box>

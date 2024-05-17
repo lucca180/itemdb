@@ -182,13 +182,13 @@ const AddToListSelect = (props: Props) => {
                   onClick={() => addItemToList(list.internal_id)}
                   isDisabled={isDynamicActionDisabled('add', list.dynamicType)}
                 >
-                  {list.itemInfo.some((i) => i.item_iid === item.internal_id) && (
+                  {/* {list.itemInfo.some((i) => i.item_iid === item.internal_id) && (
                     <Tooltip label={t('Lists.already-in-this-list')} fontSize="sm" placement="top">
                       <span>
                         <Icon verticalAlign="middle" as={BsBookmarkCheckFill} mr={2} />
                       </span>
                     </Tooltip>
-                  )}
+                  )} */}
                   {list.name}
                   {list.purpose !== 'none' && !list.official && (
                     <Tooltip label={`${list.purpose}`} fontSize="sm" placement="top">

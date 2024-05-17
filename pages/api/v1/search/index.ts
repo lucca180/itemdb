@@ -41,7 +41,13 @@ const validColorTypes = [
   'population',
 ];
 
-export async function doSearch(query: string, filters: SearchFilters, includeStats = true) {
+export async function doSearch(
+  query: string,
+  filters: SearchFilters,
+  includeStats = true,
+  list_id = 0,
+  includeHidden = false
+) {
   const originalQuery = query;
   const [queryFilters, querySanitezed] = parseFilters(originalQuery, false);
 
@@ -57,7 +63,7 @@ export async function doSearch(query: string, filters: SearchFilters, includeSta
 
   if (page < 0) page = 0;
   if (limit < 1) limit = 1;
-  if (limit > 4000) limit = 4000;
+  if (limit > 10000) limit = 10000;
 
   let categoryFilters = (filters.category as string[]) ?? [];
   let typeFilters = (filters.type as string[]) ?? [];
@@ -88,6 +94,8 @@ export async function doSearch(query: string, filters: SearchFilters, includeSta
   if (categoryFilters && !Array.isArray(categoryFilters)) categoryFilters = [categoryFilters];
   if (typeFilters && !Array.isArray(typeFilters)) typeFilters = [typeFilters];
   if (statusFilters && !Array.isArray(statusFilters)) statusFilters = [statusFilters];
+
+  const hiddenQuery = !includeHidden ? Prisma.sql`AND isHidden = 0` : Prisma.empty;
 
   const catFiltersSQL = [];
 
@@ -368,6 +376,12 @@ export async function doSearch(query: string, filters: SearchFilters, includeSta
             ? Prisma.sql` AND ${Prisma.join(numberFilters, ' AND ')}`
             : Prisma.empty
         }
+
+        ${
+          !!list_id
+            ? Prisma.sql` AND exists (select 1 from listitems li where li.item_iid = temp.internal_id and list_id = ${list_id} ${hiddenQuery})`
+            : Prisma.empty
+        }
         
         ${sortSQL}
         ${sortDir === 'desc' ? Prisma.sql`DESC` : Prisma.sql`ASC`}
@@ -436,6 +450,12 @@ export async function doSearch(query: string, filters: SearchFilters, includeSta
       ${
         colorSql_outside && isColorNeg
           ? Prisma.sql` AND ${colorSql_outside} > ${colorTolerance}`
+          : Prisma.empty
+      }
+
+      ${
+        !!list_id
+          ? Prisma.sql` AND exists (select 1 from listitems li where li.item_iid = temp.internal_id and list_id = ${list_id} ${hiddenQuery})`
           : Prisma.empty
       }
 

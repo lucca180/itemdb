@@ -92,7 +92,7 @@ export async function getServerSideProps(context: any) {
   const indexType = body?.indexType ?? 'item_id';
   const list_id = body?.list_id ?? null;
 
-  const list = list_id ? await getList('official', Number(list_id), null, true, true) : null;
+  const list = list_id ? await getList('official', Number(list_id), null, true) : null;
 
   return {
     props: {

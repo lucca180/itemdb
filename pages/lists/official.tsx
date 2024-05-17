@@ -192,7 +192,7 @@ const OfficialListsPage = (props: Props) => {
 export default OfficialListsPage;
 
 export async function getServerSideProps(context: any) {
-  const lists = await getUserLists('official', null, false, 15);
+  const lists = await getUserLists('official', null, 15);
 
   return {
     props: {

@@ -25,6 +25,7 @@ type Props = {
   filters: SearchFiltersType;
   isColorSearch?: boolean;
   onChange?: (newFilters: SearchFiltersType) => void;
+  isLists?: boolean;
 };
 
 const ALL_COLORS = [
@@ -510,31 +511,33 @@ const SearchFilters = (props: Props) => {
           </VStack>
         </AccordionPanel>
       </AccordionItem>
-      <AccordionItem>
-        <h2>
-          <AccordionButton>
-            <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              {t('General.search-mode')}
-            </Box>
-            <AccordionIcon />
-          </AccordionButton>
-        </h2>
-        <AccordionPanel pb={4}>
-          <HStack>
-            <Select
-              size="sm"
-              variant={'filled'}
-              bg={'whiteAlpha.200'}
-              value={filters.mode}
-              onChange={(e) => handleSelectChange(e.target.value, 'mode')}
-            >
-              <option value="name">{t('General.item-name')}</option>
-              <option value="description">{t('General.item-description')}</option>
-              <option value="all">{t('General.item-name-and-description')}</option>
-            </Select>
-          </HStack>
-        </AccordionPanel>
-      </AccordionItem>
+      {!props.isLists && (
+        <AccordionItem>
+          <h2>
+            <AccordionButton>
+              <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
+                {t('General.search-mode')}
+              </Box>
+              <AccordionIcon />
+            </AccordionButton>
+          </h2>
+          <AccordionPanel pb={4}>
+            <HStack>
+              <Select
+                size="sm"
+                variant={'filled'}
+                bg={'whiteAlpha.200'}
+                value={filters.mode}
+                onChange={(e) => handleSelectChange(e.target.value, 'mode')}
+              >
+                <option value="name">{t('General.item-name')}</option>
+                <option value="description">{t('General.item-description')}</option>
+                <option value="all">{t('General.item-name-and-description')}</option>
+              </Select>
+            </HStack>
+          </AccordionPanel>
+        </AccordionItem>
+      )}
     </Accordion>
   );
 };
