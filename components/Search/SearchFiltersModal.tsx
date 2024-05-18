@@ -11,6 +11,7 @@ import {
 } from '@chakra-ui/react';
 import SearchFilters from './SearchFilters';
 import { SearchFilters as SearchFiltersType, SearchStats } from '../../types';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   filters: SearchFiltersType;
@@ -25,6 +26,7 @@ type Props = {
 };
 
 const SearchFilterModal = (props: Props) => {
+  const t = useTranslations();
   const {
     filters,
     stats,
@@ -51,7 +53,7 @@ const SearchFilterModal = (props: Props) => {
     <Modal isOpen={!!isOpen} onClose={onClose} isCentered scrollBehavior="inside">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Search Filters</ModalHeader>
+        <ModalHeader>{t('Search.search-filters')}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <SearchFilters
@@ -64,10 +66,10 @@ const SearchFilterModal = (props: Props) => {
         </ModalBody>
         <ModalFooter as={Flex} gap={3}>
           <Button variant="outline" onClick={resetFiltersAndClose} colorScheme="gray" size="sm">
-            Reset
+            {t('General.reset')}
           </Button>
           <Button variant="outline" colorScheme="green" size="sm" onClick={applyFiltersAndClose}>
-            Apply Filters
+            {t('Search.apply-filters')}
           </Button>
         </ModalFooter>
       </ModalContent>

@@ -18,7 +18,7 @@ import {
   Icon,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Layout from '../../../components/Layout';
 import { CreateListModalProps } from '../../../components/Modal/CreateListModal';
 import { ListItemInfo, User, UserList } from '../../../types';
@@ -75,9 +75,12 @@ const UserListsPage = (props: Props) => {
   const [isEdit, setEdit] = useState<boolean>(false);
 
   const [owner, setOwner] = useState<User | undefined>(props.owner);
-  const [matches, setMatches] = useState<{ seek: ListItemInfo[]; trade: ListItemInfo[] }>({
-    seek: [],
-    trade: [],
+  const [matches, setMatches] = useState<{
+    seek: { [list_id: number]: ListItemInfo[] };
+    trade: { [list_id: number]: ListItemInfo[] };
+  }>({
+    seek: {},
+    trade: {},
   });
   const [loading, setLoading] = useState<boolean>(true);
   const isOwner = user?.username && user?.username === router.query.username;
@@ -97,6 +100,16 @@ const UserListsPage = (props: Props) => {
     return () => toast.closeAll();
   }, [router.query]);
 
+  const seekItems = useMemo(() => {
+    const allItems = new Set(Object.values(matches.seek).flat());
+    return allItems.size;
+  }, [matches.seek]);
+
+  const tradeItems = useMemo(() => {
+    const allItems = new Set(Object.values(matches.trade).flat());
+    return allItems.size;
+  }, [matches.trade]);
+
   const init = async (force = false) => {
     setLists({});
     setLoading(true);
@@ -104,13 +117,7 @@ const UserListsPage = (props: Props) => {
     try {
       if (!targetUsername) throw 'Invalid Username';
 
-      const token = await getIdToken();
-
-      const listsRes = await axios.get(`/api/v1/lists/${targetUsername}`, {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      });
+      const listsRes = await axios.get(`/api/v1/lists/${targetUsername}`);
 
       if (force) {
         const userRes = await axios.get(`/api/v1/users/${targetUsername}`);
@@ -120,16 +127,8 @@ const UserListsPage = (props: Props) => {
 
       if (user) {
         const [seekRes, tradeRes] = await Promise.all([
-          axios.get(`/api/v1/lists/match/${user.username}/${targetUsername}`, {
-            headers: {
-              authorization: `Bearer ${token}`,
-            },
-          }),
-          axios.get(`/api/v1/lists/match/${targetUsername}/${user.username}`, {
-            headers: {
-              authorization: `Bearer ${token}`,
-            },
-          }),
+          axios.get(`/api/v1/lists/match/${user.username}/${targetUsername}`),
+          axios.get(`/api/v1/lists/match/${targetUsername}/${user.username}`),
         ]);
 
         setMatches({
@@ -403,7 +402,7 @@ const UserListsPage = (props: Props) => {
                       </Badge>
                     ),
                     username: owner.username,
-                    items: matches.seek.length,
+                    items: seekItems,
                   })}
                 </Text>
                 <Text
@@ -418,7 +417,7 @@ const UserListsPage = (props: Props) => {
                       </Badge>
                     ),
                     username: owner.username,
-                    items: matches.trade.length,
+                    items: tradeItems,
                   })}
                 </Text>
               </Stack>

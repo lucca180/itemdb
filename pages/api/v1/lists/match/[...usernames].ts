@@ -127,24 +127,23 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       },
     });
 
-    const seekerItemsSet = new Set(
-      seekerLists.flatMap((list) => list.items.map((item) => item.item_iid))
+    const offererItemsSet = new Set(
+      offererLists.flatMap((list) => list.items.map((item) => item.item_iid))
     );
-    const alreadyMatched = new Set();
 
-    const matchedItems: ListItemInfo[] = offererLists.flatMap((list) => {
-      const x = list.items.filter(
-        (item) => seekerItemsSet.has(item.item_iid) && !alreadyMatched.has(item.item_iid)
-      );
+    const listMatch: { [list_id: number]: ListItemInfo[] } = {};
 
-      return x.map((item): ListItemInfo => {
-        alreadyMatched.add(item.item_iid);
+    seekerLists.flatMap((list) => {
+      const x = list.items.filter((item) => offererItemsSet.has(item.item_iid));
 
+      const match = x.map((item): ListItemInfo => {
         return { ...item, addedAt: item.addedAt.toJSON(), updatedAt: item.updatedAt.toJSON() };
       });
+
+      if (match.length > 0) listMatch[list.internal_id] = match;
     });
 
-    return res.status(200).json(matchedItems);
+    return res.status(200).json(listMatch);
   } catch (e: any) {
     console.error(e);
     return res.status(500).json({ error: 'Internal Server Error' });
