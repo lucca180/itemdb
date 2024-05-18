@@ -96,6 +96,7 @@ const UserListsPage = (props: Props) => {
 
   useEffect(() => {
     // if (owner) setOwner(undefined);
+    if (owner && router.query.username !== owner.username) init(true);
 
     return () => toast.closeAll();
   }, [router.query]);
