@@ -745,7 +745,7 @@ const ListPage = (props: Props) => {
           <Flex gap={3} flexFlow="column" p={3} bg="gray.700" borderRadius="md">
             <Center flexFlow="column">
               <Heading size="lg" mb={3}>
-                {t('Lists.highlights')}
+                {list.official ? t('Lists.exclusives') : t('Lists.highlights')}
               </Heading>
               {isEdit && (
                 <Text fontSize="xs" fontStyle="italic">

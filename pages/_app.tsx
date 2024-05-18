@@ -32,7 +32,12 @@ function MyApp({ Component, pageProps }: AppProps) {
           >
             <Head>
               {Object.entries(VALID_LOCALES).map(([key, value]) => (
-                <link rel="alternate" key={key} hrefLang={key} href={`${value}${router.asPath}`} />
+                <link
+                  rel="alternate"
+                  key={key}
+                  hrefLang={key}
+                  href={`https://itemdb.com.br${value}${router.asPath}`}
+                />
               ))}
             </Head>
             <NextNProgress color="#718096" showOnShallow={true} />

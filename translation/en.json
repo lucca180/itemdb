@@ -412,7 +412,8 @@
     "graph-warning": "It's possible that at some point, we didn't have price data for all items on the list. Keep in mind that this graph is solely for curiosity purposes and is not accurate in any form.",
     "list-price-history": "List Price History",
     "price-history-max": "The price history can only be displayed for lists with {MAX_ITEMS} NP items or less.",
-    "no-price-history": "We don't have the price history for this list."
+    "no-price-history": "We don't have the price history for this list.",
+    "exclusives": "Exclusives"
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",

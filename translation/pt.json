@@ -531,7 +531,8 @@
     "graph-warning": "É possível que em algum momento não tivéssemos dados de preços para todos os itens da lista. Tenha em mente que este gráfico é apenas para fins de curiosidade e não é preciso de nenhuma forma.",
     "list-price-history": "Histórico de Preços da Lista",
     "no-price-history": "Não temos o histórico de preços desta lista.",
-    "price-history-max": "O histórico de preços só pode ser exibido para listas com {MAX_ITEMS} itens NP ou menos."
+    "price-history-max": "O histórico de preços só pode ser exibido para listas com {MAX_ITEMS} itens NP ou menos.",
+    "exclusives": "Exclusivos"
   },
   "Restock": {
     "est-profit": "Lucro Est.",
