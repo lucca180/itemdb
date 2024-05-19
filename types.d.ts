@@ -165,7 +165,7 @@ export type SearchFilters = {
   colorType: string;
   sortBy: string;
   sortDir: string;
-  mode: 'name' | 'description' | 'all';
+  mode: 'name' | 'description' | 'all' | 'fuzzy';
   limit: number;
   page: number;
 };

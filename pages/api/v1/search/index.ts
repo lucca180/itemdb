@@ -15,6 +15,8 @@ import { Prisma } from '@prisma/client';
 import qs from 'qs';
 import { parseFilters } from '../../../../utils/parseFilters';
 
+const ENV_FUZZY_SEARCH = process.env.HAS_FUZZY_SEARCH === 'true';
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET' || !req.url)
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
@@ -88,7 +90,7 @@ export async function doSearch(
   let colorFilter = (filters.color as string) ?? '';
 
   const sortBy = (filters.sortBy as string) ?? 'name';
-  const sortDir = (filters.sortDir as string) ?? 'asc';
+  let sortDir = (filters.sortDir as string) ?? 'asc';
   const mode = (filters.mode as string) ?? 'name';
 
   if (categoryFilters && !Array.isArray(categoryFilters)) categoryFilters = [categoryFilters];
@@ -308,7 +310,11 @@ export async function doSearch(
     fulltext = Prisma.sql`MATCH (temp.name, temp.description) AGAINST (${query} IN BOOLEAN MODE) OR temp.name LIKE ${`%${originalQuery}%`} OR temp.description LIKE ${`%${originalQuery}%`}`;
   else if (mode === 'description')
     fulltext = Prisma.sql`MATCH (temp.description) AGAINST (${query} IN BOOLEAN MODE) OR temp.description LIKE ${`%${originalQuery}%`}`;
-  else
+  else if (mode === 'fuzzy' && ENV_FUZZY_SEARCH) {
+    fulltext = Prisma.sql`DAMLEVP('${query.toLowerCase()}', LOWER(temp.name)) < 0.5`;
+    sortSQL = Prisma.sql`ORDER BY DAMLEVP('${query.toLowerCase()}', LOWER(temp.name))`;
+    sortDir = 'asc';
+  } else
     fulltext = Prisma.sql`MATCH (temp.name) AGAINST (${query} IN BOOLEAN MODE) OR temp.name LIKE ${`%${originalQuery}%`}`;
 
   let resultRaw;
