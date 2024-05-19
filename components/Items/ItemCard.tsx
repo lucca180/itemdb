@@ -90,7 +90,7 @@ const ItemCardBase = (props: ItemProps) => {
         <Link
           as={disableLink ? undefined : MainLink}
           style={props.style}
-          prefetch={!disableLink && !disablePrefetch ? undefined : false}
+          prefetch={disableLink || disablePrefetch !== false ? false : undefined}
           href={disableLink ? undefined : '/item/' + (item.slug ?? item.internal_id)}
           _hover={{ textDecoration: 'none' }}
           // pointerEvents={disableLink ? 'none' : 'initial'}

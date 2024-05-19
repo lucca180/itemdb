@@ -36,9 +36,12 @@ import { SearchBar } from './Search/SearchBar';
 import Color from 'color';
 import Brazil from '../public/icons/brazil.png';
 import { useTranslations } from 'next-intl';
-import { LanguageToast } from './Modal/LanguageToast';
+import { LanguageToastProps } from './Modal/LanguageToast';
 import axios from 'axios';
 import { setCookie } from 'cookies-next';
+import dynamic from 'next/dynamic';
+
+const LanguageToast = dynamic<LanguageToastProps>(() => import('./Modal/LanguageToast'));
 
 type Props = {
   children?: ReactNode;
@@ -133,21 +136,21 @@ const Layout = (props: Props) => {
           whiteSpace={'nowrap'}
         >
           <Box w="100%" bg="blackAlpha.400" position={'absolute'} h="26px" left="0" zIndex={-1} />
-          <ChakraLink as={Link} href="/articles">
+          <ChakraLink as={Link} href="/articles" prefetch={false}>
             {t('articles')}
           </ChakraLink>
-          <ChakraLink as={Link} href="/lists/import">
+          <ChakraLink as={Link} href="/lists/import" prefetch={false}>
             {t('checklists')}
           </ChakraLink>
           <Text display="inline-flex" alignItems={'center'} gap={1}>
-            <ChakraLink as={Link} href="/restock/dashboard">
+            <ChakraLink as={Link} href="/restock/dashboard" prefetch={false}>
               {t('dashboard')}
             </ChakraLink>{' '}
           </Text>
-          <ChakraLink as={Link} href="/restock">
+          <ChakraLink as={Link} href="/restock" prefetch={false}>
             {t('restock-hub')}
           </ChakraLink>{' '}
-          <ChakraLink as={Link} href="/articles/userscripts">
+          <ChakraLink as={Link} href="/articles/userscripts" prefetch={false}>
             {t('sdb-pricer')}
           </ChakraLink>
         </Flex>

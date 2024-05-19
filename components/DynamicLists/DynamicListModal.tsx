@@ -30,7 +30,6 @@ import { BsCheckCircleFill, BsExclamationCircleFill, BsXCircleFill } from 'react
 import DynamicIcon from '../../public/icons/dynamic.png';
 import { ExtendedSearchQuery, UserList } from '../../types';
 import { useAuth, UserLists } from '../../utils/auth';
-import { getRandomName } from '../../utils/randomName';
 import { useTranslations } from 'next-intl';
 
 export type DynamicListModalProps = {
@@ -87,24 +86,16 @@ const DynamicListModal = (props: DynamicListModalProps) => {
 
   const createNewList = async () => {
     if (!user) throw new Error('User not found');
-    const token = await getIdToken();
+    const getRandomName = (await import('../../utils/randomName')).getRandomName;
 
-    const res = await axios.post(
-      `/api/v1/lists/${user.username}`,
-      {
-        name: getRandomName(),
-        description: '',
-        cover_url: '',
-        visibility: 'public',
-        purpose: 'none',
-        colorHex: '#fff',
-      },
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const res = await axios.post(`/api/v1/lists/${user.username}`, {
+      name: getRandomName(),
+      description: '',
+      cover_url: '',
+      visibility: 'public',
+      purpose: 'none',
+      colorHex: '#fff',
+    });
 
     if (res.data.success) {
       const list = res.data.message;

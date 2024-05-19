@@ -7,11 +7,11 @@ import { useTranslations } from 'next-intl';
 
 const VALID_LOCALES = ['en', 'pt'];
 
-type LanguageToastProps = {
+export type LanguageToastProps = {
   saveLang: (prefLang: string) => Promise<void>;
 };
 
-export const LanguageToast = (props: LanguageToastProps) => {
+const LanguageToast = (props: LanguageToastProps) => {
   const { saveLang } = props;
   const t = useTranslations();
   const toast = useToast();
@@ -108,3 +108,5 @@ const ToastMsg = ({ prefLang, handleAction }: ToastMsgProps) => {
       </Flex>
     );
 };
+
+export default LanguageToast;

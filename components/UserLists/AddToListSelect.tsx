@@ -17,7 +17,6 @@ import { BsBookmarkCheckFill } from 'react-icons/bs';
 import { useAtom } from 'jotai';
 import { ItemData, ListItemInfo, UserList } from '../../types';
 import { useAuth, UserLists } from '../../utils/auth';
-import { getRandomName } from '../../utils/randomName';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import dynamic from 'next/dynamic';
 import NextImage from 'next/image';
@@ -36,7 +35,7 @@ type Props = {
 const AddToListSelect = (props: Props) => {
   const t = useTranslations();
   const { item } = props;
-  const { user, getIdToken, authLoading } = useAuth();
+  const { user, authLoading } = useAuth();
   const [lists, setLists] = useState<UserList[]>([]);
   const [, setStorageLists] = useAtom(UserLists);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -57,13 +56,7 @@ const AddToListSelect = (props: Props) => {
     if (!user) return;
     setLoading(true);
     try {
-      const token = await getIdToken();
-
-      const res = await axios.get(`/api/v1/lists/${user.username}`, {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await axios.get(`/api/v1/lists/${user.username}`);
       setLists(res.data);
       setStorageLists(res.data);
       setLoading(false);
@@ -75,8 +68,6 @@ const AddToListSelect = (props: Props) => {
   const addItemToList = async (list_id: number) => {
     if (!user) return;
     try {
-      const token = await getIdToken();
-
       const res = await axios.put(
         `/api/v1/lists/${user.username}/${list_id}?alertDuplicates=true`,
         {
@@ -86,11 +77,6 @@ const AddToListSelect = (props: Props) => {
               item_iid: item.internal_id,
             },
           ],
-        },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
         }
       );
       if (res.data.success) {
@@ -122,24 +108,17 @@ const AddToListSelect = (props: Props) => {
 
   const createNewList = async () => {
     if (!user) return;
-    const token = await getIdToken();
     try {
-      const res = await axios.post(
-        `/api/v1/lists/${user.username}`,
-        {
-          name: getRandomName(),
-          description: '',
-          cover_url: '',
-          visibility: 'public',
-          purpose: 'none',
-          colorHex: '#fff',
-        },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const getRandomName = (await import('../../utils/randomName')).getRandomName;
+
+      const res = await axios.post(`/api/v1/lists/${user.username}`, {
+        name: getRandomName(),
+        description: '',
+        cover_url: '',
+        visibility: 'public',
+        purpose: 'none',
+        colorHex: '#fff',
+      });
 
       if (res.data.success) {
         const list = res.data.message;

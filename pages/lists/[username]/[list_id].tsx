@@ -49,7 +49,7 @@ import { SortSelect } from '../../../components/Input/SortSelect';
 import { CheckAuth } from '../../../utils/googleCloud';
 import { useTranslations } from 'next-intl';
 import { BsFilter } from 'react-icons/bs';
-import SearchFilterModal from '../../../components/Search/SearchFiltersModal';
+import { SearchFilterModalProps } from '../../../components/Search/SearchFiltersModal';
 import { defaultFilters } from '../../../utils/parseFilters';
 import { getFiltersDiff } from '../../search';
 
@@ -59,6 +59,10 @@ const CreateListModal = dynamic<CreateListModalProps>(
 
 const ItemActionModal = dynamic<ItemActionModalProps>(
   () => import('../../../components/Modal/ItemActionModal')
+);
+
+const SearchFilterModal = dynamic<SearchFilterModalProps>(
+  () => import('../../../components/Search/SearchFiltersModal')
 );
 
 type ExtendedListItemInfo = ListItemInfo & { hasChanged?: boolean };

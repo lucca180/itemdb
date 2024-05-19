@@ -13,7 +13,7 @@ import SearchFilters from './SearchFilters';
 import { SearchFilters as SearchFiltersType, SearchStats } from '../../types';
 import { useTranslations } from 'next-intl';
 
-type Props = {
+export type SearchFilterModalProps = {
   filters: SearchFiltersType;
   stats: SearchStats | null;
   isColorSearch?: boolean;
@@ -25,7 +25,7 @@ type Props = {
   isLists?: boolean;
 };
 
-const SearchFilterModal = (props: Props) => {
+const SearchFilterModal = (props: SearchFilterModalProps) => {
   const t = useTranslations();
   const {
     filters,

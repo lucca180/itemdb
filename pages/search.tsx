@@ -24,7 +24,7 @@ import { SearchFilters as SearchFiltersType, SearchResults } from '../types';
 import Pagination from '../components/Input/Pagination';
 import qs from 'qs';
 import SearchFilterCard from '../components/Search/SearchFiltersCard';
-import SearchFilterModal from '../components/Search/SearchFiltersModal';
+import { SearchFilterModalProps } from '../components/Search/SearchFiltersModal';
 import { BsFilter } from 'react-icons/bs';
 import { SelectItemsCheckbox } from '../components/Input/SelectItemsCheckbox';
 import ListSelect from '../components/UserLists/ListSelect';
@@ -34,6 +34,11 @@ import { CreateDynamicListButton } from '../components/DynamicLists/CreateButton
 import Color from 'color';
 import NextLink from 'next/link';
 import { useTranslations } from 'next-intl';
+import dynamic from 'next/dynamic';
+
+const SearchFilterModal = dynamic<SearchFilterModalProps>(
+  () => import('../components/Search/SearchFiltersModal')
+);
 
 const Axios = axios.create({
   baseURL: '/api/v1/',
