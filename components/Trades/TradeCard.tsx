@@ -1,8 +1,9 @@
 import { Badge, Box, Flex, Skeleton, Text } from '@chakra-ui/react';
-import React from 'react';
+import React, { useRef } from 'react';
 import { ItemData, TradeData } from '../../types';
 import TradeTable from './TradeTable';
 import { useTranslations } from 'next-intl';
+import { ViewportList } from 'react-viewport-list';
 
 type Props = {
   trades: TradeData[];
@@ -15,7 +16,7 @@ const TradeCard = (props: Props) => {
   const { trades, item, isLoading } = props;
   const color = item?.color.rgb;
   const colorString = color ? `rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)` : 'gray.600';
-
+  const ref = useRef<HTMLDivElement | null>(null);
   return (
     <Flex
       // flex={1}
@@ -32,7 +33,7 @@ const TradeCard = (props: Props) => {
           {trades.length} {trades.length === 20 && '+'}
         </Badge>
       </Box>
-      <Box bg="gray.600" boxShadow="md" overflow="auto" borderBottomRadius="md">
+      <Box bg="gray.600" boxShadow="md" overflow="auto" borderBottomRadius="md" ref={ref}>
         {isLoading && (
           <>
             <Skeleton h="150px" />
@@ -40,9 +41,11 @@ const TradeCard = (props: Props) => {
         )}
         {!isLoading && (
           <>
-            {trades.map((t) => (
-              <TradeTable featuredItem={item} key={t.trade_id} data={t} />
-            ))}
+            {trades.length > 0 && (
+              <ViewportList viewportRef={ref} items={trades} overscan={2} initialPrerender={3}>
+                {(t) => <TradeTable featuredItem={item} key={t.trade_id} data={t} />}
+              </ViewportList>
+            )}
             {trades.length === 0 && (
               <Text p={3} textAlign="center" fontSize="sm">
                 {t('ItemPage.no-trade-history-card')} :(

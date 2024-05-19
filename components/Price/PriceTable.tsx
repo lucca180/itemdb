@@ -1,6 +1,4 @@
 import {
-  Stat,
-  StatArrow,
   Table,
   TableContainer,
   Tbody,
@@ -8,12 +6,16 @@ import {
   Tr,
   Text,
   IconButton,
+  Box,
+  Flex,
+  Icon,
 } from '@chakra-ui/react';
 import React from 'react';
 import { PriceData } from '../../types';
 import { MinusIcon } from '@chakra-ui/icons';
 import { useFormatter, useTranslations } from 'next-intl';
 import { FiEdit } from 'react-icons/fi';
+import { FaCaretDown, FaCaretUp } from 'react-icons/fa';
 
 const intl = new Intl.NumberFormat();
 
@@ -24,10 +26,7 @@ type Props = {
 };
 
 const PriceTable = (props: Props) => {
-  const { data, isAdmin, onEdit } = props;
-  const sortedData = data;
-  const t = useTranslations();
-  const format = useFormatter();
+  const { data: sortedData, isAdmin, onEdit } = props;
 
   return (
     <TableContainer
@@ -41,51 +40,14 @@ const PriceTable = (props: Props) => {
       <Table h="100%" variant="striped" colorScheme="gray" size="sm">
         <Tbody>
           {sortedData.map((price, index) => (
-            <Tr key={price.addedAt}>
-              <Td>
-                {price.inflated && (
-                  <Text fontWeight="bold" color="red.400">
-                    {t('General.inflation')}!
-                  </Text>
-                )}
-                {intl.format(price.value)} NP
-              </Td>
-              <Td>
-                {!!sortedData[index + 1]?.value && (
-                  <Stat>
-                    {!!(price.value - sortedData[index + 1]?.value) && (
-                      <StatArrow
-                        type={
-                          price.value - sortedData[index + 1]?.value > 0 ? 'increase' : 'decrease'
-                        }
-                      />
-                    )}
-                    {!(price.value - sortedData[index + 1]?.value) && (
-                      <MinusIcon mr={1} boxSize="16px" />
-                    )}
-                    {intl.format(price.value - sortedData[index + 1]?.value)} NP
-                  </Stat>
-                )}
-              </Td>
-              <Td>
-                {format.dateTime(new Date(price.addedAt), {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-              </Td>
-              {isAdmin && (
-                <Td>
-                  {' '}
-                  <IconButton
-                    onClick={() => onEdit?.(price)}
-                    size="xs"
-                    aria-label="Edit"
-                    icon={<FiEdit />}
-                  />
-                </Td>
-              )}
-            </Tr>
+            <PriceItem
+              key={price.addedAt}
+              price={price}
+              data={sortedData}
+              index={index}
+              isAdmin={isAdmin}
+              onEdit={onEdit}
+            />
           ))}
         </Tbody>
       </Table>
@@ -94,3 +56,58 @@ const PriceTable = (props: Props) => {
 };
 
 export default PriceTable;
+
+const PriceItem = (props: Props & { price: PriceData; index: number }) => {
+  const { price, data: sortedData, index, isAdmin, onEdit } = props;
+  const format = useFormatter();
+  const t = useTranslations();
+
+  return (
+    <Tr key={price.addedAt}>
+      <Td>
+        {price.inflated && (
+          <Text fontWeight="bold" color="red.400">
+            {t('General.inflation')}!
+          </Text>
+        )}
+        {intl.format(price.value)} NP
+      </Td>
+      <Td>
+        {!!sortedData[index + 1]?.value && (
+          <Flex alignItems={'center'}>
+            {!!(price.value - sortedData[index + 1]?.value) && (
+              <Box display="inline">
+                {price.value - sortedData[index + 1]?.value > 0 && (
+                  <Icon as={FaCaretUp} color="green.400" boxSize={'22px'} />
+                )}
+                {price.value - sortedData[index + 1]?.value < 0 && (
+                  <Icon as={FaCaretDown} color="red.400" boxSize={'22px'} />
+                )}
+              </Box>
+            )}
+            {!(price.value - sortedData[index + 1]?.value) && <MinusIcon mr={1} boxSize="16px" />}
+            <Text>{intl.format(price.value - sortedData[index + 1]?.value)} NP</Text>
+          </Flex>
+        )}
+      </Td>
+      <Td>
+        {format.dateTime(new Date(price.addedAt), {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })}
+      </Td>
+      {isAdmin && (
+        <Td>
+          {' '}
+          <IconButton
+            onClick={() => onEdit?.(price)}
+            size="xs"
+            aria-label="Edit"
+            icon={<FiEdit />}
+          />
+        </Td>
+      )}
+    </Tr>
+  );
+};
