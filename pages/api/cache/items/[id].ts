@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-// import { createCanvas, loadImage } from 'canvas';
+import { createCanvas, loadImage } from '@napi-rs/canvas';
 import { ImageBucket } from '../../../../utils/googleCloud';
 import axios from 'axios';
 
@@ -68,7 +68,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       return;
     }
   } catch (e) {
-    const { createCanvas, loadImage } = await import('canvas');
     const img = await loadImage('./public/item-error.png');
 
     if (!canvas || !ctx) {
@@ -78,7 +77,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     ctx.drawImage(img, 0, 0);
 
-    const buffer = canvas.toBuffer();
+    const buffer = await canvas.encode('png');
 
     res
       .writeHead(400, {

@@ -1,4 +1,4 @@
-import { createCanvas, loadImage } from 'canvas';
+import { createCanvas, loadImage } from '@napi-rs/canvas';
 import pixelmatch from 'pixelmatch';
 
 // this function detects if the item image has the wearable icon
@@ -14,7 +14,7 @@ export const detectWearable = async (imageURL: string) => {
   const itemCtx = itemCanvas.getContext('2d');
   itemCtx.drawImage(itemImage, -1, -63, itemImage.width, itemImage.height);
 
-  const val = pixelmatch(iconCanvas.toBuffer('raw'), itemCanvas.toBuffer('raw'), null, 17, 16, {
+  const val = pixelmatch(iconCanvas.data(), itemCanvas.data(), null, 17, 16, {
     threshold: 0.1,
   });
 
