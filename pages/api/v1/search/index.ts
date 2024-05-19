@@ -311,8 +311,8 @@ export async function doSearch(
   else if (mode === 'description')
     fulltext = Prisma.sql`MATCH (temp.description) AGAINST (${query} IN BOOLEAN MODE) OR temp.description LIKE ${`%${originalQuery}%`}`;
   else if (mode === 'fuzzy' && ENV_FUZZY_SEARCH) {
-    fulltext = Prisma.sql`DAMLEVP('${query.toLowerCase()}', LOWER(temp.name)) < 0.5`;
-    sortSQL = Prisma.sql`ORDER BY DAMLEVP('${query.toLowerCase()}', LOWER(temp.name))`;
+    fulltext = Prisma.sql`DAMLEVP(${query.toLowerCase()}, LOWER(temp.name)) < 0.5`;
+    sortSQL = Prisma.sql`ORDER BY DAMLEVP(${query.toLowerCase()}, LOWER(temp.name))`;
     sortDir = 'asc';
   } else
     fulltext = Prisma.sql`MATCH (temp.name) AGAINST (${query} IN BOOLEAN MODE) OR temp.name LIKE ${`%${originalQuery}%`}`;
