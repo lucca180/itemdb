@@ -1,5 +1,4 @@
 import * as Sentry from '@sentry/nextjs';
-import { CaptureConsole } from '@sentry/integrations';
 
 const SENTRY_DSN = process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN;
 
@@ -12,7 +11,7 @@ if (isProd)
     // Adjust this value in production, or use tracesSampler for greater control
     tracesSampleRate: 1.0,
     integrations: [
-      new CaptureConsole({
+      Sentry.captureConsoleIntegration({
         // array of methods that should be captured
         // defaults to ['log', 'info', 'warn', 'error', 'debug', 'assert']
         levels: ['error', 'warn'],

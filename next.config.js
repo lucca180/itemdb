@@ -54,11 +54,9 @@ const nextConfig = {
     config.plugins.push(
       new webpack.DefinePlugin({
         __SENTRY_DEBUG__: false,
-        __SENTRY_TRACING__: false,
+        // __SENTRY_TRACING__: false,
       })
     );
-
-    // return the modified config
     return config;
   },
 };
@@ -67,8 +65,4 @@ const sentryWebpackPluginOptions = {
   silent: true, // Suppresses all logs
 };
 
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
-});
-
-module.exports = withSentryConfig(withBundleAnalyzer(nextConfig), sentryWebpackPluginOptions);
+module.exports = withSentryConfig(nextConfig, sentryWebpackPluginOptions);
