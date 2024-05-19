@@ -1,4 +1,14 @@
-import { Badge, chakra, Divider, Tooltip, useToast, Box, useDisclosure } from '@chakra-ui/react';
+import {
+  Badge,
+  chakra,
+  Divider,
+  Tooltip,
+  useToast,
+  Box,
+  useDisclosure,
+  HStack,
+  Text,
+} from '@chakra-ui/react';
 import { ContextMenu, ContextMenuItem, Submenu, ContextMenuTrigger } from 'rctx-contextmenu';
 import { ItemData, ListItemInfo, UserList } from '../../types';
 import { useAuth, UserLists } from '../../utils/auth';
@@ -10,6 +20,14 @@ import dynamic from 'next/dynamic';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import NextImage from 'next/image';
 import { useTranslations } from 'next-intl';
+import AuctionIcon from '../../public/icons/auction.png';
+import ShopIcon from '../../public/icons/shop.svg';
+import SDBIcon from '../../public/icons/safetydeposit.svg';
+import SWIcon from '../../public/icons/shopwizard.png';
+import TPIcon from '../../public/icons/tradingpost.png';
+import ClosetIcon from '../../public/icons/closet.svg';
+import NeosearchIcon from '../../public/icons/neosearch.svg';
+import Image from 'next/image';
 
 const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
   () => import('./DuplicatedItemModal')
@@ -251,6 +269,9 @@ const ItemCtxMenu = (props: Props) => {
           )}
           {!lists && user && <CtxMenuItem disabled>{t('Layout.loading')}...</CtxMenuItem>}
         </CtxSubmenu>
+        <CtxSubmenu title={t('General.search-at')}>
+          <FindAtCtx item={item} />
+        </CtxSubmenu>
         <Divider />
         <CtxMenuItem onClick={() => handleCopy(item.image)}>
           {t('Layout.copy-image-url')}
@@ -283,3 +304,109 @@ function SortListByChange(a: UserList, b: UserList) {
 
   return dateB.getTime() - dateA.getTime();
 }
+
+type FindAtCtxProps = {
+  item: ItemData;
+};
+
+const FindAtCtx = (props: FindAtCtxProps) => {
+  const { item } = props;
+  const t = useTranslations();
+
+  const openNewTab = (url?: string | null) => {
+    if (!url) return;
+    window.open(url, '_blank');
+  };
+
+  return (
+    <>
+      {item.findAt.shopWizard && (
+        <CtxMenuItem onClick={() => openNewTab(item.findAt.shopWizard)}>
+          <HStack>
+            <Image
+              src={SWIcon}
+              alt="Shop Wizard"
+              title="Shop Wizard"
+              height={26}
+              quality="100"
+              style={{ display: 'inline' }}
+            />
+            <Text>{t('General.shop-wizard')}</Text>
+          </HStack>
+        </CtxMenuItem>
+      )}
+      {item.findAt.auction && (
+        <CtxMenuItem onClick={() => openNewTab(item.findAt.auction)}>
+          <HStack>
+            <Image
+              src={AuctionIcon}
+              alt="Action House"
+              title="Action House"
+              height={26}
+              quality="100"
+            />
+            <Text>{t('General.action-house')}</Text>
+          </HStack>
+        </CtxMenuItem>
+      )}
+      {item.findAt.trading && (
+        <CtxMenuItem onClick={() => openNewTab(item.findAt.trading)}>
+          <HStack>
+            <Image src={TPIcon} alt="Trading Post" title="Trading Post" height={26} quality="100" />
+            <Text>{t('General.trading-post')}</Text>
+          </HStack>
+        </CtxMenuItem>
+      )}
+      {item.findAt.safetyDeposit && (
+        <CtxMenuItem onClick={() => openNewTab(item.findAt.safetyDeposit)}>
+          <HStack>
+            <Image
+              src={SDBIcon}
+              alt="Safety Deposit Box"
+              title="Safety Deposit Box"
+              height={26}
+              quality="100"
+            />
+            <Text>{t('General.safety-deposit-box')}</Text>
+          </HStack>
+        </CtxMenuItem>
+      )}
+      {item.findAt.closet && (
+        <CtxMenuItem onClick={() => openNewTab(item.findAt.closet)}>
+          <HStack>
+            <Image src={ClosetIcon} alt="Closet" title="Closet" height={26} quality="100" />
+            <Text>Closet</Text>
+          </HStack>
+        </CtxMenuItem>
+      )}
+      {item.findAt.restockShop && (
+        <CtxMenuItem onClick={() => openNewTab(item.findAt.restockShop)}>
+          <HStack>
+            <Image
+              src={ShopIcon}
+              alt="Restock Shop"
+              title="Restock Shop"
+              height={26}
+              quality="100"
+            />
+            <Text>{t('General.restock-shop')}</Text>
+          </HStack>
+        </CtxMenuItem>
+      )}
+      {item.findAt.neosearch && (
+        <CtxMenuItem onClick={() => openNewTab(item.findAt.neosearch)}>
+          <HStack>
+            <Image
+              src={NeosearchIcon}
+              alt="Neopets Search"
+              title="Neopets Search"
+              height={26}
+              quality="100"
+            />
+            <Text>{t('General.neopets-search')}</Text>
+          </HStack>
+        </CtxMenuItem>
+      )}
+    </>
+  );
+};

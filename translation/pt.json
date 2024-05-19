@@ -287,7 +287,12 @@
     "search-mode": "Modo de Pesquisa",
     "less": "Menos",
     "more": "Mais",
-    "link-copied": "Link Copiado"
+    "link-copied": "Link Copiado",
+    "action-house": "Casa de Leilões",
+    "neopets-search": "Pesquisa do Neopets",
+    "restock-shop": "Loja de Restock",
+    "shop-wizard": "Mágico Pechincheiro",
+    "search-at": "Procurar Em"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",

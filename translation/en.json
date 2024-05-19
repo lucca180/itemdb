@@ -286,7 +286,12 @@
     "item-name-and-description": "Item Name and Description",
     "less": "Less",
     "more": "More",
-    "link-copied": "Link Copied"
+    "link-copied": "Link Copied",
+    "shop-wizard": "Shop Wizard",
+    "action-house": "Action House",
+    "restock-shop": "Restock Shop",
+    "neopets-search": "Neopets Search",
+    "search-at": "Search At"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",
