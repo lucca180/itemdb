@@ -24,6 +24,7 @@ export type ItemProps = {
   isLE?: boolean;
   sortType?: string;
   disablePrefetch?: boolean;
+  highlight?: boolean;
 };
 
 const intl = new Intl.NumberFormat();
@@ -43,6 +44,7 @@ const ItemCardBase = (props: ItemProps) => {
     onListAction,
     sortType,
     disablePrefetch,
+    highlight,
   } = props;
   const [isMobile] = useMediaQuery('(hover: none)');
 
@@ -106,6 +108,7 @@ const ItemCardBase = (props: ItemProps) => {
             justifyContent="center"
             alignItems="center"
             boxShadow={selected ? 'outline' : 'lg'}
+            filter={highlight ? 'drop-shadow(0px 0px 5px #f0f03d)' : undefined}
             textAlign="center"
             cursor="pointer"
             textDecoration="none"

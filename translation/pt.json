@@ -635,7 +635,8 @@
     "item-data-extractor-script": "Item Data Extractor Script",
     "pricing-trade-lots": "Precificar Lotes de Trocas",
     "vote-on-pricing-suggestions": "Votar em Sugestões de Preços",
-    "estimated-profit": "Lucro Estimado"
+    "estimated-profit": "Lucro Estimado",
+    "bmg-warning": "Os itens destacados só são visíveis com a bênção <Link>Mercadorias do Mercado Negro</Link> do Oráculo do Obelisco "
   },
   "Search": {
     "search": "Pesquisa",

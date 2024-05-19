@@ -3,6 +3,7 @@ import { ItemData } from '../../../types';
 import { useEffect, useState } from 'react';
 import { VirtualizedItemList } from '../../Utils/VirtualizedItemList';
 import { useTranslations } from 'next-intl';
+import { restockBlackMarketItems } from '../../../utils/utils';
 
 type Props = {
   itemList: ItemData[] | undefined;
@@ -37,18 +38,23 @@ export const RarityView = (props: Props) => {
               {t('Restock.rarity-range', { range })}
             </Heading>
             <Text textAlign={'center'}>{t(rarityText[range])}</Text>
-            <VirtualizedItemList sortType={sortType} key={range} items={items} />
+            <VirtualizedItemList
+              sortType={sortType}
+              key={range}
+              items={items}
+              highlightList={restockBlackMarketItems}
+            />
           </Flex>
         ))}
     </Flex>
   );
 };
 
-const rarityGroups = [85, 95, 99];
+const rarityGroups = [85, 94, 99];
 const rarityText: { [range: string]: string } = {
   'r1-r85': 'Restock.rarity-range-1',
-  'r86-r95': 'Restock.rarity-range-2',
-  'r96-r99': 'Restock.rarity-range-3',
+  'r86-r94': 'Restock.rarity-range-2',
+  'r95-r99': 'Restock.rarity-range-3',
   unknown: 'Unknown',
 };
 const groupItems = (items: ItemData[]) => {

@@ -22,6 +22,7 @@ import {
   faerielandShops,
   getRestockProfit,
   halloweenShops,
+  restockBlackMarketItems,
   restockShopInfo,
   shopIDToCategory,
   slugify,
@@ -353,7 +354,11 @@ const RestockShop = (props: RestockShopPageProps) => {
             </HStack>
           </Flex>
           {viewType === 'default' && (
-            <VirtualizedItemList sortType={sortInfo.sortBy} items={filteredItems ?? []} />
+            <VirtualizedItemList
+              sortType={sortInfo.sortBy}
+              items={filteredItems ?? []}
+              highlightList={restockBlackMarketItems}
+            />
           )}
           {viewType === 'rarity' && (
             <>
@@ -361,6 +366,14 @@ const RestockShop = (props: RestockShopPageProps) => {
             </>
           )}
           <Text textAlign={'center'} mt={8} fontSize="xs">
+            {t.rich('Restock.bmg-warning', {
+              Link: (chunk) => (
+                <Link href="/lists/official/1952" color="yellow.200">
+                  {chunk}
+                </Link>
+              ),
+            })}
+            <br />
             {t('Restock.info-up-to-date-warning')}
             <br />
             <Link href="/contribute" color="gray.400">

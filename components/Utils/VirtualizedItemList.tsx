@@ -7,6 +7,7 @@ import ItemCard from '../Items/ItemCard';
 type VirtualizedItemListProps = {
   items: ItemData[];
   sortType?: string;
+  highlightList?: number[];
 };
 
 export const VirtualizedItemList = (props: VirtualizedItemListProps) => {
@@ -34,7 +35,13 @@ export const VirtualizedItemList = (props: VirtualizedItemListProps) => {
         {(group, index) => (
           <Flex ref={elementRef} gap={[1, 3]} key={index} justifyContent="center" flexWrap={'wrap'}>
             {group.map((item) => (
-              <ItemCard sortType={sortType} key={item.internal_id} item={item} disablePrefetch />
+              <ItemCard
+                highlight={props.highlightList?.includes(item.internal_id)}
+                sortType={sortType}
+                key={item.internal_id}
+                item={item}
+                disablePrefetch
+              />
             ))}
           </Flex>
         )}

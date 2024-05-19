@@ -634,7 +634,8 @@
     "vote-on-pricing-suggestions": "Vote on Pricing Suggestions",
     "item-data-extractor-script": "Item Data Extractor Script",
     "cta-2": "This way, not only will your data here on the dashboard become more accurate, but it also helps us keep the prices always updated!",
-    "estimated-profit": "Estimated Profit"
+    "estimated-profit": "Estimated Profit",
+    "bmg-warning": "Highlighted items are only visible with the <Link>Black Market Goods</Link> obelisk boon"
   },
   "Search": {
     "search": "Search",
