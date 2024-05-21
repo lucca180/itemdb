@@ -54,7 +54,7 @@ model Items {
   priceProcess          PriceProcess2[]
   restockAuctionHistory RestockAuctionHistory[]
   processHistory        PriceProcessHistory[]
-  effects           ItemEffect[]
+  effects               ItemEffect[]
 
   @@index([name, image_id])
   @@index([image_id])
@@ -237,7 +237,7 @@ model TradeItems {
   image       String
   image_id    String
   order       Int
-  price       Decimal?  @db.Decimal(11, 0)
+  price       Decimal? @db.Decimal(11, 0)
   addedAt     DateTime @default(now())
   item_id     Int?
 
@@ -321,6 +321,7 @@ model OpenableQueue {
   processed      Boolean  @default(false)
   addedAt        DateTime @default(now())
 }
+
 model Feedbacks {
   feedback_id Int      @id @default(autoincrement())
   type        String   @default("feedback")
@@ -329,6 +330,7 @@ model Feedbacks {
   email       String?  @db.Text
   votes       Int      @default(0)
   addedAt     DateTime @default(now())
+  ip_address String @default("0")
 
   processed   Boolean   @default(false)
   approved    Boolean   @default(false)
@@ -337,8 +339,11 @@ model Feedbacks {
   user_id String?
   user    User?   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
+  @@index([type, processed])
+
   vote FeedbackVotes[]
 }
+
 model FeedbackVotes {
   vote_id     Int       @id @default(autoincrement())
   feedback_id Int
@@ -473,7 +478,7 @@ model RestockSession {
 }
 
 model ItemEffect {
-  internal_id Int    @id @default(autoincrement())
+  internal_id Int     @id @default(autoincrement())
   item_iid    Int
   type        String
   name        String
@@ -481,11 +486,11 @@ model ItemEffect {
   minVal      Int?
   maxVal      Int?
   strVal      String?
-  text        String?  @db.Text
-  isChance    Boolean  @default(false)
+  text        String? @db.Text
+  isChance    Boolean @default(false)
 
-  addedAt     DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  addedAt   DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   item Items? @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
 
@@ -520,7 +525,7 @@ model PriceProcess2 {
   otherInfo  String?
   stock      Int      @default(1)
   price      Int
-  price2     Decimal? @db.Decimal(11, 0) 
+  price2     Decimal? @db.Decimal(11, 0)
   addedAt    DateTime @default(now())
   ip_address String?
   language   String

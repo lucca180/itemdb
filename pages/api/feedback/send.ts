@@ -59,6 +59,22 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       voteMultiplier >= Math.floor(FEEDBACK_VOTE_TARGET * 0.7)
     );
 
+  if (type === 'feedback') {
+    const count = await prisma.feedbacks.count({
+      where: {
+        type: {
+          in: ['feedback', 'officialApply'],
+        },
+        ip_address: ip ?? '1',
+        addedAt: {
+          gte: new Date(new Date().getTime() - 1000 * 60 * 60 * 24),
+        },
+      },
+    });
+
+    if (count > 5) return res.status(429).json({ success: false, message: 'Too many requests' });
+  }
+
   if (!shoudContinue) return res.status(200).json({ success: true, message: 'already processed' });
 
   const result = await prisma.feedbacks.create({
@@ -81,8 +97,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     },
   });
 
-  if (type === 'feedback' || type === 'officialApply')
+  if (type === 'feedback' || type === 'officialApply') {
     await submitMailFeedback(obj, subject_id, email ?? '', result.feedback_id, type);
+  }
 
   return res.status(200).json({ success: true, message: result });
 }
