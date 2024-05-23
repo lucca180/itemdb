@@ -57,9 +57,9 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       isHidden: item.isHidden,
     }));
 
-    const isOwner = user && user.id === list.owner.id;
+    const isOwner = !!(user && user.id === list.owner.id);
 
-    const queryRes = await doSearch(query, reqQuery, false, list.internal_id);
+    const queryRes = await doSearch(query, reqQuery, false, list.internal_id, isOwner);
 
     const itemIDs = new Set(queryRes.content.map((item) => item.internal_id));
 
