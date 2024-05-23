@@ -181,6 +181,7 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
         isWearable: item.isWearable,
         isNeohome: !!item.specialType?.toLowerCase().includes('neohome'),
         est_val: item.est_val,
+        isBD: item.isBD,
         status: item.status,
       };
     }
@@ -289,6 +290,7 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
       isNeohome: !!dbItem.specialType?.toLowerCase().includes('neohome'),
       est_val: dbItem.est_val,
       status: dbItem.status,
+      isBD: dbItem.isBD,
       updatedAt: new Date(),
     };
 
