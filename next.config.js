@@ -28,6 +28,13 @@ const nextConfig = {
   distDir: process.env.BUILD_DIR || '.next',
   experimental: {
     largePageDataBytes: 512 * 1000,
+    optimizePackageImports: [
+      '@sentry/nextjs',
+      'framer-motion',
+      '@chakra-ui/react',
+      '@chakra-ui/icons',
+      'firebase',
+    ],
   },
   async headers() {
     return [
