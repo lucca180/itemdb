@@ -5,10 +5,13 @@ import { User } from './types';
 import * as jose from 'jose';
 import { LRUCache } from 'lru-cache';
 import requestIp from 'request-ip';
+
 const API_SKIPS: { [method: string]: string[] } = {
   GET: ['api/auth', 'api/cache'],
-  POST: ['api/auth', '/v1/prices', '/v1/trades', '/v1/items', '/v1/items/open'],
+  POST: ['api/auth', 'api/redis'],
 };
+
+const infoAPIEndpoints = ['/v1/prices', '/v1/trades', '/v1/items', '/v1/items/open'];
 
 const userKeyCache = new LRUCache({
   max: 100,
@@ -17,14 +20,17 @@ const userKeyCache = new LRUCache({
 const PUBLIC_FILE = /\.(.*)$/;
 const VALID_LOCALES = ['en', 'pt'];
 
+const skipAPIMiddleware = process.env.SKIP_API_MIDDLEWARE === 'true';
+
 export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/_next') || PUBLIC_FILE.test(request.nextUrl.pathname)) {
     return NextResponse.next();
   }
 
   if (request.nextUrl.pathname.startsWith('/api/')) {
-    return NextResponse.next();
-    // return apiMiddleware(request);
+    if (skipAPIMiddleware) return NextResponse.next();
+
+    return apiMiddleware(request);
   }
 
   const cookies = {
@@ -118,7 +124,7 @@ const apiMiddleware = async (request: NextRequest) => {
     return NextResponse.next();
   }
 
-  const banned = await checkRedis(ip, host);
+  const banned = await checkRedis(ip, host, request.nextUrl.pathname, request.method);
   if (banned) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
@@ -179,14 +185,18 @@ const checkSessionLocal = async (jwt: string) => {
   return jwtDecoded.payload.user_id as string;
 };
 
-const checkRedis = async (ip: string, host: string) => {
+const checkRedis = async (ip: string, host: string, pathname: string, method: string) => {
   try {
+    const isInfo =
+      infoAPIEndpoints.some((endpoint) => pathname.includes(endpoint)) && method === 'POST';
+
     const res = await fetch(`http://${host}/api/redis/checkapi`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-forwarded-for': ip,
       },
+      body: JSON.stringify({ isInfo, pathname }),
     });
 
     if (res.status === 429) {
