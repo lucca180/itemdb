@@ -135,6 +135,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       status,
       type,
       weight,
+      isBD,
     } = item;
     let imageId: string | undefined = undefined;
 
@@ -197,6 +198,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       status: status,
       type: type ?? 'np',
       isNC: isNC,
+      isBD: isBD ?? undefined,
       specialType: specialTypes,
       isWearable: !!specialTypes?.includes('wearable'),
       language: lang as string,

@@ -197,7 +197,7 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
 
     // merge the data we're missing
     let hasChange = false;
-    const forceMerge = ['type', 'isNC', 'isWearable', 'status', 'est_val'];
+    const forceMerge = ['type', 'isNC', 'isWearable', 'status', 'est_val', 'isBD'];
     for (const key of Object.keys(dbItem) as Array<keyof typeof dbItem>) {
       if (['internal_id', 'addedAt', 'updatedAt', 'hash'].includes(key)) continue;
       const temp = dbItem[key];

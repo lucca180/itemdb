@@ -23,6 +23,7 @@ model Items {
   type        ItemType  @default(np)
   isWearable  Boolean   @default(false)
   isNeohome   Boolean   @default(false)
+  isBD        Boolean   @default(false)
   est_val     Int?
   specialType String?
   releaseDate DateTime?
@@ -89,6 +90,7 @@ model ItemProcess {
   rarity      Int?
   weight      Int?
   isNC        Boolean
+  isBD        Boolean   @default(false)
   type        ItemType  @default(np)
   est_val     Int?
   specialType String?

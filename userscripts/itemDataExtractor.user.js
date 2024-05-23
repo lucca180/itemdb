@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.4.5
+// @version      1.5.0
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -746,6 +746,60 @@ async function handleUCChamber() {
   submitItems();
 }
 
+// ------ itembd (battledome) ------ //
+
+function handleBDEquip() {  
+  const handleData = (items) => {
+    for(const itemData of items){
+      const item = {
+        name: itemData.name,
+        img: itemData.imageUrl,
+        itemId: Number(itemData.oii),
+        isBD: true
+      }
+
+      const itemKey = genItemKey(item);
+      if (!itemsHistory[itemKey]) {
+        itemsObj[itemKey] = item;
+        itemsHistory[itemKey] = true;
+      }
+    }
+
+    submitItems();
+  }
+
+  const items = BDStatus.objInfo;
+  if(items) handleData(items);
+
+  $(document).ajaxSuccess(() => {
+    const items = BDStatus.objInfo;
+    if(items) handleData(items);
+  });
+}
+
+function handleArena() {
+  const items = $("#p1equipment .item")
+
+  items.each(function(i){
+    const img = $(this).attr('src');
+    const name = $(this).attr('alt');
+
+    const item = {
+      name: name,
+      img: img,
+      isBD: true
+    }
+
+    const itemKey = genItemKey(item);
+    if (!itemsHistory[itemKey]) {
+      itemsObj[itemKey] = item;
+      itemsHistory[itemKey] = true;
+    }
+  });
+
+  submitItems();
+}
+
 // ------ prices ------ //
 
 function handleSWPrices() {
@@ -1168,6 +1222,8 @@ if (URLHas('haggle.phtml')) handleRestockHaggle();
 if (URLHas('/ncma/')) handleNCJournal();
 if (URLHas('petlookup.phtml')) handlePetLookup();
 if (URLHas('/stylingchamber/')) handleUCChamber();
+if (URLHas('dome/neopets.phtml')) handleBDEquip();
+if (URLHas('dome/arena.phtml')) handleArena();
 if (hasSSW) handleSSWPrices();
 
 // ----------- //

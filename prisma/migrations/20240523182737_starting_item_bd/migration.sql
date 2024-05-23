@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE `itemprocess` ADD COLUMN `isBD` BOOLEAN NOT NULL DEFAULT false;
+
+-- AlterTable
+ALTER TABLE `items` ADD COLUMN `isBD` BOOLEAN NOT NULL DEFAULT false;
