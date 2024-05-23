@@ -82,33 +82,33 @@ const apiMiddleware = async (request: NextRequest) => {
   const host = request.headers.get('host') as string;
 
   // Admin routes - need to check if user is admin
-  if (request.nextUrl.pathname.startsWith('/api/admin')) {
-    if (!sessionCookie || !sessionCookie.value) {
-      return NextResponse.json({ error: 'Not authorized' }, { status: 401 });
-    }
+  // if (request.nextUrl.pathname.startsWith('/api/admin')) {
+  //   if (!sessionCookie || !sessionCookie.value) {
+  //     return NextResponse.json({ error: 'Not authorized' }, { status: 401 });
+  //   }
 
-    try {
-      const userid = await checkSessionLocal(sessionCookie.value);
-      if (userKeyCache.has(userid)) {
-        const user = userKeyCache.get(userid) as User;
-        if (user.isAdmin) {
-          return NextResponse.next();
-        }
-      }
+  //   try {
+  //     const userid = await checkSessionLocal(sessionCookie.value);
+  //     if (userKeyCache.has(userid)) {
+  //       const user = userKeyCache.get(userid) as User;
+  //       if (user.isAdmin) {
+  //         return NextResponse.next();
+  //       }
+  //     }
 
-      const authRes = await checkSession(sessionCookie.value, host, false);
+  //     const authRes = await checkSession(sessionCookie.value, host, false);
 
-      const user = authRes.user;
+  //     const user = authRes.user;
 
-      if (user) userKeyCache.set(userid, user);
+  //     if (user) userKeyCache.set(userid, user);
 
-      if (!user || !user.isAdmin) throw new Error('Not authorized');
-    } catch (e) {
-      console.error(e);
-      return NextResponse.json({ error: 'Not authorized' }, { status: 401 });
-    }
-    return NextResponse.next();
-  }
+  //     if (!user || !user.isAdmin) throw new Error('Not authorized');
+  //   } catch (e) {
+  //     console.error(e);
+  //     return NextResponse.json({ error: 'Not authorized' }, { status: 401 });
+  //   }
+  //   return NextResponse.next();
+  // }
 
   if (sessionCookie && sessionCookie.value) {
     try {

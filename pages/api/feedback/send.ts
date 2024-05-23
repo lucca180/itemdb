@@ -84,6 +84,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       json: JSON.stringify(obj),
       type: type ?? 'feedback',
       votes: voteMultiplier,
+      ip_address: ip ?? '1',
       user: user_id
         ? {
             connect: {
