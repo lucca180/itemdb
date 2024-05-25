@@ -8,6 +8,7 @@
     "dev": "next dev --turbo",
     "build": "npx prisma generate && next build",
     "build-proxy": "npx prisma generate --data-proxy && next build",
+    "ts": "tsc --noEmit --incremental",
     "start": "PORT=4000 next start",
     "lint": "next lint",
     "lint-fix": "next lint --fix",

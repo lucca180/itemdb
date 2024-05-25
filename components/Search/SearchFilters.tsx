@@ -240,6 +240,16 @@ const SearchFilters = (props: Props) => {
                 <Badge>{stats?.isNeohome?.true ?? 0}</Badge>
               </Text>
             </NegCheckbox>
+            <NegCheckbox
+              value="battledome"
+              onChange={(val) => handleCheckChange(val, 'type', 'battledome')}
+              checklist={filters.type}
+            >
+              <Text fontSize={'sm'}>
+                <Badge colorScheme="red">{t('General.battledome')}</Badge>{' '}
+                <Badge>{stats?.isBD?.true ?? 0}</Badge>
+              </Text>
+            </NegCheckbox>
           </VStack>
         </AccordionPanel>
       </AccordionItem>

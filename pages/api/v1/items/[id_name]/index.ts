@@ -205,6 +205,7 @@ export const getItem = async (id_name: number | string) => {
     name: result.name,
     specialType: result.specialType,
     isNC: !!result.isNC,
+    isBD: !!result.isBD,
     type: result.type,
     estVal: result.est_val,
     weight: result.weight,

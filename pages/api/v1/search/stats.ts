@@ -23,7 +23,14 @@ export const getSearchStats = async (resQuery: string, list_id = 0, includeHidde
 
   const isColorSearch = query.match(/#[0-9A-Fa-f]{6}$/gm);
 
-  const groups = ['category', 'isWearable', 'status', 'type', 'isNeohome'] as (keyof Items)[];
+  const groups = [
+    'category',
+    'isWearable',
+    'status',
+    'type',
+    'isNeohome',
+    'isBD',
+  ] as (keyof Items)[];
 
   const hiddenQuery = !includeHidden ? Prisma.sql`AND isHidden = 0` : Prisma.empty;
 
@@ -39,6 +46,7 @@ export const getSearchStats = async (resQuery: string, list_id = 0, includeHidde
       else if (group === 'isNeohome') column = Prisma.sql`a.isNeohome`;
       else if (group === 'status') column = Prisma.sql`a.status`;
       else if (group === 'type') column = Prisma.sql`a.type`;
+      else if (group === 'isBD') column = Prisma.sql`a.isBD`;
       else column = Prisma.sql`a.category`;
 
       const sqlQuery = prisma.$queryRaw`

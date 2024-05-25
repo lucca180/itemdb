@@ -127,6 +127,9 @@ const EditItemModal = (props: EditItemModalProps) => {
       if (tags.includes('neohome')) itemCopy.isNeohome = true;
       else itemCopy.isNeohome = false;
 
+      if (tags.includes('battledome')) itemCopy.isBD = true;
+      else itemCopy.isBD = false;
+
       setItem(itemCopy);
     }
   };
@@ -542,6 +545,8 @@ export const CategoriesTab = (props: TagSelectProps) => {
 
     if (item.isNeohome) tempTags.push('neohome');
 
+    if (item.isBD) tempTags.push('battledome');
+
     setSpecialTags(tempTags);
   }, [item]);
 
@@ -584,6 +589,9 @@ export const CategoriesTab = (props: TagSelectProps) => {
               </Checkbox>
               <Checkbox value="neohome">
                 <Badge colorScheme="cyan">{t('General.neohome')}</Badge>
+              </Checkbox>
+              <Checkbox value="battledome">
+                <Badge colorScheme="red">{t('General.battledome')}</Badge>
               </Checkbox>
             </Stack>
           </CheckboxGroup>

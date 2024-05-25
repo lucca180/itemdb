@@ -14,7 +14,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   const isColorSearch = query.match(/#[0-9A-Fa-f]{6}$/gm);
 
-  const groups = ['category', 'isWearable', 'status', 'type', 'isNeohome'] as (keyof Items)[];
+  const groups = [
+    'category',
+    'isWearable',
+    'status',
+    'type',
+    'isNeohome',
+    'isBD',
+  ] as (keyof Items)[];
 
   if (isColorSearch) {
     const color = Color(query);
@@ -28,6 +35,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       else if (group === 'isNeohome') column = Prisma.sql`a.isNeohome`;
       else if (group === 'status') column = Prisma.sql`a.status`;
       else if (group === 'type') column = Prisma.sql`a.type`;
+      else if (group === 'isBD') column = Prisma.sql`a.isBD`;
       else column = Prisma.sql`a.category`;
 
       const sqlQuery = prisma.$queryRaw`

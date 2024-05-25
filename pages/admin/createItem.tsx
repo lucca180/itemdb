@@ -35,6 +35,7 @@ const defaultItem: ItemData = {
   rarity: null,
   weight: null,
   type: 'np',
+  isBD: false,
   isNC: false,
   isWearable: false,
   isNeohome: false,

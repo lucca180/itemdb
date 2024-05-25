@@ -12,6 +12,7 @@ export type ItemData = {
   isNC: boolean;
   isWearable: boolean;
   isNeohome: boolean;
+  isBD: boolean;
   estVal: number | null;
   specialType: string | null;
   status: 'active' | 'no trade' | null;
@@ -147,6 +148,7 @@ export type SearchStats = {
   type: Record<string, number>;
   isWearable: Record<string, number>;
   isNeohome: Record<string, number>;
+  isBD: Record<string, number>;
   status: Record<string, number>;
 };
 

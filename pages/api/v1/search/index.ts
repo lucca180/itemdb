@@ -135,21 +135,27 @@ export async function doSearch(
     const typeTrue = typeFilters.filter((o: string) => !o.startsWith('!'));
 
     if (typeNeg.length > 0) {
-      const type_column = typeNeg.filter((o: string) => o !== 'wearable' && o !== 'neohome');
+      const type_column = typeNeg.filter(
+        (o: string) => o !== 'wearable' && o !== 'neohome' && o !== 'battledome'
+      );
 
       if (type_column.length > 0)
         typeFiltersSQL.push(Prisma.sql`temp.type NOT IN (${Prisma.join(type_column)})`);
 
+      if (typeNeg.includes('battledome')) typeFiltersSQL.push(Prisma.sql`temp.isBD = 0`);
       if (typeNeg.includes('wearable')) typeFiltersSQL.push(Prisma.sql`temp.isWearable = 0`);
       if (typeNeg.includes('neohome')) typeFiltersSQL.push(Prisma.sql`temp.isNeohome = 0`);
     }
 
     if (typeTrue.length > 0) {
-      const type_column = typeTrue.filter((o: string) => o !== 'wearable' && o !== 'neohome');
+      const type_column = typeTrue.filter(
+        (o: string) => o !== 'wearable' && o !== 'neohome' && o !== 'battledome'
+      );
 
       if (type_column.length > 0)
         typeFiltersSQL.push(Prisma.sql`temp.type IN (${Prisma.join(type_column)})`);
 
+      if (typeTrue.includes('battledome')) typeFiltersSQL.push(Prisma.sql`temp.isBD = 1`);
       if (typeTrue.includes('wearable')) typeFiltersSQL.push(Prisma.sql`temp.isWearable = 1`);
       if (typeTrue.includes('neohome')) typeFiltersSQL.push(Prisma.sql`temp.isNeohome = 1`);
     }
@@ -485,6 +491,7 @@ export async function doSearch(
       type: result.type,
       specialType: result.specialType,
       isNC: !!result.isNC,
+      isBD: !!result.isBD,
       estVal: result.est_val,
       weight: result.weight,
       description: result.description ?? '',

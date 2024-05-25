@@ -66,6 +66,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       specialType: result.specialType,
       type: result.type,
       isNC: !!result.isNC,
+      isBD: !!result.isBD,
       estVal: result.est_val,
       weight: result.weight,
       description: result.description ?? '',

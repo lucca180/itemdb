@@ -219,6 +219,16 @@ const ItemPage = (props: ItemPageProps) => {
                   PB
                 </Badge>
               )}
+              {item.isBD && (
+                <Badge
+                  colorScheme="red"
+                  borderRadius="md"
+                  as={Link}
+                  href="/search?s=&type[]=battledome"
+                >
+                  {t('General.battledome')}
+                </Badge>
+              )}
               {item.isWearable && (
                 <Badge
                   colorScheme="blue"
