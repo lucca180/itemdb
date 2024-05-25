@@ -1,6 +1,6 @@
   // ==UserScript==
   // @name         itemdb - Safety Deposit Box Pricer
-  // @version      1.2.5
+  // @version      1.3.0
   // @author       itemdb
   // @namespace    itemdb
   // @description  Shows the market price for your sdb items
@@ -66,36 +66,53 @@
        * With this approach, the execution of the script is not interrupted in case an "item.slug" is not parseable.
        */
       try {
-        if(!item || (item && item.status !== 'no trade' && !item.price.value && !item.isNC)){
-          priceStr = `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">???</a></small>`;
+
+        if(item && item.rarity) {
+          var color = setColor(item.rarity)
+          priceStr += `<small style='color:${color}'><b>r${intl.format(item.rarity)}</b></small><br/>`;
         }
 
         if(item && item.status === 'no trade'){
-          priceStr = `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">No Trade</a></small>`;
+          priceStr += `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">No Trade</a>`;
         }
 
         if(item && item.isNC && !item.owls){
-          priceStr = `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">NC</a>`;
+          priceStr += `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">NC</a>`;
         }
 
         if(item && item.isNC && item.owls){
-          priceStr = `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">${item.owls.value}</a><small><br/><a href="https://itemdb.com.br/articles/owls" target="_blank">Owls</a></small>`;
+          priceStr += `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">${item.owls.value}</a><small><br/><a href="https://itemdb.com.br/articles/owls" target="_blank">Owls</a></small>`;
+        }
+
+        if(!item || (item && item.status !== 'no trade' && !item.price.value && !item.isNC)){
+          priceStr += `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">???</a>`;
         }
 
         if(item && item.price.value){
-          priceStr = `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">≈ ${intl.format(item.price.value)} NP</a>`;
+          priceStr += `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">≈ ${intl.format(item.price.value)} NP</a>`;
         }
 
         if (item && item.isMissingInfo){
           priceStr += `<br/><small><a href="https://itemdb.com.br/contribute" target="_blank"><i>We need info about this item<br/>Learn how to Help</i></a></small>`
         }
       } catch { // We're not catching any specific error, as any error that may surface it will be handled with the "We need more info" referral link.
-        priceStr = `<a>Not Found</a></small>`;
+        priceStr = `<a>Not Found</a>`;
         priceStr += `<br/><small><a href="https://itemdb.com.br/contribute" target="_blank"><i>We need info about this item<br/>Learn how to Help</i></a></small>`
       }
 
       tds.eq( -2 ).before(`<td align="center" width="150px">${priceStr}</td>`);
     })
+  }
+
+  function setColor(rarity) {
+    if (rarity <= 74) return 'black';
+    if(rarity <= 100) return '#089d08';
+    if(rarity <= 104) return '#d16778'; // Special
+    if(rarity <= 110) return 'orange'; // MEGA RARE (Items that cannot be bought at Neopian Shops)
+    if(rarity <= 179) return '#fb4444'; // Retired
+    if(rarity == 180) return '#a1a1a1'; // Retired
+    if(rarity <= 250) return '#fb4444'; // Hidden Tower
+    return '#ec69ff';                   // Neocash | Artifact - 500
   }
 
   fetchPriceData();
