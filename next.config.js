@@ -6,6 +6,7 @@ const { withSentryConfig } = require('@sentry/nextjs');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   cacheMaxMemorySize: 0,
+  productionBrowserSourceMaps: true,
   i18n: {
     locales: ['en', 'pt'],
     defaultLocale: 'en',
