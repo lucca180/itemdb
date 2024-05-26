@@ -36,3 +36,4 @@ jobs:
 
       - name: Deploy with rsync
         run: rsync -avz --delete . ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.TARGET_DIRECTORY }}
+        
