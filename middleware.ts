@@ -7,7 +7,7 @@ import { LRUCache } from 'lru-cache';
 import requestIp from 'request-ip';
 
 const API_SKIPS: { [method: string]: string[] } = {
-  GET: ['api/auth', 'api/cache'],
+  GET: ['api/auth', 'api/cache', 'api/redis'],
   POST: ['api/auth', 'api/redis'],
 };
 
