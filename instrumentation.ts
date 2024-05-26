@@ -14,11 +14,11 @@ export function register() {
     // Adjust this value in production, or use tracesSampler for greater control
     tracesSampleRate: 1.0,
     integrations: [
-      Sentry.captureConsoleIntegration({
-        // array of methods that should be captured
-        // defaults to ['log', 'info', 'warn', 'error', 'debug', 'assert']
-        levels: ['error', 'warn'],
-      }),
+      // Sentry.captureConsoleIntegration({
+      //   // array of methods that should be captured
+      //   // defaults to ['log', 'info', 'warn', 'error', 'debug', 'assert']
+      //   levels: ['error', 'warn'],
+      // }),
     ],
   });
 }
