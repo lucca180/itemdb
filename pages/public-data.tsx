@@ -74,8 +74,9 @@ const RawDataPage = () => {
                 <Text>{data.description}</Text>
               </CardBody>
               <CardFooter color={'gray'} flexFlow={'column'}>
-                <Flex gap={1} justifyContent={'space-between'}>
+                <Flex gap={1} justifyContent={'space-between'} fontSize={'xs'}>
                   <Text>Date: {data.date}</Text>
+                  <Text>Size: {data.size}</Text>
                   <Text>Format: {data.format}</Text>
                 </Flex>
                 <Button as={Link} href={data.link} isExternal variant="outline" size="sm" mt={3}>
@@ -108,6 +109,7 @@ const rawExportData = [
     name: "itemdb's Item Data",
     description: "A dump of all items in itemdb's database. Does not include prices or other data.",
     date: '2024-04-14',
+    size: '4.23MB',
     format: 'zip, csv',
     link: 'https://firebasestorage.googleapis.com/v0/b/itemdb-1db58.appspot.com/o/raw%2Fitemdb_items_20240414.zip?alt=media&token=127d4c20-0e79-4c12-8cc4-68ec68ed5aa3',
   },
@@ -115,6 +117,7 @@ const rawExportData = [
     name: "itemdb's Restock History",
     description: "A dump of all restocks reports in itemdb's database.",
     date: '2024-04-14',
+    size: '130MB',
     format: 'zip, csv',
     link: 'https://firebasestorage.googleapis.com/v0/b/itemdb-1db58.appspot.com/o/raw%2Fitemdb_restockHistory_20240414.zip?alt=media&token=c1606c35-e8d1-4b23-9158-5aa374101409',
   },

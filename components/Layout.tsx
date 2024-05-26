@@ -322,10 +322,10 @@ const Layout = (props: Props) => {
                 <Text fontSize="xs" mb={2} textTransform="uppercase" color="gray.500">
                   <b>{t('resources')}</b>
                 </Text>
-                <ChakraLink href="/articles">{t('articles')}</ChakraLink>
-                <ChakraLink href="/lists/official">{t('official-lists')}</ChakraLink>
                 <ChakraLink href="/articles/owls">Owls</ChakraLink>
+                <ChakraLink href="/lists/official">{t('official-lists')}</ChakraLink>
                 <ChakraLink href="/articles/userscripts">{t('userscripts')}</ChakraLink>
+                <ChakraLink href="/public-data">{t('public-data')}</ChakraLink>
               </Flex>
               <Flex flex="1" flexFlow={'column'} fontSize="xs" gap={2} color="gray.300">
                 <Text fontSize="xs" mb={2} textTransform="uppercase" color="gray.500">

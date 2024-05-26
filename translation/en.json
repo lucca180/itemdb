@@ -66,7 +66,8 @@
     "delete-from-this-list": "Delete from this list",
     "you-can-change-lang": "You can switch languages at any time in the footer",
     "server-upgrade": "We have a scheduled maintenance next Sunday (14) and itemdb may be unavailable for a few hours",
-    "mt15": "<b>MT NEEDS YOU</b> - Click here and learn more #mtRecomended"
+    "mt15": "<b>MT NEEDS YOU</b> - Click here and learn more #mtRecomended",
+    "public-data": "Public Data"
   },
   "ItemPage": {
     "item-info": "Item Info",
