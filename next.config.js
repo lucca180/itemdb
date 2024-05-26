@@ -31,10 +31,17 @@ const nextConfig = {
     largePageDataBytes: 512 * 1000,
     optimizePackageImports: [
       '@sentry/nextjs',
+      'axios',
       'framer-motion',
       '@chakra-ui/react',
       '@chakra-ui/icons',
       'firebase',
+      'lightweight-charts',
+      'lodash',
+      '@emotion/react',
+      '@emotion/styled',
+      '@dnd-kit/core',
+      '@dnd-kit/sortable',
     ],
   },
   async headers() {
@@ -68,6 +75,10 @@ const nextConfig = {
     return config;
   },
 };
+
+// const withBundleAnalyzer = require('@next/bundle-analyzer')({
+//   enabled: false,
+// })
 
 const sentryWebpackPluginOptions = {
   silent: true, // Suppresses all logs
