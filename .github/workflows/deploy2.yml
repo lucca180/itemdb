@@ -23,7 +23,7 @@ jobs:
         run: yarn install
 
       - name: Create SA key
-        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > firebase-key.json.json
+        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > firebase-key.json
 
       - name: Build Website
         run: yarn build
