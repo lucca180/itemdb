@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Neopets Open Source Item Database",
   "keywords": [],
-  "license": "MIT",
+  "license": "MPL-2.0",
   "scripts": {
     "dev": "next dev --turbo",
     "build": "npx prisma generate && next build",
