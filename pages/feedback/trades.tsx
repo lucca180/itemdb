@@ -21,7 +21,7 @@ import {
 import axios from 'axios';
 import { getCookie } from 'cookies-next';
 import { NextApiRequest, NextPageContext } from 'next';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BsXLg, BsXCircleFill, BsCheckCircleFill, BsCheckLg } from 'react-icons/bs';
 import CardBase from '../../components/Card/CardBase';
 import HeaderCard from '../../components/Card/HeaderCard';
@@ -34,12 +34,13 @@ import { useTranslations } from 'next-intl';
 
 const FeedbackSuggest = () => {
   const t = useTranslations();
-  const { user, authLoading, getIdToken } = useAuth();
+  const { user, authLoading } = useAuth();
   const [trades, setTrades] = useState<TradeData[]>([]);
   const [prevTrades, setPrev] = useState<TradeData[]>([]);
   const [currentTrade, setCurrentTrade] = useState<TradeData>();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
+  const popularItem = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -49,31 +50,30 @@ const FeedbackSuggest = () => {
 
   const init = async () => {
     setIsLoading(true);
-    const res = await axios.get('/api/v1/trades/latest?random=true');
+    const res = await axios.get('/api/v1/trades/pricefy', {
+      params: {
+        itemName: popularItem.current,
+      },
+    });
 
-    setTrades(res.data);
-    setCurrentTrade(res.data[0]);
+    const data = res.data as { trades: TradeData[]; popularItem: string | null };
+
+    popularItem.current = data.popularItem ?? undefined;
+
+    setTrades(data.trades);
+    setCurrentTrade(data.trades[0]);
     setIsLoading(false);
   };
 
   const handleSubmitAdmin = async (trade: TradeData) => {
     setIsLoading(true);
 
-    const token = await getIdToken();
     try {
-      const res = await axios.patch(
-        '/api/v1/trades',
-        {
-          trade: trade,
-        },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await axios.patch('/api/v1/trades', {
+        trade: trade,
+      });
 
-      if (res.data.success) handleSkip();
+      if (res.data.success) await handleSkip();
       else throw res.data;
 
       setIsLoading(false);
@@ -104,7 +104,7 @@ const FeedbackSuggest = () => {
         json: JSON.stringify(feedbackJSON),
       });
 
-      if (res.data.success) handleSkip();
+      if (res.data.success) await handleSkip();
       else throw res.data;
 
       setIsLoading(false);
@@ -115,9 +115,18 @@ const FeedbackSuggest = () => {
     }
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
     if (currentTrade) setPrev([...prevTrades, currentTrade]);
     const newTrades = trades.filter((trade) => trade.trade_id !== currentTrade?.trade_id);
+
+    if (newTrades.length === 0) {
+      setTrades([]);
+      setCurrentTrade(undefined);
+      await init();
+
+      return;
+    }
+
     setTrades(newTrades);
     setCurrentTrade(newTrades[0]);
   };
