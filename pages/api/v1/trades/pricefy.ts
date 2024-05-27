@@ -1,6 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { TradeData } from '../../../../types';
+import Chance from 'chance';
+const chance = new Chance();
+import { Prisma } from '@prisma/client';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -11,19 +14,29 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (req.method !== 'GET')
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
+  let order: Prisma.TradesOrderByWithRelationAndSearchRelevanceInput = { addedAt: 'asc' };
+
+  // to prevent multiple people from pricing the same trade at the same time
+  const dir = chance.bool() ? 'asc' : 'desc';
+  const field = chance.pickone(['addedAt', 'trade_id', 'owner', 'wishlist', 'ip_address', 'hash']);
+
+  order = {
+    [field]: dir,
+  };
+
   const limit = (req.query.limit as string) ?? '1';
   let itemName = req.query.itemName as string | undefined;
 
   if (!itemName) itemName = await getPopularItem();
   if (!itemName) return res.json({ trades: [], popularItem: null });
 
-  let tradeRaw = await getPrecifyTrades(itemName, parseInt(limit));
+  let tradeRaw = await getPrecifyTrades(itemName, order, parseInt(limit));
 
   if (!tradeRaw || !tradeRaw.length) {
     itemName = await getPopularItem();
     if (!itemName) return res.json({ trades: [], popularItem: null });
 
-    tradeRaw = await getPrecifyTrades(itemName, parseInt(limit));
+    tradeRaw = await getPrecifyTrades(itemName, order, parseInt(limit));
   }
 
   const trades: TradeData[] = tradeRaw.map((t) => {
@@ -75,7 +88,11 @@ const getPopularItem = async () => {
   return rawData[0].name;
 };
 
-const getPrecifyTrades = async (itemName: string, limit = 1) => {
+const getPrecifyTrades = async (
+  itemName: string,
+  order: Prisma.TradesOrderByWithRelationAndSearchRelevanceInput,
+  limit = 1
+) => {
   const tradeRaw = await prisma.trades.findMany({
     where: {
       processed: false,
@@ -87,7 +104,7 @@ const getPrecifyTrades = async (itemName: string, limit = 1) => {
     },
     include: { items: true },
     distinct: 'hash',
-    orderBy: { addedAt: 'desc' },
+    orderBy: order,
     take: limit,
   });
 
