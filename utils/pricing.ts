@@ -92,6 +92,12 @@ function checkFiltered(filtered: PriceProcess2[], goal: number) {
 
   if (filtered.filter((x) => x.type === 'ssw').length >= 5) return true;
 
+  if (
+    filtered.length === filtered.filter((x) => x.type === 'trade').length &&
+    filtered.length >= Math.floor(goal / 2)
+  )
+    return true;
+
   return false;
 }
 
