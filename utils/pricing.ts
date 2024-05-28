@@ -2,6 +2,8 @@ import { PriceProcess2 } from '@prisma/client';
 import { differenceInCalendarDays } from 'date-fns';
 import { mean, standardDeviation } from 'simple-statistics';
 
+const TRADE_MIN_GOAL = process.env.TRADE_MIN_GOAL || '7';
+
 export const processPrices2 = (allItemData: PriceProcess2[]) => {
   // const item = allItemData[0];
 
@@ -94,7 +96,7 @@ function checkFiltered(filtered: PriceProcess2[], goal: number) {
 
   if (
     filtered.length === filtered.filter((x) => x.type === 'trade').length &&
-    filtered.length >= Math.floor(goal / 2)
+    filtered.length >= Number(TRADE_MIN_GOAL)
   )
     return true;
 
