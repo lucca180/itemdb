@@ -1,5 +1,5 @@
 import { Badge, Box, Button, Flex, Heading, Icon, Stack, Text } from '@chakra-ui/react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Layout from '../../components/Layout';
 import Image from 'next/image';
 import {
@@ -13,14 +13,12 @@ import {
   TradeData,
   UserList,
 } from '../../types';
-import { useRouter } from 'next/router';
 import FindAtCard from '../../components/Items/FindAtCard';
 import ItemInfoCard from '../../components/Items/InfoCard';
 import ColorInfoCard from '../../components/Items/ColorInfoCard';
 import MissingInfoCard from '../../components/Items/MissingInfoCard';
 import ItemPreview from '../../components/Items/ItemPreview';
 import ItemPriceCard from '../../components/Price/ItemPriceCard';
-import axios from 'axios';
 import TradeCard from '../../components/Trades/TradeCard';
 // import ItemTags from '../../components/Items/ItemTags';
 import { FiSend, FiEdit3 } from 'react-icons/fi';
@@ -83,66 +81,14 @@ const ItemPage = (props: ItemPageProps) => {
     tradeLists,
     itemOpenable,
     itemParent,
-    NPPrices,
     NPTrades: trades,
-    lastSeen: seenProps,
     itemEffects,
   } = props;
-  const [prices, setPrices] = useState<PriceData[] | null>(NPPrices);
-  const [seenStats, setSeen] = useState<ItemLastSeen | null>(seenProps);
-  // const [trades, setTrades] = useState<TradeData[]>([]);
-  // const [tags, setTags] = useState<ItemTag[]>([]);
-  const [isLoading, setLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const { user } = useAuth();
 
   const color = item?.color.rgb ?? [255, 255, 255];
-  const router = useRouter();
-
-  useEffect(() => {
-    if (router.isReady) init();
-  }, [router, router.pathname]);
-
-  useEffect(() => {
-    setPrices(NPPrices);
-  }, [NPPrices]);
-
-  const init = async () => {
-    setLoading(true);
-
-    if (item.isNC || item.status === 'no trade') {
-      // const [resTags] = await Promise.all([axios.get(`/api/v1/items/${item.internal_id}/tags`)]);
-
-      // setTags(resTags.data);
-      setLoading(false);
-      return;
-    }
-
-    const [resPrice, resStats] = await Promise.all([
-      axios.get(`/api/v1/items/${item.internal_id}/prices`),
-      axios.get(`/api/v1/prices/stats/`, {
-        params: {
-          item_id: item.item_id ?? -1,
-          name: item.name,
-          image_id: item.image_id,
-        },
-      }),
-      // axios.get(`/api/v1/trades/`, {
-      //   params: {
-      //     name: item.name,
-      //     image_id: item.image_id,
-      //   },
-      // }),
-      // axios.get(`/api/v1/items/${item.internal_id}/tags`),
-    ]);
-
-    setPrices(resPrice.data ?? []);
-    setSeen(resStats.data);
-    // setTrades(resTrades.data);
-    // setTags(resTags.data);
-    setLoading(false);
-  };
 
   return (
     <Layout
@@ -300,7 +246,7 @@ const ItemPage = (props: ItemPageProps) => {
           w={{ base: '100%', md: 'auto' }}
         >
           <Flex flex="2" flexFlow="column" gap={{ base: 4, md: 6 }}>
-            <ManualCheckCard item={item} />
+            {user && user.isAdmin && <ManualCheckCard item={item} />}
             {item.isMissingInfo && <MissingInfoCard />}
 
             <Flex flexFlow="column" gap={{ base: 4, md: 6 }} display={{ base: 'flex', md: 'none' }}>
@@ -308,7 +254,9 @@ const ItemPage = (props: ItemPageProps) => {
               <FindAtCard item={item} />
             </Flex>
 
-            {!item.isNC && <ItemPriceCard item={item} lastSeen={seenStats} prices={prices ?? []} />}
+            {!item.isNC && (
+              <ItemPriceCard item={item} lastSeen={props.lastSeen} prices={props.NPPrices} />
+            )}
             {item.isNC && <NCTrade item={item} lists={tradeLists} />}
             {itemEffects.length > 0 && <ItemEffectsCard item={item} effects={itemEffects} />}
             {lists && <ItemOfficialLists item={item} lists={lists} />}
@@ -318,8 +266,8 @@ const ItemPage = (props: ItemPageProps) => {
             <SimilarItemsCard item={item} similarItems={props.similarItems} />
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>
-            {item.isWearable && <ItemPreview item={item} isLoading={isLoading} />}
-            {item.findAt.restockShop && <ItemRestock item={item} lastSeen={seenStats} />}
+            {item.isWearable && <ItemPreview item={item} />}
+            {item.findAt.restockShop && <ItemRestock item={item} lastSeen={props.lastSeen} />}
             {!item.isNC && item.status === 'active' && <TradeCard item={item} trades={trades} />}
             {itemParent.length > 0 && <ItemParent item={item} parentItems={itemParent} />}
           </Flex>

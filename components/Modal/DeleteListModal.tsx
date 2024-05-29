@@ -13,9 +13,9 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useState } from 'react';
-import { useAuth, UserLists } from '../../utils/auth';
-import { useAtom } from 'jotai';
+import { useAuth } from '../../utils/auth';
 import { useTranslations } from 'next-intl';
+import { useLists } from '../../utils/useLists';
 
 export type DeleteListModalProps = {
   isOpen: boolean;
@@ -31,7 +31,7 @@ const DeleteListModal = (props: DeleteListModalProps) => {
   const { isOpen, onClose, selectedLists: listsIds, refresh, username } = props;
   const [isLoading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
-  const [, setStorageLists] = useAtom(UserLists);
+  const { revalidate } = useLists();
 
   const confirmDelete = async () => {
     setLoading(true);
@@ -50,7 +50,7 @@ const DeleteListModal = (props: DeleteListModalProps) => {
       if (res.data.success) {
         refresh();
         handleClose();
-        setStorageLists(null);
+        revalidate();
         setLoading(false);
       } else throw res.data;
     } catch (e) {

@@ -4,7 +4,6 @@ import {
   Button,
   MenuList,
   MenuItem,
-  Icon,
   MenuDivider,
   Tooltip,
   useToast,
@@ -12,17 +11,16 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import { useEffect, useState } from 'react';
-import { BsBookmarkCheckFill } from 'react-icons/bs';
-import { useAtom } from 'jotai';
+import { useMemo, useState } from 'react';
 import { ItemData, ListItemInfo, UserList } from '../../types';
-import { useAuth, UserLists } from '../../utils/auth';
+import { useAuth } from '../../utils/auth';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import dynamic from 'next/dynamic';
 import NextImage from 'next/image';
 import { useTranslations } from 'next-intl';
 import { isDynamicActionDisabled } from '../../utils/utils';
 import { DuplicatedItemModalProps } from '../Modal/DuplicatedItemModal';
+import { useLists } from '../../utils/useLists';
 
 const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
   () => import('../Modal/DuplicatedItemModal')
@@ -36,34 +34,13 @@ const AddToListSelect = (props: Props) => {
   const t = useTranslations();
   const { item } = props;
   const { user, authLoading } = useAuth();
-  const [lists, setLists] = useState<UserList[]>([]);
-  const [, setStorageLists] = useAtom(UserLists);
+  const { lists, isLoading, revalidate } = useLists();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedList, setSelectedList] = useState<UserList | undefined>();
   const [duplicatedItem, setDuplicatedItem] = useState<ListItemInfo | undefined>();
-  const [isLoading, setLoading] = useState<boolean>(false);
   const toast = useToast();
 
-  const sorted = [...lists].sort((a, b) => SortListByChange(a, b));
-
-  useEffect(() => {
-    if (!authLoading && user) {
-      init();
-    }
-  }, [authLoading, user]);
-
-  const init = async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      const res = await axios.get(`/api/v1/lists/${user.username}`);
-      setLists(res.data);
-      setStorageLists(res.data);
-      setLoading(false);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  const sorted = useMemo(() => [...lists].sort((a, b) => SortListByChange(a, b)), [lists]);
 
   const addItemToList = async (list_id: number) => {
     if (!user) return;
@@ -86,7 +63,7 @@ const AddToListSelect = (props: Props) => {
           duration: 5000,
         });
 
-        init();
+        revalidate();
       }
     } catch (err: any) {
       console.error(err);
@@ -123,8 +100,7 @@ const AddToListSelect = (props: Props) => {
       if (res.data.success) {
         const list = res.data.message;
         addItemToList(list.internal_id);
-        setStorageLists(null);
-        init();
+        revalidate();
       } else throw new Error(res.data.message);
     } catch (err) {
       console.error(err);

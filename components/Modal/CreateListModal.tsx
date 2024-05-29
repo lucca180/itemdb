@@ -24,10 +24,10 @@ import {
 import axios from 'axios';
 import { useState } from 'react';
 import { UserList } from '../../types';
-import { useAuth, UserLists } from '../../utils/auth';
+import { useAuth } from '../../utils/auth';
 import { ColorResult, TwitterPicker } from '@hello-pangea/color-picker';
-import { useAtom } from 'jotai';
 import { useTranslations } from 'next-intl';
+import { useLists } from '../../utils/useLists';
 
 export type CreateListModalProps = {
   list?: UserList;
@@ -65,7 +65,7 @@ const CreateListModal = (props: CreateListModalProps) => {
   const [isLoading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
   const [list, setList] = useState(props.list ?? defaultList);
-  const [, setStorageLists] = useAtom(UserLists);
+  const { revalidate } = useLists();
 
   const saveChanges = async () => {
     setLoading(true);
@@ -106,7 +106,7 @@ const CreateListModal = (props: CreateListModalProps) => {
 
       if (res.data.success) {
         props.refresh?.();
-        setStorageLists(null);
+        revalidate();
         onClose();
       } else throw res.data;
     } catch (err) {

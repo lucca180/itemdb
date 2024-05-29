@@ -27,7 +27,7 @@ import mt_logo from '../public/magnetismo-logo.png';
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import LoginModal from './Modal/LoginModal';
+import { LoginModalProps } from './Modal/LoginModal';
 import { useAuth } from '../utils/auth';
 import { AiFillHeart } from 'react-icons/ai';
 import { BsBoxArrowInRight, BsFillPersonFill } from 'react-icons/bs';
@@ -42,6 +42,7 @@ import { setCookie } from 'cookies-next';
 import dynamic from 'next/dynamic';
 
 const LanguageToast = dynamic<LanguageToastProps>(() => import('./Modal/LanguageToast'));
+const LoginModal = dynamic<LoginModalProps>(() => import('./Modal/LoginModal'));
 
 type Props = {
   children?: ReactNode;
@@ -93,7 +94,7 @@ const Layout = (props: Props) => {
   return (
     <>
       <NextSeo {...props.SEO} />
-      <LoginModal isOpen={isOpen} onClose={onClose} />
+      {isOpen && <LoginModal isOpen={isOpen} onClose={onClose} />}
       <LanguageToast saveLang={saveLang} />
       <Flex flexFlow="column" minH="100vh">
         {/* <Flex

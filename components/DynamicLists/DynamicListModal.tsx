@@ -22,15 +22,14 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import { useAtom } from 'jotai';
-
 import Image from 'next/image';
 import { useState } from 'react';
 import { BsCheckCircleFill, BsExclamationCircleFill, BsXCircleFill } from 'react-icons/bs';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import { ExtendedSearchQuery, UserList } from '../../types';
-import { useAuth, UserLists } from '../../utils/auth';
+import { useAuth } from '../../utils/auth';
 import { useTranslations } from 'next-intl';
+import { useLists } from '../../utils/useLists';
 
 export type DynamicListModalProps = {
   isOpen: boolean;
@@ -43,10 +42,10 @@ const DynamicListModal = (props: DynamicListModalProps) => {
   const t = useTranslations();
   const toast = useToast();
   const { isOpen, onClose, resultCount, searchQuery } = props;
-  const { user, getIdToken } = useAuth();
-  const [, setStorageLists] = useAtom(UserLists);
+  const { user } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
+  const { revalidate } = useLists();
 
   const [dynamicType, setDynamicType] = useState<'addOnly' | 'removeOnly' | 'fullSync'>('addOnly');
 
@@ -55,7 +54,6 @@ const DynamicListModal = (props: DynamicListModalProps) => {
 
     setLoading(true);
     try {
-      const token = await getIdToken();
       const newList = await createNewList();
 
       const res = await axios.post(
@@ -63,11 +61,6 @@ const DynamicListModal = (props: DynamicListModalProps) => {
         {
           dynamicType,
           queryData: searchQuery,
-        },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
         }
       );
 
@@ -99,7 +92,7 @@ const DynamicListModal = (props: DynamicListModalProps) => {
 
     if (res.data.success) {
       const list = res.data.message;
-      setStorageLists(null);
+      revalidate();
       return list as UserList;
     } else throw new Error(res.data.message);
   };

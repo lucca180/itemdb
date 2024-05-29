@@ -25,12 +25,12 @@ import { useTranslations } from 'next-intl';
 const mailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // const isProd = process.env.NODE_ENV === 'production';
 
-type Props = {
+export type LoginModalProps = {
   isOpen: boolean;
   onClose: () => void;
 };
 
-const LoginModal = (props: Props) => {
+const LoginModal = (props: LoginModalProps) => {
   const t = useTranslations();
   const { isOpen, onClose } = props;
   const [email, setEmail] = useState<string>('');

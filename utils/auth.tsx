@@ -3,7 +3,7 @@ import { setCookie, deleteCookie } from 'cookies-next';
 import type { User as FirebaseUser } from 'firebase/auth';
 import { useAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
-import { User, UserList, UserPreferences } from '../types';
+import { User, UserPreferences } from '../types';
 import axios from 'axios';
 
 const getAuth = () => import('./firebase/auth');
@@ -69,11 +69,7 @@ const storageLocal =
     : undefined;
 
 export const UserState = atomWithStorage<User | null>('UserState', null, storageSession as any);
-export const UserLists = atomWithStorage<UserList[] | null>(
-  'UserLists',
-  null,
-  storageSession as any
-);
+
 export const UserPrefs = atomWithStorage<UserPreferences | null>(
   'UserPrefs',
   null,
@@ -81,7 +77,6 @@ export const UserPrefs = atomWithStorage<UserPreferences | null>(
 );
 
 export function AuthProvider({ children }: any) {
-  const [, setLists] = useAtom(UserLists);
   const [user, setUser] = useAtom(UserState);
   const [userPref, setUserPref] = useAtom(UserPrefs);
   const [userToken, setUserToken] = useState<string | null>(null);
@@ -161,7 +156,6 @@ export function AuthProvider({ children }: any) {
     auth.signOut();
     await axios.get('/api/auth/logout');
     setUser(null);
-    setLists(null);
     location.reload();
   };
 

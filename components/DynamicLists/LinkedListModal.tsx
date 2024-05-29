@@ -13,15 +13,14 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import { useAtom } from 'jotai';
-
 import Image from 'next/image';
 import { useState } from 'react';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import { UserList } from '../../types';
-import { useAuth, UserLists } from '../../utils/auth';
+import { useAuth } from '../../utils/auth';
 import { useTranslations } from 'next-intl';
 import { DynamicListInfo } from './DynamicListModal';
+import { useLists } from '../../utils/useLists';
 
 export type LinkedListModalProps = {
   isOpen: boolean;
@@ -34,8 +33,8 @@ const LinkedListModal = (props: LinkedListModalProps) => {
   const t = useTranslations();
   const toast = useToast();
   const { isOpen, onClose, list, onCreate } = props;
-  const { user, getIdToken } = useAuth();
-  const [, setStorageLists] = useAtom(UserLists);
+  const { user } = useAuth();
+  const { revalidate } = useLists();
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
 
@@ -46,21 +45,12 @@ const LinkedListModal = (props: LinkedListModalProps) => {
 
     setLoading(true);
     try {
-      const token = await getIdToken();
       const newList = await createNewList();
 
-      await axios.post(
-        `/api/v1/lists/${user.username}/${newList.internal_id}/dynamic`,
-        {
-          dynamicType,
-          linked_id: list.internal_id,
-        },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await axios.post(`/api/v1/lists/${user.username}/${newList.internal_id}/dynamic`, {
+        dynamicType,
+        linked_id: list.internal_id,
+      });
 
       onCreate?.({ ...newList, dynamicType: dynamicType, linkedListId: list.internal_id });
       toast({
@@ -77,28 +67,19 @@ const LinkedListModal = (props: LinkedListModalProps) => {
 
   const createNewList = async () => {
     if (!user) throw new Error('User not found');
-    const token = await getIdToken();
 
-    const res = await axios.post(
-      `/api/v1/lists/${user.username}`,
-      {
-        name: list.name + ' (Checklist)',
-        description: '',
-        coverURL: list.coverURL,
-        visibility: 'public',
-        purpose: 'none',
-        colorHex: list.colorHex,
-      },
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const res = await axios.post(`/api/v1/lists/${user.username}`, {
+      name: list.name + ' (Checklist)',
+      description: '',
+      coverURL: list.coverURL,
+      visibility: 'public',
+      purpose: 'none',
+      colorHex: list.colorHex,
+    });
 
     if (res.data.success) {
       const list = res.data.message;
-      setStorageLists(null);
+      revalidate();
       return list as UserList;
     } else throw new Error(res.data.message);
   };

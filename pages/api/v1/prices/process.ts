@@ -80,7 +80,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
           b.item_iid = p.item_iid
         )
       GROUP BY item_iid 
-      HAVING count >= 30
+      HAVING count >= 20
       LIMIT 1
   ` as any;
 

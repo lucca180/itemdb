@@ -11,10 +11,9 @@ import {
 } from '@chakra-ui/react';
 import { ContextMenu, ContextMenuItem, Submenu, ContextMenuTrigger } from 'rctx-contextmenu';
 import { ItemData, ListItemInfo, UserList } from '../../types';
-import { useAuth, UserLists } from '../../utils/auth';
-import { useAtom } from 'jotai';
+import { useAuth } from '../../utils/auth';
 import axios from 'axios';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { DuplicatedItemModalProps } from './DuplicatedItemModal';
 import dynamic from 'next/dynamic';
 import DynamicIcon from '../../public/icons/dynamic.png';
@@ -28,6 +27,7 @@ import TPIcon from '../../public/icons/tradingpost.png';
 import ClosetIcon from '../../public/icons/closet.svg';
 import NeosearchIcon from '../../public/icons/neosearch.svg';
 import Image from 'next/image';
+import { useLists } from '../../utils/useLists';
 
 const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
   () => import('./DuplicatedItemModal')
@@ -93,38 +93,15 @@ type Props = {
 const ItemCtxMenu = (props: Props) => {
   const t = useTranslations();
   const toast = useToast();
-  const { user, getIdToken } = useAuth();
-  const [lists, setLists] = useAtom(UserLists);
+  const { user } = useAuth();
+  const { lists, isLoading } = useLists();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedList, setSelectedList] = useState<UserList | undefined>();
   const [duplicatedItem, setDuplicatedItem] = useState<ListItemInfo | undefined>();
 
+  const sortedLists = useMemo(() => [...lists].sort(SortListByChange), [lists]);
+
   const { item, onListAction } = props;
-
-  const fetchLists = async () => {
-    props.onShow?.();
-    if (!user || lists !== null) return;
-    try {
-      const token = await getIdToken();
-
-      const res = await axios.get(`/api/v1/lists/${user.username}?includeItems=false`, {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      });
-      const listsData = res.data as UserList[];
-
-      setLists(listsData.sort((a, b) => SortListByChange(a, b)));
-    } catch (err) {
-      console.error(err);
-      toast({
-        title: t('General.error'),
-        description: t('ItemPage.error-fetching-lists'),
-        status: 'error',
-        duration: 2000,
-      });
-    }
-  };
 
   const handleOpenInNewTab = () => {
     window.open('/item/' + item.slug, '_blank');
@@ -152,8 +129,6 @@ const ItemCtxMenu = (props: Props) => {
     });
 
     try {
-      const token = await getIdToken();
-
       const res = await axios.put(
         `/api/v1/lists/${user.username}/${list_id}?alertDuplicates=true`,
         {
@@ -162,11 +137,6 @@ const ItemCtxMenu = (props: Props) => {
               item_iid: item.internal_id,
             },
           ],
-        },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
         }
       );
       if (res.data.success) {
@@ -211,7 +181,7 @@ const ItemCtxMenu = (props: Props) => {
       )}
       <CtxMenu
         id={item.internal_id.toString()}
-        onShow={fetchLists}
+        onShow={props.onShow}
         onHide={props.onHide}
         preventHideOnResize
         preventHideOnScroll
@@ -224,8 +194,8 @@ const ItemCtxMenu = (props: Props) => {
         )}
         <CtxMenuItem onClick={handleOpenInNewTab}>{t('Layout.open-in-a-new-tab')}</CtxMenuItem>
         <CtxSubmenu title={t('Layout.add-item-to-list')}>
-          {lists &&
-            lists.map((list) => (
+          {sortedLists &&
+            sortedLists.map((list) => (
               <CtxMenuItem
                 onClick={() => addItemToList(list.internal_id)}
                 key={list.internal_id}
@@ -267,7 +237,7 @@ const ItemCtxMenu = (props: Props) => {
           {(!user || (lists && !lists.length)) && (
             <CtxMenuItem disabled>{t('ItemPage.no-lists-found')}</CtxMenuItem>
           )}
-          {!lists && user && <CtxMenuItem disabled>{t('Layout.loading')}...</CtxMenuItem>}
+          {isLoading && <CtxMenuItem disabled>{t('Layout.loading')}...</CtxMenuItem>}
         </CtxSubmenu>
         <CtxSubmenu title={t('General.search-at')}>
           <FindAtCtx item={item} />

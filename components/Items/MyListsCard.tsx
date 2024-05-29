@@ -24,7 +24,7 @@ import DynamicIcon from '../../public/icons/dynamic.png';
 import dynamic from 'next/dynamic';
 import axios from 'axios';
 import Color from 'color';
-import useSWR from 'swr';
+import useSWRImmutable from 'swr';
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import { isDynamicActionDisabled } from '../../utils/utils';
 import { DuplicatedItemModalProps } from '../Modal/DuplicatedItemModal';
@@ -51,7 +51,7 @@ const ItemMyLists = (props: Props) => {
 
   const [selectedList, setSelectedList] = React.useState<ReducedUserList | undefined>();
   const { item } = props;
-  const { data, mutate } = useSWR(`/api/v1/items/${item.internal_id}/mylists`, fetcher, {
+  const { data, mutate } = useSWRImmutable(`/api/v1/items/${item.internal_id}/mylists`, fetcher, {
     shouldRetryOnError: false,
   });
 
