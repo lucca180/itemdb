@@ -21,10 +21,15 @@ const PUBLIC_FILE = /\.(.*)$/;
 const VALID_LOCALES = ['en', 'pt'];
 
 const skipAPIMiddleware = process.env.SKIP_API_MIDDLEWARE === 'true';
+const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === 'true';
 
 export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/_next') || PUBLIC_FILE.test(request.nextUrl.pathname)) {
     return NextResponse.next();
+  }
+
+  if (MAINTENANCE_MODE) {
+    return NextResponse.rewrite(new URL('/maintenance', request.url), { status: 503 });
   }
 
   if (request.nextUrl.pathname.startsWith('/api/')) {

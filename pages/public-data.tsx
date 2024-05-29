@@ -64,7 +64,7 @@ const RawDataPage = () => {
           You can also check out our{' '}
           <Link href="https://itemdb.stoplight.io/docs/itemdb-api">API</Link> for general uses.
         </Text>
-        <Flex my={5} gap={5}>
+        <Flex my={5} gap={5} flexFlow={['column', 'row']}>
           {rawExportData.map((data, i) => (
             <Card key={i} variant={'outline'} w={'350px'}>
               <CardHeader>
