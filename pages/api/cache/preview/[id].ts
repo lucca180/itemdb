@@ -36,7 +36,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     }
 
     if (exists && !forceRefresh) {
-      res.setHeader('Content-Type', 'image/png');
+      // res.setHeader('Content-Type', 'image/png');
       res.setHeader('Cache-Control', 'public, max-age=2592000');
 
       if (file.metadata.cacheControl !== 'public, max-age=2592000') {
@@ -75,15 +75,16 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
       for (const img of images) ctx.drawImage(img, 0, 0, 600, 600);
 
-      const buffer = await canvas.encode('png');
+      const buffer = await canvas.encode('webp', 100);
       await file.save(buffer, {
         metadata: {
+          contentType: 'image/webp',
           cacheControl: 'public, max-age=2592000',
         },
       });
 
       res.writeHead(200, {
-        'Content-Type': 'image/png',
+        'Content-Type': 'image/webp',
         'Content-Length': buffer.length,
         'Cache-Control': 'public, max-age=2592000',
       });
@@ -100,10 +101,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     ctx.drawImage(img, 0, 0);
 
-    const buffer = await canvas.encode('png');
+    const buffer = await canvas.encode('webp', 50);
 
     res.writeHead(400, {
-      'Content-Type': 'image/jpeg',
+      'Content-Type': 'image/webp',
       'Content-Length': buffer.length,
       'Cache-Control': 'no-cache, no-store, must-revalidate',
       'Error-Image': 'true',
