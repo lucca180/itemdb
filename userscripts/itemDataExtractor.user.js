@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.5.0
+// @version      1.5.1
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -177,7 +177,8 @@ function handleTrades() {
 
         const img = $(this).find('img').first().attr('src');
         const description = $(this).find('img').first().attr('alt');
-        const rarity = $(this).find('td').last().text().match(/\d+/)?.[0];
+        const rarityStr = $(this).find('td').eq(1).text().match(/(?:- r|rarity |artifact - )(\d+)/gi)?.[0]
+        const rarity = rarityStr ? rarityStr.match(/\d+/)[0] : undefined;
 
         const item = {
           img: img,
