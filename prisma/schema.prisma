@@ -437,6 +437,8 @@ model ListTags {
   addedAt DateTime @default(now())
 
   name    String
+  description String? @db.Text
+  isNameVisible Boolean @default(true)
   order   Int     @default(0)
   visible Boolean @default(true)
 
