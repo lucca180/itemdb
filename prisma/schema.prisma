@@ -19,11 +19,7 @@ model Items {
   category    String?
   rarity      Int?
   weight      Int?
-  isNC        Boolean
   type        ItemType  @default(np)
-  isWearable  Boolean   @default(false)
-  isNeohome   Boolean   @default(false)
-  isBD        Boolean   @default(false)
   est_val     Int?
   specialType String?
   releaseDate DateTime?
@@ -35,6 +31,16 @@ model Items {
 
   addedAt   DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  isNC       Boolean
+  isWearable Boolean  @default(false)
+  isNeohome  Boolean  @default(false)
+  isBD       Boolean  @default(false)
+
+  canRead ThreeStateBoolean @default(unknown)
+  canEat  ThreeStateBoolean @default(unknown)
+  canPlay ThreeStateBoolean @default(unknown)
+  canOpen ThreeStateBoolean @default(unknown)
 
   translation ItemTranslation[]
   child_itens OpenableItems[]   @relation("parentItem")
@@ -63,6 +69,12 @@ model Items {
   @@fulltext([name])
   @@fulltext([description])
   @@fulltext([name, description])
+}
+
+enum ThreeStateBoolean {
+  true
+  unknown
+  false
 }
 
 model ItemTranslation {
@@ -332,7 +344,7 @@ model Feedbacks {
   email       String?  @db.Text
   votes       Int      @default(0)
   addedAt     DateTime @default(now())
-  ip_address String @default("0")
+  ip_address  String   @default("0")
 
   processed   Boolean   @default(false)
   approved    Boolean   @default(false)
@@ -341,9 +353,9 @@ model Feedbacks {
   user_id String?
   user    User?   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-  @@index([type, processed])
-
   vote FeedbackVotes[]
+
+  @@index([type, processed])
 }
 
 model FeedbackVotes {
@@ -436,11 +448,11 @@ model ListTags {
 
   addedAt DateTime @default(now())
 
-  name    String
-  description String? @db.Text
+  name          String
+  description   String? @db.Text
   isNameVisible Boolean @default(true)
-  order   Int     @default(0)
-  visible Boolean @default(true)
+  order         Int     @default(0)
+  visible       Boolean @default(true)
 
   lists UserList[]
 }

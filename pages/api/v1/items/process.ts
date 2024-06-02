@@ -1,9 +1,16 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { Items as Item, ItemProcess, Items, ItemColor } from '@prisma/client';
+import { Items as Item, ItemProcess, Items, ItemColor, Prisma } from '@prisma/client';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import Vibrant from 'node-vibrant';
-import { categoryToShopID, genItemKey, slugify } from '../../../../utils/utils';
+import {
+  allBooksCats,
+  allFoodsCats,
+  allPlayCats,
+  categoryToShopID,
+  genItemKey,
+  slugify,
+} from '../../../../utils/utils';
 import Color from 'color';
 import { detectWearable } from '../../../../utils/detectWearable';
 import { processOpenableItems } from './open';
@@ -182,6 +189,9 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
         isNeohome: !!item.specialType?.toLowerCase().includes('neohome'),
         est_val: item.est_val,
         isBD: item.isBD,
+        canEat: checkEat(item.category) && !item.isWearable ? 'true' : undefined,
+        canPlay: checkPlay(item.category) && !item.isWearable ? 'true' : undefined,
+        canRead: checkRead(item.category) && !item.isWearable ? 'true' : undefined,
         status: item.status,
       };
     }
@@ -274,7 +284,7 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
     if (!hasChange) return undefined;
 
     // yay new data
-    const updatedItem = {
+    const updatedItem: Prisma.ItemsUpdateArgs['data'] = {
       item_id: dbItem.item_id,
       name: dbItem.name,
       description: dbItem.description,
@@ -291,6 +301,18 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
       est_val: dbItem.est_val,
       status: dbItem.status,
       isBD: dbItem.isBD,
+      canEat:
+        dbItem.canEat === 'unknown' && checkEat(dbItem.category) && !dbItem.isWearable
+          ? 'true'
+          : undefined,
+      canPlay:
+        dbItem.canPlay === 'unknown' && checkPlay(dbItem.category) && !dbItem.isWearable
+          ? 'true'
+          : undefined,
+      canRead:
+        dbItem.canRead === 'unknown' && checkRead(dbItem.category) && !dbItem.isWearable
+          ? 'true'
+          : undefined,
       updatedAt: new Date(),
     };
 
@@ -406,3 +428,10 @@ async function processOpenables() {
 const checker = (arr: any[], target: any[]) => target.every((v) => arr.includes(v));
 
 const genericCats = ['special', 'gift', 'food', 'clothes', 'neogarden', 'neohome'];
+
+const checkEat = (category?: string | null) =>
+  allFoodsCats.filter((x) => x.toLowerCase() === category?.toLowerCase()).length > 0;
+const checkPlay = (category?: string | null) =>
+  allPlayCats.filter((x) => x.toLowerCase() === category?.toLowerCase()).length > 0;
+const checkRead = (category?: string | null) =>
+  allBooksCats.filter((x) => x.toLowerCase() === category?.toLowerCase()).length > 0;

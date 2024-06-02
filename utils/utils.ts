@@ -1426,3 +1426,24 @@ export const allFoodsCats = [
   'Tropical Food',
   'Tyrannian Food',
 ];
+
+export const allPlayCats = [
+  'Broken Toy',
+  'Darigan Toy',
+  'Instrument',
+  'Plushies',
+  'Springy Things',
+  'Toy',
+  'Usuki Doll',
+];
+
+export const allBooksCats = [
+  'Book',
+  'Booktastic Book',
+  'Brightvale Book',
+  'Desert Scroll',
+  'Faerie Book',
+  'Moltaran Book',
+  'Neovian Press',
+  'Quasalan Tablets',
+];

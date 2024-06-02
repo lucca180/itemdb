@@ -130,6 +130,10 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
       category: itemData.category,
       comment: itemData.comment,
       status: itemData.status,
+      isBD: itemData.isBD,
+      // canEat: itemData.canEat,
+      // canPlay: itemData.canPlay,
+      // canRead: itemData.canRead,
       slug: itemSlug,
     },
   });
