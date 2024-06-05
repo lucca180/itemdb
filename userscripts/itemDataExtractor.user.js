@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.5.1
+// @version      1.5.2
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -245,7 +245,7 @@ function handleGeneralShops() {
   const items = $('.shop-item');
 
   items.each(function (i) {
-    const itemData = $(this).find('.item-img');
+    const itemData = $(this).find('.item-img, .item-obelisk');
     const itemEl = itemData[0];
     const itemID = itemEl.dataset.link.match(/(?<=obj_info_id\=)\d+/)?.[0];
 
@@ -959,7 +959,7 @@ function handleRestock() {
   const items = $('.shop-item');
 
   items.each(function (i) {
-    const info = $(this).find('.item-img')[0];
+    const info = $(this).find('.item-img, .item-obelisk')[0];
     const itemName = info.dataset.name;
     const price = info.dataset.price.replace(',', '');
     const id = info.dataset.link.match(/(?<=obj_info_id\=)\d+/)?.[0];

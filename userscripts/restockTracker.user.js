@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Restock Tracker
-// @version      1.0.5
+// @version      1.0.6
 // @author       itemdb
 // @namespace    itemdb
 // @description  Tracks your restock metrics
@@ -107,7 +107,7 @@ function handleGeneralShops() {
   const session = getSession(shopID);
   
   items.each(function (i) {
-    const itemData = $(this).find('.item-img');
+    const itemData = $(this).find('.item-img, .item-obelisk');
     const itemEl = itemData[0];
     const itemID = itemEl.dataset.link.match(/(?<=obj_info_id\=)\d+/)?.[0];
     const stockId = itemEl.dataset.link.match(/(?<=stock_id\=)\d+/)?.[0];
