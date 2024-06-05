@@ -131,9 +131,10 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
       comment: itemData.comment,
       status: itemData.status,
       isBD: itemData.isBD,
-      // canEat: itemData.canEat,
-      // canPlay: itemData.canPlay,
-      // canRead: itemData.canRead,
+      canEat: itemData.useTypes.canEat,
+      canPlay: itemData.useTypes.canPlay,
+      canRead: itemData.useTypes.canRead,
+      canOpen: itemData.useTypes.canOpen,
       slug: itemSlug,
     },
   });
@@ -207,7 +208,7 @@ export const getItem = async (id_name: number | string) => {
     item_id: result.item_id,
     rarity: result.rarity,
     name: result.name,
-    specialType: result.specialType,
+    // specialType: result.specialType,
     isNC: !!result.isNC,
     isBD: !!result.isBD,
     type: result.type,
@@ -236,6 +237,12 @@ export const getItem = async (id_name: number | string) => {
     owls: null,
     comment: result.comment ?? null,
     slug: result.slug ?? null,
+    useTypes: {
+      canEat: result.canEat,
+      canRead: result.canRead,
+      canOpen: result.canOpen,
+      canPlay: result.canPlay,
+    },
   };
 
   if (item.isNC && item.status !== 'no trade' && item.isWearable)

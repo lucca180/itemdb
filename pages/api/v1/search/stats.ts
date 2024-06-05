@@ -30,6 +30,9 @@ export const getSearchStats = async (resQuery: string, list_id = 0, includeHidde
     'type',
     'isNeohome',
     'isBD',
+    'canEat',
+    'canRead',
+    'canPlay',
   ] as (keyof Items)[];
 
   const hiddenQuery = !includeHidden ? Prisma.sql`AND isHidden = 0` : Prisma.empty;
@@ -47,6 +50,9 @@ export const getSearchStats = async (resQuery: string, list_id = 0, includeHidde
       else if (group === 'status') column = Prisma.sql`a.status`;
       else if (group === 'type') column = Prisma.sql`a.type`;
       else if (group === 'isBD') column = Prisma.sql`a.isBD`;
+      else if (group === 'canEat') column = Prisma.sql`a.canEat`;
+      else if (group === 'canRead') column = Prisma.sql`a.canRead`;
+      else if (group === 'canPlay') column = Prisma.sql`a.canPlay`;
       else column = Prisma.sql`a.category`;
 
       const sqlQuery = prisma.$queryRaw`

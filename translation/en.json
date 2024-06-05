@@ -154,7 +154,8 @@
     "effects-cure-disease": "This item {random, select, true {has a chance of cure} other{cures}} <Disease></Disease> {species, select, true {from your <Neopet></Neopet>} other {}}",
     "effects-heal": "This item {random, select, true {has a chance of healing} other{will heal}} <StrVal></StrVal> {minVal, plural, =0{} other{<b>#HP</b>}} {maxVal, plural, =0{} other{and <b>up to <b>#HP</b></b>}} of your {species, select, true {<Neopet></Neopet>} other {pets health}}",
     "effects-stats": "This item {random, select, true {has a chance of changing} other{will change}} your {species, select, true {<Neopet></Neopet>} other {pet's}} <Name></Name> by <StrVal></StrVal> {minVal, plural, =0{} other{<b>{minVal, number, ::+?} points</b>}} {maxVal, plural, =0{} other{and <b>up to {maxVal, number, ::+?} points</b>}}",
-    "item-effects": "Item Effects"
+    "item-effects": "Item Effects",
+    "usage-type": "Usage Type"
   },
   "Button": {
     "feedback": "Feedback",
@@ -293,7 +294,11 @@
     "restock-shop": "Restock Shop",
     "neopets-search": "Neopets Search",
     "search-at": "Search At",
-    "battledome": "Battledome"
+    "battledome": "Battledome",
+    "readable": "Readable",
+    "edible": "Edible",
+    "playable": "Playable",
+    "openable": "Openable"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",

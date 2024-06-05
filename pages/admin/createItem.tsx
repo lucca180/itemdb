@@ -40,7 +40,7 @@ const defaultItem: ItemData = {
   isWearable: false,
   isNeohome: false,
   estVal: null,
-  specialType: null,
+  // specialType: null,
   status: 'active',
   isMissingInfo: true,
   slug: null,
@@ -49,6 +49,12 @@ const defaultItem: ItemData = {
   price: null as any,
   color: null as any,
   findAt: null as any,
+  useTypes: {
+    canEat: 'unknown',
+    canRead: 'unknown',
+    canOpen: 'unknown',
+    canPlay: 'unknown',
+  },
 };
 
 const CreateItem = () => {
@@ -88,6 +94,19 @@ const CreateItem = () => {
       setItem(itemCopy);
     }
   };
+
+  // const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  //   // this wont work on this page....
+  //   return;
+  //   // const { name, value } = e.target;
+
+  //   // setItem((prev) => {
+  //   //   const itemCopy = { ...prev };
+  //   //   //@ts-expect-error ts is dumb
+  //   //   itemCopy.useTypes[name] = value;
+  //   //   return itemCopy;
+  //   // });
+  // };
 
   const createItem = async () => {
     if (!item.name || !item.image) {
@@ -224,6 +243,7 @@ const CreateItem = () => {
             <CategoriesTab
               categories={[]}
               tags={tags}
+              onSelectChange={() => {}}
               item={item as ItemData}
               itemProps={defaultItem}
               onChange={handleTagsChange}

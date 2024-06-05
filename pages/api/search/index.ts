@@ -334,7 +334,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       rarity: result.rarity,
       name: result.name,
       type: result.type,
-      specialType: result.specialType,
+      // specialType: result.specialType,
       isNC: !!result.isNC,
       estVal: result.est_val,
       isBD: !!result.isBD,
@@ -369,6 +369,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         : null,
       comment: result.comment ?? null,
       slug: result.slug ?? null,
+      useTypes: {
+        canEat: result.canEat,
+        canRead: result.canRead,
+        canOpen: result.canOpen,
+        canPlay: result.canPlay,
+      },
     };
 
     item.findAt = getItemFindAtLinks(item); // does have all the info we need :)

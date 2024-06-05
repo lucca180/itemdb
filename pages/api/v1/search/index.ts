@@ -134,10 +134,10 @@ export async function doSearch(
       .map((o: string) => o.slice(1));
     const typeTrue = typeFilters.filter((o: string) => !o.startsWith('!'));
 
+    const skipColumns = ['wearable', 'neohome', 'battledome', 'canEat', 'canRead', 'canPlay'];
+
     if (typeNeg.length > 0) {
-      const type_column = typeNeg.filter(
-        (o: string) => o !== 'wearable' && o !== 'neohome' && o !== 'battledome'
-      );
+      const type_column = typeNeg.filter((o: string) => !skipColumns.includes(o));
 
       if (type_column.length > 0)
         typeFiltersSQL.push(Prisma.sql`temp.type NOT IN (${Prisma.join(type_column)})`);
@@ -145,12 +145,14 @@ export async function doSearch(
       if (typeNeg.includes('battledome')) typeFiltersSQL.push(Prisma.sql`temp.isBD = 0`);
       if (typeNeg.includes('wearable')) typeFiltersSQL.push(Prisma.sql`temp.isWearable = 0`);
       if (typeNeg.includes('neohome')) typeFiltersSQL.push(Prisma.sql`temp.isNeohome = 0`);
+
+      if (typeNeg.includes('canEat')) typeFiltersSQL.push(Prisma.sql`temp.canEat != 'true'`);
+      if (typeNeg.includes('canRead')) typeFiltersSQL.push(Prisma.sql`temp.canRead != 'true'`);
+      if (typeNeg.includes('canPlay')) typeFiltersSQL.push(Prisma.sql`temp.canPlay != 'true'`);
     }
 
     if (typeTrue.length > 0) {
-      const type_column = typeTrue.filter(
-        (o: string) => o !== 'wearable' && o !== 'neohome' && o !== 'battledome'
-      );
+      const type_column = typeTrue.filter((o: string) => !skipColumns.includes(o));
 
       if (type_column.length > 0)
         typeFiltersSQL.push(Prisma.sql`temp.type IN (${Prisma.join(type_column)})`);
@@ -158,6 +160,10 @@ export async function doSearch(
       if (typeTrue.includes('battledome')) typeFiltersSQL.push(Prisma.sql`temp.isBD = 1`);
       if (typeTrue.includes('wearable')) typeFiltersSQL.push(Prisma.sql`temp.isWearable = 1`);
       if (typeTrue.includes('neohome')) typeFiltersSQL.push(Prisma.sql`temp.isNeohome = 1`);
+
+      if (typeTrue.includes('canEat')) typeFiltersSQL.push(Prisma.sql`temp.canEat = 'true'`);
+      if (typeTrue.includes('canRead')) typeFiltersSQL.push(Prisma.sql`temp.canRead = 'true'`);
+      if (typeTrue.includes('canPlay')) typeFiltersSQL.push(Prisma.sql`temp.canPlay = 'true'`);
     }
   }
 
@@ -489,7 +495,7 @@ export async function doSearch(
       rarity: result.rarity,
       name: result.name,
       type: result.type,
-      specialType: result.specialType,
+      // specialType: result.specialType,
       isNC: !!result.isNC,
       isBD: !!result.isBD,
       estVal: result.est_val,
@@ -524,6 +530,12 @@ export async function doSearch(
         : null,
       comment: result.comment ?? null,
       slug: result.slug ?? null,
+      useTypes: {
+        canEat: result.canEat,
+        canRead: result.canRead,
+        canOpen: result.canOpen,
+        canPlay: result.canPlay,
+      },
     };
 
     item.findAt = getItemFindAtLinks(item); // does have all the info we need :)

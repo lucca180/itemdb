@@ -14,7 +14,6 @@ export type ItemData = {
   isNeohome: boolean;
   isBD: boolean;
   estVal: number | null;
-  specialType: string | null;
   status: 'active' | 'no trade' | null;
   color: ItemColorData;
   findAt: ItemFindAt;
@@ -24,6 +23,7 @@ export type ItemData = {
   slug: string | null;
   comment: string | null;
   canonical_id: number | null;
+  useTypes: UseTypes;
 };
 
 export type ItemFindAt = {
@@ -149,6 +149,9 @@ export type SearchStats = {
   isWearable: Record<string, number>;
   isNeohome: Record<string, number>;
   isBD: Record<string, number>;
+  canEat: Record<string, number>;
+  canRead: Record<string, number>;
+  canPlay: Record<string, number>;
   status: Record<string, number>;
 };
 
@@ -452,6 +455,15 @@ type ItemEffect = {
   text?: string;
   isChance: boolean;
 };
+
+type UseTypes = {
+  canEat: ThreeStateBoolean;
+  canRead: ThreeStateBoolean;
+  canPlay: ThreeStateBoolean;
+  canOpen: ThreeStateBoolean;
+};
+
+type ThreeStateBoolean = 'true' | 'false' | 'unknown';
 
 // ------- FEEDBACKS JSON -------- //
 export type Feedback = {

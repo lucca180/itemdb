@@ -135,7 +135,7 @@ export const getManyItems = async (
       item_id: result.item_id,
       rarity: result.rarity,
       name: result.name,
-      specialType: result.specialType,
+      // specialType: result.specialType,
       isNC: !!result.isNC,
       isBD: !!result.isBD,
       type: result.type,
@@ -171,6 +171,12 @@ export const getManyItems = async (
         : null,
       comment: result.comment ?? null,
       slug: result.slug ?? null,
+      useTypes: {
+        canEat: result.canEat,
+        canRead: result.canRead,
+        canOpen: result.canOpen,
+        canPlay: result.canPlay,
+      },
     };
     x.findAt = getItemFindAtLinks(x); // does have all the info we need :)
     x.isMissingInfo = isMissingInfo(x);

@@ -134,6 +134,17 @@ const EditItemModal = (props: EditItemModalProps) => {
     }
   };
 
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+
+    setItem((prev) => {
+      const itemCopy = { ...prev };
+      //@ts-expect-error ts is dumb
+      itemCopy.useTypes[name] = value;
+      return itemCopy;
+    });
+  };
+
   const saveChanges = async () => {
     setLoading(true);
     try {
@@ -241,6 +252,7 @@ const EditItemModal = (props: EditItemModalProps) => {
                         tags={tags}
                         item={item}
                         itemProps={itemProps}
+                        onSelectChange={handleSelectChange}
                         onChange={handleTagsChange}
                       />
                     </TabPanel>
@@ -526,11 +538,12 @@ type TagSelectProps = {
   categories: string[];
   tags: string[];
   onChange: (tags: string[], type: 'categories' | 'tags' | 'special') => void;
+  onSelectChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
 };
 
 export const CategoriesTab = (props: TagSelectProps) => {
   const t = useTranslations();
-  const { item, onChange: handleChange } = props;
+  const { item, onChange: handleChange, onSelectChange } = props;
   const [specialTags, setSpecialTags] = useState<string[]>([]);
   const { user } = useAuth();
 
@@ -597,16 +610,70 @@ export const CategoriesTab = (props: TagSelectProps) => {
           </CheckboxGroup>
         </FormControl>
       )}
-      {/* <FormControl>
-                <FormLabel color="gray.300">Categories (max. 5)</FormLabel>
-                <TagSelect
-                    value={categories}
-                    onChange={(vals) => handleChange(vals, 'categories')}
-                    type='categories'
-                    disabled={categories.length >= 5}
-                />
-                <FormHelperText>Prefer to use existing categories instead of creating new ones</FormHelperText>
-            </FormControl> */}
+      <FormControl>
+        <FormLabel color="gray.300">{t('ItemPage.usage-type')}</FormLabel>
+        <Stack>
+          <Stack direction="row" alignItems={'center'}>
+            <Badge colorScheme="orange">{t('General.readable')}</Badge>
+            <Select
+              size="sm"
+              variant={'filled'}
+              value={item.useTypes.canRead}
+              onChange={onSelectChange}
+              name="canRead"
+            >
+              <option value="unknown">Unknown</option>
+              <option value="true">True</option>
+              <option value="false">False</option>
+            </Select>
+          </Stack>
+
+          <Stack direction="row" alignItems={'center'}>
+            <Badge colorScheme="orange">{t('General.edible')}</Badge>
+            <Select
+              size="sm"
+              variant={'filled'}
+              value={item.useTypes.canEat}
+              onChange={onSelectChange}
+              name="canEat"
+            >
+              <option value="unknown">Unknown</option>
+              <option value="true">True</option>
+              <option value="false">False</option>
+            </Select>
+          </Stack>
+
+          <Stack direction="row" alignItems={'center'}>
+            <Badge colorScheme="orange">{t('General.playable')}</Badge>
+            <Select
+              size="sm"
+              variant={'filled'}
+              value={item.useTypes.canPlay}
+              onChange={onSelectChange}
+              name="canPlay"
+            >
+              <option value="unknown">Unknown</option>
+              <option value="true">True</option>
+              <option value="false">False</option>
+            </Select>
+          </Stack>
+
+          <Stack direction="row" alignItems={'center'}>
+            <Badge colorScheme="orange">{t('General.openable')}</Badge>
+            <Select
+              size="sm"
+              variant={'filled'}
+              value={item.useTypes.canOpen}
+              onChange={onSelectChange}
+              name="canOpen"
+            >
+              <option value="unknown">Unknown</option>
+              <option value="true">True</option>
+              <option value="false">False</option>
+            </Select>
+          </Stack>
+        </Stack>
+      </FormControl>
       {/* <FormControl>
         <FormLabel color="gray.300">Tags (max. 15)</FormLabel>
         <TagSelect

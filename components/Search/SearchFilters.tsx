@@ -250,6 +250,36 @@ const SearchFilters = (props: Props) => {
                 <Badge>{stats?.isBD?.true ?? 0}</Badge>
               </Text>
             </NegCheckbox>
+            <NegCheckbox
+              value="canRead"
+              onChange={(val) => handleCheckChange(val, 'type', 'canRead')}
+              checklist={filters.type}
+            >
+              <Text fontSize={'sm'}>
+                <Badge colorScheme="orange">{t('General.readable')}</Badge>{' '}
+                <Badge>{stats?.canRead?.true ?? 0}</Badge>
+              </Text>
+            </NegCheckbox>
+            <NegCheckbox
+              value="canEat"
+              onChange={(val) => handleCheckChange(val, 'type', 'canEat')}
+              checklist={filters.type}
+            >
+              <Text fontSize={'sm'}>
+                <Badge colorScheme="orange">{t('General.edible')}</Badge>{' '}
+                <Badge>{stats?.canEat?.true ?? 0}</Badge>
+              </Text>
+            </NegCheckbox>
+            <NegCheckbox
+              value="canPlay"
+              onChange={(val) => handleCheckChange(val, 'type', 'canPlay')}
+              checklist={filters.type}
+            >
+              <Text fontSize={'sm'}>
+                <Badge colorScheme="orange">{t('General.playable')}</Badge>{' '}
+                <Badge>{stats?.canPlay?.true ?? 0}</Badge>
+              </Text>
+            </NegCheckbox>
           </VStack>
         </AccordionPanel>
       </AccordionItem>

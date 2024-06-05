@@ -165,16 +165,6 @@ const ItemPage = (props: ItemPageProps) => {
                   PB
                 </Badge>
               )}
-              {item.isBD && (
-                <Badge
-                  colorScheme="red"
-                  borderRadius="md"
-                  as={Link}
-                  href="/search?s=&type[]=battledome"
-                >
-                  {t('General.battledome')}
-                </Badge>
-              )}
               {item.isWearable && (
                 <Badge
                   colorScheme="blue"
@@ -193,6 +183,46 @@ const ItemPage = (props: ItemPageProps) => {
                   href="/search?s=&type[]=neohome"
                 >
                   {t('General.neohome')}
+                </Badge>
+              )}
+              {item.isBD && (
+                <Badge
+                  colorScheme="red"
+                  borderRadius="md"
+                  as={Link}
+                  href="/search?s=&type[]=battledome"
+                >
+                  {t('General.battledome')}
+                </Badge>
+              )}
+              {item.useTypes.canEat === 'true' && (
+                <Badge
+                  colorScheme="orange"
+                  borderRadius="md"
+                  as={Link}
+                  href="/search?s=&type[]=canEat"
+                >
+                  {t('General.edible')}
+                </Badge>
+              )}
+              {item.useTypes.canRead === 'true' && (
+                <Badge
+                  colorScheme="orange"
+                  borderRadius="md"
+                  as={Link}
+                  href="/search?s=&type[]=canRead"
+                >
+                  {t('General.readable')}
+                </Badge>
+              )}
+              {item.useTypes.canPlay === 'true' && (
+                <Badge
+                  colorScheme="orange"
+                  borderRadius="md"
+                  as={Link}
+                  href="/search?s=&type[]=canPlay"
+                >
+                  {t('General.playable')}
                 </Badge>
               )}
             </Stack>

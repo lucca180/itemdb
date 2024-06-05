@@ -155,7 +155,8 @@
     "effects-disease": "Esse item {random, select, true {tem a <b>chance</b> de causar} other{causa}} <Disease></Disease> {species, select, true {em <Neopet></Neopet>} other {}}",
     "effects-heal": "Esse item {random, select, true {tem a <b>chance</b> de curar} other{cura}} a vida do seu {species, select, true {<Neopet></Neopet>} other {pet}} {maxVal, plural, =0{} other{entre}} <StrVal></StrVal> {minVal, plural, =0{} other{em <b>#HP</b>}} {maxVal, plural, =0{} other{e <b>#HP</b>}}",
     "effects-stats": "Esse item {random, select, true {tem a <b>chance</b> de mudar} other{muda}} o valor de <Name></Name> do seu {species, select, true {<Neopet></Neopet>} other {pet}} {maxVal, plural, =0{em} other{entre}} <StrVal></StrVal> {minVal, plural, =0{} =1{<b>+1 ponto</b>} other{<b>{minVal, number, ::+?} pontos</b>}} {maxVal, plural, =0{} other{e <b> {maxVal, number, ::+?} pontos</b>}}",
-    "item-effects": "Efeitos do Item"
+    "item-effects": "Efeitos do Item",
+    "usage-type": "Tipo de Uso"
   },
   "Button": {
     "feedback": "Feedback",
@@ -294,7 +295,11 @@
     "restock-shop": "Loja de Restock",
     "shop-wizard": "Mágico Pechincheiro",
     "search-at": "Procurar Em",
-    "battledome": "Arena de Batalha"
+    "battledome": "Arena de Batalha",
+    "edible": "Comestível",
+    "playable": "Brincável",
+    "readable": "Legível",
+    "openable": "Abrível"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",
