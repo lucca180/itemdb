@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { CheckAuth } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
 import { ItemPrices } from '@prisma/client';
+import { slugify } from '../../../../utils/utils';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -105,14 +106,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       return res.status(400).json({ error: 'Bad Request' });
 
     if (action === 'approve') {
-      await prisma.items.update({
-        where: {
-          internal_id: Number(id),
-        },
-        data: {
-          [correctInfo.field]: correctInfo.value,
-        },
-      });
+      await handleItemUpdate(Number(id), correctInfo.field, correctInfo.value);
 
       await prisma.itemProcess.updateMany({
         where: {
@@ -158,4 +152,43 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   return res.status(400).json({ error: 'Bad Request' });
+};
+
+const handleItemUpdate = async (id: number, field: string, value: string) => {
+  let itemSlug = '';
+
+  if (field === 'name') {
+    itemSlug = slugify(value);
+
+    const dbSlugItems = await prisma.items.findMany({
+      where: {
+        slug: {
+          startsWith: itemSlug,
+        },
+        NOT: {
+          internal_id: Number(id),
+        },
+      },
+    });
+
+    if (dbSlugItems.length > 0) {
+      const regex = new RegExp(`^${itemSlug}-\\d+$`);
+
+      const sameSlug = dbSlugItems.filter((x) => regex.test(x.slug ?? ''));
+
+      if (sameSlug.length > 0) {
+        itemSlug = `${itemSlug}-${sameSlug.length + 1}`;
+      }
+    }
+  }
+
+  await prisma.items.update({
+    where: {
+      internal_id: Number(id),
+    },
+    data: {
+      [field]: value,
+      slug: itemSlug || undefined,
+    },
+  });
 };

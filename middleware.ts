@@ -124,7 +124,7 @@ const apiMiddleware = async (request: NextRequest) => {
 
   // Rate limit
   const ip =
-    requestIp.getClientIp(request as any) ?? request.headers.get('x-forwarded-for') ?? request.ip;
+    requestIp.getClientIp(request as any) ?? request.ip ?? request.headers.get('x-forwarded-for');
   if (!ip) {
     return NextResponse.next();
   }
