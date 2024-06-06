@@ -44,6 +44,8 @@ import dynamic from 'next/dynamic';
 const LanguageToast = dynamic<LanguageToastProps>(() => import('./Modal/LanguageToast'));
 const LoginModal = dynamic<LoginModalProps>(() => import('./Modal/LoginModal'));
 
+const IS_GREY = process.env.NEXT_PUBLIC_IS_GREY === 'true';
+
 type Props = {
   children?: ReactNode;
   loading?: boolean;
@@ -166,6 +168,7 @@ const Layout = (props: Props) => {
               quality={100}
               priority
               display={{ base: 'inherit', md: 'none' }}
+              filter={IS_GREY ? 'grayscale(0.9)' : undefined}
             />
             <Image
               as={NextImage}
@@ -175,6 +178,7 @@ const Layout = (props: Props) => {
               quality={100}
               priority
               display={{ base: 'none', md: 'inherit' }}
+              filter={IS_GREY ? 'grayscale(0.9)' : undefined}
             />
           </Flex>
           <Flex flex="1 1 auto" justifyContent="center" alignItems="center">

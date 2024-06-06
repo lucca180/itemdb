@@ -35,6 +35,8 @@ type Props = {
   hottestRestock: ItemData[];
 };
 
+const IS_GREY = process.env.NEXT_PUBLIC_IS_GREY === 'true';
+
 const HomePage = (props: Props) => {
   const t = useTranslations('HomePage');
   const { latestOwls, latestPosts, hottestRestock } = props;
@@ -85,7 +87,14 @@ const HomePage = (props: Props) => {
           bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.6) 80%)`}
           zIndex={-1}
         />
-        <Image src={logo} alt="itemdb logo" width={500} quality="100" priority />
+        <Image
+          src={logo}
+          alt="itemdb logo"
+          width={500}
+          quality="100"
+          priority
+          style={{ filter: IS_GREY ? 'grayscale(0.9)' : undefined }}
+        />
         <Heading size="sm" mt={4} lineHeight={1.5}>
           <Highlight
             query={t('open-source')}
