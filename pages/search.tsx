@@ -118,7 +118,7 @@ const SearchPage = () => {
       if (!totalResults || !__isNewPage.current) {
         Axios.get('search?s=' + encodeURIComponent(query), {
           signal: ABORT_CONTROLER.signal,
-          params: { ...params, limit: 1, sortBy: 'name', sortDir: 'asc' },
+          params: { ...params, limit: 1, onlyStats: true },
         })
           .then((res) => {
             setTotalResults(res.data.totalResults);

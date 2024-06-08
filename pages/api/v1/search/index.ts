@@ -24,12 +24,13 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const reqQuery = qs.parse(req.url.split('?')[1]) as any;
   const query = (reqQuery.s as string)?.trim() ?? '';
   const skipStats = reqQuery.skipStats === 'true';
+  const onlyStats = reqQuery.onlyStats === 'true';
 
   reqQuery.page = parseInt(reqQuery.page as string) || 1;
   reqQuery.limit = parseInt(reqQuery.limit as string) || 48;
   reqQuery.limit = Math.min(reqQuery.limit, 3000);
 
-  const result = await doSearch(query, reqQuery, !skipStats);
+  const result = await doSearch(query, reqQuery, !skipStats, 0, false, onlyStats);
   res.json(result);
 }
 
@@ -48,7 +49,8 @@ export async function doSearch(
   filters: SearchFilters,
   includeStats = true,
   list_id = 0,
-  includeHidden = false
+  includeHidden = false,
+  onlyStats = false
 ) {
   const originalQuery = query;
   const [queryFilters, querySanitezed] = parseFilters(originalQuery, false);
@@ -331,14 +333,15 @@ export async function doSearch(
 
   let resultRaw;
 
-  const statsQuery = !includeStats ? Prisma.sql`` : Prisma.sql`,count(*) OVER() AS full_count`;
+  const statsQuery =
+    !includeStats && !onlyStats ? Prisma.sql`` : Prisma.sql`,count(*) OVER() AS full_count`;
 
   if (isColorSearch) {
     const colorQuery = Color(query);
     const [l, a, b] = colorQuery.lab().array();
 
     resultRaw = (await prisma.$queryRaw`
-      SELECT * ${statsQuery} FROM (
+      SELECT ${!onlyStats ? Prisma.sql`*` : Prisma.sql`1`} ${statsQuery} FROM (
         SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, 
         b.rgb_g, b.rgb_b, b.hex, b.hsv_h, b.hsv_s, b.hsv_v, f.dist,
         c.addedAt as priceAdded, c.price, c.noInflation_id, 
@@ -408,7 +411,7 @@ export async function doSearch(
   } else {
     query = `%${query}%`;
     resultRaw = (await prisma.$queryRaw`
-      SELECT * ${statsQuery} FROM (
+      SELECT ${!onlyStats ? Prisma.sql`*` : Prisma.sql`1`} ${statsQuery} FROM (
         SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex, b.hsv_h, b.hsv_s, b.hsv_v,
           c.addedAt as priceAdded, c.price, c.noInflation_id, 
           d.pricedAt as owlsPriced, d.value as owlsValue, d.valueMin as owlsValueMin
@@ -477,13 +480,13 @@ export async function doSearch(
           : Prisma.empty
       }
 
-      ${sortSQL} 
-      ${sortDir === 'desc' ? Prisma.sql`DESC` : Prisma.sql`ASC`}
+      ${!onlyStats ? sortSQL : Prisma.empty} 
+      ${!onlyStats ? (sortDir === 'desc' ? Prisma.sql`DESC` : Prisma.sql`ASC`) : Prisma.empty}
       LIMIT ${limit} OFFSET ${page * limit}
     `) as any[];
   }
 
-  const filteredResult = resultRaw;
+  const filteredResult = onlyStats ? [] : resultRaw;
 
   const itemList: ItemData[] = filteredResult.map((result: any) => {
     const item: ItemData = {
