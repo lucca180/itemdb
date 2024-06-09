@@ -108,25 +108,25 @@ const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
     (t) => t.name === trade.items[0].name && t.image_id === trade.items[0].image_id
   );
 
-  let unpriced = null;
+  // let unpriced = null;
 
-  let similar = similarList.find((t) => {
+  const similar = similarList.find((t) => {
     const isTheSame = t.items.every(
       (t2) => t2.name === t.items[0].name && t2.image_id === t.items[0].image_id
     );
 
-    const isSimilar = t.items.length === trade.items.length && isTheSame === isAllItemsTheSame;
-    const isAllEmpty = t.items.every((item) => !item.price);
+    // const isSimilar = t.items.length === trade.items.length && isTheSame === isAllItemsTheSame;
+    // const isAllEmpty = t.items.every((item) => !item.price);
 
-    if (isAllEmpty && isSimilar) {
-      unpriced = t;
-      return false;
-    }
+    // // if (isAllEmpty && isSimilar) {
+    // //   unpriced = t;
+    // //   return false;
+    // // }
 
     return t.items.length === trade.items.length && isTheSame === isAllItemsTheSame;
   });
 
-  if (!similar && unpriced) similar = unpriced;
+  // if (!similar && unpriced) similar = unpriced;
 
   if (!similar) {
     await checkTradeEstPrice(trade);
