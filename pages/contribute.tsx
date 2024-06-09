@@ -16,6 +16,11 @@ import {
   Button,
   Icon,
   UnorderedList,
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  AlertTitle,
+  Box,
 } from '@chakra-ui/react';
 import { BsCheckCircleFill, BsXCircleFill } from 'react-icons/bs';
 import HeaderCard from '../components/Card/HeaderCard';
@@ -99,6 +104,7 @@ const ItemDataExtractor = () => {
           {t('General.this-may-not-work-on-mobile-devices')}
         </Text>
       )}
+
       <Text>
         {t.rich('Feedback.ide-1', {
           Link: (chunk) => (
@@ -138,6 +144,21 @@ const ItemDataExtractor = () => {
       <Heading size="md" mt={3}>
         {t('Feedback.how-to-install')}
       </Heading>
+      <Alert status="warning" borderRadius={'md'}>
+        <AlertIcon />
+        <Box>
+          <AlertTitle>Manifest V3</AlertTitle>
+          <AlertDescription>
+            {t.rich('Feedback.manifest-v3-text', {
+              Link: (chunk) => (
+                <Link href="https://www.tampermonkey.net/faq.php#Q209" isExternal>
+                  {chunk}
+                </Link>
+              ),
+            })}
+          </AlertDescription>
+        </Box>
+      </Alert>
       <UnorderedList spacing={3}>
         <ListItem>
           {t.rich('Feedback.ide-4', {

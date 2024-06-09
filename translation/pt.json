@@ -417,7 +417,8 @@
     "sync-price-for-equal-items": "Sincronizar preço para itens iguais",
     "experiments": "Experimentos",
     "all-equal": "Todos Iguais",
-    "x-items": " {x, plural, =0 {} =1 {# item} other {# itens}}"
+    "x-items": " {x, plural, =0 {} =1 {# item} other {# itens}}",
+    "manifest-v3-text": "Desde Junho de 2024 pode ser necessário passos adicionais para instalar qualquer userscript em navegadores baseados no Chrome (como Opera, Edge, Vivaldi, etc...) <Link>Saiba mais aqui</Link>\n"
   },
   "Lists": {
     "add-to-list": "Adicionar a Lista",

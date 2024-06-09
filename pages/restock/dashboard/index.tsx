@@ -354,6 +354,28 @@ const RestockDashboard = () => {
           )}
 
           <Heading size="md">{t('Restock.how-to-use')}</Heading>
+          <Alert
+            status="warning"
+            borderRadius={'md'}
+            maxW="750px"
+            my={4}
+            fontSize="sm"
+            sx={{ a: { color: 'green.200' } }}
+          >
+            <AlertIcon />
+            <Box>
+              <AlertTitle>Manifest V3</AlertTitle>
+              <AlertDescription>
+                {t.rich('Feedback.manifest-v3-text', {
+                  Link: (chunk) => (
+                    <Link href="https://www.tampermonkey.net/faq.php#Q209" isExternal>
+                      {chunk}
+                    </Link>
+                  ),
+                })}
+              </AlertDescription>
+            </Box>
+          </Alert>
           <UnorderedList mt={3} pl={3} sx={{ a: { color: 'green.200' } }} spacing={2}>
             {!user && (
               <ListItem>

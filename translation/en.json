@@ -543,7 +543,8 @@
     "multiplier-shortcuts-helper": "Type <Kbd>k</Kbd> to multiply the current input by 1000, <Kbd>m</Kbd> for a million and <Kbd>b</Kbd> for a billion",
     "experiments": "Experiments",
     "all-equal": "All Equal",
-    "x-items": "{x, plural, =0 {} =1 {# item} other {# items}}"
+    "x-items": "{x, plural, =0 {} =1 {# item} other {# items}}",
+    "manifest-v3-text": "Since June 2024, additional steps may be required to install any userscript in Chrome-based browsers (such as Opera, Edge, Vivaldi, etc...) <Link>Learn more here</Link>"
   },
   "Restock": {
     "restock-info": "Restock Info",
