@@ -203,17 +203,17 @@ const processDTIData = async (
 
   const bodiesAndZones = data.compatibleBodiesAndTheirZones;
 
-  bodiesAndZones.map((rawData) => {
+  bodiesAndZones.map((rawData, i) => {
     const body = rawData.body;
     const zones = rawData.zones;
 
-    zones.map((zone, i) => {
+    zones.map((zone) => {
       dataArr.push({
         item_id: Number(data.id),
         item_iid: item.internal_id,
         zone_label: zone.label,
-        zone_plain_label: zone.label.toLocaleLowerCase().replace(/[^a-z0-9.]+/g, ''),
-        species_name: body.species?.name,
+        zone_plain_label: zone.label.toLowerCase().replace(/[^a-z0-9.]+/g, ''),
+        species_name: body.species?.name.toLowerCase(),
         isCanonical: i === 0,
       });
     });

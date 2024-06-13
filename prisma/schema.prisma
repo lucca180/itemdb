@@ -525,7 +525,7 @@ model WearableData {
   species_name     String?
   isCanonical      Boolean @default(false)
   
-  @@unique([item_iid, zone_label, species_name, isCanonical])
+  @@unique([item_iid, zone_label, species_name])
   @@index([item_iid, isCanonical])
   @@index([zone_plain_label, species_name])
 }
