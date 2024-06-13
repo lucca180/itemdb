@@ -601,7 +601,7 @@ const SearchFilters = (props: Props) => {
           <h2>
             <AccordionButton>
               <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-                {t('General.search-mode')}
+                {t('General.search-mode')} {filters.mode !== 'name' && <Badge>1</Badge>}
               </Box>
               <AccordionIcon />
             </AccordionButton>

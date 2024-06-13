@@ -26,17 +26,27 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     const img_id = (id as string).split('.')[0];
 
+    const item = await prisma.items.findFirst({
+      where: {
+        image_id: img_id as string,
+      },
+    });
+
+    if (!item) return res.status(404).send('Item not found');
+
     const file = ImageBucket.file('preview/' + img_id + '.png');
     const [exists] = await file.exists();
 
-    let forceRefresh = refresh === 'true';
-
+    const forceRefresh = refresh === 'true';
+    let processPromise;
     if (exists) {
       const daysSinceLastUpdate = Math.floor(
         (Date.now() - new Date(file.metadata.updated).getTime()) / (1000 * 60 * 60 * 24)
       );
+
       if (daysSinceLastUpdate >= 30) {
-        forceRefresh = true;
+        const [, rawData] = await handleRegularStyle(item.name);
+        processPromise = processDTIData(item, rawData);
       }
     }
 
@@ -52,16 +62,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         await file.setMetadata({ cacheControl: 'public, max-age=2592000' });
       }
 
-      return res.redirect(file.publicUrl());
+      res.redirect(file.publicUrl());
+
+      if (processPromise) await processPromise;
+
+      return;
     } else {
-      const item = await prisma.items.findFirst({
-        where: {
-          image_id: img_id as string,
-        },
-      });
-
-      if (!item) return res.status(404).send('Item not found');
-
       canvas = createCanvas(600, 600);
       ctx = canvas.getContext('2d');
 
@@ -108,7 +114,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
       res.end(buffer);
 
-      if (rawData) processDTIData(item, rawData);
+      if (rawData) await processDTIData(item, rawData);
 
       return;
     }
