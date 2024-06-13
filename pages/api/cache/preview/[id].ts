@@ -4,6 +4,8 @@ import { createCanvas, loadImage } from '@napi-rs/canvas';
 import { ImageBucket } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
 import axios from 'axios';
+import { DTIBodiesAndTheirZones, DTIItemPreview } from '../../../../types';
+import { Items, Prisma } from '@prisma/client';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -29,7 +31,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     let forceRefresh = refresh === 'true';
 
-    if (exists && new Date(file.metadata.updated) < new Date('2023-11-09')) forceRefresh = true;
+    if (exists) {
+      const daysSinceLastUpdate = Math.floor(
+        (Date.now() - new Date(file.metadata.updated).getTime()) / (1000 * 60 * 60 * 24)
+      );
+      if (daysSinceLastUpdate >= 30) {
+        forceRefresh = true;
+      }
+    }
 
     if (exists && forceRefresh) {
       await file.delete();
@@ -57,8 +66,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       ctx = canvas.getContext('2d');
 
       let imagesURLs: string[];
+      let rawData:
+        | (DTIItemPreview & { compatibleBodiesAndTheirZones: DTIBodiesAndTheirZones[] })
+        | undefined = undefined;
+
       try {
-        imagesURLs = await handleRegularStyle(item.name);
+        const styleData = await handleRegularStyle(item.name);
+        imagesURLs = styleData[0];
+        rawData = styleData[1];
         if (imagesURLs.length === 0) throw new Error('No layers found');
       } catch (e) {
         imagesURLs = await handleAltStyle(item.image_id!);
@@ -76,10 +91,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       for (const img of images) ctx.drawImage(img, 0, 0, 600, 600);
 
       const buffer = await canvas.encode('webp', 100);
+
       await file.save(buffer, {
         metadata: {
           contentType: 'image/webp',
           cacheControl: 'public, max-age=2592000',
+          lastUpdate: new Date(),
         },
       });
 
@@ -89,7 +106,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         'Cache-Control': 'public, max-age=2592000',
       });
 
-      return res.end(buffer);
+      res.end(buffer);
+
+      if (rawData) processDTIData(item, rawData);
+
+      return;
     }
   } catch (e) {
     const img = await loadImage('./public/oops.jpg');
@@ -115,7 +136,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 }
 
-const handleRegularStyle = async (itemName: string) => {
+const handleRegularStyle = async (
+  itemName: string
+): Promise<
+  [string[], DTIItemPreview & { compatibleBodiesAndTheirZones: DTIBodiesAndTheirZones[] }]
+> => {
   const itemPreviewData = await dti.fetchItemPreview(itemName);
 
   const itemRestrictedZoneIds = new Set(
@@ -152,7 +177,7 @@ const handleRegularStyle = async (itemName: string) => {
     imagesURLs.push(layer.imageUrlV2);
   }
 
-  return imagesURLs;
+  return [imagesURLs, itemPreviewData];
 };
 
 // using data from DTI again. Thanks DTI!
@@ -168,4 +193,34 @@ const handleAltStyle = async (image_id: string): Promise<string[]> => {
   const url = style.swf_assets[0].urls.png;
 
   return [url];
+};
+
+const processDTIData = async (
+  item: Items,
+  data: DTIItemPreview & { compatibleBodiesAndTheirZones: DTIBodiesAndTheirZones[] }
+) => {
+  const dataArr: Prisma.WearableDataCreateManyInput[] = [];
+
+  const bodiesAndZones = data.compatibleBodiesAndTheirZones;
+
+  bodiesAndZones.map((rawData) => {
+    const body = rawData.body;
+    const zones = rawData.zones;
+
+    zones.map((zone, i) => {
+      dataArr.push({
+        item_id: Number(data.id),
+        item_iid: item.internal_id,
+        zone_label: zone.label,
+        zone_plain_label: zone.label.toLocaleLowerCase().replace(/[^a-z0-9.]+/g, ''),
+        species_name: body.species?.name,
+        isCanonical: i === 0,
+      });
+    });
+  });
+
+  await prisma.wearableData.createMany({
+    data: dataArr,
+    skipDuplicates: true,
+  });
 };

@@ -1,6 +1,6 @@
 import Axios from 'axios';
 import Chance from 'chance';
-import { DTIColor, DTIItemPreview } from '../types';
+import { DTIBodiesAndTheirZones, DTIColor, DTIItemPreview } from '../types';
 import { DTI_ALL_COLORS, GET_ITEM_PREVIEW_BY_NAME } from './impressConsts';
 
 const chance = new Chance();
@@ -54,7 +54,9 @@ export class dti {
     };
 
     const res = await dti._query(GET_ITEM_PREVIEW_BY_NAME, variables);
-    return res.itemByName as DTIItemPreview;
+    return res.itemByName as DTIItemPreview & {
+      compatibleBodiesAndTheirZones: DTIBodiesAndTheirZones[];
+    };
   }
 
   public static async getItemPreview(itemName: string) {

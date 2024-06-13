@@ -539,6 +539,18 @@ export type DTIItemPreview = {
   canonicalAppearance: DTICanonicalAppearance;
 };
 
+export type DTIBodiesAndTheirZones = {
+  zones: {
+    label: string;
+  }[];
+  body: {
+    representsAllBodies: boolean;
+    species: {
+      name: string;
+    } | null;
+  };
+};
+
 export type DTICanonicalAppearance = {
   id: string;
   restrictedZones: {

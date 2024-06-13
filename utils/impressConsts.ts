@@ -165,6 +165,18 @@ query($itemName: String!, $species: ID, $color: ID) {
   itemByName(name: $itemName) {
     id
     name
+    compatibleBodiesAndTheirZones{
+      zones {
+        label
+      }
+			body{
+        id
+        representsAllBodies
+        species{
+          name
+        }
+      }
+    }
     canonicalAppearance(preferredSpeciesId: $species) {
       ...ItemAppearanceForOutfitPreview
       body {

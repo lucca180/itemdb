@@ -33,9 +33,9 @@ model Items {
   updatedAt DateTime @updatedAt
 
   isNC       Boolean
-  isWearable Boolean  @default(false)
-  isNeohome  Boolean  @default(false)
-  isBD       Boolean  @default(false)
+  isWearable Boolean @default(false)
+  isNeohome  Boolean @default(false)
+  isBD       Boolean @default(false)
 
   canRead ThreeStateBoolean @default(unknown)
   canEat  ThreeStateBoolean @default(unknown)
@@ -62,6 +62,7 @@ model Items {
   restockAuctionHistory RestockAuctionHistory[]
   processHistory        PriceProcessHistory[]
   effects               ItemEffect[]
+  wearableData          WearableData[]
 
   @@index([name, image_id])
   @@index([image_id])
@@ -511,6 +512,22 @@ model ItemEffect {
   item Items? @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
 
   @@index([type, item_iid])
+}
+
+model WearableData {
+  internal_id Int   @id @default(autoincrement())
+  item_iid    Int
+  item_id     Int
+  item        Items @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+
+  zone_label       String?
+  zone_plain_label String?
+  species_name     String?
+  isCanonical      Boolean @default(false)
+  
+  @@unique([item_iid, zone_label, species_name, isCanonical])
+  @@index([item_iid, isCanonical])
+  @@index([zone_plain_label, species_name])
 }
 
 // -------- DISMANTELING PRICE PROCESS --------- //
