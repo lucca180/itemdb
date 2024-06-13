@@ -46,6 +46,7 @@ const SearchFilters = (props: Props) => {
   const t = useTranslations();
   const { stats, isColorSearch } = props;
   const [showMoreCat, setCat] = useBoolean();
+  const [showMoreZone, setZone] = useBoolean();
   const [filters, setFilters] = useState<SearchFiltersType>(props.filters);
   const [colorVal, setColorVal] = useState<string>(
     props.filters.color && !ALL_COLORS_CODE.includes(props.filters.color.toLowerCase())
@@ -445,6 +446,50 @@ const SearchFilters = (props: Props) => {
         <h2>
           <AccordionButton>
             <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
+              {t('General.wearable-zone')}{' '}
+              {filters.zone.length > 0 && <Badge>{filters.zone.length}</Badge>}
+            </Box>
+            <AccordionIcon />
+          </AccordionButton>
+        </h2>
+        <AccordionPanel pb={4}>
+          <VStack alignItems="flex-start">
+            {stats &&
+              Object.entries(stats.zone_label)
+                .sort((a, b) => a[0].localeCompare(b[0]))
+                .filter((a) => a[0] !== 'Unknown')
+                .slice(0, showMoreZone ? undefined : 5)
+                .map((stat) => (
+                  <NegCheckbox
+                    key={stat[0]}
+                    value={stat[0]}
+                    onChange={(val) => handleCheckChange(val, 'zone', stat[0])}
+                    checklist={filters.zone}
+                  >
+                    <Text fontSize={'sm'} textTransform="capitalize">
+                      {stat[0]} <Badge>{stat[1]}</Badge>
+                    </Text>
+                  </NegCheckbox>
+                ))}
+            {stats && Object.keys(stats.category).length > 5 && (
+              <Text
+                fontSize="sm"
+                color="gray.300"
+                cursor="pointer"
+                onClick={setZone.toggle}
+                textAlign="center"
+              >
+                {showMoreZone ? t('Search.show-less') : t('Search.show-more')}
+              </Text>
+            )}
+            {!stats && [...Array(5)].map((_, i) => <Skeleton key={i} w="100%" h="25px" />)}
+          </VStack>
+        </AccordionPanel>
+      </AccordionItem>
+      <AccordionItem>
+        <h2>
+          <AccordionButton>
+            <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
               {t('General.status')}{' '}
               {filters.status.length > 0 && <Badge>{filters.status.length}</Badge>}
             </Box>
@@ -573,6 +618,7 @@ const SearchFilters = (props: Props) => {
                 <option value="name">{t('General.item-name')}</option>
                 <option value="description">{t('General.item-description')}</option>
                 <option value="all">{t('General.item-name-and-description')}</option>
+                <option value="not">{t('General.name-not-contains')}</option>
               </Select>
             </HStack>
           </AccordionPanel>

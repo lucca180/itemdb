@@ -72,6 +72,7 @@ export async function doSearch(
   let categoryFilters = (filters.category as string[]) ?? [];
   let typeFilters = (filters.type as string[]) ?? [];
   let statusFilters = (filters.status as string[]) ?? [];
+  let zoneFilters = (filters.zone as string[]) ?? [];
 
   const colorTolerance = isNaN(Number(filters.colorTolerance as string))
     ? 750
@@ -98,6 +99,7 @@ export async function doSearch(
   if (categoryFilters && !Array.isArray(categoryFilters)) categoryFilters = [categoryFilters];
   if (typeFilters && !Array.isArray(typeFilters)) typeFilters = [typeFilters];
   if (statusFilters && !Array.isArray(statusFilters)) statusFilters = [statusFilters];
+  if (zoneFilters && !Array.isArray(zoneFilters)) zoneFilters = [zoneFilters];
 
   const hiddenQuery = !includeHidden ? Prisma.sql`AND isHidden = 0` : Prisma.empty;
 
@@ -125,6 +127,35 @@ export async function doSearch(
     else if (catTrue.length > 0)
       catFiltersSQL.push(
         Prisma.sql`(temp.category IN (${Prisma.join(catTrue)}) OR temp.category IS NULL)`
+      );
+  }
+
+  const zoneFilterSQL = [];
+
+  if (zoneFilters.length > 0) {
+    const zoneNeg = zoneFilters
+      .filter((o: string) => o.startsWith('!'))
+      .map((o: string) => o.slice(1).toLowerCase());
+    const zoneTrue = zoneFilters
+      .filter((o: string) => !o.startsWith('!'))
+      .map((a) => a.toLowerCase());
+
+    if (zoneNeg.length > 0 && !zoneNeg.includes('unknown'))
+      zoneFilterSQL.push(
+        Prisma.sql`(temp.zone_label NOT IN (${Prisma.join(zoneNeg)}) OR temp.zone_label IS NULL)`
+      );
+    else if (zoneNeg.length > 0)
+      zoneFilterSQL.push(
+        Prisma.sql`(temp.zone_label NOT IN (${Prisma.join(
+          zoneNeg
+        )}) AND temp.zone_label IS NOT NULL)`
+      );
+
+    if (zoneTrue.length > 0 && !zoneTrue.includes('unknown'))
+      zoneFilterSQL.push(Prisma.sql`temp.zone_label IN (${Prisma.join(zoneTrue)})`);
+    else if (zoneTrue.length > 0)
+      zoneFilterSQL.push(
+        Prisma.sql`(temp.zone_label IN (${Prisma.join(zoneTrue)}) OR temp.zone_label IS NULL)`
       );
   }
 
@@ -328,6 +359,8 @@ export async function doSearch(
     fulltext = Prisma.sql`DAMLEVP(${query.toLowerCase()}, LOWER(temp.name)) < 0.5`;
     sortSQL = Prisma.sql`ORDER BY DAMLEVP(${query.toLowerCase()}, LOWER(temp.name))`;
     sortDir = 'asc';
+  } else if (mode === 'not') {
+    fulltext = Prisma.sql`temp.name NOT LIKE ${`%${originalQuery}%`}`;
   } else
     fulltext = Prisma.sql`MATCH (temp.name) AGAINST (${query} IN BOOLEAN MODE) OR temp.name LIKE ${`%${originalQuery}%`}`;
 
@@ -416,6 +449,7 @@ export async function doSearch(
           c.addedAt as priceAdded, c.price, c.noInflation_id, 
           d.pricedAt as owlsPriced, d.value as owlsValue, d.valueMin as owlsValueMin
           ${colorSql_inside ? Prisma.sql`, ${colorSql_inside} as dist` : Prisma.empty}
+          ${zoneFilterSQL.length > 0 ? Prisma.sql`, w.zone_label` : Prisma.empty}
         FROM Items as a
         LEFT JOIN ItemColor as b on a.image_id = b.image_id and ${colorTypeSQL} ${
       colorSql_inside ? Prisma.sql`and b.population > 0` : Prisma.empty
@@ -439,6 +473,11 @@ export async function doSearch(
               GROUP BY item_iid
           )
         ) as d on d.item_iid = a.internal_id
+        ${
+          zoneFilterSQL.length > 0
+            ? Prisma.sql`LEFT JOIN WearableData w on w.item_iid = a.internal_id and w.isCanonical = 1`
+            : Prisma.empty
+        }
       ) as temp
             
       WHERE (${fulltext}) and temp.canonical_id is null
@@ -471,6 +510,12 @@ export async function doSearch(
       ${
         colorSql_outside && isColorNeg
           ? Prisma.sql` AND ${colorSql_outside} > ${colorTolerance}`
+          : Prisma.empty
+      }
+
+      ${
+        !!zoneFilterSQL.length
+          ? Prisma.sql` AND ${Prisma.join(zoneFilterSQL, ' AND ')}`
           : Prisma.empty
       }
 

@@ -2,6 +2,7 @@ import { SearchFilters } from '../types';
 
 export const defaultFilters: SearchFilters = {
   category: [],
+  zone: [],
   type: [],
   status: [],
   color: '',
@@ -22,6 +23,7 @@ export const defaultFilters: SearchFilters = {
 
 const parsableFilters = [
   'category',
+  'zone',
   'type',
   'status',
   'color',
@@ -56,6 +58,21 @@ export const parseFilters = (query: string, skipBoolean = true): [SearchFilters,
       if (negCategory) newCategory.push(...negCategory.split(',').map((c) => `!${c}`));
 
       filters.category = newCategory;
+    }
+
+    if (filterName === 'zone') {
+      const posCategory = matchRegex(query, `zone`);
+      const negCategory = matchRegex(query, `-zone`);
+
+      query = sanitizeQuery(query, `zone`);
+      query = sanitizeQuery(query, `-zone`);
+
+      const newZone = [];
+
+      if (posCategory) newZone.push(...posCategory.split(','));
+      if (negCategory) newZone.push(...negCategory.split(',').map((c) => `!${c}`));
+
+      filters.zone = newZone;
     }
 
     if (filterName === 'type') {
@@ -195,8 +212,8 @@ export const parseFilters = (query: string, skipBoolean = true): [SearchFilters,
 
       query = sanitizeQuery(query, `mode`);
 
-      if (mode && ['name', 'description', 'all'].includes(mode))
-        filters.mode = mode as 'name' | 'description' | 'all';
+      if (mode && ['name', 'description', 'all', 'not'].includes(mode))
+        filters.mode = mode as 'name' | 'description' | 'all' | 'not';
     }
 
     if (filterName === 'colorTolerance') {

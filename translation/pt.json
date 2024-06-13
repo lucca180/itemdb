@@ -299,7 +299,9 @@
     "edible": "Comestível",
     "playable": "Brincável",
     "readable": "Legível",
-    "openable": "Abrível"
+    "openable": "Abrível",
+    "name-not-contains": "Nome Não Contém",
+    "wearable-zone": "Zona de Aplicável"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",

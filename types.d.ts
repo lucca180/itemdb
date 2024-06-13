@@ -153,10 +153,12 @@ export type SearchStats = {
   canRead: Record<string, number>;
   canPlay: Record<string, number>;
   status: Record<string, number>;
+  zone_label: Record<string, number>;
 };
 
 export type SearchFilters = {
   category: string[];
+  zone: string[];
   type: string[];
   status: string[];
   color: string;
@@ -170,7 +172,7 @@ export type SearchFilters = {
   colorType: string;
   sortBy: string;
   sortDir: string;
-  mode: 'name' | 'description' | 'all' | 'fuzzy';
+  mode: 'name' | 'description' | 'all' | 'fuzzy' | 'not';
   limit: number;
   page: number;
 };

@@ -298,7 +298,9 @@
     "readable": "Readable",
     "edible": "Edible",
     "playable": "Playable",
-    "openable": "Openable"
+    "openable": "Openable",
+    "name-not-contains": "Name Not Contains",
+    "wearable-zone": "Wearable Zone"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",
