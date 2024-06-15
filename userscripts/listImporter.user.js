@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - List Importer
-// @version      1.2.0
+// @version      1.2.1
 // @author       itemdb
 // @namespace    itemdb
 // @description  Imports items to your wishlists
