@@ -75,19 +75,23 @@ export const getSearchStats = async (resQuery: string, list_id = 0, includeHidde
       `
           : Prisma.empty
       }
+      
       ${
         group === 'zone_label'
           ? Prisma.sql`LEFT JOIN WearableData w on w.item_iid = a.internal_id and w.isCanonical = 1`
           : Prisma.empty
       }
-      where (${fulltext}) and a.canonical_id is null ${
-      !!l ? Prisma.sql`and d.dist is not null` : Prisma.empty
-    }
+
+      where (${fulltext}) and a.canonical_id is null 
+      
+      ${!!l ? Prisma.sql`and d.dist is not null` : Prisma.empty}
+      
       ${
         list_id
           ? Prisma.sql`AND exists (SELECT 1 FROM ListItems WHERE list_id = ${list_id} and item_iid = a.internal_id ${hiddenQuery})`
           : Prisma.empty
       }
+
       group by ${column}
     `;
 

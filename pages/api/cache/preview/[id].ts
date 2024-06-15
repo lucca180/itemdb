@@ -82,7 +82,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         rawData = styleData[1];
         if (imagesURLs.length === 0) throw new Error('No layers found');
       } catch (e) {
-        imagesURLs = await handleAltStyle(item.image_id!);
+        imagesURLs = await handleAltStyle(item.image_id!, item.name);
         if (imagesURLs.length === 0) throw e;
       }
 
@@ -187,12 +187,17 @@ const handleRegularStyle = async (
 };
 
 // using data from DTI again. Thanks DTI!
-const handleAltStyle = async (image_id: string): Promise<string[]> => {
-  if (!image_id.includes('nostalgic')) return [];
+const handleAltStyle = async (image_id: string, itemName: string): Promise<string[]> => {
+  if (!image_id.includes('nostalgic') && !itemName.toLowerCase().includes('nostalgic')) return [];
   const dtiRes = await axios.get('https://impress.openneo.net/alt-styles.json');
   const dtiData = dtiRes.data as any[];
 
-  const style = dtiData.find((x) => x.thumbnail_url.includes(image_id));
+  // hotfixes thumbnail_url being wrong
+  const altImgID = itemName.toLowerCase().replaceAll(' ', '_');
+
+  const style = dtiData.find(
+    (x) => x.thumbnail_url.includes(image_id) || x.thumbnail_url.includes(altImgID)
+  );
 
   if (!style) return [];
 
