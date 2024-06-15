@@ -315,7 +315,7 @@ const UserListsPage = (props: Props) => {
       <Box>
         <Box
           position="absolute"
-          h="30vh"
+          h="45vh"
           left="0"
           width="100%"
           bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.6) 80%)`}

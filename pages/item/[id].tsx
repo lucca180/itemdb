@@ -115,10 +115,10 @@ const ItemPage = (props: ItemPageProps) => {
       <Box>
         <Box
           position="absolute"
-          h="40vh"
+          h="45vh"
           left="0"
           width="100%"
-          bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${color[0]},${color[1]}, ${color[2]},.4) 80%)`}
+          bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${color[0]},${color[1]}, ${color[2]},.5) 80%)`}
           zIndex={-1}
         />
         <Flex gap={{ base: 4, md: 8 }} pt={6} alignItems="center">
