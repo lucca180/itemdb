@@ -520,11 +520,11 @@ model WearableData {
   item_id     Int
   item        Items @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
 
-  zone_label       String?
-  zone_plain_label String?
-  species_name     String?
+  zone_label       String  @default("")
+  zone_plain_label String  @default("")
+  species_name     String  @default("")
   isCanonical      Boolean @default(false)
-  
+
   @@unique([item_iid, zone_label, species_name])
   @@index([item_iid, isCanonical])
   @@index([zone_plain_label, species_name])
