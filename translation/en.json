@@ -650,7 +650,9 @@
     "item-data-extractor-script": "Item Data Extractor Script",
     "cta-2": "This way, not only will your data here on the dashboard become more accurate, but it also helps us keep the prices always updated!",
     "estimated-profit": "Estimated Profit",
-    "bmg-warning": "Highlighted items are only visible with the <Link>Black Market Goods</Link> obelisk boon"
+    "bmg-warning": "Highlighted items are only visible with the <Link>Black Market Goods</Link> obelisk boon",
+    "import-latest-x-sessions": "Import Latest {x} Sessions",
+    "dashboard-limits": "You can only import up to {x} sessions at a time. We recommend importing your sessions regularly"
   },
   "Search": {
     "search": "Search",

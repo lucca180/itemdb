@@ -651,7 +651,9 @@
     "pricing-trade-lots": "Precificar Lotes de Trocas",
     "vote-on-pricing-suggestions": "Votar em Sugestões de Preços",
     "estimated-profit": "Lucro Estimado",
-    "bmg-warning": "Os itens destacados só são visíveis com a bênção <Link>Mercadorias do Mercado Negro</Link> do Oráculo do Obelisco "
+    "bmg-warning": "Os itens destacados só são visíveis com a bênção <Link>Mercadorias do Mercado Negro</Link> do Oráculo do Obelisco ",
+    "dashboard-limits": "Você só pode importar até {x} sessões de uma vez. Recomendamos importar suas sessões regularmente",
+    "import-latest-x-sessions": "Importar últimas {x} sessões"
   },
   "Search": {
     "search": "Pesquisa",

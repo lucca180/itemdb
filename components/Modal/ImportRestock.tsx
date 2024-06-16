@@ -13,6 +13,9 @@ import {
   CheckboxGroup,
   Checkbox,
   Button,
+  Spinner,
+  Center,
+  useToast,
 } from '@chakra-ui/react';
 import { formatDistance } from 'date-fns';
 import { useEffect, useState } from 'react';
@@ -29,15 +32,20 @@ export type FeedbackModalProps = {
   refresh: () => void;
 };
 
+const MAX_SESSIONS = 50;
+
 const ImportRestockModal = (props: FeedbackModalProps) => {
   const t = useTranslations();
   const format = useFormatter();
+  const toast = useToast();
   const ref = useRef<HTMLDivElement | null>(null);
   const { isOpen, onClose, refresh } = props;
   const [allSessions, setSessions] = useState<RestockSession[]>([]);
   const [selectedSessions, setSelectedSessions] = useState<string[]>([]);
   const [confirmImport, setConfirmImport] = useState<'import' | 'discard' | null>(null);
-  const allChecked = selectedSessions.length === allSessions.length;
+  const [loading, setLoading] = useState(false);
+  const allChecked =
+    selectedSessions.length === allSessions.length || selectedSessions.length === MAX_SESSIONS;
   const isIndeterminate = !!selectedSessions.length && !allChecked;
 
   useEffect(() => {
@@ -73,21 +81,36 @@ const ImportRestockModal = (props: FeedbackModalProps) => {
 
     if (selectedSessions.includes(value)) {
       setSelectedSessions(selectedSessions.filter((x) => x !== value));
-    } else {
+    } else if (selectedSessions.length < MAX_SESSIONS) {
       setSelectedSessions([...selectedSessions, value]);
     }
   };
 
   const handleImport = async () => {
-    const sessions = allSessions.filter((x, i) => selectedSessions.includes(i.toString()));
-    await axios.post('/api/v1/restock', { sessionList: sessions });
+    setLoading(true);
+    try {
+      const sessions = allSessions.filter((x, i) => selectedSessions.includes(i.toString()));
+      await axios.post('/api/v1/restock', { sessionList: sessions });
 
-    if (window && window.itemdb_restock) {
-      window.itemdb_restock.cleanAll();
+      if (window && window.itemdb_restock) {
+        window.itemdb_restock.cleanAll();
+      }
+
+      handleClose();
+      refresh();
+    } catch (e) {
+      toast({
+        title: t('General.error'),
+        description: t('General.something-went-wrong-please-try-again-later'),
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+
+      console.error(e);
+
+      setLoading(false);
     }
-
-    handleClose();
-    refresh();
   };
 
   const doThings = () => {
@@ -114,7 +137,18 @@ const ImportRestockModal = (props: FeedbackModalProps) => {
   return (
     <Modal isOpen={isOpen} onClose={handleClose} isCentered scrollBehavior="inside">
       <ModalOverlay />
-      {confirmImport && (
+      {loading && (
+        <ModalContent>
+          <ModalHeader>{t('Restock.import-sessions')}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Center>
+              <Spinner />
+            </Center>
+          </ModalBody>
+        </ModalContent>
+      )}
+      {confirmImport && !loading && (
         <ModalContent>
           <ModalHeader>{t('Restock.import-sessions')}</ModalHeader>
           <ModalCloseButton />
@@ -154,13 +188,16 @@ const ImportRestockModal = (props: FeedbackModalProps) => {
         </ModalContent>
       )}
 
-      {!confirmImport && (
+      {!confirmImport && !loading && (
         <ModalContent>
           <ModalHeader>{t('Restock.import-sessions')}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Text fontSize="sm">
               {t('Restock.import-modal-4')} {t('Restock.import-modal-5')}
+            </Text>
+            <Text fontSize={'sm'} color="red.300" textAlign={'center'} mt={3}>
+              {t('Restock.dashboard-limits', { x: MAX_SESSIONS })}
             </Text>
             <Flex mt={3} maxH="300px" overflow={'auto'} direction="column" px={1} ref={ref}>
               <Checkbox
@@ -170,11 +207,16 @@ const ImportRestockModal = (props: FeedbackModalProps) => {
                 colorScheme="green"
                 onChange={(e) =>
                   e.target.checked
-                    ? setSelectedSessions(allSessions.map((x, i) => i.toString()))
+                    ? setSelectedSessions(
+                        allSessions.slice(0, MAX_SESSIONS).map((x, i) => i.toString())
+                      )
                     : setSelectedSessions([])
                 }
               >
-                {t('Restock.import-modal-import-all-x', { x: allSessions.length })}
+                {allSessions.length <= MAX_SESSIONS &&
+                  t('Restock.import-modal-import-all-x', { x: allSessions.length })}
+                {allSessions.length > MAX_SESSIONS &&
+                  t('Restock.import-latest-x-sessions', { x: MAX_SESSIONS })}
               </Checkbox>
               <CheckboxGroup colorScheme="green" value={selectedSessions}>
                 <Stack pl={3} spacing={3} direction="column">
@@ -232,7 +274,7 @@ const ImportRestockModal = (props: FeedbackModalProps) => {
               size="sm"
               colorScheme="green"
               onClick={() => setConfirmImport('import')}
-              isDisabled={!selectedSessions.length}
+              isDisabled={!selectedSessions.length || selectedSessions.length > MAX_SESSIONS}
             >
               {t('Restock.import-modal-import-x-sessions', { x: selectedSessions.length })}
             </Button>

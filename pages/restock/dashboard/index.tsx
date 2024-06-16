@@ -59,7 +59,7 @@ type AlertMsg = {
 type PeriodFilter = { timePeriod: number; shops: number | string; timestamp?: number };
 const intl = new Intl.NumberFormat();
 
-const defaultFilter: PeriodFilter = { timePeriod: 30, shops: 'all', timestamp: undefined };
+const defaultFilter: PeriodFilter = { timePeriod: 7, shops: 'all', timestamp: undefined };
 
 const RestockDashboard = () => {
   const t = useTranslations();
@@ -251,6 +251,7 @@ const RestockDashboard = () => {
           {filter?.timestamp && (
             <option value={filter.timePeriod}>{formatter.dateTime(filter.timestamp)}</option>
           )}
+          <option value={0.5}>{t('General.last-x-hours', { x: 12 })}</option>
           <option value={1}>{t('General.last-x-hours', { x: 24 })}</option>
           <option value={7}>{t('General.last-x-days', { x: 7 })}</option>
           <option value={30}>{t('General.last-x-days', { x: 30 })}</option>
