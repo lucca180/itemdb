@@ -63,6 +63,7 @@ model Items {
   processHistory        PriceProcessHistory[]
   effects               ItemEffect[]
   wearableData          WearableData[]
+  ncMallData            NcMallData[]
 
   @@index([name, image_id])
   @@index([image_id])
@@ -528,6 +529,28 @@ model WearableData {
   @@unique([item_iid, zone_label, species_name])
   @@index([item_iid, isCanonical])
   @@index([zone_plain_label, species_name])
+}
+
+
+model NcMallData {
+  internal_id Int    @id @default(autoincrement())
+  item_iid    Int
+  item_id     Int
+  item        Items @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+
+  price      Int
+  saleBegin  DateTime?
+  saleEnd    DateTime?
+
+  discountBegin DateTime?
+  discountEnd   DateTime?
+  discountPrice Int?
+
+  active Boolean @default(true)
+  addedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([item_iid, active])
 }
 
 // -------- DISMANTELING PRICE PROCESS --------- //
