@@ -122,7 +122,9 @@ const HomePage = (props: Props) => {
         <Stack direction={{ base: 'column', lg: 'row' }}>
           <Flex gap={4} flexFlow="column" flex="1">
             <Heading size="md" textAlign={{ base: 'left', lg: 'center' }}>
-              {t('latest-discoveries')}
+              <Link as={NextLink} href="/search?s=&sortBy=added&sortDir=desc">
+                {t('latest-discoveries')}
+              </Link>
             </Heading>
             <Flex flexWrap="wrap" gap={4} justifyContent="center" h="100%">
               {latestItems &&
