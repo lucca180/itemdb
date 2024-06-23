@@ -488,7 +488,8 @@ model RestockSession {
 
   shop_id Int
 
-  session Json
+  session Json?
+  sessionText String? @db.LongText
 
   // @@index([user_id])
   // @@index([user_id, startedAt])
