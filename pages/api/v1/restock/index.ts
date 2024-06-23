@@ -45,6 +45,12 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
         startedAt: 'desc',
       },
       take: limit ? Number(limit) : undefined,
+      select: {
+        sessionText: true,
+        startedAt: true,
+        endedAt: true,
+        shop_id: true,
+      },
     });
 
     if (!sessions.length) return res.status(200).json(null);
@@ -77,7 +83,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         startedAt: new Date(session.startDate),
         endedAt: new Date(session.lastRefresh),
         shop_id: Number(session.shopId),
-        session: JSON.stringify(session),
+        // session: JSON.stringify(session),
+        sessionText: typeof session === 'string' ? session : JSON.stringify(session),
       };
     });
 
@@ -96,7 +103,12 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
 type ValueOf<T> = T[keyof T];
 export const calculateStats = async (
-  rawSessions: RawRestockSession[]
+  rawSessions: {
+    startedAt: Date;
+    endedAt: Date;
+    shop_id: number;
+    sessionText: string | null;
+  }[]
 ): Promise<[RestockStats, RestockChart]> => {
   const stats: RestockStats = JSON.parse(JSON.stringify(defaultStats));
   const sessions: RestockSession[] = [];
@@ -115,8 +127,10 @@ export const calculateStats = async (
   let reactionTotalTime: number[] = [];
 
   rawSessions.map((rawSession) => {
-    if (!rawSession.session) return;
-    const session = JSON.parse(rawSession.session as string) as RestockSession;
+    if (!rawSession.sessionText) return;
+    let session = JSON.parse(rawSession.sessionText as string) as RestockSession | string;
+    if (typeof session === 'string') session = JSON.parse(session) as RestockSession;
+
     sessions.push(session);
 
     const duration = differenceInMilliseconds(
