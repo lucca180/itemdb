@@ -206,7 +206,7 @@ export const getItemDrops = async (
     isChoice: isChoice,
   };
 
-  let zoneData = await prisma.wearableData.findMany({
+  const zoneData = await prisma.wearableData.findMany({
     where: {
       item_iid: {
         in: Array.from(allItemIds),
