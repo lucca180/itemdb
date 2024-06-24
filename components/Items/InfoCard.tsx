@@ -3,7 +3,7 @@ import React from 'react';
 import { ItemData } from '../../types';
 import { MdHelp } from 'react-icons/md';
 import { rarityStr } from '../../utils/utils';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import Color from 'color';
 
 type Props = {
@@ -18,7 +18,7 @@ const ItemInfoCard = (props: Props) => {
   const color = Color(item.color.hex);
   const rgb = item.color.rgb;
   const rarityString = rarityStr(item.rarity ?? 0);
-
+  const format = useFormatter();
   return (
     <Flex
       // flex={1}
@@ -124,6 +124,20 @@ const ItemInfoCard = (props: Props) => {
             {item.internal_id}
           </Text>
         </HStack>
+        {item.firstSeen && (
+          <HStack>
+            <Tag size="lg" fontWeight="bold" as="h3">
+              {t('ItemPage.first-seen')}
+            </Tag>
+            <Text flex="1" textAlign="right">
+              {format.dateTime(new Date(item.firstSeen), {
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric',
+              })}
+            </Text>
+          </HStack>
+        )}
       </Flex>
     </Flex>
   );

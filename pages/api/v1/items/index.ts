@@ -73,6 +73,10 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       category: result.category,
       status: result.status,
       isNeohome: !!result.isNeohome,
+      firstSeen:
+        (result.item_id >= 85020 && result.type !== 'pb'
+          ? new Date(result.addedAt).toJSON()
+          : null) ?? null,
       isWearable: !!result.specialType?.includes('wearable') || !!result.isWearable,
       color: {
         hsv: [result.hsv_h, result.hsv_s, result.hsv_v],

@@ -553,6 +553,10 @@ export async function doSearch(
       status: result.status,
       isNeohome: !!result.isNeohome,
       isWearable: !!result.specialType?.includes('wearable') || !!result.isWearable,
+      firstSeen:
+        (result.item_id >= 85020 && result.type !== 'pb'
+          ? new Date(result.addedAt).toJSON()
+          : null) ?? null,
       color: {
         hsv: [result.hsv_h, result.hsv_s, result.hsv_v],
         rgb: [result.rgb_r, result.rgb_g, result.rgb_b],

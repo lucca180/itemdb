@@ -49,6 +49,7 @@ const defaultItem: ItemData = {
   price: null as any,
   color: null as any,
   findAt: null as any,
+  firstSeen: null,
   useTypes: {
     canEat: 'unknown',
     canRead: 'unknown',

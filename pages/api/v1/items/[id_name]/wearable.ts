@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getItem } from '.';
-import { getItemDrops, getItemParent } from './drops';
 import prisma from '../../../../../utils/prisma';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {

@@ -24,6 +24,7 @@ export type ItemData = {
   comment: string | null;
   canonical_id: number | null;
   useTypes: UseTypes;
+  firstSeen: string | null;
 };
 
 export type ItemFindAt = {
