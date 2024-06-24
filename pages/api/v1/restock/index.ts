@@ -1,4 +1,4 @@
-import { Prisma, RestockSession as RawRestockSession } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { RestockChart, RestockSession, RestockStats } from '../../../../types';
 import { CheckAuth } from '../../../../utils/googleCloud';

@@ -3,8 +3,10 @@ import { getItem } from '.';
 import { ItemDrop, ItemOpenable, PrizePoolData } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
+import { WearableData } from '@prisma/client';
 
 const catType = ['trinkets', 'accessories', 'clothing', 'le', 'choice'];
+const catTypeZone = ['trinkets', 'accessories', 'clothing'];
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -105,6 +107,7 @@ export const getItemDrops = async (
   const openingSet: { [id: string]: number[] } = {};
 
   const confimedDrops = new Set<string>();
+  const allItemIds = new Set<number>();
 
   let hasManual = false;
 
@@ -123,10 +126,11 @@ export const getItemDrops = async (
 
   const manualItems: number[] = [];
   let isChoice = false;
-
+  let isZoneCat = false;
   drops
     .sort((a, b) => (a.notes?.length ?? 0) - (b.notes?.length ?? 0))
     .map((drop) => {
+      allItemIds.add(drop.item_iid);
       const dropData: ItemDrop = {
         item_iid: drop.item_iid,
         dropRate: dropsData[drop.item_iid]?.dropRate ?? 0,
@@ -166,6 +170,7 @@ export const getItemDrops = async (
 
         if (catType.includes(note) || note.match(/cat\d+y\d+/gim) || note.match(/cat\d+/gim)) {
           if (note !== 'le') isChoice = true;
+          if (catTypeZone.includes(note)) isZoneCat = true;
 
           if (!poolsData[drop.item_iid]) poolsData[drop.item_iid] = {};
 
@@ -201,6 +206,15 @@ export const getItemDrops = async (
     isChoice: isChoice,
   };
 
+  let zoneData = await prisma.wearableData.findMany({
+    where: {
+      item_iid: {
+        in: Array.from(allItemIds),
+      },
+      isCanonical: true,
+    },
+  });
+
   Object.values(dropsData)
     .filter((a) => manualItems.includes(a.item_iid) || a.dropRate >= (isNC ? 1 : 2))
     .map((drop) => {
@@ -214,6 +228,11 @@ export const getItemDrops = async (
 
       if (sortedCats.length > 0)
         moreCommonCat = sortedCats[0]?.[1] <= sortedCats[1]?.[1] ? 'unknown' : sortedCats[0][0];
+
+      if (moreCommonCat === 'unknown' && isZoneCat) {
+        const zone = zoneData.find((a) => a.item_iid === drop.item_iid);
+        if (zone) moreCommonCat = zoneToCat(zone);
+      }
 
       if (!prizePools[moreCommonCat])
         prizePools[moreCommonCat] = {
@@ -385,4 +404,22 @@ const getMinMax = (drops: number, minMax: MinMax) => {
   }
 
   return minMax;
+};
+
+const zoneToCat = (data: WearableData) => {
+  const clothes = ['shirtdress', 'jacket', 'trousers'];
+  const trinkets = [
+    'background',
+    'foreground',
+    'backgrounditem',
+    'music',
+    'soundeffects',
+    'higherforegrounditem',
+    'lowerforegrounditem',
+    'thoughtbubble',
+  ];
+
+  if (clothes.includes(data.zone_plain_label)) return 'clothing';
+  if (trinkets.includes(data.zone_plain_label)) return 'trinkets';
+  return 'accessories';
 };

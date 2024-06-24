@@ -49,6 +49,8 @@ import ItemMyLists from '../../components/Items/MyListsCard';
 import { useAuth } from '../../utils/auth';
 import ItemEffectsCard from '../../components/Items/ItemEffectsCard';
 import { getItemEffects } from '../api/v1/items/[id_name]/effects';
+import { WearableData } from '@prisma/client';
+import { getWearableData } from '../api/v1/items/[id_name]/wearable';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -69,6 +71,7 @@ type ItemPageProps = {
   NPTrades: TradeData[];
   NPPrices: PriceData[];
   itemEffects: ItemEffect[];
+  wearableData: WearableData[] | null;
   messages: any;
 };
 
@@ -296,7 +299,7 @@ const ItemPage = (props: ItemPageProps) => {
             <SimilarItemsCard item={item} similarItems={props.similarItems} />
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>
-            {item.isWearable && <ItemPreview item={item} />}
+            {item.isWearable && <ItemPreview item={item} wearableData={props.wearableData} />}
             {item.findAt.restockShop && <ItemRestock item={item} lastSeen={props.lastSeen} />}
             {!item.isNC && item.status === 'active' && <TradeCard item={item} trades={trades} />}
             {itemParent.length > 0 && <ItemParent item={item} parentItems={itemParent} />}
@@ -350,6 +353,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     NPTrades,
     lastSeen,
     itemEffects,
+    wearableData,
   ] = await Promise.all([
     getItemColor([item.image_id]),
     getItemLists(item.internal_id, true, false),
@@ -363,6 +367,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
       ? getLastSeen({ item_id: item.item_id, name: item.name, image_id: item.image_id })
       : null,
     getItemEffects(item.internal_id),
+    item.isWearable ? getWearableData(item.internal_id) : null,
   ]);
 
   if (!colors) return { notFound: true };
@@ -379,6 +384,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     NPPrices: itemPrices,
     lastSeen: lastSeen,
     itemEffects: itemEffects,
+    wearableData: wearableData,
     messages: (await import(`../../translation/${context.locale}.json`)).default,
   };
 
