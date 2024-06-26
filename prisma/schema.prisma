@@ -241,7 +241,7 @@ model Trades {
 
   items TradeItems[]
 
-  @@index([hash, processed])
+  @@index([processed,hash])
   @@index([wishlist(length: 200)])
 }
 
@@ -592,10 +592,7 @@ model PriceProcess2 {
   processed Boolean @default(false)
 
   @@unique([type, neo_id])
-  // @@index([item_iid])
-  // @@index([item_iid, addedAt])
-  @@index([addedAt, processed])
-  @@index([item_iid, addedAt, processed])
+  @@index([addedAt, processed, item_iid])
 }
 
 // this is mostly for auction and restock data
