@@ -226,7 +226,10 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     }
   }
 
-  const priceAddList = (await Promise.all(priceAddPromises)).filter((x) => !!x) as ItemPrices[];
+  const priceAddList = (await Promise.allSettled(priceAddPromises))
+    .filter((x) => x.status === 'fulfilled')
+    .map((x) => (x.status === 'fulfilled' ? x.value : null))
+    .filter((x) => !!x) as ItemPrices[];
 
   const result = await prisma.$transaction([
     prisma.itemPrices.createMany({ data: priceAddList }),
@@ -377,7 +380,10 @@ async function updateOrAddDB(
 
     return newPriceData;
   } catch (e) {
-    if (typeof e !== 'string') throw e;
+    if (typeof e !== 'string') {
+      console.error('PRICE PROCESS ERROR:', e);
+      throw e;
+    }
 
     // if (e === 'inflation') return newPriceData;
 
