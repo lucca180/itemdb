@@ -124,6 +124,7 @@ model ItemProcess {
   processed Boolean @default(false)
 
   @@index([name, image_id])
+  @@index([manual_check, processed])
 }
 
 enum ItemType {
@@ -242,6 +243,7 @@ model Trades {
   items TradeItems[]
 
   @@index([processed,hash])
+  @@index([hash, addedAt])
   @@index([wishlist(length: 200)])
 }
 
@@ -590,9 +592,11 @@ model PriceProcess2 {
   hash      String? @unique
   neo_id    Int?
   processed Boolean @default(false)
-
+  
   @@unique([type, neo_id])
-  @@index([addedAt, processed, item_iid])
+  
+  @@index([addedAt, processed])
+  @@index([item_iid, addedAt, processed])
 }
 
 // this is mostly for auction and restock data
