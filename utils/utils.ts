@@ -306,7 +306,7 @@ export const shopIDToCategory: { [id: string]: string } = {
 
 export const isMissingInfo = (item: ItemData) => {
   for (const [key, val] of Object.entries(item)) {
-    if (['comment', 'specialType', 'owls', 'canonical_id'].includes(key)) continue;
+    if (['comment', 'specialType', 'owls', 'canonical_id', 'firstSeen'].includes(key)) continue;
 
     if (val === null) return true;
   }
