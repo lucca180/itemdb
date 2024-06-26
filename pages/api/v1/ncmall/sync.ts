@@ -31,6 +31,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const ncMallRes = await axios.get(TARNUM_SERVER + '/neopets/ncmall');
   const ncMallData = ncMallRes.data as { [id: number]: NCMallData };
 
+  if (!ncMallData || Object.values(ncMallData).length === 0)
+    return res.status(500).json({ error: 'Failed to fetch data' });
+
   const allCurrentData = await prisma.ncMallData.findMany({
     where: {
       active: true,
