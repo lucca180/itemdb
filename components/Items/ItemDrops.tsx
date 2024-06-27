@@ -244,7 +244,11 @@ const getCatImage = (cat: string, item_iid: number) => {
       </Badge>
     );
 
-  return null;
+  return (
+    <Badge as="h3" fontSize="md" mb={3}>
+      Category {cat}
+    </Badge>
+  );
 };
 
 type DropTextProps = {
