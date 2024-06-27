@@ -11,7 +11,8 @@
     "hottest-restock-period": "14-Day",
     "stats": "Stats",
     "latest-articles": "Latest Articles",
-    "seo-description": "Find all the data about Neopets items such as the most updated prices, wearable previews, restock history, color search, capsules drop rates and more! Create your item lists easily and share around Neopia!"
+    "seo-description": "Find all the data about Neopets items such as the most updated prices, wearable previews, restock history, color search, capsules drop rates and more! Create your item lists easily and share around Neopia!",
+    "new-in-nc-mall": "New in NC Mall"
   },
   "BetaStats": {
     "items-in-db": "Items in the database",

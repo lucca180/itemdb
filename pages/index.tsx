@@ -27,22 +27,27 @@ import Color from 'color';
 import { getTrendingItems } from './api/v1/beta/trending';
 import { getHotestRestock } from './api/v1/beta/restock';
 import { useTranslations } from 'next-intl';
+import { getLatestNCMallItems } from './api/v1/ncmall';
+import { getLatestItems } from './api/v1/items';
+import { getLatestPricedItems } from './api/v1/prices';
 
 type Props = {
+  latestItems: ItemData[];
+  lastestPrices: ItemData[];
   latestOwls: ItemData[];
   latestPosts: WP_Article[];
   trendingItems: ItemData[];
   hottestRestock: ItemData[];
+  latestNcMall: ItemData[];
 };
 
 const IS_GREY = process.env.NEXT_PUBLIC_IS_GREY === 'true';
 
 const HomePage = (props: Props) => {
   const t = useTranslations('HomePage');
-  const { latestOwls, latestPosts, hottestRestock } = props;
-  const [latestItems, setItems] = useState<ItemData[] | null>(null);
-  const [latestPrices, setPrices] = useState<ItemData[] | null>(null);
-  const [trendingItems, setTrending] = useState<ItemData[] | null>(null);
+  const { latestOwls, latestPosts, hottestRestock, latestNcMall, trendingItems } = props;
+  const [latestItems, setItems] = useState<ItemData[] | null>(props.latestItems);
+  const [latestPrices, setPrices] = useState<ItemData[] | null>(props.lastestPrices);
 
   const color = Color('#4A5568');
   // const color = Color('#CB3F5D');
@@ -68,7 +73,6 @@ const HomePage = (props: Props) => {
 
     setItems(itemRes.value?.data || null);
     setPrices(priceRes.value?.data || null);
-    setTrending(props.trendingItems || null);
   };
 
   return (
@@ -136,6 +140,7 @@ const HomePage = (props: Props) => {
             <Tabs flex={1} colorScheme="gray" variant={'line'}>
               <TabList>
                 {props.trendingItems.length > 0 && <Tab>{t('trending-items')}</Tab>}
+                {latestNcMall.length > 0 && <Tab>{t('new-in-nc-mall')}</Tab>}
                 {!latestOwls || (!!latestOwls.length && <Tab>{t('latest-owls')}</Tab>)}
                 <Tab>
                   {t('hottest-restock-period')} {t('hottest-restock')}
@@ -150,6 +155,15 @@ const HomePage = (props: Props) => {
                           <ItemCard item={item} key={item.internal_id} />
                         ))}
                       {!trendingItems && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
+                    </Flex>
+                  </TabPanel>
+                )}
+                {latestNcMall.length && (
+                  <TabPanel px={0}>
+                    <Flex flexWrap="wrap" gap={4} justifyContent="center" h="100%">
+                      {latestNcMall &&
+                        latestNcMall.map((item) => <ItemCard item={item} key={item.internal_id} />)}
+                      {!latestNcMall && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
                     </Flex>
                   </TabPanel>
                 )}
@@ -175,7 +189,9 @@ const HomePage = (props: Props) => {
         </Stack>
         <Stack direction={{ base: 'column', lg: 'row' }} mt={2} gap={{ base: 8, lg: 3 }}>
           <Flex flexFlow="column" flex={1} alignItems="center">
-            <Heading size="md">{t('stats')}</Heading>
+            <Heading size="md" mb={{ base: 5, lg: 0 }}>
+              {t('stats')}
+            </Heading>
             <BetaStatsCard />
           </Flex>
           <Flex flex={1} flexFlow={'column'}>
@@ -199,7 +215,16 @@ const HomePage = (props: Props) => {
 export default HomePage;
 
 export async function getStaticProps(context: any) {
-  const [latestOwls, latestPosts, trendingItems, hottestRestock] = await Promise.all([
+  const [
+    latestItems,
+    latestOwls,
+    latestPosts,
+    trendingItems,
+    hottestRestock,
+    latestNcMall,
+    lastestPrices,
+  ] = await Promise.all([
+    getLatestItems(16).catch(() => []),
     getLatestOwls(16).catch(() => []),
     wp_getLatestPosts(5).catch((e) => {
       console.error(e);
@@ -207,14 +232,19 @@ export async function getStaticProps(context: any) {
     }),
     getTrendingItems(16).catch(() => []),
     getHotestRestock(16, 15).catch(() => []),
+    getLatestNCMallItems(16).catch(() => []),
+    getLatestPricedItems(16).catch(() => []),
   ]);
 
   return {
     props: {
+      latestItems,
       latestOwls,
       latestPosts,
       trendingItems,
       hottestRestock,
+      latestNcMall,
+      lastestPrices,
       messages: (await import(`../translation/${context.locale}.json`)).default,
     },
     revalidate: 180, // In seconds

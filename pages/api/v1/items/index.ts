@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
-import { ItemData } from '../../../../types';
-import { getItemFindAtLinks, isMissingInfo } from '../../../../utils/utils';
 import requestIp from 'request-ip';
 import hash from 'object-hash';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { checkHash } from '../../../../utils/hash';
+import { getManyItems } from './many';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -24,100 +23,9 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   let limit = req.query.limit ? Number(req.query.limit) : 50;
   limit = Math.min(limit, 100);
 
-  const resultRaw = (await prisma.$queryRaw`
-    SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex, 
-    c.addedAt as priceAdded, c.price, c.noInflation_id, 
-    d.pricedAt as owlsPriced, d.value as owlsValue, d.valueMin as owlsValueMin
-    FROM Items as a
-    LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
-    LEFT JOIN (
-      SELECT *
-      FROM ItemPrices
-      WHERE (item_iid, addedAt) IN (
-          SELECT item_iid, MAX(addedAt)
-          FROM ItemPrices
-          GROUP BY item_iid
-      ) AND manual_check IS null
-    ) as c on c.item_iid = a.internal_id
-    LEFT JOIN (
-      SELECT *
-      FROM OwlsPrice
-      WHERE (item_iid, addedAt) IN (
-          SELECT item_iid, MAX(addedAt)
-          FROM OwlsPrice
-          GROUP BY item_iid
-      )
-    ) as d on d.item_iid = a.internal_id
-    where a.canonical_id is null
-    ORDER BY a.addedAt DESC
-    LIMIT ${limit}
-  `) as any;
-  const filteredResult = resultRaw;
+  const items = await getLatestItems(limit);
 
-  const itemList: ItemData[] = filteredResult.map((result: any) => {
-    const item: ItemData = {
-      internal_id: result.internal_id,
-      canonical_id: result.canonical_id ?? null,
-      image: result.image ?? '',
-      image_id: result.image_id ?? '',
-      item_id: result.item_id,
-      rarity: result.rarity,
-      name: result.name,
-      // specialType: result.specialType,
-      type: result.type,
-      isNC: !!result.isNC,
-      isBD: !!result.isBD,
-      estVal: result.est_val,
-      weight: result.weight,
-      description: result.description ?? '',
-      category: result.category,
-      status: result.status,
-      isNeohome: !!result.isNeohome,
-      firstSeen:
-        (result.item_id >= 85020 && result.type !== 'pb'
-          ? new Date(result.addedAt).toJSON()
-          : null) ?? null,
-      isWearable: !!result.specialType?.includes('wearable') || !!result.isWearable,
-      color: {
-        hsv: [result.hsv_h, result.hsv_s, result.hsv_v],
-        rgb: [result.rgb_r, result.rgb_g, result.rgb_b],
-        lab: [result.lab_l, result.lab_a, result.lab_b],
-        hex: result.hex,
-        type: 'vibrant',
-        population: result.population,
-      },
-      findAt: getItemFindAtLinks(result),
-      isMissingInfo: false,
-      price: {
-        value: result.price,
-        addedAt: result.priceAdded,
-        inflated: !!result.noInflation_id,
-      },
-      owls: result.owlsValue
-        ? {
-            value: result.owlsValue,
-            pricedAt: result.owlsPriced,
-            valueMin: result.owlsValueMin,
-            buyable: result.owlsValue.toLowerCase().includes('buyable'),
-          }
-        : null,
-      comment: result.comment ?? null,
-      slug: result.slug ?? null,
-      useTypes: {
-        canEat: result.canEat,
-        canRead: result.canRead,
-        canOpen: result.canOpen,
-        canPlay: result.canPlay,
-      },
-    };
-
-    item.findAt = getItemFindAtLinks(item); // does have all the info we need :)
-    item.isMissingInfo = isMissingInfo(item);
-
-    return item;
-  });
-
-  return res.json(itemList);
+  return res.status(200).json(items);
 };
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -246,4 +154,32 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   return res.status(500).json({ error: 'Internal Server Error' });
+};
+
+export const getLatestItems = async (limit: number) => {
+  const result = await prisma.items.findMany({
+    where: {
+      canonical_id: null,
+    },
+    orderBy: {
+      addedAt: 'desc',
+    },
+    select: {
+      internal_id: true,
+      addedAt: true,
+    },
+    take: limit,
+  });
+
+  const items = await getManyItems({
+    id: result.map((data) => data.internal_id.toString()),
+  });
+
+  // sort by addedAt
+  return Object.values(items).sort((a, b) => {
+    return (
+      result.findIndex((data) => data.internal_id === a.internal_id) -
+      result.findIndex((data) => data.internal_id === b.internal_id)
+    );
+  });
 };
