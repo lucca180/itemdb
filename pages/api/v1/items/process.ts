@@ -15,6 +15,7 @@ import Color from 'color';
 import { detectWearable } from '../../../../utils/detectWearable';
 import { processOpenableItems } from './open';
 import { CheckAuth } from '../../../../utils/googleCloud';
+import { ItemData } from '../../../../types';
 
 type ValueOf<T> = T[keyof T];
 
@@ -91,11 +92,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 
   // remove the 'undefined' and add new items to db
-  const itemAddList = (await Promise.all(itemAddPromises)).filter((x) => !!x) as Item[];
+  let itemAddList = (await Promise.all(itemAddPromises)).filter((x) => !!x) as Item[];
 
   const itemColorAddList = (await Promise.all(itemAddList.map((i) => getPallete(i))))
     .flat()
     .filter((x) => !!x) as ItemColor[];
+
+  // only create items that have a color
+  itemAddList = itemAddList.filter((x) => itemColorAddList.some((y) => y.image_id === x.image_id));
 
   const result = await prisma.$transaction([
     prisma.items.createMany({ data: itemAddList, skipDuplicates: true }),
@@ -339,51 +343,56 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
   }
 }
 
-export async function getPallete(item: Items) {
-  if (!item.image || !item.image_id) return undefined;
-  const pallete = await Vibrant.from(item.image).quality(1).getPalette();
+export async function getPallete(item: Items | ItemData) {
+  try {
+    if (!item.image || !item.image_id) return undefined;
+    const pallete = await Vibrant.from(item.image).quality(1).getPalette();
 
-  const colors = [];
-  let maxPop: [string, number] = ['', 0];
+    const colors = [];
+    let maxPop: [string, number] = ['', 0];
 
-  for (const [key, val] of Object.entries(pallete)) {
-    const color = Color.rgb(val?.rgb ?? [255, 255, 255]);
-    const lab = color.lab().array();
-    const hsv = color.hsv().array();
-    const hex = color.hex();
+    for (const [key, val] of Object.entries(pallete)) {
+      const color = Color.rgb(val?.rgb ?? [255, 255, 255]);
+      const lab = color.lab().array();
+      const hsv = color.hsv().array();
+      const hex = color.hex();
 
-    const colorData = {
-      image_id: item.image_id,
-      image: item.image,
+      const colorData = {
+        image_id: item.image_id,
+        image: item.image,
 
-      lab_l: lab[0],
-      lab_a: lab[1],
-      lab_b: lab[2],
+        lab_l: lab[0],
+        lab_a: lab[1],
+        lab_b: lab[2],
 
-      hsv_h: hsv[0],
-      hsv_s: hsv[1],
-      hsv_v: hsv[2],
+        hsv_h: hsv[0],
+        hsv_s: hsv[1],
+        hsv_v: hsv[2],
 
-      rgb_r: val?.rgb[0] ?? 255,
-      rgb_g: val?.rgb[1] ?? 255,
-      rgb_b: val?.rgb[2] ?? 255,
+        rgb_r: val?.rgb[0] ?? 255,
+        rgb_g: val?.rgb[1] ?? 255,
+        rgb_b: val?.rgb[2] ?? 255,
 
-      hex: hex,
+        hex: hex,
 
-      type: key.toLowerCase(),
-      population: val?.population ?? 0,
-      isMaxPopulation: false,
-    };
+        type: key.toLowerCase(),
+        population: val?.population ?? 0,
+        isMaxPopulation: false,
+      };
 
-    if (colorData.population > maxPop[1]) maxPop = [colorData.type, colorData.population];
+      if (colorData.population > maxPop[1]) maxPop = [colorData.type, colorData.population];
 
-    colors.push(colorData);
+      colors.push(colorData);
+    }
+
+    const i = colors.findIndex((x) => x.type === maxPop[0]);
+    colors[i].isMaxPopulation = true;
+
+    return colors;
+  } catch (e) {
+    console.error(e);
+    return undefined;
   }
-
-  const i = colors.findIndex((x) => x.type === maxPop[0]);
-  colors[i].isMaxPopulation = true;
-
-  return colors;
 }
 
 async function processOpenables() {
