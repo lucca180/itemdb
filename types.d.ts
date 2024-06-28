@@ -1,3 +1,5 @@
+import type { NcMallData } from '@prisma/client';
+
 export type ItemData = {
   internal_id: number;
   item_id: number | null;
@@ -500,6 +502,21 @@ export type OwlsTrade = {
   traded: string;
   traded_for: string;
   notes: string;
+};
+
+export type NCMallData = {
+  internal_id: number;
+  item_iid: number;
+  item_id: number;
+  price: number;
+  saleBegin: string | null;
+  saleEnd: string | null;
+  discountBegin: string | null;
+  discountEnd: string | null;
+  discountPrice: number | null;
+  active: boolean;
+  addedAt: string;
+  updatedAt: string;
 };
 
 // ------- DTI -------- //
