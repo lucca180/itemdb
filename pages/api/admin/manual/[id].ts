@@ -31,6 +31,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     where: {
       processed: false,
       manual_check: {
+        not: null,
         contains: `(${id})`,
       },
     },
