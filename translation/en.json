@@ -158,7 +158,12 @@
     "item-effects": "Item Effects",
     "usage-type": "Usage Type",
     "occupies": "Occupies",
-    "first-seen": "First Seen"
+    "first-seen": "First Seen",
+    "nc-mall-info": "NC Mall Info",
+    "launch-date": "Launch Date",
+    "retire-date": "Retire Date",
+    "buyable-right-now": "Buyable right now",
+    "retired": "Retired"
   },
   "Button": {
     "feedback": "Feedback",
@@ -303,7 +308,8 @@
     "playable": "Playable",
     "openable": "Openable",
     "name-not-contains": "Name Not Contains",
-    "wearable-zone": "Wearable Zone"
+    "wearable-zone": "Wearable Zone",
+    "until": "until"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",

@@ -8,6 +8,7 @@ import {
   ItemEffect,
   ItemLastSeen,
   ItemOpenable,
+  NCMallData,
   // ItemTag,
   PriceData,
   TradeData,
@@ -51,6 +52,8 @@ import ItemEffectsCard from '../../components/Items/ItemEffectsCard';
 import { getItemEffects } from '../api/v1/items/[id_name]/effects';
 import { WearableData } from '@prisma/client';
 import { getWearableData } from '../api/v1/items/[id_name]/wearable';
+import { getItemNCMall } from '../api/v1/items/[id_name]/ncmall';
+import NcMallCard from '../../components/Items/NCMallCard';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -72,6 +75,7 @@ type ItemPageProps = {
   NPPrices: PriceData[];
   itemEffects: ItemEffect[];
   wearableData: WearableData[] | null;
+  ncMallData: NCMallData | null;
   messages: any;
 };
 
@@ -299,8 +303,11 @@ const ItemPage = (props: ItemPageProps) => {
             <SimilarItemsCard item={item} similarItems={props.similarItems} />
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>
-            {item.isWearable && <ItemPreview item={item} wearableData={props.wearableData} />}
+            {item.isNC && props.ncMallData && (
+              <NcMallCard item={item} ncMallData={props.ncMallData} />
+            )}
             {item.findAt.restockShop && <ItemRestock item={item} lastSeen={props.lastSeen} />}
+            {item.isWearable && <ItemPreview item={item} wearableData={props.wearableData} />}
             {!item.isNC && item.status === 'active' && <TradeCard item={item} trades={trades} />}
             {itemParent.length > 0 && <ItemParent item={item} parentItems={itemParent} />}
           </Flex>
@@ -354,6 +361,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     lastSeen,
     itemEffects,
     wearableData,
+    NCMallData,
   ] = await Promise.all([
     getItemColor([item.image_id]),
     getItemLists(item.internal_id, true, false),
@@ -368,6 +376,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
       : null,
     getItemEffects(item.internal_id),
     item.isWearable ? getWearableData(item.internal_id) : null,
+    item.isNC ? getItemNCMall(item.internal_id) : null,
   ]);
 
   if (!colors) return { notFound: true };
@@ -385,6 +394,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     lastSeen: lastSeen,
     itemEffects: itemEffects,
     wearableData: wearableData,
+    ncMallData: NCMallData,
     messages: (await import(`../../translation/${context.locale}.json`)).default,
   };
 

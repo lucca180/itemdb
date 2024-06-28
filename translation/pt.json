@@ -159,7 +159,12 @@
     "item-effects": "Efeitos do Item",
     "usage-type": "Tipo de Uso",
     "occupies": "Ocupa",
-    "first-seen": "Descoberto Em"
+    "first-seen": "Descoberto Em",
+    "launch-date": "Lançamento",
+    "nc-mall-info": "Info do Centro NC",
+    "retire-date": "Retirado em",
+    "buyable-right-now": "Disponível Agora",
+    "retired": "Retirado"
   },
   "Button": {
     "feedback": "Feedback",
@@ -304,7 +309,8 @@
     "readable": "Legível",
     "openable": "Abrível",
     "name-not-contains": "Nome Não Contém",
-    "wearable-zone": "Zona de Aplicável"
+    "wearable-zone": "Zona de Aplicável",
+    "until": "até"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",
