@@ -45,8 +45,13 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       );
 
       if (daysSinceLastUpdate >= 30) {
-        const [, rawData] = await handleRegularStyle(item.name);
-        processPromise = processDTIData(item, rawData);
+        try {
+          const [, rawData] = await handleRegularStyle(item.name);
+          processPromise = processDTIData(item, rawData);
+        } catch (e) {
+          processPromise = null;
+          console.error(e);
+        }
       }
     }
 
