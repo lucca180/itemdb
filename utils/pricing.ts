@@ -32,7 +32,7 @@ export const processPrices2 = (allItemData: PriceProcess2[]) => {
   mostRecents.map((x, i) => {
     if (i <= 4) {
       const stock = Math.min(x.stock, 2);
-      prices.push(...Array(stock).fill(x.price));
+      prices.push(...Array(stock).fill(x.price.toNumber()));
     } else prices.push(x.price.toNumber());
   });
 
