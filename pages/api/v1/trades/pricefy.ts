@@ -14,7 +14,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (req.method !== 'GET')
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
-  let order: Prisma.TradesOrderByWithRelationAndSearchRelevanceInput = { addedAt: 'asc' };
+  let order: Prisma.TradesOrderByWithRelationInput = { addedAt: 'asc' };
 
   // to prevent multiple people from pricing the same trade at the same time
   const dir = chance.bool() ? 'asc' : 'desc';
@@ -90,7 +90,7 @@ const getPopularItem = async () => {
 
 const getPrecifyTrades = async (
   itemName: string,
-  order: Prisma.TradesOrderByWithRelationAndSearchRelevanceInput,
+  order: Prisma.TradesOrderByWithRelationInput,
   limit = 1
 ) => {
   const tradeRaw = await prisma.trades.findMany({

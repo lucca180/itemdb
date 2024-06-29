@@ -41,7 +41,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     let processPromise;
     if (exists) {
       const daysSinceLastUpdate = Math.floor(
-        (Date.now() - new Date(file.metadata.updated).getTime()) / (1000 * 60 * 60 * 24)
+        (Date.now() - new Date(file.metadata.updated ?? 0).getTime()) / (1000 * 60 * 60 * 24)
       );
 
       if (daysSinceLastUpdate >= 30) {

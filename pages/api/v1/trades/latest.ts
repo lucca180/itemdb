@@ -18,7 +18,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const includeProcessed = req.query.includeProcessed === 'true';
   const random = req.query.random === 'true';
 
-  let order: Prisma.TradesOrderByWithRelationAndSearchRelevanceInput = { addedAt: 'asc' };
+  let order: Prisma.TradesOrderByWithRelationInput = { addedAt: 'asc' };
 
   // to prevent multiple people from pricing the same trade at the same time
   if (random) {
