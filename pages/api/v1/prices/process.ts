@@ -212,8 +212,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
           item,
           newPriceAlgorithm.price,
           newPriceAlgorithm.usedIds,
-          newPriceAlgorithm.latestDate,
-          newPriceAlgorithm?.price
+          newPriceAlgorithm.latestDate
         ).then((_) => {
           if (_) processedIDs.push(...allIDs);
           return _;
@@ -304,38 +303,37 @@ async function updateOrAddDB(
   priceData: PriceProcess2,
   priceValue: number,
   usedIDs: number[],
-  latestDate: Date,
-  priceValue2?: number
+  latestDate: Date
 ): Promise<Prisma.ItemPricesUncheckedCreateInput | undefined> {
-  const newPriceData = {
+  const newPriceData: Prisma.ItemPricesUncheckedCreateInput = {
     name: 'priceprocess2',
     item_iid: priceData.item_iid,
-    price: priceValue >= Math.pow(2, 31) ? Math.pow(2, 31) - 1 : priceValue,
-    newPrice: priceValue2 ?? null,
+    price: priceValue,
     manual_check: null,
     addedAt: latestDate,
     usedProcessIDs: usedIDs.toString(),
-  } as Prisma.ItemPricesUncheckedCreateInput;
+  };
 
   try {
     if (!priceData.item_iid) throw 'invalid data';
 
-    const oldPrice = await prisma.itemPrices.findFirst({
+    const oldPriceRaw = await prisma.itemPrices.findFirst({
       where: {
         item_iid: newPriceData.item_iid,
       },
       orderBy: { addedAt: 'desc' },
     });
 
-    if (!oldPrice) return newPriceData;
+    if (!oldPriceRaw) return newPriceData;
+    const oldPrice = oldPriceRaw.price.toNumber();
 
-    const daysSinceLastUpdate = differenceInCalendarDays(latestDate, oldPrice.addedAt);
-    const variation = coefficientOfVariation([oldPrice.price, priceValue]);
-    const priceDiff = Math.abs(oldPrice.price - priceValue);
+    const daysSinceLastUpdate = differenceInCalendarDays(latestDate, oldPriceRaw.addedAt);
+    const variation = coefficientOfVariation([oldPrice, priceValue]);
+    const priceDiff = Math.abs(oldPrice - priceValue);
 
     if (daysSinceLastUpdate <= 1) return undefined;
 
-    if (latestDate < oldPrice.addedAt) {
+    if (latestDate < oldPriceRaw.addedAt) {
       return undefined;
     }
 
@@ -346,34 +344,37 @@ async function updateOrAddDB(
 
     if ((variation <= 5 || priceDiff < 5000) && daysSinceLastUpdate <= 15) return undefined;
 
-    if (!oldPrice.noInflation_id && priceDiff >= 75000) {
-      if (oldPrice.price < priceValue && variation >= 75) {
-        newPriceData.noInflation_id = oldPrice.internal_id;
+    if (!oldPriceRaw.noInflation_id && priceDiff >= 75000) {
+      if (oldPrice < priceValue && variation >= 75) {
+        newPriceData.noInflation_id = oldPriceRaw.internal_id;
         throw 'inflation';
       }
 
-      if (oldPrice.price < priceValue && priceValue >= 100000 && variation >= 50) {
-        newPriceData.noInflation_id = oldPrice.internal_id;
+      if (oldPrice < priceValue && priceValue >= 100000 && variation >= 50) {
+        newPriceData.noInflation_id = oldPriceRaw.internal_id;
         throw 'inflation';
       }
     }
 
     // update an inflated price
-    if (oldPrice.noInflation_id) {
-      const lastNormalPrice = await prisma.itemPrices.findUniqueOrThrow({
-        where: { internal_id: oldPrice.noInflation_id },
+    if (oldPriceRaw.noInflation_id) {
+      const lastNormalPriceRaw = await prisma.itemPrices.findUniqueOrThrow({
+        where: { internal_id: oldPriceRaw.noInflation_id },
       });
-      // const daysWithInflation = differenceInCalendarDays(latestDate, lastNormalPrice.addedAt);
-      const inflationVariation = coefficientOfVariation([lastNormalPrice.price, priceValue]);
 
-      newPriceData.noInflation_id = oldPrice.noInflation_id;
+      const lastNormalPrice = lastNormalPriceRaw.price.toNumber();
+
+      // const daysWithInflation = differenceInCalendarDays(latestDate, lastNormalPrice.addedAt);
+      const inflationVariation = coefficientOfVariation([lastNormalPrice, priceValue]);
+
+      newPriceData.noInflation_id = oldPriceRaw.noInflation_id;
 
       if (
         priceValue <= 75000 ||
         // (daysWithInflation >= 60 && variation < 30) ||
         (priceValue > 75000 && inflationVariation < 75) ||
         (priceValue >= 100000 && inflationVariation < 50) ||
-        lastNormalPrice.price >= priceValue
+        lastNormalPrice >= priceValue
       )
         newPriceData.noInflation_id = null;
     }

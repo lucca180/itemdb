@@ -1,5 +1,3 @@
-import type { NcMallData } from '@prisma/client';
-
 export type ItemData = {
   internal_id: number;
   item_id: number | null;

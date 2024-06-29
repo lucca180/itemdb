@@ -186,8 +186,7 @@ export const newCreatePriceProcessFlow = async (
       return {
         owner: raw.owner,
         stock: raw.stock,
-        price: raw.price >= Math.pow(2, 31) ? Math.pow(2, 31) - 1 : raw.price,
-        price2: raw.price,
+        price: raw.price,
         otherInfo: raw.otherInfo,
         language: raw.language,
         ip_address: raw.ip_address,

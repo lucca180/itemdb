@@ -40,7 +40,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
     pricesByIid[price.item_iid].push({
       price_id: price.internal_id,
-      value: price.price,
+      value: price.price.toNumber(),
       item_iid: price.item_iid,
       addedAt: price.addedAt.toJSON(),
       inflated: !!price.noInflation_id,

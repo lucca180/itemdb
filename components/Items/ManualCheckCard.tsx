@@ -102,8 +102,8 @@ const ManualCheckCard = (props: Props) => {
       {type === 'inflation' && (
         <AlertDescription>
           Please confirm that the new price of{' '}
-          <b>{intl.format((manualCheck as ItemPrices).price ?? 0)} NP</b> is close to correct for{' '}
-          {new Date(manualCheck.addedAt).toLocaleDateString()}
+          <b>{intl.format((manualCheck as ItemPrices).price.toNumber() ?? 0)} NP</b> is close to
+          correct for {new Date(manualCheck.addedAt).toLocaleDateString()}
           <Flex mt={3} justifyContent="space-between">
             <Button colorScheme={'red'} variant="ghost" onClick={() => submitAction('reprove')}>
               Reject

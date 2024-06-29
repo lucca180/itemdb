@@ -169,8 +169,8 @@ model ItemPrices {
   item_id     Int?
   name        String
   image_id    String?
-  price       Int
-  newPrice    Decimal?  @db.Decimal(11, 0)
+  // price       Int
+  price       Decimal   @db.Decimal(11, 0)
   addedAt     DateTime  @default(now())
   processedAt DateTime? @default(now())
 
@@ -242,7 +242,7 @@ model Trades {
 
   items TradeItems[]
 
-  @@index([processed,hash])
+  @@index([processed, hash])
   @@index([hash, addedAt])
   @@index([wishlist(length: 200)])
 }
@@ -534,23 +534,22 @@ model WearableData {
   @@index([zone_plain_label, species_name])
 }
 
-
 model NcMallData {
-  internal_id Int    @id @default(autoincrement())
+  internal_id Int   @id @default(autoincrement())
   item_iid    Int
   item_id     Int
   item        Items @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
 
-  price      Int
-  saleBegin  DateTime?
-  saleEnd    DateTime?
+  price     Int
+  saleBegin DateTime?
+  saleEnd   DateTime?
 
   discountBegin DateTime?
   discountEnd   DateTime?
   discountPrice Int?
 
-  active Boolean @default(true)
-  addedAt DateTime @default(now())
+  active    Boolean  @default(true)
+  addedAt   DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([item_iid, active])
@@ -583,8 +582,7 @@ model PriceProcess2 {
   type       String
   otherInfo  String?
   stock      Int      @default(1)
-  price      Int
-  price2     Decimal? @db.Decimal(11, 0)
+  price      Decimal  @db.Decimal(11, 0)
   addedAt    DateTime @default(now())
   ip_address String?
   language   String
@@ -592,9 +590,8 @@ model PriceProcess2 {
   hash      String? @unique
   neo_id    Int?
   processed Boolean @default(false)
-  
+
   @@unique([type, neo_id])
-  
   @@index([addedAt, processed])
   @@index([item_iid, addedAt, processed])
 }

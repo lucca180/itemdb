@@ -359,7 +359,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       findAt: getItemFindAtLinks(result),
       isMissingInfo: false,
       price: {
-        value: result.price,
+        value: result.price ? result.price.toNumber() : null,
         addedAt: result.priceAdded,
         inflated: !!result.noInflation_id,
       },

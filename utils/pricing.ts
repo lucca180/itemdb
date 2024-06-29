@@ -8,7 +8,9 @@ export const processPrices2 = (allItemData: PriceProcess2[]) => {
   // const item = allItemData[0];
 
   // get only the most recent data available that fits the criteria
-  const mostRecentsRaw = filterMostRecents(allItemData).sort((a, b) => a.price - b.price);
+  const mostRecentsRaw = filterMostRecents(allItemData).sort(
+    (a, b) => a.price.toNumber() - b.price.toNumber()
+  );
 
   if (mostRecentsRaw.length === 0) return undefined;
 
@@ -31,7 +33,7 @@ export const processPrices2 = (allItemData: PriceProcess2[]) => {
     if (i <= 4) {
       const stock = Math.min(x.stock, 2);
       prices.push(...Array(stock).fill(x.price));
-    } else prices.push(x.price);
+    } else prices.push(x.price.toNumber());
   });
 
   // remove outliers

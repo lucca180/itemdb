@@ -234,7 +234,7 @@ export const getItem = async (id_name: number | string) => {
     findAt: getItemFindAtLinks(result), // doesnt have all the info we need :(
     isMissingInfo: false,
     price: {
-      value: result.price,
+      value: result.price ? result.price.toNumber() : null,
       addedAt: (result.priceAdded as Date | null)?.toJSON() ?? null,
       inflated: !!result.noInflation_id,
     },
