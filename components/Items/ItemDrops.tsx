@@ -102,7 +102,7 @@ const ItemDrops = (props: Props) => {
         .sort((a, b) => a.name.localeCompare(b.name))
         .map((pool, i) => (
           <Flex alignItems="center" key={pool.name} flexFlow="column" mb={8}>
-            {getCatImage(pool.name, item.internal_id)}
+            {isChoice && getCatImage(pool.name, item.internal_id)}
             {!isChoice && pool.name === 'bonus' && (
               <Alert status="success" variant="subtle" textAlign={'center'} mb={3}>
                 <Text textAlign={'center'} fontSize="sm" flex="1">
