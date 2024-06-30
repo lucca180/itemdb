@@ -360,7 +360,11 @@ export const shouldSkipTrade = (wishlist: string) => {
   if (wishlist.toLowerCase().includes('paperclip') || wishlist.toLowerCase().includes('paper clip'))
     return true;
 
-  const wishCpy = wishlist.toLowerCase().replaceAll(/nps?/g, '');
+  let wishCpy = wishlist.toLowerCase().replaceAll(/nps?/g, '');
+  wishCpy = wishCpy.replaceAll('reserved', '');
+  wishCpy = wishCpy.replaceAll('res', '');
+  wishCpy = wishCpy.replaceAll('r', '');
+  wishCpy = wishCpy.trim();
 
   if (!isNaN(Number(wishCpy))) {
     if (!Number.isInteger(Number(wishCpy))) return false;

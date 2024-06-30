@@ -81,15 +81,20 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (itemList.length === 0) continue;
 
-    const tradeHash = hash({
+    const oldTradeHash = hash({
       wishlist: lot.wishList,
+      items: itemList,
+    });
+
+    const newTradeHash = hash({
+      wishlist: lot.wishList.toLowerCase().trim().replace(/\s/g, ''),
       items: itemList,
     });
 
     const similarTrades = await prisma.trades.findFirst({
       where: {
         owner: lot.owner,
-        hash: tradeHash,
+        OR: [{ hash: newTradeHash }, { hash: oldTradeHash }],
         addedAt: {
           gte: new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 3),
         },
@@ -108,7 +113,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         ip_address: requestIp.getClientIp(req),
         priced: lot.wishList === 'none' || shouldSkipTrade(lot.wishList),
         processed: lot.wishList === 'none' || shouldSkipTrade(lot.wishList),
-        hash: tradeHash,
+        hash: newTradeHash,
         items: {
           create: [...itemList],
         },
