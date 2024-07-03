@@ -120,7 +120,20 @@ export const SearchBar = (props: Props) => {
         },
       });
 
-      setResult(searchRes.data);
+      if (searchRes.data.content.length !== 0) {
+        setResult(searchRes.data);
+        return;
+      }
+
+      const fuzzyRes = await Axios.get('search?s=' + encodeURIComponent(newSearch.trim()), {
+        params: {
+          limit: 5,
+          skipStats: true,
+          mode: 'fuzzy',
+        },
+      });
+
+      setResult(fuzzyRes.data);
     } catch (e) {
       console.error(e);
     }
