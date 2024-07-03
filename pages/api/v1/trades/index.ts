@@ -108,7 +108,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     const prom = prisma.trades.create({
       data: {
         trade_id: Number(lot.tradeID),
-        wishlist: lot.wishList,
+        wishlist: lot.wishList.trim(),
         owner: lot.owner,
         ip_address: requestIp.getClientIp(req),
         priced: lot.wishList === 'none' || shouldSkipTrade(lot.wishList),
