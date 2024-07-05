@@ -163,7 +163,10 @@
     "launch-date": "Launch Date",
     "retire-date": "Retire Date",
     "buyable-right-now": "Buyable right now",
-    "retired": "Retired"
+    "retired": "Retired",
+    "free": "Free!",
+    "since": "Since",
+    "until": "Until"
   },
   "Button": {
     "feedback": "Feedback",

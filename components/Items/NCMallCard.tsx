@@ -15,8 +15,9 @@ const NcMallCard = (props: Props) => {
   const format = useFormatter();
   const { item, ncMallData } = props;
 
-  const isDiscounted = new Date(ncMallData.discountEnd ?? 0) > new Date();
-  const isBuyable = !ncMallData.saleEnd || new Date(ncMallData.saleEnd) > new Date();
+  const isDiscounted = ncMallData.active && new Date(ncMallData.discountEnd ?? 0) > new Date();
+  const isBuyable =
+    ncMallData.active && (!ncMallData.saleEnd || new Date(ncMallData.saleEnd) > new Date());
 
   return (
     <CardBase title={t('ItemPage.nc-mall-info')} color={item.color.rgb}>
@@ -73,14 +74,15 @@ const NcMallCard = (props: Props) => {
               colorScheme={isDiscounted ? undefined : 'purple'}
               textDecoration={isDiscounted ? 'line-through' : undefined}
             >
-              {ncMallData.price} NC
+              {ncMallData.price > 0 && `${ncMallData.price} NC`}
+              {ncMallData.price === 0 && t('ItemPage.free')}
             </Badge>
           </Flex>
         </HStack>
         {ncMallData.saleBegin && (
           <HStack>
             <Tag size="md" fontWeight="bold" as="h3">
-              {t('ItemPage.launch-date')}
+              {t('ItemPage.since')}
             </Tag>
             <Flex flexFlow={'column'} flex="1" alignItems={'flex-end'} gap={1}>
               <Text
@@ -100,7 +102,7 @@ const NcMallCard = (props: Props) => {
         {ncMallData.saleEnd && (
           <HStack>
             <Tag size="md" fontWeight="bold" as="h3">
-              {t('ItemPage.retire-date')}
+              {t('ItemPage.until')}
             </Tag>
             <Flex flexFlow={'column'} flex="1" alignItems={'flex-end'} gap={1}>
               <Text

@@ -164,7 +164,10 @@
     "nc-mall-info": "Info do Centro NC",
     "retire-date": "Retirado em",
     "buyable-right-now": "Disponível Agora",
-    "retired": "Retirado"
+    "retired": "Retirado",
+    "free": "Grátis!",
+    "since": "Desde",
+    "until": "Até"
   },
   "Button": {
     "feedback": "Feedback",
