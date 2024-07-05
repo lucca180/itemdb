@@ -372,8 +372,7 @@ async function updateOrAddDB(
       if (
         priceValue <= 75000 ||
         // (daysWithInflation >= 60 && variation < 30) ||
-        (priceValue > 75000 && inflationVariation < 75) ||
-        (priceValue >= 100000 && inflationVariation < 50) ||
+        inflationVariation < 50 ||
         lastNormalPrice >= priceValue
       )
         newPriceData.noInflation_id = null;

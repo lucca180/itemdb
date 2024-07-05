@@ -300,7 +300,11 @@ export const getItemDrops = async (
       pool.maxDrop = Number(max);
     }
 
-    if (!pool.isChance && pool.openings / openingCount <= 0.9 && !openableData.isChoice)
+    if (
+      !pool.isChance &&
+      pool.openings / openingCount <= 0.9 &&
+      (!openableData.isChoice || pool.name === 'le')
+    )
       pool.isChance = true;
   });
 
