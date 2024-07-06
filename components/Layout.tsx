@@ -18,6 +18,7 @@ import {
   Spinner,
   Link as ChakraLink,
   Select,
+  Badge,
 } from '@chakra-ui/react';
 
 import NextImage from 'next/image';
@@ -145,17 +146,23 @@ const Layout = (props: Props) => {
           <ChakraLink as={Link} href="/lists/import" prefetch={false}>
             {t('checklists')}
           </ChakraLink>
+          <ChakraLink as={Link} href="/restock/dashboard" prefetch={false}>
+            {t('dashboard')}
+          </ChakraLink>{' '}
           <Text display="inline-flex" alignItems={'center'} gap={1}>
-            <ChakraLink as={Link} href="/restock/dashboard" prefetch={false}>
-              {t('dashboard')}
+            <Badge colorScheme="yellow" fontSize={'9px'} verticalAlign={'middle'}>
+              {t('new')}
+            </Badge>
+            <ChakraLink as={Link} href="/tools/pet-colors" prefetch={false}>
+              {t('pet-color-tool')}
             </ChakraLink>{' '}
           </Text>
           <ChakraLink as={Link} href="/restock" prefetch={false}>
             {t('restock-hub')}
           </ChakraLink>{' '}
-          <ChakraLink as={Link} href="/articles/userscripts" prefetch={false}>
+          {/* <ChakraLink as={Link} href="/articles/userscripts" prefetch={false}>
             {t('sdb-pricer')}
-          </ChakraLink>
+          </ChakraLink> */}
         </Flex>
         <Flex as="header" w="full" maxW="8xl" marginX="auto" gap={{ base: 2, md: 4 }} px={4} py={4}>
           <Flex as={Link} href="/" flex={'0 0 auto'}>

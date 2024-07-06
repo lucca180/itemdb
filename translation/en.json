@@ -68,7 +68,8 @@
     "you-can-change-lang": "You can switch languages at any time in the footer",
     "server-upgrade": "We have a scheduled maintenance next Sunday (14) and itemdb may be unavailable for a few hours",
     "mt15": "<b>MT NEEDS YOU</b> - Click here and learn more #mtRecomended",
-    "public-data": "Public Data"
+    "public-data": "Public Data",
+    "pet-color-tool": "Pet Color Tool"
   },
   "ItemPage": {
     "item-info": "Item Info",
@@ -775,5 +776,19 @@
     "unknown-text": "We couldn't precise the category of the following items, so we cannot provide the odds correctly.",
     "item-opening-reports": "{itemName} drop odds on {openings} opening reports. <Link>Learn How To Help</Link>",
     "item-drops": "Item Drops"
+  },
+  "PetColors": {
+    "no-color-1": "We couldn't find a way to paint your neopet with this color.",
+    "no-color-2": "Perhaps you could try the Rainbow Fountain or the Secret Laboratory.",
+    "color-change": "Color Change",
+    "cheapest-way": "Cheapest Way",
+    "perfect-match": "Perfect Match",
+    "cheapest-change": "Cheapest Change",
+    "select-color": "Select Color",
+    "select-species": "Select Species",
+    "pet-color-tool": "Pet Color Tool",
+    "cta": "The Pet Color Tool is the perfect tool for you to change the color or species (or both!) of your neopet while spending much less!",
+    "species-change": "Species Change",
+    "combination-error": "Pet + Color combination not found. Please try again."
   }
 }

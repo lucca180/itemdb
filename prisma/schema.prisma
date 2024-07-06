@@ -558,6 +558,15 @@ model NcMallData {
   @@index([item_iid, active])
 }
 
+model ColorSpecies { 
+  internal_id Int    @id @default(autoincrement())
+  species_id  Int
+  color_id    Int
+  addedAt     DateTime @default(now())
+
+  @@unique([species_id, color_id])
+}
+
 // -------- DISMANTELING PRICE PROCESS --------- //
 
 // this is for the last time each item appeared on the price process for each type

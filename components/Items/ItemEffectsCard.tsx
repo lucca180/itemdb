@@ -140,7 +140,7 @@ const EffectText = (props: EffectTextProps) => {
   const locale = useLocale() as 'en' | 'pt';
 
   if (text) return <Markdown>{text}</Markdown>;
-  console.log(props.effect);
+
   return (
     <>
       {['disease', 'cureDisease'].includes(type) &&

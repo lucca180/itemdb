@@ -1,7 +1,7 @@
 import Axios from 'axios';
 import Chance from 'chance';
-import { DTIBodiesAndTheirZones, DTIColor, DTIItemPreview } from '../types';
-import { DTI_ALL_COLORS, GET_ITEM_PREVIEW_BY_NAME } from './impressConsts';
+import { DTIBodiesAndTheirZones, DTIColor, DTIItemPreview, DTIPetAppearance } from '../types';
+import { DTI_ALL_COLORS, GET_ITEM_PREVIEW_BY_NAME, GET_PET_APPEARANCE } from './impressConsts';
 
 const chance = new Chance();
 
@@ -57,6 +57,17 @@ export class dti {
     return res.itemByName as DTIItemPreview & {
       compatibleBodiesAndTheirZones: DTIBodiesAndTheirZones[];
     };
+  }
+
+  public static async fetchPetPreview(speciesId: number, colorId: number) {
+    const variables = {
+      speciesId: speciesId,
+      colorId: colorId,
+      pose: 'HAPPY_MASC',
+    };
+
+    const res = await dti._query(GET_PET_APPEARANCE, variables);
+    return res.petAppearance as DTIPetAppearance;
   }
 
   public static async getItemPreview(itemName: string) {

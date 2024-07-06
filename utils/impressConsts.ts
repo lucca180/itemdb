@@ -152,11 +152,11 @@ query($allZonesIds: [ID!]!, $speciesId: ID!, $colorId: ID!, $offset: Int!, $size
 
 export const GET_PET_APPEARANCE =
   `
-query($speciesId: ID!, $colorId: ID!, $pose: Pose!, $size: LayerImageSize){
+query($speciesId: ID!, $colorId: ID!, $pose: Pose!){
 	petAppearance(speciesId: $speciesId, colorId: $colorId, pose: $pose){
 	  ...PetAppearanceForOutfitPreview
 	}
-  }
+}
 ` + FRAGMENT_PET_APPEARANCE;
 
 export const GET_ITEM_PREVIEW_BY_NAME =

@@ -69,7 +69,8 @@
     "itemdb-survey": "itemdb está completando um ano! Queremos sua opinião nesta pesquisa rápida (leva 30s!)",
     "server-upgrade": "Nós teremos uma manutenção programada no próximo Domingo (14) e o itemdb pode ficar indisponível por algumas horas",
     "mt15": "<b>O MT PRECISA DE VOCÊ</b> - Clique aqui e saiba mais",
-    "public-data": "Public Data"
+    "public-data": "Public Data",
+    "pet-color-tool": "Pet Color Tool"
   },
   "ItemPage": {
     "item-info": "Item Info",
@@ -776,5 +777,19 @@
     "unknown-categories": "Categoria Desconhecida",
     "unknown-text": "Não conseguimos precisar a categoria dos seguintes itens, por isso não podemos fornecer as probabilidades corretamente.",
     "item-drops": "Item Drops"
+  },
+  "PetColors": {
+    "cheapest-change": "Troca mais barata",
+    "cheapest-way": "Mais Barato",
+    "color-change": "Troca de Cor",
+    "cta": "A Ferramenta de Cor de Pet é a maneira perfeita para você mudar a cor ou espécie (ou ambas!) do seu neopet gastando muito menos!",
+    "no-color-1": "Não encontramos forma de pintar seu neopet com essa cor.",
+    "no-color-2": "Talvez você possa tentar a Fonte Arco-Íris ou o Laboratório Secreto.",
+    "perfect-match": "Combinação Perfeita",
+    "pet-color-tool": "Ferramenta de Cor de Pet",
+    "select-color": "Selecionar Cor",
+    "select-species": "Selecionar Espécie",
+    "species-change": "Troca de Espécie",
+    "combination-error": "Combinação de cor + especie não encontrada.  Por favor, tente novamente."
   }
 }
