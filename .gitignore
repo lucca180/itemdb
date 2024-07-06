@@ -9,3 +9,4 @@ firebase-key.json
 userscripts/hash.js
 *.tsbuildinfo
 pages/restock/dashboard/index-disabled2.tsx
+pages/api/_dev
