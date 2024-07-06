@@ -5,7 +5,7 @@ import CardBase from '../Card/CardBase';
 import dynamic from 'next/dynamic';
 import Color from 'color';
 import { useLocale, useTranslations } from 'next-intl';
-import { getDiseaseTranslation } from '../../utils/utils';
+import { getDiseaseTranslation, getPetColorId, getSpeciesId } from '../../utils/utils';
 import NextImage from 'next/image';
 
 const Markdown = dynamic(() => import('../Utils/Markdown'));
@@ -64,6 +64,11 @@ const EffectTypes = {
     name_pt: 'Outro',
     img: '/icons/effects-other.gif',
   },
+  colorSpecies: {
+    name_en: 'Color/Species Change',
+    name_pt: 'Troca de Cor/Espécie',
+    img: '/icons/effects-color.png',
+  },
 };
 
 type EffectCardProps = {
@@ -119,12 +124,23 @@ type EffectTextProps = {
 };
 
 const EffectText = (props: EffectTextProps) => {
-  const { name, type, species, isChance, text, strVal, minVal, maxVal } = props.effect;
+  const {
+    name,
+    type,
+    species,
+    isChance,
+    text,
+    strVal,
+    minVal,
+    maxVal,
+    speciesTarget,
+    colorTarget,
+  } = props.effect;
   const t = useTranslations();
   const locale = useLocale() as 'en' | 'pt';
 
   if (text) return <Markdown>{text}</Markdown>;
-
+  console.log(props.effect);
   return (
     <>
       {['disease', 'cureDisease'].includes(type) &&
@@ -173,6 +189,76 @@ const EffectText = (props: EffectTextProps) => {
           })}
         </>
       )}
+      {type === 'colorSpecies' && (
+        <>
+          {t.rich('ItemPage.effects-colorSpecies', {
+            isAll: !!speciesTarget && !!colorTarget,
+            random: isChance,
+            species: species && species.length > 0 ? 'true' : 'false',
+            TargetType: () => (
+              <>
+                {speciesTarget && !colorTarget && t('General.species')}
+                {!speciesTarget && colorTarget && t('ItemPage.color')}
+              </>
+            ),
+            Target1: () => (
+              <>
+                {colorTarget && (
+                  <>
+                    <Link
+                      href={`https://www.neopets.com/pool/all_pb.phtml?f_color_id=${getPetColorId(
+                        colorTarget
+                      )}`}
+                      isExternal
+                    >
+                      {colorTarget}
+                    </Link>
+                  </>
+                )}
+                {colorTarget && !speciesTarget && (
+                  <NextImage
+                    src={'/icons/neopets.png'}
+                    width={16}
+                    height={16}
+                    style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '0.2rem' }}
+                    alt="link icon"
+                  />
+                )}
+              </>
+            ),
+            Target2: () => (
+              <>
+                {speciesTarget && (
+                  <>
+                    <Link
+                      href={`https://www.neopets.com/pool/all_pb.phtml?f_species_id=${getSpeciesId(
+                        speciesTarget
+                      )}`}
+                      isExternal
+                    >
+                      {speciesTarget}
+                    </Link>
+                    <NextImage
+                      src={'/icons/neopets.png'}
+                      width={16}
+                      height={16}
+                      style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '0.2rem' }}
+                      alt="link icon"
+                    />
+                  </>
+                )}
+              </>
+            ),
+            Neopet: () => (
+              <>
+                {species?.map((a, i) => (
+                  <PetImage pet={a} key={a} comma={i !== species.length - 1} />
+                ))}
+              </>
+            ),
+          })}
+        </>
+      )}
     </>
   );
 };
@@ -189,7 +275,7 @@ const PetImage = ({ pet, comma }: { pet: string; comma?: boolean }) => {
         height={'18px'}
         alt={pet}
       />
-      {comma && ','}{' '}
+      {comma && ','}
     </Box>
   );
 };

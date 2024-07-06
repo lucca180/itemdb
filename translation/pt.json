@@ -167,7 +167,9 @@
     "retired": "Retirado",
     "free": "Grátis!",
     "since": "Desde",
-    "until": "Até"
+    "until": "Até",
+    "color": "cor",
+    "effects-colorSpecies": "Esse item {random, select, true {tem a chance de {isAll, select, true {transformar} other {trocar a <TargetType></TargetType> do}}} other{irá {isAll, select, true {transformar} other {trocar a <TargetType></TargetType> do}}}} seu {species, select, true {<Neopet></Neopet>} other {pet}} {isAll, select, true {em um} other {para}} <Target1></Target1> <Target2></Target2>"
   },
   "Button": {
     "feedback": "Feedback",
@@ -313,7 +315,8 @@
     "openable": "Abrível",
     "name-not-contains": "Nome Não Contém",
     "wearable-zone": "Zona de Aplicável",
-    "until": "até"
+    "until": "até",
+    "species": "espécie"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",

@@ -56,6 +56,7 @@ import NextLink from 'next/link';
 import { useTranslations } from 'next-intl';
 import SpeciesSelect from '../Input/SpeciesSelect';
 import { deseaseList_en } from '../../utils/utils';
+import NeoColorSelect from '../Input/NeoColorSelect';
 
 const ConfirmDeleteItem = dynamic<{
   isOpen: boolean;
@@ -360,7 +361,7 @@ export const InfoTab = (props: infoTabProps) => {
             })}
           </Text>
           <Text fontSize="sm">
-            {t.rich('modalFeedbackCallback', {
+            {t.rich('ItemPage.modalFeedbackCallback', {
               b: (chunks) => <b>{chunks}</b>,
             })}
           </Text>
@@ -947,6 +948,20 @@ export const EffectsTab = (props: EffectsTabProps) => {
     setUnsavedChanges(true);
   };
 
+  const handleColorSpeciesChange = (
+    newVal: string,
+    name: 'colorTarget' | 'speciesTarget',
+    index: number
+  ) => {
+    setEffects((prev) => {
+      const newEffects = [...prev];
+      newEffects[index][name] = newVal;
+      return newEffects;
+    });
+
+    setUnsavedChanges(true);
+  };
+
   const addEffect = () => {
     setUnsavedChanges(true);
     setEffects((prev) => [...prev, defaultEffect]);
@@ -960,7 +975,6 @@ export const EffectsTab = (props: EffectsTabProps) => {
 
     setEffects((prev) => prev.filter((_, i) => i !== index));
   };
-
   return (
     <Stack flexFlow="column" gap={4}>
       {error && (
@@ -981,6 +995,7 @@ export const EffectsTab = (props: EffectsTabProps) => {
               <option value="disease">Cause Disease</option>
               <option value="heal">Heal HP</option>
               <option value="stats">Stats</option>
+              <option value="colorSpecies">Color/Species Change</option>
               <option value="other">Other</option>
             </Select>
             {['disease', 'cureDisease'].includes(effect.type) && (
@@ -1017,11 +1032,12 @@ export const EffectsTab = (props: EffectsTabProps) => {
               </Select>
             )}
           </HStack>
+
           {['heal', 'stats'].includes(effect.type) && (
             <HStack>
               <Input
                 onChange={(e) => handleChange(e, i)}
-                value={effect.minVal}
+                value={effect.minVal ?? undefined}
                 name="minVal"
                 type="number"
                 placeholder="Min Value"
@@ -1029,7 +1045,7 @@ export const EffectsTab = (props: EffectsTabProps) => {
               />
               <Input
                 onChange={(e) => handleChange(e, i)}
-                value={effect.maxVal}
+                value={effect.maxVal ?? undefined}
                 name="maxVal"
                 type="number"
                 placeholder="Max Value"
@@ -1037,7 +1053,7 @@ export const EffectsTab = (props: EffectsTabProps) => {
               />
               <Input
                 onChange={(e) => handleChange(e, i)}
-                value={effect.strVal}
+                value={effect.strVal ?? undefined}
                 name="strVal"
                 type="input"
                 placeholder="strVal (text)"
@@ -1045,14 +1061,30 @@ export const EffectsTab = (props: EffectsTabProps) => {
               />
             </HStack>
           )}
+
+          {effect.type === 'colorSpecies' && (
+            <HStack>
+              <NeoColorSelect
+                onChange={(v) => handleColorSpeciesChange(v, 'colorTarget', i)}
+                value={effect.colorTarget ?? undefined}
+                placeHolder="Target Color"
+              />
+              <SpeciesSelect
+                onChange={(v) => handleColorSpeciesChange(v as string, 'speciesTarget', i)}
+                value={effect.speciesTarget ?? undefined}
+                placeHolder="Target Species"
+              />
+            </HStack>
+          )}
           <SpeciesSelect
-            onChange={(v) => handleSpeciesChange(v, i)}
-            value={effect.species}
+            onChange={(v) => handleSpeciesChange(v as string[], i)}
+            value={effect.species || undefined}
+            isMultiple
             placeHolder="Required Species (optional)"
           />
           <Input
             name="text"
-            value={effect.text}
+            value={effect.text ?? undefined}
             onChange={(e) => handleChange(e, i)}
             placeholder="Notes (accept markdown - optional)"
             variant="filled"

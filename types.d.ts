@@ -449,13 +449,15 @@ type UserPreferences = {
 
 type ItemEffect = {
   internal_id?: number;
-  type: 'disease' | 'cureDisease' | 'heal' | 'stats' | 'other';
+  type: 'disease' | 'cureDisease' | 'heal' | 'stats' | 'colorSpecies' | 'other';
   name: string;
-  species?: string[];
-  minVal?: number;
-  maxVal?: number;
-  strVal?: string;
-  text?: string;
+  species?: string[] | null;
+  minVal?: number | null;
+  maxVal?: number | null;
+  strVal?: string | null;
+  text?: string | null;
+  speciesTarget?: string | null;
+  colorTarget?: string | null;
   isChance: boolean;
 };
 

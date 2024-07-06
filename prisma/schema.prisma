@@ -510,6 +510,9 @@ model ItemEffect {
   text        String? @db.Text
   isChance    Boolean @default(false)
 
+  speciesTarget Int?
+  colorTarget   Int?
+
   addedAt   DateTime @default(now())
   updatedAt DateTime @updatedAt
 

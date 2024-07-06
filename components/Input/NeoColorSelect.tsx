@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   AutoComplete,
   AutoCompleteInput,
@@ -6,81 +6,24 @@ import {
   AutoCompleteList,
   AutoCompleteTag,
 } from '@choc-ui/chakra-autocomplete';
+import { allNeopetsColors } from '../../utils/utils';
 
 type Props = {
-  value?: string[] | string;
-  onChange?: (newVals: string[] | string) => void;
+  value?: string;
+  onChange?: (newVals: string) => void;
   disabled?: boolean;
   placeHolder?: string;
   isMultiple?: boolean;
 };
 
-const allSpecies = [
-  'Acara',
-  'Aisha',
-  'Blumaroo',
-  'Bori',
-  'Bruce',
-  'Buzz',
-  'Chia',
-  'Chomby',
-  'Cybunny',
-  'Draik',
-  'Elephante',
-  'Eyrie',
-  'Flotsam',
-  'Gelert',
-  'Gnorbu',
-  'Grarrl',
-  'Grundo',
-  'Hissi',
-  'Ixi',
-  'Jetsam',
-  'JubJub',
-  'Kacheek',
-  'Kau',
-  'Kiko',
-  'Koi',
-  'Korbat',
-  'Kougra',
-  'Krawk',
-  'Kyrii',
-  'Lenny',
-  'Lupe',
-  'Lutari',
-  'Meerca',
-  'Moehog',
-  'Mynci',
-  'Nimmo',
-  'Ogrin',
-  'Peophin',
-  'Poogle',
-  'Pteri',
-  'Quiggle',
-  'Ruki',
-  'Scorchio',
-  'Shoyru',
-  'Skeith',
-  'Techo',
-  'Tonu',
-  'Tuskaninny',
-  'Uni',
-  'Usul',
-  'Vandagyre',
-  'Wocky',
-  'Xweetok',
-  'Yurble',
-  'Zafara',
-];
-
-const SpeciesSelect = (props: Props) => {
+const NeoColorSelect = (props: Props) => {
   const { value: valueProps, onChange, disabled, placeHolder, isMultiple } = props;
+
+  const allColorsSorted = useMemo(() => Object.values(allNeopetsColors).sort(), []);
 
   return (
     <AutoComplete
-      defaultValues={
-        valueProps ? (Array.isArray(valueProps) ? valueProps : [valueProps]) : undefined
-      }
+      defaultValues={Array.isArray(valueProps) ? valueProps : [valueProps]}
       openOnFocus
       rollNavigation
       multiple={isMultiple}
@@ -94,7 +37,7 @@ const SpeciesSelect = (props: Props) => {
         }
       </AutoCompleteInput>
       <AutoCompleteList>
-        {allSpecies.map((option, oid) => (
+        {allColorsSorted.map((option, oid) => (
           <AutoCompleteItem
             key={`option-${oid}`}
             value={option}
@@ -111,4 +54,4 @@ const SpeciesSelect = (props: Props) => {
   );
 };
 
-export default SpeciesSelect;
+export default NeoColorSelect;

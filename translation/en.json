@@ -166,7 +166,9 @@
     "retired": "Retired",
     "free": "Free!",
     "since": "Since",
-    "until": "Until"
+    "until": "Until",
+    "effects-colorSpecies": "This item {random, select, true {has a chance of {isAll, select, true {turning} other {changing}}} other{will {isAll, select, true {turn} other {change}}}} your {species, select, true {<Neopet></Neopet>} other {pet's}} <TargetType></TargetType> to <Target1></Target1> <Target2></Target2>",
+    "color": "color"
   },
   "Button": {
     "feedback": "Feedback",
@@ -312,7 +314,8 @@
     "openable": "Openable",
     "name-not-contains": "Name Not Contains",
     "wearable-zone": "Wearable Zone",
-    "until": "until"
+    "until": "until",
+    "species": "species"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",

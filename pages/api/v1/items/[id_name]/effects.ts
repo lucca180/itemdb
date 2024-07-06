@@ -4,7 +4,13 @@ import { ItemEffect } from '../../../../../types';
 import prisma from '../../../../../utils/prisma';
 import { getItem } from '.';
 import { ItemEffect as PrimsaItemEffect } from '@prisma/client';
-import { allFoodsCats } from '../../../../../utils/utils';
+import {
+  allFoodsCats,
+  allNeopetsColors,
+  allSpecies,
+  getPetColorId,
+  getSpeciesId,
+} from '../../../../../utils/utils';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -45,11 +51,13 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       item_iid: item.internal_id,
       type: effect.type,
       name: effect.name,
-      species: effect.species?.toString(),
+      species: effect.species?.toString() || undefined,
       isChance: effect.isChance,
       minVal: effect.minVal ? Number(effect.minVal) : undefined,
       maxVal: effect.maxVal ? Number(effect.maxVal) : undefined,
       strVal: effect.strVal,
+      colorTarget: getPetColorId(effect.colorTarget ?? '') || undefined,
+      speciesTarget: getSpeciesId(effect.speciesTarget ?? '') || undefined,
       text: effect.text,
     },
   });
@@ -76,12 +84,14 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
     data: {
       type: effect.type,
       name: effect.name,
-      species: effect.species?.toString(),
+      species: effect.species?.toString() || undefined,
       isChance: effect.isChance,
       minVal: effect.minVal ? Number(effect.minVal) : undefined,
       maxVal: effect.maxVal ? Number(effect.maxVal) : undefined,
       strVal: effect.strVal,
       text: effect.text,
+      colorTarget: getPetColorId(effect.colorTarget ?? '') || undefined,
+      speciesTarget: getSpeciesId(effect.speciesTarget ?? '') || undefined,
     },
   });
 
@@ -183,15 +193,17 @@ export const getItemEffects = async (id_name: string | number) => {
 };
 
 const formatEffect = (effect: PrimsaItemEffect) => {
-  const obj = {
+  const obj: ItemEffect = {
     internal_id: effect.internal_id,
-    type: effect.type,
+    type: effect.type as ItemEffect['type'],
     name: effect.name,
-    species: effect.species?.split(','),
+    species: effect.species?.split(',') ?? null,
     isChance: effect.isChance,
     minVal: effect.minVal,
     maxVal: effect.maxVal,
     strVal: effect.strVal,
+    colorTarget: effect.colorTarget ? allNeopetsColors[`${effect.colorTarget}`] : null,
+    speciesTarget: effect.speciesTarget ? allSpecies[`${effect.speciesTarget}`] : null,
     text: effect.text,
   };
 
@@ -199,5 +211,5 @@ const formatEffect = (effect: PrimsaItemEffect) => {
 };
 
 const revalidate = async (slug: string, res: NextApiResponse) => {
-  Promise.allSettled([res.revalidate(`/item/${slug}`), res.revalidate('/pt/item/${slug}')]);
+  Promise.allSettled([res.revalidate(`/item/${slug}`), res.revalidate(`/pt/item/${slug}`)]);
 };
