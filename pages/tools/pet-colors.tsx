@@ -46,7 +46,7 @@ type PetColorData = {
   cheapestChange: ItemData[];
 };
 
-const RawDataPage = () => {
+const PetColorToolPage = () => {
   const t = useTranslations();
   const router = useRouter();
   const toast = useToast();
@@ -382,7 +382,7 @@ const RawDataPage = () => {
   );
 };
 
-export default RawDataPage;
+export default PetColorToolPage;
 
 export async function getStaticProps(context: any) {
   return {

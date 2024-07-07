@@ -40,11 +40,26 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
     if (!exists) return res.status(400).json({ error: 'pet_color_not_found' });
   }
 
+  const SpeciesOR = [
+    {
+      species: {
+        contains: speciesTargetId ? allSpecies[speciesTargetId] : undefined,
+      },
+    },
+    {
+      species: null,
+    },
+  ];
+
   const rawData = await prisma.itemEffect.findMany({
     where: {
       OR: [
-        { colorTarget: colorTargetId, speciesTarget: speciesTargetId ? null : undefined },
-        { speciesTarget: speciesTargetId },
+        {
+          colorTarget: colorTargetId,
+          speciesTarget: speciesTargetId ? null : undefined,
+          OR: SpeciesOR,
+        },
+        { speciesTarget: speciesTargetId, OR: SpeciesOR },
       ],
     },
   });
