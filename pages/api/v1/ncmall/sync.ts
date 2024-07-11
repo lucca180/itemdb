@@ -125,6 +125,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       item_id: item.id,
       name: item.name,
       img: item.img,
+      rarity: 500,
+      category: 'Special',
       type: 'nc',
       description: item.description,
     };
