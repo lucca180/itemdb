@@ -221,7 +221,7 @@ const EditItemModal = (props: EditItemModalProps) => {
   return (
     <>
       <ConfirmDeleteItem isOpen={isDeleteOpen} onClose={onDeleteClose} item={item} />
-      <Modal isOpen={isOpen} onClose={handleCancel} isCentered size="lg" scrollBehavior="inside">
+      <Modal isOpen={isOpen} onClose={handleCancel} isCentered size="lg">
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>
@@ -348,7 +348,7 @@ export const InfoTab = (props: infoTabProps) => {
   const isAdmin = user?.role === 'ADMIN';
 
   return (
-    <Flex flexFlow="column" gap={4}>
+    <Flex flexFlow="column" gap={4} maxH="500px" px={3} overflow={'auto'}>
       {!isAdmin && (
         <>
           <Text fontSize="sm" sx={{ a: { color: 'blue.300' } }}>
