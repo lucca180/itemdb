@@ -3,7 +3,7 @@ import React from 'react';
 import Image from 'next/image';
 import { ItemData } from '../../types';
 import { AiFillInfoCircle, AiFillWarning } from 'react-icons/ai';
-import ItemCtxMenu, { CtxTrigger } from '../Modal/ItemCtxMenu';
+import ItemCtxMenu, { CtxTrigger } from '../Menus/ItemCtxMenu';
 import { getRestockProfit, rarityToCCPoints } from '../../utils/utils';
 import { useTranslations } from 'next-intl';
 import MainLink from '../Utils/MainLink';

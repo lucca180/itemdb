@@ -28,7 +28,7 @@ import axios from 'axios';
 import { SearchResults } from '../../types';
 import NextLink from 'next/link';
 import debounce from 'lodash/debounce';
-import ItemCtxMenu, { CtxTrigger } from '../Modal/ItemCtxMenu';
+import ItemCtxMenu, { CtxTrigger } from '../Menus/ItemCtxMenu';
 import qs from 'qs';
 import { getFiltersDiff } from '../../pages/search';
 import { parseFilters } from '../../utils/parseFilters';

@@ -14,7 +14,7 @@ import { ItemData, ListItemInfo, UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import axios from 'axios';
 import { useMemo, useState } from 'react';
-import { DuplicatedItemModalProps } from './DuplicatedItemModal';
+import { DuplicatedItemModalProps } from '../Modal/DuplicatedItemModal';
 import dynamic from 'next/dynamic';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import NextImage from 'next/image';
@@ -30,7 +30,7 @@ import Image from 'next/image';
 import { useLists } from '../../utils/useLists';
 
 const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
-  () => import('./DuplicatedItemModal')
+  () => import('../Modal/DuplicatedItemModal')
 );
 
 const CtxMenu = chakra(ContextMenu, {
