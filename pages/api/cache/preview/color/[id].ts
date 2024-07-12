@@ -83,7 +83,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       if (imagesURLs.length === 0) throw new Error('No layers found');
 
       const imagesPromises = [];
-      console.log(imagesURLs);
       for (const img of imagesURLs) {
         imagesPromises.push(loadImage(img));
       }
