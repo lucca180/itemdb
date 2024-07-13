@@ -24,6 +24,7 @@ const ItemComments = (props: Props) => {
         gap={3}
         flexFlow="column"
         fontSize="sm"
+        textAlign={'center'}
         sx={{
           a: {
             color: color.lightness(70).hex(),
