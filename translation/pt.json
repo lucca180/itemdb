@@ -317,7 +317,8 @@
     "name-not-contains": "Nome Não Contém",
     "wearable-zone": "Zona de Aplicável",
     "until": "até",
-    "species": "espécie"
+    "species": "espécie",
+    "search-items": "Buscar Itens"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",
@@ -563,7 +564,11 @@
     "list-price-history": "Histórico de Preços da Lista",
     "no-price-history": "Não temos o histórico de preços desta lista.",
     "price-history-max": "O histórico de preços só pode ser exibido para listas com {MAX_ITEMS} itens NP ou menos.",
-    "exclusives": "Exclusivos"
+    "exclusives": "Exclusivos",
+    "add-items-to-list": "Adicionar itens à lista",
+    "import-modal-cta": "Você também pode <Link>Importar Itens</Link> do seu cofre, galeria e muito mais!",
+    "need-refresh": "Pode ser necessário atualizar a página para ver as alterações.",
+    "add-items": "Adicionar Itens"
   },
   "Restock": {
     "est-profit": "Lucro Est.",

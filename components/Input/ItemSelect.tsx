@@ -13,6 +13,7 @@ import { Image } from '@chakra-ui/react';
 type Props = {
   color?: string;
   isDisabled?: boolean;
+  placeholder?: string;
   onChange: (item: ItemData) => void;
 };
 
@@ -40,6 +41,7 @@ const ItemSelect = (props: Props) => {
 
   const onSelectOption = ({ item }: { item: Item }) => {
     onChange(item.originalValue as ItemData);
+    setQuery('');
   };
 
   return (
@@ -50,7 +52,7 @@ const ItemSelect = (props: Props) => {
       disableFilter
     >
       <AutoCompleteInput
-        placeholder="Add Item"
+        placeholder={props.placeholder ?? 'Add Item'}
         isDisabled={props.isDisabled}
         variant="filled"
         value={query}

@@ -52,6 +52,7 @@ import { BsFilter } from 'react-icons/bs';
 import { SearchFilterModalProps } from '../../../components/Search/SearchFiltersModal';
 import { defaultFilters } from '../../../utils/parseFilters';
 import { getFiltersDiff } from '../../search';
+import { AddListItemsModalProps } from '../../../components/Modal/AddListItemsModal';
 
 const CreateListModal = dynamic<CreateListModalProps>(
   () => import('../../../components/Modal/CreateListModal')
@@ -63,6 +64,10 @@ const ItemActionModal = dynamic<ItemActionModalProps>(
 
 const SearchFilterModal = dynamic<SearchFilterModalProps>(
   () => import('../../../components/Search/SearchFiltersModal')
+);
+
+const AddListItemsModal = dynamic<AddListItemsModalProps>(
+  () => import('../../../components/Modal/AddListItemsModal')
 );
 
 type ExtendedListItemInfo = ListItemInfo & { hasChanged?: boolean };
@@ -87,6 +92,7 @@ const ListPage = (props: Props) => {
   const router = useRouter();
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isOpenInsert, onOpen: onOpenInsert, onClose: onCloseInsert } = useDisclosure();
 
   const { user, getIdToken, authLoading } = useAuth();
 
@@ -569,20 +575,29 @@ const ListPage = (props: Props) => {
           applyFilters={() => applyFilters()}
         />
       )}
-      <CreateListModal
-        refresh={() => init(true)}
-        isOpen={openCreateModal}
-        list={list}
-        onClose={() => setOpenCreateModal(false)}
-      />
-      <ItemActionModal
-        refresh={() => init(true)}
-        isOpen={!!selectionAction}
-        onClose={() => setSelectionAction('')}
-        selectedItems={itemSelect.map((id) => itemInfo[id])}
-        action={selectionAction}
-        list={list}
-      />
+      {openCreateModal && (
+        <CreateListModal
+          refresh={() => init(true)}
+          isOpen={openCreateModal}
+          list={list}
+          onClose={() => setOpenCreateModal(false)}
+        />
+      )}
+      {!!selectionAction && (
+        <ItemActionModal
+          refresh={() => init(true)}
+          isOpen={!!selectionAction}
+          onClose={() => setSelectionAction('')}
+          selectedItems={itemSelect.map((id) => itemInfo[id])}
+          action={selectionAction}
+          list={list}
+        />
+      )}
+
+      {isOpenInsert && (
+        <AddListItemsModal isOpen={isOpenInsert} onClose={onCloseInsert} list={list} />
+      )}
+
       <ListHeader
         list={list}
         isOwner={isOwner}
@@ -637,8 +652,8 @@ const ListPage = (props: Props) => {
           {!isEdit && (
             <HStack>
               {isOwner && (
-                <Button variant="solid" onClick={() => router.push('/lists/import')}>
-                  {t('Lists.import-items')}
+                <Button variant="solid" onClick={onOpenInsert}>
+                  {t('Lists.add-items')}
                 </Button>
               )}
               {(isOwner || list.official) && !list.linkedListId && (

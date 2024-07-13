@@ -316,7 +316,8 @@
     "name-not-contains": "Name Not Contains",
     "wearable-zone": "Wearable Zone",
     "until": "until",
-    "species": "species"
+    "species": "species",
+    "search-items": "Search Items"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",
@@ -443,7 +444,11 @@
     "list-price-history": "List Price History",
     "price-history-max": "The price history can only be displayed for lists with {MAX_ITEMS} NP items or less.",
     "no-price-history": "We don't have the price history for this list.",
-    "exclusives": "Exclusives"
+    "exclusives": "Exclusives",
+    "need-refresh": "You may need to refresh the page to see the changes.",
+    "add-items-to-list": "Add Items to List",
+    "import-modal-cta": "You can also <Link>Import Items</Link> from your sdb, gallery and more!",
+    "add-items": "Add Items"
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",
