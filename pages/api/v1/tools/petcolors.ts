@@ -56,7 +56,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
       OR: [
         {
           colorTarget: colorTargetId,
-          speciesTarget: speciesTargetId ? null : undefined,
+          speciesTarget: null,
           OR: SpeciesOR,
         },
         { speciesTarget: speciesTargetId, OR: SpeciesOR },
@@ -121,9 +121,29 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
     cheapestChange = [perfectMatch[0]];
   }
 
+  const thumbnail = {
+    species: speciesTargetId ? allSpecies[speciesTargetId].toLowerCase() : '',
+    color: colorTargetId ? allNeopetsColors[colorTargetId].toLowerCase() : '',
+  };
+
+  if (!speciesTargetId) {
+    const cheapestEffect = rawData.find((data) => data.item_iid === cheapestChange[0]);
+    if (cheapestEffect && cheapestEffect.speciesTarget) {
+      thumbnail.species = allSpecies[cheapestEffect.speciesTarget].toLowerCase();
+    }
+  }
+
+  if (!colorTargetId) {
+    const cheapestEffect = rawData.find((data) => data.item_iid === cheapestChange.at(-1));
+    if (cheapestEffect && cheapestEffect.colorTarget) {
+      thumbnail.color = allNeopetsColors[cheapestEffect.colorTarget].toLowerCase();
+    }
+  }
+
   const response = {
     speciesId: speciesTargetId,
     colorId: colorTargetId,
+    thumbnail,
     speciesName: speciesTargetId ? allSpecies[speciesTargetId] : null,
     colorName: colorTargetId ? allNeopetsColors[colorTargetId] : null,
     perfectMatch: perfectMatch.map((id) => itemData[id]),

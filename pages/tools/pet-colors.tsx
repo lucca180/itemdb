@@ -40,6 +40,10 @@ type PetColorData = {
   speciesId?: number;
   speciesName?: string;
   colorName?: string;
+  thumbnail: {
+    species: string;
+    color: string;
+  };
   perfectMatch: ItemData[];
   colorChanges: ItemData[];
   speciesChanges: ItemData[];
@@ -272,9 +276,9 @@ const PetColorToolPage = () => {
               >
                 <Skeleton isLoaded={!isImgLoading} borderRadius={'md'}>
                   <NextImage
-                    src={`/api/cache/preview/color/${
-                      petColorData.speciesName?.toLowerCase() ?? ''
-                    }_${petColorData.colorName?.toLowerCase() ?? ''}.png`}
+                    src={`/api/cache/preview/color/${petColorData.thumbnail.species ?? ''}_${
+                      petColorData.thumbnail.color ?? ''
+                    }.png`}
                     width={'150'}
                     height={'150'}
                     alt={`${species} ${color}`}
@@ -329,31 +333,33 @@ const PetColorToolPage = () => {
                   </Flex>
                 </Flex>
               )}
-              <Flex
-                flexFlow={'column'}
-                alignItems={'center'}
-                gap={2}
-                bg="blackAlpha.400"
-                borderRadius={'md'}
-                p={3}
-              >
-                <Badge colorScheme="blue">{t('PetColors.color-change')}</Badge>
-                {!!petColorData.colorChanges.length && (
-                  <Flex flexWrap={'wrap'} gap={2} justifyContent={'center'} flex={1}>
-                    {petColorData.colorChanges.map((item) => (
-                      <ItemCard small key={item.internal_id} item={item} />
-                    ))}
-                  </Flex>
-                )}
-                {!petColorData.colorChanges.length && (
-                  <Text fontSize={'xs'} maxW="200px" textAlign={'center'}>
-                    {t('PetColors.no-color-1')}
-                    <br />
-                    <br />
-                    {t('PetColors.no-color-2')}
-                  </Text>
-                )}
-              </Flex>
+              {!!color && (
+                <Flex
+                  flexFlow={'column'}
+                  alignItems={'center'}
+                  gap={2}
+                  bg="blackAlpha.400"
+                  borderRadius={'md'}
+                  p={3}
+                >
+                  <Badge colorScheme="blue">{t('PetColors.color-change')}</Badge>
+                  {!!petColorData.colorChanges.length && (
+                    <Flex flexWrap={'wrap'} gap={2} justifyContent={'center'} flex={1}>
+                      {petColorData.colorChanges.map((item) => (
+                        <ItemCard small key={item.internal_id} item={item} />
+                      ))}
+                    </Flex>
+                  )}
+                  {!petColorData.colorChanges.length && (
+                    <Text fontSize={'xs'} maxW="200px" textAlign={'center'}>
+                      {t('PetColors.no-color-1')}
+                      <br />
+                      <br />
+                      {t('PetColors.no-color-2')}
+                    </Text>
+                  )}
+                </Flex>
+              )}
               {!!petColorData.speciesChanges.length && (
                 <Flex
                   flexFlow={'column'}
