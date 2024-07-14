@@ -57,7 +57,7 @@ const Layout = (props: Props) => {
   const t = useTranslations('Layout');
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { user, signout } = useAuth();
+  const { user, signout, authLoading } = useAuth();
   const [isLargerThanMD] = useMediaQuery('(min-width: 48em)');
 
   const color = Color('#4A5568');
@@ -221,6 +221,7 @@ const Layout = (props: Props) => {
                 _hover={{ bg: 'gray.600' }}
                 onClick={onOpen}
                 px={{ base: 0, md: 4 }}
+                isLoading={authLoading}
               >
                 <Icon as={BsBoxArrowInRight} boxSize="18px" mr={2} verticalAlign="text-top" />
                 <Box as="span" display={{ base: 'none', md: 'inline' }}>
