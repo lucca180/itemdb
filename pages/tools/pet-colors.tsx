@@ -333,7 +333,7 @@ const PetColorToolPage = () => {
                   </Flex>
                 </Flex>
               )}
-              {!!color && (
+              {!!petColorData.colorId && (
                 <Flex
                   flexFlow={'column'}
                   alignItems={'center'}
