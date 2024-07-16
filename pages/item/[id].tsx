@@ -367,7 +367,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     getItemLists(item.internal_id, true, false),
     getSimilarItems(item.internal_id.toString()),
     item.isNC ? getItemLists(item.internal_id, false, false) : [],
-    getItemDrops(item.internal_id, item.isNC),
+    item.useTypes.canOpen !== 'false' ? getItemDrops(item.internal_id, item.isNC) : null,
     getItemParent(item.internal_id),
     !item.isNC ? getItemPrices({ iid: item.internal_id }) : [],
     !item.isNC ? getItemTrades({ name: item.name, image_id: item.image_id }) : [],

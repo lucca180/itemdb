@@ -27,7 +27,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (!item) return res.status(400).json({ error: 'Item not found' });
 
   const [drops, parents] = await Promise.all([
-    getItemDrops(item.internal_id, item.isNC),
+    item.useTypes.canOpen !== 'false' ? getItemDrops(item.internal_id, item.isNC) : null,
     getItemParent(item.internal_id),
   ]);
 
@@ -97,6 +97,11 @@ export const getItemDrops = async (
   const drops = await prisma.openableItems.findMany({
     where: {
       parent_iid: item_iid,
+      parent_item: {
+        canOpen: {
+          not: 'false',
+        },
+      },
     },
   });
 
@@ -356,6 +361,11 @@ export const getItemParent = async (item_iid: number) => {
   const drops = await prisma.openableItems.findMany({
     where: {
       item_iid: item_iid,
+      parent_item: {
+        canOpen: {
+          not: 'false',
+        },
+      },
     },
   });
 
