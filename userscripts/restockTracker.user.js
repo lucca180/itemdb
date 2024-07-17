@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Restock Tracker
-// @version      1.0.6
+// @version      1.0.7
 // @author       itemdb
 // @namespace    itemdb
 // @description  Tracks your restock metrics
@@ -136,13 +136,19 @@ function handleRestockHaggle(){
   
   const shopId = $(".shop-bg").css("background-image").split('/').at(-1).match(/\d+/)[0]
   const isHaggle = $('.haggleForm').length > 0;
-  const isSoldOut = $('.item-desc').next('p').text().includes("SOLD OUT");
-  const isBought = $('.item-desc').next('p').next('p').text().includes("added to your inventory");
+  const isSoldOut = $('#container__2020').text().includes("SOLD OUT");
+  const isBought = $('#container__2020').text().includes("added to your inventory");
 
   const session = getSession(shopId);
   
-  let clickIndex = session.clicks.findIndex(click => click.item_id === id && click.restock_id === stockId && (!click.buy_timestamp && !click.soldOut_timestamp));
+  let clickIndex = session.clicks.findIndex(click => (!id || click.item_id === id) && click.restock_id === stockId && (!click.buy_timestamp && !click.soldOut_timestamp));
   let click = session.clicks[clickIndex];
+  
+  if(!click && !id) {
+    console.error('item not found');
+    return;
+  }
+
   if(!click) {
     click = {
       item_id: id,
@@ -160,7 +166,7 @@ function handleRestockHaggle(){
     click.soldOut_timestamp = Date.now();
   }
 
-  if(isHaggle) {
+  if(isHaggle && !click.haggle_timestamp) {
     click.haggle_timestamp = Date.now();
   }
 
