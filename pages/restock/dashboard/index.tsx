@@ -48,7 +48,7 @@ import { UTCDate } from '@date-fns/utc';
 
 const color = Color('#599379').rgb().array();
 
-const MIN_SCRIPT_VERSION = 105;
+const MIN_SCRIPT_VERSION = 108;
 
 type AlertMsg = {
   title?: ReactElement | string;
