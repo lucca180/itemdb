@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Restock Tracker
-// @version      1.0.6
+// @version      1.0.8
 // @author       itemdb
 // @namespace    itemdb
 // @description  Tracks your restock metrics
@@ -47,7 +47,7 @@ const SESSION_TIMEOUT = 60 // how many minutes since the last refresh to conside
 // ------------------------------------- //
  // this is used to expose functions to itemdb
 unsafeWindow.itemdb_restock = {
-  scriptVersion: 105,
+  scriptVersion: 108,
 };
 
 function getCurrentSessions() {
@@ -99,6 +99,15 @@ function getSession(shopId) {
   return session;
 }
 
+function getLastClick(shopId) {
+  const click = GM_getValue(`${shopId}_lastClick`, null);
+  return click;
+}
+
+function setLastClick(shopId, click) {
+  GM_setValue(`${shopId}_lastClick`, click);
+}
+
 // -------------------------- //
 
 function handleGeneralShops() {
@@ -131,18 +140,27 @@ function handleRestockHaggle(){
   let url = window.location.href;
   if(!url.includes("obj_info_id")) url = document.referrer;
   
-  const id = url.match(/(?<=obj_info_id\=)\d+/)?.[0];
-  const stockId = url.match(/(?<=stock_id\=)\d+/)?.[0];
+  const shopId = $(".shop-bg").css("background-image").split('/').at(-1).match(/\d+/)[0];
+
+  let id = url.match(/(?<=obj_info_id\=)\d+/)?.[0];
+  let stockId = url.match(/(?<=stock_id\=)\d+/)?.[0];
+
+  if(!id || !stockId) {
+    const lastClick = getLastClick(shopId);
+    if(!lastClick) return;
+    id = lastClick.item_id;
+    stockId = lastClick.restock_id;
+  }
   
-  const shopId = $(".shop-bg").css("background-image").split('/').at(-1).match(/\d+/)[0]
   const isHaggle = $('.haggleForm').length > 0;
-  const isSoldOut = $('.item-desc').next('p').text().includes("SOLD OUT");
-  const isBought = $('.item-desc').next('p').next('p').text().includes("added to your inventory");
+  const isSoldOut = $('#container__2020').text().includes("SOLD OUT");
+  const isBought = $('#container__2020').text().includes("added to your inventory");
 
   const session = getSession(shopId);
   
-  let clickIndex = session.clicks.findIndex(click => click.item_id === id && click.restock_id === stockId && (!click.buy_timestamp && !click.soldOut_timestamp));
+  let clickIndex = session.clicks.findIndex(click => (click.item_id === id) && click.restock_id === stockId && (!click.buy_timestamp && !click.soldOut_timestamp));
   let click = session.clicks[clickIndex];
+
   if(!click) {
     click = {
       item_id: id,
@@ -160,12 +178,19 @@ function handleRestockHaggle(){
     click.soldOut_timestamp = Date.now();
   }
 
-  if(isHaggle) {
+  if(isHaggle && !click.haggle_timestamp) {
     click.haggle_timestamp = Date.now();
   }
 
   if(isBought) {
     click.buy_timestamp = Date.now();
+  }
+
+  if(!isBought || !isSoldOut) {
+    setLastClick(shopId, click);
+  }
+  else {
+    setLastClick(shopId, null)
   }
 
   session.clicks[clickIndex] = click;
