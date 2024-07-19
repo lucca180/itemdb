@@ -70,7 +70,8 @@
     "server-upgrade": "Nós teremos uma manutenção programada no próximo Domingo (14) e o itemdb pode ficar indisponível por algumas horas",
     "mt15": "<b>O MT PRECISA DE VOCÊ</b> - Clique aqui e saiba mais",
     "public-data": "Public Data",
-    "pet-color-tool": "Pet Color Tool"
+    "pet-color-tool": "Pet Color Tool",
+    "ctxMenuTip": "Dica: segure <Kbd>Shift</Kbd> para usar o menu padrão"
   },
   "ItemPage": {
     "item-info": "Item Info",
