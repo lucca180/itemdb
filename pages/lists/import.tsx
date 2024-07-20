@@ -26,7 +26,7 @@ import icon from '../../public/logo_icon.svg';
 import { parseBody } from 'next/dist/server/api-utils/node/parse-body';
 import ListSelect from '../../components/UserLists/ListSelect';
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ItemData, UserList } from '../../types';
 import ItemCard from '../../components/Items/ItemCard';
 import { useAuth } from '../../utils/auth';
@@ -141,6 +141,14 @@ const ImportItems = (props: ImportItemsProps) => {
   useEffect(() => {
     init();
   }, [items]);
+
+  const loadedItems = useMemo(
+    () =>
+      Object.entries(itemData ?? {}).sort(
+        (a, b) => (b[1].price.value ?? 0) - (a[1].price.value ?? 0)
+      ),
+    [itemData, items]
+  );
 
   const init = async () => {
     const itemRes = await axios.post(`/api/v1/items/many`, {
@@ -331,8 +339,8 @@ const ImportItems = (props: ImportItemsProps) => {
         <Flex flex="2" sx={{ a: { color: 'initial' } }} flexFlow="column">
           <Flex flexWrap="wrap" gap={3} justifyContent="center">
             {itemData &&
-              Object.entries(itemData)
-                .slice(0, 25)
+              loadedItems
+                .slice(0, 30)
                 .map((item) => (
                   <ItemCard
                     disablePrefetch={true}
@@ -343,9 +351,9 @@ const ImportItems = (props: ImportItemsProps) => {
                 ))}
             {!itemData && [...Array(20)].map((_, i) => <ItemCard key={i} />)}
           </Flex>
-          {itemData && Object.entries(itemData).length > 25 && (
+          {itemData && loadedItems.length > 30 && (
             <Text textAlign="center">
-              {t('Lists.import-and-more', { value: Object.entries(itemData).length - 25 })}
+              {t('Lists.import-and-more', { value: loadedItems.length - 30 })}
             </Text>
           )}
         </Flex>

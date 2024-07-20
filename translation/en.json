@@ -69,7 +69,8 @@
     "server-upgrade": "We have a scheduled maintenance next Sunday (14) and itemdb may be unavailable for a few hours",
     "mt15": "<b>MT NEEDS YOU</b> - Click here and learn more #mtRecomended",
     "public-data": "Public Data",
-    "pet-color-tool": "Pet Color Tool"
+    "pet-color-tool": "Pet Color Tool",
+    "ctxMenuTip": "Tip: hold <Kbd>Shift</Kbd> to use default context menu"
   },
   "ItemPage": {
     "item-info": "Item Info",

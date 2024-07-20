@@ -8,6 +8,7 @@ import {
   useDisclosure,
   HStack,
   Text,
+  Kbd,
 } from '@chakra-ui/react';
 import { ContextMenu, ContextMenuItem, Submenu, ContextMenuTrigger } from 'rctx-contextmenu';
 import { ItemData, ListItemInfo, UserList } from '../../types';
@@ -261,6 +262,12 @@ const ItemCtxMenu = (props: Props) => {
             {t('Layout.delete-from-this-list')}
           </CtxMenuItem>
         </Box>
+        <Divider />
+        <Text p={2} pb={0} textAlign={'center'} fontSize={'xs'}>
+          {t.rich('Layout.ctxMenuTip', {
+            Kbd: (children) => <Kbd>{children}</Kbd>,
+          })}
+        </Text>
       </CtxMenu>
     </>
   );
