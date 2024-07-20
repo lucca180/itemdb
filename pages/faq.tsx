@@ -71,7 +71,27 @@ const WhyUsPage = () => {
               b: (chunk) => <b>{chunk}</b>,
             })}
           </Text>
-          <Heading size="md">{t('FAQ.why-use-itemdb')}</Heading>
+          <Heading size="md" mt={5}>
+            {t('FAQ.is-it-safe-i-wont-be-frozen')}
+          </Heading>
+          <Text>
+            {t.rich('FAQ.text-is-safe', {
+              Gramps: (chunk) => (
+                <Link href="https://www.youtube.com/@mrsgrandpatv" isExternal>
+                  {chunk}
+                </Link>
+              ),
+              Safe: (chunk) => (
+                <Link href="/img/tnt-support.png" isExternal>
+                  {chunk}
+                </Link>
+              ),
+              br: () => <br />,
+            })}
+          </Text>
+          <Heading size="md" mt={5}>
+            {t('FAQ.why-use-itemdb')}
+          </Heading>
           <Text>{t('FAQ.we-have-a-lot-of-cool-features-such-as')}</Text>
           <Grid templateColumns={['1', 'repeat(2, 2fr)', 'repeat(3, 2fr)']} gap={[2, 3, 6]}>
             <FeatureCard

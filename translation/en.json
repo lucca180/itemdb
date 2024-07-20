@@ -752,7 +752,9 @@
     "text-12": "itemdb is a <Link>Magnetismo Times</Link> project and, as Certified Site, you should be able to talk about it on Neopets - but you cannot link to it. Just make sure you also mention Magnetismo Times to be safe around Neopets' moderators",
     "you-have-a-lot-of-missing-or-wrong-info": "You have a lot of missing or wrong info...",
     "text-13": "All the information on the itemdb is provided by users like you using our <Link>Item Data Extractor Script</Link>. Most of the time, as soon the correct information hits our database, it will be automatically updated on the site and you should not worry about it.",
-    "text-14": "But sometimes, when TNT changes something, our algorithm will fall into a merge conflict and we will need to give it a check manually. If that is the case, you can help us by reporting the issue using the <b>Feedback Button</b> on each item's pages."
+    "text-14": "But sometimes, when TNT changes something, our algorithm will fall into a merge conflict and we will need to give it a check manually. If that is the case, you can help us by reporting the issue using the <b>Feedback Button</b> on each item's pages.",
+    "is-it-safe-i-wont-be-frozen": "Is it safe? I won't be frozen?",
+    "text-is-safe": "itemdb doesn't break any Neopets rules nor any of our official userscripts. They do not automatize or give you an unfair advantage over other users.\n<br></br><br></br>\nBut if you are still unsure, <Gramps>Gramps</Gramps> did ask TNT about it and they said <Safe>we're fine</Safe> :)"
   },
   "Articles": {
     "all-articles": "All Articles",

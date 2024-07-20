@@ -753,7 +753,9 @@
     "text-12": "itemdb é um projeto do <Link>Magnetismo Times</Link> e, como Site Certificado, você deve poder falar sobre ele no Neopets - mas não pode criar um link. Apenas certifique-se de mencionar também o Magnetismo Times para estar seguro perto dos moderadores do Neopets",
     "text-13": "Todas as informações no itemdb são fornecidas por usuários como você usando nosso <Link>Item Data Extractor Script</Link>. Na maioria das vezes, assim que a informação correta chegar ao nosso banco de dados, ela será atualizada automaticamente no site e você não deve se preocupar com isso.",
     "text-14": "Mas às vezes, quando o TNT muda alguma coisa, nosso algoritmo entra em conflito e precisaremos verificar manualmente. Se for esse o caso, você pode nos ajudar reportando o problema usando o <b>Botão Feedback</b> nas páginas de cada item.",
-    "you-have-a-lot-of-missing-or-wrong-info": "Vocês tem muitas informações faltantes ou erradas..."
+    "you-have-a-lot-of-missing-or-wrong-info": "Vocês tem muitas informações faltantes ou erradas...",
+    "is-it-safe-i-wont-be-frozen": "É seguro? Não serei congelado?",
+    "text-is-safe": "itemdb não quebra nenhuma regra do Neopets nem nenhum de nossos scripts de usuário oficiais. \nEles não automatizam nem oferecem uma vantagem injusta sobre outros usuários. \n<br></br><br></br>\nMas se você ainda não tiver certeza, <Gramps>Gramps</Gramps> perguntou à TNT sobre isso e eles disseram <Safe>somos seguros</Safe> :)"
   },
   "Articles": {
     "all-articles": "Todos os Artigos",
