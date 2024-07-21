@@ -318,7 +318,8 @@
     "wearable-zone": "Wearable Zone",
     "until": "until",
     "species": "species",
-    "search-items": "Search Items"
+    "search-items": "Search Items",
+    "download": "Download"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",
@@ -674,7 +675,17 @@
     "estimated-profit": "Estimated Profit",
     "bmg-warning": "Highlighted items are only visible with the <Link>Black Market Goods</Link> obelisk boon",
     "import-latest-x-sessions": "Import Latest {x} Sessions",
-    "dashboard-limits": "You can only import up to {x} sessions at a time. We recommend importing your sessions regularly"
+    "dashboard-limits": "You can only import up to {x} sessions at a time. We recommend importing your sessions regularly",
+    "est-revenue": "Est. Revenue",
+    "favorite-shop": "Favorite Shop",
+    "wrapped-text1": "Before showing your Restock Wrapped card, <b>we need your help</b> to make itemdb more precise",
+    "wrapped-text2": "We need you to:",
+    "wrapped-precify-text": "<Link>Precify</Link> <b>{needTrades}</b> more trades lots; or",
+    "wrapped-vote-text": "<Link>Vote</Link> on <b>{needVotes}</b> more pricing suggestions",
+    "wrapped-text3": "After that, you will be able to see (and download!) your Restock Wrapped card for the next 24 hours without needing to help us again.",
+    "wrapped-text4": "Why do I need to do this?",
+    "wrapped-text5": "itemdb is open source and completly free. All expenses are paid from our own pocket.<br></br><br></br> Besides that, we are a small team and pricing trades takes a lot of our free time.<br></br><br></br> So, instead of fixing bugs, creating new Official Lists or adding new features, most of our time is spent on trying to make itemdb prices more acurate by pricing trades.<br></br><br></br> We absolutely hate to \"lock\" any features behind a \"contribute-wall\" (?), but we need your help to keep itemdb prices always updated.",
+    "image-copied-to-clipboard": "Image copied to clipboard"
   },
   "Search": {
     "search": "Search",

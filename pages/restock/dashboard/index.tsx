@@ -41,10 +41,16 @@ import RestockItem from '../../../components/Hubs/Restock/RestockItemCard';
 import { FiSend } from 'react-icons/fi';
 import FeedbackModal from '../../../components/Modal/FeedbackModal';
 import { useFormatter, useTranslations } from 'next-intl';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaFileImage } from 'react-icons/fa';
 // import CalendarHeatmap from '../../../components/Charts/CalHeatmap';
 import { endOfDay } from 'date-fns';
 import { UTCDate } from '@date-fns/utc';
+import { RestockWrappedModalProps } from '../../../components/Modal/RestockWrappedModal';
+import dynamic from 'next/dynamic';
+
+const RestockWrappedModal = dynamic<RestockWrappedModalProps>(
+  () => import('../../../components/Modal/RestockWrappedModal')
+);
 
 const color = Color('#599379').rgb().array();
 
@@ -66,6 +72,7 @@ const RestockDashboard = () => {
   const formatter = useFormatter();
   const { user, authLoading } = useAuth();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isWrappedOpen, onOpen: onWrappedOpen, onClose: onWrappedClose } = useDisclosure();
   const [openImport, setOpenImport] = useState<boolean>(false);
   const [sessionStats, setSessionStats] = useState<RestockStats | null>(null);
   const [alertMsg, setAlertMsg] = useState<AlertMsg | null>(null);
@@ -221,8 +228,18 @@ const RestockDashboard = () => {
         themeColor: '#599379',
       }}
     >
-      <ImportRestockModal isOpen={openImport} onClose={handleClose} refresh={refresh} />
-      <FeedbackModal isOpen={isOpen} onClose={onClose} />
+      {openImport && (
+        <ImportRestockModal isOpen={openImport} onClose={handleClose} refresh={refresh} />
+      )}
+      {isOpen && <FeedbackModal isOpen={isOpen} onClose={onClose} />}
+      {!!sessionStats && isWrappedOpen && (
+        <RestockWrappedModal
+          timePeriod={filter?.timePeriod}
+          isOpen={isWrappedOpen}
+          onClose={onWrappedClose}
+          stats={sessionStats}
+        />
+      )}
       <Box
         position="absolute"
         h="650px"
@@ -477,13 +494,21 @@ const RestockDashboard = () => {
           )}
           <Center my={6} flexFlow="column" gap={2}>
             <Heading size="md">{t('Restock.your-est-revenue')}</Heading>
-            <Heading
-              size="2xl"
-              bgGradient="linear(to-r, green.400, green.200, green.400)"
-              bgClip="text"
-            >
-              {intl.format(sessionStats.estRevenue)} NP
-            </Heading>
+            <HStack>
+              <Heading
+                size="2xl"
+                bgGradient="linear(to-r, green.400, green.200, green.400)"
+                bgClip="text"
+              >
+                {intl.format(sessionStats.estRevenue)} NP
+              </Heading>
+              <IconButton
+                size="sm"
+                aria-label="Restock Dashboard Button"
+                onClick={onWrappedOpen}
+                icon={<FaFileImage />}
+              />
+            </HStack>
             <Heading size="sm">
               {t('Restock.with-x-items', {
                 x: intl.format(sessionStats.totalBought.count),

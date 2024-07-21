@@ -319,7 +319,8 @@
     "wearable-zone": "Zona de Aplicável",
     "until": "até",
     "species": "espécie",
-    "search-items": "Buscar Itens"
+    "search-items": "Buscar Itens",
+    "download": "Download"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",
@@ -675,7 +676,17 @@
     "estimated-profit": "Lucro Estimado",
     "bmg-warning": "Os itens destacados só são visíveis com a bênção <Link>Mercadorias do Mercado Negro</Link> do Oráculo do Obelisco ",
     "dashboard-limits": "Você só pode importar até {x} sessões de uma vez. Recomendamos importar suas sessões regularmente",
-    "import-latest-x-sessions": "Importar últimas {x} sessões"
+    "import-latest-x-sessions": "Importar últimas {x} sessões",
+    "est-revenue": "Receita Est.",
+    "favorite-shop": "Loja Favorita",
+    "wrapped-text3": "Depois disso, você poderá ver (e baixar!) seu Restock Wrapped card pelas próximas 24 horas sem precisar nos ajudar novamente.",
+    "wrapped-text1": "Antes de mostrar seu Restock Wrapped card, <b>precisamos da sua ajuda</b> para tornar o itemdb mais preciso",
+    "wrapped-text2": "Precisamos que você:",
+    "wrapped-precify-text": "<Link>Precifique</Link> mais <b>{needTrades}</b> lotes de trocas; ou",
+    "wrapped-vote-text": "<Link>Vote</Link> em mais <b>{needVotes}</b> sugestões de preços",
+    "wrapped-text4": "Por que preciso fazer isso?",
+    "wrapped-text5": "itemdb é de código aberto e totalmente gratuito. Todas as despesas são pagas do nosso próprio bolso.<br></br><br></br> Além disso, somos uma equipe pequena e precificar os lotes de trocas ocupam muito do nosso tempo livre.<br></br><br></br> Então, em vez de consertar bugs, criar novas listas oficiais ou adicionar coisas novas, a maior parte do nosso tempo é gasto tentando tornar os preços do itemdb mais precisos precificando trocas.<br></br><br></br>Nós absolutamente odiamos \"bloquear\" qualquer recurso por trás de um \"paywall de contribuição\"(?), mas precisamos da sua ajuda para manter os preços do itemdb sempre atualizados.",
+    "image-copied-to-clipboard": "Imagem copiada para a área de transferência"
   },
   "Search": {
     "search": "Pesquisa",
