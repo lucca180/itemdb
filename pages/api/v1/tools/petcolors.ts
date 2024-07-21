@@ -54,12 +54,14 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
   const rawData = await prisma.itemEffect.findMany({
     where: {
       OR: [
-        {
-          colorTarget: colorTargetId,
-          speciesTarget: null,
-          OR: SpeciesOR,
-        },
-        { speciesTarget: speciesTargetId, OR: SpeciesOR },
+        colorTargetId
+          ? {
+              colorTarget: colorTargetId,
+              speciesTarget: null,
+              OR: SpeciesOR,
+            }
+          : {},
+        speciesTargetId ? { speciesTarget: speciesTargetId, OR: SpeciesOR } : {},
       ],
     },
   });
