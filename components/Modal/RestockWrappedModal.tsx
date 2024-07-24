@@ -32,6 +32,8 @@ import axios from 'axios';
 
 const chance = new Chance();
 
+const SKIP_WALL = process.env.NEXT_PUBLIC_SKIP_CONTRIBUTE_WALL === 'true';
+
 export type RestockWrappedModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -86,7 +88,7 @@ const RestockWrappedModal = (props: RestockWrappedModalProps) => {
 
   const init = async () => {
     // wait to show contribute-wall
-    if (Date.now() < 1722124799000) {
+    if (Date.now() < 1722124799000 && !SKIP_WALL) {
       setWrappedCheck({ canWrapped: true, needTrades: 0, needVotes: 0 });
       return;
     }
@@ -191,7 +193,7 @@ const RestockWrappedModal = (props: RestockWrappedModalProps) => {
     <Modal isOpen={isOpen} onClose={onClose} isCentered scrollBehavior="inside">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Restock Wrapped</ModalHeader>
+        <ModalHeader>Restock Card</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           {wrappedCheck?.canWrapped && (
