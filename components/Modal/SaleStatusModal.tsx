@@ -82,7 +82,7 @@ export default function SaleStatusModal(props: SaleStatusModalProps) {
                   ) : (
                     <Badge colorScheme="red">Hard to Sell</Badge>
                   ),
-                percent: saleStatus.percent,
+                percent: saleStatus.percent.toFixed(0),
                 days: saleStatus.type === 'buyable' ? 15 : 30,
               })}
             </Text>
