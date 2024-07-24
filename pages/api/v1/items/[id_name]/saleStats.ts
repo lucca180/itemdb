@@ -3,6 +3,7 @@ import prisma from '../../../../../utils/prisma';
 import { getItem } from '.';
 import { PriceProcess2, TradeItems, Trades } from '@prisma/client';
 import { SaleStatus } from '../../../../../types';
+import { isSameDay } from 'date-fns';
 
 const MIN_PRICE_DATA = process.env.MIN_PRICE_DATA ? parseInt(process.env.MIN_PRICE_DATA) : 5;
 const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
@@ -49,6 +50,8 @@ export const getSaleStats = async (
 
   if (rawPriceData.length < MIN_PRICE_DATA) return null;
 
+  const mostRecentData = rawPriceData[rawPriceData.length - 1];
+
   const ownersData: { [owner: string]: PriceProcess2[] } = {};
 
   rawPriceData.map((price) => {
@@ -72,10 +75,14 @@ export const getSaleStats = async (
 
       if (price.stock < lastStock) {
         itemSold += lastStock - price.stock;
-      } else if (isLastOne && !isFromLastXDays) {
-        itemSold += Math.min(price.stock, 3);
-      } else {
+      } else if (price.stock > lastStock) {
         itemTotal += price.stock - lastStock;
+      } else if (
+        isLastOne &&
+        !isFromLastXDays &&
+        !isSameDay(price.addedAt, mostRecentData.addedAt)
+      ) {
+        itemSold += Math.min(price.stock, 3);
       }
 
       lastStock = price.stock;
@@ -150,10 +157,10 @@ const getUBSaleStats = async (iid: number, dayLimit = 15): Promise<SaleStatus | 
 
       if (stock < lastStock) {
         itemSold += lastStock - stock;
+      } else if (stock > lastStock) {
+        itemTotal += stock - lastStock;
       } else if (isLastOne && !isFromLastXDays) {
         itemSold += Math.min(stock, 3);
-      } else {
-        itemTotal += stock - lastStock;
       }
 
       lastStock = stock;
