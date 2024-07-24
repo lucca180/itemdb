@@ -3,7 +3,7 @@ import prisma from '../../../../../utils/prisma';
 import { getItem } from '.';
 import { PriceProcess2, TradeItems, Trades } from '@prisma/client';
 import { SaleStatus } from '../../../../../types';
-import { isSameDay } from 'date-fns';
+import { differenceInCalendarDays, isSameDay } from 'date-fns';
 
 const MIN_PRICE_DATA = process.env.MIN_PRICE_DATA ? parseInt(process.env.MIN_PRICE_DATA) : 5;
 const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
@@ -51,6 +51,10 @@ export const getSaleStats = async (iid: number, dayLimit = 15): Promise<SaleStat
   if (rawPriceData.length < MIN_PRICE_DATA) return getUBSaleStats(iid, dayLimit);
 
   const mostRecentData = rawPriceData[rawPriceData.length - 1];
+  const mostOldData = rawPriceData[0];
+
+  if (differenceInCalendarDays(Date.now(), mostOldData.addedAt) < 7)
+    return getUBSaleStats(iid, dayLimit);
 
   const ownersData: { [owner: string]: PriceProcess2[] } = {};
 
@@ -141,6 +145,10 @@ const getUBSaleStats = async (iid: number, dayLimit = 15): Promise<SaleStatus | 
   });
 
   if (rawTradeData.length < MIN_PRICE_DATA) return null;
+
+  const mostOldData = rawTradeData[0];
+
+  if (differenceInCalendarDays(Date.now(), mostOldData.addedAt) < 7) return null;
 
   const ownersData: { [owner: string]: (Trades & { items: TradeItems[] })[] } = {};
 

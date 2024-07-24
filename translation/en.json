@@ -173,7 +173,7 @@
     "color": "color",
     "saleStatus-thanks-feedback": "Thank you for your feedback! It will make the itemdb increasingly accurate and useful :)",
     "saleStatus-feedback-cta": "You can also leave your comments using the Feedback button across the site",
-    "saleStatus-feedback-sale-cta": "Leave your feedback below about this item's sale status:",
+    "saleStatus-feedback-sale-cta": "Based on your experience, do you agree with the current Sale Status of this item?",
     "saleStatus-beta-alert": "This is a beta feature and we are working to improve the accuracy of this data, so <b>don't take it as a source of absolute truth</b> :)",
     "saleStatus": "Sale Status",
     "saleStatus-text": "This item is <Badge></Badge> because we determined that <b>~{percent}%</b> of the available items <b>in the last {days} days</b> were sold."

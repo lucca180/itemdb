@@ -174,7 +174,7 @@
     "effects-colorSpecies": "Esse item {random, select, true {tem a chance de {isAll, select, true {transformar} other {trocar a <TargetType></TargetType> do}}} other{irá {isAll, select, true {transformar} other {trocar a <TargetType></TargetType> do}}}} seu {species, select, true {<Neopet></Neopet>} other {pet}} {isAll, select, true {em um} other {para}} <Target1></Target1> <Target2></Target2>",
     "saleStatus": "Status de Venda",
     "saleStatus-beta-alert": "Este é um recurso beta e estamos trabalhando para melhorar a precisão desses dados, então <b>não tome isso como uma fonte de verdade absoluta</b> :)",
-    "saleStatus-feedback-sale-cta": "Deixe seu feedback abaixo sobre o Status de Venda deste item:",
+    "saleStatus-feedback-sale-cta": "Baseado na sua experiencia, você concorda com o Sale Status atual desse item?",
     "saleStatus-feedback-cta": "Você também pode deixar seus comentários usando o botão Feedback no site",
     "saleStatus-text": "Este item é <Badge></Badge> porque determinamos que <b>~{percent}%</b> dos itens disponíveis <b>nos últimos {days} dias</b> foram vendidos."
   },
