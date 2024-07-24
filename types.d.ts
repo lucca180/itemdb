@@ -519,6 +519,14 @@ export type NCMallData = {
   updatedAt: string;
 };
 
+export type SaleStatus = {
+  sold: number;
+  total: number;
+  percent: number;
+  status: 'easy' | 'regular' | 'hard';
+  type: 'buyable' | 'unbuyable';
+};
+
 // ------- DTI -------- //
 
 export type DTISpecies = {

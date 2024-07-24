@@ -13,9 +13,10 @@ import {
   SkeletonText,
   useDisclosure,
   Button,
+  Badge,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
-import { ItemData, ItemLastSeen, PriceData } from '../../types';
+import { ItemData, ItemLastSeen, PriceData, SaleStatus } from '../../types';
 import { ChartComponentProps } from '../Charts/PriceChart';
 import { AiOutlineAreaChart, AiOutlineTable } from 'react-icons/ai';
 import PriceTable from './PriceTable';
@@ -30,10 +31,13 @@ import { AdminEditPriceModalProps } from '../Modal/AdminEditPriceModal';
 import { useAuth } from '../../utils/auth';
 import useSWRImmutable from 'swr';
 import axios, { AxiosRequestConfig } from 'axios';
+import { SaleStatusModalProps } from '../Modal/SaleStatusModal';
 
 const ChartComponent = dynamic<ChartComponentProps>(() => import('../Charts/PriceChart'));
 const LastSeenModal = dynamic<LastSeenModalProps>(() => import('../Modal/LastSeenModal'));
 const WrongPriceModal = dynamic<WrongPriceModalProps>(() => import('../Modal/WrongPriceModal'));
+const SaleStatusModal = dynamic<SaleStatusModalProps>(() => import('../Modal/SaleStatusModal'));
+
 const AdminEditPriceModal = dynamic<AdminEditPriceModalProps>(
   () => import('../Modal/AdminEditPriceModal')
 );
@@ -46,6 +50,7 @@ type Props = {
   item: ItemData;
   prices: PriceData[];
   lastSeen: ItemLastSeen | null;
+  saleStatus: SaleStatus | null;
 };
 
 const intl = new Intl.NumberFormat();
@@ -56,6 +61,7 @@ const ItemPriceCard = (props: Props) => {
   const { user } = useAuth();
   const lastSeenModal = useDisclosure();
   const wrongPriceModal = useDisclosure();
+  const saleStatusModal = useDisclosure();
   const { item } = props;
   const [displayState, setDisplay] = useState('table');
   const [priceDiff, setDiff] = useState<number | null>(null);
@@ -185,6 +191,14 @@ const ItemPriceCard = (props: Props) => {
       {wrongPriceModal.isOpen && (
         <WrongPriceModal isOpen={wrongPriceModal.isOpen} onClose={wrongPriceModal.onClose} />
       )}
+      {saleStatusModal.isOpen && props.saleStatus && (
+        <SaleStatusModal
+          item_iid={item.internal_id}
+          isOpen={saleStatusModal.isOpen}
+          onClose={saleStatusModal.onClose}
+          saleStatus={props.saleStatus}
+        />
+      )}
       <CardBase color={rgbColor} title={t('ItemPage.price-overview')}>
         <Flex gap={4} flexFlow="column">
           <Flex gap={3} flexFlow="column">
@@ -194,6 +208,24 @@ const ItemPriceCard = (props: Props) => {
               gap={1}
             >
               <Flex flexFlow="column" alignItems={'center'}>
+                {props.saleStatus && (
+                  <>
+                    {props.saleStatus.status === 'easy' && (
+                      <Badge
+                        onClick={saleStatusModal.onOpen}
+                        colorScheme="green"
+                        cursor={'pointer'}
+                      >
+                        Easy to Sell <Icon verticalAlign={'middle'} boxSize={'14px'} as={MdHelp} />
+                      </Badge>
+                    )}
+                    {props.saleStatus.status === 'hard' && (
+                      <Badge onClick={saleStatusModal.onOpen} colorScheme="red" cursor={'pointer'}>
+                        Hard to Sell <Icon verticalAlign={'middle'} boxSize={'14px'} as={MdHelp} />
+                      </Badge>
+                    )}
+                  </>
+                )}
                 <Stat flex="initial" textAlign="center" minW="20%">
                   {price?.inflated && (
                     <Text fontWeight="bold" color="red.300">

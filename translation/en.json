@@ -170,7 +170,13 @@
     "since": "Since",
     "until": "Until",
     "effects-colorSpecies": "This item {random, select, true {has a chance of {isAll, select, true {turning} other {changing}}} other{will {isAll, select, true {turn} other {change}}}} your {species, select, true {<Neopet></Neopet>} other {pet's}} <TargetType></TargetType> to <Target1></Target1> <Target2></Target2>",
-    "color": "color"
+    "color": "color",
+    "saleStatus-thanks-feedback": "Thank you for your feedback! It will make the itemdb increasingly accurate and useful :)",
+    "saleStatus-feedback-cta": "You can also leave your comments using the Feedback button across the site",
+    "saleStatus-feedback-sale-cta": "Leave your feedback below about this item's sale status:",
+    "saleStatus-beta-alert": "This is a beta feature and we are working to improve the accuracy of this data, so <b>don't take it as a source of absolute truth</b> :)",
+    "saleStatus": "Sale Status",
+    "saleStatus-text": "This item is <Badge></Badge> because we determined that <b>~{percent}%</b> of the available items <b>in the last {days} days</b> were sold."
   },
   "Button": {
     "feedback": "Feedback",
@@ -678,11 +684,11 @@
     "dashboard-limits": "You can only import up to {x} sessions at a time. We recommend importing your sessions regularly",
     "est-revenue": "Est. Revenue",
     "favorite-shop": "Favorite Shop",
-    "wrapped-text1": "Before showing your Restock Wrapped card, <b>we need your help</b> to make itemdb more precise",
+    "wrapped-text1": "Before showing your Restock Card, <b>we need your help</b> to make itemdb more precise",
     "wrapped-text2": "We need you to:",
     "wrapped-precify-text": "<Link>Precify</Link> <b>{needTrades}</b> more trades lots; or",
     "wrapped-vote-text": "<Link>Vote</Link> on <b>{needVotes}</b> more pricing suggestions",
-    "wrapped-text3": "After that, you will be able to see (and download!) your Restock Wrapped card for the next 24 hours without needing to help us again.",
+    "wrapped-text3": "After that, you will be able to see (and download!) your Restock Card for the next 24 hours without needing to help us again.",
     "wrapped-text4": "Why do I need to do this?",
     "wrapped-text5": "itemdb is open source and completly free. All expenses are paid from our own pocket.<br></br><br></br> Besides that, we are a small team and pricing trades takes a lot of our free time.<br></br><br></br> So, instead of fixing bugs, creating new Official Lists or adding new features, most of our time is spent on trying to make itemdb prices more acurate by pricing trades.<br></br><br></br> We absolutely hate to \"lock\" any features behind a \"contribute-wall\" (?), but we need your help to keep itemdb prices always updated.",
     "image-copied-to-clipboard": "Image copied to clipboard"

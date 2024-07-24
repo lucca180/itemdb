@@ -171,7 +171,12 @@
     "since": "Desde",
     "until": "Até",
     "color": "cor",
-    "effects-colorSpecies": "Esse item {random, select, true {tem a chance de {isAll, select, true {transformar} other {trocar a <TargetType></TargetType> do}}} other{irá {isAll, select, true {transformar} other {trocar a <TargetType></TargetType> do}}}} seu {species, select, true {<Neopet></Neopet>} other {pet}} {isAll, select, true {em um} other {para}} <Target1></Target1> <Target2></Target2>"
+    "effects-colorSpecies": "Esse item {random, select, true {tem a chance de {isAll, select, true {transformar} other {trocar a <TargetType></TargetType> do}}} other{irá {isAll, select, true {transformar} other {trocar a <TargetType></TargetType> do}}}} seu {species, select, true {<Neopet></Neopet>} other {pet}} {isAll, select, true {em um} other {para}} <Target1></Target1> <Target2></Target2>",
+    "saleStatus": "Status de Venda",
+    "saleStatus-beta-alert": "Este é um recurso beta e estamos trabalhando para melhorar a precisão desses dados, então <b>não tome isso como uma fonte de verdade absoluta</b> :)",
+    "saleStatus-feedback-sale-cta": "Deixe seu feedback abaixo sobre o Status de Venda deste item:",
+    "saleStatus-feedback-cta": "Você também pode deixar seus comentários usando o botão Feedback no site",
+    "saleStatus-text": "Este item é <Badge></Badge> porque determinamos que <b>~{percent}%</b> dos itens disponíveis <b>nos últimos {days} dias</b> foram vendidos."
   },
   "Button": {
     "feedback": "Feedback",
@@ -679,8 +684,8 @@
     "import-latest-x-sessions": "Importar últimas {x} sessões",
     "est-revenue": "Receita Est.",
     "favorite-shop": "Loja Favorita",
-    "wrapped-text3": "Depois disso, você poderá ver (e baixar!) seu Restock Wrapped card pelas próximas 24 horas sem precisar nos ajudar novamente.",
-    "wrapped-text1": "Antes de mostrar seu Restock Wrapped card, <b>precisamos da sua ajuda</b> para tornar o itemdb mais preciso",
+    "wrapped-text3": "Depois disso, você poderá ver (e baixar!) seu Restock Card pelas próximas 24 horas sem precisar nos ajudar novamente.",
+    "wrapped-text1": "Antes de mostrar seu Restock Card, <b>precisamos da sua ajuda</b> para tornar o itemdb mais preciso",
     "wrapped-text2": "Precisamos que você:",
     "wrapped-precify-text": "<Link>Precifique</Link> mais <b>{needTrades}</b> lotes de trocas; ou",
     "wrapped-vote-text": "<Link>Vote</Link> em mais <b>{needVotes}</b> sugestões de preços",
