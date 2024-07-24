@@ -22,23 +22,23 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const itemQuery = isNaN(id) ? id_name : id;
 
   const item = await getItem(itemQuery);
-  if (!item) return res.status(400).json({ error: 'Item not found' });
 
-  const stats = await getSaleStats(item.internal_id, 15, (item.price.value ?? 0) > 1000000);
+  if (!item) return res.status(400).json({ error: 'Item not found' });
+  if (!item.price.value) return res.json(null);
+
+  const stats = await getSaleStats(item.internal_id, 15);
 
   res.json(stats);
 }
 
-export const getSaleStats = async (
-  iid: number,
-  dayLimit = 15,
-  isUB = false
-): Promise<SaleStatus | null> => {
+export const getSaleStats = async (iid: number, dayLimit = 15): Promise<SaleStatus | null> => {
   if (DISABLE_SALE_STATS) return null;
-  if (isUB) return getUBSaleStats(iid, dayLimit);
   const rawPriceData = await prisma.priceProcess2.findMany({
     where: {
       item_iid: iid,
+      type: {
+        not: 'trade',
+      },
       addedAt: {
         gte: new Date(Date.now() - dayLimit * 24 * 60 * 60 * 1000),
       },
@@ -48,7 +48,7 @@ export const getSaleStats = async (
     },
   });
 
-  if (rawPriceData.length < MIN_PRICE_DATA) return null;
+  if (rawPriceData.length < MIN_PRICE_DATA) return getUBSaleStats(iid, dayLimit);
 
   const mostRecentData = rawPriceData[rawPriceData.length - 1];
 
@@ -89,6 +89,18 @@ export const getSaleStats = async (
     }
   }
 
+  let type: SaleStatus['type'] = 'buyable';
+
+  const tradeStats = await getUBSaleStats(iid, dayLimit);
+  if (tradeStats) {
+    itemSold += tradeStats.sold;
+    itemTotal += tradeStats.total;
+
+    if (tradeStats.total > itemTotal) {
+      type = 'unbuyable';
+    }
+  }
+
   if (itemTotal < MIN_PRICE_DATA) return null;
 
   const salePercent = (itemSold / itemTotal) * 100;
@@ -97,7 +109,7 @@ export const getSaleStats = async (
   if (salePercent > 50) status = 'easy';
   else if (salePercent > 25) status = 'regular';
 
-  return { sold: itemSold, total: itemTotal, percent: salePercent, status, type: 'buyable' };
+  return { sold: itemSold, total: itemTotal, percent: salePercent, status, type };
 };
 
 const getUBSaleStats = async (iid: number, dayLimit = 15): Promise<SaleStatus | null> => {

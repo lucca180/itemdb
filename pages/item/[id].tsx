@@ -386,7 +386,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     getItemEffects(item.internal_id),
     item.isWearable ? getWearableData(item.internal_id) : null,
     item.isNC ? getItemNCMall(item.internal_id) : null,
-    !!item.price.value ? getSaleStats(item.internal_id, 15, item.price.value > 1000000) : null,
+    !!item.price.value ? getSaleStats(item.internal_id, 15) : null,
   ]);
 
   if (!colors) return { notFound: true };
