@@ -260,10 +260,13 @@ export const getItem = async (id_name: number | string) => {
 
 export const getSomeItemIDs = async () => {
   const result = await prisma.items.findMany({
+    where: {
+      canonical_id: null,
+    },
     orderBy: {
       addedAt: 'desc',
     },
-    take: 16,
+    take: 6,
   });
 
   return result;
