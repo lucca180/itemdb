@@ -1,6 +1,6 @@
   // ==UserScript==
   // @name         itemdb - Safety Deposit Box Pricer
-  // @version      1.3.0
+  // @version      1.4.0
   // @author       itemdb
   // @namespace    itemdb
   // @description  Shows the market price for your sdb items
@@ -59,47 +59,58 @@
       const itemId = tds.last().find('input').attr('name').match(/\d+/)[0];
 
       const item = itemData[itemId];
-      let priceStr = '';
+      let priceStr = '<div style="display: flex;flex-flow: column;justify-content: center;align-items: center; gap: .3rem;">';
 
       /*
        * If items are missing from the DB, wrap the conditions inside a try -> catch.
        * With this approach, the execution of the script is not interrupted in case an "item.slug" is not parseable.
        */
       try {
+        if(!item) throw 'no item';
 
-        if(item && item.rarity) {
-          var color = setColor(item.rarity)
-          priceStr += `<small style='color:${color}'><b>r${intl.format(item.rarity)}</b></small><br/>`;
+        if(item.rarity) {
+          var color1 = setColor(item.rarity)
+          priceStr += `<small style='color:${color1}'><b>r${intl.format(item.rarity)}</b></small>`;
         }
 
-        if(item && item.status === 'no trade'){
+        if(item.status === 'no trade'){
           priceStr += `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">No Trade</a>`;
         }
 
-        if(item && item.isNC && !item.owls){
+        if(item.isNC && !item.owls && item.status === 'active'){
           priceStr += `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">NC</a>`;
         }
 
-        if(item && item.isNC && item.owls){
+        if(item.isNC && item.owls){
           priceStr += `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">${item.owls.value}</a><small><br/><a href="https://itemdb.com.br/articles/owls" target="_blank">Owls</a></small>`;
         }
 
-        if(!item || (item && item.status !== 'no trade' && !item.price.value && !item.isNC)){
+        if(item && item.status !== 'no trade' && !item.price.value && !item.isNC){
           priceStr += `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">???</a>`;
         }
 
-        if(item && item.price.value){
-          priceStr += `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">≈ ${intl.format(item.price.value)} NP</a>`;
+        if(item.price.value){
+          priceStr += `<div>`;
+
+          if(item.saleStatus && item.saleStatus.status !== 'regular') {
+              var color2 = item.saleStatus.status === 'ets' ? 'green' : '#fb1717';
+              priceStr += `<small style='color:${color2}'><b>[${item.saleStatus.status.toUpperCase()}]</b></small> `;
+          }
+
+          priceStr += `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">${item.price.inflated ? "⚠ " : ""}${intl.format(item.price.value)} NP</a>`;
+          priceStr += `</div>`;
         }
 
-        if (item && item.isMissingInfo){
-          priceStr += `<br/><small><a href="https://itemdb.com.br/contribute" target="_blank"><i>We need info about this item<br/>Learn how to Help</i></a></small>`
+        if (item.isMissingInfo){
+          priceStr += `<div><small><a href="https://itemdb.com.br/contribute" target="_blank"><i>We need info about this item<br/>Learn how to Help</i></a></small></div>`
         }
-      } catch { // We're not catching any specific error, as any error that may surface it will be handled with the "We need more info" referral link.
+      } catch(e) { // We're not catching any specific error, as any error that may surface it will be handled with the "We need more info" referral link.
+        console.error(e)
         priceStr = `<a>Not Found</a>`;
         priceStr += `<br/><small><a href="https://itemdb.com.br/contribute" target="_blank"><i>We need info about this item<br/>Learn how to Help</i></a></small>`
       }
 
+      priceStr += '</div>';
       tds.eq( -2 ).before(`<td align="center" width="150px">${priceStr}</td>`);
     })
   }
@@ -108,7 +119,7 @@
     if (rarity <= 74) return 'black';
     if(rarity <= 100) return '#089d08';
     if(rarity <= 104) return '#d16778'; // Special
-    if(rarity <= 110) return 'orange'; // MEGA RARE (Items that cannot be bought at Neopian Shops)
+    if(rarity <= 110) return 'orange';  // MEGA RARE
     if(rarity <= 179) return '#fb4444'; // Retired
     if(rarity == 180) return '#a1a1a1'; // Retired
     if(rarity <= 250) return '#fb4444'; // Hidden Tower
