@@ -267,7 +267,7 @@ export const getItem = async (id_name: number | string) => {
     item.owls = await fetchOwlsData(item.name, item);
 
   if (!DISABLE_SALE_STATS && item.price.value)
-    item.saleStatus = await getSaleStats(item.internal_id, 15);
+    item.saleStatus = await getSaleStats(item.internal_id);
 
   item.findAt = getItemFindAtLinks(item); // does have all the info we need :)
   item.isMissingInfo = isMissingInfo(item);

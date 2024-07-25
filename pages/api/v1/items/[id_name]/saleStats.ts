@@ -26,7 +26,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (!item) return res.status(400).json({ error: 'Item not found' });
   if (!item.price.value) return res.json(null);
 
-  const stats = await getSaleStats(item.internal_id, 15);
+  const stats = await getSaleStats(item.internal_id);
 
   res.json(stats);
 }
