@@ -6,6 +6,8 @@ import { ItemData } from '../../../../types';
 import { Prisma } from '@prisma/client';
 import qs from 'qs';
 
+const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
+
 export const config = {
   api: {
     responseLimit: false,
@@ -96,7 +98,8 @@ export const getManyItems = async (
     SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex,
       b.hsv_h, b.hsv_s, b.hsv_v,
       c.addedAt as priceAdded, c.price, c.noInflation_id, 
-      d.pricedAt as owlsPriced, d.value as owlsValue, d.valueMin as owlsValueMin
+      d.pricedAt as owlsPriced, d.value as owlsValue, d.valueMin as owlsValueMin,
+      s.totalSold, s.totalItems, s.stats, s.daysPeriod
     FROM Items as a
     LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
     LEFT JOIN (
@@ -118,6 +121,15 @@ export const getManyItems = async (
           GROUP BY item_iid
       )
     ) as d on d.item_iid = a.internal_id
+    LEFT JOIN (
+      SELECT *
+      FROM SaleStats
+      WHERE (item_iid, addedAt) IN (
+          SELECT item_iid, MAX(addedAt)
+          FROM SaleStats
+          GROUP BY item_iid
+      )
+    ) as s on s.item_iid = a.internal_id
     WHERE ${query}
     LIMIT ${limit}
     `) as any[];
@@ -175,6 +187,16 @@ export const getManyItems = async (
         : null,
       comment: result.comment ?? null,
       slug: result.slug ?? null,
+      saleStatus:
+        result.totalSold && !DISABLE_SALE_STATS
+          ? {
+              sold: result.totalSold,
+              total: result.totalItems,
+              percent: Math.round((result.totalSold / result.totalItems) * 100),
+              status: result.stats,
+              type: result.daysPeriod,
+            }
+          : null,
       useTypes: {
         canEat: result.canEat,
         canRead: result.canRead,

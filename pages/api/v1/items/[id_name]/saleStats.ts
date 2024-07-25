@@ -33,6 +33,28 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
 export const getSaleStats = async (iid: number, dayLimit = 15): Promise<SaleStatus | null> => {
   if (DISABLE_SALE_STATS) return null;
+  const saleStats = await prisma.saleStats.findFirst({
+    where: {
+      item_iid: iid,
+      addedAt: {
+        gte: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+      },
+    },
+    orderBy: {
+      addedAt: 'desc',
+    },
+  });
+
+  if (saleStats) {
+    return {
+      sold: saleStats.totalSold,
+      total: saleStats.totalItems,
+      percent: Math.round((saleStats.totalSold / saleStats.totalItems) * 100),
+      status: saleStats.stats,
+      type: saleStats.daysPeriod > 15 ? 'unbuyable' : 'buyable',
+    };
+  }
+
   const rawPriceData = await prisma.priceProcess2.findMany({
     where: {
       item_iid: iid,
@@ -48,13 +70,13 @@ export const getSaleStats = async (iid: number, dayLimit = 15): Promise<SaleStat
     },
   });
 
-  if (rawPriceData.length < MIN_PRICE_DATA) return getUBSaleStats(iid, dayLimit);
+  if (rawPriceData.length < MIN_PRICE_DATA) return getUBSaleStats(iid, dayLimit, true);
 
   const mostRecentData = rawPriceData[rawPriceData.length - 1];
   const mostOldData = rawPriceData[0];
 
   if (differenceInCalendarDays(Date.now(), mostOldData.addedAt) < 7)
-    return getUBSaleStats(iid, dayLimit);
+    return getUBSaleStats(iid, dayLimit, true);
 
   const ownersData: { [owner: string]: PriceProcess2[] } = {};
 
@@ -107,16 +129,30 @@ export const getSaleStats = async (iid: number, dayLimit = 15): Promise<SaleStat
 
   if (itemTotal < MIN_PRICE_DATA) return null;
 
-  const salePercent = (itemSold / itemTotal) * 100;
-  let status: 'easy' | 'regular' | 'hard' = 'hard';
+  const salePercent = Math.round((itemSold / itemTotal) * 100);
+  let status: 'hts' | 'regular' | 'ets' = 'hts';
 
-  if (salePercent > 50) status = 'easy';
-  else if (salePercent > 25) status = 'regular';
+  if (salePercent >= 50) status = 'ets';
+  else if (salePercent >= 25) status = 'regular';
+
+  await prisma.saleStats.create({
+    data: {
+      item_iid: iid,
+      totalSold: itemSold,
+      totalItems: itemTotal,
+      stats: status,
+      daysPeriod: dayLimit,
+    },
+  });
 
   return { sold: itemSold, total: itemTotal, percent: salePercent, status, type };
 };
 
-const getUBSaleStats = async (iid: number, dayLimit = 15): Promise<SaleStatus | null> => {
+const getUBSaleStats = async (
+  iid: number,
+  dayLimit = 15,
+  shouldCreate = false
+): Promise<SaleStatus | null> => {
   const item = await prisma.items.findUnique({
     where: {
       internal_id: iid,
@@ -189,12 +225,24 @@ const getUBSaleStats = async (iid: number, dayLimit = 15): Promise<SaleStatus | 
 
   if (itemTotal < MIN_PRICE_DATA) return null;
 
-  const salePercent = (itemSold / itemTotal) * 100;
+  const salePercent = Math.round((itemSold / itemTotal) * 100);
 
-  let status: 'easy' | 'regular' | 'hard' = 'hard';
+  let status: 'hts' | 'regular' | 'ets' = 'hts';
 
-  if (salePercent > 50) status = 'easy';
-  else if (salePercent > 25) status = 'regular';
+  if (salePercent >= 50) status = 'ets';
+  else if (salePercent >= 25) status = 'regular';
+
+  if (shouldCreate) {
+    await prisma.saleStats.create({
+      data: {
+        item_iid: iid,
+        totalSold: itemSold,
+        totalItems: itemTotal,
+        stats: status,
+        daysPeriod: dayLimit,
+      },
+    });
+  }
 
   return { sold: itemSold, total: itemTotal, percent: salePercent, status, type: 'unbuyable' };
 };

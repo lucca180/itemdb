@@ -16,7 +16,7 @@ import {
   Badge,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
-import { ItemData, ItemLastSeen, PriceData, SaleStatus } from '../../types';
+import { ItemData, ItemLastSeen, PriceData } from '../../types';
 import { ChartComponentProps } from '../Charts/PriceChart';
 import { AiOutlineAreaChart, AiOutlineTable } from 'react-icons/ai';
 import PriceTable from './PriceTable';
@@ -50,7 +50,6 @@ type Props = {
   item: ItemData;
   prices: PriceData[];
   lastSeen: ItemLastSeen | null;
-  saleStatus: SaleStatus | null;
 };
 
 const intl = new Intl.NumberFormat();
@@ -191,12 +190,12 @@ const ItemPriceCard = (props: Props) => {
       {wrongPriceModal.isOpen && (
         <WrongPriceModal isOpen={wrongPriceModal.isOpen} onClose={wrongPriceModal.onClose} />
       )}
-      {saleStatusModal.isOpen && props.saleStatus && (
+      {saleStatusModal.isOpen && item.saleStatus && (
         <SaleStatusModal
           item_iid={item.internal_id}
           isOpen={saleStatusModal.isOpen}
           onClose={saleStatusModal.onClose}
-          saleStatus={props.saleStatus}
+          saleStatus={item.saleStatus}
         />
       )}
       <CardBase color={rgbColor} title={t('ItemPage.price-overview')}>
@@ -208,9 +207,9 @@ const ItemPriceCard = (props: Props) => {
               gap={1}
             >
               <Flex flexFlow="column" alignItems={'center'}>
-                {props.saleStatus && (
+                {item.saleStatus && (
                   <>
-                    {props.saleStatus.status === 'easy' && (
+                    {item.saleStatus.status === 'ets' && (
                       <Badge
                         onClick={saleStatusModal.onOpen}
                         colorScheme="green"
@@ -219,7 +218,7 @@ const ItemPriceCard = (props: Props) => {
                         Easy to Sell <Icon verticalAlign={'middle'} boxSize={'14px'} as={MdHelp} />
                       </Badge>
                     )}
-                    {props.saleStatus.status === 'hard' && (
+                    {item.saleStatus.status === 'hts' && (
                       <Badge onClick={saleStatusModal.onOpen} colorScheme="red" cursor={'pointer'}>
                         Hard to Sell <Icon verticalAlign={'middle'} boxSize={'14px'} as={MdHelp} />
                       </Badge>

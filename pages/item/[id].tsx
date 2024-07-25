@@ -11,7 +11,6 @@ import {
   NCMallData,
   // ItemTag,
   PriceData,
-  SaleStatus,
   TradeData,
   UserList,
 } from '../../types';
@@ -55,7 +54,6 @@ import { WearableData } from '@prisma/client';
 import { getWearableData } from '../api/v1/items/[id_name]/wearable';
 import { getItemNCMall } from '../api/v1/items/[id_name]/ncmall';
 import NcMallCard from '../../components/Items/NCMallCard';
-import { getSaleStats } from '../api/v1/items/[id_name]/saleStats';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -78,7 +76,6 @@ type ItemPageProps = {
   itemEffects: ItemEffect[];
   wearableData: WearableData[] | null;
   ncMallData: NCMallData | null;
-  saleStatus: SaleStatus | null;
   messages: any;
 };
 
@@ -295,12 +292,7 @@ const ItemPage = (props: ItemPageProps) => {
             </Flex>
 
             {!item.isNC && (
-              <ItemPriceCard
-                item={item}
-                saleStatus={props.saleStatus}
-                lastSeen={props.lastSeen}
-                prices={props.NPPrices}
-              />
+              <ItemPriceCard item={item} lastSeen={props.lastSeen} prices={props.NPPrices} />
             )}
             {item.isNC && <NCTrade item={item} lists={tradeLists} />}
             {itemEffects.length > 0 && <ItemEffectsCard item={item} effects={itemEffects} />}
@@ -370,7 +362,6 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     itemEffects,
     wearableData,
     NCMallData,
-    saleStatus,
   ] = await Promise.all([
     getItemColor([item.image_id]),
     getItemLists(item.internal_id, true, false),
@@ -386,7 +377,6 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     getItemEffects(item.internal_id),
     item.isWearable ? getWearableData(item.internal_id) : null,
     item.isNC ? getItemNCMall(item.internal_id) : null,
-    !!item.price.value ? getSaleStats(item.internal_id, 15) : null,
   ]);
 
   if (!colors) return { notFound: true };
@@ -405,7 +395,6 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     itemEffects: itemEffects,
     wearableData: wearableData,
     ncMallData: NCMallData,
-    saleStatus: saleStatus,
     messages: (await import(`../../translation/${context.locale}.json`)).default,
   };
 
