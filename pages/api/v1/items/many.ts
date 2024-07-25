@@ -5,7 +5,6 @@ import { getItemFindAtLinks, isMissingInfo } from '../../../../utils/utils';
 import { ItemData } from '../../../../types';
 import { Prisma } from '@prisma/client';
 import qs from 'qs';
-import { getSaleStats } from './[id_name]/saleStats';
 
 const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
 
@@ -207,9 +206,6 @@ export const getManyItems = async (
     };
     x.findAt = getItemFindAtLinks(x); // does have all the info we need :)
     x.isMissingInfo = isMissingInfo(x);
-
-    if (!DISABLE_SALE_STATS && x.price.value && !x.saleStatus)
-      x.saleStatus = await getSaleStats(x.internal_id);
 
     if (id) items[result.internal_id] = x;
     else if (item_id) items[result.item_id] = x;
