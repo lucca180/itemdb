@@ -99,12 +99,14 @@
     "prettier": "2.8.4",
     "prisma": "^5.17.0",
     "ts-node": "10.9.2",
+    "tsc-files": "^1.1.4",
     "typescript": "^5.4.3",
     "wp-types": "^3.64.0"
   },
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": [
       "npx prettier --write"
-    ]
+    ],
+    "**/*.ts": "tsc-files --noEmit"
   }
 }
