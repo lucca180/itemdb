@@ -373,6 +373,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         : null,
       comment: result.comment ?? null,
       slug: result.slug ?? null,
+      saleStatus: null,
       useTypes: {
         canEat: result.canEat,
         canRead: result.canRead,

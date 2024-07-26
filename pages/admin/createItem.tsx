@@ -50,6 +50,7 @@ const defaultItem: ItemData = {
   color: null as any,
   findAt: null as any,
   firstSeen: null,
+  saleStatus: null,
   useTypes: {
     canEat: 'unknown',
     canRead: 'unknown',

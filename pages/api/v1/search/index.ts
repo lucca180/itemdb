@@ -17,6 +17,8 @@ import { parseFilters } from '../../../../utils/parseFilters';
 
 const ENV_FUZZY_SEARCH = process.env.HAS_FUZZY_SEARCH === 'true';
 
+const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET' || !req.url)
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
@@ -378,7 +380,8 @@ export async function doSearch(
         SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, 
         b.rgb_g, b.rgb_b, b.hex, b.hsv_h, b.hsv_s, b.hsv_v, f.dist,
         c.addedAt as priceAdded, c.price, c.noInflation_id, 
-        d.pricedAt as owlsPriced, d.value as owlsValue, d.valueMin as owlsValueMin
+        d.pricedAt as owlsPriced, d.value as owlsValue, d.valueMin as owlsValueMin,
+        s.totalSold, s.totalItems, s.stats, s.daysPeriod
         FROM Items as a
         LEFT JOIN (
                 SELECT image_id, min((POWER(lab_l-${l},2)+POWER(lab_a-${a},2)+POWER(lab_b-${b},2))) as dist
@@ -406,6 +409,15 @@ export async function doSearch(
               GROUP BY item_iid
           )
         ) as d on d.item_iid = a.internal_id
+        LEFT JOIN (
+          SELECT *
+          FROM SaleStats
+          WHERE (item_iid, addedAt) IN (
+              SELECT item_iid, MAX(addedAt)
+              FROM SaleStats
+              GROUP BY item_iid
+          )
+        ) as s on s.item_iid = a.internal_id
       ) as temp
         
         WHERE temp.dist is not null and temp.canonical_id is null
@@ -447,7 +459,8 @@ export async function doSearch(
       SELECT ${!onlyStats ? Prisma.sql`*` : Prisma.sql`1`} ${statsQuery} FROM (
         SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex, b.hsv_h, b.hsv_s, b.hsv_v,
           c.addedAt as priceAdded, c.price, c.noInflation_id, 
-          d.pricedAt as owlsPriced, d.value as owlsValue, d.valueMin as owlsValueMin
+          d.pricedAt as owlsPriced, d.value as owlsValue, d.valueMin as owlsValueMin,
+          s.totalSold, s.totalItems, s.stats, s.daysPeriod
           ${colorSql_inside ? Prisma.sql`, ${colorSql_inside} as dist` : Prisma.empty}
           ${zoneFilterSQL.length > 0 ? Prisma.sql`, w.zone_label` : Prisma.empty}
         FROM Items as a
@@ -473,6 +486,15 @@ export async function doSearch(
               GROUP BY item_iid
           )
         ) as d on d.item_iid = a.internal_id
+        LEFT JOIN (
+          SELECT *
+          FROM SaleStats
+          WHERE (item_iid, addedAt) IN (
+              SELECT item_iid, MAX(addedAt)
+              FROM SaleStats
+              GROUP BY item_iid
+          )
+        ) as s on s.item_iid = a.internal_id
         ${
           zoneFilterSQL.length > 0
             ? Prisma.sql`LEFT JOIN WearableData w on w.item_iid = a.internal_id and w.isCanonical = 1`
@@ -582,6 +604,16 @@ export async function doSearch(
         : null,
       comment: result.comment ?? null,
       slug: result.slug ?? null,
+      saleStatus:
+        result.totalSold && !DISABLE_SALE_STATS
+          ? {
+              sold: result.totalSold,
+              total: result.totalItems,
+              percent: Math.round((result.totalSold / result.totalItems) * 100),
+              status: result.stats,
+              type: result.daysPeriod,
+            }
+          : null,
       useTypes: {
         canEat: result.canEat,
         canRead: result.canRead,

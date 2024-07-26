@@ -70,14 +70,14 @@ export default function SaleStatusModal(props: SaleStatusModalProps) {
             fontSize={'sm'}
             sx={{
               a: { color: 'blue.200' },
-              b: { color: saleStatus.status === 'easy' ? 'green.200' : 'red.200' },
+              b: { color: saleStatus.status === 'ets' ? 'green.200' : 'red.200' },
             }}
           >
             <Text textAlign={'center'}>
               {t.rich('ItemPage.saleStatus-text', {
                 b: (chunks) => <b>{chunks}</b>,
                 Badge: () =>
-                  saleStatus.status === 'easy' ? (
+                  saleStatus.status === 'ets' ? (
                     <Badge colorScheme="green">Easy to Sell</Badge>
                   ) : (
                     <Badge colorScheme="red">Hard to Sell</Badge>

@@ -19,6 +19,7 @@ export type ItemData = {
   findAt: ItemFindAt;
   isMissingInfo: boolean;
   price: ItemPriceData;
+  saleStatus: SaleStatus | null;
   owls: OwlsPriceData | null;
   slug: string | null;
   comment: string | null;
@@ -523,7 +524,7 @@ export type SaleStatus = {
   sold: number;
   total: number;
   percent: number;
-  status: 'easy' | 'regular' | 'hard';
+  status: 'ets' | 'regular' | 'hts';
   type: 'buyable' | 'unbuyable';
 };
 

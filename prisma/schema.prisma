@@ -64,6 +64,7 @@ model Items {
   effects               ItemEffect[]
   wearableData          WearableData[]
   ncMallData            NcMallData[]
+  saleStats             SaleStats[]
 
   @@index([name, image_id])
   @@index([image_id])
@@ -558,13 +559,34 @@ model NcMallData {
   @@index([item_iid, active])
 }
 
-model ColorSpecies { 
-  internal_id Int    @id @default(autoincrement())
+model ColorSpecies {
+  internal_id Int      @id @default(autoincrement())
   species_id  Int
   color_id    Int
   addedAt     DateTime @default(now())
 
   @@unique([species_id, color_id])
+}
+
+model SaleStats {
+  internal_id Int       @id @default(autoincrement())
+  item_iid    Int
+  item        Items     @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+  stats       SaleStatsEnum
+
+  totalItems Int
+  totalSold  Int
+  daysPeriod Int
+
+  addedAt DateTime @default(now())
+
+  @@index([item_iid, addedAt])
+}
+
+enum SaleStatsEnum {
+  ets
+  regular
+  hts
 }
 
 // -------- DISMANTELING PRICE PROCESS --------- //

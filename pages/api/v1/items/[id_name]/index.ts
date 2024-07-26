@@ -6,6 +6,9 @@ import { Prisma } from '@prisma/client';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import axios from 'axios';
 import { differenceInCalendarDays, isSameDay } from 'date-fns';
+import { getSaleStats } from './saleStats';
+
+const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -180,7 +183,8 @@ export const getItem = async (id_name: number | string) => {
   const resultRaw = (await prisma.$queryRaw`
     SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex,
     b.hsv_h, b.hsv_s, b.hsv_v,
-      c.addedAt as priceAdded, c.price, c.noInflation_id 
+      c.addedAt as priceAdded, c.price, c.noInflation_id,
+      s.totalSold, s.totalItems, s.stats, s.daysPeriod
     FROM Items as a
     LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
     LEFT JOIN (
@@ -193,6 +197,15 @@ export const getItem = async (id_name: number | string) => {
           GROUP BY item_iid
       )
     ) as c on c.item_iid = a.internal_id
+    LEFT JOIN (
+      SELECT *
+      FROM SaleStats
+      WHERE (item_iid, addedAt) IN (
+          SELECT item_iid, MAX(addedAt)
+          FROM SaleStats
+          GROUP BY item_iid
+      )
+    ) as s on s.item_iid = a.internal_id
     WHERE ${query}
   `) as any[] | null;
 
@@ -241,6 +254,7 @@ export const getItem = async (id_name: number | string) => {
     owls: null,
     comment: result.comment ?? null,
     slug: result.slug ?? null,
+    saleStatus: null,
     useTypes: {
       canEat: result.canEat,
       canRead: result.canRead,
@@ -251,6 +265,9 @@ export const getItem = async (id_name: number | string) => {
 
   if (item.isNC && item.status !== 'no trade' && item.isWearable)
     item.owls = await fetchOwlsData(item.name, item);
+
+  if (!DISABLE_SALE_STATS && item.price.value)
+    item.saleStatus = await getSaleStats(item.internal_id);
 
   item.findAt = getItemFindAtLinks(item); // does have all the info we need :)
   item.isMissingInfo = isMissingInfo(item);
