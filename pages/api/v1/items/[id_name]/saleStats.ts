@@ -239,7 +239,7 @@ const getUBSaleStats = async (
         totalSold: itemSold,
         totalItems: itemTotal,
         stats: status,
-        daysPeriod: dayLimit,
+        daysPeriod: dayLimit * 2,
       },
     });
   }

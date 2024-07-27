@@ -259,13 +259,14 @@ type DropTextProps = {
 
 const DropText = ({ pool, itemOpenable, isFirst }: DropTextProps) => {
   const t = useTranslations();
+  const isGram = itemOpenable.isGram;
 
   if (!pool || !pool.isChance) {
     const openable = pool ?? itemOpenable;
     if (openable.maxDrop > 1 && openable.maxDrop !== openable.minDrop)
       return (
         <>
-          {t.rich('Drops.multiple', {
+          {t.rich(isGram ? 'Drops.gram-multiple' : 'Drops.multiple', {
             b: (text) => <b>{text}</b>,
             isFirst: isFirst,
             min: openable.minDrop,
@@ -276,7 +277,7 @@ const DropText = ({ pool, itemOpenable, isFirst }: DropTextProps) => {
 
     return (
       <>
-        {t.rich('Drops.single', {
+        {t.rich(isGram ? 'Drops.gram-single' : 'Drops.single', {
           b: (text) => <b>{text}</b>,
           isFirst: isFirst,
           min: openable.minDrop || openable.maxDrop,
@@ -295,6 +296,7 @@ const DropText = ({ pool, itemOpenable, isFirst }: DropTextProps) => {
             min: pool.minDrop,
             max: pool.maxDrop,
             type: pool.name,
+            isGram: isGram,
             chance: pool.openings ? ((pool.openings / itemOpenable.openings) * 100).toFixed(2) : 0,
           })}
         </>
@@ -307,6 +309,7 @@ const DropText = ({ pool, itemOpenable, isFirst }: DropTextProps) => {
           isFirst: isFirst,
           min: pool.minDrop || pool.maxDrop,
           type: pool.name,
+          isGram: isGram,
           chance: pool.openings ? ((pool.openings / itemOpenable.openings) * 100).toFixed(2) : 0,
         })}
       </>

@@ -408,7 +408,14 @@ const ImportItems = (props: ImportItemsProps) => {
               {t('General.submit')}
             </Button>
             {recomended_list && (
-              <CreateLinkedListButton list={recomended_list} isImport onCreate={handleLinkedList} />
+              <>
+                <Text>{t('General.or')}</Text>
+                <CreateLinkedListButton
+                  list={recomended_list}
+                  isImport
+                  onCreate={handleLinkedList}
+                />
+              </>
             )}
           </HStack>
         </Flex>

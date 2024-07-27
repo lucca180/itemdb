@@ -113,7 +113,7 @@ export default function AddListItemsModal(props: AddListItemsModalProps) {
               />
               <Text fontSize="xs" color="whiteAlpha.600">
                 {t.rich('Lists.import-modal-cta', {
-                  Link: (chunk) => <NextLink href="/import">{chunk}</NextLink>,
+                  Link: (chunk) => <NextLink href="/lists/import">{chunk}</NextLink>,
                 })}
               </Text>
             </Flex>

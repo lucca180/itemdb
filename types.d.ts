@@ -330,6 +330,7 @@ export type ItemOpenable = {
   hasLE: boolean;
   isGBC: boolean;
   isChoice: boolean;
+  isGram: boolean;
   maxDrop: number;
   minDrop: number;
 };

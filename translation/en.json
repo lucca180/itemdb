@@ -12,7 +12,8 @@
     "stats": "Stats",
     "latest-articles": "Latest Articles",
     "seo-description": "Find all the data about Neopets items such as the most updated prices, wearable previews, restock history, color search, capsules drop rates and more! Create your item lists easily and share around Neopia!",
-    "new-in-nc-mall": "New in NC Mall"
+    "new-in-nc-mall": "New in NC Mall",
+    "is-it-safe": "Is it safe?"
   },
   "BetaStats": {
     "items-in-db": "Items in the database",
@@ -325,7 +326,8 @@
     "until": "until",
     "species": "species",
     "search-items": "Search Items",
-    "download": "Download"
+    "download": "Download",
+    "or": "or"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",
@@ -793,14 +795,16 @@
   "Drops": {
     "single": "This item will {isFirst, select, false {also} other {}} drop {min, plural, =0 {} =1 {<b>one</b> of} other {<b>#</b> of}} the following items:",
     "multiple": "This item will {isFirst, select, false {also} other {}} drop {min, plural, =0 {} other {<b>at least #</b>}} and <b>up to {max}</b> of the these items:",
-    "chance-single": "You {isFirst, select, false {also} other {}} have {chance, plural, =0 {chances of} other {<b>#% chance</b> of}} getting <b>{min, plural, =1 {one} other {#}}</b> of these {type, select, le {<b>Limited Edition Items</b> } bonus {<b>Bonus Items</b>} other {items}}:",
-    "chance-multiple": "You {isFirst, select, false {also} other {}} have {chance, plural, =0 {chances of} other {<b>#% chance</b> of}} getting {min, plural, =0 {} other {<b>at least #</b> and}} <b>up to {max}</b> of these {type, select, le {itens <b>Limited Edition Items</b> } bonus {<b>Bonus Items</b>} other {items}}:",
+    "chance-single": "You {isFirst, select, false {also} other {}} have {chance, plural, =0 {chances of} other {<b>#% chance</b> of}} {isGram, select, false {choosing} other{getting}} <b>{min, plural, =1 {one} other {#}}</b> of these {type, select, le {<b>Limited Edition Items</b> } bonus {<b>Bonus Items</b>} other {items}}:",
+    "chance-multiple": "You {isFirst, select, false {also} other {}} have {chance, plural, =0 {chances of} other {<b>#% chance</b> of}} {isGram, select, false {choosing} other{getting}} {min, plural, =0 {} other {<b>at least #</b> and}} <b>up to {max}</b> of these {type, select, le {itens <b>Limited Edition Items</b> } bonus {<b>Bonus Items</b>} other {items}}:",
     "gbc": "<b>Gift Box Mystery Capsules</b> can drop any item <b>currently</b> for sale for <b>at least 150NC</b> at the NC Mall",
     "pool-opening-reports": "Odds on {openings} opening reports. <Link>Learn How To Help</Link>",
     "unknown-categories": "Unknown Categories",
     "unknown-text": "We couldn't precise the category of the following items, so we cannot provide the odds correctly.",
     "item-opening-reports": "{itemName} drop odds on {openings} opening reports. <Link>Learn How To Help</Link>",
-    "item-drops": "Item Drops"
+    "item-drops": "Item Drops",
+    "gram-single": "You {isFirst, select, false {also} other {}} can choose {min, plural, =0 {} =1 {<b>one</b> of} other {<b>#</b> of}} the following items:",
+    "gram-multiple": "You {isFirst, select, false {also} other {}} can choose {min, plural, =0 {} other {<b>at least #</b>}} and <b>up to {max}</b> of the these items:"
   },
   "PetColors": {
     "no-color-1": "We couldn't find a way to paint your neopet with this color.",

@@ -12,7 +12,8 @@
     "stats": "Estatísticas",
     "latest-articles": "Últimos Artigos",
     "seo-description": "Encontre todas as informações que você precisa sobre itens de Neopets em um só lugar! Descubra os preços mais recentes, descobertas, artigos e muito mais.",
-    "new-in-nc-mall": "Novo no Centro NC"
+    "new-in-nc-mall": "Novo no Centro NC",
+    "is-it-safe": "É seguro?"
   },
   "BetaStats": {
     "items-in-db": "Itens no banco de dados",
@@ -326,7 +327,8 @@
     "until": "até",
     "species": "espécie",
     "search-items": "Buscar Itens",
-    "download": "Download"
+    "download": "Download",
+    "or": "ou"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",
@@ -794,14 +796,16 @@
   "Drops": {
     "single": "Este item {isFirst, select, false {também} other {}} irá conceder {min, plural, =0 {os} =1 {<b>um</b> dos} other {<b>#</b> dos}} seguintes itens:",
     "multiple": "Este item {isFirst, select, false {também} other {}} irá conceder {min, plural, =0 {} other {<b>pelo menos #</b>}} e <b>até {max}</b> dos seguintes itens:",
-    "chance-single": "Você {isFirst, select, false {também} other {}} tem {chance, plural, =0 {chances} other {<b>#% de chance</b>}} de ganhar <b>{min, plural, =1 {um} other {#}}</b> desses {type, select, le {itens <b>Edição Limitada</b>} bonus {<b>Itens Bonus</b>} other {itens}}:",
-    "chance-multiple": "Você {isFirst, select, false {também} other {}} tem {chance, plural, =0 {chances} other {<b>#% de chance</b>}} de ganhar {min, plural, =0 {} other {<b>pelo menos #</b> e}} <b>até {max}</b> desses {type, select, le {itens <b>Edição Limitada</b>} bonus {<b>Itens Bonus</b>} other {itens}}:",
+    "chance-single": "Você {isFirst, select, false {também} other {}} tem {chance, plural, =0 {chances} other {<b>#% de chance</b>}} de {isGram, select, true {poder escolher} other{ganhar}} <b>{min, plural, =1 {um} other {#}}</b> desses {type, select, le {itens <b>Edição Limitada</b>} bonus {<b>Itens Bonus</b>} other {itens}}:",
+    "chance-multiple": "Você {isFirst, select, false {também} other {}} tem {chance, plural, =0 {chances} other {<b>#% de chance</b>}} de {isGram, select, true {poder escolher} other{ganhar}} {min, plural, =0 {} other {<b>pelo menos #</b> e}} <b>até {max}</b> desses {type, select, le {itens <b>Edição Limitada</b>} bonus {<b>Itens Bonus</b>} other {itens}}:",
     "gbc": "<b>Gift Box Mystery Capsules</b> podem conceder qualquer item <b>atualmente</b> à venda por <b>pelo menos 150NC</b> no Centro NC",
     "item-opening-reports": "Chances de drops de {itemName} com base em {openings} aberturas. <Link>Saiba como ajudar</Link>",
     "pool-opening-reports": "Chances com base em {openings} aberturas. <Link>Saiba como ajudar</Link>",
     "unknown-categories": "Categoria Desconhecida",
     "unknown-text": "Não conseguimos precisar a categoria dos seguintes itens, por isso não podemos fornecer as probabilidades corretamente.",
-    "item-drops": "Item Drops"
+    "item-drops": "Item Drops",
+    "gram-single": "Você {isFirst, select, false {também} other {}} poderá escolher {min, plural, =0 {os} =1 {<b>um</b> dos} other {<b>#</b> dos}} seguintes itens:",
+    "gram-multiple": "Você {isFirst, select, false {também} other {}} poderá escolher {min, plural, =0 {} other {<b>pelo menos #</b>}} e <b>até {max}</b> dos seguintes itens:"
   },
   "PetColors": {
     "cheapest-change": "Troca mais barata",

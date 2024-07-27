@@ -1,5 +1,5 @@
 import { Badge, Box, Button, Flex, Heading, Icon, Stack, Text } from '@chakra-ui/react';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Layout from '../../components/Layout';
 import Image from 'next/image';
 import {
@@ -96,6 +96,10 @@ const ItemPage = (props: ItemPageProps) => {
   const { user } = useAuth();
 
   const color = item?.color.rgb ?? [255, 255, 255];
+  const colorSpeciesEffect = useMemo(() => {
+    if (itemEffects.length === 0) return null;
+    return itemEffects.find((effect) => effect.type === 'colorSpecies');
+  }, [itemEffects]);
 
   return (
     <Layout
@@ -307,7 +311,13 @@ const ItemPage = (props: ItemPageProps) => {
               <NcMallCard item={item} ncMallData={props.ncMallData} />
             )}
             {item.findAt.restockShop && <ItemRestock item={item} lastSeen={props.lastSeen} />}
-            {item.isWearable && <ItemPreview item={item} wearableData={props.wearableData} />}
+            {(item.isWearable || colorSpeciesEffect) && (
+              <ItemPreview
+                colorSpeciesEffect={colorSpeciesEffect}
+                item={item}
+                wearableData={props.wearableData}
+              />
+            )}
             {!item.isNC && item.status === 'active' && <TradeCard item={item} trades={trades} />}
             {itemParent.length > 0 && <ItemParent item={item} parentItems={itemParent} />}
           </Flex>

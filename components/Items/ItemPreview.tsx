@@ -1,7 +1,7 @@
 import { AspectRatio, Box, Flex, Link, Skeleton, Text } from '@chakra-ui/react';
 import React, { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
-import { ItemData } from '../../types';
+import { ItemData, ItemEffect } from '../../types';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { useTranslations } from 'next-intl';
 import { WearableData } from '@prisma/client';
@@ -9,12 +9,13 @@ import { WearableData } from '@prisma/client';
 type Props = {
   item: ItemData;
   wearableData?: WearableData[] | null;
+  colorSpeciesEffect?: ItemEffect | null;
 };
 
 const ItemPreview = (props: Props) => {
   const t = useTranslations();
   const [isLoaded, setIsLoaded] = useState(0);
-  const { item } = props;
+  const { item, colorSpeciesEffect, wearableData } = props;
   const color = item.color.rgb;
 
   useEffect(() => {
@@ -22,10 +23,10 @@ const ItemPreview = (props: Props) => {
   }, [item]);
 
   const zonesData = useMemo(() => {
-    if (!props.wearableData) return [];
+    if (!wearableData) return [];
     const zones: { [id: string]: { label: string; species: string[] } } = {};
 
-    props.wearableData
+    wearableData
       .filter((x) => x.isCanonical)
       .forEach((data) => {
         if (!zones[data.zone_plain_label])
@@ -43,7 +44,16 @@ const ItemPreview = (props: Props) => {
       });
 
     return Object.values(zones);
-  }, [props.wearableData]);
+  }, [wearableData]);
+
+  const previewUrl = useMemo(() => {
+    if (item.isWearable) return '/api/cache/preview/' + item.image_id + '.png';
+    if (!colorSpeciesEffect) return '';
+
+    const { colorTarget, speciesTarget } = colorSpeciesEffect;
+
+    return `/api/cache/preview/color/${speciesTarget}_${colorTarget}.png`.toLowerCase();
+  }, [item, colorSpeciesEffect]);
 
   return (
     <Flex
@@ -76,7 +86,7 @@ const ItemPreview = (props: Props) => {
         <Skeleton minW={300} minH={300} h="100%" w="100%" isLoaded={!!isLoaded}>
           <AspectRatio ratio={1}>
             <Image
-              src={'/api/cache/preview/' + item.image_id + '.png'}
+              src={previewUrl}
               alt="Item Preview"
               unoptimized
               fill
@@ -88,10 +98,12 @@ const ItemPreview = (props: Props) => {
         </Skeleton>
       </Flex>
       <Box p={1} textAlign="center" bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}>
-        <Text fontSize="xs" p={1}>
-          <b>{t('ItemPage.occupies')}:</b>{' '}
-          {zonesData.map((x, i) => x.label + (i + 1 == zonesData.length ? '' : ', '))}
-        </Text>
+        {zonesData.length > 0 && (
+          <Text fontSize="xs" p={1}>
+            <b>{t('ItemPage.occupies')}:</b>{' '}
+            {zonesData.map((x, i) => x.label + (i + 1 == zonesData.length ? '' : ', '))}
+          </Text>
+        )}
         <Text fontSize="xs">
           {t('ItemPage.powered-by')}{' '}
           <Link href={item.findAt.dti ?? undefined} isExternal fontWeight="bold">

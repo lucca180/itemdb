@@ -132,6 +132,7 @@ export const getItemDrops = async (
   const manualItems: number[] = [];
   let isChoice = false;
   let isZoneCat = false;
+  let isGram = false;
   drops
     .sort((a, b) => (a.notes?.length ?? 0) - (b.notes?.length ?? 0))
     .map((drop) => {
@@ -172,7 +173,7 @@ export const getItemDrops = async (
         let val = 1;
 
         if (notesList.length === 1) val = 10;
-
+        if (note.includes('gram')) isGram = true;
         if (catType.includes(note) || note.match(/cat\d+y\d+/gim) || note.match(/cat\d+/gim)) {
           if (note !== 'le') isChoice = true;
           if (catTypeZone.includes(note)) isZoneCat = true;
@@ -209,6 +210,7 @@ export const getItemDrops = async (
     minDrop: 0,
     maxDrop: 0,
     isChoice: isChoice,
+    isGram: isGram,
   };
 
   const zoneData = await prisma.wearableData.findMany({
