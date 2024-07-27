@@ -112,7 +112,7 @@ const HomePage = (props: Props) => {
             {t('title')}
           </Highlight>{' '}
           <Link color={color.lightness(70).hex()} href="/faq">
-            {t('why-us')}
+            {t('is-it-safe')}
           </Link>
         </Heading>
       </Box>
