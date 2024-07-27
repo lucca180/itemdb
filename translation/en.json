@@ -325,7 +325,8 @@
     "until": "until",
     "species": "species",
     "search-items": "Search Items",
-    "download": "Download"
+    "download": "Download",
+    "or": "or"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",
