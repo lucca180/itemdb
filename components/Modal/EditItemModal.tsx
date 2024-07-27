@@ -712,6 +712,7 @@ const defaultItemOpenable: ItemOpenable = {
   hasLE: false,
   isGBC: false,
   isChoice: false,
+  isGram: false,
   maxDrop: 0,
   minDrop: 0,
 };
