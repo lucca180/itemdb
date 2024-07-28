@@ -177,7 +177,8 @@
     "saleStatus-beta-alert": "Este é um recurso beta e estamos trabalhando para melhorar a precisão desses dados, então <b>não tome isso como uma fonte de verdade absoluta</b> :)",
     "saleStatus-feedback-sale-cta": "Baseado na sua experiencia, você concorda com o Sale Status atual desse item?",
     "saleStatus-feedback-cta": "Você também pode deixar seus comentários usando o botão Feedback no site",
-    "saleStatus-text": "Este item é <Badge></Badge> porque determinamos que <b>~{percent}%</b> dos itens disponíveis <b>nos últimos {days} dias</b> foram vendidos."
+    "saleStatus-text": "Este item é <Badge></Badge> porque determinamos que <b>~{percent}%</b> dos itens disponíveis <b>nos últimos {days} dias</b> foram vendidos.",
+    "saleStatus-thanks-feedback": "Obrigado pelo seu feedback! Isso ajudará a toranr o itemdb cada vez mais preciso e útil :)"
   },
   "Button": {
     "feedback": "Feedback",
