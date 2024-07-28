@@ -299,7 +299,7 @@ const DropText = ({ pool, itemOpenable, isFirst }: DropTextProps) => {
             isFirst: isFirst,
             min: pool.minDrop,
             max: pool.maxDrop,
-            type: pool.name,
+            type: pool.isLE ? 'le' : pool.name,
             isGram: isGram,
             chance: pool.openings ? ((pool.openings / itemOpenable.openings) * 100).toFixed(2) : 0,
           })}
@@ -312,7 +312,7 @@ const DropText = ({ pool, itemOpenable, isFirst }: DropTextProps) => {
           b: (text) => <b>{text}</b>,
           isFirst: isFirst,
           min: pool.minDrop || pool.maxDrop,
-          type: pool.name,
+          type: pool.isLE ? 'le' : pool.name,
           isGram: isGram,
           chance: pool.openings ? ((pool.openings / itemOpenable.openings) * 100).toFixed(2) : 0,
         })}
