@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 import { Flex, Text, Image, Badge, Center, Alert, AlertIcon, Link } from '@chakra-ui/react';
 import axios from 'axios';
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { ItemData, ItemOpenable, PrizePoolData } from '../../types';
 import CardBase from '../Card/CardBase';
 import ItemCard from './ItemCard';
@@ -26,6 +26,11 @@ const ItemDrops = (props: Props) => {
   const itemDrops = itemOpenable.drops;
   const multiplePools = Object.keys(pools).length > 1;
   const isChoice = itemOpenable.isChoice;
+
+  const poolsArr = useMemo(
+    () => Object.values(pools).sort((a, b) => (a.isLE ? -1 : a.name.localeCompare(b.name))),
+    [pools]
+  );
 
   useEffect(() => {
     if (SKIP_ITEMS.includes(item.internal_id)) return;
@@ -69,15 +74,15 @@ const ItemDrops = (props: Props) => {
           <DropText pool={null} itemOpenable={itemOpenable} />
         </Text>
       )}
-      {pools['le'] && pools['le'].items.length > 0 && (
+      {/* {bonusPool && bonusPool.items.length > 0 && (
         <>
           <Alert status="success" variant="subtle" textAlign={'center'}>
             <Text textAlign={'center'} fontSize="sm" flex="1">
-              <DropText pool={pools['le']} itemOpenable={itemOpenable} />
+              <DropText pool={bonusPool} itemOpenable={itemOpenable} />
             </Text>
           </Alert>
           <Flex gap={3} wrap="wrap" justifyContent="center" my={3}>
-            {pools['le'].items
+            {bonusPool.items
               .map((a) => itemDrops[a])
               .sort((a, b) => b.dropRate - a.dropRate)
               .map((drop) => {
@@ -96,21 +101,20 @@ const ItemDrops = (props: Props) => {
               })}
           </Flex>
         </>
-      )}
-      {Object.values(pools)
-        .filter((a) => !['le', 'unknown'].includes(a.name))
-        .sort((a, b) => a.name.localeCompare(b.name))
+      )} */}
+      {poolsArr
+        .filter((a) => !['unknown'].includes(a.name))
         .map((pool, i) => (
-          <Flex alignItems="center" key={pool.name} flexFlow="column" mb={8}>
-            {isChoice && getCatImage(pool.name, item.internal_id)}
-            {!isChoice && pool.name === 'bonus' && (
+          <Flex alignItems="center" key={pool.name} flexFlow="column" mb={3}>
+            {isChoice && !pool.isLE && getCatImage(pool.name, item.internal_id)}
+            {(pool.name === 'bonus' || pool.isLE) && (
               <Alert status="success" variant="subtle" textAlign={'center'} mb={3}>
                 <Text textAlign={'center'} fontSize="sm" flex="1">
                   <DropText pool={pool} itemOpenable={itemOpenable} />
                 </Text>
               </Alert>
             )}
-            {!isChoice && pool.name !== 'bonus' && (
+            {!isChoice && pool.name !== 'bonus' && !pool.isLE && (
               <Text textAlign={'center'} fontSize="sm" flex="1" mb={3}>
                 <DropText pool={pool} itemOpenable={itemOpenable} isFirst={i === 0} />
               </Text>
@@ -134,7 +138,7 @@ const ItemDrops = (props: Props) => {
                   );
                 })}
             </Flex>
-            {isChoice && (
+            {isChoice && !pool.isLE && (
               <Text textAlign={'center'} mt={4} fontSize="xs" color="gray.300">
                 {t.rich('Drops.pool-opening-reports', {
                   b: (text) => <b>{text}</b>,

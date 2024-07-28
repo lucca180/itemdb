@@ -776,6 +776,7 @@ export const OpenableTab = (props: OpenableTabProps) => {
       maxDrop: 0,
       minDrop: 0,
       isChance: false,
+      isLE: false,
       totalDrops: 0,
     };
 

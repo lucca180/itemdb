@@ -343,6 +343,7 @@ export type PrizePoolData = {
   minDrop: number;
   totalDrops: number;
   isChance: boolean;
+  isLE: boolean;
 };
 
 export type ItemDrop = {

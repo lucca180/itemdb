@@ -150,6 +150,7 @@ export const getItemDrops = async (
       const pool = drop.prizePool?.toLowerCase();
       if (pool) {
         if (pool.includes('gram')) isGram = true;
+        if (pool.split('-').includes('le')) dropData.isLE = true;
 
         if (!prizePools[pool]) {
           prizePools[pool] = {
@@ -160,6 +161,7 @@ export const getItemDrops = async (
             maxDrop: 0,
             minDrop: 0,
             totalDrops: 0,
+            isLE: pool.split('-').includes('le'),
           };
         }
 
@@ -251,6 +253,7 @@ export const getItemDrops = async (
           maxDrop: 0,
           minDrop: 0,
           totalDrops: 0,
+          isLE: moreCommonCat.toLowerCase() === 'le',
         };
 
       prizePools[moreCommonCat].items.push(drop.item_iid);
