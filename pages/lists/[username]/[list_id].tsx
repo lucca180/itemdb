@@ -76,17 +76,6 @@ type Props = {
   list: UserList;
 };
 
-const sortTypes = {
-  name: 'General.name',
-  price: 'General.price',
-  rarity: 'General.rarity',
-  color: 'General.color',
-  custom: 'General.custom',
-  addedAt: 'General.added-at',
-  faerieFest: 'General.recycling-points',
-  item_id: 'General.item-id',
-};
-
 const ListPage = (props: Props) => {
   const t = useTranslations();
   const router = useRouter();
@@ -129,6 +118,20 @@ const ListPage = (props: Props) => {
   const isOwner = user?.username === router.query.username || user?.id === list?.owner.id;
   const color = Color(list?.colorHex || '#4A5568');
   const rgb = color.rgb().array();
+
+  const sortTypes = useMemo(() => {
+    return {
+      name: 'General.name',
+      price: 'General.price',
+      rarity: 'General.rarity',
+      color: 'General.color',
+      custom:
+        list.officialTag?.toLowerCase() === 'stamps' ? 'General.album-order' : 'General.custom',
+      addedAt: 'General.added-at',
+      faerieFest: 'General.recycling-points',
+      item_id: 'General.item-id',
+    };
+  }, [list.officialTag]);
 
   const itemCount = useMemo(() => {
     if (!list) return 0;
@@ -288,6 +291,11 @@ const ListPage = (props: Props) => {
 
   const handleSortChange = (sortBy: string, sortDir: string) => {
     if (!list) return;
+
+    if (sortBy === 'custom' && list.officialTag?.toLowerCase() === 'stamps') {
+      sortDir = 'asc';
+    }
+
     if (searchItemInfoIds) {
       const itemInfoIds = Object.values(itemInfo)
         .filter((a) => items[a.item_iid]?.name.toLowerCase().includes(searchQuery.current))
@@ -485,7 +493,11 @@ const ListPage = (props: Props) => {
   };
 
   const handleItemInfoChange = useCallback(
-    (id: number, value: number, field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden') => {
+    (
+      id: number,
+      value: number,
+      field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order'
+    ) => {
       const newInfo = { ...itemInfo };
 
       if (field === 'isHidden' || field === 'isHighlight') newInfo[id][field] = !!value;

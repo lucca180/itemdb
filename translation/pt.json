@@ -328,7 +328,9 @@
     "species": "espécie",
     "search-items": "Buscar Itens",
     "download": "Download",
-    "or": "ou"
+    "or": "ou",
+    "order": "Ordem",
+    "album-order": "Ordem do Álbum"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",

@@ -30,7 +30,7 @@ type Props = {
   onChange?: (
     id: number,
     value: number,
-    field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden'
+    field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order'
   ) => void;
   onClick?: (id: number, force?: boolean) => void;
   onListAction?: (item: ItemData, action: 'move' | 'delete') => any;
@@ -60,7 +60,10 @@ function SortableItem1(props: Props) {
     else if (selected !== isSelected) setSelected(selected ?? false);
   }, [selected, editMode]);
 
-  const handleItemInfoChange = (value: number, field: 'amount' | 'capValue' | 'isHighlight') => {
+  const handleItemInfoChange = (
+    value: number,
+    field: 'amount' | 'capValue' | 'isHighlight' | 'order'
+  ) => {
     if (!itemInfo) return;
     const newInfo = { ...itemInfo };
 
@@ -135,6 +138,21 @@ function SortableItem1(props: Props) {
               variant="filled"
               defaultValue={itemInfo?.amount}
               onChange={(value) => handleItemInfoChange(Number(value || 1), 'amount')}
+            >
+              <NumberInputField />
+              <NumberInputStepper>
+                <NumberIncrementStepper />
+                <NumberDecrementStepper />
+              </NumberInputStepper>
+            </NumberInput>
+          </InputGroup>
+          <InputGroup size="xs">
+            <InputLeftAddon children={t('General.order')} />
+            <NumberInput
+              min={0}
+              variant="filled"
+              defaultValue={itemInfo?.order ?? 0}
+              onChange={(value) => handleItemInfoChange(Number(value || 0), 'order')}
             >
               <NumberInputField />
               <NumberInputStepper>

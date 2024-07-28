@@ -327,7 +327,9 @@
     "species": "species",
     "search-items": "Search Items",
     "download": "Download",
-    "or": "or"
+    "or": "or",
+    "order": "Order",
+    "album-order": "Album Order"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",
