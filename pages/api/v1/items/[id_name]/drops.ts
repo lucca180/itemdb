@@ -149,6 +149,8 @@ export const getItemDrops = async (
 
       const pool = drop.prizePool?.toLowerCase();
       if (pool) {
+        if (pool.includes('gram')) isGram = true;
+
         if (!prizePools[pool]) {
           prizePools[pool] = {
             name: pool,
@@ -173,7 +175,6 @@ export const getItemDrops = async (
         let val = 1;
 
         if (notesList.length === 1) val = 10;
-        if (note.includes('gram')) isGram = true;
         if (catType.includes(note) || note.match(/cat\d+y\d+/gim) || note.match(/cat\d+/gim)) {
           if (note !== 'le') isChoice = true;
           if (catTypeZone.includes(note)) isZoneCat = true;
