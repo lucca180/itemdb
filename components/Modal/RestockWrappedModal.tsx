@@ -88,7 +88,7 @@ const RestockWrappedModal = (props: RestockWrappedModalProps) => {
 
   const init = async () => {
     // wait to show contribute-wall
-    if (Date.now() < 1722124799000 && !SKIP_WALL) {
+    if (Date.now() < 1722124799000 || SKIP_WALL) {
       setWrappedCheck({ canWrapped: true, needTrades: 0, needVotes: 0 });
       return;
     }
