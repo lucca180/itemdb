@@ -31,7 +31,13 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
 
   const itemsMissingInfo = prisma.items.count({
     where: {
-      OR: [{ item_id: null }, { category: null }, { rarity: null }],
+      OR: [
+        { item_id: null },
+        { category: null },
+        { rarity: null },
+        { est_val: null },
+        { weight: null },
+      ],
     },
   });
 
