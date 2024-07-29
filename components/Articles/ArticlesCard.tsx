@@ -1,4 +1,15 @@
-import { Flex, Heading, Image, Text, Link, Card, CardBody, Stack } from '@chakra-ui/react';
+import {
+  Flex,
+  Heading,
+  Image,
+  Text,
+  Link,
+  Card,
+  CardBody,
+  Stack,
+  HStack,
+  Badge,
+} from '@chakra-ui/react';
 import { WP_Article } from '../../types';
 import NextLink from 'next/link';
 
@@ -10,6 +21,8 @@ type Props = {
 export const ArticleCard = (props: Props) => {
   const { article, vertical } = props;
   const rgb = article.palette?.lightvibrant.rgb ?? [0, 0, 0];
+
+  const isNew = new Date(article.date) > new Date(new Date().setDate(new Date().getDate() - 7));
 
   if (vertical)
     return (
@@ -74,7 +87,10 @@ export const ArticleCard = (props: Props) => {
         borderRadius="md"
       />
       <Flex flexFlow={'column'} gap={1}>
-        <Heading size="md">{article.title}</Heading>
+        <HStack>
+          {isNew && <Badge colorScheme="yellow">New</Badge>}
+          <Heading size="md">{article.title}</Heading>
+        </HStack>
         <Text fontSize="xs">{article.excerpt}</Text>
       </Flex>
     </Link>
