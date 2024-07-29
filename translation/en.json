@@ -460,7 +460,8 @@
     "need-refresh": "You may need to refresh the page to see the changes.",
     "add-items-to-list": "Add Items to List",
     "import-modal-cta": "You can also <Link>Import Items</Link> from your sdb, gallery and more!",
-    "add-items": "Add Items"
+    "add-items": "Add Items",
+    "stamp-script-tip": "You can use our <Link>Stamp Album Helper Script</Link> to see which stamps you are missing and how much it would cost to complete your album."
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",

@@ -18,7 +18,7 @@ import {
   Spinner,
   Link as ChakraLink,
   Select,
-  Badge,
+  // Badge,
 } from '@chakra-ui/react';
 
 import NextImage from 'next/image';
@@ -150,9 +150,9 @@ const Layout = (props: Props) => {
             {t('dashboard')}
           </ChakraLink>{' '}
           <Text display="inline-flex" alignItems={'center'} gap={1}>
-            <Badge colorScheme="yellow" fontSize={'9px'} verticalAlign={'middle'}>
+            {/* <Badge colorScheme="yellow" fontSize={'9px'} verticalAlign={'middle'}>
               {t('new')}
-            </Badge>
+            </Badge> */}
             <ChakraLink as={Link} href="/tools/pet-colors" prefetch={false}>
               {t('pet-color-tool')}
             </ChakraLink>{' '}

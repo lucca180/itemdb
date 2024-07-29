@@ -16,6 +16,7 @@ import {
   Spinner,
   IconButton,
   useDisclosure,
+  Link,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -750,10 +751,27 @@ const ListPage = (props: Props) => {
           <Text
             textAlign={'center'}
             fontSize="xs"
-            color="gray.500"
+            color="gray.400"
             display={{ base: 'none', md: 'inline' }}
           >
             {t('General.tip')}: {t('Lists.user-list-tip-1')}
+          </Text>
+        )}
+        {list.officialTag === 'Stamps' && (
+          <Text
+            textAlign={'center'}
+            fontSize="xs"
+            color="gray.400"
+            display={{ base: 'none', md: 'inline' }}
+          >
+            {t('General.tip')}:{' '}
+            {t.rich('Lists.stamp-script-tip', {
+              Link: (chunk) => (
+                <Link color="gray.200" href="/articles/userscripts" isExternal>
+                  {chunk}
+                </Link>
+              ),
+            })}
           </Text>
         )}
         {isEdit && sortInfo.sortBy === 'custom' && (

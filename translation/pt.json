@@ -580,7 +580,8 @@
     "add-items-to-list": "Adicionar itens à lista",
     "import-modal-cta": "Você também pode <Link>Importar Itens</Link> do seu cofre, galeria e muito mais!",
     "need-refresh": "Pode ser necessário atualizar a página para ver as alterações.",
-    "add-items": "Adicionar Itens"
+    "add-items": "Adicionar Itens",
+    "stamp-script-tip": "Você pode usar nosso <Link>Stamp Album Helper Script</Link> para ver quais selos estão faltando e quanto custaria para completar seu álbum."
   },
   "Restock": {
     "est-profit": "Lucro Est.",
