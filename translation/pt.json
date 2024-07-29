@@ -797,8 +797,8 @@
     "yahoo-mail-error": "Os usuários do Yahoo podem ter dificuldades para receber e-mails no momento"
   },
   "Drops": {
-    "single": "Este item {isFirst, select, false {também} other {}} irá conceder {min, plural, =0 {os} =1 {<b>um</b> dos} other {<b>#</b> dos}} seguintes itens:",
-    "multiple": "Este item {isFirst, select, false {também} other {}} irá conceder {min, plural, =0 {} other {<b>pelo menos #</b>}} e <b>até {max}</b> dos seguintes itens:",
+    "single": "Este item {isFirst, select, false {também} other {}} irá conceder {min, plural, =0 {os} =1 {<b>um</b> dos} other {<b>#</b> dos}} seguintes {type, select, le {itens <b>Edição Limitada</b>} bonus {<b>Itens Bonus</b>} other {itens}}:",
+    "multiple": "Este item {isFirst, select, false {também} other {}} irá conceder {min, plural, =0 {} other {<b>pelo menos #</b>}} e <b>até {max}</b> dos seguintes {type, select, le {itens <b>Edição Limitada</b>} bonus {<b>Itens Bonus</b>} other {itens}}:",
     "chance-single": "Você {isFirst, select, false {também} other {}} tem {chance, plural, =0 {chances} other {<b>#% de chance</b>}} de {isGram, select, true {poder escolher} other{ganhar}} <b>{min, plural, =1 {um} other {#}}</b> desses {type, select, le {itens <b>Edição Limitada</b>} bonus {<b>Itens Bonus</b>} other {itens}}:",
     "chance-multiple": "Você {isFirst, select, false {também} other {}} tem {chance, plural, =0 {chances} other {<b>#% de chance</b>}} de {isGram, select, true {poder escolher} other{ganhar}} {min, plural, =0 {} other {<b>pelo menos #</b> e}} <b>até {max}</b> desses {type, select, le {itens <b>Edição Limitada</b>} bonus {<b>Itens Bonus</b>} other {itens}}:",
     "gbc": "<b>Gift Box Mystery Capsules</b> podem conceder qualquer item <b>atualmente</b> à venda por <b>pelo menos 150NC</b> no Centro NC",
@@ -807,8 +807,8 @@
     "unknown-categories": "Categoria Desconhecida",
     "unknown-text": "Não conseguimos precisar a categoria dos seguintes itens, por isso não podemos fornecer as probabilidades corretamente.",
     "item-drops": "Item Drops",
-    "gram-single": "Você {isFirst, select, false {também} other {}} poderá escolher {min, plural, =0 {os} =1 {<b>um</b> dos} other {<b>#</b> dos}} seguintes itens:",
-    "gram-multiple": "Você {isFirst, select, false {também} other {}} poderá escolher {min, plural, =0 {} other {<b>pelo menos #</b>}} e <b>até {max}</b> dos seguintes itens:"
+    "gram-single": "Você {isFirst, select, false {também} other {}} poderá escolher {min, plural, =0 {os} =1 {<b>um</b> dos} other {<b>#</b> dos}} seguintes {type, select, le {itens <b>Edição Limitada</b>} bonus {<b>Itens Bonus</b>} other {itens}}:",
+    "gram-multiple": "Você {isFirst, select, false {também} other {}} poderá escolher {min, plural, =0 {} other {<b>pelo menos #</b>}} e <b>até {max}</b> dos seguintes {type, select, le {itens <b>Edição Limitada</b>} bonus {<b>Itens Bonus</b>} other {itens}}:"
   },
   "PetColors": {
     "cheapest-change": "Troca mais barata",
