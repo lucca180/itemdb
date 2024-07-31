@@ -143,8 +143,9 @@ export const getItemEffects = async (id_name: string | number) => {
 
   const effects = effectsRaw.map((effect) => formatEffect(effect));
   const isFood =
-    item.category &&
-    allFoodsCats.map((cat) => cat.toLowerCase()).includes(item.category.toLowerCase());
+    item.useTypes.canEat === 'true' ||
+    (item.category &&
+      allFoodsCats.map((cat) => cat.toLowerCase()).includes(item.category.toLowerCase()));
 
   // some custom effects
   if (!isFood) return effects;
@@ -185,6 +186,16 @@ export const getItemEffects = async (id_name: string | number) => {
       type: 'disease',
       name: 'Itchy Scratchies',
       species: ['Kyrii'],
+      isChance: false,
+    });
+  }
+
+  if (item.name.toLowerCase().includes('worm')) {
+    effects.push({
+      internal_id: -1,
+      type: 'cureDisease',
+      name: 'Any Disease',
+      species: ['Pteri'],
       isChance: false,
     });
   }
