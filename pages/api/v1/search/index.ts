@@ -390,16 +390,7 @@ export async function doSearch(
                 having dist <= ${colorTolerance}
             ) as f on a.image_id = f.image_id
         LEFT JOIN ItemColor as b on a.image_id = b.image_id and (POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) = f.dist
-        LEFT JOIN (
-          SELECT *
-          FROM ItemPrices
-          WHERE (item_iid, addedAt) IN (
-              SELECT item_iid, MAX(addedAt)
-              FROM ItemPrices
-              where manual_check is null
-              GROUP BY item_iid
-          ) AND manual_check IS null
-        ) as c on c.item_iid = a.internal_id
+        LEFT JOIN ItemPrices as c on c.item_iid = a.internal_id and c.isLatest = 1
         LEFT JOIN (
           SELECT *
           FROM OwlsPrice
@@ -467,16 +458,7 @@ export async function doSearch(
         LEFT JOIN ItemColor as b on a.image_id = b.image_id and ${colorTypeSQL} ${
       colorSql_inside ? Prisma.sql`and b.population > 0` : Prisma.empty
     }
-        LEFT JOIN (
-          SELECT *
-          FROM ItemPrices
-          WHERE (item_iid, addedAt) IN (
-              SELECT item_iid, MAX(addedAt)
-              FROM ItemPrices
-              where manual_check is null
-              GROUP BY item_iid
-          ) AND manual_check IS null
-        ) as c on c.item_iid = a.internal_id
+        LEFT JOIN itemPrices as c on c.item_iid = a.internal_id and c.isLatest = 1
         LEFT JOIN (
           SELECT *
           FROM OwlsPrice

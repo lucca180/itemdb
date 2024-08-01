@@ -170,10 +170,11 @@ model ItemPrices {
   item_id     Int?
   name        String
   image_id    String?
-  // price       Int
   price       Decimal   @db.Decimal(11, 0)
   addedAt     DateTime  @default(now())
   processedAt DateTime? @default(now())
+
+  isLatest Boolean?
 
   manual_check   String?
   noInflation_id Int?
@@ -185,6 +186,9 @@ model ItemPrices {
   @@index([name, image_id])
   @@index([name, addedAt])
   @@index([name, item_iid])
+
+  @@unique([item_iid, isLatest])
+
   @@index([item_iid, addedAt, manual_check])
 }
 

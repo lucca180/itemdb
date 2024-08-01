@@ -60,11 +60,43 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
   const priceID = req.query.id as string;
 
+  const originalPrice = await prisma.itemPrices.findUnique({
+    where: {
+      internal_id: Number(priceID),
+    },
+  });
+
+  if (!originalPrice) {
+    return res.status(404).json({ error: 'Price not found' });
+  }
+
   await prisma.itemPrices.delete({
     where: {
       internal_id: Number(priceID),
     },
   });
+
+  if (!originalPrice.isLatest) return res.json(true);
+
+  const lastOne = await prisma.itemPrices.findFirst({
+    where: {
+      item_iid: originalPrice.item_iid,
+    },
+    orderBy: {
+      addedAt: 'desc',
+    },
+  });
+
+  if (lastOne) {
+    await prisma.itemPrices.update({
+      where: {
+        internal_id: lastOne.internal_id,
+      },
+      data: {
+        isLatest: true,
+      },
+    });
+  }
 
   return res.json(true);
 };

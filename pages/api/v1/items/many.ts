@@ -102,16 +102,7 @@ export const getManyItems = async (
       s.totalSold, s.totalItems, s.stats, s.daysPeriod
     FROM Items as a
     LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
-    LEFT JOIN (
-      SELECT *
-      FROM ItemPrices
-      WHERE (item_iid, addedAt) IN (
-          SELECT item_iid, MAX(addedAt)
-          FROM ItemPrices
-          where manual_check is null
-          GROUP BY item_iid
-      ) AND manual_check IS null
-    ) as c on c.item_iid = a.internal_id
+    LEFT JOIN ItemPrices as c on c.item_iid = a.internal_id and c.isLatest = 1
     LEFT JOIN (
       SELECT *
       FROM OwlsPrice

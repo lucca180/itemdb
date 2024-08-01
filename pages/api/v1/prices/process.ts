@@ -230,6 +230,20 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     .map((x) => (x.status === 'fulfilled' ? x.value : null))
     .filter((x) => !!x) as ItemPrices[];
 
+  const updatedIDs = priceAddList
+    .filter((x) => !!x && !x.manual_check)
+    .map((x) => x.item_iid ?? -1);
+
+  await prisma.itemPrices.updateMany({
+    where: {
+      item_iid: { in: updatedIDs },
+      isLatest: true,
+    },
+    data: {
+      isLatest: null,
+    },
+  });
+
   const result = await prisma.$transaction([
     prisma.itemPrices.createMany({ data: priceAddList }),
     prisma.priceProcess2.updateMany({
@@ -310,6 +324,7 @@ async function updateOrAddDB(
     item_iid: priceData.item_iid,
     price: priceValue,
     manual_check: null,
+    isLatest: true,
     addedAt: latestDate,
     usedProcessIDs: usedIDs.toString(),
   };
@@ -390,6 +405,7 @@ async function updateOrAddDB(
     return {
       ...newPriceData,
       manual_check: e,
+      isLatest: null,
     };
   }
 }

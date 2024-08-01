@@ -45,13 +45,34 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const id = req.query.id as string;
 
   if (type === 'inflation') {
-    if (action === 'approve') {
+    const check = (await prisma.itemPrices.findFirst({
+      where: {
+        internal_id: checkID,
+      },
+    })) as ItemPrices;
+
+    if (action === 'approve' || action === 'not_inflated') {
+      const updateResult = await prisma.itemPrices.updateMany({
+        where: {
+          item_iid: check.item_iid,
+          isLatest: true,
+          addedAt: {
+            lte: check.addedAt,
+          },
+        },
+        data: {
+          isLatest: null,
+        },
+      });
+
       await prisma.itemPrices.update({
         where: {
           internal_id: checkID,
         },
         data: {
           manual_check: null,
+          noInflation_id: action === 'not_inflated' ? null : undefined,
+          isLatest: updateResult.count > 0 || null,
         },
       });
 
@@ -59,12 +80,6 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     if (action === 'reprove') {
-      const check = (await prisma.itemPrices.findFirst({
-        where: {
-          internal_id: checkID,
-        },
-      })) as ItemPrices;
-
       const processIds = check.usedProcessIDs.split(',').map(Number);
 
       await prisma.itemPrices.delete({
@@ -81,20 +96,6 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         },
         data: {
           processed: false,
-        },
-      });
-
-      return res.json({ success: true });
-    }
-
-    if (action === 'not_inflated') {
-      await prisma.itemPrices.update({
-        where: {
-          internal_id: checkID,
-        },
-        data: {
-          manual_check: null,
-          noInflation_id: null,
         },
       });
 
