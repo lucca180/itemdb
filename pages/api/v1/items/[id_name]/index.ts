@@ -382,7 +382,7 @@ export const fetchOwlsData = async (
     });
 
     lastOwls = owls;
-    // check if last check was in the last 3 days
+    // check if last check was in the last 15 days
     if (owls && differenceInCalendarDays(new Date(), owls.lastChecked) < 15) {
       return {
         value: owls.value,
@@ -404,18 +404,27 @@ export const fetchOwlsData = async (
     const lastUpdated = data.last_updated ? new Date(data.last_updated) : new Date();
 
     if ((!lastOwls && item) || (lastOwls && item && !isSameDay(lastOwls.pricedAt, lastUpdated))) {
-      await prisma.owlsPrice.create({
+      const updateAll = prisma.owlsPrice.updateMany({
+        where: {
+          item_iid: item.internal_id,
+          isLatest: true,
+        },
         data: {
-          item: {
-            connect: {
-              internal_id: item.internal_id,
-            },
-          },
+          isLatest: null,
+        },
+      });
+
+      const createAll = prisma.owlsPrice.create({
+        data: {
+          item_iid: item.internal_id,
           value: data.owls_value,
           valueMin: price,
           pricedAt: lastUpdated,
+          isLatest: true,
         },
       });
+
+      await prisma.$transaction([updateAll, createAll]);
     } else if (lastOwls && isSameDay(lastOwls.pricedAt, lastUpdated)) {
       await prisma.owlsPrice.update({
         where: {

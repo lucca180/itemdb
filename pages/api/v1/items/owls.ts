@@ -61,18 +61,27 @@ export const getLatestOwls = async (limit = 20) => {
       let price = Number(owlsItem.owls_value.split('-')[0]);
       if (isNaN(price)) price = 0;
 
-      await prisma.owlsPrice.create({
+      const updateAll = prisma.owlsPrice.updateMany({
+        where: {
+          item_iid: item.internal_id,
+          isLatest: true,
+        },
         data: {
-          item: {
-            connect: {
-              internal_id: item.internal_id,
-            },
-          },
+          isLatest: null,
+        },
+      });
+
+      const createAll = prisma.owlsPrice.create({
+        data: {
+          item_iid: item.internal_id,
           value: owlsItem.owls_value,
           valueMin: price,
           pricedAt: pricedAt,
+          isLatest: true,
         },
       });
+
+      await prisma.$transaction([updateAll, createAll]);
 
       item.owls = {
         value: owlsItem.owls_value,
@@ -107,11 +116,11 @@ export const getLatestOwls = async (limit = 20) => {
 
   if (itemRes.length < limit) {
     const owlsItem = await prisma.owlsPrice.findMany({
-      distinct: ['item_iid'],
       where: {
         item_iid: {
           notIn: itemRes.map((item) => item.internal_id),
         },
+        isLatest: true,
       },
       orderBy: {
         pricedAt: 'desc',
