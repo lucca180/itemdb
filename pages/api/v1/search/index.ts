@@ -400,15 +400,7 @@ export async function doSearch(
               GROUP BY item_iid
           )
         ) as d on d.item_iid = a.internal_id
-        LEFT JOIN (
-          SELECT *
-          FROM SaleStats
-          WHERE (item_iid, addedAt) IN (
-              SELECT item_iid, MAX(addedAt)
-              FROM SaleStats
-              GROUP BY item_iid
-          )
-        ) as s on s.item_iid = a.internal_id
+        LEFT JOIN SaleStats as s on s.item_iid = a.internal_id and s.isLatest = 1
       ) as temp
         
         WHERE temp.dist is not null and temp.canonical_id is null
@@ -468,15 +460,7 @@ export async function doSearch(
               GROUP BY item_iid
           )
         ) as d on d.item_iid = a.internal_id
-        LEFT JOIN (
-          SELECT *
-          FROM SaleStats
-          WHERE (item_iid, addedAt) IN (
-              SELECT item_iid, MAX(addedAt)
-              FROM SaleStats
-              GROUP BY item_iid
-          )
-        ) as s on s.item_iid = a.internal_id
+        LEFT JOIN SaleStats as s on s.item_iid = a.internal_id and s.isLatest = 1
         ${
           zoneFilterSQL.length > 0
             ? Prisma.sql`LEFT JOIN WearableData w on w.item_iid = a.internal_id and w.isCanonical = 1`

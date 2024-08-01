@@ -135,6 +135,16 @@ export const getSaleStats = async (iid: number, dayLimit = 15): Promise<SaleStat
   if (salePercent >= 50) status = 'ets';
   else if (salePercent >= 25) status = 'regular';
 
+  await prisma.saleStats.updateMany({
+    where: {
+      item_iid: iid,
+      isLatest: true,
+    },
+    data: {
+      isLatest: null,
+    },
+  });
+
   await prisma.saleStats.create({
     data: {
       item_iid: iid,
@@ -142,6 +152,7 @@ export const getSaleStats = async (iid: number, dayLimit = 15): Promise<SaleStat
       totalItems: itemTotal,
       stats: status,
       daysPeriod: dayLimit,
+      isLatest: true,
     },
   });
 
@@ -233,6 +244,16 @@ const getUBSaleStats = async (
   else if (salePercent >= 25) status = 'regular';
 
   if (shouldCreate) {
+    await prisma.saleStats.updateMany({
+      where: {
+        item_iid: iid,
+        isLatest: true,
+      },
+      data: {
+        isLatest: null,
+      },
+    });
+
     await prisma.saleStats.create({
       data: {
         item_iid: iid,

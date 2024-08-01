@@ -112,15 +112,7 @@ export const getManyItems = async (
           GROUP BY item_iid
       )
     ) as d on d.item_iid = a.internal_id
-    LEFT JOIN (
-      SELECT *
-      FROM SaleStats
-      WHERE (item_iid, addedAt) IN (
-          SELECT item_iid, MAX(addedAt)
-          FROM SaleStats
-          GROUP BY item_iid
-      )
-    ) as s on s.item_iid = a.internal_id
+    LEFT JOIN SaleStats as s on s.item_iid = a.internal_id and s.isLatest = 1
     WHERE ${query}
     LIMIT ${limit}
     `) as any[];

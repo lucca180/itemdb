@@ -581,10 +581,12 @@ model SaleStats {
   totalItems Int
   totalSold  Int
   daysPeriod Int
+  isLatest   Boolean?
 
   addedAt DateTime @default(now())
 
   @@index([item_iid, addedAt])
+  @@index([item_iid, isLatest])
 }
 
 enum SaleStatsEnum {
