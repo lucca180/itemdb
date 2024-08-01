@@ -183,12 +183,10 @@ model ItemPrices {
   item_iid Int?
   item     Items? @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
 
+  @@unique([item_iid, isLatest])
   @@index([name, image_id])
   @@index([name, addedAt])
   @@index([name, item_iid])
-
-  @@unique([item_iid, isLatest])
-
   @@index([item_iid, addedAt, manual_check])
 }
 
@@ -476,11 +474,10 @@ model OwlsPrice {
   lastChecked DateTime @default(now())
 
   item_iid Int
-  item     Items @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+  item     Items    @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
   isLatest Boolean?
 
-
-  @@index([item_iid, isLatest])
+  @@unique([item_iid, isLatest])
   @@index([item_iid, pricedAt(sort: Desc)])
 }
 
@@ -575,9 +572,9 @@ model ColorSpecies {
 }
 
 model SaleStats {
-  internal_id Int       @id @default(autoincrement())
+  internal_id Int           @id @default(autoincrement())
   item_iid    Int
-  item        Items     @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+  item        Items         @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
   stats       SaleStatsEnum
 
   totalItems Int
@@ -587,8 +584,8 @@ model SaleStats {
 
   addedAt DateTime @default(now())
 
+  @@unique([item_iid, isLatest])
   @@index([item_iid, addedAt])
-  @@index([item_iid, isLatest])
 }
 
 enum SaleStatsEnum {
