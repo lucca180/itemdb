@@ -528,6 +528,7 @@ export type SaleStatus = {
   percent: number;
   status: 'ets' | 'regular' | 'hts';
   type: 'buyable' | 'unbuyable';
+  addedAt: string;
 };
 
 // ------- DTI -------- //

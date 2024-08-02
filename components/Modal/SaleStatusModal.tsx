@@ -14,7 +14,7 @@ import {
   Alert,
   AlertIcon,
 } from '@chakra-ui/react';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import { SaleStatus } from '../../types';
 import { FaThumbsDown, FaThumbsUp } from 'react-icons/fa';
 import { useState } from 'react';
@@ -30,7 +30,9 @@ export type SaleStatusModalProps = {
 
 export default function SaleStatusModal(props: SaleStatusModalProps) {
   const t = useTranslations();
+  const formater = useFormatter();
   const { isOpen, onClose, saleStatus, item_iid } = props;
+  const { status } = saleStatus;
   const [voted, setVoted] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -70,20 +72,31 @@ export default function SaleStatusModal(props: SaleStatusModalProps) {
             fontSize={'sm'}
             sx={{
               a: { color: 'blue.200' },
-              b: { color: saleStatus.status === 'ets' ? 'green.200' : 'red.200' },
+              b: {
+                color:
+                  status === 'ets' ? 'green.200' : status === 'regular' ? 'gray.400' : 'red.200',
+              },
             }}
           >
             <Text textAlign={'center'}>
               {t.rich('ItemPage.saleStatus-text', {
                 b: (chunks) => <b>{chunks}</b>,
-                Badge: () =>
-                  saleStatus.status === 'ets' ? (
-                    <Badge colorScheme="green">Easy to Sell</Badge>
-                  ) : (
-                    <Badge colorScheme="red">Hard to Sell</Badge>
-                  ),
+                Badge: () => (
+                  <>
+                    {status === 'ets' && <Badge colorScheme="green">Easy to Sell</Badge>}
+                    {status === 'hts' && <Badge colorScheme="red">Hard to Sell</Badge>}
+                    {status === 'regular' && <Badge colorScheme="gray">Regular</Badge>}
+                  </>
+                ),
                 percent: saleStatus.percent.toFixed(0),
                 days: saleStatus.type === 'buyable' ? 15 : 30,
+              })}
+            </Text>
+            <Text textAlign={'center'} my={3} fontSize={'xs'} color="gray.300">
+              {t('ItemPage.this-was-last-updated-at', {
+                date: formater.dateTime(new Date(saleStatus.addedAt), {
+                  dateStyle: 'short',
+                }),
               })}
             </Text>
             <Alert borderRadius={'md'} status="warning" fontSize={'xs'} my={3}>

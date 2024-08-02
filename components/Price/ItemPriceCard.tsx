@@ -223,6 +223,11 @@ const ItemPriceCard = (props: Props) => {
                         Hard to Sell <Icon verticalAlign={'middle'} boxSize={'14px'} as={MdHelp} />
                       </Badge>
                     )}
+                    {item.saleStatus.status === 'regular' && (
+                      <Badge onClick={saleStatusModal.onOpen} colorScheme="gray" cursor={'pointer'}>
+                        Regular <Icon verticalAlign={'middle'} boxSize={'14px'} as={MdHelp} />
+                      </Badge>
+                    )}
                   </>
                 )}
                 <Stat flex="initial" textAlign="center" minW="20%">

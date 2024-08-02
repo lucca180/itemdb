@@ -177,7 +177,8 @@
     "saleStatus-feedback-sale-cta": "Based on your experience, do you agree with the current Sale Status of this item?",
     "saleStatus-beta-alert": "This is a beta feature and we are working to improve the accuracy of this data, so <b>don't take it as a source of absolute truth</b> :)",
     "saleStatus": "Sale Status",
-    "saleStatus-text": "This item is <Badge></Badge> because we determined that <b>~{percent}%</b> of the available items <b>in the last {days} days</b> were sold."
+    "saleStatus-text": "This item is <Badge></Badge> because we determined that <b>~{percent}%</b> of the available items <b>in the last {days} days</b> were sold.",
+    "this-was-last-updated-at": "This was last updated at {date}"
   },
   "Button": {
     "feedback": "Feedback",

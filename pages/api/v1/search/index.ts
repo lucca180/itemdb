@@ -381,7 +381,7 @@ export async function doSearch(
         b.rgb_g, b.rgb_b, b.hex, b.hsv_h, b.hsv_s, b.hsv_v, f.dist,
         c.addedAt as priceAdded, c.price, c.noInflation_id, 
         d.pricedAt as owlsPriced, d.value as owlsValue, d.valueMin as owlsValueMin,
-        s.totalSold, s.totalItems, s.stats, s.daysPeriod
+        s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded
         FROM Items as a
         LEFT JOIN (
                 SELECT image_id, min((POWER(lab_l-${l},2)+POWER(lab_a-${a},2)+POWER(lab_b-${b},2))) as dist
@@ -435,7 +435,7 @@ export async function doSearch(
         SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex, b.hsv_h, b.hsv_s, b.hsv_v,
           c.addedAt as priceAdded, c.price, c.noInflation_id, 
           d.pricedAt as owlsPriced, d.value as owlsValue, d.valueMin as owlsValueMin,
-          s.totalSold, s.totalItems, s.stats, s.daysPeriod
+          s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded,
           ${colorSql_inside ? Prisma.sql`, ${colorSql_inside} as dist` : Prisma.empty}
           ${zoneFilterSQL.length > 0 ? Prisma.sql`, w.zone_label` : Prisma.empty}
         FROM Items as a
@@ -562,6 +562,7 @@ export async function doSearch(
               percent: Math.round((result.totalSold / result.totalItems) * 100),
               status: result.stats,
               type: result.daysPeriod,
+              addedAt: result.saleAdded.toJSON(),
             }
           : null,
       useTypes: {

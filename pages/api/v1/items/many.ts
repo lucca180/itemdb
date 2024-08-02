@@ -99,7 +99,7 @@ export const getManyItems = async (
       b.hsv_h, b.hsv_s, b.hsv_v,
       c.addedAt as priceAdded, c.price, c.noInflation_id, 
       d.pricedAt as owlsPriced, d.value as owlsValue, d.valueMin as owlsValueMin,
-      s.totalSold, s.totalItems, s.stats, s.daysPeriod
+      s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded
     FROM Items as a
     LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
     LEFT JOIN ItemPrices as c on c.item_iid = a.internal_id and c.isLatest = 1
@@ -170,6 +170,7 @@ export const getManyItems = async (
               percent: Math.round((result.totalSold / result.totalItems) * 100),
               status: result.stats,
               type: result.daysPeriod,
+              addedAt: result.saleAdded.toJSON(),
             }
           : null,
       useTypes: {

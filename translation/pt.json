@@ -178,7 +178,8 @@
     "saleStatus-feedback-sale-cta": "Baseado na sua experiencia, você concorda com o Sale Status atual desse item?",
     "saleStatus-feedback-cta": "Você também pode deixar seus comentários usando o botão Feedback no site",
     "saleStatus-text": "Este item é <Badge></Badge> porque determinamos que <b>~{percent}%</b> dos itens disponíveis <b>nos últimos {days} dias</b> foram vendidos.",
-    "saleStatus-thanks-feedback": "Obrigado pelo seu feedback! Isso ajudará a toranr o itemdb cada vez mais preciso e útil :)"
+    "saleStatus-thanks-feedback": "Obrigado pelo seu feedback! Isso ajudará a toranr o itemdb cada vez mais preciso e útil :)",
+    "this-was-last-updated-at": "A última atualização foi em {date}"
   },
   "Button": {
     "feedback": "Feedback",

@@ -31,13 +31,17 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   res.json(stats);
 }
 
-export const getSaleStats = async (iid: number, dayLimit = 15): Promise<SaleStatus | null> => {
+export const getSaleStats = async (
+  iid: number,
+  dayLimit = 15,
+  lastPriceDate: Date | null = null
+): Promise<SaleStatus | null> => {
   if (DISABLE_SALE_STATS) return null;
   const saleStats = await prisma.saleStats.findFirst({
     where: {
       item_iid: iid,
       addedAt: {
-        gte: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+        gte: lastPriceDate ?? new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
       },
     },
     orderBy: {
@@ -51,6 +55,7 @@ export const getSaleStats = async (iid: number, dayLimit = 15): Promise<SaleStat
       total: saleStats.totalItems,
       percent: Math.round((saleStats.totalSold / saleStats.totalItems) * 100),
       status: saleStats.stats,
+      addedAt: saleStats.addedAt.toJSON(),
       type: saleStats.daysPeriod > 15 ? 'unbuyable' : 'buyable',
     };
   }
@@ -156,7 +161,14 @@ export const getSaleStats = async (iid: number, dayLimit = 15): Promise<SaleStat
     },
   });
 
-  return { sold: itemSold, total: itemTotal, percent: salePercent, status, type };
+  return {
+    sold: itemSold,
+    total: itemTotal,
+    percent: salePercent,
+    status,
+    type,
+    addedAt: new Date().toJSON(),
+  };
 };
 
 const getUBSaleStats = async (
@@ -265,5 +277,12 @@ const getUBSaleStats = async (
     });
   }
 
-  return { sold: itemSold, total: itemTotal, percent: salePercent, status, type: 'unbuyable' };
+  return {
+    sold: itemSold,
+    total: itemTotal,
+    percent: salePercent,
+    status,
+    type: 'unbuyable',
+    addedAt: new Date().toJSON(),
+  };
 };
