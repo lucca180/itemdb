@@ -110,8 +110,8 @@ const FeedbackVotingPage = () => {
   };
 
   const handleVote = async (action: 'upvote' | 'downvote') => {
+    setError('');
     setIsLoading(true);
-
     try {
       if (!currentFeedback) throw new Error('No feedback selected');
       const token = await getIdToken();
@@ -134,6 +134,11 @@ const FeedbackVotingPage = () => {
         const newFeedbacks = feedbacks.filter(
           (f) => f.feedback_id !== currentFeedback?.feedback_id
         );
+
+        if (!newFeedbacks.length) {
+          return init();
+        }
+
         setFeedbacks(newFeedbacks);
         setCurrentFeedback(newFeedbacks[0]);
       } else throw new Error(res.data.message);
