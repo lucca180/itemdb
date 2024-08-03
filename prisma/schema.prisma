@@ -260,7 +260,6 @@ model TradeItems {
   order       Int
   price       Decimal? @db.Decimal(11, 0)
   addedAt     DateTime @default(now())
-  item_id     Int?
 
   @@index([trade_id, order])
   @@index([name, image_id])
