@@ -27,6 +27,7 @@ import {
   shopIDToCategory,
   slugify,
   tyrannianShops,
+  getDateNST,
 } from '../../utils/utils';
 import { defaultFilters } from '../../utils/parseFilters';
 import { useEffect, useState } from 'react';
@@ -86,7 +87,7 @@ const RestockShop = (props: RestockShopPageProps) => {
 
   useEffect(() => {
     const shopCategory = shopIDToCategory[shopInfo.id];
-    const todayNST = new Date();
+    const todayNST = getDateNST();
 
     if (todayNST.getDate() === 3) setSpecialDay('hpd');
     else if (

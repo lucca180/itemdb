@@ -15,7 +15,7 @@ import Color from 'color';
 import { useEffect, useState, Fragment } from 'react';
 import ShopCard from '../../components/Hubs/Restock/ShopCard';
 import Layout from '../../components/Layout';
-import { restockShopInfo } from '../../utils/utils';
+import { restockShopInfo, getDateNST } from '../../utils/utils';
 import NextLink from 'next/link';
 import { useTranslations } from 'next-intl';
 
@@ -36,7 +36,7 @@ const RestockHub = () => {
   const [specialDay, setSpecialDay] = useState('');
 
   useEffect(() => {
-    const todayNST = new Date();
+    const todayNST = getDateNST();
 
     if (todayNST.getDate() === 3) setSpecialDay('hpd');
     else if (todayNST.getMonth() === 4 && todayNST.getDate() === 12) setSpecialDay('tyrannia');

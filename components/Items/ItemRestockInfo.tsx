@@ -4,6 +4,7 @@ import { ItemData, ItemLastSeen } from '../../types';
 import {
   categoryToShopID,
   faerielandShops,
+  getDateNST,
   getRestockPrice,
   getRestockProfit,
   halloweenShops,
@@ -30,7 +31,7 @@ const ItemRestock = (props: Props) => {
 
   React.useEffect(() => {
     if (!item.category) return;
-    const todayNST = new Date();
+    const todayNST = getDateNST();
 
     if (todayNST.getDate() === 3) setSpecialDay('hpd');
     else if (
