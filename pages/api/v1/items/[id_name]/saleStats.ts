@@ -68,8 +68,8 @@ export const getSaleStats = async (
 
   const [shopSales, tradeSales, auctionSales] = await Promise.all([
     getShopSales(iid, dayLimit),
-    getUBSaleStats(iid, dayLimit),
-    getAuctionSaleStats(iid, dayLimit),
+    getTradeSales(iid, dayLimit),
+    getAuctionSales(iid, dayLimit),
   ]);
 
   if (!shopSales && !tradeSales && !auctionSales) return null;
@@ -194,7 +194,7 @@ export const getShopSales = async (iid: number, dayLimit = 15) => {
   return { itemSold, itemTotal };
 };
 
-const getUBSaleStats = async (iid: number, dayLimit = 15) => {
+const getTradeSales = async (iid: number, dayLimit = 15) => {
   const item = await prisma.items.findUnique({
     where: {
       internal_id: iid,
@@ -268,7 +268,7 @@ const getUBSaleStats = async (iid: number, dayLimit = 15) => {
   return { itemSold, itemTotal };
 };
 
-const getAuctionSaleStats = async (iid: number, dayLimit = 15) => {
+const getAuctionSales = async (iid: number, dayLimit = 15) => {
   const rawAuctionData = await prisma.restockAuctionHistory.findMany({
     where: {
       item_iid: iid,
@@ -282,7 +282,8 @@ const getAuctionSaleStats = async (iid: number, dayLimit = 15) => {
     },
   });
 
-  if (rawAuctionData.length < MIN_PRICE_DATA) return null;
+  const mostOldData = rawAuctionData[0];
+  if (differenceInCalendarDays(Date.now(), mostOldData.addedAt) < 7) return null;
 
   const ownersData: { [owner: string]: RestockAuctionHistory[] } = {};
 
