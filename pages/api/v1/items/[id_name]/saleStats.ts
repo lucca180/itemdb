@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../../utils/prisma';
 import { getItem } from '.';
-import { PriceProcess2, TradeItems, Trades } from '@prisma/client';
+import { PriceProcess2, RestockAuctionHistory, TradeItems, Trades } from '@prisma/client';
 import { SaleStatus } from '../../../../../types';
 import { differenceInCalendarDays, isSameDay } from 'date-fns';
 
@@ -37,11 +37,17 @@ export const getSaleStats = async (
   lastPriceDate: Date | null = null
 ): Promise<SaleStatus | null> => {
   if (DISABLE_SALE_STATS) return null;
+  const latestDate = Math.max(
+    Date.now() - 5 * 24 * 60 * 60 * 1000,
+    lastPriceDate?.getTime() ?? 0,
+    1722650400000
+  );
+
   const saleStats = await prisma.saleStats.findFirst({
     where: {
       item_iid: iid,
       addedAt: {
-        gte: lastPriceDate ?? new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+        gte: new Date(latestDate),
       },
     },
     orderBy: {
@@ -60,6 +66,72 @@ export const getSaleStats = async (
     };
   }
 
+  const [shopSales, tradeSales, auctionSales] = await Promise.all([
+    getShopSales(iid, dayLimit),
+    getUBSaleStats(iid, dayLimit),
+    getAuctionSaleStats(iid, dayLimit),
+  ]);
+
+  if (!shopSales && !tradeSales && !auctionSales) return null;
+
+  let itemSold = 0;
+  let itemTotal = 0;
+
+  if (shopSales) {
+    itemSold += shopSales.itemSold;
+    itemTotal += shopSales.itemTotal;
+  }
+
+  if (tradeSales) {
+    itemSold += tradeSales.itemSold;
+    itemTotal += tradeSales.itemTotal;
+  }
+
+  if (auctionSales) {
+    itemSold += auctionSales.itemSold;
+    itemTotal += auctionSales.itemTotal;
+  }
+
+  if (itemTotal < MIN_PRICE_DATA) return null;
+
+  const salePercent = Math.round((itemSold / itemTotal) * 100);
+
+  let status: 'hts' | 'regular' | 'ets' = 'hts';
+  if (salePercent >= 50) status = 'ets';
+  else if (salePercent >= 25) status = 'regular';
+
+  await prisma.saleStats.updateMany({
+    where: {
+      item_iid: iid,
+      isLatest: true,
+    },
+    data: {
+      isLatest: null,
+    },
+  });
+
+  await prisma.saleStats.create({
+    data: {
+      item_iid: iid,
+      totalSold: itemSold,
+      totalItems: itemTotal,
+      stats: status,
+      daysPeriod: dayLimit,
+      isLatest: true,
+    },
+  });
+
+  return {
+    sold: itemSold,
+    total: itemTotal,
+    percent: salePercent,
+    status,
+    type: 'buyable',
+    addedAt: new Date().toJSON(),
+  };
+};
+
+export const getShopSales = async (iid: number, dayLimit = 15) => {
   const rawPriceData = await prisma.priceProcess2.findMany({
     where: {
       item_iid: iid,
@@ -75,13 +147,12 @@ export const getSaleStats = async (
     },
   });
 
-  if (rawPriceData.length < MIN_PRICE_DATA) return getUBSaleStats(iid, dayLimit, true);
+  if (rawPriceData.length < MIN_PRICE_DATA) return null;
 
   const mostRecentData = rawPriceData[rawPriceData.length - 1];
   const mostOldData = rawPriceData[0];
 
-  if (differenceInCalendarDays(Date.now(), mostOldData.addedAt) < 7)
-    return getUBSaleStats(iid, dayLimit, true);
+  if (differenceInCalendarDays(Date.now(), mostOldData.addedAt) < 7) return null;
 
   const ownersData: { [owner: string]: PriceProcess2[] } = {};
 
@@ -120,62 +191,10 @@ export const getSaleStats = async (
     }
   }
 
-  let type: SaleStatus['type'] = 'buyable';
-
-  const tradeStats = await getUBSaleStats(iid, dayLimit);
-  if (tradeStats) {
-    itemSold += tradeStats.sold;
-    itemTotal += tradeStats.total;
-
-    if (tradeStats.total > itemTotal) {
-      type = 'unbuyable';
-    }
-  }
-
-  if (itemTotal < MIN_PRICE_DATA) return null;
-
-  const salePercent = Math.round((itemSold / itemTotal) * 100);
-  let status: 'hts' | 'regular' | 'ets' = 'hts';
-
-  if (salePercent >= 50) status = 'ets';
-  else if (salePercent >= 25) status = 'regular';
-
-  await prisma.saleStats.updateMany({
-    where: {
-      item_iid: iid,
-      isLatest: true,
-    },
-    data: {
-      isLatest: null,
-    },
-  });
-
-  await prisma.saleStats.create({
-    data: {
-      item_iid: iid,
-      totalSold: itemSold,
-      totalItems: itemTotal,
-      stats: status,
-      daysPeriod: dayLimit,
-      isLatest: true,
-    },
-  });
-
-  return {
-    sold: itemSold,
-    total: itemTotal,
-    percent: salePercent,
-    status,
-    type,
-    addedAt: new Date().toJSON(),
-  };
+  return { itemSold, itemTotal };
 };
 
-const getUBSaleStats = async (
-  iid: number,
-  dayLimit = 15,
-  shouldCreate = false
-): Promise<SaleStatus | null> => {
+const getUBSaleStats = async (iid: number, dayLimit = 15) => {
   const item = await prisma.items.findUnique({
     where: {
       internal_id: iid,
@@ -246,43 +265,59 @@ const getUBSaleStats = async (
     }
   }
 
-  if (itemTotal < MIN_PRICE_DATA) return null;
+  return { itemSold, itemTotal };
+};
 
-  const salePercent = Math.round((itemSold / itemTotal) * 100);
-
-  let status: 'hts' | 'regular' | 'ets' = 'hts';
-
-  if (salePercent >= 50) status = 'ets';
-  else if (salePercent >= 25) status = 'regular';
-
-  if (shouldCreate) {
-    await prisma.saleStats.updateMany({
-      where: {
-        item_iid: iid,
-        isLatest: true,
+const getAuctionSaleStats = async (iid: number, dayLimit = 15) => {
+  const rawAuctionData = await prisma.restockAuctionHistory.findMany({
+    where: {
+      item_iid: iid,
+      type: 'auction',
+      addedAt: {
+        gte: new Date(Date.now() - dayLimit * 24 * 60 * 60 * 1000),
       },
-      data: {
-        isLatest: null,
-      },
-    });
+    },
+    orderBy: {
+      addedAt: 'asc',
+    },
+  });
 
-    await prisma.saleStats.create({
-      data: {
-        item_iid: iid,
-        totalSold: itemSold,
-        totalItems: itemTotal,
-        stats: status,
-        daysPeriod: dayLimit * 2,
-      },
-    });
+  if (rawAuctionData.length < MIN_PRICE_DATA) return null;
+
+  const ownersData: { [owner: string]: RestockAuctionHistory[] } = {};
+
+  rawAuctionData.map((auction) => {
+    if (!auction.owner) return;
+    if (!ownersData[auction.owner]) ownersData[auction.owner] = [];
+    ownersData[auction.owner].push(auction);
+  });
+
+  let itemSold = 0;
+  let itemTotal = 0;
+
+  for (const owner in ownersData) {
+    const auctions = ownersData[owner];
+
+    let notSold = 0;
+
+    for (let i = 0; i < auctions.length; i++) {
+      const auction = auctions[i];
+      if (auction.otherInfo?.includes('nobody')) {
+        if (!notSold) {
+          itemTotal++;
+          notSold++;
+        }
+      } else {
+        if (notSold) {
+          notSold--;
+          itemSold++;
+        } else {
+          itemSold++;
+          itemTotal++;
+        }
+      }
+    }
   }
 
-  return {
-    sold: itemSold,
-    total: itemTotal,
-    percent: salePercent,
-    status,
-    type: 'unbuyable',
-    addedAt: new Date().toJSON(),
-  };
+  return { itemSold, itemTotal };
 };
