@@ -21,7 +21,7 @@ export const SearchList = (props: Props) => {
   };
 
   const captureKey = (e: KeyboardEvent) => {
-    if (e.key === 'F3' || (e.ctrlKey && e.key === 'f')) {
+    if (e.key === 'F3' || ((e.ctrlKey || e.metaKey) && e.key === 'f')) {
       e.preventDefault();
       setFocus();
     }
