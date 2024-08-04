@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
-import type { DecodedIdToken } from 'firebase-admin/auth';
-import { User } from './types';
+// import type { DecodedIdToken } from 'firebase-admin/auth';
+// import { User } from './types';
 import * as jose from 'jose';
 import { LRUCache } from 'lru-cache';
 import requestIp from 'request-ip';
@@ -93,7 +93,10 @@ const apiMiddleware = async (request: NextRequest) => {
 
   // Rate limit
   const ip =
-    requestIp.getClientIp(request as any) || request.ip || request.headers.get('X-Forwarded-For');
+    requestIp.getClientIp(request as any) ||
+    request.ip ||
+    request.headers.get('X-Forwarded-For')?.split(',')[0];
+
   if (!ip) {
     return NextResponse.next();
   }
@@ -106,27 +109,27 @@ const apiMiddleware = async (request: NextRequest) => {
   return NextResponse.next();
 };
 
-const checkSession = async (session: string, host: string, skipUser: boolean) => {
-  const res = await fetch(`http://${host}/api/auth/checkSession`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ session: session, skipUser: skipUser }),
-  });
+// const checkSession = async (session: string, host: string, skipUser: boolean) => {
+//   const res = await fetch(`http://${host}/api/auth/checkSession`, {
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json',
+//     },
+//     body: JSON.stringify({ session: session, skipUser: skipUser }),
+//   });
 
-  const { authRes } = await res.json();
+//   const { authRes } = await res.json();
 
-  return authRes as
-    | {
-        decodedToken: DecodedIdToken;
-        user: null;
-      }
-    | {
-        decodedToken: DecodedIdToken;
-        user: User;
-      };
-};
+//   return authRes as
+//     | {
+//         decodedToken: DecodedIdToken;
+//         user: null;
+//       }
+//     | {
+//         decodedToken: DecodedIdToken;
+//         user: User;
+//       };
+// };
 
 const checkSessionLocal = async (jwt: string) => {
   const decoded = jose.decodeProtectedHeader(jwt);
@@ -166,6 +169,7 @@ const checkRedis = async (ip: string, pathname: string) => {
       headers: {
         'Content-Type': 'application/json',
         'X-Forwarded-For': ip,
+        'idb-ip-check': ip,
       },
       body: JSON.stringify({ pathname }),
     });

@@ -6,7 +6,7 @@ const LIMIT_BAN = 2 * 60 * 60 * 1000;
 const skipAPIMiddleware = process.env.SKIP_API_MIDDLEWARE === 'true';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
-  const ip = req.headers['X-Forwarded-For'] as string;
+  const ip = req.headers['idb-ip-check'] as string;
 
   if (!ip) return res.status(200).json('ok');
 
