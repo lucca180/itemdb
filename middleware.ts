@@ -8,10 +8,8 @@ import requestIp from 'request-ip';
 
 const API_SKIPS: { [method: string]: string[] } = {
   GET: ['api/auth', 'api/cache', 'api/redis'],
-  POST: ['api/auth', 'api/redis'],
+  POST: ['api/auth', 'api/redis', '/v1/prices', '/v1/trades', '/v1/items', '/v1/items/open'],
 };
-
-const infoAPIEndpoints = ['/v1/prices', '/v1/trades', '/v1/items', '/v1/items/open'];
 
 const userKeyCache = new LRUCache({
   max: 100,
@@ -22,6 +20,7 @@ const VALID_LOCALES = ['en', 'pt'];
 
 const skipAPIMiddleware = process.env.SKIP_API_MIDDLEWARE === 'true';
 const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === 'true';
+const ITEMDB_URL = process.env.ITEMDB_SERVER;
 
 export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/_next') || PUBLIC_FILE.test(request.nextUrl.pathname)) {
@@ -67,7 +66,7 @@ export const config = {
 // ---------- API Middleware ---------- //
 
 const apiMiddleware = async (request: NextRequest) => {
-  if (process.env.NODE_ENV === 'development') return NextResponse.next();
+  // if (process.env.NODE_ENV === 'development') return NextResponse.next();
   // Skip rate limit if key is provided
   if (request.headers.get('x-tarnum-skip') === process.env.TARNUM_KEY) {
     return NextResponse.next();
@@ -84,7 +83,6 @@ const apiMiddleware = async (request: NextRequest) => {
   }
 
   const sessionCookie = request.cookies.get('session');
-  const host = request.headers.get('host') as string;
 
   // Admin routes - need to check if user is admin
   // if (request.nextUrl.pathname.startsWith('/api/admin')) {
@@ -129,7 +127,7 @@ const apiMiddleware = async (request: NextRequest) => {
     return NextResponse.next();
   }
 
-  const banned = await checkRedis(ip, host, request.nextUrl.pathname, request.method);
+  const banned = await checkRedis(ip, request.nextUrl.pathname);
   if (banned) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
@@ -190,18 +188,15 @@ const checkSessionLocal = async (jwt: string) => {
   return jwtDecoded.payload.user_id as string;
 };
 
-const checkRedis = async (ip: string, host: string, pathname: string, method: string) => {
+const checkRedis = async (ip: string, pathname: string) => {
   try {
-    const isInfo =
-      infoAPIEndpoints.some((endpoint) => pathname.includes(endpoint)) && method === 'POST';
-
-    const res = await fetch(`http://${host}/api/redis/checkapi`, {
+    const res = await fetch(`${ITEMDB_URL}/api/redis/checkapi`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-forwarded-for': ip,
       },
-      body: JSON.stringify({ isInfo, pathname }),
+      body: JSON.stringify({ pathname }),
     });
 
     if (res.status === 429) {
@@ -210,6 +205,7 @@ const checkRedis = async (ip: string, host: string, pathname: string, method: st
 
     return false;
   } catch (e) {
+    console.error('checkRedis error', e);
     return false;
   }
 };
