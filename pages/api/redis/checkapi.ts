@@ -16,7 +16,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const itemsRequested = Number(rawItemsCount);
 
   if (itemsRequested >= LIMIT_COUNT) {
-    redis.pexpire(ip, LIMIT_BAN);
     return res.status(429).json('Too many requests');
   }
 
@@ -49,7 +48,13 @@ if (process.env.NODE_ENV === 'production') {
 
 export const redis_setItemCount = async (ip: string | null | undefined, itemCount: number) => {
   if (skipAPIMiddleware || !ip || !itemCount) return;
-  console.log(ip, itemCount, skipAPIMiddleware);
-  await redis.incrby(ip, itemCount);
-  await redis.pexpire(ip, LIMIT_BAN);
+
+  const newVal = await redis.incrby(ip, itemCount);
+
+  if (newVal >= LIMIT_COUNT) {
+    await redis.pexpire(ip, LIMIT_BAN);
+    return;
+  }
+
+  await redis.pexpire(ip, 30 * 60 * 1000);
 };
