@@ -47,14 +47,19 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 export const redis_setItemCount = async (ip: string | null | undefined, itemCount: number) => {
-  if (skipAPIMiddleware || !ip || !itemCount) return;
+  try {
+    if (skipAPIMiddleware || !ip || !itemCount) return;
 
-  const newVal = await redis.incrby(ip, itemCount);
+    const newVal = await redis.incrby(ip, itemCount);
 
-  if (newVal >= LIMIT_COUNT) {
-    await redis.pexpire(ip, LIMIT_BAN);
-    return;
+    if (newVal >= LIMIT_COUNT) {
+      console.error('Banning IP:', ip);
+      await redis.pexpire(ip, LIMIT_BAN);
+      return;
+    }
+
+    await redis.pexpire(ip, 30 * 60 * 1000);
+  } catch (e) {
+    console.error('redis_setItemCount error', e);
   }
-
-  await redis.pexpire(ip, 30 * 60 * 1000);
 };
