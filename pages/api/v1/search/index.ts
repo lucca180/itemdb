@@ -14,6 +14,8 @@ import Color from 'color';
 import { Prisma } from '@prisma/client';
 import qs from 'qs';
 import { parseFilters } from '../../../../utils/parseFilters';
+import requestIp from 'request-ip';
+import { redis_setItemCount } from '../../redis/checkapi';
 
 const ENV_FUZZY_SEARCH = process.env.HAS_FUZZY_SEARCH === 'true';
 
@@ -33,6 +35,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   reqQuery.limit = Math.min(reqQuery.limit, 3000);
 
   const result = await doSearch(query, reqQuery, !skipStats, 0, false, onlyStats);
+
+  const ip = requestIp.getClientIp(req);
+  await redis_setItemCount(ip, result.content.length);
+
   res.json(result);
 }
 

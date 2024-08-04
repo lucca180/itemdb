@@ -7,6 +7,8 @@ import { CheckAuth } from '../../../../../utils/googleCloud';
 import axios from 'axios';
 import { differenceInCalendarDays, isSameDay } from 'date-fns';
 import { getSaleStats } from './saleStats';
+import requestIp from 'request-ip';
+import { redis_setItemCount } from '../../../redis/checkapi';
 
 const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
 
@@ -31,6 +33,9 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const name = isNaN(internal_id) ? (id_name as string) : undefined;
 
   const item = await getItem(name ?? internal_id);
+
+  const ip = requestIp.getClientIp(req);
+  await redis_setItemCount(ip, 1);
 
   return res.json(item);
 };

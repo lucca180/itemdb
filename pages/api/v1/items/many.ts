@@ -5,6 +5,8 @@ import { getItemFindAtLinks, isMissingInfo } from '../../../../utils/utils';
 import { ItemData } from '../../../../types';
 import { Prisma } from '@prisma/client';
 import qs from 'qs';
+import requestIp from 'request-ip';
+import { redis_setItemCount } from '../../redis/checkapi';
 
 const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
 
@@ -68,6 +70,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     },
     10000
   );
+
+  const ip = requestIp.getClientIp(req);
+  await redis_setItemCount(ip, Object.values(items).length);
 
   return res.json(items);
 }
