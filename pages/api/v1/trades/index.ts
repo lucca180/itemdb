@@ -419,7 +419,6 @@ const getTradeItems = async (trade_id: number, hash: string | null) => {
     image_id: x.image_id,
     order: x.order,
     price: x.price,
-    item_id: x.item_id,
     addedAt: x.addedAt,
     trade: {
       trade_id: x.trade_id,
