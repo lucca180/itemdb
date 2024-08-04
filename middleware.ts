@@ -84,35 +84,6 @@ const apiMiddleware = async (request: NextRequest) => {
 
   const sessionCookie = request.cookies.get('session');
 
-  // Admin routes - need to check if user is admin
-  // if (request.nextUrl.pathname.startsWith('/api/admin')) {
-  //   if (!sessionCookie || !sessionCookie.value) {
-  //     return NextResponse.json({ error: 'Not authorized' }, { status: 401 });
-  //   }
-
-  //   try {
-  //     const userid = await checkSessionLocal(sessionCookie.value);
-  //     if (userKeyCache.has(userid)) {
-  //       const user = userKeyCache.get(userid) as User;
-  //       if (user.isAdmin) {
-  //         return NextResponse.next();
-  //       }
-  //     }
-
-  //     const authRes = await checkSession(sessionCookie.value, host, false);
-
-  //     const user = authRes.user;
-
-  //     if (user) userKeyCache.set(userid, user);
-
-  //     if (!user || !user.isAdmin) throw new Error('Not authorized');
-  //   } catch (e) {
-  //     console.error(e);
-  //     return NextResponse.json({ error: 'Not authorized' }, { status: 401 });
-  //   }
-  //   return NextResponse.next();
-  // }
-
   if (sessionCookie && sessionCookie.value) {
     try {
       await checkSessionLocal(sessionCookie.value);
@@ -122,7 +93,7 @@ const apiMiddleware = async (request: NextRequest) => {
 
   // Rate limit
   const ip =
-    requestIp.getClientIp(request as any) ?? request.ip ?? request.headers.get('x-forwarded-for');
+    requestIp.getClientIp(request as any) || request.ip || request.headers.get('X-Forwarded-For');
   if (!ip) {
     return NextResponse.next();
   }
@@ -194,7 +165,7 @@ const checkRedis = async (ip: string, pathname: string) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-forwarded-for': ip,
+        'X-Forwarded-For': ip,
       },
       body: JSON.stringify({ pathname }),
     });
