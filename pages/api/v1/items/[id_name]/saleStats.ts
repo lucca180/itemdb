@@ -282,6 +282,8 @@ const getAuctionSales = async (iid: number, dayLimit = 15) => {
     },
   });
 
+  if (!rawAuctionData.length) return null;
+
   const mostOldData = rawAuctionData[0];
   if (differenceInCalendarDays(Date.now(), mostOldData.addedAt) < 7) return null;
 
