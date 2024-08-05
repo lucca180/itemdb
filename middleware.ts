@@ -67,7 +67,7 @@ export const config = {
 // ---------- API Middleware ---------- //
 
 const apiMiddleware = async (request: NextRequest) => {
-  // if (process.env.NODE_ENV === 'development') return NextResponse.next();
+  if (process.env.NODE_ENV === 'development') return NextResponse.next();
   // Skip rate limit if key is provided
   if (request.headers.get('x-tarnum-skip') === process.env.TARNUM_KEY) {
     return NextResponse.next();
