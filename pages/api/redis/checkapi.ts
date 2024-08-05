@@ -46,9 +46,16 @@ if (process.env.NODE_ENV === 'production') {
   redis = global.redis;
 }
 
-export const redis_setItemCount = async (ip: string | null | undefined, itemCount: number) => {
+export const redis_setItemCount = async (
+  ip: string | null | undefined,
+  itemCount: number,
+  req: NextApiRequest
+) => {
   try {
     if (skipAPIMiddleware || !ip || !itemCount) return;
+
+    const skipRedis = req.headers['idb-skip-redis'] as string | undefined;
+    if (skipRedis && skipRedis === process.env.SKIP_REDIS_KEY) return;
 
     const newVal = await redis.incrby(ip, itemCount);
 

@@ -72,7 +72,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   );
 
   const ip = requestIp.getClientIp(req);
-  await redis_setItemCount(ip, Object.values(items).length);
+  await redis_setItemCount(ip, Object.values(items).length, req);
 
   return res.json(items);
 }

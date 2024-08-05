@@ -21,6 +21,7 @@ const VALID_LOCALES = ['en', 'pt'];
 const skipAPIMiddleware = process.env.SKIP_API_MIDDLEWARE === 'true';
 const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === 'true';
 const ITEMDB_URL = process.env.ITEMDB_SERVER;
+const SKIP_REDIS_KEY = process.env.SKIP_REDIS_KEY;
 
 export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/_next') || PUBLIC_FILE.test(request.nextUrl.pathname)) {
@@ -87,7 +88,13 @@ const apiMiddleware = async (request: NextRequest) => {
   if (sessionCookie && sessionCookie.value) {
     try {
       await checkSessionLocal(sessionCookie.value);
-      return NextResponse.next();
+      const requestHeaders = new Headers(request.headers);
+      requestHeaders.set('idb-skip-redis', SKIP_REDIS_KEY ?? '');
+      return NextResponse.next({
+        request: {
+          headers: requestHeaders,
+        },
+      });
     } catch (e) {}
   }
 

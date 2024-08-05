@@ -37,7 +37,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const result = await doSearch(query, reqQuery, !skipStats, 0, false, onlyStats);
 
   const ip = requestIp.getClientIp(req);
-  await redis_setItemCount(ip, result.content.length);
+  await redis_setItemCount(ip, result.content.length, req);
 
   res.json(result);
 }
