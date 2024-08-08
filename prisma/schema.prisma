@@ -68,7 +68,7 @@ model Items {
 
   @@index([name, image_id])
   @@index([image_id])
-  // @@index([item_id])
+  @@index([category, rarity, est_val])
   @@fulltext([name])
   @@fulltext([description])
   @@fulltext([name, description])
@@ -559,6 +559,7 @@ model NcMallData {
   updatedAt DateTime @updatedAt
 
   @@index([item_iid, active])
+  @@index([active, saleEnd])
 }
 
 model ColorSpecies {
@@ -654,7 +655,5 @@ model RestockAuctionHistory {
   neo_id Int?
 
   @@unique([type, neo_id])
-  // @@index([item_iid])
-  // @@index([item_iid, addedAt])
-  @@index([item_iid, addedAt, type])
+  @@index([item_iid, type, addedAt])
 }
