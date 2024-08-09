@@ -31,20 +31,21 @@ if (process.env.NODE_ENV === 'production') {
     password: process.env.REDIS_PASSWORD,
     enableAutoPipelining: true,
   });
-} else {
-  // @ts-expect-error global is not defined
-  if (!global.redis) {
-    // @ts-expect-error global is not defined
-    global.redis = new Redis({
-      port: process.env.REDIS_PORT as unknown as number,
-      host: process.env.REDIS_HOST,
-      password: process.env.REDIS_PASSWORD,
-      enableAutoPipelining: true,
-    });
-  }
-  // @ts-expect-error global is not defined
-  redis = global.redis;
 }
+// else {
+//   // @ts-expect-error global is not defined
+//   if (!global.redis) {
+//     // @ts-expect-error global is not defined
+//     global.redis = new Redis({
+//       port: process.env.REDIS_PORT as unknown as number,
+//       host: process.env.REDIS_HOST,
+//       password: process.env.REDIS_PASSWORD,
+//       enableAutoPipelining: true,
+//     });
+//   }
+//   // @ts-expect-error global is not defined
+//   redis = global.redis;
+// }
 
 export const redis_setItemCount = async (
   ip: string | null | undefined,

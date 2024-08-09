@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { CheckAuth } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
-import { Prisma } from '@prisma/client';
 
 const TRADE_GOAL = 15;
 const VOTE_GOAL = 30;
@@ -16,12 +15,23 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
-  if (user.isAdmin) return res.status(200).json({ canWrapped: true, needTrades: 0, needVotes: 0 });
+  const { success, needTrades, needVotes } = await contributeCheck(user.id, 1);
+
+  return res.status(200).json({ canWrapped: success, needTrades, needVotes });
+}
+
+export const contributeCheck = async (uid?: string, goalMulplier = 1) => {
+  const tradeGoal = TRADE_GOAL * goalMulplier;
+  const voteGoal = VOTE_GOAL * goalMulplier;
+
+  if (!uid) {
+    return { success: false, needTrades: tradeGoal, needVotes: voteGoal };
+  }
 
   // check if user precified TRADE_GOAL prices in the last 24hrs
   const prices = await prisma.feedbacks.count({
     where: {
-      user_id: user.id,
+      user_id: uid,
       type: 'tradePrice',
       addedAt: {
         gte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000),
@@ -29,57 +39,26 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     },
   });
 
-  if (prices >= TRADE_GOAL) {
-    return res.status(200).json({ canWrapped: true, needTrades: 0, needVotes: 0 });
+  if (prices >= tradeGoal) {
+    return { success: true, needTrades: 0, needVotes: 0 };
   }
 
   // check if user voted VOTE_GOAL times in the last 24 hrs
   const votes = await prisma.feedbackVotes.count({
     where: {
-      user_id: user.id,
+      user_id: uid,
       addedAt: {
         gte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000),
       },
     },
   });
 
-  if (votes >= VOTE_GOAL) {
-    return res.status(200).json({ canWrapped: true, needTrades: 0, needVotes: 0 });
+  if (votes >= voteGoal) {
+    return { success: true, needTrades: 0, needVotes: 0 };
   }
 
-  // check if there is trades or feedbacks to vote
-  const tradeQueueRaw = prisma.$queryRaw<{ count: number }[]>(
-    Prisma.sql`SELECT COUNT(DISTINCT hash) as "count" FROM trades where processed = 0`
-  );
+  const needTrades = Math.max(0, tradeGoal - prices);
+  const needVotes = Math.max(0, voteGoal - votes);
 
-  const feedbackVoting = prisma.feedbacks.count({
-    where: {
-      type: 'tradePrice',
-      processed: false,
-      user_id: {
-        not: user?.id,
-      },
-      vote: {
-        none: {
-          user_id: user?.id,
-        },
-      },
-    },
-  });
-
-  const [tradeQueueRes, feedbacks] = await Promise.all([tradeQueueRaw, feedbackVoting]);
-  const tradeQueue = Number(tradeQueueRes[0].count.toString());
-
-  let needTrades = Math.max(0, TRADE_GOAL - prices);
-  let needVotes = Math.max(0, VOTE_GOAL - votes);
-
-  if (needTrades > tradeQueue) {
-    needTrades = tradeQueue;
-  }
-
-  if (needVotes > feedbacks) {
-    needVotes = feedbacks;
-  }
-
-  return res.status(200).json({ canWrapped: false, needTrades, needVotes });
-}
+  return { success: false, needTrades, needVotes };
+};

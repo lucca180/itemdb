@@ -1,46 +1,38 @@
 import {
-  Badge,
-  Box,
   Button,
   Center,
   Divider,
   Flex,
-  Heading,
   HStack,
-  Image,
   Link,
   Spinner,
-  Tag,
   Text,
+  Image,
 } from '@chakra-ui/react';
 import Color from 'color';
 import { GetStaticPropsContext } from 'next';
-import { CreateDynamicListButton } from '../../components/DynamicLists/CreateButton';
-import Layout from '../../components/Layout';
-import { ItemData, ShopInfo } from '../../types';
+import { CreateDynamicListButton } from '../../../components/DynamicLists/CreateButton';
+import Layout from '../../../components/Layout';
+import { ItemData, ShopInfo } from '../../../types';
 import {
-  faerielandShops,
   getRestockProfit,
-  halloweenShops,
   restockBlackMarketItems,
   restockShopInfo,
   shopIDToCategory,
   slugify,
-  tyrannianShops,
-  getDateNST,
-} from '../../utils/utils';
-import { defaultFilters } from '../../utils/parseFilters';
+} from '../../../utils/utils';
+import { defaultFilters } from '../../../utils/parseFilters';
 import { useEffect, useState } from 'react';
-import { SortSelect } from '../../components/Input/SortSelect';
-import { SearchList } from '../../components/Search/SearchLists';
-import { CollapseNumber } from '../../components/Input/CollapseNumber';
+import { SortSelect } from '../../../components/Input/SortSelect';
+import { SearchList } from '../../../components/Search/SearchLists';
+import { CollapseNumber } from '../../../components/Input/CollapseNumber';
 import axios from 'axios';
-import { getFiltersDiff } from '../search';
-import NextLink from 'next/link';
+import { getFiltersDiff } from '../../search';
 import { useTranslations } from 'next-intl';
-import { RarityView } from '../../components/Hubs/Restock/RarityView';
-import { VirtualizedItemList } from '../../components/Utils/VirtualizedItemList';
-import { useAuth } from '../../utils/auth';
+import { RarityView } from '../../../components/Hubs/Restock/RarityView';
+import { VirtualizedItemList } from '../../../components/Utils/VirtualizedItemList';
+import { useAuth } from '../../../utils/auth';
+import RestockHeader from '../../../components/Hubs/Restock/RestockHeader';
 
 type RestockShopPageProps = {
   shopInfo: ShopInfo;
@@ -70,12 +62,9 @@ const RestockShop = (props: RestockShopPageProps) => {
   const [sortInfo, setSortInfo] = useState({ sortBy: 'price', sortDir: 'desc' });
   const [loading, setLoading] = useState(true);
   const [itemFilter, setItemFilter] = useState<ItemFilter>({ query: undefined, minProfit: 5000 });
-  const [specialDay, setSpecialDay] = useState('');
   const [viewType, setViewType] = useState<'default' | 'rarity'>(
     userPref?.restock_prefView ?? 'rarity'
   );
-
-  const color = Color(shopInfo.color).rgb().round().array();
 
   useEffect(() => {
     init();
@@ -84,36 +73,6 @@ const RestockShop = (props: RestockShopPageProps) => {
   useEffect(() => {
     handleFilterChange();
   }, [itemFilter, itemList]);
-
-  useEffect(() => {
-    const shopCategory = shopIDToCategory[shopInfo.id];
-    const todayNST = getDateNST();
-
-    if (todayNST.getDate() === 3) setSpecialDay('hpd');
-    else if (
-      todayNST.getMonth() === 4 &&
-      todayNST.getDate() === 12 &&
-      tyrannianShops.map((x) => x.toLowerCase()).includes(shopCategory)
-    )
-      setSpecialDay('tyrannia');
-
-    if (todayNST.getMonth() === 7 && todayNST.getDate() === 20 && shopCategory === 'usuki doll')
-      setSpecialDay('usukicon');
-
-    if (
-      todayNST.getMonth() === 8 &&
-      todayNST.getDate() === 20 &&
-      faerielandShops.map((x) => x.toLowerCase()).includes(shopCategory)
-    )
-      setSpecialDay('festival');
-
-    if (
-      todayNST.getMonth() === 9 &&
-      todayNST.getDate() === 31 &&
-      halloweenShops.map((x) => x.toLowerCase()).includes(shopCategory)
-    )
-      setSpecialDay('halloween');
-  }, []);
 
   const init = async () => {
     setLoading(true);
@@ -201,46 +160,7 @@ const RestockShop = (props: RestockShopPageProps) => {
         },
       }}
     >
-      <Box
-        position="absolute"
-        h="650px"
-        left="0"
-        width="100%"
-        bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${color[0]},${color[1]},${color[2]},.5) 70%)`}
-        zIndex={-1}
-      />
-      <Text fontSize="xs" mt={2}>
-        <Link as={NextLink} href="/restock">
-          ← {t('Restock.back-to-restock-hub')}
-        </Link>
-      </Text>
-      <Center mt={2} mb={6} flexFlow="column" gap={2}>
-        <HStack>
-          <Link as={NextLink} href="/restock">
-            <Badge>{shopInfo.category}</Badge>
-          </Link>
-          {shopInfo.difficulty.toLowerCase() !== 'medium' && (
-            <Link as={NextLink} href="/restock">
-              <Badge
-                colorScheme={shopInfo.difficulty.toLowerCase() === 'beginner' ? 'green' : 'red'}
-              >
-                {shopInfo.difficulty}
-              </Badge>
-            </Link>
-          )}
-        </HStack>
-        <Link
-          href={`https://www.neopets.com/objects.phtml?type=shop&obj_type=${shopInfo.id}`}
-          isExternal
-        >
-          <Image
-            src={`https://images.neopets.com/shopkeepers/w${shopInfo.id}.gif`}
-            alt={`${shopInfo.name} thumbnail`}
-            borderRadius="md"
-            boxShadow={'md'}
-          />
-        </Link>
-        <Heading as="h1">{shopInfo.name}</Heading>
+      <RestockHeader shop={shopInfo}>
         <Text
           as="h2"
           sx={{ a: { color: Color(shopInfo.color).lightness(70).hex() } }}
@@ -278,16 +198,7 @@ const RestockShop = (props: RestockShopPageProps) => {
             />
           </Link>
         </Text>
-        {specialDay === 'hpd' && <Tag colorScheme={'green'}>{t('Restock.half-price-day')}</Tag>}
-        {specialDay === 'tyrannia' && (
-          <Tag colorScheme={'orange'}>{t('Restock.tyrannian-victory-day')}</Tag>
-        )}
-        {specialDay === 'usukicon' && <Tag colorScheme={'pink'}>{t('Restock.usuki-day')}</Tag>}
-        {specialDay === 'festival' && (
-          <Tag colorScheme={'purple'}>{t('Restock.faerie-festival')}</Tag>
-        )}
-        {specialDay === 'halloween' && <Tag colorScheme={'orange'}>{t('Restock.halloween')}</Tag>}
-      </Center>
+      </RestockHeader>
       <Divider my={3} />
       {loading && (
         <Center>
@@ -411,7 +322,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 
   const props: RestockShopPageProps = {
     shopInfo: shopInfo,
-    messages: (await import(`../../translation/${context.locale}.json`)).default,
+    messages: (await import(`../../../translation/${context.locale}.json`)).default,
   };
 
   return {

@@ -330,7 +330,11 @@
     "download": "Download",
     "or": "or",
     "order": "Order",
-    "album-order": "Album Order"
+    "album-order": "Album Order",
+    "x-days": "{x} days",
+    "1-day": "1 day",
+    "1-hour": "1 hour",
+    "x-minutes": "{x} minutes"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",
@@ -697,7 +701,21 @@
     "wrapped-text3": "After that, you will be able to see (and download!) your Restock Card for the next 24 hours without needing to help us again.",
     "wrapped-text4": "Why do I need to do this?",
     "wrapped-text5": "itemdb is open source and completly free. All expenses are paid from our own pocket.<br></br><br></br> Besides that, we are a small team and pricing trades takes a lot of our free time.<br></br><br></br> So, instead of fixing bugs, creating new Official Lists or adding new features, most of our time is spent on trying to make itemdb prices more acurate by pricing trades.<br></br><br></br> We absolutely hate to \"lock\" any features behind a \"contribute-wall\" (?), but we need your help to keep itemdb prices always updated.",
-    "image-copied-to-clipboard": "Image copied to clipboard"
+    "image-copied-to-clipboard": "Image copied to clipboard",
+    "stocked-at-date": "Stocked at {date}",
+    "contribute-wall-1": "Before showing the Restock History for this shop, within your selected timeframe, <b>we need your help</b> to make itemdb more accurate.",
+    "contribute-wall-2": "After that, you will be able to check the Restock History, <b>within the selected timeframe</b>, for all Neopia Shops for the next <b>24 hours</b> before needing to make another contribution.",
+    "contribute-wall-3": "My goal is bigger than the Feedback/Trade Queue",
+    "contribute-wall-4": "In this case, just help us clear the queue!<br></br>Unfortunately, if more trades to price or feedback to vote on come up, the 'contribute wall' will reappear. <br></br> <br></br> We don't like it either, but that's how the code works :(",
+    "restock-history-header": "Check out the hottest items recently restocked at <Link>{shopname}</Link>",
+    "restock-history-hub-cta": "View the most profitable items from this shop",
+    "restock-history": "Restock History",
+    "contribute-wall-5": "HAHA I'm just going to troll everything!!!",
+    "contribute-wall-6": "Please don't! We're doing our best to keep the site up-to-date and provide new useful tools for all players. We just need a little bit of your help.<br></br><br></br> In any case, we can also permanently ban you from accessing the site. So please don't do it.",
+    "price-order": "Price Order",
+    "chronological-order": "Chronological Order",
+    "history-cta": "Check out the <Link>Restock History</Link> for this shop",
+    "history-empty": "We couldn't find any data for the selected timeframe. Please try a different one."
   },
   "Search": {
     "search": "Search",

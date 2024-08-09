@@ -331,7 +331,11 @@
     "download": "Download",
     "or": "ou",
     "order": "Ordem",
-    "album-order": "Ordem do Álbum"
+    "album-order": "Ordem do Álbum",
+    "1-day": "1 dia",
+    "1-hour": "1 hora",
+    "x-days": "{x} dias",
+    "x-minutes": "{x} minutos"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",
@@ -698,7 +702,21 @@
     "wrapped-vote-text": "<Link>Vote</Link> em mais <b>{needVotes}</b> sugestões de preços",
     "wrapped-text4": "Por que preciso fazer isso?",
     "wrapped-text5": "itemdb é de código aberto e totalmente gratuito. Todas as despesas são pagas do nosso próprio bolso.<br></br><br></br> Além disso, somos uma equipe pequena e precificar os lotes de trocas ocupam muito do nosso tempo livre.<br></br><br></br> Então, em vez de consertar bugs, criar novas listas oficiais ou adicionar coisas novas, a maior parte do nosso tempo é gasto tentando tornar os preços do itemdb mais precisos precificando trocas.<br></br><br></br>Nós absolutamente odiamos \"bloquear\" qualquer recurso por trás de um \"paywall de contribuição\"(?), mas precisamos da sua ajuda para manter os preços do itemdb sempre atualizados.",
-    "image-copied-to-clipboard": "Imagem copiada para a área de transferência"
+    "image-copied-to-clipboard": "Imagem copiada para a área de transferência",
+    "stocked-at-date": "Estocou em {date}",
+    "contribute-wall-1": "Antes de mostrar o Histórico de Restock desta loja, dentro do período selecionado, <b>precisamos da sua ajuda</b> para tornar o itemdb mais preciso.",
+    "contribute-wall-2": "Depois disso, você poderá conferir o Histórico de Restock, para o <b>período selecionado</b>, de todas as lojas de Neopia pelas próximas <b>24 horas</b> antes de precisar fazer outra contribuição.",
+    "contribute-wall-3": "Meu objetivo é maior que a fila de Feedback/Trocas",
+    "contribute-wall-4": "Nesse caso, basta nos ajudar a limpar a fila!<br></br>Infelizmente, se surgirem mais trocas para precificar ou feedback para votar, o 'paywall de contribuição' reaparecerá. \n<br></br> <br></br> Também não gostamos, mas é assim que o código funciona :(",
+    "restock-history-hub-cta": "Veja os itens mais lucrativos desta loja",
+    "restock-history": "Histórico de Restock",
+    "restock-history-header": "Confira os melhores itens que apareceram recentemente em <Link>{shopname}</Link>",
+    "contribute-wall-5": "HAHA vou só trollar tudo!!!",
+    "contribute-wall-6": "Por favor, não! Estamos fazendo o nosso melhor para manter o site atualizado e fornecer novas ferramentas úteis para todos os jogadores. Só precisamos de um pouco da sua ajuda.<br></br><br></br> Em qualquer caso, também podemos proibi-lo permanentemente de acessar o site. Então, por favor, não faça isso.",
+    "chronological-order": "Ordem Cronológica",
+    "price-order": "Ordem de Preço",
+    "history-cta": "Confira o <Link>Histórico de Restock</Link> desta loja",
+    "history-empty": "Não encontramos nenhum dado para o período selecionado. Por favor, tente um período diferente."
   },
   "Search": {
     "search": "Pesquisa",
