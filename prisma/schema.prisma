@@ -619,12 +619,10 @@ model PriceProcess2 {
 
   owner      String?
   type       String
-  otherInfo  String?
   stock      Int      @default(1)
   price      Decimal  @db.Decimal(11, 0)
   addedAt    DateTime @default(now())
   ip_address String?
-  language   String
 
   hash      String? @unique
   neo_id    Int?
@@ -649,7 +647,6 @@ model RestockAuctionHistory {
   price      Int
   addedAt    DateTime @default(now())
   ip_address String?
-  language   String
 
   hash   String? @unique
   neo_id Int?
