@@ -715,7 +715,8 @@
     "price-order": "Price Order",
     "chronological-order": "Chronological Order",
     "history-cta": "Check out the <Link>Restock History</Link> for this shop",
-    "history-empty": "We couldn't find any data for the selected timeframe. Please try a different one."
+    "history-empty": "We couldn't find any data for the selected timeframe. Please try a different one.",
+    "history-dashboard-cta": "Check out the <Link>Restock History</Link> for your favorite shop!"
   },
   "Search": {
     "search": "Search",

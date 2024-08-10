@@ -716,7 +716,8 @@
     "chronological-order": "Ordem Cronológica",
     "price-order": "Ordem de Preço",
     "history-cta": "Confira o <Link>Histórico de Restock</Link> desta loja",
-    "history-empty": "Não encontramos nenhum dado para o período selecionado. Por favor, tente um período diferente."
+    "history-empty": "Não encontramos nenhum dado para o período selecionado. Por favor, tente um período diferente.",
+    "history-dashboard-cta": "Confira o <Link>Histórico de Restock</Link> da sua loja favorita!"
   },
   "Search": {
     "search": "Pesquisa",
