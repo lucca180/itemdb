@@ -1,8 +1,9 @@
-import { Badge, Flex, Link, Text, Image, Box, HStack } from '@chakra-ui/react';
+import { Badge, Flex, Link, Text, Box, HStack } from '@chakra-ui/react';
 import Color from 'color';
 import NextLink from 'next/link';
 import { ShopInfo } from '../../../types';
 import { slugify } from '../../../utils/utils';
+import NextImage from 'next/image';
 
 type Props = {
   shop: ShopInfo;
@@ -34,10 +35,12 @@ const ShopCard = (props: Props) => {
     >
       <Box mt="-40px">
         <Link as={NextLink} href={`/restock/${slugify(shop.name)}`}>
-          <Image
+          <NextImage
+            width={325}
+            height={108.33}
             src={`https://images.neopets.com/shopkeepers/w${shop.id}.gif`}
             alt={`${shop.name} thumbnail`}
-            borderRadius="md"
+            style={{ borderRadius: '0.375rem' }}
             // boxShadow={'md'}
           />
         </Link>

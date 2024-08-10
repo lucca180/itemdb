@@ -12,7 +12,7 @@ import {
 } from '../../../utils/utils';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
-
+import ChakraImage from '../../Utils/Image';
 type Props = {
   shop: ShopInfo;
   children?: React.ReactNode;
@@ -104,10 +104,13 @@ const RestockHeader = (props: Props) => {
           href={`https://www.neopets.com/objects.phtml?type=shop&obj_type=${shopInfo.id}`}
           isExternal
         >
-          <Image
+          <ChakraImage
             src={`https://images.neopets.com/shopkeepers/w${shopInfo.id}.gif`}
+            width={450}
+            height={150}
             alt={`${shopInfo.name} thumbnail`}
             borderRadius="md"
+            objectFit={'cover'}
             boxShadow={'md'}
           />
         </Link>
