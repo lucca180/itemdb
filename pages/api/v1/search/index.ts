@@ -416,7 +416,7 @@ export async function doSearch(
         LEFT JOIN ItemColor as b on a.image_id = b.image_id and (POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) = f.dist
         LEFT JOIN ItemPrices as c on c.item_iid = a.internal_id and c.isLatest = 1
         LEFT JOIN OwlsPrice as d on d.item_iid = a.internal_id and d.isLatest = 1
-        LEFT JOIN SaleStats as s on s.item_iid = a.internal_id and s.isLatest = 1
+        LEFT JOIN SaleStats as s on s.item_iid = a.internal_id and s.isLatest = 1 and s.stats != "unknown"
       ) as temp
         
         WHERE temp.dist is not null and temp.canonical_id is null
@@ -468,7 +468,7 @@ export async function doSearch(
     }
         LEFT JOIN itemPrices as c on c.item_iid = a.internal_id and c.isLatest = 1
         LEFT JOIN OwlsPrice as d on d.item_iid = a.internal_id and d.isLatest = 1
-        LEFT JOIN SaleStats as s on s.item_iid = a.internal_id and s.isLatest = 1
+        LEFT JOIN SaleStats as s on s.item_iid = a.internal_id and s.isLatest = 1 and s.stats != "unknown"
         ${
           zoneFilterSQL.length > 0
             ? Prisma.sql`LEFT JOIN WearableData w on w.item_iid = a.internal_id and w.isCanonical = 1`

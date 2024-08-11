@@ -55,7 +55,8 @@ export const getSaleStats = async (
     },
   });
 
-  if (saleStats) {
+  if (saleStats && saleStats.stats === 'unknown') return null;
+  else if (saleStats && saleStats.stats !== 'unknown') {
     return {
       sold: saleStats.totalSold,
       total: saleStats.totalItems,
@@ -71,8 +72,6 @@ export const getSaleStats = async (
     getTradeSales(iid, dayLimit),
     getAuctionSales(iid, dayLimit),
   ]);
-
-  if (!shopSales && !tradeSales && !auctionSales) return null;
 
   let itemSold = 0;
   let itemTotal = 0;
@@ -92,7 +91,30 @@ export const getSaleStats = async (
     itemTotal += auctionSales.itemTotal;
   }
 
-  if (itemTotal < MIN_PRICE_DATA) return null;
+  if (itemTotal < MIN_PRICE_DATA) {
+    await prisma.saleStats.updateMany({
+      where: {
+        item_iid: iid,
+        isLatest: true,
+      },
+      data: {
+        isLatest: null,
+      },
+    });
+
+    await prisma.saleStats.create({
+      data: {
+        item_iid: iid,
+        totalSold: 0,
+        totalItems: 0,
+        stats: 'unknown',
+        daysPeriod: dayLimit,
+        isLatest: true,
+      },
+    });
+
+    return null;
+  }
 
   const salePercent = Math.round((itemSold / itemTotal) * 100);
 

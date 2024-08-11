@@ -109,7 +109,7 @@ export const getManyItems = async (
     LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
     LEFT JOIN ItemPrices as c on c.item_iid = a.internal_id and c.isLatest = 1
     LEFT JOIN OwlsPrice as d on d.item_iid = a.internal_id and d.isLatest = 1
-    LEFT JOIN SaleStats as s on s.item_iid = a.internal_id and s.isLatest = 1
+    LEFT JOIN SaleStats as s on s.item_iid = a.internal_id and s.isLatest = 1 and s.stats != "unknown"
     WHERE ${query}
     LIMIT ${limit}
     `) as any[];

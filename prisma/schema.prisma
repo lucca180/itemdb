@@ -592,6 +592,7 @@ enum SaleStatsEnum {
   ets
   regular
   hts
+  unknown
 }
 
 // -------- DISMANTELING PRICE PROCESS --------- //
