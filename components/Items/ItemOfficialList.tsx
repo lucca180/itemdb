@@ -1,9 +1,9 @@
-import { Flex, Link, Text } from '@chakra-ui/react';
+import { Flex, Link, Text, Image } from '@chakra-ui/react';
 import React from 'react';
 import { ItemData, UserList } from '../../types';
 import CardBase from '../Card/CardBase';
 import NextLink from 'next/link';
-import Image from 'next/image';
+import NextImage from 'next/image';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import dynamic from 'next/dynamic';
 import Color from 'color';
@@ -58,7 +58,7 @@ const ItemOfficialLists = (props: Props) => {
                 prefetch={false}
               >
                 {list.coverURL && (
-                  <Image width={40} height={40} src={list.coverURL} alt={list.name} quality={100} />
+                  <Image width={'40px'} height={'40px'} src={list.coverURL} alt={list.name} />
                 )}
               </Flex>
             </Flex>
@@ -76,7 +76,7 @@ const ItemOfficialLists = (props: Props) => {
             >
               {list.name}{' '}
               {list.dynamicType && (
-                <Image
+                <NextImage
                   src={DynamicIcon}
                   alt="dynamic list"
                   width={10}

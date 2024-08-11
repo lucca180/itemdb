@@ -25,6 +25,7 @@ import {
   CloseButton,
   IconButton,
   HStack,
+  Badge,
 } from '@chakra-ui/react';
 import Color from 'color';
 import { ReactElement, useEffect, useState } from 'react';
@@ -581,17 +582,34 @@ const RestockDashboard = () => {
                 </TabList>
                 <TabPanels>
                   <TabPanel px={0}>
-                    <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
-                      {hideMisses && (
-                        <Center flexFlow="column" h="300px">
-                          <Icon as={FaEyeSlash} fontSize="50px" color="gray.600" />
-                          <Text fontSize={'sm'} color="gray.400"></Text>
-                        </Center>
-                      )}
-                      {!hideMisses &&
-                        sessionStats.hottestRestocks.map((item, i) => (
-                          <ItemCard disablePrefetch item={item} key={i} />
-                        ))}
+                    <Flex flexFlow={'column'} gap={3}>
+                      <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
+                        {hideMisses && (
+                          <Center flexFlow="column" h="300px">
+                            <Icon as={FaEyeSlash} fontSize="50px" color="gray.600" />
+                            <Text fontSize={'sm'} color="gray.400"></Text>
+                          </Center>
+                        )}
+                        {!hideMisses &&
+                          sessionStats.hottestRestocks.map((item, i) => (
+                            <ItemCard disablePrefetch item={item} key={i} />
+                          ))}
+                      </Flex>
+                      <Text fontSize={'sm'}>
+                        <Badge colorScheme="green">{t('Layout.new')}</Badge>{' '}
+                        {t.rich('Restock.history-dashboard-cta', {
+                          Link: (chunk) => (
+                            <Link
+                              color="green.200"
+                              as={NextLink}
+                              isExternal
+                              href={`/restock/${sessionStats.mostPopularShop.shopId}/history`}
+                            >
+                              {chunk}
+                            </Link>
+                          ),
+                        })}
+                      </Text>
                     </Flex>
                   </TabPanel>
                   <TabPanel px={0}>
