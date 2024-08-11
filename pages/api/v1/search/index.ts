@@ -175,7 +175,17 @@ export async function doSearch(
       .map((o: string) => o.slice(1));
     const typeTrue = typeFilters.filter((o: string) => !o.startsWith('!'));
 
-    const skipColumns = ['wearable', 'neohome', 'battledome', 'canEat', 'canRead', 'canPlay'];
+    const skipColumns = [
+      'wearable',
+      'neohome',
+      'battledome',
+      'canEat',
+      'canRead',
+      'canPlay',
+      'hts',
+      'ets',
+      'regular',
+    ];
 
     if (typeNeg.length > 0) {
       const type_column = typeNeg.filter((o: string) => !skipColumns.includes(o));
@@ -190,6 +200,10 @@ export async function doSearch(
       if (typeNeg.includes('canEat')) typeFiltersSQL.push(Prisma.sql`temp.canEat != 'true'`);
       if (typeNeg.includes('canRead')) typeFiltersSQL.push(Prisma.sql`temp.canRead != 'true'`);
       if (typeNeg.includes('canPlay')) typeFiltersSQL.push(Prisma.sql`temp.canPlay != 'true'`);
+
+      if (typeNeg.includes('hts')) typeFiltersSQL.push(Prisma.sql`temp.stats != 'hts'`);
+      if (typeNeg.includes('ets')) typeFiltersSQL.push(Prisma.sql`temp.stats != 'ets'`);
+      if (typeNeg.includes('regular')) typeFiltersSQL.push(Prisma.sql`temp.stats != 'regular'`);
     }
 
     if (typeTrue.length > 0) {
@@ -205,6 +219,10 @@ export async function doSearch(
       if (typeTrue.includes('canEat')) typeFiltersSQL.push(Prisma.sql`temp.canEat = 'true'`);
       if (typeTrue.includes('canRead')) typeFiltersSQL.push(Prisma.sql`temp.canRead = 'true'`);
       if (typeTrue.includes('canPlay')) typeFiltersSQL.push(Prisma.sql`temp.canPlay = 'true'`);
+
+      if (typeTrue.includes('hts')) typeFiltersSQL.push(Prisma.sql`temp.stats = 'hts'`);
+      if (typeTrue.includes('ets')) typeFiltersSQL.push(Prisma.sql`temp.stats = 'ets'`);
+      if (typeTrue.includes('regular')) typeFiltersSQL.push(Prisma.sql`temp.stats = 'regular'`);
     }
   }
 

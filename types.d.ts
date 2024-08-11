@@ -156,6 +156,7 @@ export type SearchStats = {
   canPlay: Record<string, number>;
   status: Record<string, number>;
   zone_label: Record<string, number>;
+  saleStatus: Record<string, number>;
 };
 
 export type SearchFilters = {

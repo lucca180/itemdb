@@ -13,6 +13,7 @@ import {
   Skeleton,
   Input,
   Select,
+  Divider,
 } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { SearchStats, SearchFilters as SearchFiltersType } from '../../types';
@@ -221,6 +222,7 @@ const SearchFilters = (props: Props) => {
                 <Badge colorScheme="yellow">PB</Badge> <Badge>{stats?.type.pb ?? 0}</Badge>
               </Text>
             </NegCheckbox>
+            <Divider />
             <NegCheckbox
               value="wearable"
               onChange={(val) => handleCheckChange(val, 'type', 'wearable')}
@@ -251,6 +253,7 @@ const SearchFilters = (props: Props) => {
                 <Badge>{stats?.isBD?.true ?? 0}</Badge>
               </Text>
             </NegCheckbox>
+            <Divider />
             <NegCheckbox
               value="canRead"
               onChange={(val) => handleCheckChange(val, 'type', 'canRead')}
@@ -279,6 +282,37 @@ const SearchFilters = (props: Props) => {
               <Text fontSize={'sm'}>
                 <Badge colorScheme="orange">{t('General.playable')}</Badge>{' '}
                 <Badge>{stats?.canPlay?.true ?? 0}</Badge>
+              </Text>
+            </NegCheckbox>
+            <Divider />
+            <NegCheckbox
+              value="ets"
+              onChange={(val) => handleCheckChange(val, 'type', 'ets')}
+              checklist={filters.type}
+            >
+              <Text fontSize={'sm'}>
+                <Badge colorScheme="green">Easy to Sale</Badge>{' '}
+                <Badge>{stats?.saleStatus?.ets ?? 0}</Badge>
+              </Text>
+            </NegCheckbox>
+            <NegCheckbox
+              value="regular"
+              onChange={(val) => handleCheckChange(val, 'type', 'regular')}
+              checklist={filters.type}
+            >
+              <Text fontSize={'sm'}>
+                <Badge colorScheme="gray">Regular</Badge>{' '}
+                <Badge>{stats?.saleStatus?.regular ?? 0}</Badge>
+              </Text>
+            </NegCheckbox>
+            <NegCheckbox
+              value="hts"
+              onChange={(val) => handleCheckChange(val, 'type', 'hts')}
+              checklist={filters.type}
+            >
+              <Text fontSize={'sm'}>
+                <Badge colorScheme="red">Hard To Sale</Badge>{' '}
+                <Badge>{stats?.saleStatus?.hts ?? 0}</Badge>
               </Text>
             </NegCheckbox>
           </VStack>

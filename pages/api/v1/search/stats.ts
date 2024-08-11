@@ -36,6 +36,7 @@ export const getSearchStats = async (resQuery: string, list_id = 0, includeHidde
     'canRead',
     'canPlay',
     'zone_label',
+    'saleStatus',
   ];
 
   const hiddenQuery = !includeHidden ? Prisma.sql`AND isHidden = 0` : Prisma.empty;
@@ -59,11 +60,21 @@ export const getSearchStats = async (resQuery: string, list_id = 0, includeHidde
     else if (group === 'canRead') column = Prisma.sql`a.canRead`;
     else if (group === 'canPlay') column = Prisma.sql`a.canPlay`;
     else if (group === 'zone_label') column = Prisma.sql`w.zone_label`;
+    else if (group === 'saleStatus') column = Prisma.sql`s.stats as saleStatus`;
     else column = Prisma.sql`a.category`;
+
+    const groupBy = group === 'saleStatus' ? Prisma.sql`s.stats` : column;
 
     const sqlQuery = prisma.$queryRaw`
       SELECT ${column}, count(*) as count
       FROM Items as a
+
+      ${
+        group === 'saleStatus'
+          ? Prisma.sql`LEFT JOIN SaleStats as s on a.internal_id = s.item_iid and s.isLatest = 1`
+          : Prisma.empty
+      }
+
       ${
         !!l
           ? Prisma.sql`LEFT JOIN (
@@ -92,7 +103,7 @@ export const getSearchStats = async (resQuery: string, list_id = 0, includeHidde
           : Prisma.empty
       }
 
-      group by ${column}
+      group by ${groupBy}
     `;
 
     queries.push(sqlQuery);
