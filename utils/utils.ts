@@ -1,7 +1,6 @@
 import { ItemProcess, Items, PriceProcess } from '@prisma/client';
 import { mean, standardDeviation } from 'simple-statistics';
 import { ItemData, ItemFindAt, ShopInfo, TradeData } from '../types';
-import { UTCDate } from '@date-fns/utc';
 
 export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
   const findAt: ItemFindAt = {
@@ -467,11 +466,11 @@ export const restockBlackMarketItems = [
 export const getRestockPrice = (
   item: ItemData,
   ignoreSpecialDays = false,
-  date?: Date
+  date?: number
 ): number[] | null => {
   if (!item.category || !item.rarity || !item.estVal) return null;
 
-  const todayNST = date ?? getDateNST();
+  const todayNST = getDateNST(date);
 
   let minPrice = Math.round(item.estVal * 1.44);
   let maxPrice = Math.round(item.estVal * 1.92);
@@ -548,7 +547,11 @@ export const getRestockProfit = (item: ItemData, ignoreSpecialDays = false) => {
 export const getRestockProfitOnDate = (item: ItemData, date: Date | number) => {
   if (!item.price.value) return null;
 
-  const prices = getRestockPrice(item, false, new UTCDate(date));
+  let timestamp: number;
+  if (date instanceof Date) timestamp = date.getTime();
+  else timestamp = date;
+
+  const prices = getRestockPrice(item, false, timestamp);
 
   if (!prices) return null;
 
