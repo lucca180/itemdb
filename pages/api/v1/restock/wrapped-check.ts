@@ -1,9 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { CheckAuth } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
+import { Prisma } from '@prisma/client';
 
-const TRADE_GOAL = 15;
-const VOTE_GOAL = 30;
+const TRADE_GOAL = 10;
+const VOTE_GOAL = 20;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   let user;
@@ -57,8 +58,43 @@ export const contributeCheck = async (uid?: string, goalMulplier = 1) => {
     return { success: true, needTrades: 0, needVotes: 0 };
   }
 
-  const needTrades = Math.max(0, tradeGoal - prices);
-  const needVotes = Math.max(0, voteGoal - votes);
+  // check if there is trades or feedbacks to vote
+  const tradeQueueRaw = prisma.$queryRaw<{ count: number }[]>(
+    Prisma.sql`SELECT COUNT(DISTINCT hash) as "count" FROM trades where processed = 0`
+  );
+
+  const feedbackVoting = prisma.feedbacks.count({
+    where: {
+      type: 'tradePrice',
+      processed: false,
+      user_id: {
+        not: uid,
+      },
+      vote: {
+        none: {
+          user_id: uid,
+        },
+      },
+    },
+  });
+
+  const [tradeQueueRes, feedbacks] = await Promise.all([tradeQueueRaw, feedbackVoting]);
+  const tradeQueue = Number(tradeQueueRes[0].count.toString());
+
+  let needTrades = Math.max(0, tradeGoal - prices);
+  let needVotes = Math.max(0, voteGoal - votes);
+
+  if (tradeQueue < 50) needTrades = 0;
+  else if (needTrades > tradeQueue) {
+    needTrades = tradeQueue;
+  }
+
+  if (feedbacks < 50) needVotes = 0;
+  else if (needVotes > feedbacks) {
+    needVotes = feedbacks;
+  }
+
+  if (!needTrades || !needVotes) return { success: true, needTrades: 0, needVotes: 0 };
 
   return { success: false, needTrades, needVotes };
 };

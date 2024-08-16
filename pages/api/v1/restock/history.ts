@@ -13,7 +13,7 @@ const MODE_COST: { [cost: string]: number } = {
   '3days': 2,
   '1day': 4,
   '1hour': 8,
-  '30min': 15,
+  '30min': 18,
 };
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
