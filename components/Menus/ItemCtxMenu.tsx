@@ -185,7 +185,6 @@ const ItemCtxMenu = (props: Props) => {
         onShow={props.onShow}
         onHide={props.onHide}
         preventHideOnResize
-        preventHideOnScroll
         appendTo="body"
       >
         {props.onSelect ? (
