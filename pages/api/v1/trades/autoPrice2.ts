@@ -90,6 +90,9 @@ export const autoPriceTrades2 = async (tradeRaw: (Trades & { items: TradeItems[]
 };
 
 const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
+  const shouldSkip = await checkTradeEstPrice(trade);
+  if (shouldSkip) return null;
+
   const similarList = await prisma.trades.findMany({
     where: {
       priced: true,
@@ -99,10 +102,7 @@ const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
     include: { items: true },
   });
 
-  if (similarList.length === 0) {
-    await checkTradeEstPrice(trade);
-    return null;
-  }
+  if (similarList.length === 0) return null;
 
   const isAllItemsTheSame = trade.items.every(
     (t) => t.name === trade.items[0].name && t.image_id === trade.items[0].image_id
@@ -128,10 +128,7 @@ const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
 
   // if (!similar && unpriced) similar = unpriced;
 
-  if (!similar) {
-    await checkTradeEstPrice(trade);
-    return null;
-  }
+  if (!similar) return null;
 
   const updatedItems: any[] = [...trade.items];
 
@@ -161,7 +158,7 @@ const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
 
 // this will skip trade pricing if the trade is est price is less than 100k
 const checkTradeEstPrice = async (trade: Trades & { items: TradeItems[] }) => {
-  if (trade.items.length === 1) return false;
+  // if (trade.items.length === 1) return false;
 
   const itemsQuery = trade.items.map((item) => [item.name, item.image_id]) as [string, string][];
 
@@ -176,9 +173,11 @@ const checkTradeEstPrice = async (trade: Trades & { items: TradeItems[] }) => {
 
     if (!itemData.price.value) return false;
 
+    if (itemData.price.inflated) return false;
+
     if (
       itemData.price.addedAt &&
-      differenceInCalendarDays(new Date(), new Date(itemData.price.addedAt)) > 30
+      differenceInCalendarDays(new Date(), new Date(itemData.price.addedAt)) > 15
     )
       return false;
 
