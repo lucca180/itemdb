@@ -38,6 +38,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
         { est_val: null },
         { weight: null },
       ],
+      canonical_id: null,
     },
   });
 
