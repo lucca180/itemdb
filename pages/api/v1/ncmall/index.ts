@@ -16,13 +16,13 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 async function GET(req: NextApiRequest, res: NextApiResponse) {
   const limit = req.query.limit ? Number(req.query.limit) : 16;
 
-  const result = await getLatestNCMall(limit);
+  const result = await getNCMallData(limit);
 
   return res.status(200).json(result);
 }
 
-export const getLatestNCMall = async (limit: number) => {
-  const result = prisma.ncMallData.findMany({
+export const getNCMallData = async (limit: number, isLeaving = false) => {
+  const result = await prisma.ncMallData.findMany({
     where: {
       active: true,
       OR: [
@@ -31,20 +31,22 @@ export const getLatestNCMall = async (limit: number) => {
             gte: new Date(),
           },
         },
-        { saleEnd: null },
+        { saleEnd: isLeaving ? undefined : null },
       ],
     },
-    orderBy: {
-      saleBegin: 'desc',
-    },
+    orderBy: isLeaving
+      ? { saleEnd: 'asc' }
+      : {
+          saleBegin: 'desc',
+        },
     take: limit,
   });
 
   return result;
 };
 
-export const getLatestNCMallItems = async (limit: number) => {
-  const ncMallData = await getLatestNCMall(limit);
+export const getNCMallItemsData = async (limit: number, isLeaving = false) => {
+  const ncMallData = await getNCMallData(limit, isLeaving);
 
   const items = await getManyItems({
     id: ncMallData.map((data) => data.item_iid.toString()),
