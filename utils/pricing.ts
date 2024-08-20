@@ -41,7 +41,7 @@ export const processPrices2 = (allItemData: PriceProcess2[]) => {
   const priceSTD = standardDeviation(prices);
 
   let out = prices.filter(
-    (x) => x <= priceMean + priceSTD * 0.75 && x >= priceMean - priceSTD * 2.25
+    (x) => x <= priceMean + priceSTD * 0.75 && x >= priceMean - priceSTD * 1.8
   );
   out = out.splice(0, 5);
 
