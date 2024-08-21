@@ -14,6 +14,7 @@ import {
   AccordionItem,
   AccordionPanel,
   Flex,
+  IconButton,
 } from '@chakra-ui/react';
 import Color from 'color';
 import { ItemRestockData, ShopInfo } from '../../../types';
@@ -25,6 +26,7 @@ import { GetStaticPropsContext } from 'next';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import RestockHistoryCard from '../../../components/Hubs/Restock/RestockHistoryCard';
+import { MdRefresh } from 'react-icons/md';
 
 type RestockHistoryPageProps = {
   shopInfo: ShopInfo;
@@ -171,6 +173,14 @@ const RestockHistory = (props: RestockHistoryPageProps) => {
             <option value="price">{t('Restock.price-order')}</option>
             <option value="addedAt">{t('Restock.chronological-order')}</option>
           </Select>
+          <IconButton
+            icon={<MdRefresh />}
+            size="sm"
+            bg="blackAlpha.300"
+            aria-label="Refresh"
+            onClick={() => init()}
+            isDisabled={isLoading}
+          />
         </HStack>
       </Center>
       {!wall && (
