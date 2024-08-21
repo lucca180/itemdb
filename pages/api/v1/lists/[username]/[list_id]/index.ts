@@ -267,9 +267,6 @@ const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
     const { user } = await CheckAuth(req);
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
-    if (user.username !== username && !user.isAdmin)
-      return res.status(403).json({ error: 'Forbidden' });
-
     const list = await prisma.userList.findUnique({
       where: {
         internal_id: parseInt(list_id),
@@ -281,7 +278,8 @@ const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (!list) return res.status(400).json({ error: 'List Not Found' });
 
-    if (list.user_id !== user.id) return res.status(403).json({ error: 'Forbidden' });
+    if (list.user_id !== user.id && !(list.official && user.isAdmin))
+      return res.status(403).json({ error: 'Forbidden' });
 
     if (alertDuplicates === 'true') {
       const itemIids = new Set(items.map((item) => parseInt(item.item_iid)));

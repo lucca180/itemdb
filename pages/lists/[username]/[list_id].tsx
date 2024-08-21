@@ -117,6 +117,7 @@ const ListPage = (props: Props) => {
   const searchQuery = useRef('');
 
   const isOwner = user?.username === router.query.username || user?.id === list?.owner.id;
+  const canEdit = isOwner || !!(list?.official && user?.isAdmin);
   const color = Color(list?.colorHex || '#4A5568');
   const rgb = color.rgb().array();
 
@@ -378,7 +379,7 @@ const ListPage = (props: Props) => {
 
   const selectItem = useCallback(
     (infoId: number, force = false) => {
-      if (!isOwner) return;
+      if (!canEdit) return;
       if (!isEdit && !force) return;
 
       if (force) setEdit(true);
@@ -389,7 +390,7 @@ const ListPage = (props: Props) => {
         setItemSelect([...itemSelect, infoId]);
       }
     },
-    [isEdit, itemSelect, isOwner]
+    [isEdit, itemSelect, canEdit]
   );
 
   const handleSelectCheckbox = useCallback(
@@ -613,7 +614,7 @@ const ListPage = (props: Props) => {
 
       <ListHeader
         list={list}
-        isOwner={isOwner}
+        isOwner={canEdit}
         color={color}
         items={items}
         itemInfo={itemInfo}
@@ -664,7 +665,7 @@ const ListPage = (props: Props) => {
         >
           {!isEdit && (
             <HStack>
-              {isOwner && (
+              {canEdit && (
                 <Button variant="solid" onClick={onOpenInsert}>
                   {t('Lists.add-items')}
                 </Button>
@@ -721,7 +722,7 @@ const ListPage = (props: Props) => {
               colorScheme={isFiltered ? 'blue' : undefined}
             />
             <SearchList onChange={handleSearch} />
-            {isOwner && (
+            {canEdit && (
               <FormControl display="flex" alignItems="center" justifyContent="center" w={'auto'}>
                 <FormLabel mb="0" textColor={'gray.300'} fontSize="sm">
                   {t('General.edit-mode')}
@@ -747,7 +748,7 @@ const ListPage = (props: Props) => {
             </HStack>
           </HStack>
         </Flex>
-        {!isEdit && isOwner && (
+        {!isEdit && canEdit && (
           <Text
             textAlign={'center'}
             fontSize="xs"
@@ -789,8 +790,9 @@ const ListPage = (props: Props) => {
           </Center>
         )}
 
-        {itemInfoIds.filter((a) => !!itemInfo && itemInfo[a].isHighlight && !itemInfo[a].isHidden)
-          .length > 0 && (
+        {(searchItemInfoIds ?? itemInfoIds).filter(
+          (a) => !!itemInfo && itemInfo[a].isHighlight && !itemInfo[a].isHidden
+        ).length > 0 && (
           <Flex gap={3} flexFlow="column" p={3} bg="gray.700" borderRadius="md">
             <Center flexFlow="column">
               <Heading size="lg" mb={3}>
@@ -818,6 +820,7 @@ const ListPage = (props: Props) => {
                 activateSort={false}
                 onSort={handleSort}
                 onChange={handleItemInfoChange}
+                onListAction={canEdit ? cntxAction : undefined}
               />
             </Flex>
           </Flex>
@@ -827,7 +830,7 @@ const ListPage = (props: Props) => {
             list={list}
             sortType={sortInfo.sortBy}
             onClick={selectItem}
-            ids={searchItemInfoIds ?? itemInfoIds.filter((a) => !itemInfo[a].isHighlight)}
+            ids={(searchItemInfoIds ?? itemInfoIds).filter((a) => !itemInfo[a].isHighlight)}
             itemInfo={itemInfo}
             items={items}
             itemSelect={itemSelect}
@@ -835,7 +838,7 @@ const ListPage = (props: Props) => {
             activateSort={isEdit && !lockSort}
             onSort={handleSort}
             onChange={handleItemInfoChange}
-            onListAction={cntxAction}
+            onListAction={canEdit ? cntxAction : undefined}
           />
         </Flex>
       </Flex>
