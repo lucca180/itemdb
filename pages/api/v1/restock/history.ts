@@ -54,7 +54,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     select r.* from restockauctionhistory r 
     left join items i on i.internal_id  = r.item_iid
     left join itemprices p on p.item_iid = r.item_iid and p.isLatest = 1
-    where r.type = 'restock' and i.category = ${category} and r.addedAt >= ${lastDaysFormated} and r.owner != 'restock-haggle'
+    where r.type = 'restock' and i.category = ${category} and i.rarity <= 100 and r.addedAt >= ${lastDaysFormated} and r.owner != 'restock-haggle'
     order by p.price desc
     limit 50
   `) as RestockAuctionHistory[];
