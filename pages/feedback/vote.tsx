@@ -263,7 +263,6 @@ const FeedbackVotingPage = () => {
                 {currentFeedback.type === 'tradePrice' && (
                   <TradeTable
                     onReport={onOpen}
-                    feedback_uid={user?.isAdmin ? currentFeedback.user_id : null}
                     isAuto={currentFeedback.user_id === AUTO_PRICE_UID}
                     data={currentFeedback.parsed?.content.trade as TradeData}
                   />

@@ -11,7 +11,6 @@ type Props = {
   data: TradeData;
   featuredItem?: ItemData;
   isAuto?: boolean;
-  feedback_uid?: string | null;
   onReport?: () => void;
 };
 
@@ -44,9 +43,6 @@ const TradeTable = (props: Props) => {
                 {t('ItemPage.lot')} {data.trade_id}
               </b>{' '}
               | {t('ItemPage.owned-by')} {data.owner}
-              {props.feedback_uid && !props.isAuto && (
-                <Text color="gray.400"> | {props.feedback_uid}</Text>
-              )}
             </Text>
             <Text color="gray.300">
               {t('ItemPage.seen-at')}{' '}
