@@ -23,9 +23,15 @@ import { FeedbackExperimentsModalProps } from '../Modal/FeedbackExperimentsModal
 import { AiOutlineExperiment } from 'react-icons/ai';
 import { useAuth } from '../../utils/auth';
 import dynamic from 'next/dynamic';
+import { FaCalculator } from 'react-icons/fa';
+import { TradeCalculatorModalProps } from './TradeCalculatorModal';
 
 const FeedbackExperimentsModal = dynamic<FeedbackExperimentsModalProps>(
   () => import('../Modal/FeedbackExperimentsModal')
+);
+
+const TradeCalculatorModal = dynamic<TradeCalculatorModalProps>(
+  () => import('./TradeCalculatorModal')
 );
 
 type Props = {
@@ -180,6 +186,7 @@ type ItemTradeProps = {
 
 const ItemTrade = (props: ItemTradeProps) => {
   const t = useTranslations();
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const ref = useRef<HTMLInputElement>(null);
   const setFocus = useRef(false);
   const { item } = props;
@@ -205,6 +212,10 @@ const ItemTrade = (props: ItemTradeProps) => {
       props.doSubmit?.();
     }
 
+    if (e.key.toLowerCase() === 'c') {
+      onOpen();
+    }
+
     if (!item.price || !props.useShortcuts) return;
 
     if (e.key.toLowerCase() === 'k') {
@@ -220,38 +231,66 @@ const ItemTrade = (props: ItemTradeProps) => {
     }
   };
 
+  const closeModal = (val?: string) => {
+    if (val) {
+      handleChange(val);
+    }
+
+    onClose();
+  };
+
   return (
-    <Flex gap={3}>
-      <Box>
-        <Image src={item.image} width={80} height={80} alt={item.name} />
-      </Box>
-      <Flex flex={1} flexFlow="column" justifyContent="center" gap={1}>
-        <Text wordBreak={'break-word'} whiteSpace={'pre-line'} fontSize="sm">
-          {item.name}
-        </Text>
-        <FormControl>
-          <CustomNumberInput
-            skipDebounce
-            wrapperProps={{
-              variant: 'filled',
-              size: 'sm',
-              placeholder: t('General.np-price'),
-            }}
-            inputProps={{
-              ref: ref,
-              placeholder: t('General.np-price'),
-              textAlign: 'left',
-              onKeyDown: handleKeyDown,
-              name: item.trade_id + item.name + item.order,
-            }}
-            value={item.price?.toString()}
-            onChange={(val) => handleChange(val)}
-          />
-          <FormHelperText fontSize="xs">
-            {t('Feedback.leave-empty-if-price-is-not-specified')}
-          </FormHelperText>
-        </FormControl>
+    <>
+      {isOpen && (
+        <TradeCalculatorModal
+          isOpen={isOpen}
+          onClose={closeModal}
+          useShortcuts={props.useShortcuts}
+          finalRef={ref}
+        />
+      )}
+      <Flex gap={3}>
+        <Box>
+          <Image src={item.image} width={80} height={80} alt={item.name} />
+        </Box>
+        <Flex flex={1} flexFlow="column" justifyContent="center" gap={1}>
+          <Text wordBreak={'break-word'} whiteSpace={'pre-line'} fontSize="sm">
+            {item.name}
+          </Text>
+          <FormControl>
+            <HStack>
+              <CustomNumberInput
+                skipDebounce
+                wrapperProps={{
+                  variant: 'filled',
+                  size: 'sm',
+                  placeholder: t('General.np-price'),
+                  flex: 1,
+                }}
+                inputProps={{
+                  ref: ref,
+                  placeholder: t('General.np-price'),
+                  textAlign: 'left',
+                  onKeyDown: handleKeyDown,
+                  name: item.trade_id + item.name + item.order,
+                }}
+                value={item.price?.toString()}
+                onChange={(val) => handleChange(val)}
+              />
+              <IconButton
+                tabIndex={-1}
+                size="sm"
+                icon={<FaCalculator />}
+                onClick={onOpen}
+                aria-label="Calculator"
+              />
+            </HStack>
+            <FormHelperText fontSize="xs">
+              {t('Feedback.leave-empty-if-price-is-not-specified')}
+            </FormHelperText>
+          </FormControl>
+        </Flex>
       </Flex>
-    </Flex>
+    </>
   );
 };

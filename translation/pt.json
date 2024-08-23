@@ -460,7 +460,13 @@
     "report-form-label": "O que aconteceu e por que você acredita que isso foi intencional?",
     "report-text1": "Se você acredita que este feedback foi <b>malicioso ou intencionalmente incorreto</b>, preencha os campos abaixo e investigaremos.",
     "report-text2": "Por favor, não faça mau uso desta ferramenta. Se você não acredita que o erro foi intencional, <b>simplesmente dê um voto negativo</b>",
-    "will-investigate": "Investigaremos esse feedback o mais rápido possível. \nVocê pode votar negativamente agora."
+    "will-investigate": "Investigaremos esse feedback o mais rápido possível. \nVocê pode votar negativamente agora.",
+    "calculator-baby-paint-brush-amount": "Quantidade de Pincel Bebê",
+    "calculator-final-price": "Preço Final",
+    "calculator-pure-price": "Preço em Pure",
+    "calculator-set-price": "Definir Preço",
+    "calculator-tip": "Dica: você pode pressionar <Kbd>c</Kbd> dentro de um input de preço para abrir a Calculadora de Preços",
+    "price-calculator": "Calculadora de Preços"
   },
   "Lists": {
     "add-to-list": "Adicionar a Lista",

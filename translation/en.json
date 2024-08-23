@@ -591,7 +591,13 @@
     "report-feedback": "Report Feedback",
     "report-text1": "If you believe that this feedback was <b>maliciously or intentionally incorrect</b>, please fill out the fields below, and we will investigate.",
     "report-form-label": "What happened and why do you believe this was intentional?",
-    "report-text2": "Please do not misuse this tool. If you don't believe the error was intentional, <b>simply give a downvote</b>"
+    "report-text2": "Please do not misuse this tool. If you don't believe the error was intentional, <b>simply give a downvote</b>",
+    "calculator-tip": "Tip: You can press <Kbd>c</Kbd> inside a price input to open the Price Calculator",
+    "calculator-baby-paint-brush-amount": "Baby Paint Brush Amount",
+    "calculator-pure-price": "Pure Price",
+    "calculator-final-price": "Final Price",
+    "calculator-set-price": "Set Price",
+    "price-calculator": "Price Calculator"
   },
   "Restock": {
     "restock-info": "Restock Info",
