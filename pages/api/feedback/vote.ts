@@ -24,6 +24,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   try {
     const { user } = await CheckAuth(req);
     if (!user) throw new Error('User not found');
+    if (user.banned) return res.status(403);
     user_id = user.id;
     const isAdmin = user.role === 'ADMIN';
 
@@ -136,7 +137,7 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
         },
         data: {
           xp: {
-            decrement: FEEDBACK_VOTE_TARGET * 2,
+            decrement: feedback.votes * 5,
           },
         },
       });

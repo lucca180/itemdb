@@ -251,6 +251,7 @@ const FeedbackVotingPage = () => {
               >
                 {currentFeedback.type === 'tradePrice' && (
                   <TradeTable
+                    feedback_uid={user?.isAdmin ? currentFeedback.user_id : null}
                     isAuto={currentFeedback.user_id === AUTO_PRICE_UID}
                     data={currentFeedback.parsed?.content.trade as TradeData}
                   />
@@ -329,7 +330,14 @@ export async function getServerSideProps(context: NextPageContext) {
 
     if (!token) throw new Error('No token found');
 
-    await CheckAuth(context.req as NextApiRequest, token);
+    const check = await CheckAuth(context.req as NextApiRequest, token);
+    if (!check.user) throw new Error('User not found');
+
+    if (check.user.banned) {
+      return {
+        notFound: true,
+      };
+    }
 
     return {
       props: {

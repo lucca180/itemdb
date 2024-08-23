@@ -350,7 +350,14 @@ export async function getServerSideProps(context: NextPageContext) {
 
     if (!token) throw new Error('No token found');
 
-    await CheckAuth(context.req as NextApiRequest, token);
+    const check = await CheckAuth(context.req as NextApiRequest, token);
+    if (!check.user) throw new Error('User not found');
+
+    if (check.user.banned) {
+      return {
+        notFound: true,
+      };
+    }
 
     return {
       props: {

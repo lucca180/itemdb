@@ -30,7 +30,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     };
     const { user } = await CheckAuth(req);
 
-    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!user || user.banned) return res.status(401).json({ error: 'Unauthorized' });
 
     const sessions = await prisma.restockSession.findMany({
       where: {
@@ -68,7 +68,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const { user } = await CheckAuth(req);
 
-    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!user || user.banned) return res.status(401).json({ error: 'Unauthorized' });
 
     const { sessionList } = req.body as { sessionList: RestockSession[] };
 

@@ -21,7 +21,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   if (!album_id) {
     return res.status(400).json({ error: 'Missing query parameters' });
   }
-  console.log(album_id);
+
   const album = await prisma.userList.findFirst({
     where: {
       official: true,

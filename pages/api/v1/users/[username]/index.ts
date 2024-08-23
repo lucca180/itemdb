@@ -112,6 +112,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       lastLogin: startOfDay(tempUser.last_login).toJSON(),
       createdAt: tempUser.createdAt.toJSON(),
       xp: tempUser.xp,
+      banned: tempUser.xp < -300,
     };
 
     if (updatedUser.prefLang)
@@ -150,6 +151,7 @@ export const getUser = async (username: string) => {
     lastLogin: startOfDay(user.last_login).toJSON(),
     createdAt: user.createdAt.toJSON(),
     xp: user.xp,
+    banned: user.xp < -300,
   };
 
   return cleanedUser;

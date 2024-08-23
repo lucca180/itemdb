@@ -43,7 +43,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const { user } = await CheckAuth(req);
 
-    if (!user || user.username !== username) return res.status(401).json({ error: 'Unauthorized' });
+    if (!user || user.username !== username || user.banned)
+      return res.status(401).json({ error: 'Unauthorized' });
   } catch (e) {
     return res.status(401).json({ error: 'Unauthorized' });
   }

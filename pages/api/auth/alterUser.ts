@@ -9,7 +9,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (req.method !== 'POST')
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
-  const { neopetsUser, prefLang, username } = req.body as { neopetsUser: string; prefLang: string; username: string };
+  const { neopetsUser, prefLang, username } = req.body as {
+    neopetsUser: string;
+    prefLang: string;
+    username: string;
+  };
 
   try {
     const authRes = await CheckAuth(req);
@@ -42,6 +46,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       createdAt: dbUser.createdAt.toJSON(),
       prefLang: dbUser.pref_lang,
       xp: dbUser.xp,
+      banned: dbUser.xp < -300,
     };
 
     res.json(user);

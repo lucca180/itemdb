@@ -66,6 +66,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       createdAt: dbUser.createdAt.toJSON(),
       prefLang: dbUser.pref_lang,
       xp: dbUser.xp,
+      banned: dbUser.xp < -300,
     };
 
     res.json(finalUser);
@@ -76,3 +77,30 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     res.status(401).json({ error: 'Unauthorized' });
   }
 }
+
+export const getUserById = async (uid: string) => {
+  const dbUser = await prisma.user.findUnique({
+    where: { id: uid },
+  });
+
+  if (!dbUser) return null;
+
+  const user: User = {
+    id: dbUser.id,
+    username: dbUser.username,
+    neopetsUser: dbUser.neo_user,
+    isAdmin: dbUser.role === 'ADMIN',
+    email: dbUser.email,
+    profileColor: dbUser.profile_color,
+    profileImage: dbUser.profile_image,
+    description: dbUser.description,
+    role: dbUser.role as UserRoles,
+    prefLang: dbUser.pref_lang,
+    lastLogin: startOfDay(dbUser.last_login).toJSON(),
+    createdAt: dbUser.createdAt.toJSON(),
+    xp: dbUser.xp,
+    banned: dbUser.xp < -300,
+  };
+
+  return user;
+};

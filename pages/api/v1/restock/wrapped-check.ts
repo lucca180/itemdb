@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { CheckAuth } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
 import { Prisma } from '@prisma/client';
+import { getUserById } from '../../auth/login';
 
 const TRADE_GOAL = 10;
 const VOTE_GOAL = 20;
@@ -27,6 +28,16 @@ export const contributeCheck = async (uid?: string, goalMulplier = 1) => {
 
   if (!uid) {
     return { success: false, needTrades: tradeGoal, needVotes: voteGoal };
+  }
+
+  const user = await getUserById(uid);
+
+  if (!user) {
+    return { success: false, needTrades: tradeGoal, needVotes: voteGoal };
+  }
+
+  if (user.banned) {
+    return { success: false, needTrades: 0, needVotes: 0 };
   }
 
   // check if user precified TRADE_GOAL prices in the last 24hrs
@@ -85,14 +96,7 @@ export const contributeCheck = async (uid?: string, goalMulplier = 1) => {
   let needVotes = Math.max(0, voteGoal - votes);
 
   if (tradeQueue < 50) needTrades = 0;
-  else if (needTrades > tradeQueue) {
-    needTrades = tradeQueue;
-  }
-
   if (feedbacks < 50) needVotes = 0;
-  else if (needVotes > feedbacks) {
-    needVotes = feedbacks;
-  }
 
   if (!needTrades || !needVotes) return { success: true, needTrades: 0, needVotes: 0 };
 

@@ -206,6 +206,8 @@ export type User = {
 
   prefLang: string | null;
 
+  banned: boolean;
+
   xp: number;
 };
 
