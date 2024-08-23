@@ -19,7 +19,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const authRes = await CheckAuth(req);
     const decodedToken = authRes.decodedToken;
     const authUser = authRes.user;
-    if (!authUser) return res.status(401).json({ error: 'Unauthorized' });
+    if (!authUser || authUser.banned) return res.status(401).json({ error: 'Unauthorized' });
 
     const dbUser = (await prisma.user.update({
       where: { id: decodedToken.uid },
