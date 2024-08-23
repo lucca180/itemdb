@@ -98,7 +98,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     },
   });
 
-  if (type === 'feedback' || type === 'officialApply') {
+  if (type === 'feedback' || type === 'officialApply' || type === 'reportFeedback') {
     await submitMailFeedback(obj, subject_id, email ?? '', result.feedback_id, type);
   }
 
@@ -177,7 +177,7 @@ const submitMailFeedback = async (
       <b>sender email</b>: ${email}<br/>
       <b>subject_id</b>: ${subject_id}<br/>
       <b>ip</b>: ${data.ip}<br/>
-      <b>pageRef</b>: ${data.pageRef}<br/>
+      <b>pageRef</b>: ${data.pageRef}<br/><br/>
       <b>data</b>: ${data.content.message ?? data.content.justification}<br/><br/>
       <b>rawData</b>: ${JSON.stringify(data)}
     `,

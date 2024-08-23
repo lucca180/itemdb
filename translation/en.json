@@ -586,7 +586,12 @@
     "experiments": "Experiments",
     "all-equal": "All Equal",
     "x-items": "{x, plural, =0 {} =1 {# item} other {# items}}",
-    "manifest-v3-text": "Since June 2024, additional steps may be required to install any userscript in Chrome-based browsers (such as Opera, Edge, Vivaldi, etc...) <Link>Learn more here</Link>"
+    "manifest-v3-text": "Since June 2024, additional steps may be required to install any userscript in Chrome-based browsers (such as Opera, Edge, Vivaldi, etc...) <Link>Learn more here</Link>",
+    "will-investigate": "We will investigate this feedback as soon as possible. You can downvote it now.",
+    "report-feedback": "Report Feedback",
+    "report-text1": "If you believe that this feedback was <b>maliciously or intentionally incorrect</b>, please fill out the fields below, and we will investigate.",
+    "report-form-label": "What happened and why do you believe this was intentional?",
+    "report-text2": "Please do not misuse this tool. If you don't believe the error was intentional, <b>simply give a downvote</b>"
   },
   "Restock": {
     "restock-info": "Restock Info",

@@ -13,6 +13,7 @@ import {
   Icon,
   Spinner,
   Text,
+  useDisclosure,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import Link from 'next/link';
@@ -30,12 +31,19 @@ import { getCookie } from 'cookies-next';
 import { NextPageContext, NextApiRequest } from 'next';
 import { CheckAuth } from '../../utils/googleCloud';
 import { useTranslations } from 'next-intl';
+import dynamic from 'next/dynamic';
+import { ReportFeedbackModalProps } from '../../components/Modal/ReportFeedbackModal';
+
+const ReportFeedbackModal = dynamic<ReportFeedbackModalProps>(
+  () => import('../../components/Modal/ReportFeedbackModal')
+);
 
 const AUTO_PRICE_UID = 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1';
 
 const FeedbackVotingPage = () => {
   const t = useTranslations();
   const { user, authLoading, getIdToken } = useAuth();
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [currentFeedback, setCurrentFeedback] = useState<Feedback>();
   const [isLoading, setIsLoading] = useState(true);
@@ -157,6 +165,9 @@ const FeedbackVotingPage = () => {
         description: t('Feedback.feedback-system-description'),
       }}
     >
+      {isOpen && currentFeedback && (
+        <ReportFeedbackModal feedback={currentFeedback} isOpen={isOpen} onClose={onClose} />
+      )}
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/altador/altadorcup/link_images/2008/help_me_decide.gif',
@@ -251,6 +262,7 @@ const FeedbackVotingPage = () => {
               >
                 {currentFeedback.type === 'tradePrice' && (
                   <TradeTable
+                    onReport={onOpen}
                     feedback_uid={user?.isAdmin ? currentFeedback.user_id : null}
                     isAuto={currentFeedback.user_id === AUTO_PRICE_UID}
                     data={currentFeedback.parsed?.content.trade as TradeData}
