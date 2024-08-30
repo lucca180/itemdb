@@ -262,6 +262,7 @@ model TradeItems {
   addedAt     DateTime @default(now())
 
   @@index([trade_id, order])
+  @@index([order, trade_id])
   @@index([name, image_id])
 }
 
