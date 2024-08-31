@@ -261,7 +261,7 @@ model TradeItems {
   price       Decimal? @db.Decimal(11, 0)
   addedAt     DateTime @default(now())
 
-  @@index([trade_id, order])
+  @@unique([trade_id, order])
   @@index([order, trade_id])
   @@index([name, image_id])
 }
