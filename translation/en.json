@@ -728,7 +728,18 @@
     "chronological-order": "Chronological Order",
     "history-cta": "Check out the <Link>Restock History</Link> for this shop",
     "history-empty": "We couldn't find any data for the selected timeframe. Please try a different one.",
-    "history-dashboard-cta": "Check out the <Link>Restock History</Link> for your favorite shop!"
+    "history-dashboard-cta": "Check out the <Link>Restock History</Link> for your favorite shop!",
+    "from-x-with-y-items": "from {0} NP with {1} items",
+    "avg-reaction-time-tooltip": "The avg time between the item appearing on your screen and the haggle/sold out page being loaded",
+    "fastest-buy": "Fastest Buy",
+    "fastest-buy-tooltip": "Time it took between the item appearing on your screen and the success buy page being loaded",
+    "favorite-buy": "Favorite Buy",
+    "favorite-buy-tooltip": "Bought {0} times",
+    "from-x": "from {0}",
+    "hide-misses-helper-txt": "Hide all information about your missed restocks.",
+    "hide-comparations": "Hide Comparations",
+    "hide-comparations-helper-txt": "Hide all comparations with previous sessions. You may need to refresh to see the changes.",
+    "dashboard-options": "Dashboard Options"
   },
   "Search": {
     "search": "Search",

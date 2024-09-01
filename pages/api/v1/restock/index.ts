@@ -7,6 +7,7 @@ import { differenceInMilliseconds } from 'date-fns';
 import { getRestockProfitOnDate, removeOutliers } from '../../../../utils/utils';
 import { getManyItems } from '../items/many';
 import { UTCDate } from '@date-fns/utc';
+import { countBy, maxBy } from 'lodash';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -31,12 +32,18 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     const { user } = await CheckAuth(req);
 
     if (!user || user.banned) return res.status(401).json({ error: 'Unauthorized' });
+    let newStartDate = startDate;
+
+    if (startDate && !endDate) {
+      const diff = differenceInMilliseconds(Date.now(), new Date(Number(startDate)));
+      newStartDate = (Number(startDate) - diff).toString();
+    }
 
     const sessions = await prisma.restockSession.findMany({
       where: {
         user_id: user.id,
         startedAt: {
-          gte: startDate ? new Date(Number(startDate)) : undefined,
+          gte: newStartDate ? new Date(Number(newStartDate)) : undefined,
           lte: endDate ? new Date(Number(endDate)) : undefined,
         },
         shop_id: shopId ? Number(shopId) : undefined,
@@ -53,11 +60,18 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       },
     });
 
-    if (!sessions.length) return res.status(200).json(null);
+    const currentStats = sessions.filter((x) => x.startedAt >= new Date(Number(startDate)));
 
-    const [stats] = await calculateStats(sessions);
+    if (!currentStats.length) return res.status(200).json(null);
 
-    return res.status(200).json(stats);
+    const pastStats = sessions.filter((x) => x.startedAt < new Date(Number(startDate)));
+
+    const [currentResult, pastResult] = await Promise.all([
+      calculateStats(currentStats),
+      pastStats.length ? calculateStats(pastStats) : null,
+    ]);
+
+    return res.status(200).json({ currentStats: currentResult?.[0], pastStats: pastResult?.[0] });
   } catch (e) {
     console.error(e);
     return res.status(500).json({ error: 'Internal Server Error' });
@@ -122,6 +136,7 @@ export const calculateStats = async (
   const revenuePerDay: { [date: string]: number } = {};
   const lostPerDay: { [date: string]: number } = {};
   const refreshesPerDay: { [date: string]: number } = {};
+  let fastestBuy: RestockStats['fastestBuy'] = undefined;
 
   let refreshTotalTime: number[] = [];
   let reactionTotalTime: number[] = [];
@@ -232,6 +247,27 @@ export const calculateStats = async (
         revenuePerDay[date] = revenuePerDay[date]
           ? revenuePerDay[date] + (item.price.value ?? 0)
           : item.price.value ?? 0;
+
+        const time = differenceInMilliseconds(
+          new Date(click.buy_timestamp),
+          new Date(restockItem.timestamp)
+        );
+
+        if (!fastestBuy)
+          fastestBuy = {
+            timediff: time,
+            timestamp: click.buy_timestamp,
+            item,
+          };
+        else {
+          if (fastestBuy.timediff > time) {
+            fastestBuy = {
+              timediff: time,
+              timestamp: click.buy_timestamp,
+              item,
+            };
+          }
+        }
       } else {
         stats.totalLost.count++;
         stats.totalLost.value += item.price.value ?? 0;
@@ -254,6 +290,13 @@ export const calculateStats = async (
       }
     });
   });
+
+  stats.fastestBuy = fastestBuy;
+  const favBuy = findMostFrequent(allBought.map((x) => x.item));
+  stats.favoriteItem = {
+    item: favBuy.item,
+    count: favBuy.count,
+  };
 
   stats.hottestRestocks = Object.values(allItemsData)
     .sort((a, b) => (b.price.value ?? 0) - (a.price.value ?? 0))
@@ -305,6 +348,11 @@ const defaultStats: RestockStats = {
   totalSessions: 0,
   mostExpensiveBought: undefined,
   mostExpensiveLost: undefined,
+  fastestBuy: undefined,
+  favoriteItem: {
+    item: undefined,
+    count: 0,
+  },
   totalRefreshes: 0,
   totalClicks: 0,
   totalLost: {
@@ -336,3 +384,18 @@ const formatDate = (date: number) => {
   const d = new UTCDate(date);
   return d.toISOString().split('T')[0];
 };
+
+function findMostFrequent<T>(arr: T[]): { item: T; count: number } {
+  // Convert objects to strings for comparison
+  const frequencyMap = countBy(arr.map((item) => JSON.stringify(item)));
+
+  // Find the string with the maximum frequency
+  const mostFrequentString = maxBy(Object.keys(frequencyMap), (key) => frequencyMap[key]);
+  if (!mostFrequentString) throw new Error('No most frequent string found');
+  // Parse the string back to an object if it's an object
+  try {
+    return { item: JSON.parse(mostFrequentString) as T, count: frequencyMap[mostFrequentString] };
+  } catch (e) {
+    return { item: mostFrequentString as unknown as T, count: frequencyMap[mostFrequentString] };
+  }
+}

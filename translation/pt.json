@@ -729,7 +729,18 @@
     "price-order": "Ordem de Preço",
     "history-cta": "Confira o <Link>Histórico de Restock</Link> desta loja",
     "history-empty": "Não encontramos nenhum dado para o período selecionado. Por favor, tente um período diferente.",
-    "history-dashboard-cta": "Confira o <Link>Histórico de Restock</Link> da sua loja favorita!"
+    "history-dashboard-cta": "Confira o <Link>Histórico de Restock</Link> da sua loja favorita!",
+    "from-x-with-y-items": "de {0} NP com {1} itens",
+    "avg-reaction-time-tooltip": "O tempo médio entre o item aparecer na sua tela e a página de pechincha/esgotado ser carregada",
+    "fastest-buy": "Compra Mais Rápida",
+    "fastest-buy-tooltip": "Tempo que levou entre o item aparecer na tela e o carregamento da página de compra bem-sucedida",
+    "favorite-buy": "Compra Favorita",
+    "favorite-buy-tooltip": "Comprado {0} vezes",
+    "from-x": "de {0}",
+    "dashboard-options": "Opções do Dashboard",
+    "hide-comparations": "Ocultar Comparações",
+    "hide-comparations-helper-txt": "Oculte todas as comparações com sessões anteriores. \nPode ser necessário atualizar para ver as alterações.",
+    "hide-misses-helper-txt": "Oculte todas as informações sobre seus itens perdidos."
   },
   "Search": {
     "search": "Pesquisa",

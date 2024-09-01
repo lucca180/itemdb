@@ -424,19 +424,25 @@ type RestockStats = {
     click: RestockSession['clicks'][0];
     restockItem: RestockSession['items'][0];
   }[];
-
   worstBaits: {
     item: ItemData;
     click: RestockSession['clicks'][0];
     restockItem: RestockSession['items'][0];
   }[];
-
   hottestLost: {
     item: ItemData;
     click: RestockSession['clicks'][0];
     restockItem: RestockSession['items'][0];
   }[];
-
+  fastestBuy?: {
+    item: ItemData;
+    timediff: number;
+    timestamp: number;
+  };
+  favoriteItem: {
+    item?: ItemData;
+    count: number;
+  };
   unknownPrices: number;
 };
 
@@ -451,6 +457,8 @@ type UserPreferences = {
   labs_feedbackShortcuts?: boolean;
 
   restock_prefView?: 'default' | 'rarity';
+  dashboard_hideMisses?: boolean;
+  dashboard_hidePrev?: boolean;
 };
 
 type ItemEffect = {

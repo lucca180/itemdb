@@ -1,4 +1,4 @@
-import { Avatar, Box, Flex, Heading, Image, Text } from '@chakra-ui/react';
+import { Box, Flex, Heading, Image, Text } from '@chakra-ui/react';
 import { RestockStats } from '../../../types';
 import { LegacyRef, useMemo } from 'react';
 import Color from 'color';
@@ -65,15 +65,6 @@ export const RestockWrappedCard = (props: RestockWrappedCardProps) => {
       />
       <Flex w="100%" h="100%" flexFlow={'column'} gap={4} zIndex={1}>
         <Flex alignItems={'center'} gap={2}>
-          {user?.profileImage && (
-            <Avatar
-              crossOrigin="anonymous"
-              src={user?.profileImage}
-              width={'25px'}
-              height={'25px'}
-              name={user.username ?? 'itemdb user'}
-            />
-          )}
           <Flex gap={2} alignItems={'baseline'} display="inline-flex">
             <Text fontSize={'sm'} fontWeight={'500'}>
               {user.username ?? 'itemdb user'}
@@ -153,7 +144,12 @@ export const RestockWrappedCard = (props: RestockWrappedCardProps) => {
         </Flex>
         <Flex flex={1} alignItems={'flex-end'} opacity={0.9}>
           <Flex alignItems={'center'} gap={1}>
-            <Image src={'/logo_icon.svg'} w={'25px'} h={'25px'} alt="itemdb logo" />
+            <Image
+              src={'https://itemdb.com.br/logo_icon.svg'}
+              w={'25px'}
+              h={'25px'}
+              alt="itemdb logo"
+            />
             <Text fontSize={'xs'} fontFamily={'Cocogoose'}>
               itemdb.com.br/restock
             </Text>

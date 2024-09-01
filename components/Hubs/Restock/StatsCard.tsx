@@ -1,29 +1,260 @@
-import { Card, CardBody, Stat, StatHelpText, StatLabel, StatNumber } from '@chakra-ui/react';
-import { ReactNode } from 'react';
+import { Badge, Flex, Icon, Text, Tooltip } from '@chakra-ui/react';
+import { FaArrowTrendDown, FaArrowTrendUp } from 'react-icons/fa6';
+import { RestockStats } from '../../../types';
+import { useFormatter, useTranslations } from 'next-intl';
+import { msIntervalFormated, restockShopInfo } from '../../../utils/utils';
+import { MdHelp } from 'react-icons/md';
 
 type StatsCardProps = {
-  label: string | ReactNode;
-  stat: string | ReactNode;
-  helpText?: string | ReactNode;
+  label?: string;
+  stat?: string;
+  helpText?: string;
   blur?: boolean;
+  session: RestockStats;
+  pastSession?: RestockStats | null;
+  type: string;
+};
+
+type StatsInfo = {
+  label: string;
+  stat: string;
+  helpText?: string;
+  labelTooltip?: string;
+
+  badgeTooltip?: string;
+  badgeIconType?: 'up' | 'down';
+  badgeColor?: string;
+  badgeStat?: string;
 };
 
 export const StatsCard = (props: StatsCardProps) => {
-  const { label, stat, helpText } = props;
+  const {
+    labelTooltip,
+    label,
+    stat,
+    badgeStat,
+    badgeIconType,
+    badgeColor,
+    helpText,
+    badgeTooltip,
+  } = useStatsTypes(props.type, props.session, props.pastSession);
 
   return (
-    <Card variant="outline" bg="blackAlpha.500">
-      <CardBody
-        filter={props.blur ? 'blur(10px)' : undefined}
-        display={'flex'}
-        alignItems={'center'}
-      >
-        <Stat>
-          <StatLabel fontSize={['xs', 'sm']}>{label}</StatLabel>
-          <StatNumber fontSize={['xl', '2xl']}>{stat}</StatNumber>
-          <StatHelpText fontSize={['xs', 'sm']}>{helpText}</StatHelpText>
-        </Stat>
-      </CardBody>
-    </Card>
+    <Flex
+      bg="blackAlpha.600"
+      filter={props.blur ? 'blur(10px)' : undefined}
+      // alignItems={'center'}
+      borderRadius={'lg'}
+      flexFlow={'column'}
+      overflow={'hidden'}
+    >
+      <Flex pt={4} pb={1} px={3}>
+        <Tooltip
+          hasArrow
+          isDisabled={!labelTooltip}
+          label={labelTooltip}
+          bg="blackAlpha.900"
+          placement="top"
+          fontSize={'xs'}
+          color="white"
+        >
+          <Text color="whiteAlpha.700" fontSize={'xs'} cursor={'default'}>
+            {label}
+            {!!labelTooltip && <Icon as={MdHelp} verticalAlign={'middle'} ml={1} />}
+          </Text>
+        </Tooltip>
+      </Flex>
+      <Flex justifyContent={'space-between'} alignItems={'center'} flex={1} pb={4} px={3} gap={3}>
+        <Text fontSize={'xl'} fontWeight={'semibold'}>
+          {stat}
+        </Text>
+        {badgeStat && (
+          <Tooltip
+            hasArrow
+            isDisabled={!badgeTooltip}
+            label={badgeTooltip}
+            bg="blackAlpha.900"
+            fontSize={'xs'}
+            placement="top"
+            color="white"
+          >
+            <Badge
+              colorScheme={badgeColor}
+              p={1}
+              borderRadius={'lg'}
+              display="flex"
+              alignItems={'center'}
+            >
+              <Icon as={badgeIconType === 'up' ? FaArrowTrendUp : FaArrowTrendDown} mr={1} />
+              {badgeStat}
+            </Badge>
+          </Tooltip>
+        )}
+      </Flex>
+      <Flex bg="blackAlpha.700" px={4} py={1} fontSize={'xs'} color="whiteAlpha.700">
+        {helpText}
+      </Flex>
+    </Flex>
   );
+};
+
+const intl = new Intl.NumberFormat();
+
+const useStatsTypes = (
+  type: string,
+  sessionStats: RestockStats,
+  pastSession?: RestockStats | null
+): StatsInfo => {
+  const t = useTranslations();
+  const formatter = useFormatter();
+
+  let badgeData = {};
+  switch (type) {
+    case 'reactionTime':
+      if (pastSession) {
+        const diff = sessionStats.avgReactionTime - pastSession.avgReactionTime;
+        const diffPercentage = Math.abs(diff / pastSession.avgReactionTime) * 100;
+
+        badgeData = {
+          badgeStat: `${diffPercentage.toFixed(2)}%`,
+          badgeIconType: diff > 0 ? 'up' : 'down',
+          badgeColor: diff > 0 ? 'red' : 'green',
+          badgeTooltip: t('Restock.from-x', {
+            0: msIntervalFormated(pastSession.avgReactionTime, true, 2),
+          }),
+        };
+      }
+
+      return {
+        label: t('Restock.avg-reaction-time'),
+        stat: msIntervalFormated(sessionStats.avgReactionTime, true, 2),
+        helpText: t('Restock.based-on-x-clicks', {
+          x: intl.format(sessionStats.totalClicks),
+        }),
+        labelTooltip: t('Restock.avg-reaction-time-tooltip'),
+        ...badgeData,
+      };
+    case 'bestBuy':
+      return {
+        label: t('Restock.most-expensive-item-bought'),
+        stat: `${intl.format(sessionStats.mostExpensiveBought?.price.value ?? 0)} NP`,
+        helpText: sessionStats.mostExpensiveBought?.name ?? t('Restock.none'),
+        ...badgeData,
+      };
+    case 'refreshTime':
+      if (pastSession) {
+        const diff = sessionStats.avgRefreshTime - pastSession.avgRefreshTime;
+        const diffPercentage = Math.abs(diff / pastSession.avgRefreshTime) * 100;
+
+        badgeData = {
+          badgeStat: `${diffPercentage.toFixed(2)}%`,
+          badgeIconType: diff > 0 ? 'up' : 'down',
+          badgeColor: diff > 0 ? 'red' : 'green',
+          badgeTooltip: t('Restock.from-x', {
+            0: msIntervalFormated(pastSession.avgRefreshTime, true, 2),
+          }),
+        };
+      }
+      return {
+        label: t('Restock.avg-refresh-time'),
+        stat: msIntervalFormated(sessionStats.avgRefreshTime, true, 2),
+        helpText: t('Restock.based-on-x-refreshs', {
+          x: intl.format(sessionStats.totalRefreshes),
+        }),
+        ...badgeData,
+      };
+    case 'clickedAndLost':
+      if (pastSession) {
+        const diff = sessionStats.totalLost.value - pastSession.totalLost.value;
+        const diffPercentage = Math.abs(diff / pastSession.totalLost.value) * 100;
+
+        badgeData = {
+          badgeStat: `${diffPercentage.toFixed(2)}%`,
+          badgeIconType: diff > 0 ? 'up' : 'down',
+          badgeColor: diff > 0 ? 'red' : 'green',
+          badgeTooltip: t('Restock.from-x', {
+            0: `${intl.format(pastSession.totalLost.value)} NP`,
+          }),
+        };
+      }
+
+      return {
+        label: t('Restock.total-clicked-and-lost'),
+        stat: `${intl.format(sessionStats.totalLost?.value ?? 0)} NP`,
+        helpText: `${intl.format(sessionStats.totalLost.count)} ${t('General.items')}`,
+        ...badgeData,
+      };
+    case 'worstClickedAndLost':
+      return {
+        label: t('Restock.most-expensive-clicked-and-lost'),
+        stat: `${intl.format(sessionStats.mostExpensiveLost?.price.value ?? 0)} NP`,
+        helpText: sessionStats.mostExpensiveLost?.name ?? t('Restock.none'),
+        ...badgeData,
+      };
+    case 'fastestBuy':
+      if (pastSession) {
+        const diff =
+          (sessionStats.fastestBuy?.timediff ?? 0) - (pastSession.fastestBuy?.timediff ?? 0);
+        const diffPercentage = Math.abs(diff / (pastSession.fastestBuy?.timediff ?? 0)) * 100;
+
+        badgeData = {
+          badgeStat: `${diffPercentage.toFixed(2)}%`,
+          badgeIconType: diff > 0 ? 'up' : 'down',
+          badgeColor: diff > 0 ? 'red' : 'green',
+          badgeTooltip: t('Restock.from-x', {
+            0: msIntervalFormated(pastSession.fastestBuy?.timediff ?? 0, true, 2),
+          }),
+        };
+      }
+
+      return {
+        label: t('Restock.fastest-buy'),
+        labelTooltip: t('Restock.fastest-buy-tooltip'),
+        stat: msIntervalFormated(sessionStats.fastestBuy?.timediff ?? 0, true, 2),
+        helpText: `${sessionStats.fastestBuy?.item.name ?? t('Restock.none')} ${t(
+          'Restock.at'
+        )} ${formatter.dateTime(sessionStats.fastestBuy?.timestamp ?? 0, {
+          timeStyle: 'short',
+          dateStyle: 'short',
+        })}`,
+        ...badgeData,
+      };
+    case 'favoriteBuy':
+      return {
+        label: t('Restock.favorite-buy'),
+        stat: `${sessionStats.favoriteItem.item?.name ?? t('Restock.none')}`,
+        helpText: t('Restock.favorite-buy-tooltip', {
+          0: intl.format(sessionStats.favoriteItem.count),
+        }),
+        ...badgeData,
+      };
+    case 'timeSpent':
+      if (pastSession) {
+        const diff = sessionStats.durationCount - pastSession.durationCount;
+        const diffPercentage = Math.abs(diff / pastSession.durationCount) * 100;
+
+        badgeData = {
+          badgeStat: `${diffPercentage.toFixed(2)}%`,
+          badgeIconType: diff > 0 ? 'up' : 'down',
+          badgeColor: diff > 0 ? 'green' : 'green',
+          badgeTooltip: t('Restock.from-x', {
+            0: msIntervalFormated(pastSession.durationCount, true, 2),
+          }),
+        };
+      }
+      return {
+        label: t('Restock.time-spent-restocking'),
+        stat: msIntervalFormated(sessionStats.durationCount, true, 2),
+        helpText: `${msIntervalFormated(sessionStats.mostPopularShop.durationCount, true, 2)} ${t(
+          'Restock.at'
+        )} ${restockShopInfo[sessionStats.mostPopularShop.shopId].name}`,
+        ...badgeData,
+      };
+    default:
+      return {
+        label: 'Total Restocks',
+        stat: '1',
+        helpText: 'Total restocks made in this session',
+      };
+  }
 };

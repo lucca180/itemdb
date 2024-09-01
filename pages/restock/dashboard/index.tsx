@@ -26,9 +26,10 @@ import {
   IconButton,
   HStack,
   Badge,
+  Tooltip,
 } from '@chakra-ui/react';
 import Color from 'color';
-import { ReactElement, useEffect, useState } from 'react';
+import { ReactElement, useEffect, useMemo, useState } from 'react';
 import Layout from '../../../components/Layout';
 import NextLink from 'next/link';
 import { StatsCard } from '../../../components/Hubs/Restock/StatsCard';
@@ -37,20 +38,26 @@ import ImportRestockModal from '../../../components/Modal/ImportRestock';
 import { RestockChart, RestockSession, RestockStats } from '../../../types';
 import { useAuth } from '../../../utils/auth';
 import axios from 'axios';
-import { msIntervalFormated, restockShopInfo } from '../../../utils/utils';
+import { restockShopInfo } from '../../../utils/utils';
 import RestockItem from '../../../components/Hubs/Restock/RestockItemCard';
 import { FiSend } from 'react-icons/fi';
 import FeedbackModal from '../../../components/Modal/FeedbackModal';
 import { useFormatter, useTranslations } from 'next-intl';
-import { FaEye, FaEyeSlash, FaFileImage } from 'react-icons/fa';
+import { FaCog, FaEyeSlash, FaFileDownload } from 'react-icons/fa';
 // import CalendarHeatmap from '../../../components/Charts/CalHeatmap';
 import { endOfDay } from 'date-fns';
 import { UTCDate } from '@date-fns/utc';
 import { RestockWrappedModalProps } from '../../../components/Modal/RestockWrappedModal';
 import dynamic from 'next/dynamic';
+import { FaArrowTrendUp, FaArrowTrendDown } from 'react-icons/fa6';
+import { DashboardOptionsModalProps } from '../../../components/Modal/DashboardOptionsModal';
 
 const RestockWrappedModal = dynamic<RestockWrappedModalProps>(
   () => import('../../../components/Modal/RestockWrappedModal')
+);
+
+const DashboardOptionsModal = dynamic<DashboardOptionsModalProps>(
+  () => import('../../../components/Modal/DashboardOptionsModal')
 );
 
 const color = Color('#599379').rgb().array();
@@ -71,18 +78,31 @@ const defaultFilter: PeriodFilter = { timePeriod: 7, shops: 'all', timestamp: un
 const RestockDashboard = () => {
   const t = useTranslations();
   const formatter = useFormatter();
-  const { user, authLoading } = useAuth();
+  const { user, userPref, authLoading } = useAuth();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isOpenOptions, onOpen: onOpenOptions, onClose: onCloseOptions } = useDisclosure();
   const { isOpen: isWrappedOpen, onOpen: onWrappedOpen, onClose: onWrappedClose } = useDisclosure();
   const [openImport, setOpenImport] = useState<boolean>(false);
   const [sessionStats, setSessionStats] = useState<RestockStats | null>(null);
+  const [pastSessionStats, setPastSessionStats] = useState<RestockStats | null>(null);
   const [alertMsg, setAlertMsg] = useState<AlertMsg | null>(null);
   const [importCount, setImportCount] = useState<number>(0);
   const [shopList, setShopList] = useState<number[]>([]);
   const [noScript, setNoScript] = useState<boolean>(false);
-  const [hideMisses, setHideMisses] = useState<boolean>(false);
   const [filter, setFilter] = useState<PeriodFilter | null>(null);
   const [chartData, setChartData] = useState<RestockChart | null>(null);
+
+  const revenueDiff = useMemo(() => {
+    if (!sessionStats || !pastSessionStats) return null;
+    const diff = sessionStats.estRevenue - pastSessionStats.estRevenue;
+    const diffPercentage = Math.abs(diff / pastSessionStats.estRevenue) * 100;
+
+    return {
+      diff,
+      diffPercentage,
+      isPositive: diff > 0,
+    };
+  }, [sessionStats, pastSessionStats]);
 
   useEffect(() => {
     if (!authLoading && user && !!filter) {
@@ -92,9 +112,6 @@ const RestockDashboard = () => {
   }, [user, authLoading, !!filter]);
 
   useEffect(() => {
-    const hideMisses = localStorage.getItem('hideMisses');
-    if (hideMisses) setHideMisses(hideMisses === 'true');
-
     const storageFilter = localStorage.getItem('restockFilter');
     let timePeriod = storageFilter ? JSON.parse(storageFilter)?.timePeriod || 7 : 7;
     if (timePeriod === 90) timePeriod = 30;
@@ -122,7 +139,8 @@ const RestockDashboard = () => {
 
       const [res, chartRes] = await Promise.all([dataProm, chartProm]);
 
-      const statsData = res.data as RestockStats;
+      const statsData = res.data.currentStats as RestockStats;
+      const pastData = res.data.pastStats as RestockStats | undefined;
       const chartsData = chartRes?.data as RestockChart;
 
       if (chartsData) setChartData(chartsData);
@@ -142,6 +160,8 @@ const RestockDashboard = () => {
       }
 
       if (customFilter.shops === 'all') setShopList(statsData.shopList);
+      if (pastData && !userPref?.dashboard_hidePrev) setPastSessionStats(pastData);
+      else setPastSessionStats(null);
 
       setSessionStats(statsData);
       setAlertMsg(null);
@@ -209,12 +229,6 @@ const RestockDashboard = () => {
     );
   };
 
-  const toggleMisses = () => {
-    const newMisses = !hideMisses;
-    setHideMisses(newMisses);
-    localStorage.setItem('hideMisses', newMisses.toString());
-  };
-
   // const setCustomTimestamp = (timestamp: number) => {
   //   init({ ...defaultFilter, timestamp });
   //   setFilter({ ...defaultFilter, timestamp });
@@ -233,6 +247,7 @@ const RestockDashboard = () => {
         <ImportRestockModal isOpen={openImport} onClose={handleClose} refresh={refresh} />
       )}
       {isOpen && <FeedbackModal isOpen={isOpen} onClose={onClose} />}
+      {isOpenOptions && <DashboardOptionsModal isOpen={isOpenOptions} onClose={onCloseOptions} />}
       {!!sessionStats && isWrappedOpen && (
         <RestockWrappedModal
           timePeriod={filter?.timePeriod}
@@ -269,11 +284,12 @@ const RestockDashboard = () => {
           {filter?.timestamp && (
             <option value={filter.timePeriod}>{formatter.dateTime(filter.timestamp)}</option>
           )}
+          <option value={0.08325}>{t('General.last-x-hours', { x: 2 })}</option>
           <option value={0.5}>{t('General.last-x-hours', { x: 12 })}</option>
           <option value={1}>{t('General.last-x-hours', { x: 24 })}</option>
           <option value={7}>{t('General.last-x-days', { x: 7 })}</option>
           <option value={30}>{t('General.last-x-days', { x: 30 })}</option>
-          {/* <option value={60}>{t('General.last-x-days', { x: 60 })}</option> */}
+          <option value={60}>{t('General.last-x-days', { x: 60 })}</option>
           {/* <option>All Time</option> */}
         </Select>
         <Select
@@ -306,19 +322,13 @@ const RestockDashboard = () => {
           </Button>
         )}
         {sessionStats && (
-          <HStack gap={1}>
-            <IconButton
-              bg="blackAlpha.300"
-              aria-label="toggle visibility"
-              icon={hideMisses ? <FaEyeSlash /> : <FaEye />}
-              onClick={toggleMisses}
-              fontSize="16px"
-              size="sm"
-            />
-            <Text onClick={toggleMisses} fontSize={'xs'} cursor="pointer">
-              {hideMisses ? t('Restock.show-misses') : t('Restock.hide-misses')}
-            </Text>
-          </HStack>
+          <IconButton
+            bg="blackAlpha.300"
+            aria-label="Open Dashboard Options"
+            icon={<FaCog />}
+            onClick={onOpenOptions}
+            size="sm"
+          />
         )}
       </Flex>
       {noScript && (
@@ -494,7 +504,15 @@ const RestockDashboard = () => {
             </Center>
           )}
           <Center my={6} flexFlow="column" gap={2}>
-            <Heading size="md">{t('Restock.your-est-revenue')}</Heading>
+            <Heading size="md">
+              {t('Restock.your-est-revenue')}{' '}
+              <IconButton
+                size="xs"
+                aria-label="Restock Wrapped Button"
+                onClick={onWrappedOpen}
+                icon={<FaFileDownload />}
+              />
+            </Heading>
             <HStack>
               <Heading
                 size="2xl"
@@ -503,12 +521,30 @@ const RestockDashboard = () => {
               >
                 {intl.format(sessionStats.estRevenue)} NP
               </Heading>
-              <IconButton
-                size="sm"
-                aria-label="Restock Dashboard Button"
-                onClick={onWrappedOpen}
-                icon={<FaFileImage />}
-              />
+              {revenueDiff && (
+                <Tooltip
+                  hasArrow
+                  label={t('Restock.from-x-with-y-items', {
+                    0: intl.format(pastSessionStats!.estRevenue),
+                    1: pastSessionStats!.totalBought.count,
+                  })}
+                  bg="blackAlpha.900"
+                  fontSize={'xs'}
+                  placement="top"
+                  color="white"
+                >
+                  <Badge
+                    colorScheme={revenueDiff.isPositive ? 'green' : 'red'}
+                    p={1}
+                    borderRadius={'lg'}
+                    display="flex"
+                    alignItems={'center'}
+                  >
+                    <Icon as={revenueDiff.isPositive ? FaArrowTrendUp : FaArrowTrendDown} mr={1} />
+                    {revenueDiff.diffPercentage.toFixed(2)}%
+                  </Badge>
+                </Tooltip>
+              )}
             </HStack>
             <Heading size="sm">
               {t('Restock.with-x-items', {
@@ -517,45 +553,25 @@ const RestockDashboard = () => {
             </Heading>
           </Center>
           <Divider />
-          <SimpleGrid mt={3} columns={[2, 3, 3, 5]} spacing={[1, 1, 4]}>
+          <SimpleGrid mt={3} columns={[2, 2, 2, 4, 4]} spacing={[2, 3]}>
+            <StatsCard type="reactionTime" session={sessionStats} pastSession={pastSessionStats} />
+            <StatsCard type="fastestBuy" session={sessionStats} pastSession={pastSessionStats} />
+            <StatsCard type="refreshTime" session={sessionStats} pastSession={pastSessionStats} />
+            <StatsCard type="bestBuy" session={sessionStats} pastSession={pastSessionStats} />
             <StatsCard
-              label={t('Restock.avg-reaction-time')}
-              stat={msIntervalFormated(sessionStats.avgReactionTime, true, 2)}
-              helpText={t('Restock.based-on-x-clicks', {
-                x: intl.format(sessionStats.totalClicks),
-              })}
-            />
-            {/* <StatsCard
-              label={t('Restock.time-spent-restocking')}
-              stat={msIntervalFormated(sessionStats.durationCount, true)}
-              helpText={`${msIntervalFormated(sessionStats.mostPopularShop.durationCount)} ${t(
-                'Restock.at'
-              )} ${restockShopInfo[sessionStats.mostPopularShop.shopId].name}`}
-            /> */}
-            <StatsCard
-              label={t('Restock.most-expensive-item-bought')}
-              stat={`${intl.format(sessionStats.mostExpensiveBought?.price.value ?? 0)} NP`}
-              helpText={sessionStats.mostExpensiveBought?.name ?? t('Restock.none')}
+              type="clickedAndLost"
+              blur={userPref?.dashboard_hideMisses}
+              session={sessionStats}
+              pastSession={pastSessionStats}
             />
             <StatsCard
-              label={t('Restock.avg-refresh-time')}
-              stat={msIntervalFormated(sessionStats.avgRefreshTime, false, 1)}
-              helpText={t('Restock.based-on-x-refreshs', {
-                x: intl.format(sessionStats.totalRefreshes),
-              })}
+              type="worstClickedAndLost"
+              blur={userPref?.dashboard_hideMisses}
+              session={sessionStats}
+              pastSession={pastSessionStats}
             />
-            <StatsCard
-              label={t('Restock.total-clicked-and-lost')}
-              stat={`${intl.format(sessionStats.totalLost?.value ?? 0)} NP`}
-              helpText={`${intl.format(sessionStats.totalLost.count)} ${t('General.items')}`}
-              blur={hideMisses}
-            />
-            <StatsCard
-              label={t('Restock.most-expensive-clicked-and-lost')}
-              stat={`${intl.format(sessionStats.mostExpensiveLost?.price.value ?? 0)} NP`}
-              helpText={sessionStats.mostExpensiveLost?.name ?? t('Restock.none')}
-              blur={hideMisses}
-            />
+            <StatsCard type="favoriteBuy" session={sessionStats} pastSession={pastSessionStats} />
+            <StatsCard type="timeSpent" session={sessionStats} pastSession={pastSessionStats} />
           </SimpleGrid>
           <Flex mt={6} w="100%" gap={3} flexFlow={['column', 'column', 'row']}>
             <Flex flexFlow={'column'} textAlign={'center'} gap={3} flex={1}>
@@ -584,13 +600,13 @@ const RestockDashboard = () => {
                   <TabPanel px={0}>
                     <Flex flexFlow={'column'} gap={3}>
                       <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
-                        {hideMisses && (
+                        {userPref?.dashboard_hideMisses && (
                           <Center flexFlow="column" h="300px">
                             <Icon as={FaEyeSlash} fontSize="50px" color="gray.600" />
                             <Text fontSize={'sm'} color="gray.400"></Text>
                           </Center>
                         )}
-                        {!hideMisses &&
+                        {!userPref?.dashboard_hideMisses &&
                           sessionStats.hottestRestocks.map((item, i) => (
                             <ItemCard disablePrefetch item={item} key={i} />
                           ))}
@@ -614,12 +630,12 @@ const RestockDashboard = () => {
                   </TabPanel>
                   <TabPanel px={0}>
                     <Flex gap={3} flexFlow="column" justifyContent={'center'}>
-                      {hideMisses && (
+                      {userPref?.dashboard_hideMisses && (
                         <Center flexFlow="column" h="300px">
                           <Icon as={FaEyeSlash} fontSize="50px" color="gray.600" />
                         </Center>
                       )}
-                      {!hideMisses &&
+                      {!userPref?.dashboard_hideMisses &&
                         sessionStats.hottestLost.map((lost, i) => (
                           <RestockItem
                             disablePrefetch
@@ -629,7 +645,7 @@ const RestockDashboard = () => {
                             key={i}
                           />
                         ))}
-                      {!hideMisses && sessionStats.hottestLost.length === 0 && (
+                      {!userPref?.dashboard_hideMisses && sessionStats.hottestLost.length === 0 && (
                         <Text fontSize={'xs'} color="gray.400">
                           {t('Restock.you-didnt-lose-anything-youre-awesome')}
                         </Text>
@@ -638,12 +654,12 @@ const RestockDashboard = () => {
                   </TabPanel>
                   <TabPanel px={0}>
                     <Flex gap={3} flexFlow="column" justifyContent={'center'}>
-                      {hideMisses && (
+                      {userPref?.dashboard_hideMisses && (
                         <Center flexFlow="column" h="300px">
                           <Icon as={FaEyeSlash} fontSize="50px" color="gray.600" />
                         </Center>
                       )}
-                      {!hideMisses &&
+                      {!userPref?.dashboard_hideMisses &&
                         sessionStats.worstBaits.map((bait, i) => (
                           <RestockItem
                             disablePrefetch
@@ -653,7 +669,7 @@ const RestockDashboard = () => {
                             key={i}
                           />
                         ))}
-                      {!hideMisses && sessionStats.worstBaits.length === 0 && (
+                      {!userPref?.dashboard_hideMisses && sessionStats.worstBaits.length === 0 && (
                         <Text fontSize={'xs'} color="gray.400">
                           {t('Restock.you-didnt-fall-for-any-bait-items')}
                         </Text>
