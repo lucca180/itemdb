@@ -292,11 +292,13 @@ export const calculateStats = async (
   });
 
   stats.fastestBuy = fastestBuy;
-  const favBuy = findMostFrequent(allBought.map((x) => x.item));
-  stats.favoriteItem = {
-    item: favBuy.item,
-    count: favBuy.count,
-  };
+  if (allBought.length) {
+    const favBuy = findMostFrequent(allBought.map((x) => x.item));
+    stats.favoriteItem = {
+      item: favBuy.item,
+      count: favBuy.count,
+    };
+  }
 
   stats.hottestRestocks = Object.values(allItemsData)
     .sort((a, b) => (b.price.value ?? 0) - (a.price.value ?? 0))
