@@ -349,7 +349,7 @@ export const getItemDrops = async (
       let dropRate = (drop.dropRate / itemDropCount) * 100;
 
       if (drop.dropRate / pool.openings >= 1) {
-        if (drop.item_iid === 17434) openableData.isGBC = true;
+        if ([65354, 17434, 860].includes(drop.item_iid)) openableData.isGBC = true;
         dropRate = 100;
       }
 

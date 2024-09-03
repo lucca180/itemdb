@@ -98,7 +98,7 @@ export const contributeCheck = async (uid?: string, goalMulplier = 1) => {
   if (tradeQueue < 50) needTrades = 0;
   if (feedbacks < 50) needVotes = 0;
 
-  if (!needTrades || !needVotes) return { success: true, needTrades: 0, needVotes: 0 };
+  if (!needTrades && !needVotes) return { success: true, needTrades: 0, needVotes: 0 };
 
   return { success: false, needTrades, needVotes };
 };

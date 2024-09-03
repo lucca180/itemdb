@@ -291,7 +291,7 @@ const SearchFilters = (props: Props) => {
               checklist={filters.type}
             >
               <Text fontSize={'sm'}>
-                <Badge colorScheme="green">Easy to Sale</Badge>{' '}
+                <Badge colorScheme="green">Easy to Sell</Badge>{' '}
                 <Badge>{stats?.saleStatus?.ets ?? 0}</Badge>
               </Text>
             </NegCheckbox>
@@ -311,7 +311,7 @@ const SearchFilters = (props: Props) => {
               checklist={filters.type}
             >
               <Text fontSize={'sm'}>
-                <Badge colorScheme="red">Hard To Sale</Badge>{' '}
+                <Badge colorScheme="red">Hard To Sell</Badge>{' '}
                 <Badge>{stats?.saleStatus?.hts ?? 0}</Badge>
               </Text>
             </NegCheckbox>
