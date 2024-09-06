@@ -633,6 +633,8 @@ model PriceProcess2 {
   processed Boolean @default(false)
 
   @@unique([type, neo_id])
+  
+  @@index([processed, addedAt, item_iid])
   @@index([addedAt, processed, item_iid])
   @@index([item_iid, processed, addedAt])
 }
