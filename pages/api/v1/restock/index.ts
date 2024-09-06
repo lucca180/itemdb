@@ -188,8 +188,12 @@ export const calculateStats = async (
     }
 
     allItems.push(...Object.values(session.items));
-    Object.values(session.items).map((x) => allItemsID.add(x.item_id.toString()));
-    Object.values(session.clicks).map((x) => allItemsID.add(x.item_id.toString()));
+    Object.values(session.items).map((x) =>
+      x.item_id ? allItemsID.add(x.item_id.toString()) : null
+    );
+    Object.values(session.clicks).map((x) =>
+      x.item_id ? allItemsID.add(x.item_id.toString()) : null
+    );
 
     const date = formatDate(session.startDate);
     refreshesPerDay[date] = refreshesPerDay[date]
