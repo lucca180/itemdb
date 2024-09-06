@@ -379,6 +379,7 @@ type RestockSession = {
     [restock_id: number]: {
       item_id: number;
       timestamp: number;
+      notTrust?: boolean;
     };
   };
   clicks: {

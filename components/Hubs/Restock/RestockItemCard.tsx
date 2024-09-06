@@ -99,7 +99,7 @@ const RestockItem = (props: Props) => {
             <Text fontSize={'xs'}>
               {t.rich('Restock.bought-in-x-at-y', {
                 b: (children) => <b>{children}</b>,
-                x: msIntervalFormated(boughtTime, true, 2),
+                x: restockItem.notTrust ? '???' : msIntervalFormated(boughtTime, true, 2),
                 y: format.dateTime(clickData.buy_timestamp ?? 0, {
                   year: 'numeric',
                   month: 'long',
@@ -115,7 +115,7 @@ const RestockItem = (props: Props) => {
             <Text fontSize={'xs'}>
               {t.rich('Restock.lost-haggling', {
                 b: (children) => <b>{children}</b>,
-                x: msIntervalFormated(lostHaggle, true, 2),
+                x: restockItem.notTrust ? '???' : msIntervalFormated(lostHaggle, true, 2),
                 y: format.dateTime(clickData.haggle_timestamp ?? 0, {
                   year: 'numeric',
                   month: 'long',
@@ -131,7 +131,7 @@ const RestockItem = (props: Props) => {
             <Text fontSize={'xs'}>
               {t.rich('Restock.lost-no-haggle', {
                 b: (children) => <b>{children}</b>,
-                x: msIntervalFormated(lostNoHaggle, true, 2),
+                x: restockItem.notTrust ? '???' : msIntervalFormated(lostNoHaggle, true, 2),
                 y: format.dateTime(clickData.soldOut_timestamp ?? 0, {
                   year: 'numeric',
                   month: 'long',

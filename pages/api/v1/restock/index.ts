@@ -141,6 +141,7 @@ export const calculateStats = async (
   let refreshTotalTime: number[] = [];
   let reactionTotalTime: number[] = [];
 
+  const allItemsID = new Set<string>();
   rawSessions.map((rawSession) => {
     if (!rawSession.sessionText) return;
     let session = JSON.parse(rawSession.sessionText as string) as RestockSession | string;
@@ -187,6 +188,9 @@ export const calculateStats = async (
     }
 
     allItems.push(...Object.values(session.items));
+    Object.values(session.items).map((x) => allItemsID.add(x.item_id.toString()));
+    Object.values(session.clicks).map((x) => allItemsID.add(x.item_id.toString()));
+
     const date = formatDate(session.startDate);
     refreshesPerDay[date] = refreshesPerDay[date]
       ? refreshesPerDay[date] + session.refreshes.length
@@ -211,8 +215,6 @@ export const calculateStats = async (
   reactionTotalTime = removeOutliers(reactionTotalTime, 1);
   stats.avgReactionTime = reactionTotalTime.reduce((a, b) => a + b, 0) / reactionTotalTime.length;
 
-  const allItemsID = new Set(allItems.map((x) => x.item_id.toString()));
-
   const allItemsData = await getManyItems({
     item_id: [...allItemsID],
   });
@@ -220,8 +222,19 @@ export const calculateStats = async (
   sessions.map((session) => {
     session.clicks.map((click) => {
       const item = allItemsData[click.item_id];
-      const restockItem = session.items[click.restock_id];
-      if (!item || !restockItem) return;
+      let restockItem = session.items[click.restock_id];
+      if (!item) return;
+
+      if (!restockItem) {
+        session.items[click.restock_id] = {
+          item_id: click.item_id,
+          timestamp: (click.haggle_timestamp || click.soldOut_timestamp || 0) - 1,
+          notTrust: true,
+        };
+
+        restockItem = session.items[click.restock_id];
+        if (restockItem.timestamp < 0) return;
+      }
 
       if (!item.price.value) stats.unknownPrices++;
 
@@ -253,19 +266,21 @@ export const calculateStats = async (
           new Date(restockItem.timestamp)
         );
 
-        if (!fastestBuy)
-          fastestBuy = {
-            timediff: time,
-            timestamp: click.buy_timestamp,
-            item,
-          };
-        else {
-          if (fastestBuy.timediff > time) {
+        if (!restockItem.notTrust) {
+          if (!fastestBuy)
             fastestBuy = {
               timediff: time,
               timestamp: click.buy_timestamp,
               item,
             };
+          else {
+            if (fastestBuy.timediff > time) {
+              fastestBuy = {
+                timediff: time,
+                timestamp: click.buy_timestamp,
+                item,
+              };
+            }
           }
         }
       } else {
