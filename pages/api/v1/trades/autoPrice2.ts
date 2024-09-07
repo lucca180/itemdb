@@ -177,14 +177,14 @@ const checkTradeEstPrice = async (trade: Trades & { items: TradeItems[] }) => {
 
     if (
       itemData.price.addedAt &&
-      differenceInCalendarDays(new Date(), new Date(itemData.price.addedAt)) > 15
+      differenceInCalendarDays(new Date(), new Date(itemData.price.addedAt)) > 30
     )
       return false;
 
     priceSum += itemData.price.value;
   }
 
-  if (priceSum >= 100000) return false;
+  if (priceSum >= Math.min(100000, trade.items.length * 50000)) return false;
 
   await processTradePrice(trade as any);
 
