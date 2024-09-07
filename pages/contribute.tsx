@@ -52,6 +52,7 @@ const ContributePage = () => {
           ],
         },
       }}
+      mainColor="#4974f5c7"
     >
       <HeaderCard
         image={{

@@ -108,6 +108,7 @@ const RestockHistory = (props: RestockHistoryPageProps) => {
           ],
         },
       }}
+      mainColor={`${shopInfo.color}a6`}
     >
       <RestockHeader shop={shopInfo} isHistory>
         <Text as="h2" textAlign={'center'}>

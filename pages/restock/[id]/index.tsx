@@ -159,6 +159,7 @@ const RestockShop = (props: RestockShopPageProps) => {
           ],
         },
       }}
+      mainColor={`${shopInfo.color}a6`}
     >
       <RestockHeader shop={shopInfo}>
         <Text

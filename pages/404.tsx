@@ -25,13 +25,13 @@ const Error404Page = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
-    <Layout SEO={{ title: t('Error.page-not-found'), noindex: true }}>
+    <Layout SEO={{ title: t('Error.page-not-found'), noindex: true }} mainColor="#ff6464c7">
       <Box
         position="absolute"
         h="650px"
         left="0"
         width="100%"
-        bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(255,100,100,.7) 70%)`}
+        bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(255, 100, 100, 0.7) 70%)`}
         zIndex={-1}
       />
       <FeedbackModal isOpen={isOpen} onClose={onClose} />

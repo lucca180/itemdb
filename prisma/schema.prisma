@@ -408,6 +408,8 @@ model UserList {
   tag          ListTags? @relation(fields: [tagId], references: [internal_id], onDelete: SetNull, onUpdate: Cascade)
   official_tag String?
 
+  slug String? @unique
+
   items ListItems[]
 }
 
@@ -537,7 +539,6 @@ model WearableData {
   isCanonical      Boolean @default(false)
 
   @@unique([item_iid, zone_label, species_name])
-  
   @@index([zone_label, item_iid, isCanonical])
   @@index([item_iid, isCanonical])
   @@index([zone_plain_label, species_name])
@@ -633,7 +634,6 @@ model PriceProcess2 {
   processed Boolean @default(false)
 
   @@unique([type, neo_id])
-  
   @@index([processed, addedAt, item_iid])
   @@index([addedAt, processed, item_iid])
   @@index([item_iid, processed, addedAt])

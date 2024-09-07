@@ -54,6 +54,7 @@ import { WearableData } from '@prisma/client';
 import { getWearableData } from '../api/v1/items/[id_name]/wearable';
 import { getItemNCMall } from '../api/v1/items/[id_name]/ncmall';
 import NcMallCard from '../../components/Items/NCMallCard';
+import Color from 'color';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -109,6 +110,7 @@ const ItemPage = (props: ItemPageProps) => {
         description: generateMetaDescription(item),
         openGraph: { images: [{ url: item.image, width: 80, height: 80, alt: item.name }] },
       }}
+      mainColor={Color(item.color.hex).alpha(0.4).hexa()}
     >
       {item && isEditModalOpen && (
         <EditItemModal

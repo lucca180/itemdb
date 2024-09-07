@@ -41,6 +41,7 @@ import { LanguageToastProps } from './Modal/LanguageToast';
 import axios from 'axios';
 import { setCookie } from 'cookies-next';
 import dynamic from 'next/dynamic';
+import { DropdownButton, DropdownOption } from './Menus/HeaderDropdown';
 
 const LanguageToast = dynamic<LanguageToastProps>(() => import('./Modal/LanguageToast'));
 const LoginModal = dynamic<LoginModalProps>(() => import('./Modal/LoginModal'));
@@ -51,10 +52,11 @@ type Props = {
   children?: ReactNode;
   loading?: boolean;
   SEO?: NextSeoProps;
+  mainColor?: string;
 };
 
 const Layout = (props: Props) => {
-  const t = useTranslations('Layout');
+  const t = useTranslations();
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { user, signout, authLoading } = useAuth();
@@ -123,48 +125,7 @@ const Layout = (props: Props) => {
             })}
           </ChakraLink>
         </Flex> */}
-        <Flex
-          as="nav"
-          w="full"
-          maxW="8xl"
-          marginX="auto"
-          gap={{ base: 3, md: 4 }}
-          px={4}
-          // pt={4}
-          py={1}
-          // h="26px"
-          alignItems="center"
-          color="whiteAlpha.700"
-          fontSize={'xs'}
-          overflow={'auto'}
-          whiteSpace={'nowrap'}
-        >
-          <Box w="100%" bg="blackAlpha.400" position={'absolute'} h="26px" left="0" zIndex={-1} />
-          <ChakraLink as={Link} href="/articles" prefetch={false}>
-            {t('articles')}
-          </ChakraLink>
-          <ChakraLink as={Link} href="/lists/import" prefetch={false}>
-            {t('checklists')}
-          </ChakraLink>
-          <ChakraLink as={Link} href="/restock/dashboard" prefetch={false}>
-            {t('dashboard')}
-          </ChakraLink>{' '}
-          <Text display="inline-flex" alignItems={'center'} gap={1}>
-            {/* <Badge colorScheme="yellow" fontSize={'9px'} verticalAlign={'middle'}>
-              {t('new')}
-            </Badge> */}
-            <ChakraLink as={Link} href="/tools/pet-colors" prefetch={false}>
-              {t('pet-color-tool')}
-            </ChakraLink>{' '}
-          </Text>
-          <ChakraLink as={Link} href="/restock" prefetch={false}>
-            {t('restock-hub')}
-          </ChakraLink>{' '}
-          {/* <ChakraLink as={Link} href="/articles/userscripts" prefetch={false}>
-            {t('sdb-pricer')}
-          </ChakraLink> */}
-        </Flex>
-        <Flex as="header" w="full" maxW="8xl" marginX="auto" gap={{ base: 2, md: 4 }} px={4} py={4}>
+        <Flex as="header" w="full" maxW="8xl" marginX="auto" gap={{ base: 2, md: 4 }} px={4} py={5}>
           <Flex as={Link} href="/" flex={'0 0 auto'}>
             <Image
               as={NextImage}
@@ -225,7 +186,7 @@ const Layout = (props: Props) => {
               >
                 <Icon as={BsBoxArrowInRight} boxSize="18px" mr={2} verticalAlign="text-top" />
                 <Box as="span" display={{ base: 'none', md: 'inline' }}>
-                  {t('login')}
+                  {t('Layout.login')}
                 </Box>
               </Button>
             )}
@@ -238,7 +199,9 @@ const Layout = (props: Props) => {
                     px={{ base: 2, md: 4 }}
                     textAlign="center"
                   >
-                    {isLargerThanMD && <Box as="span">{t('hi-user', { name: user.username })}</Box>}
+                    {isLargerThanMD && (
+                      <Box as="span">{t('Layout.hi-user', { name: user.username })}</Box>
+                    )}
                     <Icon
                       as={BsFillPersonFill}
                       display={{ base: 'inherit', md: 'none' }}
@@ -248,14 +211,16 @@ const Layout = (props: Props) => {
                   <MenuList>
                     <MenuGroup
                       title={
-                        !isLargerThanMD ? `${t('hello-user', { name: user.username })}` : undefined
+                        !isLargerThanMD
+                          ? `${t('Layout.hello-user', { name: user.username })}`
+                          : undefined
                       }
                     >
                       <MenuItem as={Link} href={`/lists/${user.username}`}>
-                        {t('my-lists')}
+                        {t('Layout.my-lists')}
                       </MenuItem>
                       <MenuItem as={Link} href={`/contribute`}>
-                        {t('how-to-contribute')}
+                        {t('Layout.how-to-contribute')}
                       </MenuItem>
                     </MenuGroup>
                     <MenuDivider />
@@ -266,16 +231,59 @@ const Layout = (props: Props) => {
             )}
           </Box>
         </Flex>
-
+        <Flex
+          bg={props.mainColor}
+          justifyContent={'center'}
+          alignItems={'center'}
+          py={1}
+          gap={{ base: 1, md: 3 }}
+        >
+          <DropdownButton label={t('Layout.home')} href="/" />
+          <DropdownButton bg={props.mainColor} label={t('Layout.articles')} href="/articles">
+            <DropdownOption label="Owls" href="/articles/owls" />
+            <DropdownOption label={t('Layout.userscripts')} href="/articles/userscripts" />
+            <DropdownOption label={t('Layout.patch-notes')} href="/articles" />
+            <DropdownOption label={t('Layout.how-to-contribute')} href="/contribute" />
+            <DropdownOption
+              label={t('Layout.sort-galleries-by-color')}
+              href="/articles/sort-gallery"
+            />
+            <DropdownOption
+              label={t('Layout.advanced-search-queries')}
+              href="/articles/advanced-search-queries"
+            />
+          </DropdownButton>
+          <DropdownButton bg={props.mainColor} label={t('Layout.restock')} href="/restock">
+            <DropdownOption label={t('Layout.dashboard')} href="/restock/dashboard" />
+            <DropdownOption label={t('Restock.restock-history')} href="/restock/1/history" />
+          </DropdownButton>
+          <DropdownButton bg={props.mainColor} label={t('Lists.Lists')} href="/tools">
+            <DropdownOption label={t('Layout.checklists')} href="/lists/import" />
+            <DropdownOption label={t('Layout.import-tool')} href="/lists/import" />
+            <DropdownOption label={t('Layout.official-lists')} href="/lists/official" />
+            <DropdownOption
+              label={t('General.dynamic-lists')}
+              href="/articles/checklists-and-dynamic-lists"
+            />
+          </DropdownButton>
+          <DropdownButton bg={props.mainColor} label={t('Layout.tools')} href="/tools">
+            <DropdownOption label={t('Layout.sdb-pricer')} href="/articles/userscripts" />
+            <DropdownOption label={t('Layout.userscripts')} href="/articles/userscripts" />
+            <DropdownOption label={t('Layout.pet-color-tool')} href="/tools/pet-colors" />
+            <DropdownOption label="Faerie Festival Hub" href="/hub/faeriefestival2023" />
+            <DropdownOption label={t('Layout.restock-dashboard')} href="/restock/dashboard" />
+          </DropdownButton>
+        </Flex>
         <Box as="main" flex="1" w="full" maxW="8xl" marginX="auto" px={4} pb={6} h="100%">
           {!props.loading && props.children}
           {props.loading && (
             <Center h="80vh" flexFlow="column" gap={3}>
               <Spinner size="lg" />
-              <Text>{t('loading')}</Text>
+              <Text>{t('Layout.loading')}</Text>
             </Center>
           )}
         </Box>
+
         <Box
           as="footer"
           // textAlign={'center'}
@@ -304,7 +312,7 @@ const Layout = (props: Props) => {
                 <NextImage src={mt_logo} width={202} height={50} alt="Magnetismo Times logo" />
               </ChakraLink>
               <Text fontSize="xs" color="gray.500" position={'relative'}>
-                {t('made-in')}{' '}
+                {t('Layout.made-in')}{' '}
                 <NextImage
                   src={Brazil}
                   alt="Brazil Flag"
@@ -333,33 +341,33 @@ const Layout = (props: Props) => {
             <Flex flexFlow={['row']} gap={[3, 12]} justifyContent="center">
               <Flex flex="1" flexFlow={'column'} fontSize="xs" gap={2} color="gray.300">
                 <Text fontSize="xs" mb={2} textTransform="uppercase" color="gray.500">
-                  <b>{t('resources')}</b>
+                  <b>{t('Layout.resources')}</b>
                 </Text>
                 <ChakraLink href="/articles/owls">Owls</ChakraLink>
-                <ChakraLink href="/lists/official">{t('official-lists')}</ChakraLink>
-                <ChakraLink href="/articles/userscripts">{t('userscripts')}</ChakraLink>
-                <ChakraLink href="/public-data">{t('public-data')}</ChakraLink>
+                <ChakraLink href="/lists/official">{t('Layout.official-lists')}</ChakraLink>
+                <ChakraLink href="/articles/userscripts">{t('Layout.userscripts')}</ChakraLink>
+                <ChakraLink href="/public-data">{t('Layout.public-data')}</ChakraLink>
               </Flex>
               <Flex flex="1" flexFlow={'column'} fontSize="xs" gap={2} color="gray.300">
                 <Text fontSize="xs" mb={2} textTransform="uppercase" color="gray.500">
-                  <b>{t('contribute')}</b>
+                  <b>{t('Layout.contribute')}</b>
                 </Text>
                 <ChakraLink href="/contribute">Item Data Extractor</ChakraLink>
-                <ChakraLink href="/feedback">{t('feedback')}</ChakraLink>
-                <ChakraLink href="/feedback/trades">{t('trade-pricing')}</ChakraLink>
-                <ChakraLink href="/contribute">+ {t('more')}</ChakraLink>
+                <ChakraLink href="/feedback">{t('Layout.feedback')}</ChakraLink>
+                <ChakraLink href="/feedback/trades">{t('Layout.trade-pricing')}</ChakraLink>
+                <ChakraLink href="/contribute">+ {t('Layout.more')}</ChakraLink>
               </Flex>
               <Flex flex="1" flexFlow={'column'} fontSize="xs" gap={2} color="gray.300">
                 <Text fontSize="xs" mb={2} textTransform="uppercase" color="gray.500">
                   <b>itemdb</b>
                 </Text>
                 <ChakraLink href="https://itemdb.stoplight.io/docs/itemdb-api" isExternal>
-                  {t('developers')}
+                  {t('Layout.developers')}
                 </ChakraLink>
-                <ChakraLink href="/privacy">{t('privacy-policy')}</ChakraLink>
-                <ChakraLink href="/terms">{t('terms-of-use')}</ChakraLink>
+                <ChakraLink href="/privacy">{t('Layout.privacy-policy')}</ChakraLink>
+                <ChakraLink href="/terms">{t('Layout.terms-of-use')}</ChakraLink>
                 <ChakraLink href="https://github.com/lucca180/itemdb/" isExternal>
-                  {t('source-code')}
+                  {t('Layout.source-code')}
                 </ChakraLink>
               </Flex>
             </Flex>

@@ -78,6 +78,7 @@ const HomePage = (props: Props) => {
 
   return (
     <Layout
+      mainColor={color.alpha(0.9).hexa()}
       SEO={{
         description: t('seo-description'),
       }}

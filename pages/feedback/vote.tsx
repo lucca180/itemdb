@@ -164,6 +164,7 @@ const FeedbackVotingPage = () => {
         title: t('Feedback.voting-feedback'),
         description: t('Feedback.feedback-system-description'),
       }}
+      mainColor="#4A5568c7"
     >
       {isOpen && currentFeedback && (
         <ReportFeedbackModal feedback={currentFeedback} isOpen={isOpen} onClose={onClose} />

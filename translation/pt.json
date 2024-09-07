@@ -73,7 +73,15 @@
     "mt15": "<b>O MT PRECISA DE VOCÊ</b> - Clique aqui e saiba mais",
     "public-data": "Public Data",
     "pet-color-tool": "Pet Color Tool",
-    "ctxMenuTip": "Dica: segure <Kbd>Shift</Kbd> para usar o menu padrão"
+    "ctxMenuTip": "Dica: segure <Kbd>Shift</Kbd> para usar o menu padrão",
+    "advanced-search-queries": "Buscas e Filtros Avançados",
+    "home": "Início",
+    "import-tool": "Importação de Lista",
+    "patch-notes": "Notas de Atualização",
+    "restock": "Restock",
+    "restock-dashboard": "Restock Dashboard",
+    "sort-galleries-by-color": "Ordenar Galerias por Cor",
+    "tools": "Ferramentas"
   },
   "ItemPage": {
     "item-info": "Item Info",

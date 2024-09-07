@@ -167,6 +167,7 @@ const PetColorToolPage = () => {
           ],
         },
       }}
+      mainColor="#745fb3c7"
     >
       <Box
         position="absolute"

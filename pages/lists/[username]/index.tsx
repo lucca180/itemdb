@@ -288,6 +288,7 @@ const UserListsPage = (props: Props) => {
         nofollow: true,
         noindex: true,
       }}
+      mainColor={`${color.hex()}b8`}
     >
       {isOwner && (
         <>

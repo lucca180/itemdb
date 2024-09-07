@@ -179,7 +179,7 @@ const LoginPage = () => {
   };
 
   return (
-    <Layout>
+    <Layout mainColor="#4A5568c7">
       <LoginModal isOpen={isOpen} onClose={closeLogin} />
       <Center h="80vh" flexFlow="column">
         {isLoading && !error && <Spinner size="lg" />}

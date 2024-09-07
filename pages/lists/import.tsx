@@ -60,6 +60,7 @@ const ImportPage = (props: Props) => {
           ],
         },
       }}
+      mainColor="#65855Bc7"
     >
       <HeaderCard
         image={{

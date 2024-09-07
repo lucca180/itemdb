@@ -212,7 +212,7 @@ const CreateItem = () => {
     );
 
   return (
-    <Layout SEO={{ title: 'Create New Item', nofollow: true, noindex: true }}>
+    <Layout SEO={{ title: 'Create New Item', nofollow: true, noindex: true }} mainColor="#7AB92Ac7">
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/nt/ntimages/441_xweetok_agent.gif',

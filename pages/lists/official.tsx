@@ -121,6 +121,7 @@ const OfficialListsPage = (props: Props) => {
           ],
         },
       }}
+      mainColor="#4962ecc7"
     >
       <ApplyListModal isOpen={isOpen} onClose={onClose} />
       <HeaderCard

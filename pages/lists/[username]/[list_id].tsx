@@ -546,6 +546,7 @@ const ListPage = (props: Props) => {
             ],
           },
         }}
+        mainColor={`${color.hex()}c7`}
       >
         <ListHeader list={list} isOwner={false} color={color} items={{}} itemInfo={{}} />
         <Center mt={5} gap={6}>
@@ -576,6 +577,7 @@ const ListPage = (props: Props) => {
           ],
         },
       }}
+      mainColor={`${color.hex()}b8`}
     >
       {isOpen && (
         <SearchFilterModal

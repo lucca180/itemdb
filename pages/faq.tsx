@@ -17,7 +17,7 @@ import { useTranslations } from 'next-intl';
 const WhyUsPage = () => {
   const t = useTranslations();
   return (
-    <Layout SEO={{ title: t('FAQ.frequent-asked-questions') }}>
+    <Layout SEO={{ title: t('FAQ.frequent-asked-questions') }} mainColor="#4bbde0c7">
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/desert/usurper_clue.gif',

@@ -308,6 +308,7 @@ const SearchPage = () => {
         noindex: true,
         nofollow: true,
       }}
+      mainColor="#4A5568c7"
     >
       <Box
         position="absolute"

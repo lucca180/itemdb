@@ -10,6 +10,7 @@ const TermsPage = () => {
         title: 'Terms of Use',
         description: 'This page outlines the terms of use for itemdb, its features, and API.',
       }}
+      mainColor="#a5aa9fc7"
     >
       <HeaderCard
         image={{

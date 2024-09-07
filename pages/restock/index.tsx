@@ -71,6 +71,7 @@ const RestockHub = () => {
         description: t('Restock.restock-description'),
         themeColor: '#A5DAE9',
       }}
+      mainColor="rgba(165, 218, 233, 0.4)"
     >
       <Box
         position="absolute"

@@ -43,6 +43,7 @@ const ArticlePage = (props: Props) => {
           images: [{ url: post.thumbnail ?? '', width: 150, height: 150, alt: post.title }],
         },
       }}
+      mainColor={`${post.palette?.lightvibrant.hex ?? '#05B7E8'}6b`}
     >
       <HeaderCard
         image={

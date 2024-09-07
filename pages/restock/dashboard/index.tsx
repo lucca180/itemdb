@@ -242,6 +242,7 @@ const RestockDashboard = () => {
         description: t('Restock.restock-dashboard-desc'),
         themeColor: '#599379',
       }}
+      mainColor="#599379c7"
     >
       {openImport && (
         <ImportRestockModal isOpen={openImport} onClose={handleClose} refresh={refresh} />

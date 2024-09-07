@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 const Error500Page = () => {
   const t = useTranslations();
   return (
-    <Layout SEO={{ title: t('Error.internal-server-error') }}>
+    <Layout SEO={{ title: t('Error.internal-server-error') }} mainColor="#4A5568c7">
       <Center
         height="75vh"
         flexFlow="column"

@@ -11,6 +11,7 @@ const PrivacyPolicyPage = () => {
         description:
           'itemdb collects some personal data during its use. Here we will detail more about how we collect, process, and use your data.',
       }}
+      mainColor="#7AB92Ac7"
     >
       <HeaderCard
         image={{

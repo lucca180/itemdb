@@ -27,7 +27,10 @@ const FeedbackPage = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
-    <Layout SEO={{ title: 'Feedback', description: t('Feedback.feedback-system-description') }}>
+    <Layout
+      SEO={{ title: 'Feedback', description: t('Feedback.feedback-system-description') }}
+      mainColor="#4A5568c7"
+    >
       <FeedbackModal isOpen={isOpen} onClose={onClose} />
       <HeaderCard
         image={{

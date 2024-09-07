@@ -30,13 +30,13 @@ const RawDataPage = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
-    <Layout SEO={{ title: 'itemdb Public Data', noindex: true }}>
+    <Layout SEO={{ title: 'itemdb Public Data', noindex: true }} mainColor="#6c8ab3c7">
       <Box
         position="absolute"
         h="650px"
         left="0"
         width="100%"
-        bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(108, 138, 179, 0.7) 70%)`}
+        bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,hsla(215, 31.80%, 56.30%, 0.70) 70%)`}
         zIndex={-1}
       />
       <FeedbackModal isOpen={isOpen} onClose={onClose} />

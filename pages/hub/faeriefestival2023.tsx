@@ -1,5 +1,15 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { Box, Center, Flex, Heading, Image, Link } from '@chakra-ui/react';
+import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  Box,
+  Center,
+  Flex,
+  Heading,
+  Image,
+  Link,
+} from '@chakra-ui/react';
 import NextImage from 'next/image';
 import Layout from '../../components/Layout';
 
@@ -25,6 +35,7 @@ const FaeriesFest2023 = () => {
           ],
         },
       }}
+      mainColor="#9b65c0c7"
     >
       <Box
         position="absolute"
@@ -40,7 +51,7 @@ const FaeriesFest2023 = () => {
           href="https://www.neopets.com/faeriefestival/index.phtml"
           isExternal
           position={'absolute'}
-          top={['-50px', '-60px', '-70px']}
+          top={['-40px', '-50px', '-60px']}
         >
           <Image
             as={NextImage}
@@ -66,6 +77,13 @@ const FaeriesFest2023 = () => {
         </Link>
       </Center>
       <Center flexFlow="column" gap={5}>
+        <Alert maxW="400px" fontSize={'sm'} status={'warning'}>
+          <AlertIcon />
+          <AlertDescription>
+            This guide is from the <b>Faerie Festival 2023</b> event. We don&apos;t know if the
+            point values will be the same for the next event.
+          </AlertDescription>
+        </Alert>
         <Center flexFlow="column" gap={1}>
           <Heading color="whiteAlpha.900">♻️Recycling</Heading>
           <Heading as="h3" size="sm" color="whiteAlpha.700">
@@ -107,7 +125,7 @@ const FaeriesFest2023 = () => {
           />
           <SearchCard
             title="1 point"
-            description="All items that give you 2 point to spend at the Prize Shop"
+            description="All items that give you 1 point to spend at the Prize Shop"
             link="/search?s=&rarity[]=1&rarity[]=79"
             color="#065DD2"
             coverURL="https://images.neopets.com/items/bluetradingcardback.gif"

@@ -31,6 +31,7 @@ const ArticlesPage = (props: Props) => {
           ],
         },
       }}
+      mainColor="#E4DA0A6b"
     >
       <HeaderCard
         image={{

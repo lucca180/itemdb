@@ -144,6 +144,7 @@ const FeedbackSuggest = () => {
         title: t('Feedback.trade-pricing-feedback'),
         description: t('Feedback.feedback-system-description'),
       }}
+      mainColor="#4A5568c7"
     >
       <HeaderCard
         image={{
