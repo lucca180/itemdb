@@ -319,7 +319,7 @@ const Layout = (props: Props) => {
                   width={18}
                   style={{ display: 'inline', verticalAlign: 'middle', margin: '0 0px' }}
                 />{' '}
-                {t('by')}{' '}
+                {t('Layout.by')}{' '}
                 <ChakraLink href="https://magnetismotimes.com/" isExternal>
                   Magnetismo Times
                 </ChakraLink>
