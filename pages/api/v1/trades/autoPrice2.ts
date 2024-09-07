@@ -184,7 +184,7 @@ const checkTradeEstPrice = async (trade: Trades & { items: TradeItems[] }) => {
     priceSum += itemData.price.value;
   }
 
-  if (priceSum >= Math.min(100000, trade.items.length * 50000)) return false;
+  if (priceSum >= Math.max(100000, trade.items.length * 50000)) return false;
 
   await processTradePrice(trade as any);
 
