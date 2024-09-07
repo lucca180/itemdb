@@ -408,7 +408,7 @@ model UserList {
   tag          ListTags? @relation(fields: [tagId], references: [internal_id], onDelete: SetNull, onUpdate: Cascade)
   official_tag String?
 
-  slug String? @unique
+  // slug String? @unique
 
   items ListItems[]
 }
