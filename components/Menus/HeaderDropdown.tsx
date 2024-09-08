@@ -8,7 +8,7 @@ import {
   useBoolean,
 } from '@chakra-ui/react';
 import React from 'react';
-
+import NextLink from 'next/link';
 type Props = {
   // onSubmit: (e: any, search: string, params: string) => void;
   label: string;
@@ -25,7 +25,6 @@ export const DropdownButton = (props: Props) => {
     <Popover
       isOpen={!children ? false : undefined}
       placement="bottom"
-      isLazy
       trigger="hover"
       onOpen={setIsOpen.on}
       onClose={setIsOpen.off}
@@ -34,7 +33,8 @@ export const DropdownButton = (props: Props) => {
         <Button
           size={{ base: 'xs', sm: 'sm' }}
           variant={isOpen ? undefined : 'ghost'}
-          as="a"
+          as={NextLink}
+          prefetch={false}
           href={href}
         >
           {label}
@@ -66,7 +66,8 @@ export const DropdownOption = (props: Props) => {
       variant="ghost"
       fontWeight={'normal'}
       justifyContent={'flex-start'}
-      as="a"
+      as={NextLink}
+      prefetch={false}
       href={href}
       py={4}
       px={3}
