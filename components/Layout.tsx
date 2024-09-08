@@ -102,30 +102,15 @@ const Layout = (props: Props) => {
       {isOpen && <LoginModal isOpen={isOpen} onClose={onClose} />}
       <LanguageToast saveLang={saveLang} />
       <Flex flexFlow="column" minH="100vh">
-        {/* <Flex
+        <Flex
+          as="header"
           w="full"
           maxW="8xl"
           marginX="auto"
-          gap={1}
-          px={4}
-          // pt={4}
-          py={1}
-          // h="26px"
-          alignItems="center"
-          color="blackAlpha.800"
-          fontSize={'xs'}
-          overflow={'auto'}
-          whiteSpace={'nowrap'}
+          gap={{ base: 2, md: 4 }}
+          px={{ base: 2, md: 4 }}
+          py={5}
         >
-          <Box w="100%" bg="green.500" position={'absolute'} h="26px" left="0" zIndex={-1} />
-          <Text fontSize={'sm'}>⚠️</Text>
-          <ChakraLink href="https://magnetismotimes.com/mt15/" isExternal>
-            {t.rich('mt15', {
-              b: (chunks) => <b>{chunks}</b>,
-            })}
-          </ChakraLink>
-        </Flex> */}
-        <Flex as="header" w="full" maxW="8xl" marginX="auto" gap={{ base: 2, md: 4 }} px={4} py={5}>
           <Flex as={Link} href="/" flex={'0 0 auto'}>
             <Image
               as={NextImage}
@@ -257,7 +242,7 @@ const Layout = (props: Props) => {
             <DropdownOption label={t('Layout.dashboard')} href="/restock/dashboard" />
             <DropdownOption label={t('Restock.restock-history')} href="/restock/1/history" />
           </DropdownButton>
-          <DropdownButton bg={props.mainColor} label={t('Lists.Lists')} href="/tools">
+          <DropdownButton bg={props.mainColor} label={t('Lists.Lists')} href="/lists/official">
             <DropdownOption label={t('Layout.checklists')} href="/lists/import" />
             <DropdownOption label={t('Layout.import-tool')} href="/lists/import" />
             <DropdownOption label={t('Layout.official-lists')} href="/lists/official" />
@@ -266,7 +251,7 @@ const Layout = (props: Props) => {
               href="/articles/checklists-and-dynamic-lists"
             />
           </DropdownButton>
-          <DropdownButton bg={props.mainColor} label={t('Layout.tools')} href="/tools">
+          <DropdownButton bg={props.mainColor} label={t('Layout.tools')} href="/tools/pet-colors">
             <DropdownOption label={t('Layout.sdb-pricer')} href="/articles/userscripts" />
             <DropdownOption label={t('Layout.userscripts')} href="/articles/userscripts" />
             <DropdownOption label={t('Layout.pet-color-tool')} href="/tools/pet-colors" />

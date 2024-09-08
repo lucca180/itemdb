@@ -134,7 +134,7 @@ const ItemPage = (props: ItemPageProps) => {
           bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${color[0]},${color[1]}, ${color[2]},.5) 80%)`}
           zIndex={-1}
         />
-        <Flex gap={{ base: 4, md: 8 }} pt={6} alignItems="center">
+        <Flex gap={{ base: 4, md: 8 }} pt={5} alignItems="center">
           <Flex
             position="relative"
             p={2}
