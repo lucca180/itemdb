@@ -278,6 +278,7 @@ const UserListsPage = (props: Props) => {
           noindex: true,
         }}
         loading
+        mainColor={`${color.hex()}b8`}
       />
     );
 
