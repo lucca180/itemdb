@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../utils/prisma';
 import requestIp from 'request-ip';
 import sgMail from '@sendgrid/mail';
-import { FEEDBACK_VOTE_TARGET } from './vote';
+import { FEEDBACK_VOTE_TARGET, MAX_VOTE_MULTIPLIER } from './vote';
 import { TradeData } from '../../../types';
 import { processTradePrice } from '../v1/trades';
 
@@ -43,11 +43,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     if (user) {
       if (user.role === 'ADMIN') voteMultiplier = FEEDBACK_VOTE_TARGET * 2;
-      else
-        voteMultiplier = Math.max(
-          1,
-          Math.min(Math.round(user.xp / 1000), Math.floor(FEEDBACK_VOTE_TARGET * 0.7))
-        );
+      else voteMultiplier = Math.max(1, Math.min(Math.floor(user.xp / 1000), MAX_VOTE_MULTIPLIER));
     }
   }
 
@@ -56,7 +52,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       parsed.trade as TradeData,
       parseInt(subject_id),
       user_id,
-      voteMultiplier >= Math.floor(FEEDBACK_VOTE_TARGET * 0.7)
+      voteMultiplier >= MAX_VOTE_MULTIPLIER
     );
 
   if (type === 'feedback') {

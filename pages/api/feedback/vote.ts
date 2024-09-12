@@ -7,6 +7,7 @@ import { processTags } from '../v1/items/[id_name]/index';
 import { processTradePrice } from '../v1/trades';
 
 export const FEEDBACK_VOTE_TARGET = 5;
+export const MAX_VOTE_MULTIPLIER = 3;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
@@ -29,11 +30,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const isAdmin = user.role === 'ADMIN';
 
     if (isAdmin) voteMultiplier = FEEDBACK_VOTE_TARGET * 2;
-    else
-      voteMultiplier = Math.max(
-        1,
-        Math.min(Math.round(user.xp / 1000), Math.floor(FEEDBACK_VOTE_TARGET * 0.7))
-      );
+    else voteMultiplier = Math.max(1, Math.min(Math.floor(user.xp / 1000), MAX_VOTE_MULTIPLIER));
 
     const feedbackRaw = await prisma.feedbacks.findUniqueOrThrow({
       where: {
@@ -55,11 +52,13 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       votesIncrementDecrement = {
         increment: 1 * voteMultiplier,
       };
-    else if (action === 'downvote')
+    else if (action === 'downvote') {
+      voteMultiplier = isAdmin ? voteMultiplier : Math.min(voteMultiplier * 2, MAX_VOTE_MULTIPLIER);
+
       votesIncrementDecrement = {
         decrement: 1 * voteMultiplier,
       };
-
+    }
     const feedback = prisma.feedbacks.update({
       where: {
         feedback_id: parseInt(feedback_id),

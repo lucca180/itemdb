@@ -363,9 +363,9 @@ export const rarityStr = (rarity: number) => {
   return null;
 };
 
+const skip_terms = ['paperclip', 'paper clip', 'buying'];
 export const shouldSkipTrade = (wishlist: string) => {
-  if (wishlist.toLowerCase().includes('paperclip') || wishlist.toLowerCase().includes('paper clip'))
-    return true;
+  if (skip_terms.some((term) => wishlist.toLowerCase().includes(term))) return true;
 
   let wishCpy = wishlist.toLowerCase().replaceAll(/nps?/g, '');
   wishCpy = wishCpy.replaceAll('reserved', '');

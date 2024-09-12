@@ -2,7 +2,7 @@ import { Prisma, TradeItems, Trades } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { processTradePrice } from '.';
-import { FEEDBACK_VOTE_TARGET } from '../../feedback/vote';
+import { MAX_VOTE_MULTIPLIER } from '../../feedback/vote';
 import { getManyItems } from '../items/many';
 import { differenceInCalendarDays } from 'date-fns';
 
@@ -68,7 +68,7 @@ export const autoPriceTrades2 = async (tradeRaw: (Trades & { items: TradeItems[]
       pageRef: 'auto',
       content: { trade: t },
     }),
-    votes: Math.floor(FEEDBACK_VOTE_TARGET * 0.7),
+    votes: MAX_VOTE_MULTIPLIER - 1,
   }));
 
   const feedbacks = prisma.feedbacks.createMany({
