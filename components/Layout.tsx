@@ -209,7 +209,7 @@ const Layout = (props: Props) => {
                       </MenuItem>
                     </MenuGroup>
                     <MenuDivider />
-                    <MenuItem onClick={signout}>{t('logout')}</MenuItem>
+                    <MenuItem onClick={signout}>{t('Layout.logout')}</MenuItem>
                   </MenuList>
                 </Menu>
               </>
