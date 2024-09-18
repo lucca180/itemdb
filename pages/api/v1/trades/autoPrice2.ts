@@ -56,16 +56,17 @@ export const autoPriceTrades2 = async (tradeRaw: (Trades & { items: TradeItems[]
     promises.push(findSimilar(trade));
   }
 
-  const trades = await Promise.all(promises);
-  const filteredTrades = trades.filter((t) => t !== null) as Trades[];
+  const promResult = await Promise.all(promises);
+  const filteredTrades = promResult.filter((t) => !!t && t?.[0] !== null) as [Trades, number][];
 
-  const feedbackArray: Prisma.FeedbacksCreateInput[] = filteredTrades.map((t) => ({
+  const feedbackArray: Prisma.FeedbacksCreateInput[] = filteredTrades.map(([t, originalId]) => ({
     type: 'tradePrice',
     subject_id: t.trade_id,
     user_id: 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1',
     json: JSON.stringify({
       ip: 'auto',
       pageRef: 'auto',
+      auto_ref: originalId,
       content: { trade: t },
     }),
     votes: MAX_VOTE_MULTIPLIER - 1,
@@ -78,7 +79,7 @@ export const autoPriceTrades2 = async (tradeRaw: (Trades & { items: TradeItems[]
   const updateTrades = prisma.trades.updateMany({
     where: {
       trade_id: {
-        in: filteredTrades.map((t) => t.trade_id),
+        in: filteredTrades.map(([t]) => t.trade_id),
       },
     },
     data: {
@@ -97,6 +98,7 @@ const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
     where: {
       priced: true,
       wishlist: trade.wishlist,
+      auto_ignore_pricing: false,
     },
     orderBy: { addedAt: 'desc' },
     include: { items: true },
@@ -150,10 +152,13 @@ const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
     return null;
   }
 
-  return {
-    ...trade,
-    items: updatedItems,
-  };
+  return [
+    {
+      ...trade,
+      items: updatedItems,
+    },
+    similar.trade_id,
+  ];
 };
 
 // this will skip trade pricing if the trade is est price is less than 100k

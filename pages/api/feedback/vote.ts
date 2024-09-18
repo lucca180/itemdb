@@ -178,7 +178,7 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
   }
 };
 
-const commitTradePrice = (feedback: Feedbacks, approved: boolean, req?: NextApiRequest) => {
+const commitTradePrice = async (feedback: Feedbacks, approved: boolean, req?: NextApiRequest) => {
   if (feedback.type !== 'tradePrice') return;
 
   const json = feedback.json as string;
@@ -186,6 +186,17 @@ const commitTradePrice = (feedback: Feedbacks, approved: boolean, req?: NextApiR
   const trade = parsed.content.trade as TradeData;
 
   if (approved) return processTradePrice(trade, req);
+
+  if (parsed.auto_ref) {
+    await prisma.trades.update({
+      where: {
+        trade_id: parsed.auto_ref,
+      },
+      data: {
+        auto_ignore_pricing: true,
+      },
+    });
+  }
 
   return prisma.trades.update({
     where: {

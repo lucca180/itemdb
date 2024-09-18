@@ -245,6 +245,8 @@ model Trades {
 
   items TradeItems[]
 
+  auto_ignore_pricing Boolean @default(false)
+
   @@index([processed, hash])
   @@index([hash, addedAt])
   @@index([wishlist(length: 200)])
