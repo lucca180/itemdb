@@ -75,7 +75,7 @@ const FeedbackSuggest = () => {
         trade: trade,
       });
 
-      if (res.data.success) await handleSkip();
+      if (res.data.success) await handleSkip(true);
       else throw res.data;
 
       setIsLoading(false);
@@ -106,7 +106,7 @@ const FeedbackSuggest = () => {
         json: JSON.stringify(feedbackJSON),
       });
 
-      if (res.data.success) await handleSkip();
+      if (res.data.success) await handleSkip(true);
       else throw res.data;
 
       setIsLoading(false);
@@ -117,10 +117,11 @@ const FeedbackSuggest = () => {
     }
   };
 
-  const handleSkip = async () => {
+  const handleSkip = async (isNext = false) => {
     if (currentTrade) {
       setPrev([...prevTrades, currentTrade]);
-      skippedTrades.current.push(currentTrade.trade_id.toString());
+
+      if (!isNext) skippedTrades.current.push(currentTrade.trade_id.toString());
     }
 
     const newTrades = trades.filter((trade) => trade.trade_id !== currentTrade?.trade_id);

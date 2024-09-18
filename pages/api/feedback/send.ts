@@ -159,7 +159,7 @@ const processTradeFeedback = async (
   return true;
 };
 
-const processSimilarTrades = async (trade: TradeData, trade_id: number, user_id: string) => {
+export const processSimilarTrades = async (trade: TradeData, trade_id: number, user_id: string) => {
   const currentTrade = {
     isAllItemsTheSame: trade.items.every(
       (t) => t.name === trade.items[0].name && t.image_id === trade.items[0].image_id
@@ -187,6 +187,9 @@ const processSimilarTrades = async (trade: TradeData, trade_id: number, user_id:
       },
     },
   });
+  console.log('similarTrades', similarTrades.length);
+
+  if (!similarTrades.length) return [];
 
   const feedbackCreate: any = [];
   const updatedTrades: number[] = [];
@@ -230,7 +233,7 @@ const processSimilarTrades = async (trade: TradeData, trade_id: number, user_id:
     };
 
     processTradeFeedback(similarTradeData, similarTradeData.trade_id, user_id, false).then((x) => {
-      if (x) return;
+      if (!x) return;
 
       const createFeedback = prisma.feedbacks.create({
         data: {

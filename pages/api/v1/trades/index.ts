@@ -12,6 +12,7 @@ import { autoPriceTrades2 } from './autoPrice2';
 import { newCreatePriceProcessFlow } from '../prices';
 import { TradeItems, Trades } from '@prisma/client';
 import { getManyItems } from '../items/many';
+import { processSimilarTrades } from '../../feedback/send';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
@@ -164,7 +165,12 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
 
-  await processTradePrice(trade, req);
+  const [, updatedTrades] = await Promise.all([
+    processTradePrice(trade, req),
+    processSimilarTrades(trade, trade.trade_id, user.id),
+  ]);
+
+  console.log('updatedTrades ', updatedTrades);
 
   return res.status(200).json({ success: true, message: false });
 };
