@@ -26,17 +26,18 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   const limit = (req.query.limit as string) ?? '1';
   let itemName = req.query.itemName as string | undefined;
+  const skipList: string[] = req.query.skipList ? (req.query.skipList as string).split(',') : [];
 
-  if (!itemName) itemName = await getPopularItem();
+  if (!itemName) itemName = await getPopularItem(skipList);
   if (!itemName) return res.json({ trades: [], popularItem: null });
 
-  let tradeRaw = await getPrecifyTrades(itemName, order, parseInt(limit));
+  let tradeRaw = await getPrecifyTrades(itemName, order, parseInt(limit), skipList);
 
   if (!tradeRaw || !tradeRaw.length) {
-    itemName = await getPopularItem();
+    itemName = await getPopularItem(skipList);
     if (!itemName) return res.json({ trades: [], popularItem: null });
 
-    tradeRaw = await getPrecifyTrades(itemName, order, parseInt(limit));
+    tradeRaw = await getPrecifyTrades(itemName, order, parseInt(limit), skipList);
   }
 
   const trades: TradeData[] = tradeRaw.map((t) => {
@@ -66,20 +67,39 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   res.json({ trades, popularItem: itemName });
 }
 
-const getPopularItem = async () => {
+const getPopularItem = async (skipList?: string[]) => {
+  const shouldGetOld = chance.bool();
+
   const rawData = await prisma.tradeItems.groupBy({
     where: {
       trade: {
         processed: false,
+        trade_id: skipList
+          ? {
+              notIn: skipList.map((s) => parseInt(s)),
+            }
+          : undefined,
       },
     },
     by: ['name'],
     _count: true,
-    orderBy: {
-      _count: {
-        name: 'desc',
-      },
+    _max: {
+      addedAt: true,
     },
+    orderBy: [
+      shouldGetOld
+        ? {}
+        : {
+            _count: {
+              name: 'desc',
+            },
+          },
+      {
+        _max: {
+          addedAt: 'asc',
+        },
+      },
+    ],
     take: 1,
   });
 
@@ -91,11 +111,17 @@ const getPopularItem = async () => {
 const getPrecifyTrades = async (
   itemName: string,
   order: Prisma.TradesOrderByWithRelationInput,
-  limit = 1
+  limit = 1,
+  skipList?: string[]
 ) => {
   const tradeRaw = await prisma.trades.findMany({
     where: {
       processed: false,
+      trade_id: skipList
+        ? {
+            notIn: skipList.map((s) => parseInt(s)),
+          }
+        : undefined,
       items: {
         some: {
           name: itemName,

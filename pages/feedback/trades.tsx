@@ -41,6 +41,7 @@ const FeedbackSuggest = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const popularItem = useRef<string | undefined>(undefined);
+  const skippedTrades = useRef<string[]>([]);
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -53,6 +54,7 @@ const FeedbackSuggest = () => {
     const res = await axios.get('/api/v1/trades/pricefy', {
       params: {
         itemName: popularItem.current,
+        skipList: skippedTrades.current.join(','),
       },
     });
 
@@ -116,7 +118,11 @@ const FeedbackSuggest = () => {
   };
 
   const handleSkip = async () => {
-    if (currentTrade) setPrev([...prevTrades, currentTrade]);
+    if (currentTrade) {
+      setPrev([...prevTrades, currentTrade]);
+      skippedTrades.current.push(currentTrade.trade_id.toString());
+    }
+
     const newTrades = trades.filter((trade) => trade.trade_id !== currentTrade?.trade_id);
 
     if (newTrades.length === 0) {
