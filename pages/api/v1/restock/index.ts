@@ -142,7 +142,10 @@ export const calculateStats = async (
   let reactionTotalTime: number[] = [];
 
   const allItemsID = new Set<string>();
-  rawSessions.map((rawSession) => {
+
+  const deDuplicatedSessions = removeDuplicatedSessions(rawSessions);
+
+  deDuplicatedSessions.map((rawSession) => {
     if (!rawSession.sessionText) return;
     let session = JSON.parse(rawSession.sessionText as string) as RestockSession | string;
     if (typeof session === 'string') session = JSON.parse(session) as RestockSession;
@@ -420,3 +423,32 @@ function findMostFrequent<T>(arr: T[]): { item: T; count: number } {
     return { item: mostFrequentString as unknown as T, count: frequencyMap[mostFrequentString] };
   }
 }
+
+const removeDuplicatedSessions = (
+  sessions: {
+    startedAt: Date;
+    endedAt: Date;
+    shop_id: number;
+    sessionText: string | null;
+  }[]
+) => {
+  // if a session has the same start date and shop id, remove the smaller lastRefres
+  const sessionMap: {
+    [key: string]: {
+      startedAt: Date;
+      endedAt: Date;
+      shop_id: number;
+      sessionText: string | null;
+    };
+  } = {};
+
+  sessions.map((session) => {
+    const key = `${session.startedAt.toJSON()}_${session.shop_id}`;
+    if (!sessionMap[key]) sessionMap[key] = session;
+    else {
+      if (session.endedAt > sessionMap[key].endedAt) sessionMap[key] = session;
+    }
+  });
+
+  return Object.values(sessionMap);
+};
