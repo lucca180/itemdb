@@ -55,7 +55,7 @@
     "lightweight-charts": "^4.2.0",
     "lodash": "^4.17.21",
     "lru-cache": "^11.0.1",
-    "next": "^14.2.8",
+    "next": "^14.2.9",
     "next-intl": "^3.19.1",
     "next-seo": "^6.6.0",
     "next-sitemap": "^4.2.3",
