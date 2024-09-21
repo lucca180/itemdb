@@ -112,7 +112,7 @@ const FeedbackTrade = (props: Props) => {
               leftIcon={<Icon as={BsArrowLeftRight} />}
               colorScheme="gray"
               variant="outline"
-              onClick={handleSkip}
+              onClick={() => handleSkip?.()}
             >
               {t('General.skip')}
             </Button>
