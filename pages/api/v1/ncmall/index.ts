@@ -53,9 +53,21 @@ export const getNCMallItemsData = async (limit: number, isLeaving = false) => {
   });
 
   return Object.values(items).sort((a, b) => {
+    const aData = ncMallData.find((data) => data.item_iid === a.internal_id);
+    const bData = ncMallData.find((data) => data.item_iid === b.internal_id);
+
+    if (!aData || !bData) return 0;
+
+    if (isLeaving) {
+      return (
+        new Date(aData.saleEnd ?? 0).getTime() - new Date(bData.saleEnd ?? 0).getTime() ||
+        a.name.localeCompare(b.name)
+      );
+    }
+
     return (
-      ncMallData.findIndex((data) => data.item_iid === a.internal_id) -
-      ncMallData.findIndex((data) => data.item_iid === b.internal_id)
+      new Date(bData.saleBegin ?? 0).getTime() - new Date(aData.saleBegin ?? 0).getTime() ||
+      a.name.localeCompare(b.name)
     );
   });
 };
