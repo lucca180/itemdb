@@ -5,7 +5,6 @@ import prisma from '../../../../../utils/prisma';
 import { getItem } from '.';
 import { ItemEffect as PrimsaItemEffect } from '@prisma/client';
 import {
-  allFoodsCats,
   allNeopetsColors,
   allSpecies,
   getPetColorId,
@@ -142,10 +141,7 @@ export const getItemEffects = async (id_name: string | number) => {
   });
 
   const effects = effectsRaw.map((effect) => formatEffect(effect));
-  const isFood =
-    item.useTypes.canEat === 'true' ||
-    (item.category &&
-      allFoodsCats.map((cat) => cat.toLowerCase()).includes(item.category.toLowerCase()));
+  const isFood = item.useTypes.canEat === 'true';
 
   // some custom effects
   if (!isFood) return effects;
