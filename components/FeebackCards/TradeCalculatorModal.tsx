@@ -13,13 +13,19 @@ import {
   VStack,
   ModalProps,
   Kbd,
+  Alert,
+  AlertTitle,
+  AlertDescription,
+  Box,
 } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
 import CustomNumberInput from '../Input/CustomNumber';
 import { useMemo, useRef, useState } from 'react';
+import { TradeData } from '../../types';
 
 export type TradeCalculatorModalProps = {
   isOpen: boolean;
+  trade: TradeData;
   onClose: (val?: string) => void;
   useShortcuts?: boolean;
   finalRef?: ModalProps['finalFocusRef'];
@@ -29,7 +35,7 @@ const intl = new Intl.NumberFormat();
 
 export default function TradeCalculatorModal(props: TradeCalculatorModalProps) {
   const t = useTranslations();
-  const { isOpen, onClose } = props;
+  const { isOpen, onClose, trade } = props;
   const [purePrice, setPurePrice] = useState<string>();
   const [babyPB, setBabyPB] = useState<string>();
 
@@ -85,6 +91,12 @@ export default function TradeCalculatorModal(props: TradeCalculatorModalProps) {
           <ModalHeader>{t('Feedback.price-calculator')}</ModalHeader>
           <ModalCloseButton />
           <ModalBody fontSize={'sm'} sx={{ a: { color: 'blue.200' } }}>
+            <Alert mb={3} size={'sm'} justifyContent={'center'} borderRadius={'md'} p={1}>
+              <Box textAlign={'center'}>
+                <AlertTitle>Wishlist</AlertTitle>
+                <AlertDescription>{trade.wishlist}</AlertDescription>
+              </Box>
+            </Alert>
             <Text color="gray.400" textAlign={'center'} fontSize={'xs'}>
               {t.rich('Feedback.calculator-tip', {
                 Kbd: (children) => <Kbd>{children}</Kbd>,

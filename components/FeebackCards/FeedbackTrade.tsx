@@ -159,6 +159,7 @@ const FeedbackTrade = (props: Props) => {
 
             {trade?.items.map((item, i) => (
               <ItemTrade
+                trade={trade}
                 useShortcuts={userPref?.labs_feedbackShortcuts || false}
                 canSubmit={i === trade.items.length - 1 || isAllPriced || (i === 0 && isAllEmpty)}
                 doSubmit={doSubmit}
@@ -178,6 +179,7 @@ export default FeedbackTrade;
 
 type ItemTradeProps = {
   item: TradeItems;
+  trade: TradeData;
   canSubmit?: boolean;
   useShortcuts?: boolean;
   doSubmit?: () => void;
@@ -243,6 +245,7 @@ const ItemTrade = (props: ItemTradeProps) => {
     <>
       {isOpen && (
         <TradeCalculatorModal
+          trade={props.trade}
           isOpen={isOpen}
           onClose={closeModal}
           useShortcuts={props.useShortcuts}
