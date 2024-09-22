@@ -31,9 +31,11 @@ import { TradeData } from '../../types';
 import { useAuth } from '../../utils/auth';
 import { CheckAuth } from '../../utils/googleCloud';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/router';
 
 const FeedbackSuggest = () => {
   const t = useTranslations();
+  const router = useRouter();
   const { user, authLoading } = useAuth();
   const [trades, setTrades] = useState<TradeData[]>([]);
   const [prevTrades, setPrev] = useState<TradeData[]>([]);
@@ -53,7 +55,7 @@ const FeedbackSuggest = () => {
     setIsLoading(true);
     const res = await axios.get('/api/v1/trades/pricefy', {
       params: {
-        itemName: popularItem.current,
+        itemName: popularItem.current ?? router.query.target,
         skipList: skippedTrades.current.join(','),
       },
     });

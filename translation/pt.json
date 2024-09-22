@@ -188,7 +188,22 @@
     "saleStatus-feedback-cta": "Você também pode deixar seus comentários usando o botão Feedback no site",
     "saleStatus-text": "Este item é <Badge></Badge> porque determinamos que <b>~{percent}%</b> dos itens disponíveis <b>nos últimos {days} dias</b> foram vendidos.",
     "saleStatus-thanks-feedback": "Obrigado pelo seu feedback! Isso ajudará a toranr o itemdb cada vez mais preciso e útil :)",
-    "this-was-last-updated-at": "A última atualização foi em {date}"
+    "this-was-last-updated-at": "A última atualização foi em {date}",
+    "algorithm-txt": "Normalmente, nosso algoritmo espera cerca de 20 entradas de dados antes de definir o preço de um item. Pode precisar de <b>menos ou mais entradas</b> dependendo da qualidade dos dados que temos (por exemplo, uma pesquisa no SSW é considerada dado de <b>melhor qualidade</b> do que apenas visualizar um item em uma loja de usuário)",
+    "but-something-is-reaally-wrong": "Mas algo está realmente errado!!!",
+    "current-data-status": "Status Atual dos Dados",
+    "fresh-data": "Dados Recentes",
+    "fresh-data-txt": "Nosso algoritmo prefere usar dados novos ao calcular preços.",
+    "itemdb-admins-please-help": "ADMINS DO ITEMDB POR FAVOR AJUDEM!!!!!!!!",
+    "old-data": "Dados Antigos",
+    "old-data-txt": "Nosso algoritmo aguardará por mais dados novos e usará isso como último recurso (ou seja, pode demorar um pouco).",
+    "thank-you-for-your-report": "Obrigado pelo seu feedback",
+    "waiting-trades": "Trocas à Espera",
+    "waiting-trades-txt": "Lotes de Trocas que estão esperando para serem precificadas.",
+    "wrong-price-report": "Se você realmente acredita que algo deu errado ao definir o preço deste item, use o botão abaixo e nós daremos uma olhada nisso.",
+    "wrong-price-report-2": "Tenha em mente que os admins do itemdb atualmente não podem adicionar novos preços manualmente - apenas o poderoso algoritmo pode fazer isso - mas podemos corrigir quaisquer erros que ele cometa.",
+    "x-entries": "{x} entradas",
+    "algorithm-txt2": "Nosso sistema também irá ignorar dados repetidos, portanto, se nos enviar novos dados e o número de entradas não mudar, significa que já temos esses dados."
   },
   "Button": {
     "feedback": "Feedback",

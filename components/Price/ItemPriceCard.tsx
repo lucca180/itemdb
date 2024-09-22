@@ -188,7 +188,11 @@ const ItemPriceCard = (props: Props) => {
         <LastSeenModal isOpen={lastSeenModal.isOpen} onClose={lastSeenModal.onClose} />
       )}
       {wrongPriceModal.isOpen && (
-        <WrongPriceModal isOpen={wrongPriceModal.isOpen} onClose={wrongPriceModal.onClose} />
+        <WrongPriceModal
+          item={item}
+          isOpen={wrongPriceModal.isOpen}
+          onClose={wrongPriceModal.onClose}
+        />
       )}
       {saleStatusModal.isOpen && item.saleStatus && (
         <SaleStatusModal

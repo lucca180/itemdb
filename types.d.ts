@@ -545,6 +545,14 @@ export type SaleStatus = {
   addedAt: string;
 };
 
+export type PricingInfo = {
+  waitingTrades: number;
+  dataStatus: {
+    fresh: number;
+    old: number;
+  };
+};
+
 // ------- DTI -------- //
 
 export type DTISpecies = {

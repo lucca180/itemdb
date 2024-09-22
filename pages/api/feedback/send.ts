@@ -5,6 +5,9 @@ import sgMail from '@sendgrid/mail';
 import { FEEDBACK_VOTE_TARGET, MAX_VOTE_MULTIPLIER } from './vote';
 import { TradeData } from '../../../types';
 import { processTradePrice } from '../v1/trades';
+import { Webhook, MessageBuilder } from 'discord-webhook-node';
+import { getItem } from '../v1/items/[id_name]';
+import Color from 'color';
 
 const SKIP_AUTO_TRADE_FEEDBACK = process.env.SKIP_AUTO_TRADE_FEEDBACK == 'true';
 
@@ -81,6 +84,20 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     if (count > 5) return res.status(429).json({ success: false, message: 'Too many requests' });
   }
 
+  if (type === 'priceReport') {
+    const count = await prisma.feedbacks.count({
+      where: {
+        type: 'priceReport',
+        ip_address: ip ?? '1',
+        addedAt: {
+          gte: new Date(new Date().getTime() - 1000 * 60 * 60 * 24),
+        },
+      },
+    });
+
+    if (count > 10) return res.status(429).json({ success: false, message: 'Too many requests' });
+  }
+
   if (!shoudContinue) return res.status(200).json({ success: true, message: 'already processed' });
 
   const result = await prisma.feedbacks.create({
@@ -100,6 +117,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   if (type === 'feedback' || type === 'officialApply' || type === 'reportFeedback') {
     await submitMailFeedback(obj, subject_id, email ?? '', result.feedback_id, type);
+  }
+
+  if (type === 'priceReport') {
+    await submitHookFeedback(subject_id, result.feedback_id, type);
   }
 
   return res.status(200).json({ success: true, message: result });
@@ -286,4 +307,27 @@ const submitMailFeedback = async (
       <b>rawData</b>: ${JSON.stringify(data)}
     `,
   });
+};
+
+const hook = new Webhook(
+  process.env.DISCORD_WEBHOOK_URL ??
+    'https://discord.com/api/webhooks/1287448055947329626/bpaHd1as5Qjc0c_7IYsDbxhrNkH_E6F_g9SHUzfAEyCMccRUEHHiKwW0CCzq_tR8-uKz'
+);
+
+const submitHookFeedback = async (subject_id: string, feedback_id: number, type: string) => {
+  if (type !== 'priceReport') return;
+  const item = await getItem(subject_id);
+  if (!item) return;
+
+  const embed = new MessageBuilder()
+    .setAuthor('Price Check Request')
+    .setTitle(item.name)
+    .setColor(Color(item.color.hex).rgbNumber())
+    .setThumbnail(item?.image)
+    .setDescription('Um usuário pediu para verificar se o preço de um item está correto')
+    .setFooter(`Feedback ID: ${feedback_id}`)
+    //@ts-expect-error wrong typing
+    .setURL(`https://itemdb.com.br/item/${item.slug}`);
+
+  await hook.send(embed).catch(console.error);
 };

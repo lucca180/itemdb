@@ -187,7 +187,22 @@
     "saleStatus-beta-alert": "This is a beta feature and we are working to improve the accuracy of this data, so <b>don't take it as a source of absolute truth</b> :)",
     "saleStatus": "Sale Status",
     "saleStatus-text": "This item is <Badge></Badge> because we determined that <b>~{percent}%</b> of the available items <b>in the last {days} days</b> were sold.",
-    "this-was-last-updated-at": "This was last updated at {date}"
+    "this-was-last-updated-at": "This was last updated at {date}",
+    "current-data-status": "Current Data Status",
+    "waiting-trades": "Waiting Trades",
+    "x-entries": "{x} entries",
+    "waiting-trades-txt": "Trade Lots that are waiting to be priced.",
+    "fresh-data": "Fresh Data",
+    "fresh-data-txt": "Our algorithm prefers using fresh data when calculating prices.",
+    "old-data": "Old Data",
+    "old-data-txt": "Our algorithm will wait for more new data and will use this as a last resort (aka. it can take a while).",
+    "algorithm-txt": "Usually, our algorithm waits for around 20 data points before pricing an item. It may take <b>fewer or more data points</b> depending on the quality of the data we have (e.g., a SSW search is considered <b>higher quality</b> data than just viewing an item in a usershop).",
+    "but-something-is-reaally-wrong": "But something is reaally wrong!!!",
+    "wrong-price-report": "If you trully believe that something went wrong when pricing this item, please use the button bellow and we will take a look at it.",
+    "wrong-price-report-2": "Bear in mind that itemdb admins currently cannot add new prices manually - only the all mighty algorithm can do that - but we can correct any mistakes it makes.",
+    "thank-you-for-your-report": "Thank you for your report!",
+    "itemdb-admins-please-help": "ITEMDB ADMINS PLEASE HELP!!!!!!!!",
+    "algorithm-txt2": "Our system also will ignore repeated data, so if send us new data and the number of entries does not change, it means that we already have that data."
   },
   "Button": {
     "feedback": "Feedback",
