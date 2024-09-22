@@ -16,6 +16,7 @@ import { detectWearable } from '../../../../utils/detectWearable';
 import { processOpenableItems } from './open';
 import { CheckAuth } from '../../../../utils/googleCloud';
 import { ItemData } from '../../../../types';
+import { sendNewItemsHook } from '../../../../utils/discord-hooks';
 
 type ValueOf<T> = T[keyof T];
 
@@ -120,7 +121,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     }),
   ]);
 
-  await processOpenables();
+  const newItems = result[0].count;
+  await Promise.all([sendNewItemsHook(newItems), processOpenables()]);
+
   return res.json({ ...result, manualChecks });
 }
 

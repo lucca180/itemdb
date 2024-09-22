@@ -309,13 +309,10 @@ const submitMailFeedback = async (
   });
 };
 
-const hook = new Webhook(
-  process.env.DISCORD_WEBHOOK_URL ??
-    'https://discord.com/api/webhooks/1287448055947329626/bpaHd1as5Qjc0c_7IYsDbxhrNkH_E6F_g9SHUzfAEyCMccRUEHHiKwW0CCzq_tR8-uKz'
-);
+const hook = process.env.FEEDBACK_WEBHOOK ? new Webhook(process.env.FEEDBACK_WEBHOOK) : null;
 
 const submitHookFeedback = async (subject_id: string, feedback_id: number, type: string) => {
-  if (type !== 'priceReport') return;
+  if (type !== 'priceReport' || !hook) return;
   const item = await getItem(subject_id);
   if (!item) return;
 
