@@ -30,7 +30,7 @@ export const sendNewItemsHook = async (latest: number) => {
   });
 
   const ncMsgs = Object.values(itemData)
-    .filter((i) => !i.isNC)
+    .filter((i) => i.isNC)
     .map((i) => newNCMall(i));
   const newItemsMsgs = Object.values(itemData).map((i) => newItemsHookSend(i));
 
