@@ -21,8 +21,8 @@ const FaeriesFest2023 = () => {
   return (
     <Layout
       SEO={{
-        title: 'Faerie Festival 2023 Hub',
-        description: 'Find the best items to recycle for the Faerie Festival 2023 event!',
+        title: 'Faerie Festival Guide',
+        description: 'Find the best items to recycle for the Faerie Festival event!',
         themeColor: '#9b65c0',
         openGraph: {
           images: [
@@ -30,7 +30,7 @@ const FaeriesFest2023 = () => {
               url: 'https://images.neopets.com/homepage/marquee/icons/faeriefestival_event_icon.png',
               width: 300,
               height: 300,
-              alt: 'Faeries Festival 2023 hub',
+              alt: 'Faeries Festival',
             },
           ],
         },
@@ -189,7 +189,7 @@ const FaeriesFest2023 = () => {
           />
           <SearchCard
             title="Illusen's Team"
-            description="Create your own lists that update automatically based on your criteria"
+            description="All items from Illusen's Team prize shop"
             link="/lists/official/326"
             color="#84B12A"
             coverURL="https://images.neopets.com/faeriefestival/2023/np/illusen-happy-face.png"

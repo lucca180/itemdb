@@ -78,6 +78,11 @@ const nextConfig = {
         destination: '/api/v1/search/:slug*',
         permanent: true,
       },
+      {
+        source: '/hub/faeriefestival2023',
+        destination: '/hub/faeriefestival',
+        permanent: true,
+      },
     ];
   },
   transpilePackages: ['lightweight-charts', 'fancy-canvas'],
