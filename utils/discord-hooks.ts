@@ -43,9 +43,14 @@ const getItemEmbed = (item: ItemData) => {
     .setTitle(`${item.name} - r${item.rarity ?? '???'}`)
     .setColor(Color(item.color.hex).rgbNumber())
     .setThumbnail(item.image)
-    .setDescription(item.description)
-    //@ts-expect-error wrong typing
-    .setURL(`https://itemdb.com.br/item/${item.slug}`);
+    .setDescription(item.description);
+
+  if (item.isWearable) {
+    embed.setImage('https://itemdb.com.br/api/cache/preview/' + item.image_id + '.png');
+  }
+
+  //@ts-expect-error bad types
+  embed.setURL(`https://itemdb.com.br/item/${item.slug}`);
 
   return embed;
 };
