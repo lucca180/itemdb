@@ -68,7 +68,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       name: name,
       slug: slug,
     },
-    10000
+    10000,
   );
 
   const ip = requestIp.getClientIp(req);
@@ -79,7 +79,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
 export const getManyItems = async (
   queryObj: FindManyQuery,
-  limit = 60000
+  limit = 60000,
 ): Promise<{ [identifier: string]: ItemData }> => {
   const { id, item_id, name_image_id, image_id, name, slug } = queryObj;
 
@@ -90,7 +90,7 @@ export const getManyItems = async (
   else if (name_image_id && name_image_id.length > 0) {
     const convertToTuple = name_image_id.map((x) => Prisma.sql`(${x[0]}, ${x[1]})`);
     query = Prisma.sql`(a.name, a.image_id) IN (${Prisma.join(
-      convertToTuple
+      convertToTuple,
     )}) AND a.canonical_id is null`;
   } else if (image_id && image_id.length > 0)
     query = Prisma.sql`a.image_id IN (${Prisma.join(image_id)}) AND a.canonical_id is null`;

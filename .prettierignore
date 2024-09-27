@@ -9,3 +9,6 @@ userscripts
 utils/randomName.ts
 utils/hash.ts
 utils/views/*
+*.md
+package.json
+*.lock

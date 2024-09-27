@@ -112,7 +112,7 @@ const getPrecifyTrades = async (
   itemName: string,
   order: Prisma.TradesOrderByWithRelationInput,
   limit = 1,
-  skipList?: string[]
+  skipList?: string[],
 ) => {
   const tradeRaw = await prisma.trades.findMany({
     where: {

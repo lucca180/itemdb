@@ -26,7 +26,7 @@ import { SearchList } from '../../components/Search/SearchLists';
 const fetcher = (url: string) => axios.get(url).then((res) => res.data as UserList[]);
 
 const ApplyListModal = dynamic<ApplyListModalProps>(
-  () => import('../../components/Modal/OfficialListApply')
+  () => import('../../components/Modal/OfficialListApply'),
 );
 
 type Props = {
@@ -49,7 +49,7 @@ const OfficialListsPage = (props: Props) => {
   useEffect(() => {
     if (data) {
       const newCats = [...new Set(data.map((list) => list.officialTag || 'Uncategorized'))].sort(
-        (a, b) => a.localeCompare(b)
+        (a, b) => a.localeCompare(b),
       );
 
       setLists(data);
@@ -68,7 +68,7 @@ const OfficialListsPage = (props: Props) => {
       setLists(data.filter((x) => !x.officialTag).sort((a, b) => a.name.localeCompare(b.name)));
     } else {
       setLists(
-        data.filter((x) => x.officialTag === value).sort((a, b) => a.name.localeCompare(b.name))
+        data.filter((x) => x.officialTag === value).sort((a, b) => a.name.localeCompare(b.name)),
       );
     }
   };
@@ -90,8 +90,8 @@ const OfficialListsPage = (props: Props) => {
       filteredLists.filter(
         (x) =>
           x.name.toLowerCase().includes(searchLower) ||
-          (x.description ?? '').toLowerCase().includes(searchLower)
-      )
+          (x.description ?? '').toLowerCase().includes(searchLower),
+      ),
     );
   };
 
@@ -103,7 +103,7 @@ const OfficialListsPage = (props: Props) => {
         acc[groupIndex].push(cur);
         return acc;
       }, [] as UserList[][]),
-    [lists, rowSize]
+    [lists, rowSize],
   );
 
   return (

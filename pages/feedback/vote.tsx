@@ -35,7 +35,7 @@ import dynamic from 'next/dynamic';
 import { ReportFeedbackModalProps } from '../../components/Modal/ReportFeedbackModal';
 
 const ReportFeedbackModal = dynamic<ReportFeedbackModalProps>(
-  () => import('../../components/Modal/ReportFeedbackModal')
+  () => import('../../components/Modal/ReportFeedbackModal'),
 );
 
 const AUTO_PRICE_UID = 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1';
@@ -135,12 +135,12 @@ const FeedbackVotingPage = () => {
           headers: {
             authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (res.data.success) {
         const newFeedbacks = feedbacks.filter(
-          (f) => f.feedback_id !== currentFeedback?.feedback_id
+          (f) => f.feedback_id !== currentFeedback?.feedback_id,
         );
 
         if (!newFeedbacks.length) {

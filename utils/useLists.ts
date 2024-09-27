@@ -11,7 +11,7 @@ export const useLists = () => {
   const { user } = useAuth();
   const { data, error, isLoading, mutate } = useSWR(
     !user ? null : `/api/v1/lists/${user.username}`,
-    fetcher
+    fetcher,
   );
 
   return {

@@ -161,7 +161,7 @@ const EditItemModal = (props: EditItemModalProps) => {
         },
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       setLoading(false);
@@ -720,7 +720,7 @@ const defaultItemOpenable: ItemOpenable = {
 export const OpenableTab = (props: OpenableTabProps) => {
   const { itemOpenable: itemOpenableProps, item } = props;
   const [itemOpenable, setItemOpenable] = useState<ItemOpenable | null>(
-    itemOpenableProps ?? defaultItemOpenable
+    itemOpenableProps ?? defaultItemOpenable,
   );
   const { getIdToken } = useAuth();
   const [dropData, setDropData] = useState<{ [id: number]: ItemData }>({});
@@ -757,7 +757,7 @@ export const OpenableTab = (props: OpenableTabProps) => {
       },
       {
         headers: { Authorization: `Bearer ${token}` },
-      }
+      },
     );
 
     setItemOpenable(res.data.dropUpdate);
@@ -908,14 +908,14 @@ export const EffectsTab = (props: EffectsTabProps) => {
     } catch (e: any) {
       console.error(e);
       setError(
-        'An error occurred while saving the effects. Please REFRESH the page and try later.'
+        'An error occurred while saving the effects. Please REFRESH the page and try later.',
       );
     }
   };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-    index: number
+    index: number,
   ) => {
     const name = e.target.name as keyof ItemEffect;
     const value = e.target.value;
@@ -953,7 +953,7 @@ export const EffectsTab = (props: EffectsTabProps) => {
   const handleColorSpeciesChange = (
     newVal: string,
     name: 'colorTarget' | 'speciesTarget',
-    index: number
+    index: number,
   ) => {
     setEffects((prev) => {
       const newEffects = [...prev];

@@ -103,7 +103,7 @@ const intl = new Intl.NumberFormat();
 const useStatsTypes = (
   type: string,
   sessionStats: RestockStats,
-  pastSession?: RestockStats | null
+  pastSession?: RestockStats | null,
 ): StatsInfo => {
   const t = useTranslations();
   const formatter = useFormatter();
@@ -212,7 +212,7 @@ const useStatsTypes = (
         labelTooltip: t('Restock.fastest-buy-tooltip'),
         stat: msIntervalFormated(sessionStats.fastestBuy?.timediff ?? 0, true, 2),
         helpText: `${sessionStats.fastestBuy?.item.name ?? t('Restock.none')} ${t(
-          'Restock.at'
+          'Restock.at',
         )} ${formatter.dateTime(sessionStats.fastestBuy?.timestamp ?? 0, {
           timeStyle: 'short',
           dateStyle: 'short',
@@ -246,7 +246,7 @@ const useStatsTypes = (
         label: t('Restock.time-spent-restocking'),
         stat: msIntervalFormated(sessionStats.durationCount, true, 2),
         helpText: `${msIntervalFormated(sessionStats.mostPopularShop.durationCount, true, 2)} ${t(
-          'Restock.at'
+          'Restock.at',
         )} ${restockShopInfo[sessionStats.mostPopularShop.shopId].name}`,
         ...badgeData,
       };

@@ -144,7 +144,7 @@ const EditProfileModal = (props: EditProfileModalProps) => {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
     setUserProfile({
       ...userProfile,

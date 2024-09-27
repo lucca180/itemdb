@@ -44,7 +44,7 @@ const BetaStatsCard = () => {
             !stats || isLoading ? null : (
               <>
                 {(((stats.itemsTotal - stats.itemsMissingInfo) / stats.itemsTotal) * 100).toFixed(
-                  0
+                  0,
                 )}
                 %
               </>

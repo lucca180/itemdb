@@ -34,7 +34,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 export const wp_getLatestPosts = async (
   limit = 5,
   page = 1,
-  ignorePatch = false
+  ignorePatch = false,
 ): Promise<WP_Article[]> => {
   const posts_res = await wp.get('/posts', {
     params: {
@@ -49,7 +49,7 @@ export const wp_getLatestPosts = async (
     const thumburl: string | null =
       ((post._embedded?.['wp:featuredmedia']?.[0] as any)?.source_url || '').replace(
         'https://',
-        'https://i0.wp.com/'
+        'https://i0.wp.com/',
       ) || null;
 
     return {

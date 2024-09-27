@@ -31,7 +31,7 @@ export type SortableAreaProps = {
   onChange?: (
     id: number,
     value: number,
-    field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order'
+    field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order',
   ) => void;
   onListAction?: (item: ItemData, action: 'move' | 'delete') => void;
 };
@@ -52,7 +52,7 @@ export default function SortableArea(props: SortableAreaProps) {
     useSensor(TouchSensor, {
       activationConstraint: { delay: 250, tolerance: 5 },
     }),
-    useSensor(MouseSensor, { activationConstraint: { distance: 5 } })
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
   );
 
   const debouncedOnChange = useCallback(
@@ -60,11 +60,11 @@ export default function SortableArea(props: SortableAreaProps) {
       (
         id: number,
         value: number,
-        field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order'
+        field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order',
       ) => props.onChange?.(id, value, field),
-      250
+      250,
     ),
-    [props.onChange]
+    [props.onChange],
   );
 
   const groupedIds = useMemo(
@@ -84,7 +84,7 @@ export default function SortableArea(props: SortableAreaProps) {
           acc[groupIndex].push(cur);
           return acc;
         }, [] as number[][]),
-    [ids, editMode, dimensions?.borderBox.width]
+    [ids, editMode, dimensions?.borderBox.width],
   );
 
   return (

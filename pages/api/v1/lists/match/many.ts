@@ -76,8 +76,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   const targetItemsSet = new Set(
     targetLists.flatMap((list) =>
-      list.items.filter((i) => i.item.isNC).map((item) => item.item_iid)
-    )
+      list.items.filter((i) => i.item.isNC).map((item) => item.item_iid),
+    ),
   );
 
   const userMatch: { [username: string]: number[] } = {};

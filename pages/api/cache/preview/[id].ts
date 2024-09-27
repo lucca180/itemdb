@@ -41,7 +41,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     let processPromise;
     if (exists) {
       const daysSinceLastUpdate = Math.floor(
-        (Date.now() - new Date(file.metadata.updated ?? 0).getTime()) / (1000 * 60 * 60 * 24)
+        (Date.now() - new Date(file.metadata.updated ?? 0).getTime()) / (1000 * 60 * 60 * 24),
       );
 
       if (daysSinceLastUpdate >= 30) {
@@ -148,17 +148,17 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 const handleRegularStyle = async (
-  itemName: string
+  itemName: string,
 ): Promise<
   [string[], DTIItemPreview & { compatibleBodiesAndTheirZones: DTIBodiesAndTheirZones[] }]
 > => {
   const itemPreviewData = await dti.fetchItemPreview(itemName);
 
   const itemRestrictedZoneIds = new Set(
-    itemPreviewData.canonicalAppearance.restrictedZones.map((z) => z.id)
+    itemPreviewData.canonicalAppearance.restrictedZones.map((z) => z.id),
   );
   const petRestrictedZoneIds = new Set(
-    itemPreviewData.canonicalAppearance.body.canonicalAppearance.restrictedZones
+    itemPreviewData.canonicalAppearance.body.canonicalAppearance.restrictedZones,
   );
 
   const layers = [
@@ -201,7 +201,7 @@ const handleAltStyle = async (image_id: string, itemName: string): Promise<strin
   const altImgID = itemName.toLowerCase().replaceAll(' ', '_');
 
   const style = dtiData.find(
-    (x) => x.thumbnail_url.includes(image_id) || x.thumbnail_url.includes(altImgID)
+    (x) => x.thumbnail_url.includes(image_id) || x.thumbnail_url.includes(altImgID),
   );
 
   if (!style) return [];
@@ -213,7 +213,7 @@ const handleAltStyle = async (image_id: string, itemName: string): Promise<strin
 
 const processDTIData = async (
   item: Items,
-  data: DTIItemPreview & { compatibleBodiesAndTheirZones: DTIBodiesAndTheirZones[] }
+  data: DTIItemPreview & { compatibleBodiesAndTheirZones: DTIBodiesAndTheirZones[] },
 ) => {
   const dataArr: Prisma.WearableDataCreateManyInput[] = [];
 

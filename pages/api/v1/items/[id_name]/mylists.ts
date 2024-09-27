@@ -33,7 +33,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
 export const getItemMyLists = async (
   item_id: number,
-  user_id: string
+  user_id: string,
 ): Promise<ReducedUserList[]> => {
   const listsRaw = await prisma.userList.findMany({
     where: {

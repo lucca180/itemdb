@@ -71,7 +71,7 @@ export const contributeCheck = async (uid?: string, goalMulplier = 1) => {
 
   // check if there is trades or feedbacks to vote
   const tradeQueueRaw = prisma.$queryRaw<{ count: number }[]>(
-    Prisma.sql`SELECT COUNT(DISTINCT hash) as "count" FROM trades where processed = 0`
+    Prisma.sql`SELECT COUNT(DISTINCT hash) as "count" FROM trades where processed = 0`,
   );
 
   const feedbackVoting = prisma.feedbacks.count({

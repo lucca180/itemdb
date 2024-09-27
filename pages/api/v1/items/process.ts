@@ -69,7 +69,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   // list of unique entries
   const uniqueNames = [...processList].filter(
     (value, index, self) =>
-      index === self.findIndex((t) => genItemKey(t, true) === genItemKey(value, true))
+      index === self.findIndex((t) => genItemKey(t, true) === genItemKey(value, true)),
   );
 
   const deleteIds: number[] = [];

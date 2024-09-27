@@ -14,7 +14,7 @@ export interface MainLinkProps {
 const MainLink: React.FC<MainLinkProps> = React.forwardRef(
   (
     { href, target, className, children, prefetch }: MainLinkProps,
-    ref: React.Ref<HTMLAnchorElement> | undefined
+    ref: React.Ref<HTMLAnchorElement> | undefined,
   ) => {
     const router = useRouter();
 
@@ -25,7 +25,7 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
           return await router.push(href);
         }
       },
-      [router, href]
+      [router, href],
     );
 
     if (prefetch)
@@ -40,7 +40,7 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
         {children}
       </a>
     );
-  }
+  },
 );
 
 MainLink.displayName = 'MainLink';

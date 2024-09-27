@@ -64,7 +64,7 @@ const DuplicatedItemModal = (props: DuplicatedItemModalProps) => {
           headers: {
             authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
       if (res.data.success) {
         toast({

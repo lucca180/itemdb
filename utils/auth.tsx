@@ -73,7 +73,7 @@ export const UserState = atomWithStorage<User | null>('UserState', null, storage
 export const UserPrefs = atomWithStorage<UserPreferences | null>(
   'UserPrefs',
   null,
-  storageLocal as any
+  storageLocal as any,
 );
 
 export function AuthProvider({ children }: any) {
@@ -118,13 +118,16 @@ export function AuthProvider({ children }: any) {
 
   // force refresh the token every 10 minutes
   useEffect(() => {
-    const handle = setInterval(async () => {
-      getAuth().then(async (res) => {
-        const { auth } = res;
-        const user = auth.currentUser;
-        if (user) await user.getIdToken(true);
-      });
-    }, 10 * 60 * 1000);
+    const handle = setInterval(
+      async () => {
+        getAuth().then(async (res) => {
+          const { auth } = res;
+          const user = auth.currentUser;
+          if (user) await user.getIdToken(true);
+        });
+      },
+      10 * 60 * 1000,
+    );
     return () => clearInterval(handle);
   }, []);
 
@@ -161,7 +164,7 @@ export function AuthProvider({ children }: any) {
 
   const updatePref = async (
     key: keyof UserPreferences,
-    value: UserPreferences[keyof UserPreferences]
+    value: UserPreferences[keyof UserPreferences],
   ) => {
     const newPref = { ...(userPref ?? undefined), [key]: value };
     setUserPref(newPref);

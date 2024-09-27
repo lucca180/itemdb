@@ -22,7 +22,7 @@ const ColorInfoCard = (props: Props) => {
   const color = colors.vibrant.rgb;
 
   const isInvisible = Object.values(colors).every(
-    (color) => color.population === 0 && color.hex === '#FFFFFF'
+    (color) => color.population === 0 && color.hex === '#FFFFFF',
   );
 
   return (

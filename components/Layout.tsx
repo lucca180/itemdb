@@ -308,8 +308,8 @@ const Layout = (props: Props) => {
                 <ChakraLink href="https://magnetismotimes.com/" isExternal>
                   Magnetismo Times
                 </ChakraLink>
-                <br />© 1999-{new Date().getFullYear()} NeoPets, Inc. All rights reserved. Used with
-                permission.
+                <br />© 1999-{new Date().getFullYear()} NeoPets, Inc. All rights reserved. Used
+                with permission.
               </Text>
               <Box>
                 <Select

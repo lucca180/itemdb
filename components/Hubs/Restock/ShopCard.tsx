@@ -63,8 +63,8 @@ const ShopCard = (props: Props) => {
                 shop.difficulty === 'Beginner'
                   ? 'green'
                   : shop.difficulty === 'Advanced'
-                  ? 'red'
-                  : undefined
+                    ? 'red'
+                    : undefined
               }
             >
               {shop.difficulty}

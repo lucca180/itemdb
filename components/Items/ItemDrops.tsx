@@ -29,7 +29,7 @@ const ItemDrops = (props: Props) => {
 
   const poolsArr = useMemo(
     () => Object.values(pools).sort((a, b) => (a.isLE ? -1 : a.name.localeCompare(b.name))),
-    [pools]
+    [pools],
   );
 
   useEffect(() => {
@@ -190,7 +190,7 @@ const ItemDrops = (props: Props) => {
                     disablePrefetch
                     item={item}
                     small
-                    odds={multiplePools && isChoice ? undefined : drop.dropRate ?? undefined}
+                    odds={multiplePools && isChoice ? undefined : (drop.dropRate ?? undefined)}
                     isLE={drop.isLE}
                   />
                 );

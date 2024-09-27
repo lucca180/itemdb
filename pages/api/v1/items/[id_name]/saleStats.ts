@@ -34,13 +34,13 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 export const getSaleStats = async (
   iid: number,
   dayLimit = 15,
-  lastPriceDate: Date | null = null
+  lastPriceDate: Date | null = null,
 ): Promise<SaleStatus | null> => {
   if (DISABLE_SALE_STATS) return null;
   const latestDate = Math.max(
     Date.now() - 5 * 24 * 60 * 60 * 1000,
     lastPriceDate?.getTime() ?? 0,
-    1722650400000
+    1722650400000,
   );
 
   const saleStats = await prisma.saleStats.findFirst({
@@ -272,7 +272,7 @@ const getTradeSales = async (iid: number, dayLimit = 15) => {
       const isFromLastXDays = trade.addedAt > new Date(Date.now() - dayLimit * 24 * 60 * 60 * 1000);
 
       const stock = trade.items.filter(
-        (i) => i.name === item.name && i.image_id === item.image_id
+        (i) => i.name === item.name && i.image_id === item.image_id,
       ).length;
 
       if (stock < lastStock) {

@@ -53,7 +53,7 @@ export async function middleware(request: NextRequest) {
     return response;
 
   const redirectResponse = NextResponse.redirect(
-    new URL(`/${locale}${request.nextUrl.pathname}${request.nextUrl.search}`, request.url)
+    new URL(`/${locale}${request.nextUrl.pathname}${request.nextUrl.search}`, request.url),
   );
 
   redirectResponse.cookies.set(cookies);
@@ -147,7 +147,7 @@ const checkSessionLocal = async (jwt: string) => {
     | undefined;
   if (!cacheKeys || cacheKeys.revalidate < Date.now()) {
     const res = await fetch(
-      'https://www.googleapis.com/identitytoolkit/v3/relyingparty/publicKeys'
+      'https://www.googleapis.com/identitytoolkit/v3/relyingparty/publicKeys',
     );
     const JWKS = await res.json();
     cacheKeys = { keys: undefined, revalidate: 0 };

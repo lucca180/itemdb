@@ -29,7 +29,7 @@ const CustomNumberInput = (props: Props) => {
     debounce((newValue: string) => {
       props.onChange?.(newValue);
     }, 250),
-    [props.onChange]
+    [props.onChange],
   );
 
   const onChange = (val: string) => {

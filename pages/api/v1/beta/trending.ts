@@ -30,7 +30,7 @@ export const getTrendingItems = async (limit: number) => {
       headers: {
         'Api-Key': `${process.env.SA_API_KEY}`,
       },
-    }
+    },
   );
 
   const popularItemsStats: any = {};

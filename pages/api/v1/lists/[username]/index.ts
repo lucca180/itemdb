@@ -151,7 +151,7 @@ const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
           order: list.order,
           updatedAt: new Date(),
         },
-      })
+      }),
     );
 
     const result = await prisma.$transaction(updateLists);
@@ -254,7 +254,7 @@ export const getUserLists = async (username: string, user?: User | null, limit =
           ? -1
           : 1
         : (a.order ?? 0) - (b.order ?? 0) ||
-          (new Date(b.updatedAt) < new Date(a.updatedAt) ? -1 : 1)
+          (new Date(b.updatedAt) < new Date(a.updatedAt) ? -1 : 1),
     );
 
   return lists;
@@ -273,7 +273,7 @@ type Pallete = {
 
 export const getImagePalette = async (
   image_url: string,
-  skipCheck = false
+  skipCheck = false,
 ): Promise<Record<ColorType, Pallete>> => {
   if (!skipCheck) CHECK_IMG_URL(image_url);
 

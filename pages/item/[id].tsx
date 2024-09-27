@@ -57,10 +57,10 @@ import NcMallCard from '../../components/Items/NCMallCard';
 import Color from 'color';
 
 const EditItemModal = dynamic<EditItemModalProps>(
-  () => import('../../components/Modal/EditItemModal')
+  () => import('../../components/Modal/EditItemModal'),
 );
 const FeedbackModal = dynamic<FeedbackModalProps>(
-  () => import('../../components/Modal/FeedbackModal')
+  () => import('../../components/Modal/FeedbackModal'),
 );
 
 type ItemPageProps = {

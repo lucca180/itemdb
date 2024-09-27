@@ -57,7 +57,7 @@ const RestockHistory = (props: RestockHistoryPageProps) => {
     setWall(null);
     try {
       const res = await axios.get(
-        `/api/v1/restock/history?id=${shopInfo.id}&mode=${newMode ?? mode}`
+        `/api/v1/restock/history?id=${shopInfo.id}&mode=${newMode ?? mode}`,
       );
 
       setRestockData(sortRestock(res.data, sortMode));

@@ -18,12 +18,12 @@
     "downlevelIteration": true,
     "types": ["node"]
   },
-  "exclude": ["node_modules",  "./node_modules/*",  "./node_modules", "userscripts"],
+  "exclude": ["node_modules", "./node_modules/*", "./node_modules", "userscripts"],
   "include": ["next-env.d.ts", "types.d.ts", "**/*.ts", "**/*.tsx"],
   "ts-node": {
     "compilerOptions": {
       "module": "commonjs",
-      "skipLibCheck": true,
+      "skipLibCheck": true
     }
   }
 }

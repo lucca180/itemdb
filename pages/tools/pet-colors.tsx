@@ -32,7 +32,7 @@ import { useRouter } from 'next/router';
 import { FaShareAlt } from 'react-icons/fa';
 
 const FeedbackModal = dynamic<FeedbackModalProps>(
-  () => import('../../components/Modal/FeedbackModal')
+  () => import('../../components/Modal/FeedbackModal'),
 );
 
 type PetColorData = {

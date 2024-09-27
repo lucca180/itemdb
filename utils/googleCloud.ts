@@ -15,7 +15,7 @@ export const CheckAuth = async (
   req: NextApiRequest | null,
   token?: string,
   session?: string,
-  skipUser = false
+  skipUser = false,
 ) => {
   token = token || req?.headers.authorization?.split('Bearer ')[1];
 

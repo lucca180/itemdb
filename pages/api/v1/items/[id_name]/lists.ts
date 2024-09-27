@@ -25,7 +25,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 export const getItemLists = async (
   id: number,
   onlyOfficial: boolean,
-  includeItems = true
+  includeItems = true,
 ): Promise<UserList[]> => {
   const listsRaw = await prisma.userList.findMany({
     where: {

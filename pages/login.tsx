@@ -139,7 +139,7 @@ const LoginPage = () => {
         },
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       const user = userRes.data as User;

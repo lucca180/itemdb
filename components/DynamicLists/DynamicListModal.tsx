@@ -61,7 +61,7 @@ const DynamicListModal = (props: DynamicListModalProps) => {
         {
           dynamicType,
           queryData: searchQuery,
-        }
+        },
       );
 
       console.log(res.data);

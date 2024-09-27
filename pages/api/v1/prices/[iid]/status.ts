@@ -22,7 +22,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   const GTE = new Date(
-    Math.max(Date.now() - 1000 * 60 * 60 * 24 * 30, new Date(item.price.addedAt ?? 0).getTime())
+    Math.max(Date.now() - 1000 * 60 * 60 * 24 * 30, new Date(item.price.addedAt ?? 0).getTime()),
   );
 
   const waitingTrades = await prisma.trades.count({

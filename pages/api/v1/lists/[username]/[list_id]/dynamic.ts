@@ -148,7 +148,7 @@ export const syncDynamicList = async (list_id: number, force = false) => {
             list_id: list_id,
             item_iid: item.item_iid,
           };
-        }
+        },
       );
 
       await prisma.listItems.createMany({
@@ -209,7 +209,7 @@ export const syncDynamicList = async (list_id: number, force = false) => {
             list_id: list_id,
             item_iid: item.internal_id,
           };
-        }
+        },
       );
 
       await prisma.listItems.createMany({

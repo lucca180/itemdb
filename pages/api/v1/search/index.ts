@@ -58,7 +58,7 @@ export async function doSearch(
   includeStats = true,
   list_id = 0,
   includeHidden = false,
-  onlyStats = false
+  onlyStats = false,
 ) {
   const originalQuery = query;
   const [queryFilters, querySanitezed] = parseFilters(originalQuery, false);
@@ -123,18 +123,18 @@ export async function doSearch(
 
     if (catNeg.length > 0 && !catNeg.includes('unknown'))
       catFiltersSQL.push(
-        Prisma.sql`(temp.category NOT IN (${Prisma.join(catNeg)}) OR temp.category IS NULL)`
+        Prisma.sql`(temp.category NOT IN (${Prisma.join(catNeg)}) OR temp.category IS NULL)`,
       );
     else if (catNeg.length > 0)
       catFiltersSQL.push(
-        Prisma.sql`(temp.category NOT IN (${Prisma.join(catNeg)}) AND temp.category IS NOT NULL)`
+        Prisma.sql`(temp.category NOT IN (${Prisma.join(catNeg)}) AND temp.category IS NOT NULL)`,
       );
 
     if (catTrue.length > 0 && !catTrue.includes('unknown'))
       catFiltersSQL.push(Prisma.sql`temp.category IN (${Prisma.join(catTrue)})`);
     else if (catTrue.length > 0)
       catFiltersSQL.push(
-        Prisma.sql`(temp.category IN (${Prisma.join(catTrue)}) OR temp.category IS NULL)`
+        Prisma.sql`(temp.category IN (${Prisma.join(catTrue)}) OR temp.category IS NULL)`,
       );
   }
 
@@ -150,20 +150,20 @@ export async function doSearch(
 
     if (zoneNeg.length > 0 && !zoneNeg.includes('unknown'))
       zoneFilterSQL.push(
-        Prisma.sql`(temp.zone_label NOT IN (${Prisma.join(zoneNeg)}) OR temp.zone_label IS NULL)`
+        Prisma.sql`(temp.zone_label NOT IN (${Prisma.join(zoneNeg)}) OR temp.zone_label IS NULL)`,
       );
     else if (zoneNeg.length > 0)
       zoneFilterSQL.push(
         Prisma.sql`(temp.zone_label NOT IN (${Prisma.join(
-          zoneNeg
-        )}) AND temp.zone_label IS NOT NULL)`
+          zoneNeg,
+        )}) AND temp.zone_label IS NOT NULL)`,
       );
 
     if (zoneTrue.length > 0 && !zoneTrue.includes('unknown'))
       zoneFilterSQL.push(Prisma.sql`temp.zone_label IN (${Prisma.join(zoneTrue)})`);
     else if (zoneTrue.length > 0)
       zoneFilterSQL.push(
-        Prisma.sql`(temp.zone_label IN (${Prisma.join(zoneTrue)}) OR temp.zone_label IS NULL)`
+        Prisma.sql`(temp.zone_label IN (${Prisma.join(zoneTrue)}) OR temp.zone_label IS NULL)`,
       );
   }
 
@@ -236,18 +236,18 @@ export async function doSearch(
 
     if (statusNeg.length > 0 && !statusNeg.includes('Unknown'))
       statusFiltersSQL.push(
-        Prisma.sql`(temp.status NOT IN (${Prisma.join(statusNeg)}) OR temp.status IS NULL)`
+        Prisma.sql`(temp.status NOT IN (${Prisma.join(statusNeg)}) OR temp.status IS NULL)`,
       );
     else if (statusNeg.length > 0)
       statusFiltersSQL.push(
-        Prisma.sql`(temp.status NOT IN (${Prisma.join(statusNeg)}) AND temp.status IS NOT NULL)`
+        Prisma.sql`(temp.status NOT IN (${Prisma.join(statusNeg)}) AND temp.status IS NOT NULL)`,
       );
 
     if (statusTrue.length > 0 && !statusTrue.includes('Unknown'))
       statusFiltersSQL.push(Prisma.sql`temp.status IN (${Prisma.join(statusTrue)})`);
     else if (statusTrue.length > 0)
       statusFiltersSQL.push(
-        Prisma.sql`(temp.status IN (${Prisma.join(statusTrue)}) OR temp.status IS NULL)`
+        Prisma.sql`(temp.status IN (${Prisma.join(statusTrue)}) OR temp.status IS NULL)`,
       );
   }
 
@@ -299,9 +299,9 @@ export async function doSearch(
     else if (todayNST.getMonth() === 4 && todayNST.getDate() === 12) {
       numberFilters.push(Prisma.sql`
         ((temp.category in (${Prisma.join(tyrannianShops)}) AND ${getRestockQuery(
-        0.2,
-        minProfit
-      )}) OR (${getRestockQuery(1, minProfit)}))
+          0.2,
+          minProfit,
+        )}) OR (${getRestockQuery(1, minProfit)}))
       `);
     }
 
@@ -310,7 +310,7 @@ export async function doSearch(
       numberFilters.push(Prisma.sql`
         ((temp.category = 'usuki doll' AND ${getRestockQuery(
           0.33,
-          minProfit
+          minProfit,
         )}) OR (${getRestockQuery(1, minProfit)}))
       `);
     }
@@ -319,9 +319,9 @@ export async function doSearch(
     else if (todayNST.getMonth() === 8 && todayNST.getDate() === 20) {
       numberFilters.push(Prisma.sql`
         ((temp.category in (${Prisma.join(faerielandShops)}) AND ${getRestockQuery(
-        0.5,
-        minProfit
-      )}) OR (${getRestockQuery(1, minProfit)}))
+          0.5,
+          minProfit,
+        )}) OR (${getRestockQuery(1, minProfit)}))
       `);
     }
 
@@ -329,9 +329,9 @@ export async function doSearch(
     else if (todayNST.getMonth() === 9 && todayNST.getDate() === 31) {
       numberFilters.push(Prisma.sql`
         ((temp.category in (${Prisma.join(halloweenShops)}) AND t${getRestockQuery(
-        0.5,
-        minProfit
-      )}) OR (${getRestockQuery(1, minProfit)}))
+          0.5,
+          minProfit,
+        )}) OR (${getRestockQuery(1, minProfit)}))
       `);
     } else {
       numberFilters.push(getRestockQuery(1, minProfit));
@@ -464,8 +464,8 @@ export async function doSearch(
           ${zoneFilterSQL.length > 0 ? Prisma.sql`, w.zone_label` : Prisma.empty}
         FROM Items as a
         LEFT JOIN ItemColor as b on a.image_id = b.image_id and ${colorTypeSQL} ${
-      colorSql_inside ? Prisma.sql`and b.population > 0` : Prisma.empty
-    }
+          colorSql_inside ? Prisma.sql`and b.population > 0` : Prisma.empty
+        }
         LEFT JOIN itemPrices as c on c.item_iid = a.internal_id and c.isLatest = 1
         LEFT JOIN OwlsPrice as d on d.item_iid = a.internal_id and d.isLatest = 1
         LEFT JOIN SaleStats as s on s.item_iid = a.internal_id and s.isLatest = 1 and s.stats != "unknown"

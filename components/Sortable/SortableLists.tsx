@@ -41,7 +41,7 @@ export default function SortableLists(props: SortableListsProps) {
     useSensor(TouchSensor, {
       activationConstraint: { delay: 200, tolerance: 5 },
     }),
-    useSensor(MouseSensor, { activationConstraint: { distance: 5 } })
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
   );
 
   return (
@@ -63,7 +63,7 @@ export default function SortableLists(props: SortableListsProps) {
               key={id}
               cardProps={props.cardProps}
             />
-          ) : null
+          ) : null,
         )}
       </SortableContext>
       <DragOverlay>

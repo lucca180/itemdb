@@ -128,7 +128,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     });
 
     const offererItemsSet = new Set(
-      offererLists.flatMap((list) => list.items.map((item) => item.item_iid))
+      offererLists.flatMap((list) => list.items.map((item) => item.item_iid)),
     );
 
     const listMatch: { [list_id: number]: ListItemInfo[] } = {};

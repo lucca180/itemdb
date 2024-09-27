@@ -64,7 +64,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     const itemIDs = new Set(queryRes.content.map((item) => item.internal_id));
 
     const result = itemInfo.filter(
-      (item) => itemIDs.has(item.item_iid) && (!item.isHidden || isOwner)
+      (item) => itemIDs.has(item.item_iid) && (!item.isHidden || isOwner),
     );
 
     return res.status(200).json(result);

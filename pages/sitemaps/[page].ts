@@ -17,7 +17,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   if (!page || isNaN(parseInt(page)))
     return getServerSideSitemapIndexLegacy(
       ctx,
-      [...Array(70)].map((_, i) => `${siteURL}/sitemaps/${i}.xml`)
+      [...Array(70)].map((_, i) => `${siteURL}/sitemaps/${i}.xml`),
     );
 
   const [itemInfo, officialLists] = await Promise.all([

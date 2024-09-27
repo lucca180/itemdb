@@ -416,7 +416,7 @@ export const getList = async (
   username: string,
   list_id: number,
   userOrToken?: User | null | string,
-  isOfficial = false
+  isOfficial = false,
 ) => {
   const listRaw = await prisma.userList.findUnique({
     where: {

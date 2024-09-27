@@ -130,7 +130,7 @@ const ImportItems = (props: ImportItemsProps) => {
   const toast = useToast();
   const { items, indexType, recomended_list } = props;
   const [itemData, setItemData] = useState<{ [identifier: string | number]: ItemData } | null>(
-    null
+    null,
   );
   const [notFound, setNotFound] = useState<number>(0);
   const [importInfo, setImportInfo] = useState(DefaultImportInfo);
@@ -146,9 +146,9 @@ const ImportItems = (props: ImportItemsProps) => {
   const loadedItems = useMemo(
     () =>
       Object.entries(itemData ?? {}).sort(
-        (a, b) => (b[1].price.value ?? 0) - (a[1].price.value ?? 0)
+        (a, b) => (b[1].price.value ?? 0) - (a[1].price.value ?? 0),
       ),
-    [itemData, items]
+    [itemData, items],
   );
 
   const init = async () => {
@@ -187,8 +187,8 @@ const ImportItems = (props: ImportItemsProps) => {
         amount: importInfo.ignore.includes('quantity')
           ? 1
           : item.canonical_id
-          ? canonicalAmount[item.canonical_id]
-          : items[item.item_id ?? -1] ?? 1,
+            ? canonicalAmount[item.canonical_id]
+            : (items[item.item_id ?? -1] ?? 1),
         imported: true,
       }));
 
@@ -212,8 +212,8 @@ const ImportItems = (props: ImportItemsProps) => {
           importInfo.action === 'add'
             ? t('Lists.toast-import')
             : importInfo.action === 'hide'
-            ? t('Lists.toast-hide')
-            : t('Lists.toast-remove'),
+              ? t('Lists.toast-hide')
+              : t('Lists.toast-remove'),
       }),
       status: 'info',
       duration: null,
@@ -230,7 +230,7 @@ const ImportItems = (props: ImportItemsProps) => {
             headers: {
               Authorization: `Bearer ${await getIdToken()}`,
             },
-          }
+          },
         );
       }
 
@@ -255,8 +255,8 @@ const ImportItems = (props: ImportItemsProps) => {
             importInfo.action === 'add'
               ? t('Lists.toast-imported')
               : importInfo.action === 'hide'
-              ? t('Lists.toast-hidden')
-              : t('Lists.toast-removed'),
+                ? t('Lists.toast-hidden')
+                : t('Lists.toast-removed'),
         }),
         status: 'success',
         duration: 10000,
@@ -273,8 +273,8 @@ const ImportItems = (props: ImportItemsProps) => {
             importInfo.action === 'add'
               ? t('Lists.toast-importing')
               : importInfo.action === 'hide'
-              ? t('Lists.toast-hidding')
-              : t('Lists.toast-removing'),
+                ? t('Lists.toast-hidding')
+                : t('Lists.toast-removing'),
         }),
         status: 'error',
         duration: null,

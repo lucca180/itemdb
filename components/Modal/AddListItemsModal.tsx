@@ -23,7 +23,7 @@ import dynamic from 'next/dynamic';
 import { DuplicatedItemModalProps } from './DuplicatedItemModal';
 
 const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
-  () => import('./DuplicatedItemModal')
+  () => import('./DuplicatedItemModal'),
 );
 export type AddListItemsModalProps = {
   isOpen: boolean;
@@ -59,7 +59,7 @@ export default function AddListItemsModal(props: AddListItemsModalProps) {
               item_iid: item.internal_id,
             },
           ],
-        }
+        },
       );
       if (res.data.success) {
         toast.update(toastId, {

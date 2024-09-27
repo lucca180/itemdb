@@ -22,7 +22,7 @@ import { FeedbackModalProps } from '../components/Modal/FeedbackModal';
 import { useTranslations } from 'next-intl';
 
 const FeedbackModal = dynamic<FeedbackModalProps>(
-  () => import('../components/Modal/FeedbackModal')
+  () => import('../components/Modal/FeedbackModal'),
 );
 
 const RawDataPage = () => {

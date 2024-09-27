@@ -373,7 +373,7 @@ export const processTags = async (itemTags: string[], itemCats: string[], intern
 
 export const fetchOwlsData = async (
   itemName: string,
-  item?: ItemData
+  item?: ItemData,
 ): Promise<OwlsPriceData | null> => {
   let lastOwls;
   if (item) {

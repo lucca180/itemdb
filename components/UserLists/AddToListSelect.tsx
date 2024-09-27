@@ -23,7 +23,7 @@ import { DuplicatedItemModalProps } from '../Modal/DuplicatedItemModal';
 import { useLists } from '../../utils/useLists';
 
 const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
-  () => import('../Modal/DuplicatedItemModal')
+  () => import('../Modal/DuplicatedItemModal'),
 );
 
 type Props = {
@@ -54,7 +54,7 @@ const AddToListSelect = (props: Props) => {
               item_iid: item.internal_id,
             },
           ],
-        }
+        },
       );
       if (res.data.success) {
         toast({

@@ -35,7 +35,7 @@ const Markdown = dynamic(() => import('../Utils/Markdown'));
 
 const ItemActionModal = dynamic<ItemActionModalProps>(() => import('../Modal/ItemActionModal'));
 const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
-  () => import('../Modal/DuplicatedItemModal')
+  () => import('../Modal/DuplicatedItemModal'),
 );
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data as ReducedUserList[]);
@@ -175,7 +175,7 @@ const ItemMyLists = (props: Props) => {
                       <Markdown>
                         {
                           (list.description || t('ItemPage.list-no-description')).split(
-                            /[\r\n]+/
+                            /[\r\n]+/,
                           )[0]
                         }
                       </Markdown>

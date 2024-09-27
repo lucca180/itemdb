@@ -37,7 +37,7 @@ export const getSimilarItems = async (id_name: string) => {
   });
 
   const sortedItems = Object.values(items).sort(
-    (a, b) => ids.indexOf(a.internal_id) - ids.indexOf(b.internal_id)
+    (a, b) => ids.indexOf(a.internal_id) - ids.indexOf(b.internal_id),
   );
 
   return sortedItems;

@@ -52,7 +52,7 @@ const SearchFilters = (props: Props) => {
   const [colorVal, setColorVal] = useState<string>(
     props.filters.color && !ALL_COLORS_CODE.includes(props.filters.color.toLowerCase())
       ? props.filters.color
-      : '#c4bce4'
+      : '#c4bce4',
   );
 
   useEffect(() => {
@@ -60,7 +60,7 @@ const SearchFilters = (props: Props) => {
     setColorVal(
       props.filters.color && !ALL_COLORS_CODE.includes(props.filters.color.toLowerCase())
         ? props.filters.color
-        : '#c4bce4'
+        : '#c4bce4',
     );
   }, [props.filters]);
 
@@ -71,7 +71,7 @@ const SearchFilters = (props: Props) => {
   const handleCheckChange = (
     newFilter: string,
     filterType: keyof typeof filters,
-    defaultValue: string
+    defaultValue: string,
   ) => {
     if (
       [
@@ -97,7 +97,7 @@ const SearchFilters = (props: Props) => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
     const newFilters = [...filters[filterType]].filter(
-      (f) => f !== defaultValue && f !== `!${defaultValue}`
+      (f) => f !== defaultValue && f !== `!${defaultValue}`,
     );
 
     if (newFilter) newFilters.push(newFilter);
@@ -120,7 +120,7 @@ const SearchFilters = (props: Props) => {
       | 'estVal'
       | 'owlsValue'
       | 'restockProfit'
-      | 'colorTolerance'
+      | 'colorTolerance',
   ) => {
     let newFilters = filters;
     if (!['restockProfit', 'colorTolerance'].includes(filterType)) {

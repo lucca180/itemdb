@@ -55,7 +55,7 @@ const ItemActionModal = (props: ItemActionModalProps) => {
           headers: {
             authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (res.status === 200) {

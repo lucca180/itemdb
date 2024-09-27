@@ -111,8 +111,8 @@ const ItemRestock = (props: Props) => {
                 restockProfit && restockProfit <= 0
                   ? 'red.300'
                   : specialDay
-                  ? 'green.200'
-                  : undefined
+                    ? 'green.200'
+                    : undefined
               }
             >
               {!restockProfit && '???'}

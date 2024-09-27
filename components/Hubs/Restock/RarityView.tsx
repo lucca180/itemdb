@@ -63,7 +63,7 @@ const groupItems = (items: ItemData[]) => {
   let last = 0;
   rarityGroups.map((rarity) => {
     const itemList = items.filter(
-      (item) => item.rarity && item.rarity <= rarity && item.rarity > last
+      (item) => item.rarity && item.rarity <= rarity && item.rarity > last,
     );
 
     if (!itemList.length) {

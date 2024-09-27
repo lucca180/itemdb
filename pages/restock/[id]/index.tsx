@@ -63,7 +63,7 @@ const RestockShop = (props: RestockShopPageProps) => {
   const [loading, setLoading] = useState(true);
   const [itemFilter, setItemFilter] = useState<ItemFilter>({ query: undefined, minProfit: 5000 });
   const [viewType, setViewType] = useState<'default' | 'rarity'>(
-    userPref?.restock_prefView ?? 'rarity'
+    userPref?.restock_prefView ?? 'rarity',
   );
 
   useEffect(() => {

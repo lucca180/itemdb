@@ -40,15 +40,15 @@ import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 
 const CreateListModal = dynamic<CreateListModalProps>(
-  () => import('../../../components/Modal/CreateListModal')
+  () => import('../../../components/Modal/CreateListModal'),
 );
 
 const DeleteListModal = dynamic<DeleteListModalProps>(
-  () => import('../../../components/Modal/DeleteListModal')
+  () => import('../../../components/Modal/DeleteListModal'),
 );
 
 const EditProfileModal = dynamic<EditProfileModalProps>(
-  () => import('../../../components/Modal/EditProfileModal')
+  () => import('../../../components/Modal/EditProfileModal'),
 );
 
 type ExtendedUserList = UserList & {
@@ -234,7 +234,7 @@ const UserListsPage = (props: Props) => {
           headers: {
             authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (res.data.success) {

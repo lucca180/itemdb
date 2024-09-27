@@ -33,7 +33,7 @@ export const wp_getBySlug = async (slug: string): Promise<WP_Article | null> => 
     const thumburl: string | null =
       ((post._embedded?.['wp:featuredmedia']?.[0] as any)?.source_url || '').replace(
         'https://',
-        'https://i0.wp.com/'
+        'https://i0.wp.com/',
       ) || null;
 
     return {

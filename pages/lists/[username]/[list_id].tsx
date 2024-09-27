@@ -56,19 +56,19 @@ import { getFiltersDiff } from '../../search';
 import { AddListItemsModalProps } from '../../../components/Modal/AddListItemsModal';
 
 const CreateListModal = dynamic<CreateListModalProps>(
-  () => import('../../../components/Modal/CreateListModal')
+  () => import('../../../components/Modal/CreateListModal'),
 );
 
 const ItemActionModal = dynamic<ItemActionModalProps>(
-  () => import('../../../components/Modal/ItemActionModal')
+  () => import('../../../components/Modal/ItemActionModal'),
 );
 
 const SearchFilterModal = dynamic<SearchFilterModalProps>(
-  () => import('../../../components/Search/SearchFiltersModal')
+  () => import('../../../components/Search/SearchFiltersModal'),
 );
 
 const AddListItemsModal = dynamic<AddListItemsModalProps>(
-  () => import('../../../components/Modal/AddListItemsModal')
+  () => import('../../../components/Modal/AddListItemsModal'),
 );
 
 type ExtendedListItemInfo = ListItemInfo & { hasChanged?: boolean };
@@ -207,7 +207,7 @@ const ListPage = (props: Props) => {
       setRawItemInfo([...itemInfos]);
 
       const sortedItemInfo = itemInfos.sort((a, b) =>
-        sortItems(a, b, listData.sortBy, listData.sortDir, itemData)
+        sortItems(a, b, listData.sortBy, listData.sortDir, itemData),
       );
       const infoIds = [];
       const itemMap: { [id: number]: ListItemInfo } = {};
@@ -242,7 +242,7 @@ const ListPage = (props: Props) => {
     if (!list) return [{}, []];
 
     const itemInfoRes = await axios.get(
-      `/api/v1/lists/${list.owner.username}/${list.internal_id}/items`
+      `/api/v1/lists/${list.owner.username}/${list.internal_id}/items`,
     );
     const itemInfoData: ListItemInfo[] = itemInfoRes.data;
 
@@ -308,7 +308,7 @@ const ListPage = (props: Props) => {
     }
 
     const sortedItemInfo = Object.values(itemInfo).sort((a, b) =>
-      sortItems(a, b, sortBy, sortDir, items)
+      sortItems(a, b, sortBy, sortDir, items),
     );
     setSortInfo({ sortBy, sortDir });
     setItemInfoIds(sortedItemInfo.map((item) => item.internal_id));
@@ -344,13 +344,13 @@ const ListPage = (props: Props) => {
       `/api/v1/lists/${list.owner.username}/${list.internal_id}/items`,
       {
         params,
-      }
+      },
     );
 
     const itemInfoData = itemRes.data as ListItemInfo[];
 
     const sortedItemInfo = itemInfoData.sort((a, b) =>
-      sortItems(a, b, list.sortBy, list.sortDir, items)
+      sortItems(a, b, list.sortBy, list.sortDir, items),
     );
 
     const itemMap: { [id: number]: ListItemInfo } = {};
@@ -390,7 +390,7 @@ const ListPage = (props: Props) => {
         setItemSelect([...itemSelect, infoId]);
       }
     },
-    [isEdit, itemSelect, canEdit]
+    [isEdit, itemSelect, canEdit],
   );
 
   const handleSelectCheckbox = useCallback(
@@ -398,7 +398,7 @@ const ListPage = (props: Props) => {
       if (checkAll) setItemSelect(itemInfoIds);
       else setItemSelect([]);
     },
-    [itemInfoIds]
+    [itemInfoIds],
   );
 
   const handleSort = useCallback(
@@ -418,7 +418,7 @@ const ListPage = (props: Props) => {
       setItemInfoIds([...newOrder, ...highlights]);
       setItemInfo(newInfo);
     },
-    [itemInfo, itemInfoIds]
+    [itemInfo, itemInfoIds],
   );
 
   const setHasChanges = () => {
@@ -470,7 +470,7 @@ const ListPage = (props: Props) => {
           headers: {
             authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (res.data.success) {
@@ -498,7 +498,7 @@ const ListPage = (props: Props) => {
     (
       id: number,
       value: number,
-      field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order'
+      field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order',
     ) => {
       const newInfo = { ...itemInfo };
 
@@ -510,7 +510,7 @@ const ListPage = (props: Props) => {
       setItemInfo(newInfo);
       setHasChanges();
     },
-    [itemInfo]
+    [itemInfo],
   );
 
   const cntxAction = useCallback(
@@ -520,7 +520,7 @@ const ListPage = (props: Props) => {
       setItemSelect([infoId]);
       setSelectionAction(action);
     },
-    [itemInfoIds]
+    [itemInfoIds],
   );
 
   if (isLoading)
@@ -793,7 +793,7 @@ const ListPage = (props: Props) => {
         )}
 
         {(searchItemInfoIds ?? itemInfoIds).filter(
-          (a) => !!itemInfo && itemInfo[a].isHighlight && !itemInfo[a].isHidden
+          (a) => !!itemInfo && itemInfo[a].isHighlight && !itemInfo[a].isHidden,
         ).length > 0 && (
           <Flex gap={3} flexFlow="column" p={3} bg="gray.700" borderRadius="md">
             <Center flexFlow="column">
@@ -812,7 +812,9 @@ const ListPage = (props: Props) => {
                 ids={itemInfoIds
                   .filter((a) => itemInfo[a].isHighlight)
                   .sort((a, b) =>
-                    items[itemInfo[a].item_iid].name.localeCompare(items[itemInfo[b].item_iid].name)
+                    items[itemInfo[a].item_iid].name.localeCompare(
+                      items[itemInfo[b].item_iid].name,
+                    ),
                   )}
                 list={list}
                 itemInfo={itemInfo}
@@ -884,7 +886,7 @@ const sortItems = (
   b: ListItemInfo,
   sortBy: string,
   sortDir: string,
-  items: { [id: string]: ItemData }
+  items: { [id: string]: ItemData },
 ) => {
   const itemA = items[a.item_iid];
   const itemB = items[b.item_iid];

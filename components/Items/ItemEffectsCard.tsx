@@ -207,7 +207,7 @@ const EffectText = (props: EffectTextProps) => {
                   <>
                     <Link
                       href={`https://www.neopets.com/pool/all_pb.phtml?f_color_id=${getPetColorId(
-                        colorTarget
+                        colorTarget,
                       )}`}
                       isExternal
                     >
@@ -232,7 +232,7 @@ const EffectText = (props: EffectTextProps) => {
                   <>
                     <Link
                       href={`https://www.neopets.com/pool/all_pb.phtml?f_species_id=${getSpeciesId(
-                        speciesTarget
+                        speciesTarget,
                       )}`}
                       isExternal
                     >

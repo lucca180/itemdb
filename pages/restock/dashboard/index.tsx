@@ -53,11 +53,11 @@ import { FaArrowTrendUp, FaArrowTrendDown } from 'react-icons/fa6';
 import { DashboardOptionsModalProps } from '../../../components/Modal/DashboardOptionsModal';
 
 const RestockWrappedModal = dynamic<RestockWrappedModalProps>(
-  () => import('../../../components/Modal/RestockWrappedModal')
+  () => import('../../../components/Modal/RestockWrappedModal'),
 );
 
 const DashboardOptionsModal = dynamic<DashboardOptionsModalProps>(
-  () => import('../../../components/Modal/DashboardOptionsModal')
+  () => import('../../../components/Modal/DashboardOptionsModal'),
 );
 
 const color = Color('#599379').rgb().array();
@@ -203,7 +203,7 @@ const RestockDashboard = () => {
     }
 
     const validSessions = [...currentParsed, ...unsyncParsed].filter(
-      (x) => x.clicks.length && Object.keys(x.items).length
+      (x) => x.clicks.length && Object.keys(x.items).length,
     );
 
     setImportCount(validSessions.length);
@@ -225,7 +225,7 @@ const RestockDashboard = () => {
     setFilter((prev) => ({ ...(prev ?? defaultFilter), [name]: value, timestamp: undefined }));
     localStorage.setItem(
       'restockFilter',
-      JSON.stringify({ ...filter, [name]: value, timestamp: undefined })
+      JSON.stringify({ ...filter, [name]: value, timestamp: undefined }),
     );
   };
 

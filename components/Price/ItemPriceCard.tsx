@@ -39,7 +39,7 @@ const WrongPriceModal = dynamic<WrongPriceModalProps>(() => import('../Modal/Wro
 const SaleStatusModal = dynamic<SaleStatusModalProps>(() => import('../Modal/SaleStatusModal'));
 
 const AdminEditPriceModal = dynamic<AdminEditPriceModalProps>(
-  () => import('../Modal/AdminEditPriceModal')
+  () => import('../Modal/AdminEditPriceModal'),
 );
 
 function fetcher<T>(url: string, config?: AxiosRequestConfig<any>): Promise<T> {
@@ -72,7 +72,7 @@ const ItemPriceCard = (props: Props) => {
   const { data: prices } = useSWRImmutable<PriceData[]>(
     `/api/v1/items/${props.item.internal_id}/prices`,
     (url) => fetcher(url),
-    { fallbackData: props.prices }
+    { fallbackData: props.prices },
   );
 
   const { data: lastSeen } = useSWRImmutable<ItemLastSeen | null>(
@@ -87,7 +87,7 @@ const ItemPriceCard = (props: Props) => {
       },
     ],
     ([url, config]: any) => fetcher(url, config),
-    { fallbackData: props.lastSeen }
+    { fallbackData: props.lastSeen },
   );
 
   const price = prices?.[0];

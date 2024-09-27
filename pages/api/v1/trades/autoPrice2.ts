@@ -107,14 +107,14 @@ const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
   if (similarList.length === 0) return null;
 
   const isAllItemsTheSame = trade.items.every(
-    (t) => t.name === trade.items[0].name && t.image_id === trade.items[0].image_id
+    (t) => t.name === trade.items[0].name && t.image_id === trade.items[0].image_id,
   );
 
   // let unpriced = null;
 
   const similar = similarList.find((t) => {
     const isTheSame = t.items.every(
-      (t2) => t2.name === t.items[0].name && t2.image_id === t.items[0].image_id
+      (t2) => t2.name === t.items[0].name && t2.image_id === t.items[0].image_id,
     );
 
     // const isSimilar = t.items.length === trade.items.length && isTheSame === isAllItemsTheSame;

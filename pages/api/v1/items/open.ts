@@ -93,7 +93,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     });
 
   const openableItems = (await Promise.all(openableItemsPromise)).filter(
-    (item) => item
+    (item) => item,
   ) as Prisma.OpenableItemsUncheckedCreateInput[];
 
   const openableItemData = await prisma.openableItems.createMany({
@@ -168,7 +168,7 @@ export const processOpenableItems = async (openableItem: OpenableQueue) => {
   });
 
   const openableItems = (await Promise.all(openableItemsPromise)).filter(
-    (item) => item
+    (item) => item,
   ) as Prisma.OpenableItemsUncheckedCreateInput[];
 
   const openableItemData = await prisma.openableItems.createMany({
@@ -182,7 +182,7 @@ const addToQueue = async (
   item: any,
   parent: any,
   opening_id: string,
-  ip_address: string | null
+  ip_address: string | null,
 ) => {
   return prisma.openableQueue.create({
     data: {

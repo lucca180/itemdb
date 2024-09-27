@@ -367,7 +367,7 @@ const updateLastSeenTrades = async (
   trades: Trades &
     {
       items: TradeItems[];
-    }[]
+    }[],
 ) => {
   const itemNameImage: any = {};
 

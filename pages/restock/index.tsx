@@ -23,7 +23,7 @@ const allCats = [
   ...new Set(
     Object.values(restockShopInfo)
       .map((shop) => shop.category)
-      .flat()
+      .flat(),
   ),
 ].sort((a, b) => a.localeCompare(b));
 
@@ -143,8 +143,8 @@ const RestockHub = () => {
                   ? diff === 'Beginner'
                     ? 'green'
                     : diff === 'Advanced'
-                    ? 'red'
-                    : 'cyan'
+                      ? 'red'
+                      : 'cyan'
                   : undefined
               }
               onClick={() => handleDiff(diff)}
@@ -158,7 +158,7 @@ const RestockHub = () => {
         {(selCats.length > 0 ? selCats : allCats).map((cat) => {
           const shops = Object.values(restockShopInfo).filter(
             (x) =>
-              (selDiff.length > 0 ? selDiff.includes(x.difficulty) : true) && x.category === cat
+              (selDiff.length > 0 ? selDiff.includes(x.difficulty) : true) && x.category === cat,
           );
           if (shops.length === 0) return null;
           return (

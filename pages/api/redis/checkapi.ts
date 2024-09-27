@@ -50,7 +50,7 @@ if (process.env.NODE_ENV === 'production') {
 export const redis_setItemCount = async (
   ip: string | null | undefined,
   itemCount: number,
-  req: NextApiRequest
+  req: NextApiRequest,
 ) => {
   try {
     if (skipAPIMiddleware || !ip || !itemCount) return;

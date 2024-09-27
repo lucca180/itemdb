@@ -43,7 +43,7 @@ const NCTrade = (props: Props) => {
 
   const [match, setMatch] = useState({ seeking: {}, trading: {} });
   const [tableType, setTableType] = useState<'seeking' | 'trading' | 'owlsTrading'>(
-    seeking.length ? 'seeking' : 'trading'
+    seeking.length ? 'seeking' : 'trading',
   );
   const [tradeHistory, setTradeHistory] = useState<OwlsTrade[] | null>(null);
 

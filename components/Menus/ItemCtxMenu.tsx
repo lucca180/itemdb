@@ -31,7 +31,7 @@ import Image from 'next/image';
 import { useLists } from '../../utils/useLists';
 
 const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
-  () => import('../Modal/DuplicatedItemModal')
+  () => import('../Modal/DuplicatedItemModal'),
 );
 
 const CtxMenu = chakra(ContextMenu, {
@@ -138,7 +138,7 @@ const ItemCtxMenu = (props: Props) => {
               item_iid: item.internal_id,
             },
           ],
-        }
+        },
       );
       if (res.data.success) {
         toast.update(toastId, {

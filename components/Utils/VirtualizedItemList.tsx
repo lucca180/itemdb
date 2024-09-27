@@ -26,7 +26,7 @@ export const VirtualizedItemList = (props: VirtualizedItemListProps) => {
         acc[groupIndex].push(cur);
         return acc;
       }, [] as ItemData[][]),
-    [items, dimensions?.borderBox.width]
+    [items, dimensions?.borderBox.width],
   );
 
   return (

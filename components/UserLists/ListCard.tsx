@@ -47,7 +47,7 @@ const UserListCard = (props: Props) => {
   const copyLink = () => {
     const userName = list.official ? 'official' : list.owner.username;
     navigator.clipboard.writeText(
-      `${window.location.origin}/lists/${userName}/${list.internal_id}`
+      `${window.location.origin}/lists/${userName}/${list.internal_id}`,
     );
     toast({
       title: t('General.link-copied'),

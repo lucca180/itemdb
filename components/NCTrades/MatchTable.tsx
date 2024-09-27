@@ -15,7 +15,7 @@ const MatchTable = (props: Props) => {
   const t = useTranslations();
   const { data, matches, type } = props;
   const sortedData = data.sort(
-    (a, b) => new Date(b.owner.lastSeen).getTime() - new Date(a.owner.lastSeen).getTime()
+    (a, b) => new Date(b.owner.lastSeen).getTime() - new Date(a.owner.lastSeen).getTime(),
   );
 
   return (

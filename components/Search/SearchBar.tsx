@@ -87,7 +87,7 @@ export const SearchBar = (props: Props) => {
       {
         arrayFormat: 'brackets',
         encode: false,
-      }
+      },
     );
 
     paramsString = paramsString ? '&' + paramsString : '';
@@ -144,7 +144,7 @@ export const SearchBar = (props: Props) => {
     debounce((newValue: string) => {
       preSearch(newValue);
     }, 375),
-    [isOpen]
+    [isOpen],
   );
 
   return (

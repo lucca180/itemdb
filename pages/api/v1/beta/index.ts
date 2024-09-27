@@ -45,7 +45,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
   const itemsTotal = prisma.items.count();
 
   const tradeQueueRaw = prisma.$queryRaw<{ count: number }[]>(
-    Prisma.sql`SELECT COUNT(DISTINCT hash) as "count" FROM trades where processed = 0`
+    Prisma.sql`SELECT COUNT(DISTINCT hash) as "count" FROM trades where processed = 0`,
   );
 
   const feedbackVoting = prisma.feedbacks.count({

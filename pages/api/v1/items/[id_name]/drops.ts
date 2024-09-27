@@ -92,7 +92,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 // ---------- helpers ---------- //
 export const getItemDrops = async (
   item_iid: number,
-  isNC = false
+  isNC = false,
 ): Promise<ItemOpenable | null> => {
   const drops = await prisma.openableItems.findMany({
     where: {
@@ -285,7 +285,7 @@ export const getItemDrops = async (
 
       openingMinMax = getMinMax(
         opening.filter((x) => !ignoreItems.includes(x)).length,
-        openingMinMax
+        openingMinMax,
       );
 
       if (drops === 0) return;

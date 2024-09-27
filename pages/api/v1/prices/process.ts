@@ -168,7 +168,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       item_iid: x.item_iid,
       count: Number(x.count),
       addedAt: new Date(x.MAX_addedAt),
-    })
+    }),
   );
 
   let total = 0;
@@ -212,11 +212,11 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
           item,
           newPriceAlgorithm.price,
           newPriceAlgorithm.usedIds,
-          newPriceAlgorithm.latestDate
+          newPriceAlgorithm.latestDate,
         ).then((_) => {
           if (_) processedIDs.push(...allIDs);
           return _;
-        })
+        }),
       );
     } catch (e) {
       console.error(e, item);
@@ -317,7 +317,7 @@ async function updateOrAddDB(
   priceData: PriceProcess2,
   priceValue: number,
   usedIDs: number[],
-  latestDate: Date
+  latestDate: Date,
 ): Promise<Prisma.ItemPricesUncheckedCreateInput | undefined> {
   const newPriceData: Prisma.ItemPricesUncheckedCreateInput = {
     name: 'priceprocess2',

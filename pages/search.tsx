@@ -37,7 +37,7 @@ import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 
 const SearchFilterModal = dynamic<SearchFilterModalProps>(
-  () => import('../components/Search/SearchFiltersModal')
+  () => import('../components/Search/SearchFiltersModal'),
 );
 
 const Axios = axios.create({
@@ -51,7 +51,7 @@ Axios.interceptors.response.use(
       return Promise.reject({ status: 499 });
     }
     return Promise.reject((error.response && error.response.data) || 'Error');
-  }
+  },
 );
 
 const intl = new Intl.NumberFormat();
@@ -267,7 +267,7 @@ const SearchPage = () => {
           headers: {
             authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
       if (res.data.success) {
         toast.update(toastId, {
@@ -378,7 +378,7 @@ const SearchPage = () => {
                     defaultText={t('Search.showing', {
                       val1: intl.format(searchResult.resultsPerPage * (searchResult.page - 1) + 1),
                       val2: intl.format(
-                        Math.min(searchResult.resultsPerPage * searchResult.page, totalResults)
+                        Math.min(searchResult.resultsPerPage * searchResult.page, totalResults),
                       ),
                       val3: intl.format(totalResults),
                     })}

@@ -9,7 +9,7 @@ export const processPrices2 = (allItemData: PriceProcess2[]) => {
 
   // get only the most recent data available that fits the criteria
   const mostRecentsRaw = filterMostRecents(allItemData).sort(
-    (a, b) => a.price.toNumber() - b.price.toNumber()
+    (a, b) => a.price.toNumber() - b.price.toNumber(),
   );
 
   if (mostRecentsRaw.length === 0) return undefined;
@@ -41,7 +41,7 @@ export const processPrices2 = (allItemData: PriceProcess2[]) => {
   const priceSTD = standardDeviation(prices);
 
   let out = prices.filter(
-    (x) => x <= priceMean + priceSTD * 0.75 && x >= priceMean - priceSTD * 1.8
+    (x) => x <= priceMean + priceSTD * 0.75 && x >= priceMean - priceSTD * 1.8,
   );
   out = out.splice(0, 5);
 
@@ -64,7 +64,7 @@ function filterMostRecents(priceProcessList: PriceProcess2[]) {
   };
 
   const firstFiltered = priceProcessList.filter(
-    (x) => differenceInCalendarDays(Date.now(), x.addedAt) <= 0
+    (x) => differenceInCalendarDays(Date.now(), x.addedAt) <= 0,
   );
 
   if (checkFiltered(firstFiltered, daysThreshold[3] * 2)) return firstFiltered;
@@ -79,7 +79,7 @@ function filterMostRecents(priceProcessList: PriceProcess2[]) {
     const filtered = priceProcessList.filter(
       (x) =>
         differenceInCalendarDays(Date.now(), x.addedAt) <= days &&
-        differenceInCalendarDays(Date.now(), x.addedAt) >= prevDays
+        differenceInCalendarDays(Date.now(), x.addedAt) >= prevDays,
     );
 
     if (checkFiltered(filtered, goal)) return filtered;

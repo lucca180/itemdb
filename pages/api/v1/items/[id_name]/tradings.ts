@@ -148,7 +148,7 @@ const getAuctionData = async (name: string) => {
 const getOwlsTradeData = async (name: string) => {
   try {
     const res = await axios.get(
-      'https://neo-owls.net/itemdata/profile/' + encodeURIComponent(name)
+      'https://neo-owls.net/itemdata/profile/' + encodeURIComponent(name),
     );
 
     if (res.data?.trade_reports) return res.data.trade_reports;

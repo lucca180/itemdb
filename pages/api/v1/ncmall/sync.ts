@@ -100,7 +100,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
             discountPrice: item.discountPrice,
             active: true,
           },
-        })
+        }),
       );
     }
   }
@@ -116,7 +116,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       data: {
         active: false,
       },
-    })
+    }),
   );
 
   const itemData = inexistentIds.map((id) => {
