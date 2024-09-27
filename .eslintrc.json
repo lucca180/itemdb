@@ -13,7 +13,9 @@
     ],
     // wrongly assuming that you will type things correcly :pray:
     "@typescript-eslint/no-explicit-any": "off",
-    "@typescript-eslint/no-unused-vars": "warn"
+    "@typescript-eslint/no-unused-vars": ["warn", {
+      "caughtErrors": "none"
+    }]
   },
   "ignorePatterns": ["userscripts/*", "utils/views/*"]
 }

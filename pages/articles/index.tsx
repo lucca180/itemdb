@@ -23,7 +23,7 @@ const ArticlesPage = (props: Props) => {
         openGraph: {
           images: [
             {
-              url: 'https://images.neopets.com/nt/ntimages/94_acara_type.gif' ?? '',
+              url: 'https://images.neopets.com/nt/ntimages/94_acara_type.gif',
               width: 150,
               height: 150,
               alt: t('Articles.all-articles'),
