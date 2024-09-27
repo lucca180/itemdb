@@ -1,17 +1,5 @@
-import {
-  Button,
-  Flex,
-  Heading,
-  Icon,
-  ListItem,
-  Text,
-  UnorderedList,
-  useDisclosure,
-} from '@chakra-ui/react';
+import { Card, Center, Heading, Text, useDisclosure, Image, Box } from '@chakra-ui/react';
 import Link from 'next/link';
-import { BsCheckAll, BsPencilFill } from 'react-icons/bs';
-import { FiSend } from 'react-icons/fi';
-import CardBase from '../../components/Card/CardBase';
 import HeaderCard from '../../components/Card/HeaderCard';
 import Layout from '../../components/Layout';
 import { FeedbackModalProps } from '../../components/Modal/FeedbackModal';
@@ -19,7 +7,7 @@ import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 
 const FeedbackModal = dynamic<FeedbackModalProps>(
-  () => import('../../components/Modal/FeedbackModal')
+  () => import('../../components/Modal/FeedbackModal'),
 );
 
 const FeedbackPage = () => {
@@ -44,86 +32,26 @@ const FeedbackPage = () => {
           {t('Feedback.feedback-system-description')}
         </Text>
       </HeaderCard>
-      <Flex
-        mt={8}
-        gap={6}
-        alignItems={{ base: 'center', md: 'flex-start' }}
-        flexFlow={{ base: 'column', md: 'row' }}
-      >
-        <CardBase
-          chakraWrapper={{ flex: 1 }}
-          title={t('Feedback.how-it-works')}
-          chakra={{ bg: 'gray.700' }}
-        >
-          <Text>
-            {t('Feedback.fds-pg-1')}
-            <br />
-            <br />
-            {t('Feedback.fds-pg-2')}
-          </Text>
-          <Heading size="md" mt={6}>
-            {t('Feedback.suggesting')}
-          </Heading>
-          <Text>{t('Feedback.as-suggesting-you-can-be-asked-to')}</Text>
-          <UnorderedList mt={3}>
-            <ListItem>{t('Feedback.price-trade-lots')}</ListItem>
-            {/* <ListItem>Search and fill missing data</ListItem> */}
-          </UnorderedList>
-          <Heading size="md" mt={6}>
-            {t('Feedback.voting')}
-          </Heading>
-          <Text>{t('Feedback.as-voting-you-can-be-asked-to')}</Text>
-          <UnorderedList mt={3}>
-            <ListItem>{t('Feedback.perform-fact-checking-on-the-suggested-information')}</ListItem>
-            <ListItem>{t('Feedback.upvote-suggestions')}</ListItem>
-            <ListItem>{t('Feedback.downvote-fraudulent-suggestions-or-spam')}</ListItem>
-          </UnorderedList>
-        </CardBase>
-        <Flex flex="1" flexFlow="column" alignSelf="stretch" alignItems="center" gap={6}>
-          <Heading size="md">{t('Feedback.i-want-to')}</Heading>
-          <Flex flex="1" gap={3} flexFlow="column" justifyContent="center">
-            <Button
-              bg="gray.700"
-              as={Link}
-              href="/feedback/trades"
-              p={6}
-              gap={3}
-              borderRadius="md"
-              textAlign={'center'}
-              leftIcon={<Icon boxSize={5} as={BsPencilFill} color="purple.200" />}
-            >
-              <Text fontSize="md" fontWeight="bold">
-                {t('Feedback.price-trades')}
-              </Text>
-            </Button>
-            <Button
-              bg="gray.700"
-              as={Link}
-              href="/feedback/vote"
-              p={6}
-              borderRadius="md"
-              textAlign={'center'}
-              leftIcon={<Icon boxSize={10} as={BsCheckAll} color="green.200" />}
-            >
-              <Text fontSize="md" fontWeight="bold">
-                {t('Feedback.vote-suggestions')}
-              </Text>
-            </Button>
-            <Button
-              bg="gray.700"
-              onClick={onOpen}
-              p={6}
-              borderRadius="md"
-              textAlign={'center'}
-              leftIcon={<Icon boxSize={6} as={FiSend} />}
-            >
-              <Text fontSize="md" fontWeight="bold">
-                {t('Feedback.send-feedback')}
-              </Text>
-            </Button>
-          </Flex>
-        </Flex>
-      </Flex>
+      <Center gap={8} mt={10} alignItems={'stretch'}>
+        <FeedbackCard
+          title={t('Feedback.trade-lot-pricing')}
+          description={t('Feedback.trade-lot-pricing-txt')}
+          icon="https://images.neopets.com/surveyimg/sur_cards/04_island/066.jpg"
+          href="/feedback/trades"
+        />
+        <FeedbackCard
+          title={t('Feedback.contact-us')}
+          description={t('Feedback.contact-us-text')}
+          icon="https://images.neopets.com/press/lg_aisha_7.jpg"
+          onClick={onOpen}
+        />
+        <FeedbackCard
+          title={t('Feedback.suggestion-voting')}
+          description={t('Feedback.suggestion-voting-txt')}
+          icon="https://images.neopets.com/games/tradingcards/premium/0911.gif"
+          href="/feedback/vote"
+        />
+      </Center>
     </Layout>
   );
 };
@@ -137,3 +65,49 @@ export async function getStaticProps(context: any) {
     },
   };
 }
+
+const FeedbackCard = ({
+  title,
+  description,
+  icon,
+  href,
+  onClick,
+}: {
+  title: string;
+  description: string;
+  icon: string;
+  href?: string;
+  onClick?: () => void;
+}) => {
+  return (
+    <Card
+      w={275}
+      h={350}
+      direction={'column'}
+      alignItems={'center'}
+      overflow="hidden"
+      variant="outline"
+      rounded={'xl'}
+      p={8}
+      boxShadow={'lg'}
+      bg="gray.700"
+      gap={2}
+      textAlign={'center'}
+      cursor={'pointer'}
+      _hover={{ bg: 'gray.800' }}
+      as={href ? Link : undefined}
+      href={href}
+      onClick={onClick}
+    >
+      <Box w="200px" h="200px" overflow={'hidden'}>
+        <Image src={icon} objectFit={'cover'} alt="trading post" />
+      </Box>
+      <Text fontSize={'sm'} fontWeight={'bold'}>
+        {title}
+      </Text>
+      <Text fontSize={'xs'} color="gray.400">
+        {description}
+      </Text>
+    </Card>
+  );
+};

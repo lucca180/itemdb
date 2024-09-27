@@ -1,4 +1,4 @@
-import { Flex, Box, Image } from '@chakra-ui/react';
+import { Flex, Box, Image, Container } from '@chakra-ui/react';
 import Color from 'color';
 import NextImage from 'next/image';
 import icon from '../../public/logo_icon.svg';
@@ -62,7 +62,9 @@ const HeaderCard = (props: Props) => {
             />
           )}
         </Box>
-        <Box>{children}</Box>
+        <Container mx={0} maxW="container.lg" p={0}>
+          {children}
+        </Container>
       </Flex>
     </Box>
   );
