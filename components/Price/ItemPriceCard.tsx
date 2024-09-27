@@ -32,6 +32,7 @@ import { useAuth } from '../../utils/auth';
 import useSWRImmutable from 'swr';
 import axios, { AxiosRequestConfig } from 'axios';
 import { SaleStatusModalProps } from '../Modal/SaleStatusModal';
+import { FaFlag } from 'react-icons/fa';
 
 const ChartComponent = dynamic<ChartComponentProps>(() => import('../Charts/PriceChart'));
 const LastSeenModal = dynamic<LastSeenModalProps>(() => import('../Modal/LastSeenModal'));
@@ -261,8 +262,13 @@ const ItemPriceCard = (props: Props) => {
                   )}
                 </Stat>
                 {price?.value && (
-                  <Button size="xs" onClick={wrongPriceModal.onOpen}>
-                    {t('ItemPage.report-wrong-price')}
+                  <Button
+                    size="xs"
+                    onClick={wrongPriceModal.onOpen}
+                    colorScheme="red"
+                    variant={'ghost'}
+                  >
+                    <Icon as={FaFlag} mr={1} verticalAlign={'center'} /> {t('ItemPage.wrong-price')}
                   </Button>
                 )}
               </Flex>

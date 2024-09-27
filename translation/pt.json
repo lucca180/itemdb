@@ -203,7 +203,8 @@
     "wrong-price-report": "Se você realmente acredita que algo deu errado ao definir o preço deste item, use o botão abaixo e nós daremos uma olhada nisso.",
     "wrong-price-report-2": "Tenha em mente que os admins do itemdb atualmente não podem adicionar novos preços manualmente - apenas o poderoso algoritmo pode fazer isso - mas podemos corrigir quaisquer erros que ele cometa.",
     "x-entries": "{x} entradas",
-    "algorithm-txt2": "Nosso sistema também irá ignorar dados repetidos, portanto, se nos enviar novos dados e o número de entradas não mudar, significa que já temos esses dados."
+    "algorithm-txt2": "Nosso sistema também irá ignorar dados repetidos, portanto, se nos enviar novos dados e o número de entradas não mudar, significa que já temos esses dados.",
+    "wrong-price": "Preço Errado?"
   },
   "Button": {
     "feedback": "Feedback",
@@ -363,7 +364,7 @@
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",
-    "modalLabel": "Digite seu feedback, comentários e ideias",
+    "modalLabel": "Escreva seus comentários e ideias (ou detalhes sobre bugs e erros)",
     "modalContributeCallback": "Itens faltando? Preços desatualizados? <Link>Dê uma olhada aqui</Link>",
     "done": "Pronto",
     "thanks": "Nós agradecemos seus comentários e feedbacks",
@@ -489,7 +490,14 @@
     "calculator-pure-price": "Preço em Pure",
     "calculator-set-price": "Definir Preço",
     "calculator-tip": "Dica: você pode pressionar <Kbd>c</Kbd> dentro de um input de preço para abrir a Calculadora de Preços",
-    "price-calculator": "Calculadora de Preços"
+    "price-calculator": "Calculadora de Preços",
+    "trade-lot-pricing": "Precificar Lotes de Troca",
+    "trade-lot-pricing-txt": "Preencha o valor de cada item de um lote de trocas de acordo com a lista de desejos",
+    "contact-us": "Fale com a gente",
+    "contact-us-text": "Tem uma pergunta, ideia legal, sugestão ou encontrou um erro? Fale com a gente!",
+    "suggestion-voting": "Votação de Sugestões",
+    "suggestion-voting-txt": "Vote na sugestões de outros usuários (ou do nosso sistema)",
+    "bug-helper-text": "Se você está reportando um bug, coloque a maior quantidade de detalhes possível sobre o que aconteceu e quando."
   },
   "Lists": {
     "add-to-list": "Adicionar a Lista",

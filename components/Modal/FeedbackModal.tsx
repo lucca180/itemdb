@@ -79,27 +79,28 @@ const FeedbackModal = (props: FeedbackModalProps) => {
     <Modal isOpen={isOpen} onClose={handleCancel} isCentered scrollBehavior="inside">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Feedback</ModalHeader>
+        <ModalHeader>{t('Feedback.contact-us')}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           {!isLoading && !isSuccess && !error && (
-            <Stack gap={3}>
+            <Stack gap={5}>
               <FormControl>
                 <FormLabel color="gray.300">
                   {t('General.email-address')} ({t('General.optional')})
                 </FormLabel>
                 <Input variant="filled" onChange={(e) => setEmail(e.target.value)} value={email} />
-                <FormHelperText>{t('Feedback.modalHelper')}</FormHelperText>
+                <FormHelperText fontSize={'xs'}>{t('Feedback.modalHelper')}</FormHelperText>
               </FormControl>
               <FormControl>
-                <FormLabel color="gray.300">{t('Feedback.modalLabel')} :)</FormLabel>
+                <FormLabel color="gray.300">{t('Feedback.modalLabel')}</FormLabel>
                 <Textarea
                   variant="filled"
                   onChange={(e) => setMessage(e.target.value)}
                   value={message}
                 />
+                <FormHelperText fontSize={'xs'}>{t('Feedback.bug-helper-text')}</FormHelperText>
               </FormControl>
-              <Text fontSize="sm" color="gray.400">
+              <Text fontSize="sm" color="gray.400" textAlign={'center'}>
                 {t.rich('Feedback.modalContributeCallback', {
                   Link: (chunks) => (
                     <Link as={NextLink} href="/contribute" color="gray.200">

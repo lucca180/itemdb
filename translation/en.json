@@ -202,7 +202,8 @@
     "wrong-price-report-2": "Bear in mind that itemdb admins currently cannot add new prices manually - only the all mighty algorithm can do that - but we can correct any mistakes it makes.",
     "thank-you-for-your-report": "Thank you for your report!",
     "itemdb-admins-please-help": "ITEMDB ADMINS PLEASE HELP!!!!!!!!",
-    "algorithm-txt2": "Our system also will ignore repeated data, so if send us new data and the number of entries does not change, it means that we already have that data."
+    "algorithm-txt2": "Our system also will ignore repeated data, so if send us new data and the number of entries does not change, it means that we already have that data.",
+    "wrong-price": "Wrong Price?"
   },
   "Button": {
     "feedback": "Feedback",
@@ -494,7 +495,7 @@
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",
-    "modalLabel": "Write your feedback, comments and ideas",
+    "modalLabel": "Write your feedback, requests and ideas (or bug reports)",
     "modalContributeCallback": "Missing items? Outdated prices? <Link>Check this instead</Link>",
     "done": "Done",
     "thanks": "We appreciate your comments and feedback",
@@ -620,7 +621,14 @@
     "calculator-pure-price": "Pure Price",
     "calculator-final-price": "Final Price",
     "calculator-set-price": "Set Price",
-    "price-calculator": "Price Calculator"
+    "price-calculator": "Price Calculator",
+    "trade-lot-pricing": "Trade Lot Pricing",
+    "trade-lot-pricing-txt": "Fill in the value of each item in the trade lot according to the wishlist",
+    "contact-us": "Contact Us",
+    "contact-us-text": "Have a question, cool idea, suggestion, or found an error? Contact us!",
+    "suggestion-voting": "Suggestion Voting",
+    "suggestion-voting-txt": "Vote on suggestions from other users (or from our system)",
+    "bug-helper-text": "If you are reporting a bug, provide as many details as possible about what happened and when."
   },
   "Restock": {
     "restock-info": "Restock Info",
