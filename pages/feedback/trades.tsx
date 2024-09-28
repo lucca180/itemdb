@@ -173,14 +173,14 @@ const FeedbackSuggest = () => {
         flexFlow={{ base: 'column', md: 'row' }}
       >
         <CardBase
-          chakraWrapper={{ flex: 2 }}
+          chakraWrapper={{ maxW: '700px' }}
           title={t('Feedback.trade-pricing-guidelines')}
           chakra={{ bg: 'gray.700' }}
         >
           <TradeGuidelines />
         </CardBase>
         <Flex
-          flex="1"
+          flex="2"
           flexFlow={{ base: 'column-reverse', md: 'column' }}
           h="100%"
           w="100%"
@@ -246,7 +246,7 @@ export default FeedbackSuggest;
 export const TradeGuidelines = () => {
   const t = useTranslations();
   return (
-    <>
+    <Box fontSize={'sm'}>
       <Text>
         {t.rich('Feedback.pt-1', {
           b: (chunk) => <b>{chunk}</b>,
@@ -256,7 +256,7 @@ export const TradeGuidelines = () => {
         <AlertIcon />
         <Box w="100%">
           <AlertTitle>{t('Feedback.10-02-2024-policy-changes')}</AlertTitle>
-          <AlertDescription fontSize="sm">
+          <AlertDescription fontSize="xs">
             {t.rich('Feedback.new-policy-1', {
               b: (chunk) => <b>{chunk}</b>,
             })}
@@ -277,10 +277,10 @@ export const TradeGuidelines = () => {
           <ListIcon as={BsXCircleFill} color="red.300" />
           {t('Feedback.pt-3')}
           <br />
-          <Text fontSize="sm" color="gray.400">
+          <Text fontSize="xs" color="gray.400">
             {t('Feedback.pt-4')}
           </Text>
-          <Text fontSize="sm" color="gray.400">
+          <Text fontSize="xs" color="gray.400">
             {t('Feedback.pt-5')}
           </Text>
         </ListItem>
@@ -288,7 +288,7 @@ export const TradeGuidelines = () => {
           <ListIcon as={BsXCircleFill} color="red.300" />
           {t('Feedback.pt-6')}
           <br />
-          <Text fontSize="sm" color="gray.400">
+          <Text fontSize="xs" color="gray.400">
             {t('Feedback.pt-7')}
           </Text>
         </ListItem>
@@ -296,10 +296,10 @@ export const TradeGuidelines = () => {
           <ListIcon as={BsXCircleFill} color="red.300" />
           {t('Feedback.pt-8')}
           <br />
-          <Text fontSize="sm" color="gray.400">
+          <Text fontSize="xs" color="gray.400">
             {t('Feedback.pt-9')}
           </Text>
-          <Text fontSize="sm" color="gray.400">
+          <Text fontSize="xs" color="gray.400">
             {t('Feedback.pt-10')}
           </Text>
         </ListItem>
@@ -307,7 +307,7 @@ export const TradeGuidelines = () => {
           <ListIcon as={BsXCircleFill} color="red.300" />
           {t('Feedback.pt-11')}
           <br />
-          <Text fontSize="sm" color="gray.400">
+          <Text fontSize="xs" color="gray.400">
             {t('Feedback.pt-12')}{' '}
           </Text>
         </ListItem>
@@ -320,10 +320,10 @@ export const TradeGuidelines = () => {
           <ListIcon as={BsCheckCircleFill} color="green.300" />
           {t('Feedback.pt-13')}
           <br />
-          <Text fontSize="sm" color="gray.400">
+          <Text fontSize="xs" color="gray.400">
             {t('Feedback.pt-14')}
           </Text>
-          <Text fontSize="sm" color="gray.400">
+          <Text fontSize="xs" color="gray.400">
             {t('Feedback.pt-15')}
           </Text>
         </ListItem>
@@ -331,13 +331,12 @@ export const TradeGuidelines = () => {
           <ListIcon as={BsCheckCircleFill} color="green.300" />
           {t('Feedback.pt-16')}
           <br />
-          {/* <Text fontSize='sm' color="gray.400">Eg: "6 baby pb + 100k" or "2m + HTS" -{">"} leave it blank</Text> */}
         </ListItem>
         <ListItem>
           <ListIcon as={BsCheckCircleFill} color="green.300" />
           {t('Feedback.pt-17')}
           <br />
-          <Text fontSize="sm" color="gray.400">
+          <Text fontSize="xs" color="gray.400">
             {t('Feedback.pt-18')}
           </Text>
         </ListItem>
@@ -347,7 +346,7 @@ export const TradeGuidelines = () => {
           <br />
         </ListItem>
       </List>
-    </>
+    </Box>
   );
 };
 

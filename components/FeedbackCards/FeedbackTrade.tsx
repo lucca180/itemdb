@@ -25,6 +25,8 @@ import { useAuth } from '../../utils/auth';
 import dynamic from 'next/dynamic';
 import { FaCalculator } from 'react-icons/fa';
 import { TradeCalculatorModalProps } from './TradeCalculatorModal';
+//@ts-expect-error missing types
+import Sticky from 'react-stickynode';
 
 const FeedbackExperimentsModal = dynamic<FeedbackExperimentsModalProps>(
   () => import('../Modal/FeedbackExperimentsModal')
@@ -51,7 +53,7 @@ const FeedbackTrade = (props: Props) => {
   const t = useTranslations();
   const { handleSkip, handleSubmit, handleUndo, hasUndo } = props;
   const [trade, setTrade] = useState<TradeData | undefined>(props.trade);
-
+  const [isSticky, setIsSticky] = useState(false);
   useEffect(() => {
     setTrade(props.trade);
   }, [props.trade]);
@@ -134,7 +136,7 @@ const FeedbackTrade = (props: Props) => {
           />
         </Flex>
         <CardBase
-          chakraWrapper={{ flex: 1 }}
+          chakraWrapper={{ flex: 1, id: 'tradeCard' }}
           title={t('Layout.trade-pricing')}
           chakra={{ bg: 'gray.700' }}
         >
@@ -145,17 +147,24 @@ const FeedbackTrade = (props: Props) => {
             <Badge colorScheme="blue">{t('Feedback.x-items', { x: trade?.items.length })}</Badge>
           </Center>
           <Flex flexFlow="column" gap={6}>
-            <Flex
-              textAlign="center"
-              fontSize="sm"
-              wordBreak={'break-word'}
-              whiteSpace={'pre-line'}
-              flexFlow="column"
-              p={2}
+            <Sticky
+              bottomBoundary="#tradeCard"
+              innerZ={1}
+              onStateChange={({ status }: { status: number }) => setIsSticky(status !== 0)}
             >
-              <b>{t('ItemPage.wishlist')}</b>
-              <Text>{trade?.wishlist}</Text>
-            </Flex>
+              <Flex
+                textAlign="center"
+                fontSize="sm"
+                wordBreak={'break-word'}
+                whiteSpace={'pre-line'}
+                flexFlow="column"
+                p={2}
+                bg={isSticky ? 'gray.800' : undefined}
+              >
+                <b>{t('ItemPage.wishlist')}</b>
+                <Text>{trade?.wishlist}</Text>
+              </Flex>
+            </Sticky>
 
             {trade?.items.map((item, i) => (
               <ItemTrade

@@ -53,6 +53,7 @@ type Props = {
   loading?: boolean;
   SEO?: NextSeoProps;
   mainColor?: string;
+  fullWidth?: boolean;
 };
 
 const Layout = (props: Props) => {
@@ -259,7 +260,16 @@ const Layout = (props: Props) => {
             <DropdownOption label={t('Layout.restock-dashboard')} href="/restock/dashboard" />
           </DropdownButton>
         </Flex>
-        <Box as="main" flex="1" w="full" maxW="8xl" marginX="auto" px={4} pb={6} h="100%">
+        <Box
+          as="main"
+          flex="1"
+          w="full"
+          maxW={props.fullWidth ? undefined : '8xl'}
+          marginX="auto"
+          px={props.fullWidth ? undefined : 4}
+          pb={6}
+          h="100%"
+        >
           {!props.loading && props.children}
           {props.loading && (
             <Center h="80vh" flexFlow="column" gap={3}>
@@ -308,8 +318,8 @@ const Layout = (props: Props) => {
                 <ChakraLink href="https://magnetismotimes.com/" isExternal>
                   Magnetismo Times
                 </ChakraLink>
-                <br />© 1999-{new Date().getFullYear()} NeoPets, Inc. All rights reserved. Used
-                with permission.
+                <br />© 1999-{new Date().getFullYear()} NeoPets, Inc. All rights reserved. Used with
+                permission.
               </Text>
               <Box>
                 <Select
