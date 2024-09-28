@@ -91,14 +91,29 @@ export default function WrongPriceModal(props: WrongPriceModalProps) {
                         <ListItem>
                           <Link
                             as={NextLink}
+                            prefetch={false}
                             href={`/feedback/trades?target=${item.name}`}
                             isExternal
                           >
-                            {t('ItemPage.waiting-trades')}
+                            {t('ItemPage.waiting-pricing')}
                           </Link>{' '}
-                          - {t('ItemPage.x-entries', { x: data?.waitingTrades ?? 0 })}
+                          - {t('ItemPage.x-entries', { x: data?.waitingTrades.needPricing ?? 0 })}
                           <Text fontSize={'xs'} mb={1} color="gray.400">
                             {t('ItemPage.waiting-trades-txt')}
+                          </Text>
+                        </ListItem>
+                        <ListItem>
+                          <Link
+                            as={NextLink}
+                            href={`/feedback/vote?target=${item.name}`}
+                            prefetch={false}
+                            isExternal
+                          >
+                            {t('ItemPage.waiting-votes')}
+                          </Link>{' '}
+                          - {t('ItemPage.x-entries', { x: data?.waitingTrades.needVoting ?? 0 })}
+                          <Text fontSize={'xs'} mb={1} color="gray.400">
+                            {t('ItemPage.waiting-votes-txt')}
                           </Text>
                         </ListItem>
                         <ListItem>
@@ -155,12 +170,22 @@ export default function WrongPriceModal(props: WrongPriceModalProps) {
                 <ListItem>
                   {t.rich('ItemPage.wrongPrice-5', {
                     Link1: (chunk) => (
-                      <Link as={NextLink} href={`/feedback/trades?target=${item.name}`} isExternal>
+                      <Link
+                        as={NextLink}
+                        prefetch={false}
+                        href={`/feedback/trades?target=${item.name}`}
+                        isExternal
+                      >
                         {chunk}
                       </Link>
                     ),
                     Link2: (chunk) => (
-                      <Link as={NextLink} href="/feedback/vote" isExternal>
+                      <Link
+                        as={NextLink}
+                        href={`/feedback/vote?target=${item.name}`}
+                        prefetch={false}
+                        isExternal
+                      >
                         {chunk}
                       </Link>
                     ),

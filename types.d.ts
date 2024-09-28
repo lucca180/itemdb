@@ -546,7 +546,10 @@ export type SaleStatus = {
 };
 
 export type PricingInfo = {
-  waitingTrades: number;
+  waitingTrades: {
+    needPricing: number;
+    needVoting: number;
+  };
   dataStatus: {
     fresh: number;
     old: number;

@@ -204,7 +204,10 @@
     "wrong-price-report-2": "Tenha em mente que os admins do itemdb atualmente não podem adicionar novos preços manualmente - apenas o poderoso algoritmo pode fazer isso - mas podemos corrigir quaisquer erros que ele cometa.",
     "x-entries": "{x} entradas",
     "algorithm-txt2": "Nosso sistema também irá ignorar dados repetidos, portanto, se nos enviar novos dados e o número de entradas não mudar, significa que já temos esses dados.",
-    "wrong-price": "Preço Errado?"
+    "wrong-price": "Preço Errado?",
+    "waiting-pricing": "Esperando Preço",
+    "waiting-votes": "Esperando Votos",
+    "waiting-votes-txt": "Lote de Trocas que aguardam validação de preço"
   },
   "Button": {
     "feedback": "Feedback",

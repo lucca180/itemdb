@@ -3,6 +3,7 @@ import prisma from '../../../utils/prisma';
 import { FeedbackParsed } from '../../../types';
 import { CheckAuth } from '../../../utils/googleCloud';
 import requestIp from 'request-ip';
+import { Feedbacks } from '@prisma/client';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET')
@@ -13,8 +14,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const ip_address = requestIp.getClientIp(req);
 
   const includeProcessed = req.query.includeProcessed === 'true';
+  const target = req.query.itemName as string;
   let user_id;
   let user;
+
   try {
     user = (await CheckAuth(req))?.user;
     if (!user) throw new Error('User not found');
@@ -25,22 +28,30 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     return;
   }
 
-  const feedbackRaw = await prisma.feedbacks.findMany({
-    where: {
-      processed: includeProcessed,
-      OR: [{ user_id: { not: user_id } }, { user_id: null }],
-      type: {
-        in: ['tradePrice', user.isAdmin ? 'itemChange' : 'neverWillBeAType'],
-      },
-      vote: {
-        none: {
-          user_id: user_id,
+  let feedbackRaw: Feedbacks[] = [];
+
+  if (target) {
+    feedbackRaw = await getTradeFeedback(target, parseInt(limit), user_id);
+  }
+
+  if (!feedbackRaw.length) {
+    feedbackRaw = await prisma.feedbacks.findMany({
+      where: {
+        processed: includeProcessed,
+        OR: [{ user_id: { not: user_id } }, { user_id: null }],
+        type: {
+          in: ['tradePrice', user.isAdmin ? 'itemChange' : 'neverWillBeAType'],
+        },
+        vote: {
+          none: {
+            user_id: user_id,
+          },
         },
       },
-    },
-    orderBy: { addedAt: 'asc' },
-    take: parseInt(limit),
-  });
+      orderBy: { addedAt: 'asc' },
+      take: parseInt(limit),
+    });
+  }
 
   const feedbacks = [];
   for (const feedback of feedbackRaw) {
@@ -53,3 +64,32 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   res.json(feedbackRaw);
 }
+
+const getTradeFeedback = async (itemName: string, limit: number, user_id: string) => {
+  const feedbackIds = (await prisma.$queryRaw`
+    SELECT f.feedback_id FROM feedbacks f 
+    left join trades t on f.subject_id = t.trade_id and f.type = 'tradePrice'
+    left join tradeitems ti on t.trade_id = ti.trade_id
+    where f.type = 'tradePrice' and ti.name = ${itemName} and f.processed = 0
+  `) as { feedback_id: number }[];
+
+  const feedbackRaw = await prisma.feedbacks.findMany({
+    where: {
+      feedback_id: {
+        in: feedbackIds.map((f) => f.feedback_id),
+      },
+      user_id: {
+        not: user_id,
+      },
+      vote: {
+        none: {
+          user_id: user_id,
+        },
+      },
+    },
+    orderBy: { addedAt: 'asc' },
+    take: limit,
+  });
+
+  return feedbackRaw;
+};

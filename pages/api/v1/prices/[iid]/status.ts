@@ -22,10 +22,10 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   const GTE = new Date(
-    Math.max(Date.now() - 1000 * 60 * 60 * 24 * 30, new Date(item.price.addedAt ?? 0).getTime()),
+    Math.max(Date.now() - 1000 * 60 * 60 * 24 * 30, new Date(item.price.addedAt ?? 0).getTime())
   );
 
-  const waitingTrades = await prisma.trades.count({
+  const waitingTrades = await prisma.trades.groupBy({
     where: {
       priced: false,
       addedAt: {
@@ -38,6 +38,8 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
         },
       },
     },
+    by: ['processed'],
+    _count: true,
   });
 
   const priceData = await prisma.priceProcess2.findMany({
@@ -54,9 +56,16 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     fresh: 0,
     old: 0,
   };
-
+  const uniqueOwners = new Set<string>();
   priceData.forEach((price) => {
     if (price.type === 'usershop') return;
+
+    if (price.owner) {
+      if (!uniqueOwners.has(price.owner)) {
+        uniqueOwners.add(price.owner);
+      } else return;
+    }
+
     // if data is from the last 3 days it is considered fresh
     if (price.addedAt >= new Date(Date.now() - 1000 * 60 * 60 * 24 * 4)) {
       dataStatus.fresh++;
@@ -66,7 +75,10 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   });
 
   return res.status(200).json({
-    waitingTrades,
+    waitingTrades: {
+      needPricing: waitingTrades.find((x) => x.processed === false)?._count ?? 0,
+      needVoting: waitingTrades.find((x) => x.processed === true)?._count ?? 0,
+    },
     dataStatus,
   });
 };

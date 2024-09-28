@@ -27,11 +27,11 @@ import { FaCalculator } from 'react-icons/fa';
 import { TradeCalculatorModalProps } from './TradeCalculatorModal';
 
 const FeedbackExperimentsModal = dynamic<FeedbackExperimentsModalProps>(
-  () => import('../Modal/FeedbackExperimentsModal'),
+  () => import('../Modal/FeedbackExperimentsModal')
 );
 
 const TradeCalculatorModal = dynamic<TradeCalculatorModalProps>(
-  () => import('./TradeCalculatorModal'),
+  () => import('./TradeCalculatorModal')
 );
 
 type Props = {
@@ -86,9 +86,9 @@ const FeedbackTrade = (props: Props) => {
   const isAllEqual = useMemo(
     () =>
       trade?.items.every(
-        (item) => item.name === trade.items[0].name && item.image_id === trade.items[0].image_id,
+        (item) => item.name === trade.items[0].name && item.image_id === trade.items[0].image_id
       ),
-    [trade],
+    [trade]
   );
 
   const isAllEmpty = useMemo(() => trade?.items.every((item) => !item.price), [trade]);

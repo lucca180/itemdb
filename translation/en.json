@@ -203,7 +203,10 @@
     "thank-you-for-your-report": "Thank you for your report!",
     "itemdb-admins-please-help": "ITEMDB ADMINS PLEASE HELP!!!!!!!!",
     "algorithm-txt2": "Our system also will ignore repeated data, so if send us new data and the number of entries does not change, it means that we already have that data.",
-    "wrong-price": "Wrong Price?"
+    "wrong-price": "Wrong Price?",
+    "waiting-pricing": "Waiting Pricing",
+    "waiting-votes": "Waiting Votes",
+    "waiting-votes-txt": "Trade Lots that are waiting for pricing validation"
   },
   "Button": {
     "feedback": "Feedback",

@@ -21,7 +21,7 @@ import { useState, useEffect } from 'react';
 import { BsArrowDownCircleFill, BsArrowUpCircleFill } from 'react-icons/bs';
 import CardBase from '../../components/Card/CardBase';
 import HeaderCard from '../../components/Card/HeaderCard';
-import FeedbackItem from '../../components/FeebackCards/FeedbackItem';
+import FeedbackItem from '../../components/FeedbackCards/FeedbackItem';
 import Layout from '../../components/Layout';
 import TradeTable from '../../components/Trades/TradeTable';
 import { Feedback, TradeData } from '../../types';
@@ -33,15 +33,17 @@ import { CheckAuth } from '../../utils/googleCloud';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { ReportFeedbackModalProps } from '../../components/Modal/ReportFeedbackModal';
+import { useRouter } from 'next/router';
 
 const ReportFeedbackModal = dynamic<ReportFeedbackModalProps>(
-  () => import('../../components/Modal/ReportFeedbackModal'),
+  () => import('../../components/Modal/ReportFeedbackModal')
 );
 
 const AUTO_PRICE_UID = 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1';
 
 const FeedbackVotingPage = () => {
   const t = useTranslations();
+  const router = useRouter();
   const { user, authLoading, getIdToken } = useAuth();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
@@ -95,6 +97,9 @@ const FeedbackVotingPage = () => {
       if (!token) throw new Error('No token');
 
       const res = await axios.get('/api/feedback/getLatest', {
+        params: {
+          itemName: router.query.target,
+        },
         headers: {
           authorization: `Bearer ${token}`,
         },
@@ -135,12 +140,12 @@ const FeedbackVotingPage = () => {
           headers: {
             authorization: `Bearer ${token}`,
           },
-        },
+        }
       );
 
       if (res.data.success) {
         const newFeedbacks = feedbacks.filter(
-          (f) => f.feedback_id !== currentFeedback?.feedback_id,
+          (f) => f.feedback_id !== currentFeedback?.feedback_id
         );
 
         if (!newFeedbacks.length) {
