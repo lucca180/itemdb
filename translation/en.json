@@ -80,7 +80,10 @@
     "restock": "Restock",
     "import-tool": "Import Tool",
     "tools": "Tools",
-    "restock-dashboard": "Restock Dashboard"
+    "restock-dashboard": "Restock Dashboard",
+    "devs": "Devs",
+    "missing-info-hub": "Missing Info Hub",
+    "feedback-and-ideas": "Feedback and Ideas"
   },
   "ItemPage": {
     "item-info": "Item Info",
@@ -899,5 +902,12 @@
     "cta": "The Pet Color Tool is the perfect tool for you to change the color or species (or both!) of your neopet while spending much less!",
     "species-change": "Species Change",
     "combination-error": "Pet + Color combination not found. Please try again."
+  },
+  "MissingHub": {
+    "missing-info-hub": "Missing Info Hub",
+    "description": "We're missing some information on these items. If you have any of these items, <Link>learn how to help</Link>",
+    "yay-its-empty": "yay it's empty!",
+    "prev-page": "Prev Page",
+    "next-page": "Next Page"
   }
 }

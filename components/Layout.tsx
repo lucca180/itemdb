@@ -259,6 +259,13 @@ const Layout = (props: Props) => {
             <DropdownOption label="Faerie Festival Hub" href="/hub/faeriefestival2023" />
             <DropdownOption label={t('Layout.restock-dashboard')} href="/restock/dashboard" />
           </DropdownButton>
+          <DropdownButton bg={props.mainColor} label={t('Layout.contribute')} href="/contribute">
+            <DropdownOption label={'Item Data Extractor'} href="/contribute" />
+            <DropdownOption label={t('Layout.missing-info-hub')} href="/hub/missing-info" />
+            <DropdownOption label={t('Layout.trade-pricing')} href="/feedback/trades" />
+            <DropdownOption label={t('Feedback.suggestion-voting')} href="/feedback/vote" />
+            <DropdownOption label={t('Layout.feedback-and-ideas')} href="/feedback" />
+          </DropdownButton>
         </Flex>
         <Box
           as="main"
@@ -339,6 +346,9 @@ const Layout = (props: Props) => {
                   <b>{t('Layout.resources')}</b>
                 </Text>
                 <ChakraLink href="/articles/owls">Owls</ChakraLink>
+                <ChakraLink href="https://itemdb.stoplight.io/docs/itemdb-api" isExternal>
+                  {t('Layout.devs')}
+                </ChakraLink>
                 <ChakraLink href="/lists/official">{t('Layout.official-lists')}</ChakraLink>
                 <ChakraLink href="/articles/userscripts">{t('Layout.userscripts')}</ChakraLink>
                 <ChakraLink href="/public-data">{t('Layout.public-data')}</ChakraLink>
@@ -348,7 +358,7 @@ const Layout = (props: Props) => {
                   <b>{t('Layout.contribute')}</b>
                 </Text>
                 <ChakraLink href="/contribute">Item Data Extractor</ChakraLink>
-                <ChakraLink href="/feedback">{t('Layout.feedback')}</ChakraLink>
+                <ChakraLink href="/feedback">{t('Feedback.vote-suggestions')}</ChakraLink>
                 <ChakraLink href="/feedback/trades">{t('Layout.trade-pricing')}</ChakraLink>
                 <ChakraLink href="/contribute">+ {t('Layout.more')}</ChakraLink>
               </Flex>
@@ -356,11 +366,9 @@ const Layout = (props: Props) => {
                 <Text fontSize="xs" mb={2} textTransform="uppercase" color="gray.500">
                   <b>itemdb</b>
                 </Text>
-                <ChakraLink href="https://itemdb.stoplight.io/docs/itemdb-api" isExternal>
-                  {t('Layout.developers')}
-                </ChakraLink>
                 <ChakraLink href="/privacy">{t('Layout.privacy-policy')}</ChakraLink>
                 <ChakraLink href="/terms">{t('Layout.terms-of-use')}</ChakraLink>
+                <ChakraLink href="/feedback">{t('Feedback.contact-us')}</ChakraLink>
                 <ChakraLink href="https://github.com/lucca180/itemdb/" isExternal>
                   {t('Layout.source-code')}
                 </ChakraLink>

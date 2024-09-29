@@ -81,7 +81,8 @@
     "restock": "Restock",
     "restock-dashboard": "Restock Dashboard",
     "sort-galleries-by-color": "Ordenar Galerias por Cor",
-    "tools": "Ferramentas"
+    "tools": "Ferramentas",
+    "devs": "Devs"
   },
   "ItemPage": {
     "item-info": "Item Info",
@@ -900,5 +901,12 @@
     "select-species": "Selecionar Espécie",
     "species-change": "Troca de Espécie",
     "combination-error": "Combinação de cor + especie não encontrada.  Por favor, tente novamente."
+  },
+  "MissingHub": {
+    "description": "Estamos precisando de algumas informações sobre esses itens. Se você possui algum desses itens, <Link>saiba como ajudar</Link>",
+    "missing-info-hub": "Centro de Informações",
+    "next-page": "Próxima Página",
+    "prev-page": "Página Anterior",
+    "yay-its-empty": "eba está vazio!"
   }
 }
