@@ -80,8 +80,8 @@
     "swr": "^2.2.5"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.5.0",
-    "@commitlint/config-conventional": "^19.5.0",
+    "@commitlint/cli": "^18.5.0",
+    "@commitlint/config-conventional": "^18.5.0",
     "@next/bundle-analyzer": "^14.2.3",
     "@next/eslint-plugin-next": "^14.2.13",
     "@swc-jotai/react-refresh": "^0.2.0",
