@@ -82,7 +82,9 @@
     "restock-dashboard": "Restock Dashboard",
     "sort-galleries-by-color": "Ordenar Galerias por Cor",
     "tools": "Ferramentas",
-    "devs": "Devs"
+    "devs": "Devs",
+    "feedback-and-ideas": "Feedback e Ideias",
+    "missing-info-hub": "Infos Faltantes"
   },
   "ItemPage": {
     "item-info": "Item Info",
@@ -904,7 +906,7 @@
   },
   "MissingHub": {
     "description": "Estamos precisando de algumas informações sobre esses itens. Se você possui algum desses itens, <Link>saiba como ajudar</Link>",
-    "missing-info-hub": "Centro de Informações",
+    "missing-info-hub": "Central de Informações Faltantes",
     "next-page": "Próxima Página",
     "prev-page": "Página Anterior",
     "yay-its-empty": "eba está vazio!"
