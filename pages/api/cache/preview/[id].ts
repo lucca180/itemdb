@@ -41,7 +41,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     let processPromise;
     if (exists) {
       const daysSinceLastUpdate = Math.floor(
-        (Date.now() - new Date(file.metadata.updated ?? 0).getTime()) / (1000 * 60 * 60 * 24),
+        (Date.now() - new Date(file.metadata.updated ?? 0).getTime()) / (1000 * 60 * 60 * 24)
       );
 
       if (daysSinceLastUpdate >= 30) {
@@ -87,7 +87,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         rawData = styleData[1];
         if (imagesURLs.length === 0) throw new Error('No layers found');
       } catch (e) {
-        imagesURLs = await handleAltStyle(item.image_id!, item.name);
+        imagesURLs = await handleAltStyle(item.image_id!, item.name, item.item_id);
         if (imagesURLs.length === 0) throw e;
       }
 
@@ -148,17 +148,17 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 const handleRegularStyle = async (
-  itemName: string,
+  itemName: string
 ): Promise<
   [string[], DTIItemPreview & { compatibleBodiesAndTheirZones: DTIBodiesAndTheirZones[] }]
 > => {
   const itemPreviewData = await dti.fetchItemPreview(itemName);
 
   const itemRestrictedZoneIds = new Set(
-    itemPreviewData.canonicalAppearance.restrictedZones.map((z) => z.id),
+    itemPreviewData.canonicalAppearance.restrictedZones.map((z) => z.id)
   );
   const petRestrictedZoneIds = new Set(
-    itemPreviewData.canonicalAppearance.body.canonicalAppearance.restrictedZones,
+    itemPreviewData.canonicalAppearance.body.canonicalAppearance.restrictedZones
   );
 
   const layers = [
@@ -191,9 +191,16 @@ const handleRegularStyle = async (
   return [imagesURLs, itemPreviewData];
 };
 
+const altStylesNames = ['nostalgic', 'prismatic'];
 // using data from DTI again. Thanks DTI!
-const handleAltStyle = async (image_id: string, itemName: string): Promise<string[]> => {
-  if (!image_id.includes('nostalgic') && !itemName.toLowerCase().includes('nostalgic')) return [];
+const handleAltStyle = async (
+  image_id: string,
+  itemName: string,
+  item_id: number | null
+): Promise<string[]> => {
+  if (!altStylesNames.some((x) => itemName.toLowerCase().includes(x) || image_id.includes(x)))
+    return [];
+
   const dtiRes = await axios.get('https://impress.openneo.net/alt-styles.json');
   const dtiData = dtiRes.data as any[];
 
@@ -201,7 +208,10 @@ const handleAltStyle = async (image_id: string, itemName: string): Promise<strin
   const altImgID = itemName.toLowerCase().replaceAll(' ', '_');
 
   const style = dtiData.find(
-    (x) => x.thumbnail_url.includes(image_id) || x.thumbnail_url.includes(altImgID),
+    (x) =>
+      x.id === (item_id ?? -1) ||
+      x.thumbnail_url.includes(image_id) ||
+      x.thumbnail_url.includes(altImgID)
   );
 
   if (!style) return [];
@@ -213,7 +223,7 @@ const handleAltStyle = async (image_id: string, itemName: string): Promise<strin
 
 const processDTIData = async (
   item: Items,
-  data: DTIItemPreview & { compatibleBodiesAndTheirZones: DTIBodiesAndTheirZones[] },
+  data: DTIItemPreview & { compatibleBodiesAndTheirZones: DTIBodiesAndTheirZones[] }
 ) => {
   const dataArr: Prisma.WearableDataCreateManyInput[] = [];
 
