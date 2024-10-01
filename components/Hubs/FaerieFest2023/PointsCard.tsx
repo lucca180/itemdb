@@ -18,15 +18,15 @@ const FF_PointsCard = (props: Props) => {
   return (
     <CardBase
       title={
-        <Link as={NextLink} href="/hub/faeriefestival2023">
-          Faerie Festival 2023
+        <Link as={NextLink} href="/hub/faeriefestival">
+          Faerie Festival
         </Link>
       }
       color={'#eca5fd'}
     >
       <Text textAlign={'center'}>
         {item.rarity && (
-          <Link as={NextLink} href="/hub/faeriefestival2023">
+          <Link as={NextLink} href="/hub/faeriefestival">
             {points} point{points > 1 ? 's' : ''}
           </Link>
         )}

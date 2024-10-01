@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import {
-  Alert,
-  AlertDescription,
-  AlertIcon,
+  // Alert,
+  // AlertDescription,
+  // AlertIcon,
   Box,
   Center,
   Flex,
@@ -60,7 +60,7 @@ const FaeriesFest2023 = () => {
             w={['175px', '200px', '300px']}
             maxW="300px"
             quality={100}
-            alt="Faeries Festival 2023 logo"
+            alt="Faeries Festival logo"
             dropShadow="lg"
           />
         </Link>
@@ -70,20 +70,20 @@ const FaeriesFest2023 = () => {
             //@ts-ignore
             src={Background}
             quality={100}
-            alt="Faeries Festival 2023 background"
+            alt="Faeries Festival background"
             borderRadius={'md'}
             boxShadow="lg"
           />
         </Link>
       </Center>
       <Center flexFlow="column" gap={5}>
-        <Alert maxW="400px" fontSize={'sm'} status={'warning'}>
+        {/* <Alert maxW="400px" fontSize={'sm'} status={'warning'}>
           <AlertIcon />
           <AlertDescription>
             This guide is from the <b>Faerie Festival 2023</b> event. We don&apos;t know if the
             point values will be the same for the next event.
           </AlertDescription>
-        </Alert>
+        </Alert> */}
         <Center flexFlow="column" gap={1}>
           <Heading color="whiteAlpha.900">♻️Recycling</Heading>
           <Heading as="h3" size="sm" color="whiteAlpha.700">
@@ -109,7 +109,7 @@ const FaeriesFest2023 = () => {
           />
           <SearchCard
             title="4 points"
-            description="All items that give you 4 points to spend at the Prize Shop"
+            description="All items that give you 4 points to spend at the Prize Shop (except Sticky Snowballs)"
             link="/search?s=&rarity[]=98&rarity[]=100"
             color="#515C66"
             coverURL="https://images.neopets.com/items/toy_faerie_grey.gif"
@@ -182,7 +182,7 @@ const FaeriesFest2023 = () => {
           <SearchCard
             title="Jhudora's Team"
             description="All items from Jhudora's Team prize shop"
-            link="/lists/official/325"
+            link="/lists/official/4921"
             color="#ae3baf"
             coverURL="https://images.neopets.com/faeriefestival/2023/np/jhudora-happy-face.png"
             footerText="Lists"
@@ -190,7 +190,7 @@ const FaeriesFest2023 = () => {
           <SearchCard
             title="Illusen's Team"
             description="All items from Illusen's Team prize shop"
-            link="/lists/official/326"
+            link="/lists/official/4920"
             color="#84B12A"
             coverURL="https://images.neopets.com/faeriefestival/2023/np/illusen-happy-face.png"
             footerText="Lists"

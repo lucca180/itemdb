@@ -55,12 +55,13 @@ import { getWearableData } from '../api/v1/items/[id_name]/wearable';
 import { getItemNCMall } from '../api/v1/items/[id_name]/ncmall';
 import NcMallCard from '../../components/Items/NCMallCard';
 import Color from 'color';
+import FF_PointsCard from '../../components/Hubs/FaerieFest2023/PointsCard';
 
 const EditItemModal = dynamic<EditItemModalProps>(
-  () => import('../../components/Modal/EditItemModal'),
+  () => import('../../components/Modal/EditItemModal')
 );
 const FeedbackModal = dynamic<FeedbackModalProps>(
-  () => import('../../components/Modal/FeedbackModal'),
+  () => import('../../components/Modal/FeedbackModal')
 );
 
 type ItemPageProps = {
@@ -309,6 +310,7 @@ const ItemPage = (props: ItemPageProps) => {
             <SimilarItemsCard item={item} similarItems={props.similarItems} />
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>
+            {!item.isNC && <FF_PointsCard item={item} />}
             {item.isNC && props.ncMallData && (
               <NcMallCard item={item} ncMallData={props.ncMallData} />
             )}
