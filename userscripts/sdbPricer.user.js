@@ -1,6 +1,6 @@
   // ==UserScript==
   // @name         itemdb - Safety Deposit Box Pricer
-  // @version      1.4.0
+  // @version      1.4.1
   // @author       itemdb
   // @namespace    itemdb
   // @description  Shows the market price for your sdb items
@@ -70,7 +70,10 @@
 
         if(item.rarity) {
           var color1 = setColor(item.rarity)
-          priceStr += `<small style='color:${color1}'><b>r${intl.format(item.rarity)}</b></small>`;
+          var points = rarityToCCPoints(item);
+          var pointStr = points ? ` - <a href="https://itemdb.com.br/pt/hub/faeriefestival2023" target="_blank">${points} points</a>` : '';
+
+          priceStr += `<small style='color:${color1}'><b>r${intl.format(item.rarity)}</b> ${pointStr}</small>`;
         }
 
         if(item.status === 'no trade'){
@@ -115,15 +118,30 @@
     })
   }
 
-  function setColor(rarity) {
-    if (rarity <= 74) return 'black';
-    if(rarity <= 100) return '#089d08';
-    if(rarity <= 104) return '#d16778'; // Special
-    if(rarity <= 110) return 'orange';  // MEGA RARE
-    if(rarity <= 179) return '#fb4444'; // Retired
-    if(rarity == 180) return '#a1a1a1'; // Retired
-    if(rarity <= 250) return '#fb4444'; // Hidden Tower
-    return '#ec69ff';                   // Neocash | Artifact - 500
-  }
+function setColor(rarity) {
+  if (rarity <= 74) return 'black';
+  if(rarity <= 100) return '#089d08';
+  if(rarity <= 104) return '#d16778'; // Special
+  if(rarity <= 110) return 'orange';  // MEGA RARE
+  if(rarity <= 179) return '#fb4444'; // Retired
+  if(rarity == 180) return '#a1a1a1'; // Retired
+  if(rarity <= 250) return '#fb4444'; // Hidden Tower
+  return '#ec69ff';                   // Neocash | Artifact - 500
+}
 
-  fetchPriceData();
+// hope TNT doesn't change it this year
+function rarityToCCPoints(item) {
+  if (item.internal_id === 289) return 1;
+
+  const rarity = item.rarity ?? 0;
+
+  if (rarity <= 79 || rarity === 101) return 1;
+  if (rarity <= 89) return 2;
+  if (rarity <= 97) return 6;
+  if (rarity <= 100) return 4;
+  if (rarity <= 179) return 8;
+
+  return 0;
+}
+
+fetchPriceData();
