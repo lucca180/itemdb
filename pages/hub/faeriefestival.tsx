@@ -141,15 +141,15 @@ const FaeriesFest2023 = () => {
           />
         </Flex>
         <Center flexFlow="column" gap={1} mt={5}>
-          <Heading color="whiteAlpha.900">📦Faerie Recycling Capsule</Heading>
+          <Heading color="whiteAlpha.900">📦Faerie Donation Capsule</Heading>
           <Heading as="h3" size="sm" color="whiteAlpha.700">
-            All drops from the Faerie Recycling Capsule
+            All drops from the Faerie Donation Capsule
           </Heading>
         </Center>
         <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
           <SearchCard
             title="r99"
-            description="All r99 items that you can get from the Faerie Recycling Capsule"
+            description="All r99 items that you can get from the Faerie Donation Capsule"
             link="/search?s=&rarity[]=99&rarity[]=99"
             color="#EC5CDC"
             coverURL="https://images.neopets.com/items/sta_queen_fyora.gif"
@@ -157,7 +157,7 @@ const FaeriesFest2023 = () => {
           />
           <SearchCard
             title="r96 - r98"
-            description="All r96 - r98 items that you can get from the Faerie Recycling Capsule"
+            description="All r96 - r98 items that you can get from the Faerie Donation Capsule"
             link="/search?s=&rarity[]=96&rarity[]=98"
             color="#F70808"
             coverURL="https://images.neopets.com/items/sta_sloth_charm.gif"
@@ -165,7 +165,7 @@ const FaeriesFest2023 = () => {
           />
           <SearchCard
             title="r90 - r95"
-            description="All r90 - r95 items that you can get from the Faerie Recycling Capsule"
+            description="All r90 - r95 items that you can get from the Faerie Donation Capsule"
             link="/search?s=&rarity[]=90&rarity[]=95"
             color="#F4C412"
             coverURL="https://images.neopets.com/items/toy_faerie_siyana.gif"

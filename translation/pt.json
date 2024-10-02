@@ -84,7 +84,8 @@
     "tools": "Ferramentas",
     "devs": "Devs",
     "feedback-and-ideas": "Feedback e Ideias",
-    "missing-info-hub": "Infos Faltantes"
+    "missing-info-hub": "Infos Faltantes",
+    "faerie-festval-cta": "Encontre os melhores itens para doar no <Link>Guia do Festival das Fadas</Link>"
   },
   "ItemPage": {
     "item-info": "Item Info",

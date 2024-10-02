@@ -25,6 +25,7 @@ import NextImage from 'next/image';
 import logo from '../public/logo_white_compressed.svg';
 import logo_icon from '../public/logo_icon.svg';
 import mt_logo from '../public/magnetismo-logo.png';
+import FaerieIcon from '../public/hub/faerie-icon.png';
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -103,6 +104,29 @@ const Layout = (props: Props) => {
       {isOpen && <LoginModal isOpen={isOpen} onClose={onClose} />}
       <LanguageToast saveLang={saveLang} />
       <Flex flexFlow="column" minH="100vh">
+        <Flex h="28px" bg="rgba(255, 162, 207, 0.81)">
+          <Flex
+            maxW="8xl"
+            w="full"
+            marginX="auto"
+            alignItems={'center'}
+            px={{ base: 2, md: 4 }}
+            gap={2}
+          >
+            <ChakraLink href="/hub/faeriefestival" fontWeight={'bold'}>
+              <NextImage width={24} height={24} src={FaerieIcon} alt="Faerie Icon" />
+            </ChakraLink>
+            <Text fontSize={'xs'} color="blackAlpha.800">
+              {t.rich('Layout.faerie-festval-cta', {
+                Link: (chunk) => (
+                  <ChakraLink href="/hub/faeriefestival" fontWeight={'bold'}>
+                    {chunk}
+                  </ChakraLink>
+                ),
+              })}
+            </Text>
+          </Flex>
+        </Flex>
         <Flex
           as="header"
           w="full"
@@ -256,7 +280,7 @@ const Layout = (props: Props) => {
             <DropdownOption label={t('Layout.sdb-pricer')} href="/articles/userscripts" />
             <DropdownOption label={t('Layout.userscripts')} href="/articles/userscripts" />
             <DropdownOption label={t('Layout.pet-color-tool')} href="/tools/pet-colors" />
-            <DropdownOption label="Faerie Festival Hub" href="/hub/faeriefestival2023" />
+            <DropdownOption label="Faerie Festival Hub" href="/hub/faeriefestival" />
             <DropdownOption label={t('Layout.restock-dashboard')} href="/restock/dashboard" />
           </DropdownButton>
           <DropdownButton bg={props.mainColor} label={t('Layout.contribute')} href="/contribute">

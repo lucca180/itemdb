@@ -83,7 +83,8 @@
     "restock-dashboard": "Restock Dashboard",
     "devs": "Devs",
     "missing-info-hub": "Missing Info Hub",
-    "feedback-and-ideas": "Feedback and Ideas"
+    "feedback-and-ideas": "Feedback and Ideas",
+    "faerie-festval-cta": "Find the best items to donate in the <Link>Faerie Festival Guide</Link>"
   },
   "ItemPage": {
     "item-info": "Item Info",
