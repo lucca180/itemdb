@@ -6,15 +6,18 @@ import {
   Button,
   Flex,
   useBoolean,
+  Badge,
 } from '@chakra-ui/react';
 import React from 'react';
 import NextLink from 'next/link';
+import { useTranslations } from 'next-intl';
 type Props = {
   // onSubmit: (e: any, search: string, params: string) => void;
   label: string;
   href: string;
   bg?: string;
   children?: React.ReactNode;
+  newUntil?: number;
 };
 
 export const DropdownButton = (props: Props) => {
@@ -58,7 +61,10 @@ export const DropdownButton = (props: Props) => {
 };
 
 export const DropdownOption = (props: Props) => {
-  const { label, href } = props;
+  const t = useTranslations();
+  const { label, href, newUntil } = props;
+
+  const isNew = newUntil && newUntil > Date.now();
 
   return (
     <Button
@@ -74,6 +80,11 @@ export const DropdownOption = (props: Props) => {
       borderRadius={0}
     >
       {label}
+      {isNew && (
+        <Badge as="span" colorScheme="orange" ml={1}>
+          {t('Layout.new')}
+        </Badge>
+      )}
     </Button>
   );
 };

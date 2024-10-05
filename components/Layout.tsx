@@ -104,7 +104,7 @@ const Layout = (props: Props) => {
       {isOpen && <LoginModal isOpen={isOpen} onClose={onClose} />}
       <LanguageToast saveLang={saveLang} />
       <Flex flexFlow="column" minH="100vh">
-        <Flex h="28px" bg="rgba(255, 162, 207, 0.81)">
+        <Flex minH="26px" bg="rgba(255, 162, 207, 0.81)" py={1}>
           <Flex
             maxW="8xl"
             w="full"
@@ -275,6 +275,11 @@ const Layout = (props: Props) => {
               label={t('General.dynamic-lists')}
               href="/articles/checklists-and-dynamic-lists"
             />
+            <DropdownOption
+              newUntil={1728691200000}
+              label={t('HomePage.leaving-nc-mall')}
+              href="/mall/leaving"
+            />
           </DropdownButton>
           <DropdownButton bg={props.mainColor} label={t('Layout.tools')} href="/tools/pet-colors">
             <DropdownOption label={t('Layout.sdb-pricer')} href="/articles/userscripts" />
@@ -285,7 +290,11 @@ const Layout = (props: Props) => {
           </DropdownButton>
           <DropdownButton bg={props.mainColor} label={t('Layout.contribute')} href="/contribute">
             <DropdownOption label={'Item Data Extractor'} href="/contribute" />
-            <DropdownOption label={t('Layout.missing-info-hub')} href="/hub/missing-info" />
+            <DropdownOption
+              newUntil={1728691200000}
+              label={t('Layout.missing-info-hub')}
+              href="/hub/missing-info"
+            />
             <DropdownOption label={t('Layout.trade-pricing')} href="/feedback/trades" />
             <DropdownOption label={t('Feedback.suggestion-voting')} href="/feedback/vote" />
             <DropdownOption label={t('Layout.feedback-and-ideas')} href="/feedback" />
