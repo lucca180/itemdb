@@ -62,6 +62,7 @@ const nextConfig = {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, stale-while-revalidate',
           },
+          { key: 'Access-Control-Allow-Origin', value: '*' },
         ],
       },
     ];
@@ -91,7 +92,7 @@ const nextConfig = {
       new webpack.DefinePlugin({
         __SENTRY_DEBUG__: false,
         // __SENTRY_TRACING__: false,
-      }),
+      })
     );
     return config;
   },
