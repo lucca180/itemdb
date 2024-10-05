@@ -910,5 +910,9 @@
     "yay-its-empty": "yay it's empty!",
     "prev-page": "Prev Page",
     "next-page": "Next Page"
+  },
+  "NcMall": {
+    "leaving-soon-tm": "Leaving Soon™",
+    "leaving-soon-desc": "Items that are leaving the <Link>NC Mall</Link> soon"
   }
 }

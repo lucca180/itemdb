@@ -19,6 +19,7 @@ type NCMallData = {
   discountEnd?: number;
   discountPrice?: number;
   isAvailable: boolean;
+  isBuyable: boolean;
 };
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
@@ -69,6 +70,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         continue;
       }
 
+      if (!item.isAvailable || !item.isBuyable) continue;
+
       create.push({
         item_iid: dbItem.internal_id,
         item_id: item.id,
@@ -81,6 +84,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         active: true,
       });
     } else {
+      if (!item.isAvailable || !item.isBuyable) continue;
+
       removeIds.delete(item.id);
       const existentData = allCurrentData.find((data) => data.item_id === item.id);
       if (!checkDataChanged(existentData!, item)) continue;
@@ -100,7 +105,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
             discountPrice: item.discountPrice,
             active: true,
           },
-        }),
+        })
       );
     }
   }
@@ -116,7 +121,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       data: {
         active: false,
       },
-    }),
+    })
   );
 
   const itemData = inexistentIds.map((id) => {

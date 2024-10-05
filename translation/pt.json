@@ -911,5 +911,9 @@
     "next-page": "Próxima Página",
     "prev-page": "Página Anterior",
     "yay-its-empty": "eba está vazio!"
+  },
+  "NcMall": {
+    "leaving-soon-desc": "Itens que sairão do <Link>Centro NC</Link> em breve",
+    "leaving-soon-tm": "Deixando o Mall™"
   }
 }

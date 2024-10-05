@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { getManyItems } from '../items/many';
+import { NCMallData } from '../../../../types';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -21,7 +22,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
   return res.status(200).json(result);
 }
 
-export const getNCMallData = async (limit: number, isLeaving = false) => {
+export const getNCMallData = async (limit: number, isLeaving = false): Promise<NCMallData[]> => {
   const result = await prisma.ncMallData.findMany({
     where: {
       active: true,
@@ -42,7 +43,20 @@ export const getNCMallData = async (limit: number, isLeaving = false) => {
     take: limit,
   });
 
-  return result;
+  return result.map((data) => ({
+    internal_id: data.internal_id,
+    item_id: data.item_id,
+    item_iid: data.item_iid,
+    price: data.price,
+    saleBegin: data.saleBegin ? data.saleBegin.toJSON() : null,
+    saleEnd: data.saleEnd ? data.saleEnd.toJSON() : null,
+    discountBegin: data.discountBegin ? data.discountBegin.toJSON() : null,
+    discountEnd: data.discountEnd ? data.discountEnd.toJSON() : null,
+    discountPrice: data.discountPrice,
+    active: data.active,
+    addedAt: data.addedAt.toJSON(),
+    updatedAt: data.updatedAt.toJSON(),
+  }));
 };
 
 export const getNCMallItemsData = async (limit: number, isLeaving = false) => {
