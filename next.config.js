@@ -47,13 +47,6 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/api/(.*)',
-        headers: [
-          { key: 'Access-Control-Allow-Origin', value: '*' },
-          { key: 'Access-Control-Allow-Headers', value: 'Content-Type' },
-        ],
-      },
-      {
         // list more extensions here if needed; these are all the resources in the `public` folder including the subfolders
         source: '/:all*(svg|jpg|png|gif|ttf|ico)',
         locale: false,
@@ -62,7 +55,6 @@ const nextConfig = {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, stale-while-revalidate',
           },
-          { key: 'Access-Control-Allow-Origin', value: '*' },
         ],
       },
     ];
