@@ -52,7 +52,11 @@ const NeedInfoPage = () => {
     <Layout
       SEO={{
         title: t('MissingHub.missing-info-hub'),
-        description: t('MissingHub.description'),
+        description: t
+          .rich('MissingHub.description', {
+            Link: (chunk) => chunk,
+          })
+          .toString(),
         themeColor: '#aeb18a',
       }}
       mainColor="rgba(240, 250, 148, 0.40)"
