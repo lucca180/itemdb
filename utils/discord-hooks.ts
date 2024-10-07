@@ -32,7 +32,10 @@ export const sendNewItemsHook = async (latest: number) => {
   const ncMsgs = Object.values(itemData)
     .filter((i) => i.isNC && (!i.item_id || i.item_id > 85020))
     .map((i) => newNCMall(i));
-  const newItemsMsgs = Object.values(itemData).map((i) => newItemsHookSend(i));
+
+  const newItemsMsgs = Object.values(itemData)
+    .filter((i) => !i.item_id || i.item_id > 85020)
+    .map((i) => newItemsHookSend(i));
 
   await Promise.all([...ncMsgs, ...newItemsMsgs]);
 };
