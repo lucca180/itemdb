@@ -114,5 +114,6 @@ export async function getStaticProps(context: any) {
       itemData: items,
       messages: (await import(`../../translation/${context.locale}.json`)).default,
     },
+    revalidate: 180,
   };
 }
