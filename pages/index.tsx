@@ -239,7 +239,7 @@ export async function getStaticProps(context: any) {
     lastestPrices,
     leavingNcMall,
   ] = await Promise.all([
-    getLatestItems(16).catch(() => []),
+    getLatestItems(16, true).catch(() => []),
     getLatestOwls(16).catch(() => []),
     wp_getLatestPosts(5).catch((e) => {
       console.error(e);

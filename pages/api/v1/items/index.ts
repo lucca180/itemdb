@@ -4,7 +4,7 @@ import prisma from '../../../../utils/prisma';
 import requestIp from 'request-ip';
 import hash from 'object-hash';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { checkHash } from '../../../../utils/hash';
+// import { checkHash } from '../../../../utils/hash';
 import { getManyItems } from './many';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
@@ -32,7 +32,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
   const items = data.items;
   const lang = data.lang;
-  const dataHash = data.hash;
+  // const dataHash = data.hash;
 
   // if (!checkHash(dataHash, { items: items }))
   // return res.status(400).json({ error: 'Invalid hash' });
@@ -156,10 +156,11 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   return res.status(500).json({ error: 'Internal Server Error' });
 };
 
-export const getLatestItems = async (limit: number) => {
+export const getLatestItems = async (limit: number, skipOldIDs = false) => {
   const result = await prisma.items.findMany({
     where: {
       canonical_id: null,
+      OR: [{ item_id: null }, { item_id: { gte: skipOldIDs ? 85020 : 0 } }],
     },
     orderBy: {
       addedAt: 'desc',
