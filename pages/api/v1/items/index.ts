@@ -22,8 +22,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   let limit = req.query.limit ? Number(req.query.limit) : 50;
   limit = Math.min(limit, 100);
+  const includeOld = req.query.includeOld ? req.query.includeOld === 'true' : false;
 
-  const items = await getLatestItems(limit);
+  const items = await getLatestItems(limit, includeOld);
 
   return res.status(200).json(items);
 };
