@@ -58,12 +58,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       parsed.trade as TradeData,
       parseInt(subject_id),
       user_id,
-      voteMultiplier >= MAX_VOTE_MULTIPLIER,
+      voteMultiplier >= MAX_VOTE_MULTIPLIER
     );
     const autopriced = await processSimilarTrades(
       parsed.trade as TradeData,
       parseInt(subject_id),
-      user_id,
+      user_id
     );
     obj.autoPriceList = autopriced;
   }
@@ -130,7 +130,7 @@ const processTradeFeedback = async (
   trade: TradeData,
   trade_id: number,
   user_id: string,
-  trust: boolean,
+  trust: boolean
 ) => {
   const tradeFeedback = await prisma.feedbacks.findFirst({
     where: { type: 'tradePrice', subject_id: trade_id },
@@ -165,7 +165,7 @@ const processTradeFeedback = async (
   if (!trust || trade.items.length === 1) return true;
 
   const isAllItemsTheSame = trade.items.every(
-    (t) => t.name === trade.items[0].name && t.image_id === trade.items[0].image_id,
+    (t) => t.name === trade.items[0].name && t.image_id === trade.items[0].image_id
   );
 
   const isAllSamePrice = trade.items.every((i) => i.price === trade.items[0].price && !!i.price);
@@ -183,7 +183,7 @@ const processTradeFeedback = async (
 export const processSimilarTrades = async (trade: TradeData, trade_id: number, user_id: string) => {
   const currentTrade = {
     isAllItemsTheSame: trade.items.every(
-      (t) => t.name === trade.items[0].name && t.image_id === trade.items[0].image_id,
+      (t) => t.name === trade.items[0].name && t.image_id === trade.items[0].image_id
     ),
     isAllSamePrice: trade.items.every((i) => i.price === trade.items[0].price && !!i.price),
     isAllEmpty: trade.items.every((item) => !item.price),
@@ -208,7 +208,6 @@ export const processSimilarTrades = async (trade: TradeData, trade_id: number, u
       },
     },
   });
-  console.log('similarTrades', similarTrades.length);
 
   if (!similarTrades.length) return [];
 
@@ -284,7 +283,7 @@ const submitMailFeedback = async (
   subject_id: string,
   email: string,
   id: number,
-  type: string,
+  type: string
 ) => {
   if (!SENDGRID_API_KEY) return console.error('Missing SENDGRID config');
 

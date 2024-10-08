@@ -107,14 +107,14 @@ const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
   if (similarList.length === 0) return null;
 
   const isAllItemsTheSame = trade.items.every(
-    (t) => t.name === trade.items[0].name && t.image_id === trade.items[0].image_id,
+    (t) => t.name === trade.items[0].name && t.image_id === trade.items[0].image_id
   );
 
   // let unpriced = null;
 
   const similar = similarList.find((t) => {
     const isTheSame = t.items.every(
-      (t2) => t2.name === t.items[0].name && t2.image_id === t.items[0].image_id,
+      (t2) => t2.name === t.items[0].name && t2.image_id === t.items[0].image_id
     );
 
     // const isSimilar = t.items.length === trade.items.length && isTheSame === isAllItemsTheSame;
@@ -189,7 +189,7 @@ const checkTradeEstPrice = async (trade: Trades & { items: TradeItems[] }) => {
     priceSum += itemData.price.value;
   }
 
-  if (priceSum >= Math.max(100000, trade.items.length * 50000)) return false;
+  if (priceSum >= Math.max(300000, trade.items.length * 100000)) return false;
 
   await processTradePrice(trade as any);
 
