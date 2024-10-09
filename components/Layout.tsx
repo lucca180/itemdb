@@ -25,7 +25,6 @@ import NextImage from 'next/image';
 import logo from '../public/logo_white_compressed.svg';
 import logo_icon from '../public/logo_icon.svg';
 import mt_logo from '../public/magnetismo-logo.png';
-import FaerieIcon from '../public/hub/faerie-icon.png';
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -104,7 +103,7 @@ const Layout = (props: Props) => {
       {isOpen && <LoginModal isOpen={isOpen} onClose={onClose} />}
       <LanguageToast saveLang={saveLang} />
       <Flex flexFlow="column" minH="100vh">
-        <Flex minH="26px" bg="rgba(255, 162, 207, 0.81)" py={1}>
+        <Flex minH="26px" bg="#cdcdcd" py={1}>
           <Flex
             maxW="8xl"
             w="full"
@@ -113,17 +112,8 @@ const Layout = (props: Props) => {
             px={{ base: 2, md: 4 }}
             gap={2}
           >
-            <ChakraLink href="/hub/faeriefestival" fontWeight={'bold'}>
-              <NextImage width={24} height={24} src={FaerieIcon} alt="Faerie Icon" />
-            </ChakraLink>
             <Text fontSize={'xs'} color="blackAlpha.800">
-              {t.rich('Layout.faerie-festval-cta', {
-                Link: (chunk) => (
-                  <ChakraLink href="/hub/faeriefestival" fontWeight={'bold'}>
-                    {chunk}
-                  </ChakraLink>
-                ),
-              })}
+              ⚠️ <b>{t('Layout.scheduled-maintenance')}</b> - {t('Layout.server-upgrade')}
             </Text>
           </Flex>
         </Flex>

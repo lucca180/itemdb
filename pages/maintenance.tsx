@@ -31,10 +31,7 @@ const MaintenancePage = () => {
           alt="meepits maintenance"
           borderRadius={'md'}
         />
-        <Text>
-          We're probably deploying some new features or fixing some bugs. We should be back in a few
-          minutes!
-        </Text>
+        <Text>We're under a scheduled maintenance. We'll be back very soon :) </Text>
       </Center>
     </Flex>
   );

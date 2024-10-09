@@ -68,7 +68,7 @@
     "move-to-list": "Move to List",
     "delete-from-this-list": "Delete from this list",
     "you-can-change-lang": "You can switch languages at any time in the footer",
-    "server-upgrade": "We have a scheduled maintenance next Sunday (14) and itemdb may be unavailable for a few hours",
+    "server-upgrade": "We have a scheduled maintenance on 10/10 and itemdb may be unavailable for a few hours",
     "mt15": "<b>MT NEEDS YOU</b> - Click here and learn more #mtRecomended",
     "public-data": "Public Data",
     "pet-color-tool": "Pet Color Tool",
@@ -84,7 +84,8 @@
     "devs": "Devs",
     "missing-info-hub": "Missing Info Hub",
     "feedback-and-ideas": "Feedback and Ideas",
-    "faerie-festval-cta": "Find the best items to donate in the <Link>Faerie Festival Guide</Link>"
+    "faerie-festval-cta": "Find the best items to donate in the <Link>Faerie Festival Guide</Link>",
+    "scheduled-maintenance": "Scheduled Maintenance"
   },
   "ItemPage": {
     "item-info": "Item Info",
