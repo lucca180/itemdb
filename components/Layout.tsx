@@ -103,20 +103,6 @@ const Layout = (props: Props) => {
       {isOpen && <LoginModal isOpen={isOpen} onClose={onClose} />}
       <LanguageToast saveLang={saveLang} />
       <Flex flexFlow="column" minH="100vh">
-        <Flex minH="26px" bg="#cdcdcd" py={1}>
-          <Flex
-            maxW="8xl"
-            w="full"
-            marginX="auto"
-            alignItems={'center'}
-            px={{ base: 2, md: 4 }}
-            gap={2}
-          >
-            <Text fontSize={'xs'} color="blackAlpha.800">
-              ⚠️ <b>{t('Layout.scheduled-maintenance')}</b> - {t('Layout.server-upgrade')}
-            </Text>
-          </Flex>
-        </Flex>
         <Flex
           as="header"
           w="full"
