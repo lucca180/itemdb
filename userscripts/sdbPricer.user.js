@@ -70,10 +70,8 @@
 
         if(item.rarity) {
           var color1 = setColor(item.rarity)
-          var points = rarityToCCPoints(item);
-          var pointStr = points ? ` - <a href="https://itemdb.com.br/pt/hub/faeriefestival2023" target="_blank">${points} points</a>` : '';
-
-          priceStr += `<small style='color:${color1}'><b>r${intl.format(item.rarity)}</b> ${pointStr}</small>`;
+          
+          priceStr += `<small style='color:${color1}'><b>r${intl.format(item.rarity)}</b></small>`;
         }
 
         if(item.status === 'no trade'){
@@ -127,21 +125,6 @@ function setColor(rarity) {
   if(rarity == 180) return '#a1a1a1'; // Retired
   if(rarity <= 250) return '#fb4444'; // Hidden Tower
   return '#ec69ff';                   // Neocash | Artifact - 500
-}
-
-// hope TNT doesn't change it this year
-function rarityToCCPoints(item) {
-  if (item.internal_id === 289) return 1;
-
-  const rarity = item.rarity ?? 0;
-
-  if (rarity <= 79 || rarity === 101) return 1;
-  if (rarity <= 89) return 2;
-  if (rarity <= 97) return 6;
-  if (rarity <= 100) return 4;
-  if (rarity <= 179) return 8;
-
-  return 0;
 }
 
 fetchPriceData();
