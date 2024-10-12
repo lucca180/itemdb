@@ -24,7 +24,6 @@ import {
 import { useTranslations } from 'next-intl';
 import NextLink from 'next/link';
 import { ItemData, PricingInfo } from '../../types';
-import useSWRImmutable from 'swr';
 import axios from 'axios';
 import router from 'next/router';
 import { useState } from 'react';
@@ -32,14 +31,14 @@ import { useState } from 'react';
 export type WrongPriceModalProps = {
   isOpen: boolean;
   item: ItemData;
+  data?: PricingInfo;
+  isLoading: boolean;
   onClose: () => void;
 };
-const fetcher = (url: string) => axios.get(url).then((res) => res.data as PricingInfo);
 
 export default function WrongPriceModal(props: WrongPriceModalProps) {
   const t = useTranslations();
-  const { isOpen, onClose, item } = props;
-  const { data, isLoading } = useSWRImmutable(`/api/v1/prices/${item.internal_id}/status`, fetcher);
+  const { isOpen, onClose, item, data, isLoading } = props;
 
   const [isButtonLoading, setButtonLoading] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);

@@ -505,7 +505,9 @@
     "contact-us-text": "Tem uma pergunta, ideia legal, sugestão ou encontrou um erro? Fale com a gente!",
     "suggestion-voting": "Votação de Sugestões",
     "suggestion-voting-txt": "Vote na sugestões de outros usuários (ou do nosso sistema)",
-    "bug-helper-text": "Se você está reportando um bug, coloque a maior quantidade de detalhes possível sobre o que aconteceu e quando."
+    "bug-helper-text": "Se você está reportando um bug, coloque a maior quantidade de detalhes possível sobre o que aconteceu e quando.",
+    "price-update-txt": "Detectamos que este preço pode estar incorreto ou desatualizado e temos novos dados aguardando para serem precificados",
+    "we-need-your-help": "Precisamos da sua ajuda!"
   },
   "Lists": {
     "add-to-list": "Adicionar a Lista",
