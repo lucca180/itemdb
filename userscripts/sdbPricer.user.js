@@ -1,6 +1,6 @@
   // ==UserScript==
   // @name         itemdb - Safety Deposit Box Pricer
-  // @version      1.4.1
+  // @version      1.4.2
   // @author       itemdb
   // @namespace    itemdb
   // @description  Shows the market price for your sdb items
