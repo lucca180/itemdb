@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Update and Restart Node Server
+      - name: Itemdb Blue (main) - Deploy
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -23,6 +23,23 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             yarn
             npx prisma migrate deploy
-            pm2 stop ecosystem.config.js
+            pm2 stop ecosystem.config.js --only itemdb-web
+            pm2 start itemdb-green
             yarn build || exit
-            pm2 reload ecosystem.config.js
+            pm2 stop itemdb-green
+            pm2 reload ecosystem.config.js --only itemdb-web --update-env
+      - name: Itemdb Green (main) - Update
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            cd /home/tarnum/itemdb-green/
+            git fetch origin main
+            git reset --hard FETCH_HEAD
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            yarn
+            yarn build || exit
+            pm2 stop ecosystem.config.js --only itemdb-green --update-env
