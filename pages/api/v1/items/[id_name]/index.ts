@@ -232,11 +232,14 @@ export const getItem = async (id_name: number | string) => {
     },
     findAt: getItemFindAtLinks(result), // doesnt have all the info we need :(
     isMissingInfo: false,
-    price: {
-      value: result.price ? result.price.toNumber() : null,
-      addedAt: (result.priceAdded as Date | null)?.toJSON() ?? null,
-      inflated: !!result.noInflation_id,
-    },
+    price:
+      result.status.toLowerCase() === 'no trade'
+        ? { value: null, addedAt: null, inflated: false }
+        : {
+            value: result.price ? result.price.toNumber() : null,
+            addedAt: (result.priceAdded as Date | null)?.toJSON() ?? null,
+            inflated: !!result.noInflation_id,
+          },
     owls: null,
     comment: result.comment ?? null,
     slug: result.slug ?? null,
@@ -373,7 +376,7 @@ export const processTags = async (itemTags: string[], itemCats: string[], intern
 
 export const fetchOwlsData = async (
   itemName: string,
-  item?: ItemData,
+  item?: ItemData
 ): Promise<OwlsPriceData | null> => {
   let lastOwls;
   if (item) {
