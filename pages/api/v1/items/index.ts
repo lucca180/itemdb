@@ -24,7 +24,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   limit = Math.min(limit, 100);
   const includeOld = req.query.includeOld ? req.query.includeOld === 'true' : false;
 
-  const items = await getLatestItems(limit, includeOld);
+  const items = await getLatestItems(limit, !includeOld);
 
   return res.status(200).json(items);
 };

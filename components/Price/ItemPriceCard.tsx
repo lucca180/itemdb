@@ -129,8 +129,6 @@ const ItemPriceCard = (props: Props) => {
 
     if (!price) return true;
 
-    if (price.value < 500000 && !price.inflated) return false;
-
     if (differenceInCalendarDays(new Date(), new Date(price.addedAt)) > 15 && hasTrades)
       return true;
 
