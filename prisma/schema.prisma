@@ -661,4 +661,5 @@ model RestockAuctionHistory {
 
   @@unique([type, neo_id])
   @@index([item_iid, type, addedAt])
+  @@index([type, addedAt])
 }
