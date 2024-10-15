@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 
 const FeedbackModal = dynamic<FeedbackModalProps>(
-  () => import('../../components/Modal/FeedbackModal'),
+  () => import('../../components/Modal/FeedbackModal')
 );
 
 const FeedbackPage = () => {
@@ -32,7 +32,12 @@ const FeedbackPage = () => {
           {t('Feedback.feedback-system-description')}
         </Text>
       </HeaderCard>
-      <Center gap={8} mt={10} alignItems={'stretch'}>
+      <Center
+        gap={8}
+        mt={10}
+        flexFlow={{ base: 'column', md: 'row' }}
+        alignItems={{ base: 'center', md: 'stretch' }}
+      >
         <FeedbackCard
           title={t('Feedback.trade-lot-pricing')}
           description={t('Feedback.trade-lot-pricing-txt')}
@@ -82,13 +87,13 @@ const FeedbackCard = ({
   return (
     <Card
       w={275}
-      h={350}
+      h={['auto', 350]}
       direction={'column'}
       alignItems={'center'}
       overflow="hidden"
       variant="outline"
       rounded={'xl'}
-      p={8}
+      p={[3, 8]}
       boxShadow={'lg'}
       bg="gray.700"
       gap={2}
