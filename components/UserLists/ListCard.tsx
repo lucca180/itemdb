@@ -47,7 +47,7 @@ const UserListCard = (props: Props) => {
   const copyLink = () => {
     const userName = list.official ? 'official' : list.owner.username;
     navigator.clipboard.writeText(
-      `${window.location.origin}/lists/${userName}/${list.internal_id}`,
+      `${window.location.origin}/lists/${userName}/${list.slug ?? list.internal_id}`
     );
     toast({
       title: t('General.link-copied'),
@@ -75,7 +75,9 @@ const UserListCard = (props: Props) => {
     >
       <Link
         as={NextLink}
-        href={`/lists/${list.official ? 'official' : list.owner.username}/${list.internal_id}`}
+        href={`/lists/${list.official ? 'official' : list.owner.username}/${
+          list.slug ?? list.internal_id
+        }`}
         _hover={{ textDecoration: 'none' }}
       >
         <Flex
@@ -117,7 +119,9 @@ const UserListCard = (props: Props) => {
           >
             <Link
               as={NextLink}
-              href={`/lists/${list.official ? 'official' : list.user_username}/${list.internal_id}`}
+              href={`/lists/${list.official ? 'official' : list.owner.username}/${
+                list.slug ?? list.internal_id
+              }`}
             >
               {list.name}
             </Link>

@@ -1,6 +1,6 @@
 import { startOfDay } from 'date-fns';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getImagePalette } from '..';
+import { createListSlug, getImagePalette } from '..';
 import { ListItemInfo, UserList, User } from '../../../../../../types';
 import { CheckAuth } from '../../../../../../utils/googleCloud';
 import prisma from '../../../../../../utils/prisma';
@@ -218,6 +218,12 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         colorHexVar = colors.vibrant.hex;
       }
 
+      let slug = list.slug;
+
+      if (name && list.name !== name) {
+        slug = await createListSlug(name, user.id);
+      }
+
       await prisma.userList.update({
         where: {
           internal_id: Number(list_id),
@@ -235,6 +241,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
           official_tag: officialTag,
           sortBy: sortInfo?.sortBy,
           sortDir: sortInfo?.sortDir,
+          slug: slug,
         },
       });
     }
@@ -414,13 +421,17 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
 
 export const getList = async (
   username: string,
-  list_id: number,
+  list_id_or_slug: number | string,
   userOrToken?: User | null | string,
-  isOfficial = false,
+  isOfficial = false
 ) => {
-  const listRaw = await prisma.userList.findUnique({
+  const list_id = typeof list_id_or_slug === 'number' ? list_id_or_slug : undefined;
+  const slug = typeof list_id_or_slug === 'string' ? list_id_or_slug : undefined;
+
+  const listRaw = await prisma.userList.findFirst({
     where: {
       internal_id: list_id,
+      slug: slug,
       official: isOfficial || undefined,
       user: {
         username: isOfficial ? undefined : username,
@@ -449,6 +460,20 @@ export const getList = async (
   if (listRaw.dynamicType) await syncDynamicList(listRaw.internal_id);
 
   const owner = listRaw.user;
+
+  if (!listRaw.slug) {
+    const slug = await createListSlug(listRaw.name, listRaw.user_id);
+    await prisma.userList.update({
+      where: {
+        internal_id: listRaw.internal_id,
+      },
+      data: {
+        slug: slug,
+      },
+    });
+
+    listRaw.slug = slug;
+  }
 
   const list: UserList = {
     internal_id: listRaw.internal_id,
@@ -484,6 +509,8 @@ export const getList = async (
     officialTag: listRaw.official_tag ?? null,
 
     itemCount: listRaw.items.filter((x) => !x.isHidden).length,
+
+    slug: listRaw.slug,
     // itemInfo: excludeItems
     //   ? []
     //   : listRaw.items.map((item) => {

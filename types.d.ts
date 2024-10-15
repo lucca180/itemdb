@@ -255,6 +255,8 @@ export type UserList = {
   dynamicType: 'addOnly' | 'removeOnly' | 'fullSync' | null;
   lastSync: string | null;
   linkedListId: number | null;
+
+  slug: string | null;
 };
 
 export type ReducedUserList = {
@@ -285,7 +287,7 @@ export type ReducedUserList = {
   updatedAt: string;
 
   itemInfo: ListItemInfo[];
-
+  slug: string | null;
   dynamicType: 'addOnly' | 'removeOnly' | 'fullSync' | null;
   lastSync: string | null;
   linkedListId: number | null;

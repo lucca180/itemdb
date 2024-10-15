@@ -54,7 +54,7 @@ const ItemOfficialLists = (props: Props) => {
                 borderRadius={'md'}
                 overflow={'hidden'}
                 as={NextLink}
-                href={`/lists/official/${list.internal_id}`}
+                href={`/lists/official/${list.slug ?? list.internal_id}`}
                 prefetch={false}
               >
                 {list.coverURL && (
@@ -64,7 +64,7 @@ const ItemOfficialLists = (props: Props) => {
             </Flex>
             <Text
               as={NextLink}
-              href={`/lists/official/${list.internal_id}`}
+              href={`/lists/official/${list.slug ?? list.internal_id}`}
               sx={{ color: 'white !important;' }}
               textAlign="center"
               fontSize="sm"

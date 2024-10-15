@@ -15,7 +15,7 @@ const MatchTable = (props: Props) => {
   const t = useTranslations();
   const { data, matches, type } = props;
   const sortedData = data.sort(
-    (a, b) => new Date(b.owner.lastSeen).getTime() - new Date(a.owner.lastSeen).getTime(),
+    (a, b) => new Date(b.owner.lastSeen).getTime() - new Date(a.owner.lastSeen).getTime()
   );
 
   return (
@@ -47,7 +47,10 @@ const MatchTable = (props: Props) => {
           {sortedData.map((list) => (
             <Tr key={list.internal_id}>
               <Td>
-                <Link as={NextLink} href={`/lists/${list.owner.username}/${list.internal_id}`}>
+                <Link
+                  as={NextLink}
+                  href={`/lists/${list.owner.username}/${list.slug ?? list.internal_id}`}
+                >
                   {list.name}
                 </Link>
               </Td>

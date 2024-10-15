@@ -35,7 +35,7 @@ import { AiOutlineAreaChart } from 'react-icons/ai';
 
 const Markdown = dynamic(() => import('../Utils/Markdown'));
 const ListPriceHistoryModal = dynamic<ListPriceHistoryModalProps>(
-  () => import('../Modal/ListPriceHistoryModal'),
+  () => import('../Modal/ListPriceHistoryModal')
 );
 
 type ListHeaderProps = {
@@ -101,7 +101,7 @@ const ListHeader = (props: ListHeaderProps) => {
   const copyLink = () => {
     const userName = list.official ? 'official' : list.owner.username;
     navigator.clipboard.writeText(
-      `${window.location.origin}/lists/${userName}/${list.internal_id}`,
+      `${window.location.origin}/lists/${userName}/${list.slug ?? list.internal_id}`
     );
     toast({
       title: t('General.link-copied'),

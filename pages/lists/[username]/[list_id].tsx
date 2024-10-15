@@ -172,7 +172,8 @@ const ListPage = (props: Props) => {
     setSearchItemInfoIds(null);
     setFilters(defaultFilters);
     try {
-      const { username, list_id } = router.query;
+      const list_id = props.list.internal_id;
+      const { username } = router.query;
 
       let listData = props.list;
 
@@ -181,11 +182,13 @@ const ListPage = (props: Props) => {
 
         listData = res.data;
 
+        if (listData.slug && listData.slug !== router.query.list_id) {
+          router.replace(`/lists/${username}/${listData.slug}`);
+        }
+
         if (!listData) throw 'List does not exist';
         setList(listData);
       }
-
-      if (listData.official) router.replace('/lists/official/' + listData.internal_id);
 
       const [itemData, itemInfos] = await getItems();
 
@@ -867,9 +870,32 @@ export async function getServerSideProps(context: NextPageContext) {
       | null;
   }
 
-  const list = await getList(username, parseInt(list_id), userOrToken, username === 'official');
+  const parsedId = isNaN(parseInt(list_id as string)) ? undefined : parseInt(list_id as string);
+  const slug = parsedId ? undefined : list_id;
+
+  const list = await getList(username, (parsedId ?? slug)!, userOrToken, username === 'official');
 
   if (!list) return { notFound: true };
+
+  if (parsedId && list.slug) {
+    let actualUsername = username;
+    if (list.official) actualUsername = 'official';
+    return {
+      redirect: {
+        destination: `/lists/${actualUsername}/${list.slug}`,
+        permanent: true,
+      },
+    };
+  }
+
+  if (list.official && username !== 'official') {
+    return {
+      redirect: {
+        destination: `/lists/official/${list.slug ?? list.internal_id}`,
+        permanent: true,
+      },
+    };
+  }
 
   return {
     props: {

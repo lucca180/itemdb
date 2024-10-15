@@ -5,6 +5,7 @@ import Vibrant from 'node-vibrant';
 import { ColorType, User, UserList } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
+import { slugify } from '../../../../../utils/utils';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -69,6 +70,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       const colors = await getImagePalette(coverURL);
       colorHexVar = colors.vibrant.hex;
     }
+    const slug = await createListSlug(name, user.id);
 
     const list = await prisma.userList.create({
       data: {
@@ -79,11 +81,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         official: user.isAdmin ? official : undefined,
         purpose: purpose as 'none' | 'trading' | 'seeking',
         visibility: visibility as 'public' | 'private' | 'unlisted',
-        user: {
-          connect: {
-            id: user.id,
-          },
-        },
+        slug: slug,
+        user_id: user.id,
       },
     });
 
@@ -151,7 +150,7 @@ const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
           order: list.order,
           updatedAt: new Date(),
         },
-      }),
+      })
     );
 
     const result = await prisma.$transaction(updateLists);
@@ -229,6 +228,8 @@ export const getUserLists = async (username: string, user?: User | null, limit =
         order: list.order ?? 0,
 
         itemCount: list.items.filter((x) => !x.isHidden).length,
+
+        slug: list.slug,
         // itemInfo: !includeItems
         //   ? []
         //   : list.items.map((item) => {
@@ -254,7 +255,7 @@ export const getUserLists = async (username: string, user?: User | null, limit =
           ? -1
           : 1
         : (a.order ?? 0) - (b.order ?? 0) ||
-          (new Date(b.updatedAt) < new Date(a.updatedAt) ? -1 : 1),
+          (new Date(b.updatedAt) < new Date(a.updatedAt) ? -1 : 1)
     );
 
   return lists;
@@ -273,7 +274,7 @@ type Pallete = {
 
 export const getImagePalette = async (
   image_url: string,
-  skipCheck = false,
+  skipCheck = false
 ): Promise<Record<ColorType, Pallete>> => {
   if (!skipCheck) CHECK_IMG_URL(image_url);
 
@@ -321,4 +322,31 @@ export const CHECK_IMG_URL = (image_url: string) => {
     throw 'Invalid domain';
 
   if (!image_url.match(/\.(jpeg|jpg|gif|png)$/)) throw 'Invalid image format';
+};
+
+export const createListSlug = async (name: string, userId: string) => {
+  let slug = slugify(name);
+
+  const lists = await prisma.userList.findMany({
+    where: {
+      slug: slug,
+      user_id: userId,
+    },
+  });
+
+  if (lists.length === 0) return slug;
+
+  // check if we have same slug
+
+  const regex = new RegExp(`^${slug}(-\\d+)?$`);
+
+  const allSlugs = [...lists.map((x) => x.slug)];
+
+  const sameSlug = allSlugs.filter((x) => regex.test(x ?? ''));
+
+  if (sameSlug.length > 0) {
+    slug = `${slug}-${sameSlug.length + 1}`;
+  }
+
+  return slug;
 };

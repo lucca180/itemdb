@@ -17,7 +17,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   if (!page || isNaN(parseInt(page)))
     return getServerSideSitemapIndexLegacy(
       ctx,
-      [...Array(70)].map((_, i) => `${siteURL}/sitemaps/${i}.xml`),
+      [...Array(70)].map((_, i) => `${siteURL}/sitemaps/${i}.xml`)
     );
 
   const [itemInfo, officialLists] = await Promise.all([
@@ -49,6 +49,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       select: {
         internal_id: true,
         updatedAt: true,
+        slug: true,
       },
       take: 10,
       skip: parseInt(page) * 10,
@@ -58,28 +59,28 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const officialListsPaths: ISitemapField[] = officialLists
     .map((list) => [
       {
-        loc: `${siteURL}/lists/official/${list.internal_id}`,
+        loc: `${siteURL}/lists/official/${list.slug ?? list.internal_id}`,
         alternateRefs: [
           {
-            href: `${siteURL}/pt/lists/official/${list.internal_id}`,
+            href: `${siteURL}/pt/lists/official/${list.slug ?? list.internal_id}`,
             hreflang: 'pt',
           },
           {
-            href: `${siteURL}/lists/official/${list.internal_id}`,
+            href: `${siteURL}/lists/official/${list.slug ?? list.internal_id}`,
             hreflang: 'en',
           },
         ],
         lastmod: list.updatedAt.toISOString(),
       },
       {
-        loc: `${siteURL}/pt/lists/official/${list.internal_id}`,
+        loc: `${siteURL}/pt/lists/official/${list.slug ?? list.internal_id}`,
         alternateRefs: [
           {
-            href: `${siteURL}/pt/lists/official/${list.internal_id}`,
+            href: `${siteURL}/pt/lists/official/${list.slug ?? list.internal_id}`,
             hreflang: 'pt',
           },
           {
-            href: `${siteURL}/lists/official/${list.internal_id}`,
+            href: `${siteURL}/lists/official/${list.slug ?? list.internal_id}`,
             hreflang: 'en',
           },
         ],
