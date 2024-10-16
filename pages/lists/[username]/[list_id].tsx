@@ -457,24 +457,13 @@ const ListPage = (props: Props) => {
       duration: null,
     });
 
-    const { username, list_id } = router.query;
-    const token = await getIdToken();
-
     const changedItems = Object.values(itemInfo).filter((item) => item.hasChanged);
 
     try {
-      const res = await axios.post(
-        `/api/v1/lists/${username}/${list_id}`,
-        {
-          list_id: list.internal_id,
-          itemInfo: changedItems,
-        },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await axios.post(`/api/v1/lists/${list.owner.username}/${list.internal_id}`, {
+        list_id: list.internal_id,
+        itemInfo: changedItems,
+      });
 
       if (res.data.success) {
         toast.update(x, {
