@@ -34,7 +34,7 @@ import { useFormatter, useTranslations } from 'next-intl';
 import { WrongPriceModalProps } from '../Modal/WrongPriceModal';
 import { AdminEditPriceModalProps } from '../Modal/AdminEditPriceModal';
 import { useAuth } from '../../utils/auth';
-import useSWRImmutable from 'swr';
+import useSWRImmutable from 'swr/immutable';
 import axios, { AxiosRequestConfig } from 'axios';
 import { SaleStatusModalProps } from '../Modal/SaleStatusModal';
 import { FaFlag } from 'react-icons/fa';

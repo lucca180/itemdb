@@ -24,7 +24,7 @@ import DynamicIcon from '../../public/icons/dynamic.png';
 import dynamic from 'next/dynamic';
 import axios from 'axios';
 import Color from 'color';
-import useSWRImmutable from 'swr';
+import useSWRImmutable from 'swr/immutable';
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import { isDynamicActionDisabled } from '../../utils/utils';
 import { DuplicatedItemModalProps } from '../Modal/DuplicatedItemModal';
