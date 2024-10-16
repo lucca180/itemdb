@@ -58,7 +58,13 @@ const ItemOfficialLists = (props: Props) => {
                 prefetch={false}
               >
                 {list.coverURL && (
-                  <Image width={'40px'} height={'40px'} src={list.coverURL} alt={list.name} />
+                  <Image
+                    width={'40px'}
+                    objectFit={'cover'}
+                    height={'40px'}
+                    src={list.coverURL}
+                    alt={list.name}
+                  />
                 )}
               </Flex>
             </Flex>
