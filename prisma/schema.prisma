@@ -247,6 +247,11 @@ model Trades {
 
   auto_ignore_pricing Boolean @default(false)
 
+  isCanonical     Boolean?
+  isAllItemsEqual Boolean?
+  itemsCount      Int      @default(0)
+
+  @@unique([wishlist(length: 300), isCanonical, isAllItemsEqual, itemsCount])
   @@index([processed, hash])
   @@index([hash, addedAt])
   @@index([wishlist(length: 200)])

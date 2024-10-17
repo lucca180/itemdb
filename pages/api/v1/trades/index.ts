@@ -58,7 +58,12 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const promiseArr = [];
 
   for (const lot of tradeLots) {
-    const itemList = [];
+    const itemList: {
+      name: string;
+      image: string;
+      image_id: string;
+      order: number;
+    }[] = [];
 
     for (const item of lot.items) {
       let { name, img, order } = item;
@@ -104,6 +109,10 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (similarTrades) continue;
 
+    const isAllItemsEqual = itemList.every(
+      (item) => item.name === itemList[0].name && item.image_id === itemList[0].image_id
+    );
+
     // its not possible to use createMany with multiple related records
     // so we have to try to create the trade and then create the items
     const prom = prisma.trades.create({
@@ -114,6 +123,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         ip_address: requestIp.getClientIp(req),
         priced: lot.wishList === 'none' || shouldSkipTrade(lot.wishList),
         processed: lot.wishList === 'none' || shouldSkipTrade(lot.wishList),
+        isAllItemsEqual: isAllItemsEqual,
+        itemsCount: itemList.length,
         hash: newTradeHash,
         items: {
           create: [...itemList],
@@ -367,7 +378,7 @@ const updateLastSeenTrades = async (
   trades: Trades &
     {
       items: TradeItems[];
-    }[],
+    }[]
 ) => {
   const itemNameImage: any = {};
 
