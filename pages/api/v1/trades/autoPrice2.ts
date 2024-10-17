@@ -53,7 +53,12 @@ export const autoPriceTrades2 = async (tradeRaw: (Trades & { items: TradeItems[]
   const promises = [];
 
   for (const trade of tradeRaw) {
-    promises.push(findSimilar(trade));
+    const promise = findCanonical(trade).then((x) => {
+      if (x) return findSimilar(x);
+      return null;
+    });
+
+    promises.push(promise);
   }
 
   const promResult = await Promise.all(promises);
@@ -136,7 +141,7 @@ const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
 
   for (const similarItem of similar.items) {
     updatedItems[similarItem.order].price = similarItem.price;
-    updatedItems[similarItem.order].addedAt = similarItem.addedAt.toJSON(); //why is this needed?
+    updatedItems[similarItem.order].addedAt = updatedItems[similarItem.order].addedAt.toJSON();
   }
 
   const isAllEmpty = updatedItems.every((item) => !item.price);
@@ -159,6 +164,36 @@ const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
     },
     similar.trade_id,
   ];
+};
+
+const findCanonical = async (trade: Trades & { items: TradeItems[] }) => {
+  const canonical = await prisma.trades.findUnique({
+    where: {
+      wishlist_isCanonical_isAllItemsEqual_itemsCount: {
+        wishlist: trade.wishlist,
+        isCanonical: true,
+        isAllItemsEqual: trade.isAllItemsEqual!,
+        itemsCount: trade.itemsCount,
+      },
+    },
+    include: { items: true },
+  });
+
+  if (!canonical) return trade;
+
+  const updatedItems: any[] = [...trade.items];
+
+  for (const canonicalItem of canonical.items) {
+    updatedItems[canonicalItem.order].price = canonicalItem.price;
+    updatedItems[canonicalItem.order].addedAt = updatedItems[canonicalItem.order].addedAt.toJSON();
+  }
+
+  await processTradePrice({
+    ...trade,
+    items: updatedItems,
+  } as any);
+
+  return null;
 };
 
 // this will skip trade pricing if the trade is est price is less than 100k

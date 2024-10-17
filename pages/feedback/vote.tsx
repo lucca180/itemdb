@@ -34,9 +34,14 @@ import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { ReportFeedbackModalProps } from '../../components/Modal/ReportFeedbackModal';
 import { useRouter } from 'next/router';
+import { CanonicalTradeModalProps } from '../../components/Modal/CanonicalTradeModal';
 
 const ReportFeedbackModal = dynamic<ReportFeedbackModalProps>(
   () => import('../../components/Modal/ReportFeedbackModal')
+);
+
+const CanonicalTradeModal = dynamic<CanonicalTradeModalProps>(
+  () => import('../../components/Modal/CanonicalTradeModal')
 );
 
 const AUTO_PRICE_UID = 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1';
@@ -50,6 +55,11 @@ const FeedbackVotingPage = () => {
   const [currentFeedback, setCurrentFeedback] = useState<Feedback>();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
+  const {
+    isOpen: isCanonicalOpen,
+    onOpen: onCanonicalOpen,
+    onClose: onCanonicalClose,
+  } = useDisclosure();
 
   const isAdmin = user?.role === 'ADMIN';
 
@@ -174,6 +184,14 @@ const FeedbackVotingPage = () => {
       {isOpen && currentFeedback && (
         <ReportFeedbackModal feedback={currentFeedback} isOpen={isOpen} onClose={onClose} />
       )}
+      {isCanonicalOpen && currentFeedback && (
+        <CanonicalTradeModal
+          trade={currentFeedback.parsed?.content.trade}
+          isOpen={isCanonicalOpen}
+          onClose={onCanonicalClose}
+          refresh={init}
+        />
+      )}
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/altador/altadorcup/link_images/2008/help_me_decide.gif',
@@ -290,6 +308,7 @@ const FeedbackVotingPage = () => {
                 >
                   {isAdmin ? t('Feedback.reprove') : t('Feedback.downvote')} (A)
                 </Button>
+                {isAdmin && <Button onClick={onCanonicalOpen}>🏷️</Button>}
                 <Button
                   leftIcon={<Icon as={BsArrowUpCircleFill} />}
                   colorScheme="green"
