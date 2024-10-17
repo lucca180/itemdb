@@ -15,6 +15,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   const includeProcessed = req.query.includeProcessed === 'true';
   const target = req.query.itemName as string;
+  const wishlist = req.query.wishlist as string;
+
   let user_id;
   let user;
 
@@ -29,6 +31,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 
   let feedbackRaw: Feedbacks[] = [];
+
+  if (wishlist) {
+    feedbackRaw = await getTradeFeedbackWishlist(wishlist, parseInt(limit), user_id);
+  }
 
   if (target) {
     feedbackRaw = await getTradeFeedback(target, parseInt(limit), user_id);
@@ -71,6 +77,35 @@ const getTradeFeedback = async (itemName: string, limit: number, user_id: string
     left join trades t on f.subject_id = t.trade_id and f.type = 'tradePrice'
     left join tradeitems ti on t.trade_id = ti.trade_id
     where f.type = 'tradePrice' and ti.name = ${itemName} and f.processed = 0
+  `) as { feedback_id: number }[];
+
+  const feedbackRaw = await prisma.feedbacks.findMany({
+    where: {
+      feedback_id: {
+        in: feedbackIds.map((f) => f.feedback_id),
+      },
+      user_id: {
+        not: user_id,
+      },
+      vote: {
+        none: {
+          user_id: user_id,
+        },
+      },
+    },
+    orderBy: { addedAt: 'asc' },
+    take: limit,
+  });
+
+  return feedbackRaw;
+};
+
+const getTradeFeedbackWishlist = async (wishlist: string, limit: number, user_id: string) => {
+  const feedbackIds = (await prisma.$queryRaw`
+    SELECT f.feedback_id FROM feedbacks f 
+    left join trades t on f.subject_id = t.trade_id and f.type = 'tradePrice'
+    left join tradeitems ti on t.trade_id = ti.trade_id
+    where f.type = 'tradePrice' and t.wishlist = ${wishlist} and f.processed = 0
   `) as { feedback_id: number }[];
 
   const feedbackRaw = await prisma.feedbacks.findMany({

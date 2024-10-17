@@ -109,6 +109,7 @@ const FeedbackVotingPage = () => {
       const res = await axios.get('/api/feedback/getLatest', {
         params: {
           itemName: router.query.target,
+          wishlist: router.query.wishlist,
         },
         headers: {
           authorization: `Bearer ${token}`,
