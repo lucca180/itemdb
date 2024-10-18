@@ -5,7 +5,7 @@ import { ItemData, ItemFindAt, ShopInfo, TradeData } from '../types';
 export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
   const findAt: ItemFindAt = {
     safetyDeposit: `https://www.neopets.com/safetydeposit.phtml?obj_name=${cleanItem(
-      item,
+      item
     )}&category=0`,
     shopWizard: null,
     auction: null,
@@ -27,11 +27,11 @@ export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
   if (item.type !== 'np' || item.status?.toLowerCase() === 'no trade') return findAt;
 
   findAt.auction = `https://www.neopets.com/genie.phtml?type=process_genie&criteria=exact&auctiongenie=${cleanItem(
-    item,
+    item
   )}`;
   findAt.shopWizard = `https://www.neopets.com/shops/wizard.phtml?string=${cleanItem(item)}`;
   findAt.trading = `https://www.neopets.com/island/tradingpost.phtml?type=browse&criteria=item_exact&search_string=${cleanItem(
-    item,
+    item
   )}`;
 
   if (
@@ -47,7 +47,7 @@ export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
 
   if (item.rarity && item.rarity <= 98) {
     findAt.neosearch = `https://www.neopets.com/search.phtml?selected_type=object&string=${cleanItem(
-      item,
+      item
     )}`;
   }
 
@@ -74,7 +74,7 @@ function cleanItem(item: ItemData | Items | string) {
 
 export function genItemKey(
   item: Items | ItemProcess | PriceProcess | ItemData | TradeData['items'][0],
-  ignoreID = false,
+  ignoreID = false
 ) {
   const image_id = item.image_id ?? '';
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -466,7 +466,7 @@ export const restockBlackMarketItems = [
 export const getRestockPrice = (
   item: ItemData,
   ignoreSpecialDays = false,
-  date?: number,
+  date?: number
 ): number[] | null => {
   if (!item.category || !item.rarity || !item.estVal) return null;
 
@@ -1303,7 +1303,7 @@ export const msIntervalFormated = (ms: number, long = false, precision = 0) => {
 
 export const isDynamicActionDisabled = (
   action: 'move' | 'add' | 'remove',
-  dynamicType: 'addOnly' | 'removeOnly' | 'fullSync' | null,
+  dynamicType: 'addOnly' | 'removeOnly' | 'fullSync' | null
 ) => {
   if (!dynamicType) return false;
 
@@ -1642,7 +1642,7 @@ export const allSpecies: { [id: string]: string } = {
 
 export const getPetColorId = (color: string) => {
   const x = Object.keys(allNeopetsColors).find(
-    (x) => allNeopetsColors[x].toLowerCase() === color.toLowerCase(),
+    (x) => allNeopetsColors[x].toLowerCase() === color.toLowerCase()
   );
   if (!x) return null;
   return parseInt(x);
@@ -1650,8 +1650,32 @@ export const getPetColorId = (color: string) => {
 
 export const getSpeciesId = (species: string) => {
   const x = Object.keys(allSpecies).find(
-    (x) => allSpecies[x].toLowerCase() === species.toLowerCase(),
+    (x) => allSpecies[x].toLowerCase() === species.toLowerCase()
   );
   if (!x) return null;
   return parseInt(x);
+};
+
+export const promiseAllLimit = async <T>(
+  arr: Promise<T>[],
+  limit: number,
+  continueOnThrow = false
+) => {
+  const results: T[] = [];
+
+  for (let i = 0; i < arr.length; i += limit) {
+    try {
+      const chunk = arr.slice(i, i + limit);
+      const res = await Promise.all(chunk);
+      results.push(...res);
+    } catch (e) {
+      if (continueOnThrow) {
+        console.error(e);
+      } else {
+        throw e;
+      }
+    }
+  }
+
+  return results;
 };

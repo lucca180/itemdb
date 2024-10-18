@@ -3,6 +3,7 @@ import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 import { processTradePrice } from '..';
 import { FeedbackParsed, TradeData } from '../../../../../types';
+import { promiseAllLimit } from '../../../../../utils/utils';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -106,7 +107,7 @@ export const applyCanonicalTrade = async (id: string) => {
   const trades = await prisma.trades.findMany({
     where: {
       addedAt: {
-        gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30),
+        gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 20),
       },
       // priced: false,
       isAllItemsEqual: canonTrade.isAllItemsEqual,
@@ -117,19 +118,24 @@ export const applyCanonicalTrade = async (id: string) => {
     include: { items: true },
   });
 
-  for (const trade of [...trades, canonicalTrade]) {
+  const processArr = [];
+
+  for (const trade of [canonicalTrade, ...trades]) {
     const updatedItems = [...trade.items];
 
     for (const canonicalItem of canonicalTrade.items) {
       updatedItems[canonicalItem.order].price = canonicalItem.price;
-      console.log(trade.trade_id, canonicalItem.order, canonicalItem.price, canonicalTrade);
     }
 
-    await processTradePrice({
+    const x = processTradePrice({
       ...trade,
       items: updatedItems,
     } as TradeData);
+
+    processArr.push(x);
   }
+
+  await promiseAllLimit(processArr, 5, true);
 
   // delete feedbacks for similar trades
 
