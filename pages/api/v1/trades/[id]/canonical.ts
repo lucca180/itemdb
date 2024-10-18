@@ -83,8 +83,24 @@ export const applyCanonicalTrade = async (id: string) => {
       },
     });
   } catch (e: any) {
-    console.error(e);
-    throw { error: 'Internal Server Error' };
+    await prisma.trades.updateMany({
+      where: {
+        wishlist: canonicalTrade.wishlist,
+        isCanonical: true,
+        isAllItemsEqual: canonTrade.isAllItemsEqual,
+        itemsCount: canonTrade.itemsCount,
+      },
+      data: {
+        isCanonical: false,
+      },
+    });
+
+    await prisma.trades.update({
+      where: { trade_id: Number(id) },
+      data: {
+        isCanonical: true,
+      },
+    });
   }
 
   const trades = await prisma.trades.findMany({
