@@ -15,11 +15,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         trade_id: true,
         wishlist: true,
       },
-      skip: 332 + i * take,
+      skip: 590 + i * take,
       take: take,
     });
 
-    console.log(`${332 + i * take} - Fetched ${allCanonTrades.length} trades`);
+    console.log(`${590 + i * take} - Fetched ${allCanonTrades.length} trades`);
 
     if (allCanonTrades.length === 0) break;
 

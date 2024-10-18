@@ -3,9 +3,6 @@ import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 import { processTradePrice } from '..';
 import { FeedbackParsed, TradeData } from '../../../../../types';
-import { promiseAllLimit } from '../../../../../utils/utils';
-
-const TRADE_CANONICAL_PROMISE_LIMIT = process.env.TRADE_CANONICAL_PROMISE_LIMIT || 5;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -120,26 +117,32 @@ export const applyCanonicalTrade = async (id: string) => {
     include: { items: true },
   });
 
-  let processArr = [];
+  const allTrades = [canonicalTrade, ...trades];
 
-  for (const trade of [canonicalTrade, ...trades]) {
+  let i = 0;
+  for (const trade of allTrades) {
     const updatedItems = [...trade.items];
+    let skip = false;
 
     for (const canonicalItem of canonicalTrade.items) {
+      if (updatedItems[canonicalItem.order].price && trade.trade_id !== canonicalTrade.trade_id) {
+        skip = true;
+        break;
+      }
+
       updatedItems[canonicalItem.order].price = canonicalItem.price;
     }
 
-    const x = processTradePrice({
+    if (skip) continue;
+
+    if (i % 10 === 0) console.log(`Processing ${i} of ${allTrades.length} trades`);
+
+    await processTradePrice({
       ...trade,
       items: updatedItems,
     } as TradeData);
 
-    processArr.push(x);
-
-    if (processArr.length >= Number(TRADE_CANONICAL_PROMISE_LIMIT)) {
-      await Promise.all(processArr);
-      processArr = [];
-    }
+    i++;
   }
 
   // delete feedbacks for similar trades
