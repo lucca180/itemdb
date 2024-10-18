@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 import { processTradePrice } from '..';
+import { FeedbackParsed, TradeData } from '../../../../../types';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -33,15 +34,46 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
   const id = req.query.id as string;
   if (!id) return res.status(400).json({ error: 'Missing ID' });
 
-  const canonicalTrade = await prisma.trades.findUnique({
-    where: { trade_id: Number(id) },
-    include: { items: true },
+  try {
+    const updated = await applyCanonicalTrade(id);
+    return res.status(200).json({ success: true, updated: updated });
+  } catch (e: any) {
+    console.error(e);
+    return res.status(400).json({ error: e.error });
+  }
+}
+
+export const applyCanonicalTrade = async (id: string) => {
+  const feedback = await prisma.feedbacks.findFirst({
+    where: {
+      subject_id: Number(id),
+      type: 'tradePrice',
+      // processed: false,
+      votes: {
+        gte: 0,
+      },
+    },
+    orderBy: {
+      addedAt: 'desc',
+    },
   });
 
-  if (!canonicalTrade) return res.status(404).json({ error: 'Trade not found' });
+  if (!feedback) throw { error: 'Feedback not found' };
 
-  if (canonicalTrade.isAllItemsEqual === null || !canonicalTrade.itemsCount)
-    return res.status(400).json({ error: 'Canonical Trade Missing Data' });
+  const json = feedback.json as string;
+  const parsed = JSON.parse(json) as FeedbackParsed;
+  const canonicalTrade = parsed.content.trade as TradeData;
+
+  const canonTrade = await prisma.trades.findUnique({
+    where: {
+      trade_id: Number(id),
+    },
+  });
+
+  if (!canonicalTrade || !canonTrade) throw { error: 'Trade not found' };
+
+  if (canonTrade.isAllItemsEqual === null || !canonTrade.itemsCount)
+    throw { error: 'Canonical Trade Missing Data' };
 
   try {
     await prisma.trades.update({
@@ -52,33 +84,35 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
     });
   } catch (e: any) {
     console.error(e);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    throw { error: 'Internal Server Error' };
   }
 
   const trades = await prisma.trades.findMany({
     where: {
-      priced: false,
-      isAllItemsEqual: canonicalTrade.isAllItemsEqual,
+      addedAt: {
+        gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30),
+      },
+      // priced: false,
+      isAllItemsEqual: canonTrade.isAllItemsEqual,
       isCanonical: null,
-      itemsCount: canonicalTrade.itemsCount,
+      itemsCount: canonTrade.itemsCount,
       wishlist: canonicalTrade.wishlist,
     },
     include: { items: true },
   });
 
   for (const trade of [...trades, canonicalTrade]) {
-    const updatedItems: any[] = [...trade.items];
+    const updatedItems = [...trade.items];
 
     for (const canonicalItem of canonicalTrade.items) {
       updatedItems[canonicalItem.order].price = canonicalItem.price;
-      updatedItems[canonicalItem.order].addedAt =
-        updatedItems[canonicalItem.order].addedAt.toJSON();
+      console.log(trade.trade_id, canonicalItem.order, canonicalItem.price, canonicalTrade);
     }
 
     await processTradePrice({
       ...trade,
       items: updatedItems,
-    } as any);
+    } as TradeData);
   }
 
   // delete feedbacks for similar trades
@@ -99,5 +133,5 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
     },
   });
 
-  return res.status(200).json({ success: true, updated: allIds.length });
-}
+  return allIds.length;
+};

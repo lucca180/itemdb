@@ -186,7 +186,10 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
   return res.status(200).json({ success: true, message: false });
 };
 
-export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) => {
+export const processTradePrice = async (
+  trade: TradeData | (Trades & { items: TradeItems[] }),
+  req?: NextApiRequest
+) => {
   let tradeHash = trade.hash;
 
   const originalTrade = await prisma.trades.findFirst({
@@ -203,7 +206,7 @@ export const processTradePrice = async (trade: TradeData, req?: NextApiRequest) 
   // this is the worst (or is it?)
   // update: (its getting worse and worse)
   const updateItems = trade.items
-    .filter((x) => x.price && x.price > 0)
+    .filter((x) => x.price && Number(x.price) > 0)
     .map((item) => {
       return [
         prisma.tradeItems.update({
