@@ -51,8 +51,24 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
       },
     });
   } catch (e: any) {
-    console.error(e);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    await prisma.trades.updateMany({
+      where: {
+        wishlist: canonicalTrade.wishlist,
+        isCanonical: true,
+        isAllItemsEqual: canonicalTrade.isAllItemsEqual,
+        itemsCount: canonicalTrade.itemsCount,
+      },
+      data: {
+        isCanonical: false,
+      },
+    });
+
+    await prisma.trades.update({
+      where: { trade_id: Number(id) },
+      data: {
+        isCanonical: true,
+      },
+    });
   }
 
   const trades = await prisma.trades.findMany({
