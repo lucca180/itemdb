@@ -6,6 +6,7 @@ import prisma from '../../../../utils/prisma';
 import axios from 'axios';
 import { DTIBodiesAndTheirZones, DTIItemPreview } from '../../../../types';
 import { Items, Prisma } from '@prisma/client';
+import { getSpeciesId } from '../../../../utils/utils';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -191,7 +192,7 @@ const handleRegularStyle = async (
   return [imagesURLs, itemPreviewData];
 };
 
-const altStylesNames = ['nostalgic', 'prismatic'];
+const altStylesNames = ['nostalgic', 'prismatic', 'spooky'];
 // using data from DTI again. Thanks DTI!
 const handleAltStyle = async (
   image_id: string,
@@ -201,7 +202,13 @@ const handleAltStyle = async (
   if (!altStylesNames.some((x) => itemName.toLowerCase().includes(x) || image_id.includes(x)))
     return [];
 
-  const dtiRes = await axios.get('https://impress.openneo.net/alt-styles.json');
+  const specieName = itemName.split(' ').at(-1)?.toLowerCase();
+  if (!specieName) return [];
+
+  const specieID = getSpeciesId(specieName);
+  if (!specieID) return [];
+
+  const dtiRes = await axios.get(`https://impress.openneo.net/species/${specieID}/alt-styles.json`);
   const dtiData = dtiRes.data as any[];
 
   // hotfixes thumbnail_url being wrong
