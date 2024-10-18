@@ -113,6 +113,13 @@ export const applyCanonicalTrade = async (id: string) => {
       isCanonical: null,
       itemsCount: canonTrade.itemsCount,
       wishlist: canonicalTrade.wishlist,
+      items: {
+        none: {
+          price: {
+            not: null,
+          },
+        },
+      },
     },
     include: { items: true },
   });
@@ -121,6 +128,7 @@ export const applyCanonicalTrade = async (id: string) => {
 
   let i = 0;
   for (const trade of allTrades) {
+    i++;
     const updatedItems = [...trade.items];
     let skip = false;
 
@@ -133,16 +141,13 @@ export const applyCanonicalTrade = async (id: string) => {
       updatedItems[canonicalItem.order].price = canonicalItem.price;
     }
 
+    if (i % 10 === 0) console.log(`Processed ${i} of ${allTrades.length} trades`);
     if (skip) continue;
-
-    if (i % 10 === 0) console.log(`Processing ${i} of ${allTrades.length} trades`);
 
     await processTradePrice({
       ...trade,
       items: updatedItems,
     } as TradeData);
-
-    i++;
   }
 
   // delete feedbacks for similar trades
