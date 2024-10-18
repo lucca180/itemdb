@@ -5,6 +5,8 @@ import { processTradePrice } from '..';
 import { FeedbackParsed, TradeData } from '../../../../../types';
 import { promiseAllLimit } from '../../../../../utils/utils';
 
+const TRADE_CANONICAL_PROMISE_LIMIT = process.env.TRADE_CANONICAL_PROMISE_LIMIT || 5;
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   try {
     if (req.method === 'POST') return POST(req, res);
@@ -118,7 +120,7 @@ export const applyCanonicalTrade = async (id: string) => {
     include: { items: true },
   });
 
-  const processArr = [];
+  let processArr = [];
 
   for (const trade of [canonicalTrade, ...trades]) {
     const updatedItems = [...trade.items];
@@ -133,9 +135,12 @@ export const applyCanonicalTrade = async (id: string) => {
     } as TradeData);
 
     processArr.push(x);
-  }
 
-  await promiseAllLimit(processArr, 5, true);
+    if (processArr.length >= Number(TRADE_CANONICAL_PROMISE_LIMIT)) {
+      await Promise.all(processArr);
+      processArr = [];
+    }
+  }
 
   // delete feedbacks for similar trades
 
