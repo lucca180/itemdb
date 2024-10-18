@@ -60,12 +60,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       user_id,
       voteMultiplier >= MAX_VOTE_MULTIPLIER
     );
-    const autopriced = await processSimilarTrades(
-      parsed.trade as TradeData,
-      parseInt(subject_id),
-      user_id
-    );
-    obj.autoPriceList = autopriced;
+    // const autopriced = await processSimilarTrades(
+    //   parsed.trade as TradeData,
+    //   parseInt(subject_id),
+    //   user_id
+    // );
+    // obj.autoPriceList = autopriced;
+
+    obj.autoPriceList = [];
   }
 
   if (type === 'feedback') {
@@ -133,7 +135,7 @@ const processTradeFeedback = async (
   trust: boolean
 ) => {
   const tradeFeedback = await prisma.feedbacks.findFirst({
-    where: { type: 'tradePrice', subject_id: trade_id },
+    where: { type: 'tradePrice', subject_id: trade_id, processed: false },
   });
 
   await prisma.trades.update({
