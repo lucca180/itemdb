@@ -49,9 +49,6 @@ export const applyCanonicalTrade = async (id: string) => {
       subject_id: Number(id),
       type: 'tradePrice',
       processed: false,
-      votes: {
-        gte: 0,
-      },
     },
     orderBy: {
       addedAt: 'desc',
