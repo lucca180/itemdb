@@ -2,6 +2,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../../utils/prisma';
 import { applyCanonicalTrade } from './canonical';
 
+const initialSkip = process.env.INITIAL_SKIP ? parseInt(process.env.INITIAL_SKIP) : 645;
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   let i = 0;
   const take = 100;
@@ -15,11 +17,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         trade_id: true,
         wishlist: true,
       },
-      skip: 590 + i * take,
+      skip: initialSkip + i * take,
       take: take,
     });
 
-    console.log(`${590 + i * take} - Fetched ${allCanonTrades.length} trades`);
+    console.log(`${initialSkip + i * take} - Fetched ${allCanonTrades.length} trades`);
 
     if (allCanonTrades.length === 0) break;
 
