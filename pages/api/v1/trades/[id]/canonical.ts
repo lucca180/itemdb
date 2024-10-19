@@ -88,7 +88,7 @@ export const applyCanonicalTrade = async (id: string) => {
         itemsCount: canonTrade.itemsCount,
       },
       data: {
-        isCanonical: false,
+        isCanonical: null,
       },
     });
 
