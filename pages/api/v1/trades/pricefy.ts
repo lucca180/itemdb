@@ -69,50 +69,38 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
 const getPopularItem = async (skipList?: string[]) => {
   const shouldGetOld = chance.bool();
+  const prismaSkip = Prisma.join(skipList && skipList.length > 0 ? skipList : [-1]);
 
-  const rawData = await prisma.tradeItems.groupBy({
-    where: {
-      trade: {
-        processed: false,
-        trade_id: skipList
-          ? {
-              notIn: skipList.map((s) => parseInt(s)),
-            }
-          : undefined,
-      },
-    },
-    by: ['name'],
-    _count: true,
-    _max: {
-      addedAt: true,
-    },
-    orderBy: [
-      shouldGetOld
-        ? {}
-        : {
-            _count: {
-              name: 'desc',
-            },
-          },
-      {
-        _max: {
-          addedAt: 'asc',
-        },
-      },
-    ],
-    take: 1,
-  });
+  const orderBy = shouldGetOld
+    ? Prisma.sql`ORDER BY max_addedAt asc`
+    : Prisma.sql`ORDER BY count desc`;
 
-  if (!rawData.length) return undefined;
+  const rawQuery = (await prisma.$queryRaw`
+    select name, count(name) as count, max(t.addedAt) as max_addedAt FROM trades t 
+    left join tradeitems ti2 on t.trade_id = ti2.trade_id
+    where processed = 0 and EXISTS (
+        SELECT 1 
+        FROM trades t2
+        LEFT JOIN tradeitems ti ON t2.trade_id = ti.trade_id
+        LEFT JOIN items i ON i.name = ti.name AND i.image_id = ti.image_id
+        LEFT JOIN itemprices p ON p.item_iid = i.internal_id AND p.isLatest = 1 AND p.addedAt > t.addedAt
+        WHERE t.trade_id = t2.trade_id
+        AND p.price IS NULL
+    ) and t.trade_id not in (${prismaSkip})
+    group by name ${orderBy}
+    limit 1
+  `) as { name: string; count: bigint; max_addedAt: Date }[];
 
-  return rawData[0].name;
+  if (!rawQuery.length) return undefined;
+
+  return rawQuery[0].name;
 };
 
 const getPrecifyTrades = async (
   itemName: string,
   order: Prisma.TradesOrderByWithRelationInput,
   limit = 1,
-  skipList?: string[],
+  skipList?: string[]
 ) => {
   const tradeRaw = await prisma.trades.findMany({
     where: {

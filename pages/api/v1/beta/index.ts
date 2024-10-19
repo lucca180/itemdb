@@ -45,7 +45,16 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
   const itemsTotal = prisma.items.count();
 
   const tradeQueueRaw = prisma.$queryRaw<{ count: number }[]>(
-    Prisma.sql`SELECT COUNT(DISTINCT hash) as "count" FROM trades where processed = 0`,
+    Prisma.sql`
+    SELECT COUNT(DISTINCT hash) as "count" FROM trades t where processed = 0 and EXISTS (
+      SELECT 1 
+      FROM trades t2
+      LEFT JOIN tradeitems ti ON t2.trade_id = ti.trade_id
+      LEFT JOIN items i ON i.name = ti.name AND i.image_id = ti.image_id
+      LEFT JOIN itemprices p ON p.item_iid = i.internal_id AND p.isLatest = 1 AND p.addedAt > t.addedAt
+      WHERE t.trade_id = t2.trade_id
+      AND p.price IS NULL
+      )`
   );
 
   const feedbackVoting = prisma.feedbacks.count({
