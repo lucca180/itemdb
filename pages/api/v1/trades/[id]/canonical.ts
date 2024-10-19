@@ -48,7 +48,7 @@ export const applyCanonicalTrade = async (id: string) => {
     where: {
       subject_id: Number(id),
       type: 'tradePrice',
-      // processed: false,
+      processed: false,
       votes: {
         gte: 0,
       },
@@ -105,10 +105,7 @@ export const applyCanonicalTrade = async (id: string) => {
 
   const trades = await prisma.trades.findMany({
     where: {
-      addedAt: {
-        gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 20),
-      },
-      // priced: false,
+      priced: false,
       isAllItemsEqual: canonTrade.isAllItemsEqual,
       isCanonical: null,
       itemsCount: canonTrade.itemsCount,
