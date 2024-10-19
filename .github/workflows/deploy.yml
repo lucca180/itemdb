@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Itemdb Blue (main) - Deploy
+      - name: itemdb Blue (main) - Deploy
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -28,7 +28,7 @@ jobs:
             yarn build || exit
             pm2 stop itemdb-green
             pm2 reload ecosystem.config.js --only itemdb-web --update-env
-      - name: Itemdb Green (main) - Update
+      - name: itemdb Green (backup) - Update
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
