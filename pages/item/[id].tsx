@@ -309,7 +309,9 @@ const ItemPage = (props: ItemPageProps) => {
             {itemEffects.length > 0 && <ItemEffectsCard item={item} effects={itemEffects} />}
             {lists && <ItemOfficialLists item={item} lists={lists} />}
             {!!user && <ItemMyLists item={item} />}
-            {itemRecipes && <ItemRecipes item={item} recipes={itemRecipes} />}
+            {itemRecipes && itemRecipes.length > 0 && (
+              <ItemRecipes item={item} recipes={itemRecipes} />
+            )}
             {item.comment && <ItemComments item={item} />}
             {itemOpenable && <ItemDrops item={item} itemOpenable={itemOpenable} />}
             <SimilarItemsCard item={item} similarItems={props.similarItems} />
