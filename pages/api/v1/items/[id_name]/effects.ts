@@ -61,7 +61,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     },
   });
 
-  await revalidate(item.slug!, res);
+  await revalidateItem(item.slug!, res);
   return res.status(200).json(formatEffect(newEffect));
 };
 
@@ -97,7 +97,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
   const { id_name } = req.query;
   const item = await getItem(id_name as string);
   if (item) {
-    await revalidate(item.slug!, res);
+    await revalidateItem(item.slug!, res);
   }
 
   return res.status(200).json(formatEffect(updated));
@@ -124,7 +124,7 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
   const { id_name } = req.query;
   const item = await getItem(id_name as string);
   if (item) {
-    await revalidate(item.slug!, res);
+    await revalidateItem(item.slug!, res);
   }
 
   return res.status(200).json({});
@@ -217,6 +217,11 @@ const formatEffect = (effect: PrimsaItemEffect) => {
   return JSON.parse(JSON.stringify(obj)) as ItemEffect;
 };
 
-const revalidate = async (slug: string, res: NextApiResponse) => {
-  Promise.allSettled([res.revalidate(`/item/${slug}`), res.revalidate(`/pt/item/${slug}`)]);
+export const revalidateItem = async (slug: string, res: NextApiResponse, onlyGenerated = true) => {
+  const options = onlyGenerated ? undefined : { unstable_onlyGenerated: false };
+
+  return Promise.allSettled([
+    res.revalidate(`/item/${slug}`, options),
+    res.revalidate(`/pt/item/${slug}`, options),
+  ]);
 };

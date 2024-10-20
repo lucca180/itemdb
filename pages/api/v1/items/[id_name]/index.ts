@@ -9,6 +9,7 @@ import { differenceInCalendarDays, isSameDay } from 'date-fns';
 import { getSaleStats } from './saleStats';
 import requestIp from 'request-ip';
 import { redis_setItemCount } from '../../../redis/checkapi';
+import { revalidateItem } from './effects';
 
 const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
 
@@ -119,7 +120,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
     }
   }
 
-  await prisma.items.update({
+  const item = await prisma.items.update({
     where: { internal_id: internal_id },
     data: {
       item_id: itemId,
@@ -149,9 +150,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 
   await processTags(itemTags, itemCats, internal_id);
 
-  try {
-    await res.revalidate(`/item/${itemSlug ?? itemData.slug}`, { unstable_onlyGenerated: true });
-  } catch (e) {}
+  await revalidateItem(item.slug!, res);
 
   return res.status(200).json({ success: true });
 };
@@ -169,10 +168,17 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
     console.error(e);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
+  const item = await prisma.items.findUnique({
+    where: {
+      internal_id: internal_id,
+    },
+  });
 
   await prisma.items.delete({
     where: { internal_id: internal_id },
   });
+
+  if (item?.slug) await revalidateItem(item.slug, res, false);
 
   return res.status(200).json({ success: true });
 };

@@ -4,6 +4,7 @@ import { ItemDrop, ItemOpenable, PrizePoolData } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 import { WearableData } from '@prisma/client';
+import { revalidateItem } from './effects';
 
 const catType = ['trinkets', 'accessories', 'clothing', 'le', 'choice'];
 const catTypeZone = ['trinkets', 'accessories', 'clothing'];
@@ -82,9 +83,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const newDrops = await getItemDrops(item.internal_id, item.isNC);
 
-  try {
-    await res.revalidate('/item/' + item.slug, { unstable_onlyGenerated: true });
-  } catch (e) {}
+  await revalidateItem(item.slug!, res);
 
   return res.status(200).json({ dropUpdate: newDrops });
 };
@@ -92,7 +91,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 // ---------- helpers ---------- //
 export const getItemDrops = async (
   item_iid: number,
-  isNC = false,
+  isNC = false
 ): Promise<ItemOpenable | null> => {
   const drops = await prisma.openableItems.findMany({
     where: {
@@ -285,7 +284,7 @@ export const getItemDrops = async (
 
       openingMinMax = getMinMax(
         opening.filter((x) => !ignoreItems.includes(x)).length,
-        openingMinMax,
+        openingMinMax
       );
 
       if (drops === 0) return;
