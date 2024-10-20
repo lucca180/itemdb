@@ -1,5 +1,6 @@
 import { Link, LinkProps } from '@chakra-ui/react';
 import Image from 'next/image';
+
 export const IconLink = (props: LinkProps) => {
   if (!props.href) return null;
 

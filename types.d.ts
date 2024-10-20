@@ -487,6 +487,13 @@ type UseTypes = {
 
 type ThreeStateBoolean = 'true' | 'false' | 'unknown';
 
+type ItemRecipe = {
+  internal_id: number;
+  result: ItemData;
+  ingredients: ItemData[];
+  type: string;
+};
+
 // ------- FEEDBACKS JSON -------- //
 export type Feedback = {
   feedback_id: number;

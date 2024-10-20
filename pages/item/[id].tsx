@@ -8,6 +8,7 @@ import {
   ItemEffect,
   ItemLastSeen,
   ItemOpenable,
+  ItemRecipe,
   NCMallData,
   // ItemTag,
   PriceData,
@@ -55,6 +56,8 @@ import { getWearableData } from '../api/v1/items/[id_name]/wearable';
 import { getItemNCMall } from '../api/v1/items/[id_name]/ncmall';
 import NcMallCard from '../../components/Items/NCMallCard';
 import Color from 'color';
+import { getItemRecipes } from '../api/v1/items/[id_name]/recipes';
+import ItemRecipes from '../../components/Items/ItemRecipes';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -77,6 +80,7 @@ type ItemPageProps = {
   itemEffects: ItemEffect[];
   wearableData: WearableData[] | null;
   ncMallData: NCMallData | null;
+  itemRecipes: ItemRecipe[] | null;
   messages: any;
 };
 
@@ -91,6 +95,7 @@ const ItemPage = (props: ItemPageProps) => {
     itemParent,
     NPTrades: trades,
     itemEffects,
+    itemRecipes,
   } = props;
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
@@ -304,6 +309,7 @@ const ItemPage = (props: ItemPageProps) => {
             {itemEffects.length > 0 && <ItemEffectsCard item={item} effects={itemEffects} />}
             {lists && <ItemOfficialLists item={item} lists={lists} />}
             {!!user && <ItemMyLists item={item} />}
+            {itemRecipes && <ItemRecipes item={item} recipes={itemRecipes} />}
             {item.comment && <ItemComments item={item} />}
             {itemOpenable && <ItemDrops item={item} itemOpenable={itemOpenable} />}
             <SimilarItemsCard item={item} similarItems={props.similarItems} />
@@ -374,6 +380,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     itemEffects,
     wearableData,
     NCMallData,
+    itemRecipes,
   ] = await Promise.all([
     getItemColor([item.image_id]),
     getItemLists(item.internal_id, true, false),
@@ -389,6 +396,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     getItemEffects(item.internal_id),
     item.isWearable ? getWearableData(item.internal_id) : null,
     item.isNC ? getItemNCMall(item.internal_id) : null,
+    !item.isNC ? getItemRecipes(item.internal_id) : null,
   ]);
 
   if (!colors) return { notFound: true };
@@ -407,6 +415,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     itemEffects: itemEffects,
     wearableData: wearableData,
     ncMallData: NCMallData,
+    itemRecipes: itemRecipes,
     messages: (await import(`../../translation/${context.locale}.json`)).default,
   };
 

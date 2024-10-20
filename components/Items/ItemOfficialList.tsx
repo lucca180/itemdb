@@ -21,6 +21,8 @@ const ItemOfficialLists = (props: Props) => {
   const officialLists = lists.filter((list) => list.official);
   const color = Color(item.color.hex);
 
+  if (!officialLists.length) return null;
+
   return (
     <CardBase
       title={<Link href="/lists/official">{t('General.official-lists')}</Link>}

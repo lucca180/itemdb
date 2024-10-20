@@ -65,6 +65,8 @@ model Items {
   wearableData          WearableData[]
   ncMallData            NcMallData[]
   saleStats             SaleStats[]
+  ItemRecipes           ItemRecipes[]
+  ItemIngredients       ItemIngredients[]
 
   @@index([name, image_id])
   @@index([image_id])
@@ -606,6 +608,27 @@ enum SaleStatsEnum {
   regular
   hts
   unknown
+}
+
+model ItemRecipes {
+  internal_id Int @id @default(autoincrement())
+
+  result_iid Int   @unique
+  result     Items @relation(fields: [result_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+
+  type String @default("cookingpot")
+
+  ingredients ItemIngredients[]
+}
+
+model ItemIngredients {
+  internal_id Int @id @default(autoincrement())
+
+  item_iid Int
+  item     Items @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+
+  recipe_id Int
+  recipe    ItemRecipes @relation(fields: [recipe_id], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 // -------- DISMANTELING PRICE PROCESS --------- //

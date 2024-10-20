@@ -211,7 +211,8 @@
     "wrong-price": "Wrong Price?",
     "waiting-pricing": "Waiting Pricing",
     "waiting-votes": "Waiting Votes",
-    "waiting-votes-txt": "Trade Lots that are waiting for pricing validation"
+    "waiting-votes-txt": "Trade Lots that are waiting for pricing validation",
+    "cooking-pot-text": "This item appears in the following <Link>Cooking Pot</Link> recipes"
   },
   "Button": {
     "feedback": "Feedback",
