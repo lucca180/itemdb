@@ -17,7 +17,7 @@ const ItemRecipes = (props: Props) => {
   const { item, recipes } = props;
   const color = Color(item.color.hex);
   return (
-    <CardBase title={'Cooking Pot Recipes'} color={item.color.rgb}>
+    <CardBase title={t('ItemPage.cooking-pot-recipes')} color={item.color.rgb}>
       <Flex flexFlow={'column'} gap={3}>
         <Text textAlign={'center'} fontSize={'sm'} sx={{ a: { color: color.lightness(70).hex() } }}>
           {t.rich('ItemPage.cooking-pot-text', {

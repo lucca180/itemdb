@@ -212,7 +212,8 @@
     "waiting-pricing": "Waiting Pricing",
     "waiting-votes": "Waiting Votes",
     "waiting-votes-txt": "Trade Lots that are waiting for pricing validation",
-    "cooking-pot-text": "This item appears in the following <Link>Cooking Pot</Link> recipes"
+    "cooking-pot-text": "This item appears in the following <Link>Cooking Pot</Link> recipes",
+    "cooking-pot-recipes": "Cooking Pot Recipes"
   },
   "Button": {
     "feedback": "Feedback",

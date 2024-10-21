@@ -213,7 +213,8 @@
     "waiting-pricing": "Esperando Preço",
     "waiting-votes": "Esperando Votos",
     "waiting-votes-txt": "Lote de Trocas que aguardam validação de preço",
-    "cooking-pot-text": "Este item aparece nas seguintes receitas do <Link>Caldeirão da Jhuidah</Link>"
+    "cooking-pot-text": "Este item aparece nas seguintes receitas do <Link>Caldeirão da Jhuidah</Link>",
+    "cooking-pot-recipes": "Receitas do Caldeirão"
   },
   "Button": {
     "feedback": "Feedback",
