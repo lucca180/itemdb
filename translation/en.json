@@ -85,7 +85,8 @@
     "missing-info-hub": "Missing Info Hub",
     "feedback-and-ideas": "Feedback and Ideas",
     "faerie-festval-cta": "Find the best items to donate in the <Link>Faerie Festival Guide</Link>",
-    "scheduled-maintenance": "Scheduled Maintenance"
+    "scheduled-maintenance": "Scheduled Maintenance",
+    "tavi-alert": "Some prices might be wildly outdated due to Tavi's Quests. <Link>Learn how to help</Link> or use the Wrong Price Button :)"
   },
   "ItemPage": {
     "item-info": "Item Info",

@@ -42,6 +42,7 @@ import axios from 'axios';
 import { setCookie } from 'cookies-next';
 import dynamic from 'next/dynamic';
 import { DropdownButton, DropdownOption } from './Menus/HeaderDropdown';
+import { SiteAlert } from './Utils/SiteAlert';
 
 const LanguageToast = dynamic<LanguageToastProps>(() => import('./Modal/LanguageToast'));
 const LoginModal = dynamic<LoginModalProps>(() => import('./Modal/LoginModal'));
@@ -103,6 +104,7 @@ const Layout = (props: Props) => {
       {isOpen && <LoginModal isOpen={isOpen} onClose={onClose} />}
       <LanguageToast saveLang={saveLang} />
       <Flex flexFlow="column" minH="100vh">
+        <SiteAlert />
         <Flex
           as="header"
           w="full"
