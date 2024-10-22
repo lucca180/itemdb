@@ -20,6 +20,8 @@ import {
   Kbd,
   useOutsideClick,
   Badge,
+  Icon,
+  Tooltip,
 } from '@chakra-ui/react';
 import React, { useCallback } from 'react';
 import SearchMenu from '../Menus/SearchMenu';
@@ -33,6 +35,7 @@ import qs from 'qs';
 import { getFiltersDiff } from '../../pages/search';
 import { parseFilters } from '../../utils/parseFilters';
 import { useTranslations } from 'next-intl';
+import { AiFillWarning } from 'react-icons/ai';
 
 const Axios = axios.create({
   baseURL: '/api/v1/',
@@ -44,7 +47,7 @@ type Props = {
 const intl = new Intl.NumberFormat();
 
 export const SearchBar = (props: Props) => {
-  const t = useTranslations('Layout');
+  const t = useTranslations();
   const [search, setSearch] = React.useState<string>('');
   const [isLargerThanMD] = useMediaQuery('(min-width: 48em)');
   const [searchResult, setResult] = React.useState<SearchResults | null>(null);
@@ -87,7 +90,7 @@ export const SearchBar = (props: Props) => {
       {
         arrayFormat: 'brackets',
         encode: false,
-      },
+      }
     );
 
     paramsString = paramsString ? '&' + paramsString : '';
@@ -144,7 +147,7 @@ export const SearchBar = (props: Props) => {
     debounce((newValue: string) => {
       preSearch(newValue);
     }, 375),
-    [isOpen],
+    [isOpen]
   );
 
   return (
@@ -173,7 +176,7 @@ export const SearchBar = (props: Props) => {
             onChange={(e) => setSearch(e.target.value)}
             value={search}
             ref={inputRef}
-            placeholder={isLargerThanMD ? t('search-by') : t('search-the-database')}
+            placeholder={isLargerThanMD ? t('Layout.search-by') : t('Layout.search-the-database')}
             _focus={{ bg: 'gray.700' }}
             h="100%"
           />
@@ -188,7 +191,7 @@ export const SearchBar = (props: Props) => {
             </Center>
           )}
           {!isLoading && searchResult && searchResult.content.length === 0 && (
-            <Text textAlign="center">{t('no-results-found')}</Text>
+            <Text textAlign="center">{t('Layout.no-results-found')}</Text>
           )}
           {!isLoading &&
             searchResult &&
@@ -235,8 +238,29 @@ export const SearchBar = (props: Props) => {
                     />
                     <Flex flexFlow="column" alignItems="flex-start">
                       {item.name}
-                      {item.price.value && <Badge>{intl.format(item.price.value)} NP</Badge>}
+
+                      {item.status === 'no trade' && <Badge>No Trade</Badge>}
+
+                      {item.price.value && !item.price.inflated && (
+                        <Badge whiteSpace="normal">{intl.format(item.price.value)} NP</Badge>
+                      )}
+
+                      {item.price.value && item.price.inflated && (
+                        <Tooltip
+                          label={t('General.inflation')}
+                          aria-label="Inflation Tooltip"
+                          placement="top"
+                        >
+                          <Badge colorScheme="red" whiteSpace="normal">
+                            <Icon as={AiFillWarning} verticalAlign="middle" />{' '}
+                            {intl.format(item.price.value)} NP
+                          </Badge>
+                        </Tooltip>
+                      )}
+
                       {item.isNC && <Badge colorScheme="purple">NC</Badge>}
+
+                      {item.type === 'pb' && <Badge colorScheme="yellow">PB</Badge>}
                     </Flex>
                   </Link>
                 </CtxTrigger>
@@ -246,7 +270,8 @@ export const SearchBar = (props: Props) => {
         {!isLoading && searchResult && searchResult.content.length > 0 && (
           <PopoverFooter textAlign={'center'}>
             <Text fontSize="sm">
-              {t('or-just-press')} <Kbd verticalAlign={'middle'}>{t('key-enter')}</Kbd>
+              {t('Layout.or-just-press')}{' '}
+              <Kbd verticalAlign={'middle'}>{t('Layout.key-enter')}</Kbd>
             </Text>
           </PopoverFooter>
         )}
