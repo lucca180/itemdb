@@ -163,9 +163,14 @@ export const getLatestItems = async (limit: number, skipOldIDs = false) => {
       canonical_id: null,
       OR: [{ item_id: null }, { item_id: { gte: skipOldIDs ? 85020 : 0 } }],
     },
-    orderBy: {
-      addedAt: 'desc',
-    },
+    orderBy: [
+      {
+        addedAt: 'desc',
+      },
+      {
+        internal_id: 'asc',
+      },
+    ],
     select: {
       internal_id: true,
       addedAt: true,
