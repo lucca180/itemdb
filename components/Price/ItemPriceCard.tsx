@@ -35,6 +35,8 @@ import { WrongPriceModalProps } from '../Modal/WrongPriceModal';
 import { AdminEditPriceModalProps } from '../Modal/AdminEditPriceModal';
 import { useAuth } from '../../utils/auth';
 import useSWRImmutable from 'swr/immutable';
+import useSWR from 'swr';
+
 import axios, { AxiosRequestConfig } from 'axios';
 import { SaleStatusModalProps } from '../Modal/SaleStatusModal';
 import { FaFlag } from 'react-icons/fa';
@@ -81,13 +83,13 @@ const ItemPriceCard = (props: Props) => {
     fetcher
   );
 
-  const { data: prices } = useSWRImmutable<PriceData[]>(
+  const { data: prices } = useSWR<PriceData[]>(
     `/api/v1/items/${props.item.internal_id}/prices`,
     (url) => fetcher(url),
     { fallbackData: props.prices }
   );
 
-  const { data: lastSeen } = useSWRImmutable<ItemLastSeen | null>(
+  const { data: lastSeen } = useSWR<ItemLastSeen | null>(
     [
       `/api/v1/prices/stats`,
       {
