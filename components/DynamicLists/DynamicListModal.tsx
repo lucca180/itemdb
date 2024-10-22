@@ -56,15 +56,11 @@ const DynamicListModal = (props: DynamicListModalProps) => {
     try {
       const newList = await createNewList();
 
-      const res = await axios.post(
-        `/api/v1/lists/${user.username}/${newList.internal_id}/dynamic`,
-        {
-          dynamicType,
-          queryData: searchQuery,
-        },
-      );
+      await axios.post(`/api/v1/lists/${user.username}/${newList.internal_id}/dynamic`, {
+        dynamicType,
+        queryData: searchQuery,
+      });
 
-      console.log(res.data);
       toast({
         title: t('Lists.dynamic-list-created'),
         status: 'success',
@@ -72,7 +68,7 @@ const DynamicListModal = (props: DynamicListModalProps) => {
       });
       onClose();
     } catch (e) {
-      console.log(e);
+      console.error(e);
       setError(true);
     }
   };

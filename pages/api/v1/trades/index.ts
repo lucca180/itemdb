@@ -176,12 +176,10 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
 
-  const [, updatedTrades] = await Promise.all([
+  await Promise.all([
     processTradePrice(trade, req),
     processSimilarTrades(trade, trade.trade_id, user.id),
   ]);
-
-  console.log('updatedTrades ', updatedTrades);
 
   return res.status(200).json({ success: true, message: false });
 };

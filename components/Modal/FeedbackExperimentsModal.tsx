@@ -32,7 +32,6 @@ const FeedbackExperimentsModal = (props: FeedbackExperimentsModalProps) => {
   const handleSwitch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const key = event.target.id as keyof typeof userPref;
     const value = event.target.checked;
-    console.log(key, value);
     updatePref(key, value);
   };
 
