@@ -168,7 +168,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       item_iid: x.item_iid,
       count: Number(x.count),
       addedAt: new Date(x.MAX_addedAt),
-    }),
+    })
   );
 
   let total = 0;
@@ -212,11 +212,11 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
           item,
           newPriceAlgorithm.price,
           newPriceAlgorithm.usedIds,
-          newPriceAlgorithm.latestDate,
+          newPriceAlgorithm.latestDate
         ).then((_) => {
           if (_) processedIDs.push(...allIDs);
           return _;
-        }),
+        })
       );
     } catch (e) {
       console.error(e, item);
@@ -317,7 +317,7 @@ async function updateOrAddDB(
   priceData: PriceProcess2,
   priceValue: number,
   usedIDs: number[],
-  latestDate: Date,
+  latestDate: Date
 ): Promise<Prisma.ItemPricesUncheckedCreateInput | undefined> {
   const newPriceData: Prisma.ItemPricesUncheckedCreateInput = {
     name: 'priceprocess2',
@@ -359,7 +359,7 @@ async function updateOrAddDB(
 
     if ((variation <= 5 || priceDiff < 5000) && daysSinceLastUpdate <= 15) return undefined;
 
-    if (!oldPriceRaw.noInflation_id && priceDiff >= 75000) {
+    if (!oldPriceRaw.noInflation_id && priceDiff >= 90000) {
       if (oldPrice < priceValue && variation >= 75) {
         newPriceData.noInflation_id = oldPriceRaw.internal_id;
         throw 'inflation';
@@ -373,20 +373,33 @@ async function updateOrAddDB(
 
     // update an inflated price
     if (oldPriceRaw.noInflation_id) {
-      const lastNormalPriceRaw = await prisma.itemPrices.findUniqueOrThrow({
-        where: { internal_id: oldPriceRaw.noInflation_id },
+      const allPrices = await prisma.itemPrices.findMany({
+        where: {
+          item_iid: oldPriceRaw.item_iid,
+        },
       });
+
+      const lastNormalPriceRaw = allPrices.find(
+        (x) => x.internal_id === oldPriceRaw.noInflation_id
+      );
+      if (!lastNormalPriceRaw) throw 'inflation with no normal price';
 
       const lastNormalPrice = lastNormalPriceRaw.price.toNumber();
 
-      // const daysWithInflation = differenceInCalendarDays(latestDate, lastNormalPrice.addedAt);
+      const daysWithInflation = differenceInCalendarDays(latestDate, lastNormalPriceRaw.addedAt);
       const inflationVariation = coefficientOfVariation([lastNormalPrice, priceValue]);
 
       newPriceData.noInflation_id = oldPriceRaw.noInflation_id;
 
+      const pricesWithInflation = allPrices.filter(
+        (x) =>
+          x.addedAt > lastNormalPriceRaw.addedAt &&
+          x.noInflation_id === lastNormalPriceRaw.internal_id
+      );
+
       if (
-        priceValue <= 75000 ||
-        // (daysWithInflation >= 60 && variation < 30) ||
+        priceValue <= 90000 ||
+        (daysWithInflation >= 60 && variation < 30 && pricesWithInflation.length >= 3) ||
         inflationVariation < 50 ||
         lastNormalPrice >= priceValue
       )
