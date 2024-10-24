@@ -3,6 +3,7 @@ import { differenceInCalendarDays } from 'date-fns';
 import { mean, standardDeviation } from 'simple-statistics';
 
 const TRADE_MIN_GOAL = process.env.TRADE_MIN_GOAL || '7';
+const EVENT_MODE = process.env.EVENT_MODE === 'true';
 
 export const processPrices2 = (allItemData: PriceProcess2[]) => {
   // const item = allItemData[0];
@@ -69,7 +70,7 @@ export const processPrices2 = (allItemData: PriceProcess2[]) => {
 
 function filterMostRecents(priceProcessList: PriceProcess2[]) {
   const daysThreshold: { [days: number]: number } = {
-    3: 15,
+    3: EVENT_MODE ? 5 : 15,
     7: 10,
     15: 5,
     30: 3,
@@ -113,7 +114,7 @@ function checkFiltered(filtered: PriceProcess2[], goal: number) {
 
   if (notUsershop.length >= goal) return true;
 
-  if (ssw.length >= 5) return true;
+  if (ssw.length >= (EVENT_MODE ? 3 : 5)) return true;
 
   if (filtered.length === trades.length && filtered.length >= Number(TRADE_MIN_GOAL)) return true;
 
