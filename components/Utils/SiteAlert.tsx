@@ -4,6 +4,7 @@ import Image from 'next/image';
 import NextLink from 'next/link';
 
 export const SiteAlert = () => {
+  return null;
   const t = useTranslations();
   return (
     <Flex bg="yellow.500">
