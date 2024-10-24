@@ -24,6 +24,7 @@ export const processPrices2 = (allItemData: PriceProcess2[]) => {
       return x;
     })
     .filter((x) => !!x) as PriceProcess2[];
+
   const prices: number[] = [];
 
   const usedIds = new Set<number>(mostRecents.map((x) => x.internal_id));
@@ -37,12 +38,16 @@ export const processPrices2 = (allItemData: PriceProcess2[]) => {
   });
 
   // remove outliers
-  const priceMean = mean(prices);
-  const priceSTD = standardDeviation(prices);
+  let out = removeOutliers(prices).splice(0, 100);
+  if (out.length === 0) {
+    console.error(allItemData[0].item_iid, ' - No prices left after removing outliers');
+    return undefined;
+  }
+  const priceMean = mean(out);
+  const priceSTD = standardDeviation(out);
 
-  let out = prices.filter(
-    (x) => x <= priceMean + priceSTD * 0.75 && x >= priceMean - priceSTD * 1.8
-  );
+  out = out.filter((x) => x <= priceMean + priceSTD * 0.75 && x >= priceMean - priceSTD * 1.8);
+
   out = out.splice(0, 5);
 
   const finalMean = out.length >= 2 ? mean(out) : out[0];
@@ -125,3 +130,24 @@ function logRound(value: number) {
 }
 
 const log10 = (x: number) => Math.log(x) / Math.log(10);
+
+const removeOutliers = (data: number[]) => {
+  const sorted = data.sort((a, b) => a - b);
+  const q1 = quartile(sorted, 0.25);
+  const q3 = quartile(sorted, 0.75);
+
+  const iqr = q3 - q1;
+
+  return sorted.filter((x) => x >= q1 - 1.5 * iqr && x <= q3 + 1.5 * iqr);
+};
+
+const quartile = (sorted: number[], q: number) => {
+  const pos = (sorted.length - 1) * q;
+  const base = Math.floor(pos);
+  const rest = pos - base;
+  if (sorted[base + 1] !== undefined) {
+    return sorted[base] + rest * (sorted[base + 1] - sorted[base]);
+  } else {
+    return sorted[base];
+  }
+};
