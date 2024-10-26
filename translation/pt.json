@@ -87,7 +87,8 @@
     "missing-info-hub": "Infos Faltantes",
     "faerie-festval-cta": "Encontre os melhores itens para doar no <Link>Guia do Festival das Fadas</Link>",
     "scheduled-maintenance": "Manutenção Programada",
-    "tavi-alert": "Alguns preços podem estar bastante desatualizados devido às Buscas de Tavi. \n<Link>Saiba como ajudar</Link> ou use o Botão de Preço Errado :)"
+    "tavi-alert": "Alguns preços podem estar bastante desatualizados devido às Buscas de Tavi. \n<Link>Saiba como ajudar</Link> ou use o Botão de Preço Errado :)",
+    "item-effects": "Efeitos de Itens"
   },
   "ItemPage": {
     "item-info": "Item Info",
@@ -921,5 +922,16 @@
   "NcMall": {
     "leaving-soon-desc": "Itens que sairão do <Link>Centro NC</Link> em breve",
     "leaving-soon-tm": "Deixando o Mall™"
+  },
+  "ItemEffects": {
+    "color-species-change": "Troca de Cor/Espécie",
+    "cure-disease": "Cura",
+    "disease": "Doença",
+    "heal-hp": "Curar HP",
+    "other": "Outro",
+    "stats-change": "Alteração de Stats",
+    "empty-msg": "Não encontramos nenhum item com esses efeitos :(",
+    "item-effect-hub": "Central de Efeitos de Itens",
+    "cta": "Encontre todos os itens que podem alterar os stats do seu neopet, sarar doenças (ou causá-las!), curar HP e muito mais!"
   }
 }

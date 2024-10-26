@@ -253,26 +253,22 @@ const Layout = (props: Props) => {
               label={t('General.dynamic-lists')}
               href="/articles/checklists-and-dynamic-lists"
             />
-            <DropdownOption
-              newUntil={1728691200000}
-              label={t('HomePage.leaving-nc-mall')}
-              href="/mall/leaving"
-            />
+            <DropdownOption label={t('HomePage.leaving-nc-mall')} href="/mall/leaving" />
           </DropdownButton>
           <DropdownButton bg={props.mainColor} label={t('Layout.tools')} href="/tools/pet-colors">
             <DropdownOption label={t('Layout.sdb-pricer')} href="/articles/userscripts" />
             <DropdownOption label={t('Layout.userscripts')} href="/articles/userscripts" />
             <DropdownOption label={t('Layout.pet-color-tool')} href="/tools/pet-colors" />
-            <DropdownOption label="Faerie Festival Hub" href="/hub/faeriefestival" />
+            <DropdownOption
+              newUntil={1732579200000}
+              label={t('Layout.item-effects')}
+              href="/hub/item-effects"
+            />
             <DropdownOption label={t('Layout.restock-dashboard')} href="/restock/dashboard" />
           </DropdownButton>
           <DropdownButton bg={props.mainColor} label={t('Layout.contribute')} href="/contribute">
             <DropdownOption label={'Item Data Extractor'} href="/contribute" />
-            <DropdownOption
-              newUntil={1728691200000}
-              label={t('Layout.missing-info-hub')}
-              href="/hub/missing-info"
-            />
+            <DropdownOption label={t('Layout.missing-info-hub')} href="/hub/missing-info" />
             <DropdownOption label={t('Layout.trade-pricing')} href="/feedback/trades" />
             <DropdownOption label={t('Feedback.suggestion-voting')} href="/feedback/vote" />
             <DropdownOption label={t('Layout.feedback-and-ideas')} href="/feedback" />

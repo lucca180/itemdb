@@ -86,7 +86,8 @@
     "feedback-and-ideas": "Feedback and Ideas",
     "faerie-festval-cta": "Find the best items to donate in the <Link>Faerie Festival Guide</Link>",
     "scheduled-maintenance": "Scheduled Maintenance",
-    "tavi-alert": "Some prices might be wildly outdated due to Tavi's Quests. <Link>Learn how to help</Link> or use the Wrong Price Button :)"
+    "tavi-alert": "Some prices might be wildly outdated due to Tavi's Quests. <Link>Learn how to help</Link> or use the Wrong Price Button :)",
+    "item-effects": "Item Effects"
   },
   "ItemPage": {
     "item-info": "Item Info",
@@ -920,5 +921,16 @@
   "NcMall": {
     "leaving-soon-tm": "Leaving Soon™",
     "leaving-soon-desc": "Items that are leaving the <Link>NC Mall</Link> soon"
+  },
+  "ItemEffects": {
+    "stats-change": "Stats Change",
+    "disease": "Disease",
+    "cure-disease": "Cure Disease",
+    "heal-hp": "Heal HP",
+    "color-species-change": "Color/Species Change",
+    "other": "Other",
+    "empty-msg": "We couldn't find any items with these effects :(",
+    "item-effect-hub": "Item Effect Hub",
+    "cta": "Find every item that can change your neopet's stats, cure diseases (or cause them!), heal HP, and more!"
   }
 }

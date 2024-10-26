@@ -38,7 +38,7 @@ const ItemEffectsCard = (props: Props) => {
 
 export default ItemEffectsCard;
 
-const EffectTypes = {
+export const EffectTypes = {
   disease: {
     name_en: 'Disease',
     name_pt: 'Doença',
@@ -75,7 +75,7 @@ type EffectCardProps = {
   effect: ItemEffect;
 };
 
-const EffectCard = (props: EffectCardProps) => {
+export const EffectCard = (props: EffectCardProps) => {
   const effectType = props.effect.type;
   const locale = useLocale();
   //@ts-expect-error ts is dumb
@@ -123,7 +123,7 @@ type EffectTextProps = {
   effect: ItemEffect;
 };
 
-const EffectText = (props: EffectTextProps) => {
+export const EffectText = (props: EffectTextProps) => {
   const {
     name,
     type,
@@ -207,7 +207,7 @@ const EffectText = (props: EffectTextProps) => {
                   <>
                     <Link
                       href={`https://www.neopets.com/pool/all_pb.phtml?f_color_id=${getPetColorId(
-                        colorTarget,
+                        colorTarget
                       )}`}
                       isExternal
                     >
@@ -232,7 +232,7 @@ const EffectText = (props: EffectTextProps) => {
                   <>
                     <Link
                       href={`https://www.neopets.com/pool/all_pb.phtml?f_species_id=${getSpeciesId(
-                        speciesTarget,
+                        speciesTarget
                       )}`}
                       isExternal
                     >

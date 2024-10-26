@@ -199,7 +199,7 @@ export const getItemEffects = async (id_name: string | number) => {
   return effects as ItemEffect[];
 };
 
-const formatEffect = (effect: PrimsaItemEffect) => {
+export const formatEffect = (effect: PrimsaItemEffect) => {
   const obj: ItemEffect = {
     internal_id: effect.internal_id,
     type: effect.type as ItemEffect['type'],
