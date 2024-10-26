@@ -12,3 +12,11 @@ pages/restock/dashboard/index-disabled2.tsx
 pages/api/_dev
 
 .ds_store
+
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
