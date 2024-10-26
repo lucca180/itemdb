@@ -45,7 +45,7 @@ const LeavingMallPage = (props: LeavingMallPageProps) => {
           .rich('NcMall.leaving-soon-desc', {
             Link: (chunk) => chunk,
           })
-          .toString(),
+          ?.toString(),
         themeColor: color.hex(),
       }}
       mainColor="rgba(205, 193, 255, 0.58)"

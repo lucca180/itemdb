@@ -56,7 +56,7 @@ const NeedInfoPage = () => {
           .rich('MissingHub.description', {
             Link: (chunk) => chunk,
           })
-          .toString(),
+          ?.toString(),
         themeColor: '#aeb18a',
       }}
       mainColor="rgba(240, 250, 148, 0.40)"

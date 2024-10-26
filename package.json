@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",
-    "@chakra-ui/react": "^2.8.2",
+    "@chakra-ui/react": "2.8.2",
     "@choc-ui/chakra-autocomplete": "^5.7.0",
     "@date-fns/utc": "^2.1.0",
     "@dnd-kit/core": "^6.1.0",
