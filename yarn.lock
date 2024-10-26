@@ -324,7 +324,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@chakra-ui/react@npm:^2.10.3":
+"@chakra-ui/react@npm:^2.8.2":
   version: 2.10.3
   resolution: "@chakra-ui/react@npm:2.10.3"
   dependencies:
@@ -8383,7 +8383,7 @@ __metadata:
   resolution: "itemdb@workspace:."
   dependencies:
     "@chakra-ui/icons": "npm:^2.2.4"
-    "@chakra-ui/react": "npm:^2.10.3"
+    "@chakra-ui/react": "npm:^2.8.2"
     "@choc-ui/chakra-autocomplete": "npm:^5.7.0"
     "@commitlint/cli": "npm:^18.5.0"
     "@commitlint/config-conventional": "npm:^18.5.0"
