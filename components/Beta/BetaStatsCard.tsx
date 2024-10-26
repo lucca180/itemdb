@@ -1,5 +1,5 @@
 import { ExternalLinkIcon } from '@chakra-ui/icons';
-import { Flex, Icon, Heading, As, Center, Skeleton } from '@chakra-ui/react';
+import { Flex, Icon, Heading, Center, Skeleton } from '@chakra-ui/react';
 import axios from 'axios';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -44,7 +44,7 @@ const BetaStatsCard = () => {
             !stats || isLoading ? null : (
               <>
                 {(((stats.itemsTotal - stats.itemsMissingInfo) / stats.itemsTotal) * 100).toFixed(
-                  0,
+                  0
                 )}
                 %
               </>
@@ -134,7 +134,7 @@ const BetaStatsCard = () => {
 export default BetaStatsCard;
 
 type StatCardProps = {
-  icon: As;
+  icon: React.ElementType;
   value: React.ReactNode | null;
   children: React.ReactNode;
 };
