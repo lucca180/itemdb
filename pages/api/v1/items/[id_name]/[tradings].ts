@@ -49,16 +49,24 @@ const getRestockData = async (name: string) => {
         name: name,
       },
       type: 'restock',
+      owner: {
+        not: 'restock-haggle',
+      },
+      addedAt: {
+        gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 90),
+      },
     },
     orderBy: { addedAt: 'desc' },
-    take: 20,
   });
 
   const items = await getManyItems({
     id: restockRaw.map((p) => p.item_iid?.toString() ?? ''),
   });
 
+  let totalStock = 0;
+
   const restock: ItemRestockData[] = restockRaw.map((p): ItemRestockData => {
+    totalStock += p.stock;
     return {
       internal_id: p.internal_id,
       item: items[p.item_iid?.toString() ?? ''],
@@ -68,7 +76,12 @@ const getRestockData = async (name: string) => {
     };
   });
 
-  return restock;
+  return {
+    recent: restock.slice(0, 20),
+    appearances: restock.length,
+    totalStock: totalStock,
+    period: '90-days',
+  };
 };
 
 const getTradeData = async (name: string) => {
@@ -79,15 +92,22 @@ const getTradeData = async (name: string) => {
           name: name,
         },
       },
+      addedAt: {
+        gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 90),
+      },
     },
     include: {
       items: true,
     },
     orderBy: { addedAt: 'desc' },
-    take: 20,
   });
 
-  const trade: TradeData[] = tradeRaw.map((p) => {
+  const uniqueOwners = new Set();
+  let priced = 0;
+
+  const tradeList: TradeData[] = tradeRaw.map((p) => {
+    uniqueOwners.add(p.owner);
+    if (p.priced) priced++;
     return {
       trade_id: p.trade_id,
       owner: p.owner,
@@ -109,7 +129,13 @@ const getTradeData = async (name: string) => {
     };
   });
 
-  return trade;
+  return {
+    recent: tradeList.slice(0, 20),
+    total: tradeRaw.length,
+    uniqueOwners: uniqueOwners.size,
+    priced: priced,
+    period: '90-days',
+  };
 };
 
 const getAuctionData = async (name: string) => {
@@ -118,37 +144,52 @@ const getAuctionData = async (name: string) => {
       item: {
         name: name,
       },
+      addedAt: {
+        gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 90),
+      },
       type: 'auction',
     },
     orderBy: { addedAt: 'desc' },
-    take: 20,
   });
 
   const items = await getManyItems({
     id: auctionRaw.map((p) => p.item_iid.toString()),
   });
 
+  const uniqueOwners = new Set();
+  let soldAuctions = 0;
+  const totalAuctions = auctionRaw.length;
+
   const auctions: ItemAuctionData[] = auctionRaw.map((p) => {
+    uniqueOwners.add(p.owner);
+    if (!p.otherInfo?.includes('nobody')) soldAuctions++;
+
     return {
       auction_id: p.neo_id,
       internal_id: p.internal_id,
       item: items[p.item_iid?.toString() ?? ''],
       price: p.price,
       owner: p.owner ?? 'unknown',
-      isNF: !!p.otherInfo?.split(',').includes('nf'),
+      isNF: !!p.otherInfo?.toLowerCase().split(',').includes('nf'),
       hasBuyer: !!p.otherInfo?.includes('nobody'),
       addedAt: p.addedAt.toJSON(),
       timeLeft: p.otherInfo?.split(',')?.[1] ?? null,
     };
   });
 
-  return auctions;
+  return {
+    recent: auctions.slice(0, 20),
+    total: totalAuctions,
+    sold: soldAuctions,
+    uniqueOwners: uniqueOwners.size,
+    period: '90-days',
+  };
 };
 
 const getOwlsTradeData = async (name: string) => {
   try {
     const res = await axios.get(
-      'https://neo-owls.net/itemdata/profile/' + encodeURIComponent(name),
+      'https://neo-owls.net/itemdata/profile/' + encodeURIComponent(name)
     );
 
     if (res.data?.trade_reports) return res.data.trade_reports;

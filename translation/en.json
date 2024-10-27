@@ -215,7 +215,31 @@
     "waiting-votes": "Waiting Votes",
     "waiting-votes-txt": "Trade Lots that are waiting for pricing validation",
     "cooking-pot-text": "This item appears in the following <Link>Cooking Pot</Link> recipes",
-    "cooking-pot-recipes": "Cooking Pot Recipes"
+    "cooking-pot-recipes": "Cooking Pot Recipes",
+    "sold": "Sold",
+    "not-sold": "Not Sold",
+    "last-known-price": "Last Known Price",
+    "time-left": "Time Left",
+    "sold-question": "Sold?",
+    "first-seen-history": "First Seen",
+    "latest-x": "Latest {x}",
+    "total-auctions": "Total Auctions",
+    "unique-owners": "Unique Owners",
+    "last-new-auction": "Last New Auction",
+    "total-sold": "Total Sold",
+    "90-days-history": "90 Days History",
+    "seen-history-text": "The historical data here was collected by users using the itemdb <b>Item Data Extractor Script</b>. <Link>Learn how you can contribute</Link> too!",
+    "units-in-stock": "Units in Stock",
+    "unique-restocks": "Unique Restocks",
+    "total-units-stocked": "Total Units Stocked",
+    "last-seen-stock": "Last Seen Stock",
+    "seen-history-psa": "This data is not 100% accurate and cannot be interpreted as all the times the item was available on this location.",
+    "latest-x-restocks": "Latest {x} Restocks",
+    "latest-x-auctions": "Latest {x} Auctions",
+    "latest-x-trades": "Latest {x} Trade Lots",
+    "total-trade-lots": "Total Trade Lots",
+    "total-priced": "Total Priced",
+    "last-trade-lot": "Last Trade Lot"
   },
   "Button": {
     "feedback": "Feedback",
@@ -371,7 +395,8 @@
     "x-days": "{x} days",
     "1-day": "1 day",
     "1-hour": "1 hour",
-    "x-minutes": "{x} minutes"
+    "x-minutes": "{x} minutes",
+    "auction-house": "Auction House"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",

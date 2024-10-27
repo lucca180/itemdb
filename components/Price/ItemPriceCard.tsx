@@ -42,12 +42,23 @@ import { SaleStatusModalProps } from '../Modal/SaleStatusModal';
 import { FaFlag } from 'react-icons/fa';
 import { differenceInCalendarDays } from 'date-fns';
 import Link from 'next/link';
+import HeadingLine from '../Utils/HeadingLine';
+
+import AuctionIcon from '../../public/icons/auction.png';
+import ShopIcon from '../../public/icons/shop.svg';
+import SWIcon from '../../public/icons/shopwizard.png';
+import TPIcon from '../../public/icons/tradingpost.png';
+
+import Image from 'next/image';
+import { SeenHistoryModalProps } from '../SeenHistory/SeenHistoryModal';
 
 const ChartComponent = dynamic<ChartComponentProps>(() => import('../Charts/PriceChart'));
 const LastSeenModal = dynamic<LastSeenModalProps>(() => import('../Modal/LastSeenModal'));
 const WrongPriceModal = dynamic<WrongPriceModalProps>(() => import('../Modal/WrongPriceModal'));
 const SaleStatusModal = dynamic<SaleStatusModalProps>(() => import('../Modal/SaleStatusModal'));
-
+const SeenHistoryModal = dynamic<SeenHistoryModalProps>(
+  () => import('../SeenHistory/SeenHistoryModal')
+);
 const AdminEditPriceModal = dynamic<AdminEditPriceModalProps>(
   () => import('../Modal/AdminEditPriceModal')
 );
@@ -77,6 +88,7 @@ const ItemPriceCard = (props: Props) => {
   const isNoTrade = item.status?.toLowerCase() === 'no trade';
   const [selectedPrice, setSelectedPrice] = useState<PriceData | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [seenHistory, setSeenHistory] = useState<string | null>(null);
   const rgbColor = item.color.rgb;
   const { data: priceStatus, isLoading: isPriceStatusLoading } = useSWRImmutable<PricingInfo>(
     `/api/v1/prices/${item.internal_id}/status`,
@@ -179,6 +191,15 @@ const ItemPriceCard = (props: Props) => {
           saleStatus={item.saleStatus}
         />
       )}
+      {seenHistory && (
+        <SeenHistoryModal
+          isOpen={!!seenHistory}
+          onClose={() => setSeenHistory(null)}
+          item={item}
+          type={seenHistory as 'tp' | 'auction' | 'restock'}
+        />
+      )}
+
       <CardBase color={rgbColor} title={t('ItemPage.price-overview')}>
         <Flex gap={3} flexFlow="column">
           {needHelp && <HelpNeeded item={item} />}
@@ -248,7 +269,6 @@ const ItemPriceCard = (props: Props) => {
               {prices.length > 0 && (
                 <>
                   <HStack ml="auto" mr={2} mb={2} gap={0}>
-                    aaa
                     {displayState === 'table' && (
                       <IconButton
                         onClick={() => setDisplay('chart')}
@@ -289,89 +309,42 @@ const ItemPriceCard = (props: Props) => {
               )}
             </Flex>
           </Flex>
-          {!!lastSeen && (
-            <HStack
-              justifyContent={{ base: 'space-between', md: 'space-around' }}
-              textAlign="center"
-            >
-              <Stat flex="initial">
-                <StatLabel cursor={'pointer'} onClick={lastSeenModal.onOpen}>
-                  {t('ItemPage.last-sw')} <Icon boxSize={'12px'} as={MdHelp} />
-                </StatLabel>
-                <StatHelpText>
-                  {lastSeen.sw && format.relativeTime(new Date(lastSeen.sw))}
-                  {!lastSeen.sw && t('General.never')}
-                </StatHelpText>
-              </Stat>
-              <Stat flex="initial">
-                <StatLabel cursor={'pointer'} onClick={lastSeenModal.onOpen}>
-                  {t('ItemPage.last-tp')} <Icon boxSize={'12px'} as={MdHelp} />
-                </StatLabel>
-                <StatHelpText>
-                  {lastSeen.tp && format.relativeTime(new Date(lastSeen.tp))}
-                  {!lastSeen.tp && t('General.never')}
-                </StatHelpText>
-              </Stat>
-              <Stat flex="initial">
-                <StatLabel cursor={'pointer'} onClick={lastSeenModal.onOpen}>
-                  {t('ItemPage.last-auction')} <Icon boxSize={'12px'} as={MdHelp} />
-                </StatLabel>
-                <StatHelpText>
-                  {lastSeen.auction && format.relativeTime(new Date(lastSeen.auction))}
-                  {!lastSeen.auction && t('General.never')}
-                </StatHelpText>
-              </Stat>
-              <Stat flex="initial">
-                <StatLabel cursor={'pointer'} onClick={lastSeenModal.onOpen}>
-                  {t('ItemPage.last-restock')} <Icon boxSize={'12px'} as={MdHelp} />
-                </StatLabel>
-                <StatHelpText>
-                  {!lastSeen.restock && !item.findAt.restockShop && t('ItemPage.does-not-restock')}
-                  {lastSeen.restock && format.relativeTime(new Date(lastSeen.restock))}
-                  {!lastSeen.restock && item.findAt.restockShop && t('General.never')}
-                </StatHelpText>
-              </Stat>
-            </HStack>
-          )}
-          {!lastSeen && (
-            <HStack
-              justifyContent={{ base: 'space-between', md: 'space-around' }}
-              textAlign="center"
-            >
-              <Stat flex="initial">
-                <StatLabel>
-                  {t('ItemPage.last-sw')} <Icon boxSize={'12px'} as={MdHelp} />
-                </StatLabel>
-                <StatHelpText>
-                  <SkeletonText mt={1} skeletonHeight="3" noOfLines={1} />
-                </StatHelpText>
-              </Stat>
-              <Stat flex="initial">
-                <StatLabel>
-                  {t('ItemPage.last-tp')} <Icon boxSize={'12px'} as={MdHelp} />
-                </StatLabel>
-                <StatHelpText>
-                  <SkeletonText mt={1} skeletonHeight="3" noOfLines={1} />
-                </StatHelpText>
-              </Stat>
-              <Stat flex="initial">
-                <StatLabel>
-                  {t('ItemPage.last-auction')} <Icon boxSize={'12px'} as={MdHelp} />
-                </StatLabel>
-                <StatHelpText>
-                  <SkeletonText mt={1} skeletonHeight="3" noOfLines={1} />
-                </StatHelpText>
-              </Stat>
-              <Stat flex="initial">
-                <StatLabel>
-                  {t('ItemPage.last-restock')} <Icon boxSize={'12px'} as={MdHelp} />
-                </StatLabel>
-                <StatHelpText>
-                  <SkeletonText mt={1} skeletonHeight="3" noOfLines={1} />
-                </StatHelpText>
-              </Stat>
-            </HStack>
-          )}
+          <HeadingLine
+            fontSize={'sm'}
+            fontWeight={'bold'}
+            cursor={'pointer'}
+            alignItems={'center'}
+            onClick={lastSeenModal.onOpen}
+          >
+            {t('ItemPage.seen-at')} <Icon boxSize={'12px'} as={MdHelp} ml={1} />
+          </HeadingLine>
+
+          <HStack
+            justifyContent={{ base: 'center', md: 'space-around' }}
+            textAlign="center"
+            flexWrap={'wrap'}
+          >
+            <LastSeenCard type="sw" lastSeen={lastSeen?.sw} isLoading={!lastSeen} />
+            <LastSeenCard
+              type="tp"
+              lastSeen={lastSeen?.tp}
+              isLoading={!lastSeen}
+              onClick={() => setSeenHistory('tp')}
+            />
+            <LastSeenCard
+              type="auction"
+              lastSeen={lastSeen?.auction}
+              isLoading={!lastSeen}
+              onClick={() => setSeenHistory('auction')}
+            />
+            <LastSeenCard
+              type="restock"
+              lastSeen={lastSeen?.restock}
+              isLoading={!lastSeen}
+              doesNotRestock={!item.findAt.restockShop}
+              onClick={() => setSeenHistory('restock')}
+            />
+          </HStack>
         </Flex>
       </CardBase>
     </>
@@ -433,4 +406,67 @@ const HelpNeeded = (props: HelpNeededProps) => {
       />
     </Alert>
   );
+};
+
+type LastSeenCardProps = {
+  type: 'sw' | 'tp' | 'auction' | 'restock';
+  lastSeen?: string | null;
+  isLoading?: boolean;
+  doesNotRestock?: boolean;
+  onClick?: () => void;
+};
+
+const LastSeenCard = (props: LastSeenCardProps) => {
+  const { lastSeen, type, isLoading, doesNotRestock, onClick } = props;
+  const t = useTranslations();
+  const format = useFormatter();
+
+  return (
+    <Flex
+      flexFlow={'column'}
+      fontSize={'sm'}
+      bg="gray.700"
+      p={2}
+      borderRadius={'md'}
+      onClick={onClick}
+      cursor={!!onClick ? 'pointer' : undefined}
+    >
+      <Text display={'flex'} alignItems={'center'} gap={1}>
+        <Image
+          src={lastSeenTypes[type].icon}
+          alt={t(lastSeenTypes[type].title)}
+          title={t(lastSeenTypes[type].title)}
+          height={24}
+          quality="100"
+          style={{ display: 'inline-block' }}
+        />
+        {t(lastSeenTypes[type].title)}
+      </Text>
+      <Text opacity={0.8}>
+        {lastSeen && format.relativeTime(new Date(lastSeen))}
+        {!lastSeen && !isLoading && !doesNotRestock && t('General.never')}
+        {isLoading && <SkeletonText mt={1} skeletonHeight="3" noOfLines={1} />}
+        {type === 'restock' && doesNotRestock && t('ItemPage.does-not-restock')}
+      </Text>
+    </Flex>
+  );
+};
+
+const lastSeenTypes = {
+  sw: {
+    title: 'General.shop-wizard',
+    icon: SWIcon,
+  },
+  tp: {
+    title: 'General.trading-post',
+    icon: TPIcon,
+  },
+  auction: {
+    title: 'General.auction-house',
+    icon: AuctionIcon,
+  },
+  restock: {
+    title: 'General.restock-shop',
+    icon: ShopIcon,
+  },
 };
