@@ -68,11 +68,15 @@ export const RestockHistory = (props: RestockHistoryProps) => {
         />
         <SeenHistoryStatusCard
           title={t('ItemPage.last-seen-stock')}
-          status={`${format.dateTime(new Date(data?.recent?.[0]?.addedAt ?? 0), {
-            dateStyle: 'short',
-            timeStyle: 'short',
-            timeZone: 'america/los_angeles',
-          })} NST`}
+          status={`${
+            !data?.recent?.[0]?.addedAt
+              ? ''
+              : format.dateTime(new Date(data.recent[0].addedAt), {
+                  dateStyle: 'short',
+                  timeStyle: 'short',
+                  timeZone: 'america/los_angeles',
+                })
+          } NST`}
           loading={loading}
         />
       </HStack>

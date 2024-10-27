@@ -106,23 +106,25 @@ const getTradeData = async (name: string) => {
   let priced = 0;
 
   const tradeList: TradeData[] = tradeRaw.map((p) => {
-    uniqueOwners.add(p.owner);
-    if (p.priced) priced++;
     return {
       trade_id: p.trade_id,
       owner: p.owner,
       priced: p.priced,
       hash: p.hash,
-      items: p.items.map((i) => ({
-        internal_id: i.internal_id,
-        trade_id: i.trade_id,
-        name: i.name,
-        image: i.image,
-        image_id: i.image_id,
-        price: i.price?.toNumber() || null,
-        order: i.order,
-        addedAt: i.addedAt.toJSON(),
-      })),
+      items: p.items.map((i) => {
+        if (i.name === name && !!i.price?.toNumber() && p.priced) priced++;
+
+        return {
+          internal_id: i.internal_id,
+          trade_id: i.trade_id,
+          name: i.name,
+          image: i.image,
+          image_id: i.image_id,
+          price: i.price?.toNumber() || null,
+          order: i.order,
+          addedAt: i.addedAt.toJSON(),
+        };
+      }),
       wishlist: p.wishlist,
       processed: p.processed,
       addedAt: p.addedAt.toJSON(),
