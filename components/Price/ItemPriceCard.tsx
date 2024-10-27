@@ -428,8 +428,8 @@ const LastSeenCard = (props: LastSeenCardProps) => {
       bg="gray.700"
       p={2}
       borderRadius={'md'}
-      onClick={onClick}
-      cursor={!!onClick ? 'pointer' : undefined}
+      onClick={lastSeen ? onClick : undefined}
+      cursor={!!onClick && !!lastSeen ? 'pointer' : undefined}
     >
       <Text display={'flex'} alignItems={'center'} gap={1}>
         <Image
