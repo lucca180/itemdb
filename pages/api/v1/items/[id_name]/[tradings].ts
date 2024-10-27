@@ -106,6 +106,7 @@ const getTradeData = async (name: string) => {
   let priced = 0;
 
   const tradeList: TradeData[] = tradeRaw.map((p) => {
+    uniqueOwners.add(p.owner);
     return {
       trade_id: p.trade_id,
       owner: p.owner,
