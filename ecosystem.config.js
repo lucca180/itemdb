@@ -8,7 +8,7 @@ module.exports = {
       exec_mode: 'cluster',
       time: true,
       merge_logs: true,
-      max_memory_restart: '1000M',
+      max_memory_restart: '1300M',
     },
     {
       name: 'itemdb-green',
@@ -18,7 +18,7 @@ module.exports = {
       exec_mode: 'fork',
       time: true,
       merge_logs: true,
-      max_memory_restart: '1000M',
+      max_memory_restart: '1300M',
     },
   ],
 };
