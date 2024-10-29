@@ -50,6 +50,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     data: {
       noInflation_id: noInflation_id,
       price: newPrice,
+      usedProcessIDs: 'manual_edit',
       addedAt: newAddedAt ? new Date(newAddedAt) : undefined,
     },
   });

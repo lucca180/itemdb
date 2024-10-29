@@ -53,14 +53,6 @@ export const processPrices2 = (allItemData: PriceProcess2[]) => {
 
   const finalMean = out.length >= 2 ? mean(out) : out[0];
 
-  // prevent troll prices
-  if (
-    finalMean < 100000 &&
-    mostRecentsRaw.length <= 3 &&
-    differenceInCalendarDays(Date.now(), latestDate) >= 20
-  )
-    return undefined;
-
   return {
     price: logRound(finalMean),
     usedIds: Array.from(usedIds),
@@ -106,17 +98,34 @@ function filterMostRecents(priceProcessList: PriceProcess2[]) {
 }
 
 function checkFiltered(filtered: PriceProcess2[], goal: number) {
-  const trades = filtered.filter((x) => x.type === 'trade');
-  const ssw = filtered.filter((x) => x.type === 'ssw');
-  const notUsershop = filtered.filter((x) => x.type !== 'usershop');
+  const ownersSet = new Set<string>();
+  // remove stuff with the same owner
+  const newFiltered = filtered
+    .map((x) => {
+      if (x.owner && ownersSet.has(x.owner)) return undefined;
+      if (x.owner) ownersSet.add(x.owner);
 
-  if (goal <= 3 && filtered.length === goal && !trades.length) return false;
+      return x;
+    })
+    .filter((x) => !!x) as PriceProcess2[];
+
+  if (!newFiltered.length) return false;
+
+  const trades = newFiltered.filter((x) => x.type === 'trade');
+  const ssw = newFiltered.filter((x) => x.type === 'ssw');
+  const notUsershop = newFiltered.filter((x) => x.type !== 'usershop');
+  const swOrSSW = newFiltered.filter((x) => x.type === 'ssw' || x.type === 'sw');
+
+  if (swOrSSW.length < 3 && swOrSSW.length === newFiltered.length) return false;
+
+  if (goal <= 3 && newFiltered.length === goal && !trades.length) return false;
 
   if (notUsershop.length >= goal) return true;
 
   if (ssw.length >= (EVENT_MODE ? 3 : 5)) return true;
 
-  if (filtered.length === trades.length && filtered.length >= Number(TRADE_MIN_GOAL)) return true;
+  if (newFiltered.length === trades.length && newFiltered.length >= Number(TRADE_MIN_GOAL))
+    return true;
 
   return false;
 }
