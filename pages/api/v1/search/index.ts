@@ -328,7 +328,7 @@ export async function doSearch(
     // oct 31
     else if (todayNST.getMonth() === 9 && todayNST.getDate() === 31) {
       numberFilters.push(Prisma.sql`
-        ((temp.category in (${Prisma.join(halloweenShops)}) AND t${getRestockQuery(
+        ((temp.category in (${Prisma.join(halloweenShops)}) AND ${getRestockQuery(
         0.5,
         minProfit
       )}) OR (${getRestockQuery(1, minProfit)}))
