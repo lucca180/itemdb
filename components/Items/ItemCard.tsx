@@ -141,7 +141,7 @@ const ItemCardBase = (props: ItemProps) => {
               <Badge whiteSpace="normal">{intl.format(item.price.value)} NP</Badge>
             )}
 
-            {!item.isNC && item.status === 'no trade' && <Badge>No Trade</Badge>}
+            {item.type !== 'np' && item.status === 'no trade' && <Badge>No Trade</Badge>}
 
             {item.type === 'pb' && <Badge colorScheme="yellow">PB</Badge>}
 

@@ -239,7 +239,7 @@ export const SearchBar = (props: Props) => {
                     <Flex flexFlow="column" alignItems="flex-start">
                       {item.name}
 
-                      {item.status === 'no trade' && <Badge>No Trade</Badge>}
+                      {item.type !== 'np' && item.status === 'no trade' && <Badge>No Trade</Badge>}
 
                       {item.price.value && !item.price.inflated && (
                         <Badge whiteSpace="normal">{intl.format(item.price.value)} NP</Badge>
