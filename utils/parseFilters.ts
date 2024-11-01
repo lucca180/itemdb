@@ -12,6 +12,7 @@ export const defaultFilters: SearchFilters = {
   estVal: ['', ''],
   owlsValue: ['', ''],
   restockProfit: '',
+  restockIncludeUnpriced: false,
   colorTolerance: '750',
   colorType: 'vibrant',
   sortBy: 'name',

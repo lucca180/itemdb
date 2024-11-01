@@ -13,7 +13,7 @@ import Color from 'color';
 import { GetStaticPropsContext } from 'next';
 import { CreateDynamicListButton } from '../../../components/DynamicLists/CreateButton';
 import Layout from '../../../components/Layout';
-import { ItemData, ShopInfo } from '../../../types';
+import { ItemData, SearchFilters, ShopInfo } from '../../../types';
 import {
   getRestockProfit,
   restockBlackMarketItems,
@@ -63,7 +63,7 @@ const RestockShop = (props: RestockShopPageProps) => {
   const [loading, setLoading] = useState(true);
   const [itemFilter, setItemFilter] = useState<ItemFilter>({ query: undefined, minProfit: 5000 });
   const [viewType, setViewType] = useState<'default' | 'rarity'>(
-    userPref?.restock_prefView ?? 'rarity',
+    userPref?.restock_prefView ?? 'rarity'
   );
 
   useEffect(() => {
@@ -76,14 +76,15 @@ const RestockShop = (props: RestockShopPageProps) => {
 
   const init = async () => {
     setLoading(true);
-    const filters = {
+    const filters: SearchFilters = {
       ...defaultFilters,
       restockProfit: '1',
       category: [shopIDToCategory[shopInfo.id]],
-      rarity: [1, 99],
+      rarity: ['1', '99'],
       limit: 3000,
       sortBy: 'price',
       sortDir: 'desc',
+      restockIncludeUnpriced: true,
     };
 
     const res = await axios.get('/api/v1/search', {
@@ -124,7 +125,7 @@ const RestockShop = (props: RestockShopPageProps) => {
         return (
           (itemFilter.query
             ? item.name.toLowerCase().includes(itemFilter.query.toLowerCase())
-            : true) && (profit ? profit >= itemFilter.minProfit : false)
+            : true) && (profit ? profit >= itemFilter.minProfit : true)
         );
       })
       .sort((a, b) => sortItems(a, b, sortInfo.sortBy, sortInfo.sortDir));
@@ -358,17 +359,17 @@ const sortItems = (a: ItemData, b: ItemData, sortBy: string, sortDir: string) =>
   } else if (sortBy === 'price') {
     if (sortDir === 'asc')
       return (
-        (itemA.price.value ?? Number.MAX_SAFE_INTEGER) -
-          (itemB.price.value ?? Number.MAX_SAFE_INTEGER) ||
-        (itemA.owls?.valueMin ?? Number.MAX_SAFE_INTEGER) -
-          (itemB.owls?.valueMin ?? Number.MAX_SAFE_INTEGER)
+        (itemA.price.value ?? Number.MIN_SAFE_INTEGER) -
+          (itemB.price.value ?? Number.MIN_SAFE_INTEGER) ||
+        (itemA.owls?.valueMin ?? Number.MIN_SAFE_INTEGER) -
+          (itemB.owls?.valueMin ?? Number.MIN_SAFE_INTEGER)
       );
     else
       return (
-        (itemB.price.value ?? Number.MIN_SAFE_INTEGER) -
-          (itemA.price.value ?? Number.MIN_SAFE_INTEGER) ||
-        (itemB.owls?.valueMin ?? Number.MIN_SAFE_INTEGER) -
-          (itemA.owls?.valueMin ?? Number.MIN_SAFE_INTEGER)
+        (itemB.price.value ?? Number.MAX_SAFE_INTEGER) -
+          (itemA.price.value ?? Number.MAX_SAFE_INTEGER) ||
+        (itemB.owls?.valueMin ?? Number.MAX_SAFE_INTEGER) -
+          (itemA.owls?.valueMin ?? Number.MAX_SAFE_INTEGER)
       );
   } else if (sortBy === 'item_id') {
     if (sortDir === 'asc')

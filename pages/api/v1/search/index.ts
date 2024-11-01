@@ -289,10 +289,11 @@ export async function doSearch(
 
   if (restockProfit !== '' && !isNaN(Number(restockProfit))) {
     const minProfit = Number(restockProfit);
+    const includeUnpriced = filters.restockIncludeUnpriced;
     const todayNST = getDateNST();
 
     if (todayNST.getDate() === 3) {
-      numberFilters.push(getRestockQuery(0.5, minProfit));
+      numberFilters.push(getRestockQuery(0.5, minProfit, includeUnpriced));
     }
 
     // may 12
@@ -300,8 +301,9 @@ export async function doSearch(
       numberFilters.push(Prisma.sql`
         ((temp.category in (${Prisma.join(tyrannianShops)}) AND ${getRestockQuery(
         0.2,
-        minProfit
-      )}) OR (${getRestockQuery(1, minProfit)}))
+        minProfit,
+        includeUnpriced
+      )}) OR (${getRestockQuery(1, minProfit, includeUnpriced)}))
       `);
     }
 
@@ -310,8 +312,9 @@ export async function doSearch(
       numberFilters.push(Prisma.sql`
         ((temp.category = 'usuki doll' AND ${getRestockQuery(
           0.33,
-          minProfit
-        )}) OR (${getRestockQuery(1, minProfit)}))
+          minProfit,
+          includeUnpriced
+        )}) OR (${getRestockQuery(1, minProfit, includeUnpriced)}))
       `);
     }
 
@@ -320,8 +323,9 @@ export async function doSearch(
       numberFilters.push(Prisma.sql`
         ((temp.category in (${Prisma.join(faerielandShops)}) AND ${getRestockQuery(
         0.5,
-        minProfit
-      )}) OR (${getRestockQuery(1, minProfit)}))
+        minProfit,
+        includeUnpriced
+      )}) OR (${getRestockQuery(1, minProfit, includeUnpriced)}))
       `);
     }
 
@@ -330,11 +334,12 @@ export async function doSearch(
       numberFilters.push(Prisma.sql`
         ((temp.category in (${Prisma.join(halloweenShops)}) AND ${getRestockQuery(
         0.5,
-        minProfit
-      )}) OR (${getRestockQuery(1, minProfit)}))
+        minProfit,
+        includeUnpriced
+      )}) OR (${getRestockQuery(1, minProfit, includeUnpriced)}))
       `);
     } else {
-      numberFilters.push(getRestockQuery(1, minProfit));
+      numberFilters.push(getRestockQuery(1, minProfit, includeUnpriced));
     }
   }
 
@@ -619,11 +624,16 @@ export async function doSearch(
 // WHERE (POWER(h-15,2)+POWER(s-100,2)+POWER(l-45,2)) <= 750
 // ORDER BY dist
 
-const getRestockQuery = (multiplier: number, minProfit: number) => Prisma.sql`
+const getRestockQuery = (
+  multiplier: number,
+  minProfit: number,
+  includeUnpriced = false
+) => Prisma.sql`
 (
   (temp.rarity <= 84 AND temp.price - GREATEST(100, temp.est_val * 1.9) * ${multiplier} >= ${minProfit} ) OR
   (temp.rarity >= 85 AND temp.rarity <= 89 AND temp.price - GREATEST(2500, temp.est_val * 1.9) * ${multiplier} >= ${minProfit} ) OR
   (temp.rarity >= 90 AND temp.rarity <= 94 AND temp.price - GREATEST(5000, temp.est_val * 1.9) * ${multiplier} >= ${minProfit} ) OR
-  (temp.rarity >= 95 AND temp.rarity <= 99 AND temp.price - GREATEST(1000, temp.est_val * 1.9) * ${multiplier} >= ${minProfit} )
+  (temp.rarity >= 95 AND temp.rarity <= 99 AND temp.price - GREATEST(1000, temp.est_val * 1.9) * ${multiplier} >= ${minProfit} ) 
+  ${includeUnpriced ? Prisma.sql` OR temp.price IS NULL` : Prisma.empty}
 )
 `;

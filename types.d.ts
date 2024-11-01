@@ -170,7 +170,8 @@ export type SearchFilters = {
   weight: string[]; // [min, max]
   estVal: string[]; // [min, max]
   owlsValue: string[]; // [min, max]
-  restockProfit: string; // min profit %
+  restockProfit: string; // min profit margin
+  restockIncludeUnpriced: boolean;
   colorTolerance: string; // color tolerance
   colorType: string;
   sortBy: string;
