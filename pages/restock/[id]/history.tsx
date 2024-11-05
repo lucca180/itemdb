@@ -19,11 +19,11 @@ import {
 import Color from 'color';
 import { ItemRestockData, ShopInfo } from '../../../types';
 import { restockShopInfo, slugify } from '../../../utils/utils';
-import { useTranslations } from 'next-intl';
+import { createTranslator, useTranslations } from 'next-intl';
 import Layout from '../../../components/Layout';
 import RestockHeader from '../../../components/Hubs/Restock/RestockHeader';
 import { GetStaticPropsContext } from 'next';
-import { useEffect, useState } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import axios from 'axios';
 import RestockHistoryCard from '../../../components/Hubs/Restock/RestockHistoryCard';
 import { MdRefresh } from 'react-icons/md';
@@ -31,6 +31,7 @@ import { MdRefresh } from 'react-icons/md';
 type RestockHistoryPageProps = {
   shopInfo: ShopInfo;
   messages: any;
+  locale: string;
 };
 
 type ContributeWall = {
@@ -57,7 +58,7 @@ const RestockHistory = (props: RestockHistoryPageProps) => {
     setWall(null);
     try {
       const res = await axios.get(
-        `/api/v1/restock/history?id=${shopInfo.id}&mode=${newMode ?? mode}`,
+        `/api/v1/restock/history?id=${shopInfo.id}&mode=${newMode ?? mode}`
       );
 
       setRestockData(sortRestock(res.data, sortMode));
@@ -86,30 +87,7 @@ const RestockHistory = (props: RestockHistoryPageProps) => {
   };
 
   return (
-    <Layout
-      SEO={{
-        title: `${shopInfo.name} | ${t('Restock.restock-history')}`,
-        description: `${t.rich('Restock.restock-history-header', {
-          Link: (chunk) => chunk,
-          shopname: shopInfo.name,
-        })}`,
-        themeColor: shopInfo.color,
-        twitter: {
-          cardType: 'summary_large_image',
-        },
-        openGraph: {
-          images: [
-            {
-              url: `https://images.neopets.com/shopkeepers/w${shopInfo.id}.gif`,
-              width: 450,
-              height: 150,
-              alt: shopInfo.name,
-            },
-          ],
-        },
-      }}
-      mainColor={`${shopInfo.color}a6`}
-    >
+    <>
       <RestockHeader shop={shopInfo} isHistory>
         <Text as="h2" textAlign={'center'}>
           {t.rich('Restock.restock-history-header', {
@@ -307,7 +285,7 @@ const RestockHistory = (props: RestockHistoryPageProps) => {
           </Center>
         </Center>
       )}
-    </Layout>
+    </>
   );
 };
 
@@ -336,6 +314,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
   const props: RestockHistoryPageProps = {
     shopInfo: shopInfo,
     messages: (await import(`../../../translation/${context.locale}.json`)).default,
+    locale: context.locale ?? 'en',
   };
 
   return {
@@ -364,4 +343,39 @@ const sortRestock = (restock: ItemRestockData[] | null | undefined, mode: string
   return restock.sort((a, b) => {
     return new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime();
   });
+};
+
+RestockHistory.getLayout = function getLayout(page: ReactElement, props: RestockHistoryPageProps) {
+  const t = createTranslator({ messages: props.messages, locale: props.locale });
+  const { shopInfo } = props;
+  return (
+    <Layout
+      SEO={{
+        title: `${shopInfo.name} | ${t('Restock.restock-history')}`,
+        description: `${t
+          .rich('Restock.restock-history-header', {
+            Link: (chunk) => chunk,
+            shopname: shopInfo.name,
+          })
+          ?.toString()}`,
+        themeColor: shopInfo.color,
+        twitter: {
+          cardType: 'summary_large_image',
+        },
+        openGraph: {
+          images: [
+            {
+              url: `https://images.neopets.com/shopkeepers/w${shopInfo.id}.gif`,
+              width: 450,
+              height: 150,
+              alt: shopInfo.name,
+            },
+          ],
+        },
+      }}
+      mainColor={`${shopInfo.color}a6`}
+    >
+      {page}
+    </Layout>
+  );
 };

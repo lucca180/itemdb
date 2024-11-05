@@ -17,7 +17,7 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ReactElement } from 'react';
 import { BsArrowDownCircleFill, BsArrowUpCircleFill } from 'react-icons/bs';
 import CardBase from '../../components/Card/CardBase';
 import HeaderCard from '../../components/Card/HeaderCard';
@@ -30,7 +30,7 @@ import { TradeGuidelines } from './trades';
 import { getCookie } from 'cookies-next';
 import { NextPageContext, NextApiRequest } from 'next';
 import { CheckAuth } from '../../utils/googleCloud';
-import { useTranslations } from 'next-intl';
+import { createTranslator, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { ReportFeedbackModalProps } from '../../components/Modal/ReportFeedbackModal';
 import { useRouter } from 'next/router';
@@ -175,13 +175,7 @@ const FeedbackVotingPage = () => {
   };
 
   return (
-    <Layout
-      SEO={{
-        title: t('Feedback.voting-feedback'),
-        description: t('Feedback.feedback-system-description'),
-      }}
-      mainColor="#4A5568c7"
-    >
+    <>
       {isOpen && currentFeedback && (
         <ReportFeedbackModal feedback={currentFeedback} isOpen={isOpen} onClose={onClose} />
       )}
@@ -331,7 +325,7 @@ const FeedbackVotingPage = () => {
           )}
         </Flex>
       </Flex>
-    </Layout>
+    </>
   );
 };
 
@@ -379,6 +373,7 @@ export async function getServerSideProps(context: NextPageContext) {
     return {
       props: {
         messages: (await import(`../../translation/${context.locale}.json`)).default,
+        locale: context.locale,
       },
     };
   } catch (e) {
@@ -390,3 +385,18 @@ export async function getServerSideProps(context: NextPageContext) {
     };
   }
 }
+
+FeedbackVotingPage.getLayout = function getLayout(page: ReactElement, props: any) {
+  const t = createTranslator({ messages: props.messages, locale: props.locale });
+  return (
+    <Layout
+      SEO={{
+        title: t('Feedback.voting-feedback'),
+        description: t('Feedback.feedback-system-description'),
+      }}
+      mainColor="#4A5568c7"
+    >
+      {page}
+    </Layout>
+  );
+};

@@ -12,9 +12,9 @@ import {
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import Layout from '../../components/Layout';
-import { useTranslations } from 'next-intl';
+import { createTranslator, useTranslations } from 'next-intl';
 import Color from 'color';
-import { useEffect, useState } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import axios from 'axios';
 import { ItemData } from '../../types';
 import ItemCard from '../../components/Items/ItemCard';
@@ -49,18 +49,7 @@ const NeedInfoPage = () => {
   };
 
   return (
-    <Layout
-      SEO={{
-        title: t('MissingHub.missing-info-hub'),
-        description: t
-          .rich('MissingHub.description', {
-            Link: (chunk) => chunk,
-          })
-          ?.toString(),
-        themeColor: '#aeb18a',
-      }}
-      mainColor="rgba(240, 250, 148, 0.40)"
-    >
+    <>
       <Box
         position="absolute"
         h="650px"
@@ -139,7 +128,7 @@ const NeedInfoPage = () => {
           </Button>
         )}
       </Center>
-    </Layout>
+    </>
   );
 };
 
@@ -152,6 +141,26 @@ export async function getStaticProps(context: any) {
     },
   };
 }
+
+NeedInfoPage.getLayout = function getLayout(page: ReactElement, props: any) {
+  const t = createTranslator({ messages: props.messages, locale: props.locale });
+  return (
+    <Layout
+      SEO={{
+        title: t('MissingHub.missing-info-hub'),
+        description: t
+          .rich('MissingHub.description', {
+            Link: (chunk) => chunk,
+          })
+          ?.toString(),
+        themeColor: '#aeb18a',
+      }}
+      mainColor="rgba(240, 250, 148, 0.40)"
+    >
+      {page}
+    </Layout>
+  );
+};
 
 type TypeButtonProps = {
   selectedField: string;

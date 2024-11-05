@@ -20,11 +20,11 @@ import dynamic from 'next/dynamic';
 import { FiSend } from 'react-icons/fi';
 import Layout from '../../components/Layout';
 import { FeedbackModalProps } from '../../components/Modal/FeedbackModal';
-import { useTranslations } from 'next-intl';
+import { createTranslator, useTranslations } from 'next-intl';
 import NextImage from 'next/image';
 import PetColorImg from '../../public/pet-color-hub.png';
 import { allNeopetsColors, allSpecies, getPetColorId, getSpeciesId } from '../../utils/utils';
-import { useEffect, useMemo, useState } from 'react';
+import { ReactElement, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { ItemData } from '../../types';
 import ItemCard from '../../components/Items/ItemCard';
@@ -32,7 +32,7 @@ import { useRouter } from 'next/router';
 import { FaShareAlt } from 'react-icons/fa';
 
 const FeedbackModal = dynamic<FeedbackModalProps>(
-  () => import('../../components/Modal/FeedbackModal'),
+  () => import('../../components/Modal/FeedbackModal')
 );
 
 type PetColorData = {
@@ -148,27 +148,7 @@ const PetColorToolPage = () => {
   };
 
   return (
-    <Layout
-      SEO={{
-        title: t('PetColors.pet-color-tool'),
-        description: t('PetColors.cta'),
-        themeColor: '#745fb3',
-        twitter: {
-          cardType: 'summary_large_image',
-        },
-        openGraph: {
-          images: [
-            {
-              url: `https://itemdb.com.br/pet-color-hub.png`,
-              width: 600,
-              height: 200,
-              alt: 'happy zafara painting a picture',
-            },
-          ],
-        },
-      }}
-      mainColor="#745fb3c7"
-    >
+    <>
       <Box
         position="absolute"
         h="650px"
@@ -385,7 +365,7 @@ const PetColorToolPage = () => {
           <Icon as={FiSend} mr={1} /> {t('Button.feedback')}
         </Button>
       </Center>
-    </Layout>
+    </>
   );
 };
 
@@ -395,6 +375,36 @@ export async function getStaticProps(context: any) {
   return {
     props: {
       messages: (await import(`../../translation/${context.locale}.json`)).default,
+      locale: context.locale,
     },
   };
 }
+
+PetColorToolPage.getLayout = function getLayout(page: ReactElement, props: any) {
+  const t = createTranslator({ messages: props.messages, locale: props.locale });
+  return (
+    <Layout
+      SEO={{
+        title: t('PetColors.pet-color-tool'),
+        description: t('PetColors.cta'),
+        themeColor: '#745fb3',
+        twitter: {
+          cardType: 'summary_large_image',
+        },
+        openGraph: {
+          images: [
+            {
+              url: `https://itemdb.com.br/pet-color-hub.png`,
+              width: 600,
+              height: 200,
+              alt: 'happy zafara painting a picture',
+            },
+          ],
+        },
+      }}
+      mainColor="#745fb3c7"
+    >
+      {page}
+    </Layout>
+  );
+};

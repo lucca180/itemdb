@@ -16,27 +16,11 @@ import Layout from '../../components/Layout';
 import Background from '../../public/hub/faeriefest2023.png';
 import Logo from '../../public/hub/faeriefest2023-logo.png';
 import SearchCard from '../../components/Hubs/FaerieFest2023/SearchCard';
+import { ReactElement } from 'react';
 
 const FaeriesFest2023 = () => {
   return (
-    <Layout
-      SEO={{
-        title: 'Faerie Festival Guide',
-        description: 'Find the best items to recycle for the Faerie Festival event!',
-        themeColor: '#9b65c0',
-        openGraph: {
-          images: [
-            {
-              url: 'https://images.neopets.com/homepage/marquee/icons/faeriefestival_event_icon.png',
-              width: 300,
-              height: 300,
-              alt: 'Faeries Festival',
-            },
-          ],
-        },
-      }}
-      mainColor="#9b65c0c7"
-    >
+    <>
       <Box
         position="absolute"
         h="650px"
@@ -238,7 +222,7 @@ const FaeriesFest2023 = () => {
           />
         </Flex>
       </Center>
-    </Layout>
+    </>
   );
 };
 
@@ -248,6 +232,33 @@ export async function getStaticProps(context: any) {
   return {
     props: {
       messages: (await import(`../../translation/${context.locale}.json`)).default,
+      locale: context.locale,
     },
   };
 }
+
+FaeriesFest2023.getLayout = function getLayout(page: ReactElement) {
+  // const t = createTranslator({ messages: props.messages, locale: props.locale });
+  return (
+    <Layout
+      SEO={{
+        title: 'Faerie Festival Guide',
+        description: 'Find the best items to recycle for the Faerie Festival event!',
+        themeColor: '#9b65c0',
+        openGraph: {
+          images: [
+            {
+              url: 'https://images.neopets.com/homepage/marquee/icons/faeriefestival_event_icon.png',
+              width: 300,
+              height: 300,
+              alt: 'Faeries Festival',
+            },
+          ],
+        },
+      }}
+      mainColor="#9b65c0c7"
+    >
+      {page}
+    </Layout>
+  );
+};

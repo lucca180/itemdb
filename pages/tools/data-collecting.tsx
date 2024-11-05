@@ -12,10 +12,10 @@ import {
 } from '@chakra-ui/react';
 import HeaderCard from '../../components/Card/HeaderCard';
 import Layout from '../../components/Layout';
-import { useTranslations } from 'next-intl';
+import { createTranslator, useTranslations } from 'next-intl';
 import ItemSelect from '../../components/Input/ItemSelect';
 import { ItemData } from '../../types';
-import { useState } from 'react';
+import { ReactElement, useState } from 'react';
 import ItemCard from '../../components/Items/ItemCard';
 import axios from 'axios';
 import { getCookie } from 'cookies-next';
@@ -72,13 +72,7 @@ const DataCollectingPage = () => {
   };
 
   return (
-    <Layout
-      SEO={{
-        title: 'Data Collecting Tool',
-        description: t('Feedback.feedback-system-description'),
-      }}
-      mainColor="#abf14ec7"
-    >
+    <>
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/caption/sm_caption_982.gif',
@@ -141,7 +135,7 @@ const DataCollectingPage = () => {
           )}
         </Flex>
       </Flex>
-    </Layout>
+    </>
   );
 };
 
@@ -168,6 +162,7 @@ export async function getServerSideProps(context: NextPageContext) {
     return {
       props: {
         messages: (await import(`../../translation/${context.locale}.json`)).default,
+        locale: context.locale,
       },
     };
   } catch (e) {
@@ -179,3 +174,19 @@ export async function getServerSideProps(context: NextPageContext) {
     };
   }
 }
+
+DataCollectingPage.getLayout = function getLayout(page: ReactElement, props: any) {
+  const t = createTranslator({ messages: props.messages, locale: props.locale });
+  return (
+    <Layout
+      SEO={{
+        title: 'Data Collecting Tool',
+        description: t('Feedback.feedback-system-description'),
+        noindex: true,
+      }}
+      mainColor="#abf14ec7"
+    >
+      {page}
+    </Layout>
+  );
+};

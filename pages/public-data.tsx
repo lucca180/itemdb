@@ -20,9 +20,10 @@ import { FiDownload, FiSend } from 'react-icons/fi';
 import Layout from '../components/Layout';
 import { FeedbackModalProps } from '../components/Modal/FeedbackModal';
 import { useTranslations } from 'next-intl';
+import { ReactElement } from 'react';
 
 const FeedbackModal = dynamic<FeedbackModalProps>(
-  () => import('../components/Modal/FeedbackModal'),
+  () => import('../components/Modal/FeedbackModal')
 );
 
 const RawDataPage = () => {
@@ -30,7 +31,7 @@ const RawDataPage = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
-    <Layout SEO={{ title: 'itemdb Public Data', noindex: true }} mainColor="#6c8ab3c7">
+    <>
       <Box
         position="absolute"
         h="650px"
@@ -90,7 +91,7 @@ const RawDataPage = () => {
           <Icon as={FiSend} mr={1} /> {t('Button.feedback')}
         </Button>
       </Center>
-    </Layout>
+    </>
   );
 };
 
@@ -103,6 +104,14 @@ export async function getStaticProps(context: any) {
     },
   };
 }
+
+RawDataPage.getLayout = function getLayout(page: ReactElement) {
+  return (
+    <Layout SEO={{ title: 'itemdb Public Data', noindex: true }} mainColor="#6c8ab3c7">
+      {page}
+    </Layout>
+  );
+};
 
 const rawExportData = [
   {

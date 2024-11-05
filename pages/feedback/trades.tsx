@@ -21,7 +21,7 @@ import {
 import axios from 'axios';
 import { getCookie } from 'cookies-next';
 import { NextApiRequest, NextPageContext } from 'next';
-import { useEffect, useRef, useState } from 'react';
+import { ReactElement, useEffect, useRef, useState } from 'react';
 import { BsXLg, BsXCircleFill, BsCheckCircleFill, BsCheckLg } from 'react-icons/bs';
 import CardBase from '../../components/Card/CardBase';
 import HeaderCard from '../../components/Card/HeaderCard';
@@ -30,7 +30,7 @@ import Layout from '../../components/Layout';
 import { TradeData } from '../../types';
 import { useAuth } from '../../utils/auth';
 import { CheckAuth } from '../../utils/googleCloud';
-import { useTranslations } from 'next-intl';
+import { createTranslator, useTranslations } from 'next-intl';
 import { useRouter } from 'next/router';
 
 const FeedbackSuggest = () => {
@@ -148,13 +148,7 @@ const FeedbackSuggest = () => {
   };
 
   return (
-    <Layout
-      SEO={{
-        title: t('Feedback.trade-pricing-feedback'),
-        description: t('Feedback.feedback-system-description'),
-      }}
-      mainColor="#4A5568c7"
-    >
+    <>
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/altador/altadorcup/link_images/2008/help_me_decide.gif',
@@ -237,7 +231,7 @@ const FeedbackSuggest = () => {
           )}
         </Flex>
       </Flex>
-    </Layout>
+    </>
   );
 };
 
@@ -371,6 +365,7 @@ export async function getServerSideProps(context: NextPageContext) {
     return {
       props: {
         messages: (await import(`../../translation/${context.locale}.json`)).default,
+        locale: context.locale,
       },
     };
   } catch (e) {
@@ -382,3 +377,18 @@ export async function getServerSideProps(context: NextPageContext) {
     };
   }
 }
+
+FeedbackSuggest.getLayout = function getLayout(page: ReactElement, props: any) {
+  const t = createTranslator({ messages: props.messages, locale: props.locale });
+  return (
+    <Layout
+      SEO={{
+        title: t('Feedback.trade-pricing-feedback'),
+        description: t('Feedback.feedback-system-description'),
+      }}
+      mainColor="#4A5568c7"
+    >
+      {page}
+    </Layout>
+  );
+};

@@ -11,9 +11,9 @@ import {
   Select,
 } from '@chakra-ui/react';
 import Layout from '../../components/Layout';
-import { useTranslations } from 'next-intl';
+import { createTranslator, useTranslations } from 'next-intl';
 import Color from 'color';
-import { useEffect, useState } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import axios from 'axios';
 import { ItemData, ItemEffect } from '../../types';
 import { EffectsCard } from '../../components/Hubs/Effects/EffectsCard';
@@ -68,14 +68,7 @@ const ItemEffectPage = () => {
   };
 
   return (
-    <Layout
-      SEO={{
-        title: t('ItemEffects.item-effect-hub'),
-        description: t('ItemEffects.cta'),
-        themeColor: '#f86dba',
-      }}
-      mainColor="rgba(248, 109, 186, 0.4)"
-    >
+    <>
       <Box
         position="absolute"
         h="650px"
@@ -171,7 +164,7 @@ const ItemEffectPage = () => {
           </Button>
         )}
       </Center>
-    </Layout>
+    </>
   );
 };
 
@@ -181,9 +174,26 @@ export async function getStaticProps(context: any) {
   return {
     props: {
       messages: (await import(`../../translation/${context.locale}.json`)).default,
+      locale: context.locale,
     },
   };
 }
+
+ItemEffectPage.getLayout = function getLayout(page: ReactElement, props: any) {
+  const t = createTranslator({ messages: props.messages, locale: props.locale });
+  return (
+    <Layout
+      SEO={{
+        title: t('ItemEffects.item-effect-hub'),
+        description: t('ItemEffects.cta'),
+        themeColor: '#f86dba',
+      }}
+      mainColor="rgba(248, 109, 186, 0.4)"
+    >
+      {page}
+    </Layout>
+  );
+};
 
 type TypeButtonProps = {
   selectedField: string;

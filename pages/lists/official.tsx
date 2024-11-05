@@ -16,21 +16,23 @@ import { UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import { getUserLists } from '../api/v1/lists/[username]';
 import dynamic from 'next/dynamic';
-import { useTranslations } from 'next-intl';
+import { createTranslator, useTranslations } from 'next-intl';
 import useSWRImmutable from 'swr/immutable';
 import axios from 'axios';
-import { useEffect, useMemo, useState } from 'react';
+import { ReactElement, useEffect, useMemo, useState } from 'react';
 import { ViewportList } from 'react-viewport-list';
 import { SearchList } from '../../components/Search/SearchLists';
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data as UserList[]);
 
 const ApplyListModal = dynamic<ApplyListModalProps>(
-  () => import('../../components/Modal/OfficialListApply'),
+  () => import('../../components/Modal/OfficialListApply')
 );
 
 type Props = {
   lists: UserList[];
+  messages: any;
+  locale: string;
 };
 
 const OfficialListsPage = (props: Props) => {
@@ -49,7 +51,7 @@ const OfficialListsPage = (props: Props) => {
   useEffect(() => {
     if (data) {
       const newCats = [...new Set(data.map((list) => list.officialTag || 'Uncategorized'))].sort(
-        (a, b) => a.localeCompare(b),
+        (a, b) => a.localeCompare(b)
       );
 
       setLists(data);
@@ -68,7 +70,7 @@ const OfficialListsPage = (props: Props) => {
       setLists(data.filter((x) => !x.officialTag).sort((a, b) => a.name.localeCompare(b.name)));
     } else {
       setLists(
-        data.filter((x) => x.officialTag === value).sort((a, b) => a.name.localeCompare(b.name)),
+        data.filter((x) => x.officialTag === value).sort((a, b) => a.name.localeCompare(b.name))
       );
     }
   };
@@ -90,8 +92,8 @@ const OfficialListsPage = (props: Props) => {
       filteredLists.filter(
         (x) =>
           x.name.toLowerCase().includes(searchLower) ||
-          (x.description ?? '').toLowerCase().includes(searchLower),
-      ),
+          (x.description ?? '').toLowerCase().includes(searchLower)
+      )
     );
   };
 
@@ -103,26 +105,11 @@ const OfficialListsPage = (props: Props) => {
         acc[groupIndex].push(cur);
         return acc;
       }, [] as UserList[][]),
-    [lists, rowSize],
+    [lists, rowSize]
   );
 
   return (
-    <Layout
-      SEO={{
-        title: t('General.official-lists'),
-        description: t('Lists.officialList-description'),
-        openGraph: {
-          images: [
-            {
-              url: 'https://images.neopets.com/games/tradingcards/premium/0911.gif',
-              width: 150,
-              height: 150,
-            },
-          ],
-        },
-      }}
-      mainColor="#4962ecc7"
-    >
+    <>
       <ApplyListModal isOpen={isOpen} onClose={onClose} />
       <HeaderCard
         image={{
@@ -186,7 +173,7 @@ const OfficialListsPage = (props: Props) => {
           </ViewportList>
         </Flex>
       </Flex>
-    </Layout>
+    </>
   );
 };
 
@@ -199,6 +186,31 @@ export async function getServerSideProps(context: any) {
     props: {
       lists,
       messages: (await import(`../../translation/${context.locale}.json`)).default,
+      locale: context.locale,
     },
   };
 }
+
+OfficialListsPage.getLayout = function getLayout(page: ReactElement, props: Props) {
+  const t = createTranslator({ messages: props.messages, locale: props.locale });
+  return (
+    <Layout
+      SEO={{
+        title: t('General.official-lists'),
+        description: t('Lists.officialList-description'),
+        openGraph: {
+          images: [
+            {
+              url: 'https://images.neopets.com/games/tradingcards/premium/0911.gif',
+              width: 150,
+              height: 150,
+            },
+          ],
+        },
+      }}
+      mainColor="#4962ecc7"
+    >
+      {page}
+    </Layout>
+  );
+};

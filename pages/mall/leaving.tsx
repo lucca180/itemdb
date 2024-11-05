@@ -1,8 +1,8 @@
 import { Box, Center, Heading, Image, Divider, Text, Flex, HStack } from '@chakra-ui/react';
 import Layout from '../../components/Layout';
-import { useFormatter, useTranslations } from 'next-intl';
+import { createTranslator, useFormatter, useTranslations } from 'next-intl';
 import Color from 'color';
-import { useMemo } from 'react';
+import { ReactElement, useMemo } from 'react';
 import { ItemData, NCMallData } from '../../types';
 import ItemCard from '../../components/Items/ItemCard';
 import { IconLink } from '../../components/Utils/IconLink';
@@ -12,13 +12,15 @@ type LeavingMallPageProps = {
   messages: any;
   mallData: NCMallData[];
   itemData: ItemData[];
+  locale: string;
 };
+
+const color = Color('#CDC1FF');
+const rgb = color.rgb().array();
 
 const LeavingMallPage = (props: LeavingMallPageProps) => {
   const t = useTranslations();
   const formater = useFormatter();
-  const color = Color('#CDC1FF');
-  const rgb = color.rgb().array();
   const { mallData, itemData } = props;
 
   const itemsPerDate = useMemo(() => {
@@ -38,18 +40,7 @@ const LeavingMallPage = (props: LeavingMallPageProps) => {
   }, [mallData]);
 
   return (
-    <Layout
-      SEO={{
-        title: t('NcMall.leaving-soon-tm') + ' | Neopets NC Mall',
-        description: t
-          .rich('NcMall.leaving-soon-desc', {
-            Link: (chunk) => chunk,
-          })
-          ?.toString(),
-        themeColor: color.hex(),
-      }}
-      mainColor="rgba(205, 193, 255, 0.58)"
-    >
+    <>
       <Box
         position="absolute"
         h="650px"
@@ -96,7 +87,7 @@ const LeavingMallPage = (props: LeavingMallPageProps) => {
           </>
         ))}
       </Flex>
-    </Layout>
+    </>
   );
 };
 
@@ -113,7 +104,28 @@ export async function getStaticProps(context: any) {
       mallData: mallData,
       itemData: items,
       messages: (await import(`../../translation/${context.locale}.json`)).default,
+      locale: context.locale,
     },
     revalidate: 180,
   };
 }
+
+LeavingMallPage.getLayout = function getLayout(page: ReactElement, props: LeavingMallPageProps) {
+  const t = createTranslator({ messages: props.messages, locale: props.locale });
+  return (
+    <Layout
+      SEO={{
+        title: t('NcMall.leaving-soon-tm') + ' | Neopets NC Mall',
+        description: t
+          .rich('NcMall.leaving-soon-desc', {
+            Link: (chunk) => chunk,
+          })
+          ?.toString(),
+        themeColor: color.hex(),
+      }}
+      mainColor="rgba(205, 193, 255, 0.58)"
+    >
+      {page}
+    </Layout>
+  );
+};

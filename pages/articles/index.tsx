@@ -5,7 +5,8 @@ import HeaderCard from '../../components/Card/HeaderCard';
 import Layout from '../../components/Layout';
 import { WP_Article } from '../../types';
 import { wp_getLatestPosts } from '../api/wp/posts';
-import { useTranslations } from 'next-intl';
+import { createTranslator, useTranslations } from 'next-intl';
+import { ReactElement } from 'react';
 
 type Props = {
   allPosts: WP_Article[];
@@ -16,23 +17,7 @@ const ArticlesPage = (props: Props) => {
   const { allPosts } = props;
 
   return (
-    <Layout
-      SEO={{
-        title: t('Articles.all-articles'),
-        themeColor: '#E4DA0A',
-        openGraph: {
-          images: [
-            {
-              url: 'https://images.neopets.com/nt/ntimages/94_acara_type.gif',
-              width: 150,
-              height: 150,
-              alt: t('Articles.all-articles'),
-            },
-          ],
-        },
-      }}
-      mainColor="#E4DA0A6b"
-    >
+    <>
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/nt/ntimages/94_acara_type.gif',
@@ -54,7 +39,7 @@ const ArticlesPage = (props: Props) => {
           ))}
         </Flex>
       </Flex>
-    </Layout>
+    </>
   );
 };
 
@@ -66,8 +51,34 @@ export async function getStaticProps(context: any) {
   return {
     props: {
       messages: (await import(`../../translation/${context.locale}.json`)).default,
+      locale: context.locale,
       allPosts,
     },
     revalidate: 60, // In seconds
   };
 }
+
+ArticlesPage.getLayout = function getLayout(page: ReactElement, props: any) {
+  const t = createTranslator({ messages: props.messages, locale: props.locale });
+  return (
+    <Layout
+      SEO={{
+        title: t('Articles.all-articles'),
+        themeColor: '#E4DA0A',
+        openGraph: {
+          images: [
+            {
+              url: 'https://images.neopets.com/nt/ntimages/94_acara_type.gif',
+              width: 150,
+              height: 150,
+              alt: t('Articles.all-articles'),
+            },
+          ],
+        },
+      }}
+      mainColor="#E4DA0A6b"
+    >
+      {page}
+    </Layout>
+  );
+};

@@ -1,5 +1,5 @@
 import { Badge, Box, Button, Flex, Heading, Icon, Stack, Text } from '@chakra-ui/react';
-import React, { useMemo, useState } from 'react';
+import React, { ReactElement, useMemo, useState } from 'react';
 import Layout from '../../components/Layout';
 import Image from 'next/image';
 import {
@@ -58,6 +58,7 @@ import NcMallCard from '../../components/Items/NCMallCard';
 import Color from 'color';
 import { getItemRecipes } from '../api/v1/items/[id_name]/recipes';
 import ItemRecipes from '../../components/Items/ItemRecipes';
+import { NextPageWithLayout } from '../_app';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -84,7 +85,7 @@ type ItemPageProps = {
   messages: any;
 };
 
-const ItemPage = (props: ItemPageProps) => {
+const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
   const t = useTranslations();
   const {
     item,
@@ -108,15 +109,7 @@ const ItemPage = (props: ItemPageProps) => {
   }, [itemEffects]);
 
   return (
-    <Layout
-      SEO={{
-        title: item.name,
-        themeColor: item.color.hex,
-        description: generateMetaDescription(item),
-        openGraph: { images: [{ url: item.image, width: 80, height: 80, alt: item.name }] },
-      }}
-      mainColor={Color(item.color.hex).alpha(0.4).hexa()}
-    >
+    <>
       {item && isEditModalOpen && (
         <EditItemModal
           isOpen={isEditModalOpen}
@@ -333,7 +326,7 @@ const ItemPage = (props: ItemPageProps) => {
           </Flex>
         </Flex>
       </Flex>
-    </Layout>
+    </>
   );
 };
 
@@ -438,18 +431,7 @@ export async function getStaticPaths() {
 }
 
 const generateMetaDescription = (item: ItemData) => {
-  // const intl = new Intl.NumberFormat();
-
   const metaDescription = truncateString(item.description, 130);
-
-  // if (hasDrops) metaDescription += ` | Check out drop rates`;
-
-  // if (item.price.value) metaDescription += ` | Market Price: ${intl.format(item.price.value)} NP`;
-
-  // if (!item.isMissingInfo)
-  //   metaDescription += ` - Rarity: r${item.rarity} - Category: ${item.category}`;
-
-  // metaDescription += ` | Find out more about this item on itemdb.`;
 
   return metaDescription;
 };
@@ -463,3 +445,20 @@ function truncateString(str: string, num: number) {
 
   return str.slice(0, num) + '...';
 }
+
+ItemPage.getLayout = function getLayout(page: ReactElement, props: ItemPageProps) {
+  const { item } = props;
+  return (
+    <Layout
+      SEO={{
+        title: item.name,
+        themeColor: item.color.hex,
+        description: generateMetaDescription(item),
+        openGraph: { images: [{ url: item.image, width: 80, height: 80, alt: item.name }] },
+      }}
+      mainColor={Color(item.color.hex).alpha(0.4).hexa()}
+    >
+      {page}
+    </Layout>
+  );
+};

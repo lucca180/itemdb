@@ -42,7 +42,7 @@ import { restockShopInfo } from '../../../utils/utils';
 import RestockItem from '../../../components/Hubs/Restock/RestockItemCard';
 import { FiSend } from 'react-icons/fi';
 import FeedbackModal from '../../../components/Modal/FeedbackModal';
-import { useFormatter, useTranslations } from 'next-intl';
+import { createTranslator, useFormatter, useTranslations } from 'next-intl';
 import { FaCog, FaEyeSlash, FaFileDownload } from 'react-icons/fa';
 // import CalendarHeatmap from '../../../components/Charts/CalHeatmap';
 import { endOfDay } from 'date-fns';
@@ -53,11 +53,11 @@ import { FaArrowTrendUp, FaArrowTrendDown } from 'react-icons/fa6';
 import { DashboardOptionsModalProps } from '../../../components/Modal/DashboardOptionsModal';
 
 const RestockWrappedModal = dynamic<RestockWrappedModalProps>(
-  () => import('../../../components/Modal/RestockWrappedModal'),
+  () => import('../../../components/Modal/RestockWrappedModal')
 );
 
 const DashboardOptionsModal = dynamic<DashboardOptionsModalProps>(
-  () => import('../../../components/Modal/DashboardOptionsModal'),
+  () => import('../../../components/Modal/DashboardOptionsModal')
 );
 
 const color = Color('#599379').rgb().array();
@@ -203,7 +203,7 @@ const RestockDashboard = () => {
     }
 
     const validSessions = [...currentParsed, ...unsyncParsed].filter(
-      (x) => x.clicks.length && Object.keys(x.items).length,
+      (x) => x.clicks.length && Object.keys(x.items).length
     );
 
     setImportCount(validSessions.length);
@@ -225,7 +225,7 @@ const RestockDashboard = () => {
     setFilter((prev) => ({ ...(prev ?? defaultFilter), [name]: value, timestamp: undefined }));
     localStorage.setItem(
       'restockFilter',
-      JSON.stringify({ ...filter, [name]: value, timestamp: undefined }),
+      JSON.stringify({ ...filter, [name]: value, timestamp: undefined })
     );
   };
 
@@ -236,14 +236,7 @@ const RestockDashboard = () => {
   // };
 
   return (
-    <Layout
-      SEO={{
-        title: t('Restock.neopets-restock-dashboard'),
-        description: t('Restock.restock-dashboard-desc'),
-        themeColor: '#599379',
-      }}
-      mainColor="#599379c7"
-    >
+    <>
       {openImport && (
         <ImportRestockModal isOpen={openImport} onClose={handleClose} refresh={refresh} />
       )}
@@ -717,7 +710,7 @@ const RestockDashboard = () => {
           </Flex>
         </>
       )}
-    </Layout>
+    </>
   );
 };
 
@@ -727,6 +720,23 @@ export async function getStaticProps(context: any) {
   return {
     props: {
       messages: (await import(`../../../translation/${context.locale}.json`)).default,
+      locale: context.locale,
     },
   };
 }
+
+RestockDashboard.getLayout = function getLayout(page: ReactElement, props: any) {
+  const t = createTranslator({ messages: props.messages, locale: props.locale });
+  return (
+    <Layout
+      SEO={{
+        title: t('Restock.neopets-restock-dashboard'),
+        description: t('Restock.restock-dashboard-desc'),
+        themeColor: '#599379',
+      }}
+      mainColor="#599379c7"
+    >
+      {page}
+    </Layout>
+  );
+};

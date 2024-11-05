@@ -26,7 +26,7 @@ import icon from '../../public/logo_icon.svg';
 import { parseBody } from 'next/dist/server/api-utils/node/parse-body';
 import ListSelect from '../../components/UserLists/ListSelect';
 import axios from 'axios';
-import { useEffect, useMemo, useState } from 'react';
+import { ReactElement, useEffect, useMemo, useState } from 'react';
 import { ItemData, UserList } from '../../types';
 import ItemCard from '../../components/Items/ItemCard';
 import { useAuth } from '../../utils/auth';
@@ -35,33 +35,20 @@ import { CreateLinkedListButton } from '../../components/DynamicLists/CreateLink
 import { useRouter } from 'next/router';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import NextLink from 'next/link';
-import { useTranslations } from 'next-intl';
+import { createTranslator, useTranslations } from 'next-intl';
 type Props = {
   items?: { [index: number | string]: number };
   indexType?: string;
   recomended_list?: UserList | null;
+  locale: string;
+  messages: any;
 };
 
 const ImportPage = (props: Props) => {
   const t = useTranslations();
   const { items, indexType, recomended_list } = props;
   return (
-    <Layout
-      SEO={{
-        title: t('Lists.checklists-and-importing-items'),
-        description: t('Lists.import-page-description'),
-        openGraph: {
-          images: [
-            {
-              url: 'https://images.neopets.com/caption/sm_caption_831.gif',
-              width: 150,
-              height: 150,
-            },
-          ],
-        },
-      }}
-      mainColor="#65855Bc7"
-    >
+    <>
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/caption/sm_caption_831.gif',
@@ -81,7 +68,7 @@ const ImportPage = (props: Props) => {
           <ImportItems items={items} indexType={indexType} recomended_list={recomended_list} />
         )}
       </Flex>
-    </Layout>
+    </>
   );
 };
 
@@ -101,9 +88,34 @@ export async function getServerSideProps(context: any) {
       indexType: indexType,
       recomended_list: list,
       messages: (await import(`../../translation/${context.locale}.json`)).default,
-    }, // will be passed to the page component as props
+      locale: context.locale ?? 'en',
+    },
   };
 }
+
+ImportPage.getLayout = function getLayout(page: ReactElement, props: Props) {
+  const t = createTranslator({ messages: props.messages, locale: props.locale });
+  return (
+    <Layout
+      SEO={{
+        title: t('Lists.checklists-and-importing-items'),
+        description: t('Lists.import-page-description'),
+        openGraph: {
+          images: [
+            {
+              url: 'https://images.neopets.com/caption/sm_caption_831.gif',
+              width: 150,
+              height: 150,
+            },
+          ],
+        },
+      }}
+      mainColor="#65855Bc7"
+    >
+      {page}
+    </Layout>
+  );
+};
 
 type ImportItemsProps = {
   items: { [item_id: number | string]: number };
@@ -130,7 +142,7 @@ const ImportItems = (props: ImportItemsProps) => {
   const toast = useToast();
   const { items, indexType, recomended_list } = props;
   const [itemData, setItemData] = useState<{ [identifier: string | number]: ItemData } | null>(
-    null,
+    null
   );
   const [notFound, setNotFound] = useState<number>(0);
   const [importInfo, setImportInfo] = useState(DefaultImportInfo);
@@ -146,9 +158,9 @@ const ImportItems = (props: ImportItemsProps) => {
   const loadedItems = useMemo(
     () =>
       Object.entries(itemData ?? {}).sort(
-        (a, b) => (b[1].price.value ?? 0) - (a[1].price.value ?? 0),
+        (a, b) => (b[1].price.value ?? 0) - (a[1].price.value ?? 0)
       ),
-    [itemData, items],
+    [itemData, items]
   );
 
   const init = async () => {
@@ -187,8 +199,8 @@ const ImportItems = (props: ImportItemsProps) => {
         amount: importInfo.ignore.includes('quantity')
           ? 1
           : item.canonical_id
-            ? canonicalAmount[item.canonical_id]
-            : (items[item.item_id ?? -1] ?? 1),
+          ? canonicalAmount[item.canonical_id]
+          : items[item.item_id ?? -1] ?? 1,
         imported: true,
       }));
 
@@ -212,8 +224,8 @@ const ImportItems = (props: ImportItemsProps) => {
           importInfo.action === 'add'
             ? t('Lists.toast-import')
             : importInfo.action === 'hide'
-              ? t('Lists.toast-hide')
-              : t('Lists.toast-remove'),
+            ? t('Lists.toast-hide')
+            : t('Lists.toast-remove'),
       }),
       status: 'info',
       duration: null,
@@ -230,7 +242,7 @@ const ImportItems = (props: ImportItemsProps) => {
             headers: {
               Authorization: `Bearer ${await getIdToken()}`,
             },
-          },
+          }
         );
       }
 
@@ -255,8 +267,8 @@ const ImportItems = (props: ImportItemsProps) => {
             importInfo.action === 'add'
               ? t('Lists.toast-imported')
               : importInfo.action === 'hide'
-                ? t('Lists.toast-hidden')
-                : t('Lists.toast-removed'),
+              ? t('Lists.toast-hidden')
+              : t('Lists.toast-removed'),
         }),
         status: 'success',
         duration: 10000,
@@ -273,8 +285,8 @@ const ImportItems = (props: ImportItemsProps) => {
             importInfo.action === 'add'
               ? t('Lists.toast-importing')
               : importInfo.action === 'hide'
-                ? t('Lists.toast-hidding')
-                : t('Lists.toast-removing'),
+              ? t('Lists.toast-hidding')
+              : t('Lists.toast-removing'),
         }),
         status: 'error',
         duration: null,

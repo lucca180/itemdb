@@ -2,17 +2,11 @@
 import { Flex, Heading, Text, Link, ListItem, UnorderedList } from '@chakra-ui/react';
 import HeaderCard from '../components/Card/HeaderCard';
 import Layout from '../components/Layout';
+import { ReactElement } from 'react';
 
 const PrivacyPolicyPage = () => {
   return (
-    <Layout
-      SEO={{
-        title: 'Privacy Policy',
-        description:
-          'itemdb collects some personal data during its use. Here we will detail more about how we collect, process, and use your data.',
-      }}
-      mainColor="#7AB92Ac7"
-    >
+    <>
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/nt/ntimages/441_xweetok_agent.gif',
@@ -113,7 +107,7 @@ const PrivacyPolicyPage = () => {
           </Text>
         </Flex>
       </Flex>
-    </Layout>
+    </>
   );
 };
 
@@ -123,6 +117,22 @@ export async function getStaticProps(context: any) {
   return {
     props: {
       messages: (await import(`../translation/${context.locale}.json`)).default,
+      locale: context.locale,
     },
   };
 }
+
+PrivacyPolicyPage.getLayout = function getLayout(page: ReactElement) {
+  return (
+    <Layout
+      SEO={{
+        title: 'Privacy Policy',
+        description:
+          'itemdb collects some personal data during its use. Here we will detail more about how we collect, process, and use your data.',
+      }}
+      mainColor="#7AB92Ac7"
+    >
+      {page}
+    </Layout>
+  );
+};

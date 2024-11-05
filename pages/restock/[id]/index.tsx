@@ -22,21 +22,23 @@ import {
   slugify,
 } from '../../../utils/utils';
 import { defaultFilters } from '../../../utils/parseFilters';
-import { useEffect, useState } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import { SortSelect } from '../../../components/Input/SortSelect';
 import { SearchList } from '../../../components/Search/SearchLists';
 import { CollapseNumber } from '../../../components/Input/CollapseNumber';
 import axios from 'axios';
 import { getFiltersDiff } from '../../search';
-import { useTranslations } from 'next-intl';
+import { createTranslator, useTranslations } from 'next-intl';
 import { RarityView } from '../../../components/Hubs/Restock/RarityView';
 import { VirtualizedItemList } from '../../../components/Utils/VirtualizedItemList';
 import { useAuth } from '../../../utils/auth';
 import RestockHeader from '../../../components/Hubs/Restock/RestockHeader';
+import { NextPageWithLayout } from '../../_app';
 
 type RestockShopPageProps = {
   shopInfo: ShopInfo;
   messages: any;
+  locale: string;
 };
 
 const sortTypes = {
@@ -53,7 +55,7 @@ type ItemFilter = {
   minProfit: number;
 };
 
-const RestockShop = (props: RestockShopPageProps) => {
+const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockShopPageProps) => {
   const t = useTranslations();
   const { shopInfo } = props;
   const { userPref, updatePref } = useAuth();
@@ -139,29 +141,7 @@ const RestockShop = (props: RestockShopPageProps) => {
   };
 
   return (
-    <Layout
-      SEO={{
-        title: `${shopInfo.name} | ${t('Restock.neopets-restock-helper')}`,
-        description: t('Restock.shop-desc', {
-          0: shopInfo.name,
-        }),
-        themeColor: shopInfo.color,
-        twitter: {
-          cardType: 'summary_large_image',
-        },
-        openGraph: {
-          images: [
-            {
-              url: `https://images.neopets.com/shopkeepers/w${shopInfo.id}.gif`,
-              width: 450,
-              height: 150,
-              alt: shopInfo.name,
-            },
-          ],
-        },
-      }}
-      mainColor={`${shopInfo.color}a6`}
-    >
+    <>
       <RestockHeader shop={shopInfo}>
         <Text
           as="h2"
@@ -296,7 +276,7 @@ const RestockShop = (props: RestockShopPageProps) => {
           </Text>
         </>
       )}
-    </Layout>
+    </>
   );
 };
 
@@ -325,6 +305,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
   const props: RestockShopPageProps = {
     shopInfo: shopInfo,
     messages: (await import(`../../../translation/${context.locale}.json`)).default,
+    locale: context.locale ?? 'en',
   };
 
   return {
@@ -399,4 +380,36 @@ const sortItems = (a: ItemData, b: ItemData, sortBy: string, sortDir: string) =>
       );
   }
   return 0;
+};
+
+RestockShop.getLayout = function getLayout(page: ReactElement, props: RestockShopPageProps) {
+  const t = createTranslator({ messages: props.messages, locale: props.locale });
+  const { shopInfo } = props;
+  return (
+    <Layout
+      SEO={{
+        title: `${shopInfo.name} | ${t('Restock.neopets-restock-helper')}`,
+        description: t('Restock.shop-desc', {
+          0: shopInfo.name,
+        }),
+        themeColor: shopInfo.color,
+        twitter: {
+          cardType: 'summary_large_image',
+        },
+        openGraph: {
+          images: [
+            {
+              url: `https://images.neopets.com/shopkeepers/w${shopInfo.id}.gif`,
+              width: 450,
+              height: 150,
+              alt: shopInfo.name,
+            },
+          ],
+        },
+      }}
+      mainColor={`${shopInfo.color}a6`}
+    >
+      {page}
+    </Layout>
+  );
 };

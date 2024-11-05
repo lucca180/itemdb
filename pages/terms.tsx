@@ -2,16 +2,11 @@
 import { Flex, Heading, Text } from '@chakra-ui/react';
 import HeaderCard from '../components/Card/HeaderCard';
 import Layout from '../components/Layout';
+import { ReactElement } from 'react';
 
 const TermsPage = () => {
   return (
-    <Layout
-      SEO={{
-        title: 'Terms of Use',
-        description: 'This page outlines the terms of use for itemdb, its features, and API.',
-      }}
-      mainColor="#a5aa9fc7"
-    >
+    <>
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/caption/sm_caption_1252.gif',
@@ -54,8 +49,8 @@ const TermsPage = () => {
             any of it. We are not affiliated with Neopets Inc. in any way.
           </Text>
           <Text>
-            Be toughful when using the itemdb API. Most of personal uses are fine, but heavy use of
-            the API can cause performance issues for the site. If you are using the API for a
+            Be thoughtful when using the itemdb API. Most of personal uses are fine, but heavy use
+            of the API can cause performance issues for the site. If you are using the API for a
             project, please contact us and we will be happy to help you. We reserve the right to
             refuse service to anyone who we believe is using the site or its API in a way that is
             detrimental to the site or its community.
@@ -70,7 +65,7 @@ const TermsPage = () => {
           <Text>
             When creating content on itemdb, such as lists, you are granting us a license to use
             that content as a part of the itemdb website or any other Magnetismo Times project with
-            proper atributions. Bear in mind that any public content you create on itemdb can be
+            proper attributions. Bear in mind that any public content you create on itemdb can be
             accessed by anyone, including other users and search engines.
           </Text>
           <Text>
@@ -92,7 +87,7 @@ const TermsPage = () => {
           </Text>
         </Flex>
       </Flex>
-    </Layout>
+    </>
   );
 };
 
@@ -102,6 +97,21 @@ export async function getStaticProps(context: any) {
   return {
     props: {
       messages: (await import(`../translation/${context.locale}.json`)).default,
+      locale: context.locale,
     },
   };
 }
+
+TermsPage.getLayout = function getLayout(page: ReactElement) {
+  return (
+    <Layout
+      SEO={{
+        title: 'Terms of Use',
+        description: 'This page outlines the terms of use for itemdb, its features, and API.',
+      }}
+      mainColor="#a5aa9fc7"
+    >
+      {page}
+    </Layout>
+  );
+};

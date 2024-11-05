@@ -11,7 +11,7 @@ import {
   TabPanels,
   Tabs,
 } from '@chakra-ui/react';
-import React, { useEffect, useState } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import logo from '../public/logo_white_compressed.svg';
 import Image from 'next/image';
@@ -26,10 +26,11 @@ import NextLink from 'next/link';
 import Color from 'color';
 import { getTrendingItems } from './api/v1/beta/trending';
 // import { getHotestRestock } from './api/v1/beta/restock';
-import { useTranslations } from 'next-intl';
+import { createTranslator, useTranslations } from 'next-intl';
 import { getNCMallItemsData } from './api/v1/ncmall';
 import { getLatestItems } from './api/v1/items';
 import { getLatestPricedItems } from './api/v1/prices';
+import { NextPageWithLayout } from './_app';
 
 type Props = {
   latestItems: ItemData[];
@@ -40,19 +41,20 @@ type Props = {
   hottestRestock: ItemData[];
   latestNcMall: ItemData[];
   leavingNcMall: ItemData[];
+  messages: any;
+  locale: string;
 };
 
 const IS_GREY = process.env.NEXT_PUBLIC_IS_GREY === 'true';
 
-const HomePage = (props: Props) => {
+const color = Color('#4A5568');
+const rgb = color.rgb().round().array();
+
+const HomePage: NextPageWithLayout<Props> = (props: Props) => {
   const t = useTranslations('HomePage');
   const { latestOwls, latestPosts, latestNcMall, trendingItems, leavingNcMall } = props;
   const [latestItems, setItems] = useState<ItemData[] | null>(props.latestItems);
   const [latestPrices, setPrices] = useState<ItemData[] | null>(props.lastestPrices);
-
-  const color = Color('#4A5568');
-  // const color = Color('#CB3F5D');
-  const rgb = color.rgb().round().array();
 
   useEffect(() => {
     init();
@@ -77,12 +79,7 @@ const HomePage = (props: Props) => {
   };
 
   return (
-    <Layout
-      mainColor={color.alpha(0.9).hexa()}
-      SEO={{
-        description: t('seo-description'),
-      }}
-    >
+    <>
       <Box textAlign="center" display="flex" flexFlow="column" alignItems="center" mt="50px">
         <Box
           position="absolute"
@@ -222,7 +219,7 @@ const HomePage = (props: Props) => {
           </Flex>
         </Stack>
       </Flex>
-    </Layout>
+    </>
   );
 };
 
@@ -263,7 +260,26 @@ export async function getStaticProps(context: any) {
       lastestPrices,
       leavingNcMall,
       messages: (await import(`../translation/${context.locale}.json`)).default,
+      locale: context.locale,
     },
     revalidate: 180, // In seconds
   };
 }
+
+HomePage.getLayout = function getLayout(page: ReactElement, props: Props) {
+  const t = createTranslator({
+    messages: props.messages,
+    namespace: 'HomePage',
+    locale: props.locale,
+  });
+  return (
+    <Layout
+      mainColor={color.alpha(0.9).hexa()}
+      SEO={{
+        description: t('seo-description'),
+      }}
+    >
+      {page}
+    </Layout>
+  );
+};

@@ -12,24 +12,25 @@ import {
   Link,
 } from '@chakra-ui/react';
 import Color from 'color';
-import { useEffect, useState, Fragment } from 'react';
+import { useEffect, useState, Fragment, ReactElement } from 'react';
 import ShopCard from '../../components/Hubs/Restock/ShopCard';
 import Layout from '../../components/Layout';
 import { restockShopInfo, getDateNST } from '../../utils/utils';
 import NextLink from 'next/link';
-import { useTranslations } from 'next-intl';
+import { createTranslator, useTranslations } from 'next-intl';
+import { NextPageWithLayout } from '../_app';
 
 const allCats = [
   ...new Set(
     Object.values(restockShopInfo)
       .map((shop) => shop.category)
-      .flat(),
+      .flat()
   ),
 ].sort((a, b) => a.localeCompare(b));
 
 const color = Color('#A5DAE9').rgb().array();
 
-const RestockHub = () => {
+const RestockHub: NextPageWithLayout<any> = () => {
   const t = useTranslations();
   const [selCats, setSelCats] = useState<string[]>([]);
   const [selDiff, setSelDiff] = useState<string[]>([]);
@@ -65,14 +66,7 @@ const RestockHub = () => {
   };
 
   return (
-    <Layout
-      SEO={{
-        title: t('Restock.neopets-restock-helper'),
-        description: t('Restock.restock-description'),
-        themeColor: '#A5DAE9',
-      }}
-      mainColor="rgba(165, 218, 233, 0.4)"
-    >
+    <>
       <Box
         position="absolute"
         h="650px"
@@ -143,8 +137,8 @@ const RestockHub = () => {
                   ? diff === 'Beginner'
                     ? 'green'
                     : diff === 'Advanced'
-                      ? 'red'
-                      : 'cyan'
+                    ? 'red'
+                    : 'cyan'
                   : undefined
               }
               onClick={() => handleDiff(diff)}
@@ -158,7 +152,7 @@ const RestockHub = () => {
         {(selCats.length > 0 ? selCats : allCats).map((cat) => {
           const shops = Object.values(restockShopInfo).filter(
             (x) =>
-              (selDiff.length > 0 ? selDiff.includes(x.difficulty) : true) && x.category === cat,
+              (selDiff.length > 0 ? selDiff.includes(x.difficulty) : true) && x.category === cat
           );
           if (shops.length === 0) return null;
           return (
@@ -175,7 +169,7 @@ const RestockHub = () => {
           );
         })}
       </Flex>
-    </Layout>
+    </>
   );
 };
 
@@ -188,3 +182,19 @@ export async function getStaticProps(context: any) {
     },
   };
 }
+
+RestockHub.getLayout = function getLayout(page: ReactElement, props: any) {
+  const t = createTranslator(props.messages);
+  return (
+    <Layout
+      SEO={{
+        title: t('Restock.neopets-restock-helper'),
+        description: t('Restock.restock-description'),
+        themeColor: '#A5DAE9',
+      }}
+      mainColor="rgba(165, 218, 233, 0.4)"
+    >
+      {page}
+    </Layout>
+  );
+};

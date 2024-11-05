@@ -29,31 +29,17 @@ import { useDisclosure } from '@chakra-ui/react';
 import { FeedbackModalProps } from '../components/Modal/FeedbackModal';
 import { FiEdit3, FiSend } from 'react-icons/fi';
 import dynamic from 'next/dynamic';
-import { useTranslations } from 'next-intl';
+import { createTranslator, useTranslations } from 'next-intl';
+import { ReactElement } from 'react';
 
 const FeedbackModal = dynamic<FeedbackModalProps>(
-  () => import('../components/Modal/FeedbackModal'),
+  () => import('../components/Modal/FeedbackModal')
 );
 
 const ContributePage = () => {
   const t = useTranslations();
   return (
-    <Layout
-      SEO={{
-        title: t('Layout.how-to-contribute'),
-        description: t('Feedback.contribute-description'),
-        openGraph: {
-          images: [
-            {
-              url: 'https://images.neopets.com/games/betterthanyou/contestant435.gif',
-              width: 150,
-              height: 150,
-            },
-          ],
-        },
-      }}
-      mainColor="#4974f5c7"
-    >
+    <>
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/games/betterthanyou/contestant435.gif',
@@ -88,7 +74,7 @@ const ContributePage = () => {
           </TabPanels>
         </Tabs>
       </Flex>
-    </Layout>
+    </>
   );
 };
 
@@ -430,6 +416,31 @@ export async function getStaticProps(context: any) {
   return {
     props: {
       messages: (await import(`../translation/${context.locale}.json`)).default,
+      locale: context.locale,
     },
   };
 }
+
+ContributePage.getLayout = function getLayout(page: ReactElement, props: any) {
+  const t = createTranslator({ messages: props.messages, locale: props.locale });
+  return (
+    <Layout
+      SEO={{
+        title: t('Layout.how-to-contribute'),
+        description: t('Feedback.contribute-description'),
+        openGraph: {
+          images: [
+            {
+              url: 'https://images.neopets.com/games/betterthanyou/contestant435.gif',
+              width: 150,
+              height: 150,
+            },
+          ],
+        },
+      }}
+      mainColor="#4974f5c7"
+    >
+      {page}
+    </Layout>
+  );
+};

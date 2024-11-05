@@ -12,12 +12,13 @@ import HeaderCard from '../components/Card/HeaderCard';
 import Layout from '../components/Layout';
 import DynamicIcon from '../public/icons/dynamic.png';
 import NextImage from 'next/image';
-import { useTranslations } from 'next-intl';
+import { createTranslator, useTranslations } from 'next-intl';
+import { ReactElement } from 'react';
 
 const WhyUsPage = () => {
   const t = useTranslations();
   return (
-    <Layout SEO={{ title: t('FAQ.frequent-asked-questions') }} mainColor="#4bbde0c7">
+    <>
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/desert/usurper_clue.gif',
@@ -190,7 +191,7 @@ const WhyUsPage = () => {
           </Text>
         </Flex>
       </Flex>
-    </Layout>
+    </>
   );
 };
 
@@ -200,6 +201,16 @@ export async function getStaticProps(context: any) {
   return {
     props: {
       messages: (await import(`../translation/${context.locale}.json`)).default,
+      locale: context.locale,
     },
   };
 }
+
+WhyUsPage.getLayout = function getLayout(page: ReactElement, props: any) {
+  const t = createTranslator({ messages: props.messages, locale: props.locale });
+  return (
+    <Layout SEO={{ title: t('FAQ.frequent-asked-questions') }} mainColor="#4bbde0c7">
+      {page}
+    </Layout>
+  );
+};

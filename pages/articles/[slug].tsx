@@ -23,10 +23,13 @@ import NextLink from 'next/link';
 import { wp_getLatestPosts } from '../api/wp/posts';
 import { ArticleCard } from '../../components/Articles/ArticlesCard';
 import { useFormatter, useTranslations } from 'next-intl';
+import { ReactElement } from 'react';
 
 type Props = {
   post: WP_Article;
   recomendations: WP_Article[];
+  messages: any;
+  locale: string;
 };
 
 const ArticlePage = (props: Props) => {
@@ -34,17 +37,7 @@ const ArticlePage = (props: Props) => {
   const formatter = useFormatter();
   const { post, recomendations } = props;
   return (
-    <Layout
-      SEO={{
-        title: post.title,
-        description: post.excerpt,
-        themeColor: post.palette?.lightvibrant.hex ?? '#05B7E8',
-        openGraph: {
-          images: [{ url: post.thumbnail ?? '', width: 150, height: 150, alt: post.title }],
-        },
-      }}
-      mainColor={`${post.palette?.lightvibrant.hex ?? '#05B7E8'}6b`}
-    >
+    <>
       <HeaderCard
         image={
           post.thumbnail
@@ -102,7 +95,7 @@ const ArticlePage = (props: Props) => {
           </Flex>
         </>
       )}
-    </Layout>
+    </>
   );
 };
 
@@ -127,10 +120,30 @@ export async function getStaticProps(context: GetStaticPropsContext) {
       post,
       messages: (await import(`../../translation/${context.locale}.json`)).default,
       recomendations: recommended.filter((x) => x.id !== post.id),
+      locale: context.locale,
     },
     revalidate: 60,
   };
 }
+
+ArticlePage.getLayout = function getLayout(page: ReactElement, props: Props) {
+  const { post } = props;
+  return (
+    <Layout
+      SEO={{
+        title: post.title,
+        description: post.excerpt,
+        themeColor: post.palette?.lightvibrant.hex ?? '#05B7E8',
+        openGraph: {
+          images: [{ url: post.thumbnail ?? '', width: 150, height: 150, alt: post.title }],
+        },
+      }}
+      mainColor={`${post.palette?.lightvibrant.hex ?? '#05B7E8'}6b`}
+    >
+      {page}
+    </Layout>
+  );
+};
 
 export async function getStaticPaths() {
   const posts = await wp_getLatestPosts(5);

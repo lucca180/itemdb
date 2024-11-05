@@ -11,14 +11,24 @@ import { NextIntlClientProvider } from 'next-intl';
 import { useRouter } from 'next/router';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
+import type { NextPage } from 'next';
 
 const VALID_LOCALES = {
   en: '',
   pt: '/pt',
 };
 
-function MyApp({ Component, pageProps }: AppProps) {
+export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
+  getLayout?: (page: React.ReactElement, props: P) => React.ReactNode;
+};
+
+type AppPropsWithLayout = AppProps & {
+  Component: NextPageWithLayout;
+};
+
+function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   const router = useRouter();
+  const getLayout = Component.getLayout ?? ((page) => page);
 
   return (
     <ChakraProvider theme={theme}>
@@ -42,7 +52,7 @@ function MyApp({ Component, pageProps }: AppProps) {
             </Head>
             <NextNProgress color="#718096" showOnShallow={true} />
             <DefaultSeo {...SEOConfig} />
-            <Component {...pageProps} />
+            {getLayout(<Component {...pageProps} />, pageProps)}
             <Script id="pathOverwriter">
               {`function myPathOverwriter({ path }) {
                   if (path.startsWith("/pt")) path = path.replace("/pt", "");

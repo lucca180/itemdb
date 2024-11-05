@@ -4,7 +4,8 @@ import HeaderCard from '../../components/Card/HeaderCard';
 import Layout from '../../components/Layout';
 import { FeedbackModalProps } from '../../components/Modal/FeedbackModal';
 import dynamic from 'next/dynamic';
-import { useTranslations } from 'next-intl';
+import { createTranslator, useTranslations } from 'next-intl';
+import { ReactElement } from 'react';
 
 const FeedbackModal = dynamic<FeedbackModalProps>(
   () => import('../../components/Modal/FeedbackModal')
@@ -15,10 +16,7 @@ const FeedbackPage = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
-    <Layout
-      SEO={{ title: 'Feedback', description: t('Feedback.feedback-system-description') }}
-      mainColor="#4A5568c7"
-    >
+    <>
       <FeedbackModal isOpen={isOpen} onClose={onClose} />
       <HeaderCard
         image={{
@@ -57,7 +55,7 @@ const FeedbackPage = () => {
           href="/feedback/vote"
         />
       </Center>
-    </Layout>
+    </>
   );
 };
 
@@ -67,9 +65,22 @@ export async function getStaticProps(context: any) {
   return {
     props: {
       messages: (await import(`../../translation/${context.locale}.json`)).default,
+      locale: context.locale,
     },
   };
 }
+
+FeedbackPage.getLayout = function getLayout(page: ReactElement, props: any) {
+  const t = createTranslator({ messages: props.messages, locale: props.locale });
+  return (
+    <Layout
+      SEO={{ title: 'Feedback', description: t('Feedback.feedback-system-description') }}
+      mainColor="#4A5568c7"
+    >
+      {page}
+    </Layout>
+  );
+};
 
 const FeedbackCard = ({
   title,

@@ -10,7 +10,7 @@ import {
   FormLabel,
   useDisclosure,
 } from '@chakra-ui/react';
-import React, { useEffect, useState } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import { useRouter } from 'next/router';
 // import { getAuth, isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
@@ -139,7 +139,7 @@ const LoginPage = () => {
         },
         {
           headers: { Authorization: `Bearer ${token}` },
-        },
+        }
       );
 
       const user = userRes.data as User;
@@ -179,7 +179,7 @@ const LoginPage = () => {
   };
 
   return (
-    <Layout mainColor="#4A5568c7">
+    <>
       <LoginModal isOpen={isOpen} onClose={closeLogin} />
       <Center h="80vh" flexFlow="column">
         {isLoading && !error && <Spinner size="lg" />}
@@ -245,7 +245,7 @@ const LoginPage = () => {
           </Flex>
         )}
       </Center>
-    </Layout>
+    </>
   );
 };
 
@@ -255,6 +255,15 @@ export async function getStaticProps(context: any) {
   return {
     props: {
       messages: (await import(`../translation/${context.locale}.json`)).default,
+      locale: context.locale,
     },
   };
 }
+
+LoginPage.getLayout = function getLayout(page: ReactElement) {
+  return (
+    <Layout mainColor="#4A5568c7" SEO={{ noindex: true }}>
+      {page}
+    </Layout>
+  );
+};
