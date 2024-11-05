@@ -179,12 +179,13 @@ export async function getStaticProps(context: any) {
   return {
     props: {
       messages: (await import(`../../translation/${context.locale}.json`)).default,
+      locale: context.locale,
     },
   };
 }
 
 RestockHub.getLayout = function getLayout(page: ReactElement, props: any) {
-  const t = createTranslator(props.messages);
+  const t = createTranslator({ messages: props.messages, locale: props.locale });
   return (
     <Layout
       SEO={{
