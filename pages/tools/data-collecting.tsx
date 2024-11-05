@@ -1,0 +1,181 @@
+import {
+  Center,
+  Heading,
+  Text,
+  Flex,
+  Select,
+  FormControl,
+  FormHelperText,
+  FormLabel,
+  Button,
+  useToast,
+} from '@chakra-ui/react';
+import HeaderCard from '../../components/Card/HeaderCard';
+import Layout from '../../components/Layout';
+import { useTranslations } from 'next-intl';
+import ItemSelect from '../../components/Input/ItemSelect';
+import { ItemData } from '../../types';
+import { useState } from 'react';
+import ItemCard from '../../components/Items/ItemCard';
+import axios from 'axios';
+import { getCookie } from 'cookies-next';
+import { NextPageContext, NextApiRequest } from 'next';
+import { CheckAuth } from '../../utils/googleCloud';
+
+const DATA_COLLECTING_OPTIONS = [
+  {
+    name: 'Daily Quests',
+    id: 'dailyQuests',
+    multiple: true,
+    description: "We're seeking data from your daily quests item prizes!",
+  },
+  {
+    name: 'Weekly Quests',
+    id: 'weeklyQuests',
+    multiple: true,
+    description: "We're seeking data from your Weekly Quests item prizes!",
+  },
+];
+
+const DataCollectingPage = () => {
+  const t = useTranslations();
+  const toast = useToast();
+  const [itemList, setItemList] = useState<ItemData[]>([]);
+  const [type, setType] = useState<string>('');
+  const onChange = (item: ItemData) => {
+    const items = [...itemList].filter((i) => i.internal_id !== item.internal_id);
+    items.push(item);
+    setItemList(items);
+  };
+
+  const submit = async () => {
+    const obj = {
+      type: type,
+      itemList: itemList.map((item) => item.internal_id).join(','),
+    };
+
+    const resProm = axios.post('/api/v1/tools/data-collecting', obj);
+    toast.promise(resProm, {
+      success: { title: t('General.success'), description: t('General.thank-you') },
+      error: {
+        title: t('General.something-went-wrong'),
+        description: t('General.try-again-later'),
+      },
+      loading: { title: t('General.sending-dots') },
+    });
+
+    const res = await resProm;
+
+    console.log(res.data);
+
+    setItemList([]);
+  };
+
+  return (
+    <Layout
+      SEO={{
+        title: 'Data Collecting Tool',
+        description: t('Feedback.feedback-system-description'),
+      }}
+      mainColor="#abf14ec7"
+    >
+      <HeaderCard
+        image={{
+          src: 'https://images.neopets.com/caption/sm_caption_982.gif',
+          alt: 'quiz-giver thumbnail',
+        }}
+        color="#b4ff53"
+      >
+        <Heading size="lg">Data Collecting Tool</Heading>
+        <Text size={{ base: 'sm', md: undefined }}></Text>
+      </HeaderCard>
+      <Flex justifyContent={'space-between'} w={'100%'} gap={8}>
+        <Flex flexFlow={'column'} w="100%" maxW={'500px'}>
+          <FormControl my={5}>
+            <FormLabel>Type</FormLabel>
+            <Select
+              variant="solid"
+              bg={'blackAlpha.300'}
+              onChange={(e) => setType(e.target.value)}
+              value={type}
+            >
+              <option value="">Select Type</option>
+              {DATA_COLLECTING_OPTIONS.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.name}
+                </option>
+              ))}
+            </Select>
+            <FormHelperText>
+              We&apos;re only seeking data from these places right now. We can add more in the
+              future!
+            </FormHelperText>
+          </FormControl>
+          <FormControl my={5}>
+            <FormLabel>Item</FormLabel>
+            <ItemSelect isDisabled={!type} onChange={onChange} />
+          </FormControl>
+        </Flex>
+        <Flex flexFlow="column" w={'100%'} borderRadius={'md'} bg="blackAlpha.500" p={3} gap={3}>
+          {!!itemList.length && (
+            <>
+              <Flex gap={3} flexWrap={'wrap'} justifyContent={'center'}>
+                {itemList.map((item) => (
+                  <ItemCard key={item.internal_id} item={item} small />
+                ))}
+              </Flex>
+              <Center mt={8} gap={3}>
+                <Button colorScheme="gray" variant="ghost" onClick={() => setItemList([])}>
+                  Clear
+                </Button>
+                <Button colorScheme="green" variant="ghost" onClick={submit}>
+                  Submit
+                </Button>
+              </Center>
+            </>
+          )}
+          {!itemList.length && (
+            <Center flex="1">
+              <Text color="gray.400">No items selected</Text>
+            </Center>
+          )}
+        </Flex>
+      </Flex>
+    </Layout>
+  );
+};
+
+export default DataCollectingPage;
+
+export async function getServerSideProps(context: NextPageContext) {
+  try {
+    const token = getCookie('userToken', { req: context.req, res: context.res }) as
+      | string
+      | undefined
+      | null;
+
+    if (!token) throw new Error('No token found');
+
+    const check = await CheckAuth(context.req as NextApiRequest, token);
+    if (!check.user) throw new Error('User not found');
+
+    if (check.user.banned) {
+      return {
+        notFound: true,
+      };
+    }
+
+    return {
+      props: {
+        messages: (await import(`../../translation/${context.locale}.json`)).default,
+      },
+    };
+  } catch (e) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    };
+  }
+}

@@ -396,7 +396,9 @@
     "1-day": "1 day",
     "1-hour": "1 hour",
     "x-minutes": "{x} minutes",
-    "auction-house": "Auction House"
+    "auction-house": "Auction House",
+    "thank-you": "Thank you!",
+    "sending-dots": "Sending..."
   },
   "Lists": {
     "item-added-to-list": "Item added to list",

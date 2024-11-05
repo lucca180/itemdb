@@ -397,7 +397,9 @@
     "1-hour": "1 hora",
     "x-days": "{x} dias",
     "x-minutes": "{x} minutos",
-    "auction-house": "Casa de Leilões"
+    "auction-house": "Casa de Leilões",
+    "sending-dots": "Enviando...",
+    "thank-you": "Obrigado!"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",

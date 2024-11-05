@@ -67,6 +67,7 @@ model Items {
   saleStats             SaleStats[]
   ItemRecipes           ItemRecipes[]
   ItemIngredients       ItemIngredients[]
+  DataCollecting        DataCollecting[]
 
   @@index([name, image_id])
   @@index([image_id])
@@ -318,6 +319,7 @@ model User {
   votes          FeedbackVotes[]
   restockSession RestockSession[]
   ListTags       ListTags[]
+  DataCollecting DataCollecting[]
 }
 
 model OpenableItems {
@@ -629,6 +631,22 @@ model ItemIngredients {
 
   recipe_id Int
   recipe    ItemRecipes @relation(fields: [recipe_id], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model DataCollecting {
+  internal_id Int    @id @default(autoincrement())
+  type        String
+  item_iid    Int
+  item        Items  @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+
+  instance_id String
+
+  ip_address String
+
+  user_id String?
+  user    User?   @relation(fields: [user_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  addedAt DateTime @default(now())
 }
 
 // -------- DISMANTELING PRICE PROCESS --------- //

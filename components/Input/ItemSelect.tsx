@@ -14,7 +14,7 @@ type Props = {
   color?: string;
   isDisabled?: boolean;
   placeholder?: string;
-  onChange: (item: ItemData) => void;
+  onChange?: (item: ItemData) => void;
 };
 
 const ItemSelect = (props: Props) => {
@@ -40,7 +40,7 @@ const ItemSelect = (props: Props) => {
   };
 
   const onSelectOption = ({ item }: { item: Item }) => {
-    onChange(item.originalValue as ItemData);
+    onChange?.(item.originalValue as ItemData);
     setQuery('');
   };
 
