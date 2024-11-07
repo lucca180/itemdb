@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 // next.config.js
 
-const { withSentryConfig } = require('@sentry/nextjs');
+import { withSentryConfig } from '@sentry/nextjs';
+import type { NextConfig } from 'next';
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+const nextConfig: NextConfig = {
   cacheMaxMemorySize: 0,
   productionBrowserSourceMaps: true,
   i18n: {
@@ -28,6 +28,7 @@ const nextConfig = {
   },
   distDir: process.env.BUILD_DIR || '.next',
   experimental: {
+    reactCompiler: true,
     largePageDataBytes: 512 * 1000,
     optimizePackageImports: [
       '@sentry/nextjs',

@@ -1,6 +1,6 @@
 import { Box, Flex, Heading, Image, Text } from '@chakra-ui/react';
 import { RestockStats } from '../../../types';
-import { LegacyRef, useMemo } from 'react';
+import { Ref, useMemo } from 'react';
 import Color from 'color';
 import { useAuth } from '../../../utils/auth';
 import { restockShopInfo } from '../../../utils/utils';
@@ -8,7 +8,7 @@ import { useTranslations } from 'next-intl';
 
 type RestockWrappedCardProps = {
   stats: RestockStats;
-  innerRef?: LegacyRef<HTMLDivElement> | undefined;
+  innerRef?: Ref<HTMLDivElement> | undefined;
   bgGradient?: string;
   timePeriod?: number;
 };

@@ -30,7 +30,7 @@ type Props = {
   onChange?: (
     id: number,
     value: number,
-    field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order',
+    field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order'
   ) => void;
   onClick?: (id: number, force?: boolean) => void;
   onListAction?: (item: ItemData, action: 'move' | 'delete') => any;
@@ -38,7 +38,7 @@ type Props = {
 
 function SortableItem1(props: Props) {
   const t = useTranslations();
-  const ref = useRef<Element | null | undefined>();
+  const ref = useRef<Element | null | undefined>(undefined);
   const { id, item, editMode, isTrading, selected, sortType } = props;
   const [itemInfo, setItemInfo] = useState<ListItemInfo | undefined>(props.itemInfo);
   const [isSelected, setSelected] = useState<boolean>(selected ?? false);
@@ -62,7 +62,7 @@ function SortableItem1(props: Props) {
 
   const handleItemInfoChange = (
     value: number,
-    field: 'amount' | 'capValue' | 'isHighlight' | 'order',
+    field: 'amount' | 'capValue' | 'isHighlight' | 'order'
   ) => {
     if (!itemInfo) return;
     const newInfo = { ...itemInfo };
@@ -92,7 +92,7 @@ function SortableItem1(props: Props) {
       inViewRef(node);
       setNodeRef(node);
     },
-    [inViewRef, setNodeRef],
+    [inViewRef, setNodeRef]
   );
 
   if (!editMode && itemInfo?.isHidden) return null;
@@ -124,7 +124,7 @@ function SortableItem1(props: Props) {
           onListAction={props.onListAction}
           selected={isSelected}
           disablePrefetch
-          capValue={isTrading ? (itemInfo?.capValue ?? undefined) : undefined}
+          capValue={isTrading ? itemInfo?.capValue ?? undefined : undefined}
           quantity={itemInfo?.amount ?? undefined}
         />
       </Box>

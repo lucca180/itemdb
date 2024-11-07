@@ -19,7 +19,7 @@ const ChartComponent = (props: ChartComponentProps) => {
   const textColor = 'white';
   const areaTopColor = `rgb(${RBG[0]}, ${RBG[1]}, ${RBG[2]})`;
   const areaBottomColor = `rgba(${RBG[0]}, ${RBG[1]}, ${RBG[2]}, 0.28)`;
-  const chartContainerRef = useRef<any>();
+  const chartContainerRef = useRef<any>(undefined);
 
   useEffect(() => {
     const handleResize = () => {
