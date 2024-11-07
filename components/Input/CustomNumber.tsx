@@ -1,4 +1,4 @@
-import { NumberInput, NumberInputField, NumberInputProps } from '@chakra-ui/react';
+import { NumberInput, NumberInputField } from '@chakra-ui/react';
 import { useCallback, useEffect, useState } from 'react';
 import debounce from 'lodash/debounce';
 
@@ -8,7 +8,7 @@ type Props = {
   value?: string;
   onChange?: (newValue: string) => void;
   inputProps?: React.ComponentProps<typeof NumberInputField>;
-  wrapperProps?: NumberInputProps;
+  wrapperProps?: React.ComponentProps<typeof NumberInput>;
   skipDebounce?: boolean;
 };
 
@@ -29,7 +29,7 @@ const CustomNumberInput = (props: Props) => {
     debounce((newValue: string) => {
       props.onChange?.(newValue);
     }, 250),
-    [props.onChange],
+    [props.onChange]
   );
 
   const onChange = (val: string) => {

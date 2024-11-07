@@ -60,7 +60,7 @@ export const SearchBar = (props: Props) => {
   let disableListener = false;
 
   useOutsideClick({
-    ref: inputRef,
+    ref: inputRef as any,
     handler: (e: any) => {
       if (disableListener) return;
       let isRightMB;

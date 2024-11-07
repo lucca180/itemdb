@@ -36,7 +36,12 @@ const DashboardOptionsModal = (props: DashboardOptionsModalProps) => {
   };
 
   return (
-    <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose} isCentered>
+    <AlertDialog
+      isOpen={isOpen}
+      leastDestructiveRef={cancelRef as any}
+      onClose={onClose}
+      isCentered
+    >
       <AlertDialogOverlay>
         <AlertDialogContent>
           <AlertDialogHeader fontSize="lg" fontWeight="bold">

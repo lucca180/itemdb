@@ -83,7 +83,7 @@ export default function TradeCalculatorModal(props: TradeCalculatorModalProps) {
         isOpen={isOpen}
         onClose={() => onClose()}
         isCentered
-        initialFocusRef={babyPBRef}
+        initialFocusRef={babyPBRef as any}
         finalFocusRef={props.finalRef}
       >
         <ModalOverlay />

@@ -52,7 +52,7 @@ const ConfirmDeleteItem = (props: Props) => {
 
   if (msg)
     return (
-      <AlertDialog isOpen leastDestructiveRef={cancelRef} onClose={onClose}>
+      <AlertDialog isOpen leastDestructiveRef={cancelRef as any} onClose={onClose}>
         <AlertDialogOverlay>
           <AlertDialogContent>
             <AlertDialogHeader fontSize="lg" fontWeight="bold">
@@ -73,7 +73,7 @@ const ConfirmDeleteItem = (props: Props) => {
     return (
       <AlertDialog
         isOpen
-        leastDestructiveRef={cancelRef}
+        leastDestructiveRef={cancelRef as any}
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         onClose={() => {}}
       >
@@ -91,7 +91,7 @@ const ConfirmDeleteItem = (props: Props) => {
     );
 
   return (
-    <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
+    <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef as any} onClose={onClose}>
       <AlertDialogOverlay>
         <AlertDialogContent>
           <AlertDialogHeader fontSize="lg" fontWeight="bold">

@@ -15,7 +15,7 @@ import { ListItemInfo, ItemData, UserList } from '../../types';
 import { SortableItem } from './ItemCard';
 import debounce from 'lodash/debounce';
 import { ViewportList } from 'react-viewport-list';
-import { Flex, useDimensions } from '@chakra-ui/react';
+import { Flex, useSize } from '@chakra-ui/react';
 
 export type SortableAreaProps = {
   ids: number[];
@@ -31,14 +31,14 @@ export type SortableAreaProps = {
   onChange?: (
     id: number,
     value: number,
-    field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order',
+    field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order'
   ) => void;
   onListAction?: (item: ItemData, action: 'move' | 'delete') => void;
 };
 
 export default function SortableArea(props: SortableAreaProps) {
   const elementRef = useRef(null);
-  const dimensions = useDimensions(elementRef, true);
+  const dimensions = useSize(elementRef, { observeMutation: true });
 
   const { itemInfo, items, editMode, activateSort, list } = props;
   const [activeId, setActiveId] = useState<number | null>(null);
@@ -52,7 +52,7 @@ export default function SortableArea(props: SortableAreaProps) {
     useSensor(TouchSensor, {
       activationConstraint: { delay: 250, tolerance: 5 },
     }),
-    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } })
   );
 
   const debouncedOnChange = useCallback(
@@ -60,11 +60,11 @@ export default function SortableArea(props: SortableAreaProps) {
       (
         id: number,
         value: number,
-        field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order',
+        field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order'
       ) => props.onChange?.(id, value, field),
-      250,
+      250
     ),
-    [props.onChange],
+    [props.onChange]
   );
 
   const groupedIds = useMemo(
@@ -76,15 +76,15 @@ export default function SortableArea(props: SortableAreaProps) {
           return !item?.isHidden || (editMode && !activateSort);
         })
         .reduce((acc, cur, i) => {
-          const itemSize = dimensions && dimensions.borderBox.width >= 768 ? 160 : 110;
-          const groupSize = dimensions ? Math.floor(dimensions.borderBox.width / itemSize) : 8;
+          const itemSize = dimensions && dimensions.width >= 768 ? 182 : 124;
+          const groupSize = dimensions ? Math.floor(dimensions.width / itemSize) : 8;
 
           const groupIndex = Math.floor(i / groupSize);
           if (!acc[groupIndex]) acc[groupIndex] = [];
           acc[groupIndex].push(cur);
           return acc;
         }, [] as number[][]),
-    [ids, editMode, dimensions?.borderBox.width],
+    [ids, editMode, dimensions?.width]
   );
 
   return (

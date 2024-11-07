@@ -53,7 +53,7 @@ export async function middleware(request: NextRequest) {
     return response;
 
   const redirectResponse = NextResponse.redirect(
-    new URL(`/${locale}${request.nextUrl.pathname}${request.nextUrl.search}`, request.url),
+    new URL(`/${locale}${request.nextUrl.pathname}${request.nextUrl.search}`, request.url)
   );
 
   redirectResponse.cookies.set(cookies);
@@ -100,9 +100,7 @@ const apiMiddleware = async (request: NextRequest) => {
 
   // Rate limit
   const ip =
-    requestIp.getClientIp(request as any) ||
-    request.ip ||
-    request.headers.get('X-Forwarded-For')?.split(',')[0];
+    requestIp.getClientIp(request as any) || request.headers.get('X-Forwarded-For')?.split(',')[0];
 
   if (!ip) {
     return NextResponse.next();
@@ -147,7 +145,7 @@ const checkSessionLocal = async (jwt: string) => {
     | undefined;
   if (!cacheKeys || cacheKeys.revalidate < Date.now()) {
     const res = await fetch(
-      'https://www.googleapis.com/identitytoolkit/v3/relyingparty/publicKeys',
+      'https://www.googleapis.com/identitytoolkit/v3/relyingparty/publicKeys'
     );
     const JWKS = await res.json();
     cacheKeys = { keys: undefined, revalidate: 0 };

@@ -1,6 +1,6 @@
 import { useMemo, useRef } from 'react';
 import { ItemData } from '../../types';
-import { Flex, useDimensions } from '@chakra-ui/react';
+import { Flex, useSize } from '@chakra-ui/react';
 import { ViewportList } from 'react-viewport-list';
 import ItemCard from '../Items/ItemCard';
 
@@ -13,20 +13,21 @@ type VirtualizedItemListProps = {
 export const VirtualizedItemList = (props: VirtualizedItemListProps) => {
   const { items, sortType } = props;
   const elementRef = useRef(null);
-  const dimensions = useDimensions(elementRef, true);
+  const dimensions = useSize(elementRef, { observeMutation: true });
 
   const groupedItems = useMemo(
     () =>
       (items ?? []).reduce((acc, cur, i) => {
-        const itemSize = dimensions && dimensions.borderBox.width >= 768 ? 160 : 110;
-        const groupSize = dimensions ? Math.floor(dimensions.borderBox.width / itemSize) : 8;
-
+        console.log(dimensions?.width);
+        const itemSize = dimensions && dimensions.width >= 768 ? 182 : 124;
+        const groupSize = dimensions ? Math.floor(dimensions.width / itemSize) : 8;
+        console.log(groupSize);
         const groupIndex = Math.floor(i / groupSize);
         if (!acc[groupIndex]) acc[groupIndex] = [];
         acc[groupIndex].push(cur);
         return acc;
       }, [] as ItemData[][]),
-    [items, dimensions?.borderBox.width],
+    [items, dimensions?.width]
   );
 
   return (

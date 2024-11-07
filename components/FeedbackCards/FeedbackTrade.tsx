@@ -258,7 +258,7 @@ const ItemTrade = (props: ItemTradeProps) => {
           isOpen={isOpen}
           onClose={closeModal}
           useShortcuts={props.useShortcuts}
-          finalRef={ref}
+          finalRef={ref as any}
         />
       )}
       <Flex gap={3}>
