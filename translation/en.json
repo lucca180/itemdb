@@ -959,5 +959,12 @@
     "empty-msg": "We couldn't find any items with these effects :(",
     "item-effect-hub": "Item Effect Hub",
     "cta": "Find every item that can change your neopet's stats, cure diseases (or cause them!), heal HP, and more!"
+  },
+  "SiteAlert": {
+    "hpd": "Half Price Day - All Neopian Shops are 50% off today. Check out our <Link>Restocking Guide</Link> and make a big profit!",
+    "tyrannian-victory": "Tyrannian Victory Day - All <Link>Tyrannian Shops</Link> with 80% off (except Ugga Shinies)",
+    "usuki-day": "Usuki Day - <Link>Usukiland</Link> with 66.6% off",
+    "faerie-festival": "Faerie Festival - <Link>Faerieland Shops</Link> with 50% off (except Faerie Furniture and Faerie Weapon)",
+    "halloween": "Halloween - <Link>Haunted Woods Shops</Link> with 50% off (except Neovia)"
   }
 }

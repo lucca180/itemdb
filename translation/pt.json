@@ -960,5 +960,12 @@
     "empty-msg": "Não encontramos nenhum item com esses efeitos :(",
     "item-effect-hub": "Central de Efeitos de Itens",
     "cta": "Encontre todos os itens que podem alterar os stats do seu neopet, sarar doenças (ou causá-las!), curar HP e muito mais!"
+  },
+  "SiteAlert": {
+    "hpd": "Dia da Metade do Preço - Todas as Lojas Neopianas estão com 50% off hoje. Dê uma olhada no nosso <Link>Guia de Restock</Link> e tenha muito lucro!",
+    "tyrannian-victory": "Dia da Vitória Tyranniana - Todas as <Link>Lojas de Tyranniana</Link> com 80% de desconto (exceto Ugga Shinies)",
+    "usuki-day": "Dia de Usuki - <Link>Usukiland</Link> com 66,6% de desconto",
+    "faerie-festival": "Festival das Fadas - <Link>Lojas do Mundo das Fadas</Link> com 50% de desconto (exceto Faerie Furniture e Faerie Weapon)",
+    "halloween": "Halloween - <Link>Lojas dos Bosques Assombrados</Link> com 50% de desconto (exceto Neovia)"
   }
 }
