@@ -75,16 +75,17 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
     .sort(
       (a, b) =>
         (itemData[a.item_iid].price.value ?? Infinity) -
-        (itemData[b.item_iid].price.value ?? Infinity),
+        (itemData[b.item_iid].price.value ?? Infinity)
     )
     .map((x) => x.item_iid);
 
   const colorChanges = rawData
     .filter((data) => data.colorTarget === colorTargetId && data.speciesTarget !== speciesTargetId)
+    .filter((data) => !(data.item_iid === 14488 && speciesTargetId === 7)) // remove orange paint brush from chias
     .sort(
       (a, b) =>
         (itemData[a.item_iid].price.value ?? Infinity) -
-        (itemData[b.item_iid].price.value ?? Infinity),
+        (itemData[b.item_iid].price.value ?? Infinity)
     )
     .map((x) => x.item_iid);
 
@@ -93,7 +94,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
     .sort(
       (a, b) =>
         (itemData[a.item_iid].price.value ?? Infinity) -
-        (itemData[b.item_iid].price.value ?? Infinity),
+        (itemData[b.item_iid].price.value ?? Infinity)
     )
     .map((x) => x.item_iid);
 
@@ -175,7 +176,7 @@ export const checkPetColorExists = async (colorTargetId: number, speciesTargetId
             headers: {
               'User-Agent': 'itemdb/1.0 (+https://itemdb.com.br)',
             },
-          },
+          }
         );
         if (!x.data) {
           return false;
