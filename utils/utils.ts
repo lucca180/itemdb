@@ -196,6 +196,7 @@ export const categoryToShopID: { [id: string]: string } = {
   'medieval food': '56',
   refreshments: '63',
 };
+
 export const shopIDToCategory: { [id: string]: string } = {
   '1': 'food',
   '2': 'magic item',
@@ -559,6 +560,20 @@ export const getRestockProfitOnDate = (item: ItemData, date: Date | number) => {
 };
 
 export const restockShopInfo: { [id: string]: ShopInfo } = {
+  '-1': {
+    name: 'Almost Abandoned Attic',
+    category: 'Other',
+    difficulty: 'Medium',
+    color: '#f4da18',
+    id: '-1',
+  },
+  '-2': {
+    name: 'Igloo Garage Sale',
+    category: 'Other',
+    difficulty: 'Medium',
+    color: '#f4da18',
+    id: '-2',
+  },
   '1': {
     name: 'Neopian Fresh Foods',
     category: 'Foods',

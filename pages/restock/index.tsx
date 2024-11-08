@@ -152,7 +152,9 @@ const RestockHub: NextPageWithLayout<any> = () => {
         {(selCats.length > 0 ? selCats : allCats).map((cat) => {
           const shops = Object.values(restockShopInfo).filter(
             (x) =>
-              (selDiff.length > 0 ? selDiff.includes(x.difficulty) : true) && x.category === cat
+              (selDiff.length > 0 ? selDiff.includes(x.difficulty) : true) &&
+              x.category === cat &&
+              Number(x.id) > 0
           );
           if (shops.length === 0) return null;
           return (

@@ -1,12 +1,15 @@
 // ==UserScript==
 // @name         itemdb - Restock Tracker
-// @version      1.0.8
+// @version      1.1.0
 // @author       itemdb
 // @namespace    itemdb
 // @description  Tracks your restock metrics
 // @website      https://itemdb.com.br
 // @match        *://*.neopets.com/objects.phtml*
 // @match        *://*.neopets.com/haggle.phtml*
+// @match        *://*.neopets.com/winter/igloo2.phtml*
+// @match        *://*.neopets.com/winter/process_igloo.phtml*
+// @match        *://*.neopets.com/halloween/garage.phtml*
 // @match        *://itemdb.com.br/*
 // @icon         https://itemdb.com.br/favicon.ico
 // @connect      itemdb.com.br
@@ -25,6 +28,7 @@
     refreshes: number[];
     items: {[restock_id: number]:{
       item_id: number;
+      stock_price: number;
       timestamp: number;
     }};
     clicks: {
@@ -33,6 +37,7 @@
       soldOut_timestamp: number | null;
       haggle_timestamp: number | null;
       buy_timestamp: number | null;
+      buy_price: number | null
     }[];
 
     version: number;
@@ -47,7 +52,7 @@ const SESSION_TIMEOUT = 60 // how many minutes since the last refresh to conside
 // ------------------------------------- //
  // this is used to expose functions to itemdb
 unsafeWindow.itemdb_restock = {
-  scriptVersion: 108,
+  scriptVersion: 110,
 };
 
 function getCurrentSessions() {
@@ -58,7 +63,7 @@ function getUnsyncSessions() {
   return GM_getValue('unsync_sessions', []); // restockSession[]
 }
 
-const CURRENT_MODEL_VERSION = 1;
+const CURRENT_MODEL_VERSION = 2;
 
 // function to check if the current url contains a word
 function URLHas(string) {
@@ -121,9 +126,12 @@ function handleGeneralShops() {
     const itemID = itemEl.dataset.link.match(/(?<=obj_info_id\=)\d+/)?.[0];
     const stockId = itemEl.dataset.link.match(/(?<=stock_id\=)\d+/)?.[0];
 
+    const price = itemEl.dataset.price.replace(/[^0-9]/g, '');
+
     if(!session.items[stockId]) session.items[stockId] = {
       item_id: itemID,
       timestamp: Date.now(),
+      stock_price: price
     };
   });  
 
@@ -155,6 +163,7 @@ function handleRestockHaggle(){
   const isHaggle = $('.haggleForm').length > 0;
   const isSoldOut = $('#container__2020').text().includes("SOLD OUT");
   const isBought = $('#container__2020').text().includes("added to your inventory");
+  const buyVal = $('#container__2020').text().match(/(?<=I accept your offer of\s)\d+(?=\sNeopoints)/)?.[0];
 
   const session = getSession(shopId);
   
@@ -168,6 +177,7 @@ function handleRestockHaggle(){
       soldOut_timestamp: null,
       haggle_timestamp: null,
       buy_timestamp: null,
+      buy_price: null
     };
 
     session.clicks.push(click);
@@ -184,6 +194,7 @@ function handleRestockHaggle(){
 
   if(isBought) {
     click.buy_timestamp = Date.now();
+    click.buy_price = buyVal;
   }
 
   if(!isBought || !isSoldOut) {
@@ -199,6 +210,166 @@ function handleRestockHaggle(){
   current_sessions[shopId] = session;
 
   GM_setValue('current_sessions', current_sessions);
+}
+
+function handleIgloo() {
+  const shopID = '-2';
+  const items = $('form[name="items_for_sale"] td')
+  const session = getSession(shopID);
+  console.log(session)
+
+  items.each(function (i) {
+    const itemData = $(this).find('a');
+    const itemEl = itemData[0];
+    const itemID = itemEl.href.match(/(?<=obj_info_id\=)\d+/)?.[0];
+    const price = $(this).text().match(/(?<=Cost\s*:\s*)[\d,]+/)?.[0];
+    // const timestamp in 5 min intervals
+    const stockId = Math.round(Date.now()/(1000 * 60 * 5)) + Number(itemID);
+
+    if(!session.items[stockId]) session.items[stockId] = {
+      item_id: itemID,
+      timestamp: Date.now(),
+      stock_price: price
+    };
+  });
+
+  const lastRefresh = Date.now();
+  session.refreshes.push(lastRefresh);
+  session.lastRefresh = lastRefresh;
+
+  let current_sessions = getCurrentSessions();
+  current_sessions[shopID] = session;
+  GM_setValue('current_sessions', current_sessions);
+}
+
+function handleIglooHaggle() {
+  let url = window.location.href;
+  if(!url.includes("obj_info_id")) url = document.referrer;
+  
+  const shopId = "-2";
+  const session = getSession(shopId);
+
+  let id = url.match(/(?<=obj_info_id\=)\d+/)?.[0];
+  let stockId = Math.round(Date.now()/(1000 * 60 * 5)) + Number(id);
+  
+  const sessionItem = session.items[stockId];
+
+  const isBought = document.querySelector("body > center > p").textContent.includes("Thanks for buying")
+  const isSoldOut = document.querySelector("body > center > p").textContent.includes("Sorry, we dont have any more of those left :(");
+
+  if(!isBought && !isSoldOut) return;
+
+  const buyVal = sessionItem?.stock_price || null;
+  
+  let click = {
+    item_id: id,
+    restock_id: stockId,
+    soldOut_timestamp: null,
+    haggle_timestamp: null,
+    buy_timestamp: null,
+    buy_price: null
+  };
+
+  session.clicks.push(click);
+
+  let clickIndex = session.clicks.length - 1;
+  
+  if(isSoldOut) {
+    click.soldOut_timestamp = Date.now();
+  }
+
+  if(isBought) {
+    click.buy_timestamp = Date.now();
+    click.buy_price = buyVal;
+  }
+
+  session.clicks[clickIndex] = click;
+
+  let current_sessions = getCurrentSessions();
+  current_sessions[shopId] = session;
+
+  GM_setValue('current_sessions', current_sessions);
+}
+
+function handleAttic() {
+  const shopID = '-1';
+  const items = $('#items li')
+  const session = getSession(shopID);
+  console.log(session);
+  const date = Math.round(Date.now()/(1000 * 60 * 5))
+
+  items.each(function (i) {
+    const itemData = $(this);
+    const itemID = itemData.attr('oii');
+    const price =  itemData.attr('oprice').replace(/[^0-9]/g, '');
+
+    // const timestamp in 5 min intervals
+    const stockId = date + Number(itemID);
+
+    if(!session.items[stockId]) session.items[stockId] = {
+      item_id: itemID,
+      timestamp: Date.now(),
+      stock_price: price
+    };
+  });
+
+  $('#frm-abandoned-attic').on('submit', function() {
+    console.log('submit')
+    const itemID = $("#oii").val();
+    const stockId = date + Number(itemID);
+    const price = $(`#items li[oii="${itemID}"]`).attr('oprice').replace(/[^0-9]/g, '');
+
+    const click = {
+      item_id: itemID,
+      restock_id: stockId,
+      soldOut_timestamp: null,
+      haggle_timestamp: null,
+      buy_timestamp: null,
+      buy_price: price
+    };
+
+    setLastClick(shopID, click);
+  });
+
+  const lastRefresh = Date.now();
+  session.refreshes.push(lastRefresh);
+  session.lastRefresh = lastRefresh;
+  
+  handleAtticClick(session);
+  let current_sessions = getCurrentSessions();
+  current_sessions[shopID] = session;
+  GM_setValue('current_sessions', current_sessions);
+}
+
+const handleAtticClick = (session) => {
+  const shopID = '-1';
+  let click = getLastClick(shopID);
+
+  if(!click || $(".errorOuter").length > 0) return false;
+  console.log('hasLastClick', click);
+  const isBought = $('p:contains("Take good care of it, I have placed it in your inventory!")').length > 0;
+  const isSoldOut = $('p:contains("Sorry, we just sold out of that.")').length > 0;
+
+  if(!isBought && !isSoldOut) {
+    setLastClick(shopID, null);
+    return false;
+  }
+
+  session.clicks.push(click);
+  let clickIndex = session.clicks.length - 1;
+
+  if(isBought) {
+    click.buy_timestamp = Date.now();
+  }
+  else {
+    click.soldOut_timestamp = Date.now();
+    click.buy_price = null;
+  }
+
+  session.clicks[clickIndex] = click;
+
+  setLastClick(shopID, null);
+  return true;
 }
 
 function getSessions() {
@@ -232,4 +403,8 @@ unsafeWindow.itemdb_restock.cleanAll = cleanAll;
 
 if (URLHas('obj_type')) handleGeneralShops();
 if (URLHas('haggle.phtml')) handleRestockHaggle();
+if (URLHas('igloo2.phtml')) handleIgloo();
+if (URLHas('process_igloo.phtml')) handleIglooHaggle();
+if (URLHas('garage.phtml')) handleAttic();
+
 if (URLHas('idb_clear')) cleanAll();

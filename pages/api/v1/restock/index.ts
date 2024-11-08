@@ -90,7 +90,11 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       return res.status(400).json({ error: 'Bad Request' });
 
     const sessions: Prisma.RestockSessionCreateManyInput[] = sessionList.map((session) => {
-      if (isNaN(Number(session.shopId))) throw new Error('Invalid shopId');
+      if (isNaN(Number(session.shopId))) {
+        if ((session.shopId as any) === 'attic') session.shopId = -1;
+        else if ((session.shopId as any) === 'igloo') session.shopId = -2;
+        else throw new Error('Invalid shopId');
+      }
       return {
         user_id: user.id,
         modelVersion: session.version,
@@ -122,7 +126,7 @@ export const calculateStats = async (
     endedAt: Date;
     shop_id: number;
     sessionText: string | null;
-  }[],
+  }[]
 ): Promise<[RestockStats, RestockChart]> => {
   const stats: RestockStats = JSON.parse(JSON.stringify(defaultStats));
   const sessions: RestockSession[] = [];
@@ -154,7 +158,7 @@ export const calculateStats = async (
 
     const duration = differenceInMilliseconds(
       new Date(rawSession.endedAt),
-      new Date(rawSession.startedAt),
+      new Date(rawSession.startedAt)
     );
     stats.durationCount += duration;
     allShops[rawSession.shop_id] = allShops[rawSession.shop_id]
@@ -167,7 +171,7 @@ export const calculateStats = async (
     session.refreshes.map((x, i) => {
       if (i === 0) return;
       sessionRefreshTime.push(
-        differenceInMilliseconds(new Date(x), new Date(session.refreshes[i - 1])),
+        differenceInMilliseconds(new Date(x), new Date(session.refreshes[i - 1]))
       );
     });
 
@@ -180,7 +184,7 @@ export const calculateStats = async (
       const time = click.haggle_timestamp || click.soldOut_timestamp;
       if (!item || !time) return;
       sessionReactionTime.push(
-        Math.abs(differenceInMilliseconds(new Date(time), new Date(item.timestamp))),
+        Math.abs(differenceInMilliseconds(new Date(time), new Date(item.timestamp)))
       );
     });
 
@@ -192,10 +196,10 @@ export const calculateStats = async (
 
     allItems.push(...Object.values(session.items));
     Object.values(session.items).map((x) =>
-      x.item_id ? allItemsID.add(x.item_id.toString()) : null,
+      x.item_id ? allItemsID.add(x.item_id.toString()) : null
     );
     Object.values(session.clicks).map((x) =>
-      x.item_id ? allItemsID.add(x.item_id.toString()) : null,
+      x.item_id ? allItemsID.add(x.item_id.toString()) : null
     );
 
     const date = formatDate(session.startDate);
@@ -208,7 +212,7 @@ export const calculateStats = async (
   });
 
   const morePopularShop = Object.keys(allShops).reduce((a, b) =>
-    allShops[a] > allShops[b] ? a : b,
+    allShops[a] > allShops[b] ? a : b
   );
   stats.mostPopularShop = {
     shopId: parseInt(morePopularShop),
@@ -266,11 +270,11 @@ export const calculateStats = async (
         const date = formatDate(click.buy_timestamp);
         revenuePerDay[date] = revenuePerDay[date]
           ? revenuePerDay[date] + (item.price.value ?? 0)
-          : (item.price.value ?? 0);
+          : item.price.value ?? 0;
 
         const time = differenceInMilliseconds(
           new Date(click.buy_timestamp),
-          new Date(restockItem.timestamp),
+          new Date(restockItem.timestamp)
         );
 
         if (!restockItem.notTrust) {
@@ -299,7 +303,7 @@ export const calculateStats = async (
           const date = formatDate(click.soldOut_timestamp);
           lostPerDay[date] = lostPerDay[date]
             ? lostPerDay[date] + (item.price.value ?? 0)
-            : (item.price.value ?? 0);
+            : item.price.value ?? 0;
         }
 
         stats.mostExpensiveLost =
@@ -338,7 +342,7 @@ export const calculateStats = async (
     .sort(
       (a, b) =>
         (getRestockProfitOnDate(a.item, a.click.buy_timestamp!) ?? 0) -
-        (getRestockProfitOnDate(b.item, b.click.buy_timestamp!) ?? 0),
+        (getRestockProfitOnDate(b.item, b.click.buy_timestamp!) ?? 0)
     )
     .splice(0, 10);
 
@@ -430,7 +434,7 @@ const removeDuplicatedSessions = (
     endedAt: Date;
     shop_id: number;
     sessionText: string | null;
-  }[],
+  }[]
 ) => {
   // if a session has the same start date and shop id, remove the smaller lastRefres
   const sessionMap: {

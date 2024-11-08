@@ -302,6 +302,8 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 
   if (!shopInfo) return { notFound: true };
 
+  if (Number(shopInfo.id) < 0) return { notFound: true };
+
   const props: RestockShopPageProps = {
     shopInfo: shopInfo,
     messages: (await import(`../../../translation/${context.locale}.json`)).default,
