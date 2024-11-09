@@ -76,7 +76,7 @@ export default function SortableArea(props: SortableAreaProps) {
           return !item?.isHidden || (editMode && !activateSort);
         })
         .reduce((acc, cur, i) => {
-          const itemSize = dimensions && dimensions.width >= 768 ? 182 : 124;
+          const itemSize = dimensions && dimensions.width >= 768 ? 162 : 112;
           const groupSize = dimensions ? Math.floor(dimensions.width / itemSize) : 8;
 
           const groupIndex = Math.floor(i / groupSize);

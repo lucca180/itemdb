@@ -1,6 +1,6 @@
 import { useMemo, useRef } from 'react';
 import { ItemData } from '../../types';
-import { Flex, useSize } from '@chakra-ui/react';
+import { Box, Flex, useSize } from '@chakra-ui/react';
 import { ViewportList } from 'react-viewport-list';
 import ItemCard from '../Items/ItemCard';
 
@@ -19,7 +19,7 @@ export const VirtualizedItemList = (props: VirtualizedItemListProps) => {
     () =>
       (items ?? []).reduce((acc, cur, i) => {
         console.log(dimensions?.width);
-        const itemSize = dimensions && dimensions.width >= 768 ? 182 : 124;
+        const itemSize = dimensions && dimensions.width >= 768 ? 162 : 112;
         const groupSize = dimensions ? Math.floor(dimensions.width / itemSize) : 8;
         console.log(groupSize);
         const groupIndex = Math.floor(i / groupSize);
@@ -32,9 +32,10 @@ export const VirtualizedItemList = (props: VirtualizedItemListProps) => {
 
   return (
     <Flex px={[1, 3]} flexFlow="column" gap={3}>
+      <Box ref={elementRef} w={'100%'} h={'1px'}></Box>
       <ViewportList items={groupedItems} viewportRef={null} initialPrerender={4} overscan={2}>
         {(group, index) => (
-          <Flex ref={elementRef} gap={[1, 3]} key={index} justifyContent="center" flexWrap={'wrap'}>
+          <Flex gap={[1, 3]} key={index} justifyContent="center" flexWrap={'wrap'}>
             {group.map((item) => (
               <ItemCard
                 highlight={props.highlightList?.includes(item.internal_id)}
