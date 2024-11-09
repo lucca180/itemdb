@@ -258,7 +258,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
           flex="1"
           maxW={{ base: '100vh', md: '275px' }}
           w={{ base: '100%', md: 'auto' }}
-          minW="200px"
+          minW={{ base: '200px', lg: '275px' }}
           flexFlow="column"
           gap={5}
         >
@@ -282,11 +282,12 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
         <Flex
           flex="3"
           gap={{ base: 4, md: 6 }}
-          flexFlow={{ base: 'column', lg: 'row' }}
+          flexDir={{ base: 'column', lg: 'row' }}
           maxW={{ base: '100vh', md: 'none' }}
           w={{ base: '100%', md: 'auto' }}
+          flexWrap="wrap"
         >
-          <Flex flex="2" flexFlow="column" gap={{ base: 4, md: 6 }}>
+          <Flex flex="2" flexFlow="column" gap={{ base: 4, md: 6 }} maxW="785px">
             {user && user.isAdmin && <ManualCheckCard item={item} />}
             {item.isMissingInfo && <MissingInfoCard />}
 
