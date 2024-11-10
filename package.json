@@ -29,6 +29,7 @@
     "@google-cloud/storage": "^7.13.0",
     "@hello-pangea/color-picker": "^3.2.2",
     "@hugocxl/react-to-image": "^0.0.9",
+    "@json2csv/node": "^7.0.6",
     "@napi-rs/canvas": "^0.1.58",
     "@prisma/client": "^5.22.0",
     "@sendgrid/mail": "^8.1.4",

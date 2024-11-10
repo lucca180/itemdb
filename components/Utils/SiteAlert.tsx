@@ -75,6 +75,17 @@ const alerts = {
     bg: 'red.900',
     color: 'whiteAlpha.900',
   },
+  weeklyQuests: {
+    message: 'SiteAlert.quest-log',
+    link: '/tools/data-collecting',
+    img: {
+      src: 'https://images.neopets.com/quests/images/CompletedQuest.png',
+      h: 28,
+      w: 28,
+    },
+    bg: '#b4ff53c7',
+    color: 'blackAlpha.900',
+  },
 };
 
 export const SiteAlert = () => {
@@ -114,6 +125,9 @@ export const SiteAlert = () => {
 
 const getAlert = () => {
   const todayNST = getDateNST();
+
+  if (todayNST.getTime() > 1731337200000 && todayNST.getTime() < 1732028400000)
+    return alerts.weeklyQuests;
 
   if (todayNST.getDate() === 3) return alerts.hpd;
   else if (todayNST.getMonth() === 4 && todayNST.getDate() === 12) return alerts.tyrannia;

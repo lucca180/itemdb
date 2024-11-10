@@ -9,6 +9,7 @@ import {
   FormLabel,
   Button,
   useToast,
+  Box,
 } from '@chakra-ui/react';
 import HeaderCard from '../../components/Card/HeaderCard';
 import Layout from '../../components/Layout';
@@ -22,20 +23,27 @@ import { getCookie } from 'cookies-next';
 import { NextPageContext, NextApiRequest } from 'next';
 import { CheckAuth } from '../../utils/googleCloud';
 
-const DATA_COLLECTING_OPTIONS = [
-  {
+const DATA_COLLECTING_OPTIONS: {
+  [id: string]: {
+    name: string;
+    id: string;
+    multiple: boolean;
+    description: string;
+  };
+} = {
+  dailyQuests: {
     name: 'Daily Quests',
     id: 'dailyQuests',
     multiple: true,
-    description: "We're seeking data from your daily quests item prizes!",
+    description: 'We are collecting data on the new Daily Rewards in the Quest Log.',
   },
-  {
+  weeklyQuests: {
     name: 'Weekly Quests',
     id: 'weeklyQuests',
     multiple: true,
-    description: "We're seeking data from your Weekly Quests item prizes!",
+    description: 'We are collecting data on the new Weekly Rewards in the Quest Log.',
   },
-];
+};
 
 const DataCollectingPage = () => {
   const t = useTranslations();
@@ -81,7 +89,10 @@ const DataCollectingPage = () => {
         color="#b4ff53"
       >
         <Heading size="lg">Data Collecting Tool</Heading>
-        <Text size={{ base: 'sm', md: undefined }}></Text>
+        <Text size={{ base: 'sm', md: undefined }}>
+          This tool is designed to help us collect certain data that we can&apos;t capture
+          automatically (mostly some prize pools)
+        </Text>
       </HeaderCard>
       <Flex justifyContent={'space-between'} w={'100%'} gap={8}>
         <Flex flexFlow={'column'} w="100%" maxW={'500px'}>
@@ -94,7 +105,7 @@ const DataCollectingPage = () => {
               value={type}
             >
               <option value="">Select Type</option>
-              {DATA_COLLECTING_OPTIONS.map((option) => (
+              {Object.values(DATA_COLLECTING_OPTIONS).map((option) => (
                 <option key={option.id} value={option.id}>
                   {option.name}
                 </option>
@@ -105,34 +116,54 @@ const DataCollectingPage = () => {
               future!
             </FormHelperText>
           </FormControl>
-          <FormControl my={5}>
+          <Box my={5}>
             <FormLabel>Item</FormLabel>
             <ItemSelect isDisabled={!type} onChange={onChange} />
-          </FormControl>
+          </Box>
+          <Center mt={4} gap={3}>
+            <Button
+              disabled={!itemList.length}
+              colorScheme="gray"
+              variant="ghost"
+              onClick={() => setItemList([])}
+            >
+              Clear
+            </Button>
+            <Button
+              disabled={!itemList.length}
+              colorScheme="green"
+              variant="ghost"
+              onClick={submit}
+            >
+              Submit
+            </Button>
+          </Center>
         </Flex>
-        <Flex flexFlow="column" w={'100%'} borderRadius={'md'} bg="blackAlpha.500" p={3} gap={3}>
-          {!!itemList.length && (
-            <>
-              <Flex gap={3} flexWrap={'wrap'} justifyContent={'center'}>
-                {itemList.map((item) => (
-                  <ItemCard key={item.internal_id} item={item} small />
-                ))}
-              </Flex>
-              <Center mt={8} gap={3}>
-                <Button colorScheme="gray" variant="ghost" onClick={() => setItemList([])}>
-                  Clear
-                </Button>
-                <Button colorScheme="green" variant="ghost" onClick={submit}>
-                  Submit
-                </Button>
+        <Flex flexFlow="column" w={'100%'}>
+          <Flex flexFlow="column" mb={3}>
+            <Heading as="h3" size="md" textAlign={'center'}>
+              {DATA_COLLECTING_OPTIONS[type]?.name}
+            </Heading>
+            <Text fontSize={'sm'} textAlign={'center'}>
+              {DATA_COLLECTING_OPTIONS[type]?.description}
+            </Text>
+          </Flex>
+          <Flex flex={1} borderRadius={'md'} bg="blackAlpha.500" p={3} gap={3}>
+            {!!itemList.length && (
+              <>
+                <Flex gap={3} flexWrap={'wrap'} justifyContent={'center'}>
+                  {itemList.map((item) => (
+                    <ItemCard key={item.internal_id} item={item} small />
+                  ))}
+                </Flex>
+              </>
+            )}
+            {!itemList.length && (
+              <Center flex="1">
+                <Text color="gray.400">No items selected</Text>
               </Center>
-            </>
-          )}
-          {!itemList.length && (
-            <Center flex="1">
-              <Text color="gray.400">No items selected</Text>
-            </Center>
-          )}
+            )}
+          </Flex>
         </Flex>
       </Flex>
     </>
