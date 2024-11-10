@@ -1,16 +1,17 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.6.0
+// @version      1.7.0
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
 // @website      https://itemdb.com.br
 // @match        *://*.neopets.com/*
+// @match        *://*.itemdb.com.br/*
 // @exclude      *://*.neopets.com/login/*
 // @exclude      *://*.nc.neopets.com/*
 // @exclude      *://*images.neopets.com/*
 // @icon         https://itemdb.com.br/favicon.ico
-// @require      https://raw.githubusercontent.com/lucca180/itemdb/bcf2c9c233924ce1c1a79d10db2204e76411615e/userscripts/hash.min.js#sha256-i7GklRMhg+TgHM8PofRiixnWfHWzHV57Yg7j9cjE6R8=
+// @require      https://raw.githubusercontent.com/lucca180/itemdb/1c597aecbc6b9e702df2c3aabaa903e76c047d98/userscripts/hash.min.js#sha256-0arjqIu/NuIwHhYsalqVhJLChC3Qau3cACKSENtp1yY=
 // @connect      itemdb.com.br
 // @connect      neopets.com
 // @grant        GM_xmlhttpRequest
@@ -828,11 +829,11 @@ const itemdb_script = function() {
   function handleAuctionPrices() {
     let auctions;
 
-    if (URLHas('genie.phtml')) auctions = $('.content > table tr').clone().slice(1);
+    if (URLHas('genie.phtml')) auctions = $('.content > p > table tr').clone().slice(1);
 
     if (URLHas('auctions.phtml')) auctions = $('.content > center table tr').clone().slice(1);
 
-    auctions.each(function (i) {
+    auctions.each(function (i) {  
       const tds = $(this).find('td');
       const auction_id = tds
         .eq(1)
@@ -1334,3 +1335,9 @@ function watchFetchItemRequests(paramName) {
 if (URLHas('petlookup.phtml')) watchItemRequests('viewdata');
 if (URLHas('/stylingchamber/')) watchFetchItemRequests('userStyles');
 if (URLHas('customise')) watchItemRequests('editordata');
+
+// for troubleshooting use
+unsafeWindow.itemdb_script = {
+  version: GM_info.script.version,
+  versionCode: Number(GM_info.script.version.replaceAll(".", ""))
+}
