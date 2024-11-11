@@ -94,7 +94,12 @@ const DataCollectingPage = () => {
           automatically (mostly some prize pools)
         </Text>
       </HeaderCard>
-      <Flex justifyContent={'space-between'} w={'100%'} gap={8}>
+      <Flex
+        flexFlow={{ base: 'column-reverse', md: 'row' }}
+        justifyContent={'space-between'}
+        w={'100%'}
+        gap={8}
+      >
         <Flex flexFlow={'column'} w="100%" maxW={'500px'}>
           <FormControl my={5}>
             <FormLabel>Type</FormLabel>
