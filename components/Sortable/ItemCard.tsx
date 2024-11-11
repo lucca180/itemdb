@@ -16,7 +16,7 @@ import {
   VStack,
   Box,
 } from '@chakra-ui/react';
-import { useInView } from 'react-intersection-observer';
+// import { useInView } from 'react-intersection-observer';
 import { useTranslations } from 'next-intl';
 
 type Props = {
@@ -42,7 +42,7 @@ function SortableItem1(props: Props) {
   const { id, item, editMode, isTrading, selected, sortType } = props;
   const [itemInfo, setItemInfo] = useState<ListItemInfo | undefined>(props.itemInfo);
   const [isSelected, setSelected] = useState<boolean>(selected ?? false);
-  const { ref: inViewRef, inView } = useInView();
+  // const { ref: inViewRef, inView } = useInView();
 
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: props.id,
@@ -89,22 +89,25 @@ function SortableItem1(props: Props) {
   const setRefs = useCallback(
     (node: HTMLElement | null) => {
       ref.current = node;
-      inViewRef(node);
+      // inViewRef(node);
       setNodeRef(node);
     },
-    [inViewRef, setNodeRef]
+    [
+      // inViewRef,
+      setNodeRef,
+    ]
   );
 
   if (!editMode && itemInfo?.isHidden) return null;
 
-  if (!inView)
-    return (
-      <VStack mb={3} ref={setRefs} style={style} {...attributes} {...listeners}>
-        <Box style={{ height: '100%' }}>
-          <ItemCard item={item} sortType={sortType} disablePrefetch />
-        </Box>
-      </VStack>
-    );
+  // if (!inView)
+  //   return (
+  //     <VStack mb={3} ref={setRefs} style={style} {...attributes} {...listeners}>
+  //       <Box style={{ height: '100%' }}>
+  //         <ItemCard item={item} sortType={sortType} disablePrefetch />
+  //       </Box>
+  //     </VStack>
+  //   );
 
   return (
     <VStack

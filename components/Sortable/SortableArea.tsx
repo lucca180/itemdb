@@ -15,7 +15,7 @@ import { ListItemInfo, ItemData, UserList } from '../../types';
 import { SortableItem } from './ItemCard';
 import debounce from 'lodash/debounce';
 import { ViewportList } from 'react-viewport-list';
-import { Flex, useSize } from '@chakra-ui/react';
+import { Box, Flex, useSize } from '@chakra-ui/react';
 
 export type SortableAreaProps = {
   ids: number[];
@@ -76,7 +76,12 @@ export default function SortableArea(props: SortableAreaProps) {
           return !item?.isHidden || (editMode && !activateSort);
         })
         .reduce((acc, cur, i) => {
-          const itemSize = dimensions && dimensions.width >= 768 ? 162 : 112;
+          const itemSizeMap = {
+            sm: editMode ? 162 : 112,
+            md: editMode ? 162 : 162,
+          };
+
+          const itemSize = dimensions && dimensions.width >= 768 ? itemSizeMap.md : itemSizeMap.sm;
           const groupSize = dimensions ? Math.floor(dimensions.width / itemSize) : 8;
 
           const groupIndex = Math.floor(i / groupSize);
@@ -94,16 +99,11 @@ export default function SortableArea(props: SortableAreaProps) {
       onDragEnd={handleDragEnd}
       onDragStart={handleDragStart}
     >
+      <Box w="100%" ref={elementRef} h="1px"></Box>
       <SortableContext items={ids} disabled={!activateSort} strategy={rectSortingStrategy}>
         <ViewportList items={groupedIds} viewportRef={null} initialPrerender={4} overscan={2}>
           {(group, index) => (
-            <Flex
-              ref={elementRef}
-              gap={[1, 3]}
-              key={index}
-              justifyContent="center"
-              flexWrap={'wrap'}
-            >
+            <Flex gap={[1, 3]} key={index} justifyContent="center" flexWrap={'wrap'}>
               {group.map((id) => (
                 <SortableItem
                   key={id}
