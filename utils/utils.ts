@@ -1596,6 +1596,7 @@ export const allNeopetsColors: { [id: string]: string } = {
   '116': 'Sroom',
   '117': 'Potato',
   '118': 'Banana',
+  '120': '25th Anniversary',
 };
 export const allSpecies: { [id: string]: string } = {
   '1': 'Acara',
