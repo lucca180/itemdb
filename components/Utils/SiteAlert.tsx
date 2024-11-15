@@ -86,6 +86,17 @@ const alerts = {
     bg: '#b4ff53c7',
     color: 'blackAlpha.900',
   },
+  anniversary: {
+    message: 'SiteAlert.anniversary',
+    link: '/tools/data-collecting',
+    img: {
+      src: 'https://images.neopets.com/themes/h5/basic/images/birthday25-icon.png',
+      h: 28,
+      w: 28,
+    },
+    bg: '#53ffffc7',
+    color: 'blackAlpha.900',
+  },
 };
 
 export const SiteAlert = () => {
@@ -102,6 +113,7 @@ export const SiteAlert = () => {
         gap={1}
         fontSize={'xs'}
         minH={'30px'}
+        px={1}
       >
         {alert.img && (
           <Link as={NextLink} href={alert.link}>
@@ -126,7 +138,7 @@ export const SiteAlert = () => {
 const getAlert = () => {
   const todayNST = getDateNST();
 
-  // if (todayNST.getTime() < 1732028400000) return alerts.weeklyQuests;
+  if (todayNST.getTime() < 1732028400000) return alerts.anniversary;
 
   if (todayNST.getDate() === 3) return alerts.hpd;
   else if (todayNST.getMonth() === 4 && todayNST.getDate() === 12) return alerts.tyrannia;

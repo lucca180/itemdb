@@ -43,6 +43,12 @@ const DATA_COLLECTING_OPTIONS: {
     multiple: true,
     description: 'We are collecting data on the new Weekly Rewards in the Quest Log.',
   },
+  wheelOfCelebration: {
+    name: 'Wheel of Celebration',
+    id: 'wheelOfCelebration',
+    multiple: true,
+    description: 'We are collecting data on the new Wheel of Celebration prizes.',
+  },
 };
 
 const DataCollectingPage = () => {
