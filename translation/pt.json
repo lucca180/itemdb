@@ -6,7 +6,7 @@
     "latest-prices": "Últimos Preços",
     "latest-discoveries": "Últimas Descobertas",
     "trending-items": "Itens Populares",
-    "latest-owls": "Owls",
+    "latest-owls": "Novidades no Owls",
     "hottest-restock": "Melhores Restocks",
     "hottest-restock-period": "",
     "stats": "Estatísticas",
@@ -14,7 +14,8 @@
     "seo-description": "Encontre todas as informações que você precisa sobre itens de Neopets em um só lugar! Descubra os preços mais recentes, descobertas, artigos e muito mais.",
     "new-in-nc-mall": "Novo no Centro NC",
     "is-it-safe": "É seguro?",
-    "leaving-nc-mall": "Deixando o Centro NC"
+    "leaving-nc-mall": "Deixando o Centro NC",
+    "featured-lists": "Listas em Destaque"
   },
   "BetaStats": {
     "items-in-db": "Itens no banco de dados",
@@ -399,7 +400,9 @@
     "x-minutes": "{x} minutos",
     "auction-house": "Casa de Leilões",
     "sending-dots": "Enviando...",
-    "thank-you": "Obrigado!"
+    "thank-you": "Obrigado!",
+    "learn-more": "Saiba Mais",
+    "view-all": "Ver Tudo"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",

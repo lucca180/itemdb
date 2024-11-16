@@ -31,7 +31,7 @@ import Image from 'next/image';
 import { useLists } from '../../utils/useLists';
 
 const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
-  () => import('../Modal/DuplicatedItemModal'),
+  () => import('../Modal/DuplicatedItemModal')
 );
 
 const CtxMenu = chakra(ContextMenu, {
@@ -89,6 +89,7 @@ type Props = {
   onListAction?: (item: ItemData, action: 'move' | 'delete') => any;
   onShow?: () => void;
   onHide?: () => void;
+  menuId?: string;
 };
 
 const ItemCtxMenu = (props: Props) => {
@@ -102,7 +103,7 @@ const ItemCtxMenu = (props: Props) => {
 
   const sortedLists = useMemo(() => [...lists].sort(SortListByChange), [lists]);
 
-  const { item, onListAction } = props;
+  const { item, menuId, onListAction } = props;
 
   const handleOpenInNewTab = () => {
     window.open('/item/' + item.slug, '_blank');
@@ -138,7 +139,7 @@ const ItemCtxMenu = (props: Props) => {
               item_iid: item.internal_id,
             },
           ],
-        },
+        }
       );
       if (res.data.success) {
         toast.update(toastId, {
@@ -181,7 +182,7 @@ const ItemCtxMenu = (props: Props) => {
         />
       )}
       <CtxMenu
-        id={item.internal_id.toString()}
+        id={menuId ?? item.internal_id.toString()}
         onShow={props.onShow}
         onHide={props.onHide}
         preventHideOnResize

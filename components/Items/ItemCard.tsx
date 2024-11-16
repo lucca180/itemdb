@@ -30,17 +30,13 @@ export type ItemProps = {
 const intl = new Intl.NumberFormat();
 
 const ItemCardBase = (props: ItemProps) => {
-  const t = useTranslations();
   const {
     item,
     isLoading,
     selected,
     disableLink,
-    capValue,
     quantity,
     small,
-    odds,
-    isLE,
     onListAction,
     sortType,
     disablePrefetch,
@@ -78,7 +74,12 @@ const ItemCardBase = (props: ItemProps) => {
 
   return (
     <>
-      <ItemCtxMenu item={item} onSelect={props.onSelect} onListAction={onListAction} />
+      <ItemCtxMenu
+        menuId={item.internal_id.toString()}
+        item={item}
+        onSelect={props.onSelect}
+        onListAction={onListAction}
+      />
       <CtxTrigger
         id={item.internal_id.toString()}
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -124,107 +125,12 @@ const ItemCardBase = (props: ItemProps) => {
             />
             <Text fontSize={{ base: 'xs', md: small ? 'xs' : 'sm' }}>{item.name}</Text>
 
-            {item.price.value && item.price.inflated && (
-              <Tooltip
-                label={t('General.inflation')}
-                aria-label="Inflation Tooltip"
-                placement="top"
-              >
-                <Badge colorScheme="red" whiteSpace="normal">
-                  <Icon as={AiFillWarning} verticalAlign="middle" /> {intl.format(item.price.value)}{' '}
-                  NP
-                </Badge>
-              </Tooltip>
-            )}
-
-            {item.price.value && !item.price.inflated && (
-              <Badge whiteSpace="normal">{intl.format(item.price.value)} NP</Badge>
-            )}
-
-            {item.type === 'np' && item.status === 'no trade' && <Badge>No Trade</Badge>}
-
-            {item.type === 'pb' && <Badge colorScheme="yellow">PB</Badge>}
-
-            {item.isNC &&
-              !capValue &&
-              (!item.owls ||
-                (isNaN(Number(item.owls.value.split('-')[0])) && !item.owls.buyable)) && (
-                <Badge colorScheme="purple">NC</Badge>
-              )}
-
-            {item.isNC &&
-              item.owls &&
-              !capValue &&
-              !item.owls.buyable &&
-              !isNaN(Number(item.owls.value.split('-')[0])) && (
-                <Badge colorScheme="purple" whiteSpace="normal">
-                  {item.owls.value} Owls
-                </Badge>
-              )}
-
-            {item.isNC && item.owls && !capValue && item.owls.buyable && (
-              <Badge colorScheme="purple" whiteSpace="normal">
-                {t('ItemPage.nc-buyable')}
-              </Badge>
-            )}
-
-            {item.isNC && Number(capValue) > 0 && (
-              <Tooltip
-                label="User Asking Price in GBCs - Not Official"
-                aria-label="Not Official NC Price Tooltip"
-                placement="top"
-              >
-                <Badge colorScheme="purple" whiteSpace="normal">
-                  <Icon as={AiFillInfoCircle} verticalAlign="middle" /> NC - {capValue} CAPS
-                </Badge>
-              </Tooltip>
-            )}
-
-            {!!odds && (
-              <Badge
-                colorScheme={isLE ? 'green' : 'white'}
-                whiteSpace="pre-wrap"
-                textAlign={'center'}
-              >
-                {isLE ? 'LE' : ''} {odds.toFixed(2)}%
-              </Badge>
-            )}
+            <ItemCardBadge {...props} profit={profit} />
 
             {(quantity ?? 0) > 1 && (
               <Text fontSize={'xs'} fontWeight="bold">
                 {quantity}x
               </Text>
-            )}
-
-            {sortType === 'profit' && !!profit && (
-              <>
-                {profit <= 1000 && (
-                  <>
-                    <Tooltip
-                      hasArrow
-                      label={
-                        profit > 0
-                          ? t('Restock.estimated-profit-is-less-than')
-                          : t('Restock.estimated-loss')
-                      }
-                      placement="top"
-                    >
-                      <Badge colorScheme="red" display="flex" alignItems={'center'} gap={1}>
-                        {intl.format(profit)} NP <MdHelp size={'0.7rem'} />
-                      </Badge>
-                    </Tooltip>
-                  </>
-                )}
-                {profit > 1000 && (
-                  <>
-                    <Tooltip hasArrow label={t('Restock.estimated-profit')} placement="top">
-                      <Badge colorScheme="green" display="flex" alignItems={'center'} gap={1}>
-                        {intl.format(profit)} NP <MdHelp size={'0.7rem'} />
-                      </Badge>
-                    </Tooltip>
-                  </>
-                )}
-              </>
             )}
 
             {['faerieFest', 'item_id', 'rarity'].includes(sortType ?? '') && (
@@ -246,3 +152,105 @@ const ItemCardBase = (props: ItemProps) => {
 const ItemCard = React.memo(ItemCardBase);
 
 export default ItemCard;
+
+type ItemCardBadgeProps = Pick<ItemProps, 'item' | 'capValue' | 'odds' | 'sortType' | 'isLE'> & {
+  profit?: number | null;
+};
+
+export const ItemCardBadge = (props: ItemCardBadgeProps) => {
+  const t = useTranslations();
+  const { item, capValue, odds, profit, isLE, sortType } = props;
+
+  if (!item) return null;
+
+  return (
+    <>
+      {item.price.value && item.price.inflated && (
+        <Tooltip label={t('General.inflation')} aria-label="Inflation Tooltip" placement="top">
+          <Badge colorScheme="red" whiteSpace="normal">
+            <Icon as={AiFillWarning} verticalAlign="middle" /> {intl.format(item.price.value)} NP
+          </Badge>
+        </Tooltip>
+      )}
+
+      {item.price.value && !item.price.inflated && (
+        <Badge whiteSpace="normal">{intl.format(item.price.value)} NP</Badge>
+      )}
+
+      {item.type === 'np' && item.status === 'no trade' && <Badge>No Trade</Badge>}
+
+      {item.type === 'pb' && <Badge colorScheme="yellow">PB</Badge>}
+
+      {item.isNC &&
+        !capValue &&
+        (!item.owls || (isNaN(Number(item.owls.value.split('-')[0])) && !item.owls.buyable)) && (
+          <Badge colorScheme="purple">NC</Badge>
+        )}
+
+      {item.isNC &&
+        item.owls &&
+        !capValue &&
+        !item.owls.buyable &&
+        !isNaN(Number(item.owls.value.split('-')[0])) && (
+          <Badge colorScheme="purple" whiteSpace="normal">
+            {item.owls.value} Owls
+          </Badge>
+        )}
+
+      {item.isNC && item.owls && !capValue && item.owls.buyable && (
+        <Badge colorScheme="purple" whiteSpace="normal">
+          {t('ItemPage.nc-buyable')}
+        </Badge>
+      )}
+
+      {item.isNC && Number(capValue) > 0 && (
+        <Tooltip
+          label="User Asking Price in GBCs - Not Official"
+          aria-label="Not Official NC Price Tooltip"
+          placement="top"
+        >
+          <Badge colorScheme="purple" whiteSpace="normal">
+            <Icon as={AiFillInfoCircle} verticalAlign="middle" /> NC - {capValue} CAPS
+          </Badge>
+        </Tooltip>
+      )}
+
+      {!!odds && (
+        <Badge colorScheme={isLE ? 'green' : 'white'} whiteSpace="pre-wrap" textAlign={'center'}>
+          {isLE ? 'LE' : ''} {odds.toFixed(2)}%
+        </Badge>
+      )}
+
+      {sortType === 'profit' && !!profit && (
+        <>
+          {profit <= 1000 && (
+            <>
+              <Tooltip
+                hasArrow
+                label={
+                  profit > 0
+                    ? t('Restock.estimated-profit-is-less-than')
+                    : t('Restock.estimated-loss')
+                }
+                placement="top"
+              >
+                <Badge colorScheme="red" display="flex" alignItems={'center'} gap={1}>
+                  {intl.format(profit)} NP <MdHelp size={'0.7rem'} />
+                </Badge>
+              </Tooltip>
+            </>
+          )}
+          {profit > 1000 && (
+            <>
+              <Tooltip hasArrow label={t('Restock.estimated-profit')} placement="top">
+                <Badge colorScheme="green" display="flex" alignItems={'center'} gap={1}>
+                  {intl.format(profit)} NP <MdHelp size={'0.7rem'} />
+                </Badge>
+              </Tooltip>
+            </>
+          )}
+        </>
+      )}
+    </>
+  );
+};

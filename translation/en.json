@@ -14,7 +14,8 @@
     "seo-description": "Find all the data about Neopets items such as the most updated prices, wearable previews, restock history, color search, capsules drop rates and more! Create your item lists easily and share around Neopia!",
     "new-in-nc-mall": "New in NC Mall",
     "is-it-safe": "Is it safe?",
-    "leaving-nc-mall": "Leaving NC Mall"
+    "leaving-nc-mall": "Leaving NC Mall",
+    "featured-lists": "Featured Lists"
   },
   "BetaStats": {
     "items-in-db": "Items in the database",
@@ -398,7 +399,9 @@
     "x-minutes": "{x} minutes",
     "auction-house": "Auction House",
     "thank-you": "Thank you!",
-    "sending-dots": "Sending..."
+    "sending-dots": "Sending...",
+    "view-all": "View All",
+    "learn-more": "Learn More"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",

@@ -1,36 +1,28 @@
-import {
-  Box,
-  Flex,
-  Heading,
-  Highlight,
-  Link,
-  Stack,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
-} from '@chakra-ui/react';
-import React, { ReactElement, useEffect, useState } from 'react';
+import { Box, Flex, Heading, Highlight, Link, SimpleGrid, Stack } from '@chakra-ui/react';
+import React, { ReactElement } from 'react';
 import Layout from '../components/Layout';
 import logo from '../public/logo_white_compressed.svg';
 import Image from 'next/image';
 import ItemCard from '../components/Items/ItemCard';
-import { ItemData, WP_Article } from '../types';
+import { ItemData, UserList, WP_Article } from '../types';
 import BetaStatsCard from '../components/Beta/BetaStatsCard';
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 import { getLatestOwls } from './api/v1/items/owls';
 import { ArticleCard } from '../components/Articles/ArticlesCard';
 import { wp_getLatestPosts } from './api/wp/posts';
 import NextLink from 'next/link';
 import Color from 'color';
-import { getTrendingItems } from './api/v1/beta/trending';
+import { getTrendingItems, getTrendingLists } from './api/v1/beta/trending';
 // import { getHotestRestock } from './api/v1/beta/restock';
 import { createTranslator, useTranslations } from 'next-intl';
 import { getNCMallItemsData } from './api/v1/ncmall';
 import { getLatestItems } from './api/v1/items';
 import { getLatestPricedItems } from './api/v1/prices';
 import { NextPageWithLayout } from './_app';
+import { HomeCard } from '../components/Card/HomeCard';
+import UserListCard from '../components/UserLists/ListCard';
+import { HorizontalHomeCard } from '../components/Card/HorizontalHomeCard';
+import useSWR from 'swr';
 
 type Props = {
   latestItems: ItemData[];
@@ -41,42 +33,32 @@ type Props = {
   hottestRestock: ItemData[];
   latestNcMall: ItemData[];
   leavingNcMall: ItemData[];
+  trendingLists: UserList[];
   messages: any;
   locale: string;
 };
 
-const IS_GREY = process.env.NEXT_PUBLIC_IS_GREY === 'true';
-
 const color = Color('#4A5568');
 const rgb = color.rgb().round().array();
 
+function fetcher<T>(url: string, config?: AxiosRequestConfig<any>): Promise<T> {
+  return axios.get(url, config).then((res) => res.data);
+}
 const HomePage: NextPageWithLayout<Props> = (props: Props) => {
-  const t = useTranslations('HomePage');
-  const { latestOwls, latestPosts, latestNcMall, trendingItems, leavingNcMall } = props;
-  const [latestItems, setItems] = useState<ItemData[] | null>(props.latestItems);
-  const [latestPrices, setPrices] = useState<ItemData[] | null>(props.lastestPrices);
+  const t = useTranslations();
 
-  useEffect(() => {
-    init();
-  }, []);
+  const { latestOwls, latestPosts, latestNcMall, trendingItems, leavingNcMall, trendingLists } =
+    props;
 
-  const init = async () => {
-    const [itemRes, priceRes] = (await Promise.allSettled([
-      axios.get('api/v1/items', {
-        params: {
-          limit: 16,
-        },
-      }),
-      axios.get('api/v1/prices', {
-        params: {
-          limit: 16,
-        },
-      }),
-    ])) as { status: 'fulfilled' | 'rejected'; value?: any }[];
+  const { data: latestItems } = useSWR<ItemData[]>(`api/v1/items?limit=20`, (url) => fetcher(url), {
+    fallbackData: props.latestItems,
+  });
 
-    setItems(itemRes.value?.data || null);
-    setPrices(priceRes.value?.data || null);
-  };
+  const { data: latestPrices } = useSWR<ItemData[]>(
+    `api/v1/prices?limit=16`,
+    (url) => fetcher(url),
+    { fallbackData: props.lastestPrices }
+  );
 
   return (
     <>
@@ -90,17 +72,10 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
           bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.6) 80%)`}
           zIndex={-1}
         />
-        <Image
-          src={logo}
-          alt="itemdb logo"
-          width={500}
-          quality="100"
-          priority
-          style={{ filter: IS_GREY ? 'grayscale(0.9)' : undefined }}
-        />
+        <Image src={logo} alt="itemdb logo" width={500} quality="100" priority />
         <Heading size="sm" mt={4} lineHeight={1.5}>
           <Highlight
-            query={t('open-source')}
+            query={t('HomePage.open-source')}
             styles={{
               px: '2',
               py: '1',
@@ -108,107 +83,104 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
               bg: 'gray.100',
             }}
           >
-            {t('title')}
+            {t('HomePage.title')}
           </Highlight>{' '}
           <Link color={color.lightness(70).hex()} href="/faq">
-            {t('is-it-safe')}
+            {t('HomePage.is-it-safe')}
           </Link>
         </Heading>
       </Box>
-      <Flex mt={8} gap={4} flexFlow="column">
-        <Heading size="md">{t('latest-prices')}</Heading>
-        <Flex flexWrap="wrap" gap={4} justifyContent="center">
-          {latestPrices !== null &&
-            latestPrices.map((item) => <ItemCard item={item} key={item.internal_id} />)}
-          {!latestPrices && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
-        </Flex>
-        <Stack direction={{ base: 'column', lg: 'row' }}>
-          <Flex gap={4} flexFlow="column" flex="1">
-            <Heading size="md" textAlign={{ base: 'left', lg: 'center' }}>
-              <Link as={NextLink} href="/search?s=&sortBy=added&sortDir=desc">
-                {t('latest-discoveries')}
-              </Link>
-            </Heading>
-            <Flex flexWrap="wrap" gap={4} justifyContent="center" h="100%">
-              {latestItems &&
-                latestItems.map((item) => <ItemCard item={item} key={item.internal_id} />)}
-              {!latestItems && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
-            </Flex>
+      <Flex mt={8} gap={8} flexFlow="column">
+        <HorizontalHomeCard
+          color="#2e333b"
+          h={70}
+          w={70}
+          image="https://images.neopets.com/quests/images/neopoint-bag.png"
+          title={t('HomePage.latest-prices')}
+        >
+          <Flex flexWrap="wrap" gap={4} justifyContent="center">
+            {latestPrices &&
+              latestPrices.map((item) => <ItemCard item={item} key={item.internal_id} />)}
+            {!latestPrices && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
           </Flex>
-          <Flex gap={4} flexFlow="column" flex="1">
-            <Tabs flex={1} colorScheme="gray" variant={'line'}>
-              <TabList>
-                {props.trendingItems.length > 0 && <Tab>{t('trending-items')}</Tab>}
-                {latestNcMall.length > 0 && <Tab>{t('new-in-nc-mall')}</Tab>}
-                {leavingNcMall.length > 0 && <Tab>{t('leaving-nc-mall')}</Tab>}
-                {!latestOwls || (!!latestOwls.length && <Tab>{t('latest-owls')}</Tab>)}
-                {/* <Tab>
-                  {t('hottest-restock-period')} {t('hottest-restock')}
-                </Tab> */}
-              </TabList>
-              <TabPanels>
-                {props.trendingItems.length > 0 && (
-                  <TabPanel px={0}>
-                    <Flex flexWrap="wrap" gap={4} justifyContent="center">
-                      {trendingItems !== null &&
-                        trendingItems.map((item) => (
-                          <ItemCard item={item} key={item.internal_id} />
-                        ))}
-                      {!trendingItems && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
-                    </Flex>
-                  </TabPanel>
-                )}
-                {latestNcMall.length && (
-                  <TabPanel px={0}>
-                    <Flex flexWrap="wrap" gap={4} justifyContent="center" h="100%">
-                      {latestNcMall &&
-                        latestNcMall.map((item) => <ItemCard item={item} key={item.internal_id} />)}
-                      {!latestNcMall && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
-                    </Flex>
-                  </TabPanel>
-                )}
-                {leavingNcMall.length && (
-                  <TabPanel px={0}>
-                    <Flex flexWrap="wrap" gap={4} justifyContent="center" h="100%">
-                      {leavingNcMall &&
-                        leavingNcMall.map((item) => (
-                          <ItemCard item={item} key={item.internal_id} />
-                        ))}
-                      {!leavingNcMall && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
-                    </Flex>
-                  </TabPanel>
-                )}
-                {latestOwls.length && (
-                  <TabPanel px={0}>
-                    <Flex flexWrap="wrap" gap={4} justifyContent="center" h="100%">
-                      {latestOwls &&
-                        latestOwls.map((item) => <ItemCard item={item} key={item.internal_id} />)}
-                      {!latestOwls && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
-                    </Flex>
-                  </TabPanel>
-                )}
-                {/* <TabPanel px={0}>
-                  <Flex flexWrap="wrap" gap={4} justifyContent="center">
-                    {hottestRestock &&
-                      hottestRestock.map((item) => <ItemCard item={item} key={item.internal_id} />)}
-                    {!hottestRestock && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
-                  </Flex>
-                </TabPanel> */}
-              </TabPanels>
-            </Tabs>
+        </HorizontalHomeCard>
+        <SimpleGrid columns={{ base: 1, lg: 3 }} spacing={8} justifyItems={'center'}>
+          {latestItems && (
+            <HomeCard
+              href="/search?s=&sortBy=added&sortDir=desc"
+              color="#e7db7a"
+              image="https://images.neopets.com/prehistoric/outskirts/fearslayer_9h4v3cfj.png"
+              items={latestItems}
+              title={t('HomePage.latest-discoveries')}
+            />
+          )}
+          {trendingItems && (
+            <HomeCard
+              color="#AE445A"
+              title={t('HomePage.trending-items')}
+              image="https://images.neopets.com/themes/h5/common/communitycentral/images/icon-neoboards.png"
+              items={trendingItems}
+            />
+          )}
+          {latestNcMall && (
+            <HomeCard
+              color="#BED754"
+              title={t('HomePage.new-in-nc-mall')}
+              image="https://images.neopets.com/neggfest/y19/mall/nc.png"
+              items={latestNcMall}
+            />
+          )}
+        </SimpleGrid>
+        <HorizontalHomeCard
+          color="#4A5568"
+          image="https://images.neopets.com/themes/h5/newyears/images/transferlog-icon.png"
+          title={t('HomePage.featured-lists')}
+          viewAllLink="/lists/official"
+        >
+          <Flex flexWrap="wrap" gap={4} justifyContent="center">
+            {trendingLists.map((list) => (
+              <UserListCard key={list.internal_id} list={list} />
+            ))}
           </Flex>
+        </HorizontalHomeCard>
+        <Stack direction={{ base: 'column', lg: 'row' }} spacing={8}>
+          {leavingNcMall && (
+            <HomeCard
+              useItemCard
+              href="/mall/leaving"
+              color="#CB9DF0"
+              image="https://images.neopets.com/themes/h5/altadorcup/images/calendar-icon.png"
+              items={leavingNcMall}
+              title={t('HomePage.leaving-nc-mall')}
+              h={70}
+              w={70}
+            />
+          )}
+          {latestOwls && (
+            <HomeCard
+              useItemCard
+              href="/articles/owls"
+              color="#789DBC"
+              image="https://images.neopets.com/neopies/y25/images/nominees/GiftBoxMysteryCapsule_y20tmnsll0/04.png"
+              items={latestOwls}
+              title={t('HomePage.latest-owls')}
+              linkText={t('General.learn-more')}
+              w={70}
+              h={70}
+            />
+          )}
         </Stack>
         <Stack direction={{ base: 'column', lg: 'row' }} mt={2} gap={{ base: 8, lg: 3 }}>
           <Flex flexFlow="column" flex={1} alignItems="center">
             <Heading size="md" mb={{ base: 5, lg: 0 }}>
-              {t('stats')}
+              {t('HomePage.stats')}
             </Heading>
             <BetaStatsCard />
           </Flex>
           <Flex flex={1} flexFlow={'column'}>
             <Heading size="md" textAlign="center" mb={5}>
               <Link as={NextLink} href="/articles">
-                {t('latest-articles')}
+                {t('HomePage.latest-articles')}
               </Link>
             </Heading>
             <Flex flexFlow={'column'} gap={2}>
@@ -235,18 +207,20 @@ export async function getStaticProps(context: any) {
     latestNcMall,
     lastestPrices,
     leavingNcMall,
+    trendingLists,
   ] = await Promise.all([
-    getLatestItems(16, true).catch(() => []),
-    getLatestOwls(16).catch(() => []),
+    getLatestItems(20, true).catch(() => []),
+    getLatestOwls(18).catch(() => []),
     wp_getLatestPosts(5).catch((e) => {
       console.error(e);
       return [];
     }),
-    getTrendingItems(16).catch(() => []),
+    getTrendingItems(20).catch(() => []),
     [], // getHotestRestock(16, 15).catch(() => []),
-    getNCMallItemsData(16).catch(() => []),
+    getNCMallItemsData(20).catch(() => []),
     getLatestPricedItems(16).catch(() => []),
-    getNCMallItemsData(16, true).catch(() => []),
+    getNCMallItemsData(18, true).catch(() => []),
+    getTrendingLists(3).catch(() => []),
   ]);
 
   return {
@@ -259,6 +233,7 @@ export async function getStaticProps(context: any) {
       latestNcMall,
       lastestPrices,
       leavingNcMall,
+      trendingLists,
       messages: (await import(`../translation/${context.locale}.json`)).default,
       locale: context.locale,
     },
