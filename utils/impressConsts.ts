@@ -159,6 +159,15 @@ query($speciesId: ID!, $colorId: ID!, $pose: Pose!){
 }
 ` + FRAGMENT_PET_APPEARANCE;
 
+export const GET_PET_APPEARANCE_ANY_POSE =
+  `
+query($speciesId: ID!, $colorId: ID!){
+	petAppearances(speciesId: $speciesId, colorId: $colorId){
+	  ...PetAppearanceForOutfitPreview
+	}
+}
+` + FRAGMENT_PET_APPEARANCE;
+
 export const GET_ITEM_PREVIEW_BY_NAME =
   `
 query($itemName: String!, $species: ID, $color: ID) {
