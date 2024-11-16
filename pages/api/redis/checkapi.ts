@@ -3,7 +3,8 @@ import { Redis } from 'ioredis';
 
 const LIMIT_COUNT = 15000;
 const LIMIT_BAN = 2 * 60 * 60 * 1000;
-const skipAPIMiddleware = process.env.SKIP_API_MIDDLEWARE === 'true';
+const skipAPIMiddleware =
+  process.env.SKIP_API_MIDDLEWARE === 'true' || process.env.NODE_ENV === 'development';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   const ip = req.headers['idb-ip-check'] as string;
@@ -50,7 +51,7 @@ if (process.env.NODE_ENV === 'production') {
 export const redis_setItemCount = async (
   ip: string | null | undefined,
   itemCount: number,
-  req: NextApiRequest,
+  req: NextApiRequest
 ) => {
   try {
     if (skipAPIMiddleware || !ip || !itemCount) return;

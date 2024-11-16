@@ -116,8 +116,10 @@ export const SearchBar = (props: Props) => {
     if (!isOpen) onToggle();
 
     try {
-      const searchRes = await Axios.get('search?s=' + encodeURIComponent(newSearch.trim()), {
+      const searchRes = await Axios.get('search', {
         params: {
+          s: newSearch.trim(),
+          sortBy: 'match',
           limit: 5,
           skipStats: true,
         },
@@ -126,8 +128,9 @@ export const SearchBar = (props: Props) => {
       if (searchRes.data.content.length !== 0) {
         setResult(searchRes.data);
       } else {
-        const fuzzyRes = await Axios.get('search?s=' + encodeURIComponent(newSearch.trim()), {
+        const fuzzyRes = await Axios.get('search', {
           params: {
+            s: newSearch.trim(),
             limit: 5,
             skipStats: true,
             mode: 'fuzzy',

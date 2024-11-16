@@ -33,7 +33,14 @@ const ItemSelect = (props: Props) => {
   }, [query]);
 
   const loadItems = async () => {
-    const res = await axios.get('/api/v1/search?s=' + query + '&limit=5' + '&skipStats=true');
+    const res = await axios.get('/api/v1/search', {
+      params: {
+        limit: 5,
+        skipStats: true,
+        s: query,
+        sortBy: 'match',
+      },
+    });
     const data = res.data as SearchResults;
     setItems(data.content);
     setIsLoading(false);

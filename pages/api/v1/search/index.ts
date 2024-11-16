@@ -377,6 +377,8 @@ export async function doSearch(
   else if (sortBy === 'estVal') sortSQL = Prisma.sql`ORDER BY temp.est_val`;
   else if (sortBy === 'id') sortSQL = Prisma.sql`ORDER BY temp.item_id`;
   else if (sortBy === 'rarity') sortSQL = Prisma.sql`ORDER BY temp.rarity`;
+  else if (sortBy === 'match')
+    sortSQL = Prisma.sql`ORDER BY temp.name = ${originalQuery} DESC, temp.name`;
   else sortSQL = isColorSearch ? Prisma.sql`ORDER BY dist` : Prisma.sql`ORDER BY temp.name`;
 
   let fulltext;
