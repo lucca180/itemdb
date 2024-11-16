@@ -81,7 +81,7 @@ export default function SortableArea(props: SortableAreaProps) {
             md: editMode ? 162 : 162,
           };
 
-          const itemSize = dimensions && dimensions.width >= 768 ? itemSizeMap.md : itemSizeMap.sm;
+          const itemSize = dimensions && window.innerWidth >= 768 ? itemSizeMap.md : itemSizeMap.sm;
           const groupSize = dimensions ? Math.floor(dimensions.width / itemSize) : 8;
 
           const groupIndex = Math.floor(i / groupSize);
