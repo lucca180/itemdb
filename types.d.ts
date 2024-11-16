@@ -640,7 +640,7 @@ export type DTIPetAppearance = {
   id: string;
   isGlitched: boolean;
   layers: DTILayer[];
-  pose: string[];
+  pose: string;
   restrictedZones: string[];
   species: {
     id: string;
