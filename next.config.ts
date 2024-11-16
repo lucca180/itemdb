@@ -7,6 +7,7 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   cacheMaxMemorySize: 0,
   productionBrowserSourceMaps: true,
+  skipMiddlewareUrlNormalize: true,
   i18n: {
     locales: ['en', 'pt'],
     defaultLocale: 'en',
