@@ -1,4 +1,13 @@
-import { Button, Divider, Flex, Heading, IconButton, Link, Text } from '@chakra-ui/react';
+import {
+  Button,
+  Divider,
+  Flex,
+  Heading,
+  IconButton,
+  Link,
+  Text,
+  useMediaQuery,
+} from '@chakra-ui/react';
 import NextImage from 'next/image';
 import { ItemData } from '../../types';
 import Color from 'color';
@@ -105,11 +114,14 @@ export const HomeCard = (props: HomeCardProps) => {
 };
 
 const HomeItem = ({ item, menuKey }: { item: ItemData; menuKey: string }) => {
+  const [isMobile] = useMediaQuery('(hover: none)');
+
   return (
     <>
       <ItemCtxMenu item={item} menuId={menuKey} />
       <CtxTrigger
         id={menuKey}
+        disable={isMobile ? true : undefined}
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         //@ts-ignore
         disableWhileShiftPressed

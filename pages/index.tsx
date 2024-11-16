@@ -104,7 +104,11 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
             {!latestPrices && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
           </Flex>
         </HorizontalHomeCard>
-        <SimpleGrid columns={{ base: 1, lg: 3 }} spacing={8} justifyItems={'center'}>
+        <SimpleGrid
+          columns={{ base: 1, lg: 3 }}
+          spacing={{ base: 4, xl: 8 }}
+          justifyItems={'center'}
+        >
           {latestItems && (
             <HomeCard
               href="/search?s=&sortBy=added&sortDir=desc"
@@ -143,7 +147,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
             ))}
           </Flex>
         </HorizontalHomeCard>
-        <Stack direction={{ base: 'column', lg: 'row' }} spacing={8}>
+        <Stack direction={{ base: 'column', lg: 'row' }} spacing={{ base: 4, xl: 8 }}>
           {leavingNcMall && (
             <HomeCard
               useItemCard
