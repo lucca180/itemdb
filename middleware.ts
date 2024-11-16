@@ -38,13 +38,6 @@ export async function middleware(request: NextRequest) {
     return apiMiddleware(request);
   }
 
-  if (
-    request.nextUrl.pathname.match(
-      /\.(png|jpg|jpeg|gif|svg|css|js|ico|woff|woff2|ttf|otf|eot|json|txt|xml|mp4|webm|ogg)$/
-    )
-  )
-    return NextResponse.next();
-
   const cookies = {
     name: 'idb_accept-language',
     value: request.headers.get('accept-language') ?? '',
@@ -68,7 +61,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/api/:path*', '/:path*'],
+  matcher: ['/api/:path*', '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)'],
 };
 
 // ---------- API Middleware ---------- //
