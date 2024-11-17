@@ -28,7 +28,7 @@ import { Feedback, TradeData } from '../../types';
 import { useAuth } from '../../utils/auth';
 import { TradeGuidelines } from './trades';
 import { getCookie } from 'cookies-next';
-import { NextPageContext, NextApiRequest } from 'next';
+import { NextApiRequest, GetServerSidePropsContext } from 'next';
 import { CheckAuth } from '../../utils/googleCloud';
 import { createTranslator, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
@@ -352,7 +352,7 @@ export default FeedbackVotingPage;
 //   );
 // };
 
-export async function getServerSideProps(context: NextPageContext) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   try {
     const token = getCookie('userToken', { req: context.req, res: context.res }) as
       | string
@@ -379,7 +379,7 @@ export async function getServerSideProps(context: NextPageContext) {
   } catch (e) {
     return {
       redirect: {
-        destination: '/login',
+        destination: `/login?redirect=${encodeURIComponent(context.resolvedUrl)}`,
         permanent: false,
       },
     };

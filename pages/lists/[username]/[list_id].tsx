@@ -35,7 +35,7 @@ import Color from 'color';
 import SortableArea from '../../../components/Sortable/SortableArea';
 import { SelectItemsCheckbox } from '../../../components/Input/SelectItemsCheckbox';
 import { ItemActionModalProps } from '../../../components/Modal/ItemActionModal';
-import { NextPageContext } from 'next';
+import { GetServerSidePropsContext } from 'next';
 import { getList } from '../../api/v1/lists/[username]/[list_id]';
 import { getCookie } from 'cookies-next';
 
@@ -842,7 +842,7 @@ const ListPage = (props: Props) => {
 
 export default ListPage;
 
-export async function getServerSideProps(context: NextPageContext) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { list_id, username } = context.query;
   if (!username || !list_id || Array.isArray(username) || Array.isArray(list_id))
     return { notFound: true };

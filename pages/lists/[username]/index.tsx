@@ -31,7 +31,7 @@ import { FaTrash } from 'react-icons/fa';
 import { DeleteListModalProps } from '../../../components/Modal/DeleteListModal';
 import { BiLinkExternal } from 'react-icons/bi';
 import { EditProfileModalProps } from '../../../components/Modal/EditProfileModal';
-import { NextPageContext } from 'next';
+import { GetServerSidePropsContext } from 'next';
 import { getUser } from '../../api/v1/users/[username]';
 import NextImage from 'next/image';
 import icon from '../../../public/logo_icon.svg';
@@ -40,15 +40,15 @@ import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 
 const CreateListModal = dynamic<CreateListModalProps>(
-  () => import('../../../components/Modal/CreateListModal'),
+  () => import('../../../components/Modal/CreateListModal')
 );
 
 const DeleteListModal = dynamic<DeleteListModalProps>(
-  () => import('../../../components/Modal/DeleteListModal'),
+  () => import('../../../components/Modal/DeleteListModal')
 );
 
 const EditProfileModal = dynamic<EditProfileModalProps>(
-  () => import('../../../components/Modal/EditProfileModal'),
+  () => import('../../../components/Modal/EditProfileModal')
 );
 
 type ExtendedUserList = UserList & {
@@ -234,7 +234,7 @@ const UserListsPage = (props: Props) => {
           headers: {
             authorization: `Bearer ${token}`,
           },
-        },
+        }
       );
 
       if (res.data.success) {
@@ -508,7 +508,7 @@ const UserListsPage = (props: Props) => {
   );
 };
 
-export async function getServerSideProps(context: NextPageContext) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { username } = context.query;
   if (!username || Array.isArray(username)) return { notFound: true };
 

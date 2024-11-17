@@ -20,7 +20,7 @@ import { ReactElement, useState } from 'react';
 import ItemCard from '../../components/Items/ItemCard';
 import axios from 'axios';
 import { getCookie } from 'cookies-next';
-import { NextPageContext, NextApiRequest } from 'next';
+import { NextApiRequest, GetServerSidePropsContext } from 'next';
 import { CheckAuth } from '../../utils/googleCloud';
 
 const DATA_COLLECTING_OPTIONS: {
@@ -183,7 +183,7 @@ const DataCollectingPage = () => {
 
 export default DataCollectingPage;
 
-export async function getServerSideProps(context: NextPageContext) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   try {
     const token = getCookie('userToken', { req: context.req, res: context.res }) as
       | string
@@ -210,7 +210,7 @@ export async function getServerSideProps(context: NextPageContext) {
   } catch (e) {
     return {
       redirect: {
-        destination: '/login',
+        destination: `/login?redirect=${encodeURIComponent(context.resolvedUrl)}`,
         permanent: false,
       },
     };

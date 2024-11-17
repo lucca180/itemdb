@@ -14,7 +14,7 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { getCookie } from 'cookies-next';
-import { NextPageContext, NextApiRequest } from 'next';
+import { NextApiRequest, GetServerSidePropsContext } from 'next';
 import React, { useState } from 'react';
 import HeaderCard from '../../components/Card/HeaderCard';
 import Layout from '../../components/Layout';
@@ -264,7 +264,7 @@ const CreateItem = () => {
 
 export default CreateItem;
 
-export async function getServerSideProps(context: NextPageContext) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   try {
     const token = getCookie('userToken', { req: context.req, res: context.res }) as
       | string
@@ -285,7 +285,7 @@ export async function getServerSideProps(context: NextPageContext) {
   } catch (e) {
     return {
       redirect: {
-        destination: '/',
+        destination: `/login?redirect=${encodeURIComponent(context.resolvedUrl)}`,
         permanent: false,
       },
     };

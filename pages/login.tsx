@@ -47,6 +47,7 @@ const LoginPage = () => {
   const init = async () => {
     setIsLoading(true);
     const { auth, isSignInWithEmailLink, signInWithEmailLink } = await getAuth();
+    const redirectTo = (router.query.redirect as string | undefined) ?? '/';
 
     if (isSignInWithEmailLink(auth, window.location.href) && !user) {
       let mailAddr = window.localStorage.getItem('emailForSignIn');
@@ -77,7 +78,7 @@ const LoginPage = () => {
 
         setUser(user);
 
-        router.replace('/');
+        router.replace(decodeURIComponent(redirectTo));
       } catch (e: any) {
         setError(e.message);
         console.error(error);
@@ -90,7 +91,7 @@ const LoginPage = () => {
         return setNeedInfo(true);
       }
 
-      router.replace('/');
+      router.replace(decodeURIComponent(redirectTo));
     } else onOpen();
   };
 
@@ -109,6 +110,8 @@ const LoginPage = () => {
   };
 
   const saveChanges = async () => {
+    const redirectTo = (router.query.redirect as string | undefined) ?? '/';
+
     setError('');
     if (!neopetsUser || !username) {
       setError(t('Login.please-fill-all-fields'));
@@ -151,7 +154,7 @@ const LoginPage = () => {
 
       setUser(user);
 
-      router.replace('/');
+      router.replace(decodeURIComponent(redirectTo));
     } catch (e: any) {
       setError(e.message);
       console.error(error);
@@ -160,7 +163,8 @@ const LoginPage = () => {
 
   const closeLogin = () => {
     onClose();
-    router.replace('/');
+    const redirectTo = (router.query.redirect as string | undefined) ?? '/';
+    router.replace(decodeURIComponent(redirectTo));
   };
 
   const checkUsername = async (): Promise<boolean> => {

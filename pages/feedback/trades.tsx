@@ -20,7 +20,7 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { getCookie } from 'cookies-next';
-import { NextApiRequest, NextPageContext } from 'next';
+import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { ReactElement, useEffect, useRef, useState } from 'react';
 import { BsXLg, BsXCircleFill, BsCheckCircleFill, BsCheckLg } from 'react-icons/bs';
 import CardBase from '../../components/Card/CardBase';
@@ -344,7 +344,7 @@ export const TradeGuidelines = () => {
   );
 };
 
-export async function getServerSideProps(context: NextPageContext) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   try {
     const token = getCookie('userToken', { req: context.req, res: context.res }) as
       | string
@@ -371,7 +371,7 @@ export async function getServerSideProps(context: NextPageContext) {
   } catch (e) {
     return {
       redirect: {
-        destination: '/login',
+        destination: `/login?redirect=${encodeURIComponent(context.resolvedUrl)}`,
         permanent: false,
       },
     };
