@@ -438,7 +438,9 @@ export const fetchOwlsData = async (
         },
       });
 
-      await prisma.$transaction([updateAll, createAll]);
+      await prisma.$transaction([updateAll, createAll], {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      });
     } else if (lastOwls && isSameDay(lastOwls.pricedAt, lastUpdated)) {
       await prisma.owlsPrice.update({
         where: {

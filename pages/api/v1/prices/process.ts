@@ -244,15 +244,20 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     },
   });
 
-  const result = await prisma.$transaction([
-    prisma.itemPrices.createMany({ data: priceAddList }),
-    prisma.priceProcess2.updateMany({
-      data: { processed: true },
-      where: {
-        internal_id: { in: processedIDs },
-      },
-    }),
-  ]);
+  const result = await prisma.$transaction(
+    [
+      prisma.itemPrices.createMany({ data: priceAddList, skipDuplicates: true }),
+      prisma.priceProcess2.updateMany({
+        data: { processed: true },
+        where: {
+          internal_id: { in: processedIDs },
+        },
+      }),
+    ],
+    {
+      isolationLevel: Prisma.TransactionIsolationLevel.ReadUncommitted,
+    }
+  );
 
   const manualCheckList = priceAddList.filter((x) => x.manual_check).map((x) => x.item_iid);
 

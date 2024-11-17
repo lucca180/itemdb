@@ -3,6 +3,7 @@ import { isSameDay } from 'date-fns';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { getManyItems } from './many';
+import { Prisma } from '@prisma/client';
 
 type OwlsRes = {
   recent_updates: {
@@ -81,7 +82,9 @@ export const getLatestOwls = async (limit = 20) => {
         },
       });
 
-      await prisma.$transaction([updateAll, createAll]);
+      await prisma.$transaction([updateAll, createAll], {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      });
 
       item.owls = {
         value: owlsItem.owls_value,
