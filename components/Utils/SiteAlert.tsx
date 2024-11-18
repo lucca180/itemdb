@@ -138,7 +138,7 @@ export const SiteAlert = () => {
 const getAlert = () => {
   const todayNST = getDateNST();
 
-  if (todayNST.getTime() < 1732028400000) return alerts.anniversary;
+  // if (todayNST.getTime() < 1732028400000) return alerts.anniversary;
 
   if (todayNST.getDate() === 3) return alerts.hpd;
   else if (todayNST.getMonth() === 4 && todayNST.getDate() === 12) return alerts.tyrannia;
