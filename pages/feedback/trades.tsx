@@ -19,7 +19,6 @@ import {
   Text,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import { getCookie } from 'cookies-next';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { ReactElement, useEffect, useRef, useState } from 'react';
 import { BsXLg, BsXCircleFill, BsCheckCircleFill, BsCheckLg } from 'react-icons/bs';
@@ -346,14 +345,7 @@ export const TradeGuidelines = () => {
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   try {
-    const token = getCookie('userToken', { req: context.req, res: context.res }) as
-      | string
-      | undefined
-      | null;
-
-    if (!token) throw new Error('No token found');
-
-    const check = await CheckAuth(context.req as NextApiRequest, token);
+    const check = await CheckAuth(context.req as NextApiRequest);
     if (!check.user) throw new Error('User not found');
 
     if (check.user.banned) {

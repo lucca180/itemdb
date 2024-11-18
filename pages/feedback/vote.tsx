@@ -27,7 +27,6 @@ import TradeTable from '../../components/Trades/TradeTable';
 import { Feedback, TradeData } from '../../types';
 import { useAuth } from '../../utils/auth';
 import { TradeGuidelines } from './trades';
-import { getCookie } from 'cookies-next';
 import { NextApiRequest, GetServerSidePropsContext } from 'next';
 import { CheckAuth } from '../../utils/googleCloud';
 import { createTranslator, useTranslations } from 'next-intl';
@@ -354,14 +353,7 @@ export default FeedbackVotingPage;
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   try {
-    const token = getCookie('userToken', { req: context.req, res: context.res }) as
-      | string
-      | undefined
-      | null;
-
-    if (!token) throw new Error('No token found');
-
-    const check = await CheckAuth(context.req as NextApiRequest, token);
+    const check = await CheckAuth(context.req as NextApiRequest);
     if (!check.user) throw new Error('User not found');
 
     if (check.user.banned) {

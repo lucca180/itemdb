@@ -37,7 +37,6 @@ import { SelectItemsCheckbox } from '../../../components/Input/SelectItemsCheckb
 import { ItemActionModalProps } from '../../../components/Modal/ItemActionModal';
 import { GetServerSidePropsContext } from 'next';
 import { getList } from '../../api/v1/lists/[username]/[list_id]';
-import { getCookie } from 'cookies-next';
 
 import { CreateListModalProps } from '../../../components/Modal/CreateListModal';
 
@@ -853,10 +852,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     const res = await CheckAuth((context.req ?? null) as any);
     userOrToken = res?.user;
   } catch (err) {
-    userOrToken = getCookie('userToken', { req: context.req, res: context.res }) as
-      | string
-      | undefined
-      | null;
+    console.error(err);
   }
 
   const parsedId = isNaN(parseInt(list_id as string)) ? undefined : parseInt(list_id as string);

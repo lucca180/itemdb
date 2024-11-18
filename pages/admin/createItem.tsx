@@ -13,7 +13,6 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import { getCookie } from 'cookies-next';
 import { NextApiRequest, GetServerSidePropsContext } from 'next';
 import React, { useState } from 'react';
 import HeaderCard from '../../components/Card/HeaderCard';
@@ -266,14 +265,7 @@ export default CreateItem;
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   try {
-    const token = getCookie('userToken', { req: context.req, res: context.res }) as
-      | string
-      | undefined
-      | null;
-
-    if (!token) throw new Error('No token found');
-
-    const res = await CheckAuth(context.req as NextApiRequest, token);
+    const res = await CheckAuth(context.req as NextApiRequest);
 
     if (!res || !res.user || !res.user?.isAdmin) throw new Error('User is not an admin');
 

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useContext, createContext } from 'react';
-import { setCookie, deleteCookie } from 'cookies-next';
 import type { User as FirebaseUser } from 'firebase/auth';
 import { useAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
@@ -73,7 +72,7 @@ export const UserState = atomWithStorage<User | null>('UserState', null, storage
 export const UserPrefs = atomWithStorage<UserPreferences | null>(
   'UserPrefs',
   null,
-  storageLocal as any,
+  storageLocal as any
 );
 
 export function AuthProvider({ children }: any) {
@@ -88,7 +87,6 @@ export function AuthProvider({ children }: any) {
 
       return auth.onIdTokenChanged(async (newUser) => {
         if (!newUser) {
-          deleteCookie('userToken');
           setUserToken(null);
           setAuthLoading(false);
           return;
@@ -99,8 +97,6 @@ export function AuthProvider({ children }: any) {
         }
 
         const token = await newUser.getIdToken();
-        deleteCookie('userToken');
-        setCookie('userToken', token, { secure: true });
         setUserToken(token);
         setAuthLoading(false);
       });
@@ -118,16 +114,13 @@ export function AuthProvider({ children }: any) {
 
   // force refresh the token every 10 minutes
   useEffect(() => {
-    const handle = setInterval(
-      async () => {
-        getAuth().then(async (res) => {
-          const { auth } = res;
-          const user = auth.currentUser;
-          if (user) await user.getIdToken(true);
-        });
-      },
-      10 * 60 * 1000,
-    );
+    const handle = setInterval(async () => {
+      getAuth().then(async (res) => {
+        const { auth } = res;
+        const user = auth.currentUser;
+        if (user) await user.getIdToken(true);
+      });
+    }, 10 * 60 * 1000);
     return () => clearInterval(handle);
   }, []);
 
@@ -140,7 +133,6 @@ export function AuthProvider({ children }: any) {
       const token = await user.getIdToken();
       if (!token) throw 'No token found';
 
-      setCookie('userToken', token, { secure: true });
       const userRes = await axios.post('/api/auth/login', null, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -164,7 +156,7 @@ export function AuthProvider({ children }: any) {
 
   const updatePref = async (
     key: keyof UserPreferences,
-    value: UserPreferences[keyof UserPreferences],
+    value: UserPreferences[keyof UserPreferences]
   ) => {
     const newPref = { ...(userPref ?? undefined), [key]: value };
     setUserPref(newPref);

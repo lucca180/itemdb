@@ -43,7 +43,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     if (token) {
       const sessionCookie = await Auth.createSessionCookie(token, { expiresIn: expiresIn });
       res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
-      cookies.push(`session=${sessionCookie};Path=/;HttpOnly;Max-Age=${expiresIn};`);
+      cookies.push(
+        `session=${sessionCookie};Path=/;httpOnly=true;secure=true;SameSite=Lax;Max-Age=${expiresIn};`
+      );
     }
 
     if (dbUser.pref_lang) {

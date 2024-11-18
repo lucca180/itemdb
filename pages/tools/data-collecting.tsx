@@ -19,7 +19,6 @@ import { ItemData } from '../../types';
 import { ReactElement, useState } from 'react';
 import ItemCard from '../../components/Items/ItemCard';
 import axios from 'axios';
-import { getCookie } from 'cookies-next';
 import { NextApiRequest, GetServerSidePropsContext } from 'next';
 import { CheckAuth } from '../../utils/googleCloud';
 
@@ -185,14 +184,7 @@ export default DataCollectingPage;
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   try {
-    const token = getCookie('userToken', { req: context.req, res: context.res }) as
-      | string
-      | undefined
-      | null;
-
-    if (!token) throw new Error('No token found');
-
-    const check = await CheckAuth(context.req as NextApiRequest, token);
+    const check = await CheckAuth(context.req as NextApiRequest);
     if (!check.user) throw new Error('User not found');
 
     if (check.user.banned) {
