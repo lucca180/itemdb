@@ -50,7 +50,7 @@ export const getLatestOwls = async (limit = 20) => {
     const owlsItem = owlsData.recent_updates[i];
     const item = items[owlsItem.api_name];
 
-    if (!item) {
+    if (!item || !item.isNC || !owlsItem.owls_value) {
       i++;
       continue;
     }
@@ -94,25 +94,6 @@ export const getLatestOwls = async (limit = 20) => {
       };
     }
 
-    if (!item.isNC) {
-      await prisma.items.update({
-        where: {
-          internal_id: item.internal_id,
-        },
-        data: {
-          rarity: 500,
-          type: 'nc',
-          isNC: true,
-          isWearable: true,
-        },
-      });
-
-      item.isNC = true;
-      item.type = 'nc';
-      item.isWearable = true;
-      item.rarity = 500;
-    }
-
     itemRes.push(item);
     i++;
   }
@@ -138,5 +119,8 @@ export const getLatestOwls = async (limit = 20) => {
     itemRes.push(...Object.values(newItems));
   }
 
-  return itemRes;
+  return itemRes.sort((a, b) => {
+    if (!a.owls || !b.owls) return 0;
+    return new Date(b.owls.pricedAt).getTime() - new Date(a.owls.pricedAt).getTime();
+  });
 };
