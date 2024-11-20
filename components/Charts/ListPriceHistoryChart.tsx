@@ -30,6 +30,7 @@ const ListChartComponent = (props: ListChartComponentProps) => {
       layout: {
         background: { type: ColorType.Solid, color: backgroundColor },
         textColor,
+        attributionLogo: false,
       },
       crosshair: {
         vertLine: {
