@@ -100,7 +100,9 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
         >
           <Flex flexWrap="wrap" gap={4} justifyContent="center">
             {latestPrices &&
-              latestPrices.map((item) => <ItemCard item={item} key={item.internal_id} />)}
+              latestPrices.map((item) => (
+                <ItemCard item={item} key={item.internal_id} utm_content="latest-prices" />
+              ))}
             {!latestPrices && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
           </Flex>
         </HorizontalHomeCard>
@@ -111,7 +113,8 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
         >
           {latestItems && (
             <HomeCard
-              href="/search?s=&sortBy=added&sortDir=desc"
+              utm_content="latest-items"
+              href="/search?s=&sortBy=added&sortDir=desc?utm_content=latest-items"
               color="#e7db7a"
               image="https://images.neopets.com/prehistoric/outskirts/fearslayer_9h4v3cfj.png"
               items={latestItems}
@@ -120,6 +123,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
           )}
           {trendingItems && (
             <HomeCard
+              utm_content="trending-items"
               color="#AE445A"
               title={t('HomePage.trending-items')}
               image="https://images.neopets.com/themes/h5/common/communitycentral/images/icon-neoboards.png"
@@ -128,6 +132,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
           )}
           {latestNcMall && (
             <HomeCard
+              utm_content="latest-nc-mall"
               color="#BED754"
               title={t('HomePage.new-in-nc-mall')}
               image="https://images.neopets.com/neggfest/y19/mall/nc.png"
@@ -139,11 +144,11 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
           color="#4A5568"
           image="https://images.neopets.com/themes/h5/newyears/images/transferlog-icon.png"
           title={t('HomePage.featured-lists')}
-          viewAllLink="/lists/official"
+          viewAllLink="/lists/official?utm_content=featured-lists"
         >
           <Flex flexWrap="wrap" gap={4} justifyContent="center">
             {trendingLists.map((list) => (
-              <UserListCard key={list.internal_id} list={list} />
+              <UserListCard key={list.internal_id} list={list} utm_content="featured-lists" />
             ))}
           </Flex>
         </HorizontalHomeCard>
@@ -152,6 +157,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
             <HomeCard
               useItemCard
               href="/mall/leaving"
+              utm_content="leaving-nc-mall"
               color="#CB9DF0"
               image="https://images.neopets.com/themes/h5/altadorcup/images/calendar-icon.png"
               items={leavingNcMall}
@@ -163,6 +169,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
           {latestOwls && (
             <HomeCard
               useItemCard
+              utm_content="latest-owls"
               href="/articles/owls"
               color="#789DBC"
               image="https://images.neopets.com/neopies/y25/images/nominees/GiftBoxMysteryCapsule_y20tmnsll0/04.png"

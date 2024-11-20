@@ -29,10 +29,22 @@ type HomeCardProps = {
   w?: number;
   useItemCard?: boolean;
   opacity?: number;
+  utm_content?: string;
 };
 
 export const HomeCard = (props: HomeCardProps) => {
-  const { items, title, image, href: viewAllLink, linkText, w, h, useItemCard, opacity } = props;
+  const {
+    items,
+    title,
+    image,
+    href: viewAllLink,
+    linkText,
+    w,
+    h,
+    useItemCard,
+    opacity,
+    utm_content,
+  } = props;
   const [page, setPage] = useState(0);
   const color = new Color(props.color);
   const rgb = color.rgb().array();
@@ -71,6 +83,7 @@ export const HomeCard = (props: HomeCardProps) => {
               <HomeItem
                 key={item.internal_id + title}
                 menuKey={item.internal_id + title}
+                utm_content={utm_content}
                 item={item}
               />
             ))}
@@ -79,7 +92,7 @@ export const HomeCard = (props: HomeCardProps) => {
         {useItemCard && (
           <Flex flexWrap={'wrap'} gap={2} my={3} justifyContent={'center'}>
             {items.slice(9 * page, 9 * (page + 1)).map((item) => (
-              <ItemCard key={item.internal_id + title} item={item} />
+              <ItemCard key={item.internal_id + title} item={item} utm_content={utm_content} />
             ))}
           </Flex>
         )}
@@ -94,7 +107,12 @@ export const HomeCard = (props: HomeCardProps) => {
             size="sm"
           />
           {viewAllLink && (
-            <Button as={MainLink} href={viewAllLink} variant={'ghost'} size={'sm'}>
+            <Button
+              as={MainLink}
+              href={viewAllLink + (utm_content ? `?utm_content=${utm_content}` : '')}
+              variant={'ghost'}
+              size={'sm'}
+            >
               {linkText ?? t('General.view-all')}
             </Button>
           )}
@@ -113,7 +131,15 @@ export const HomeCard = (props: HomeCardProps) => {
   );
 };
 
-const HomeItem = ({ item, menuKey }: { item: ItemData; menuKey: string }) => {
+const HomeItem = ({
+  item,
+  menuKey,
+  utm_content,
+}: {
+  item: ItemData;
+  menuKey: string;
+  utm_content?: string;
+}) => {
   const [isMobile] = useMediaQuery('(hover: none)');
 
   return (
@@ -129,7 +155,11 @@ const HomeItem = ({ item, menuKey }: { item: ItemData; menuKey: string }) => {
         <Link
           as={MainLink}
           prefetch={false}
-          href={'/item/' + (item.slug ?? item.internal_id)}
+          href={
+            '/item/' +
+            (item.slug ?? item.internal_id) +
+            (utm_content ? `?utm_content=${utm_content}` : '')
+          }
           _hover={{ textDecoration: 'none' }}
         >
           <Flex

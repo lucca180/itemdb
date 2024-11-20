@@ -25,6 +25,7 @@ export type ItemProps = {
   sortType?: string;
   disablePrefetch?: boolean;
   highlight?: boolean;
+  utm_content?: string;
 };
 
 const intl = new Intl.NumberFormat();
@@ -41,6 +42,7 @@ const ItemCardBase = (props: ItemProps) => {
     sortType,
     disablePrefetch,
     highlight,
+    utm_content,
   } = props;
   const [isMobile] = useMediaQuery('(hover: none)');
 
@@ -92,7 +94,13 @@ const ItemCardBase = (props: ItemProps) => {
           as={disableLink ? undefined : MainLink}
           style={props.style}
           prefetch={disableLink || disablePrefetch !== false ? false : undefined}
-          href={disableLink ? undefined : '/item/' + (item.slug ?? item.internal_id)}
+          href={
+            disableLink
+              ? undefined
+              : '/item/' +
+                (item.slug ?? item.internal_id) +
+                (utm_content ? `?utm_content=${utm_content}` : '')
+          }
           _hover={{ textDecoration: 'none' }}
           // pointerEvents={disableLink ? 'none' : 'initial'}
         >

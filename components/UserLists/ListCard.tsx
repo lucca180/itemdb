@@ -19,12 +19,13 @@ type Props = {
     seek: { [list_id: number]: ListItemInfo[] };
     trade: { [list_id: number]: ListItemInfo[] };
   };
+  utm_content?: string;
 };
 
 const UserListCard = (props: Props) => {
   const t = useTranslations();
   const toast = useToast();
-  const { list, matches, isSelected, disableLink } = props;
+  const { list, matches, isSelected, disableLink, utm_content } = props;
   const [matchCount, setMatchCount] = useState(0);
   const color = Color(list?.colorHex || '#4A5568');
   const rgb = color.rgb().array();
@@ -77,7 +78,7 @@ const UserListCard = (props: Props) => {
         as={NextLink}
         href={`/lists/${list.official ? 'official' : list.owner.username}/${
           list.slug ?? list.internal_id
-        }`}
+        }${utm_content ? `?utm_content=${utm_content}` : ''}`}
         _hover={{ textDecoration: 'none' }}
       >
         <Flex
@@ -121,7 +122,7 @@ const UserListCard = (props: Props) => {
               as={NextLink}
               href={`/lists/${list.official ? 'official' : list.owner.username}/${
                 list.slug ?? list.internal_id
-              }`}
+              }${utm_content ? `?utm_content=${utm_content}` : ''}`}
             >
               {list.name}
             </Link>
