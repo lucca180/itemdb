@@ -97,6 +97,17 @@ const alerts = {
     bg: '#53ffffc7',
     color: 'blackAlpha.900',
   },
+  hiddenTower: {
+    message: 'SiteAlert.hiddenTower',
+    link: '/lists/official/hidden-tower',
+    img: {
+      src: 'https://images.neopets.com/themes/h5/birthday/images/inventory-icon.png',
+      h: 28,
+      w: 28,
+    },
+    bg: 'pink.300',
+    color: 'blackAlpha.800',
+  },
 };
 
 export const SiteAlert = () => {
@@ -139,7 +150,7 @@ const getAlert = () => {
   const todayNST = getDateNST();
 
   // if (todayNST.getTime() < 1732028400000) return alerts.anniversary;
-
+  if (isThirdWednesday(todayNST)) return alerts.hiddenTower;
   if (todayNST.getDate() === 3) return alerts.hpd;
   else if (todayNST.getMonth() === 4 && todayNST.getDate() === 12) return alerts.tyrannia;
 
@@ -151,3 +162,11 @@ const getAlert = () => {
 
   return alerts.default;
 };
+
+function isThirdWednesday(date: Date) {
+  const dayOfWeek = date.getDay();
+  const dayOfMonth = date.getDate();
+  if (dayOfWeek !== 3) return false;
+
+  return dayOfMonth >= 15 && dayOfMonth <= 21;
+}
