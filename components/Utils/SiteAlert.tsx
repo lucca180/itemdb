@@ -127,7 +127,7 @@ export const SiteAlert = () => {
         px={1}
       >
         {alert.img && (
-          <Link as={NextLink} href={alert.link}>
+          <Link as={NextLink} href={alert.link + '?utm_content=site-alert'}>
             <Image src={alert.img.src} width={alert.img.w} height={alert.img.h} alt="alert icon" />
           </Link>
         )}
@@ -135,7 +135,7 @@ export const SiteAlert = () => {
           {!!alert.message &&
             t.rich(alert.message, {
               Link: (children) => (
-                <Link as={NextLink} href={alert.link} fontWeight="bold">
+                <Link as={NextLink} href={alert.link + '?utm_content=site-alert'} fontWeight="bold">
                   {children}
                 </Link>
               ),
