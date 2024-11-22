@@ -851,9 +851,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   try {
     const res = await CheckAuth((context.req ?? null) as any);
     userOrToken = res?.user;
-  } catch (err) {
-    console.error(err);
-  }
+  } catch (err) {}
 
   const parsedId = isNaN(parseInt(list_id as string)) ? undefined : parseInt(list_id as string);
   const slug = parsedId ? undefined : list_id;
