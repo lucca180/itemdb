@@ -406,8 +406,8 @@ const SearchPage = () => {
               isDisabled={!searchResult}
             >
               <option value="30">{t('General.x-per-page', { x: 30 })}</option>
-              <option value="48">{t('General.x-per-page', { x: 30 })}</option>
-              <option value="96">{t('General.x-per-page', { x: 30 })}</option>
+              <option value="48">{t('General.x-per-page', { x: 48 })}</option>
+              <option value="96">{t('General.x-per-page', { x: 96 })}</option>
             </Select>
           </HStack>
         </Flex>
