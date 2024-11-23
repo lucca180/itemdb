@@ -473,7 +473,7 @@ const SearchPage = () => {
               setPage={changePage}
             />
           )}
-          {!searchResult && <Pagination />}
+          {!searchResult && <Pagination mt={2} />}
           <Flex mt={4} flexWrap="wrap" gap={{ base: 3, md: 4 }} justifyContent="center">
             {searchResult?.content.map((item) => (
               <Box
