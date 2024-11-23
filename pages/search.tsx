@@ -28,65 +28,69 @@ import { SearchFilterModalProps } from '../components/Search/SearchFiltersModal'
 import { BsFilter } from 'react-icons/bs';
 import { SelectItemsCheckbox } from '../components/Input/SelectItemsCheckbox';
 import ListSelect from '../components/UserLists/ListSelect';
-import { useAuth } from '../utils/auth';
 import { defaultFilters } from '../utils/parseFilters';
 import { CreateDynamicListButton } from '../components/DynamicLists/CreateButton';
 import Color from 'color';
 import NextLink from 'next/link';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
+import { useLists } from '../utils/useLists';
 
 const SearchFilterModal = dynamic<SearchFilterModalProps>(
-  () => import('../components/Search/SearchFiltersModal'),
+  () => import('../components/Search/SearchFiltersModal')
 );
 
-const Axios = axios.create({
+const itemdb = axios.create({
   baseURL: '/api/v1/',
 });
 
-Axios.interceptors.response.use(
+itemdb.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.code === 'ERR_CANCELED') {
       return Promise.reject({ status: 499 });
     }
     return Promise.reject((error.response && error.response.data) || 'Error');
-  },
+  }
 );
 
 const intl = new Intl.NumberFormat();
-let ABORT_CONTROLER = new AbortController();
+const color = Color('#4A5568');
+const rgb = color.rgb().round().array();
+
+let ABORT_CONTROLLER = new AbortController();
 
 const SearchPage = () => {
+  const router = useRouter();
   const t = useTranslations();
+  const { addItemToList } = useLists();
   const toast = useToast();
-  const { user, getIdToken } = useAuth();
-  const [searchQuery, setQuery] = useState<string>('');
-  const [searchResult, setResult] = useState<SearchResults | null>(null);
-  const [searchStatus, setStatus] = useState<SearchStats | null>(null);
-  const [filters, setFilters] = useState<SearchFiltersType>(defaultFilters);
-  const [isColorSearch, setIsColorSearch] = useState<boolean>(false);
-  const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [totalResults, setTotalResults] = useState<number | null>(null);
-  const __isNewPage = useRef(false);
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [searchResult, setResult] = useState<SearchResults | null>(null);
+  const [searchQuery, setQuery] = useState<string>('');
+  const [isColorSearch, setIsColorSearch] = useState<boolean>(false);
+  const [filters, setFilters] = useState<SearchFiltersType>(defaultFilters);
+  const [searchStatus, setStatus] = useState<SearchStats | null>(null);
+  const prevFilter = useRef<SearchFiltersType>(null);
+  const [isLargerThanLG] = useMediaQuery('(min-width: 62em)', { fallback: true });
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const searchTip = searchTips[new Date().getHours() % searchTips.length];
 
-  const [isLargerThanLG] = useMediaQuery('(min-width: 62em)', { fallback: true });
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const router = useRouter();
-
-  const color = Color('#4A5568');
-  const rgb = color.rgb().round().array();
+  useEffect(() => {
+    parseQueryString();
+  }, [router.query]);
 
   useEffect(() => {
-    if (router.isReady) {
-      const [custom, forceRefresh] = parseQueryString();
-      init(custom, forceRefresh);
-    }
-  }, [router.isReady, router.query]);
+    if (!router.isReady) return;
 
-  const init = async (customFilters?: SearchFiltersType, forceStats = false) => {
+    doSearch(undefined, shouldUpdateCount(filters, prevFilter.current));
+    changeQueryString();
+    prevFilter.current = filters;
+  }, [filters, router.isReady]);
+
+  const doSearch = async (fetchStats = false, fetchCount = false) => {
     const query = (router.query.s as string) ?? '';
     setQuery(query);
     setSelectedItems([]);
@@ -94,141 +98,73 @@ const SearchPage = () => {
     if (query.match(/^#[0-9A-Fa-f]{6}$/)) {
       if (!searchResult && !isColorSearch) {
         setIsColorSearch(true);
+        setFilters((oldFilters) => ({
+          ...oldFilters,
+          sortBy: oldFilters.sortBy !== 'name' ? oldFilters.sortBy : 'color',
+        }));
 
-        customFilters = {
-          ...(customFilters ?? filters),
-          sortBy:
-            (customFilters ?? filters).sortBy !== 'name'
-              ? (customFilters ?? filters).sortBy
-              : 'color',
-        };
-
-        setFilters(customFilters);
+        return;
       }
     } else setIsColorSearch(false);
 
-    const params = getFiltersDiff({ ...(customFilters ?? filters) });
-
+    const params = getFiltersDiff(filters);
     setResult(null);
-    if (!__isNewPage.current) setTotalResults(null);
-    try {
-      ABORT_CONTROLER.abort();
-      ABORT_CONTROLER = new AbortController();
 
-      if (!totalResults || !__isNewPage.current) {
-        Axios.get('search?s=' + encodeURIComponent(query), {
-          signal: ABORT_CONTROLER.signal,
-          params: { ...params, limit: 1, onlyStats: true },
-        })
-          .then((res) => {
-            setTotalResults(res.data.totalResults);
+    fetchStats = fetchStats || !totalResults;
+    fetchCount = fetchCount || !searchResult;
+
+    if (fetchStats) setStatus(null);
+    if (fetchCount) setTotalResults(null);
+
+    try {
+      ABORT_CONTROLLER.abort();
+      ABORT_CONTROLLER = new AbortController();
+
+      if (fetchCount) {
+        itemdb
+          .get('search', {
+            signal: ABORT_CONTROLLER.signal,
+            params: {
+              ...params,
+              s: query,
+              limit: 1,
+              onlyStats: true,
+            },
           })
-          .catch(() => {});
+          .then((res) => setTotalResults(res.data.totalResults))
+          .catch();
       }
 
-      __isNewPage.current = false;
+      if (fetchStats) {
+        itemdb
+          .get('search/stats', {
+            signal: ABORT_CONTROLLER.signal,
+            params: {
+              s: query,
+            },
+          })
+          .then((res) => setStatus(res.data));
+      }
 
-      const [resSearch, resStats] = await Promise.all([
-        Axios.get('search?s=' + encodeURIComponent(query), {
-          signal: ABORT_CONTROLER.signal,
-          params: { ...params, skipStats: true },
-        }),
-
-        !searchStatus || forceStats
-          ? Axios.get('search/stats?s=' + encodeURIComponent(query), {
-              signal: ABORT_CONTROLER.signal,
-            })
-          : null,
-      ]);
-
-      setResult(resSearch.data);
-      if (resStats) setStatus(resStats.data);
+      itemdb
+        .get('search', {
+          signal: ABORT_CONTROLLER.signal,
+          params: {
+            ...params,
+            skipStats: true,
+            s: query,
+          },
+        })
+        .then((res) => setResult(res.data));
     } catch (err) {
       toast({
-        title: 'An Error Occurred',
-        description: 'Please try again',
+        title: t('General.an-error-occurred'),
+        description: t('General.try-again-later'),
         status: 'error',
         duration: null,
         isClosable: true,
       });
     }
-  };
-
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newFilter = {
-      ...filters,
-      [e.target.name]: e.target.value,
-      page: 1,
-    };
-
-    setFilters(newFilter);
-    changeQueryString(newFilter);
-  };
-
-  const handleFilterChange = (newFilter: SearchFiltersType) => {
-    setFilters({
-      ...filters,
-      ...newFilter,
-      page: 1,
-    });
-  };
-
-  const resetFilters = () => {
-    const newFilter = {
-      ...defaultFilters,
-      sortBy: filters.sortBy,
-      sortDir: filters.sortDir,
-      page: 1,
-    };
-
-    setFilters(newFilter);
-    changeQueryString(newFilter);
-  };
-
-  const changePage = (page: number) => {
-    setFilters({ ...filters, page: page });
-    changeQueryString({ ...filters, page: page });
-    __isNewPage.current = true;
-    if (typeof window !== 'undefined') window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-  };
-
-  const parseQueryString = (): [SearchFiltersType, boolean] => {
-    const queryStrings = qs.parse(router.asPath, {
-      ignoreQueryPrefix: true,
-    });
-
-    const queryFilters = getFiltersDiff(queryStrings);
-
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //@ts-ignore
-    let customFilters: SearchFiltersType = { ...defaultFilters, ...queryFilters };
-
-    if (Object.keys(queryStrings).length == 1) customFilters = defaultFilters;
-
-    if (searchQuery && searchQuery !== router.query.s) {
-      setStatus(null);
-      customFilters.page = 1;
-    }
-
-    setFilters(customFilters);
-
-    return [customFilters, searchQuery !== router.query.s];
-  };
-
-  const changeQueryString = (customFilters?: SearchFiltersType) => {
-    const query = (router.query.s as string) ?? '';
-
-    const params = getFiltersDiff({ ...(customFilters ?? filters) });
-
-    let paramsString = qs.stringify(params, {
-      arrayFormat: 'brackets',
-      encode: false,
-    });
-    paramsString = paramsString ? '&' + paramsString : '';
-
-    router.push(router.pathname + '?s=' + encodeURIComponent(query) + paramsString, undefined, {
-      shallow: true,
-    });
   };
 
   const selectItem = (id?: number, checkAll?: boolean) => {
@@ -242,60 +178,98 @@ const SearchPage = () => {
     }
   };
 
-  const addItemToList = async (list_id: number) => {
-    if (!user) return;
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFilters((oldFilter) => ({
+      ...oldFilter,
+      [e.target.name]: e.target.value,
+      page: 1,
+    }));
+  };
 
-    const toastId = toast({
-      title: `${t('Lists.adding-items-to-list')}...`,
-      description: `${t('Lists.this-may-take-a-while-please-wait')}...`,
-      status: 'info',
-      duration: null,
-      isClosable: true,
+  const applyFilterChange = (newFilter: SearchFiltersType) => {
+    setFilters((oldFilters) => ({
+      ...oldFilters,
+      ...newFilter,
+      page: 1,
+    }));
+  };
+
+  const resetFilters = () => {
+    const newFilter = {
+      ...defaultFilters,
+      sortBy: filters.sortBy,
+      sortDir: filters.sortDir,
+      page: 1,
+    };
+
+    setFilters(newFilter);
+  };
+
+  const changePage = (page: number) => {
+    setFilters((oldFilters) => ({ ...oldFilters, page: page }));
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+  };
+
+  const parseQueryString = () => {
+    const queryStrings = qs.parse(router.asPath, {
+      ignoreQueryPrefix: true,
     });
 
-    try {
-      const token = await getIdToken();
+    const queryFilters = getFiltersDiff(queryStrings, filters);
 
-      const items = selectedItems.map((id) => ({ item_iid: id }));
-
-      const res = await axios.put(
-        `/api/v1/lists/${user.username}/${list_id}`,
-        {
-          items: items,
-        },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        },
-      );
-      if (res.data.success) {
-        toast.update(toastId, {
-          title: t('Lists.items-added-to-list'),
-          status: 'success',
-          duration: 5000,
-        });
-        setSelectedItems([]);
-      }
-    } catch (err) {
-      console.error(err);
-
-      toast.update(toastId, {
-        title: t('General.oops'),
-        description: t('Lists.errorOccurred'),
-        status: 'error',
-        duration: 5000,
-      });
+    if (Object.keys(queryFilters).length > 0) {
+      setFilters((oldFilters) => ({
+        ...oldFilters,
+        ...queryFilters,
+      }));
+    } else if (!!router.query.s && !!searchQuery && router.query.s !== searchQuery) {
+      doSearch(true, true);
     }
   };
 
-  const onItemClick = (e: React.MouseEvent<any>, id: number) => {
-    if (selectedItems.length <= 0 && !e.ctrlKey) return;
+  const changeQueryString = () => {
+    const query = (router.query.s as string) ?? '';
 
-    if (e?.ctrlKey) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
+    if (!prevFilter.current) return;
+    const newParams = getFiltersDiff(filters, prevFilter.current);
+
+    if (!Object.keys(newParams).length) return;
+
+    let paramsString = qs.stringify(newParams, {
+      arrayFormat: 'brackets',
+      encode: false,
+    });
+
+    paramsString = paramsString ? '&' + paramsString : '';
+
+    router.push(router.pathname + '?s=' + encodeURIComponent(query) + paramsString, undefined, {
+      shallow: true,
+    });
+  };
+
+  const handleAddItemToList = async (list_id: number) => {
+    const listPromise = addItemToList(list_id, selectedItems);
+
+    toast.promise(listPromise, {
+      success: { title: t('Lists.items-added-to-list'), duration: 3000 },
+      error: { title: t('General.oops'), description: t('Lists.errorOccurred') },
+      loading: {
+        title: `${t('Lists.adding-items-to-list')}...`,
+        description: `${t('Lists.this-may-take-a-while-please-wait')}...`,
+        duration: null,
+        isClosable: true,
+      },
+    });
+
+    listPromise
+      .then(() => setSelectedItems([]))
+      .catch((err) => {
+        console.error(err);
+      });
+  };
+
+  const onItemClick = (e: React.MouseEvent<any>, id: number) => {
+    if (selectedItems.length <= 0) return;
 
     selectItem(id);
   };
@@ -310,6 +284,134 @@ const SearchPage = () => {
       }}
       mainColor="#4A5568c7"
     >
+      {isOpen && (
+        <SearchFilterModal
+          isOpen={isOpen}
+          onClose={onClose}
+          filters={filters}
+          stats={searchStatus}
+          isColorSearch={isColorSearch}
+          resetFilters={resetFilters}
+          applyFilters={applyFilterChange}
+        />
+      )}
+      <Box position="absolute" h="20vh" left="0" width="100%" bg="blackAlpha.200" zIndex={-1} />
+      <Flex
+        position={'relative'}
+        w="100%"
+        mx="auto"
+        py={3}
+        alignItems={'center'}
+        justifyContent={'space-between'}
+        flexDir={{ base: 'column-reverse', lg: 'row' }}
+        gap={3}
+        textAlign={'center'}
+      >
+        <HStack justifyContent={'space-between'}>
+          <Flex textColor={'gray.300'} fontSize={{ base: 'xs', sm: 'sm' }} gap={3}>
+            {totalResults !== null && searchResult && (
+              <SelectItemsCheckbox
+                checked={selectedItems}
+                allChecked={selectedItems.length === searchResult.content.length}
+                onClick={(checkAll) => selectItem(undefined, checkAll)}
+                defaultText={t('Search.showing', {
+                  val1: intl.format(searchResult.resultsPerPage * (searchResult.page - 1) + 1),
+                  val2: intl.format(
+                    Math.min(searchResult.resultsPerPage * searchResult.page, totalResults)
+                  ),
+                  val3: intl.format(totalResults),
+                })}
+              />
+            )}
+            {(!searchResult || totalResults === null) && <Skeleton width="100px" h="15px" />}
+            {selectedItems.length > 0 && (
+              <ListSelect
+                defaultText={t('Lists.add-to-list')}
+                size="sm"
+                createNew
+                onChange={(list) => handleAddItemToList(list.internal_id)}
+              />
+            )}
+          </Flex>
+          <Box display={{ base: 'block', lg: 'none' }}>
+            {!isLargerThanLG && (
+              <HStack gap={2}>
+                <CreateDynamicListButton
+                  resultCount={searchResult?.totalResults}
+                  isLoading={!searchResult}
+                  filters={filters}
+                  query={searchQuery}
+                  isMobile
+                />
+                <IconButton
+                  aria-label="search filters"
+                  onClick={onOpen}
+                  icon={<BsFilter />}
+                  display={{ base: 'inherit', lg: 'none' }}
+                />
+              </HStack>
+            )}
+          </Box>
+        </HStack>
+        <Flex
+          flex="0 1 auto"
+          mx={0}
+          minW={{ base: 'none', sm: 350 }}
+          w={{ base: '100%', sm: 'auto' }}
+          flexDir={{ base: 'column', sm: 'row' }}
+          gap={2}
+          alignItems="center"
+        >
+          <Text flex="0 0 auto" textColor={'gray.300'} fontSize={{ base: 'xs', sm: 'sm' }}>
+            {t('General.sort-by')}
+          </Text>
+          <HStack gap={2} flex="0 1 auto">
+            <Select
+              name="sortBy"
+              variant="filled"
+              value={filters.sortBy}
+              onChange={handleSelectChange}
+              size="sm"
+              fontSize={['xs', 'sm']}
+              isDisabled={!searchResult}
+            >
+              <option value="name">{t('General.name')}</option>
+              <option value="price">{t('General.price')}</option>
+              <option value="owls">{t('ItemPage.owls-value')}</option>
+              <option value="rarity">{t('General.rarity')}</option>
+              <option value="color">{t('General.color')}</option>
+              <option value="weight">{t('General.weight')}</option>
+              <option value="estVal">{t('General.est-val')}</option>
+              <option value="id">{t('General.id')}</option>
+            </Select>
+            <Select
+              name="sortDir"
+              variant="filled"
+              value={filters.sortDir}
+              onChange={handleSelectChange}
+              size="sm"
+              fontSize={['xs', 'sm']}
+              isDisabled={!searchResult}
+            >
+              <option value="asc">{t('General.ascending')}</option>
+              <option value="desc">{t('General.descending')}</option>
+            </Select>
+            <Select
+              name="limit"
+              variant="filled"
+              value={filters.limit}
+              onChange={handleSelectChange}
+              size="sm"
+              fontSize={['xs', 'sm']}
+              isDisabled={!searchResult}
+            >
+              <option value="30">{t('General.x-per-page', { x: 30 })}</option>
+              <option value="48">{t('General.x-per-page', { x: 30 })}</option>
+              <option value="96">{t('General.x-per-page', { x: 30 })}</option>
+            </Select>
+          </HStack>
+        </Flex>
+      </Flex>
       <Box
         position="absolute"
         h="50vh"
@@ -319,10 +421,10 @@ const SearchPage = () => {
         zIndex={-1}
       />
       <Flex
+        mt={3}
         gap={4}
         flexFlow={{ base: 'column', lg: 'row' }}
         alignItems={{ base: 'center', lg: 'flex-start' }}
-        pt={3}
       >
         <Box
           flex="1 0 auto"
@@ -334,9 +436,8 @@ const SearchPage = () => {
             filters={filters}
             stats={searchStatus}
             isColorSearch={isColorSearch}
-            onChange={handleFilterChange}
             resetFilters={resetFilters}
-            applyFilters={() => changeQueryString()}
+            applyFilters={applyFilterChange}
           />
 
           <Flex justifyContent={'center'}>
@@ -348,130 +449,31 @@ const SearchPage = () => {
             />
           </Flex>
         </Box>
-
-        {isOpen && (
-          <SearchFilterModal
-            isOpen={isOpen}
-            onClose={onClose}
-            filters={filters}
-            stats={searchStatus}
-            isColorSearch={isColorSearch}
-            onChange={handleFilterChange}
-            resetFilters={resetFilters}
-            applyFilters={() => changeQueryString()}
-          />
-        )}
         <Box flex="1">
-          <Flex
-            justifyContent={'space-between'}
-            alignItems="center"
-            flexFlow={{ base: 'column-reverse', lg: 'row' }}
-            gap={3}
-          >
-            <HStack justifyContent={'space-between'} w="100%">
-              <Flex textColor={'gray.300'} fontSize={{ base: 'xs', sm: 'sm' }} gap={3}>
-                {totalResults !== null && searchResult && (
-                  <SelectItemsCheckbox
-                    checked={selectedItems}
-                    allChecked={selectedItems.length === searchResult.content.length}
-                    onClick={(checkAll) => selectItem(undefined, checkAll)}
-                    defaultText={t('Search.showing', {
-                      val1: intl.format(searchResult.resultsPerPage * (searchResult.page - 1) + 1),
-                      val2: intl.format(
-                        Math.min(searchResult.resultsPerPage * searchResult.page, totalResults),
-                      ),
-                      val3: intl.format(totalResults),
-                    })}
-                  />
-                )}
-                {(!searchResult || totalResults === null) && <Skeleton width="100px" h="15px" />}
-                {selectedItems.length > 0 && (
-                  <ListSelect
-                    defaultText={t('Lists.add-to-list')}
-                    size="sm"
-                    createNew
-                    onChange={(list) => addItemToList(list.internal_id)}
-                  />
-                )}
-              </Flex>
-              {!isLargerThanLG && (
-                <HStack gap={3}>
-                  <CreateDynamicListButton
-                    resultCount={searchResult?.totalResults}
-                    isLoading={!searchResult}
-                    filters={filters}
-                    query={searchQuery}
-                    isMobile
-                  />
-                  <IconButton
-                    aria-label="search filters"
-                    onClick={onOpen}
-                    icon={<BsFilter />}
-                    display={{ base: 'inherit', lg: 'none' }}
-                  />
-                </HStack>
-              )}
-            </HStack>
-            <Flex
-              flex="0 1 auto"
-              mx={0}
-              minW={{ base: 'none', sm: 350 }}
-              w={{ base: '100%', sm: 'auto' }}
-              gap={2}
-              alignItems="center"
-            >
-              <Text flex="0 0 auto" textColor={'gray.300'} fontSize={{ base: 'xs', sm: 'sm' }}>
-                {t('General.sort-by')}
-              </Text>
-              <Select
-                name="sortBy"
-                variant="filled"
-                value={filters.sortBy}
-                onChange={handleSelectChange}
-                size="sm"
-                isDisabled={!searchResult}
-              >
-                <option value="name">{t('General.name')}</option>
-                <option value="price">{t('General.price')}</option>
-                <option value="owls">{t('ItemPage.owls-value')}</option>
-                <option value="rarity">{t('General.rarity')}</option>
-                <option value="color">{t('General.color')}</option>
-                <option value="weight">{t('General.weight')}</option>
-                <option value="estVal">{t('General.est-val')}</option>
-                <option value="id">{t('General.id')}</option>
-              </Select>
-              <Select
-                name="sortDir"
-                variant="filled"
-                value={filters.sortDir}
-                onChange={handleSelectChange}
-                size="sm"
-                isDisabled={!searchResult}
-              >
-                <option value="asc">{t('General.ascending')}</option>
-                <option value="desc">{t('General.descending')}</option>
-              </Select>
-            </Flex>
-          </Flex>
-
           <Text
             textAlign={'center'}
             fontSize="xs"
             color="gray.500"
             display={{ base: 'none', lg: 'block' }}
           >
-            {t('General.tip')}: {searchTip}
+            {t('General.tip')}:{' '}
+            {t.rich(searchTip.tag, {
+              Link: (chunk) => (
+                <Link as={NextLink} href={searchTip.href} color="gray.400">
+                  {chunk}
+                </Link>
+              ),
+            })}
           </Text>
-
           {searchResult && (
             <Pagination
+              mt={2}
               currentPage={searchResult.page}
               totalPages={Math.ceil((totalResults ?? 1000) / searchResult.resultsPerPage)}
               setPage={changePage}
             />
           )}
           {!searchResult && <Pagination />}
-
           <Flex mt={4} flexWrap="wrap" gap={{ base: 3, md: 4 }} justifyContent="center">
             {searchResult?.content.map((item) => (
               <Box
@@ -514,20 +516,6 @@ const SearchPage = () => {
   );
 };
 
-export const getFiltersDiff = (a: { [id: string]: any }, b?: SearchFiltersType) => {
-  if (!b) b = defaultFilters;
-  const keys = Object.keys(b) as (keyof SearchFiltersType)[];
-  const diff = {} as {
-    [key in keyof SearchFiltersType]: string | string[] | number;
-  };
-
-  for (const key of keys) {
-    if (a[key] && JSON.stringify(a[key]) !== JSON.stringify(b[key])) diff[key] = a[key];
-  }
-
-  return diff;
-};
-
 export default SearchPage;
 
 export async function getStaticProps(context: any) {
@@ -538,20 +526,41 @@ export async function getStaticProps(context: any) {
   };
 }
 
+export const getFiltersDiff = (
+  a: { [id: string]: any },
+  b?: SearchFiltersType
+): Partial<SearchFiltersType> => {
+  if (!b) b = defaultFilters;
+  const keys = Object.keys(b) as (keyof SearchFiltersType)[];
+  const diff = {} as {
+    [key in keyof SearchFiltersType]: any;
+  };
+
+  for (const key of keys) {
+    if (a[key] && a[key] != b[key] && JSON.stringify(a[key]) != JSON.stringify(b[key]))
+      diff[key] = a[key];
+  }
+
+  return diff as Partial<SearchFiltersType>;
+};
+
+const shouldUpdateCount = (newFilter: SearchFiltersType, prevFilter: SearchFiltersType | null) => {
+  const diff = getFiltersDiff(newFilter, prevFilter ?? undefined);
+  const keys = Object.keys(diff) as (keyof SearchFiltersType)[];
+  const dontUpdateCountKeys = ['page', 'resultsPerPage', 'sortDir', 'sortBy'];
+
+  return keys.some((key) => !dontUpdateCountKeys.includes(key));
+};
+
 const searchTips = [
-  <>
-    you can use{' '}
-    <Link as={NextLink} href="/articles/advanced-search-queries" color="gray.400">
-      Advanced Operators
-    </Link>{' '}
-    to supercharge your search
-  </>,
-  <>
-    you can create a{' '}
-    <Link as={NextLink} href="/articles/checklists-and-dynamic-lists" color="gray.400">
-      Dynamic List
-    </Link>{' '}
-    to keep it always up to date with your search
-  </>,
-  <>you can use right click or ctrl+click to select multiple items</>,
+  {
+    _id: 'Advanced Operators',
+    tag: 'Search.tip-advanced-operators',
+    href: '/articles/advanced-search-queries',
+  },
+  {
+    _id: 'Dynamic Lists',
+    tag: 'Search.tip-dynamic-lists',
+    href: '/articles/checklists-and-dynamic-lists',
+  },
 ];

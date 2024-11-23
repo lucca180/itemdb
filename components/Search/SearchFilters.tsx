@@ -52,7 +52,7 @@ const SearchFilters = (props: Props) => {
   const [colorVal, setColorVal] = useState<string>(
     props.filters.color && !ALL_COLORS_CODE.includes(props.filters.color.toLowerCase())
       ? props.filters.color
-      : '#c4bce4',
+      : '#c4bce4'
   );
 
   useEffect(() => {
@@ -60,7 +60,7 @@ const SearchFilters = (props: Props) => {
     setColorVal(
       props.filters.color && !ALL_COLORS_CODE.includes(props.filters.color.toLowerCase())
         ? props.filters.color
-        : '#c4bce4',
+        : '#c4bce4'
     );
   }, [props.filters]);
 
@@ -71,7 +71,7 @@ const SearchFilters = (props: Props) => {
   const handleCheckChange = (
     newFilter: string,
     filterType: keyof typeof filters,
-    defaultValue: string,
+    defaultValue: string
   ) => {
     if (
       [
@@ -97,7 +97,7 @@ const SearchFilters = (props: Props) => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
     const newFilters = [...filters[filterType]].filter(
-      (f) => f !== defaultValue && f !== `!${defaultValue}`,
+      (f) => f !== defaultValue && f !== `!${defaultValue}`
     );
 
     if (newFilter) newFilters.push(newFilter);
@@ -120,7 +120,7 @@ const SearchFilters = (props: Props) => {
       | 'estVal'
       | 'owlsValue'
       | 'restockProfit'
-      | 'colorTolerance',
+      | 'colorTolerance'
   ) => {
     let newFilters = filters;
     if (!['restockProfit', 'colorTolerance'].includes(filterType)) {
@@ -153,7 +153,7 @@ const SearchFilters = (props: Props) => {
         <AccordionPanel pb={4}>
           <VStack alignItems="flex-start">
             {stats &&
-              Object.entries(stats.category)
+              Object.entries(getCategories(stats.category, filters.category))
                 .sort((a, b) => sortCategories(a[0], b[0], filters.category, !showMoreCat))
                 .slice(0, showMoreCat ? undefined : 5)
                 .map((cat) => (
@@ -685,4 +685,18 @@ const sortCategories = (a: string, b: string, selected: string[], selectedFirst 
   }
 
   return a.localeCompare(b);
+};
+
+const getCategories = (catStats: Record<string, number>, selected: string[]) => {
+  //check if there is a selected category that is not in the stats
+  const stats = Object.keys(catStats);
+  const selectedStats = selected.filter((s) => !stats.includes(s) && !stats.includes(`!${s}`));
+
+  // if there is, add it to the stats
+  selectedStats.forEach((s) => {
+    const key = s.startsWith('!') ? s.slice(1) : s;
+    if (!catStats[key]) catStats[key] = 0;
+  });
+
+  return catStats;
 };

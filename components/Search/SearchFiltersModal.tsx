@@ -12,14 +12,15 @@ import {
 import SearchFilters from './SearchFilters';
 import { SearchFilters as SearchFiltersType, SearchStats } from '../../types';
 import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
 
 export type SearchFilterModalProps = {
   filters: SearchFiltersType;
   stats: SearchStats | null;
   isColorSearch?: boolean;
-  onChange: (filters: SearchFiltersType) => void;
+  onChange?: (filters: SearchFiltersType) => void;
   resetFilters: () => void;
-  applyFilters: () => void;
+  applyFilters: (newFilters: SearchFiltersType) => void;
   onClose: () => void;
   isOpen?: boolean;
   isLists?: boolean;
@@ -27,20 +28,22 @@ export type SearchFilterModalProps = {
 
 const SearchFilterModal = (props: SearchFilterModalProps) => {
   const t = useTranslations();
-  const {
-    filters,
-    stats,
-    isColorSearch,
-    isOpen,
-    onClose,
-    onChange,
-    resetFilters,
-    applyFilters,
-    isLists,
-  } = props;
+  const { stats, isColorSearch, isOpen, onClose, onChange, resetFilters, applyFilters, isLists } =
+    props;
+
+  const [filters, setFilters] = useState<SearchFiltersType>(props.filters);
+
+  useEffect(() => {
+    setFilters(props.filters);
+  }, [props.filters]);
+
+  const handleChange = (newFilters: SearchFiltersType) => {
+    setFilters(newFilters);
+    onChange?.(newFilters);
+  };
 
   const applyFiltersAndClose = () => {
-    applyFilters();
+    applyFilters(filters);
     onClose();
   };
 
@@ -57,7 +60,7 @@ const SearchFilterModal = (props: SearchFilterModalProps) => {
         <ModalCloseButton />
         <ModalBody>
           <SearchFilters
-            onChange={onChange}
+            onChange={handleChange}
             isLists={isLists}
             filters={filters}
             stats={stats}

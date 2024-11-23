@@ -20,10 +20,19 @@ export const getSearchStats = async (resQuery: string, list_id = 0, includeHidde
   const [, newQuery] = parseFilters(originalQuery, false);
 
   const query = newQuery;
-
-  const fulltext = Prisma.sql`MATCH (a.name) AGAINST (${query} IN BOOLEAN MODE) OR a.name LIKE ${`%${originalQuery}%`}`;
-
   const isColorSearch = query.match(/#[0-9A-Fa-f]{6}$/gm);
+  let l, a, b;
+
+  if (isColorSearch) {
+    const color = Color(query);
+    [l, a, b] = color.lab().array();
+    console.log(l, a, b);
+  }
+
+  const fulltext =
+    !isColorSearch && (query || originalQuery)
+      ? Prisma.sql`and (MATCH (a.name) AGAINST (${query} IN BOOLEAN MODE) OR a.name LIKE ${`%${originalQuery}%`})`
+      : Prisma.empty;
 
   const groups = [
     'category',
@@ -40,12 +49,6 @@ export const getSearchStats = async (resQuery: string, list_id = 0, includeHidde
   ];
 
   const hiddenQuery = !includeHidden ? Prisma.sql`AND isHidden = 0` : Prisma.empty;
-  let l, a, b;
-
-  if (isColorSearch) {
-    const color = Color(query);
-    [l, a, b] = color.lab().array();
-  }
 
   const queries = [];
 
@@ -76,7 +79,7 @@ export const getSearchStats = async (resQuery: string, list_id = 0, includeHidde
       }
 
       ${
-        !!l
+        isColorSearch
           ? Prisma.sql`LEFT JOIN (
             SELECT image_id, min((POWER(lab_l-${l},2)+POWER(lab_a-${a},2)+POWER(lab_b-${b},2))) as dist
             FROM ItemColor
@@ -93,9 +96,9 @@ export const getSearchStats = async (resQuery: string, list_id = 0, includeHidde
           : Prisma.empty
       }
 
-      where (${fulltext}) and a.canonical_id is null 
+      where 1 = 1 ${fulltext} and a.canonical_id is null 
       
-      ${!!l ? Prisma.sql`and d.dist is not null` : Prisma.empty}
+      ${!!isColorSearch ? Prisma.sql`and d.dist is not null` : Prisma.empty}
       
       ${
         list_id

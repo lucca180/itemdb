@@ -18,7 +18,7 @@ export const SelectItemsCheckbox = (props: Props) => {
       isIndeterminate={!!checked?.length && !allChecked}
       onChange={() => onClick?.(!allChecked)}
     >
-      <Text fontSize={{ base: 'sm' }}>
+      <Text fontSize={{ base: 'xs', md: 'sm' }}>
         {!defaultText || checked?.length
           ? t('Button.items-selected', { items: checked?.length ?? 0 })
           : `${defaultText}`}

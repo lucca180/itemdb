@@ -3,24 +3,40 @@ import CardBase from '../Card/CardBase';
 import SearchFilters from './SearchFilters';
 import { SearchFilters as SearchFiltersType, SearchStats } from '../../types';
 import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
 
 type Props = {
   filters: SearchFiltersType;
   stats: SearchStats | null;
   isColorSearch: boolean;
-  onChange: (filters: SearchFiltersType) => void;
+  onChange?: (filters: SearchFiltersType) => void;
   resetFilters: () => void;
-  applyFilters: () => void;
+  applyFilters: (filters: SearchFiltersType) => void;
 };
 
 const SearchFilterCard = (props: Props) => {
   const t = useTranslations();
-  const { filters, stats, isColorSearch, onChange, resetFilters, applyFilters } = props;
+  const { stats, isColorSearch, onChange, resetFilters } = props;
+  const [filters, setFilters] = useState<SearchFiltersType>(props.filters);
+
+  useEffect(() => {
+    setFilters(props.filters);
+  }, [props.filters]);
+
+  const handleChange = (newFilters: SearchFiltersType) => {
+    setFilters(newFilters);
+    onChange?.(newFilters);
+  };
+
+  const applyFilters = () => {
+    props.applyFilters(filters);
+  };
+
   return (
     <>
       <CardBase title={t('Search.search-filters')} noPadding>
         <SearchFilters
-          onChange={onChange}
+          onChange={handleChange}
           filters={filters}
           stats={stats}
           isColorSearch={isColorSearch}

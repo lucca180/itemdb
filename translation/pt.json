@@ -402,7 +402,9 @@
     "sending-dots": "Enviando...",
     "thank-you": "Obrigado!",
     "learn-more": "Saiba Mais",
-    "view-all": "Ver Tudo"
+    "view-all": "Ver Tudo",
+    "x-results": "{x} resultados",
+    "x-per-page": "{x} por página"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",
@@ -828,7 +830,9 @@
     "search-filters": "Filtros de Busca",
     "show-less": "Mostrar menos",
     "show-more": "Mostrar mais",
-    "tolerance": "Tolerancia"
+    "tolerance": "Tolerancia",
+    "tip-advanced-operators": "você pode usar <Link>Operadores Avançados</Link> para turbinar sua pesquisa",
+    "tip-dynamic-lists": "você pode criar uma <Link>Lista Dinâmica</Link> para mantê-la sempre atualizada com sua busca"
   },
   "DynamicList": {
     "addOnly-1": "Novos itens que corresponderem à pesquisa <b>serão adicionados</b> a lista.",

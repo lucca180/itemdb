@@ -3,6 +3,8 @@ import { useTranslations } from 'next-intl';
 import { BiFirstPage, BiLastPage } from 'react-icons/bi';
 
 type Props = {
+  mt?: number;
+  mb?: number;
   currentPage?: number;
   totalPages?: number;
   setPage?: (page: number) => void;
@@ -10,7 +12,7 @@ type Props = {
 
 const Pagination = (props: Props) => {
   const t = useTranslations();
-  const { currentPage, totalPages, setPage } = props;
+  const { currentPage, totalPages, setPage, mt, mb } = props;
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (setPage) setPage(parseInt(e.target.value));
@@ -18,7 +20,7 @@ const Pagination = (props: Props) => {
 
   if (currentPage == null || totalPages == null || !setPage)
     return (
-      <HStack mt={4} justifyContent="center">
+      <HStack mt={mt ?? 4} mb={mb} justifyContent="center">
         <IconButton
           size="sm"
           isDisabled
@@ -45,7 +47,7 @@ const Pagination = (props: Props) => {
     );
 
   return (
-    <HStack mt={4} justifyContent="center">
+    <HStack mt={mt ?? 4} mb={mb} justifyContent="center">
       <IconButton
         size="sm"
         isDisabled={currentPage <= 1}

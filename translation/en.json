@@ -401,7 +401,9 @@
     "thank-you": "Thank you!",
     "sending-dots": "Sending...",
     "view-all": "View All",
-    "learn-more": "Learn More"
+    "learn-more": "Learn More",
+    "x-results": "{x} results",
+    "x-per-page": "{x} per page"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",
@@ -827,7 +829,9 @@
     "custom-color": "Custom Color",
     "color-type": "Color Type",
     "most-prominent": "Most Prominent",
-    "tolerance": "Tolerance"
+    "tolerance": "Tolerance",
+    "tip-advanced-operators": "you can use <Link>Advanced Operators</Link> to supercharge your search",
+    "tip-dynamic-lists": "you can create <Link>Dynamic List</Link> to keep it always up to date with your search"
   },
   "DynamicList": {
     "addOnly-1": "New items that match the search query <b>will be added</b> to the list.",

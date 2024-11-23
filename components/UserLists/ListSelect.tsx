@@ -85,7 +85,14 @@ const ListSelect = (props: Props) => {
 
   return (
     <Menu>
-      <MenuButton as={Button} variant="solid" rightIcon={<ChevronDownIcon />} size={props.size}>
+      <MenuButton
+        whiteSpace={'normal'}
+        as={Button}
+        variant="solid"
+        rightIcon={<ChevronDownIcon />}
+        size={props.size}
+        fontSize={{ base: 'xs', md: 'sm' }}
+      >
         {selectedList && (
           <>
             {selectedList.name}
