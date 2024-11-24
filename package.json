@@ -65,6 +65,7 @@
     "object-hash": "^3.0.0",
     "pixelmatch": "^6.0.0",
     "qs": "^6.13.0",
+    "query-string": "^9.1.1",
     "rctx-contextmenu": "^1.4.1",
     "react": "19.0.0-rc-02c0e824-20241028",
     "react-dom": "19.0.0-rc-02c0e824-20241028",

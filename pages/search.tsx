@@ -22,7 +22,6 @@ import { useRouter } from 'next/router';
 import axios from 'axios';
 import { SearchFilters as SearchFiltersType, SearchResults } from '../types';
 import Pagination from '../components/Input/Pagination';
-import qs from 'qs';
 import SearchFilterCard from '../components/Search/SearchFiltersCard';
 import { SearchFilterModalProps } from '../components/Search/SearchFiltersModal';
 import { BsFilter } from 'react-icons/bs';
@@ -35,6 +34,8 @@ import NextLink from 'next/link';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useLists } from '../utils/useLists';
+import queryString from 'query-string';
+import isEqual from 'lodash/isEqual';
 
 const SearchFilterModal = dynamic<SearchFilterModalProps>(
   () => import('../components/Search/SearchFiltersModal')
@@ -68,7 +69,7 @@ const SearchPage = () => {
   const [totalResults, setTotalResults] = useState<number | null>(null);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [searchResult, setResult] = useState<SearchResults | null>(null);
-  const [searchQuery, setQuery] = useState<string>('');
+  const [searchQuery, setQuery] = useState<string | null>(null);
   const [isColorSearch, setIsColorSearch] = useState<boolean>(false);
   const [filters, setFilters] = useState<SearchFiltersType>(defaultFilters);
   const [searchStatus, setStatus] = useState<SearchStats | null>(null);
@@ -79,11 +80,17 @@ const SearchPage = () => {
   const searchTip = searchTips[new Date().getHours() % searchTips.length];
 
   useEffect(() => {
+    // skip initial render
+    if (!router.isReady || !prevFilter.current) return;
+
     parseQueryString();
-  }, [router.query]);
+  }, [router.query, router.isReady]);
 
   useEffect(() => {
     if (!router.isReady) return;
+
+    // parse initial query string and set filters
+    if (!prevFilter.current && !parseQueryString()) return;
 
     doSearch(undefined, shouldUpdateCount(filters, prevFilter.current));
     changeQueryString();
@@ -91,6 +98,11 @@ const SearchPage = () => {
   }, [filters, router.isReady]);
 
   const doSearch = async (fetchStats = false, fetchCount = false) => {
+    if (router.query.s !== searchQuery) {
+      fetchStats = true;
+      fetchCount = true;
+    }
+
     const query = (router.query.s as string) ?? '';
     setQuery(query);
     setSelectedItems([]);
@@ -211,32 +223,41 @@ const SearchPage = () => {
   };
 
   const parseQueryString = () => {
-    const queryStrings = qs.parse(router.asPath, {
-      ignoreQueryPrefix: true,
+    const queryStrings = queryString.parse(router.asPath, {
+      arrayFormat: 'bracket',
+      parseNumbers: true,
     });
 
-    const queryFilters = getFiltersDiff(queryStrings, filters);
+    const queryFilters = getFiltersDiff(queryStrings);
+    const currentFilters = getFiltersDiff(filters);
 
-    if (Object.keys(queryFilters).length > 0) {
+    if (!isEqual(currentFilters, queryFilters)) {
+      setFilters({ ...defaultFilters, ...queryFilters });
+
+      return false;
+    } else if (router.query.s !== searchQuery && searchQuery !== null) {
       setFilters((oldFilters) => ({
         ...oldFilters,
-        ...queryFilters,
+        page: 1,
       }));
-    } else if (!!router.query.s && !!searchQuery && router.query.s !== searchQuery) {
-      doSearch(true, true);
+
+      return false;
     }
+
+    return true;
   };
 
   const changeQueryString = () => {
     const query = (router.query.s as string) ?? '';
 
     if (!prevFilter.current) return;
-    const newParams = getFiltersDiff(filters, prevFilter.current);
+    const newParams = getFiltersDiff(filters);
+    const oldParams = getFiltersDiff(prevFilter.current);
 
-    if (!Object.keys(newParams).length) return;
+    if (isEqual(newParams, oldParams)) return;
 
-    let paramsString = qs.stringify(newParams, {
-      arrayFormat: 'brackets',
+    let paramsString = queryString.stringify(newParams, {
+      arrayFormat: 'bracket',
       encode: false,
     });
 
@@ -340,7 +361,7 @@ const SearchPage = () => {
                   resultCount={searchResult?.totalResults}
                   isLoading={!searchResult}
                   filters={filters}
-                  query={searchQuery}
+                  query={searchQuery ?? ''}
                   isMobile
                 />
                 <IconButton
@@ -445,7 +466,7 @@ const SearchPage = () => {
               resultCount={totalResults ?? undefined}
               isLoading={!searchResult}
               filters={filters}
-              query={searchQuery}
+              query={searchQuery ?? ''}
             />
           </Flex>
         </Box>
