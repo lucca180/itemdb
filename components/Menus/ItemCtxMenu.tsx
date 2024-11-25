@@ -37,6 +37,7 @@ const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
 const CtxMenu = chakra(ContextMenu, {
   baseStyle: {
     background: 'gray.800 !important',
+    zIndex: '9999 !important',
     // padding: "0 !important"
   },
 });
