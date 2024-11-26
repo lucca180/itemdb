@@ -19,7 +19,12 @@ const SimilarItemsCard = (props: Props) => {
     <CardBase title={t('ItemPage.suggestion')} color={color}>
       <Flex gap={3} wrap="wrap" justifyContent="center">
         {props.similarItems.map((item) => (
-          <ItemCard disablePrefetch key={item.internal_id} item={item} />
+          <ItemCard
+            utm_content="similar_items"
+            disablePrefetch
+            key={item.internal_id}
+            item={item}
+          />
         ))}
         {props.similarItems.length === 0 && (
           <Text fontSize="sm">{t('ItemPage.suggestion-fail')}</Text>
