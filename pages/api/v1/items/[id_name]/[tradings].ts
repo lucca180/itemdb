@@ -174,7 +174,7 @@ const getAuctionData = async (name: string) => {
       price: p.price,
       owner: p.owner ?? 'unknown',
       isNF: !!p.otherInfo?.toLowerCase().split(',').includes('nf'),
-      hasBuyer: !!p.otherInfo?.includes('nobody'),
+      hasBuyer: !p.otherInfo?.includes('nobody'),
       addedAt: p.addedAt.toJSON(),
       timeLeft: p.otherInfo?.split(',')?.[1] ?? null,
     };

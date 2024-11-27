@@ -136,7 +136,7 @@ const getAuctionData = async (name: string) => {
       price: p.price,
       owner: p.owner ?? 'unknown',
       isNF: !!p.otherInfo?.split(',').includes('nf'),
-      hasBuyer: !!p.otherInfo?.includes('nobody'),
+      hasBuyer: !p.otherInfo?.includes('nobody'),
       addedAt: p.addedAt.toJSON(),
       timeLeft: p.otherInfo?.split(',')?.[1] ?? null,
     };
@@ -148,7 +148,7 @@ const getAuctionData = async (name: string) => {
 const getOwlsTradeData = async (name: string) => {
   try {
     const res = await axios.get(
-      'https://neo-owls.net/itemdata/profile/' + encodeURIComponent(name),
+      'https://neo-owls.net/itemdata/profile/' + encodeURIComponent(name)
     );
 
     if (res.data?.trade_reports) return res.data.trade_reports;
