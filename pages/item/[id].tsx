@@ -251,18 +251,18 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
         minH="500px"
         gap={6}
         mt={5}
-        flexFlow={{ base: 'column-reverse', md: 'row' }}
-        alignItems={{ base: 'center', md: 'inherit' }}
+        flexFlow={{ base: 'column-reverse', lg: 'row' }}
+        alignItems={{ base: 'center', lg: 'inherit' }}
       >
         <Flex
           flex="1"
-          maxW={{ base: '100vh', md: '275px' }}
-          w={{ base: '100%', md: 'auto' }}
-          minW="200px"
+          maxW={{ base: '100vh', lg: '275px' }}
+          w={{ base: '100%', lg: 'auto' }}
+          minW="250px"
           flexFlow="column"
           gap={5}
         >
-          <Flex flexFlow="column" display={{ base: 'none', md: 'flex' }} gap={5}>
+          <Flex flexFlow="column" display={{ base: 'none', lg: 'flex' }} gap={5}>
             <AddToListSelect item={item} />
             <FindAtCard item={item} />
           </Flex>
@@ -282,15 +282,15 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
         <Flex
           flex="3"
           gap={{ base: 4, md: 6 }}
-          flexFlow={{ base: 'column', lg: 'row' }}
+          flexFlow={{ base: 'column', xl: 'row' }}
           maxW={{ base: '100vh', md: 'none' }}
           w={{ base: '100%', md: 'auto' }}
         >
-          <Flex flex="2" flexFlow="column" gap={{ base: 4, md: 6 }}>
+          <Flex flex="2" flexFlow="column" gap={{ base: 4, md: 6 }} maxW="800px">
             {user && user.isAdmin && <ManualCheckCard item={item} />}
             {item.isMissingInfo && <MissingInfoCard />}
 
-            <Flex flexFlow="column" gap={{ base: 4, md: 6 }} display={{ base: 'flex', md: 'none' }}>
+            <Flex flexFlow="column" gap={{ base: 4, md: 6 }} display={{ base: 'flex', lg: 'none' }}>
               <AddToListSelect item={item} />
               <FindAtCard item={item} />
             </Flex>
