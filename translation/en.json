@@ -240,7 +240,9 @@
     "latest-x-trades": "Latest {x} Trade Lots",
     "total-trade-lots": "Total Trade Lots",
     "total-priced": "Total Priced",
-    "last-trade-lot": "Last Trade Lot"
+    "last-trade-lot": "Last Trade Lot",
+    "has-a-buyer": "Has a Buyer?",
+    "auction-disclaimer": "These data reflect the state of the auction the last time it was viewed by the itemdb and cannot be interpreted as the final auction result (unless stated otherwise)."
   },
   "Button": {
     "feedback": "Feedback",
@@ -403,7 +405,9 @@
     "view-all": "View All",
     "learn-more": "Learn More",
     "x-results": "{x} results",
-    "x-per-page": "{x} per page"
+    "x-per-page": "{x} per page",
+    "yes": "Yes",
+    "no": "No"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",

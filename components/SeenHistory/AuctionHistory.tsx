@@ -94,6 +94,9 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
         </Text>
         <AuctionHistoryTable data={data?.recent ?? []} />
         <Text textAlign={'center'} fontSize={'xs'} mt={3}>
+          {t('ItemPage.auction-disclaimer')}
+        </Text>
+        <Text textAlign={'center'} fontSize={'xs'} mt={1}>
           {t('ItemPage.seen-history-psa')}
         </Text>
       </Flex>
@@ -122,7 +125,7 @@ const AuctionHistoryTable = (props: Props) => {
           <Tr>
             <Th isNumeric>{t('ItemPage.last-known-price')}</Th>
             <Th>{t('ItemPage.time-left')}</Th>
-            <Th>{t('ItemPage.sold-question')}</Th>
+            <Th>{t('ItemPage.has-a-buyer')}</Th>
             <Th>{t('ItemPage.owner')}</Th>
             <Th>{t('ItemPage.first-seen-history')}</Th>
           </Tr>
@@ -153,7 +156,9 @@ const AuctionItem = (props: { auction: ItemAuctionData; index: number }) => {
         </Text>
       </Td>
       <Td>
-        <Text>{auction.hasBuyer ? t('ItemPage.sold') : t('ItemPage.not-sold')}</Text>
+        <Text color={auction.hasBuyer ? 'green.200' : 'undefined'}>
+          {auction.hasBuyer ? t('General.yes') : t('General.no')}
+        </Text>
       </Td>
       <Td>
         <Text>{auction.owner}</Text>

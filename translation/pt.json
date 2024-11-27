@@ -241,7 +241,9 @@
     "latest-x-trades": "Últimos {x} Lotes de Troca",
     "last-trade-lot": "Último Lote de Troca",
     "total-priced": "Total com Preço",
-    "total-trade-lots": "Total de Lotes de Trocas"
+    "total-trade-lots": "Total de Lotes de Trocas",
+    "has-a-buyer": "Tem Comprador?",
+    "auction-disclaimer": "Esses dados refletem o estado do leilão na última vez que ele foi visto pelo itemdb e não pode ser interpretado como o resultado final do leilão (exceto quando dito o contrário)."
   },
   "Button": {
     "feedback": "Feedback",
@@ -404,7 +406,9 @@
     "learn-more": "Saiba Mais",
     "view-all": "Ver Tudo",
     "x-results": "{x} resultados",
-    "x-per-page": "{x} por página"
+    "x-per-page": "{x} por página",
+    "no": "Não",
+    "yes": "Sim"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",
