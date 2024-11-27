@@ -389,6 +389,7 @@ export const fetchOwlsData = async (
     const owls = await prisma.owlsPrice.findFirst({
       where: {
         item_iid: item.internal_id,
+        isLatest: true,
       },
       orderBy: {
         addedAt: 'desc',
@@ -417,7 +418,12 @@ export const fetchOwlsData = async (
     if (isNaN(price)) price = 0;
     const lastUpdated = data.last_updated ? new Date(data.last_updated) : new Date();
 
-    if ((!lastOwls && item) || (lastOwls && item && !isSameDay(lastOwls.pricedAt, lastUpdated))) {
+    if (
+      (!lastOwls && item) ||
+      (lastOwls &&
+        item &&
+        (!isSameDay(lastOwls.pricedAt, lastUpdated) || price !== lastOwls.valueMin))
+    ) {
       const updateAll = prisma.owlsPrice.updateMany({
         where: {
           item_iid: item.internal_id,
