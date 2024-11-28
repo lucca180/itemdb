@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.7.0
+// @version      1.8.0
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -11,7 +11,7 @@
 // @exclude      *://*.nc.neopets.com/*
 // @exclude      *://*images.neopets.com/*
 // @icon         https://itemdb.com.br/favicon.ico
-// @require      https://raw.githubusercontent.com/lucca180/itemdb/1c597aecbc6b9e702df2c3aabaa903e76c047d98/userscripts/hash.min.js#sha256-0arjqIu/NuIwHhYsalqVhJLChC3Qau3cACKSENtp1yY=
+// @require      https://raw.githubusercontent.com/lucca180/itemdb/4a4eb07e73c94ba9ab99e4d539aee5b7743c2b36/userscripts/hash.min.js#sha256-/mfJeI863QWx9yb+cM+2a1joZJnZ7u7WTeNrvct75Tw=
 // @connect      itemdb.com.br
 // @connect      neopets.com
 // @grant        GM_xmlhttpRequest
@@ -846,23 +846,26 @@ const itemdb_script = function() {
       const isNF = tds.eq(3).find('b')?.text() ? 'NF' : '';
       const timeLeft = tds.eq(4).find('b').text();
       const lastBid = tds.eq(5).find('b').text();
+      const askingPrice = tds.eq(6).find("b").text();
+
       let bidder = tds.eq(-1).text().trim();
 
-      bidder = bidder === 'nobody' ? bidder : bidder.slice(0, 3).padEnd(6, '*');
+      bidder = bidder === "nobody" ? bidder : bidder.slice(0, 3).padEnd(6, "*");
+      const hasBuyer = bidder !== "nobody";
 
       const otherInfo = [isNF, timeLeft, bidder];
 
       const itemPriceInfo = {
         name: itemName,
         img: img,
-        owner: owner.slice(0, 3).padEnd(6, '*'),
+        owner: owner.slice(0, 3).padEnd(6, "*"),
         stock: 1,
-        value: parseInt(lastBid),
+        value: parseInt(hasBuyer ? lastBid : askingPrice),
         otherInfo: otherInfo,
-        type: 'auction',
+        type: "auction",
         neo_id: auction_id,
       };
-
+      
       priceList.push(itemPriceInfo);
     });
 
