@@ -20,7 +20,7 @@ export const useLists = () => {
     const itemArray = Array.isArray(item_iids) ? item_iids : [item_iids];
     const items = itemArray.map((id) => ({ item_iid: id }));
 
-    await axios.post(`/api/v1/lists/${user.username}/${listId}`, {
+    await axios.put(`/api/v1/lists/${user.username}/${listId}`, {
       items: items,
     });
 
