@@ -139,13 +139,7 @@ const RestockDashboard = () => {
 
       const [res, chartRes] = await Promise.all([dataProm, chartProm]);
 
-      const statsData = res.data.currentStats as RestockStats;
-      const pastData = res.data.pastStats as RestockStats | undefined;
-      const chartsData = chartRes?.data as RestockChart;
-
-      if (chartsData) setChartData(chartsData);
-
-      if (!statsData) {
+      if (!res.data) {
         setAlertMsg({
           type: 'warning',
           description: (
@@ -158,6 +152,12 @@ const RestockDashboard = () => {
         });
         return;
       }
+
+      const statsData = res.data.currentStats as RestockStats;
+      const pastData = res.data.pastStats as RestockStats | undefined;
+      const chartsData = chartRes?.data as RestockChart;
+
+      if (chartsData) setChartData(chartsData);
 
       if (customFilter.shops === 'all') setShopList(statsData.shopList);
       if (pastData && !userPref?.dashboard_hidePrev) setPastSessionStats(pastData);
