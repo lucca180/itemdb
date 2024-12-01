@@ -90,16 +90,16 @@ export const getTrendingLists = async (limit: number) => {
   });
 
   const sorted = lists.sort((a, b) => {
-    if (popularListsStats[a.slug!].pageviews > popularListsStats[b.slug!].pageviews) return -1;
-    if (popularListsStats[a.slug!].pageviews < popularListsStats[b.slug!].pageviews) return 1;
+    if (popularListsStats[a.slug!]?.pageviews > popularListsStats[b.slug!]?.pageviews) return -1;
+    if (popularListsStats[a.slug!]?.pageviews < popularListsStats[b.slug!]?.pageviews) return 1;
     return 0;
   });
 
-  const isFeaturedActive = FEATURED_UNTIL ? Date.now() > FEATURED_UNTIL : false;
+  const isFeaturedActive = FEATURED_UNTIL ? Date.now() < FEATURED_UNTIL : false;
 
-  const featuredLists = isFeaturedActive
-    ? sorted.filter((list) => FEATURED_SLUGS.includes(list.slug ?? ''))
-    : [];
+  const featuredLists = (
+    isFeaturedActive ? sorted.filter((list) => FEATURED_SLUGS.includes(list.slug ?? '')) : []
+  ).sort((a, b) => FEATURED_SLUGS.indexOf(a.slug ?? '') - FEATURED_SLUGS.indexOf(b.slug ?? ''));
 
   const otherLists = isFeaturedActive
     ? sorted.filter((list) => !FEATURED_SLUGS.includes(list.slug ?? ''))
