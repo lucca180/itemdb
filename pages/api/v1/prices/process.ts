@@ -339,7 +339,15 @@ async function updateOrAddDB(
       orderBy: { addedAt: 'desc' },
     });
 
-    if (!oldPriceRaw) return newPriceData;
+    if (!oldPriceRaw) {
+      const item = await prisma.items.findFirst({ where: { internal_id: priceData.item_iid } });
+
+      // do not add prices for new items
+      if (differenceInCalendarDays(item!.addedAt, new Date()) < 3) return undefined;
+
+      return newPriceData;
+    }
+
     const oldPrice = oldPriceRaw.price.toNumber();
 
     const daysSinceLastUpdate = differenceInCalendarDays(latestDate, oldPriceRaw.addedAt);
