@@ -6,7 +6,7 @@ import { Feedbacks } from '@prisma/client';
 import { processTags } from '../v1/items/[id_name]/index';
 import { processTradePrice } from '../v1/trades';
 
-export const FEEDBACK_VOTE_TARGET = 5;
+export const FEEDBACK_VOTE_TARGET = 7;
 export const MAX_VOTE_MULTIPLIER = 3;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
@@ -30,7 +30,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const isAdmin = user.role === 'ADMIN';
 
     if (isAdmin) voteMultiplier = FEEDBACK_VOTE_TARGET * 2;
-    else voteMultiplier = Math.max(1, Math.min(Math.floor(user.xp / 1000), MAX_VOTE_MULTIPLIER));
+    else voteMultiplier = getVoteMultiplier(user.xp);
 
     const feedbackRaw = await prisma.feedbacks.findUniqueOrThrow({
       where: {
@@ -229,4 +229,8 @@ const commitItemChange = async (feedback: Feedbacks, approved: boolean) => {
       },
     });
   }
+};
+
+export const getVoteMultiplier = (userXP: number) => {
+  return Math.max(1, Math.min(Math.floor(userXP / 2000), MAX_VOTE_MULTIPLIER));
 };

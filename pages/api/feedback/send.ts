@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../utils/prisma';
 import requestIp from 'request-ip';
 import sgMail from '@sendgrid/mail';
-import { FEEDBACK_VOTE_TARGET, MAX_VOTE_MULTIPLIER } from './vote';
+import { FEEDBACK_VOTE_TARGET, getVoteMultiplier, MAX_VOTE_MULTIPLIER } from './vote';
 import { TradeData } from '../../../types';
 import { processTradePrice } from '../v1/trades';
 import { Webhook, MessageBuilder } from 'discord-webhook-node';
@@ -49,7 +49,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     if (user) {
       if (user.role === 'ADMIN') voteMultiplier = FEEDBACK_VOTE_TARGET * 2;
-      else voteMultiplier = Math.max(1, Math.min(Math.floor(user.xp / 1000), MAX_VOTE_MULTIPLIER));
+      else voteMultiplier = getVoteMultiplier(user.xp);
     }
   }
 
