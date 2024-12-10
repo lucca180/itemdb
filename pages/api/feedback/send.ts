@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../utils/prisma';
 import requestIp from 'request-ip';
-import sgMail from '@sendgrid/mail';
+import { Resend } from 'resend';
 import { FEEDBACK_VOTE_TARGET, getVoteMultiplier, MAX_VOTE_MULTIPLIER } from './vote';
 import { TradeData } from '../../../types';
 import { processTradePrice } from '../v1/trades';
@@ -278,7 +278,8 @@ export const processSimilarTrades = async (trade: TradeData, trade_id: number, u
   return updatedTrades;
 };
 
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const resend = new Resend(RESEND_API_KEY);
 
 const submitMailFeedback = async (
   data: any,
@@ -287,14 +288,12 @@ const submitMailFeedback = async (
   id: number,
   type: string
 ) => {
-  if (!SENDGRID_API_KEY) return console.error('Missing SENDGRID config');
-
-  sgMail.setApiKey(SENDGRID_API_KEY);
+  if (!RESEND_API_KEY) return console.error('Missing RESEND config');
 
   if (type === 'officialApply')
     subject_id = `https://itemdb.com.br/lists/${data.content.username}/${subject_id}`;
 
-  await sgMail.send({
+  await resend.emails.send({
     from: 'itemdb <noreply@itemdb.com.br>',
     to: 'lucca@itemdb.com.br',
     subject: `[itemdb] ${type}`,
