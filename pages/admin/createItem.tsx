@@ -56,6 +56,7 @@ const defaultItem: ItemData = {
     canOpen: 'unknown',
     canPlay: 'unknown',
   },
+  mallData: null,
 };
 
 const CreateItem = () => {

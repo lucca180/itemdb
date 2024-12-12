@@ -412,7 +412,8 @@ export async function doSearch(
         b.rgb_g, b.rgb_b, b.hex, b.hsv_h, b.hsv_s, b.hsv_v, f.dist,
         c.addedAt as priceAdded, c.price, c.noInflation_id, 
         d.pricedAt as owlsPriced, d.value as owlsValue, d.valueMin as owlsValueMin,
-        s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded
+        s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded,
+        n.price as ncPrice, n.saleBegin, n.saleEnd, n.discountBegin, n.discountEnd, n.discountPrice
         FROM Items as a
         LEFT JOIN (
                 SELECT image_id, min((POWER(lab_l-${l},2)+POWER(lab_a-${a},2)+POWER(lab_b-${b},2))) as dist
@@ -424,6 +425,7 @@ export async function doSearch(
         LEFT JOIN ItemPrices as c on c.item_iid = a.internal_id and c.isLatest = 1
         LEFT JOIN OwlsPrice as d on d.item_iid = a.internal_id and d.isLatest = 1
         LEFT JOIN SaleStats as s on s.item_iid = a.internal_id and s.isLatest = 1 and s.stats != "unknown"
+        LEFT JOIN NcMallData as n on n.item_iid = a.internal_id and n.active = 1
       ) as temp
         
         WHERE temp.dist is not null and temp.canonical_id is null
@@ -466,7 +468,8 @@ export async function doSearch(
         SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex, b.hsv_h, b.hsv_s, b.hsv_v,
           c.addedAt as priceAdded, c.price, c.noInflation_id, 
           d.pricedAt as owlsPriced, d.value as owlsValue, d.valueMin as owlsValueMin,
-          s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded
+          s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded,
+          n.price as ncPrice, n.saleBegin, n.saleEnd, n.discountBegin, n.discountEnd, n.discountPrice
           ${colorSql_inside ? Prisma.sql`, ${colorSql_inside} as dist` : Prisma.empty}
           ${zoneFilterSQL.length > 0 ? Prisma.sql`, w.zone_label` : Prisma.empty}
         FROM Items as a
@@ -476,6 +479,7 @@ export async function doSearch(
         LEFT JOIN itemPrices as c on c.item_iid = a.internal_id and c.isLatest = 1
         LEFT JOIN OwlsPrice as d on d.item_iid = a.internal_id and d.isLatest = 1
         LEFT JOIN SaleStats as s on s.item_iid = a.internal_id and s.isLatest = 1 and s.stats != "unknown"
+        LEFT JOIN NcMallData as n on n.item_iid = a.internal_id and n.active = 1
         ${
           zoneFilterSQL.length > 0
             ? Prisma.sql`LEFT JOIN WearableData w on w.item_iid = a.internal_id and w.isCanonical = 1`
@@ -605,6 +609,16 @@ export async function doSearch(
         canOpen: result.canOpen,
         canPlay: result.canPlay,
       },
+      mallData: !result.ncPrice
+        ? null
+        : {
+            price: result.ncPrice,
+            saleBegin: result.saleBegin ? result.saleBegin.toJSON() : null,
+            saleEnd: result.saleEnd ? result.saleEnd.toJSON() : null,
+            discountBegin: result.discountBegin ? result.discountBegin.toJSON() : null,
+            discountEnd: result.discountEnd ? result.discountEnd.toJSON() : null,
+            discountPrice: result.discountPrice,
+          },
     };
 
     item.findAt = getItemFindAtLinks(item); // does have all the info we need :)

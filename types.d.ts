@@ -26,6 +26,7 @@ export type ItemData = {
   canonical_id: number | null;
   useTypes: UseTypes;
   firstSeen: string | null;
+  mallData: ItemMallData | null;
 };
 
 export type ItemFindAt = {
@@ -71,6 +72,15 @@ export type OwlsPriceData = {
   valueMin: number;
   value: string;
   buyable: boolean;
+};
+
+export type ItemMallData = {
+  price: number;
+  saleBegin: string | null;
+  saleEnd: string | null;
+  discountBegin: string | null;
+  discountEnd: string | null;
+  discountPrice: number | null;
 };
 
 export type ColorType =
@@ -531,16 +541,10 @@ export type OwlsTrade = {
   notes: string;
 };
 
-export type NCMallData = {
+export type NCMallData = ItemMallData & {
   internal_id: number;
   item_iid: number;
   item_id: number;
-  price: number;
-  saleBegin: string | null;
-  saleEnd: string | null;
-  discountBegin: string | null;
-  discountEnd: string | null;
-  discountPrice: number | null;
   active: boolean;
   addedAt: string;
   updatedAt: string;

@@ -194,10 +194,12 @@ export const getItem = async (id_name: number | string) => {
   const resultRaw = (await prisma.$queryRaw`
     SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex,
     b.hsv_h, b.hsv_s, b.hsv_v,
-      c.addedAt as priceAdded, c.price, c.noInflation_id
+      c.addedAt as priceAdded, c.price, c.noInflation_id,
+      n.price as ncPrice, n.saleBegin, n.saleEnd, n.discountBegin, n.discountEnd, n.discountPrice
     FROM Items as a
     LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
     LEFT JOIN itemPrices as c on c.item_iid = a.internal_id and c.isLatest = 1
+    LEFT JOIN NcMallData as n on n.item_iid = a.internal_id and n.active = 1
     WHERE ${query}
   `) as any[] | null;
 
@@ -256,6 +258,16 @@ export const getItem = async (id_name: number | string) => {
       canOpen: result.canOpen,
       canPlay: result.canPlay,
     },
+    mallData: !result.ncPrice
+      ? null
+      : {
+          price: result.ncPrice,
+          saleBegin: result.saleBegin ? result.saleBegin.toJSON() : null,
+          saleEnd: result.saleEnd ? result.saleEnd.toJSON() : null,
+          discountBegin: result.discountBegin ? result.discountBegin.toJSON() : null,
+          discountEnd: result.discountEnd ? result.discountEnd.toJSON() : null,
+          discountPrice: result.discountPrice,
+        },
   };
 
   if (item.isNC && item.status !== 'no trade' && item.isWearable)

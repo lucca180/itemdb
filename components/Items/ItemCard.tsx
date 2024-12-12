@@ -191,6 +191,7 @@ export const ItemCardBadge = (props: ItemCardBadgeProps) => {
 
       {item.isNC &&
         !capValue &&
+        !item.mallData &&
         (!item.owls || (isNaN(Number(item.owls.value.split('-')[0])) && !item.owls.buyable)) && (
           <Badge colorScheme="purple">NC</Badge>
         )}
@@ -199,15 +200,22 @@ export const ItemCardBadge = (props: ItemCardBadgeProps) => {
         item.owls &&
         !capValue &&
         !item.owls.buyable &&
+        !item.mallData &&
         !isNaN(Number(item.owls.value.split('-')[0])) && (
           <Badge colorScheme="purple" whiteSpace="normal">
             {item.owls.value} Owls
           </Badge>
         )}
 
-      {item.isNC && item.owls && !capValue && item.owls.buyable && (
+      {item.isNC && item.owls && !capValue && item.owls.buyable && !item.mallData && (
         <Badge colorScheme="purple" whiteSpace="normal">
           {t('ItemPage.nc-buyable')}
+        </Badge>
+      )}
+
+      {item.isNC && item.mallData && (
+        <Badge colorScheme="purple" whiteSpace="normal">
+          {intl.format(item.mallData.discountPrice || item.mallData.price)} NC
         </Badge>
       )}
 

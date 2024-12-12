@@ -104,12 +104,14 @@ export const getManyItems = async (
       b.hsv_h, b.hsv_s, b.hsv_v,
       c.addedAt as priceAdded, c.price, c.noInflation_id, 
       d.pricedAt as owlsPriced, d.value as owlsValue, d.valueMin as owlsValueMin,
-      s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded
+      s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded,
+      n.price as ncPrice, n.saleBegin, n.saleEnd, n.discountBegin, n.discountEnd, n.discountPrice
     FROM Items as a
     LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
     LEFT JOIN ItemPrices as c on c.item_iid = a.internal_id and c.isLatest = 1
     LEFT JOIN OwlsPrice as d on d.item_iid = a.internal_id and d.isLatest = 1
     LEFT JOIN SaleStats as s on s.item_iid = a.internal_id and s.isLatest = 1 and s.stats != "unknown"
+    LEFT JOIN NcMallData as n on n.item_iid = a.internal_id and n.active = 1
     WHERE ${query}
     LIMIT ${limit}
     `) as any[];
@@ -187,6 +189,16 @@ export const getManyItems = async (
         canOpen: result.canOpen,
         canPlay: result.canPlay,
       },
+      mallData: !result.ncPrice
+        ? null
+        : {
+            price: result.ncPrice,
+            saleBegin: result.saleBegin ? result.saleBegin.toJSON() : null,
+            saleEnd: result.saleEnd ? result.saleEnd.toJSON() : null,
+            discountBegin: result.discountBegin ? result.discountBegin.toJSON() : null,
+            discountEnd: result.discountEnd ? result.discountEnd.toJSON() : null,
+            discountPrice: result.discountPrice,
+          },
     };
     x.findAt = getItemFindAtLinks(x); // does have all the info we need :)
     x.isMissingInfo = isMissingInfo(x);

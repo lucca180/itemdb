@@ -19,9 +19,6 @@ import {
   PopoverFooter,
   Kbd,
   useOutsideClick,
-  Badge,
-  Icon,
-  Tooltip,
 } from '@chakra-ui/react';
 import React, { useCallback } from 'react';
 import SearchMenu from '../Menus/SearchMenu';
@@ -35,7 +32,7 @@ import qs from 'qs';
 import { getFiltersDiff } from '../../pages/search';
 import { parseFilters } from '../../utils/parseFilters';
 import { useTranslations } from 'next-intl';
-import { AiFillWarning } from 'react-icons/ai';
+import { ItemCardBadge } from '../Items/ItemCard';
 
 const Axios = axios.create({
   baseURL: '/api/v1/',
@@ -44,7 +41,6 @@ const Axios = axios.create({
 type Props = {
   onSubmit: (e: any, search: string, params: string) => void;
 };
-const intl = new Intl.NumberFormat();
 
 export const SearchBar = (props: Props) => {
   const t = useTranslations();
@@ -242,28 +238,7 @@ export const SearchBar = (props: Props) => {
                     <Flex flexFlow="column" alignItems="flex-start">
                       {item.name}
 
-                      {item.type === 'np' && item.status === 'no trade' && <Badge>No Trade</Badge>}
-
-                      {item.price.value && !item.price.inflated && (
-                        <Badge whiteSpace="normal">{intl.format(item.price.value)} NP</Badge>
-                      )}
-
-                      {item.price.value && item.price.inflated && (
-                        <Tooltip
-                          label={t('General.inflation')}
-                          aria-label="Inflation Tooltip"
-                          placement="top"
-                        >
-                          <Badge colorScheme="red" whiteSpace="normal">
-                            <Icon as={AiFillWarning} verticalAlign="middle" />{' '}
-                            {intl.format(item.price.value)} NP
-                          </Badge>
-                        </Tooltip>
-                      )}
-
-                      {item.isNC && <Badge colorScheme="purple">NC</Badge>}
-
-                      {item.type === 'pb' && <Badge colorScheme="yellow">PB</Badge>}
+                      <ItemCardBadge item={item} />
                     </Flex>
                   </Link>
                 </CtxTrigger>
