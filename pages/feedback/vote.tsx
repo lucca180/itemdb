@@ -109,6 +109,7 @@ const FeedbackVotingPage = () => {
         params: {
           itemName: router.query.target,
           wishlist: router.query.wishlist,
+          order: router.query.order,
         },
         headers: {
           authorization: `Bearer ${token}`,

@@ -15,7 +15,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   const includeProcessed = req.query.includeProcessed === 'true';
   const target = req.query.itemName as string;
-  const wishlist = req.query.wishlist as string;
+  let wishlist = req.query.wishlist as string;
+  const order = req.query.order as string;
 
   let user_id;
   let user;
@@ -31,6 +32,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 
   let feedbackRaw: Feedbacks[] = [];
+
+  if (order === 'wishlist' && !wishlist) {
+    const wishlists = await getWishlists(parseInt(limit));
+    wishlist = wishlists[0].wishlist;
+  }
 
   if (wishlist) {
     feedbackRaw = await getTradeFeedbackWishlist(wishlist, parseInt(limit), user_id);
@@ -127,4 +133,17 @@ const getTradeFeedbackWishlist = async (wishlist: string, limit: number, user_id
   });
 
   return feedbackRaw;
+};
+
+const getWishlists = async (limit: number) => {
+  const wishlists = (await prisma.$queryRaw`
+    select t.wishlist from feedbacks f 
+    left join trades t on f.subject_id = t.trade_id 
+    where f.type = 'tradePrice' and f.processed = 0
+    group by t.wishlist 
+    order by count(*) desc
+    limit ${limit}
+  `) as { wishlist: string }[];
+
+  return wishlists;
 };
