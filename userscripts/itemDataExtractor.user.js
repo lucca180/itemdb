@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.8.0
+// @version      1.8.1
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -11,7 +11,7 @@
 // @exclude      *://*.nc.neopets.com/*
 // @exclude      *://*images.neopets.com/*
 // @icon         https://itemdb.com.br/favicon.ico
-// @require      https://raw.githubusercontent.com/lucca180/itemdb/4a4eb07e73c94ba9ab99e4d539aee5b7743c2b36/userscripts/hash.min.js#sha256-/mfJeI863QWx9yb+cM+2a1joZJnZ7u7WTeNrvct75Tw=
+// @require      https://raw.githubusercontent.com/lucca180/itemdb/cefb1bf6f9a9797ba7934e45c64d97ac27fbb1fe/userscripts/hash.min.js#sha256-qvScLSSeFxxVSGjWWNbTgwuqM2IffRSeYkXbGffQNzA=
 // @connect      itemdb.com.br
 // @connect      neopets.com
 // @grant        GM_xmlhttpRequest
@@ -845,8 +845,8 @@ const itemdb_script = function() {
       const owner = tds.eq(3).find('.sf').text();
       const isNF = tds.eq(3).find('b')?.text() ? 'NF' : '';
       const timeLeft = tds.eq(4).find('b').text();
-      const lastBid = tds.eq(5).find('b').text();
-      const askingPrice = tds.eq(6).find("b").text();
+      const lastBid = tds.eq(5).find('b').text().replaceAll(/(\,|\.)/g, '');
+      const askingPrice = tds.eq(6).find("b").text().replaceAll(/(\,|\.)/g, '');
 
       let bidder = tds.eq(-1).text().trim();
 
