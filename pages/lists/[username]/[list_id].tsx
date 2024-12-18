@@ -853,8 +853,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     userOrToken = res?.user;
   } catch (err) {}
 
-  const parsedId = isNaN(parseInt(list_id as string)) ? undefined : parseInt(list_id as string);
-  const slug = parsedId ? undefined : list_id;
+  const isNum = /^\d+$/.test(list_id);
+
+  const parsedId = !isNum ? undefined : parseInt(list_id as string);
+  const slug = isNum ? undefined : list_id;
 
   const list = await getList(username, (parsedId ?? slug)!, userOrToken, username === 'official');
 

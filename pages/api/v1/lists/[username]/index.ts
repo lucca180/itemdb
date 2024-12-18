@@ -70,6 +70,11 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       const colors = await getImagePalette(coverURL);
       colorHexVar = colors.vibrant.hex;
     }
+
+    if (/^\d+$/.test(name)) {
+      return res.status(400).json({ error: 'List name cannot be a number' });
+    }
+
     const slug = await createListSlug(name, user.id);
 
     const list = await prisma.userList.create({

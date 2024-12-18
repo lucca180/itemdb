@@ -221,6 +221,10 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       let slug = list.slug;
 
       if (name && list.name !== name) {
+        if (/^\d+$/.test(name)) {
+          return res.status(400).json({ error: 'List name cannot be a number' });
+        }
+
         slug = await createListSlug(name, user.id);
       }
 

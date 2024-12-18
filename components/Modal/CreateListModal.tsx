@@ -124,7 +124,7 @@ const CreateListModal = (props: CreateListModalProps) => {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     setList({
       ...list,
@@ -187,7 +187,13 @@ const CreateListModal = (props: CreateListModalProps) => {
 
               <FormControl>
                 <FormLabel color="gray.300">{t('ItemPage.list-name')}</FormLabel>
-                <Input variant="filled" name="name" onChange={handleChange} value={list.name} />
+                <Input
+                  variant="filled"
+                  name="name"
+                  onChange={handleChange}
+                  value={list.name}
+                  isInvalid={/^\d+$/.test(list.name ?? '')}
+                />
                 <FormHelperText>{t('General.required')}</FormHelperText>
               </FormControl>
               <FormControl>
