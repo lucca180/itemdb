@@ -66,6 +66,9 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     // sw, ssw and usershop items have a max value of 999.999
     if (['sw', 'ssw', 'usershop'].includes(type) && value > 999999) continue;
 
+    // hotfix for users that didn't update their script
+    if (type === 'auction' && value < 1000) continue;
+
     const excludeNeoId = ['sw', 'ssw', 'usershop', 'restock'];
 
     const x = {
@@ -93,7 +96,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       { ...x, dateHash, neo_id: neo_id },
       {
         excludeKeys: (key: string) => ['ip_address', 'hash', 'stock'].includes(key),
-      },
+      }
     );
 
     dataList.push(x);
@@ -120,7 +123,7 @@ export const getLatestPricedItems = async (limit: number) => {
   });
 
   const sortedItems = Object.values(items).sort(
-    (a, b) => ids.indexOf(a.internal_id.toString()) - ids.indexOf(b.internal_id.toString()),
+    (a, b) => ids.indexOf(a.internal_id.toString()) - ids.indexOf(b.internal_id.toString())
   );
 
   return sortedItems;
@@ -129,7 +132,7 @@ export const getLatestPricedItems = async (limit: number) => {
 export const newCreatePriceProcessFlow = async (
   dataList: Prisma.PriceProcessCreateInput[] | PriceProcess[],
   skipLastSeen = false,
-  skipProcessed = false,
+  skipProcessed = false
 ) => {
   const itemInfo: { [id: string]: Set<string | string[]> } = {
     id: new Set(),
@@ -152,7 +155,7 @@ export const newCreatePriceProcessFlow = async (
   });
 
   const allItemsFull = await Promise.all(
-    Object.keys(itemInfo).map((key: any) => getManyItems({ [key]: Array.from(itemInfo[key]) })),
+    Object.keys(itemInfo).map((key: any) => getManyItems({ [key]: Array.from(itemInfo[key]) }))
   );
 
   const allItems = Object.assign({}, ...allItemsFull) as { [identifier: string]: ItemData };
@@ -325,9 +328,9 @@ const processLastSeen = async (lastSeen: { [key: string]: { [id: number]: Date }
           data: {
             lastSeen: date,
           },
-        }),
+        })
       );
-    }),
+    })
   );
 
   await prisma.lastSeen.createMany({
@@ -363,7 +366,7 @@ const newHandleAuction = async (dataList: Prisma.RestockAuctionHistoryCreateMany
       },
       create: auction,
       update: auction,
-    }),
+    })
   );
 
   while (tries < 3) {
@@ -383,7 +386,7 @@ const newHandleAuction = async (dataList: Prisma.RestockAuctionHistoryCreateMany
 
 const findItem = (
   rawInput: Prisma.PriceProcessCreateInput,
-  list: { [identifier: string]: ItemData },
+  list: { [identifier: string]: ItemData }
 ) => {
   const { name, image_id, item_id } = rawInput;
 
