@@ -687,7 +687,7 @@ const errorCodeToMessage = (code: string) => {
         </>
       );
     case 'notFound':
-      return 'You needed to have uploaded restock sessions in 2024 to access the Restock Review 2024. Please try again next year.';
+      return 'You needed to have uploaded restock sessions before december 2024 to access the Restock Review 2024. Please try again next year.';
     case 'maintenance':
       return 'The 2024 Restock Review is currently disabled for maintenance. Please try again later.';
     default:

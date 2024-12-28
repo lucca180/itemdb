@@ -214,7 +214,7 @@ export const getWrapped = async (user_id: string, year: number) => {
         user_id: user_id,
         addedAt: {
           gte: new Date(year, 0, 1),
-          lt: new Date(year + 1, 0, 1),
+          lt: new Date(year, 11, 1),
         },
       },
     });
@@ -236,11 +236,16 @@ export const getWrapped = async (user_id: string, year: number) => {
   const monthly = await prisma.restockWrapped.findMany({
     where: {
       user_id: user_id,
+      sessionText: {
+        not: null,
+      },
       dateType: {
         in: Array.from({ length: 12 }, (_, i) => format(new Date(year, i, 1), 'MM-yy')),
       },
     },
   });
+
+  if (!monthly.length) throw 'notFound';
 
   const wrapped: RestockStats = JSON.parse(JSON.stringify(defaultStats));
   const monthlyStats: RestockStats[] = [];
