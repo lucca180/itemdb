@@ -86,7 +86,7 @@ const WrappedTimeline = (props: WrappedTimelineProps) => {
             <Tabs variant="soft-rounded" colorScheme="green" align="center" mt={3}>
               <TabList>
                 <Tab color={'white'}>Hottest Buys</Tab>
-                <Tab color={'white'}>Worse Losses</Tab>
+                <Tab color={'white'}>Worst Losses</Tab>
               </TabList>
               <TabPanels>
                 <TabPanel>
