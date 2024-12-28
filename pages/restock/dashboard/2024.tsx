@@ -479,8 +479,8 @@ const Wrapped2024 = (props: Wrapped2024Props) => {
             <br /> The shopkeeper must know you by name now!
           </Text>
           <Image
-            src={`https://images.neopets.com/shopkeepers/w${wrappedData?.mostPopularShop.shopId}.gif`}
-            alt={restockShopInfo[wrappedData!.mostPopularShop.shopId].name}
+            src={getShopImg(wrappedData.mostPopularShop.shopId)}
+            alt={restockShopInfo[wrappedData.mostPopularShop.shopId].name}
             mt={3}
             borderRadius={'md'}
             boxShadow={'md'}
@@ -692,5 +692,19 @@ const errorCodeToMessage = (code: string) => {
       return 'The 2024 Restock Review is currently disabled for maintenance. Please try again later.';
     default:
       return 'An error occurred';
+  }
+};
+
+const getShopImg = (shopId: number) => {
+  if (shopId >= 1) {
+    return `https://images.neopets.com/shopkeepers/w${shopId}.gif`;
+  }
+
+  if (shopId === -1) {
+    return 'https://images.neopets.com/halloween/ghost_shop.gif';
+  }
+
+  if (shopId === -2) {
+    return 'https://images.neopets.com/winter/eskimo2.gif';
   }
 };

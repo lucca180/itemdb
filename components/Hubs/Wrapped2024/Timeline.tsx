@@ -29,7 +29,9 @@ const WrappedTimeline = (props: WrappedTimelineProps) => {
         iconStyle={{ background: mainColor, color: '#fff' }}
         icon={<FaCalendar />}
       >
-        Our journey begins here
+        <Flex>
+          <Text as="span">Our journey begins here</Text>
+        </Flex>
       </VerticalTimelineElement>
       {monthlyData.map((month) => (
         <VerticalTimelineElement
@@ -128,7 +130,9 @@ const WrappedTimeline = (props: WrappedTimelineProps) => {
         iconStyle={{ background: mainColor, color: '#fff' }}
         icon={<FaCalendar />}
       >
-        Our journey ends here
+        <Flex>
+          <Text as="span">Our journey ends here</Text>
+        </Flex>
       </VerticalTimelineElement>
     </VerticalTimeline>
   );

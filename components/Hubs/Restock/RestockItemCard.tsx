@@ -80,7 +80,9 @@ const RestockItem = (props: Props) => {
           textAlign={'left'}
         >
           <HStack>
-            <Text>{item.name}</Text>
+            <Text as="span" fontSize={'md'}>
+              {item.name}
+            </Text>
             {item.price.value && <Badge>{intl.format(item.price.value)} NP</Badge>}
             {isBait && (
               <Tooltip
@@ -102,7 +104,7 @@ const RestockItem = (props: Props) => {
           </HStack>
 
           {boughtTime > 0 && (
-            <Text fontSize={'xs'}>
+            <Text as="span" fontSize={'xs'}>
               {t.rich('Restock.bought-in-x-at-y', {
                 b: (children) => <b>{children}</b>,
                 x: restockItem.notTrust ? '???' : msIntervalFormated(boughtTime, true, 2),
@@ -118,7 +120,7 @@ const RestockItem = (props: Props) => {
           )}
 
           {boughtTime < 0 && lostHaggle > 0 && (
-            <Text fontSize={'xs'}>
+            <Text as="span" fontSize={'xs'}>
               {t.rich('Restock.lost-haggling', {
                 b: (children) => <b>{children}</b>,
                 x: restockItem.notTrust ? '???' : msIntervalFormated(lostHaggle, true, 2),
@@ -134,7 +136,7 @@ const RestockItem = (props: Props) => {
           )}
 
           {boughtTime < 0 && lostHaggle < 0 && lostNoHaggle > 0 && (
-            <Text fontSize={'xs'}>
+            <Text as="span" fontSize={'xs'}>
               {t.rich('Restock.lost-no-haggle', {
                 b: (children) => <b>{children}</b>,
                 x: restockItem.notTrust ? '???' : msIntervalFormated(lostNoHaggle, true, 2),
