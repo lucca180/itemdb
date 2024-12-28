@@ -1,5 +1,5 @@
 import { VerticalTimeline, VerticalTimelineElement } from 'react-vertical-timeline-component';
-import '../../../public/vertical-timeline.style.css';
+import 'react-vertical-timeline-component/style.min.css';
 import { RestockStats } from '../../../types';
 import { useFormatter } from 'next-intl';
 import { FaCalendar } from 'react-icons/fa';
