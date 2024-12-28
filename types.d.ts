@@ -409,8 +409,13 @@ type RestockSession = {
 };
 
 type RestockStats = {
+  startDate: number;
+  endDate: number;
   durationCount: number;
   shopList: number[];
+  shopDuration: {
+    [shopId: string]: number;
+  };
   mostPopularShop: {
     shopId: number;
     durationCount: number;
@@ -457,6 +462,9 @@ type RestockStats = {
     item?: ItemData;
     count: number;
   };
+  buyCount: {
+    [item_iid: number | string]: number;
+  };
   unknownPrices: number;
 };
 
@@ -473,6 +481,8 @@ type UserPreferences = {
   restock_prefView?: 'default' | 'rarity';
   dashboard_hideMisses?: boolean;
   dashboard_hidePrev?: boolean;
+
+  dashboard_wrappedHide?: 'notJoined' | 'notReady' | 'ready';
 };
 
 type ItemEffect = {

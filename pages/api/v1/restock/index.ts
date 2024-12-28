@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { RestockChart, RestockSession, RestockStats } from '../../../../types';
+import { ItemData, RestockChart, RestockSession, RestockStats } from '../../../../types';
 import { CheckAuth } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
 import { differenceInMilliseconds } from 'date-fns';
@@ -67,8 +67,18 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     const pastStats = sessions.filter((x) => x.startedAt < new Date(Number(startDate)));
 
     const [currentResult, pastResult] = await Promise.all([
-      calculateStats(currentStats),
-      pastStats.length ? calculateStats(pastStats) : null,
+      calculateStats(
+        currentStats,
+        currentStats.at(0)?.startedAt.getTime() ?? 0,
+        currentStats.at(-1)?.endedAt?.getTime() ?? 0
+      ),
+      pastStats.length
+        ? calculateStats(
+            pastStats,
+            pastStats.at(0)?.startedAt?.getTime() ?? 0,
+            pastStats.at(-1)?.endedAt?.getTime() ?? 0
+          )
+        : null,
     ]);
 
     return res.status(200).json({ currentStats: currentResult?.[0], pastStats: pastResult?.[0] });
@@ -126,8 +136,13 @@ export const calculateStats = async (
     endedAt: Date;
     shop_id: number;
     sessionText: string | null;
-  }[]
+  }[],
+  startDate: number,
+  endDate: number,
+  pricingFunction: (item: ItemData, timestamp: number) => number | null = defaultPricingFunction
 ): Promise<[RestockStats, RestockChart]> => {
+  const middleDate = startDate + (endDate - startDate) / 2;
+
   const stats: RestockStats = JSON.parse(JSON.stringify(defaultStats));
   const sessions: RestockSession[] = [];
   const allShops: { [id: string]: number } = {};
@@ -149,12 +164,18 @@ export const calculateStats = async (
 
   const deDuplicatedSessions = removeDuplicatedSessions(rawSessions);
 
+  stats.startDate = Infinity;
+  stats.endDate = 0;
+
   deDuplicatedSessions.map((rawSession) => {
     if (!rawSession.sessionText) return;
     let session = JSON.parse(rawSession.sessionText as string) as RestockSession | string;
     if (typeof session === 'string') session = JSON.parse(session) as RestockSession;
 
     sessions.push(session);
+
+    stats.startDate = Math.min(stats.startDate, new Date(rawSession.startedAt).getTime());
+    stats.endDate = Math.max(stats.endDate, new Date(rawSession.endedAt).getTime());
 
     const duration = differenceInMilliseconds(
       new Date(rawSession.endedAt),
@@ -211,8 +232,15 @@ export const calculateStats = async (
     stats.totalClicks += session.clicks.length;
   });
 
-  const morePopularShop = Object.keys(allShops).reduce((a, b) =>
-    allShops[a] > allShops[b] ? a : b
+  stats.shopDuration = {};
+
+  Object.keys(allShops).map((shopId) => {
+    stats.shopDuration[shopId] = allShops[shopId];
+  });
+
+  const morePopularShop = Object.keys(allShops).reduce(
+    (a, b) => (allShops[a] > allShops[b] ? a : b),
+    Object.keys(allShops)[0]
   );
   stats.mostPopularShop = {
     shopId: parseInt(morePopularShop),
@@ -232,9 +260,9 @@ export const calculateStats = async (
 
   sessions.map((session) => {
     session.clicks.map((click) => {
-      const item = allItemsData[click.item_id];
+      const rawItem = allItemsData[click.item_id];
       let restockItem = session.items[click.restock_id];
-      if (!item) return;
+      if (!rawItem) return;
 
       if (!restockItem) {
         session.items[click.restock_id] = {
@@ -246,6 +274,8 @@ export const calculateStats = async (
         restockItem = session.items[click.restock_id];
         if (restockItem.timestamp < 0) return;
       }
+
+      const item = getItemWithPricing(rawItem, pricingFunction, restockItem.timestamp);
 
       if (!item.price.value) stats.unknownPrices++;
 
@@ -262,7 +292,7 @@ export const calculateStats = async (
             : item;
 
         allBought.push({ item, click, restockItem });
-        const profit = getRestockProfitOnDate(item, click.buy_timestamp);
+        const profit = getRestockProfitOnDate(item, click.buy_timestamp, restockItem.timestamp);
 
         if (profit && profit < 1000) allBaits.push({ item, click, restockItem });
 
@@ -320,6 +350,9 @@ export const calculateStats = async (
   stats.fastestBuy = fastestBuy;
   if (allBought.length) {
     const favBuy = findMostFrequent(allBought.map((x) => x.item));
+
+    stats.buyCount = favBuy.frequencyMap;
+
     stats.favoriteItem = {
       item: favBuy.item,
       count: favBuy.count,
@@ -327,6 +360,7 @@ export const calculateStats = async (
   }
 
   stats.hottestRestocks = Object.values(allItemsData)
+    .map((item) => getItemWithPricing(item, pricingFunction, middleDate))
     .sort((a, b) => (b.price.value ?? 0) - (a.price.value ?? 0))
     .splice(0, 16);
 
@@ -366,9 +400,12 @@ export const calculateStats = async (
   return [stats, chart];
 };
 
-const defaultStats: RestockStats = {
+export const defaultStats: RestockStats = {
+  startDate: 0,
+  endDate: 0,
   durationCount: 0,
   shopList: [],
+  shopDuration: {},
   mostPopularShop: {
     shopId: 0,
     durationCount: 0,
@@ -399,6 +436,7 @@ const defaultStats: RestockStats = {
   hottestLost: [],
   worstBaits: [],
   unknownPrices: 0,
+  buyCount: {},
 };
 
 const defaultCharts: RestockChart = {
@@ -413,19 +451,31 @@ const formatDate = (date: number) => {
   return d.toISOString().split('T')[0];
 };
 
-function findMostFrequent<T>(arr: T[]): { item: T; count: number } {
-  // Convert objects to strings for comparison
-  const frequencyMap = countBy(arr.map((item) => JSON.stringify(item)));
+// function findMostFrequent<T>(arr: T[]): { item: T; count: number } {
+//   // Convert objects to strings for comparison
+//   const frequencyMap = countBy(arr.map((item) => JSON.stringify(item)));
 
-  // Find the string with the maximum frequency
-  const mostFrequentString = maxBy(Object.keys(frequencyMap), (key) => frequencyMap[key]);
-  if (!mostFrequentString) throw new Error('No most frequent string found');
-  // Parse the string back to an object if it's an object
-  try {
-    return { item: JSON.parse(mostFrequentString) as T, count: frequencyMap[mostFrequentString] };
-  } catch (e) {
-    return { item: mostFrequentString as unknown as T, count: frequencyMap[mostFrequentString] };
-  }
+//   // Find the string with the maximum frequency
+//   const mostFrequentString = maxBy(Object.keys(frequencyMap), (key) => frequencyMap[key]);
+//   if (!mostFrequentString) throw new Error('No most frequent string found');
+//   // Parse the string back to an object if it's an object
+//   try {
+//     return { item: JSON.parse(mostFrequentString) as T, count: frequencyMap[mostFrequentString] };
+//   } catch (e) {
+//     return { item: mostFrequentString as unknown as T, count: frequencyMap[mostFrequentString] };
+//   }
+// }
+
+function findMostFrequent(arr: ItemData[]) {
+  const frequencyMap = countBy(arr, (item) => item.internal_id);
+
+  const mostFrequent = maxBy(Object.keys(frequencyMap), (key) => frequencyMap[key]);
+  if (!mostFrequent) throw new Error('No most frequent found');
+  return {
+    item: arr.find((x) => x.item_id === parseInt(mostFrequent))!,
+    count: frequencyMap[mostFrequent],
+    frequencyMap,
+  };
 }
 
 const removeDuplicatedSessions = (
@@ -436,7 +486,7 @@ const removeDuplicatedSessions = (
     sessionText: string | null;
   }[]
 ) => {
-  // if a session has the same start date and shop id, remove the smaller lastRefres
+  // if a session has the same start date and shop id, remove the smaller lastRefresh
   const sessionMap: {
     [key: string]: {
       startedAt: Date;
@@ -455,4 +505,24 @@ const removeDuplicatedSessions = (
   });
 
   return Object.values(sessionMap);
+};
+
+const defaultPricingFunction = (item: ItemData): number | null => {
+  return item.price.value;
+};
+
+const getItemWithPricing = (
+  item: ItemData,
+  pricingFunction: (item: ItemData, timestamp: number) => number | null,
+  timestamp: number
+): ItemData => {
+  const price = pricingFunction(item, timestamp);
+  return {
+    ...item,
+    price: {
+      value: price,
+      addedAt: price ? new Date(timestamp).toJSON() : null,
+      inflated: false,
+    },
+  };
 };

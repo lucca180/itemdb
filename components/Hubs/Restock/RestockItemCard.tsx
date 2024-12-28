@@ -32,21 +32,21 @@ const RestockItem = (props: Props) => {
   const boughtTime = restockItem
     ? differenceInMilliseconds(
         new Date(clickData.buy_timestamp ?? 0),
-        new Date(restockItem.timestamp),
+        new Date(restockItem.timestamp)
       )
     : -1;
 
   const lostHaggle = restockItem
     ? differenceInMilliseconds(
         new Date(clickData.haggle_timestamp ?? 0),
-        new Date(restockItem.timestamp),
+        new Date(restockItem.timestamp)
       )
     : -1;
 
   const lostNoHaggle = restockItem
     ? differenceInMilliseconds(
         new Date(clickData.soldOut_timestamp ?? 0),
-        new Date(restockItem.timestamp),
+        new Date(restockItem.timestamp)
       )
     : -1;
 
@@ -72,7 +72,13 @@ const RestockItem = (props: Props) => {
           objectFit="cover"
           borderRadius="md"
         />
-        <Flex alignItems={'flex-start'} gap={1} flexFlow={'column'} justifyContent={'center'}>
+        <Flex
+          alignItems={'flex-start'}
+          gap={1}
+          flexFlow={'column'}
+          justifyContent={'center'}
+          textAlign={'left'}
+        >
           <HStack>
             <Text>{item.name}</Text>
             {item.price.value && <Badge>{intl.format(item.price.value)} NP</Badge>}

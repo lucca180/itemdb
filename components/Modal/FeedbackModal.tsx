@@ -17,6 +17,7 @@ import {
   Center,
   FormHelperText,
   Link,
+  Icon,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import NextLink from 'next/link';
@@ -25,6 +26,7 @@ import { useState } from 'react';
 import { ItemData } from '../../types';
 import { useAuth } from '../../utils/auth';
 import { useTranslations } from 'next-intl';
+import { FiSend } from 'react-icons/fi';
 
 export type FeedbackModalProps = {
   isOpen: boolean;
@@ -154,3 +156,22 @@ const FeedbackModal = (props: FeedbackModalProps) => {
 };
 
 export default FeedbackModal;
+
+type FeedbackButtonProps = {
+  item?: ItemData;
+} & React.ComponentProps<typeof Button>;
+
+export const FeedbackButton = (props: FeedbackButtonProps) => {
+  const t = useTranslations();
+  const { item } = props;
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+
+  return (
+    <>
+      <FeedbackModal isOpen={isOpen} onClose={() => setIsOpen(false)} item={item} />
+      <Button variant="outline" size="sm" onClick={() => setIsOpen(true)} {...props}>
+        <Icon as={FiSend} mr={1} /> {t('Button.feedback')}
+      </Button>
+    </>
+  );
+};

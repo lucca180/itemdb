@@ -51,6 +51,7 @@ import { RestockWrappedModalProps } from '../../../components/Modal/RestockWrapp
 import dynamic from 'next/dynamic';
 import { FaArrowTrendUp, FaArrowTrendDown } from 'react-icons/fa6';
 import { DashboardOptionsModalProps } from '../../../components/Modal/DashboardOptionsModal';
+import { RestockedCTACard } from '../../../components/Hubs/Wrapped2024/CTACard';
 
 const RestockWrappedModal = dynamic<RestockWrappedModalProps>(
   () => import('../../../components/Modal/RestockWrappedModal')
@@ -497,6 +498,9 @@ const RestockDashboard = () => {
               </Alert>
             </Center>
           )}
+          <Center flexFlow={'column'} gap={2}>
+            <RestockedCTACard />
+          </Center>
           <Center my={6} flexFlow="column" gap={2}>
             <Heading size="md">
               {t('Restock.your-est-revenue')}{' '}

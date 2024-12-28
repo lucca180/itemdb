@@ -26,6 +26,7 @@ export type ItemProps = {
   disablePrefetch?: boolean;
   highlight?: boolean;
   utm_content?: string;
+  uniqueID?: string;
 };
 
 const intl = new Intl.NumberFormat();
@@ -43,6 +44,7 @@ const ItemCardBase = (props: ItemProps) => {
     disablePrefetch,
     highlight,
     utm_content,
+    uniqueID,
   } = props;
   const [isMobile] = useMediaQuery('(hover: none)');
 
@@ -77,13 +79,13 @@ const ItemCardBase = (props: ItemProps) => {
   return (
     <>
       <ItemCtxMenu
-        menuId={item.internal_id.toString()}
+        menuId={item.internal_id.toString() + uniqueID}
         item={item}
         onSelect={props.onSelect}
         onListAction={onListAction}
       />
       <CtxTrigger
-        id={item.internal_id.toString()}
+        id={item.internal_id.toString() + uniqueID}
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         //@ts-ignore
         disableWhileShiftPressed

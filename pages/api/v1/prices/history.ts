@@ -20,11 +20,36 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(400).json({ error: 'Invalid request body' });
   }
 
+  const pricesByIid = await getManyItemsPriceHistory({ item_iids });
+
+  return res.status(200).json(pricesByIid);
+};
+
+export const getManyItemsPriceHistory = async ({
+  item_iids,
+  item_ids,
+}: {
+  item_iids?: number[];
+  item_ids?: number[];
+}) => {
+  if (!item_iids && !item_ids) return {};
+
   const pricesRaw = await prisma.itemPrices.findMany({
     where: {
-      item_iid: {
-        in: item_iids,
-      },
+      OR: [
+        {
+          item_iid: {
+            in: item_iids,
+          },
+        },
+        {
+          item: {
+            item_id: {
+              in: item_ids,
+            },
+          },
+        },
+      ],
     },
     orderBy: {
       addedAt: 'desc',
@@ -47,5 +72,5 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     });
   });
 
-  return res.status(200).json(pricesByIid);
+  return pricesByIid;
 };

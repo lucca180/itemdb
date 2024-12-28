@@ -545,8 +545,13 @@ export const getRestockProfit = (item: ItemData, ignoreSpecialDays = false) => {
   return item.price.value - prices[1];
 };
 
-export const getRestockProfitOnDate = (item: ItemData, date: Date | number) => {
-  if (!item.price.value) return null;
+export const getRestockProfitOnDate = (
+  item: ItemData,
+  date: Date | number,
+  price?: number | null
+) => {
+  price = price ?? item.price.value ?? 0;
+  if (!price) return null;
 
   let timestamp: number;
   if (date instanceof Date) timestamp = date.getTime();
@@ -556,7 +561,7 @@ export const getRestockProfitOnDate = (item: ItemData, date: Date | number) => {
 
   if (!prices) return null;
 
-  return item.price.value - prices[1];
+  return price - prices[1];
 };
 
 export const restockShopInfo: { [id: string]: ShopInfo } = {

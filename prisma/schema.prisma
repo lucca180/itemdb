@@ -320,6 +320,10 @@ model User {
   restockSession RestockSession[]
   ListTags       ListTags[]
   DataCollecting DataCollecting[]
+
+  RestockWrapped RestockWrapped[]
+
+  WrappedSettings WrappedSettings[]
 }
 
 model OpenableItems {
@@ -647,6 +651,37 @@ model DataCollecting {
   user    User?   @relation(fields: [user_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   addedAt DateTime @default(now())
+}
+
+model RestockWrapped {
+  internal_id Int @id @default(autoincrement())
+
+  user_id String
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  dateType     String
+  processed_at DateTime @default(now())
+
+  sessionText String? @db.LongText
+
+  @@unique([user_id, dateType])
+}
+
+model WrappedSettings {
+  internal_id Int @id @default(autoincrement())
+  year        Int @default(2024)
+
+  user_id String
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  ready Boolean @default(false)
+
+  settings String @db.LongText
+
+  addedAt   DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([user_id, year])
 }
 
 // -------- DISMANTELING PRICE PROCESS --------- //
