@@ -78,6 +78,11 @@ const nextConfig: NextConfig = {
         destination: '/hub/faeriefestival',
         permanent: true,
       },
+      {
+        source: '/articles/owls',
+        destination: '/owls',
+        permanent: true,
+      },
     ];
   },
   transpilePackages: ['lightweight-charts', 'fancy-canvas'],

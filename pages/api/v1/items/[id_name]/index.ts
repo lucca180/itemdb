@@ -424,7 +424,21 @@ export const fetchOwlsData = async (
     const res = await axios.get(`https://neo-owls.net/itemdata/${encodeURIComponent(itemName)}`);
     const data = res.data as { last_updated: string; owls_value: string } | null;
 
-    if (!data || !data.owls_value) return null;
+    if (!data || !data.owls_value) {
+      if (lastOwls) {
+        await prisma.owlsPrice.update({
+          where: {
+            internal_id: lastOwls.internal_id,
+            isLatest: false,
+          },
+          data: {
+            lastChecked: new Date(),
+          },
+        });
+      }
+
+      return null;
+    }
 
     let price = Number(data.owls_value.split('-')[0]);
     if (isNaN(price)) price = 0;

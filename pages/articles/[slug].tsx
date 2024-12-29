@@ -25,14 +25,14 @@ import { ArticleCard } from '../../components/Articles/ArticlesCard';
 import { useFormatter, useTranslations } from 'next-intl';
 import { ReactElement } from 'react';
 
-type Props = {
+export type ArticlePageProps = {
   post: WP_Article;
   recomendations: WP_Article[];
   messages: any;
   locale: string;
 };
 
-const ArticlePage = (props: Props) => {
+const ArticlePage = (props: ArticlePageProps) => {
   const t = useTranslations();
   const formatter = useFormatter();
   const { post, recomendations } = props;
@@ -126,7 +126,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
   };
 }
 
-ArticlePage.getLayout = function getLayout(page: ReactElement, props: Props) {
+ArticlePage.getLayout = function getLayout(page: ReactElement, props: ArticlePageProps) {
   const { post } = props;
   return (
     <Layout
