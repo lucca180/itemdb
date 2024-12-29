@@ -44,13 +44,13 @@ const LanguageToast = (props: LanguageToastProps) => {
     }
   };
 
-  const checkLanguage = () => {
+  const checkLanguage = async () => {
     const sessionToast = sessionStorage.getItem('language-toast');
     if (sessionToast) return;
 
-    const cookies = getCookies();
+    const cookies = await getCookies();
 
-    if (cookies.NEXT_LOCALE || !cookies['idb_accept-language']) return;
+    if (!cookies || cookies.NEXT_LOCALE || !cookies['idb_accept-language']) return;
 
     const prefLang =
       alParser.pick(VALID_LOCALES, cookies['idb_accept-language'], {

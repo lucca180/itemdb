@@ -1,7 +1,7 @@
 import Color from 'color';
 import { startOfDay } from 'date-fns';
 import { NextApiRequest, NextApiResponse } from 'next';
-import Vibrant from 'node-vibrant';
+import { Vibrant } from 'node-vibrant/node';
 import { ColorType, User, UserList } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
@@ -283,11 +283,11 @@ export const getImagePalette = async (
 ): Promise<Record<ColorType, Pallete>> => {
   if (!skipCheck) CHECK_IMG_URL(image_url);
 
-  const pallete = await Vibrant.from(image_url).getPalette();
+  const palette = await Vibrant.from(image_url).getPalette();
 
   const colors: any = {};
 
-  for (const [key, val] of Object.entries(pallete)) {
+  for (const [key, val] of Object.entries(palette)) {
     const color = Color.rgb(val?.rgb ?? [255, 255, 255]);
     const lab = color.lab().round().array();
     const hsv = color.hsv().round().array();

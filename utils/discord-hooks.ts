@@ -1,14 +1,13 @@
-import { MessageBuilder, Webhook } from 'discord-webhook-node';
+import webhook from 'webhook-discord';
 import { getManyItems } from '../pages/api/v1/items/many';
 import { ItemData } from '../types';
 import prisma from './prisma';
-import Color from 'color';
 
 const ncChannelHook = process.env.NC_CHANNEL_WEBHOOK
-  ? new Webhook(process.env.NC_CHANNEL_WEBHOOK)
+  ? new webhook.Webhook(process.env.NC_CHANNEL_WEBHOOK)
   : null;
 const newItemsHook = process.env.NEW_ITEMS_WEBHOOK
-  ? new Webhook(process.env.NEW_ITEMS_WEBHOOK)
+  ? new webhook.Webhook(process.env.NEW_ITEMS_WEBHOOK)
   : null;
 
 export const sendNewItemsHook = async (latest: number) => {
@@ -41,10 +40,11 @@ export const sendNewItemsHook = async (latest: number) => {
 };
 
 const getItemEmbed = (item: ItemData) => {
-  const embed = new MessageBuilder()
+  const embed = new webhook.MessageBuilder()
     .setAuthor('Item Novo!!!')
+    .setName('itemdb')
     .setTitle(`${item.name} - r${item.rarity ?? '???'}`)
-    .setColor(Color(item.color.hex).rgbNumber())
+    .setColor(item.color.hex)
     .setThumbnail(item.image)
     .setDescription(item.description);
 
@@ -52,7 +52,6 @@ const getItemEmbed = (item: ItemData) => {
     embed.setImage('https://itemdb.com.br/api/cache/preview/' + item.image_id + '.png');
   }
 
-  //@ts-expect-error bad types
   embed.setURL(`https://itemdb.com.br/item/${item.slug}`);
 
   return embed;

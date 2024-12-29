@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getItem } from '.';
 import { getItemColor } from '../colors';
 import prisma from '../../../../../utils/prisma';
-import { getPallete } from '../process';
+import { getPalette } from '../process';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -35,7 +35,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     });
   }
 
-  const pallete = await getPallete(item);
+  const pallete = await getPalette(item);
 
   if (!pallete) return res.status(400).json({ error: 'Invalid Pallete' });
 

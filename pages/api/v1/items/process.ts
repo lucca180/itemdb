@@ -2,7 +2,7 @@
 import { Items as Item, ItemProcess, Items, ItemColor, Prisma } from '@prisma/client';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
-import Vibrant from 'node-vibrant';
+import { Vibrant } from 'node-vibrant/node';
 import {
   allBooksCats,
   allFoodsCats,
@@ -69,7 +69,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   // list of unique entries
   const uniqueNames = [...processList].filter(
     (value, index, self) =>
-      index === self.findIndex((t) => genItemKey(t, true) === genItemKey(value, true)),
+      index === self.findIndex((t) => genItemKey(t, true) === genItemKey(value, true))
   );
 
   const deleteIds: number[] = [];
@@ -95,7 +95,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   // remove the 'undefined' and add new items to db
   let itemAddList = (await Promise.all(itemAddPromises)).filter((x) => !!x) as Item[];
 
-  const itemColorAddList = (await Promise.all(itemAddList.map((i) => getPallete(i))))
+  const itemColorAddList = (await Promise.all(itemAddList.map((i) => getPalette(i))))
     .flat()
     .filter((x) => !!x) as ItemColor[];
 
@@ -346,15 +346,15 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
   }
 }
 
-export async function getPallete(item: Items | ItemData) {
+export async function getPalette(item: Items | ItemData) {
   try {
     if (!item.image || !item.image_id) return undefined;
-    const pallete = await Vibrant.from(item.image).quality(1).getPalette();
+    const palette = await Vibrant.from(item.image).quality(1).getPalette();
 
     const colors = [];
     let maxPop: [string, number] = ['', 0];
 
-    for (const [key, val] of Object.entries(pallete)) {
+    for (const [key, val] of Object.entries(palette)) {
       const color = Color.rgb(val?.rgb ?? [255, 255, 255]);
       const lab = color.lab().array();
       const hsv = color.hsv().array();
