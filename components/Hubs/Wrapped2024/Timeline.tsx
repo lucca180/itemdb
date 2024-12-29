@@ -5,6 +5,7 @@ import { useFormatter } from 'next-intl';
 import { FaCalendar } from 'react-icons/fa';
 import { Flex, Tab, TabList, TabPanel, TabPanels, Tabs, Text } from '@chakra-ui/react';
 import RestockItem from '../Restock/RestockItemCard';
+import { addDays, isLastDayOfMonth } from 'date-fns';
 
 type WrappedTimelineProps = {
   wrappedData: RestockStats;
@@ -36,9 +37,12 @@ const WrappedTimeline = (props: WrappedTimelineProps) => {
       {monthlyData.map((month) => (
         <VerticalTimelineElement
           key={month.startDate}
-          date={format.dateTime(month.startDate, {
-            month: 'long',
-          })}
+          date={format.dateTime(
+            isLastDayOfMonth(month.startDate) ? addDays(month.startDate, 1) : month.startDate,
+            {
+              month: 'long',
+            }
+          )}
           contentStyle={{ background: mainColor, color: '#fff' }}
           iconStyle={{ background: mainColor, color: '#fff' }}
           icon={<FaCalendar />}

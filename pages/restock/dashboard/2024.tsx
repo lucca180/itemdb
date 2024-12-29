@@ -628,7 +628,10 @@ export async function getServerSideProps(context: any) {
       },
     };
   } catch (e) {
-    console.error(e);
+    if (typeof e !== 'string') {
+      console.log(e);
+    }
+
     return {
       props: {
         error: typeof e === 'string' ? e : 'unknown',
