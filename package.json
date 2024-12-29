@@ -79,8 +79,8 @@
     "webhook-discord": "^3.7.8"
   },
   "devDependencies": {
-    "@commitlint/cli": "^18.5.0",
-    "@commitlint/config-conventional": "^18.5.0",
+    "@commitlint/cli": "^19.6.1",
+    "@commitlint/config-conventional": "^19.6.0",
     "@next/bundle-analyzer": "15.1.0",
     "@next/eslint-plugin-next": "15.1.0",
     "@swc-jotai/react-refresh": "^0.2.0",
@@ -103,7 +103,7 @@
     "eslint-config-prettier": "^8.10.0",
     "eslint-plugin-react-compiler": "19.0.0-beta-37ed2a7-20241206",
     "husky": "^8.0.0",
-    "lint-staged": "13.0.3",
+    "lint-staged": "15.3.0",
     "prettier": "2.8.4",
     "prisma": "^6.1.0",
     "ts-node": "10.9.2",
