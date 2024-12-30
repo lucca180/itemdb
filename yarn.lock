@@ -4760,6 +4760,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tsconfig/node16@npm:^1.0.3":
+  version: 1.0.4
+  resolution: "@tsconfig/node16@npm:1.0.4"
+  checksum: 10c0/05f8f2734e266fb1839eb1d57290df1664fe2aa3b0fdd685a9035806daa635f7519bf6d5d9b33f6e69dd545b8c46bd6e2b5c79acb2b1f146e885f7f11a42a5bb
+  languageName: node
+  linkType: hard
+
+"@tycrek/discord-hookr@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "@tycrek/discord-hookr@npm:0.1.0"
+  dependencies:
+    "@tsconfig/node16": "npm:^1.0.3"
+    "@types/node": "npm:^18.11.17"
+    axios: "npm:^1.2.1"
+    formdata-polyfill: "npm:^4.0.10"
+    typescript: "npm:^4.9.4"
+  checksum: 10c0/3211b1a5ffffc856ba3a5f9dd2592052972f956894ae815595794afc1804b21bcff69ecea1198e784cfd2644a394c7b6a4924c440d3f085b3ec34a3c6c1e80fb
+  languageName: node
+  linkType: hard
+
 "@types/accept-language-parser@npm:^1.5.6":
   version: 1.5.6
   resolution: "@types/accept-language-parser@npm:1.5.6"
@@ -5030,7 +5050,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^18.15.3":
+"@types/node@npm:^18.11.17, @types/node@npm:^18.15.3":
   version: 18.19.68
   resolution: "@types/node@npm:18.19.68"
   dependencies:
@@ -6262,7 +6282,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.7.9":
+"axios@npm:^1.2.1, axios@npm:^1.7.9":
   version: 1.7.9
   resolution: "axios@npm:1.7.9"
   dependencies:
@@ -8531,6 +8551,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fetch-blob@npm:^3.1.2":
+  version: 3.2.0
+  resolution: "fetch-blob@npm:3.2.0"
+  dependencies:
+    node-domexception: "npm:^1.0.0"
+    web-streams-polyfill: "npm:^3.0.3"
+  checksum: 10c0/60054bf47bfa10fb0ba6cb7742acec2f37c1f56344f79a70bb8b1c48d77675927c720ff3191fa546410a0442c998d27ab05e9144c32d530d8a52fbe68f843b69
+  languageName: node
+  linkType: hard
+
 "file-entry-cache@npm:^6.0.1":
   version: 6.0.1
   resolution: "file-entry-cache@npm:6.0.1"
@@ -8788,6 +8818,15 @@ __metadata:
     combined-stream: "npm:^1.0.8"
     mime-types: "npm:^2.1.12"
   checksum: 10c0/cb6f3ac49180be03ff07ba3ff125f9eba2ff0b277fb33c7fc47569fc5e616882c5b1c69b9904c4c4187e97dd0419dd03b134174756f296dec62041e6527e2c6e
+  languageName: node
+  linkType: hard
+
+"formdata-polyfill@npm:^4.0.10":
+  version: 4.0.10
+  resolution: "formdata-polyfill@npm:4.0.10"
+  dependencies:
+    fetch-blob: "npm:^3.1.2"
+  checksum: 10c0/5392ec484f9ce0d5e0d52fb5a78e7486637d516179b0eb84d81389d7eccf9ca2f663079da56f761355c0a65792810e3b345dc24db9a8bbbcf24ef3c8c88570c6
   languageName: node
   linkType: hard
 
@@ -10286,6 +10325,7 @@ __metadata:
     "@prisma/client": "npm:^6.1.0"
     "@sentry/nextjs": "npm:^8.47.0"
     "@swc-jotai/react-refresh": "npm:^0.2.0"
+    "@tycrek/discord-hookr": "npm:^0.1.0"
     "@types/accept-language-parser": "npm:^1.5.6"
     "@types/chance": "npm:^1.1.3"
     "@types/color": "npm:^3.0.6"
@@ -10354,7 +10394,6 @@ __metadata:
     ts-node: "npm:10.9.2"
     tsc-files: "npm:^1.1.4"
     typescript: "npm:^5.6.2"
-    webhook-discord: "npm:^3.7.8"
     wp-types: "npm:^3.64.0"
   languageName: unknown
   linkType: soft
@@ -11906,6 +11945,13 @@ __metadata:
     next: ">= 6.0.0"
     react: ">= 16.0.0"
   checksum: 10c0/6639c61e70e426e1795d705e3aa25005e9dcfcb841773e30311bc9e231aee0b219ef4e1d839b274f1a64df480bf4b3044f55ad7fb6796c53b218570577c4e746
+  languageName: node
+  linkType: hard
+
+"node-domexception@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "node-domexception@npm:1.0.0"
+  checksum: 10c0/5e5d63cda29856402df9472335af4bb13875e1927ad3be861dc5ebde38917aecbf9ae337923777af52a48c426b70148815e890a5d72760f1b4d758cc671b1a2b
   languageName: node
   linkType: hard
 
@@ -14464,13 +14510,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"snekfetch@npm:^3.6.4":
-  version: 3.6.4
-  resolution: "snekfetch@npm:3.6.4"
-  checksum: 10c0/dcb00fbdfb71a3f7d77a082eda4a74d54983a53189654703acedbffdef3256f3a0391e3cb3866fae7f05f59f3aebbb9c307baf5d15f41aff86382b09458dd3eb
-  languageName: node
-  linkType: hard
-
 "socks-proxy-agent@npm:^8.0.3":
   version: 8.0.4
   resolution: "socks-proxy-agent@npm:8.0.4"
@@ -15363,6 +15402,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"typescript@npm:^4.9.4":
+  version: 4.9.5
+  resolution: "typescript@npm:4.9.5"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 10c0/5f6cad2e728a8a063521328e612d7876e12f0d8a8390d3b3aaa452a6a65e24e9ac8ea22beb72a924fd96ea0a49ea63bb4e251fb922b12eedfb7f7a26475e5c56
+  languageName: node
+  linkType: hard
+
 "typescript@npm:^5.6.2":
   version: 5.6.2
   resolution: "typescript@npm:5.6.2"
@@ -15390,6 +15439,16 @@ __metadata:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 10c0/a7b7ede75dc7fc32a76d0d0af6b91f5fbd8620890d84c906f663d8783bf3de6d7bd50f0430b8bb55eac88a38934af847ff709e7156e5138b95ae94cbd5f73e5b
+  languageName: node
+  linkType: hard
+
+"typescript@patch:typescript@npm%3A^4.9.4#optional!builtin<compat/typescript>":
+  version: 4.9.5
+  resolution: "typescript@patch:typescript@npm%3A4.9.5#optional!builtin<compat/typescript>::version=4.9.5&hash=289587"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 10c0/e3333f887c6829dfe0ab6c1dbe0dd1e3e2aeb56c66460cb85c5440c566f900c833d370ca34eb47558c0c69e78ced4bfe09b8f4f98b6de7afed9b84b8d1dd06a1
   languageName: node
   linkType: hard
 
@@ -15940,12 +15999,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webhook-discord@npm:^3.7.8":
-  version: 3.7.8
-  resolution: "webhook-discord@npm:3.7.8"
-  dependencies:
-    snekfetch: "npm:^3.6.4"
-  checksum: 10c0/ee81c7b18f68d2113e9318caaacf6855fe155f2445b14ab22b5254d57ac14cf3d35775051f3eb2a3379b525f6b2e9c0893e64ab1a2a801426b10a2c8a65a6763
+"web-streams-polyfill@npm:^3.0.3":
+  version: 3.3.3
+  resolution: "web-streams-polyfill@npm:3.3.3"
+  checksum: 10c0/64e855c47f6c8330b5436147db1c75cb7e7474d924166800e8e2aab5eb6c76aac4981a84261dd2982b3e754490900b99791c80ae1407a9fa0dcff74f82ea3a7f
   languageName: node
   linkType: hard
 

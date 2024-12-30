@@ -1,14 +1,8 @@
-import webhook from 'webhook-discord';
 import { getManyItems } from '../pages/api/v1/items/many';
 import { ItemData } from '../types';
 import prisma from './prisma';
-
-const ncChannelHook = process.env.NC_CHANNEL_WEBHOOK
-  ? new webhook.Webhook(process.env.NC_CHANNEL_WEBHOOK)
-  : null;
-const newItemsHook = process.env.NEW_ITEMS_WEBHOOK
-  ? new webhook.Webhook(process.env.NEW_ITEMS_WEBHOOK)
-  : null;
+import { Webhook, EmbedBuilder } from '@tycrek/discord-hookr';
+import type { EmbedBuilder as Embed } from '@tycrek/discord-hookr/dist/EmbedBuilder';
 
 export const sendNewItemsHook = async (latest: number) => {
   const newItemIds = await prisma.items.findMany({
@@ -32,24 +26,29 @@ export const sendNewItemsHook = async (latest: number) => {
     .filter((i) => i.isNC && (!i.item_id || i.item_id > 85020))
     .map((i) => newNCMall(i));
 
-  const newItemsMsgs = Object.values(itemData)
+  const newItemsEmbeds = Object.values(itemData)
     .filter((i) => !i.item_id || i.item_id > 85020)
-    .map((i) => newItemsHookSend(i));
+    .map((i) => getItemEmbed(i));
+
+  // send in chunks of 10
+  const newItemsMsgs = [];
+  for (let i = 0; i < newItemsEmbeds.length; i += 10) {
+    newItemsMsgs.push(newItemsHookSend(newItemsEmbeds.slice(i, i + 10)));
+  }
 
   await Promise.all([...ncMsgs, ...newItemsMsgs]);
 };
 
 const getItemEmbed = (item: ItemData) => {
-  const embed = new webhook.MessageBuilder()
-    .setAuthor('Item Novo!!!')
-    .setName('itemdb')
+  const embed = new EmbedBuilder()
+    .setAuthor({ name: 'Item Novo!!!' })
     .setTitle(`${item.name} - r${item.rarity ?? '???'}`)
     .setColor(item.color.hex)
-    .setThumbnail(item.image)
+    .setThumbnail({ url: item.image })
     .setDescription(item.description);
 
   if (item.isWearable) {
-    embed.setImage('https://itemdb.com.br/api/cache/preview/' + item.image_id + '.png');
+    embed.setImage({ url: 'https://itemdb.com.br/api/cache/preview/' + item.image_id + '.png' });
   }
 
   embed.setURL(`https://itemdb.com.br/item/${item.slug}`);
@@ -58,15 +57,25 @@ const getItemEmbed = (item: ItemData) => {
 };
 
 export const newNCMall = async (item: ItemData) => {
+  const ncChannelHook = process.env.NC_CHANNEL_WEBHOOK
+    ? new Webhook(process.env.NC_CHANNEL_WEBHOOK)
+    : null;
+
   if (!ncChannelHook) return;
   const embed = getItemEmbed(item);
+  ncChannelHook.addEmbed(embed);
 
-  return ncChannelHook.send(embed);
+  return ncChannelHook.send();
 };
 
-export const newItemsHookSend = async (item: ItemData) => {
-  if (!newItemsHook) return;
-  const embed = getItemEmbed(item);
+export const newItemsHookSend = async (embeds: Embed[]) => {
+  const newItemsHook = process.env.NEW_ITEMS_WEBHOOK
+    ? new Webhook(process.env.NEW_ITEMS_WEBHOOK)
+    : null;
 
-  return newItemsHook.send(embed);
+  if (!newItemsHook) return;
+
+  newItemsHook.addEmbed([...embeds]);
+
+  return newItemsHook.send();
 };

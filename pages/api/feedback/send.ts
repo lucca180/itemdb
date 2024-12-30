@@ -5,7 +5,7 @@ import { Resend } from 'resend';
 import { FEEDBACK_VOTE_TARGET, getVoteMultiplier, MAX_VOTE_MULTIPLIER } from './vote';
 import { TradeData } from '../../../types';
 import { processTradePrice } from '../v1/trades';
-import webhook from 'webhook-discord';
+import { Webhook, EmbedBuilder } from '@tycrek/discord-hookr';
 import { getItem } from '../v1/items/[id_name]';
 
 const SKIP_AUTO_TRADE_FEEDBACK = process.env.SKIP_AUTO_TRADE_FEEDBACK == 'true';
@@ -308,24 +308,22 @@ const submitMailFeedback = async (
   });
 };
 
-const hook = process.env.FEEDBACK_WEBHOOK
-  ? new webhook.Webhook(process.env.FEEDBACK_WEBHOOK)
-  : null;
-
 const submitHookFeedback = async (subject_id: string, feedback_id: number, type: string) => {
+  const hook = process.env.FEEDBACK_WEBHOOK ? new Webhook(process.env.FEEDBACK_WEBHOOK) : null;
+
   if (type !== 'priceReport' || !hook) return;
   const item = await getItem(subject_id);
   if (!item) return;
 
-  const embed = new webhook.MessageBuilder()
-    .setAuthor('Price Check Request')
-    .setName('itemdb')
+  const embed = new EmbedBuilder()
+    .setAuthor({ name: 'Price Check Request' })
     .setTitle(item.name)
     .setColor(item.color.hex)
-    .setThumbnail(item?.image)
+    .setThumbnail({ url: item?.image })
     .setDescription('Um usuário pediu para verificar se o preço de um item está correto')
-    .setFooter(`Feedback ID: ${feedback_id}`, 'https://itemdb.com.br/favicon.ico')
+    .setFooter({ text: `Feedback ID: ${feedback_id}` })
     .setURL(`https://itemdb.com.br/item/${item.slug}`);
 
-  await hook.send(embed).catch(console.error);
+  hook.addEmbed(embed);
+  hook.send().catch(console.error);
 };
