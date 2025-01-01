@@ -52,9 +52,18 @@ async function PATCH(req: NextApiRequest, res: NextApiResponse) {
 
   const processAll = req.query.processAll === 'true';
 
+  const pastMonth = addMonths(startOfMonth(new Date()), -1);
+
   const usersInQueue = await prisma.wrappedSettings.findMany({
     where: {
       ready: processAll ? undefined : false,
+      user: {
+        RestockWrapped: {
+          none: {
+            dateType: format(pastMonth, 'MM-yy'),
+          },
+        },
+      },
     },
     orderBy: {
       user: {
@@ -79,6 +88,9 @@ async function PATCH(req: NextApiRequest, res: NextApiResponse) {
       },
       orderBy: {
         processed_at: 'desc',
+      },
+      select: {
+        dateType: true,
       },
     });
 
