@@ -14,12 +14,13 @@ type CreateLinkedListButtonProps = {
   list: UserList;
   isImport?: boolean;
   onCreate?: (list: UserList) => void;
+  isLoading?: boolean;
 };
 
 export const CreateLinkedListButton = (props: CreateLinkedListButtonProps) => {
   const t = useTranslations();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { list, isImport, onCreate } = props;
+  const { list, isImport, onCreate, isLoading } = props;
 
   return (
     <>
@@ -29,6 +30,7 @@ export const CreateLinkedListButton = (props: CreateLinkedListButtonProps) => {
 
       <Button
         variant={!isImport ? ['solid', 'ghost'] : 'solid'}
+        isLoading={isLoading}
         textAlign={'center'}
         colorScheme="orange"
         onClick={onOpen}

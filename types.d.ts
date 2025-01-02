@@ -258,7 +258,7 @@ export type UserList = {
   createdAt: string;
   updatedAt: string;
 
-  // itemInfo: ListItemInfo[];
+  itemInfo?: ListItemInfo[];
   itemCount: number;
 
   officialTag: string | null;

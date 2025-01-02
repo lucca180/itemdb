@@ -499,7 +499,7 @@
     "lock-sort": "Lock Sort",
     "highlights": "Highlights",
     "highlights-text": "Highlights are only sorted by name",
-    "user-list-tip-1": "you can use right click or ctrl+click to select multiple items",
+    "user-list-tip-1": "you can use right click to select multiple items",
     "list-want": "You want {matchCount} items from this list",
     "list-have": "You have {matchCount} items from this list",
     "trading": "trading",

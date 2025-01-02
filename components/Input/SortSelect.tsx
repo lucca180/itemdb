@@ -8,11 +8,12 @@ type Props = {
   sortBy: string;
   sortDir: string;
   onClick: (sortBy: string, sortDir: string) => void;
+  disabled?: boolean;
 };
 
 export const SortSelect = (props: Props) => {
   const t = useTranslations();
-  const { sortTypes, sortBy } = props;
+  const { sortTypes, sortBy, disabled } = props;
 
   const arrow =
     props.sortDir === 'asc' ? (
@@ -31,7 +32,7 @@ export const SortSelect = (props: Props) => {
 
   return (
     <Menu>
-      <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
+      <MenuButton as={Button} rightIcon={<ChevronDownIcon />} isDisabled={disabled}>
         {t(sortTypes[sortBy])}
       </MenuButton>
       <MenuList>

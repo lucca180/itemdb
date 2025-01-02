@@ -639,7 +639,7 @@
     "import-items": "Importar Itens",
     "lock-sort": "Bloquear Ordenação",
     "move-items": "Mover Itens",
-    "user-list-tip-1": "você pode clicar com o botão direito ou ctrl+clique para selecionar vários itens",
+    "user-list-tip-1": "você pode clicar com o botão direito para selecionar vários itens",
     "list-have": "Você tem {matchCount, plural, =1 {1 item} other {# itens}} desta lista",
     "list-want": "Você quer {matchCount, plural, =1 {1 item} other {# itens}} desta lista",
     "private": "privado",

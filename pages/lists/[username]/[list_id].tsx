@@ -13,7 +13,6 @@ import {
   FormLabel,
   Switch,
   useToast,
-  Spinner,
   IconButton,
   useDisclosure,
   Link,
@@ -72,17 +71,20 @@ const AddListItemsModal = dynamic<AddListItemsModalProps>(
 
 type ExtendedListItemInfo = ListItemInfo & { hasChanged?: boolean };
 
-type Props = {
+type ListPageProps = {
   list: UserList;
+  canEdit: boolean;
+  isOwner: boolean;
+  messages: any;
 };
 
-const ListPage = (props: Props) => {
+const ListPage = (props: ListPageProps) => {
   const t = useTranslations();
   const router = useRouter();
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isOpenInsert, onOpen: onOpenInsert, onClose: onCloseInsert } = useDisclosure();
-
+  const { canEdit, isOwner } = props;
   const { user, getIdToken, authLoading } = useAuth();
 
   const [list, setList] = useState<UserList>(props.list);
@@ -115,8 +117,6 @@ const ListPage = (props: Props) => {
   const [filters, setFilters] = useState<SearchFiltersType>(defaultFilters);
   const searchQuery = useRef('');
 
-  const isOwner = user?.username === router.query.username || user?.id === list?.owner.id;
-  const canEdit = isOwner || !!(list?.official && user?.isAdmin);
   const color = Color(list?.colorHex || '#4A5568');
   const rgb = color.rgb().array();
 
@@ -248,22 +248,21 @@ const ListPage = (props: Props) => {
     );
     const itemInfoData: ListItemInfo[] = itemInfoRes.data;
 
-    const itensId: number[] = itemInfoData.map((item) => item.item_iid);
+    const itemsId: number[] = itemInfoData.map((item) => item.item_iid);
 
-    if (itensId.length === 0) {
+    if (itemsId.length === 0) {
       return [{}, itemInfoData];
     }
 
-    const [itemRes, searchRes] = await Promise.all([
-      axios.post(`/api/v1/items/many`, {
-        id: itensId,
-      }),
-      axios.get(`/api/v1/lists/${list.owner.username}/${list.internal_id}/stats`),
-    ]);
+    axios
+      .get(`/api/v1/lists/${list.owner.username}/${list.internal_id}/stats`)
+      .then((res) => setListStats(res.data));
+
+    const itemRes = await axios.post(`/api/v1/items/many`, {
+      id: itemsId,
+    });
 
     const itemDataRaw: { [id: string]: ItemData } = itemRes?.data;
-
-    setListStats(searchRes.data);
 
     return [itemDataRaw, itemInfoData];
   };
@@ -514,38 +513,6 @@ const ListPage = (props: Props) => {
     [itemInfoIds]
   );
 
-  if (isLoading)
-    return (
-      <Layout
-        SEO={{
-          title: `${list.name} - ${
-            list.official
-              ? t('General.official-list')
-              : t('Lists.owner-username-s-lists', { username: list.owner.username })
-          }`,
-          nofollow: !list.official,
-          noindex: !list.official,
-          themeColor: list.colorHex ?? '#4A5568',
-          description: stripMarkdown(list.description ?? '') || undefined,
-          openGraph: {
-            images: [
-              {
-                url: list.coverURL ?? 'https://itemdb.com.br/logo_icon.png',
-                width: 150,
-                height: 150,
-              },
-            ],
-          },
-        }}
-        mainColor={`${color.hex()}b8`}
-      >
-        <ListHeader list={list} isOwner={false} color={color} items={{}} itemInfo={{}} />
-        <Center mt={5} gap={6}>
-          <Spinner size={'lg'} color={color.hex()} />
-        </Center>
-      </Layout>
-    );
-
   return (
     <Layout
       SEO={{
@@ -607,7 +574,7 @@ const ListPage = (props: Props) => {
 
       <ListHeader
         list={list}
-        isOwner={canEdit}
+        canEdit={canEdit}
         color={color}
         items={items}
         itemInfo={itemInfo}
@@ -659,16 +626,18 @@ const ListPage = (props: Props) => {
           {!isEdit && (
             <HStack>
               {canEdit && (
-                <Button variant="solid" onClick={onOpenInsert}>
+                <Button variant="solid" onClick={onOpenInsert} isLoading={isLoading}>
                   {t('Lists.add-items')}
                 </Button>
               )}
               {(isOwner || list.official) && !list.linkedListId && (
-                <CreateLinkedListButton list={list} />
+                <CreateLinkedListButton list={list} isLoading={isLoading} />
               )}
-              <Text as="div" textColor={'gray.300'} fontSize="sm">
-                {t('Lists.itemcount-items', { itemCount })}
-              </Text>
+              {!isLoading && (
+                <Text as="div" textColor={'gray.300'} fontSize="sm">
+                  {t('Lists.itemcount-items', { itemCount })}
+                </Text>
+              )}
             </HStack>
           )}
           {isEdit && (
@@ -709,14 +678,21 @@ const ListPage = (props: Props) => {
             flexWrap={'wrap'}
           >
             <IconButton
+              isLoading={isLoading}
               aria-label="search filters"
               onClick={onOpen}
               icon={<BsFilter />}
               colorScheme={isFiltered ? 'blue' : undefined}
             />
-            <SearchList onChange={handleSearch} />
+            <SearchList disabled={isLoading} onChange={handleSearch} />
             {canEdit && (
-              <FormControl display="flex" alignItems="center" justifyContent="center" w={'auto'}>
+              <FormControl
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                w={'auto'}
+                isDisabled={isLoading}
+              >
                 <FormLabel mb="0" textColor={'gray.300'} fontSize="sm">
                   {t('General.edit-mode')}
                 </FormLabel>
@@ -737,6 +713,7 @@ const ListPage = (props: Props) => {
                 sortBy={sortInfo.sortBy}
                 onClick={handleSortChange}
                 sortDir={sortInfo.sortDir}
+                disabled={isLoading}
               />
             </HStack>
           </HStack>
@@ -818,22 +795,31 @@ const ListPage = (props: Props) => {
             </Flex>
           </Flex>
         )}
-        <Flex px={[1, 3]} flexFlow="column">
-          <SortableArea
-            list={list}
-            sortType={sortInfo.sortBy}
-            onClick={selectItem}
-            ids={(searchItemInfoIds ?? itemInfoIds).filter((a) => !itemInfo[a].isHighlight)}
-            itemInfo={itemInfo}
-            items={items}
-            itemSelect={itemSelect}
-            editMode={isEdit}
-            activateSort={isEdit && !lockSort}
-            onSort={handleSort}
-            onChange={handleItemInfoChange}
-            onListAction={canEdit ? cntxAction : undefined}
-          />
-        </Flex>
+        {isLoading && (
+          <Flex gap={3} justifyContent={'center'} wrap={'wrap'}>
+            {Array.from({ length: Math.min(8 * 5, list.itemCount) }).map((_, i) => (
+              <ItemCard key={i} isLoading />
+            ))}
+          </Flex>
+        )}
+        {!isLoading && (
+          <Flex px={[1, 3]} flexFlow="column">
+            <SortableArea
+              list={list}
+              sortType={sortInfo.sortBy}
+              onClick={selectItem}
+              ids={(searchItemInfoIds ?? itemInfoIds).filter((a) => !itemInfo[a].isHighlight)}
+              itemInfo={itemInfo}
+              items={items}
+              itemSelect={itemSelect}
+              editMode={isEdit}
+              activateSort={isEdit && !lockSort}
+              onSort={handleSort}
+              onChange={handleItemInfoChange}
+              onListAction={canEdit ? cntxAction : undefined}
+            />
+          </Flex>
+        )}
       </Flex>
     </Layout>
   );
@@ -846,11 +832,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   if (!username || !list_id || Array.isArray(username) || Array.isArray(list_id))
     return { notFound: true };
 
-  let userOrToken = null;
+  let user = null;
 
   try {
     const res = await CheckAuth((context.req ?? null) as any);
-    userOrToken = res?.user;
+    user = res?.user;
   } catch (err) {}
 
   const isNum = /^\d+$/.test(list_id);
@@ -858,7 +844,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const parsedId = !isNum ? undefined : parseInt(list_id as string);
   const slug = isNum ? undefined : list_id;
 
-  const list = await getList(username, (parsedId ?? slug)!, userOrToken, username === 'official');
+  const list = await getList(username, (parsedId ?? slug)!, user, username === 'official');
 
   if (!list) return { notFound: true };
 
@@ -882,11 +868,15 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
+  const props: ListPageProps = {
+    list,
+    canEdit: !!(user && (user.id === list.owner.id || (list.official && user.isAdmin))),
+    isOwner: !!(user && user.id === list.owner.id),
+    messages: (await import(`../../../translation/${context.locale}.json`)).default,
+  };
+
   return {
-    props: {
-      list,
-      messages: (await import(`../../../translation/${context.locale}.json`)).default,
-    },
+    props,
   };
 }
 

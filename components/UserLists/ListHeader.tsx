@@ -43,7 +43,7 @@ type ListHeaderProps = {
   color: Color<string>;
   items: { [item_iid: string]: ItemData };
   itemInfo: { [itemInfoId: number]: ListItemInfo & { hasChanged?: boolean } };
-  isOwner: boolean;
+  canEdit: boolean;
   setOpenCreateModal?: (value: boolean) => void;
 };
 
@@ -52,7 +52,7 @@ const intl = new Intl.NumberFormat();
 const ListHeader = (props: ListHeaderProps) => {
   const t = useTranslations();
   const toast = useToast();
-  const { list, color, items, itemInfo, isOwner, setOpenCreateModal } = props;
+  const { list, color, items, itemInfo, canEdit: isOwner, setOpenCreateModal } = props;
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { user } = useAuth();
   const rgb = color.rgb().array();

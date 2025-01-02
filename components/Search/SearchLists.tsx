@@ -10,6 +10,7 @@ import { useState, useRef, useEffect } from 'react';
 
 type Props = {
   onChange: (search: string) => void;
+  disabled?: boolean;
 };
 
 export const SearchList = (props: Props) => {
@@ -59,6 +60,7 @@ export const SearchList = (props: Props) => {
           aria-label="Search list"
           icon={<SearchIcon />}
           variant="ghost"
+          isDisabled={props.disabled}
         />
       </InputLeftElement>
 
@@ -73,6 +75,7 @@ export const SearchList = (props: Props) => {
         p={search ? undefined : 0}
         ref={inputRef}
         transition="width 0.5s ease"
+        isDisabled={props.disabled}
         _focus={{
           w: '175px',
           pl: search ? undefined : 10,
