@@ -85,7 +85,7 @@ const ListPage = (props: ListPageProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isOpenInsert, onOpen: onOpenInsert, onClose: onCloseInsert } = useDisclosure();
   const { canEdit, isOwner } = props;
-  const { user, getIdToken, authLoading } = useAuth();
+  const { user } = useAuth();
 
   const [list, setList] = useState<UserList>(props.list);
 
@@ -145,10 +145,10 @@ const ListPage = (props: ListPageProps) => {
   }, [itemInfo, searchItemInfoIds]);
 
   useEffect(() => {
-    if (!authLoading && router.isReady) {
+    if (router.isReady) {
       init();
     }
-  }, [authLoading, router.isReady]);
+  }, [router.isReady]);
 
   useEffect(() => {
     // if (list) setList(undefined);
@@ -278,14 +278,9 @@ const ListPage = (props: ListPageProps) => {
       offerer = list.owner.username;
     }
 
-    const token = await getIdToken();
-
     const res = await axios.get(`/api/v1/lists/match/${seeker}/${offerer}`, {
       params: {
         list_id: list.internal_id,
-      },
-      headers: {
-        authorization: `Bearer ${token}`,
       },
     });
 
