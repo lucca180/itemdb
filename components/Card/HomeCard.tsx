@@ -64,7 +64,7 @@ export const HomeCard = (props: HomeCardProps) => {
       <Flex
         w="100%"
         flex={1}
-        px={{ base: 6, lg: 2, xl: 6 }}
+        px={{ base: 2, lg: 2, xl: 6 }}
         py={4}
         flexFlow={'column'}
         borderRadius={'lg'}
