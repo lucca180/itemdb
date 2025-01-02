@@ -25,6 +25,9 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(400).json({ error: 'Bad Request' });
 
   const reqQuery = qs.parse(req.url.split('?')[1]) as any;
+
+  const isQueryEmpty = Object.keys(reqQuery).length === 0;
+
   const query = (reqQuery.s as string)?.trim() ?? '';
   reqQuery.page = 1;
   reqQuery.limit = 10000;
@@ -57,6 +60,8 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       isHidden: item.isHidden,
     }));
 
+    if (isQueryEmpty) return res.status(200).json(itemInfo);
+
     const isOwner = !!(user && user.id === list.owner.id);
 
     const queryRes = await doSearch(query, reqQuery, false, list.internal_id, isOwner);
@@ -64,7 +69,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     const itemIDs = new Set(queryRes.content.map((item) => item.internal_id));
 
     const result = itemInfo.filter(
-      (item) => itemIDs.has(item.item_iid) && (!item.isHidden || isOwner),
+      (item) => itemIDs.has(item.item_iid) && (!item.isHidden || isOwner)
     );
 
     return res.status(200).json(result);
