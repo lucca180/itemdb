@@ -37,18 +37,8 @@ export const getManyItemsPriceHistory = async ({
   const pricesRaw = await prisma.itemPrices.findMany({
     where: {
       OR: [
-        {
-          item_iid: {
-            in: item_iids,
-          },
-        },
-        {
-          item: {
-            item_id: {
-              in: item_ids,
-            },
-          },
-        },
+        item_iids ? { item_iid: { in: item_iids } } : {},
+        item_ids ? { item: { item_id: { in: item_ids } } } : {},
       ],
     },
     orderBy: {

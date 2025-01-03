@@ -14,8 +14,13 @@ import { useEffect, useState } from 'react';
 import { ItemPriceData } from '../../types';
 import axios from 'axios';
 import { isBefore, isSameDay } from 'date-fns';
-import ListChartComponent from '../Charts/ListPriceHistoryChart';
+import { ListChartComponentProps } from '../Charts/ListPriceHistoryChart';
 import Color from 'color';
+import dynamic from 'next/dynamic';
+
+const ListChartComponent = dynamic<ListChartComponentProps>(
+  () => import('../Charts/ListPriceHistoryChart')
+);
 
 export type ListPriceHistoryModalProps = {
   isOpen: boolean;
