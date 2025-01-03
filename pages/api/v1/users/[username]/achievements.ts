@@ -2,6 +2,7 @@ import { format } from 'date-fns';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getUser } from '.';
 import prisma from '../../../../../utils/prisma';
+import { User } from '../../../../../types';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -31,7 +32,16 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 
+  const achievements = await getUserAchievements(user);
+
+  return res.status(200).json(achievements);
+};
+
+export const getUserAchievements = async (user_or_id: User | string) => {
   const achievements = [];
+
+  const user = typeof user_or_id !== 'string' ? user_or_id : await getUser(user_or_id);
+  if (!user) return null;
 
   // itemdb admin
   if (user.isAdmin) {
@@ -90,5 +100,5 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     });
   }
 
-  return res.status(200).json(achievements);
+  return achievements;
 };

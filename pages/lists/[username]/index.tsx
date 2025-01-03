@@ -16,15 +16,15 @@ import {
   Switch,
   useToast,
   Icon,
+  Spinner,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import React, { useEffect, useMemo, useState } from 'react';
 import Layout from '../../../components/Layout';
 import { CreateListModalProps } from '../../../components/Modal/CreateListModal';
-import { ListItemInfo, User, UserList } from '../../../types';
-import { useAuth } from '../../../utils/auth';
+import { ListItemInfo, User, UserAchievement, UserList } from '../../../types';
 import { useRouter } from 'next/router';
-import SortableLists from '../../../components/Sortable/SortableLists';
+import { SortableListsProps } from '../../../components/Sortable/SortableLists';
 import Color from 'color';
 import { SelectItemsCheckbox } from '../../../components/Input/SelectItemsCheckbox';
 import { FaTrash } from 'react-icons/fa';
@@ -38,6 +38,9 @@ import icon from '../../../public/logo_icon.svg';
 import UserAchiev from '../../../components/Achievements/UserAchiev';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
+import { CheckAuth } from '../../../utils/googleCloud';
+import { getUserAchievements } from '../../api/v1/users/[username]/achievements';
+import UserListCard from '../../../components/UserLists/ListCard';
 
 const CreateListModal = dynamic<CreateListModalProps>(
   () => import('../../../components/Modal/CreateListModal')
@@ -51,19 +54,26 @@ const EditProfileModal = dynamic<EditProfileModalProps>(
   () => import('../../../components/Modal/EditProfileModal')
 );
 
+const SortableLists = dynamic<SortableListsProps>(
+  () => import('../../../components/Sortable/SortableLists')
+);
+
 type ExtendedUserList = UserList & {
   hasChanged?: boolean;
 };
 
 type Props = {
   owner: User;
+  user: User | null;
+  isOwner: boolean;
+  achievements: UserAchievement[];
 };
 
 const UserListsPage = (props: Props) => {
   const t = useTranslations();
   const router = useRouter();
   const toast = useToast();
-  const { user, getIdToken, authLoading } = useAuth();
+  const { isOwner, user } = props;
   const [openCreateModal, setOpenCreateModal] = useState<boolean>(false);
   const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false);
   const [openEditProfileModal, setOpenEditProfileModal] = useState<boolean>(false);
@@ -74,7 +84,7 @@ const UserListsPage = (props: Props) => {
   const [selectedLists, setSelectedLists] = useState<number[]>([]);
   const [isEdit, setEdit] = useState<boolean>(false);
 
-  const [owner, setOwner] = useState<User | undefined>(props.owner);
+  const [owner, setOwner] = useState<User>(props.owner);
   const [matches, setMatches] = useState<{
     seek: { [list_id: number]: ListItemInfo[] };
     trade: { [list_id: number]: ListItemInfo[] };
@@ -83,19 +93,17 @@ const UserListsPage = (props: Props) => {
     trade: {},
   });
   const [loading, setLoading] = useState<boolean>(true);
-  const isOwner = user?.username && user?.username === router.query.username;
 
   const color = Color(owner?.profileColor || '#4A5568');
   const rgb = color.rgb().array();
 
   useEffect(() => {
-    if (!authLoading && router.isReady && loading) {
+    if (router.isReady && loading) {
       init();
     }
-  }, [authLoading, router.isReady]);
+  }, [router.isReady]);
 
   useEffect(() => {
-    // if (owner) setOwner(undefined);
     if (owner && router.query.username !== owner.username) init(true);
 
     return () => toast.closeAll();
@@ -222,20 +230,11 @@ const UserListsPage = (props: Props) => {
     });
 
     try {
-      const token = await getIdToken();
       const listsToSave = Object.values(lists).filter((list) => list.hasChanged);
 
       if (!user) return;
 
-      const res = await axios.put(
-        `/api/v1/lists/${user.username}`,
-        { lists: listsToSave },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await axios.put(`/api/v1/lists/${user.username}`, { lists: listsToSave });
 
       if (res.data.success) {
         toast.update(x, {
@@ -261,26 +260,8 @@ const UserListsPage = (props: Props) => {
   const refresh = () => {
     setSelectedLists([]);
     setEdit(false);
-    setOwner(undefined);
     init(true);
   };
-
-  if (!owner || loading)
-    return (
-      <Layout
-        SEO={{
-          title: `${
-            owner?.username
-              ? t('Lists.owner-username-s-lists', { username: owner.username as string })
-              : t('Layout.loading')
-          }`,
-          nofollow: true,
-          noindex: true,
-        }}
-        loading
-        mainColor={`${color.hex()}b8`}
-      />
-    );
 
   return (
     <Layout
@@ -391,9 +372,11 @@ const UserListsPage = (props: Props) => {
             </Stack>
             <Heading size={{ base: 'lg', md: undefined }}>
               {t('Lists.owner-username-s-lists', { username: owner.username })}{' '}
-              <Badge fontSize="lg" verticalAlign="middle">
-                {listsIds.length}
-              </Badge>
+              {!loading && (
+                <Badge fontSize="lg" verticalAlign="middle">
+                  {listsIds.length}
+                </Badge>
+              )}
             </Heading>
             {!isOwner && (
               <Stack mt={2} gap={1}>
@@ -431,7 +414,7 @@ const UserListsPage = (props: Props) => {
               </Text>
             )}
             <Stack mt={2} alignItems="flex-start">
-              {owner.username && <UserAchiev username={owner.username} />}
+              {owner.username && <UserAchiev achievements={props.achievements} />}
             </Stack>
           </Box>
         </Flex>
@@ -442,11 +425,11 @@ const UserListsPage = (props: Props) => {
       <Flex justifyContent={'space-between'} flexWrap="wrap" gap={3} alignItems="center" py={3}>
         <HStack>
           {isOwner && (
-            <Button variant="solid" onClick={() => setOpenCreateModal(true)}>
+            <Button isLoading={loading} variant="solid" onClick={() => setOpenCreateModal(true)}>
               + {t('Lists.new-list')}
             </Button>
           )}
-          {!isEdit && (
+          {!isEdit && !loading && (
             <Text as="div" textColor={'gray.300'} fontSize="sm">
               {listsIds.length} {t('General.lists')}
             </Text>
@@ -475,7 +458,7 @@ const UserListsPage = (props: Props) => {
         </HStack>
         <HStack flex="0 0 auto">
           {isOwner && (
-            <FormControl display="flex" alignItems="center">
+            <FormControl isDisabled={loading} display="flex" alignItems="center">
               <FormLabel mb="0" textColor={'gray.300'} fontSize="sm">
                 {t('General.edit-mode')}
               </FormLabel>
@@ -492,18 +475,36 @@ const UserListsPage = (props: Props) => {
           </Text>
         </Center>
       )}
-      <Flex mt={5} gap={4} flexWrap="wrap" justifyContent={'center'}>
-        <SortableLists
-          cardProps={{ matches }}
-          lists={lists}
-          ids={listsIds}
-          listSelect={selectedLists}
-          editMode={isEdit}
-          activateSort={isEdit}
-          onClick={selectItem}
-          onSort={handleSort}
-        />
-      </Flex>
+      {!loading && (
+        <Flex mt={5} gap={4} flexWrap="wrap" justifyContent={'center'}>
+          {isEdit && (
+            <SortableLists
+              cardProps={{ matches }}
+              lists={lists}
+              ids={listsIds}
+              listSelect={selectedLists}
+              editMode={isEdit}
+              activateSort={isEdit}
+              onClick={selectItem}
+              onSort={handleSort}
+            />
+          )}
+          {!isEdit &&
+            listsIds.map((id) => (
+              <UserListCard
+                key={id}
+                list={lists[id]}
+                isSelected={selectedLists.includes(id)}
+                matches={matches}
+              />
+            ))}
+        </Flex>
+      )}
+      {loading && (
+        <Center mt={5}>
+          <Spinner size="lg" />
+        </Center>
+      )}
     </Layout>
   );
 };
@@ -512,14 +513,25 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { username } = context.query;
   if (!username || Array.isArray(username)) return { notFound: true };
 
+  let user = null;
+
+  try {
+    const res = await CheckAuth((context.req ?? null) as any);
+    user = res?.user;
+  } catch (err) {}
+
   const owner = await getUser(username as string);
   if (!owner) return { notFound: true };
+
+  const ownerAchiev = await getUserAchievements(owner);
 
   return {
     props: {
       owner,
+      isOwner: user?.id === owner.id,
+      achievements: ownerAchiev ?? [],
       messages: (await import(`../../../translation/${context.locale}.json`)).default,
-    }, // will be passed to the page component as props
+    },
   };
 }
 

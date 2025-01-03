@@ -1,25 +1,13 @@
 import { Flex } from '@chakra-ui/react';
-import axios from 'axios';
-import { useState, useEffect } from 'react';
 import { UserAchievement } from '../../types';
 import AchievBadge from './AchievBadge';
 
 type UserAchievProps = {
-  username: string;
+  achievements: UserAchievement[];
 };
 
 const UserAchiev = (props: UserAchievProps) => {
-  const { username } = props;
-  const [achievements, setAchievements] = useState<UserAchievement[]>([]);
-
-  useEffect(() => {
-    init();
-  }, []);
-
-  const init = async () => {
-    const achiev = await axios.get(`/api/v1/users/${username}/achievements`);
-    setAchievements(achiev.data);
-  };
+  const { achievements } = props;
 
   if (!achievements.length) return <></>;
 
