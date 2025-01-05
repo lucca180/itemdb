@@ -136,18 +136,6 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
     let itemSlug = slugify(item.name);
     if (!itemSlug) throw 'invalid data';
 
-    const dbItemListPromise = prisma.items.findMany({
-      where: {
-        OR: [
-          {
-            name: item.name,
-            image_id: item.image_id,
-          },
-          item.item_id ? { item_id: item.item_id } : {},
-        ],
-      },
-    });
-
     const manualCheck = await prisma.itemProcess.findFirst({
       where: {
         manual_check: {
@@ -164,6 +152,18 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
     if (manualCheck) {
       throw manualCheck.manual_check;
     }
+
+    const dbItemListPromise = prisma.items.findMany({
+      where: {
+        OR: [
+          {
+            name: item.name,
+            image_id: item.image_id,
+          },
+          item.item_id ? { item_id: item.item_id } : {},
+        ],
+      },
+    });
 
     const dbSlugItemsPromise = prisma.items.findMany({
       where: {
