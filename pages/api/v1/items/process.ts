@@ -148,6 +148,23 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
       },
     });
 
+    const manualCheck = await prisma.itemProcess.findFirst({
+      where: {
+        manual_check: {
+          not: null,
+        },
+        processed: false,
+        OR: [
+          { name: item.name, image_id: item.image_id },
+          item.item_id ? { item_id: item.item_id } : {},
+        ],
+      },
+    });
+
+    if (manualCheck) {
+      throw manualCheck.manual_check;
+    }
+
     const dbSlugItemsPromise = prisma.items.findMany({
       where: {
         slug: {
