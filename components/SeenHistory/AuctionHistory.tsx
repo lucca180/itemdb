@@ -9,13 +9,20 @@ import {
   Thead,
   Flex,
   HStack,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+  Spinner,
 } from '@chakra-ui/react';
-import React from 'react';
-import { ItemAuctionData, ItemData } from '../../types';
+import React, { useEffect } from 'react';
+import { ContributeWallData, ItemAuctionData, ItemData } from '../../types';
 import { useFormatter, useTranslations } from 'next-intl';
 import axios, { AxiosRequestConfig } from 'axios';
 import { SeenHistoryStatusCard } from './SeenHistoryStatusCard';
 import useSWRImmutable from 'swr/immutable';
+import { ContributeWall } from '../Utils/ContributeWall';
 
 type Props = {
   data: ItemAuctionData[];
@@ -41,11 +48,34 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
   const { item } = props;
   const format = useFormatter();
   const t = useTranslations();
-
+  const [wall, setWall] = React.useState<ContributeWallData | null>(null);
+  const [soldData, setSoldData] = React.useState<AuctionHistoryResponse | null>(null);
   const { data, isLoading: loading } = useSWRImmutable<AuctionHistoryResponse>(
     `/api/v1/items/${item.name}/auction`,
     fetcher
   );
+
+  useEffect(() => {
+    init();
+  }, []);
+
+  const init = async () => {
+    setWall(null);
+    try {
+      const res = await axios.get(`/api/v1/items/${item.name}/auction?sold=true`);
+
+      setSoldData(res.data);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error);
+
+        if (error.response?.status === 403) {
+          setWall(error.response?.data);
+          console.log(error.response?.data);
+        }
+      }
+    }
+  };
 
   return (
     <Flex flexFlow="column">
@@ -87,12 +117,31 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
         />
       </HStack>
       <Flex flexFlow="column" bg="gray.800" p={2} borderRadius={'lg'} gap={2}>
-        <Text textAlign={'center'} fontSize="md" fontWeight={'bold'}>
-          {t('ItemPage.latest-x-auctions', {
-            x: 20,
-          })}
-        </Text>
-        <AuctionHistoryTable data={data?.recent ?? []} />
+        <Tabs align="center" variant="soft-rounded" colorScheme="gray" isLazy>
+          <TabList>
+            <Tab>
+              {t('ItemPage.latest-x-auctions', {
+                x: 20,
+              })}
+            </Tab>
+            <Tab>
+              {t('ItemPage.latest-x-sold', {
+                x: 20,
+              })}
+            </Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel>
+              {!loading && <AuctionHistoryTable data={data?.recent ?? []} />}
+              {loading && <Spinner />}
+            </TabPanel>
+            <TabPanel>
+              {wall && <ContributeWall textType="ItemPage" color={item.color.hex} wall={wall} />}
+              {!wall && soldData && <AuctionHistoryTable data={soldData.recent ?? []} />}
+              {!wall && !soldData && <Spinner />}
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
         <Text textAlign={'center'} fontSize={'xs'} mt={3}>
           {t('ItemPage.auction-disclaimer')}
         </Text>
@@ -113,21 +162,31 @@ const AuctionHistoryTable = (props: Props) => {
   return (
     <TableContainer
       minH={{ base: 100, md: 200 }}
-      maxH={{ base: 200, md: 500 }}
+      maxH={{ base: 200, md: 425 }}
       w="100%"
-      maxW="1000"
+      maxW="1000px"
       borderRadius="sm"
       overflowX="auto"
       overflowY="auto"
     >
       <Table h="100%" variant="striped" colorScheme="gray" size="sm" bg={'gray.600'}>
         <Thead>
-          <Tr>
-            <Th isNumeric>{t('ItemPage.last-known-price')}</Th>
-            <Th>{t('ItemPage.time-left')}</Th>
-            <Th>{t('ItemPage.has-a-buyer')}</Th>
-            <Th>{t('ItemPage.owner')}</Th>
-            <Th>{t('ItemPage.first-seen-history')}</Th>
+          <Tr whiteSpace={'wrap'}>
+            <Th textAlign={'center'} fontSize={'0.6rem'}>
+              {t('ItemPage.last-known-price')}
+            </Th>
+            <Th textAlign={'center'} fontSize={'0.6rem'}>
+              {t('ItemPage.time-left')}
+            </Th>
+            <Th textAlign={'center'} fontSize={'0.6rem'}>
+              {t('ItemPage.has-a-buyer')}
+            </Th>
+            <Th textAlign={'center'} fontSize={'0.6rem'}>
+              {t('ItemPage.owner')}
+            </Th>
+            <Th textAlign={'center'} fontSize={'0.6rem'}>
+              {t('ItemPage.first-seen-history')}
+            </Th>
           </Tr>
         </Thead>
         <Tbody fontSize={'xs'} color="gray.200">

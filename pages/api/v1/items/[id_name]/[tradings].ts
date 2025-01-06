@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { ItemAuctionData, ItemRestockData, TradeData } from '../../../../../types';
+import { ItemRestockData, TradeData } from '../../../../../types';
 import prisma from '../../../../../utils/prisma';
 import { getManyItems } from '../many';
 
@@ -29,10 +29,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     return res.json(trade);
   }
 
-  if (type === 'auction') {
-    const auction = await getAuctionData(name);
-    return res.json(auction);
-  }
+  // if (type === 'auction') {
+  //   const auction = await getAuctionData(name);
+  //   return res.json(auction);
+  // }
 
   if (type === 'owls') {
     const owls = await getOwlsTradeData(name);
@@ -137,54 +137,6 @@ const getTradeData = async (name: string) => {
     total: tradeRaw.length,
     uniqueOwners: uniqueOwners.size,
     priced: priced,
-    period: '90-days',
-  };
-};
-
-const getAuctionData = async (name: string) => {
-  const auctionRaw = await prisma.restockAuctionHistory.findMany({
-    where: {
-      item: {
-        name: name,
-      },
-      addedAt: {
-        gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 90),
-      },
-      type: 'auction',
-    },
-    orderBy: { addedAt: 'desc' },
-  });
-
-  const items = await getManyItems({
-    id: auctionRaw.map((p) => p.item_iid.toString()),
-  });
-
-  const uniqueOwners = new Set();
-  let soldAuctions = 0;
-  const totalAuctions = auctionRaw.length;
-
-  const auctions: ItemAuctionData[] = auctionRaw.map((p) => {
-    uniqueOwners.add(p.owner);
-    if (!p.otherInfo?.includes('nobody')) soldAuctions++;
-
-    return {
-      auction_id: p.neo_id,
-      internal_id: p.internal_id,
-      item: items[p.item_iid?.toString() ?? ''],
-      price: p.price,
-      owner: p.owner ?? 'unknown',
-      isNF: !!p.otherInfo?.toLowerCase().split(',').includes('nf'),
-      hasBuyer: !p.otherInfo?.includes('nobody'),
-      addedAt: p.addedAt.toJSON(),
-      timeLeft: p.otherInfo?.split(',')?.[1] ?? null,
-    };
-  });
-
-  return {
-    recent: auctions.slice(0, 20),
-    total: totalAuctions,
-    sold: soldAuctions,
-    uniqueOwners: uniqueOwners.size,
     period: '90-days',
   };
 };

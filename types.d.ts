@@ -515,6 +515,12 @@ type ItemRecipe = {
   type: string;
 };
 
+type ContributeWallData = {
+  success: boolean;
+  needTrades: number;
+  needVotes: number;
+};
+
 // ------- FEEDBACKS JSON -------- //
 export type Feedback = {
   feedback_id: number;

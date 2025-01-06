@@ -242,7 +242,10 @@
     "total-priced": "Total Priced",
     "last-trade-lot": "Last Trade Lot",
     "has-a-buyer": "Has a Buyer?",
-    "auction-disclaimer": "These data reflect the state of the auction the last time it was viewed by the itemdb and cannot be interpreted as the final auction result (unless stated otherwise)."
+    "auction-disclaimer": "These data reflect the state of the auction the last time it was viewed by the itemdb and cannot be interpreted as the final auction result (unless stated otherwise).",
+    "contribute-wall-1": "Before showing this data <b>we need your help</b> to make itemdb more accurate.",
+    "contribute-wall-2": "After that, you will be able to check the this data, <b>for every item</b>, for the next <b>24 hours</b> before needing to make another contribution.",
+    "latest-x-sold": "Latest {x} Sold"
   },
   "Button": {
     "feedback": "Feedback",

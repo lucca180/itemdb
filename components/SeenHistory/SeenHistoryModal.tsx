@@ -19,6 +19,7 @@ import { TradeHistoryProps } from './TradeHistory';
 const AuctionHistory = dynamic<AuctionHistoryProps>(() => import('./AuctionHistory'));
 const RestockHistory = dynamic<RestockHistoryProps>(() => import('./RestockHistory'));
 const TradeHistory = dynamic<TradeHistoryProps>(() => import('./TradeHistory'));
+
 export type SeenHistoryModalProps = {
   isOpen: boolean;
   onClose: () => void;
