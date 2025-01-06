@@ -194,6 +194,9 @@ export const processTradePrice = async (
     where: {
       trade_id: trade.trade_id,
     },
+    include: {
+      items: true,
+    },
   });
 
   if (!tradeHash && originalTrade) tradeHash = originalTrade.hash;
@@ -203,9 +206,16 @@ export const processTradePrice = async (
 
   // this is the worst (or is it?)
   // update: (its getting worse and worse)
+  // update 2: god help us all
   const updateItems = trade.items
     .filter((x) => x.price && Number(x.price) > 0)
     .map((item) => {
+      if (
+        isUpdate &&
+        originalTrade.items.find((x) => x.internal_id === item.internal_id)?.price === item.price
+      )
+        return [];
+
       return [
         prisma.tradeItems.update({
           where: {
@@ -215,33 +225,36 @@ export const processTradePrice = async (
             price: item.price,
           },
         }),
+
         prisma.tradeItems.updateMany({
           where: {
-            OR: [
-              {
-                order: item.order,
-                trade: {
-                  hash: tradeHash,
-                  processed: false,
-                  priced: false,
-                },
-              },
-              isUpdate && originalTrade.tradesUpdated
-                ? {
-                    order: item.order,
-                    trade: {
-                      trade_id: {
-                        in: originalTrade.tradesUpdated?.split(',').map((x) => Number(x)),
-                      },
-                    },
-                  }
-                : {},
-            ],
+            order: item.order,
+            trade: {
+              hash: tradeHash,
+              processed: false,
+              priced: false,
+            },
           },
           data: {
             price: item.price,
           },
         }),
+
+        isUpdate && originalTrade.tradesUpdated
+          ? prisma.tradeItems.updateMany({
+              where: {
+                order: item.order,
+                trade: {
+                  trade_id: {
+                    in: originalTrade.tradesUpdated?.split(',').map((x) => Number(x)),
+                  },
+                },
+              },
+              data: {
+                price: item.price,
+              },
+            })
+          : {},
       ];
     });
 
