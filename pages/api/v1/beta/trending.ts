@@ -64,7 +64,7 @@ const FEATURED_UNTIL = process.env.FEATURED_UNTIL ? Number(process.env.FEATURED_
 export const getTrendingLists = async (limit: number) => {
   const statsRes = await axios.get(
     'https://simpleanalytics.com/itemdb.com.br.json?version=5&fields=pages&start=today-7d&pages=/lists/official/*&limit=' +
-      limit,
+      limit * 5,
     {
       headers: {
         'Api-Key': `${process.env.SA_API_KEY}`,
@@ -84,18 +84,24 @@ export const getTrendingLists = async (limit: number) => {
     };
   });
 
+  const isFeaturedActive = FEATURED_UNTIL ? Date.now() < FEATURED_UNTIL : false;
+
   const lists = await prisma.userList.findMany({
-    where: { slug: { in: [...FEATURED_SLUGS, ...Object.keys(popularListsStats)] }, official: true },
+    where: {
+      slug: {
+        in: [...(isFeaturedActive ? FEATURED_SLUGS : []), ...Object.keys(popularListsStats)],
+      },
+      official: true,
+    },
     include: { user: true, items: true },
   });
 
   const sorted = lists.sort((a, b) => {
-    if (popularListsStats[a.slug!]?.pageviews > popularListsStats[b.slug!]?.pageviews) return -1;
-    if (popularListsStats[a.slug!]?.pageviews < popularListsStats[b.slug!]?.pageviews) return 1;
-    return 0;
-  });
+    const aPageViews = popularListsStats[a.slug!]?.pageviews ?? 0;
+    const bPageViews = popularListsStats[b.slug!]?.pageviews ?? 0;
 
-  const isFeaturedActive = FEATURED_UNTIL ? Date.now() < FEATURED_UNTIL : false;
+    return bPageViews - aPageViews;
+  });
 
   const featuredLists = (
     isFeaturedActive ? sorted.filter((list) => FEATURED_SLUGS.includes(list.slug ?? '')) : []
