@@ -216,7 +216,7 @@ export const processTradePrice = async (
       )
         return [];
 
-      return [
+      const transaction = [
         prisma.tradeItems.update({
           where: {
             internal_id: item.internal_id,
@@ -239,23 +239,27 @@ export const processTradePrice = async (
             price: item.price,
           },
         }),
+      ];
 
-        isUpdate && originalTrade.tradesUpdated
-          ? prisma.tradeItems.updateMany({
-              where: {
-                order: item.order,
-                trade: {
-                  trade_id: {
-                    in: originalTrade.tradesUpdated?.split(',').map((x) => Number(x)),
-                  },
+      if (isUpdate && originalTrade.tradesUpdated) {
+        transaction.push(
+          prisma.tradeItems.updateMany({
+            where: {
+              order: item.order,
+              trade: {
+                trade_id: {
+                  in: originalTrade.tradesUpdated?.split(',').map((x) => Number(x)),
                 },
               },
-              data: {
-                price: item.price,
-              },
-            })
-          : {},
-      ];
+            },
+            data: {
+              price: item.price,
+            },
+          })
+        );
+      }
+
+      return prisma.$transaction(transaction);
     });
 
   await Promise.all(updateItems.flat());
