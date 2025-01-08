@@ -259,7 +259,7 @@ export const processTradePrice = async (
         );
       }
 
-      return prisma.$transaction(transaction);
+      return prisma.$transaction(transaction, { isolationLevel: 'ReadUncommitted' });
     });
 
   await Promise.all(updateItems.flat());
