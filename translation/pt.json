@@ -411,7 +411,8 @@
     "x-results": "{x} resultados",
     "x-per-page": "{x} por página",
     "no": "Não",
-    "yes": "Sim"
+    "yes": "Sim",
+    "restock-shops": "Lojas de Restoque"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",

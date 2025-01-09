@@ -19,12 +19,14 @@ import {
   PopoverFooter,
   Kbd,
   useOutsideClick,
+  Badge,
+  Box,
 } from '@chakra-ui/react';
 import React, { useCallback } from 'react';
 import SearchMenu from '../Menus/SearchMenu';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import { SearchResults } from '../../types';
+import { ItemData, ShopInfo, UserList } from '../../types';
 import NextLink from 'next/link';
 import debounce from 'lodash/debounce';
 import ItemCtxMenu, { CtxTrigger } from '../Menus/ItemCtxMenu';
@@ -33,6 +35,8 @@ import { getFiltersDiff } from '../../pages/search';
 import { parseFilters } from '../../utils/parseFilters';
 import { useTranslations } from 'next-intl';
 import { ItemCardBadge } from '../Items/ItemCard';
+import { stripMarkdown } from '../../utils/utils';
+import HeadingLine from '../Utils/HeadingLine';
 
 const Axios = axios.create({
   baseURL: '/api/v1/',
@@ -46,7 +50,11 @@ export const SearchBar = (props: Props) => {
   const t = useTranslations();
   const [search, setSearch] = React.useState<string>('');
   const [isLargerThanMD] = useMediaQuery('(min-width: 48em)');
-  const [searchResult, setResult] = React.useState<SearchResults | null>(null);
+  const [searchResult, setResult] = React.useState<{
+    items: ItemData[];
+    lists: UserList[];
+    restockShop: ShopInfo[];
+  } | null>(null);
   const { isOpen, onToggle, onClose } = useDisclosure();
   const [isLoading, setLoading] = React.useState<boolean>(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -112,29 +120,16 @@ export const SearchBar = (props: Props) => {
     if (!isOpen) onToggle();
 
     try {
-      const searchRes = await Axios.get('search', {
+      const searchRes = await Axios.get('search/omni', {
         params: {
           s: newSearch.trim(),
-          sortBy: 'match',
           limit: 5,
-          skipStats: true,
         },
       });
 
-      if (searchRes.data.content.length !== 0) {
-        setResult(searchRes.data);
-      } else {
-        const fuzzyRes = await Axios.get('search', {
-          params: {
-            s: newSearch.trim(),
-            limit: 5,
-            skipStats: true,
-            mode: 'fuzzy',
-          },
-        });
+      setResult(searchRes.data);
 
-        setResult(fuzzyRes.data);
-      }
+      console.log(searchRes.data);
     } catch (e) {
       console.error(e);
     }
@@ -189,63 +184,157 @@ export const SearchBar = (props: Props) => {
               <Spinner />
             </Center>
           )}
-          {!isLoading && searchResult && searchResult.content.length === 0 && (
-            <Text textAlign="center">{t('Layout.no-results-found')}</Text>
-          )}
-          {!isLoading &&
-            searchResult &&
-            searchResult.content.length > 0 &&
-            searchResult.content.map((item) => (
-              <React.Fragment key={item.internal_id}>
-                <ItemCtxMenu
-                  item={item}
-                  onShow={() => (disableListener = true)}
-                  onHide={() => (disableListener = false)}
-                />
-                <CtxTrigger
-                  id={item.internal_id.toString()}
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                  //@ts-ignore
-                  disableWhileShiftPressed
-                  disable={isMobile ? true : undefined}
-                >
-                  <Link
-                    as={NextLink}
-                    display="flex"
-                    prefetch={false}
-                    href={`/item/${item.slug}`}
-                    key={item.internal_id}
-                    px={{ base: 1, md: 2 }}
-                    py={2}
-                    alignItems="center"
-                    cursor={'pointer'}
-                    _hover={{
-                      bg: `rgba(${item.color.rgb[0]},${item.color.rgb[1]}, ${item.color.rgb[2]},.35)`,
-                    }}
-                    _focus={{
-                      bg: `rgba(${item.color.rgb[0]},${item.color.rgb[1]}, ${item.color.rgb[2]},.35)`,
-                    }}
-                    fontSize={{ base: 'xs', sm: 'sm', md: 'md' }}
-                    onClick={onClose}
-                  >
-                    <Image
-                      src={item.image}
-                      boxSize="35px"
-                      mr={2}
-                      alt={item.description}
-                      borderRadius="sm"
+          {!isLoading && searchResult && (
+            <>
+              {searchResult.items.length === 0 &&
+                searchResult.lists.length === 0 &&
+                searchResult.restockShop.length === 0 && (
+                  <Text textAlign="center">{t('Layout.no-results-found')}</Text>
+                )}
+              {searchResult.items.length > 0 &&
+                searchResult.items.map((item) => (
+                  <React.Fragment key={item.internal_id}>
+                    <ItemCtxMenu
+                      item={item}
+                      onShow={() => (disableListener = true)}
+                      onHide={() => (disableListener = false)}
                     />
-                    <Flex flexFlow="column" alignItems="flex-start">
-                      {item.name}
+                    <CtxTrigger
+                      id={item.internal_id.toString()}
+                      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                      //@ts-ignore
+                      disableWhileShiftPressed
+                      disable={isMobile ? true : undefined}
+                    >
+                      <Link
+                        as={NextLink}
+                        display="flex"
+                        prefetch={false}
+                        href={`/item/${item.slug}`}
+                        key={item.internal_id}
+                        px={{ base: 1, md: 2 }}
+                        py={2}
+                        alignItems="center"
+                        cursor={'pointer'}
+                        _hover={{
+                          bg: `rgba(${item.color.rgb[0]},${item.color.rgb[1]}, ${item.color.rgb[2]},.35)`,
+                        }}
+                        _focus={{
+                          bg: `rgba(${item.color.rgb[0]},${item.color.rgb[1]}, ${item.color.rgb[2]},.35)`,
+                        }}
+                        fontSize={{ base: 'xs', sm: 'sm', md: 'md' }}
+                        onClick={onClose}
+                      >
+                        <Image
+                          src={item.image}
+                          boxSize="35px"
+                          mr={2}
+                          alt={item.description}
+                          borderRadius="sm"
+                        />
+                        <Flex flexFlow="column" alignItems="flex-start">
+                          {item.name}
 
-                      <ItemCardBadge item={item} />
-                    </Flex>
-                  </Link>
-                </CtxTrigger>
-              </React.Fragment>
-            ))}
+                          <ItemCardBadge item={item} />
+                        </Flex>
+                      </Link>
+                    </CtxTrigger>
+                  </React.Fragment>
+                ))}
+              <Box display={{ base: 'none', lg: 'block' }}>
+                {searchResult.lists.length > 0 && (
+                  <>
+                    <HeadingLine as={Link} href="/lists/official" fontSize={'sm'} my={1}>
+                      {t('General.official-lists')}
+                    </HeadingLine>
+
+                    {searchResult.lists.map((list) => (
+                      <Link
+                        as={NextLink}
+                        display="flex"
+                        prefetch={false}
+                        href={`/lists/official/${list.slug}`}
+                        key={list.internal_id}
+                        px={{ base: 1, md: 2 }}
+                        py={2}
+                        alignItems="center"
+                        cursor={'pointer'}
+                        _hover={{
+                          bg: `${list.colorHex}23`,
+                        }}
+                        _focus={{
+                          bg: `${list.colorHex}23`,
+                        }}
+                        fontSize={{ base: 'xs', sm: 'sm', md: 'md' }}
+                        onClick={onClose}
+                      >
+                        <Image
+                          src={list.coverURL!}
+                          boxSize="35px"
+                          mr={2}
+                          alt={list.name}
+                          borderRadius="sm"
+                          objectFit={'cover'}
+                        />
+                        <Flex flexFlow="column" alignItems="flex-start">
+                          {list.name}
+                          <Text display={{ base: 'none', lg: 'block' }} fontSize={'xs'}>
+                            {stripMarkdown(list.description ?? '')}
+                          </Text>
+                          {/* <ItemCardBadge item={item} /> */}
+                        </Flex>
+                      </Link>
+                    ))}
+                  </>
+                )}
+                {searchResult.restockShop.length > 0 && (
+                  <>
+                    <HeadingLine as={Link} href="/restock" my={1} fontSize={'sm'}>
+                      {t('General.restock-shops')}
+                    </HeadingLine>
+
+                    {searchResult.restockShop.map((shop) => (
+                      <Link
+                        as={NextLink}
+                        display="flex"
+                        prefetch={false}
+                        href={`/restock/${shop.id}`}
+                        key={shop.id}
+                        px={{ base: 1, md: 2 }}
+                        py={2}
+                        alignItems="center"
+                        cursor={'pointer'}
+                        _hover={{
+                          bg: `${shop.color}23`,
+                        }}
+                        _focus={{
+                          bg: `${shop.color}23`,
+                        }}
+                        fontSize={{ base: 'xs', sm: 'sm', md: 'md' }}
+                        onClick={onClose}
+                      >
+                        <Image
+                          objectPosition={'center'}
+                          src={`https://images.neopets.com/themes/h5/basic/images/v3/shop-icon.svg`}
+                          boxSize="35px"
+                          mr={2}
+                          alt={shop.name}
+                          borderRadius="sm"
+                          objectFit={'cover'}
+                        />
+                        <Flex flexFlow="column" alignItems="flex-start">
+                          {shop.name}
+                          <Badge>{shop.category}</Badge>
+                        </Flex>
+                      </Link>
+                    ))}
+                  </>
+                )}
+              </Box>
+            </>
+          )}
         </PopoverBody>
-        {!isLoading && searchResult && searchResult.content.length > 0 && (
+        {!isLoading && searchResult && searchResult.items.length > 0 && (
           <PopoverFooter textAlign={'center'}>
             <Text fontSize="sm">
               {t('Layout.or-just-press')}{' '}

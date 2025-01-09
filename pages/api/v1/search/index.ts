@@ -54,7 +54,7 @@ const validColorTypes = [
 
 export async function doSearch(
   query: string,
-  filters: SearchFilters,
+  filters?: SearchFilters,
   includeStats = true,
   list_id = 0,
   includeHidden = false,

@@ -45,6 +45,7 @@
     "firebase": "^11.1.0",
     "firebase-admin": "^13.0.2",
     "framer-motion": "^10.15.0",
+    "fuse.js": "^7.0.0",
     "he": "^1.2.0",
     "html-react-parser": "^5.1.18",
     "html-to-image": "^1.11.11",

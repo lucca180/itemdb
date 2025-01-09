@@ -428,6 +428,9 @@ model UserList {
   items ListItems[]
 
   @@unique([slug, user_id])
+  @@fulltext([name])
+  @@fulltext([description])
+  @@fulltext([name, description])
 }
 
 enum DynamicListType {

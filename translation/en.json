@@ -410,7 +410,8 @@
     "x-results": "{x} results",
     "x-per-page": "{x} per page",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "restock-shops": "Restock Shops"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",
