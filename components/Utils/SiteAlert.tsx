@@ -149,7 +149,7 @@ export const SiteAlert = () => {
 const getAlert = () => {
   const todayNST = getDateNST();
 
-  if (todayNST.getTime() < 1736726399000) return alerts.weeklyQuests;
+  // if (todayNST.getTime() < 1736726399000) return alerts.weeklyQuests;
   if (isThirdWednesday(todayNST)) return alerts.hiddenTower;
   if (todayNST.getDate() === 3) return alerts.hpd;
   else if (todayNST.getMonth() === 4 && todayNST.getDate() === 12) return alerts.tyrannia;
