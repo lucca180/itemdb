@@ -411,7 +411,8 @@
     "x-per-page": "{x} per page",
     "yes": "Yes",
     "no": "No",
-    "restock-shops": "Restock Shops"
+    "restock-shops": "Restock Shops",
+    "always": "Always"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",
@@ -824,7 +825,11 @@
     "hide-misses-helper-txt": "Hide all information about your missed restocks.",
     "hide-comparations": "Hide Comparations",
     "hide-comparations-helper-txt": "Hide all comparations with previous sessions. You may need to refresh to see the changes.",
-    "dashboard-options": "Dashboard Options"
+    "dashboard-options": "Dashboard Options",
+    "hidden-tower": "Hidden Tower - 3% off",
+    "ht-next-discount-day": "Discount Day Price | Next at {x}",
+    "discounted-price": "Discounted Price",
+    "random-event-price": "Random Event Price"
   },
   "Search": {
     "search": "Search",

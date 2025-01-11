@@ -313,7 +313,13 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
             {item.isNC && props.ncMallData && (
               <NcMallCard item={item} ncMallData={props.ncMallData} />
             )}
-            {item.findAt.restockShop && <ItemRestock item={item} lastSeen={props.lastSeen} />}
+            {item.findAt.restockShop && (
+              <ItemRestock
+                isHT={item.findAt.restockShop.includes('hiddentower938')}
+                item={item}
+                lastSeen={props.lastSeen}
+              />
+            )}
             {(item.isWearable || colorSpeciesEffect) && (
               <ItemPreview
                 colorSpeciesEffect={colorSpeciesEffect}

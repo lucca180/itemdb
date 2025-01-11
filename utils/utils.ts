@@ -45,6 +45,10 @@ export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
     }`;
   }
 
+  if (item.rarity === 200) {
+    findAt.restockShop = `https://www.neopets.com/faerieland/hiddentower938.phtml`;
+  }
+
   if (item.rarity && item.rarity <= 98) {
     findAt.neosearch = `https://www.neopets.com/search.phtml?selected_type=object&string=${cleanItem(
       item
@@ -488,9 +492,20 @@ export const getRestockPrice = (
   } else if (item.rarity <= 99) {
     minPrice = Math.max(minPrice, 10000);
     maxPrice = Math.max(maxPrice, 10000);
+  } else if (item.rarity === 200) {
+    minPrice = item.estVal;
+    maxPrice = item.estVal;
   }
 
   if (ignoreSpecialDays) return [minPrice, maxPrice];
+
+  if (item.rarity === 200) {
+    if (isThirdWednesday()) {
+      return [minPrice * 0.97, maxPrice * 0.97].map((x) => Math.round(x));
+    }
+
+    return [minPrice, maxPrice];
+  }
 
   if (todayNST.getDate() === 3) {
     return [minPrice * 0.5, maxPrice * 0.5].map((x) => Math.round(x));
@@ -578,6 +593,13 @@ export const restockShopInfo: { [id: string]: ShopInfo } = {
     difficulty: 'Medium',
     color: '#f4da18',
     id: '-2',
+  },
+  '-3': {
+    name: 'Hidden Tower',
+    category: 'Other',
+    difficulty: 'Advanced',
+    color: '#f4da18',
+    id: '-3',
   },
   '1': {
     name: 'Neopian Fresh Foods',
@@ -1700,3 +1722,24 @@ export const promiseAllLimit = async <T>(
 
   return results;
 };
+
+export function isThirdWednesday(date?: Date) {
+  date = date || getDateNST();
+  return date.getDay() === 3 && Math.floor((date.getDate() - 1) / 7) === 2;
+}
+
+export function nextThirdWednesday(date?: Date) {
+  date = date || getDateNST();
+  const month = date.getMonth();
+  const year = date.getFullYear();
+
+  let thirdWednesday = new Date(year, month, 1);
+  thirdWednesday.setDate(1 + ((3 - thirdWednesday.getDay() + 7) % 7) + 14);
+
+  if (thirdWednesday <= date) {
+    thirdWednesday = new Date(year, month + 1, 1);
+    thirdWednesday.setDate(1 + ((3 - thirdWednesday.getDay() + 7) % 7) + 14);
+  }
+
+  return thirdWednesday;
+}

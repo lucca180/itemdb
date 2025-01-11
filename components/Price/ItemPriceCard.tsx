@@ -341,6 +341,7 @@ const ItemPriceCard = (props: Props) => {
               type="restock"
               lastSeen={lastSeen?.restock}
               isLoading={!lastSeen}
+              isAlways={item.findAt.restockShop?.includes('hiddentower')}
               doesNotRestock={!item.findAt.restockShop}
               onClick={() => setSeenHistory('restock')}
             />
@@ -414,10 +415,11 @@ type LastSeenCardProps = {
   isLoading?: boolean;
   doesNotRestock?: boolean;
   onClick?: () => void;
+  isAlways?: boolean;
 };
 
 const LastSeenCard = (props: LastSeenCardProps) => {
-  const { lastSeen, type, isLoading, doesNotRestock, onClick } = props;
+  const { lastSeen, type, isLoading, doesNotRestock, isAlways, onClick } = props;
   const t = useTranslations();
   const format = useFormatter();
 
@@ -444,7 +446,8 @@ const LastSeenCard = (props: LastSeenCardProps) => {
       </Text>
       <Text opacity={0.8}>
         {lastSeen && format.relativeTime(new Date(lastSeen))}
-        {!lastSeen && !isLoading && !doesNotRestock && t('General.never')}
+        {!lastSeen && !isLoading && !doesNotRestock && !isAlways && t('General.never')}
+        {!lastSeen && !isLoading && !doesNotRestock && isAlways && t('General.always')}
         {isLoading && <SkeletonText mt={1} skeletonHeight="3" noOfLines={1} />}
         {type === 'restock' && doesNotRestock && t('ItemPage.does-not-restock')}
       </Text>

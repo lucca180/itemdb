@@ -94,7 +94,7 @@
   "ItemPage": {
     "item-info": "Item Info",
     "item-id": "Item ID",
-    "est-val-warning": "Não relete o valor real do item",
+    "est-val-warning": "Não reflete o valor real do item",
     "color-palette": "Paleta de Cores",
     "invisible-item": "Procurando por cores em um item invisível?",
     "find-at": "Encontre em",
@@ -412,7 +412,8 @@
     "x-per-page": "{x} por página",
     "no": "Não",
     "yes": "Sim",
-    "restock-shops": "Lojas de Restoque"
+    "restock-shops": "Lojas de Restoque",
+    "always": "Sempre"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",
@@ -825,7 +826,11 @@
     "dashboard-options": "Opções do Dashboard",
     "hide-comparations": "Ocultar Comparações",
     "hide-comparations-helper-txt": "Oculte todas as comparações com sessões anteriores. \nPode ser necessário atualizar para ver as alterações.",
-    "hide-misses-helper-txt": "Oculte todas as informações sobre seus itens perdidos."
+    "hide-misses-helper-txt": "Oculte todas as informações sobre seus itens perdidos.",
+    "hidden-tower": "Torre Oculta - 3% off",
+    "ht-next-discount-day": "Preço do Dia de Desconto | Próximo em {x}",
+    "discounted-price": "Dia de Desconto",
+    "random-event-price": "Preço Evento Aleatório"
   },
   "Search": {
     "search": "Pesquisa",

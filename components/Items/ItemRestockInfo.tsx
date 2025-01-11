@@ -1,4 +1,4 @@
-import { Center, Flex, HStack, Tag, Text, Link } from '@chakra-ui/react';
+import { Center, Flex, HStack, Tag, Text, Link, Tooltip } from '@chakra-ui/react';
 import React from 'react';
 import { ItemData, ItemLastSeen } from '../../types';
 import {
@@ -8,6 +8,8 @@ import {
   getRestockPrice,
   getRestockProfit,
   halloweenShops,
+  isThirdWednesday,
+  nextThirdWednesday,
   restockShopInfo,
   slugify,
   tyrannianShops,
@@ -16,22 +18,30 @@ import CardBase from '../Card/CardBase';
 import Image from 'next/image';
 import NextLink from 'next/link';
 import { useTranslations } from 'next-intl';
+import { MdHelp } from 'react-icons/md';
 
 type Props = {
   item: ItemData;
   lastSeen: ItemLastSeen | null;
+  isHT?: boolean; // is hidden tower item
 };
 
 const intl = new Intl.NumberFormat();
 
 const ItemRestock = (props: Props) => {
   const t = useTranslations();
-  const { item, lastSeen } = props;
+  const { item, lastSeen, isHT } = props;
   const [specialDay, setSpecialDay] = React.useState('');
 
   React.useEffect(() => {
     if (!item.category) return;
     const todayNST = getDateNST();
+
+    if (isHT) {
+      //check if is the third wednesday of the month
+      if (isThirdWednesday()) setSpecialDay('ht');
+      return;
+    }
 
     if (todayNST.getDate() === 3) setSpecialDay('hpd');
     else if (
@@ -69,7 +79,7 @@ const ItemRestock = (props: Props) => {
   const restockOriginalProfit = getRestockProfit(item, true);
 
   const shopInfo = item.category
-    ? restockShopInfo[categoryToShopID[item.category.toLowerCase()]]
+    ? restockShopInfo[isHT ? '-3' : categoryToShopID[item.category.toLowerCase()]]
     : null;
   if (!item.category || !item.estVal || !restockPrice) return null;
 
@@ -77,11 +87,20 @@ const ItemRestock = (props: Props) => {
     <CardBase title={t('Restock.restock-info')} color={item.color.rgb}>
       <Flex flexFlow={'column'} gap={2}>
         <Center flexFlow="column" gap={2}>
-          <Link as={NextLink} href={`/restock/${slugify(shopInfo?.name ?? '')}`}>
+          <Link
+            as={NextLink}
+            href={
+              !isHT ? `/restock/${slugify(shopInfo?.name ?? '')}` : '/lists/official/hidden-tower'
+            }
+          >
             <Image
-              src={`https://images.neopets.com/shopkeepers/w${
-                categoryToShopID[item.category.toLowerCase()]
-              }.gif`}
+              src={
+                !isHT
+                  ? `https://images.neopets.com/shopkeepers/w${
+                      categoryToShopID[item.category.toLowerCase()]
+                    }.gif`
+                  : 'https://images.neopets.com/faerieland/tower_1.gif'
+              }
               priority
               alt={item.category.toLowerCase() + ' shop'}
               width={276}
@@ -97,6 +116,7 @@ const ItemRestock = (props: Props) => {
             <Tag colorScheme={'purple'}>{t('Restock.faerie-festival')}</Tag>
           )}
           {specialDay === 'halloween' && <Tag colorScheme={'orange'}>{t('Restock.halloween')}</Tag>}
+          {specialDay === 'ht' && <Tag colorScheme={'pink'}>{t('Restock.hidden-tower')}</Tag>}
         </Center>
         <HStack>
           <Tag size="md" fontWeight="bold" as="h3">
@@ -111,8 +131,8 @@ const ItemRestock = (props: Props) => {
                 restockProfit && restockProfit <= 0
                   ? 'red.300'
                   : specialDay
-                    ? 'green.200'
-                    : undefined
+                  ? 'green.200'
+                  : undefined
               }
             >
               {!restockProfit && '???'}
@@ -144,25 +164,58 @@ const ItemRestock = (props: Props) => {
             )}
           </Flex>
         </HStack>
-        <HStack>
-          <Tag size="md" fontWeight="bold" as="h3">
-            {t('Restock.latest-restock')}
-          </Tag>
-          <Text flex="1" fontSize="xs" textAlign="right">
-            {lastSeen?.restock && (
-              <>
-                {new Date(lastSeen?.restock).toLocaleString(undefined, {
-                  year: 'numeric',
+        {!isHT && (
+          <HStack>
+            <Tag size="md" fontWeight="bold" as="h3">
+              {t('Restock.latest-restock')}
+            </Tag>
+            <Text flex="1" fontSize="xs" textAlign="right">
+              {lastSeen?.restock && (
+                <>
+                  {new Date(lastSeen?.restock).toLocaleString(undefined, {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: 'numeric',
+                  })}
+                </>
+              )}
+              {!lastSeen?.restock && '???'}
+            </Text>
+          </HStack>
+        )}
+        {isHT && (
+          <HStack>
+            <Tooltip
+              hasArrow
+              label={t('Restock.ht-next-discount-day', {
+                x: nextThirdWednesday().toLocaleString(undefined, {
                   month: 'short',
                   day: 'numeric',
-                  hour: 'numeric',
-                  minute: 'numeric',
-                })}
-              </>
-            )}
-            {!lastSeen?.restock && '???'}
-          </Text>
-        </HStack>
+                }),
+              })}
+            >
+              <Tag size="md" fontWeight="bold" as="h3">
+                {t('Restock.discounted-price')}{' '}
+                <MdHelp size={'0.8rem'} style={{ marginLeft: '0.2rem' }} />
+              </Tag>
+            </Tooltip>
+            <Text flex="1" fontSize="xs" textAlign="right">
+              {intl.format(Math.round(item.estVal * 0.97))} NP
+            </Text>
+          </HStack>
+        )}
+        {isHT && (
+          <HStack>
+            <Tag size="md" fontWeight="bold" as="h3">
+              {t('Restock.random-event-price')}
+            </Tag>
+            <Text flex="1" fontSize="xs" textAlign="right">
+              {intl.format(Math.round(item.estVal * 0.9))} NP
+            </Text>
+          </HStack>
+        )}
       </Flex>
     </CardBase>
   );
