@@ -3,6 +3,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { CheckAuth } from '../../../../utils/googleCloud';
 import { User } from '../../../../types';
+import { subDays } from 'date-fns';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -43,6 +44,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
   });
 
   const itemsTotal = prisma.items.count();
+  const DATE_LIMIT = subDays(new Date(), 30);
 
   const tradeQueueRaw = prisma.$queryRaw<{ count: number }[]>(
     Prisma.sql`
@@ -52,7 +54,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
       LEFT JOIN tradeitems ti ON t2.trade_id = ti.trade_id
       LEFT JOIN items i ON i.name = ti.name AND i.image_id = ti.image_id
       LEFT JOIN itemprices p ON p.item_iid = i.internal_id AND p.isLatest = 1 AND p.addedAt > t.addedAt
-      WHERE t.trade_id = t2.trade_id
+      WHERE t.trade_id = t2.trade_id and t.addedAt >= ${DATE_LIMIT}
       AND p.price IS NULL
       )`
   );

@@ -4,6 +4,7 @@ import { TradeData } from '../../../../types';
 import Chance from 'chance';
 const chance = new Chance();
 import { Prisma } from '@prisma/client';
+import { subDays } from 'date-fns';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -37,7 +38,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     itemName = await getPopularItem(skipList);
     if (!itemName) return res.json({ trades: [], popularItem: null });
 
-    tradeRaw = await getPrecifyTrades(itemName, order, parseInt(limit), skipList);
+    tradeRaw = await getPrecifyTrades(itemName, order, parseInt(limit), skipList, false);
   }
 
   const trades: TradeData[] = tradeRaw.map((t) => {
@@ -67,13 +68,17 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   res.json({ trades, popularItem: itemName });
 }
 
+const DATE_LIMIT = subDays(new Date(), 30);
+
 const getPopularItem = async (skipList?: string[]) => {
-  const shouldGetOld = chance.bool();
+  const shouldGetOld = chance.bool({ likelihood: 60 });
   const prismaSkip = Prisma.join(skipList && skipList.length > 0 ? skipList : [-1]);
 
   const orderBy = shouldGetOld
     ? Prisma.sql`ORDER BY max_addedAt asc`
     : Prisma.sql`ORDER BY count desc`;
+
+  const dateLimit = !shouldGetOld ? Prisma.sql`AND t.addedAt >= ${DATE_LIMIT}` : Prisma.empty;
 
   const rawQuery = (await prisma.$queryRaw`
     select name, count(name) as count, max(t.addedAt) as max_addedAt FROM trades t 
@@ -86,7 +91,7 @@ const getPopularItem = async (skipList?: string[]) => {
         LEFT JOIN itemprices p ON p.item_iid = i.internal_id AND p.isLatest = 1 AND p.addedAt > t.addedAt
         WHERE t.trade_id = t2.trade_id
         AND p.price IS NULL
-    ) and t.trade_id not in (${prismaSkip})
+    ) and t.trade_id not in (${prismaSkip}) ${dateLimit}
     group by name ${orderBy}
     limit 1
   `) as { name: string; count: bigint; max_addedAt: Date }[];
@@ -100,11 +105,13 @@ const getPrecifyTrades = async (
   itemName: string,
   order: Prisma.TradesOrderByWithRelationInput,
   limit = 1,
-  skipList?: string[]
+  skipList?: string[],
+  skipOld = true
 ) => {
   const tradeRaw = await prisma.trades.findMany({
     where: {
       processed: false,
+      addedAt: skipOld ? { gte: DATE_LIMIT } : undefined,
       trade_id: skipList
         ? {
             notIn: skipList.map((s) => parseInt(s)),
