@@ -32,7 +32,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const listProm = prisma.userList.findMany({
     where: {
-      OR: [{ name: { search: `*${query}*` } }, { description: { search: `*${query}*` } }],
+      OR: [{ name: { contains: `${query}` } }, { description: { contains: `${query}` } }],
       official: true,
     },
     include: {
@@ -40,13 +40,22 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       user: true,
     },
     take: 3,
-    orderBy: {
-      _relevance: {
-        fields: ['name', 'description'],
-        search: `${query}`,
-        sort: 'asc',
+    orderBy: [
+      {
+        _relevance: {
+          fields: ['name'],
+          search: `*${query}*`,
+          sort: 'asc',
+        },
       },
-    },
+      {
+        _relevance: {
+          fields: ['description'],
+          search: `*${query}*`,
+          sort: 'asc',
+        },
+      },
+    ],
   });
 
   let [searchRes, listRes] = await Promise.all([searchProm, listProm]);
