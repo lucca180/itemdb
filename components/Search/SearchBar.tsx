@@ -241,7 +241,7 @@ export const SearchBar = (props: Props) => {
                     </CtxTrigger>
                   </React.Fragment>
                 ))}
-              <Box display={{ base: 'none', lg: 'block' }}>
+              <Box display={{ base: 'none', md: 'block' }}>
                 {searchResult.lists.length > 0 && (
                   <>
                     <HeadingLine as={Link} href="/lists/official" fontSize={'sm'} my={1}>
