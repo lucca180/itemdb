@@ -118,7 +118,6 @@ const RestockHeader = (props: Props) => {
         {props.children}
         {!isHistory && (
           <Text mt={3} fontSize="sm" textAlign={'center'}>
-            <Badge colorScheme="green">{t('Layout.new')}</Badge>{' '}
             {t.rich('Restock.history-cta', {
               Link: (chunk) => (
                 <Link href={`/restock/${slugify(shopInfo.name)}/history`}>

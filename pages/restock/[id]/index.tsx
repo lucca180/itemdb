@@ -1,14 +1,4 @@
-import {
-  Button,
-  Center,
-  Divider,
-  Flex,
-  HStack,
-  Link,
-  Spinner,
-  Text,
-  Image,
-} from '@chakra-ui/react';
+import { Button, Divider, Flex, HStack, Link, Text, Image } from '@chakra-ui/react';
 import Color from 'color';
 import { GetStaticPropsContext } from 'next';
 import { CreateDynamicListButton } from '../../../components/DynamicLists/CreateButton';
@@ -34,11 +24,13 @@ import { VirtualizedItemList } from '../../../components/Utils/VirtualizedItemLi
 import { useAuth } from '../../../utils/auth';
 import RestockHeader from '../../../components/Hubs/Restock/RestockHeader';
 import { NextPageWithLayout } from '../../_app';
+import { doSearch } from '../../api/v1/search';
 
 type RestockShopPageProps = {
   shopInfo: ShopInfo;
   messages: any;
   locale: string;
+  initialItems?: ItemData[];
 };
 
 const sortTypes = {
@@ -60,7 +52,7 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
   const { shopInfo } = props;
   const { userPref, updatePref } = useAuth();
   const [filteredItems, setFilteredItems] = useState<ItemData[]>();
-  const [itemList, setItemList] = useState<ItemData[]>();
+  const [itemList, setItemList] = useState<ItemData[]>(props.initialItems ?? []);
   const [sortInfo, setSortInfo] = useState({ sortBy: 'price', sortDir: 'desc' });
   const [loading, setLoading] = useState(true);
   const [itemFilter, setItemFilter] = useState<ItemFilter>({ query: undefined, minProfit: 5000 });
@@ -182,100 +174,96 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
         </Text>
       </RestockHeader>
       <Divider my={3} />
-      {loading && (
-        <Center>
-          <Spinner />
-        </Center>
-      )}
-      {!loading && (
-        <>
-          <Flex
-            justifyContent={'space-between'}
-            alignItems="center"
-            gap={3}
-            mb={3}
-            flexFlow={{ base: 'column-reverse', lg: 'row' }}
-          >
-            <HStack alignItems={'center'}>
-              <CreateDynamicListButton
-                removeMargin
-                resultCount={filteredItems?.length ?? itemList?.length ?? 0}
-                query={itemFilter.query || undefined}
-                filters={{
-                  ...defaultFilters,
-                  restockProfit: itemFilter.minProfit.toString(),
-                  category: [shopIDToCategory[shopInfo.id]],
-                  rarity: ['1', '99'],
-                  limit: 3000,
-                  sortBy: 'price',
-                  sortDir: 'desc',
-                }}
-              />
-              <Text as="div" textColor={'gray.300'} fontSize="sm">
-                {filteredItems?.length ?? itemList?.length ?? 0} {t('General.items')}
-              </Text>
-            </HStack>
 
-            <HStack
-              flex="0 0 auto"
-              minW={{ base: 'none', md: 400 }}
-              justifyContent={['center', 'flex-end']}
-              flexWrap={'wrap'}
-            >
-              <Button onClick={toggleView}>
-                {viewType === 'rarity'
-                  ? t('Restock.use-classic-view')
-                  : t('Restock.use-rarity-view')}
-              </Button>
-              <CollapseNumber onChange={(val) => handleProfitChange(val ?? 5000)} />
-              <SearchList onChange={handleSearch} />
-              <HStack>
-                <Text
-                  flex="0 0 auto"
-                  textColor={'gray.300'}
-                  fontSize="sm"
-                  display={{ base: 'none', md: 'inherit' }}
-                >
-                  {t('General.sort-by')}
-                </Text>
-                <SortSelect
-                  sortTypes={sortTypes}
-                  sortBy={sortInfo.sortBy}
-                  onClick={handleSort}
-                  sortDir={sortInfo.sortDir}
-                />
-              </HStack>
-            </HStack>
-          </Flex>
-          {viewType === 'default' && (
-            <VirtualizedItemList
-              sortType={sortInfo.sortBy}
-              items={filteredItems ?? []}
-              highlightList={restockBlackMarketItems}
-            />
-          )}
-          {viewType === 'rarity' && (
-            <>
-              <RarityView itemList={filteredItems} sortType={sortInfo.sortBy} />
-            </>
-          )}
-          <Text textAlign={'center'} mt={8} fontSize="xs">
-            {t.rich('Restock.bmg-warning', {
-              Link: (chunk) => (
-                <Link href="/lists/official/1952" color="yellow.200">
-                  {chunk}
-                </Link>
-              ),
-            })}
-            <br />
-            {t('Restock.info-up-to-date-warning')}
-            <br />
-            <Link href="/contribute" color="gray.400">
-              {t('General.learnHelp')}
-            </Link>
+      <Flex
+        justifyContent={'space-between'}
+        alignItems="center"
+        gap={3}
+        mb={3}
+        flexFlow={{ base: 'column-reverse', lg: 'row' }}
+      >
+        <HStack alignItems={'center'}>
+          <CreateDynamicListButton
+            removeMargin
+            isLoading={loading}
+            resultCount={filteredItems?.length ?? itemList?.length ?? 0}
+            query={itemFilter.query || undefined}
+            filters={{
+              ...defaultFilters,
+              restockProfit: itemFilter.minProfit.toString(),
+              category: [shopIDToCategory[shopInfo.id]],
+              rarity: ['1', '99'],
+              limit: 3000,
+              sortBy: 'price',
+              sortDir: 'desc',
+            }}
+          />
+          <Text as="div" textColor={'gray.300'} fontSize="sm">
+            {!loading && (
+              <>
+                {filteredItems?.length ?? itemList?.length ?? 0} {t('General.items')}
+              </>
+            )}
           </Text>
+        </HStack>
+
+        <HStack
+          flex="0 0 auto"
+          minW={{ base: 'none', md: 400 }}
+          justifyContent={['center', 'flex-end']}
+          flexWrap={'wrap'}
+        >
+          <Button isLoading={loading} onClick={toggleView}>
+            {viewType === 'rarity' ? t('Restock.use-classic-view') : t('Restock.use-rarity-view')}
+          </Button>
+          <CollapseNumber disabled={loading} onChange={(val) => handleProfitChange(val ?? 5000)} />
+          <SearchList disabled={loading} onChange={handleSearch} />
+          <HStack>
+            <Text
+              flex="0 0 auto"
+              textColor={'gray.300'}
+              fontSize="sm"
+              display={{ base: 'none', md: 'inherit' }}
+            >
+              {t('General.sort-by')}
+            </Text>
+            <SortSelect
+              disabled={loading}
+              sortTypes={sortTypes}
+              sortBy={sortInfo.sortBy}
+              onClick={handleSort}
+              sortDir={sortInfo.sortDir}
+            />
+          </HStack>
+        </HStack>
+      </Flex>
+      {viewType === 'default' && (
+        <VirtualizedItemList
+          sortType={sortInfo.sortBy}
+          items={filteredItems ?? []}
+          highlightList={restockBlackMarketItems}
+        />
+      )}
+      {viewType === 'rarity' && (
+        <>
+          <RarityView itemList={filteredItems} sortType={sortInfo.sortBy} />
         </>
       )}
+      <Text textAlign={'center'} mt={8} fontSize="xs">
+        {t.rich('Restock.bmg-warning', {
+          Link: (chunk) => (
+            <Link href="/lists/official/1952" color="yellow.200">
+              {chunk}
+            </Link>
+          ),
+        })}
+        <br />
+        {t('Restock.info-up-to-date-warning')}
+        <br />
+        <Link href="/contribute" color="gray.400">
+          {t('General.learnHelp')}
+        </Link>
+      </Text>
     </>
   );
 };
@@ -304,14 +292,29 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 
   if (Number(shopInfo.id) < 0) return { notFound: true };
 
+  const filters: SearchFilters = {
+    ...defaultFilters,
+    restockProfit: '1',
+    category: [shopIDToCategory[shopInfo.id]],
+    rarity: ['1', '99'],
+    limit: 32,
+    sortBy: 'price',
+    sortDir: 'desc',
+    restockIncludeUnpriced: true,
+  };
+
+  const result = await doSearch('', filters, false);
+
   const props: RestockShopPageProps = {
     shopInfo: shopInfo,
+    initialItems: result.content,
     messages: (await import(`../../../translation/${context.locale}.json`)).default,
     locale: context.locale ?? 'en',
   };
 
   return {
     props,
+    revalidate: 600,
   };
 }
 

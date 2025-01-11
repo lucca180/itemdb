@@ -12,6 +12,7 @@ import { MdOutlineAttachMoney } from 'react-icons/md';
 
 type Props = {
   onChange: (number: number | undefined) => void;
+  disabled?: boolean;
 };
 
 const intl = new Intl.NumberFormat();
@@ -64,6 +65,7 @@ export const CollapseNumber = (props: Props) => {
     <InputGroup w="auto" minW="40px" bg="whiteAlpha.200" borderRadius={'md'}>
       <InputLeftElement>
         <IconButton
+          isDisabled={props.disabled}
           onClick={setFocus}
           aria-label="Search list"
           icon={<MdOutlineAttachMoney />}
