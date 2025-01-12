@@ -22,7 +22,6 @@ import { useRouter } from 'next/router';
 import axios from 'axios';
 import { SearchFilters as SearchFiltersType, SearchResults } from '../types';
 import Pagination from '../components/Input/Pagination';
-import SearchFilterCard from '../components/Search/SearchFiltersCard';
 import { SearchFilterModalProps } from '../components/Search/SearchFiltersModal';
 import { BsFilter } from 'react-icons/bs';
 import { SelectItemsCheckbox } from '../components/Input/SelectItemsCheckbox';
@@ -40,6 +39,8 @@ import isEqual from 'lodash/isEqual';
 const SearchFilterModal = dynamic<SearchFilterModalProps>(
   () => import('../components/Search/SearchFiltersModal')
 );
+
+const SearchFilterCard = dynamic(() => import('../components/Search/SearchFiltersCard'));
 
 const itemdb = axios.create({
   baseURL: '/api/v1/',
