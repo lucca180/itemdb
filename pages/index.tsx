@@ -72,7 +72,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
           bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.6) 80%)`}
           zIndex={-1}
         />
-        <Image src={logo} alt="itemdb logo" width={500} quality="100" priority placeholder="blur" />
+        <Image src={logo} alt="itemdb logo" width={500} quality="100" priority />
         <Heading size="sm" mt={4} lineHeight={1.5}>
           <Highlight
             query={t('HomePage.open-source')}
