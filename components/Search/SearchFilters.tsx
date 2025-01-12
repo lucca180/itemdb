@@ -64,10 +64,6 @@ const SearchFilters = (props: Props) => {
     );
   }, [props.filters]);
 
-  // useEffect(() => {
-  //   console.log('opa, setou', filters)
-  // }, [filters])
-
   const handleCheckChange = (
     newFilter: string,
     filterType: keyof typeof filters,

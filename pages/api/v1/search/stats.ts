@@ -26,7 +26,6 @@ export const getSearchStats = async (resQuery: string, list_id = 0, includeHidde
   if (isColorSearch) {
     const color = Color(query);
     [l, a, b] = color.lab().array();
-    console.log(l, a, b);
   }
 
   const fulltext =

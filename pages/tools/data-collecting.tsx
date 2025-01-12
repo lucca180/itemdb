@@ -77,9 +77,7 @@ const DataCollectingPage = () => {
       loading: { title: t('General.sending-dots') },
     });
 
-    const res = await resProm;
-
-    console.log(res.data);
+    await resProm;
 
     setItemList([]);
   };

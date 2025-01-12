@@ -48,7 +48,6 @@ export default function SortableArea(props: ListViewportProps) {
 
   function handleDragStart(event: DragStartEvent) {
     const { active } = event;
-    console.log('active', active);
     setActiveId(Number(active.id));
   }
 

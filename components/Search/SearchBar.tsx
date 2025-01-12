@@ -128,8 +128,6 @@ export const SearchBar = (props: Props) => {
       });
 
       setResult(searchRes.data);
-
-      console.log(searchRes.data);
     } catch (e) {
       console.error(e);
     }
