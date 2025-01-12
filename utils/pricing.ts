@@ -38,8 +38,10 @@ export const processPrices2 = (allItemData: PriceProcess2[]) => {
     } else prices.push(x.price.toNumber());
   });
 
+  const reducedPrices = prices.splice(0, 30);
   // remove outliers
-  let out = removeOutliers(prices).splice(0, 50);
+  let out = removeOutliers(reducedPrices);
+
   if (out.length === 0) {
     console.error(allItemData[0].item_iid, ' - No prices left after removing outliers');
     return undefined;
