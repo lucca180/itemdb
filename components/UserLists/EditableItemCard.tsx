@@ -1,6 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import React, { useEffect, useState } from 'react';
 import ItemCard from '../Items/ItemCard';
 import { ItemData, ListItemInfo } from '../../types';
 import {
@@ -16,10 +14,9 @@ import {
   VStack,
   Box,
 } from '@chakra-ui/react';
-// import { useInView } from 'react-intersection-observer';
 import { useTranslations } from 'next-intl';
 
-type Props = {
+export type EditableItemCardProps = {
   id: number;
   item: ItemData;
   isTrading?: boolean;
@@ -34,26 +31,17 @@ type Props = {
   ) => void;
   onClick?: (id: number, force?: boolean) => void;
   onListAction?: (item: ItemData, action: 'move' | 'delete') => any;
+  innerRef?: any;
+  style?: React.CSSProperties;
+  attributes?: any;
+  listeners?: any;
 };
 
-function SortableItem1(props: Props) {
+export function EditableItemCard(props: EditableItemCardProps) {
   const t = useTranslations();
-  const ref = useRef<Element | null | undefined>(undefined);
   const { id, item, editMode, isTrading, selected, sortType } = props;
   const [itemInfo, setItemInfo] = useState<ListItemInfo | undefined>(props.itemInfo);
   const [isSelected, setSelected] = useState<boolean>(selected ?? false);
-  // const { ref: inViewRef, inView } = useInView();
-
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
-    id: props.id,
-  });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    touchAction: 'manipulation',
-    // height: '100%',
-  };
 
   useEffect(() => {
     if (!editMode) setSelected(false);
@@ -86,36 +74,15 @@ function SortableItem1(props: Props) {
     props.onClick?.(id, force);
   };
 
-  const setRefs = useCallback(
-    (node: HTMLElement | null) => {
-      ref.current = node;
-      // inViewRef(node);
-      setNodeRef(node);
-    },
-    [
-      // inViewRef,
-      setNodeRef,
-    ]
-  );
-
   if (!editMode && itemInfo?.isHidden) return null;
-
-  // if (!inView)
-  //   return (
-  //     <VStack mb={3} ref={setRefs} style={style} {...attributes} {...listeners}>
-  //       <Box style={{ height: '100%' }}>
-  //         <ItemCard item={item} sortType={sortType} disablePrefetch />
-  //       </Box>
-  //     </VStack>
-  //   );
 
   return (
     <VStack
+      ref={props.innerRef}
+      style={props.style}
+      {...props.attributes}
+      {...props.listeners}
       mb={3}
-      ref={setRefs}
-      style={style}
-      {...attributes}
-      {...listeners}
       opacity={itemInfo?.isHidden ? 0.5 : 1}
     >
       <Box onClick={(e) => onClick(e)} style={{ height: '100%' }}>
@@ -201,5 +168,3 @@ function SortableItem1(props: Props) {
     </VStack>
   );
 }
-
-export const SortableItem = React.memo(SortableItem1);

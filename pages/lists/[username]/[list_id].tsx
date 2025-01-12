@@ -31,7 +31,6 @@ import { useAuth } from '../../../utils/auth';
 import { useRouter } from 'next/router';
 import ItemCard from '../../../components/Items/ItemCard';
 import Color from 'color';
-import SortableArea from '../../../components/Sortable/SortableArea';
 import { SelectItemsCheckbox } from '../../../components/Input/SelectItemsCheckbox';
 import { ItemActionModalProps } from '../../../components/Modal/ItemActionModal';
 import { GetServerSidePropsContext } from 'next';
@@ -52,6 +51,7 @@ import { SearchFilterModalProps } from '../../../components/Search/SearchFilters
 import { defaultFilters } from '../../../utils/parseFilters';
 import { getFiltersDiff } from '../../search';
 import { AddListItemsModalProps } from '../../../components/Modal/AddListItemsModal';
+import { ItemList } from '../../../components/UserLists/ItemList';
 
 const CreateListModal = dynamic<CreateListModalProps>(
   () => import('../../../components/Modal/CreateListModal')
@@ -770,7 +770,7 @@ const ListPage = (props: ListPageProps) => {
               )}
             </Center>
             <Flex px={[1, 3]} flexFlow="column">
-              <SortableArea
+              <ItemList
                 onClick={selectItem}
                 ids={itemInfoIds
                   .filter((a) => itemInfo[a].isHighlight)
@@ -799,7 +799,7 @@ const ListPage = (props: ListPageProps) => {
         )}
         {!isLoading && (
           <Flex px={[1, 3]} flexFlow="column">
-            <SortableArea
+            <ItemList
               list={list}
               sortType={sortInfo.sortBy}
               onClick={selectItem}
