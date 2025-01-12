@@ -22,7 +22,23 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'images.neopets.com',
+        hostname: '**.neopets.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.blogspot.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.imgur.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.wp.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.itemdb.com.br',
       },
     ],
     minimumCacheTTL: 2592000,

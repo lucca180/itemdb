@@ -1,8 +1,8 @@
-import { Flex, Box, Image, Container } from '@chakra-ui/react';
+import { Flex, Box, Container } from '@chakra-ui/react';
 import Color from 'color';
 import NextImage from 'next/image';
 import icon from '../../public/logo_icon.svg';
-
+import Image from '../Utils/Image';
 type Props = {
   image?: {
     src: string;
@@ -55,8 +55,10 @@ const HeaderCard = (props: Props) => {
           {image && (
             <Image
               src={image.src}
-              width={{ base: '100px', md: '150px' }}
-              height={{ base: '100px', md: '150px' }}
+              width={150}
+              height={150}
+              w={{ base: '100px', md: '150px' }}
+              h={{ base: '100px', md: '150px' }}
               borderRadius="md"
               alt={image.alt}
             />

@@ -105,6 +105,8 @@ const RestockHeader = (props: Props) => {
           isExternal
         >
           <ChakraImage
+            priority
+            quality={90}
             src={`https://images.neopets.com/shopkeepers/w${shopInfo.id}.gif`}
             width={450}
             height={150}

@@ -1,14 +1,23 @@
-import { Badge, Flex, Link, Text, Image, IconButton, HStack, useToast } from '@chakra-ui/react';
+import {
+  Badge,
+  Flex,
+  Link,
+  Text,
+  IconButton,
+  Image as ChakraImg,
+  HStack,
+  useToast,
+} from '@chakra-ui/react';
 import { ListItemInfo, UserList } from '../../types';
 import icon from '../../public/logo_icon.svg';
 import DynamicIcon from '../../public/icons/dynamic.png';
-import NextImage from 'next/image';
 import Color from 'color';
 import NextLink from 'next/link';
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { FaShareAlt } from 'react-icons/fa';
+import Image from '../Utils/Image';
 const Markdown = dynamic(() => import('../Utils/Markdown'));
 
 type Props = {
@@ -96,12 +105,16 @@ const UserListCard = (props: Props) => {
           alignItems="center"
         >
           {!list.coverURL && (
-            <NextImage src={icon} width={75} style={{ opacity: 0.85 }} alt={'List Cover'} />
+            <Image src={icon} width={75} style={{ opacity: 0.85 }} alt={'List Cover'} />
           )}
 
           {list.coverURL && (
             <Image
+              quality={90}
+              as={list.official ? undefined : ChakraImg}
               src={list.coverURL}
+              width={140}
+              height={140}
               w={{ base: '95px', sm: '140px' }}
               h={{ base: '95px', sm: '140px' }}
               alt={'List Cover'}
@@ -157,7 +170,7 @@ const UserListCard = (props: Props) => {
               p={'2px'}
               alignItems={'center'}
             >
-              <NextImage src={DynamicIcon} alt="Dynamic List" width={8} />
+              <Image src={DynamicIcon} alt="Dynamic List" w={'8px'} />
             </Badge>
           )}
           {list.official && (

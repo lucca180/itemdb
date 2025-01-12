@@ -4,7 +4,6 @@ import {
   Divider,
   Flex,
   Heading,
-  Image,
   Text,
   HStack,
   Button,
@@ -19,6 +18,7 @@ import { restockShopInfo, getDateNST } from '../../utils/utils';
 import NextLink from 'next/link';
 import { createTranslator, useTranslations } from 'next-intl';
 import { NextPageWithLayout } from '../_app';
+import Image from '../../components/Utils/Image';
 
 const allCats = [
   ...new Set(
@@ -77,6 +77,10 @@ const RestockHub: NextPageWithLayout<any> = () => {
       />
       <Center my={6} flexFlow="column" gap={2}>
         <Image
+          priority
+          quality={100}
+          width={600}
+          height={200}
           src="https://images.neopets.com/ncmall/shopkeepers/cashshop_limited.png"
           alt="Restock Hub thumbnail"
           borderRadius="md"
