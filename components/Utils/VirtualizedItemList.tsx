@@ -18,10 +18,8 @@ export const VirtualizedItemList = (props: VirtualizedItemListProps) => {
   const groupedItems = useMemo(
     () =>
       (items ?? []).reduce((acc, cur, i) => {
-        console.log(dimensions?.width);
         const itemSize = dimensions && window.innerWidth >= 768 ? 162 : 112;
         const groupSize = dimensions ? Math.floor(dimensions.width / itemSize) : 8;
-        console.log(groupSize);
         const groupIndex = Math.floor(i / groupSize);
         if (!acc[groupIndex]) acc[groupIndex] = [];
         acc[groupIndex].push(cur);

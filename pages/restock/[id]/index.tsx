@@ -51,7 +51,7 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
   const t = useTranslations();
   const { shopInfo } = props;
   const { userPref, updatePref } = useAuth();
-  const [filteredItems, setFilteredItems] = useState<ItemData[]>();
+  const [filteredItems, setFilteredItems] = useState<ItemData[]>(props.initialItems ?? []);
   const [itemList, setItemList] = useState<ItemData[]>(props.initialItems ?? []);
   const [sortInfo, setSortInfo] = useState({ sortBy: 'price', sortDir: 'desc' });
   const [loading, setLoading] = useState(true);
@@ -65,6 +65,7 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
   }, [shopInfo.id]);
 
   useEffect(() => {
+    if (props.initialItems?.length === itemList.length) return;
     handleFilterChange();
   }, [itemFilter, itemList]);
 

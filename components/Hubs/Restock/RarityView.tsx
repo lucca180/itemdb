@@ -1,51 +1,61 @@
 import { Flex, Heading, Text } from '@chakra-ui/react';
 import { ItemData } from '../../../types';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { VirtualizedItemList } from '../../Utils/VirtualizedItemList';
 import { useTranslations } from 'next-intl';
 import { restockBlackMarketItems } from '../../../utils/utils';
 
 type Props = {
-  itemList: ItemData[] | undefined;
+  itemList: ItemData[];
   sortType?: string;
 };
 
 export const RarityView = (props: Props) => {
   const t = useTranslations();
   const { itemList, sortType } = props;
-  const [groupedItems, setGroupedItems] = useState<{ [range: string]: ItemData[] }>({});
+  const [groupedItems, setGroupedItems] = useState<{ [range: string]: ItemData[] }>(
+    groupItems(itemList)
+  );
+  const skippedFirst = useRef(false);
+
+  const rarityGroupList = useMemo(
+    () => Object.entries(groupedItems).sort((a, b) => b[0].localeCompare(a[0])),
+    [groupedItems]
+  );
 
   useEffect(() => {
-    if (!itemList) return;
+    if (!skippedFirst.current) {
+      skippedFirst.current = true;
+      return;
+    }
+
     setGroupedItems(groupItems(itemList));
   }, [itemList]);
 
   return (
     <Flex flexFlow="column" gap={5}>
-      {Object.entries(groupedItems)
-        .reverse()
-        .map(([range, items]) => (
-          <Flex
+      {rarityGroupList.map(([range, items]) => (
+        <Flex
+          key={range}
+          bg="whiteAlpha.50"
+          px={2}
+          py={4}
+          flexFlow={'column'}
+          gap={3}
+          borderRadius={'md'}
+        >
+          <Heading size="lg" textAlign="center">
+            {t('Restock.rarity-range', { range })}
+          </Heading>
+          <Text textAlign={'center'}>{t(rarityText[range])}</Text>
+          <VirtualizedItemList
+            sortType={sortType}
             key={range}
-            bg="whiteAlpha.50"
-            px={2}
-            py={4}
-            flexFlow={'column'}
-            gap={3}
-            borderRadius={'md'}
-          >
-            <Heading size="lg" textAlign="center">
-              {t('Restock.rarity-range', { range })}
-            </Heading>
-            <Text textAlign={'center'}>{t(rarityText[range])}</Text>
-            <VirtualizedItemList
-              sortType={sortType}
-              key={range}
-              items={items}
-              highlightList={restockBlackMarketItems}
-            />
-          </Flex>
-        ))}
+            items={items}
+            highlightList={restockBlackMarketItems}
+          />
+        </Flex>
+      ))}
     </Flex>
   );
 };
@@ -57,26 +67,24 @@ const rarityText: { [range: string]: string } = {
   'r95-r99': 'Restock.rarity-range-3',
   unknown: 'Unknown',
 };
+
 const groupItems = (items: ItemData[]) => {
   const groups: { [range: string]: ItemData[] } = {};
 
-  let last = 0;
-  rarityGroups.map((rarity) => {
-    const itemList = items.filter(
-      (item) => item.rarity && item.rarity <= rarity && item.rarity > last,
-    );
-
-    if (!itemList.length) {
-      last = rarity;
+  items.map((item) => {
+    if (!item.rarity) {
+      groups['unknown'] = [...(groups['unknown'] ?? []), item];
       return;
     }
-    groups[`r${last + 1}-r${rarity}`] = itemList;
-    last = rarity;
+
+    if (item.rarity <= rarityGroups[0]) {
+      groups['r1-r85'] = [...(groups['r1-r85'] ?? []), item];
+    } else if (item.rarity <= rarityGroups[1]) {
+      groups['r86-r94'] = [...(groups['r86-r94'] ?? []), item];
+    } else {
+      groups['r95-r99'] = [...(groups['r95-r99'] ?? []), item];
+    }
   });
-
-  const itemList = items.filter((item) => !item.rarity);
-
-  if (itemList.length > 0) groups['unknown'] = itemList;
 
   return groups;
 };
