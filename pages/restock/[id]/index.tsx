@@ -79,6 +79,7 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
       limit: 3000,
       sortBy: 'price',
       sortDir: 'desc',
+      status: ['active'],
       restockIncludeUnpriced: true,
     };
 
@@ -301,6 +302,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     limit: 32,
     sortBy: 'price',
     sortDir: 'desc',
+    status: ['active'],
     restockIncludeUnpriced: true,
   };
 
