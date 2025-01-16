@@ -18,10 +18,6 @@ import {
 import FindAtCard from '../../components/Items/FindAtCard';
 import ItemInfoCard from '../../components/Items/InfoCard';
 import ColorInfoCard from '../../components/Items/ColorInfoCard';
-import MissingInfoCard from '../../components/Items/MissingInfoCard';
-import ItemPreview from '../../components/Items/ItemPreview';
-import ItemPriceCard from '../../components/Price/ItemPriceCard';
-import TradeCard from '../../components/Trades/TradeCard';
 // import ItemTags from '../../components/Items/ItemTags';
 import { FiSend, FiEdit3 } from 'react-icons/fi';
 import type { EditItemModalProps } from '../../components/Modal/EditItemModal';
@@ -30,34 +26,23 @@ import AddToListSelect from '../../components/UserLists/AddToListSelect';
 import { GetStaticPropsContext } from 'next';
 import { getItem, getSomeItemIDs } from '../api/v1/items/[id_name]';
 import { getItemColor } from '../api/v1/items/colors';
-import ItemOfficialLists from '../../components/Items/ItemOfficialList';
 import { getItemLists } from '../api/v1/items/[id_name]/lists';
-import NCTrade from '../../components/NCTrades';
 import Link from 'next/link';
-import ItemComments from '../../components/Items/ItemComments';
 import { getSimilarItems } from '../api/v1/items/[id_name]/similar';
 import SimilarItemsCard from '../../components/Items/SimilarItemsCard';
 import { getItemDrops, getItemParent } from '../api/v1/items/[id_name]/drops';
-import ItemDrops from '../../components/Items/ItemDrops';
-import ItemParent from '../../components/Items/ItemParent';
 import dynamic from 'next/dynamic';
 import { getItemPrices } from '../api/v1/items/[id_name]/prices';
 import { getItemTrades } from '../api/v1/trades';
-import ItemRestock from '../../components/Items/ItemRestockInfo';
 import { getLastSeen } from '../api/v1/prices/stats';
-import ManualCheckCard from '../../components/Items/ManualCheckCard';
 import { useTranslations } from 'next-intl';
-import ItemMyLists from '../../components/Items/MyListsCard';
 import { useAuth } from '../../utils/auth';
-import ItemEffectsCard from '../../components/Items/ItemEffectsCard';
 import { getItemEffects } from '../api/v1/items/[id_name]/effects';
-import { WearableData } from '@prisma/client';
+import type { WearableData } from '@prisma/client';
 import { getWearableData } from '../api/v1/items/[id_name]/wearable';
 import { getItemNCMall } from '../api/v1/items/[id_name]/ncmall';
 import NcMallCard from '../../components/Items/NCMallCard';
-import Color from 'color';
 import { getItemRecipes } from '../api/v1/items/[id_name]/recipes';
-import ItemRecipes from '../../components/Items/ItemRecipes';
 import { NextPageWithLayout } from '../_app';
 
 const EditItemModal = dynamic<EditItemModalProps>(
@@ -66,6 +51,21 @@ const EditItemModal = dynamic<EditItemModalProps>(
 const FeedbackModal = dynamic<FeedbackModalProps>(
   () => import('../../components/Modal/FeedbackModal')
 );
+
+const ManualCheckCard = dynamic(() => import('../../components/Items/ManualCheckCard'));
+const MissingInfoCard = dynamic(() => import('../../components/Items/MissingInfoCard'));
+const ItemPriceCard = dynamic(() => import('../../components/Price/ItemPriceCard'));
+const NCTrade = dynamic(() => import('../../components/NCTrades'));
+const ItemEffectsCard = dynamic(() => import('../../components/Items/ItemEffectsCard'));
+const ItemOfficialLists = dynamic(() => import('../../components/Items/ItemOfficialList'));
+const ItemMyLists = dynamic(() => import('../../components/Items/MyListsCard'));
+const ItemComments = dynamic(() => import('../../components/Items/ItemComments'));
+const ItemDrops = dynamic(() => import('../../components/Items/ItemDrops'));
+const ItemParent = dynamic(() => import('../../components/Items/ItemParent'));
+const TradeCard = dynamic(() => import('../../components/Trades/TradeCard'));
+const ItemRestock = dynamic(() => import('../../components/Items/ItemRestockInfo'));
+const ItemPreview = dynamic(() => import('../../components/Items/ItemPreview'));
+const ItemRecipes = dynamic(() => import('../../components/Items/ItemRecipes'));
 
 type ItemPageProps = {
   item: ItemData;
@@ -82,6 +82,7 @@ type ItemPageProps = {
   wearableData: WearableData[] | null;
   ncMallData: NCMallData | null;
   itemRecipes: ItemRecipe[] | null;
+  mainLayoutColor: string;
   messages: any;
 };
 
@@ -382,6 +383,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     wearableData,
     NCMallData,
     itemRecipes,
+    colorRaw,
   ] = await Promise.all([
     getItemColor([item.image_id]),
     getItemLists(item.internal_id, true, false),
@@ -398,9 +400,12 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     item.isWearable ? getWearableData(item.internal_id) : null,
     item.isNC ? getItemNCMall(item.internal_id) : null,
     !item.isNC ? getItemRecipes(item.internal_id) : null,
+    import('color'),
   ]);
 
   if (!colors) return { notFound: true };
+
+  const Color = colorRaw.default;
 
   const props: ItemPageProps = {
     item: item,
@@ -417,6 +422,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     wearableData: wearableData,
     ncMallData: NCMallData,
     itemRecipes: itemRecipes,
+    mainLayoutColor: Color(item.color.hex).alpha(0.4).hexa(),
     messages: (await import(`../../translation/${context.locale}.json`)).default,
   };
 
@@ -453,7 +459,7 @@ function truncateString(str: string, num: number) {
 }
 
 ItemPage.getLayout = function getLayout(page: ReactElement, props: ItemPageProps) {
-  const { item } = props;
+  const { item, mainLayoutColor } = props;
   return (
     <Layout
       SEO={{
@@ -462,7 +468,7 @@ ItemPage.getLayout = function getLayout(page: ReactElement, props: ItemPageProps
         description: generateMetaDescription(item),
         openGraph: { images: [{ url: item.image, width: 80, height: 80, alt: item.name }] },
       }}
-      mainColor={Color(item.color.hex).alpha(0.4).hexa()}
+      mainColor={mainLayoutColor}
     >
       {page}
     </Layout>
