@@ -60,7 +60,7 @@
     "next-seo": "^6.6.0",
     "next-sitemap": "^4.2.3",
     "nextjs-progressbar": "^0.0.16",
-    "node-vibrant": "^4.0.0",
+    "node-vibrant": "^4.0.3",
     "object-hash": "^3.0.0",
     "pixelmatch": "^6.0.0",
     "qs": "^6.13.0",
