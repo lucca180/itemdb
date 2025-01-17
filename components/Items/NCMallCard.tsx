@@ -33,13 +33,14 @@ const NcMallCard = (props: Props) => {
               quality={100}
             />
           </Link>
-          {isBuyable && (
-            <Badge
-              fontSize="xs"
-              colorScheme={isDiscounted ? undefined : 'purple'}
-              textDecoration={isDiscounted ? 'line-through' : undefined}
-            >
+          {isBuyable && !isDiscounted && (
+            <Badge fontSize="xs" colorScheme={'purple'}>
               {t('ItemPage.buyable-right-now')}
+            </Badge>
+          )}
+          {isBuyable && isDiscounted && (
+            <Badge fontSize="xs" colorScheme={'orange'}>
+              {t('ItemPage.on-sale')}
             </Badge>
           )}
           {!isBuyable && (
@@ -56,7 +57,7 @@ const NcMallCard = (props: Props) => {
             {isDiscounted && (
               <Badge
                 fontSize="xs"
-                colorScheme={isDiscounted ? 'purple' : undefined}
+                colorScheme={isDiscounted ? 'orange' : undefined}
                 textAlign={'right'}
               >
                 {ncMallData.discountPrice} NC <br /> {t('General.until')}{' '}
@@ -85,11 +86,7 @@ const NcMallCard = (props: Props) => {
               {t('ItemPage.since')}
             </Tag>
             <Flex flexFlow={'column'} flex="1" alignItems={'flex-end'} gap={1}>
-              <Text
-                fontSize="xs"
-                colorScheme={isDiscounted ? 'purple' : undefined}
-                textAlign={'right'}
-              >
+              <Text fontSize="xs" textAlign={'right'}>
                 {format.dateTime(new Date(ncMallData.saleBegin), {
                   year: 'numeric',
                   month: 'short',
@@ -105,11 +102,7 @@ const NcMallCard = (props: Props) => {
               {t('ItemPage.until')}
             </Tag>
             <Flex flexFlow={'column'} flex="1" alignItems={'flex-end'} gap={1}>
-              <Text
-                fontSize="xs"
-                colorScheme={isDiscounted ? 'purple' : undefined}
-                textAlign={'right'}
-              >
+              <Text fontSize="xs" textAlign={'right'}>
                 {format.dateTime(new Date(ncMallData.saleEnd ?? 0), {
                   year: 'numeric',
                   month: 'short',
