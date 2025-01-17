@@ -23,6 +23,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
   const items = data.items;
   const parentItem = data.parentItem;
+  const gramInfo = data.gramInfo;
   const lang = data.lang;
 
   if (lang !== 'en') return res.status(400).json({ error: 'Language not supported' });
@@ -59,7 +60,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     name_image_id: [...name_image_id, parent_name_image_id],
   });
 
-  const opening_id = chance.hash({ length: 15 });
+  const opening_id = gramInfo?.cash_id || chance.hash({ length: 15 });
 
   const ip_address = requestIp.getClientIp(req);
 
@@ -93,8 +94,27 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     });
 
   const openableItems = (await Promise.all(openableItemsPromise)).filter(
-    (item) => item,
+    (item) => item
   ) as Prisma.OpenableItemsUncheckedCreateInput[];
+
+  if (gramInfo.options.length) {
+    const itemNameData = await getManyItems({
+      name: gramInfo.options as string[],
+    });
+
+    Object.values(itemNameData).map((itemData) => {
+      const data = {
+        opening_id: opening_id,
+        item_iid: itemData.internal_id,
+        parent_iid: parentData.internal_id,
+        limitedEdition: false,
+        notes: 'gramOption',
+        ip_address: ip_address,
+      };
+
+      openableItems.push(data);
+    });
+  }
 
   const openableItemData = await prisma.openableItems.createMany({
     data: openableItems,
@@ -168,7 +188,7 @@ export const processOpenableItems = async (openableItem: OpenableQueue) => {
   });
 
   const openableItems = (await Promise.all(openableItemsPromise)).filter(
-    (item) => item,
+    (item) => item
   ) as Prisma.OpenableItemsUncheckedCreateInput[];
 
   const openableItemData = await prisma.openableItems.createMany({
@@ -182,7 +202,7 @@ const addToQueue = async (
   item: any,
   parent: any,
   opening_id: string,
-  ip_address: string | null,
+  ip_address: string | null
 ) => {
   return prisma.openableQueue.create({
     data: {

@@ -93,7 +93,13 @@ export const getItemDrops = async (
   item_iid: number,
   isNC = false
 ): Promise<ItemOpenable | null> => {
-  const drops = await prisma.openableItems.findMany({
+  const itemProm = prisma.items.findFirst({
+    where: {
+      internal_id: item_iid,
+    },
+  });
+
+  const dropsProm = prisma.openableItems.findMany({
     where: {
       parent_iid: item_iid,
       parent_item: {
@@ -103,6 +109,8 @@ export const getItemDrops = async (
       },
     },
   });
+
+  const [item, drops] = await Promise.all([itemProm, dropsProm]);
 
   const prizePools: { [name: string]: PrizePoolData } = {};
   const dropsData: { [id: number]: ItemDrop } = {};
@@ -121,6 +129,8 @@ export const getItemDrops = async (
       return;
     }
 
+    if (drop.notes?.includes('gramOption')) return;
+
     openingSet[drop.opening_id] = [...(openingSet[drop.opening_id] ?? []), drop.item_iid];
   });
 
@@ -131,7 +141,8 @@ export const getItemDrops = async (
   const manualItems: number[] = [];
   let isChoice = false;
   let isZoneCat = false;
-  let isGram = false;
+  let isGram = !!item?.name.toLowerCase().split(' ').includes('gram');
+
   drops
     .sort((a, b) => (a.notes?.length ?? 0) - (b.notes?.length ?? 0))
     .map((drop) => {
@@ -345,9 +356,9 @@ export const getItemDrops = async (
         openableData.hasLE = true;
       }
 
-      let dropRate = (drop.dropRate / itemDropCount) * 100;
+      let dropRate = isGram ? 0 : (drop.dropRate / itemDropCount) * 100;
 
-      if (drop.dropRate / pool.openings >= 1) {
+      if (drop.dropRate / pool.openings >= 1 && !isGram) {
         if ([65354, 17434, 860].includes(drop.item_iid)) openableData.isGBC = true;
         dropRate = 100;
       }

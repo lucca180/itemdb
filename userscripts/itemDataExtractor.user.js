@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.8.1
+// @version      1.9.0
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -45,6 +45,11 @@ const originalOpen = window.XMLHttpRequest.prototype.open;
 const originalFetch = window.fetch;
 
 let resItemData = [];
+
+const script_info = {
+  version: GM_info.script.version,
+  versionCode: Number(GM_info.script.version.replaceAll(".", ""))
+}
 
 const itemdb_script = function() {
   if(typeof $ === 'undefined') return;
@@ -999,6 +1004,64 @@ const itemdb_script = function() {
     });
   }
 
+  function handleNCGram() {
+    $(document).on('ajaxSuccess.ncGram', () => {
+      const isGram = $(".popup-body__2020 input[name='popup_title']").val()?.toLowerCase().includes("gram") || $("#invItemName").text()?.toLowerCase().includes("gram");
+      if(!isGram) return;
+      const itemName = $("#invItemName").text();
+      const image = $(".inv-itemLg").css("background-image").replace(/^url\(['"](.+)['"]\)/, '$1')
+      
+      const parentItem = {
+        name: itemName,
+        img: image
+      }
+      
+      const gramOptions = $("#giftItem-1 option").map(function() {
+        if($(this).val() < 0) return;
+        return $(this).text()
+      }).get();
+
+      const gramInfo = {
+        options: gramOptions,
+        cash_id: $(".popup-body__2020 input[name='cash_obj_id']").val()
+      }
+
+      const submitButton = $('#iteminfo_select_action > div');
+      if(!submitButton.length) return;
+      
+      $(document).off(`ajaxSuccess.ncGram`);
+      
+      const JQUERY3 = jQuery;
+      const J$ = $;
+      let _interval;
+      submitButton.on(`click.action`, function(){
+        submitButton.off(`click.action`);
+
+        $(document).on(`ajaxSuccess.actionSuccess`, () => {
+          const result = $('#invResult');
+
+          // neopets changes the jquery object and breaks everything.
+          if(_interval) clearInterval(_interval);
+          _interval = setInterval(() => {$ = J$; jQuery = JQUERY3;}, 100);
+
+          if(!result.length) return;
+          
+          const item = {
+            name: result.find('b').first().text(),
+            img: result.find("img").attr('src'),
+            isLE: false,
+            notes: 'gram',
+          };
+
+          $(document).off(`ajaxSuccess.actionSuccess`);
+
+          console.log([item], parentItem, gramInfo)
+          submitOpenable([item], parentItem, gramInfo)
+        })
+      })
+    });
+  }
+
   function handleNPOpenables(){
     const pageLoad = Date.now();
     $(document).ajaxSuccess(() => {
@@ -1119,6 +1182,7 @@ const itemdb_script = function() {
     handleNCCapsule();
     handleNPOpenables();
     handleNPRefresh();
+    handleNCGram();
   }
   if (!URLHas('inventory')) discardPrevInventory();
   if (URLHas('safetydeposit')) handleSDB();
@@ -1170,6 +1234,7 @@ const itemdb_script = function() {
       url: 'https://itemdb.com.br/api/v1/items',
       headers: {
         'Content-Type': 'application/json',
+        'itemdb-version': script_info.versionCode,
       },
       data: JSON.stringify(rawData),
       onload: function (res) {
@@ -1203,6 +1268,7 @@ const itemdb_script = function() {
       url: 'https://itemdb.com.br/api/v1/prices',
       headers: {
         'Content-Type': 'application/json',
+        'itemdb-version': script_info.versionCode,
       },
       data: JSON.stringify(rawData),
       onload: function (res) {
@@ -1236,6 +1302,7 @@ const itemdb_script = function() {
       url: 'https://itemdb.com.br/api/v1/trades',
       headers: {
         'Content-Type': 'application/json',
+        'itemdb-version': script_info.versionCode,
       },
       data: JSON.stringify(rawData),
       onload: function (res) {
@@ -1251,8 +1318,10 @@ const itemdb_script = function() {
     })
   }
 
-  async function submitOpenable(items, parentItem) {
+  async function submitOpenable(items, parentItem, gramInfo) {
     if(checkTranslation()) return;
+
+    const hash = idb.getTradesHash({items, parentItem, gramInfo});
 
     const pageLang = GM_getValue('pageLang', 'unknown');
     if(pageLang !== nl) return console.error('Language error');
@@ -1261,6 +1330,8 @@ const itemdb_script = function() {
       lang: pageLang,
       items: items,
       parentItem: parentItem,
+      gramInfo: gramInfo,
+      hash: hash,
     }
 
     GM_xmlhttpRequest({
@@ -1268,6 +1339,7 @@ const itemdb_script = function() {
       url: 'https://itemdb.com.br/api/v1/items/open',
       headers: {
         'Content-Type': 'application/json',
+        'itemdb-version': script_info.versionCode,
       },
       data: JSON.stringify(rawData),
       onload: function (res) {
@@ -1340,7 +1412,4 @@ if (URLHas('/stylingchamber/')) watchFetchItemRequests('userStyles');
 if (URLHas('customise')) watchItemRequests('editordata');
 
 // for troubleshooting use
-unsafeWindow.itemdb_script = {
-  version: GM_info.script.version,
-  versionCode: Number(GM_info.script.version.replaceAll(".", ""))
-}
+unsafeWindow.itemdb_script = script_info;
