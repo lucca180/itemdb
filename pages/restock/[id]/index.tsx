@@ -296,7 +296,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 
   const filters: SearchFilters = {
     ...defaultFilters,
-    restockProfit: '1',
+    restockProfit: '5000',
     category: [shopIDToCategory[shopInfo.id]],
     rarity: ['1', '99'],
     limit: 32,
