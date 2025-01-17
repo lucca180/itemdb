@@ -293,7 +293,7 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
           },
           {
             addedAt: {
-              lt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
+              lt: new Date(Date.now() - (MAX_PAST_DAYS + 7) * 24 * 60 * 60 * 1000),
             },
           },
         ],
