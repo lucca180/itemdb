@@ -141,7 +141,9 @@ export const getItemDrops = async (
   const manualItems: number[] = [];
   let isChoice = false;
   let isZoneCat = false;
-  let isGram = !!item?.name.toLowerCase().split(' ').includes('gram');
+  let isGram = false;
+
+  const hasGramInName = !!item?.name.toLowerCase().split(' ').includes('gram');
 
   drops
     .sort((a, b) => (a.notes?.length ?? 0) - (b.notes?.length ?? 0))
@@ -209,6 +211,8 @@ export const getItemDrops = async (
             : val;
         }
       });
+
+      if (notesList.includes('gramOption') && hasGramInName) isGram = true;
 
       dropsData[drop.item_iid] = dropData;
     });
