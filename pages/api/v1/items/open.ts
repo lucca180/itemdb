@@ -103,6 +103,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     });
 
     Object.values(itemNameData).map((itemData) => {
+      if (!itemData.isNC) return;
+
       const data = {
         opening_id: opening_id,
         item_iid: itemData.internal_id,

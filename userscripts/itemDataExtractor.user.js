@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.9.0
+// @version      1.9.1
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -1006,9 +1006,13 @@ const itemdb_script = function() {
 
   function handleNCGram() {
     $(document).on('ajaxSuccess.ncGram', () => {
-      const isGram = $(".popup-body__2020 input[name='popup_title']").val()?.toLowerCase().includes("gram") || $("#invItemName").text()?.toLowerCase().includes("gram");
-      if(!isGram) return;
+      const popupTitle = $(".popup-body__2020 input[name='popup_title']");
+      if(!popupTitle.length) return;
+
       const itemName = $("#invItemName").text();
+      const isGram = popupTitle.val()?.toLowerCase().split(" ").includes("gram") || itemName?.toLowerCase().split(" ").includes("gram");
+
+      if(!isGram) return;
       const image = $(".inv-itemLg").css("background-image").replace(/^url\(['"](.+)['"]\)/, '$1')
       
       const parentItem = {
