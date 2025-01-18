@@ -368,7 +368,6 @@ export async function getStaticProps(context: GetStaticPropsContext) {
         permanent: true,
       },
     };
-
   const [
     colors,
     lists,
@@ -385,22 +384,22 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     itemRecipes,
     colorRaw,
   ] = await Promise.all([
-    getItemColor([item.image_id]),
-    getItemLists(item.internal_id, true, false),
-    getSimilarItems(item.internal_id.toString()),
-    item.isNC ? getItemLists(item.internal_id, false, false) : [],
-    item.useTypes.canOpen !== 'false' ? getItemDrops(item.internal_id, item.isNC) : null,
-    getItemParent(item.internal_id),
-    !item.isNC ? getItemPrices({ iid: item.internal_id }) : [],
-    !item.isNC ? getItemTrades({ name: item.name, image_id: item.image_id }) : [],
+    getItemColor([item.image_id]), //0
+    getItemLists(item.internal_id, true, false), // 1
+    getSimilarItems(item.internal_id.toString()), // 2
+    item.isNC ? getItemLists(item.internal_id, false, false) : [], // 3
+    item.useTypes.canOpen !== 'false' ? getItemDrops(item.internal_id, item.isNC) : null, // 4
+    getItemParent(item.internal_id), // 5
+    !item.isNC ? getItemPrices({ iid: item.internal_id }) : [], // 6
+    !item.isNC ? getItemTrades({ name: item.name, image_id: item.image_id }) : [], // 7
     !item.isNC
       ? getLastSeen({ item_id: item.item_id, name: item.name, image_id: item.image_id })
-      : null,
-    getItemEffects(item.internal_id),
-    item.isWearable ? getWearableData(item.internal_id) : null,
-    item.isNC ? getItemNCMall(item.internal_id) : null,
-    !item.isNC ? getItemRecipes(item.internal_id) : null,
-    import('color'),
+      : null, // 8
+    getItemEffects(item), // 9
+    item.isWearable ? getWearableData(item.internal_id) : null, // 10
+    item.isNC ? getItemNCMall(item.internal_id) : null, // 11
+    !item.isNC ? getItemRecipes(item.internal_id) : null, // 12
+    import('color'), // 13
   ]);
 
   if (!colors) return { notFound: true };

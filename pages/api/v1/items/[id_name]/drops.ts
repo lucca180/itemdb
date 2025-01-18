@@ -102,15 +102,12 @@ export const getItemDrops = async (
   const dropsProm = prisma.openableItems.findMany({
     where: {
       parent_iid: item_iid,
-      parent_item: {
-        canOpen: {
-          not: 'false',
-        },
-      },
     },
   });
 
   const [item, drops] = await Promise.all([itemProm, dropsProm]);
+
+  if (drops.length === 0 || !item || item.canOpen === 'false') return null;
 
   const prizePools: { [name: string]: PrizePoolData } = {};
   const dropsData: { [id: number]: ItemDrop } = {};
@@ -230,14 +227,16 @@ export const getItemDrops = async (
     isGram: isGram,
   };
 
-  const zoneData = await prisma.wearableData.findMany({
-    where: {
-      item_iid: {
-        in: Array.from(allItemIds),
-      },
-      isCanonical: true,
-    },
-  });
+  const zoneData = isZoneCat
+    ? await prisma.wearableData.findMany({
+        where: {
+          item_iid: {
+            in: Array.from(allItemIds),
+          },
+          isCanonical: true,
+        },
+      })
+    : [];
 
   Object.values(dropsData)
     .filter((a) => manualItems.includes(a.item_iid) || a.dropRate >= (isNC ? 1 : 2))

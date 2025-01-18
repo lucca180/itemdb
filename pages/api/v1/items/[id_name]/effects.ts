@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { CheckAuth } from '../../../../../utils/googleCloud';
-import { ItemEffect } from '../../../../../types';
+import { ItemData, ItemEffect } from '../../../../../types';
 import prisma from '../../../../../utils/prisma';
 import { getItem } from '.';
 import { ItemEffect as PrimsaItemEffect } from '@prisma/client';
@@ -130,8 +130,12 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
   return res.status(200).json({});
 };
 
-export const getItemEffects = async (id_name: string | number) => {
-  const item = await getItem(id_name as string);
+export const getItemEffects = async (item_id_name: ItemData | string | number) => {
+  const item =
+    typeof item_id_name === 'object'
+      ? item_id_name
+      : await getItem(item_id_name.toString() as string);
+
   if (!item) throw new Error('Item not found');
 
   const effectsRaw = await prisma.itemEffect.findMany({
