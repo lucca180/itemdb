@@ -204,6 +204,12 @@ const CreateListModal = (props: CreateListModalProps) => {
                   onChange={handleChange}
                   value={list.description ?? ''}
                 />
+                <FormHelperText>
+                  Accepts some markdown tags{' '}
+                  <Text fontSize={'xs'} display={'inline'}>
+                    (such as links, bold, italic, strikethrough etc.)
+                  </Text>
+                </FormHelperText>
               </FormControl>
               <FormControl>
                 <FormLabel color="gray.300">{t('Lists.cover-image-url')} (150x150)</FormLabel>

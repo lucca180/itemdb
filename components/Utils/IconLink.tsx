@@ -1,7 +1,13 @@
 import { Link, LinkProps } from '@chakra-ui/react';
 import Image from 'next/image';
 
-export const IconLink = (props: LinkProps) => {
+export const IconLink = (
+  props: LinkProps & {
+    iconWidth?: number | `${number}`;
+    iconHeight?: number | `${number}`;
+    iconStyle?: React.CSSProperties;
+  }
+) => {
   if (!props.href) return null;
 
   return (
@@ -10,9 +16,11 @@ export const IconLink = (props: LinkProps) => {
       {getIcon(props.href) && (
         <Image
           src={getIcon(props.href)}
-          width={18}
-          height={18}
-          style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '0.2rem' }}
+          width={props.iconWidth || 18}
+          height={props.iconHeight || 18}
+          style={
+            props.iconStyle ?? { display: 'inline', verticalAlign: 'middle', marginLeft: '0.2rem' }
+          }
           alt="link icon"
         />
       )}
@@ -26,6 +34,8 @@ const getIcon = (url: string) => {
   if (hostname.endsWith('neopets.com')) return '/icons/neopets.png';
   if (hostname.endsWith('magnetismotimes.com')) return '/icons/mt.png';
   if (hostname.endsWith('itemdb.com.br')) return '/favicon.svg';
+  if (hostname.endsWith('openneo.net')) return '/icons/dti.png';
+  if (hostname.endsWith('neomerch.com')) return '/icons/merch.png';
 
   return '';
 };

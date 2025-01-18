@@ -70,7 +70,7 @@ const LinkedListModal = (props: LinkedListModalProps) => {
 
     const res = await axios.post(`/api/v1/lists/${user.username}`, {
       name: list.name + ' (Checklist)',
-      description: '',
+      description: list.description,
       coverURL: list.coverURL,
       visibility: 'public',
       purpose: 'none',
