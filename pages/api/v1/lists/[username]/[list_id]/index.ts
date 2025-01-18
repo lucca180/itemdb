@@ -1,6 +1,5 @@
-import { startOfDay } from 'date-fns';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { createListSlug, getImagePalette } from '..';
+import { createListSlug, getImagePalette, rawToList } from '..';
 import { ListItemInfo, UserList, User } from '../../../../../../types';
 import { CheckAuth } from '../../../../../../utils/googleCloud';
 import prisma from '../../../../../../utils/prisma';
@@ -463,8 +462,6 @@ export const getList = async (
 
   if (listRaw.dynamicType) await syncDynamicList(listRaw.internal_id);
 
-  const owner = listRaw.user;
-
   if (!listRaw.slug) {
     const slug = await createListSlug(listRaw.name, listRaw.user_id);
     await prisma.userList.update({
@@ -479,60 +476,7 @@ export const getList = async (
     listRaw.slug = slug;
   }
 
-  const list: UserList = {
-    internal_id: listRaw.internal_id,
-    name: listRaw.name,
-    description: listRaw.description,
-    coverURL: listRaw.cover_url,
-    colorHex: listRaw.colorHex,
-    purpose: listRaw.purpose,
-    official: listRaw.official,
-    visibility: listRaw.visibility,
-    user_id: listRaw.user_id,
-    user_username: owner?.username ?? '',
-    user_neouser: owner?.neo_user ?? '',
-
-    owner: {
-      id: owner.id,
-      username: owner.username,
-      neopetsUser: owner.neo_user,
-      lastSeen: startOfDay(owner.last_login).toJSON(),
-    },
-
-    createdAt: listRaw.createdAt.toJSON(),
-    updatedAt: listRaw.updatedAt.toJSON(),
-
-    sortBy: listRaw.sortBy,
-    sortDir: listRaw.sortDir,
-    order: listRaw.order ?? 0,
-
-    dynamicType: listRaw.dynamicType,
-    lastSync: listRaw.lastSync?.toJSON() ?? null,
-    linkedListId: listRaw.linkedListId ?? null,
-
-    officialTag: listRaw.official_tag ?? null,
-
-    itemCount: listRaw.items.filter((x) => !x.isHidden).length,
-
-    slug: listRaw.slug,
-    // itemInfo: excludeItems
-    //   ? []
-    //   : listRaw.items.map((item) => {
-    //       return {
-    //         internal_id: item.internal_id,
-    //         list_id: item.list_id,
-    //         item_iid: item.item_iid,
-    //         addedAt: item.addedAt.toJSON(),
-    //         updatedAt: item.updatedAt.toJSON(),
-    //         amount: item.amount,
-    //         capValue: item.capValue,
-    //         imported: item.imported,
-    //         order: item.order,
-    //         isHighlight: item.isHighlight,
-    //         isHidden: item.isHidden,
-    //       };
-    //     }),
-  };
+  const list: UserList = rawToList(listRaw, listRaw.user);
 
   return list;
 };

@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { UserList } from '../../../../../types';
 import prisma from '../../../../../utils/prisma';
-import { startOfDay } from 'date-fns';
+import { rawToList } from '../../lists/[username]';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -49,62 +49,5 @@ export const getItemLists = async (
     },
   });
 
-  return listsRaw.map((list) => {
-    const owner = list.user;
-
-    return {
-      internal_id: list.internal_id,
-      name: list.name,
-      description: list.description,
-      coverURL: list.cover_url,
-      colorHex: list.colorHex,
-      purpose: list.purpose,
-      official: list.official,
-      visibility: list.visibility,
-      user_id: list.user_id,
-      user_username: owner?.username ?? '',
-      user_neouser: owner?.neo_user ?? '',
-
-      owner: {
-        id: owner.id,
-        username: owner.username,
-        neopetsUser: owner.neo_user,
-        lastSeen: startOfDay(owner.last_login).toJSON(),
-      },
-
-      dynamicType: list.dynamicType,
-      lastSync: list.lastSync?.toJSON() ?? null,
-      linkedListId: list.linkedListId,
-
-      createdAt: list.createdAt.toJSON(),
-      updatedAt: list.updatedAt.toJSON(),
-
-      officialTag: list.official_tag,
-
-      sortBy: list.sortBy,
-      sortDir: list.sortDir,
-      order: list.order ?? 0,
-
-      slug: list.slug,
-
-      itemCount: list.items.filter((x) => !x.isHidden).length,
-      itemInfo: !includeItems
-        ? []
-        : list.items.map((item) => {
-            return {
-              internal_id: item.internal_id,
-              list_id: item.list_id,
-              item_iid: item.item_iid,
-              addedAt: item.addedAt.toJSON(),
-              updatedAt: item.updatedAt.toJSON(),
-              amount: item.amount,
-              capValue: item.capValue,
-              imported: item.imported,
-              order: item.order,
-              isHighlight: item.isHighlight,
-              isHidden: item.isHidden,
-            };
-          }),
-    };
-  });
+  return listsRaw.map((list) => rawToList(list, list.user, includeItems));
 };

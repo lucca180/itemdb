@@ -271,7 +271,7 @@ const ListHeader = (props: ListHeaderProps) => {
                 <Link
                   isExternal
                   display={{ base: 'none', md: 'inline' }}
-                  href={`http://www.neopets.com/userlookup.phtml?user=${list.user_neouser}`}
+                  href={`http://www.neopets.com/userlookup.phtml?user=${list.owner.neopetsUser}`}
                 >
                   <Badge borderRadius="md" colorScheme={color.isLight() ? 'black' : 'gray'}>
                     {t('General.userlookup')} <Icon as={BiLinkExternal} verticalAlign="text-top" />
@@ -280,7 +280,7 @@ const ListHeader = (props: ListHeaderProps) => {
                 <Link
                   isExternal
                   display={{ base: 'none', md: 'inline' }}
-                  href={`http://www.neopets.com/neomessages.phtml?type=send&recipient=${list.user_neouser}`}
+                  href={`http://www.neopets.com/neomessages.phtml?type=send&recipient=${list.owner.neopetsUser}`}
                 >
                   <Badge borderRadius="md" colorScheme={color.isLight() ? 'black' : 'gray'}>
                     {t('General.neomail')} <Icon as={BiLinkExternal} verticalAlign="text-top" />

@@ -425,12 +425,20 @@ model UserList {
 
   slug String?
 
+  seriesType SeriesType?
+
   items ListItems[]
 
   @@unique([slug, user_id])
   @@fulltext([name])
   @@fulltext([description])
   @@fulltext([name, description])
+}
+
+enum SeriesType {
+  listCreation
+  itemAddition
+  itemRemoval
 }
 
 enum DynamicListType {

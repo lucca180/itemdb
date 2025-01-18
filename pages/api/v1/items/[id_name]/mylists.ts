@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { ReducedUserList } from '../../../../../types';
+import { ObligatoryUserList } from '../../../../../types';
 import prisma from '../../../../../utils/prisma';
-import { startOfDay } from 'date-fns';
 import { CheckAuth } from '../../../../../utils/googleCloud';
+import { rawToList } from '../../lists/[username]';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -34,7 +34,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 export const getItemMyLists = async (
   item_id: number,
   user_id: string
-): Promise<ReducedUserList[]> => {
+): Promise<ObligatoryUserList[]> => {
   const listsRaw = await prisma.userList.findMany({
     where: {
       user_id: user_id,
@@ -50,53 +50,26 @@ export const getItemMyLists = async (
     },
   });
 
-  return listsRaw.map((list) => {
-    const owner = list.user;
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const item = list.items.find((item) => item.item_iid === item_id)!;
-    return {
-      internal_id: list.internal_id,
-      name: list.name,
-      description: list.description,
-      coverURL: list.cover_url,
-      colorHex: list.colorHex,
-      purpose: list.purpose,
-      official: list.official,
-      visibility: list.visibility,
+  return listsRaw.map((listRaw) => {
+    const item = listRaw.items.find((item) => item.item_iid === item_id)!;
+    const list = rawToList(listRaw, listRaw.user);
 
-      owner: {
-        id: owner.id,
-        username: owner.username,
-        neopetsUser: owner.neo_user,
-        lastSeen: startOfDay(owner.last_login).toJSON(),
+    list.itemInfo = [
+      {
+        internal_id: item.internal_id,
+        list_id: item.list_id,
+        item_iid: item.item_iid,
+        addedAt: item.addedAt.toJSON(),
+        updatedAt: item.updatedAt.toJSON(),
+        amount: item.amount,
+        capValue: item.capValue,
+        imported: item.imported,
+        order: item.order,
+        isHighlight: item.isHighlight,
+        isHidden: item.isHidden,
       },
+    ];
 
-      dynamicType: list.dynamicType,
-      lastSync: list.lastSync?.toJSON() ?? null,
-      linkedListId: list.linkedListId,
-
-      createdAt: list.createdAt.toJSON(),
-      updatedAt: list.updatedAt.toJSON(),
-      slug: list.slug,
-      itemInfo: [
-        {
-          internal_id: item.internal_id,
-          list_id: item.list_id,
-          item_iid: item.item_iid,
-          addedAt: item.addedAt.toJSON(),
-          updatedAt: item.updatedAt.toJSON(),
-          amount: item.amount,
-          capValue: item.capValue,
-          imported: item.imported,
-          order: item.order,
-          isHighlight: item.isHighlight,
-          isHidden: item.isHidden,
-        },
-      ],
-
-      sortBy: list.sortBy,
-      sortDir: list.sortDir,
-      order: list.order ?? 0,
-    };
+    return list as ObligatoryUserList;
   });
 };

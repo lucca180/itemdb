@@ -21,7 +21,7 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useState } from 'react';
-import { ItemData, UserList, ListItemInfo, ReducedUserList } from '../../types';
+import { ItemData, UserList, ListItemInfo, ObligatoryUserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import { useTranslations } from 'next-intl';
 
@@ -30,7 +30,7 @@ export type DuplicatedItemModalProps = {
   onClose: () => void;
   onChange?: () => void;
   item: ItemData;
-  list?: UserList | ReducedUserList;
+  list?: UserList | ObligatoryUserList;
   itemInfo: ListItemInfo;
 };
 
@@ -64,7 +64,7 @@ const DuplicatedItemModal = (props: DuplicatedItemModalProps) => {
           headers: {
             authorization: `Bearer ${token}`,
           },
-        },
+        }
       );
       if (res.data.success) {
         toast({

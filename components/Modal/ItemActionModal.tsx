@@ -16,13 +16,13 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useState } from 'react';
-import { ListItemInfo, ReducedUserList, UserList } from '../../types';
+import { ListItemInfo, ObligatoryUserList, UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import ListSelect from '../UserLists/ListSelect';
 import { useTranslations } from 'next-intl';
 
 export type ItemActionModalProps = {
-  list: UserList | ReducedUserList;
+  list: UserList | ObligatoryUserList;
   isOpen: boolean;
   action: 'move' | 'delete' | '';
   selectedItems: ListItemInfo[];
@@ -55,7 +55,7 @@ const ItemActionModal = (props: ItemActionModalProps) => {
           headers: {
             authorization: `Bearer ${token}`,
           },
-        },
+        }
       );
 
       if (res.status === 200) {

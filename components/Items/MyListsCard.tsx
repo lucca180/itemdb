@@ -16,7 +16,7 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import React, { useMemo } from 'react';
-import { ItemData, ReducedUserList } from '../../types';
+import { ItemData, ObligatoryUserList } from '../../types';
 import CardBase from '../Card/CardBase';
 import NextLink from 'next/link';
 import Image from 'next/image';
@@ -38,7 +38,7 @@ const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
   () => import('../Modal/DuplicatedItemModal')
 );
 
-const fetcher = (url: string) => axios.get(url).then((res) => res.data as ReducedUserList[]);
+const fetcher = (url: string) => axios.get(url).then((res) => res.data as ObligatoryUserList[]);
 
 type Props = {
   item: ItemData;
@@ -49,7 +49,7 @@ const ItemMyLists = (props: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isActionOpen, onOpen: onActionOpen, onClose: onActionClose } = useDisclosure();
 
-  const [selectedList, setSelectedList] = React.useState<ReducedUserList | undefined>();
+  const [selectedList, setSelectedList] = React.useState<ObligatoryUserList | undefined>();
   const { item } = props;
   const { data, mutate } = useSWRImmutable(`/api/v1/items/${item.internal_id}/mylists`, fetcher, {
     shouldRetryOnError: false,
@@ -60,7 +60,7 @@ const ItemMyLists = (props: Props) => {
   const color = Color(item.color.hex);
   const toast = useToast();
 
-  const doAction = async (list: ReducedUserList, action: 'hide' | 'highlight') => {
+  const doAction = async (list: ObligatoryUserList, action: 'hide' | 'highlight') => {
     const promise = axios
       .post(`/api/v1/lists/${list.owner.username}/${list.internal_id}`, {
         list_id: list.internal_id,
@@ -85,12 +85,12 @@ const ItemMyLists = (props: Props) => {
     });
   };
 
-  const handleOpen = (list: ReducedUserList) => {
+  const handleOpen = (list: ObligatoryUserList) => {
     setSelectedList(list);
     onOpen();
   };
 
-  const handleActionOpen = (list: ReducedUserList) => {
+  const handleActionOpen = (list: ObligatoryUserList) => {
     setSelectedList(list);
     onActionOpen();
   };

@@ -3,8 +3,8 @@ import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getManyItems } from '../items/many';
 import prisma from '../../../../utils/prisma';
-import { startOfDay } from 'date-fns';
 import { UserList } from '../../../../types';
+import { rawToList } from '../lists/[username]';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -111,45 +111,9 @@ export const getTrendingLists = async (limit: number) => {
     ? sorted.filter((list) => !FEATURED_SLUGS.includes(list.slug ?? ''))
     : sorted;
 
-  const sortedLists: UserList[] = [...featuredLists, ...otherLists].map((listRaw) => {
-    return {
-      internal_id: listRaw.internal_id,
-      name: listRaw.name,
-      description: listRaw.description,
-      coverURL: listRaw.cover_url,
-      colorHex: listRaw.colorHex,
-      purpose: listRaw.purpose,
-      official: listRaw.official,
-      visibility: listRaw.visibility,
-      user_id: listRaw.user_id,
-      user_username: listRaw.user.username ?? '',
-      user_neouser: listRaw.user.neo_user ?? '',
-
-      owner: {
-        id: listRaw.user.id,
-        username: listRaw.user.username,
-        neopetsUser: listRaw.user.neo_user,
-        lastSeen: startOfDay(listRaw.user.last_login).toJSON(),
-      },
-
-      createdAt: listRaw.createdAt.toJSON(),
-      updatedAt: listRaw.updatedAt.toJSON(),
-
-      sortBy: listRaw.sortBy,
-      sortDir: listRaw.sortDir,
-      order: listRaw.order ?? 0,
-
-      dynamicType: listRaw.dynamicType,
-      lastSync: listRaw.lastSync?.toJSON() ?? null,
-      linkedListId: listRaw.linkedListId ?? null,
-
-      officialTag: listRaw.official_tag ?? null,
-
-      itemCount: listRaw.items.filter((x) => !x.isHidden).length,
-
-      slug: listRaw.slug,
-    };
-  });
+  const sortedLists: UserList[] = [...featuredLists, ...otherLists].map((listRaw) =>
+    rawToList(listRaw, listRaw.user)
+  );
 
   return sortedLists.slice(0, limit);
 };

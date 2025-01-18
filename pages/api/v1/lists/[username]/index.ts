@@ -6,6 +6,7 @@ import { ColorType, User, UserList } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 import { slugify } from '../../../../../utils/utils';
+import { ListItems, UserList as RawList, User as RawUser } from '@prisma/client';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -197,63 +198,7 @@ export const getUserLists = async (username: string, user?: User | null, limit =
   if (!listsRaw || listsRaw.length === 0) return [];
 
   const lists: UserList[] = listsRaw
-    .map((list) => {
-      return {
-        internal_id: list.internal_id,
-        name: list.name,
-        description: list.description,
-        coverURL: list.cover_url,
-        colorHex: list.colorHex,
-        purpose: list.purpose,
-        official: list.official,
-        visibility: list.visibility,
-
-        user_id: list.user_id,
-        user_username: list.user.username ?? '',
-        user_neouser: list.user.neo_user ?? '',
-
-        owner: {
-          id: list.user.id,
-          username: list.user.username,
-          neopetsUser: list.user.neo_user,
-          lastSeen: startOfDay(list.user.last_login).toJSON(),
-        },
-
-        createdAt: list.createdAt.toJSON(),
-        updatedAt: list.updatedAt.toJSON(),
-
-        officialTag: list.official_tag,
-
-        dynamicType: list.dynamicType,
-        lastSync: list.lastSync?.toJSON() ?? null,
-        linkedListId: list.linkedListId,
-
-        sortDir: list.sortDir,
-        sortBy: list.sortBy,
-        order: list.order ?? 0,
-
-        itemCount: list.items.filter((x) => !x.isHidden).length,
-
-        slug: list.slug,
-        // itemInfo: !includeItems
-        //   ? []
-        //   : list.items.map((item) => {
-        //       return {
-        //         internal_id: item.internal_id,
-        //         list_id: item.list_id,
-        //         item_iid: item.item_iid,
-        //         addedAt: item.addedAt.toJSON(),
-        //         updatedAt: item.updatedAt.toJSON(),
-        //         amount: item.amount,
-        //         capValue: item.capValue,
-        //         imported: item.imported,
-        //         order: item.order,
-        //         isHighlight: item.isHighlight,
-        //         isHidden: item.isHidden,
-        //       };
-        //     }),
-      };
-    })
+    .map((list) => rawToList(list, list.user))
     .sort((a, b) =>
       isOfficial
         ? new Date(b.createdAt) < new Date(a.createdAt)
@@ -354,4 +299,63 @@ export const createListSlug = async (name: string, userId: string) => {
   }
 
   return slug;
+};
+
+export const rawToList = (
+  listRaw: RawList & { items: ListItems[] },
+  owner: User | RawUser,
+  includeItems = false
+): UserList => {
+  return {
+    internal_id: listRaw.internal_id,
+    name: listRaw.name,
+    description: listRaw.description,
+    coverURL: listRaw.cover_url,
+    colorHex: listRaw.colorHex,
+    purpose: listRaw.purpose,
+    official: listRaw.official,
+    visibility: listRaw.visibility,
+
+    owner: {
+      id: owner.id,
+      username: owner.username,
+      neopetsUser: (owner as RawUser)?.neo_user ?? (owner as User).neopetsUser,
+      lastSeen: startOfDay((owner as RawUser).last_login ?? (owner as User).lastLogin).toJSON(),
+    },
+
+    createdAt: listRaw.createdAt.toJSON(),
+    updatedAt: listRaw.updatedAt.toJSON(),
+
+    sortBy: listRaw.sortBy,
+    sortDir: listRaw.sortDir,
+    order: listRaw.order ?? 0,
+
+    dynamicType: listRaw.dynamicType,
+    lastSync: listRaw.lastSync?.toJSON() ?? null,
+    linkedListId: listRaw.linkedListId ?? null,
+
+    officialTag: listRaw.official_tag ?? null,
+
+    itemCount: listRaw.items.filter((x) => !x.isHidden).length,
+
+    slug: listRaw.slug,
+    seriesType: listRaw.seriesType,
+    itemInfo: !includeItems
+      ? []
+      : listRaw.items.map((item) => {
+          return {
+            internal_id: item.internal_id,
+            list_id: item.list_id,
+            item_iid: item.item_iid,
+            addedAt: item.addedAt.toJSON(),
+            updatedAt: item.updatedAt.toJSON(),
+            amount: item.amount,
+            capValue: item.capValue,
+            imported: item.imported,
+            order: item.order,
+            isHighlight: item.isHighlight,
+            isHidden: item.isHidden,
+          };
+        }),
+  };
 };

@@ -95,7 +95,7 @@ const CreateListModal = (props: CreateListModalProps) => {
         },
       };
 
-      const username = list.user_username ?? user.username;
+      const username = list.owner?.username ?? user.username;
 
       // if list exists then update, else create
       const res = await (props.list
@@ -150,7 +150,7 @@ const CreateListModal = (props: CreateListModalProps) => {
         <ModalBody>
           {!isLoading && !error && (
             <Stack gap={3}>
-              {props.list && user?.id !== props.list?.user_id && user?.isAdmin && (
+              {props.list && user?.id !== props.list?.owner.id && user?.isAdmin && (
                 <Text textAlign="center" color="red.300">
                   {t('Lists.admin-edit-msg')}
                 </Text>
