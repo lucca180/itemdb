@@ -248,7 +248,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
           official_tag: officialTag,
           sortBy: sortInfo?.sortBy,
           sortDir: sortInfo?.sortDir,
-          seriesType: seriesType as SeriesType | null,
+          seriesType: seriesType === 'none' ? null : (seriesType as SeriesType),
           slug: slug,
         },
       });
