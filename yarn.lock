@@ -9022,7 +9022,7 @@ __metadata:
     ioredis: "npm:^5.4.1"
     jose: "npm:^5.2.0"
     jotai: "npm:^2.10.1"
-    lightweight-charts: "npm:^4.2.1"
+    lightweight-charts: "npm:^4.2.2"
     lint-staged: "npm:15.3.0"
     lodash: "npm:^4.17.21"
     lru-cache: "npm:^11.0.1"
@@ -9419,12 +9419,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lightweight-charts@npm:^4.2.1":
-  version: 4.2.1
-  resolution: "lightweight-charts@npm:4.2.1"
+"lightweight-charts@npm:^4.2.2":
+  version: 4.2.2
+  resolution: "lightweight-charts@npm:4.2.2"
   dependencies:
     fancy-canvas: "npm:2.1.0"
-  checksum: 10c0/727f19cea545dae23ecbc42182181fdf5f1978382f3dcdaaea70cbbf8368dba797dd535f29c272bd754f24cc97258490d5ac86c1360ad168e83a2005b167c7be
+  checksum: 10c0/7bc71bf4b25c2a2cfc8dca25bbea56e61178472c7ae915b62ceb045433cbe097fb26a6d16345280c283fb443370fd8a3be239abacaa92694f19e9123b46577cb
   languageName: node
   linkType: hard
 

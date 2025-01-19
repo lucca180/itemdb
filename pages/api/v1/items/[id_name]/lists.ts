@@ -49,5 +49,15 @@ export const getItemLists = async (
     },
   });
 
-  return listsRaw.map((list) => rawToList(list, list.user, includeItems));
+  return listsRaw.map((list) => {
+    const newList = rawToList(list, list.user, includeItems);
+    if (includeItems) return newList;
+    const item = list.items.find((item) => item.item_iid === id)!;
+
+    newList.itemInfo = [
+      { ...item, addedAt: item.addedAt.toJSON(), updatedAt: item.updatedAt.toJSON() },
+    ];
+
+    return newList;
+  });
 };

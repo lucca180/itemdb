@@ -2,17 +2,20 @@ import { Box } from '@chakra-ui/react';
 import Color from 'color';
 import { createChart, ColorType, LineStyle } from 'lightweight-charts';
 import React, { useEffect, useRef } from 'react';
-import { ColorData, ItemData, PriceData } from '../../types';
+import { ColorData, ItemData, PriceData, UserList } from '../../types';
+import { VertLine } from './VerticalLine';
 
 const intl = new Intl.NumberFormat();
 
 export type ChartComponentProps = {
   color: ItemData['color'] | ColorData;
   data: PriceData[];
+  lists?: UserList[];
+  showMarkerLabel?: boolean;
 };
 
 const ChartComponent = (props: ChartComponentProps) => {
-  const { data, color } = props;
+  const { data, color, lists, showMarkerLabel } = props;
   const RBG = Color.rgb(color.rgb).round().array();
   const backgroundColor = 'transparent';
   const lineColor = `rgb(${RBG[0]}, ${RBG[1]}, ${RBG[2]})`;
@@ -75,6 +78,25 @@ const ChartComponent = (props: ChartComponentProps) => {
 
     newSeries.setData(dataClone.reverse());
 
+    lists?.map((list) => {
+      if (!list.seriesType) return;
+
+      const date =
+        list.seriesType === 'listCreation'
+          ? new Date(list.createdAt).toISOString().split('T')[0]
+          : new Date(list.itemInfo?.[0].addedAt ?? 0).toISOString().split('T')[0];
+
+      const vertLine = new VertLine(chart, newSeries, date.toString(), {
+        showLabel: !!showMarkerLabel,
+        labelText: list.name,
+        color: list.colorHex ?? '',
+        labelTextColor: Color(list.colorHex ?? '').isDark() ? 'white' : 'black',
+        labelBackgroundColor: list.colorHex ?? '',
+      });
+
+      newSeries.attachPrimitive(vertLine);
+    });
+
     window.addEventListener('resize', handleResize);
 
     return () => {
@@ -82,7 +104,7 @@ const ChartComponent = (props: ChartComponentProps) => {
 
       chart.remove();
     };
-  }, [data, color]);
+  }, [data, color, showMarkerLabel, lists]);
 
   return <Box flex="1" ref={chartContainerRef} />;
 };

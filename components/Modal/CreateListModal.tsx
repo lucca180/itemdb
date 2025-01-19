@@ -81,12 +81,13 @@ const CreateListModal = (props: CreateListModalProps) => {
         visibility: list.visibility,
         purpose: list.purpose,
         colorHex: list.colorHex,
-        official: list.official,
-        officialTag: list.officialTag,
+        official: user.isAdmin ? list.official : undefined,
+        officialTag: user.isAdmin ? list.officialTag : undefined,
         sortInfo: {
           sortBy: list.sortBy,
           sortDir: list.sortDir,
         },
+        seriesType: list.seriesType,
       };
 
       const configs = {
@@ -171,15 +172,30 @@ const CreateListModal = (props: CreateListModalProps) => {
                     </Checkbox>
                   </FormControl>
                   {list.official && (
-                    <FormControl>
-                      <FormLabel color="gray.300">{t('Lists.official-tag')}</FormLabel>
-                      <Input
-                        variant="filled"
-                        name="officialTag"
-                        onChange={handleChange}
-                        value={list.officialTag ?? ''}
-                      />
-                    </FormControl>
+                    <>
+                      <FormControl>
+                        <FormLabel color="gray.300">{t('Lists.official-tag')}</FormLabel>
+                        <Input
+                          variant="filled"
+                          name="officialTag"
+                          onChange={handleChange}
+                          value={list.officialTag ?? ''}
+                        />
+                      </FormControl>
+                      <FormControl>
+                        <FormLabel color="gray.300">Series Type</FormLabel>
+                        <Select
+                          variant="filled"
+                          name="seriesType"
+                          onChange={handleChange}
+                          value={list.seriesType ?? 'none'}
+                        >
+                          <option value="none">None</option>
+                          <option value="listCreation">List Creation</option>
+                          <option value="itemAddition">Item Addition</option>
+                        </Select>
+                      </FormControl>
+                    </>
                   )}
                   <Divider />
                 </Stack>

@@ -297,7 +297,12 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
             </Flex>
 
             {!item.isNC && (
-              <ItemPriceCard item={item} lastSeen={props.lastSeen} prices={props.NPPrices} />
+              <ItemPriceCard
+                item={item}
+                lastSeen={props.lastSeen}
+                prices={props.NPPrices}
+                lists={props.lists}
+              />
             )}
             {item.isNC && <NCTrade item={item} lists={tradeLists} />}
             {itemEffects.length > 0 && <ItemEffectsCard item={item} effects={itemEffects} />}

@@ -247,7 +247,8 @@
     "contribute-wall-1": "Antes de mostrar esses dados <b>precisamos da sua ajuda</b> para tornar o itemdb mais preciso.",
     "contribute-wall-2": "Depois disso, você poderá conferir esses dados para <b>todos os itens</b> pelas próximas <b>24 horas</b> antes de precisar fazer outra contribuição.",
     "latest-x-sold": "Últimos {x} Vendidos",
-    "on-sale": "Promoção"
+    "on-sale": "Promoção",
+    "added-to": "Adicionado em <List></List>"
   },
   "Button": {
     "feedback": "Feedback",

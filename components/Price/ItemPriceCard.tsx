@@ -19,9 +19,10 @@ import {
   AlertIcon,
   AlertTitle,
   CloseButton,
+  useBoolean,
 } from '@chakra-ui/react';
 import React, { useEffect, useMemo, useState } from 'react';
-import { ItemData, ItemLastSeen, PriceData, PricingInfo } from '../../types';
+import { ItemData, ItemLastSeen, PriceData, PricingInfo, UserList } from '../../types';
 import { ChartComponentProps } from '../Charts/PriceChart';
 import { AiOutlineAreaChart, AiOutlineTable } from 'react-icons/ai';
 import PriceTable from './PriceTable';
@@ -36,6 +37,7 @@ import { AdminEditPriceModalProps } from '../Modal/AdminEditPriceModal';
 import { useAuth } from '../../utils/auth';
 import useSWRImmutable from 'swr/immutable';
 import useSWR from 'swr';
+import { MdLabelOutline, MdLabel } from 'react-icons/md';
 
 import axios, { AxiosRequestConfig } from 'axios';
 import { SaleStatusModalProps } from '../Modal/SaleStatusModal';
@@ -71,6 +73,7 @@ type Props = {
   item: ItemData;
   prices: PriceData[];
   lastSeen: ItemLastSeen | null;
+  lists?: UserList[];
 };
 
 const intl = new Intl.NumberFormat();
@@ -89,6 +92,8 @@ const ItemPriceCard = (props: Props) => {
   const [selectedPrice, setSelectedPrice] = useState<PriceData | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [seenHistory, setSeenHistory] = useState<string | null>(null);
+  const [showLabel, { toggle: toggleLabel }] = useBoolean(true);
+
   const rgbColor = item.color.rgb;
   const { data: priceStatus, isLoading: isPriceStatusLoading } = useSWRImmutable<PricingInfo>(
     `/api/v1/prices/${item.internal_id}/status`,
@@ -269,6 +274,13 @@ const ItemPriceCard = (props: Props) => {
               {prices.length > 0 && (
                 <>
                   <HStack ml="auto" mr={2} mb={2} gap={0}>
+                    <IconButton
+                      onClick={toggleLabel}
+                      size="sm"
+                      aria-label="Table"
+                      icon={!showLabel ? <MdLabelOutline /> : <MdLabel />}
+                      mr={2}
+                    />
                     {displayState === 'table' && (
                       <IconButton
                         onClick={() => setDisplay('chart')}
@@ -286,9 +298,18 @@ const ItemPriceCard = (props: Props) => {
                       />
                     )}
                   </HStack>
-                  {displayState === 'chart' && <ChartComponent color={item.color} data={prices} />}
+                  {displayState === 'chart' && (
+                    <ChartComponent
+                      showMarkerLabel={showLabel}
+                      lists={props.lists}
+                      color={item.color}
+                      data={prices}
+                    />
+                  )}
                   {displayState === 'table' && (
                     <PriceTable
+                      showMarkerLabel={showLabel}
+                      lists={props.lists}
                       data={prices}
                       isAdmin={isAdmin}
                       onEdit={(data) => setSelectedPrice(data)}

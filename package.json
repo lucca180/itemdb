@@ -52,7 +52,7 @@
     "ioredis": "^5.4.1",
     "jose": "^5.2.0",
     "jotai": "^2.10.1",
-    "lightweight-charts": "^4.2.1",
+    "lightweight-charts": "^4.2.2",
     "lodash": "^4.17.21",
     "lru-cache": "^11.0.1",
     "next": "^15.1.5",

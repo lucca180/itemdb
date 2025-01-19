@@ -4,6 +4,7 @@ import { ListItemInfo, UserList, User } from '../../../../../../types';
 import { CheckAuth } from '../../../../../../utils/googleCloud';
 import prisma from '../../../../../../utils/prisma';
 import { syncDynamicList } from './dynamic';
+import { SeriesType } from '@prisma/client';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -185,6 +186,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       sortInfo,
       order,
       officialTag,
+      seriesType,
     } = req.body as {
       name?: string;
       description?: string;
@@ -196,6 +198,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       order?: string;
       officialTag?: string;
       sortInfo?: { sortBy: string; sortDir: string };
+      seriesType?: string;
     };
 
     if (
@@ -208,7 +211,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       official ||
       sortInfo ||
       order ||
-      officialTag
+      officialTag ||
+      seriesType
     ) {
       let colorHexVar = colorHex;
 
@@ -244,6 +248,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
           official_tag: officialTag,
           sortBy: sortInfo?.sortBy,
           sortDir: sortInfo?.sortDir,
+          seriesType: seriesType as SeriesType | null,
           slug: slug,
         },
       });
