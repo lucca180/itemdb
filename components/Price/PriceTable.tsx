@@ -19,6 +19,7 @@ import { FiEdit } from 'react-icons/fi';
 import { FaCaretDown, FaCaretUp } from 'react-icons/fa';
 import { MdLabel } from 'react-icons/md';
 import NextLink from 'next/link';
+import Color from 'color';
 
 const intl = new Intl.NumberFormat();
 
@@ -46,6 +47,7 @@ const PriceTable = (props: Props) => {
 
     lists?.map((list) => {
       if (!list.seriesType) return;
+      const color = Color(list.colorHex ?? '#000');
 
       const date =
         list.seriesType === 'listCreation'
@@ -57,7 +59,7 @@ const PriceTable = (props: Props) => {
         title: list.name,
         slug: list.slug ?? '',
         addedAt: date,
-        color: list.colorHex ?? '',
+        color: color.lightness(70).hex(),
       });
     });
 
@@ -123,19 +125,20 @@ const PriceItem = (
   if (isMarker)
     return (
       <Tr key={price.addedAt} h={42}>
-        <Td colSpan={2}>
+        <Td colSpan={1}>
           <Flex alignItems={'center'} gap={1}>
             <Icon as={MdLabel} color={price.color} />
             <Text>
               {t.rich('ItemPage.added-to', {
-                List: () => (
-                  <Link as={NextLink} href={`/lists/official/${price.slug}`} color={price.color}>
-                    {price.title}
-                  </Link>
-                ),
+                List: () => <></>,
               })}
             </Text>
           </Flex>
+        </Td>
+        <Td textAlign={'center'} whiteSpace={'normal'}>
+          <Link as={NextLink} href={`/lists/official/${price.slug}`} color={price.color}>
+            {price.title}
+          </Link>
         </Td>
         <Td>
           {format.dateTime(new Date(price.addedAt!), {

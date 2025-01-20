@@ -81,6 +81,8 @@ const ChartComponent = (props: ChartComponentProps) => {
     lists?.map((list) => {
       if (!list.seriesType) return;
 
+      const color = Color(list.colorHex ?? '#000');
+
       const date =
         list.seriesType === 'listCreation'
           ? new Date(list.createdAt).toISOString().split('T')[0]
@@ -89,9 +91,9 @@ const ChartComponent = (props: ChartComponentProps) => {
       const vertLine = new VertLine(chart, newSeries, date.toString(), {
         showLabel: !!showMarkerLabel,
         labelText: list.name,
-        color: list.colorHex ?? '',
-        labelTextColor: Color(list.colorHex ?? '').isDark() ? 'white' : 'black',
-        labelBackgroundColor: list.colorHex ?? '',
+        color: color.lightness(70).hex(),
+        labelTextColor: Color(color.lightness(70).hex()).isDark() ? 'white' : 'black',
+        labelBackgroundColor: color.lightness(70).hex(),
       });
 
       newSeries.attachPrimitive(vertLine);
