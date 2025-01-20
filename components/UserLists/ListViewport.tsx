@@ -96,13 +96,13 @@ export default function ListViewport(props: ListViewportProps) {
               };
 
               return (
-                <>
+                <React.Fragment key={id}>
                   {activateSort ? (
-                    <SortableItem key={id} {...itemProps} />
+                    <SortableItem {...itemProps} />
                   ) : (
-                    <EditableItemCard key={id} {...itemProps} />
+                    <EditableItemCard {...itemProps} />
                   )}
-                </>
+                </React.Fragment>
               );
             })}
           </Flex>

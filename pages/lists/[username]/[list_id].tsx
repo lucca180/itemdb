@@ -151,7 +151,12 @@ const ListPage = (props: ListPageProps) => {
   }, [router.isReady]);
 
   useEffect(() => {
-    // if (list) setList(undefined);
+    if (router.query.list_id === list.slug) return;
+
+    if (router.query.list_id === props.list.slug) {
+      setList(props.list);
+      init(true);
+    }
 
     return () => toast.closeAll();
   }, [router.query]);
