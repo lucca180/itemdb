@@ -310,12 +310,14 @@ export const getItemDrops = async (
       minMax = getMinMax(drops, minMax);
     });
 
-    pool.minDrop =
-      minMax.min.repeat > 1 || !minMax.min.prevRepeat ? minMax.min.val : minMax.min.prev;
-    pool.maxDrop =
-      minMax.max.repeat > 1 || !minMax.max.prevRepeat ? minMax.max.val : minMax.max.prev;
+    if (!isGram) {
+      pool.minDrop =
+        minMax.min.repeat > 1 || !minMax.min.prevRepeat ? minMax.min.val : minMax.min.prev;
+      pool.maxDrop =
+        minMax.max.repeat > 1 || !minMax.max.prevRepeat ? minMax.max.val : minMax.max.prev;
 
-    if (pool.minDrop === 1000) pool.minDrop = 0;
+      if (pool.minDrop === 1000) pool.minDrop = 0;
+    }
 
     const manualMinMax = pool.name.match(/\d+-\d+/);
     if (manualMinMax) {
@@ -342,6 +344,11 @@ export const getItemDrops = async (
       : openingMinMax.max.prev;
 
   if (openableData.minDrop === 1000) openableData.minDrop = 0;
+
+  if (isGram) {
+    openableData.minDrop = 1;
+    openableData.maxDrop = 1;
+  }
 
   Object.values(dropsData)
     .filter((a) => manualItems.includes(a.item_iid) || a.dropRate >= (isNC ? 1 : 2))
