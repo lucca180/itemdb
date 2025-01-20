@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Redis } from 'ioredis';
 
-const LIMIT_COUNT = 15000;
-const LIMIT_BAN = 2 * 60 * 60 * 1000;
+const LIMIT_COUNT = 20000;
+const LIMIT_BAN = 6 * 60 * 60 * 1000;
 const skipAPIMiddleware =
   process.env.SKIP_API_MIDDLEWARE === 'true' || process.env.NODE_ENV === 'development';
 
