@@ -62,6 +62,17 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const opening_id = gramInfo?.cash_id || chance.hash({ length: 15 });
 
+  const exists = await prisma.openableItems.findFirst({
+    where: {
+      opening_id: opening_id,
+    },
+    select: {
+      opening_id: true,
+    },
+  });
+
+  if (exists) return res.status(400).json({ error: 'opening_id already exists' });
+
   const ip_address = requestIp.getClientIp(req);
 
   const parentData = Object.values(itemsData).find((data: any) => data.name === parentItem.name);
