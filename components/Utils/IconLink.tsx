@@ -1,6 +1,8 @@
 import { Link, LinkProps } from '@chakra-ui/react';
 import Image from 'next/image';
 
+const ignoreProps = ['iconWidth', 'iconHeight', 'iconStyle'];
+
 export const IconLink = (
   props: LinkProps & {
     iconWidth?: number | `${number}`;
@@ -11,7 +13,9 @@ export const IconLink = (
   if (!props.href) return null;
 
   return (
-    <Link {...props}>
+    <Link
+      {...Object.fromEntries(Object.entries(props).filter(([key]) => !ignoreProps.includes(key)))}
+    >
       {props.children}
       {getIcon(props.href) && (
         <Image

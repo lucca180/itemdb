@@ -20,6 +20,7 @@ import { FaCaretDown, FaCaretUp } from 'react-icons/fa';
 import { MdLabel } from 'react-icons/md';
 import NextLink from 'next/link';
 import Color from 'color';
+import { isSameDay } from 'date-fns';
 
 const intl = new Intl.NumberFormat();
 
@@ -63,7 +64,14 @@ const PriceTable = (props: Props) => {
       });
     });
 
-    return sorted.sort((a, b) => new Date(b.addedAt!).getTime() - new Date(a.addedAt!).getTime());
+    return sorted.sort((a, b) => {
+      const aDate = new Date(a.addedAt!);
+      const bDate = new Date(b.addedAt!);
+
+      if (isSameDay(aDate, bDate)) return b.marker ? -1 : 1;
+
+      return bDate.getTime() - aDate.getTime();
+    });
   }, [data, lists]);
 
   return (
