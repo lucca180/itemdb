@@ -17,7 +17,7 @@ const NcMallCard = (props: Props) => {
 
   const isDiscounted =
     ncMallData.active &&
-    ncMallData.discountPrice &&
+    !!ncMallData.discountPrice &&
     new Date(ncMallData.discountEnd ?? 0) > new Date();
   const isBuyable =
     ncMallData.active && (!ncMallData.saleEnd || new Date(ncMallData.saleEnd) > new Date());
