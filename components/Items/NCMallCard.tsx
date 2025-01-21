@@ -15,7 +15,10 @@ const NcMallCard = (props: Props) => {
   const format = useFormatter();
   const { item, ncMallData } = props;
 
-  const isDiscounted = ncMallData.active && new Date(ncMallData.discountEnd ?? 0) > new Date();
+  const isDiscounted =
+    ncMallData.active &&
+    ncMallData.discountPrice &&
+    new Date(ncMallData.discountEnd ?? 0) > new Date();
   const isBuyable =
     ncMallData.active && (!ncMallData.saleEnd || new Date(ncMallData.saleEnd) > new Date());
 
