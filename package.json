@@ -39,7 +39,7 @@
     "axios": "^1.7.9",
     "chance": "^1.1.12",
     "color": "^4.2.3",
-    "cookies-next": "^5.0.2",
+    "cookies-next": "^5.1.0",
     "date-fns": "^4.1.0",
     "ejs": "^3.1.9",
     "firebase": "^11.1.0",

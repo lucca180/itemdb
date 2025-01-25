@@ -6028,14 +6028,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cookies-next@npm:^5.0.2":
-  version: 5.0.2
-  resolution: "cookies-next@npm:5.0.2"
+"cookies-next@npm:^5.1.0":
+  version: 5.1.0
+  resolution: "cookies-next@npm:5.1.0"
   dependencies:
     cookie: "npm:^1.0.1"
   peerDependencies:
     next: ">=15.0.0"
-  checksum: 10c0/75328034edb6ca516e080315d430e3de821abe852e882326ba0c189b005472f18724c56191f1680571f7214549c01324b0659adfc5f041d04fe6e8920b461b4d
+    react: ">= 16.8.0"
+  checksum: 10c0/0769e18dcaa2d9b4c51593014a8a7e360dbe809c54fdfc61310b8b53edd670ee6bdf01593067dcf81760827956cb17c07786efe22bb3d94b23e0dd388457fddb
   languageName: node
   linkType: hard
 
@@ -9004,7 +9005,7 @@ __metadata:
     babel-plugin-react-compiler: "npm:19.0.0-beta-37ed2a7-20241206"
     chance: "npm:^1.1.12"
     color: "npm:^4.2.3"
-    cookies-next: "npm:^5.0.2"
+    cookies-next: "npm:^5.1.0"
     date-fns: "npm:^4.1.0"
     ejs: "npm:^3.1.9"
     eslint: "npm:8.48.0"

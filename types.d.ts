@@ -385,8 +385,8 @@ type RestockStats = {
   };
 
   totalSessions: number;
-  mostExpensiveBought?: ItemData;
-  mostExpensiveLost?: ItemData;
+  mostExpensiveBought?: ItemData | null;
+  mostExpensiveLost?: ItemData | null;
   totalRefreshes: number;
   totalLost: {
     count: number;
@@ -420,9 +420,9 @@ type RestockStats = {
     item: ItemData;
     timediff: number;
     timestamp: number;
-  };
+  } | null;
   favoriteItem: {
-    item?: ItemData;
+    item?: ItemData | null;
     count: number;
   };
   buyCount: {

@@ -35,7 +35,7 @@ import NextLink from 'next/link';
 import { StatsCard } from '../../../components/Hubs/Restock/StatsCard';
 import ItemCard from '../../../components/Items/ItemCard';
 import ImportRestockModal from '../../../components/Modal/ImportRestock';
-import { RestockChart, RestockSession, RestockStats } from '../../../types';
+import { RestockChart, RestockSession, RestockStats, User } from '../../../types';
 import { useAuth } from '../../../utils/auth';
 import axios from 'axios';
 import { restockShopInfo } from '../../../utils/utils';
@@ -52,6 +52,10 @@ import dynamic from 'next/dynamic';
 import { FaArrowTrendUp, FaArrowTrendDown } from 'react-icons/fa6';
 import { DashboardOptionsModalProps } from '../../../components/Modal/DashboardOptionsModal';
 import { RestockedCTACard } from '../../../components/Hubs/Wrapped2024/CTACard';
+import { NextApiRequest } from 'next';
+import { CheckAuth } from '../../../utils/googleCloud';
+import { setCookie } from 'cookies-next/client';
+import { getRestockStats } from '../../api/v1/restock';
 
 const RestockWrappedModal = dynamic<RestockWrappedModalProps>(
   () => import('../../../components/Modal/RestockWrappedModal')
@@ -71,26 +75,40 @@ type AlertMsg = {
   type: 'loading' | 'info' | 'warning' | 'success' | 'error' | undefined;
 };
 
-type PeriodFilter = { timePeriod: number; shops: number | string; timestamp?: number };
+type PeriodFilter = { timePeriod: number; shops: number | string; timestamp: number | null };
 const intl = new Intl.NumberFormat();
 
-const defaultFilter: PeriodFilter = { timePeriod: 7, shops: 'all', timestamp: undefined };
+const defaultFilter: PeriodFilter = { timePeriod: 30, shops: 'all', timestamp: null };
 
-const RestockDashboard = () => {
+type RestockDashboardProps = {
+  messages: Record<string, string>;
+  locale: string;
+  initialFilter: PeriodFilter;
+  initialCurrentStats?: RestockStats | null;
+  initialPastStats?: RestockStats | null;
+  user?: User;
+};
+
+const RestockDashboard = (props: RestockDashboardProps) => {
+  const { user } = props;
   const t = useTranslations();
   const formatter = useFormatter();
-  const { user, userPref, authLoading } = useAuth();
+  const { userPref } = useAuth();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isOpenOptions, onOpen: onOpenOptions, onClose: onCloseOptions } = useDisclosure();
   const { isOpen: isWrappedOpen, onOpen: onWrappedOpen, onClose: onWrappedClose } = useDisclosure();
   const [openImport, setOpenImport] = useState<boolean>(false);
-  const [sessionStats, setSessionStats] = useState<RestockStats | null>(null);
-  const [pastSessionStats, setPastSessionStats] = useState<RestockStats | null>(null);
+  const [sessionStats, setSessionStats] = useState<RestockStats | null>(
+    props.initialCurrentStats ?? null
+  );
+  const [pastSessionStats, setPastSessionStats] = useState<RestockStats | null>(
+    props.initialPastStats ?? null
+  );
   const [alertMsg, setAlertMsg] = useState<AlertMsg | null>(null);
   const [importCount, setImportCount] = useState<number>(0);
   const [shopList, setShopList] = useState<number[]>([]);
   const [noScript, setNoScript] = useState<boolean>(false);
-  const [filter, setFilter] = useState<PeriodFilter | null>(null);
+  const [filter, setFilter] = useState<PeriodFilter | null>(props.initialFilter);
   const [chartData, setChartData] = useState<RestockChart | null>(null);
 
   const revenueDiff = useMemo(() => {
@@ -106,18 +124,9 @@ const RestockDashboard = () => {
   }, [sessionStats, pastSessionStats]);
 
   useEffect(() => {
-    if (!authLoading && user && !!filter) {
-      handleImport();
-      init();
-    }
-  }, [user, authLoading, !!filter]);
+    handleImport();
 
-  useEffect(() => {
-    const storageFilter = localStorage.getItem('restockFilter');
-    let timePeriod = storageFilter ? JSON.parse(storageFilter)?.timePeriod || 7 : 7;
-    if (timePeriod === 90) timePeriod = 30;
-    if (storageFilter) setFilter({ ...defaultFilter, timePeriod: timePeriod });
-    else setFilter(defaultFilter);
+    if (!sessionStats) init();
   }, []);
 
   const init = async (customFilter?: PeriodFilter) => {
@@ -220,14 +229,16 @@ const RestockDashboard = () => {
     init();
   };
 
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleSelectChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
-    init({ ...(filter ?? defaultFilter), [name]: value, timestamp: undefined });
-    setFilter((prev) => ({ ...(prev ?? defaultFilter), [name]: value, timestamp: undefined }));
-    localStorage.setItem(
-      'restockFilter',
-      JSON.stringify({ ...filter, [name]: value, timestamp: undefined })
-    );
+
+    init({ ...(filter ?? defaultFilter), [name]: value, timestamp: null });
+
+    setFilter((prev) => ({ ...(prev ?? defaultFilter), [name]: value, timestamp: null }));
+
+    setCookie('restockFilter2025', JSON.stringify({ ...filter, [name]: value, timestamp: null }), {
+      expires: new Date('2030-01-01'),
+    });
   };
 
   // const setCustomTimestamp = (timestamp: number) => {
@@ -271,7 +282,6 @@ const RestockDashboard = () => {
           bg="blackAlpha.300"
           size="xs"
           borderRadius={'sm'}
-          defaultValue={30}
           name="timePeriod"
           value={(filter ?? defaultFilter).timePeriod}
           onChange={handleSelectChange}
@@ -285,6 +295,7 @@ const RestockDashboard = () => {
           <option value={7}>{t('General.last-x-days', { x: 7 })}</option>
           <option value={30}>{t('General.last-x-days', { x: 30 })}</option>
           <option value={60}>{t('General.last-x-days', { x: 60 })}</option>
+          <option value={90}>{t('General.last-x-days', { x: 90 })}</option>
           {/* <option>All Time</option> */}
         </Select>
         <Select
@@ -610,7 +621,6 @@ const RestockDashboard = () => {
                           ))}
                       </Flex>
                       <Text fontSize={'sm'}>
-                        <Badge colorScheme="green">{t('Layout.new')}</Badge>{' '}
                         {t.rich('Restock.history-dashboard-cta', {
                           Link: (chunk) => (
                             <Link
@@ -720,11 +730,43 @@ const RestockDashboard = () => {
 
 export default RestockDashboard;
 
-export async function getStaticProps(context: any) {
+export async function getServerSideProps(context: any): Promise<{ props: RestockDashboardProps }> {
+  let res;
+  const filter: PeriodFilter = {
+    ...defaultFilter,
+    ...JSON.parse(context.req.cookies.restockFilter2025 || '{}'),
+  };
+
+  try {
+    res = await CheckAuth(context.req as NextApiRequest);
+  } catch (e) {}
+
+  if (!res || !res.user) {
+    return {
+      props: {
+        messages: (await import(`../../../translation/${context.locale}.json`)).default,
+        initialFilter: filter,
+        locale: context.locale,
+      },
+    };
+  }
+
+  const user = res.user;
+
+  const data = await getRestockStats({
+    user: user,
+    startDate: filter.timestamp ?? Date.now() - (filter.timePeriod ?? 7) * 24 * 60 * 60 * 1000,
+    endDate: filter.timestamp ? endOfDay(new UTCDate(filter.timestamp)).getTime() : undefined,
+    shopId: filter.shops === 'all' ? undefined : filter.shops,
+  });
+
   return {
     props: {
       messages: (await import(`../../../translation/${context.locale}.json`)).default,
       locale: context.locale,
+      initialFilter: filter,
+      initialCurrentStats: data?.currentStats ?? null,
+      initialPastStats: data?.pastStats ?? null,
     },
   };
 }

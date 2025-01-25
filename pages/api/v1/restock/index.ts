@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { ItemData, RestockChart, RestockSession, RestockStats } from '../../../../types';
+import { ItemData, RestockChart, RestockSession, RestockStats, User } from '../../../../types';
 import { CheckAuth } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
 import { differenceInMilliseconds } from 'date-fns';
@@ -32,56 +32,18 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     const { user } = await CheckAuth(req);
 
     if (!user || user.banned) return res.status(401).json({ error: 'Unauthorized' });
-    let newStartDate = startDate;
 
-    if (startDate && !endDate) {
-      const diff = differenceInMilliseconds(Date.now(), new Date(Number(startDate)));
-      newStartDate = (Number(startDate) - diff).toString();
-    }
-
-    const sessions = await prisma.restockSession.findMany({
-      where: {
-        user_id: user.id,
-        startedAt: {
-          gte: newStartDate ? new Date(Number(newStartDate)) : undefined,
-          lte: endDate ? new Date(Number(endDate)) : undefined,
-        },
-        shop_id: shopId ? Number(shopId) : undefined,
-      },
-      orderBy: {
-        startedAt: 'desc',
-      },
-      take: limit ? Number(limit) : undefined,
-      select: {
-        sessionText: true,
-        startedAt: true,
-        endedAt: true,
-        shop_id: true,
-      },
+    const result = await getRestockStats({
+      startDate,
+      endDate,
+      shopId,
+      limit,
+      user,
     });
 
-    const currentStats = sessions.filter((x) => x.startedAt >= new Date(Number(startDate)));
+    if (!result) return res.status(200).json(null);
 
-    if (!currentStats.length) return res.status(200).json(null);
-
-    const pastStats = sessions.filter((x) => x.startedAt < new Date(Number(startDate)));
-
-    const [currentResult, pastResult] = await Promise.all([
-      calculateStats(
-        currentStats,
-        currentStats.at(0)?.startedAt.getTime() ?? 0,
-        currentStats.at(-1)?.endedAt?.getTime() ?? 0
-      ),
-      pastStats.length
-        ? calculateStats(
-            pastStats,
-            pastStats.at(0)?.startedAt?.getTime() ?? 0,
-            pastStats.at(-1)?.endedAt?.getTime() ?? 0
-          )
-        : null,
-    ]);
-
-    return res.status(200).json({ currentStats: currentResult?.[0], pastStats: pastResult?.[0] });
+    return res.status(200).json(result);
   } catch (e) {
     console.error(e);
     return res.status(500).json({ error: 'Internal Server Error' });
@@ -129,6 +91,67 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
 // --------- //
 
+type GetRestockStatsParams = {
+  startDate?: string | number;
+  endDate?: string | number;
+  shopId?: string | number;
+  limit?: string;
+  user: User;
+};
+export const getRestockStats = async (params: GetRestockStatsParams) => {
+  const { startDate, endDate, shopId, limit, user } = params;
+  let newStartDate = startDate;
+
+  if (startDate && !endDate) {
+    const diff = differenceInMilliseconds(Date.now(), new Date(Number(startDate)));
+    newStartDate = (Number(startDate) - diff).toString();
+  }
+
+  const sessions = await prisma.restockSession.findMany({
+    where: {
+      user_id: user.id,
+      startedAt: {
+        gte: newStartDate ? new Date(Number(newStartDate)) : undefined,
+        lte: endDate ? new Date(Number(endDate)) : undefined,
+      },
+      shop_id: shopId ? Number(shopId) : undefined,
+    },
+    orderBy: {
+      startedAt: 'desc',
+    },
+    take: limit ? Number(limit) : undefined,
+    select: {
+      sessionText: true,
+      startedAt: true,
+      endedAt: true,
+      shop_id: true,
+    },
+  });
+
+  const currentStats = sessions.filter((x) => x.startedAt >= new Date(Number(startDate)));
+
+  if (!currentStats.length) return null;
+
+  const pastStats = sessions.filter((x) => x.startedAt < new Date(Number(startDate)));
+
+  const [currentResult, pastResult] = await Promise.all([
+    calculateStats(
+      currentStats,
+      currentStats.at(0)?.startedAt.getTime() ?? 0,
+      currentStats.at(-1)?.endedAt?.getTime() ?? 0
+    ),
+    pastStats.length
+      ? calculateStats(
+          pastStats,
+          pastStats.at(0)?.startedAt?.getTime() ?? 0,
+          pastStats.at(-1)?.endedAt?.getTime() ?? 0
+        )
+      : null,
+  ]);
+
+  return { currentStats: currentResult?.[0], pastStats: pastResult?.[0] };
+};
+
 type ValueOf<T> = T[keyof T];
 export const calculateStats = async (
   rawSessions: {
@@ -155,7 +178,7 @@ export const calculateStats = async (
   const revenuePerDay: { [date: string]: number } = {};
   const lostPerDay: { [date: string]: number } = {};
   const refreshesPerDay: { [date: string]: number } = {};
-  let fastestBuy: RestockStats['fastestBuy'] = undefined;
+  let fastestBuy: RestockStats['fastestBuy'] = null;
 
   let refreshTotalTime: number[] = [];
   let reactionTotalTime: number[] = [];
@@ -350,13 +373,14 @@ export const calculateStats = async (
   stats.fastestBuy = fastestBuy;
   if (allBought.length) {
     const favBuy = findMostFrequent(allBought.map((x) => x.item));
+    if (favBuy.item) {
+      stats.buyCount = favBuy.frequencyMap;
 
-    stats.buyCount = favBuy.frequencyMap;
-
-    stats.favoriteItem = {
-      item: favBuy.item,
-      count: favBuy.count,
-    };
+      stats.favoriteItem = {
+        item: favBuy.item,
+        count: favBuy.count,
+      };
+    }
   }
 
   stats.hottestRestocks = Object.values(allItemsData)
@@ -411,11 +435,11 @@ export const defaultStats: RestockStats = {
     durationCount: 0,
   },
   totalSessions: 0,
-  mostExpensiveBought: undefined,
-  mostExpensiveLost: undefined,
-  fastestBuy: undefined,
+  mostExpensiveBought: null,
+  mostExpensiveLost: null,
+  fastestBuy: null,
   favoriteItem: {
-    item: undefined,
+    item: null,
     count: 0,
   },
   totalRefreshes: 0,
