@@ -54,10 +54,19 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
             <DefaultSeo {...SEOConfig} />
             {getLayout(<Component {...pageProps} />, pageProps)}
             <Script
-              src={process.env.NEXT_PUBLIC_UMAMI_URL}
+              src={'/plutonita.js?v=1.0.0'}
               data-website-id={process.env.NEXT_PUBLIC_UMAMI_ID}
+              data-host-url={'https://umami.itemdb.com.br'}
+              data-url-overwrite="unamiOverwriter"
               defer
             />
+            <Script id="pathOverwriter2">
+              {`function unamiOverwriter(path) {
+                  if (path.startsWith("/pt")) path = path.replace("/pt", "");
+                  return path;
+                }
+                `}
+            </Script>
             <Script id="pathOverwriter">
               {`function myPathOverwriter({ path }) {
                   if (path.startsWith("/pt")) path = path.replace("/pt", "");
