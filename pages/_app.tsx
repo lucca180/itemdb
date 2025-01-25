@@ -53,6 +53,11 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
             <NextNProgress color="#718096" showOnShallow={true} />
             <DefaultSeo {...SEOConfig} />
             {getLayout(<Component {...pageProps} />, pageProps)}
+            <Script
+              src={process.env.NEXT_PUBLIC_UMAMI_URL}
+              data-website-id={process.env.NEXT_PUBLIC_UMAMI_ID}
+              defer
+            />
             <Script id="pathOverwriter">
               {`function myPathOverwriter({ path }) {
                   if (path.startsWith("/pt")) path = path.replace("/pt", "");
