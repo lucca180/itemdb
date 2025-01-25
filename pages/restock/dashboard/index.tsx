@@ -124,6 +124,8 @@ const RestockDashboard = (props: RestockDashboardProps) => {
   }, [sessionStats, pastSessionStats]);
 
   useEffect(() => {
+    if (!user) return;
+
     handleImport();
 
     if (!sessionStats) init();
@@ -763,6 +765,7 @@ export async function getServerSideProps(context: any): Promise<{ props: Restock
   return {
     props: {
       messages: (await import(`../../../translation/${context.locale}.json`)).default,
+      user: user,
       locale: context.locale,
       initialFilter: filter,
       initialCurrentStats: data?.currentStats ?? null,
