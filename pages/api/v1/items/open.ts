@@ -108,7 +108,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     (item) => item
   ) as Prisma.OpenableItemsUncheckedCreateInput[];
 
-  if (gramInfo.options.length) {
+  if (gramInfo.options?.length) {
     const itemNameData = await getManyItems({
       name: gramInfo.options as string[],
     });
