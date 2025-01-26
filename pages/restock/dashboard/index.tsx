@@ -196,7 +196,7 @@ const RestockDashboard = (props: RestockDashboardProps) => {
     if (!window) return;
     let currentParsed: RestockSession[] = [];
     let unsyncParsed: RestockSession[] = [];
-    console.log('importing', window.itemdb_restock);
+
     if (window.itemdb_restock) {
       const { current_sessions, unsync_sessions } = window.itemdb_restock.getSessions();
       currentParsed = Object.values(current_sessions);
