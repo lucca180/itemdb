@@ -35,7 +35,7 @@ import { getFiltersDiff } from '../../pages/search';
 import { parseFilters } from '../../utils/parseFilters';
 import { useTranslations } from 'next-intl';
 import { ItemCardBadge } from '../Items/ItemCard';
-import { stripMarkdown } from '../../utils/utils';
+import { slugify, stripMarkdown } from '../../utils/utils';
 import HeadingLine from '../Utils/HeadingLine';
 
 const Axios = axios.create({
@@ -208,7 +208,7 @@ export const SearchBar = (props: Props) => {
                         as={NextLink}
                         display="flex"
                         prefetch={false}
-                        href={`/item/${item.slug}`}
+                        href={`/item/${item.slug}?utm_content=omni-search`}
                         key={item.internal_id}
                         px={{ base: 1, md: 2 }}
                         py={2}
@@ -251,7 +251,7 @@ export const SearchBar = (props: Props) => {
                         as={NextLink}
                         display="flex"
                         prefetch={false}
-                        href={`/lists/official/${list.slug}`}
+                        href={`/lists/official/${list.slug}?utm_content=omni-search`}
                         key={list.internal_id}
                         px={{ base: 1, md: 2 }}
                         py={2}
@@ -296,7 +296,7 @@ export const SearchBar = (props: Props) => {
                         as={NextLink}
                         display="flex"
                         prefetch={false}
-                        href={`/restock/${shop.id}`}
+                        href={`/restock/${slugify(shop.name)}?utm_content=omni-search`}
                         key={shop.id}
                         px={{ base: 1, md: 2 }}
                         py={2}
