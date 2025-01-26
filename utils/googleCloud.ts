@@ -15,7 +15,7 @@ export const CheckAuth = async (
   req: NextApiRequest | null,
   token?: string,
   session?: string,
-  skipUser = false,
+  skipUser = false
 ) => {
   token = token || req?.headers.authorization?.split('Bearer ')[1];
 
@@ -27,7 +27,7 @@ export const CheckAuth = async (
     if ((!req || !req.cookies.session) && !session) throw err;
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    decodedToken = await Auth.verifySessionCookie((session ?? req?.cookies.session)!, !skipUser);
+    decodedToken = await Auth.verifySessionCookie((session ?? req?.cookies.session)!);
   }
 
   if (skipUser) return { decodedToken: decodedToken, user: null };
