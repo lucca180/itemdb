@@ -4,7 +4,6 @@ import { defaultFilters } from '../../../../utils/parseFilters';
 import { doSearch } from '.';
 import prisma from '../../../../utils/prisma';
 import { UserList } from '../../../../types';
-import { startOfDay } from 'date-fns';
 import Fuse from 'fuse.js';
 import { restockShopInfo } from '../../../../utils/utils';
 import { rawToList } from '../lists/[username]';
