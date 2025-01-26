@@ -26,11 +26,10 @@ import useSWR from 'swr';
 
 type Props = {
   latestItems: ItemData[];
-  lastestPrices: ItemData[];
+  latestPrices: ItemData[];
   latestOwls: ItemData[];
   latestPosts: WP_Article[];
   trendingItems: ItemData[];
-  hottestRestock: ItemData[];
   latestNcMall: ItemData[];
   leavingNcMall: ItemData[];
   trendingLists: UserList[];
@@ -57,7 +56,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
   const { data: latestPrices } = useSWR<ItemData[]>(
     `api/v1/prices?limit=16`,
     (url) => fetcher(url),
-    { fallbackData: props.lastestPrices }
+    { fallbackData: props.latestPrices }
   );
 
   return (
@@ -208,15 +207,14 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
 
 export default HomePage;
 
-export async function getStaticProps(context: any) {
+export async function getStaticProps(context: any): Promise<{ props: Props; revalidate: number }> {
   const [
     latestItems,
     latestOwls,
     latestPosts,
     trendingItems,
-    hottestRestock,
     latestNcMall,
-    lastestPrices,
+    latestPrices,
     leavingNcMall,
     trendingLists,
   ] = await Promise.all([
@@ -227,7 +225,6 @@ export async function getStaticProps(context: any) {
       return [];
     }),
     getTrendingItems(20).catch(() => []),
-    [], // getHotestRestock(16, 15).catch(() => []),
     getNCMallItemsData(20).catch(() => []),
     getLatestPricedItems(16).catch(() => []),
     getNCMallItemsData(18, true).catch(() => []),
@@ -240,9 +237,8 @@ export async function getStaticProps(context: any) {
       latestOwls,
       latestPosts,
       trendingItems,
-      hottestRestock,
       latestNcMall,
-      lastestPrices,
+      latestPrices,
       leavingNcMall,
       trendingLists,
       messages: (await import(`../translation/${context.locale}.json`)).default,
