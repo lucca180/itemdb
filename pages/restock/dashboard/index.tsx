@@ -737,6 +737,7 @@ export async function getServerSideProps(context: any): Promise<{ props: Restock
   const filter: PeriodFilter = {
     ...defaultFilter,
     ...JSON.parse(context.req.cookies.restockFilter2025 || '{}'),
+    shops: 'all',
   };
 
   try {
