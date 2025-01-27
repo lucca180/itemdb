@@ -23,7 +23,12 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
   const items = data.items;
   const parentItem = data.parentItem;
-  const gramInfo = data.gramInfo;
+  const gramInfo = data.gramInfo as
+    | {
+        cash_id: string;
+        options: string[];
+      }
+    | undefined;
   const lang = data.lang;
 
   if (lang !== 'en') return res.status(400).json({ error: 'Language not supported' });
@@ -108,7 +113,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     (item) => item
   ) as Prisma.OpenableItemsUncheckedCreateInput[];
 
-  if (gramInfo.options?.length) {
+  if (gramInfo?.options?.length) {
     const itemNameData = await getManyItems({
       name: gramInfo.options as string[],
     });
