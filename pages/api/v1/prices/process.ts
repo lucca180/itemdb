@@ -365,7 +365,7 @@ async function updateOrAddDB(
     if (daysSinceLastUpdate < MIN_LAST_UPDATE && variation < 30 && priceDiff < 25000)
       return undefined;
 
-    if ((variation <= 5 || priceDiff < 5000) && daysSinceLastUpdate <= 15) return undefined;
+    if ((variation <= 5 || priceDiff < 2500) && daysSinceLastUpdate <= 15) return undefined;
 
     if (!oldPriceRaw.noInflation_id && priceDiff >= 90000) {
       if (oldPrice < priceValue && variation >= 75) {
