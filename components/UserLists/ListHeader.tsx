@@ -44,6 +44,7 @@ type ListHeaderProps = {
   items: { [item_iid: string]: ItemData };
   itemInfo: { [itemInfoId: number]: ListItemInfo & { hasChanged?: boolean } };
   canEdit: boolean;
+  isLoading?: boolean;
   setOpenCreateModal?: (value: boolean) => void;
 };
 
@@ -52,7 +53,7 @@ const intl = new Intl.NumberFormat();
 const ListHeader = (props: ListHeaderProps) => {
   const t = useTranslations();
   const toast = useToast();
-  const { list, color, items, itemInfo, canEdit: isOwner, setOpenCreateModal } = props;
+  const { list, color, items, itemInfo, canEdit: isOwner, setOpenCreateModal, isLoading } = props;
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { user } = useAuth();
   const rgb = color.rgb().array();
@@ -180,6 +181,7 @@ const ListHeader = (props: ListHeaderProps) => {
               colorScheme={color.isLight() ? 'blackAlpha' : 'gray'}
               onClick={() => setOpenCreateModal?.(true)}
               size="sm"
+              isLoading={isLoading}
             >
               {t('Lists.edit-list-info')}
             </Button>

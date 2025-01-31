@@ -578,6 +578,7 @@ const ListPage = (props: ListPageProps) => {
         color={color}
         items={items}
         itemInfo={itemInfo}
+        isLoading={isLoading}
         setOpenCreateModal={setOpenCreateModal}
       />
       <Flex mt={5} gap={6} flexFlow="column">
