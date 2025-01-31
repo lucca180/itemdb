@@ -146,10 +146,14 @@ const ItemPriceCard = (props: Props) => {
 
     if (!hasTrades) return false;
 
-    if (!price) return true;
+    const res = {
+      needPricing: priceStatus.waitingTrades.needPricing,
+      needVoting: priceStatus.waitingTrades.needVoting,
+    };
 
-    if (differenceInCalendarDays(new Date(), new Date(price.addedAt)) > 15 && hasTrades)
-      return true;
+    if (!price) return res;
+
+    if (differenceInCalendarDays(new Date(), new Date(price.addedAt)) > 15 && hasTrades) return res;
 
     return false;
   }, [user, priceStatus, price]);
@@ -207,7 +211,7 @@ const ItemPriceCard = (props: Props) => {
 
       <CardBase color={rgbColor} title={t('ItemPage.price-overview')}>
         <Flex gap={3} flexFlow="column">
-          {needHelp && <HelpNeeded item={item} />}
+          {!!needHelp && <HelpNeeded item={item} helpData={needHelp} />}
           <Flex
             flexFlow={{ base: 'column', md: 'row' }}
             alignItems={{ base: 'inherit', md: 'center' }}
@@ -377,10 +381,11 @@ export default ItemPriceCard;
 
 type HelpNeededProps = {
   item: ItemData;
+  helpData: { needPricing: number; needVoting: number };
 };
 
 const HelpNeeded = (props: HelpNeededProps) => {
-  const { item } = props;
+  const { item, helpData } = props;
   const [hideHelp, setHideHelp] = useState(false);
   const t = useTranslations();
 
@@ -399,24 +404,32 @@ const HelpNeeded = (props: HelpNeededProps) => {
       >
         {t('Feedback.price-update-txt')}
         <HStack justifyContent={'center'}>
-          <Button
-            as={Link}
-            href={`/feedback/trades?target=${item.name}`}
-            prefetch={false}
-            target="_blank"
-            size="sm"
-          >
-            {t('Feedback.price-trade-lots')}
-          </Button>
-          <Button
-            as={Link}
-            href={`/feedback/vote?target=${item.name}`}
-            prefetch={false}
-            target="_blank"
-            size="sm"
-          >
-            {t('Feedback.vote-suggestions')}
-          </Button>
+          {!!helpData.needPricing && (
+            <Button
+              as={Link}
+              href={`/feedback/trades?target=${item.name}`}
+              prefetch={false}
+              target="_blank"
+              size="sm"
+            >
+              {t('Feedback.price-x-trade-lots', {
+                x: helpData.needPricing,
+              })}
+            </Button>
+          )}
+          {!!helpData.needVoting && (
+            <Button
+              as={Link}
+              href={`/feedback/vote?target=${item.name}`}
+              prefetch={false}
+              target="_blank"
+              size="sm"
+            >
+              {t('Feedback.vote-x-suggestions', {
+                x: helpData.needVoting,
+              })}
+            </Button>
+          )}
         </HStack>
       </AlertDescription>
       <CloseButton
