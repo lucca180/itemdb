@@ -23,8 +23,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 export const contributeCheck = async (uid?: string, goalMulplier = 1) => {
-  const tradeGoal = TRADE_GOAL * goalMulplier;
-  const voteGoal = VOTE_GOAL * goalMulplier;
+  const tradeGoal = Math.floor(TRADE_GOAL * goalMulplier);
+  const voteGoal = Math.floor(VOTE_GOAL * goalMulplier);
 
   if (!uid) {
     return { success: false, needTrades: tradeGoal, needVotes: voteGoal };
@@ -71,7 +71,7 @@ export const contributeCheck = async (uid?: string, goalMulplier = 1) => {
 
   // check if there is trades or feedbacks to vote
   const tradeQueueRaw = prisma.$queryRaw<{ count: number }[]>(
-    Prisma.sql`SELECT COUNT(DISTINCT hash) as "count" FROM trades where processed = 0`,
+    Prisma.sql`SELECT COUNT(DISTINCT hash) as "count" FROM trades where processed = 0`
   );
 
   const feedbackVoting = prisma.feedbacks.count({

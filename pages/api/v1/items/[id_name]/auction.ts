@@ -24,11 +24,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     try {
       const { user } = await CheckAuth(req);
 
-      const contributeGoal = await contributeCheck(user?.id, 4);
+      const contributeGoal = await contributeCheck(user?.id, 2.5);
 
       if (!contributeGoal.success) return res.status(403).json(contributeGoal);
     } catch (err) {
-      const contributeGoal = await contributeCheck(undefined, 4);
+      const contributeGoal = await contributeCheck(undefined, 2.5);
 
       if (!contributeGoal.success) return res.status(403).json(contributeGoal);
     }
