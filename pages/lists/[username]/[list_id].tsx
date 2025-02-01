@@ -194,11 +194,11 @@ const ListPage = (props: ListPageProps) => {
         setList(listData);
       }
 
-      const [itemData, itemInfos] = await getItems();
+      const [itemData, itemInfos] = await getItems(listData);
 
-      const itensId: number[] = itemInfos.map((item) => item.item_iid);
+      const itemsId: number[] = itemInfos.map((item) => item.item_iid);
 
-      if (itensId.length === 0) {
+      if (itemsId.length === 0) {
         setRawItemInfo([]);
         setItemSelect([]);
         setItemInfoIds([]);
@@ -245,11 +245,13 @@ const ListPage = (props: ListPageProps) => {
     }
   };
 
-  const getItems = async (): Promise<[{ [id: string]: ItemData }, ListItemInfo[]]> => {
-    if (!list) return [{}, []];
+  const getItems = async (
+    newList: UserList
+  ): Promise<[{ [id: string]: ItemData }, ListItemInfo[]]> => {
+    if (!newList) return [{}, []];
 
     const itemInfoRes = await axios.get(
-      `/api/v1/lists/${list.owner.username}/${list.internal_id}/items`
+      `/api/v1/lists/${newList.owner.username}/${newList.internal_id}/items`
     );
     const itemInfoData: ListItemInfo[] = itemInfoRes.data;
 
@@ -260,7 +262,7 @@ const ListPage = (props: ListPageProps) => {
     }
 
     axios
-      .get(`/api/v1/lists/${list.owner.username}/${list.internal_id}/stats`)
+      .get(`/api/v1/lists/${newList.owner.username}/${newList.internal_id}/stats`)
       .then((res) => setListStats(res.data));
 
     const itemRes = await axios.post(`/api/v1/items/many`, {
