@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getManyItems } from '../items/many';
 import prisma from '../../../../utils/prisma';
 import { UserList } from '../../../../types';
 import { rawToList } from '../lists/[username]';
+import { getClient } from '@umami/api-client';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -25,30 +24,39 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
   return res.status(200).json(sorted);
 }
 
+const client = getClient();
+
+type WebsiteMetrics = {
+  data: {
+    x: string;
+    y: number;
+  }[];
+};
+
 export const getTrendingItems = async (limit: number) => {
-  const statsRes = await axios.get(
-    'https://simpleanalytics.com/itemdb.com.br.json?version=5&fields=pages&start=today-7d&pages=/item*&limit=' +
-      (limit + 10),
-    {
-      headers: {
-        'Api-Key': `${process.env.SA_API_KEY}`,
-      },
-    }
-  );
+  const statsRes = (await client.getWebsiteMetrics('df660da1-6f93-4dda-9da5-5028fb9db292', {
+    startAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).getTime(),
+    endAt: Date.now(),
+    type: 'url',
+    // @ts-expect-error missing type
+    search: 'item',
+    limit: limit + 10,
+  })) as WebsiteMetrics;
 
   const popularItemsStats: any = {};
 
-  statsRes.data.pages.map((pageData: any) => {
-    const slug = pageData.value.split('/').pop();
+  statsRes.data.map((data) => {
+    const slug = data.x.split('/').pop();
+    if (!slug) return;
 
     popularItemsStats[slug] = {
-      slug: pageData.value.split('/').pop(),
-      pageviews: pageData.pageviews,
-      visitors: pageData.visitors,
+      slug: slug,
+      pageviews: data.y,
     };
   });
 
   const items = await getManyItems({ slug: Object.keys(popularItemsStats) });
+
   const sorted = Object.values(items).sort((a, b) => {
     if (popularItemsStats[a.slug!].pageviews > popularItemsStats[b.slug!].pageviews) return -1;
     if (popularItemsStats[a.slug!].pageviews < popularItemsStats[b.slug!].pageviews) return 1;
@@ -62,25 +70,24 @@ const FEATURED_SLUGS = process.env.FEATURED_LISTS?.split(',') ?? [];
 const FEATURED_UNTIL = process.env.FEATURED_UNTIL ? Number(process.env.FEATURED_UNTIL) : null;
 
 export const getTrendingLists = async (limit: number) => {
-  const statsRes = await axios.get(
-    'https://simpleanalytics.com/itemdb.com.br.json?version=5&fields=pages&start=today-7d&pages=/lists/official/*&limit=' +
-      limit * 5,
-    {
-      headers: {
-        'Api-Key': `${process.env.SA_API_KEY}`,
-      },
-    }
-  );
+  const statsRes = (await client.getWebsiteMetrics('df660da1-6f93-4dda-9da5-5028fb9db292', {
+    startAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).getTime(),
+    endAt: Date.now(),
+    type: 'url',
+    // @ts-expect-error missing type
+    search: 'lists/official/',
+    limit: limit * 2,
+  })) as WebsiteMetrics;
 
   const popularListsStats: any = {};
 
-  statsRes.data.pages.map((pageData: any) => {
-    const slug = pageData.value.split('/').pop();
+  statsRes.data.map((pageData) => {
+    const slug = pageData.x.split('/').pop();
+    if (!slug) return;
 
     popularListsStats[slug] = {
-      slug: pageData.value.split('/').pop(),
-      pageviews: pageData.pageviews,
-      visitors: pageData.visitors,
+      slug: slug,
+      pageviews: pageData.y,
     };
   });
 

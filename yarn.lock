@@ -4938,6 +4938,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@umami/api-client@npm:^0.76.0":
+  version: 0.76.0
+  resolution: "@umami/api-client@npm:0.76.0"
+  dependencies:
+    cross-fetch: "npm:^3.1.5"
+    debug: "npm:^4.3.4"
+    next-basics: "npm:^0.36.0"
+    uuid: "npm:^9.0.0"
+  checksum: 10c0/4d5d6420f2e1d3d5fb5eba8b4a04a48cc94abe77bdf2d34b05c5123b1daa418992d050048f02b4a9618341e98ad2e7da5e07294966a8dc0972333194556c9105
+  languageName: node
+  linkType: hard
+
 "@ungap/structured-clone@npm:^1.0.0":
   version: 1.2.0
   resolution: "@ungap/structured-clone@npm:1.2.0"
@@ -5540,6 +5552,13 @@ __metadata:
   version: 1.5.1
   resolution: "base64-js@npm:1.5.1"
   checksum: 10c0/f23823513b63173a001030fae4f2dabe283b99a9d324ade3ad3d148e218134676f1ee8568c877cd79ec1c53158dcf2d2ba527a97c606618928ba99dd930102bf
+  languageName: node
+  linkType: hard
+
+"bcryptjs@npm:^2.4.3":
+  version: 2.4.3
+  resolution: "bcryptjs@npm:2.4.3"
+  checksum: 10c0/b969467087ed7a01ff905a1c6a0c45014ec586248a448ea08370c8ed8bb314bda16a870ca23e0961d7d23bdce1a04c76fa70a9d680be814fa9ac7d8fc61870a3
   languageName: node
   linkType: hard
 
@@ -6171,6 +6190,15 @@ __metadata:
   version: 1.1.1
   resolution: "create-require@npm:1.1.1"
   checksum: 10c0/157cbc59b2430ae9a90034a5f3a1b398b6738bf510f713edc4d4e45e169bc514d3d99dd34d8d01ca7ae7830b5b8b537e46ae8f3c8f932371b0875c0151d7ec91
+  languageName: node
+  linkType: hard
+
+"cross-fetch@npm:^3.1.5":
+  version: 3.2.0
+  resolution: "cross-fetch@npm:3.2.0"
+  dependencies:
+    node-fetch: "npm:^2.7.0"
+  checksum: 10c0/d8596adf0269130098a676f6739a0922f3cc7b71cc89729925411ebe851a87026171c82ea89154c4811c9867c01c44793205a52e618ce2684650218c7fbeeb9f
   languageName: node
   linkType: hard
 
@@ -9067,6 +9095,7 @@ __metadata:
     "@types/react-window": "npm:^1.8.5"
     "@types/request-ip": "npm:^0.0.37"
     "@typescript-eslint/eslint-plugin": "npm:^8.18.0"
+    "@umami/api-client": "npm:^0.76.0"
     accept-language-parser: "npm:^1.5.0"
     axios: "npm:^1.7.9"
     babel-plugin-react-compiler: "npm:19.0.0-beta-37ed2a7-20241206"
@@ -10392,6 +10421,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"next-basics@npm:^0.36.0":
+  version: 0.36.0
+  resolution: "next-basics@npm:0.36.0"
+  dependencies:
+    bcryptjs: "npm:^2.4.3"
+    jsonwebtoken: "npm:^9.0.0"
+    pure-rand: "npm:^6.0.2"
+  peerDependencies:
+    next: ^13.4.0
+    react: ^18.2.0
+    react-dom: ^18.2.0
+  checksum: 10c0/8f323851d9af1fbed12fcfd52f30c7d57c29bddd89999f05d76f48187392033e0a9a97458abd9e649744fb065585d82071cfc28059cea28d515af414e2d1dde0
+  languageName: node
+  linkType: hard
+
 "next-intl@npm:^3.23.5":
   version: 3.23.5
   resolution: "next-intl@npm:3.23.5"
@@ -10516,7 +10560,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-fetch@npm:^2.6.1, node-fetch@npm:^2.6.7, node-fetch@npm:^2.6.9":
+"node-fetch@npm:^2.6.1, node-fetch@npm:^2.6.7, node-fetch@npm:^2.6.9, node-fetch@npm:^2.7.0":
   version: 2.7.0
   resolution: "node-fetch@npm:2.7.0"
   dependencies:
@@ -11775,6 +11819,13 @@ __metadata:
   version: 2.3.0
   resolution: "punycode@npm:2.3.0"
   checksum: 10c0/8e6f7abdd3a6635820049e3731c623bbef3fedbf63bbc696b0d7237fdba4cefa069bc1fa62f2938b0fbae057550df7b5318f4a6bcece27f1907fc75c54160bee
+  languageName: node
+  linkType: hard
+
+"pure-rand@npm:^6.0.2":
+  version: 6.1.0
+  resolution: "pure-rand@npm:6.1.0"
+  checksum: 10c0/1abe217897bf74dcb3a0c9aba3555fe975023147b48db540aa2faf507aee91c03bf54f6aef0eb2bf59cc259a16d06b28eca37f0dc426d94f4692aeff02fb0e65
   languageName: node
   linkType: hard
 
