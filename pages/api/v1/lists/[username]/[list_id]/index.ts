@@ -228,7 +228,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
           return res.status(400).json({ error: 'List name cannot be a number' });
         }
 
-        slug = await createListSlug(name, user.id);
+        slug = await createListSlug(name, user.id, !!official);
       }
 
       await prisma.userList.update({
@@ -468,7 +468,7 @@ export const getList = async (
   if (listRaw.dynamicType) await syncDynamicList(listRaw.internal_id);
 
   if (!listRaw.slug) {
-    const slug = await createListSlug(listRaw.name, listRaw.user_id);
+    const slug = await createListSlug(listRaw.name, listRaw.user_id, listRaw.official);
     await prisma.userList.update({
       where: {
         internal_id: listRaw.internal_id,

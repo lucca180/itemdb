@@ -76,7 +76,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       return res.status(400).json({ error: 'List name cannot be a number' });
     }
 
-    const slug = await createListSlug(name, user.id);
+    const slug = await createListSlug(name, user.id, official);
 
     const list = await prisma.userList.create({
       data: {
@@ -274,13 +274,14 @@ export const CHECK_IMG_URL = (image_url: string) => {
   if (!image_url.match(/\.(jpeg|jpg|gif|png)$/)) throw 'Invalid image format';
 };
 
-export const createListSlug = async (name: string, userId: string) => {
+export const createListSlug = async (name: string, userId: string, isOfficial: boolean) => {
   let slug = slugify(name);
 
   const lists = await prisma.userList.findMany({
     where: {
       slug: slug,
-      user_id: userId,
+      user_id: !isOfficial ? userId : undefined,
+      official: isOfficial,
     },
   });
 
