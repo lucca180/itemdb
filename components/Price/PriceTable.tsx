@@ -52,8 +52,8 @@ const PriceTable = (props: Props) => {
 
       const date =
         list.seriesType === 'listCreation'
-          ? new Date(list.createdAt).toISOString().split('T')[0]
-          : new Date(list.itemInfo?.[0].addedAt ?? 0).toISOString().split('T')[0];
+          ? new Date(list.createdAt).toISOString()
+          : new Date(list.itemInfo?.[0].addedAt ?? 0).toISOString();
 
       sorted.push({
         marker: true,
