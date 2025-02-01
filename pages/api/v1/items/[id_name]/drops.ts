@@ -386,7 +386,6 @@ export const getItemDrops = async (
     });
 
   openableData.openings = confimedDrops.size;
-  console.log(openableData);
   return openableData;
 };
 
