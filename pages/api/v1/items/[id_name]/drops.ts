@@ -332,6 +332,8 @@ export const getItemDrops = async (
       (!openableData.isChoice || pool.name === 'le')
     )
       pool.isChance = true;
+
+    if (pool.isLE) openableData.hasLE = true;
   });
 
   openableData.minDrop =
@@ -348,6 +350,10 @@ export const getItemDrops = async (
   if (isGram) {
     openableData.minDrop = 1;
     openableData.maxDrop = 1;
+    Object.keys(openableData.pools).map((pool) => {
+      openableData.pools[pool].minDrop = 1;
+      openableData.pools[pool].maxDrop = 1;
+    });
   }
 
   Object.values(dropsData)
@@ -380,6 +386,7 @@ export const getItemDrops = async (
     });
 
   openableData.openings = confimedDrops.size;
+  console.log(openableData);
   return openableData;
 };
 

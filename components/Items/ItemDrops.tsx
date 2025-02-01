@@ -265,7 +265,7 @@ const DropText = ({ pool, itemOpenable, isFirst }: DropTextProps) => {
   const t = useTranslations();
   const isGram = itemOpenable.isGram;
 
-  if (!pool || !pool.isChance) {
+  if (!pool || !pool.isChance || (isGram && !pool.isLE)) {
     const openable = pool ?? itemOpenable;
     const poolName = pool ? (pool.isLE ? 'le' : pool.name) : 'unknown';
 
@@ -294,7 +294,7 @@ const DropText = ({ pool, itemOpenable, isFirst }: DropTextProps) => {
     );
   }
 
-  if (pool.isChance) {
+  if (pool.isChance && (!isGram || pool.isLE)) {
     if (pool.maxDrop > 1 && pool.maxDrop !== pool.minDrop)
       return (
         <>
