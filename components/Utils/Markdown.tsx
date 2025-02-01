@@ -10,7 +10,7 @@ export default function Markdown(props: MarkdownProps) {
   return (
     <MarkdownLib
       urlTransform={(url) => decodeURI(url)}
-      allowedElements={['a', 'b', 'i', 'p', 'span', 's', 'br']}
+      allowedElements={['a', 'b', 'i', 'p', 'span', 's', 'br', 'strong', 'em']}
       components={{
         a: (props) => {
           if (checkURL(props.href ?? ''))
