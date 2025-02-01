@@ -223,12 +223,12 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
       let slug = list.slug;
 
-      if (name && list.name !== name) {
-        if (/^\d+$/.test(name)) {
+      if ((name && list.name !== name) || list.official !== official) {
+        if (/^\d+$/.test(name ?? list.name)) {
           return res.status(400).json({ error: 'List name cannot be a number' });
         }
 
-        slug = await createListSlug(name, user.id, !!official);
+        slug = await createListSlug(name ?? list.name, user.id, !!official);
       }
 
       await prisma.userList.update({
