@@ -8,7 +8,8 @@ import {
 } from '@choc-ui/chakra-autocomplete';
 import axios from 'axios';
 import { ItemData, SearchResults } from '../../types';
-import { Image } from '@chakra-ui/react';
+import { Flex, Image } from '@chakra-ui/react';
+import { ItemCardBadge } from '../Items/ItemCard';
 
 type Props = {
   color?: string;
@@ -78,8 +79,13 @@ const ItemSelect = (props: Props) => {
               label={option.name}
               textTransform="capitalize"
             >
-              <Image src={option.image} boxSize="30px" mr="2" alt={option.description} />
-              {option.name}
+              <Flex alignItems={'center'}>
+                <Image src={option.image} boxSize="40px" mr="2" alt={option.description} />
+                <Flex flexFlow="column" alignItems={'flex-start'} justifyContent={'center'}>
+                  {option.name}
+                  <ItemCardBadge item={option} />
+                </Flex>
+              </Flex>
             </AutoCompleteItem>
           );
         })}
