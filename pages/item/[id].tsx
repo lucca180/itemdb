@@ -46,7 +46,6 @@ import NcMallCard from '../../components/Items/NCMallCard';
 import { getItemRecipes } from '../api/v1/items/[id_name]/recipes';
 import { NextPageWithLayout } from '../_app';
 import { getMMEData, isMME } from '../api/v1/items/[id_name]/mme';
-import MMECard from '../../components/Items/MMECard';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -69,6 +68,7 @@ const TradeCard = dynamic(() => import('../../components/Trades/TradeCard'));
 const ItemRestock = dynamic(() => import('../../components/Items/ItemRestockInfo'));
 const ItemPreview = dynamic(() => import('../../components/Items/ItemPreview'));
 const ItemRecipes = dynamic(() => import('../../components/Items/ItemRecipes'));
+const MMECard = dynamic(() => import('../../components/Items/MMECard'));
 
 type ItemPageProps = {
   item: ItemData;
