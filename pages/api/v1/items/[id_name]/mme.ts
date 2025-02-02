@@ -31,7 +31,6 @@ export const getMMEData = async (id_name: string | number): Promise<ItemMMEData 
 
   if (!isMME(item.name)) return null;
   const mmeName = item.name.match(mmeRegex)![0];
-  console.log('MME Name:', mmeName);
 
   const search = await doSearch(mmeName);
 
@@ -50,7 +49,6 @@ export const getMMEData = async (id_name: string | number): Promise<ItemMMEData 
     const trailName = mmeItem.name.match(/(?<=S\d)[a-z]/gim)?.[0];
     if (!trailName) {
       allTrails.push(mmeItem);
-      console.error('No trail name found for', mmeItem.name);
       continue;
     }
 
