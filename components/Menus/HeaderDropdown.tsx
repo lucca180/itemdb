@@ -7,6 +7,7 @@ import {
   Flex,
   useBoolean,
   Badge,
+  useMediaQuery,
 } from '@chakra-ui/react';
 import React from 'react';
 import NextLink from 'next/link';
@@ -23,6 +24,9 @@ type Props = {
 export const DropdownButton = (props: Props) => {
   const { label, href, children, bg } = props;
   const [isOpen, setIsOpen] = useBoolean();
+  const [isMobile] = useMediaQuery('(hover: none)', { fallback: false });
+
+  const shouldBeLink = !children || !isMobile;
 
   return (
     <Popover
@@ -36,9 +40,9 @@ export const DropdownButton = (props: Props) => {
         <Button
           size={{ base: 'xs', sm: 'sm' }}
           variant={isOpen ? undefined : 'ghost'}
-          as={NextLink}
-          prefetch={false}
-          href={href}
+          as={shouldBeLink ? NextLink : undefined}
+          prefetch={shouldBeLink ? false : undefined}
+          href={shouldBeLink ? href : undefined}
         >
           {label}
         </Button>
