@@ -89,7 +89,8 @@
     "faerie-festval-cta": "Encontre os melhores itens para doar no <Link>Guia do Festival das Fadas</Link>",
     "scheduled-maintenance": "Manutenção Programada",
     "tavi-alert": "Alguns preços podem estar bastante desatualizados devido às Buscas de Tavi. \n<Link>Saiba como ajudar</Link> ou use o Botão de Preço Errado :)",
-    "item-effects": "Efeitos de Itens"
+    "item-effects": "Efeitos de Itens",
+    "view-all-shops": "Ver Todas as Lojas"
   },
   "ItemPage": {
     "item-info": "Item Info",
