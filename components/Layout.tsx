@@ -114,7 +114,7 @@ const Layout = (props: Props) => {
           px={{ base: 2, md: 4 }}
           py={5}
         >
-          <Flex as={Link} href="/" flex={'0 0 auto'}>
+          <Flex as={Link} prefetch={false} href="/" flex={'0 0 auto'}>
             <Image
               as={NextImage}
               src={logo_icon}
@@ -153,6 +153,7 @@ const Layout = (props: Props) => {
           >
             <Button
               as={Link}
+              prefetch={false}
               href="/contribute"
               colorScheme="whiteAlpha"
               bg="gray.100"
@@ -204,10 +205,10 @@ const Layout = (props: Props) => {
                           : undefined
                       }
                     >
-                      <MenuItem as={Link} href={`/lists/${user.username}`}>
+                      <MenuItem as={Link} prefetch={false} href={`/lists/${user.username}`}>
                         {t('Layout.my-lists')}
                       </MenuItem>
-                      <MenuItem as={Link} href={`/contribute`}>
+                      <MenuItem as={Link} prefetch={false} href={`/contribute`}>
                         {t('Layout.how-to-contribute')}
                       </MenuItem>
                     </MenuGroup>
