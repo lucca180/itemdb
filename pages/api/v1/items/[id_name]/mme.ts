@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { getItem } from '.';
 import { doSearch } from '../../search';
 import { ItemData, ItemMMEData } from '../../../../../types';
+import { defaultFilters } from '../../../../../utils/parseFilters';
 
 const mmeRegex = /^(mini)?(MME)(\d+)/i;
 
@@ -32,7 +33,7 @@ export const getMMEData = async (id_name: string | number): Promise<ItemMMEData 
   if (!isMME(item.name)) return null;
   const mmeName = item.name.match(mmeRegex)![0];
 
-  const search = await doSearch(mmeName);
+  const search = await doSearch(mmeName, { ...defaultFilters, limit: 1000 });
 
   if (!search) return null;
   const mmeItems = search.content.filter((i) => i.name.match(mmeRegex)?.[0] === mmeName);
