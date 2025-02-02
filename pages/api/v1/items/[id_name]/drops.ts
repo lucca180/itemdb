@@ -392,7 +392,16 @@ export const getItemDrops = async (
 export const getItemParent = async (item_iid: number) => {
   const drops = await prisma.openableItems.findMany({
     where: {
-      item_iid: item_iid,
+      OR: [
+        {
+          item_iid: item_iid,
+        },
+        {
+          item: {
+            canonical_id: item_iid,
+          },
+        },
+      ],
       parent_item: {
         canOpen: {
           not: 'false',
