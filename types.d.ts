@@ -484,6 +484,16 @@ type ContributeWallData = {
   needVotes: number;
 };
 
+type ItemMMEData = {
+  name: string;
+  isMini: boolean;
+  initial: ItemData;
+  bonus: ItemData;
+  trails: {
+    [trailName: string]: ItemData[];
+  };
+};
+
 // ------- FEEDBACKS JSON -------- //
 export type Feedback = {
   feedback_id: number;

@@ -7,6 +7,7 @@ import {
   ItemData,
   ItemEffect,
   ItemLastSeen,
+  ItemMMEData,
   ItemOpenable,
   ItemRecipe,
   NCMallData,
@@ -44,6 +45,8 @@ import { getItemNCMall } from '../api/v1/items/[id_name]/ncmall';
 import NcMallCard from '../../components/Items/NCMallCard';
 import { getItemRecipes } from '../api/v1/items/[id_name]/recipes';
 import { NextPageWithLayout } from '../_app';
+import { getMMEData, isMME } from '../api/v1/items/[id_name]/mme';
+import MMECard from '../../components/Items/MMECard';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -82,6 +85,7 @@ type ItemPageProps = {
   wearableData: WearableData[] | null;
   ncMallData: NCMallData | null;
   itemRecipes: ItemRecipe[] | null;
+  mmeData: ItemMMEData | null;
   mainLayoutColor: string;
   messages: any;
 };
@@ -98,6 +102,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
     NPTrades: trades,
     itemEffects,
     itemRecipes,
+    mmeData,
   } = props;
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
@@ -308,6 +313,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
             {itemEffects.length > 0 && <ItemEffectsCard item={item} effects={itemEffects} />}
             {lists && <ItemOfficialLists item={item} lists={lists} />}
             {!!user && <ItemMyLists item={item} />}
+            {mmeData && <MMECard item={item} mmeData={mmeData} />}
             {itemRecipes && itemRecipes.length > 0 && (
               <ItemRecipes item={item} recipes={itemRecipes} />
             )}
@@ -388,6 +394,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     NCMallData,
     itemRecipes,
     colorRaw,
+    mmeData,
   ] = await Promise.all([
     getItemColor([item.image_id]), //0
     getItemLists(item.internal_id, true, false), // 1
@@ -405,6 +412,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     item.isNC ? getItemNCMall(item.internal_id) : null, // 11
     !item.isNC ? getItemRecipes(item.internal_id) : null, // 12
     import('color'), // 13
+    isMME(item.name) ? getMMEData(item.internal_id) : null, // 14
   ]);
 
   if (!colors) return { notFound: true };
@@ -426,6 +434,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     wearableData: wearableData,
     ncMallData: NCMallData,
     itemRecipes: itemRecipes,
+    mmeData: mmeData,
     mainLayoutColor: Color(item.color.hex).alpha(0.4).hexa(),
     messages: (await import(`../../translation/${context.locale}.json`)).default,
   };

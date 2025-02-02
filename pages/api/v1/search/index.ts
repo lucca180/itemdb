@@ -579,13 +579,13 @@ export async function doSearch(
           ? { value: null, addedAt: null, inflated: false }
           : {
               value: result.price ? result.price.toNumber() : null,
-              addedAt: result.priceAdded?.toJSON(),
+              addedAt: result.priceAdded?.toJSON() ?? null,
               inflated: !!result.noInflation_id,
             },
       owls: result.owlsValue
         ? {
             value: result.owlsValue,
-            pricedAt: result.owlsPriced,
+            pricedAt: result.owlsPriced.toJSON(),
             valueMin: result.owlsValueMin,
             buyable: result.owlsValue.toLowerCase().includes('buyable'),
           }
