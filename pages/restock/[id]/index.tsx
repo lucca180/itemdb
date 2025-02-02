@@ -42,6 +42,18 @@ const sortTypes = {
   item_id: 'General.restock-order',
 };
 
+const RESTOCK_FILTER = (shopInfo: ShopInfo): SearchFilters => ({
+  ...defaultFilters,
+  restockProfit: '1',
+  category: [shopIDToCategory[shopInfo.id]],
+  rarity: ['1', '99'],
+  limit: 3000,
+  sortBy: 'price',
+  sortDir: 'desc',
+  status: ['active'],
+  restockIncludeUnpriced: true,
+});
+
 type ItemFilter = {
   query?: string;
   minProfit: number;
@@ -71,17 +83,7 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
 
   const init = async () => {
     setLoading(true);
-    const filters: SearchFilters = {
-      ...defaultFilters,
-      restockProfit: '1',
-      category: [shopIDToCategory[shopInfo.id]],
-      rarity: ['1', '99'],
-      limit: 3000,
-      sortBy: 'price',
-      sortDir: 'desc',
-      status: ['active'],
-      restockIncludeUnpriced: true,
-    };
+    const filters = RESTOCK_FILTER(shopInfo);
 
     const res = await axios.get('/api/v1/search', {
       params: {
@@ -294,23 +296,21 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 
   if (Number(shopInfo.id) < 0) return { notFound: true };
 
-  const filters: SearchFilters = {
-    ...defaultFilters,
-    restockProfit: '5000',
-    category: [shopIDToCategory[shopInfo.id]],
-    rarity: ['1', '99'],
-    limit: 32,
-    sortBy: 'price',
-    sortDir: 'desc',
-    status: ['active'],
-    restockIncludeUnpriced: true,
-  };
+  const filters = RESTOCK_FILTER(shopInfo);
 
   const result = await doSearch('', filters, false);
 
+  const resultItems = result.content
+    .filter((item) => {
+      const profit = getRestockProfit(item);
+      return profit ? profit >= 5000 : true;
+    })
+    .sort((a, b) => sortItems(a, b, 'price', 'desc'))
+    .splice(0, 32);
+
   const props: RestockShopPageProps = {
     shopInfo: shopInfo,
-    initialItems: result.content,
+    initialItems: resultItems,
     messages: (await import(`../../../translation/${context.locale}.json`)).default,
     locale: context.locale ?? 'en',
   };
