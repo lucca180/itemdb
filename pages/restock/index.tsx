@@ -167,7 +167,7 @@ const RestockHub: NextPageWithLayout<any> = (props: RestockHubProps) => {
             </Heading>
             <Flex flexFlow="row" flexWrap="wrap" gap={3} justifyContent={'center'}>
               {trendingShops.map((shop) => (
-                <ShopCard key={shop.id} shop={shop} />
+                <ShopCard key={shop.id + '_trending'} shop={shop} />
               ))}
             </Flex>
           </>
