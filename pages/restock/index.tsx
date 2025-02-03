@@ -19,6 +19,8 @@ import NextLink from 'next/link';
 import { createTranslator, useTranslations } from 'next-intl';
 import { NextPageWithLayout } from '../_app';
 import Image from '../../components/Utils/Image';
+import { getTrendingShops } from '../api/v1/beta/trending';
+import { ShopInfo } from '../../types';
 
 const allCats = [
   ...new Set(
@@ -30,8 +32,13 @@ const allCats = [
 
 const color = Color('#A5DAE9').rgb().array();
 
-const RestockHub: NextPageWithLayout<any> = () => {
+type RestockHubProps = {
+  trendingShops: ShopInfo[];
+};
+
+const RestockHub: NextPageWithLayout<any> = (props: RestockHubProps) => {
   const t = useTranslations();
+  const { trendingShops } = props;
   const [selCats, setSelCats] = useState<string[]>([]);
   const [selDiff, setSelDiff] = useState<string[]>([]);
   const [specialDay, setSpecialDay] = useState('');
@@ -153,6 +160,18 @@ const RestockHub: NextPageWithLayout<any> = () => {
         </HStack>
       </HStack>
       <Flex flexFlow={'column'} flexWrap="wrap" gap={5} justifyContent="center">
+        {selCats.length === 0 && selDiff.length === 0 && (
+          <>
+            <Heading as="h2" size="lg">
+              {t('Restock.trending-shops')}
+            </Heading>
+            <Flex flexFlow="row" flexWrap="wrap" gap={3} justifyContent={'center'}>
+              {trendingShops.map((shop) => (
+                <ShopCard key={shop.id} shop={shop} />
+              ))}
+            </Flex>
+          </>
+        )}
         {(selCats.length > 0 ? selCats : allCats).map((cat) => {
           const shops = Object.values(restockShopInfo).filter(
             (x) =>
@@ -182,11 +201,15 @@ const RestockHub: NextPageWithLayout<any> = () => {
 export default RestockHub;
 
 export async function getStaticProps(context: any) {
+  const popularShops = await getTrendingShops(4);
+
   return {
     props: {
+      trendingShops: popularShops,
       messages: (await import(`../../translation/${context.locale}.json`)).default,
       locale: context.locale,
     },
+    revalidate: 24 * 60 * 60, // 24 hours
   };
 }
 

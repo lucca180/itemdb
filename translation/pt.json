@@ -838,7 +838,8 @@
     "hidden-tower": "Torre Oculta - 3% off",
     "ht-next-discount-day": "Preço do Dia de Desconto | Próximo em {x}",
     "discounted-price": "Dia de Desconto",
-    "random-event-price": "Preço Evento Aleatório"
+    "random-event-price": "Preço Evento Aleatório",
+    "trending-shops": "Lojas Populares"
   },
   "Search": {
     "search": "Pesquisa",

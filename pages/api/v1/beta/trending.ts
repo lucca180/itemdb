@@ -4,6 +4,7 @@ import prisma from '../../../../utils/prisma';
 import { UserList } from '../../../../types';
 import { rawToList } from '../lists/[username]';
 import { getClient } from '@umami/api-client';
+import { restockShopInfo, slugify } from '../../../../utils/utils';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -123,4 +124,40 @@ export const getTrendingLists = async (limit: number) => {
   );
 
   return sortedLists.slice(0, limit);
+};
+
+export const getTrendingShops = async (limit: number) => {
+  const statsRes = (await client.getWebsiteMetrics('df660da1-6f93-4dda-9da5-5028fb9db292', {
+    startAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).getTime(),
+    endAt: Date.now(),
+    type: 'url',
+    // @ts-expect-error missing type
+    search: 'restock/',
+    limit: limit * 2,
+  })) as WebsiteMetrics;
+
+  const popularShopsStats: any = {};
+
+  statsRes.data.map((pageData) => {
+    const slug = pageData.x.split('/').pop();
+    if (!slug || slug.includes('dashboard')) return;
+
+    popularShopsStats[slug] = {
+      slug: slug,
+      pageviews: pageData.y,
+    };
+  });
+
+  const shops = Object.values(restockShopInfo).filter(
+    (shop) => !!popularShopsStats[slugify(shop.name)]
+  );
+  console.log(statsRes.data);
+  const sorted = shops.sort((a, b) => {
+    const aPageViews = popularShopsStats[slugify(a.name)]?.pageviews ?? 0;
+    const bPageViews = popularShopsStats[slugify(b.name)]?.pageviews ?? 0;
+
+    return bPageViews - aPageViews;
+  });
+
+  return sorted.slice(0, limit);
 };

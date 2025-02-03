@@ -837,7 +837,8 @@
     "hidden-tower": "Hidden Tower - 3% off",
     "ht-next-discount-day": "Discount Day Price | Next at {x}",
     "discounted-price": "Discounted Price",
-    "random-event-price": "Random Event Price"
+    "random-event-price": "Random Event Price",
+    "trending-shops": "Trending Shops"
   },
   "Search": {
     "search": "Search",
