@@ -30,6 +30,7 @@ type PriceOrMarker = Partial<PriceData> & {
   color?: string;
   slug?: string;
   addedAt?: string;
+  markerType?: 'added-to' | 'available-at' | 'unavailable-at';
 };
 
 type Props = {
@@ -49,11 +50,27 @@ const PriceTable = (props: Props) => {
     lists?.map((list) => {
       if (!list.seriesType) return;
       const color = Color(list.colorHex ?? '#000');
+      let date = list.createdAt;
+      let markerType = 'added-to';
 
-      const date =
-        list.seriesType === 'listCreation'
-          ? new Date(list.createdAt).toISOString()
-          : new Date(list.itemInfo?.[0].addedAt ?? 0).toISOString();
+      if (list.seriesType === 'itemAddition' && list.itemInfo?.[0].addedAt)
+        date = list.itemInfo?.[0].addedAt;
+
+      if (list.seriesType === 'listDates' && list.seriesStart) {
+        date = list.seriesStart;
+        markerType = 'available-at';
+
+        if (list.seriesEnd) {
+          sorted.push({
+            marker: true,
+            title: list.name,
+            slug: list.slug ?? '',
+            addedAt: list.seriesEnd,
+            color: color.lightness(70).hex(),
+            markerType: 'unavailable-at',
+          });
+        }
+      }
 
       sorted.push({
         marker: true,
@@ -61,6 +78,7 @@ const PriceTable = (props: Props) => {
         slug: list.slug ?? '',
         addedAt: date,
         color: color.lightness(70).hex(),
+        markerType: markerType as 'added-to' | 'available-at' | 'unavailable-at',
       });
     });
 
@@ -136,11 +154,7 @@ const PriceItem = (
         <Td colSpan={1}>
           <Flex alignItems={'center'} gap={1}>
             <Icon as={MdLabel} color={price.color} />
-            <Text>
-              {t.rich('ItemPage.added-to', {
-                List: () => <></>,
-              })}
-            </Text>
+            <Text>{t('ItemPage.' + price.markerType)}</Text>
           </Flex>
         </Td>
         <Td textAlign={'center'} whiteSpace={'normal'}>

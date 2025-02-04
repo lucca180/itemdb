@@ -249,10 +249,12 @@
     "contribute-wall-2": "Depois disso, você poderá conferir esses dados para <b>todos os itens</b> pelas próximas <b>24 horas</b> antes de precisar fazer outra contribuição.",
     "latest-x-sold": "Últimos {x} Vendidos",
     "on-sale": "Promoção",
-    "added-to": "Adicionado em <List></List>",
+    "added-to": "Adicionado em",
     "mme-text": "Esse item faz parte de um <b>{isMini, select, true {Mini} other {}} Mysterious Morphing Experiments</b> ({name})",
     "mme-chance": "Você também tem <b>chances</b> de conseguir este item",
-    "mme-trail": "Trilha {x}"
+    "mme-trail": "Trilha {x}",
+    "available-at": "Disponível em",
+    "unavailable-at": "Indisponível em"
   },
   "Button": {
     "feedback": "Feedback",

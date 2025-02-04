@@ -262,7 +262,9 @@ export type UserList = {
 
   slug: string | null;
 
-  seriesType: 'listCreation' | 'itemAddition' | 'itemRemoval' | null;
+  seriesType: 'listCreation' | 'itemAddition' | 'listDates' | null;
+  seriesStart: string | null;
+  seriesEnd: string | null;
 };
 
 export type ObligatoryUserList = Required<Pick<UserList, 'itemInfo'>> & UserList;

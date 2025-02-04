@@ -248,10 +248,12 @@
     "contribute-wall-2": "After that, you will be able to check the this data, <b>for every item</b>, for the next <b>24 hours</b> before needing to make another contribution.",
     "latest-x-sold": "Latest {x} Sold",
     "on-sale": "On Sale",
-    "added-to": "Added to <List></List>",
+    "added-to": "Added to",
     "mme-text": "This item is part of a <b>{isMini, select, true {Mini} other {}} Mysterious Morphing Experiments</b> ({name})",
     "mme-chance": "You also have <b>a chance</b> of getting this item",
-    "mme-trail": "Trail {x}"
+    "mme-trail": "Trail {x}",
+    "available-at": "Available At",
+    "unavailable-at": "Unavailable At"
   },
   "Button": {
     "feedback": "Feedback",

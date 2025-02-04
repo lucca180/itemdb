@@ -60,7 +60,7 @@ const colorPickerStyles = {
 
 const CreateListModal = (props: CreateListModalProps) => {
   const t = useTranslations();
-  const { user, getIdToken } = useAuth();
+  const { user } = useAuth();
   const { isOpen, onClose } = props;
   const [isLoading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
@@ -71,7 +71,6 @@ const CreateListModal = (props: CreateListModalProps) => {
     setLoading(true);
     try {
       if (!user) return;
-      const token = await getIdToken();
 
       const data = {
         list_id: list.internal_id,
@@ -88,20 +87,16 @@ const CreateListModal = (props: CreateListModalProps) => {
           sortDir: list.sortDir,
         },
         seriesType: list.seriesType,
-      };
-
-      const configs = {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
+        seriesStart: list.seriesStart,
+        seriesEnd: list.seriesEnd,
       };
 
       const username = list.owner?.username ?? user.username;
 
       // if list exists then update, else create
       const res = await (props.list
-        ? axios.post(`/api/v1/lists/${username}/${list.internal_id}`, data, configs)
-        : axios.post(`/api/v1/lists/${username}`, data, configs));
+        ? axios.post(`/api/v1/lists/${username}/${list.internal_id}`, data)
+        : axios.post(`/api/v1/lists/${username}`, data));
 
       setLoading(false);
 
@@ -193,8 +188,34 @@ const CreateListModal = (props: CreateListModalProps) => {
                           <option value="none">None</option>
                           <option value="listCreation">List Creation</option>
                           <option value="itemAddition">Item Addition</option>
+                          <option value="listDates">Series Dates</option>
                         </Select>
                       </FormControl>
+                      {list.seriesType === 'listDates' && (
+                        <>
+                          <FormControl>
+                            <FormLabel color="gray.300">Series Start</FormLabel>
+                            <Input
+                              variant="filled"
+                              type="date"
+                              name="seriesStart"
+                              onChange={handleChange}
+                              value={list.seriesStart?.split('T')[0] ?? ''}
+                            />
+                          </FormControl>
+                          <FormControl>
+                            <FormLabel color="gray.300">Series End</FormLabel>
+                            <Input
+                              variant="filled"
+                              type="date"
+                              name="seriesEnd"
+                              onChange={handleChange}
+                              max={list.seriesStart || undefined}
+                              value={list.seriesEnd?.split('T')[0] ?? ''}
+                            />
+                          </FormControl>
+                        </>
+                      )}
                     </>
                   )}
                   <Divider />

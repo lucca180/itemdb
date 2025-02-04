@@ -5,6 +5,7 @@ import { CheckAuth } from '../../../../../../utils/googleCloud';
 import prisma from '../../../../../../utils/prisma';
 import { syncDynamicList } from './dynamic';
 import { SeriesType } from '@prisma/client';
+import { UTCDate } from '@date-fns/utc';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -187,6 +188,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       order,
       officialTag,
       seriesType,
+      seriesStart,
+      seriesEnd,
     } = req.body as {
       name?: string;
       description?: string;
@@ -199,6 +202,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       officialTag?: string;
       sortInfo?: { sortBy: string; sortDir: string };
       seriesType?: string;
+      seriesStart?: string;
+      seriesEnd?: string;
     };
 
     if (
@@ -212,7 +217,9 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       sortInfo ||
       order ||
       officialTag ||
-      seriesType
+      seriesType ||
+      seriesStart ||
+      seriesEnd
     ) {
       let colorHexVar = colorHex;
 
@@ -249,6 +256,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
           sortBy: sortInfo?.sortBy,
           sortDir: sortInfo?.sortDir,
           seriesType: seriesType === 'none' ? null : (seriesType as SeriesType),
+          seriesStart: seriesStart ? new UTCDate(new UTCDate(seriesStart).setHours(18)) : null,
+          seriesEnd: seriesEnd ? new UTCDate(new UTCDate(seriesEnd).setHours(18)) : null,
           slug: slug,
         },
       });

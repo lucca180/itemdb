@@ -429,6 +429,9 @@ model UserList {
 
   items ListItems[]
 
+  seriesStart DateTime?
+  seriesEnd   DateTime?
+
   @@unique([slug, user_id])
   @@fulltext([name])
   @@fulltext([description])
@@ -438,7 +441,7 @@ model UserList {
 enum SeriesType {
   listCreation
   itemAddition
-  itemRemoval
+  listDates
 }
 
 enum DynamicListType {

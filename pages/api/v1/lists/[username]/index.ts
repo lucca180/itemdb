@@ -341,6 +341,8 @@ export const rawToList = (
 
     slug: listRaw.slug,
     seriesType: listRaw.seriesType,
+    seriesStart: listRaw.seriesStart?.toJSON() ?? null,
+    seriesEnd: listRaw.seriesEnd?.toJSON() ?? null,
     itemInfo: !includeItems
       ? []
       : listRaw.items.map((item) => {

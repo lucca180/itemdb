@@ -83,10 +83,26 @@ const ChartComponent = (props: ChartComponentProps) => {
 
       const color = Color(list.colorHex ?? '#000');
 
-      const date =
-        list.seriesType === 'listCreation'
-          ? new Date(list.createdAt).toISOString().split('T')[0]
-          : new Date(list.itemInfo?.[0].addedAt ?? 0).toISOString().split('T')[0];
+      let date = list.createdAt;
+
+      if (list.seriesType === 'itemAddition' && list.itemInfo?.[0].addedAt)
+        date = list.itemInfo?.[0].addedAt;
+
+      if (list.seriesType === 'listDates' && list.seriesStart) {
+        date = list.seriesStart;
+
+        if (list.seriesEnd) {
+          const seriesEnd = new VertLine(chart, newSeries, list.seriesEnd.toString(), {
+            showLabel: !!showMarkerLabel,
+            labelText: `[End] ${list.name}`,
+            color: color.lightness(70).hex(),
+            labelTextColor: Color(color.lightness(70).hex()).isDark() ? 'white' : 'black',
+            labelBackgroundColor: color.lightness(70).hex(),
+          });
+
+          newSeries.attachPrimitive(seriesEnd);
+        }
+      }
 
       const vertLine = new VertLine(chart, newSeries, date.toString(), {
         showLabel: !!showMarkerLabel,
