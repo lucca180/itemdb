@@ -55,7 +55,13 @@ export const getItemLists = async (
     const item = list.items.find((item) => item.item_iid === id)!;
 
     newList.itemInfo = [
-      { ...item, addedAt: item.addedAt.toJSON(), updatedAt: item.updatedAt.toJSON() },
+      {
+        ...item,
+        addedAt: item.addedAt.toJSON(),
+        updatedAt: item.updatedAt.toJSON(),
+        seriesStart: item.seriesStart?.toJSON() ?? null,
+        seriesEnd: item.seriesEnd?.toJSON() ?? null,
+      },
     ];
 
     return newList;
