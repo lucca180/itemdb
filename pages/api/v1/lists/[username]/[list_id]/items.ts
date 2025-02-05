@@ -58,6 +58,8 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       order: item.order,
       isHighlight: item.isHighlight,
       isHidden: item.isHidden,
+      seriesStart: item.seriesStart?.toJSON() ?? null,
+      seriesEnd: item.seriesEnd?.toJSON() ?? null,
     }));
 
     if (isQueryEmpty) return res.status(200).json(itemInfo);

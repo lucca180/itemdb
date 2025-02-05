@@ -90,6 +90,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           ...item,
           addedAt: item.addedAt.toISOString(),
           updatedAt: item.updatedAt.toISOString(),
+          seriesStart: item.seriesStart?.toISOString() ?? null,
+          seriesEnd: item.seriesEnd?.toISOString() ?? null,
         }));
 
       return res.status(200).json(matchedItems);
@@ -128,7 +130,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     });
 
     const offererItemsSet = new Set(
-      offererLists.flatMap((list) => list.items.map((item) => item.item_iid)),
+      offererLists.flatMap((list) => list.items.map((item) => item.item_iid))
     );
 
     const listMatch: { [list_id: number]: ListItemInfo[] } = {};
@@ -137,7 +139,13 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       const x = list.items.filter((item) => offererItemsSet.has(item.item_iid));
 
       const match = x.map((item): ListItemInfo => {
-        return { ...item, addedAt: item.addedAt.toJSON(), updatedAt: item.updatedAt.toJSON() };
+        return {
+          ...item,
+          addedAt: item.addedAt.toJSON(),
+          updatedAt: item.updatedAt.toJSON(),
+          seriesStart: item.seriesStart?.toISOString() ?? null,
+          seriesEnd: item.seriesEnd?.toISOString() ?? null,
+        };
       });
 
       if (match.length > 0) listMatch[list.internal_id] = match;
