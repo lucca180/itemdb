@@ -478,6 +478,9 @@ model ListItems {
 
   isHidden Boolean @default(false)
 
+  seriesStart DateTime?
+  seriesEnd   DateTime?
+
   @@unique([list_id, item_iid])
 }
 

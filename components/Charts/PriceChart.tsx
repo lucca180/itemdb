@@ -89,16 +89,21 @@ const ChartComponent = (props: ChartComponentProps) => {
         date = list.itemInfo?.[0].addedAt;
 
       if (list.seriesType === 'listDates' && list.seriesStart) {
-        date = list.seriesStart;
+        date = list.itemInfo?.[0].seriesStart || list.seriesStart;
 
         if (list.seriesEnd) {
-          const seriesEnd = new VertLine(chart, newSeries, list.seriesEnd.toString(), {
-            showLabel: !!showMarkerLabel,
-            labelText: `[End] ${list.name}`,
-            color: color.lightness(70).hex(),
-            labelTextColor: Color(color.lightness(70).hex()).isDark() ? 'white' : 'black',
-            labelBackgroundColor: color.lightness(70).hex(),
-          });
+          const seriesEnd = new VertLine(
+            chart,
+            newSeries,
+            list.itemInfo?.[0].seriesEnd || list.seriesEnd.toString(),
+            {
+              showLabel: !!showMarkerLabel,
+              labelText: `[End] ${list.name}`,
+              color: color.lightness(70).hex(),
+              labelTextColor: Color(color.lightness(70).hex()).isDark() ? 'white' : 'black',
+              labelBackgroundColor: color.lightness(70).hex(),
+            }
+          );
 
           newSeries.attachPrimitive(seriesEnd);
         }

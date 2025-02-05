@@ -358,6 +358,8 @@ export const rawToList = (
             order: item.order,
             isHighlight: item.isHighlight,
             isHidden: item.isHidden,
+            seriesStart: item.seriesStart?.toJSON() ?? null,
+            seriesEnd: item.seriesEnd?.toJSON() ?? null,
           };
         }),
   };

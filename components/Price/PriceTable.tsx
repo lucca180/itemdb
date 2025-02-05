@@ -57,7 +57,7 @@ const PriceTable = (props: Props) => {
         date = list.itemInfo?.[0].addedAt;
 
       if (list.seriesType === 'listDates' && list.seriesStart) {
-        date = list.seriesStart;
+        date = list.itemInfo?.[0].seriesStart || list.seriesStart;
         markerType = 'available-at';
 
         if (list.seriesEnd) {
@@ -65,7 +65,7 @@ const PriceTable = (props: Props) => {
             marker: true,
             title: list.name,
             slug: list.slug ?? '',
-            addedAt: list.seriesEnd,
+            addedAt: list.itemInfo?.[0].seriesEnd || list.seriesEnd,
             color: color.lightness(70).hex(),
             markerType: 'unavailable-at',
           });

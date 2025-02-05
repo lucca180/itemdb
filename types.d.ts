@@ -281,6 +281,9 @@ export type ListItemInfo = {
   order: number | null;
   isHighlight: boolean;
   isHidden: boolean;
+
+  seriesStart: string | null;
+  seriesEnd: string | null;
 };
 
 export type Pallete = {
