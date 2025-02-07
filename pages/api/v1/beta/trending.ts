@@ -151,7 +151,7 @@ export const getTrendingShops = async (limit: number) => {
   const shops = Object.values(restockShopInfo).filter(
     (shop) => !!popularShopsStats[slugify(shop.name)]
   );
-  console.log(statsRes.data);
+
   const sorted = shops.sort((a, b) => {
     const aPageViews = popularShopsStats[slugify(a.name)]?.pageviews ?? 0;
     const bPageViews = popularShopsStats[slugify(b.name)]?.pageviews ?? 0;
