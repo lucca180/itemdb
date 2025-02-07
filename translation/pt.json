@@ -256,8 +256,9 @@
     "available-at": "Disponível em",
     "unavailable-at": "Indisponível em",
     "dyeworks-all-variants": "Todas as Variantes",
-    "dyeworks-is-variation": "Este item é uma variação <b>Dyeworks</b> de",
-    "dyeworks-x-variations": "Este item tem <b>{x} variações Dyeworks</b>"
+    "dyeworks-is-variation": "Este item é uma <b>variação Dyeworks</b>",
+    "dyeworks-x-variations": "Este item tem <b>{x} variações Dyeworks</b>",
+    "dyeworks-original-item": "Item Original"
   },
   "Button": {
     "feedback": "Feedback",

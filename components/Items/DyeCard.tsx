@@ -27,26 +27,39 @@ const DyeCard = (props: Props) => {
         flexFlow={'column'}
         justifyContent={'center'}
       >
-        {item.internal_id === dyeData.originalItem.internal_id && (
-          <Text>
-            {t.rich('ItemPage.dyeworks-x-variations', {
+        <Text>
+          {item.internal_id === dyeData.originalItem.internal_id &&
+            t.rich('ItemPage.dyeworks-x-variations', {
               x: dyeData.dyes.length,
               b: (c) => <b>{c}</b>,
             })}
-          </Text>
-        )}
-        {item.internal_id !== dyeData.originalItem.internal_id && (
-          <>
-            <Text>
-              {t.rich('ItemPage.dyeworks-is-variation', {
-                b: (c) => <b>{c}</b>,
-              })}
-            </Text>
-            <ItemCard item={dyeData.originalItem} small />
-          </>
-        )}
-        <Flex wrap="wrap" gap={2} alignItems="center" justifyContent={'center'}>
-          <Flex direction="column" gap={2} bg="blackAlpha.500" p={3} borderRadius={'md'}>
+          {item.internal_id !== dyeData.originalItem.internal_id &&
+            t.rich('ItemPage.dyeworks-is-variation', {
+              b: (c) => <b>{c}</b>,
+            })}
+        </Text>
+        <Flex wrap="wrap" gap={2} justifyContent={'center'}>
+          <Flex
+            direction="column"
+            gap={2}
+            justifyContent="center"
+            bg="blackAlpha.500"
+            p={3}
+            borderRadius={'md'}
+          >
+            <Text>{t('ItemPage.dyeworks-original-item')}</Text>
+            <Flex wrap="wrap" gap={2} justifyContent={'center'}>
+              <ItemCard key={dyeData.originalItem.internal_id} item={dyeData.originalItem} small />
+            </Flex>
+          </Flex>
+          <Flex
+            direction="column"
+            justifyContent="center"
+            gap={2}
+            bg="blackAlpha.500"
+            p={3}
+            borderRadius={'md'}
+          >
             <Text>{t('ItemPage.dyeworks-all-variants')}</Text>
             <Flex wrap="wrap" gap={2} justifyContent={'center'}>
               {dyeData.dyes.map((dye) => (
