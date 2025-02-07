@@ -18,22 +18,23 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 async function GET(req: NextApiRequest, res: NextApiResponse) {
-  const result = await getMMEData(req.query.id_name as string);
-
-  return res.status(200).json(result);
-}
-
-export const getMMEData = async (id_name: string | number): Promise<ItemMMEData | null> => {
+  const id_name = req.query.id_name as string;
   const internal_id = Number(id_name);
   const name = isNaN(internal_id) ? (id_name as string) : undefined;
 
   const item = await getItem(name ?? internal_id);
   if (!item) return null;
 
+  const result = await getMMEData(item);
+
+  return res.status(200).json(result);
+}
+
+export const getMMEData = async (item: ItemData): Promise<ItemMMEData | null> => {
   if (!isMME(item.name)) return null;
   const mmeName = item.name.match(mmeRegex)![0];
 
-  const search = await doSearch(mmeName, { ...defaultFilters, limit: 1000 });
+  const search = await doSearch(mmeName, { ...defaultFilters, limit: 1000 }, false);
 
   if (!search) return null;
   const mmeItems = search.content.filter((i) => i.name.match(mmeRegex)?.[0] === mmeName);

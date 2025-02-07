@@ -46,6 +46,7 @@ import NcMallCard from '../../components/Items/NCMallCard';
 import { getItemRecipes } from '../api/v1/items/[id_name]/recipes';
 import { NextPageWithLayout } from '../_app';
 import { getMMEData, isMME } from '../api/v1/items/[id_name]/mme';
+import { DyeworksData, getDyeworksData } from '../api/v1/items/[id_name]/dyeworks';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -69,6 +70,7 @@ const ItemRestock = dynamic(() => import('../../components/Items/ItemRestockInfo
 const ItemPreview = dynamic(() => import('../../components/Items/ItemPreview'));
 const ItemRecipes = dynamic(() => import('../../components/Items/ItemRecipes'));
 const MMECard = dynamic(() => import('../../components/Items/MMECard'));
+const DyeCard = dynamic(() => import('../../components/Items/DyeCard'));
 
 type ItemPageProps = {
   item: ItemData;
@@ -86,6 +88,7 @@ type ItemPageProps = {
   ncMallData: NCMallData | null;
   itemRecipes: ItemRecipe[] | null;
   mmeData: ItemMMEData | null;
+  dyeData: DyeworksData | null;
   mainLayoutColor: string;
   messages: any;
 };
@@ -103,6 +106,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
     itemEffects,
     itemRecipes,
     mmeData,
+    dyeData,
   } = props;
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
@@ -314,6 +318,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
             {lists && <ItemOfficialLists item={item} lists={lists} />}
             {!!user && <ItemMyLists item={item} />}
             {mmeData && <MMECard item={item} mmeData={mmeData} />}
+            {dyeData && <DyeCard item={item} dyeData={dyeData} />}
             {itemRecipes && itemRecipes.length > 0 && (
               <ItemRecipes item={item} recipes={itemRecipes} />
             )}
@@ -395,10 +400,11 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     itemRecipes,
     colorRaw,
     mmeData,
+    dyeData,
   ] = await Promise.all([
     getItemColor([item.image_id]), //0
     getItemLists(item.internal_id, true, false), // 1
-    getSimilarItems(item.internal_id.toString()), // 2
+    getSimilarItems(item), // 2
     item.isNC ? getItemLists(item.internal_id, false, false) : [], // 3
     item.useTypes.canOpen !== 'false' ? getItemDrops(item.internal_id, item.isNC) : null, // 4
     getItemParent(item.internal_id), // 5
@@ -412,7 +418,8 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     item.isNC ? getItemNCMall(item.internal_id) : null, // 11
     !item.isNC ? getItemRecipes(item.internal_id) : null, // 12
     import('color'), // 13
-    isMME(item.name) ? getMMEData(item.internal_id) : null, // 14
+    isMME(item.name) ? getMMEData(item) : null, // 14
+    item.isNC && item.isWearable ? getDyeworksData(item) : null, // 15
   ]);
 
   if (!colors) return { notFound: true };
@@ -435,6 +442,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     ncMallData: NCMallData,
     itemRecipes: itemRecipes,
     mmeData: mmeData,
+    dyeData: dyeData,
     mainLayoutColor: Color(item.color.hex).alpha(0.4).hexa(),
     messages: (await import(`../../translation/${context.locale}.json`)).default,
   };

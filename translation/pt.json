@@ -254,7 +254,10 @@
     "mme-chance": "Você também tem <b>chances</b> de conseguir este item",
     "mme-trail": "Trilha {x}",
     "available-at": "Disponível em",
-    "unavailable-at": "Indisponível em"
+    "unavailable-at": "Indisponível em",
+    "dyeworks-all-variants": "Todas as Variantes",
+    "dyeworks-is-variation": "Este item é uma variação <b>Dyeworks</b> de",
+    "dyeworks-x-variations": "Este item tem <b>{x} variações Dyeworks</b>"
   },
   "Button": {
     "feedback": "Feedback",
