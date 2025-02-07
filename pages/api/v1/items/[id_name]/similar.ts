@@ -45,7 +45,7 @@ export const getSimilarItems = async (item: ItemData, limit = 4) => {
       !(
         i.name.toLowerCase().includes(notDyeworksName.toLowerCase()) &&
         i.name.toLowerCase().includes('dyeworks')
-      ) && i.name !== notDyeworksName
+      ) && (item.name !== notDyeworksName ? i.name !== notDyeworksName : true)
   );
 
   const sortedItems = allItems.sort(
