@@ -7,6 +7,9 @@ import CardBase from '../Card/CardBase';
 import ItemCard from './ItemCard';
 import NextLink from 'next/link';
 import { useTranslations } from 'next-intl';
+import dynamic from 'next/dynamic';
+
+const OldPoolDrops = dynamic(() => import('../Utils/OldPoolDrops'));
 
 type Props = {
   item: ItemData;
@@ -24,8 +27,10 @@ const ItemDrops = (props: Props) => {
   const color = item.color.rgb;
   const pools = itemOpenable.pools;
   const itemDrops = itemOpenable.drops;
-  const multiplePools = Object.keys(pools).length > 1;
+  const multiplePools = Object.keys(pools).filter((a) => !a.includes('old-')).length > 1;
   const isChoice = itemOpenable.isChoice;
+
+  const hasOldPool = Object.keys(pools).some((a) => a.includes('old-'));
 
   const poolsArr = useMemo(
     () => Object.values(pools).sort((a, b) => (a.isLE ? -1 : a.name.localeCompare(b.name))),
@@ -74,131 +79,43 @@ const ItemDrops = (props: Props) => {
           <DropText pool={null} itemOpenable={itemOpenable} />
         </Text>
       )}
-      {/* {bonusPool && bonusPool.items.length > 0 && (
-        <>
-          <Alert status="success" variant="subtle" textAlign={'center'}>
-            <Text textAlign={'center'} fontSize="sm" flex="1">
-              <DropText pool={bonusPool} itemOpenable={itemOpenable} />
-            </Text>
-          </Alert>
-          <Flex gap={3} wrap="wrap" justifyContent="center" my={3}>
-            {bonusPool.items
-              .map((a) => itemDrops[a])
-              .sort((a, b) => b.dropRate - a.dropRate)
-              .map((drop) => {
-                const item = dropData.find((a) => drop.item_iid === a.internal_id);
-                if (!item) return null;
-                return (
-                  <ItemCard
-                    disablePrefetch
-                    key={item.internal_id}
-                    item={item}
-                    small
-                    odds={drop.dropRate}
-                    isLE={drop.isLE}
-                  />
-                );
-              })}
-          </Flex>
-        </>
-      )} */}
+
       {poolsArr
-        .filter((a) => !['unknown'].includes(a.name))
+        .filter((a) => !['unknown'].includes(a.name) && !a.name.includes('old-'))
         .map((pool, i) => (
-          <Flex alignItems="center" key={pool.name} flexFlow="column" mb={3}>
-            {isChoice && !pool.isLE && getCatImage(pool.name, item.internal_id)}
-            {(pool.name === 'bonus' || pool.isLE) && (
-              <Alert status="success" variant="subtle" textAlign={'center'} mb={3}>
-                <Text textAlign={'center'} fontSize="sm" flex="1">
-                  <DropText pool={pool} itemOpenable={itemOpenable} />
-                </Text>
-              </Alert>
-            )}
-            {!isChoice && pool.name !== 'bonus' && !pool.isLE && (
-              <Text textAlign={'center'} fontSize="sm" flex="1" mb={3}>
-                <DropText pool={pool} itemOpenable={itemOpenable} isFirst={i === 0} />
-              </Text>
-            )}
-            <Flex gap={3} wrap="wrap" justifyContent="center">
-              {pool.items
-                .map((a) => itemDrops[a])
-                .sort((a, b) => b.dropRate - a.dropRate)
-                .map((drop) => {
-                  const item = dropData.find((a) => drop.item_iid === a.internal_id);
-                  if (!item) return null;
-                  return (
-                    <ItemCard
-                      key={item.internal_id}
-                      item={item}
-                      disablePrefetch
-                      small
-                      odds={drop.dropRate}
-                      isLE={drop.isLE}
-                    />
-                  );
-                })}
-            </Flex>
-            {isChoice && !pool.isLE && (
-              <Text textAlign={'center'} mt={4} fontSize="xs" color="gray.300">
-                {t.rich('Drops.pool-opening-reports', {
-                  b: (text) => <b>{text}</b>,
-                  openings: pool.openings,
-                  Link: (text) => (
-                    <Link as={NextLink} href="/contribute" color="gray.400">
-                      {text}
-                    </Link>
-                  ),
-                })}
-              </Text>
-            )}
-          </Flex>
+          <DropPool
+            key={pool.name}
+            pool={pool}
+            itemOpenable={itemOpenable}
+            item={item}
+            dropData={dropData}
+            isFirst={i === 0}
+            forceOddsText={hasOldPool}
+          />
         ))}
 
       {pools['unknown'] && (
-        <>
-          {multiplePools && isChoice && (
-            <>
-              {' '}
-              <Center>
-                <Badge fontSize="md">{t('Drops.unknown-categories')}</Badge>
-              </Center>
-              <Text textAlign={'center'} my={3} fontSize="xs" color="gray.300">
-                {t('Drops.unknown-text')}
-              </Text>
-            </>
-          )}
-          {!isChoice &&
-            (pools['unknown'].minDrop > 0 || pools['unknown'].maxDrop > 1 || multiplePools) && (
-              <Text textAlign={'center'} mb={3} fontSize="sm" color="gray.200">
-                <DropText
-                  pool={pools['unknown']}
-                  itemOpenable={itemOpenable}
-                  isFirst={!multiplePools}
-                />
-              </Text>
-            )}
-          <Flex gap={3} wrap="wrap" justifyContent="center">
-            {pools['unknown'].items
-              .map((a) => itemDrops[a])
-              .sort((a, b) => b.dropRate - a.dropRate)
-              .map((drop) => {
-                const item = dropData.find((a) => drop.item_iid === a.internal_id);
-                if (!item) return null;
-                return (
-                  <ItemCard
-                    key={item.internal_id}
-                    disablePrefetch
-                    item={item}
-                    small
-                    odds={multiplePools && isChoice ? undefined : drop.dropRate ?? undefined}
-                    isLE={drop.isLE}
-                  />
-                );
-              })}
-          </Flex>
-        </>
+        <DropPool
+          pool={pools['unknown']}
+          itemOpenable={itemOpenable}
+          item={item}
+          dropData={dropData}
+          hasMultiplePools={multiplePools}
+          isFirst={!multiplePools}
+          forceOddsText={hasOldPool}
+        />
       )}
-      {!isChoice && !!itemOpenable.openings && (
+
+      {hasOldPool && (
+        <OldPoolDrops
+          pools={poolsArr.filter((a) => a.name.includes('old-'))}
+          itemOpenable={itemOpenable}
+          item={item}
+          dropData={dropData}
+        />
+      )}
+
+      {!isChoice && !!itemOpenable.openings && !hasOldPool && (
         <Text textAlign={'center'} mt={4} fontSize="xs" color="gray.300">
           {t.rich('Drops.item-opening-reports', {
             openings: itemOpenable.openings,
@@ -217,7 +134,15 @@ const ItemDrops = (props: Props) => {
 
 export default ItemDrops;
 
-const getCatImage = (cat: string, item_iid: number) => {
+type CatImageProps = {
+  cat: string;
+  item_iid: number;
+};
+
+const CatImage = (props: CatImageProps) => {
+  const { cat, item_iid } = props;
+  const t = useTranslations();
+
   let url = '';
 
   if (cat === 'trinkets') url = `https://images.neopets.com/ncmall/buttons/bg_${cat}.png`;
@@ -240,6 +165,18 @@ const getCatImage = (cat: string, item_iid: number) => {
 
     if (cat.toLowerCase() === 'cat3') url = '2013-2014';
   }
+
+  if (cat === 'unknown')
+    return (
+      <>
+        <Center>
+          <Badge fontSize="md">{t('Drops.unknown-categories')}</Badge>
+        </Center>
+        <Text textAlign={'center'} my={3} fontSize="xs" color="gray.300">
+          {t('Drops.unknown-text')}
+        </Text>
+      </>
+    );
 
   if (url)
     return (
@@ -325,4 +262,71 @@ const DropText = ({ pool, itemOpenable, isFirst }: DropTextProps) => {
   }
 
   return null;
+};
+
+type DropPoolProps = {
+  pool: PrizePoolData;
+  itemOpenable: ItemOpenable;
+  item: ItemData;
+  dropData: ItemData[];
+  isFirst?: boolean;
+  forceOddsText?: boolean;
+  hasMultiplePools?: boolean;
+};
+
+export const DropPool = (props: DropPoolProps) => {
+  const { pool, itemOpenable, item, dropData, isFirst, forceOddsText } = props;
+  const isChoice = itemOpenable.isChoice;
+  const itemDrops = itemOpenable.drops;
+  const t = useTranslations();
+  console.log(pool.name, isFirst, forceOddsText);
+  return (
+    <Flex alignItems="center" key={pool.name} flexFlow="column" mb={3}>
+      {isChoice && !pool.isLE && <CatImage cat={pool.name} item_iid={item.internal_id} />}
+      {(pool.name === 'bonus' || pool.isLE) && (
+        <Alert status="success" variant="subtle" textAlign={'center'} mb={3}>
+          <Text textAlign={'center'} fontSize="sm" flex="1">
+            <DropText pool={pool} itemOpenable={itemOpenable} />
+          </Text>
+        </Alert>
+      )}
+      {!isChoice && pool.name !== 'bonus' && !pool.isLE && (
+        <Text textAlign={'center'} fontSize="sm" flex="1" mb={3}>
+          <DropText pool={pool} itemOpenable={itemOpenable} isFirst={isFirst} />
+        </Text>
+      )}
+      <Flex gap={3} wrap="wrap" justifyContent="center">
+        {pool.items
+          .map((a) => itemDrops[a])
+          .sort((a, b) => b.dropRate - a.dropRate)
+          .map((drop) => {
+            const item = dropData.find((a) => drop.item_iid === a.internal_id);
+            if (!item) return null;
+            return (
+              <ItemCard
+                key={item.internal_id}
+                item={item}
+                disablePrefetch
+                small
+                odds={drop.dropRate}
+                isLE={drop.isLE}
+              />
+            );
+          })}
+      </Flex>
+      {((isChoice && !pool.isLE) || forceOddsText) && (
+        <Text textAlign={'center'} mt={4} fontSize="xs" color="gray.300">
+          {t.rich('Drops.pool-opening-reports', {
+            b: (text) => <b>{text}</b>,
+            openings: pool.openings,
+            Link: (text) => (
+              <Link as={NextLink} href="/contribute" color="gray.400">
+                {text}
+              </Link>
+            ),
+          })}
+        </Text>
+      )}
+    </Flex>
+  );
 };

@@ -257,7 +257,8 @@
     "dyeworks-x-variations": "This item have <b>{x} Dyeworks</b> variations",
     "dyeworks-is-variation": "This item is a <b>Dyeworks variation</b>",
     "dyeworks-all-variants": "All Variants",
-    "dyeworks-original-item": "Original Item"
+    "dyeworks-original-item": "Original Item",
+    "old-pool-x": "Old Pool {x}"
   },
   "Button": {
     "feedback": "Feedback",

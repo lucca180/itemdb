@@ -132,7 +132,7 @@ export const getItemDrops = async (
   });
 
   const openingCount = Object.keys(openingSet).length;
-
+  let activePoolOpenings = openingCount;
   if (openingCount < 5 && !hasManual) return null;
 
   const manualItems: number[] = [];
@@ -226,6 +226,10 @@ export const getItemDrops = async (
     isChoice: isChoice,
     isGram: isGram,
   };
+
+  activePoolOpenings = Object.values(prizePools)
+    .filter((p) => !p.name.includes('old-'))
+    .reduce((a, b) => a + b.openings, 0);
 
   const zoneData = isZoneCat
     ? await prisma.wearableData.findMany({
@@ -328,7 +332,7 @@ export const getItemDrops = async (
 
     if (
       !pool.isChance &&
-      pool.openings / openingCount <= 0.9 &&
+      pool.openings / activePoolOpenings <= 0.9 &&
       (!openableData.isChoice || pool.name === 'le')
     )
       pool.isChance = true;
