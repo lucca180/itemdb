@@ -279,7 +279,7 @@ export const DropPool = (props: DropPoolProps) => {
   const isChoice = itemOpenable.isChoice;
   const itemDrops = itemOpenable.drops;
   const t = useTranslations();
-  console.log(pool.name, isFirst, forceOddsText);
+
   return (
     <Flex alignItems="center" key={pool.name} flexFlow="column" mb={3}>
       {isChoice && !pool.isLE && <CatImage cat={pool.name} item_iid={item.internal_id} />}
