@@ -59,13 +59,13 @@ export const getItemRecipes = async (iid: number) => {
   for (const recipe of recipes) {
     const target = itemData[recipe.result_iid];
     if (!target) {
-      console.log('missing target item', recipe.result_iid);
+      console.warn('missing target item', recipe.result_iid);
       continue;
     }
 
     const ingredientItems = recipe.ingredients.map((ingredient) => {
       if (!itemData[ingredient.item_iid]) {
-        console.log('missing ingredient item', ingredient.item_iid);
+        console.warn('missing ingredient item', ingredient.item_iid);
         return null;
       }
 
@@ -73,7 +73,7 @@ export const getItemRecipes = async (iid: number) => {
     });
 
     if (ingredientItems.some((x) => !x)) {
-      console.log('missing item data', recipe.result_iid, recipe.ingredients);
+      console.warn('missing item data', recipe.result_iid, recipe.ingredients);
       continue;
     }
 

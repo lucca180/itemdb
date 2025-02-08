@@ -67,11 +67,11 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
       setSoldData(res.data);
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.log(error);
+        console.error(error);
 
         if (error.response?.status === 403) {
           setWall(error.response?.data);
-          console.log(error.response?.data);
+          console.error(error.response?.data);
         }
       }
     }

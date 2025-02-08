@@ -21,7 +21,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       url: isDev ? 'http://localhost:3000/login' : 'https://itemdb.com.br/login',
     });
 
-    if (isDev) console.log(actionLink);
+    if (isDev) console.warn(actionLink);
 
     const template = await ejs.renderFile('utils/views/signinLink.ejs', {
       actionLink,

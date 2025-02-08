@@ -60,7 +60,7 @@ const LinkedListModal = (props: LinkedListModalProps) => {
       });
       onClose();
     } catch (e) {
-      console.log(e);
+      console.error(e);
       setError(true);
     }
   };

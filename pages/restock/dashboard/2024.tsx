@@ -629,7 +629,7 @@ export async function getServerSideProps(context: any) {
     };
   } catch (e) {
     if (typeof e !== 'string') {
-      console.log(e);
+      console.error(e);
     }
 
     return {

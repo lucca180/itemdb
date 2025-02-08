@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { NextApiRequest, NextApiResponse } from 'next';
 import { CheckAuth } from '../../../../utils/googleCloud';
 import { ItemPriceData, RestockSession, RestockStats, User } from '../../../../types';

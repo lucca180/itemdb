@@ -135,7 +135,7 @@ export const applyCanonicalTrade = async (id: string) => {
       updatedItems[canonicalItem.order].price = canonicalItem.price;
     }
 
-    if (i % 10 === 0) console.log(`Processed ${i} of ${allTrades.length} trades`);
+    if (i % 10 === 0) console.warn(`Processed ${i} of ${allTrades.length} trades`);
     if (skip) continue;
 
     await processTradePrice({

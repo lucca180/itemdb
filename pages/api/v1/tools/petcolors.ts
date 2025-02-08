@@ -169,7 +169,6 @@ export const checkPetColorExists = async (colorTargetId: number, speciesTargetId
 
     if (!exists) {
       try {
-        console.log('DTI FETCHING');
         const x = await axios.get(
           `https://impress.openneo.net/species/${speciesTargetId}/colors/${colorTargetId}/pet_type.json`,
           {

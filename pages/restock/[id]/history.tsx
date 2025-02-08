@@ -52,11 +52,11 @@ const RestockHistory = (props: RestockHistoryPageProps) => {
       setRestockData(sortRestock(res.data, sortMode));
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.log(error);
+        console.error(error);
 
         if (error.response?.status === 403) {
           setWall(error.response?.data);
-          console.log(error.response?.data);
+          console.error(error.response?.data);
         }
       }
     }
