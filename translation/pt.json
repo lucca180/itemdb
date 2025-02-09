@@ -90,7 +90,8 @@
     "scheduled-maintenance": "Manutenção Programada",
     "tavi-alert": "Alguns preços podem estar bastante desatualizados devido às Buscas de Tavi. \n<Link>Saiba como ajudar</Link> ou use o Botão de Preço Errado :)",
     "item-effects": "Efeitos de Itens",
-    "view-all-shops": "Ver Todas as Lojas"
+    "view-all-shops": "Ver Todas as Lojas",
+    "report-your-nc-trades": "Reporte Suas Trocas NC"
   },
   "ItemPage": {
     "item-info": "Item Info",
@@ -260,7 +261,8 @@
     "dyeworks-x-variations": "Este item tem <b>{x} variações Dyeworks</b>",
     "dyeworks-original-item": "Item Original",
     "old-pool-x": "Prêmios Antigos {x}",
-    "add-x": "Adicionar \"{x}\""
+    "add-x": "Adicionar \"{x}\"",
+    "report-your-nc-trades": "Reporte suas Trocas NC"
   },
   "Button": {
     "feedback": "Feedback",

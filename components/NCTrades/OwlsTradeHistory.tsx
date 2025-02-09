@@ -11,6 +11,7 @@ import {
   UnorderedList,
   Center,
   Link,
+  Button,
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import { OwlsTrade, ItemData } from '../../types';
@@ -37,10 +38,13 @@ const OwlsTradeHistory = (props: Props) => {
 
   if (!tradeHistory.length)
     return (
-      <Center flexFlow="column">
+      <Center flexFlow="column" gap={2}>
         <Text fontSize="sm" opacity="0.75">
           {t('ItemPage.no-trade-history')}.
         </Text>
+        <Button as={NextLink} prefetch={false} href="/owls/report" size={'xs'}>
+          {t('ItemPage.report-your-nc-trades')}
+        </Button>
         <Text fontSize="xs" color="whiteAlpha.600">
           {t.rich('ItemPage.owls-credits', {
             Link: (chunk) => (
@@ -58,11 +62,14 @@ const OwlsTradeHistory = (props: Props) => {
       {tradeHistory.map((trade, i) => (
         <OwlsTradeCard key={i} trade={trade} item={item} />
       ))}
-      <Center>
+      <Center flexFlow="column" gap={3}>
+        <Button as={NextLink} prefetch={false} href="/owls/report" size={'xs'}>
+          {t('ItemPage.report-your-nc-trades')}
+        </Button>
         <Text fontSize="xs" color="whiteAlpha.600">
           {t.rich('ItemPage.owls-credits', {
             Link: (chunk) => (
-              <Link href="/articles/owls" as={NextLink} color="whiteAlpha.700" isExternal>
+              <Link href="/owls" as={NextLink} color="whiteAlpha.700" isExternal>
                 {chunk}
               </Link>
             ),

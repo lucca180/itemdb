@@ -89,7 +89,8 @@
     "scheduled-maintenance": "Scheduled Maintenance",
     "tavi-alert": "Some prices might be wildly outdated due to Tavi's Quests. <Link>Learn how to help</Link> or use the Wrong Price Button :)",
     "item-effects": "Item Effects",
-    "view-all-shops": "View All Shops"
+    "view-all-shops": "View All Shops",
+    "report-your-nc-trades": "Report Your NC Trades"
   },
   "ItemPage": {
     "item-info": "Item Info",
@@ -259,7 +260,8 @@
     "dyeworks-all-variants": "All Variants",
     "dyeworks-original-item": "Original Item",
     "old-pool-x": "Old Pool {x}",
-    "add-x": "Add \"{x}\""
+    "add-x": "Add \"{x}\"",
+    "report-your-nc-trades": "Report your NC Trades"
   },
   "Button": {
     "feedback": "Feedback",
