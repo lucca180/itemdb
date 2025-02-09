@@ -83,7 +83,7 @@ const OwlsReportPage = (props: OwlsReportPageProps) => {
 
   const handleAddItem = (result: ItemData | string) => {
     const item = typeof result === 'string' ? undefined : result;
-    const itemData = typeof result === 'string' ? result : result?.name;
+    const itemData = typeof result === 'string' ? result.trim() : result?.name;
     setHasError(false);
     let type = 'offered';
     if (activeStep === 1) type = 'received';
@@ -285,7 +285,7 @@ const OwlsReportPage = (props: OwlsReportPageProps) => {
                   <Flex my={3} gap={3} flexWrap={'wrap'} justifyContent={'center'}>
                     {(activeStep === 0 ? offered : received).map((item, index) => (
                       <Flex
-                        w="370px"
+                        w={{ base: 'auto', md: '370px' }}
                         key={item.itemName + '_offered'}
                         alignItems={'center'}
                         bg="whiteAlpha.200"
@@ -299,6 +299,7 @@ const OwlsReportPage = (props: OwlsReportPageProps) => {
                           alignItems={'center'}
                           justifyContent={'center'}
                           gap={2}
+                          minW="80px"
                         >
                           <Image
                             src={item.item?.image ?? icon}
@@ -372,6 +373,7 @@ const OwlsReportPage = (props: OwlsReportPageProps) => {
                     placeholder={t('Owls.add-item')}
                     searchFilter={{ type: ['nc'] }}
                     onChange={handleAddItem}
+                    limit={20}
                   />
                 </>
               )}

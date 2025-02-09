@@ -11,6 +11,7 @@ import axios from 'axios';
 import { ItemData, SearchFilters, SearchResults } from '../../types';
 import { Flex, Image } from '@chakra-ui/react';
 import { ItemCardBadge } from '../Items/ItemCard';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   color?: string;
@@ -19,11 +20,13 @@ type Props = {
   onChange?: (item: ItemData) => void;
   searchFilter?: Partial<SearchFilters>;
   creatable?: boolean;
+  limit?: number;
 };
 
 const ItemSelect = (props: Props) => {
+  const t = useTranslations();
   const [query, setQuery] = React.useState('');
-  const { onChange, color, creatable } = props;
+  const { onChange, color, creatable, limit } = props;
   const [items, setItems] = React.useState<ItemData[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
 
@@ -40,7 +43,7 @@ const ItemSelect = (props: Props) => {
     const res = await axios.get('/api/v1/search', {
       params: {
         ...props.searchFilter,
-        limit: 5,
+        limit: limit || 5,
         skipStats: true,
         s: query,
         sortBy: 'match',
@@ -75,7 +78,7 @@ const ItemSelect = (props: Props) => {
         textTransform="capitalize"
         _hover={{ bg: 'whiteAlpha.100' }}
       />
-      <AutoCompleteList>
+      <AutoCompleteList boxShadow={'lg'}>
         {items.map((option) => (
           <AutoCompleteItem
             key={`option-${option.internal_id}`}
@@ -85,7 +88,13 @@ const ItemSelect = (props: Props) => {
           >
             <Flex alignItems={'center'}>
               <Image src={option.image} boxSize="40px" mr="2" alt={option.description} />
-              <Flex flexFlow="column" alignItems={'flex-start'} justifyContent={'center'}>
+              <Flex
+                flexFlow="column"
+                alignItems={'flex-start'}
+                justifyContent={'center'}
+                textAlign={'left'}
+                fontSize={{ base: 'sm', md: 'md' }}
+              >
                 {option.name}
                 <ItemCardBadge item={option} />
               </Flex>
@@ -93,7 +102,9 @@ const ItemSelect = (props: Props) => {
           </AutoCompleteItem>
         ))}
         {creatable && (
-          <AutoCompleteCreatable>{({ value }) => <span>Add {value}</span>}</AutoCompleteCreatable>
+          <AutoCompleteCreatable>
+            {({ value }) => <span>{t('ItemPage.add-x', { x: value })}</span>}
+          </AutoCompleteCreatable>
         )}
       </AutoCompleteList>
     </AutoComplete>

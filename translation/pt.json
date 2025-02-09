@@ -259,7 +259,8 @@
     "dyeworks-is-variation": "Este item é uma <b>variação Dyeworks</b>",
     "dyeworks-x-variations": "Este item tem <b>{x} variações Dyeworks</b>",
     "dyeworks-original-item": "Item Original",
-    "old-pool-x": "Prêmios Antigos {x}"
+    "old-pool-x": "Prêmios Antigos {x}",
+    "add-x": "Adicionar \"{x}\""
   },
   "Button": {
     "feedback": "Feedback",
