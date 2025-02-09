@@ -4,6 +4,8 @@ import { ItemAuctionData, ItemRestockData, TradeData } from '../../../../../type
 import prisma from '../../../../../utils/prisma';
 import { getManyItems } from '../many';
 
+const OWLS_URL = process.env.OWLS_API_URL;
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Methods', 'GET');
@@ -147,9 +149,7 @@ const getAuctionData = async (name: string) => {
 
 const getOwlsTradeData = async (name: string) => {
   try {
-    const res = await axios.get(
-      'https://neo-owls.net/itemdata/profile/' + encodeURIComponent(name)
-    );
+    const res = await axios.get(OWLS_URL + '/itemdata/profile/' + encodeURIComponent(name));
 
     if (res.data?.trade_reports) return res.data.trade_reports;
     else return [];

@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react';
 import {
   AutoComplete,
+  AutoCompleteCreatable,
   AutoCompleteInput,
   AutoCompleteItem,
   AutoCompleteList,
   Item,
 } from '@choc-ui/chakra-autocomplete';
 import axios from 'axios';
-import { ItemData, SearchResults } from '../../types';
+import { ItemData, SearchFilters, SearchResults } from '../../types';
 import { Flex, Image } from '@chakra-ui/react';
 import { ItemCardBadge } from '../Items/ItemCard';
 
@@ -16,11 +17,13 @@ type Props = {
   isDisabled?: boolean;
   placeholder?: string;
   onChange?: (item: ItemData) => void;
+  searchFilter?: Partial<SearchFilters>;
+  creatable?: boolean;
 };
 
 const ItemSelect = (props: Props) => {
   const [query, setQuery] = React.useState('');
-  const { onChange, color } = props;
+  const { onChange, color, creatable } = props;
   const [items, setItems] = React.useState<ItemData[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
 
@@ -36,6 +39,7 @@ const ItemSelect = (props: Props) => {
   const loadItems = async () => {
     const res = await axios.get('/api/v1/search', {
       params: {
+        ...props.searchFilter,
         limit: 5,
         skipStats: true,
         s: query,
@@ -48,7 +52,7 @@ const ItemSelect = (props: Props) => {
   };
 
   const onSelectOption = ({ item }: { item: Item }) => {
-    onChange?.(item.originalValue as ItemData);
+    onChange?.(item.originalValue ?? item.value);
     setQuery('');
   };
 
@@ -58,6 +62,7 @@ const ItemSelect = (props: Props) => {
       onSelectOption={onSelectOption}
       isLoading={isLoading}
       disableFilter
+      creatable={creatable}
     >
       <AutoCompleteInput
         placeholder={props.placeholder ?? 'Add Item'}
@@ -71,24 +76,25 @@ const ItemSelect = (props: Props) => {
         _hover={{ bg: 'whiteAlpha.100' }}
       />
       <AutoCompleteList>
-        {items.map((option) => {
-          return (
-            <AutoCompleteItem
-              key={`option-${option.internal_id}`}
-              value={option}
-              label={option.name}
-              textTransform="capitalize"
-            >
-              <Flex alignItems={'center'}>
-                <Image src={option.image} boxSize="40px" mr="2" alt={option.description} />
-                <Flex flexFlow="column" alignItems={'flex-start'} justifyContent={'center'}>
-                  {option.name}
-                  <ItemCardBadge item={option} />
-                </Flex>
+        {items.map((option) => (
+          <AutoCompleteItem
+            key={`option-${option.internal_id}`}
+            value={option}
+            label={option.name}
+            textTransform="capitalize"
+          >
+            <Flex alignItems={'center'}>
+              <Image src={option.image} boxSize="40px" mr="2" alt={option.description} />
+              <Flex flexFlow="column" alignItems={'flex-start'} justifyContent={'center'}>
+                {option.name}
+                <ItemCardBadge item={option} />
               </Flex>
-            </AutoCompleteItem>
-          );
-        })}
+            </Flex>
+          </AutoCompleteItem>
+        ))}
+        {creatable && (
+          <AutoCompleteCreatable>{({ value }) => <span>Add {value}</span>}</AutoCompleteCreatable>
+        )}
       </AutoCompleteList>
     </AutoComplete>
   );

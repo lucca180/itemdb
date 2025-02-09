@@ -12,6 +12,7 @@ import { redis_setItemCount } from '../../../redis/checkapi';
 import { revalidateItem } from './effects';
 
 const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
+const OWLS_URL = process.env.OWLS_API_URL;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -421,7 +422,7 @@ export const fetchOwlsData = async (
   }
 
   try {
-    const res = await axios.get(`https://neo-owls.net/itemdata/${encodeURIComponent(itemName)}`);
+    const res = await axios.get(`${OWLS_URL}/itemdata/${encodeURIComponent(itemName)}`);
     const data = res.data as { last_updated: string; owls_value: string } | null;
 
     if (!data || !data.owls_value) {

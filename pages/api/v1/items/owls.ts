@@ -4,6 +4,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { getManyItems } from './many';
 import { Prisma } from '@prisma/client';
+import { OwlsTrade } from '../../../../types';
+import { CheckAuth } from '../../../../utils/googleCloud';
 
 type OwlsRes = {
   recent_updates: {
@@ -13,8 +15,11 @@ type OwlsRes = {
   }[];
 };
 
+const OWLS_URL = process.env.OWLS_API_URL;
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
+  if (req.method === 'POST') return POST(req, res);
 
   if (req.method == 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Methods', 'POST, GET');
@@ -33,8 +38,37 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
   return res.status(200).json(itemRes);
 }
 
+async function POST(req: NextApiRequest, res: NextApiResponse<any>) {
+  const { ds, traded, traded_for, notes } = req.body as OwlsTrade;
+
+  if (!ds || !traded || !traded_for)
+    return res.status(400).json({ error: 'Missing required fields' });
+
+  let user = null;
+
+  try {
+    user = (await CheckAuth(req)).user;
+  } catch (e) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!user || user.banned || !user.neopetsUser)
+    return res.status(401).json({ error: 'Unauthorized' });
+
+  const result = await axios.post(OWLS_URL + '/transactions/submit', {
+    user_id: user.neopetsUser,
+    date: ds,
+    traded: traded,
+    traded_for: traded_for,
+    notes: notes,
+  });
+
+  return res.status(result.status).json(result.data);
+}
+
 export const getLatestOwls = async (limit = 20) => {
-  const owlsRes = await axios.get('https://neo-owls.net/recent_updates');
+  if (!OWLS_URL) return [];
+  const owlsRes = await axios.get(OWLS_URL + '/recent_updates');
   const owlsData = owlsRes.data as OwlsRes;
 
   const names = owlsData.recent_updates.map((owl) => owl.api_name);
