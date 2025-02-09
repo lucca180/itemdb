@@ -108,6 +108,17 @@ const alerts = {
     bg: 'pink.300',
     color: 'blackAlpha.800',
   },
+  owlsReporting: {
+    message: 'SiteAlert.owls-trades',
+    link: '/owls/report',
+    img: {
+      src: 'https://images.neopets.com/themes/h5/altadorcup/images/transferlog-icon.png',
+      h: 28,
+      w: 28,
+    },
+    bg: 'blue.200',
+    color: 'blackAlpha.800',
+  },
 };
 
 export const SiteAlert = () => {
@@ -134,6 +145,7 @@ export const SiteAlert = () => {
         <Text color={alert.color}>
           {!!alert.message &&
             t.rich(alert.message, {
+              b: (children) => <b>{children}</b>,
               Link: (children) => (
                 <Link as={NextLink} href={alert.link + '?utm_content=site-alert'} fontWeight="bold">
                   {children}
@@ -149,7 +161,7 @@ export const SiteAlert = () => {
 const getAlert = () => {
   const todayNST = getDateNST();
 
-  // if (todayNST.getTime() < 1736726399000) return alerts.weeklyQuests;
+  if (todayNST.getTime() < 1739404799000) return alerts.owlsReporting;
   if (isThirdWednesday(todayNST)) return alerts.hiddenTower;
   if (todayNST.getDate() === 3) return alerts.hpd;
   else if (todayNST.getMonth() === 4 && todayNST.getDate() === 12) return alerts.tyrannia;
