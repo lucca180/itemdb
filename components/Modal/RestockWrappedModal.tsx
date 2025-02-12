@@ -26,11 +26,8 @@ import { RestockStats } from '../../types';
 import { useToPng } from '@hugocxl/react-to-image';
 import Color from 'color';
 import { useState, useEffect, useRef } from 'react';
-import Chance from 'chance';
 import { FaCopy, FaDice, FaDownload, FaShareAlt } from 'react-icons/fa';
 import axios from 'axios';
-
-const chance = new Chance();
 
 const SKIP_WALL = process.env.NEXT_PUBLIC_SKIP_CONTRIBUTE_WALL === 'true';
 
@@ -105,18 +102,15 @@ const RestockWrappedModal = (props: RestockWrappedModalProps) => {
     const maxColors = 4;
     const boughtSet = stats.hottestBought.slice(1, maxColors + 1);
     while (boughtSet.length > 0) {
-      const bought = chance.pickone(boughtSet);
+      const bought = pickOne(boughtSet);
       boughtSet.splice(boughtSet.indexOf(bought), 1);
 
       const color = Color(bought.item.color.hex)
-        .lightness(chance.integer({ min: 60, max: 95 }))
-        .saturationl(chance.integer({ min: 60, max: 95 }));
+        .lightness(randomInt(60, 95))
+        .saturationl(randomInt(60, 95));
 
-      const x = chance.integer({ min: 0, max: 100 });
-      const y = chance.integer({
-        min: (i - 0.5) * (100 / maxColors),
-        max: i * 1.1 * (100 / maxColors),
-      });
+      const x = randomInt(0, 100);
+      const y = randomInt((i - 0.5) * (100 / maxColors), i * 1.1 * (100 / maxColors));
 
       gradient += `radial-gradient(at ${x}% ${y}%, ${color
         .hsl()
@@ -324,3 +318,11 @@ const RestockWrappedModal = (props: RestockWrappedModalProps) => {
 };
 
 export default RestockWrappedModal;
+
+const randomInt = (min: number, max: number) => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
+const pickOne = (arr: any[]) => {
+  return arr[Math.floor(Math.random() * arr.length)];
+};
