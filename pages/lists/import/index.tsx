@@ -18,22 +18,23 @@ import {
   useMediaQuery,
   HStack,
   UnorderedList,
+  Badge,
 } from '@chakra-ui/react';
 import Image from 'next/image';
-import HeaderCard from '../../components/Card/HeaderCard';
-import Layout from '../../components/Layout';
-import icon from '../../public/logo_icon.svg';
+import HeaderCard from '../../../components/Card/HeaderCard';
+import Layout from '../../../components/Layout';
+import icon from '../../../public/logo_icon.svg';
 import { parseBody } from 'next/dist/server/api-utils/node/parse-body';
-import ListSelect from '../../components/UserLists/ListSelect';
+import ListSelect from '../../../components/UserLists/ListSelect';
 import axios from 'axios';
 import { ReactElement, useEffect, useMemo, useState } from 'react';
-import { ItemData, UserList } from '../../types';
-import ItemCard from '../../components/Items/ItemCard';
-import { useAuth } from '../../utils/auth';
-import { getList } from '../api/v1/lists/[username]/[list_id]';
-import { CreateLinkedListButton } from '../../components/DynamicLists/CreateLinkedList';
+import { ItemData, UserList } from '../../../types';
+import ItemCard from '../../../components/Items/ItemCard';
+import { useAuth } from '../../../utils/auth';
+import { getList } from '../../api/v1/lists/[username]/[list_id]';
+import { CreateLinkedListButton } from '../../../components/DynamicLists/CreateLinkedList';
 import { useRouter } from 'next/router';
-import DynamicIcon from '../../public/icons/dynamic.png';
+import DynamicIcon from '../../../public/icons/dynamic.png';
 import NextLink from 'next/link';
 import { createTranslator, useTranslations } from 'next-intl';
 type Props = {
@@ -87,7 +88,7 @@ export async function getServerSideProps(context: any) {
       items: items,
       indexType: indexType,
       recomended_list: list,
-      messages: (await import(`../../translation/${context.locale}.json`)).default,
+      messages: (await import(`../../../translation/${context.locale}.json`)).default,
       locale: context.locale ?? 'en',
     },
   };
@@ -164,12 +165,32 @@ const ImportItems = (props: ImportItemsProps) => {
   );
 
   const init = async () => {
+    const itemsKeys =
+      indexType !== 'name_image_id'
+        ? Object.keys(items)
+        : Object.keys(items).map((key) => key.split(','));
+
     const itemRes = await axios.post(`/api/v1/items/many`, {
-      [indexType]: Object.keys(items),
+      [indexType]: itemsKeys,
     });
 
     const data: { [identifier: string | number]: ItemData } = itemRes.data;
     const nullItems = Object.values(items).length - Object.values(data).length;
+    const notFoundItems = Object.keys(items)
+      .map((key) => {
+        let newKey = key;
+
+        if (indexType === 'name_image_id') {
+          const params = key.split(',');
+          newKey = `${encodeURI(params[0])}_${params[1]}`.toLowerCase();
+        }
+
+        return data[newKey] ? null : key;
+      })
+      .filter((item) => item);
+
+    if (notFoundItems.length > 0) console.error('not found items:', notFoundItems);
+
     setNotFound(nullItems);
     setItemData(data);
   };
@@ -194,15 +215,22 @@ const ImportItems = (props: ImportItemsProps) => {
 
         return true;
       })
-      .map((item: ItemData) => ({
-        item_iid: item.canonical_id ?? item.internal_id,
-        amount: importInfo.ignore.includes('quantity')
-          ? 1
-          : item.canonical_id
-          ? canonicalAmount[item.canonical_id]
-          : items[item.item_id ?? -1] ?? 1,
-        imported: true,
-      }));
+      .map((item: ItemData) => {
+        let importedItem = items[item.item_id ?? -1];
+        if (!importedItem) importedItem = items[item.name];
+        if (!importedItem) importedItem = items[item.image_id];
+        if (!importedItem) importedItem = items[`${item.name},${item.image_id}`];
+
+        return {
+          item_iid: item.canonical_id ?? item.internal_id,
+          amount: importInfo.ignore.includes('quantity')
+            ? 1
+            : item.canonical_id
+            ? canonicalAmount[item.canonical_id]
+            : importedItem ?? 1,
+          imported: true,
+        };
+      });
 
     if (!importData.length) {
       toast({
@@ -582,6 +610,19 @@ const ImportInfo = () => {
           </Text>
         </ListItem>
       </OrderedList>
+      <Flex bg="whiteAlpha.300" p={3} borderRadius={'md'} maxW="1000px" my={3}>
+        <Text>
+          <Badge colorScheme="green">{t('Layout.new')}</Badge> -{' '}
+          {t.rich('LIsts.adv-import-cta', {
+            b: (chunk) => <b>{chunk}</b>,
+            Link: (chunk) => (
+              <Link as={NextLink} prefetch={false} href={'/lists/import/advanced'}>
+                {chunk}
+              </Link>
+            ),
+          })}
+        </Text>
+      </Flex>
       <Heading size="md" mt={3}>
         {t('Lists.import-is-it-safe')}
       </Heading>

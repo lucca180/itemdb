@@ -254,7 +254,11 @@ const Layout = (props: Props) => {
           </DropdownButton>
           <DropdownButton bg={props.mainColor} label={t('Lists.Lists')} href="/lists/official">
             <DropdownOption label={t('Layout.checklists')} href="/lists/import" />
-            <DropdownOption label={t('Lists.import-items')} href="/lists/import" />
+            <DropdownOption
+              label={t('Lists.import-items')}
+              href="/lists/import"
+              newUntil={1740787199000}
+            />
             <DropdownOption label={t('Layout.official-lists')} href="/lists/official" />
             <DropdownOption
               label={t('General.dynamic-lists')}

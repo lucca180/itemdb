@@ -702,7 +702,12 @@
     "import-modal-cta": "Você também pode <Link>Importar Itens</Link> do seu cofre, galeria e muito mais!",
     "need-refresh": "Pode ser necessário atualizar a página para ver as alterações.",
     "add-items": "Adicionar Itens",
-    "stamp-script-tip": "Você pode usar nosso <Link>Stamp Album Helper Script</Link> para ver quais selos estão faltando e quanto custaria para completar seu álbum."
+    "stamp-script-tip": "Você pode usar nosso <Link>Stamp Album Helper Script</Link> para ver quais selos estão faltando e quanto custaria para completar seu álbum.",
+    "import-adv-1": "Para importar suas listas do <b>DTI</b> ou <b>JN</b> para o itemdb você precisará exportar essa listas para código de petpage",
+    "import-adv-2": "Você pode dar uma olhada no respectivo site para obter instruções específicas.",
+    "import-advanced-description": "Importe seus itens de listas do DTI ou JN!",
+    "import-from-pps": "Importar de Código de Petpages",
+    "paste-pp-code": "Cole o código de Petpage da sua lista aqui"
   },
   "Restock": {
     "est-profit": "Lucro Est.",
@@ -1044,5 +1049,8 @@
     "send-error": "Ocorreu um erro ao enviar a troca. Atualize a página e tente novamente.",
     "create-account-cta": "Não tem uma conta? Demora menos de 2 minutos para criar uma!",
     "login-required": "Você precisa estar logado no itemdb para reportar uma troca"
+  },
+  "LIsts": {
+    "adv-import-cta": "Você também pode importar suas listas de outros sites, como <b>Dress To Impress</b> e <b>JN</b> usando o nosso <Link>Petpage Importer</Link>"
   }
 }

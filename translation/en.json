@@ -560,7 +560,12 @@
     "add-items-to-list": "Add Items to List",
     "import-modal-cta": "You can also <Link>Import Items</Link> from your sdb, gallery and more!",
     "add-items": "Add Items",
-    "stamp-script-tip": "You can use our <Link>Stamp Album Helper Script</Link> to see which stamps you are missing and how much it would cost to complete your album."
+    "stamp-script-tip": "You can use our <Link>Stamp Album Helper Script</Link> to see which stamps you are missing and how much it would cost to complete your album.",
+    "import-from-pps": "Import from Petpage codes",
+    "import-advanced-description": "Import your items from Dress to Impress or JN lists!",
+    "import-adv-1": "To import your lists from <b>Dress to Impress</b> or <b>JN</b> into itemdb you'll need to export that list to petpage code.",
+    "import-adv-2": "You can check each site for the specific instructions.",
+    "paste-pp-code": "Paste your list's petpage code here"
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",
@@ -1043,5 +1048,8 @@
     "send-error": "An error occurred while submitting the trade. Please refresh the page and try again.",
     "login-required": "You must be logged in to report a trade",
     "create-account-cta": "Don't have an account? It takes less than 2 minutes to create one!"
+  },
+  "LIsts": {
+    "adv-import-cta": "You can also import your lists from other sites such as <b>Dress To Impress</b> and <b>JN</b> using our <Link>Petpage Importer</Link>"
   }
 }
