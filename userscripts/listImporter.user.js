@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - List Importer
-// @version      1.2.1
+// @version      1.2.2
 // @author       itemdb
 // @namespace    itemdb
 // @description  Imports items to your wishlists
@@ -136,7 +136,11 @@ function handleGourmet(){
 function handleNeoDeck(){
   if(nl !== 'en') return;
   $(".content table table a b").each(function () {
-    const name = $(this).text().trim();
+    let name = $(this).text().trim();
+    
+    if(name === 'Meerouladen and Heermeedjet')
+      name = 'Merouladen and Heermeedjet'; // the actual deck and the item name are different
+
     items[name] = 1;
   });
 
