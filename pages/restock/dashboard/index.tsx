@@ -47,21 +47,17 @@ import { FaCog, FaEyeSlash, FaFileDownload } from 'react-icons/fa';
 // import CalendarHeatmap from '../../../components/Charts/CalHeatmap';
 import { endOfDay } from 'date-fns';
 import { UTCDate } from '@date-fns/utc';
-import { RestockWrappedModalProps } from '../../../components/Modal/RestockWrappedModal';
 import dynamic from 'next/dynamic';
 import { FaArrowTrendUp, FaArrowTrendDown } from 'react-icons/fa6';
-import { DashboardOptionsModalProps } from '../../../components/Modal/DashboardOptionsModal';
 import { RestockedCTACard } from '../../../components/Hubs/Wrapped2024/CTACard';
 import { NextApiRequest } from 'next';
 import { CheckAuth } from '../../../utils/googleCloud';
 import { setCookie } from 'cookies-next/client';
 import { getRestockStats } from '../../api/v1/restock';
 
-const RestockWrappedModal = dynamic<RestockWrappedModalProps>(
-  () => import('../../../components/Modal/RestockWrappedModal')
-);
+const RestockWrappedModal = dynamic(() => import('../../../components/Modal/RestockWrappedModal'));
 
-const DashboardOptionsModal = dynamic<DashboardOptionsModalProps>(
+const DashboardOptionsModal = dynamic(
   () => import('../../../components/Modal/DashboardOptionsModal')
 );
 
