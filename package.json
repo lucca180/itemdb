@@ -32,7 +32,7 @@
     "@json2csv/node": "^7.0.6",
     "@napi-rs/canvas": "^0.1.60",
     "@prisma/client": "^6.2.1",
-    "@sentry/nextjs": "^8.51.0",
+    "@sentry/nextjs": "^9.0.1",
     "@tycrek/discord-hookr": "^0.1.0",
     "@umami/api-client": "^0.76.0",
     "accept-language-parser": "^1.5.0",
@@ -82,7 +82,7 @@
   "devDependencies": {
     "@commitlint/cli": "^19.6.1",
     "@commitlint/config-conventional": "^19.6.0",
-    "@next/bundle-analyzer": "15.1.0",
+    "@next/bundle-analyzer": "^15.1.7",
     "@next/eslint-plugin-next": "15.1.0",
     "@swc-jotai/react-refresh": "^0.2.0",
     "@types/accept-language-parser": "^1.5.6",
