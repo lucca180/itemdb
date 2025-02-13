@@ -227,10 +227,6 @@ export const getItemDrops = async (
     isGram: isGram,
   };
 
-  activePoolOpenings = Object.values(prizePools)
-    .filter((p) => !p.name.includes('old-'))
-    .reduce((a, b) => a + b.openings, 0);
-
   const zoneData = isZoneCat
     ? await prisma.wearableData.findMany({
         where: {
@@ -330,14 +326,20 @@ export const getItemDrops = async (
       pool.maxDrop = Number(max);
     }
 
+    if (pool.isLE) openableData.hasLE = true;
+  });
+
+  activePoolOpenings = Object.values(prizePools)
+    .filter((p) => !p.name.includes('old-'))
+    .reduce((a, b) => a + b.openings, 0);
+
+  Object.values(prizePools).map((pool) => {
     if (
       !pool.isChance &&
       pool.openings / activePoolOpenings <= 0.9 &&
       (!openableData.isChoice || pool.name === 'le')
     )
       pool.isChance = true;
-
-    if (pool.isLE) openableData.hasLE = true;
   });
 
   openableData.minDrop =
