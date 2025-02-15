@@ -868,7 +868,9 @@
     "most-prominent": "Most Prominent",
     "tolerance": "Tolerance",
     "tip-advanced-operators": "you can use <Link>Advanced Operators</Link> to supercharge your search",
-    "tip-dynamic-lists": "you can create <Link>Dynamic List</Link> to keep it always up to date with your search"
+    "tip-dynamic-lists": "you can create <Link>Dynamic List</Link> to keep it always up to date with your search",
+    "tip-price-calculator": "Looking to sell an item? Use our <Link>Price Calculator</Link> to get your TP wishlist / auctions values right",
+    "tip-advanced-import": "Want to migrate to itemdb? We can help you migrate your lists from other sites thanks to our <Link>Advanced Import</Link>"
   },
   "DynamicList": {
     "addOnly-1": "New items that match the search query <b>will be added</b> to the list.",

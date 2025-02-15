@@ -49,7 +49,6 @@ import { endOfDay } from 'date-fns';
 import { UTCDate } from '@date-fns/utc';
 import dynamic from 'next/dynamic';
 import { FaArrowTrendUp, FaArrowTrendDown } from 'react-icons/fa6';
-import { RestockedCTACard } from '../../../components/Hubs/Wrapped2024/CTACard';
 import { NextApiRequest } from 'next';
 import { CheckAuth } from '../../../utils/googleCloud';
 import { setCookie } from 'cookies-next/client';
@@ -83,6 +82,11 @@ type RestockDashboardProps = {
   initialCurrentStats?: RestockStats | null;
   initialPastStats?: RestockStats | null;
   user?: User;
+  tip: {
+    _id: string;
+    tag: string;
+    href: string;
+  };
 };
 
 const RestockDashboard = (props: RestockDashboardProps) => {
@@ -100,6 +104,7 @@ const RestockDashboard = (props: RestockDashboardProps) => {
   const [pastSessionStats, setPastSessionStats] = useState<RestockStats | null>(
     props.initialPastStats ?? null
   );
+
   const [alertMsg, setAlertMsg] = useState<AlertMsg | null>(null);
   const [importCount, setImportCount] = useState<number>(0);
   const [shopList, setShopList] = useState<number[]>([]);
@@ -239,12 +244,6 @@ const RestockDashboard = (props: RestockDashboardProps) => {
     });
   };
 
-  // const setCustomTimestamp = (timestamp: number) => {
-  //   init({ ...defaultFilter, timestamp });
-  //   setFilter({ ...defaultFilter, timestamp });
-  //   window.scroll({ top: 0, left: 0, behavior: 'smooth' });
-  // };
-
   return (
     <>
       {openImport && (
@@ -294,7 +293,6 @@ const RestockDashboard = (props: RestockDashboardProps) => {
           <option value={30}>{t('General.last-x-days', { x: 30 })}</option>
           <option value={60}>{t('General.last-x-days', { x: 60 })}</option>
           <option value={90}>{t('General.last-x-days', { x: 90 })}</option>
-          {/* <option>All Time</option> */}
         </Select>
         <Select
           maxW="150px"
@@ -507,9 +505,6 @@ const RestockDashboard = (props: RestockDashboardProps) => {
               </Alert>
             </Center>
           )}
-          <Center flexFlow={'column'} gap={2}>
-            <RestockedCTACard />
-          </Center>
           <Center my={6} flexFlow="column" gap={2}>
             <Heading size="md">
               {t('Restock.your-est-revenue')}{' '}
@@ -580,6 +575,22 @@ const RestockDashboard = (props: RestockDashboardProps) => {
             <StatsCard type="favoriteBuy" session={sessionStats} pastSession={pastSessionStats} />
             <StatsCard type="timeSpent" session={sessionStats} pastSession={pastSessionStats} />
           </SimpleGrid>
+          <Text textAlign={'center'} fontSize="xs" color="whiteAlpha.600" mt={6}>
+            {t('General.tip')}:{' '}
+            {t.rich(props.tip.tag, {
+              Link: (chunk) => (
+                <Link
+                  as={NextLink}
+                  href={props.tip.href + '?utm_content=site-tip'}
+                  color="whiteAlpha.800"
+                  target="_blank"
+                  prefetch={false}
+                >
+                  {chunk}
+                </Link>
+              ),
+            })}
+          </Text>
           <Flex mt={6} w="100%" gap={3} flexFlow={['column', 'column', 'row']}>
             <Flex flexFlow={'column'} textAlign={'center'} gap={3} flex={1}>
               <Heading size="md">{t('Restock.hottest-buys')}</Heading>
@@ -730,6 +741,9 @@ export default RestockDashboard;
 
 export async function getServerSideProps(context: any): Promise<{ props: RestockDashboardProps }> {
   let res;
+
+  const tip = tipList[Math.floor(Math.random() * tipList.length)];
+
   const filter: PeriodFilter = {
     ...defaultFilter,
     ...JSON.parse(context.req.cookies.restockFilter2025 || '{}'),
@@ -743,6 +757,7 @@ export async function getServerSideProps(context: any): Promise<{ props: Restock
   if (!res || !res.user) {
     return {
       props: {
+        tip,
         messages: (await import(`../../../translation/${context.locale}.json`)).default,
         initialFilter: filter,
         locale: context.locale,
@@ -761,6 +776,7 @@ export async function getServerSideProps(context: any): Promise<{ props: Restock
 
   return {
     props: {
+      tip,
       messages: (await import(`../../../translation/${context.locale}.json`)).default,
       user: user,
       locale: context.locale,
@@ -786,3 +802,26 @@ RestockDashboard.getLayout = function getLayout(page: ReactElement, props: any) 
     </Layout>
   );
 };
+
+const tipList = [
+  {
+    _id: 'Advanced Operators',
+    tag: 'Search.tip-advanced-operators',
+    href: '/articles/advanced-search-queries',
+  },
+  {
+    _id: 'Dynamic Lists',
+    tag: 'Search.tip-dynamic-lists',
+    href: '/articles/checklists-and-dynamic-lists',
+  },
+  {
+    _id: 'Price Calculator',
+    tag: 'Search.tip-price-calculator',
+    href: '/tools/price-calculator',
+  },
+  {
+    _id: 'Advanced Import',
+    tag: 'Search.tip-advanced-import',
+    href: '/lists/import/advanced',
+  },
+];

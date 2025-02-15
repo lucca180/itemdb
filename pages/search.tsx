@@ -78,7 +78,7 @@ const SearchPage = () => {
   const [isLargerThanLG] = useMediaQuery('(min-width: 62em)', { fallback: true });
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const searchTip = searchTips[new Date().getHours() % searchTips.length];
+  const searchTip = searchTips[new Date().getMinutes() % searchTips.length];
 
   useEffect(() => {
     // skip initial render
@@ -475,13 +475,13 @@ const SearchPage = () => {
           <Text
             textAlign={'center'}
             fontSize="xs"
-            color="gray.500"
+            color="whiteAlpha.600"
             display={{ base: 'none', lg: 'block' }}
           >
             {t('General.tip')}:{' '}
             {t.rich(searchTip.tag, {
               Link: (chunk) => (
-                <Link as={NextLink} href={searchTip.href} color="gray.400">
+                <Link as={NextLink} href={searchTip.href} color="whiteAlpha.800" target="_blank">
                   {chunk}
                 </Link>
               ),
@@ -584,5 +584,15 @@ const searchTips = [
     _id: 'Dynamic Lists',
     tag: 'Search.tip-dynamic-lists',
     href: '/articles/checklists-and-dynamic-lists',
+  },
+  {
+    _id: 'Price Calculator',
+    tag: 'Search.tip-price-calculator',
+    href: '/tools/price-calculator',
+  },
+  {
+    _id: 'Advanced Import',
+    tag: 'Search.tip-advanced-import',
+    href: '/lists/import/advanced',
   },
 ];
