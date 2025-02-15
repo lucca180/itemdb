@@ -702,7 +702,7 @@
     "contact-us-text": "Have a question, cool idea, suggestion, or found an error? Contact us!",
     "suggestion-voting": "Suggestion Voting",
     "suggestion-voting-txt": "Vote on suggestions from other users (or from our system)",
-    "bug-helper-text": "If you are reporting a bug, provide as many details as possible about what happened and when.",
+    "bug-helper-text": "If you are reporting a bug, provide as many details as possible about what happened and when - and links if applicable",
     "we-need-your-help": "We need your help!",
     "price-update-txt": "We detected that this price might be incorrect or outdated and we have new data waiting to be priced",
     "price-x-trade-lots": "Price {x} Trade Lots",

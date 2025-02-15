@@ -22,7 +22,7 @@ import {
 import axios from 'axios';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ItemData } from '../../types';
 import { useAuth } from '../../utils/auth';
 import { useTranslations } from 'next-intl';
@@ -44,6 +44,10 @@ const FeedbackModal = (props: FeedbackModalProps) => {
   const [error, setError] = useState<boolean>(false);
   const [email, setEmail] = useState<string>(user?.email ?? '');
   const [message, setMessage] = useState<string>('');
+
+  useEffect(() => {
+    setEmail(user?.email ?? '');
+  }, [user]);
 
   const saveChanges = async () => {
     setLoading(true);

@@ -59,7 +59,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       username: dbUser.username,
       neopetsUser: dbUser.neo_user,
       isAdmin: dbUser.role === 'ADMIN',
-      email: '',
+      email: dbUser.email,
       profileColor: dbUser.profile_color,
       profileImage: dbUser.profile_image,
       description: dbUser.description,
