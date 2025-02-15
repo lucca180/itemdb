@@ -496,7 +496,7 @@ function findMostFrequent(arr: ItemData[]) {
   const mostFrequent = maxBy(Object.keys(frequencyMap), (key) => frequencyMap[key]);
   if (!mostFrequent) throw new Error('No most frequent found');
   return {
-    item: arr.find((x) => x.item_id === parseInt(mostFrequent))!,
+    item: arr.find((x) => x.internal_id === parseInt(mostFrequent))!,
     count: frequencyMap[mostFrequent],
     frequencyMap,
   };
