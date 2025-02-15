@@ -272,6 +272,11 @@ const Layout = (props: Props) => {
             <DropdownOption label={t('Layout.pet-color-tool')} href="/tools/pet-colors" />
             <DropdownOption label={t('Layout.item-effects')} href="/hub/item-effects" />
             <DropdownOption label={t('Layout.restock-dashboard')} href="/restock/dashboard" />
+            <DropdownOption
+              label={t('Calculator.pricing-calculator')}
+              href="/tools/price-calculator"
+              newUntil={1742083199000}
+            />
           </DropdownButton>
           <DropdownButton bg={props.mainColor} label={t('Layout.contribute')} href="/contribute">
             <DropdownOption label={'Item Data Extractor'} href="/contribute" />
