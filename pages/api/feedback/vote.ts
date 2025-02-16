@@ -119,11 +119,9 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
       },
     });
 
-    if (!feedback.user_id) return;
-
     const userCreator = prisma.user.update({
       where: {
-        id: feedback.user_id,
+        id: feedback.user_id ?? '-1',
       },
       data: {
         xp: {
@@ -190,11 +188,9 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
       },
     });
 
-    if (!feedback.user_id) return;
-
     const userCreator = prisma.user.update({
       where: {
-        id: feedback.user_id,
+        id: feedback.user_id ?? '-1',
       },
       data: {
         xp: {
@@ -235,7 +231,7 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
       },
     });
 
-    await prisma.$transaction([userCreator, approveVotes, reproveVotes]);
+    await Promise.all([userCreator, approveVotes, reproveVotes]);
   }
 };
 
