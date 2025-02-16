@@ -210,7 +210,7 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
       },
       data: {
         xp: {
-          increment: FEEDBACK_VOTE_TARGET,
+          increment: Math.floor(FEEDBACK_VOTE_TARGET / 2),
         },
       },
     });
