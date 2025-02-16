@@ -312,7 +312,8 @@ model User {
   profile_image String?
   description   String? @db.Text
 
-  xp Int @default(0)
+  xp     Int @default(0)
+  old_xp Int @default(0)
 
   feedbacks      Feedbacks[]
   itemLists      UserList[]
@@ -392,6 +393,8 @@ model FeedbackVotes {
 
   approve Boolean
   addedAt DateTime @default(now())
+
+  @@unique([feedback_id, user_id])
 }
 
 model UserList {

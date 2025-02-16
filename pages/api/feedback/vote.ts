@@ -77,18 +77,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       },
     });
 
-    const votingUser = prisma.user.update({
-      where: {
-        id: user_id,
-      },
-      data: {
-        xp: {
-          increment: FEEDBACK_VOTE_TARGET,
-        },
-      },
-    });
-
-    const [feedbacks] = await prisma.$transaction([feedback, vote, votingUser]);
+    const [feedbacks] = await prisma.$transaction([feedback, vote]);
 
     if (
       !feedbacks.processed &&
@@ -109,6 +98,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
 // so, race conditions could make this exec twice, but it's not a big deal (i guess)
 const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
+  // Feedback Rejected
   if (feedback.votes <= -FEEDBACK_VOTE_TARGET) {
     // ------- Handlers -------- //
 
@@ -129,21 +119,57 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
       },
     });
 
-    if (feedback.user_id)
-      await prisma.user.update({
-        where: {
-          id: feedback.user_id,
+    if (!feedback.user_id) return;
+
+    const userCreator = prisma.user.update({
+      where: {
+        id: feedback.user_id,
+      },
+      data: {
+        xp: {
+          decrement: FEEDBACK_VOTE_TARGET * 2,
         },
-        data: {
-          xp: {
-            decrement: feedback.votes * 7,
+      },
+    });
+
+    const approveVotes = prisma.user.updateMany({
+      where: {
+        votes: {
+          some: {
+            feedback_id: feedback.feedback_id,
+            approve: true,
           },
         },
-      });
+      },
+      data: {
+        xp: {
+          decrement: FEEDBACK_VOTE_TARGET * 2,
+        },
+      },
+    });
+
+    const reproveVotes = prisma.user.updateMany({
+      where: {
+        votes: {
+          some: {
+            feedback_id: feedback.feedback_id,
+            approve: false,
+          },
+        },
+      },
+      data: {
+        xp: {
+          increment: FEEDBACK_VOTE_TARGET,
+        },
+      },
+    });
+
+    await Promise.all([userCreator, approveVotes, reproveVotes]);
 
     return;
   }
 
+  // Feedback Approved
   if (feedback.votes >= FEEDBACK_VOTE_TARGET) {
     // ------- Handlers -------- //
 
@@ -164,17 +190,52 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
       },
     });
 
-    if (feedback.user_id)
-      await prisma.user.update({
-        where: {
-          id: feedback.user_id,
+    if (!feedback.user_id) return;
+
+    const userCreator = prisma.user.update({
+      where: {
+        id: feedback.user_id,
+      },
+      data: {
+        xp: {
+          increment: FEEDBACK_VOTE_TARGET,
         },
-        data: {
-          xp: {
-            increment: FEEDBACK_VOTE_TARGET * 3,
+      },
+    });
+
+    const approveVotes = prisma.user.updateMany({
+      where: {
+        votes: {
+          some: {
+            feedback_id: feedback.feedback_id,
+            approve: true,
           },
         },
-      });
+      },
+      data: {
+        xp: {
+          increment: FEEDBACK_VOTE_TARGET,
+        },
+      },
+    });
+
+    const reproveVotes = prisma.user.updateMany({
+      where: {
+        votes: {
+          some: {
+            feedback_id: feedback.feedback_id,
+            approve: false,
+          },
+        },
+      },
+      data: {
+        xp: {
+          decrement: FEEDBACK_VOTE_TARGET,
+        },
+      },
+    });
+
+    await prisma.$transaction([userCreator, approveVotes, reproveVotes]);
   }
 };
 
