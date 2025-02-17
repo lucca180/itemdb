@@ -26,7 +26,6 @@ import type { FeedbackModalProps } from '../../components/Modal/FeedbackModal';
 import AddToListSelect from '../../components/UserLists/AddToListSelect';
 import { GetStaticPropsContext } from 'next';
 import { getItem, getSomeItemIDs } from '../api/v1/items/[id_name]';
-import { getItemColor } from '../api/v1/items/colors';
 import { getItemLists } from '../api/v1/items/[id_name]/lists';
 import Link from 'next/link';
 import { getSimilarItems } from '../api/v1/items/[id_name]/similar';
@@ -47,6 +46,7 @@ import { getItemRecipes } from '../api/v1/items/[id_name]/recipes';
 import { NextPageWithLayout } from '../_app';
 import { getMMEData, isMME } from '../api/v1/items/[id_name]/mme';
 import { DyeworksData, getDyeworksData } from '../api/v1/items/[id_name]/dyeworks';
+import { getSingleItemColor } from '../api/v1/items/[id_name]/colors';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -402,7 +402,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     mmeData,
     dyeData,
   ] = await Promise.all([
-    getItemColor([item.image_id]), //0
+    getSingleItemColor(item), //0
     getItemLists(item.internal_id, true, false), // 1
     getSimilarItems(item), // 2
     item.isNC ? getItemLists(item.internal_id, false, false) : [], // 3
@@ -430,7 +430,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     item: item,
     lists: lists,
     similarItems: similarItems,
-    colors: colors[item.image_id] as FullItemColors,
+    colors: colors as FullItemColors,
     tradeLists: tradeLists,
     itemOpenable: itemOpenable,
     itemParent: itemParent,

@@ -3,6 +3,7 @@ import { getItem } from '.';
 import { getItemColor } from '../colors';
 import prisma from '../../../../../utils/prisma';
 import { getPalette } from '../process';
+import { ItemData } from '../../../../../types';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -22,12 +23,18 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   if (!item) return res.status(400).json({ error: 'Invalid Item' });
 
-  if (!isForce && item.color?.hex) {
+  const result = await getSingleItemColor(item, isForce);
+
+  return res.json(result);
+}
+
+export const getSingleItemColor = async (item: ItemData, force = false) => {
+  if (!force && item.color?.hex) {
     const itemColor = await getItemColor([item.image_id]);
-    return res.json(itemColor[item.image_id]);
+    return itemColor[item.image_id];
   }
 
-  if (isForce && item.color.hex) {
+  if (force && item.color.hex) {
     await prisma.itemColor.deleteMany({
       where: {
         image_id: item.image_id,
@@ -35,14 +42,15 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     });
   }
 
-  const pallete = await getPalette(item);
-
-  if (!pallete) return res.status(400).json({ error: 'Invalid Pallete' });
+  const palette = await getPalette(item);
+  if (!palette) {
+    throw 'Invalid Pallete for item ' + item.internal_id;
+  }
 
   await prisma.itemColor.createMany({
-    data: pallete,
+    data: palette,
   });
 
   const itemColor = await getItemColor([item.image_id]);
-  return res.json(itemColor[item.image_id]);
-}
+  return itemColor[item.image_id];
+};
