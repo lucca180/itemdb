@@ -138,12 +138,7 @@ const NCTrade = (props: Props) => {
             )}
           </ButtonGroup>
         </Flex>
-        <Flex
-          flex={1}
-          // alignItems={{ base: 'inherit', md: 'center' }}
-          flexFlow={{ base: 'column', md: 'row' }}
-          gap={3}
-        >
+        <Flex flex={1} flexFlow={{ base: 'column', md: 'row' }} gap={3}>
           {item.owls && (
             <Badge
               colorScheme="purple"
@@ -152,6 +147,7 @@ const NCTrade = (props: Props) => {
               maxW={{ base: '100%', md: '25%' }}
               whiteSpace={'normal'}
               textTransform="initial"
+              alignSelf={'center'}
             >
               <Stat flex="initial" textAlign="center">
                 <StatNumber>
