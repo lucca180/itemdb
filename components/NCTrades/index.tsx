@@ -5,6 +5,7 @@ import {
   Center,
   Flex,
   Icon,
+  Link,
   Skeleton,
   Stat,
   StatHelpText,
@@ -43,7 +44,7 @@ const NCTrade = (props: Props) => {
 
   const [match, setMatch] = useState({ seeking: {}, trading: {} });
   const [tableType, setTableType] = useState<'seeking' | 'trading' | 'owlsTrading'>(
-    seeking.length ? 'seeking' : 'trading',
+    seeking.length ? 'seeking' : 'trading'
   );
   const [tradeHistory, setTradeHistory] = useState<OwlsTrade[] | null>(null);
 
@@ -138,7 +139,8 @@ const NCTrade = (props: Props) => {
           </ButtonGroup>
         </Flex>
         <Flex
-          alignItems={{ base: 'inherit', md: 'center' }}
+          flex={1}
+          // alignItems={{ base: 'inherit', md: 'center' }}
           flexFlow={{ base: 'column', md: 'row' }}
           gap={3}
         >
@@ -179,6 +181,22 @@ const NCTrade = (props: Props) => {
             </Flex>
           </Flex>
         </Flex>
+        {tableType !== 'owlsTrading' && (
+          <Text fontSize="xs" textAlign="center" justifySelf={'flex-end'} color="whiteAlpha.600">
+            {t.rich('ItemPage.report-owls-cta', {
+              Link: (chunk) => (
+                <Link
+                  as={NextLink}
+                  href="/owls/report?utm_content=owls-cta"
+                  color="whiteAlpha.700"
+                  isExternal
+                >
+                  {chunk}
+                </Link>
+              ),
+            })}
+          </Text>
+        )}
       </Flex>
     </CardBase>
   );

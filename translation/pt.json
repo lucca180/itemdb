@@ -262,7 +262,8 @@
     "dyeworks-original-item": "Item Original",
     "old-pool-x": "Prêmios Antigos {x}",
     "add-x": "Adicionar \"{x}\"",
-    "report-your-nc-trades": "Reporte suas Trocas NC"
+    "report-your-nc-trades": "Reporte suas Trocas NC",
+    "report-owls-cta": "Trocou um desses? <Link>Reporte aqui</Link>"
   },
   "Button": {
     "feedback": "Feedback",
