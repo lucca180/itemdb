@@ -854,7 +854,12 @@
     "ht-next-discount-day": "Discount Day Price | Next at {x}",
     "discounted-price": "Discounted Price",
     "random-event-price": "Random Event Price",
-    "trending-shops": "Trending Shops"
+    "trending-shops": "Trending Shops",
+    "shop-info-category": "<b>{name}</b> restocks r1 - r99 items from the <Link>{category}</Link> category",
+    "about-this-shop": "About This Shop",
+    "ats-total-items": "It can stock <b>{totalItems} different items</b> of which <b>{profitableCount}</b> {profitableCount, plural, =1 {is} other {are}} <b>profitable</b>",
+    "ats-r99-chances": "The odds for <b>one specific</b> r99 item to restock is about <b>{x}%</b>",
+    "ats-avg-profit": "The average profit for the items in this shop is <b>{x} NP</b>"
   },
   "Search": {
     "search": "Search",

@@ -855,7 +855,12 @@
     "ht-next-discount-day": "Preço do Dia de Desconto | Próximo em {x}",
     "discounted-price": "Dia de Desconto",
     "random-event-price": "Preço Evento Aleatório",
-    "trending-shops": "Lojas Populares"
+    "trending-shops": "Lojas Populares",
+    "shop-info-category": "<b>{name}</b> restoca itens r1 - r99 da categoria <Link>{category}</Link>",
+    "about-this-shop": "Sobre Essa Loja",
+    "ats-total-items": "Ela pode estocar <b>{totalItems} itens diferentes</b> dos quais <b>{profitableCount}</b> {profitableCount, plural, =1 {é <b>lucrativo</b>} other {são <b>lucrativos</b>}}",
+    "ats-avg-profit": "O lucro médio para os itens nesta loja é <b>{x} NP</b>",
+    "ats-r99-chances": "As chances de restocar <b>um item específico</b> r99 é cerca de <b>{x}%</b>"
   },
   "Search": {
     "search": "Pesquisa",
