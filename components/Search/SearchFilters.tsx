@@ -671,13 +671,16 @@ const ColorBox = (props: { color: string }) => (
 );
 
 const sortCategories = (a: string, b: string, selected: string[], selectedFirst = false) => {
+  selected = selected.map((s) => s.toLowerCase());
   if (selectedFirst) {
-    const includesA = selected.includes(a) || selected.includes(`!${a}`);
-    const includesB = selected.includes(b) || selected.includes(`!${b}`);
+    const includesA =
+      selected.includes(a.toLowerCase()) || selected.includes(`!${a.toLowerCase()}`);
+    const includesB =
+      selected.includes(b.toLowerCase()) || selected.includes(`!${b.toLowerCase()}`);
 
     if (includesA && !includesB) return -1;
     if (!includesA && includesB) return 1;
-    if (includesA && includesB) return a.localeCompare(b);
+    if (includesA && includesB) return a.toLowerCase().localeCompare(b.toLowerCase());
   }
 
   return a.localeCompare(b);
@@ -685,8 +688,10 @@ const sortCategories = (a: string, b: string, selected: string[], selectedFirst 
 
 const getCategories = (catStats: Record<string, number>, selected: string[]) => {
   //check if there is a selected category that is not in the stats
-  const stats = Object.keys(catStats);
-  const selectedStats = selected.filter((s) => !stats.includes(s) && !stats.includes(`!${s}`));
+  const stats = Object.keys(catStats).map((s) => s.toLowerCase());
+  const selectedStats = selected.filter(
+    (s) => !stats.includes(s.toLowerCase()) && !stats.includes(`!${s.toLowerCase()}`)
+  );
 
   // if there is, add it to the stats
   selectedStats.forEach((s) => {
