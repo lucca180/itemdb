@@ -1,4 +1,4 @@
-import { Button, Divider, Flex, HStack, Link, Text, Image, Heading } from '@chakra-ui/react';
+import { Button, Divider, Flex, HStack, Link, Text, Image } from '@chakra-ui/react';
 import Color from 'color';
 import { GetStaticPropsContext } from 'next';
 import { CreateDynamicListButton } from '../../../components/DynamicLists/CreateButton';
@@ -72,7 +72,7 @@ const INITIAL_MIN_PROFIT = 3000;
 const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockShopPageProps) => {
   const t = useTranslations();
   const format = useFormatter();
-  const { shopInfo, totalItems, profitableCount, rarityChances } = props;
+  const { shopInfo, totalItems, profitableCount } = props;
   const { userPref, updatePref } = useAuth();
   const [filteredItems, setFilteredItems] = useState<ItemData[]>(props.initialItems ?? []);
   const [itemList, setItemList] = useState<ItemData[]>(props.initialItems ?? []);
@@ -139,10 +139,11 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
         return (
           (itemFilter.query
             ? item.name.toLowerCase().includes(itemFilter.query.toLowerCase())
-            : true) && (profit ? profit >= itemFilter.minProfit : true)
+            : true) && (profit !== null ? profit >= itemFilter.minProfit : true)
         );
       })
       .sort((a, b) => sortItems(a, b, sortInfo.sortBy, sortInfo.sortDir));
+
     setFilteredItems(filtered);
   };
 
@@ -188,6 +189,50 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
             />
           </Link>
         </Text>
+        <HStack alignItems={'stretch'} justifyContent={'center'} flexWrap={'wrap'} mt={3}>
+          <ShopInfoCard>
+            <Text fontSize={'xs'}>
+              {t.rich('Restock.shop-info-category', {
+                b: (chunk) => <b>{chunk}</b>,
+                name: shopInfo.name,
+                category: shopIDToCategory[shopInfo.id],
+                Link: (chunk) => (
+                  <Link
+                    href={`/search?s=&category[]=${shopIDToCategory[shopInfo.id]}`}
+                    textTransform={'capitalize'}
+                  >
+                    {chunk}
+                  </Link>
+                ),
+              })}
+            </Text>
+          </ShopInfoCard>
+          <ShopInfoCard>
+            <Text fontSize={'xs'}>
+              {t.rich('Restock.ats-total-items', {
+                b: (chunk) => <b>{chunk}</b>,
+                totalItems: format.number(totalItems),
+                profitableCount: format.number(profitableCount),
+              })}
+            </Text>
+          </ShopInfoCard>
+          {/* <ShopInfoCard>
+            <Text fontSize={'xs'}>
+              {t.rich('Restock.ats-r99-chances', {
+                b: (chunk) => <b>{chunk}</b>,
+                x: rarityChances[99].toFixed(2),
+              })}
+            </Text>
+          </ShopInfoCard> */}
+          <ShopInfoCard>
+            <Text fontSize={'xs'}>
+              {t.rich('Restock.ats-avg-profit', {
+                b: (chunk) => <b>{chunk}</b>,
+                x: format.number(props.profitMean),
+              })}
+            </Text>
+          </ShopInfoCard>
+        </HStack>
       </RestockHeader>
       <Divider my={3} />
 
@@ -265,7 +310,7 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
           <RarityView itemList={filteredItems} sortType={sortInfo.sortBy} />
         </>
       )}
-      <Text textAlign={'center'} my={8} fontSize="xs">
+      <Text textAlign={'center'} mt={8} fontSize="xs">
         {t.rich('Restock.bmg-warning', {
           Link: (chunk) => (
             <Link href="/lists/official/1952" color="yellow.200">
@@ -274,71 +319,7 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
           ),
         })}
       </Text>
-      <Flex
-        bg="whiteAlpha.100"
-        p={3}
-        borderRadius={'md'}
-        flexFlow={'column'}
-        sx={{
-          b: { color: shopColor.lightness(80).hex() },
-          a: { color: shopColor.lightness(60).hex() },
-        }}
-      >
-        <HStack mb={2}>
-          <Image
-            alt="inventory icon"
-            src={`https://images.neopets.com/themes/h5/yellow/images/shop-icon.svg`}
-            width={'50px'}
-            height={'50px'}
-          />
-          <Heading size="lg">{t('Restock.about-this-shop')}</Heading>
-        </HStack>
-        <HStack alignItems={'stretch'} justifyContent={'center'} flexWrap={'wrap'}>
-          <ShopInfoCard>
-            <Text fontSize={'sm'}>
-              {t.rich('Restock.shop-info-category', {
-                b: (chunk) => <b>{chunk}</b>,
-                name: shopInfo.name,
-                category: shopIDToCategory[shopInfo.id],
-                Link: (chunk) => (
-                  <Link
-                    href={`/search?s=&category[]=${shopIDToCategory[shopInfo.id]}`}
-                    textTransform={'capitalize'}
-                  >
-                    {chunk}
-                  </Link>
-                ),
-              })}
-            </Text>
-          </ShopInfoCard>
-          <ShopInfoCard>
-            <Text fontSize={'sm'}>
-              {t.rich('Restock.ats-total-items', {
-                b: (chunk) => <b>{chunk}</b>,
-                totalItems: format.number(totalItems),
-                profitableCount: format.number(profitableCount),
-              })}
-            </Text>
-          </ShopInfoCard>
-          <ShopInfoCard>
-            <Text fontSize={'sm'}>
-              {t.rich('Restock.ats-r99-chances', {
-                b: (chunk) => <b>{chunk}</b>,
-                x: rarityChances[99].toFixed(2),
-              })}
-            </Text>
-          </ShopInfoCard>
-          <ShopInfoCard>
-            <Text fontSize={'sm'}>
-              {t.rich('Restock.ats-avg-profit', {
-                b: (chunk) => <b>{chunk}</b>,
-                x: format.number(props.profitMean),
-              })}
-            </Text>
-          </ShopInfoCard>
-        </HStack>
-      </Flex>
-      <Text textAlign={'center'} mt={1} fontSize="xs">
+      <Text textAlign={'center'} fontSize="xs">
         <br />
         {t('Restock.info-up-to-date-warning')}
         <br />
@@ -381,7 +362,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
   const resultItems = result.content
     .filter((item) => {
       const profit = getRestockProfit(item);
-      return profit ? profit >= INITIAL_MIN_PROFIT : true;
+      return profit !== null ? profit >= INITIAL_MIN_PROFIT : true;
     })
     .sort((a, b) => sortItems(a, b, 'price', 'desc'));
 
@@ -531,7 +512,9 @@ const profitMean = (items: ItemData[]) => {
     .map((item) => getRestockProfit(item, true))
     .filter((profit) => profit !== null);
 
-  const cleanProfit = removeOutliers(profits, 3);
+  const cleanProfit = removeOutliers(profits, 1.75);
+
+  if (!cleanProfit.length) return 0;
 
   return Math.round(mean(cleanProfit));
 };

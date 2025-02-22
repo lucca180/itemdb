@@ -858,7 +858,7 @@
     "trending-shops": "Lojas Populares",
     "shop-info-category": "<b>{name}</b> restoca itens r1 - r99 da categoria <Link>{category}</Link>",
     "about-this-shop": "Sobre Essa Loja",
-    "ats-total-items": "Ela pode estocar <b>{totalItems} itens diferentes</b> dos quais <b>{profitableCount}</b> {profitableCount, plural, =1 {é <b>lucrativo</b>} other {são <b>lucrativos</b>}}",
+    "ats-total-items": "<b>{totalItems} itens diferentes</b> podem estocar nessa loja, dos quais <b>{profitableCount}</b> {profitableCount, plural, =1 {é <b>lucrativo</b>} other {são <b>lucrativos</b>}}",
     "ats-avg-profit": "O lucro médio para os itens nesta loja é <b>{x} NP</b>",
     "ats-r99-chances": "As chances de restocar <b>um item específico</b> r99 é cerca de <b>{x}%</b>"
   },
