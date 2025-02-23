@@ -40,6 +40,54 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
     if (!exists) return res.status(400).json({ error: 'pet_color_not_found' });
   }
 
+  const response = await getPetColorData(colorTargetId, speciesTargetId);
+
+  return res.status(200).json(response);
+}
+
+export const checkPetColorExists = async (colorTargetId: number, speciesTargetId: number) => {
+  if (colorTargetId && speciesTargetId) {
+    const exists = await prisma.colorSpecies.findFirst({
+      where: {
+        color_id: colorTargetId,
+        species_id: speciesTargetId,
+      },
+    });
+
+    if (!exists) {
+      try {
+        const x = await axios.get(
+          `https://impress.openneo.net/species/${speciesTargetId}/colors/${colorTargetId}/pet_type.json`,
+          {
+            headers: {
+              'User-Agent': 'itemdb/1.0 (+https://itemdb.com.br)',
+            },
+          }
+        );
+
+        if (!x.data) {
+          return false;
+        }
+
+        await prisma.colorSpecies.create({
+          data: {
+            color_id: colorTargetId,
+            species_id: speciesTargetId,
+          },
+        });
+      } catch (e) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+};
+
+export const getPetColorData = async (
+  colorTargetId: number | undefined,
+  speciesTargetId: number | undefined
+) => {
   const SpeciesOR = [
     {
       species: {
@@ -144,8 +192,8 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
   }
 
   const response = {
-    speciesId: speciesTargetId,
-    colorId: colorTargetId,
+    speciesId: speciesTargetId || null,
+    colorId: colorTargetId || null,
     thumbnail,
     speciesName: speciesTargetId ? allSpecies[speciesTargetId] : null,
     colorName: colorTargetId ? allNeopetsColors[colorTargetId] : null,
@@ -155,41 +203,32 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
     cheapestChange: cheapestChange.map((id) => itemData[id]),
   };
 
-  return res.status(200).json(response);
-}
+  return response;
+};
 
-export const checkPetColorExists = async (colorTargetId: number, speciesTargetId: number) => {
-  if (colorTargetId && speciesTargetId) {
-    const exists = await prisma.colorSpecies.findFirst({
-      where: {
-        color_id: colorTargetId,
-        species_id: speciesTargetId,
-      },
-    });
+export const getPetColorDataStr = async (
+  colorTarget: string | undefined,
+  speciesTarget: string | undefined
+) => {
+  let colorTargetId: number | undefined = colorTarget ? Number(colorTarget) : undefined;
+  let speciesTargetId: number | undefined = speciesTarget ? Number(speciesTarget) : undefined;
 
-    if (!exists) {
-      try {
-        const x = await axios.get(
-          `https://impress.openneo.net/species/${speciesTargetId}/colors/${colorTargetId}/pet_type.json`,
-          {
-            headers: {
-              'User-Agent': 'itemdb/1.0 (+https://itemdb.com.br)',
-            },
-          }
-        );
-        if (!x.data) {
-          return false;
-        }
-
-        await prisma.colorSpecies.create({
-          data: {
-            color_id: colorTargetId,
-            species_id: speciesTargetId,
-          },
-        });
-      } catch (e) {}
-    }
+  if (colorTarget && (!colorTargetId || isNaN(colorTargetId))) {
+    colorTargetId = getPetColorId(colorTarget) ?? undefined;
   }
 
-  return true;
+  if (speciesTarget && (!speciesTargetId || isNaN(speciesTargetId))) {
+    speciesTargetId = getSpeciesId(speciesTarget) ?? undefined;
+  }
+
+  if (!colorTarget && !speciesTarget) {
+    throw { error: 'Missing query parameters' };
+  }
+
+  if (colorTargetId && speciesTargetId) {
+    const exists = await checkPetColorExists(colorTargetId, speciesTargetId);
+    if (!exists) throw { error: 'pet_color_not_found' };
+  }
+
+  return getPetColorData(colorTargetId, speciesTargetId);
 };

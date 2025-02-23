@@ -266,10 +266,10 @@ const Layout = (props: Props) => {
             />
             <DropdownOption label={t('HomePage.leaving-nc-mall')} href="/mall/leaving" />
           </DropdownButton>
-          <DropdownButton bg={props.mainColor} label={t('Layout.tools')} href="/tools/pet-colors">
+          <DropdownButton bg={props.mainColor} label={t('Layout.tools')} href="/tools/rainbow-pool">
             <DropdownOption label={t('Layout.sdb-pricer')} href="/articles/userscripts" />
             <DropdownOption label={t('Layout.userscripts')} href="/articles/userscripts" />
-            <DropdownOption label={t('Layout.pet-color-tool')} href="/tools/pet-colors" />
+            <DropdownOption label={t('Layout.rainbow-pool-tool')} href="/tools/rainbow-pool" />
             <DropdownOption label={t('Layout.item-effects')} href="/hub/item-effects" />
             <DropdownOption label={t('Layout.restock-dashboard')} href="/restock/dashboard" />
             <DropdownOption

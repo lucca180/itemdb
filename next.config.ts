@@ -94,6 +94,11 @@ const nextConfig: NextConfig = {
         destination: '/hub/faeriefestival',
         permanent: true,
       },
+      {
+        source: '/tools/pet-colors',
+        destination: '/tools/rainbow-pool/',
+        permanent: true,
+      },
     ];
   },
   transpilePackages: ['lightweight-charts', 'fancy-canvas'],

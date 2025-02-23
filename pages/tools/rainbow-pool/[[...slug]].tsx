@@ -18,28 +18,29 @@ import {
 } from '@chakra-ui/react';
 import dynamic from 'next/dynamic';
 import { FiSend } from 'react-icons/fi';
-import Layout from '../../components/Layout';
-import { FeedbackModalProps } from '../../components/Modal/FeedbackModal';
+import Layout from '../../../components/Layout';
+import { FeedbackModalProps } from '../../../components/Modal/FeedbackModal';
 import { createTranslator, useTranslations } from 'next-intl';
 import NextImage from 'next/image';
-import PetColorImg from '../../public/pet-color-hub.png';
-import { allNeopetsColors, allSpecies, getPetColorId, getSpeciesId } from '../../utils/utils';
+import { allNeopetsColors, allSpecies, getPetColorId, getSpeciesId } from '../../../utils/utils';
 import { ReactElement, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
-import { ItemData } from '../../types';
-import ItemCard from '../../components/Items/ItemCard';
+import { ItemData } from '../../../types';
+import ItemCard from '../../../components/Items/ItemCard';
 import { useRouter } from 'next/router';
 import { FaShareAlt } from 'react-icons/fa';
+import Image from '../../../components/Utils/Image';
+import { getPetColorDataStr } from '../../api/v1/tools/petcolors';
 
 const FeedbackModal = dynamic<FeedbackModalProps>(
-  () => import('../../components/Modal/FeedbackModal')
+  () => import('../../../components/Modal/FeedbackModal')
 );
 
 type PetColorData = {
-  colorId?: number;
-  speciesId?: number;
-  speciesName?: string;
-  colorName?: string;
+  colorId?: number | null;
+  speciesId?: number | null;
+  speciesName?: string | null;
+  colorName?: string | null;
   thumbnail: {
     species: string;
     color: string;
@@ -50,15 +51,23 @@ type PetColorData = {
   cheapestChange: ItemData[];
 };
 
-const PetColorToolPage = () => {
+type PetColorToolPageProps = {
+  messages: any;
+  locale: string;
+  species: string;
+  color: string;
+  petColorData: PetColorData | null;
+};
+
+const PetColorToolPage = (props: PetColorToolPageProps) => {
   const t = useTranslations();
   const router = useRouter();
   const toast = useToast();
-  const [species, setSpecies] = useState<string>('');
-  const [color, setColor] = useState<string>('');
+  const [species, setSpecies] = useState<string>(props.species);
+  const [color, setColor] = useState<string>(props.color);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [petColorData, setPetColorData] = useState<PetColorData | null>(null);
+  const [petColorData, setPetColorData] = useState<PetColorData | null>(props.petColorData);
   const [error, setError] = useState<string>('');
   const [isImgLoading, setIsImgLoading] = useState<boolean>(false);
 
@@ -68,6 +77,25 @@ const PetColorToolPage = () => {
     const cheapestChangeIds = petColorData.cheapestChange.map((item) => item.internal_id);
 
     return cheapestChangeIds.every((id) => perfectMatchIds.includes(id));
+  }, [petColorData]);
+
+  const title = useMemo(() => {
+    if (!petColorData?.speciesName && !petColorData?.colorName) return '';
+
+    if (petColorData?.speciesName && !petColorData?.colorName) {
+      return `${t('PetColors.species-title', { 0: petColorData?.speciesName })}`;
+    }
+
+    if (!petColorData?.speciesName && petColorData?.colorName) {
+      return `${t('PetColors.how-to-get-title', { 0: color })}`;
+    }
+
+    if (petColorData?.speciesName && petColorData?.colorName) {
+      return `${t('PetColors.species-color-title', {
+        0: petColorData?.colorName,
+        1: petColorData?.speciesName,
+      })}`;
+    }
   }, [petColorData]);
 
   useEffect(() => {
@@ -128,10 +156,10 @@ const PetColorToolPage = () => {
   };
 
   const changeRoute = () => {
-    const speciesQuery = species ? `species=${species.toLowerCase()}` : '';
-    const colorQuery = color ? `color=${color.toLowerCase()}` : '';
+    const speciesQuery = species ? `${species.toLowerCase()}/` : '';
+    const colorQuery = color ? `${color.toLowerCase()}` : '';
 
-    router.push(router.pathname + `?${speciesQuery}&${colorQuery}`, undefined, {
+    router.push('/tools/rainbow-pool' + `/${speciesQuery}${colorQuery}`, undefined, {
       shallow: true,
     });
   };
@@ -154,19 +182,21 @@ const PetColorToolPage = () => {
         h="650px"
         left="0"
         width="100%"
-        bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(154, 122, 237, 0.7) 70%)`}
+        bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(117, 182, 164, 0.9) 70%)`}
         zIndex={-1}
       />
       <FeedbackModal isOpen={isOpen} onClose={onClose} />
       <Center mt={8} flexFlow="column" gap={2} textAlign="center">
-        <Box
-          as={NextImage}
-          src={PetColorImg}
+        <Image
+          src={'https://images.neopets.com/caption/caption_997.gif'}
           // w={600}
-          // height={200}
+          width={400}
+          height={200}
           objectFit={'cover'}
           borderRadius={'md'}
           boxShadow={'md'}
+          quality={100}
+          objectPosition={'top'}
           alt="happy zafara painting a picture"
         />
         <Heading>{t('PetColors.pet-color-tool')}</Heading>
@@ -177,23 +207,6 @@ const PetColorToolPage = () => {
           {error}
         </Text>
         <HStack mt={3} flexWrap={{ base: 'wrap', sm: 'initial' }}>
-          <Select
-            variant="filled"
-            minW={175}
-            bg={'blackAlpha.400'}
-            size="sm"
-            onChange={(e) => setSpecies(e.target.value)}
-            value={species}
-          >
-            <option value="">{t('PetColors.select-species')}</option>
-            {Object.values(allSpecies)
-              .sort()
-              .map((species) => (
-                <option key={species} value={species}>
-                  {species}
-                </option>
-              ))}
-          </Select>
           <Select
             variant="filled"
             minW={150}
@@ -208,6 +221,23 @@ const PetColorToolPage = () => {
               .map((color) => (
                 <option key={color} value={color}>
                   {color}
+                </option>
+              ))}
+          </Select>
+          <Select
+            variant="filled"
+            minW={175}
+            bg={'blackAlpha.400'}
+            size="sm"
+            onChange={(e) => setSpecies(e.target.value)}
+            value={species}
+          >
+            <option value="">{t('PetColors.select-species')}</option>
+            {Object.values(allSpecies)
+              .sort()
+              .map((species) => (
+                <option key={species} value={species}>
+                  {species}
                 </option>
               ))}
           </Select>
@@ -235,19 +265,22 @@ const PetColorToolPage = () => {
             justifyContent={'center'}
             borderRadius={'md'}
           >
-            <IconButton
-              onClick={copyLink}
-              bg="blackAlpha.300"
-              size="sm"
-              aria-label={t('Layout.copy-link')}
-              icon={
-                <Tooltip hasArrow label={t('Layout.copy-link')} placement="top">
-                  <span>
-                    <FaShareAlt />
-                  </span>
-                </Tooltip>
-              }
-            />
+            <HStack mb={3}>
+              <Text fontSize="sm">{title}</Text>
+              <IconButton
+                onClick={copyLink}
+                bg="blackAlpha.300"
+                size="xs"
+                aria-label={t('Layout.copy-link')}
+                icon={
+                  <Tooltip hasArrow label={t('Layout.copy-link')} placement="top">
+                    <span>
+                      <FaShareAlt />
+                    </span>
+                  </Tooltip>
+                }
+              />
+            </HStack>
             <Flex gap={3} flexWrap={'wrap'} justifyContent={'center'}>
               <Flex
                 justifyContent={'center'}
@@ -292,7 +325,7 @@ const PetColorToolPage = () => {
                   )}
                   <Flex flexWrap={'wrap'} gap={2} justifyContent={'center'} flex={1}>
                     {petColorData.perfectMatch.map((item) => (
-                      <ItemCard small key={item.internal_id} item={item} />
+                      <ItemCard uniqueID="perfect" small key={item.internal_id} item={item} />
                     ))}
                   </Flex>
                 </Flex>
@@ -309,7 +342,7 @@ const PetColorToolPage = () => {
                   <Badge colorScheme="orange">{t('PetColors.cheapest-way')}</Badge>
                   <Flex flexWrap={'wrap'} gap={2} justifyContent={'center'} flex={1}>
                     {petColorData.cheapestChange.map((item) => (
-                      <ItemCard small key={item.internal_id} item={item} />
+                      <ItemCard uniqueID="cheapest" small key={item.internal_id} item={item} />
                     ))}
                   </Flex>
                 </Flex>
@@ -327,7 +360,7 @@ const PetColorToolPage = () => {
                   {!!petColorData.colorChanges.length && (
                     <Flex flexWrap={'wrap'} gap={2} justifyContent={'center'} flex={1}>
                       {petColorData.colorChanges.map((item) => (
-                        <ItemCard small key={item.internal_id} item={item} />
+                        <ItemCard uniqueID="color" small key={item.internal_id} item={item} />
                       ))}
                     </Flex>
                   )}
@@ -353,7 +386,7 @@ const PetColorToolPage = () => {
                   <Badge colorScheme="purple">{t('PetColors.species-change')}</Badge>
                   <Flex flexWrap={'wrap'} gap={2} justifyContent={'center'} flex={1}>
                     {petColorData.speciesChanges.map((item) => (
-                      <ItemCard small key={item.internal_id} item={item} />
+                      <ItemCard uniqueID="species" small key={item.internal_id} item={item} />
                     ))}
                   </Flex>
                 </Flex>
@@ -372,22 +405,102 @@ const PetColorToolPage = () => {
 export default PetColorToolPage;
 
 export async function getStaticProps(context: any) {
+  const slugs = context.params.slug ?? [];
+
+  let species = '';
+  let color = '';
+
+  if (slugs.length === 2) {
+    species = slugs[0];
+    color = slugs[1];
+  }
+
+  if (slugs.length === 1) {
+    if (getSpeciesId(slugs[0])) {
+      species = slugs[0];
+    } else {
+      color = slugs[0];
+    }
+  }
+
+  let preloadData: PetColorData | null = null;
+  if (species || color) {
+    preloadData = await getPetColorDataStr(color, species)
+      .then((d) => d)
+      .catch(() => null);
+
+    if (!preloadData) {
+      return {
+        redirect: {
+          destination: '/tools/rainbow-pool',
+        },
+      };
+    }
+
+    if (
+      (species && preloadData.speciesName?.toLowerCase() !== species) ||
+      (color && preloadData.colorName?.toLowerCase() !== color)
+    ) {
+      return {
+        redirect: {
+          destination: `/tools/rainbow-pool/${
+            (preloadData.speciesName?.toLowerCase() ?? '') + '/'
+          }${preloadData.colorName?.toLowerCase() ?? ''}`,
+        },
+      };
+    }
+  }
+
   return {
     props: {
-      messages: (await import(`../../translation/${context.locale}.json`)).default,
+      species: preloadData ? preloadData.speciesName : '',
+      color: preloadData ? preloadData.colorName : '',
+      petColorData: preloadData,
+      messages: (await import(`../../../translation/${context.locale}.json`)).default,
       locale: context.locale,
     },
   };
 }
 
+export async function getStaticPaths() {
+  return {
+    paths: [],
+    fallback: 'blocking',
+  };
+}
+
 PetColorToolPage.getLayout = function getLayout(page: ReactElement, props: any) {
   const t = createTranslator({ messages: props.messages, locale: props.locale });
+
+  let title = t('PetColors.pet-color-tool');
+  let description = t('PetColors.cta');
+  if (props.species && !props.color) {
+    title = `${t('PetColors.species-title', { 0: props.species })} - ${title}`;
+    description = `${t('PetColors.species-description', { 0: props.species })} - ${description}`;
+  }
+
+  if (!props.species && props.color) {
+    title = `${t('PetColors.how-to-get-title', { 0: props.color })} - ${title}`;
+    description = `${t('PetColors.paint-description', { 0: props.color })} - ${description}`;
+  }
+
+  if (props.species && props.color) {
+    title = `${t('PetColors.species-color-title', {
+      0: props.color,
+      1: props.species,
+    })} - ${title}`;
+    description = `${t('PetColors.species-color-description', {
+      0: props.color,
+      1: props.species,
+    })} - ${description}`;
+  }
+
   return (
     <Layout
       SEO={{
-        title: t('PetColors.pet-color-tool'),
-        description: t('PetColors.cta'),
-        themeColor: '#745fb3',
+        title: title,
+        description: description,
+        themeColor: '#75b6a4',
         twitter: {
           cardType: 'summary_large_image',
         },
@@ -402,7 +515,7 @@ PetColorToolPage.getLayout = function getLayout(page: ReactElement, props: any) 
           ],
         },
       }}
-      mainColor="#745fb3c7"
+      mainColor="#75b6a48c"
     >
       {page}
     </Layout>

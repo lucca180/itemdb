@@ -91,7 +91,8 @@
     "tavi-alert": "Alguns preços podem estar bastante desatualizados devido às Buscas de Tavi. \n<Link>Saiba como ajudar</Link> ou use o Botão de Preço Errado :)",
     "item-effects": "Efeitos de Itens",
     "view-all-shops": "Ver Todas as Lojas",
-    "report-your-nc-trades": "Reporte Suas Trocas NC"
+    "report-your-nc-trades": "Reporte Suas Trocas NC",
+    "rainbow-pool-tool": "Piscina do Arco-íris"
   },
   "ItemPage": {
     "item-info": "Item Info",
@@ -981,15 +982,21 @@
     "cheapest-change": "Troca mais barata",
     "cheapest-way": "Mais Barato",
     "color-change": "Troca de Cor",
-    "cta": "A Ferramenta de Cor de Pet é a maneira perfeita para você mudar a cor ou espécie (ou ambas!) do seu neopet gastando muito menos!",
+    "cta": "A Ferramenta da Piscina do Arco-íris é a maneira perfeita para você pintar seu neopet ou mudar a espécie gastando muito menos!",
     "no-color-1": "Não encontramos forma de pintar seu neopet com essa cor.",
     "no-color-2": "Talvez você possa tentar a Fonte Arco-Íris ou o Laboratório Secreto.",
     "perfect-match": "Combinação Perfeita",
-    "pet-color-tool": "Ferramenta de Cor de Pet",
+    "pet-color-tool": "Ferramenta da Piscina do Arco-íris",
     "select-color": "Selecionar Cor",
     "select-species": "Selecionar Espécie",
     "species-change": "Troca de Espécie",
-    "combination-error": "Combinação de cor + especie não encontrada.  Por favor, tente novamente."
+    "combination-error": "Combinação de cor + especie não encontrada.  Por favor, tente novamente.",
+    "how-to-get-title": "Como conseguir um Neopet {0}",
+    "paint-description": "Encontre a maneira mais barata de pintar seu Neopet {0}",
+    "species-color-description": "Encontre a maneira mais barata de obter o seu {0} {1}",
+    "species-color-title": "Como conseguir um {0} {1}",
+    "species-description": "Encontre a maneira mais barata de conseguir seu Neopet {0}",
+    "species-title": "Como conseguir um Neopet {0}"
   },
   "MissingHub": {
     "description": "Estamos precisando de algumas informações sobre esses itens. Se você possui algum desses itens, <Link>saiba como ajudar</Link>",
