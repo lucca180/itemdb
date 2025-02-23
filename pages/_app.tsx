@@ -3,7 +3,7 @@ import theme from '../utils/theme';
 import '../utils/global.css';
 import { Provider } from 'jotai';
 import { DefaultSeo } from 'next-seo';
-import SEOConfig from '../utils/SEO';
+import { getDefaultSEO } from '../utils/SEO';
 import NextNProgress from 'nextjs-progressbar';
 import Script from 'next/script';
 import { AuthProvider } from '../utils/auth';
@@ -51,7 +51,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
               ))}
             </Head>
             <NextNProgress color="#718096" showOnShallow={true} />
-            <DefaultSeo {...SEOConfig} />
+            <DefaultSeo {...getDefaultSEO(router.locale ?? 'en')} />
             {getLayout(<Component {...pageProps} />, pageProps)}
             <Script
               src={'/plutonita.js?v=1.0.0'}
