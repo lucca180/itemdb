@@ -2,14 +2,14 @@
 module.exports = {
   siteUrl: process.env.SITE_URL || 'https://itemdb.com.br',
   generateRobotsTxt: true, // (optional)
-  sitemapSize: 2000,
+  sitemapSize: 20000,
   changefreq: 'weekly',
   alternateRefs: [{ href: 'https://itemdb.com.br/pt', hrefLang: 'pt' }],
   exclude: ['/sitemaps/*', '/admin/*'], // <= exclude here
   robotsTxtOptions: {
     additionalSitemaps: [
       'https://itemdb.com.br/sitemaps/index.xml',
-      ...Array.from({ length: 70 }, (_, i) => `https://itemdb.com.br/sitemaps/${i}.xml`),
+      ...Array.from({ length: 30 }, (_, i) => `https://itemdb.com.br/sitemaps/${i}.xml`),
     ],
     policies: [
       {

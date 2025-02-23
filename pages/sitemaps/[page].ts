@@ -8,7 +8,7 @@ import {
 } from 'next-sitemap';
 import { GetServerSideProps } from 'next';
 import prisma from '../../utils/prisma';
-import { restockShopInfo, slugify } from '../../utils/utils';
+import { allNeopetsColors, allSpecies, restockShopInfo, slugify } from '../../utils/utils';
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const page = ctx.query.page as string;
@@ -20,7 +20,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       [...Array(70)].map((_, i) => `${siteURL}/sitemaps/${i}.xml`)
     );
 
-  const [itemInfo, officialLists] = await Promise.all([
+  const [itemInfo, officialLists, colorSpecies] = await Promise.all([
     prisma.items.findMany({
       select: {
         slug: true,
@@ -39,8 +39,8 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       orderBy: {
         name: 'asc',
       },
-      take: 990,
-      skip: parseInt(page) * 990,
+      take: 5000,
+      skip: parseInt(page) * 5000,
     }),
     prisma.userList.findMany({
       where: {
@@ -51,8 +51,12 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
         updatedAt: true,
         slug: true,
       },
-      take: 10,
-      skip: parseInt(page) * 10,
+      take: 50,
+      skip: parseInt(page) * 50,
+    }),
+    prisma.colorSpecies.findMany({
+      skip: parseInt(page) * 200,
+      take: 200,
     }),
   ]);
 
@@ -142,6 +146,85 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     })
     .flat();
 
+  const colorSpeciesPaths: ISitemapField[] = colorSpecies
+    .map((info, i) => {
+      const speciesName = allSpecies[info.species_id]?.toLowerCase();
+      const colorName = allNeopetsColors[info.color_id]?.toLowerCase();
+
+      const locArr: ISitemapField[] = [];
+
+      if (i === 0) {
+        Object.values(allNeopetsColors)
+          .slice(parseInt(page), (parseInt(page) + 1) * 100)
+          .forEach((color) => {
+            color = color.toLowerCase();
+            locArr.push({
+              loc: `${siteURL}/tools/rainbow-pool/${color}`,
+              alternateRefs: [
+                {
+                  href: `${siteURL}/pt/tools/rainbow-pool/${color}`,
+                  hreflang: 'pt',
+                },
+                {
+                  href: `${siteURL}/tools/rainbow-pool/${color}`,
+                  hreflang: 'en',
+                },
+              ],
+            });
+          });
+
+        Object.values(allSpecies)
+          .slice(parseInt(page), (parseInt(page) + 1) * 100)
+          .forEach((species) => {
+            species = species.toLowerCase();
+            locArr.push({
+              loc: `${siteURL}/tools/rainbow-pool/${species}`,
+              alternateRefs: [
+                {
+                  href: `${siteURL}/pt/tools/rainbow-pool/${species}`,
+                  hreflang: 'pt',
+                },
+                {
+                  href: `${siteURL}/tools/rainbow-pool/${species}`,
+                  hreflang: 'en',
+                },
+              ],
+            });
+          });
+      }
+
+      return [
+        ...locArr,
+        {
+          loc: `${siteURL}/tools/rainbow-pool/${speciesName}/${colorName}`,
+          alternateRefs: [
+            {
+              href: `${siteURL}/pt/tools/rainbow-pool/${speciesName}/${colorName}`,
+              hreflang: 'pt',
+            },
+            {
+              href: `${siteURL}/tools/rainbow-pool/${speciesName}/${colorName}`,
+              hreflang: 'en',
+            },
+          ],
+        },
+        {
+          loc: `${siteURL}/pt/tools/rainbow-pool/${speciesName}/${colorName}`,
+          alternateRefs: [
+            {
+              href: `${siteURL}/pt/tools/rainbow-pool/${speciesName}/${colorName}`,
+              hreflang: 'pt',
+            },
+            {
+              href: `${siteURL}/tools/rainbow-pool/${speciesName}/${colorName}`,
+              hreflang: 'en',
+            },
+          ],
+        },
+      ];
+    })
+    .flat();
+
   const restockPaths: ISitemapField[] = Object.values(restockShopInfo)
     .splice(parseInt(page) * 10, 10)
     .map((shop) => {
@@ -177,7 +260,12 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     })
     .flat();
 
-  return getServerSideSitemapLegacy(ctx, [...restockPaths, ...officialListsPaths, ...itemPaths]);
+  return getServerSideSitemapLegacy(ctx, [
+    ...restockPaths,
+    ...officialListsPaths,
+    ...itemPaths,
+    ...colorSpeciesPaths,
+  ]);
 };
 
 // Default export to prevent next.js errors
