@@ -76,6 +76,7 @@ type ListPageProps = {
   canEdit: boolean;
   isOwner: boolean;
   messages: any;
+  locale: string | undefined;
 };
 
 const ListPage = (props: ListPageProps) => {
@@ -84,7 +85,7 @@ const ListPage = (props: ListPageProps) => {
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isOpenInsert, onOpen: onOpenInsert, onClose: onCloseInsert } = useDisclosure();
-  const { canEdit, isOwner } = props;
+  const { canEdit, isOwner, locale } = props;
   const { user } = useAuth();
 
   const [list, setList] = useState<UserList>(props.list);
@@ -527,6 +528,9 @@ const ListPage = (props: ListPageProps) => {
         noindex: !list.official,
         themeColor: list.colorHex ?? '#4A5568',
         description: stripMarkdown(list.description ?? '') || undefined,
+        canonical: `https://itemdb.com.br${locale === 'pt' ? '/pt' : ''}/lists/${
+          list.official ? 'official' : list.owner.username
+        }/${list.slug ?? list.internal_id}`,
         openGraph: {
           images: [
             {
@@ -876,6 +880,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     canEdit: !!(user && (user.id === list.owner.id || (list.official && user.isAdmin))),
     isOwner: !!(user && user.id === list.owner.id),
     messages: (await import(`../../../translation/${context.locale}.json`)).default,
+    locale: context.locale,
   };
 
   return {
