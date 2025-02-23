@@ -89,8 +89,8 @@ type ItemPageProps = {
   itemRecipes: ItemRecipe[] | null;
   mmeData: ItemMMEData | null;
   dyeData: DyeworksData | null;
-  mainLayoutColor: string;
   messages: any;
+  locale: string | undefined;
 };
 
 const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
@@ -398,7 +398,6 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     wearableData,
     NCMallData,
     itemRecipes,
-    colorRaw,
     mmeData,
     dyeData,
   ] = await Promise.all([
@@ -417,14 +416,11 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     item.isWearable ? getWearableData(item.internal_id) : null, // 10
     item.isNC ? getItemNCMall(item.internal_id) : null, // 11
     !item.isNC ? getItemRecipes(item.internal_id) : null, // 12
-    import('color'), // 13
-    isMME(item.name) ? getMMEData(item) : null, // 14
-    item.isNC && item.isWearable ? getDyeworksData(item) : null, // 15
+    isMME(item.name) ? getMMEData(item) : null, // 13
+    item.isNC && item.isWearable ? getDyeworksData(item) : null, // 14
   ]);
 
   if (!colors) return { notFound: true };
-
-  const Color = colorRaw.default;
 
   const props: ItemPageProps = {
     item: item,
@@ -443,8 +439,8 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     itemRecipes: itemRecipes,
     mmeData: mmeData,
     dyeData: dyeData,
-    mainLayoutColor: Color(item.color.hex).alpha(0.4).hexa(),
     messages: (await import(`../../translation/${context.locale}.json`)).default,
+    locale: context.locale,
   };
 
   return {
@@ -480,7 +476,11 @@ function truncateString(str: string, num: number) {
 }
 
 ItemPage.getLayout = function getLayout(page: ReactElement, props: ItemPageProps) {
-  const { item, mainLayoutColor } = props;
+  const { item, locale } = props;
+
+  let canonical = 'https://itemdb.com.br/item/' + item.slug;
+  if (locale && locale !== 'en') canonical = `https://itemdb.com.br/${locale}/item/${item.slug}`;
+
   return (
     <Layout
       SEO={{
@@ -488,8 +488,9 @@ ItemPage.getLayout = function getLayout(page: ReactElement, props: ItemPageProps
         themeColor: item.color.hex,
         description: generateMetaDescription(item),
         openGraph: { images: [{ url: item.image, width: 80, height: 80, alt: item.name }] },
+        canonical: canonical,
       }}
-      mainColor={mainLayoutColor}
+      mainColor={item.color.hex + '66'}
     >
       {page}
     </Layout>
