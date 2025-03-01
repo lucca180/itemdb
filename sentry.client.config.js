@@ -14,6 +14,7 @@ if (isProd)
       'https://d093bca7709346a6a45966764e1b1988@o1042114.ingest.sentry.io/4504761196216321',
     // Adjust this value in production, or use tracesSampler for greater control
     tracesSampleRate: 0.3,
+    profilesSampleRate: 0.5,
     // ...
     // Note: if you want to override the automatic release value, do not set a
     // `release` value here - use the environment variable `SENTRY_RELEASE`, so

@@ -47,6 +47,7 @@ import { NextPageWithLayout } from '../_app';
 import { getMMEData, isMME } from '../api/v1/items/[id_name]/mme';
 import { DyeworksData, getDyeworksData } from '../api/v1/items/[id_name]/dyeworks';
 import { getSingleItemColor } from '../api/v1/items/[id_name]/colors';
+import * as Sentry from '@sentry/nextjs';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -384,6 +385,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
         permanent: true,
       },
     };
+
   const [
     colors,
     lists,
@@ -400,25 +402,38 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     itemRecipes,
     mmeData,
     dyeData,
-  ] = await Promise.all([
-    getSingleItemColor(item), //0
-    getItemLists(item.internal_id, true, false), // 1
-    getSimilarItems(item), // 2
-    item.isNC ? getItemLists(item.internal_id, false, false) : [], // 3
-    item.useTypes.canOpen !== 'false' ? getItemDrops(item.internal_id, item.isNC) : null, // 4
-    getItemParent(item.internal_id), // 5
-    !item.isNC ? getItemPrices({ iid: item.internal_id }) : [], // 6
-    !item.isNC ? getItemTrades({ name: item.name, image_id: item.image_id }) : [], // 7
-    !item.isNC
-      ? getLastSeen({ item_id: item.item_id, name: item.name, image_id: item.image_id })
-      : null, // 8
-    getItemEffects(item), // 9
-    item.isWearable ? getWearableData(item.internal_id) : null, // 10
-    item.isNC ? getItemNCMall(item.internal_id) : null, // 11
-    !item.isNC ? getItemRecipes(item.internal_id) : null, // 12
-    isMME(item.name) ? getMMEData(item) : null, // 13
-    item.isNC && item.isWearable ? getDyeworksData(item) : null, // 14
-  ]);
+  ] = await Sentry.startSpan(
+    {
+      name: 'itemLoad',
+      attributes: {
+        itemName: item.name,
+        item_iid: item.internal_id,
+        isWearable: item.isWearable,
+        isNC: item.isNC,
+      },
+    },
+    async () => {
+      return Promise.all([
+        getSingleItemColor(item), //0
+        getItemLists(item.internal_id, true, false), // 1
+        getSimilarItems(item), // 2
+        item.isNC ? getItemLists(item.internal_id, false, false) : [], // 3
+        item.useTypes.canOpen !== 'false' ? getItemDrops(item.internal_id, item.isNC) : null, // 4
+        getItemParent(item.internal_id), // 5
+        !item.isNC ? getItemPrices({ iid: item.internal_id }) : [], // 6
+        !item.isNC ? getItemTrades({ name: item.name, image_id: item.image_id }) : [], // 7
+        !item.isNC
+          ? getLastSeen({ item_id: item.item_id, name: item.name, image_id: item.image_id })
+          : null, // 8
+        getItemEffects(item), // 9
+        item.isWearable ? getWearableData(item.internal_id) : null, // 10
+        item.isNC ? getItemNCMall(item.internal_id) : null, // 11
+        !item.isNC ? getItemRecipes(item.internal_id) : null, // 12
+        isMME(item.name) ? getMMEData(item) : null, // 13
+        item.isNC && item.isWearable ? getDyeworksData(item) : null, // 14
+      ]);
+    }
+  );
 
   if (!colors) return { notFound: true };
 
