@@ -411,6 +411,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
         isWearable: item.isWearable,
         isNC: item.isNC,
       },
+      forceTransaction: true,
     },
     async () => {
       return Promise.all([
