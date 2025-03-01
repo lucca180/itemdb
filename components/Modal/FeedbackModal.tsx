@@ -57,6 +57,10 @@ const FeedbackModal = (props: FeedbackModalProps) => {
         subject_id: item?.internal_id ?? undefined,
         json: JSON.stringify({
           message: message,
+          scriptInfo: {
+            restock: window.itemdb_restock?.scriptVersion ?? null,
+            itemData: window.itemdb_script?.version ?? null,
+          },
         }),
         type: 'feedback',
         pageInfo: router.asPath,

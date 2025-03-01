@@ -860,7 +860,10 @@
     "about-this-shop": "About This Shop",
     "ats-total-items": "It can stock <b>{totalItems} different items</b> of which <b>{profitableCount}</b> {profitableCount, plural, =1 {is} other {are}} <b>profitable</b>",
     "ats-r99-chances": "The odds for <b>one specific</b> r99 item to restock is about <b>{x}%</b>",
-    "ats-avg-profit": "The average profit for the items in this shop is <b>{x} NP</b>"
+    "ats-avg-profit": "The average profit for the items in this shop is <b>{x} NP</b>",
+    "no-script-error": "We didn't detected the <Link>Restock Tracker Script</Link> installed on your browser. <Help>Need help?</Help>",
+    "text-10": "Finally, come back here and <b>import your sessions</b>",
+    "text-11": "Only the sessions you choose to import will be sended to our servers"
   },
   "Search": {
     "search": "Search",

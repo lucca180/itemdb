@@ -861,7 +861,10 @@
     "about-this-shop": "Sobre Essa Loja",
     "ats-total-items": "<b>{totalItems} itens diferentes</b> podem estocar nessa loja, dos quais <b>{profitableCount}</b> {profitableCount, plural, =1 {é <b>lucrativo</b>} other {são <b>lucrativos</b>}}",
     "ats-avg-profit": "O lucro médio para os itens nesta loja é <b>{x} NP</b>",
-    "ats-r99-chances": "As chances de restocar <b>um item específico</b> r99 é cerca de <b>{x}%</b>"
+    "ats-r99-chances": "As chances de restocar <b>um item específico</b> r99 é cerca de <b>{x}%</b>",
+    "no-script-error": "Não detectamos o <Link>Restock Tracker Script</Link> instalado no seu navegador. <Help>Precisa de ajuda?</Help>",
+    "text-10": "Finalmente, volte aqui e <b>importe suas sessões</b>",
+    "text-11": "Somente as sessões que você escolher importar serão enviadas para nossos servidores"
   },
   "Search": {
     "search": "Pesquisa",

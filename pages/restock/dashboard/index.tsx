@@ -106,9 +106,9 @@ const RestockDashboard = (props: RestockDashboardProps) => {
   );
 
   const [alertMsg, setAlertMsg] = useState<AlertMsg | null>(null);
-  const [importCount, setImportCount] = useState<number>(0);
+  const [importCount, setImportCount] = useState<number | null>(null);
   const [shopList, setShopList] = useState<number[]>([]);
-  const [noScript, setNoScript] = useState<boolean>(false);
+  const [noScript, setNoScript] = useState<'notFound' | 'outdated' | null>(null);
   const [filter, setFilter] = useState<PeriodFilter | null>(props.initialFilter);
   const [chartData, setChartData] = useState<RestockChart | null>(null);
 
@@ -208,11 +208,11 @@ const RestockDashboard = (props: RestockDashboardProps) => {
         window.itemdb_restock.scriptVersion < MIN_SCRIPT_VERSION
       ) {
         console.warn('itemdb_restock version outdated');
-        setNoScript(true);
+        setNoScript('outdated');
       }
     } else {
       console.warn('itemdb_restock not found');
-      setNoScript(true);
+      setNoScript('notFound');
     }
 
     const validSessions = [...currentParsed, ...unsyncParsed].filter(
@@ -324,7 +324,7 @@ const RestockDashboard = (props: RestockDashboardProps) => {
             </option>
           ))}
         </Select>
-        {!!importCount && (
+        {user && (
           <Button
             size="xs"
             // bg="blackAlpha.300"
@@ -332,6 +332,8 @@ const RestockDashboard = (props: RestockDashboardProps) => {
             boxShadow={'md'}
             borderRadius={'sm'}
             onClick={() => setOpenImport(true)}
+            isDisabled={!importCount}
+            isLoading={importCount === null}
           >
             {t('Restock.import-x-sessions', { x: importCount })}
           </Button>
@@ -348,21 +350,38 @@ const RestockDashboard = (props: RestockDashboardProps) => {
       </Flex>
       {noScript && (
         <Center flexFlow={'column'} my={3}>
-          <Alert status={'warning'} maxW="500px" variant="subtle" borderRadius={'md'}>
+          <Alert
+            status={noScript === 'outdated' ? 'warning' : 'error'}
+            maxW="500px"
+            variant="subtle"
+            borderRadius={'md'}
+          >
             <AlertIcon />
             <Box w="100%">
               <AlertDescription fontSize="sm">
-                {t.rich('Restock.outdated-script', {
-                  Link: (chunk) => (
-                    <Link
-                      href="https://github.com/lucca180/itemdb/raw/main/userscripts/restockTracker.user.js"
-                      color="yellow.100"
-                      isExternal
-                    >
-                      {chunk}
-                    </Link>
-                  ),
-                })}
+                {t.rich(
+                  noScript === 'outdated' ? 'Restock.outdated-script' : 'Restock.no-script-error',
+                  {
+                    Link: (chunk) => (
+                      <Link
+                        href="https://github.com/lucca180/itemdb/raw/main/userscripts/restockTracker.user.js"
+                        color={noScript === 'outdated' ? 'yellow.100' : 'red.200'}
+                        isExternal
+                      >
+                        {chunk}
+                      </Link>
+                    ),
+                    Help: (chunk) => (
+                      <Link
+                        href="/articles/help-my-scripts-are-not-working"
+                        color="red.200"
+                        target="_blank"
+                      >
+                        {chunk}
+                      </Link>
+                    ),
+                  }
+                )}
               </AlertDescription>
             </Box>
             <CloseButton
@@ -370,7 +389,7 @@ const RestockDashboard = (props: RestockDashboardProps) => {
               position="relative"
               right={0}
               top={-1}
-              onClick={() => setNoScript(false)}
+              onClick={() => setNoScript(null)}
             />
           </Alert>
         </Center>
@@ -412,7 +431,7 @@ const RestockDashboard = (props: RestockDashboardProps) => {
               <AlertDescription>
                 {t.rich('Feedback.manifest-v3-text', {
                   Link: (chunk) => (
-                    <Link href="https://www.tampermonkey.net/faq.php#Q209" isExternal>
+                    <Link href="/articles/help-my-scripts-are-not-working" isExternal>
                       {chunk}
                     </Link>
                   ),
@@ -420,7 +439,12 @@ const RestockDashboard = (props: RestockDashboardProps) => {
               </AlertDescription>
             </Box>
           </Alert>
-          <UnorderedList mt={3} pl={3} sx={{ a: { color: 'green.200' } }} spacing={2}>
+          <UnorderedList
+            mt={3}
+            pl={3}
+            sx={{ a: { color: 'green.200' }, b: { color: 'green.200' } }}
+            spacing={2}
+          >
             {!user && (
               <ListItem>
                 <Text>
@@ -497,6 +521,16 @@ const RestockDashboard = (props: RestockDashboardProps) => {
                     </Link>
                   ),
                 })}
+              </Text>
+            </ListItem>
+            <ListItem>
+              <Text>
+                {t.rich('Restock.text-10', {
+                  b: (chunk) => <b>{chunk}</b>,
+                })}
+              </Text>
+              <Text fontSize="sm" color="gray.400">
+                {t('Restock.text-11')}
               </Text>
             </ListItem>
           </UnorderedList>
