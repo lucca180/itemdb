@@ -122,14 +122,20 @@ async function PATCH(req: NextApiRequest, res: NextApiResponse) {
       nextMonth = addMonths(nextMonth, 1);
     }
 
-    await prisma.wrappedSettings.update({
+    await prisma.wrappedSettings.upsert({
       where: {
         user_id_year: {
           user_id: user.user_id,
           year: lastMonth.getFullYear(),
         },
       },
-      data: {
+      update: {
+        ready: true,
+      },
+      create: {
+        user_id: user.user_id,
+        year: lastMonth.getFullYear(),
+        settings: '',
         ready: true,
       },
     });
