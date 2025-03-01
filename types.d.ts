@@ -650,7 +650,7 @@ export type DTIPetAppearance = {
 
 declare global {
   interface Window {
-    itemdb_restock: {
+    itemdb_restock?: {
       scriptVersion: number;
       getSessions: () => {
         unsync_sessions: RestockSession[];
@@ -658,6 +658,14 @@ declare global {
       };
       cleanAll: () => void;
     };
-    itemdb_restock_cleanAll: () => void; //backwards compatibility
+    itemdb_script?: {
+      version: string;
+      versionCode: number;
+    };
+    umami?: {
+      identify: (payload: any) => Promise<void>;
+      track: (event: string, payload: any) => Promise<void>;
+    };
+    itemdb_restock_cleanAll?: () => void; //backwards compatibility
   }
 }

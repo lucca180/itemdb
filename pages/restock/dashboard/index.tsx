@@ -220,6 +220,7 @@ const RestockDashboard = (props: RestockDashboardProps) => {
     );
 
     setImportCount(validSessions.length);
+    track();
   };
 
   const handleClose = () => {
@@ -241,6 +242,18 @@ const RestockDashboard = (props: RestockDashboardProps) => {
 
     setCookie('restockFilter2025', JSON.stringify({ ...filter, [name]: value, timestamp: null }), {
       expires: new Date('2030-01-01'),
+    });
+  };
+
+  const track = async () => {
+    if (!window.umami || !user) return;
+
+    const umami = window.umami;
+
+    await umami.identify({
+      id: user.id,
+      restockScript: window.itemdb_restock?.scriptVersion ?? null,
+      itemdbScript: window.itemdb_script?.version ?? null,
     });
   };
 
