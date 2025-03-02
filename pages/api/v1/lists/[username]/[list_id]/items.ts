@@ -18,10 +18,16 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { username, list_id } = req.query;
+  const { username, list_id: list_id_or_slug } = req.query;
   const isOfficial = username === 'official';
 
-  if (!username || !list_id || Array.isArray(username) || Array.isArray(list_id) || !req.url)
+  if (
+    !username ||
+    !list_id_or_slug ||
+    Array.isArray(username) ||
+    Array.isArray(list_id_or_slug) ||
+    !req.url
+  )
     return res.status(400).json({ error: 'Bad Request' });
 
   const reqQuery = qs.parse(req.url.split('?')[1]) as any;
@@ -39,7 +45,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   } catch (e) {}
 
   try {
-    const list = await getList(username, parseInt(list_id), user, isOfficial);
+    const list = await getList(username, list_id_or_slug, user, isOfficial);
     if (!list) return res.status(404).json({ error: 'List not found' });
 
     const itemInfoRaw = await prisma.listItems.findMany({
