@@ -121,12 +121,12 @@ const RestockHistory = (props: RestockHistoryPageProps) => {
             value={mode}
             disabled={isLoading}
           >
-            <option value="30days">{t('General.x-days', { x: 30 })}</option>
-            <option value="7days">{t('General.x-days', { x: 7 })}</option>
-            <option value="3days">{t('General.x-days', { x: 3 })}</option>
+            <option value="30days">{t('General.x-days', { x: 30, long: false })}</option>
+            <option value="7days">{t('General.x-days', { x: 7, long: false })}</option>
+            <option value="3days">{t('General.x-days', { x: 3, long: false })}</option>
             <option value="1day">{t('General.1-day')}</option>
             <option value="1hour">{t('General.1-hour')}</option>
-            <option value="30min">{t('General.x-minutes', { x: 30 })}</option>
+            <option value="30min">{t('General.x-minutes', { x: 30, long: false })}</option>
           </Select>
           <Select
             variant="filled"
