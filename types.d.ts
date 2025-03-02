@@ -360,6 +360,7 @@ type RestockSession = {
     [restock_id: number]: {
       item_id: number;
       timestamp: number;
+      stock_price?: number | null;
       notTrust?: boolean;
     };
   };
@@ -369,6 +370,7 @@ type RestockSession = {
     soldOut_timestamp: number | null;
     haggle_timestamp: number | null;
     buy_timestamp: number | null;
+    buy_price: number | null;
   }[];
 
   isActive?: boolean;
@@ -388,11 +390,13 @@ type RestockStats = {
     shopId: number;
     durationCount: number;
   };
-
   totalSessions: number;
   mostExpensiveBought?: ItemData | null;
   mostExpensiveLost?: ItemData | null;
   totalRefreshes: number;
+  totalSpent?: number | null;
+  estProfit?: number | null;
+  totalHaggled: number;
   totalLost: {
     count: number;
     value: number;

@@ -416,10 +416,10 @@
     "or": "or",
     "order": "Order",
     "album-order": "Album Order",
-    "x-days": "{x} days",
+    "x-days": "{x}{long, select, true { days} other {d}}",
     "1-day": "1 day",
     "1-hour": "1 hour",
-    "x-minutes": "{x} minutes",
+    "x-minutes": "{x}{long, select, true { minutes} other {m}}",
     "auction-house": "Auction House",
     "thank-you": "Thank you!",
     "sending-dots": "Sending...",
@@ -430,7 +430,9 @@
     "yes": "Yes",
     "no": "No",
     "restock-shops": "Restock Shops",
-    "always": "Always"
+    "always": "Always",
+    "x-seconds": "{x}{long, select, true { seconds} other {s}}",
+    "x-hours": "{x}{long, select, true { hours} other {h}}"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",
@@ -863,7 +865,13 @@
     "ats-avg-profit": "The average profit for the items in this shop is <b>{x} NP</b>",
     "no-script-error": "We didn't detected the <Link>Restock Tracker Script</Link> installed on your browser. <Help>Need help?</Help>",
     "text-10": "Finally, come back here and <b>import your sessions</b>",
-    "text-11": "Only the sessions you choose to import will be sended to our servers"
+    "text-11": "Only the sessions you choose to import will be sended to our servers",
+    "total-saved-haggling": "Total Saved Haggling",
+    "estimated-revenue-0": "Estimated Revenue - {0}",
+    "your-estimate-profit": "Your Estimate Profit",
+    "x-items-bought": "{0} Items Bought",
+    "x-np-spent": "{0} NP Spent",
+    "x-time-restocking": "<Val></Val> Restocking"
   },
   "Search": {
     "search": "Search",

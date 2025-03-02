@@ -53,7 +53,6 @@ import { NextApiRequest } from 'next';
 import { CheckAuth } from '../../../utils/googleCloud';
 import { setCookie } from 'cookies-next/client';
 import { getRestockStats } from '../../api/v1/restock';
-import { IntervalFormatted } from '../../../components/Utils/IntervalFormatted';
 
 const RestockWrappedModal = dynamic(() => import('../../../components/Modal/RestockWrappedModal'));
 
@@ -61,7 +60,7 @@ const DashboardOptionsModal = dynamic(
   () => import('../../../components/Modal/DashboardOptionsModal')
 );
 
-const color = Color('#79dbaf').rgb().array();
+const color = Color('#599379').rgb().array();
 
 const MIN_SCRIPT_VERSION = 110;
 
@@ -117,24 +116,6 @@ const RestockDashboard = (props: RestockDashboardProps) => {
     if (!sessionStats || !pastSessionStats) return null;
     const diff = sessionStats.estRevenue - pastSessionStats.estRevenue;
     const diffPercentage = Math.abs(diff / pastSessionStats.estRevenue) * 100;
-
-    return {
-      diff,
-      diffPercentage,
-      isPositive: diff > 0,
-    };
-  }, [sessionStats, pastSessionStats]);
-
-  const profitDiff = useMemo(() => {
-    if (
-      !sessionStats ||
-      !pastSessionStats ||
-      !sessionStats.estProfit ||
-      !pastSessionStats.estProfit
-    )
-      return null;
-    const diff = sessionStats.estProfit - pastSessionStats.estProfit;
-    const diffPercentage = Math.abs(diff / pastSessionStats.estProfit) * 100;
 
     return {
       diff,
@@ -293,48 +274,27 @@ const RestockDashboard = (props: RestockDashboardProps) => {
       )}
       <Box
         position="absolute"
-        h="75vh"
+        h="650px"
         left="0"
         width="100%"
         bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${color[0]},${color[1]},${color[2]},.7) 70%)`}
         zIndex={-1}
       />
-      <Flex
-        gap={2}
-        alignItems="center"
-        justifyContent={['center', 'center', 'flex-end']}
-        my={2}
-        flexWrap={'wrap'}
-      >
-        {user && (
-          <Button
-            size="sm"
-            bg="blackAlpha.500"
-            fontWeight={'400'}
-            color="green.100"
-            borderRadius={'3xl'}
-            _hover={{ bg: 'blackAlpha.300' }}
-            onClick={() => setOpenImport(true)}
-            isDisabled={!importCount}
-            isLoading={importCount === null}
-          >
-            {t('Restock.import-x-sessions', { x: importCount })}
-          </Button>
-        )}
+      <Text fontSize="xs" mt={2}>
+        <Link as={NextLink} href="/restock">
+          ← {t('Restock.back-to-restock-hub')}
+        </Link>
+      </Text>
+      <Flex gap={2} alignItems="center" justifyContent={['center', 'center', 'flex-start']} my={2}>
         <Select
-          maxW="170px"
+          maxW="150px"
           variant={'filled'}
-          colorScheme="blackAlpha"
-          bg="blackAlpha.500"
-          color="green.100"
-          size="sm"
-          borderRadius={'3xl'}
+          bg="blackAlpha.300"
+          size="xs"
+          borderRadius={'sm'}
           name="timePeriod"
           value={(filter ?? defaultFilter).timePeriod}
           onChange={handleSelectChange}
-          _hover={{ bg: 'blackAlpha.300' }}
-          _focusVisible={{ bg: 'blackAlpha.300' }}
-          sx={{ option: { color: 'white' } }}
         >
           {filter?.timestamp && (
             <option value={filter.timePeriod}>{formatter.dateTime(filter.timestamp)}</option>
@@ -350,16 +310,12 @@ const RestockDashboard = (props: RestockDashboardProps) => {
         <Select
           maxW="150px"
           variant={'filled'}
-          bg="blackAlpha.500"
-          color="green.100"
-          size="sm"
-          borderRadius={'3xl'}
+          bg="blackAlpha.300"
+          size="xs"
+          borderRadius={'sm'}
           name="shops"
           value={(filter ?? defaultFilter).shops}
           onChange={handleSelectChange}
-          _hover={{ bg: 'blackAlpha.300' }}
-          _focusVisible={{ bg: 'blackAlpha.300' }}
-          sx={{ option: { color: 'white' } }}
         >
           <option value="all">{t('Restock.all-shops')}</option>
           {shopList.map((shopId) => (
@@ -368,25 +324,28 @@ const RestockDashboard = (props: RestockDashboardProps) => {
             </option>
           ))}
         </Select>
+        {user && (
+          <Button
+            size="xs"
+            // bg="blackAlpha.300"
+            colorScheme="green"
+            boxShadow={'md'}
+            borderRadius={'sm'}
+            onClick={() => setOpenImport(true)}
+            isDisabled={!importCount}
+            isLoading={importCount === null}
+          >
+            {t('Restock.import-x-sessions', { x: importCount })}
+          </Button>
+        )}
         {sessionStats && (
-          <>
-            <IconButton
-              bg="blackAlpha.500"
-              color="green.100"
-              aria-label="Open Dashboard Options"
-              icon={<FaCog />}
-              onClick={onOpenOptions}
-              size="sm"
-            />
-            <IconButton
-              bg="blackAlpha.500"
-              color="green.100"
-              aria-label="Restock Wrapped Button"
-              onClick={onWrappedOpen}
-              icon={<FaFileDownload />}
-              size="sm"
-            />
-          </>
+          <IconButton
+            bg="blackAlpha.300"
+            aria-label="Open Dashboard Options"
+            icon={<FaCog />}
+            onClick={onOpenOptions}
+            size="sm"
+          />
         )}
       </Flex>
       {noScript && (
@@ -396,7 +355,6 @@ const RestockDashboard = (props: RestockDashboardProps) => {
             maxW="500px"
             variant="subtle"
             borderRadius={'md'}
-            bg={'blackAlpha.500'}
           >
             <AlertIcon />
             <Box w="100%">
@@ -446,13 +404,7 @@ const RestockDashboard = (props: RestockDashboardProps) => {
 
           {alertMsg && (
             <Center flexFlow={'column'} my={3}>
-              <Alert
-                status={alertMsg.type}
-                maxW="500px"
-                variant="subtle"
-                borderRadius={'md'}
-                bg={'blackAlpha.500'}
-              >
+              <Alert status={alertMsg.type} maxW="500px" variant="subtle" borderRadius={'md'}>
                 <AlertIcon />
                 <Box>
                   {alertMsg.title && <AlertTitle>{alertMsg.title}</AlertTitle>}
@@ -471,8 +423,7 @@ const RestockDashboard = (props: RestockDashboardProps) => {
             maxW="750px"
             my={4}
             fontSize="sm"
-            sx={{ a: { color: 'yellow.200' } }}
-            bg={'blackAlpha.500'}
+            sx={{ a: { color: 'green.200' } }}
           >
             <AlertIcon />
             <Box>
@@ -601,23 +552,29 @@ const RestockDashboard = (props: RestockDashboardProps) => {
               </Alert>
             </Center>
           )}
-          <Flex mb={8} mt={{ base: 8, md: 1 }} flexFlow="column" gap={2}>
-            <Heading size="md" color="green.100">
-              {t('Restock.your-estimate-profit')}
+          <Center my={6} flexFlow="column" gap={2}>
+            <Heading size="md">
+              {t('Restock.your-est-revenue')}{' '}
+              <IconButton
+                size="xs"
+                aria-label="Restock Wrapped Button"
+                onClick={onWrappedOpen}
+                icon={<FaFileDownload />}
+              />
             </Heading>
             <HStack>
               <Heading
-                size="3xl"
-                filter={'drop-shadow(0 0 5px rgba(0, 0, 0, 0.4))'}
-                color="green.200"
+                size="2xl"
+                bgGradient="linear(to-r, green.400, green.200, green.400)"
+                bgClip="text"
               >
-                {intl.format(sessionStats.estProfit ?? sessionStats.estRevenue)} NP
+                {intl.format(sessionStats.estRevenue)} NP
               </Heading>
-              {(profitDiff ?? revenueDiff) && (
+              {revenueDiff && (
                 <Tooltip
                   hasArrow
                   label={t('Restock.from-x-with-y-items', {
-                    0: intl.format(pastSessionStats!.estProfit ?? pastSessionStats!.estRevenue),
+                    0: intl.format(pastSessionStats!.estRevenue),
                     1: pastSessionStats!.totalBought.count,
                   })}
                   bg="blackAlpha.900"
@@ -626,49 +583,24 @@ const RestockDashboard = (props: RestockDashboardProps) => {
                   color="white"
                 >
                   <Badge
-                    variant={'solid'}
-                    color={(profitDiff ?? revenueDiff)!.isPositive ? 'green.100' : 'red.200'}
-                    bg={'blackAlpha.500'}
+                    colorScheme={revenueDiff.isPositive ? 'green' : 'red'}
                     p={1}
                     borderRadius={'lg'}
                     display="flex"
                     alignItems={'center'}
                   >
-                    <Icon
-                      as={
-                        (profitDiff ?? revenueDiff)!.isPositive ? FaArrowTrendUp : FaArrowTrendDown
-                      }
-                      mr={1}
-                    />
-                    {(profitDiff ?? revenueDiff)!.diffPercentage.toFixed(0)}%
+                    <Icon as={revenueDiff.isPositive ? FaArrowTrendUp : FaArrowTrendDown} mr={1} />
+                    {revenueDiff.diffPercentage.toFixed(2)}%
                   </Badge>
                 </Tooltip>
               )}
             </HStack>
-            <HStack mt={3} fontSize={'sm'} fontWeight={'500'} color="green.100" flexWrap={'wrap'}>
-              <Flex py={2} px={4} bg={'blackAlpha.500'} borderRadius={'3xl'}>
-                {t('Restock.x-items-bought', {
-                  0: intl.format(sessionStats.totalBought.count),
-                })}
-              </Flex>
-              <Flex py={2} px={4} bg={'blackAlpha.500'} borderRadius={'3xl'}>
-                {t('Restock.x-np-spent', {
-                  0: intl.format(sessionStats.totalSpent ?? 0),
-                })}
-              </Flex>
-              <Flex
-                py={2}
-                px={5}
-                bg={'blackAlpha.500'}
-                borderRadius={'3xl'}
-                textTransform={'capitalize'}
-              >
-                {t.rich('Restock.x-time-restocking', {
-                  Val: () => <IntervalFormatted ms={sessionStats.durationCount} long />,
-                })}
-              </Flex>
-            </HStack>
-          </Flex>
+            <Heading size="sm">
+              {t('Restock.with-x-items', {
+                x: intl.format(sessionStats.totalBought.count),
+              })}
+            </Heading>
+          </Center>
           <Divider />
           <SimpleGrid mt={3} columns={[2, 2, 2, 4, 4]} spacing={[2, 3]}>
             <StatsCard type="reactionTime" session={sessionStats} pastSession={pastSessionStats} />
@@ -688,7 +620,7 @@ const RestockDashboard = (props: RestockDashboardProps) => {
               pastSession={pastSessionStats}
             />
             <StatsCard type="favoriteBuy" session={sessionStats} pastSession={pastSessionStats} />
-            <StatsCard type="savedHaggling" session={sessionStats} pastSession={pastSessionStats} />
+            <StatsCard type="timeSpent" session={sessionStats} pastSession={pastSessionStats} />
           </SimpleGrid>
           <Text textAlign={'center'} fontSize="xs" color="whiteAlpha.600" mt={6}>
             {t('General.tip')}:{' '}
@@ -722,29 +654,12 @@ const RestockDashboard = (props: RestockDashboardProps) => {
               </Flex>
             </Flex>
             <Flex flexFlow={'column'} textAlign={'center'} gap={3} flex={1}>
-              <Tabs flex={1} colorScheme="green" variant={'soft-rounded'}>
+              <Tabs flex={1} colorScheme="gray" variant={'line'}>
                 <TabList>
-                  <Tab
-                    color="green.50"
-                    opacity={'0.5'}
-                    _selected={{ color: 'green.100', bg: 'blackAlpha.500', opacity: 1 }}
-                  >
-                    {t('Restock.hottest-restocks')}
-                  </Tab>
-                  <Tab
-                    color="green.50"
-                    opacity={'0.5'}
-                    _selected={{ color: 'green.100', bg: 'blackAlpha.500', opacity: 1 }}
-                  >
-                    {t('Restock.worst-losses')}
-                  </Tab>
-                  <Tab
-                    color="green.50"
-                    opacity={'0.5'}
-                    _selected={{ color: 'green.100', bg: 'blackAlpha.500', opacity: 1 }}
-                  >
-                    {t('Restock.worst-baits')}
-                  </Tab>
+                  <Tab>{t('Restock.hottest-restocks')}</Tab>
+                  <Tab>{t('Restock.worst-losses')}</Tab>
+                  <Tab>{t('Restock.worst-baits')}</Tab>
+                  <Tab>❤️</Tab>
                 </TabList>
                 <TabPanels>
                   <TabPanel px={0}>
@@ -825,6 +740,30 @@ const RestockDashboard = (props: RestockDashboardProps) => {
                       )}
                     </Flex>
                   </TabPanel>
+                  <TabPanel px={0}>
+                    <Flex
+                      gap={3}
+                      px={4}
+                      flexFlow="column"
+                      textAlign={'center'}
+                      alignItems={'center'}
+                      sx={{ a: { color: 'green.200' } }}
+                    >
+                      <Heading size="md">❤️</Heading>
+                      <Heading size="sm">{t('Restock.enjoying-restock-dashboard')}</Heading>
+                      <Text fontSize={'sm'}>{t('Restock.cta-1')}</Text>
+                      <Link fontSize={'sm'} href="/feedback/trades" isExternal>
+                        {t('Restock.pricing-trade-lots')}
+                      </Link>
+                      <Link fontSize={'sm'} href="/feedback/vote" isExternal>
+                        {t('Restock.vote-on-pricing-suggestions')}
+                      </Link>
+                      <Link fontSize={'sm'} href="/contribute" isExternal>
+                        {t('Restock.item-data-extractor-script')}
+                      </Link>
+                      <Text fontSize={'sm'}>{t('Restock.cta-2')}</Text>
+                    </Flex>
+                  </TabPanel>
                 </TabPanels>
               </Tabs>
             </Flex>
@@ -902,9 +841,9 @@ RestockDashboard.getLayout = function getLayout(page: ReactElement, props: any) 
       SEO={{
         title: t('Restock.neopets-restock-dashboard'),
         description: t('Restock.restock-dashboard-desc'),
-        themeColor: '#66bf9c',
+        themeColor: '#599379',
       }}
-      mainColor="#66bf9cb8"
+      mainColor="#599379c7"
     >
       {page}
     </Layout>

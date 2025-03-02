@@ -431,7 +431,9 @@
     "no": "Não",
     "yes": "Sim",
     "restock-shops": "Lojas de Restoque",
-    "always": "Sempre"
+    "always": "Sempre",
+    "x-hours": "{x}{long, select, true { horas} other {h}}",
+    "x-seconds": "{x}{long, select, true { segundos} other {s}}"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",
@@ -864,7 +866,13 @@
     "ats-r99-chances": "As chances de restocar <b>um item específico</b> r99 é cerca de <b>{x}%</b>",
     "no-script-error": "Não detectamos o <Link>Restock Tracker Script</Link> instalado no seu navegador. <Help>Precisa de ajuda?</Help>",
     "text-10": "Finalmente, volte aqui e <b>importe suas sessões</b>",
-    "text-11": "Somente as sessões que você escolher importar serão enviadas para nossos servidores"
+    "text-11": "Somente as sessões que você escolher importar serão enviadas para nossos servidores",
+    "estimated-revenue-0": "Receita Estimada - {0}",
+    "total-saved-haggling": "Total Economizado Pechinchando",
+    "x-items-bought": "{0} Itens Comprados",
+    "x-np-spent": "{0} NP Gasto",
+    "x-time-restocking": "<Val></Val> Restocando",
+    "your-estimate-profit": "Seu Lucro Estimado"
   },
   "Search": {
     "search": "Pesquisa",

@@ -3,7 +3,7 @@ import { createTranslator, useFormatter } from 'next-intl';
 import { ReactElement } from 'react';
 import Layout from '../../../components/Layout';
 import { Image, Flex, Grid, GridItem, Heading, Text, Link } from '@chakra-ui/react';
-import { msIntervalFormated, restockShopInfo } from '../../../utils/utils';
+import { msIntervalFormatted, restockShopInfo } from '../../../utils/utils';
 import { AnimatedNumber } from '../../../components/Utils/AnimatedNumber';
 import { RestockStats, User } from '../../../types';
 import ItemCard from '../../../components/Items/ItemCard';
@@ -328,7 +328,7 @@ const Wrapped2024 = (props: Wrapped2024Props) => {
           <Text mb={5} fontSize={'sm'}>
             it took{' '}
             <Text as="span" color="#FFF9BF" fontWeight={'extrabold'}>
-              {msIntervalFormated(wrappedData?.fastestBuy?.timediff ?? 0, false, 2)}
+              {msIntervalFormatted(wrappedData?.fastestBuy?.timediff ?? 0, false, 2)}
             </Text>{' '}
             for you to buy it
           </Text>
@@ -470,7 +470,7 @@ const Wrapped2024 = (props: Wrapped2024Props) => {
           <Text fontSize={'sm'} textAlign={'center'}>
             Wow{' '}
             <Text as="span" color={'#79D7BE'} fontWeight={'bold'}>
-              {msIntervalFormated(wrappedData?.mostPopularShop.durationCount ?? 0, true, 2)}
+              {msIntervalFormatted(wrappedData?.mostPopularShop.durationCount ?? 0, true, 2)}
             </Text>{' '}
             at{' '}
             <Text as="span" color={'#79D7BE'} fontWeight={'bold'}>

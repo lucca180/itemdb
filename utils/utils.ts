@@ -1320,7 +1320,7 @@ export const removeOutliers = (arr: number[], n: number) => {
   return newArr;
 };
 
-export const msIntervalFormated = (ms: number, long = false, precision = 0) => {
+export const msIntervalFormatted = (ms: number, long = false, precision = 0) => {
   if (ms < 1000) return `${ms}${long ? ' milliseconds' : 'ms'}`;
 
   if (ms < 60 * 1000)

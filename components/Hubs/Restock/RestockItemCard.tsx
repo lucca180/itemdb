@@ -2,7 +2,7 @@ import { Badge, Flex, Link, Text, Image, HStack, Tooltip } from '@chakra-ui/reac
 import Color from 'color';
 import NextLink from 'next/link';
 import { ItemData, RestockSession } from '../../../types';
-import { getRestockProfitOnDate, msIntervalFormated } from '../../../utils/utils';
+import { getRestockProfitOnDate, msIntervalFormatted } from '../../../utils/utils';
 import { differenceInMilliseconds } from 'date-fns';
 import { useFormatter, useTranslations } from 'next-intl';
 import { MdHelp } from 'react-icons/md';
@@ -107,14 +107,16 @@ const RestockItem = (props: Props) => {
             <Text as="span" fontSize={'xs'}>
               {t.rich('Restock.bought-in-x-at-y', {
                 b: (children) => <b>{children}</b>,
-                x: restockItem.notTrust ? '???' : msIntervalFormated(boughtTime, true, 2),
-                y: format.dateTime(clickData.buy_timestamp ?? 0, {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: 'numeric',
-                  minute: 'numeric',
-                }),
+                x: restockItem.notTrust ? '???' : msIntervalFormatted(boughtTime, true, 2),
+                y:
+                  format.dateTime(clickData.buy_timestamp ?? 0, {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    timeZone: 'America/Los_Angeles',
+                  }) + ' NST',
               })}
             </Text>
           )}
@@ -123,14 +125,16 @@ const RestockItem = (props: Props) => {
             <Text as="span" fontSize={'xs'}>
               {t.rich('Restock.lost-haggling', {
                 b: (children) => <b>{children}</b>,
-                x: restockItem.notTrust ? '???' : msIntervalFormated(lostHaggle, true, 2),
-                y: format.dateTime(clickData.haggle_timestamp ?? 0, {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: 'numeric',
-                  minute: 'numeric',
-                }),
+                x: restockItem.notTrust ? '???' : msIntervalFormatted(lostHaggle, true, 2),
+                y:
+                  format.dateTime(clickData.haggle_timestamp ?? 0, {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    timeZone: 'America/Los_Angeles',
+                  }) + ' NST',
               })}
             </Text>
           )}
@@ -139,14 +143,16 @@ const RestockItem = (props: Props) => {
             <Text as="span" fontSize={'xs'}>
               {t.rich('Restock.lost-no-haggle', {
                 b: (children) => <b>{children}</b>,
-                x: restockItem.notTrust ? '???' : msIntervalFormated(lostNoHaggle, true, 2),
-                y: format.dateTime(clickData.soldOut_timestamp ?? 0, {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: 'numeric',
-                  minute: 'numeric',
-                }),
+                x: restockItem.notTrust ? '???' : msIntervalFormatted(lostNoHaggle, true, 2),
+                y:
+                  format.dateTime(clickData.soldOut_timestamp ?? 0, {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    timeZone: 'America/Los_Angeles',
+                  }) + ' NST',
               })}
             </Text>
           )}

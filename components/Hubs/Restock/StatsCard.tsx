@@ -2,8 +2,9 @@ import { Badge, Flex, Icon, Text, Tooltip } from '@chakra-ui/react';
 import { FaArrowTrendDown, FaArrowTrendUp } from 'react-icons/fa6';
 import { RestockStats } from '../../../types';
 import { useFormatter, useTranslations } from 'next-intl';
-import { msIntervalFormated, restockShopInfo } from '../../../utils/utils';
+import { msIntervalFormatted, restockShopInfo } from '../../../utils/utils';
 import { MdHelp } from 'react-icons/md';
+import { IntervalFormatted } from '../../Utils/IntervalFormatted';
 
 type StatsCardProps = {
   label?: string;
@@ -17,7 +18,7 @@ type StatsCardProps = {
 
 type StatsInfo = {
   label: string;
-  stat: string;
+  stat: string | React.ReactNode;
   helpText?: string;
   labelTooltip?: string;
 
@@ -103,7 +104,7 @@ const intl = new Intl.NumberFormat();
 const useStatsTypes = (
   type: string,
   sessionStats: RestockStats,
-  pastSession?: RestockStats | null,
+  pastSession?: RestockStats | null
 ): StatsInfo => {
   const t = useTranslations();
   const formatter = useFormatter();
@@ -120,14 +121,14 @@ const useStatsTypes = (
           badgeIconType: diff > 0 ? 'up' : 'down',
           badgeColor: diff > 0 ? 'red' : 'green',
           badgeTooltip: t('Restock.from-x', {
-            0: msIntervalFormated(pastSession.avgReactionTime, true, 2),
+            0: msIntervalFormatted(pastSession.avgReactionTime, true, 2),
           }),
         };
       }
 
       return {
         label: t('Restock.avg-reaction-time'),
-        stat: msIntervalFormated(sessionStats.avgReactionTime, true, 2),
+        stat: <IntervalFormatted ms={sessionStats.avgReactionTime} long precision={2} />,
         helpText: t('Restock.based-on-x-clicks', {
           x: intl.format(sessionStats.totalClicks),
         }),
@@ -151,13 +152,13 @@ const useStatsTypes = (
           badgeIconType: diff > 0 ? 'up' : 'down',
           badgeColor: diff > 0 ? 'red' : 'green',
           badgeTooltip: t('Restock.from-x', {
-            0: msIntervalFormated(pastSession.avgRefreshTime, true, 2),
+            0: msIntervalFormatted(pastSession.avgRefreshTime, true, 2),
           }),
         };
       }
       return {
         label: t('Restock.avg-refresh-time'),
-        stat: msIntervalFormated(sessionStats.avgRefreshTime, true, 2),
+        stat: <IntervalFormatted ms={sessionStats.avgRefreshTime} long precision={2} />,
         helpText: t('Restock.based-on-x-refreshs', {
           x: intl.format(sessionStats.totalRefreshes),
         }),
@@ -202,7 +203,7 @@ const useStatsTypes = (
           badgeIconType: diff > 0 ? 'up' : 'down',
           badgeColor: diff > 0 ? 'red' : 'green',
           badgeTooltip: t('Restock.from-x', {
-            0: msIntervalFormated(pastSession.fastestBuy?.timediff ?? 0, true, 2),
+            0: msIntervalFormatted(pastSession.fastestBuy?.timediff ?? 0, true, 2),
           }),
         };
       }
@@ -210,13 +211,14 @@ const useStatsTypes = (
       return {
         label: t('Restock.fastest-buy'),
         labelTooltip: t('Restock.fastest-buy-tooltip'),
-        stat: msIntervalFormated(sessionStats.fastestBuy?.timediff ?? 0, true, 2),
+        stat: <IntervalFormatted ms={sessionStats.fastestBuy?.timediff ?? 0} long precision={2} />,
         helpText: `${sessionStats.fastestBuy?.item.name ?? t('Restock.none')} ${t(
-          'Restock.at',
+          'Restock.at'
         )} ${formatter.dateTime(sessionStats.fastestBuy?.timestamp ?? 0, {
           timeStyle: 'short',
           dateStyle: 'short',
-        })}`,
+          timeZone: 'America/Los_Angeles',
+        })} NST`,
         ...badgeData,
       };
     case 'favoriteBuy':
@@ -238,16 +240,39 @@ const useStatsTypes = (
           badgeIconType: diff > 0 ? 'up' : 'down',
           badgeColor: diff > 0 ? 'green' : 'green',
           badgeTooltip: t('Restock.from-x', {
-            0: msIntervalFormated(pastSession.durationCount, true, 2),
+            0: msIntervalFormatted(pastSession.durationCount, true, 2),
           }),
         };
       }
       return {
         label: t('Restock.time-spent-restocking'),
-        stat: msIntervalFormated(sessionStats.durationCount, true, 2),
-        helpText: `${msIntervalFormated(sessionStats.mostPopularShop.durationCount, true, 2)} ${t(
-          'Restock.at',
+        stat: msIntervalFormatted(sessionStats.durationCount, true, 2),
+        helpText: `${msIntervalFormatted(sessionStats.mostPopularShop.durationCount, true, 2)} ${t(
+          'Restock.at'
         )} ${restockShopInfo[sessionStats.mostPopularShop.shopId].name}`,
+        ...badgeData,
+      };
+    case 'savedHaggling':
+      if (pastSession) {
+        const diff = sessionStats.totalHaggled - pastSession.totalHaggled;
+        const diffPercentage = Math.abs(diff / pastSession.totalHaggled) * 100;
+
+        badgeData = {
+          badgeStat: `${diffPercentage.toFixed(0)}%`,
+          badgeIconType: diff > 0 ? 'up' : 'down',
+          badgeColor: diff > 0 ? 'green' : 'red',
+          badgeTooltip: t('Restock.from-x', {
+            0: `${intl.format(pastSession.totalHaggled)} NP`,
+          }),
+        };
+      }
+
+      return {
+        label: t('Restock.total-saved-haggling'),
+        stat: `${intl.format(sessionStats.totalHaggled ?? 0)} NP`,
+        helpText: t('Restock.estimated-revenue-0', {
+          0: `${intl.format(sessionStats.estRevenue ?? 0)} NP`,
+        }),
         ...badgeData,
       };
     default:

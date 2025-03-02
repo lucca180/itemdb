@@ -4,7 +4,7 @@ import { ItemData, RestockChart, RestockSession, RestockStats, User } from '../.
 import { CheckAuth } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
 import { differenceInMilliseconds } from 'date-fns';
-import { getRestockProfitOnDate, removeOutliers } from '../../../../utils/utils';
+import { getRestockPrice, getRestockProfitOnDate, removeOutliers } from '../../../../utils/utils';
 import { getManyItems } from '../items/many';
 import { UTCDate } from '@date-fns/utc';
 import { countBy, maxBy } from 'lodash';
@@ -298,6 +298,8 @@ export const calculateStats = async (
         if (restockItem.timestamp < 0) return;
       }
 
+      const buyVal = Number(click.buy_price ?? restockItem.stock_price ?? 0);
+
       const item = getItemWithPricing(rawItem, pricingFunction, restockItem.timestamp);
 
       if (!item.price.value) stats.unknownPrices++;
@@ -315,11 +317,23 @@ export const calculateStats = async (
             : item;
 
         allBought.push({ item, click, restockItem });
-        const profit = getRestockProfitOnDate(item, click.buy_timestamp, restockItem.timestamp);
+        let profit = getRestockProfitOnDate(item, click.buy_timestamp, restockItem.timestamp);
+        if (buyVal && item.price.value) profit = item.price.value - buyVal;
 
         if (profit && profit < 1000) allBaits.push({ item, click, restockItem });
 
         stats.estRevenue += item.price.value ?? 0;
+
+        if (!stats.totalSpent) stats.totalSpent = 0;
+        stats.totalSpent += buyVal ?? 0;
+
+        if (buyVal) {
+          const restockVal =
+            restockItem.stock_price ?? getRestockPrice(item, false, restockItem.timestamp)?.[0];
+
+          if (restockVal && restockVal > buyVal) stats.totalHaggled += restockVal - buyVal;
+        }
+
         const date = formatDate(click.buy_timestamp);
         revenuePerDay[date] = revenuePerDay[date]
           ? revenuePerDay[date] + (item.price.value ?? 0)
@@ -406,6 +420,8 @@ export const calculateStats = async (
 
   stats.shopList = Object.keys(allShops).map((x) => parseInt(x));
 
+  stats.estProfit = stats.totalSpent ? stats.estRevenue - stats.totalSpent : null;
+
   chart.revenuePerDay = Object.keys(revenuePerDay).map((date) => ({
     date,
     value: revenuePerDay[date],
@@ -438,6 +454,9 @@ export const defaultStats: RestockStats = {
   mostExpensiveBought: null,
   mostExpensiveLost: null,
   fastestBuy: null,
+  totalSpent: null,
+  estProfit: null,
+  totalHaggled: 0,
   favoriteItem: {
     item: null,
     count: 0,
