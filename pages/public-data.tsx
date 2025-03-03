@@ -62,8 +62,8 @@ const RawDataPage = () => {
           .
         </Text>
         <Text>
-          You can also check out our{' '}
-          <Link href="https://itemdb.stoplight.io/docs/itemdb-api">API</Link> for general uses.
+          You can also check out our <Link href="https://docs.itemdb.com.br">API</Link> for general
+          uses.
         </Text>
         <Flex my={5} gap={5} flexFlow={['column', 'row']}>
           {rawExportData.map((data, i) => (

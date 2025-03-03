@@ -65,7 +65,7 @@ const WhyUsPage = () => {
                 </Link>
               ),
               Link2: (chunk) => (
-                <Link href="https://itemdb.stoplight.io/docs/itemdb-api" isExternal>
+                <Link href="https://docs.itemdb.com.br" isExternal>
                   {chunk}
                 </Link>
               ),
