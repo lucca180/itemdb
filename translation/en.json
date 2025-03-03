@@ -569,7 +569,10 @@
     "import-advanced-description": "Import your items from Dress to Impress or JN lists!",
     "import-adv-1": "To import your lists from <b>Dress to Impress</b> or <b>JN</b> into itemdb you'll need to export that list to petpage code.",
     "import-adv-2": "You can check each site for the specific instructions.",
-    "paste-pp-code": "Paste your list's petpage code here"
+    "paste-pp-code": "Paste your list's petpage code here",
+    "select-list": "Select List",
+    "copying-items-items": "Copying {items} items?",
+    "copy-items": "Copy Items"
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",

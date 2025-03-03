@@ -11,11 +11,13 @@ import {
   Portal,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import NextImage from 'next/image';
+import { useLists } from '../../utils/useLists';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   onChange?: (list: UserList) => void;
@@ -26,35 +28,17 @@ type Props = {
 };
 
 const ListSelect = (props: Props) => {
+  const t = useTranslations();
   const { user, authLoading } = useAuth();
-  const [lists, setLists] = useState<UserList[]>([]);
   const [selectedList, setSelected] = useState<UserList | undefined>(props.defaultValue);
-  const [isLoading, setLoading] = useState<boolean>(true);
-  const sorted = lists.sort((a, b) => SortListByChange(a, b));
-
-  useEffect(() => {
-    if (!authLoading && user) {
-      init();
-    }
-  }, [authLoading, user]);
+  const { lists, isLoading, revalidate } = useLists();
+  const sorted = useMemo(() => lists.sort((a, b) => SortListByChange(a, b)), [lists]);
 
   useEffect(() => {
     if (props.defaultValue) {
       setSelected(props.defaultValue);
     }
   }, [props.defaultValue]);
-
-  const init = async () => {
-    if (!user) return;
-    try {
-      const res = await axios.get(`/api/v1/lists/${user.username}`);
-
-      setLists(res.data);
-      setLoading(false);
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
   const handleSelect = (list: UserList) => {
     setSelected(list);
@@ -76,7 +60,7 @@ const ListSelect = (props: Props) => {
       });
 
       if (res.data.success) {
-        init();
+        revalidate();
       } else throw new Error(res.data.message);
     } catch (err) {
       console.error(err);
@@ -122,7 +106,7 @@ const ListSelect = (props: Props) => {
             )}
           </>
         )}
-        {!selectedList && (props.defaultText ?? 'Select List')}
+        {!selectedList && (props.defaultText ?? t('Lists.select-list'))}
       </MenuButton>
       <Portal>
         <MenuList zIndex={2000} maxH="30vh" overflow="auto">
@@ -173,24 +157,24 @@ const ListSelect = (props: Props) => {
 
           {user && !isLoading && lists.length === 0 && (
             <MenuItem justifyContent="center" disabled>
-              No lists found
+              {t('ItemPage.no-lists-found')}
             </MenuItem>
           )}
 
           {isLoading && (
             <MenuItem justifyContent="center" disabled>
-              Loading....
+              {t('Layout.loading')}...
             </MenuItem>
           )}
 
           {!user && !authLoading && (
             <MenuItem justifyContent="center" disabled>
-              Login to use lists
+              {t('Lists.login-to-use-lists')}
             </MenuItem>
           )}
 
           {user && !isLoading && props.createNew && (
-            <MenuItem onClick={createNewList}>+ Create New List</MenuItem>
+            <MenuItem onClick={createNewList}>+ {t('Lists.create-new-list')}</MenuItem>
           )}
         </MenuList>
       </Portal>

@@ -114,7 +114,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       });
     }
 
-    if (itemInfo?.length && action === 'move') {
+    if (itemInfo?.length && (action === 'move' || action === 'copy')) {
+      const shouldDelete = action === 'move';
       const listDestId = req.body.listDestId as string;
 
       if (!listDestId) return res.status(400).json({ error: 'listDestId is required' });
@@ -149,7 +150,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       const update = prisma.listItems.deleteMany({
         where: {
           internal_id: {
-            in: ids,
+            in: shouldDelete ? ids : [],
           },
         },
       });
@@ -157,7 +158,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       const updateList = prisma.userList.updateMany({
         where: {
           internal_id: {
-            in: [listDest.internal_id, Number(list_id)],
+            in: [listDest.internal_id, Number(shouldDelete ? list_id : -1)],
           },
         },
         data: {

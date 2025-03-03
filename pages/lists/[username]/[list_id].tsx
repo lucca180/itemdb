@@ -108,7 +108,7 @@ const ListPage = (props: ListPageProps) => {
 
   const [isEdit, setEdit] = useState<boolean>(false);
   const [lockSort, setLockSort] = useState<boolean>(true);
-  const [selectionAction, setSelectionAction] = useState<'move' | 'delete' | ''>('');
+  const [selectionAction, setSelectionAction] = useState<'move' | 'delete' | 'copy' | ''>('');
 
   const [matches, setMatches] = useState<ListItemInfo[]>([]);
   const [isLoading, setLoading] = useState<boolean>(true);
@@ -673,6 +673,15 @@ const ListPage = (props: ListPageProps) => {
                   onClick={() => setSelectionAction('move')}
                 >
                   {t('Lists.move-items')}
+                </Button>
+              </Box>
+              <Box>
+                <Button
+                  isDisabled={!!!itemSelect.length || !!list.dynamicType}
+                  variant="outline"
+                  onClick={() => setSelectionAction('copy')}
+                >
+                  {t('Lists.copy-items')}
                 </Button>
               </Box>
             </Flex>

@@ -13,18 +13,18 @@ import {
   Spinner,
   Center,
   FormHelperText,
+  useToast,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useState } from 'react';
 import { ListItemInfo, ObligatoryUserList, UserList } from '../../types';
-import { useAuth } from '../../utils/auth';
 import ListSelect from '../UserLists/ListSelect';
 import { useTranslations } from 'next-intl';
 
 export type ItemActionModalProps = {
   list: UserList | ObligatoryUserList;
   isOpen: boolean;
-  action: 'move' | 'delete' | '';
+  action: 'move' | 'delete' | 'copy' | '';
   selectedItems: ListItemInfo[];
   onClose: () => void;
   refresh: () => void;
@@ -32,7 +32,7 @@ export type ItemActionModalProps = {
 
 const ItemActionModal = (props: ItemActionModalProps) => {
   const t = useTranslations();
-  const { getIdToken } = useAuth();
+  const toast = useToast();
   const { isOpen, onClose, action, selectedItems, list, refresh } = props;
   const [isLoading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
@@ -41,24 +41,20 @@ const ItemActionModal = (props: ItemActionModalProps) => {
   const saveChanges = async () => {
     setLoading(true);
     try {
-      const token = await getIdToken();
-
-      const res = await axios.post(
-        `/api/v1/lists/${list.owner.username}/${list.internal_id}`,
-        {
-          list_id: list.internal_id,
-          itemInfo: selectedItems,
-          listDestId: action === 'move' ? dest?.internal_id : undefined,
-          action,
-        },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await axios.post(`/api/v1/lists/${list.owner.username}/${list.internal_id}`, {
+        list_id: list.internal_id,
+        itemInfo: selectedItems,
+        listDestId: ['copy', 'move'].includes(action) ? dest?.internal_id : undefined,
+        action,
+      });
 
       if (res.status === 200) {
+        toast({
+          title: t('General.success'),
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
         refresh();
         handleClose();
         setLoading(false);
@@ -84,10 +80,11 @@ const ItemActionModal = (props: ItemActionModalProps) => {
         <ModalHeader textTransform="capitalize">
           {action === 'move' && t('Lists.move-n-items', { items: selectedItems.length })}
           {action === 'delete' && t('Lists.delete-items-items', { items: selectedItems.length })}
+          {action === 'copy' && t('Lists.copying-items-items', { items: selectedItems.length })}
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          {!isLoading && !error && action === 'move' && (
+          {!isLoading && !error && ['copy', 'move'].includes(action) && (
             <FormControl>
               <FormLabel color="gray.300">{t('Lists.destination')}</FormLabel>
               <ListSelect onChange={setDest} />
@@ -116,13 +113,15 @@ const ItemActionModal = (props: ItemActionModalProps) => {
           )}
         </ModalBody>
         <ModalFooter>
-          <Button variant="ghost" mr={3} onClick={handleClose}>
-            {t('General.cancel')}
-          </Button>
           {!isLoading && !error && (
-            <Button onClick={saveChanges} isDisabled={action === 'move' && !dest}>
-              {t('General.confirm')}
-            </Button>
+            <>
+              <Button variant="ghost" mr={3} onClick={handleClose}>
+                {t('General.cancel')}
+              </Button>
+              <Button onClick={saveChanges} isDisabled={action === 'move' && !dest}>
+                {t('General.confirm')}
+              </Button>
+            </>
           )}
         </ModalFooter>
       </ModalContent>
