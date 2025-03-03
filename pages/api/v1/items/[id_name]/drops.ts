@@ -8,6 +8,7 @@ import { revalidateItem } from './effects';
 
 const catType = ['trinkets', 'accessories', 'clothing', 'le', 'choice'];
 const catTypeZone = ['trinkets', 'accessories', 'clothing'];
+const giftBoxes = [65354, 17434, 860];
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -141,6 +142,7 @@ export const getItemDrops = async (
   let isGram = false;
 
   const hasGramInName = !!item?.name.toLowerCase().split(' ').includes('gram');
+  const hasGBCInName = !!item?.name.toLowerCase().includes('gift box mystery capsule');
 
   drops
     .sort((a, b) => (a.notes?.length ?? 0) - (b.notes?.length ?? 0))
@@ -257,6 +259,9 @@ export const getItemDrops = async (
         if (zone) moreCommonCat = zoneToCat(zone);
       }
 
+      if (hasGBCInName && moreCommonCat === 'unknown' && giftBoxes.includes(drop.item_iid))
+        moreCommonCat = 'giftbox';
+
       if (!prizePools[moreCommonCat])
         prizePools[moreCommonCat] = {
           name: moreCommonCat,
@@ -332,6 +337,8 @@ export const getItemDrops = async (
   activePoolOpenings = Object.values(prizePools)
     .filter((p) => !p.name.includes('old-'))
     .reduce((a, b) => a + b.openings, 0);
+
+  activePoolOpenings = Math.min(activePoolOpenings, openingCount);
 
   Object.values(prizePools).map((pool) => {
     if (

@@ -82,6 +82,7 @@ const ItemDrops = (props: Props) => {
 
       {poolsArr
         .filter((a) => !['unknown'].includes(a.name) && !a.name.includes('old-'))
+        .sort((a) => (a.isLE ? -1 : 1))
         .map((pool, i) => (
           <DropPool
             key={pool.name}
