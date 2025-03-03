@@ -441,8 +441,13 @@ export const getList = async (
   userOrToken?: User | null | string,
   isOfficial = false
 ) => {
-  const list_id = typeof list_id_or_slug === 'number' ? list_id_or_slug : undefined;
-  const slug = typeof list_id_or_slug === 'string' ? list_id_or_slug : undefined;
+  let list_id;
+  let slug;
+
+  if (typeof list_id_or_slug === 'string' && isNaN(parseInt(list_id_or_slug)))
+    slug = list_id_or_slug;
+  else if (typeof list_id_or_slug === 'number' || !isNaN(parseInt(list_id_or_slug)))
+    list_id = Number(list_id_or_slug);
 
   const listRaw = await prisma.userList.findFirst({
     where: {
