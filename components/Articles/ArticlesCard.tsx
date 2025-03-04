@@ -1,17 +1,7 @@
-import {
-  Flex,
-  Heading,
-  Image,
-  Text,
-  Link,
-  Card,
-  CardBody,
-  Stack,
-  HStack,
-  Badge,
-} from '@chakra-ui/react';
+import { Flex, Heading, Text, Link, Card, CardBody, Stack, HStack, Badge } from '@chakra-ui/react';
 import { WP_Article } from '../../types';
 import NextLink from 'next/link';
+import Image from '../Utils/Image';
 
 type Props = {
   article: WP_Article;
@@ -44,6 +34,9 @@ export const ArticleCard = (props: Props) => {
         >
           <CardBody>
             <Image
+              width={150}
+              height={150}
+              w="125px"
               maxH={'125px'}
               src={article.thumbnail ?? '/logo.png'}
               alt={article.title}
@@ -82,8 +75,11 @@ export const ArticleCard = (props: Props) => {
       <Image
         src={article.thumbnail ?? '/logo.png'}
         alt="article thumbnail"
-        width="60px"
-        height="60px"
+        quality={100}
+        width={150}
+        height={150}
+        w="60px"
+        h="60px"
         borderRadius="md"
       />
       <Flex flexFlow={'column'} gap={1}>
