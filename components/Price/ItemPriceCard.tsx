@@ -217,7 +217,7 @@ const ItemPriceCard = (props: Props) => {
             alignItems={{ base: 'inherit', md: 'center' }}
             gap={1}
           >
-            <Flex flexFlow="column" alignItems={'center'}>
+            <Flex flexFlow="column" alignItems={'center'} maxW={'200px'}>
               {item.saleStatus && (
                 <>
                   {item.saleStatus.status === 'ets' && (
@@ -274,7 +274,7 @@ const ItemPriceCard = (props: Props) => {
                 </Button>
               )}
             </Flex>
-            <Flex flexFlow="column" flex="1">
+            <Flex flexFlow="column" width="100%" maxW={'580px'}>
               {prices.length > 0 && (
                 <>
                   <HStack ml="auto" mr={2} mb={2} gap={0}>
@@ -478,7 +478,7 @@ const LastSeenCard = (props: LastSeenCardProps) => {
         />
         {t(lastSeenTypes[type].title)}
       </Text>
-      <Text opacity={0.8}>
+      <Text opacity={0.8} suppressHydrationWarning>
         {lastSeen && format.relativeTime(new Date(lastSeen))}
         {!lastSeen && !isLoading && !doesNotRestock && !isAlways && t('General.never')}
         {!lastSeen && !isLoading && !doesNotRestock && isAlways && t('General.always')}

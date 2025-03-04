@@ -19,6 +19,7 @@ import {
 import FindAtCard from '../../components/Items/FindAtCard';
 import ItemInfoCard from '../../components/Items/InfoCard';
 import ColorInfoCard from '../../components/Items/ColorInfoCard';
+import ItemOfficialLists from '../../components/Items/ItemOfficialList';
 // import ItemTags from '../../components/Items/ItemTags';
 import { FiSend, FiEdit3 } from 'react-icons/fi';
 import type { EditItemModalProps } from '../../components/Modal/EditItemModal';
@@ -41,7 +42,6 @@ import { getItemEffects } from '../api/v1/items/[id_name]/effects';
 import type { WearableData } from '@prisma/client';
 import { getWearableData } from '../api/v1/items/[id_name]/wearable';
 import { getItemNCMall } from '../api/v1/items/[id_name]/ncmall';
-import NcMallCard from '../../components/Items/NCMallCard';
 import { getItemRecipes } from '../api/v1/items/[id_name]/recipes';
 import { NextPageWithLayout } from '../_app';
 import { getMMEData, isMME } from '../api/v1/items/[id_name]/mme';
@@ -61,7 +61,7 @@ const MissingInfoCard = dynamic(() => import('../../components/Items/MissingInfo
 const ItemPriceCard = dynamic(() => import('../../components/Price/ItemPriceCard'));
 const NCTrade = dynamic(() => import('../../components/NCTrades'));
 const ItemEffectsCard = dynamic(() => import('../../components/Items/ItemEffectsCard'));
-const ItemOfficialLists = dynamic(() => import('../../components/Items/ItemOfficialList'));
+// const ItemOfficialLists = dynamic(() => import('../../components/Items/ItemOfficialList'));
 const ItemMyLists = dynamic(() => import('../../components/Items/MyListsCard'));
 const ItemComments = dynamic(() => import('../../components/Items/ItemComments'));
 const ItemDrops = dynamic(() => import('../../components/Items/ItemDrops'));
@@ -72,6 +72,7 @@ const ItemPreview = dynamic(() => import('../../components/Items/ItemPreview'));
 const ItemRecipes = dynamic(() => import('../../components/Items/ItemRecipes'));
 const MMECard = dynamic(() => import('../../components/Items/MMECard'));
 const DyeCard = dynamic(() => import('../../components/Items/DyeCard'));
+const NcMallCard = dynamic(() => import('../../components/Items/NCMallCard'));
 
 type ItemPageProps = {
   item: ItemData;

@@ -6,7 +6,6 @@ import {
   Tr,
   Text,
   IconButton,
-  Box,
   Flex,
   Icon,
   Link,
@@ -157,19 +156,19 @@ const PriceItem = (
             <Text>{t('ItemPage.' + price.markerType)}</Text>
           </Flex>
         </Td>
-        <Td textAlign={'center'} whiteSpace={'normal'}>
+        <Td px={1} textAlign={'center'} whiteSpace={'normal'}>
           <Link as={NextLink} href={`/lists/official/${price.slug}`} color={price.color}>
             {price.title}
           </Link>
         </Td>
-        <Td>
+        <Td px={1}>
           {format.dateTime(new Date(price.addedAt!), {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
           })}
         </Td>
-        {isAdmin && <Td></Td>}
+        {isAdmin && <Td px={1}></Td>}
       </Tr>
     );
 
@@ -183,25 +182,38 @@ const PriceItem = (
         )}
         {intl.format(price.value!)} NP
       </Td>
-      <Td>
+      <Td px={1}>
         {!!nextPrice?.value && (
           <Flex alignItems={'center'}>
             {!!(price.value! - nextPrice?.value) && (
-              <Box display="inline">
+              <Flex
+                display="inline-flex"
+                flexFlow={'column'}
+                justifyContent={'center'}
+                alignItems={'center'}
+              >
                 {price.value! - nextPrice?.value > 0 && (
                   <Icon as={FaCaretUp} color="green.400" boxSize={'22px'} />
                 )}
                 {price.value! - nextPrice?.value < 0 && (
                   <Icon as={FaCaretDown} color="red.400" boxSize={'22px'} />
                 )}
-              </Box>
+              </Flex>
             )}
             {!(price.value! - nextPrice?.value) && <MinusIcon mr={1} boxSize="16px" />}
             <Text>{intl.format(price.value! - nextPrice?.value)} NP</Text>
+            <Text
+              ml={1}
+              fontSize={'0.55rem'}
+              color={price.value! > nextPrice?.value ? 'green.100' : 'red.200'}
+              opacity={0.8}
+            >
+              ({getPercentChange(price.value!, nextPrice.value!)}%)
+            </Text>
           </Flex>
         )}
       </Td>
-      <Td>
+      <Td px={1}>
         {format.dateTime(new Date(price.addedAt!), {
           year: 'numeric',
           month: 'long',
@@ -209,8 +221,7 @@ const PriceItem = (
         })}
       </Td>
       {isAdmin && (
-        <Td>
-          {' '}
+        <Td px={1}>
           <IconButton
             onClick={() => onEdit?.(price as PriceData)}
             size="xs"
@@ -221,4 +232,11 @@ const PriceItem = (
       )}
     </Tr>
   );
+};
+
+const getPercentChange = (newPrice: number, oldPrice: number) => {
+  const isPositive = newPrice - oldPrice > 0;
+  const val = ((newPrice - oldPrice) / oldPrice) * 100;
+  console.log(val);
+  return `${isPositive ? '+' : ''}${val.toFixed(Math.abs(val) < 1 ? 1 : 0)}`;
 };
