@@ -208,7 +208,7 @@ const PriceItem = (
               color={price.value! > nextPrice?.value ? 'green.100' : 'red.200'}
               opacity={0.8}
             >
-              ({getPercentChange(price.value!, nextPrice.value!)}%)
+              {getPercentChange(price.value!, nextPrice.value!)}%
             </Text>
           </Flex>
         )}
@@ -237,6 +237,6 @@ const PriceItem = (
 const getPercentChange = (newPrice: number, oldPrice: number) => {
   const isPositive = newPrice - oldPrice > 0;
   const val = ((newPrice - oldPrice) / oldPrice) * 100;
-  console.log(val);
+
   return `${isPositive ? '+' : ''}${val.toFixed(Math.abs(val) < 1 ? 1 : 0)}`;
 };
