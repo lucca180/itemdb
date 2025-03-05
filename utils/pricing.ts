@@ -64,6 +64,7 @@ export const processPrices2 = (allItemData: PriceProcess2[]) => {
 
 function filterMostRecents(priceProcessList: PriceProcess2[]) {
   const daysThreshold: { [days: number]: number } = {
+    0: EVENT_MODE ? 10 : 18,
     3: EVENT_MODE ? 5 : 15,
     7: 10,
     15: 5,
@@ -75,11 +76,11 @@ function filterMostRecents(priceProcessList: PriceProcess2[]) {
     (x) => differenceInCalendarDays(Date.now(), x.addedAt) <= 0
   );
 
-  if (checkFiltered(firstFiltered, daysThreshold[3] * 2)) return firstFiltered;
+  if (checkFiltered(firstFiltered, daysThreshold[0])) return firstFiltered;
 
   let count = 0;
 
-  for (let i = 0; i < Object.keys(daysThreshold).length; i++) {
+  for (let i = 1; i < Object.keys(daysThreshold).length; i++) {
     const days = parseInt(Object.keys(daysThreshold)[i]);
     const prevDays = parseInt(Object.keys(daysThreshold)[i - 1]) || 1;
     const goal = daysThreshold[days];
