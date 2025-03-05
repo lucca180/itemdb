@@ -73,7 +73,7 @@ const ItemOfficialLists = (props: Props) => {
             <Text
               as={NextLink}
               href={`/lists/official/${list.slug ?? list.internal_id}`}
-              sx={{ color: 'white !important;' }}
+              sx={{ color: 'white !important;', textWrap: 'balance' }}
               textAlign="center"
               fontSize="sm"
               fontWeight="bold"
@@ -96,7 +96,7 @@ const ItemOfficialLists = (props: Props) => {
               textAlign="center"
               fontSize="sm"
               color="whiteAlpha.800"
-              sx={{ 'b, strong': { color: 'white' } }}
+              sx={{ 'b, strong': { color: 'white' }, textWrap: 'pretty' }}
               as="div"
             >
               <Markdown>
