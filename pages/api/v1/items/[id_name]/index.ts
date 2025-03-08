@@ -5,7 +5,7 @@ import prisma from '../../../../../utils/prisma';
 import { Prisma } from '@prisma/client';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import axios from 'axios';
-import { differenceInCalendarDays, isSameDay } from 'date-fns';
+import { isSameDay, isToday } from 'date-fns';
 import { getSaleStats } from './saleStats';
 import requestIp from 'request-ip';
 import { redis_setItemCount } from '../../../redis/checkapi';
@@ -410,8 +410,8 @@ export const fetchOwlsData = async (
     });
 
     lastOwls = owls;
-    // check if last check was in the last 15 days
-    if (owls && differenceInCalendarDays(new Date(), owls.lastChecked) < 15) {
+
+    if (owls && isToday(owls.lastChecked)) {
       return {
         value: owls.value,
         valueMin: owls.valueMin,
