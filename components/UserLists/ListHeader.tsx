@@ -158,6 +158,7 @@ const ListHeader = (props: ListHeaderProps) => {
         >
           {!list.coverURL && (
             <Image
+              priority
               src={icon}
               width={{ base: '50px', md: '80px' }}
               style={{ opacity: 0.85, flex: 1 }}
@@ -167,6 +168,7 @@ const ListHeader = (props: ListHeaderProps) => {
           {list.coverURL && list.official && (
             <Image
               src={list.coverURL}
+              priority
               width={150}
               height={150}
               objectFit="cover"
