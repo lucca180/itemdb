@@ -79,7 +79,7 @@ const ArticlePage = (props: ArticlePageProps) => {
           img: { my: 2 },
         }}
       >
-        <Flex flexFlow="column" gap={3} px={3} maxW={1000}>
+        <Flex flexFlow="column" gap={3} px={3} maxW={1000} fontSize={'md'}>
           {parse(post.content, options)}
         </Flex>
       </Flex>
@@ -208,7 +208,16 @@ const options: HTMLReactParserOptions = {
       return <Tr>{domToReact(children, options)}</Tr>;
 
     if (domChildren instanceof Element && domChildren.name === 'td')
-      return <Td whiteSpace={'normal'}>{domToReact(children, options)}</Td>;
+      return (
+        <Td
+          whiteSpace={'normal'}
+          textAlign={'center'}
+          fontSize={'sm'}
+          sx={{ img: { display: 'inline-block' } }}
+        >
+          {domToReact(children, options)}
+        </Td>
+      );
 
     if (domChildren instanceof Element && domChildren.name === 'code')
       return <Code>{domToReact(children, options)}</Code>;
