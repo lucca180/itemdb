@@ -208,7 +208,7 @@ export const SearchBar = (props: Props) => {
                         as={NextLink}
                         display="flex"
                         prefetch={false}
-                        href={`/item/${item.slug}?utm_content=omni-search`}
+                        href={`/item/${item.slug}`}
                         key={item.internal_id}
                         px={{ base: 1, md: 2 }}
                         py={2}
@@ -251,7 +251,7 @@ export const SearchBar = (props: Props) => {
                         as={NextLink}
                         display="flex"
                         prefetch={false}
-                        href={`/lists/official/${list.slug}?utm_content=omni-search`}
+                        href={`/lists/official/${list.slug}`}
                         key={list.internal_id}
                         px={{ base: 1, md: 2 }}
                         py={2}
@@ -296,7 +296,7 @@ export const SearchBar = (props: Props) => {
                         as={NextLink}
                         display="flex"
                         prefetch={false}
-                        href={`/restock/${slugify(shop.name)}?utm_content=omni-search`}
+                        href={`/restock/${slugify(shop.name)}`}
                         key={shop.id}
                         px={{ base: 1, md: 2 }}
                         py={2}
