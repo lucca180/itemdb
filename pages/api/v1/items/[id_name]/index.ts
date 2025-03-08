@@ -430,10 +430,10 @@ export const fetchOwlsData = async (
         await prisma.owlsPrice.update({
           where: {
             internal_id: lastOwls.internal_id,
-            isLatest: false,
           },
           data: {
             lastChecked: new Date(),
+            isLatest: false,
           },
         });
       }
