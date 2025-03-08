@@ -10,10 +10,10 @@ import {
   Tooltip,
   Box,
   Link,
-  Image,
   IconButton,
   useToast,
   useDisclosure,
+  Image as ChakraImage,
 } from '@chakra-ui/react';
 import Color from 'color';
 import { BiLinkExternal } from 'react-icons/bi';
@@ -32,6 +32,7 @@ import { useTranslations } from 'next-intl';
 import { FaShareAlt } from 'react-icons/fa';
 import { MAX_ITEMS_LIST_PRICE, ListPriceHistoryModalProps } from '../Modal/ListPriceHistoryModal';
 import { AiOutlineAreaChart } from 'react-icons/ai';
+import Image from '../Utils/Image';
 
 const Markdown = dynamic(() => import('../Utils/Markdown'));
 const ListPriceHistoryModal = dynamic<ListPriceHistoryModalProps>(
@@ -157,17 +158,29 @@ const ListHeader = (props: ListHeaderProps) => {
         >
           {!list.coverURL && (
             <Image
-              as={NextImage}
               src={icon}
               width={{ base: '50px', md: '80px' }}
               style={{ opacity: 0.85, flex: 1 }}
               alt={'List Cover'}
             />
           )}
-          {list.coverURL && (
+          {list.coverURL && list.official && (
             <Image
               src={list.coverURL}
+              width={150}
+              height={150}
               objectFit="cover"
+              w={{ base: '100px', md: '150px' }}
+              h={{ base: '100px', md: '150px' }}
+              borderRadius="md"
+              quality={100}
+              alt={'List Cover'}
+            />
+          )}
+          {list.coverURL && !list.official && (
+            <ChakraImage
+              objectFit="cover"
+              src={list.coverURL}
               width={{ base: '100px', md: '150px' }}
               height={{ base: '100px', md: '150px' }}
               borderRadius="md"
@@ -217,6 +230,7 @@ const ListHeader = (props: ListHeaderProps) => {
           </Stack>
           <Heading
             size={{ base: 'lg', md: undefined }}
+            as={'h1'}
             display="inline-flex"
             alignItems={'center'}
             gap={1}
@@ -296,9 +310,9 @@ const ListHeader = (props: ListHeaderProps) => {
               mt={{ base: 2, md: 3 }}
               fontSize={{ base: 'sm', md: 'md' }}
               sx={{ a: { color: color.lightness(70).hex() } }}
-              as="div"
+              as="h2"
             >
-              <Markdown>{list.description}</Markdown>
+              <Markdown skipParagraph>{list.description}</Markdown>
             </Text>
           )}
           <Stack mt={{ base: 2, md: 3 }} flexFlow={'row'} alignItems={'center'}>

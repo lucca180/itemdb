@@ -4,7 +4,10 @@ import { CheckAuth } from '../../../../../../utils/googleCloud';
 import qs from 'qs';
 import { doSearch } from '../../../search';
 import prisma from '../../../../../../utils/prisma';
-import { ListItemInfo } from '../../../../../../types';
+import { ItemData, UserList } from '../../../../../../types';
+import { rawToListItems } from '..';
+import { getManyItems } from '../../../items/many';
+import { sortListItems } from '../../../../../lists/[username]/[list_id]';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -52,21 +55,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       where: { list_id: list.internal_id },
     });
 
-    const itemInfo: ListItemInfo[] = itemInfoRaw.map((item) => ({
-      internal_id: item.internal_id,
-      list_id: item.list_id,
-      item_iid: item.item_iid,
-      addedAt: item.addedAt.toJSON(),
-      updatedAt: item.updatedAt.toJSON(),
-      amount: item.amount,
-      capValue: item.capValue,
-      imported: item.imported,
-      order: item.order,
-      isHighlight: item.isHighlight,
-      isHidden: item.isHidden,
-      seriesStart: item.seriesStart?.toJSON() ?? null,
-      seriesEnd: item.seriesEnd?.toJSON() ?? null,
-    }));
+    const itemInfo = rawToListItems(itemInfoRaw);
 
     if (isQueryEmpty) return res.status(200).json(itemInfo);
 
@@ -85,4 +74,31 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     console.error(e);
     res.status(500).json({ error: 'Internal Server Error' });
   }
+};
+
+// this assumes you already verified the user is the owner of the list
+export const preloadListItems = async (list: UserList, isOwner = false, limit = 30) => {
+  const itemInfoRaw = await prisma.listItems.findMany({
+    where: { list_id: list.internal_id },
+  });
+
+  const itemInfo = rawToListItems(itemInfoRaw);
+
+  const result = itemInfo.filter((item) => !item.isHidden || isOwner);
+  const itemData = await getManyItems({ id: result.map((item) => item.item_iid.toString()) });
+
+  const sortedItemInfo = itemInfo.sort((a, b) => {
+    if (a.isHighlight && !b.isHighlight) return -1;
+    if (!a.isHighlight && b.isHighlight) return 1;
+    return sortListItems(a, b, list.sortBy, list.sortDir, itemData);
+  });
+
+  const finalResult = sortedItemInfo.splice(0, limit);
+
+  const finalItemData: { [id: string]: ItemData } = {};
+  finalResult.forEach((item) => {
+    finalItemData[item.item_iid] = itemData[item.item_iid];
+  });
+
+  return { items: finalResult, itemData: finalItemData };
 };

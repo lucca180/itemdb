@@ -2,7 +2,7 @@ import Color from 'color';
 import { startOfDay } from 'date-fns';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Vibrant } from 'node-vibrant/node';
-import { ColorType, User, UserList } from '../../../../../types';
+import { ColorType, ListItemInfo, User, UserList } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 import { slugify } from '../../../../../utils/utils';
@@ -363,4 +363,22 @@ export const rawToList = (
           };
         }),
   };
+};
+
+export const rawToListItems = (items: ListItems[]): ListItemInfo[] => {
+  return items.map((item) => ({
+    internal_id: item.internal_id,
+    list_id: item.list_id,
+    item_iid: item.item_iid,
+    addedAt: item.addedAt.toJSON(),
+    updatedAt: item.updatedAt.toJSON(),
+    amount: item.amount,
+    capValue: item.capValue,
+    imported: item.imported,
+    order: item.order,
+    isHighlight: item.isHighlight,
+    isHidden: item.isHidden,
+    seriesStart: item.seriesStart?.toJSON() ?? null,
+    seriesEnd: item.seriesEnd?.toJSON() ?? null,
+  }));
 };

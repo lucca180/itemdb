@@ -52,6 +52,7 @@ import { defaultFilters } from '../../../utils/parseFilters';
 import { getFiltersDiff } from '../../search';
 import { AddListItemsModalProps } from '../../../components/Modal/AddListItemsModal';
 import { ItemList } from '../../../components/UserLists/ItemList';
+import { preloadListItems } from '../../api/v1/lists/[username]/[list_id]/items';
 
 const CreateListModal = dynamic<CreateListModalProps>(
   () => import('../../../components/Modal/CreateListModal')
@@ -75,6 +76,12 @@ type ListPageProps = {
   list: UserList;
   canEdit: boolean;
   isOwner: boolean;
+  preloadData: {
+    itemMap: { [id: number]: ListItemInfo };
+    infoIds: number[];
+    itemInfo: ListItemInfo[];
+    items: { [id: string]: ItemData };
+  };
   messages: any;
   locale: string | undefined;
 };
@@ -85,25 +92,25 @@ const ListPage = (props: ListPageProps) => {
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isOpenInsert, onOpen: onOpenInsert, onClose: onCloseInsert } = useDisclosure();
-  const { canEdit, isOwner, locale } = props;
+  const { canEdit, isOwner, locale, preloadData } = props;
   const { user } = useAuth();
 
   const [list, setList] = useState<UserList>(props.list);
 
   const [openCreateModal, setOpenCreateModal] = useState<boolean>(false);
 
-  const [itemInfoIds, setItemInfoIds] = useState<number[]>([]);
-  const [rawItemInfo, setRawItemInfo] = useState<ListItemInfo[]>([]);
+  const [itemInfoIds, setItemInfoIds] = useState<number[]>(preloadData.infoIds);
+  const [rawItemInfo, setRawItemInfo] = useState<ListItemInfo[]>(preloadData.itemInfo);
   const [itemInfo, setItemInfo] = useState<{
     [itemInfoId: number]: ExtendedListItemInfo;
-  }>({});
+  }>(preloadData.itemMap);
 
   const [sortInfo, setSortInfo] = useState<{
     sortBy: string;
     sortDir: string;
   }>({ sortBy: 'name', sortDir: 'asc' });
 
-  const [items, setItems] = useState<{ [item_iid: string]: ItemData }>({});
+  const [items, setItems] = useState<{ [item_iid: string]: ItemData }>(preloadData.items);
   const [itemSelect, setItemSelect] = useState<number[]>([]);
 
   const [isEdit, setEdit] = useState<boolean>(false);
@@ -214,16 +221,7 @@ const ListPage = (props: ListPageProps) => {
 
       setRawItemInfo([...itemInfos]);
 
-      const sortedItemInfo = itemInfos.sort((a, b) =>
-        sortItems(a, b, listData.sortBy, listData.sortDir, itemData)
-      );
-      const infoIds = [];
-      const itemMap: { [id: number]: ListItemInfo } = {};
-
-      for (const itemInfo of sortedItemInfo) {
-        infoIds.push(itemInfo.internal_id);
-        itemMap[itemInfo.internal_id] = itemInfo;
-      }
+      const { infoIds, itemMap } = getSortedItemInfo(itemInfos, listData, itemData);
 
       setItemSelect([]);
       setSortInfo({ sortBy: listData.sortBy, sortDir: listData.sortDir });
@@ -305,14 +303,14 @@ const ListPage = (props: ListPageProps) => {
     if (searchItemInfoIds) {
       const itemInfoIds = Object.values(itemInfo)
         .filter((a) => items[a.item_iid]?.name.toLowerCase().includes(searchQuery.current))
-        .sort((a, b) => sortItems(a, b, sortBy, sortDir, items))
+        .sort((a, b) => sortListItems(a, b, sortBy, sortDir, items))
         .map((item) => item.internal_id);
 
       setSearchItemInfoIds(itemInfoIds);
     }
 
     const sortedItemInfo = Object.values(itemInfo).sort((a, b) =>
-      sortItems(a, b, sortBy, sortDir, items)
+      sortListItems(a, b, sortBy, sortDir, items)
     );
     setSortInfo({ sortBy, sortDir });
     setItemInfoIds(sortedItemInfo.map((item) => item.internal_id));
@@ -331,7 +329,7 @@ const ListPage = (props: ListPageProps) => {
 
     const itemInfoIds = Object.values(itemInfo)
       .filter((a) => items[a.item_iid]?.name.toLowerCase().includes(searchQuery.current.trim()))
-      .sort((a, b) => sortItems(a, b, sortInfo.sortBy, sortInfo.sortDir, items))
+      .sort((a, b) => sortListItems(a, b, sortInfo.sortBy, sortInfo.sortDir, items))
       .map((item) => item.internal_id);
 
     setSearchItemInfoIds(itemInfoIds);
@@ -344,6 +342,7 @@ const ListPage = (props: ListPageProps) => {
       setFilters(customFilters);
     }
     setLoading(true);
+    setItemInfoIds([]);
     const itemRes = await axios.get(
       `/api/v1/lists/${list.owner.username}/${list.internal_id}/items`,
       {
@@ -353,16 +352,7 @@ const ListPage = (props: ListPageProps) => {
 
     const itemInfoData = itemRes.data as ListItemInfo[];
 
-    const sortedItemInfo = itemInfoData.sort((a, b) =>
-      sortItems(a, b, list.sortBy, list.sortDir, items)
-    );
-
-    const itemMap: { [id: number]: ListItemInfo } = {};
-    const infoIds = [];
-    for (const itemInfo of sortedItemInfo) {
-      infoIds.push(itemInfo.internal_id);
-      itemMap[itemInfo.internal_id] = itemInfo;
-    }
+    const { infoIds, itemMap } = getSortedItemInfo(itemInfoData, list, items);
 
     searchQuery.current = '';
     setSearchItemInfoIds(null);
@@ -610,7 +600,7 @@ const ListPage = (props: ListPageProps) => {
             </Box>
             <Flex gap={3} flexWrap="wrap" w="100%" justifyContent="center">
               {matches
-                .sort((a, b) => sortItems(a, b, 'name', 'asc', items))
+                .sort((a, b) => sortListItems(a, b, 'name', 'asc', items))
                 .map((itemMatch) => (
                   <ItemCard
                     item={items[itemMatch.item_iid]}
@@ -811,14 +801,14 @@ const ListPage = (props: ListPageProps) => {
             </Flex>
           </Flex>
         )}
-        {isLoading && (
+        {isLoading && !itemInfoIds.length && (
           <Flex gap={3} justifyContent={'center'} wrap={'wrap'}>
             {Array.from({ length: Math.min(8 * 5, list.itemCount) }).map((_, i) => (
               <ItemCard key={i} isLoading />
             ))}
           </Flex>
         )}
-        {!isLoading && (
+        {(!isLoading || !!itemInfoIds.length) && (
           <Flex px={[1, 3]} flexFlow="column">
             <ItemList
               list={list}
@@ -842,6 +832,24 @@ const ListPage = (props: ListPageProps) => {
 };
 
 export default ListPage;
+
+function getSortedItemInfo(
+  itemInfos: ListItemInfo[],
+  listData: UserList,
+  itemData: { [id: string]: ItemData }
+): { infoIds: number[]; itemMap: { [id: number]: ListItemInfo } } {
+  const sortedItemInfo = itemInfos.sort((a, b) =>
+    sortListItems(a, b, listData.sortBy, listData.sortDir, itemData)
+  );
+  const infoIds = [];
+  const itemMap: { [id: number]: ListItemInfo } = {};
+
+  for (const itemInfo of sortedItemInfo) {
+    infoIds.push(itemInfo.internal_id);
+    itemMap[itemInfo.internal_id] = itemInfo;
+  }
+  return { infoIds, itemMap };
+}
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { list_id, username } = context.query;
@@ -883,9 +891,18 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       },
     };
   }
+  const isOwner = user && user.id === list.owner.id;
+  const preloadData = await preloadListItems(list, !!isOwner, 30);
+  const { itemMap, infoIds } = getSortedItemInfo(preloadData.items, list, preloadData.itemData);
 
   const props: ListPageProps = {
     list,
+    preloadData: {
+      itemMap,
+      infoIds,
+      itemInfo: preloadData.items,
+      items: preloadData.itemData,
+    },
     canEdit: !!(user && (user.id === list.owner.id || (list.official && user.isAdmin))),
     isOwner: !!(user && user.id === list.owner.id),
     messages: (await import(`../../../translation/${context.locale}.json`)).default,
@@ -897,7 +914,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   };
 }
 
-const sortItems = (
+export const sortListItems = (
   a: ListItemInfo,
   b: ListItemInfo,
   sortBy: string,

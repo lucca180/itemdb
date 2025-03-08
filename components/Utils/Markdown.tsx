@@ -4,14 +4,19 @@ import { IconLink } from './IconLink';
 type MarkdownProps = {
   // components?: any
   children: string;
+  skipParagraph?: boolean;
 };
 
 export default function Markdown(props: MarkdownProps) {
+  const skipParagraph = props.skipParagraph;
   return (
     <MarkdownLib
       urlTransform={(url) => decodeURI(url)}
       allowedElements={['a', 'b', 'i', 'p', 'span', 's', 'br', 'strong', 'em']}
       components={{
+        p: (props) => {
+          return !skipParagraph ? <p>{props.children}</p> : <>{props.children}</>;
+        },
         a: (props) => {
           if (checkURL(props.href ?? ''))
             return (
