@@ -264,7 +264,9 @@
     "old-pool-x": "Prêmios Antigos {x}",
     "add-x": "Adicionar \"{x}\"",
     "report-your-nc-trades": "Reporte suas Trocas NC",
-    "report-owls-cta": "Trocou um desses? <Link>Reporte aqui</Link>"
+    "report-owls-cta": "Trocou um desses? <Link>Reporte aqui</Link>",
+    "show-more": "Mostrar Mais",
+    "show-less": "Mostrar Menos"
   },
   "Button": {
     "feedback": "Feedback",

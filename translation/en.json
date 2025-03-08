@@ -263,7 +263,9 @@
     "old-pool-x": "Old Pool {x}",
     "add-x": "Add \"{x}\"",
     "report-your-nc-trades": "Report your NC Trades",
-    "report-owls-cta": "Traded one? <Link>Report here</Link>"
+    "report-owls-cta": "Traded one? <Link>Report here</Link>",
+    "show-more": "Show More",
+    "show-less": "Show Less"
   },
   "Button": {
     "feedback": "Feedback",

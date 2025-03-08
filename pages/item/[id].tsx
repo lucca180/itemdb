@@ -81,7 +81,10 @@ type ItemPageProps = {
   lists?: UserList[];
   tradeLists?: UserList[];
   itemOpenable: ItemOpenable | null;
-  itemParent: number[];
+  itemParent: {
+    parents_iid: number[];
+    itemData: ItemData[];
+  };
   lastSeen: ItemLastSeen | null;
   NPTrades: TradeData[];
   NPPrices: PriceData[];
@@ -346,8 +349,8 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
                 wearableData={props.wearableData}
               />
             )}
+            {itemParent.parents_iid.length > 0 && <ItemParent item={item} parent={itemParent} />}
             {!item.isNC && item.status === 'active' && <TradeCard item={item} trades={trades} />}
-            {itemParent.length > 0 && <ItemParent item={item} parentItems={itemParent} />}
           </Flex>
         </Flex>
       </Flex>
@@ -421,7 +424,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
         getSimilarItems(item), // 2
         item.isNC ? getItemLists(item.internal_id, false, false) : [], // 3
         item.useTypes.canOpen !== 'false' ? getItemDrops(item.internal_id, item.isNC) : null, // 4
-        getItemParent(item.internal_id), // 5
+        getItemParent(item.internal_id, 4), // 5
         !item.isNC ? getItemPrices({ iid: item.internal_id }) : [], // 6
         !item.isNC ? getItemTrades({ name: item.name, image_id: item.image_id }) : [], // 7
         !item.isNC

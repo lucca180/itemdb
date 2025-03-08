@@ -1,4 +1,4 @@
-import { Flex } from '@chakra-ui/react';
+import { Button, Flex, useBoolean } from '@chakra-ui/react';
 import axios from 'axios';
 import React, { useEffect } from 'react';
 import { ItemData } from '../../types';
@@ -8,48 +8,50 @@ import { useTranslations } from 'next-intl';
 
 type Props = {
   item: ItemData;
-  parentItems: number[];
+  parent: {
+    parents_iid: number[];
+    itemData: ItemData[];
+  };
 };
 
 const ItemParent = (props: Props) => {
   const t = useTranslations();
-  const [isLoading, setLoading] = React.useState(true);
-  const [parentData, setParentData] = React.useState<ItemData[]>([]);
-  const { item, parentItems } = props;
+  const [parentData, setParentData] = React.useState<ItemData[]>(props.parent.itemData);
+  const { item } = props;
+  const { parents_iid: parentItems } = props.parent;
   const color = item.color.rgb;
+  const [showMore, { toggle }] = useBoolean(false);
 
   useEffect(() => {
-    setLoading(true);
     init();
   }, [parentItems]);
 
   const init = async () => {
+    if (parentItems.length === parentData.length) return;
     const itemRes = await axios.post(`/api/v1/items/many`, {
       id: parentItems,
     });
 
     setParentData(Object.values(itemRes.data));
-    setLoading(false);
   };
-
-  if (isLoading)
-    return (
-      <CardBase title={t('ItemPage.found-inside')} color={color}>
-        <Flex gap={3} wrap="wrap" justifyContent="center">
-          {parentItems.map((id) => (
-            <ItemCard key={id} isLoading small />
-          ))}
-        </Flex>
-      </CardBase>
-    );
 
   return (
     <CardBase title={t('ItemPage.found-inside')} color={color}>
       <Flex gap={3} wrap="wrap" justifyContent="center">
-        {parentData.map((item) => {
-          return <ItemCard key={item.internal_id} item={item} small />;
-        })}
+        {parentData
+          .sort((a, b) => (b.item_id ?? b.internal_id) - (a.item_id ?? a.internal_id))
+          .slice(0, showMore ? parentData.length : 4)
+          .map((item) => {
+            return <ItemCard key={item.internal_id} item={item} small />;
+          })}
       </Flex>
+      {parentItems.length > 4 && (
+        <Flex justifyContent="center" mt={3}>
+          <Button size={'sm'} onClick={toggle}>
+            {!showMore ? t('ItemPage.show-more') : t('ItemPage.show-less')}
+          </Button>
+        </Flex>
+      )}
     </CardBase>
   );
 };

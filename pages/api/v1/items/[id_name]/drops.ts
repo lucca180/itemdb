@@ -5,6 +5,7 @@ import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 import { WearableData } from '@prisma/client';
 import { revalidateItem } from './effects';
+import { getManyItems } from '../many';
 
 const catType = ['trinkets', 'accessories', 'clothing', 'le', 'choice'];
 const catTypeZone = ['trinkets', 'accessories', 'clothing'];
@@ -402,7 +403,7 @@ export const getItemDrops = async (
   return openableData;
 };
 
-export const getItemParent = async (item_iid: number) => {
+export const getItemParent = async (item_iid: number, itemLimit = 30) => {
   const drops = await prisma.openableItems.findMany({
     where: {
       OR: [
@@ -436,7 +437,15 @@ export const getItemParent = async (item_iid: number) => {
     .filter((a) => a[1] >= 2)
     .map((a) => Number(a[0]));
 
-  return parentsArray;
+  const itemDataRaw = await getManyItems({
+    id: parentsArray.map((a) => a.toString()),
+  });
+
+  const itemData = Object.values(itemDataRaw)
+    .sort((a, b) => (b.item_id ?? b.internal_id) - (a.item_id ?? a.internal_id))
+    .slice(0, itemLimit);
+
+  return { parents_iid: parentsArray, itemData: itemData };
 };
 
 type MinMax = {
