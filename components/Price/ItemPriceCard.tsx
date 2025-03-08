@@ -215,9 +215,10 @@ const ItemPriceCard = (props: Props) => {
           <Flex
             flexFlow={{ base: 'column', md: 'row' }}
             alignItems={{ base: 'inherit', md: 'center' }}
+            justifyContent={{ base: 'flex-start', md: 'space-around' }}
             gap={1}
           >
-            <Flex flexFlow="column" alignItems={'center'} maxW={'200px'}>
+            <Flex flexFlow="column" alignItems={'center'} maxW={{ base: '100%', md: '200px' }}>
               {item.saleStatus && (
                 <>
                   {item.saleStatus.status === 'ets' && (
