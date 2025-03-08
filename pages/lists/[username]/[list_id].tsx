@@ -809,7 +809,7 @@ const ListPage = (props: ListPageProps) => {
           </Flex>
         )}
         {(!isLoading || !!itemInfoIds.length) && (
-          <Flex px={[1, 3]} flexFlow="column">
+          <Flex flexFlow="column">
             <ItemList
               list={list}
               sortType={sortInfo.sortBy}
