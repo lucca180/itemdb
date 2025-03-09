@@ -317,6 +317,28 @@ const ItemPriceCard = (props: Props) => {
               )}
             </Flex>
             <Flex flexFlow="column" width="100%" maxW={'580px'}>
+              {prices.length == 0 && (
+                <HStack ml="auto" mr={2} mb={2} gap={0}>
+                  {user?.isAdmin && (
+                    <IconButton
+                      onClick={adminCreatePrice.onOpen}
+                      size="sm"
+                      aria-label="Table"
+                      icon={<MdOutlineAdd />}
+                      mr={2}
+                    />
+                  )}
+                  {user?.isAdmin && (
+                    <IconButton
+                      onClick={forceUpdatePrices}
+                      size="sm"
+                      aria-label="Table"
+                      icon={<LuAtom />}
+                      mr={2}
+                    />
+                  )}
+                </HStack>
+              )}
               {prices.length > 0 && (
                 <>
                   <HStack ml="auto" mr={2} mb={2} gap={0}>
