@@ -6,6 +6,7 @@ import {
   AutoCompleteList,
   AutoCompleteTag,
 } from '@choc-ui/chakra-autocomplete';
+import { allSpecies, petpetSpecies } from '../../utils/utils';
 
 type Props = {
   value?: string[] | string;
@@ -13,75 +14,20 @@ type Props = {
   disabled?: boolean;
   placeHolder?: string;
   isMultiple?: boolean;
+  isPetpet?: boolean;
 };
 
-const allSpecies = [
-  'Acara',
-  'Aisha',
-  'Blumaroo',
-  'Bori',
-  'Bruce',
-  'Buzz',
-  'Chia',
-  'Chomby',
-  'Cybunny',
-  'Draik',
-  'Elephante',
-  'Eyrie',
-  'Flotsam',
-  'Gelert',
-  'Gnorbu',
-  'Grarrl',
-  'Grundo',
-  'Hissi',
-  'Ixi',
-  'Jetsam',
-  'JubJub',
-  'Kacheek',
-  'Kau',
-  'Kiko',
-  'Koi',
-  'Korbat',
-  'Kougra',
-  'Krawk',
-  'Kyrii',
-  'Lenny',
-  'Lupe',
-  'Lutari',
-  'Meerca',
-  'Moehog',
-  'Mynci',
-  'Nimmo',
-  'Ogrin',
-  'Peophin',
-  'Poogle',
-  'Pteri',
-  'Quiggle',
-  'Ruki',
-  'Scorchio',
-  'Shoyru',
-  'Skeith',
-  'Techo',
-  'Tonu',
-  'Tuskaninny',
-  'Uni',
-  'Usul',
-  'Vandagyre',
-  'Wocky',
-  'Xweetok',
-  'Yurble',
-  'Zafara',
-];
-
 const SpeciesSelect = (props: Props) => {
-  const { value: valueProps, onChange, disabled, placeHolder, isMultiple } = props;
+  const { value: valueProps, onChange, disabled, placeHolder, isMultiple, isPetpet } = props;
+
+  const data = isPetpet ? Object.values(petpetSpecies) : Object.values(allSpecies);
 
   return (
     <AutoComplete
       defaultValues={
         valueProps ? (Array.isArray(valueProps) ? valueProps : [valueProps]) : undefined
       }
-      openOnFocus
+      value={valueProps}
       rollNavigation
       multiple={isMultiple}
       onChange={(vals) => onChange?.(vals)}
@@ -94,7 +40,7 @@ const SpeciesSelect = (props: Props) => {
         }
       </AutoCompleteInput>
       <AutoCompleteList>
-        {allSpecies.map((option, oid) => (
+        {data.map((option, oid) => (
           <AutoCompleteItem
             key={`option-${oid}`}
             value={option}

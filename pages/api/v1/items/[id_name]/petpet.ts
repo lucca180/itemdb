@@ -4,9 +4,12 @@ import prisma from '../../../../../utils/prisma';
 import { getManyItems } from '../many';
 import { getItem } from '.';
 import { petpetColors, petpetSpecies } from '../../../../../utils/utils';
+import { CheckAuth } from '../../../../../utils/googleCloud';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
+  if (req.method === 'POST') return POST(req, res);
+  if (req.method === 'DELETE') return DELETE(req, res);
 
   if (req.method == 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Methods', 'GET');
@@ -25,6 +28,77 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
   const petpetData = await getPetpetData(item);
 
   return res.status(200).json(petpetData);
+}
+
+async function POST(req: NextApiRequest, res: NextApiResponse) {
+  try {
+    const { user } = await CheckAuth(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+    if (user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
+  } catch (e: any) {
+    console.error(e);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+
+  const { id_name } = req.query;
+
+  const item = await getItem(id_name as string | number);
+  if (!item) return res.status(400).json({ error: 'Item not found' });
+
+  const { item_iid, color, species, isUnpaintable, isCanonical } = req.body;
+
+  if (typeof item_iid !== 'number' || typeof color !== 'string' || typeof species !== 'string')
+    return res.status(400).json({ error: 'Invalid body' });
+
+  const speciesId = Number(findSpecies(species));
+  const colorId = Number(findColor(color));
+
+  const petpet = await prisma.petpetColors.upsert({
+    create: {
+      item_iid: item.internal_id,
+      petpet_id: speciesId,
+      color_id: colorId,
+      isUnpaintable: !!isUnpaintable ? true : false,
+      isCanonical: !!isCanonical ? true : null,
+    },
+    update: {
+      petpet_id: speciesId,
+      color_id: colorId,
+      isUnpaintable: !!isUnpaintable ? true : false,
+      isCanonical: !!isCanonical ? true : null,
+    },
+    where: {
+      item_iid: item.internal_id,
+    },
+  });
+
+  return res.status(200).json(petpet);
+}
+
+async function DELETE(req: NextApiRequest, res: NextApiResponse) {
+  try {
+    const { user } = await CheckAuth(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+    if (user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
+  } catch (e: any) {
+    console.error(e);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+
+  const { id_name } = req.query;
+
+  const item = await getItem(id_name as string | number);
+  if (!item) return res.status(400).json({ error: 'Item not found' });
+
+  const petpet = await prisma.petpetColors.delete({
+    where: {
+      item_iid: item.internal_id,
+    },
+  });
+
+  return res.status(200).json(petpet);
 }
 
 export const getPetpetData = async (item: ItemData): Promise<ItemPetpetData | null> => {
@@ -194,4 +268,35 @@ export const getPetpetData = async (item: ItemData): Promise<ItemPetpetData | nu
 
 const getPriceSum = (items: ItemData[]) => {
   return items.reduce((acc, item) => acc + (item.price.value ?? Infinity), 0);
+};
+
+const findSpecies = (itemName: string) => {
+  if (itemName.includes('Ultra Pinceron')) return '297';
+
+  for (const [id, species] of Object.entries(petpetSpecies)) {
+    const name = itemName.toLowerCase().split(' ');
+    const speciesArr = species.toLowerCase().split(' ');
+
+    if (speciesArr.every((word) => name.includes(word))) {
+      return id;
+    }
+  }
+
+  return null;
+};
+
+const findColor = (itemName: string) => {
+  if (itemName.includes('Spoppy III')) return '999999';
+  if (itemName.includes('Spoppy II')) return '99999';
+  if (itemName.includes('Glowing')) return '17';
+  for (const [id, color] of Object.entries(petpetColors)) {
+    const name = itemName.toLowerCase().split(' ');
+    const colorArr = color.toLowerCase().split(' ');
+
+    if (colorArr.every((word) => name.includes(word))) {
+      return id;
+    }
+  }
+
+  return '9999';
 };

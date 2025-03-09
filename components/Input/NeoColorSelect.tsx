@@ -28,6 +28,7 @@ const NeoColorSelect = (props: Props) => {
   return (
     <AutoComplete
       defaultValues={Array.isArray(valueProps) ? valueProps : [valueProps]}
+      value={valueProps}
       openOnFocus
       rollNavigation
       multiple={isMultiple}

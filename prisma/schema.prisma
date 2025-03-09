@@ -719,6 +719,7 @@ model PetpetColors {
 
   @@unique([color_id, petpet_id])
   @@unique([petpet_id, isCanonical])
+  @@unique([item_iid])
 }
 
 // -------- DISMANTELING PRICE PROCESS --------- //

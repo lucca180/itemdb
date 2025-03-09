@@ -42,6 +42,7 @@ import {
   ItemData,
   ItemEffect,
   ItemOpenable,
+  ItemPetpetData,
   ItemTag,
   PrizePoolData,
 } from '../../types';
@@ -73,12 +74,21 @@ export type EditItemModalProps = {
   tags: ItemTag[];
   itemOpenable: ItemOpenable | null;
   itemEffects: ItemEffect[];
+  petpetData: ItemPetpetData | null;
 };
 
 const EditItemModal = (props: EditItemModalProps) => {
   const t = useTranslations();
   const { getIdToken, user } = useAuth();
-  const { isOpen, onClose, item: itemProps, tags: tagsProps, itemOpenable, itemEffects } = props;
+  const {
+    isOpen,
+    onClose,
+    item: itemProps,
+    tags: tagsProps,
+    itemOpenable,
+    itemEffects,
+    petpetData,
+  } = props;
   const [item, setItem] = useState<ItemData>(itemProps);
   const [tags, setTags] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -241,6 +251,7 @@ const EditItemModal = (props: EditItemModalProps) => {
                   {isAdmin && <Tab>{t('ItemPage.categories')}</Tab>}
                   {isAdmin && <Tab>{t('ItemPage.drops')}</Tab>}
                   {isAdmin && <Tab>Item Effects</Tab>}
+                  {isAdmin && <Tab>Petpet</Tab>}
                 </TabList>
                 <TabPanels>
                   <TabPanel>
@@ -266,6 +277,11 @@ const EditItemModal = (props: EditItemModalProps) => {
                   {isAdmin && (
                     <TabPanel>
                       <EffectsTab item={item} itemEffects={itemEffects} />
+                    </TabPanel>
+                  )}
+                  {isAdmin && (
+                    <TabPanel>
+                      <PetpetTab item={item} petpetData={petpetData} />
                     </TabPanel>
                   )}
                 </TabPanels>
@@ -1121,6 +1137,159 @@ export const EffectsTab = (props: EffectsTabProps) => {
       {unsavedChanges && (
         <Button onClick={saveChanges} colorScheme="green" variant={'outline'} isLoading={isLoading}>
           Save Effects
+        </Button>
+      )}
+    </Stack>
+  );
+};
+
+// ------- Petpet Tab ------- //
+
+type PetpetInfo = {
+  species: string;
+  color: string;
+  isCanonical: boolean;
+  isUnpaintable: boolean;
+};
+
+type PetpetTabProps = {
+  item: ItemData;
+  petpetData?: ItemPetpetData | null;
+};
+
+const defaultPetpetInfo: PetpetInfo = {
+  species: '',
+  color: '',
+  isCanonical: false,
+  isUnpaintable: false,
+};
+
+export const PetpetTab = (props: PetpetTabProps) => {
+  const { item, petpetData } = props;
+  const [petpetInfo, setPetpetInfo] = useState<PetpetInfo>(defaultPetpetInfo);
+  const [unsavedChanges, setUnsavedChanges] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+  const [isLoading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!petpetData) return;
+    setPetpetInfo({
+      species: petpetData.species.name,
+      color: petpetData.color.name,
+      isCanonical: !!petpetData.isCanonical,
+      isUnpaintable: !!petpetData.isUnpaintable,
+    });
+  }, [petpetData]);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    inputName?: string
+  ) => {
+    const name = inputName ?? (e.target.name as keyof PetpetInfo);
+    const value = e.target.value;
+
+    const newPetpetInfo: PetpetInfo = {
+      ...petpetInfo,
+      [name]: value,
+    };
+
+    setPetpetInfo(newPetpetInfo);
+
+    setUnsavedChanges(true);
+  };
+
+  const saveChanges = async () => {
+    try {
+      setLoading(true);
+      await axios.post(`/api/v1/items/${item.internal_id}/petpet`, {
+        ...petpetInfo,
+        item_iid: item.internal_id,
+      });
+      setLoading(false);
+      setUnsavedChanges(false);
+    } catch (e: any) {
+      console.error(e);
+      setError(
+        'An error occurred while saving the petpet info. Please REFRESH the page and try later.'
+      );
+    }
+  };
+
+  const deleteData = async () => {
+    try {
+      setLoading(true);
+      await axios.delete(`/api/v1/items/${item.internal_id}/petpet`);
+      setLoading(false);
+      setPetpetInfo(defaultPetpetInfo);
+      setUnsavedChanges(false);
+    } catch (e: any) {
+      console.error(e);
+      setError(
+        'An error occurred while deleting the petpet info. Please REFRESH the page and try later.'
+      );
+    }
+  };
+
+  const handleSelectChange = (newData: string, type: 'species' | 'color') => {
+    setPetpetInfo((prev) => {
+      const newPetpetInfo = { ...prev };
+      if (type === 'color') newPetpetInfo.color = newData;
+      if (type === 'species') newPetpetInfo.species = newData;
+      return newPetpetInfo;
+    });
+
+    setUnsavedChanges(true);
+  };
+
+  return (
+    <Stack flexFlow="column" gap={4}>
+      {error && (
+        <Text color="red.400" textAlign={'center'}>
+          {error}
+        </Text>
+      )}
+      <VStack bg="blackAlpha.300" p={2} borderRadius={'sm'}>
+        <HStack>
+          <NeoColorSelect
+            isPetpet
+            onChange={(v) => handleSelectChange(v, 'color')}
+            value={petpetInfo.color}
+            placeHolder="Color"
+          />
+          <SpeciesSelect
+            isPetpet
+            onChange={(v) => handleSelectChange(v as string, 'species')}
+            value={petpetInfo.species}
+            placeHolder="Species"
+          />
+        </HStack>
+        <Select
+          name="isCanonical"
+          value={petpetInfo.isCanonical.toString()}
+          onChange={(e) => handleChange(e)}
+          variant="filled"
+        >
+          <option value="false">Not Canonical</option>
+          <option value="true">Canonical</option>
+        </Select>
+        <Select
+          name="isUnpaintable"
+          value={petpetInfo.isUnpaintable.toString()}
+          onChange={(e) => handleChange(e)}
+          variant="filled"
+        >
+          <option value="false">Paintable</option>
+          <option value="true">Unpaintable</option>
+        </Select>
+      </VStack>
+      {unsavedChanges && (
+        <Button onClick={saveChanges} colorScheme="green" variant={'outline'} isLoading={isLoading}>
+          Save Petpet
+        </Button>
+      )}
+      {!!petpetData && (
+        <Button onClick={deleteData} colorScheme="red" variant={'outline'} isLoading={isLoading}>
+          Delete Petpet Data
         </Button>
       )}
     </Stack>

@@ -135,6 +135,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
           isOpen={isEditModalOpen}
           itemOpenable={itemOpenable}
           itemEffects={itemEffects}
+          petpetData={petpetData}
           item={item}
           onClose={() => setIsEditModalOpen(false)}
           tags={[]}
