@@ -66,7 +66,7 @@ function filterMostRecents(priceProcessList: PriceProcess2[]) {
   const daysThreshold: { [days: number]: number } = {
     0: EVENT_MODE ? 10 : 18,
     3: EVENT_MODE ? 5 : 15,
-    7: 10,
+    7: EVENT_MODE ? 5 : 10,
     15: 5,
     30: 3,
     120: 1,

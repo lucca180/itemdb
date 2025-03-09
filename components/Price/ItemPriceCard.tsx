@@ -20,6 +20,7 @@ import {
   AlertTitle,
   CloseButton,
   useBoolean,
+  useToast,
 } from '@chakra-ui/react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ItemData, ItemLastSeen, PriceData, PricingInfo, UserList } from '../../types';
@@ -28,7 +29,7 @@ import { AiOutlineAreaChart, AiOutlineTable } from 'react-icons/ai';
 import PriceTable from './PriceTable';
 import { MinusIcon } from '@chakra-ui/icons';
 import CardBase from '../Card/CardBase';
-import { MdHelp, MdMoneyOff } from 'react-icons/md';
+import { MdHelp, MdMoneyOff, MdOutlineAdd } from 'react-icons/md';
 import dynamic from 'next/dynamic';
 import { LastSeenModalProps } from '../Modal/LastSeenModal';
 import { useFormatter, useTranslations } from 'next-intl';
@@ -38,6 +39,7 @@ import { useAuth } from '../../utils/auth';
 import useSWRImmutable from 'swr/immutable';
 import useSWR from 'swr';
 import { MdLabelOutline, MdLabel } from 'react-icons/md';
+import { LuAtom } from 'react-icons/lu';
 
 import axios, { AxiosRequestConfig } from 'axios';
 import { SaleStatusModalProps } from '../Modal/SaleStatusModal';
@@ -53,11 +55,16 @@ import TPIcon from '../../public/icons/tradingpost.png';
 
 import Image from 'next/image';
 import { SeenHistoryModalProps } from '../SeenHistory/SeenHistoryModal';
+import { CreatePriceModalModalProps } from '../Modal/CreatePriceModal';
 
 const ChartComponent = dynamic<ChartComponentProps>(() => import('../Charts/PriceChart'));
 const LastSeenModal = dynamic<LastSeenModalProps>(() => import('../Modal/LastSeenModal'));
 const WrongPriceModal = dynamic<WrongPriceModalProps>(() => import('../Modal/WrongPriceModal'));
 const SaleStatusModal = dynamic<SaleStatusModalProps>(() => import('../Modal/SaleStatusModal'));
+const CreatePriceModal = dynamic<CreatePriceModalModalProps>(
+  () => import('../Modal/CreatePriceModal')
+);
+
 const SeenHistoryModal = dynamic<SeenHistoryModalProps>(
   () => import('../SeenHistory/SeenHistoryModal')
 );
@@ -81,10 +88,12 @@ const intl = new Intl.NumberFormat();
 const ItemPriceCard = (props: Props) => {
   const t = useTranslations();
   const format = useFormatter();
+  const toast = useToast();
   const { user } = useAuth();
   const lastSeenModal = useDisclosure();
   const wrongPriceModal = useDisclosure();
   const saleStatusModal = useDisclosure();
+  const adminCreatePrice = useDisclosure();
   const { item } = props;
   const [displayState, setDisplay] = useState('table');
   const [priceDiff, setDiff] = useState<number | null>(null);
@@ -158,6 +167,35 @@ const ItemPriceCard = (props: Props) => {
     return false;
   }, [user, priceStatus, price]);
 
+  const forceUpdatePrices = async () => {
+    if (!user?.isAdmin) return;
+
+    const resultProm = axios.patch(`/api/admin/prices/`, {
+      item_iid: item.internal_id,
+    });
+
+    toast.promise(resultProm, {
+      loading: {
+        title: 'Running Price Process Algorithm',
+      },
+      success: {
+        title: 'Algorithm Completed',
+        description:
+          'Prices may have been updated - if not, please gather more data before trying again',
+      },
+      error: {
+        title: 'An error occurred',
+        description: 'Please DO NOT try again.',
+      },
+    });
+
+    try {
+      await resultProm;
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (!prices) return null;
 
   if (isNoTrade)
@@ -179,6 +217,9 @@ const ItemPriceCard = (props: Props) => {
           onClose={() => setSelectedPrice(null)}
           item={item}
         />
+      )}
+      {adminCreatePrice.isOpen && (
+        <CreatePriceModal isOpen={true} onClose={adminCreatePrice.onClose} item={item} />
       )}
       {lastSeenModal.isOpen && (
         <LastSeenModal isOpen={lastSeenModal.isOpen} onClose={lastSeenModal.onClose} />
@@ -279,6 +320,24 @@ const ItemPriceCard = (props: Props) => {
               {prices.length > 0 && (
                 <>
                   <HStack ml="auto" mr={2} mb={2} gap={0}>
+                    {user?.isAdmin && (
+                      <IconButton
+                        onClick={adminCreatePrice.onOpen}
+                        size="sm"
+                        aria-label="Table"
+                        icon={<MdOutlineAdd />}
+                        mr={2}
+                      />
+                    )}
+                    {user?.isAdmin && (
+                      <IconButton
+                        onClick={forceUpdatePrices}
+                        size="sm"
+                        aria-label="Table"
+                        icon={<LuAtom />}
+                        mr={2}
+                      />
+                    )}
                     <IconButton
                       onClick={toggleLabel}
                       size="sm"

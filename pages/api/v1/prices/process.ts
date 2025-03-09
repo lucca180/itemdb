@@ -6,8 +6,8 @@ import { ItemPrices, PriceProcess2, Prisma } from '@prisma/client';
 import { differenceInCalendarDays } from 'date-fns';
 import { processPrices2 } from '../../../../utils/pricing';
 
-const MAX_DAYS = 30;
-const MAX_PAST_DAYS = 60;
+export const MAX_DAYS = 30;
+export const MAX_PAST_DAYS = 60;
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
@@ -189,6 +189,58 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     },
   });
 
+  const { priceUpdate, priceProcessed, manualCheck } = await doProcessPrices(processList, ids);
+
+  return res.send({
+    priceUpdate,
+    priceProcessed,
+    manualCheck,
+  });
+};
+
+const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
+  const today = new Date().getDate();
+
+  // only clean up every 15 days
+  if ((today % 15) - 1 !== 0) {
+    const result = await prisma.priceProcessHistory.deleteMany({});
+    return res.send(result);
+  }
+
+  const result = await Promise.all([
+    prisma.priceProcessHistory.deleteMany({}),
+    prisma.priceProcess2.deleteMany({
+      where: {
+        OR: [
+          {
+            processed: true,
+            addedAt: {
+              lt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
+            },
+          },
+          {
+            addedAt: {
+              lt: new Date(Date.now() - (MAX_PAST_DAYS + 7) * 24 * 60 * 60 * 1000),
+            },
+          },
+        ],
+      },
+    }),
+  ]);
+
+  const formatedErase = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+  await prisma.$executeRaw`
+    delete from priceprocess2 p 
+    where 
+      exists (select 1 from itemprices i where i.addedAt > p.addedAt and i.item_iid = p.item_iid) and
+      addedAt < ${formatedErase}
+  `;
+
+  return res.send(result);
+};
+
+export const doProcessPrices = async (processList: PriceProcess2[], ids: number[]) => {
   const priceAddPromises: Promise<Prisma.ItemPricesUncheckedCreateInput | undefined>[] = [];
   const processedIDs: number[] = [];
 
@@ -264,53 +316,11 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     skipDuplicates: true,
   });
 
-  return res.send({
+  return {
     priceUpdate: result[0],
     priceProcessed: result[1],
     manualCheck: manualCheckList,
-  });
-};
-
-const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
-  const today = new Date().getDate();
-
-  // only clean up every 15 days
-  if ((today % 15) - 1 !== 0) {
-    const result = await prisma.priceProcessHistory.deleteMany({});
-    return res.send(result);
-  }
-
-  const result = await Promise.all([
-    prisma.priceProcessHistory.deleteMany({}),
-    prisma.priceProcess2.deleteMany({
-      where: {
-        OR: [
-          {
-            processed: true,
-            addedAt: {
-              lt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
-            },
-          },
-          {
-            addedAt: {
-              lt: new Date(Date.now() - (MAX_PAST_DAYS + 7) * 24 * 60 * 60 * 1000),
-            },
-          },
-        ],
-      },
-    }),
-  ]);
-
-  const formatedErase = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-
-  await prisma.$executeRaw`
-    delete from priceprocess2 p 
-    where 
-      exists (select 1 from itemprices i where i.addedAt > p.addedAt and i.item_iid = p.item_iid) and
-      addedAt < ${formatedErase}
-  `;
-
-  return res.send(result);
+  };
 };
 
 async function updateOrAddDB(
