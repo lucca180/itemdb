@@ -210,7 +210,7 @@ const CreateListModal = (props: CreateListModalProps) => {
                               type="date"
                               name="seriesEnd"
                               onChange={handleChange}
-                              max={list.seriesStart || undefined}
+                              min={list.seriesStart || undefined}
                               value={list.seriesEnd?.split('T')[0] ?? ''}
                             />
                           </FormControl>
