@@ -266,7 +266,14 @@
     "report-owls-cta": "Traded one? <Link>Report here</Link>",
     "show-more": "Show More",
     "show-less": "Show Less",
-    "effects-petpetColor": "This item {random, select, true {has a chance of changing} other{will change}} some petpets colors to <Target1></Target1>"
+    "effects-petpetColor": "This item {random, select, true {has a chance of changing} other{will change}} some petpets colors to <Target1></Target1>",
+    "cheapest-way-to-get-this-petpet": "Cheapest way to get this Petpet",
+    "p2-paint-base-color": "You can paint this petpet to the base color by using <b>{name}</b> at the <Link>Petpet Puddle</Link>",
+    "other-ways-of-getting-this-petpet": "Other ways of getting this petpet",
+    "petpet-puddle": "Petpet Puddle",
+    "p2-p2-at-puddle": "You can use Petpet Paint Brushes to change its color at the <Link>Petpet Puddle</Link>",
+    "color-is-base-color": "<b>{color}</b> is the <b>base color</b> for <b>{species}</b>",
+    "unpaintable-p2": "This petpet is unique and cannot be painted"
   },
   "Button": {
     "feedback": "Feedback",

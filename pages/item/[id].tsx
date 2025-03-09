@@ -9,6 +9,7 @@ import {
   ItemLastSeen,
   ItemMMEData,
   ItemOpenable,
+  ItemPetpetData,
   ItemRecipe,
   NCMallData,
   // ItemTag,
@@ -48,6 +49,8 @@ import { getMMEData, isMME } from '../api/v1/items/[id_name]/mme';
 import { DyeworksData, getDyeworksData } from '../api/v1/items/[id_name]/dyeworks';
 import { getSingleItemColor } from '../api/v1/items/[id_name]/colors';
 import * as Sentry from '@sentry/nextjs';
+import { getPetpetData } from '../api/v1/items/[id_name]/petpet';
+import PetpetCard from '../../components/Items/PetpetCard';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -94,6 +97,7 @@ type ItemPageProps = {
   itemRecipes: ItemRecipe[] | null;
   mmeData: ItemMMEData | null;
   dyeData: DyeworksData | null;
+  petpetData: ItemPetpetData | null;
   messages: any;
   locale: string | undefined;
 };
@@ -112,6 +116,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
     itemRecipes,
     mmeData,
     dyeData,
+    petpetData,
   } = props;
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
@@ -324,6 +329,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
             {!!user && <ItemMyLists item={item} />}
             {mmeData && <MMECard item={item} mmeData={mmeData} />}
             {dyeData && <DyeCard item={item} dyeData={dyeData} />}
+            {petpetData && <PetpetCard item={item} petpetData={petpetData} />}
             {itemRecipes && itemRecipes.length > 0 && (
               <ItemRecipes item={item} recipes={itemRecipes} />
             )}
@@ -406,6 +412,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     itemRecipes,
     mmeData,
     dyeData,
+    petpetData,
   ] = await Sentry.startSpan(
     {
       name: 'itemLoad',
@@ -436,6 +443,9 @@ export async function getStaticProps(context: GetStaticPropsContext) {
         !item.isNC ? getItemRecipes(item.internal_id) : null, // 12
         isMME(item.name) ? getMMEData(item) : null, // 13
         item.isNC && item.isWearable ? getDyeworksData(item) : null, // 14
+        !item.isNC && !item.isWearable && !item.isBD && !item.isNeohome
+          ? getPetpetData(item)
+          : null, // 15
       ]);
     }
   );
@@ -459,6 +469,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     itemRecipes: itemRecipes,
     mmeData: mmeData,
     dyeData: dyeData,
+    petpetData: petpetData,
     messages: (await import(`../../translation/${context.locale}.json`)).default,
     locale: context.locale,
   };

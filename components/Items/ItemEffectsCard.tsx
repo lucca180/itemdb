@@ -77,7 +77,7 @@ export const EffectTypes = {
   petpetColor: {
     name_en: 'Petpet Color Change',
     name_pt: 'Troca de Cor de Petpet',
-    img: '/icons/effects-color.png',
+    img: '/icons/effects-petpet-color.png',
   },
 };
 

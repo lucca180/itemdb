@@ -503,6 +503,33 @@ type ItemMMEData = {
   };
 };
 
+type ItemPetpetData = {
+  petpet: ItemData;
+  isUnpaintable: boolean;
+  isCanonical: boolean;
+
+  species: {
+    name: string;
+    id: number;
+  };
+  color: {
+    name: string;
+    id: number;
+  };
+
+  toCanonical: {
+    pb: ItemData;
+    p2: ItemData;
+  } | null;
+
+  cheapest: {
+    items: ItemData[];
+    cost: number | null;
+  } | null;
+
+  alternativeWays: ItemData[][] | null;
+};
+
 // ------- FEEDBACKS JSON -------- //
 export type Feedback = {
   feedback_id: number;
