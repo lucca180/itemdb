@@ -459,7 +459,7 @@ type UserPreferences = {
 
 type ItemEffect = {
   internal_id?: number;
-  type: 'disease' | 'cureDisease' | 'heal' | 'stats' | 'colorSpecies' | 'other';
+  type: 'disease' | 'cureDisease' | 'heal' | 'stats' | 'colorSpecies' | 'petpetColor' | 'other';
   name: string;
   species?: string[] | null;
   minVal?: number | null;

@@ -266,7 +266,8 @@
     "report-your-nc-trades": "Reporte suas Trocas NC",
     "report-owls-cta": "Trocou um desses? <Link>Reporte aqui</Link>",
     "show-more": "Mostrar Mais",
-    "show-less": "Mostrar Menos"
+    "show-less": "Mostrar Menos",
+    "effects-petpetColor": "Esse item {random, select, true {tem a chance de trocar} other{troca}} a cor de alguns petpets para <Target1></Target1>"
   },
   "Button": {
     "feedback": "Feedback",

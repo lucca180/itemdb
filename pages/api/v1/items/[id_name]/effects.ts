@@ -9,6 +9,7 @@ import {
   allSpecies,
   getPetColorId,
   getSpeciesId,
+  petpetColors,
 } from '../../../../../utils/utils';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
@@ -204,6 +205,13 @@ export const getItemEffects = async (item_id_name: ItemData | string | number) =
 };
 
 export const formatEffect = (effect: PrimsaItemEffect) => {
+  let colorTarget = null;
+  if (effect.colorTarget && effect.type === 'colorSpecies') {
+    colorTarget = allNeopetsColors[`${effect.colorTarget}`];
+  } else if (effect.colorTarget && effect.type === 'petpetColor') {
+    colorTarget = petpetColors[`${effect.colorTarget}`];
+  }
+
   const obj: ItemEffect = {
     internal_id: effect.internal_id,
     type: effect.type as ItemEffect['type'],
@@ -213,7 +221,7 @@ export const formatEffect = (effect: PrimsaItemEffect) => {
     minVal: effect.minVal,
     maxVal: effect.maxVal,
     strVal: effect.strVal,
-    colorTarget: effect.colorTarget ? allNeopetsColors[`${effect.colorTarget}`] : null,
+    colorTarget: colorTarget,
     speciesTarget: effect.speciesTarget ? allSpecies[`${effect.speciesTarget}`] : null,
     text: effect.text,
   };

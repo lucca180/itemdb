@@ -6,7 +6,7 @@ import {
   AutoCompleteList,
   AutoCompleteTag,
 } from '@choc-ui/chakra-autocomplete';
-import { allNeopetsColors } from '../../utils/utils';
+import { allNeopetsColors, petpetColors } from '../../utils/utils';
 
 type Props = {
   value?: string;
@@ -14,12 +14,16 @@ type Props = {
   disabled?: boolean;
   placeHolder?: string;
   isMultiple?: boolean;
+  isPetpet?: boolean;
 };
 
 const NeoColorSelect = (props: Props) => {
-  const { value: valueProps, onChange, disabled, placeHolder, isMultiple } = props;
+  const { value: valueProps, onChange, disabled, placeHolder, isMultiple, isPetpet } = props;
 
-  const allColorsSorted = useMemo(() => Object.values(allNeopetsColors).sort(), []);
+  const allColorsSorted = useMemo(
+    () => Object.values(!isPetpet ? allNeopetsColors : petpetColors).sort(),
+    []
+  );
 
   return (
     <AutoComplete

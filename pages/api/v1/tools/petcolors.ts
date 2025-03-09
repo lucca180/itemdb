@@ -101,6 +101,7 @@ export const getPetColorData = async (
 
   const rawData = await prisma.itemEffect.findMany({
     where: {
+      type: 'colorSpecies',
       OR: [
         colorTargetId
           ? {

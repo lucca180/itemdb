@@ -68,6 +68,7 @@ model Items {
   ItemRecipes           ItemRecipes[]
   ItemIngredients       ItemIngredients[]
   DataCollecting        DataCollecting[]
+  PetpetColors          PetpetColors[]
 
   @@index([name, image_id])
   @@index([image_id])
@@ -702,6 +703,22 @@ model WrappedSettings {
   updatedAt DateTime @updatedAt
 
   @@unique([user_id, year])
+}
+
+model PetpetColors {
+  internal_id Int @id @default(autoincrement())
+
+  color_id  Int
+  petpet_id Int
+  item_iid  Int
+
+  item Items @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+
+  isUnpaintable Boolean  @default(false)
+  isCanonical   Boolean?
+
+  @@unique([color_id, petpet_id])
+  @@unique([petpet_id, isCanonical])
 }
 
 // -------- DISMANTELING PRICE PROCESS --------- //

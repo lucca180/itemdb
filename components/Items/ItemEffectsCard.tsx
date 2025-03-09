@@ -5,7 +5,12 @@ import CardBase from '../Card/CardBase';
 import dynamic from 'next/dynamic';
 import Color from 'color';
 import { useLocale, useTranslations } from 'next-intl';
-import { getDiseaseTranslation, getPetColorId, getSpeciesId } from '../../utils/utils';
+import {
+  getDiseaseTranslation,
+  getPetColorId,
+  getPetpetColorId,
+  getSpeciesId,
+} from '../../utils/utils';
 import NextImage from 'next/image';
 
 const Markdown = dynamic(() => import('../Utils/Markdown'));
@@ -67,6 +72,11 @@ export const EffectTypes = {
   colorSpecies: {
     name_en: 'Color/Species Change',
     name_pt: 'Troca de Cor/Espécie',
+    img: '/icons/effects-color.png',
+  },
+  petpetColor: {
+    name_en: 'Petpet Color Change',
+    name_pt: 'Troca de Cor de Petpet',
     img: '/icons/effects-color.png',
   },
 };
@@ -254,6 +264,38 @@ export const EffectText = (props: EffectTextProps) => {
                 {species?.map((a, i) => (
                   <PetImage pet={a} key={a} comma={i !== species.length - 1} />
                 ))}
+              </>
+            ),
+          })}
+        </>
+      )}
+      {type === 'petpetColor' && (
+        <>
+          {t.rich('ItemPage.effects-petpetColor', {
+            random: isChance,
+            Target1: () => (
+              <>
+                {colorTarget && (
+                  <>
+                    <Link
+                      href={`https://www.neopets.com/pool/petpet_colors.phtml?f_color=${getPetpetColorId(
+                        colorTarget
+                      )}`}
+                      isExternal
+                    >
+                      {colorTarget}
+                    </Link>
+                  </>
+                )}
+                {colorTarget && !speciesTarget && (
+                  <NextImage
+                    src={'/icons/neopets.png'}
+                    width={16}
+                    height={16}
+                    style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '0.2rem' }}
+                    alt="link icon"
+                  />
+                )}
               </>
             ),
           })}

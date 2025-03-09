@@ -265,7 +265,8 @@
     "report-your-nc-trades": "Report your NC Trades",
     "report-owls-cta": "Traded one? <Link>Report here</Link>",
     "show-more": "Show More",
-    "show-less": "Show Less"
+    "show-less": "Show Less",
+    "effects-petpetColor": "This item {random, select, true {has a chance of changing} other{will change}} some petpets colors to <Target1></Target1>"
   },
   "Button": {
     "feedback": "Feedback",
