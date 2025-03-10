@@ -52,7 +52,7 @@ export const CheckAuth = async (
     lastLogin: startOfDay(dbUser.last_login).toJSON(),
     createdAt: dbUser.createdAt.toJSON(),
     xp: dbUser.xp,
-    banned: dbUser.xp < -300,
+    banned: dbUser.xp < -1000,
   };
 
   return {

@@ -46,7 +46,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       createdAt: dbUser.createdAt.toJSON(),
       prefLang: dbUser.pref_lang,
       xp: dbUser.xp,
-      banned: dbUser.xp < -300,
+      banned: dbUser.xp < -1000,
     };
 
     res.json(user);
