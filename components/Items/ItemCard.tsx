@@ -5,7 +5,7 @@ import { ItemData } from '../../types';
 import { AiFillInfoCircle, AiFillWarning } from 'react-icons/ai';
 import ItemCtxMenu, { CtxTrigger } from '../Menus/ItemCtxMenu';
 import { getRestockProfit, rarityToCCPoints } from '../../utils/utils';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import MainLink from '../Utils/MainLink';
 import { MdHelp } from 'react-icons/md';
 
@@ -28,8 +28,6 @@ export type ItemProps = {
   utm_content?: string;
   uniqueID?: string;
 };
-
-const intl = new Intl.NumberFormat();
 
 const ItemCardBase = (props: ItemProps) => {
   const {
@@ -169,6 +167,7 @@ type ItemCardBadgeProps = Pick<ItemProps, 'item' | 'capValue' | 'odds' | 'sortTy
 
 export const ItemCardBadge = (props: ItemCardBadgeProps) => {
   const t = useTranslations();
+  const format = useFormatter();
   const { item, capValue, odds, profit, isLE, sortType } = props;
 
   if (!item) return null;
@@ -178,13 +177,13 @@ export const ItemCardBadge = (props: ItemCardBadgeProps) => {
       {item.price.value && item.price.inflated && (
         <Tooltip label={t('General.inflation')} aria-label="Inflation Tooltip" placement="top">
           <Badge colorScheme="red" whiteSpace="normal">
-            <Icon as={AiFillWarning} verticalAlign="middle" /> {intl.format(item.price.value)} NP
+            <Icon as={AiFillWarning} verticalAlign="middle" /> {format.number(item.price.value)} NP
           </Badge>
         </Tooltip>
       )}
 
       {item.price.value && !item.price.inflated && (
-        <Badge whiteSpace="normal">{intl.format(item.price.value)} NP</Badge>
+        <Badge whiteSpace="normal">{format.number(item.price.value)} NP</Badge>
       )}
 
       {item.type === 'np' && item.status === 'no trade' && <Badge>No Trade</Badge>}
@@ -217,7 +216,7 @@ export const ItemCardBadge = (props: ItemCardBadgeProps) => {
 
       {item.isNC && item.mallData && (
         <Badge colorScheme="purple" whiteSpace="normal">
-          {intl.format(item.mallData.discountPrice || item.mallData.price)} NC
+          {format.number(item.mallData.discountPrice || item.mallData.price)} NC
         </Badge>
       )}
 
@@ -253,7 +252,7 @@ export const ItemCardBadge = (props: ItemCardBadgeProps) => {
                 placement="top"
               >
                 <Badge colorScheme="red" display="flex" alignItems={'center'} gap={1}>
-                  {intl.format(profit)} NP <MdHelp size={'0.7rem'} />
+                  {format.number(profit)} NP <MdHelp size={'0.7rem'} />
                 </Badge>
               </Tooltip>
             </>
@@ -262,7 +261,7 @@ export const ItemCardBadge = (props: ItemCardBadgeProps) => {
             <>
               <Tooltip hasArrow label={t('Restock.estimated-profit')} placement="top">
                 <Badge colorScheme="green" display="flex" alignItems={'center'} gap={1}>
-                  {intl.format(profit)} NP <MdHelp size={'0.7rem'} />
+                  {format.number(profit)} NP <MdHelp size={'0.7rem'} />
                 </Badge>
               </Tooltip>
             </>

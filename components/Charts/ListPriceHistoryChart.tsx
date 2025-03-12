@@ -1,9 +1,8 @@
 import { Box } from '@chakra-ui/react';
 import Color from 'color';
 import { createChart, ColorType, LineStyle } from 'lightweight-charts';
+import { useFormatter } from 'next-intl';
 import React, { useEffect, useRef } from 'react';
-
-const intl = new Intl.NumberFormat();
 
 export type ListChartComponentProps = {
   color: Color<string>;
@@ -12,6 +11,7 @@ export type ListChartComponentProps = {
 };
 
 const ListChartComponent = (props: ListChartComponentProps) => {
+  const formatter = useFormatter();
   const { priceData, color } = props;
   const RBG = color.lightness(50).rgb().round().array();
   const backgroundColor = 'transparent';
@@ -57,7 +57,7 @@ const ListChartComponent = (props: ListChartComponentProps) => {
 
     chart.applyOptions({
       localization: {
-        priceFormatter: intl.format,
+        priceFormatter: formatter.number,
       },
     });
 

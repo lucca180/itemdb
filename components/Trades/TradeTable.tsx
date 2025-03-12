@@ -14,8 +14,6 @@ type Props = {
   onReport?: () => void;
 };
 
-const intl = new Intl.NumberFormat();
-
 const TradeTable = (props: Props) => {
   const t = useTranslations();
   const format = useFormatter();
@@ -89,7 +87,7 @@ const TradeTable = (props: Props) => {
               </Text>
               {item.price && (
                 <Text fontSize="xs" opacity="0.8">
-                  {intl.format(item.price)} NP
+                  {format.number(item.price)} NP
                 </Text>
               )}
               {data.priced && !item.price && (

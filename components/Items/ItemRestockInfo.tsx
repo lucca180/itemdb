@@ -17,7 +17,7 @@ import {
 import CardBase from '../Card/CardBase';
 import Image from 'next/image';
 import NextLink from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import { MdHelp } from 'react-icons/md';
 
 type Props = {
@@ -26,10 +26,9 @@ type Props = {
   isHT?: boolean; // is hidden tower item
 };
 
-const intl = new Intl.NumberFormat();
-
 const ItemRestock = (props: Props) => {
   const t = useTranslations();
+  const format = useFormatter();
   const { item, lastSeen, isHT } = props;
   const [specialDay, setSpecialDay] = React.useState('');
 
@@ -136,11 +135,11 @@ const ItemRestock = (props: Props) => {
               }
             >
               {!restockProfit && '???'}
-              {restockProfit && <>{intl.format(restockProfit)} NP</>}
+              {restockProfit && <>{format.number(restockProfit)} NP</>}
             </Text>
             {!!specialDay && restockOriginalProfit && (
               <Text fontSize="xs" textAlign="right" textDecoration={'line-through'}>
-                {intl.format(restockOriginalProfit)} NP{' '}
+                {format.number(restockOriginalProfit)} NP{' '}
               </Text>
             )}
           </Flex>
@@ -151,14 +150,14 @@ const ItemRestock = (props: Props) => {
           </Tag>
           <Flex flexFlow={'column'} flex="1">
             <Text fontSize="xs" textAlign="right" color={specialDay ? 'green.200' : undefined}>
-              {intl.format(restockPrice[0])} NP{' '}
-              {restockPrice[0] !== restockPrice[1] ? `- ${intl.format(restockPrice[1])} NP` : ''}
+              {format.number(restockPrice[0])} NP{' '}
+              {restockPrice[0] !== restockPrice[1] ? `- ${format.number(restockPrice[1])} NP` : ''}
             </Text>
             {!!specialDay && originalRestockPrice && (
               <Text fontSize="xs" textAlign="right" textDecoration={'line-through'}>
-                {intl.format(originalRestockPrice[0])} NP{' '}
+                {format.number(originalRestockPrice[0])} NP{' '}
                 {originalRestockPrice[0] !== originalRestockPrice[1]
-                  ? `- ${intl.format(originalRestockPrice[1])} NP`
+                  ? `- ${format.number(originalRestockPrice[1])} NP`
                   : ''}
               </Text>
             )}
@@ -202,7 +201,7 @@ const ItemRestock = (props: Props) => {
               </Tag>
             </Tooltip>
             <Text flex="1" fontSize="xs" textAlign="right">
-              {intl.format(Math.round(item.estVal * 0.97))} NP
+              {format.number(Math.round(item.estVal * 0.97))} NP
             </Text>
           </HStack>
         )}
@@ -212,7 +211,7 @@ const ItemRestock = (props: Props) => {
               {t('Restock.random-event-price')}
             </Tag>
             <Text flex="1" fontSize="xs" textAlign="right">
-              {intl.format(Math.round(item.estVal * 0.9))} NP
+              {format.number(Math.round(item.estVal * 0.9))} NP
             </Text>
           </HStack>
         )}

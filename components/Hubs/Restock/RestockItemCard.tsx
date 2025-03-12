@@ -14,8 +14,6 @@ type Props = {
   disablePrefetch?: boolean;
 };
 
-const intl = new Intl.NumberFormat();
-
 const RestockItem = (props: Props) => {
   const t = useTranslations();
   const format = useFormatter();
@@ -83,7 +81,7 @@ const RestockItem = (props: Props) => {
             <Text as="span" fontSize={'md'}>
               {item.name}
             </Text>
-            {item.price.value && <Badge>{intl.format(item.price.value)} NP</Badge>}
+            {item.price.value && <Badge>{format.number(item.price.value)} NP</Badge>}
             {isBait && (
               <Tooltip
                 hasArrow
@@ -97,7 +95,7 @@ const RestockItem = (props: Props) => {
                 // color="white"
               >
                 <Badge colorScheme="red" display="flex" alignItems={'center'} gap={1}>
-                  {intl.format(profit)} NP <MdHelp size={'0.7rem'} />
+                  {format.number(profit)} NP <MdHelp size={'0.7rem'} />
                 </Badge>
               </Tooltip>
             )}

@@ -21,8 +21,6 @@ import NextLink from 'next/link';
 import Color from 'color';
 import { isSameDay } from 'date-fns';
 
-const intl = new Intl.NumberFormat();
-
 type PriceOrMarker = Partial<PriceData> & {
   marker?: boolean;
   title?: string;
@@ -180,7 +178,7 @@ const PriceItem = (
             {t('General.inflation')}!
           </Text>
         )}
-        {intl.format(price.value!)} NP
+        {format.number(price.value!)} NP
       </Td>
       <Td px={1}>
         {!!nextPrice?.value && (
@@ -201,7 +199,7 @@ const PriceItem = (
               </Flex>
             )}
             {!(price.value! - nextPrice?.value) && <MinusIcon mr={1} boxSize="16px" />}
-            <Text>{intl.format(price.value! - nextPrice?.value)} NP</Text>
+            <Text>{format.number(price.value! - nextPrice?.value)} NP</Text>
             <Text
               ml={1}
               fontSize={'0.55rem'}

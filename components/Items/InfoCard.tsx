@@ -10,15 +10,14 @@ type Props = {
   item: ItemData;
 };
 
-const intl = new Intl.NumberFormat();
-
 const ItemInfoCard = (props: Props) => {
   const t = useTranslations();
+  const format = useFormatter();
   const { item } = props;
   const color = Color(item.color.hex);
   const rgb = item.color.rgb;
   const rarityString = rarityStr(item.rarity ?? 0);
-  const format = useFormatter();
+
   return (
     <Flex
       // flex={1}
@@ -92,7 +91,7 @@ const ItemInfoCard = (props: Props) => {
           </Tooltip>
 
           <Text flex="1" textAlign="right">
-            {item.estVal != null ? intl.format(item.estVal) : '???'} NP
+            {item.estVal != null ? format.number(item.estVal) : '???'} NP
           </Text>
         </HStack>
         <HStack>

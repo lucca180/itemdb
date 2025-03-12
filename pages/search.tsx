@@ -30,7 +30,7 @@ import { defaultFilters } from '../utils/parseFilters';
 import { CreateDynamicListButton } from '../components/DynamicLists/CreateButton';
 import Color from 'color';
 import NextLink from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useLists } from '../utils/useLists';
 import queryString from 'query-string';
@@ -56,7 +56,6 @@ itemdb.interceptors.response.use(
   }
 );
 
-const intl = new Intl.NumberFormat();
 const color = Color('#4A5568');
 const rgb = color.rgb().round().array();
 
@@ -65,6 +64,7 @@ let ABORT_CONTROLLER = new AbortController();
 const SearchPage = () => {
   const router = useRouter();
   const t = useTranslations();
+  const format = useFormatter();
   const { addItemToList } = useLists();
   const toast = useToast();
   const [totalResults, setTotalResults] = useState<number | null>(null);
@@ -337,11 +337,11 @@ const SearchPage = () => {
                 allChecked={selectedItems.length === searchResult.content.length}
                 onClick={(checkAll) => selectItem(undefined, checkAll)}
                 defaultText={t('Search.showing', {
-                  val1: intl.format(searchResult.resultsPerPage * (searchResult.page - 1) + 1),
-                  val2: intl.format(
+                  val1: format.number(searchResult.resultsPerPage * (searchResult.page - 1) + 1),
+                  val2: format.number(
                     Math.min(searchResult.resultsPerPage * searchResult.page, totalResults)
                   ),
-                  val3: intl.format(totalResults),
+                  val3: format.number(totalResults),
                 })}
               />
             )}

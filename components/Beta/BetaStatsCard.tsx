@@ -1,7 +1,7 @@
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { Flex, Icon, Heading, Center, Skeleton } from '@chakra-ui/react';
 import axios from 'axios';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import React from 'react';
 import {
@@ -23,10 +23,9 @@ type BetaStats = {
   feedbackVoting: number;
 };
 
-const intl = new Intl.NumberFormat();
-
 const BetaStatsCard = () => {
   const t = useTranslations('BetaStats');
+  const format = useFormatter();
   const { data: stats, isLoading } = useSWR('/api/v1/beta', fetcher);
 
   return (
@@ -34,7 +33,7 @@ const BetaStatsCard = () => {
       <Flex flexFlow="column" gap={5} w="100%" maxW="400px">
         <StatCard
           icon={CiShoppingBasket}
-          value={!stats || isLoading ? null : intl.format(stats.itemsTotal)}
+          value={!stats || isLoading ? null : format.number(stats.itemsTotal)}
         >
           {t('items-in-db')}
         </StatCard>
@@ -55,13 +54,13 @@ const BetaStatsCard = () => {
         </StatCard>
         <StatCard
           icon={CiMicrochip}
-          value={!stats || isLoading ? null : intl.format(stats.itemToProcess)}
+          value={!stats || isLoading ? null : format.number(stats.itemToProcess)}
         >
           {t('process-queue')}
         </StatCard>
         <StatCard
           icon={CiBadgeDollar}
-          value={!stats || isLoading ? null : intl.format(stats.tradeQueue)}
+          value={!stats || isLoading ? null : format.number(stats.tradeQueue)}
         >
           <Link href="/feedback/trades">
             {t('trade-pricing-queue')} <ExternalLinkIcon verticalAlign="center" />
@@ -69,7 +68,7 @@ const BetaStatsCard = () => {
         </StatCard>
         <StatCard
           icon={CiCircleCheck}
-          value={!stats || isLoading ? null : intl.format(stats.feedbackVoting)}
+          value={!stats || isLoading ? null : format.number(stats.feedbackVoting)}
         >
           <Link href="/feedback/vote">
             {t('feedback-voting-queue')} <ExternalLinkIcon verticalAlign="center" />
@@ -85,7 +84,7 @@ const BetaStatsCard = () => {
   //       <Text color="gray.300">{t('items-in-db')}</Text>
   //       <Progress w="100%" value={(stats.itemsTotal / 62000) * 100} />
   //       <Text fontSize="sm" textAlign={'center'}>
-  //         {intl.format(stats.itemsTotal)}
+  //         {format.number(stats.itemsTotal)}
   //       </Text>
   //     </VStack>
   //     <VStack justifyContent={'center'} alignItems="center" w="100%">

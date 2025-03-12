@@ -28,7 +28,7 @@ import NPBag from '../../public/icons/npbag.png';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import NextImage from 'next/image';
 import dynamic from 'next/dynamic';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import { FaShareAlt } from 'react-icons/fa';
 import { MAX_ITEMS_LIST_PRICE, ListPriceHistoryModalProps } from '../Modal/ListPriceHistoryModal';
 import { AiOutlineAreaChart } from 'react-icons/ai';
@@ -49,10 +49,9 @@ type ListHeaderProps = {
   setOpenCreateModal?: (value: boolean) => void;
 };
 
-const intl = new Intl.NumberFormat();
-
 const ListHeader = (props: ListHeaderProps) => {
   const t = useTranslations();
+  const format = useFormatter();
   const toast = useToast();
   const { list, color, items, itemInfo, canEdit: isOwner, setOpenCreateModal, isLoading } = props;
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -347,7 +346,7 @@ const ListHeader = (props: ListHeaderProps) => {
                     {t('Lists.this-list-costs-aprox')}{' '}
                     {!!NPPrice && (
                       <>
-                        <b>{intl.format(NPPrice)} NP</b>
+                        <b>{format.number(NPPrice)} NP</b>
                         <Image
                           as={NextImage}
                           display="inline"
@@ -366,7 +365,7 @@ const ListHeader = (props: ListHeaderProps) => {
                     {!!NCPrice && (
                       <>
                         <b>
-                          {intl.format(NCPrice)} {t('General.caps')}
+                          {format.number(NCPrice)} {t('General.caps')}
                         </b>{' '}
                         <Image
                           as={NextImage}

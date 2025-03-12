@@ -83,8 +83,6 @@ type Props = {
   lists?: UserList[];
 };
 
-const intl = new Intl.NumberFormat();
-
 const ItemPriceCard = (props: Props) => {
   const t = useTranslations();
   const format = useFormatter();
@@ -285,7 +283,7 @@ const ItemPriceCard = (props: Props) => {
                     {t('General.inflation')}
                   </Text>
                 )}
-                {price?.value && <StatNumber>{intl.format(price.value)} NP</StatNumber>}
+                {price?.value && <StatNumber>{format.number(price.value)} NP</StatNumber>}
                 {!price?.value && <StatNumber>??? NP</StatNumber>}
                 {price?.addedAt && (
                   <StatLabel>
@@ -301,7 +299,7 @@ const ItemPriceCard = (props: Props) => {
                   <StatHelpText>
                     {!!priceDiff && <StatArrow type={priceDiff > 0 ? 'increase' : 'decrease'} />}
                     {priceDiff === 0 && <MinusIcon mr={1} boxSize="16px" />}
-                    {intl.format(priceDiff)} NP
+                    {format.number(priceDiff)} NP
                   </StatHelpText>
                 )}
               </Stat>

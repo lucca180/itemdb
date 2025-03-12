@@ -72,7 +72,6 @@ type AlertMsg = {
 };
 
 type PeriodFilter = { timePeriod: number; shops: number | string; timestamp: number | null };
-const intl = new Intl.NumberFormat();
 
 const defaultFilter: PeriodFilter = { timePeriod: 30, shops: 'all', timestamp: null };
 
@@ -611,13 +610,15 @@ const RestockDashboard = (props: RestockDashboardProps) => {
                 filter={'drop-shadow(0 0 5px rgba(0, 0, 0, 0.4))'}
                 color="green.200"
               >
-                {intl.format(sessionStats.estProfit ?? sessionStats.estRevenue)} NP
+                {formatter.number(sessionStats.estProfit ?? sessionStats.estRevenue)} NP
               </Heading>
               {(profitDiff ?? revenueDiff) && (
                 <Tooltip
                   hasArrow
                   label={t('Restock.from-x-with-y-items', {
-                    0: intl.format(pastSessionStats!.estProfit ?? pastSessionStats!.estRevenue),
+                    0: formatter.number(
+                      pastSessionStats!.estProfit ?? pastSessionStats!.estRevenue
+                    ),
                     1: pastSessionStats!.totalBought.count,
                   })}
                   bg="blackAlpha.900"
@@ -648,12 +649,12 @@ const RestockDashboard = (props: RestockDashboardProps) => {
             <HStack mt={3} fontSize={'sm'} fontWeight={'500'} color="green.100" flexWrap={'wrap'}>
               <Flex py={2} px={4} bg={'blackAlpha.500'} borderRadius={'3xl'}>
                 {t('Restock.x-items-bought', {
-                  0: intl.format(sessionStats.totalBought.count),
+                  0: formatter.number(sessionStats.totalBought.count),
                 })}
               </Flex>
               <Flex py={2} px={4} bg={'blackAlpha.500'} borderRadius={'3xl'}>
                 {t('Restock.x-np-spent', {
-                  0: intl.format(sessionStats.totalSpent ?? 0),
+                  0: formatter.number(sessionStats.totalSpent ?? 0),
                 })}
               </Flex>
               <Flex

@@ -2,19 +2,15 @@ import { Flex, Link, Image, Badge, HStack, Text } from '@chakra-ui/react';
 import { ItemRestockData } from '../../../types';
 import NextLink from 'next/link';
 import Color from 'color';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 
 type Props = {
   restock: ItemRestockData;
 };
 
-const intl = new Intl.NumberFormat();
-const intlDate = new Intl.DateTimeFormat(undefined, {
-  dateStyle: 'long',
-  timeStyle: 'short',
-});
 const RestockHistoryCard = (props: Props) => {
   const t = useTranslations();
+  const format = useFormatter();
 
   const { restock } = props;
   const { item } = restock;
@@ -54,11 +50,14 @@ const RestockHistoryCard = (props: Props) => {
                 r{item.rarity}
               </Badge>
             )}
-            {item.price.value && <Badge fontSize="xs">{intl.format(item.price.value)} NP</Badge>}
+            {item.price.value && <Badge fontSize="xs">{format.number(item.price.value)} NP</Badge>}
           </HStack>
           <Text fontSize="xs">
             {t('Restock.stocked-at-date', {
-              date: intlDate.format(new Date(restock.addedAt)),
+              date: format.dateTime(new Date(restock.addedAt), {
+                dateStyle: 'long',
+                timeStyle: 'short',
+              }),
             })}
           </Text>
         </Flex>

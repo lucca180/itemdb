@@ -18,7 +18,7 @@ import {
   AlertDescription,
   Box,
 } from '@chakra-ui/react';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import CustomNumberInput from '../Input/CustomNumber';
 import { useMemo, useRef, useState } from 'react';
 import { TradeData } from '../../types';
@@ -31,10 +31,10 @@ export type TradeCalculatorModalProps = {
   finalRef?: ModalProps['finalFocusRef'];
 };
 
-const intl = new Intl.NumberFormat();
-
 export default function TradeCalculatorModal(props: TradeCalculatorModalProps) {
   const t = useTranslations();
+  const format = useFormatter();
+
   const { isOpen, onClose, trade } = props;
   const [purePrice, setPurePrice] = useState<string>();
   const [babyPB, setBabyPB] = useState<string>();
@@ -143,7 +143,7 @@ export default function TradeCalculatorModal(props: TradeCalculatorModalProps) {
               </FormControl>
 
               <Text>
-                {t('Feedback.calculator-final-price')}: {intl.format(finalPrice)} NP
+                {t('Feedback.calculator-final-price')}: {format.number(finalPrice)} NP
               </Text>
             </VStack>
           </ModalBody>

@@ -99,8 +99,6 @@ export const StatsCard = (props: StatsCardProps) => {
   );
 };
 
-const intl = new Intl.NumberFormat();
-
 const useStatsTypes = (
   type: string,
   sessionStats: RestockStats,
@@ -130,7 +128,7 @@ const useStatsTypes = (
         label: t('Restock.avg-reaction-time'),
         stat: <IntervalFormatted ms={sessionStats.avgReactionTime} long precision={2} />,
         helpText: t('Restock.based-on-x-clicks', {
-          x: intl.format(sessionStats.totalClicks),
+          x: formatter.number(sessionStats.totalClicks),
         }),
         labelTooltip: t('Restock.avg-reaction-time-tooltip'),
         ...badgeData,
@@ -138,7 +136,7 @@ const useStatsTypes = (
     case 'bestBuy':
       return {
         label: t('Restock.most-expensive-item-bought'),
-        stat: `${intl.format(sessionStats.mostExpensiveBought?.price.value ?? 0)} NP`,
+        stat: `${formatter.number(sessionStats.mostExpensiveBought?.price.value ?? 0)} NP`,
         helpText: sessionStats.mostExpensiveBought?.name ?? t('Restock.none'),
         ...badgeData,
       };
@@ -160,7 +158,7 @@ const useStatsTypes = (
         label: t('Restock.avg-refresh-time'),
         stat: <IntervalFormatted ms={sessionStats.avgRefreshTime} long precision={2} />,
         helpText: t('Restock.based-on-x-refreshs', {
-          x: intl.format(sessionStats.totalRefreshes),
+          x: formatter.number(sessionStats.totalRefreshes),
         }),
         ...badgeData,
       };
@@ -174,21 +172,21 @@ const useStatsTypes = (
           badgeIconType: diff > 0 ? 'up' : 'down',
           badgeColor: diff > 0 ? 'red' : 'green',
           badgeTooltip: t('Restock.from-x', {
-            0: `${intl.format(pastSession.totalLost.value)} NP`,
+            0: `${formatter.number(pastSession.totalLost.value)} NP`,
           }),
         };
       }
 
       return {
         label: t('Restock.total-clicked-and-lost'),
-        stat: `${intl.format(sessionStats.totalLost?.value ?? 0)} NP`,
-        helpText: `${intl.format(sessionStats.totalLost.count)} ${t('General.items')}`,
+        stat: `${formatter.number(sessionStats.totalLost?.value ?? 0)} NP`,
+        helpText: `${formatter.number(sessionStats.totalLost.count)} ${t('General.items')}`,
         ...badgeData,
       };
     case 'worstClickedAndLost':
       return {
         label: t('Restock.most-expensive-clicked-and-lost'),
-        stat: `${intl.format(sessionStats.mostExpensiveLost?.price.value ?? 0)} NP`,
+        stat: `${formatter.number(sessionStats.mostExpensiveLost?.price.value ?? 0)} NP`,
         helpText: sessionStats.mostExpensiveLost?.name ?? t('Restock.none'),
         ...badgeData,
       };
@@ -226,7 +224,7 @@ const useStatsTypes = (
         label: t('Restock.favorite-buy'),
         stat: `${sessionStats.favoriteItem.item?.name ?? t('Restock.none')}`,
         helpText: t('Restock.favorite-buy-tooltip', {
-          0: intl.format(sessionStats.favoriteItem.count),
+          0: formatter.number(sessionStats.favoriteItem.count),
         }),
         ...badgeData,
       };
@@ -262,16 +260,16 @@ const useStatsTypes = (
           badgeIconType: diff > 0 ? 'up' : 'down',
           badgeColor: diff > 0 ? 'green' : 'red',
           badgeTooltip: t('Restock.from-x', {
-            0: `${intl.format(pastSession.totalHaggled)} NP`,
+            0: `${formatter.number(pastSession.totalHaggled)} NP`,
           }),
         };
       }
 
       return {
         label: t('Restock.total-saved-haggling'),
-        stat: `${intl.format(sessionStats.totalHaggled ?? 0)} NP`,
+        stat: `${formatter.number(sessionStats.totalHaggled ?? 0)} NP`,
         helpText: t('Restock.estimated-revenue-0', {
-          0: `${intl.format(sessionStats.estRevenue ?? 0)} NP`,
+          0: `${formatter.number(sessionStats.estRevenue ?? 0)} NP`,
         }),
         ...badgeData,
       };

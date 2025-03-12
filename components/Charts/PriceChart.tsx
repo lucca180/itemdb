@@ -4,8 +4,7 @@ import { createChart, ColorType, LineStyle } from 'lightweight-charts';
 import React, { useEffect, useRef } from 'react';
 import { ColorData, ItemData, PriceData, UserList } from '../../types';
 import { VertLine } from './VerticalLine';
-
-const intl = new Intl.NumberFormat();
+import { useFormatter } from 'next-intl';
 
 export type ChartComponentProps = {
   color: ItemData['color'] | ColorData;
@@ -15,6 +14,7 @@ export type ChartComponentProps = {
 };
 
 const ChartComponent = (props: ChartComponentProps) => {
+  const formatter = useFormatter();
   const { data, color, lists, showMarkerLabel } = props;
   const RBG = Color.rgb(color.rgb).round().array();
   const backgroundColor = 'transparent';
@@ -59,7 +59,7 @@ const ChartComponent = (props: ChartComponentProps) => {
 
     chart.applyOptions({
       localization: {
-        priceFormatter: intl.format,
+        priceFormatter: formatter.number,
       },
     });
 
