@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Restock Tracker
-// @version      1.1.0
+// @version      2.0.0
 // @author       itemdb
 // @namespace    itemdb
 // @description  Tracks your restock metrics
@@ -17,6 +17,8 @@
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
 // @grant        GM_getValue
+// @grant        GM_listValues
+// @grant        GM_deleteValues
 // @noframes
 // ==/UserScript==
 
@@ -52,11 +54,19 @@ const SESSION_TIMEOUT = 60 // how many minutes since the last refresh to conside
 // ------------------------------------- //
  // this is used to expose functions to itemdb
 unsafeWindow.itemdb_restock = {
-  scriptVersion: 110,
+  scriptVersion: 200,
 };
 
 function getCurrentSessions() {
-  return GM_getValue('current_sessions', {}); // {[shopId]: restockSession}
+  const allSessions = {};
+  for(const key of GM_listValues()) {
+    if(key.includes('_session') && !key.includes('unsync') && !key.includes('current')) {
+      const shopId = key.split('_')[0];
+      allSessions[shopId] = GM_getValue(key);
+    }
+  }
+
+  return allSessions; // {shopId: restockSession}
 }
 
 function getUnsyncSessions() {
@@ -71,19 +81,19 @@ function URLHas(string) {
 }
 
 function getSession(shopId) {
-  let current_sessions = getCurrentSessions();
-  let unsync_sessions = getUnsyncSessions();
+  const currentSession = GM_getValue(`${shopId}_session`, null);
 
-  if (current_sessions[shopId]) {
+  if (currentSession) {
     if(
-      current_sessions[shopId].lastRefresh >= Date.now() - SESSION_TIMEOUT * 60 * 1000 &&
-      JSON.stringify(current_sessions[shopId]).length < 100000
+      currentSession.lastRefresh >= Date.now() - SESSION_TIMEOUT * 60 * 1000 &&
+      JSON.stringify(currentSession).length < 100000
     )
-      return current_sessions[shopId];
+      return currentSession;
 
     else {
-      if(Object.keys(current_sessions[shopId].items).length !== 0) {
-        unsync_sessions.push(current_sessions[shopId]);
+      if(Object.keys(currentSession.items).length !== 0) {
+        const unsync_sessions = getUnsyncSessions();
+        unsync_sessions.push(currentSession);
         GM_setValue('unsync_sessions', unsync_sessions);
       }
     }
@@ -99,9 +109,12 @@ function getSession(shopId) {
     version: CURRENT_MODEL_VERSION,
   };
 
-  current_sessions[shopId] = session;
-  GM_setValue('current_sessions', current_sessions);
+  GM_setValue(`${shopId}_session`, session);
   return session;
+}
+
+function setSession(shopId, session) {
+  GM_setValue(`${shopId}_session`, session);
 }
 
 function getLastClick(shopId) {
@@ -139,9 +152,7 @@ function handleGeneralShops() {
   session.refreshes.push(lastRefresh);
   session.lastRefresh = lastRefresh;
 
-  let current_sessions = getCurrentSessions();
-  current_sessions[shopID] = session;
-  GM_setValue('current_sessions', current_sessions);
+  setSession(shopID, session);
 }
 
 function handleRestockHaggle(){
@@ -206,17 +217,13 @@ function handleRestockHaggle(){
 
   session.clicks[clickIndex] = click;
 
-  let current_sessions = getCurrentSessions();
-  current_sessions[shopId] = session;
-
-  GM_setValue('current_sessions', current_sessions);
+  setSession(shopId, session);
 }
 
 function handleIgloo() {
   const shopID = '-2';
   const items = $('form[name="items_for_sale"] td')
   const session = getSession(shopID);
-  console.log(session)
 
   items.each(function (i) {
     const itemData = $(this).find('a');
@@ -237,9 +244,7 @@ function handleIgloo() {
   session.refreshes.push(lastRefresh);
   session.lastRefresh = lastRefresh;
 
-  let current_sessions = getCurrentSessions();
-  current_sessions[shopID] = session;
-  GM_setValue('current_sessions', current_sessions);
+  setSession(shopId, session);
 }
 
 function handleIglooHaggle() {
@@ -285,17 +290,13 @@ function handleIglooHaggle() {
 
   session.clicks[clickIndex] = click;
 
-  let current_sessions = getCurrentSessions();
-  current_sessions[shopId] = session;
-
-  GM_setValue('current_sessions', current_sessions);
+  setSession(shopId, session);
 }
 
 function handleAttic() {
   const shopID = '-1';
   const items = $('#items li')
   const session = getSession(shopID);
-  console.log(session);
   const date = Math.round(Date.now()/(1000 * 60 * 5))
 
   items.each(function (i) {
@@ -314,7 +315,6 @@ function handleAttic() {
   });
 
   $('#frm-abandoned-attic').on('submit', function() {
-    console.log('submit')
     const itemID = $("#oii").val();
     const stockId = date + Number(itemID);
     const price = $(`#items li[oii="${itemID}"]`).attr('oprice').replace(/[^0-9]/g, '');
@@ -336,9 +336,7 @@ function handleAttic() {
   session.lastRefresh = lastRefresh;
   
   handleAtticClick(session);
-  let current_sessions = getCurrentSessions();
-  current_sessions[shopID] = session;
-  GM_setValue('current_sessions', current_sessions);
+  setSession(shopId, session);
 }
 
 const handleAtticClick = (session) => {
@@ -346,7 +344,6 @@ const handleAtticClick = (session) => {
   let click = getLastClick(shopID);
 
   if(!click || $(".errorOuter").length > 0) return false;
-  console.log('hasLastClick', click);
   const isBought = $('p:contains("Take good care of it, I have placed it in your inventory!")').length > 0;
   const isSoldOut = $('p:contains("Sorry, we just sold out of that.")').length > 0;
 
@@ -380,12 +377,16 @@ function getSessions() {
       session.lastRefresh >= Date.now() - SESSION_TIMEOUT * 60 * 1000 &&
       JSON.stringify(session).length < 100000
     ) return;
-    else 
-      getSession(shopId);
+
+
+    else current_sessions[shopId] = getSession(shopId);
   });
 
   let unsync_sessions = getUnsyncSessions();
-  current_sessions = getCurrentSessions();
+  
+  // backwards compatibility with script version pre 2.0.0
+  let backwardsCompatibility = Object.values(GM_getValue('current_sessions', {}));
+  unsync_sessions.push(...backwardsCompatibility);
 
   return {unsync_sessions, current_sessions};
 }
@@ -393,8 +394,7 @@ function getSessions() {
 unsafeWindow.itemdb_restock.getSessions = getSessions;
 
 function cleanAll(){
-  GM_setValue('unsync_sessions', []);
-  GM_setValue('current_sessions', {});
+  GM_deleteValues(GM_listValues());
 
   console.log('[idb_restockTracker] cleaned all');
 }
