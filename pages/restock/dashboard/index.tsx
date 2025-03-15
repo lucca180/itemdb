@@ -63,7 +63,7 @@ const DashboardOptionsModal = dynamic(
 
 const color = Color('#79dbaf').rgb().array();
 
-const MIN_SCRIPT_VERSION = 110;
+const MIN_SCRIPT_VERSION = 200;
 
 type AlertMsg = {
   title?: ReactElement | string;
