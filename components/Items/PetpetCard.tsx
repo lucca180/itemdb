@@ -7,6 +7,7 @@ import {
   Box,
   Center,
   Flex,
+  Link,
   Text,
 } from '@chakra-ui/react';
 import React from 'react';
@@ -39,6 +40,24 @@ const PetpetCard = (props: Props) => {
           <Text fontSize={'sm'} textAlign={'center'}>
             {t.rich('ItemPage.color-is-base-color', {
               b: (chunk) => <b>{chunk}</b>,
+              ColorLink: (chunk) => (
+                <Link
+                  href={`/search?s=&petpetColor[]=${petpetData.color.id}`}
+                  isExternal
+                  color={color.lightness(70).hex()}
+                >
+                  {chunk}
+                </Link>
+              ),
+              SpeciesLink: (chunk) => (
+                <Link
+                  href={`/search?s=&petpetSpecies[]=${petpetData.species.id}`}
+                  isExternal
+                  color={color.lightness(70).hex()}
+                >
+                  {chunk}
+                </Link>
+              ),
               color: petpetData.color.name,
               species: petpetData.species.name,
             })}
@@ -48,13 +67,13 @@ const PetpetCard = (props: Props) => {
               t.rich('ItemPage.p2-p2-at-puddle', {
                 b: (chunk) => <b>{chunk}</b>,
                 Link: (chunk) => (
-                  <IconLink
-                    href={`https://www.neopets.com/pool/petpet_colors.phtml?f_species=${petpetData.species.id}`}
+                  <Link
+                    href={`/search?s=&petpetSpecies[]=${petpetData.species.id}`}
                     isExternal
                     color={color.lightness(70).hex()}
                   >
                     {chunk}
-                  </IconLink>
+                  </Link>
                 ),
               })}
           </Text>
@@ -88,6 +107,16 @@ const PetpetCard = (props: Props) => {
               {t.rich('ItemPage.p2-paint-base-color', {
                 name: petpetData.toCanonical.pb.name,
                 b: (chunk) => <b>{chunk}</b>,
+                species: petpetData.species.name,
+                SpeciesLink: (chunk) => (
+                  <Link
+                    href={`/search?s=&petpetSpecies[]=${petpetData.species.id}`}
+                    isExternal
+                    color={color.lightness(70).hex()}
+                  >
+                    {chunk}
+                  </Link>
+                ),
                 Link: (chunk) => (
                   <IconLink
                     href="https://www.neopets.com/pool/puddle.phtml"

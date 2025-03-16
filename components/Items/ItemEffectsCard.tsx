@@ -5,12 +5,7 @@ import CardBase from '../Card/CardBase';
 import dynamic from 'next/dynamic';
 import Color from 'color';
 import { useLocale, useTranslations } from 'next-intl';
-import {
-  getDiseaseTranslation,
-  getPetColorId,
-  getPetpetColorId,
-  getSpeciesId,
-} from '../../utils/utils';
+import { getDiseaseTranslation, getPetpetColorId } from '../../utils/utils';
 import NextImage from 'next/image';
 
 const Markdown = dynamic(() => import('../Utils/Markdown'));
@@ -214,48 +209,18 @@ export const EffectText = (props: EffectTextProps) => {
             Target1: () => (
               <>
                 {colorTarget && (
-                  <>
-                    <Link
-                      href={`https://www.neopets.com/pool/all_pb.phtml?f_color_id=${getPetColorId(
-                        colorTarget
-                      )}`}
-                      isExternal
-                    >
-                      {colorTarget}
-                    </Link>
-                  </>
-                )}
-                {colorTarget && !speciesTarget && (
-                  <NextImage
-                    src={'/icons/neopets.png'}
-                    width={16}
-                    height={16}
-                    style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '0.2rem' }}
-                    alt="link icon"
-                  />
+                  <Link href={`/tools/rainbow-pool/${colorTarget.toLowerCase()}`} isExternal>
+                    {colorTarget}
+                  </Link>
                 )}
               </>
             ),
             Target2: () => (
               <>
                 {speciesTarget && (
-                  <>
-                    <Link
-                      href={`https://www.neopets.com/pool/all_pb.phtml?f_species_id=${getSpeciesId(
-                        speciesTarget
-                      )}`}
-                      isExternal
-                    >
-                      {speciesTarget}
-                    </Link>
-                    <NextImage
-                      src={'/icons/neopets.png'}
-                      width={16}
-                      height={16}
-                      style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '0.2rem' }}
-                      alt="link icon"
-                    />
-                  </>
+                  <Link href={`/tools/rainbow-pool/${speciesTarget.toLowerCase()}`}>
+                    {speciesTarget}
+                  </Link>
                 )}
               </>
             ),
@@ -276,25 +241,13 @@ export const EffectText = (props: EffectTextProps) => {
             Target1: () => (
               <>
                 {colorTarget && (
-                  <>
-                    <Link
-                      href={`https://www.neopets.com/pool/petpet_colors.phtml?f_color=${getPetpetColorId(
-                        colorTarget
-                      )}`}
-                      isExternal
-                    >
-                      {colorTarget}
-                    </Link>
-                  </>
-                )}
-                {colorTarget && !speciesTarget && (
-                  <NextImage
-                    src={'/icons/neopets.png'}
-                    width={16}
-                    height={16}
-                    style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '0.2rem' }}
-                    alt="link icon"
-                  />
+                  <Link
+                    href={`/search?s=&petpetColor[]=${getPetpetColorId(
+                      colorTarget
+                    )}&petpetOnlyPaintable=true`}
+                  >
+                    {colorTarget}
+                  </Link>
                 )}
               </>
             ),

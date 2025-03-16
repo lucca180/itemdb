@@ -95,7 +95,9 @@ export async function doSearch(
   const rarityFilter = (filters.rarity as string[]) ?? [];
   const estValFilter = (filters.estVal as string[]) ?? [];
   const owlsFilter = (filters.owlsValue as string[]) ?? [];
-
+  const petpetColor = (filters.petpetColor as string[]) ?? [];
+  const petpetSpecies = (filters.petpetSpecies as string[]) ?? [];
+  const petpetOnlyPaintable = (filters.petpetOnlyPaintable as boolean) ?? false;
   const restockProfit = (filters.restockProfit as string) ?? '';
 
   let colorFilter = (filters.color as string) ?? '';
@@ -343,6 +345,20 @@ export async function doSearch(
     }
   }
 
+  let petpetJoin = Prisma.empty;
+  const petpetSQL = [];
+  if (petpetColor.length > 0 || petpetSpecies.length > 0) {
+    petpetJoin = Prisma.sql`LEFT JOIN PetpetColors as pc on pc.item_iid = a.internal_id`;
+
+    if (petpetSpecies.length > 0)
+      petpetSQL.push(Prisma.sql`petpet_id in (${Prisma.join(petpetSpecies)})`);
+
+    if (petpetColor.length > 0)
+      petpetSQL.push(Prisma.sql`color_id in (${Prisma.join(petpetColor)})`);
+
+    if (petpetOnlyPaintable) petpetSQL.push(Prisma.sql`isUnpaintable = 0`);
+  }
+
   let colorSql_inside;
   let colorSql_outside;
   let isColorNeg = false;
@@ -472,6 +488,11 @@ export async function doSearch(
           n.price as ncPrice, n.saleBegin, n.saleEnd, n.discountBegin, n.discountEnd, n.discountPrice
           ${colorSql_inside ? Prisma.sql`, ${colorSql_inside} as dist` : Prisma.empty}
           ${zoneFilterSQL.length > 0 ? Prisma.sql`, w.zone_label` : Prisma.empty}
+          ${
+            petpetSQL.length > 0
+              ? Prisma.sql`, pc.color_id, pc.petpet_id, pc.isUnpaintable`
+              : Prisma.empty
+          }
         FROM Items as a
         LEFT JOIN ItemColor as b on a.image_id = b.image_id and ${colorTypeSQL} ${
       colorSql_inside ? Prisma.sql`and b.population > 0` : Prisma.empty
@@ -485,6 +506,7 @@ export async function doSearch(
             ? Prisma.sql`LEFT JOIN WearableData w on w.item_iid = a.internal_id and w.isCanonical = 1`
             : Prisma.empty
         }
+        ${petpetJoin}
       ) as temp
             
       WHERE (${fulltext}) and temp.canonical_id is null
@@ -531,6 +553,8 @@ export async function doSearch(
           ? Prisma.sql` AND exists (select 1 from listitems li where li.item_iid = temp.internal_id and list_id = ${list_id} ${hiddenQuery})`
           : Prisma.empty
       }
+
+      ${petpetSQL.length > 0 ? Prisma.sql` AND ${Prisma.join(petpetSQL, ' AND ')}` : Prisma.empty}
 
       ${!onlyStats ? sortSQL : Prisma.empty} 
       ${!onlyStats ? (sortDir === 'desc' ? Prisma.sql`DESC` : Prisma.sql`ASC`) : Prisma.empty}

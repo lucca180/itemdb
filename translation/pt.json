@@ -270,9 +270,9 @@
     "effects-petpetColor": "Esse item {random, select, true {tem a chance de trocar} other{troca}} a cor de alguns petpets para <Target1></Target1>",
     "cheapest-way-to-get-this-petpet": "Maneira mais barata de conseguir esse Petpet",
     "other-ways-of-getting-this-petpet": "Outras maneiras de conseguir este Petpet",
-    "p2-paint-base-color": "Você pode pintar este petpet para a cor base usando <b>{name}</b> na <Link>Poça dos Petpets</Link>",
+    "p2-paint-base-color": "Você pode pintar <SpeciesLink>{species}</SpeciesLink> para a cor base usando <b>{name}</b> na <Link>Poça dos Petpets</Link>",
     "petpet-puddle": "Poça dos Petpets",
-    "color-is-base-color": "<b>{color}</b> é a <b>cor base</b> de <b>{species}</b>",
+    "color-is-base-color": "<ColorLink>{color}</ColorLink> é a <b>cor base</b> de <SpeciesLink>{species}</SpeciesLink>",
     "p2-p2-at-puddle": "Você pode usar Petpet Paint Brushes para alterar sua cor na <Link>Poça de Petpets</Link>",
     "unpaintable-p2": "Este petpet é único e não pode ser pintado"
   },
