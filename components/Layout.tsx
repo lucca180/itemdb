@@ -18,8 +18,6 @@ import {
   Spinner,
   Link as ChakraLink,
   Select,
-  Badge,
-  // Badge,
 } from '@chakra-ui/react';
 
 import NextImage from 'next/image';
@@ -371,14 +369,9 @@ const Layout = (props: Props) => {
                   <b>{t('Layout.resources')}</b>
                 </Text>
                 <ChakraLink href="/articles/owls">Owls</ChakraLink>
-                <Flex gap={1}>
-                  <Badge fontSize={'xs'} colorScheme="green">
-                    {t('Layout.new')}
-                  </Badge>
-                  <ChakraLink href="https://docs.itemdb.com.br" isExternal>
-                    {t('Layout.devs')}
-                  </ChakraLink>
-                </Flex>
+                <ChakraLink href="https://docs.itemdb.com.br" isExternal>
+                  {t('Layout.devs')}
+                </ChakraLink>
                 <ChakraLink href="/lists/official">{t('Layout.official-lists')}</ChakraLink>
                 <ChakraLink href="/articles/userscripts">{t('Layout.userscripts')}</ChakraLink>
                 <ChakraLink href="/public-data">{t('Layout.public-data')}</ChakraLink>
