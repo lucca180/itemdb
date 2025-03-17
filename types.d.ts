@@ -98,6 +98,7 @@ export type PriceData = {
   value: number;
   addedAt: string;
   inflated: boolean;
+  context?: string | null;
 };
 
 export type ItemLastSeen = {
@@ -685,7 +686,9 @@ export type DTIPetAppearance = {
 declare global {
   interface Window {
     itemdb_restock?: {
-      scriptVersion: number;
+      version?: string;
+      versionCode?: number;
+      scriptVersion?: number;
       getSessions: () => {
         unsync_sessions: RestockSession[];
         current_sessions: { [shopId: number]: restockSession };
