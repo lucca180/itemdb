@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Restock Tracker
-// @version      2.0.0
+// @version      2.0.1
 // @author       itemdb
 // @namespace    itemdb
 // @description  Tracks your restock metrics
@@ -13,8 +13,6 @@
 // @match        *://itemdb.com.br/*
 // @icon         https://itemdb.com.br/favicon.ico
 // @connect      itemdb.com.br
-// @connect      neopets.com
-// @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_listValues
@@ -54,7 +52,8 @@ const SESSION_TIMEOUT = 60 // how many minutes since the last refresh to conside
 // ------------------------------------- //
  // this is used to expose functions to itemdb
 unsafeWindow.itemdb_restock = {
-  scriptVersion: 200,
+  version: GM_info.script.version,
+  versionCode: Number(GM_info.script.version.replaceAll(".", ""))
 };
 
 function getCurrentSessions() {
@@ -129,9 +128,9 @@ function setLastClick(shopId, click) {
 // -------------------------- //
 
 function handleGeneralShops() {
-  const shopID = $(".shop-bg").css("background-image").split('/').at(-1).match(/\d+/)[0];
+  const shopId = $(".shop-bg").css("background-image").split('/').at(-1).match(/\d+/)[0];
   const items = $('.shop-item');
-  const session = getSession(shopID);
+  const session = getSession(shopId);
   
   items.each(function (i) {
     const itemData = $(this).find('.item-img, .item-obelisk');
@@ -152,7 +151,7 @@ function handleGeneralShops() {
   session.refreshes.push(lastRefresh);
   session.lastRefresh = lastRefresh;
 
-  setSession(shopID, session);
+  setSession(shopId, session);
 }
 
 function handleRestockHaggle(){
@@ -221,9 +220,9 @@ function handleRestockHaggle(){
 }
 
 function handleIgloo() {
-  const shopID = '-2';
+  const shopId = '-2';
   const items = $('form[name="items_for_sale"] td')
-  const session = getSession(shopID);
+  const session = getSession(shopId);
 
   items.each(function (i) {
     const itemData = $(this).find('a');
@@ -294,9 +293,9 @@ function handleIglooHaggle() {
 }
 
 function handleAttic() {
-  const shopID = '-1';
+  const shopId = '-1';
   const items = $('#items li')
-  const session = getSession(shopID);
+  const session = getSession(shopId);
   const date = Math.round(Date.now()/(1000 * 60 * 5))
 
   items.each(function (i) {
@@ -328,7 +327,7 @@ function handleAttic() {
       buy_price: price
     };
 
-    setLastClick(shopID, click);
+    setLastClick(shopId, click);
   });
 
   const lastRefresh = Date.now();
@@ -340,15 +339,15 @@ function handleAttic() {
 }
 
 const handleAtticClick = (session) => {
-  const shopID = '-1';
-  let click = getLastClick(shopID);
+  const shopId = '-1';
+  let click = getLastClick(shopId);
 
   if(!click || $(".errorOuter").length > 0) return false;
   const isBought = $('p:contains("Take good care of it, I have placed it in your inventory!")').length > 0;
   const isSoldOut = $('p:contains("Sorry, we just sold out of that.")').length > 0;
 
   if(!isBought && !isSoldOut) {
-    setLastClick(shopID, null);
+    setLastClick(shopId, null);
     return false;
   }
 
@@ -365,7 +364,7 @@ const handleAtticClick = (session) => {
 
   session.clicks[clickIndex] = click;
 
-  setLastClick(shopID, null);
+  setLastClick(shopId, null);
   return true;
 }
 

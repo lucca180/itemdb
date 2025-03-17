@@ -58,7 +58,7 @@ const FeedbackModal = (props: FeedbackModalProps) => {
         json: JSON.stringify({
           message: message,
           scriptInfo: {
-            restock: window.itemdb_restock?.scriptVersion ?? null,
+            restock: window.itemdb_restock?.version ?? null,
             itemData: window.itemdb_script?.version ?? null,
           },
         }),

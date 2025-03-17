@@ -63,7 +63,7 @@ const DashboardOptionsModal = dynamic(
 
 const color = Color('#79dbaf').rgb().array();
 
-const MIN_SCRIPT_VERSION = 200;
+const MIN_SCRIPT_VERSION = 201;
 
 type AlertMsg = {
   title?: ReactElement | string;
@@ -145,7 +145,10 @@ const RestockDashboard = (props: RestockDashboardProps) => {
   useEffect(() => {
     if (!user) return;
 
-    setTimeout(() => handleImport(), 2000);
+    setTimeout(() => {
+      handleImport();
+      track();
+    }, 2000);
 
     if (!sessionStats) init();
   }, []);
@@ -216,21 +219,23 @@ const RestockDashboard = (props: RestockDashboardProps) => {
     let currentParsed: RestockSession[] = [];
     let unsyncParsed: RestockSession[] = [];
 
-    if (window.itemdb_restock) {
-      const { current_sessions, unsync_sessions } = window.itemdb_restock.getSessions();
-      currentParsed = Object.values(current_sessions);
-      unsyncParsed = unsync_sessions;
-
-      if (
-        !window.itemdb_restock.scriptVersion ||
-        window.itemdb_restock.scriptVersion < MIN_SCRIPT_VERSION
-      ) {
-        console.warn('itemdb_restock version outdated');
-        setNoScript('outdated');
-      }
-    } else {
+    if (!window.itemdb_restock) {
       console.warn('itemdb_restock not found');
       setNoScript('notFound');
+      setImportCount(0);
+      return;
+    }
+
+    const { current_sessions, unsync_sessions } = window.itemdb_restock.getSessions();
+    currentParsed = Object.values(current_sessions);
+    unsyncParsed = unsync_sessions;
+
+    const versionCode =
+      window.itemdb_restock.versionCode ?? window.itemdb_restock.scriptVersion ?? 0;
+
+    if (versionCode < MIN_SCRIPT_VERSION) {
+      console.warn('itemdb_restock version outdated');
+      setNoScript('outdated');
     }
 
     const validSessions = [...currentParsed, ...unsyncParsed].filter(
@@ -238,7 +243,6 @@ const RestockDashboard = (props: RestockDashboardProps) => {
     );
 
     setImportCount(validSessions.length);
-    track();
   };
 
   const handleClose = () => {
@@ -270,7 +274,8 @@ const RestockDashboard = (props: RestockDashboardProps) => {
 
     await umami.identify({
       id: user.id,
-      restockScript: window.itemdb_restock?.scriptVersion ?? null,
+      restockScript:
+        window.itemdb_restock?.versionCode ?? window.itemdb_restock?.scriptVersion ?? null,
       itemdbScript: window.itemdb_script?.version ?? null,
     });
   };
