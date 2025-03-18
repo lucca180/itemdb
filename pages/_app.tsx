@@ -67,25 +67,6 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
                 }
                 `}
             </Script>
-            <Script id="pathOverwriter">
-              {`function myPathOverwriter({ path }) {
-                  if (path.startsWith("/pt")) path = path.replace("/pt", "");
-                  return path;
-                }
-                `}
-            </Script>
-            <Script
-              data-path-overwriter="myPathOverwriter"
-              src="https://sa.itemdb.com.br/latest.js"
-            />
-            <noscript>
-              {/* eslint-disable @next/next/no-img-element */}
-              <img
-                src="https://sa.itemdb.com.br/noscript.gif"
-                alt=""
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-            </noscript>
           </NextIntlClientProvider>
         </AuthProvider>
       </Provider>
