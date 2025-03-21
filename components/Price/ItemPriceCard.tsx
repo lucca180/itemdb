@@ -392,6 +392,7 @@ const ItemPriceCard = (props: Props) => {
                   )}
                   {displayState === 'table' && (
                     <PriceTable
+                      color={item.color.hex}
                       showMarkerLabel={showLabel}
                       lists={props.lists}
                       data={prices}

@@ -43,6 +43,7 @@ export const getItemPrices = async (args: ItemPricesArgs) => {
       value: p.price.toNumber(),
       addedAt: p.addedAt.toJSON(),
       inflated: !!p.noInflation_id,
+      context: p.priceContext,
     };
   });
 

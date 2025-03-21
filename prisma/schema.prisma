@@ -187,6 +187,8 @@ model ItemPrices {
   item_iid Int?
   item     Items? @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
 
+  priceContext String?
+
   @@unique([item_iid, isLatest])
   @@index([name, image_id])
   @@index([name, addedAt])

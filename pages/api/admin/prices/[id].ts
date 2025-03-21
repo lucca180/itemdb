@@ -17,7 +17,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const priceID = req.query.id as string;
-  const { newPrice, isInflation, item_iid, newAddedAt } = req.body;
+  const { newPrice, isInflation, item_iid, priceContext } = req.body;
   let noInflation_id = undefined;
 
   if (isInflation === true) {
@@ -51,7 +51,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       noInflation_id: noInflation_id,
       price: newPrice,
       usedProcessIDs: 'manual_edit',
-      addedAt: newAddedAt ? new Date(newAddedAt) : undefined,
+      priceContext: priceContext || undefined,
     },
   });
 

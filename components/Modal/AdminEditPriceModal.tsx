@@ -12,6 +12,7 @@ import {
   Checkbox,
   VStack,
   HStack,
+  Textarea,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import React, { useEffect } from 'react';
@@ -34,6 +35,7 @@ const AdminEditPriceModal = (props: AdminEditPriceModalProps) => {
   const [msg, setMsg] = React.useState('');
   const [newPriceVal, setNewPriceVal] = React.useState(props.itemPrice?.value ?? null);
   const [newInflation, setNewInflation] = React.useState<undefined | boolean>(undefined);
+  const [priceContext, setPriceContext] = React.useState(props.itemPrice?.context ?? '');
 
   useEffect(() => {
     setNewPriceVal(itemPrice?.value ?? null);
@@ -48,7 +50,7 @@ const AdminEditPriceModal = (props: AdminEditPriceModalProps) => {
         newPrice: newPriceVal,
         isInflation: newInflation,
         item_iid: item.internal_id,
-        // newAddedAt: itemPrice.addedAt,
+        priceContext: priceContext || undefined,
       });
 
       if (res.status === 200) {
@@ -135,7 +137,7 @@ const AdminEditPriceModal = (props: AdminEditPriceModalProps) => {
             Edit Price
           </AlertDialogHeader>
           <AlertDialogBody>
-            <VStack>
+            <VStack gap={5}>
               <FormControl>
                 <FormLabel>New Price</FormLabel>
                 <CustomNumberInput
@@ -160,6 +162,14 @@ const AdminEditPriceModal = (props: AdminEditPriceModalProps) => {
                 >
                   Inflation?
                 </Checkbox>
+              </FormControl>
+              <FormControl>
+                <FormLabel>Price Context</FormLabel>
+                <Textarea
+                  variant="filled"
+                  onChange={(e) => setPriceContext(e.target.value)}
+                  value={priceContext}
+                />
               </FormControl>
             </VStack>
           </AlertDialogBody>
