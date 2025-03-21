@@ -50,7 +50,6 @@ import { DyeworksData, getDyeworksData } from '../api/v1/items/[id_name]/dyework
 import { getSingleItemColor } from '../api/v1/items/[id_name]/colors';
 import * as Sentry from '@sentry/nextjs';
 import { getPetpetData } from '../api/v1/items/[id_name]/petpet';
-import PetpetCard from '../../components/Items/PetpetCard';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -76,6 +75,7 @@ const ItemRecipes = dynamic(() => import('../../components/Items/ItemRecipes'));
 const MMECard = dynamic(() => import('../../components/Items/MMECard'));
 const DyeCard = dynamic(() => import('../../components/Items/DyeCard'));
 const NcMallCard = dynamic(() => import('../../components/Items/NCMallCard'));
+const PetpetCard = dynamic(() => import('../../components/Items/PetpetCard'));
 
 type ItemPageProps = {
   item: ItemData;
