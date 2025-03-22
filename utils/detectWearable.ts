@@ -14,7 +14,10 @@ export const detectWearable = async (imageURL: string) => {
   const itemCtx = itemCanvas.getContext('2d');
   itemCtx.drawImage(itemImage, -1, -63, itemImage.width, itemImage.height);
 
-  const val = pixelmatch(iconCanvas.data(), itemCanvas.data(), null, 17, 16, {
+  const iconImageData = iconCtx.getImageData(0, 0, wearableIcon.width, wearableIcon.height);
+  const itemImageData = itemCtx.getImageData(0, 0, 17, 16);
+
+  const val = pixelmatch(iconImageData.data, itemImageData.data, null as any, 17, 16, {
     threshold: 0.1,
   });
 

@@ -1,11 +1,11 @@
 import { Box } from '@chakra-ui/react';
-import Color from 'color';
+import { ColorInstance } from 'color';
 import { createChart, ColorType, LineStyle } from 'lightweight-charts';
 import { useFormatter } from 'next-intl';
 import React, { useEffect, useRef } from 'react';
 
 export type ListChartComponentProps = {
-  color: Color<string>;
+  color: ColorInstance;
   priceData: { [day: string]: number };
   noDataData: { [day: string]: number[] };
 };

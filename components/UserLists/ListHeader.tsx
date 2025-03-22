@@ -15,7 +15,7 @@ import {
   useDisclosure,
   Image as ChakraImage,
 } from '@chakra-ui/react';
-import Color from 'color';
+import { ColorInstance } from 'color';
 import { BiLinkExternal } from 'react-icons/bi';
 import { MdWarning } from 'react-icons/md';
 import NextLink from 'next/link';
@@ -41,7 +41,7 @@ const ListPriceHistoryModal = dynamic<ListPriceHistoryModalProps>(
 
 type ListHeaderProps = {
   list: UserList;
-  color: Color<string>;
+  color: ColorInstance;
   items: { [item_iid: string]: ItemData };
   itemInfo: { [itemInfoId: number]: ListItemInfo & { hasChanged?: boolean } };
   canEdit: boolean;

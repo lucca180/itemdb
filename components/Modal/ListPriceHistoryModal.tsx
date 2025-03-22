@@ -15,7 +15,7 @@ import { ItemPriceData } from '../../types';
 import axios from 'axios';
 import { isBefore, isSameDay } from 'date-fns';
 import { ListChartComponentProps } from '../Charts/ListPriceHistoryChart';
-import Color from 'color';
+import { ColorInstance } from 'color';
 import dynamic from 'next/dynamic';
 
 const ListChartComponent = dynamic<ListChartComponentProps>(
@@ -26,7 +26,7 @@ export type ListPriceHistoryModalProps = {
   isOpen: boolean;
   onClose: () => void;
   item_iids: number[];
-  listColor: Color<string>;
+  listColor: ColorInstance;
 };
 
 export const MAX_ITEMS_LIST_PRICE = 500;
