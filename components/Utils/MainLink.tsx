@@ -10,22 +10,21 @@ export interface MainLinkProps {
   children: React.ReactNode;
   prefetch?: boolean;
 }
-
 const MainLink: React.FC<MainLinkProps> = React.forwardRef(
   (
     { href, target, className, children, prefetch }: MainLinkProps,
-    ref: React.Ref<HTMLAnchorElement> | undefined,
+    ref: React.Ref<HTMLAnchorElement> | undefined
   ) => {
     const router = useRouter();
 
     const handleClick = React.useCallback(
-      async (e: React.SyntheticEvent) => {
-        if (href) {
+      async (e: React.MouseEvent<HTMLElement>) => {
+        if (href && !(e.ctrlKey || e.metaKey)) {
           e.preventDefault();
           return await router.push(href);
         }
       },
-      [router, href],
+      [router, href]
     );
 
     if (prefetch)
@@ -40,7 +39,7 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
         {children}
       </a>
     );
-  },
+  }
 );
 
 MainLink.displayName = 'MainLink';
