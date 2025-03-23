@@ -30,33 +30,36 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const searchProm = doSearch(query, searchFilters, false);
 
-  const listProm = prisma.userList.findMany({
-    where: {
-      OR: [{ name: { contains: `${query}` } }, { description: { contains: `${query}` } }],
-      official: true,
-    },
-    include: {
-      items: true,
-      user: true,
-    },
-    take: 3,
-    orderBy: [
-      {
-        _relevance: {
-          fields: ['name'],
-          search: `*${query}*`,
-          sort: 'asc',
-        },
+  const listProm = prisma.userList
+    .findMany({
+      where: {
+        OR: [{ name: { contains: `${query}` } }, { description: { contains: `${query}` } }],
+        official: true,
       },
-      {
-        _relevance: {
-          fields: ['description'],
-          search: `*${query}*`,
-          sort: 'asc',
-        },
+      include: {
+        items: true,
+        user: true,
       },
-    ],
-  });
+      take: 3,
+      orderBy: [
+        {
+          _relevance: {
+            fields: ['name'],
+            search: `*${query}*`,
+            sort: 'asc',
+          },
+        },
+        {
+          _relevance: {
+            fields: ['description'],
+            search: `*${query}*`,
+            sort: 'asc',
+          },
+        },
+      ],
+    })
+    .then((x) => x)
+    .catch(() => []);
 
   let [searchRes, listRes] = await Promise.all([searchProm, listProm]);
 
