@@ -616,8 +616,10 @@ const RestockDashboard = (props: RestockDashboardProps) => {
           <Flex
             mb={8}
             mt={{ base: 8, md: 1 }}
+            gap={4}
             justifyContent={'space-between'}
             alignItems={'center'}
+            flexWrap={'wrap'}
           >
             <Flex flexFlow="column" gap={2}>
               <Heading size="md" color="green.100">
