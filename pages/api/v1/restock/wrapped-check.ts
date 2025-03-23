@@ -17,7 +17,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
-  const { success, needTrades, needVotes } = await contributeCheck(user.id, 1);
+  const { success, needTrades, needVotes } = await contributeCheck(user.id, 0.5);
 
   return res.status(200).json({ canWrapped: success, needTrades, needVotes });
 }

@@ -46,7 +46,7 @@ export const ContributeWall = (props: ContributeWallProps) => {
           <Text textAlign={'center'} fontSize={'sm'}>
             {t.rich('Restock.wrapped-precify-text', {
               Link: (chunk) => (
-                <Link href="/feedback/trades" isExternal>
+                <Link href="/feedback/trades?utm_content=cta-wall" isExternal>
                   {chunk}
                 </Link>
               ),
@@ -57,7 +57,7 @@ export const ContributeWall = (props: ContributeWallProps) => {
           <Text textAlign={'center'} fontSize={'sm'}>
             {t.rich('Restock.wrapped-vote-text', {
               Link: (chunk) => (
-                <Link href="/feedback/vote" isExternal>
+                <Link href="/feedback/vote?utm_content=cta-wall" isExternal>
                   {chunk}
                 </Link>
               ),
