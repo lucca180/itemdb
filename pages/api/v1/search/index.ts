@@ -394,12 +394,14 @@ export async function doSearch(
   else if (sortBy === 'id') sortSQL = Prisma.sql`ORDER BY temp.item_id`;
   else if (sortBy === 'rarity') sortSQL = Prisma.sql`ORDER BY temp.rarity`;
   else if (sortBy === 'match')
-    sortSQL = Prisma.sql`ORDER BY temp.name = ${originalQuery} DESC, temp.name`;
+    sortSQL = Prisma.sql`ORDER BY temp.name = ${originalQuery} DESC, MATCH (temp.name) AGAINST (${originalQuery} IN NATURAL LANGUAGE MODE) desc, temp.name`;
   else sortSQL = isColorSearch ? Prisma.sql`ORDER BY dist` : Prisma.sql`ORDER BY temp.name`;
 
   let fulltext;
 
   if (query === '') fulltext = Prisma.sql`1`;
+  else if (mode === 'natural')
+    fulltext = Prisma.sql`MATCH (temp.name) AGAINST (${query} IN NATURAL LANGUAGE MODE) OR temp.name LIKE ${`%${originalQuery}%`}`;
   else if (mode === 'all')
     fulltext = Prisma.sql`MATCH (temp.name, temp.description) AGAINST (${query} IN BOOLEAN MODE) OR temp.name LIKE ${`%${originalQuery}%`} OR temp.description LIKE ${`%${originalQuery}%`}`;
   else if (mode === 'description')

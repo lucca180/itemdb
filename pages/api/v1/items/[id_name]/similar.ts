@@ -1,9 +1,8 @@
-import { Prisma } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getItem } from '.';
-import prisma from '../../../../../utils/prisma';
-import { getManyItems } from '../many';
-import { ItemData } from '../../../../../types';
+import { ItemData, SearchFilters } from '../../../../../types';
+import { doSearch } from '../../search';
+import { defaultFilters } from '../../../../../utils/parseFilters';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
@@ -22,25 +21,36 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 export const getSimilarItems = async (item: ItemData, limit = 4) => {
-  const match = Prisma.sql`MATCH(name) AGAINST(${`${item.name}`} IN NATURAL LANGUAGE MODE)`;
+  const filters: SearchFilters = {
+    ...defaultFilters,
+    limit: 20,
+    mode: 'natural',
+    sortBy: 'match',
+    sortDir: 'desc',
+  };
 
-  const rawResult = (await prisma.$queryRaw`
-    SELECT internal_id FROM Items where ${match} and internal_id != ${item.internal_id}
-    and canonical_id is null
-    order by ${match} desc limit 20
-  `) as any;
+  const rawResult = (await doSearch(item.name, filters, false)).content.filter(
+    (x) => x.internal_id !== item.internal_id
+  );
 
-  const ids = rawResult.map((item: any) => item.internal_id);
+  if (!rawResult || rawResult.length < 2) {
+    const fuzzy = await doSearch(
+      item.name,
+      {
+        ...filters,
+        mode: 'fuzzy',
+      },
+      false
+    );
 
-  const items = await getManyItems({
-    id: ids,
-  });
+    return fuzzy.content.filter((i) => i.internal_id !== item.internal_id).slice(0, limit);
+  }
 
   const notDyeworksName = item.name.includes(':')
     ? item.name.split(':').slice(1).join(':').trim()
     : item.name;
 
-  const allItems = Object.values(items).filter(
+  const allItems = rawResult.filter(
     (i) =>
       !(
         i.name.toLowerCase().includes(notDyeworksName.toLowerCase()) &&
@@ -48,9 +58,5 @@ export const getSimilarItems = async (item: ItemData, limit = 4) => {
       ) && (item.name !== notDyeworksName ? i.name !== notDyeworksName : true)
   );
 
-  const sortedItems = allItems.sort(
-    (a, b) => ids.indexOf(a.internal_id) - ids.indexOf(b.internal_id)
-  );
-
-  return sortedItems.splice(0, limit);
+  return allItems.splice(0, limit);
 };

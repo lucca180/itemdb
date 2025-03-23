@@ -190,7 +190,7 @@ export type SearchFilters = {
   colorType: string;
   sortBy: string;
   sortDir: string;
-  mode: 'name' | 'description' | 'all' | 'fuzzy' | 'not';
+  mode: 'name' | 'description' | 'all' | 'fuzzy' | 'not' | 'natural';
   limit: number;
   page: number;
 };
