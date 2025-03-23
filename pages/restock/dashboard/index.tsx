@@ -111,6 +111,7 @@ const RestockDashboard = (props: RestockDashboardProps) => {
   const [noScript, setNoScript] = useState<'notFound' | 'outdated' | null>(null);
   const [filter, setFilter] = useState<PeriodFilter | null>(props.initialFilter);
   const [chartData, setChartData] = useState<RestockChart | null>(null);
+  const [showScriptCTA, setShowScriptCTA] = useState<boolean>(false);
 
   const revenueDiff = useMemo(() => {
     if (!sessionStats || !pastSessionStats) return null;
@@ -233,9 +234,12 @@ const RestockDashboard = (props: RestockDashboardProps) => {
     const versionCode =
       window.itemdb_restock.versionCode ?? window.itemdb_restock.scriptVersion ?? 0;
 
+    let shouldShowCTA = true;
+
     if (versionCode < MIN_SCRIPT_VERSION) {
       console.warn('itemdb_restock version outdated');
       setNoScript('outdated');
+      shouldShowCTA = false;
     }
 
     const validSessions = [...currentParsed, ...unsyncParsed].filter(
@@ -243,6 +247,10 @@ const RestockDashboard = (props: RestockDashboardProps) => {
     );
 
     setImportCount(validSessions.length);
+
+    if (shouldShowCTA && !window.itemdb_script) {
+      setShowScriptCTA(true);
+    }
   };
 
   const handleClose = () => {
@@ -605,75 +613,127 @@ const RestockDashboard = (props: RestockDashboardProps) => {
               </Alert>
             </Center>
           )}
-          <Flex mb={8} mt={{ base: 8, md: 1 }} flexFlow="column" gap={2}>
-            <Heading size="md" color="green.100">
-              {t('Restock.your-estimate-profit')}
-            </Heading>
-            <HStack>
-              <Heading
-                size="3xl"
-                filter={'drop-shadow(0 0 5px rgba(0, 0, 0, 0.4))'}
-                color="green.200"
-              >
-                {formatter.number(sessionStats.estProfit ?? sessionStats.estRevenue)} NP
+          <Flex
+            mb={8}
+            mt={{ base: 8, md: 1 }}
+            justifyContent={'space-between'}
+            alignItems={'center'}
+          >
+            <Flex flexFlow="column" gap={2}>
+              <Heading size="md" color="green.100">
+                {t('Restock.your-estimate-profit')}
               </Heading>
-              {(profitDiff ?? revenueDiff) && (
-                <Tooltip
-                  hasArrow
-                  label={t('Restock.from-x-with-y-items', {
-                    0: formatter.number(
-                      pastSessionStats!.estProfit ?? pastSessionStats!.estRevenue
-                    ),
-                    1: pastSessionStats!.totalBought.count,
-                  })}
-                  bg="blackAlpha.900"
-                  fontSize={'xs'}
-                  placement="top"
-                  color="white"
+              <HStack>
+                <Heading
+                  size="3xl"
+                  filter={'drop-shadow(0 0 5px rgba(0, 0, 0, 0.4))'}
+                  color="green.200"
                 >
-                  <Badge
-                    variant={'solid'}
-                    color={(profitDiff ?? revenueDiff)!.isPositive ? 'green.100' : 'red.200'}
-                    bg={'blackAlpha.500'}
-                    p={1}
-                    borderRadius={'lg'}
-                    display="flex"
-                    alignItems={'center'}
+                  {formatter.number(sessionStats.estProfit ?? sessionStats.estRevenue)} NP
+                </Heading>
+                {(profitDiff ?? revenueDiff) && (
+                  <Tooltip
+                    hasArrow
+                    label={t('Restock.from-x-with-y-items', {
+                      0: formatter.number(
+                        pastSessionStats!.estProfit ?? pastSessionStats!.estRevenue
+                      ),
+                      1: pastSessionStats!.totalBought.count,
+                    })}
+                    bg="blackAlpha.900"
+                    fontSize={'xs'}
+                    placement="top"
+                    color="white"
                   >
-                    <Icon
-                      as={
-                        (profitDiff ?? revenueDiff)!.isPositive ? FaArrowTrendUp : FaArrowTrendDown
-                      }
-                      mr={1}
-                    />
-                    {(profitDiff ?? revenueDiff)!.diffPercentage.toFixed(0)}%
-                  </Badge>
-                </Tooltip>
-              )}
-            </HStack>
-            <HStack mt={3} fontSize={'sm'} fontWeight={'500'} color="green.100" flexWrap={'wrap'}>
-              <Flex py={2} px={4} bg={'blackAlpha.500'} borderRadius={'3xl'}>
-                {t('Restock.x-items-bought', {
-                  0: formatter.number(sessionStats.totalBought.count),
-                })}
-              </Flex>
-              <Flex py={2} px={4} bg={'blackAlpha.500'} borderRadius={'3xl'}>
-                {t('Restock.x-np-spent', {
-                  0: formatter.number(sessionStats.totalSpent ?? 0),
-                })}
-              </Flex>
+                    <Badge
+                      variant={'solid'}
+                      color={(profitDiff ?? revenueDiff)!.isPositive ? 'green.100' : 'red.200'}
+                      bg={'blackAlpha.500'}
+                      p={1}
+                      borderRadius={'lg'}
+                      display="flex"
+                      alignItems={'center'}
+                    >
+                      <Icon
+                        as={
+                          (profitDiff ?? revenueDiff)!.isPositive
+                            ? FaArrowTrendUp
+                            : FaArrowTrendDown
+                        }
+                        mr={1}
+                      />
+                      {(profitDiff ?? revenueDiff)!.diffPercentage.toFixed(0)}%
+                    </Badge>
+                  </Tooltip>
+                )}
+              </HStack>
+              <HStack mt={3} fontSize={'sm'} fontWeight={'500'} color="green.100" flexWrap={'wrap'}>
+                <Flex py={2} px={4} bg={'blackAlpha.500'} borderRadius={'3xl'}>
+                  {t('Restock.x-items-bought', {
+                    0: formatter.number(sessionStats.totalBought.count),
+                  })}
+                </Flex>
+                <Flex py={2} px={4} bg={'blackAlpha.500'} borderRadius={'3xl'}>
+                  {t('Restock.x-np-spent', {
+                    0: formatter.number(sessionStats.totalSpent ?? 0),
+                  })}
+                </Flex>
+                <Flex
+                  py={2}
+                  px={5}
+                  bg={'blackAlpha.500'}
+                  borderRadius={'3xl'}
+                  textTransform={'capitalize'}
+                >
+                  {t.rich('Restock.x-time-restocking', {
+                    Val: () => <IntervalFormatted ms={sessionStats.durationCount} long />,
+                  })}
+                </Flex>
+              </HStack>
+            </Flex>
+            {showScriptCTA && (
               <Flex
-                py={2}
-                px={5}
-                bg={'blackAlpha.500'}
-                borderRadius={'3xl'}
-                textTransform={'capitalize'}
+                bg="blackAlpha.400"
+                p={3}
+                borderRadius={'2xl'}
+                alignItems={'center'}
+                flexFlow="column"
+                maxW="400px"
+                gap={1}
+                textAlign={'center'}
               >
-                {t.rich('Restock.x-time-restocking', {
-                  Val: () => <IntervalFormatted ms={sessionStats.durationCount} long />,
-                })}
+                <Heading size="sm" color="green.50">
+                  {t('Restock.dashboard-script-cta-title')}
+                </Heading>
+                <Text fontSize={'xs'} color="green.100">
+                  {t.rich('Restock.dashboard-script-cta-text', {
+                    b: (chunk) => <b>{chunk}</b>,
+                  })}
+                </Text>
+                <HStack>
+                  <Button
+                    as={Link}
+                    href="https://github.com/lucca180/itemdb/raw/main/userscripts/itemDataExtractor.user.js"
+                    isExternal
+                    size="xs"
+                    colorScheme="white"
+                    variant={'ghost'}
+                  >
+                    {t('Restock.install-now')}
+                  </Button>
+                  <Button
+                    as={Link}
+                    href="/contribute?utm_content=dashboard-cta"
+                    isExternal
+                    size="xs"
+                    colorScheme="white"
+                    variant={'ghost'}
+                  >
+                    {t('General.learn-more')}
+                  </Button>
+                </HStack>
               </Flex>
-            </HStack>
+            )}
           </Flex>
           <Divider />
           <SimpleGrid mt={3} columns={[2, 2, 2, 4, 4]} spacing={[2, 3]}>

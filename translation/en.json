@@ -884,7 +884,10 @@
     "your-estimate-profit": "Your Estimate Profit",
     "x-items-bought": "{0} Items Bought",
     "x-np-spent": "{0} NP Spent",
-    "x-time-restocking": "<Val></Val> Restocking"
+    "x-time-restocking": "<Val></Val> Restocking",
+    "dashboard-script-cta-title": "Help make this data more accurate",
+    "dashboard-script-cta-text": "By using the <b>Item Data Extractor Script</b>, you help improve the Dashboard accuracy and much more!",
+    "install-now": "Install Now"
   },
   "Search": {
     "search": "Search",
