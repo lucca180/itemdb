@@ -167,6 +167,14 @@ const CatImage = (props: CatImageProps) => {
     if (cat.toLowerCase() === 'cat3') url = '2013-2014';
   }
 
+  if (item_iid === 67447) {
+    if (cat.toLowerCase() === 'cat1') url = '2008-2014';
+
+    if (cat.toLowerCase() === 'cat2') url = '2015-2019';
+
+    if (cat.toLowerCase() === 'cat3') url = '2020-2024';
+  }
+
   if (cat === 'unknown')
     return (
       <>
