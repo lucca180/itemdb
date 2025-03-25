@@ -100,10 +100,15 @@ function filterMostRecents(priceProcessList: PriceProcess2[]) {
   return [];
 }
 
+const priorityOrder = ['ssw', 'sw', 'trade', 'usershop'];
+
 function checkFiltered(filtered: PriceProcess2[], goal: number) {
   const ownersSet = new Set<string>();
   // remove stuff with the same owner
   const newFiltered = filtered
+    .sort((a, b) => {
+      return priorityOrder.indexOf(a.type) - priorityOrder.indexOf(b.type);
+    })
     .map((x) => {
       if (x.owner && ownersSet.has(x.owner)) return undefined;
       if (x.owner) ownersSet.add(x.owner);
