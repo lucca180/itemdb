@@ -84,10 +84,10 @@ export const preloadListItems = async (list: UserList, isOwner = false, limit = 
 
   const itemInfo = rawToListItems(itemInfoRaw);
 
-  const result = itemInfo.filter((item) => !item.isHidden || isOwner);
+  const result = itemInfo.filter((item) => !item.isHidden || isOwner || !item);
   const itemData = await getManyItems({ id: result.map((item) => item.item_iid.toString()) });
 
-  const sortedItemInfo = itemInfo.sort((a, b) => {
+  const sortedItemInfo = result.sort((a, b) => {
     if (a.isHighlight && !b.isHighlight) return -1;
     if (!a.isHighlight && b.isHighlight) return 1;
     return sortListItems(a, b, list.sortBy, list.sortDir, itemData);
