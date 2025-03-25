@@ -180,7 +180,9 @@ const useStatsTypes = (
       return {
         label: t('Restock.total-clicked-and-lost'),
         stat: `${formatter.number(sessionStats.totalLost?.value ?? 0)} NP`,
-        helpText: `${formatter.number(sessionStats.totalLost.count)} ${t('General.items')}`,
+        helpText: `${formatter.number(sessionStats.totalLost.count)} ${t(
+          'General.items'
+        ).toLowerCase()}`,
         ...badgeData,
       };
     case 'worstClickedAndLost':

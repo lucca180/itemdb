@@ -63,7 +63,8 @@ const MatchTable = (props: Props) => {
                 <Td>
                   {matches[list.owner.username ?? '']?.length && (
                     <Badge colorScheme="green">
-                      {matches[list.owner.username ?? '']?.length || 'none'} {t('General.items')}{' '}
+                      {matches[list.owner.username ?? '']?.length || 'none'}{' '}
+                      {t('General.items').toLowerCase()}{' '}
                       {type === 'seeking' ? t('General.they') : t('General.you')}{' '}
                       {t('ItemPage.can-offer')}
                     </Badge>

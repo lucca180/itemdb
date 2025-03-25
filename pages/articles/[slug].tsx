@@ -19,11 +19,11 @@ import Layout from '../../components/Layout';
 import { WP_Article } from '../../types';
 import { wp_getBySlug } from '../api/wp/posts/[slug]';
 import parse, { HTMLReactParserOptions, Element, domToReact, DOMNode } from 'html-react-parser';
-import NextLink from 'next/link';
 import { wp_getLatestPosts } from '../api/wp/posts';
 import { ArticleCard } from '../../components/Articles/ArticlesCard';
 import { useFormatter, useTranslations } from 'next-intl';
 import { ReactElement } from 'react';
+import { ArticleBreadcrumb } from '../../components/Breadcrumbs/ArticlesBreadcrumb';
 
 export type ArticlePageProps = {
   post: WP_Article;
@@ -48,12 +48,8 @@ const ArticlePage = (props: ArticlePageProps) => {
             : undefined
         }
         color={post.palette?.lightvibrant.hex ?? '#05B7E8'}
+        breadcrumb={<ArticleBreadcrumb article={post} />}
       >
-        <Text fontSize="xs">
-          <Link as={NextLink} href="/articles">
-            {t('Layout.articles')}
-          </Link>
-        </Text>
         <Heading size="lg" as="h1">
           {parse(post.title)}
         </Heading>

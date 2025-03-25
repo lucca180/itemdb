@@ -33,6 +33,7 @@ import { FaShareAlt } from 'react-icons/fa';
 import { MAX_ITEMS_LIST_PRICE, ListPriceHistoryModalProps } from '../Modal/ListPriceHistoryModal';
 import { AiOutlineAreaChart } from 'react-icons/ai';
 import Image from '../Utils/Image';
+import { ListBreadcrumb } from '../Breadcrumbs/ListBreadcrumb';
 
 const Markdown = dynamic(() => import('../Utils/Markdown'));
 const ListPriceHistoryModal = dynamic<ListPriceHistoryModalProps>(
@@ -140,7 +141,8 @@ const ListHeader = (props: ListHeaderProps) => {
         bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.6) 80%)`}
         zIndex={-1}
       />
-      <Flex gap={{ base: 3, md: 6 }} pt={6} alignItems="center">
+      <Box pt={2}>{list.official && <ListBreadcrumb list={list} />}</Box>
+      <Flex gap={{ base: 3, md: 6 }} pt={4} alignItems="center">
         <Flex
           position="relative"
           p={{ base: 1, md: 2 }}

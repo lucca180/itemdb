@@ -13,6 +13,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
 import ChakraImage from '../../Utils/Image';
+import { RestockBreadcrumb } from '../../Breadcrumbs/RestockBreadcrumb';
 type Props = {
   shop: ShopInfo;
   children?: React.ReactNode;
@@ -67,11 +68,9 @@ const RestockHeader = (props: Props) => {
         bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]},${rgb[1]},${rgb[2]},.5) 70%)`}
         zIndex={-1}
       />
-      <Text fontSize="xs" mt={2}>
-        <Link as={NextLink} href="/restock">
-          ← {t('Restock.back-to-restock-hub')}
-        </Link>
-      </Text>
+      <Box mt={2}>
+        <RestockBreadcrumb shopData={shopInfo} isHistory={isHistory} />
+      </Box>
       <Center
         mt={2}
         mb={6}

@@ -9,10 +9,11 @@ type Props = {
   };
   children?: React.ReactNode;
   color?: string;
+  breadcrumb?: React.ReactNode;
 };
 
 const HeaderCard = (props: Props) => {
-  const { image, children, color: colorProps } = props;
+  const { image, children, color: colorProps, breadcrumb } = props;
   const color = Color(colorProps ?? '#4A5568');
   const rgb = color.rgb().round().array();
 
@@ -26,7 +27,8 @@ const HeaderCard = (props: Props) => {
         bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.6) 80%)`}
         zIndex={-1}
       />
-      <Flex gap={{ base: 3, md: 6 }} pt={6} alignItems="center">
+      {breadcrumb && <Box pt={2}>{breadcrumb}</Box>}
+      <Flex gap={{ base: 3, md: 6 }} pt={!!breadcrumb ? 4 : 6} alignItems="center">
         <Box
           position="relative"
           p={{ base: 1, md: 2 }}

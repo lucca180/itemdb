@@ -50,6 +50,7 @@ import { DyeworksData, getDyeworksData } from '../api/v1/items/[id_name]/dyework
 import { getSingleItemColor } from '../api/v1/items/[id_name]/colors';
 import * as Sentry from '@sentry/nextjs';
 import { getPetpetData } from '../api/v1/items/[id_name]/petpet';
+import { ItemBreadcrumb } from '../../components/Breadcrumbs/ItemBreadcrumb';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -153,7 +154,10 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
           bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${color[0]},${color[1]}, ${color[2]},.5) 80%)`}
           zIndex={-1}
         />
-        <Flex gap={{ base: 4, md: 8 }} pt={5} alignItems="center">
+        <Box pt={2}>
+          <ItemBreadcrumb item={item} />
+        </Box>
+        <Flex gap={{ base: 4, md: 8 }} pt={4} alignItems="center">
           <Flex
             position="relative"
             p={2}

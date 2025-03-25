@@ -22,6 +22,7 @@ import axios from 'axios';
 import { ReactElement, useEffect, useMemo, useState } from 'react';
 import { ViewportList } from 'react-viewport-list';
 import { SearchList } from '../../components/Search/SearchLists';
+import { useRouter } from 'next/router';
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data as UserList[]);
 
@@ -37,6 +38,7 @@ type Props = {
 
 const OfficialListsPage = (props: Props) => {
   const t = useTranslations();
+  const router = useRouter();
   const { user, authLoading } = useAuth();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [lists, setLists] = useState<UserList[]>(props.lists);
@@ -44,9 +46,13 @@ const OfficialListsPage = (props: Props) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const rowSize = useBreakpointValue({ base: 2, xl: 3 }, { fallback: 'xl' });
 
-  const { data } = useSWRImmutable(`/api/v1/lists/official?includeItems=false`, fetcher, {
-    shouldRetryOnError: false,
-  });
+  const { data, isLoading } = useSWRImmutable(
+    `/api/v1/lists/official?includeItems=false`,
+    fetcher,
+    {
+      shouldRetryOnError: false,
+    }
+  );
 
   useEffect(() => {
     if (data) {
@@ -59,8 +65,14 @@ const OfficialListsPage = (props: Props) => {
     }
   }, [data]);
 
-  const handleFilter = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
+  useEffect(() => {
+    if (!router.query.cat || !data) return;
+
+    const cat = router.query.cat as string;
+    handleFilter(cat);
+  }, [router.query, data]);
+
+  const handleFilter = (value: string) => {
     if (!data) return;
     setSelectedCategory(value);
 
@@ -147,11 +159,18 @@ const OfficialListsPage = (props: Props) => {
             </Text>
           </Flex>
           <Flex flex="1" justifyContent="flex-end" alignItems={'center'} gap={3}>
-            <SearchList onChange={handleSearch} />
+            <SearchList onChange={handleSearch} disabled={isLoading} />
             <Text as="div" textColor={'gray.300'} flex="0 0 auto" fontSize="sm">
               {t('Lists.filter-by-type')}
             </Text>
-            <Select onChange={handleFilter} maxW="150px" variant="outlined" size="sm">
+            <Select
+              isDisabled={!categories.length}
+              onChange={(e) => handleFilter(e.target.value)}
+              value={selectedCategory}
+              maxW="150px"
+              variant="outlined"
+              size="sm"
+            >
               <option value="all">{t('Lists.show-all')}</option>
               {categories.map((category) => (
                 <option key={category} value={category}>

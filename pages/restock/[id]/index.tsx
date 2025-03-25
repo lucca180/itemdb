@@ -262,7 +262,7 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
           <Text as="div" textColor={'gray.300'} fontSize="sm">
             {!loading && (
               <>
-                {filteredItems?.length ?? itemList?.length ?? 0} {t('General.items')}
+                {filteredItems?.length ?? itemList?.length ?? 0} {t('General.items').toLowerCase()}
               </>
             )}
           </Text>
