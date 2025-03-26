@@ -1681,6 +1681,7 @@ export const allSpecies: { [id: string]: string } = {
   '53': 'Yurble',
   '54': 'Zafara',
   '55': 'Vandagyre',
+  '56': 'Varwolf',
 };
 
 export const getPetColorId = (color: string) => {
