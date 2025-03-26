@@ -1,11 +1,8 @@
-import { BreadcrumbJsonLd } from 'next-seo';
 import { ItemData } from '../../types';
-import { ChevronRightIcon } from '@chakra-ui/icons';
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
-import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import { useMemo } from 'react';
+import { Breadcrumbs } from './Breadcrumbs';
 
 type ItemBreadcrumbProps = {
   item: ItemData;
@@ -16,21 +13,10 @@ export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
   const t = useTranslations();
   const router = useRouter();
   const category = (item.category ?? 'unknown').toLowerCase();
-  const specialType = item.isWearable
-    ? 'wearable'
-    : item.isNeohome
-    ? 'neohome'
-    : item.isBD
-    ? 'battledome'
-    : null;
 
   const getLink = (url: string) => {
     const locale = router.locale === 'en' ? '' : `/${router.locale}`;
     return `https://itemdb.com.br${locale}${url}`;
-  };
-
-  const removeLink = (url: string) => {
-    return url.replace('https://itemdb.com.br', '');
   };
 
   const breadcrumbList = useMemo(() => {
@@ -52,56 +38,14 @@ export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
       },
       {
         position: 4,
-        name: item.type.toUpperCase(),
-        item: getLink(`/search?s=&category[]=${category}&type[]=${item.type}`),
+        name: item.name,
+        item: getLink(`/items/${item.slug}`),
       },
     ];
-
-    if (specialType) {
-      breadList.push({
-        position: 5,
-        name: item.isWearable
-          ? t('General.wearable')
-          : item.isNeohome
-          ? t('General.neohome')
-          : t('General.battledome'),
-        item: getLink(
-          `/search?s=&category[]=${category}&type[]=${item.type}&type[]=${specialType}`
-        ),
-      });
-    }
-
-    breadList.push({
-      position: specialType ? 6 : 5,
-      name: item.name,
-      item: getLink(`/items/${item.slug}`),
-    });
-
     return breadList;
   }, [item, router.locale]);
 
-  return (
-    <>
-      <Breadcrumb
-        spacing="2px"
-        fontSize={'xs'}
-        separator={<ChevronRightIcon color="whiteAlpha.800" />}
-        color="whiteAlpha.800"
-      >
-        {breadcrumbList.map((crumb, i) => (
-          <BreadcrumbItem key={crumb.position} isCurrentPage={i === breadcrumbList.length - 1}>
-            <BreadcrumbLink
-              as={i === breadcrumbList.length - 1 ? undefined : NextLink}
-              href={removeLink(crumb.item)}
-            >
-              {crumb.name}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-        ))}
-      </Breadcrumb>
-      <BreadcrumbJsonLd itemListElements={breadcrumbList} />
-    </>
-  );
+  return <Breadcrumbs breadcrumbList={breadcrumbList} />;
 };
 
 // capitalize first letter of each word in a string
