@@ -1056,7 +1056,8 @@
     "quest-log": "Precisamos de dados da nova prize pool do Quest Log. <Link>Clique aqui para ajudar</Link>",
     "anniversary": "Hey, precisamos de dados dos prêmios da Wheel of Celebration. <Link>Clique aqui para ajudar</Link>.",
     "hiddenTower": "3% de desconto na <Link>Torre Oculta</Link> hoje para contas com 60 meses ou mais!",
-    "owls-trades": "<b>Novo</b> - Agora você pode reportar suas <b>Trocas NC</b> para o Owls usando o itemdb! <Link>Saiba mais</Link>"
+    "owls-trades": "<b>Novo</b> - Agora você pode reportar suas <b>Trocas NC</b> para o Owls usando o itemdb! <Link>Saiba mais</Link>",
+    "year2": "Estamos comemorando <b>2 anos de itemdb</b> e queremos ouvir seu feedback neste <Link>formulário rápido</Link>!"
   },
   "Owls": {
     "confirm-and-submit": "Confirmar e Enviar",

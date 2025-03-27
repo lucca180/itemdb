@@ -119,6 +119,17 @@ const alerts = {
     bg: 'blue.200',
     color: 'blackAlpha.800',
   },
+  year2: {
+    message: 'SiteAlert.year2',
+    link: 'https://app.youform.com/forms/dxu5ne0p',
+    img: {
+      src: 'https://images.neopets.com/themes/h5/altadorcup/images/quickstock-icon.png',
+      h: 28,
+      w: 28,
+    },
+    bg: 'gray.900',
+    color: 'whiteAlpha.800',
+  },
 };
 
 export const SiteAlert = () => {
@@ -147,7 +158,12 @@ export const SiteAlert = () => {
             t.rich(alert.message, {
               b: (children) => <b>{children}</b>,
               Link: (children) => (
-                <Link as={NextLink} href={alert.link + '?utm_content=site-alert'} fontWeight="bold">
+                <Link
+                  as={NextLink}
+                  href={alert.link + '?utm_content=site-alert'}
+                  fontWeight="bold"
+                  isExternal
+                >
                   {children}
                 </Link>
               ),
@@ -161,7 +177,7 @@ export const SiteAlert = () => {
 const getAlert = () => {
   const todayNST = getDateNST();
 
-  if (todayNST.getTime() < 1739404799000) return alerts.owlsReporting;
+  if (todayNST.getTime() < 1743490799000) return alerts.year2;
   if (isThirdWednesday(todayNST)) return alerts.hiddenTower;
   if (todayNST.getDate() === 3) return alerts.hpd;
   else if (todayNST.getMonth() === 4 && todayNST.getDate() === 12) return alerts.tyrannia;

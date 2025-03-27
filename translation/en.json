@@ -1055,7 +1055,8 @@
     "quest-log": "We need data on the new prize pool for the Quest Log. <Link>Click here to help</Link>",
     "anniversary": "Hey, we need data from the Wheel of Celebration prizes. <Link>Click here to help</Link>.",
     "hiddenTower": "3% off at the <Link>Hidden Tower</Link> today for account age 60 months or older!",
-    "owls-trades": "<b>New</b> - Now you can report your <b>NC Trades</b> to Owls using itemdb! <Link>Learn more</Link>"
+    "owls-trades": "<b>New</b> - Now you can report your <b>NC Trades</b> to Owls using itemdb! <Link>Learn more</Link>",
+    "year2": "We're celebrating <b>2 years of itemdb</b> and would love to hear your feedback in this <Link>quick form</Link>!"
   },
   "Owls": {
     "items-you-offered": "Items You Offered",
