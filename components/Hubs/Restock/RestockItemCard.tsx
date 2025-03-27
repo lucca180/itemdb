@@ -6,6 +6,7 @@ import { getRestockProfitOnDate, msIntervalFormatted } from '../../../utils/util
 import { differenceInMilliseconds } from 'date-fns';
 import { useFormatter, useTranslations } from 'next-intl';
 import { MdHelp } from 'react-icons/md';
+import { useMemo } from 'react';
 
 type Props = {
   item: ItemData;
@@ -21,11 +22,16 @@ const RestockItem = (props: Props) => {
   const { item, clickData, restockItem, disablePrefetch } = props;
   const rgb = Color(item.color.hex).rgb().array();
 
-  const profit =
-    clickData.buy_timestamp && item.price.value
-      ? getRestockProfitOnDate(item, clickData.buy_timestamp!)
-      : null;
-  const isBait = profit && profit < 1000;
+  const profit = useMemo(() => {
+    if (clickData.buy_price && item.price.value) {
+      return item.price.value - clickData.buy_price;
+    } else if (clickData.buy_timestamp && item.price.value) {
+      return getRestockProfitOnDate(item, clickData.buy_timestamp);
+    }
+    return null;
+  }, [item, clickData]);
+
+  const isBait = profit && profit <= 0;
 
   const boughtTime = restockItem
     ? differenceInMilliseconds(

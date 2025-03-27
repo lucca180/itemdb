@@ -320,7 +320,7 @@ export const calculateStats = async (
         let profit = getRestockProfitOnDate(item, click.buy_timestamp, restockItem.timestamp);
         if (buyVal && item.price.value) profit = item.price.value - buyVal;
 
-        if (profit && profit < 1000) allBaits.push({ item, click, restockItem });
+        if (profit && profit <= 0) allBaits.push({ item, click, restockItem });
 
         stats.estRevenue += item.price.value ?? 0;
 
@@ -413,8 +413,7 @@ export const calculateStats = async (
   stats.worstBaits = allBaits
     .sort(
       (a, b) =>
-        (getRestockProfitOnDate(a.item, a.click.buy_timestamp!) ?? 0) -
-        (getRestockProfitOnDate(b.item, b.click.buy_timestamp!) ?? 0)
+        (getItemProfitOnDate(a.click, a.item) ?? 0) - (getItemProfitOnDate(b.click, b.item) ?? 0)
     )
     .splice(0, 10);
 
@@ -568,4 +567,12 @@ const getItemWithPricing = (
       inflated: false,
     },
   };
+};
+
+const getItemProfitOnDate = (click: RestockSession['clicks'][0], item: ItemData) => {
+  if (click.buy_price && item.price.value) {
+    return item.price.value - click.buy_price;
+  }
+
+  return getRestockProfitOnDate(item, click.buy_timestamp!);
 };
