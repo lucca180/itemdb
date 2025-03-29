@@ -1,5 +1,16 @@
 /* eslint-disable react/no-unescaped-entities */
-import { Flex, Text, Image, Badge, Center, Alert, AlertIcon, Link } from '@chakra-ui/react';
+import {
+  Flex,
+  Text,
+  Image,
+  Badge,
+  Center,
+  Alert,
+  AlertIcon,
+  Link,
+  HStack,
+  Button,
+} from '@chakra-ui/react';
 import axios from 'axios';
 import React, { useEffect, useMemo } from 'react';
 import { ItemData, ItemOpenable, PrizePoolData } from '../../types';
@@ -8,6 +19,7 @@ import ItemCard from './ItemCard';
 import NextLink from 'next/link';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
+import { showScriptCTA } from '../../utils/auth';
 
 const OldPoolDrops = dynamic(() => import('../Utils/OldPoolDrops'));
 
@@ -67,6 +79,7 @@ const ItemDrops = (props: Props) => {
 
   return (
     <CardBase title={t('Drops.item-drops')} color={color}>
+      {!itemOpenable.isGBC && <HelpNeeded />}
       {itemOpenable.isGBC && (
         <Alert borderRadius={5} mb={3}>
           <AlertIcon />
@@ -104,6 +117,7 @@ const ItemDrops = (props: Props) => {
           hasMultiplePools={multiplePools}
           isFirst={!multiplePools}
           forceOddsText={hasOldPool}
+          hideOdds
         />
       )}
 
@@ -281,10 +295,11 @@ type DropPoolProps = {
   isFirst?: boolean;
   forceOddsText?: boolean;
   hasMultiplePools?: boolean;
+  hideOdds?: boolean;
 };
 
 export const DropPool = (props: DropPoolProps) => {
-  const { pool, itemOpenable, item, dropData, isFirst, forceOddsText } = props;
+  const { pool, itemOpenable, item, dropData, isFirst, forceOddsText, hideOdds } = props;
   const isChoice = itemOpenable.isChoice;
   const itemDrops = itemOpenable.drops;
   const t = useTranslations();
@@ -317,7 +332,7 @@ export const DropPool = (props: DropPoolProps) => {
                 item={item}
                 disablePrefetch
                 small
-                odds={drop.dropRate}
+                odds={!hideOdds ? drop.dropRate : undefined}
                 isLE={drop.isLE}
               />
             );
@@ -336,6 +351,48 @@ export const DropPool = (props: DropPoolProps) => {
           })}
         </Text>
       )}
+    </Flex>
+  );
+};
+
+const HelpNeeded = () => {
+  const t = useTranslations();
+  const shouldShow = showScriptCTA();
+
+  if (!shouldShow || shouldShow === 'outdated') return null;
+
+  return (
+    <Flex
+      bg="blackAlpha.600"
+      p={2}
+      borderRadius={'lg'}
+      mb={3}
+      flexFlow={'column'}
+      alignItems={'center'}
+      textAlign={'center'}
+      gap={3}
+    >
+      <Text fontSize="md" color="white" fontWeight={'bold'}>
+        {t('ItemPage.drops-script-cta')}
+      </Text>
+      <Text fontSize="sm" color="whiteAlpha.900" maxW="500px" sx={{ textWrap: 'pretty' }}>
+        {t.rich('ItemPage.drops-script-cta-text', {
+          b: (text) => <b>{text}</b>,
+        })}
+      </Text>
+      <HStack mt={1}>
+        <Button
+          as={Link}
+          size="sm"
+          href="https://github.com/lucca180/itemdb/raw/main/userscripts/itemDataExtractor.user.js"
+          isExternal
+        >
+          {t('Restock.install-now')}
+        </Button>
+        <Button as={Link} size="sm" href="/contribute" isExternal>
+          {t('General.learn-more')}
+        </Button>
+      </HStack>
     </Flex>
   );
 };

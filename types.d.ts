@@ -695,14 +695,22 @@ declare global {
       };
       cleanAll: () => void;
     };
+
     itemdb_script?: {
       version: string;
       versionCode: number;
     };
+
+    itemdb_sdbPricer?: {
+      version: string;
+      versionCode: number;
+    };
+
     umami?: {
       identify: (payload: any) => Promise<void>;
       track: (event: string, payload: any) => Promise<void>;
     };
+
     itemdb_restock_cleanAll?: () => void; //backwards compatibility
   }
 }

@@ -274,7 +274,9 @@
     "petpet-puddle": "Poça dos Petpets",
     "color-is-base-color": "<ColorLink>{color}</ColorLink> é a <b>cor base</b> de <SpeciesLink>{species}</SpeciesLink>",
     "p2-p2-at-puddle": "Você pode usar Petpet Paint Brushes para alterar sua cor na <Link>Poça de Petpets</Link>",
-    "unpaintable-p2": "Este petpet é único e não pode ser pintado"
+    "unpaintable-p2": "Este petpet é único e não pode ser pintado",
+    "drops-script-cta": "Ajude a tornar esses dados mais precisos!",
+    "drops-script-cta-text": "Com o <b>Item Data Extractor Script</b> você nos ajuda a melhorar as chandes de drops de itens, manter os preços atualizados e muito mais!"
   },
   "Button": {
     "feedback": "Feedback",
