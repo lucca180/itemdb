@@ -183,22 +183,3 @@ export function AuthProvider({ children }: any) {
 export const useAuth = () => {
   return useContext(AuthContext);
 };
-
-const LATEST_SCRIPT_VERSION = 191;
-export const showScriptCTA = (): false | 'notFound' | 'outdated' => {
-  if (!window) return false;
-
-  const hasScript = !!(window.itemdb_restock || window.itemdb_script || window.itemdb_sdbPricer);
-
-  if (!hasScript) return false;
-
-  if (hasScript && !window.itemdb_script) {
-    return 'notFound';
-  }
-
-  if (window.itemdb_script && window.itemdb_script.versionCode < LATEST_SCRIPT_VERSION) {
-    return 'outdated';
-  }
-
-  return false;
-};

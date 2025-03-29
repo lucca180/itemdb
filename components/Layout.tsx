@@ -42,6 +42,7 @@ import { setCookie } from 'cookies-next';
 import dynamic from 'next/dynamic';
 import { DropdownButton, DropdownOption } from './Menus/HeaderDropdown';
 import { SiteAlert } from './Utils/SiteAlert';
+import { getScriptStatus } from '../utils/scriptUtils';
 
 const LanguageToast = dynamic<LanguageToastProps>(() => import('./Modal/LanguageToast'));
 const LoginModal = dynamic<LoginModalProps>(() => import('./Modal/LoginModal'));
@@ -207,6 +208,7 @@ const Layout = (props: Props) => {
                         {t('Layout.how-to-contribute')}
                       </MenuItem>
                     </MenuGroup>
+                    <ScriptStatus />
                     <MenuDivider />
                     <MenuItem onClick={signout}>{t('Layout.logout')}</MenuItem>
                   </MenuList>
@@ -304,7 +306,6 @@ const Layout = (props: Props) => {
             </Center>
           )}
         </Box>
-
         <Box
           as="footer"
           // textAlign={'center'}
@@ -401,3 +402,61 @@ const Layout = (props: Props) => {
 };
 
 export default Layout;
+
+const ScriptStatus = () => {
+  const scriptStatus = getScriptStatus();
+  const t = useTranslations();
+
+  if (!scriptStatus) return null;
+
+  return (
+    <>
+      <MenuDivider />
+      <Text px={3} pb={3} fontSize={'md'} color="white">
+        {t('Layout.script-info')}
+      </Text>
+      {Object.values(scriptStatus).map((script) => {
+        if (script.status === 'notFound' && script.name !== 'Item Data Extractor') return null;
+        return (
+          <Flex
+            key={script.name}
+            alignItems="center"
+            gap={2}
+            fontSize="xs"
+            color="whiteAlpha.700"
+            px={3}
+            pb={2}
+          >
+            <Text>
+              {script.name} {script.version ? `- ${script.version}` : ''}
+            </Text>
+            {script.status === 'outdated' && (
+              <Button
+                as="a"
+                href={script.link}
+                target="_blank"
+                size={'xs'}
+                variant={'outline'}
+                colorScheme="orange"
+              >
+                {t('Layout.update-available')}
+              </Button>
+            )}
+            {script.status === 'notFound' && (
+              <Button
+                as="a"
+                href={script.link}
+                target="_blank"
+                size={'xs'}
+                variant={'outline'}
+                colorScheme="green"
+              >
+                {t('Restock.install-now')}
+              </Button>
+            )}
+          </Flex>
+        );
+      })}
+    </>
+  );
+};

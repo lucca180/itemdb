@@ -92,7 +92,9 @@
     "item-effects": "Efeitos de Itens",
     "view-all-shops": "Ver Todas as Lojas",
     "report-your-nc-trades": "Reporte Suas Trocas NC",
-    "rainbow-pool-tool": "Piscina do Arco-íris"
+    "rainbow-pool-tool": "Piscina do Arco-íris",
+    "update-available": "Atualização Disponível",
+    "script-info": "Script Info"
   },
   "ItemPage": {
     "item-info": "Item Info",

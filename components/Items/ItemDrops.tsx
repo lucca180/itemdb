@@ -19,7 +19,7 @@ import ItemCard from './ItemCard';
 import NextLink from 'next/link';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
-import { showScriptCTA } from '../../utils/auth';
+import { showScriptCTA } from '../../utils/scriptUtils';
 
 const OldPoolDrops = dynamic(() => import('../Utils/OldPoolDrops'));
 

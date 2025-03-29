@@ -91,7 +91,9 @@
     "item-effects": "Item Effects",
     "view-all-shops": "View All Shops",
     "report-your-nc-trades": "Report Your NC Trades",
-    "rainbow-pool-tool": "Rainbow Pool Tool"
+    "rainbow-pool-tool": "Rainbow Pool Tool",
+    "update-available": "Update Available",
+    "script-info": "Script Info"
   },
   "ItemPage": {
     "item-info": "Item Info",
