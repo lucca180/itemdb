@@ -9,6 +9,7 @@ import {
 import { GetServerSideProps } from 'next';
 import prisma from '../../utils/prisma';
 import { allNeopetsColors, allSpecies, restockShopInfo, slugify } from '../../utils/utils';
+import { listCategoriesData } from '../lists/official/cat/[category]';
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const page = ctx.query.page as string;
@@ -260,11 +261,47 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     })
     .flat();
 
+  const officialListsCats: ISitemapField[] = Object.values(listCategoriesData)
+    .splice(parseInt(page) * 10, 10)
+    .map((cat) => {
+      const catSlug = slugify(cat.id);
+      return [
+        {
+          loc: `${siteURL}/lists/official/cat/${catSlug}`,
+          alternateRefs: [
+            {
+              href: `${siteURL}/pt/lists/official/cat/${catSlug}`,
+              hreflang: 'pt',
+            },
+            {
+              href: `${siteURL}/lists/official/cat/${catSlug}`,
+              hreflang: 'en',
+            },
+          ],
+        },
+        {
+          loc: `${siteURL}/pt/lists/official/cat/${catSlug}`,
+          alternateRefs: [
+            {
+              href: `${siteURL}/pt/lists/official/cat/${catSlug}`,
+              hreflang: 'pt',
+            },
+            {
+              href: `${siteURL}/lists/official/cat/${catSlug}`,
+              hreflang: 'en',
+            },
+          ],
+        },
+      ];
+    })
+    .flat();
+
   return getServerSideSitemapLegacy(ctx, [
     ...restockPaths,
     ...officialListsPaths,
     ...itemPaths,
     ...colorSpeciesPaths,
+    ...officialListsCats,
   ]);
 };
 

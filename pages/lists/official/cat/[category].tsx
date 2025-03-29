@@ -5,47 +5,46 @@ import {
   Divider,
   Button,
   useDisclosure,
-  Select,
   useBreakpointValue,
 } from '@chakra-ui/react';
-import HeaderCard from '../../components/Card/HeaderCard';
-import Layout from '../../components/Layout';
-import { ApplyListModalProps } from '../../components/Modal/OfficialListApply';
-import UserListCard from '../../components/UserLists/ListCard';
-import { UserList } from '../../types';
-import { useAuth } from '../../utils/auth';
-import { getUserLists } from '../api/v1/lists/[username]';
+import HeaderCard from '../../../../components/Card/HeaderCard';
+import Layout from '../../../../components/Layout';
+import { ApplyListModalProps } from '../../../../components/Modal/OfficialListApply';
+import UserListCard from '../../../../components/UserLists/ListCard';
+import { UserList } from '../../../../types';
+import { useAuth } from '../../../../utils/auth';
+import { getOfficialListsCat } from '../../../api/v1/lists/[username]';
 import dynamic from 'next/dynamic';
 import { createTranslator, useTranslations } from 'next-intl';
 import useSWRImmutable from 'swr/immutable';
 import axios from 'axios';
 import { ReactElement, useEffect, useMemo, useState } from 'react';
 import { ViewportList } from 'react-viewport-list';
-import { SearchList } from '../../components/Search/SearchLists';
-import { useRouter } from 'next/router';
-import { Breadcrumbs } from '../../components/Breadcrumbs/Breadcrumbs';
+import { SearchList } from '../../../../components/Search/SearchLists';
+import { Breadcrumbs } from '../../../../components/Breadcrumbs/Breadcrumbs';
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data as UserList[]);
 
 const ApplyListModal = dynamic<ApplyListModalProps>(
-  () => import('../../components/Modal/OfficialListApply')
+  () => import('../../../../components/Modal/OfficialListApply')
 );
 
 type Props = {
   lists: UserList[];
   messages: any;
   locale: string;
+  selectedCategory: string;
 };
 
-const OfficialListsPage = (props: Props) => {
+const OfficialListsCatPage = (props: Props) => {
+  const { selectedCategory } = props;
   const t = useTranslations();
-  const router = useRouter();
   const { user, authLoading } = useAuth();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [lists, setLists] = useState<UserList[]>(props.lists);
-  const [categories, setCategories] = useState<string[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const rowSize = useBreakpointValue({ base: 2, xl: 3 }, { fallback: 'xl' });
+
+  const catInfo = listCategoriesData[selectedCategory];
 
   const { data, isLoading } = useSWRImmutable(
     `/api/v1/lists/official?includeItems=false`,
@@ -56,34 +55,21 @@ const OfficialListsPage = (props: Props) => {
   );
 
   useEffect(() => {
-    if (data) {
-      const newCats = [...new Set(data.map((list) => list.officialTag || 'Uncategorized'))].sort(
-        (a, b) => a.localeCompare(b)
-      );
-
-      setLists(data);
-      setCategories(newCats);
-    }
+    handleFilter(catInfo.id);
   }, [data]);
-
-  useEffect(() => {
-    if (!router.query.cat || !data) return;
-
-    const cat = router.query.cat as string;
-    handleFilter(cat);
-  }, [router.query, data]);
 
   const handleFilter = (value: string) => {
     if (!data) return;
-    setSelectedCategory(value);
 
     if (value === 'all') {
       setLists(data);
-    } else if (value === 'Uncategorized') {
+    } else if (value.toLowerCase() === 'uncategorized') {
       setLists(data.filter((x) => !x.officialTag).sort((a, b) => a.name.localeCompare(b.name)));
     } else {
       setLists(
-        data.filter((x) => x.officialTag === value).sort((a, b) => a.name.localeCompare(b.name))
+        data
+          .filter((x) => x.officialTag?.toLowerCase() === value.toLowerCase())
+          .sort((a, b) => a.name.localeCompare(b.name))
       );
     }
   };
@@ -124,13 +110,12 @@ const OfficialListsPage = (props: Props) => {
   return (
     <>
       <ApplyListModal isOpen={isOpen} onClose={onClose} />
-
       <HeaderCard
         image={{
-          src: 'https://images.neopets.com/games/tradingcards/premium/0911.gif',
-          alt: 'grundo warehouse thumbnail',
+          src: catInfo.url,
+          alt: selectedCategory + ' thumbnail',
         }}
-        color="#4962ec"
+        color={catInfo.color}
         breadcrumb={
           <Breadcrumbs
             breadcrumbList={[
@@ -144,18 +129,19 @@ const OfficialListsPage = (props: Props) => {
                 name: t('General.official-lists'),
                 item: '/lists/official',
               },
+              {
+                position: 3,
+                name: catInfo.name,
+                item: '/lists/official/' + selectedCategory.toLowerCase(),
+              },
             ]}
           />
         }
       >
         <Heading as="h1" size="lg">
-          {t('General.official-lists')}
+          {catInfo.name}
         </Heading>
-        <Text size={{ base: 'sm', md: undefined }}>
-          {t.rich('Lists.officialList-subheader', {
-            br: () => <br />,
-          })}
-        </Text>
+        <Text size={{ base: 'sm', md: undefined }}>{catInfo.description}</Text>
       </HeaderCard>
       <Divider />
       <Flex flexFlow="column" gap={3}>
@@ -180,24 +166,6 @@ const OfficialListsPage = (props: Props) => {
           </Flex>
           <Flex flex="1" justifyContent="flex-end" alignItems={'center'} gap={3}>
             <SearchList onChange={handleSearch} disabled={isLoading} />
-            <Text as="div" textColor={'gray.300'} flex="0 0 auto" fontSize="sm">
-              {t('Lists.filter-by-type')}
-            </Text>
-            <Select
-              isDisabled={!categories.length}
-              onChange={(e) => handleFilter(e.target.value)}
-              value={selectedCategory}
-              maxW="150px"
-              variant="outlined"
-              size="sm"
-            >
-              <option value="all">{t('Lists.show-all')}</option>
-              {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </Select>
           </Flex>
         </Flex>
         <Flex mt={0} gap={4} flexFlow="column">
@@ -216,26 +184,40 @@ const OfficialListsPage = (props: Props) => {
   );
 };
 
-export default OfficialListsPage;
+export default OfficialListsCatPage;
 
 export async function getServerSideProps(context: any) {
-  const lists = await getUserLists('official', null, 15);
+  const category = context.params.category;
+  const tag = (listCategoriesData[category]?.id ?? category).toLowerCase();
+
+  if (!listCategoriesData[category]) {
+    return {
+      redirect: {
+        destination: '/lists/official?cat=' + category,
+        permanent: false,
+      },
+    };
+  }
+
+  const lists = await getOfficialListsCat(tag, 15);
 
   return {
     props: {
-      lists,
-      messages: (await import(`../../translation/${context.locale}.json`)).default,
+      lists: lists,
+      selectedCategory: category,
+      messages: (await import(`../../../../translation/${context.locale}.json`)).default,
       locale: context.locale,
     },
   };
 }
 
-OfficialListsPage.getLayout = function getLayout(page: ReactElement, props: Props) {
+OfficialListsCatPage.getLayout = function getLayout(page: ReactElement, props: Props) {
   const t = createTranslator({ messages: props.messages, locale: props.locale });
+  const catInfo = listCategoriesData[props.selectedCategory];
   return (
     <Layout
       SEO={{
-        title: t('General.official-lists'),
+        title: `${catInfo.name} - ${t('General.official-lists')}`,
         description: t('Lists.officialList-description'),
         openGraph: {
           images: [
@@ -247,9 +229,68 @@ OfficialListsPage.getLayout = function getLayout(page: ReactElement, props: Prop
           ],
         },
       }}
-      mainColor="#4962ecc7"
+      mainColor={catInfo.color + 'c7'}
     >
       {page}
     </Layout>
   );
+};
+
+export const listCategoriesData: {
+  [cat: string]: {
+    id: string;
+    name: string;
+    url: string;
+    color: string;
+    description: string;
+  };
+} = {
+  dailies: {
+    id: 'dailies',
+    name: 'Neopets Dailies',
+    url: 'https://images.neopets.com/images/frontpage/y7_day.gif',
+    color: '#D663A6',
+    description:
+      'Discover complete prize lists from Neopets Dailies! Stay updated on the latest items from Neopets Freebies and never miss a daily freebie again.',
+  },
+  'advent-calendar': {
+    id: 'advent calendar',
+    name: 'Advent Calendar',
+    url: 'https://images.neopets.com/games/tradingcards/premium/0612.gif',
+    color: '#FF0000',
+    description:
+      'Explore the Advent Calendar lists and uncover the latest items and prizes from Neopets Advent Calendar Event!',
+  },
+  'altador-cup': {
+    id: 'altador cup',
+    name: 'Altador Cup',
+    url: 'https://images.neopets.com/nt/nt_images/548_altadorcup_referee.gif',
+    color: '#FFCC00',
+    description:
+      'Explore the Altador Cup lists and uncover the latest prizes from Neopets Altador Cup Event!',
+  },
+  'festival-of-neggs': {
+    id: 'festival of neggs',
+    name: 'Festival of Neggs',
+    url: 'https://images.neopets.com/neopies/2010/finalists/byd32vcnx73a/03.jpg',
+    color: '#8FAA37',
+    description:
+      'Discover the complete prize list from current and past Festival of Neggs Neopets events!',
+  },
+  'quest-log': {
+    id: 'quest log',
+    name: 'Quest Log Prizes',
+    url: 'https://images.neopets.com/neopies/y25/images/nominees/Surprise_2sytnvcmnj/04.png',
+    color: '#F3C242',
+    description:
+      'Explore prize lists from current and past Quest Log prizes! Stay updated on the latest Daily Quests Prizes, find the best Weekly Prizes and make Neopoints easily! ',
+  },
+  stamps: {
+    id: 'stamps',
+    name: 'Stamp Album',
+    url: 'https://images.neopets.com/nt/ntimages/351_lenny_stamps.gif',
+    color: '#FFCC00',
+    description:
+      'Explore detailed checklists for each Neopets Stamp Album page! Track your stamps and complete your collection with ease.',
+  },
 };

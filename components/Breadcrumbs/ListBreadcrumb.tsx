@@ -3,6 +3,8 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/router';
 import { useMemo } from 'react';
 import { Breadcrumbs } from './Breadcrumbs';
+import { listCategoriesData } from '../../pages/lists/official/cat/[category]';
+import { slugify } from '../../utils/utils';
 
 type ListBreadcrumb = {
   list: UserList;
@@ -29,7 +31,14 @@ export const ListBreadcrumb = (props: ListBreadcrumb) => {
       },
     ];
 
-    if (category) {
+    if (category && listCategoriesData[slugify(category)]) {
+      const { name } = listCategoriesData[slugify(category)];
+      breadList.push({
+        position: 3,
+        name: name,
+        item: `/lists/official/cat/${slugify(category)}`,
+      });
+    } else if (category) {
       breadList.push({
         position: 3,
         name: capitalize(category),

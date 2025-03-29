@@ -382,3 +382,18 @@ export const rawToListItems = (items: ListItems[]): ListItemInfo[] => {
     seriesEnd: item.seriesEnd?.toJSON() ?? null,
   }));
 };
+
+export const getOfficialListsCat = async (tag: string, limit = 15) => {
+  const lists = await getUserLists('official', null);
+
+  tag = tag.toLowerCase();
+
+  const filteredLists = lists
+    .filter((list) => {
+      if (tag === 'uncategorized') return !list.officialTag;
+      return list.officialTag?.toLowerCase() === tag;
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  return filteredLists.splice(0, limit ?? 15);
+};
