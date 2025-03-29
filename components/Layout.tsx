@@ -246,7 +246,10 @@ const Layout = (props: Props) => {
               newUntil={1736121600000}
               href="/restock/dashboard/2024"
             />
-            <DropdownOption label={t('Restock.restock-history')} href="/restock/1/history" />
+            <DropdownOption
+              label={t('Restock.restock-history')}
+              href="/restock/neopian-fresh-foods/history"
+            />
             <DropdownOption label={t('Layout.view-all-shops')} href="/restock/" />
           </DropdownButton>
           <DropdownButton bg={props.mainColor} label={t('Lists.Lists')} href="/lists/official">

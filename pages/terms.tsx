@@ -14,8 +14,10 @@ const TermsPage = () => {
         }}
         color="#a5aa9f"
       >
-        <Heading size="lg">Terms of Use (April 2023)</Heading>
-        <Text size={{ base: 'sm', md: undefined }}>
+        <Heading as="h1" size="lg">
+          Terms of Use (April 2023)
+        </Heading>
+        <Text as="h2" size={{ base: 'sm', md: undefined }}>
           This page outlines the terms of use for itemdb, its features, and API.
         </Text>
       </HeaderCard>

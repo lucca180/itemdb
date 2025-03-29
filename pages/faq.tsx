@@ -26,7 +26,9 @@ const WhyUsPage = () => {
         }}
         color="#4bbde0"
       >
-        <Heading size="lg">{t('FAQ.why-itemdb')}</Heading>
+        <Heading as="h1" size="lg">
+          {t('FAQ.why-itemdb')}
+        </Heading>
         <Text size={{ base: 'sm', md: undefined }}>{t('FAQ.text-1')}</Text>
       </HeaderCard>
       <Flex flexFlow="column" gap={3} sx={{ a: { color: 'cyan.400' }, b: { color: 'blue.300' } }}>

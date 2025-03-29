@@ -91,7 +91,9 @@ const DataCollectingPage = () => {
         }}
         color="#b4ff53"
       >
-        <Heading size="lg">Data Collecting Tool</Heading>
+        <Heading as="h1" size="lg">
+          Data Collecting Tool
+        </Heading>
         <Text size={{ base: 'sm', md: undefined }}>
           This tool is designed to help us collect certain data that we can&apos;t capture
           automatically (mostly some prize pools)

@@ -63,7 +63,9 @@ const AdvancedImportPage = () => {
           />
         }
       >
-        <Heading size="lg">{t('Lists.import-from-pps')}</Heading>
+        <Heading as="h1" size="lg">
+          {t('Lists.import-from-pps')}
+        </Heading>
         <Text as="div" sx={{ a: { color: '#b8e9a9' } }}>
           {t('Lists.import-advanced-description')}
         </Text>

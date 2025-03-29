@@ -14,8 +14,10 @@ const PrivacyPolicyPage = () => {
         }}
         color="#7AB92A"
       >
-        <Heading size="lg">Privacy Policy (August 2023)</Heading>
-        <Text size={{ base: 'sm', md: undefined }}>
+        <Heading as="h1" size="lg">
+          Privacy Policy (August 2023)
+        </Heading>
+        <Text as="h2" size={{ base: 'sm', md: undefined }}>
           itemdb collects some personal data during its use. No information is sold or used for
           advertising.
           <br />

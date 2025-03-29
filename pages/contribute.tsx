@@ -64,8 +64,10 @@ const ContributePage = () => {
           />
         }
       >
-        <Heading size="lg">{t('Layout.how-to-contribute')}</Heading>
-        <Text>{t('Feedback.contribute-description')}</Text>
+        <Heading as="h1" size="lg">
+          {t('Layout.how-to-contribute')}
+        </Heading>
+        <Text as="h2">{t('Feedback.contribute-description')}</Text>
       </HeaderCard>
       <Flex flexFlow="column" gap={3} sx={{ a: { color: '#ffee71' }, b: { color: '#8ea7f1' } }}>
         <Tabs colorScheme="yellow">

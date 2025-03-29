@@ -211,8 +211,10 @@ const OwlsReportPage = (props: OwlsReportPageProps) => {
           />
         }
       >
-        <Heading size="lg">{t('Owls.report-owls-trade')}</Heading>
-        <Text>{t('Owls.description')}</Text>
+        <Heading as="h1" size="lg">
+          {t('Owls.report-owls-trade')}
+        </Heading>
+        <Text as="h2">{t('Owls.description')}</Text>
       </HeaderCard>
       {!user && (
         <Center>
@@ -487,7 +489,9 @@ const OwlsReportPage = (props: OwlsReportPageProps) => {
         maxW="900px"
         sx={{ a: { color: 'blue.200' }, b: { color: 'blue.200' } }}
       >
-        <Heading size="md">{t('Owls.faq-1')}</Heading>
+        <Heading as={'h3'} size="md">
+          {t('Owls.faq-1')}
+        </Heading>
         <Text fontSize={'sm'} color="gray.300">
           {t.rich('Owls.faq-2', {
             b: (chunk) => <b>{chunk}</b>,
@@ -498,7 +502,7 @@ const OwlsReportPage = (props: OwlsReportPageProps) => {
             ),
           })}
         </Text>
-        <Heading size="md" mt={4}>
+        <Heading as={'h3'} size="md" mt={4}>
           {t('Owls.faq-3')}
         </Heading>
         <Text fontSize={'sm'} color="gray.300">
@@ -518,7 +522,7 @@ const OwlsReportPage = (props: OwlsReportPageProps) => {
           })}
         </Text>
         <Text fontSize="sm">{t('Owls.faq-4')}</Text>
-        <Heading size="md" mt={4}>
+        <Heading as={'h3'} size="md" mt={4}>
           {t('Owls.faq-6')}
         </Heading>
         <Text fontSize={'sm'} color="gray.300">

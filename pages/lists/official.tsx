@@ -148,7 +148,9 @@ const OfficialListsPage = (props: Props) => {
           />
         }
       >
-        <Heading size="lg">{t('General.official-lists')}</Heading>
+        <Heading as="h1" size="lg">
+          {t('General.official-lists')}
+        </Heading>
         <Text size={{ base: 'sm', md: undefined }}>
           {t.rich('Lists.officialList-subheader', {
             br: () => <br />,

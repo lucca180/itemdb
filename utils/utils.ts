@@ -618,7 +618,7 @@ export const restockShopInfo: { [id: string]: ShopInfo } = {
   '3': { name: 'Toy Shop', category: 'Toys', difficulty: 'Medium', color: '#d7bb18', id: '3' },
   '4': {
     name: 'Unis Clothing Shop',
-    category: 'Wearables',
+    category: 'Clothes',
     difficulty: 'Medium',
     color: '#1d78d6',
     id: '4',
@@ -1244,14 +1244,14 @@ export const restockShopInfo: { [id: string]: ShopInfo } = {
   },
   '107': {
     name: 'Prigpants & Swolthy, Tailors',
-    category: 'Wearables',
+    category: 'Clothes',
     difficulty: 'Medium',
     color: '#be9c06',
     id: '107',
   },
   '108': {
     name: 'Mystical Surroundings',
-    category: 'Wearables',
+    category: 'Clothes',
     difficulty: 'Medium',
     color: '#d0ba52',
     id: '108',
@@ -1265,7 +1265,7 @@ export const restockShopInfo: { [id: string]: ShopInfo } = {
   },
   '111': {
     name: "Cog's Togs",
-    category: 'Wearables',
+    category: 'Clothes',
     difficulty: 'Medium',
     color: '#d06441',
     id: '111',
@@ -1300,7 +1300,7 @@ export const restockShopInfo: { [id: string]: ShopInfo } = {
   },
   '117': {
     name: 'Ugga Shinies',
-    category: 'Wearables',
+    category: 'Clothes',
     difficulty: 'Medium',
     color: '#d09916',
     id: '117',

@@ -72,7 +72,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
           zIndex={-1}
         />
         <Image src={logo} alt="itemdb logo" width={500} quality="100" priority />
-        <Heading size="sm" mt={4} lineHeight={1.5}>
+        <Heading size="sm" as="h1" mt={4} lineHeight={1.5}>
           <Highlight
             query={t('HomePage.open-source')}
             styles={{

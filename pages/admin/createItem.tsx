@@ -220,7 +220,9 @@ const CreateItem = () => {
         }}
         color="#7AB92A"
       >
-        <Heading size="lg">Create New Item</Heading>
+        <Heading as="h1" size="lg">
+          Create New Item
+        </Heading>
         <Text size={{ base: 'sm', md: undefined }}>
           Preffer to use the{' '}
           <Link href="/contribute" fontWeight="bold">

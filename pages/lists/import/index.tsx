@@ -79,7 +79,9 @@ const ImportPage = (props: Props) => {
           />
         }
       >
-        <Heading size="lg">{t('Lists.checklists-and-importing-items')}</Heading>
+        <Heading as="h1" size="lg">
+          {t('Lists.checklists-and-importing-items')}
+        </Heading>
         <Text as="div" sx={{ a: { color: '#b8e9a9' } }}>
           {t('Lists.import-page-description')}
         </Text>

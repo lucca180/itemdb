@@ -46,7 +46,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
                   rel="alternate"
                   key={key}
                   hrefLang={key}
-                  href={`https://itemdb.com.br${value}${router.asPath}`}
+                  href={removeUTM(`https://itemdb.com.br${value}${router.asPath}`)}
                 />
               ))}
             </Head>
@@ -75,3 +75,18 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
 }
 
 export default MyApp;
+
+function removeUTM(url: string) {
+  try {
+    const urlObj = new URL(url);
+    const params = urlObj.searchParams;
+
+    const utmParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+
+    utmParams.forEach((param) => params.delete(param));
+
+    return urlObj.origin + urlObj.pathname + (params.toString() ? '?' + params.toString() : '');
+  } catch (error) {
+    return url;
+  }
+}

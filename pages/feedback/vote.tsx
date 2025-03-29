@@ -215,7 +215,9 @@ const FeedbackVotingPage = () => {
           />
         }
       >
-        <Heading size="lg">{t('Feedback.the-feedback-system')}</Heading>
+        <Heading as="h1" size="lg">
+          {t('Feedback.the-feedback-system')}
+        </Heading>
         <Text size={{ base: 'sm', md: undefined }}>
           {t('Feedback.feedback-system-description')}
         </Text>

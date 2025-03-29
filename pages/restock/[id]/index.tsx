@@ -175,7 +175,8 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
             ),
             shopname: shopInfo.name,
           })}
-          <br />
+        </Text>
+        <Text as="h3">
           <Link
             href={`/search?s=&category[]=${shopIDToCategory[shopInfo.id]}&rarity[]=1&rarity[]=99`}
           >
@@ -194,6 +195,7 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
             <Text fontSize={'xs'}>
               {t.rich('Restock.shop-info-category', {
                 b: (chunk) => <b>{chunk}</b>,
+                rawCat: shopInfo.category,
                 name: shopInfo.name,
                 category: shopIDToCategory[shopInfo.id],
                 Link: (chunk) => (
@@ -461,6 +463,7 @@ RestockShop.getLayout = function getLayout(page: ReactElement, props: RestockSho
         title: `${shopInfo.name} | ${t('Restock.neopets-restock-helper')}`,
         description: t('Restock.shop-desc', {
           0: shopInfo.name,
+          category: shopInfo.category,
         }),
         themeColor: shopInfo.color,
         twitter: {
