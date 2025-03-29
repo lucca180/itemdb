@@ -34,6 +34,7 @@ import dynamic from 'next/dynamic';
 import { ReportFeedbackModalProps } from '../../components/Modal/ReportFeedbackModal';
 import { useRouter } from 'next/router';
 import { CanonicalTradeModalProps } from '../../components/Modal/CanonicalTradeModal';
+import { Breadcrumbs } from '../../components/Breadcrumbs/Breadcrumbs';
 
 const ReportFeedbackModal = dynamic<ReportFeedbackModalProps>(
   () => import('../../components/Modal/ReportFeedbackModal')
@@ -192,7 +193,27 @@ const FeedbackVotingPage = () => {
           src: 'https://images.neopets.com/altador/altadorcup/link_images/2008/help_me_decide.gif',
           alt: 'quiz-giver thumbnail',
         }}
-        // color="#7AB92A"
+        breadcrumb={
+          <Breadcrumbs
+            breadcrumbList={[
+              {
+                position: 1,
+                name: t('Layout.home'),
+                item: '/',
+              },
+              {
+                position: 2,
+                name: t('Layout.feedback'),
+                item: '/feedback',
+              },
+              {
+                position: 3,
+                name: t('Feedback.feedback-voting'),
+                item: '/feedback/vote',
+              },
+            ]}
+          />
+        }
       >
         <Heading size="lg">{t('Feedback.the-feedback-system')}</Heading>
         <Text size={{ base: 'sm', md: undefined }}>

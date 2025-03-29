@@ -31,6 +31,7 @@ import { useAuth } from '../../utils/auth';
 import { CheckAuth } from '../../utils/googleCloud';
 import { createTranslator, useTranslations } from 'next-intl';
 import { useRouter } from 'next/router';
+import { Breadcrumbs } from '../../components/Breadcrumbs/Breadcrumbs';
 
 const FeedbackSuggest = () => {
   const t = useTranslations();
@@ -153,6 +154,27 @@ const FeedbackSuggest = () => {
           src: 'https://images.neopets.com/altador/altadorcup/link_images/2008/help_me_decide.gif',
           alt: 'quiz-giver thumbnail',
         }}
+        breadcrumb={
+          <Breadcrumbs
+            breadcrumbList={[
+              {
+                position: 1,
+                name: t('Layout.home'),
+                item: '/',
+              },
+              {
+                position: 2,
+                name: t('Layout.feedback'),
+                item: '/feedback',
+              },
+              {
+                position: 3,
+                name: t('Layout.trade-pricing'),
+                item: '/feedback/trades',
+              },
+            ]}
+          />
+        }
       >
         <Heading size="lg">{t('Feedback.the-feedback-system')}</Heading>
         <Text size={{ base: 'sm', md: undefined }}>

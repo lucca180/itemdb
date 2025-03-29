@@ -15,22 +15,17 @@ export const ListBreadcrumb = (props: ListBreadcrumb) => {
 
   const category = list.officialTag ?? null;
 
-  const getLink = (url: string) => {
-    const locale = router.locale === 'en' ? '' : `/${router.locale}`;
-    return `https://itemdb.com.br${locale}${url}`;
-  };
-
   const breadcrumbList = useMemo(() => {
     const breadList = [
       {
         position: 1,
         name: t('Layout.home'),
-        item: getLink('/'),
+        item: '/',
       },
       {
         position: 2,
         name: t('General.official-lists'),
-        item: getLink('/lists/official'),
+        item: '/lists/official',
       },
     ];
 
@@ -38,14 +33,14 @@ export const ListBreadcrumb = (props: ListBreadcrumb) => {
       breadList.push({
         position: 3,
         name: capitalize(category),
-        item: getLink(`/lists/official?cat=${category}`),
+        item: `/lists/official?cat=${category}`,
       });
     }
 
     breadList.push({
       position: breadList.length + 1,
       name: list.name,
-      item: getLink(`/lists/official/${list.slug ?? list.internal_id}`),
+      item: `/lists/official/${list.slug ?? list.internal_id}`,
     });
 
     return breadList;

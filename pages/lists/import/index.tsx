@@ -37,6 +37,7 @@ import { useRouter } from 'next/router';
 import DynamicIcon from '../../../public/icons/dynamic.png';
 import NextLink from 'next/link';
 import { createTranslator, useTranslations } from 'next-intl';
+import { Breadcrumbs } from '../../../components/Breadcrumbs/Breadcrumbs';
 type Props = {
   items?: { [index: number | string]: number };
   indexType?: string;
@@ -56,6 +57,27 @@ const ImportPage = (props: Props) => {
           alt: 'Importing Items Thumbnail',
         }}
         color="#65855B"
+        breadcrumb={
+          <Breadcrumbs
+            breadcrumbList={[
+              {
+                position: 1,
+                name: t('Layout.home'),
+                item: '/',
+              },
+              {
+                position: 2,
+                name: t('Lists.Lists'),
+                item: '/lists/official',
+              },
+              {
+                position: 3,
+                name: t('Lists.checklists-and-importing-items'),
+                item: '/lists/import',
+              },
+            ]}
+          />
+        }
       >
         <Heading size="lg">{t('Lists.checklists-and-importing-items')}</Heading>
         <Text as="div" sx={{ a: { color: '#b8e9a9' } }}>

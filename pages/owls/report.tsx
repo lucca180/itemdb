@@ -35,6 +35,7 @@ import { UTCDate } from '@date-fns/utc';
 import dynamic from 'next/dynamic';
 import axios from 'axios';
 import { CheckAuth } from '../../utils/googleCloud';
+import { Breadcrumbs } from '../../components/Breadcrumbs/Breadcrumbs';
 
 const ItemSelect = dynamic(() => import('../../components/Input/ItemSelect'), {
   ssr: false,
@@ -188,6 +189,27 @@ const OwlsReportPage = (props: OwlsReportPageProps) => {
           alt: 'owls thumbnail',
         }}
         color="#47b2f8"
+        breadcrumb={
+          <Breadcrumbs
+            breadcrumbList={[
+              {
+                position: 1,
+                name: t('Layout.home'),
+                item: '/',
+              },
+              {
+                position: 2,
+                name: 'Owls',
+                item: '/owls',
+              },
+              {
+                position: 3,
+                name: 'Report Trade',
+                item: '/owls/report',
+              },
+            ]}
+          />
+        }
       >
         <Heading size="lg">{t('Owls.report-owls-trade')}</Heading>
         <Text>{t('Owls.description')}</Text>

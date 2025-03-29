@@ -4,6 +4,7 @@ import { ReactElement, useState } from 'react';
 import { createTranslator, useTranslations } from 'next-intl';
 import HeaderCard from '../../../components/Card/HeaderCard';
 import * as cheerio from 'cheerio';
+import { Breadcrumbs } from '../../../components/Breadcrumbs/Breadcrumbs';
 
 type AdvancedImportPageProps = {
   locale: string;
@@ -35,6 +36,32 @@ const AdvancedImportPage = () => {
           alt: 'Importing Items Thumbnail',
         }}
         color="#65855B"
+        breadcrumb={
+          <Breadcrumbs
+            breadcrumbList={[
+              {
+                position: 1,
+                name: t('Layout.home'),
+                item: '/',
+              },
+              {
+                position: 2,
+                name: t('Lists.Lists'),
+                item: '/lists/official',
+              },
+              {
+                position: 3,
+                name: t('Lists.checklists-and-importing-items'),
+                item: '/lists/import',
+              },
+              {
+                position: 3,
+                name: t('Lists.advanced-import'),
+                item: '/lists/import/advanced',
+              },
+            ]}
+          />
+        }
       >
         <Heading size="lg">{t('Lists.import-from-pps')}</Heading>
         <Text as="div" sx={{ a: { color: '#b8e9a9' } }}>

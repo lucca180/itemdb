@@ -13,27 +13,22 @@ export const ArticleBreadcrumb = (props: ArticleBreadcrumb) => {
   const t = useTranslations();
   const router = useRouter();
 
-  const getLink = (url: string) => {
-    const locale = router.locale === 'en' ? '' : `/${router.locale}`;
-    return `https://itemdb.com.br${locale}${url}`;
-  };
-
   const breadcrumbList = useMemo(() => {
     const breadList = [
       {
         position: 1,
         name: t('Layout.home'),
-        item: getLink('/'),
+        item: '/',
       },
       {
         position: 2,
         name: t('Layout.articles'),
-        item: getLink('/articles'),
+        item: '/articles',
       },
       {
         position: 4,
         name: article.title,
-        item: getLink(`/articles/${article.slug}`),
+        item: `/articles/${article.slug}`,
       },
     ];
 

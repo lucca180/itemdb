@@ -15,27 +15,22 @@ export const RestockBreadcrumb = (props: RestockBreadcrumb) => {
   const t = useTranslations();
   const router = useRouter();
 
-  const getLink = (url: string) => {
-    const locale = router.locale === 'en' ? '' : `/${router.locale}`;
-    return `https://itemdb.com.br${locale}${url}`;
-  };
-
   const breadcrumbList = useMemo(() => {
     const breadList = [
       {
         position: 1,
         name: t('Layout.home'),
-        item: getLink('/'),
+        item: '/',
       },
       {
         position: 2,
         name: t('Layout.restock'),
-        item: getLink('/restock'),
+        item: '/restock',
       },
       {
         position: 3,
         name: shopData.name,
-        item: getLink(`/restock/${slugify(shopData.name)}`),
+        item: `/restock/${slugify(shopData.name)}`,
       },
     ];
 
@@ -43,7 +38,7 @@ export const RestockBreadcrumb = (props: RestockBreadcrumb) => {
       breadList.push({
         position: 4,
         name: t('Restock.restock-history'),
-        item: getLink(`/restock/${slugify(shopData.name)}/history`),
+        item: `/restock/${slugify(shopData.name)}/history`,
       });
     }
 

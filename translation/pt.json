@@ -728,7 +728,8 @@
     "paste-pp-code": "Cole o código de Petpage da sua lista aqui",
     "select-list": "Selecione Lista",
     "copy-items": "Copiar Itens",
-    "copying-items-items": "Copiar {items} itens?"
+    "copying-items-items": "Copiar {items} itens?",
+    "advanced-import": "Importação avançada"
   },
   "Restock": {
     "est-profit": "Lucro Est.",

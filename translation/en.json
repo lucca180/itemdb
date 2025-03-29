@@ -586,7 +586,8 @@
     "paste-pp-code": "Paste your list's petpage code here",
     "select-list": "Select List",
     "copying-items-items": "Copying {items} items?",
-    "copy-items": "Copy Items"
+    "copy-items": "Copy Items",
+    "advanced-import": "Advanced Import"
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",

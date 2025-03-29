@@ -2,6 +2,7 @@ import { BreadcrumbJsonLd } from 'next-seo';
 import { ChevronRightIcon } from '@chakra-ui/icons';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from '@chakra-ui/react';
 import NextLink from 'next/link';
+import { useRouter } from 'next/router';
 
 type BreadcrumbsProps = {
   breadcrumbList: {
@@ -13,6 +14,17 @@ type BreadcrumbsProps = {
 
 export const Breadcrumbs = (props: BreadcrumbsProps) => {
   const { breadcrumbList } = props;
+  const router = useRouter();
+
+  const getLink = (url: string) => {
+    const locale = router.locale === 'en' ? '' : `/${router.locale}`;
+    return `https://itemdb.com.br${locale}${url}`;
+  };
+
+  const formattedBreadcrumbList = breadcrumbList.map((crumb) => ({
+    ...crumb,
+    item: getLink(crumb.item),
+  }));
 
   return (
     <>
@@ -22,7 +34,7 @@ export const Breadcrumbs = (props: BreadcrumbsProps) => {
         separator={<ChevronRightIcon color="whiteAlpha.800" />}
         color="whiteAlpha.800"
       >
-        {breadcrumbList.map((crumb, i) => (
+        {formattedBreadcrumbList.map((crumb, i) => (
           <BreadcrumbItem key={crumb.position} isCurrentPage={i === breadcrumbList.length - 1}>
             <BreadcrumbLink
               as={i === breadcrumbList.length - 1 ? undefined : NextLink}

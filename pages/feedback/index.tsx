@@ -6,6 +6,7 @@ import { FeedbackModalProps } from '../../components/Modal/FeedbackModal';
 import dynamic from 'next/dynamic';
 import { createTranslator, useTranslations } from 'next-intl';
 import { ReactElement } from 'react';
+import { Breadcrumbs } from '../../components/Breadcrumbs/Breadcrumbs';
 
 const FeedbackModal = dynamic<FeedbackModalProps>(
   () => import('../../components/Modal/FeedbackModal')
@@ -23,7 +24,22 @@ const FeedbackPage = () => {
           src: 'https://images.neopets.com/altador/altadorcup/link_images/2008/help_me_decide.gif',
           alt: 'quiz-giver thumbnail',
         }}
-        // color="#7AB92A"
+        breadcrumb={
+          <Breadcrumbs
+            breadcrumbList={[
+              {
+                position: 1,
+                name: t('Layout.home'),
+                item: '/',
+              },
+              {
+                position: 2,
+                name: t('Layout.feedback'),
+                item: '/feedback',
+              },
+            ]}
+          />
+        }
       >
         <Heading size="lg">{t('Feedback.the-feedback-system')}</Heading>
         <Text size={{ base: 'sm', md: undefined }}>

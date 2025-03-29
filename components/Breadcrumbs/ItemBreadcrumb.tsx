@@ -14,32 +14,27 @@ export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
   const router = useRouter();
   const category = (item.category ?? 'unknown').toLowerCase();
 
-  const getLink = (url: string) => {
-    const locale = router.locale === 'en' ? '' : `/${router.locale}`;
-    return `https://itemdb.com.br${locale}${url}`;
-  };
-
   const breadcrumbList = useMemo(() => {
     const breadList = [
       {
         position: 1,
         name: t('Layout.home'),
-        item: getLink('/'),
+        item: '/',
       },
       {
         position: 2,
         name: t('General.items'),
-        item: getLink('/search?s='),
+        item: '/search?s=',
       },
       {
         position: 3,
         name: capitalize(category),
-        item: getLink(`/search?s=&category[]=${category}`),
+        item: `/search?s=&category[]=${category}`,
       },
       {
         position: 4,
         name: item.name,
-        item: getLink(`/items/${item.slug}`),
+        item: `/items/${item.slug}`,
       },
     ];
     return breadList;

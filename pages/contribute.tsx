@@ -31,6 +31,7 @@ import { FiEdit3, FiSend } from 'react-icons/fi';
 import dynamic from 'next/dynamic';
 import { createTranslator, useTranslations } from 'next-intl';
 import { ReactElement } from 'react';
+import { Breadcrumbs } from '../components/Breadcrumbs/Breadcrumbs';
 
 const FeedbackModal = dynamic<FeedbackModalProps>(
   () => import('../components/Modal/FeedbackModal')
@@ -46,6 +47,22 @@ const ContributePage = () => {
           alt: 'helper acara thumbnail',
         }}
         color="#4974F5"
+        breadcrumb={
+          <Breadcrumbs
+            breadcrumbList={[
+              {
+                position: 1,
+                name: t('Layout.home'),
+                item: '/',
+              },
+              {
+                position: 2,
+                name: t('Layout.how-to-contribute'),
+                item: '/contribute',
+              },
+            ]}
+          />
+        }
       >
         <Heading size="lg">{t('Layout.how-to-contribute')}</Heading>
         <Text>{t('Feedback.contribute-description')}</Text>

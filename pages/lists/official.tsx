@@ -23,6 +23,7 @@ import { ReactElement, useEffect, useMemo, useState } from 'react';
 import { ViewportList } from 'react-viewport-list';
 import { SearchList } from '../../components/Search/SearchLists';
 import { useRouter } from 'next/router';
+import { Breadcrumbs } from '../../components/Breadcrumbs/Breadcrumbs';
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data as UserList[]);
 
@@ -123,12 +124,29 @@ const OfficialListsPage = (props: Props) => {
   return (
     <>
       <ApplyListModal isOpen={isOpen} onClose={onClose} />
+
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/games/tradingcards/premium/0911.gif',
           alt: 'grundo warehouse thumbnail',
         }}
         color="#4962ec"
+        breadcrumb={
+          <Breadcrumbs
+            breadcrumbList={[
+              {
+                position: 1,
+                name: t('Layout.home'),
+                item: '/',
+              },
+              {
+                position: 2,
+                name: t('General.official-lists'),
+                item: '/lists/official',
+              },
+            ]}
+          />
+        }
       >
         <Heading size="lg">{t('General.official-lists')}</Heading>
         <Text size={{ base: 'sm', md: undefined }}>
