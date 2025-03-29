@@ -159,7 +159,7 @@ const RestockHub: NextPageWithLayout<any> = (props: RestockHubProps) => {
           ))}
         </HStack>
       </HStack>
-      <Flex flexFlow={'column'} flexWrap="wrap" gap={5} justifyContent="center">
+      <Flex flexFlow={'column'} flexWrap="wrap" gap={5} justifyContent="center" mb={10}>
         {selCats.length === 0 && selDiff.length === 0 && (
           <>
             <Heading as="h2" size="lg">
@@ -193,6 +193,35 @@ const RestockHub: NextPageWithLayout<any> = (props: RestockHubProps) => {
             </Fragment>
           );
         })}
+      </Flex>
+      <Divider mt={5} />
+      <Flex flexFlow="column" gap={3} justifyContent={'center'}>
+        <Heading size={'md'} as="h3" mt={5}>
+          {t('Restock.faq-1')}
+        </Heading>
+        <Text color="whiteAlpha.700">
+          {t('Restock.faq-1-text')}
+          <br />
+          <br />
+          {t('Restock.faq-1-text-2')}
+        </Text>
+        <Heading size={'md'} as="h3" mt={5}>
+          {t('Restock.faq-2')}
+        </Heading>
+        <Text color="whiteAlpha.700">{t('Restock.faq-2-text')}</Text>
+        <Heading size={'md'} as="h3" mt={5}>
+          {t('Restock.faq-3')}
+        </Heading>
+        <Text color="whiteAlpha.700">
+          {t('Restock.faq-3-text')}
+          <br />
+          <br />
+          {t('Restock.faq-3-text-2')}
+        </Text>
+        <Heading size={'md'} as="h3" mt={5}>
+          {t('Restock.faq-4')}
+        </Heading>
+        <Text color="whiteAlpha.700">{t('Restock.faq-4-text')}</Text>
       </Flex>
     </>
   );

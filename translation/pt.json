@@ -893,7 +893,17 @@
     "your-estimate-profit": "Seu Lucro Estimado",
     "dashboard-script-cta-text": "Usando o <b>Item Data Extractor Script</b> você ajuda a melhorar a precisão do Dashboard e muito mais!",
     "dashboard-script-cta-title": "Ajude a tornar esses dados mais precisos",
-    "install-now": "Instale Agora"
+    "install-now": "Instale Agora",
+    "faq-1": "Como restocar no Neopets?",
+    "faq-1-text": "O restock no neopets é o processo de comprar de itens de lojas à medida que eles ficam disponíveis. Isso pode ser feito atualizando a página da loja com frequência (a cada 5-10 segundos ou mais ...) e clicando rapidamente no item que você deseja comprar.",
+    "faq-1-text-2": "Restock é uma atividade competitiva e requer muita prática e paciência para ser bom nisso. A chave é ser rápido e eficiente e saber quais itens valem a pena comprar. Você pode usar o itemdb para encontrar os melhores itens para comprar em cada loja neopiana.",
+    "faq-2": "Quando as lojas de neopets reabastecem?",
+    "faq-2-text": "As lojas do neopets reabastecem em intervalos aleatórios, apesar da mensagem da loja dizer que eles acontecem a cada 8 minutos... não é possível prever a frequência com que uma loja reabastece, no entanto, quando todas as lojas \"limpam\" ao mesmo tempo podem ser um sinal de que um reabastecimento está próximo...",
+    "faq-3": "O que são restock bans?",
+    "faq-3-text": "Restock ban é um termo usado para descrever quando um usuário não pode ver os itens em nenhuma das lojas. Isso acontece aleatoriamente quando você atualiza a página da loja muitas vezes em um curto período de tempo.",
+    "faq-3-text-2": "Os bans são temporários e geralmente significam que você não vai restocar pelo resto do dia, pois podem durar mais de 24 horas.",
+    "faq-4": "Quais são as melhores lojas de neopets para reabastecer?",
+    "faq-4-text": "Esta é uma pergunta subjetiva, pois depende de suas preferências pessoais e estilo de jogo. Você pode usar o Guia de Restock do itemdb para encontrar as melhores lojas para restockar em Neopets - as mais avançadas são mais difíceis de dominar, mas podem fornecer alguns dos melhores itens para revender."
   },
   "Search": {
     "search": "Pesquisa",
