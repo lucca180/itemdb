@@ -76,7 +76,7 @@ const UserListCard = (props: Props) => {
       minH="150px"
       maxWidth="375px"
       minW="200px"
-      w={{ base: 'auto', sm: '375px' }}
+      w={{ base: '100%', sm: '375px' }}
       gap={3}
       ml="40px"
       boxShadow={isSelected ? 'outline' : undefined}

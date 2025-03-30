@@ -7,6 +7,8 @@ import {
   useDisclosure,
   Select,
   useBreakpointValue,
+  Center,
+  Spinner,
 } from '@chakra-ui/react';
 import HeaderCard from '../../../components/Card/HeaderCard';
 import Layout from '../../../components/Layout';
@@ -209,6 +211,11 @@ const OfficialListsPage = (props: Props) => {
               </Flex>
             )}
           </ViewportList>
+          {isLoading && (
+            <Center>
+              <Spinner />
+            </Center>
+          )}
         </Flex>
       </Flex>
     </>
@@ -234,11 +241,17 @@ export async function getServerSideProps(context: any) {
 
 OfficialListsPage.getLayout = function getLayout(page: ReactElement, props: Props) {
   const t = createTranslator({ messages: props.messages, locale: props.locale });
+
+  const canonical =
+    props.locale === 'en'
+      ? `https://itemdb.com.br/lists/official`
+      : `https://itemdb.com.br/${props.locale}/lists/official`;
+
   return (
     <Layout
       SEO={{
         title: t('General.official-lists'),
-        canonical: `https://itemdb.com.br${props.locale === 'pt' ? '/pt' : ''}/lists/official`,
+        canonical: canonical,
         description: t('Lists.officialList-description'),
         openGraph: {
           images: [

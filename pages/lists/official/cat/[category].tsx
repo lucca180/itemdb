@@ -3,18 +3,16 @@ import {
   Heading,
   Text,
   Divider,
-  Button,
-  useDisclosure,
   useBreakpointValue,
+  Skeleton,
+  Spinner,
+  Center,
 } from '@chakra-ui/react';
 import HeaderCard from '../../../../components/Card/HeaderCard';
 import Layout from '../../../../components/Layout';
-import { ApplyListModalProps } from '../../../../components/Modal/OfficialListApply';
 import UserListCard from '../../../../components/UserLists/ListCard';
 import { UserList } from '../../../../types';
-import { useAuth } from '../../../../utils/auth';
 import { getOfficialListsCat } from '../../../api/v1/lists/[username]';
-import dynamic from 'next/dynamic';
 import { createTranslator, useTranslations } from 'next-intl';
 import useSWRImmutable from 'swr/immutable';
 import axios from 'axios';
@@ -24,10 +22,6 @@ import { SearchList } from '../../../../components/Search/SearchLists';
 import { Breadcrumbs } from '../../../../components/Breadcrumbs/Breadcrumbs';
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data as UserList[]);
-
-const ApplyListModal = dynamic<ApplyListModalProps>(
-  () => import('../../../../components/Modal/OfficialListApply')
-);
 
 type Props = {
   lists: UserList[];
@@ -39,8 +33,6 @@ type Props = {
 const OfficialListsCatPage = (props: Props) => {
   const { selectedCategory } = props;
   const t = useTranslations();
-  const { user, authLoading } = useAuth();
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [lists, setLists] = useState<UserList[]>(props.lists);
   const rowSize = useBreakpointValue({ base: 2, xl: 3 }, { fallback: 'xl' });
 
@@ -109,7 +101,6 @@ const OfficialListsCatPage = (props: Props) => {
 
   return (
     <>
-      <ApplyListModal isOpen={isOpen} onClose={onClose} />
       <HeaderCard
         image={{
           src: catInfo.url,
@@ -153,16 +144,15 @@ const OfficialListsCatPage = (props: Props) => {
           alignItems="center"
         >
           <Flex alignItems="center" gap={3}>
-            <Button variant="solid" isLoading={authLoading} onClick={onOpen} isDisabled={!user}>
-              + {t('Lists.official-apply-list')}
-            </Button>
-            <Text as="div" textColor={'gray.300'} fontSize="sm">
-              {lists && (
-                <>
-                  {lists.length} {t('General.lists')}
-                </>
-              )}
-            </Text>
+            <Skeleton isLoaded={!isLoading}>
+              <Text as="div" textColor={'gray.300'} fontSize="sm">
+                {lists && (
+                  <>
+                    {lists.length} {t('General.lists')}
+                  </>
+                )}
+              </Text>
+            </Skeleton>
           </Flex>
           <Flex flex="1" justifyContent="flex-end" alignItems={'center'} gap={3}>
             <SearchList onChange={handleSearch} disabled={isLoading} />
@@ -178,6 +168,11 @@ const OfficialListsCatPage = (props: Props) => {
               </Flex>
             )}
           </ViewportList>
+          {isLoading && (
+            <Center>
+              <Spinner />
+            </Center>
+          )}
         </Flex>
       </Flex>
     </>

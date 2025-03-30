@@ -39,6 +39,7 @@ export const Breadcrumbs = (props: BreadcrumbsProps) => {
             <BreadcrumbLink
               as={i === breadcrumbList.length - 1 ? undefined : NextLink}
               href={removeLink(crumb.item)}
+              prefetch={false}
             >
               {crumb.name}
             </BreadcrumbLink>

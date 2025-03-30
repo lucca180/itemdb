@@ -556,12 +556,19 @@ export async function getServerSideProps(context: any) {
 
 OwlsReportPage.getLayout = function getLayout(page: ReactElement, props: any) {
   const t = createTranslator({ messages: props.messages, locale: props.locale });
+
+  const canonical =
+    props.locale === 'en'
+      ? `https://itemdb.com.br/owls/report`
+      : `https://itemdb.com.br/${props.locale}/owls/report`;
+
   return (
     <Layout
       SEO={{
         title: t('Owls.report-owls-trade'),
         description: t('Owls.description'),
         themeColor: '#47b2f8',
+        canonical: canonical,
         openGraph: {
           images: [
             {

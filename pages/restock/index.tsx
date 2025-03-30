@@ -21,6 +21,7 @@ import { NextPageWithLayout } from '../_app';
 import Image from '../../components/Utils/Image';
 import { getTrendingShops } from '../api/v1/beta/trending';
 import { ShopInfo } from '../../types';
+import { Breadcrumbs } from '../../components/Breadcrumbs/Breadcrumbs';
 
 const allCats = [
   ...new Set(
@@ -82,12 +83,31 @@ const RestockHub: NextPageWithLayout<any> = (props: RestockHubProps) => {
         bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${color[0]},${color[1]},${color[2]},.7) 70%)`}
         zIndex={-1}
       />
-      <Center my={6} flexFlow="column" gap={2}>
+      <Box mt={2}>
+        <Breadcrumbs
+          breadcrumbList={[
+            {
+              position: 1,
+              name: t('Layout.home'),
+              item: '/',
+            },
+            {
+              position: 2,
+              name: t('Restock.restock-hub'),
+              item: '/restock',
+            },
+          ]}
+        />
+      </Box>
+      <Center my={4} flexFlow="column" gap={2} textAlign={'center'}>
         <Image
           priority
           quality={100}
           width={600}
           height={200}
+          w={'100%'}
+          maxW={'600px'}
+          h="auto"
           src="https://images.neopets.com/ncmall/shopkeepers/cashshop_limited.png"
           alt="Restock Hub thumbnail"
           borderRadius="md"
@@ -244,12 +264,18 @@ export async function getStaticProps(context: any) {
 
 RestockHub.getLayout = function getLayout(page: ReactElement, props: any) {
   const t = createTranslator({ messages: props.messages, locale: props.locale });
+  const canonical =
+    props.locale === 'en'
+      ? `https://itemdb.com.br/restock`
+      : `https://itemdb.com.br/${props.locale}/restock`;
+
   return (
     <Layout
       SEO={{
         title: t('Restock.neopets-restock-helper'),
         description: t('Restock.restock-description'),
         themeColor: '#A5DAE9',
+        canonical: canonical,
       }}
       mainColor="rgba(165, 218, 233, 0.4)"
     >

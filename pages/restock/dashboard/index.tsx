@@ -451,7 +451,9 @@ const RestockDashboard = (props: RestockDashboardProps) => {
       {!sessionStats && (
         <>
           <Center flexFlow={'column'} gap={2}>
-            <Heading size="lg">{t('Restock.itemdbs-restock-dashboard')}</Heading>
+            <Heading as="h1" size="lg">
+              {t('Restock.itemdbs-restock-dashboard')}
+            </Heading>
             <Text>{t('Restock.text-1')}</Text>
           </Center>
           <Divider my={6} />
