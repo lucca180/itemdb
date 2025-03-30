@@ -92,17 +92,16 @@ export const getSaleStats = async (
   }
 
   if (itemTotal < MIN_PRICE_DATA) {
-    await prisma.saleStats.updateMany({
+    const update = prisma.saleStats.updateMany({
       where: {
         item_iid: iid,
-        isLatest: true,
       },
       data: {
         isLatest: null,
       },
     });
 
-    await prisma.saleStats.create({
+    const create = prisma.saleStats.create({
       data: {
         item_iid: iid,
         totalSold: 0,
@@ -113,6 +112,8 @@ export const getSaleStats = async (
       },
     });
 
+    await prisma.$transaction([update, create]);
+
     return null;
   }
 
@@ -122,17 +123,16 @@ export const getSaleStats = async (
   if (salePercent >= 45) status = 'ets';
   else if (salePercent >= 20) status = 'regular';
 
-  await prisma.saleStats.updateMany({
+  const update = prisma.saleStats.updateMany({
     where: {
       item_iid: iid,
-      isLatest: true,
     },
     data: {
       isLatest: null,
     },
   });
 
-  await prisma.saleStats.create({
+  const create = prisma.saleStats.create({
     data: {
       item_iid: iid,
       totalSold: itemSold,
@@ -142,6 +142,8 @@ export const getSaleStats = async (
       isLatest: true,
     },
   });
+
+  await prisma.$transaction([update, create]);
 
   return {
     sold: itemSold,

@@ -56,6 +56,8 @@ export default function ListViewport(props: ListViewportProps) {
         .filter((i) => {
           if (!i) return false;
           const item = itemInfo[i];
+          const itemData = items[item?.item_iid];
+          if (!itemData) return false;
           return !item?.isHidden || (editMode && !activateSort);
         })
         .reduce((acc, cur, i) => {
@@ -94,6 +96,8 @@ export default function ListViewport(props: ListViewportProps) {
                 onListAction: props.onListAction,
                 item: items[itemInfo[id]?.item_iid],
               };
+
+              if (!itemProps.item) return null;
 
               return (
                 <React.Fragment key={id}>
