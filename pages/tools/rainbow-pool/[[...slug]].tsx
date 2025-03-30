@@ -152,7 +152,7 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
     let querySpecies = '';
     let queryColor = '';
 
-    const slugs = router.query.slug as string[];
+    const slugs = router.query.slug ?? [];
 
     if (slugs.length === 2) {
       querySpecies = slugs[0];
