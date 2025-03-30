@@ -9,14 +9,13 @@ import {
   ModalFooter,
   Text,
   Badge,
-  IconButton,
   Center,
   Alert,
   AlertIcon,
+  Flex,
 } from '@chakra-ui/react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { SaleStatus } from '../../types';
-import { FaThumbsDown, FaThumbsUp } from 'react-icons/fa';
 import { useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
@@ -41,7 +40,7 @@ export default function SaleStatusModal(props: SaleStatusModalProps) {
   //   setVoted(false);
   // }, [item_iid]);
 
-  const sendVote = async (vote: 'up' | 'down') => {
+  const sendVote = async (vote: 'hts' | 'ets' | 'regular') => {
     setLoading(true);
     const res = await axios.post('/api/feedback/send', {
       subject_id: item_iid,
@@ -50,7 +49,7 @@ export default function SaleStatusModal(props: SaleStatusModalProps) {
         date: Date.now(),
         saleStatus: saleStatus,
       }),
-      type: 'saleStatusFeedback',
+      type: 'saleStatus',
       pageInfo: router.asPath,
     });
     setLoading(false);
@@ -107,33 +106,52 @@ export default function SaleStatusModal(props: SaleStatusModalProps) {
                 })}
               </Text>
             </Alert>
-            <Text textAlign={'center'} mt={3}>
-              {t('ItemPage.saleStatus-feedback-sale-cta')}
-            </Text>
+
             {!voted && (
-              <>
-                <Center mt={2} gap={3}>
-                  <IconButton
-                    isLoading={loading}
-                    icon={<FaThumbsUp />}
-                    onClick={() => sendVote('up')}
-                    variant="ghost"
-                    aria-label="Upvote"
+              <Flex
+                flexFlow={'column'}
+                bg="blackAlpha.600"
+                borderRadius={'md'}
+                p={2}
+                mt={4}
+                gap={3}
+              >
+                <Text textAlign={'center'} sx={{ textWrap: 'balance' }}>
+                  {t('ItemPage.saleStatus-feedback-sale-cta')}
+                </Text>
+                <Center gap={3} my={2}>
+                  <Button
+                    size="xs"
+                    onClick={() => sendVote('ets')}
+                    variant={'outline'}
                     colorScheme="green"
-                  />
-                  <IconButton
                     isLoading={loading}
-                    icon={<FaThumbsDown />}
-                    onClick={() => sendVote('down')}
-                    variant="ghost"
-                    aria-label="Downvote"
+                  >
+                    Easy to Sell
+                  </Button>
+                  <Button
+                    size="xs"
+                    onClick={() => sendVote('regular')}
+                    variant={'outline'}
+                    colorScheme="gray"
+                    isLoading={loading}
+                  >
+                    Regular
+                  </Button>
+                  <Button
+                    size="xs"
+                    onClick={() => sendVote('hts')}
+                    variant={'outline'}
                     colorScheme="red"
-                  />
+                    isLoading={loading}
+                  >
+                    Hard to Sell
+                  </Button>
                 </Center>
                 <Text textAlign={'center'} fontSize={'xs'} color="gray.400">
                   {t('ItemPage.saleStatus-feedback-cta')}
                 </Text>
-              </>
+              </Flex>
             )}
             {voted && (
               <Text textAlign={'center'} mt={2} color="gray.400">
