@@ -153,7 +153,7 @@ const NCTrade = (props: Props) => {
                 <StatNumber>
                   {item.owls.buyable ? t('ItemPage.buyable') : item.owls.value}
                 </StatNumber>
-                <StatHelpText mb={0} as={NextLink} href="/articles/owls">
+                <StatHelpText mb={0} as={NextLink} href="/owls">
                   {t('ItemPage.owls-value')} <ExternalLinkIcon boxSize={3} verticalAlign="center" />
                 </StatHelpText>
                 <StatLabel fontSize="xs">

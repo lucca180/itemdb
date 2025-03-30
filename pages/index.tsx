@@ -169,7 +169,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
             <HomeCard
               useItemCard
               utm_content="latest-owls"
-              href="/articles/owls"
+              href="/owls"
               color="#789DBC"
               image="https://images.neopets.com/neopies/y25/images/nominees/GiftBoxMysteryCapsule_y20tmnsll0/04.png"
               items={latestOwls}

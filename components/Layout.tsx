@@ -226,7 +226,7 @@ const Layout = (props: Props) => {
         >
           <DropdownButton label={t('Layout.home')} href="/" />
           <DropdownButton bg={props.mainColor} label={t('Layout.articles')} href="/articles">
-            <DropdownOption label="Owls" href="/articles/owls" />
+            <DropdownOption label="Owls" href="/owls" />
             <DropdownOption label={t('Layout.userscripts')} href="/articles/userscripts" />
             <DropdownOption label={t('Layout.patch-notes')} href="/articles" />
             <DropdownOption label={t('Layout.how-to-contribute')} href="/contribute" />
@@ -368,7 +368,7 @@ const Layout = (props: Props) => {
                 <Text fontSize="xs" mb={2} textTransform="uppercase" color="gray.500">
                   <b>{t('Layout.resources')}</b>
                 </Text>
-                <ChakraLink href="/articles/owls">Owls</ChakraLink>
+                <ChakraLink href="/owls">Owls</ChakraLink>
                 <ChakraLink href="https://docs.itemdb.com.br" isExternal>
                   {t('Layout.devs')}
                 </ChakraLink>

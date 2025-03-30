@@ -48,7 +48,7 @@ const OwlsTradeHistory = (props: Props) => {
         <Text fontSize="xs" color="whiteAlpha.600">
           {t.rich('ItemPage.owls-credits', {
             Link: (chunk) => (
-              <Link href="/articles/owls" as={NextLink} color="whiteAlpha.700" isExternal>
+              <Link href="/owls" as={NextLink} color="whiteAlpha.700" isExternal>
                 {chunk}
               </Link>
             ),

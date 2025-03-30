@@ -125,7 +125,7 @@ const WhyUsPage = () => {
             >
               <>
                 {t.rich('FAQ.text-7', {
-                  Link: (chunk) => <Link href="/articles/owls">{chunk}</Link>,
+                  Link: (chunk) => <Link href="/owls">{chunk}</Link>,
                 })}
               </>
             </FeatureCard>
