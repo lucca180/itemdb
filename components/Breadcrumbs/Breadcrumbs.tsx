@@ -45,7 +45,7 @@ export const Breadcrumbs = (props: BreadcrumbsProps) => {
           </BreadcrumbItem>
         ))}
       </Breadcrumb>
-      <BreadcrumbJsonLd itemListElements={breadcrumbList} />
+      <BreadcrumbJsonLd itemListElements={formattedBreadcrumbList} />
     </>
   );
 };
