@@ -20,7 +20,7 @@ import dynamic from 'next/dynamic';
 import { FiSend } from 'react-icons/fi';
 import Layout from '../../../components/Layout';
 import { FeedbackModalProps } from '../../../components/Modal/FeedbackModal';
-import { createTranslator, useTranslations } from 'next-intl';
+import { createTranslator, useFormatter, useTranslations } from 'next-intl';
 import NextImage from 'next/image';
 import { allNeopetsColors, allSpecies, getPetColorId, getSpeciesId } from '../../../utils/utils';
 import { ReactElement, useEffect, useMemo, useState } from 'react';
@@ -31,12 +31,14 @@ import { useRouter } from 'next/router';
 import { FaShareAlt } from 'react-icons/fa';
 import Image from '../../../components/Utils/Image';
 import { getPetColorDataStr } from '../../api/v1/tools/petcolors';
+import { IconLink } from '../../../components/Utils/IconLink';
+import { PoolBreadcrumbs } from '../../../components/Breadcrumbs/PoolBreadcrumbs';
 
 const FeedbackModal = dynamic<FeedbackModalProps>(
   () => import('../../../components/Modal/FeedbackModal')
 );
 
-type PetColorData = {
+export type PetColorData = {
   colorId?: number | null;
   speciesId?: number | null;
   speciesName?: string | null;
@@ -51,12 +53,22 @@ type PetColorData = {
   cheapestChange: ItemData[];
 };
 
+type SpeciesInfo = {
+  name: string;
+  img: string;
+  mt: string | null;
+  limited: boolean;
+  restricted: boolean;
+  petDate: string;
+};
+
 type PetColorToolPageProps = {
   messages: any;
   locale: string;
   species: string;
   color: string;
   petColorData: PetColorData | null;
+  speciesInfo: SpeciesInfo | null;
 };
 
 const PetColorToolPage = (props: PetColorToolPageProps) => {
@@ -70,6 +82,7 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
   const [petColorData, setPetColorData] = useState<PetColorData | null>(props.petColorData);
   const [error, setError] = useState<string>('');
   const [isImgLoading, setIsImgLoading] = useState<boolean>(false);
+  const [speciesInfo, setSpeciesInfo] = useState<SpeciesInfo | null>(props.speciesInfo);
 
   const isPerfectCheapest = useMemo(() => {
     if (!petColorData) return false;
@@ -120,6 +133,11 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
 
       if (!newSpecies && !newColor) changeRoute();
 
+      if (newSpecies || species) {
+        const speciesInfo = await getSpeciesInfo(newSpecies ?? species);
+        setSpeciesInfo(speciesInfo);
+      } else setSpeciesInfo(null);
+
       setPetColorData(res.data);
       setIsLoading(false);
     } catch (e: any) {
@@ -131,25 +149,54 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
   };
 
   const parseRoute = () => {
-    const query = router.query;
+    let querySpecies = '';
+    let queryColor = '';
+
+    const slugs = router.query.slug as string[];
+
+    if (slugs.length === 2) {
+      querySpecies = slugs[0];
+      queryColor = slugs[1];
+    }
+
+    if (slugs.length === 1) {
+      if (getSpeciesId(slugs[0])) {
+        querySpecies = slugs[0];
+      } else {
+        queryColor = slugs[0];
+      }
+    }
+
     let hasChanged = false;
 
     let newSpecies;
     let newColor;
 
-    if (query.species) {
-      newSpecies = allSpecies[getSpeciesId(query.species as string) ?? ''];
+    if (species) {
+      newSpecies = allSpecies[getSpeciesId(querySpecies as string) ?? ''];
       if (newSpecies && newSpecies !== species) {
         setSpecies(newSpecies);
         hasChanged = true;
       }
     }
-    if (query.color) {
-      newColor = allNeopetsColors[getPetColorId(query.color as string) ?? ''];
+    if (color) {
+      newColor = allNeopetsColors[getPetColorId(queryColor as string) ?? ''];
       if (newColor && newColor !== color) {
         setColor(newColor);
         hasChanged = true;
       }
+    }
+
+    if (!querySpecies && species) {
+      newSpecies = '';
+      setSpecies('');
+      hasChanged = true;
+    }
+
+    if (!queryColor && color) {
+      newColor = '';
+      setColor('');
+      hasChanged = true;
     }
 
     if (hasChanged) doSearch(newSpecies, newColor);
@@ -186,6 +233,9 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
         zIndex={-1}
       />
       <FeedbackModal isOpen={isOpen} onClose={onClose} />
+      <Box mt={2}>
+        <PoolBreadcrumbs petColorData={petColorData} />
+      </Box>
       <Center mt={8} flexFlow="column" gap={2} textAlign="center">
         <Image
           src={'https://images.neopets.com/caption/caption_997.gif'}
@@ -199,7 +249,7 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
           objectPosition={'top'}
           alt="happy zafara painting a picture"
         />
-        <Heading>{t('PetColors.pet-color-tool')}</Heading>
+        <Heading as="h1">{t('PetColors.pet-color-tool')}</Heading>
         <Text maxW={'700px'} textAlign={'center'} sx={{ textWrap: 'pretty' }}>
           {t('PetColors.cta')}
         </Text>
@@ -265,8 +315,10 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
             justifyContent={'center'}
             borderRadius={'md'}
           >
-            <HStack mb={3}>
-              <Text fontSize="sm">{title}</Text>
+            <HStack>
+              <Heading fontSize="md" as="h2">
+                {title}
+              </Heading>
               <IconButton
                 onClick={copyLink}
                 bg="blackAlpha.300"
@@ -281,7 +333,12 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
                 }
               />
             </HStack>
-            <Flex gap={3} flexWrap={'wrap'} justifyContent={'center'}>
+            {speciesInfo && (
+              <Text fontSize="sm">
+                <SpeciesInfoText speciesInfo={speciesInfo} />
+              </Text>
+            )}
+            <Flex gap={3} mt={3} flexWrap={'wrap'} justifyContent={'center'}>
               <Flex
                 justifyContent={'center'}
                 alignItems={'center'}
@@ -451,8 +508,13 @@ export async function getStaticProps(context: any) {
     }
   }
 
+  let speciesInfo = null;
+
+  if (species) speciesInfo = await getSpeciesInfo(species);
+
   return {
     props: {
+      speciesInfo,
       species: preloadData ? preloadData.speciesName : '',
       color: preloadData ? preloadData.colorName : '',
       petColorData: preloadData,
@@ -520,4 +582,80 @@ PetColorToolPage.getLayout = function getLayout(page: ReactElement, props: any) 
       {page}
     </Layout>
   );
+};
+
+type SpeciesInfoTextProps = {
+  speciesInfo: SpeciesInfo;
+};
+
+const SpeciesInfoText = (props: SpeciesInfoTextProps) => {
+  const { speciesInfo } = props;
+  const formatter = useFormatter();
+  const t = useTranslations();
+
+  let textTag = 'PetColors.species-info-default';
+
+  if (speciesInfo.limited) {
+    textTag = 'PetColors.species-info-limited';
+  }
+
+  let link = '';
+  if (speciesInfo.restricted) {
+    if (speciesInfo.name === 'Grundo') textTag = 'PetColors.species-info-grundo';
+    if (speciesInfo.name === 'Krawk') {
+      textTag = 'PetColors.species-info-krawk';
+      link = 'https://itemdb.com.br/search?s=&petpetSpecies[]=154';
+    }
+    if (speciesInfo.name === 'Draik') {
+      textTag = 'PetColors.species-info-draik';
+      link = 'https://itemdb.com.br/search?s=draik%20egg&category[]=Medieval%20Food';
+    }
+  }
+
+  return (
+    <>
+      {t.rich(textTag, {
+        b: (chunk) => <b>{chunk}</b>,
+        species: speciesInfo.name,
+        speciesDate: formatter.dateTime(convertDate(speciesInfo.petDate), {
+          day: '2-digit',
+          month: 'long',
+        }),
+        CreateLink: (chunk) => (
+          <IconLink color="#9ee1cf" href="https://www.neopets.com/reg/page4.phtml" isExternal>
+            {chunk}
+          </IconLink>
+        ),
+        Link: (chunk) => (
+          <IconLink color="#9ee1cf" href={link} isExternal>
+            {chunk}
+          </IconLink>
+        ),
+      })}
+    </>
+  );
+};
+
+// convert from dd-mm to date
+function convertDate(dateString: string) {
+  const [day, month] = dateString.split('-').map(Number);
+  const year = new Date().getFullYear();
+  return new Date(year, month - 1, day);
+}
+
+const getSpeciesInfo = async (species: string) => {
+  let speciesInfo = null;
+  const petData = (await import(`../../../utils/petDays.json`)).default;
+  const petDataEntries = Object.entries(petData);
+  const petDataFiltered = petDataEntries.find(
+    ([, value]) => value.name.toLowerCase() === species.toLowerCase()
+  );
+  if (petDataFiltered) {
+    speciesInfo = {
+      ...petDataFiltered[1],
+      petDate: petDataFiltered[0],
+    };
+  }
+
+  return speciesInfo;
 };

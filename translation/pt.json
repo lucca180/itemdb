@@ -1038,7 +1038,12 @@
     "species-color-description": "Encontre a maneira mais barata de obter o seu {0} {1}",
     "species-color-title": "Como conseguir um {0} {1}",
     "species-description": "Encontre a maneira mais barata de conseguir seu Neopet {0}",
-    "species-title": "Como conseguir um Neopet {0}"
+    "species-title": "Como conseguir um Neopet {0}",
+    "species-info-default": "O dia de <b>{species}</b> é {speciesDate} e eles estão disponíveis o ano inteiro na página de <CreateLink>Criação de Pets</CreateLink>",
+    "species-info-draik": "O dia de <b>{species}</b> é {speciesDate} e, como uma espécie restrita, só pode ser criado chocando um <Link>Draik Egg</Link> no <CreateLink>Ninho de Draik</CreateLink>.",
+    "species-info-grundo": "O dia de <b>{species}</b> é {speciesDate} e, como uma espécie restrita, só pode ser criado no <CreateLink>Centro de Adoção Espacial</CreateLink>.",
+    "species-info-krawk": "O dia de <b>{species}</b> é {speciesDate} e, como uma espécie restrita, só pode ser criado chocando visitando a <CreateLink>Caverna de Fungos</CreateLink> com um petpet <Link>Krawk</Link> no seu Neopet.",
+    "species-info-limited": "<b>{species}</b> é uma espécie limitada e está disponível na página de <CreateLink>Criação de Pets</CreateLink> somente no dia {speciesDate}"
   },
   "MissingHub": {
     "description": "Estamos precisando de algumas informações sobre esses itens. Se você possui algum desses itens, <Link>saiba como ajudar</Link>",

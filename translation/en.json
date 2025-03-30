@@ -1028,7 +1028,7 @@
     "cheapest-change": "Cheapest Change",
     "select-color": "Select Color",
     "select-species": "Select Species",
-    "pet-color-tool": "Rainbow Pool Tool",
+    "pet-color-tool": "The Rainbow Pool",
     "cta": "The Rainbow Pool Tool is the perfect guide to paint your neopet or change its species while spending much less!",
     "species-change": "Species Change",
     "combination-error": "Pet + Color combination not found. Please try again.",
@@ -1037,7 +1037,12 @@
     "species-color-title": "How to get a {0} {1}",
     "species-color-description": "Find the cheapest way to get your {0} {1}",
     "species-title": "How to get a {0} Neopet easily",
-    "species-description": "Find the cheapest way to get your {0} Neopet"
+    "species-description": "Find the cheapest way to get your {0} Neopet",
+    "species-info-default": "<b>{species}</b> day is {speciesDate} and they are available the entire year at the <CreateLink>Create-a-Pet</CreateLink> page.",
+    "species-info-limited": "<b>{species}</b> is a limited species and is only available at the <CreateLink>Create-a-Pet</CreateLink> page on {speciesDate}",
+    "species-info-grundo": "<b>{species}</b> day is {speciesDate} and, as a restricted species, it can only be created at the <CreateLink>Space Adoption Agency</CreateLink>.",
+    "species-info-krawk": "<b>{species}</b> day is {speciesDate} and, as a restricted species, it can only be created by visiting the <CreateLink>Fungus Cave</CreateLink> with a <Link>Krawk</Link> petpet attached to your Neopet.",
+    "species-info-draik": "<b>{species}</b> day is {speciesDate} and, as a restricted species, it can only be created by hatching a <Link>Draik Egg</Link> at the <CreateLink>Draik Nest</CreateLink>."
   },
   "MissingHub": {
     "missing-info-hub": "Missing Info Hub",

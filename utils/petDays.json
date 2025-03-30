@@ -1,0 +1,387 @@
+{
+  "03-01": {
+    "name": "Aisha",
+    "img": "https://images.neopets.com/template_images/beach_aisha_sandcastle.gif",
+    "mt": "https://magnetismotimes.com/2014/05/memorial-mt-aisha/",
+    "limited": false,
+    "restricted": false
+  },
+  "06-01": {
+    "name": "Gnorbu",
+    "img": "https://images.neopets.com/template_images/gnorbu_red_balance.gif",
+    "mt": "https://magnetismotimes.com/2016/08/memorial-mt-gnorbu/",
+    "limited": false,
+    "restricted": false
+  },
+  "11-01": {
+    "name": "Buzz",
+    "img": "https://images.neopets.com/template_images/buzz_plushie_fly.gif",
+    "mt": "https://magnetismotimes.com/2016/02/memorial-mt-buzz/",
+    "limited": false,
+    "restricted": false
+  },
+  "16-01": {
+    "name": "Elephante",
+    "img": "https://images.neopets.com/template_images/elephante_wiggle.gif",
+    "mt": "https://magnetismotimes.com/2016/03/memorial-mt-elephante/",
+    "limited": false,
+    "restricted": false
+  },
+  "29-01": {
+    "name": "Kacheek",
+    "img": "https://images.neopets.com/template_images/kacheek_jumping.gif",
+    "mt": "https://magnetismotimes.com/2017/02/memorial-mt-kacheek/",
+    "limited": false,
+    "restricted": false
+  },
+  "03-02": {
+    "name": "Zafara",
+    "img": "https://images.neopets.com/template_images/zafara_rocking.gif",
+    "mt": null,
+    "limited": false,
+    "restricted": false
+  },
+  "12-02": {
+    "name": "Lenny",
+    "img": "https://images.neopets.com/template_images/lenny_singing.gif",
+    "mt": "https://magnetismotimes.com/2017/05/memorial-mt-lenny/",
+    "limited": false,
+    "restricted": false
+  },
+  "18-02": {
+    "name": "Chia",
+    "img": "https://images.neopets.com/template_images/chia_hug_plushie.gif",
+    "mt": "https://magnetismotimes.com/2016/02/memorial-mt-chia/",
+    "limited": false,
+    "restricted": false
+  },
+  "21-02": {
+    "name": "Tonu",
+    "img": "https://images.neopets.com/template_images/tonu_shadow_sleeping.gif",
+    "mt": null,
+    "limited": true,
+    "restricted": false
+  },
+  "22-02": {
+    "name": "Mynci",
+    "img": "https://images.neopets.com/template_images/mynci_trumpet.gif",
+    "mt": "https://magnetismotimes.com/2017/08/memorial-mt-mynci/",
+    "limited": false,
+    "restricted": false
+  },
+  "02-03": {
+    "name": "Uni",
+    "img": "https://images.neopets.com/template_images/uni_green_wink.gif",
+    "mt": null,
+    "limited": false,
+    "restricted": false
+  },
+  "06-03": {
+    "name": "Gelert",
+    "img": "https://images.neopets.com/template_images/gelert_green_ball.gif",
+    "mt": "https://magnetismotimes.com/2016/08/memorial-mt-gelert/",
+    "limited": false,
+    "restricted": false
+  },
+  "14-03": {
+    "name": "Scorchio",
+    "img": "https://images.neopets.com/template_images/scorchio_marshmallow.gif",
+    "mt": "https://magnetismotimes.com/2021/05/memorial-mt-scorchio/",
+    "limited": false,
+    "restricted": false
+  },
+  "22-03": {
+    "name": "Chomby",
+    "img": "https://images.neopets.com/template_images/flower_bite_chomby.gif",
+    "mt": "https://magnetismotimes.com/2016/03/memorial-mt-chomby/",
+    "limited": true,
+    "restricted": false
+  },
+  "02-04": {
+    "name": "Shoyru",
+    "img": "https://images.neopets.com/template_images/shoyfireball_lg.gif",
+    "mt": "https://magnetismotimes.com/2021/06/memorial-mt-shoyru/",
+    "limited": false,
+    "restricted": false
+  },
+  "16-04": {
+    "name": "Krawk",
+    "img": "https://images.neopets.com/template_images/dubloon_happy.gif",
+    "mt": "https://magnetismotimes.com/2017/05/memorial-mt-krawk/",
+    "limited": false,
+    "restricted": true
+  },
+  "19-04": {
+    "name": "Lutari",
+    "img": "https://images.neopets.com/template_images/lutari_bongo_drum.gif",
+    "mt": "https://magnetismotimes.com/2017/06/memorial-mt-lutari/",
+    "limited": true,
+    "restricted": false
+  },
+  "22-04": {
+    "name": "Kougra",
+    "img": "https://images.neopets.com/template_images/kougra_baby_sleep.gif",
+    "mt": "https://magnetismotimes.com/2017/05/memorial-mt-kougra/",
+    "limited": false,
+    "restricted": false
+  },
+  "27-04": {
+    "name": "Cybunny",
+    "img": "https://images.neopets.com/template_images/cybunny_carrot_pull.gif",
+    "mt": "https://magnetismotimes.com/2016/03/memorial-mt-cybunny/",
+    "limited": true,
+    "restricted": false
+  },
+  "02-05": {
+    "name": "Lupe",
+    "img": "https://images.neopets.com/template_images/lupe_desert_dance.gif",
+    "mt": "https://magnetismotimes.com/2017/05/memorial-mt-lupe/",
+    "limited": false,
+    "restricted": false
+  },
+  "04-05": {
+    "name": "Hissi",
+    "img": "https://images.neopets.com/template_images/hissi_joke_can.gif",
+    "mt": "https://magnetismotimes.com/2016/12/memorial-mt-hissi/",
+    "limited": true,
+    "restricted": false
+  },
+  "14-05": {
+    "name": "Moehog",
+    "img": "https://images.neopets.com/template_images/moehog_disco_dance.gif",
+    "mt": "https://magnetismotimes.com/2017/08/memorial-mt-moehog/",
+    "limited": false,
+    "restricted": false
+  },
+  "25-05": {
+    "name": "Koi",
+    "img": "https://images.neopets.com/template_images/koi_blue_laugh.gif",
+    "mt": "https://magnetismotimes.com/2017/04/memorial-mt-koi/",
+    "limited": true,
+    "restricted": false
+  },
+  "28-05": {
+    "name": "Yurble",
+    "img": "https://images.neopets.com/template_images/yurble_fire_flare.gif",
+    "mt": null,
+    "limited": false,
+    "restricted": false
+  },
+  "06-06": {
+    "name": "JubJub",
+    "img": "https://images.neopets.com/template_images/jubjubredrun.gif",
+    "mt": "https://magnetismotimes.com/2017/01/memorial-mt-jubjub/",
+    "limited": false,
+    "restricted": false
+  },
+  "13-06": {
+    "name": "Quiggle",
+    "img": "https://images.neopets.com/template_images/quiggle_boxing.gif",
+    "mt": "https://magnetismotimes.com/2021/04/memorial-mt-quiggle/",
+    "limited": false,
+    "restricted": false
+  },
+  "15-06": {
+    "name": "Nimmo",
+    "img": "https://images.neopets.com/template_images/nimmo_blue_juggle.gif",
+    "mt": "https://magnetismotimes.com/2017/08/memorial-mt-nimmo/",
+    "limited": false,
+    "restricted": false
+  },
+  "19-06": {
+    "name": "Kau",
+    "img": "https://images.neopets.com/template_images/kau_tyrannian_graze.gif",
+    "mt": "https://magnetismotimes.com/2017/03/memorial-mt-kau/",
+    "limited": false,
+    "restricted": false
+  },
+  "28-06": {
+    "name": "Acara",
+    "img": "https://images.neopets.com/template_images/acara_guitar.gif",
+    "mt": "https://magnetismotimes.com/2014/03/memorial-mt-acara/",
+    "limited": false,
+    "restricted": false
+  },
+  "03-07": {
+    "name": "Flotsam",
+    "img": "https://images.neopets.com/template_images/flotsam_blue_tail.gif",
+    "mt": "https://magnetismotimes.com/2016/05/memorial-mt-flotsam/",
+    "limited": false,
+    "restricted": false
+  },
+  "11-07": {
+    "name": "Ixi",
+    "img": "https://images.neopets.com/template_images/balloon_ixi_blowing.gif",
+    "mt": "https://magnetismotimes.com/2016/12/memorial-mt-ixi/",
+    "limited": false,
+    "restricted": false
+  },
+  "12-07": {
+    "name": "Tuskaninny",
+    "img": "https://images.neopets.com/template_images/tuskaninny_clap_purple.gif",
+    "mt": null,
+    "limited": false,
+    "restricted": false
+  },
+  "17-07": {
+    "name": "Kiko",
+    "img": "https://images.neopets.com/template_images/kiko_brown_suspiciousgnome.gif",
+    "mt": "https://magnetismotimes.com/2017/03/memorial-mt-kiko/",
+    "limited": true,
+    "restricted": false
+  },
+  "26-07": {
+    "name": "Peophin",
+    "img": "https://images.neopets.com/template_images/peophin_rasberry.gif",
+    "mt": "https://magnetismotimes.com/2017/09/memorial-mt-peophin/",
+    "limited": false,
+    "restricted": false
+  },
+  "29-07": {
+    "name": "Ruki",
+    "img": "https://images.neopets.com/template_images/shenkuu_medmix.gif",
+    "mt": "https://magnetismotimes.com/2021/05/memorial-mt-ruki/",
+    "limited": true,
+    "restricted": false
+  },
+  "08-08": {
+    "name": "Blumaroo",
+    "img": "https://images.neopets.com/template_images/giftopen_blumaroo.gif",
+    "mt": "https://magnetismotimes.com/2014/05/memorial-mt-blumaroo/",
+    "limited": false,
+    "restricted": false
+  },
+  "18-08": {
+    "name": "Meerca",
+    "img": "https://images.neopets.com/template_images/meerca_red_party.gif",
+    "mt": "https://magnetismotimes.com/2017/07/memorial-mt-meerca/",
+    "limited": false,
+    "restricted": false
+  },
+  "24-08": {
+    "name": "Grundo",
+    "img": "https://images.neopets.com/template_images/com_grundo_puppetshow.gif",
+    "mt": "https://magnetismotimes.com/2016/10/memorial-mt-grundo/",
+    "limited": false,
+    "restricted": true
+  },
+  "29-08": {
+    "name": "Kyrii",
+    "img": "https://images.neopets.com/template_images/kyrii_blue_coolsunglasses.gif",
+    "mt": "https://magnetismotimes.com/2017/05/memorial-mt-kyrii/",
+    "limited": false,
+    "restricted": false
+  },
+  "09-09": {
+    "name": "Draik",
+    "img": "https://images.neopets.com/template_images/draik_blue_puff.gif",
+    "mt": "https://magnetismotimes.com/2016/03/memorial-mt-draik/",
+    "limited": false,
+    "restricted": true
+  },
+  "13-09": {
+    "name": "Techo",
+    "img": "https://images.neopets.com/template_images/snackrifice_techo_tosser.gif",
+    "mt": null,
+    "limited": false,
+    "restricted": false
+  },
+  "19-09": {
+    "name": "Poogle",
+    "img": "https://images.neopets.com/template_images/poogle_mystery_vacationday.gif",
+    "mt": "https://magnetismotimes.com/2017/09/memorial-mt-poogle/",
+    "limited": true,
+    "restricted": false
+  },
+  "25-09": {
+    "name": "Skeith",
+    "img": "https://images.neopets.com/template_images/skeith_blue_eating.gif",
+    "mt": "https://magnetismotimes.com/2021/07/memorial-mt-skeith/",
+    "limited": false,
+    "restricted": false
+  },
+  "04-10": {
+    "name": "Grarrl",
+    "img": "https://images.neopets.com/template_images/grarrl_sport_exercising.gif",
+    "mt": "https://magnetismotimes.com/2016/09/memorial-mt-grarrl/",
+    "limited": false,
+    "restricted": false
+  },
+  "10-10": {
+    "name": "Eyrie",
+    "img": "https://images.neopets.com/template_images/eyrie_plushie_chirp.gif",
+    "mt": "https://magnetismotimes.com/2016/05/memorial-mt-eyrie/",
+    "limited": false,
+    "restricted": false
+  },
+  "13-10": {
+    "name": "Bori",
+    "img": "https://images.neopets.com/template_images/bori_orange_wave.gif",
+    "mt": "https://magnetismotimes.com/2014/05/memorial-mt-bori/",
+    "limited": false,
+    "restricted": false
+  },
+  "16-10": {
+    "name": "Jetsam",
+    "img": "https://images.neopets.com/template_images/jetsam_duck.gif",
+    "mt": "https://magnetismotimes.com/2017/01/memorial-mt-jetsam/",
+    "limited": true,
+    "restricted": false
+  },
+  "26-10": {
+    "name": "Korbat",
+    "img": "https://images.neopets.com/template_images/korbat_blue_eatingmelon.gif",
+    "mt": "https://magnetismotimes.com/2017/04/memorial-mt-korbat/",
+    "limited": false,
+    "restricted": false
+  },
+  "08-11": {
+    "name": "Pteri",
+    "img": "https://images.neopets.com/template_images/pteri_faerie_flying.gif",
+    "mt": "https://magnetismotimes.com/2021/04/memorial-mt-pteri/",
+    "limited": false,
+    "restricted": false
+  },
+  "12-11": {
+    "name": "Vandagyre",
+    "img": "https://images.neopets.com/pets/vandagyre_blue_baby.gif",
+    "mt": null,
+    "limited": false,
+    "restricted": false
+  },
+  "27-11": {
+    "name": "Usul",
+    "img": "https://images.neopets.com/template_images/usul_skiing2.gif",
+    "mt": null,
+    "limited": false,
+    "restricted": false
+  },
+  "29-11": {
+    "name": "Xweetok",
+    "img": "https://images.neopets.com/template_images/xweetok_giggle.gif",
+    "mt": null,
+    "limited": false,
+    "restricted": false
+  },
+  "05-12": {
+    "name": "Bruce",
+    "img": "https://images.neopets.com/template_images/caped_bruce.gif",
+    "mt": "https://magnetismotimes.com/2014/05/memorial-mt-bruce/",
+    "limited": false,
+    "restricted": false
+  },
+  "12-12": {
+    "name": "Wocky",
+    "img": "https://images.neopets.com/template_images/ww_wocky_wobbling.gif",
+    "mt": null,
+    "limited": false,
+    "restricted": false
+  },
+  "28-12": {
+    "name": "Ogrin",
+    "img": "https://images.neopets.com/template_images/ogrin_run.gif",
+    "mt": "https://magnetismotimes.com/2017/08/memorial-mt-ogrin/",
+    "limited": false,
+    "restricted": false
+  }
+}
