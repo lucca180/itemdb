@@ -62,7 +62,7 @@ const WhyUsPage = () => {
             {t.rich('FAQ.text-4', {
               Link: (chunk) => <Link href="/terms">{chunk}</Link>,
               Link1: (chunk) => (
-                <Link href="/articles/sortGallery" isExternal>
+                <Link href="/articles/sort-gallery" isExternal>
                   {chunk}
                 </Link>
               ),
