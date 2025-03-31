@@ -18,7 +18,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   if (!page || isNaN(parseInt(page)))
     return getServerSideSitemapIndexLegacy(
       ctx,
-      [...Array(70)].map((_, i) => `${siteURL}/sitemaps/${i}.xml`)
+      [...Array(25)].map((_, i) => `${siteURL}/sitemaps/${i}.xml`)
     );
 
   const [itemInfo, officialLists, colorSpecies] = await Promise.all([
@@ -296,13 +296,21 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     })
     .flat();
 
-  return getServerSideSitemapLegacy(ctx, [
+  const allPaths: ISitemapField[] = [
     ...restockPaths,
     ...officialListsPaths,
     ...itemPaths,
     ...colorSpeciesPaths,
     ...officialListsCats,
-  ]);
+  ];
+
+  if (allPaths.length === 0) {
+    return {
+      notFound: true,
+    };
+  }
+
+  return getServerSideSitemapLegacy(ctx, allPaths);
 };
 
 // Default export to prevent next.js errors
