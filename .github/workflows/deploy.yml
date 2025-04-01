@@ -26,6 +26,7 @@ jobs:
             pm2 stop ecosystem.config.js --only itemdb-web
             pm2 start itemdb-green
             yarn build || exit
+            yarn postbuild
             pm2 stop itemdb-green
             pm2 reload ecosystem.config.js --only itemdb-web --update-env
       - name: itemdb Green (backup) - Update
@@ -42,4 +43,5 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             yarn
             yarn build || exit
+            yarn postbuild
             pm2 stop ecosystem.config.js --only itemdb-green --update-env
