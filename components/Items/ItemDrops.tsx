@@ -117,7 +117,7 @@ const ItemDrops = (props: Props) => {
           hasMultiplePools={multiplePools}
           isFirst={!multiplePools}
           forceOddsText={hasOldPool}
-          hideOdds
+          hideOdds={isChoice}
         />
       )}
 
