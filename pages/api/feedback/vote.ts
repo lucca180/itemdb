@@ -125,7 +125,7 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
       },
       data: {
         xp: {
-          decrement: FEEDBACK_VOTE_TARGET * 10,
+          decrement: FEEDBACK_VOTE_TARGET * 6,
         },
       },
     });
@@ -141,7 +141,7 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
       },
       data: {
         xp: {
-          decrement: FEEDBACK_VOTE_TARGET * 5,
+          decrement: FEEDBACK_VOTE_TARGET * 3,
         },
       },
     });
@@ -210,7 +210,7 @@ const commitChanges = async (feedback: Feedbacks, req?: NextApiRequest) => {
       },
       data: {
         xp: {
-          increment: Math.floor(FEEDBACK_VOTE_TARGET / 2),
+          increment: Math.ceil(FEEDBACK_VOTE_TARGET / 2),
         },
       },
     });
