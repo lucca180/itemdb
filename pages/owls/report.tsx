@@ -487,7 +487,7 @@ const OwlsReportPage = (props: OwlsReportPageProps) => {
         borderRadius={'md'}
         w="100%"
         maxW="900px"
-        sx={{ a: { color: 'blue.200' }, b: { color: 'blue.200' } }}
+        sx={{ a: { color: 'blue.300' }, b: { color: 'blue.200' } }}
       >
         <Heading as={'h3'} size="md">
           {t('Owls.faq-1')}
