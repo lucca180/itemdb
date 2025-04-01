@@ -139,7 +139,7 @@ export const getManyItems = async (
       status: result.status,
       category: result.category,
       isNeohome: !!result.isNeohome,
-      isWearable: !!result.specialType?.includes('wearable') || !!result.isWearable,
+      isWearable: !!result.isWearable,
       firstSeen:
         (result.item_id >= 85020 && result.type !== 'pb'
           ? new Date(result.addedAt).toJSON()

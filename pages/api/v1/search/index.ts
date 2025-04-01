@@ -585,7 +585,7 @@ export async function doSearch(
       category: result.category,
       status: result.status,
       isNeohome: !!result.isNeohome,
-      isWearable: !!result.specialType?.includes('wearable') || !!result.isWearable,
+      isWearable: !!result.isWearable,
       firstSeen:
         (result.item_id >= 85020 && result.type !== 'pb'
           ? new Date(result.addedAt).toJSON()
