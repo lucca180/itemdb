@@ -68,7 +68,7 @@ const ListSelect = (props: Props) => {
   };
 
   return (
-    <Menu>
+    <Menu isLazy>
       <MenuButton
         whiteSpace={'normal'}
         as={Button}

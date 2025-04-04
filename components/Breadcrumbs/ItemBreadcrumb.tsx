@@ -3,6 +3,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/router';
 import { useMemo } from 'react';
 import { Breadcrumbs } from './Breadcrumbs';
+import { categoryToShopID, restockShopInfo, slugify } from '../../utils/utils';
 
 type ItemBreadcrumbProps = {
   item: ItemData;
@@ -37,6 +38,17 @@ export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
         item: `/items/${item.slug}`,
       },
     ];
+
+    if (item.findAt.restockShop && item.category) {
+      const shopInfo = restockShopInfo[categoryToShopID[item.category.toLowerCase()]];
+
+      breadList[2] = {
+        position: 2,
+        name: shopInfo.name,
+        item: `/restock/${slugify(shopInfo.name)}`,
+      };
+    }
+
     return breadList;
   }, [item, router.locale]);
 

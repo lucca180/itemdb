@@ -23,7 +23,7 @@ import { DuplicatedItemModalProps } from '../Modal/DuplicatedItemModal';
 import { useLists } from '../../utils/useLists';
 
 const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
-  () => import('../Modal/DuplicatedItemModal'),
+  () => import('../Modal/DuplicatedItemModal')
 );
 
 type Props = {
@@ -54,7 +54,7 @@ const AddToListSelect = (props: Props) => {
               item_iid: item.internal_id,
             },
           ],
-        },
+        }
       );
       if (res.data.success) {
         toast({
@@ -124,7 +124,7 @@ const AddToListSelect = (props: Props) => {
           itemInfo={duplicatedItem}
         />
       )}
-      <Menu>
+      <Menu isLazy>
         <MenuButton as={Button} variant="solid">
           {t('Lists.add-to-list')}
         </MenuButton>
@@ -136,6 +136,8 @@ const AddToListSelect = (props: Props) => {
                   key={list.internal_id}
                   onClick={() => addItemToList(list.internal_id)}
                   isDisabled={isDynamicActionDisabled('add', list.dynamicType)}
+                  whiteSpace={'wrap'}
+                  maxW={'90vw'}
                 >
                   {/* {list.itemInfo.some((i) => i.item_iid === item.internal_id) && (
                     <Tooltip label={t('Lists.already-in-this-list')} fontSize="sm" placement="top">

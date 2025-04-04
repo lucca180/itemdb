@@ -177,7 +177,7 @@ const Layout = (props: Props) => {
             )}
             {user && (
               <>
-                <Menu>
+                <Menu isLazy>
                   <MenuButton
                     as={Button}
                     rightIcon={<ChevronDownIcon />}
