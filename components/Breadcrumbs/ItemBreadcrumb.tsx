@@ -39,8 +39,10 @@ export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
       },
     ];
 
-    if (item.findAt.restockShop && item.category) {
+    if (item.findAt.restockShop && item.category && item.rarity && item.rarity < 100) {
       const shopInfo = restockShopInfo[categoryToShopID[item.category.toLowerCase()]];
+
+      if (!shopInfo || !shopInfo.name) return breadList;
 
       breadList[2] = {
         position: 2,
