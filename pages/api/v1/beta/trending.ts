@@ -40,7 +40,7 @@ export const getTrendingItems = async (limit: number) => {
     endAt: Date.now(),
     type: 'url',
     // @ts-expect-error missing type
-    search: 'item',
+    search: 'item/',
     limit: limit + 10,
   })) as WebsiteMetrics;
 
