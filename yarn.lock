@@ -4185,6 +4185,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@schummar/icu-type-parser@npm:1.21.5":
+  version: 1.21.5
+  resolution: "@schummar/icu-type-parser@npm:1.21.5"
+  checksum: 10c0/8c2bdb2087b2aeaafb484afefcc5291b21a7179fb92429cabc5f6b46019c6dedbeac6025b1a8f08e8749fb963f8a011e0ccba340ca3761f3c2348aac4b667c2c
+  languageName: node
+  linkType: hard
+
 "@selderee/plugin-htmlparser2@npm:^0.11.0":
   version: 0.11.0
   resolution: "@selderee/plugin-htmlparser2@npm:0.11.0"
@@ -9630,7 +9637,7 @@ __metadata:
     lodash: "npm:^4.17.21"
     lru-cache: "npm:^11.0.1"
     next: "npm:15.2.3"
-    next-intl: "npm:^3.23.5"
+    next-intl: "npm:^4.0.2"
     next-seo: "npm:^6.6.0"
     next-sitemap: "npm:^4.2.3"
     nextjs-progressbar: "npm:^0.0.16"
@@ -10942,17 +10949,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"next-intl@npm:^3.23.5":
-  version: 3.23.5
-  resolution: "next-intl@npm:3.23.5"
+"next-intl@npm:^4.0.2":
+  version: 4.0.2
+  resolution: "next-intl@npm:4.0.2"
   dependencies:
     "@formatjs/intl-localematcher": "npm:^0.5.4"
     negotiator: "npm:^1.0.0"
-    use-intl: "npm:^3.23.5"
+    use-intl: "npm:^4.0.2"
   peerDependencies:
-    next: ^10.0.0 || ^11.0.0 || ^12.0.0 || ^13.0.0 || ^14.0.0 || ^15.0.0
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/ea3b05c67e15e455fef60df2de455b7946bd22d86dbd6777d007f71f51f5acac557879194070a903d7233b3e9240fc0927391f5c700b2552696f4ed20961a4a9
+    next: ^12.0.0 || ^13.0.0 || ^14.0.0 || ^15.0.0
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || >=19.0.0-rc <19.0.0 || ^19.0.0
+    typescript: ^5.0.0
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 10c0/38c7b7a82f82ec10e5f4507e80e48ceba0f251a9e26e20dc0c1cb388730790638315a670a017267db38930af99070148e0802a412484f7c0f830e2a8d92c2c25
   languageName: node
   linkType: hard
 
@@ -14486,15 +14497,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-intl@npm:^3.23.5":
-  version: 3.23.5
-  resolution: "use-intl@npm:3.23.5"
+"use-intl@npm:^4.0.2":
+  version: 4.0.2
+  resolution: "use-intl@npm:4.0.2"
   dependencies:
     "@formatjs/fast-memoize": "npm:^2.2.0"
+    "@schummar/icu-type-parser": "npm:1.21.5"
     intl-messageformat: "npm:^10.5.14"
   peerDependencies:
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/4fa5a7a14ee2cc906ebb490b8dfe92e077fc9576d5664b3f84de9ee2826b3452c09f40cec4932ae07cd352998cb56cbf7d3082b0a9a0d1c468effb4e6d9dd903
+    react: ^17.0.0 || ^18.0.0 || >=19.0.0-rc <19.0.0 || ^19.0.0
+  checksum: 10c0/4d4b016ede095cfd703651a4cdce08ef6657fd383bad3fa664d0a212afd0147ed6c44c977f93923b5ab51d0326c8b44cbba3d9a028ad0ba98b325bee1f7b8c35
   languageName: node
   linkType: hard
 
