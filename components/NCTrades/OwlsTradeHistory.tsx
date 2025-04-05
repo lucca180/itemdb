@@ -58,24 +58,34 @@ const OwlsTradeHistory = (props: Props) => {
     );
 
   return (
-    <Flex flexFlow="column" maxH={300} overflow="auto" gap={3} px={1} w="100%">
-      {tradeHistory.map((trade, i) => (
-        <OwlsTradeCard key={i} trade={trade} item={item} />
-      ))}
-      <Center flexFlow="column" gap={3}>
-        <Button as={NextLink} prefetch={false} href="/owls/report" size={'xs'}>
-          {t('ItemPage.report-your-nc-trades')}
-        </Button>
-        <Text fontSize="xs" color="whiteAlpha.600">
+    <Flex
+      flexFlow="column"
+      alignItems={'center'}
+      maxH={300}
+      overflow="auto"
+      gap={3}
+      px={1}
+      w="100%"
+    >
+      <Center flexFlow="column" gap={1} borderRadius={'lg'} p={1}>
+        <Text fontSize="xs" color="whiteAlpha.800">
           {t.rich('ItemPage.owls-credits', {
             Link: (chunk) => (
-              <Link href="/owls" as={NextLink} color="whiteAlpha.700" isExternal>
+              <Link href="/owls" as={NextLink} color="whiteAlpha.900" isExternal>
                 {chunk}
               </Link>
             ),
           })}
         </Text>
+        <Button as={NextLink} prefetch={false} href="/owls/report" target="_blank" size={'xs'}>
+          {t('ItemPage.report-your-nc-trades')}
+        </Button>
       </Center>
+      <Flex maxW="600px" flexFlow="column" gap={3}>
+        {tradeHistory.map((trade, i) => (
+          <OwlsTradeCard key={i} trade={trade} item={item} />
+        ))}
+      </Flex>
     </Flex>
   );
 };
@@ -104,7 +114,7 @@ export const OwlsTradeCard = (props: OwlsTradeCardProps) => {
   const color: number[] = item?.color.rgb ?? [71, 178, 248];
 
   return (
-    <Card bg={`rgba(${color[0]},${color[1]}, ${color[2]},.35)`} textAlign={'left'}>
+    <Card bg={'blackAlpha.500'} textAlign={'left'}>
       <CardBody>
         <Heading size="sm" mb={3} opacity="0.75">
           {isValidDate(new Date(trade.ds)) &&
@@ -123,18 +133,20 @@ export const OwlsTradeCard = (props: OwlsTradeCardProps) => {
             </Heading>
             <UnorderedList>
               {trade.traded.split('+').map((traded, i) => (
-                <ListItem
-                  key={i}
-                  fontSize="xs"
-                  bg={
-                    item && isSameItem(traded, item)
-                      ? `rgba(${color[0]},${color[1]}, ${color[2]},.4)`
-                      : undefined
-                  }
-                >
-                  <NextLink href={getSearchLink(traded)} target="_blank">
+                <ListItem p={1} key={i} fontSize="xs">
+                  <Link
+                    p={1}
+                    borderRadius="md"
+                    bg={
+                      item && isSameItem(traded, item)
+                        ? `rgba(${color[0]},${color[1]}, ${color[2]},.4)`
+                        : undefined
+                    }
+                    href={item && isSameItem(traded, item) ? '#' : getSearchLink(traded)}
+                    target="_blank"
+                  >
                     {traded}
-                  </NextLink>
+                  </Link>
                 </ListItem>
               ))}
             </UnorderedList>
@@ -145,18 +157,20 @@ export const OwlsTradeCard = (props: OwlsTradeCardProps) => {
             </Heading>
             <UnorderedList>
               {trade.traded_for.split('+').map((traded, i) => (
-                <ListItem
-                  key={i}
-                  fontSize="xs"
-                  bg={
-                    item && isSameItem(traded, item)
-                      ? `rgba(${color[0]},${color[1]}, ${color[2]},.4)`
-                      : undefined
-                  }
-                >
-                  <NextLink href={getSearchLink(traded)} target="_blank">
+                <ListItem p={1} key={i} fontSize="xs">
+                  <Link
+                    p={1}
+                    borderRadius="md"
+                    bg={
+                      item && isSameItem(traded, item)
+                        ? `rgba(${color[0]},${color[1]}, ${color[2]},.4)`
+                        : undefined
+                    }
+                    href={item && isSameItem(traded, item) ? '#' : getSearchLink(traded)}
+                    target="_blank"
+                  >
                     {traded}
-                  </NextLink>
+                  </Link>
                 </ListItem>
               ))}
             </UnorderedList>
