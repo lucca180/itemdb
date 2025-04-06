@@ -1,4 +1,4 @@
-import { Flex, Link, Text, Image } from '@chakra-ui/react';
+import { Flex, Link, Text } from '@chakra-ui/react';
 import React from 'react';
 import { ItemData, UserList } from '../../types';
 import CardBase from '../Card/CardBase';
@@ -8,6 +8,8 @@ import DynamicIcon from '../../public/icons/dynamic.png';
 import dynamic from 'next/dynamic';
 import Color from 'color';
 import { useTranslations } from 'next-intl';
+import Image from '../Utils/Image';
+
 const Markdown = dynamic(() => import('../Utils/Markdown'));
 
 type Props = {
@@ -61,11 +63,14 @@ const ItemOfficialLists = (props: Props) => {
               >
                 {list.coverURL && (
                   <Image
-                    width={'40px'}
+                    width={40}
+                    height={40}
+                    quality={90}
                     objectFit={'cover'}
-                    height={'40px'}
                     src={list.coverURL}
                     alt={list.name}
+                    w="40px"
+                    h="40px"
                   />
                 )}
               </Flex>
