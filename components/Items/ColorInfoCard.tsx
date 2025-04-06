@@ -22,7 +22,7 @@ const ColorInfoCard = (props: Props) => {
   const color = colors.vibrant.rgb;
 
   const isInvisible = Object.values(colors).every(
-    (color) => color.population === 0 && color.hex === '#FFFFFF',
+    (color) => color.population === 0 && color.hex === '#FFFFFF'
   );
 
   return (
@@ -59,6 +59,7 @@ const ColorInfoCard = (props: Props) => {
             {colorKeysOrder.map((key) => (
               <Link
                 key={colors[key].type}
+                rel="nofollow"
                 href={'/search?s=' + encodeURIComponent(colors[key].hex)}
               >
                 <Flex
