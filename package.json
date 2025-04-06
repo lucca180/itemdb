@@ -57,7 +57,7 @@
     "lodash": "^4.17.21",
     "lru-cache": "^11.0.1",
     "next": "15.2.3",
-    "next-intl": "^4.0.2",
+    "next-intl": "^3.26.5",
     "next-seo": "^6.6.0",
     "next-sitemap": "^4.2.3",
     "nextjs-progressbar": "^0.0.16",
