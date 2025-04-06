@@ -3,7 +3,7 @@ import { getItem } from '.';
 import { ItemDrop, ItemOpenable, PrizePoolData } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
-import { WearableData } from '@prisma/client';
+import { OpenableItems, WearableData } from '@prisma/client';
 import { revalidateItem } from './effects';
 import { getManyItems } from '../many';
 
@@ -404,25 +404,23 @@ export const getItemDrops = async (
 };
 
 export const getItemParent = async (item_iid: number, itemLimit = 30) => {
-  const drops = await prisma.openableItems.findMany({
-    where: {
-      OR: [
-        {
-          item_iid: item_iid,
-        },
-        {
-          item: {
-            canonical_id: item_iid,
-          },
-        },
-      ],
-      parent_item: {
-        canOpen: {
-          not: 'false',
-        },
-      },
-    },
-  });
+  const drops = await prisma.$queryRaw<OpenableItems[]>`
+    SELECT t0.*
+    FROM (
+        SELECT * 
+        FROM itemdb2.OpenableItems
+        WHERE item_iid = ${item_iid}
+
+        UNION
+
+        SELECT t0.*
+        FROM OpenableItems t0
+        JOIN Items j1 ON j1.internal_id = t0.item_iid
+        WHERE j1.canonical_id = ${item_iid}
+    ) AS t0
+    JOIN Items j2 ON j2.internal_id = t0.parent_iid
+    WHERE j2.canOpen != 'false';
+  `;
 
   const parents: { [id: number]: number } = {};
 
