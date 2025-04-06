@@ -241,11 +241,7 @@ const Layout = (props: Props) => {
           </DropdownButton>
           <DropdownButton bg={props.mainColor} label={t('Layout.restock')} href="/restock">
             <DropdownOption label={t('Layout.dashboard')} href="/restock/dashboard" />
-            <DropdownOption
-              label={'2024 Review'}
-              newUntil={1736121600000}
-              href="/restock/dashboard/2024"
-            />
+            <DropdownOption label={"Cog's Tog"} href="/restock/cogs-togs" />
             <DropdownOption
               label={t('Restock.restock-history')}
               href="/restock/neopian-fresh-foods/history"
@@ -253,12 +249,9 @@ const Layout = (props: Props) => {
             <DropdownOption label={t('Layout.view-all-shops')} href="/restock/" />
           </DropdownButton>
           <DropdownButton bg={props.mainColor} label={t('Lists.Lists')} href="/lists/official">
+            <DropdownOption label={'Quest Log'} href="/lists/official/cat/quest-log" />
             <DropdownOption label={t('Layout.checklists')} href="/lists/import" />
-            <DropdownOption
-              label={t('Lists.import-items')}
-              href="/lists/import"
-              newUntil={1740787199000}
-            />
+            <DropdownOption label={t('Lists.import-items')} href="/lists/import" />
             <DropdownOption label={t('Layout.official-lists')} href="/lists/official" />
             <DropdownOption
               label={t('General.dynamic-lists')}
@@ -275,7 +268,6 @@ const Layout = (props: Props) => {
             <DropdownOption
               label={t('Calculator.pricing-calculator')}
               href="/tools/price-calculator"
-              newUntil={1742083199000}
             />
           </DropdownButton>
           <DropdownButton bg={props.mainColor} label={t('Layout.contribute')} href="/contribute">
@@ -284,11 +276,7 @@ const Layout = (props: Props) => {
             <DropdownOption label={t('Layout.trade-pricing')} href="/feedback/trades" />
             <DropdownOption label={t('Feedback.suggestion-voting')} href="/feedback/vote" />
             <DropdownOption label={t('Layout.feedback-and-ideas')} href="/feedback" />
-            <DropdownOption
-              label={t('Layout.report-your-nc-trades')}
-              href="/owls/report"
-              newUntil={1740787199000}
-            />
+            <DropdownOption label={t('Layout.report-your-nc-trades')} href="/owls/report" />
           </DropdownButton>
         </Flex>
         <Box
