@@ -3,6 +3,8 @@ import { getList } from '.';
 import { CheckAuth } from '../../../../../../utils/googleCloud';
 import prisma from '../../../../../../utils/prisma';
 import { getManyItems } from '../../../items/many';
+import requestIp from 'request-ip';
+import { redis_setItemCount } from '../../../../redis/checkapi';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -53,7 +55,12 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       id: itemInfoRaw.map((item) => item.item_iid.toString()),
     });
 
-    return res.status(200).json(Object.values(itemData));
+    const itemArray = Object.values(itemData);
+
+    const ip = requestIp.getClientIp(req);
+    redis_setItemCount(ip, itemArray.length, req);
+
+    return res.status(200).json(itemArray);
   } catch (e: any) {
     console.error(e);
     res.status(500).json({ error: 'Internal Server Error' });
