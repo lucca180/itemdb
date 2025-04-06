@@ -9,6 +9,8 @@ import {
   Thead,
   Flex,
   HStack,
+  Spinner,
+  Center,
 } from '@chakra-ui/react';
 import React from 'react';
 import { ItemData, ItemRestockData } from '../../types';
@@ -86,7 +88,12 @@ export const RestockHistory = (props: RestockHistoryProps) => {
             x: 20,
           })}
         </Text>
-        <RestockHistoryTable data={data?.recent ?? []} />
+        {!loading && <RestockHistoryTable data={data?.recent ?? []} />}
+        {loading && (
+          <Center>
+            <Spinner />
+          </Center>
+        )}
         <Text textAlign={'center'} fontSize={'xs'} mt={3}>
           {t('ItemPage.seen-history-psa')}
         </Text>
