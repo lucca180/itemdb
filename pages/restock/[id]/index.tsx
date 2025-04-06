@@ -1,4 +1,4 @@
-import { Button, Divider, Flex, HStack, Link, Text, Image } from '@chakra-ui/react';
+import { Button, Divider, Flex, HStack, Link, Text, Image, Heading } from '@chakra-ui/react';
 import Color from 'color';
 import { GetStaticPropsContext } from 'next';
 import { CreateDynamicListButton } from '../../../components/DynamicLists/CreateButton';
@@ -8,7 +8,7 @@ import {
   getRestockProfit,
   removeOutliers,
   restockBlackMarketItems,
-  restockChance,
+  // restockChance,
   restockShopInfo,
   shopIDToCategory,
   slugify,
@@ -29,16 +29,18 @@ import { NextPageWithLayout } from '../../_app';
 import { doSearch } from '../../api/v1/search';
 import { ShopInfoCard } from '../../../components/Hubs/Restock/ShopInfoCard';
 import { mean } from 'simple-statistics';
+import ShopCard from '../../../components/Hubs/Restock/ShopCard';
 
 type RestockShopPageProps = {
   shopInfo: ShopInfo;
   totalItems: number;
   profitableCount: number;
   profitMean: number;
-  rarityChances: { [rarity: number]: number };
+  // rarityChances: { [rarity: number]: number };
   messages: any;
   locale: string;
   initialItems?: ItemData[];
+  similarShops: ShopInfo[];
 };
 
 const sortTypes = {
@@ -72,7 +74,7 @@ const INITIAL_MIN_PROFIT = 3000;
 const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockShopPageProps) => {
   const t = useTranslations();
   const format = useFormatter();
-  const { shopInfo, totalItems, profitableCount } = props;
+  const { shopInfo, totalItems, profitableCount, similarShops } = props;
   const { userPref, updatePref } = useAuth();
   const [filteredItems, setFilteredItems] = useState<ItemData[]>(props.initialItems ?? []);
   const [itemList, setItemList] = useState<ItemData[]>(props.initialItems ?? []);
@@ -329,6 +331,14 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
           {t('General.learnHelp')}
         </Link>
       </Text>
+      <Flex flexFlow="column" mt={10} gap={3} p={5} borderRadius={'lg'} bg="blackAlpha.500">
+        <Heading size="lg">{t('Restock.similar-shops')}</Heading>
+        <Flex gap={5} flexWrap="wrap" justifyContent={'center'}>
+          {similarShops.map((shop) => (
+            <ShopCard key={shop.id} shop={shop} />
+          ))}
+        </Flex>
+      </Flex>
     </>
   );
 };
@@ -372,8 +382,9 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     shopInfo: shopInfo,
     totalItems: result.content.length,
     profitableCount: resultItems.length,
-    rarityChances: profitableChance(result.content),
+    // rarityChances: profitableChance(result.content),
     profitMean: profitMean(resultItems),
+    similarShops: getSimilarShops(shopInfo),
     initialItems: resultItems.splice(0, 32),
     messages: (await import(`../../../translation/${context.locale}.json`)).default,
     locale: context.locale ?? 'en',
@@ -488,27 +499,27 @@ RestockShop.getLayout = function getLayout(page: ReactElement, props: RestockSho
 };
 
 // based on https://www.reddit.com/r/neopets/comments/16u9rx5/restocking_specifics
-const profitableChance = (items: ItemData[]) => {
-  const itemRarityMap: { [rarity: number]: number } = {};
+// const profitableChance = (items: ItemData[]) => {
+//   const itemRarityMap: { [rarity: number]: number } = {};
 
-  items.map((item) => {
-    if (!item.rarity) return;
-    if (!itemRarityMap[item.rarity]) itemRarityMap[item.rarity] = 0;
-    itemRarityMap[item.rarity]++;
-  });
+//   items.map((item) => {
+//     if (!item.rarity) return;
+//     if (!itemRarityMap[item.rarity]) itemRarityMap[item.rarity] = 0;
+//     itemRarityMap[item.rarity]++;
+//   });
 
-  const rollNumber = Math.ceil(items.length * 1.6);
+//   const rollNumber = Math.ceil(items.length * 1.6);
 
-  const rarityChance: { [rarity: number]: number } = {};
+//   const rarityChance: { [rarity: number]: number } = {};
 
-  for (let i = 1; i <= 99; i++) {
-    rarityChance[i] = 0;
-    if (!itemRarityMap[i]) continue;
-    rarityChance[i] = (rollNumber / items.length) * (restockChance[i] / 100) * 100;
-  }
+//   for (let i = 1; i <= 99; i++) {
+//     rarityChance[i] = 0;
+//     if (!itemRarityMap[i]) continue;
+//     rarityChance[i] = (rollNumber / items.length) * (restockChance[i] / 100) * 100;
+//   }
 
-  return rarityChance;
-};
+//   return rarityChance;
+// };
 
 const profitMean = (items: ItemData[]) => {
   const profits = items
@@ -520,4 +531,13 @@ const profitMean = (items: ItemData[]) => {
   if (!cleanProfit.length) return 0;
 
   return Math.round(mean(cleanProfit));
+};
+
+const getSimilarShops = (shopInfo: ShopInfo, limit = 3) => {
+  const similar = Object.values(restockShopInfo).filter((shop) => {
+    if (shop.id === shopInfo.id) return false;
+    return shop.category === shopInfo.category;
+  });
+
+  return similar.slice(0, limit);
 };
