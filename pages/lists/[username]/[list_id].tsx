@@ -41,7 +41,7 @@ import { CreateListModalProps } from '../../../components/Modal/CreateListModal'
 import dynamic from 'next/dynamic';
 import ListHeader from '../../../components/UserLists/ListHeader';
 import { CreateLinkedListButton } from '../../../components/DynamicLists/CreateLinkedList';
-import { rarityToCCPoints, stripMarkdown } from '../../../utils/utils';
+import { sortListItems, stripMarkdown } from '../../../utils/utils';
 import { SearchList } from '../../../components/Search/SearchLists';
 import { SortSelect } from '../../../components/Input/SortSelect';
 import { CheckAuth } from '../../../utils/googleCloud';
@@ -53,6 +53,7 @@ import { getFiltersDiff } from '../../search';
 import { AddListItemsModalProps } from '../../../components/Modal/AddListItemsModal';
 import { ItemList } from '../../../components/UserLists/ItemList';
 import { preloadListItems } from '../../api/v1/lists/[username]/[list_id]/items';
+import { getSimilarLists } from '../../api/v1/lists/[username]/[list_id]/similar';
 
 const CreateListModal = dynamic<CreateListModalProps>(
   () => import('../../../components/Modal/CreateListModal')
@@ -70,6 +71,8 @@ const AddListItemsModal = dynamic<AddListItemsModalProps>(
   () => import('../../../components/Modal/AddListItemsModal')
 );
 
+const UserListCard = dynamic(() => import('../../../components/UserLists/ListCard'));
+
 type ExtendedListItemInfo = ListItemInfo & { hasChanged?: boolean };
 
 type ListPageProps = {
@@ -82,6 +85,7 @@ type ListPageProps = {
     itemInfo: ListItemInfo[];
     items: { [id: string]: ItemData };
   };
+  similarLists: UserList[];
   messages: any;
   locale: string | undefined;
 };
@@ -92,7 +96,7 @@ const ListPage = (props: ListPageProps) => {
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isOpenInsert, onOpen: onOpenInsert, onClose: onCloseInsert } = useDisclosure();
-  const { canEdit, isOwner, locale, preloadData } = props;
+  const { canEdit, isOwner, locale, preloadData, similarLists } = props;
   const { user } = useAuth();
 
   const [list, setList] = useState<UserList>(props.list);
@@ -563,11 +567,9 @@ const ListPage = (props: ListPageProps) => {
           list={list}
         />
       )}
-
       {isOpenInsert && (
         <AddListItemsModal isOpen={isOpenInsert} onClose={onCloseInsert} list={list} />
       )}
-
       <ListHeader
         list={list}
         canEdit={canEdit}
@@ -827,6 +829,21 @@ const ListPage = (props: ListPageProps) => {
           </Flex>
         )}
       </Flex>
+      {similarLists.length > 0 && (
+        <Flex flexFlow="column" mt={10} gap={3} p={5} borderRadius={'lg'} bg="blackAlpha.500">
+          <Heading size="lg">{t('Lists.similar-lists')}</Heading>
+          <Flex gap={5} flexWrap="wrap" justifyContent={'center'}>
+            {similarLists.map((list) => (
+              <UserListCard
+                isSmall
+                key={list.internal_id}
+                list={list}
+                utm_content="similar-lists"
+              />
+            ))}
+          </Flex>
+        </Flex>
+      )}
     </Layout>
   );
 };
@@ -892,7 +909,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
   const isOwner = user && user.id === list.owner.id;
-  const preloadData = await preloadListItems(list, !!isOwner, 30);
+
+  const [preloadData, similarLists] = await Promise.all([
+    preloadListItems(list, !!isOwner, 30),
+    list.official ? getSimilarLists(list, 3) : [],
+  ]);
+
   const { itemMap, infoIds } = getSortedItemInfo(preloadData.items, list, preloadData.itemData);
 
   const props: ListPageProps = {
@@ -903,6 +925,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       itemInfo: preloadData.items,
       items: preloadData.itemData,
     },
+    similarLists,
     canEdit: !!(user && (user.id === list.owner.id || (list.official && user.isAdmin))),
     isOwner: !!(user && user.id === list.owner.id),
     messages: (await import(`../../../translation/${context.locale}.json`)).default,
@@ -913,66 +936,3 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     props,
   };
 }
-
-export const sortListItems = (
-  a: ListItemInfo,
-  b: ListItemInfo,
-  sortBy: string,
-  sortDir: string,
-  items: { [id: string]: ItemData }
-) => {
-  const itemA = items[a.item_iid];
-  const itemB = items[b.item_iid];
-  if (!itemA || !itemB) return 0;
-
-  if (sortBy === 'name') {
-    if (sortDir === 'asc') return itemA.name.localeCompare(itemB.name);
-    else return itemB.name.localeCompare(itemA.name);
-  } else if (sortBy === 'rarity') {
-    if (sortDir === 'asc') {
-      return (itemA.rarity ?? 0) - (itemB.rarity ?? 0);
-    }
-
-    return (itemB.rarity ?? 0) - (itemA.rarity ?? 0);
-  } else if (sortBy === 'price') {
-    if (sortDir === 'asc')
-      return (
-        (itemA.price.value ?? 0) - (itemB.price.value ?? 0) ||
-        (itemA.owls?.valueMin ?? -1) - (itemB.owls?.valueMin ?? -1)
-      );
-    else
-      return (
-        (itemB.price.value ?? 0) - (itemA.price.value ?? 0) ||
-        (itemB.owls?.valueMin ?? -1) - (itemA.owls?.valueMin ?? -1)
-      );
-  } else if (sortBy === 'item_id') {
-    if (sortDir === 'asc') return (itemA.item_id ?? 0) - (itemB.item_id ?? 0);
-
-    return (itemB.item_id ?? 0) - (itemA.item_id ?? 0);
-  } else if (sortBy === 'addedAt') {
-    const dateA = new Date(a.addedAt);
-    const dateB = new Date(b.addedAt);
-
-    if (sortDir === 'asc') return dateA.getTime() - dateB.getTime();
-    else return dateB.getTime() - dateA.getTime();
-  } else if (sortBy === 'color') {
-    const colorA = new Color(itemA.color.hex);
-    const colorB = new Color(itemB.color.hex);
-    const hsvA = colorA.hsv().array();
-    const hsvB = colorB.hsv().array();
-
-    if (sortDir === 'asc') return hsvB[0] - hsvA[0] || hsvB[1] - hsvA[1] || hsvB[2] - hsvA[2];
-    else return hsvA[0] - hsvB[0] || hsvA[1] - hsvB[1] || hsvA[2] - hsvB[2];
-  } else if (sortBy === 'custom') {
-    if (sortDir === 'asc') return (a.order ?? -1) - (b.order ?? -1);
-    else return (b.order ?? -1) - (a.order ?? -1);
-  } else if (sortBy === 'faerieFest') {
-    const ffA = rarityToCCPoints(itemA);
-    const ffB = rarityToCCPoints(itemB);
-
-    if (sortDir === 'asc') return (ffA || 1000) - (ffB || 1000);
-    else return ffB - ffA;
-  }
-
-  return 0;
-};

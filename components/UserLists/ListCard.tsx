@@ -29,12 +29,13 @@ type Props = {
     trade: { [list_id: number]: ListItemInfo[] };
   };
   utm_content?: string;
+  isSmall?: boolean;
 };
 
 const UserListCard = (props: Props) => {
   const t = useTranslations();
   const toast = useToast();
-  const { list, matches, isSelected, disableLink, utm_content } = props;
+  const { list, matches, isSelected, disableLink, utm_content, isSmall } = props;
   const [matchCount, setMatchCount] = useState(0);
   const color = Color(list?.colorHex || '#4A5568');
   const rgb = color.rgb().array();
@@ -76,7 +77,7 @@ const UserListCard = (props: Props) => {
       minH="150px"
       maxWidth="375px"
       minW="200px"
-      w={{ base: '100%', sm: '375px' }}
+      w={{ base: '100%', sm: isSmall ? '350px' : '375px' }}
       gap={3}
       ml="40px"
       boxShadow={isSelected ? 'outline' : undefined}
@@ -92,8 +93,8 @@ const UserListCard = (props: Props) => {
       >
         <Flex
           position="relative"
-          w={{ base: '100px', sm: '150px' }}
-          h={{ base: '100px', sm: '150px' }}
+          w={{ base: '100px', sm: isSmall ? '100px' : '150px' }}
+          h={{ base: '100px', sm: isSmall ? '100px' : '150px' }}
           ml="-50px"
           bg="gray.700"
           bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, .75) 0%)`}
@@ -115,8 +116,8 @@ const UserListCard = (props: Props) => {
               src={list.coverURL}
               width={140}
               height={140}
-              w={{ base: '95px', sm: '140px' }}
-              h={{ base: '95px', sm: '140px' }}
+              w={{ base: '95px', sm: isSmall ? '95px' : '140px' }}
+              h={{ base: '95px', sm: isSmall ? '95px' : '140px' }}
               alt={'List Cover'}
               objectFit="cover"
               borderRadius="md"

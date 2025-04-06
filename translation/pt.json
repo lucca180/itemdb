@@ -730,7 +730,8 @@
     "select-list": "Selecione Lista",
     "copy-items": "Copiar Itens",
     "copying-items-items": "Copiar {items} itens?",
-    "advanced-import": "Importação avançada"
+    "advanced-import": "Importação avançada",
+    "similar-lists": "Listas Similares"
   },
   "Restock": {
     "est-profit": "Lucro Est.",

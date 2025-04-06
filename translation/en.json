@@ -588,7 +588,8 @@
     "select-list": "Select List",
     "copying-items-items": "Copying {items} items?",
     "copy-items": "Copy Items",
-    "advanced-import": "Advanced Import"
+    "advanced-import": "Advanced Import",
+    "similar-lists": "Similar Lists"
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",

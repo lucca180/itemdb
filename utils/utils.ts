@@ -1,6 +1,7 @@
 import { ItemProcess, Items, PriceProcess } from '@prisma/client';
 import { mean, standardDeviation } from 'simple-statistics';
-import { ItemData, ItemFindAt, ShopInfo, TradeData } from '../types';
+import { ItemData, ItemFindAt, ListItemInfo, ShopInfo, TradeData } from '../types';
+import Color from 'color';
 
 export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
   const findAt: ItemFindAt = {
@@ -2453,4 +2454,67 @@ export const getPetpetColorId = (color: string) => {
   );
   if (!x) return null;
   return parseInt(x);
+};
+
+export const sortListItems = (
+  a: ListItemInfo,
+  b: ListItemInfo,
+  sortBy: string,
+  sortDir: string,
+  items: { [id: string]: ItemData }
+) => {
+  const itemA = items[a.item_iid];
+  const itemB = items[b.item_iid];
+  if (!itemA || !itemB) return 0;
+
+  if (sortBy === 'name') {
+    if (sortDir === 'asc') return itemA.name.localeCompare(itemB.name);
+    else return itemB.name.localeCompare(itemA.name);
+  } else if (sortBy === 'rarity') {
+    if (sortDir === 'asc') {
+      return (itemA.rarity ?? 0) - (itemB.rarity ?? 0);
+    }
+
+    return (itemB.rarity ?? 0) - (itemA.rarity ?? 0);
+  } else if (sortBy === 'price') {
+    if (sortDir === 'asc')
+      return (
+        (itemA.price.value ?? 0) - (itemB.price.value ?? 0) ||
+        (itemA.owls?.valueMin ?? -1) - (itemB.owls?.valueMin ?? -1)
+      );
+    else
+      return (
+        (itemB.price.value ?? 0) - (itemA.price.value ?? 0) ||
+        (itemB.owls?.valueMin ?? -1) - (itemA.owls?.valueMin ?? -1)
+      );
+  } else if (sortBy === 'item_id') {
+    if (sortDir === 'asc') return (itemA.item_id ?? 0) - (itemB.item_id ?? 0);
+
+    return (itemB.item_id ?? 0) - (itemA.item_id ?? 0);
+  } else if (sortBy === 'addedAt') {
+    const dateA = new Date(a.addedAt);
+    const dateB = new Date(b.addedAt);
+
+    if (sortDir === 'asc') return dateA.getTime() - dateB.getTime();
+    else return dateB.getTime() - dateA.getTime();
+  } else if (sortBy === 'color') {
+    const colorA = new Color(itemA.color.hex);
+    const colorB = new Color(itemB.color.hex);
+    const hsvA = colorA.hsv().array();
+    const hsvB = colorB.hsv().array();
+
+    if (sortDir === 'asc') return hsvB[0] - hsvA[0] || hsvB[1] - hsvA[1] || hsvB[2] - hsvA[2];
+    else return hsvA[0] - hsvB[0] || hsvA[1] - hsvB[1] || hsvA[2] - hsvB[2];
+  } else if (sortBy === 'custom') {
+    if (sortDir === 'asc') return (a.order ?? -1) - (b.order ?? -1);
+    else return (b.order ?? -1) - (a.order ?? -1);
+  } else if (sortBy === 'faerieFest') {
+    const ffA = rarityToCCPoints(itemA);
+    const ffB = rarityToCCPoints(itemB);
+
+    if (sortDir === 'asc') return (ffA || 1000) - (ffB || 1000);
+    else return ffB - ffA;
+  }
+
+  return 0;
 };

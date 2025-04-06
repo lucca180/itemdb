@@ -7,7 +7,7 @@ import prisma from '../../../../../../utils/prisma';
 import { ItemData, UserList } from '../../../../../../types';
 import { rawToListItems } from '..';
 import { getManyItems } from '../../../items/many';
-import { sortListItems } from '../../../../../lists/[username]/[list_id]';
+import { sortListItems } from '../../../../../../utils/utils';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
