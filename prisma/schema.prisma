@@ -600,11 +600,11 @@ model NcMallData {
   discountEnd   DateTime?
   discountPrice Int?
 
-  active    Boolean  @default(true)
+  active    Boolean?
   addedAt   DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([item_iid, active])
+  @@unique([item_iid, active])
   @@index([active, saleEnd])
 }
 

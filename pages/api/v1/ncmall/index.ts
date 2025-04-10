@@ -53,7 +53,7 @@ export const getNCMallData = async (limit: number, isLeaving = false): Promise<N
     discountBegin: data.discountBegin ? data.discountBegin.toJSON() : null,
     discountEnd: data.discountEnd ? data.discountEnd.toJSON() : null,
     discountPrice: data.discountPrice,
-    active: data.active,
+    active: !!data.active,
     addedAt: data.addedAt.toJSON(),
     updatedAt: data.updatedAt.toJSON(),
   }));

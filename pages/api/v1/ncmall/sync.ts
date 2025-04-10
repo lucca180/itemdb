@@ -110,7 +110,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     }
   }
 
-  update.push(
+  update.unshift(
     prisma.ncMallData.updateMany({
       where: {
         item_id: {
@@ -119,7 +119,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         active: true,
       },
       data: {
-        active: false,
+        active: null,
       },
     })
   );

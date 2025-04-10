@@ -46,7 +46,7 @@ export const getItemNCMall = async (item_iid: number): Promise<NCMallData | null
     discountBegin: ncMallData.discountBegin ? ncMallData.discountBegin.toJSON() : null,
     discountEnd: ncMallData.discountEnd ? ncMallData.discountEnd.toJSON() : null,
     discountPrice: ncMallData.discountPrice,
-    active: ncMallData.active,
+    active: !!ncMallData.active,
     addedAt: ncMallData.addedAt.toJSON(),
     updatedAt: ncMallData.updatedAt.toJSON(),
   };
