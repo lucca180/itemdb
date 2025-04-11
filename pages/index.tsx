@@ -1,4 +1,4 @@
-import { Box, Flex, Heading, Highlight, Link, SimpleGrid, Stack } from '@chakra-ui/react';
+import { Box, Flex, Heading, Highlight, Link, SimpleGrid, Stack, Text } from '@chakra-ui/react';
 import React, { ReactElement } from 'react';
 import Layout from '../components/Layout';
 import logo from '../public/logo_white_compressed.webp';
@@ -14,7 +14,7 @@ import NextLink from 'next/link';
 import Color from 'color';
 import { getTrendingItems, getTrendingLists } from './api/v1/beta/trending';
 // import { getHotestRestock } from './api/v1/beta/restock';
-import { createTranslator, useTranslations } from 'next-intl';
+import { createTranslator, useFormatter, useTranslations } from 'next-intl';
 import { getNCMallItemsData } from './api/v1/ncmall';
 import { getLatestItems } from './api/v1/items';
 import { getLatestPricedItems } from './api/v1/prices';
@@ -24,9 +24,14 @@ import UserListCard from '../components/UserLists/ListCard';
 import { HorizontalHomeCard } from '../components/Card/HorizontalHomeCard';
 import useSWR from 'swr';
 
+type LatestPricesRes = {
+  count: number | null;
+  items: ItemData[];
+};
+
 type Props = {
   latestItems: ItemData[];
-  latestPrices: ItemData[];
+  latestPrices: LatestPricesRes;
   latestOwls: ItemData[];
   latestPosts: WP_Article[];
   trendingItems: ItemData[];
@@ -45,6 +50,7 @@ function fetcher<T>(url: string, config?: AxiosRequestConfig<any>): Promise<T> {
 }
 const HomePage: NextPageWithLayout<Props> = (props: Props) => {
   const t = useTranslations();
+  const formatter = useFormatter();
 
   const { latestOwls, latestPosts, latestNcMall, trendingItems, leavingNcMall, trendingLists } =
     props;
@@ -53,8 +59,8 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
     fallbackData: props.latestItems,
   });
 
-  const { data: latestPrices } = useSWR<ItemData[]>(
-    `api/v1/prices?limit=16`,
+  const { data: latestPrices } = useSWR<LatestPricesRes>(
+    `api/v1/prices?limit=16&count=true`,
     (url) => fetcher(url),
     { fallbackData: props.latestPrices }
   );
@@ -99,11 +105,19 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
         >
           <Flex flexWrap="wrap" gap={4} justifyContent="center">
             {latestPrices &&
-              latestPrices.map((item) => (
+              latestPrices.items.map((item) => (
                 <ItemCard item={item} key={item.internal_id} utm_content="latest-prices" />
               ))}
             {!latestPrices && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
           </Flex>
+          {latestPrices?.count && (
+            <Text textAlign={'right'} mt={4} fontSize={'xs'} color={'whiteAlpha.400'}>
+              {t('HomePage.x-prices-updated-last-y', {
+                count: formatter.number(latestPrices.count),
+                time: '48h',
+              })}
+            </Text>
+          )}
         </HorizontalHomeCard>
         <SimpleGrid
           columns={{ base: 1, lg: 3 }}
@@ -226,7 +240,10 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
     }),
     getTrendingItems(20).catch(() => []),
     getNCMallItemsData(20).catch(() => []),
-    getLatestPricedItems(16).catch(() => []),
+    getLatestPricedItems(16, true).catch(() => ({
+      items: [],
+      count: null,
+    })) as Promise<LatestPricesRes>,
     getNCMallItemsData(18, true).catch(() => []),
     getTrendingLists(3).catch(() => []),
   ]);

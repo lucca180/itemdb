@@ -24,10 +24,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const limit = Number(req.query.limit) || 25;
+  const includeCount = req.query.count === 'true';
 
-  const sortedItems = await getLatestPricedItems(limit);
+  const result = await getLatestPricedItems(limit, includeCount);
 
-  return res.json(sortedItems);
+  return res.json(result);
 };
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -107,14 +108,26 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   return res.json(x);
 };
 
-export const getLatestPricedItems = async (limit: number) => {
-  const pricesRaw = await prisma.itemPrices.findMany({
-    where: {
-      manual_check: null,
-    },
-    orderBy: { processedAt: 'desc' },
-    take: limit,
-  });
+export const getLatestPricedItems = async (limit: number, includeCount = false) => {
+  const [pricesRaw, priceCount] = await Promise.all([
+    prisma.itemPrices.findMany({
+      where: {
+        manual_check: null,
+      },
+      orderBy: { processedAt: 'desc' },
+      take: limit,
+    }),
+    includeCount
+      ? prisma.itemPrices.count({
+          where: {
+            processedAt: {
+              gte: new Date(Date.now() - 48 * 60 * 60 * 1000),
+            },
+            manual_check: null,
+          },
+        })
+      : null,
+  ]);
 
   const ids = pricesRaw.map((p) => p.item_iid?.toString()) as string[];
 
@@ -125,6 +138,13 @@ export const getLatestPricedItems = async (limit: number) => {
   const sortedItems = Object.values(items).sort(
     (a, b) => ids.indexOf(a.internal_id.toString()) - ids.indexOf(b.internal_id.toString())
   );
+
+  if (includeCount) {
+    return {
+      count: priceCount,
+      items: sortedItems,
+    };
+  }
 
   return sortedItems;
 };

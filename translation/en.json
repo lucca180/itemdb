@@ -15,7 +15,8 @@
     "new-in-nc-mall": "New in NC Mall",
     "is-it-safe": "Is it safe?",
     "leaving-nc-mall": "Leaving NC Mall",
-    "featured-lists": "Featured Lists"
+    "featured-lists": "Featured Lists",
+    "x-prices-updated-last-y": "{count} prices updated in the last {time}"
   },
   "BetaStats": {
     "items-in-db": "Items in the database",

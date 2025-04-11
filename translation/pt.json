@@ -15,7 +15,8 @@
     "new-in-nc-mall": "Novo no Centro NC",
     "is-it-safe": "É seguro?",
     "leaving-nc-mall": "Deixando o Centro NC",
-    "featured-lists": "Listas em Destaque"
+    "featured-lists": "Listas em Destaque",
+    "x-prices-updated-last-y": "{count} preços atualizados nas últimas {time}"
   },
   "BetaStats": {
     "items-in-db": "Itens no banco de dados",
