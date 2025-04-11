@@ -26,7 +26,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const limit = Number(req.query.limit) || 25;
   const includeCount = req.query.count === 'true';
 
-  const result = await getLatestPricedItems(limit, includeCount);
+  const result = await getLatestPricedItems(Math.min(limit, 100), includeCount);
 
   return res.json(result);
 };
