@@ -1,5 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { allNeopetsColors, allSpecies, getPetColorId, getSpeciesId } from '../../../../utils/utils';
+import {
+  allNeopetsColors,
+  allSpecies,
+  getPetColorId,
+  getSpeciesId,
+} from '../../../../utils/pet-utils';
 import prisma from '../../../../utils/prisma';
 import { getManyItems } from '../items/many';
 import axios from 'axios';

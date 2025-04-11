@@ -7,7 +7,7 @@ import {
   allSpecies,
   getPetColorId,
   getSpeciesId,
-} from '../../../../../utils/utils';
+} from '../../../../../utils/pet-utils';
 import { checkPetColorExists } from '../../../v1/tools/petcolors';
 import prisma from '../../../../../utils/prisma';
 

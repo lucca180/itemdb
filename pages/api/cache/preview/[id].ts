@@ -6,7 +6,7 @@ import prisma from '../../../../utils/prisma';
 import axios from 'axios';
 import { DTIBodiesAndTheirZones, DTIItemPreview } from '../../../../types';
 import { Items, Prisma } from '@prisma/client';
-import { getSpeciesId } from '../../../../utils/utils';
+import { getSpeciesId } from '../../../../utils/pet-utils';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {

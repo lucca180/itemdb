@@ -8,8 +8,9 @@ import {
 } from 'next-sitemap';
 import { GetServerSideProps } from 'next';
 import prisma from '../../utils/prisma';
-import { allNeopetsColors, allSpecies, restockShopInfo, slugify } from '../../utils/utils';
+import { restockShopInfo, slugify } from '../../utils/utils';
 import { listCategoriesData } from '../lists/official/cat/[category]';
+import { allSpecies, allNeopetsColors } from '../../utils/pet-utils';
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const page = ctx.query.page as string;

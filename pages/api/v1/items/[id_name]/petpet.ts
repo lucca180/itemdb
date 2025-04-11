@@ -3,7 +3,7 @@ import { ItemData, ItemPetpetData } from '../../../../../types';
 import prisma from '../../../../../utils/prisma';
 import { getManyItems } from '../many';
 import { getItem } from '.';
-import { petpetColors, petpetSpecies } from '../../../../../utils/utils';
+import { petpetColors, petpetSpecies } from '../../../../../utils/pet-utils';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {

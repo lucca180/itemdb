@@ -5,8 +5,9 @@ import CardBase from '../Card/CardBase';
 import dynamic from 'next/dynamic';
 import Color from 'color';
 import { useLocale, useTranslations } from 'next-intl';
-import { getDiseaseTranslation, getPetpetColorId } from '../../utils/utils';
+import { getDiseaseTranslation } from '../../utils/utils';
 import NextImage from 'next/image';
+import { getPetpetColorId } from '../../utils/pet-utils';
 
 const Markdown = dynamic(() => import('../Utils/Markdown'));
 

@@ -6,7 +6,7 @@ import {
   AutoCompleteList,
   AutoCompleteTag,
 } from '@choc-ui/chakra-autocomplete';
-import { allSpecies, petpetSpecies } from '../../utils/utils';
+import { allSpecies, petpetSpecies } from '../../utils/pet-utils';
 
 type Props = {
   value?: string[] | string;

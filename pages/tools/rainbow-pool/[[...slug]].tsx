@@ -22,7 +22,12 @@ import Layout from '../../../components/Layout';
 import { FeedbackModalProps } from '../../../components/Modal/FeedbackModal';
 import { createTranslator, useFormatter, useTranslations } from 'next-intl';
 import NextImage from 'next/image';
-import { allNeopetsColors, allSpecies, getPetColorId, getSpeciesId } from '../../../utils/utils';
+import {
+  allNeopetsColors,
+  allSpecies,
+  getPetColorId,
+  getSpeciesId,
+} from '../../../utils/pet-utils';
 import { ReactElement, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { ItemData } from '../../../types';

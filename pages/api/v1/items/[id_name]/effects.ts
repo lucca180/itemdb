@@ -10,7 +10,7 @@ import {
   getPetColorId,
   getSpeciesId,
   petpetColors,
-} from '../../../../../utils/utils';
+} from '../../../../../utils/pet-utils';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
