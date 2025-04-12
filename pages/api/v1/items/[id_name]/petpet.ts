@@ -46,7 +46,10 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
   const item = await getItem(id_name as string | number);
   if (!item) return res.status(400).json({ error: 'Item not found' });
 
-  const { item_iid, color, species, isUnpaintable, isCanonical } = req.body;
+  let { item_iid, color, species, isUnpaintable, isCanonical } = req.body;
+
+  isUnpaintable = isUnpaintable === 'true' || isUnpaintable === true;
+  isCanonical = isCanonical === 'true' || isCanonical === true;
 
   if (typeof item_iid !== 'number' || typeof color !== 'string' || typeof species !== 'string')
     return res.status(400).json({ error: 'Invalid body' });
