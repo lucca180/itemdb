@@ -29,6 +29,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     items = await getNCMallItemsData(limit, false).catch(() => []);
   }
 
+  if (widgetType === 'leaving-ncmall') {
+    items = await getNCMallItemsData(limit, true).catch(() => []);
+  }
+
   const html = ReactDOMServer.renderToStaticMarkup(<Widget items={items} locale={locale} />);
   // res.setHeader('Access-Control-Allow-Origin', '*');
   // res.setHeader('Access-Control-Allow-Methods', 'GET');
