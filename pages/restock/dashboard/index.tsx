@@ -220,12 +220,22 @@ const RestockDashboard = (props: RestockDashboardProps) => {
     let currentParsed: RestockSession[] = [];
     let unsyncParsed: RestockSession[] = [];
 
+    setImportCount(null);
+
     if (!window.itemdb_restock) {
       console.warn('itemdb_restock not found');
       setNoScript('notFound');
       setImportCount(0);
+
+      //retry
+      setTimeout(() => {
+        handleImport();
+      }, 1000);
+
       return;
     }
+
+    setNoScript(null);
 
     const { current_sessions, unsync_sessions } = window.itemdb_restock.getSessions();
     currentParsed = Object.values(current_sessions);
