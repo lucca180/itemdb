@@ -11,6 +11,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const widgetType = (req.query.type as string) || 'latest-items';
   const limit = Number(req.query.limit) || 5;
   const locale = (req.query.locale as string) || 'en';
+  const showBadges = req.query.badges === 'true' ? true : false;
+
   let items: ItemData[] = [];
 
   if (widgetType === 'latest-items') {
@@ -33,10 +35,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     items = await getNCMallItemsData(limit, true).catch(() => []);
   }
 
-  const html = ReactDOMServer.renderToStaticMarkup(<Widget items={items} locale={locale} />);
+  const html = ReactDOMServer.renderToStaticMarkup(
+    <Widget items={items} locale={locale} showBadges={showBadges} />
+  );
+
   // res.setHeader('Access-Control-Allow-Origin', '*');
   // res.setHeader('Access-Control-Allow-Methods', 'GET');
   // res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
   res.setHeader('Content-Type', 'text/plain');
   res.status(200).send(html);
 }

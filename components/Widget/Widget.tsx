@@ -1,20 +1,22 @@
 /* eslint-disable @next/next/no-img-element */
+import { Fragment } from 'react';
 import { ItemData } from '../../types';
 
 type WidgetProps = {
   items: ItemData[];
   locale: string;
+  showBadges?: boolean;
 };
 
 export const Widget = (props: WidgetProps) => {
-  const { items, locale } = props;
+  const { items, locale, showBadges } = props;
 
-  let msg = 'See more on itemdb';
+  let msg = 'See more on <b>itemdb</b>';
   if (locale === 'pt') {
-    msg = 'Veja mais no itemdb';
+    msg = 'Veja mais no <b>itemdb</b>';
   }
   if (locale === 'es') {
-    msg = 'Ver más en itemdb';
+    msg = 'Ver más en <b>itemdb</b>';
   }
 
   return (
@@ -64,9 +66,31 @@ export const Widget = (props: WidgetProps) => {
           cursor: pointer;
           text-decoration: none;
         }
+        .itemdb-widget-button img {
+          width: 20px;
+          height: auto;
+        }
         .itemdb-widget-button:hover, .itemdb-widget-button.a:hover{
           color: white;
         } 
+        .itemdb-widget-badge {
+          display: inline-block;
+          vertical-align: middle;
+          padding: 0 4px;
+          background: #EDF2F7;
+          color: #2D3748;
+          text-transform: uppercase;
+          font-weight: 700;
+          border-radius: 2px;
+        }
+        .itemdb-widget-badge-purple {
+          background: #E9D8FD;
+          color: #44337A;
+        }
+          .itemdb-widget-badge-yellow {
+          background: #FEFCBF;
+          color: #744210;
+        }
       `}
       </style>
       <div className="itemdb-widget">
@@ -83,21 +107,73 @@ export const Widget = (props: WidgetProps) => {
                   {item.name}
                 </a>
               </p>
+              {showBadges && <SimpleCardBadge item={item} />}
             </div>
           ))}
         </div>
         <a href="https://itemdb.com.br" target="_blank" className="itemdb-widget-button">
           <picture>
-            <img
-              alt="itemdb logo"
-              src="https://itemdb.com.br/logo_icon.svg"
-              width="20px"
-              height="auto"
-            />
+            <img alt="itemdb logo" src="https://itemdb.com.br/logo_icon.svg" height="auto" />
           </picture>
-          {msg}
+          <span dangerouslySetInnerHTML={{ __html: msg }} />
         </a>
       </div>
+    </>
+  );
+};
+
+const intlFormat = new Intl.NumberFormat();
+
+type SimpleCardBadgeProps = {
+  item: ItemData;
+};
+
+export const SimpleCardBadge = (props: SimpleCardBadgeProps) => {
+  const { item } = props;
+
+  if (!item) return null;
+
+  return (
+    <>
+      {item.price.value && item.price.inflated && (
+        <div className="itemdb-widget-badge itemdb-widget-red">
+          {intlFormat.format(item.price.value)} NP
+        </div>
+      )}
+
+      {item.price.value && !item.price.inflated && (
+        <div className="itemdb-widget-badge">{intlFormat.format(item.price.value)} NP</div>
+      )}
+
+      {item.type === 'np' && item.status === 'no trade' && (
+        <div className="itemdb-widget-badge">No Trade</div>
+      )}
+
+      {item.type === 'pb' && (
+        <div className="itemdb-widget-badge itemdb-widget-badge-yellow">PB</div>
+      )}
+
+      {item.isNC &&
+        !item.mallData &&
+        (!item.owls || (isNaN(Number(item.owls.value.split('-')[0])) && !item.owls.buyable)) && (
+          <div className="itemdb-widget-badge itemdb-widget-badge-purple">NC</div>
+        )}
+
+      {item.isNC &&
+        item.owls &&
+        !item.owls.buyable &&
+        !item.mallData &&
+        !isNaN(Number(item.owls.value.split('-')[0])) && (
+          <div className="itemdb-widget-badge itemdb-widget-badge-purple">
+            {item.owls.value} Owls
+          </div>
+        )}
+
+      {item.isNC && item.mallData && (
+        <div className="itemdb-widget-badge itemdb-widget-badge-purple">
+          {intlFormat.format(item.mallData.discountPrice || item.mallData.price)} NC
+        </div>
+      )}
     </>
   );
 };
