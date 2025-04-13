@@ -70,7 +70,9 @@ export const Widget = (props: WidgetProps) => {
           width: 20px;
           height: auto;
         }
-        .itemdb-widget-button:hover, .itemdb-widget-button.a:hover{
+        .itemdb-widget-button:hover, 
+        .itemdb-widget-button.a:hover, 
+        .itemdb-widget-button b {
           color: white;
         } 
         .itemdb-widget-badge {
