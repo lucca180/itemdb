@@ -6,6 +6,7 @@ import { getLatestPricedItems } from '../v1/prices';
 import { ItemData } from '../../../types';
 import { getTrendingItems } from '../v1/beta/trending';
 import { getNCMallItemsData } from '../v1/ncmall';
+import { getListItems } from '../v1/lists/[username]/[list_id]/itemdata';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const widgetType = (req.query.type as string) || 'latest-items';
@@ -33,6 +34,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (widgetType === 'leaving-ncmall') {
     items = await getNCMallItemsData(limit, true).catch(() => []);
+  }
+
+  if (widgetType === 'list') {
+    const list_id = req.query.list_id as string;
+    const list_owner = req.query.list_owner as string;
+    if (!list_id || !list_owner) return res.status(400).send('Required fields missing');
+
+    const listItems = await getListItems(list_id, list_owner);
+
+    if (!listItems) return res.status(404).send('List not found');
+
+    items = listItems;
   }
 
   const html = ReactDOMServer.renderToStaticMarkup(

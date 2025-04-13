@@ -66,3 +66,29 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
+// this function does not check if user is owner of the list
+// only returns public data
+export const getListItems = async (list_id_or_slug: string, username: string) => {
+  const isOfficial = username === 'official';
+
+  const list = await getList(username, list_id_or_slug, null, isOfficial);
+  if (!list) return null;
+
+  const isOwner = false;
+
+  const itemInfoRaw = await prisma.listItems.findMany({
+    where: { list_id: list.internal_id, isHidden: !isOwner ? false : undefined },
+    select: {
+      item_iid: true,
+    },
+  });
+
+  if (!itemInfoRaw.length) return [];
+
+  const itemData = await getManyItems({
+    id: itemInfoRaw.map((item) => item.item_iid.toString()),
+  });
+
+  return Object.values(itemData);
+};
