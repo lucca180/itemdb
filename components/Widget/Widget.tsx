@@ -76,6 +76,7 @@ export const Widget = (props: WidgetProps) => {
           color: white;
         } 
         .itemdb-widget-badge {
+          font-size: 12px;
           display: inline-block;
           vertical-align: middle;
           padding: 0 4px;
