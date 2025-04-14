@@ -12,6 +12,7 @@ import { useRouter } from 'next/router';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import type { NextPage } from 'next';
+import { onIntlError } from '../utils/intlHandler';
 
 const VALID_LOCALES = {
   en: '',
@@ -39,6 +40,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
             messages={pageProps.messages}
             timeZone={'America/Los_Angeles'}
             now={new Date()}
+            onError={onIntlError}
           >
             <Head>
               {Object.entries(VALID_LOCALES).map(([key, value]) => (
