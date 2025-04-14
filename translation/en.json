@@ -842,7 +842,7 @@
     "favorite-shop": "Favorite Shop",
     "wrapped-text1": "Before showing your Restock Card, <b>we need your help</b> to make itemdb more precise",
     "wrapped-text2": "We need you to:",
-    "wrapped-precify-text": "<Link>Price/Link> <b>{needTrades}</b> more trades lots; or",
+    "wrapped-precify-text": "<Link>Price</Link> <b>{needTrades}</b> more trades lots; or",
     "wrapped-vote-text": "<Link>Vote</Link> on <b>{needVotes}</b> more pricing suggestions",
     "wrapped-text3": "After that, you will be able to see (and download!) your Restock Card for the next 24 hours without needing to help us again.",
     "wrapped-text4": "Why do I need to do this?",
