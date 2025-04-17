@@ -32,8 +32,8 @@
     "@hugocxl/react-to-image": "^0.0.9",
     "@json2csv/node": "^7.0.6",
     "@napi-rs/canvas": "^0.1.60",
-    "@prisma/client": "^6.5.0",
-    "@sentry/nextjs": "^9.12.0",
+    "@prisma/client": "^6.6.0",
+    "@sentry/nextjs": "^9.13.0",
     "@tycrek/discord-hookr": "^0.1.0",
     "@umami/api-client": "^0.76.0",
     "accept-language-parser": "^1.5.0",
@@ -100,18 +100,18 @@
     "@types/react-window": "^1.8.5",
     "@types/request-ip": "^0.0.37",
     "@typescript-eslint/eslint-plugin": "^8.18.0",
-    "babel-plugin-react-compiler": "19.0.0-beta-37ed2a7-20241206",
+    "babel-plugin-react-compiler": "^19.0.0-beta-ebf51a3-20250411",
     "eslint": "8.48.0",
     "eslint-config-next": "15.3.0",
     "eslint-config-prettier": "^8.10.0",
-    "eslint-plugin-react-compiler": "19.0.0-beta-37ed2a7-20241206",
+    "eslint-plugin-react-compiler": "^19.0.0-beta-ebf51a3-20250411",
     "husky": "^8.0.0",
     "lint-staged": "15.3.0",
     "prettier": "2.8.4",
-    "prisma": "^6.5.0",
+    "prisma": "^6.6.0",
     "ts-node": "10.9.2",
     "tsc-files": "^1.1.4",
-    "typescript": "^5.8.2",
+    "typescript": "^5.8.3",
     "wp-types": "^3.64.0"
   },
   "lint-staged": {
@@ -122,6 +122,7 @@
   },
   "packageManager": "yarn@4.6.0",
   "resolutions": {
-    "@types/react": "19.1.0"
+    "@types/react": "19.1.0",
+    "axios": "^1.8.4"
   }
 }
