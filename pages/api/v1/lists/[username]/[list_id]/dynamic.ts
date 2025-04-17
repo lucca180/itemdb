@@ -184,24 +184,6 @@ export const syncDynamicList = async (list_id: number, force = false) => {
         },
       });
     }
-
-    logData.runtime = Date.now() - start;
-
-    await Promise.all([
-      prisma.userList.update({
-        where: {
-          internal_id: list_id,
-        },
-        data: {
-          lastSync: new Date(),
-        },
-      }),
-      !!(logData.added.length || logData.removed.length)
-        ? createLog('dynamicListSync', logData, targetList.internal_id.toString(), 'itemdb_system')
-        : null,
-    ]);
-
-    return true;
   }
 
   if (dynamicQuery) {
@@ -254,25 +236,26 @@ export const syncDynamicList = async (list_id: number, force = false) => {
         },
       });
     }
-
-    logData.runtime = Date.now() - start;
-
-    await Promise.all([
-      prisma.userList.update({
-        where: {
-          internal_id: list_id,
-        },
-        data: {
-          lastSync: new Date(),
-        },
-      }),
-      !!(logData.added.length || logData.removed.length)
-        ? createLog('dynamicListSync', logData, targetList.internal_id.toString(), 'itemdb_system')
-        : null,
-    ]);
-
-    return true;
   }
+
+  logData.runtime = Date.now() - start;
+  const isLogEmpty = !logData.added.length && !logData.removed.length;
+
+  await Promise.all([
+    prisma.userList.update({
+      where: {
+        internal_id: list_id,
+      },
+      data: {
+        lastSync: new Date(),
+      },
+    }),
+    !isLogEmpty && !firstSync
+      ? createLog('dynamicListSync', logData, targetList.internal_id.toString(), 'itemdb_system')
+      : null,
+  ]);
+
+  return true;
 };
 
 type DynamicSyncLog = {
