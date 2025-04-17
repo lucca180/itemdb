@@ -113,6 +113,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 export const syncDynamicList = async (list_id: number, force = false) => {
+  const start = Date.now();
   const targetList = await prisma.userList.findFirst({
     where: {
       internal_id: list_id,
@@ -133,6 +134,12 @@ export const syncDynamicList = async (list_id: number, force = false) => {
   const { linkedListId, dynamicType } = targetList;
   const dynamicQuery = targetList.dynamicQuery as ExtendedSearchQuery;
 
+  const logData: DynamicSyncLog = {
+    added: [],
+    removed: [],
+    runtime: 0,
+  };
+
   if (linkedListId) {
     if (dynamicType === 'addOnly' || dynamicType === 'fullSync' || firstSync) {
       const res = (await prisma.$queryRaw`
@@ -144,11 +151,12 @@ export const syncDynamicList = async (list_id: number, force = false) => {
 
       const addData: { list_id: number; item_iid: number }[] = res.map(
         (item: { item_iid: number }) => {
+          logData.added.push(item.item_iid);
           return {
             list_id: list_id,
             item_iid: item.item_iid,
           };
-        },
+        }
       );
 
       await prisma.listItems.createMany({
@@ -164,6 +172,7 @@ export const syncDynamicList = async (list_id: number, force = false) => {
       `) as any;
 
       const removeData: number[] = res.map((item: { internal_id: number }) => {
+        logData.removed.push(item.internal_id);
         return item.internal_id;
       });
 
@@ -176,14 +185,21 @@ export const syncDynamicList = async (list_id: number, force = false) => {
       });
     }
 
-    await prisma.userList.update({
-      where: {
-        internal_id: list_id,
-      },
-      data: {
-        lastSync: new Date(),
-      },
-    });
+    logData.runtime = Date.now() - start;
+
+    await Promise.all([
+      prisma.userList.update({
+        where: {
+          internal_id: list_id,
+        },
+        data: {
+          lastSync: new Date(),
+        },
+      }),
+      !!(logData.added.length || logData.removed.length)
+        ? createLog('dynamicListSync', logData, targetList.internal_id.toString(), 'itemdb_system')
+        : null,
+    ]);
 
     return true;
   }
@@ -205,11 +221,12 @@ export const syncDynamicList = async (list_id: number, force = false) => {
 
       const addData: { list_id: number; item_iid: number }[] = res.map(
         (item: { internal_id: number }) => {
+          logData.added.push(item.internal_id);
           return {
             list_id: list_id,
             item_iid: item.internal_id,
           };
-        },
+        }
       );
 
       await prisma.listItems.createMany({
@@ -224,6 +241,7 @@ export const syncDynamicList = async (list_id: number, force = false) => {
       `) as any;
 
       const removeData: number[] = res.map((item: { item_iid: number }) => {
+        logData.removed.push(item.item_iid);
         return item.item_iid;
       });
 
@@ -237,13 +255,40 @@ export const syncDynamicList = async (list_id: number, force = false) => {
       });
     }
 
-    await prisma.userList.update({
-      where: {
-        internal_id: list_id,
-      },
-      data: {
-        lastSync: new Date(),
-      },
-    });
+    logData.runtime = Date.now() - start;
+
+    await Promise.all([
+      prisma.userList.update({
+        where: {
+          internal_id: list_id,
+        },
+        data: {
+          lastSync: new Date(),
+        },
+      }),
+      !!(logData.added.length || logData.removed.length)
+        ? createLog('dynamicListSync', logData, targetList.internal_id.toString(), 'itemdb_system')
+        : null,
+    ]);
+
+    return true;
   }
+};
+
+type DynamicSyncLog = {
+  added: number[];
+  removed: number[];
+  runtime: number;
+};
+
+// this should be moved to a log service
+const createLog = async (actionType: string, data: any, subjectId?: string, uid?: string) => {
+  await prisma.actionLogs.create({
+    data: {
+      actionType,
+      logData: data,
+      subject_id: subjectId,
+      user_id: uid === 'itemdb_system' ? 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1' : uid,
+    },
+  });
 };

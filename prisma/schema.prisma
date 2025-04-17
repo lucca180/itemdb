@@ -329,6 +329,7 @@ model User {
   RestockWrapped RestockWrapped[]
 
   WrappedSettings WrappedSettings[]
+  ActionLogs      ActionLogs[]
 }
 
 model OpenableItems {
@@ -726,7 +727,26 @@ model PetpetColors {
   @@unique([item_iid])
 }
 
-// -------- DISMANTELING PRICE PROCESS --------- //
+model ActionLogs {
+  log_id     Int    @id @default(autoincrement())
+  actionType String
+
+  logData Json
+
+  subject_id String?
+
+  addedAt DateTime @default(now())
+
+  user       User?   @relation(fields: [user_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  user_id    String?
+  ip_address String?
+
+  @@index([actionType, addedAt])
+  @@index([actionType, subject_id, addedAt])
+  @@index([user_id, actionType])
+}
+
+// -------- DISMANTLING PRICE PROCESS --------- //
 
 // this is for the last time each item appeared on the price process for each type
 model LastSeen {
