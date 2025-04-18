@@ -26,7 +26,10 @@ const CustomNumberInput = (props: Props) => {
   }, [props.value]);
 
   const debouncedOnChange = useCallback(
-    (newVal: string) => debounce(() => props.onChange?.(newVal), 250),
+    // eslint-disable-next-line react-compiler/react-compiler
+    debounce((newValue: string) => {
+      props.onChange?.(newValue);
+    }, 250),
     [props.onChange]
   );
 

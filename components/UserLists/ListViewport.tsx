@@ -39,11 +39,15 @@ export default function ListViewport(props: ListViewportProps) {
   }, [props.ids]);
 
   const debouncedOnChange = useCallback(
-    (
-      id: number,
-      value: number,
-      field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order'
-    ) => debounce(() => props.onChange?.(id, value, field), 250),
+    // eslint-disable-next-line react-compiler/react-compiler
+    debounce(
+      (
+        id: number,
+        value: number,
+        field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order'
+      ) => props.onChange?.(id, value, field),
+      250
+    ),
     [props.onChange]
   );
 

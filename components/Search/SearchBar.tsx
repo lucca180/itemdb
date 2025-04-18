@@ -136,7 +136,10 @@ export const SearchBar = (props: Props) => {
   };
 
   const debouncedPreSearch = useCallback(
-    (newValue: string) => debounce(() => preSearch(newValue), 375),
+    // eslint-disable-next-line react-compiler/react-compiler
+    debounce((newValue: string) => {
+      preSearch(newValue);
+    }, 375),
     [isOpen]
   );
 
