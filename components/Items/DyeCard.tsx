@@ -1,5 +1,5 @@
 import { Flex, Text } from '@chakra-ui/react';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ItemData } from '../../types';
 import CardBase from '../Card/CardBase';
 import ItemCard from './ItemCard';
@@ -16,8 +16,18 @@ const DyeCard = (props: Props) => {
   const { item, dyeData } = props;
   const color = item.color.rgb;
 
+  const type = useMemo(() => {
+    if (dyeData.originalItem.name.toLowerCase().includes('dyeworks')) return 'dyeworks';
+    if (dyeData.originalItem.name.toLowerCase().includes('prismatic')) return 'prismatic';
+
+    if (dyeData.dyes.some((dye) => dye.name.toLowerCase().includes('dyeworks'))) return 'dyeworks';
+    if (dyeData.dyes.some((dye) => dye.name.toLowerCase().includes('prismatic')))
+      return 'prismatic';
+    return 'none';
+  }, [dyeData]);
+
   return (
-    <CardBase title={`Dyeworks Info`} color={color}>
+    <CardBase title={type === 'dyeworks' ? `Dyeworks Info` : 'Prismatic Info'} color={color}>
       <Flex
         gap={3}
         wrap="wrap"
@@ -29,12 +39,12 @@ const DyeCard = (props: Props) => {
       >
         <Text>
           {item.internal_id === dyeData.originalItem.internal_id &&
-            t.rich('ItemPage.dyeworks-x-variations', {
+            t.rich(`ItemPage.${type}-x-variations`, {
               x: dyeData.dyes.length,
               b: (c) => <b>{c}</b>,
             })}
           {item.internal_id !== dyeData.originalItem.internal_id &&
-            t.rich('ItemPage.dyeworks-is-variation', {
+            t.rich(`ItemPage.${type}-is-variation`, {
               b: (c) => <b>{c}</b>,
             })}
         </Text>

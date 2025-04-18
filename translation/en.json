@@ -279,7 +279,9 @@
     "unpaintable-p2": "This petpet is unique and cannot be painted",
     "drops-script-cta": "Help make this data more accurate!",
     "drops-script-cta-text": "With the <b>Item Data Extractor Script</b> you help us improve item drops odds, keep prices updated and more!",
-    "latest-x-with-price": "Latest {x} With Price"
+    "latest-x-with-price": "Latest {x} With Price",
+    "prismatic-x-variations": "This item have <b>{x} Prismatic</b> variations",
+    "prismatic-is-variation": "This item is a <b>Prismatic variation</b>"
   },
   "Button": {
     "feedback": "Feedback",

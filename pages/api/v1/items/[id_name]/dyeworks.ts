@@ -45,7 +45,7 @@ export const getDyeworksData = async (item: ItemData): Promise<DyeworksData | nu
     (i) =>
       i.name.toLowerCase().includes(notDyeworksName.toLowerCase()) &&
       i.name !== notDyeworksName &&
-      i.name.toLowerCase().includes('dyeworks')
+      (i.name.toLowerCase().includes('dyeworks') || i.name.toLowerCase().includes('prismatic'))
   );
 
   const originalItem = search.content.find((i) => i.name === notDyeworksName);
