@@ -48,7 +48,10 @@ const TagSelect = (props: Props) => {
     setOptions(newOptions);
   };
 
-  const debouncedLoad = useCallback(debounce(loadOptions, 250), []);
+  const debouncedLoad = useCallback(
+    (search: string) => debounce(() => loadOptions(search), 250),
+    []
+  );
 
   return (
     <AutoComplete defaultValues={valueProps} multiple onChange={(vals) => onChange(vals)} creatable>

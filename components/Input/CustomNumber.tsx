@@ -26,9 +26,7 @@ const CustomNumberInput = (props: Props) => {
   }, [props.value]);
 
   const debouncedOnChange = useCallback(
-    debounce((newValue: string) => {
-      props.onChange?.(newValue);
-    }, 250),
+    (newVal: string) => debounce(() => props.onChange?.(newVal), 250),
     [props.onChange]
   );
 

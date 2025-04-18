@@ -131,6 +131,7 @@ const SearchPage = () => {
 
     try {
       ABORT_CONTROLLER.abort();
+      // eslint-disable-next-line react-compiler/react-compiler
       ABORT_CONTROLLER = new AbortController();
 
       if (fetchCount) {

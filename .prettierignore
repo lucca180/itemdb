@@ -12,3 +12,4 @@ utils/views/*
 *.md
 package.json
 *.lock
+prisma/generated/**
