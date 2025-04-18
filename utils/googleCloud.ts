@@ -4,7 +4,7 @@ import type { NextApiRequest } from 'next';
 import prisma from './prisma';
 import { Storage } from '@google-cloud/storage';
 import { User, UserRoles } from '../types';
-import { User as dbUser } from '@prisma/client';
+import { User as dbUser } from '@prisma/generated/client';
 import { startOfDay } from 'date-fns';
 
 if (!getApps().length) initializeApp({ credential: cert('./firebase-key.json') });

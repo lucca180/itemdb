@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 // import { CheckAuth } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/generated/client';
 import { AsyncParser } from '@json2csv/node';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {

@@ -3,7 +3,7 @@ import { isSameDay } from 'date-fns';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { getManyItems } from './many';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/generated/client';
 import { OwlsTrade } from '../../../../types';
 import { CheckAuth } from '../../../../utils/googleCloud';
 

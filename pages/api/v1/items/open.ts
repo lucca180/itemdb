@@ -1,4 +1,4 @@
-import { OpenableQueue, Prisma } from '@prisma/client';
+import { OpenableQueue, Prisma } from '@prisma/generated/client';
 import Chance from 'chance';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';

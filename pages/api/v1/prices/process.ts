@@ -2,7 +2,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { coefficientOfVariation } from '../../../../utils/utils';
-import { ItemPrices, PriceProcess2, Prisma } from '@prisma/client';
+import { ItemPrices, PriceProcess2, Prisma } from '@prisma/generated/client';
 import { differenceInCalendarDays } from 'date-fns';
 import { processPrices2 } from '../../../../utils/pricing';
 

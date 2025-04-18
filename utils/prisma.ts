@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 //@ts-nocheck
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/generated/client';
 
 // PrismaClient is attached to the `global` object in development to prevent
 // exhausting your database connection limit.

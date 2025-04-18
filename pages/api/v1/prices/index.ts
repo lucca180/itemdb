@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import requestIp from 'request-ip';
 import hash from 'object-hash';
-import { PriceProcess, Prisma } from '@prisma/client';
+import { PriceProcess, Prisma } from '@prisma/generated/client';
 import { getManyItems } from '../items/many';
 import { checkHash } from '../../../../utils/hash';
 import { ItemData } from '../../../../types';

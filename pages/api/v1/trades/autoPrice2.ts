@@ -1,4 +1,4 @@
-import { Prisma, TradeItems, Trades } from '@prisma/client';
+import { Prisma, TradeItems, Trades } from '@prisma/generated/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { processTradePrice } from '.';

@@ -1,4 +1,4 @@
-import { PriceProcess2 } from '@prisma/client';
+import { PriceProcess2 } from '@prisma/generated/client';
 import { differenceInCalendarDays } from 'date-fns';
 import { mean, standardDeviation } from 'simple-statistics';
 

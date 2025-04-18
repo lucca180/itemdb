@@ -2,7 +2,7 @@ import prisma from '../../../utils/prisma';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { CheckAuth } from '../../../utils/googleCloud';
 import { User, UserRoles } from '../../../types';
-import { User as dbUser } from '@prisma/client';
+import { User as dbUser } from '@prisma/generated/client';
 import { startOfDay } from 'date-fns';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {

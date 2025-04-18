@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../utils/prisma';
 import { FeedbackParsed, TradeData } from '../../../types';
 import { CheckAuth } from '../../../utils/googleCloud';
-import { Feedbacks } from '@prisma/client';
+import { Feedbacks } from '@prisma/generated/client';
 import { processTags } from '../v1/items/[id_name]/index';
 import { processTradePrice } from '../v1/trades';
 

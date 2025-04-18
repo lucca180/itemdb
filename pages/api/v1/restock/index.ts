@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/generated/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { ItemData, RestockChart, RestockSession, RestockStats, User } from '../../../../types';
 import { CheckAuth } from '../../../../utils/googleCloud';

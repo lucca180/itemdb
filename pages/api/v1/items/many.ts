@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { getItemFindAtLinks, isMissingInfo } from '../../../../utils/utils';
 import { ItemData } from '../../../../types';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/generated/client';
 import qs from 'qs';
 import requestIp from 'request-ip';
 import { redis_setItemCount } from '../../redis/checkapi';

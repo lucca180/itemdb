@@ -11,7 +11,7 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { ItemData } from '../../types';
 import { useAuth } from '../../utils/auth';
-import type { ItemPrices, ItemProcess } from '@prisma/client';
+import type { ItemPrices, ItemProcess } from '@prisma/generated/client';
 
 type Props = {
   item: ItemData;

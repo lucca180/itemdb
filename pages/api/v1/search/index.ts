@@ -11,7 +11,7 @@ import {
 } from '../../../../utils/utils';
 import { ItemData, SearchFilters } from '../../../../types';
 import Color from 'color';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/generated/client';
 import qs from 'qs';
 import { parseFilters } from '../../../../utils/parseFilters';
 import requestIp from 'request-ip';

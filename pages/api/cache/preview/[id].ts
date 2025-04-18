@@ -5,7 +5,7 @@ import { ImageBucket } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
 import axios from 'axios';
 import { DTIBodiesAndTheirZones, DTIItemPreview } from '../../../../types';
-import { Items, Prisma } from '@prisma/client';
+import { Items, Prisma } from '@prisma/generated/client';
 import { getSpeciesId } from '../../../../utils/pet-utils';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {

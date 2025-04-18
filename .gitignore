@@ -20,3 +20,5 @@ pages/api/_dev
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+prisma/generated

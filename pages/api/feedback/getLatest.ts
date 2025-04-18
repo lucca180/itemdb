@@ -3,7 +3,7 @@ import prisma from '../../../utils/prisma';
 import { FeedbackParsed } from '../../../types';
 import { CheckAuth } from '../../../utils/googleCloud';
 import requestIp from 'request-ip';
-import { Feedbacks } from '@prisma/client';
+import { Feedbacks } from '@prisma/generated/client';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET')

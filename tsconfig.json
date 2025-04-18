@@ -27,7 +27,12 @@
       {
         "name": "next"
       }
-    ]
+    ],
+    "paths": {
+      "@prisma/generated/*": [
+        "./prisma/generated/*"
+      ]
+    }
   },
   "exclude": [
     "node_modules",

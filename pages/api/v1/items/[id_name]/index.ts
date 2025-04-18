@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { ItemData, OwlsPriceData } from '../../../../../types';
 import { getItemFindAtLinks, isMissingInfo, slugify } from '../../../../../utils/utils';
 import prisma from '../../../../../utils/prisma';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/generated/client';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import axios from 'axios';
 import { isSameDay, isToday } from 'date-fns';

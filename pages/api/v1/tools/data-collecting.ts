@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { CheckAuth } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
 import Chance from 'chance';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/generated/client';
 import requestIp from 'request-ip';
 
 const chance = new Chance();

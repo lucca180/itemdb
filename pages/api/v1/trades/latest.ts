@@ -3,7 +3,7 @@ import prisma from '../../../../utils/prisma';
 import { TradeData } from '../../../../types';
 import Chance from 'chance';
 const chance = new Chance();
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/generated/client';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {

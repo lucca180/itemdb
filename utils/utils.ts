@@ -1,4 +1,4 @@
-import { ItemProcess, Items, PriceProcess } from '@prisma/client';
+import { ItemProcess, Items, PriceProcess } from '@prisma/generated/client';
 import { mean, standardDeviation } from 'simple-statistics';
 import { ItemData, ItemFindAt, ListItemInfo, ShopInfo, TradeData } from '../types';
 import Color from 'color';

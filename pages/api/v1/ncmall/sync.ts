@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
-import { NcMallData as dbMallData, Prisma } from '@prisma/client';
+import { NcMallData as dbMallData, Prisma } from '@prisma/generated/client';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 const TARNUM_SERVER = process.env.TARNUM_SERVER;

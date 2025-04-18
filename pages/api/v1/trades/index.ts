@@ -10,7 +10,7 @@ import { shouldSkipTrade } from '../../../../utils/utils';
 import hash from 'object-hash';
 import { autoPriceTrades2 } from './autoPrice2';
 import { newCreatePriceProcessFlow } from '../prices';
-import { TradeItems, Trades } from '@prisma/client';
+import { TradeItems, Trades } from '@prisma/generated/client';
 import { getManyItems } from '../items/many';
 import { processSimilarTrades } from '../../feedback/send';
 

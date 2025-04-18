@@ -3,7 +3,7 @@ import { getItem } from '.';
 import { ItemDrop, ItemOpenable, PrizePoolData } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
-import { OpenableItems, WearableData } from '@prisma/client';
+import { OpenableItems, WearableData } from '@prisma/generated/client';
 import { revalidateItem } from './effects';
 import { getManyItems } from '../many';
 

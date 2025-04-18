@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { CheckAuth } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
-import { ItemPrices } from '@prisma/client';
+import { ItemPrices } from '@prisma/generated/client';
 import { slugify } from '../../../../utils/utils';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {

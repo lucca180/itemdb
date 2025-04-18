@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/generated/client';
 import Color from 'color';
 import { parseFilters } from '../../../../utils/parseFilters';
 

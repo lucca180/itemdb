@@ -6,7 +6,7 @@ import { ColorType, ListItemInfo, User, UserList } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 import { slugify } from '../../../../../utils/utils';
-import { ListItems, UserList as RawList, User as RawUser } from '@prisma/client';
+import { ListItems, UserList as RawList, User as RawUser } from '@prisma/generated/client';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);

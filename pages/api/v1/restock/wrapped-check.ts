@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { CheckAuth } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/generated/client';
 import { getUserById } from '../../auth/login';
 
 const TRADE_GOAL = 10;

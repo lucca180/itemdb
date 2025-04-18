@@ -40,7 +40,7 @@ import { getLastSeen } from '../api/v1/prices/stats';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '../../utils/auth';
 import { getItemEffects } from '../api/v1/items/[id_name]/effects';
-import type { WearableData } from '@prisma/client';
+import type { WearableData } from '@prisma/generated/client';
 import { getWearableData } from '../api/v1/items/[id_name]/wearable';
 import { getItemNCMall } from '../api/v1/items/[id_name]/ncmall';
 import { getItemRecipes } from '../api/v1/items/[id_name]/recipes';

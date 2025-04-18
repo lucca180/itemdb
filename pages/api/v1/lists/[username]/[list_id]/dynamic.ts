@@ -3,7 +3,7 @@ import { ExtendedSearchQuery } from '../../../../../../types';
 import { CheckAuth } from '../../../../../../utils/googleCloud';
 import prisma from '../../../../../../utils/prisma';
 import { doSearch } from '../../../search';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/generated/client';
 import { isSameHour } from 'date-fns';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {

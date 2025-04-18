@@ -4,7 +4,7 @@ import { ListItemInfo, UserList, User } from '../../../../../../types';
 import { CheckAuth } from '../../../../../../utils/googleCloud';
 import prisma from '../../../../../../utils/prisma';
 import { syncDynamicList } from './dynamic';
-import { SeriesType } from '@prisma/client';
+import { SeriesType } from '@prisma/generated/client';
 import { UTCDate } from '@date-fns/utc';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {

@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { ItemData, ItemEffect } from '../../types';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { useTranslations } from 'next-intl';
-import { WearableData } from '@prisma/client';
+import { WearableData } from '@prisma/generated/client';
 
 type Props = {
   item: ItemData;

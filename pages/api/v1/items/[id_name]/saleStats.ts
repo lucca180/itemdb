@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../../utils/prisma';
 import { getItem } from '.';
-import { PriceProcess2, RestockAuctionHistory, TradeItems, Trades } from '@prisma/client';
+import { PriceProcess2, RestockAuctionHistory, TradeItems, Trades } from '@prisma/generated/client';
 import { SaleStatus } from '../../../../../types';
 import { differenceInCalendarDays, isSameDay } from 'date-fns';
 

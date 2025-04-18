@@ -5,7 +5,7 @@ import { CheckAuth } from '../../../../utils/googleCloud';
 import { contributeCheck } from './wrapped-check';
 import { getManyItems } from '../items/many';
 import { ItemRestockData } from '../../../../types';
-import { RestockAuctionHistory } from '@prisma/client';
+import { RestockAuctionHistory } from '@prisma/generated/client';
 
 const MODE_COST: { [cost: string]: number } = {
   '30days': 0,
