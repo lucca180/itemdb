@@ -36,7 +36,7 @@ export const sendNewItemsHook = async (latest: number) => {
     newItemsMsgs.push(newItemsHookSend(newItemsEmbeds.slice(i, i + 10)));
   }
 
-  await Promise.all([...ncMsgs, ...newItemsMsgs]);
+  await Promise.allSettled([...ncMsgs, ...newItemsMsgs]);
 };
 
 const getItemEmbed = (item: ItemData) => {
