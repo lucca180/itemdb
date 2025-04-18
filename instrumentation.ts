@@ -10,7 +10,7 @@ export function register() {
   Sentry.init({
     dsn:
       SENTRY_DSN ||
-      'https://d093bca7709346a6a45966764e1b1988@o1042114.ingest.sentry.io/4504761196216321',
+      'https://d093bca7709346a6a45966764e1b1988@o1042114.ingest.us.sentry.io/4504761196216321',
     // Adjust this value in production, or use tracesSampler for greater control
     tracesSampleRate: 0.3,
     profilesSampleRate: 0.5,
