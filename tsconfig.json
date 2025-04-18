@@ -31,7 +31,13 @@
     "paths": {
       "@prisma/generated/*": [
         "./prisma/generated/*"
-      ]
+      ],
+      "@components/*": [
+        "./components/*"
+      ],
+      "@utils/*": [
+        "./utils/*"
+      ],
     }
   },
   "exclude": [
