@@ -17,6 +17,7 @@ import { processOpenableItems } from './open';
 import { CheckAuth } from '../../../../utils/googleCloud';
 import { ItemData } from '../../../../types';
 import { sendNewItemsHook } from '../../../../utils/discord-hooks';
+import { syncAllDynamicLists } from '../lists/sync';
 
 type ValueOf<T> = T[keyof T];
 
@@ -122,7 +123,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   ]);
 
   const newItems = result[0].count;
-  await Promise.all([sendNewItemsHook(newItems), processOpenables()]);
+  await Promise.all([
+    newItems ? sendNewItemsHook(newItems) : undefined,
+    processOpenables(),
+    newItems ? syncAllDynamicLists() : undefined,
+  ]);
 
   return res.json({ ...result, manualChecks });
 }

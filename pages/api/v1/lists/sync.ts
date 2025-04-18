@@ -17,6 +17,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 async function GET(req: NextApiRequest, res: NextApiResponse) {
+  await syncAllDynamicLists();
+
+  res.status(200).json({ message: 'Dynamic lists synced' });
+}
+
+export const syncAllDynamicLists = async () => {
   const dynamicOfficialLists = await prisma.userList.findMany({
     where: {
       official: true,
@@ -34,6 +40,4 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
   });
 
   await Promise.all(promises);
-
-  res.status(200).json({ message: 'Dynamic lists synced' });
-}
+};
