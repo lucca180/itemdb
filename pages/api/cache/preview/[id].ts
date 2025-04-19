@@ -192,15 +192,15 @@ const handleRegularStyle = async (
   return [imagesURLs, itemPreviewData];
 };
 
-const altStylesNames = ['nostalgic', 'prismatic', 'spooky'];
+// const altStylesNames = ['nostalgic', 'prismatic', 'spooky'];
 // using data from DTI again. Thanks DTI!
 const handleAltStyle = async (
   image_id: string,
   itemName: string,
   item_id: number | null
 ): Promise<string[]> => {
-  if (!altStylesNames.some((x) => itemName.toLowerCase().includes(x) || image_id.includes(x)))
-    return [];
+  // if (!altStylesNames.some((x) => itemName.toLowerCase().includes(x) || image_id.includes(x)))
+  //   return [];
 
   const specieName = itemName.split(' ').at(-1)?.toLowerCase();
   if (!specieName) return [];
