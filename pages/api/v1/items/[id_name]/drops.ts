@@ -11,6 +11,8 @@ const catType = ['trinkets', 'accessories', 'clothing', 'le', 'choice'];
 const catTypeZone = ['trinkets', 'accessories', 'clothing'];
 const giftBoxes = [65354, 17434, 860];
 
+const SKIP_ITEMS = [61696, 65743];
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Methods', 'GET');
@@ -95,6 +97,8 @@ export const getItemDrops = async (
   item_iid: number,
   isNC = false
 ): Promise<ItemOpenable | null> => {
+  if (SKIP_ITEMS.includes(item_iid)) return null;
+
   const itemProm = prisma.items.findFirst({
     where: {
       internal_id: item_iid,
@@ -424,11 +428,18 @@ export const getItemParent = async (item_iid: number, itemLimit = 30) => {
 
   const parents: { [id: number]: number } = {};
 
-  drops.map((drop) => {
-    if (!drop.parent_iid) return;
-    parents[drop.parent_iid] = parents[drop.parent_iid] ? parents[drop.parent_iid] + 1 : 1;
-    if (drop.prizePool) parents[drop.parent_iid] += 10;
-  });
+  drops
+    .filter(
+      (drop) =>
+        drop.parent_iid &&
+        !SKIP_ITEMS.includes(drop.parent_iid) &&
+        !SKIP_ITEMS.includes(drop.item_iid)
+    )
+    .map((drop) => {
+      if (!drop.parent_iid) return;
+      parents[drop.parent_iid] = parents[drop.parent_iid] ? parents[drop.parent_iid] + 1 : 1;
+      if (drop.prizePool) parents[drop.parent_iid] += 10;
+    });
 
   //discard parents with less than 3 drops
   const parentsArray = Object.entries(parents)
