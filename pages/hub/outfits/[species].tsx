@@ -151,6 +151,9 @@ OutfitPage.getLayout = function getLayout(page: ReactElement, props: any) {
         title: t('OutfitPage.exclusive-species-clothes', {
           species: props.species,
         }),
+        twitter: {
+          cardType: 'summary_large_image',
+        },
         openGraph: {
           images: [
             {
