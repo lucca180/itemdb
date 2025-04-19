@@ -60,7 +60,7 @@ export class dti {
     const variables = {
       itemName: itemName,
       species: pet.species.id,
-      color: 61, //pet.color.id,
+      color: pet.color.id,
     };
 
     const res = await dti._query(GET_ITEM_PREVIEW_BY_NAME, variables);
