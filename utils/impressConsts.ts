@@ -22,6 +22,7 @@ fragment ItemAppearanceForOutfitPreview on ItemAppearance {
     layers {
       id
       remoteId
+      bodyId
       imageUrlV2(idealSize: SIZE_600)
       knownGlitches
       zone {
@@ -54,6 +55,7 @@ fragment PetAppearanceForOutfitPreview on PetAppearance {
     layers {
       id
       remoteId
+      bodyId
       imageUrlV2(idealSize: SIZE_600)
       knownGlitches
       zone {

@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { dti } from '../../../../utils/impress';
+import { dti, getVisibleLayers } from '../../../../utils/impress';
 import { createCanvas, loadImage } from '@napi-rs/canvas';
 import { ImageBucket } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
@@ -159,31 +159,36 @@ const handleRegularStyle = async (
     throw new Error('Item Preview not found');
   }
 
-  const itemRestrictedZoneIds = new Set(
-    itemPreviewData.canonicalAppearance.restrictedZones.map((z) => z.id)
-  );
-  const petRestrictedZoneIds = new Set(
-    itemPreviewData.canonicalAppearance.body.canonicalAppearance.restrictedZones
+  const layers = getVisibleLayers(
+    itemPreviewData.canonicalAppearance.body.canonicalAppearance,
+    itemPreviewData.canonicalAppearance
   );
 
-  const layers = [
-    ...itemPreviewData.canonicalAppearance.layers.map((l) => ({ ...l, source: 'item' })),
-    ...itemPreviewData.canonicalAppearance.body.canonicalAppearance.layers.map((l) => ({
-      ...l,
-      source: 'pet',
-    })),
-  ]
-    .filter((layer) => {
-      if (layer.source === 'pet' && itemRestrictedZoneIds.has(layer.zone.id)) {
-        return false;
-      }
-      if (layer.source === 'pet' && petRestrictedZoneIds.has(layer.zone.id)) {
-        return false;
-      }
+  // const itemRestrictedZoneIds = new Set(
+  //   itemPreviewData.canonicalAppearance.restrictedZones.map((z) => z.id)
+  // );
+  // const petRestrictedZoneIds = new Set(
+  //   itemPreviewData.canonicalAppearance.body.canonicalAppearance.restrictedZones
+  // );
 
-      return true;
-    })
-    .sort((a, b) => a.zone.depth - b.zone.depth);
+  // const layers = [
+  //   ...itemPreviewData.canonicalAppearance.layers.map((l) => ({ ...l, source: 'item' })),
+  //   ...itemPreviewData.canonicalAppearance.body.canonicalAppearance.layers.map((l) => ({
+  //     ...l,
+  //     source: 'pet',
+  //   })),
+  // ]
+  //   .filter((layer) => {
+  //     if (layer.source === 'pet' && itemRestrictedZoneIds.has(layer.zone.id)) {
+  //       return false;
+  //     }
+  //     if (layer.source === 'pet' && petRestrictedZoneIds.has(layer.zone.id)) {
+  //       return false;
+  //     }
+
+  //     return true;
+  //   })
+  //   .sort((a, b) => a.zone.depth - b.zone.depth);
 
   if (layers.length === 0) throw 'No layers found';
 

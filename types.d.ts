@@ -626,6 +626,7 @@ export type DTILayer = {
   imageUrlV2: string;
   knowGlitches: string[];
   remoteId: string;
+  bodyId: string;
   zone: {
     id: string;
     depth: number;
@@ -674,7 +675,11 @@ export type DTIPetAppearance = {
   isGlitched: boolean;
   layers: DTILayer[];
   pose: string;
-  restrictedZones: string[];
+  restrictedZones: {
+    id: string;
+    depth: number;
+    label: string;
+  }[];
   species: {
     id: string;
     name: string;

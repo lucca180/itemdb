@@ -1,6 +1,12 @@
 import Axios from 'axios';
 import Chance from 'chance';
-import { DTIBodiesAndTheirZones, DTIColor, DTIItemPreview, DTIPetAppearance } from '../types';
+import {
+  DTIBodiesAndTheirZones,
+  DTICanonicalAppearance,
+  DTIColor,
+  DTIItemPreview,
+  DTIPetAppearance,
+} from '../types';
 import {
   DTI_ALL_COLORS,
   GET_ITEM_PREVIEW_BY_NAME,
@@ -54,10 +60,11 @@ export class dti {
     const variables = {
       itemName: itemName,
       species: pet.species.id,
-      color: pet.color.id,
+      color: 61, //pet.color.id,
     };
 
     const res = await dti._query(GET_ITEM_PREVIEW_BY_NAME, variables);
+
     return res.itemByName as DTIItemPreview & {
       compatibleBodiesAndTheirZones: DTIBodiesAndTheirZones[];
     };
@@ -123,3 +130,43 @@ const loadImage = (url: string): Promise<HTMLImageElement> => {
     img.src = url;
   });
 };
+
+export function getVisibleLayers(
+  petAppearance: DTIPetAppearance,
+  itemAppearances: DTICanonicalAppearance
+) {
+  if (!petAppearance) {
+    return [];
+  }
+
+  const petLayers = petAppearance.layers.map((l) => ({ ...l, source: 'pet' }));
+
+  const itemLayers = itemAppearances.layers.map((l) => ({ ...l, source: 'item' }));
+
+  const allLayers = [...petLayers, ...itemLayers];
+
+  const itemRestrictedZoneIds = new Set(itemAppearances.restrictedZones.map((z) => z.id));
+  const petRestrictedZoneIds = new Set(petAppearance.restrictedZones.map((z) => z.id));
+
+  const visibleLayers = allLayers.filter((layer) => {
+    if (layer.source === 'pet' && itemRestrictedZoneIds.has(layer.zone.id)) {
+      return false;
+    }
+    if (
+      layer.source === 'item' &&
+      layer.bodyId !== '0' &&
+      (petAppearance.pose === 'UNCONVERTED' || petRestrictedZoneIds.has(layer.zone.id))
+    ) {
+      return false;
+    }
+    if (layer.source === 'pet' && petRestrictedZoneIds.has(layer.zone.id)) {
+      return false;
+    }
+
+    return true;
+  });
+
+  visibleLayers.sort((a, b) => a.zone.depth - b.zone.depth);
+
+  return visibleLayers;
+}
