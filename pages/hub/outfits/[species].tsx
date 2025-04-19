@@ -39,19 +39,20 @@ const OutfitPage = (props: OutfitPageProps) => {
         zIndex={-1}
       />
       <Center my={6} flexFlow="column" gap={2}>
-        <Box h="200px" overflow={'hidden'} borderRadius="md" boxShadow={'md'}>
-          <NavArrows species={species} />
-          <Image
-            width={'600'}
-            height={'200'}
-            quality={90}
-            w={'600px'}
-            h={'200px'}
-            priority
-            src="https://images.neopets.com/ncmall/shopkeepers/cashshop_fashionshow.png"
-            alt={t('OutfitPage.exclusive-clothes-guide')}
-          />
-        </Box>
+        <NavArrows species={species} />
+        <Image
+          borderRadius="md"
+          boxShadow={'md'}
+          width={'600'}
+          height={'200'}
+          quality={90}
+          w={'100%'}
+          maxW={'600px'}
+          h="auto"
+          priority
+          src="https://images.neopets.com/ncmall/shopkeepers/cashshop_fashionshow.png"
+          alt={t('OutfitPage.exclusive-clothes-guide')}
+        />
         <Heading as="h1" fontWeight={'bold'} textAlign="center" color="white">
           {t('OutfitPage.exclusive-species-clothes', {
             species,
