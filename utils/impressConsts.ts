@@ -201,6 +201,37 @@ query($itemName: String!, $species: ID, $color: ID) {
   FRAGMENT_PET_APPEARANCE +
   FRAGMENT_ITEM_APPEARANCE;
 
+export const GET_ITEMS_PREVIEW_BY_NAME =
+  `
+query($itemNames: [String!]!, $species: ID, $color: ID) {
+  itemsByName(names: $itemNames) {
+    id
+    name
+    compatibleBodiesAndTheirZones{
+      zones {
+        label
+      }
+			body{
+        id
+        representsAllBodies
+        species{
+          name
+        }
+      }
+    }
+    canonicalAppearance(preferredSpeciesId: $species) {
+      ...ItemAppearanceForOutfitPreview
+      body {
+        canonicalAppearance(preferredColorId: $color) {
+          ...PetAppearanceForOutfitPreview
+        }
+      }
+    }
+  }
+}` +
+  FRAGMENT_PET_APPEARANCE +
+  FRAGMENT_ITEM_APPEARANCE;
+
 // API RESPONSES //
 
 export const DTI_ALL_ZONES =

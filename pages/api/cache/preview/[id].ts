@@ -159,10 +159,9 @@ const handleRegularStyle = async (
     throw new Error('Item Preview not found');
   }
 
-  const layers = getVisibleLayers(
-    itemPreviewData.canonicalAppearance.body.canonicalAppearance,
-    itemPreviewData.canonicalAppearance
-  );
+  const layers = getVisibleLayers(itemPreviewData.canonicalAppearance.body.canonicalAppearance, [
+    itemPreviewData.canonicalAppearance,
+  ]);
 
   // const itemRestrictedZoneIds = new Set(
   //   itemPreviewData.canonicalAppearance.restrictedZones.map((z) => z.id)

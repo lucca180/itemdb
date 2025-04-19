@@ -10,6 +10,7 @@ import {
 import {
   DTI_ALL_COLORS,
   GET_ITEM_PREVIEW_BY_NAME,
+  GET_ITEMS_PREVIEW_BY_NAME,
   GET_PET_APPEARANCE_ANY_POSE,
 } from './impressConsts';
 
@@ -68,6 +69,21 @@ export class dti {
     return res.itemByName as DTIItemPreview & {
       compatibleBodiesAndTheirZones: DTIBodiesAndTheirZones[];
     };
+  }
+
+  public static async fetchOutfitPreview(itemNames: string[]) {
+    const pet = dti.getRandomPet();
+
+    const variables = {
+      itemNames: itemNames,
+      species: pet.species.id,
+      color: pet.color.id,
+    };
+
+    const res = await dti._query(GET_ITEMS_PREVIEW_BY_NAME, variables);
+    return res.itemsByName as (DTIItemPreview & {
+      compatibleBodiesAndTheirZones: DTIBodiesAndTheirZones[];
+    })[];
   }
 
   public static async fetchPetPreview(speciesId: number, colorId: number) {
@@ -133,19 +149,29 @@ const loadImage = (url: string): Promise<HTMLImageElement> => {
 
 export function getVisibleLayers(
   petAppearance: DTIPetAppearance,
-  itemAppearances: DTICanonicalAppearance
+  itemAppearances: DTICanonicalAppearance[]
 ) {
   if (!petAppearance) {
     return [];
   }
 
+  const validItemAppearances = itemAppearances.filter((a) => a);
+
   const petLayers = petAppearance.layers.map((l) => ({ ...l, source: 'pet' }));
 
-  const itemLayers = itemAppearances.layers.map((l) => ({ ...l, source: 'item' }));
+  const itemLayers = validItemAppearances
+    .map((a) => a.layers)
+    .flat()
+    .map((l) => ({ ...l, source: 'item' }));
 
   const allLayers = [...petLayers, ...itemLayers];
 
-  const itemRestrictedZoneIds = new Set(itemAppearances.restrictedZones.map((z) => z.id));
+  const itemRestrictedZoneIds = new Set(
+    validItemAppearances
+      .map((a) => a.restrictedZones)
+      .flat()
+      .map((z) => z.id)
+  );
   const petRestrictedZoneIds = new Set(petAppearance.restrictedZones.map((z) => z.id));
 
   const visibleLayers = allLayers.filter((layer) => {

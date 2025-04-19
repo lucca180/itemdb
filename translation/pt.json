@@ -1138,5 +1138,10 @@
     "you-should-ask-for": "Você deve pedir:",
     "your-asking-price-in-nps": "Seu preço em NPs",
     "your-auction-should-be": "Seu leilão deve ser:"
+  },
+  "OutfitPage": {
+    "exclusive-clothes-guide": "Guia de Roupas Exclusivas",
+    "description": "Descubra todas as roupas exclusivas para seu Neopet {specie}! Encontre itens aplicáveis raros para incrementar seu armário e customizar seu {specie} com estilo!",
+    "exclusive-species-clothes": "Roupas Exclusivas de {species}"
   }
 }
