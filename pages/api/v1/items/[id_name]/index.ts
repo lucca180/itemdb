@@ -433,7 +433,7 @@ export const fetchOwlsData = async (
           },
           data: {
             lastChecked: new Date(),
-            isLatest: false,
+            isLatest: null,
           },
         });
       }
@@ -491,7 +491,12 @@ export const fetchOwlsData = async (
       pricedAt: lastUpdated.toJSON(),
       buyable: data.owls_value.toLowerCase().includes('buyable'),
     };
-  } catch (e) {
+  } catch (e: any) {
+    if (e.status === 404) {
+      console.error(`Owls API not found for item ${itemName}`);
+      return null;
+    }
+
     return lastOwls
       ? {
           value: lastOwls.value,
