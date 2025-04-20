@@ -144,6 +144,7 @@ const UserListCard = (props: Props) => {
           {list.visibility !== 'private' && (
             <IconButton
               onClick={copyLink}
+              data-umami-event="copy-link"
               size="xs"
               aria-label="Share Link"
               icon={<FaShareAlt />}

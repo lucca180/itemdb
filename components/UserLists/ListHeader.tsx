@@ -261,6 +261,7 @@ const ListHeader = (props: ListHeaderProps) => {
             {list.visibility !== 'private' && (
               <IconButton
                 onClick={copyLink}
+                data-umami-event="copy-link"
                 bg="blackAlpha.300"
                 size="sm"
                 aria-label={t('Layout.copy-link')}

@@ -169,6 +169,11 @@ const ItemCtxMenu = (props: Props) => {
     }
   };
 
+  const onShowMenu = () => {
+    window.umami?.track('item-ctx-menu', { item: item.slug });
+    if (props.onShow) props.onShow();
+  };
+
   if (typeof window === 'undefined') return <></>;
 
   return (
@@ -184,7 +189,7 @@ const ItemCtxMenu = (props: Props) => {
       )}
       <CtxMenu
         id={menuId ?? item.internal_id.toString()}
-        onShow={props.onShow}
+        onShow={onShowMenu}
         onHide={props.onHide}
         preventHideOnResize
         appendTo="body"

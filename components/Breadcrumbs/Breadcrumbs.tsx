@@ -37,6 +37,7 @@ export const Breadcrumbs = (props: BreadcrumbsProps) => {
         {formattedBreadcrumbList.map((crumb, i) => (
           <BreadcrumbItem key={crumb.position} isCurrentPage={i === breadcrumbList.length - 1}>
             <BreadcrumbLink
+              data-umami-event="breadcrumb-link"
               as={i === breadcrumbList.length - 1 ? undefined : NextLink}
               href={removeLink(crumb.item)}
               prefetch={i === breadcrumbList.length - 1 ? undefined : false}

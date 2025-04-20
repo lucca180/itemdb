@@ -326,6 +326,7 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
               </Heading>
               <IconButton
                 onClick={copyLink}
+                data-umami-event="copy-link"
                 bg="blackAlpha.300"
                 size="xs"
                 aria-label={t('Layout.copy-link')}

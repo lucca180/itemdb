@@ -143,6 +143,10 @@ const ItemPriceCard = (props: Props) => {
     else setIsAdmin(false);
   }, [user]);
 
+  useEffect(() => {
+    if (displayState === 'chart') window.umami?.track('price-chart');
+  }, [displayState]);
+
   const needHelp = useMemo(() => {
     if (!priceStatus || !user) return false;
 
@@ -440,6 +444,7 @@ const ItemPriceCard = (props: Props) => {
             <LastSeenCard
               type="auction"
               lastSeen={lastSeen?.auction}
+              data-umami-event="copy-link"
               isLoading={!lastSeen}
               onClick={() => setSeenHistory('auction')}
             />
@@ -538,6 +543,11 @@ const LastSeenCard = (props: LastSeenCardProps) => {
   const t = useTranslations();
   const format = useFormatter();
 
+  const track = () => {
+    window.umami?.track(`seen-${type}`);
+    props.onClick?.();
+  };
+
   return (
     <Flex
       flexFlow={'column'}
@@ -545,7 +555,7 @@ const LastSeenCard = (props: LastSeenCardProps) => {
       bg="gray.700"
       p={2}
       borderRadius={'md'}
-      onClick={lastSeen ? onClick : undefined}
+      onClick={track}
       cursor={!!onClick && !!lastSeen ? 'pointer' : undefined}
     >
       <Text display={'flex'} alignItems={'center'} gap={1}>
