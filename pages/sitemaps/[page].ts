@@ -297,12 +297,48 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     })
     .flat();
 
+  const speciesOutfitsPaths: ISitemapField[] = Object.values(allSpecies)
+    .splice(parseInt(page) * 10, 10)
+    .map((species) => {
+      const speciesLower = species.toLowerCase();
+      return [
+        {
+          loc: `${siteURL}/hub/outfits/${speciesLower}`,
+          alternateRefs: [
+            {
+              href: `${siteURL}/pt/hub/outfits/${speciesLower}`,
+              hreflang: 'pt',
+            },
+            {
+              href: `${siteURL}/hub/outfits/${speciesLower}`,
+              hreflang: 'en',
+            },
+          ],
+        },
+        {
+          loc: `${siteURL}/pt/hub/outfits/${speciesLower}`,
+          alternateRefs: [
+            {
+              href: `${siteURL}/pt/hub/outfits/${speciesLower}`,
+              hreflang: 'pt',
+            },
+            {
+              href: `${siteURL}/hub/outfits/${speciesLower}`,
+              hreflang: 'en',
+            },
+          ],
+        },
+      ];
+    })
+    .flat();
+
   const allPaths: ISitemapField[] = [
     ...restockPaths,
     ...officialListsPaths,
     ...itemPaths,
     ...colorSpeciesPaths,
     ...officialListsCats,
+    ...speciesOutfitsPaths,
   ];
 
   if (allPaths.length === 0) {

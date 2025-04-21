@@ -69,7 +69,7 @@ const OutfitPage = (props: OutfitPageProps) => {
           bg={'blackAlpha.400'}
           size="sm"
           onChange={(e) => changeSpecies(e.target.value)}
-          defaultValue={species}
+          value={species}
         >
           <option value="">{t('PetColors.select-species')}</option>
           {Object.values(allSpecies)
@@ -112,9 +112,6 @@ const OutfitPage = (props: OutfitPageProps) => {
                     width={300}
                     height={300}
                   />
-                  <Text fontSize={'xs'} textAlign={'center'} color="whiteAlpha.500">
-                    Powered by Dress to Impress
-                  </Text>
                 </Flex>
 
                 <Flex flexWrap={'wrap'} justifyContent={'center'} gap={2} flex={1}>
@@ -126,6 +123,9 @@ const OutfitPage = (props: OutfitPageProps) => {
             </Flex>
           );
         })}
+        <Text fontSize={'xs'} textAlign={'center'} color="whiteAlpha.500">
+          Outfit previews powered by Dress to Impress
+        </Text>
       </Flex>
     </>
   );
@@ -133,7 +133,17 @@ const OutfitPage = (props: OutfitPageProps) => {
 
 export default OutfitPage;
 
-export async function getServerSideProps(context: any) {
+export async function getStaticPaths() {
+  const paths = Object.values(allSpecies)
+    .splice(0, 5)
+    .map((species) => ({
+      params: { species: species.toLowerCase() },
+    }));
+
+  return { paths, fallback: 'blocking' };
+}
+
+export async function getStaticProps(context: any) {
   const outfits = await getSpeciesOutfits(context.params.species);
   return {
     props: {
@@ -141,14 +151,22 @@ export async function getServerSideProps(context: any) {
       species: capitalize(context.params.species),
       messages: (await import(`../../../translation/${context.locale}.json`)).default,
     },
+    revalidate: 600,
   };
 }
 
 OutfitPage.getLayout = function getLayout(page: ReactElement, props: any) {
   const t = createTranslator({ messages: props.messages, locale: props.locale });
+
+  const canonical =
+    props.locale === 'en'
+      ? `https://itemdb.com.br/hub/outfits/${props.species.toLowerCase()}`
+      : `https://itemdb.com.br/${props.locale}/hub/outfits/${props.species.toLowerCase()}`;
+
   return (
     <Layout
       SEO={{
+        canonical: canonical,
         title: t('OutfitPage.exclusive-species-clothes', {
           species: props.species,
         }),
@@ -202,7 +220,7 @@ const NavArrows = (props: NavArrowsProps) => {
   const prevSpecies = allSpecies[speciesId - 1] ?? allSpecies[56];
 
   return (
-    <Center gap={8} mb={3} fontSize={'xs'}>
+    <Center gap={8} fontSize={'xs'}>
       <Link as={NextLink} href={`/hub/outfits/${prevSpecies.toLowerCase()}`}>
         ← {prevSpecies}
       </Link>
