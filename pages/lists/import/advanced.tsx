@@ -5,6 +5,7 @@ import { createTranslator, useTranslations } from 'next-intl';
 import HeaderCard from '../../../components/Card/HeaderCard';
 import * as cheerio from 'cheerio';
 import { Breadcrumbs } from '../../../components/Breadcrumbs/Breadcrumbs';
+import { loadTranslation } from '@utils/load-translation';
 
 type AdvancedImportPageProps = {
   locale: string;
@@ -119,7 +120,7 @@ export default AdvancedImportPage;
 export async function getStaticProps(context: any) {
   return {
     props: {
-      messages: (await import(`../../../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale as string, 'lists/import/advanced'),
       locale: context.locale ?? 'en',
     },
   };

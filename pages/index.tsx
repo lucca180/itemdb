@@ -23,6 +23,7 @@ import { HomeCard } from '../components/Card/HomeCard';
 import UserListCard from '../components/UserLists/ListCard';
 import { HorizontalHomeCard } from '../components/Card/HorizontalHomeCard';
 import useSWR from 'swr';
+import { loadTranslation } from '@utils/load-translation';
 
 type LatestPricesRes = {
   count: number | null;
@@ -258,7 +259,7 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
       latestPrices,
       leavingNcMall,
       trendingLists,
-      messages: (await import(`../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale, 'index'),
       locale: context.locale,
     },
     revalidate: 180, // In seconds
@@ -268,14 +269,13 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
 HomePage.getLayout = function getLayout(page: ReactElement, props: Props) {
   const t = createTranslator({
     messages: props.messages,
-    namespace: 'HomePage',
     locale: props.locale,
   });
   return (
     <Layout
       mainColor={color.alpha(0.9).hexa()}
       SEO={{
-        description: t('seo-description'),
+        description: t('HomePage.seo-description'),
       }}
     >
       {page}

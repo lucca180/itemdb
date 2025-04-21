@@ -3,6 +3,7 @@ import { Flex, Heading, Text, Link, ListItem, UnorderedList } from '@chakra-ui/r
 import HeaderCard from '../components/Card/HeaderCard';
 import Layout from '../components/Layout';
 import { ReactElement } from 'react';
+import { loadTranslation } from '@utils/load-translation';
 
 const PrivacyPolicyPage = () => {
   return (
@@ -118,7 +119,7 @@ export default PrivacyPolicyPage;
 export async function getStaticProps(context: any) {
   return {
     props: {
-      messages: (await import(`../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale, 'privacy'),
       locale: context.locale,
     },
   };

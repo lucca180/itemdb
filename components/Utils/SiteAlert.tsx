@@ -21,7 +21,7 @@ const alerts = {
     color: 'white',
   },
   hpd: {
-    message: 'SiteAlert.hpd',
+    message: 'hpd',
     link: '/restock',
     img: {
       src: 'https://images.neopets.com/themes/h5/altadorcup/images/shop-icon.png',
@@ -32,7 +32,7 @@ const alerts = {
     color: 'blackAlpha.900',
   },
   tyrannia: {
-    message: 'SiteAlert.tyrannian-victory',
+    message: 'tyrannian-victory',
     link: '/restock',
     img: {
       src: 'https://images.neopets.com/themes/h5/tyrannia/images/shop-icon.png',
@@ -43,7 +43,7 @@ const alerts = {
     color: 'blackAlpha.900',
   },
   usuki: {
-    message: 'SiteAlert.usuki-day',
+    message: 'usuki-day',
     link: '/restock/usukiland',
     img: {
       src: 'https://images.neopets.com/neoboards/avatars/usukicon_usuls.gif',
@@ -54,7 +54,7 @@ const alerts = {
     color: 'blackAlpha.900',
   },
   faerieFestival: {
-    message: 'SiteAlert.faerie-festival',
+    message: 'faerie-festival',
     link: '/restock',
     img: {
       src: 'https://images.neopets.com/themes/h5/destroyedfestival/images/shop-icon.png',
@@ -65,7 +65,7 @@ const alerts = {
     color: 'blackAlpha.900',
   },
   halloween: {
-    message: 'SiteAlert.halloween',
+    message: 'halloween',
     link: '/restock',
     img: {
       src: 'https://images.neopets.com/themes/h5/hauntedwoods/images/shop-icon.svg',
@@ -76,7 +76,7 @@ const alerts = {
     color: 'whiteAlpha.900',
   },
   weeklyQuests: {
-    message: 'SiteAlert.quest-log',
+    message: 'quest-log',
     link: '/tools/data-collecting',
     img: {
       src: 'https://images.neopets.com/quests/images/CompletedQuest.png',
@@ -87,7 +87,7 @@ const alerts = {
     color: 'blackAlpha.900',
   },
   anniversary: {
-    message: 'SiteAlert.anniversary',
+    message: 'anniversary',
     link: '/tools/data-collecting',
     img: {
       src: 'https://images.neopets.com/themes/h5/basic/images/birthday25-icon.png',
@@ -98,7 +98,7 @@ const alerts = {
     color: 'blackAlpha.900',
   },
   hiddenTower: {
-    message: 'SiteAlert.hiddenTower',
+    message: 'hiddenTower',
     link: '/lists/official/hidden-tower',
     img: {
       src: 'https://images.neopets.com/themes/h5/birthday/images/inventory-icon.png',
@@ -109,7 +109,7 @@ const alerts = {
     color: 'blackAlpha.800',
   },
   owlsReporting: {
-    message: 'SiteAlert.owls-trades',
+    message: 'owls-trades',
     link: '/owls/report',
     img: {
       src: 'https://images.neopets.com/themes/h5/altadorcup/images/transferlog-icon.png',
@@ -120,7 +120,7 @@ const alerts = {
     color: 'blackAlpha.800',
   },
   year2: {
-    message: 'SiteAlert.year2',
+    message: 'year2',
     link: 'https://app.youform.com/forms/dxu5ne0p',
     img: {
       src: 'https://images.neopets.com/themes/h5/altadorcup/images/quickstock-icon.png',
@@ -155,7 +155,7 @@ export const SiteAlert = () => {
         )}
         <Text color={alert.color}>
           {!!alert.message &&
-            t.rich(alert.message, {
+            t.rich('SiteAlert.' + alert.message, {
               b: (children) => <b>{children}</b>,
               Link: (children) => (
                 <Link

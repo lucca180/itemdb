@@ -15,9 +15,10 @@ import { FiSend } from 'react-icons/fi';
 import Layout from '../components/Layout';
 import { FeedbackModalProps } from '../components/Modal/FeedbackModal';
 import { useTranslations } from 'next-intl';
+import { loadTranslation } from '@utils/load-translation';
 
 const FeedbackModal = dynamic<FeedbackModalProps>(
-  () => import('../components/Modal/FeedbackModal'),
+  () => import('../components/Modal/FeedbackModal')
 );
 
 const Error404Page = () => {
@@ -67,7 +68,7 @@ export default Error404Page;
 export async function getStaticProps(context: any) {
   return {
     props: {
-      messages: (await import(`../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale, '404'),
     },
   };
 }

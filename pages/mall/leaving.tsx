@@ -7,6 +7,7 @@ import { ItemData, NCMallData } from '../../types';
 import ItemCard from '../../components/Items/ItemCard';
 import { IconLink } from '../../components/Utils/IconLink';
 import { getNCMallData, getNCMallItemsData } from '../api/v1/ncmall';
+import { loadTranslation } from '@utils/load-translation';
 
 type LeavingMallPageProps = {
   messages: any;
@@ -103,7 +104,7 @@ export async function getStaticProps(context: any) {
     props: {
       mallData: mallData,
       itemData: items,
-      messages: (await import(`../../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale as string, 'mall/leaving'),
       locale: context.locale,
     },
     revalidate: 180,

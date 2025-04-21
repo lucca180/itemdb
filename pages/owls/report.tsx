@@ -36,6 +36,7 @@ import dynamic from 'next/dynamic';
 import axios from 'axios';
 import { CheckAuth } from '../../utils/googleCloud';
 import { Breadcrumbs } from '../../components/Breadcrumbs/Breadcrumbs';
+import { loadTranslation } from '@utils/load-translation';
 
 const ItemSelect = dynamic(() => import('../../components/Input/ItemSelect'), {
   ssr: false,
@@ -43,11 +44,11 @@ const ItemSelect = dynamic(() => import('../../components/Input/ItemSelect'), {
 });
 
 const steps = [
-  { title: 'Owls.you-offered' },
-  { title: 'Owls.you-received' },
-  { title: 'Owls.notes-and-comments' },
-  { title: 'General.confirm' },
-  { title: 'General.success' },
+  { title: 'you-offered' },
+  { title: 'you-received' },
+  { title: 'notes-and-comments' },
+  { title: 'confirm' },
+  { title: 'success' },
 ];
 
 type OwlsReport = {
@@ -248,7 +249,7 @@ const OwlsReportPage = (props: OwlsReportPageProps) => {
                   </StepIndicator>
 
                   <Box flexShrink="0">
-                    <StepTitle>{t(step.title)}</StepTitle>
+                    <StepTitle>{t('Owls.' + step.title)}</StepTitle>
                   </Box>
                   <StepSeparator />
                 </Step>
@@ -548,7 +549,7 @@ export async function getServerSideProps(context: any) {
   return {
     props: {
       user: user,
-      messages: (await import(`../../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale as string, 'owls/report'),
       locale: context.locale,
     },
   };

@@ -24,7 +24,7 @@ type BetaStats = {
 };
 
 const BetaStatsCard = () => {
-  const t = useTranslations('BetaStats');
+  const t = useTranslations();
   const format = useFormatter();
   const { data: stats, isLoading } = useSWR('/api/v1/beta', fetcher);
 
@@ -35,7 +35,7 @@ const BetaStatsCard = () => {
           icon={CiShoppingBasket}
           value={!stats || isLoading ? null : format.number(stats.itemsTotal)}
         >
-          {t('items-in-db')}
+          {t('BetaStats.items-in-db')}
         </StatCard>
         <StatCard
           icon={CiShoppingTag}
@@ -50,20 +50,20 @@ const BetaStatsCard = () => {
             )
           }
         >
-          {t('complete-items')}
+          {t('BetaStats.complete-items')}
         </StatCard>
         <StatCard
           icon={CiMicrochip}
           value={!stats || isLoading ? null : format.number(stats.itemToProcess)}
         >
-          {t('process-queue')}
+          {t('BetaStats.process-queue')}
         </StatCard>
         <StatCard
           icon={CiBadgeDollar}
           value={!stats || isLoading ? null : format.number(stats.tradeQueue)}
         >
           <Link href="/feedback/trades">
-            {t('trade-pricing-queue')} <ExternalLinkIcon verticalAlign="center" />
+            {t('BetaStats.trade-pricing-queue')} <ExternalLinkIcon verticalAlign="center" />
           </Link>
         </StatCard>
         <StatCard
@@ -71,7 +71,7 @@ const BetaStatsCard = () => {
           value={!stats || isLoading ? null : format.number(stats.feedbackVoting)}
         >
           <Link href="/feedback/vote">
-            {t('feedback-voting-queue')} <ExternalLinkIcon verticalAlign="center" />
+            {t('BetaStats.feedback-voting-queue')} <ExternalLinkIcon verticalAlign="center" />
           </Link>
         </StatCard>
       </Flex>

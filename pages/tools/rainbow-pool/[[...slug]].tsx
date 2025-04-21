@@ -38,6 +38,7 @@ import Image from '../../../components/Utils/Image';
 import { getPetColorDataStr } from '../../api/v1/tools/petcolors';
 import { IconLink } from '../../../components/Utils/IconLink';
 import { PoolBreadcrumbs } from '../../../components/Breadcrumbs/PoolBreadcrumbs';
+import { loadTranslation } from '@utils/load-translation';
 
 const FeedbackModal = dynamic<FeedbackModalProps>(
   () => import('../../../components/Modal/FeedbackModal')
@@ -524,7 +525,7 @@ export async function getStaticProps(context: any) {
       species: preloadData ? preloadData.speciesName : '',
       color: preloadData ? preloadData.colorName : '',
       petColorData: preloadData,
-      messages: (await import(`../../../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale as string, 'tools/rainbow-pool/[[...slug]]'),
       locale: context.locale,
     },
   };
@@ -599,28 +600,28 @@ const SpeciesInfoText = (props: SpeciesInfoTextProps) => {
   const formatter = useFormatter();
   const t = useTranslations();
 
-  let textTag = 'PetColors.species-info-default';
+  let textTag = 'species-info-default';
 
   if (speciesInfo.limited) {
-    textTag = 'PetColors.species-info-limited';
+    textTag = 'species-info-limited';
   }
 
   let link = '';
   if (speciesInfo.restricted) {
-    if (speciesInfo.name === 'Grundo') textTag = 'PetColors.species-info-grundo';
+    if (speciesInfo.name === 'Grundo') textTag = 'species-info-grundo';
     if (speciesInfo.name === 'Krawk') {
-      textTag = 'PetColors.species-info-krawk';
+      textTag = 'species-info-krawk';
       link = 'https://itemdb.com.br/search?s=&petpetSpecies[]=154';
     }
     if (speciesInfo.name === 'Draik') {
-      textTag = 'PetColors.species-info-draik';
+      textTag = 'species-info-draik';
       link = 'https://itemdb.com.br/search?s=draik%20egg&category[]=Medieval%20Food';
     }
   }
 
   return (
     <>
-      {t.rich(textTag, {
+      {t.rich('PetColors.' + textTag, {
         b: (chunk) => <b>{chunk}</b>,
         species: speciesInfo.name,
         speciesDate: formatter.dateTime(convertDate(speciesInfo.petDate), {

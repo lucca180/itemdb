@@ -22,3 +22,4 @@ pages/api/_dev
 !.yarn/versions
 
 prisma/generated
+translation/tree-shake/

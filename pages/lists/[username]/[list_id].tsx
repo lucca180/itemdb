@@ -54,6 +54,7 @@ import { AddListItemsModalProps } from '../../../components/Modal/AddListItemsMo
 import { ItemList } from '../../../components/UserLists/ItemList';
 import { preloadListItems } from '../../api/v1/lists/[username]/[list_id]/items';
 import { getSimilarLists } from '../../api/v1/lists/[username]/[list_id]/similar';
+import { loadTranslation } from '@utils/load-translation';
 
 const CreateListModal = dynamic<CreateListModalProps>(
   () => import('../../../components/Modal/CreateListModal')
@@ -134,15 +135,14 @@ const ListPage = (props: ListPageProps) => {
 
   const sortTypes = useMemo(() => {
     return {
-      name: 'General.name',
-      price: 'General.price',
-      rarity: 'General.rarity',
-      color: 'General.color',
-      custom:
-        list.officialTag?.toLowerCase() === 'stamps' ? 'General.album-order' : 'General.custom',
-      addedAt: 'General.added-at',
-      faerieFest: 'General.recycling-points',
-      item_id: 'General.item-id',
+      name: 'name',
+      price: 'price',
+      rarity: 'rarity',
+      color: 'color',
+      custom: list.officialTag?.toLowerCase() === 'stamps' ? 'album-order' : 'custom',
+      addedAt: 'added-at',
+      faerieFest: 'recycling-points',
+      item_id: 'item-id',
     };
   }, [list.officialTag]);
 
@@ -935,7 +935,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     similarLists,
     canEdit: !!(user && (user.id === list.owner.id || (list.official && user.isAdmin))),
     isOwner: !!(user && user.id === list.owner.id),
-    messages: (await import(`../../../translation/${context.locale}.json`)).default,
+    messages: await loadTranslation(context.locale as string, 'lists/[username]/[list_id]'),
     locale: context.locale,
   };
 

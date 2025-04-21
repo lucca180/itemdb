@@ -17,6 +17,7 @@ import Background from '../../public/hub/faeriefest2023.png';
 import Logo from '../../public/hub/faeriefest2023-logo.png';
 import SearchCard from '../../components/Hubs/FaerieFest2023/SearchCard';
 import { ReactElement } from 'react';
+import { loadTranslation } from '@utils/load-translation';
 
 const FaeriesFest2023 = () => {
   return (
@@ -231,7 +232,7 @@ export default FaeriesFest2023;
 export async function getStaticProps(context: any) {
   return {
     props: {
-      messages: (await import(`../../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale as string, 'hub/faeriefestival'),
       locale: context.locale,
     },
   };

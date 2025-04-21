@@ -11,6 +11,7 @@ import { allSpecies, getSpeciesId } from '@utils/pet-utils';
 import { useRouter } from 'next/router';
 import { SkeletonImage } from '@components/Utils/SkeletonImage';
 import NextLink from 'next/link';
+import { loadTranslation } from '@utils/load-translation';
 
 type OutfitPageProps = {
   outfits: { [key: string]: ItemData[] };
@@ -149,7 +150,8 @@ export async function getStaticProps(context: any) {
     props: {
       outfits,
       species: capitalize(context.params.species),
-      messages: (await import(`../../../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale as string, 'hub/outfits/[species]'),
+      locale: context.locale,
     },
     revalidate: 600,
   };

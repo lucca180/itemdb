@@ -21,6 +21,7 @@ import { InfoTab, CategoriesTab } from '../../components/Modal/EditItemModal';
 import { ItemData } from '../../types';
 import { useAuth } from '../../utils/auth';
 import { CheckAuth } from '../../utils/googleCloud';
+import { loadTranslation } from '@utils/load-translation';
 
 const defaultItem: ItemData = {
   internal_id: -1,
@@ -274,7 +275,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
     return {
       props: {
-        messages: (await import(`../../translation/${context.locale}.json`)).default,
+        messages: await loadTranslation(context.locale as string, 'admin/createItem'),
       },
     };
   } catch (e) {

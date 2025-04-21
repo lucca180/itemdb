@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 const SearchMenu = () => {
-  const t = useTranslations('Layout');
+  const t = useTranslations();
   return (
     <Menu>
       <MenuButton size="sm" as={IconButton}>
@@ -13,10 +13,10 @@ const SearchMenu = () => {
       <Portal>
         <MenuList>
           <MenuItem as={Link} href="/search">
-            {t('advanced-search')}
+            {t('Layout.advanced-search')}
           </MenuItem>
           <MenuItem as={Link} href="/lists/official">
-            {t('official-lists')}
+            {t('Layout.official-lists')}
           </MenuItem>
         </MenuList>
       </Portal>

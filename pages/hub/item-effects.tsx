@@ -17,6 +17,7 @@ import { ReactElement, useEffect, useState } from 'react';
 import axios from 'axios';
 import { ItemData, ItemEffect } from '../../types';
 import { EffectsCard } from '../../components/Hubs/Effects/EffectsCard';
+import { loadTranslation } from '@utils/load-translation';
 
 const LIMIT_PER_PAGE = 18;
 
@@ -173,7 +174,7 @@ export default ItemEffectPage;
 export async function getStaticProps(context: any) {
   return {
     props: {
-      messages: (await import(`../../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale as string, 'hub/item-effects'),
       locale: context.locale,
     },
   };

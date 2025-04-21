@@ -25,7 +25,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
 export let redis: Redis;
 
-if (process.env.NODE_ENV === 'production') {
+if (
+  process.env.NODE_ENV === 'production' &&
+  process.env.REDIS_PORT &&
+  process.env.REDIS_HOST &&
+  process.env.REDIS_PASSWORD
+) {
   redis = new Redis({
     port: process.env.REDIS_PORT as unknown as number,
     host: process.env.REDIS_HOST,
@@ -54,7 +59,7 @@ export const redis_setItemCount = async (
   req: NextApiRequest
 ) => {
   try {
-    if (skipAPIMiddleware || !ip || !itemCount) return;
+    if (skipAPIMiddleware || !ip || !itemCount || !redis) return;
 
     const skipRedis = req.headers['idb-skip-redis'] as string | undefined;
     if (skipRedis && skipRedis === process.env.SKIP_REDIS_KEY) return;

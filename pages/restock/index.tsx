@@ -22,6 +22,7 @@ import Image from '../../components/Utils/Image';
 import { getTrendingShops } from '../api/v1/beta/trending';
 import { ShopInfo } from '../../types';
 import { Breadcrumbs } from '../../components/Breadcrumbs/Breadcrumbs';
+import { loadTranslation } from '@utils/load-translation';
 
 const allCats = [
   ...new Set(
@@ -168,8 +169,8 @@ const RestockHub: NextPageWithLayout<any> = (props: RestockHubProps) => {
                   ? diff === 'Beginner'
                     ? 'green'
                     : diff === 'Advanced'
-                    ? 'red'
-                    : 'cyan'
+                      ? 'red'
+                      : 'cyan'
                   : undefined
               }
               onClick={() => handleDiff(diff)}
@@ -255,7 +256,7 @@ export async function getStaticProps(context: any) {
   return {
     props: {
       trendingShops: popularShops,
-      messages: (await import(`../../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale as string, 'restock/index'),
       locale: context.locale,
     },
     revalidate: 24 * 60 * 60, // 24 hours

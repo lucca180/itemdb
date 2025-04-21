@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import { createTranslator, useTranslations } from 'next-intl';
 import { ReactElement } from 'react';
 import { Breadcrumbs } from '../../components/Breadcrumbs/Breadcrumbs';
+import { loadTranslation } from '@utils/load-translation';
 
 const FeedbackModal = dynamic<FeedbackModalProps>(
   () => import('../../components/Modal/FeedbackModal')
@@ -82,7 +83,7 @@ export default FeedbackPage;
 export async function getStaticProps(context: any) {
   return {
     props: {
-      messages: (await import(`../../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale as string, 'feedback/index'),
       locale: context.locale,
     },
   };

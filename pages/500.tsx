@@ -2,6 +2,7 @@
 import { Heading, Text, Center, Image } from '@chakra-ui/react';
 import Layout from '../components/Layout';
 import { useTranslations } from 'next-intl';
+import { loadTranslation } from '@utils/load-translation';
 
 const Error500Page = () => {
   const t = useTranslations();
@@ -30,7 +31,7 @@ export default Error500Page;
 export async function getStaticProps(context: any) {
   return {
     props: {
-      messages: (await import(`../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale, '500'),
     },
   };
 }

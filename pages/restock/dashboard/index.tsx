@@ -54,6 +54,7 @@ import { CheckAuth } from '../../../utils/googleCloud';
 import { setCookie } from 'cookies-next/client';
 import { getRestockStats } from '../../api/v1/restock';
 import { IntervalFormatted } from '../../../components/Utils/IntervalFormatted';
+import { loadTranslation } from '@utils/load-translation';
 
 const RestockWrappedModal = dynamic(() => import('../../../components/Modal/RestockWrappedModal'));
 
@@ -76,7 +77,7 @@ type PeriodFilter = { timePeriod: number; shops: number | string; timestamp: num
 const defaultFilter: PeriodFilter = { timePeriod: 30, shops: 'all', timestamp: null };
 
 type RestockDashboardProps = {
-  messages: Record<string, string>;
+  messages: any;
   locale: string;
   initialFilter: PeriodFilter;
   initialCurrentStats?: RestockStats | null;
@@ -772,7 +773,7 @@ const RestockDashboard = (props: RestockDashboardProps) => {
           </SimpleGrid>
           <Text textAlign={'center'} fontSize="xs" color="whiteAlpha.600" mt={6}>
             {t('General.tip')}:{' '}
-            {t.rich(props.tip.tag, {
+            {t.rich('Search.' + props.tip.tag, {
               Link: (chunk) => (
                 <Link
                   as={NextLink}
@@ -946,7 +947,7 @@ export async function getServerSideProps(context: any): Promise<{ props: Restock
     return {
       props: {
         tip,
-        messages: (await import(`../../../translation/${context.locale}.json`)).default,
+        messages: await loadTranslation(context.locale as string, 'restock/dashboard/index'),
         initialFilter: filter,
         locale: context.locale,
       },
@@ -994,22 +995,22 @@ RestockDashboard.getLayout = function getLayout(page: ReactElement, props: any) 
 const tipList = [
   {
     _id: 'Advanced Operators',
-    tag: 'Search.tip-advanced-operators',
+    tag: 'tip-advanced-operators',
     href: '/articles/advanced-search-queries',
   },
   {
     _id: 'Dynamic Lists',
-    tag: 'Search.tip-dynamic-lists',
+    tag: 'tip-dynamic-lists',
     href: '/articles/checklists-and-dynamic-lists',
   },
   {
     _id: 'Price Calculator',
-    tag: 'Search.tip-price-calculator',
+    tag: 'tip-price-calculator',
     href: '/tools/price-calculator',
   },
   {
     _id: 'Advanced Import',
-    tag: 'Search.tip-advanced-import',
+    tag: 'tip-advanced-import',
     href: '/lists/import/advanced',
   },
 ];

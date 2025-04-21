@@ -7,6 +7,7 @@ import { WP_Article } from '../../types';
 import { wp_getLatestPosts } from '../api/wp/posts';
 import { createTranslator, useTranslations } from 'next-intl';
 import { ReactElement } from 'react';
+import { loadTranslation } from '@utils/load-translation';
 
 type Props = {
   allPosts: WP_Article[];
@@ -50,7 +51,7 @@ export async function getStaticProps(context: any) {
 
   return {
     props: {
-      messages: (await import(`../../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale as string, 'articles/index'),
       locale: context.locale,
       allPosts,
     },

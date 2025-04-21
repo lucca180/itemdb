@@ -38,6 +38,7 @@ import DynamicIcon from '../../../public/icons/dynamic.png';
 import NextLink from 'next/link';
 import { createTranslator, useTranslations } from 'next-intl';
 import { Breadcrumbs } from '../../../components/Breadcrumbs/Breadcrumbs';
+import { loadTranslation } from '@utils/load-translation';
 type Props = {
   items?: { [index: number | string]: number };
   indexType?: string;
@@ -112,7 +113,7 @@ export async function getServerSideProps(context: any) {
       items: items,
       indexType: indexType,
       recomended_list: list,
-      messages: (await import(`../../../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale as string, 'lists/import/index'),
       locale: context.locale ?? 'en',
     },
   };
@@ -250,8 +251,8 @@ const ImportItems = (props: ImportItemsProps) => {
           amount: importInfo.ignore.includes('quantity')
             ? 1
             : item.canonical_id
-            ? canonicalAmount[item.canonical_id]
-            : importedItem ?? 1,
+              ? canonicalAmount[item.canonical_id]
+              : (importedItem ?? 1),
           imported: true,
         };
       });
@@ -276,8 +277,8 @@ const ImportItems = (props: ImportItemsProps) => {
           importInfo.action === 'add'
             ? t('Lists.toast-import')
             : importInfo.action === 'hide'
-            ? t('Lists.toast-hide')
-            : t('Lists.toast-remove'),
+              ? t('Lists.toast-hide')
+              : t('Lists.toast-remove'),
       }),
       status: 'info',
       duration: null,
@@ -319,8 +320,8 @@ const ImportItems = (props: ImportItemsProps) => {
             importInfo.action === 'add'
               ? t('Lists.toast-imported')
               : importInfo.action === 'hide'
-              ? t('Lists.toast-hidden')
-              : t('Lists.toast-removed'),
+                ? t('Lists.toast-hidden')
+                : t('Lists.toast-removed'),
         }),
         status: 'success',
         duration: 10000,
@@ -337,8 +338,8 @@ const ImportItems = (props: ImportItemsProps) => {
             importInfo.action === 'add'
               ? t('Lists.toast-importing')
               : importInfo.action === 'hide'
-              ? t('Lists.toast-hidding')
-              : t('Lists.toast-removing'),
+                ? t('Lists.toast-hidding')
+                : t('Lists.toast-removing'),
         }),
         status: 'error',
         duration: null,

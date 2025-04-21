@@ -4,6 +4,7 @@ import Layout from '../../components/Layout';
 import { wp_getLatestPosts } from '../api/wp/posts';
 import { wp_getBySlug } from '../api/wp/posts/[slug]';
 import ArticlePage, { ArticlePageProps } from '../articles/[slug]';
+import { loadTranslation } from '@utils/load-translation';
 
 const OwlsPage = (props: ArticlePageProps) => {
   return <ArticlePage {...props} />;
@@ -26,7 +27,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
   return {
     props: {
       post,
-      messages: (await import(`../../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale as string, 'owls/index'),
       recomendations: recommended.filter((x) => x.id !== post.id),
       locale: context.locale,
     },

@@ -21,6 +21,7 @@ import Layout from '../components/Layout';
 import { FeedbackModalProps } from '../components/Modal/FeedbackModal';
 import { useTranslations } from 'next-intl';
 import { ReactElement } from 'react';
+import { loadTranslation } from '@utils/load-translation';
 
 const FeedbackModal = dynamic<FeedbackModalProps>(
   () => import('../components/Modal/FeedbackModal')
@@ -100,7 +101,7 @@ export default RawDataPage;
 export async function getStaticProps(context: any) {
   return {
     props: {
-      messages: (await import(`../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale, 'public-data'),
     },
   };
 }

@@ -35,6 +35,7 @@ import dynamic from 'next/dynamic';
 import { useLists } from '../utils/useLists';
 import queryString from 'query-string';
 import isEqual from 'lodash/isEqual';
+import { loadTranslation } from '@utils/load-translation';
 
 const SearchFilterModal = dynamic<SearchFilterModalProps>(
   () => import('../components/Search/SearchFiltersModal')
@@ -480,7 +481,7 @@ const SearchPage = () => {
             display={{ base: 'none', lg: 'block' }}
           >
             {t('General.tip')}:{' '}
-            {t.rich(searchTip.tag, {
+            {t.rich('Search.' + searchTip.tag, {
               Link: (chunk) => (
                 <Link as={NextLink} href={searchTip.href} color="whiteAlpha.800" target="_blank">
                   {chunk}
@@ -544,7 +545,7 @@ export default SearchPage;
 export async function getStaticProps(context: any) {
   return {
     props: {
-      messages: (await import(`../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale, 'search'),
     },
   };
 }
@@ -578,22 +579,22 @@ const shouldUpdateCount = (newFilter: SearchFiltersType, prevFilter: SearchFilte
 const searchTips = [
   {
     _id: 'Advanced Operators',
-    tag: 'Search.tip-advanced-operators',
+    tag: 'tip-advanced-operators',
     href: '/articles/advanced-search-queries',
   },
   {
     _id: 'Dynamic Lists',
-    tag: 'Search.tip-dynamic-lists',
+    tag: 'tip-dynamic-lists',
     href: '/articles/checklists-and-dynamic-lists',
   },
   {
     _id: 'Price Calculator',
-    tag: 'Search.tip-price-calculator',
+    tag: 'tip-price-calculator',
     href: '/tools/price-calculator',
   },
   {
     _id: 'Advanced Import',
-    tag: 'Search.tip-advanced-import',
+    tag: 'tip-advanced-import',
     href: '/lists/import/advanced',
   },
 ];

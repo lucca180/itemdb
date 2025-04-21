@@ -14,6 +14,7 @@ import { NextApiRequest } from 'next';
 import WrappedTimeline from '../../../components/Hubs/Wrapped2024/Timeline';
 import { FeedbackButton } from '../../../components/Modal/FeedbackModal';
 import NextLink from 'next/link';
+import { loadTranslation } from '@utils/load-translation';
 
 type Wrapped2024Props = {
   wrappedData: RestockStats;
@@ -624,7 +625,7 @@ export async function getServerSideProps(context: any) {
         wrappedData: data.wrapped,
         monthlyData: data.monthly,
         user: res.user,
-        messages: (await import(`../../../translation/${context.locale}.json`)).default,
+        messages: await loadTranslation(context.locale as string, 'restock/dashboard/2024'),
       },
     };
   } catch (e) {
@@ -635,7 +636,7 @@ export async function getServerSideProps(context: any) {
     return {
       props: {
         error: typeof e === 'string' ? e : 'unknown',
-        messages: (await import(`../../../translation/${context.locale}.json`)).default,
+        messages: await loadTranslation(context.locale as string, 'restock/dashboard/2024'),
       },
     };
   }

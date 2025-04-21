@@ -1120,7 +1120,9 @@
     "please-send-your-notes-and-comments-in-english": " ",
     "send-error": "An error occurred while submitting the trade. Please refresh the page and try again.",
     "login-required": "You must be logged in to report a trade",
-    "create-account-cta": "Don't have an account? It takes less than 2 minutes to create one!"
+    "create-account-cta": "Don't have an account? It takes less than 2 minutes to create one!",
+    "confirm": "Confirm",
+    "success": "Success"
   },
   "LIsts": {
     "adv-import-cta": "You can also import your lists from other sites such as <b>Dress To Impress</b> and <b>JN</b> using our <Link>Petpage Importer</Link>"

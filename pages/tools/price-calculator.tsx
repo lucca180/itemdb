@@ -21,6 +21,7 @@ import { createTranslator, useFormatter, useTranslations } from 'next-intl';
 import { ReactElement, useMemo, useState } from 'react';
 import Image from '../../components/Utils/Image';
 import { MultiplyInput } from '../../components/Input/MultiplyInput';
+import { loadTranslation } from '@utils/load-translation';
 
 const FeedbackModal = dynamic<FeedbackModalProps>(
   () => import('../../components/Modal/FeedbackModal')
@@ -231,7 +232,7 @@ export default PriceCalculator;
 export async function getStaticProps(context: any) {
   return {
     props: {
-      messages: (await import(`../../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale, 'tools/price-calculator'),
       locale: context.locale,
     },
   };

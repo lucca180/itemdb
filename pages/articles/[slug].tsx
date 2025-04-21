@@ -24,6 +24,7 @@ import { ArticleCard } from '../../components/Articles/ArticlesCard';
 import { useFormatter, useTranslations } from 'next-intl';
 import { ReactElement } from 'react';
 import { ArticleBreadcrumb } from '../../components/Breadcrumbs/ArticlesBreadcrumb';
+import { loadTranslation } from '@utils/load-translation';
 
 export type ArticlePageProps = {
   post: WP_Article;
@@ -115,7 +116,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
   return {
     props: {
       post,
-      messages: (await import(`../../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale as string, 'articles/[slug]'),
       recomendations: recommended.filter((x) => x.id !== post.id),
       locale: context.locale,
     },

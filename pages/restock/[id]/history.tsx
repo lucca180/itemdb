@@ -21,6 +21,7 @@ import axios from 'axios';
 import RestockHistoryCard from '../../../components/Hubs/Restock/RestockHistoryCard';
 import { MdRefresh } from 'react-icons/md';
 import { ContributeWall } from '../../../components/Utils/ContributeWall';
+import { loadTranslation } from '@utils/load-translation';
 
 type RestockHistoryPageProps = {
   shopInfo: ShopInfo;
@@ -203,7 +204,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 
   const props: RestockHistoryPageProps = {
     shopInfo: shopInfo,
-    messages: (await import(`../../../translation/${context.locale}.json`)).default,
+    messages: await loadTranslation(context.locale as string, 'restock/[id]/history'),
     locale: context.locale ?? 'en',
   };
 

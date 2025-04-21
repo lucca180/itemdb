@@ -32,6 +32,7 @@ import { CheckAuth } from '../../utils/googleCloud';
 import { createTranslator, useTranslations } from 'next-intl';
 import { useRouter } from 'next/router';
 import { Breadcrumbs } from '../../components/Breadcrumbs/Breadcrumbs';
+import { loadTranslation } from '@utils/load-translation';
 
 const FeedbackSuggest = () => {
   const t = useTranslations();
@@ -380,7 +381,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
     return {
       props: {
-        messages: (await import(`../../translation/${context.locale}.json`)).default,
+        messages: await loadTranslation(context.locale as string, 'feedback/trades'),
         locale: context.locale,
       },
     };

@@ -41,6 +41,7 @@ import { useTranslations } from 'next-intl';
 import { CheckAuth } from '../../../utils/googleCloud';
 import { getUserAchievements } from '../../api/v1/users/[username]/achievements';
 import UserListCard from '../../../components/UserLists/ListCard';
+import { loadTranslation } from '@utils/load-translation';
 
 const CreateListModal = dynamic<CreateListModalProps>(
   () => import('../../../components/Modal/CreateListModal')
@@ -530,7 +531,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       owner,
       isOwner: user?.id === owner.id,
       achievements: ownerAchiev ?? [],
-      messages: (await import(`../../../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale as string, 'lists/[username]/index'),
     },
   };
 }

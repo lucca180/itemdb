@@ -21,6 +21,7 @@ import ItemCard from '../../components/Items/ItemCard';
 import axios from 'axios';
 import { NextApiRequest, GetServerSidePropsContext } from 'next';
 import { CheckAuth } from '../../utils/googleCloud';
+import { loadTranslation } from '@utils/load-translation';
 
 const DATA_COLLECTING_OPTIONS: {
   [id: string]: {
@@ -195,7 +196,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
     return {
       props: {
-        messages: (await import(`../../translation/${context.locale}.json`)).default,
+        messages: await loadTranslation(context.locale as string, 'tools/data-collecting'),
         locale: context.locale,
       },
     };

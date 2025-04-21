@@ -38,9 +38,14 @@ export const ContributeWall = (props: ContributeWallProps) => {
         }}
       >
         <Text textAlign={'center'} fontSize={'sm'}>
-          {t.rich(textType + '.contribute-wall-1', {
-            b: (chunk) => <b>{chunk}</b>,
-          })}
+          {textType === 'Restock' &&
+            t.rich('Restock.contribute-wall-1', {
+              b: (chunk) => <b>{chunk}</b>,
+            })}
+          {textType === 'ItemPage' &&
+            t.rich('ItemPage.contribute-wall-1', {
+              b: (chunk) => <b>{chunk}</b>,
+            })}
         </Text>
         <Box bg="blackAlpha.500" p={8} borderRadius={'md'}>
           <Text textAlign={'center'} fontSize={'sm'}>
@@ -67,9 +72,14 @@ export const ContributeWall = (props: ContributeWallProps) => {
           </Text>
         </Box>
         <Text textAlign={'center'} fontSize={'sm'}>
-          {t.rich(textType + '.contribute-wall-2', {
-            b: (chunk) => <b>{chunk}</b>,
-          })}
+          {textType === 'Restock' &&
+            t.rich('Restock.contribute-wall-2', {
+              b: (chunk) => <b>{chunk}</b>,
+            })}
+          {textType === 'ItemPage' &&
+            t.rich('ItemPage.contribute-wall-2', {
+              b: (chunk) => <b>{chunk}</b>,
+            })}
         </Text>
         <Accordion allowToggle w="100%" mt={5}>
           <AccordionItem>

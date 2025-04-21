@@ -18,6 +18,7 @@ import { ReactElement, useEffect, useState } from 'react';
 import axios from 'axios';
 import { ItemData } from '../../types';
 import ItemCard from '../../components/Items/ItemCard';
+import { loadTranslation } from '@utils/load-translation';
 
 const NeedInfoPage = () => {
   const t = useTranslations();
@@ -137,7 +138,8 @@ export default NeedInfoPage;
 export async function getStaticProps(context: any) {
   return {
     props: {
-      messages: (await import(`../../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale as string, 'hub/missing-info'),
+      locale: context.locale,
     },
   };
 }

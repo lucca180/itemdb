@@ -35,6 +35,7 @@ import { ReportFeedbackModalProps } from '../../components/Modal/ReportFeedbackM
 import { useRouter } from 'next/router';
 import { CanonicalTradeModalProps } from '../../components/Modal/CanonicalTradeModal';
 import { Breadcrumbs } from '../../components/Breadcrumbs/Breadcrumbs';
+import { loadTranslation } from '@utils/load-translation';
 
 const ReportFeedbackModal = dynamic<ReportFeedbackModalProps>(
   () => import('../../components/Modal/ReportFeedbackModal')
@@ -388,7 +389,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
     return {
       props: {
-        messages: (await import(`../../translation/${context.locale}.json`)).default,
+        messages: await loadTranslation(context.locale as string, 'feedback/vote'),
         locale: context.locale,
       },
     };

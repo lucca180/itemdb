@@ -47,7 +47,7 @@ export const RarityView = (props: Props) => {
           <Heading size="lg" textAlign="center">
             {t('Restock.rarity-range', { range })}
           </Heading>
-          <Text textAlign={'center'}>{t(rarityText[range])}</Text>
+          <Text textAlign={'center'}>{t(`Restock.${rarityText[range]}`)}</Text>
           <VirtualizedItemList
             sortType={sortType}
             key={range}
@@ -62,9 +62,9 @@ export const RarityView = (props: Props) => {
 
 const rarityGroups = [85, 94, 99];
 const rarityText: { [range: string]: string } = {
-  'r1-r85': 'Restock.rarity-range-1',
-  'r86-r94': 'Restock.rarity-range-2',
-  'r95-r99': 'Restock.rarity-range-3',
+  'r1-r85': 'rarity-range-1',
+  'r86-r94': 'rarity-range-2',
+  'r95-r99': 'rarity-range-3',
   unknown: 'Unknown',
 };
 

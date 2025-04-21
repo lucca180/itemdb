@@ -40,7 +40,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
             messages={pageProps.messages}
             timeZone={'America/Los_Angeles'}
             now={new Date()}
-            onError={onIntlError}
+            onError={(e) => onIntlError(e, { path: router.asPath })}
           >
             <Head>
               {Object.entries(VALID_LOCALES).map(([key, value]) => (

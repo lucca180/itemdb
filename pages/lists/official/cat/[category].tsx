@@ -20,6 +20,7 @@ import { ReactElement, useEffect, useMemo, useState } from 'react';
 import { ViewportList } from 'react-viewport-list';
 import { SearchList } from '../../../../components/Search/SearchLists';
 import { Breadcrumbs } from '../../../../components/Breadcrumbs/Breadcrumbs';
+import { loadTranslation } from '@utils/load-translation';
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data as UserList[]);
 
@@ -200,7 +201,7 @@ export async function getServerSideProps(context: any) {
     props: {
       lists: lists,
       selectedCategory: category,
-      messages: (await import(`../../../../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale as string, 'lists/official/cat/[category]'),
       locale: context.locale,
     },
   };

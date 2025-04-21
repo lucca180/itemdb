@@ -33,12 +33,12 @@ export const SortSelect = (props: Props) => {
   return (
     <Menu>
       <MenuButton as={Button} rightIcon={<ChevronDownIcon />} isDisabled={disabled}>
-        {t(sortTypes[sortBy])}
+        {t('General.' + sortTypes[sortBy])}
       </MenuButton>
       <MenuList>
         {Object.entries(sortTypes).map(([key, val]) => (
           <MenuItem key={key} value={key} onClick={() => onclick(key)}>
-            {t(val)} {key === sortBy && arrow}
+            {t('General.' + val)} {key === sortBy && arrow}
           </MenuItem>
         ))}
       </MenuList>

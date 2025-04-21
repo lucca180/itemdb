@@ -561,13 +561,13 @@ const LastSeenCard = (props: LastSeenCardProps) => {
       <Text display={'flex'} alignItems={'center'} gap={1}>
         <Image
           src={lastSeenTypes[type].icon}
-          alt={t(lastSeenTypes[type].title)}
-          title={t(lastSeenTypes[type].title)}
+          alt={t(`General.${lastSeenTypes[type].title}`)}
+          title={t(`General.${lastSeenTypes[type].title}`)}
           height={24}
           quality="100"
           style={{ display: 'inline-block' }}
         />
-        {t(lastSeenTypes[type].title)}
+        {t(`General.${lastSeenTypes[type].title}`)}
       </Text>
       <Text opacity={0.8} suppressHydrationWarning>
         {lastSeen && format.relativeTime(new Date(lastSeen))}
@@ -582,19 +582,19 @@ const LastSeenCard = (props: LastSeenCardProps) => {
 
 const lastSeenTypes = {
   sw: {
-    title: 'General.shop-wizard',
+    title: 'shop-wizard',
     icon: SWIcon,
   },
   tp: {
-    title: 'General.trading-post',
+    title: 'trading-post',
     icon: TPIcon,
   },
   auction: {
-    title: 'General.auction-house',
+    title: 'auction-house',
     icon: AuctionIcon,
   },
   restock: {
-    title: 'General.restock-shop',
+    title: 'restock-shop',
     icon: ShopIcon,
   },
 };

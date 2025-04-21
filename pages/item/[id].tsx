@@ -51,6 +51,7 @@ import { getSingleItemColor } from '../api/v1/items/[id_name]/colors';
 import * as Sentry from '@sentry/nextjs';
 import { getPetpetData } from '../api/v1/items/[id_name]/petpet';
 import { ItemBreadcrumb } from '../../components/Breadcrumbs/ItemBreadcrumb';
+import { loadTranslation } from '@utils/load-translation';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -475,7 +476,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     mmeData: mmeData,
     dyeData: dyeData,
     petpetData: petpetData,
-    messages: (await import(`../../translation/${context.locale}.json`)).default,
+    messages: await loadTranslation(context.locale ?? 'en', 'item/[id]'),
     locale: context.locale,
   };
 

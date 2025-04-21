@@ -9,6 +9,7 @@
     "build": "npx prisma generate && next build",
     "build-turbo": "npx prisma generate && next build --turbopack",
     "build-proxy": "npx prisma generate --data-proxy && next build",
+    "build-intl": "npx --yes github:lucca180/itemdb-intl-compiler ./pages --output ./translation/tree-shake -t ./",
     "ts": "tsc --noEmit --incremental",
     "ts-check": "tsc",
     "start": "PORT=4000 next start",

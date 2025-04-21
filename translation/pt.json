@@ -1121,7 +1121,9 @@
     "please-send-your-notes-and-comments-in-english": "Por favor, envie suas notas e comentários em inglês!",
     "send-error": "Ocorreu um erro ao enviar a troca. Atualize a página e tente novamente.",
     "create-account-cta": "Não tem uma conta? Demora menos de 2 minutos para criar uma!",
-    "login-required": "Você precisa estar logado no itemdb para reportar uma troca"
+    "login-required": "Você precisa estar logado no itemdb para reportar uma troca",
+    "confirm": "Confirmar",
+    "success": "Sucesso"
   },
   "LIsts": {
     "adv-import-cta": "Você também pode importar suas listas de outros sites, como <b>Dress To Impress</b> e <b>JN</b> usando o nosso <Link>Petpage Importer</Link>"

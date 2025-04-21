@@ -30,6 +30,7 @@ import { doSearch } from '../../api/v1/search';
 import { ShopInfoCard } from '../../../components/Hubs/Restock/ShopInfoCard';
 import { mean } from 'simple-statistics';
 import ShopCard from '../../../components/Hubs/Restock/ShopCard';
+import { loadTranslation } from '@utils/load-translation';
 
 type RestockShopPageProps = {
   shopInfo: ShopInfo;
@@ -44,12 +45,12 @@ type RestockShopPageProps = {
 };
 
 const sortTypes = {
-  name: 'General.name',
-  price: 'General.price',
-  profit: 'General.profit',
-  rarity: 'General.rarity',
-  color: 'General.color',
-  item_id: 'General.restock-order',
+  name: 'name',
+  price: 'price',
+  profit: 'profit',
+  rarity: 'rarity',
+  color: 'color',
+  item_id: 'restock-order',
 };
 
 const RESTOCK_FILTER = (shopInfo: ShopInfo): SearchFilters => ({
@@ -386,7 +387,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     profitMean: profitMean(resultItems),
     similarShops: getSimilarShops(shopInfo),
     initialItems: resultItems.splice(0, 32),
-    messages: (await import(`../../../translation/${context.locale}.json`)).default,
+    messages: await loadTranslation(context.locale as string, 'restock/[id]/index'),
     locale: context.locale ?? 'en',
   };
 

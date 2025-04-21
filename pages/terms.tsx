@@ -3,6 +3,7 @@ import { Flex, Heading, Text } from '@chakra-ui/react';
 import HeaderCard from '../components/Card/HeaderCard';
 import Layout from '../components/Layout';
 import { ReactElement } from 'react';
+import { loadTranslation } from '@utils/load-translation';
 
 const TermsPage = () => {
   return (
@@ -98,7 +99,7 @@ export default TermsPage;
 export async function getStaticProps(context: any) {
   return {
     props: {
-      messages: (await import(`../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale, 'terms'),
       locale: context.locale,
     },
   };

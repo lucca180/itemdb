@@ -21,6 +21,7 @@ import { useAuth } from '../utils/auth';
 import LoginModal from '../components/Modal/LoginModal';
 import { User } from '../types';
 import { useTranslations } from 'next-intl';
+import { loadTranslation } from '@utils/load-translation';
 
 const mailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -258,7 +259,7 @@ export default LoginPage;
 export async function getStaticProps(context: any) {
   return {
     props: {
-      messages: (await import(`../translation/${context.locale}.json`)).default,
+      messages: await loadTranslation(context.locale, 'login'),
       locale: context.locale,
     },
   };
