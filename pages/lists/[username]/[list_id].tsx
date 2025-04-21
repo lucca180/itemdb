@@ -174,6 +174,13 @@ const ListPage = (props: ListPageProps) => {
   }, [router.query]);
 
   useEffect(() => {
+    setItemInfoIds(preloadData.infoIds);
+    setRawItemInfo(preloadData.itemInfo);
+    setItemInfo(preloadData.itemMap);
+    setItems(preloadData.items);
+  }, [preloadData]);
+
+  useEffect(() => {
     if (user && list) getMatches();
   }, [user, list]);
 
