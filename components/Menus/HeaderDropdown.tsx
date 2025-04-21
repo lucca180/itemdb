@@ -82,6 +82,8 @@ export const DropdownOption = (props: Props) => {
       py={4}
       px={3}
       borderRadius={0}
+      data-umami-event="dropdown-link"
+      data-umami-event-label={label}
     >
       {label}
       {isNew && (

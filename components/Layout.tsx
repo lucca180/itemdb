@@ -240,7 +240,8 @@ const Layout = (props: Props) => {
             />
           </DropdownButton>
           <DropdownButton bg={props.mainColor} label={t('Layout.restock')} href="/restock">
-            <DropdownOption label={t('Layout.dashboard')} href="/restock/dashboard" />
+            <DropdownOption label={t('Layout.restock-dashboard')} href="/restock/dashboard" />
+            <DropdownOption label={'Neopian Fresh Foods'} href="/restock/neopian-fresh-foods" />
             <DropdownOption label={"Cog's Tog"} href="/restock/cogs-togs" />
             <DropdownOption
               label={t('Restock.restock-history')}
@@ -249,15 +250,23 @@ const Layout = (props: Props) => {
             <DropdownOption label={t('Layout.view-all-shops')} href="/restock/" />
           </DropdownButton>
           <DropdownButton bg={props.mainColor} label={t('Lists.Lists')} href="/lists/official">
-            <DropdownOption label={'Quest Log'} href="/lists/official/cat/quest-log" />
-            <DropdownOption label={t('Layout.checklists')} href="/lists/import" />
-            <DropdownOption label={t('Lists.import-items')} href="/lists/import" />
-            <DropdownOption label={t('Layout.official-lists')} href="/lists/official" />
+            <DropdownOption label={t('Layout.import-items-and-checklists')} href="/lists/import" />
+            <DropdownOption
+              label={t('Layout.dailies-and-freebies')}
+              href="/lists/official/cat/dailies"
+            />
+            <DropdownOption
+              label={t('Layout.exclusive-clothes')}
+              href="/hub/outfits/aisha"
+              newUntil={1748735999000}
+            />
             <DropdownOption
               label={t('General.dynamic-lists')}
               href="/articles/checklists-and-dynamic-lists"
             />
             <DropdownOption label={t('HomePage.leaving-nc-mall')} href="/mall/leaving" />
+            <DropdownOption label={'Quest Log'} href="/lists/official/cat/quest-log" />
+            <DropdownOption label={t('Layout.all-official-lists')} href="/lists/official" />
           </DropdownButton>
           <DropdownButton bg={props.mainColor} label={t('Layout.tools')} href="/tools/rainbow-pool">
             <DropdownOption label={t('Layout.sdb-pricer')} href="/articles/userscripts" />
@@ -336,8 +345,8 @@ const Layout = (props: Props) => {
                 <ChakraLink href="https://magnetismotimes.com/" isExternal>
                   Magnetismo Times
                 </ChakraLink>
-                <br />© 1999-{new Date().getFullYear()} NeoPets, Inc. All rights reserved. Used with
-                permission.
+                <br />© 1999-{new Date().getFullYear()} NeoPets, Inc. All rights reserved. Used
+                with permission.
               </Text>
               <Box>
                 <Select
