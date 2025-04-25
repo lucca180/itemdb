@@ -1678,12 +1678,12 @@ export const sortListItems = (
   } else if (sortBy === 'price') {
     if (sortDir === 'asc')
       return (
-        (itemA.price.value ?? 0) - (itemB.price.value ?? 0) ||
+        (itemA.price.value ?? Infinity) - (itemB.price.value ?? Infinity) ||
         (itemA.owls?.valueMin ?? -1) - (itemB.owls?.valueMin ?? -1)
       );
     else
       return (
-        (itemB.price.value ?? 0) - (itemA.price.value ?? 0) ||
+        (itemB.price.value ?? Infinity) - (itemA.price.value ?? Infinity) ||
         (itemB.owls?.valueMin ?? -1) - (itemA.owls?.valueMin ?? -1)
       );
   } else if (sortBy === 'item_id') {

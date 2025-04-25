@@ -417,7 +417,7 @@ const sortItems = (a: ItemData, b: ItemData, sortBy: string, sortDir: string) =>
     else return itemB.name.localeCompare(itemA.name);
   } else if (sortBy === 'rarity') {
     if (sortDir === 'asc') {
-      return (itemA.rarity ?? Number.MAX_SAFE_INTEGER) - (itemB.rarity ?? Number.MAX_SAFE_INTEGER);
+      return (itemA.rarity ?? Infinity) - (itemB.rarity ?? Infinity);
     }
 
     return (itemB.rarity ?? Number.MIN_SAFE_INTEGER) - (itemA.rarity ?? Number.MIN_SAFE_INTEGER);
@@ -431,16 +431,11 @@ const sortItems = (a: ItemData, b: ItemData, sortBy: string, sortDir: string) =>
       );
     else
       return (
-        (itemB.price.value ?? Number.MAX_SAFE_INTEGER) -
-          (itemA.price.value ?? Number.MAX_SAFE_INTEGER) ||
-        (itemB.owls?.valueMin ?? Number.MAX_SAFE_INTEGER) -
-          (itemA.owls?.valueMin ?? Number.MAX_SAFE_INTEGER)
+        (itemB.price.value ?? Infinity) - (itemA.price.value ?? Infinity) ||
+        (itemB.owls?.valueMin ?? Infinity) - (itemA.owls?.valueMin ?? Infinity)
       );
   } else if (sortBy === 'item_id') {
-    if (sortDir === 'asc')
-      return (
-        (itemA.item_id ?? Number.MAX_SAFE_INTEGER) - (itemB.item_id ?? Number.MAX_SAFE_INTEGER)
-      );
+    if (sortDir === 'asc') return (itemA.item_id ?? Infinity) - (itemB.item_id ?? Infinity);
 
     return (itemB.item_id ?? Number.MIN_SAFE_INTEGER) - (itemA.item_id ?? Number.MIN_SAFE_INTEGER);
   } else if (sortBy === 'color') {
@@ -453,10 +448,7 @@ const sortItems = (a: ItemData, b: ItemData, sortBy: string, sortDir: string) =>
     else return hsvA[0] - hsvB[0] || hsvA[1] - hsvB[1] || hsvA[2] - hsvB[2];
   } else if (sortBy === 'profit') {
     if (sortDir === 'asc')
-      return (
-        (getRestockProfit(itemA) ?? Number.MAX_SAFE_INTEGER) -
-        (getRestockProfit(itemB) ?? Number.MAX_SAFE_INTEGER)
-      );
+      return (getRestockProfit(itemA) ?? Infinity) - (getRestockProfit(itemB) ?? Infinity);
     else
       return (
         (getRestockProfit(itemB) ?? Number.MIN_SAFE_INTEGER) -
