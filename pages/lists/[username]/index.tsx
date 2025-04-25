@@ -68,6 +68,8 @@ type Props = {
   user: User | null;
   isOwner: boolean;
   achievements: UserAchievement[];
+  messages: any;
+  locale: string;
 };
 
 const UserListsPage = (props: Props) => {
@@ -526,13 +528,17 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const ownerAchiev = await getUserAchievements(owner);
 
+  const props: Props = {
+    owner,
+    user: user,
+    isOwner: user?.id === owner.id,
+    achievements: ownerAchiev ?? [],
+    messages: await loadTranslation(context.locale as string, 'lists/[username]/index'),
+    locale: context.locale as string,
+  };
+
   return {
-    props: {
-      owner,
-      isOwner: user?.id === owner.id,
-      achievements: ownerAchiev ?? [],
-      messages: await loadTranslation(context.locale as string, 'lists/[username]/index'),
-    },
+    props,
   };
 }
 
