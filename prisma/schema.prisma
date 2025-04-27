@@ -325,7 +325,6 @@ model User {
   itemLists      UserList[]
   votes          FeedbackVotes[]
   restockSession RestockSession[]
-  ListTags       ListTags[]
   DataCollecting DataCollecting[]
 
   RestockWrapped RestockWrapped[]
@@ -430,18 +429,18 @@ model UserList {
   linkedList   UserList?        @relation("linkedLists", fields: [linkedListId], references: [internal_id], onDelete: SetNull, onUpdate: Cascade)
   linkedLists  UserList[]       @relation("linkedLists")
 
-  tagId        Int?
-  tag          ListTags? @relation(fields: [tagId], references: [internal_id], onDelete: SetNull, onUpdate: Cascade)
+  canBeLinked Boolean @default(false)
+
   official_tag String?
+  listUserTag  String?
 
   slug String?
 
-  seriesType SeriesType?
-
-  items ListItems[]
-
+  seriesType  SeriesType?
   seriesStart DateTime?
   seriesEnd   DateTime?
+
+  items ListItems[]
 
   @@unique([slug, user_id])
   @@fulltext([name])
@@ -493,22 +492,6 @@ model ListItems {
   seriesEnd   DateTime?
 
   @@unique([list_id, item_iid])
-}
-
-model ListTags {
-  internal_id Int    @id @default(autoincrement())
-  user_id     String
-  user        User   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-  addedAt DateTime @default(now())
-
-  name          String
-  description   String? @db.Text
-  isNameVisible Boolean @default(true)
-  order         Int     @default(0)
-  visible       Boolean @default(true)
-
-  lists UserList[]
 }
 
 model OwlsPrice {
