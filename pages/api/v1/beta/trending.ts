@@ -36,7 +36,7 @@ type WebsiteMetrics = {
 
 export const getTrendingItems = async (limit: number) => {
   const statsRes = (await client.getWebsiteMetrics('df660da1-6f93-4dda-9da5-5028fb9db292', {
-    startAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).getTime(),
+    startAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).getTime(),
     endAt: Date.now(),
     type: 'url',
     // @ts-expect-error missing type
@@ -72,7 +72,7 @@ const FEATURED_UNTIL = process.env.FEATURED_UNTIL ? Number(process.env.FEATURED_
 
 export const getTrendingLists = async (limit: number) => {
   const statsRes = (await client.getWebsiteMetrics('df660da1-6f93-4dda-9da5-5028fb9db292', {
-    startAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).getTime(),
+    startAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).getTime(),
     endAt: Date.now(),
     type: 'url',
     // @ts-expect-error missing type
@@ -128,7 +128,7 @@ export const getTrendingLists = async (limit: number) => {
 
 export const getTrendingShops = async (limit: number) => {
   const statsRes = (await client.getWebsiteMetrics('df660da1-6f93-4dda-9da5-5028fb9db292', {
-    startAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).getTime(),
+    startAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).getTime(),
     endAt: Date.now(),
     type: 'url',
     // @ts-expect-error missing type
