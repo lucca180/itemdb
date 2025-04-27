@@ -122,16 +122,17 @@ function checkFiltered(filtered: PriceProcess2[], goal: number) {
   const trades = newFiltered.filter((x) => x.type === 'trade');
   const ssw = newFiltered.filter((x) => x.type === 'ssw');
   const notUsershop = newFiltered.filter((x) => x.type !== 'usershop');
-  const swOrSSW = newFiltered.filter((x) => x.type === 'ssw' || x.type === 'sw');
 
-  if (swOrSSW.length < 3 && swOrSSW.length === newFiltered.length) return false;
+  // if ssw/sw/usershops are less than 3 and no trades, don't price
+  if (newFiltered.length < 3 && !trades.length) return false;
 
-  if (goal <= 3 && newFiltered.length === goal && !trades.length) return false;
-
+  // if not usershop is more than the goal, do price!
   if (notUsershop.length >= goal) return true;
 
+  // if ssw is greater than val, then price!
   if (ssw.length >= (EVENT_MODE ? 3 : 5)) return true;
 
+  // if we only have trades, and the trades are more than the goal, do price!
   if (newFiltered.length === trades.length && newFiltered.length >= Number(TRADE_MIN_GOAL))
     return true;
 
