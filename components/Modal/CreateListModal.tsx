@@ -20,10 +20,11 @@ import {
   FormHelperText,
   Select,
   Divider,
+  Link,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useState } from 'react';
-import { UserList } from '../../types';
+import { ColorType, UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import { ColorResult, TwitterPicker } from '@hello-pangea/color-picker';
 import { useTranslations } from 'next-intl';
@@ -58,6 +59,19 @@ const colorPickerStyles = {
   },
 };
 
+const defaultColors = [
+  '#FF6900',
+  '#FCB900',
+  '#7BDCB5',
+  '#00D084',
+  '#8ED1FC',
+  '#0693E3',
+  '#ABB8C3',
+  '#EB144C',
+  '#F78DA7',
+  '#9900EF',
+];
+
 const CreateListModal = (props: CreateListModalProps) => {
   const t = useTranslations();
   const { user } = useAuth();
@@ -66,6 +80,7 @@ const CreateListModal = (props: CreateListModalProps) => {
   const [error, setError] = useState<boolean>(false);
   const [list, setList] = useState(props.list ?? defaultList);
   const { revalidate } = useLists();
+  const [colorPalette, setColorPalette] = useState<string[]>(defaultColors);
 
   const saveChanges = async () => {
     setLoading(true);
@@ -133,6 +148,25 @@ const CreateListModal = (props: CreateListModalProps) => {
       ...list,
       colorHex: color.hex,
     });
+  };
+
+  const loadColorPalette = async () => {
+    const url = list.coverURL;
+
+    if (!url || !isValidHttpUrl(url)) {
+      setColorPalette(defaultColors);
+      return;
+    }
+
+    try {
+      const res = await axios.post('/api/v1/tools/getColor', { url: url });
+      const data = res.data as Record<ColorType, { hex: string }>;
+      const colors = Object.values(data).map((color) => color.hex);
+      setColorPalette([...defaultColors, ...colors]);
+    } catch (err) {
+      console.error(err);
+      setColorPalette(defaultColors);
+    }
   };
 
   return (
@@ -231,7 +265,7 @@ const CreateListModal = (props: CreateListModalProps) => {
                   value={list.name}
                   isInvalid={/^\d+$/.test(list.name ?? '')}
                 />
-                <FormHelperText>{t('General.required')}</FormHelperText>
+                <FormHelperText fontSize={'xs'}>{t('General.required')}</FormHelperText>
               </FormControl>
               <FormControl>
                 <FormLabel color="gray.300">{t('General.description')}</FormLabel>
@@ -241,11 +275,15 @@ const CreateListModal = (props: CreateListModalProps) => {
                   onChange={handleChange}
                   value={list.description ?? ''}
                 />
-                <FormHelperText>
-                  Accepts some markdown tags{' '}
-                  <Text fontSize={'xs'} display={'inline'}>
-                    (such as links, bold, italic, strikethrough etc.)
-                  </Text>
+                <FormHelperText fontSize={'xs'}>
+                  {t.rich('Lists.markdown-tip', {
+                    Link: (children) => (
+                      <Link href="https://commonmark.org/help/" color="gray.300" isExternal>
+                        {children}
+                      </Link>
+                    ),
+                    Small: (children) => <Text display={'inline'}>{children}</Text>,
+                  })}
                 </FormHelperText>
               </FormControl>
               <FormControl>
@@ -259,15 +297,23 @@ const CreateListModal = (props: CreateListModalProps) => {
               </FormControl>
               <FormControl>
                 <FormLabel color="gray.300">{t('General.color')}</FormLabel>
-                <Center>
+                <Center flexFlow={'column'} gap={2}>
                   <TwitterPicker
                     styles={colorPickerStyles}
                     triangle="hide"
+                    colors={colorPalette}
                     color={list.colorHex ?? '#000000'}
                     onChangeComplete={handleColorChange}
                   />
+                  <Button
+                    size={'xs'}
+                    onClick={loadColorPalette}
+                    isDisabled={!isValidHttpUrl(list.coverURL)}
+                  >
+                    {t('Lists.load-cover-image-palette')}
+                  </Button>
                 </Center>
-                <FormHelperText>{t('Lists.color-helper')}</FormHelperText>
+                <FormHelperText fontSize={'xs'}>{t('Lists.color-helper')}</FormHelperText>
               </FormControl>
               <FormControl>
                 <FormLabel color="gray.300">{t('General.visibility')}</FormLabel>
@@ -294,7 +340,7 @@ const CreateListModal = (props: CreateListModalProps) => {
                   <option value="seeking">{t('Lists.seeking-these-items')}</option>
                   <option value="trading">{t('Lists.trading-these-items')}</option>
                 </Select>
-                <FormHelperText>{t('Lists.seeking-trading-msg')}</FormHelperText>
+                <FormHelperText fontSize={'xs'}>{t('Lists.seeking-trading-msg')}</FormHelperText>
               </FormControl>
               <FormControl>
                 <FormLabel color="gray.300">{t('Lists.default-sorting')}</FormLabel>
@@ -360,3 +406,17 @@ const CreateListModal = (props: CreateListModalProps) => {
 };
 
 export default CreateListModal;
+
+function isValidHttpUrl(string?: string | null) {
+  if (!string) return false;
+
+  let url;
+
+  try {
+    url = new URL(string);
+  } catch (_) {
+    return false;
+  }
+
+  return url.protocol === 'http:' || url.protocol === 'https:';
+}

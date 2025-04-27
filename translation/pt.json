@@ -715,7 +715,7 @@
     "delete-item-name": "Excluir {x}",
     "item-deleted-successfully-you-can-close-this-page-now": "Item excluído com sucesso. Você pode fechar esta página agora",
     "change-lang-helper": "Você precisará atualizar a página para que esta alteração entre em vigor",
-    "color-helper": "Deixe #000000 e nós vamos escolher uma cor para você com base na imagem de capa",
+    "color-helper": "Deixe #000000 e nós vamos escolher uma cor para você com base na imagem de capa (apenas para imagens suportadas)",
     "official-tag": "Tag Oficial",
     "filter-by-type": "Filtrar por Tipo",
     "show-all": "Mostrar Tudo",
@@ -738,7 +738,9 @@
     "copy-items": "Copiar Itens",
     "copying-items-items": "Copiar {items} itens?",
     "advanced-import": "Importação avançada",
-    "similar-lists": "Listas Similares"
+    "similar-lists": "Listas Similares",
+    "markdown-tip": "Aceita algumas tags <Link>Markdown</Link> <Small>(como links, negrito, itálico, riscado etc.)</Small>",
+    "load-cover-image-palette": "Carregar Paleta de Cores da Capa"
   },
   "Restock": {
     "est-profit": "Lucro Est.",

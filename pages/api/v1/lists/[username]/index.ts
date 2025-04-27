@@ -68,8 +68,11 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     let colorHexVar = colorHex;
 
     if ((!colorHexVar || colorHexVar === '#000000') && coverURL) {
-      const colors = await getImagePalette(coverURL);
-      colorHexVar = colors.vibrant.hex;
+      const colors = await getImagePalette(coverURL, true).catch(() => {
+        return null;
+      });
+
+      colorHexVar = colors?.vibrant.hex ?? colorHexVar;
     }
 
     if (/^\d+$/.test(name)) {
@@ -213,7 +216,7 @@ export const getUserLists = async (username: string, user?: User | null, limit =
 
 // ---- COLORS ---- //
 
-type Pallete = {
+type Palette = {
   lab: number[];
   hsv: number[];
   rgb: number[];
@@ -225,7 +228,7 @@ type Pallete = {
 export const getImagePalette = async (
   image_url: string,
   skipCheck = false
-): Promise<Record<ColorType, Pallete>> => {
+): Promise<Record<ColorType, Palette>> => {
   if (!skipCheck) CHECK_IMG_URL(image_url);
 
   const palette = await Vibrant.from(image_url).getPalette();
@@ -267,6 +270,8 @@ export const CHECK_IMG_URL = (image_url: string) => {
       'neopets.com',
       'www.neopets.com',
       'uploads.neopets.com',
+      'imgur.com',
+      'i.imgur.com',
     ].includes(hostname)
   )
     throw 'Invalid domain';
