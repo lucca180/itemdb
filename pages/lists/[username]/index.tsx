@@ -495,10 +495,12 @@ const UserListsPage = (props: Props) => {
           {!isEdit &&
             listsIds.map((id) => (
               <UserListCard
+                canEdit={isOwner}
                 key={id}
                 list={lists[id]}
                 isSelected={selectedLists.includes(id)}
                 matches={matches}
+                refresh={refresh}
               />
             ))}
         </Flex>
