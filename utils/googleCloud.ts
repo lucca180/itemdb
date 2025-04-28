@@ -5,6 +5,8 @@ import prisma from './prisma';
 import { Storage } from '@google-cloud/storage';
 import { User as dbUser } from '@prisma/generated/client';
 import { rawToUser } from '../pages/api/auth/login';
+import { S3Client, PutObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
+import axios from 'axios';
 
 if (!getApps().length) initializeApp({ credential: cert('./firebase-key.json') });
 
@@ -50,3 +52,62 @@ export const GoogleStorage = new Storage({
 });
 
 export const ImageBucket = GoogleStorage.bucket('itemdb-1db58.appspot.com');
+
+// ----------- S3 R2 MIGRATION ----------- //
+
+export const S3 = new S3Client({
+  region: 'auto',
+  endpoint: `https://49f11ef3296870a8f69b32f2d4555981.r2.cloudflarestorage.com`,
+  forcePathStyle: true,
+  requestChecksumCalculation: 'WHEN_REQUIRED',
+  responseChecksumValidation: 'WHEN_REQUIRED',
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID ?? '',
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY ?? '',
+  },
+});
+
+export const fileExists = async (path: string) => {
+  try {
+    await S3.send(new HeadObjectCommand({ Bucket: 'itemdb', Key: path }));
+    return true;
+  } catch (error: any) {
+    console.error('Error checking file existence:', error.$metadata);
+    if (error.name === 'NotFound' || error.$metadata?.httpStatusCode === 404) {
+      return false;
+    }
+    throw error;
+  }
+};
+
+export const uploadToS3 = async (path: string, buffer: Buffer, contentType: string) => {
+  const command = new PutObjectCommand({
+    Bucket: 'itemdb',
+    Key: path,
+    Body: buffer,
+    ContentType: contentType,
+    ContentLength: buffer.length,
+  });
+
+  await S3.send(command);
+};
+
+export const deleteFromS3 = async (path: string) => {
+  const command = new PutObjectCommand({
+    Bucket: 'itemdb',
+    Key: path,
+  });
+
+  await S3.send(command);
+};
+
+export async function cdnExists(path: string): Promise<boolean> {
+  try {
+    const response = await axios.head('https://cdn.itemdb.com.br/' + path, {
+      validateStatus: () => true,
+    });
+    return response.status >= 200 && response.status < 300;
+  } catch (error) {
+    throw new Error(`Error checking CDN existence: ${error}`);
+  }
+}

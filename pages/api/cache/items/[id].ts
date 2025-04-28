@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createCanvas, loadImage } from '@napi-rs/canvas';
-import { ImageBucket } from '../../../../utils/googleCloud';
+import { uploadToS3, cdnExists } from '../../../../utils/googleCloud';
 import axios from 'axios';
 
 // const ISDEV = process.env.NODE_ENV === 'development';
@@ -24,24 +24,17 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     const img_id = (id as string).split('.')[0];
 
-    const file = ImageBucket.file('items/' + img_id + '.gif');
-    const [exists] = await file.exists();
+    const path = `items/${img_id}.gif`;
+
+    const exists = await cdnExists(path);
 
     const forceRefresh = refresh === 'true';
-
-    if (exists && forceRefresh) {
-      await file.delete();
-    }
 
     if (exists && !forceRefresh) {
       res.setHeader('Content-Type', 'image/gif');
       res.setHeader('Cache-Control', 'public, s-maxage=2592000');
 
-      if (file.metadata.cacheControl !== 'public, max-age=2592000') {
-        await file.setMetadata({ cacheControl: 'public, max-age=2592000' });
-      }
-
-      res.redirect(301, file.publicUrl());
+      res.redirect(301, `https://cdn.itemdb.com.br/${path}`);
       return;
     } else {
       const img = await axios.get(`https://images.neopets.com/items/${img_id}.gif`, {
@@ -52,11 +45,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
       const buffer = Buffer.from(new Uint8Array(img.data));
 
-      await file.save(buffer, {
-        metadata: {
-          cacheControl: 'public, max-age=604800',
-        },
-      });
+      await uploadToS3(path, buffer, 'image/gif');
 
       res
         .writeHead(200, {
@@ -69,6 +58,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       return;
     }
   } catch (e) {
+    console.error(e);
     const img = await loadImage('./public/item-error.png');
 
     if (!canvas || !ctx) {
