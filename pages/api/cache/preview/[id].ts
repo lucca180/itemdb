@@ -60,7 +60,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     }
 
     if (lastModified && !forceRefresh) {
-      res.setHeader('Cache-Control', 'public, max-age=2592000');
+      res.setHeader('Cache-Control', forceRefresh ? 'no-cache' : 'public, max-age=2592000');
 
       res.redirect(`https://cdn.itemdb.com.br/${path}`);
 
@@ -103,7 +103,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       res.writeHead(200, {
         'Content-Type': 'image/webp',
         'Content-Length': buffer.length,
-        'Cache-Control': 'public, max-age=2592000',
+        'Cache-Control': forceRefresh ? 'no-cache' : 'public, max-age=2592000',
       });
 
       res.end(buffer);

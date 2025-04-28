@@ -32,7 +32,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     if (exists && !forceRefresh) {
       res.setHeader('Content-Type', 'image/gif');
-      res.setHeader('Cache-Control', 'public, s-maxage=2592000');
+      res.setHeader('Cache-Control', forceRefresh ? 'no-cache' : 'public, s-maxage=2592000');
 
       res.redirect(301, `https://cdn.itemdb.com.br/${path}`);
       return;
@@ -51,7 +51,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         .writeHead(200, {
           'Content-Type': 'image/gif',
           'Content-Length': buffer.length,
-          'Cache-Control': 'public, s-maxage=604800',
+          'Cache-Control': forceRefresh ? 'no-cache' : 'public, s-maxage=604800',
         })
         .end(buffer);
 
