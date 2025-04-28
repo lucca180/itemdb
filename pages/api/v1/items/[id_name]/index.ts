@@ -493,7 +493,6 @@ export const fetchOwlsData = async (
     };
   } catch (e: any) {
     if (e.status === 404) {
-      console.error(`Owls API not found for item ${itemName}`);
       return null;
     }
 
