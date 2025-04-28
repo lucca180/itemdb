@@ -113,7 +113,7 @@ export const TradeHistory = (props: TradeHistoryProps) => {
         <Tabs align="center" variant="soft-rounded" colorScheme="gray" isLazy>
           <TabList>
             <Tab>
-              {t('ItemPage.latest-x-auctions', {
+              {t('ItemPage.latest-x-trades', {
                 x: 20,
               })}
             </Tab>

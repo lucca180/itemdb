@@ -284,7 +284,7 @@
     "unpaintable-p2": "Este petpet é único e não pode ser pintado",
     "drops-script-cta": "Ajude a tornar esses dados mais precisos!",
     "drops-script-cta-text": "Com o <b>Item Data Extractor Script</b> você nos ajuda a melhorar as chances de drops de itens, manter os preços atualizados e muito mais!",
-    "latest-x-with-price": "Últimos {x} Com Preço",
+    "latest-x-with-price": "Últimos {x} com Preço",
     "prismatic-is-variation": "Esse item é uma <b>Variante Prismática</b>",
     "prismatic-x-variations": "Esse item tem <b>{x} Variantes Prismáticas</b>"
   },
