@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { dti } from '../../../../../utils/impress';
 import { createCanvas, loadImage } from '@napi-rs/canvas';
-import { ImageBucket } from '../../../../../utils/googleCloud';
+import { cdnExists, uploadToS3 } from '../../../../../utils/googleCloud';
 import {
   allNeopetsColors,
   allSpecies,
@@ -55,24 +55,15 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       img_id = `${allSpecies[speciesId]}_${allNeopetsColors[colorId]}`;
     }
 
-    const file = ImageBucket.file('colors/' + img_id + '.png');
-    const [exists] = await file.exists();
+    const path = `colors/${img_id}.png`;
+    const exists = await cdnExists(path);
 
     const forceRefresh = refresh === 'true';
 
-    if (exists && forceRefresh) {
-      await file.delete();
-    }
-
     if (exists && !forceRefresh) {
-      // res.setHeader('Content-Type', 'image/png');
       res.setHeader('Cache-Control', 'public, max-age=2592000');
 
-      if (file.metadata.cacheControl !== 'public, max-age=2592000') {
-        await file.setMetadata({ cacheControl: 'public, max-age=2592000' });
-      }
-
-      res.redirect(file.publicUrl());
+      res.redirect(301, `https://cdn.itemdb.com.br/${path}`);
 
       return;
     } else {
@@ -93,13 +84,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
       const buffer = await canvas.encode('webp', 100);
 
-      await file.save(buffer, {
-        metadata: {
-          contentType: 'image/webp',
-          cacheControl: 'public, max-age=2592000',
-          lastUpdate: new Date(),
-        },
-      });
+      await uploadToS3(path, buffer, 'image/webp');
 
       res.writeHead(200, {
         'Content-Type': 'image/webp',

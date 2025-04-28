@@ -29,7 +29,6 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@google-cloud/storage": "^7.15.0",
     "@hello-pangea/color-picker": "^3.2.2",
     "@hugocxl/react-to-image": "^0.0.9",
     "@json2csv/node": "^7.0.6",

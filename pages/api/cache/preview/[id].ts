@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { dti, getVisibleLayers } from '../../../../utils/impress';
 import { createCanvas, loadImage } from '@napi-rs/canvas';
-import { ImageBucket } from '../../../../utils/googleCloud';
+import { cdnExists, uploadToS3 } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
 import axios from 'axios';
 import { DTIBodiesAndTheirZones, DTIItemPreview } from '../../../../types';
@@ -35,14 +35,17 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     if (!item) return res.status(404).send('Item not found');
 
-    const file = ImageBucket.file('preview/' + img_id + '.png');
-    const [exists] = await file.exists();
+    const path = `preview/${img_id}.png`;
+
+    const lastModified = await cdnExists(path, true);
 
     const forceRefresh = refresh === 'true';
     let processPromise;
-    if (exists) {
+
+    if (lastModified) {
+      const lastModifiedDate = new Date(lastModified as string);
       const daysSinceLastUpdate = Math.floor(
-        (Date.now() - new Date(file.metadata.updated ?? 0).getTime()) / (1000 * 60 * 60 * 24)
+        (Date.now() - lastModifiedDate.getTime()) / (1000 * 60 * 60 * 24)
       );
 
       if (daysSinceLastUpdate >= 30) {
@@ -56,19 +59,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       }
     }
 
-    if (exists && forceRefresh) {
-      await file.delete();
-    }
-
-    if (exists && !forceRefresh) {
-      // res.setHeader('Content-Type', 'image/png');
+    if (lastModified && !forceRefresh) {
       res.setHeader('Cache-Control', 'public, max-age=2592000');
 
-      if (file.metadata.cacheControl !== 'public, max-age=2592000') {
-        await file.setMetadata({ cacheControl: 'public, max-age=2592000' });
-      }
-
-      res.redirect(file.publicUrl());
+      res.redirect(`https://cdn.itemdb.com.br/${path}`);
 
       if (processPromise) await processPromise;
 
@@ -104,13 +98,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
       const buffer = await canvas.encode('webp', 100);
 
-      await file.save(buffer, {
-        metadata: {
-          contentType: 'image/webp',
-          cacheControl: 'public, max-age=2592000',
-          lastUpdate: new Date(),
-        },
-      });
+      await uploadToS3(path, buffer, 'image/webp');
 
       res.writeHead(200, {
         'Content-Type': 'image/webp',
@@ -125,6 +113,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       return;
     }
   } catch (e) {
+    console.error(e);
     const img = await loadImage('./public/oops.jpg');
 
     if (!canvas || !ctx) {
@@ -162,32 +151,6 @@ const handleRegularStyle = async (
   const layers = getVisibleLayers(itemPreviewData.canonicalAppearance.body.canonicalAppearance, [
     itemPreviewData.canonicalAppearance,
   ]);
-
-  // const itemRestrictedZoneIds = new Set(
-  //   itemPreviewData.canonicalAppearance.restrictedZones.map((z) => z.id)
-  // );
-  // const petRestrictedZoneIds = new Set(
-  //   itemPreviewData.canonicalAppearance.body.canonicalAppearance.restrictedZones
-  // );
-
-  // const layers = [
-  //   ...itemPreviewData.canonicalAppearance.layers.map((l) => ({ ...l, source: 'item' })),
-  //   ...itemPreviewData.canonicalAppearance.body.canonicalAppearance.layers.map((l) => ({
-  //     ...l,
-  //     source: 'pet',
-  //   })),
-  // ]
-  //   .filter((layer) => {
-  //     if (layer.source === 'pet' && itemRestrictedZoneIds.has(layer.zone.id)) {
-  //       return false;
-  //     }
-  //     if (layer.source === 'pet' && petRestrictedZoneIds.has(layer.zone.id)) {
-  //       return false;
-  //     }
-
-  //     return true;
-  //   })
-  //   .sort((a, b) => a.zone.depth - b.zone.depth);
 
   if (layers.length === 0) throw 'No layers found';
 

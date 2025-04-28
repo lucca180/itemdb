@@ -2,7 +2,6 @@ import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { DecodedIdToken, getAuth } from 'firebase-admin/auth';
 import type { NextApiRequest } from 'next';
 import prisma from './prisma';
-import { Storage } from '@google-cloud/storage';
 import { User as dbUser } from '@prisma/generated/client';
 import { rawToUser } from '../pages/api/auth/login';
 import { S3Client, PutObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
@@ -46,13 +45,6 @@ export const CheckAuth = async (
     user: user,
   };
 };
-
-export const GoogleStorage = new Storage({
-  keyFilename: './firebase-key.json',
-});
-
-export const ImageBucket = GoogleStorage.bucket('itemdb-1db58.appspot.com');
-
 // ----------- S3 R2 MIGRATION ----------- //
 
 export const S3 = new S3Client({
@@ -101,11 +93,16 @@ export const deleteFromS3 = async (path: string) => {
   await S3.send(command);
 };
 
-export async function cdnExists(path: string): Promise<boolean> {
+export async function cdnExists(path: string, includeHeader = false): Promise<boolean | string> {
   try {
     const response = await axios.head('https://cdn.itemdb.com.br/' + path, {
       validateStatus: () => true,
     });
+
+    if (includeHeader) {
+      return response.headers['last-modified'];
+    }
+
     return response.status >= 200 && response.status < 300;
   } catch (error) {
     throw new Error(`Error checking CDN existence: ${error}`);

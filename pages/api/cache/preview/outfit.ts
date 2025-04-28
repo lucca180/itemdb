@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { dti, getVisibleLayers } from '../../../../utils/impress';
 import { createCanvas, loadImage } from '@napi-rs/canvas';
-import { ImageBucket } from '../../../../utils/googleCloud';
+import { cdnExists, uploadToS3 } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
 import qs from 'qs';
 import objectHash from 'object-hash';
@@ -36,27 +36,16 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     if (!items || !items.length) return res.status(404).send('Item not found');
 
     const hash = objectHash(items.map((item) => item.internal_id).sort());
+    const path = `preview/${hash}.png`;
 
-    const file = ImageBucket.file('preview/' + hash + '.png');
-    const [exists] = await file.exists();
+    const exists = await cdnExists(path);
 
     const forceRefresh = refresh === 'true';
 
-    if (exists && forceRefresh) {
-      await file.delete();
-    }
-
     if (exists && !forceRefresh) {
-      // res.setHeader('Content-Type', 'image/png');
       res.setHeader('Cache-Control', 'public, max-age=2592000');
 
-      if (file.metadata.cacheControl !== 'public, max-age=2592000') {
-        await file.setMetadata({ cacheControl: 'public, max-age=2592000' });
-      }
-
-      res.redirect(file.publicUrl());
-
-      // if (processPromise) await processPromise;
+      res.redirect(301, `https://cdn.itemdb.com.br/${path}`);
 
       return;
     } else {
@@ -78,13 +67,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
       const buffer = await canvas.encode('webp', 100);
 
-      await file.save(buffer, {
-        metadata: {
-          contentType: 'image/webp',
-          cacheControl: 'public, max-age=2592000',
-          lastUpdate: new Date(),
-        },
-      });
+      await uploadToS3(path, buffer, 'image/webp');
 
       res.writeHead(200, {
         'Content-Type': 'image/webp',
@@ -93,8 +76,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       });
 
       res.end(buffer);
-
-      // if (rawData) await processDTIData(item, rawData);
 
       return;
     }
