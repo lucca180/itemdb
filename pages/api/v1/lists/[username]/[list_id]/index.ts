@@ -190,6 +190,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       seriesType,
       seriesStart,
       seriesEnd,
+      listUserTag,
+      canBeLinked,
     } = req.body as {
       name?: string;
       description?: string;
@@ -204,6 +206,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       seriesType?: string;
       seriesStart?: string;
       seriesEnd?: string;
+      listUserTag?: string;
+      canBeLinked?: boolean;
     };
 
     if (
@@ -219,7 +223,9 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       officialTag ||
       seriesType ||
       seriesStart ||
-      seriesEnd
+      seriesEnd ||
+      listUserTag ||
+      canBeLinked
     ) {
       let colorHexVar = colorHex;
 
@@ -255,6 +261,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
           official_tag: officialTag,
           sortBy: sortInfo?.sortBy,
           sortDir: sortInfo?.sortDir,
+          listUserTag: listUserTag ?? null,
+          canBeLinked: canBeLinked ?? undefined,
           seriesType: seriesType === 'none' ? null : (seriesType as SeriesType),
           seriesStart: seriesStart ? new UTCDate(new UTCDate(seriesStart).setHours(18)) : null,
           seriesEnd: seriesEnd ? new UTCDate(new UTCDate(seriesEnd).setHours(18)) : null,

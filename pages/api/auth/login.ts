@@ -4,6 +4,7 @@ import { Auth, CheckAuth } from '../../../utils/googleCloud';
 import requestIp from 'request-ip';
 import { User, UserRoles } from '../../../types';
 import { startOfDay } from 'date-fns';
+import { User as PrismaUser } from '@prisma/generated/client';
 
 const expiresIn = 14 * 24 * 60 * 60 * 1000; // 31 days in milliseconds;
 
@@ -54,22 +55,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     if (cookies.length) res.setHeader('Set-Cookie', cookies);
 
-    const finalUser: User = {
-      id: dbUser.id,
-      username: dbUser.username,
-      neopetsUser: dbUser.neo_user,
-      isAdmin: dbUser.role === 'ADMIN',
-      email: dbUser.email,
-      profileColor: dbUser.profile_color,
-      profileImage: dbUser.profile_image,
-      description: dbUser.description,
-      role: dbUser.role as UserRoles,
-      lastLogin: startOfDay(dbUser.last_login).toJSON(),
-      createdAt: dbUser.createdAt.toJSON(),
-      prefLang: dbUser.pref_lang,
-      xp: dbUser.xp,
-      banned: dbUser.xp < -1000,
-    };
+    const finalUser = rawToUser(dbUser);
 
     res.json(finalUser);
 
@@ -87,22 +73,27 @@ export const getUserById = async (uid: string) => {
 
   if (!dbUser) return null;
 
-  const user: User = {
-    id: dbUser.id,
-    username: dbUser.username,
-    neopetsUser: dbUser.neo_user,
-    isAdmin: dbUser.role === 'ADMIN',
-    email: dbUser.email,
-    profileColor: dbUser.profile_color,
-    profileImage: dbUser.profile_image,
-    description: dbUser.description,
-    role: dbUser.role as UserRoles,
-    prefLang: dbUser.pref_lang,
-    lastLogin: startOfDay(dbUser.last_login).toJSON(),
-    createdAt: dbUser.createdAt.toJSON(),
-    xp: dbUser.xp,
-    banned: dbUser.xp < -1000,
-  };
+  const user = rawToUser(dbUser);
 
   return user;
+};
+
+export const rawToUser = (rawUser: PrismaUser, removeMail = false): User => {
+  return {
+    id: rawUser.id,
+    username: rawUser.username,
+    neopetsUser: rawUser.neo_user,
+    isAdmin: rawUser.role === 'ADMIN',
+    email: removeMail ? '' : rawUser.email,
+    profileColor: rawUser.profile_color,
+    profileImage: rawUser.profile_image,
+    description: rawUser.description,
+    role: rawUser.role as UserRoles,
+    prefLang: rawUser.pref_lang,
+    lastLogin: startOfDay(rawUser.last_login).toJSON(),
+    createdAt: rawUser.createdAt.toJSON(),
+    xp: rawUser.xp,
+    profileMode: (rawUser.profile_mode as 'default' | 'groups') ?? 'default',
+    banned: rawUser.xp < -1000,
+  };
 };

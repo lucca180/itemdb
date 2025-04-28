@@ -48,7 +48,18 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 // creates a new list
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const { username } = req.query;
-  const { name, description, coverURL, purpose, visibility, colorHex, official } = req.body;
+  const {
+    name,
+    description,
+    coverURL,
+    purpose,
+    visibility,
+    colorHex,
+    official,
+    officialTag,
+    canBeLinked,
+    listUserTag,
+  } = req.body;
 
   try {
     const { user } = await CheckAuth(req);
@@ -88,6 +99,9 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         cover_url: coverURL,
         colorHex: colorHexVar,
         official: user.isAdmin ? official : undefined,
+        official_tag: officialTag,
+        canBeLinked: canBeLinked ?? true, // create as true by default
+        listUserTag: listUserTag ?? null,
         purpose: purpose as 'none' | 'trading' | 'seeking',
         visibility: visibility as 'public' | 'private' | 'unlisted',
         slug: slug,
@@ -339,8 +353,10 @@ export const rawToList = (
     dynamicType: listRaw.dynamicType,
     lastSync: listRaw.lastSync?.toJSON() ?? null,
     linkedListId: listRaw.linkedListId ?? null,
+    canBeLinked: listRaw.official || listRaw.canBeLinked,
 
     officialTag: listRaw.official_tag ?? null,
+    userTag: listRaw.listUserTag ?? null,
 
     itemCount: listRaw.items.filter((x) => !x.isHidden).length,
 

@@ -3,9 +3,8 @@ import { DecodedIdToken, getAuth } from 'firebase-admin/auth';
 import type { NextApiRequest } from 'next';
 import prisma from './prisma';
 import { Storage } from '@google-cloud/storage';
-import { User, UserRoles } from '../types';
 import { User as dbUser } from '@prisma/generated/client';
-import { startOfDay } from 'date-fns';
+import { rawToUser } from '../pages/api/auth/login';
 
 if (!getApps().length) initializeApp({ credential: cert('./firebase-key.json') });
 
@@ -38,22 +37,7 @@ export const CheckAuth = async (
 
   if (!dbUser) return { decodedToken: decodedToken, user: null };
 
-  const user: User = {
-    id: dbUser.id,
-    username: dbUser.username,
-    neopetsUser: dbUser.neo_user,
-    isAdmin: dbUser.role === 'ADMIN',
-    email: dbUser.email,
-    profileColor: dbUser.profile_color,
-    profileImage: dbUser.profile_image,
-    description: dbUser.description,
-    role: dbUser.role as UserRoles,
-    prefLang: dbUser.pref_lang,
-    lastLogin: startOfDay(dbUser.last_login).toJSON(),
-    createdAt: dbUser.createdAt.toJSON(),
-    xp: dbUser.xp,
-    banned: dbUser.xp < -1000,
-  };
+  const user = rawToUser(dbUser);
 
   return {
     decodedToken: decodedToken,

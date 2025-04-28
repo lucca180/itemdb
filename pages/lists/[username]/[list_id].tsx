@@ -636,7 +636,7 @@ const ListPage = (props: ListPageProps) => {
                   {t('Lists.add-items')}
                 </Button>
               )}
-              {(isOwner || list.official) && !list.linkedListId && (
+              {(isOwner || list.official || list.canBeLinked) && !list.linkedListId && (
                 <CreateLinkedListButton list={list} isLoading={isLoading} />
               )}
               {!isLoading && (

@@ -218,6 +218,7 @@ export type User = {
   profileColor: string | null;
   profileImage: string | null;
   description: string | null;
+  profileMode: 'groups' | 'default';
 
   prefLang: string | null;
 
@@ -259,10 +260,12 @@ export type UserList = {
   itemCount: number;
 
   officialTag: string | null;
+  userTag: string | null;
 
   dynamicType: 'addOnly' | 'removeOnly' | 'fullSync' | null;
   lastSync: string | null;
   linkedListId: number | null;
+  canBeLinked: boolean;
 
   slug: string | null;
 

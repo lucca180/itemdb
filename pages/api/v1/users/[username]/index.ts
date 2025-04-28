@@ -1,9 +1,8 @@
-import { startOfDay } from 'date-fns';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { User, UserRoles } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 import { getImagePalette } from '../../lists/[username]';
+import { rawToUser } from '../../../auth/login';
 
 const VALID_LANGS = ['en', 'pt'];
 
@@ -98,22 +97,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (!tempUser) return res.status(400).json({ error: 'user not found' });
 
-    const updatedUser: User = {
-      id: tempUser.id,
-      username: tempUser.username,
-      neopetsUser: tempUser.neo_user,
-      isAdmin: tempUser.role === 'ADMIN',
-      email: '',
-      profileColor: tempUser.profile_color,
-      profileImage: tempUser.profile_image,
-      description: tempUser.description,
-      role: tempUser.role as UserRoles,
-      prefLang: tempUser.pref_lang,
-      lastLogin: startOfDay(tempUser.last_login).toJSON(),
-      createdAt: tempUser.createdAt.toJSON(),
-      xp: tempUser.xp,
-      banned: tempUser.xp < -1000,
-    };
+    const updatedUser = rawToUser(tempUser, true);
 
     if (updatedUser.prefLang)
       res.setHeader('Set-Cookie', `NEXT_LOCALE=${updatedUser.prefLang};Path=/;Max-Age=2147483647;`);
@@ -136,23 +120,7 @@ export const getUser = async (username: string) => {
 
   if (!user) return null;
 
-  // remove sensitive data
-  const cleanedUser: User = {
-    id: user.id,
-    username: user.username,
-    neopetsUser: user.neo_user,
-    isAdmin: user.role === 'ADMIN',
-    email: '',
-    profileColor: user.profile_color,
-    profileImage: user.profile_image,
-    description: user.description,
-    role: user.role as UserRoles,
-    prefLang: user.pref_lang,
-    lastLogin: startOfDay(user.last_login).toJSON(),
-    createdAt: user.createdAt.toJSON(),
-    xp: user.xp,
-    banned: user.xp < -1000,
-  };
+  const cleanedUser = rawToUser(user, true);
 
   return cleanedUser;
 };

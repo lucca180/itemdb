@@ -104,6 +104,8 @@ const CreateListModal = (props: CreateListModalProps) => {
         seriesType: list.seriesType,
         seriesStart: list.seriesStart,
         seriesEnd: list.seriesEnd,
+        listUserTag: list.userTag || undefined,
+        canBeLinked: (list.canBeLinked as boolean | string) == 'true',
       };
 
       const username = list.owner?.username ?? user.username;
@@ -369,6 +371,34 @@ const CreateListModal = (props: CreateListModalProps) => {
                   <option value="asc">{t('General.ascending')}</option>
                   <option value="desc">{t('General.descending')}</option>
                 </Select>
+              </FormControl>
+              <FormControl>
+                <FormLabel color="gray.300">Can be Linked?</FormLabel>
+                <Select
+                  variant="filled"
+                  name="canBeLinked"
+                  onChange={handleChange}
+                  value={list.canBeLinked?.toString() ?? 'true'}
+                >
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
+                </Select>
+                <FormHelperText>
+                  This will allow other users to create a dynamic clone of this list. Learn more on{' '}
+                  <Link href="/articles/checklists-and-dynamic-lists">Linked Lists</Link>
+                </FormHelperText>
+              </FormControl>
+              <FormControl>
+                <FormLabel color="gray.300">Profile Tag</FormLabel>
+                <Input
+                  variant="filled"
+                  name="userTag"
+                  onChange={handleChange}
+                  value={list.userTag ?? ''}
+                />
+                <FormHelperText fontSize={'xs'}>
+                  This can be used for grouping lists in your profile
+                </FormHelperText>
               </FormControl>
             </Stack>
           )}

@@ -316,6 +316,7 @@ model User {
 
   profile_color String?
   profile_image String?
+  profile_mode  String? @default("default")
   description   String? @db.Text
 
   xp     Int @default(0)

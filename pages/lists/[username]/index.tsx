@@ -122,6 +122,33 @@ const UserListsPage = (props: Props) => {
     return allItems.size;
   }, [matches.trade]);
 
+  const listGroups = useMemo(() => {
+    const groups: { [key: string]: ExtendedUserList[] } = {};
+
+    listsIds.forEach((id) => {
+      const list = lists[id];
+      if (!list) return;
+      const groupTag = list.userTag ?? '';
+
+      if (!groups[groupTag]) groups[groupTag] = [];
+      groups[groupTag].push(list);
+    });
+
+    return Object.entries(groups)
+      .map(([group, lists]) => ({
+        group,
+        lists,
+      }))
+      .sort((a, b) => {
+        if (a.group === '') return 1;
+        if (b.group === '') return -1;
+        return a.group.localeCompare(b.group);
+      });
+  }, [lists]);
+
+  // temporary -> should be user.profileMode
+  const isGroupMode = listGroups.length > 1;
+
   const init = async (force = false) => {
     setLists({});
     setLoading(true);
@@ -137,7 +164,7 @@ const UserListsPage = (props: Props) => {
         setOwner(userRes.data);
       }
 
-      if (user) {
+      if (user && !isOwner) {
         const [seekRes, tradeRes] = await Promise.all([
           axios.get(`/api/v1/lists/match/${user.username}/${targetUsername}`),
           axios.get(`/api/v1/lists/match/${targetUsername}/${user.username}`),
@@ -235,7 +262,7 @@ const UserListsPage = (props: Props) => {
     try {
       const listsToSave = Object.values(lists).filter((list) => list.hasChanged);
 
-      if (!user) return;
+      if (!user || !isOwner) return;
 
       const res = await axios.put(`/api/v1/lists/${user.username}`, { lists: listsToSave });
 
@@ -471,7 +498,7 @@ const UserListsPage = (props: Props) => {
         </HStack>
       </Flex>
 
-      {isEdit && (
+      {isEdit && !isGroupMode && (
         <Center>
           <Text fontSize="sm" opacity="0.8">
             {t('General.tip')}: {t('Lists.drag-and-drop-to-reorder-lists')}
@@ -487,12 +514,35 @@ const UserListsPage = (props: Props) => {
               ids={listsIds}
               listSelect={selectedLists}
               editMode={isEdit}
-              activateSort={isEdit}
+              activateSort={isEdit && !isGroupMode}
               onClick={selectItem}
               onSort={handleSort}
             />
           )}
+
+          {isGroupMode &&
+            listGroups.map(({ group, lists }) => (
+              <Box key={group} width="100%" bg="blackAlpha.400" p={4} borderRadius="md">
+                <Text fontSize="lg" fontWeight="bold" mb={2}>
+                  {group}
+                </Text>
+                <Flex gap={4} flexWrap="wrap" justifyContent={'center'}>
+                  {lists.map((list) => (
+                    <UserListCard
+                      canEdit={isOwner}
+                      key={list.internal_id}
+                      list={list}
+                      isSelected={selectedLists.includes(list.internal_id)}
+                      matches={matches}
+                      refresh={refresh}
+                    />
+                  ))}
+                </Flex>
+              </Box>
+            ))}
+
           {!isEdit &&
+            !isGroupMode &&
             listsIds.map((id) => (
               <UserListCard
                 canEdit={isOwner}
