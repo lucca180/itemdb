@@ -4438,7 +4438,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@prisma/client@npm:^6.7.0":
+"@prisma/client@npm:^6.6.0":
   version: 6.7.0
   resolution: "@prisma/client@npm:6.7.0"
   peerDependencies:
@@ -10809,7 +10809,7 @@ __metadata:
     "@napi-rs/canvas": "npm:^0.1.60"
     "@next/bundle-analyzer": "npm:15.3.1"
     "@next/eslint-plugin-next": "npm:15.3.1"
-    "@prisma/client": "npm:^6.7.0"
+    "@prisma/client": "npm:^6.6.0"
     "@sentry/nextjs": "npm:^9.13.0"
     "@swc-jotai/react-refresh": "npm:^0.2.0"
     "@tycrek/discord-hookr": "npm:^0.1.0"
@@ -10865,7 +10865,7 @@ __metadata:
     object-hash: "npm:^3.0.0"
     pixelmatch: "npm:^7.1.0"
     prettier: "npm:3.5.3"
-    prisma: "npm:^6.7.0"
+    prisma: "npm:^6.6.0"
     qs: "npm:^6.13.0"
     query-string: "npm:^9.1.1"
     rctx-contextmenu: "npm:^1.4.1"
@@ -13458,7 +13458,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prisma@npm:^6.7.0":
+"prisma@npm:^6.6.0":
   version: 6.7.0
   resolution: "prisma@npm:6.7.0"
   dependencies:
