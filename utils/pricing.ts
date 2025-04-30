@@ -9,29 +9,22 @@ export const processPrices2 = (allItemData: PriceProcess2[]) => {
   // const item = allItemData[0];
 
   // get only the most recent data available that fits the criteria
-  const mostRecentsRaw = filterMostRecents(allItemData).sort(
+  const mostRecentRaw = filterMostRecent(allItemData).sort(
     (a, b) => a.price.toNumber() - b.price.toNumber()
   );
 
-  if (mostRecentsRaw.length === 0) return undefined;
-
-  const owners = new Set<string>();
+  if (mostRecentRaw.length === 0) return undefined;
 
   // filter out items with the same owner
-  const mostRecents = mostRecentsRaw
-    .map((x) => {
-      if (x.owner && !owners.has(x.owner)) owners.add(x.owner);
-      else return undefined;
-      return x;
-    })
-    .filter((x) => !!x) as PriceProcess2[];
+  // (although i believe this is already done in the filterMostRecent function)
+  const mostRecent = uniqueByOwner(mostRecentRaw);
 
   const prices: number[] = [];
 
-  const usedIds = new Set<number>(mostRecents.map((x) => x.internal_id));
-  const latestDate = mostRecents.reduce((a, b) => (a.addedAt > b.addedAt ? a : b)).addedAt;
+  const usedIds = new Set<number>(mostRecent.map((x) => x.internal_id));
+  const latestDate = mostRecent.reduce((a, b) => (a.addedAt > b.addedAt ? a : b)).addedAt;
 
-  mostRecents.map((x, i) => {
+  mostRecent.map((x, i) => {
     if (i <= 4) {
       const stock = Math.min(x.stock, 2);
       prices.push(...Array(stock).fill(x.price.toNumber()));
@@ -43,11 +36,21 @@ export const processPrices2 = (allItemData: PriceProcess2[]) => {
   let out = removeOutliers(reducedPrices);
 
   if (out.length === 0) {
-    console.error(allItemData[0].item_iid, ' - No prices left after removing outliers');
+    console.error(
+      'processPrices2: No prices left after removing outliers',
+      allItemData[0].item_iid
+    );
     return undefined;
   }
   const priceMean = mean(out);
   const priceSTD = standardDeviation(out);
+  const relativeSTD = priceSTD / priceMean;
+
+  // skip if the deviation is too high
+  if (out.length > 1 && out.length <= 3 && relativeSTD >= 0.75) {
+    console.error('processPrices2: Too high deviation', allItemData[0].item_iid, relativeSTD, out);
+    return undefined;
+  }
 
   out = out.filter((x) => x <= priceMean + priceSTD * 0.75 && x >= priceMean - priceSTD * 1.8);
 
@@ -62,7 +65,7 @@ export const processPrices2 = (allItemData: PriceProcess2[]) => {
   };
 };
 
-function filterMostRecents(priceProcessList: PriceProcess2[]) {
+function filterMostRecent(priceProcessList: PriceProcess2[]) {
   const daysThreshold: { [days: number]: number } = {
     0: EVENT_MODE ? 10 : 18,
     3: EVENT_MODE ? 5 : 15,
@@ -103,19 +106,12 @@ function filterMostRecents(priceProcessList: PriceProcess2[]) {
 const priorityOrder = ['ssw', 'sw', 'trade', 'usershop'];
 
 function checkFiltered(filtered: PriceProcess2[], goal: number) {
-  const ownersSet = new Set<string>();
   // remove stuff with the same owner
-  const newFiltered = filtered
-    .sort((a, b) => {
+  const newFiltered = uniqueByOwner(
+    filtered.sort((a, b) => {
       return priorityOrder.indexOf(a.type) - priorityOrder.indexOf(b.type);
     })
-    .map((x) => {
-      if (x.owner && ownersSet.has(x.owner)) return undefined;
-      if (x.owner) ownersSet.add(x.owner);
-
-      return x;
-    })
-    .filter((x) => !!x) as PriceProcess2[];
+  );
 
   if (!newFiltered.length) return false;
 
@@ -170,3 +166,12 @@ const quartile = (sorted: number[], q: number) => {
     return sorted[base];
   }
 };
+
+function uniqueByOwner(items: PriceProcess2[]) {
+  const seen = new Set<string>();
+  return items.filter((x) => {
+    if (!x.owner || seen.has(x.owner)) return false;
+    seen.add(x.owner);
+    return true;
+  });
+}
