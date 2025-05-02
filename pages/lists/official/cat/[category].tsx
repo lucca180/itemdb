@@ -40,7 +40,7 @@ const OfficialListsCatPage = (props: Props) => {
   const catInfo = listCategoriesData[selectedCategory];
 
   const { data, isLoading } = useSWRImmutable(
-    `/api/v1/lists/official?includeItems=false`,
+    `/api/v1/lists/official?officialTag=${catInfo.id}`,
     fetcher,
     {
       shouldRetryOnError: false,
@@ -57,12 +57,14 @@ const OfficialListsCatPage = (props: Props) => {
     if (value === 'all') {
       setLists(data);
     } else if (value.toLowerCase() === 'uncategorized') {
-      setLists(data.filter((x) => !x.officialTag).sort((a, b) => a.name.localeCompare(b.name)));
+      setLists(
+        data.filter((x) => !x.officialTag).sort((a, b) => sortLists(a, b, catInfo.featured))
+      );
     } else {
       setLists(
         data
           .filter((x) => x.officialTag?.toLowerCase() === value.toLowerCase())
-          .sort((a, b) => a.name.localeCompare(b.name))
+          .sort((a, b) => sortLists(a, b, catInfo.featured))
       );
     }
   };
@@ -195,7 +197,9 @@ export async function getServerSideProps(context: any) {
     };
   }
 
-  const lists = await getOfficialListsCat(tag, 15);
+  const lists = (await getOfficialListsCat(tag, 3000))
+    .sort((a, b) => sortLists(a, b, listCategoriesData[category].featured))
+    .splice(0, 15);
 
   return {
     props: {
@@ -239,6 +243,7 @@ export const listCategoriesData: {
     url: string;
     color: string;
     description: string;
+    featured?: string[];
   };
 } = {
   dailies: {
@@ -280,6 +285,7 @@ export const listCategoriesData: {
     color: '#F3C242',
     description:
       'Explore prize lists from current and past Quest Log prizes! Stay updated on the latest Daily Quests Prizes, find the best Weekly Prizes and make Neopoints easily! ',
+    featured: ['weekly-quest-prize', 'daily-quest-prize', 'premium-daily-quest-prizes'],
   },
   stamps: {
     id: 'stamps',
@@ -289,4 +295,15 @@ export const listCategoriesData: {
     description:
       'Explore detailed checklists for each Neopets Stamp Album page! Track your stamps and complete your collection with ease.',
   },
+};
+
+const sortLists = (a: UserList, b: UserList, featured?: string[]) => {
+  if (featured) {
+    const aIndex = featured.indexOf(a.slug?.toLowerCase() ?? '');
+    const bIndex = featured.indexOf(b.slug?.toLowerCase() ?? '');
+    if (aIndex !== -1 && bIndex === -1) return -1;
+    if (aIndex === -1 && bIndex !== -1) return 1;
+    if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+  }
+  return a.name.localeCompare(b.name);
 };

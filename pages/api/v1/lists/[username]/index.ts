@@ -24,9 +24,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
 // gets all lists of a user
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { username } = req.query;
+  const { username, officialTag } = req.query;
   if (!username || typeof username !== 'string')
     return res.status(400).json({ error: 'Bad Request' });
+
+  if (officialTag && username === 'official') {
+    const result = await getOfficialListsCat(officialTag as string, 3000);
+    return res.status(200).json(result);
+  }
 
   let user = null;
 
@@ -188,7 +193,12 @@ const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
 
 // ----------- //
 
-export const getUserLists = async (username: string, user?: User | null, limit = -1) => {
+export const getUserLists = async (
+  username: string,
+  user?: User | null,
+  limit = -1,
+  officialTag?: string
+) => {
   const isOfficial = username === 'official';
 
   const listsRaw = await prisma.userList.findMany({
@@ -201,6 +211,7 @@ export const getUserLists = async (username: string, user?: User | null, limit =
         }
       : {
           official: true,
+          official_tag: officialTag || undefined,
         },
     include: {
       items: true,
@@ -405,7 +416,7 @@ export const rawToListItems = (items: ListItems[]): ListItemInfo[] => {
 };
 
 export const getOfficialListsCat = async (tag: string, limit = 15) => {
-  const lists = await getUserLists('official', null);
+  const lists = await getUserLists('official', null, -1, tag);
 
   tag = tag.toLowerCase();
 

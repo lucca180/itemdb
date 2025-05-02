@@ -444,6 +444,8 @@ model UserList {
   items ListItems[]
 
   @@unique([slug, user_id])
+  @@index([official_tag, official])
+  @@index([official, createdAt])
   @@fulltext([name])
   @@fulltext([description])
   @@fulltext([name, description])
