@@ -56,18 +56,21 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
             <DefaultSeo {...getDefaultSEO(router.locale ?? 'en')} />
             {getLayout(<Component {...pageProps} />, pageProps)}
             <Script
-              src={'/plutonita.js?v=1.0.0'}
+              src={'/plutonita.js?v=1.0.2'}
               data-website-id={process.env.NEXT_PUBLIC_UMAMI_ID}
               data-host-url={'https://umami.itemdb.com.br'}
-              data-url-overwrite="unamiOverwriter"
+              data-before-send="beforeSendHandler"
               defer
             />
-            <Script id="pathOverwriter2">
-              {`function unamiOverwriter(path) {
-                  if (path.startsWith("/pt")) path = path.replace("/pt", "");
-                  return path;
-                }
-                `}
+            <Script id="pathOverwriter">
+              {`function beforeSendHandler(type, payload) {
+                    const url = payload.url;
+                    if(['es', 'pt'].includes(url.split("/")[3])) {
+                      payload.url = url.replace("/pt", "");
+                    }
+
+                    return payload;
+                }`}
             </Script>
           </NextIntlClientProvider>
         </AuthProvider>
