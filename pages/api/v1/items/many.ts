@@ -162,14 +162,15 @@ export const getManyItems = async (
               addedAt: (result.priceAdded as Date | null)?.toJSON() ?? null,
               inflated: !!result.noInflation_id,
             },
-      owls: result.owlsValue
-        ? {
-            value: result.owlsValue,
-            pricedAt: result.owlsPriced?.toJSON() ?? null,
-            valueMin: result.owlsValueMin,
-            buyable: result.owlsValue.toLowerCase().includes('buyable'),
-          }
-        : null,
+      // owls: result.owlsValue
+      //   ? {
+      //       value: result.owlsValue,
+      //       pricedAt: result.owlsPriced?.toJSON() ?? null,
+      //       valueMin: result.owlsValueMin,
+      //       buyable: result.owlsValue.toLowerCase().includes('buyable'),
+      //     }
+      //   : null,
+      owls: null,
       comment: result.comment ?? null,
       slug: result.slug ?? null,
       saleStatus:

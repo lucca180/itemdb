@@ -16,7 +16,8 @@
     "is-it-safe": "Is it safe?",
     "leaving-nc-mall": "Leaving NC Mall",
     "featured-lists": "Featured Lists",
-    "x-prices-updated-last-y": "{count} prices updated in the last {time}"
+    "x-prices-updated-last-y": "{count} prices updated in the last {time}",
+    "new-clothes": "New Clothes"
   },
   "BetaStats": {
     "items-in-db": "Items in the database",

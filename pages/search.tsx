@@ -401,7 +401,7 @@ const SearchPage = () => {
             >
               <option value="name">{t('General.name')}</option>
               <option value="price">{t('General.price')}</option>
-              <option value="owls">{t('ItemPage.owls-value')}</option>
+              {/* <option value="owls">{t('ItemPage.owls-value')}</option> */}
               <option value="rarity">{t('General.rarity')}</option>
               <option value="color">{t('General.color')}</option>
               <option value="weight">{t('General.weight')}</option>

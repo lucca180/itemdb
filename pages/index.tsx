@@ -7,13 +7,11 @@ import ItemCard from '../components/Items/ItemCard';
 import { ItemData, UserList, WP_Article } from '../types';
 import BetaStatsCard from '../components/Beta/BetaStatsCard';
 import axios, { AxiosRequestConfig } from 'axios';
-import { getLatestOwls } from './api/v1/items/owls';
 import { ArticleCard } from '../components/Articles/ArticlesCard';
 import { wp_getLatestPosts } from './api/wp/posts';
 import NextLink from 'next/link';
 import Color from 'color';
 import { getTrendingItems, getTrendingLists } from './api/v1/beta/trending';
-// import { getHotestRestock } from './api/v1/beta/restock';
 import { createTranslator, useFormatter, useTranslations } from 'next-intl';
 import { getNCMallItemsData } from './api/v1/ncmall';
 import { getLatestItems } from './api/v1/items';
@@ -33,7 +31,7 @@ type LatestPricesRes = {
 type Props = {
   latestItems: ItemData[];
   latestPrices: LatestPricesRes;
-  latestOwls: ItemData[];
+  latestWearable: ItemData[];
   latestPosts: WP_Article[];
   trendingItems: ItemData[];
   latestNcMall: ItemData[];
@@ -53,7 +51,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
   const t = useTranslations();
   const formatter = useFormatter();
 
-  const { latestOwls, latestPosts, latestNcMall, trendingItems, leavingNcMall, trendingLists } =
+  const { latestWearable, latestPosts, latestNcMall, trendingItems, leavingNcMall, trendingLists } =
     props;
 
   const { data: latestItems } = useSWR<ItemData[]>(`api/v1/items?limit=20`, (url) => fetcher(url), {
@@ -178,20 +176,21 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
               title={t('HomePage.leaving-nc-mall')}
               h={70}
               w={70}
+              perPage={9}
             />
           )}
-          {latestOwls && (
+          {latestWearable && (
             <HomeCard
               useItemCard
-              utm_content="latest-owls"
-              href="/owls"
-              color="#789DBC"
-              image="https://images.neopets.com/neopies/y25/images/nominees/GiftBoxMysteryCapsule_y20tmnsll0/04.png"
-              items={latestOwls}
-              title={t('HomePage.latest-owls')}
-              linkText={t('General.learn-more')}
+              utm_content="latest-wearable"
+              href="/search?s=&sortBy=added&sortDir=desc&type[]=wearable&utm_content=latest-wearable"
+              color="#59cde2"
+              image="https://images.neopets.com/themes/h5/basic/images/customise-icon.svg"
+              items={latestWearable}
+              title={t('HomePage.new-clothes')}
               w={70}
               h={70}
+              perPage={9}
             />
           )}
         </Stack>
@@ -225,7 +224,7 @@ export default HomePage;
 export async function getStaticProps(context: any): Promise<{ props: Props; revalidate: number }> {
   const [
     latestItems,
-    latestOwls,
+    latestWearable,
     latestPosts,
     trendingItems,
     latestNcMall,
@@ -234,7 +233,7 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
     trendingLists,
   ] = await Promise.all([
     getLatestItems(20, true).catch(() => []),
-    getLatestOwls(18).catch(() => []),
+    getLatestItems(18, true, true).catch(() => []),
     wp_getLatestPosts(5).catch((e) => {
       console.error(e);
       return [];
@@ -252,7 +251,7 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
   return {
     props: {
       latestItems,
-      latestOwls,
+      latestWearable,
       latestPosts,
       trendingItems,
       latestNcMall,

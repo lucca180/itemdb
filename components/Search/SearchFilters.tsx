@@ -342,7 +342,7 @@ const SearchFilters = (props: Props) => {
           </HStack>
         </AccordionPanel>
       </AccordionItem>
-      <AccordionItem>
+      {/* <AccordionItem>
         <h2>
           <AccordionButton>
             <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
@@ -369,7 +369,7 @@ const SearchFilters = (props: Props) => {
             />
           </HStack>
         </AccordionPanel>
-      </AccordionItem>
+      </AccordionItem> */}
       <AccordionItem>
         <h2>
           <AccordionButton>

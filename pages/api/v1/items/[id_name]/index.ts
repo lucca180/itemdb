@@ -271,8 +271,8 @@ export const getItem = async (id_name: number | string) => {
         },
   };
 
-  if (item.isNC && item.status !== 'no trade' && item.isWearable)
-    item.owls = await fetchOwlsData(item.name, item);
+  // if (item.isNC && item.status !== 'no trade' && item.isWearable)
+  // item.owls = await fetchOwlsData(item.name, item);
 
   if (!DISABLE_SALE_STATS && item.price.value && item.price.addedAt)
     item.saleStatus = await getSaleStats(item.internal_id, 15, new Date(item.price.addedAt));

@@ -302,10 +302,10 @@ export async function doSearch(
     else if (todayNST.getMonth() === 4 && todayNST.getDate() === 12) {
       numberFilters.push(Prisma.sql`
         ((temp.category in (${Prisma.join(tyrannianShops)}) AND ${getRestockQuery(
-        0.2,
-        minProfit,
-        includeUnpriced
-      )}) OR (${getRestockQuery(1, minProfit, includeUnpriced)}))
+          0.2,
+          minProfit,
+          includeUnpriced
+        )}) OR (${getRestockQuery(1, minProfit, includeUnpriced)}))
       `);
     }
 
@@ -324,10 +324,10 @@ export async function doSearch(
     else if (todayNST.getMonth() === 8 && todayNST.getDate() === 20) {
       numberFilters.push(Prisma.sql`
         ((temp.category in (${Prisma.join(faerielandShops)}) AND ${getRestockQuery(
-        0.5,
-        minProfit,
-        includeUnpriced
-      )}) OR (${getRestockQuery(1, minProfit, includeUnpriced)}))
+          0.5,
+          minProfit,
+          includeUnpriced
+        )}) OR (${getRestockQuery(1, minProfit, includeUnpriced)}))
       `);
     }
 
@@ -335,10 +335,10 @@ export async function doSearch(
     else if (todayNST.getMonth() === 9 && todayNST.getDate() === 31) {
       numberFilters.push(Prisma.sql`
         ((temp.category in (${Prisma.join(halloweenShops)}) AND ${getRestockQuery(
-        0.5,
-        minProfit,
-        includeUnpriced
-      )}) OR (${getRestockQuery(1, minProfit, includeUnpriced)}))
+          0.5,
+          minProfit,
+          includeUnpriced
+        )}) OR (${getRestockQuery(1, minProfit, includeUnpriced)}))
       `);
     } else {
       numberFilters.push(getRestockQuery(1, minProfit, includeUnpriced));
@@ -497,8 +497,8 @@ export async function doSearch(
           }
         FROM Items as a
         LEFT JOIN ItemColor as b on a.image_id = b.image_id and ${colorTypeSQL} ${
-      colorSql_inside ? Prisma.sql`and b.population > 0` : Prisma.empty
-    }
+          colorSql_inside ? Prisma.sql`and b.population > 0` : Prisma.empty
+        }
         LEFT JOIN itemPrices as c on c.item_iid = a.internal_id and c.isLatest = 1
         LEFT JOIN OwlsPrice as d on d.item_iid = a.internal_id and d.isLatest = 1
         LEFT JOIN SaleStats as s on s.item_iid = a.internal_id and s.isLatest = 1 and s.stats != "unknown"
@@ -608,14 +608,15 @@ export async function doSearch(
               addedAt: result.priceAdded?.toJSON() ?? null,
               inflated: !!result.noInflation_id,
             },
-      owls: result.owlsValue
-        ? {
-            value: result.owlsValue,
-            pricedAt: result.owlsPriced.toJSON(),
-            valueMin: result.owlsValueMin,
-            buyable: result.owlsValue.toLowerCase().includes('buyable'),
-          }
-        : null,
+      // owls: result.owlsValue
+      //   ? {
+      //       value: result.owlsValue,
+      //       pricedAt: result.owlsPriced.toJSON(),
+      //       valueMin: result.owlsValueMin,
+      //       buyable: result.owlsValue.toLowerCase().includes('buyable'),
+      //     }
+      //   : null,
+      owls: null,
       comment: result.comment ?? null,
       slug: result.slug ?? null,
       saleStatus:

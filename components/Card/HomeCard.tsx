@@ -30,6 +30,7 @@ type HomeCardProps = {
   useItemCard?: boolean;
   opacity?: number;
   utm_content?: string;
+  perPage?: number;
 };
 
 export const HomeCard = (props: HomeCardProps) => {
@@ -44,6 +45,7 @@ export const HomeCard = (props: HomeCardProps) => {
     useItemCard,
     opacity,
     utm_content,
+    perPage = 10,
   } = props;
   const [page, setPage] = useState(0);
   const color = new Color(props.color);
@@ -79,7 +81,7 @@ export const HomeCard = (props: HomeCardProps) => {
         <Divider borderColor={'whiteAlpha.300'} mt={3} />
         {!useItemCard && (
           <Flex flexFlow={'column'}>
-            {items.slice(10 * page, 10 * (page + 1)).map((item) => (
+            {items.slice(perPage * page, perPage * (page + 1)).map((item) => (
               <HomeItem
                 key={item.internal_id + title}
                 menuKey={item.internal_id + title}
@@ -91,7 +93,7 @@ export const HomeCard = (props: HomeCardProps) => {
         )}
         {useItemCard && (
           <Flex flexWrap={'wrap'} gap={2} my={3} justifyContent={'center'}>
-            {items.slice(9 * page, 9 * (page + 1)).map((item) => (
+            {items.slice(perPage * page, perPage * (page + 1)).map((item) => (
               <ItemCard key={item.internal_id + title} item={item} utm_content={utm_content} />
             ))}
           </Flex>

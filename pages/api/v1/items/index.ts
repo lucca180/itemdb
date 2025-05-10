@@ -157,11 +157,12 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   return res.status(500).json({ error: 'Internal Server Error' });
 };
 
-export const getLatestItems = async (limit: number, skipOldIDs = false) => {
+export const getLatestItems = async (limit: number, skipOldIDs = false, onlyWearable = false) => {
   const result = await prisma.items.findMany({
     where: {
       canonical_id: null,
       OR: [{ item_id: null }, { item_id: { gte: skipOldIDs ? 85020 : 0 } }],
+      isWearable: onlyWearable ? true : undefined,
     },
     orderBy: [
       {
