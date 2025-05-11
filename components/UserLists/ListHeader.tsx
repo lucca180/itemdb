@@ -236,6 +236,29 @@ const ListHeader = (props: ListHeaderProps) => {
                 {t('Lists.' + list.visibility)}
               </Badge>
             )}
+            {!list.official && list.owner.neopetsUser && list.purpose !== 'none' && (
+              <>
+                <Badge
+                  as={Link}
+                  isExternal
+                  href={`http://www.neopets.com/userlookup.phtml?user=${list.owner.neopetsUser}`}
+                  borderRadius="md"
+                  colorScheme={color.isLight() ? 'black' : 'gray'}
+                >
+                  {t('General.userlookup')} <Icon as={BiLinkExternal} verticalAlign="text-top" />
+                </Badge>
+
+                <Badge
+                  as={Link}
+                  isExternal
+                  href={`http://www.neopets.com/neomessages.phtml?type=send&recipient=${list.owner.neopetsUser}`}
+                  borderRadius="md"
+                  colorScheme={color.isLight() ? 'black' : 'gray'}
+                >
+                  {t('General.neomail')} <Icon as={BiLinkExternal} verticalAlign="text-top" />
+                </Badge>
+              </>
+            )}
           </Stack>
           <Heading
             size={{ base: 'lg', md: undefined }}
@@ -295,29 +318,17 @@ const ListHeader = (props: ListHeaderProps) => {
                 ),
                 username: list.owner.username,
               })}
+              {!list.dynamicType && (
+                <>
+                  {' '}
+                  •{' '}
+                  {t.rich('Lists.updated-x', {
+                    b: (chunk) => <b>{chunk}</b>,
+                    x: format.relativeTime(new Date(list.updatedAt)),
+                  })}
+                </>
+              )}
             </Text>
-            {!list.official && list.owner.neopetsUser && (
-              <>
-                <Link
-                  isExternal
-                  display={{ base: 'none', md: 'inline' }}
-                  href={`http://www.neopets.com/userlookup.phtml?user=${list.owner.neopetsUser}`}
-                >
-                  <Badge borderRadius="md" colorScheme={color.isLight() ? 'black' : 'gray'}>
-                    {t('General.userlookup')} <Icon as={BiLinkExternal} verticalAlign="text-top" />
-                  </Badge>
-                </Link>
-                <Link
-                  isExternal
-                  display={{ base: 'none', md: 'inline' }}
-                  href={`http://www.neopets.com/neomessages.phtml?type=send&recipient=${list.owner.neopetsUser}`}
-                >
-                  <Badge borderRadius="md" colorScheme={color.isLight() ? 'black' : 'gray'}>
-                    {t('General.neomail')} <Icon as={BiLinkExternal} verticalAlign="text-top" />
-                  </Badge>
-                </Link>
-              </>
-            )}
           </Stack>
           {list.description && (
             <Text

@@ -745,7 +745,8 @@
     "advanced-import": "Importação avançada",
     "similar-lists": "Listas Similares",
     "markdown-tip": "Aceita algumas tags <Link>Markdown</Link> <Small>(como links, negrito, itálico, riscado etc.)</Small>",
-    "load-cover-image-palette": "Carregar Paleta de Cores da Capa"
+    "load-cover-image-palette": "Carregar Paleta de Cores da Capa",
+    "updated-x": "atualizado <b>{x}</b>"
   },
   "Restock": {
     "est-profit": "Lucro Est.",
