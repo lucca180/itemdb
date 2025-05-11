@@ -240,7 +240,11 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
   return res.send(result);
 };
 
-export const doProcessPrices = async (processList: PriceProcess2[], ids: number[]) => {
+export const doProcessPrices = async (
+  processList: PriceProcess2[],
+  ids: number[],
+  forceMode = false
+) => {
   const priceAddPromises: Promise<Prisma.ItemPricesUncheckedCreateInput | undefined>[] = [];
   const processedIDs: number[] = [];
 
@@ -251,7 +255,7 @@ export const doProcessPrices = async (processList: PriceProcess2[], ids: number[
     const item = allItemData[0];
 
     try {
-      const newPriceAlgorithm = processPrices2(allItemData);
+      const newPriceAlgorithm = processPrices2(allItemData, forceMode);
 
       if (!newPriceAlgorithm) continue;
 

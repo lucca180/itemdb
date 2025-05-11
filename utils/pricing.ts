@@ -3,13 +3,12 @@ import { differenceInCalendarDays } from 'date-fns';
 import { mean, standardDeviation } from 'simple-statistics';
 
 const TRADE_MIN_GOAL = process.env.TRADE_MIN_GOAL || '7';
-const EVENT_MODE = process.env.EVENT_MODE === 'true';
 
-export const processPrices2 = (allItemData: PriceProcess2[]) => {
+export const processPrices2 = (allItemData: PriceProcess2[], forceMode = false) => {
   // const item = allItemData[0];
 
   // get only the most recent data available that fits the criteria
-  const mostRecentRaw = filterMostRecent(allItemData).sort(
+  const mostRecentRaw = filterMostRecent(allItemData, forceMode).sort(
     (a, b) => a.price.toNumber() - b.price.toNumber()
   );
 
@@ -65,7 +64,9 @@ export const processPrices2 = (allItemData: PriceProcess2[]) => {
   };
 };
 
-function filterMostRecent(priceProcessList: PriceProcess2[]) {
+function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) {
+  const EVENT_MODE = forceMode || process.env.EVENT_MODE === 'true';
+
   const daysThreshold: { [days: number]: number } = {
     0: EVENT_MODE ? 10 : 18,
     3: EVENT_MODE ? 5 : 15,
@@ -79,7 +80,7 @@ function filterMostRecent(priceProcessList: PriceProcess2[]) {
     (x) => differenceInCalendarDays(Date.now(), x.addedAt) <= 0
   );
 
-  if (checkFiltered(firstFiltered, daysThreshold[0])) return firstFiltered;
+  if (checkFiltered(firstFiltered, daysThreshold[0], forceMode)) return firstFiltered;
 
   let count = 0;
 
@@ -94,7 +95,7 @@ function filterMostRecent(priceProcessList: PriceProcess2[]) {
         differenceInCalendarDays(Date.now(), x.addedAt) >= prevDays
     );
 
-    if (checkFiltered(filtered, goal)) return filtered;
+    if (checkFiltered(filtered, goal, forceMode)) return filtered;
 
     count += filtered.filter((x) => x.type !== 'usershop').length;
     if (count >= goal) return [];
@@ -105,7 +106,9 @@ function filterMostRecent(priceProcessList: PriceProcess2[]) {
 
 const priorityOrder = ['ssw', 'sw', 'trade', 'usershop'];
 
-function checkFiltered(filtered: PriceProcess2[], goal: number) {
+function checkFiltered(filtered: PriceProcess2[], goal: number, forceMode = false) {
+  const EVENT_MODE = forceMode || process.env.EVENT_MODE === 'true';
+
   // remove stuff with the same owner
   const newFiltered = uniqueByOwner(
     filtered.sort((a, b) => {

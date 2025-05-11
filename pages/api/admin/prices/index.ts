@@ -102,7 +102,7 @@ async function PATCH(req: NextApiRequest, res: NextApiResponse) {
     return res.status(400).json({ error: 'Nothing to process' });
   }
 
-  const result = await doProcessPrices(priceProcess, [Number(item_iid)]);
+  const result = await doProcessPrices(priceProcess, [Number(item_iid)], true);
 
   return res.json(result);
 }
