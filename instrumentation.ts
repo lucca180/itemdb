@@ -15,11 +15,12 @@ export function register() {
     tracesSampleRate: 0.3,
     profilesSampleRate: 0.5,
     integrations: [
-      // Sentry.captureConsoleIntegration({
-      //   // array of methods that should be captured
-      //   // defaults to ['log', 'info', 'warn', 'error', 'debug', 'assert']
-      //   levels: ['error', 'warn'],
-      // }),
+      Sentry.prismaIntegration(),
+      Sentry.captureConsoleIntegration({
+        // array of methods that should be captured
+        // defaults to ['log', 'info', 'warn', 'error', 'debug', 'assert']
+        levels: ['error'],
+      }),
     ],
   });
 }
