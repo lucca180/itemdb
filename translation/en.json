@@ -455,7 +455,11 @@
     "restock-shops": "Restock Shops",
     "always": "Always",
     "x-seconds": "{x}{long, select, true { seconds} other {s}}",
-    "x-hours": "{x}{long, select, true { hours} other {h}}"
+    "x-hours": "{x}{long, select, true { hours} other {h}}",
+    "x-added": "{x} added",
+    "x-removed": "{x} removed",
+    "removed": "Removed",
+    "added": "Added"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",
@@ -947,7 +951,9 @@
     "fullSync-2": "You'll not be able to <b>add new items</b> to the list manually.",
     "fullSync-3": "Items that no longer match the search query <b>will be removed</b> from the list.",
     "fullSync-4": "You'll not be able to <b>remove items</b> from the list - <i>but you can hide them</i>.",
-    "linkedLists-desc": "Linked Lists are special lists that are automatically updated (once per hour) based on another list."
+    "linkedLists-desc": "Linked Lists are special lists that are automatically updated (once per hour) based on another list.",
+    "dynamic-list-history": "Dynamic List History",
+    "no-change-logs-found-for-this-list": "No change logs found for this list :("
   },
   "Login": {
     "invalid-email-address": "Invalid email address",

@@ -456,7 +456,11 @@
     "restock-shops": "Lojas de Restoque",
     "always": "Sempre",
     "x-hours": "{x}{long, select, true { horas} other {h}}",
-    "x-seconds": "{x}{long, select, true { segundos} other {s}}"
+    "x-seconds": "{x}{long, select, true { segundos} other {s}}",
+    "x-added": "{x} adicionados",
+    "x-removed": "{x} removidos",
+    "added": "Adicionado",
+    "removed": "Removido"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",
@@ -948,7 +952,9 @@
     "removeOnly-2": "Você não poderá <b>adicionar novos itens</b> à lista manualmente.",
     "removeOnly-3": "Itens que não corresponderem mais à pesquisa <b>serão removidos</b> da lista.",
     "removeOnly-4": "Você poderá <b>remover itens</b> da lista.",
-    "linkedLists-desc": "Linked Lists são listas especiais atualizadas automaticamente (uma vez por hora) com base em outra lista."
+    "linkedLists-desc": "Linked Lists são listas especiais atualizadas automaticamente (uma vez por hora) com base em outra lista.",
+    "dynamic-list-history": "Histórico de Lista Dinâmica",
+    "no-change-logs-found-for-this-list": "Nenhum registro de alteração encontrado para esta lista :("
   },
   "Login": {
     "invalid-email-address": "Endereço de email inválido",

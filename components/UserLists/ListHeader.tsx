@@ -39,6 +39,7 @@ const Markdown = dynamic(() => import('../Utils/Markdown'));
 const ListPriceHistoryModal = dynamic<ListPriceHistoryModalProps>(
   () => import('../Modal/ListPriceHistoryModal')
 );
+const DynamicHistoryModal = dynamic(() => import('../Modal/DynamicListLogsModal'));
 
 type ListHeaderProps = {
   list: UserList;
@@ -56,6 +57,8 @@ const ListHeader = (props: ListHeaderProps) => {
   const toast = useToast();
   const { list, color, items, itemInfo, canEdit: isOwner, setOpenCreateModal, isLoading } = props;
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isOpenDynamic, onOpen: onOpenDynamic, onClose: onCloseDynamic } = useDisclosure();
+
   const { user } = useAuth();
   const rgb = color.rgb().array();
 
@@ -132,6 +135,9 @@ const ListHeader = (props: ListHeaderProps) => {
           onClose={onClose}
           item_iids={item_iids}
         />
+      )}
+      {isOpenDynamic && (
+        <DynamicHistoryModal list={list} isOpen={isOpenDynamic} onClose={onCloseDynamic} />
       )}
       <Box
         position="absolute"
@@ -242,8 +248,12 @@ const ListHeader = (props: ListHeaderProps) => {
 
             {!!list.dynamicType && (
               <IconButton
-                aria-label="Share Link"
+                ml={1}
+                colorScheme={color.isLight() ? 'blackAlpha' : 'gray'}
+                aria-label="Dynamic List History"
+                data-umami-event="dynamic-list-history"
                 size="sm"
+                onClick={onOpenDynamic}
                 icon={
                   <Tooltip hasArrow label={`Dynamic List`} placement="top">
                     <NextImage

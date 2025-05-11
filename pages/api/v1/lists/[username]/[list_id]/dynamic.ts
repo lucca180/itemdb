@@ -5,17 +5,19 @@ import prisma from '../../../../../../utils/prisma';
 import { doSearch } from '../../../search';
 import { Prisma } from '@prisma/generated/client';
 import { isSameHour } from 'date-fns';
+import { getList } from '.';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   // return res.status(405).json({ error: 'Method not allowed' });
 
   if (req.method === 'GET') return GET(req, res);
+  if (req.method === 'PATCH') return PATCH(req, res);
   if (req.method === 'POST') return POST(req, res);
   // if (req.method === 'PUT') return PUT(req, res);
   // if (req.method === 'DELETE') return DELETE(req, res);
 
   if (req.method == 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH');
     return res.status(200).json({});
   }
 
@@ -23,6 +25,57 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
+  const { username, list_id: list_id_or_slug } = req.query;
+  const isOfficial = username === 'official';
+
+  if (!username || !list_id_or_slug || Array.isArray(username) || Array.isArray(list_id_or_slug))
+    return res.status(400).json({ error: 'Bad Request' });
+
+  let user = null;
+
+  try {
+    user = (await CheckAuth(req)).user;
+  } catch (e) {}
+
+  const list = await getList(username, list_id_or_slug, user, isOfficial);
+  if (!list) return res.status(404).json({ error: 'List not found' });
+
+  const canShow = isOfficial || list.owner.username === user?.username;
+  if (!canShow) return res.status(403).json({ error: 'Unauthorized' });
+
+  if (!list.dynamicType) return res.status(400).json({ error: 'List is not dynamic' });
+
+  const logs = await prisma.actionLogs.findMany({
+    where: {
+      subject_id: list.internal_id.toString(),
+      actionType: 'dynamicListSync',
+    },
+    orderBy: {
+      addedAt: 'desc',
+    },
+  });
+
+  const dynamicLogs = [];
+  const itemIds = new Set<number>();
+
+  for (const log of logs) {
+    const { logData } = log;
+    const { added, removed } = logData as DynamicSyncLog;
+
+    dynamicLogs.push({
+      added,
+      removed,
+      addedAt: log.addedAt,
+    });
+
+    added.map((itemId: number) => itemIds.add(itemId));
+    removed.map((itemId: number) => itemIds.add(itemId));
+  }
+
+  return res.status(200).json({ dynamicLogs, item_iids: Array.from(itemIds) });
+};
+
+const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
   const { list_id } = req.query;
   await syncDynamicList(parseInt(list_id as string), true);
   res.send('ok');

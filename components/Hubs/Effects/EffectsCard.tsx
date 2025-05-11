@@ -20,7 +20,8 @@ import ItemCtxMenu, { CtxTrigger } from '../../Menus/ItemCtxMenu';
 import MainLink from '../../Utils/MainLink';
 
 type EffectsCardProps = {
-  item: ItemData & { effects: ItemEffect[] };
+  item: ItemData & { effects?: ItemEffect[] };
+  uniqueID?: string;
 };
 
 export const EffectsCard = (props: EffectsCardProps) => {
@@ -41,9 +42,9 @@ export const EffectsCard = (props: EffectsCardProps) => {
       borderRadius={'md'}
       flexFlow={'column'}
     >
-      <ItemCtxMenu item={item} />
+      <ItemCtxMenu menuId={props.uniqueID + item.internal_id.toString()} item={item} />
       <CtxTrigger
-        id={item.internal_id.toString()}
+        id={props.uniqueID + item.internal_id.toString()}
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         //@ts-ignore
         disableWhileShiftPressed
@@ -97,30 +98,40 @@ export const EffectsCard = (props: EffectsCardProps) => {
           </Flex>
         </Link>
       </CtxTrigger>
-      <Divider my={3} />
-      <Flex flexFlow={'column'} gap={2} sx={{ a: { color: color.lightness(70).hex() } }}>
-        {item.effects.map((effect) => (
-          <HStack key={effect.internal_id} gap={2} bg="blackAlpha.300" p={1} borderRadius={'md'}>
-            <Box w={'20px'} h="20px" flex="0 0 auto" overflow={'hidden'} borderRadius={'sm'}>
-              <Image
-                width={20}
-                height={20}
-                src={EffectTypes[effect.type].img}
-                alt={effect.name}
-                quality={100}
-              />
-            </Box>
-            <Text
-              fontSize="xs"
-              color="whiteAlpha.800"
-              sx={{ 'b, strong': { color: 'white' } }}
-              as="div"
-            >
-              <EffectText effect={effect} />
-            </Text>
-          </HStack>
-        ))}
-      </Flex>
+      {item.effects && item.effects.length > 0 && (
+        <>
+          <Divider my={3} />
+          <Flex flexFlow={'column'} gap={2} sx={{ a: { color: color.lightness(70).hex() } }}>
+            {item.effects.map((effect) => (
+              <HStack
+                key={effect.internal_id}
+                gap={2}
+                bg="blackAlpha.300"
+                p={1}
+                borderRadius={'md'}
+              >
+                <Box w={'20px'} h="20px" flex="0 0 auto" overflow={'hidden'} borderRadius={'sm'}>
+                  <Image
+                    width={20}
+                    height={20}
+                    src={EffectTypes[effect.type].img}
+                    alt={effect.name}
+                    quality={100}
+                  />
+                </Box>
+                <Text
+                  fontSize="xs"
+                  color="whiteAlpha.800"
+                  sx={{ 'b, strong': { color: 'white' } }}
+                  as="div"
+                >
+                  <EffectText effect={effect} />
+                </Text>
+              </HStack>
+            ))}
+          </Flex>
+        </>
+      )}
     </Flex>
   );
 };
