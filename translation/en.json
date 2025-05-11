@@ -969,7 +969,8 @@
     "enter-a-valid-image-url": "Enter a valid image url",
     "profile-image-url": "Profile Image URL",
     "allowedDomains": "Only images from neopets.com, magnetismotimes.com and itemdb.com.br are allowed",
-    "color-helper": "Leave as #000000 and we will choose one for you based on your profile image"
+    "color-helper": "Leave as #000000 and we will choose one for you based on your profile image",
+    "list-groups-helper": "<b>List Groups</b> mode will use lists \"Profile Tag\" field to group lists together in your profile page"
   },
   "FAQ": {
     "why-itemdb": "Why itemdb?",

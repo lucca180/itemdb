@@ -15,8 +15,8 @@ import {
   HStack,
   Switch,
   useToast,
-  Icon,
   Spinner,
+  IconButton,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -27,9 +27,8 @@ import { useRouter } from 'next/router';
 import { SortableListsProps } from '../../../components/Sortable/SortableLists';
 import Color from 'color';
 import { SelectItemsCheckbox } from '../../../components/Input/SelectItemsCheckbox';
-import { FaTrash } from 'react-icons/fa';
+import { FaEnvelope, FaHouseUser, FaTrash } from 'react-icons/fa';
 import { DeleteListModalProps } from '../../../components/Modal/DeleteListModal';
-import { BiLinkExternal } from 'react-icons/bi';
 import { EditProfileModalProps } from '../../../components/Modal/EditProfileModal';
 import { GetServerSidePropsContext } from 'next';
 import { getUser } from '../../api/v1/users/[username]';
@@ -42,6 +41,8 @@ import { CheckAuth } from '../../../utils/googleCloud';
 import { getUserAchievements } from '../../api/v1/users/[username]/achievements';
 import UserListCard from '../../../components/UserLists/ListCard';
 import { loadTranslation } from '@utils/load-translation';
+
+const Markdown = dynamic(() => import('../../../components/Utils/Markdown'), { ssr: false });
 
 const CreateListModal = dynamic<CreateListModalProps>(
   () => import('../../../components/Modal/CreateListModal')
@@ -112,6 +113,10 @@ const UserListsPage = (props: Props) => {
     return () => toast.closeAll();
   }, [router.query]);
 
+  useEffect(() => {
+    setOwner(props.owner);
+  }, [props.owner]);
+
   const seekItems = useMemo(() => {
     const allItems = new Set(Object.values(matches.seek).flat());
     return allItems.size;
@@ -146,8 +151,7 @@ const UserListsPage = (props: Props) => {
       });
   }, [lists]);
 
-  // temporary -> should be user.profileMode
-  const isGroupMode = listGroups.length > 1;
+  const isGroupMode = owner.profileMode === 'groups';
 
   const init = async (force = false) => {
     setLists({});
@@ -381,24 +385,25 @@ const UserListsPage = (props: Props) => {
               </Button>
             )}
           </Box>
-          <Box>
+          <Flex flexFlow={'column'} h={'100%'} gap={2} alignItems={'flex-start'}>
             <Stack direction="row" mb={1} flexWrap="wrap">
-              <Link
+              <IconButton
+                as={Link}
                 isExternal
                 href={`http://www.neopets.com/userlookup.phtml?user=${owner.neopetsUser}`}
-              >
-                <Badge borderRadius="md" colorScheme={color.isLight() ? 'black' : 'gray'}>
-                  {t('General.userlookup')} <Icon as={BiLinkExternal} verticalAlign="text-top" />
-                </Badge>
-              </Link>
-              <Link
+                size="sm"
+                aria-label={t('General.userlookup')}
+                icon={<FaHouseUser />}
+              />
+              <IconButton
+                as={Link}
                 isExternal
                 href={`http://www.neopets.com/neomessages.phtml?type=send&recipient=${owner.neopetsUser}`}
-              >
-                <Badge borderRadius="md" colorScheme={color.isLight() ? 'black' : 'gray'}>
-                  {t('General.neomail')} <Icon as={BiLinkExternal} verticalAlign="text-top" />
-                </Badge>
-              </Link>
+                size="sm"
+                aria-label={t('General.neomail')}
+                icon={<FaEnvelope />}
+              />
+              {owner.username && <UserAchiev achievements={props.achievements} />}
             </Stack>
             <Heading size={{ base: 'lg', md: undefined }}>
               {t('Lists.owner-username-s-lists', { username: owner.username })}{' '}
@@ -408,45 +413,49 @@ const UserListsPage = (props: Props) => {
                 </Badge>
               )}
             </Heading>
-            {!isOwner && (
-              <Stack mt={2} gap={1}>
-                <Text fontSize={{ base: 'xs', md: 'sm' }} fontWeight="bold">
-                  {t.rich('Lists.profile-match-want', {
-                    Badge: (chunk) => (
-                      <Badge borderRadius="md" verticalAlign="middle" colorScheme="green">
-                        {chunk}
-                      </Badge>
-                    ),
-                    username: owner.username,
-                    items: seekItems,
-                  })}
-                </Text>
-                <Text
-                  fontSize={{ base: 'xs', md: 'sm' }}
-                  fontWeight="bold"
-                  sx={{ marginTop: '0 !important' }}
-                >
-                  {t.rich('Lists.profile-match-have', {
-                    Badge: (chunk) => (
-                      <Badge borderRadius="md" verticalAlign="middle" colorScheme="blue">
-                        {chunk}
-                      </Badge>
-                    ),
-                    username: owner.username,
-                    items: tradeItems,
-                  })}
-                </Text>
-              </Stack>
-            )}
-            {isOwner && (
-              <Text mt={2} fontSize={{ base: 'xs', md: 'sm' }} fontWeight="bold">
-                {t('Lists.oh-thats-you')}
+            {owner.description && (
+              <Text as="div" fontSize={{ base: 'xs', md: 'sm' }}>
+                <Markdown>{owner.description}</Markdown>
               </Text>
             )}
-            <Stack mt={2} alignItems="flex-start">
-              {owner.username && <UserAchiev achievements={props.achievements} />}
-            </Stack>
-          </Box>
+            {isOwner && !owner.description && (
+              <Text fontSize={{ base: 'xs', md: 'sm' }} fontStyle={'italic'} opacity={0.8}>
+                Tip: you can add a description to your profile!
+              </Text>
+            )}
+            {!isOwner && (
+              <Box bg="blackAlpha.400" p={1} px={2} borderRadius="md" mt={2} color="gray.300">
+                <Stack gap={1}>
+                  <Text fontSize={{ base: 'xs', md: 'sm' }} fontWeight="bold">
+                    {t.rich('Lists.profile-match-want', {
+                      Badge: (chunk) => (
+                        <Badge borderRadius="md" verticalAlign="middle" colorScheme="green">
+                          {chunk}
+                        </Badge>
+                      ),
+                      username: owner.username,
+                      items: seekItems,
+                    })}
+                  </Text>
+                  <Text
+                    fontSize={{ base: 'xs', md: 'sm' }}
+                    fontWeight="bold"
+                    sx={{ marginTop: '0 !important' }}
+                  >
+                    {t.rich('Lists.profile-match-have', {
+                      Badge: (chunk) => (
+                        <Badge borderRadius="md" verticalAlign="middle" colorScheme="blue">
+                          {chunk}
+                        </Badge>
+                      ),
+                      username: owner.username,
+                      items: tradeItems,
+                    })}
+                  </Text>
+                </Stack>
+              </Box>
+            )}
+          </Flex>
         </Flex>
       </Box>
 

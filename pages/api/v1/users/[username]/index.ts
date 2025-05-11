@@ -35,7 +35,8 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
-  let { neopetsUser, username, profileColor, profileImage, description, prefLang } = req.body;
+  let { neopetsUser, username, profileColor, profileImage, description, prefLang, profileMode } =
+    req.body;
 
   if (!prefLang || !VALID_LANGS.includes(prefLang)) prefLang = undefined;
 
@@ -87,11 +88,12 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       where: { id: decodedToken.uid },
       data: {
         neo_user: neopetsUser,
-        username: username,
+        username: user.username ?? username,
         profile_color: colorHexVar,
         profile_image: profileImage,
         description: description,
         pref_lang: prefLang,
+        profile_mode: profileMode,
       },
     });
 

@@ -16,6 +16,8 @@ import {
   Center,
   FormHelperText,
   Select,
+  Textarea,
+  Link,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -23,7 +25,6 @@ import { User } from '../../types';
 import { useAuth } from '../../utils/auth';
 import { ColorResult, TwitterPicker } from '@hello-pangea/color-picker';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/router';
 
 export type EditProfileModalProps = {
   isOpen: boolean;
@@ -37,6 +38,7 @@ const defaultUser: Partial<User> = {
   profileColor: '',
   profileImage: '',
   description: '',
+  profileMode: 'default',
 };
 
 const colorPickerStyles = {
@@ -58,7 +60,6 @@ const EditProfileModal = (props: EditProfileModalProps) => {
   const { isOpen, onClose } = props;
   const [isLoading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
-  const router = useRouter();
   // const [list, setList] = useState(props.list ?? defaultUser);
 
   useEffect(() => {
@@ -144,7 +145,7 @@ const EditProfileModal = (props: EditProfileModalProps) => {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     setUserProfile({
       ...userProfile,
@@ -212,15 +213,25 @@ const EditProfileModal = (props: EditProfileModalProps) => {
                 />
               </FormControl>
 
-              {/* <FormControl>
-                <FormLabel color="gray.300">Description</FormLabel>
+              <FormControl>
+                <FormLabel color="gray.300">{t('General.description')}</FormLabel>
                 <Textarea
                   variant="filled"
                   name="description"
                   onChange={handleChange}
                   value={userProfile.description ?? ''}
                 />
-              </FormControl> */}
+                <FormHelperText fontSize={'xs'}>
+                  {t.rich('Lists.markdown-tip', {
+                    Link: (children) => (
+                      <Link href="https://commonmark.org/help/" color="gray.300" isExternal>
+                        {children}
+                      </Link>
+                    ),
+                    Small: (children) => <Text display={'inline'}>{children}</Text>,
+                  })}
+                </FormHelperText>
+              </FormControl>
               <FormControl>
                 <FormLabel color="gray.300">{t('Profile.profile-image-url')} (150x150)</FormLabel>
                 <Input
@@ -232,17 +243,21 @@ const EditProfileModal = (props: EditProfileModalProps) => {
                 <FormHelperText>{t('Profile.allowedDomains')}</FormHelperText>
               </FormControl>
               <FormControl>
-                <FormLabel color="gray.300">{t('General.language')}</FormLabel>
+                <FormLabel color="gray.300">Profile Mode</FormLabel>
                 <Select
                   onChange={handleChange}
-                  value={userProfile.prefLang ?? router.locale ?? 'en'}
+                  value={userProfile.profileMode ?? 'default'}
                   variant={'filled'}
-                  name="prefLang"
+                  name="profileMode"
                 >
-                  <option value={'en'}>English</option>
-                  <option value={'pt'}>Português</option>
+                  <option value={'default'}>Default</option>
+                  <option value={'groups'}>List Groups</option>
                 </Select>
-                <FormHelperText>{t('Lists.change-lang-helper')}</FormHelperText>
+                <FormHelperText>
+                  {t.rich('Profile.list-groups-helper', {
+                    b: (children) => <b>{children}</b>,
+                  })}
+                </FormHelperText>
               </FormControl>
               <FormControl>
                 <FormLabel color="gray.300">{t('General.color')}</FormLabel>
