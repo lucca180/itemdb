@@ -446,6 +446,7 @@ model UserList {
   @@unique([slug, user_id])
   @@index([official_tag, official])
   @@index([official, createdAt])
+  @@index([user_id, visibility, createdAt])
   @@fulltext([name])
   @@fulltext([description])
   @@fulltext([name, description])
