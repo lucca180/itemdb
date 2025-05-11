@@ -253,7 +253,7 @@ const ListHeader = (props: ListHeaderProps) => {
                 aria-label="Dynamic List History"
                 data-umami-event="dynamic-list-history"
                 size="sm"
-                onClick={onOpenDynamic}
+                onClick={list.official || isOwner ? onOpenDynamic : undefined}
                 icon={
                   <Tooltip hasArrow label={`Dynamic List`} placement="top">
                     <NextImage
