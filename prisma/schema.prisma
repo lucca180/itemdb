@@ -71,6 +71,7 @@ model Items {
   ItemIngredients       ItemIngredients[]
   DataCollecting        DataCollecting[]
   PetpetColors          PetpetColors[]
+  NCTradeItems          ncTradeItems[]
 
   @@index([name, image_id])
   @@index([image_id])
@@ -332,6 +333,7 @@ model User {
 
   WrappedSettings WrappedSettings[]
   ActionLogs      ActionLogs[]
+  NCTrade         ncTrade[]
 }
 
 model OpenableItems {
@@ -733,6 +735,47 @@ model ActionLogs {
   @@index([actionType, addedAt])
   @@index([actionType, subject_id, addedAt])
   @@index([user_id, actionType])
+}
+
+model ncTrade {
+  trade_id  Int      @id @default(autoincrement())
+  tradeDate DateTime
+  notes     String
+
+  reporter    User   @relation(fields: [reporter_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  reporter_id String
+
+  ip_address   String?
+  addedAt      DateTime       @default(now())
+  NCTradeItems ncTradeItems[]
+
+  @@map("NCTrade")
+}
+
+model ncTradeItems {
+  internal_id Int     @id @default(autoincrement())
+  trade_id    Int
+  trade       ncTrade @relation(fields: [trade_id], references: [trade_id], onDelete: Cascade, onUpdate: Cascade)
+
+  item_iid  Int?
+  item      Items?  @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+  item_name String?
+
+  type ncTradeItemType
+
+  personalValue String
+  pvMinValue    Int
+  pvMaxValue    Int
+  quantity      Int    @default(1)
+
+  @@map("NCTradeItems")
+}
+
+enum ncTradeItemType {
+  offered
+  received
+
+  @@map("NCTradeItemType")
 }
 
 // -------- DISMANTLING PRICE PROCESS --------- //

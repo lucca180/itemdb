@@ -26,17 +26,17 @@ import {
 import Layout from '../../components/Layout';
 import HeaderCard from '../../components/Card/HeaderCard';
 import { createTranslator, useTranslations } from 'next-intl';
-import { ItemData, OwlsTrade, User } from '../../types';
+import { ItemData, NCTradeItem, NCTradeReport, OwlsTrade, User } from '../../types';
 import Image from '../../components/Utils/Image';
 import icon from '../../public/logo_icon.svg';
 import { format } from 'date-fns';
 import { OwlsTradeCard } from '../../components/NCTrades/OwlsTradeHistory';
-import { UTCDate } from '@date-fns/utc';
 import dynamic from 'next/dynamic';
 import axios from 'axios';
 import { CheckAuth } from '../../utils/googleCloud';
 import { Breadcrumbs } from '../../components/Breadcrumbs/Breadcrumbs';
 import { loadTranslation } from '@utils/load-translation';
+import { UTCDate } from '@date-fns/utc';
 
 const ItemSelect = dynamic(() => import('../../components/Input/ItemSelect'), {
   ssr: false,
@@ -51,33 +51,170 @@ const steps = [
   { title: 'success' },
 ];
 
-type OwlsReport = {
-  offered: OwlsTradeItem[];
-  received: OwlsTradeItem[];
-  notes: string;
-  date: string;
-};
-
-type OwlsTradeItem = {
-  item?: ItemData;
-  itemName: string;
-  personalValue: string;
-  quantity: number;
-};
-
-type OwlsReportPageProps = {
+type NcTradeReportPageProps = {
   user: User | null;
 };
 
-const OwlsReportPage = (props: OwlsReportPageProps) => {
+const NcTradeReportPage = (props: NcTradeReportPageProps) => {
+  const { user } = props;
+  const t = useTranslations();
+  return (
+    <>
+      <HeaderCard
+        image={{
+          src: 'https://images.neopets.com/nt/ntimages/309_white_weewoo.gif',
+          alt: 'owls thumbnail',
+        }}
+        color="#47b2f8"
+        breadcrumb={
+          <Breadcrumbs
+            breadcrumbList={[
+              {
+                position: 1,
+                name: t('Layout.home'),
+                item: '/',
+              },
+              {
+                position: 2,
+                name: 'Owls',
+                item: '/owls',
+              },
+              {
+                position: 3,
+                name: 'Report Trade',
+                item: '/mall/report',
+              },
+            ]}
+          />
+        }
+      >
+        <Heading as="h1" size="lg">
+          {t('Owls.report-owls-trade')}
+        </Heading>
+        <Text as="h2">{t('Owls.description')}</Text>
+      </HeaderCard>
+      <NCTradeReportCard user={user} />
+      <Divider my={8} />
+      <Flex
+        flexFlow={'column'}
+        gap={4}
+        p={4}
+        borderRadius={'md'}
+        w="100%"
+        maxW="900px"
+        sx={{ a: { color: 'blue.300' }, b: { color: 'blue.200' } }}
+      >
+        <Heading as={'h3'} size="md">
+          {t('Owls.faq-1')}
+        </Heading>
+        <Text fontSize={'sm'} color="gray.300">
+          {t.rich('Owls.faq-2', {
+            b: (chunk) => <b>{chunk}</b>,
+            Link: (chunk) => (
+              <Link href="https://www.neopets.com/~Personalvalues" isExternal>
+                {chunk}
+              </Link>
+            ),
+          })}
+        </Text>
+        <Heading as={'h3'} size="md" mt={4}>
+          {t('Owls.faq-3')}
+        </Heading>
+        <Text fontSize={'sm'} color="gray.300">
+          {t.rich('Owls.faq-5', {
+            br: () => <br />,
+            b: (chunk) => <b>{chunk}</b>,
+            DTI: (chunk) => (
+              <Link href="https://impress.openneo.net/" isExternal>
+                {chunk}
+              </Link>
+            ),
+            Eya: (chunk) => (
+              <Link href="https://www.neopets.com/~Eya" isExternal>
+                {chunk}
+              </Link>
+            ),
+          })}
+        </Text>
+        <Text fontSize="sm">{t('Owls.faq-4')}</Text>
+        <Heading as={'h3'} size="md" mt={4}>
+          {t('Owls.faq-6')}
+        </Heading>
+        <Text fontSize={'sm'} color="gray.300">
+          {t.rich('Owls.faq-7', {
+            Link: (chunk) => <Link href="/owls">{chunk}</Link>,
+          })}
+        </Text>
+      </Flex>
+    </>
+  );
+};
+
+export default NcTradeReportPage;
+
+export async function getServerSideProps(context: any) {
+  let user = null;
+
+  try {
+    user = (await CheckAuth(context.req)).user;
+    if (user?.banned) user = null;
+  } catch (e) {}
+
+  return {
+    props: {
+      user: user,
+      messages: await loadTranslation(context.locale as string, 'mall/report'),
+      locale: context.locale,
+    },
+  };
+}
+
+NcTradeReportPage.getLayout = function getLayout(page: ReactElement, props: any) {
+  const t = createTranslator({ messages: props.messages, locale: props.locale });
+
+  const canonical =
+    props.locale === 'en'
+      ? `https://itemdb.com.br/mall/report`
+      : `https://itemdb.com.br/${props.locale}/mall/report`;
+
+  return (
+    <Layout
+      SEO={{
+        title: t('Owls.report-owls-trade'),
+        description: t('Owls.description'),
+        themeColor: '#47b2f8',
+        canonical: canonical,
+        openGraph: {
+          images: [
+            {
+              url: 'https://images.neopets.com/nt/ntimages/309_white_weewoo.gif',
+              width: 300,
+              height: 300,
+              alt: 'Faeries Festival',
+            },
+          ],
+        },
+      }}
+      mainColor="#47B2F86b"
+    >
+      {page}
+    </Layout>
+  );
+};
+
+type NCTradeReportProps = {
+  user: User | null;
+};
+
+const NCTradeReportCard = (props: NCTradeReportProps) => {
   const { user } = props;
   const { activeStep, goToNext, goToPrevious, setActiveStep } = useSteps({
     index: 0,
     count: steps.length,
   });
   const t = useTranslations();
-  const [offered, setOffered] = useState<OwlsTradeItem[]>([]);
-  const [received, setReceived] = useState<OwlsTradeItem[]>([]);
+  const [offered, setOffered] = useState<NCTradeItem[]>([]);
+  const [received, setReceived] = useState<NCTradeItem[]>([]);
   const [notes, setNotes] = useState<string>('');
   const [date, setDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
   const [hasError, setHasError] = useState<boolean>(false);
@@ -161,8 +298,7 @@ const OwlsReportPage = (props: OwlsReportPageProps) => {
   const submitTrade = async () => {
     setIsLoading(true);
     try {
-      const owlsTrade = tradeReportToOwlsTrade({ offered, received, notes, date });
-      const res = await axios.post('/api/v1/items/owls', owlsTrade);
+      const res = await axios.post('/api/v1/items/owls', { offered, received, notes, date });
 
       if (res.status === 200) {
         goToNext();
@@ -184,39 +320,6 @@ const OwlsReportPage = (props: OwlsReportPageProps) => {
 
   return (
     <>
-      <HeaderCard
-        image={{
-          src: 'https://images.neopets.com/nt/ntimages/309_white_weewoo.gif',
-          alt: 'owls thumbnail',
-        }}
-        color="#47b2f8"
-        breadcrumb={
-          <Breadcrumbs
-            breadcrumbList={[
-              {
-                position: 1,
-                name: t('Layout.home'),
-                item: '/',
-              },
-              {
-                position: 2,
-                name: 'Owls',
-                item: '/owls',
-              },
-              {
-                position: 3,
-                name: 'Report Trade',
-                item: '/owls/report',
-              },
-            ]}
-          />
-        }
-      >
-        <Heading as="h1" size="lg">
-          {t('Owls.report-owls-trade')}
-        </Heading>
-        <Text as="h2">{t('Owls.description')}</Text>
-      </HeaderCard>
       {!user && (
         <Center>
           <Flex
@@ -480,115 +583,11 @@ const OwlsReportPage = (props: OwlsReportPageProps) => {
           </Center>
         </>
       )}
-      <Divider my={8} />
-      <Flex
-        flexFlow={'column'}
-        gap={4}
-        p={4}
-        borderRadius={'md'}
-        w="100%"
-        maxW="900px"
-        sx={{ a: { color: 'blue.300' }, b: { color: 'blue.200' } }}
-      >
-        <Heading as={'h3'} size="md">
-          {t('Owls.faq-1')}
-        </Heading>
-        <Text fontSize={'sm'} color="gray.300">
-          {t.rich('Owls.faq-2', {
-            b: (chunk) => <b>{chunk}</b>,
-            Link: (chunk) => (
-              <Link href="https://www.neopets.com/~Personalvalues" isExternal>
-                {chunk}
-              </Link>
-            ),
-          })}
-        </Text>
-        <Heading as={'h3'} size="md" mt={4}>
-          {t('Owls.faq-3')}
-        </Heading>
-        <Text fontSize={'sm'} color="gray.300">
-          {t.rich('Owls.faq-5', {
-            br: () => <br />,
-            b: (chunk) => <b>{chunk}</b>,
-            DTI: (chunk) => (
-              <Link href="https://impress.openneo.net/" isExternal>
-                {chunk}
-              </Link>
-            ),
-            Eya: (chunk) => (
-              <Link href="https://www.neopets.com/~Eya" isExternal>
-                {chunk}
-              </Link>
-            ),
-          })}
-        </Text>
-        <Text fontSize="sm">{t('Owls.faq-4')}</Text>
-        <Heading as={'h3'} size="md" mt={4}>
-          {t('Owls.faq-6')}
-        </Heading>
-        <Text fontSize={'sm'} color="gray.300">
-          {t.rich('Owls.faq-7', {
-            Link: (chunk) => <Link href="/owls">{chunk}</Link>,
-          })}
-        </Text>
-      </Flex>
     </>
   );
 };
 
-export default OwlsReportPage;
-
-export async function getServerSideProps(context: any) {
-  let user = null;
-
-  try {
-    user = (await CheckAuth(context.req)).user;
-    if (user?.banned) user = null;
-  } catch (e) {}
-
-  return {
-    props: {
-      user: user,
-      messages: await loadTranslation(context.locale as string, 'owls/report'),
-      locale: context.locale,
-    },
-  };
-}
-
-OwlsReportPage.getLayout = function getLayout(page: ReactElement, props: any) {
-  const t = createTranslator({ messages: props.messages, locale: props.locale });
-
-  const canonical =
-    props.locale === 'en'
-      ? `https://itemdb.com.br/owls/report`
-      : `https://itemdb.com.br/${props.locale}/owls/report`;
-
-  return (
-    <Layout
-      SEO={{
-        title: t('Owls.report-owls-trade'),
-        description: t('Owls.description'),
-        themeColor: '#47b2f8',
-        canonical: canonical,
-        openGraph: {
-          images: [
-            {
-              url: 'https://images.neopets.com/nt/ntimages/309_white_weewoo.gif',
-              width: 300,
-              height: 300,
-              alt: 'Faeries Festival',
-            },
-          ],
-        },
-      }}
-      mainColor="#47B2F86b"
-    >
-      {page}
-    </Layout>
-  );
-};
-
-const tradeReportToOwlsTrade = (report: OwlsReport): OwlsTrade => {
+const tradeReportToOwlsTrade = (report: NCTradeReport): OwlsTrade => {
   const trade: OwlsTrade = {
     ds: format(new UTCDate(report.date), 'yyyy-MM-dd'),
     notes: report.notes,

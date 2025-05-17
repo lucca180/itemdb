@@ -42,7 +42,7 @@ const OwlsTradeHistory = (props: Props) => {
         <Text fontSize="sm" opacity="0.75">
           {t('ItemPage.no-trade-history')}.
         </Text>
-        <Button as={NextLink} prefetch={false} href="/owls/report" size={'xs'}>
+        <Button as={NextLink} prefetch={false} href="/mall/report" size={'xs'}>
           {t('ItemPage.report-your-nc-trades')}
         </Button>
         <Text fontSize="xs" color="whiteAlpha.600">
@@ -77,7 +77,7 @@ const OwlsTradeHistory = (props: Props) => {
             ),
           })}
         </Text>
-        <Button as={NextLink} prefetch={false} href="/owls/report" target="_blank" size={'xs'}>
+        <Button as={NextLink} prefetch={false} href="/mall/report" target="_blank" size={'xs'}>
           {t('ItemPage.report-your-nc-trades')}
         </Button>
       </Center>

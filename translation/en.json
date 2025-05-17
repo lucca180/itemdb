@@ -1109,7 +1109,7 @@
     "confirm-and-submit": "Confirm and Submit",
     "confirm-and-submit-text": "Please take your time to review the trade details before submitting",
     "form-error": "There are errors in the form. Please make sure all fields are filled correctly.",
-    "terms-msg": "By pressing the submit button you'be sending this trade data and the Neopets username linked to your itemdb account to Owls team and are subject to their terms and privacy policy.",
+    "terms-msg": "By pressing the submit button you'be also sending this trade data and the Neopets username linked to your itemdb account to Owls team and are subject to their terms and privacy policy.",
     "your-cap-personal-value": "Your Cap Personal Value",
     "pv-helper": "Must be a value or a range. Eg: <b>1</b> or <b>1-2</b>",
     "add-item": "Add Item",

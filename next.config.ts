@@ -99,6 +99,11 @@ const nextConfig: NextConfig = {
         destination: '/tools/rainbow-pool/',
         permanent: true,
       },
+      {
+        source: '/owls/report',
+        destination: '/mall/report/',
+        permanent: true,
+      },
     ];
   },
   transpilePackages: ['lightweight-charts', 'fancy-canvas'],

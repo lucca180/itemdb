@@ -110,7 +110,7 @@ const alerts = {
   },
   owlsReporting: {
     message: 'owls-trades',
-    link: '/owls/report',
+    link: '/mall/report',
     img: {
       src: 'https://images.neopets.com/themes/h5/altadorcup/images/transferlog-icon.png',
       h: 28,

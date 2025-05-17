@@ -183,7 +183,7 @@ const NCTrade = (props: Props) => {
               Link: (chunk) => (
                 <Link
                   as={NextLink}
-                  href="/owls/report?utm_content=owls-cta"
+                  href="/mall/report?utm_content=owls-cta"
                   color="whiteAlpha.700"
                   isExternal
                 >

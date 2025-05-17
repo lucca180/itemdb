@@ -602,6 +602,20 @@ export type PricingInfo = {
   };
 };
 
+export type NCTradeReport = {
+  offered: NCTradeItem[];
+  received: NCTradeItem[];
+  notes: string;
+  date: string;
+};
+
+export type NCTradeItem = {
+  item?: ItemData;
+  itemName: string;
+  personalValue: string;
+  quantity: number;
+};
+
 // ------- DTI -------- //
 
 export type DTISpecies = {

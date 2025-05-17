@@ -285,7 +285,7 @@ const Layout = (props: Props) => {
             <DropdownOption label={t('Layout.trade-pricing')} href="/feedback/trades" />
             <DropdownOption label={t('Feedback.suggestion-voting')} href="/feedback/vote" />
             <DropdownOption label={t('Layout.feedback-and-ideas')} href="/feedback" />
-            <DropdownOption label={t('Layout.report-your-nc-trades')} href="/owls/report" />
+            <DropdownOption label={t('Layout.report-your-nc-trades')} href="/mall/report" />
           </DropdownButton>
         </Flex>
         <Box
