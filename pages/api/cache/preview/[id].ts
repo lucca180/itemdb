@@ -172,7 +172,7 @@ const handleAltStyle = async (
   const specieName = itemName.split(' ').at(-1)?.toLowerCase();
   if (!specieName) return [];
 
-  const specieID = getSpeciesId(specieName);
+  const specieID = getSpeciesId(specieName) ?? handleEssenceToken(specieName);
   if (!specieID) return [];
 
   const dtiRes = await axios.get(`https://impress.openneo.net/species/${specieID}/alt-styles.json`);
@@ -223,4 +223,32 @@ const processDTIData = async (
     data: dataArr,
     skipDuplicates: true,
   });
+};
+
+// handle essence tokens (i hate this)
+const handleEssenceToken = (name: string): number | null => {
+  switch (name) {
+    case 'kass':
+      return 12;
+    case 'aurrick':
+      return 28;
+    case 'edna':
+      return 54;
+    case 'hannah':
+      return 50;
+    case 'jeran':
+      return 31;
+    case 'kelland':
+      return 46;
+    case 'lyra':
+      return 52;
+    case 'nyx':
+      return 2;
+    case 'sophie':
+      return 19;
+    case 'vira':
+      return 1;
+    default:
+      return null;
+  }
 };
