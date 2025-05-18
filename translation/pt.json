@@ -1135,7 +1135,11 @@
     "create-account-cta": "Não tem uma conta? Demora menos de 2 minutos para criar uma!",
     "login-required": "Você precisa estar logado no itemdb para reportar uma troca",
     "confirm": "Confirmar",
-    "success": "Sucesso"
+    "success": "Sucesso",
+    "average-value": "Valor Médio",
+    "based-on-x-trades": "baseado em <b>{x} trocas</b> reportadas",
+    "x-caps": "{x} caps",
+    "avg-value-disclaimer": "* O Valor Médio é atualmente um teste. Fique atento ao usar esse valor nas suas trocas pois pode não estar correto. Por favor, relate quaisquer problemas usando o botão de Feedback"
   },
   "LIsts": {
     "adv-import-cta": "Você também pode importar suas listas de outros sites, como <b>Dress To Impress</b> e <b>JN</b> usando o nosso <Link>Petpage Importer</Link>"

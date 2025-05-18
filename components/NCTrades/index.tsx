@@ -177,22 +177,27 @@ const NCTrade = (props: Props) => {
             </Flex>
           </Flex>
         </Flex>
-        {tableType !== 'owlsTrading' && (
-          <Text fontSize="xs" textAlign="center" justifySelf={'flex-end'} color="whiteAlpha.600">
-            {t.rich('ItemPage.report-owls-cta', {
-              Link: (chunk) => (
-                <Link
-                  as={NextLink}
-                  href="/mall/report?utm_content=owls-cta"
-                  color="whiteAlpha.700"
-                  isExternal
-                >
-                  {chunk}
-                </Link>
-              ),
-            })}
-          </Text>
-        )}
+
+        <Text
+          fontSize="xs"
+          textAlign="center"
+          justifySelf={'flex-end'}
+          color="whiteAlpha.600"
+          mt={1}
+        >
+          {t.rich('ItemPage.report-owls-cta', {
+            Link: (chunk) => (
+              <Link
+                as={NextLink}
+                href="/mall/report?utm_content=owls-cta"
+                color="whiteAlpha.800"
+                isExternal
+              >
+                {chunk}
+              </Link>
+            ),
+          })}
+        </Text>
       </Flex>
     </CardBase>
   );

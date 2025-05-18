@@ -1134,7 +1134,11 @@
     "login-required": "You must be logged in to report a trade",
     "create-account-cta": "Don't have an account? It takes less than 2 minutes to create one!",
     "confirm": "Confirm",
-    "success": "Success"
+    "success": "Success",
+    "average-value": "Average Value",
+    "x-caps": "{x} caps",
+    "based-on-x-trades": "based on <b>{x} trade reports</b>",
+    "avg-value-disclaimer": "* Average Value is a currently a test. Please be mindful when using this value as your trade value as it may not be accurate. Please report any issues using the Feedback button across the site"
   },
   "LIsts": {
     "adv-import-cta": "You can also import your lists from other sites such as <b>Dress To Impress</b> and <b>JN</b> using our <Link>Petpage Importer</Link>"

@@ -17,6 +17,8 @@ import NextLink from 'next/link';
 import { OwlsTrade, ItemData } from '../../types';
 import { useFormatter, useTranslations } from 'next-intl';
 import { UTCDate } from '@date-fns/utc';
+import { filterMostRecentNc } from '@utils/ncTradePricing';
+import { mean } from 'simple-statistics';
 
 type Props = {
   item: ItemData;
@@ -26,6 +28,8 @@ type Props = {
 const OwlsTradeHistory = (props: Props) => {
   const t = useTranslations();
   const { item, tradeHistory } = props;
+
+  const avgValue = tradeHistory ? getAvgValue(tradeHistory, item) : null;
 
   if (!tradeHistory)
     return (
@@ -67,25 +71,55 @@ const OwlsTradeHistory = (props: Props) => {
       px={1}
       w="100%"
     >
-      <Center flexFlow="column" gap={1} borderRadius={'lg'} p={1}>
-        <Text fontSize="xs" color="whiteAlpha.800">
-          {t.rich('ItemPage.owls-credits', {
-            Link: (chunk) => (
-              <Link href="/owls" as={NextLink} color="whiteAlpha.900" isExternal>
-                {chunk}
-              </Link>
-            ),
-          })}
-        </Text>
-        <Button as={NextLink} prefetch={false} href="/mall/report" target="_blank" size={'xs'}>
-          {t('ItemPage.report-your-nc-trades')}
-        </Button>
-      </Center>
+      {avgValue && (
+        <Center>
+          <Flex
+            flexFlow={'column'}
+            bg="rgba(214, 188, 250, 0.16)"
+            p={1}
+            borderRadius={'lg'}
+            textAlign={'center'}
+            fontSize={'sm'}
+            maxW="175px"
+            gap={1}
+          >
+            <Text fontSize="xs" color="whiteAlpha.700">
+              {t('Owls.average-value')}*
+            </Text>
+            <Text fontSize="md" fontWeight={'bold'}>
+              {t('Owls.x-caps', { x: avgValue.value })}
+            </Text>
+            <Text fontSize={'xs'} color="whiteAlpha.700" sx={{ textWrap: 'balance' }}>
+              {t.rich('Owls.based-on-x-trades', {
+                b: (chunk) => <b>{chunk}</b>,
+                x: avgValue.usedCount,
+              })}
+            </Text>
+          </Flex>
+        </Center>
+      )}
+
       <Flex maxW="600px" flexFlow="column" gap={3}>
         {tradeHistory.map((trade, i) => (
           <OwlsTradeCard key={i} trade={trade} item={item} />
         ))}
       </Flex>
+      <Center flexFlow="column" gap={1} borderRadius={'lg'} p={1}>
+        <Text fontSize="xs" color="whiteAlpha.600">
+          {t.rich('ItemPage.owls-credits', {
+            Link: (chunk) => (
+              <Link href="/owls" as={NextLink} color="whiteAlpha.800" isExternal>
+                {chunk}
+              </Link>
+            ),
+          })}
+        </Text>
+        {avgValue && (
+          <Text fontSize={'xs'} color="whiteAlpha.600" textAlign={'center'} maxW="700px">
+            {t('Owls.avg-value-disclaimer')}
+          </Text>
+        )}
+      </Center>
     </Flex>
   );
 };
@@ -189,4 +223,74 @@ export const OwlsTradeCard = (props: OwlsTradeCardProps) => {
       </CardBody>
     </Card>
   );
+};
+
+const getAvgValue = (tradeHistory: OwlsTrade[], item: ItemData) => {
+  let filteredTrades = filterMostRecentNc(tradeHistory);
+  if (!filteredTrades.length && tradeHistory.length > 3) filteredTrades = tradeHistory;
+
+  if (!filteredTrades.length) return null;
+
+  const values = filteredTrades
+    .map((trade) => {
+      const targetItem =
+        trade.traded.split('+').find((traded) => isSameItem(traded, item)) ||
+        trade.traded_for.split('+').find((traded) => isSameItem(traded, item));
+
+      if (!targetItem) return undefined;
+
+      const values =
+        targetItem
+          .match(/\((\d+)(?:-(\d+))?\)/)
+          ?.slice(1)
+          .map((value) => parseInt(value))
+          .filter((x) => !isNaN(x)) ?? [];
+
+      if (values.length === 0) return undefined;
+
+      return values;
+    })
+    .filter((value) => value !== undefined)
+    .flat();
+
+  const filteredValues = removeOutliers(values);
+
+  if (!filteredValues.length) return null;
+
+  const mostRecent = filteredTrades[0].ds;
+  const meanValue = mean(filteredValues);
+
+  const minVal = Math.floor(meanValue);
+  const maxVal = Math.ceil(meanValue);
+
+  let finalVal = '';
+  if (minVal === maxVal) finalVal = minVal.toString();
+  else finalVal = `${minVal}-${maxVal}`;
+
+  return {
+    value: finalVal,
+    timestamp: new Date(mostRecent).getTime(),
+    usedCount: filteredTrades.length,
+  };
+};
+
+const removeOutliers = (data: number[]) => {
+  const sorted = data.sort((a, b) => a - b);
+  const q1 = quartile(sorted, 0.25);
+  const q3 = quartile(sorted, 0.75);
+
+  const iqr = q3 - q1;
+
+  return sorted.filter((x) => x >= q1 - 1.5 * iqr && x <= q3 + 1.5 * iqr);
+};
+
+const quartile = (sorted: number[], q: number) => {
+  const pos = (sorted.length - 1) * q;
+  const base = Math.floor(pos);
+  const rest = pos - base;
+  if (sorted[base + 1] !== undefined) {
+    return sorted[base] + rest * (sorted[base + 1] - sorted[base]);
+  } else {
+    return sorted[base];
+  }
 };
