@@ -44,6 +44,8 @@ model Items {
   canPlay ThreeStateBoolean @default(unknown)
   canOpen ThreeStateBoolean @default(unknown)
 
+  imgCacheOverride String?
+
   translation ItemTranslation[]
   child_itens OpenableItems[]   @relation("parentItem")
   inside_at   OpenableItems[]   @relation("childItem")

@@ -27,6 +27,7 @@ export type ItemData = {
   useTypes: UseTypes;
   firstSeen: string | null;
   mallData: ItemMallData | null;
+  cacheHash: string | null;
 };
 
 export type ItemFindAt = {

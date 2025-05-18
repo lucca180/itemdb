@@ -29,6 +29,7 @@ const defaultItem: ItemData = {
   item_id: null,
   name: '',
   description: '',
+  cacheHash: null,
   image: '',
   image_id: '',
   category: null,

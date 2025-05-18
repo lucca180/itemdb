@@ -572,6 +572,7 @@ export async function doSearch(
       canonical_id: result.canonical_id ?? null,
       image: result.image ?? '',
       image_id: result.image_id ?? '',
+      cacheHash: result.imgCacheOverride ?? null,
       item_id: result.item_id,
       rarity: result.rarity,
       name: result.name,

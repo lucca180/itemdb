@@ -460,7 +460,8 @@
     "x-added": "{x} adicionados",
     "x-removed": "{x} removidos",
     "added": "Adicionado",
-    "removed": "Removido"
+    "removed": "Removido",
+    "refresh": "Atualizar"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",

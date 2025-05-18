@@ -7,6 +7,8 @@ import axios from 'axios';
 import { DTIBodiesAndTheirZones, DTIItemPreview } from '../../../../types';
 import { Items, Prisma } from '@prisma/generated/client';
 import { getSpeciesId } from '../../../../utils/pet-utils';
+import { Chance } from 'chance';
+import { revalidateItem } from '../../v1/items/[id_name]/effects';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -17,7 +19,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (req.method !== 'GET')
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
-  const { id, refresh } = req.query;
+  const { id, refresh, hash } = req.query;
 
   let canvas;
   let ctx;
@@ -40,6 +42,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const lastModified = await cdnExists(path, true);
 
     const forceRefresh = refresh === 'true';
+
     let processPromise;
 
     if (lastModified) {
@@ -60,9 +63,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     }
 
     if (lastModified && !forceRefresh) {
-      res.setHeader('Cache-Control', forceRefresh ? 'no-cache' : 'public, max-age=2592000');
+      res.setHeader('Cache-Control', 'public, max-age=2592000');
 
-      res.redirect(`https://cdn.itemdb.com.br/${path}`);
+      const urlPath = `https://cdn.itemdb.com.br/${path}`;
+      const cacheKeyPath = hash ? `?hash=${hash}` : '';
+
+      res.redirect(urlPath + cacheKeyPath);
 
       if (processPromise) await processPromise;
 
@@ -109,6 +115,17 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       res.end(buffer);
 
       if (rawData) await processDTIData(item, rawData);
+
+      if (forceRefresh) {
+        const chance = new Chance();
+
+        await prisma.items.update({
+          where: { internal_id: item.internal_id },
+          data: { imgCacheOverride: chance.hash({ length: 10 }) },
+        });
+
+        await revalidateItem(item.slug!, res);
+      }
 
       return;
     }

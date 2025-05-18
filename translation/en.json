@@ -459,7 +459,8 @@
     "x-added": "{x} added",
     "x-removed": "{x} removed",
     "removed": "Removed",
-    "added": "Added"
+    "added": "Added",
+    "refresh": "Refresh"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",
