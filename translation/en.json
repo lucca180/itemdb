@@ -603,7 +603,7 @@
     "copy-items": "Copy Items",
     "advanced-import": "Advanced Import",
     "similar-lists": "Similar Lists",
-    "markdown-tip": "Accepts some <Link>markdown tags</Link> <Small>(such as links, bold, italic, strikethrough etc.)</Small>",
+    "markdown-tip": "Accepts some <Link>markdown tags</Link> <Small>(such as links, bold, italic)</Small>",
     "load-cover-image-palette": "Load Cover Image Palette",
     "updated-x": "updated <b>{x}</b>"
   },
