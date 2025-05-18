@@ -121,7 +121,7 @@ const ItemPreview = (props: Props) => {
           className="refresh-button"
           display={'none'}
           onClick={refreshPreview}
-          isDisabled={refresh >= 3}
+          isDisabled={refresh >= 2}
           shadow={'md'}
           bg="gray.700"
           _hover={{
