@@ -107,11 +107,15 @@ const ItemCtxMenu = (props: Props) => {
   const { item, menuId, onListAction } = props;
 
   const handleOpenInNewTab = () => {
+    window.umami?.track('item-ctx-menu', { action: 'open new tab' });
     window.open('/item/' + item.slug, '_blank');
   };
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
+
+    window.umami?.track('item-ctx-menu', { action: 'copy text' });
+
     toast({
       title: t('Layout.copied-to-clipboard'),
       description: text,
@@ -123,6 +127,8 @@ const ItemCtxMenu = (props: Props) => {
 
   const addItemToList = async (list_id: number) => {
     if (!user) return;
+
+    window.umami?.track('item-ctx-menu', { action: 'open' });
 
     const toastId = toast({
       title: t('Layout.adding-item-to-list'),
@@ -170,8 +176,19 @@ const ItemCtxMenu = (props: Props) => {
   };
 
   const onShowMenu = () => {
-    window.umami?.track('item-ctx-menu', { item: item.slug });
+    window.umami?.track('item-ctx-menu-open');
     if (props.onShow) props.onShow();
+  };
+
+  const handleListAction = (action: 'move' | 'delete') => {
+    if (!onListAction) return;
+    onListAction(item, action);
+    window.umami?.track('item-ctx-menu', { action: 'list action ' + action });
+  };
+
+  const onSelect = () => {
+    if (props.onSelect) props.onSelect();
+    window.umami?.track('item-ctx-menu', { action: 'select item' });
   };
 
   if (typeof window === 'undefined') return <></>;
@@ -195,7 +212,7 @@ const ItemCtxMenu = (props: Props) => {
         appendTo="body"
       >
         {props.onSelect ? (
-          <CtxMenuItem onClick={props.onSelect}>{t('Layout.select-item')}</CtxMenuItem>
+          <CtxMenuItem onClick={onSelect}>{t('Layout.select-item')}</CtxMenuItem>
         ) : (
           <></>
         )}
@@ -259,12 +276,12 @@ const ItemCtxMenu = (props: Props) => {
           {t('Layout.copy-link')}
         </CtxMenuItem>
         <CtxMenuItem onClick={() => handleCopy(item.name)}>{t('Layout.copy-text')}</CtxMenuItem>
-        <Box display={onListAction ? 'inherit' : 'none'}>
+        <Box display={!!onListAction ? 'inherit' : 'none'}>
           <Divider />
-          <CtxMenuItem onClick={() => onListAction?.(item, 'move')}>
+          <CtxMenuItem onClick={() => handleListAction('move')}>
             {t('Layout.move-to-list')}
           </CtxMenuItem>
-          <CtxMenuItem onClick={() => onListAction?.(item, 'delete')} color="red.400">
+          <CtxMenuItem onClick={() => handleListAction('delete')} color="red.400">
             {t('Layout.delete-from-this-list')}
           </CtxMenuItem>
         </Box>
@@ -298,6 +315,7 @@ const FindAtCtx = (props: FindAtCtxProps) => {
 
   const openNewTab = (url?: string | null) => {
     if (!url) return;
+    window.umami?.track('item-ctx-menu', { action: 'find at link' });
     window.open(url, '_blank');
   };
 

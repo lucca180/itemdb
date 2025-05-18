@@ -117,6 +117,7 @@ const ItemPreview = (props: Props) => {
           right={0}
           m={2}
           size="sm"
+          data-umami-event="refresh-preview"
           className="refresh-button"
           display={'none'}
           onClick={refreshPreview}
