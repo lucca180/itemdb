@@ -2,7 +2,7 @@ import { Box, Flex, Heading, Highlight, Link, SimpleGrid, Stack, Text } from '@c
 import React, { ReactElement } from 'react';
 import Layout from '../components/Layout';
 import logo from '../public/logo_white_compressed.webp';
-import Image from 'next/image';
+import NextImage from 'next/image';
 import ItemCard from '../components/Items/ItemCard';
 import { ItemData, UserList, WP_Article } from '../types';
 import BetaStatsCard from '../components/Beta/BetaStatsCard';
@@ -22,6 +22,8 @@ import UserListCard from '../components/UserLists/ListCard';
 import { HorizontalHomeCard } from '../components/Card/HorizontalHomeCard';
 import useSWR from 'swr';
 import { loadTranslation } from '@utils/load-translation';
+import { getNewItemsInfo } from './api/v1/beta/new-items';
+import Image from '@components/Utils/Image';
 
 type LatestPricesRes = {
   count: number | null;
@@ -37,6 +39,10 @@ type Props = {
   latestNcMall: ItemData[];
   leavingNcMall: ItemData[];
   trendingLists: UserList[];
+  newItemCount?: {
+    freeItems: number;
+    paidItems: number;
+  };
   messages: any;
   locale: string;
 };
@@ -51,8 +57,15 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
   const t = useTranslations();
   const formatter = useFormatter();
 
-  const { latestWearable, latestPosts, latestNcMall, trendingItems, leavingNcMall, trendingLists } =
-    props;
+  const {
+    latestWearable,
+    latestPosts,
+    latestNcMall,
+    trendingItems,
+    leavingNcMall,
+    trendingLists,
+    newItemCount,
+  } = props;
 
   const { data: latestItems } = useSWR<ItemData[]>(`api/v1/items?limit=20`, (url) => fetcher(url), {
     fallbackData: props.latestItems,
@@ -76,7 +89,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
           bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.6) 80%)`}
           zIndex={-1}
         />
-        <Image src={logo} alt="itemdb logo" width={500} quality="100" priority />
+        <NextImage src={logo} alt="itemdb logo" width={500} quality="100" priority />
         <Heading size="sm" as="h1" mt={4} lineHeight={1.5}>
           <Highlight
             query={t('HomePage.open-source')}
@@ -118,6 +131,80 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
             </Text>
           )}
         </HorizontalHomeCard>
+        {newItemCount && (
+          <Flex gap={4} flexWrap={'wrap'}>
+            <HorizontalHomeCard
+              color="#B794F4"
+              bgOpacity="0.75"
+              innerStyle={{ border: 0, py: 2 }}
+              style={{ flex: '1', minW: '400px' }}
+            >
+              <Flex alignItems={'center'}>
+                <Image
+                  src="https://images.neopets.com/caption/sm_caption_1100.gif"
+                  alt="tax beast thumbnail"
+                  width={100}
+                  height={100}
+                  quality="100"
+                  borderRadius={'md'}
+                />
+                <Flex flexFlow="column" ml={3}>
+                  <Text fontSize="lg" fontWeight="bold">
+                    {t.rich('HomePage.new-paid-items', {
+                      Highlight: (chunks) => (
+                        <Text as="span" color="purple.700" bg="purple.200" px={1} borderRadius="md">
+                          {chunks}
+                        </Text>
+                      ),
+                      days: 7,
+                    })}
+                  </Text>
+                  <Text fontSize="4xl" fontWeight={'bold'}>
+                    {newItemCount.paidItems}
+                  </Text>
+                  <Text fontSize="xs" color="whiteAlpha.700">
+                    {t('HomePage.new-paid-items-text')}
+                  </Text>
+                </Flex>
+              </Flex>
+            </HorizontalHomeCard>
+            <HorizontalHomeCard
+              color="#F6AD55"
+              bgOpacity="0.75"
+              innerStyle={{ border: 0, py: 2 }}
+              style={{ flex: '1', minW: '400px' }}
+            >
+              <Flex alignItems={'center'}>
+                <Image
+                  src="https://images.neopets.com/nt/ntimages/475_money_tree.gif"
+                  alt="money tree thumbnail"
+                  width={100}
+                  height={100}
+                  quality="100"
+                  borderRadius={'md'}
+                />
+                <Flex flexFlow="column" ml={3}>
+                  <Text fontSize="lg" fontWeight="bold">
+                    {t.rich('HomePage.new-free-items', {
+                      Highlight: (chunks) => (
+                        <Text as="span" color="orange.600" bg="orange.100" px={1} borderRadius="md">
+                          {chunks}
+                        </Text>
+                      ),
+                      days: 7,
+                    })}
+                  </Text>
+                  <Text fontSize="4xl" fontWeight={'bold'}>
+                    {newItemCount.freeItems}
+                  </Text>
+                  <Text fontSize="xs" color="whiteAlpha.800">
+                    {t('HomePage.new-free-items-text')}
+                  </Text>
+                </Flex>
+              </Flex>
+            </HorizontalHomeCard>
+          </Flex>
+        )}
         <SimpleGrid
           columns={{ base: 1, lg: 3 }}
           spacing={{ base: 4, xl: 8 }}
@@ -231,6 +318,7 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
     latestPrices,
     leavingNcMall,
     trendingLists,
+    newItemCount,
   ] = await Promise.all([
     getLatestItems(20, true).catch(() => []),
     getLatestItems(18, true, true).catch(() => []),
@@ -246,6 +334,7 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
     })) as Promise<LatestPricesRes>,
     getNCMallItemsData(18, true).catch(() => []),
     getTrendingLists(3).catch(() => []),
+    getNewItemsInfo(7).catch(() => undefined),
   ]);
 
   return {
@@ -258,6 +347,7 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
       latestPrices,
       leavingNcMall,
       trendingLists,
+      newItemCount,
       messages: await loadTranslation(context.locale, 'index'),
       locale: context.locale,
     },

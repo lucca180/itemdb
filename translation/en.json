@@ -17,7 +17,11 @@
     "leaving-nc-mall": "Leaving NC Mall",
     "featured-lists": "Featured Lists",
     "x-prices-updated-last-y": "{count} prices updated in the last {time}",
-    "new-clothes": "New Clothes"
+    "new-clothes": "New Clothes",
+    "new-paid-items": "New <Highlight>Paid Items</Highlight> in the last {days} days",
+    "new-paid-items-text": "Includes NC items and from rare item codes",
+    "new-free-items": "New <Highlight>Free Items</Highlight> in the last {days} days",
+    "new-free-items-text": "Includes Neopoint Items and excludes PB exclusive clothes and rare item codes"
   },
   "BetaStats": {
     "items-in-db": "Items in the database",
