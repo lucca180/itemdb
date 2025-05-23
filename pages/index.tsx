@@ -132,12 +132,12 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
           )}
         </HorizontalHomeCard>
         {newItemCount && (
-          <Flex gap={4} flexWrap={'wrap'}>
+          <Flex gap={4} flexWrap={'wrap'} flexFlow={{ base: 'column', lg: 'row' }}>
             <HorizontalHomeCard
               color="#B794F4"
               bgOpacity="0.75"
               innerStyle={{ border: 0, py: 2 }}
-              style={{ flex: '1', minW: '400px' }}
+              style={{ flex: '1' }}
             >
               <Flex alignItems={'center'}>
                 <Image
@@ -172,7 +172,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
               color="#F6AD55"
               bgOpacity="0.75"
               innerStyle={{ border: 0, py: 2 }}
-              style={{ flex: '1', minW: '400px' }}
+              style={{ flex: '1' }}
             >
               <Flex alignItems={'center'}>
                 <Image
