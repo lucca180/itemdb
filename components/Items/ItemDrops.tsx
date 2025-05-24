@@ -20,6 +20,7 @@ import NextLink from 'next/link';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { showScriptCTA } from '../../utils/scriptUtils';
+import { capInfoIds, capsulesInfo } from '@utils/ncCapsulesInfo';
 
 const OldPoolDrops = dynamic(() => import('../Utils/OldPoolDrops'));
 
@@ -172,21 +173,15 @@ const CatImage = (props: CatImageProps) => {
   if (url)
     return <Image h={'60px'} w={'269px'} objectFit="cover" src={url} alt={`${cat} image`} mb={3} />;
 
-  // figure out a better way to handle this
-  if (item_iid === 63977) {
-    if (cat.toLowerCase() === 'cat1') url = '2007-2010';
-
-    if (cat.toLowerCase() === 'cat2') url = '2011-2012';
-
-    if (cat.toLowerCase() === 'cat3') url = '2013-2014';
-  }
-
-  if (item_iid === 67447) {
-    if (cat.toLowerCase() === 'cat1') url = '2008-2014';
-
-    if (cat.toLowerCase() === 'cat2') url = '2015-2019';
-
-    if (cat.toLowerCase() === 'cat3') url = '2020-2024';
+  if (capInfoIds.includes(item_iid)) {
+    const info = capsulesInfo[item_iid];
+    const catText = info[cat as `cat${number}`]?.text ?? cat;
+    if (catText && catText !== 'unknown')
+      return (
+        <Badge as="h3" fontSize="lg" mb={3}>
+          {catText}
+        </Badge>
+      );
   }
 
   if (cat === 'unknown')
