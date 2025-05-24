@@ -121,7 +121,7 @@ export const getItemDrops = async (
 
   const openingSet: { [id: string]: number[] } = {};
 
-  const confimedDrops = new Set<string>();
+  const confirmedDrops = new Set<string>();
   const allItemIds = new Set<number>();
 
   let hasManual = false;
@@ -201,8 +201,8 @@ export const getItemDrops = async (
 
           // there's a better place to do this, but it's a quick fix
           if (notesList.length === 2) {
-            const oppening = openingSet[drop.opening_id];
-            const otherItem = oppening.find((a) => a !== drop.item_iid);
+            const opening = openingSet[drop.opening_id];
+            const otherItem = opening.find((a) => a !== drop.item_iid);
 
             if (otherItem && poolsData[otherItem]) {
               const maxNoteVal = Math.max(...Object.values(poolsData[otherItem]));
@@ -315,7 +315,7 @@ export const getItemDrops = async (
 
       pool.openings++;
       pool.totalDrops += drops;
-      confimedDrops.add(id);
+      confirmedDrops.add(id);
 
       minMax = getMinMax(drops, minMax);
     });
@@ -403,7 +403,7 @@ export const getItemDrops = async (
       };
     });
 
-  openableData.openings = confimedDrops.size;
+  openableData.openings = confirmedDrops.size;
   return openableData;
 };
 
