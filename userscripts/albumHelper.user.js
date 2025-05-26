@@ -1,10 +1,9 @@
 // ==UserScript==
 // @name         itemdb - Stamp Album Helper
-// @version      1.0.0
+// @version      1.0.1
 // @author       originally EatWooloos, updated by itemdb
 // @namespace    itemdb
 // @description  Adds an info menu about your missing stamps
-// @version      1.0.0
 // @icon         https://itemdb.com.br/favicon.ico
 // @match        *://*.neopets.com/stamps.phtml?type=album&page_id=*
 // @connect      itemdb.com.br
