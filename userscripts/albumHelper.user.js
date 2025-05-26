@@ -201,6 +201,7 @@ function createInfoContent(imgElement, itemData) {
         else if (rNum >= 105 && rNum <= 110) return `<strong style="color:red">r${r} (MEGA RARE)</strong>`;
         else if (rNum >= 111 && rNum <= 179) return `<strong style="color:red">r${r} (RARITY ${rNum})</strong>`;
         else if (rNum === 180) return `<strong style="color:#666666">r${r} (retired)</strong>`;
+        else if (rNum === 200) return `<strong style="color:red">r${r} (Artifact - 200)</strong>`;
     };
 
     const createHelper = itemName => {
