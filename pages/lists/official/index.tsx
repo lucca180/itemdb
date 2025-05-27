@@ -21,7 +21,7 @@ import dynamic from 'next/dynamic';
 import { createTranslator, useTranslations } from 'next-intl';
 import useSWRImmutable from 'swr/immutable';
 import axios from 'axios';
-import { ReactElement, useEffect, useMemo, useState } from 'react';
+import { ReactElement, useMemo, useState } from 'react';
 import { ViewportList } from 'react-viewport-list';
 import { SearchList } from '../../../components/Search/SearchLists';
 import { useRouter } from 'next/router';
@@ -45,12 +45,11 @@ const OfficialListsPage = (props: Props) => {
   const router = useRouter();
   const { user, authLoading } = useAuth();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [lists, setLists] = useState<UserList[]>(props.lists);
-  const [categories, setCategories] = useState<string[]>([]);
+  const [filteredLists, setFilteredLists] = useState<UserList[]>();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const rowSize = useBreakpointValue({ base: 2, xl: 3 }, { fallback: 'xl' });
 
-  const { data, isLoading } = useSWRImmutable(
+  const { data: lists, isLoading } = useSWRImmutable(
     `/api/v1/lists/official?includeItems=false`,
     fetcher,
     {
@@ -58,54 +57,52 @@ const OfficialListsPage = (props: Props) => {
     }
   );
 
-  useEffect(() => {
-    if (data) {
-      const newCats = [...new Set(data.map((list) => list.officialTag || 'Uncategorized'))].sort(
-        (a, b) => a.localeCompare(b)
-      );
-
-      setLists(data);
-      setCategories(newCats);
-    }
-  }, [data]);
-
-  useEffect(() => {
-    if (!router.query.cat || !data) return;
-
-    const cat = router.query.cat as string;
-    handleFilter(cat);
-  }, [router.query, data]);
+  const categories = useMemo(() => {
+    if (!lists) return [];
+    const newCats = [...new Set(lists.map((list) => list.officialTag || 'Uncategorized'))].sort(
+      (a, b) => a.localeCompare(b)
+    );
+    return newCats;
+  }, [lists]);
 
   const handleFilter = (value: string) => {
-    if (!data) return;
+    if (!lists) return props.lists;
     setSelectedCategory(value);
 
     if (value === 'all') {
-      setLists(data);
+      setFilteredLists(lists);
+      return lists;
     } else if (value === 'Uncategorized') {
-      setLists(data.filter((x) => !x.officialTag).sort((a, b) => a.name.localeCompare(b.name)));
+      const filtered = lists
+        .filter((x) => !x.officialTag)
+        .sort((a, b) => a.name.localeCompare(b.name));
+      setFilteredLists(filtered);
+      return filtered;
     } else {
-      setLists(
-        data.filter((x) => x.officialTag === value).sort((a, b) => a.name.localeCompare(b.name))
-      );
+      const filtered = lists
+        .filter((x) => x.officialTag === value)
+        .sort((a, b) => a.name.localeCompare(b.name));
+      setFilteredLists(filtered);
+      return filtered;
     }
   };
 
   const handleSearch = (search: string) => {
-    if (!data) return;
-    let filteredLists = data;
+    if (!lists && !props.lists) return;
+    const allLists = lists ?? props.lists;
+    let newFilteredLists = allLists;
 
     if (selectedCategory != 'all')
-      filteredLists = data.filter((x) => x.officialTag === selectedCategory);
+      newFilteredLists = allLists.filter((x) => x.officialTag === selectedCategory);
 
     if (!search) {
-      setLists(filteredLists);
+      setFilteredLists(newFilteredLists);
       return;
     }
 
     const searchLower = search.toLowerCase();
-    setLists(
-      filteredLists.filter(
+    setFilteredLists(
+      newFilteredLists.filter(
         (x) =>
           x.name.toLowerCase().includes(searchLower) ||
           (x.description ?? '').toLowerCase().includes(searchLower)
@@ -113,15 +110,19 @@ const OfficialListsPage = (props: Props) => {
     );
   };
 
+  const cat = router.query.cat as string;
+  const actualLists =
+    filteredLists ?? (cat ? handleFilter(cat) : undefined) ?? lists ?? props.lists;
+
   const groupedLists = useMemo(
     () =>
-      lists.reduce((acc, cur, i) => {
+      actualLists.reduce((acc, cur, i) => {
         const groupIndex = Math.floor(i / (rowSize ?? 3));
         if (!acc[groupIndex]) acc[groupIndex] = [];
         acc[groupIndex].push(cur);
         return acc;
       }, [] as UserList[][]),
-    [lists, rowSize]
+    [actualLists, rowSize]
   );
 
   return (
@@ -173,9 +174,9 @@ const OfficialListsPage = (props: Props) => {
               + {t('Lists.official-apply-list')}
             </Button>
             <Text as="div" textColor={'gray.300'} fontSize="sm">
-              {lists && (
+              {actualLists && (
                 <>
-                  {lists.length} {t('General.lists')}
+                  {actualLists.length} {t('General.lists')}
                 </>
               )}
             </Text>
