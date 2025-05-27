@@ -280,7 +280,7 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
         else if (key === 'description' && item.description && dbItem.description) {
           if (dbItem.description.trim().length < item.description.trim().length) {
             if (item.description.trim().includes(dbItem.description.trim()))
-              dbItem.description = item.description;
+              dbItem.description = item.description.trim();
             else throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
           }
         }
@@ -461,7 +461,7 @@ async function processOpenables() {
 // check if all elements in target are in arr
 const checker = (arr: any[], target: any[]) => target.every((v) => arr.includes(v));
 
-const genericCats = ['special', 'gift', 'food', 'clothes', 'neogarden', 'neohome'];
+const genericCats = ['special', 'gift', 'food', 'clothes', 'neogarden', 'neohome', 'none'];
 
 const checkEat = (category?: string | null) =>
   allFoodsCats.filter((x) => x.toLowerCase() === category?.toLowerCase()).length > 0;
