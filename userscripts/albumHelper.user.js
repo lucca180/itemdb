@@ -1,10 +1,9 @@
 // ==UserScript==
 // @name         itemdb - Stamp Album Helper
-// @version      1.0.0
+// @version      1.0.1
 // @author       originally EatWooloos, updated by itemdb
 // @namespace    itemdb
 // @description  Adds an info menu about your missing stamps
-// @version      1.0.0
 // @icon         https://itemdb.com.br/favicon.ico
 // @match        *://*.neopets.com/stamps.phtml?type=album&page_id=*
 // @connect      itemdb.com.br
@@ -201,6 +200,7 @@ function createInfoContent(imgElement, itemData) {
         else if (rNum >= 105 && rNum <= 110) return `<strong style="color:red">r${r} (MEGA RARE)</strong>`;
         else if (rNum >= 111 && rNum <= 179) return `<strong style="color:red">r${r} (RARITY ${rNum})</strong>`;
         else if (rNum === 180) return `<strong style="color:#666666">r${r} (retired)</strong>`;
+        else if (rNum === 200) return `<strong style="color:red">r${r} (Artifact - 200)</strong>`;
     };
 
     const createHelper = itemName => {
