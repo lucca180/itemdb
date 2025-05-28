@@ -137,6 +137,18 @@ export const capsulesInfo: CapsuleInfo = {
       text: '2022-2023',
     },
   },
+  68310: {
+    name: 'Spread Your Wings Retired Mystery Capsule',
+    cat1: {
+      text: '2007-2011',
+    },
+    cat2: {
+      text: '2012-2014',
+    },
+    cat3: {
+      text: '2015-2024',
+    },
+  },
 };
 
 export const capInfoIds = Object.keys(capsulesInfo).map((id) => parseInt(id, 10));
