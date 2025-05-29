@@ -156,7 +156,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
           zIndex={-1}
         />
         <Box pt={2}>
-          <ItemBreadcrumb item={item} />
+          <ItemBreadcrumb item={item} officialLists={lists} />
         </Box>
         <Flex gap={{ base: 4, md: 8 }} pt={4} alignItems="center">
           <Flex

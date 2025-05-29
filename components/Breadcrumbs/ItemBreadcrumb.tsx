@@ -1,4 +1,4 @@
-import { ItemData } from '../../types';
+import { ItemData, UserList } from '../../types';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/router';
 import { useMemo } from 'react';
@@ -7,10 +7,11 @@ import { categoryToShopID, restockShopInfo, slugify } from '../../utils/utils';
 
 type ItemBreadcrumbProps = {
   item: ItemData;
+  officialLists?: UserList[];
 };
 
 export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
-  const { item } = props;
+  const { item, officialLists } = props;
   const t = useTranslations();
   const router = useRouter();
   const category = (item.category ?? 'unknown').toLowerCase();
@@ -35,7 +36,7 @@ export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
       {
         position: 4,
         name: item.name,
-        item: `/items/${item.slug}`,
+        item: `/item/${item.slug}`,
       },
     ];
 
@@ -48,6 +49,13 @@ export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
         position: 2,
         name: shopInfo.name,
         item: `/restock/${slugify(shopInfo.name)}`,
+      };
+    } else if (officialLists && officialLists.length === 1) {
+      const list = officialLists[0];
+      breadList[2] = {
+        position: 2,
+        name: list.name,
+        item: `/list/${list.slug}`,
       };
     }
 

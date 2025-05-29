@@ -85,6 +85,11 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
       {
+        source: '/items/:slug*',
+        destination: '/item/:slug*',
+        permanent: true,
+      },
+      {
         source: '/api/search/:slug*',
         destination: '/api/v1/search/:slug*',
         permanent: true,
