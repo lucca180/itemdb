@@ -330,6 +330,22 @@ const ListHeader = (props: ListHeaderProps) => {
               )}
             </Text>
           </Stack>
+          {list.seriesStart && list.seriesEnd && (
+            <Text fontSize={'xs'} mt={1} color="whiteAlpha.700">
+              Available from{' '}
+              <b>
+                {format.dateTime(new Date(list.seriesStart), {
+                  dateStyle: 'short',
+                })}
+              </b>{' '}
+              through{' '}
+              <b>
+                {format.dateTime(new Date(list.seriesEnd), {
+                  dateStyle: 'short',
+                })}
+              </b>
+            </Text>
+          )}
           {list.description && (
             <Text
               mt={{ base: 2, md: 3 }}
@@ -340,6 +356,7 @@ const ListHeader = (props: ListHeaderProps) => {
               <Markdown skipParagraph>{list.description}</Markdown>
             </Text>
           )}
+
           <Stack mt={{ base: 2, md: 3 }} flexFlow={'row'} alignItems={'center'}>
             {(!!NPPrice || !!NCPrice) && (
               <Flex
