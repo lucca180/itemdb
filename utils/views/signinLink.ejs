@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width"> <!-- Forcing initial-scale shouldn't be necessary -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge"> <!-- Use the latest (edge) version of IE rendering engine -->
     <meta name="x-apple-disable-message-reformatting">  <!-- Disable auto-scale in iOS 10 Mail entirely -->
-    <title>Email address verification</title> <!-- The title tag shows in email notifications, like Android 4.4. -->
+    <title>itemdb login</title> <!-- The title tag shows in email notifications, like Android 4.4. -->
     <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet">
 
     <!-- CSS Reset : BEGIN -->
@@ -210,6 +210,10 @@
 												Thanks for using itemdb. Click on the button below to login.
 											</p>
 											<a href="<%= actionLink %>" target="_blank" style="font-weight: bolder; display:inline-block;margin: 15px 0; font-size: 16px; padding:15px 40px; margin: 10px 0; background-color: #2d3748; border-radius: 6px; color: white;">Sign into itemdb</a>
+											<p class="email-body">
+												or paste this link into your browser:<br/>
+												<a href="<%= actionLink %>" target="_blank" style="color: #30e3ca; text-decoration: none;"><%= actionLink %></a>
+											</p>
 											<p class="email-body">
 												If this email wasn't intended for you feel free to delete it.<br/>
 											</p>
