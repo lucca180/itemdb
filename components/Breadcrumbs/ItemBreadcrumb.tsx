@@ -55,7 +55,7 @@ export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
       breadList[2] = {
         position: 2,
         name: list.name,
-        item: `/list/official/${list.slug}`,
+        item: `/lists/official/${list.slug}`,
       };
     }
 
