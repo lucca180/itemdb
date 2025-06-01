@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import {
   Flex,
   Text,
@@ -330,7 +329,7 @@ const ListHeader = (props: ListHeaderProps) => {
               )}
             </Text>
           </Stack>
-          {list.seriesStart && list.seriesEnd && (
+          {/* {list.seriesStart && list.seriesEnd && (
             <Text fontSize={'xs'} mt={1} color="whiteAlpha.700">
               Available from{' '}
               <b>
@@ -345,7 +344,7 @@ const ListHeader = (props: ListHeaderProps) => {
                 })}
               </b>
             </Text>
-          )}
+          )} */}
           {list.description && (
             <Text
               mt={{ base: 2, md: 3 }}
@@ -392,7 +391,6 @@ const ListHeader = (props: ListHeaderProps) => {
                           as={NextImage}
                           display="inline"
                           verticalAlign="bottom"
-                          //@ts-ignore
                           src={NPBag}
                           width="24px"
                           height="24px"
@@ -412,7 +410,6 @@ const ListHeader = (props: ListHeaderProps) => {
                           as={NextImage}
                           display="inline"
                           verticalAlign="bottom"
-                          //@ts-ignore
                           src={GiftBox}
                           width="24px"
                           height="24px"
