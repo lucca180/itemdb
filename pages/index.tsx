@@ -39,10 +39,10 @@ type Props = {
   latestNcMall: ItemData[];
   leavingNcMall: ItemData[];
   trendingLists: UserList[];
-  newItemCount?: {
+  newItemCount: {
     freeItems: number;
     paidItems: number;
-  };
+  } | null;
   messages: any;
   locale: string;
 };
@@ -334,7 +334,7 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
     })) as Promise<LatestPricesRes>,
     getNCMallItemsData(18, true).catch(() => []),
     getTrendingLists(3).catch(() => []),
-    getNewItemsInfo(7).catch(() => undefined),
+    getNewItemsInfo(7).catch(() => null),
   ]);
 
   return {
