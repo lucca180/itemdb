@@ -51,7 +51,12 @@ export const processPrices2 = (allItemData: PriceProcess2[], forceMode = false) 
     return undefined;
   }
 
-  out = out.filter((x) => x <= priceMean + priceSTD * 0.75 && x >= priceMean - priceSTD * 1.8);
+  // sometimes priceSTD is so high that lowerLimit is negative
+  const lowerLimitFactor = Math.floor(Math.min(1.7, priceMean / priceSTD) * 10) / 10;
+
+  out = out.filter(
+    (x) => x <= priceMean + priceSTD * 0.75 && x >= priceMean - priceSTD * lowerLimitFactor
+  );
 
   out = out.splice(0, 5);
 
