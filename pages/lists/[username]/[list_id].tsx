@@ -261,10 +261,10 @@ const ListPage = (props: ListPageProps) => {
 
     const basePath = `/api/v1/lists/${newList.owner.username}/${newList.internal_id}`;
 
+    axios.get(`${basePath}/stats`).then((res) => setListStats(res.data));
     const [itemInfoRes, itemRes] = await Promise.all([
       axios.get(`${basePath}/items`),
       axios.get(`${basePath}/itemdata?asObject=true`),
-      axios.get(`${basePath}/stats`).then((res) => setListStats(res.data)),
     ]);
     const itemInfoData: ListItemInfo[] = itemInfoRes.data;
 
