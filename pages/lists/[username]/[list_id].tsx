@@ -129,6 +129,7 @@ const ListPage = (props: ListPageProps) => {
   const [listStats, setListStats] = useState<SearchStats | null>(null);
   const [filters, setFilters] = useState<SearchFiltersType>(defaultFilters);
   const searchQuery = useRef('');
+  const prevList = useRef(props.list);
 
   const list = useMemo(() => {
     if (forceList && props.list.internal_id === forceList.internal_id) return forceList;
@@ -168,12 +169,13 @@ const ListPage = (props: ListPageProps) => {
   }, [router.isReady]);
 
   useEffect(() => {
-    if (router.query.list_id === list.slug) return;
-
-    if (router.query.list_id === props.list.slug) init(true);
+    if (props.list.internal_id !== prevList.current.internal_id) {
+      init(true);
+      prevList.current = props.list;
+    }
 
     return () => toast.closeAll();
-  }, [router.query]);
+  }, [props.list]);
 
   useEffect(() => {
     setItemInfoIds(preloadData.infoIds);
