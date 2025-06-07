@@ -5,9 +5,9 @@ on:
       - main
       - master
 jobs:
-  build-and-deploy:
+  deploy-itemdb-blue:
+    name: itemdb blue (main) - Deploy
     runs-on: ubuntu-latest
-
     steps:
       - name: itemdb Blue (main) - Deploy
         uses: appleboy/ssh-action@master
@@ -30,6 +30,11 @@ jobs:
             yarn postbuild
             pm2 stop itemdb-green
             pm2 reload ecosystem.config.js --only itemdb-web --update-env
+  deploy-itemdb-green:
+    name: itemdb Green (backup) - Deploy
+    needs: deploy-itemdb-blue
+    runs-on: ubuntu-latest
+    steps:
       - name: itemdb Green (backup) - Update
         uses: appleboy/ssh-action@master
         with:
