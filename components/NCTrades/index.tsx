@@ -34,7 +34,7 @@ type Props = {
 
 const NCTrade = (props: Props) => {
   const t = useTranslations();
-  const { user } = useAuth();
+  const { user, authLoading } = useAuth();
   const { item, lists } = props;
   const color = item.color.rgb;
   const textColor = Color.rgb(color).lighten(0.65).hex();
@@ -43,6 +43,7 @@ const NCTrade = (props: Props) => {
   const trading = lists?.filter((list) => list.purpose === 'trading' && !list.official) ?? [];
 
   const [match, setMatch] = useState({ seeking: {}, trading: {} });
+  const [isMatchLoading, setIsMatchLoading] = useState(true);
   const [tableType, setTableType] = useState<'seeking' | 'trading' | 'owlsTrading'>(
     seeking.length ? 'seeking' : 'trading'
   );
@@ -55,13 +56,18 @@ const NCTrade = (props: Props) => {
   }, [item.internal_id]);
 
   useEffect(() => {
-    if (!user || item.status === 'no trade') return;
-    setMatch({ seeking: {}, trading: {} });
+    if (authLoading || !user || item.status === 'no trade' || !lists) return;
     init();
-  }, [lists, user]);
+  }, [lists, user, authLoading]);
 
   const init = async () => {
-    if (!user || !user.username || (!seeking.length && !trading.length)) return;
+    if (!user || !user.username || (!seeking.length && !trading.length)) {
+      setMatch({ seeking: {}, trading: {} });
+      setIsMatchLoading(false);
+      return;
+    }
+
+    setIsMatchLoading(true);
     const seekingUsers = seeking.map((list) => list.owner?.username);
     const tradingUsers = trading.map((list) => list.owner?.username);
 
@@ -82,6 +88,8 @@ const NCTrade = (props: Props) => {
       seeking: seekingRes.data,
       trading: tradingRes.data,
     });
+
+    setIsMatchLoading(false);
   };
 
   const getOwlsTrade = async () => {
@@ -169,6 +177,7 @@ const NCTrade = (props: Props) => {
                   data={tableType === 'seeking' ? seeking : trading}
                   matches={tableType === 'seeking' ? match.seeking : match.trading}
                   type={tableType}
+                  isLoading={isMatchLoading}
                 />
               )}
               {tableType === 'owlsTrading' && (

@@ -10932,7 +10932,7 @@ __metadata:
     husky: "npm:^8.0.0"
     ioredis: "npm:^5.6.1"
     jose: "npm:^5.2.0"
-    jotai: "npm:^2.12.2"
+    jotai: "npm:^2.12.5"
     lightweight-charts: "npm:^4.2.2"
     lint-staged: "npm:15.3.0"
     lodash: "npm:^4.17.21"
@@ -11031,9 +11031,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jotai@npm:^2.12.2":
-  version: 2.12.2
-  resolution: "jotai@npm:2.12.2"
+"jotai@npm:^2.12.5":
+  version: 2.12.5
+  resolution: "jotai@npm:2.12.5"
   peerDependencies:
     "@types/react": ">=17.0.0"
     react: ">=17.0.0"
@@ -11042,7 +11042,7 @@ __metadata:
       optional: true
     react:
       optional: true
-  checksum: 10c0/df135d8a8c635df5d34bdb30b2e24afa93292c9c0bdac589ed9df31da50cec8c4820f66d04f23fa05f6c0ed0726e86c83b0767ca9c6abae4d281a253526d2db3
+  checksum: 10c0/5075b2c78f3e170d84a14b9f69a5903a5aa5b61242ee9acebc5665ce5a5fb13724748107dfd1069d00fe45b3a4ed15e07c40c0861dc817effc10532b733afabe
   languageName: node
   linkType: hard
 

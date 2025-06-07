@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, createContext } from 'react';
 import type { User as FirebaseUser } from 'firebase/auth';
 import { useAtom } from 'jotai';
-import { atomWithStorage } from 'jotai/utils';
+import { atomWithStorage, createJSONStorage } from 'jotai/utils';
 import { User, UserPreferences } from '../types';
 import axios from 'axios';
 
@@ -31,49 +31,12 @@ const AuthContext = createContext<AuthContextType>({
   userPref: null,
 });
 
-const storageSession =
-  typeof window !== 'undefined'
-    ? {
-        getItem: (key: string) => JSON.parse(sessionStorage.getItem(key) ?? 'null'),
-        setItem: (key: string, value: any) => sessionStorage.setItem(key, JSON.stringify(value)),
-        removeItem: (key: string) => sessionStorage.removeItem(key),
-        subscribe: (key: string, callback: (value: any) => void, initialValue: any) => {
-          const listener = (e: StorageEvent) => {
-            if (e.key === key) {
-              callback(e.newValue ? JSON.parse(e.newValue) : initialValue);
-            }
-          };
-          window.addEventListener('storage', listener);
-          return () => window.removeEventListener('storage', listener);
-        },
-      }
-    : undefined;
+const storageLocal = createJSONStorage<UserPreferences | null>(() => localStorage);
+const storageSession = createJSONStorage<User | null>(() => sessionStorage);
 
-const storageLocal =
-  typeof window !== 'undefined'
-    ? {
-        getItem: (key: string) => JSON.parse(localStorage.getItem(key) ?? 'null'),
-        setItem: (key: string, value: any) => localStorage.setItem(key, JSON.stringify(value)),
-        removeItem: (key: string) => localStorage.removeItem(key),
-        subscribe: (key: string, callback: (value: any) => void, initialValue: any) => {
-          const listener = (e: StorageEvent) => {
-            if (e.key === key) {
-              callback(e.newValue ? JSON.parse(e.newValue) : initialValue);
-            }
-          };
-          window.addEventListener('storage', listener);
-          return () => window.removeEventListener('storage', listener);
-        },
-      }
-    : undefined;
+export const UserState = atomWithStorage<User | null>('UserState', null, storageSession);
 
-export const UserState = atomWithStorage<User | null>('UserState', null, storageSession as any);
-
-export const UserPrefs = atomWithStorage<UserPreferences | null>(
-  'UserPrefs',
-  null,
-  storageLocal as any
-);
+export const UserPrefs = atomWithStorage<UserPreferences | null>('UserPrefs', null, storageLocal);
 
 export function AuthProvider({ children }: any) {
   const [user, setUser] = useAtom(UserState);
@@ -114,23 +77,26 @@ export function AuthProvider({ children }: any) {
 
   // force refresh the token every 10 minutes
   useEffect(() => {
-    const handle = setInterval(async () => {
-      getAuth().then(async (res) => {
-        const { auth } = res;
-        const user = auth.currentUser;
-        if (user) await user.getIdToken(true);
-      });
-    }, 10 * 60 * 1000);
+    const handle = setInterval(
+      async () => {
+        getAuth().then(async (res) => {
+          const { auth } = res;
+          const user = auth.currentUser;
+          if (user) await user.getIdToken(true);
+        });
+      },
+      10 * 60 * 1000
+    );
     return () => clearInterval(handle);
   }, []);
 
-  const doLogin = async (user: FirebaseUser) => {
+  const doLogin = async (fireUser: FirebaseUser) => {
     try {
-      if (!user) {
+      if (!fireUser) {
         throw 'No user found';
       }
 
-      const token = await user.getIdToken();
+      const token = await fireUser.getIdToken();
       if (!token) throw 'No token found';
 
       const userRes = await axios.post('/api/auth/login', null, {
@@ -139,6 +105,8 @@ export function AuthProvider({ children }: any) {
 
       const userData = userRes.data as User;
       userData.isAdmin = userData.role === 'ADMIN';
+
+      if (user && checkEqual(userData, user)) return;
 
       setUser(userData);
     } catch (e: any) {
@@ -182,4 +150,8 @@ export function AuthProvider({ children }: any) {
 
 export const useAuth = () => {
   return useContext(AuthContext);
+};
+
+const checkEqual = (a: object, b: object) => {
+  return JSON.stringify(a) === JSON.stringify(b);
 };

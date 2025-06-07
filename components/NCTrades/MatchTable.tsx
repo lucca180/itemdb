@@ -1,4 +1,15 @@
-import { Table, TableContainer, Tbody, Td, Tr, Th, Thead, Badge, Link } from '@chakra-ui/react';
+import {
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Tr,
+  Th,
+  Thead,
+  Badge,
+  Link,
+  Skeleton,
+} from '@chakra-ui/react';
 import { formatDistanceToNow, isToday } from 'date-fns';
 import NextLink from 'next/link';
 import React from 'react';
@@ -9,11 +20,12 @@ type Props = {
   data: UserList[];
   matches: { [key: string]: number[] } | null;
   type: 'seeking' | 'trading';
+  isLoading?: boolean;
 };
 
 const MatchTable = (props: Props) => {
   const t = useTranslations();
-  const { data, matches, type } = props;
+  const { data, matches, type, isLoading } = props;
   const sortedData = data.sort(
     (a, b) => new Date(b.owner.lastSeen).getTime() - new Date(a.owner.lastSeen).getTime()
   );
@@ -59,7 +71,7 @@ const MatchTable = (props: Props) => {
                   {list.owner.username}
                 </Link>
               </Td>
-              {matches && (
+              {!isLoading && matches && (
                 <Td>
                   {matches[list.owner.username ?? '']?.length && (
                     <Badge colorScheme="green">
@@ -72,6 +84,11 @@ const MatchTable = (props: Props) => {
                   {!matches[list.owner.username ?? '']?.length && (
                     <Badge>{t('ItemPage.no-matches')}</Badge>
                   )}
+                </Td>
+              )}
+              {isLoading && (
+                <Td>
+                  <Skeleton w="100px" h="10px" />
                 </Td>
               )}
               <Td>
