@@ -11,7 +11,7 @@ import {
   Portal,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import DynamicIcon from '../../public/icons/dynamic.png';
@@ -30,15 +30,20 @@ type Props = {
 const ListSelect = (props: Props) => {
   const t = useTranslations();
   const { user, authLoading } = useAuth();
-  const [selectedList, setSelected] = useState<UserList | undefined>(props.defaultValue);
+  const [forceSelected, setSelected] = useState<UserList | undefined>(props.defaultValue);
   const { lists, isLoading, revalidate } = useLists();
   const sorted = useMemo(() => lists.sort((a, b) => SortListByChange(a, b)), [lists]);
+  const prevDefaultValue = useRef(props.defaultValue);
 
-  useEffect(() => {
-    if (props.defaultValue) {
+  const selectedList = useMemo(() => {
+    if (props.defaultValue && prevDefaultValue.current !== props.defaultValue) {
+      prevDefaultValue.current = props.defaultValue;
       setSelected(props.defaultValue);
+      return props.defaultValue;
     }
-  }, [props.defaultValue]);
+
+    return forceSelected || props.defaultValue;
+  }, [forceSelected, props.defaultValue]);
 
   const handleSelect = (list: UserList) => {
     setSelected(list);

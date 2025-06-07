@@ -11,7 +11,7 @@ import {
   Link,
 } from '@chakra-ui/react';
 import Color from 'color';
-import { useEffect, useState, Fragment, ReactElement } from 'react';
+import { useState, Fragment, ReactElement, useMemo } from 'react';
 import ShopCard from '../../components/Hubs/Restock/ShopCard';
 import Layout from '../../components/Layout';
 import { restockShopInfo, getDateNST } from '../../utils/utils';
@@ -43,20 +43,18 @@ const RestockHub: NextPageWithLayout<any> = (props: RestockHubProps) => {
   const { trendingShops } = props;
   const [selCats, setSelCats] = useState<string[]>([]);
   const [selDiff, setSelDiff] = useState<string[]>([]);
-  const [specialDay, setSpecialDay] = useState('');
 
-  useEffect(() => {
-    const todayNST = getDateNST();
+  const todayNST = getDateNST();
+  const todayDate = todayNST.getDate();
 
-    if (todayNST.getDate() === 3) setSpecialDay('hpd');
-    else if (todayNST.getMonth() === 4 && todayNST.getDate() === 12) setSpecialDay('tyrannia');
-
-    if (todayNST.getMonth() === 7 && todayNST.getDate() === 20) setSpecialDay('usukicon');
-
-    if (todayNST.getMonth() === 8 && todayNST.getDate() === 20) setSpecialDay('festival');
-
-    if (todayNST.getMonth() === 9 && todayNST.getDate() === 31) setSpecialDay('halloween');
-  }, []);
+  const specialDay = useMemo(() => {
+    if (todayNST.getDate() === 3) return 'hpd';
+    if (todayNST.getMonth() === 4 && todayNST.getDate() === 12) return 'tyrannia';
+    if (todayNST.getMonth() === 7 && todayNST.getDate() === 20) return 'usukicon';
+    if (todayNST.getMonth() === 8 && todayNST.getDate() === 20) return 'festival';
+    if (todayNST.getMonth() === 9 && todayNST.getDate() === 31) return 'halloween';
+    return '';
+  }, [todayDate]);
 
   const handleCat = (cat: string) => {
     if (selCats.includes(cat)) {

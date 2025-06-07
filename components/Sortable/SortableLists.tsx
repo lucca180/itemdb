@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -31,17 +31,26 @@ export type SortableListsProps = {
 export default function SortableLists(props: SortableListsProps) {
   const { activateSort, editMode, lists, listSelect } = props;
   const [activeId, setActiveId] = useState<number | null>(null);
-  const [ids, setIds] = useState(props.ids);
+  const [forceIds, setIds] = useState(props.ids);
 
-  useEffect(() => {
-    setIds(props.ids);
-  }, [props.ids]);
+  const prevProps = React.useRef(props.ids);
+
+  const ids = useMemo(() => {
+    if (!checkEqual(prevProps.current, props.ids)) {
+      prevProps.current = props.ids;
+      setIds(props.ids);
+
+      return props.ids;
+    }
+
+    return forceIds;
+  }, [props.ids, forceIds]);
 
   const sensors = useSensors(
     useSensor(TouchSensor, {
       activationConstraint: { delay: 200, tolerance: 5 },
     }),
-    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } })
   );
 
   return (
@@ -63,7 +72,7 @@ export default function SortableLists(props: SortableListsProps) {
               key={id}
               cardProps={props.cardProps}
             />
-          ) : null,
+          ) : null
         )}
       </SortableContext>
       <DragOverlay>
@@ -99,3 +108,7 @@ export default function SortableLists(props: SortableListsProps) {
     setActiveId(null);
   }
 }
+
+const checkEqual = (a: number[], b: number[]) => {
+  return a.length === b.length && JSON.stringify(a) === JSON.stringify(b);
+};

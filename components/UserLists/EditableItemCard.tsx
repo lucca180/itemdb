@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import ItemCard from '../Items/ItemCard';
 import { ItemData, ListItemInfo } from '../../types';
 import { VStack, Box } from '@chakra-ui/react';
@@ -30,12 +30,9 @@ export type EditableItemCardProps = {
 export function EditableItemCard(props: EditableItemCardProps) {
   const { id, item, editMode, isTrading, selected, sortType } = props;
   const [itemInfo, setItemInfo] = useState<ListItemInfo | undefined>(props.itemInfo);
-  const [isSelected, setSelected] = useState<boolean>(selected ?? false);
+  const [shouldSelect, setSelected] = useState<boolean>(selected ?? false);
 
-  useEffect(() => {
-    if (!editMode) setSelected(false);
-    else if (selected !== isSelected) setSelected(selected ?? false);
-  }, [selected, editMode]);
+  const isSelected = editMode && (props.selected ?? shouldSelect ?? false);
 
   const handleItemInfoChange = (
     value: number,
@@ -83,7 +80,7 @@ export function EditableItemCard(props: EditableItemCardProps) {
           onListAction={props.onListAction}
           selected={isSelected}
           disablePrefetch
-          capValue={isTrading ? itemInfo?.capValue ?? undefined : undefined}
+          capValue={isTrading ? (itemInfo?.capValue ?? undefined) : undefined}
           quantity={itemInfo?.amount ?? undefined}
         />
       </Box>

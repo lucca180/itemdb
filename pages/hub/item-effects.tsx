@@ -40,8 +40,9 @@ const ItemEffectPage = () => {
   const [statsName, setStatsName] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
+
   useEffect(() => {
-    setPage(1);
+    // setPage(1);
     init(1);
   }, []);
 

@@ -1,5 +1,5 @@
 import { Center, Flex, HStack, Tag, Text, Link, Tooltip } from '@chakra-ui/react';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ItemData, ItemLastSeen } from '../../types';
 import {
   categoryToShopID,
@@ -30,47 +30,47 @@ const ItemRestock = (props: Props) => {
   const t = useTranslations();
   const format = useFormatter();
   const { item, lastSeen, isHT } = props;
-  const [specialDay, setSpecialDay] = React.useState('');
 
-  React.useEffect(() => {
-    if (!item.category) return;
-    const todayNST = getDateNST();
+  const todayNST = getDateNST();
+  const todayDate = todayNST.getDate();
+
+  const specialDay = useMemo(() => {
+    if (!item.category) return null;
+    const category = item.category.toLowerCase();
 
     if (isHT) {
       //check if is the third wednesday of the month
-      if (isThirdWednesday()) setSpecialDay('ht');
+      if (isThirdWednesday()) return 'ht';
       return;
     }
 
-    if (todayNST.getDate() === 3) setSpecialDay('hpd');
+    if (todayNST.getDate() === 3) return 'hpd';
     else if (
       todayNST.getMonth() === 4 &&
       todayNST.getDate() === 12 &&
-      tyrannianShops.map((x) => x.toLowerCase()).includes(item.category.toLowerCase())
+      tyrannianShops.map((x) => x.toLowerCase()).includes(category)
     )
-      setSpecialDay('tyrannia');
+      return 'tyrannia';
 
-    if (
-      todayNST.getMonth() === 7 &&
-      todayNST.getDate() === 20 &&
-      item.category.toLowerCase() === 'usuki doll'
-    )
-      setSpecialDay('usukicon');
+    if (todayNST.getMonth() === 7 && todayNST.getDate() === 20 && category === 'usuki doll')
+      return 'usukicon';
 
     if (
       todayNST.getMonth() === 8 &&
       todayNST.getDate() === 20 &&
-      faerielandShops.map((x) => x.toLowerCase()).includes(item.category.toLowerCase())
+      faerielandShops.map((x) => x.toLowerCase()).includes(category)
     )
-      setSpecialDay('festival');
+      return 'festival';
 
     if (
       todayNST.getMonth() === 9 &&
       todayNST.getDate() === 31 &&
-      halloweenShops.map((x) => x.toLowerCase()).includes(item.category.toLowerCase())
+      halloweenShops.map((x) => x.toLowerCase()).includes(category)
     )
-      setSpecialDay('halloween');
-  }, []);
+      return 'halloween';
+
+    return '';
+  }, [todayDate, item]);
 
   const restockPrice = getRestockPrice(item);
   const originalRestockPrice = getRestockPrice(item, true);
@@ -130,8 +130,8 @@ const ItemRestock = (props: Props) => {
                 restockProfit && restockProfit <= 0
                   ? 'red.300'
                   : specialDay
-                  ? 'green.200'
-                  : undefined
+                    ? 'green.200'
+                    : undefined
               }
             >
               {!restockProfit && '???'}

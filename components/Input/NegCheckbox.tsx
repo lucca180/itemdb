@@ -1,3 +1,4 @@
+/* eslint-disable react-you-might-not-need-an-effect/you-might-not-need-an-effect */
 import { Checkbox } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 

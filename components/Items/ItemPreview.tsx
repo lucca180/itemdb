@@ -1,5 +1,5 @@
 import { AspectRatio, Box, Flex, IconButton, Link, Skeleton, Text } from '@chakra-ui/react';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { ItemData, ItemEffect } from '../../types';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
@@ -23,9 +23,7 @@ const ItemPreview = (props: Props) => {
   const { item, colorSpeciesEffect, wearableData } = props;
   const color = item.color.rgb;
 
-  useEffect(() => {
-    if (isLoaded && isLoaded !== item.internal_id) setIsLoaded(0);
-  }, [item]);
+  if (isLoaded && isLoaded !== item.internal_id) setIsLoaded(0);
 
   const zonesData = useMemo(() => {
     if (!wearableData) return [];

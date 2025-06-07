@@ -11,7 +11,7 @@ import {
   tyrannianShops,
 } from '../../../utils/utils';
 import { useTranslations } from 'next-intl';
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import ChakraImage from '../../Utils/Image';
 import { RestockBreadcrumb } from '../../Breadcrumbs/RestockBreadcrumb';
 type Props = {
@@ -23,40 +23,41 @@ type Props = {
 const RestockHeader = (props: Props) => {
   const t = useTranslations();
   const { shop: shopInfo, isHistory } = props;
-  const [specialDay, setSpecialDay] = useState('');
 
   const color = Color(shopInfo.color);
   const rgb = color.rgb().array();
 
-  useEffect(() => {
-    const shopCategory = shopIDToCategory[shopInfo.id];
-    const todayNST = getDateNST();
+  const todayNST = getDateNST();
+  const todayDate = todayNST.getDate();
 
-    if (todayNST.getDate() === 3) setSpecialDay('hpd');
+  const specialDay = useMemo(() => {
+    const shopCategory = shopIDToCategory[shopInfo.id];
+
+    if (todayNST.getDate() === 3) return 'hpd';
     else if (
       todayNST.getMonth() === 4 &&
       todayNST.getDate() === 12 &&
       tyrannianShops.map((x) => x.toLowerCase()).includes(shopCategory)
     )
-      setSpecialDay('tyrannia');
+      return 'tyrannia';
 
     if (todayNST.getMonth() === 7 && todayNST.getDate() === 20 && shopCategory === 'usuki doll')
-      setSpecialDay('usukicon');
+      return 'usukicon';
 
     if (
       todayNST.getMonth() === 8 &&
       todayNST.getDate() === 20 &&
       faerielandShops.map((x) => x.toLowerCase()).includes(shopCategory)
     )
-      setSpecialDay('festival');
+      return 'festival';
 
     if (
       todayNST.getMonth() === 9 &&
       todayNST.getDate() === 31 &&
       halloweenShops.map((x) => x.toLowerCase()).includes(shopCategory)
     )
-      setSpecialDay('halloween');
-  }, []);
+      return 'halloween';
+  }, [shopInfo.id, todayDate]);
 
   return (
     <>

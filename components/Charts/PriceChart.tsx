@@ -1,3 +1,4 @@
+/* eslint-disable react-you-might-not-need-an-effect/you-might-not-need-an-effect */
 import { Box } from '@chakra-ui/react';
 import Color from 'color';
 import { createChart, ColorType, LineStyle } from 'lightweight-charts';

@@ -1,3 +1,4 @@
+/* eslint-disable react-you-might-not-need-an-effect/you-might-not-need-an-effect */
 import { Skeleton, AspectRatio } from '@chakra-ui/react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';

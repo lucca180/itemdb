@@ -1,3 +1,4 @@
+/* eslint-disable react-you-might-not-need-an-effect/you-might-not-need-an-effect */
 import {
   Accordion,
   AccordionItem,
@@ -15,7 +16,7 @@ import {
   Select,
   Divider,
 } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { SearchStats, SearchFilters as SearchFiltersType } from '../../types';
 import CustomNumberInput from '../Input/CustomNumber';
 import NegCheckbox from '../Input/NegCheckbox';
@@ -55,7 +56,14 @@ const SearchFilters = (props: Props) => {
       : '#c4bce4'
   );
 
+  const isFirstLoad = useRef(true);
+
   useEffect(() => {
+    if (isFirstLoad.current) {
+      isFirstLoad.current = false;
+      return;
+    }
+
     setFilters(props.filters);
     setColorVal(
       props.filters.color && !ALL_COLORS_CODE.includes(props.filters.color.toLowerCase())

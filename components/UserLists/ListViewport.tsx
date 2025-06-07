@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { ListItemInfo, ItemData, UserList } from '../../types';
 import debounce from 'lodash/debounce';
 import { ViewportList } from 'react-viewport-list';
@@ -32,11 +32,19 @@ export default function ListViewport(props: ListViewportProps) {
   const dimensions = useSize(elementRef, { observeMutation: true });
 
   const { itemInfo, items, editMode, activateSort, list } = props;
-  const [ids, setIds] = useState(props.ids);
+  const [forceIds, setIds] = useState(props.ids);
+  const prevProps = React.useRef(props.ids);
 
-  useEffect(() => {
-    setIds(props.ids);
-  }, [props.ids]);
+  const ids = useMemo(() => {
+    if (!checkEqual(prevProps.current, props.ids)) {
+      prevProps.current = props.ids;
+      setIds(props.ids);
+
+      return props.ids;
+    }
+
+    return forceIds;
+  }, [props.ids, forceIds]);
 
   const debouncedOnChange = useCallback(
     // eslint-disable-next-line react-compiler/react-compiler
@@ -116,3 +124,7 @@ export default function ListViewport(props: ListViewportProps) {
     </>
   );
 }
+
+const checkEqual = (a: number[], b: number[]) => {
+  return a.length === b.length && JSON.stringify(a) === JSON.stringify(b);
+};

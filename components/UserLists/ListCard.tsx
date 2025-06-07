@@ -14,7 +14,7 @@ import icon from '../../public/logo_icon.svg';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import Color from 'color';
 import NextLink from 'next/link';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { FaPencilAlt, FaShareAlt } from 'react-icons/fa';
@@ -45,23 +45,21 @@ const UserListCard = (props: Props) => {
   const toast = useToast();
   const { list, matches, isSelected, disableLink, utm_content, isSmall, canEdit } = props;
   const { isOpen, onToggle } = useDisclosure();
-  const [matchCount, setMatchCount] = useState(0);
   const color = Color(list?.colorHex || '#4A5568');
   const rgb = color.rgb().array();
 
-  useEffect(() => {
-    if (!matches) return;
+  const matchCount = useMemo(() => {
+    if (!matches) return 0;
 
     const seekMatches = matches.seek[list.internal_id] || [];
     const tradeMatches = matches.trade[list.internal_id] || [];
 
-    if (list.purpose === 'trading' && seekMatches.length) {
-      setMatchCount(seekMatches.length);
+    if (list.purpose === 'trading') {
+      return seekMatches.length;
+    } else if (list.purpose === 'seeking') {
+      return tradeMatches.length;
     }
-
-    if (list.purpose === 'seeking' && tradeMatches.length) {
-      setMatchCount(tradeMatches.length);
-    }
+    return 0;
   }, [list, matches]);
 
   const copyLink = () => {

@@ -108,6 +108,7 @@ const OutfitPage = (props: OutfitPageProps) => {
               >
                 <Flex flexFlow={'column'}>
                   <SkeletonImage
+                    key={line}
                     url={getPreviewUrl(outfit)}
                     loadkey={line}
                     width={300}

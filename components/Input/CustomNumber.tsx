@@ -1,3 +1,4 @@
+/* eslint-disable react-you-might-not-need-an-effect/you-might-not-need-an-effect */
 import { NumberInput, NumberInputField } from '@chakra-ui/react';
 import { useCallback, useEffect, useState } from 'react';
 import debounce from 'lodash/debounce';

@@ -29,7 +29,7 @@ const NeedInfoPage = () => {
   const [page, setPage] = useState(1);
 
   useEffect(() => {
-    setPage(1);
+    // setPage(1);
     init(1);
   }, []);
 

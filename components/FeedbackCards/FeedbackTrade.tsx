@@ -52,11 +52,13 @@ const FeedbackTrade = (props: Props) => {
   const { userPref } = useAuth();
   const t = useTranslations();
   const { handleSkip, handleSubmit, handleUndo, hasUndo } = props;
-  const [trade, setTrade] = useState<TradeData | undefined>(props.trade);
+  const [forceTrade, setTrade] = useState<TradeData | undefined>(props.trade);
   const [isSticky, setIsSticky] = useState(false);
-  useEffect(() => {
-    setTrade(props.trade);
-  }, [props.trade]);
+
+  const trade = useMemo(() => {
+    if (forceTrade && props.trade?.trade_id === forceTrade.trade_id) return forceTrade;
+    return props.trade;
+  }, [forceTrade, props.trade]);
 
   const handleChange = (item: TradeItems, index: number) => {
     if (!trade) return;

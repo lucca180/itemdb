@@ -1,3 +1,4 @@
+/* eslint-disable react-you-might-not-need-an-effect/you-might-not-need-an-effect */
 import { useState, useEffect } from 'react';
 
 function ClientOnly({ children, ...delegated }: any) {
