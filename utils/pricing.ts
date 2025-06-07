@@ -52,7 +52,17 @@ export const processPrices2 = (allItemData: PriceProcess2[], forceMode = false) 
   }
 
   // sometimes priceSTD is so high that lowerLimit is negative
-  const lowerLimitFactor = Math.floor(Math.min(1.7, priceMean / priceSTD) * 10) / 10;
+  const lowerLimitFactor = Math.ceil(Math.min(1.7, priceMean / priceSTD) * 10) / 10;
+
+  if (lowerLimitFactor < 0.1) {
+    console.error(
+      'processPrices2: Lower limit factor too low',
+      allItemData[0].item_iid,
+      lowerLimitFactor
+    );
+
+    return undefined;
+  }
 
   out = out.filter(
     (x) => x <= priceMean + priceSTD * 0.75 && x >= priceMean - priceSTD * lowerLimitFactor
