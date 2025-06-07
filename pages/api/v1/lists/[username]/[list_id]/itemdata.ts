@@ -18,7 +18,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { username, list_id: list_id_or_slug } = req.query;
+  const { username, list_id: list_id_or_slug, asObject } = req.query;
   const isOfficial = username === 'official';
 
   if (
@@ -59,6 +59,8 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 
     const ip = requestIp.getClientIp(req);
     redis_setItemCount(ip, itemArray.length, req);
+
+    if (asObject === 'true') return res.status(200).json(itemData);
 
     return res.status(200).json(itemArray);
   } catch (e: any) {

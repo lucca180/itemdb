@@ -1,3 +1,4 @@
+/* eslint-disable react-you-might-not-need-an-effect/you-might-not-need-an-effect */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import {
   Badge,
@@ -27,7 +28,6 @@ import {
   SearchFilters as SearchFiltersType,
   SearchStats,
 } from '../../../types';
-import { useAuth } from '../../../utils/auth';
 import { useRouter } from 'next/router';
 import ItemCard from '../../../components/Items/ItemCard';
 import Color from 'color';
@@ -55,6 +55,7 @@ import { ItemList } from '../../../components/UserLists/ItemList';
 import { preloadListItems } from '../../api/v1/lists/[username]/[list_id]/items';
 import { getSimilarLists } from '../../api/v1/lists/[username]/[list_id]/similar';
 import { loadTranslation } from '@utils/load-translation';
+import { getListMatch } from '../../api/v1/lists/match/[...usernames]';
 
 const CreateListModal = dynamic<CreateListModalProps>(
   () => import('../../../components/Modal/CreateListModal')
@@ -87,6 +88,7 @@ type ListPageProps = {
     items: { [id: string]: ItemData };
   };
   similarLists: UserList[];
+  matches: ListItemInfo[];
   messages: any;
   locale: string | undefined;
 };
@@ -97,10 +99,9 @@ const ListPage = (props: ListPageProps) => {
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isOpenInsert, onOpen: onOpenInsert, onClose: onCloseInsert } = useDisclosure();
-  const { canEdit, isOwner, locale, preloadData, similarLists } = props;
-  const { user } = useAuth();
+  const { canEdit, isOwner, locale, preloadData, similarLists, matches } = props;
 
-  const [list, setList] = useState<UserList>(props.list);
+  const [forceList, setList] = useState<UserList>(props.list);
 
   const [openCreateModal, setOpenCreateModal] = useState<boolean>(false);
 
@@ -122,13 +123,17 @@ const ListPage = (props: ListPageProps) => {
   const [lockSort, setLockSort] = useState<boolean>(true);
   const [selectionAction, setSelectionAction] = useState<'move' | 'delete' | 'copy' | ''>('');
 
-  const [matches, setMatches] = useState<ListItemInfo[]>([]);
   const [isLoading, setLoading] = useState<boolean>(true);
   const [searchItemInfoIds, setSearchItemInfoIds] = useState<number[] | null>(null);
 
   const [listStats, setListStats] = useState<SearchStats | null>(null);
   const [filters, setFilters] = useState<SearchFiltersType>(defaultFilters);
   const searchQuery = useRef('');
+
+  const list = useMemo(() => {
+    if (forceList && props.list.internal_id === forceList.internal_id) return forceList;
+    return props.list;
+  }, [forceList, props.list]);
 
   const color = Color(list?.colorHex || '#4A5568');
   const rgb = color.rgb().array();
@@ -153,8 +158,8 @@ const ListPage = (props: ListPageProps) => {
       return searchItemInfoIds.length;
     }
 
-    return Object.values(itemInfo).filter((x) => !x.isHidden).length;
-  }, [itemInfo, searchItemInfoIds]);
+    return list.itemCount;
+  }, [list, itemInfo, searchItemInfoIds]);
 
   useEffect(() => {
     if (router.isReady) {
@@ -165,10 +170,7 @@ const ListPage = (props: ListPageProps) => {
   useEffect(() => {
     if (router.query.list_id === list.slug) return;
 
-    if (router.query.list_id === props.list.slug) {
-      setList(props.list);
-      init(true);
-    }
+    if (router.query.list_id === props.list.slug) init(true);
 
     return () => toast.closeAll();
   }, [router.query]);
@@ -179,10 +181,6 @@ const ListPage = (props: ListPageProps) => {
     setItemInfo(preloadData.itemMap);
     setItems(preloadData.items);
   }, [preloadData]);
-
-  useEffect(() => {
-    if (user && list) getMatches();
-  }, [user, list]);
 
   const isFiltered = useMemo(() => {
     return rawItemInfo.length !== Object.keys(itemInfo).length;
@@ -222,7 +220,6 @@ const ListPage = (props: ListPageProps) => {
         setItemSelect([]);
         setItemInfoIds([]);
         setItemInfo({});
-        setMatches([]);
         setSortInfo({ sortBy: listData.sortBy, sortDir: listData.sortDir });
         if (force) setList(listData);
         setItems({});
@@ -260,9 +257,13 @@ const ListPage = (props: ListPageProps) => {
   ): Promise<[{ [id: string]: ItemData }, ListItemInfo[]]> => {
     if (!newList) return [{}, []];
 
-    const itemInfoRes = await axios.get(
-      `/api/v1/lists/${newList.owner.username}/${newList.internal_id}/items`
-    );
+    const basePath = `/api/v1/lists/${newList.owner.username}/${newList.internal_id}`;
+
+    const [itemInfoRes, itemRes] = await Promise.all([
+      axios.get(`${basePath}/items`),
+      axios.get(`${basePath}/itemdata?asObject=true`),
+      axios.get(`${basePath}/stats`).then((res) => setListStats(res.data)),
+    ]);
     const itemInfoData: ListItemInfo[] = itemInfoRes.data;
 
     const itemsId: number[] = itemInfoData.map((item) => item.item_iid);
@@ -271,37 +272,9 @@ const ListPage = (props: ListPageProps) => {
       return [{}, itemInfoData];
     }
 
-    axios
-      .get(`/api/v1/lists/${newList.owner.username}/${newList.internal_id}/stats`)
-      .then((res) => setListStats(res.data));
-
-    const itemRes = await axios.post(`/api/v1/items/many`, {
-      id: itemsId,
-    });
-
     const itemDataRaw: { [id: string]: ItemData } = itemRes?.data;
 
     return [itemDataRaw, itemInfoData];
-  };
-
-  const getMatches = async () => {
-    if (!list || !user || list.purpose === 'none' || isOwner) return;
-
-    let seeker = list.purpose === 'seeking' ? list.owner.username : user.username;
-    let offerer = list.purpose === 'trading' ? list.owner.username : user.username;
-
-    if (list.official) {
-      seeker = user.username;
-      offerer = list.owner.username;
-    }
-
-    const res = await axios.get(`/api/v1/lists/match/${seeker}/${offerer}`, {
-      params: {
-        list_id: list.internal_id,
-      },
-    });
-
-    setMatches(res.data);
   };
 
   const handleSortChange = (sortBy: string, sortDir: string) => {
@@ -587,7 +560,7 @@ const ListPage = (props: ListPageProps) => {
         setOpenCreateModal={setOpenCreateModal}
       />
       <Flex mt={5} gap={6} flexFlow="column">
-        {!isOwner && user && list.purpose !== 'none' && matches.length > 0 && (
+        {matches.length > 0 && (
           <>
             <Box>
               <Heading size={{ base: 'md', md: 'lg' }}>
@@ -639,11 +612,9 @@ const ListPage = (props: ListPageProps) => {
               {(isOwner || list.official || list.canBeLinked) && !list.linkedListId && (
                 <CreateLinkedListButton list={list} isLoading={isLoading} />
               )}
-              {!isLoading && (
-                <Text as="div" textColor={'gray.300'} fontSize="sm">
-                  {t('Lists.itemcount-items', { itemCount })}
-                </Text>
-              )}
+              <Text as="div" textColor={'gray.300'} fontSize="sm">
+                {t('Lists.itemcount-items', { itemCount })}
+              </Text>
             </HStack>
           )}
           {isEdit && (
@@ -917,9 +888,22 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
   const isOwner = user && user.id === list.owner.id;
 
-  const [preloadData, similarLists] = await Promise.all([
+  const shouldGetMatches = !!list && !!user && list.purpose !== 'none' && !isOwner;
+
+  const seeker: string = list.purpose === 'seeking' ? list.owner.username! : (user?.username ?? '');
+  const offerer: string =
+    list.purpose === 'trading' ? list.owner.username! : (user?.username ?? '');
+
+  const [preloadData, similarLists, matches] = await Promise.all([
     preloadListItems(list, !!isOwner, 30),
     list.official ? getSimilarLists(list, 3) : [],
+    shouldGetMatches
+      ? (
+          getListMatch(seeker, offerer, (context.req ?? null) as any, list.internal_id) as Promise<
+            ListItemInfo[]
+          >
+        ).catch(() => [])
+      : [],
   ]);
 
   const { itemMap, infoIds } = getSortedItemInfo(preloadData.items, list, preloadData.itemData);
@@ -933,6 +917,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       items: preloadData.itemData,
     },
     similarLists,
+    matches,
     canEdit: !!(user && (user.id === list.owner.id || (list.official && user.isAdmin))),
     isOwner: !!(user && user.id === list.owner.id),
     messages: await loadTranslation(context.locale as string, 'lists/[username]/[list_id]'),

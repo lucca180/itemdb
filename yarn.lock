@@ -8937,6 +8937,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-plugin-react-you-might-not-need-an-effect@npm:^0.0.44":
+  version: 0.0.44
+  resolution: "eslint-plugin-react-you-might-not-need-an-effect@npm:0.0.44"
+  dependencies:
+    eslint-utils: "npm:^3.0.0"
+  peerDependencies:
+    eslint: ">=7.0.0"
+  checksum: 10c0/a328fba96f29d06eaa77baa7b391430dd41f3bc687ca15ed7a01db04626e66699ce9e76c7f09dd2e4282e9656e2a62ef615c64aec51c311ace8164181cbd585d
+  languageName: node
+  linkType: hard
+
 "eslint-plugin-react@npm:^7.37.0":
   version: 7.37.2
   resolution: "eslint-plugin-react@npm:7.37.2"
@@ -8972,6 +8983,24 @@ __metadata:
     esrecurse: "npm:^4.3.0"
     estraverse: "npm:^5.2.0"
   checksum: 10c0/613c267aea34b5a6d6c00514e8545ef1f1433108097e857225fed40d397dd6b1809dffd11c2fde23b37ca53d7bf935fe04d2a18e6fc932b31837b6ad67e1c116
+  languageName: node
+  linkType: hard
+
+"eslint-utils@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "eslint-utils@npm:3.0.0"
+  dependencies:
+    eslint-visitor-keys: "npm:^2.0.0"
+  peerDependencies:
+    eslint: ">=5"
+  checksum: 10c0/45aa2b63667a8d9b474c98c28af908d0a592bed1a4568f3145cd49fb5d9510f545327ec95561625290313fe126e6d7bdfe3fdbdb6f432689fab6b9497d3bfb52
+  languageName: node
+  linkType: hard
+
+"eslint-visitor-keys@npm:^2.0.0":
+  version: 2.1.0
+  resolution: "eslint-visitor-keys@npm:2.1.0"
+  checksum: 10c0/9f0e3a2db751d84067d15977ac4b4472efd6b303e369e6ff241a99feac04da758f46d5add022c33d06b53596038dbae4b4aceb27c7e68b8dfc1055b35e495787
   languageName: node
   linkType: hard
 
@@ -10892,6 +10921,7 @@ __metadata:
     eslint-config-next: "npm:15.3.2"
     eslint-config-prettier: "npm:^9.1.0"
     eslint-plugin-react-compiler: "npm:^19.1.0-rc.1"
+    eslint-plugin-react-you-might-not-need-an-effect: "npm:^0.0.44"
     firebase: "npm:^11.7.1"
     firebase-admin: "npm:^13.3.0"
     framer-motion: "npm:^12.10.5"

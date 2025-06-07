@@ -88,7 +88,7 @@ const UserListsPage = (props: Props) => {
   const [selectedLists, setSelectedLists] = useState<number[]>([]);
   const [isEdit, setEdit] = useState<boolean>(false);
 
-  const [owner, setOwner] = useState<User>(props.owner);
+  const [forceOwner, setOwner] = useState<User>(props.owner);
   const [matches, setMatches] = useState<{
     seek: { [list_id: number]: ListItemInfo[] };
     trade: { [list_id: number]: ListItemInfo[] };
@@ -97,6 +97,15 @@ const UserListsPage = (props: Props) => {
     trade: {},
   });
   const [loading, setLoading] = useState<boolean>(true);
+
+  const owner = useMemo(() => {
+    if (forceOwner && props.owner.id !== forceOwner.id) {
+      setOwner(props.owner);
+      return props.owner;
+    }
+
+    return forceOwner || props.owner;
+  }, [forceOwner, props.owner]);
 
   const color = Color(owner?.profileColor || '#4A5568');
   const rgb = color.rgb().array();
@@ -112,10 +121,6 @@ const UserListsPage = (props: Props) => {
 
     return () => toast.closeAll();
   }, [router.query]);
-
-  useEffect(() => {
-    setOwner(props.owner);
-  }, [props.owner]);
 
   const seekItems = useMemo(() => {
     const allItems = new Set(Object.values(matches.seek).flat());

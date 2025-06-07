@@ -1,7 +1,8 @@
 {
-  "plugins": ["@typescript-eslint", "react-compiler"],
+  "plugins": ["react-you-might-not-need-an-effect", "@typescript-eslint", "react-compiler"],
   "extends": ["plugin:@typescript-eslint/recommended", "next/core-web-vitals", "prettier"],
   "rules": {
+    "react-you-might-not-need-an-effect/you-might-not-need-an-effect": "warn",
     "react-compiler/react-compiler": "error",
     "no-console": ["warn", { "allow": ["warn", "error"] }],
     "react-hooks/exhaustive-deps": "off",
