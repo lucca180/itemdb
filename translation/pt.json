@@ -751,7 +751,11 @@
     "similar-lists": "Listas Similares",
     "markdown-tip": "Aceita algumas tags <Link>Markdown</Link> <Small>(como links, negrito, itálico)</Small>",
     "load-cover-image-palette": "Carregar Paleta de Cores da Capa",
-    "updated-x": "atualizado <b>{x}</b>"
+    "updated-x": "atualizado <b>{x}</b>",
+    "can-be-linked": "Pode ser clonado?",
+    "can-be-linked-help": "Isso permitirá que outros usuários criem um clone dinâmico desta lista. Saiba mais sobre <Link>Linked Lists</Link>",
+    "group-tag": "Tag de Grupo",
+    "group-tag-help": "Isso pode ser usado para agrupar listas em seu perfil selecionando o modo List Groups nas configurações do seu perfil"
   },
   "Restock": {
     "est-profit": "Lucro Est.",

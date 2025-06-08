@@ -373,32 +373,39 @@ const CreateListModal = (props: CreateListModalProps) => {
                 </Select>
               </FormControl>
               <FormControl>
-                <FormLabel color="gray.300">Can be Linked?</FormLabel>
+                <FormLabel color="gray.300">{t('Lists.can-be-linked')}</FormLabel>
                 <Select
                   variant="filled"
                   name="canBeLinked"
                   onChange={handleChange}
                   value={list.canBeLinked?.toString() ?? 'true'}
                 >
-                  <option value="true">Yes</option>
-                  <option value="false">No</option>
+                  <option value="true">{t('General.yes')}</option>
+                  <option value="false">{t('General.no')}</option>
                 </Select>
-                <FormHelperText>
-                  This will allow other users to create a dynamic clone of this list. Learn more on{' '}
-                  <Link href="/articles/checklists-and-dynamic-lists">Linked Lists</Link>
+                <FormHelperText fontSize={'xs'}>
+                  {t.rich('Lists.can-be-linked-help', {
+                    Link: (children) => (
+                      <Link
+                        href="/articles/checklists-and-dynamic-lists"
+                        isExternal
+                        color={'whiteAlpha.800'}
+                      >
+                        {children}
+                      </Link>
+                    ),
+                  })}
                 </FormHelperText>
               </FormControl>
               <FormControl>
-                <FormLabel color="gray.300">Profile Tag</FormLabel>
+                <FormLabel color="gray.300">{t('Lists.group-tag')}</FormLabel>
                 <Input
                   variant="filled"
                   name="userTag"
                   onChange={handleChange}
                   value={list.userTag ?? ''}
                 />
-                <FormHelperText fontSize={'xs'}>
-                  This can be used for grouping lists in your profile
-                </FormHelperText>
+                <FormHelperText fontSize={'xs'}>{t('Lists.group-tag-help')}</FormHelperText>
               </FormControl>
             </Stack>
           )}
