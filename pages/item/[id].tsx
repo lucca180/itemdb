@@ -181,6 +181,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
               {
                 <Badge
                   as={Link}
+                  prefetch={false}
                   borderRadius="md"
                   href={`/search?s=&category[]=${item.category ?? 'Unknown'}`}
                 >
@@ -188,17 +189,35 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
                 </Badge>
               }
               {item.type === 'np' && (
-                <Badge colorScheme="green" borderRadius="md" as={Link} href="/search?s=&type[]=np">
+                <Badge
+                  colorScheme="green"
+                  borderRadius="md"
+                  as={Link}
+                  prefetch={false}
+                  href="/search?s=&type[]=np"
+                >
                   NP
                 </Badge>
               )}
               {item.type === 'nc' && (
-                <Badge colorScheme="purple" borderRadius="md" as={Link} href="/search?s=&type[]=nc">
+                <Badge
+                  colorScheme="purple"
+                  borderRadius="md"
+                  as={Link}
+                  prefetch={false}
+                  href="/search?s=&type[]=nc"
+                >
                   NC
                 </Badge>
               )}
               {item.type === 'pb' && (
-                <Badge colorScheme="yellow" borderRadius="md" as={Link} href="/search?s=&type[]=pb">
+                <Badge
+                  colorScheme="yellow"
+                  borderRadius="md"
+                  as={Link}
+                  prefetch={false}
+                  href="/search?s=&type[]=pb"
+                >
                   PB
                 </Badge>
               )}
@@ -207,6 +226,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
                   colorScheme="blue"
                   borderRadius="md"
                   as={Link}
+                  prefetch={false}
                   href="/search?s=&type[]=wearable"
                 >
                   {t('General.wearable')}
@@ -217,6 +237,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
                   colorScheme="cyan"
                   borderRadius="md"
                   as={Link}
+                  prefetch={false}
                   href="/search?s=&type[]=neohome"
                 >
                   {t('General.neohome')}
@@ -227,6 +248,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
                   colorScheme="red"
                   borderRadius="md"
                   as={Link}
+                  prefetch={false}
                   href="/search?s=&type[]=battledome"
                 >
                   {t('General.battledome')}
@@ -237,6 +259,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
                   colorScheme="orange"
                   borderRadius="md"
                   as={Link}
+                  prefetch={false}
                   href="/search?s=&type[]=canEat"
                 >
                   {t('General.edible')}
@@ -247,6 +270,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
                   colorScheme="orange"
                   borderRadius="md"
                   as={Link}
+                  prefetch={false}
                   href="/search?s=&type[]=canRead"
                 >
                   {t('General.readable')}
@@ -257,6 +281,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
                   colorScheme="orange"
                   borderRadius="md"
                   as={Link}
+                  prefetch={false}
                   href="/search?s=&type[]=canPlay"
                 >
                   {t('General.playable')}

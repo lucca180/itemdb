@@ -100,6 +100,7 @@ const UserListCard = (props: Props) => {
           href={`/lists/${list.official ? 'official' : list.owner.username}/${
             list.slug ?? list.internal_id
           }${utm_content ? `?utm_content=${utm_content}` : ''}`}
+          prefetch={false}
           _hover={{ textDecoration: 'none' }}
         >
           <Flex
@@ -148,6 +149,7 @@ const UserListCard = (props: Props) => {
                 href={`/lists/${list.official ? 'official' : list.owner.username}/${
                   list.slug ?? list.internal_id
                 }${utm_content ? `?utm_content=${utm_content}` : ''}`}
+                prefetch={false}
               >
                 {list.name}
               </Link>
@@ -197,7 +199,13 @@ const UserListCard = (props: Props) => {
               </Badge>
             )}
             {list.official && (
-              <Badge as={NextLink} href="/lists/official" colorScheme="blue" variant="solid">
+              <Badge
+                as={NextLink}
+                href="/lists/official"
+                prefetch={false}
+                colorScheme="blue"
+                variant="solid"
+              >
                 ✓ {t('General.official')}
               </Badge>
             )}

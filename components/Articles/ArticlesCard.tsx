@@ -19,6 +19,7 @@ export const ArticleCard = (props: Props) => {
       <Link
         // flex={1}
         as={NextLink}
+        prefetch={false}
         href={`/articles/${article.slug}`}
         borderRadius="md"
         _hover={{
@@ -58,6 +59,7 @@ export const ArticleCard = (props: Props) => {
   return (
     <Link
       as={NextLink}
+      prefetch={false}
       display="flex"
       href={`/articles/${article.slug}`}
       p={3}
