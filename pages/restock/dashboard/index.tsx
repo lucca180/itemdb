@@ -977,13 +977,19 @@ export async function getServerSideProps(context: any): Promise<{ props: Restock
 }
 
 RestockDashboard.getLayout = function getLayout(page: ReactElement, props: any) {
+  const { locale } = props;
   const t = createTranslator({ messages: props.messages, locale: props.locale });
+
+  let canonical = 'https://itemdb.com.br/restock/dashboard';
+  if (locale && locale !== 'en') canonical = `https://itemdb.com.br/${locale}/restock/dashboard`;
+
   return (
     <Layout
       SEO={{
         title: t('Restock.neopets-restock-dashboard'),
         description: t('Restock.restock-dashboard-desc'),
         themeColor: '#66bf9c',
+        canonical: canonical,
       }}
       mainColor="#66bf9cb8"
     >

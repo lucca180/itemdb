@@ -36,7 +36,11 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 }
 
 OwlsPage.getLayout = function getLayout(page: ReactElement, props: ArticlePageProps) {
-  const { post } = props;
+  const { post, locale } = props;
+
+  let canonical = 'https://itemdb.com.br/owls/';
+  if (locale && locale !== 'en') canonical = `https://itemdb.com.br/${locale}/owls`;
+
   return (
     <Layout
       SEO={{
@@ -46,6 +50,7 @@ OwlsPage.getLayout = function getLayout(page: ReactElement, props: ArticlePagePr
         openGraph: {
           images: [{ url: post.thumbnail ?? '', width: 150, height: 150, alt: post.title }],
         },
+        canonical: canonical,
       }}
       mainColor={`${post.palette?.lightvibrant.hex ?? '#05B7E8'}6b`}
     >

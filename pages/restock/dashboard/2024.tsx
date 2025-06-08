@@ -644,12 +644,15 @@ export async function getServerSideProps(context: any) {
 
 Wrapped2024.getLayout = function getLayout(page: ReactElement, props: any) {
   const t = createTranslator({ messages: props.messages, locale: props.locale });
+  const canonical = 'https://itemdb.com.br/restock/dashboard/2024';
+
   return (
     <Layout
       SEO={{
         title: '2024 Restock Review',
         description: t('Restock.restock-dashboard-desc'),
         themeColor: '#58ab7c',
+        canonical: canonical,
       }}
       mainColor="#58ab7c"
     >

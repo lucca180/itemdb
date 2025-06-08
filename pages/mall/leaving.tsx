@@ -112,7 +112,12 @@ export async function getStaticProps(context: any) {
 }
 
 LeavingMallPage.getLayout = function getLayout(page: ReactElement, props: LeavingMallPageProps) {
+  const { locale } = props;
   const t = createTranslator({ messages: props.messages, locale: props.locale });
+
+  let canonical = 'https://itemdb.com.br/mall/leaving';
+  if (locale && locale !== 'en') canonical = `https://itemdb.com.br/${locale}/mall/leaving`;
+
   return (
     <Layout
       SEO={{
@@ -123,6 +128,7 @@ LeavingMallPage.getLayout = function getLayout(page: ReactElement, props: Leavin
           })
           ?.toString(),
         themeColor: color.hex(),
+        canonical,
       }}
       mainColor="rgba(205, 193, 255, 0.58)"
     >

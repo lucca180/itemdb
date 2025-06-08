@@ -106,11 +106,15 @@ export async function getStaticProps(context: any) {
 }
 
 TermsPage.getLayout = function getLayout(page: ReactElement) {
+  const canonical = 'https://itemdb.com.br/terms';
+
   return (
     <Layout
       SEO={{
         title: 'Terms of Use',
         description: 'This page outlines the terms of use for itemdb, its features, and API.',
+        canonical: canonical,
+        noindex: true,
       }}
       mainColor="#a5aa9fc7"
     >

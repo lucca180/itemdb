@@ -443,6 +443,12 @@ export async function getStaticProps(context: any) {
 
 ContributePage.getLayout = function getLayout(page: ReactElement, props: any) {
   const t = createTranslator({ messages: props.messages, locale: props.locale });
+
+  let canonical = 'https://itemdb.com.br/contribute';
+  if (props.locale && props.locale !== 'en') {
+    canonical = `https://itemdb.com.br/${props.locale}/contribute`;
+  }
+
   return (
     <Layout
       SEO={{
@@ -457,6 +463,7 @@ ContributePage.getLayout = function getLayout(page: ReactElement, props: any) {
             },
           ],
         },
+        canonical: canonical,
       }}
       mainColor="#4974f5c7"
     >

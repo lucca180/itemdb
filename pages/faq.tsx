@@ -211,8 +211,14 @@ export async function getStaticProps(context: any) {
 
 WhyUsPage.getLayout = function getLayout(page: ReactElement, props: any) {
   const t = createTranslator({ messages: props.messages, locale: props.locale });
+
+  let canonical = 'https://itemdb.com.br/faq';
+  if (props.locale && props.locale !== 'en') {
+    canonical = `https://itemdb.com.br/${props.locale}/faq`;
+  }
+
   return (
-    <Layout SEO={{ title: t('FAQ.frequent-asked-questions') }} mainColor="#4bbde0c7">
+    <Layout SEO={{ title: t('FAQ.frequent-asked-questions'), canonical }} mainColor="#4bbde0c7">
       {page}
     </Layout>
   );

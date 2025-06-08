@@ -190,7 +190,7 @@ NcTradeReportPage.getLayout = function getLayout(page: ReactElement, props: any)
               url: 'https://images.neopets.com/nt/ntimages/309_white_weewoo.gif',
               width: 300,
               height: 300,
-              alt: 'Faeries Festival',
+              alt: 'White Weewoo',
             },
           ],
         },

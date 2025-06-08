@@ -126,12 +126,16 @@ export async function getStaticProps(context: any) {
 }
 
 PrivacyPolicyPage.getLayout = function getLayout(page: ReactElement) {
+  const canonical = 'https://itemdb.com.br/privacy';
+
   return (
     <Layout
       SEO={{
         title: 'Privacy Policy',
         description:
           'itemdb collects some personal data during its use. Here we will detail more about how we collect, process, and use your data.',
+        canonical: canonical,
+        noindex: true,
       }}
       mainColor="#7AB92Ac7"
     >
