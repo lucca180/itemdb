@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { ItemData, OwlsPriceData } from '../../../../../types';
+import { ItemData, OwlsPriceData, User } from '../../../../../types';
 import { getItemFindAtLinks, isMissingInfo, slugify } from '../../../../../utils/utils';
 import prisma from '../../../../../utils/prisma';
-import { Prisma } from '@prisma/generated/client';
+import { Items, Prisma } from '@prisma/generated/client';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import axios from 'axios';
 import { isSameDay, isToday } from 'date-fns';
@@ -10,6 +10,7 @@ import { getSaleStats } from './saleStats';
 import requestIp from 'request-ip';
 import { redis_setItemCount } from '../../../redis/checkapi';
 import { revalidateItem } from './effects';
+import { ItemChangesLog } from '../process';
 
 const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
 const OWLS_URL = process.env.OWLS_API_URL;
@@ -47,16 +48,16 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
   if (isNaN(internal_id)) return res.status(400).json({ error: 'Invalid Request' });
 
   const itemData = req.body.itemData as ItemData;
-  const itemCats = (req.body.itemCats as string[]) ?? [];
-  const itemTags = (req.body.itemTags as string[]) ?? [];
+  // const itemCats = (req.body.itemCats as string[]) ?? [];
+  // const itemTags = (req.body.itemTags as string[]) ?? [];
 
   if (!itemData) return res.status(400).json({ error: 'Invalid Request' });
 
   if (isNaN(internal_id) || internal_id !== Number(itemData.internal_id))
     return res.status(400).json({ error: 'Invalid Request' });
-
+  let user: User | null = null;
   try {
-    const { user } = await CheckAuth(req);
+    user = (await CheckAuth(req)).user;
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
     if (user.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
@@ -70,7 +71,9 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
   const imageId = itemData.image.match(/[^\.\/]+(?=\.gif)/)?.[0] ?? undefined;
   if (!imageId) return res.status(400).json({ error: 'Invalid Request' });
 
-  const originalItem = await getItem(internal_id);
+  const originalItem = await prisma.items.findUnique({
+    where: { internal_id: internal_id },
+  });
 
   const rarity =
     (!itemData.rarity && itemData.rarity !== 0) || isNaN(Number(itemData.rarity))
@@ -149,7 +152,9 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
     },
   });
 
-  await processTags(itemTags, itemCats, internal_id);
+  await logChanges(originalItem!, item, user.id);
+
+  // await processTags(itemTags, itemCats, internal_id);
 
   await revalidateItem(item.slug!, res);
 
@@ -505,4 +510,33 @@ export const fetchOwlsData = async (
         }
       : null;
   }
+};
+
+const logChanges = async (originalItem: Items, updatedItem: Items, uid: string) => {
+  const changes: ItemChangesLog = {};
+
+  const keys = Object.keys(updatedItem) as (keyof Items)[];
+
+  for (const key of keys) {
+    const originalVal = originalItem[key];
+    const newVal = updatedItem[key];
+
+    if (typeof originalVal === 'undefined' || typeof newVal === 'undefined') continue;
+
+    if (originalVal !== newVal) {
+      changes[key] = {
+        oldVal: originalVal,
+        newVal: newVal,
+      };
+    }
+  }
+
+  await prisma.actionLogs.create({
+    data: {
+      actionType: 'itemUpdate',
+      subject_id: updatedItem.internal_id.toString(),
+      user_id: uid,
+      logData: changes,
+    },
+  });
 };

@@ -235,6 +235,8 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
       else throw 'More than one entry exists with the same name.';
     }
 
+    const changeObj = {} as ItemChangesLog;
+
     // merge the data we're missing
     let hasChange = false;
     const forceMerge = ['type', 'isNC', 'isWearable', 'status', 'est_val', 'isBD'];
@@ -307,6 +309,10 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
       }
 
       hasChange ||= dbItem[key] !== temp;
+
+      if (dbItem[key] !== temp) {
+        logChanges(changeObj, temp, dbItem[key], key);
+      }
     }
 
     // no new data
@@ -349,6 +355,8 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
       data: updatedItem,
       where: { internal_id: dbItem.internal_id },
     });
+
+    await saveLogChanges(dbItem, changeObj);
 
     return undefined;
   } catch (e: any) {
@@ -469,3 +477,31 @@ const checkPlay = (category?: string | null) =>
   allPlayCats.filter((x) => x.toLowerCase() === category?.toLowerCase()).length > 0;
 const checkRead = (category?: string | null) =>
   allBooksCats.filter((x) => x.toLowerCase() === category?.toLowerCase()).length > 0;
+
+const saveLogChanges = async (item: Item, changes: ItemChangesLog) => {
+  await prisma.actionLogs.create({
+    data: {
+      actionType: 'itemUpdate',
+      subject_id: item.internal_id.toString(),
+      user_id: 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1',
+      logData: changes,
+    },
+  });
+};
+
+export type ItemChangesLog = {
+  [key in keyof Item | keyof ItemData]?: {
+    oldVal: any;
+    newVal: any;
+  };
+};
+
+const logChanges = (
+  changeArr: ItemChangesLog,
+  oldVal: unknown,
+  newVal: unknown,
+  field: keyof Item | keyof ItemData
+) => {
+  if (!changeArr[field]) changeArr[field] = { oldVal, newVal };
+  else changeArr[field].newVal = newVal;
+};

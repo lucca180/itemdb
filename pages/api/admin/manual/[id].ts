@@ -3,10 +3,12 @@ import { CheckAuth } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
 import { ItemPrices } from '@prisma/generated/client';
 import { slugify } from '../../../../utils/utils';
+import { User } from '@types';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+  let user: User | null = null;
   try {
-    const user = (await CheckAuth(req)).user;
+    user = (await CheckAuth(req)).user;
     if (!user || !user.isAdmin) throw new Error('Unauthorized');
   } catch (e) {
     res.status(401).json({ error: 'Unauthorized' });
@@ -14,7 +16,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 
   if (req.method === 'GET') return GET(req, res);
-  if (req.method === 'POST') return POST(req, res);
+  if (req.method === 'POST') return POST(req, res, user);
 }
 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -40,7 +42,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   return res.json({ inflation, info });
 };
 
-const POST = async (req: NextApiRequest, res: NextApiResponse) => {
+const POST = async (req: NextApiRequest, res: NextApiResponse, user: User) => {
   const { type, action, checkID, correctInfo } = req.body;
   const id = req.query.id as string;
 
@@ -108,7 +110,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       return res.status(400).json({ error: 'Bad Request' });
 
     if (action === 'approve') {
-      await handleItemUpdate(Number(id), correctInfo.field, correctInfo.value);
+      await handleItemUpdate(Number(id), correctInfo.field, correctInfo.value, user);
 
       await prisma.itemProcess.updateMany({
         where: {
@@ -156,7 +158,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   return res.status(400).json({ error: 'Bad Request' });
 };
 
-const handleItemUpdate = async (id: number, field: string, value: string) => {
+const handleItemUpdate = async (id: number, field: string, value: string, user: User) => {
   let itemSlug = '';
 
   if (field === 'name') {
@@ -191,6 +193,18 @@ const handleItemUpdate = async (id: number, field: string, value: string) => {
     data: {
       [field]: value,
       slug: itemSlug || undefined,
+    },
+  });
+
+  await prisma.actionLogs.create({
+    data: {
+      subject_id: id.toString(),
+      actionType: 'conflictResolve',
+      logData: {
+        field,
+        value,
+      },
+      user_id: user.id,
     },
   });
 };
