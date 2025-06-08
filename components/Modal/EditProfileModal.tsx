@@ -240,7 +240,7 @@ const EditProfileModal = (props: EditProfileModalProps) => {
                   onChange={handleChange}
                   value={userProfile.profileImage ?? ''}
                 />
-                <FormHelperText>{t('Profile.allowedDomains')}</FormHelperText>
+                <FormHelperText fontSize={'xs'}>{t('Profile.allowedDomains')}</FormHelperText>
               </FormControl>
               <FormControl>
                 <FormLabel color="gray.300">Profile Mode</FormLabel>
@@ -253,7 +253,7 @@ const EditProfileModal = (props: EditProfileModalProps) => {
                   <option value={'default'}>Default</option>
                   <option value={'groups'}>List Groups</option>
                 </Select>
-                <FormHelperText>
+                <FormHelperText fontSize={'xs'}>
                   {t.rich('Profile.list-groups-helper', {
                     b: (children) => <b>{children}</b>,
                   })}
@@ -269,7 +269,7 @@ const EditProfileModal = (props: EditProfileModalProps) => {
                     onChangeComplete={handleColorChange}
                   />
                 </Center>
-                <FormHelperText>{t('Profile.color-helper')}</FormHelperText>
+                <FormHelperText fontSize={'xs'}>{t('Profile.color-helper')}</FormHelperText>
               </FormControl>
             </Stack>
           )}

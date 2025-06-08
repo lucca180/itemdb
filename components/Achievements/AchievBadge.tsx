@@ -1,4 +1,5 @@
-import { Tooltip, Flex, Image } from '@chakra-ui/react';
+import { Tooltip, Flex } from '@chakra-ui/react';
+import Image from '@components/Utils/Image';
 
 type AchievBadgeProps = {
   name: string;
