@@ -1,43 +1,36 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { CheckAuth } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
+import { User } from '@types';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+  let user: User | null = null;
   try {
-    const user = (await CheckAuth(req)).user;
+    user = (await CheckAuth(req)).user;
     if (!user || !user.isAdmin) throw new Error('Unauthorized');
   } catch (e) {
     res.status(401).json({ error: 'Unauthorized' });
     return;
   }
 
-  if (req.method === 'POST') return POST(req, res);
-  if (req.method === 'DELETE') return DELETE(req, res);
+  if (req.method === 'POST') return POST(req, res, user);
+  if (req.method === 'DELETE') return DELETE(req, res, user);
 }
 
-const POST = async (req: NextApiRequest, res: NextApiResponse) => {
+const POST = async (req: NextApiRequest, res: NextApiResponse, user: User) => {
   const priceID = req.query.id as string;
   const { newPrice, isInflation, item_iid, priceContext } = req.body;
   let noInflation_id = undefined;
 
-  if (isInflation === true) {
-    const prices = await prisma.itemPrices.findFirst({
-      where: {
-        item_iid: Number(item_iid),
-        noInflation_id: null,
-        internal_id: {
-          not: Number(priceID),
-        },
-      },
-      orderBy: {
-        addedAt: 'desc',
-      },
-    });
+  const originalPrice = await prisma.itemPrices.findUnique({
+    where: {
+      internal_id: Number(priceID),
+    },
+  });
 
-    if (prices) {
-      noInflation_id = prices.internal_id;
-    }
-  }
+  if (!originalPrice) return res.status(404).json({ error: 'Price not found' });
+
+  noInflation_id = originalPrice.noInflation_id;
 
   if (isInflation === false) {
     noInflation_id = null;
@@ -55,10 +48,22 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     },
   });
 
+  await prisma.actionLogs.create({
+    data: {
+      actionType: 'editPrice',
+      subject_id: item_iid.toString(),
+      logData: {
+        originalPrice,
+        updatedPrice: updated,
+      },
+      user_id: user.id,
+    },
+  });
+
   return res.json(updated);
 };
 
-const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
+const DELETE = async (req: NextApiRequest, res: NextApiResponse, user: User) => {
   const priceID = req.query.id as string;
 
   const originalPrice = await prisma.itemPrices.findUnique({
@@ -74,6 +79,15 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
   await prisma.itemPrices.delete({
     where: {
       internal_id: Number(priceID),
+    },
+  });
+
+  await prisma.actionLogs.create({
+    data: {
+      actionType: 'deletePrice',
+      subject_id: originalPrice.item_iid?.toString(),
+      logData: originalPrice,
+      user_id: user.id,
     },
   });
 
