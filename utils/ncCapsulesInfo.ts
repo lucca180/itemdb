@@ -149,6 +149,39 @@ export const capsulesInfo: CapsuleInfo = {
       text: '2015-2024',
     },
   },
+  68420: {
+    name: 'Summer Pastels Closet Essentials Mystery Capsule',
+    cat1: {
+      text: 'Essential T-Shirt',
+    },
+    cat2: {
+      text: 'Essential Long Sleeve',
+    },
+    cat3: {
+      text: 'Essential Tank Top',
+    },
+    cat4: {
+      text: 'Essential Cardigan',
+    },
+    cat5: {
+      text: 'Essential Hoodie',
+    },
+    cat6: {
+      text: 'Essential Pants',
+    },
+    cat7: {
+      text: 'Essential Shorts',
+    },
+    cat8: {
+      text: 'Essential Skirt',
+    },
+    cat9: {
+      text: 'Essential Filter',
+    },
+    cat10: {
+      text: 'Essential Background',
+    },
+  },
 };
 
 export const capInfoIds = Object.keys(capsulesInfo).map((id) => parseInt(id, 10));
