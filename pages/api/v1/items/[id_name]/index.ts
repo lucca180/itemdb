@@ -518,6 +518,7 @@ const logChanges = async (originalItem: Items, updatedItem: Items, uid: string) 
   const keys = Object.keys(updatedItem) as (keyof Items)[];
 
   for (const key of keys) {
+    if (key === 'addedAt' || key === 'updatedAt') continue;
     const originalVal = originalItem[key];
     const newVal = updatedItem[key];
 

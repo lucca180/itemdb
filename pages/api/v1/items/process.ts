@@ -254,13 +254,16 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
       if (dbItem[key] && item[key] && dbItem[key] !== item[key]) {
         // check if we're gaining info with specialType
         if (key === 'specialType') {
-          const dbArr = dbItem.specialType?.split(',') ?? [];
-          const itemArr = item.specialType?.split(',') ?? [];
+          const cleanedDb = cleanSpecialType(dbItem.specialType ?? '');
+          const cleanedItem = cleanSpecialType(item.specialType ?? '');
+
+          const dbArr = cleanedDb.split(',').map((x) => x.trim().toLowerCase());
+          const itemArr = cleanedItem.split(',').map((x) => x.trim().toLowerCase());
 
           if (dbArr.length > itemArr.length && !checker(dbArr, itemArr))
             throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
           else if (dbArr.length < itemArr.length && checker(itemArr, dbArr))
-            dbItem.specialType = item.specialType;
+            dbItem.specialType = cleanedItem;
         }
 
         // check some default values
@@ -504,4 +507,15 @@ const logChanges = (
 ) => {
   if (!changeArr[field]) changeArr[field] = { oldVal, newVal };
   else changeArr[field].newVal = newVal;
+};
+
+const cleanSpecialType = (specialType: string) => {
+  const skipTypes = ['trading', 'auctioned'];
+
+  const types = specialType
+    .split(',')
+    .map((x) => x.trim().toLowerCase())
+    .filter((x) => !skipTypes.includes(x));
+
+  return types.join(',');
 };
