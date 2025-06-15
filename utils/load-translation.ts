@@ -18,7 +18,7 @@ const _loadTranslation = async (locale: string, relativePath: string) => {
     keys: [],
     namespaces: [],
   };
-
+  if (process.env.NODE_ENV === 'development') return;
   try {
     [translations, treeshake] = (await Promise.all([
       import(`../translation/${locale}.json`),
