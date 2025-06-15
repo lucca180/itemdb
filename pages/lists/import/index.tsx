@@ -486,7 +486,7 @@ const ImportItems = (props: ImportItemsProps) => {
           </HStack>
           <Flex bg="whiteAlpha.300" p={3} borderRadius={'md'} maxW="1000px" my={3}>
             <Text fontSize={'sm'} textAlign={'center'}>
-              {t.rich('LIsts.adv-import-cta', {
+              {t.rich('Lists.adv-import-cta', {
                 b: (chunk) => <b>{chunk}</b>,
                 Link: (chunk) => (
                   <Link as={NextLink} prefetch={false} href={'/lists/import/advanced'}>
@@ -650,7 +650,7 @@ const ImportInfo = () => {
       <Flex bg="whiteAlpha.300" p={3} borderRadius={'md'} maxW="1000px" my={3}>
         <Text>
           <Badge colorScheme="green">{t('Layout.new')}</Badge> -{' '}
-          {t.rich('LIsts.adv-import-cta', {
+          {t.rich('Lists.adv-import-cta', {
             b: (chunk) => <b>{chunk}</b>,
             Link: (chunk) => (
               <Link as={NextLink} prefetch={false} href={'/lists/import/advanced'}>

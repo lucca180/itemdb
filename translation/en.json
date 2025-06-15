@@ -126,7 +126,7 @@
     "nc-trade": "NC Trade",
     "seeking": "Seeking",
     "trading": "Trading",
-    "owls-trades": "Reported Trades",
+    "owls-trades": "Trades History",
     "owls-value": "Owls Value",
     "buyable": "Buyable",
     "list-name": "List Name",
@@ -613,7 +613,8 @@
     "can-be-linked": "Can be Linked?",
     "can-be-linked-help": "This will allow other users to create a dynamic clone of this list. Learn more on <Link>Linked Lists</Link>",
     "group-tag": "Group Tag",
-    "group-tag-help": "This can be used for grouping lists in your profile by selecting Group Mode in your profile settings"
+    "group-tag-help": "This can be used for grouping lists in your profile by selecting Group Mode in your profile settings",
+    "adv-import-cta": "You can also import your lists from other sites such as <b>Dress To Impress</b> and <b>JN</b> using our <Link>Petpage Importer</Link>"
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",
@@ -1124,8 +1125,8 @@
     "add-item": "Add Item",
     "you-offered": "You Offered",
     "you-received": "You Received",
-    "report-owls-trade": "Owls - Report Trade",
-    "description": "Report your NC Trades easily with itemdb and help Owls to stay up to date!",
+    "report-owls-trade": "Report Neocash Trades",
+    "description": "Report your Neocash Trades easily with itemdb and help our Value Guide to stay up to date!",
     "faq-1": "What is a Personal Value?",
     "faq-2": "Personal values (PVs) are numerical whole numbers that are used to describe <b>your</b> opinion on the value of an item. You can check <Link>/~PersonalValues</Link> to see a full guide about Personal Values...",
     "faq-3": "How to get a Personal Value?",
@@ -1147,9 +1148,6 @@
     "x-caps": "{x} caps",
     "based-on-x-trades": "based on <b>{x} trade reports</b>",
     "avg-value-disclaimer": "* Average Value is a currently a test. Please be mindful when using this value as your trade value as it may not be accurate. Please report any issues using the Feedback button across the site"
-  },
-  "LIsts": {
-    "adv-import-cta": "You can also import your lists from other sites such as <b>Dress To Impress</b> and <b>JN</b> using our <Link>Petpage Importer</Link>"
   },
   "Calculator": {
     "pricing-calculator": "Price Calculator",

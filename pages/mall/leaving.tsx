@@ -6,7 +6,7 @@ import { ReactElement, useMemo } from 'react';
 import { ItemData, NCMallData } from '../../types';
 import ItemCard from '../../components/Items/ItemCard';
 import { IconLink } from '../../components/Utils/IconLink';
-import { getNCMallData, getNCMallItemsData } from '../api/v1/ncmall';
+import { getNCMallData, getNCMallItemsData } from '../api/v1/mall';
 import { loadTranslation } from '@utils/load-translation';
 
 type LeavingMallPageProps = {

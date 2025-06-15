@@ -4,9 +4,7 @@ import prisma from '../../../../utils/prisma';
 import {
   faerielandShops,
   getDateNST,
-  getItemFindAtLinks,
   halloweenShops,
-  isMissingInfo,
   tyrannianShops,
 } from '../../../../utils/utils';
 import { ItemData, SearchFilters } from '../../../../types';
@@ -16,10 +14,9 @@ import qs from 'qs';
 import { parseFilters } from '../../../../utils/parseFilters';
 import requestIp from 'request-ip';
 import { redis_setItemCount } from '../../redis/checkapi';
+import { rawToItemData } from '../items/many';
 
 const ENV_FUZZY_SEARCH = process.env.HAS_FUZZY_SEARCH === 'true';
-
-const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET' || !req.url)
@@ -429,7 +426,7 @@ export async function doSearch(
         SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, 
         b.rgb_g, b.rgb_b, b.hex, b.hsv_h, b.hsv_s, b.hsv_v, f.dist,
         c.addedAt as priceAdded, c.price, c.noInflation_id, 
-        d.pricedAt as owlsPriced, d.value as owlsValue, d.valueMin as owlsValueMin,
+        d.addedAt as ncValueAddedAt, d.minValue, d.maxValue, d.valueRange,
         s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded,
         n.price as ncPrice, n.saleBegin, n.saleEnd, n.discountBegin, n.discountEnd, n.discountPrice
         FROM Items as a
@@ -441,7 +438,7 @@ export async function doSearch(
             ) as f on a.image_id = f.image_id
         LEFT JOIN ItemColor as b on a.image_id = b.image_id and (POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) = f.dist
         LEFT JOIN ItemPrices as c on c.item_iid = a.internal_id and c.isLatest = 1
-        LEFT JOIN OwlsPrice as d on d.item_iid = a.internal_id and d.isLatest = 1
+        LEFT JOIN ncValues as d on d.item_iid = a.internal_id and d.isLatest = 1
         LEFT JOIN SaleStats as s on s.item_iid = a.internal_id and s.isLatest = 1 and s.stats != "unknown"
         LEFT JOIN NcMallData as n on n.item_iid = a.internal_id and n.active = 1
       ) as temp
@@ -485,7 +482,7 @@ export async function doSearch(
       SELECT ${!onlyStats ? Prisma.sql`*` : Prisma.sql`1`} ${statsQuery} FROM (
         SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex, b.hsv_h, b.hsv_s, b.hsv_v,
           c.addedAt as priceAdded, c.price, c.noInflation_id, 
-          d.pricedAt as owlsPriced, d.value as owlsValue, d.valueMin as owlsValueMin,
+          d.addedAt as ncValueAddedAt, d.minValue, d.maxValue, d.valueRange,
           s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded,
           n.price as ncPrice, n.saleBegin, n.saleEnd, n.discountBegin, n.discountEnd, n.discountPrice
           ${colorSql_inside ? Prisma.sql`, ${colorSql_inside} as dist` : Prisma.empty}
@@ -500,7 +497,7 @@ export async function doSearch(
           colorSql_inside ? Prisma.sql`and b.population > 0` : Prisma.empty
         }
         LEFT JOIN itemPrices as c on c.item_iid = a.internal_id and c.isLatest = 1
-        LEFT JOIN OwlsPrice as d on d.item_iid = a.internal_id and d.isLatest = 1
+        LEFT JOIN ncValues as d on d.item_iid = a.internal_id and d.isLatest = 1
         LEFT JOIN SaleStats as s on s.item_iid = a.internal_id and s.isLatest = 1 and s.stats != "unknown"
         LEFT JOIN NcMallData as n on n.item_iid = a.internal_id and n.active = 1
         ${
@@ -566,94 +563,7 @@ export async function doSearch(
 
   const filteredResult = onlyStats ? [] : resultRaw;
 
-  const itemList: ItemData[] = filteredResult.map((result: any) => {
-    const item: ItemData = {
-      internal_id: result.internal_id,
-      canonical_id: result.canonical_id ?? null,
-      image: result.image ?? '',
-      image_id: result.image_id ?? '',
-      cacheHash: result.imgCacheOverride ?? null,
-      item_id: result.item_id,
-      rarity: result.rarity,
-      name: result.name,
-      type: result.type,
-      // specialType: result.specialType,
-      isNC: !!result.isNC,
-      isBD: !!result.isBD,
-      estVal: result.est_val,
-      weight: result.weight,
-      description: result.description ?? '',
-      category: result.category,
-      status: result.status,
-      isNeohome: !!result.isNeohome,
-      isWearable: !!result.isWearable,
-      firstSeen:
-        (result.item_id >= 85020 && result.type !== 'pb'
-          ? new Date(result.addedAt).toJSON()
-          : null) ?? null,
-      color: {
-        hsv: [result.hsv_h, result.hsv_s, result.hsv_v],
-        rgb: [result.rgb_r, result.rgb_g, result.rgb_b],
-        lab: [result.lab_l, result.lab_a, result.lab_b],
-        hex: result.hex,
-        type: 'vibrant',
-        population: result.population,
-      },
-      findAt: getItemFindAtLinks(result),
-      isMissingInfo: false,
-      price:
-        result.status.toLowerCase() === 'no trade'
-          ? { value: null, addedAt: null, inflated: false }
-          : {
-              value: result.price ? result.price.toNumber() : null,
-              addedAt: result.priceAdded?.toJSON() ?? null,
-              inflated: !!result.noInflation_id,
-            },
-      // owls: result.owlsValue
-      //   ? {
-      //       value: result.owlsValue,
-      //       pricedAt: result.owlsPriced.toJSON(),
-      //       valueMin: result.owlsValueMin,
-      //       buyable: result.owlsValue.toLowerCase().includes('buyable'),
-      //     }
-      //   : null,
-      owls: null,
-      comment: result.comment ?? null,
-      slug: result.slug ?? null,
-      saleStatus:
-        result.totalSold && !DISABLE_SALE_STATS
-          ? {
-              sold: result.totalSold,
-              total: result.totalItems,
-              percent: Math.round((result.totalSold / result.totalItems) * 100),
-              status: result.stats,
-              type: result.daysPeriod,
-              addedAt: result.saleAdded.toJSON(),
-            }
-          : null,
-      useTypes: {
-        canEat: result.canEat,
-        canRead: result.canRead,
-        canOpen: result.canOpen,
-        canPlay: result.canPlay,
-      },
-      mallData: !result.ncPrice
-        ? null
-        : {
-            price: result.ncPrice,
-            saleBegin: result.saleBegin ? result.saleBegin.toJSON() : null,
-            saleEnd: result.saleEnd ? result.saleEnd.toJSON() : null,
-            discountBegin: result.discountBegin ? result.discountBegin.toJSON() : null,
-            discountEnd: result.discountEnd ? result.discountEnd.toJSON() : null,
-            discountPrice: result.discountPrice,
-          },
-    };
-
-    item.findAt = getItemFindAtLinks(item); // does have all the info we need :)
-    item.isMissingInfo = isMissingInfo(item);
-
-    return item;
-  });
+  const itemList: ItemData[] = filteredResult.map((result: any) => rawToItemData(result));
 
   return {
     content: itemList,

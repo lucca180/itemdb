@@ -20,7 +20,8 @@ export type ItemData = {
   isMissingInfo: boolean;
   price: ItemPriceData;
   saleStatus: SaleStatus | null;
-  owls: OwlsPriceData | null;
+  ncValue: NCValue | null;
+  owls?: OwlsPriceData | null;
   slug: string | null;
   comment: string | null;
   canonical_id: number | null;
@@ -615,6 +616,13 @@ export type NCTradeItem = {
   itemName: string;
   personalValue: string;
   quantity: number;
+};
+
+export type NCValue = {
+  minValue: number;
+  maxValue: number;
+  range: string;
+  addedAt: string;
 };
 
 // ------- DTI -------- //

@@ -23,7 +23,7 @@ import { useAuth } from '../../utils/auth';
 import { CheckAuth } from '../../utils/googleCloud';
 import { loadTranslation } from '@utils/load-translation';
 
-const defaultItem: ItemData = {
+const defaultItem: Partial<ItemData> = {
   internal_id: -1,
   canonical_id: null,
   item_id: null,
@@ -46,7 +46,6 @@ const defaultItem: ItemData = {
   isMissingInfo: true,
   slug: null,
   comment: null,
-  owls: null,
   price: null as any,
   color: null as any,
   findAt: null as any,
@@ -64,7 +63,7 @@ const defaultItem: ItemData = {
 const CreateItem = () => {
   const toast = useToast();
   const { user, authLoading, getIdToken } = useAuth();
-  const [item, setItem] = useState<ItemData>(defaultItem);
+  const [item, setItem] = useState<Partial<ItemData>>(defaultItem);
   const [tags, setTags] = useState<string[]>([]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -243,7 +242,11 @@ const CreateItem = () => {
         </TabList>
         <TabPanels>
           <TabPanel>
-            <InfoTab item={item} itemProps={defaultItem} onChange={handleChange} />
+            <InfoTab
+              item={item as ItemData}
+              itemProps={defaultItem as ItemData}
+              onChange={handleChange}
+            />
           </TabPanel>
           <TabPanel>
             <CategoriesTab
@@ -251,7 +254,7 @@ const CreateItem = () => {
               tags={tags}
               onSelectChange={() => {}}
               item={item as ItemData}
-              itemProps={defaultItem}
+              itemProps={defaultItem as ItemData}
               onChange={handleTagsChange}
             />
           </TabPanel>

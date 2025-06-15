@@ -13,7 +13,7 @@ import NextLink from 'next/link';
 import Color from 'color';
 import { getTrendingItems, getTrendingLists } from './api/v1/beta/trending';
 import { createTranslator, useFormatter, useTranslations } from 'next-intl';
-import { getNCMallItemsData } from './api/v1/ncmall';
+import { getNCMallItemsData } from './api/v1/mall';
 import { getLatestItems } from './api/v1/items';
 import { getLatestPricedItems } from './api/v1/prices';
 import { NextPageWithLayout } from './_app';

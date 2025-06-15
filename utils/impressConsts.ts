@@ -232,6 +232,16 @@ query($itemNames: [String!]!, $species: ID, $color: ID) {
   FRAGMENT_PET_APPEARANCE +
   FRAGMENT_ITEM_APPEARANCE;
 
+export const GET_ITEM_RATIOS_BY_NAME = `
+  query($itemName: String!) {
+    itemByName(name: $itemName) {
+      id
+      name
+      numUsersSeekingThis
+      numUsersOfferingThis
+}}
+`;
+
 // API RESPONSES //
 
 export const DTI_ALL_ZONES =

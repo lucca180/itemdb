@@ -23,3 +23,5 @@ pages/api/_dev
 
 prisma/generated
 translation/tree-shake/
+
+itemDataExtractor-admin.user.js

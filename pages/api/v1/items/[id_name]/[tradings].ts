@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { ItemAuctionData, ItemRestockData, TradeData } from '../../../../../types';
+import { ItemAuctionData, ItemRestockData, OwlsTrade, TradeData } from '../../../../../types';
 import prisma from '../../../../../utils/prisma';
 import { getManyItems } from '../many';
 import { CheckAuth } from '../../../../../utils/googleCloud';
@@ -155,11 +155,11 @@ const getTradeData = async (name: string, onlyPriced = false) => {
   };
 };
 
-const getOwlsTradeData = async (name: string) => {
+export const getOwlsTradeData = async (name: string) => {
   try {
     const res = await axios.get(OWLS_URL + '/itemdata/profile/' + encodeURIComponent(name));
 
-    if (res.data?.trade_reports) return res.data.trade_reports;
+    if (res.data?.trade_reports) return res.data.trade_reports as OwlsTrade[];
     else return [];
   } catch (e) {
     return [];

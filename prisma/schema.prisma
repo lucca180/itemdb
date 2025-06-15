@@ -74,6 +74,7 @@ model Items {
   DataCollecting        DataCollecting[]
   PetpetColors          PetpetColors[]
   NCTradeItems          ncTradeItems[]
+  ncValues              ncValues[]
 
   @@index([name, image_id])
   @@index([image_id])
@@ -778,6 +779,26 @@ enum ncTradeItemType {
   received
 
   @@map("NCTradeItemType")
+}
+
+model ncValues {
+  value_id   Int    @id @default(autoincrement())
+  item_iid   Int
+  item       Items  @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+  valueRange String
+  minValue   Int
+  maxValue   Int
+
+  addedAt         DateTime
+  processedAt     DateTime? @default(now())
+  lastChangeCheck DateTime? @default(now())
+
+  valueContext Json?
+
+  isLatest Boolean?
+
+  @@unique([item_iid, isLatest])
+  @@index([item_iid, addedAt])
 }
 
 // -------- DISMANTLING PRICE PROCESS --------- //

@@ -147,7 +147,7 @@ const NCTrade = (props: Props) => {
           </ButtonGroup>
         </Flex>
         <Flex flex={1} flexFlow={{ base: 'column', md: 'row' }} gap={3}>
-          {item.owls && (
+          {/* {item.owls && (
             <Badge
               colorScheme="purple"
               fontSize="xs"
@@ -169,7 +169,7 @@ const NCTrade = (props: Props) => {
                 </StatLabel>
               </Stat>
             </Badge>
-          )}
+          )} */}
           <Flex flexFlow="column" flex="1" overflow="hidden">
             <Flex justifyContent="center" alignItems={'center'} gap={3}>
               {tableType !== 'owlsTrading' && (

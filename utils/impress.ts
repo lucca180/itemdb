@@ -10,6 +10,7 @@ import {
 import {
   DTI_ALL_COLORS,
   GET_ITEM_PREVIEW_BY_NAME,
+  GET_ITEM_RATIOS_BY_NAME,
   GET_ITEMS_PREVIEW_BY_NAME,
   GET_PET_APPEARANCE_ANY_POSE,
 } from './impressConsts';
@@ -18,7 +19,7 @@ const chance = new Chance();
 
 const request = Axios.create({
   baseURL: 'https://impress-2020.openneo.net/api/',
-  timeout: 10000,
+  timeout: 15000,
   headers: {
     'accept-encoding': '*',
     'User-Agent': 'itemdb/1.0 (+https://itemdb.com.br)',
@@ -68,6 +69,16 @@ export class dti {
 
     return res.itemByName as DTIItemPreview & {
       compatibleBodiesAndTheirZones: DTIBodiesAndTheirZones[];
+    };
+  }
+
+  public static async fetchRatiosByName(itemName: string) {
+    const res = await dti._query(GET_ITEM_RATIOS_BY_NAME, { itemName: itemName });
+    return res.itemByName as {
+      id: number;
+      name: string;
+      numUsersSeekingThis: number;
+      numUsersOfferingThis: number;
     };
   }
 

@@ -76,8 +76,8 @@ const NcTradeReportPage = (props: NcTradeReportPageProps) => {
               },
               {
                 position: 2,
-                name: 'Owls',
-                item: '/owls',
+                name: 'Mall',
+                item: '/mall',
               },
               {
                 position: 3,
@@ -298,7 +298,7 @@ const NCTradeReportCard = (props: NCTradeReportProps) => {
   const submitTrade = async () => {
     setIsLoading(true);
     try {
-      const res = await axios.post('/api/v1/items/owls', { offered, received, notes, date });
+      const res = await axios.post('/api/v1/mall/report', { offered, received, notes, date });
 
       if (res.status === 200) {
         goToNext();

@@ -9,6 +9,7 @@ import requestIp from 'request-ip';
 import { redis_setItemCount } from '../../redis/checkapi';
 
 const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
+const ENABLE_IDB_VALUES = process.env.ENABLE_IDB_VALUES === 'true';
 
 export const config = {
   api: {
@@ -103,13 +104,13 @@ export const getManyItems = async (
     SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex,
       b.hsv_h, b.hsv_s, b.hsv_v,
       c.addedAt as priceAdded, c.price, c.noInflation_id, 
-      d.pricedAt as owlsPriced, d.value as owlsValue, d.valueMin as owlsValueMin,
+      d.addedAt as ncValueAddedAt, d.minValue, d.maxValue, d.valueRange,
       s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded,
       n.price as ncPrice, n.saleBegin, n.saleEnd, n.discountBegin, n.discountEnd, n.discountPrice
     FROM Items as a
     LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
     LEFT JOIN ItemPrices as c on c.item_iid = a.internal_id and c.isLatest = 1
-    LEFT JOIN OwlsPrice as d on d.item_iid = a.internal_id and d.isLatest = 1
+    LEFT JOIN ncValues as d on d.item_iid = a.internal_id and d.isLatest = 1
     LEFT JOIN SaleStats as s on s.item_iid = a.internal_id and s.isLatest = 1 and s.stats != "unknown"
     LEFT JOIN NcMallData as n on n.item_iid = a.internal_id and n.active = 1
     WHERE ${query}
@@ -121,89 +122,7 @@ export const getManyItems = async (
   const items: { [identifier: string]: ItemData } = {};
 
   for (const result of resultRaw) {
-    const x: ItemData = {
-      internal_id: result.internal_id,
-      canonical_id: result.canonical_id ?? null,
-      image: result.image,
-      image_id: result.image_id,
-      cacheHash: result.imgCacheOverride ?? null,
-      item_id: result.item_id,
-      rarity: result.rarity,
-      name: result.name,
-      // specialType: result.specialType,
-      isNC: !!result.isNC,
-      isBD: !!result.isBD,
-      type: result.type,
-      estVal: result.est_val,
-      weight: result.weight,
-      description: result.description ?? '',
-      status: result.status,
-      category: result.category,
-      isNeohome: !!result.isNeohome,
-      isWearable: !!result.isWearable,
-      firstSeen:
-        (result.item_id >= 85020 && result.type !== 'pb'
-          ? new Date(result.addedAt).toJSON()
-          : null) ?? null,
-      color: {
-        hsv: [result.hsv_h, result.hsv_s, result.hsv_v],
-        rgb: [result.rgb_r, result.rgb_g, result.rgb_b],
-        lab: [result.lab_l, result.lab_a, result.lab_b],
-        hex: result.hex,
-        type: 'vibrant',
-        population: result.population,
-      },
-      findAt: getItemFindAtLinks(result), // doesnt have all the info we need :(
-      isMissingInfo: false,
-      price:
-        result.status.toLowerCase() === 'no trade'
-          ? { value: null, addedAt: null, inflated: false }
-          : {
-              value: result.price ? result.price.toNumber() : null,
-              addedAt: (result.priceAdded as Date | null)?.toJSON() ?? null,
-              inflated: !!result.noInflation_id,
-            },
-      // owls: result.owlsValue
-      //   ? {
-      //       value: result.owlsValue,
-      //       pricedAt: result.owlsPriced?.toJSON() ?? null,
-      //       valueMin: result.owlsValueMin,
-      //       buyable: result.owlsValue.toLowerCase().includes('buyable'),
-      //     }
-      //   : null,
-      owls: null,
-      comment: result.comment ?? null,
-      slug: result.slug ?? null,
-      saleStatus:
-        result.totalSold && !DISABLE_SALE_STATS
-          ? {
-              sold: result.totalSold,
-              total: result.totalItems,
-              percent: Math.round((result.totalSold / result.totalItems) * 100),
-              status: result.stats,
-              type: result.daysPeriod,
-              addedAt: result.saleAdded.toJSON(),
-            }
-          : null,
-      useTypes: {
-        canEat: result.canEat,
-        canRead: result.canRead,
-        canOpen: result.canOpen,
-        canPlay: result.canPlay,
-      },
-      mallData: !result.ncPrice
-        ? null
-        : {
-            price: result.ncPrice,
-            saleBegin: result.saleBegin ? result.saleBegin.toJSON() : null,
-            saleEnd: result.saleEnd ? result.saleEnd.toJSON() : null,
-            discountBegin: result.discountBegin ? result.discountBegin.toJSON() : null,
-            discountEnd: result.discountEnd ? result.discountEnd.toJSON() : null,
-            discountPrice: result.discountPrice,
-          },
-    };
-    x.findAt = getItemFindAtLinks(x); // does have all the info we need :)
-    x.isMissingInfo = isMissingInfo(x);
+    const x: ItemData = rawToItemData(result);
 
     if (id) items[result.internal_id] = x;
     else if (item_id) items[result.item_id] = x;
@@ -223,4 +142,95 @@ export type FindManyQuery = {
   image_id?: string[];
   name?: string[];
   slug?: string[];
+};
+
+export const rawToItemData = (raw: any): ItemData => {
+  const result = raw as any;
+
+  const item: ItemData = {
+    internal_id: result.internal_id,
+    canonical_id: result.canonical_id ?? null,
+    image: result.image,
+    image_id: result.image_id,
+    cacheHash: result.imgCacheOverride ?? null,
+    item_id: result.item_id,
+    rarity: result.rarity,
+    name: result.name,
+    // specialType: result.specialType,
+    isNC: !!result.isNC,
+    isBD: !!result.isBD,
+    type: result.type,
+    estVal: result.est_val,
+    weight: result.weight,
+    description: result.description ?? '',
+    status: result.status,
+    category: result.category,
+    isNeohome: !!result.isNeohome,
+    isWearable: !!result.isWearable,
+    firstSeen:
+      (result.item_id >= 85020 && result.type !== 'pb'
+        ? new Date(result.addedAt).toJSON()
+        : null) ?? null,
+    color: {
+      hsv: [result.hsv_h, result.hsv_s, result.hsv_v],
+      rgb: [result.rgb_r, result.rgb_g, result.rgb_b],
+      lab: [result.lab_l, result.lab_a, result.lab_b],
+      hex: result.hex,
+      type: 'vibrant',
+      population: result.population,
+    },
+    findAt: getItemFindAtLinks(result), // doesnt have all the info we need :(
+    isMissingInfo: false,
+    price:
+      result.status.toLowerCase() === 'no trade'
+        ? { value: null, addedAt: null, inflated: false }
+        : {
+            value: result.price ? result.price.toNumber() : null,
+            addedAt: (result.priceAdded as Date | null)?.toJSON() ?? null,
+            inflated: !!result.noInflation_id,
+          },
+    ncValue:
+      ENABLE_IDB_VALUES && result.valueRange
+        ? {
+            minValue: result.minValue,
+            maxValue: result.maxValue,
+            range: result.valueRange,
+            addedAt: result.ncValueAddedAt.toJSON(),
+          }
+        : null,
+    comment: result.comment ?? null,
+    slug: result.slug ?? null,
+    saleStatus:
+      result.totalSold && !DISABLE_SALE_STATS
+        ? {
+            sold: result.totalSold,
+            total: result.totalItems,
+            percent: Math.round((result.totalSold / result.totalItems) * 100),
+            status: result.stats,
+            type: result.daysPeriod,
+            addedAt: result.saleAdded.toJSON(),
+          }
+        : null,
+    useTypes: {
+      canEat: result.canEat,
+      canRead: result.canRead,
+      canOpen: result.canOpen,
+      canPlay: result.canPlay,
+    },
+    mallData: !result.ncPrice
+      ? null
+      : {
+          price: result.ncPrice,
+          saleBegin: result.saleBegin ? result.saleBegin.toJSON() : null,
+          saleEnd: result.saleEnd ? result.saleEnd.toJSON() : null,
+          discountBegin: result.discountBegin ? result.discountBegin.toJSON() : null,
+          discountEnd: result.discountEnd ? result.discountEnd.toJSON() : null,
+          discountPrice: result.discountPrice,
+        },
+  };
+
+  item.findAt = getItemFindAtLinks(item); // does have all the info we need :)
+  item.isMissingInfo = isMissingInfo(item);
+
+  return item;
 };

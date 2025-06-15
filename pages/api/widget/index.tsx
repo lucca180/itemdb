@@ -5,7 +5,7 @@ import { Widget } from '../../../components/Widget/Widget';
 import { getLatestPricedItems } from '../v1/prices';
 import { ItemData } from '../../../types';
 import { getTrendingItems } from '../v1/beta/trending';
-import { getNCMallItemsData } from '../v1/ncmall';
+import { getNCMallItemsData } from '../v1/mall';
 import { getListItems } from '../v1/lists/[username]/[list_id]/itemdata';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

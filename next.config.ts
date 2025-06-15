@@ -109,6 +109,11 @@ const nextConfig: NextConfig = {
         destination: '/mall/report/',
         permanent: true,
       },
+      {
+        source: '/api/v1/ncmall/:slug*',
+        destination: '/api/v1/mall/:slug*',
+        permanent: true,
+      },
     ];
   },
   transpilePackages: ['lightweight-charts', 'fancy-canvas'],

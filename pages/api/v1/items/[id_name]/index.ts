@@ -11,9 +11,12 @@ import requestIp from 'request-ip';
 import { redis_setItemCount } from '../../../redis/checkapi';
 import { revalidateItem } from './effects';
 import { ItemChangesLog } from '../process';
+import { rawToItemData } from '../many';
+import { getNCValue } from '../../mall/[iid]';
 
 const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
 const OWLS_URL = process.env.OWLS_API_URL;
+const ENABLE_IDB_VALUES = process.env.ENABLE_IDB_VALUES === 'true';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -213,71 +216,10 @@ export const getItem = async (id_name: number | string) => {
 
   const result = resultRaw[0];
 
-  const item: ItemData = {
-    internal_id: result.internal_id,
-    canonical_id: result.canonical_id ?? null,
-    image: result.image,
-    image_id: result.image_id,
-    cacheHash: result.imgCacheOverride ?? null,
-    item_id: result.item_id,
-    rarity: result.rarity,
-    name: result.name,
-    isNC: !!result.isNC,
-    isBD: !!result.isBD,
-    type: result.type,
-    estVal: result.est_val,
-    weight: result.weight,
-    description: result.description ?? '',
-    status: result.status,
-    category: result.category,
-    isNeohome: !!result.isNeohome,
-    isWearable: !!result.isWearable,
-    firstSeen:
-      (result.item_id >= 85020 && result.type !== 'pb'
-        ? new Date(result.addedAt).toJSON()
-        : null) ?? null,
-    color: {
-      hsv: [result.hsv_h, result.hsv_s, result.hsv_v],
-      rgb: [result.rgb_r, result.rgb_g, result.rgb_b],
-      lab: [result.lab_l, result.lab_a, result.lab_b],
-      hex: result.hex,
-      type: 'vibrant',
-      population: result.population,
-    },
-    findAt: getItemFindAtLinks(result), // doesnt have all the info we need :(
-    isMissingInfo: false,
-    price:
-      result.status.toLowerCase() === 'no trade'
-        ? { value: null, addedAt: null, inflated: false }
-        : {
-            value: result.price ? result.price.toNumber() : null,
-            addedAt: (result.priceAdded as Date | null)?.toJSON() ?? null,
-            inflated: !!result.noInflation_id,
-          },
-    owls: null,
-    comment: result.comment ?? null,
-    slug: result.slug ?? null,
-    saleStatus: null,
-    useTypes: {
-      canEat: result.canEat,
-      canRead: result.canRead,
-      canOpen: result.canOpen,
-      canPlay: result.canPlay,
-    },
-    mallData: !result.ncPrice
-      ? null
-      : {
-          price: result.ncPrice,
-          saleBegin: result.saleBegin ? result.saleBegin.toJSON() : null,
-          saleEnd: result.saleEnd ? result.saleEnd.toJSON() : null,
-          discountBegin: result.discountBegin ? result.discountBegin.toJSON() : null,
-          discountEnd: result.discountEnd ? result.discountEnd.toJSON() : null,
-          discountPrice: result.discountPrice,
-        },
-  };
+  const item: ItemData = rawToItemData(result);
 
-  // if (item.isNC && item.status !== 'no trade' && item.isWearable)
-  // item.owls = await fetchOwlsData(item.name, item);
+  if (item.isNC && item.status !== 'no trade' && ENABLE_IDB_VALUES)
+    item.ncValue = await getNCValue(item.internal_id, item.name, 7, false);
 
   if (!DISABLE_SALE_STATS && item.price.value && item.price.addedAt)
     item.saleStatus = await getSaleStats(item.internal_id, 15, new Date(item.price.addedAt));
