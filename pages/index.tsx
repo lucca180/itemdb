@@ -322,10 +322,7 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
   ] = await Promise.all([
     getLatestItems(20, true).catch(() => []),
     getLatestItems(18, true, true).catch(() => []),
-    wp_getLatestPosts(5).catch((e) => {
-      console.error(e);
-      return [];
-    }),
+    wp_getLatestPosts(5).catch(() => []),
     getTrendingItems(20).catch(() => []),
     getNCMallItemsData(20).catch(() => []),
     getLatestPricedItems(16, true).catch(() => ({

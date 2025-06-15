@@ -2,6 +2,7 @@ import { initializeApp, getApp, getApps } from 'firebase/app';
 
 const isProd = process.env.NODE_ENV === 'production';
 
+// firebaseConfig -> replace with your Firebase project configuration
 const firebaseConfig = {
   apiKey: isProd
     ? process.env.NEXT_PUBLIC_FIREBASE_KEY_PROD
