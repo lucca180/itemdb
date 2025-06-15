@@ -116,6 +116,15 @@ RawDataPage.getLayout = function getLayout(page: ReactElement) {
 
 const rawExportData = [
   {
+    name: "itemdb's db dump",
+    description:
+      "A dump of itemdb's database, including items, colors and prices. Useful if you want to run your own clone of itemdb.",
+    date: '2025-06-15',
+    size: '90MB',
+    format: 'zip, sql',
+    link: 'http://cdn.itemdb.com.br/raw/itemdb-dump-2025-06-15.zip',
+  },
+  {
     name: "itemdb's Item Data",
     description: "A dump of all items in itemdb's database. Does not include prices or other data.",
     date: '2024-04-14',
