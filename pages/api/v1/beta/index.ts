@@ -80,7 +80,13 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
     itemsTotalCount,
     tradeQueueCount,
     feedbackVotingCount,
-  ] = await Promise.all([itemProcess, itemsMissingInfo, itemsTotal, tradeQueueRaw, feedbackVoting]);
+  ] = await Promise.all([
+    itemProcess.catch(() => 0),
+    itemsMissingInfo.catch(() => 0),
+    itemsTotal.catch(() => 0),
+    tradeQueueRaw.catch(() => [{ count: 0 }]),
+    feedbackVoting.catch(() => 0),
+  ]);
 
   return res.status(200).json({
     itemToProcess: itemToProcessCount,

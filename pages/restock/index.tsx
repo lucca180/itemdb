@@ -249,7 +249,7 @@ const RestockHub: NextPageWithLayout<any> = (props: RestockHubProps) => {
 export default RestockHub;
 
 export async function getStaticProps(context: any) {
-  const popularShops = await getTrendingShops(4);
+  const popularShops = await getTrendingShops(4).catch(() => []);
 
   return {
     props: {
