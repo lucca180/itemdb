@@ -122,7 +122,7 @@ const rawExportData = [
     date: '2025-06-15',
     size: '90MB',
     format: 'zip, sql',
-    link: 'http://cdn.itemdb.com.br/raw/itemdb-dump-2025-06-15.zip',
+    link: 'https://cdn.itemdb.com.br/raw/itemdb-dump-2025-06-15.zip',
   },
   {
     name: "itemdb's Item Data",
