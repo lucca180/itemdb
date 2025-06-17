@@ -23,10 +23,10 @@ With all set, run `npx prisma migrate dev` to sync itemdb schema with your MySQL
 
 But it will be empty :(
 
-We have a handy db dump available at [Public Data](https://itemdb.com.br/pt/public-data) page that you can use to import to your local database.
+We have a handy db dump available at [Public Data](https://itemdb.com.br/public-data) page that you can use to import to your local database.
 
 ### Tips
 
-- When importing the dump, be sure to skip foreign key checks to prevent errors. Also the correct order should be `items`, `itemcolors`, `itemprices`
-- If you try to login, the login url will be on your node console output. You can then change your user to admin in the database to gain some superpowers.
-- If you want to test something that isn't disclosed you can reach us via [Feedback](https://itemdb.com.br/pt/feedback)
+- When importing the dump, be sure to skip foreign key checks to prevent errors. Also the correct order should be `items` -> `itemcolors` -> `itemprices`
+- If you try to login, the login url will be on your node console output. You can then change your user type to admin in the database to gain some superpowers.
+- If you want to test something that isn't disclosed here you can reach us via [Feedback](https://itemdb.com.br/feedback)
