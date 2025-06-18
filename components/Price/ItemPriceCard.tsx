@@ -313,6 +313,7 @@ const ItemPriceCard = (props: Props) => {
                   onClick={wrongPriceModal.onOpen}
                   colorScheme="red"
                   variant={'ghost'}
+                  data-umami-event="wrong-price-button"
                 >
                   <Icon as={FaFlag} mr={1} verticalAlign={'center'} /> {t('ItemPage.wrong-price')}
                 </Button>

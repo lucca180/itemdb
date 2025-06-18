@@ -216,7 +216,7 @@ export default function WrongPriceModal(props: WrongPriceModalProps) {
                     {!isSuccess && t('ItemPage.itemdb-admins-please-help')}
                     {isSuccess && t('ItemPage.thank-you-for-your-report')}
                   </Button>
-                  {t('ItemPage.wrong-price-report-2')}
+                  {/* {t('ItemPage.wrong-price-report-2')} */}
                 </AccordionPanel>
               </AccordionItem>
             </Accordion>
