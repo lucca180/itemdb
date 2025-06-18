@@ -298,7 +298,7 @@ const NCTradeReportCard = (props: NCTradeReportProps) => {
   const submitTrade = async () => {
     setIsLoading(true);
     try {
-      const res = await axios.post('/api/v1/mall/report', { offered, received, notes, date });
+      const res = await axios.post('/api/v1/mall/trades', { offered, received, notes, date });
 
       if (res.status === 200) {
         goToNext();
