@@ -1,12 +1,12 @@
 /* eslint-disable no-console */
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getItem } from '../items/[id_name]';
+import { getItem } from '../../items/[id_name]';
 import prisma from '@utils/prisma';
 import { ncTradeItems, ncValues } from '@prisma/generated/client';
 import { dti } from '@utils/impress';
 import { differenceInCalendarDays } from 'date-fns';
 import { NCValue, OwlsTrade } from '@types';
-import { getOwlsTradeData } from '../items/[id_name]/[tradings]';
+import { getOwlsTradeData } from '../../items/[id_name]/[tradings]';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
