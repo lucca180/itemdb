@@ -63,7 +63,11 @@ export const getNewItemsInfo = async (days = 7) => {
 
   newItems.forEach((item) => {
     if (item.isNC) paidItems++;
-    else if (item.description?.toLowerCase().includes('item code')) paidItems++;
+    else if (
+      item.description?.toLowerCase().includes('item code') ||
+      item.description?.toLowerCase().includes('prize code')
+    )
+      paidItems++;
     else freeItems++;
   });
 
