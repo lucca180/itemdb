@@ -41,21 +41,49 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 export const getSimilarLists = async (list: UserList, limit: number) => {
+  const name = list.name;
+
+  const similarIdsRaw = (await prisma.$queryRaw`
+    select internal_id from userlist
+      where official = 1 AND 
+      ( 
+        MATCH name AGAINST (${name} IN NATURAL LANGUAGE MODE) OR 
+        MATCH description AGAINST (${name} IN NATURAL LANGUAGE MODE)
+      )
+      ORDER BY MATCH name AGAINST (${name} IN NATURAL LANGUAGE MODE) desc, MATCH description AGAINST (${name} IN NATURAL LANGUAGE MODE) desc, updatedAt desc
+  `) as { internal_id: number }[];
+
+  const similarIds = similarIdsRaw
+    .map((x: { internal_id: number }) => x.internal_id)
+    .filter((id) => id !== list.internal_id);
+
   const similarLists = await prisma.userList.findMany({
-    where: {
-      official: true,
-      official_tag: list.officialTag,
-      NOT: {
-        internal_id: list.internal_id,
-      },
-    },
-    orderBy: {
-      updatedAt: 'desc',
-    },
+    where: similarIds.length
+      ? {
+          internal_id: {
+            in: similarIds,
+          },
+        }
+      : {
+          official: true,
+          official_tag: list.officialTag,
+          NOT: {
+            internal_id: list.internal_id,
+          },
+        },
     include: {
       items: true,
       user: true,
     },
+  });
+
+  similarLists.sort((a, b) => {
+    const aPos = similarIds.indexOf(a.internal_id);
+    const bPos = similarIds.indexOf(b.internal_id);
+    if (aPos === -1 && bPos === -1) return 0;
+    if (aPos === -1) return 1;
+    if (bPos === -1) return -1;
+    return aPos - bPos;
   });
 
   if (!similarLists.length) return [];
