@@ -132,23 +132,21 @@ const NCTrade = (props: Props) => {
             >
               {trading.length} {t('ItemPage.trading')}
             </Button>
-            {item.isWearable && (
-              <Button
-                colorScheme={''}
-                _active={{
-                  bg: `rgba(${color[0]},${color[1]}, ${color[2]},.24)`,
-                  borderColor: `rgba(${color[0]},${color[1]}, ${color[2]},1)`,
-                  color: textColor,
-                }}
-                isActive={tableType === 'owlsTrading'}
-                onClick={() => setTableType('owlsTrading')}
-              >
-                <Skeleton isLoaded={owlsTradeHistory !== null} startColor={item.color.hex} mr={1}>
-                  <span>{owlsTradeHistory?.length ?? '00'}</span>
-                </Skeleton>{' '}
-                {t('ItemPage.owls-trades')}
-              </Button>
-            )}
+            <Button
+              colorScheme={''}
+              _active={{
+                bg: `rgba(${color[0]},${color[1]}, ${color[2]},.24)`,
+                borderColor: `rgba(${color[0]},${color[1]}, ${color[2]},1)`,
+                color: textColor,
+              }}
+              isActive={tableType === 'owlsTrading'}
+              onClick={() => setTableType('owlsTrading')}
+            >
+              <Skeleton isLoaded={owlsTradeHistory !== null} startColor={item.color.hex} mr={1}>
+                <span>{owlsTradeHistory?.length ?? '00'}</span>
+              </Skeleton>{' '}
+              {t('ItemPage.owls-trades')}
+            </Button>
           </ButtonGroup>
         </Flex>
         <Flex flex={1} flexFlow={{ base: 'column', md: 'row' }} gap={3}>

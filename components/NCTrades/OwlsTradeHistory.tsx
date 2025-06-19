@@ -66,15 +66,6 @@ const OwlsTradeHistory = (props: Props) => {
         <Button as={NextLink} prefetch={false} href="/mall/report" size={'xs'}>
           {t('ItemPage.report-your-nc-trades')}
         </Button>
-        <Text fontSize="xs" color="whiteAlpha.600">
-          {t.rich('ItemPage.owls-credits', {
-            Link: (chunk) => (
-              <Link href="/owls" as={NextLink} color="whiteAlpha.700" isExternal>
-                {chunk}
-              </Link>
-            ),
-          })}
-        </Text>
       </Center>
     );
 
