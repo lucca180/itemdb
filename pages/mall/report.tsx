@@ -587,7 +587,7 @@ const NCTradeReportCard = (props: NCTradeReportProps) => {
   );
 };
 
-const tradeReportToOwlsTrade = (report: NCTradeReport): OwlsTrade => {
+export const tradeReportToOwlsTrade = (report: NCTradeReport): OwlsTrade => {
   const trade: OwlsTrade = {
     ds: format(new UTCDate(report.date), 'yyyy-MM-dd'),
     notes: report.notes,

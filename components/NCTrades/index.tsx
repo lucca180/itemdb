@@ -17,7 +17,7 @@ import axios from 'axios';
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { MdMoneyOff } from 'react-icons/md';
-import { ItemData, OwlsTrade, UserList } from '../../types';
+import { ItemData, NCTradeReport, OwlsTrade, UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import CardBase from '../Card/CardBase';
 import MatchTable from './MatchTable';
@@ -47,12 +47,13 @@ const NCTrade = (props: Props) => {
   const [tableType, setTableType] = useState<'seeking' | 'trading' | 'owlsTrading'>(
     seeking.length ? 'seeking' : 'trading'
   );
-  const [tradeHistory, setTradeHistory] = useState<OwlsTrade[] | null>(null);
+  const [owlsTradeHistory, setOwlsTradeHistory] = useState<OwlsTrade[] | null>(null);
+  const [tradeHistory, setTradeHistory] = useState<NCTradeReport[] | null>(null);
 
   useEffect(() => {
     if (item.status === 'no trade') return;
-    setTradeHistory(null);
-    getOwlsTrade();
+    setOwlsTradeHistory(null);
+    getTradeHistory();
   }, [item.internal_id]);
 
   useEffect(() => {
@@ -92,10 +93,14 @@ const NCTrade = (props: Props) => {
     setIsMatchLoading(false);
   };
 
-  const getOwlsTrade = async () => {
-    const res = await axios.get('/api/v1/items/' + encodeURIComponent(item.name) + '/owls');
+  const getTradeHistory = async () => {
+    const [owlsRes, rawHistory] = await Promise.all([
+      axios.get('/api/v1/items/' + encodeURIComponent(item.name) + '/owls'),
+      axios.get('/api/v1/items/' + encodeURIComponent(item.name) + '/nctrade'),
+    ]);
 
-    setTradeHistory(res.data);
+    setOwlsTradeHistory(owlsRes.data);
+    setTradeHistory(rawHistory.data.trades);
   };
 
   if (item.status === 'no trade')
@@ -138,8 +143,8 @@ const NCTrade = (props: Props) => {
                 isActive={tableType === 'owlsTrading'}
                 onClick={() => setTableType('owlsTrading')}
               >
-                <Skeleton isLoaded={tradeHistory !== null} startColor={item.color.hex} mr={1}>
-                  <span>{tradeHistory?.length ?? '00'}</span>
+                <Skeleton isLoaded={owlsTradeHistory !== null} startColor={item.color.hex} mr={1}>
+                  <span>{owlsTradeHistory?.length ?? '00'}</span>
                 </Skeleton>{' '}
                 {t('ItemPage.owls-trades')}
               </Button>
@@ -181,7 +186,11 @@ const NCTrade = (props: Props) => {
                 />
               )}
               {tableType === 'owlsTrading' && (
-                <OwlsTradeHistory item={item} tradeHistory={tradeHistory} />
+                <OwlsTradeHistory
+                  item={item}
+                  owlsTrades={owlsTradeHistory}
+                  tradeHistory={tradeHistory}
+                />
               )}
             </Flex>
           </Flex>

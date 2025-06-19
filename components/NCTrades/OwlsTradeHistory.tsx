@@ -14,20 +14,37 @@ import {
   Button,
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
-import { OwlsTrade, ItemData } from '../../types';
+import { OwlsTrade, ItemData, NCTradeReport } from '../../types';
 import { useFormatter, useTranslations } from 'next-intl';
 import { UTCDate } from '@date-fns/utc';
 import { filterMostRecentNc } from '@utils/ncTradePricing';
 import { mean } from 'simple-statistics';
+import { useMemo } from 'react';
+import { tradeReportToOwlsTrade } from '../../pages/mall/report';
 
 type Props = {
   item: ItemData;
-  tradeHistory: OwlsTrade[] | null;
+  owlsTrades: OwlsTrade[] | null;
+  tradeHistory: NCTradeReport[] | null;
 };
 
 const OwlsTradeHistory = (props: Props) => {
   const t = useTranslations();
-  const { item, tradeHistory } = props;
+  const { item } = props;
+
+  const tradeHistory = useMemo(() => {
+    const trades: OwlsTrade[] = [...(props.owlsTrades ?? [])];
+
+    props.tradeHistory?.forEach((trade) => {
+      trades.push(tradeReportToOwlsTrade(trade));
+    });
+
+    return getUniqueOwlsTrades(trades).sort((a, b) => {
+      const dateA = new Date(a.ds);
+      const dateB = new Date(b.ds);
+      return dateB.getTime() - dateA.getTime();
+    });
+  }, [props.tradeHistory, props.owlsTrades]);
 
   const avgValue = tradeHistory ? getAvgValue(tradeHistory, item) : null;
 
@@ -105,15 +122,6 @@ const OwlsTradeHistory = (props: Props) => {
         ))}
       </Flex>
       <Center flexFlow="column" gap={1} borderRadius={'lg'} p={1}>
-        <Text fontSize="xs" color="whiteAlpha.600">
-          {t.rich('ItemPage.owls-credits', {
-            Link: (chunk) => (
-              <Link href="/owls" as={NextLink} color="whiteAlpha.800" isExternal>
-                {chunk}
-              </Link>
-            ),
-          })}
-        </Text>
         {avgValue && (
           <Text fontSize={'xs'} color="whiteAlpha.600" textAlign={'center'} maxW="700px">
             {t('Owls.avg-value-disclaimer')}
@@ -293,4 +301,17 @@ const quartile = (sorted: number[], q: number) => {
   } else {
     return sorted[base];
   }
+};
+
+const getUniqueOwlsTrades = (trades: OwlsTrade[]) => {
+  const uniqueTrades = new Map<string, OwlsTrade>();
+
+  trades.forEach((trade) => {
+    const key = `${trade.traded}-${trade.traded_for}-${trade.ds}`;
+    if (!uniqueTrades.has(key)) {
+      uniqueTrades.set(key, trade);
+    }
+  });
+
+  return Array.from(uniqueTrades.values());
 };

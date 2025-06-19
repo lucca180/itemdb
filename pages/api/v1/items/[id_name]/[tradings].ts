@@ -1,6 +1,12 @@
 import axios from 'axios';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { ItemAuctionData, ItemRestockData, OwlsTrade, TradeData } from '../../../../../types';
+import {
+  ItemAuctionData,
+  ItemRestockData,
+  NCTradeReport,
+  OwlsTrade,
+  TradeData,
+} from '../../../../../types';
 import prisma from '../../../../../utils/prisma';
 import { getManyItems } from '../many';
 import { CheckAuth } from '../../../../../utils/googleCloud';
@@ -47,6 +53,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (type === 'owls') {
     const owls = await getOwlsTradeData(name);
     return res.json(owls);
+  }
+
+  if (type === 'nctrade') {
+    const trades = await getNCTradeData(id || name);
+    return res.json(trades);
   }
 
   return res.status(400).json({ error: 'Invalid Request' });
@@ -218,6 +229,46 @@ const getAuctionData = async (name: string, onlySold = false) => {
     sold: soldAuctions,
     uniqueOwners: uniqueOwners.size,
     period: '90-days',
+  };
+};
+
+export const getNCTradeData = async (name: string | number) => {
+  const ncTradeRaw = await prisma.ncTrade.findMany({
+    where: {
+      NCTradeItems: {
+        some: typeof name === 'string' ? { item_name: name } : { item_iid: name },
+      },
+    },
+    include: {
+      NCTradeItems: {
+        include: {
+          item: true,
+        },
+      },
+    },
+    orderBy: { tradeDate: 'desc' },
+  });
+
+  const trades: NCTradeReport[] = ncTradeRaw.map((trade) => {
+    return {
+      notes: trade.notes,
+      date: trade.tradeDate.toJSON(),
+      offered: trade.NCTradeItems.filter((item) => item.type === 'offered').map((item) => ({
+        itemName: (item.item?.name ?? item.item_name) as string,
+        personalValue: item.personalValue,
+        quantity: item.quantity,
+      })),
+      received: trade.NCTradeItems.filter((item) => item.type === 'received').map((item) => ({
+        itemName: (item.item?.name ?? item.item_name) as string,
+        personalValue: item.personalValue,
+        quantity: item.quantity,
+      })),
+    };
+  });
+
+  return {
+    trades: trades,
+    totalTrades: ncTradeRaw.length,
   };
 };
 

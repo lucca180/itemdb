@@ -612,7 +612,7 @@ export type NCTradeReport = {
 };
 
 export type NCTradeItem = {
-  item?: ItemData;
+  item?: ItemData | null;
   itemName: string;
   personalValue: string;
   quantity: number;
