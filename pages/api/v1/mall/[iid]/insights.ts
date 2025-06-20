@@ -53,7 +53,8 @@ export const getNCTradeInsights = async (item_iid: string | number): Promise<Ins
 
     if (
       report.notes?.toLowerCase().includes('le') ||
-      report.prizePool?.toLowerCase().includes('le')
+      report.prizePool?.toLowerCase().includes('le') ||
+      report.limitedEdition
     ) {
       parentData[report.parent_iid].isLE = true;
     }

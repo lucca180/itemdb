@@ -99,7 +99,7 @@ const MallReleaseCard = (props: MallReleaseCardProps) => {
   return (
     <>
       <HStack>
-        {isBuyable && <Badge colorScheme="green">{t('ItemPage.buyable-now')}</Badge>}
+        {isBuyable && <Badge colorScheme="yellow">{t('ItemPage.buyable-now')}</Badge>}
         {!isDirect && (
           <Badge colorScheme={isLE ? 'green' : 'gray'}>{isLE ? 'LE' : 'Cap'} Prize</Badge>
         )}
