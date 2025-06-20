@@ -292,7 +292,9 @@
     "prismatic-x-variations": "This item have <b>{x} Prismatic</b> variations",
     "prismatic-is-variation": "This item is a <b>Prismatic variation</b>",
     "buyable-now": "Buyable Now",
-    "insights": "Insights"
+    "insights": "Insights",
+    "no-enough-data": "No Enough Data",
+    "est-value-nc": "Est. Value"
   },
   "Button": {
     "feedback": "Feedback",

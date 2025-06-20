@@ -178,16 +178,16 @@ const NCTrade = (props: Props) => {
             borderRadius={'md'}
           >
             <Stat flex="initial" textAlign="center">
-              <StatLabel fontSize="xs">Est. Value</StatLabel>
+              <StatLabel fontSize="xs">{t('ItemPage.est-value-nc')}</StatLabel>
               {!item.ncValue && (
                 <>
                   <StatNumber mb={0}>???</StatNumber>
                   <Text fontSize="xs" as="span">
-                    No Enough Data
+                    {t('ItemPage.no-enough-data')}
                   </Text>
                   <StatLabel fontSize="xs" mt={1}>
                     <Link as={Link} href="/mall/report" isExternal>
-                      Report your NC Trades
+                      {t('ItemPage.report-your-nc-trades')}
                     </Link>
                   </StatLabel>
                 </>

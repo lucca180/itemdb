@@ -293,7 +293,9 @@
     "prismatic-is-variation": "Esse item é uma <b>Variante Prismática</b>",
     "prismatic-x-variations": "Esse item tem <b>{x} Variantes Prismáticas</b>",
     "buyable-now": "Disponível Agora",
-    "insights": "Insights"
+    "insights": "Insights",
+    "est-value-nc": "Valor Est.",
+    "no-enough-data": "Sem Dados"
   },
   "Button": {
     "feedback": "Feedback",
