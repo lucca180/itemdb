@@ -27,7 +27,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(404).json({ error: 'Item not found' });
   }
 
-  const value = await getNCValue(item.internal_id, item.name, 3);
+  const value = await getNCValue(item.internal_id, item.name, 15);
 
   return res.status(200).json(value);
 };
@@ -35,7 +35,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 export const getNCValue = async (
   item_iid: number,
   itemName: string,
-  updateInterval = 3,
+  updateInterval = 15,
   shouldReturnUpdated = true
 ) => {
   const valueRaw = await prisma.ncValues.findFirst({

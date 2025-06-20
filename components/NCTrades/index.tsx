@@ -8,7 +8,6 @@ import {
   Link,
   Skeleton,
   Stat,
-  StatHelpText,
   StatLabel,
   StatNumber,
   Text,
@@ -22,7 +21,6 @@ import { useAuth } from '../../utils/auth';
 import CardBase from '../Card/CardBase';
 import MatchTable from './MatchTable';
 import NextLink from 'next/link';
-import { ExternalLinkIcon } from '@chakra-ui/icons';
 import OwlsTradeHistory from './OwlsTradeHistory';
 import Color from 'color';
 import { useTranslations } from 'next-intl';
@@ -150,7 +148,7 @@ const NCTrade = (props: Props) => {
           </ButtonGroup>
         </Flex>
         <Flex flex={1} flexFlow={{ base: 'column', md: 'row' }} gap={3}>
-          {/* {item.owls && (
+          {item.ncValue && (
             <Badge
               colorScheme="purple"
               fontSize="xs"
@@ -159,20 +157,21 @@ const NCTrade = (props: Props) => {
               whiteSpace={'normal'}
               textTransform="initial"
               alignSelf={'center'}
+              borderRadius={'md'}
             >
               <Stat flex="initial" textAlign="center">
-                <StatNumber>
-                  {item.owls.buyable ? t('ItemPage.buyable') : item.owls.value}
+                <StatLabel fontSize="xs">Est. Value</StatLabel>
+                <StatNumber mb={0}>
+                  {item.ncValue.range}
+                  <Text fontSize="xs" as="span">
+                    {' '}
+                    caps
+                  </Text>
                 </StatNumber>
-                <StatHelpText mb={0} as={NextLink} href="/owls">
-                  {t('ItemPage.owls-value')} <ExternalLinkIcon boxSize={3} verticalAlign="center" />
-                </StatHelpText>
-                <StatLabel fontSize="xs">
-                  on {format(new Date(item.owls.pricedAt), 'PP')}{' '}
-                </StatLabel>
+                <StatLabel fontSize="xs">{format(new Date(item.ncValue.addedAt), 'PP')} </StatLabel>
               </Stat>
             </Badge>
-          )} */}
+          )}
           <Flex flexFlow="column" flex="1" overflow="hidden">
             <Flex justifyContent="center" alignItems={'center'} gap={3}>
               {tableType !== 'owlsTrading' && (

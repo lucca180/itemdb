@@ -219,7 +219,7 @@ export const getItem = async (id_name: number | string) => {
   const item: ItemData = rawToItemData(result);
 
   if (item.isNC && item.status !== 'no trade' && ENABLE_IDB_VALUES)
-    item.ncValue = await getNCValue(item.internal_id, item.name, 7, false);
+    item.ncValue = await getNCValue(item.internal_id, item.name, 15, false);
 
   if (!DISABLE_SALE_STATS && item.price.value && item.price.addedAt)
     item.saleStatus = await getSaleStats(item.internal_id, 15, new Date(item.price.addedAt));

@@ -46,7 +46,7 @@ const OwlsTradeHistory = (props: Props) => {
     });
   }, [props.tradeHistory, props.owlsTrades]);
 
-  const avgValue = tradeHistory ? getAvgValue(tradeHistory, item) : null;
+  // const avgValue = tradeHistory ? getAvgValue(tradeHistory, item) : null;
 
   if (!tradeHistory)
     return (
@@ -79,7 +79,7 @@ const OwlsTradeHistory = (props: Props) => {
       px={1}
       w="100%"
     >
-      {avgValue && (
+      {/* {avgValue && (
         <Center>
           <Flex
             flexFlow={'column'}
@@ -95,30 +95,30 @@ const OwlsTradeHistory = (props: Props) => {
               {t('Owls.average-value')}*
             </Text>
             <Text fontSize="md" fontWeight={'bold'}>
-              {t('Owls.x-caps', { x: avgValue.value })}
+              {t('Owls.x-caps', { x: avgValue?.value })}
             </Text>
             <Text fontSize={'xs'} color="whiteAlpha.700" sx={{ textWrap: 'balance' }}>
               {t.rich('Owls.based-on-x-trades', {
                 b: (chunk) => <b>{chunk}</b>,
-                x: avgValue.usedCount,
+                x: avgValue?.usedCount,
               })}
             </Text>
           </Flex>
         </Center>
-      )}
+      )} */}
 
       <Flex maxW="600px" flexFlow="column" gap={3}>
         {tradeHistory.map((trade, i) => (
           <OwlsTradeCard key={i} trade={trade} item={item} />
         ))}
       </Flex>
-      <Center flexFlow="column" gap={1} borderRadius={'lg'} p={1}>
+      {/* <Center flexFlow="column" gap={1} borderRadius={'lg'} p={1}>
         {avgValue && (
           <Text fontSize={'xs'} color="whiteAlpha.600" textAlign={'center'} maxW="700px">
             {t('Owls.avg-value-disclaimer')}
           </Text>
         )}
-      </Center>
+      </Center> */}
     </Flex>
   );
 };
@@ -224,6 +224,7 @@ export const OwlsTradeCard = (props: OwlsTradeCardProps) => {
   );
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getAvgValue = (tradeHistory: OwlsTrade[], item: ItemData) => {
   let filteredTrades = filterMostRecentNc(tradeHistory);
   if (!filteredTrades.length && tradeHistory.length > 3) filteredTrades = tradeHistory;
