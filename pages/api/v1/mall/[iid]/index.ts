@@ -88,6 +88,12 @@ const updateNCValue = async (item_iid: number, itemName: string, oldValue?: NCVa
     },
   });
 
+  const itemRaw = prisma.items.findUniqueOrThrow({
+    where: {
+      internal_id: item_iid,
+    },
+  });
+
   const owlsTradesRaw = getOwlsTradeData(itemName);
 
   const ratiosRaw = dti.fetchRatiosByName(itemName).catch((e) => {
@@ -95,11 +101,16 @@ const updateNCValue = async (item_iid: number, itemName: string, oldValue?: NCVa
     return null;
   });
 
-  const [tradesDb, ratios, owlsTrades] = await Promise.all([tradesRaw, ratiosRaw, owlsTradesRaw]);
+  const [tradesDb, ratios, owlsTrades, item] = await Promise.all([
+    tradesRaw,
+    ratiosRaw,
+    owlsTradesRaw,
+    itemRaw,
+  ]);
 
   const trades = [...tradesDb, ...owlsTrades];
 
-  if (trades.length < 3) {
+  if (trades.length < 3 || differenceInCalendarDays(Date.now(), item.addedAt) < 15) {
     const updated = oldValue
       ? await prisma.ncValues.update({
           where: {
