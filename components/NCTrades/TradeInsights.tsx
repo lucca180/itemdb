@@ -29,15 +29,7 @@ export const TradeInsights = (props: TradeInsightsProps) => {
 
   return (
     <Flex direction="column">
-      <Flex
-        bg="blackAlpha.500"
-        p={2}
-        borderRadius={'xl'}
-        maxW="500px"
-        boxShadow={'sm'}
-        flexFlow={'column'}
-        gap={1}
-      >
+      <Flex bg="blackAlpha.300" p={2} borderRadius={'xl'} maxW="500px" flexFlow={'column'} gap={1}>
         <HStack color="whiteAlpha.700" mb={2}>
           <Icon as={MdInsights} boxSize="24px" />
           <Text fontSize={'sm'} fontWeight={'bold'} color="whiteAlpha.800">
@@ -45,13 +37,13 @@ export const TradeInsights = (props: TradeInsightsProps) => {
           </Text>
         </HStack>
         {releases.map((release, i) => {
-          if (!showMore && i >= 3) return null;
+          if (!showMore && i >= 2) return null;
           return (
             <Flex
               key={release.internal_id}
               bg="blackAlpha.400"
               p={2}
-              borderRadius={'sm'}
+              borderRadius={'md'}
               mb={1}
               fontSize={'sm'}
               flexFlow={'column'}
@@ -70,7 +62,7 @@ export const TradeInsights = (props: TradeInsightsProps) => {
             </Flex>
           );
         })}
-        {releases.length > 3 && (
+        {releases.length > 2 && (
           <Button size={'xs'} color="whiteAlpha.700" cursor="pointer" onClick={toggleShowMore}>
             {showMore ? t('ItemPage.show-less') : t('ItemPage.show-more')}
           </Button>
