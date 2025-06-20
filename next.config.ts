@@ -137,4 +137,4 @@ const sentryWebpackPluginOptions = {
   autoInstrumentMiddleware: false,
 };
 
-module.exports = withSentryConfig(nextConfig, sentryWebpackPluginOptions);
+export default withSentryConfig(nextConfig, sentryWebpackPluginOptions);
