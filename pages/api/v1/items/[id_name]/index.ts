@@ -5,7 +5,7 @@ import prisma from '../../../../../utils/prisma';
 import { Items, Prisma } from '@prisma/generated/client';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import axios from 'axios';
-import { isSameDay, isToday } from 'date-fns';
+import { differenceInCalendarDays, isSameDay, isToday } from 'date-fns';
 import { getSaleStats } from './saleStats';
 import requestIp from 'request-ip';
 import { redis_setItemCount } from '../../../redis/checkapi';
@@ -218,7 +218,12 @@ export const getItem = async (id_name: number | string) => {
 
   const item: ItemData = rawToItemData(result);
 
-  if (item.isNC && item.status !== 'no trade' && ENABLE_IDB_VALUES)
+  if (
+    item.isNC &&
+    item.status !== 'no trade' &&
+    ENABLE_IDB_VALUES &&
+    differenceInCalendarDays(Date.now(), new Date(result.addedAt)) > 15
+  )
     item.ncValue = await getNCValue(item.internal_id, item.name, 15, false);
 
   if (!DISABLE_SALE_STATS && item.price.value && item.price.addedAt)
