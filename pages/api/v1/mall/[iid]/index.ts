@@ -99,7 +99,7 @@ const updateNCValue = async (item_iid: number, itemName: string, oldValue?: NCVa
 
   const trades = [...tradesDb, ...owlsTrades];
 
-  if (!trades.length || (!ratios && trades.length < 3)) {
+  if (trades.length < 3) {
     const updated = oldValue
       ? await prisma.ncValues.update({
           where: {
