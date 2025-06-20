@@ -625,6 +625,19 @@ export type NCValue = {
   addedAt: string;
 };
 
+export type InsightsResponse = {
+  releases: NCMallData[];
+  ncEvents: UserList[];
+  parentData: {
+    [parent_iid: number]: {
+      isLE: boolean;
+    };
+  };
+  itemData: {
+    [iid: string]: ItemData;
+  };
+};
+
 // ------- DTI -------- //
 
 export type DTISpecies = {

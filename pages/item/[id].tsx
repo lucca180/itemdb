@@ -4,6 +4,7 @@ import Layout from '../../components/Layout';
 import Image from 'next/image';
 import {
   FullItemColors,
+  InsightsResponse,
   ItemData,
   ItemEffect,
   ItemLastSeen,
@@ -52,6 +53,7 @@ import * as Sentry from '@sentry/nextjs';
 import { getPetpetData } from '../api/v1/items/[id_name]/petpet';
 import { ItemBreadcrumb } from '../../components/Breadcrumbs/ItemBreadcrumb';
 import { loadTranslation } from '@utils/load-translation';
+import { getNCTradeInsights } from '../api/v1/mall/[iid]/insights';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -100,6 +102,7 @@ type ItemPageProps = {
   mmeData: ItemMMEData | null;
   dyeData: DyeworksData | null;
   petpetData: ItemPetpetData | null;
+  ncInsights: InsightsResponse | null;
   messages: any;
   locale: string | undefined;
 };
@@ -119,6 +122,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
     mmeData,
     dyeData,
     petpetData,
+    ncInsights,
   } = props;
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
@@ -354,7 +358,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
                 lists={props.lists}
               />
             )}
-            {item.isNC && <NCTrade item={item} lists={tradeLists} />}
+            {item.isNC && <NCTrade item={item} lists={tradeLists} insights={ncInsights} />}
             {itemEffects.length > 0 && <ItemEffectsCard item={item} effects={itemEffects} />}
             {lists && <ItemOfficialLists item={item} lists={lists} />}
             {!!user && <ItemMyLists item={item} />}
@@ -444,6 +448,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     mmeData,
     dyeData,
     petpetData,
+    ncInsights,
   ] = await Sentry.startSpan(
     {
       name: 'itemLoad',
@@ -477,6 +482,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
         !item.isNC && !item.isWearable && !item.isBD && !item.isNeohome
           ? getPetpetData(item)
           : null, // 15
+        item.isNC ? getNCTradeInsights(item.internal_id) : null, // 16
       ]);
     }
   );
@@ -501,6 +507,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     mmeData: mmeData,
     dyeData: dyeData,
     petpetData: petpetData,
+    ncInsights: ncInsights,
     messages: await loadTranslation(context.locale ?? 'en', 'item/[id]'),
     locale: context.locale,
   };

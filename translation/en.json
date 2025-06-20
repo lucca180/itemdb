@@ -290,7 +290,9 @@
     "drops-script-cta-text": "With the <b>Item Data Extractor Script</b> you help us improve item drops odds, keep prices updated and more!",
     "latest-x-with-price": "Latest {x} With Price",
     "prismatic-x-variations": "This item have <b>{x} Prismatic</b> variations",
-    "prismatic-is-variation": "This item is a <b>Prismatic variation</b>"
+    "prismatic-is-variation": "This item is a <b>Prismatic variation</b>",
+    "buyable-now": "Buyable Now",
+    "insights": "Insights"
   },
   "Button": {
     "feedback": "Feedback",
@@ -1147,7 +1149,10 @@
     "average-value": "Average Value",
     "x-caps": "{x} caps",
     "based-on-x-trades": "based on <b>{x} trade reports</b>",
-    "avg-value-disclaimer": "* Average Value is a currently a test. Please be mindful when using this value as your trade value as it may not be accurate. Please report any issues using the Feedback button across the site"
+    "avg-value-disclaimer": "* Average Value is a currently a test. Please be mindful when using this value as your trade value as it may not be accurate. Please report any issues using the Feedback button across the site",
+    "releases": "Releases",
+    "direct-purchase": "Direct Purchase",
+    "nc-event": "NC Event"
   },
   "Calculator": {
     "pricing-calculator": "Price Calculator",

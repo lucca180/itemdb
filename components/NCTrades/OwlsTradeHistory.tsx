@@ -70,15 +70,7 @@ const OwlsTradeHistory = (props: Props) => {
     );
 
   return (
-    <Flex
-      flexFlow="column"
-      alignItems={'center'}
-      maxH={300}
-      overflow="auto"
-      gap={3}
-      px={1}
-      w="100%"
-    >
+    <Flex flexFlow="column" maxH={300} overflow="auto" gap={3} w="100%">
       {/* {avgValue && (
         <Center>
           <Flex
@@ -107,7 +99,7 @@ const OwlsTradeHistory = (props: Props) => {
         </Center>
       )} */}
 
-      <Flex maxW="600px" flexFlow="column" gap={3}>
+      <Flex maxW="500px" flexFlow="column" gap={3}>
         {tradeHistory.map((trade, i) => (
           <OwlsTradeCard key={i} trade={trade} item={item} />
         ))}
@@ -147,7 +139,7 @@ export const OwlsTradeCard = (props: OwlsTradeCardProps) => {
   const color: number[] = item?.color.rgb ?? [71, 178, 248];
 
   return (
-    <Card bg={'blackAlpha.500'} textAlign={'left'}>
+    <Card bg={'blackAlpha.500'} textAlign={'left'} borderRadius={'xl'}>
       <CardBody>
         <Heading size="sm" mb={3} opacity="0.75">
           {isValidDate(new Date(trade.ds)) &&
