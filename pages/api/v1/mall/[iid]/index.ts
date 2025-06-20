@@ -95,7 +95,9 @@ const updateNCValue = async (item_iid: number, itemName: string, oldValue?: NCVa
     return null;
   });
 
-  const [trades, ratios, owlsTrades] = await Promise.all([tradesRaw, ratiosRaw, owlsTradesRaw]);
+  const [tradesDb, ratios, owlsTrades] = await Promise.all([tradesRaw, ratiosRaw, owlsTradesRaw]);
+
+  const trades = [...tradesDb, ...owlsTrades];
 
   if (!trades.length || (!ratios && trades.length < 3)) {
     const updated = oldValue
@@ -119,7 +121,7 @@ const updateNCValue = async (item_iid: number, itemName: string, oldValue?: NCVa
   const offering = ratios?.numUsersOfferingThis;
 
   const ratio = ratios ? (seeking! / offering!) * 100 : null;
-  const value = calculateItemValue(ratio, [...trades, ...owlsTrades], itemName);
+  const value = calculateItemValue(ratio, trades, itemName);
   const valueRange = value[0] !== value[1] ? `${value[0]}-${value[1]}` : `${value[0]}`;
 
   if (valueRange === oldValue?.range) {
