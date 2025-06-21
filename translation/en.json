@@ -618,7 +618,8 @@
     "can-be-linked-help": "This will allow other users to create a dynamic clone of this list. Learn more on <Link>Linked Lists</Link>",
     "group-tag": "Group Tag",
     "group-tag-help": "This can be used for grouping lists in your profile by selecting Group Mode in your profile settings",
-    "adv-import-cta": "You can also import your lists from other sites such as <b>Dress To Impress</b> and <b>JN</b> using our <Link>Petpage Importer</Link>"
+    "adv-import-cta": "You can also import your lists from other sites such as <b>Dress To Impress</b> and <b>JN</b> using our <Link>Petpage Importer</Link>",
+    "import-adv-tip": "Tip: you can <Link>import your lists</Link> from other sites directly to itemdb"
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",

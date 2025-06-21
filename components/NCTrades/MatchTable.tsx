@@ -9,6 +9,7 @@ import {
   Badge,
   Link,
   Skeleton,
+  Text,
 } from '@chakra-ui/react';
 import { formatDistanceToNow, isToday } from 'date-fns';
 import NextLink from 'next/link';
@@ -53,6 +54,16 @@ const MatchTable = (props: Props) => {
             <Tr>
               <Td colSpan={4} textAlign="center">
                 {t('ItemPage.no-lists-found')} :(
+                <br />
+                <Text fontSize={'xs'} mt={2} color="whiteAlpha.600">
+                  {t.rich('Lists.import-adv-tip', {
+                    Link: (chunks) => (
+                      <Link color="whiteAlpha.800" href="/lists/import?utm_content=import-tip">
+                        {chunks}
+                      </Link>
+                    ),
+                  })}
+                </Text>
               </Td>
             </Tr>
           )}

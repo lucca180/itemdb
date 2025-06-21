@@ -760,7 +760,8 @@
     "can-be-linked-help": "Isso permitirá que outros usuários criem um clone dinâmico desta lista. Saiba mais sobre <Link>Linked Lists</Link>",
     "group-tag": "Tag de Grupo",
     "group-tag-help": "Isso pode ser usado para agrupar listas em seu perfil selecionando o modo List Groups nas configurações do seu perfil",
-    "adv-import-cta": "Você também pode importar suas listas de outros sites, como <b>Dress To Impress</b> e <b>JN</b> usando o nosso <Link>Petpage Importer</Link>"
+    "adv-import-cta": "Você também pode importar suas listas de outros sites, como <b>Dress To Impress</b> e <b>JN</b> usando o nosso <Link>Petpage Importer</Link>",
+    "import-adv-tip": "Dica: você pode <Link>importar suas listas</Link> de outros sites diretamente para o itemdb"
   },
   "Restock": {
     "est-profit": "Lucro Est.",
