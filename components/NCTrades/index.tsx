@@ -129,7 +129,14 @@ const NCTrade = (props: Props) => {
   return (
     <CardBase title={t('ItemPage.nc-trade')} color={color}>
       <Flex flexFlow="column" minH="200px">
-        <Flex justifyContent="center" gap={2} alignItems="center" mb={3}>
+        <Flex
+          justifyContent={{ base: 'flex-start', md: 'center' }}
+          gap={2}
+          alignItems="center"
+          pb={1.5}
+          mb={1.5}
+          overflow={'auto'}
+        >
           <ButtonGroup size="sm" isAttached variant="outline">
             {hasInsights && (
               <Button
