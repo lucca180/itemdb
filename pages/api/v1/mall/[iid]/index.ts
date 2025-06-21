@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getItem } from '../../items/[id_name]';
 import prisma from '@utils/prisma';
@@ -200,17 +199,13 @@ function calculateItemValue(ratio: number | null, tradeHistory: tradeHistory[], 
   }
 
   const [minRate, maxRate] = mapToRange(ratio).split('-').map(Number);
-  console.log(
-    `Calculated minRate: ${minRate}, maxRate: ${maxRate} from ratio: ${ratio}, minHist: ${minHist}, maxHist: ${maxHist}`
-  );
+
   // Calculate the final value using a weighted average of the historical values and the current rate
   const nEffective = totalWeight;
   const alpha = 1 / (1 + nEffective * 1.5);
   const vFinalMin = alpha * minRate + (1 - alpha) * minHist;
   const vFinalMax = alpha * maxRate + (1 - alpha) * maxHist;
-  console.log(
-    `Final values calculated: vFinalMin: ${vFinalMin}, vFinalMax: ${vFinalMax} with alpha: ${alpha}`
-  );
+
   return [Math.floor(vFinalMin), Math.round(vFinalMax)];
 }
 
@@ -250,9 +245,7 @@ const getTradeHistoryValues = (trade: any, itemName: string) => {
   if (typeof trade.personalValue !== 'undefined') {
     const deltaT = (now - itemdbTrade.trade.tradeDate.getTime()) / (1000 * 60 * 60 * 24);
     const weight = Math.exp(-lambda * deltaT);
-    console.log(
-      `Trade on ${itemdbTrade.trade.tradeDate.toISOString()} with deltaT ${deltaT} has weight ${weight}, values min: ${itemdbTrade.pvMinValue}, max: ${itemdbTrade.pvMaxValue}`
-    );
+
     return { min: itemdbTrade.pvMinValue, max: itemdbTrade.pvMaxValue, weight };
   }
   const tradeDate = new Date(owlsTrade.ds);
@@ -261,10 +254,6 @@ const getTradeHistoryValues = (trade: any, itemName: string) => {
 
   const val = getItemValueOwls(owlsTrade, itemName);
   if (!val) return null;
-
-  console.log(
-    `Owls trade on ${tradeDate.toISOString()} with deltaT ${deltaT} has weight ${weight}, values min: ${val[0]}, max: ${val[1] ?? val[0]}`
-  );
 
   return { min: val[0], max: val[1] ?? val[0], weight };
 };
