@@ -18,6 +18,7 @@ import {
   Spinner,
   Link as ChakraLink,
   Select,
+  Portal,
 } from '@chakra-ui/react';
 
 import NextImage from 'next/image';
@@ -198,25 +199,27 @@ const Layout = (props: Props) => {
                       boxSize="18px"
                     />
                   </MenuButton>
-                  <MenuList>
-                    <MenuGroup
-                      title={
-                        !isLargerThanMD
-                          ? `${t('Layout.hello-user', { name: user.username })}`
-                          : undefined
-                      }
-                    >
-                      <MenuItem as={Link} prefetch={false} href={`/lists/${user.username}`}>
-                        {t('Layout.my-lists')}
-                      </MenuItem>
-                      <MenuItem as={Link} prefetch={false} href={`/contribute`}>
-                        {t('Layout.how-to-contribute')}
-                      </MenuItem>
-                    </MenuGroup>
-                    {isLargerThanMD && <ScriptStatus />}
-                    <MenuDivider />
-                    <MenuItem onClick={signout}>{t('Layout.logout')}</MenuItem>
-                  </MenuList>
+                  <Portal>
+                    <MenuList>
+                      <MenuGroup
+                        title={
+                          !isLargerThanMD
+                            ? `${t('Layout.hello-user', { name: user.username })}`
+                            : undefined
+                        }
+                      >
+                        <MenuItem as={Link} prefetch={false} href={`/lists/${user.username}`}>
+                          {t('Layout.my-lists')}
+                        </MenuItem>
+                        <MenuItem as={Link} prefetch={false} href={`/contribute`}>
+                          {t('Layout.how-to-contribute')}
+                        </MenuItem>
+                      </MenuGroup>
+                      {isLargerThanMD && <ScriptStatus />}
+                      <MenuDivider />
+                      <MenuItem onClick={signout}>{t('Layout.logout')}</MenuItem>
+                    </MenuList>
+                  </Portal>
                 </Menu>
               </>
             )}
