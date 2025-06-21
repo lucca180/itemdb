@@ -130,10 +130,15 @@ const ListReleaseCard = (props: ListReleaseCardProps) => {
   const { release } = props;
   const formatter = useFormatter();
   const t = useTranslations();
+  const isActive =
+    release.seriesStart &&
+    new Date(release.seriesStart) <= new Date() &&
+    (!release.seriesEnd || new Date(release.seriesEnd) > new Date());
 
   return (
     <>
       <HStack>
+        {isActive && <Badge colorScheme="yellow">{t('ItemPage.buyable-now')}</Badge>}
         <Badge colorScheme="orange">{t('Owls.nc-event')}</Badge>
       </HStack>
       <Text>
