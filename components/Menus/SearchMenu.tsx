@@ -7,7 +7,7 @@ const SearchMenu = () => {
   const t = useTranslations();
   return (
     <Menu>
-      <MenuButton size="sm" as={IconButton}>
+      <MenuButton size="sm" as={IconButton} data-umami-event="search-menu-button">
         <ChevronDownIcon boxSize="20px" />
       </MenuButton>
       <Portal>

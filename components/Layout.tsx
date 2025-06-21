@@ -60,7 +60,10 @@ const Layout = (props: Props) => {
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { user, signout, authLoading } = useAuth();
-  const [isLargerThanMD] = useMediaQuery('(min-width: 48em)');
+  const [isLargerThanMD] = useMediaQuery('(min-width: 48em)', {
+    ssr: true,
+    fallback: false,
+  });
 
   const color = Color('#4A5568');
   const rgb = color.rgb().round().array();
@@ -152,6 +155,7 @@ const Layout = (props: Props) => {
               prefetch={false}
               href="/contribute"
               colorScheme="whiteAlpha"
+              data-umami-event="heart-button"
               bg="gray.100"
               _hover={{ color: 'red.400' }}
               _active={{ bg: 'gray.200' }}
@@ -177,12 +181,13 @@ const Layout = (props: Props) => {
             )}
             {user && (
               <>
-                <Menu isLazy>
+                <Menu>
                   <MenuButton
                     as={Button}
                     rightIcon={<ChevronDownIcon />}
                     px={{ base: 2, md: 4 }}
                     textAlign="center"
+                    data-umami-event="profile-menu-button"
                   >
                     {isLargerThanMD && (
                       <Box as="span">{t('Layout.hi-user', { name: user.username })}</Box>
@@ -208,7 +213,7 @@ const Layout = (props: Props) => {
                         {t('Layout.how-to-contribute')}
                       </MenuItem>
                     </MenuGroup>
-                    <ScriptStatus />
+                    {isLargerThanMD && <ScriptStatus />}
                     <MenuDivider />
                     <MenuItem onClick={signout}>{t('Layout.logout')}</MenuItem>
                   </MenuList>
