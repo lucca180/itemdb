@@ -73,8 +73,9 @@ const OfficialListsCatPage = (props: Props) => {
     if (!data) return;
     let filteredLists = data;
 
-    if (selectedCategory != 'all')
-      filteredLists = data.filter((x) => x.officialTag === selectedCategory);
+    filteredLists = data.filter(
+      (x) => x.officialTag?.toLowerCase() === selectedCategory.toLowerCase()
+    );
 
     if (!search) {
       setLists(filteredLists);
