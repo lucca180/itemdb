@@ -95,19 +95,19 @@ async function pricePage(itemData) {
       }
 
       if(item.status === 'no trade'){
-        priceStr += `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">No Trade</a>`;
+        priceStr += `<a href="https://itemdb.com.br/item/${item.slug}?utm_content=sdbPricer" target="_blank">No Trade</a>`;
       }
 
       if(item.isNC && !item.owls && item.status === 'active'){
-        priceStr += `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">NC</a>`;
+        priceStr += `<a href="https://itemdb.com.br/item/${item.slug}?utm_content=sdbPricer" target="_blank">NC</a>`;
       }
 
       if(item.isNC && item.ncValue){
-        priceStr += `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">${item.ncValue.range} caps</a><small>`;
+        priceStr += `<a href="https://itemdb.com.br/item/${item.slug}?utm_content=sdbPricer" target="_blank">${item.ncValue.range} caps</a>`;
       }
 
       if(item && item.status !== 'no trade' && !item.price.value && !item.isNC){
-        priceStr += `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">???</a>`;
+        priceStr += `<a href="https://itemdb.com.br/item/${item.slug}?utm_content=sdbPricer" target="_blank">???</a>`;
       }
 
       if(item.price.value){
@@ -118,7 +118,7 @@ async function pricePage(itemData) {
             priceStr += `<small style='color:${color2}'><b>[${item.saleStatus.status.toUpperCase()}]</b></small> `;
         }
 
-        priceStr += `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">${item.price.inflated ? "⚠ " : ""}${intl.format(item.price.value)} NP</a>`;
+        priceStr += `<a href="https://itemdb.com.br/item/${item.slug}?utm_content=sdbPricer" target="_blank">${item.price.inflated ? "⚠ " : ""}${intl.format(item.price.value)} NP</a>`;
         priceStr += `</div>`;
       }
 
