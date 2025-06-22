@@ -23,6 +23,15 @@ export const TradeInsights = (props: TradeInsightsProps) => {
     return arr.sort((a: any, b: any) => {
       const dateA = new Date(a.saleBegin ?? a.seriesStart);
       const dateB = new Date(b.saleBegin ?? b.seriesStart);
+
+      if (isEventActive(a) || isBuyable(a)) {
+        return -1; // Prioritize active events or buyable releases
+      }
+
+      if (isEventActive(b) || isBuyable(b)) {
+        return 1; // Prioritize active events or buyable releases
+      }
+
       return dateB.getTime() - dateA.getTime();
     });
   }, [insights]);
@@ -79,19 +88,21 @@ type MallReleaseCardProps = {
   item: ItemData;
 };
 
+const isBuyable = (release: NCMallData) =>
+  release.active && (!release.saleEnd || new Date(release.saleEnd) > new Date());
+
 const MallReleaseCard = (props: MallReleaseCardProps) => {
   const { release, parentData, itemData, item } = props;
   const isLE = parentData[release.item_iid]?.isLE ?? false;
   const capItem = itemData[release.item_iid.toString()];
   const isDirect = release.item_iid === item.internal_id;
-  const isBuyable = release.active && (!release.saleEnd || new Date(release.saleEnd) > new Date());
   const formatter = useFormatter();
   const t = useTranslations();
 
   return (
     <>
       <HStack>
-        {isBuyable && <Badge colorScheme="yellow">{t('ItemPage.buyable-now')}</Badge>}
+        {isBuyable(release) && <Badge colorScheme="yellow">{t('ItemPage.buyable-now')}</Badge>}
         {!isDirect && (
           <Badge colorScheme={isLE ? 'green' : 'gray'}>{isLE ? 'LE' : 'Cap'} Prize</Badge>
         )}
@@ -113,10 +124,15 @@ const MallReleaseCard = (props: MallReleaseCardProps) => {
         {formatter.dateTime(new Date(release.saleBegin ?? 0), {
           dateStyle: 'medium',
         })}{' '}
-        -{' '}
-        {formatter.dateTime(new Date(release.saleEnd ?? 0), {
-          dateStyle: 'medium',
-        })}
+        {release.saleEnd && (
+          <>
+            {' '}
+            -{' '}
+            {formatter.dateTime(new Date(release.saleEnd), {
+              dateStyle: 'medium',
+            })}
+          </>
+        )}
       </Text>
     </>
   );
@@ -126,14 +142,19 @@ type ListReleaseCardProps = {
   release: UserList;
 };
 
+const isEventActive = (release: UserList) => {
+  return (
+    release.seriesStart &&
+    new Date(release.seriesStart) <= new Date() &&
+    (!release.seriesEnd || new Date(release.seriesEnd) > new Date())
+  );
+};
+
 const ListReleaseCard = (props: ListReleaseCardProps) => {
   const { release } = props;
   const formatter = useFormatter();
   const t = useTranslations();
-  const isActive =
-    release.seriesStart &&
-    new Date(release.seriesStart) <= new Date() &&
-    (!release.seriesEnd || new Date(release.seriesEnd) > new Date());
+  const isActive = isEventActive(release);
 
   return (
     <>
@@ -151,12 +172,16 @@ const ListReleaseCard = (props: ListReleaseCardProps) => {
       <Text fontSize={'xs'} color="whiteAlpha.700">
         {formatter.dateTime(new Date(release.seriesStart ?? 0), {
           dateStyle: 'medium',
-        })}{' '}
-        -{' '}
-        {release.seriesEnd &&
-          formatter.dateTime(new Date(release.seriesEnd ?? 0), {
-            dateStyle: 'medium',
-          })}
+        })}
+        {release.seriesEnd && (
+          <>
+            {' '}
+            -{' '}
+            {formatter.dateTime(new Date(release.seriesEnd), {
+              dateStyle: 'medium',
+            })}
+          </>
+        )}
       </Text>
     </>
   );
