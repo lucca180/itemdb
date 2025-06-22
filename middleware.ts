@@ -1,18 +1,15 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
-// import type { DecodedIdToken } from 'firebase-admin/auth';
-// import { User } from './types';
-import * as jose from 'jose';
-import { LRUCache } from 'lru-cache';
 import requestIp from 'request-ip';
+import { LRUCache } from 'lru-cache';
 
 const API_SKIPS: { [method: string]: string[] } = {
   GET: ['api/auth', 'api/cache', 'api/redis'],
   POST: ['api/auth', 'api/redis', '/v1/prices', '/v1/trades', '/v1/items', '/v1/items/open'],
 };
 
-const userKeyCache = new LRUCache({
-  max: 100,
+const sessionCache = new LRUCache({
+  max: 250,
 });
 
 const PUBLIC_FILE = /\.(.*)$/;
@@ -21,7 +18,6 @@ const VALID_LOCALES = ['en', 'pt'];
 const skipAPIMiddleware = process.env.SKIP_API_MIDDLEWARE === 'true';
 const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === 'true';
 const ITEMDB_URL = process.env.ITEMDB_SERVER;
-const SKIP_REDIS_KEY = process.env.SKIP_REDIS_KEY;
 
 export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/_next') || PUBLIC_FILE.test(request.nextUrl.pathname)) {
@@ -38,12 +34,28 @@ export async function middleware(request: NextRequest) {
     return apiMiddleware(request);
   }
 
+  // handle session
+  const response = NextResponse.next();
+
+  const sessionCookie = request.cookies.get('idb-session-id')?.value || '';
+  if (!sessionCookie) {
+    const newSession = await getSession(sessionCookie);
+    response.cookies.set({
+      name: 'idb-session-id',
+      value: newSession,
+      expires: Date.now() + 20 * 60 * 1000, // 20 minutes
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    });
+  }
+
+  // Set accept-language cookie
   const cookies = {
     name: 'idb_accept-language',
     value: request.headers.get('accept-language') ?? '',
     expires: Date.now() + 1000000,
   };
-  const response = NextResponse.next();
 
   response.cookies.set(cookies);
 
@@ -83,18 +95,23 @@ const apiMiddleware = async (request: NextRequest) => {
     return NextResponse.next();
   }
 
-  const sessionCookie = request.cookies.get('session');
+  const sessionCookie = request.cookies.get('idb-session-id');
+  const cacheSession = sessionCache.get(sessionCookie?.value || '');
+
+  if (cacheSession) {
+    return NextResponse.next();
+  }
 
   if (sessionCookie && sessionCookie.value) {
     try {
-      await checkSessionLocal(sessionCookie.value);
-      const requestHeaders = new Headers(request.headers);
-      requestHeaders.set('idb-skip-redis', SKIP_REDIS_KEY ?? '');
-      return NextResponse.next({
-        request: {
-          headers: requestHeaders,
-        },
-      });
+      const isValidSession = await getSession(sessionCookie.value, true);
+      if (!!isValidSession) {
+        sessionCache.set(sessionCookie.value, true, {
+          ttl: 20 * 60 * 1000,
+        });
+
+        return NextResponse.next();
+      }
     } catch (e) {}
   }
 
@@ -114,59 +131,6 @@ const apiMiddleware = async (request: NextRequest) => {
   return NextResponse.next();
 };
 
-// const checkSession = async (session: string, host: string, skipUser: boolean) => {
-//   const res = await fetch(`http://${host}/api/auth/checkSession`, {
-//     method: 'POST',
-//     headers: {
-//       'Content-Type': 'application/json',
-//     },
-//     body: JSON.stringify({ session: session, skipUser: skipUser }),
-//   });
-
-//   const { authRes } = await res.json();
-
-//   return authRes as
-//     | {
-//         decodedToken: DecodedIdToken;
-//         user: null;
-//       }
-//     | {
-//         decodedToken: DecodedIdToken;
-//         user: User;
-//       };
-// };
-
-const checkSessionLocal = async (jwt: string) => {
-  const decoded = jose.decodeProtectedHeader(jwt);
-  const kid = decoded.kid as string;
-
-  let cacheKeys = userKeyCache.get('firesbaseKeys') as
-    | { keys: any; revalidate: number }
-    | undefined;
-  if (!cacheKeys || cacheKeys.revalidate < Date.now()) {
-    const res = await fetch(
-      'https://www.googleapis.com/identitytoolkit/v3/relyingparty/publicKeys'
-    );
-    const JWKS = await res.json();
-    cacheKeys = { keys: undefined, revalidate: 0 };
-    cacheKeys.keys = JWKS;
-    const cacheControl = res.headers.get('Cache-Control')?.split('=')[1];
-    cacheKeys.revalidate = cacheControl ? Date.now() + parseInt(cacheControl) * 1000 : 0;
-    userKeyCache.set('firesbaseKeys', cacheKeys);
-  }
-
-  if (!cacheKeys) throw new Error('No keys');
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const publicKey = await jose.importX509(cacheKeys.keys[kid], decoded.alg!);
-
-  const jwtDecoded = await jose.jwtVerify(jwt, publicKey, {
-    issuer: 'https://session.firebase.google.com/itemdb-1db58',
-    audience: 'itemdb-1db58',
-  });
-
-  return jwtDecoded.payload.user_id as string;
-};
-
 const checkRedis = async (ip: string, pathname: string) => {
   try {
     const res = await fetch(`${ITEMDB_URL}/api/redis/checkapi`, {
@@ -184,6 +148,25 @@ const checkRedis = async (ip: string, pathname: string) => {
     }
 
     return false;
+  } catch (e) {
+    console.error('checkRedis error', e);
+    return false;
+  }
+};
+
+const getSession = async (sessionToken?: string, checkOnly = false) => {
+  try {
+    const res = await fetch(`${ITEMDB_URL}/api/redis/session?checkOnly=${checkOnly}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'idb-session-id': sessionToken || '',
+      },
+    });
+
+    const data = await res.json();
+
+    return data;
   } catch (e) {
     console.error('checkRedis error', e);
     return false;

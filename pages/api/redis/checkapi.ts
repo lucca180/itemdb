@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { Redis } from 'ioredis';
+import { redis } from '@utils/redis';
+import { checkSession } from './session';
 
 const LIMIT_COUNT = 20000;
 const LIMIT_BAN = 6 * 60 * 60 * 1000;
@@ -9,7 +10,11 @@ const skipAPIMiddleware =
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   const ip = req.headers['idb-ip-check'] as string;
 
-  if (!ip) return res.status(200).json('ok');
+  if (!ip || !redis) return res.status(200).json('ok');
+
+  const sessionId = req.cookies['idb-session-id'] || '';
+  const isValidSession = sessionId ? await checkSession(sessionId) : false;
+  if (isValidSession) return res.status(200).json('ok');
 
   const rawItemsCount = await redis.get(ip);
   if (!rawItemsCount) return res.status(200).json('ok');
@@ -23,36 +28,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   res.status(200).json('ok');
 }
 
-export let redis: Redis;
-
-if (
-  process.env.NODE_ENV === 'production' &&
-  process.env.REDIS_PORT &&
-  process.env.REDIS_HOST &&
-  process.env.REDIS_PASSWORD
-) {
-  redis = new Redis({
-    port: process.env.REDIS_PORT as unknown as number,
-    host: process.env.REDIS_HOST,
-    password: process.env.REDIS_PASSWORD,
-    enableAutoPipelining: true,
-  });
-}
-// else {
-//   // @ts-expect-error global is not defined
-//   if (!global.redis) {
-//     // @ts-expect-error global is not defined
-//     global.redis = new Redis({
-//       port: process.env.REDIS_PORT as unknown as number,
-//       host: process.env.REDIS_HOST,
-//       password: process.env.REDIS_PASSWORD,
-//       enableAutoPipelining: true,
-//     });
-//   }
-//   // @ts-expect-error global is not defined
-//   redis = global.redis;
-// }
-
 export const redis_setItemCount = async (
   ip: string | null | undefined,
   itemCount: number,
@@ -63,6 +38,11 @@ export const redis_setItemCount = async (
 
     const skipRedis = req.headers['idb-skip-redis'] as string | undefined;
     if (skipRedis && skipRedis === process.env.SKIP_REDIS_KEY) return;
+
+    const sessionId = req.cookies['idb-session-id'] || '';
+    const isValidSession = await checkSession(sessionId);
+
+    if (isValidSession) return;
 
     const newVal = await redis.incrby(ip, itemCount);
 

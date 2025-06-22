@@ -10838,7 +10838,6 @@ __metadata:
     html-to-image: "npm:^1.11.13"
     husky: "npm:^8.0.0"
     ioredis: "npm:^5.6.1"
-    jose: "npm:^5.2.0"
     jotai: "npm:^2.12.5"
     lightweight-charts: "npm:^4.2.2"
     lint-staged: "npm:15.3.0"
@@ -10928,13 +10927,6 @@ __metadata:
   version: 4.15.7
   resolution: "jose@npm:4.15.7"
   checksum: 10c0/ba453909277c6c8bd44c589a4f0b9748f6c1021782b2bef573d1de2b2e54ae667547ef15c76268b604ab330c327db41c3cf2dd7008bf17ae7d3d8e8146ac7213
-  languageName: node
-  linkType: hard
-
-"jose@npm:^5.2.0":
-  version: 5.6.2
-  resolution: "jose@npm:5.6.2"
-  checksum: 10c0/86df19254559785968b10873a23cc6361e5dfd5fc9b8774d7d0692c43a234a7ef91bd4a6832c441e15c6282f89d13515f8d979623952baf465442529ccc01509
   languageName: node
   linkType: hard
 
