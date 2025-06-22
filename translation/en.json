@@ -295,7 +295,9 @@
     "insights": "Insights",
     "no-enough-data": "No Enough Data",
     "est-value-nc": "Est. Value",
-    "nc-value": "NC Value"
+    "nc-value": "NC Value",
+    "nc-guide-value": "NC Guide Value",
+    "release-history": "Release History"
   },
   "Button": {
     "feedback": "Feedback",

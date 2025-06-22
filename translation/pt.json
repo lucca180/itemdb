@@ -296,7 +296,9 @@
     "insights": "Insights",
     "est-value-nc": "Valor Est.",
     "no-enough-data": "Sem Dados",
-    "nc-value": "NC Value"
+    "nc-value": "NC Value",
+    "nc-guide-value": "Guia de Valores NC",
+    "release-history": "Histórico de Lançamentos"
   },
   "Button": {
     "feedback": "Feedback",

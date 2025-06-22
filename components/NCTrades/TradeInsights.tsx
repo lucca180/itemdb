@@ -43,7 +43,7 @@ export const TradeInsights = (props: TradeInsightsProps) => {
         <HStack color="whiteAlpha.700" mb={2}>
           <Icon as={MdInsights} boxSize="24px" />
           <Text fontSize={'sm'} fontWeight={'bold'} color="whiteAlpha.800">
-            {t('Owls.releases')}
+            {t('ItemPage.release-history')}
           </Text>
         </HStack>
         {releases.map((release, i) => {

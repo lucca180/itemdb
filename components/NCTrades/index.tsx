@@ -8,6 +8,7 @@ import {
   Link,
   Skeleton,
   Stat,
+  StatHelpText,
   StatLabel,
   StatNumber,
   Text,
@@ -185,18 +186,18 @@ const NCTrade = (props: Props) => {
             borderRadius={'md'}
           >
             <Stat flex="initial" textAlign="center">
-              <StatLabel fontSize="xs">{t('ItemPage.est-value-nc')}</StatLabel>
+              <StatLabel fontSize="xs">{t('ItemPage.nc-guide-value')}</StatLabel>
               {!item.ncValue && (
                 <>
                   <StatNumber mb={0}>???</StatNumber>
                   <Text fontSize="xs" as="span">
                     {t('ItemPage.no-enough-data')}
                   </Text>
-                  <StatLabel fontSize="xs" mt={1}>
+                  <StatHelpText fontSize="xs" mt={1} mb={0} fontWeight={'medium'} opacity={1}>
                     <Link as={Link} href="/mall/report" isExternal>
                       {t('ItemPage.report-your-nc-trades')}
                     </Link>
-                  </StatLabel>
+                  </StatHelpText>
                 </>
               )}
               {item.ncValue && (
@@ -209,9 +210,9 @@ const NCTrade = (props: Props) => {
                     </Text>
                   </StatNumber>
 
-                  <StatLabel fontSize="xs">
+                  <StatHelpText fontSize="xs" mb={0}>
                     {format(new Date(item.ncValue.addedAt), 'PP')}{' '}
-                  </StatLabel>
+                  </StatHelpText>
                 </>
               )}
             </Stat>
