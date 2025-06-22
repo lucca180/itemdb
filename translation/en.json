@@ -294,7 +294,8 @@
     "buyable-now": "Buyable Now",
     "insights": "Insights",
     "no-enough-data": "No Enough Data",
-    "est-value-nc": "Est. Value"
+    "est-value-nc": "Est. Value",
+    "nc-value": "NC Value"
   },
   "Button": {
     "feedback": "Feedback",

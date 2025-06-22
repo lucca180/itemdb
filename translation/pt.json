@@ -295,7 +295,8 @@
     "buyable-now": "Disponível Agora",
     "insights": "Insights",
     "est-value-nc": "Valor Est.",
-    "no-enough-data": "Sem Dados"
+    "no-enough-data": "Sem Dados",
+    "nc-value": "NC Value"
   },
   "Button": {
     "feedback": "Feedback",

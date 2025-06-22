@@ -200,13 +200,6 @@ export const ItemCardBadge = (props: ItemCardBadgeProps) => {
         </Badge>
       )}
 
-      {/* 
-      {item.isNC && item.owls && !capValue && item.owls.buyable && !item.mallData && (
-        <Badge colorScheme="purple" whiteSpace="normal">
-          {t('ItemPage.nc-buyable')}
-        </Badge>
-      )} */}
-
       {item.isNC && item.mallData && (
         <Badge colorScheme="purple" whiteSpace="normal">
           {format.number(item.mallData.discountPrice || item.mallData.price)} NC

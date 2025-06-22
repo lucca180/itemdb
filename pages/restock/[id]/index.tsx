@@ -426,13 +426,13 @@ const sortItems = (a: ItemData, b: ItemData, sortBy: string, sortDir: string) =>
       return (
         (itemA.price.value ?? Number.MIN_SAFE_INTEGER) -
           (itemB.price.value ?? Number.MIN_SAFE_INTEGER) ||
-        (itemA.owls?.valueMin ?? Number.MIN_SAFE_INTEGER) -
-          (itemB.owls?.valueMin ?? Number.MIN_SAFE_INTEGER)
+        (itemA.ncValue?.minValue ?? Number.MIN_SAFE_INTEGER) -
+          (itemB.ncValue?.minValue ?? Number.MIN_SAFE_INTEGER)
       );
     else
       return (
         (itemB.price.value ?? Infinity) - (itemA.price.value ?? Infinity) ||
-        (itemB.owls?.valueMin ?? Infinity) - (itemA.owls?.valueMin ?? Infinity)
+        (itemB.ncValue?.minValue ?? Infinity) - (itemA.ncValue?.minValue ?? Infinity)
       );
   } else if (sortBy === 'item_id') {
     if (sortDir === 'asc') return (itemA.item_id ?? Infinity) - (itemB.item_id ?? Infinity);

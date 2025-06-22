@@ -91,7 +91,7 @@ export async function doSearch(
   const weightFilter = (filters.weight as string[]) ?? [];
   const rarityFilter = (filters.rarity as string[]) ?? [];
   const estValFilter = (filters.estVal as string[]) ?? [];
-  const owlsFilter = (filters.owlsValue as string[]) ?? [];
+  const ncValueFilter = (filters.ncValue as string[]) ?? [];
   const petpetColor = (filters.petpetColor as string[]) ?? [];
   const petpetSpecies = (filters.petpetSpecies as string[]) ?? [];
   const petpetOnlyPaintable = (filters.petpetOnlyPaintable as boolean) ?? false;
@@ -279,11 +279,11 @@ export async function doSearch(
       numberFilters.push(Prisma.sql`temp.rarity <= ${parseInt(rarityFilter[1])}`);
   }
 
-  if (owlsFilter.length > 0) {
-    if (owlsFilter[0] !== '')
-      numberFilters.push(Prisma.sql`temp.owlsValueMin >= ${parseInt(owlsFilter[0])}`);
-    if (owlsFilter[1] !== '')
-      numberFilters.push(Prisma.sql`temp.owlsValueMin <= ${parseInt(owlsFilter[1])}`);
+  if (ncValueFilter.length > 0) {
+    if (ncValueFilter[0] !== '')
+      numberFilters.push(Prisma.sql`temp.minValue >= ${parseInt(ncValueFilter[0])}`);
+    if (ncValueFilter[1] !== '')
+      numberFilters.push(Prisma.sql`temp.minValue <= ${parseInt(ncValueFilter[1])}`);
   }
 
   if (restockProfit !== '' && !isNaN(Number(restockProfit))) {
@@ -380,7 +380,7 @@ export async function doSearch(
   if (sortBy === 'name') sortSQL = Prisma.sql`ORDER BY temp.name`;
   else if (sortBy === 'price') sortSQL = Prisma.sql`ORDER BY temp.price`;
   else if (sortBy === 'added') sortSQL = Prisma.sql`ORDER BY temp.addedAt`;
-  else if (sortBy === 'owls') sortSQL = Prisma.sql`ORDER BY temp.owlsValueMin`;
+  else if (sortBy === 'ncValue') sortSQL = Prisma.sql`ORDER BY temp.minValue`;
   else if (sortBy === 'color' && isColorSearch) sortSQL = Prisma.sql`ORDER BY dist`;
   else if (sortBy === 'color')
     sortSQL = Prisma.sql`ORDER BY temp.hsv_h ${

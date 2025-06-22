@@ -182,7 +182,7 @@ export type SearchFilters = {
   rarity: string[]; // [min, max]
   weight: string[]; // [min, max]
   estVal: string[]; // [min, max]
-  owlsValue: string[]; // [min, max]
+  ncValue: string[]; // [min, max]
   petpetColor: string[];
   petpetSpecies: string[];
   petpetOnlyPaintable: boolean;

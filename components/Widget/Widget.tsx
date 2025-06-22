@@ -156,21 +156,15 @@ export const SimpleCardBadge = (props: SimpleCardBadgeProps) => {
         <div className="itemdb-widget-badge itemdb-widget-badge-yellow">PB</div>
       )}
 
-      {item.isNC &&
-        !item.mallData &&
-        (!item.owls || (isNaN(Number(item.owls.value.split('-')[0])) && !item.owls.buyable)) && (
-          <div className="itemdb-widget-badge itemdb-widget-badge-purple">NC</div>
-        )}
+      {item.isNC && !item.mallData && !item.ncValue && (
+        <div className="itemdb-widget-badge itemdb-widget-badge-purple">NC</div>
+      )}
 
-      {item.isNC &&
-        item.owls &&
-        !item.owls.buyable &&
-        !item.mallData &&
-        !isNaN(Number(item.owls.value.split('-')[0])) && (
-          <div className="itemdb-widget-badge itemdb-widget-badge-purple">
-            {item.owls.value} Owls
-          </div>
-        )}
+      {item.isNC && item.ncValue && !item.mallData && (
+        <div className="itemdb-widget-badge itemdb-widget-badge-purple">
+          {item.ncValue.range} caps
+        </div>
+      )}
 
       {item.isNC && item.mallData && (
         <div className="itemdb-widget-badge itemdb-widget-badge-purple">

@@ -194,7 +194,7 @@ export const rawToItemData = (raw: any): ItemData => {
         ? {
             minValue: result.minValue,
             maxValue: result.maxValue,
-            range: result.valueRange,
+            range: result.minValue >= 30 ? '+30' : result.valueRange,
             addedAt: result.ncValueAddedAt.toJSON(),
           }
         : null,

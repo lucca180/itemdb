@@ -1,6 +1,6 @@
   // ==UserScript==
   // @name         itemdb - Safety Deposit Box Pricer
-  // @version      1.5.0
+  // @version      1.5.1
   // @author       itemdb
   // @namespace    itemdb
   // @description  Shows the market price for your sdb/closet items
@@ -102,8 +102,8 @@ async function pricePage(itemData) {
         priceStr += `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">NC</a>`;
       }
 
-      if(item.isNC && item.owls){
-        priceStr += `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">${item.owls.value}</a><small><br/><a href="https://itemdb.com.br/articles/owls" target="_blank">Owls</a></small>`;
+      if(item.isNC && item.ncValue){
+        priceStr += `<a href="https://itemdb.com.br/item/${item.slug}" target="_blank">${item.ncValue.range} caps</a><small>`;
       }
 
       if(item && item.status !== 'no trade' && !item.price.value && !item.isNC){

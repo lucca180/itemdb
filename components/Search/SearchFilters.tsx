@@ -80,7 +80,7 @@ const SearchFilters = (props: Props) => {
     if (
       [
         'price',
-        'owlsValue',
+        'ncValue',
         'rarity',
         'weight',
         'estVal',
@@ -122,7 +122,7 @@ const SearchFilters = (props: Props) => {
       | 'rarity'
       | 'weight'
       | 'estVal'
-      | 'owlsValue'
+      | 'ncValue'
       | 'restockProfit'
       | 'colorTolerance'
   ) => {
@@ -350,13 +350,13 @@ const SearchFilters = (props: Props) => {
           </HStack>
         </AccordionPanel>
       </AccordionItem>
-      {/* <AccordionItem>
+      <AccordionItem>
         <h2>
           <AccordionButton>
             <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              <Badge colorScheme="purple">NC</Badge> {t('ItemPage.owls-value')}{' '}
-              {filters.owlsValue.filter((a) => a || a === '0').length > 0 && (
-                <Badge>{filters.owlsValue.filter((a) => a || a === '0').length}</Badge>
+              NC Value
+              {filters.ncValue.filter((a) => a || a === '0').length > 0 && (
+                <Badge>{filters.ncValue.filter((a) => a || a === '0').length}</Badge>
               )}
             </Box>
             <AccordionIcon />
@@ -365,19 +365,19 @@ const SearchFilters = (props: Props) => {
         <AccordionPanel pb={4}>
           <HStack>
             <CustomNumberInput
-              onChange={(val) => handleNumberChange(val, 0, 'owlsValue')}
-              value={filters.owlsValue[0]}
+              onChange={(val) => handleNumberChange(val, 0, 'ncValue')}
+              value={filters.ncValue[0]}
             />
             <Text fontSize="sm" color="gray.300">
               {t('General.to')}
             </Text>
             <CustomNumberInput
-              onChange={(val) => handleNumberChange(val, 1, 'owlsValue')}
-              value={filters.owlsValue[1]}
+              onChange={(val) => handleNumberChange(val, 1, 'ncValue')}
+              value={filters.ncValue[1]}
             />
           </HStack>
         </AccordionPanel>
-      </AccordionItem> */}
+      </AccordionItem>
       <AccordionItem>
         <h2>
           <AccordionButton>

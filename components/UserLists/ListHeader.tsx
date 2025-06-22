@@ -69,8 +69,7 @@ const ListHeader = (props: ListHeaderProps) => {
 
       if (
         itemData &&
-        !itemData.isNC &&
-        !itemData.price.value &&
+        ((itemData.isNC && !itemData.ncValue) || (!itemData.isNC && !itemData.price.value)) &&
         itemData.status === 'active' &&
         !item.isHidden
       )
@@ -96,9 +95,9 @@ const ListHeader = (props: ListHeaderProps) => {
 
     return Object.values(itemInfo).reduce((acc, item) => {
       const itemData = items[item.item_iid];
-      if (!itemData || !itemData.owls || !itemData.owls.valueMin || item.isHidden) return acc;
+      if (!itemData || !itemData.ncValue || !itemData.ncValue.minValue || item.isHidden) return acc;
 
-      return acc + itemData.owls.valueMin * item.amount;
+      return acc + itemData.ncValue.minValue * item.amount;
     }, 0);
   }, [items, itemInfo]);
 

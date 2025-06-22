@@ -10,7 +10,7 @@ export const defaultFilters: SearchFilters = {
   rarity: ['', ''],
   weight: ['', ''],
   estVal: ['', ''],
-  owlsValue: ['', ''],
+  ncValue: ['', ''],
   petpetColor: [],
   petpetSpecies: [],
   petpetOnlyPaintable: false,
@@ -35,7 +35,7 @@ const parsableFilters = [
   'rarity',
   'weight',
   'estVal',
-  'owlsValue',
+  'ncValue',
   'sortBy',
   'sortDir',
   'mode',
@@ -180,19 +180,19 @@ export const parseFilters = (query: string, skipBoolean = true): [SearchFilters,
       filters.estVal = newEstVal;
     }
 
-    if (filterName === 'owlsValue') {
-      const minOwlsValue = matchRegex(query, `owlsMin`);
-      const maxOwlsValue = matchRegex(query, `owlsMax`);
+    if (filterName === 'ncValue') {
+      const minNcValue = matchRegex(query, `ncValueMin`);
+      const maxNcValue = matchRegex(query, `ncValueMax`);
 
-      query = sanitizeQuery(query, `owlsMin`);
-      query = sanitizeQuery(query, `owlsMax`);
+      query = sanitizeQuery(query, `ncValueMin`);
+      query = sanitizeQuery(query, `ncValueMax`);
 
-      const newOwlsValue = [];
+      const newNcValue = [];
 
-      if (minOwlsValue) newOwlsValue[0] = minOwlsValue;
-      if (maxOwlsValue) newOwlsValue[1] = maxOwlsValue;
+      if (minNcValue) newNcValue[0] = minNcValue;
+      if (maxNcValue) newNcValue[1] = maxNcValue;
 
-      filters.owlsValue = newOwlsValue;
+      filters.ncValue = newNcValue;
     }
 
     if (filterName === 'sortBy') {

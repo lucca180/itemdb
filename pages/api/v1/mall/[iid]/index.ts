@@ -231,7 +231,7 @@ const rawToNCValue = (raw: ncValues): NCValue => {
   return {
     minValue: raw.minValue,
     maxValue: raw.maxValue,
-    range: raw.valueRange,
+    range: raw.minValue >= 30 ? '+30' : raw.valueRange,
     addedAt: new Date(raw.addedAt).toJSON(),
   };
 };
