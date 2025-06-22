@@ -24,12 +24,13 @@ export const TradeInsights = (props: TradeInsightsProps) => {
       const dateA = new Date(a.saleBegin ?? a.seriesStart);
       const dateB = new Date(b.saleBegin ?? b.seriesStart);
 
-      if (isEventActive(a) || isBuyable(a)) {
-        return -1; // Prioritize active events or buyable releases
+      // Prioritize active events or buyable releases
+      if ((isEventActive(a) || isBuyable(a)) && !(isEventActive(b) || isBuyable(b))) {
+        return -1;
       }
 
-      if (isEventActive(b) || isBuyable(b)) {
-        return 1; // Prioritize active events or buyable releases
+      if ((isEventActive(b) || isBuyable(b)) && !(isEventActive(a) || isBuyable(a))) {
+        return 1;
       }
 
       return dateB.getTime() - dateA.getTime();
