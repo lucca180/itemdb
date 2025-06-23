@@ -144,6 +144,8 @@ const NCTrade = (props: Props) => {
                 colorScheme={tableType === 'insights' ? 'blue' : ''}
                 isActive={tableType === 'insights'}
                 onClick={() => setTableType('insights')}
+                data-umami-event="nc-trade-buttons"
+                data-umami-event-label={'insights'}
               >
                 {t('ItemPage.insights')}
               </Button>
@@ -152,6 +154,8 @@ const NCTrade = (props: Props) => {
               colorScheme={tableType === 'seeking' ? 'cyan' : ''}
               isActive={tableType === 'seeking'}
               onClick={() => setTableType('seeking')}
+              data-umami-event="nc-trade-buttons"
+              data-umami-event-label={'seeking'}
             >
               {seeking.length} {t('ItemPage.seeking')}
             </Button>
@@ -159,6 +163,8 @@ const NCTrade = (props: Props) => {
               colorScheme={tableType === 'trading' ? 'purple' : ''}
               isActive={tableType === 'trading'}
               onClick={() => setTableType('trading')}
+              data-umami-event="nc-trade-buttons"
+              data-umami-event-label={'trading'}
             >
               {trading.length} {t('ItemPage.trading')}
             </Button>
@@ -166,6 +172,8 @@ const NCTrade = (props: Props) => {
               colorScheme={tableType === 'owlsTrading' ? 'teal' : ''}
               isActive={tableType === 'owlsTrading'}
               onClick={() => setTableType('owlsTrading')}
+              data-umami-event="nc-trade-buttons"
+              data-umami-event-label={'owls-trading'}
             >
               <Skeleton isLoaded={owlsTradeHistory !== null} startColor={item.color.hex} mr={1}>
                 <span>{tradeCount}</span>
