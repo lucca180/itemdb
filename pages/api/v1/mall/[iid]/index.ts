@@ -48,7 +48,8 @@ export const getNCValue = async (
 
   if (
     !valueRaw ||
-    differenceInCalendarDays(Date.now(), valueRaw.lastChangeCheck ?? 0) > updateInterval
+    (differenceInCalendarDays(Date.now(), valueRaw.addedAt) > updateInterval &&
+      differenceInCalendarDays(Date.now(), valueRaw.lastChangeCheck ?? 0) >= 3)
   ) {
     if (!shouldReturnUpdated) {
       // not awaiting the update if we don't need the updated value

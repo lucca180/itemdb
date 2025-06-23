@@ -224,7 +224,7 @@ export const getItem = async (id_name: number | string) => {
     item.isNC &&
     item.status !== 'no trade' &&
     ENABLE_IDB_VALUES &&
-    differenceInCalendarDays(Date.now(), new Date(result.addedAt)) > 15
+    differenceInCalendarDays(Date.now(), new Date(result.addedAt)) > 3
   )
     item.ncValue = await getNCValue(item.internal_id, item.name, 15, false);
 
