@@ -1,11 +1,10 @@
 import axios from 'axios';
-import { format, isSameDay } from 'date-fns';
+import { isSameDay } from 'date-fns';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { Prisma } from '@prisma/generated/client';
-import { NCTradeItem, NCTradeReport, OwlsTrade } from '../../../../types';
+import { NCTradeItem, NCTradeReport } from '../../../../types';
 import { CheckAuth } from '../../../../utils/googleCloud';
-import { UTCDate } from '@date-fns/utc';
 import requestIp from 'request-ip';
 import { getManyItems } from '../items/many';
 
@@ -88,22 +87,22 @@ async function POST(req: NextApiRequest, res: NextApiResponse<any>) {
     },
   });
 
-  const { ds, traded, traded_for } = tradeReportToOwlsTrade({
-    date,
-    offered,
-    received,
-    notes,
-  });
+  // const { ds, traded, traded_for } = tradeReportToOwlsTrade({
+  //   date,
+  //   offered,
+  //   received,
+  //   notes,
+  // });
 
-  const result = await axios.post(OWLS_URL + '/transactions/submit', {
-    user_id: user.neopetsUser,
-    date: ds,
-    traded: traded,
-    traded_for: traded_for,
-    notes: notes,
-  });
+  // const result = await axios.post(OWLS_URL + '/transactions/submit', {
+  //   user_id: user.neopetsUser,
+  //   date: ds,
+  //   traded: traded,
+  //   traded_for: traded_for,
+  //   notes: notes,
+  // });
 
-  return res.status(result.status).json(result.data);
+  return res.status(200).json({ success: true, message: 'Trade submitted successfully' });
 }
 
 export const getLatestOwls = async (limit = 20) => {
@@ -199,28 +198,28 @@ export const getLatestOwls = async (limit = 20) => {
   });
 };
 
-const tradeReportToOwlsTrade = (report: NCTradeReport): OwlsTrade => {
-  const trade: OwlsTrade = {
-    ds: format(new UTCDate(report.date), 'yyyy-MM-dd'),
-    notes: report.notes,
-    traded: '',
-    traded_for: '',
-  };
+// const tradeReportToOwlsTrade = (report: NCTradeReport): OwlsTrade => {
+//   const trade: OwlsTrade = {
+//     ds: format(new UTCDate(report.date), 'yyyy-MM-dd'),
+//     notes: report.notes,
+//     traded: '',
+//     traded_for: '',
+//   };
 
-  report.offered.forEach((item, i) => {
-    if (i > 0) trade.traded += ' + ';
-    if (item.quantity > 1) trade.traded += `${item.quantity}x `;
-    trade.traded += `${item.itemName} (${item.personalValue})`;
-  });
+//   report.offered.forEach((item, i) => {
+//     if (i > 0) trade.traded += ' + ';
+//     if (item.quantity > 1) trade.traded += `${item.quantity}x `;
+//     trade.traded += `${item.itemName} (${item.personalValue})`;
+//   });
 
-  report.received.forEach((item, i) => {
-    if (i > 0) trade.traded_for += ' + ';
-    if (item.quantity > 1) trade.traded_for += `${item.quantity}x `;
-    trade.traded_for += `${item.itemName} (${item.personalValue})`;
-  });
+//   report.received.forEach((item, i) => {
+//     if (i > 0) trade.traded_for += ' + ';
+//     if (item.quantity > 1) trade.traded_for += `${item.quantity}x `;
+//     trade.traded_for += `${item.itemName} (${item.personalValue})`;
+//   });
 
-  return trade;
-};
+//   return trade;
+// };
 
 const toTradeItem = (
   tradeItemRaw: NCTradeItem,
