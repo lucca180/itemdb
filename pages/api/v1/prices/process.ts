@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { coefficientOfVariation } from '../../../../utils/utils';
 import { ItemPrices, PriceProcess2, Prisma } from '@prisma/generated/client';
-import { differenceInCalendarDays } from 'date-fns';
+import { differenceInCalendarDays, differenceInDays } from 'date-fns';
 import { processPrices2 } from '../../../../utils/pricing';
 
 export const MAX_DAYS = 30;
@@ -357,7 +357,7 @@ async function updateOrAddDB(
       const item = await prisma.items.findFirst({ where: { internal_id: priceData.item_iid } });
 
       // do not add prices for new items
-      if (differenceInCalendarDays(new Date(), item!.addedAt) < 2) return undefined;
+      if (differenceInDays(new Date(), item!.addedAt) < 2) return undefined;
 
       return newPriceData;
     }
