@@ -108,7 +108,6 @@ export const getNCTradeInsights = async (item_iid: string | number): Promise<Ins
   const ncEventsRaw = prisma.userList.findMany({
     where: {
       official: true,
-      official_tag: 'NC Event',
       items: {
         some: {
           item_iid: Number(item_iid),
