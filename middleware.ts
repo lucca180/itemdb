@@ -18,7 +18,7 @@ const VALID_LOCALES = ['en', 'pt'];
 const skipAPIMiddleware = process.env.SKIP_API_MIDDLEWARE === 'true';
 const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === 'true';
 const ITEMDB_URL = process.env.ITEMDB_SERVER;
-
+const isDev = process.env.NODE_ENV === 'development';
 export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/_next') || PUBLIC_FILE.test(request.nextUrl.pathname)) {
     return NextResponse.next();
@@ -38,7 +38,7 @@ export async function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
   const sessionCookie = request.cookies.get('idb-session-id')?.value || '';
-  if (!sessionCookie) {
+  if (!sessionCookie && !isDev) {
     const newSession = await getSession(sessionCookie);
     response.cookies.set({
       name: 'idb-session-id',
@@ -79,7 +79,7 @@ export const config = {
 // ---------- API Middleware ---------- //
 
 const apiMiddleware = async (request: NextRequest) => {
-  if (process.env.NODE_ENV === 'development') return NextResponse.next();
+  if (isDev) return NextResponse.next();
   // Skip rate limit if key is provided
   if (request.headers.get('x-tarnum-skip') === process.env.TARNUM_KEY) {
     return NextResponse.next();
