@@ -50,7 +50,7 @@ const AdminEditPriceModal = (props: AdminEditPriceModalProps) => {
         newPrice: newPriceVal,
         isInflation: newInflation,
         item_iid: item.internal_id,
-        priceContext: priceContext || undefined,
+        priceContext: priceContext,
       });
 
       if (res.status === 200) {

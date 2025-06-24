@@ -44,7 +44,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse, user: User) => {
       noInflation_id: noInflation_id,
       price: newPrice,
       usedProcessIDs: 'manual_edit',
-      priceContext: priceContext || undefined,
+      priceContext: priceContext || null,
     },
   });
 
