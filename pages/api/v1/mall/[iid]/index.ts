@@ -97,9 +97,19 @@ const updateNCValue = async (item_iid: number, itemName: string, oldValue?: NCVa
 
   const [tradesDb, ratios, owlsTrades] = await Promise.all([tradesRaw, ratiosRaw, owlsTradesRaw]);
 
-  const trades = [...tradesDb, ...owlsTrades];
+  const trades = [...tradesDb, ...owlsTrades].filter((t: tradeHistory) => {
+    if (!oldValue) return true;
+    const owlsTrade = t as OwlsTrade;
 
-  if (trades.length < 3) {
+    if (owlsTrade.ds) {
+      return new Date(owlsTrade.ds) > new Date(oldValue.addedAt);
+    }
+
+    // itemdb trades are already filtered by query
+    return true;
+  });
+
+  if ((trades.length < 5 && !ratios) || (trades.length < 3 && !!ratios)) {
     const updated = oldValue
       ? await prisma.ncValues.update({
           where: {
