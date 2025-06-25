@@ -161,14 +161,12 @@ const ListReleaseCard = (props: ListReleaseCardProps) => {
     <>
       <HStack>
         {isActive && <Badge colorScheme="yellow">{t('ItemPage.buyable-now')}</Badge>}
-        <Badge colorScheme="orange">{t('Owls.nc-event')}</Badge>
+        {release.officialTag && <Badge colorScheme="orange">{release.officialTag}</Badge>}
       </HStack>
       <Text>
-        {
-          <Link as={NextLink} href={`/lists/official/${release.slug}`} prefetch={false}>
-            {release.name}
-          </Link>
-        }
+        <Link as={NextLink} href={`/lists/official/${release.slug}`} prefetch={false}>
+          {release.name}
+        </Link>
       </Text>
       <Text fontSize={'xs'} color="whiteAlpha.700">
         {formatter.dateTime(new Date(release.seriesStart ?? 0), {
