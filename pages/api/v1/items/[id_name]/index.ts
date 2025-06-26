@@ -117,7 +117,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
     });
 
     if (dbSlugItems.length > 0) {
-      const regex = new RegExp(`^${itemSlug}-\\d+$`);
+      const regex = new RegExp(`^${itemSlug}(-\\d+)?$`);
 
       const sameSlug = dbSlugItems.filter((x) => regex.test(x.slug ?? ''));
 
