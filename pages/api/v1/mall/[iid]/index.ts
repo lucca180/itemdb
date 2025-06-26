@@ -75,7 +75,9 @@ const updateNCValue = async (item_iid: number, itemName: string, oldValue?: NCVa
       item_iid: item_iid,
       trade: {
         tradeDate: {
-          gt: oldValue ? new Date(oldValue.addedAt) : undefined,
+          gt: oldValue
+            ? new Date(oldValue.addedAt)
+            : new Date(Date.now() - 1000 * 60 * 60 * 24 * 180),
         },
       },
     },
@@ -98,15 +100,17 @@ const updateNCValue = async (item_iid: number, itemName: string, oldValue?: NCVa
   const [tradesDb, ratios, owlsTrades] = await Promise.all([tradesRaw, ratiosRaw, owlsTradesRaw]);
 
   const trades = [...tradesDb, ...owlsTrades].filter((t: tradeHistory) => {
-    if (!oldValue) return true;
     const owlsTrade = t as OwlsTrade;
 
-    if (owlsTrade.ds) {
-      return new Date(owlsTrade.ds) > new Date(oldValue.addedAt);
-    }
+    // itemdb trades is already filtered by tradeDate
+    if (!owlsTrade.ds) return true;
 
-    // itemdb trades are already filtered by query
-    return true;
+    const tradeDate = new Date(owlsTrade.ds);
+    if (tradeDate.getTime() < Date.now() - 1000 * 60 * 60 * 24 * 180) return false;
+
+    if (!oldValue) return true;
+
+    return new Date(owlsTrade.ds) > new Date(oldValue.addedAt);
   });
 
   if ((trades.length < 5 && !ratios) || (trades.length < 3 && !!ratios)) {
