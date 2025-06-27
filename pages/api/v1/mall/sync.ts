@@ -55,6 +55,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     },
     select: {
       item_id: true,
+      name: true,
+      description: true,
       internal_id: true,
     },
   });
@@ -69,6 +71,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         inexistentIds.push(item.id);
         continue;
       }
+
+      // send item data to process queue
+      if (item.name !== dbItem.name || item.description.trim() !== dbItem.description?.trim())
+        inexistentIds.push(item.id);
 
       if (!item.isAvailable || !item.isBuyable) continue;
 
@@ -136,6 +142,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       description: item.description,
     };
   });
+
   const createItemRes = await fetch(ITEMDB_SERVER + '/api/v1/items', {
     method: 'POST',
     headers: {
