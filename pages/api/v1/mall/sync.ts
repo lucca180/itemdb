@@ -65,8 +65,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   for (const id in ncMallData) {
     const item = ncMallData[id];
+    const dbItem = allItems.find((i) => item.id === i.item_id);
+
     if (!allIds.has(item.id)) {
-      const dbItem = allItems.find((i) => item.id === i.item_id);
       if (!dbItem) {
         inexistentIds.push(item.id);
         continue;
@@ -90,6 +91,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         active: true,
       });
     } else {
+      if (dbItem) {
+        // send item data to process queue
+        if (item.name !== dbItem.name || item.description.trim() !== dbItem.description?.trim())
+          inexistentIds.push(item.id);
+      }
+
       if (!item.isAvailable || !item.isBuyable) continue;
 
       removeIds.delete(item.id);
