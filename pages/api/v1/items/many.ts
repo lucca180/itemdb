@@ -224,16 +224,22 @@ export const rawToItemData = (raw: any): ItemData => {
 
   // ncValue logic
   if (item.isNC && item.status === 'active' && NC_VALUES_TYPE) {
-    let ncType = NC_VALUES_TYPE;
+    const ncType = NC_VALUES_TYPE;
 
-    if (ncType === 'best') {
-      const idbDate = new Date(result.ncValueAddedAt ?? 0);
-      const lebronDate = new Date(result.owlsPriced ?? 0);
-
-      ncType = idbDate > lebronDate ? 'itemdb' : 'lebron';
+    if (NC_VALUES_TYPE === 'lebron') {
+      item.ncValue =
+        result.owlsValue && result.owlsValue !== 'null'
+          ? {
+              minValue: result.owlsValueMin,
+              maxValue: result.owlsValueMin,
+              range: result.owlsValue,
+              addedAt: result.owlsPriced.toJSON(),
+              source: 'lebron',
+            }
+          : null;
     }
 
-    if (ncType === 'itemdb') {
+    if (ncType === 'itemdb' || (ncType === 'best' && !item.ncValue)) {
       item.ncValue = result.valueRange
         ? {
             minValue: result.minValue,
@@ -241,18 +247,6 @@ export const rawToItemData = (raw: any): ItemData => {
             range: result.minValue >= 30 ? '+30' : result.valueRange,
             addedAt: result.ncValueAddedAt.toJSON(),
             source: 'itemdb',
-          }
-        : null;
-    }
-
-    if (ncType === 'lebron') {
-      item.ncValue = result.owlsValue
-        ? {
-            minValue: result.owlsValueMin,
-            maxValue: result.owlsValueMin,
-            range: result.owlsValue,
-            addedAt: result.owlsPriced.toJSON(),
-            source: 'lebron',
           }
         : null;
     }

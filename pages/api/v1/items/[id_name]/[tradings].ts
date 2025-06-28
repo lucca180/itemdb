@@ -307,7 +307,7 @@ const checkGoal = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 const updateLebronVal = async (res: LebronSearchResponse) => {
-  if (!res.itemStats.value) return;
+  if (!res.itemStats.value || res.itemStats.value === 'null') return;
   const lebronItem = res.itemStats;
 
   const item = await prisma.items.findFirst({
