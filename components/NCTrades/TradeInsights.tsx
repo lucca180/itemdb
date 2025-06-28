@@ -1,5 +1,5 @@
 import { Badge, Flex, HStack, Icon, Text, Link, Button } from '@chakra-ui/react';
-import { getNCMallDataDates } from '@components/Items/NCMallCard';
+import { getNCMallDataDates, isMallDiscounted } from '@components/Items/NCMallCard';
 import { InsightsResponse, ItemData, NCMallData, UserList } from '@types';
 import { useFormatter, useTranslations } from 'next-intl';
 import NextLink from 'next/link';
@@ -101,6 +101,8 @@ const MallReleaseCard = (props: MallReleaseCardProps) => {
   const formatter = useFormatter();
   const t = useTranslations();
 
+  const isDiscounted = isMallDiscounted(release);
+
   const { startDate, endDate } = getNCMallDataDates(release, item);
 
   return (
@@ -110,8 +112,9 @@ const MallReleaseCard = (props: MallReleaseCardProps) => {
         {!isDirect && (
           <Badge colorScheme={isLE ? 'green' : 'gray'}>{isLE ? 'LE' : 'Cap'} Prize</Badge>
         )}
-        <Badge colorScheme="purple">
-          {release.price > 0 && `${release.price} NC`}
+        <Badge colorScheme={isDiscounted ? 'orange' : 'purple'}>
+          {release.price > 0 &&
+            `${formatter.number(isDiscounted ? (release.discountPrice ?? -1) : release.price)} NC`}
           {release.price === 0 && t('ItemPage.free')}
         </Badge>
       </HStack>

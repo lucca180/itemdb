@@ -8,6 +8,7 @@ import { getRestockProfit, rarityToCCPoints } from '../../utils/utils';
 import { useFormatter, useTranslations } from 'next-intl';
 import MainLink from '../Utils/MainLink';
 import { MdHelp } from 'react-icons/md';
+import { isMallDiscounted } from './NCMallCard';
 
 export type ItemProps = {
   item?: ItemData;
@@ -171,6 +172,7 @@ export const ItemCardBadge = (props: ItemCardBadgeProps) => {
   const { item, capValue, odds, profit, isLE, sortType } = props;
 
   if (!item) return null;
+  const isDiscounted = isMallDiscounted(item.mallData);
 
   return (
     <>
@@ -204,8 +206,9 @@ export const ItemCardBadge = (props: ItemCardBadgeProps) => {
       )}
 
       {item.isNC && item.mallData && (
-        <Badge colorScheme={item.mallData.discountPrice ? 'orange' : 'purple'} whiteSpace="normal">
-          {format.number(item.mallData.discountPrice || item.mallData.price)} NC
+        <Badge colorScheme={isDiscounted ? 'orange' : 'purple'} whiteSpace="normal">
+          {format.number(isDiscounted ? (item.mallData.discountPrice ?? -1) : item.mallData.price)}{' '}
+          NC
         </Badge>
       )}
 

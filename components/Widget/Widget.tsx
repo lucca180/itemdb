@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { Fragment } from 'react';
 import { ItemData } from '../../types';
+import { isMallDiscounted } from '@components/Items/NCMallCard';
 
 type WidgetProps = {
   items: ItemData[];
@@ -135,6 +136,7 @@ export const SimpleCardBadge = (props: SimpleCardBadgeProps) => {
   const { item } = props;
 
   if (!item) return null;
+  const isDiscounted = isMallDiscounted(item.mallData);
 
   return (
     <>
@@ -168,7 +170,10 @@ export const SimpleCardBadge = (props: SimpleCardBadgeProps) => {
 
       {item.isNC && item.mallData && (
         <div className="itemdb-widget-badge itemdb-widget-badge-purple">
-          {intlFormat.format(item.mallData.discountPrice || item.mallData.price)} NC
+          {intlFormat.format(
+            isDiscounted ? (item.mallData.discountPrice ?? -1) : item.mallData.price
+          )}{' '}
+          NC
         </div>
       )}
     </>

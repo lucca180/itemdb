@@ -1,6 +1,6 @@
 import { Center, Flex, HStack, Tag, Text, Link, Badge } from '@chakra-ui/react';
 import React from 'react';
-import { ItemData, NCMallData } from '../../types';
+import { ItemData, ItemMallData, NCMallData } from '../../types';
 import CardBase from '../Card/CardBase';
 import Image from 'next/image';
 import { useFormatter, useTranslations } from 'next-intl';
@@ -15,10 +15,8 @@ const NcMallCard = (props: Props) => {
   const format = useFormatter();
   const { item, ncMallData } = props;
 
-  const isDiscounted =
-    ncMallData.active &&
-    !!ncMallData.discountPrice &&
-    new Date(ncMallData.discountEnd ?? 0) > new Date();
+  const isDiscounted = isMallDiscounted(ncMallData);
+
   const isBuyable =
     ncMallData.active && (!ncMallData.saleEnd || new Date(ncMallData.saleEnd) > new Date());
 
@@ -139,6 +137,11 @@ export const getNCMallDataDates = (ncMallData: NCMallData, item: ItemData) => {
     startDate,
     endDate,
   };
+};
+
+export const isMallDiscounted = (ncMallData?: ItemMallData | null): boolean => {
+  if (!ncMallData) return false;
+  return !!ncMallData.discountPrice && new Date(ncMallData.discountEnd ?? 0) > new Date();
 };
 
 function maxDate(...dates: Date[]): Date {
