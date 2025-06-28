@@ -38,6 +38,8 @@ export const UserState = atomWithStorage<User | null>('UserState', null, storage
 
 export const UserPrefs = atomWithStorage<UserPreferences | null>('UserPrefs', null, storageLocal);
 
+let isDoingLogin = false;
+
 export function AuthProvider({ children }: any) {
   const [user, setUser] = useAtom(UserState);
   const [userPref, setUserPref] = useAtom(UserPrefs);
@@ -99,12 +101,17 @@ export function AuthProvider({ children }: any) {
       const token = await fireUser.getIdToken();
       if (!token) throw 'No token found';
 
+      if (isDoingLogin) return;
+
+      isDoingLogin = true;
+
       const userRes = await axios.post('/api/auth/login', null, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      isDoingLogin = false;
+
       const userData = userRes.data as User;
-      userData.isAdmin = userData.role === 'ADMIN';
 
       if (user && checkEqual(userData, user)) return;
 

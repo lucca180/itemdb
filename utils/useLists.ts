@@ -11,7 +11,10 @@ export const useLists = () => {
   const { user } = useAuth();
   const { data, error, isLoading, mutate } = useSWR(
     !user ? null : `/api/v1/lists/${user.username}`,
-    fetcher
+    fetcher,
+    {
+      focusThrottleInterval: 30000,
+    }
   );
 
   const addItemToList = async (listId: number, item_iids: number | number[]) => {
