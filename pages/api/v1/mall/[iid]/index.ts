@@ -247,6 +247,7 @@ const rawToNCValue = (raw: ncValues): NCValue => {
     maxValue: raw.maxValue,
     range: raw.minValue >= 30 ? '+30' : raw.valueRange,
     addedAt: new Date(raw.addedAt).toJSON(),
+    source: 'itemdb',
   };
 };
 
@@ -290,5 +291,6 @@ const getItemValueOwls = (trade: OwlsTrade, itemName: string) => {
 
   return values;
 };
+
 const isSameItem = (tradeStr: string, itemName: string) =>
   tradeStr.toLowerCase().includes(itemName.toLowerCase());

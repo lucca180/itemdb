@@ -169,7 +169,7 @@ const NCTrade = (props: Props) => {
               {trading.length} {t('ItemPage.trading')}
             </Button>
             <Button
-              colorScheme={tableType === 'ncTrading' ? 'teal' : ''}
+              colorScheme={tableType === 'ncTrading' ? 'yellow' : ''}
               isActive={tableType === 'ncTrading'}
               onClick={() => setTableType('ncTrading')}
               data-umami-event="nc-trade-buttons"
@@ -184,7 +184,7 @@ const NCTrade = (props: Props) => {
         </Flex>
         <Flex flex={1} flexFlow={{ base: 'column', md: 'row' }} gap={3}>
           <Badge
-            colorScheme="purple"
+            colorScheme={item.ncValue && item.ncValue.source === 'lebron' ? 'yellow' : 'purple'}
             fontSize="xs"
             minW="15%"
             maxW={{ base: '100%', md: '25%' }}
@@ -194,7 +194,13 @@ const NCTrade = (props: Props) => {
             borderRadius={'md'}
           >
             <Stat flex="initial" textAlign="center">
-              <StatLabel fontSize="xs">{t('ItemPage.nc-guide-value')}</StatLabel>
+              <StatLabel fontSize="xs">
+                {!item.ncValue && t('ItemPage.nc-guide-value')}
+                {item.ncValue &&
+                  (item.ncValue.source === 'itemdb'
+                    ? t('ItemPage.itemdb-value')
+                    : t('ItemPage.lebron-value'))}
+              </StatLabel>
               {!item.ncValue && (
                 <>
                   <StatNumber mb={0}>???</StatNumber>

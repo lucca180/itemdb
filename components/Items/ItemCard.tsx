@@ -195,13 +195,16 @@ export const ItemCardBadge = (props: ItemCardBadgeProps) => {
       )}
 
       {item.isNC && item.ncValue && !capValue && !item.mallData && (
-        <Badge colorScheme="purple" whiteSpace="normal">
+        <Badge
+          colorScheme={item.ncValue.source === 'lebron' ? 'yellow' : 'purple'}
+          whiteSpace="normal"
+        >
           {item.ncValue.range} Caps
         </Badge>
       )}
 
       {item.isNC && item.mallData && (
-        <Badge colorScheme="purple" whiteSpace="normal">
+        <Badge colorScheme={item.mallData.discountPrice ? 'orange' : 'purple'} whiteSpace="normal">
           {format.number(item.mallData.discountPrice || item.mallData.price)} NC
         </Badge>
       )}

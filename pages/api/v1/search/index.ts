@@ -428,6 +428,7 @@ export async function doSearch(
         c.addedAt as priceAdded, c.price, c.noInflation_id, 
         d.addedAt as ncValueAddedAt, d.minValue, d.maxValue, d.valueRange,
         s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded,
+        o.pricedAt as owlsPriced, o.value as owlsValue, o.valueMin as owlsValueMin,
         n.price as ncPrice, n.saleBegin, n.saleEnd, n.discountBegin, n.discountEnd, n.discountPrice
         FROM Items as a
         LEFT JOIN (
@@ -439,6 +440,7 @@ export async function doSearch(
         LEFT JOIN ItemColor as b on a.image_id = b.image_id and (POWER(b.lab_l-${l},2)+POWER(b.lab_a-${a},2)+POWER(b.lab_b-${b},2)) = f.dist
         LEFT JOIN ItemPrices as c on c.item_iid = a.internal_id and c.isLatest = 1
         LEFT JOIN ncValues as d on d.item_iid = a.internal_id and d.isLatest = 1
+        LEFT JOIN owlsPrice as o on o.item_iid = a.internal_id and o.isLatest = 1
         LEFT JOIN SaleStats as s on s.item_iid = a.internal_id and s.isLatest = 1 and s.stats != "unknown"
         LEFT JOIN NcMallData as n on n.item_iid = a.internal_id and n.active = 1
       ) as temp
@@ -484,6 +486,7 @@ export async function doSearch(
           c.addedAt as priceAdded, c.price, c.noInflation_id, 
           d.addedAt as ncValueAddedAt, d.minValue, d.maxValue, d.valueRange,
           s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded,
+          o.pricedAt as owlsPriced, o.value as owlsValue, o.valueMin as owlsValueMin,
           n.price as ncPrice, n.saleBegin, n.saleEnd, n.discountBegin, n.discountEnd, n.discountPrice
           ${colorSql_inside ? Prisma.sql`, ${colorSql_inside} as dist` : Prisma.empty}
           ${zoneFilterSQL.length > 0 ? Prisma.sql`, w.zone_label` : Prisma.empty}
@@ -499,6 +502,7 @@ export async function doSearch(
         LEFT JOIN itemPrices as c on c.item_iid = a.internal_id and c.isLatest = 1
         LEFT JOIN ncValues as d on d.item_iid = a.internal_id and d.isLatest = 1
         LEFT JOIN SaleStats as s on s.item_iid = a.internal_id and s.isLatest = 1 and s.stats != "unknown"
+        LEFT JOIN owlsPrice as o on o.item_iid = a.internal_id and o.isLatest = 1
         LEFT JOIN NcMallData as n on n.item_iid = a.internal_id and n.active = 1
         ${
           zoneFilterSQL.length > 0

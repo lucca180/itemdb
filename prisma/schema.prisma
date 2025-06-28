@@ -516,6 +516,9 @@ model OwlsPrice {
   item     Items    @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
   isLatest Boolean?
 
+  isVolatile Boolean @default(false)
+  source     String  @default("owls")
+
   @@unique([item_iid, isLatest])
   @@index([item_iid, pricedAt(sort: Desc)])
 }

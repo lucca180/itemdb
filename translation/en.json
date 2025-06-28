@@ -297,7 +297,9 @@
     "est-value-nc": "Est. Value",
     "nc-value": "NC Value",
     "nc-guide-value": "NC Guide Value",
-    "release-history": "Release History"
+    "release-history": "Release History",
+    "lebron-value": "Lebron Value",
+    "itemdb-value": "itemdb Value"
   },
   "Button": {
     "feedback": "Feedback",

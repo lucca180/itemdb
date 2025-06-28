@@ -21,7 +21,6 @@ export type ItemData = {
   price: ItemPriceData;
   saleStatus: SaleStatus | null;
   ncValue: NCValue | null;
-  owls?: OwlsPriceData | null;
   slug: string | null;
   comment: string | null;
   canonical_id: number | null;
@@ -623,6 +622,7 @@ export type NCValue = {
   maxValue: number;
   range: string;
   addedAt: string;
+  source: 'itemdb' | 'lebron';
 };
 
 export type InsightsResponse = {

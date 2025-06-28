@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { getItemFindAtLinks, isMissingInfo } from '../../../../utils/utils';
@@ -9,7 +8,7 @@ import requestIp from 'request-ip';
 import { redis_setItemCount } from '../../redis/checkapi';
 
 const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
-const ENABLE_IDB_VALUES = process.env.ENABLE_IDB_VALUES === 'true';
+const NC_VALUES_TYPE = process.env.NC_VALUES_TYPE;
 
 export const config = {
   api: {
@@ -105,12 +104,14 @@ export const getManyItems = async (
       b.hsv_h, b.hsv_s, b.hsv_v,
       c.addedAt as priceAdded, c.price, c.noInflation_id, 
       d.addedAt as ncValueAddedAt, d.minValue, d.maxValue, d.valueRange,
+      o.pricedAt as owlsPriced, o.value as owlsValue, o.valueMin as owlsValueMin,
       s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded,
       n.price as ncPrice, n.saleBegin, n.saleEnd, n.discountBegin, n.discountEnd, n.discountPrice
     FROM Items as a
     LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
     LEFT JOIN ItemPrices as c on c.item_iid = a.internal_id and c.isLatest = 1
     LEFT JOIN ncValues as d on d.item_iid = a.internal_id and d.isLatest = 1
+    LEFT JOIN owlsPrice as o on o.item_iid = a.internal_id and o.isLatest = 1
     LEFT JOIN SaleStats as s on s.item_iid = a.internal_id and s.isLatest = 1 and s.stats != "unknown"
     LEFT JOIN NcMallData as n on n.item_iid = a.internal_id and n.active = 1
     WHERE ${query}
@@ -189,15 +190,7 @@ export const rawToItemData = (raw: any): ItemData => {
             addedAt: (result.priceAdded as Date | null)?.toJSON() ?? null,
             inflated: !!result.noInflation_id,
           },
-    ncValue:
-      ENABLE_IDB_VALUES && result.valueRange
-        ? {
-            minValue: result.minValue,
-            maxValue: result.maxValue,
-            range: result.minValue >= 30 ? '+30' : result.valueRange,
-            addedAt: result.ncValueAddedAt.toJSON(),
-          }
-        : null,
+    ncValue: null,
     comment: result.comment ?? null,
     slug: result.slug ?? null,
     saleStatus:
@@ -228,6 +221,42 @@ export const rawToItemData = (raw: any): ItemData => {
           discountPrice: result.discountPrice,
         },
   };
+
+  // ncValue logic
+  if (item.isNC && item.status === 'active' && NC_VALUES_TYPE) {
+    let ncType = NC_VALUES_TYPE;
+
+    if (ncType === 'best') {
+      const idbDate = new Date(result.ncValueAddedAt ?? 0);
+      const lebronDate = new Date(result.owlsPriced ?? 0);
+
+      ncType = idbDate > lebronDate ? 'itemdb' : 'lebron';
+    }
+
+    if (ncType === 'itemdb') {
+      item.ncValue = result.valueRange
+        ? {
+            minValue: result.minValue,
+            maxValue: result.maxValue,
+            range: result.minValue >= 30 ? '+30' : result.valueRange,
+            addedAt: result.ncValueAddedAt.toJSON(),
+            source: 'itemdb',
+          }
+        : null;
+    }
+
+    if (ncType === 'lebron') {
+      item.ncValue = result.owlsValue
+        ? {
+            minValue: result.owlsValueMin,
+            maxValue: result.owlsValueMin,
+            range: result.owlsValue,
+            addedAt: result.owlsPriced.toJSON(),
+            source: 'lebron',
+          }
+        : null;
+    }
+  }
 
   item.findAt = getItemFindAtLinks(item); // does have all the info we need :)
   item.isMissingInfo = isMissingInfo(item);

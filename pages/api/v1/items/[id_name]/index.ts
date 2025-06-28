@@ -1,11 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { ItemData, OwlsPriceData, User } from '../../../../../types';
+import { ItemData, User } from '../../../../../types';
 import { getItemFindAtLinks, isMissingInfo, slugify } from '../../../../../utils/utils';
 import prisma from '../../../../../utils/prisma';
 import { Items, Prisma } from '@prisma/generated/client';
 import { CheckAuth } from '../../../../../utils/googleCloud';
-import axios from 'axios';
-import { differenceInCalendarDays, isSameDay, isToday } from 'date-fns';
+import { differenceInCalendarDays } from 'date-fns';
 import { getSaleStats } from './saleStats';
 import requestIp from 'request-ip';
 import { redis_setItemCount } from '../../../redis/checkapi';
@@ -15,8 +14,7 @@ import { rawToItemData } from '../many';
 import { getNCValue } from '../../mall/[iid]';
 
 const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
-const OWLS_URL = process.env.OWLS_API_URL;
-const ENABLE_IDB_VALUES = process.env.ENABLE_IDB_VALUES === 'true';
+const NC_VALUES_TYPE = process.env.NC_VALUES_TYPE; // 'itemdb' or 'lebron'
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -205,10 +203,12 @@ export const getItem = async (id_name: number | string) => {
       b.hsv_h, b.hsv_s, b.hsv_v,
       c.addedAt as priceAdded, c.price, c.noInflation_id,
       d.addedAt as ncValueAddedAt, d.minValue, d.maxValue, d.valueRange,
+      o.pricedAt as owlsPriced, o.value as owlsValue, o.valueMin as owlsValueMin,
       n.price as ncPrice, n.saleBegin, n.saleEnd, n.discountBegin, n.discountEnd, n.discountPrice
     FROM Items as a
     LEFT JOIN ItemColor as b on a.image_id = b.image_id and b.type = "Vibrant"
     LEFT JOIN ncValues as d on d.item_iid = a.internal_id and d.isLatest = 1
+    LEFT JOIN owlsPrice as o on o.item_iid = a.internal_id and o.isLatest = 1
     LEFT JOIN itemPrices as c on c.item_iid = a.internal_id and c.isLatest = 1
     LEFT JOIN NcMallData as n on n.item_iid = a.internal_id and n.active = 1
     WHERE ${query}
@@ -222,8 +222,8 @@ export const getItem = async (id_name: number | string) => {
 
   if (
     item.isNC &&
-    item.status !== 'no trade' &&
-    ENABLE_IDB_VALUES &&
+    item.status === 'active' &&
+    NC_VALUES_TYPE === 'itemdb' &&
     differenceInCalendarDays(Date.now(), new Date(result.addedAt)) > 3
   )
     item.ncValue = await getNCValue(item.internal_id, item.name, 15, false);
@@ -346,120 +346,6 @@ export const processTags = async (itemTags: string[], itemCats: string[], intern
 };
 
 // ---------------------------- //
-
-export const fetchOwlsData = async (
-  itemName: string,
-  item?: ItemData
-): Promise<OwlsPriceData | null> => {
-  let lastOwls;
-  if (item) {
-    const owls = await prisma.owlsPrice.findFirst({
-      where: {
-        item_iid: item.internal_id,
-        isLatest: true,
-      },
-      orderBy: {
-        addedAt: 'desc',
-      },
-    });
-
-    lastOwls = owls;
-
-    if (owls && isToday(owls.lastChecked)) {
-      return {
-        value: owls.value,
-        valueMin: owls.valueMin,
-        pricedAt: owls.pricedAt.toJSON(),
-        buyable: owls.value.toLowerCase().includes('buyable'),
-      };
-    }
-  }
-
-  try {
-    const res = await axios.get(`${OWLS_URL}/itemdata/${encodeURIComponent(itemName)}`);
-    const data = res.data as { last_updated: string; owls_value: string } | null;
-
-    if (!data || !data.owls_value) {
-      if (lastOwls) {
-        await prisma.owlsPrice.update({
-          where: {
-            internal_id: lastOwls.internal_id,
-          },
-          data: {
-            lastChecked: new Date(),
-            isLatest: null,
-          },
-        });
-      }
-
-      return null;
-    }
-
-    let price = Number(data.owls_value.split('-')[0]);
-    if (isNaN(price)) price = 0;
-    const lastUpdated = data.last_updated ? new Date(data.last_updated) : new Date();
-
-    if (
-      (!lastOwls && item) ||
-      (lastOwls &&
-        item &&
-        (!isSameDay(lastOwls.pricedAt, lastUpdated) || price !== lastOwls.valueMin))
-    ) {
-      const updateAll = prisma.owlsPrice.updateMany({
-        where: {
-          item_iid: item.internal_id,
-          isLatest: true,
-        },
-        data: {
-          isLatest: null,
-        },
-      });
-
-      const createAll = prisma.owlsPrice.create({
-        data: {
-          item_iid: item.internal_id,
-          value: data.owls_value,
-          valueMin: price,
-          pricedAt: lastUpdated,
-          isLatest: true,
-        },
-      });
-
-      await prisma.$transaction([updateAll, createAll], {
-        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
-      });
-    } else if (lastOwls && isSameDay(lastOwls.pricedAt, lastUpdated)) {
-      await prisma.owlsPrice.update({
-        where: {
-          internal_id: lastOwls.internal_id,
-        },
-        data: {
-          lastChecked: new Date(),
-        },
-      });
-    }
-
-    return {
-      value: data.owls_value,
-      valueMin: price,
-      pricedAt: lastUpdated.toJSON(),
-      buyable: data.owls_value.toLowerCase().includes('buyable'),
-    };
-  } catch (e: any) {
-    if (e.status === 404) {
-      return null;
-    }
-
-    return lastOwls
-      ? {
-          value: lastOwls.value,
-          valueMin: lastOwls.valueMin,
-          pricedAt: lastOwls.pricedAt.toJSON(),
-          buyable: lastOwls.value.toLowerCase().includes('buyable'),
-        }
-      : null;
-  }
-};
 
 const logChanges = async (originalItem: Items, updatedItem: Items, uid: string) => {
   const changes: ItemChangesLog = {};

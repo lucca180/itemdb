@@ -298,7 +298,9 @@
     "no-enough-data": "Sem Dados",
     "nc-value": "NC Value",
     "nc-guide-value": "Guia de Valores NC",
-    "release-history": "Histórico de Lançamentos"
+    "release-history": "Histórico de Lançamentos",
+    "itemdb-value": "Valor itemdb",
+    "lebron-value": "Valor Lebron"
   },
   "Button": {
     "feedback": "Feedback",

@@ -11,6 +11,7 @@ import prisma from '../../../../../utils/prisma';
 import { getManyItems } from '../many';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import { contributeCheck } from '../../restock/wrapped-check';
+import { Prisma } from '@prisma/generated/client';
 
 const LEBRON_URL = process.env.LEBRON_API_URL;
 
@@ -175,9 +176,12 @@ export const getLebronItemData = async (name: string) => {
       },
     });
 
-    return res.data as LebronSearchResponse;
+    const data = res.data as LebronSearchResponse;
+
+    updateLebronVal(data);
+
+    return data;
   } catch (e) {
-    console.error(LEBRON_URL + '/search/' + encodeURIComponent(name));
     console.error('Error fetching Lebron data:', e);
     return null;
   }
@@ -300,4 +304,62 @@ const checkGoal = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   return true;
+};
+
+const updateLebronVal = async (res: LebronSearchResponse) => {
+  if (!res.itemStats.value) return;
+  const lebronItem = res.itemStats;
+
+  const item = await prisma.items.findFirst({
+    where: {
+      name: lebronItem.name,
+      isNC: true,
+    },
+  });
+
+  if (!item) {
+    console.error(`Item not found for Lebron update: ${lebronItem.name}`);
+    return;
+  }
+
+  const oldVal = await prisma.owlsPrice.findFirst({
+    where: {
+      item_iid: item.internal_id,
+      isLatest: true,
+    },
+  });
+
+  if (
+    oldVal &&
+    oldVal.value === lebronItem.value &&
+    oldVal.pricedAt.getTime() === lebronItem.lastUpdated
+  )
+    return;
+
+  const newVal: Prisma.OwlsPriceUncheckedCreateInput = {
+    value: lebronItem.value,
+    item_iid: item.internal_id,
+    addedAt: new Date(),
+    isLatest: true,
+    pricedAt: new Date(lebronItem.lastUpdated),
+    valueMin: Number(lebronItem.value.split('-')[0]) || 0,
+    isVolatile: lebronItem.isVolatile,
+    source: 'lebron',
+  };
+
+  const updateRaw = prisma.owlsPrice.updateMany({
+    where: {
+      item_iid: item.internal_id,
+      isLatest: true,
+    },
+    data: {
+      isLatest: null,
+    },
+  });
+
+  const createRaw = prisma.owlsPrice.create({
+    data: newVal,
+  });
+
+  await prisma.$transaction([updateRaw, createRaw]);
 };
