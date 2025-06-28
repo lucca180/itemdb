@@ -30,6 +30,9 @@ export const getItemNCMall = async (item_iid: number): Promise<NCMallData | null
     where: {
       item_iid: item_iid,
     },
+    orderBy: {
+      addedAt: 'desc',
+    },
   });
 
   const ncMallData = result.find((r) => r.active == true) || result[0] || null;

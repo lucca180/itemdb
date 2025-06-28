@@ -22,6 +22,8 @@ const NcMallCard = (props: Props) => {
   const isBuyable =
     ncMallData.active && (!ncMallData.saleEnd || new Date(ncMallData.saleEnd) > new Date());
 
+  const { startDate, endDate } = getNCMallDataDates(ncMallData, item);
+
   return (
     <CardBase title={t('ItemPage.nc-mall-info')} color={item.color.rgb}>
       <Flex flexFlow={'column'} gap={2}>
@@ -83,14 +85,14 @@ const NcMallCard = (props: Props) => {
             </Badge>
           </Flex>
         </HStack>
-        {ncMallData.saleBegin && (
+        {startDate && (
           <HStack>
             <Tag size="md" fontWeight="bold" as="h3">
               {t('ItemPage.since')}
             </Tag>
             <Flex flexFlow={'column'} flex="1" alignItems={'flex-end'} gap={1}>
               <Text fontSize="xs" textAlign={'right'}>
-                {format.dateTime(new Date(ncMallData.saleBegin), {
+                {format.dateTime(startDate, {
                   year: 'numeric',
                   month: 'short',
                   day: 'numeric',
@@ -99,14 +101,14 @@ const NcMallCard = (props: Props) => {
             </Flex>
           </HStack>
         )}
-        {ncMallData.saleEnd && (
+        {endDate && (
           <HStack>
             <Tag size="md" fontWeight="bold" as="h3">
               {t('ItemPage.until')}
             </Tag>
             <Flex flexFlow={'column'} flex="1" alignItems={'flex-end'} gap={1}>
               <Text fontSize="xs" textAlign={'right'}>
-                {format.dateTime(new Date(ncMallData.saleEnd ?? 0), {
+                {format.dateTime(endDate, {
                   year: 'numeric',
                   month: 'short',
                   day: 'numeric',
@@ -121,3 +123,28 @@ const NcMallCard = (props: Props) => {
 };
 
 export default NcMallCard;
+
+export const getNCMallDataDates = (ncMallData: NCMallData, item: ItemData) => {
+  const startDate = ncMallData.saleBegin
+    ? maxDate(new Date(ncMallData.saleBegin), new Date(item.firstSeen ?? 0))
+    : null;
+
+  const endDate = !ncMallData.active
+    ? minDate(new Date(ncMallData.saleEnd ?? 0), new Date(ncMallData.updatedAt))
+    : ncMallData.saleEnd
+      ? new Date(ncMallData.saleEnd)
+      : null;
+
+  return {
+    startDate,
+    endDate,
+  };
+};
+
+function maxDate(...dates: Date[]): Date {
+  return new Date(Math.max(...dates.map((d) => d.getTime())));
+}
+
+function minDate(...dates: Date[]): Date {
+  return new Date(Math.min(...dates.map((d) => d.getTime())));
+}

@@ -1,4 +1,5 @@
 import { Badge, Flex, HStack, Icon, Text, Link, Button } from '@chakra-ui/react';
+import { getNCMallDataDates } from '@components/Items/NCMallCard';
 import { InsightsResponse, ItemData, NCMallData, UserList } from '@types';
 import { useFormatter, useTranslations } from 'next-intl';
 import NextLink from 'next/link';
@@ -100,6 +101,8 @@ const MallReleaseCard = (props: MallReleaseCardProps) => {
   const formatter = useFormatter();
   const t = useTranslations();
 
+  const { startDate, endDate } = getNCMallDataDates(release, item);
+
   return (
     <>
       <HStack>
@@ -107,7 +110,10 @@ const MallReleaseCard = (props: MallReleaseCardProps) => {
         {!isDirect && (
           <Badge colorScheme={isLE ? 'green' : 'gray'}>{isLE ? 'LE' : 'Cap'} Prize</Badge>
         )}
-        <Badge colorScheme="purple">{release.price} NC</Badge>
+        <Badge colorScheme="purple">
+          {release.price > 0 && `${release.price} NC`}
+          {release.price === 0 && t('ItemPage.free')}
+        </Badge>
       </HStack>
       <Text>
         {isDirect && (
@@ -122,14 +128,14 @@ const MallReleaseCard = (props: MallReleaseCardProps) => {
         )}
       </Text>
       <Text fontSize={'xs'} color="whiteAlpha.700">
-        {formatter.dateTime(new Date(release.saleBegin ?? 0), {
+        {formatter.dateTime(new Date(startDate ?? 0), {
           dateStyle: 'medium',
         })}{' '}
-        {release.saleEnd && (
+        {endDate && (
           <>
             {' '}
             -{' '}
-            {formatter.dateTime(new Date(release.saleEnd), {
+            {formatter.dateTime(new Date(endDate), {
               dateStyle: 'medium',
             })}
           </>
