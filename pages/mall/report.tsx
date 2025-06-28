@@ -26,11 +26,11 @@ import {
 import Layout from '../../components/Layout';
 import HeaderCard from '../../components/Card/HeaderCard';
 import { createTranslator, useTranslations } from 'next-intl';
-import { ItemData, NCTradeItem, NCTradeReport, OwlsTrade, User } from '../../types';
+import { ItemData, LebronTrade, NCTradeItem, NCTradeReport, User } from '../../types';
 import Image from '../../components/Utils/Image';
 import icon from '../../public/logo_icon.svg';
 import { format } from 'date-fns';
-import { OwlsTradeCard } from '../../components/NCTrades/OwlsTradeHistory';
+import { NCTradeCard } from '../../components/NCTrades/NCTradeHistory';
 import dynamic from 'next/dynamic';
 import axios from 'axios';
 import { CheckAuth } from '../../utils/googleCloud';
@@ -136,7 +136,7 @@ const NcTradeReportPage = (props: NcTradeReportPageProps) => {
             ),
           })}
         </Text>
-        <Text fontSize="sm">{t('Owls.faq-4')}</Text>
+        {/* <Text fontSize="sm">{t('Owls.faq-4')}</Text>
         <Heading as={'h3'} size="md" mt={4}>
           {t('Owls.faq-6')}
         </Heading>
@@ -144,7 +144,7 @@ const NcTradeReportPage = (props: NcTradeReportPageProps) => {
           {t.rich('Owls.faq-7', {
             Link: (chunk) => <Link href="/owls">{chunk}</Link>,
           })}
-        </Text>
+        </Text> */}
       </Flex>
     </>
   );
@@ -539,8 +539,8 @@ const NCTradeReportCard = (props: NCTradeReportProps) => {
               )}
               {activeStep === 3 && (
                 <>
-                  <OwlsTradeCard
-                    trade={tradeReportToOwlsTrade({ offered, received, notes, date })}
+                  <NCTradeCard
+                    trade={tradeReportToLebronTrade({ offered, received, notes, date })}
                   />
                   <Text fontSize={'xs'} color="gray.500" textAlign="center">
                     {t('Owls.terms-msg')}
@@ -587,24 +587,24 @@ const NCTradeReportCard = (props: NCTradeReportProps) => {
   );
 };
 
-export const tradeReportToOwlsTrade = (report: NCTradeReport): OwlsTrade => {
-  const trade: OwlsTrade = {
-    ds: format(new UTCDate(report.date), 'yyyy-MM-dd'),
+export const tradeReportToLebronTrade = (report: NCTradeReport): LebronTrade => {
+  const trade: LebronTrade = {
+    tradeDate: new UTCDate(report.date).getTime(),
     notes: report.notes,
-    traded: '',
-    traded_for: '',
+    itemsSent: '',
+    itemsReceived: '',
   };
 
   report.offered.forEach((item, i) => {
-    if (i > 0) trade.traded += ' + ';
-    if (item.quantity > 1) trade.traded += `${item.quantity}x `;
-    trade.traded += `${item.itemName} (${item.personalValue})`;
+    if (i > 0) trade.itemsSent += ' + ';
+    if (item.quantity > 1) trade.itemsSent += `${item.quantity}x `;
+    trade.itemsSent += `${item.itemName} (${item.personalValue})`;
   });
 
   report.received.forEach((item, i) => {
-    if (i > 0) trade.traded_for += ' + ';
-    if (item.quantity > 1) trade.traded_for += `${item.quantity}x `;
-    trade.traded_for += `${item.itemName} (${item.personalValue})`;
+    if (i > 0) trade.itemsReceived += ' + ';
+    if (item.quantity > 1) trade.itemsReceived += `${item.quantity}x `;
+    trade.itemsReceived += `${item.itemName} (${item.personalValue})`;
   });
 
   return trade;

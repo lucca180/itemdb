@@ -638,6 +638,23 @@ export type InsightsResponse = {
   };
 };
 
+export type LebronSearchResponse = {
+  itemStats: {
+    name: string;
+    value: string;
+    lastUpdated: number;
+    isVolatile: boolean;
+  };
+  reports: LebronTrade[];
+};
+
+export type LebronTrade = {
+  tradeDate: number;
+  itemsSent: string;
+  itemsReceived: string;
+  notes: string;
+};
+
 // ------- DTI -------- //
 
 export type DTISpecies = {

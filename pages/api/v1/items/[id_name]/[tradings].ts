@@ -3,8 +3,8 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import {
   ItemAuctionData,
   ItemRestockData,
+  LebronSearchResponse,
   NCTradeReport,
-  OwlsTrade,
   TradeData,
 } from '../../../../../types';
 import prisma from '../../../../../utils/prisma';
@@ -12,7 +12,7 @@ import { getManyItems } from '../many';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import { contributeCheck } from '../../restock/wrapped-check';
 
-const OWLS_URL = process.env.OWLS_API_URL;
+const LEBRON_URL = process.env.LEBRON_API_URL;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -50,9 +50,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     return res.json(auction);
   }
 
-  if (type === 'owls') {
-    const owls = await getOwlsTradeData(name);
-    return res.json(owls);
+  if (type === 'lebron') {
+    const lebron = await getLebronItemData(name);
+    return res.json(lebron);
   }
 
   if (type === 'nctrade') {
@@ -166,14 +166,20 @@ const getTradeData = async (name: string, onlyPriced = false) => {
   };
 };
 
-export const getOwlsTradeData = async (name: string) => {
+export const getLebronItemData = async (name: string) => {
   try {
-    const res = await axios.get(OWLS_URL + '/itemdata/profile/' + encodeURIComponent(name));
+    const res = await axios.get(LEBRON_URL + 'search/' + encodeURIComponent(name), {
+      headers: {
+        Authorization: 'Bearer ' + process.env.LEBRON_API_KEY,
+        Referer: 'https://itemdb.com.br',
+      },
+    });
 
-    if (res.data?.trade_reports) return res.data.trade_reports as OwlsTrade[];
-    else return [];
+    return res.data as LebronSearchResponse;
   } catch (e) {
-    return [];
+    console.error(LEBRON_URL + '/search/' + encodeURIComponent(name));
+    console.error('Error fetching Lebron data:', e);
+    return null;
   }
 };
 

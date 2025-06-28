@@ -17,12 +17,12 @@ import axios from 'axios';
 import { format } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
 import { MdMoneyOff } from 'react-icons/md';
-import { InsightsResponse, ItemData, NCTradeReport, OwlsTrade, UserList } from '../../types';
+import { InsightsResponse, ItemData, LebronTrade, NCTradeReport, UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import CardBase from '../Card/CardBase';
 import MatchTable from './MatchTable';
 import NextLink from 'next/link';
-import OwlsTradeHistory from './OwlsTradeHistory';
+import NCTradeHistory from './NCTradeHistory';
 import { useTranslations } from 'next-intl';
 import { TradeInsights } from './TradeInsights';
 
@@ -49,24 +49,24 @@ const NCTrade = (props: Props) => {
     return insights.releases.length > 0 || insights.ncEvents.length > 0;
   }, [insights]);
 
-  const [tableType, setTableType] = useState<'seeking' | 'trading' | 'insights' | 'owlsTrading'>(
+  const [tableType, setTableType] = useState<'seeking' | 'trading' | 'insights' | 'ncTrading'>(
     hasInsights ? 'insights' : 'seeking'
   );
-  const [owlsTradeHistory, setOwlsTradeHistory] = useState<OwlsTrade[] | null>(null);
+  const [lebronTradeHistory, setLebronTradeHistory] = useState<LebronTrade[] | null>(null);
   const [tradeHistory, setTradeHistory] = useState<NCTradeReport[] | null>(null);
 
   const tradeCount = useMemo(() => {
-    if (!owlsTradeHistory && !tradeHistory) return '00';
-    const owlsCount = owlsTradeHistory ? owlsTradeHistory.length : 0;
+    if (!lebronTradeHistory && !tradeHistory) return '00';
+    const lebronCount = lebronTradeHistory ? lebronTradeHistory.length : 0;
     const tradeCount = tradeHistory ? tradeHistory.length : 0;
 
     // temporarily limit the count to 20
-    return Math.min(owlsCount + tradeCount, 20);
-  }, [owlsTradeHistory, tradeHistory]);
+    return Math.min(lebronCount + tradeCount, 20);
+  }, [lebronTradeHistory, tradeHistory]);
 
   useEffect(() => {
     if (item.status === 'no trade') return;
-    setOwlsTradeHistory(null);
+    setLebronTradeHistory(null);
     getTradeHistory();
   }, [item.internal_id]);
 
@@ -108,12 +108,12 @@ const NCTrade = (props: Props) => {
   };
 
   const getTradeHistory = async () => {
-    const [owlsRes, rawHistory] = await Promise.all([
-      axios.get('/api/v1/items/' + encodeURIComponent(item.name) + '/owls'),
+    const [lebronRes, rawHistory] = await Promise.all([
+      axios.get('/api/v1/items/' + encodeURIComponent(item.name) + '/lebron'),
       axios.get('/api/v1/items/' + encodeURIComponent(item.name) + '/nctrade'),
     ]);
 
-    setOwlsTradeHistory(owlsRes.data);
+    setLebronTradeHistory(lebronRes.data.reports || []);
     setTradeHistory(rawHistory.data.trades);
   };
 
@@ -169,13 +169,13 @@ const NCTrade = (props: Props) => {
               {trading.length} {t('ItemPage.trading')}
             </Button>
             <Button
-              colorScheme={tableType === 'owlsTrading' ? 'teal' : ''}
-              isActive={tableType === 'owlsTrading'}
-              onClick={() => setTableType('owlsTrading')}
+              colorScheme={tableType === 'ncTrading' ? 'teal' : ''}
+              isActive={tableType === 'ncTrading'}
+              onClick={() => setTableType('ncTrading')}
               data-umami-event="nc-trade-buttons"
               data-umami-event-label={'owls-trading'}
             >
-              <Skeleton isLoaded={owlsTradeHistory !== null} startColor={item.color.hex} mr={1}>
+              <Skeleton isLoaded={lebronTradeHistory !== null} startColor={item.color.hex} mr={1}>
                 <span>{tradeCount}</span>
               </Skeleton>{' '}
               {t('ItemPage.owls-trades')}
@@ -239,10 +239,10 @@ const NCTrade = (props: Props) => {
                   isLoading={isMatchLoading}
                 />
               )}
-              {tableType === 'owlsTrading' && (
-                <OwlsTradeHistory
+              {tableType === 'ncTrading' && (
+                <NCTradeHistory
                   item={item}
-                  owlsTrades={owlsTradeHistory}
+                  ncTrades={lebronTradeHistory}
                   tradeHistory={tradeHistory}
                 />
               )}

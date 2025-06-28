@@ -5,7 +5,6 @@ import { ncTradeItems, ncValues } from '@prisma/generated/client';
 import { dti } from '@utils/impress';
 import { differenceInCalendarDays } from 'date-fns';
 import { NCValue, OwlsTrade } from '@types';
-import { getOwlsTradeData } from '../../items/[id_name]/[tradings]';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -90,16 +89,16 @@ const updateNCValue = async (item_iid: number, itemName: string, oldValue?: NCVa
     },
   });
 
-  const owlsTradesRaw = getOwlsTradeData(itemName);
+  // const owlsTradesRaw = getOwlsTradeData(itemName);
 
   const ratiosRaw = dti.fetchRatiosByName(itemName).catch((e) => {
     console.error('Error fetching ratios:', e);
     return null;
   });
 
-  const [tradesDb, ratios, owlsTrades] = await Promise.all([tradesRaw, ratiosRaw, owlsTradesRaw]);
+  const [tradesDb, ratios] = await Promise.all([tradesRaw, ratiosRaw]);
 
-  const trades = [...tradesDb, ...owlsTrades].filter((t: tradeHistory) => {
+  const trades = [...tradesDb].filter((t: tradeHistory) => {
     const owlsTrade = t as OwlsTrade;
 
     // itemdb trades is already filtered by tradeDate
