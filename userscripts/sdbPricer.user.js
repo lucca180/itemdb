@@ -1,6 +1,6 @@
   // ==UserScript==
   // @name         itemdb - Safety Deposit Box Pricer
-  // @version      1.5.2
+  // @version      1.5.3
   // @author       itemdb
   // @namespace    itemdb
   // @description  Shows the market price for your sdb/closet items
@@ -74,6 +74,8 @@ async function pricePage(itemData) {
 
   const intl = new Intl.NumberFormat();
 
+  let grandTotal = 0
+
   trs.each(function (i) {
     const tds = $(this).find('td');
     const itemId = tds.last().find('input').attr('name').match(/\d+/)?.[0] ?? tds.last().find('input').data('item_id');
@@ -90,7 +92,7 @@ async function pricePage(itemData) {
 
       if(item.rarity) {
         var color1 = setColor(item.rarity)
-        
+
         priceStr += `<small style='color:${color1}'><b>r${intl.format(item.rarity)}</b></small>`;
       }
 
@@ -120,6 +122,15 @@ async function pricePage(itemData) {
 
         priceStr += `<a href="https://itemdb.com.br/item/${item.slug}?utm_content=sdbPricer" target="_blank">${item.price.inflated ? "⚠ " : ""}${intl.format(item.price.value)} NP</a>`;
         priceStr += `</div>`;
+
+        const itemQtyCol = tds.eq(-2)[0];
+        const itemQty = parseInt(itemQtyCol.textContent)
+        const totalValue = item.price.value * itemQty;
+        grandTotal += totalValue
+
+        if (itemQty > 1){
+            priceStr += `<small style='color: #000000'><b>${intl.format(totalValue)} NP total</b></small> `
+        }
       }
 
       if (item.isMissingInfo){
@@ -134,6 +145,18 @@ async function pricePage(itemData) {
     priceStr += '</div>';
     tds.eq( -2 ).before(`<td align="center" width="150px">${priceStr}</td>`);
   })
+
+    $(footerSelector).parent().before(`
+<tr bgcolor="silver">
+  <th colspan="3" class="contentModuleHeaderAlt" style="text-align: center;"></th>
+  <th class="contentModuleHeaderAlt" style="text-align: right;">Total:</th>
+  <td align="center" class="contentModuleHeaderAlt" style="text-align: center; width: 70px;" nowrap="">
+    <b>${intl.format(grandTotal)} NP</b>
+  </td>
+  <th colspan="2" class="contentModuleHeaderAlt" style="text-align: center;"></th>
+</tr>
+`);
+
 }
 
 function setColor(rarity) {
