@@ -7,6 +7,7 @@ import {
   Icon,
   Link,
   Skeleton,
+  Spinner,
   Stat,
   StatHelpText,
   StatLabel,
@@ -43,6 +44,7 @@ const NCTrade = (props: Props) => {
 
   const [match, setMatch] = useState({ seeking: {}, trading: {} });
   const [isMatchLoading, setIsMatchLoading] = useState(true);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(true);
 
   const hasInsights = useMemo(() => {
     if (!insights) return false;
@@ -115,6 +117,7 @@ const NCTrade = (props: Props) => {
 
     setLebronTradeHistory(lebronRes.data?.reports || []);
     setTradeHistory(rawHistory.data.trades);
+    setIsHistoryLoading(false);
   };
 
   if (item.status === 'no trade')
@@ -175,7 +178,12 @@ const NCTrade = (props: Props) => {
               data-umami-event="nc-trade-buttons"
               data-umami-event-label={'owls-trading'}
             >
-              <Skeleton isLoaded={lebronTradeHistory !== null} startColor={item.color.hex} mr={1}>
+              <Skeleton
+                isLoaded={(lebronTradeHistory ?? tradeHistory) !== null}
+                startColor={item.color.hex}
+                mr={1}
+                borderRadius={'sm'}
+              >
                 <span>{tradeCount}</span>
               </Skeleton>{' '}
               {t('ItemPage.owls-trades')}
@@ -246,11 +254,16 @@ const NCTrade = (props: Props) => {
                 />
               )}
               {tableType === 'ncTrading' && (
-                <NCTradeHistory
-                  item={item}
-                  ncTrades={lebronTradeHistory}
-                  tradeHistory={tradeHistory}
-                />
+                <>
+                  {isHistoryLoading && <Spinner mt={8} />}
+                  {!isHistoryLoading && (
+                    <NCTradeHistory
+                      item={item}
+                      ncTrades={lebronTradeHistory}
+                      tradeHistory={tradeHistory}
+                    />
+                  )}
+                </>
               )}
             </Flex>
           </Flex>
