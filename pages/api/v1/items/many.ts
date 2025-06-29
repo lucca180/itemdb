@@ -226,7 +226,7 @@ export const rawToItemData = (raw: any): ItemData => {
   if (item.isNC && item.status === 'active' && NC_VALUES_TYPE) {
     const ncType = NC_VALUES_TYPE;
 
-    if (NC_VALUES_TYPE === 'lebron') {
+    if (NC_VALUES_TYPE === 'lebron' || NC_VALUES_TYPE === 'best') {
       item.ncValue =
         result.owlsValue && result.owlsValue !== 'null'
           ? {
