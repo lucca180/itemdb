@@ -6252,15 +6252,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@umami/api-client@npm:^0.78.0":
-  version: 0.78.0
-  resolution: "@umami/api-client@npm:0.78.0"
+"@umami/api-client@npm:^0.79.0":
+  version: 0.79.0
+  resolution: "@umami/api-client@npm:0.79.0"
   dependencies:
     cross-fetch: "npm:^3.1.5"
     debug: "npm:^4.3.4"
     next-basics: "npm:^0.36.0"
     uuid: "npm:^9.0.0"
-  checksum: 10c0/6dcc814a64ab92887312d87d622437c4d3b4bba9007eb72130b9154727c6344e66fc605cd18445cf54760504352d71c49ca4b50409bd6f9cd0ea50bab5cba71d
+  checksum: 10c0/9c0d8cb630e7e12ddad9f242825e7849e43c061430f200a82bd6e89889e8ccf9800d0a2fbd9ce11a8f26f8c3f946625fccda07061fb0b0888d12d1ca38a2eadf
   languageName: node
   linkType: hard
 
@@ -10541,7 +10541,7 @@ __metadata:
     "@types/react-window": "npm:^1.8.8"
     "@types/request-ip": "npm:^0.0.37"
     "@typescript-eslint/eslint-plugin": "npm:^8.34.1"
-    "@umami/api-client": "npm:^0.78.0"
+    "@umami/api-client": "npm:^0.79.0"
     accept-language-parser: "npm:^1.5.0"
     axios: "npm:^1.10.0"
     babel-plugin-react-compiler: "npm:^19.1.0-rc.2"

@@ -59,8 +59,8 @@ export const getTrendingItems = async (limit: number) => {
   const items = await getManyItems({ slug: Object.keys(popularItemsStats) });
 
   const sorted = Object.values(items).sort((a, b) => {
-    if (popularItemsStats[a.slug!].pageviews > popularItemsStats[b.slug!].pageviews) return -1;
-    if (popularItemsStats[a.slug!].pageviews < popularItemsStats[b.slug!].pageviews) return 1;
+    if (popularItemsStats[a.slug!]?.pageviews > popularItemsStats[b.slug!]?.pageviews) return -1;
+    if (popularItemsStats[a.slug!]?.pageviews < popularItemsStats[b.slug!]?.pageviews) return 1;
     return 0;
   });
 
