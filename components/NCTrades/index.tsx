@@ -113,7 +113,7 @@ const NCTrade = (props: Props) => {
       axios.get('/api/v1/items/' + encodeURIComponent(item.name) + '/nctrade'),
     ]);
 
-    setLebronTradeHistory(lebronRes.data.reports || []);
+    setLebronTradeHistory(lebronRes.data?.reports || []);
     setTradeHistory(rawHistory.data.trades);
   };
 
