@@ -1,5 +1,6 @@
-import { Tooltip, Flex } from '@chakra-ui/react';
+import { Flex } from '@chakra-ui/react';
 import Image from '@components/Utils/Image';
+import Tooltip from '@components/Utils/Tooltip';
 
 type AchievBadgeProps = {
   name: string;
@@ -8,7 +9,7 @@ type AchievBadgeProps = {
 
 const AchievBadge = (props: AchievBadgeProps) => {
   return (
-    <Tooltip hasArrow label={props.name}>
+    <Tooltip label={props.name}>
       <Flex
         max-w="32px"
         max-h="32px"
@@ -18,7 +19,7 @@ const AchievBadge = (props: AchievBadgeProps) => {
         borderRadius={4}
         cursor="pointer"
       >
-        <Image src={props.src} width={22} height={22} alt="achievment image" />
+        <Image src={props.src} width={22} height={22} alt="achievement image" />
       </Flex>
     </Tooltip>
   );
