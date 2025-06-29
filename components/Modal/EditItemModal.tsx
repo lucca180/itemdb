@@ -59,6 +59,7 @@ import { useTranslations } from 'next-intl';
 import SpeciesSelect from '../Input/SpeciesSelect';
 import { deseaseList_en } from '../../utils/utils';
 import NeoColorSelect from '../Input/NeoColorSelect';
+import { UTCDate } from '@date-fns/utc';
 
 const ConfirmDeleteItem = dynamic<{
   isOpen: boolean;
@@ -425,19 +426,34 @@ export const InfoTab = (props: infoTabProps) => {
                 color={item.image === itemProps.image ? 'gray.400' : '#fff'}
               />
             </FormControl>
-            <FormControl>
-              <FormLabel color="gray.300">{t('General.canonical-id')}</FormLabel>
-              <Input
-                variant="filled"
-                type="text"
-                name="canonical_id"
-                size="sm"
-                value={item.canonical_id ?? ''}
-                onChange={handleChange}
-                isDisabled={!isAdmin}
-                color={item.canonical_id == itemProps.canonical_id ? 'gray.400' : '#fff'}
-              />
-            </FormControl>
+            <HStack>
+              <FormControl>
+                <FormLabel color="gray.300">{t('General.canonical-id')}</FormLabel>
+                <Input
+                  variant="filled"
+                  type="text"
+                  name="canonical_id"
+                  size="sm"
+                  value={item.canonical_id ?? ''}
+                  onChange={handleChange}
+                  isDisabled={!isAdmin}
+                  color={item.canonical_id == itemProps.canonical_id ? 'gray.400' : '#fff'}
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel color="gray.300">{t('ItemPage.first-seen')}</FormLabel>
+                <Input
+                  variant="filled"
+                  type="date"
+                  name="firstSeen"
+                  size="sm"
+                  value={item.firstSeen ? toDateInput(item.firstSeen) : undefined}
+                  onChange={handleChange}
+                  isDisabled={!isAdmin}
+                  color={item.firstSeen == itemProps.firstSeen ? 'gray.400' : '#fff'}
+                />
+              </FormControl>
+            </HStack>
           </Stack>
           <Divider />
           <HStack>
@@ -498,18 +514,6 @@ export const InfoTab = (props: infoTabProps) => {
           </HStack>
           <HStack>
             <FormControl>
-              <FormLabel color="gray.300">{t('General.status')}</FormLabel>
-              <ItemStatusSelect
-                name="status"
-                value={item.status ?? ''}
-                onChange={handleChange}
-                isDisabled={!isAdmin}
-                color={item.status == itemProps.status ? 'gray.400' : '#fff'}
-              />
-            </FormControl>
-          </HStack>
-          <HStack>
-            <FormControl>
               <FormLabel color="gray.300">{t('General.category')}</FormLabel>
               <ItemCatSelect
                 name="category"
@@ -517,6 +521,18 @@ export const InfoTab = (props: infoTabProps) => {
                 onChange={handleChange}
                 isDisabled={!isAdmin}
                 color={item.category == itemProps.category ? 'gray.400' : '#fff'}
+              />
+            </FormControl>
+          </HStack>
+          <HStack>
+            <FormControl>
+              <FormLabel color="gray.300">{t('General.status')}</FormLabel>
+              <ItemStatusSelect
+                name="status"
+                value={item.status ?? ''}
+                onChange={handleChange}
+                isDisabled={!isAdmin}
+                color={item.status == itemProps.status ? 'gray.400' : '#fff'}
               />
             </FormControl>
           </HStack>
@@ -1296,3 +1312,12 @@ export const PetpetTab = (props: PetpetTabProps) => {
     </Stack>
   );
 };
+
+function toDateInput(date: Date | string | number) {
+  date = new UTCDate(date);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}

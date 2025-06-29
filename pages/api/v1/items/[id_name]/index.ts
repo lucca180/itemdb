@@ -12,6 +12,7 @@ import { revalidateItem } from './effects';
 import { ItemChangesLog } from '../process';
 import { rawToItemData } from '../many';
 import { getNCValue } from '../../mall/[iid]';
+import { UTCDate } from '@date-fns/utc';
 
 const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
 const NC_VALUES_TYPE = process.env.NC_VALUES_TYPE; // 'itemdb' or 'lebron'
@@ -125,6 +126,15 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
     }
   }
 
+  let addedAt: Date | undefined = undefined;
+
+  if (
+    itemData.firstSeen &&
+    new Date(itemData.firstSeen).getTime() !== originalItem?.addedAt.getTime()
+  ) {
+    addedAt = new UTCDate(new UTCDate(itemData.firstSeen).setHours(18));
+  }
+
   const item = await prisma.items.update({
     where: { internal_id: internal_id },
     data: {
@@ -139,6 +149,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
       est_val: estVal,
       weight: weight,
       isNC: !!itemData.isNC,
+      addedAt: addedAt,
       isWearable: !!itemData.isWearable,
       isNeohome: !!itemData.isNeohome,
       category: itemData.category,
