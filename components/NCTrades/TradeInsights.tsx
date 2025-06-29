@@ -1,10 +1,11 @@
 import { Badge, Flex, HStack, Icon, Text, Link, Button } from '@chakra-ui/react';
 import { getNCMallDataDates, isMallDiscounted } from '@components/Items/NCMallCard';
+import Tooltip from '@components/Utils/Tooltip';
 import { InsightsResponse, ItemData, NCMallData, UserList } from '@types';
 import { useFormatter, useTranslations } from 'next-intl';
 import NextLink from 'next/link';
 import { useMemo, useState } from 'react';
-import { MdInsights } from 'react-icons/md';
+import { MdHelp, MdInsights } from 'react-icons/md';
 
 type TradeInsightsProps = {
   item: ItemData;
@@ -103,7 +104,14 @@ const MallReleaseCard = (props: MallReleaseCardProps) => {
 
   const isDiscounted = isMallDiscounted(release);
 
-  const { startDate, endDate } = getNCMallDataDates(release, item);
+  const hasDiscountPrice = !!(
+    release.discountPrice &&
+    release.discountPrice >= 0 &&
+    release.discountBegin &&
+    release.discountEnd
+  );
+
+  const { startDate, endDate, discountBegin, discountEnd } = getNCMallDataDates(release, item);
 
   return (
     <>
@@ -112,11 +120,27 @@ const MallReleaseCard = (props: MallReleaseCardProps) => {
         {!isDirect && (
           <Badge colorScheme={isLE ? 'green' : 'gray'}>{isLE ? 'LE' : 'Cap'} Prize</Badge>
         )}
-        <Badge colorScheme={isDiscounted ? 'orange' : 'purple'}>
-          {release.price > 0 &&
-            `${formatter.number(isDiscounted ? (release.discountPrice ?? -1) : release.price)} NC`}
+        <Badge
+          colorScheme={'purple'}
+          textDecoration={
+            (isBuyable(release) && isDiscounted) || (!isBuyable(release) && hasDiscountPrice)
+              ? 'line-through'
+              : undefined
+          }
+        >
+          {release.price > 0 && `${formatter.number(release.price)} NC`}
           {release.price === 0 && t('ItemPage.free')}
         </Badge>
+        {hasDiscountPrice && release.discountPrice && (
+          <Tooltip
+            label={<DiscountedText discountBegin={discountBegin} discountEnd={discountEnd} />}
+          >
+            <Badge colorScheme={'orange'} cursor="pointer">
+              {release.discountPrice > 0 && `${formatter.number(release.discountPrice)} NC`}
+              <Icon as={MdHelp} boxSize="12px" ml={1} verticalAlign={'middle'} />
+            </Badge>
+          </Tooltip>
+        )}
       </HStack>
       <Text>
         {isDirect && (
@@ -144,6 +168,40 @@ const MallReleaseCard = (props: MallReleaseCardProps) => {
           </>
         )}
       </Text>
+    </>
+  );
+};
+
+type DiscountedTextProps = {
+  discountBegin: number | null;
+  discountEnd: number | null;
+};
+
+const DiscountedText = (props: DiscountedTextProps) => {
+  const { discountBegin, discountEnd } = props;
+  const t = useTranslations();
+  const formatter = useFormatter();
+
+  const startDate = formatter.dateTime(new Date(discountBegin ?? 0), {
+    dateStyle: 'medium',
+  });
+  const endDate = formatter.dateTime(new Date(discountEnd ?? 0), {
+    dateStyle: 'medium',
+  });
+
+  const isSame = startDate === endDate;
+
+  return (
+    <>
+      {isSame && <>{t('ItemPage.discounted-on-x', { x: startDate })}</>}
+      {!isSame && (
+        <>
+          {t('ItemPage.discounted-from-x-to-y', {
+            x: startDate,
+            y: endDate,
+          })}
+        </>
+      )}
     </>
   );
 };

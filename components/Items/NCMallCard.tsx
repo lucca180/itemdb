@@ -4,6 +4,7 @@ import { ItemData, ItemMallData, NCMallData } from '../../types';
 import CardBase from '../Card/CardBase';
 import Image from 'next/image';
 import { useFormatter, useTranslations } from 'next-intl';
+import { UTCDate } from '@date-fns/utc';
 
 type Props = {
   item: ItemData;
@@ -124,18 +125,28 @@ export default NcMallCard;
 
 export const getNCMallDataDates = (ncMallData: NCMallData, item: ItemData) => {
   const startDate = ncMallData.saleBegin
-    ? maxDate(new Date(ncMallData.saleBegin), new Date(item.firstSeen ?? 0))
+    ? maxDate(new UTCDate(ncMallData.saleBegin), new UTCDate(item.firstSeen ?? 0))
     : null;
 
   const endDate = !ncMallData.active
-    ? minDate(new Date(ncMallData.saleEnd ?? 0), new Date(ncMallData.updatedAt))
+    ? minDate(new UTCDate(ncMallData.saleEnd ?? 0), new UTCDate(ncMallData.updatedAt))
     : ncMallData.saleEnd
-      ? new Date(ncMallData.saleEnd)
+      ? new UTCDate(ncMallData.saleEnd)
       : null;
 
+  const discountBegin = ncMallData.discountBegin
+    ? maxDate(startDate ?? new UTCDate(0), new UTCDate(ncMallData.discountBegin ?? 0))
+    : null;
+
+  const discountEnd = ncMallData.discountEnd
+    ? minDate(endDate ?? new UTCDate(9999, 11, 31), new UTCDate(ncMallData.discountEnd ?? 0))
+    : null;
+
   return {
-    startDate,
-    endDate,
+    startDate: startDate?.getTime() ?? null,
+    endDate: endDate?.getTime() ?? null,
+    discountBegin: discountBegin?.getTime() ?? null,
+    discountEnd: discountEnd?.getTime() ?? null,
   };
 };
 
@@ -145,9 +156,9 @@ export const isMallDiscounted = (ncMallData?: ItemMallData | null): boolean => {
 };
 
 function maxDate(...dates: Date[]): Date {
-  return new Date(Math.max(...dates.map((d) => d.getTime())));
+  return new UTCDate(Math.max(...dates.map((d) => d.getTime())));
 }
 
 function minDate(...dates: Date[]): Date {
-  return new Date(Math.min(...dates.map((d) => d.getTime())));
+  return new UTCDate(Math.min(...dates.map((d) => d.getTime())));
 }

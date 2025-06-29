@@ -89,9 +89,18 @@ export const getNCTradeInsights = async (item_iid: string | number): Promise<Ins
   const releasesRaw = prisma.ncMallData.findMany({
     distinct: ['saleBegin', 'item_iid'],
     where: {
-      item_iid: {
-        in: [...parent_iids, Number(item_iid)],
-      },
+      OR: [
+        {
+          item_iid: {
+            in: [...parent_iids, Number(item_iid)],
+          },
+        },
+        {
+          item: {
+            canonical_id: Number(item_iid),
+          },
+        },
+      ],
     },
     orderBy: [
       {
@@ -125,10 +134,18 @@ export const getNCTradeInsights = async (item_iid: string | number): Promise<Ins
 
   const [releases, itemData, ncEvents] = await Promise.all([releasesRaw, itemDataRaw, ncEventsRaw]);
 
+  const newReleases = releases.map((release) => {
+    const item = itemData[release.item_iid];
+    // for items with canonical_id, we don't want to fetch the item data again,
+    // so we just use the canonical_id (aka this item_iid) instead
+    if (!item) release.item_iid = Number(item_iid);
+    return release;
+  });
+
   const lists = ncEvents.map((event) => rawToList(event, event.user));
 
   return {
-    releases: releases.map((release) => {
+    releases: newReleases.map((release) => {
       return {
         ...release,
         addedAt: release.addedAt.toISOString(),

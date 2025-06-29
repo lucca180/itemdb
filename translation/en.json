@@ -299,7 +299,9 @@
     "nc-guide-value": "NC Guide Value",
     "release-history": "Release History",
     "lebron-value": "Lebron Value",
-    "itemdb-value": "itemdb Value"
+    "itemdb-value": "itemdb Value",
+    "discounted-on-x": "Discounted on {x}",
+    "discounted-from-x-to-y": "Discount Price - {x} to {y}"
   },
   "Button": {
     "feedback": "Feedback",

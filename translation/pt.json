@@ -300,7 +300,9 @@
     "nc-guide-value": "Guia de Valores NC",
     "release-history": "Histórico de Lançamentos",
     "itemdb-value": "Valor itemdb",
-    "lebron-value": "Valor Lebron"
+    "lebron-value": "Valor Lebron",
+    "discounted-from-x-to-y": "Promoção - {x} até {y}",
+    "discounted-on-x": "Promoção em {x}"
   },
   "Button": {
     "feedback": "Feedback",
