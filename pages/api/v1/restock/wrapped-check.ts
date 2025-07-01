@@ -36,6 +36,10 @@ export const contributeCheck = async (uid?: string, goalMulplier = 1) => {
     return { success: false, needTrades: tradeGoal, needVotes: voteGoal };
   }
 
+  if (user?.isAdmin) {
+    return { success: true, needTrades: 0, needVotes: 0 };
+  }
+
   if (user.banned) {
     return { success: false, needTrades: 0, needVotes: 0 };
   }
