@@ -281,9 +281,9 @@ export async function doSearch(
 
   if (ncValueFilter.length > 0) {
     if (ncValueFilter[0] !== '')
-      numberFilters.push(Prisma.sql`temp.minValue >= ${parseInt(ncValueFilter[0])}`);
+      numberFilters.push(Prisma.sql`temp.owlsValueMin >= ${parseInt(ncValueFilter[0])}`);
     if (ncValueFilter[1] !== '')
-      numberFilters.push(Prisma.sql`temp.minValue <= ${parseInt(ncValueFilter[1])}`);
+      numberFilters.push(Prisma.sql`temp.owlsValueMin <= ${parseInt(ncValueFilter[1])}`);
   }
 
   if (restockProfit !== '' && !isNaN(Number(restockProfit))) {
@@ -380,7 +380,7 @@ export async function doSearch(
   if (sortBy === 'name') sortSQL = Prisma.sql`ORDER BY temp.name`;
   else if (sortBy === 'price') sortSQL = Prisma.sql`ORDER BY temp.price`;
   else if (sortBy === 'added') sortSQL = Prisma.sql`ORDER BY temp.addedAt`;
-  else if (sortBy === 'ncValue') sortSQL = Prisma.sql`ORDER BY temp.minValue`;
+  else if (sortBy === 'ncValue') sortSQL = Prisma.sql`ORDER BY temp.owlsValueMin`;
   else if (sortBy === 'color' && isColorSearch) sortSQL = Prisma.sql`ORDER BY dist`;
   else if (sortBy === 'color')
     sortSQL = Prisma.sql`ORDER BY temp.hsv_h ${
