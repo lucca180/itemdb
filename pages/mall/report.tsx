@@ -62,10 +62,10 @@ const NcTradeReportPage = (props: NcTradeReportPageProps) => {
     <>
       <HeaderCard
         image={{
-          src: 'https://images.neopets.com/nt/ntimages/309_white_weewoo.gif',
+          src: 'https://images.neopets.com/altador/altadorcup/h5/images/hauntedwoods/player1.png',
           alt: 'owls thumbnail',
         }}
-        color="#47b2f8"
+        color="#FDB927"
         breadcrumb={
           <Breadcrumbs
             breadcrumbList={[
@@ -102,7 +102,7 @@ const NcTradeReportPage = (props: NcTradeReportPageProps) => {
         borderRadius={'md'}
         w="100%"
         maxW="900px"
-        sx={{ a: { color: 'blue.300' }, b: { color: 'blue.200' } }}
+        sx={{ a: { color: 'yellow.300' }, b: { color: 'orange.200' } }}
       >
         <Heading as={'h3'} size="md">
           {t('Owls.faq-1')}
@@ -136,15 +136,15 @@ const NcTradeReportPage = (props: NcTradeReportPageProps) => {
             ),
           })}
         </Text>
-        {/* <Text fontSize="sm">{t('Owls.faq-4')}</Text>
+        <Text fontSize="sm">{t('Owls.faq-4')}</Text>
         <Heading as={'h3'} size="md" mt={4}>
           {t('Owls.faq-6')}
         </Heading>
         <Text fontSize={'sm'} color="gray.300">
           {t.rich('Owls.faq-7', {
-            Link: (chunk) => <Link href="/owls">{chunk}</Link>,
+            Link: (chunk) => <Link href="/lebron">{chunk}</Link>,
           })}
-        </Text> */}
+        </Text>
       </Flex>
     </>
   );
@@ -182,12 +182,12 @@ NcTradeReportPage.getLayout = function getLayout(page: ReactElement, props: any)
       SEO={{
         title: t('Owls.report-owls-trade'),
         description: t('Owls.description'),
-        themeColor: '#47b2f8',
+        themeColor: '#FDB927',
         canonical: canonical,
         openGraph: {
           images: [
             {
-              url: 'https://images.neopets.com/nt/ntimages/309_white_weewoo.gif',
+              url: 'https://images.neopets.com/altador/altadorcup/h5/images/hauntedwoods/player1.png',
               width: 300,
               height: 300,
               alt: 'White Weewoo',
@@ -195,7 +195,7 @@ NcTradeReportPage.getLayout = function getLayout(page: ReactElement, props: any)
           ],
         },
       }}
-      mainColor="#47B2F86b"
+      mainColor="#cd9c33"
     >
       {page}
     </Layout>
@@ -340,7 +340,7 @@ const NCTradeReportCard = (props: NCTradeReportProps) => {
       {user && (
         <>
           <Flex w="100%" overflow={'auto'} pb={2}>
-            <Stepper w="100%" minW="900px" size="sm" index={activeStep}>
+            <Stepper w="100%" minW="900px" size="sm" index={activeStep} colorScheme="yellow">
               {steps.map((step, index) => (
                 <Step key={index}>
                   <StepIndicator>
@@ -560,13 +560,13 @@ const NCTradeReportCard = (props: NCTradeReportProps) => {
                 </Button>
               )}
               {activeStep < 3 && (
-                <Button colorScheme="green" variant={'ghost'} onClick={validateContinue}>
+                <Button colorScheme="orange" variant={'ghost'} onClick={validateContinue}>
                   {t('General.next')}
                 </Button>
               )}
               {activeStep === 3 && (
                 <Button
-                  colorScheme="green"
+                  colorScheme="orange"
                   variant={'ghost'}
                   onClick={submitTrade}
                   isLoading={isLoading}
@@ -575,7 +575,7 @@ const NCTradeReportCard = (props: NCTradeReportProps) => {
                 </Button>
               )}
               {activeStep === 4 && (
-                <Button colorScheme="blue" variant={'ghost'} onClick={reset}>
+                <Button colorScheme="yellow" variant={'ghost'} onClick={reset}>
                   {t('Owls.send-another-trade')}
                 </Button>
               )}

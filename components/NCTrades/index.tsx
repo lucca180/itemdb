@@ -202,7 +202,12 @@ const NCTrade = (props: Props) => {
             borderRadius={'md'}
           >
             <Stat flex="initial" textAlign="center">
-              <StatLabel fontSize="xs">
+              <StatLabel
+                fontSize="xs"
+                as={item.ncValue?.source === 'lebron' ? Link : undefined}
+                href="/articles/lebron"
+                isExternal
+              >
                 {!item.ncValue && t('ItemPage.nc-guide-value')}
                 {item.ncValue &&
                   (item.ncValue.source === 'itemdb'
