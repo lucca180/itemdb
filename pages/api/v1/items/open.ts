@@ -63,6 +63,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const itemsData = await getManyItems({
     name_image_id: [...name_image_id, parent_name_image_id],
+    includeFlags: true,
   });
 
   const opening_id = gramInfo?.cash_id || chance.hash({ length: 15 });
@@ -91,12 +92,31 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(400).json({ error: 'unknown parent' });
   }
 
+  let noUnknownList: number[] = [];
+  if (parentData.itemFlags && parentData.itemFlags.includes('no-unknown')) {
+    const existingOpenResults = await prisma.openableItems.findMany({
+      distinct: ['item_iid'],
+      where: {
+        parent_iid: parentData.internal_id,
+      },
+      select: {
+        item_iid: true,
+      },
+    });
+
+    noUnknownList = existingOpenResults.map((x) => x.item_iid);
+  }
+
   const openableItemsPromise: Promise<Prisma.OpenableItemsUncheckedCreateInput | undefined>[] =
     items.map(async (item: any): Promise<Prisma.OpenableItemsUncheckedCreateInput | undefined> => {
       const itemData = Object.values(itemsData).find((data: any) => data.name === item.name);
       if (!itemData) {
         await addToQueue(item, parentItem, opening_id, ip_address);
         return undefined;
+      }
+
+      if (noUnknownList.length) {
+        if (!noUnknownList.includes(itemData.internal_id)) return undefined;
       }
 
       return {
