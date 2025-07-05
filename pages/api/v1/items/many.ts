@@ -214,7 +214,7 @@ export const rawToItemData = (raw: any, options: RawToItemOptions = {}): ItemDat
       canOpen: result.canOpen,
       canPlay: result.canPlay,
     },
-    mallData: !result.ncPrice
+    mallData: !result.saleBegin
       ? null
       : {
           price: result.ncPrice,
