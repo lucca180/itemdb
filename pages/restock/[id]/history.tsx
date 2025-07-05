@@ -214,13 +214,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 }
 
 export async function getStaticPaths() {
-  const paths = Object.values(restockShopInfo)
-    .splice(0, 3)
-    .map((shop) => ({
-      params: { id: slugify(shop.name) },
-    }));
-
-  return { paths, fallback: 'blocking' };
+  return { paths: [], fallback: 'blocking' };
 }
 
 const sortRestock = (restock: ItemRestockData[] | null | undefined, mode: string) => {

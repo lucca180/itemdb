@@ -207,8 +207,11 @@ export const ItemCardBadge = (props: ItemCardBadgeProps) => {
 
       {item.isNC && item.mallData && (
         <Badge colorScheme={isDiscounted ? 'orange' : 'purple'} whiteSpace="normal">
-          {format.number(isDiscounted ? (item.mallData.discountPrice ?? -1) : item.mallData.price)}{' '}
-          NC
+          {item.mallData.price > 0 &&
+            `${format.number(
+              isDiscounted ? (item.mallData.discountPrice ?? -1) : item.mallData.price
+            )} NC`}
+          {item.mallData.price === 0 && t('ItemPage.free')}
         </Badge>
       )}
 
