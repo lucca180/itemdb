@@ -97,7 +97,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           inexistentIds.push(item.id);
       }
 
-      if (!item.isAvailable || !item.isBuyable) continue;
+      if (!item.isAvailable) continue;
 
       removeIds.delete(item.id);
       const existentData = allCurrentData.find((data) => data.item_id === item.id);
