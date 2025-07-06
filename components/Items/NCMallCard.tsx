@@ -27,7 +27,7 @@ const NcMallCard = (props: Props) => {
     <CardBase title={t('ItemPage.nc-mall-info')} color={item.color.rgb}>
       <Flex flexFlow={'column'} gap={2}>
         <Center flexFlow="column" gap={2}>
-          <Link href={`https://ncmall.neopets.com/`} isExternal>
+          <Link href={getNCMallLink(item)} isExternal>
             <Image
               src={'https://images.neopets.com/ncmall/shopkeepers/exclusive_shop1.png'}
               width={600}
@@ -38,7 +38,7 @@ const NcMallCard = (props: Props) => {
             />
           </Link>
           {isBuyable && !isDiscounted && (
-            <Badge fontSize="xs" colorScheme={'purple'}>
+            <Badge fontSize="xs" colorScheme={'yellow'}>
               {t('ItemPage.buyable-right-now')}
             </Badge>
           )}
@@ -162,3 +162,9 @@ function maxDate(...dates: Date[]): Date {
 function minDate(...dates: Date[]): Date {
   return new UTCDate(Math.min(...dates.map((d) => d.getTime())));
 }
+
+export const getNCMallLink = (item: ItemData) => {
+  const name = encodeURI(item.name.split(' ').join('+').toLowerCase());
+
+  return `https://ncmall.neopets.com/mall/search.phtml?type=search&text=${name}&utm_source=itemdb.com.br`;
+};

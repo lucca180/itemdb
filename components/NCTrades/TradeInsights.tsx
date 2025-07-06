@@ -1,5 +1,5 @@
 import { Badge, Flex, HStack, Icon, Text, Link, Button } from '@chakra-ui/react';
-import { getNCMallDataDates, isMallDiscounted } from '@components/Items/NCMallCard';
+import { getNCMallDataDates, getNCMallLink, isMallDiscounted } from '@components/Items/NCMallCard';
 import Tooltip from '@components/Utils/Tooltip';
 import { InsightsResponse, ItemData, NCMallData, UserList } from '@types';
 import { useFormatter, useTranslations } from 'next-intl';
@@ -144,7 +144,7 @@ const MallReleaseCard = (props: MallReleaseCardProps) => {
       </HStack>
       <Text>
         {isDirect && (
-          <Link href={`https://ncmall.neopets.com/`} isExternal>
+          <Link href={getNCMallLink(item)} isExternal>
             {t('Owls.direct-purchase')}
           </Link>
         )}
