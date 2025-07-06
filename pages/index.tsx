@@ -309,7 +309,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
 
 export default HomePage;
 
-export async function getServerSideProps(context: any): Promise<{ props: Props }> {
+export async function getStaticProps(context: any): Promise<{ props: Props; revalidate: number }> {
   const [
     latestItems,
     latestWearable,
@@ -335,8 +335,6 @@ export async function getServerSideProps(context: any): Promise<{ props: Props }
     getNewItemsInfo(7).catch(() => null),
   ]);
 
-  context.res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=600');
-
   return {
     props: {
       latestItems,
@@ -351,6 +349,7 @@ export async function getServerSideProps(context: any): Promise<{ props: Props }
       messages: await loadTranslation(context.locale, 'index'),
       locale: context.locale,
     },
+    revalidate: 180,
   };
 }
 
