@@ -335,7 +335,7 @@ export async function getServerSideProps(context: any): Promise<{ props: Props }
     getNewItemsInfo(7).catch(() => null),
   ]);
 
-  context.res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=60');
+  context.res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=600');
 
   return {
     props: {
