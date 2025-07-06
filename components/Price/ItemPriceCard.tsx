@@ -498,6 +498,8 @@ const HelpNeeded = (props: HelpNeededProps) => {
               prefetch={false}
               target="_blank"
               size="sm"
+              data-umami-event="help-needed"
+              data-umami-event-label="price-trades"
             >
               {t('Feedback.price-x-trade-lots', {
                 x: helpData.needPricing,
@@ -511,6 +513,8 @@ const HelpNeeded = (props: HelpNeededProps) => {
               prefetch={false}
               target="_blank"
               size="sm"
+              data-umami-event="help-needed"
+              data-umami-event-label="vote-suggestions"
             >
               {t('Feedback.vote-x-suggestions', {
                 x: helpData.needVoting,
