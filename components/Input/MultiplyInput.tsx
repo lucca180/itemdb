@@ -35,6 +35,18 @@ export const MultiplyInput = (props: MultiplyInputProps) => {
     }
 
     if (newValue !== purePrice) {
+      handleChange(newValue);
+    }
+  };
+
+  const handleChange = (val?: string) => {
+    if (!val) {
+      setPurePrice(undefined);
+      if (props.onChange) props.onChange(undefined);
+      return;
+    }
+    const newValue = val.replace(/[^0-9]/g, '');
+    if (newValue !== purePrice) {
       setPurePrice(newValue);
       if (props.onChange) props.onChange(newValue);
     }
@@ -52,7 +64,7 @@ export const MultiplyInput = (props: MultiplyInputProps) => {
         ...props.inputProps,
       }}
       value={purePrice}
-      onChange={(val) => setPurePrice(val)}
+      onChange={(val) => handleChange(val)}
     />
   );
 };
