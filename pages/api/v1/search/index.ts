@@ -184,6 +184,7 @@ export async function doSearch(
       'hts',
       'ets',
       'regular',
+      'collectible',
     ];
 
     if (typeNeg.length > 0) {
@@ -203,6 +204,14 @@ export async function doSearch(
       if (typeNeg.includes('hts')) typeFiltersSQL.push(Prisma.sql`temp.stats != 'hts'`);
       if (typeNeg.includes('ets')) typeFiltersSQL.push(Prisma.sql`temp.stats != 'ets'`);
       if (typeNeg.includes('regular')) typeFiltersSQL.push(Prisma.sql`temp.stats != 'regular'`);
+
+      // this is not available in the UI
+      // (way too hard to make /stats to work with this)
+      if (typeNeg.includes('collectible')) {
+        typeFiltersSQL.push(
+          Prisma.sql`not exists (select 1 from listitems li left join userlist l on l.internal_id = li.list_id where li.item_iid = temp.internal_id and l.official = 1 and l.official_tag = 'stamps')`
+        );
+      }
     }
 
     if (typeTrue.length > 0) {
@@ -222,6 +231,14 @@ export async function doSearch(
       if (typeTrue.includes('hts')) typeFiltersSQL.push(Prisma.sql`temp.stats = 'hts'`);
       if (typeTrue.includes('ets')) typeFiltersSQL.push(Prisma.sql`temp.stats = 'ets'`);
       if (typeTrue.includes('regular')) typeFiltersSQL.push(Prisma.sql`temp.stats = 'regular'`);
+
+      // this is not available in the UI
+      // (way too hard to make /stats to work with this)
+      if (typeTrue.includes('collectible')) {
+        typeFiltersSQL.push(
+          Prisma.sql`exists (select 1 from listitems li left join userlist l on l.internal_id = li.list_id where li.item_iid = temp.internal_id and l.official = 1 and l.official_tag = 'stamps')`
+        );
+      }
     }
   }
 
