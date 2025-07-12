@@ -112,7 +112,8 @@ const NCTrade = (props: Props) => {
   const getTradeHistory = async () => {
     const [lebronRes, rawHistory] = await Promise.all([
       axios.get('/api/v1/items/' + encodeURIComponent(item.name) + '/lebron'),
-      axios.get('/api/v1/items/' + encodeURIComponent(item.name) + '/nctrade'),
+      { data: { trades: [] } },
+      // axios.get('/api/v1/items/' + encodeURIComponent(item.name) + '/nctrade'),
     ]);
 
     setLebronTradeHistory(lebronRes.data?.reports || []);
