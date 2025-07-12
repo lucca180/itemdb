@@ -20,7 +20,7 @@ type Props = {
 const ItemOfficialLists = (props: Props) => {
   const t = useTranslations();
   const { item, lists } = props;
-  const officialLists = lists.filter((list) => list.official);
+  const officialLists = lists.filter((list) => list.official && list.visibility === 'public');
   const color = Color(item.color.hex);
 
   if (!officialLists.length) return null;
