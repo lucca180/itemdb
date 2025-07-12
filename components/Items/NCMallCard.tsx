@@ -129,7 +129,7 @@ export const getNCMallDataDates = (ncMallData: NCMallData, item: ItemData) => {
     : null;
 
   const endDate = !ncMallData.active
-    ? minDate(new UTCDate(ncMallData.saleEnd ?? 0), new UTCDate(ncMallData.updatedAt))
+    ? minDate(new UTCDate(ncMallData.saleEnd ?? '2099-01-01'), new UTCDate(ncMallData.updatedAt))
     : ncMallData.saleEnd
       ? new UTCDate(ncMallData.saleEnd)
       : null;
