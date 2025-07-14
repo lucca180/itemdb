@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { Auth } from '../../../utils/googleCloud';
-import ejs from 'ejs';
 import { CreateEmailOptions, Resend } from 'resend';
+import { getEmail } from '@utils/email';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -23,16 +23,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     if (isDev) console.warn(actionLink);
 
-    const template = await ejs.renderFile('utils/views/signinLink.ejs', {
-      actionLink,
-      randomNumber: Math.random(),
-    });
+    const template = getEmail(actionLink);
 
     const msg: CreateEmailOptions = {
       from: 'itemdb <noreply@itemdb.com.br>',
       to: email,
-      subject: 'itemdb: Magic login link',
-      html: template,
+      subject: 'itemdb - Login Link',
+      html: template.html,
+      text: template.text,
     };
 
     await resend.emails.send(msg);
