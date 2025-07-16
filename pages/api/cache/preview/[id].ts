@@ -265,6 +265,26 @@ const handleEssenceToken = (name: string): number | null => {
       return 19;
     case 'vira':
       return 1;
+    case 'sasha':
+      return 9;
+    case 'talek':
+      return 10;
+    case 'kankrik':
+      return 14;
+    case 'galem':
+      return 16;
+    case 'nilo':
+      return 22;
+    case 'rufus':
+      return 26;
+    case 'jacques':
+      return 29;
+    case 'kayla':
+      return 54;
+    case 'kelpbeard':
+      return 25;
+    case 'isca':
+      return 2;
     default:
       return null;
   }
