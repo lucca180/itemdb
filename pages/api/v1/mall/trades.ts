@@ -1,24 +1,15 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import axios from 'axios';
-import { isSameDay } from 'date-fns';
+import { format } from 'date-fns';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { Prisma } from '@prisma/generated/client';
-import { NCTradeItem, NCTradeReport } from '../../../../types';
+import { LebronTrade, NCTradeItem, NCTradeReport } from '../../../../types';
 import { CheckAuth } from '../../../../utils/googleCloud';
 import requestIp from 'request-ip';
-import { getManyItems } from '../items/many';
-
-type OwlsRes = {
-  recent_updates: {
-    api_name: string;
-    date_of_last_update: string;
-    owls_value: string;
-  }[];
-};
+import { UTCDate } from '@date-fns/utc';
+const LEBRON_URL = process.env.LEBRON_API_URL;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
-  // if (req.method === 'GET') return GET(req, res);
   if (req.method === 'POST') return POST(req, res);
 
   if (req.method == 'OPTIONS') {
@@ -28,15 +19,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   return res.status(405).json({ error: 'Method not allowed' });
 }
-
-// async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
-//   let limit = req.query.limit ? Number(req.query.limit) : 20;
-//   limit = Math.min(limit, 20);
-
-//   const itemRes = await getLatestOwls(limit);
-
-//   return res.status(200).json(itemRes);
-// }
 
 async function POST(req: NextApiRequest, res: NextApiResponse<any>) {
   const { offered, received, notes, date } = req.body as NCTradeReport;
@@ -71,6 +53,28 @@ async function POST(req: NextApiRequest, res: NextApiResponse<any>) {
     itemsCreate.push(toTradeItem(receivedItem, 'received'));
   });
 
+  const { tradeDate, itemsSent, itemsReceived } = tradeReportToOwlsTrade({
+    date,
+    offered,
+    received,
+    notes,
+  });
+
+  const body = {
+    username: user.neopetsUser,
+    trade_date: tradeDate,
+    items_sent: itemsSent,
+    items_received: itemsReceived,
+    notes: notes,
+  };
+
+  const result = await axios.post(LEBRON_URL + 'report', body, {
+    headers: {
+      Authorization: 'Bearer ' + process.env.LEBRON_API_KEY,
+      Referer: 'https://itemdb.com.br',
+    },
+  });
+
   await prisma.ncTrade.create({
     data: {
       reporter_id: user.id,
@@ -86,46 +90,33 @@ async function POST(req: NextApiRequest, res: NextApiResponse<any>) {
     },
   });
 
-  // const { ds, traded, traded_for } = tradeReportToOwlsTrade({
-  //   date,
-  //   offered,
-  //   received,
-  //   notes,
-  // });
-
-  // const result = await axios.post(OWLS_URL + '/transactions/submit', {
-  //   user_id: user.neopetsUser,
-  //   date: ds,
-  //   traded: traded,
-  //   traded_for: traded_for,
-  //   notes: notes,
-  // });
-
-  return res.status(200).json({ success: true, message: 'Trade submitted successfully' });
+  return res
+    .status(200)
+    .json({ success: true, message: 'Trade submitted successfully', lebron: result.data });
 }
 
-// const tradeReportToOwlsTrade = (report: NCTradeReport): OwlsTrade => {
-//   const trade: OwlsTrade = {
-//     ds: format(new UTCDate(report.date), 'yyyy-MM-dd'),
-//     notes: report.notes,
-//     traded: '',
-//     traded_for: '',
-//   };
+const tradeReportToOwlsTrade = (report: NCTradeReport): LebronTrade => {
+  const trade: LebronTrade = {
+    tradeDate: format(new UTCDate(report.date), 'yyyy-MM-dd') as any,
+    notes: report.notes,
+    itemsSent: '',
+    itemsReceived: '',
+  };
 
-//   report.offered.forEach((item, i) => {
-//     if (i > 0) trade.traded += ' + ';
-//     if (item.quantity > 1) trade.traded += `${item.quantity}x `;
-//     trade.traded += `${item.itemName} (${item.personalValue})`;
-//   });
+  report.offered.forEach((item, i) => {
+    if (i > 0) trade.itemsSent += ' + ';
+    if (item.quantity > 1) trade.itemsSent += `${item.quantity}x `;
+    trade.itemsSent += `${item.itemName} (${item.personalValue})`;
+  });
 
-//   report.received.forEach((item, i) => {
-//     if (i > 0) trade.traded_for += ' + ';
-//     if (item.quantity > 1) trade.traded_for += `${item.quantity}x `;
-//     trade.traded_for += `${item.itemName} (${item.personalValue})`;
-//   });
+  report.received.forEach((item, i) => {
+    if (i > 0) trade.itemsReceived += ' + ';
+    if (item.quantity > 1) trade.itemsReceived += `${item.quantity}x `;
+    trade.itemsReceived += `${item.itemName} (${item.personalValue})`;
+  });
 
-//   return trade;
-// };
+  return trade;
+};
 
 const toTradeItem = (
   tradeItemRaw: NCTradeItem,

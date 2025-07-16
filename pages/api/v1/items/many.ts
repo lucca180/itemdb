@@ -123,7 +123,7 @@ export const getManyItems = async (
   const items: { [identifier: string]: ItemData } = {};
 
   for (const result of resultRaw) {
-    const x: ItemData = rawToItemData(result);
+    const x: ItemData = rawToItemData(result, queryObj);
 
     if (id) items[result.internal_id] = x;
     else if (item_id) items[result.item_id] = x;
@@ -143,9 +143,13 @@ export type FindManyQuery = {
   image_id?: string[];
   name?: string[];
   slug?: string[];
+} & RawToItemOptions;
+
+type RawToItemOptions = {
+  includeFlags?: boolean;
 };
 
-export const rawToItemData = (raw: any): ItemData => {
+export const rawToItemData = (raw: any, options: RawToItemOptions = {}): ItemData => {
   const result = raw as any;
 
   const item: ItemData = {
@@ -210,7 +214,7 @@ export const rawToItemData = (raw: any): ItemData => {
       canOpen: result.canOpen,
       canPlay: result.canPlay,
     },
-    mallData: !result.ncPrice
+    mallData: !result.saleBegin
       ? null
       : {
           price: result.ncPrice,
@@ -221,6 +225,10 @@ export const rawToItemData = (raw: any): ItemData => {
           discountPrice: result.discountPrice,
         },
   };
+
+  if (options.includeFlags && result.flags) {
+    item.itemFlags = result.flags;
+  }
 
   // ncValue logic
   if (item.isNC && item.status === 'active' && NC_VALUES_TYPE) {

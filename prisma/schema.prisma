@@ -45,6 +45,7 @@ model Items {
   canOpen ThreeStateBoolean @default(unknown)
 
   imgCacheOverride String?
+  flags            String?
 
   translation ItemTranslation[]
   child_itens OpenableItems[]   @relation("parentItem")

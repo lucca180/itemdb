@@ -210,7 +210,7 @@ const UserListCard = (props: Props) => {
               </Badge>
             )}
 
-            {list.visibility !== 'public' && (
+            {!list.official && list.visibility !== 'public' && (
               <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>
                 {t('Lists.' + list.visibility)}
               </Badge>

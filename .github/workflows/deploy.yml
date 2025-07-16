@@ -21,7 +21,7 @@ jobs:
             git reset --hard FETCH_HEAD
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            yarn
+            yarn install --immutable
             npx prisma migrate deploy
             pm2 stop ecosystem.config.js --only itemdb-web
             pm2 start itemdb-green
@@ -47,7 +47,7 @@ jobs:
             git reset --hard FETCH_HEAD
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            yarn
+            yarn install --immutable
             yarn build-intl
             yarn build-turbo || exit
             yarn postbuild

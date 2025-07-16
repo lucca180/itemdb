@@ -28,6 +28,7 @@ export type ItemData = {
   firstSeen: string | null;
   mallData: ItemMallData | null;
   cacheHash: string | null;
+  itemFlags?: string | null;
 };
 
 export type ItemFindAt = {

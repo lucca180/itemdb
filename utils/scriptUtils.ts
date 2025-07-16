@@ -26,6 +26,15 @@ export const showScriptCTA = (): false | 'notFound' | 'outdated' => {
 };
 
 export const getScriptStatus = () => {
+  try {
+    return _getScriptStatus();
+  } catch (error) {
+    console.error('Error getting script status:', error);
+    return null;
+  }
+};
+
+const _getScriptStatus = () => {
   if (!window) return null;
   const hasScript = !!(window.itemdb_restock || window.itemdb_script || window.itemdb_sdbPricer);
 

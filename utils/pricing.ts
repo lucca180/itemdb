@@ -30,7 +30,7 @@ export const processPrices2 = (allItemData: PriceProcess2[], forceMode = false) 
     } else prices.push(x.price.toNumber());
   });
 
-  const reducedPrices = prices.splice(0, 30);
+  const reducedPrices = prices.splice(0, 40);
   // remove outliers
   let out = removeOutliers(reducedPrices);
 
@@ -52,7 +52,7 @@ export const processPrices2 = (allItemData: PriceProcess2[], forceMode = false) 
   }
 
   // sometimes priceSTD is so high that lowerLimit is negative
-  const lowerLimitFactor = Math.ceil(Math.min(1.7, priceMean / priceSTD) * 10) / 10;
+  const lowerLimitFactor = Math.ceil(Math.min(1.6, priceMean / priceSTD) * 10) / 10;
 
   if (lowerLimitFactor < 0.1) {
     console.error(

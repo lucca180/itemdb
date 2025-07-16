@@ -225,7 +225,7 @@ const ListHeader = (props: ListHeaderProps) => {
                 ✓ {t('General.official')}
               </Badge>
             )}
-            {list.visibility !== 'public' && (
+            {!list.official && list.visibility !== 'public' && (
               <Badge
                 borderRadius="md"
                 colorScheme={color.isLight() ? 'black' : 'gray'}

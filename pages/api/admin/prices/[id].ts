@@ -36,6 +36,23 @@ const POST = async (req: NextApiRequest, res: NextApiResponse, user: User) => {
     noInflation_id = null;
   }
 
+  if (isInflation && !noInflation_id) {
+    const lastInflationPrice = await prisma.itemPrices.findFirst({
+      where: {
+        item_iid: item_iid,
+        internal_id: {
+          not: Number(priceID),
+        },
+        noInflation_id: null,
+      },
+      orderBy: {
+        addedAt: 'desc',
+      },
+    });
+
+    noInflation_id = lastInflationPrice ? lastInflationPrice.internal_id : null;
+  }
+
   const updated = await prisma.itemPrices.update({
     where: {
       internal_id: Number(priceID),

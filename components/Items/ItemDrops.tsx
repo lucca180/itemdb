@@ -381,10 +381,19 @@ const HelpNeeded = () => {
           size="sm"
           href="https://github.com/lucca180/itemdb/raw/main/userscripts/itemDataExtractor.user.js"
           isExternal
+          data-umami-event="help-needed"
+          data-umami-event-label="install"
         >
           {t('Restock.install-now')}
         </Button>
-        <Button as={Link} size="sm" href="/contribute" isExternal>
+        <Button
+          as={Link}
+          size="sm"
+          href="/contribute"
+          isExternal
+          data-umami-event="help-needed"
+          data-umami-event-label="learn-more"
+        >
           {t('General.learn-more')}
         </Button>
       </HStack>

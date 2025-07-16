@@ -136,13 +136,7 @@ const OutfitPage = (props: OutfitPageProps) => {
 export default OutfitPage;
 
 export async function getStaticPaths() {
-  const paths = Object.values(allSpecies)
-    .splice(0, 5)
-    .map((species) => ({
-      params: { species: species.toLowerCase() },
-    }));
-
-  return { paths, fallback: 'blocking' };
+  return { paths: [], fallback: 'blocking' };
 }
 
 export async function getStaticProps(context: any) {

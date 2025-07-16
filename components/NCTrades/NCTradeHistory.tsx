@@ -71,6 +71,15 @@ const NCTradeHistory = (props: Props) => {
         {tradeHistory.map((trade, i) => (
           <NCTradeCard key={i} trade={trade} item={item} />
         ))}
+        <Text fontSize="xs" textAlign="center" mt={2} color="whiteAlpha.600">
+          {t.rich('ItemPage.owls-credits', {
+            Link: (chunks) => (
+              <Link href="/articles/lebron" target="_blank" color="whiteAlpha.800">
+                {chunks}
+              </Link>
+            ),
+          })}
+        </Text>
       </Flex>
     </Flex>
   );

@@ -28,7 +28,7 @@ import type { EditItemModalProps } from '../../components/Modal/EditItemModal';
 import type { FeedbackModalProps } from '../../components/Modal/FeedbackModal';
 import AddToListSelect from '../../components/UserLists/AddToListSelect';
 import { GetStaticPropsContext } from 'next';
-import { getItem, getSomeItemIDs } from '../api/v1/items/[id_name]';
+import { getItem } from '../api/v1/items/[id_name]';
 import { getItemLists } from '../api/v1/items/[id_name]/lists';
 import Link from 'next/link';
 import { getSimilarItems } from '../api/v1/items/[id_name]/similar';
@@ -519,13 +519,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 }
 
 export async function getStaticPaths() {
-  const items = await getSomeItemIDs();
-
-  const paths = items.map((item) => ({
-    params: { id: item.slug ?? item.internal_id.toString() },
-  }));
-
-  return { paths, fallback: 'blocking' };
+  return { paths: [], fallback: 'blocking' };
 }
 
 const generateMetaDescription = (item: ItemData) => {

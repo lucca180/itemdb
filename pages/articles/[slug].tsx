@@ -144,10 +144,8 @@ ArticlePage.getLayout = function getLayout(page: ReactElement, props: ArticlePag
 };
 
 export async function getStaticPaths() {
-  const posts = await wp_getLatestPosts(5);
-
   return {
-    paths: posts.map((post) => ({ params: { slug: post.slug } })),
+    paths: [],
     fallback: 'blocking',
   };
 }

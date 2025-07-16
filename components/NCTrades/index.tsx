@@ -112,7 +112,8 @@ const NCTrade = (props: Props) => {
   const getTradeHistory = async () => {
     const [lebronRes, rawHistory] = await Promise.all([
       axios.get('/api/v1/items/' + encodeURIComponent(item.name) + '/lebron'),
-      axios.get('/api/v1/items/' + encodeURIComponent(item.name) + '/nctrade'),
+      { data: { trades: [] } },
+      // axios.get('/api/v1/items/' + encodeURIComponent(item.name) + '/nctrade'),
     ]);
 
     setLebronTradeHistory(lebronRes.data?.reports || []);
@@ -202,7 +203,12 @@ const NCTrade = (props: Props) => {
             borderRadius={'md'}
           >
             <Stat flex="initial" textAlign="center">
-              <StatLabel fontSize="xs">
+              <StatLabel
+                fontSize="xs"
+                as={item.ncValue?.source === 'lebron' ? Link : undefined}
+                href="/articles/lebron"
+                isExternal
+              >
                 {!item.ncValue && t('ItemPage.nc-guide-value')}
                 {item.ncValue &&
                   (item.ncValue.source === 'itemdb'

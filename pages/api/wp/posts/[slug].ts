@@ -30,11 +30,13 @@ export const wp_getBySlug = async (slug: string): Promise<WP_Article | null> => 
   });
 
   const posts = posts_res.data.map(async (post: WP_REST_API_Post) => {
-    const thumburl: string | null =
+    const thumbUrl: string | null =
       ((post._embedded?.['wp:featuredmedia']?.[0] as any)?.source_url || '').replace(
         'https://',
-        'https://i0.wp.com/',
+        'https://i0.wp.com/'
       ) || null;
+
+    const palette = thumbUrl ? await getImagePalette(isLebron(post.slug, thumbUrl), true) : null;
 
     return {
       id: post.id,
@@ -43,12 +45,17 @@ export const wp_getBySlug = async (slug: string): Promise<WP_Article | null> => 
       excerpt: he.decode(post.excerpt.rendered.replace(/<[^>]+>/g, '')),
       slug: post.slug,
       date: post.date_gmt,
-      thumbnail: thumburl || null,
-      palette: thumburl ? await getImagePalette(thumburl, true) : null,
+      thumbnail: thumbUrl || null,
+      palette: palette,
     };
   });
 
   const posts_data = await Promise.all(posts);
 
   return posts_data[0] ?? null;
+};
+
+const isLebron = (slug: string, thumb: string) => {
+  if (slug === 'lebron') return 'https://blog.itemdb.com.br/wp-content/uploads/2025/07/lakers.png';
+  return thumb;
 };

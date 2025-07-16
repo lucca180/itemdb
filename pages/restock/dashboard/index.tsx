@@ -733,16 +733,20 @@ const RestockDashboard = (props: RestockDashboardProps) => {
                     size="xs"
                     colorScheme="white"
                     variant={'ghost'}
+                    data-umami-event="script-cta"
+                    data-umami-event-label="install-now"
                   >
                     {t('Restock.install-now')}
                   </Button>
                   <Button
                     as={Link}
-                    href="/contribute?utm_content=dashboard-cta"
+                    href="/contribute"
                     isExternal
                     size="xs"
                     colorScheme="white"
                     variant={'ghost'}
+                    data-umami-event="script-cta"
+                    data-umami-event-label="contribute"
                   >
                     {t('General.learn-more')}
                   </Button>

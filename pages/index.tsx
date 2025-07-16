@@ -50,9 +50,9 @@ type Props = {
 const color = Color('#4A5568');
 const rgb = color.rgb().round().array();
 
-function fetcher<T>(url: string, config?: AxiosRequestConfig<any>): Promise<T> {
-  return axios.get(url, config).then((res) => res.data);
-}
+export const fetcher = <T,>(url: string, config?: AxiosRequestConfig<any>): Promise<T> =>
+  axios.get<T>(url, config).then((res) => res.data);
+
 const HomePage: NextPageWithLayout<Props> = (props: Props) => {
   const t = useTranslations();
   const formatter = useFormatter();
@@ -65,17 +65,18 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
     leavingNcMall,
     trendingLists,
     newItemCount,
+    latestPrices,
   } = props;
 
   const { data: latestItems } = useSWR<ItemData[]>(`api/v1/items?limit=20`, (url) => fetcher(url), {
     fallbackData: props.latestItems,
   });
 
-  const { data: latestPrices } = useSWR<LatestPricesRes>(
-    `api/v1/prices?limit=16&count=true`,
-    (url) => fetcher(url),
-    { fallbackData: props.latestPrices }
-  );
+  // const { data: latestPrices } = useSWR<LatestPricesRes>(
+  //   `api/v1/prices?limit=16&count=true`,
+  //   (url) => fetcher(url),
+  //   { fallbackData: props.latestPrices }
+  // );
 
   return (
     <>
@@ -348,7 +349,7 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
       messages: await loadTranslation(context.locale, 'index'),
       locale: context.locale,
     },
-    revalidate: 180, // In seconds
+    revalidate: 180,
   };
 }
 
