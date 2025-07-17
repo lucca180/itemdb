@@ -11,7 +11,7 @@ import {
 import NextImage from 'next/image';
 import { ItemData } from '../../types';
 import Color from 'color';
-import ItemCard, { ItemCardBadge } from '../Items/ItemCard';
+import ItemCard, { ItemCardBadge, ItemImage } from '../Items/ItemCard';
 import ItemCtxMenu, { CtxTrigger } from '../Menus/ItemCtxMenu';
 import MainLink from '../Utils/MainLink';
 import { GoChevronLeft, GoChevronRight } from 'react-icons/go';
@@ -172,13 +172,10 @@ const HomeItem = ({
             alignItems={'center'}
             color="whiteAlpha.900"
           >
-            <NextImage
-              src={`/api/cache/items/${item.image_id}.gif`}
+            <ItemImage
+              item={item}
               width={60}
               height={60}
-              unoptimized
-              alt={item.name}
-              title={item.description}
               style={{ borderRadius: '12px', flexShrink: 0 }}
             />
             <Flex flexFlow={'column'} pl={3} alignItems={'start'} justifyContent={'center'} gap={1}>

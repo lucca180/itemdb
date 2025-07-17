@@ -1,5 +1,5 @@
 import { Badge, Box, Icon, Skeleton, Text, Link, Tooltip, useMediaQuery } from '@chakra-ui/react';
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import { ItemData } from '../../types';
 import { AiFillInfoCircle, AiFillWarning } from 'react-icons/ai';
@@ -124,14 +124,7 @@ const ItemCardBase = (props: ItemProps) => {
             textDecoration="none"
             gap={2}
           >
-            <Image
-              src={`/api/cache/items/${item.image_id}.gif`}
-              width={80}
-              height={80}
-              unoptimized
-              alt={item.name}
-              title={item.description}
-            />
+            <ItemImage item={item} />
             <Text fontSize={{ base: 'xs', md: small ? 'xs' : 'sm' }}>{item.name}</Text>
 
             <ItemCardBadge {...props} profit={profit} />
@@ -264,5 +257,29 @@ export const ItemCardBadge = (props: ItemCardBadgeProps) => {
         </>
       )}
     </>
+  );
+};
+
+type ImageProps = React.ComponentProps<typeof Image>;
+
+export const ItemImage = (props: { item: ItemData } & Partial<ImageProps>) => {
+  const { item } = props;
+  const [error, setError] = useState(false);
+
+  const src = error
+    ? `/api/cache/items/${item.image_id}.gif`
+    : `https://cdn.itemdb.com.br/items/${item.image_id}.gif`;
+
+  return (
+    <Image
+      src={src}
+      width={80}
+      height={80}
+      unoptimized
+      alt={item.name}
+      title={item.description}
+      onError={() => setError(true)}
+      {...props}
+    />
   );
 };

@@ -18,6 +18,7 @@ import { EffectText, EffectTypes } from '../../Items/ItemEffectsCard';
 import Color from 'color';
 import ItemCtxMenu, { CtxTrigger } from '../../Menus/ItemCtxMenu';
 import MainLink from '../../Utils/MainLink';
+import { ItemImage } from '@components/Items/ItemCard';
 
 type EffectsCardProps = {
   item: ItemData & { effects?: ItemEffect[] };
@@ -59,14 +60,7 @@ export const EffectsCard = (props: EffectsCardProps) => {
         >
           <Flex gap={2}>
             <Box w="50px" h="50px">
-              <Image
-                src={`/api/cache/items/${item.image_id}.gif`}
-                width={50}
-                height={50}
-                unoptimized
-                alt={item.name}
-                title={item.description}
-              />
+              <ItemImage item={item} width={50} height={50} />
             </Box>
             <Flex flexFlow={'column'} gap={1}>
               <Text fontSize={'sm'}>{item.name}</Text>
