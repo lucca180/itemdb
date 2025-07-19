@@ -57,6 +57,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           name: i.name,
           image: i.image,
           image_id: i.image_id,
+          item_iid: i.item_iid || null,
           order: i.order,
           price: i.price?.toNumber() || null,
           addedAt: i.addedAt.toJSON(),
@@ -87,7 +88,7 @@ const getPopularItem = async (skipList?: string[]) => {
         SELECT 1 
         FROM trades t2
         LEFT JOIN tradeitems ti ON t2.trade_id = ti.trade_id
-        LEFT JOIN items i ON i.name = ti.name AND i.image_id = ti.image_id
+        LEFT JOIN items i ON ti.item_iid = i.internal_id
         LEFT JOIN itemprices p ON p.item_iid = i.internal_id AND p.isLatest = 1 AND p.addedAt > t.addedAt
         WHERE t.trade_id = t2.trade_id
         AND p.price IS NULL

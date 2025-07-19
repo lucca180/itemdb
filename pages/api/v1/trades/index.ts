@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
-import { TradeData } from '../../../../types';
+import { ItemData, TradeData } from '../../../../types';
 import requestIp from 'request-ip';
 import { CheckAuth } from '../../../../utils/googleCloud';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -57,13 +57,18 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const promiseArr = [];
 
+  let itemDataRaw: { [key: string]: ItemData } = {};
+
   for (const lot of tradeLots) {
     const itemList: {
       name: string;
       image: string;
       image_id: string;
       order: number;
+      item_iid: number | null;
     }[] = [];
+
+    const fetchList: [string, string][] = [];
 
     for (const item of lot.items) {
       let { name, img, order } = item;
@@ -75,10 +80,20 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
       if (img) imageId = (img as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? null;
 
+      if (!imageId) continue;
+
+      const itemKey = `${encodeURI(name.toLowerCase())}_${imageId}`;
+      const itemData = itemDataRaw[itemKey];
+
+      if (!itemData) {
+        fetchList.push([name, imageId]);
+      }
+
       const x = {
         name: name,
         image: img,
         image_id: imageId as string,
+        item_iid: itemData ? itemData.internal_id : null,
         order: order,
       };
 
@@ -86,6 +101,23 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     if (itemList.length === 0) continue;
+
+    const itemReq = await getManyItems({
+      name_image_id: fetchList,
+    });
+
+    itemDataRaw = { ...itemDataRaw, ...itemReq };
+
+    itemList.forEach((item) => {
+      if (!item.item_iid) {
+        const itemData = itemReq[`${encodeURI(item.name.toLowerCase())}_${item.image_id}`];
+        if (itemData) {
+          item.item_iid = itemData.internal_id;
+        } else {
+          item.item_iid = null;
+        }
+      }
+    });
 
     const oldTradeHash = hash({
       wishlist: lot.wishList,
@@ -344,19 +376,27 @@ export const processTradePrice = async (
 };
 
 type getItemTradesArgs = {
-  name: string;
+  name?: string;
   image_id?: string;
+  item_iid?: number;
 };
 
 export const getItemTrades = async (args: getItemTradesArgs) => {
-  const { name, image_id } = args;
+  const { name, image_id, item_iid } = args;
+
+  if (!name && !image_id && !item_iid) {
+    throw new Error(
+      'getItemTrades: At least one argument (name, image_id, item_iid) must be provided'
+    );
+  }
 
   const tradeRaw = await prisma.trades.findMany({
     where: {
       items: {
         some: {
-          name: name,
+          name: name || undefined,
           image_id: image_id || undefined,
+          item_iid: item_iid || undefined,
         },
       },
     },
@@ -381,6 +421,7 @@ export const getItemTrades = async (args: getItemTradesArgs) => {
           name: i.name,
           image: i.image,
           image_id: i.image_id,
+          item_iid: i.item_iid || null,
           price: i.price?.toNumber() || null,
           order: i.order,
           addedAt: i.addedAt.toJSON(),
@@ -398,21 +439,7 @@ const updateLastSeenTrades = async (
       items: TradeItems[];
     }[]
 ) => {
-  const itemNameImage: any = {};
-
-  trades
-    .map((t) => t.items)
-    .flat()
-    .map((i) => {
-      if (!i) return;
-      itemNameImage[`${i.name}_${i.image_id}`] = [i.name, i.image_id];
-    });
-
-  const itemsData = await getManyItems({
-    name_image_id: Object.values(itemNameImage),
-  });
-
-  const items_iid = Object.values(itemsData).map((x) => x.internal_id);
+  const items_iid = trades.map((x) => x.items.map((i) => i.internal_id)).flat();
 
   const createMany = items_iid.map((iid) => ({
     item_iid: iid,

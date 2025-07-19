@@ -106,13 +106,11 @@ const getRestockData = async (name: string) => {
   };
 };
 
-const getTradeData = async (name: string, onlyPriced = false) => {
+const getTradeData = async (name: string | number, onlyPriced = false) => {
   const tradeRaw = await prisma.trades.findMany({
     where: {
       items: {
-        some: {
-          name: name,
-        },
+        some: typeof name === 'string' ? { name: name } : { item_iid: name },
       },
       addedAt: {
         gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 90),
@@ -147,6 +145,7 @@ const getTradeData = async (name: string, onlyPriced = false) => {
           name: i.name,
           image: i.image,
           image_id: i.image_id,
+          item_iid: i.item_iid || null,
           price: i.price?.toNumber() || null,
           order: i.order,
           addedAt: i.addedAt.toJSON(),

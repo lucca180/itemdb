@@ -50,7 +50,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       const trade = parsed.content.trade as TradeData;
 
       const isAllItemsSame = trade.items.every(
-        (item) => item.name === trade.items[0].name && item.image_id === trade.items[0].image_id,
+        (item) => item.name === trade.items[0].name && item.image_id === trade.items[0].image_id
       );
       const isAllEmpty = trade.items.every((item) => !item.price);
 

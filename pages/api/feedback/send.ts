@@ -237,6 +237,7 @@ export const processSimilarTrades = async (trade: TradeData, trade_id: number, u
           name: i.name,
           image: i.image,
           image_id: i.image_id,
+          item_iid: i.item_iid || null,
           price: i.price?.toNumber() || null,
           order: i.order,
           addedAt: i.addedAt.toJSON(),

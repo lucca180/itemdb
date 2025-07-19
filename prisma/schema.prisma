@@ -76,6 +76,7 @@ model Items {
   PetpetColors          PetpetColors[]
   NCTradeItems          ncTradeItems[]
   ncValues              ncValues[]
+  TradeItems            TradeItems[]
 
   @@index([name, image_id])
   @@index([image_id])
@@ -282,8 +283,11 @@ model TradeItems {
   price       Decimal? @db.Decimal(11, 0)
   addedAt     DateTime @default(now())
 
+  item_iid Int?
+  item     Items? @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+
   @@unique([trade_id, order])
-  @@index([order, trade_id])
+  @@index([order, trade_id, item_iid])
   @@index([name, image_id])
 }
 

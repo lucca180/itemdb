@@ -128,6 +128,7 @@ export type TradeData = {
   hash: string | null;
   items: {
     internal_id: number;
+    item_iid: number | null;
     trade_id: number;
     name: string;
     image: string;

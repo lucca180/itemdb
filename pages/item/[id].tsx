@@ -469,7 +469,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
         item.useTypes.canOpen !== 'false' ? getItemDrops(item.internal_id, item.isNC) : null, // 4
         getItemParent(item.internal_id, 4), // 5
         !item.isNC ? getItemPrices({ iid: item.internal_id }) : [], // 6
-        !item.isNC ? getItemTrades({ name: item.name, image_id: item.image_id }) : [], // 7
+        !item.isNC ? getItemTrades({ item_iid: item.internal_id }) : [], // 7
         !item.isNC
           ? getLastSeen({ item_id: item.item_id, name: item.name, image_id: item.image_id })
           : null, // 8

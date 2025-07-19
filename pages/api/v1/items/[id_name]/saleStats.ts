@@ -230,8 +230,7 @@ const getTradeSales = async (iid: number, dayLimit = 15) => {
     where: {
       items: {
         some: {
-          name: item.name,
-          image_id: item.image_id ?? '',
+          item_iid: iid,
         },
       },
       addedAt: {

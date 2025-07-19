@@ -63,6 +63,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           name: i.name,
           image: i.image,
           image_id: i.image_id,
+          item_iid: i.item_iid || null,
           order: i.order,
           price: i.price?.toNumber() || null,
           addedAt: i.addedAt.toJSON(),

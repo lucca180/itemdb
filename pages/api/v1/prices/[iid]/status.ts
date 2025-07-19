@@ -41,8 +41,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       },
       items: {
         some: {
-          image_id: item.image_id,
-          name: item.name,
+          item_iid: item.internal_id,
         },
       },
     },
