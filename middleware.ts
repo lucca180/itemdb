@@ -186,7 +186,15 @@ const getSession = async (sessionToken?: string, checkOnly = false) => {
 const updateServerTime = (label: string, startTime: number, response: NextResponse) => {
   const endTime = Date.now();
   const value = endTime - startTime;
-  const serverTime = response.headers.get('Server-Timing') || '';
+  let serverTime = response.headers.get('Server-Timing') || '';
+
+  if (!serverTime) {
+    const sst = response.headers.get('X-Nginx-Timing') || '';
+    if (sst) {
+      serverTime = `nginx-timing;dur=${Number(sst) * 1000}`;
+    }
+  }
+
   const newServerTime = serverTime
     ? `${serverTime}, ${label};dur=${value}`
     : `${label};dur=${value}`;
