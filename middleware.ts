@@ -20,8 +20,15 @@ const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === 'true';
 const ITEMDB_URL = process.env.ITEMDB_SERVER;
 const isDev = process.env.NODE_ENV === 'development';
 export async function middleware(request: NextRequest) {
+  const response = NextResponse.next();
+
+  const sst = request.headers.get('X-Nginx-Timing') || '';
+  if (sst) {
+    response.headers.set('Server-Timing', `nginx-timing;dur=${Number(sst) * 1000}`);
+  }
+
   if (request.nextUrl.pathname.startsWith('/_next') || PUBLIC_FILE.test(request.nextUrl.pathname)) {
-    return NextResponse.next();
+    return response;
   }
 
   if (MAINTENANCE_MODE) {
@@ -29,14 +36,12 @@ export async function middleware(request: NextRequest) {
   }
 
   if (request.nextUrl.pathname.startsWith('/api/')) {
-    if (skipAPIMiddleware) return NextResponse.next();
+    if (skipAPIMiddleware) return response;
 
     return apiMiddleware(request);
   }
   const startTime = Date.now();
   // handle session
-  const response = NextResponse.next();
-
   const sessionCookie = request.cookies.get('idb-session-id')?.value || '';
   if (!sessionCookie && !isDev) {
     const newSession = await getSession(sessionCookie);
@@ -186,14 +191,8 @@ const getSession = async (sessionToken?: string, checkOnly = false) => {
 const updateServerTime = (label: string, startTime: number, response: NextResponse) => {
   const endTime = Date.now();
   const value = endTime - startTime;
-  let serverTime = response.headers.get('Server-Timing') || '';
 
-  if (!serverTime) {
-    const sst = response.headers.get('X-Nginx-Timing') || '';
-    if (sst) {
-      serverTime = `nginx-timing;dur=${Number(sst) * 1000}`;
-    }
-  }
+  const serverTime = response.headers.get('Server-Timing') || '';
 
   const newServerTime = serverTime
     ? `${serverTime}, ${label};dur=${value}`
