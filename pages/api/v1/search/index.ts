@@ -65,7 +65,8 @@ export async function doSearch(
   filters = { ...queryFilters, ...filters };
 
   let { page, limit } = filters;
-
+  limit = Number(limit) || 48;
+  page = Number(page) || 1;
   page = page - 1;
 
   const isColorSearch = !!query.match(/^#[0-9A-Fa-f]{6}$/);

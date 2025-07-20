@@ -26,7 +26,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const searchFilters = { ...defaultFilters };
   searchFilters.sortBy = 'match';
-  searchFilters.limit = reqQuery.limit || 5;
+  searchFilters.limit = Number(reqQuery.limit) || 5;
 
   const searchProm = doSearch(query, searchFilters, false);
 
