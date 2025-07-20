@@ -453,9 +453,8 @@ export const getList = async (
   let list_id;
   let slug;
 
-  if (typeof list_id_or_slug === 'string' && isNaN(parseInt(list_id_or_slug)))
-    slug = list_id_or_slug;
-  else if (typeof list_id_or_slug === 'number' || !isNaN(parseInt(list_id_or_slug)))
+  if (typeof list_id_or_slug === 'string' && isNaN(Number(list_id_or_slug))) slug = list_id_or_slug;
+  else if (typeof list_id_or_slug === 'number' || !isNaN(Number(list_id_or_slug)))
     list_id = Number(list_id_or_slug);
   else throw new Error('Invalid list_id_or_slug');
 
