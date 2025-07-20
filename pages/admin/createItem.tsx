@@ -62,7 +62,7 @@ const defaultItem: Partial<ItemData> = {
 
 const CreateItem = () => {
   const toast = useToast();
-  const { user, authLoading, getIdToken } = useAuth();
+  const { user, authLoading } = useAuth();
   const [item, setItem] = useState<Partial<ItemData>>(defaultItem);
   const [tags, setTags] = useState<string[]>([]);
 
@@ -152,13 +152,10 @@ const CreateItem = () => {
     });
 
     try {
-      const token = await getIdToken();
-
       const res = await fetch('/api/v1/items', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           lang: 'en',
@@ -168,11 +165,7 @@ const CreateItem = () => {
       });
 
       if (res.status === 200) {
-        await axios.post('/api/v1/items/process', undefined, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        await axios.post('/api/v1/items/process');
 
         toast.update(toastID, {
           title: 'Item created.',

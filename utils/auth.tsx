@@ -11,7 +11,6 @@ type AuthContextType = {
   user: User | null;
   userToken: string | null;
   signout: () => void;
-  getIdToken: () => string | null;
   authLoading: boolean;
   setUser: (user: User) => void;
   updatePref: (key: keyof UserPreferences, value: UserPreferences[keyof UserPreferences]) => void;
@@ -23,7 +22,6 @@ const AuthContext = createContext<AuthContextType>({
   userToken: null,
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   signout: () => {},
-  getIdToken: () => null,
   authLoading: true,
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   setUser: () => {},
@@ -71,11 +69,6 @@ export function AuthProvider({ children }: any) {
       unsubs.then((unsubs) => unsubs());
     };
   }, []);
-
-  // for backwards compatibility
-  const getIdToken = () => {
-    return userToken;
-  };
 
   // force refresh the token every 10 minutes
   useEffect(() => {
@@ -143,7 +136,6 @@ export function AuthProvider({ children }: any) {
         user: user,
         userToken: userToken,
         signout,
-        getIdToken,
         authLoading,
         setUser,
         updatePref,

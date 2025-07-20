@@ -22,8 +22,8 @@ import {
 import axios from 'axios';
 import { useState } from 'react';
 import { ItemData, UserList, ListItemInfo, ObligatoryUserList } from '../../types';
-import { useAuth } from '../../utils/auth';
 import { useTranslations } from 'next-intl';
+import { useAuth } from '@utils/auth';
 
 export type DuplicatedItemModalProps = {
   isOpen: boolean;
@@ -36,7 +36,7 @@ export type DuplicatedItemModalProps = {
 
 const DuplicatedItemModal = (props: DuplicatedItemModalProps) => {
   const t = useTranslations();
-  const { user, getIdToken } = useAuth();
+  const { user } = useAuth();
   const { isOpen, onClose, item, list, itemInfo, onChange } = props;
   const [isLoading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
@@ -47,25 +47,15 @@ const DuplicatedItemModal = (props: DuplicatedItemModalProps) => {
     setLoading(true);
     if (!user || !list) return;
     try {
-      const token = await getIdToken();
-
-      const res = await axios.put(
-        `/api/v1/lists/${user.username}/${list.internal_id}`,
-        {
-          items: [
-            {
-              list_id: list.internal_id,
-              item_iid: item.internal_id,
-              amount: amount,
-            },
-          ],
-        },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
+      const res = await axios.put(`/api/v1/lists/${user.username}/${list.internal_id}`, {
+        items: [
+          {
+            list_id: list.internal_id,
+            item_iid: item.internal_id,
+            amount: amount,
           },
-        }
-      );
+        ],
+      });
       if (res.data.success) {
         toast({
           title: t('Lists.item-added-to-list'),

@@ -55,7 +55,7 @@ const colorPickerStyles = {
 
 const EditProfileModal = (props: EditProfileModalProps) => {
   const t = useTranslations();
-  const { user, setUser, getIdToken } = useAuth();
+  const { user, setUser } = useAuth();
   const [userProfile, setUserProfile] = useState(user ?? defaultUser);
   const { isOpen, onClose } = props;
   const [isLoading, setLoading] = useState<boolean>(false);
@@ -70,8 +70,6 @@ const EditProfileModal = (props: EditProfileModalProps) => {
     setLoading(true);
     setError('');
     try {
-      const token = await getIdToken();
-
       if (!userProfile.username || !userProfile.neopetsUser) {
         setLoading(false);
         setError(t('Profile.fill-required-fields'));
@@ -119,13 +117,7 @@ const EditProfileModal = (props: EditProfileModalProps) => {
         }
       }
 
-      const configs = {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      };
-
-      const res = await axios.post(`/api/v1/users/${userProfile.username}`, userProfile, configs);
+      const res = await axios.post(`/api/v1/users/${userProfile.username}`, userProfile);
       setUser(res.data);
       setLoading(false);
 

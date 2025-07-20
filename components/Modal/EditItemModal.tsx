@@ -81,7 +81,7 @@ export type EditItemModalProps = {
 
 const EditItemModal = (props: EditItemModalProps) => {
   const t = useTranslations();
-  const { getIdToken, user } = useAuth();
+  const { user } = useAuth();
   const {
     isOpen,
     onClose,
@@ -161,20 +161,11 @@ const EditItemModal = (props: EditItemModalProps) => {
   const saveChanges = async () => {
     setLoading(true);
     try {
-      const token = await getIdToken();
-      if (!token) return;
-
-      const res = await axios.patch(
-        '/api/v1/items/' + item.internal_id,
-        {
-          itemData: item,
-          itemCats: categories,
-          itemTags: tags,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const res = await axios.patch('/api/v1/items/' + item.internal_id, {
+        itemData: item,
+        itemCats: categories,
+        itemTags: tags,
+      });
 
       setLoading(false);
 
@@ -755,7 +746,6 @@ export const OpenableTab = (props: OpenableTabProps) => {
   const [itemOpenable, setItemOpenable] = useState<ItemOpenable | null>(
     itemOpenableProps ?? defaultItemOpenable
   );
-  const { getIdToken } = useAuth();
   const [dropData, setDropData] = useState<{ [id: number]: ItemData }>({});
   const [isLoading, setLoading] = useState<boolean>(false);
   const [newPoolName, setNewPoolName] = useState<string>('');
@@ -777,21 +767,13 @@ export const OpenableTab = (props: OpenableTabProps) => {
   };
 
   const updatePool = async (poolName: string, newItem: ItemData, action: 'add' | 'remove') => {
-    const token = await getIdToken();
-    if (!token) return;
     setLoading(true);
 
-    const res = await axios.patch(
-      `/api/v1/items/${item.slug}/drops`,
-      {
-        drop_id: newItem.internal_id,
-        poolName: poolName,
-        action: action,
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+    const res = await axios.patch(`/api/v1/items/${item.slug}/drops`, {
+      drop_id: newItem.internal_id,
+      poolName: poolName,
+      action: action,
+    });
 
     setItemOpenable(res.data.dropUpdate);
   };

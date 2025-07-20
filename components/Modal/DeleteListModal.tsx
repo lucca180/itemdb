@@ -13,7 +13,6 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useState } from 'react';
-import { useAuth } from '../../utils/auth';
 import { useTranslations } from 'next-intl';
 import { useLists } from '../../utils/useLists';
 
@@ -27,7 +26,6 @@ export type DeleteListModalProps = {
 
 const DeleteListModal = (props: DeleteListModalProps) => {
   const t = useTranslations();
-  const { getIdToken } = useAuth();
   const { isOpen, onClose, selectedLists: listsIds, refresh, username } = props;
   const [isLoading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
@@ -36,12 +34,7 @@ const DeleteListModal = (props: DeleteListModalProps) => {
   const confirmDelete = async () => {
     setLoading(true);
     try {
-      const token = await getIdToken();
-
       const res = await axios.delete(`/api/v1/lists/${username}`, {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
         data: {
           listIds: listsIds,
         },

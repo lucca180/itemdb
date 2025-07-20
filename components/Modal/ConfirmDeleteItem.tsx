@@ -11,7 +11,6 @@ import {
 import axios from 'axios';
 import React from 'react';
 import { ItemData } from '../../types';
-import { useAuth } from '../../utils/auth';
 import { useTranslations } from 'next-intl';
 
 type Props = {
@@ -24,21 +23,14 @@ const ConfirmDeleteItem = (props: Props) => {
   const t = useTranslations();
   const { isOpen, onClose, item } = props;
   const cancelRef = React.useRef(null);
-  const { getIdToken } = useAuth();
   const [loading, setLoading] = React.useState(false);
   const [msg, setMsg] = React.useState('');
 
   const onConfirm = async () => {
     setLoading(true);
-    const token = await getIdToken();
 
-    if (!token) return setMsg('No token found');
     try {
-      const res = await axios.delete(`/api/v1/items/${item.internal_id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await axios.delete(`/api/v1/items/${item.internal_id}`);
 
       if (res.status === 200) {
         setMsg(t('Lists.item-deleted-successfully-you-can-close-this-page-now'));

@@ -163,7 +163,7 @@ const DefaultImportInfo = {
 
 const ImportItems = (props: ImportItemsProps) => {
   const t = useTranslations();
-  const { user, getIdToken } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const toast = useToast();
   const { items, indexType, recomended_list } = props;
@@ -286,17 +286,9 @@ const ImportItems = (props: ImportItemsProps) => {
 
     try {
       if (importInfo.action === 'add') {
-        await axios.put(
-          `/api/v1/lists/${user.username}/${importInfo.list.internal_id}/`,
-          {
-            items: importData,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${await getIdToken()}`,
-            },
-          }
-        );
+        await axios.put(`/api/v1/lists/${user.username}/${importInfo.list.internal_id}/`, {
+          items: importData,
+        });
       }
 
       if (importInfo.action === 'remove' || importInfo.action === 'hide') {
@@ -306,9 +298,6 @@ const ImportItems = (props: ImportItemsProps) => {
           },
           params: {
             hide: importInfo.action === 'hide',
-          },
-          headers: {
-            Authorization: `Bearer ${await getIdToken()}`,
           },
         });
       }

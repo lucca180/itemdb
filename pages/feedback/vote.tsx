@@ -50,7 +50,7 @@ const AUTO_PRICE_UID = 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1';
 const FeedbackVotingPage = () => {
   const t = useTranslations();
   const router = useRouter();
-  const { user, authLoading, getIdToken } = useAuth();
+  const { user, authLoading } = useAuth();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [currentFeedback, setCurrentFeedback] = useState<Feedback>();
@@ -104,17 +104,11 @@ const FeedbackVotingPage = () => {
     setError('');
     setIsLoading(true);
     try {
-      const token = await getIdToken();
-      if (!token) throw new Error('No token');
-
       const res = await axios.get('/api/feedback/getLatest', {
         params: {
           itemName: router.query.target,
           wishlist: router.query.wishlist,
           order: router.query.order,
-        },
-        headers: {
-          authorization: `Bearer ${token}`,
         },
       });
 
@@ -140,21 +134,11 @@ const FeedbackVotingPage = () => {
     setIsLoading(true);
     try {
       if (!currentFeedback) throw new Error('No feedback selected');
-      const token = await getIdToken();
-      if (!token) throw new Error('No token');
 
-      const res = await axios.post(
-        '/api/feedback/vote',
-        {
-          action,
-          feedback_id: currentFeedback?.feedback_id,
-        },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await axios.post('/api/feedback/vote', {
+        action,
+        feedback_id: currentFeedback?.feedback_id,
+      });
 
       if (res.data.success) {
         const newFeedbacks = feedbacks.filter(
