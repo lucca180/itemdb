@@ -20,7 +20,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const { username, list_id: list_id_or_slug, asObject } = req.query;
   const isOfficial = username === 'official';
-
+  let startTime = Date.now();
   if (
     !username ||
     !list_id_or_slug ||
@@ -35,11 +35,12 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     user = (await CheckAuth(req)).user;
   } catch (e) {}
+  startTime = updateServerTime('auth-check', startTime, res);
 
   try {
     const list = await getList(username, list_id_or_slug, user, isOfficial);
     if (!list) return res.status(404).json({ error: 'List not found' });
-
+    startTime = updateServerTime('list-check', startTime, res);
     const isOwner = !!(user && user.id === list.owner.id);
 
     const itemInfoRaw = await prisma.listItems.findMany({
@@ -49,16 +50,22 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       },
     });
 
+    startTime = updateServerTime('get-list-item', startTime, res);
+
     if (!itemInfoRaw.length) return res.status(200).json([]);
 
     const itemData = await getManyItems({
       id: itemInfoRaw.map((item) => item.item_iid.toString()),
     });
 
+    startTime = updateServerTime('get-item-data', startTime, res);
+
     const itemArray = Object.values(itemData);
 
     const ip = requestIp.getClientIp(req);
     redis_setItemCount(ip, itemArray.length, req);
+
+    updateServerTime('set-redis', startTime, res);
 
     if (asObject === 'true') return res.status(200).json(itemData);
 
@@ -93,4 +100,16 @@ export const getListItems = async (list_id_or_slug: string, username: string) =>
   });
 
   return Object.values(itemData);
+};
+
+const updateServerTime = (label: string, startTime: number, response: NextApiResponse) => {
+  const endTime = Date.now();
+  const value = endTime - startTime;
+  const serverTime = response.getHeader('Server-Timing') || '';
+  const newServerTime = serverTime
+    ? `${serverTime}, ${label};dur=${value}`
+    : `${label};dur=${value}`;
+
+  response.setHeader('Server-Timing', newServerTime);
+  return endTime;
 };

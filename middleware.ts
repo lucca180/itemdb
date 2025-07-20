@@ -33,7 +33,7 @@ export async function middleware(request: NextRequest) {
 
     return apiMiddleware(request);
   }
-
+  const startTime = Date.now();
   // handle session
   const response = NextResponse.next();
 
@@ -61,6 +61,8 @@ export async function middleware(request: NextRequest) {
 
   const locale = request.cookies.get('NEXT_LOCALE')?.value;
 
+  updateServerTime('regular-middleware', startTime, response);
+
   if (!locale || locale === request.nextUrl.locale || !VALID_LOCALES.includes(locale))
     return response;
 
@@ -79,27 +81,31 @@ export const config = {
 // ---------- API Middleware ---------- //
 
 const apiMiddleware = async (request: NextRequest) => {
-  if (isDev) return NextResponse.next();
+  const response = NextResponse.next();
+  if (isDev) return response;
   // Skip rate limit if key is provided
   if (request.headers.get('x-tarnum-skip') === process.env.TARNUM_KEY) {
-    return NextResponse.next();
+    return response;
   }
 
   if (request.method === 'OPTIONS') {
-    return NextResponse.next();
+    return response;
   }
 
   //check if request pathname has a skip route
   const skips = API_SKIPS[request.method] || [];
   if (skips.some((skip) => request.nextUrl.pathname.includes(skip))) {
-    return NextResponse.next();
+    return response;
   }
+
+  const startTime = Date.now();
 
   const sessionCookie = request.cookies.get('idb-session-id');
   const cacheSession = sessionCache.get(sessionCookie?.value || '');
 
   if (cacheSession) {
-    return NextResponse.next();
+    updateServerTime('api-middleware', startTime, response);
+    return response;
   }
 
   if (sessionCookie && sessionCookie.value) {
@@ -110,7 +116,8 @@ const apiMiddleware = async (request: NextRequest) => {
           ttl: 20 * 60 * 1000,
         });
 
-        return NextResponse.next();
+        updateServerTime('api-middleware', startTime, response);
+        return response;
       }
     } catch (e) {}
   }
@@ -120,14 +127,17 @@ const apiMiddleware = async (request: NextRequest) => {
     requestIp.getClientIp(request as any) || request.headers.get('X-Forwarded-For')?.split(',')[0];
 
   if (!ip) {
+    updateServerTime('api-middleware', startTime, response);
     return NextResponse.next();
   }
 
   const banned = await checkRedis(ip, request.nextUrl.pathname);
   if (banned) {
+    updateServerTime('api-middleware', startTime, response);
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
 
+  updateServerTime('api-middleware', startTime, response);
   return NextResponse.next();
 };
 
@@ -171,4 +181,14 @@ const getSession = async (sessionToken?: string, checkOnly = false) => {
     console.error('checkRedis error', e);
     return false;
   }
+};
+
+const updateServerTime = (label: string, startTime: number, response: NextResponse) => {
+  const endTime = Date.now();
+  const value = endTime - startTime;
+  const serverTime = response.headers.get('Server-Timing') || '';
+  const newServerTime = serverTime
+    ? `${serverTime}, ${label};dur=${value}`
+    : `${label};dur=${value}`;
+  response.headers.set('Server-Timing', newServerTime);
 };
