@@ -287,7 +287,9 @@ const ItemPriceCard = (props: Props) => {
                     {t('General.inflation')}
                   </Text>
                 )}
-                {price?.value && <StatNumber>{format.number(price.value)} NP</StatNumber>}
+                {price?.value && (
+                  <StatNumber whiteSpace={'nowrap'}>{format.number(price.value)} NP</StatNumber>
+                )}
                 {!price?.value && <StatNumber>??? NP</StatNumber>}
                 {price?.addedAt && (
                   <StatLabel>
