@@ -185,8 +185,12 @@ export const ItemCardBadge = (props: ItemCardBadgeProps) => {
 
       {item.type === 'pb' && <Badge colorScheme="yellow">PB</Badge>}
 
-      {item.isNC && !capValue && !item.mallData && !item.ncValue && (
+      {item.isNC && !capValue && !item.mallData && !item.ncValue && item.status !== 'no trade' && (
         <Badge colorScheme="purple">NC</Badge>
+      )}
+
+      {item.isNC && !capValue && !item.mallData && !item.ncValue && item.status === 'no trade' && (
+        <Badge colorScheme="purple">NC - No Trade</Badge>
       )}
 
       {item.isNC && item.ncValue && !capValue && !item.mallData && (
