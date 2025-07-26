@@ -1,12 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import qs from 'qs';
-import { defaultFilters } from '../../../../utils/parseFilters';
+import { defaultFilters, parseFilters } from '../../../../utils/parseFilters';
 import { doSearch } from '.';
 import prisma from '../../../../utils/prisma';
 import { UserList } from '../../../../types';
 import Fuse from 'fuse.js';
 import { restockShopInfo } from '../../../../utils/utils';
 import { rawToList } from '../lists/[username]';
+import { UserList as RawList, User as RawUser, Prisma } from '@prisma/generated/client';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET' && req.url) return GET(req, res);
@@ -30,36 +31,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const searchProm = doSearch(query, searchFilters, false);
 
-  const listProm = prisma.userList
-    .findMany({
-      where: {
-        OR: [{ name: { contains: `${query}` } }, { description: { contains: `${query}` } }],
-        official: true,
-      },
-      include: {
-        items: true,
-        user: true,
-      },
-      take: 3,
-      orderBy: [
-        {
-          _relevance: {
-            fields: ['name'],
-            search: `*${query}*`,
-            sort: 'asc',
-          },
-        },
-        {
-          _relevance: {
-            fields: ['description'],
-            search: `*${query}*`,
-            sort: 'asc',
-          },
-        },
-      ],
-    })
-    .then((x) => x)
-    .catch(() => []);
+  const listProm = getListsRaw(query);
 
   let [searchRes, listRes] = await Promise.all([searchProm, listProm]);
 
@@ -81,4 +53,53 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const result = shop.map((x) => x.item).slice(0, 1);
 
   return res.status(200).json({ items: searchRes.content, lists: userLists, restockShop: result });
+};
+
+const ENV_FUZZY_SEARCH = process.env.HAS_FUZZY_SEARCH === 'true';
+
+const getListsRaw = async (query: string, limit = 3) => {
+  const originalQuery = query;
+  const [, querySanitized] = parseFilters(originalQuery, false);
+  query = querySanitized.trim() ?? '';
+
+  const listsRaw: (RawList & RawUser)[] = await prisma.$queryRaw`
+    select ul.*, u.username, u.neo_user, u.last_login from UserList ul 
+    left join User u on ul.user_id = u.id
+    where ul.official = 1
+    ${
+      ENV_FUZZY_SEARCH
+        ? Prisma.sql`and bounded_edit_dist_t(${originalQuery.toLowerCase()}, LOWER(ul.name), 6) <= 6`
+        : Prisma.sql`and 1 = 0`
+    }
+
+    union
+
+    select ul.*, u.username, u.neo_user, u.last_login from UserList ul 
+    left join User u on ul.user_id = u.id
+    where ul.official = 1
+    and (MATCH (ul.name, ul.description) AGAINST (${query} IN BOOLEAN MODE) OR ul.name LIKE ${`%${originalQuery}%`} OR ul.description LIKE ${`%${originalQuery}%`})
+    
+    order by
+      name = ${originalQuery} DESC,
+      ${
+        ENV_FUZZY_SEARCH
+          ? Prisma.sql`bounded_edit_dist_t(${originalQuery.toLowerCase()}, LOWER(name), 6),`
+          : Prisma.empty
+      }
+      createdAt DESC
+  `;
+
+  return [...listsRaw]
+    .map((listRaw) => {
+      return {
+        ...listRaw,
+        user: {
+          id: listRaw.user_id,
+          username: listRaw.username,
+          neo_user: listRaw.neo_user,
+          last_login: listRaw.last_login?.toJSON() ?? null,
+        },
+      };
+    })
+    .slice(0, limit) as unknown as (RawList & { user: RawUser })[];
 };

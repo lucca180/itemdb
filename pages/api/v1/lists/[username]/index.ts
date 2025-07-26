@@ -333,7 +333,7 @@ export const createListSlug = async (name: string, userId: string, isOfficial: b
 };
 
 export const rawToList = (
-  listRaw: RawList & { items: ListItems[] },
+  listRaw: RawList & { items?: ListItems[] },
   owner: User | RawUser,
   includeItems = false
 ): UserList => {
@@ -369,7 +369,7 @@ export const rawToList = (
     officialTag: listRaw.official_tag ?? null,
     userTag: listRaw.listUserTag ?? null,
 
-    itemCount: listRaw.items.filter((x) => !x.isHidden).length,
+    itemCount: listRaw.items?.filter((x) => !x.isHidden).length ?? -1,
 
     slug: listRaw.slug,
     seriesType: listRaw.seriesType,
@@ -377,7 +377,7 @@ export const rawToList = (
     seriesEnd: listRaw.seriesEnd?.toJSON() ?? null,
     itemInfo: !includeItems
       ? []
-      : listRaw.items.map((item) => {
+      : listRaw.items?.map((item) => {
           return {
             internal_id: item.internal_id,
             list_id: item.list_id,

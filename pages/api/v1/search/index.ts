@@ -58,9 +58,9 @@ export async function doSearch(
   onlyStats = false
 ) {
   const originalQuery = query;
-  const [queryFilters, querySanitezed] = parseFilters(originalQuery, false);
+  const [queryFilters, querySanitized] = parseFilters(originalQuery, false);
 
-  query = querySanitezed.trim() ?? '';
+  query = querySanitized.trim() ?? '';
 
   filters = { ...queryFilters, ...filters };
 
