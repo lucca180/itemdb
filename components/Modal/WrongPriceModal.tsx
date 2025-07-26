@@ -20,6 +20,7 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
+  Select,
 } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
 import NextLink from 'next/link';
@@ -27,6 +28,7 @@ import { ItemData, PricingInfo } from '../../types';
 import axios from 'axios';
 import router from 'next/router';
 import { useState } from 'react';
+import { useAuth } from '@utils/auth';
 
 export type WrongPriceModalProps = {
   isOpen: boolean;
@@ -38,7 +40,9 @@ export type WrongPriceModalProps = {
 
 export default function WrongPriceModal(props: WrongPriceModalProps) {
   const t = useTranslations();
+  const { user } = useAuth();
   const { isOpen, onClose, item, data, isLoading } = props;
+  const [reportReason, setReportReason] = useState<string>('');
 
   const [isButtonLoading, setButtonLoading] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
@@ -50,7 +54,9 @@ export default function WrongPriceModal(props: WrongPriceModalProps) {
         subject_id: item.internal_id,
         json: JSON.stringify({
           message: 'User cried for help',
+          reason: reportReason,
         }),
+        user_id: user?.id,
         type: 'priceReport',
         pageInfo: router.asPath,
       });
@@ -206,12 +212,23 @@ export default function WrongPriceModal(props: WrongPriceModalProps) {
                 </AccordionButton>
                 <AccordionPanel pb={4} display="flex" flexFlow="column" gap={3}>
                   {t('ItemPage.wrong-price-report')}
+                  <Select
+                    variant={'filled'}
+                    colorScheme="red"
+                    placeholder={t('Feedback.select-reason')}
+                    value={reportReason}
+                    onChange={(e) => setReportReason(e.target.value)}
+                    isDisabled={isSuccess}
+                  >
+                    <option value="outdated">{t('Feedback.last-price-is-outdated')}</option>
+                    <option value="wrong">{t('Feedback.last-price-is-crazy-unrealistic')}</option>
+                  </Select>
                   <Button
                     onClick={sendReport}
                     size="sm"
                     colorScheme={'red'}
                     isLoading={isButtonLoading}
-                    isDisabled={isSuccess}
+                    isDisabled={isSuccess || !reportReason}
                   >
                     {!isSuccess && t('ItemPage.itemdb-admins-please-help')}
                     {isSuccess && t('ItemPage.thank-you-for-your-report')}

@@ -767,7 +767,10 @@
     "we-need-your-help": "We need your help!",
     "price-update-txt": "We detected that this price might be incorrect or outdated and we have new data waiting to be priced",
     "price-x-trade-lots": "Price {x} Trade Lots",
-    "vote-x-suggestions": "Vote {x} Suggestions"
+    "vote-x-suggestions": "Vote {x} Suggestions",
+    "select-reason": "Select reason...",
+    "last-price-is-outdated": "Last price is outdated",
+    "last-price-is-crazy-unrealistic": "Last price is crazy/unrealistic"
   },
   "Restock": {
     "restock-info": "Restock Info",

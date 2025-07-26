@@ -617,7 +617,10 @@
     "price-update-txt": "Detectamos que este preço pode estar incorreto ou desatualizado e temos novos dados aguardando para serem precificados",
     "we-need-your-help": "Precisamos da sua ajuda!",
     "price-x-trade-lots": "Precificar {x} Lotes de Troca",
-    "vote-x-suggestions": "Votar em {x} Sugestões"
+    "vote-x-suggestions": "Votar em {x} Sugestões",
+    "last-price-is-crazy-unrealistic": "O último preço é louco/irrealista",
+    "last-price-is-outdated": "O último preço está desatualizado",
+    "select-reason": "Selecione o motivo ..."
   },
   "Lists": {
     "add-to-list": "Adicionar a Lista",

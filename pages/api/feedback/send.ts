@@ -7,6 +7,7 @@ import { TradeData } from '../../../types';
 import { processTradePrice } from '../v1/trades';
 import { Webhook, EmbedBuilder } from '@tycrek/discord-hookr';
 import { getItem } from '../v1/items/[id_name]';
+import { User } from '@prisma/generated/client';
 
 const SKIP_AUTO_TRADE_FEEDBACK = process.env.SKIP_AUTO_TRADE_FEEDBACK == 'true';
 
@@ -38,9 +39,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   let shoudContinue = true;
   let voteMultiplier = 0;
-
+  let user = null;
   if (user_id) {
-    const user = await prisma.user.findUnique({
+    user = await prisma.user.findUnique({
       where: {
         id: user_id,
       },
@@ -125,7 +126,13 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 
   if (type === 'priceReport') {
-    await submitHookFeedback(subject_id, result.feedback_id, type);
+    await submitHookFeedback({
+      subject_id,
+      feedback_id: result.feedback_id,
+      type,
+      reason: parsed.reason,
+      user,
+    });
   }
 
   return res.status(200).json({ success: true, message: result });
@@ -313,7 +320,16 @@ const submitMailFeedback = async (
   });
 };
 
-const submitHookFeedback = async (subject_id: string, feedback_id: number, type: string) => {
+type PriceCheckParams = {
+  subject_id: string;
+  feedback_id: number;
+  type: string;
+  reason: string;
+  user: User | null;
+};
+
+const submitHookFeedback = async (params: PriceCheckParams) => {
+  const { subject_id, feedback_id, type, reason, user } = params;
   const hook = process.env.FEEDBACK_WEBHOOK ? new Webhook(process.env.FEEDBACK_WEBHOOK) : null;
 
   if (type !== 'priceReport' || !hook) return;
@@ -326,9 +342,23 @@ const submitHookFeedback = async (subject_id: string, feedback_id: number, type:
     .setColor(item.color.hex)
     .setThumbnail({ url: item?.image })
     .setDescription('Um usuário pediu para verificar se o preço de um item está correto')
+    .addField({
+      name: 'Usuário',
+      value: user ? `${user.username}` : 'Unknown',
+      inline: true,
+    })
+    .addField({
+      name: 'Motivo',
+      value: capitalize(reason) || 'Nenhum motivo foi informado',
+      inline: true,
+    })
     .setFooter({ text: `Feedback ID: ${feedback_id}` })
     .setURL(`https://itemdb.com.br/item/${item.slug}`);
 
   hook.addEmbed(embed);
   hook.send().catch(console.error);
+};
+
+const capitalize = (str: string) => {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 };
