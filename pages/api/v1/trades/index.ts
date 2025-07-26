@@ -439,7 +439,10 @@ const updateLastSeenTrades = async (
       items: TradeItems[];
     }[]
 ) => {
-  const items_iid = trades.map((x) => x.items.map((i) => i.internal_id)).flat();
+  const items_iid = trades
+    .map((x) => x.items.map((i) => i.item_iid))
+    .flat()
+    .filter((x) => x !== null) as number[];
 
   const createMany = items_iid.map((iid) => ({
     item_iid: iid,
