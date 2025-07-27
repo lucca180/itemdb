@@ -23,9 +23,8 @@ import ItemInfoCard from '../../components/Items/InfoCard';
 import ColorInfoCard from '../../components/Items/ColorInfoCard';
 import ItemOfficialLists from '../../components/Items/ItemOfficialList';
 // import ItemTags from '../../components/Items/ItemTags';
-import { FiSend, FiEdit3 } from 'react-icons/fi';
+import { FiEdit3 } from 'react-icons/fi';
 import type { EditItemModalProps } from '../../components/Modal/EditItemModal';
-import type { FeedbackModalProps } from '../../components/Modal/FeedbackModal';
 import AddToListSelect from '../../components/UserLists/AddToListSelect';
 import { GetStaticPropsContext } from 'next';
 import { getItem } from '../api/v1/items/[id_name]';
@@ -54,12 +53,10 @@ import { getPetpetData } from '../api/v1/items/[id_name]/petpet';
 import { ItemBreadcrumb } from '../../components/Breadcrumbs/ItemBreadcrumb';
 import { loadTranslation } from '@utils/load-translation';
 import { getNCTradeInsights } from '../api/v1/mall/[iid]/insights';
+import FeedbackButton from '@components/Feedback/FeedbackButton';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
-);
-const FeedbackModal = dynamic<FeedbackModalProps>(
-  () => import('../../components/Modal/FeedbackModal')
 );
 
 const ManualCheckCard = dynamic(() => import('../../components/Items/ManualCheckCard'));
@@ -125,7 +122,6 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
     ncInsights,
   } = props;
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const { user } = useAuth();
 
   const color = item?.color.rgb ?? [255, 255, 255];
@@ -146,9 +142,6 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
           onClose={() => setIsEditModalOpen(false)}
           tags={[]}
         />
-      )}
-      {feedbackModalOpen && (
-        <FeedbackModal isOpen={feedbackModalOpen} onClose={() => setFeedbackModalOpen(false)} />
       )}
       <Box>
         <Box
@@ -326,9 +319,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
           {colors && <ColorInfoCard colors={colors} />}
           {/* <ItemTags toggleModal={() => setIsEditModalOpen(true)} item={item} tags={tags} /> */}
           <Flex justifyContent="center" gap={1}>
-            <Button variant="outline" size="sm" onClick={() => setFeedbackModalOpen(true)}>
-              <Icon as={FiSend} mr={1} /> {t('Button.feedback')}
-            </Button>
+            <FeedbackButton />
             <Button variant="outline" size="sm" onClick={() => setIsEditModalOpen(true)}>
               <Icon as={FiEdit3} mr={1} /> {t('Button.edit')}
             </Button>

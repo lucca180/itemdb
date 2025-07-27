@@ -61,6 +61,7 @@ const FeedbackModal = (props: FeedbackModalProps) => {
             restock: window.itemdb_restock?.version ?? null,
             itemData: window.itemdb_script?.version ?? null,
           },
+          userAgent: navigator.userAgent,
         }),
         type: 'feedback',
         pageInfo: router.asPath,

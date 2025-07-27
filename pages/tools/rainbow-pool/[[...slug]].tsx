@@ -4,8 +4,6 @@ import {
   Text,
   Center,
   Button,
-  Icon,
-  useDisclosure,
   Box,
   Flex,
   Select,
@@ -17,10 +15,7 @@ import {
   Tooltip,
   useToast,
 } from '@chakra-ui/react';
-import dynamic from 'next/dynamic';
-import { FiSend } from 'react-icons/fi';
 import Layout from '../../../components/Layout';
-import { FeedbackModalProps } from '../../../components/Modal/FeedbackModal';
 import { createTranslator, useFormatter, useTranslations } from 'next-intl';
 import NextImage from 'next/image';
 import {
@@ -40,10 +35,7 @@ import { getPetColorDataStr } from '../../api/v1/tools/petcolors';
 import { IconLink } from '../../../components/Utils/IconLink';
 import { PoolBreadcrumbs } from '../../../components/Breadcrumbs/PoolBreadcrumbs';
 import { loadTranslation } from '@utils/load-translation';
-
-const FeedbackModal = dynamic<FeedbackModalProps>(
-  () => import('../../../components/Modal/FeedbackModal')
-);
+import FeedbackButton from '@components/Feedback/FeedbackButton';
 
 export type PetColorData = {
   colorId?: number | null;
@@ -85,7 +77,6 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
   const [species, setSpecies] = useState<string>(props.species);
   const [color, setColor] = useState<string>(props.color);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [petColorData, setPetColorData] = useState<PetColorData | null>(props.petColorData);
   const [error, setError] = useState<string>('');
   const [isImgLoading, setIsImgLoading] = useState<boolean>(false);
@@ -239,7 +230,6 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
         bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(117, 182, 164, 0.9) 70%)`}
         zIndex={-1}
       />
-      <FeedbackModal isOpen={isOpen} onClose={onClose} />
       <Box mt={2}>
         <PoolBreadcrumbs petColorData={petColorData} />
       </Box>
@@ -459,9 +449,7 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
             </Flex>
           </Flex>
         )}
-        <Button variant="outline" size="sm" onClick={onOpen} mt={5}>
-          <Icon as={FiSend} mr={1} /> {t('Button.feedback')}
-        </Button>
+        <FeedbackButton mt={3} />
       </Center>
     </>
   );

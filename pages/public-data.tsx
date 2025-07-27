@@ -7,7 +7,6 @@ import {
   Image,
   Button,
   Icon,
-  useDisclosure,
   Box,
   Flex,
   Card,
@@ -15,22 +14,13 @@ import {
   CardHeader,
   CardFooter,
 } from '@chakra-ui/react';
-import dynamic from 'next/dynamic';
-import { FiDownload, FiSend } from 'react-icons/fi';
+import { FiDownload } from 'react-icons/fi';
 import Layout from '../components/Layout';
-import { FeedbackModalProps } from '../components/Modal/FeedbackModal';
-import { useTranslations } from 'next-intl';
 import { ReactElement } from 'react';
 import { loadTranslation } from '@utils/load-translation';
-
-const FeedbackModal = dynamic<FeedbackModalProps>(
-  () => import('../components/Modal/FeedbackModal')
-);
+import { FeedbackButton } from '@components/Modal/FeedbackModal';
 
 const RawDataPage = () => {
-  const t = useTranslations();
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
   return (
     <>
       <Box
@@ -41,7 +31,6 @@ const RawDataPage = () => {
         bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,hsla(215, 31.80%, 56.30%, 0.70) 70%)`}
         zIndex={-1}
       />
-      <FeedbackModal isOpen={isOpen} onClose={onClose} />
       <Center mt={8} flexFlow="column" gap={2} sx={{ a: { color: 'blue.300' } }} textAlign="center">
         <Image
           src="https://images.neopets.com/ncmall/shopkeepers/cashshop_homestructure.png"
@@ -88,9 +77,7 @@ const RawDataPage = () => {
             </Card>
           ))}
         </Flex>
-        <Button variant="outline" size="sm" onClick={onOpen} mt={5}>
-          <Icon as={FiSend} mr={1} /> {t('Button.feedback')}
-        </Button>
+        <FeedbackButton mt={5} />
       </Center>
     </>
   );

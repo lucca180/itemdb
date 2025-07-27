@@ -12,9 +12,9 @@ import { CheckAuth } from '../../../utils/googleCloud';
 import { getWrapped } from '../../api/v1/restock/wrapped';
 import { NextApiRequest } from 'next';
 import WrappedTimeline from '../../../components/Hubs/Wrapped2024/Timeline';
-import { FeedbackButton } from '../../../components/Modal/FeedbackModal';
 import NextLink from 'next/link';
 import { loadTranslation } from '@utils/load-translation';
+import FeedbackButton from '@components/Feedback/FeedbackButton';
 
 type Wrapped2024Props = {
   wrappedData: RestockStats;

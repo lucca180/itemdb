@@ -37,13 +37,13 @@ type DynamicListLogsResponse = {
   item_iids: number[];
 };
 
-export type FeedbackModalProps = {
+export type DynamicListLogsModalProps = {
   isOpen: boolean;
   onClose: () => void;
   list: UserList;
 };
 
-const DynamicListLogsModal = (props: FeedbackModalProps) => {
+const DynamicListLogsModal = (props: DynamicListLogsModalProps) => {
   const t = useTranslations();
   const formatter = useFormatter();
   const { isOpen, onClose, list } = props;

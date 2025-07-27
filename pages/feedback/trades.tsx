@@ -24,7 +24,7 @@ import { ReactElement, useEffect, useRef, useState } from 'react';
 import { BsXLg, BsXCircleFill, BsCheckCircleFill, BsCheckLg } from 'react-icons/bs';
 import CardBase from '../../components/Card/CardBase';
 import HeaderCard from '../../components/Card/HeaderCard';
-import FeedbackTrade from '../../components/FeedbackCards/FeedbackTrade';
+import FeedbackTrade from '../../components/Feedback/FeedbackTrade';
 import Layout from '../../components/Layout';
 import { TradeData } from '../../types';
 import { useAuth } from '../../utils/auth';

@@ -44,6 +44,7 @@ import dynamic from 'next/dynamic';
 import { DropdownButton, DropdownOption } from './Menus/HeaderDropdown';
 import { SiteAlert } from './Utils/SiteAlert';
 import { getScriptStatus } from '../utils/scriptUtils';
+import FeedbackButton from './Feedback/FeedbackButton';
 
 const LanguageToast = dynamic<LanguageToastProps>(() => import('./Modal/LanguageToast'));
 const LoginModal = dynamic<LoginModalProps>(() => import('./Modal/LoginModal'));
@@ -355,17 +356,30 @@ const Layout = (props: Props) => {
                 <br />© 1999-{new Date().getFullYear()} NeoPets, Inc. All rights reserved. Used
                 with permission.
               </Text>
-              <Box>
+              <Flex alignItems={'flex-end'} gap={4}>
+                <FeedbackButton
+                  bg="whiteAlpha.200"
+                  variant={'solid'}
+                  size="xs"
+                  flex="1"
+                  h="25px"
+                  borderRadius="md"
+                />
                 <Select
+                  borderRadius="md"
+                  bg="whiteAlpha.200"
                   size="xs"
                   variant="filled"
                   defaultValue={router.locale ?? 'en'}
+                  flex="1"
+                  minW="120px"
+                  h="25px"
                   onChange={(e) => changeLang(e.target.value)}
                 >
                   <option value="en">English</option>
                   <option value="pt">Português</option>
                 </Select>
-              </Box>
+              </Flex>
             </Flex>
             <Flex flexFlow={['row']} gap={[3, 12]} justifyContent="center">
               <Flex flex="1" flexFlow={'column'} fontSize="xs" gap={2} color="gray.300">

@@ -40,8 +40,6 @@ import { useAuth } from '../../../utils/auth';
 import axios from 'axios';
 import { restockShopInfo } from '../../../utils/utils';
 import RestockItem from '../../../components/Hubs/Restock/RestockItemCard';
-import { FiSend } from 'react-icons/fi';
-import FeedbackModal from '../../../components/Modal/FeedbackModal';
 import { createTranslator, useFormatter, useTranslations } from 'next-intl';
 import { FaCog, FaEyeSlash, FaFileDownload } from 'react-icons/fa';
 // import CalendarHeatmap from '../../../components/Charts/CalHeatmap';
@@ -55,6 +53,7 @@ import { setCookie } from 'cookies-next/client';
 import { getRestockStats } from '../../api/v1/restock';
 import { IntervalFormatted } from '../../../components/Utils/IntervalFormatted';
 import { loadTranslation } from '@utils/load-translation';
+import FeedbackButton from '@components/Feedback/FeedbackButton';
 
 const RestockWrappedModal = dynamic(() => import('../../../components/Modal/RestockWrappedModal'));
 
@@ -95,7 +94,6 @@ const RestockDashboard = (props: RestockDashboardProps) => {
   const t = useTranslations();
   const formatter = useFormatter();
   const { userPref } = useAuth();
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isOpenOptions, onOpen: onOpenOptions, onClose: onCloseOptions } = useDisclosure();
   const { isOpen: isWrappedOpen, onOpen: onWrappedOpen, onClose: onWrappedClose } = useDisclosure();
   const [openImport, setOpenImport] = useState<boolean>(false);
@@ -304,7 +302,6 @@ const RestockDashboard = (props: RestockDashboardProps) => {
       {openImport && (
         <ImportRestockModal isOpen={openImport} onClose={handleClose} refresh={refresh} />
       )}
-      {isOpen && <FeedbackModal isOpen={isOpen} onClose={onClose} />}
       {isOpenOptions && <DashboardOptionsModal isOpen={isOpenOptions} onClose={onCloseOptions} />}
       {!!sessionStats && isWrappedOpen && (
         <RestockWrappedModal
@@ -920,9 +917,7 @@ const RestockDashboard = (props: RestockDashboardProps) => {
               {t('Restock.all-values-are-based-on-current-itemdbs-price')}
             </Text>
 
-            <Button variant="outline" size="sm" onClick={onOpen}>
-              <Icon as={FiSend} mr={1} /> {t('Button.feedback')}
-            </Button>
+            <FeedbackButton />
           </Flex>
         </>
       )}

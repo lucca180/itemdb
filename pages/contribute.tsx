@@ -25,18 +25,12 @@ import {
 import { BsCheckCircleFill, BsXCircleFill } from 'react-icons/bs';
 import HeaderCard from '../components/Card/HeaderCard';
 import Layout from '../components/Layout';
-import { useDisclosure } from '@chakra-ui/react';
-import { FeedbackModalProps } from '../components/Modal/FeedbackModal';
-import { FiEdit3, FiSend } from 'react-icons/fi';
-import dynamic from 'next/dynamic';
+import { FiEdit3 } from 'react-icons/fi';
 import { createTranslator, useTranslations } from 'next-intl';
 import { ReactElement } from 'react';
 import { Breadcrumbs } from '../components/Breadcrumbs/Breadcrumbs';
 import { loadTranslation } from '@utils/load-translation';
-
-const FeedbackModal = dynamic<FeedbackModalProps>(
-  () => import('../components/Modal/FeedbackModal')
-);
+import FeedbackButton from '@components/Feedback/FeedbackButton';
 
 const ContributePage = () => {
   const t = useTranslations();
@@ -261,11 +255,9 @@ const ItemDataExtractor = () => {
 
 const FeedbackSystem = () => {
   const t = useTranslations();
-  const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
     <>
-      <FeedbackModal isOpen={isOpen} onClose={onClose} />
       <Flex flexFlow="column" gap={3} maxW="1000px">
         <Heading size="lg">{t('Feedback.feedback-system')}</Heading>
         <Text>
@@ -287,11 +279,7 @@ const FeedbackSystem = () => {
                 <Icon as={FiEdit3} mr={1} /> {chunk}
               </Button>
             ),
-            Feedback: (chunk) => (
-              <Button variant="outline" size="sm" onClick={onOpen}>
-                <Icon as={FiSend} mr={1} /> {chunk}
-              </Button>
-            ),
+            Feedback: () => <FeedbackButton />,
             b: (chunk) => <b>{chunk}</b>,
           })}
         </Text>

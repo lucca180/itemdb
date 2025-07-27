@@ -26,7 +26,7 @@ import { useFormatter, useTranslations } from 'next-intl';
 import { useRef } from 'react';
 import { ViewportList } from 'react-viewport-list';
 
-export type FeedbackModalProps = {
+export type ImportRestockModalProps = {
   isOpen: boolean;
   onClose: () => void;
   refresh: () => void;
@@ -34,7 +34,7 @@ export type FeedbackModalProps = {
 
 const MAX_SESSIONS = 50;
 
-const ImportRestockModal = (props: FeedbackModalProps) => {
+const ImportRestockModal = (props: ImportRestockModalProps) => {
   const t = useTranslations();
   const format = useFormatter();
   const toast = useToast();
@@ -72,7 +72,7 @@ const ImportRestockModal = (props: FeedbackModalProps) => {
     setSessions(
       [...currentParsed, ...unsyncParsed]
         .filter((x) => x.clicks.length && Object.keys(x.items).length)
-        .sort((a, b) => b.startDate - a.startDate),
+        .sort((a, b) => b.startDate - a.startDate)
     );
   };
 
@@ -208,7 +208,7 @@ const ImportRestockModal = (props: FeedbackModalProps) => {
                 onChange={(e) =>
                   e.target.checked
                     ? setSelectedSessions(
-                        allSessions.slice(0, MAX_SESSIONS).map((x, i) => i.toString()),
+                        allSessions.slice(0, MAX_SESSIONS).map((x, i) => i.toString())
                       )
                     : setSelectedSessions([])
                 }

@@ -2,9 +2,6 @@ import {
   Heading,
   Text,
   Center,
-  Button,
-  Icon,
-  useDisclosure,
   Box,
   Flex,
   Select,
@@ -13,24 +10,17 @@ import {
   FormHelperText,
   Divider,
 } from '@chakra-ui/react';
-import dynamic from 'next/dynamic';
-import { FiSend } from 'react-icons/fi';
 import Layout from '../../components/Layout';
-import { FeedbackModalProps } from '../../components/Modal/FeedbackModal';
 import { createTranslator, useFormatter, useTranslations } from 'next-intl';
 import { ReactElement, useMemo, useState } from 'react';
 import Image from '../../components/Utils/Image';
 import { MultiplyInput } from '../../components/Input/MultiplyInput';
 import { loadTranslation } from '@utils/load-translation';
-
-const FeedbackModal = dynamic<FeedbackModalProps>(
-  () => import('../../components/Modal/FeedbackModal')
-);
+import FeedbackButton from '@components/Feedback/FeedbackButton';
 
 const PriceCalculator = () => {
   const t = useTranslations();
   const formatter = useFormatter();
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [askingPrice, setAskingPrice] = useState<number>();
   const [calcMode, setCalcMode] = useState<
     'pure' | 'babyPB' | 'startPrice' | 'minIncrement' | 'babyPBNoLimit'
@@ -110,7 +100,6 @@ const PriceCalculator = () => {
         bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(66, 202, 255, 0.7) 70%)`}
         zIndex={-1}
       />
-      <FeedbackModal isOpen={isOpen} onClose={onClose} />
       <Center mt={8} flexFlow="column" gap={2} textAlign="center">
         <Image
           src={'https://images.neopets.com/caption/caption_1282.jpg'}
@@ -218,10 +207,7 @@ const PriceCalculator = () => {
             )}
           </Flex>
         </Center>
-
-        <Button variant="outline" size="sm" mt={5} onClick={onOpen}>
-          <Icon as={FiSend} mr={1} /> {t('Button.feedback')}
-        </Button>
+        <FeedbackButton mt={5} />
       </Center>
     </>
   );

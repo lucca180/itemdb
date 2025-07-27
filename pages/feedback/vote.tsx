@@ -21,7 +21,7 @@ import { useState, useEffect, ReactElement } from 'react';
 import { BsArrowDownCircleFill, BsArrowUpCircleFill } from 'react-icons/bs';
 import CardBase from '../../components/Card/CardBase';
 import HeaderCard from '../../components/Card/HeaderCard';
-import FeedbackItem from '../../components/FeedbackCards/FeedbackItem';
+import FeedbackItem from '../../components/Feedback/FeedbackItem';
 import Layout from '../../components/Layout';
 import TradeTable from '../../components/Trades/TradeTable';
 import { Feedback, TradeData } from '../../types';
