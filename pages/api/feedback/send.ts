@@ -325,11 +325,12 @@ type PriceCheckParams = {
   feedback_id: number;
   type: string;
   reason: string;
+  suggestedPrice?: string;
   user: User | null;
 };
 
 const submitHookFeedback = async (params: PriceCheckParams) => {
-  const { subject_id, feedback_id, type, reason, user } = params;
+  const { subject_id, feedback_id, type, reason, user, suggestedPrice } = params;
   const hook = process.env.FEEDBACK_WEBHOOK ? new Webhook(process.env.FEEDBACK_WEBHOOK) : null;
 
   if (type !== 'priceReport' || !hook) return;
@@ -350,6 +351,11 @@ const submitHookFeedback = async (params: PriceCheckParams) => {
     .addField({
       name: 'Motivo',
       value: capitalize(reason) || 'Nenhum motivo foi informado',
+      inline: true,
+    })
+    .addField({
+      name: 'Preço Sugerido',
+      value: suggestedPrice || '???',
       inline: true,
     })
     .setFooter({ text: `Feedback ID: ${feedback_id}` })

@@ -770,7 +770,8 @@
     "vote-x-suggestions": "Vote {x} Suggestions",
     "select-reason": "Select reason...",
     "last-price-is-outdated": "Last price is outdated",
-    "last-price-is-crazy-unrealistic": "Last price is crazy/unrealistic"
+    "last-price-is-crazy-unrealistic": "Last price is crazy/unrealistic",
+    "suggested-price": "Suggested Price"
   },
   "Restock": {
     "restock-info": "Restock Info",

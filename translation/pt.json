@@ -620,7 +620,8 @@
     "vote-x-suggestions": "Votar em {x} Sugestões",
     "last-price-is-crazy-unrealistic": "O último preço é louco/irrealista",
     "last-price-is-outdated": "O último preço está desatualizado",
-    "select-reason": "Selecione o motivo ..."
+    "select-reason": "Selecione o motivo...",
+    "suggested-price": "Preço Sugerido"
   },
   "Lists": {
     "add-to-list": "Adicionar a Lista",

@@ -29,6 +29,7 @@ import axios from 'axios';
 import router from 'next/router';
 import { useState } from 'react';
 import { useAuth } from '@utils/auth';
+import { MultiplyInput } from '@components/Input/MultiplyInput';
 
 export type WrongPriceModalProps = {
   isOpen: boolean;
@@ -46,6 +47,7 @@ export default function WrongPriceModal(props: WrongPriceModalProps) {
 
   const [isButtonLoading, setButtonLoading] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const [suggestedPrice, setSuggestedPrice] = useState<string>();
 
   const sendReport = async () => {
     setButtonLoading(true);
@@ -55,6 +57,7 @@ export default function WrongPriceModal(props: WrongPriceModalProps) {
         json: JSON.stringify({
           message: 'User cried for help',
           reason: reportReason,
+          suggestedPrice: suggestedPrice,
         }),
         user_id: user?.id,
         type: 'priceReport',
@@ -214,15 +217,27 @@ export default function WrongPriceModal(props: WrongPriceModalProps) {
                   {t('ItemPage.wrong-price-report')}
                   <Select
                     variant={'filled'}
-                    colorScheme="red"
+                    bg="whiteAlpha.200"
                     placeholder={t('Feedback.select-reason')}
                     value={reportReason}
                     onChange={(e) => setReportReason(e.target.value)}
                     isDisabled={isSuccess}
+                    size="sm"
+                    borderRadius={'md'}
                   >
                     <option value="outdated">{t('Feedback.last-price-is-outdated')}</option>
                     <option value="wrong">{t('Feedback.last-price-is-crazy-unrealistic')}</option>
                   </Select>
+                  <MultiplyInput
+                    onChange={setSuggestedPrice}
+                    wrapperProps={{ variant: 'filled', bg: 'whiteAlpha.200', borderRadius: 'md' }}
+                    inputProps={{
+                      variant: 'filled',
+                      placeholder: t('Feedback.suggested-price'),
+                      pl: 3,
+                      _placeholder: { color: 'whiteAlpha.700' },
+                    }}
+                  />
                   <Button
                     onClick={sendReport}
                     size="sm"
@@ -233,7 +248,6 @@ export default function WrongPriceModal(props: WrongPriceModalProps) {
                     {!isSuccess && t('ItemPage.itemdb-admins-please-help')}
                     {isSuccess && t('ItemPage.thank-you-for-your-report')}
                   </Button>
-                  {/* {t('ItemPage.wrong-price-report-2')} */}
                 </AccordionPanel>
               </AccordionItem>
             </Accordion>
