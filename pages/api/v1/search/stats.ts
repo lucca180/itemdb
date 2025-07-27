@@ -10,12 +10,27 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
   const query = (req.query.s as string)?.trim() ?? '';
-  const result = await getSearchStats(query);
+  const forceCategory = req.query.forceCategory as string | undefined;
+  const isRestock = req.query.isRestock === 'true' || undefined;
+  const result = await getSearchStats(query, {
+    forceCategory,
+    isRestock,
+  });
 
   res.json(result);
 }
 
-export const getSearchStats = async (resQuery: string, list_id = 0, includeHidden = false) => {
+type SearchStatsParams = {
+  list?: {
+    id: number;
+    includeHidden?: boolean;
+  };
+  forceCategory?: string;
+  isRestock?: boolean;
+};
+
+export const getSearchStats = async (resQuery: string, params?: SearchStatsParams) => {
+  const { list, forceCategory, isRestock } = params || {};
   const originalQuery = resQuery.trim() ?? '';
   const [, newQuery] = parseFilters(originalQuery, false);
 
@@ -47,7 +62,7 @@ export const getSearchStats = async (resQuery: string, list_id = 0, includeHidde
     'saleStatus',
   ];
 
-  const hiddenQuery = !includeHidden ? Prisma.sql`AND isHidden = 0` : Prisma.empty;
+  const hiddenQuery = !list?.includeHidden ? Prisma.sql`AND isHidden = 0` : Prisma.empty;
 
   const queries = [];
 
@@ -100,10 +115,14 @@ export const getSearchStats = async (resQuery: string, list_id = 0, includeHidde
       ${!!isColorSearch ? Prisma.sql`and d.dist is not null` : Prisma.empty}
       
       ${
-        list_id
-          ? Prisma.sql`AND exists (SELECT 1 FROM ListItems WHERE list_id = ${list_id} and item_iid = a.internal_id ${hiddenQuery})`
+        list?.id
+          ? Prisma.sql`AND exists (SELECT 1 FROM ListItems WHERE list_id = ${list.id} and item_iid = a.internal_id ${hiddenQuery})`
           : Prisma.empty
       }
+
+      ${forceCategory ? Prisma.sql`AND a.category = ${forceCategory}` : Prisma.empty}
+
+      ${isRestock ? Prisma.sql`AND a.rarity <= 100` : Prisma.empty}
 
       group by ${groupBy}
     `;

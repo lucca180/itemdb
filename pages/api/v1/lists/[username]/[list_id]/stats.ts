@@ -39,7 +39,12 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 
     const isOwner = !!(user && user.id === list.owner.id);
 
-    const searchStats = await getSearchStats('', list.internal_id, isOwner);
+    const searchStats = await getSearchStats('', {
+      list: {
+        id: list.internal_id,
+        includeHidden: isOwner,
+      },
+    });
 
     return res.status(200).json(searchStats);
   } catch (e: any) {

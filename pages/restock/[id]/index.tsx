@@ -1,9 +1,20 @@
-import { Button, Divider, Flex, HStack, Link, Text, Image, Heading } from '@chakra-ui/react';
+import {
+  Button,
+  Divider,
+  Flex,
+  HStack,
+  Link,
+  Text,
+  Image,
+  Heading,
+  IconButton,
+  useDisclosure,
+} from '@chakra-ui/react';
 import Color from 'color';
 import { GetStaticPropsContext } from 'next';
 import { CreateDynamicListButton } from '../../../components/DynamicLists/CreateButton';
 import Layout from '../../../components/Layout';
-import { ItemData, SearchFilters, ShopInfo } from '../../../types';
+import { ItemData, SearchFilters, SearchResults, SearchStats, ShopInfo } from '../../../types';
 import {
   getRestockProfit,
   removeOutliers,
@@ -17,7 +28,6 @@ import { defaultFilters } from '../../../utils/parseFilters';
 import { ReactElement, useEffect, useState } from 'react';
 import { SortSelect } from '../../../components/Input/SortSelect';
 import { SearchList } from '../../../components/Search/SearchLists';
-import { CollapseNumber } from '../../../components/Input/CollapseNumber';
 import axios from 'axios';
 import { getFiltersDiff } from '../../search';
 import { createTranslator, useFormatter, useTranslations } from 'next-intl';
@@ -31,6 +41,10 @@ import { ShopInfoCard } from '../../../components/Hubs/Restock/ShopInfoCard';
 import { mean } from 'simple-statistics';
 import ShopCard from '../../../components/Hubs/Restock/ShopCard';
 import { loadTranslation } from '@utils/load-translation';
+import { BsFilter } from 'react-icons/bs';
+import dynamic from 'next/dynamic';
+
+const SearchFilterModal = dynamic(() => import('../../../components/Search/SearchFiltersModal'));
 
 type RestockShopPageProps = {
   shopInfo: ShopInfo;
@@ -53,9 +67,11 @@ const sortTypes = {
   item_id: 'restock-order',
 };
 
+const INITIAL_MIN_PROFIT = '3000';
+
 const RESTOCK_FILTER = (shopInfo: ShopInfo): SearchFilters => ({
   ...defaultFilters,
-  restockProfit: '1',
+  restockProfit: INITIAL_MIN_PROFIT,
   category: [shopIDToCategory[shopInfo.id]],
   rarity: ['1', '99'],
   limit: 10000,
@@ -65,26 +81,21 @@ const RESTOCK_FILTER = (shopInfo: ShopInfo): SearchFilters => ({
   restockIncludeUnpriced: true,
 });
 
-type ItemFilter = {
-  query?: string;
-  minProfit: number;
-};
-
-const INITIAL_MIN_PROFIT = 3000;
-
 const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockShopPageProps) => {
   const t = useTranslations();
   const format = useFormatter();
   const { shopInfo, totalItems, profitableCount, similarShops } = props;
   const { userPref, updatePref } = useAuth();
+  const { isOpen, onClose, onOpen } = useDisclosure();
   const [filteredItems, setFilteredItems] = useState<ItemData[]>(props.initialItems ?? []);
   const [itemList, setItemList] = useState<ItemData[]>(props.initialItems ?? []);
   const [sortInfo, setSortInfo] = useState({ sortBy: 'price', sortDir: 'desc' });
   const [loading, setLoading] = useState(true);
-  const [itemFilter, setItemFilter] = useState<ItemFilter>({
-    query: undefined,
-    minProfit: INITIAL_MIN_PROFIT,
-  });
+  const [itemSearch, setItemSearch] = useState<string>('');
+  const [filters, setFilters] = useState<SearchFilters>(RESTOCK_FILTER(shopInfo));
+  const [stats, setStats] = useState<SearchStats | null>(null);
+  const [isFiltered, setFiltered] = useState(false);
+
   const [viewType, setViewType] = useState<'default' | 'rarity'>(
     userPref?.restock_prefView ?? 'rarity'
   );
@@ -92,17 +103,30 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
   const shopColor = Color(shopInfo.color);
 
   useEffect(() => {
-    init();
+    resetFilters(true);
   }, [shopInfo.id]);
 
   useEffect(() => {
     if (props.initialItems?.length === itemList.length) return;
     handleFilterChange();
-  }, [itemFilter, itemList]);
+  }, [itemSearch, itemList]);
 
-  const init = async () => {
+  const init = async (forceStats = false) => {
     setLoading(true);
     const filters = RESTOCK_FILTER(shopInfo);
+
+    if (!stats || forceStats) {
+      axios
+        .get('/api/v1/search/stats', {
+          params: {
+            forceCategory: shopIDToCategory[shopInfo.id],
+            isRestock: 'true',
+          },
+        })
+        .then((res) => {
+          setStats(res.data);
+        });
+    }
 
     const res = await axios.get('/api/v1/search', {
       params: {
@@ -126,11 +150,7 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
   const handleSearch = (query: string) => {
     if (!itemList) return;
 
-    setItemFilter({ ...itemFilter, query: query });
-  };
-
-  const handleProfitChange = (value: number) => {
-    setItemFilter({ ...itemFilter, minProfit: value });
+    setItemSearch(query);
   };
 
   const handleFilterChange = () => {
@@ -138,12 +158,7 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
 
     const filtered = [...itemList]
       .filter((item) => {
-        const profit = getRestockProfit(item);
-        return (
-          (itemFilter.query
-            ? item.name.toLowerCase().includes(itemFilter.query.toLowerCase())
-            : true) && (profit !== null ? profit >= itemFilter.minProfit : true)
-        );
+        return itemSearch ? item.name.toLowerCase().includes(itemSearch.toLowerCase()) : true;
       })
       .sort((a, b) => sortItems(a, b, sortInfo.sortBy, sortInfo.sortDir));
 
@@ -156,8 +171,51 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
     updatePref('restock_prefView', newView);
   };
 
+  const applyFilters = async (newFilters: SearchFilters) => {
+    setLoading(true);
+    const res = await axios.get('/api/v1/search', {
+      params: {
+        ...getFiltersDiff(newFilters),
+        skipStats: true,
+      },
+    });
+
+    const data = res.data as SearchResults;
+
+    const searchResult = data.content
+      .filter((item) => {
+        return itemSearch ? item.name.toLowerCase().includes(itemSearch.toLowerCase()) : true;
+      })
+      .sort((a, b) => sortItems(a, b, sortInfo.sortBy, sortInfo.sortDir));
+
+    setFilteredItems(searchResult);
+    setItemList(data.content);
+    setFiltered(true);
+    setLoading(false);
+    onClose();
+  };
+
+  const resetFilters = (force = false) => {
+    setFilters(RESTOCK_FILTER(shopInfo));
+    setItemSearch('');
+    init(force);
+    setFiltered(false);
+  };
+
   return (
     <>
+      {isOpen && (
+        <SearchFilterModal
+          isLists
+          isOpen={isOpen}
+          onClose={onClose}
+          filters={filters}
+          stats={stats}
+          onChange={(filters) => setFilters(filters)}
+          resetFilters={resetFilters}
+          applyFilters={applyFilters}
+        />
+      )}
       <RestockHeader shop={shopInfo}>
         <Text as="h2" sx={{ a: { color: shopColor.lightness(70).hex() } }} textAlign={'center'}>
           {t.rich('Restock.profitable-items-from', {
@@ -253,16 +311,8 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
             removeMargin
             isLoading={loading}
             resultCount={filteredItems?.length ?? itemList?.length ?? 0}
-            query={itemFilter.query || undefined}
-            filters={{
-              ...defaultFilters,
-              restockProfit: itemFilter.minProfit.toString(),
-              category: [shopIDToCategory[shopInfo.id]],
-              rarity: ['1', '99'],
-              limit: 3000,
-              sortBy: 'price',
-              sortDir: 'desc',
-            }}
+            query={itemSearch || undefined}
+            filters={filters}
           />
           <Text as="div" textColor={'gray.300'} fontSize="sm">
             {!loading && (
@@ -282,7 +332,13 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
           <Button isLoading={loading} onClick={toggleView}>
             {viewType === 'rarity' ? t('Restock.use-classic-view') : t('Restock.use-rarity-view')}
           </Button>
-          <CollapseNumber disabled={loading} onChange={(val) => handleProfitChange(val ?? 3000)} />
+          <IconButton
+            isLoading={loading}
+            aria-label="search filters"
+            onClick={onOpen}
+            icon={<BsFilter />}
+            colorScheme={isFiltered ? 'blue' : undefined}
+          />
           <SearchList disabled={loading} onChange={handleSearch} />
           <HStack>
             <Text
@@ -368,16 +424,11 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 
   if (Number(shopInfo.id) < 0) return { notFound: true };
 
-  const filters: SearchFilters = { ...RESTOCK_FILTER(shopInfo), restockProfit: '' };
+  const filters: SearchFilters = RESTOCK_FILTER(shopInfo);
 
   const result = await doSearch('', filters, false);
 
-  const resultItems = result.content
-    .filter((item) => {
-      const profit = getRestockProfit(item);
-      return profit !== null ? profit >= INITIAL_MIN_PROFIT : true;
-    })
-    .sort((a, b) => sortItems(a, b, 'price', 'desc'));
+  const resultItems = result.content.sort((a, b) => sortItems(a, b, 'price', 'desc'));
 
   const props: RestockShopPageProps = {
     shopInfo: shopInfo,
