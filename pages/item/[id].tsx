@@ -311,12 +311,12 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
           gap={5}
         >
           <Flex flexFlow="column" display={{ base: 'none', lg: 'flex' }} gap={5}>
-            <AddToListSelect item={item} />
-            <FindAtCard item={item} />
+            <AddToListSelect key={item.internal_id} item={item} />
+            <FindAtCard key={item.internal_id} item={item} />
           </Flex>
 
-          <ItemInfoCard item={item} />
-          {colors && <ColorInfoCard colors={colors} />}
+          <ItemInfoCard key={item.internal_id} item={item} />
+          {colors && <ColorInfoCard key={item.internal_id} colors={colors} />}
           {/* <ItemTags toggleModal={() => setIsEditModalOpen(true)} item={item} tags={tags} /> */}
           <Flex justifyContent="center" gap={1}>
             <FeedbackButton />
@@ -333,42 +333,61 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
           w={{ base: '100%', md: 'auto' }}
         >
           <Flex flex="2" flexFlow="column" gap={{ base: 4, md: 6 }} maxW="800px">
-            {user && user.isAdmin && <ManualCheckCard item={item} />}
-            {item.isMissingInfo && <MissingInfoCard />}
+            {user && user.isAdmin && <ManualCheckCard key={item.internal_id} item={item} />}
+            {item.isMissingInfo && <MissingInfoCard key={item.internal_id} />}
 
             <Flex flexFlow="column" gap={{ base: 4, md: 6 }} display={{ base: 'flex', lg: 'none' }}>
-              <AddToListSelect item={item} />
-              <FindAtCard item={item} />
+              <AddToListSelect key={item.internal_id} item={item} />
+              <FindAtCard key={item.internal_id} item={item} />
             </Flex>
 
             {!item.isNC && (
               <ItemPriceCard
+                key={item.internal_id}
                 item={item}
                 lastSeen={props.lastSeen}
                 prices={props.NPPrices}
                 lists={props.lists}
               />
             )}
-            {item.isNC && <NCTrade item={item} lists={tradeLists} insights={ncInsights} />}
-            {itemEffects.length > 0 && <ItemEffectsCard item={item} effects={itemEffects} />}
-            {lists && <ItemOfficialLists item={item} lists={lists} />}
-            {!!user && <ItemMyLists item={item} />}
-            {mmeData && <MMECard item={item} mmeData={mmeData} />}
-            {dyeData && <DyeCard item={item} dyeData={dyeData} />}
-            {petpetData && <PetpetCard item={item} petpetData={petpetData} />}
-            {itemRecipes && itemRecipes.length > 0 && (
-              <ItemRecipes item={item} recipes={itemRecipes} />
+            {item.isNC && (
+              <NCTrade
+                key={item.internal_id}
+                item={item}
+                lists={tradeLists}
+                insights={ncInsights}
+              />
             )}
-            {item.comment && <ItemComments item={item} />}
-            {itemOpenable && <ItemDrops item={item} itemOpenable={itemOpenable} />}
-            <SimilarItemsCard item={item} similarItems={props.similarItems} />
+            {itemEffects.length > 0 && (
+              <ItemEffectsCard key={item.internal_id} item={item} effects={itemEffects} />
+            )}
+            {lists && <ItemOfficialLists key={item.internal_id} item={item} lists={lists} />}
+            {!!user && <ItemMyLists key={item.internal_id} item={item} />}
+            {mmeData && <MMECard key={item.internal_id} item={item} mmeData={mmeData} />}
+            {dyeData && <DyeCard key={item.internal_id} item={item} dyeData={dyeData} />}
+            {petpetData && (
+              <PetpetCard key={item.internal_id} item={item} petpetData={petpetData} />
+            )}
+            {itemRecipes && itemRecipes.length > 0 && (
+              <ItemRecipes key={item.internal_id} item={item} recipes={itemRecipes} />
+            )}
+            {item.comment && <ItemComments key={item.internal_id} item={item} />}
+            {itemOpenable && (
+              <ItemDrops key={item.internal_id} item={item} itemOpenable={itemOpenable} />
+            )}
+            <SimilarItemsCard
+              key={item.internal_id}
+              item={item}
+              similarItems={props.similarItems}
+            />
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>
             {item.isNC && props.ncMallData && (
-              <NcMallCard item={item} ncMallData={props.ncMallData} />
+              <NcMallCard key={item.internal_id} item={item} ncMallData={props.ncMallData} />
             )}
             {item.findAt.restockShop && (
               <ItemRestock
+                key={item.internal_id}
                 isHT={item.findAt.restockShop.includes('hiddentower938')}
                 item={item}
                 lastSeen={props.lastSeen}
@@ -376,13 +395,18 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
             )}
             {(item.isWearable || colorSpeciesEffect) && (
               <ItemPreview
+                key={item.internal_id}
                 colorSpeciesEffect={colorSpeciesEffect}
                 item={item}
                 wearableData={props.wearableData}
               />
             )}
-            {itemParent.parents_iid.length > 0 && <ItemParent item={item} parent={itemParent} />}
-            {!item.isNC && item.status === 'active' && <TradeCard item={item} trades={trades} />}
+            {itemParent.parents_iid.length > 0 && (
+              <ItemParent key={item.internal_id} item={item} parent={itemParent} />
+            )}
+            {!item.isNC && item.status === 'active' && (
+              <TradeCard key={item.internal_id} item={item} trades={trades} />
+            )}
           </Flex>
         </Flex>
       </Flex>
