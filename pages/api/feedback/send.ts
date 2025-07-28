@@ -131,6 +131,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       feedback_id: result.feedback_id,
       type,
       reason: parsed.reason,
+      suggestedPrice: parsed.suggestedPrice,
       user,
     });
   }

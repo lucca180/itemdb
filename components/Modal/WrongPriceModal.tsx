@@ -230,7 +230,12 @@ export default function WrongPriceModal(props: WrongPriceModalProps) {
                   </Select>
                   <MultiplyInput
                     onChange={setSuggestedPrice}
-                    wrapperProps={{ variant: 'filled', bg: 'whiteAlpha.200', borderRadius: 'md' }}
+                    wrapperProps={{
+                      variant: 'filled',
+                      bg: 'whiteAlpha.200',
+                      borderRadius: 'md',
+                      isDisabled: isSuccess,
+                    }}
                     inputProps={{
                       variant: 'filled',
                       placeholder: t('Feedback.suggested-price'),
