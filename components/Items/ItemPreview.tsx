@@ -90,6 +90,10 @@ const ItemPreview = (props: Props) => {
       });
     }
 
+    window.umami?.track('item-preview-variation', {
+      variation: newVariation,
+    });
+
     setVariation(newVariation);
   };
 
