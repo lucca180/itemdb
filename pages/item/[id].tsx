@@ -130,6 +130,8 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
     return itemEffects.find((effect) => effect.type === 'colorSpecies');
   }, [itemEffects]);
 
+  const getKey = (str: string) => item.internal_id + str;
+
   return (
     <>
       {item && isEditModalOpen && (
@@ -311,12 +313,12 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
           gap={5}
         >
           <Flex flexFlow="column" display={{ base: 'none', lg: 'flex' }} gap={5}>
-            <AddToListSelect key={item.internal_id} item={item} />
-            <FindAtCard key={item.internal_id} item={item} />
+            <AddToListSelect key={getKey('add-to-list')} item={item} />
+            <FindAtCard key={getKey('find-at')} item={item} />
           </Flex>
 
-          <ItemInfoCard key={item.internal_id} item={item} />
-          {colors && <ColorInfoCard key={item.internal_id} colors={colors} />}
+          <ItemInfoCard key={getKey('item-info')} item={item} />
+          {colors && <ColorInfoCard key={getKey('color-info')} colors={colors} />}
           {/* <ItemTags toggleModal={() => setIsEditModalOpen(true)} item={item} tags={tags} /> */}
           <Flex justifyContent="center" gap={1}>
             <FeedbackButton />
@@ -333,17 +335,17 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
           w={{ base: '100%', md: 'auto' }}
         >
           <Flex flex="2" flexFlow="column" gap={{ base: 4, md: 6 }} maxW="800px">
-            {user && user.isAdmin && <ManualCheckCard key={item.internal_id} item={item} />}
-            {item.isMissingInfo && <MissingInfoCard key={item.internal_id} />}
+            {user && user.isAdmin && <ManualCheckCard key={getKey('manual-check')} item={item} />}
+            {item.isMissingInfo && <MissingInfoCard key={getKey('missing-info')} />}
 
             <Flex flexFlow="column" gap={{ base: 4, md: 6 }} display={{ base: 'flex', lg: 'none' }}>
-              <AddToListSelect key={item.internal_id} item={item} />
-              <FindAtCard key={item.internal_id} item={item} />
+              <AddToListSelect key={getKey('add-to-list')} item={item} />
+              <FindAtCard key={getKey('find-at')} item={item} />
             </Flex>
 
             {!item.isNC && (
               <ItemPriceCard
-                key={item.internal_id}
+                key={getKey('price-card')}
                 item={item}
                 lastSeen={props.lastSeen}
                 prices={props.NPPrices}
@@ -352,42 +354,44 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
             )}
             {item.isNC && (
               <NCTrade
-                key={item.internal_id}
+                key={getKey('nc-trade')}
                 item={item}
                 lists={tradeLists}
                 insights={ncInsights}
               />
             )}
             {itemEffects.length > 0 && (
-              <ItemEffectsCard key={item.internal_id} item={item} effects={itemEffects} />
+              <ItemEffectsCard key={getKey('item-effects')} item={item} effects={itemEffects} />
             )}
-            {lists && <ItemOfficialLists key={item.internal_id} item={item} lists={lists} />}
-            {!!user && <ItemMyLists key={item.internal_id} item={item} />}
-            {mmeData && <MMECard key={item.internal_id} item={item} mmeData={mmeData} />}
-            {dyeData && <DyeCard key={item.internal_id} item={item} dyeData={dyeData} />}
+            {lists && (
+              <ItemOfficialLists key={getKey('official-lists')} item={item} lists={lists} />
+            )}
+            {!!user && <ItemMyLists key={getKey('my-lists')} item={item} />}
+            {mmeData && <MMECard key={getKey('mme-card')} item={item} mmeData={mmeData} />}
+            {dyeData && <DyeCard key={getKey('dye-card')} item={item} dyeData={dyeData} />}
             {petpetData && (
-              <PetpetCard key={item.internal_id} item={item} petpetData={petpetData} />
+              <PetpetCard key={getKey('petpet-card')} item={item} petpetData={petpetData} />
             )}
             {itemRecipes && itemRecipes.length > 0 && (
-              <ItemRecipes key={item.internal_id} item={item} recipes={itemRecipes} />
+              <ItemRecipes key={getKey('item-recipes')} item={item} recipes={itemRecipes} />
             )}
-            {item.comment && <ItemComments key={item.internal_id} item={item} />}
+            {item.comment && <ItemComments key={getKey('item-comments')} item={item} />}
             {itemOpenable && (
-              <ItemDrops key={item.internal_id} item={item} itemOpenable={itemOpenable} />
+              <ItemDrops key={getKey('item-drops')} item={item} itemOpenable={itemOpenable} />
             )}
             <SimilarItemsCard
-              key={item.internal_id}
+              key={getKey('similar-items')}
               item={item}
               similarItems={props.similarItems}
             />
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>
             {item.isNC && props.ncMallData && (
-              <NcMallCard key={item.internal_id} item={item} ncMallData={props.ncMallData} />
+              <NcMallCard key={getKey('nc-mall-card')} item={item} ncMallData={props.ncMallData} />
             )}
             {item.findAt.restockShop && (
               <ItemRestock
-                key={item.internal_id}
+                key={getKey('item-restock')}
                 isHT={item.findAt.restockShop.includes('hiddentower938')}
                 item={item}
                 lastSeen={props.lastSeen}
@@ -395,17 +399,17 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
             )}
             {(item.isWearable || colorSpeciesEffect) && (
               <ItemPreview
-                key={item.internal_id}
+                key={getKey('item-preview')}
                 colorSpeciesEffect={colorSpeciesEffect}
                 item={item}
                 wearableData={props.wearableData}
               />
             )}
             {itemParent.parents_iid.length > 0 && (
-              <ItemParent key={item.internal_id} item={item} parent={itemParent} />
+              <ItemParent key={getKey('item-parent')} item={item} parent={itemParent} />
             )}
             {!item.isNC && item.status === 'active' && (
-              <TradeCard key={item.internal_id} item={item} trades={trades} />
+              <TradeCard key={getKey('trade-card')} item={item} trades={trades} />
             )}
           </Flex>
         </Flex>
