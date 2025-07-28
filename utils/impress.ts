@@ -5,10 +5,12 @@ import {
   DTICanonicalAppearance,
   DTIColor,
   DTIItemPreview,
+  DTILayer,
   DTIPetAppearance,
 } from '../types';
 import {
   DTI_ALL_COLORS,
+  GET_ITEM_LAYER_BY_REMOTE_ID,
   GET_ITEM_PREVIEW_BY_NAME,
   GET_ITEM_RATIOS_BY_NAME,
   GET_ITEMS_PREVIEW_BY_NAME,
@@ -70,6 +72,12 @@ export class dti {
     return res.itemByName as DTIItemPreview & {
       compatibleBodiesAndTheirZones: DTIBodiesAndTheirZones[];
     };
+  }
+
+  public static async fetchItemLayer(remoteId: number) {
+    const res = await dti._query(GET_ITEM_LAYER_BY_REMOTE_ID, { remoteId: remoteId });
+
+    return res.appearanceLayerByRemoteId as DTILayer;
   }
 
   public static async fetchRatiosByName(itemName: string) {

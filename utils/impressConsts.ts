@@ -24,6 +24,7 @@ fragment ItemAppearanceForOutfitPreview on ItemAppearance {
       remoteId
       bodyId
       imageUrlV2(idealSize: SIZE_600)
+      canvasMovieLibraryUrl
       knownGlitches
       zone {
         id
@@ -240,6 +241,24 @@ export const GET_ITEM_RATIOS_BY_NAME = `
       numUsersSeekingThis
       numUsersOfferingThis
 }}
+`;
+
+export const GET_ITEM_LAYER_BY_REMOTE_ID = `
+query($remoteId: ID!) {
+  appearanceLayerByRemoteId(remoteId: $remoteId) {
+    id
+    remoteId
+    bodyId
+    imageUrlV2(idealSize: SIZE_600)
+    canvasMovieLibraryUrl
+    knownGlitches
+    zone {
+      id
+      depth
+      label
+    }
+  }
+}
 `;
 
 // API RESPONSES //

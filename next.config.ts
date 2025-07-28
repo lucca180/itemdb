@@ -66,7 +66,7 @@ const nextConfig: NextConfig = {
     return [
       {
         // list more extensions here if needed; these are all the resources in the `public` folder including the subfolders
-        source: '/:all*(svg|jpg|png|gif|ttf|ico)',
+        source: '/:all*(svg|jpg|png|gif|ttf|ico|js)',
         locale: false,
         headers: [
           {

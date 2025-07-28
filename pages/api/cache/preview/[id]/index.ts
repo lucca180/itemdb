@@ -1,14 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { dti, getVisibleLayers } from '../../../../utils/impress';
+import { dti, getVisibleLayers } from '../../../../../utils/impress';
 import { createCanvas, loadImage } from '@napi-rs/canvas';
-import { cdnExists, uploadToS3 } from '../../../../utils/googleCloud';
-import prisma from '../../../../utils/prisma';
+import { cdnExists, uploadToS3 } from '../../../../../utils/googleCloud';
+import prisma from '../../../../../utils/prisma';
 import axios from 'axios';
-import { DTIBodiesAndTheirZones, DTIItemPreview } from '../../../../types';
+import { DTIBodiesAndTheirZones, DTIItemPreview } from '../../../../../types';
 import { Items, Prisma } from '@prisma/generated/client';
-import { getSpeciesId } from '../../../../utils/pet-utils';
+import { getSpeciesId } from '../../../../../utils/pet-utils';
 import { Chance } from 'chance';
-import { revalidateItem } from '../../v1/items/[id_name]/effects';
+import { revalidateItem } from '../../../v1/items/[id_name]/effects';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {

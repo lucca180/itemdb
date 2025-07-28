@@ -685,6 +685,7 @@ export type DTILayer = {
   knowGlitches: string[];
   remoteId: string;
   bodyId: string;
+  canvasMovieLibraryUrl?: string;
   zone: {
     id: string;
     depth: number;
