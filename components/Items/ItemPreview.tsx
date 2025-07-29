@@ -1,5 +1,5 @@
 import { AspectRatio, Box, Button, Flex, IconButton, Link, Skeleton, Text } from '@chakra-ui/react';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, memo, useCallback } from 'react';
 import Image from 'next/image';
 import { ItemData, ItemEffect } from '../../types';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
@@ -96,6 +96,12 @@ const ItemPreview = (props: Props) => {
 
     setVariation(newVariation);
   };
+
+  const handleIframeLoadStart = useCallback(() => setIsIframeLoaded(0), []);
+  const handleIframeLoad = useCallback(
+    () => setIsIframeLoaded(item.internal_id),
+    [item.internal_id]
+  );
 
   return (
     <Flex
@@ -197,23 +203,12 @@ const ItemPreview = (props: Props) => {
           display={variation === 'animated' ? 'flex' : 'none'}
         >
           <Skeleton minW={300} minH={300} h="100%" w="100%" isLoaded={!!isIframeLoaded}>
-            <AspectRatio ratio={1}>
-              <iframe
-                id="animated-preview-iframe"
-                key={'animated-iframe-' + item.internal_id}
-                src={`/api/cache/preview/${item.image_id}/animated`}
-                title="Item Animated Preview"
-                onLoadStart={() => setIsIframeLoaded(0)}
-                onLoad={() => setIsIframeLoaded(item.internal_id)}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  border: 'none',
-                  pointerEvents: 'none',
-                  background: 'transparent',
-                }}
-              />
-            </AspectRatio>
+            <AnimatedPreview
+              key={'animated-iframe-' + item.image_id}
+              imageId={item.image_id}
+              onLoadStart={handleIframeLoadStart}
+              onLoad={handleIframeLoad}
+            />
           </Skeleton>
         </Flex>
       )}
@@ -236,3 +231,39 @@ const ItemPreview = (props: Props) => {
 };
 
 export default ItemPreview;
+interface AnimatedPreviewProps {
+  imageId: string;
+  onLoadStart: () => void;
+  onLoad: () => void;
+}
+
+const AnimatedPreview = memo(({ imageId, onLoadStart, onLoad }: AnimatedPreviewProps) => {
+  const handleLoadStart = useCallback(() => {
+    onLoadStart();
+  }, [onLoadStart]);
+
+  const handleLoad = useCallback(() => {
+    onLoad();
+  }, [onLoad]);
+
+  return (
+    <AspectRatio ratio={1}>
+      <iframe
+        id="animated-preview-iframe"
+        key={'animated-iframe-' + imageId}
+        src={`/api/cache/preview/${imageId}/animated`}
+        onLoadStart={handleLoadStart}
+        onLoad={handleLoad}
+        style={{
+          width: '100%',
+          height: '100%',
+          border: 'none',
+          pointerEvents: 'none',
+          background: 'transparent',
+        }}
+      />
+    </AspectRatio>
+  );
+});
+
+AnimatedPreview.displayName = 'AnimatedPreview';
