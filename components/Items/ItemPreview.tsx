@@ -200,6 +200,7 @@ const ItemPreview = (props: Props) => {
             <AspectRatio ratio={1}>
               <iframe
                 id="animated-preview-iframe"
+                key={'animated-iframe-' + item.internal_id}
                 src={`/api/cache/preview/${item.image_id}/animated`}
                 title="Item Animated Preview"
                 onLoadStart={() => setIsIframeLoaded(0)}
