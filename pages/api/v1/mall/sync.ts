@@ -77,7 +77,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       if (item.name !== dbItem.name || item.description.trim() !== dbItem.description?.trim())
         inexistentIds.push(item.id);
 
-      if (!item.isAvailable) continue;
+      if (!item.isAvailable || !item.isBuyable) continue;
 
       create.push({
         item_iid: dbItem.internal_id,
@@ -97,7 +97,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           inexistentIds.push(item.id);
       }
 
-      if (!item.isAvailable) continue;
+      if (!item.isAvailable || !item.isBuyable) continue;
 
       removeIds.delete(item.id);
       const existentData = allCurrentData.find((data) => data.item_id === item.id);
