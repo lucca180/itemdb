@@ -52,7 +52,7 @@ export default function SeenHistoryModal(props: SeenHistoryModalProps) {
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>
-            {t(`General.${lastSeenTypes[type].title}`)} - {t('ItemPage.90-days-history')}
+            {t(`General.${lastSeenTypes[type].title}`)} - {t('ItemPage.x-days-history', { x: 180 })}
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody fontSize={'sm'}>

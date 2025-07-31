@@ -244,7 +244,7 @@
     "total-auctions": "Total de Leilões",
     "total-sold": "Total Vendido",
     "unique-owners": "Donos Únicos",
-    "90-days-history": "Histórico de 90 dias",
+    "x-days-history": "Histórico de {x} dias",
     "seen-history-text": "Os dados históricos aqui foram coletados por usuários usando <b>Item Data Extractor Script</b> do itemdb. Saiba <Link>como ajudar</Link> também!",
     "units-in-stock": "Estoque",
     "last-seen-stock": "Visto por Último em Estoque",

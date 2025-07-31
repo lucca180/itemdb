@@ -243,7 +243,7 @@
     "unique-owners": "Unique Owners",
     "last-new-auction": "Last New Auction",
     "total-sold": "Total Sold",
-    "90-days-history": "90 Days History",
+    "x-days-history": "{x} Days History",
     "seen-history-text": "The historical data here was collected by users using the itemdb <b>Item Data Extractor Script</b>. <Link>Learn how you can contribute</Link> too!",
     "units-in-stock": "Units in Stock",
     "unique-restocks": "Unique Restocks",

@@ -22,9 +22,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   return res.status(200).json({ canWrapped: success, needTrades, needVotes });
 }
 
-export const contributeCheck = async (uid?: string, goalMulplier = 1) => {
-  const tradeGoal = Math.floor(TRADE_GOAL * goalMulplier);
-  const voteGoal = Math.floor(VOTE_GOAL * goalMulplier);
+export const contributeCheck = async (uid?: string, goalMultiplier = 1) => {
+  const tradeGoal = Math.floor(TRADE_GOAL * goalMultiplier);
+  const voteGoal = Math.floor(VOTE_GOAL * goalMultiplier);
 
   if (!uid) {
     return { success: false, needTrades: tradeGoal, needVotes: voteGoal };

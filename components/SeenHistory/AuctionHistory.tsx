@@ -121,12 +121,12 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
           <TabList>
             <Tab>
               {t('ItemPage.latest-x-auctions', {
-                x: 20,
+                x: 40,
               })}
             </Tab>
             <Tab>
               {t('ItemPage.latest-x-sold', {
-                x: 20,
+                x: 40,
               })}
             </Tab>
           </TabList>

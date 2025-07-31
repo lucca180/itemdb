@@ -85,7 +85,7 @@ export const RestockHistory = (props: RestockHistoryProps) => {
       <Flex flexFlow="column" bg="gray.800" p={2} borderRadius={'lg'} gap={2}>
         <Text textAlign={'center'} fontSize="md" fontWeight={'bold'}>
           {t('ItemPage.latest-x-restocks', {
-            x: 20,
+            x: 40,
           })}
         </Text>
         {!loading && <RestockHistoryTable data={data?.recent ?? []} />}

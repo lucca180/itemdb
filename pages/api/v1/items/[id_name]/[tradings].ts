@@ -64,6 +64,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   return res.status(400).json({ error: 'Invalid Request' });
 }
 
+const MAX_DAYS = 180;
+
 const getRestockData = async (name: string) => {
   const restockRaw = await prisma.restockAuctionHistory.findMany({
     where: {
@@ -75,7 +77,7 @@ const getRestockData = async (name: string) => {
         not: 'restock-haggle',
       },
       addedAt: {
-        gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 90),
+        gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * MAX_DAYS),
       },
     },
     orderBy: { addedAt: 'desc' },
@@ -99,10 +101,10 @@ const getRestockData = async (name: string) => {
   });
 
   return {
-    recent: restock.slice(0, 20),
+    recent: restock.slice(0, 40),
     appearances: restock.length,
     totalStock: totalStock,
-    period: '90-days',
+    period: MAX_DAYS,
   };
 };
 
@@ -113,7 +115,7 @@ const getTradeData = async (name: string | number, onlyPriced = false) => {
         some: typeof name === 'string' ? { name: name } : { item_iid: name },
       },
       addedAt: {
-        gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 90),
+        gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * MAX_DAYS),
       },
       priced: onlyPriced ? true : undefined,
     },
@@ -158,11 +160,11 @@ const getTradeData = async (name: string | number, onlyPriced = false) => {
     .filter((p) => p !== null) as TradeData[];
 
   return {
-    recent: tradeList.slice(0, 20),
+    recent: tradeList.slice(0, 40),
     total: tradeRaw.length,
     uniqueOwners: uniqueOwners.size,
     priced: priced,
-    period: '90-days',
+    period: MAX_DAYS,
   };
 };
 
@@ -200,7 +202,7 @@ const getAuctionData = async (name: string, onlySold = false) => {
           }
         : {},
       addedAt: {
-        gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 90),
+        gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * MAX_DAYS),
       },
       type: 'auction',
     },
@@ -233,11 +235,11 @@ const getAuctionData = async (name: string, onlySold = false) => {
   });
 
   return {
-    recent: auctions.slice(0, 20),
+    recent: auctions.slice(0, 40),
     total: totalAuctions,
     sold: soldAuctions,
     uniqueOwners: uniqueOwners.size,
-    period: '90-days',
+    period: MAX_DAYS,
   };
 };
 
@@ -287,14 +289,14 @@ const checkGoal = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const { user } = await CheckAuth(req);
 
-    const contributeGoal = await contributeCheck(user?.id, 2);
+    const contributeGoal = await contributeCheck(user?.id, 1.5);
 
     if (!contributeGoal.success) {
       res.status(403).json(contributeGoal);
       return false;
     }
   } catch (err) {
-    const contributeGoal = await contributeCheck(undefined, 2);
+    const contributeGoal = await contributeCheck(undefined, 1.5);
 
     if (!contributeGoal.success) {
       res.status(403).json(contributeGoal);

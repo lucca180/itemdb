@@ -114,12 +114,12 @@ export const TradeHistory = (props: TradeHistoryProps) => {
           <TabList>
             <Tab>
               {t('ItemPage.latest-x-trades', {
-                x: 20,
+                x: 40,
               })}
             </Tab>
             <Tab>
               {t('ItemPage.latest-x-with-price', {
-                x: 20,
+                x: 40,
               })}
             </Tab>
           </TabList>
