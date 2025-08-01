@@ -31,7 +31,7 @@ export const getSpeciesOutfits = async (species: string) => {
     JOIN items i ON w.item_iid = i.internal_id
     WHERE w.species_name != ''
       AND i.type != 'pb'
-      AND i.name LIKE ${`%${species}%`}
+      AND i.name REGEXP ${`\\b${species}(\\b|\\s)`}
       AND i.internal_id > 0
     GROUP BY w.item_iid
     HAVING COUNT(DISTINCT w.species_name) <= 3;
