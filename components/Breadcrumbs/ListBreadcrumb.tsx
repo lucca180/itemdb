@@ -31,19 +31,27 @@ export const ListBreadcrumb = (props: ListBreadcrumb) => {
       },
     ];
 
-    if (category && listCategoriesData[slugify(category)]) {
-      const { name } = listCategoriesData[slugify(category)];
-      breadList.push({
-        position: 3,
-        name: name,
-        item: `/lists/official/cat/${slugify(category)}`,
-      });
-    } else if (category) {
-      breadList.push({
-        position: 3,
-        name: capitalize(category),
-        item: `/lists/official?cat=${category}`,
-      });
+    if (category) {
+      if (category === 'The Void Within') {
+        breadList.push({
+          position: 3,
+          name: 'The Void Within',
+          item: '/hub/the-void-within',
+        });
+      } else if (listCategoriesData[slugify(category)]) {
+        const { name } = listCategoriesData[slugify(category)];
+        breadList.push({
+          position: 3,
+          name: name,
+          item: `/lists/official/cat/${slugify(category)}`,
+        });
+      } else {
+        breadList.push({
+          position: 3,
+          name: capitalize(category),
+          item: `/lists/official?cat=${category}`,
+        });
+      }
     }
 
     breadList.push({

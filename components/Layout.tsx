@@ -236,6 +236,7 @@ const Layout = (props: Props) => {
           <DropdownButton label={t('Layout.home')} href="/" />
           <DropdownButton bg={props.mainColor} label={t('Layout.articles')} href="/articles">
             <DropdownOption label={t('Layout.userscripts')} href="/articles/userscripts" />
+            <DropdownOption label={'The Void Within'} href="/hub/the-void-within" />
             <DropdownOption label={t('Layout.patch-notes')} href="/articles" />
             <DropdownOption label={t('Layout.how-to-contribute')} href="/contribute" />
             <DropdownOption
