@@ -330,6 +330,8 @@ type PriceCheckParams = {
   user: User | null;
 };
 
+const intl = new Intl.NumberFormat();
+
 const submitHookFeedback = async (params: PriceCheckParams) => {
   const { subject_id, feedback_id, type, reason, user, suggestedPrice } = params;
   const hook = process.env.FEEDBACK_WEBHOOK ? new Webhook(process.env.FEEDBACK_WEBHOOK) : null;
@@ -356,7 +358,7 @@ const submitHookFeedback = async (params: PriceCheckParams) => {
     })
     .addField({
       name: 'Preço Sugerido',
-      value: suggestedPrice || '???',
+      value: suggestedPrice ? intl.format(Number(suggestedPrice)) : '???',
       inline: true,
     })
     .setFooter({ text: `Feedback ID: ${feedback_id}` })
