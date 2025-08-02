@@ -301,7 +301,9 @@
     "lebron-value": "Lebron Value",
     "itemdb-value": "itemdb Value",
     "discounted-on-x": "Discounted on {x}",
-    "discounted-from-x-to-y": "Discount Price - {x} to {y}"
+    "discounted-from-x-to-y": "Discount Price - {x} to {y}",
+    "no-trade-help-text": "You cannot send this item to another user",
+    "no-trade": "No Trade"
   },
   "Button": {
     "feedback": "Feedback",
