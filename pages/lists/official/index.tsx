@@ -226,7 +226,7 @@ const OfficialListsPage = (props: Props) => {
 
 export default OfficialListsPage;
 
-export async function getServerSideProps(context: any) {
+export async function getStaticProps(context: any) {
   const category = context.query.cat;
   const lists = category
     ? await getOfficialListsCat(category, 15)
@@ -238,6 +238,7 @@ export async function getServerSideProps(context: any) {
       messages: await loadTranslation(context.locale as string, 'lists/official/index'),
       locale: context.locale,
     },
+    revalidate: 120,
   };
 }
 
