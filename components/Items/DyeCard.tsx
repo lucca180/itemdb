@@ -39,12 +39,12 @@ const DyeCard = (props: Props) => {
       >
         <Text>
           {item.internal_id === dyeData.originalItem.internal_id &&
-            t.rich(`ItemPage.${type}-x-variations`, {
+            t.rich(`DyeCard.${type}-x-variations`, {
               x: dyeData.dyes.length,
               b: (c) => <b>{c}</b>,
             })}
           {item.internal_id !== dyeData.originalItem.internal_id &&
-            t.rich(`ItemPage.${type}-is-variation`, {
+            t.rich(`DyeCard.${type}-is-variation`, {
               b: (c) => <b>{c}</b>,
             })}
         </Text>
@@ -57,7 +57,7 @@ const DyeCard = (props: Props) => {
             p={3}
             borderRadius={'md'}
           >
-            <Text>{t('ItemPage.dyeworks-original-item')}</Text>
+            <Text>{t('DyeCard.dyeworks-original-item')}</Text>
             <Flex wrap="wrap" gap={2} justifyContent={'center'}>
               <ItemCard key={dyeData.originalItem.internal_id} item={dyeData.originalItem} small />
             </Flex>
@@ -70,7 +70,7 @@ const DyeCard = (props: Props) => {
             p={3}
             borderRadius={'md'}
           >
-            <Text>{t('ItemPage.dyeworks-all-variants')}</Text>
+            <Text>{t('DyeCard.dyeworks-all-variants')}</Text>
             <Flex wrap="wrap" gap={2} justifyContent={'center'}>
               {dyeData.dyes.map((dye) => (
                 <ItemCard key={dye.internal_id} item={dye} small />

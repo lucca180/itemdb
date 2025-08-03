@@ -79,8 +79,6 @@ const SearchPage = () => {
   const [isLargerThanLG] = useMediaQuery('(min-width: 62em)', { fallback: true });
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const searchTip = searchTips[new Date().getMinutes() % searchTips.length];
-
   useEffect(() => {
     // skip initial render
     if (!router.isReady || !prevFilter.current) return;
@@ -480,14 +478,7 @@ const SearchPage = () => {
             color="whiteAlpha.600"
             display={{ base: 'none', lg: 'block' }}
           >
-            {t('General.tip')}:{' '}
-            {t.rich('Search.' + searchTip.tag, {
-              Link: (chunk) => (
-                <Link as={NextLink} href={searchTip.href} color="whiteAlpha.800" target="_blank">
-                  {chunk}
-                </Link>
-              ),
-            })}
+            <SearchTips />
           </Text>
           {searchResult && (
             <Pagination
@@ -576,25 +567,50 @@ const shouldUpdateCount = (newFilter: SearchFiltersType, prevFilter: SearchFilte
   return keys.some((key) => !dontUpdateCountKeys.includes(key));
 };
 
-const searchTips = [
-  {
-    _id: 'Advanced Operators',
-    tag: 'tip-advanced-operators',
-    href: '/articles/advanced-search-queries',
-  },
-  {
-    _id: 'Dynamic Lists',
-    tag: 'tip-dynamic-lists',
-    href: '/articles/checklists-and-dynamic-lists',
-  },
-  {
-    _id: 'Price Calculator',
-    tag: 'tip-price-calculator',
-    href: '/tools/price-calculator',
-  },
-  {
-    _id: 'Advanced Import',
-    tag: 'tip-advanced-import',
-    href: '/lists/import/advanced',
-  },
-];
+const SearchTips = () => {
+  const t = useTranslations();
+  const totalTips = 4;
+  const searchTip = new Date().getMinutes() % totalTips;
+
+  return (
+    <>
+      {t('General.tip')}:{' '}
+      {searchTip === 0 &&
+        t.rich('Search.tip-advanced-operators', {
+          Link: (chunk) => (
+            <Link as={NextLink} href="/articles/advanced-search-queries" color="whiteAlpha.800">
+              {chunk}
+            </Link>
+          ),
+        })}
+      {searchTip === 1 &&
+        t.rich('Search.tip-dynamic-lists', {
+          Link: (chunk) => (
+            <Link
+              as={NextLink}
+              href="/articles/checklists-and-dynamic-lists"
+              color="whiteAlpha.800"
+            >
+              {chunk}
+            </Link>
+          ),
+        })}
+      {searchTip === 2 &&
+        t.rich('Search.tip-price-calculator', {
+          Link: (chunk) => (
+            <Link as={NextLink} href="/tools/price-calculator" color="whiteAlpha.800">
+              {chunk}
+            </Link>
+          ),
+        })}
+      {searchTip === 3 &&
+        t.rich('Search.tip-advanced-import', {
+          Link: (chunk) => (
+            <Link as={NextLink} href="/lists/import/advanced" color="whiteAlpha.800">
+              {chunk}
+            </Link>
+          ),
+        })}
+    </>
+  );
+};

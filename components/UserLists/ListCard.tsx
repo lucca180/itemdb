@@ -212,13 +212,13 @@ const UserListCard = (props: Props) => {
 
             {!list.official && list.visibility !== 'public' && (
               <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>
-                {t('Lists.' + list.visibility)}
+                <ListVisibility visibility={list.visibility} />
               </Badge>
             )}
 
             {!list.official && list.purpose !== 'none' && (
               <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>
-                {t('Lists.' + list.purpose)}
+                <ListPurpose purpose={list.purpose} />
               </Badge>
             )}
 
@@ -244,3 +244,28 @@ const UserListCard = (props: Props) => {
 };
 
 export default UserListCard;
+
+// These components are used to prevent using t("Lists." + variable)
+// which would not be tree-shaken by our itemdb-intl plugin
+const ListVisibility = ({ visibility }: { visibility: 'private' | 'unlisted' }) => {
+  const t = useTranslations();
+
+  const translation = {
+    private: t('Lists.private'),
+    unlisted: t('Lists.unlisted'),
+  };
+
+  return translation[visibility];
+};
+
+const ListPurpose = ({ purpose }: { purpose: 'seeking' | 'trading' | 'none' }) => {
+  const t = useTranslations();
+
+  const translation = {
+    seeking: t('Lists.seeking'),
+    trading: t('Lists.trading'),
+    none: t('Lists.none'),
+  };
+
+  return translation[purpose];
+};

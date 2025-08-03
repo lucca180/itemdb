@@ -187,10 +187,6 @@
     "wrongPrice-7": "Nosso algoritmo de preços é executado a cada hora e atualizará o preço se tivermos dados suficientes!",
     "wrongPriceHeader": "Preço errado? Você pode consertar!",
     "report-wrong-price": "Informar Preço Errado",
-    "effects-cure-disease": "Esse item {random, select, true {tem a <b>chance</b> de curar} other{cura}} <Disease></Disease> {species, select, true {em <Neopet></Neopet>} other {}}",
-    "effects-disease": "Esse item {random, select, true {tem a <b>chance</b> de causar} other{causa}} <Disease></Disease> {species, select, true {em <Neopet></Neopet>} other {}}",
-    "effects-heal": "Esse item {random, select, true {tem a <b>chance</b> de curar} other{cura}} a vida do seu {species, select, true {<Neopet></Neopet>} other {pet}} {maxVal, plural, =0{} other{entre}} <StrVal></StrVal> {minVal, plural, =0{} other{em <b>#HP</b>}} {maxVal, plural, =0{} other{e <b>#HP</b>}}",
-    "effects-stats": "Esse item {random, select, true {tem a <b>chance</b> de mudar} other{muda}} o valor de <Name></Name> do seu {species, select, true {<Neopet></Neopet>} other {pet}} {maxVal, plural, =0{em} other{entre}} <StrVal></StrVal> {minVal, plural, =0{} =1{<b>+1 ponto</b>} other{<b>{minVal, number, ::+?} pontos</b>}} {maxVal, plural, =0{} other{e <b> {maxVal, number, ::+?} pontos</b>}}",
     "item-effects": "Efeitos do Item",
     "usage-type": "Tipo de Uso",
     "occupies": "Ocupa",
@@ -204,7 +200,6 @@
     "since": "Desde",
     "until": "Até",
     "color": "cor",
-    "effects-colorSpecies": "Esse item {random, select, true {tem a chance de {isAll, select, true {transformar} other {trocar a <TargetType></TargetType> do}}} other{irá {isAll, select, true {transformar} other {trocar a <TargetType></TargetType> do}}}} seu {species, select, true {<Neopet></Neopet>} other {pet}} {isAll, select, true {em um} other {para}} <Target1></Target1> <Target2></Target2>",
     "saleStatus": "Status de Venda",
     "saleStatus-beta-alert": "Este é um recurso beta e estamos trabalhando para melhorar a precisão desses dados, então <b>não tome isso como uma fonte de verdade absoluta</b> :)",
     "saleStatus-feedback-sale-cta": "Baseado na sua experiencia, você qual deveria ser o Sale Status desse item?",
@@ -269,17 +264,13 @@
     "mme-trail": "Trilha {x}",
     "available-at": "Disponível em",
     "unavailable-at": "Indisponível em",
-    "dyeworks-all-variants": "Todas as Variantes",
-    "dyeworks-is-variation": "Este item é uma <b>variação Dyeworks</b>",
-    "dyeworks-x-variations": "Este item tem <b>{x} variações Dyeworks</b>",
-    "dyeworks-original-item": "Item Original",
+
     "old-pool-x": "Prêmios Antigos {x}",
     "add-x": "Adicionar \"{x}\"",
     "report-your-nc-trades": "Reporte suas Trocas NC",
     "report-owls-cta": "Trocou um desses? <Link>Reporte aqui</Link>",
     "show-more": "Mostrar Mais",
     "show-less": "Mostrar Menos",
-    "effects-petpetColor": "Esse item {random, select, true {tem a chance de trocar} other{troca}} a cor de alguns petpets para <Target1></Target1>",
     "cheapest-way-to-get-this-petpet": "Maneira mais barata de conseguir esse Petpet",
     "other-ways-of-getting-this-petpet": "Outras maneiras de conseguir este Petpet",
     "p2-paint-base-color": "Você pode pintar <SpeciesLink>{species}</SpeciesLink> para a cor base usando <b>{name}</b> na <Link>Poça dos Petpets</Link>",
@@ -290,8 +281,7 @@
     "drops-script-cta": "Ajude a tornar esses dados mais precisos!",
     "drops-script-cta-text": "Com o <b>Item Data Extractor Script</b> você nos ajuda a melhorar as chances de drops de itens, manter os preços atualizados e muito mais!",
     "latest-x-with-price": "Últimos {x} com Preço",
-    "prismatic-is-variation": "Esse item é uma <b>Variante Prismática</b>",
-    "prismatic-x-variations": "Esse item tem <b>{x} Variantes Prismáticas</b>",
+
     "buyable-now": "Disponível Agora",
     "insights": "Insights",
     "est-value-nc": "Valor Est.",
@@ -1192,5 +1182,35 @@
     "exclusive-clothes-guide": "Guia de Roupas Exclusivas",
     "description": "Descubra todas as roupas exclusivas para seu Neopet {specie}! Encontre itens aplicáveis raros para incrementar seu armário e customizar seu {specie} com estilo!",
     "exclusive-species-clothes": "Roupas Exclusivas de {species}"
+  },
+  "Effects": {
+    "effects-cure-disease": "Esse item {random, select, true {tem a <b>chance</b> de curar} other{cura}} <Disease></Disease> {species, select, true {em <Neopet></Neopet>} other {}}",
+    "effects-disease": "Esse item {random, select, true {tem a <b>chance</b> de causar} other{causa}} <Disease></Disease> {species, select, true {em <Neopet></Neopet>} other {}}",
+    "effects-heal": "Esse item {random, select, true {tem a <b>chance</b> de curar} other{cura}} a vida do seu {species, select, true {<Neopet></Neopet>} other {pet}} {maxVal, plural, =0{} other{entre}} <StrVal></StrVal> {minVal, plural, =0{} other{em <b>#HP</b>}} {maxVal, plural, =0{} other{e <b>#HP</b>}}",
+    "effects-stats": "Esse item {random, select, true {tem a <b>chance</b> de mudar} other{muda}} o valor de <Name></Name> do seu {species, select, true {<Neopet></Neopet>} other {pet}} {maxVal, plural, =0{em} other{entre}} <StrVal></StrVal> {minVal, plural, =0{} =1{<b>+1 ponto</b>} other{<b>{minVal, number, ::+?} pontos</b>}} {maxVal, plural, =0{} other{e <b> {maxVal, number, ::+?} pontos</b>}}",
+    "effects-petpetColor": "Esse item {random, select, true {tem a chance de trocar} other{troca}} a cor de alguns petpets para <Target1></Target1>",
+    "effects-colorSpecies": "Esse item {random, select, true {tem a chance de {isAll, select, true {transformar} other {trocar a <TargetType></TargetType> do}}} other{irá {isAll, select, true {transformar} other {trocar a <TargetType></TargetType> do}}}} seu {species, select, true {<Neopet></Neopet>} other {pet}} {isAll, select, true {em um} other {para}} <Target1></Target1> <Target2></Target2>"
+  },
+  "DyeCard": {
+    "dyeworks-all-variants": "Todas as Variantes",
+    "dyeworks-is-variation": "Este item é uma <b>variação Dyeworks</b>",
+    "dyeworks-x-variations": "Este item tem <b>{x} variações Dyeworks</b>",
+    "dyeworks-original-item": "Item Original",
+    "prismatic-is-variation": "Esse item é uma <b>Variante Prismática</b>",
+    "prismatic-x-variations": "Esse item tem <b>{x} Variantes Prismáticas</b>"
+  },
+  "SortTypes": {
+    "name": "Nome",
+    "price": "Preço",
+    "color": "Cor",
+    "id": "ID",
+    "profit": "Lucro",
+    "rarity": "Raridade",
+    "restock-order": "Ordem de Restock",
+    "album-order": "Ordem do Álbum",
+    "added-at": "Adicionado Em",
+    "recycling-points": "Pontos de Reciclagem",
+    "item-id": "Item ID",
+    "custom": "Personalizado"
   }
 }

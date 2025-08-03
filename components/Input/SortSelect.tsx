@@ -6,8 +6,8 @@ import { AiOutlineArrowUp } from 'react-icons/ai';
 type Props = {
   sortTypes: { [key: string]: string };
   sortBy: string;
-  sortDir: string;
-  onClick: (sortBy: string, sortDir: string) => void;
+  sortDir: 'asc' | 'desc';
+  onClick: (sortBy: string, sortDir: 'asc' | 'desc') => void;
   disabled?: boolean;
 };
 
@@ -33,12 +33,12 @@ export const SortSelect = (props: Props) => {
   return (
     <Menu>
       <MenuButton as={Button} rightIcon={<ChevronDownIcon />} isDisabled={disabled}>
-        {t('General.' + sortTypes[sortBy])}
+        {t('SortTypes.' + sortTypes[sortBy])}
       </MenuButton>
       <MenuList>
         {Object.entries(sortTypes).map(([key, val]) => (
           <MenuItem key={key} value={key} onClick={() => onclick(key)}>
-            {t('General.' + val)} {key === sortBy && arrow}
+            {t('SortTypes.' + val)} {key === sortBy && arrow}
           </MenuItem>
         ))}
       </MenuList>

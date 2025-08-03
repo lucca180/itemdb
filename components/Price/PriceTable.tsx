@@ -163,7 +163,9 @@ const PriceItem = (
         <Td colSpan={1}>
           <Flex alignItems={'center'} gap={1}>
             <Icon as={MdLabel} color={price.color} />
-            <Text>{t('ItemPage.' + price.markerType)}</Text>
+            <Text>
+              <MarkerText markerType={price.markerType} />
+            </Text>
           </Flex>
         </Td>
         <Td px={1} textAlign={'center'} whiteSpace={'normal'}>
@@ -281,4 +283,18 @@ const getPercentChange = (newPrice: number, oldPrice: number) => {
   const val = ((newPrice - oldPrice) / oldPrice) * 100;
 
   return `${isPositive ? '+' : ''}${val.toFixed(Math.abs(val) < 1 ? 1 : 0)}`;
+};
+
+const MarkerText = (props: { markerType?: 'added-to' | 'available-at' | 'unavailable-at' }) => {
+  const t = useTranslations();
+  switch (props.markerType) {
+    case 'added-to':
+      return t('ItemPage.added-to');
+    case 'available-at':
+      return t('ItemPage.available-at');
+    case 'unavailable-at':
+      return t('ItemPage.unavailable-at');
+    default:
+      return '';
+  }
 };

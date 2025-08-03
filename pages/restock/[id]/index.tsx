@@ -354,7 +354,7 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
               sortTypes={sortTypes}
               sortBy={sortInfo.sortBy}
               onClick={handleSort}
-              sortDir={sortInfo.sortDir}
+              sortDir={sortInfo.sortDir as 'asc' | 'desc'}
             />
           </HStack>
         </HStack>

@@ -555,6 +555,25 @@ const LastSeenCard = (props: LastSeenCardProps) => {
     props.onClick?.();
   };
 
+  const lastSeenTypes = {
+    sw: {
+      title: t('General.shop-wizard'),
+      icon: SWIcon,
+    },
+    tp: {
+      title: t('General.trading-post'),
+      icon: TPIcon,
+    },
+    auction: {
+      title: t('General.auction-house'),
+      icon: AuctionIcon,
+    },
+    restock: {
+      title: t('General.restock-shop'),
+      icon: ShopIcon,
+    },
+  };
+
   return (
     <Flex
       flexFlow={'column'}
@@ -568,13 +587,13 @@ const LastSeenCard = (props: LastSeenCardProps) => {
       <Text display={'flex'} alignItems={'center'} gap={1}>
         <Image
           src={lastSeenTypes[type].icon}
-          alt={t(`General.${lastSeenTypes[type].title}`)}
-          title={t(`General.${lastSeenTypes[type].title}`)}
+          alt={lastSeenTypes[type].title}
+          title={lastSeenTypes[type].title}
           height={24}
           quality="100"
           style={{ display: 'inline-block' }}
         />
-        {t(`General.${lastSeenTypes[type].title}`)}
+        {lastSeenTypes[type].title}
       </Text>
       <Text opacity={0.8} suppressHydrationWarning>
         {lastSeen && format.relativeTime(new Date(lastSeen))}
@@ -585,23 +604,4 @@ const LastSeenCard = (props: LastSeenCardProps) => {
       </Text>
     </Flex>
   );
-};
-
-const lastSeenTypes = {
-  sw: {
-    title: 'shop-wizard',
-    icon: SWIcon,
-  },
-  tp: {
-    title: 'trading-post',
-    icon: TPIcon,
-  },
-  auction: {
-    title: 'auction-house',
-    icon: AuctionIcon,
-  },
-  restock: {
-    title: 'restock-shop',
-    icon: ShopIcon,
-  },
 };

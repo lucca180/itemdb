@@ -150,7 +150,7 @@ export const EffectText = (props: EffectTextProps) => {
   return (
     <>
       {['disease', 'cureDisease'].includes(type) &&
-        t.rich(`ItemPage.effects-${type === 'disease' ? 'disease' : 'cure-disease'}`, {
+        t.rich(`Effects.effects-${type === 'disease' ? 'disease' : 'cure-disease'}`, {
           b: (chunk) => <b>{chunk}</b>,
           Disease: () => (
             <Link href="https://www.neopets.com/hospital.phtml" whiteSpace={'pre'} isExternal>
@@ -177,7 +177,7 @@ export const EffectText = (props: EffectTextProps) => {
 
       {['heal', 'stats'].includes(type) && (
         <>
-          {t.rich(`ItemPage.effects-${type}`, {
+          {t.rich(`Effects.effects-${type}`, {
             b: (chunk) => <b>{chunk}</b>,
             Name: () => <Badge>{name}</Badge>,
             minVal: minVal ?? 0,
@@ -197,7 +197,7 @@ export const EffectText = (props: EffectTextProps) => {
       )}
       {type === 'colorSpecies' && (
         <>
-          {t.rich('ItemPage.effects-colorSpecies', {
+          {t.rich('Effects.effects-colorSpecies', {
             isAll: !!speciesTarget && !!colorTarget,
             random: isChance,
             species: species && species.length > 0 ? 'true' : 'false',
@@ -237,7 +237,7 @@ export const EffectText = (props: EffectTextProps) => {
       )}
       {type === 'petpetColor' && (
         <>
-          {t.rich('ItemPage.effects-petpetColor', {
+          {t.rich('Effects.effects-petpetColor', {
             random: isChance,
             Target1: () => (
               <>

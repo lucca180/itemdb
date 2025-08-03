@@ -700,7 +700,7 @@ const ListPage = (props: ListPageProps) => {
                 sortTypes={sortTypes}
                 sortBy={sortInfo.sortBy}
                 onClick={handleSortChange}
-                sortDir={sortInfo.sortDir}
+                sortDir={sortInfo.sortDir as 'asc' | 'desc'}
                 disabled={isLoading}
               />
             </HStack>

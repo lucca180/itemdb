@@ -43,14 +43,6 @@ const ItemSelect = dynamic(() => import('../../components/Input/ItemSelect'), {
   loading: () => <Input variant={'filled'} placeholder="Add Item" />,
 });
 
-const steps = [
-  { title: 'you-offered' },
-  { title: 'you-received' },
-  { title: 'notes-and-comments' },
-  { title: 'confirm' },
-  { title: 'success' },
-];
-
 type NcTradeReportPageProps = {
   user: User | null;
 };
@@ -58,6 +50,7 @@ type NcTradeReportPageProps = {
 const NcTradeReportPage = (props: NcTradeReportPageProps) => {
   const { user } = props;
   const t = useTranslations();
+
   return (
     <>
       <HeaderCard
@@ -208,11 +201,20 @@ type NCTradeReportProps = {
 
 const NCTradeReportCard = (props: NCTradeReportProps) => {
   const { user } = props;
+  const t = useTranslations();
+
+  const steps = [
+    { title: t('Owls.you-offered') },
+    { title: t('Owls.you-received') },
+    { title: t('Owls.notes-and-comments') },
+    { title: t('Owls.confirm') },
+    { title: t('Owls.success') },
+  ];
+
   const { activeStep, goToNext, goToPrevious, setActiveStep } = useSteps({
     index: 0,
     count: steps.length,
   });
-  const t = useTranslations();
   const [offered, setOffered] = useState<NCTradeItem[]>([]);
   const [received, setReceived] = useState<NCTradeItem[]>([]);
   const [notes, setNotes] = useState<string>('');
@@ -352,7 +354,7 @@ const NCTradeReportCard = (props: NCTradeReportProps) => {
                   </StepIndicator>
 
                   <Box flexShrink="0">
-                    <StepTitle>{t('Owls.' + step.title)}</StepTitle>
+                    <StepTitle>{step.title}</StepTitle>
                   </Box>
                   <StepSeparator />
                 </Step>

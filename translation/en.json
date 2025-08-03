@@ -186,10 +186,6 @@
     "wrongPrice-6": "✨Wait for our algorithm to do their magic✨",
     "wrongPrice-7": "Our pricing algorithm run every hour and will update the price if we have enough data!",
     "report-wrong-price": "Report Wrong Price",
-    "effects-disease": "This item {random, select, true {can cause} other{causes}} <Disease></Disease> {species, select, true {to <Neopet></Neopet>} other {}}",
-    "effects-cure-disease": "This item {random, select, true {has a chance of cure} other{cures}} <Disease></Disease> {species, select, true {from your <Neopet></Neopet>} other {}}",
-    "effects-heal": "This item {random, select, true {has a chance of healing} other{will heal}} <StrVal></StrVal> {minVal, plural, =0{} other{<b>#HP</b>}} {maxVal, plural, =0{} other{and <b>up to <b>#HP</b></b>}} of your {species, select, true {<Neopet></Neopet>} other {pets health}}",
-    "effects-stats": "This item {random, select, true {has a chance of changing} other{will change}} your {species, select, true {<Neopet></Neopet>} other {pet's}} <Name></Name> by <StrVal></StrVal> {minVal, plural, =0{} other{<b>{minVal, number, ::+?} points</b>}} {maxVal, plural, =0{} other{and <b>up to {maxVal, number, ::+?} points</b>}}",
     "item-effects": "Item Effects",
     "usage-type": "Usage Type",
     "occupies": "Occupies",
@@ -202,7 +198,6 @@
     "free": "Free!",
     "since": "Since",
     "until": "Until",
-    "effects-colorSpecies": "This item {random, select, true {has a chance of {isAll, select, true {turning} other {changing}}} other{will {isAll, select, true {turn} other {change}}}} your {species, select, true {<Neopet></Neopet>} other {pet's}} <TargetType></TargetType> to <Target1></Target1> <Target2></Target2>",
     "color": "color",
     "saleStatus-thanks-feedback": "Thank you for your feedback! It will make the itemdb increasingly accurate and useful :)",
     "saleStatus-feedback-cta": "You can also leave your comments using the Feedback button across the site",
@@ -268,17 +263,13 @@
     "mme-trail": "Trail {x}",
     "available-at": "Available At",
     "unavailable-at": "Unavailable At",
-    "dyeworks-x-variations": "This item have <b>{x} Dyeworks</b> variations",
-    "dyeworks-is-variation": "This item is a <b>Dyeworks variation</b>",
-    "dyeworks-all-variants": "All Variants",
-    "dyeworks-original-item": "Original Item",
+
     "old-pool-x": "Old Pool {x}",
     "add-x": "Add \"{x}\"",
     "report-your-nc-trades": "Report your NC Trades",
     "report-owls-cta": "Traded one? <Link>Report here</Link>",
     "show-more": "Show More",
     "show-less": "Show Less",
-    "effects-petpetColor": "This item {random, select, true {has a chance of changing} other{will change}} some petpets colors to <Target1></Target1>",
     "cheapest-way-to-get-this-petpet": "Cheapest way to get this Petpet",
     "p2-paint-base-color": "You can paint <SpeciesLink>{species}</SpeciesLink> to the base color by using <b>{name}</b> at the <Link>Petpet Puddle</Link>",
     "other-ways-of-getting-this-petpet": "Other ways of getting this petpet",
@@ -289,8 +280,7 @@
     "drops-script-cta": "Help make this data more accurate!",
     "drops-script-cta-text": "With the <b>Item Data Extractor Script</b> you help us improve item drops odds, keep prices updated and more!",
     "latest-x-with-price": "Latest {x} With Price",
-    "prismatic-x-variations": "This item have <b>{x} Prismatic</b> variations",
-    "prismatic-is-variation": "This item is a <b>Prismatic variation</b>",
+
     "buyable-now": "Buyable Now",
     "insights": "Insights",
     "no-enough-data": "No Enough Data",
@@ -1191,5 +1181,35 @@
     "description": "Find out every exclusive clothes for your {specie} Neopet! Discover rare wearable items to upgrade your wardrobe and customize your {specie} in style.",
     "exclusive-species-clothes": "Exclusive {species} Clothes",
     "exclusive-clothes-guide": "Exclusive Clothes Guide"
+  },
+  "Effects": {
+    "effects-disease": "This item {random, select, true {can cause} other{causes}} <Disease></Disease> {species, select, true {to <Neopet></Neopet>} other {}}",
+    "effects-cure-disease": "This item {random, select, true {has a chance of cure} other{cures}} <Disease></Disease> {species, select, true {from your <Neopet></Neopet>} other {}}",
+    "effects-heal": "This item {random, select, true {has a chance of healing} other{will heal}} <StrVal></StrVal> {minVal, plural, =0{} other{<b>#HP</b>}} {maxVal, plural, =0{} other{and <b>up to <b>#HP</b></b>}} of your {species, select, true {<Neopet></Neopet>} other {pets health}}",
+    "effects-stats": "This item {random, select, true {has a chance of changing} other{will change}} your {species, select, true {<Neopet></Neopet>} other {pet's}} <Name></Name> by <StrVal></StrVal> {minVal, plural, =0{} other{<b>{minVal, number, ::+?} points</b>}} {maxVal, plural, =0{} other{and <b>up to {maxVal, number, ::+?} points</b>}}",
+    "effects-colorSpecies": "This item {random, select, true {has a chance of {isAll, select, true {turning} other {changing}}} other{will {isAll, select, true {turn} other {change}}}} your {species, select, true {<Neopet></Neopet>} other {pet's}} <TargetType></TargetType> to <Target1></Target1> <Target2></Target2>",
+    "effects-petpetColor": "This item {random, select, true {has a chance of changing} other{will change}} some petpets colors to <Target1></Target1>"
+  },
+  "DyeCard": {
+    "dyeworks-x-variations": "This item have <b>{x} Dyeworks</b> variations",
+    "dyeworks-is-variation": "This item is a <b>Dyeworks variation</b>",
+    "dyeworks-all-variants": "All Variants",
+    "dyeworks-original-item": "Original Item",
+    "prismatic-x-variations": "This item have <b>{x} Prismatic</b> variations",
+    "prismatic-is-variation": "This item is a <b>Prismatic variation</b>"
+  },
+  "SortTypes": {
+    "name": "Name",
+    "price": "Price",
+    "color": "Color",
+    "id": "ID",
+    "profit": "Profit",
+    "rarity": "Rarity",
+    "restock-order": "Restock Order",
+    "album-order": "Album Order",
+    "added-at": "Added At",
+    "recycling-points": "Recycling Points",
+    "item-id": "Item ID",
+    "custom": "Custom"
   }
 }

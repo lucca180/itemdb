@@ -27,24 +27,24 @@ export type SeenHistoryModalProps = {
   type: 'tp' | 'auction' | 'restock';
 };
 
-const lastSeenTypes = {
-  sw: {
-    title: 'shop-wizard',
-  },
-  tp: {
-    title: 'trading-post',
-  },
-  auction: {
-    title: 'auction-house',
-  },
-  restock: {
-    title: 'restock-shop',
-  },
-};
-
 export default function SeenHistoryModal(props: SeenHistoryModalProps) {
   const t = useTranslations();
   const { isOpen, onClose, item, type } = props;
+
+  const lastSeenTypes = {
+    sw: {
+      title: t('General.shop-wizard'),
+    },
+    tp: {
+      title: t('General.trading-post'),
+    },
+    auction: {
+      title: t('General.auction-house'),
+    },
+    restock: {
+      title: t('General.restock-shop'),
+    },
+  };
 
   return (
     <>
@@ -52,7 +52,7 @@ export default function SeenHistoryModal(props: SeenHistoryModalProps) {
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>
-            {t(`General.${lastSeenTypes[type].title}`)} - {t('ItemPage.x-days-history', { x: 180 })}
+            {lastSeenTypes[type].title} - {t('ItemPage.x-days-history', { x: 180 })}
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody fontSize={'sm'}>
