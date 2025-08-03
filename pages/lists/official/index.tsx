@@ -27,6 +27,7 @@ import { SearchList } from '../../../components/Search/SearchLists';
 import { useRouter } from 'next/router';
 import { Breadcrumbs } from '../../../components/Breadcrumbs/Breadcrumbs';
 import { loadTranslation } from '@utils/load-translation';
+import { GetServerSidePropsContext } from 'next';
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data as UserList[]);
 
@@ -226,11 +227,13 @@ const OfficialListsPage = (props: Props) => {
 
 export default OfficialListsPage;
 
-export async function getStaticProps(context: any) {
-  const category = context.query.cat;
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const category = context.query?.cat as string | undefined;
   const lists = category
     ? await getOfficialListsCat(category, 15)
     : await getUserLists('official', null, 15);
+
+  context.res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=300');
 
   return {
     props: {
@@ -238,7 +241,6 @@ export async function getStaticProps(context: any) {
       messages: await loadTranslation(context.locale as string, 'lists/official/index'),
       locale: context.locale,
     },
-    revalidate: 120,
   };
 }
 

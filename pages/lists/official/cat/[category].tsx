@@ -202,6 +202,8 @@ export async function getServerSideProps(context: any) {
     .sort((a, b) => sortLists(a, b, listCategoriesData[category].featured))
     .splice(0, 15);
 
+  context.res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=300');
+
   return {
     props: {
       lists: lists,
