@@ -16,7 +16,7 @@ type Props = {
 };
 
 const FindAtCard = (props: Props) => {
-  const t = useTranslations('ItemPage');
+  const t = useTranslations();
   const { item } = props;
   const color = item.color.rgb;
 
@@ -28,7 +28,7 @@ const FindAtCard = (props: Props) => {
         fontWeight="bold"
         bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}
       >
-        {t('find-at')}
+        {t('ItemPage.find-at')}
       </Box>
       <Flex
         py={3}

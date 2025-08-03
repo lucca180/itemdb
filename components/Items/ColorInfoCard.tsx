@@ -17,7 +17,7 @@ const colorKeysOrder: (keyof FullItemColors)[] = [
 ];
 
 const ColorInfoCard = (props: Props) => {
-  const t = useTranslations('ItemPage');
+  const t = useTranslations();
   const { colors } = props;
   const color = colors.vibrant.rgb;
 
@@ -40,7 +40,7 @@ const ColorInfoCard = (props: Props) => {
         fontWeight="bold"
         bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}
       >
-        {t('color-palette')}
+        {t('ItemPage.color-palette')}
       </Box>
       <Flex
         p={3}
