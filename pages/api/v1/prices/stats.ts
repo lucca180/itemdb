@@ -45,7 +45,7 @@ export const getLastSeen = async (params: getLastSeenParams) => {
       },
     });
 
-    if (!itemData)
+    if (!itemData || itemData.isNC || itemData.status === 'no trade')
       return {
         sw: null,
         tp: null,

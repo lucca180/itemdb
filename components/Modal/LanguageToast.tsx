@@ -1,6 +1,5 @@
 import { Flex, useToast, Text, Button } from '@chakra-ui/react';
 import { getCookies } from 'cookies-next';
-import alParser from 'accept-language-parser';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
@@ -49,13 +48,18 @@ const LanguageToast = (props: LanguageToastProps) => {
     if (sessionToast) return;
 
     const cookies = await getCookies();
+    const languages = [...new Set(navigator.languages.map((lang) => lang.split('-')[0]))];
 
-    if (!cookies || cookies.NEXT_LOCALE || !cookies['idb_accept-language']) return;
+    if (!cookies || cookies.NEXT_LOCALE || !languages) return;
 
-    const prefLang =
-      alParser.pick(VALID_LOCALES, cookies['idb_accept-language'], {
-        loose: true,
-      }) || 'en';
+    let prefLang = 'en';
+
+    for (const lang of languages) {
+      if (VALID_LOCALES.includes(lang)) {
+        prefLang = lang;
+        break;
+      }
+    }
 
     if (!prefLang || router.locale === prefLang) return;
 

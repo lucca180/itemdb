@@ -55,15 +55,6 @@ export async function middleware(request: NextRequest) {
     });
   }
 
-  // Set accept-language cookie
-  const cookies = {
-    name: 'idb_accept-language',
-    value: request.headers.get('accept-language') ?? '',
-    expires: Date.now() + 1000000,
-  };
-
-  response.cookies.set(cookies);
-
   const locale = request.cookies.get('NEXT_LOCALE')?.value;
 
   updateServerTime('regular-middleware', startTime, response);
@@ -75,7 +66,6 @@ export async function middleware(request: NextRequest) {
     new URL(`/${locale}${request.nextUrl.pathname}${request.nextUrl.search}`, request.url)
   );
 
-  redirectResponse.cookies.set(cookies);
   return redirectResponse;
 }
 
