@@ -263,7 +263,6 @@
     "mme-trail": "Trail {x}",
     "available-at": "Available At",
     "unavailable-at": "Unavailable At",
-
     "old-pool-x": "Old Pool {x}",
     "add-x": "Add \"{x}\"",
     "report-your-nc-trades": "Report your NC Trades",
@@ -280,7 +279,6 @@
     "drops-script-cta": "Help make this data more accurate!",
     "drops-script-cta-text": "With the <b>Item Data Extractor Script</b> you help us improve item drops odds, keep prices updated and more!",
     "latest-x-with-price": "Latest {x} With Price",
-
     "buyable-now": "Buyable Now",
     "insights": "Insights",
     "no-enough-data": "No Enough Data",
@@ -1115,7 +1113,8 @@
     "anniversary": "Hey, we need data from the Wheel of Celebration prizes. <Link>Click here to help</Link>.",
     "hiddenTower": "3% off at the <Link>Hidden Tower</Link> today for account age 60 months or older!",
     "owls-trades": "<b>New</b> - Now you can report your <b>NC Trades</b> to Owls using itemdb! <Link>Learn more</Link>",
-    "year2": "We're celebrating <b>2 years of itemdb</b> and would love to hear your feedback in this <Link>quick form</Link>!"
+    "year2": "We're celebrating <b>2 years of itemdb</b> and would love to hear your feedback in this <Link>quick form</Link>!",
+    "tvw": "Neopia is in danger! Check out our <Link>The Void Within Plot Hub</Link> and find out lists and resources to help you through the plot!"
   },
   "Owls": {
     "items-you-offered": "Items You Offered",

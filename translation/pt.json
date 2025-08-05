@@ -264,7 +264,6 @@
     "mme-trail": "Trilha {x}",
     "available-at": "Disponível em",
     "unavailable-at": "Indisponível em",
-
     "old-pool-x": "Prêmios Antigos {x}",
     "add-x": "Adicionar \"{x}\"",
     "report-your-nc-trades": "Reporte suas Trocas NC",
@@ -281,7 +280,6 @@
     "drops-script-cta": "Ajude a tornar esses dados mais precisos!",
     "drops-script-cta-text": "Com o <b>Item Data Extractor Script</b> você nos ajuda a melhorar as chances de drops de itens, manter os preços atualizados e muito mais!",
     "latest-x-with-price": "Últimos {x} com Preço",
-
     "buyable-now": "Disponível Agora",
     "insights": "Insights",
     "est-value-nc": "Valor Est.",
@@ -1116,7 +1114,8 @@
     "anniversary": "Hey, precisamos de dados dos prêmios da Wheel of Celebration. <Link>Clique aqui para ajudar</Link>.",
     "hiddenTower": "3% de desconto na <Link>Torre Oculta</Link> hoje para contas com 60 meses ou mais!",
     "owls-trades": "<b>Novo</b> - Agora você pode reportar suas <b>Trocas NC</b> para o Owls usando o itemdb! <Link>Saiba mais</Link>",
-    "year2": "Estamos comemorando <b>2 anos de itemdb</b> e queremos ouvir seu feedback neste <Link>formulário rápido</Link>!"
+    "year2": "Estamos comemorando <b>2 anos de itemdb</b> e queremos ouvir seu feedback neste <Link>formulário rápido</Link>!",
+    "tvw": "Neopia está em perigo! Confira nossa central do plot <Link>The Void Within</Link> e descubra listas e recursos para te ajudar no plot!"
   },
   "Owls": {
     "confirm-and-submit": "Confirmar e Enviar",

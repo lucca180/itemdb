@@ -130,6 +130,17 @@ const alerts = {
     bg: 'gray.900',
     color: 'whiteAlpha.800',
   },
+  tvw: {
+    message: 'tvw',
+    link: '/hub/the-void-within',
+    img: {
+      src: 'https://images.neopets.com/plots/tvw/activities/void-collection/images/void-attractor.png',
+      h: 28,
+      w: 28,
+    },
+    bg: 'purple.600',
+    color: 'pink.100',
+  },
 };
 
 export const SiteAlert = () => {
@@ -177,7 +188,7 @@ export const SiteAlert = () => {
 const getAlert = () => {
   const todayNST = getDateNST();
 
-  if (todayNST.getTime() < 1743490799000) return alerts.year2;
+  if (todayNST.getTime() < 1754967599000) return alerts.tvw;
   if (isThirdWednesday(todayNST)) return alerts.hiddenTower;
   if (todayNST.getDate() === 3) return alerts.hpd;
   else if (todayNST.getMonth() === 4 && todayNST.getDate() === 12) return alerts.tyrannia;
