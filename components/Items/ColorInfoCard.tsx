@@ -86,7 +86,7 @@ const ColorInfoCard = (props: Props) => {
           <Center flexFlow="column" gap={1}>
             <Icon as={AiFillEyeInvisible} boxSize="32px" opacity={0.4} />
             <Text fontSize="xs" color="gray.200">
-              {t('invisible-item')}
+              {t('ItemPage.invisible-item')}
             </Text>
           </Center>
         )}
