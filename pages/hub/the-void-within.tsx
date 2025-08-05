@@ -99,11 +99,17 @@ export async function getStaticProps(context: any) {
   };
 }
 
-TheVoidWithinHub.getLayout = function getLayout(page: ReactElement) {
+TheVoidWithinHub.getLayout = function getLayout(page: ReactElement, props: { locale: string }) {
+  const { locale } = props;
   // const t = createTranslator({ messages: props.messages, locale: props.locale });
+
+  let canonical = 'https://itemdb.com.br/hub/the-void-within';
+  if (locale && locale !== 'en') canonical = `https://itemdb.com.br/${locale}/hub/the-void-within`;
+
   return (
     <Layout
       SEO={{
+        canonical: canonical,
         title: 'The Void Within Plot Prize Guide',
         description:
           "Nyx and the Gang are back into Neopia's epic struggle against the immutable, grey, and shadowy shades threatening to overtake the planet in The Void Within Neopets Plot! Find the best prizes and guides to help you get the best many neopoints on The Void Within plot",

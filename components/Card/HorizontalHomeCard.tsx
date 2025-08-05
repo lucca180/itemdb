@@ -16,11 +16,12 @@ type HorizontalHomeCard = {
   bgOpacity?: string;
   style?: FlexProps;
   innerStyle?: FlexProps;
+  utm_content?: string;
 };
 
 export const HorizontalHomeCard = (props: HorizontalHomeCard) => {
   const t = useTranslations();
-  const { children, title, image, viewAllLink, w, h, bgOpacity } = props;
+  const { children, title, image, viewAllLink, w, h, bgOpacity, utm_content } = props;
   const color = Color(props.color);
   const rgb = color.rgb().array();
 
@@ -51,7 +52,14 @@ export const HorizontalHomeCard = (props: HorizontalHomeCard) => {
             {title && <Heading size={'lg'}>{title}</Heading>}
             <Flex flex={1} justifyContent={'flex-end'}>
               {viewAllLink && (
-                <Button as={MainLink} href={viewAllLink} variant={'ghost'} size={'sm'}>
+                <Button
+                  as={MainLink}
+                  href={viewAllLink}
+                  variant={'ghost'}
+                  size={'sm'}
+                  trackEvent={utm_content}
+                  trackEventLabel={utm_content ? 'view-all' : undefined}
+                >
                   {t('General.view-all')}
                 </Button>
               )}

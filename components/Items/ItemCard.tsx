@@ -95,13 +95,9 @@ const ItemCardBase = (props: ItemProps) => {
           as={disableLink ? undefined : MainLink}
           style={props.style}
           prefetch={disableLink || disablePrefetch !== false ? false : undefined}
-          href={
-            disableLink
-              ? undefined
-              : '/item/' +
-                (item.slug ?? item.internal_id) +
-                (utm_content ? `?utm_content=${utm_content}` : '')
-          }
+          trackEvent={utm_content || undefined}
+          trackEventLabel={item.slug || undefined}
+          href={disableLink ? undefined : '/item/' + (item.slug ?? item.internal_id)}
           _hover={{ textDecoration: 'none' }}
           // pointerEvents={disableLink ? 'none' : 'initial'}
         >

@@ -99,7 +99,9 @@ const UserListCard = (props: Props) => {
           as={NextLink}
           href={`/lists/${list.official ? 'official' : list.owner.username}/${
             list.slug ?? list.internal_id
-          }${utm_content ? `?utm_content=${utm_content}` : ''}`}
+          }`}
+          data-umami-event={utm_content}
+          data-umami-event-label={utm_content ? list.slug : undefined}
           prefetch={false}
           _hover={{ textDecoration: 'none' }}
         >
@@ -148,8 +150,10 @@ const UserListCard = (props: Props) => {
                 as={NextLink}
                 href={`/lists/${list.official ? 'official' : list.owner.username}/${
                   list.slug ?? list.internal_id
-                }${utm_content ? `?utm_content=${utm_content}` : ''}`}
+                }`}
                 prefetch={false}
+                data-umami-event={utm_content}
+                data-umami-event-label={utm_content ? list.slug : undefined}
               >
                 {list.name}
               </Link>

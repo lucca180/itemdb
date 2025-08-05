@@ -160,7 +160,12 @@ export const SiteAlert = () => {
         px={1}
       >
         {alert.img && (
-          <Link as={NextLink} href={alert.link + '?utm_content=site-alert'}>
+          <Link
+            as={NextLink}
+            href={alert.link}
+            data-umami-event="site-alert-click"
+            data-umami-event-label={alert.message}
+          >
             <Image src={alert.img.src} width={alert.img.w} height={alert.img.h} alt="alert icon" />
           </Link>
         )}
@@ -171,9 +176,11 @@ export const SiteAlert = () => {
               Link: (children) => (
                 <Link
                   as={NextLink}
-                  href={alert.link + '?utm_content=site-alert'}
+                  href={alert.link}
                   fontWeight="bold"
                   isExternal
+                  data-umami-event="site-alert-click"
+                  data-umami-event-label={alert.message}
                 >
                   {children}
                 </Link>

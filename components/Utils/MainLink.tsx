@@ -9,10 +9,12 @@ export interface MainLinkProps {
   className?: string;
   children: React.ReactNode;
   prefetch?: boolean;
+  trackEvent?: string;
+  trackEventLabel?: string;
 }
 const MainLink: React.FC<MainLinkProps> = React.forwardRef(
   (
-    { href, target, className, children, prefetch }: MainLinkProps,
+    { href, target, className, children, prefetch, trackEvent, trackEventLabel }: MainLinkProps,
     ref: React.Ref<HTMLAnchorElement> | undefined
   ) => {
     const router = useRouter();
@@ -29,13 +31,28 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
 
     if (prefetch)
       return (
-        <NextLink ref={ref} className={className} target={target} href={href || '/'}>
+        <NextLink
+          ref={ref}
+          className={className}
+          target={target}
+          href={href || '/'}
+          data-umami-event={trackEvent}
+          data-umami-event-label={trackEvent ? trackEventLabel : undefined}
+        >
           {children}
         </NextLink>
       );
 
     return (
-      <a ref={ref} className={className} target={target} href={href || '/'} onClick={handleClick}>
+      <a
+        ref={ref}
+        className={className}
+        target={target}
+        href={href || '/'}
+        onClick={handleClick}
+        data-umami-event={trackEvent}
+        data-umami-event-label={trackEvent ? trackEventLabel : undefined}
+      >
         {children}
       </a>
     );

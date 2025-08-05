@@ -111,9 +111,11 @@ export const HomeCard = (props: HomeCardProps) => {
           {viewAllLink && (
             <Button
               as={MainLink}
-              href={viewAllLink + (utm_content ? `?utm_content=${utm_content}` : '')}
+              href={viewAllLink}
               variant={'ghost'}
               size={'sm'}
+              trackEvent={utm_content}
+              trackEventLabel={linkText || 'view-all'}
             >
               {linkText ?? t('General.view-all')}
             </Button>
@@ -157,12 +159,10 @@ const HomeItem = ({
         <Link
           as={MainLink}
           prefetch={false}
-          href={
-            '/item/' +
-            (item.slug ?? item.internal_id) +
-            (utm_content ? `?utm_content=${utm_content}` : '')
-          }
+          href={'/item/' + (item.slug ?? item.internal_id)}
           _hover={{ textDecoration: 'none' }}
+          trackEvent={utm_content || undefined}
+          trackEventLabel={item.slug || undefined}
         >
           <Flex
             h="80px"

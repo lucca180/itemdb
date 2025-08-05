@@ -244,7 +244,8 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
           color="#4A5568"
           image="https://images.neopets.com/themes/h5/newyears/images/transferlog-icon.png"
           title={t('HomePage.featured-lists')}
-          viewAllLink="/lists/official?utm_content=featured-lists"
+          viewAllLink="/lists/official"
+          utm_content="featured-lists"
         >
           <Flex flexWrap="wrap" gap={4} justifyContent="center">
             {trendingLists.map((list) => (
