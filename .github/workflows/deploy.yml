@@ -52,18 +52,3 @@ jobs:
             yarn build-turbo || exit
             yarn postbuild
             pm2 stop ecosystem.config.js --only itemdb-green --update-env
-  purge-cloudflare-cache:
-    name: Purge Cloudflare Cache
-    needs: deploy-itemdb-green
-    runs-on: ubuntu-latest
-    steps:
-      - name: Purge Document Cache
-        run: |
-          curl -X POST https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
-            -d '{
-                  "tags": [
-                    "document"
-                  ]
-                }'

@@ -58,7 +58,9 @@ export async function middleware(request: NextRequest) {
   const locale = request.cookies.get('NEXT_LOCALE')?.value;
 
   updateServerTime('regular-middleware', startTime, response);
-  response.headers.set('Cache-Tag', 'document');
+
+  // setting a cookie makes cloudflare not cache the HTML
+  response.cookies.set({ name: 'skip-html-cache', value: 'true', maxAge: 60 });
 
   if (!locale || locale === request.nextUrl.locale || !VALID_LOCALES.includes(locale))
     return response;
@@ -66,6 +68,9 @@ export async function middleware(request: NextRequest) {
   const redirectResponse = NextResponse.redirect(
     new URL(`/${locale}${request.nextUrl.pathname}${request.nextUrl.search}`, request.url)
   );
+
+  // setting a cookie makes cloudflare not cache the HTML
+  redirectResponse.cookies.set({ name: 'skip-html-cache', value: 'true', maxAge: 60 });
 
   return redirectResponse;
 }
