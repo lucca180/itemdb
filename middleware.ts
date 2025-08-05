@@ -58,6 +58,7 @@ export async function middleware(request: NextRequest) {
   const locale = request.cookies.get('NEXT_LOCALE')?.value;
 
   updateServerTime('regular-middleware', startTime, response);
+  response.headers.set('Cache-Tag', 'document');
 
   if (!locale || locale === request.nextUrl.locale || !VALID_LOCALES.includes(locale))
     return response;
