@@ -76,6 +76,16 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        source: '/hub/:slug*',
+        locale: false,
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=0, must-revalidate',
+          },
+        ],
+      },
+      {
         source: '/js/:slug*',
         // locale: false,
         headers: [
