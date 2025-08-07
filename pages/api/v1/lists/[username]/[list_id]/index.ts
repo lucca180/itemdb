@@ -236,7 +236,10 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
       let slug = list.slug;
 
-      if ((name && list.name !== name) || list.official !== official) {
+      if (
+        (name && list.name.toLowerCase().trim() !== name.toLowerCase().trim()) ||
+        list.official !== official
+      ) {
         if (/^\d+$/.test(name ?? list.name)) {
           return res.status(400).json({ error: 'List name cannot be a number' });
         }
@@ -272,7 +275,6 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     return res.status(200).json({ success: true, message: 'list updated' });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     console.error(e);
     res.status(500).json({ error: 'Internal Server Error' });
