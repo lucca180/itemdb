@@ -96,7 +96,7 @@ export async function getStaticProps(context: any) {
       messages: await loadTranslation(context.locale as string, 'hub/the-void-within'),
       locale: context.locale,
     },
-    revalidate: 12 * 60 * 60, // 12 hours
+    revalidate: 300,
   };
 }
 
