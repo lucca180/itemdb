@@ -161,3 +161,29 @@ export const getTrendingShops = async (limit: number) => {
 
   return sorted.slice(0, limit);
 };
+
+const FEATURED_TVW_SLUGS = process.env.FEATURED_TVW_LISTS?.split(',') ?? [];
+const FEATURED_TVW_UNTIL = process.env.FEATURED_TVW_UNTIL
+  ? Number(process.env.FEATURED_TVW_UNTIL)
+  : null;
+
+export const getTVWLists = async (limit: number) => {
+  const lists = await getTrendingLists(10000);
+  const tvwLists = lists.filter((list) => list.officialTag === 'The Void Within');
+
+  const isFeaturedActive = FEATURED_TVW_UNTIL ? Date.now() < FEATURED_TVW_UNTIL : false;
+
+  const featuredLists = (
+    isFeaturedActive ? tvwLists.filter((list) => FEATURED_TVW_SLUGS.includes(list.slug ?? '')) : []
+  ).sort(
+    (a, b) => FEATURED_TVW_SLUGS.indexOf(a.slug ?? '') - FEATURED_TVW_SLUGS.indexOf(b.slug ?? '')
+  );
+
+  const otherLists = isFeaturedActive
+    ? tvwLists.filter((list) => !FEATURED_TVW_SLUGS.includes(list.slug ?? ''))
+    : tvwLists;
+
+  const sortedLists: UserList[] = [...featuredLists, ...otherLists];
+
+  return sortedLists.slice(0, limit);
+};

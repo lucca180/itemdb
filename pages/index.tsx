@@ -11,7 +11,7 @@ import { ArticleCard } from '../components/Articles/ArticlesCard';
 import { wp_getLatestPosts } from './api/wp/posts';
 import NextLink from 'next/link';
 import Color from 'color';
-import { getTrendingItems, getTrendingLists } from './api/v1/beta/trending';
+import { getTrendingItems, getTrendingLists, getTVWLists } from './api/v1/beta/trending';
 import { createTranslator, useFormatter, useTranslations } from 'next-intl';
 import { getNCMallItemsData } from './api/v1/mall';
 import { getLatestItems } from './api/v1/items';
@@ -19,7 +19,7 @@ import { getLatestPricedItems } from './api/v1/prices';
 import { NextPageWithLayout } from './_app';
 import { HomeCard } from '../components/Card/HomeCard';
 import UserListCard from '../components/UserLists/ListCard';
-import { HorizontalHomeCard } from '../components/Card/HorizontalHomeCard';
+import { HorizontalHomeCard, TVWHomeCard } from '../components/Card/HorizontalHomeCard';
 import useSWR from 'swr';
 import { loadTranslation } from '@utils/load-translation';
 import { getNewItemsInfo } from './api/v1/beta/new-items';
@@ -39,6 +39,7 @@ type Props = {
   latestNcMall: ItemData[];
   leavingNcMall: ItemData[];
   trendingLists: UserList[];
+  tvwLists: UserList[] | null;
   newItemCount: {
     freeItems: number;
     paidItems: number;
@@ -50,7 +51,7 @@ type Props = {
 const color = Color('#4A5568');
 const rgb = color.rgb().round().array();
 
-export const fetcher = <T,>(url: string, config?: AxiosRequestConfig<any>): Promise<T> =>
+const fetcher = <T,>(url: string, config?: AxiosRequestConfig<any>): Promise<T> =>
   axios.get<T>(url, config).then((res) => res.data);
 
 const HomePage: NextPageWithLayout<Props> = (props: Props) => {
@@ -66,6 +67,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
     trendingLists,
     newItemCount,
     latestPrices,
+    tvwLists,
   } = props;
 
   const { data: latestItems } = useSWR<ItemData[]>(`api/v1/items?limit=20`, (url) => fetcher(url), {
@@ -132,6 +134,24 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
             </Text>
           )}
         </HorizontalHomeCard>
+        {tvwLists && (
+          <TVWHomeCard>
+            <Flex
+              flexWrap="wrap"
+              justifyContent={'space-around'}
+              gap={4}
+              sx={{
+                img: {
+                  filter: 'none',
+                },
+              }}
+            >
+              {tvwLists.map((list) => (
+                <UserListCard isSmall key={list.internal_id} list={list} utm_content="tvw-lists" />
+              ))}
+            </Flex>
+          </TVWHomeCard>
+        )}
         {newItemCount && (
           <Flex gap={4} flexWrap={'wrap'} flexFlow={{ base: 'column', lg: 'row' }}>
             <HorizontalHomeCard
@@ -321,6 +341,7 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
     leavingNcMall,
     trendingLists,
     newItemCount,
+    tvwLists,
   ] = await Promise.all([
     getLatestItems(20, true).catch(() => []),
     getLatestItems(18, true, true).catch(() => []),
@@ -334,6 +355,7 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
     getNCMallItemsData(18, true).catch(() => []),
     getTrendingLists(3).catch(() => []),
     getNewItemsInfo(7).catch(() => null),
+    getTVWLists(3).catch(() => null), // Fetch TVW lists
   ]);
 
   return {
@@ -347,6 +369,7 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
       leavingNcMall,
       trendingLists,
       newItemCount,
+      tvwLists,
       messages: await loadTranslation(context.locale, 'index'),
       locale: context.locale,
     },
