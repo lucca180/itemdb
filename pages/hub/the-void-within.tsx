@@ -18,8 +18,8 @@ import Banner from '../../public/hub/tvw-banner.png';
 import { ReactElement } from 'react';
 import { loadTranslation } from '@utils/load-translation';
 import { UserList } from '@types';
-import { getOfficialListsCat } from '../api/v1/lists/[username]';
 import UserListCard from '@components/UserLists/ListCard';
+import { getTVWLists } from '../api/v1/beta/trending';
 
 type TheVoidWithinHubProps = {
   messages: any;
@@ -85,10 +85,7 @@ const TheVoidWithinHub = (props: TheVoidWithinHubProps) => {
 export default TheVoidWithinHub;
 
 export async function getStaticProps(context: any) {
-  const featuredLists = ['the-void-within-prize-shop', 'the-void-within'];
-  const lists = (await getOfficialListsCat('The Void Within', 3000))
-    .sort((a, b) => sortLists(a, b, featuredLists))
-    .splice(0, 15);
+  const lists = await getTVWLists(3000);
 
   return {
     props: {
@@ -131,15 +128,4 @@ TheVoidWithinHub.getLayout = function getLayout(page: ReactElement, props: { loc
       {page}
     </Layout>
   );
-};
-
-const sortLists = (a: UserList, b: UserList, featured?: string[]) => {
-  if (featured) {
-    const aIndex = featured.indexOf(a.slug?.toLowerCase() ?? '');
-    const bIndex = featured.indexOf(b.slug?.toLowerCase() ?? '');
-    if (aIndex !== -1 && bIndex === -1) return -1;
-    if (aIndex === -1 && bIndex !== -1) return 1;
-    if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
-  }
-  return new Date(a.updatedAt) < new Date(b.updatedAt) ? 1 : -1;
 };
