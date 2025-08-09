@@ -279,9 +279,10 @@ const createPriceProcess = async (dataList: Prisma.PriceProcess2CreateManyInput[
     } catch (e: any) {
       if (['P2002', 'P2034'].includes(e.code) && tries < 3) {
         tries++;
+        await exponentialBackoff(tries);
         continue;
       }
-      console.error(e);
+      console.error('Create Price Process Error:', e);
       throw e;
     }
   }
@@ -301,9 +302,10 @@ const createRestockHistory = async (dataList: Prisma.RestockAuctionHistoryCreate
     } catch (e: any) {
       if (['P2002', 'P2034'].includes(e.code) && tries < 3) {
         tries++;
+        await exponentialBackoff(tries);
         continue;
       }
-      console.error(e);
+      console.error('Create Restock History Error:', e);
       throw e;
     }
   }
@@ -366,9 +368,10 @@ const processLastSeen = async (lastSeen: { [key: string]: { [id: number]: Date }
     } catch (e: any) {
       if (['P2002', 'P2034'].includes(e.code) && tries < 3) {
         tries++;
+        await exponentialBackoff(tries);
         continue;
       }
-      console.error(e);
+      console.error('Update Last Seen Error:', e);
       throw e;
     }
   }
@@ -389,16 +392,50 @@ const newHandleAuction = async (dataList: Prisma.RestockAuctionHistoryCreateMany
     })
   );
 
+  const filteredAuctions = dataList.filter(
+    (x) => x.price > 1000000 && ['30 min', 'closed'].includes(x.otherInfo?.toLowerCase() || '')
+  );
+
+  const upsertPriceProcess = filteredAuctions.map((auction) =>
+    prisma.priceProcess2.upsert({
+      where: {
+        type_neo_id: {
+          type: 'auction',
+          neo_id: auction.neo_id as number,
+        },
+        item_iid: auction.item_iid,
+      },
+      create: {
+        owner: auction.owner,
+        stock: auction.stock,
+        price: auction.price,
+        ip_address: auction.ip_address,
+        addedAt: auction.addedAt,
+        processed: false,
+        type: 'auction',
+        hash: auction.hash,
+        neo_id: auction.neo_id,
+        item_iid: auction.item_iid,
+      },
+      update: {
+        price: auction.price,
+        ip_address: auction.ip_address,
+        addedAt: new Date(),
+      },
+    })
+  );
+
   while (tries < 3) {
     try {
-      const x = await prisma.$transaction(auctionData);
+      const x = await prisma.$transaction([...auctionData, ...upsertPriceProcess]);
       return x;
     } catch (e: any) {
       if (['P2002', 'P2034'].includes(e.code) && tries < 3) {
         tries++;
+        await exponentialBackoff(tries);
         continue;
       }
-      console.error(e);
+      console.error('Handle New Auction Error:', e);
       throw e;
     }
   }
@@ -431,4 +468,9 @@ const findItem = (
   }
 
   return null;
+};
+
+const exponentialBackoff = async (tries: number) => {
+  const delay = Math.pow(2, tries) * 300; // Exponential backoff formula
+  return new Promise((resolve) => setTimeout(resolve, delay));
 };
