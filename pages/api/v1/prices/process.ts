@@ -268,7 +268,7 @@ export const doProcessPrices = async (
         updateOrAddDB(
           item,
           newPrice.price,
-          newPrice.usedIds,
+          allIDs,
           newPrice.latestDate,
           newPriceAlgorithm?.price
         ).then((_) => {
