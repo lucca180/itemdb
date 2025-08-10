@@ -42,17 +42,26 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
   };
 
   let filtered: PriceProcess2[] = [];
+  let count = 0;
+
   for (const days in daysThreshold) {
     const threshold = daysThreshold[days];
     filtered = priceProcessList.filter(
-      (x) => differenceInCalendarDays(Date.now(), x.addedAt) <= parseInt(days, 10)
+      (x) =>
+        differenceInCalendarDays(Date.now(), x.addedAt) <= parseInt(days, 10) &&
+        x.type !== 'usershop'
     );
 
     filtered = uniqueByOwner(filtered);
+    count += filtered.length;
 
     if (filtered.length >= threshold) {
       break;
+    } else if (filtered.length === priceProcessList.length) {
+      return [];
     } else filtered = [];
+
+    if (count >= threshold) return [];
   }
 
   if (!filtered.length) filtered = uniqueByOwner(priceProcessList);
@@ -67,9 +76,10 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
 
   const noOutliers = new Set(removeOutliersCombined(allPrices));
 
-  if (noOutliers.size < 3) return [];
-
   filtered = filtered.filter((x) => noOutliers.has(x.price.toNumber()));
+
+  // if all remaining data is from usershops, skip
+  if (filtered.length === filtered.filter((x) => x.type !== 'usershop').length) return [];
 
   const result = filtered.map((x) => [x, getWeight(x)]) as [PriceProcess2, number][];
 
@@ -80,8 +90,8 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
   );
 
   // data is low confidence, skip
-  if (meanWeight < 0.5 && differenceInCalendarDays(Date.now(), lastDate) <= 30) {
-    console.error('processPrices2: low quality data', filtered[0]?.item_iid, meanWeight, filtered);
+  if (meanWeight < 0.5 && differenceInCalendarDays(Date.now(), lastDate) <= 40) {
+    console.warn('processPrices2: low quality data', filtered[0]?.item_iid, meanWeight, filtered);
     return [];
   }
 
