@@ -96,13 +96,13 @@ const sourceWeight: { [key: string]: number } = {
   usershop: 0.35,
 };
 
-const getWeight = (price: PriceProcess2, priorityDays = 7, alpha = 0.03, minWeight = 0.2) => {
+const getWeight = (price: PriceProcess2, priorityDays = 10, alpha = 0.01, minWeight = 0.2) => {
   const typeWeight = sourceWeight[price.type] || 0.35;
 
   const days = differenceInCalendarDays(Date.now(), price.addedAt);
   const daysWeight = days < priorityDays ? 1 : Math.max(0, 1 / (1 + (days - priorityDays) * alpha));
-  const stock = Math.min(price.stock, MAX_VALID_STOCK);
 
+  const stock = Math.min(price.stock, MAX_VALID_STOCK);
   const stockWeight =
     price.type === 'usershop' ? 1 : 1 + (0.5 * (stock - 1)) / (MAX_VALID_STOCK - 1);
 
