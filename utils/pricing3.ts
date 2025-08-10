@@ -91,7 +91,7 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
 
   // data is low confidence, skip
   if (meanWeight < 0.5 && differenceInCalendarDays(Date.now(), lastDate) <= 40) {
-    console.warn('processPrices2: low quality data', filtered[0]?.item_iid, meanWeight, filtered);
+    console.warn('processPrices3: low quality data', filtered[0]?.item_iid, meanWeight, filtered);
     return [];
   }
 
@@ -159,9 +159,18 @@ function removeOutliersCombined(data: number[]) {
   if (iqrFiltered.length < 2) return iqrFiltered;
 
   const medianVal = median(iqrFiltered);
-  const madVal = mad(iqrFiltered);
+  const madVal = mad(iqrFiltered) * 1.4826; // Scale MAD to be consistent with standard deviation
 
-  return iqrFiltered.filter((x) => Math.abs(x - medianVal) <= 3 * madVal);
+  // less punitive for lower values, more punitive for higher values
+  const lowerMultiplier = 3.3;
+  const upperMultiplier = 2.7;
+
+  return iqrFiltered.filter((x) => {
+    if (x < medianVal) {
+      return medianVal - x <= lowerMultiplier * madVal;
+    }
+    return x - medianVal <= upperMultiplier * madVal;
+  });
 }
 
 function weightedStdFilter(weightedPrices: [PriceProcess2, number][], kLower = 1, kUpper = 1) {
@@ -177,7 +186,7 @@ function weightedStdFilter(weightedPrices: [PriceProcess2, number][], kLower = 1
   // skip if the deviation is too high
   if (weightedPrices.length <= 3 && relativeSTD >= 0.75) {
     console.error(
-      'processPrices2: Too high deviation',
+      'processPrices3: Too high deviation',
       weightedPrices[0][0].item_iid,
       relativeSTD,
       weightedPrices
@@ -189,7 +198,7 @@ function weightedStdFilter(weightedPrices: [PriceProcess2, number][], kLower = 1
 
   if (lowerLimitFactor < 0.1) {
     console.error(
-      'processPrices2: Lower limit factor too low',
+      'processPrices3: Lower limit factor too low',
       weightedPrices[0][0].item_iid,
       lowerLimitFactor
     );
