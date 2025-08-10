@@ -287,6 +287,11 @@ const ItemPriceCard = (props: Props) => {
                     {t('General.inflation')}
                   </Text>
                 )}
+                {isAdmin && price?.newPrice && (
+                  <StatNumber whiteSpace={'nowrap'} fontSize={'xs'} color="gray.400" mt={1}>
+                    New Alg <br /> <b>{format.number(price.newPrice)} NP</b>
+                  </StatNumber>
+                )}
                 {price?.value && (
                   <StatNumber whiteSpace={'nowrap'}>{format.number(price.value)} NP</StatNumber>
                 )}

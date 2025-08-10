@@ -337,7 +337,7 @@ export const calculateStats = async (
         const date = formatDate(click.buy_timestamp);
         revenuePerDay[date] = revenuePerDay[date]
           ? revenuePerDay[date] + (item.price.value ?? 0)
-          : item.price.value ?? 0;
+          : (item.price.value ?? 0);
 
         const time = differenceInMilliseconds(
           new Date(click.buy_timestamp),
@@ -370,7 +370,7 @@ export const calculateStats = async (
           const date = formatDate(click.soldOut_timestamp);
           lostPerDay[date] = lostPerDay[date]
             ? lostPerDay[date] + (item.price.value ?? 0)
-            : item.price.value ?? 0;
+            : (item.price.value ?? 0);
         }
 
         stats.mostExpensiveLost =
@@ -562,6 +562,7 @@ const getItemWithPricing = (
   return {
     ...item,
     price: {
+      newValue: null,
       value: price,
       addedAt: price ? new Date(timestamp).toJSON() : null,
       inflated: false,

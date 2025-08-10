@@ -6,9 +6,9 @@ const TRADE_MIN_GOAL = process.env.TRADE_MIN_GOAL || '7';
 
 export const processPrices2 = (allItemData: PriceProcess2[], forceMode = false) => {
   // const item = allItemData[0];
-
+  const filteredNoAuctions = allItemData.filter((x) => x.type !== 'auction');
   // get only the most recent data available that fits the criteria
-  const mostRecentRaw = filterMostRecent(allItemData, forceMode).sort(
+  const mostRecentRaw = filterMostRecent(filteredNoAuctions, forceMode).sort(
     (a, b) => a.price.toNumber() - b.price.toNumber()
   );
 

@@ -5,6 +5,7 @@ import { coefficientOfVariation } from '../../../../utils/utils';
 import { ItemPrices, PriceProcess2, Prisma } from '@prisma/generated/client';
 import { differenceInCalendarDays, differenceInDays } from 'date-fns';
 import { processPrices2 } from '../../../../utils/pricing';
+import { processPrices3 } from '@utils/pricing3';
 
 export const MAX_DAYS = 30;
 export const MAX_PAST_DAYS = 60;
@@ -255,20 +256,21 @@ export const doProcessPrices = async (
     const item = allItemData[0];
 
     try {
-      const newPriceAlgorithm = processPrices2(allItemData, forceMode);
-
-      if (!newPriceAlgorithm) continue;
+      const newPrice = processPrices2(allItemData, forceMode);
+      const newPriceAlgorithm = processPrices3(allItemData, forceMode);
+      if (!newPrice) continue;
 
       const allIDs = allItemData
-        .filter((x) => x.addedAt <= newPriceAlgorithm.latestDate)
+        .filter((x) => x.addedAt <= newPrice.latestDate)
         .map((x) => x.internal_id);
 
       priceAddPromises.push(
         updateOrAddDB(
           item,
-          newPriceAlgorithm.price,
-          newPriceAlgorithm.usedIds,
-          newPriceAlgorithm.latestDate
+          newPrice.price,
+          newPrice.usedIds,
+          newPrice.latestDate,
+          newPriceAlgorithm?.price
         ).then((_) => {
           if (_) processedIDs.push(...allIDs);
           return _;
@@ -331,12 +333,13 @@ async function updateOrAddDB(
   priceData: PriceProcess2,
   priceValue: number,
   usedIDs: number[],
-  latestDate: Date
+  latestDate: Date,
+  newPrice?: number
 ): Promise<Prisma.ItemPricesUncheckedCreateInput | undefined> {
   const newPriceData: Prisma.ItemPricesUncheckedCreateInput = {
-    name: 'priceprocess2',
     item_iid: priceData.item_iid,
     price: priceValue,
+    newPrice: newPrice ?? null,
     manual_check: null,
     isLatest: true,
     addedAt: latestDate,

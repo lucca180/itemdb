@@ -25,12 +25,11 @@ type ItemPricesArgs = {
   name?: string;
 };
 export const getItemPrices = async (args: ItemPricesArgs) => {
-  const { iid, name } = args;
+  const { iid } = args;
 
   const pricesRaw = await prisma.itemPrices.findMany({
     where: {
       item_iid: !isNaN(iid ?? NaN) ? iid : undefined,
-      name: name,
       manual_check: null,
     },
     orderBy: { addedAt: 'desc' },
@@ -43,6 +42,7 @@ export const getItemPrices = async (args: ItemPricesArgs) => {
       value: p.price.toNumber(),
       addedAt: p.addedAt.toJSON(),
       inflated: !!p.noInflation_id,
+      newPrice: p.newPrice ? p.newPrice.toNumber() : null,
       context: p.priceContext,
     };
   });

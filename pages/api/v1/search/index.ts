@@ -443,7 +443,7 @@ export async function doSearch(
       SELECT ${!onlyStats ? Prisma.sql`*` : Prisma.sql`1`} ${statsQuery} FROM (
         SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, 
         b.rgb_g, b.rgb_b, b.hex, b.hsv_h, b.hsv_s, b.hsv_v, f.dist,
-        c.addedAt as priceAdded, c.price, c.noInflation_id, 
+        c.addedAt as priceAdded, c.price, c.noInflation_id, c.newPrice,
         d.addedAt as ncValueAddedAt, d.minValue, d.maxValue, d.valueRange,
         s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded,
         o.pricedAt as owlsPriced, o.value as owlsValue, o.valueMin as owlsValueMin,
@@ -501,7 +501,7 @@ export async function doSearch(
     resultRaw = (await prisma.$queryRaw`
       SELECT ${!onlyStats ? Prisma.sql`*` : Prisma.sql`1`} ${statsQuery} FROM (
         SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex, b.hsv_h, b.hsv_s, b.hsv_v,
-          c.addedAt as priceAdded, c.price, c.noInflation_id, 
+          c.addedAt as priceAdded, c.price, c.noInflation_id, c.newPrice,
           d.addedAt as ncValueAddedAt, d.minValue, d.maxValue, d.valueRange,
           s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded,
           o.pricedAt as owlsPriced, o.value as owlsValue, o.valueMin as owlsValueMin,
@@ -594,6 +594,7 @@ export async function doSearch(
     resultsPerPage: limit,
   };
 }
+
 // SELECT *,
 // (POWER(h-15,2)+POWER(s-100,2)+POWER(l-45,2)) as dist
 // FROM ItemColor

@@ -54,7 +54,6 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
 
   const newPrice = await prisma.itemPrices.create({
     data: {
-      name: '',
       item_iid: Number(item_iid),
       price: price,
       noInflation_id: noInflation_id,

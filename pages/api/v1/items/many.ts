@@ -102,7 +102,7 @@ export const getManyItems = async (
   const resultRaw = (await prisma.$queryRaw`
     SELECT a.*, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex,
       b.hsv_h, b.hsv_s, b.hsv_v,
-      c.addedAt as priceAdded, c.price, c.noInflation_id, 
+      c.addedAt as priceAdded, c.price, c.noInflation_id, c.newPrice, 
       d.addedAt as ncValueAddedAt, d.minValue, d.maxValue, d.valueRange,
       o.pricedAt as owlsPriced, o.value as owlsValue, o.valueMin as owlsValueMin,
       s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded,
@@ -188,11 +188,12 @@ export const rawToItemData = (raw: any, options: RawToItemOptions = {}): ItemDat
     isMissingInfo: false,
     price:
       result.status.toLowerCase() === 'no trade'
-        ? { value: null, addedAt: null, inflated: false }
+        ? { value: null, addedAt: null, inflated: false, newValue: null }
         : {
             value: result.price ? result.price.toNumber() : null,
             addedAt: (result.priceAdded as Date | null)?.toJSON() ?? null,
             inflated: !!result.noInflation_id,
+            newValue: result.newPrice ? result.newPrice.toNumber() : null,
           },
     ncValue: null,
     comment: result.comment ?? null,
