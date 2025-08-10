@@ -79,7 +79,7 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
   filtered = filtered.filter((x) => noOutliers.has(x.price.toNumber()));
 
   // if all remaining data is from usershops, skip
-  if (filtered.length === filtered.filter((x) => x.type !== 'usershop').length) return [];
+  if (filtered.length === filtered.filter((x) => x.type === 'usershop').length) return [];
 
   const result = filtered.map((x) => [x, getWeight(x)]) as [PriceProcess2, number][];
 
