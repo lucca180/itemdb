@@ -2,11 +2,12 @@ import { PriceProcess2 } from '@prisma/generated/client';
 import { differenceInCalendarDays } from 'date-fns';
 import { median, quantileSorted, mad, sum, mean } from 'simple-statistics';
 
-const MAX_VALID_STOCK = 3; // max stock to consider for price calculation
+const MAX_VALID_STOCK = 2; // max stock to consider for price calculation
 
 export const processPrices3 = (allItemData: PriceProcess2[], forceMode = false) => {
   // get only the most recent data available that fits the criteria
-  const weightedVals = filterMostRecent(allItemData, forceMode);
+  const sorted = [...allItemData].sort((a, b) => a.price.toNumber() - b.price.toNumber());
+  const weightedVals = filterMostRecent(sorted, forceMode);
 
   if (weightedVals.length === 0) return undefined;
 
@@ -67,15 +68,16 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
   if (!filtered.length) filtered = uniqueByOwner(priceProcessList);
 
   const allPrices: number[] = [];
-  filtered.forEach((x) => {
-    const stock = Math.max(x.stock, MAX_VALID_STOCK);
-    for (let i = 0; i < stock; i++) {
-      allPrices.push(x.price.toNumber());
-    }
+  filtered.forEach((x, i) => {
+    const stock = Math.min(x.stock, MAX_VALID_STOCK);
+    if (i < 5) {
+      for (let i = 0; i < stock; i++) {
+        allPrices.push(x.price.toNumber());
+      }
+    } else allPrices.push(x.price.toNumber());
   });
 
   const noOutliers = new Set(removeOutliersCombined(allPrices));
-
   filtered = filtered.filter((x) => noOutliers.has(x.price.toNumber()));
 
   // if all remaining data is from usershops, skip
@@ -114,7 +116,7 @@ const getWeight = (price: PriceProcess2, priorityDays = 10, alpha = 0.01, minWei
 
   const stock = Math.min(price.stock, MAX_VALID_STOCK);
   const stockWeight =
-    price.type === 'usershop' ? 1 : 1 + (0.5 * (stock - 1)) / (MAX_VALID_STOCK - 1);
+    price.type === 'usershop' ? 1 : 1 + (0.35 * (stock - 1)) / (MAX_VALID_STOCK - 1);
 
   return Math.max(typeWeight * daysWeight * stockWeight, minWeight);
 };
@@ -162,8 +164,8 @@ function removeOutliersCombined(data: number[]) {
   const madVal = mad(iqrFiltered) * 1.4826; // Scale MAD to be consistent with standard deviation
 
   // less punitive for lower values, more punitive for higher values
-  const lowerMultiplier = 3.3;
-  const upperMultiplier = 2.7;
+  const lowerMultiplier = 3.5;
+  const upperMultiplier = 2;
 
   return iqrFiltered.filter((x) => {
     if (x < medianVal) {
