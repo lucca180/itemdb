@@ -7,8 +7,10 @@ import { PriceProcess, Prisma } from '@prisma/generated/client';
 import { getManyItems } from '../items/many';
 import { checkHash } from '../../../../utils/hash';
 import { ItemData } from '../../../../types';
+import { differenceInCalendarDays } from 'date-fns';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
+type RestockAuction = Prisma.RestockAuctionHistoryCreateManyInput & { addToPriceProcess: boolean };
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -222,7 +224,7 @@ export const newCreatePriceProcessFlow = async (
     .filter((x) => x !== null) as Prisma.PriceProcess2CreateManyInput[];
 
   const newRestockAuction = dataList
-    .map((raw): Prisma.RestockAuctionHistoryCreateManyInput | null => {
+    .map((raw): RestockAuction | null => {
       if (!['restock', 'auction'].includes(raw.type)) return null;
       const itemData = findItem(raw, allItems);
       if (!itemData) return null;
@@ -242,9 +244,10 @@ export const newCreatePriceProcessFlow = async (
         hash: raw.hash,
         item_iid: itemData.internal_id,
         neo_id: raw.neo_id,
+        addToPriceProcess: shouldAddToPriceProcess(itemData),
       };
     })
-    .filter((x) => x !== null) as Prisma.RestockAuctionHistoryCreateManyInput[];
+    .filter((x) => x !== null) as RestockAuction[];
 
   const deleteAll = prisma.priceProcessHistory.deleteMany({
     where: {
@@ -288,13 +291,13 @@ const createPriceProcess = async (dataList: Prisma.PriceProcess2CreateManyInput[
   }
 };
 
-const createRestockHistory = async (dataList: Prisma.RestockAuctionHistoryCreateManyInput[]) => {
+const createRestockHistory = async (dataList: RestockAuction[]) => {
   let tries = 0;
 
   while (tries < 3) {
     try {
       const x = await prisma.restockAuctionHistory.createMany({
-        data: dataList,
+        data: dataList.map(removePriceProcess),
         skipDuplicates: true,
       });
 
@@ -377,7 +380,7 @@ const processLastSeen = async (lastSeen: { [key: string]: { [id: number]: Date }
   }
 };
 
-const newHandleAuction = async (dataList: Prisma.RestockAuctionHistoryCreateManyInput[]) => {
+const newHandleAuction = async (dataList: RestockAuction[]) => {
   let tries = 0;
   const auctionData = dataList.map((auction) =>
     prisma.restockAuctionHistory.upsert({
@@ -387,8 +390,8 @@ const newHandleAuction = async (dataList: Prisma.RestockAuctionHistoryCreateMany
           neo_id: auction.neo_id as number,
         },
       },
-      create: auction,
-      update: auction,
+      create: removePriceProcess(auction),
+      update: removePriceProcess(auction),
     })
   );
 
@@ -397,34 +400,38 @@ const newHandleAuction = async (dataList: Prisma.RestockAuctionHistoryCreateMany
     (x) => x.price > 1000000 && filteredStr.some((y) => x.otherInfo?.toLowerCase().includes(y))
   );
 
-  const upsertPriceProcess = filteredAuctions.map((auction) =>
-    prisma.priceProcess2.upsert({
-      where: {
-        type_neo_id: {
-          type: 'auction',
-          neo_id: auction.neo_id as number,
-        },
-        item_iid: auction.item_iid,
-      },
-      create: {
-        owner: auction.owner,
-        stock: auction.stock,
-        price: auction.price,
-        ip_address: auction.ip_address,
-        addedAt: auction.addedAt,
-        processed: false,
-        type: 'auction',
-        hash: auction.hash,
-        neo_id: auction.neo_id,
-        item_iid: auction.item_iid,
-      },
-      update: {
-        price: auction.price,
-        ip_address: auction.ip_address,
-        addedAt: new Date(),
-      },
-    })
-  );
+  const upsertPriceProcess = filteredAuctions
+    .map((auction) =>
+      auction.addToPriceProcess
+        ? prisma.priceProcess2.upsert({
+            where: {
+              type_neo_id: {
+                type: 'auction',
+                neo_id: auction.neo_id as number,
+              },
+              item_iid: auction.item_iid,
+            },
+            create: {
+              owner: auction.owner,
+              stock: auction.stock,
+              price: auction.price,
+              ip_address: auction.ip_address,
+              addedAt: auction.addedAt,
+              processed: false,
+              type: 'auction',
+              hash: auction.hash,
+              neo_id: auction.neo_id,
+              item_iid: auction.item_iid,
+            },
+            update: {
+              price: auction.price,
+              ip_address: auction.ip_address + ', auction update(' + new Date().getTime() + ')',
+              addedAt: new Date(),
+            },
+          })
+        : undefined
+    )
+    .filter((x) => x !== undefined);
 
   while (tries < 3) {
     try {
@@ -474,4 +481,21 @@ const findItem = (
 const exponentialBackoff = async (tries: number) => {
   const delay = Math.pow(2, tries) * 300; // Exponential backoff formula
   return new Promise((resolve) => setTimeout(resolve, delay));
+};
+
+const removePriceProcess = (dataList: RestockAuction) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { addToPriceProcess, ...rest } = dataList;
+  return rest as Prisma.RestockAuctionHistoryCreateManyInput;
+};
+
+const shouldAddToPriceProcess = (item: ItemData) => {
+  const price = item.price.value;
+  if (!price) return false;
+  const priceTime = new Date(item.price?.addedAt ?? 0);
+  const timeDiff = differenceInCalendarDays(new Date(), priceTime);
+
+  if (price > 700000 || timeDiff > 60) return true;
+
+  return false;
 };
