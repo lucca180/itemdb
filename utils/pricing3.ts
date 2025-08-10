@@ -74,9 +74,13 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
   const result = filtered.map((x) => [x, getWeight(x)]) as [PriceProcess2, number][];
 
   const meanWeight = mean(result.map(([, w]) => w));
+  const lastDate = result.reduce(
+    (latest, [x]) => (x.addedAt > latest ? x.addedAt : latest),
+    new Date(0)
+  );
 
   // data is low confidence, skip
-  if (meanWeight < 0.5) {
+  if (meanWeight < 0.5 && differenceInCalendarDays(Date.now(), lastDate) <= 30) {
     console.error('processPrices2: low quality data', filtered[0]?.item_iid, meanWeight, filtered);
     return [];
   }
@@ -89,17 +93,18 @@ const sourceWeight: { [key: string]: number } = {
   sw: 0.8,
   auction: 0.7,
   trade: 0.7,
-  usershop: 0.3,
+  usershop: 0.35,
 };
 
-const getWeight = (price: PriceProcess2, priorityDays = 7, alpha = 0.05, minWeight = 0.2) => {
-  const typeWeight = sourceWeight[price.type] || 0.1;
+const getWeight = (price: PriceProcess2, priorityDays = 7, alpha = 0.03, minWeight = 0.2) => {
+  const typeWeight = sourceWeight[price.type] || 0.35;
 
   const days = differenceInCalendarDays(Date.now(), price.addedAt);
-  const daysWeight = days < priorityDays ? 1 : Math.max(0, 1 - (days - priorityDays) * alpha);
+  const daysWeight = days < priorityDays ? 1 : Math.max(0, 1 / (1 + (days - priorityDays) * alpha));
   const stock = Math.min(price.stock, MAX_VALID_STOCK);
 
-  const stockWeight = 1 + (0.3 * (stock - 1)) / (MAX_VALID_STOCK - 1);
+  const stockWeight =
+    price.type === 'usershop' ? 1 : 1 + (0.5 * (stock - 1)) / (MAX_VALID_STOCK - 1);
 
   return Math.max(typeWeight * daysWeight * stockWeight, minWeight);
 };
@@ -120,7 +125,9 @@ const log10 = (x: number) => Math.log(x) / Math.log(10);
 
 function uniqueByOwner(items: PriceProcess2[]) {
   const seen = new Set<string>();
-  const sortedItems = [...items].sort((a, b) => a.price.toNumber() - b.price.toNumber());
+  const sortedItems = [...items].sort(
+    (a, b) => a.price.toNumber() - b.price.toNumber() || sourceWeight[b.type] - sourceWeight[a.type]
+  );
   return sortedItems.filter((x) => {
     if (!x.owner || seen.has(x.owner)) return false;
     seen.add(x.owner);

@@ -392,8 +392,9 @@ const newHandleAuction = async (dataList: Prisma.RestockAuctionHistoryCreateMany
     })
   );
 
+  const filteredStr = ['30 min', 'closed'];
   const filteredAuctions = dataList.filter(
-    (x) => x.price > 1000000 && ['30 min', 'closed'].includes(x.otherInfo?.toLowerCase() || '')
+    (x) => x.price > 1000000 && filteredStr.some((y) => x.otherInfo?.toLowerCase().includes(y))
   );
 
   const upsertPriceProcess = filteredAuctions.map((auction) =>
