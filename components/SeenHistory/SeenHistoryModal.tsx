@@ -48,7 +48,7 @@ export default function SeenHistoryModal(props: SeenHistoryModalProps) {
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose} isCentered size={'xl'}>
+      <Modal isOpen={isOpen} onClose={onClose} isCentered size={'3xl'}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>
