@@ -2,18 +2,20 @@ import { PriceProcess2 } from '@prisma/generated/client';
 import { differenceInCalendarDays } from 'date-fns';
 import { median, quantileSorted, mad, sum, mean } from 'simple-statistics';
 
-const MAX_VALID_STOCK = 2; // max stock to consider for price calculation
+const MAX_VALID_STOCK = 3; // max stock to consider for price calculation
 
 export const processPrices3 = (allItemData: PriceProcess2[], forceMode = false) => {
   // get only the most recent data available that fits the criteria
-  const sorted = [...allItemData].sort((a, b) => a.price.toNumber() - b.price.toNumber());
+  const sorted = [...allItemData]
+    .sort((a, b) => a.price.toNumber() - b.price.toNumber())
+    .slice(0, 40);
   const weightedVals = filterMostRecent(sorted, forceMode);
 
   if (weightedVals.length === 0) return undefined;
 
   const usedIds = new Set<number>(weightedVals.map(([x]) => x.internal_id));
 
-  const filteredPrices = weightedStdFilter(weightedVals, 1.6, 0.75);
+  const filteredPrices = weightedStdFilter(weightedVals, 1.6, 0.75)?.slice(0, 5);
   if (!filteredPrices) return undefined;
 
   const latestDate = filteredPrices.reduce(
@@ -71,9 +73,7 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
   filtered.forEach((x, i) => {
     const stock = Math.min(x.stock, MAX_VALID_STOCK);
     if (i < 5) {
-      for (let i = 0; i < stock; i++) {
-        allPrices.push(x.price.toNumber());
-      }
+      allPrices.push(...Array(stock).fill(x.price.toNumber()));
     } else allPrices.push(x.price.toNumber());
   });
 
@@ -208,11 +208,12 @@ function weightedStdFilter(weightedPrices: [PriceProcess2, number][], kLower = 1
     return undefined;
   }
 
-  return weightedPrices.filter(
-    ([p]) =>
+  return weightedPrices.filter(([p]) => {
+    return (
       p.price.toNumber() >= meanWeighted - stdWeighted * lowerLimitFactor &&
       p.price.toNumber() <= meanWeighted + stdWeighted * kUpper
-  );
+    );
+  });
 }
 
 function weightedMean(val: [PriceProcess2, number][]) {
