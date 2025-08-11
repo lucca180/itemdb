@@ -42,11 +42,14 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
     0: EVENT_MODE ? 10 : 18,
     3: EVENT_MODE ? 5 : 15,
     7: EVENT_MODE ? 5 : 10,
+    15: 5,
+    30: 3,
+    120: 1,
   };
 
   let filtered: PriceProcess2[] = [];
-  let count = 0;
 
+  // try to get recent data first
   for (const days in daysThreshold) {
     const threshold = daysThreshold[days];
     filtered = priceProcessList.filter(
@@ -56,17 +59,15 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
     );
 
     filtered = uniqueByOwner(filtered);
-    count += filtered.length;
 
     if (filtered.length >= threshold) {
       break;
     } else if (filtered.length === priceProcessList.length) {
       return [];
     } else filtered = [];
-
-    if (count >= threshold) return [];
   }
 
+  // if not enough data, try to use all data
   if (!filtered.length) filtered = uniqueByOwner(priceProcessList);
 
   const allPrices: number[] = [];
