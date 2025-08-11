@@ -268,7 +268,7 @@ export const doProcessPrices = async (
         updateOrAddDB(
           item,
           newPrice.price,
-          allIDs,
+          allItemData.map((x) => x.internal_id),
           newPrice.latestDate,
           newPriceAlgorithm?.price
         ).then((_) => {
