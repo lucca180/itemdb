@@ -96,6 +96,10 @@ export const autoPriceTrades2 = async (tradeRaw: (Trades & { items: TradeItems[]
 };
 
 const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
+  // we have a lot of "cool negg" trades that are not following our guidelines
+  // so let's just skip them for now
+  if (trade.wishlist.toLowerCase().includes('cool negg')) return null;
+
   const shouldSkip = await checkTradeEstPrice(trade);
   if (shouldSkip) return null;
 
