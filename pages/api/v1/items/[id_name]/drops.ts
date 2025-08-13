@@ -409,7 +409,7 @@ export const getItemDrops = async (
 
   openableData.openings = confirmedDrops.size;
 
-  if (!openableData.openings) return null;
+  if (!Object.keys(openableData.drops).length) return null;
 
   return openableData;
 };
