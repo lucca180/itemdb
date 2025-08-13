@@ -491,7 +491,8 @@ const removePriceProcess = (dataList: RestockAuction) => {
 
 const shouldAddToPriceProcess = (item: ItemData) => {
   const price = item.price.value;
-  if (!price) return false;
+  if (!price) return true;
+
   const priceTime = new Date(item.price?.addedAt ?? 0);
   const timeDiff = differenceInCalendarDays(new Date(), priceTime);
 

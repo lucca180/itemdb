@@ -67,8 +67,7 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
     } else filtered = [];
   }
 
-  // if not enough data, try to use all data
-  if (!filtered.length) filtered = uniqueByOwner(priceProcessList);
+  if (!filtered.length) return [];
 
   const allPrices: number[] = [];
   filtered.forEach((x, i) => {
