@@ -39,8 +39,8 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
   const EVENT_MODE = forceMode || process.env.EVENT_MODE === 'true';
 
   const daysThreshold: { [days: number]: number } = {
-    0: EVENT_MODE ? 10 : 18,
-    3: EVENT_MODE ? 5 : 15,
+    0: EVENT_MODE ? 10 : 15,
+    3: EVENT_MODE ? 5 : 10,
     7: EVENT_MODE ? 5 : 10,
     15: 5,
     30: 3,
@@ -61,6 +61,11 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
     filtered = uniqueByOwner(filtered);
 
     if (filtered.length >= threshold) {
+      // adding usershop data as well
+      filtered = priceProcessList.filter(
+        (x) => differenceInCalendarDays(Date.now(), x.addedAt) <= parseInt(days, 10)
+      );
+
       break;
     } else if (filtered.length === priceProcessList.length) {
       return [];
@@ -79,6 +84,7 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
 
   const noOutliers = new Set(removeOutliersCombined(allPrices));
   filtered = filtered.filter((x) => noOutliers.has(x.price.toNumber()));
+
   // if all remaining data is from usershops, skip
   if (filtered.length === filtered.filter((x) => x.type === 'usershop').length) return [];
 
@@ -101,9 +107,9 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
 
 const sourceWeight: { [key: string]: number } = {
   ssw: 1,
-  sw: 0.8,
-  auction: 0.7,
-  trade: 0.7,
+  sw: 0.85,
+  auction: 0.75,
+  trade: 0.75,
   usershop: 0.35,
 };
 
@@ -114,16 +120,16 @@ const getWeight = (
   alpha = 0.01,
   minWeight = 0.2
 ) => {
+  const isUsershop = price.type === 'usershop';
   const typeWeight = sourceWeight[price.type] || 0.35;
 
   const days = differenceInCalendarDays(Date.now(), price.addedAt);
   const daysWeight = days < priorityDays ? 1 : Math.max(0, 1 / (1 + (days - priorityDays) * alpha));
 
   const stock = Math.min(price.stock, MAX_VALID_STOCK);
-  const stockWeight =
-    price.type === 'usershop' ? 1 : 1 + (0.35 * (stock - 1)) / (MAX_VALID_STOCK - 1);
+  const stockWeight = isUsershop ? 1 : 1 + (0.35 * (stock - 1)) / (MAX_VALID_STOCK - 1);
 
-  const indexWeight = index < 3 ? 1 + Math.exp(-(index + 2) * 0.5) : 1;
+  const indexWeight = index < 3 && !isUsershop ? 1 + Math.exp(-(index + 2) * 0.5) : 1;
 
   return Math.max(typeWeight * daysWeight * stockWeight * indexWeight, minWeight);
 };

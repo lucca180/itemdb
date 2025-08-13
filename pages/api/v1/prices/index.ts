@@ -496,7 +496,7 @@ const shouldAddToPriceProcess = (item: ItemData) => {
   const priceTime = new Date(item.price?.addedAt ?? 0);
   const timeDiff = differenceInCalendarDays(new Date(), priceTime);
 
-  if (price > 700000 || timeDiff > 60) return true;
+  if (price >= 500000 || timeDiff >= 30) return true;
 
   return false;
 };
