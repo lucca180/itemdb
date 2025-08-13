@@ -48,33 +48,31 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
   };
 
   let filtered: PriceProcess2[] = [];
+  let passed = false;
 
-  // try to get recent data first
   for (const days in daysThreshold) {
     const threshold = daysThreshold[days];
-    filtered = priceProcessList.filter(
-      (x) =>
-        differenceInCalendarDays(Date.now(), x.addedAt) <= parseInt(days, 10) &&
-        x.type !== 'usershop'
+    let filteredRaw = priceProcessList.filter(
+      (x) => differenceInCalendarDays(Date.now(), x.addedAt) <= parseInt(days, 10)
     );
 
-    filtered = uniqueByOwner(filtered);
+    filtered.push(...filteredRaw);
+    filteredRaw = uniqueByOwner(filteredRaw);
 
-    if (filtered.length >= threshold) {
-      // adding usershop data as well
-      filtered = priceProcessList.filter(
-        (x) => differenceInCalendarDays(Date.now(), x.addedAt) <= parseInt(days, 10)
-      );
-
+    if (filteredRaw.length >= threshold) {
+      passed = true;
       break;
-    } else if (filtered.length === priceProcessList.length) {
+    } else if (filteredRaw.length === priceProcessList.length) {
       return [];
-    } else filtered = [];
+    }
   }
 
-  if (!filtered.length) return [];
+  if (!filtered.length || !passed) return [];
 
   const allPrices: number[] = [];
+
+  filtered = uniqueByOwner(filtered).sort((a, b) => a.price.toNumber() - b.price.toNumber());
+
   filtered.forEach((x, i) => {
     const stock = Math.min(x.stock, MAX_VALID_STOCK);
     if (i < 5) {
