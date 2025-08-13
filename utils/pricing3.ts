@@ -79,11 +79,10 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
 
   const noOutliers = new Set(removeOutliersCombined(allPrices));
   filtered = filtered.filter((x) => noOutliers.has(x.price.toNumber()));
-
   // if all remaining data is from usershops, skip
   if (filtered.length === filtered.filter((x) => x.type === 'usershop').length) return [];
 
-  const result = filtered.map((x) => [x, getWeight(x)]) as [PriceProcess2, number][];
+  const result = filtered.map((x, i) => [x, getWeight(x, i)]) as [PriceProcess2, number][];
 
   const meanWeight = mean(result.map(([, w]) => w));
   const lastDate = result.reduce(
@@ -92,7 +91,7 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
   );
 
   // data is low confidence, skip
-  if (meanWeight < 0.5 && differenceInCalendarDays(Date.now(), lastDate) <= 40) {
+  if (meanWeight < 0.5 && differenceInCalendarDays(Date.now(), lastDate) <= 30) {
     console.warn('processPrices3: low quality data', filtered[0]?.item_iid, meanWeight, filtered);
     return [];
   }
@@ -108,7 +107,13 @@ const sourceWeight: { [key: string]: number } = {
   usershop: 0.35,
 };
 
-const getWeight = (price: PriceProcess2, priorityDays = 10, alpha = 0.01, minWeight = 0.2) => {
+const getWeight = (
+  price: PriceProcess2,
+  index = 0,
+  priorityDays = 10,
+  alpha = 0.01,
+  minWeight = 0.2
+) => {
   const typeWeight = sourceWeight[price.type] || 0.35;
 
   const days = differenceInCalendarDays(Date.now(), price.addedAt);
@@ -118,7 +123,9 @@ const getWeight = (price: PriceProcess2, priorityDays = 10, alpha = 0.01, minWei
   const stockWeight =
     price.type === 'usershop' ? 1 : 1 + (0.35 * (stock - 1)) / (MAX_VALID_STOCK - 1);
 
-  return Math.max(typeWeight * daysWeight * stockWeight, minWeight);
+  const indexWeight = index < 3 ? 1 + Math.exp(-(index + 2) * 0.5) : 1;
+
+  return Math.max(typeWeight * daysWeight * stockWeight * indexWeight, minWeight);
 };
 
 // Helper functions
@@ -159,7 +166,6 @@ function removeOutliersCombined(data: number[]) {
   const iqrFiltered = sorted.filter((x) => x >= q1 - 1.5 * iqr && x <= q3 + 1.5 * iqr);
 
   if (iqrFiltered.length < 2) return iqrFiltered;
-
   const medianVal = median(iqrFiltered);
   const madVal = mad(iqrFiltered) * 1.4826; // Scale MAD to be consistent with standard deviation
 
@@ -167,19 +173,21 @@ function removeOutliersCombined(data: number[]) {
   const lowerMultiplier = 3.5;
   const upperMultiplier = 2;
 
-  return iqrFiltered.filter((x) => {
+  const madFiltered = iqrFiltered.filter((x) => {
     if (x < medianVal) {
       return medianVal - x <= lowerMultiplier * madVal;
     }
     return x - medianVal <= upperMultiplier * madVal;
   });
+
+  return madFiltered;
 }
 
 function weightedStdFilter(weightedPrices: [PriceProcess2, number][], kLower = 1, kUpper = 1) {
   const meanWeighted = weightedMean(weightedPrices);
 
   const varianceWeighted =
-    sum(weightedPrices.map(([, w]) => w * Math.pow(w - meanWeighted, 2))) /
+    sum(weightedPrices.map(([p, w]) => w * Math.pow(p.price.toNumber() - meanWeighted, 2))) /
     sum(weightedPrices.map(([, w]) => w));
 
   const stdWeighted = Math.sqrt(varianceWeighted);
