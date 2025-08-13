@@ -115,6 +115,8 @@ export const getItemDrops = async (
 
   if (drops.length === 0 || !item || item.canOpen === 'false') return null;
 
+  const isNoUnknown = item.flags?.includes('no-unknown');
+
   const prizePools: { [name: string]: PrizePoolData } = {};
   const dropsData: { [id: number]: ItemDrop } = {};
   const poolsData: { [id: string]: { [note: string]: number } } = {};
@@ -267,6 +269,8 @@ export const getItemDrops = async (
       if (hasGBCInName && moreCommonCat === 'unknown' && giftBoxes.includes(drop.item_iid))
         moreCommonCat = 'giftbox';
 
+      if (isNoUnknown && moreCommonCat === 'unknown') return;
+
       if (!prizePools[moreCommonCat])
         prizePools[moreCommonCat] = {
           name: moreCommonCat,
@@ -378,7 +382,7 @@ export const getItemDrops = async (
     .filter((a) => manualItems.includes(a.item_iid) || a.dropRate >= (isNC ? 1 : 2))
     .map((drop) => {
       const pool = prizePools[drop.pool ?? 'unknown'];
-
+      if (!pool) return;
       const itemDropCount =
         pool.totalDrops -
         Object.values(dropsData)
@@ -404,6 +408,9 @@ export const getItemDrops = async (
     });
 
   openableData.openings = confirmedDrops.size;
+
+  if (!openableData.openings) return null;
+
   return openableData;
 };
 

@@ -260,7 +260,7 @@ const DropText = ({ pool, itemOpenable, isFirst }: DropTextProps) => {
             max: pool.maxDrop,
             type: pool.isLE ? 'le' : pool.name,
             isGram: isGram,
-            chance: pool.openings ? ((pool.openings / itemOpenable.openings) * 100).toFixed(2) : 0,
+            chance: pool.openings ? getChance(pool.openings, itemOpenable.openings) : 0,
           })}
         </>
       );
@@ -273,7 +273,7 @@ const DropText = ({ pool, itemOpenable, isFirst }: DropTextProps) => {
           min: pool.minDrop || pool.maxDrop,
           type: pool.isLE ? 'le' : pool.name,
           isGram: isGram,
-          chance: pool.openings ? ((pool.openings / itemOpenable.openings) * 100).toFixed(2) : 0,
+          chance: pool.openings ? getChance(pool.openings, itemOpenable.openings) : 0,
         })}
       </>
     );
@@ -399,4 +399,12 @@ const HelpNeeded = () => {
       </HStack>
     </Flex>
   );
+};
+
+const getChance = (openings: number, totalOpenings: number): string => {
+  if (totalOpenings === 0) return '0';
+  const chance = ((openings / totalOpenings) * 100).toFixed(2);
+  if (chance === '100.00') return '0';
+
+  return chance;
 };
