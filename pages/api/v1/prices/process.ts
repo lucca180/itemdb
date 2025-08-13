@@ -15,6 +15,8 @@ const TARNUM_KEY = process.env.TARNUM_KEY;
 const EVENT_MODE = process.env.EVENT_MODE === 'true';
 const MIN_LAST_UPDATE = EVENT_MODE ? 3 : 7;
 
+const USE_NEW_ALGORITHM = process.env.USE_NEW_ALGORITHM === 'true';
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Methods', 'POST, GET');
@@ -256,8 +258,12 @@ export const doProcessPrices = async (
     const item = allItemData[0];
 
     try {
-      const newPrice = processPrices2(allItemData, forceMode);
-      const newPriceAlgorithm = processPrices3(allItemData, forceMode);
+      const newPrice = USE_NEW_ALGORITHM
+        ? processPrices3(allItemData, forceMode)
+        : processPrices2(allItemData, forceMode);
+
+      const newPriceAlgorithm = USE_NEW_ALGORITHM ? null : processPrices3(allItemData, forceMode);
+
       if (!newPrice) continue;
 
       const allIDs = allItemData
