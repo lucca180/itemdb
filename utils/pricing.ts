@@ -47,7 +47,7 @@ export const processPrices2 = (allItemData: PriceProcess2[], forceMode = false) 
 
   // skip if the deviation is too high
   if (out.length > 1 && out.length <= 3 && relativeSTD >= 0.75) {
-    console.error('processPrices2: Too high deviation', allItemData[0].item_iid, relativeSTD, out);
+    console.warn('processPrices2: Too high deviation', allItemData[0].item_iid, relativeSTD, out);
     return undefined;
   }
 

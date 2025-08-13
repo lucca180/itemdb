@@ -188,11 +188,11 @@ function weightedStdFilter(weightedPrices: [PriceProcess2, number][], kLower = 1
 
   // skip if the deviation is too high
   if (weightedPrices.length <= 3 && relativeSTD >= 0.75) {
-    console.error(
+    console.warn(
       'processPrices3: Too high deviation',
       weightedPrices[0][0].item_iid,
       relativeSTD,
-      weightedPrices
+      weightedPrices.map(([p]) => p.price.toNumber())
     );
     return undefined;
   }
