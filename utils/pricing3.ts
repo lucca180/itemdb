@@ -16,7 +16,7 @@ export const processPrices3 = (allItemData: PriceProcess2[], forceMode = false) 
   const usedIds = new Set<number>(weightedVals.map(([x]) => x.internal_id));
 
   const filteredPrices = weightedStdFilter(weightedVals, 1.6, 0.75)?.slice(0, 5);
-  if (!filteredPrices) return undefined;
+  if (!filteredPrices || !filteredPrices.length) return undefined;
 
   const latestDate = filteredPrices.reduce(
     (latest, [x]) => (x.addedAt > latest ? x.addedAt : latest),
@@ -184,6 +184,7 @@ function removeOutliersCombined(data: number[]) {
 }
 
 function weightedStdFilter(weightedPrices: [PriceProcess2, number][], kLower = 1, kUpper = 1) {
+  if (!weightedPrices || !weightedPrices.length) return undefined;
   const meanWeighted = weightedMean(weightedPrices);
 
   const varianceWeighted =
