@@ -84,6 +84,7 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
       allPrices.push(...Array(stock).fill(x.price.toNumber()));
     } else allPrices.push(x.price.toNumber());
   });
+
   const noOutliers = new Set(removeOutliersCombined(allPrices));
   filtered = filtered.filter((x) => noOutliers.has(x.price.toNumber()));
 
@@ -93,6 +94,8 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
   if (filtered.length === filtered.filter((x) => x.type === 'usershop').length) return [];
 
   const result = filtered.map((x, i) => [x, getWeight(x, i)]) as [PriceProcess2, number][];
+
+  // console.log(result);
 
   const meanWeight = mean(result.map(([, w]) => w));
   const lastDate = result.reduce(
@@ -178,6 +181,8 @@ function removeOutliersCombined(data: number[]) {
   if (iqrFiltered.length < 2) return iqrFiltered;
   const medianVal = median(iqrFiltered);
   const madVal = mad(iqrFiltered) * 1.4826; // Scale MAD to be consistent with standard deviation
+
+  if (madVal === 0) return iqrFiltered;
 
   // less punitive for lower values, more punitive for higher values
   const lowerMultiplier = 3.5;
