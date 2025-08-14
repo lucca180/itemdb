@@ -39,8 +39,8 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
   const EVENT_MODE = forceMode || process.env.EVENT_MODE === 'true';
 
   const daysThreshold: { [days: number]: number } = {
-    0: EVENT_MODE ? 10 : 15,
-    3: EVENT_MODE ? 5 : 10,
+    0: EVENT_MODE ? 10 : 18,
+    3: EVENT_MODE ? 5 : 15,
     7: EVENT_MODE ? 5 : 10,
     15: 5,
     30: 3,
@@ -210,7 +210,7 @@ function weightedStdFilter(weightedPrices: [PriceProcess2, number][], kLower = 1
   const relativeSTD = stdWeighted / meanWeighted;
 
   // skip if the deviation is too high
-  if (weightedPrices.length <= 3 && relativeSTD >= 0.75) {
+  if (weightedPrices.length <= 5 && relativeSTD >= 0.75) {
     console.warn(
       'processPrices3: Too high deviation',
       weightedPrices[0][0].item_iid,
