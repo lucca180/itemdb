@@ -85,6 +85,7 @@ export const TVWHomeCard = ({ children }: { children: React.ReactNode }) => {
       viewAllLink="/hub/the-void-within"
       title={'The Void Within'}
       isSmall
+      utm_content="tvw-lists"
       sx={{
         position: 'relative',
         isolation: 'isolate',

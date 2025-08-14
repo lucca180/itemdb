@@ -34,6 +34,7 @@ export const CreateLinkedListButton = (props: CreateLinkedListButtonProps) => {
         textAlign={'center'}
         colorScheme="orange"
         onClick={onOpen}
+        data-umami-event="dynamic-list-create"
       >
         <Box display="inline" mr={[0, '5px']}>
           <Image src={DynamicIcon} alt="lightning bolt" width={12} />

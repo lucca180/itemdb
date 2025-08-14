@@ -42,6 +42,7 @@ export const CreateDynamicListButton = (props: CreateDynamicListButtonProps) => 
           onClick={onOpen}
           isLoading={isLoading}
           mt={removeMargin ? undefined : 3}
+          data-umami-event="dynamic-list-create"
         >
           {t('General.create')}{' '}
           <Image src={DynamicIcon} alt="lightning bolt" width={12} style={{ margin: '0 5px' }} />{' '}
@@ -59,6 +60,7 @@ export const CreateDynamicListButton = (props: CreateDynamicListButtonProps) => 
           h={10}
           minW={10}
           // mt={3}
+          data-umami-event="dynamic-list-create"
         >
           <Image src={DynamicIcon} alt="lightning bolt" width={12} />
         </Button>
