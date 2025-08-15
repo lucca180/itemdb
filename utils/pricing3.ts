@@ -6,9 +6,8 @@ const MAX_VALID_STOCK = 3; // max stock to consider for price calculation
 
 export const processPrices3 = (allItemData: PriceProcess2[], forceMode = false) => {
   // get only the most recent data available that fits the criteria
-  const sorted = [...allItemData]
-    .sort((a, b) => a.price.toNumber() - b.price.toNumber())
-    .slice(0, 40);
+  const sorted = [...allItemData].sort((a, b) => a.price.toNumber() - b.price.toNumber());
+
   const weightedVals = filterMostRecent(sorted, forceMode);
 
   if (weightedVals.length === 0) return undefined;
@@ -54,15 +53,18 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
 
   for (const days in daysThreshold) {
     const threshold = daysThreshold[days];
+    const currentDay = parseInt(days, 10);
     let filteredRaw = priceProcessList.filter(
       (x) =>
-        differenceInCalendarDays(Date.now(), x.addedAt) <= parseInt(days, 10) &&
+        differenceInCalendarDays(Date.now(), x.addedAt) <= currentDay &&
         differenceInCalendarDays(Date.now(), x.addedAt) >= prevDay
     );
 
     filtered.push(...filteredRaw);
     filteredRaw = uniqueByOwner(filteredRaw);
-    prevDay = parseInt(days, 10);
+    prevDay = currentDay;
+
+    // console.log(currentDay, threshold, filteredRaw.length);
 
     if (filteredRaw.length >= threshold) {
       passed = true;
@@ -74,7 +76,7 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
 
   if (!filtered.length || !passed) return [];
 
-  const allPrices: number[] = [];
+  let allPrices: number[] = [];
 
   filtered = uniqueByOwner(filtered).sort((a, b) => a.price.toNumber() - b.price.toNumber());
 
@@ -84,6 +86,8 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
       allPrices.push(...Array(stock).fill(x.price.toNumber()));
     } else allPrices.push(x.price.toNumber());
   });
+
+  allPrices = allPrices.slice(0, 50);
 
   const noOutliers = new Set(removeOutliersCombined(allPrices));
   filtered = filtered.filter((x) => noOutliers.has(x.price.toNumber()));
