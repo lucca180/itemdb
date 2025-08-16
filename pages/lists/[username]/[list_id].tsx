@@ -768,7 +768,9 @@ const ListPage = (props: ListPageProps) => {
                 ids={itemInfoIds
                   .filter((a) => itemInfo[a].isHighlight)
                   .sort((a, b) =>
-                    items[itemInfo[a].item_iid].name.localeCompare(items[itemInfo[b].item_iid].name)
+                    items[itemInfo[a].item_iid]?.name?.localeCompare(
+                      items[itemInfo[b].item_iid]?.name ?? ''
+                    )
                   )}
                 list={list}
                 itemInfo={itemInfo}
