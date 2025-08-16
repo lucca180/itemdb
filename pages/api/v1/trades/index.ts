@@ -216,6 +216,8 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
   return res.status(200).json({ success: true, message: false });
 };
 
+const MAX_SUPPORTED_NUMBER = 99999999999;
+
 export const processTradePrice = async (
   trade: TradeData | (Trades & { items: TradeItems[] }),
   req?: NextApiRequest
@@ -240,7 +242,7 @@ export const processTradePrice = async (
   // update: (its getting worse and worse)
   // update 2: god help us all
   const updateItems = trade.items
-    .filter((x) => x.price && Number(x.price) > 0)
+    .filter((x) => x.price && Number(x.price) > 0 && Number(x.price) < MAX_SUPPORTED_NUMBER)
     .map((item) => {
       if (
         isUpdate &&
