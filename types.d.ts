@@ -67,7 +67,6 @@ export type ItemPriceData = {
   addedAt: string | null;
   value: number | null;
   inflated: boolean;
-  newValue: number | null;
 };
 
 export type OwlsPriceData = {
@@ -101,7 +100,6 @@ export type PriceData = {
   value: number;
   addedAt: string;
   inflated: boolean;
-  newPrice: number | null;
   context?: string | null;
 };
 

@@ -562,7 +562,6 @@ const getItemWithPricing = (
   return {
     ...item,
     price: {
-      newValue: null,
       value: price,
       addedAt: price ? new Date(timestamp).toJSON() : null,
       inflated: false,

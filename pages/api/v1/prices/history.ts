@@ -58,7 +58,6 @@ export const getManyItemsPriceHistory = async ({
       value: price.price.toNumber(),
       item_iid: price.item_iid,
       addedAt: price.addedAt.toJSON(),
-      newValue: price.newPrice?.toNumber() || null,
       inflated: !!price.noInflation_id,
     });
   });
