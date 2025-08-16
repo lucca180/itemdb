@@ -23,11 +23,20 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
       async (e: React.MouseEvent<HTMLElement>) => {
         if (href && !(e.ctrlKey || e.metaKey)) {
           e.preventDefault();
+
+          handleTracking();
+
           return await router.push(href);
         }
       },
       [router, href]
     );
+
+    const handleTracking = () => {
+      if (trackEvent) {
+        window.umami?.track(trackEvent, { label: trackEventLabel });
+      }
+    };
 
     if (prefetch)
       return (
@@ -36,23 +45,14 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
           className={className}
           target={target}
           href={href || '/'}
-          data-umami-event={trackEvent}
-          data-umami-event-label={trackEvent ? trackEventLabel : undefined}
+          onClick={handleTracking}
         >
           {children}
         </NextLink>
       );
 
     return (
-      <a
-        ref={ref}
-        className={className}
-        target={target}
-        href={href || '/'}
-        onClick={handleClick}
-        data-umami-event={trackEvent}
-        data-umami-event-label={trackEvent ? trackEventLabel : undefined}
-      >
+      <a ref={ref} className={className} target={target} href={href || '/'} onClick={handleClick}>
         {children}
       </a>
     );
