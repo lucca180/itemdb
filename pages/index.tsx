@@ -353,7 +353,7 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
       count: null,
     })) as Promise<LatestPricesRes>,
     getNCMallItemsData(18, true).catch(() => []),
-    getTrendingLists(3).catch(() => []),
+    getTrendingLists(20).catch(() => []),
     getNewItemsInfo(7).catch(() => null),
     getTVWLists(3).catch(() => null), // Fetch TVW lists
   ]);
@@ -367,7 +367,7 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
       latestNcMall,
       latestPrices,
       leavingNcMall,
-      trendingLists,
+      trendingLists: trendingLists.filter((x) => x.officialTag !== 'The Void Within').slice(0, 3),
       newItemCount,
       tvwLists,
       messages: await loadTranslation(context.locale, 'index'),
