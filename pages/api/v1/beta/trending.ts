@@ -99,6 +99,9 @@ export const getTrendingLists = async (limit: number) => {
       slug: {
         in: [...(isFeaturedActive ? FEATURED_SLUGS : []), ...Object.keys(popularListsStats)],
       },
+      official_tag: {
+        not: 'The Void Within',
+      },
       official: true,
     },
     include: { user: true, items: true },
