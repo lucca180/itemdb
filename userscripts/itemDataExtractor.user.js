@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.9.2
+// @version      1.9.3
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -132,8 +132,25 @@ const itemdb_script = function() {
   }
 
   function handleSDB() {
-    const trs = $('form table').eq(2).find('tr').clone().slice(1, -1);
-    trs.each(function (i) {
+    const allTrs = $('form table').eq(2).find('tr').clone();
+
+    // SDB page can have lots of other scripts changing stuff
+    // we're validating if the headers we care about are still there
+    const validateSDB = ["Image", "Name", "Description", "Type"];
+    
+    let isValid = true;
+    allTrs.first().find('td').map(function (i) {
+      const text = $(this).text().trim();
+      if (validateSDB[i] && validateSDB[i].toLowerCase() !== text.toLowerCase()) {
+        isValid = false;
+      }
+    });
+
+    console.log('[itemdb]: Valid SDB headers?', isValid);
+    if (!isValid) return;
+    
+
+    allTrs.slice(1, -1).each(function (i) {
       const tds = $(this).find('td');
       const img = tds.first().find('img').first().attr('src');
 
