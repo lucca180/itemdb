@@ -19,7 +19,6 @@ import {
   AlertIcon,
   AlertTitle,
   CloseButton,
-  useBoolean,
   useToast,
 } from '@chakra-ui/react';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -38,7 +37,6 @@ import { AdminEditPriceModalProps } from '../Modal/AdminEditPriceModal';
 import { useAuth } from '../../utils/auth';
 import useSWRImmutable from 'swr/immutable';
 import useSWR from 'swr';
-import { MdLabelOutline, MdLabel } from 'react-icons/md';
 import { LuAtom } from 'react-icons/lu';
 
 import axios, { AxiosRequestConfig } from 'axios';
@@ -99,7 +97,6 @@ const ItemPriceCard = (props: Props) => {
   const [selectedPrice, setSelectedPrice] = useState<PriceData | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [seenHistory, setSeenHistory] = useState<string | null>(null);
-  const [showLabel, { toggle: toggleLabel }] = useBoolean(true);
 
   const rgbColor = item.color.rgb;
   const { data: priceStatus, isLoading: isPriceStatusLoading } = useSWRImmutable<PricingInfo>(
@@ -365,13 +362,7 @@ const ItemPriceCard = (props: Props) => {
                         mr={2}
                       />
                     )}
-                    <IconButton
-                      onClick={toggleLabel}
-                      size="sm"
-                      aria-label="Table"
-                      icon={!showLabel ? <MdLabelOutline /> : <MdLabel />}
-                      mr={2}
-                    />
+
                     {displayState === 'table' && (
                       <IconButton
                         onClick={() => setDisplay('chart')}
@@ -390,17 +381,12 @@ const ItemPriceCard = (props: Props) => {
                     )}
                   </HStack>
                   {displayState === 'chart' && (
-                    <ChartComponent
-                      showMarkerLabel={showLabel}
-                      lists={props.lists}
-                      color={item.color}
-                      data={prices}
-                    />
+                    <ChartComponent lists={props.lists} color={item.color} data={prices} />
                   )}
                   {displayState === 'table' && (
                     <PriceTable
+                      item={item}
                       color={item.color.hex}
-                      showMarkerLabel={showLabel}
                       lists={props.lists}
                       data={prices}
                       isAdmin={isAdmin}

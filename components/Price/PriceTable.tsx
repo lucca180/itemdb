@@ -10,15 +10,14 @@ import {
   Icon,
   Link,
   Box,
-  useBoolean,
+  Badge,
 } from '@chakra-ui/react';
 import React, { useMemo } from 'react';
-import { PriceData, UserList } from '../../types';
+import { ItemData, PriceData, UserList } from '../../types';
 import { MinusIcon } from '@chakra-ui/icons';
 import { useFormatter, useTranslations } from 'next-intl';
-import { FiChevronDown, FiChevronRight, FiEdit } from 'react-icons/fi';
+import { BiEditAlt } from 'react-icons/bi';
 import { FaCaretDown, FaCaretUp } from 'react-icons/fa';
-import { MdLabel } from 'react-icons/md';
 import NextLink from 'next/link';
 import Color from 'color';
 import { isSameDay } from 'date-fns';
@@ -36,21 +35,22 @@ type PriceOrMarker = Partial<PriceData> & {
 };
 
 type Props = {
-  showMarkerLabel?: boolean;
   data: PriceData[];
   color: string;
   lists?: UserList[];
   isAdmin?: boolean;
   onEdit?: (price: PriceData) => void;
+  item: ItemData;
 };
 
 const PriceTable = (props: Props) => {
-  const { lists, data, isAdmin, onEdit } = props;
+  const { lists, data, isAdmin, onEdit, item } = props;
 
   const linkColor = Color(props.color).alpha(0.8).lightness(70).hexa();
 
   const sortedData: PriceOrMarker[] = useMemo(() => {
     const sorted: PriceOrMarker[] = [...data];
+    const itemAdded = new Date(item.firstSeen ?? 0);
 
     lists?.map((list) => {
       if (!list.seriesType) return;
@@ -66,6 +66,10 @@ const PriceTable = (props: Props) => {
         markerType = 'available-at';
 
         if (list.seriesEnd) {
+          const endDate = list.itemInfo?.[0].seriesEnd || list.seriesEnd;
+
+          if (new Date(endDate) < itemAdded) return;
+
           sorted.push({
             marker: true,
             title: list.name,
@@ -76,6 +80,8 @@ const PriceTable = (props: Props) => {
           });
         }
       }
+
+      date = dateMax(itemAdded, new Date(date)).toJSON();
 
       sorted.push({
         marker: true,
@@ -118,7 +124,6 @@ const PriceTable = (props: Props) => {
               isAdmin={isAdmin}
               onEdit={onEdit}
               lists={lists}
-              showMarkerLabel={props.showMarkerLabel}
             />
           ))}
         </Tbody>
@@ -130,7 +135,7 @@ const PriceTable = (props: Props) => {
 export default PriceTable;
 
 const PriceItem = (
-  props: Omit<Props, 'data' | 'color'> & {
+  props: Omit<Props, 'data' | 'color' | 'item'> & {
     data: PriceOrMarker[];
     price: PriceOrMarker;
     index: number;
@@ -139,7 +144,6 @@ const PriceItem = (
   const { price, data: sortedData, index, isAdmin, onEdit } = props;
   const format = useFormatter();
   const t = useTranslations();
-  const [showContext, { toggle }] = useBoolean(true);
 
   const bgColor = index % 2 === 0 ? 'gray.700' : 'transparent';
 
@@ -155,32 +159,31 @@ const PriceItem = (
   }, [sortedData, index]);
 
   const isMarker = price.marker;
-  if (isMarker && !props.showMarkerLabel) return null;
 
   if (isMarker)
     return (
       <Tr key={price.addedAt} h={42} bg={bgColor}>
-        <Td colSpan={1}>
-          <Flex alignItems={'center'} gap={1}>
-            <Icon as={MdLabel} color={price.color} />
-            <Text>
+        <Td colSpan={isAdmin ? 4 : 3} border={0}>
+          <Flex flexFlow={'column'} alignItems={'center'} gap={2}>
+            <Badge>
               <MarkerText markerType={price.markerType} />
+            </Badge>
+            <Link
+              as={NextLink}
+              href={`/lists/official/${price.slug}`}
+              sx={{ color: price.color + ' !important' }}
+            >
+              {price.title}
+            </Link>
+            <Text fontSize={'xs'}>
+              {format.dateTime(new Date(price.addedAt!), {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
             </Text>
           </Flex>
         </Td>
-        <Td px={1} textAlign={'center'} whiteSpace={'normal'}>
-          <Link as={NextLink} href={`/lists/official/${price.slug}`} color={price.color}>
-            {price.title}
-          </Link>
-        </Td>
-        <Td px={1}>
-          {format.dateTime(new Date(price.addedAt!), {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
-        </Td>
-        {isAdmin && <Td px={1}></Td>}
       </Tr>
     );
 
@@ -189,17 +192,6 @@ const PriceItem = (
       <Tr key={price.addedAt} bg={bgColor} border={0}>
         <Td>
           <Flex alignItems={'center'}>
-            {!!price.context && (
-              <IconButton
-                aria-label="Show price context"
-                size="xs"
-                variant={'ghost'}
-                onClick={toggle}
-                icon={!showContext ? <FiChevronRight /> : <FiChevronDown />}
-                ml={-3}
-                mr={1}
-              />
-            )}
             <Flex flexFlow={'column'}>
               {price.inflated && (
                 <Text fontWeight="bold" color="red.400">
@@ -254,12 +246,12 @@ const PriceItem = (
               onClick={() => onEdit?.(price as PriceData)}
               size="xs"
               aria-label="Edit"
-              icon={<FiEdit />}
+              icon={<BiEditAlt />}
             />
           </Td>
         )}
       </Tr>
-      {showContext && !!price.context && (
+      {!!price.context && (
         <Tr bg={bgColor} border={0}>
           <Td colSpan={4}>
             <Box
@@ -297,4 +289,8 @@ const MarkerText = (props: { markerType?: 'added-to' | 'available-at' | 'unavail
     default:
       return '';
   }
+};
+
+const dateMax = (...dates: Date[]) => {
+  return dates.reduce((max, date) => (date > max ? date : max), new Date(0));
 };

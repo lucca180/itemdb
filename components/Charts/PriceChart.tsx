@@ -11,12 +11,11 @@ export type ChartComponentProps = {
   color: ItemData['color'] | ColorData;
   data: PriceData[];
   lists?: UserList[];
-  showMarkerLabel?: boolean;
 };
 
 const ChartComponent = (props: ChartComponentProps) => {
   const formatter = useFormatter();
-  const { data, color, lists, showMarkerLabel } = props;
+  const { data, color, lists } = props;
   const RBG = Color.rgb(color.rgb).round().array();
   const backgroundColor = 'transparent';
   const lineColor = `rgb(${RBG[0]}, ${RBG[1]}, ${RBG[2]})`;
@@ -98,7 +97,7 @@ const ChartComponent = (props: ChartComponentProps) => {
             newSeries,
             list.itemInfo?.[0].seriesEnd || list.seriesEnd.toString(),
             {
-              showLabel: !!showMarkerLabel,
+              showLabel: true,
               labelText: `[End] ${list.name}`,
               color: color.lightness(70).hex(),
               labelTextColor: Color(color.lightness(70).hex()).isDark() ? 'white' : 'black',
@@ -111,7 +110,7 @@ const ChartComponent = (props: ChartComponentProps) => {
       }
 
       const vertLine = new VertLine(chart, newSeries, date.toString(), {
-        showLabel: !!showMarkerLabel,
+        showLabel: true,
         labelText: list.name,
         color: color.lightness(70).hex(),
         labelTextColor: Color(color.lightness(70).hex()).isDark() ? 'white' : 'black',
@@ -128,7 +127,7 @@ const ChartComponent = (props: ChartComponentProps) => {
 
       chart.remove();
     };
-  }, [data, color, showMarkerLabel, lists]);
+  }, [data, color, lists]);
 
   return <Box flex="1" ref={chartContainerRef} />;
 };
