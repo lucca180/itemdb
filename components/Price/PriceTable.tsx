@@ -105,7 +105,7 @@ const PriceTable = (props: Props) => {
 
   return (
     <TableContainer
-      minH={{ base: 100, md: 200 }}
+      minH={{ base: 100 }}
       maxH={{ base: 200, md: 300 }}
       w="100%"
       borderRadius="sm"
@@ -145,7 +145,7 @@ const PriceItem = (
   const format = useFormatter();
   const t = useTranslations();
 
-  const bgColor = index % 2 === 0 ? 'gray.700' : 'transparent';
+  const bgColor = index % 2 === 0 ? 'blackAlpha.400' : 'transparent';
 
   const nextPrice = useMemo(() => {
     let nextIndex = index + 1;

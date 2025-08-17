@@ -20,6 +20,7 @@ import {
   AlertTitle,
   CloseButton,
   useToast,
+  Box,
 } from '@chakra-ui/react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ItemData, ItemLastSeen, PriceData, PricingInfo, UserList } from '../../types';
@@ -256,7 +257,7 @@ const ItemPriceCard = (props: Props) => {
             flexFlow={{ base: 'column', md: 'row' }}
             alignItems={{ base: 'inherit', md: 'center' }}
             justifyContent={{ base: 'flex-start', md: 'space-around' }}
-            gap={1}
+            gap={2}
           >
             <Flex flexFlow="column" alignItems={'center'} maxW={{ base: '100%', md: '200px' }}>
               {item.saleStatus && (
@@ -384,14 +385,16 @@ const ItemPriceCard = (props: Props) => {
                     <ChartComponent lists={props.lists} color={item.color} data={prices} />
                   )}
                   {displayState === 'table' && (
-                    <PriceTable
-                      item={item}
-                      color={item.color.hex}
-                      lists={props.lists}
-                      data={prices}
-                      isAdmin={isAdmin}
-                      onEdit={(data) => setSelectedPrice(data)}
-                    />
+                    <Box bg="blackAlpha.300" borderRadius={'md'} overflow={'hidden'}>
+                      <PriceTable
+                        item={item}
+                        color={item.color.hex}
+                        lists={props.lists}
+                        data={prices}
+                        isAdmin={isAdmin}
+                        onEdit={(data) => setSelectedPrice(data)}
+                      />
+                    </Box>
                   )}
                 </>
               )}
