@@ -1,5 +1,5 @@
 import { Center, Flex, Text } from '@chakra-ui/react';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ItemData, ItemRecipe } from '../../types';
 import CardBase from '../Card/CardBase';
 import Color from 'color';
@@ -16,39 +16,123 @@ const ItemRecipes = (props: Props) => {
   const t = useTranslations();
   const { item, recipes } = props;
   const color = Color(item.color.hex);
+
+  const recipeType = recipes[0].type;
+
+  const title = useMemo(() => {
+    if (recipeType === 'cookingpot') return t('ItemPage.cooking-pot-recipes');
+    if (recipeType === 'repair') return t('ItemPage.donnys-toy-repair-shop');
+  }, [recipeType]);
+
+  const repairDetails = useMemo(() => {
+    if (recipeType !== 'repair') return;
+
+    const details = {
+      broken: recipes[0].ingredients[0],
+      original: recipes[0].result,
+      itemType: item.internal_id === recipes[0].ingredients[0].internal_id ? 'broken' : 'original',
+    };
+
+    return details;
+  }, [recipeType, item]);
+
   return (
-    <CardBase title={t('ItemPage.cooking-pot-recipes')} color={item.color.rgb}>
+    <CardBase title={title} color={item.color.rgb}>
       <Flex flexFlow={'column'} gap={3}>
-        <Text textAlign={'center'} fontSize={'sm'} sx={{ a: { color: color.lightness(70).hex() } }}>
-          {t.rich('ItemPage.cooking-pot-text', {
-            Link: (children) => (
-              <IconLink href="http://www.neopets.com/island/cookingpot.phtml" isExternal>
-                {children}
-              </IconLink>
-            ),
-          })}
-        </Text>
-        {recipes.map((recipe) => (
-          <Center key={recipe.internal_id}>
-            <Center
-              bg="gray.700"
-              p={3}
-              gap={3}
-              alignItems={'stretch'}
-              borderRadius={'md'}
-              flexWrap={'wrap'}
+        {recipeType === 'cookingpot' && (
+          <>
+            <Text
+              textAlign={'center'}
+              fontSize={'sm'}
+              sx={{ a: { color: color.lightness(70).hex() } }}
             >
-              <ItemCard key={recipe.result.internal_id} item={recipe.result} small />
-              <Center>=</Center>
-              {recipe.ingredients.map((ingredient, i) => (
+              {t.rich('ItemPage.cooking-pot-text', {
+                Link: (children) => (
+                  <IconLink href="http://www.neopets.com/island/cookingpot.phtml" isExternal>
+                    {children}
+                  </IconLink>
+                ),
+              })}
+            </Text>
+            {recipes.map((recipe) => (
+              <Center key={recipe.internal_id}>
+                <Center
+                  bg="gray.700"
+                  p={3}
+                  gap={3}
+                  alignItems={'stretch'}
+                  borderRadius={'md'}
+                  flexWrap={'wrap'}
+                >
+                  <ItemCard key={recipe.result.internal_id} item={recipe.result} small />
+                  <Center>=</Center>
+                  {recipe.ingredients.map((ingredient, i) => (
+                    <>
+                      <ItemCard key={ingredient.internal_id} item={ingredient} small />{' '}
+                      {+i !== recipe.ingredients.length - 1 && <Center>+</Center>}
+                    </>
+                  ))}
+                </Center>
+              </Center>
+            ))}
+          </>
+        )}
+        {recipeType === 'repair' && repairDetails && (
+          <>
+            <Text
+              textAlign={'center'}
+              fontSize={'sm'}
+              sx={{ a: { color: color.lightness(70).hex() } }}
+            >
+              {repairDetails.itemType === 'broken' && (
                 <>
-                  <ItemCard key={ingredient.internal_id} item={ingredient} small />{' '}
-                  {+i !== recipe.ingredients.length - 1 && <Center>+</Center>}
+                  {t.rich('ItemPage.can-be-repaired', {
+                    Link: (children) => (
+                      <IconLink href="https://www.neopets.com/winter/brokentoys.phtml" isExternal>
+                        {children}
+                      </IconLink>
+                    ),
+                  })}
                 </>
-              ))}
-            </Center>
-          </Center>
-        ))}
+              )}
+              {repairDetails.itemType === 'original' && (
+                <>
+                  {t.rich('ItemPage.has-broken-version', {
+                    Link: (children) => (
+                      <IconLink href="https://www.neopets.com/winter/brokentoys.phtml" isExternal>
+                        {children}
+                      </IconLink>
+                    ),
+                  })}
+                </>
+              )}
+            </Text>
+            {recipes.map((recipe) => (
+              <Center key={recipe.internal_id}>
+                <Center
+                  bg="gray.700"
+                  p={3}
+                  gap={3}
+                  alignItems={'stretch'}
+                  borderRadius={'md'}
+                  flexWrap={'wrap'}
+                >
+                  <ItemCard
+                    key={repairDetails.broken.internal_id}
+                    item={repairDetails.broken}
+                    small
+                  />
+                  <Center>{'=>'}</Center>
+                  <ItemCard
+                    key={repairDetails.original.internal_id}
+                    item={repairDetails.original}
+                    small
+                  />
+                </Center>
+              </Center>
+            ))}
+          </>
+        )}
       </Flex>
     </CardBase>
   );

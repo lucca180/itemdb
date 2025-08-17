@@ -292,7 +292,10 @@
     "discounted-from-x-to-y": "Discount Price - {x} to {y}",
     "no-trade-help-text": "You cannot send this item to another user",
     "no-trade": "No Trade",
-    "report-error": "Report Error"
+    "report-error": "Report Error",
+    "can-be-repaired": "This item can be repaired at <Link>Donny's Repair Shop</Link>",
+    "has-broken-version": "This item has a broken version that can be repaired at <Link>Donny's Repair Shop</Link>",
+    "donnys-toy-repair-shop": "Donny's Toy Repair Shop"
   },
   "Button": {
     "feedback": "Feedback",
