@@ -14,7 +14,12 @@ const FeedbackButton = (props: FeedbackButtonProps) => {
     <>
       {isOpen && <FeedbackModal isOpen={isOpen} onClose={onClose} />}
       <Button variant="outline" size="sm" onClick={onOpen} {...props}>
-        <Icon as={FiSend} mr={1} /> {t('Button.feedback')}
+        {!props.children && (
+          <>
+            <Icon as={FiSend} mr={1} /> {t('Button.feedback')}
+          </>
+        )}
+        {props.children}
       </Button>
     </>
   );

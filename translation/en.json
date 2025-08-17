@@ -291,7 +291,8 @@
     "discounted-on-x": "Discounted on {x}",
     "discounted-from-x-to-y": "Discount Price - {x} to {y}",
     "no-trade-help-text": "You cannot send this item to another user",
-    "no-trade": "No Trade"
+    "no-trade": "No Trade",
+    "report-error": "Report Error"
   },
   "Button": {
     "feedback": "Feedback",

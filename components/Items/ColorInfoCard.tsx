@@ -67,6 +67,7 @@ const ColorInfoCard = (props: Props) => {
                   h="50px"
                   p={1}
                   bg={colors[key].hex}
+                  borderRadius="sm"
                   justifyContent="center"
                   alignItems="center"
                   flexFlow="column"

@@ -321,10 +321,14 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
           {colors && <ColorInfoCard key={getKey('color-info')} colors={colors} />}
           {/* <ItemTags toggleModal={() => setIsEditModalOpen(true)} item={item} tags={tags} /> */}
           <Flex justifyContent="center" gap={1}>
-            <FeedbackButton />
-            <Button variant="outline" size="sm" onClick={() => setIsEditModalOpen(true)}>
-              <Icon as={FiEdit3} mr={1} /> {t('Button.edit')}
-            </Button>
+            <FeedbackButton colorScheme="red" variant={'ghost'}>
+              {t('ItemPage.report-error')}
+            </FeedbackButton>
+            {user?.isAdmin && (
+              <Button variant="outline" size="sm" onClick={() => setIsEditModalOpen(true)}>
+                <Icon as={FiEdit3} mr={1} /> {t('Button.edit')}
+              </Button>
+            )}
           </Flex>
         </Flex>
         <Flex
