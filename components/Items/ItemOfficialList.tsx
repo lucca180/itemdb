@@ -1,4 +1,4 @@
-import { Flex, Link, Text } from '@chakra-ui/react';
+import { Badge, Flex, Link, Text } from '@chakra-ui/react';
 import React from 'react';
 import { ItemData, UserList } from '../../types';
 import CardBase from '../Card/CardBase';
@@ -49,6 +49,7 @@ const ItemOfficialLists = (props: Props) => {
             borderRadius={'md'}
             gap={1}
             boxShadow={'sm'}
+            alignItems={'center'}
           >
             <Flex mt="-20px" justifyContent={'center'}>
               <Flex
@@ -108,6 +109,7 @@ const ItemOfficialLists = (props: Props) => {
                 {(list.description || t('ItemPage.list-no-description')).split(/[\r\n]+/)[0]}
               </Markdown>
             </Text>
+            {list.itemInfo?.[0].isHighlight && <Badge>{t('ItemPage.exclusive')}</Badge>}
           </Flex>
         ))}
       </Flex>

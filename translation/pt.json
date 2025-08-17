@@ -296,7 +296,8 @@
     "report-error": "Reportar Erro",
     "can-be-repaired": "Este item pode ser reparado no <Link>Reparo de Brinquedos do Donny</Link>",
     "has-broken-version": "Este item tem uma versão quebrada que pode ser consertada no <Link>Reparo de Brinquedos do Donny</Link>",
-    "donnys-toy-repair-shop": "Reparo de Brinquedos do Donny"
+    "donnys-toy-repair-shop": "Reparo de Brinquedos do Donny",
+    "exclusive": "Exclusivo"
   },
   "Button": {
     "feedback": "Feedback",
