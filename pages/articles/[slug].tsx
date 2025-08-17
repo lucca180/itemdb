@@ -76,7 +76,7 @@ const ArticlePage = (props: ArticlePageProps) => {
           img: { my: 2 },
         }}
       >
-        <Flex flexFlow="column" gap={3} px={3} maxW={1000} fontSize={'md'}>
+        <Flex flexFlow="column" gap={3} px={3} maxW={'800px'} fontSize={'md'}>
           {parse(post.content, options)}
         </Flex>
       </Flex>
