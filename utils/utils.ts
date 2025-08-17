@@ -640,7 +640,7 @@ export const restockShopInfo: { [id: string]: ShopInfo } = {
   },
   '8': {
     name: 'Collectable Card Shop',
-    category: 'Collectables',
+    category: 'Collectibles',
     difficulty: 'Beginner',
     color: '#cc7f36',
     id: '8',
@@ -923,7 +923,7 @@ export const restockShopInfo: { [id: string]: ShopInfo } = {
   },
   '58': {
     name: 'Neopian Post Office',
-    category: 'Collectables',
+    category: 'Collectibles',
     difficulty: 'Advanced',
     color: '#eccf6e',
     id: '58',
@@ -979,7 +979,7 @@ export const restockShopInfo: { [id: string]: ShopInfo } = {
   },
   '68': {
     name: 'Collectable Coins',
-    category: 'Collectables',
+    category: 'Collectibles',
     difficulty: 'Advanced',
     color: '#d7c912',
     id: '68',
@@ -1105,7 +1105,7 @@ export const restockShopInfo: { [id: string]: ShopInfo } = {
   },
   '86': {
     name: 'Collectable Sea Shells',
-    category: 'Collectables',
+    category: 'Collectibles',
     difficulty: 'Advanced',
     color: '#2bcac9',
     id: '86',
