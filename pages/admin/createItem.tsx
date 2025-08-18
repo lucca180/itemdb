@@ -156,6 +156,7 @@ const CreateItem = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'itemdb-version': 'admin-panel',
         },
         body: JSON.stringify({
           lang: 'en',

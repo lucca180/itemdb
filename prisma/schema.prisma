@@ -136,6 +136,8 @@ model ItemProcess {
 
   processed Boolean @default(false)
 
+  meta String? @db.Text
+
   @@index([name, image_id])
   @@index([manual_check, processed])
 }

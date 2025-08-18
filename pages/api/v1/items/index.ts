@@ -6,6 +6,10 @@ import hash from 'object-hash';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 // import { checkHash } from '../../../../utils/hash';
 import { getManyItems } from './many';
+import { Prisma } from '@prisma/generated/client';
+import { allCategories } from '@utils/allCats';
+
+const TARNUM_KEY = process.env.TARNUM_KEY;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -30,6 +34,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
+  const tarnumkey = req.headers['tarnumkey'] as string | undefined;
   const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
   const items = data.items;
   const lang = data.lang;
@@ -39,6 +44,14 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   // return res.status(400).json({ error: 'Invalid hash' });
 
   if (lang !== 'en') return res.status(400).json({ error: 'Language not supported' });
+
+  const meta = req.headers['itemdb-version'];
+  if (!meta && tarnumkey !== TARNUM_KEY)
+    return res.status(500).json({ error: 'Internal Server Error' });
+
+  const requestMeta = {
+    itemdbVersion: meta || 'direct-api',
+  };
 
   const dataList = [];
   for (const item of items) {
@@ -66,7 +79,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     weight = isNaN(Number(weight)) ? undefined : Number(weight);
     itemId = isNaN(Number(itemId)) ? undefined : Number(itemId);
 
-    if (!name || !img) continue;
+    if (!name || !img || /[\d\,\.]+\WNP/gm.test(name)) continue;
 
     if (img) img = (img as string).replace(/^[^\/\/\s]*\/\//gim, 'https://');
     if (!img.includes('images.neopets.com/items/')) continue;
@@ -105,7 +118,9 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
     specialTypes = specialTypes?.length > 0 ? specialTypes?.toString() : undefined;
 
-    const x = {
+    if (category && !allCategories.includes(category.toLowerCase())) continue;
+
+    const x: Prisma.ItemProcessCreateManyInput = {
       item_id: itemId,
       name: name.trim(),
       description: description?.trim(),
@@ -124,10 +139,11 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       language: lang as string,
       ip_address: requestIp.getClientIp(req),
       hash: '',
+      meta: JSON.stringify(requestMeta),
     };
 
     x.hash = hash(x, {
-      excludeKeys: (key: string) => ['ip_address', 'hash'].includes(key),
+      excludeKeys: (key: string) => ['ip_address', 'hash', 'meta'].includes(key),
     });
 
     dataList.push(x);
