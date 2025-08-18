@@ -182,6 +182,39 @@ export const capsulesInfo: CapsuleInfo = {
       text: 'Essential Background',
     },
   },
+  69477: {
+    name: 'Closet Essentials II Mystery Capsule',
+    cat1: {
+      text: 'Essential Button Down Shirt',
+    },
+    cat2: {
+      text: 'Essential Turtleneck Top',
+    },
+    cat3: {
+      text: 'Essential Sweater Vest',
+    },
+    cat4: {
+      text: 'Essential Plaid Skirt',
+    },
+    cat5: {
+      text: 'Essential Glitter Contacts',
+    },
+    cat6: {
+      text: 'Essential Slip Dye Wig',
+    },
+    cat7: {
+      text: 'Essential Hair Accessories',
+    },
+    cat8: {
+      text: 'Essential Middle Part Wig',
+    },
+    cat9: {
+      text: 'Essential Mist',
+    },
+    cat10: {
+      text: 'Essential Aura',
+    },
+  },
 };
 
 export const capInfoIds = Object.keys(capsulesInfo).map((id) => parseInt(id, 10));
