@@ -395,7 +395,7 @@ const newHandleAuction = async (dataList: RestockAuction[]) => {
     })
   );
 
-  const filteredStr = ['30 min', 'closed'];
+  const filteredStr = ['< 30 min', 'closed'];
   const filteredAuctions = dataList.filter(
     (x) => x.price > 1000000 && filteredStr.some((y) => x.otherInfo?.toLowerCase().includes(y))
   );
