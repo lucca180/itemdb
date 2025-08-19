@@ -200,7 +200,7 @@ export const capsulesInfo: CapsuleInfo = {
       text: 'Essential Glitter Contacts',
     },
     cat6: {
-      text: 'Essential Slip Dye Wig',
+      text: 'Essential Split Dye Wig',
     },
     cat7: {
       text: 'Essential Hair Accessories',
