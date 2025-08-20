@@ -1188,11 +1188,11 @@
   },
   "Effects": {
     "effects-disease": "This item {random, select, true {can cause} other{causes}} <Disease></Disease> {species, select, true {to <Neopet></Neopet>} other {}}",
-    "effects-cure-disease": "This item {random, select, true {has a chance of cure} other{cures}} <Disease></Disease> {species, select, true {from your <Neopet></Neopet>} other {}}",
-    "effects-heal": "This item {random, select, true {has a chance of healing} other{will heal}} <StrVal></StrVal> {minVal, plural, =0{} other{<b>#HP</b>}} {maxVal, plural, =0{} other{and <b>up to <b>#HP</b></b>}} of your {species, select, true {<Neopet></Neopet>} other {pets health}}",
-    "effects-stats": "This item {random, select, true {has a chance of changing} other{will change}} your {species, select, true {<Neopet></Neopet>} other {pet's}} <Name></Name> by <StrVal></StrVal> {minVal, plural, =0{} other{<b>{minVal, number, ::+?} points</b>}} {maxVal, plural, =0{} other{and <b>up to {maxVal, number, ::+?} points</b>}}",
-    "effects-colorSpecies": "This item {random, select, true {has a chance of {isAll, select, true {turning} other {changing}}} other{will {isAll, select, true {turn} other {change}}}} your {species, select, true {<Neopet></Neopet>} other {pet's}} <TargetType></TargetType> to <Target1></Target1> <Target2></Target2>",
-    "effects-petpetColor": "This item {random, select, true {has a chance of changing} other{will change}} some petpets colors to <Target1></Target1>"
+    "effects-cure-disease": "This item {random, select, true {has a <b>chance</b> of cure} other{cures}} <Disease></Disease> {species, select, true {from your <Neopet></Neopet>} other {}}",
+    "effects-heal": "This item {random, select, true {has a <b>chance</b> of healing} other{will heal}} <StrVal></StrVal> {minVal, plural, =0{} other{<b>#HP</b>}} {maxVal, plural, =0{} other{and <b>up to <b>#HP</b></b>}} of your {species, select, true {<Neopet></Neopet>} other {pets health}}",
+    "effects-stats": "This item {random, select, true {has a <b>chance</b> of changing} other{will change}} your {species, select, true {<Neopet></Neopet>} other {pet's}} <Name></Name> by <StrVal></StrVal> {minVal, plural, =0{} other{<b>{minVal, number, ::+?} points</b>}} {maxVal, plural, =0{} other{and <b>up to {maxVal, number, ::+?} points</b>}}",
+    "effects-colorSpecies": "This item {random, select, true {has a <b>chance</b> of {isAll, select, true {turning} other {changing}}} other{will {isAll, select, true {turn} other {change}}}} your {species, select, true {<Neopet></Neopet>} other {pet's}} <TargetType></TargetType> to <Target1></Target1> <Target2></Target2>",
+    "effects-petpetColor": "This item {random, select, true {has a <b>chance</b> of changing} other{will change}} some petpets colors to <Target1></Target1>"
   },
   "DyeCard": {
     "dyeworks-x-variations": "This item have <b>{x} Dyeworks</b> variations",

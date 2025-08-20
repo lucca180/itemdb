@@ -1192,8 +1192,8 @@
     "effects-disease": "Esse item {random, select, true {tem a <b>chance</b> de causar} other{causa}} <Disease></Disease> {species, select, true {em <Neopet></Neopet>} other {}}",
     "effects-heal": "Esse item {random, select, true {tem a <b>chance</b> de curar} other{cura}} a vida do seu {species, select, true {<Neopet></Neopet>} other {pet}} {maxVal, plural, =0{} other{entre}} <StrVal></StrVal> {minVal, plural, =0{} other{em <b>#HP</b>}} {maxVal, plural, =0{} other{e <b>#HP</b>}}",
     "effects-stats": "Esse item {random, select, true {tem a <b>chance</b> de mudar} other{muda}} o valor de <Name></Name> do seu {species, select, true {<Neopet></Neopet>} other {pet}} {maxVal, plural, =0{em} other{entre}} <StrVal></StrVal> {minVal, plural, =0{} =1{<b>+1 ponto</b>} other{<b>{minVal, number, ::+?} pontos</b>}} {maxVal, plural, =0{} other{e <b> {maxVal, number, ::+?} pontos</b>}}",
-    "effects-petpetColor": "Esse item {random, select, true {tem a chance de trocar} other{troca}} a cor de alguns petpets para <Target1></Target1>",
-    "effects-colorSpecies": "Esse item {random, select, true {tem a chance de {isAll, select, true {transformar} other {trocar a <TargetType></TargetType> do}}} other{irá {isAll, select, true {transformar} other {trocar a <TargetType></TargetType> do}}}} seu {species, select, true {<Neopet></Neopet>} other {pet}} {isAll, select, true {em um} other {para}} <Target1></Target1> <Target2></Target2>"
+    "effects-petpetColor": "Esse item {random, select, true {tem a <b>chance</b> de trocar} other{troca}} a cor de alguns petpets para <Target1></Target1>",
+    "effects-colorSpecies": "Esse item {random, select, true {tem a <b>chance</b> de {isAll, select, true {transformar} other {trocar a <TargetType></TargetType> do}}} other{irá {isAll, select, true {transformar} other {trocar a <TargetType></TargetType> do}}}} seu {species, select, true {<Neopet></Neopet>} other {pet}} {isAll, select, true {em um} other {para}} <Target1></Target1> <Target2></Target2>"
   },
   "DyeCard": {
     "dyeworks-all-variants": "Todas as Variantes",
