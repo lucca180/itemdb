@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.9.4
+// @version      1.9.5
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -741,12 +741,10 @@ const itemdb_script = function() {
   // ------ prices ------ //
 
   function handleSWPrices() {
-    $(document).ajaxSuccess((_, xhr) => {
-      const response = xhr.responseText;
-      const $sw = $('<div>').html(response);
-      const itemName = $sw.find('.wizard-results-text h3').text();
-      const items = $sw.find('.wizard-results-grid-shop li').slice(1);
-      const minVal = $sw.find('input[name="rs_min_price"]').val();
+    $(document).ajaxSuccess(() => {
+      const itemName = $('.wizard-results-text h3').text();
+      const items = $('.wizard-results-grid-shop li').clone().slice(1);
+      const minVal = $('input[name="rs_min_price"]').val();
 
       if(minVal > 1) return;
 
@@ -756,7 +754,7 @@ const itemdb_script = function() {
         const value = $(this)
           .find('.wizard-results-price')
           .text()
-          .replace(/\D*/gm, '');
+          .replace(/(\,|(NP))/gm, '');
         const itemID = $(this)
           .find('a')
           .attr('href')
@@ -770,6 +768,7 @@ const itemdb_script = function() {
           value: parseInt(value),
           type: 'sw',
         };
+
         priceList.push(itemPriceInfo);
       });
 
@@ -778,20 +777,19 @@ const itemdb_script = function() {
   }
 
   function handleSSWPrices() {
-    $(document).ajaxSuccess((_, xhr) => {
-      const response = JSON.parse(xhr.responseText);
-      const $ssw = $('<div>').html(response.html);
+    $(document).ajaxSuccess(() => {
       const resultTrs = isBeta
-        ? $ssw.find('.ssw-results-grid li').slice(1)
-        : $ssw.find('#results_table tr').slice(1);
+        ? $('.ssw-results-grid li').slice(1)
+        : $('#ssw-tabs-2 #results_table tr').slice(1);
       if (resultTrs.length === 0) return;
 
-      const minVal = response.req.minp;
-      const maxVal = response.req.maxp;
-      
-      if(minVal > 1 || maxVal > 1) return;
+      const minVal = $(':input[name="min_price"]').val()
 
-      const itemName = response.req.item_name;
+      if(minVal > 1) return;
+
+      const itemName = $('#search_for')
+        .text()
+        .match(/'(.*?)'/gm)?.[1];
 
       if (isBeta) {
         resultTrs.each(function (i) {
@@ -810,7 +808,7 @@ const itemdb_script = function() {
 
           const itemPriceInfo = {
             item_id: itemID,
-            name: itemName,
+            name: itemName.slice(1, -1),
             owner: shopOwner.slice(0, 3).padEnd(6, '*'),
             stock: parseInt(stock),
             value: parseInt(price),
@@ -836,7 +834,7 @@ const itemdb_script = function() {
 
           const itemPriceInfo = {
             item_id: itemID,
-            name: itemName,
+            name: itemName.slice(1, -1),
             owner: shopOwner.slice(0, 3).padEnd(6, '*'),
             stock: parseInt(stock),
             value: parseInt(price),
