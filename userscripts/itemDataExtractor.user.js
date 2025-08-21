@@ -1390,13 +1390,7 @@ function genItemKey(item) {
 }
 
 // only runs the script if the page is fully loaded
-addEventListener("DOMContentLoaded", () => {
-  try{
-    itemdb_script();
-  }catch(e){
-    console.error('[itemdb] Fatal error:', e);
-  }
-});
+addEventListener("DOMContentLoaded", itemdb_script);
 
 // For some pages, we need to watch if we receive the item data from the neo server
 // We only watch requests that contains the data from items. Everything else is ignored.
