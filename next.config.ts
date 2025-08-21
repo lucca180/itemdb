@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
     localeDetection: false,
   },
   images: {
-    // domains: ['images.neopets.com', 'magnetismotimes.com'],
+    qualities: [100, 90],
     remotePatterns: [
       {
         protocol: 'https',
@@ -77,7 +77,6 @@ const nextConfig: NextConfig = {
       },
       {
         source: '/js/:slug*',
-        // locale: false,
         headers: [
           {
             key: 'Cache-Control',

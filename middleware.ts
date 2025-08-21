@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 import requestIp from 'request-ip';
 import { LRUCache } from 'lru-cache';
+import { checkRedis, getSession } from '@utils/redis';
 
 const API_SKIPS: { [method: string]: string[] } = {
   GET: ['api/auth', 'api/cache', 'api/redis'],
@@ -17,15 +18,15 @@ const VALID_LOCALES = ['en', 'pt'];
 
 const skipAPIMiddleware = process.env.SKIP_API_MIDDLEWARE === 'true';
 const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === 'true';
-const ITEMDB_URL = process.env.ITEMDB_SERVER;
 const isDev = process.env.NODE_ENV === 'development';
+
+export const config = {
+  matcher: ['/api/:path*', '/:path*'],
+  runtime: 'nodejs',
+};
+
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next();
-
-  const sst = request.headers.get('X-Nginx-Timing') || '';
-  if (sst) {
-    response.headers.set('Server-Timing', `nginx-timing;dur=${Number(sst) * 1000}`);
-  }
 
   if (request.nextUrl.pathname.startsWith('/_next') || PUBLIC_FILE.test(request.nextUrl.pathname)) {
     return response;
@@ -40,11 +41,12 @@ export async function middleware(request: NextRequest) {
 
     return apiMiddleware(request);
   }
+
   const startTime = Date.now();
   // handle session
   const sessionCookie = request.cookies.get('idb-session-id')?.value || '';
   if (!sessionCookie && !isDev) {
-    const newSession = await getSession(sessionCookie);
+    const newSession = (await getSession(sessionCookie)) as string;
     response.cookies.set({
       name: 'idb-session-id',
       value: newSession,
@@ -74,10 +76,6 @@ export async function middleware(request: NextRequest) {
 
   return redirectResponse;
 }
-
-export const config = {
-  matcher: ['/api/:path*', '/:path*'],
-};
 
 // ---------- API Middleware ---------- //
 
@@ -113,10 +111,6 @@ const apiMiddleware = async (request: NextRequest) => {
     try {
       const isValidSession = await getSession(sessionCookie.value, true);
       if (!!isValidSession) {
-        sessionCache.set(sessionCookie.value, true, {
-          ttl: 20 * 60 * 1000,
-        });
-
         updateServerTime('api-middleware', startTime, response);
         return response;
       }
@@ -140,48 +134,6 @@ const apiMiddleware = async (request: NextRequest) => {
 
   updateServerTime('api-middleware', startTime, response);
   return NextResponse.next();
-};
-
-const checkRedis = async (ip: string, pathname: string) => {
-  try {
-    const res = await fetch(`${ITEMDB_URL}/api/redis/checkapi`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Forwarded-For': ip,
-        'idb-ip-check': ip,
-      },
-      body: JSON.stringify({ pathname }),
-    });
-
-    if (res.status === 429) {
-      return true;
-    }
-
-    return false;
-  } catch (e) {
-    console.error('checkRedis error', e);
-    return false;
-  }
-};
-
-const getSession = async (sessionToken?: string, checkOnly = false) => {
-  try {
-    const res = await fetch(`${ITEMDB_URL}/api/redis/session?checkOnly=${checkOnly}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'idb-session-id': sessionToken || '',
-      },
-    });
-
-    const data = await res.json();
-
-    return data;
-  } catch (e) {
-    console.error('checkRedis error', e);
-    return false;
-  }
 };
 
 const updateServerTime = (label: string, startTime: number, response: NextResponse) => {

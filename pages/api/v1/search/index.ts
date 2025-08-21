@@ -13,7 +13,7 @@ import { Prisma } from '@prisma/generated/client';
 import qs from 'qs';
 import { parseFilters } from '../../../../utils/parseFilters';
 import requestIp from 'request-ip';
-import { redis_setItemCount } from '../../redis/checkapi';
+import { redis_setItemCount } from '@utils/redis';
 import { rawToItemData } from '../items/many';
 
 const ENV_FUZZY_SEARCH = process.env.HAS_FUZZY_SEARCH === 'true';

@@ -7,7 +7,7 @@ import { CheckAuth } from '../../../../../utils/googleCloud';
 import { differenceInCalendarDays } from 'date-fns';
 import { getSaleStats } from './saleStats';
 import requestIp from 'request-ip';
-import { redis_setItemCount } from '../../../redis/checkapi';
+import { redis_setItemCount } from '@utils/redis';
 import { revalidateItem } from './effects';
 import { ItemChangesLog } from '../process';
 import { rawToItemData } from '../many';

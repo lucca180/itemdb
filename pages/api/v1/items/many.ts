@@ -5,7 +5,7 @@ import { ItemData } from '../../../../types';
 import { Prisma } from '@prisma/generated/client';
 import qs from 'qs';
 import requestIp from 'request-ip';
-import { redis_setItemCount } from '../../redis/checkapi';
+import { redis_setItemCount } from '@utils/redis';
 
 const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
 const NC_VALUES_TYPE = process.env.NC_VALUES_TYPE;

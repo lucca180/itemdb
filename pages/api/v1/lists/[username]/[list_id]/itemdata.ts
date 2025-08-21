@@ -4,7 +4,7 @@ import { CheckAuth } from '../../../../../../utils/googleCloud';
 import prisma from '../../../../../../utils/prisma';
 import { getManyItems } from '../../../items/many';
 import requestIp from 'request-ip';
-import { redis_setItemCount } from '../../../../redis/checkapi';
+import { redis_setItemCount } from '@utils/redis';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
