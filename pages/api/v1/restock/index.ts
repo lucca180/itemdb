@@ -9,6 +9,14 @@ import { getManyItems } from '../items/many';
 import { UTCDate } from '@date-fns/utc';
 import { countBy, maxBy } from 'lodash';
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '2mb',
+    },
+  },
+};
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
   if (req.method === 'POST') return POST(req, res);
