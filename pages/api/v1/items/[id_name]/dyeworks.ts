@@ -26,7 +26,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
   const name = isNaN(internal_id) ? (id_name as string) : undefined;
 
   const item = await getItem(name ?? internal_id);
-  if (!item) return null;
+  if (!item) return res.status(404).json({ error: 'Item not found' });
 
   const result = await getDyeworksData(item);
 

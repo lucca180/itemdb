@@ -33,13 +33,18 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   });
 
   if (!album && !redirect) {
-    return res.status(404).json({ error: 'Album not found' });
+    res.status(404).json({ error: 'Album not found' });
+    return;
   }
 
-  if (!album) return res.redirect(301, '/lists/official');
+  if (!album) {
+    res.redirect(301, '/lists/official');
+    return;
+  }
 
   if (redirect) {
-    return res.redirect(301, `/lists/official/${album.internal_id}`);
+    res.redirect(301, `/lists/official/${album.internal_id}`);
+    return;
   }
 
   const stamps = await prisma.listItems.findMany({

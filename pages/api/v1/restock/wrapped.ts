@@ -14,7 +14,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (req.method === 'GET') return GET(req, res);
   if (req.method === 'PATCH') return PATCH(req, res);
 
-  if (req.method == 'OPTIONS') return res.status(200);
+  if (req.method == 'OPTIONS') return res.status(200).json({});
 
   return res.status(405).json({ error: 'Method not allowed' });
 }

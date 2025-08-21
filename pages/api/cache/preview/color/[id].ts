@@ -117,7 +117,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       Expires: 0,
     });
 
-    return res.end(buffer);
+    res.end(buffer);
+    return;
   }
 }
 

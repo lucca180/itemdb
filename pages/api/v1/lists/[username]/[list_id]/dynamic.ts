@@ -79,7 +79,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
   const { list_id } = req.query;
   await syncDynamicList(parseInt(list_id as string), true);
   res.send('ok');
-  return null;
+  return;
 };
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {

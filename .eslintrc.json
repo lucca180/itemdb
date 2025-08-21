@@ -20,5 +20,5 @@
       "caughtErrors": "none"
     }]
   },
-  "ignorePatterns": ["userscripts/*", "utils/views/*", "prisma/generated/*", "public/*"]
+  "ignorePatterns": ["userscripts/*", "utils/views/*", "prisma/generated/*", "public/*", "next-env.d.ts"]
 }

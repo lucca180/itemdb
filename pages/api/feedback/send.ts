@@ -52,7 +52,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       else voteMultiplier = getVoteMultiplier(user.xp);
 
       if (user.xp <= -300 && type !== 'feedback') {
-        return res.status(403);
+        return res.status(403).send('Forbidden');
       }
     }
   }

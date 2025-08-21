@@ -57,7 +57,7 @@
     "lodash": "^4.17.21",
     "lru-cache": "^11.0.1",
     "mailgen": "^2.0.29",
-    "next": "15.5.0",
+    "next": "15.5.1-canary.1",
     "next-intl": "^3.26.5",
     "next-seo": "^6.6.0",
     "next-sitemap": "^4.2.3",

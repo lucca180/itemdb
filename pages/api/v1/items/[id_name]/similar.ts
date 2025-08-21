@@ -14,7 +14,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   const item = await getItem(name ?? internal_id);
 
-  if (!item) return [];
+  if (!item) return res.status(404).json({ error: 'Item not found' });
 
   const similarItems = await getSimilarItems(item);
   return res.json(similarItems);

@@ -25,7 +25,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   try {
     const { user } = await CheckAuth(req);
     if (!user) throw new Error('User not found');
-    if (user.banned) return res.status(403);
+    if (user.banned) return res.status(403).send('Forbidden');
     user_id = user.id;
     const isAdmin = user.role === 'ADMIN';
 
