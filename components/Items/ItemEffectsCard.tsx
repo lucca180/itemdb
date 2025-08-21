@@ -198,6 +198,7 @@ export const EffectText = (props: EffectTextProps) => {
       {type === 'colorSpecies' && (
         <>
           {t.rich('Effects.effects-colorSpecies', {
+            b: (chunk) => <b>{chunk}</b>,
             isAll: !!speciesTarget && !!colorTarget,
             random: isChance,
             species: species && species.length > 0 ? 'true' : 'false',
@@ -238,6 +239,7 @@ export const EffectText = (props: EffectTextProps) => {
       {type === 'petpetColor' && (
         <>
           {t.rich('Effects.effects-petpetColor', {
+            b: (chunk) => <b>{chunk}</b>,
             random: isChance,
             Target1: () => (
               <>
