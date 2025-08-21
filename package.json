@@ -13,8 +13,8 @@
     "ts": "tsc --noEmit --incremental",
     "ts-check": "tsc",
     "start": "PORT=4000 next start",
-    "lint": "next lint",
-    "lint-fix": "next lint --fix",
+    "lint": "eslint .",
+    "lint-fix": "eslint --fix .",
     "prettier": "prettier --write .",
     "prepare": "husky install",
     "postbuild": "next-sitemap"
@@ -83,6 +83,7 @@
   "devDependencies": {
     "@commitlint/cli": "^19.6.1",
     "@commitlint/config-conventional": "^19.6.0",
+    "@eslint/eslintrc": "3",
     "@next/bundle-analyzer": "15.5.0",
     "@next/eslint-plugin-next": "15.5.0",
     "@swc-jotai/react-refresh": "^0.3.0",
