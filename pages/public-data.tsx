@@ -106,10 +106,10 @@ const rawExportData = [
     name: "itemdb's db dump",
     description:
       "A dump of itemdb's database, including items, colors and prices. Useful if you want to run your own clone of itemdb.",
-    date: '2025-06-15',
-    size: '90MB',
+    date: '2025-08-20',
+    size: '97.5MB',
     format: 'zip, sql',
-    link: 'https://cdn.itemdb.com.br/raw/itemdb-dump-2025-06-15.zip',
+    link: 'https://cdn.itemdb.com.br/raw/itemdb-dump-2025-08-20.zip',
   },
   {
     name: "itemdb's Item Data",
