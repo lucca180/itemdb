@@ -275,6 +275,7 @@ const ItemTrade = (props: ItemTradeProps) => {
             whiteSpace={'pre-line'}
             fontSize="sm"
             isExternal
+            tabIndex={-1}
           >
             {item.name}
           </Link>
