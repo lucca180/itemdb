@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 // next.config.js
 
-import { withSentryConfig } from '@sentry/nextjs';
+import { SentryBuildOptions, withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
@@ -141,9 +141,19 @@ const nextConfig: NextConfig = {
 //   enabled: false,
 // })
 
-const sentryWebpackPluginOptions = {
-  silent: true, // Suppresses all logs
+const sentryWebpackPluginOptions: SentryBuildOptions = {
+  org: 'lucca-4p',
+  project: 'itemdb',
   autoInstrumentMiddleware: false,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  sourcemaps: {
+    disable: false, // Enable source maps (default: false)
+    assets: ['**/*.js', '**/*.js.map'], // Specify which files to upload
+    ignore: ['**/node_modules/**'], // Files to exclude
+    deleteSourcemapsAfterUpload: false, // Security: delete after upload
+  },
+  disableLogger: true,
+  widenClientFileUpload: true,
 };
 
 export default withSentryConfig(nextConfig, sentryWebpackPluginOptions);
