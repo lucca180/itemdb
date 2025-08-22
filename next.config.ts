@@ -143,6 +143,7 @@ const nextConfig: NextConfig = {
 const sentryWebpackPluginOptions: SentryBuildOptions = {
   org: 'lucca-4p',
   project: 'itemdb',
+  silent: true,
   autoInstrumentMiddleware: false,
   authToken: process.env.SENTRY_AUTH_TOKEN,
   sourcemaps: {
