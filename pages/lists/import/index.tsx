@@ -193,7 +193,7 @@ const ImportItems = (props: ImportItemsProps) => {
     const itemsKeys =
       indexType !== 'name_image_id'
         ? Object.keys(items)
-        : Object.keys(items).map((key) => key.split(','));
+        : Object.keys(items).map((key) => key.split(/,(?=[^,]*$)/));
 
     const itemRes = await axios.post(`/api/v1/items/many`, {
       [indexType]: itemsKeys,
@@ -206,7 +206,7 @@ const ImportItems = (props: ImportItemsProps) => {
         let newKey = key;
 
         if (indexType === 'name_image_id') {
-          const params = key.split(',');
+          const params = key.split(/,(?=[^,]*$)/);
           newKey = `${encodeURI(params[0])}_${params[1]}`.toLowerCase();
         }
 
