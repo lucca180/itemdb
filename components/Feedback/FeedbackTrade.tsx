@@ -11,6 +11,7 @@ import {
   IconButton,
   Text,
   useDisclosure,
+  Link,
 } from '@chakra-ui/react';
 import { TradeData } from '../../types';
 import CardBase from '../Card/CardBase';
@@ -268,9 +269,15 @@ const ItemTrade = (props: ItemTradeProps) => {
           <Image src={item.image} width={80} height={80} alt={item.name} />
         </Box>
         <Flex flex={1} flexFlow="column" justifyContent="center" gap={1}>
-          <Text wordBreak={'break-word'} whiteSpace={'pre-line'} fontSize="sm">
+          <Link
+            href={`/item/${item.item_iid}`}
+            wordBreak={'break-word'}
+            whiteSpace={'pre-line'}
+            fontSize="sm"
+            isExternal
+          >
             {item.name}
-          </Text>
+          </Link>
           <FormControl>
             <HStack>
               <CustomNumberInput
