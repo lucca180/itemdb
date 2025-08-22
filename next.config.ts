@@ -128,7 +128,6 @@ const nextConfig: NextConfig = {
   transpilePackages: ['lightweight-charts', 'fancy-canvas'],
   compiler: {
     define: {
-      __SENTRY_DEBUG__: 'false',
       // __SENTRY_TRACING__: 'false',
       __RRWEB_EXCLUDE_IFRAME__: 'true',
       __RRWEB_EXCLUDE_SHADOW_DOM__: 'true',
@@ -148,9 +147,8 @@ const sentryWebpackPluginOptions: SentryBuildOptions = {
   authToken: process.env.SENTRY_AUTH_TOKEN,
   sourcemaps: {
     disable: false, // Enable source maps (default: false)
-    assets: ['**/*.js', '**/*.js.map'], // Specify which files to upload
-    ignore: ['**/node_modules/**'], // Files to exclude
-    deleteSourcemapsAfterUpload: false, // Security: delete after upload
+    ignore: ['**/node_modules/**'],
+    deleteSourcemapsAfterUpload: false,
   },
   disableLogger: true,
   widenClientFileUpload: true,
