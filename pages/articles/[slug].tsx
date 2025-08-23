@@ -50,14 +50,21 @@ const ArticlePage = (props: ArticlePageProps) => {
         }
         color={post.palette?.lightvibrant.hex ?? '#05B7E8'}
         breadcrumb={<ArticleBreadcrumb article={post} />}
+        isCenter
       >
-        <Heading size="lg" as="h1">
+        <Heading size="lg" as="h1" textAlign="center">
           {parse(post.title)}
         </Heading>
-        <Text size={{ base: 'sm', md: undefined }} as="h2">
+        <Text
+          size={{ base: 'sm', md: undefined }}
+          as="h2"
+          textAlign="center"
+          maxW={'900px'}
+          mx="auto"
+        >
           {post.excerpt}
         </Text>
-        <Text fontSize="xs" mt={1}>
+        <Text fontSize="xs" mt={1} textAlign="center">
           {t('Articles.posted-at-date', {
             date: formatter.dateTime(new Date(post.date), {
               year: 'numeric',
@@ -76,13 +83,20 @@ const ArticlePage = (props: ArticlePageProps) => {
           img: { my: 2 },
         }}
       >
-        <Flex flexFlow="column" gap={3} px={3} maxW={'800px'} fontSize={'md'}>
+        <Flex flexFlow="column" gap={3} px={3} maxW={'900px'} w="100%" fontSize={'md'} mx={'auto'}>
           {parse(post.content, options)}
         </Flex>
       </Flex>
       {recomendations.length > 0 && (
-        <>
-          <Heading size="md" as="h3" my={2} mt={16}>
+        <Flex
+          flexFlow={'column'}
+          justifyContent={'center'}
+          maxW={'900px'}
+          mx={'auto'}
+          px={3}
+          my={16}
+        >
+          <Heading size="md" as="h3" my={2}>
             {t('Articles.recommended-articles')}
           </Heading>
           <Flex gap={[2, 3]} overflow="auto" pb={3}>
@@ -90,7 +104,7 @@ const ArticlePage = (props: ArticlePageProps) => {
               <ArticleCard key={article.id} article={article} vertical />
             ))}
           </Flex>
-        </>
+        </Flex>
       )}
     </>
   );

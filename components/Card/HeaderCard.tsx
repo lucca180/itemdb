@@ -10,10 +10,11 @@ type Props = {
   children?: React.ReactNode;
   color?: string;
   breadcrumb?: React.ReactNode;
+  isCenter?: boolean;
 };
 
 const HeaderCard = (props: Props) => {
-  const { image, children, color: colorProps, breadcrumb } = props;
+  const { image, children, color: colorProps, breadcrumb, isCenter } = props;
   const color = Color(colorProps ?? '#4A5568');
   const rgb = color.rgb().round().array();
 
@@ -28,7 +29,13 @@ const HeaderCard = (props: Props) => {
         zIndex={-1}
       />
       {breadcrumb && <Box pt={2}>{breadcrumb}</Box>}
-      <Flex gap={{ base: 3, md: 6 }} pt={!!breadcrumb ? 4 : 6} alignItems="center">
+      <Flex
+        gap={!isCenter ? { base: 3, md: 6 } : { base: 2, md: 3 }}
+        pt={!!breadcrumb ? 4 : 6}
+        alignItems="center"
+        justifyContent={isCenter ? 'center' : 'flex-start'}
+        flexFlow={isCenter ? 'column' : 'row'}
+      >
         <Box
           position="relative"
           p={{ base: 1, md: 2 }}
