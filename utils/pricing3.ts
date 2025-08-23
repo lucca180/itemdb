@@ -5,8 +5,14 @@ import { median, quantileSorted, mad, sum, mean } from 'simple-statistics';
 const MAX_VALID_STOCK = 3; // max stock to consider for price calculation
 
 export const processPrices3 = (allItemData: PriceProcess2[], forceMode = false) => {
-  // get only the most recent data available that fits the criteria
-  const sorted = [...allItemData].sort((a, b) => a.price.toNumber() - b.price.toNumber());
+  // we're using ip_address field to add more info than we should
+  // (adding a new column to PriceProcess2 is pain)
+  const sorted = [...allItemData]
+    .sort((a, b) => a.price.toNumber() - b.price.toNumber())
+    .map((x) => {
+      if (x.ip_address?.includes('auctionSold')) x.type = 'auction-sold';
+      return x;
+    });
 
   const weightedVals = filterMostRecent(sorted, forceMode);
 
@@ -119,8 +125,9 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
 const sourceWeight: { [key: string]: number } = {
   ssw: 1,
   sw: 0.85,
-  auction: 0.75,
+  'auction-sold': 0.75,
   trade: 0.75,
+  auction: 0.7,
   usershop: 0.35,
 };
 

@@ -400,6 +400,11 @@ const newHandleAuction = async (dataList: RestockAuction[]) => {
     (x) => x.price > 1000000 && filteredStr.some((y) => x.otherInfo?.toLowerCase().includes(y))
   );
 
+  const isSold = (auction: RestockAuction) =>
+    !auction.otherInfo?.includes('nobody') ? ', auctionSold' : '';
+
+  // we're using ip_address field to add more info than we should
+  // (adding a new column to PriceProcess2 is pain)
   const upsertPriceProcess = filteredAuctions
     .map((auction) =>
       auction.addToPriceProcess
@@ -415,7 +420,7 @@ const newHandleAuction = async (dataList: RestockAuction[]) => {
               owner: auction.owner,
               stock: auction.stock,
               price: auction.price,
-              ip_address: auction.ip_address,
+              ip_address: auction.ip_address + isSold(auction),
               addedAt: auction.addedAt,
               processed: false,
               type: 'auction',
@@ -425,7 +430,8 @@ const newHandleAuction = async (dataList: RestockAuction[]) => {
             },
             update: {
               price: auction.price,
-              ip_address: auction.ip_address + ', auction update(' + new Date().getTime() + ')',
+              ip_address:
+                auction.ip_address + isSold(auction) + `, auctionUpdated(${new Date().getTime()})`,
               addedAt: new Date(),
             },
           })
