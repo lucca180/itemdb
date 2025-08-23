@@ -240,13 +240,13 @@ export const getPetpetData = async (item: ItemData): Promise<ItemPetpetData | nu
 
   // option 3: buy the cheapest and paint it
   if (cheapestP2 && canonicalPb) {
-    const price = getPriceSum([cheapestP2, canonicalPb, targetPb]);
+    const price = getPriceSum([cheapestP2, targetPb]);
     const cheapestPrice = getPriceSum(cheapestRoute);
 
-    allWays.push([cheapestP2, canonicalPb, targetPb]);
+    allWays.push([cheapestP2, targetPb]);
 
     if (price < cheapestPrice) {
-      cheapestRoute = [cheapestP2, canonicalPb, targetPb];
+      cheapestRoute = [cheapestP2, targetPb];
     }
   }
 
