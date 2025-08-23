@@ -189,7 +189,7 @@ export const getLebronItemData = async (name: string) => {
 };
 
 const getAuctionData = async (name: string, onlySold = false) => {
-  const auctionRaw = await prisma.restockAuctionHistory.findMany({
+  let auctionRaw = await prisma.restockAuctionHistory.findMany({
     where: {
       item: {
         name: name,
@@ -212,6 +212,14 @@ const getAuctionData = async (name: string, onlySold = false) => {
   const items = await getManyItems({
     id: auctionRaw.map((p) => p.item_iid.toString()),
   });
+
+  // only include < 30 min or closed auctions
+  if (onlySold) {
+    auctionRaw = auctionRaw.filter((p) => {
+      const otherInfo = p.otherInfo?.toLowerCase() || '';
+      return otherInfo.includes('< 30 min') || otherInfo.includes('closed');
+    });
+  }
 
   const uniqueOwners = new Set();
   let soldAuctions = 0;
