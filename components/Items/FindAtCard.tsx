@@ -1,4 +1,4 @@
-import { Box, Flex } from '@chakra-ui/react';
+import { Box, Flex, Link } from '@chakra-ui/react';
 import React from 'react';
 import Image from 'next/image';
 import { ItemData } from '../../types';
@@ -10,6 +10,7 @@ import TPIcon from '../../public/icons/tradingpost.png';
 import ClosetIcon from '../../public/icons/closet.svg';
 import NeosearchIcon from '../../public/icons/neosearch.svg';
 import { useTranslations } from 'next-intl';
+import MainLink from '@components/Utils/MainLink';
 
 type Props = {
   item: ItemData;
@@ -40,12 +41,26 @@ const FindAtCard = (props: Props) => {
         textAlign="center"
       >
         {item.findAt.shopWizard && (
-          <a href={item.findAt.shopWizard} target="_blank" rel="noopener">
+          <Link
+            as={MainLink}
+            href={item.findAt.shopWizard}
+            isExternal
+            trackEvent="find-at"
+            trackEventLabel="Shop Wizard"
+            rel="noopener"
+          >
             <Image src={SWIcon} alt="Shop Wizard" title="Shop Wizard" height={32} quality="100" />
-          </a>
+          </Link>
         )}
         {item.findAt.auction && (
-          <a href={item.findAt.auction} target="_blank" rel="noopener">
+          <Link
+            as={MainLink}
+            href={item.findAt.auction}
+            isExternal
+            trackEvent="find-at"
+            trackEventLabel="Auction House"
+            rel="noopener"
+          >
             <Image
               src={AuctionIcon}
               alt="Action House"
@@ -53,15 +68,29 @@ const FindAtCard = (props: Props) => {
               height={32}
               quality="100"
             />
-          </a>
+          </Link>
         )}
         {item.findAt.trading && (
-          <a href={item.findAt.trading} target="_blank" rel="noopener">
+          <Link
+            as={MainLink}
+            href={item.findAt.trading}
+            isExternal
+            trackEvent="find-at"
+            trackEventLabel="Trading Post"
+            rel="noopener"
+          >
             <Image src={TPIcon} alt="Trading Post" title="Trading Post" height={32} quality="100" />
-          </a>
+          </Link>
         )}
         {item.findAt.safetyDeposit && (
-          <a href={item.findAt.safetyDeposit} target="_blank" rel="noopener">
+          <Link
+            as={MainLink}
+            href={item.findAt.safetyDeposit}
+            isExternal
+            trackEvent="find-at"
+            trackEventLabel="Safety Deposit Box"
+            rel="noopener"
+          >
             <Image
               src={SDBIcon}
               alt="Safety Deposit Box"
@@ -69,15 +98,29 @@ const FindAtCard = (props: Props) => {
               height={32}
               quality="100"
             />
-          </a>
+          </Link>
         )}
         {item.findAt.closet && (
-          <a href={item.findAt.closet} target="_blank" rel="noopener">
+          <Link
+            as={MainLink}
+            href={item.findAt.closet}
+            isExternal
+            trackEvent="find-at"
+            trackEventLabel="Closet"
+            rel="noopener"
+          >
             <Image src={ClosetIcon} alt="Closet" title="Closet" height={32} quality="100" />
-          </a>
+          </Link>
         )}
         {item.findAt.restockShop && (
-          <a href={item.findAt.restockShop} target="_blank" rel="noopener">
+          <Link
+            as={MainLink}
+            href={item.findAt.restockShop}
+            isExternal
+            trackEvent="find-at"
+            trackEventLabel="Restock Shop"
+            rel="noopener"
+          >
             <Image
               src={ShopIcon}
               alt="Restock Shop"
@@ -85,10 +128,17 @@ const FindAtCard = (props: Props) => {
               height={32}
               quality="100"
             />
-          </a>
+          </Link>
         )}
         {item.findAt.neosearch && (
-          <a href={item.findAt.neosearch} target="_blank" rel="noopener">
+          <Link
+            as={MainLink}
+            href={item.findAt.neosearch}
+            isExternal
+            trackEvent="find-at"
+            trackEventLabel="Neopets Search"
+            rel="noopener"
+          >
             <Image
               src={NeosearchIcon}
               alt="Neopets Search"
@@ -96,7 +146,7 @@ const FindAtCard = (props: Props) => {
               height={32}
               quality="100"
             />
-          </a>
+          </Link>
         )}
       </Flex>
     </Flex>

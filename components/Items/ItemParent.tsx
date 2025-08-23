@@ -42,7 +42,7 @@ const ItemParent = (props: Props) => {
           .sort((a, b) => (b.item_id ?? b.internal_id) - (a.item_id ?? a.internal_id))
           .slice(0, showMore ? parentData.length : 4)
           .map((item) => {
-            return <ItemCard key={item.internal_id} item={item} small />;
+            return <ItemCard key={item.internal_id} item={item} small utm_content="found-inside" />;
           })}
       </Flex>
       {parentItems.length > 4 && (

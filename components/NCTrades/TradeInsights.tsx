@@ -1,9 +1,9 @@
 import { Badge, Flex, HStack, Icon, Text, Link, Button } from '@chakra-ui/react';
 import { getNCMallDataDates, getNCMallLink, isMallDiscounted } from '@components/Items/NCMallCard';
+import MainLink from '@components/Utils/MainLink';
 import Tooltip from '@components/Utils/Tooltip';
 import { InsightsResponse, ItemData, NCMallData, UserList } from '@types';
 import { useFormatter, useTranslations } from 'next-intl';
-import NextLink from 'next/link';
 import { useMemo, useState } from 'react';
 import { MdHelp, MdInsights } from 'react-icons/md';
 
@@ -144,12 +144,24 @@ const MallReleaseCard = (props: MallReleaseCardProps) => {
       </HStack>
       <Text>
         {isDirect && (
-          <Link href={getNCMallLink(item)} isExternal>
+          <Link
+            as={MainLink}
+            href={getNCMallLink(item)}
+            isExternal
+            trackEvent="nc-insights"
+            trackEventLabel={'nc-mall-link'}
+          >
             {t('Owls.direct-purchase')}
           </Link>
         )}
         {!isDirect && capItem && (
-          <Link as={NextLink} href={`/item/${capItem.slug}`} prefetch={false}>
+          <Link
+            as={MainLink}
+            href={`/item/${capItem.slug}`}
+            prefetch={false}
+            trackEvent="nc-insights"
+            trackEventLabel={item.name}
+          >
             {capItem.name}
           </Link>
         )}
@@ -231,7 +243,13 @@ const ListReleaseCard = (props: ListReleaseCardProps) => {
         {release.officialTag && <Badge colorScheme="orange">{release.officialTag}</Badge>}
       </HStack>
       <Text>
-        <Link as={NextLink} href={`/lists/official/${release.slug}`} prefetch={false}>
+        <Link
+          as={MainLink}
+          href={`/lists/official/${release.slug}`}
+          prefetch={false}
+          trackEvent="nc-insights"
+          trackEventLabel={release.name}
+        >
           {release.name}
         </Link>
       </Text>

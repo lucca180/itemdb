@@ -9,6 +9,7 @@ import dynamic from 'next/dynamic';
 import Color from 'color';
 import { useTranslations } from 'next-intl';
 import Image from '../Utils/Image';
+import MainLink from '@components/Utils/MainLink';
 
 const Markdown = dynamic(() => import('../Utils/Markdown'));
 
@@ -77,16 +78,14 @@ const ItemOfficialLists = (props: Props) => {
               </Flex>
             </Flex>
             <Text
-              as={NextLink}
+              as={MainLink}
               href={`/lists/official/${list.slug ?? list.internal_id}`}
               sx={{ color: 'white !important;', textWrap: 'balance' }}
               textAlign="center"
               fontSize="sm"
               fontWeight="bold"
-              display={'inline-flex'}
-              justifyContent="center"
-              alignItems="center"
               prefetch={false}
+              trackEvent="item-official-list"
             >
               {list.name}{' '}
               {list.dynamicType && (
@@ -94,7 +93,7 @@ const ItemOfficialLists = (props: Props) => {
                   src={DynamicIcon}
                   alt="dynamic list"
                   width={10}
-                  style={{ marginLeft: '5px' }}
+                  style={{ marginLeft: '2px', display: 'inline-block', verticalAlign: 'sub' }}
                 />
               )}
             </Text>

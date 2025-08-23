@@ -13,7 +13,13 @@ const FeedbackButton = (props: FeedbackButtonProps) => {
   return (
     <>
       {isOpen && <FeedbackModal isOpen={isOpen} onClose={onClose} />}
-      <Button variant="outline" size="sm" onClick={onOpen} {...props}>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onOpen}
+        data-umami-event="feedback-button"
+        {...props}
+      >
         {!props.children && (
           <>
             <Icon as={FiSend} mr={1} /> {t('Button.feedback')}
