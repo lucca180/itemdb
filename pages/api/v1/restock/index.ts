@@ -12,7 +12,7 @@ import { countBy, maxBy } from 'lodash';
 export const config = {
   api: {
     bodyParser: {
-      sizeLimit: '2mb',
+      sizeLimit: '4mb',
     },
   },
 };

@@ -3701,10 +3701,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@next/env@npm:15.5.1-canary.1":
-  version: 15.5.1-canary.1
-  resolution: "@next/env@npm:15.5.1-canary.1"
-  checksum: 10c0/1fc2298c7f4bf01a12b37a19b5999b1b9bf7e4d0c9a7289ce59fc3cd9dc01e706ddbb4b2261bac42d32f8bb03a1ea00f0de23f237465871bab4c0fd9ba6eb9e2
+"@next/env@npm:15.5.1-canary.5":
+  version: 15.5.1-canary.5
+  resolution: "@next/env@npm:15.5.1-canary.5"
+  checksum: 10c0/4f897ce747134362853b795909e594fe13c0075dfd2ed3c74d55c73b003575997f0fd4e997830dca839a98bb9f2363962c65994db8301ddacb75a76ce5f39eac
   languageName: node
   linkType: hard
 
@@ -3724,58 +3724,58 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@next/swc-darwin-arm64@npm:15.5.1-canary.1":
-  version: 15.5.1-canary.1
-  resolution: "@next/swc-darwin-arm64@npm:15.5.1-canary.1"
+"@next/swc-darwin-arm64@npm:15.5.1-canary.5":
+  version: 15.5.1-canary.5
+  resolution: "@next/swc-darwin-arm64@npm:15.5.1-canary.5"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@next/swc-darwin-x64@npm:15.5.1-canary.1":
-  version: 15.5.1-canary.1
-  resolution: "@next/swc-darwin-x64@npm:15.5.1-canary.1"
+"@next/swc-darwin-x64@npm:15.5.1-canary.5":
+  version: 15.5.1-canary.5
+  resolution: "@next/swc-darwin-x64@npm:15.5.1-canary.5"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@next/swc-linux-arm64-gnu@npm:15.5.1-canary.1":
-  version: 15.5.1-canary.1
-  resolution: "@next/swc-linux-arm64-gnu@npm:15.5.1-canary.1"
+"@next/swc-linux-arm64-gnu@npm:15.5.1-canary.5":
+  version: 15.5.1-canary.5
+  resolution: "@next/swc-linux-arm64-gnu@npm:15.5.1-canary.5"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@next/swc-linux-arm64-musl@npm:15.5.1-canary.1":
-  version: 15.5.1-canary.1
-  resolution: "@next/swc-linux-arm64-musl@npm:15.5.1-canary.1"
+"@next/swc-linux-arm64-musl@npm:15.5.1-canary.5":
+  version: 15.5.1-canary.5
+  resolution: "@next/swc-linux-arm64-musl@npm:15.5.1-canary.5"
   conditions: os=linux & cpu=arm64 & libc=musl
   languageName: node
   linkType: hard
 
-"@next/swc-linux-x64-gnu@npm:15.5.1-canary.1":
-  version: 15.5.1-canary.1
-  resolution: "@next/swc-linux-x64-gnu@npm:15.5.1-canary.1"
+"@next/swc-linux-x64-gnu@npm:15.5.1-canary.5":
+  version: 15.5.1-canary.5
+  resolution: "@next/swc-linux-x64-gnu@npm:15.5.1-canary.5"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@next/swc-linux-x64-musl@npm:15.5.1-canary.1":
-  version: 15.5.1-canary.1
-  resolution: "@next/swc-linux-x64-musl@npm:15.5.1-canary.1"
+"@next/swc-linux-x64-musl@npm:15.5.1-canary.5":
+  version: 15.5.1-canary.5
+  resolution: "@next/swc-linux-x64-musl@npm:15.5.1-canary.5"
   conditions: os=linux & cpu=x64 & libc=musl
   languageName: node
   linkType: hard
 
-"@next/swc-win32-arm64-msvc@npm:15.5.1-canary.1":
-  version: 15.5.1-canary.1
-  resolution: "@next/swc-win32-arm64-msvc@npm:15.5.1-canary.1"
+"@next/swc-win32-arm64-msvc@npm:15.5.1-canary.5":
+  version: 15.5.1-canary.5
+  resolution: "@next/swc-win32-arm64-msvc@npm:15.5.1-canary.5"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"@next/swc-win32-x64-msvc@npm:15.5.1-canary.1":
-  version: 15.5.1-canary.1
-  resolution: "@next/swc-win32-x64-msvc@npm:15.5.1-canary.1"
+"@next/swc-win32-x64-msvc@npm:15.5.1-canary.5":
+  version: 15.5.1-canary.5
+  resolution: "@next/swc-win32-x64-msvc@npm:15.5.1-canary.5"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
@@ -10930,7 +10930,7 @@ __metadata:
     lodash: "npm:^4.17.21"
     lru-cache: "npm:^11.0.1"
     mailgen: "npm:^2.0.29"
-    next: "npm:15.5.1-canary.1"
+    next: "npm:15.5.1-canary.5"
     next-intl: "npm:^3.26.5"
     next-seo: "npm:^6.6.0"
     next-sitemap: "npm:^4.2.3"
@@ -10943,8 +10943,8 @@ __metadata:
     qs: "npm:^6.13.0"
     query-string: "npm:^9.1.1"
     rctx-contextmenu: "npm:^1.4.1"
-    react: "npm:19.1.1"
-    react-dom: "npm:19.1.1"
+    react: "npm:^19.1.1"
+    react-dom: "npm:^19.1.1"
     react-icons: "npm:^5.5.0"
     react-markdown: "npm:^10.1.0"
     react-stickynode: "npm:^5.0.2"
@@ -12325,19 +12325,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"next@npm:15.5.1-canary.1":
-  version: 15.5.1-canary.1
-  resolution: "next@npm:15.5.1-canary.1"
+"next@npm:15.5.1-canary.5":
+  version: 15.5.1-canary.5
+  resolution: "next@npm:15.5.1-canary.5"
   dependencies:
-    "@next/env": "npm:15.5.1-canary.1"
-    "@next/swc-darwin-arm64": "npm:15.5.1-canary.1"
-    "@next/swc-darwin-x64": "npm:15.5.1-canary.1"
-    "@next/swc-linux-arm64-gnu": "npm:15.5.1-canary.1"
-    "@next/swc-linux-arm64-musl": "npm:15.5.1-canary.1"
-    "@next/swc-linux-x64-gnu": "npm:15.5.1-canary.1"
-    "@next/swc-linux-x64-musl": "npm:15.5.1-canary.1"
-    "@next/swc-win32-arm64-msvc": "npm:15.5.1-canary.1"
-    "@next/swc-win32-x64-msvc": "npm:15.5.1-canary.1"
+    "@next/env": "npm:15.5.1-canary.5"
+    "@next/swc-darwin-arm64": "npm:15.5.1-canary.5"
+    "@next/swc-darwin-x64": "npm:15.5.1-canary.5"
+    "@next/swc-linux-arm64-gnu": "npm:15.5.1-canary.5"
+    "@next/swc-linux-arm64-musl": "npm:15.5.1-canary.5"
+    "@next/swc-linux-x64-gnu": "npm:15.5.1-canary.5"
+    "@next/swc-linux-x64-musl": "npm:15.5.1-canary.5"
+    "@next/swc-win32-arm64-msvc": "npm:15.5.1-canary.5"
+    "@next/swc-win32-x64-msvc": "npm:15.5.1-canary.5"
     "@swc/helpers": "npm:0.5.15"
     caniuse-lite: "npm:^1.0.30001579"
     postcss: "npm:8.4.31"
@@ -12380,7 +12380,7 @@ __metadata:
       optional: true
   bin:
     next: dist/bin/next
-  checksum: 10c0/169e4e76cf2c7a9ed8b87a057bb063a4d458e7524a0d9daf2a9f6805752255f1327e2e5837c8a9cdc5a24d47a4b2c4324e068c742c0bca677d2f9e08e7c8525a
+  checksum: 10c0/a1074493772ce388a9b2a9413c2ea0c323bda83e5396a3b36309dc022859f7011e7d904fe8c29104e8503980ee81dc930d0b23f70dce8df558d90aaad6eda47c
   languageName: node
   linkType: hard
 
@@ -13844,7 +13844,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:19.1.1":
+"react-dom@npm:^19.1.1":
   version: 19.1.1
   resolution: "react-dom@npm:19.1.1"
   dependencies:
@@ -14047,7 +14047,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:19.1.1":
+"react@npm:^19.1.1":
   version: 19.1.1
   resolution: "react@npm:19.1.1"
   checksum: 10c0/8c9769a2dfd02e603af6445058325e6c8a24b47b185d0e461f66a6454765ddcaecb3f0a90184836c68bb509f3c38248359edbc42f0d07c23eb500a5c30c87b4e

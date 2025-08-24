@@ -90,7 +90,15 @@ const ImportRestockModal = (props: ImportRestockModalProps) => {
     setLoading(true);
     try {
       const sessions = allSessions.filter((x, i) => selectedSessions.includes(i.toString()));
-      await axios.post('/api/v1/restock', { sessionList: sessions });
+      await axios.post(
+        '/api/v1/restock',
+        { sessionList: sessions },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
       if (window && window.itemdb_restock) {
         window.itemdb_restock.cleanAll();
