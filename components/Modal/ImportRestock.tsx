@@ -90,6 +90,18 @@ const ImportRestockModal = (props: ImportRestockModalProps) => {
     setLoading(true);
     try {
       const sessions = allSessions.filter((x, i) => selectedSessions.includes(i.toString()));
+      if (!isSerializable(sessions)) {
+        console.error('Invalid session data:', sessions);
+        toast({
+          title: t('General.error'),
+          description: <ResetToastMsg />,
+          status: 'error',
+          isClosable: true,
+        });
+        setLoading(false);
+        return;
+      }
+
       await axios.post(
         '/api/v1/restock',
         { sessionList: sessions },
@@ -294,3 +306,68 @@ const ImportRestockModal = (props: ImportRestockModalProps) => {
 };
 
 export default ImportRestockModal;
+
+function isSerializable(obj: any): boolean {
+  const seen = new WeakSet();
+
+  function check(value: any): boolean {
+    if (value === null) return true;
+    const type = typeof value;
+
+    if (type === 'string' || type === 'number' || type === 'boolean') {
+      if (Number.isNaN(value) || value === Infinity || value === -Infinity) {
+        console.error('[RestockImport] Non-serializable value found:', value, type);
+        return false;
+      }
+      return true;
+    }
+
+    if (type === 'bigint' || type === 'symbol' || type === 'function' || type === 'undefined') {
+      console.error('[RestockImport] Non-serializable value found:', value, type);
+      return false;
+    }
+
+    if (Array.isArray(value)) {
+      if (seen.has(value)) {
+        console.error('[RestockImport] Non-serializable value found:', value, 'Circular reference');
+        return false;
+      }
+      seen.add(value);
+      return value.every(check);
+    }
+
+    if (type === 'object') {
+      if (seen.has(value)) {
+        console.error('[RestockImport] Non-serializable value found:', value, 'Circular reference');
+        return false;
+      }
+
+      seen.add(value);
+      return Object.values(value).every(check);
+    }
+
+    return false;
+  }
+
+  return check(obj);
+}
+
+const ResetToastMsg = () => {
+  const t = useTranslations();
+
+  const resetAll = () => {
+    if (window && window.itemdb_restock) {
+      window.itemdb_restock.cleanAll();
+      window.location.reload();
+    }
+  };
+
+  return (
+    <Flex flexFlow={'column'} gap={1}>
+      <Text>{t('Restock.corrupt-sessions')}</Text>
+      <Button colorScheme="blackAlpha" onClick={resetAll}>
+        {t('Restock.reset-data')}
+      </Button>
+    </Flex>
+  );
+};

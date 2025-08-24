@@ -942,7 +942,8 @@
     "faq-3-text-2": "Os bans são temporários e geralmente significam que você não vai restocar pelo resto do dia, pois podem durar mais de 24 horas.",
     "faq-4": "Quais são as melhores lojas de neopets para reabastecer?",
     "faq-4-text": "Esta é uma pergunta subjetiva, pois depende de suas preferências pessoais e estilo de jogo. Você pode usar o Guia de Restock do itemdb para encontrar as melhores lojas para restockar em Neopets - as mais avançadas são mais difíceis de dominar, mas podem fornecer alguns dos melhores itens para revender.",
-    "similar-shops": "Lojas Similares"
+    "similar-shops": "Lojas Similares",
+    "corrupt-sessions": "Você pode ter sessão corrompida e precisamos redefinir seus dados, por favor confirme"
   },
   "Search": {
     "search": "Pesquisa",
