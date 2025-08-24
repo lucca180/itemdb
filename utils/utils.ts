@@ -31,7 +31,7 @@ export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
     item
   )}`;
   findAt.shopWizard = `https://www.neopets.com/shops/wizard.phtml?string=${cleanItem(item)}`;
-  findAt.trading = `https://www.neopets.com/island/tradingpost.phtml?type=browse&criteria=item_exact&search_string=${cleanItem(
+  findAt.trading = `https://www.neopets.com/island/tradingpost.phtml?type=browse&&sort_by=newest&criteria=item_exact&search_string=${cleanItem(
     item
   )}`;
 

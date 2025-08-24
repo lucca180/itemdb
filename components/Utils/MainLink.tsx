@@ -11,10 +11,20 @@ export interface MainLinkProps {
   prefetch?: boolean;
   trackEvent?: string;
   trackEventLabel?: string;
+  isExternal?: boolean;
 }
 const MainLink: React.FC<MainLinkProps> = React.forwardRef(
   (
-    { href, target, className, children, prefetch, trackEvent, trackEventLabel }: MainLinkProps,
+    {
+      href,
+      target,
+      className,
+      children,
+      prefetch,
+      trackEvent,
+      trackEventLabel,
+      isExternal,
+    }: MainLinkProps,
     ref: React.Ref<HTMLAnchorElement> | undefined
   ) => {
     const router = useRouter();
@@ -26,10 +36,14 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
 
           handleTracking();
 
+          if (isExternal) {
+            return window.open(href, '_blank');
+          }
+
           return await router.push(href);
         }
       },
-      [router, href]
+      [router, href, isExternal]
     );
 
     const handleTracking = () => {
@@ -43,7 +57,7 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
         <NextLink
           ref={ref}
           className={className}
-          target={target}
+          target={target || (isExternal ? '_blank' : undefined)}
           href={href || '/'}
           onClick={handleTracking}
         >
@@ -52,7 +66,13 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
       );
 
     return (
-      <a ref={ref} className={className} target={target} href={href || '/'} onClick={handleClick}>
+      <a
+        ref={ref}
+        className={className}
+        target={target || (isExternal ? '_blank' : undefined)}
+        href={href || '/'}
+        onClick={handleClick}
+      >
         {children}
       </a>
     );
