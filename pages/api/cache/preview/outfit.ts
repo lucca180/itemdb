@@ -80,7 +80,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       return;
     }
   } catch (e) {
-    console.error(e);
     const img = await loadImage('./public/oops.jpg');
 
     if (!canvas || !ctx) {
