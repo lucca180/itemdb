@@ -8,12 +8,11 @@ import { getRestockPrice, getRestockProfitOnDate, removeOutliers } from '../../.
 import { getManyItems } from '../items/many';
 import { UTCDate } from '@date-fns/utc';
 import { countBy, maxBy } from 'lodash';
+import { parseBody } from 'next/dist/server/api-utils/node/parse-body';
 
 export const config = {
   api: {
-    bodyParser: {
-      sizeLimit: '4mb',
-    },
+    bodyParser: false,
   },
 };
 
@@ -64,7 +63,9 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (!user || user.banned) return res.status(401).json({ error: 'Unauthorized' });
 
-    const { sessionList } = req.body as { sessionList: RestockSession[] };
+    // Parse the request body manually to try to fix Invalid Json error...
+    const body = await parseBody(req, '2mb');
+    const { sessionList } = body as { sessionList: RestockSession[] };
 
     if (!sessionList || !Array.isArray(sessionList))
       return res.status(400).json({ error: 'Bad Request' });
@@ -92,7 +93,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
     return res.status(200).json({ success: true });
   } catch (e) {
-    console.error(e);
+    console.error('Dashboard Import Error:', e, req.body);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 };
