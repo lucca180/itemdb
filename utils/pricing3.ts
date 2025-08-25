@@ -20,7 +20,7 @@ export const processPrices3 = (allItemData: PriceProcess2[], forceMode = false) 
 
   const usedIds = new Set<number>(weightedVals.map(([x]) => x.internal_id));
 
-  const filteredPrices = weightedStdFilter(weightedVals, 1.5, 0.75)?.slice(0, 5);
+  const filteredPrices = weightedStdFilter(weightedVals, 1.5, 0.75)?.slice(0, 7);
   if (!filteredPrices || !filteredPrices.length) return undefined;
 
   const latestDate = filteredPrices.reduce(
