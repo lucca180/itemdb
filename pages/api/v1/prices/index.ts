@@ -8,6 +8,7 @@ import { getManyItems } from '../items/many';
 import { checkHash } from '../../../../utils/hash';
 import { ItemData } from '../../../../types';
 import { differenceInCalendarDays } from 'date-fns';
+import { chunk } from 'lodash';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 type RestockAuction = Prisma.RestockAuctionHistoryCreateManyInput & { addToPriceProcess: boolean };
@@ -363,19 +364,21 @@ const processLastSeen = async (lastSeen: { [key: string]: { [id: number]: Date }
     skipDuplicates: true,
   });
 
-  let tries = 0;
-  while (tries < 3) {
-    try {
-      const x = await prisma.$transaction(updatePromises);
-      return x;
-    } catch (e: any) {
-      if (['P2002', 'P2034'].includes(e.code) && tries < 3) {
-        tries++;
-        await exponentialBackoff(tries);
-        continue;
+  for (const batch of chunk(updatePromises, 10)) {
+    let tries = 0;
+    while (tries < 3) {
+      try {
+        await Promise.all(batch);
+        break;
+      } catch (e: any) {
+        if (['P2002', 'P2034'].includes(e.code) && tries < 3) {
+          tries++;
+          await exponentialBackoff(tries);
+          continue;
+        }
+        console.error('Update Last Seen Error:', e);
+        throw e;
       }
-      console.error('Update Last Seen Error:', e);
-      throw e;
     }
   }
 };

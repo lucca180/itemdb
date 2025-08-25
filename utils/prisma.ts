@@ -24,7 +24,15 @@ const adapter =
       : 30000,
   });
 
-const prisma = globalForPrisma.prisma || new PrismaClient({ adapter });
+const prisma =
+  globalForPrisma.prisma ||
+  new PrismaClient({
+    adapter,
+    transactionOptions: {
+      maxWait: 5000,
+      timeout: 10000,
+    },
+  });
 
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;
