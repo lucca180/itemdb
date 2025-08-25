@@ -93,7 +93,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
     return res.status(200).json({ success: true });
   } catch (e) {
-    console.error('Dashboard Import Error:', e, req.body);
+    const rawBody = await getRawBody(req);
+    console.error('Dashboard Import Error:', e, rawBody.text);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 };
@@ -585,3 +586,18 @@ const getItemProfitOnDate = (click: RestockSession['clicks'][0], item: ItemData)
 
   return getRestockProfitOnDate(item, click.buy_timestamp!);
 };
+
+//
+
+export async function getRawBody(req: NextApiRequest): Promise<{ buffer: Buffer; text: string }> {
+  const chunks: Uint8Array[] = [];
+
+  for await (const chunk of req) {
+    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+  }
+
+  const buffer = Buffer.concat(chunks);
+  const text = buffer.toString('utf8');
+
+  return { buffer, text };
+}
