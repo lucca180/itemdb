@@ -36,7 +36,7 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
 
           handleTracking();
 
-          if (isExternal) {
+          if (isExternal || target === '_blank') {
             return window.open(href, '_blank');
           }
 
