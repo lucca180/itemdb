@@ -65,7 +65,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     if (!user || user.banned) return res.status(401).json({ error: 'Unauthorized' });
 
     // Parse the request body manually to try to fix Invalid Json error...
-    const body = await parseBody(req, '2mb');
+    const body = await parseBodyFailsafe(req);
     const { sessionList } = body as { sessionList: RestockSession[] };
 
     if (!sessionList || !Array.isArray(sessionList))
@@ -623,4 +623,15 @@ const getError = (str: string) => {
   }
 
   return 'no error';
+};
+
+const parseBodyFailsafe = async (req: NextApiRequest): Promise<any> => {
+  try {
+    const body = await parseBody(req, '2mb');
+    return body;
+  } catch (e) {
+    const rawBody = await getRawBody(req);
+    const body = JSON.parse(rawBody.text);
+    return body;
+  }
 };
