@@ -31,6 +31,7 @@ type PriceOrMarker = Partial<PriceData> & {
   color?: string;
   slug?: string;
   addedAt?: string;
+  hasEnding?: boolean;
   markerType?: 'added-to' | 'available-at' | 'unavailable-at';
 };
 
@@ -54,12 +55,18 @@ const PriceTable = (props: Props) => {
 
     lists?.map((list) => {
       if (!list.seriesType) return;
-      const color = Color(list.colorHex ?? '#000');
+
+      const color = Color(list.colorHex ?? '#000')
+        .lightness(70)
+        .hex();
+
       let date = list.createdAt;
       let markerType = 'added-to';
 
       if (list.seriesType === 'itemAddition' && list.itemInfo?.[0].addedAt)
         date = list.itemInfo?.[0].addedAt;
+
+      let hasEnding = false;
 
       if (list.seriesType === 'listDates' && list.seriesStart) {
         date = list.itemInfo?.[0].seriesStart || list.seriesStart;
@@ -70,12 +77,15 @@ const PriceTable = (props: Props) => {
 
           if (new Date(endDate) < itemAdded) return;
 
+          hasEnding = true;
+
           sorted.push({
             marker: true,
             title: list.name,
             slug: list.slug ?? '',
+            hasEnding: true,
             addedAt: list.itemInfo?.[0].seriesEnd || list.seriesEnd,
-            color: color.lightness(70).hex(),
+            color: color,
             markerType: 'unavailable-at',
           });
         }
@@ -88,12 +98,13 @@ const PriceTable = (props: Props) => {
         title: list.name,
         slug: list.slug ?? '',
         addedAt: date,
-        color: color.lightness(70).hex(),
+        color: color,
+        hasEnding: hasEnding,
         markerType: markerType as 'added-to' | 'available-at' | 'unavailable-at',
       });
     });
 
-    return sorted.sort((a, b) => {
+    sorted.sort((a, b) => {
       const aDate = new Date(a.addedAt!);
       const bDate = new Date(b.addedAt!);
 
@@ -101,6 +112,23 @@ const PriceTable = (props: Props) => {
 
       return bDate.getTime() - aDate.getTime();
     });
+
+    let markerColor = '';
+    sorted.forEach((item) => {
+      if (!item.marker && markerColor) item.color = markerColor;
+
+      if (markerColor && item.marker && markerColor === item.color) {
+        markerColor = '';
+        return;
+      }
+
+      if (!markerColor && item.marker && item.hasEnding) {
+        markerColor = item.color!;
+        return;
+      }
+    });
+
+    return sorted;
   }, [data, lists]);
 
   return (
@@ -162,7 +190,7 @@ const PriceItem = (
 
   if (isMarker)
     return (
-      <Tr key={price.addedAt} h={42} bg={bgColor}>
+      <Tr key={price.addedAt} h={42} bg={bgColor} borderLeft={`3px solid ${price.color}85`}>
         <Td colSpan={isAdmin ? 4 : 3} border={0}>
           <Flex flexFlow={'column'} alignItems={'center'} gap={2}>
             <Badge>
@@ -189,7 +217,12 @@ const PriceItem = (
 
   return (
     <React.Fragment key={price.addedAt}>
-      <Tr key={price.addedAt} bg={bgColor} border={0}>
+      <Tr
+        key={price.addedAt}
+        bg={bgColor}
+        border={0}
+        borderLeft={price.color ? `3px solid ${price.color}85` : undefined}
+      >
         <Td>
           <Flex alignItems={'center'}>
             <Flex flexFlow={'column'}>
