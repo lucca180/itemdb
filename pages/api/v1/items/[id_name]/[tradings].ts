@@ -182,7 +182,9 @@ export const getLebronItemData = async (name: string) => {
     updateLebronVal(data);
 
     return data;
-  } catch (e) {
+  } catch (e: any) {
+    if (e?.response?.status === 404) return null;
+
     console.error('Error fetching Lebron data:', e);
     return null;
   }
