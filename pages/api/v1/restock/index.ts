@@ -9,6 +9,7 @@ import { getManyItems } from '../items/many';
 import { UTCDate } from '@date-fns/utc';
 import { countBy, maxBy } from 'lodash';
 import { parseBody } from 'next/dist/server/api-utils/node/parse-body';
+import * as Sentry from '@sentry/nextjs';
 
 export const config = {
   api: {
@@ -94,7 +95,14 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(200).json({ success: true });
   } catch (e) {
     const rawBody = await getRawBody(req);
-    console.error('Dashboard Import Error:', e, rawBody.text);
+    const error = getError(rawBody.text);
+
+    Sentry.getCurrentScope().addAttachment({
+      filename: 'rawBody.txt',
+      data: rawBody.text,
+    });
+
+    console.error('Dashboard Import Error:', e, error, { size: rawBody.size, text: rawBody.text });
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 };
@@ -589,7 +597,9 @@ const getItemProfitOnDate = (click: RestockSession['clicks'][0], item: ItemData)
 
 //
 
-export async function getRawBody(req: NextApiRequest): Promise<{ buffer: Buffer; text: string }> {
+export async function getRawBody(
+  req: NextApiRequest
+): Promise<{ buffer: Buffer; text: string; size: number }> {
   const chunks: Uint8Array[] = [];
 
   for await (const chunk of req) {
@@ -599,5 +609,18 @@ export async function getRawBody(req: NextApiRequest): Promise<{ buffer: Buffer;
   const buffer = Buffer.concat(chunks);
   const text = buffer.toString('utf8');
 
-  return { buffer, text };
+  //buffer size in MB
+  const bufferSizeInMB = buffer.length / (1024 * 1024);
+
+  return { buffer, text, size: bufferSizeInMB };
 }
+
+const getError = (str: string) => {
+  try {
+    JSON.parse(str);
+  } catch (e) {
+    return e;
+  }
+
+  return 'no error';
+};
