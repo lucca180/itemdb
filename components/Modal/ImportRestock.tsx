@@ -16,8 +16,6 @@ import {
   Spinner,
   Center,
   useToast,
-  Alert,
-  AlertIcon,
 } from '@chakra-ui/react';
 import { formatDistance } from 'date-fns';
 import { useEffect, useState } from 'react';
@@ -215,11 +213,6 @@ const ImportRestockModal = (props: ImportRestockModalProps) => {
           <ModalHeader>{t('Restock.import-sessions')}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Alert status="warning" fontSize="sm" mb={2}>
-              <AlertIcon />
-              We&apos;re aware of an issue preventing some users from importing sessions. Please
-              stay with us while we collect data to investigate this issue.
-            </Alert>
             <Text fontSize="sm">
               {t('Restock.import-modal-4')} {t('Restock.import-modal-5')}
             </Text>
