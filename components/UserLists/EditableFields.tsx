@@ -79,7 +79,7 @@ const EditableFields = (props: EditableFieldsProps) => {
           </NumberInput>
         </InputGroup>
       )}
-      {list?.official && (
+      {list?.official && list.seriesType && (
         <>
           <InputGroup size="xs">
             <InputLeftAddon children={'Start'} />
