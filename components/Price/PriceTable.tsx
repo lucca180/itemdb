@@ -60,7 +60,7 @@ const PriceTable = (props: Props) => {
         .lightness(70)
         .hex();
 
-      let date = list.createdAt;
+      let date: string | null = list.createdAt;
       let markerType = 'added-to';
 
       if (list.seriesType === 'itemAddition' && list.itemInfo?.[0].addedAt)
@@ -68,22 +68,22 @@ const PriceTable = (props: Props) => {
 
       let hasEnding = false;
 
-      if (list.seriesType === 'listDates' && list.seriesStart) {
-        date = list.itemInfo?.[0].seriesStart || list.seriesStart;
-        markerType = 'available-at';
+      if (list.seriesType === 'listDates') {
+        date = list.itemInfo?.[0].seriesStart || list.seriesStart || null;
 
         if (list.seriesEnd) {
+          markerType = 'available-at';
           const endDate = list.itemInfo?.[0].seriesEnd || list.seriesEnd;
 
           if (new Date(endDate) < itemAdded) return;
 
-          hasEnding = true;
+          hasEnding = !!date;
 
           sorted.push({
             marker: true,
             title: list.name,
             slug: list.slug ?? '',
-            hasEnding: true,
+            hasEnding: hasEnding,
             addedAt: list.itemInfo?.[0].seriesEnd || list.seriesEnd,
             color: color,
             markerType: 'unavailable-at',
@@ -91,17 +91,18 @@ const PriceTable = (props: Props) => {
         }
       }
 
-      date = dateMax(itemAdded, new Date(date)).toJSON();
+      date = date ? dateMax(itemAdded, new Date(date)).toJSON() : null;
 
-      sorted.push({
-        marker: true,
-        title: list.name,
-        slug: list.slug ?? '',
-        addedAt: date,
-        color: color,
-        hasEnding: hasEnding,
-        markerType: markerType as 'added-to' | 'available-at' | 'unavailable-at',
-      });
+      if (date)
+        sorted.push({
+          marker: true,
+          title: list.name,
+          slug: list.slug ?? '',
+          addedAt: date,
+          color: color,
+          hasEnding: hasEnding,
+          markerType: markerType as 'added-to' | 'available-at' | 'unavailable-at',
+        });
     });
 
     sorted.sort((a, b) => {
