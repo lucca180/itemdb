@@ -1,6 +1,12 @@
+import fs from 'fs';
+
+const treeShakeExists = () => {
+  return fs.existsSync(`../translation/tree-shake`);
+};
+
 // wanted to move this code to the intlHandler.ts but without updating EVERY import in the codebase
 export const loadTranslation = (locale: string, relativePath: string) =>
-  process.env.NODE_ENV === 'development'
+  process.env.NODE_ENV === 'development' || !treeShakeExists()
     ? import(`../translation/${locale}.json`).then((res) => res.default)
     : _loadTranslation(locale, relativePath);
 
