@@ -127,7 +127,11 @@ export const getNCTradeInsights = async (item_iid: string | number): Promise<Ins
       },
     },
     include: {
-      items: true,
+      items: {
+        where: {
+          item_iid: Number(item_iid),
+        },
+      },
       user: true,
     },
   });
@@ -142,7 +146,7 @@ export const getNCTradeInsights = async (item_iid: string | number): Promise<Ins
     return release;
   });
 
-  const lists = ncEvents.map((event) => rawToList(event, event.user));
+  const lists = ncEvents.map((event) => rawToList(event, event.user, true));
 
   return {
     releases: newReleases.map((release) => {

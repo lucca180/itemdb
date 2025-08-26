@@ -81,6 +81,12 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
             isHighlight: item.isHighlight,
             isHidden: item.isHidden,
             amount: item.amount,
+            seriesStart: item.seriesStart
+              ? new UTCDate(new UTCDate(item.seriesStart).setHours(18))
+              : null,
+            seriesEnd: item.seriesEnd
+              ? new UTCDate(new UTCDate(item.seriesEnd).setHours(18))
+              : null,
           },
         });
       });

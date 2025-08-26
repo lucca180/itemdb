@@ -9,6 +9,7 @@ import {
   NumberDecrementStepper,
   Checkbox,
   Text,
+  Input,
 } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
 import { EditableItemCardProps } from './EditableItemCard';
@@ -16,14 +17,14 @@ import { ListItemInfo } from '../../types';
 
 export type EditableFieldsProps = EditableItemCardProps & {
   handleItemInfoChange: (
-    value: number,
-    field: 'amount' | 'capValue' | 'isHighlight' | 'order'
+    value: number | string,
+    field: 'amount' | 'capValue' | 'isHighlight' | 'order' | 'seriesStart' | 'seriesEnd'
   ) => void;
   itemInfo: ListItemInfo | undefined;
 };
 
 const EditableFields = (props: EditableFieldsProps) => {
-  const { id, item, isTrading, handleItemInfoChange, itemInfo } = props;
+  const { id, item, isTrading, handleItemInfoChange, itemInfo, list } = props;
 
   const t = useTranslations();
 
@@ -77,6 +78,28 @@ const EditableFields = (props: EditableFieldsProps) => {
             </NumberInputStepper>
           </NumberInput>
         </InputGroup>
+      )}
+      {list?.official && (
+        <>
+          <InputGroup size="xs">
+            <InputLeftAddon children={'Start'} />
+            <Input
+              type="date"
+              variant="filled"
+              value={itemInfo?.seriesStart?.split('T')[0] || ''}
+              onChange={(e) => handleItemInfoChange(e.target.value, 'seriesStart')}
+            />
+          </InputGroup>
+          <InputGroup size="xs">
+            <InputLeftAddon children={'End'} />
+            <Input
+              type="date"
+              variant="filled"
+              value={itemInfo?.seriesEnd?.split('T')[0] || ''}
+              onChange={(e) => handleItemInfoChange(e.target.value, 'seriesEnd')}
+            />
+          </InputGroup>
+        </>
       )}
       <Checkbox
         defaultChecked={itemInfo?.isHighlight}

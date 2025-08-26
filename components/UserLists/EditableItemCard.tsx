@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import ItemCard from '../Items/ItemCard';
-import { ItemData, ListItemInfo } from '../../types';
+import { ItemData, ListItemInfo, UserList } from '../../types';
 import { VStack, Box } from '@chakra-ui/react';
 import dynamic from 'next/dynamic';
 
@@ -14,10 +14,18 @@ export type EditableItemCardProps = {
   editMode?: boolean;
   selected?: boolean;
   sortType?: string;
+  list?: UserList;
   onChange?: (
     id: number,
-    value: number,
-    field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order'
+    value: number | string | null,
+    field:
+      | 'amount'
+      | 'capValue'
+      | 'isHighlight'
+      | 'isHidden'
+      | 'order'
+      | 'seriesStart'
+      | 'seriesEnd'
   ) => void;
   onClick?: (id: number, force?: boolean) => void;
   onListAction?: (item: ItemData, action: 'move' | 'delete') => any;
@@ -35,15 +43,18 @@ export function EditableItemCard(props: EditableItemCardProps) {
   const isSelected = editMode && (props.selected ?? shouldSelect ?? false);
 
   const handleItemInfoChange = (
-    value: number,
-    field: 'amount' | 'capValue' | 'isHighlight' | 'order'
+    value: number | string | null,
+    field: 'amount' | 'capValue' | 'isHighlight' | 'order' | 'seriesStart' | 'seriesEnd'
   ) => {
     if (!itemInfo) return;
-    const newInfo = { ...itemInfo };
+    const newInfo = { ...itemInfo } as any;
 
-    if (field === 'isHighlight') newInfo[field] = !!value;
-    else newInfo[field] = value;
-
+    if (['seriesStart', 'seriesEnd'].includes(field)) {
+      newInfo[field] = value as string | null;
+    } else {
+      if (field === 'isHighlight') newInfo[field] = !!value;
+      else newInfo[field] = value as number;
+    }
     setItemInfo(newInfo);
     props.onChange?.(id, value, field);
   };

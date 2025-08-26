@@ -466,13 +466,24 @@ const ListPage = (props: ListPageProps) => {
   const handleItemInfoChange = useCallback(
     (
       id: number,
-      value: number,
-      field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order'
+      value: number | string | null,
+      field:
+        | 'amount'
+        | 'capValue'
+        | 'isHighlight'
+        | 'isHidden'
+        | 'order'
+        | 'seriesStart'
+        | 'seriesEnd'
     ) => {
-      const newInfo = { ...itemInfo };
+      const newInfo = { ...itemInfo } as any;
 
-      if (field === 'isHidden' || field === 'isHighlight') newInfo[id][field] = !!value;
-      else newInfo[id][field] = value;
+      if (field === 'seriesStart' || field === 'seriesEnd') {
+        newInfo[id][field] = value as string | null;
+      } else {
+        if (field === 'isHidden' || field === 'isHighlight') newInfo[id][field] = !!value;
+        else newInfo[id][field] = value;
+      }
 
       newInfo[id].hasChanged = true;
 

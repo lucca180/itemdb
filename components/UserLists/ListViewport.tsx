@@ -21,8 +21,15 @@ export type ListViewportProps = {
   onSort?: (ids: number[]) => void;
   onChange?: (
     id: number,
-    value: number,
-    field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order'
+    value: number | string | null,
+    field:
+      | 'amount'
+      | 'capValue'
+      | 'isHighlight'
+      | 'isHidden'
+      | 'order'
+      | 'seriesStart'
+      | 'seriesEnd'
   ) => void;
   onListAction?: (item: ItemData, action: 'move' | 'delete') => void;
 };
@@ -51,8 +58,15 @@ export default function ListViewport(props: ListViewportProps) {
     debounce(
       (
         id: number,
-        value: number,
-        field: 'amount' | 'capValue' | 'isHighlight' | 'isHidden' | 'order'
+        value: number | string | null,
+        field:
+          | 'amount'
+          | 'capValue'
+          | 'isHighlight'
+          | 'isHidden'
+          | 'order'
+          | 'seriesStart'
+          | 'seriesEnd'
       ) => props.onChange?.(id, value, field),
       250
     ),
@@ -95,6 +109,7 @@ export default function ListViewport(props: ListViewportProps) {
             {group.map((id) => {
               const itemProps: EditableItemCardProps = {
                 id,
+                list,
                 sortType: props.sortType,
                 onClick: props.onClick,
                 itemInfo: itemInfo[id],

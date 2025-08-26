@@ -223,10 +223,15 @@ type ListReleaseCardProps = {
 };
 
 const isEventActive = (release: UserList) => {
+  const item = release.itemInfo?.[0];
+
+  const seriesStart = item?.seriesStart || release.seriesStart;
+  const seriesEnd = item?.seriesEnd || release.seriesEnd;
+
   return (
-    release.seriesStart &&
-    new Date(release.seriesStart) <= new Date() &&
-    (!release.seriesEnd || new Date(release.seriesEnd) > new Date())
+    seriesStart &&
+    new Date(seriesStart) <= new Date() &&
+    (!seriesEnd || new Date(seriesEnd) > new Date())
   );
 };
 
@@ -235,6 +240,9 @@ const ListReleaseCard = (props: ListReleaseCardProps) => {
   const formatter = useFormatter();
   const t = useTranslations();
   const isActive = isEventActive(release);
+  const item = release.itemInfo?.[0];
+  const seriesStart = item?.seriesStart || release.seriesStart;
+  const seriesEnd = item?.seriesEnd || release.seriesEnd;
 
   return (
     <>
@@ -254,14 +262,14 @@ const ListReleaseCard = (props: ListReleaseCardProps) => {
         </Link>
       </Text>
       <Text fontSize={'xs'} color="whiteAlpha.700">
-        {formatter.dateTime(new Date(release.seriesStart ?? 0), {
+        {formatter.dateTime(new Date(seriesStart ?? 0), {
           dateStyle: 'medium',
         })}
-        {release.seriesEnd && (
+        {seriesEnd && (
           <>
             {' '}
             -{' '}
-            {formatter.dateTime(new Date(release.seriesEnd), {
+            {formatter.dateTime(new Date(seriesEnd), {
               dateStyle: 'medium',
             })}
           </>
