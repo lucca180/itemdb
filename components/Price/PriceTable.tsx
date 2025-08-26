@@ -60,11 +60,11 @@ const PriceTable = (props: Props) => {
         .lightness(70)
         .hex();
 
-      let date: string | null = list.createdAt;
+      let date: string | null = list.itemInfo?.[0].seriesStart || list.createdAt;
       let markerType = 'added-to';
 
       if (list.seriesType === 'itemAddition' && list.itemInfo?.[0].addedAt)
-        date = list.itemInfo?.[0].addedAt;
+        date = list.itemInfo?.[0].seriesStart || list.itemInfo?.[0].addedAt;
 
       let hasEnding = false;
 
@@ -84,7 +84,7 @@ const PriceTable = (props: Props) => {
             title: list.name,
             slug: list.slug ?? '',
             hasEnding: hasEnding,
-            addedAt: list.itemInfo?.[0].seriesEnd || list.seriesEnd,
+            addedAt: endDate,
             color: color,
             markerType: 'unavailable-at',
           });
