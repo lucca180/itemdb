@@ -18,10 +18,10 @@ import { MinusIcon } from '@chakra-ui/icons';
 import { useFormatter, useTranslations } from 'next-intl';
 import { BiEditAlt } from 'react-icons/bi';
 import { FaCaretDown, FaCaretUp } from 'react-icons/fa';
-import NextLink from 'next/link';
 import Color from 'color';
 import { isSameDay } from 'date-fns';
 import dynamic from 'next/dynamic';
+import MainLink from '@components/Utils/MainLink';
 
 const Markdown = dynamic(() => import('../Utils/Markdown'));
 
@@ -197,7 +197,9 @@ const PriceItem = (
               <MarkerText markerType={price.markerType} />
             </Badge>
             <Link
-              as={NextLink}
+              as={MainLink}
+              trackEvent="price-marker"
+              trackEventLabel={price.slug}
               href={`/lists/official/${price.slug}`}
               sx={{ color: price.color + ' !important' }}
             >
