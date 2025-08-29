@@ -60,24 +60,25 @@ const PriceTable = (props: Props) => {
         .lightness(70)
         .hex();
 
-      let date: string | null = list.itemInfo?.[0].seriesStart || list.createdAt;
+      let startDate: string | null = list.itemInfo?.[0].seriesStart || list.createdAt;
+      let endDate: string | null = null;
       let markerType = 'added-to';
 
       if (list.seriesType === 'itemAddition' && list.itemInfo?.[0].addedAt)
-        date = list.itemInfo?.[0].seriesStart || list.itemInfo?.[0].addedAt;
+        startDate = list.itemInfo?.[0].seriesStart || list.itemInfo?.[0].addedAt;
 
       let hasEnding = false;
 
       if (list.seriesType === 'listDates') {
-        date = list.itemInfo?.[0].seriesStart || list.seriesStart || null;
+        startDate = list.itemInfo?.[0].seriesStart || list.seriesStart || null;
 
         if (list.seriesEnd) {
           markerType = 'available-at';
-          const endDate = list.itemInfo?.[0].seriesEnd || list.seriesEnd;
+          endDate = list.itemInfo?.[0].seriesEnd || list.seriesEnd;
 
-          if (new Date(endDate) < itemAdded) return;
+          if (new Date(endDate) <= itemAdded) return;
 
-          hasEnding = !!date;
+          hasEnding = !!startDate;
 
           sorted.push({
             marker: true,
@@ -91,14 +92,14 @@ const PriceTable = (props: Props) => {
         }
       }
 
-      date = date ? dateMax(itemAdded, new Date(date)).toJSON() : null;
+      startDate = startDate ? dateMax(itemAdded, new Date(startDate)).toJSON() : null;
 
-      if (date)
+      if (startDate)
         sorted.push({
           marker: true,
           title: list.name,
           slug: list.slug ?? '',
-          addedAt: date,
+          addedAt: startDate,
           color: color,
           hasEnding: hasEnding,
           markerType: markerType as 'added-to' | 'available-at' | 'unavailable-at',

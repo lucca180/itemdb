@@ -20,7 +20,7 @@ export const processPrices3 = (allItemData: PriceProcess2[], forceMode = false) 
 
   const usedIds = new Set<number>(weightedVals.map(([x]) => x.internal_id));
 
-  const filteredPrices = weightedStdFilter(weightedVals, 1.5, 0.75)?.slice(0, 7);
+  const filteredPrices = weightedStdFilter(weightedVals, 1.6, 0.75)?.slice(0, 7);
   if (!filteredPrices || !filteredPrices.length) return undefined;
 
   const latestDate = filteredPrices.reduce(
@@ -196,7 +196,7 @@ function removeOutliersCombined(data: number[]) {
   if (madVal === 0) return iqrFiltered;
 
   // less punitive for lower values, more punitive for higher values
-  const lowerMultiplier = 3;
+  const lowerMultiplier = 3.25;
   const upperMultiplier = 2;
 
   const madFiltered = iqrFiltered.filter((x) => {
