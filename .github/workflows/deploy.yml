@@ -6,7 +6,7 @@ on:
       - master
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 jobs:
   deploy-itemdb-blue:
     name: itemdb blue (main) - Deploy
