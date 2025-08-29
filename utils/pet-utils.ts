@@ -697,6 +697,9 @@ export const petpetSpecies: { [id: string]: string } = {
   '1104': 'Tanamurx',
   '1105': 'Weebly',
   '1106': 'Flipflap',
+  '1107': 'Toothygrin',
+  '1108': 'Scorf',
+  '1109': 'Lumidrax',
 };
 
 export const petpetColors: { [id: string]: string } = {
@@ -753,6 +756,7 @@ export const petpetColors: { [id: string]: string } = {
   '51': 'Chocolate',
   '52': 'Strawberry',
   '53': '25th Anniversary',
+  '54': 'Void',
   '1001': '8-bit',
   '1002': 'Chocolate',
   '1003': 'Gold',
