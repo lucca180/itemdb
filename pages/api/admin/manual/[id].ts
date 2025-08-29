@@ -160,6 +160,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse, user: User) => {
 
 const handleItemUpdate = async (id: number, field: string, value: string, user: User) => {
   let itemSlug = '';
+  let image_id = '';
 
   if (field === 'name') {
     itemSlug = slugify(value);
@@ -186,6 +187,10 @@ const handleItemUpdate = async (id: number, field: string, value: string, user: 
     }
   }
 
+  if (field === 'image') {
+    image_id = (value as string).match(/[^\.\/]+(?=\.gif)/)?.[0] ?? '';
+  }
+
   await prisma.items.update({
     where: {
       internal_id: Number(id),
@@ -193,6 +198,7 @@ const handleItemUpdate = async (id: number, field: string, value: string, user: 
     data: {
       [field]: value,
       slug: itemSlug || undefined,
+      image_id: image_id || undefined,
     },
   });
 

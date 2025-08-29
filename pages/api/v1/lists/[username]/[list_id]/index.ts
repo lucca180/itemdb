@@ -6,6 +6,7 @@ import prisma from '../../../../../../utils/prisma';
 import { syncDynamicList } from './dynamic';
 import { SeriesType } from '@prisma/generated/client';
 import { UTCDate } from '@date-fns/utc';
+import { slugify } from '@utils/utils';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -241,11 +242,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       }
 
       let slug = list.slug;
-
-      if (
-        (name && list.name.toLowerCase().trim() !== name.toLowerCase().trim()) ||
-        list.official !== official
-      ) {
+      // update slug
+      if ((name && slugify(name) !== list.slug) || list.official !== official) {
         if (/^\d+$/.test(name ?? list.name)) {
           return res.status(400).json({ error: 'List name cannot be a number' });
         }
