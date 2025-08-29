@@ -366,7 +366,7 @@ async function updateOrAddDB(
       const item = await prisma.items.findFirst({ where: { internal_id: priceData.item_iid } });
 
       // do not add prices for new items
-      if (differenceInDays(new Date(), item!.addedAt) < 2) return undefined;
+      if (differenceInDays(latestDate, item!.addedAt) < 2) return undefined;
 
       return newPriceData;
     }
