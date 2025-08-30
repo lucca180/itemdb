@@ -59,7 +59,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
       noInflation_id: noInflation_id,
       addedAt: new UTCDate(new UTCDate(addedAt).setHours(18)),
       usedProcessIDs: 'admin_price',
-      isLatest: newIsLatest ? true : null,
+      isLatest: newIsLatest && price > 0 ? true : null,
     },
   });
 

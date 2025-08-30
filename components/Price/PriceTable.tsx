@@ -154,6 +154,7 @@ const PriceTable = (props: Props) => {
               isAdmin={isAdmin}
               onEdit={onEdit}
               lists={lists}
+              itemColor={item.color.hex}
             />
           ))}
         </Tbody>
@@ -169,6 +170,7 @@ const PriceItem = (
     data: PriceOrMarker[];
     price: PriceOrMarker;
     index: number;
+    itemColor: string;
   }
 ) => {
   const { price, data: sortedData, index, isAdmin, onEdit } = props;
@@ -216,6 +218,34 @@ const PriceItem = (
             </Text>
           </Flex>
         </Td>
+      </Tr>
+    );
+
+  if (price.value === 0)
+    return (
+      <Tr key={'0'} h={50} bg={bgColor} border={0} borderLeft={`3px solid ${props.itemColor}`}>
+        <Td colSpan={isAdmin ? 3 : 4}>
+          <Flex flexFlow={'column'} alignItems={'center'} gap={2}>
+            {format.dateTime(new Date(price.addedAt!), {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
+            <Text textAlign={'center'} color={'whiteAlpha.700'}>
+              {t('ItemPage.unknown-price-msg')}
+            </Text>
+          </Flex>
+        </Td>
+        {isAdmin && (
+          <Td px={1}>
+            <IconButton
+              onClick={() => onEdit?.(price as PriceData)}
+              size="xs"
+              aria-label="Edit"
+              icon={<BiEditAlt />}
+            />
+          </Td>
+        )}
       </Tr>
     );
 

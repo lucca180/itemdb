@@ -93,10 +93,8 @@ const ItemPriceCard = (props: Props) => {
   const adminCreatePrice = useDisclosure();
   const { item } = props;
   const [displayState, setDisplay] = useState('table');
-  const [priceDiff, setDiff] = useState<number | null>(null);
   const isNoTrade = item.status?.toLowerCase() === 'no trade';
   const [selectedPrice, setSelectedPrice] = useState<PriceData | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [seenHistory, setSeenHistory] = useState<string | null>(null);
 
   const rgbColor = item.color.rgb;
@@ -126,20 +124,15 @@ const ItemPriceCard = (props: Props) => {
     { fallbackData: props.lastSeen }
   );
 
-  const price = prices?.[0];
+  const price = prices?.[0].isLatest ? prices[0] : null;
 
-  useEffect(() => {
-    if (!prices) return;
-    if (prices.length >= 2) {
-      const diff = (prices[0]?.value ?? 0) - (prices[1]?.value ?? 0);
-      setDiff(diff);
-    } else setDiff(null);
+  const priceDiff = useMemo(() => {
+    if (!prices || prices.length < 2) return null;
+    const priceZero = prices[0].isLatest ? prices[0] : null;
+    const priceOne = prices[1];
+    if (!priceZero || !priceOne.value) return null;
+    return (priceZero.value ?? 0) - priceOne.value;
   }, [prices]);
-
-  useEffect(() => {
-    if (user && user.isAdmin) setIsAdmin(true);
-    else setIsAdmin(false);
-  }, [user]);
 
   useEffect(() => {
     if (displayState === 'chart') window.umami?.track('price-chart');
@@ -391,8 +384,8 @@ const ItemPriceCard = (props: Props) => {
                         color={item.color.hex}
                         lists={props.lists}
                         data={prices}
-                        isAdmin={isAdmin}
-                        onEdit={(data) => setSelectedPrice(data)}
+                        isAdmin={user?.isAdmin}
+                        onEdit={(price) => setSelectedPrice(price)}
                       />
                     </Box>
                   )}

@@ -298,7 +298,8 @@
     "has-broken-version": "Este item tem uma versão quebrada que pode ser consertada no <Link>Reparo de Brinquedos do Donny</Link>",
     "donnys-toy-repair-shop": "Reparo de Brinquedos do Donny",
     "exclusive": "Exclusivo",
-    "price-context": "Contexto de Preço"
+    "price-context": "Contexto de Preço",
+    "unknown-price-msg": "Não foi possível estimar o preço deste item"
   },
   "Button": {
     "feedback": "Feedback",

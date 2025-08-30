@@ -101,6 +101,7 @@ export type PriceData = {
   addedAt: string;
   inflated: boolean;
   context?: string | null;
+  isLatest: boolean;
 };
 
 export type ItemLastSeen = {
