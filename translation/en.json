@@ -296,7 +296,8 @@
     "can-be-repaired": "This item can be repaired at <Link>Donny's Repair Shop</Link>",
     "has-broken-version": "This item has a broken version that can be repaired at <Link>Donny's Repair Shop</Link>",
     "donnys-toy-repair-shop": "Donny's Toy Repair Shop",
-    "exclusive": "Exclusive"
+    "exclusive": "Exclusive",
+    "price-context": "Price Context"
   },
   "Button": {
     "feedback": "Feedback",

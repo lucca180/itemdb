@@ -297,7 +297,8 @@
     "can-be-repaired": "Este item pode ser reparado no <Link>Reparo de Brinquedos do Donny</Link>",
     "has-broken-version": "Este item tem uma versão quebrada que pode ser consertada no <Link>Reparo de Brinquedos do Donny</Link>",
     "donnys-toy-repair-shop": "Reparo de Brinquedos do Donny",
-    "exclusive": "Exclusivo"
+    "exclusive": "Exclusivo",
+    "price-context": "Contexto de Preço"
   },
   "Button": {
     "feedback": "Feedback",
@@ -943,7 +944,8 @@
     "faq-4": "Quais são as melhores lojas de neopets para reabastecer?",
     "faq-4-text": "Esta é uma pergunta subjetiva, pois depende de suas preferências pessoais e estilo de jogo. Você pode usar o Guia de Restock do itemdb para encontrar as melhores lojas para restockar em Neopets - as mais avançadas são mais difíceis de dominar, mas podem fornecer alguns dos melhores itens para revender.",
     "similar-shops": "Lojas Similares",
-    "corrupt-sessions": "Você pode ter sessão corrompida e precisamos redefinir seus dados, por favor confirme"
+    "corrupt-sessions": "Você pode ter sessão corrompida e precisamos redefinir seus dados, por favor confirme",
+    "reset-data": "Reset Data"
   },
   "Search": {
     "search": "Pesquisa",

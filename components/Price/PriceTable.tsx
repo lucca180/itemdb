@@ -295,9 +295,14 @@ const PriceItem = (
               whiteSpace={'normal'}
               fontSize={'0.8rem'}
               color={'whiteAlpha.700'}
-              fontStyle={'italic'}
               textAlign={'center'}
+              bg="blackAlpha.300"
+              p={1}
+              borderRadius={'md'}
             >
+              <Text fontWeight={'bold'} mb={2}>
+                {t('ItemPage.price-context')}
+              </Text>
               <Markdown>{price.context}</Markdown>
             </Box>
           </Td>
