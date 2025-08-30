@@ -124,11 +124,11 @@ const ItemPriceCard = (props: Props) => {
     { fallbackData: props.lastSeen }
   );
 
-  const price = prices?.[0].isLatest ? prices[0] : null;
+  const price = prices?.[0]?.isLatest ? prices[0] : null;
 
   const priceDiff = useMemo(() => {
     if (!prices || prices.length < 2) return null;
-    const priceZero = prices[0].isLatest ? prices[0] : null;
+    const priceZero = prices[0]?.isLatest ? prices[0] : null;
     const priceOne = prices[1];
     if (!priceZero || !priceOne.value) return null;
     return (priceZero.value ?? 0) - priceOne.value;
