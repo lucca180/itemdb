@@ -21,7 +21,7 @@ export const SeenHistoryStatusCard = (props: SeenHistoryStatusCardProps) => {
       flex="1"
     >
       <Text>{props.title}</Text>
-      <Text as="div" opacity={0.8} mt={1}>
+      <Text as="div" opacity={0.8} mt={1} fontSize={'xs'}>
         {!props.loading &&
           props.status &&
           (isNaN(Number(props.status)) ? props.status : format.number(props.status as number))}

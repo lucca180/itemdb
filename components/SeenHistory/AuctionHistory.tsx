@@ -81,7 +81,7 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
     <Flex flexFlow="column">
       <HStack
         justifyContent={'space-between'}
-        mb={5}
+        mb={2}
         alignItems={'stretch'}
         bg="gray.800"
         p={2}
@@ -94,7 +94,7 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
         />
         <SeenHistoryStatusCard
           title={t('ItemPage.total-sold')}
-          status={data?.sold}
+          status={`${data?.sold} (${data?.sold ? ((data.sold / data.total) * 100).toFixed(0) : 0}%)`}
           loading={loading}
         />
         <SeenHistoryStatusCard
@@ -142,10 +142,10 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
             </TabPanel>
           </TabPanels>
         </Tabs>
-        <Text textAlign={'center'} fontSize={'xs'} mt={3}>
+        <Text textAlign={'center'} fontSize={'xs'} mt={1} color="whiteAlpha.600">
           {t('ItemPage.auction-disclaimer')}
         </Text>
-        <Text textAlign={'center'} fontSize={'xs'} mt={1}>
+        <Text textAlign={'center'} fontSize={'xs'} mt={1} color="whiteAlpha.600">
           {t('ItemPage.seen-history-psa')}
         </Text>
       </Flex>
@@ -162,7 +162,7 @@ const AuctionHistoryTable = (props: Props) => {
   return (
     <TableContainer
       minH={{ base: 100, md: 200 }}
-      maxH={{ base: 200, md: 425 }}
+      maxH={{ base: 200, md: 500 }}
       w="100%"
       maxW="1000px"
       borderRadius="sm"
@@ -185,7 +185,7 @@ const AuctionHistoryTable = (props: Props) => {
               {t('ItemPage.owner')}
             </Th>
             <Th textAlign={'center'} fontSize={'0.6rem'}>
-              {t('ItemPage.first-seen-history')}
+              {t('ItemPage.last-seen')}
             </Th>
           </Tr>
         </Thead>
