@@ -116,6 +116,9 @@ export const getLatestPricedItems = async (limit: number, includeCount = false) 
     prisma.itemPrices.findMany({
       where: {
         manual_check: null,
+        price: {
+          gt: 0,
+        },
       },
       orderBy: { processedAt: 'desc' },
       take: limit,
