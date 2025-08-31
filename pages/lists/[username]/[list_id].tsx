@@ -910,7 +910,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     list.purpose === 'trading' ? list.owner.username! : (user?.username ?? '');
 
   const [preloadData, similarLists, matches] = await Promise.all([
-    preloadListItems(list, !!isOwner, 30),
+    preloadListItems(list, 30),
     list.official ? getSimilarLists(list, 3) : [],
     shouldGetMatches
       ? (

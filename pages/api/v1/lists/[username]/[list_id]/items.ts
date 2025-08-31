@@ -77,14 +77,15 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 // this assumes you already verified the user is the owner of the list
-export const preloadListItems = async (list: UserList, isOwner = false, limit = 30) => {
+export const preloadListItems = async (list: UserList, limit = 30) => {
   const itemInfoRaw = await prisma.listItems.findMany({
     where: { list_id: list.internal_id },
   });
 
   const itemInfo = rawToListItems(itemInfoRaw);
 
-  const result = itemInfo.filter((item) => !item.isHidden || isOwner || !item);
+  // we're preloading so hidden items don't show in the first load
+  const result = itemInfo.filter((item) => !item.isHidden || !item);
   const itemData = await getManyItems({ id: result.map((item) => item.item_iid.toString()) });
 
   const sortedItemInfo = result.sort((a, b) => {
