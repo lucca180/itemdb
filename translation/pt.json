@@ -299,7 +299,9 @@
     "donnys-toy-repair-shop": "Reparo de Brinquedos do Donny",
     "exclusive": "Exclusivo",
     "price-context": "Contexto de Preço",
-    "unknown-price-msg": "Não foi possível estimar o preço deste item"
+    "unknown-price-msg": "Não foi possível estimar o preço deste item",
+    "sold-x-day-median": "Mediana Vendidos {x} Dias",
+    "x-day-median": "Mediana {x} Dias"
   },
   "Button": {
     "feedback": "Feedback",

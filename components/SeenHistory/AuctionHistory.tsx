@@ -37,6 +37,7 @@ type AuctionHistoryResponse = {
   total: number;
   sold: number;
   uniqueOwners: number;
+  priceMedian: number | null;
 };
 
 async function fetcher<T>(url: string, config?: AxiosRequestConfig<any>): Promise<T> {
@@ -46,7 +47,6 @@ async function fetcher<T>(url: string, config?: AxiosRequestConfig<any>): Promis
 
 export const AuctionHistory = (props: AuctionHistoryProps) => {
   const { item } = props;
-  const format = useFormatter();
   const t = useTranslations();
   const [wall, setWall] = React.useState<ContributeWallData | null>(null);
   const [soldData, setSoldData] = React.useState<AuctionHistoryResponse | null>(null);
@@ -103,17 +103,16 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
           loading={loading}
         />
         <SeenHistoryStatusCard
-          title={t('ItemPage.last-new-auction')}
-          status={`${
-            !data?.recent?.[0]?.addedAt
-              ? ''
-              : format.dateTime(new Date(data.recent[0].addedAt), {
-                  dateStyle: 'short',
-                  timeStyle: 'short',
-                  timeZone: 'america/los_angeles',
-                })
-          } NST`}
+          title={t('ItemPage.x-day-median', { x: 15 })}
+          status={data?.priceMedian ?? '???'}
           loading={loading}
+          isNP
+        />
+        <SeenHistoryStatusCard
+          title={t('ItemPage.sold-x-day-median', { x: 15 })}
+          status={soldData?.priceMedian ?? '???'}
+          loading={!wall && !soldData}
+          isNP
         />
       </HStack>
       <Flex flexFlow="column" bg="gray.800" p={2} borderRadius={'lg'} gap={2}>
@@ -131,11 +130,11 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
             </Tab>
           </TabList>
           <TabPanels>
-            <TabPanel>
+            <TabPanel pb={0} px={1}>
               {!loading && <AuctionHistoryTable data={data?.recent ?? []} />}
               {loading && <Spinner />}
             </TabPanel>
-            <TabPanel>
+            <TabPanel pb={0} px={1}>
               {wall && <ContributeWall textType="ItemPage" color={item.color.hex} wall={wall} />}
               {!wall && soldData && <AuctionHistoryTable data={soldData.recent ?? []} />}
               {!wall && !soldData && <Spinner />}
@@ -165,7 +164,7 @@ const AuctionHistoryTable = (props: Props) => {
       maxH={{ base: 200, md: 500 }}
       w="100%"
       maxW="1000px"
-      borderRadius="sm"
+      borderRadius="md"
       overflowX="auto"
       overflowY="auto"
     >

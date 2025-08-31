@@ -178,7 +178,7 @@ function uniqueByOwner(items: PriceProcess2[]) {
   });
 }
 
-function removeOutliersCombined(data: number[]) {
+export function removeOutliersCombined(data: number[]) {
   if (data.length < 4) return data;
 
   const sorted = [...data].sort((a, b) => a - b);

@@ -5,6 +5,7 @@ type SeenHistoryStatusCardProps = {
   title: string;
   status?: string | number;
   loading?: boolean;
+  isNP?: boolean;
 };
 
 export const SeenHistoryStatusCard = (props: SeenHistoryStatusCardProps) => {
@@ -20,11 +21,14 @@ export const SeenHistoryStatusCard = (props: SeenHistoryStatusCardProps) => {
       justifyContent={'center'}
       flex="1"
     >
-      <Text>{props.title}</Text>
+      <Text fontSize={'xs'}>{props.title}</Text>
       <Text as="div" opacity={0.8} mt={1} fontSize={'xs'}>
-        {!props.loading &&
-          props.status &&
-          (isNaN(Number(props.status)) ? props.status : format.number(props.status as number))}
+        {!props.loading && props.status && (
+          <>
+            {isNaN(Number(props.status)) ? props.status : format.number(props.status as number)}{' '}
+            {props.isNP && 'NP'}
+          </>
+        )}
         {props.loading && <SkeletonText noOfLines={1} skeletonHeight="3" />}
       </Text>
     </Flex>

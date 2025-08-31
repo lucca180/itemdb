@@ -6,12 +6,14 @@ import {
   LebronSearchResponse,
   NCTradeReport,
   TradeData,
-} from '../../../../../types';
-import prisma from '../../../../../utils/prisma';
+} from '@types';
+import prisma from '@utils/prisma';
 import { getManyItems } from '../many';
-import { CheckAuth } from '../../../../../utils/googleCloud';
+import { CheckAuth } from '@utils/googleCloud';
 import { contributeCheck } from '../../restock/wrapped-check';
 import { Prisma } from '@prisma/generated/client';
+import { medianSorted } from 'simple-statistics';
+import { removeOutliersCombined } from '@utils/pricing3';
 
 const LEBRON_URL = process.env.LEBRON_API_URL;
 
@@ -244,12 +246,26 @@ const getAuctionData = async (name: string, onlySold = false) => {
     };
   });
 
+  const now = new Date();
+  const recentAuctions = auctions
+    .filter((p) => {
+      const addedAt = new Date(p.addedAt);
+      const diff = now.getTime() - addedAt.getTime();
+      return diff <= 1000 * 60 * 60 * 24 * 7;
+    })
+    .map((p) => p.price)
+    .sort((a, b) => a - b);
+
+  const median =
+    recentAuctions.length >= 5 ? medianSorted(removeOutliersCombined(recentAuctions)) : null;
+
   return {
     recent: auctions.slice(0, 40),
     total: totalAuctions,
     sold: soldAuctions,
     uniqueOwners: uniqueOwners.size,
     period: MAX_DAYS,
+    priceMedian: median,
   };
 };
 

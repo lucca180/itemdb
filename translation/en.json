@@ -298,7 +298,9 @@
     "donnys-toy-repair-shop": "Donny's Toy Repair Shop",
     "exclusive": "Exclusive",
     "price-context": "Price Context",
-    "unknown-price-msg": "Unable to estimate this item's price"
+    "unknown-price-msg": "Unable to estimate this item's price",
+    "sold-x-day-median": "Sold {X}-day Median",
+    "x-day-median": "{x}-day Median"
   },
   "Button": {
     "feedback": "Feedback",
