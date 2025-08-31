@@ -78,8 +78,9 @@ model Items {
   ncValues              ncValues[]
   TradeItems            TradeItems[]
 
-  @@index([name, image_id])
   @@index([image_id])
+  @@index([name, image_id])
+  @@index([canonical_id, name])
   @@index([category, rarity, est_val])
   @@fulltext([name])
   @@fulltext([description])

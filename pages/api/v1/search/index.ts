@@ -416,7 +416,7 @@ export async function doSearch(
 
   if (query === '') fulltext = Prisma.sql`1`;
   else if (mode === 'natural')
-    fulltext = Prisma.sql`MATCH (temp.name) AGAINST (${query} IN NATURAL LANGUAGE MODE) OR temp.name LIKE ${`%${originalQuery}%`}`;
+    fulltext = Prisma.sql`MATCH (temp.name) AGAINST (${query} IN NATURAL LANGUAGE MODE)`;
   else if (mode === 'all')
     fulltext = Prisma.sql`MATCH (temp.name, temp.description) AGAINST (${query} IN BOOLEAN MODE) OR temp.name LIKE ${`%${originalQuery}%`} OR temp.description LIKE ${`%${originalQuery}%`}`;
   else if (mode === 'description')
