@@ -2049,6 +2049,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@date-fns/tz@npm:^1.4.1":
+  version: 1.4.1
+  resolution: "@date-fns/tz@npm:1.4.1"
+  checksum: 10c0/9033fdc4682fe3d4d147625ce04fa88a8792653594e2de8d5a438c8f3bfc0990ee28fe773f91cac6810b06d818b5b281ae0608752ba8337257d0279ded3f019a
+  languageName: node
+  linkType: hard
+
 "@date-fns/utc@npm:^2.1.0":
   version: 2.1.0
   resolution: "@date-fns/utc@npm:2.1.0"
@@ -10850,6 +10857,7 @@ __metadata:
     "@choc-ui/chakra-autocomplete": "npm:^5.8.4"
     "@commitlint/cli": "npm:^19.6.1"
     "@commitlint/config-conventional": "npm:^19.6.0"
+    "@date-fns/tz": "npm:^1.4.1"
     "@date-fns/utc": "npm:^2.1.0"
     "@dnd-kit/core": "npm:^6.3.1"
     "@dnd-kit/sortable": "npm:^10.0.0"

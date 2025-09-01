@@ -22,6 +22,7 @@ import Color from 'color';
 import { isSameDay } from 'date-fns';
 import dynamic from 'next/dynamic';
 import MainLink from '@components/Utils/MainLink';
+import { tz } from '@date-fns/tz';
 
 const Markdown = dynamic(() => import('../Utils/Markdown'));
 
@@ -110,7 +111,12 @@ const PriceTable = (props: Props) => {
       const aDate = new Date(a.addedAt!);
       const bDate = new Date(b.addedAt!);
 
-      if (isSameDay(aDate, bDate)) return b.marker ? -1 : 1;
+      if (
+        isSameDay(aDate, bDate, {
+          in: tz('America/Los_Angeles'),
+        })
+      )
+        return b.marker ? -1 : 1;
 
       return bDate.getTime() - aDate.getTime();
     });
