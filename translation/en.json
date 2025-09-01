@@ -299,7 +299,7 @@
     "exclusive": "Exclusive",
     "price-context": "Price Context",
     "unknown-price-msg": "Unable to estimate this item's price",
-    "sold-x-day-median": "Sold {X}-day Median",
+    "sold-x-day-median": "Sold {x}-day Median",
     "x-day-median": "{x}-day Median"
   },
   "Button": {
