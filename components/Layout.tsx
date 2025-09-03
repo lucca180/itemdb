@@ -82,7 +82,11 @@ const Layout = (props: Props) => {
   };
 
   const saveLang = async (prefLang: string) => {
-    setCookie('NEXT_LOCALE', prefLang, { expires: new Date('2030-01-01') });
+    setCookie('NEXT_LOCALE', prefLang, {
+      expires: new Date('2030-01-01'),
+      sameSite: 'none',
+      secure: true,
+    });
     if (!user) return;
     await axios.post(`/api/v1/users/${user.username}`, {
       prefLang: prefLang,

@@ -50,7 +50,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     }
 
     if (dbUser.pref_lang) {
-      cookies.push(`NEXT_LOCALE=${dbUser.pref_lang};Path=/;Max-Age=2147483647;`);
+      cookies.push(
+        `NEXT_LOCALE=${dbUser.pref_lang};Path=/;Max-Age=2147483647;SameSite=None;Secure;`
+      );
     }
 
     if (cookies.length) res.setHeader('Set-Cookie', cookies);

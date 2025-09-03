@@ -25,3 +25,4 @@ prisma/generated
 translation/tree-shake/
 
 itemDataExtractor-admin.user.js
+certificates
