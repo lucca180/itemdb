@@ -39,17 +39,20 @@ import NextLink from 'next/link';
 import { createTranslator, useTranslations } from 'next-intl';
 import { Breadcrumbs } from '../../../components/Breadcrumbs/Breadcrumbs';
 import { loadTranslation } from '@utils/load-translation';
+import { GetServerSidePropsContext } from 'next';
+import * as Sentry from '@sentry/nextjs';
+
 type Props = {
   items?: { [index: number | string]: number };
   indexType?: string;
-  recomended_list?: UserList | null;
+  recommended_list?: UserList | null;
   locale: string;
   messages: any;
 };
 
 const ImportPage = (props: Props) => {
   const t = useTranslations();
-  const { items, indexType, recomended_list } = props;
+  const { items, indexType, recommended_list } = props;
   return (
     <>
       <HeaderCard
@@ -91,7 +94,7 @@ const ImportPage = (props: Props) => {
         <Divider />
         {!items && <ImportInfo />}
         {items && !!indexType && (
-          <ImportItems items={items} indexType={indexType} recomended_list={recomended_list} />
+          <ImportItems items={items} indexType={indexType} recommended_list={recommended_list} />
         )}
       </Flex>
     </>
@@ -100,11 +103,25 @@ const ImportPage = (props: Props) => {
 
 export default ImportPage;
 
-export async function getServerSideProps(context: any) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   const body = await parseBody(context.req, '4mb');
   const items = JSON.parse(body?.itemDataJson ?? 'null');
   const indexType = body?.indexType ?? 'item_id';
   const list_id = body?.list_id ?? null;
+
+  if (context.req.method === 'POST' && !items) {
+    Sentry.getCurrentScope().addAttachment({
+      filename: 'rawBody.txt',
+      data: body,
+    });
+
+    Sentry.getCurrentScope().addAttachment({
+      filename: 'fullReq.txt',
+      data: context.req.toString(),
+    });
+
+    Sentry.captureException(new Error('Failed to import items'));
+  }
 
   const list = list_id ? await getList('official', Number(list_id), null, true) : null;
 
@@ -112,7 +129,7 @@ export async function getServerSideProps(context: any) {
     props: {
       items: items,
       indexType: indexType,
-      recomended_list: list,
+      recommended_list: list,
       messages: await loadTranslation(context.locale as string, 'lists/import/index'),
       locale: context.locale ?? 'en',
     },
@@ -146,7 +163,7 @@ ImportPage.getLayout = function getLayout(page: ReactElement, props: Props) {
 type ImportItemsProps = {
   items: { [item_id: number | string]: number };
   indexType: string;
-  recomended_list?: UserList | null;
+  recommended_list?: UserList | null;
 };
 
 const DefaultImportInfo = {
@@ -166,7 +183,7 @@ const ImportItems = (props: ImportItemsProps) => {
   const { user } = useAuth();
   const router = useRouter();
   const toast = useToast();
-  const { items, indexType, recomended_list } = props;
+  const { items, indexType, recommended_list } = props;
   const [itemData, setItemData] = useState<{ [identifier: string | number]: ItemData } | null>(
     null
   );
@@ -462,11 +479,11 @@ const ImportItems = (props: ImportItemsProps) => {
             <Button onClick={handleImport} isDisabled={!importInfo.list}>
               {t('General.submit')}
             </Button>
-            {recomended_list && (
+            {recommended_list && (
               <>
                 <Text>{t('General.or')}</Text>
                 <CreateLinkedListButton
-                  list={recomended_list}
+                  list={recommended_list}
                   isImport
                   onCreate={handleLinkedList}
                 />
