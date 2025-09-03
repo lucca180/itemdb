@@ -41,6 +41,7 @@ import { Breadcrumbs } from '../../../components/Breadcrumbs/Breadcrumbs';
 import { loadTranslation } from '@utils/load-translation';
 import { GetServerSidePropsContext } from 'next';
 import * as Sentry from '@sentry/nextjs';
+import { getRawBody } from '../../api/v1/restock';
 
 type Props = {
   items?: { [index: number | string]: number };
@@ -105,20 +106,30 @@ export default ImportPage;
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const body = await parseBody(context.req, '4mb');
-  const items = JSON.parse(body?.itemDataJson ?? 'null');
+  let items = JSON.parse(body?.itemDataJson ?? 'null');
   const indexType = body?.indexType ?? 'item_id';
   const list_id = body?.list_id ?? null;
 
   if (context.req.method === 'POST' && !items) {
-    Sentry.getCurrentScope().addAttachment({
-      filename: 'rawBody.txt',
-      data: body,
-    });
+    try {
+      const rawBody = await getRawBody(context.req);
+      Sentry.getCurrentScope().addAttachment({
+        filename: 'rawBody.txt',
+        data: rawBody.text,
+      });
 
-    Sentry.getCurrentScope().addAttachment({
-      filename: 'fullReq.txt',
-      data: context.req.toString(),
-    });
+      Sentry.getCurrentScope().addAttachment({
+        filename: 'fullReq.txt',
+        data: context.req.toString(),
+      });
+
+      const qs = await import('query-string');
+
+      const parsed = qs.default.parse(rawBody.text) as any;
+      items = JSON.parse(parsed.itemDataJson ?? 'null');
+    } catch (e) {
+      console.error('Failed to parse body:', e);
+    }
 
     Sentry.captureException(new Error('Failed to import items'));
   }

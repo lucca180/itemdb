@@ -10,6 +10,7 @@ import { UTCDate } from '@date-fns/utc';
 import { countBy, maxBy } from 'lodash';
 import { parseBody } from 'next/dist/server/api-utils/node/parse-body';
 import * as Sentry from '@sentry/nextjs';
+import type { IncomingMessage } from 'http';
 
 export const config = {
   api: {
@@ -598,7 +599,7 @@ const getItemProfitOnDate = (click: RestockSession['clicks'][0], item: ItemData)
 //
 
 export async function getRawBody(
-  req: NextApiRequest
+  req: IncomingMessage
 ): Promise<{ buffer: Buffer; text: string; size: number }> {
   const chunks: Uint8Array[] = [];
 
