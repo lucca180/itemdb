@@ -40,7 +40,6 @@ import { createTranslator, useTranslations } from 'next-intl';
 import { Breadcrumbs } from '../../../components/Breadcrumbs/Breadcrumbs';
 import { loadTranslation } from '@utils/load-translation';
 import { GetServerSidePropsContext } from 'next';
-import * as Sentry from '@sentry/nextjs';
 import { getRawBody } from '../../api/v1/restock';
 
 type Props = {
@@ -110,28 +109,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const indexType = body?.indexType ?? 'item_id';
   const list_id = body?.list_id ?? null;
 
+  // nextjs parseBody is weird...
   if (context.req.method === 'POST' && !items) {
-    try {
-      const rawBody = await getRawBody(context.req);
-      Sentry.getCurrentScope().addAttachment({
-        filename: 'rawBody.txt',
-        data: rawBody.text,
-      });
-
-      Sentry.getCurrentScope().addAttachment({
-        filename: 'fullReq.txt',
-        data: context.req.toString(),
-      });
-
-      const qs = await import('query-string');
-
-      const parsed = qs.default.parse(rawBody.text) as any;
-      items = JSON.parse(parsed.itemDataJson ?? 'null');
-    } catch (e) {
-      console.error('Failed to parse body:', e);
-    }
-
-    Sentry.captureException(new Error('Failed to import items'));
+    const rawBody = await getRawBody(context.req);
+    const qs = await import('query-string');
+    const parsed = qs.default.parse(rawBody.text) as any;
+    items = JSON.parse(parsed.itemDataJson ?? 'null');
   }
 
   const list = list_id ? await getList('official', Number(list_id), null, true) : null;
@@ -408,7 +391,9 @@ const ImportItems = (props: ImportItemsProps) => {
 
   return (
     <>
-      <Heading size="lg">Importing {Object.values(itemData ?? items).length} Items</Heading>
+      <Heading size="lg">
+        {t('Lists.importing-x-items', { x: Object.values(itemData ?? items).length })}
+      </Heading>
       {notFound > 0 && (
         <Text fontSize="sm" color="red.400">
           {t.rich('Lists.import-notFound', {
