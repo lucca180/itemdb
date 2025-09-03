@@ -7,7 +7,7 @@ import { UserList } from '../../../../types';
 import Fuse from 'fuse.js';
 import { restockShopInfo } from '../../../../utils/utils';
 import { rawToList } from '../lists/[username]';
-import { UserList as RawList, User as RawUser, Prisma } from '@prisma/generated/client';
+import { UserList as RawList, User as RawUser } from '@prisma/generated/client';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET' && req.url) return GET(req, res);
@@ -43,19 +43,20 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const userLists: UserList[] = listRes.map((listRaw) => rawToList(listRaw, listRaw.user));
 
-  const fuze = new Fuse(Object.values(restockShopInfo), {
-    keys: ['name'],
-    threshold: 0.2,
-    ignoreLocation: true,
-  });
+  const fuze = new Fuse(
+    Object.values(restockShopInfo).filter((x) => Number(x.id) > 0),
+    {
+      keys: ['name'],
+      threshold: 0.2,
+      ignoreLocation: true,
+    }
+  );
 
   const shop = fuze.search(query);
   const result = shop.map((x) => x.item).slice(0, 1);
 
   return res.status(200).json({ items: searchRes.content, lists: userLists, restockShop: result });
 };
-
-const ENV_FUZZY_SEARCH = process.env.HAS_FUZZY_SEARCH === 'true';
 
 const getListsRaw = async (query: string, limit = 3) => {
   const originalQuery = query;
@@ -66,27 +67,10 @@ const getListsRaw = async (query: string, limit = 3) => {
     select ul.*, u.username, u.neo_user, u.last_login from UserList ul 
     left join User u on ul.user_id = u.id
     where ul.official = 1
-    ${
-      ENV_FUZZY_SEARCH
-        ? Prisma.sql`and bounded_edit_dist_t(${originalQuery.toLowerCase()}, LOWER(ul.name), 6) <= 6`
-        : Prisma.sql`and 1 = 0`
-    }
-
-    union
-
-    select ul.*, u.username, u.neo_user, u.last_login from UserList ul 
-    left join User u on ul.user_id = u.id
-    where ul.official = 1
-    and (MATCH (ul.name, ul.description) AGAINST (${query} IN BOOLEAN MODE) OR ul.name LIKE ${`%${originalQuery}%`} OR ul.description LIKE ${`%${originalQuery}%`})
-    
+    and (MATCH (ul.name, ul.description) AGAINST (${query} IN NATURAL LANGUAGE MODE) OR ul.name LIKE ${`%${originalQuery}%`} OR ul.description LIKE ${`%${originalQuery}%`})
     order by
       name = ${originalQuery} DESC,
-      ${
-        ENV_FUZZY_SEARCH
-          ? Prisma.sql`bounded_edit_dist_t(${originalQuery.toLowerCase()}, LOWER(name), 6),`
-          : Prisma.empty
-      }
-      createdAt DESC
+      updatedAt DESC
   `;
 
   return [...listsRaw]
