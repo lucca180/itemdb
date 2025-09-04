@@ -118,7 +118,7 @@ const OutfitPage = (props: OutfitPageProps) => {
 
                 <Flex flexWrap={'wrap'} justifyContent={'center'} gap={2} flex={1}>
                   {outfit.map((item) => (
-                    <ItemCard key={item.internal_id} item={item} />
+                    <ItemCard uniqueID={`outfit-${line}`} key={item.internal_id} item={item} />
                   ))}
                 </Flex>
               </Flex>

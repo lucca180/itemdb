@@ -59,7 +59,12 @@ const DyeCard = (props: Props) => {
           >
             <Text>{t('DyeCard.dyeworks-original-item')}</Text>
             <Flex wrap="wrap" gap={2} justifyContent={'center'}>
-              <ItemCard key={dyeData.originalItem.internal_id} item={dyeData.originalItem} small />
+              <ItemCard
+                uniqueID="dyeworks-original-item"
+                key={dyeData.originalItem.internal_id}
+                item={dyeData.originalItem}
+                small
+              />
             </Flex>
           </Flex>
           <Flex
@@ -73,7 +78,7 @@ const DyeCard = (props: Props) => {
             <Text>{t('DyeCard.dyeworks-all-variants')}</Text>
             <Flex wrap="wrap" gap={2} justifyContent={'center'}>
               {dyeData.dyes.map((dye) => (
-                <ItemCard key={dye.internal_id} item={dye} small />
+                <ItemCard uniqueID="dyeworks-variant" key={dye.internal_id} item={dye} small />
               ))}
             </Flex>
           </Flex>

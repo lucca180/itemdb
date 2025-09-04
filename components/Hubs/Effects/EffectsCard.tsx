@@ -22,7 +22,7 @@ import { ItemImage } from '@components/Items/ItemCard';
 
 type EffectsCardProps = {
   item: ItemData & { effects?: ItemEffect[] };
-  uniqueID?: string;
+  uniqueID: string;
 };
 
 export const EffectsCard = (props: EffectsCardProps) => {

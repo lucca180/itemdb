@@ -64,11 +64,21 @@ const ItemRecipes = (props: Props) => {
                   borderRadius={'md'}
                   flexWrap={'wrap'}
                 >
-                  <ItemCard key={recipe.result.internal_id} item={recipe.result} small />
+                  <ItemCard
+                    uniqueID={`cooking-pot-card-${recipe.result.internal_id}`}
+                    key={recipe.result.internal_id}
+                    item={recipe.result}
+                    small
+                  />
                   <Center>=</Center>
                   {recipe.ingredients.map((ingredient, i) => (
                     <>
-                      <ItemCard key={ingredient.internal_id} item={ingredient} small />{' '}
+                      <ItemCard
+                        uniqueID={`cooking-pot-card-${ingredient.internal_id}`}
+                        key={ingredient.internal_id}
+                        item={ingredient}
+                        small
+                      />{' '}
                       {+i !== recipe.ingredients.length - 1 && <Center>+</Center>}
                     </>
                   ))}
@@ -118,12 +128,14 @@ const ItemRecipes = (props: Props) => {
                   flexWrap={'wrap'}
                 >
                   <ItemCard
+                    uniqueID={`repair-card-${repairDetails.broken.internal_id}`}
                     key={repairDetails.broken.internal_id}
                     item={repairDetails.broken}
                     small
                   />
                   <Center>{'=>'}</Center>
                   <ItemCard
+                    uniqueID={`repair-card-${repairDetails.original.internal_id}`}
                     key={repairDetails.original.internal_id}
                     item={repairDetails.original}
                     small

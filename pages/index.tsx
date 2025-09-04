@@ -121,9 +121,15 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
           <Flex flexWrap="wrap" gap={4} justifyContent="center">
             {latestPrices &&
               latestPrices.items.map((item) => (
-                <ItemCard item={item} key={item.internal_id} utm_content="latest-prices" />
+                <ItemCard
+                  uniqueID="latest-prices"
+                  item={item}
+                  key={item.internal_id}
+                  utm_content="latest-prices"
+                />
               ))}
-            {!latestPrices && [...Array(16)].map((_, i) => <ItemCard key={i} />)}
+            {!latestPrices &&
+              [...Array(16)].map((_, i) => <ItemCard uniqueID="latest-prices" key={i} />)}
           </Flex>
           {latestPrices?.count && (
             <Text textAlign={'right'} mt={4} fontSize={'xs'} color={'whiteAlpha.400'}>

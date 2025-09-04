@@ -164,7 +164,12 @@ const DataCollectingPage = () => {
               <>
                 <Flex gap={3} flexWrap={'wrap'} justifyContent={'center'}>
                   {itemList.map((item) => (
-                    <ItemCard key={item.internal_id} item={item} small />
+                    <ItemCard
+                      uniqueID={`data-collecting`}
+                      key={item.internal_id}
+                      item={item}
+                      small
+                    />
                   ))}
                 </Flex>
               </>

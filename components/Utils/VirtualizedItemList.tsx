@@ -8,6 +8,7 @@ type VirtualizedItemListProps = {
   items: ItemData[];
   sortType?: string;
   highlightList?: number[];
+  uniqueID?: string;
 };
 
 export const VirtualizedItemList = (props: VirtualizedItemListProps) => {
@@ -36,6 +37,7 @@ export const VirtualizedItemList = (props: VirtualizedItemListProps) => {
           <Flex gap={[1, 3]} key={index} justifyContent="center" flexWrap={'wrap'}>
             {group.map((item) => (
               <ItemCard
+                uniqueID={`virtualized-list-${props.uniqueID ?? 'default'}`}
                 highlight={props.highlightList?.includes(item.internal_id)}
                 sortType={sortType}
                 key={item.internal_id}

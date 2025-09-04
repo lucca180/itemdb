@@ -267,7 +267,9 @@ const Wrapped2024 = (props: Wrapped2024Props) => {
             </Text>{' '}
             times! wow
           </Text>
-          {wrappedData?.favoriteItem && <ItemCard item={wrappedData.favoriteItem.item!} />}
+          {wrappedData?.favoriteItem && (
+            <ItemCard uniqueID={`favorite-item`} item={wrappedData.favoriteItem.item!} />
+          )}
         </Flex>
       </Flex>
       <Flex
@@ -311,7 +313,12 @@ const Wrapped2024 = (props: Wrapped2024Props) => {
         <Grid templateColumns={{ base: 'repeat(2, 1fr)', lg: 'repeat(5, 1fr)' }} gap={3}>
           {wrappedData?.hottestBought.map((buy) => (
             <GridItem key={buy.item.internal_id}>
-              <ItemCard key={buy.item.internal_id} small item={buy.item} />
+              <ItemCard
+                uniqueID={`hottest-bought`}
+                key={buy.item.internal_id}
+                small
+                item={buy.item}
+              />
             </GridItem>
           ))}
         </Grid>
@@ -333,7 +340,9 @@ const Wrapped2024 = (props: Wrapped2024Props) => {
             </Text>{' '}
             for you to buy it
           </Text>
-          {wrappedData?.fastestBuy && <ItemCard item={wrappedData.fastestBuy.item!} />}
+          {wrappedData?.fastestBuy && (
+            <ItemCard uniqueID={`fastest-buy`} item={wrappedData.fastestBuy.item!} />
+          )}
         </Flex>
       </Flex>
       <Flex
@@ -387,7 +396,12 @@ const Wrapped2024 = (props: Wrapped2024Props) => {
         <Grid templateColumns={{ base: 'repeat(2, 1fr)', lg: 'repeat(5, 1fr)' }} gap={3}>
           {wrappedData?.hottestLost.slice(0, 10).map((buy) => (
             <GridItem key={buy.item.internal_id}>
-              <ItemCard key={buy.item.internal_id} small item={buy.item} />
+              <ItemCard
+                uniqueID={`hottest-lost`}
+                key={buy.item.internal_id}
+                small
+                item={buy.item}
+              />
             </GridItem>
           ))}
         </Grid>
@@ -419,7 +433,9 @@ const Wrapped2024 = (props: Wrapped2024Props) => {
             {wrappedData &&
               hottestMiss(wrappedData)
                 .slice(0, 5)
-                .map((item) => <ItemCard key={item.internal_id} item={item} small />)}
+                .map((item) => (
+                  <ItemCard uniqueID={`hottest-miss`} key={item.internal_id} item={item} small />
+                ))}
           </Flex>
         </Flex>
       </Flex>

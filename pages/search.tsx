@@ -497,6 +497,7 @@ const SearchPage = () => {
                 cursor={selectedItems.length > 0 ? 'pointer' : 'default'}
               >
                 <ItemCard
+                  uniqueID={`search`}
                   item={item}
                   onSelect={() => selectItem(item.internal_id)}
                   disableLink={selectedItems.length > 0}
@@ -505,7 +506,8 @@ const SearchPage = () => {
                 />
               </Box>
             ))}
-            {!searchResult && [...Array(48)].map((_, i) => <ItemCard key={i} />)}
+            {!searchResult &&
+              [...Array(48)].map((_, i) => <ItemCard uniqueID={`search`} key={i} />)}
             {searchResult && searchResult.content.length === 0 && (
               <Center h="60vh" flexFlow="column" gap={3}>
                 <Image

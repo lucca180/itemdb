@@ -108,7 +108,10 @@ const NeedInfoPage = () => {
         </TypeButton>
       </Center>
       <Center alignItems={'stretch'} flexWrap={'wrap'} gap={3} mt={3}>
-        {!isLoading && items.map((item) => <ItemCard key={item.internal_id} item={item} />)}
+        {!isLoading &&
+          items.map((item) => (
+            <ItemCard uniqueID="missing-info" key={item.internal_id} item={item} />
+          ))}
         {!isLoading && items.length === 0 && (
           <VStack>
             <Image maxW="300px" src="/api/cache/preview/bg_waitingrestock.png" alt="empty image" />

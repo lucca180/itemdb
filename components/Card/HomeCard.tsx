@@ -94,7 +94,12 @@ export const HomeCard = (props: HomeCardProps) => {
         {useItemCard && (
           <Flex flexWrap={'wrap'} gap={2} my={3} justifyContent={'center'}>
             {items.slice(perPage * page, perPage * (page + 1)).map((item) => (
-              <ItemCard key={item.internal_id + title} item={item} utm_content={utm_content} />
+              <ItemCard
+                uniqueID={title}
+                key={item.internal_id + title}
+                item={item}
+                utm_content={utm_content}
+              />
             ))}
           </Flex>
         )}

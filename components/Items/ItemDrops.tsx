@@ -72,7 +72,7 @@ const ItemDrops = (props: Props) => {
       <CardBase title={t('Drops.item-drops')} color={color}>
         <Flex gap={3} wrap="wrap" justifyContent="center">
           {Object.values(itemDrops).map((item) => (
-            <ItemCard key={item.item_iid} isLoading small />
+            <ItemCard uniqueID="" key={item.item_iid} isLoading small />
           ))}
         </Flex>
       </CardBase>
@@ -323,7 +323,8 @@ export const DropPool = (props: DropPoolProps) => {
             if (!item) return null;
             return (
               <ItemCard
-                key={item.internal_id}
+                uniqueID={`drop-${pool.name}`}
+                key={`drop-${pool.name}-${item.internal_id}`}
                 item={item}
                 disablePrefetch
                 small

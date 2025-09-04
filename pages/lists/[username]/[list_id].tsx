@@ -598,6 +598,7 @@ const ListPage = (props: ListPageProps) => {
                 .sort((a, b) => sortListItems(a, b, 'name', 'asc', items))
                 .map((itemMatch) => (
                   <ItemCard
+                    uniqueID="list-match"
                     item={items[itemMatch.item_iid]}
                     key={itemMatch.item_iid}
                     capValue={itemMatch.capValue}
@@ -799,7 +800,7 @@ const ListPage = (props: ListPageProps) => {
         {isLoading && !itemInfoIds.length && (
           <Flex gap={3} justifyContent={'center'} wrap={'wrap'}>
             {Array.from({ length: Math.min(8 * 5, list.itemCount) }).map((_, i) => (
-              <ItemCard key={i} isLoading />
+              <ItemCard uniqueID={`loading`} key={i} isLoading />
             ))}
           </Flex>
         )}

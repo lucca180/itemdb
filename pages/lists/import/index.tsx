@@ -411,13 +411,15 @@ const ImportItems = (props: ImportItemsProps) => {
                 .slice(0, 30)
                 .map((item) => (
                   <ItemCard
+                    uniqueID={`import-list`}
                     disablePrefetch={true}
                     key={item[0]}
                     item={item[1]}
                     quantity={items[item[0]]}
                   />
                 ))}
-            {!itemData && [...Array(20)].map((_, i) => <ItemCard key={i} />)}
+            {!itemData &&
+              [...Array(20)].map((_, i) => <ItemCard uniqueID={`import-list`} key={i} />)}
           </Flex>
           {itemData && loadedItems.length > 30 && (
             <Text textAlign="center">

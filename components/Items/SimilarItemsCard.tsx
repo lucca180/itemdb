@@ -20,6 +20,7 @@ const SimilarItemsCard = (props: Props) => {
       <Flex gap={3} wrap="wrap" justifyContent="center">
         {props.similarItems.map((item) => (
           <ItemCard
+            uniqueID={`similar-items`}
             utm_content="similar_items"
             disablePrefetch
             key={item.internal_id}

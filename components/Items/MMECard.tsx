@@ -43,9 +43,18 @@ const MMECard = (props: Props) => {
                 </b>
               </Text>
               <Flex wrap="wrap" gap={2} justifyContent={'center'}>
-                <ItemCard item={mmeData.initial} small />
+                <ItemCard
+                  uniqueID={`mme-initial-${mmeData.initial.internal_id}`}
+                  item={mmeData.initial}
+                  small
+                />
                 {mmeData.trails[trail].map((i) => (
-                  <ItemCard key={i.internal_id} item={i} small />
+                  <ItemCard
+                    uniqueID={`mme-trail-${trail}-${i.internal_id}`}
+                    key={i.internal_id}
+                    item={i}
+                    small
+                  />
                 ))}
               </Flex>
             </Flex>
@@ -56,7 +65,12 @@ const MMECard = (props: Props) => {
             b: (children) => <b>{children}</b>,
           })}
         </Text>
-        <ItemCard item={mmeData.bonus} small isLE />
+        <ItemCard
+          uniqueID={`mme-bonus-${mmeData.bonus.internal_id}`}
+          item={mmeData.bonus}
+          small
+          isLE
+        />
       </Flex>
     </CardBase>
   );

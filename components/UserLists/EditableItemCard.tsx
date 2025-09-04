@@ -84,6 +84,7 @@ export function EditableItemCard(props: EditableItemCardProps) {
     >
       <Box onClick={(e) => onClick(e)} style={{ height: '100%' }}>
         <ItemCard
+          uniqueID="editable-item-card"
           item={item}
           sortType={sortType}
           disableLink={editMode}

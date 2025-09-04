@@ -143,7 +143,10 @@ const ItemEffectPage = () => {
         </Center>
       )}
       <Center alignItems={'stretch'} flexWrap={'wrap'} gap={3} mt={3}>
-        {!isLoading && items.map((item) => <EffectsCard key={item.internal_id} item={item} />)}
+        {!isLoading &&
+          items.map((item) => (
+            <EffectsCard uniqueID={`${field}-item-effect`} key={item.internal_id} item={item} />
+          ))}
         {!isLoading && items.length === 0 && (
           <VStack>
             <Text>{t('ItemEffects.empty-msg')}</Text>

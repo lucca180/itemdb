@@ -194,12 +194,13 @@ export const SearchBar = (props: Props) => {
                 searchResult.items.map((item) => (
                   <React.Fragment key={item.internal_id}>
                     <ItemCtxMenu
+                      menuId={`omni-search-${item.internal_id}`}
                       item={item}
                       onShow={() => (disableListener = true)}
                       onHide={() => (disableListener = false)}
                     />
                     <CtxTrigger
-                      id={item.internal_id.toString()}
+                      id={`omni-search-${item.internal_id}`}
                       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                       //@ts-ignore
                       disableWhileShiftPressed

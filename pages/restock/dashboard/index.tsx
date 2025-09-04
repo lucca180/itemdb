@@ -840,7 +840,12 @@ const RestockDashboard = (props: RestockDashboardProps) => {
                         )}
                         {!userPref?.dashboard_hideMisses &&
                           sessionStats.hottestRestocks.map((item, i) => (
-                            <ItemCard disablePrefetch item={item} key={i} />
+                            <ItemCard
+                              uniqueID={`hottest-restock`}
+                              disablePrefetch
+                              item={item}
+                              key={i}
+                            />
                           ))}
                       </Flex>
                       <Text fontSize={'sm'}>

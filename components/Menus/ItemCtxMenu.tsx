@@ -90,7 +90,7 @@ type Props = {
   onListAction?: (item: ItemData, action: 'move' | 'delete') => any;
   onShow?: () => void;
   onHide?: () => void;
-  menuId?: string;
+  menuId: string;
 };
 
 const ItemCtxMenu = (props: Props) => {

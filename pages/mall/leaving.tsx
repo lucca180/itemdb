@@ -82,7 +82,7 @@ const LeavingMallPage = (props: LeavingMallPageProps) => {
               {mallData.map((mall) => {
                 const item = itemData.find((item) => item.internal_id === mall.item_iid);
                 if (!item) return null;
-                return <ItemCard key={item.internal_id} item={item} />;
+                return <ItemCard uniqueID={`leaving-mall`} key={item.internal_id} item={item} />;
               })}
             </HStack>
           </>
