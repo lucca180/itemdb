@@ -71,7 +71,7 @@ export const redis_setItemCount = async (
       if (isBanned) return;
 
       const banCount = (await redis.get(`bCount:${ip}`)) || '0';
-      await redis.set(`ban:${ip}`, 'true', 'EX', (INITIAL_BAN_HOURS + Number(banCount)) * 60 * 60);
+      await redis.set(`ban:${ip}`, newVal, 'EX', (INITIAL_BAN_HOURS + Number(banCount)) * 60 * 60);
 
       await redis.incr(`bCount:${ip}`);
       await redis.expire(`bCount:${ip}`, 30 * 24 * 60 * 60);
