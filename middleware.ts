@@ -93,7 +93,7 @@ const apiMiddleware = async (request: NextRequest) => {
 
   //check if request pathname has a skip route
   const skips = API_SKIPS[request.method] || [];
-  if (skips.some((skip) => request.nextUrl.pathname.includes(skip))) {
+  if (skips.some((skip) => request.nextUrl.pathname.endsWith(skip))) {
     return response;
   }
 
@@ -123,10 +123,11 @@ const apiMiddleware = async (request: NextRequest) => {
 
   if (!ip) {
     updateServerTime('api-middleware', startTime, response);
+    console.error('Middleware Error: No IP found for request');
     return NextResponse.next();
   }
 
-  const banned = await checkRedis(ip, request.nextUrl.pathname);
+  const banned = await checkRedis(ip);
   if (banned) {
     updateServerTime('api-middleware', startTime, response);
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });

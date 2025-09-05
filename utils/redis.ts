@@ -5,7 +5,7 @@ import { NextApiRequest } from 'next/types';
 const chance = new Chance();
 
 const LIMIT_COUNT = 20000;
-const LIMIT_BAN = 6 * 60 * 60 * 1000;
+const INITIAL_BAN_HOURS = 2;
 const skipAPIMiddleware =
   process.env.SKIP_API_MIDDLEWARE === 'true' || process.env.NODE_ENV === 'development';
 
@@ -26,29 +26,26 @@ if (
 }
 
 export const getSession = async (sessionToken?: string, checkOnly = false) => {
-  const sessionData = sessionToken ? await redis.get(sessionToken) : null;
+  const sessionName = `guid:${sessionToken}`;
+  const sessionData = sessionToken ? await redis.get(sessionName) : null;
   if (sessionData) return sessionToken as string;
 
   if (checkOnly) return false;
 
   const newSessionId = chance.guid({ version: 5 });
-  await redis.set(newSessionId, 'true', 'EX', 20 * 60);
+  await redis.set(`guid:${newSessionId}`, 'true', 'EX', 20 * 60);
 
   return newSessionId;
 };
 
-export const checkRedis = async (ip: string, sessionId: string) => {
+export const checkRedis = async (ip: string, sessionId?: string) => {
   const isValidSession = sessionId ? await getSession(sessionId, true) : false;
   if (isValidSession) return false;
 
-  const rawItemsCount = await redis.get(ip);
-  if (!rawItemsCount) return false;
+  const isBanned = await redis.get(`ban:${ip}`);
+  if (isBanned) return true;
 
-  const itemsRequested = Number(rawItemsCount);
-
-  if (itemsRequested >= LIMIT_COUNT) {
-    return true;
-  }
+  return false;
 };
 
 export const redis_setItemCount = async (
@@ -70,8 +67,14 @@ export const redis_setItemCount = async (
     const newVal = await redis.incrby(ip, itemCount);
 
     if (newVal >= LIMIT_COUNT) {
-      console.error('Banning IP:', ip);
-      await redis.pexpire(ip, LIMIT_BAN);
+      const isBanned = await redis.get(`ban:${ip}`);
+      if (isBanned) return;
+
+      const banCount = (await redis.get(`bCount:${ip}`)) || '0';
+      await redis.set(`ban:${ip}`, 'true', 'EX', (INITIAL_BAN_HOURS + Number(banCount)) * 60 * 60);
+
+      await redis.incr(`bCount:${ip}`);
+      await redis.expire(`bCount:${ip}`, 30 * 24 * 60 * 60);
       return;
     }
 
