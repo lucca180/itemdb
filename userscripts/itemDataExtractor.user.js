@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.9.5
+// @version      1.9.6
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -37,19 +37,23 @@ The code of the external script has been obfuscated to prevent malicious actors 
 replicating the hash and inserting false information into the itemdb.
 */
 
-// function to check if the current url contains a word
-function URLHas(string) {
-  return window.location.href.includes(string);
-}
 
 const originalOpen = window.XMLHttpRequest.prototype.open;
 const originalFetch = window.fetch;
 
 let resItemData = [];
+let dataSource = '';
 
 const script_info = {
   version: GM_info.script.version,
   versionCode: Number(GM_info.script.version.replaceAll(".", ""))
+}
+
+// function to check if the current url contains a word
+function URLHas(string) {
+  const hasWord = window.location.href.includes(string);
+  dataSource = hasWord ? string : dataSource;
+  return hasWord;
 }
 
 const itemdb_script = function() {
@@ -1248,7 +1252,8 @@ const itemdb_script = function() {
     const rawData = {
       lang: pageLang,
       items: itemsList,
-      hash: hash
+      hash: hash,
+      dataSource,
     }
 
     GM_xmlhttpRequest({
@@ -1282,7 +1287,8 @@ const itemdb_script = function() {
     const rawData = {
       lang: pageLang,
       itemPrices: priceList,
-      hash: hash
+      hash: hash,
+      dataSource
     }
 
     GM_xmlhttpRequest({
@@ -1316,7 +1322,8 @@ const itemdb_script = function() {
     const rawData = {
       lang: pageLang,
       tradeLots: tradeList,
-      hash: hash
+      hash: hash,
+      dataSource
     }
 
     GM_xmlhttpRequest({
@@ -1354,6 +1361,7 @@ const itemdb_script = function() {
       parentItem: parentItem,
       gramInfo: gramInfo,
       hash: hash,
+      dataSource,
     }
 
     GM_xmlhttpRequest({

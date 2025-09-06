@@ -51,6 +51,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const requestMeta = {
     itemdbVersion: meta || 'direct-api',
+    dataSource: data.dataSource || 'unknown',
   };
 
   const dataList = [];
