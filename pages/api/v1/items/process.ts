@@ -302,8 +302,6 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
             dbItem.category = item.category;
           else if (
             itemCategory !== dbCatetory &&
-            !genericCats.includes(itemCategory) &&
-            !genericCats.includes(dbCatetory) &&
             categoryToShopID[itemCategory] &&
             categoryToShopID[dbCatetory]
           )
