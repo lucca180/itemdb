@@ -10,6 +10,7 @@ import {
   Link,
   HStack,
   Button,
+  useDisclosure,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import React, { useEffect, useMemo } from 'react';
@@ -23,6 +24,7 @@ import { showScriptCTA } from '../../utils/scriptUtils';
 import { capInfoIds, capsulesInfo } from '@utils/ncCapsulesInfo';
 
 const OldPoolDrops = dynamic(() => import('../Utils/OldPoolDrops'));
+const OfficialOddsModal = dynamic(() => import('../Modal/OfficialOddsModal'));
 
 type Props = {
   item: ItemData;
@@ -35,6 +37,7 @@ const ItemDrops = (props: Props) => {
   const t = useTranslations();
   const [isLoading, setLoading] = React.useState(true);
   const [dropData, setDropData] = React.useState<ItemData[]>([]);
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const { item, itemOpenable } = props;
 
   const color = item.color.rgb;
@@ -80,6 +83,7 @@ const ItemDrops = (props: Props) => {
 
   return (
     <CardBase title={t('Drops.item-drops')} color={color}>
+      {isOpen && <OfficialOddsModal isOpen={isOpen} onClose={onClose} />}
       {!itemOpenable.isGBC && <HelpNeeded />}
       {itemOpenable.isGBC && (
         <Alert borderRadius={5} mb={3}>
@@ -142,6 +146,11 @@ const ItemDrops = (props: Props) => {
               </Link>
             ),
           })}
+        </Text>
+      )}
+      {item.isNC && (
+        <Text textAlign={'center'} mt={2} fontSize="xs" color="gray.400">
+          <Link onClick={onOpen}>{t('ItemPage.official-nc-mall-drops')}</Link>
         </Text>
       )}
     </CardBase>
@@ -295,6 +304,7 @@ type DropPoolProps = {
 
 export const DropPool = (props: DropPoolProps) => {
   const { pool, itemOpenable, item, dropData, isFirst, forceOddsText, hideOdds } = props;
+
   const isChoice = itemOpenable.isChoice;
   const itemDrops = itemOpenable.drops;
   const t = useTranslations();

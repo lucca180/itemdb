@@ -300,7 +300,10 @@
     "price-context": "Price Context",
     "unknown-price-msg": "Unable to estimate this item's price",
     "sold-x-day-median": "Sold {x}-day Median",
-    "x-day-median": "{x}-day Median"
+    "x-day-median": "{x}-day Median",
+    "official-nc-mall-drops": "Official NC Mall Drops",
+    "drops-same-change": "Every item has equal chances inside each pool",
+    "official-drops-desc": "This is the official NC Mall drops provided by TNT. Our calculations may differ from the official ones by different reasons and it's up to you which one to trust more. <Link>Source</Link>"
   },
   "Button": {
     "feedback": "Feedback",

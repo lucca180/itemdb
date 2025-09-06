@@ -301,7 +301,10 @@
     "price-context": "Contexto de Preço",
     "unknown-price-msg": "Não foi possível estimar o preço deste item",
     "sold-x-day-median": "Mediana Vendidos {x} Dias",
-    "x-day-median": "Mediana {x} Dias"
+    "x-day-median": "Mediana {x} Dias",
+    "drops-same-change": "Cada item tem chances iguais dentro de cada pool",
+    "official-drops-desc": "Essas são as chances oficiais de drops do Centro NC fornecido pela TNT. Nossos cálculos podem diferir dos oficiais por diferentes razões e cabe a você em que confiar mais. <Link>Fonte</Link>",
+    "official-nc-mall-drops": "Chances Oficiais do Centro NC"
   },
   "Button": {
     "feedback": "Feedback",
