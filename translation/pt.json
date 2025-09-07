@@ -952,7 +952,9 @@
     "faq-4-text": "Esta é uma pergunta subjetiva, pois depende de suas preferências pessoais e estilo de jogo. Você pode usar o Guia de Restock do itemdb para encontrar as melhores lojas para restockar em Neopets - as mais avançadas são mais difíceis de dominar, mas podem fornecer alguns dos melhores itens para revender.",
     "similar-shops": "Lojas Similares",
     "corrupt-sessions": "Você pode ter sessão corrompida e precisamos redefinir seus dados, por favor confirme",
-    "reset-data": "Reset Data"
+    "reset-data": "Reset Data",
+    "faq-5": "O que é o Dia da Metade do Preço?",
+    "faq-5-text": "No dia 3 de cada mês, as lojas oficiais de neopets oferecem um desconto de 50% em todos os itens. Esta é uma ótima oportunidade para reabastecer os itens a um preço mais baixo. No entanto, esteja ciente de que, devido à alta demanda, as lojas podem ficar sem estoque rapidamente neste dia. Nosso guia de restock é atualizado em tempo real para ajudá-lo a obter as ofertas mais quentes no dia da metade do preço!"
   },
   "Search": {
     "search": "Pesquisa",

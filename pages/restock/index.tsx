@@ -23,6 +23,7 @@ import { getTrendingShops } from '../api/v1/beta/trending';
 import { ShopInfo } from '../../types';
 import { Breadcrumbs } from '../../components/Breadcrumbs/Breadcrumbs';
 import { loadTranslation } from '@utils/load-translation';
+import { FAQPageJsonLd } from 'next-seo';
 
 const allCats = [
   ...new Set(
@@ -215,6 +216,7 @@ const RestockHub: NextPageWithLayout<any> = (props: RestockHubProps) => {
       </Flex>
       <Divider mt={5} />
       <Flex flexFlow="column" gap={3} justifyContent={'center'}>
+        <RestockQuestionsLD />
         <Heading size={'md'} as="h3" mt={5}>
           {t('Restock.faq-1')}
         </Heading>
@@ -241,6 +243,10 @@ const RestockHub: NextPageWithLayout<any> = (props: RestockHubProps) => {
           {t('Restock.faq-4')}
         </Heading>
         <Text color="whiteAlpha.700">{t('Restock.faq-4-text')}</Text>
+        <Heading size={'md'} as="h3" mt={5}>
+          {t('Restock.faq-5')}
+        </Heading>
+        <Text color="whiteAlpha.700">{t('Restock.faq-5-text')}</Text>
       </Flex>
     </>
   );
@@ -281,4 +287,19 @@ RestockHub.getLayout = function getLayout(page: ReactElement, props: any) {
       {page}
     </Layout>
   );
+};
+
+const RestockQuestionsLD = () => {
+  const t = useTranslations();
+  const FAQCount = 5;
+  const questions = [];
+
+  for (let i = 1; i <= FAQCount; i++) {
+    questions.push({
+      questionName: t(`Restock.faq-${i}`),
+      acceptedAnswerText: t(`Restock.faq-${i}-text`),
+    });
+  }
+
+  return <FAQPageJsonLd mainEntity={questions} />;
 };

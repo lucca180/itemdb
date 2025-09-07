@@ -279,7 +279,8 @@ export const ItemImage = (props: { item: ItemData } & Partial<ImageProps>) => {
       alt={item.name}
       title={item.description}
       onError={() => setError(true)}
-      {...props}
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      {...(({ item, ...rest }) => rest)(props)}
     />
   );
 };

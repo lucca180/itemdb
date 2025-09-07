@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { useMemo } from 'react';
 import { Breadcrumbs } from './Breadcrumbs';
 import { categoryToShopID, restockShopInfo, slugify } from '../../utils/utils';
+import { ProductJsonLd, ProductJsonLdProps } from 'next-seo';
 
 type ItemBreadcrumbProps = {
   item: ItemData;
@@ -62,7 +63,12 @@ export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
     return breadList;
   }, [item, router.locale]);
 
-  return <Breadcrumbs breadcrumbList={breadcrumbList} />;
+  return (
+    <>
+      <Breadcrumbs breadcrumbList={breadcrumbList} />
+      <ProductJsonLd {...getItemJSONLD(item)} />
+    </>
+  );
 };
 
 // capitalize first letter of each word in a string
@@ -71,4 +77,30 @@ const capitalize = (s: string) => {
     .split(' ')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
+};
+
+const getItemJSONLD = (item: ItemData): ProductJsonLdProps => {
+  const cacheHash = item.cacheHash ? '?hash=' + item.cacheHash : '';
+
+  const img = [
+    item.isWearable
+      ? `https://itemdb.com.br/api/cache/preview/${item.image_id}.png${cacheHash}`
+      : null,
+    item.image,
+  ].filter(Boolean) as string[];
+
+  return {
+    productName: item.name,
+    description: item.description,
+    sku: (item.item_id || item.internal_id).toString(),
+    images: img,
+    offers: item.price.value
+      ? [
+          {
+            price: item.price.value,
+            priceCurrency: 'XXX',
+          },
+        ]
+      : [],
+  };
 };
