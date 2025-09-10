@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client"
-  previewFeatures = ["nativeDistinct", "relationJoins", "driverAdapters", "queryCompiler"]
+  previewFeatures = ["nativeDistinct", "relationJoins"]
   output          = "./generated"
   moduleFormat    = "esm"
 }
