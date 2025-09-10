@@ -102,6 +102,7 @@ const RestockHub: NextPageWithLayout<any> = (props: RestockHubProps) => {
       <Center my={4} flexFlow="column" gap={2} textAlign={'center'}>
         <Image
           priority
+          fetchPriority="high"
           quality={100}
           width={600}
           height={200}

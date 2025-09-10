@@ -19,11 +19,13 @@ type HorizontalHomeCard = {
   utm_content?: string;
   sx?: FlexProps['sx'];
   isSmall?: boolean;
+  isPriority?: boolean;
 };
 
 export const HorizontalHomeCard = (props: HorizontalHomeCard) => {
   const t = useTranslations();
-  const { children, title, image, viewAllLink, w, h, bgOpacity, utm_content, isSmall } = props;
+  const { children, title, image, viewAllLink, w, h, bgOpacity, utm_content, isSmall, isPriority } =
+    props;
   const color = Color(props.color);
   const rgb = color.rgb().array();
 
@@ -50,7 +52,14 @@ export const HorizontalHomeCard = (props: HorizontalHomeCard) => {
         {(image || title || viewAllLink) && (
           <Flex alignItems={'center'} gap={4} flexShrink={0} h={isSmall ? 'auto' : '70px'} mb={3}>
             {image && title && (
-              <NextImage src={image} quality={100} width={w ?? 70} height={h ?? 70} alt={title!} />
+              <NextImage
+                src={image}
+                quality={100}
+                width={w ?? 70}
+                height={h ?? 70}
+                alt={title!}
+                priority={isPriority}
+              />
             )}
             {title && <Heading size={'lg'}>{title}</Heading>}
             <Flex flex={1} justifyContent={'flex-end'}>

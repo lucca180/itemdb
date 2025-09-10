@@ -92,7 +92,14 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
           bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.6) 80%)`}
           zIndex={-1}
         />
-        <NextImage src={logo} alt="itemdb logo" width={500} quality="100" priority />
+        <NextImage
+          src={logo}
+          alt="itemdb logo"
+          width={500}
+          quality="100"
+          priority
+          fetchPriority="high"
+        />
         <Heading size="sm" as="h1" mt={4} lineHeight={1.5}>
           <Highlight
             query={t('HomePage.open-source')}
@@ -117,6 +124,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
           w={70}
           image="https://images.neopets.com/quests/images/neopoint-bag.png"
           title={t('HomePage.latest-prices')}
+          isPriority
         >
           <Flex flexWrap="wrap" gap={4} justifyContent="center">
             {latestPrices &&
