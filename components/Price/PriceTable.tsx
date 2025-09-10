@@ -68,29 +68,29 @@ const PriceTable = (props: Props) => {
       if (list.seriesType === 'itemAddition' && list.itemInfo?.[0].addedAt)
         startDate = list.itemInfo?.[0].seriesStart || list.itemInfo?.[0].addedAt;
 
-      let hasEnding = false;
-
       if (list.seriesType === 'listDates') {
         startDate = list.itemInfo?.[0].seriesStart || list.seriesStart || null;
+      }
 
-        if (list.seriesEnd) {
-          markerType = 'available-at';
-          endDate = list.itemInfo?.[0].seriesEnd || list.seriesEnd;
+      let hasEnding = !!list.itemInfo?.[0].seriesEnd;
 
-          if (new Date(endDate) <= itemAdded) return;
+      if (list.seriesEnd || hasEnding) {
+        markerType = 'available-at';
+        endDate = list.itemInfo?.[0].seriesEnd || (list.seriesEnd as string);
 
-          hasEnding = !!startDate;
+        if (new Date(endDate) <= itemAdded) return;
 
-          sorted.push({
-            marker: true,
-            title: list.name,
-            slug: list.slug ?? '',
-            hasEnding: hasEnding,
-            addedAt: endDate,
-            color: color,
-            markerType: 'unavailable-at',
-          });
-        }
+        hasEnding = !!startDate;
+
+        sorted.push({
+          marker: true,
+          title: list.name,
+          slug: list.slug ?? '',
+          hasEnding: hasEnding,
+          addedAt: endDate,
+          color: color,
+          markerType: 'unavailable-at',
+        });
       }
 
       startDate = startDate ? dateMax(itemAdded, new Date(startDate)).toJSON() : null;
