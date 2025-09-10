@@ -62,11 +62,11 @@ export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
 
     return breadList;
   }, [item, router.locale]);
-
+  const productJson = getItemJSONLD(item);
   return (
     <>
       <Breadcrumbs breadcrumbList={breadcrumbList} />
-      <ProductJsonLd {...getItemJSONLD(item)} />
+      {productJson && <ProductJsonLd {...productJson} />}
     </>
   );
 };
@@ -79,7 +79,7 @@ const capitalize = (s: string) => {
     .join(' ');
 };
 
-const getItemJSONLD = (item: ItemData): ProductJsonLdProps => {
+const getItemJSONLD = (item: ItemData): ProductJsonLdProps | null => {
   const cacheHash = item.cacheHash ? '?hash=' + item.cacheHash : '';
 
   const img = [
@@ -89,18 +89,33 @@ const getItemJSONLD = (item: ItemData): ProductJsonLdProps => {
     item.image,
   ].filter(Boolean) as string[];
 
+  const offers = [];
+  if (item.price.value) {
+    offers.push({
+      price: item.price.value,
+      priceCurrency: 'XXX',
+    });
+  }
+
+  if (item.mallData?.price) {
+    offers.push({
+      price: item.mallData.price,
+      priceCurrency: 'XXX',
+    });
+  } else if (item.ncValue?.minValue) {
+    offers.push({
+      price: item.ncValue.minValue,
+      priceCurrency: 'XXX',
+    });
+  }
+
+  if (!offers.length) return null;
+
   return {
     productName: item.name,
     description: item.description,
     sku: (item.item_id || item.internal_id).toString(),
     images: img,
-    offers: item.price.value
-      ? [
-          {
-            price: item.price.value,
-            priceCurrency: 'XXX',
-          },
-        ]
-      : [],
+    offers: offers,
   };
 };
