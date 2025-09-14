@@ -5,7 +5,7 @@ import requestIp from 'request-ip';
 import { CheckAuth } from '../../../../utils/googleCloud';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { checkHash } from '../../../../utils/hash';
-import { Items, Prisma } from '.prisma/client';
+import { Items, Prisma } from '@prisma/generated/client';
 import { shouldSkipTrade } from '../../../../utils/utils';
 import hash from 'object-hash';
 import { autoPriceTrades2 } from './autoPrice2';
