@@ -19,7 +19,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
-            cd /home/tarnum/itemdb/
+            cd /home/itemdb/
             git fetch origin main
             git reset --hard FETCH_HEAD
             export NVM_DIR="$HOME/.nvm"
@@ -45,7 +45,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
-            cd /home/tarnum/itemdb-green/
+            cd /home/itemdb-green/
             git fetch origin main
             git reset --hard FETCH_HEAD
             export NVM_DIR="$HOME/.nvm"
