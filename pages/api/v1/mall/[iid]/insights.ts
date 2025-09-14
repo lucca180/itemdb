@@ -4,7 +4,7 @@ import prisma from '@utils/prisma';
 import { getManyItems } from '../../items/many';
 import { InsightsResponse } from '@types';
 import { rawToList } from '../../lists/[username]';
-import { OpenableItems } from '@prisma/client';
+import { OpenableItems } from '@prisma/generated/client';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
