@@ -29,6 +29,7 @@ import ClosetIcon from '../../public/icons/closet.svg';
 import NeosearchIcon from '../../public/icons/neosearch.svg';
 import Image from 'next/image';
 import { useLists } from '../../utils/useLists';
+import { dynamicListCan } from '@utils/utils';
 
 const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
   () => import('../Modal/DuplicatedItemModal')
@@ -223,7 +224,7 @@ const ItemCtxMenu = (props: Props) => {
               <CtxMenuItem
                 onClick={() => addItemToList(list.internal_id)}
                 key={list.internal_id}
-                disabled={!!list.dynamicType && list.dynamicType !== 'addOnly'}
+                disabled={!dynamicListCan(list, 'add')}
               >
                 {list.name}
                 {list.purpose !== 'none' && !list.official && (

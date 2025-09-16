@@ -41,7 +41,7 @@ import { CreateListModalProps } from '../../../components/Modal/CreateListModal'
 import dynamic from 'next/dynamic';
 import ListHeader from '../../../components/UserLists/ListHeader';
 import { CreateLinkedListButton } from '../../../components/DynamicLists/CreateLinkedList';
-import { sortListItems, stripMarkdown } from '../../../utils/utils';
+import { dynamicListCan, sortListItems, stripMarkdown } from '../../../utils/utils';
 import { SearchList } from '../../../components/Search/SearchLists';
 import { SortSelect } from '../../../components/Input/SortSelect';
 import { CheckAuth } from '../../../utils/googleCloud';
@@ -642,7 +642,7 @@ const ListPage = (props: ListPageProps) => {
               </Box>
               <Box>
                 <Button
-                  isDisabled={!!!itemSelect.length || list.dynamicType === 'fullSync'}
+                  isDisabled={!itemSelect.length || !dynamicListCan(list, 'remove')}
                   colorScheme="red"
                   variant="outline"
                   onClick={() => setSelectionAction('delete')}
@@ -652,7 +652,7 @@ const ListPage = (props: ListPageProps) => {
               </Box>
               <Box>
                 <Button
-                  isDisabled={!!!itemSelect.length || !!list.dynamicType}
+                  isDisabled={!itemSelect.length || !dynamicListCan(list, 'remove')}
                   variant="outline"
                   onClick={() => setSelectionAction('move')}
                 >
@@ -661,7 +661,7 @@ const ListPage = (props: ListPageProps) => {
               </Box>
               <Box>
                 <Button
-                  isDisabled={!!!itemSelect.length || !!list.dynamicType}
+                  isDisabled={!itemSelect.length}
                   variant="outline"
                   onClick={() => setSelectionAction('copy')}
                 >
