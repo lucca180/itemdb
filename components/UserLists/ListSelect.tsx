@@ -11,7 +11,7 @@ import {
   Portal,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import DynamicIcon from '../../public/icons/dynamic.png';
@@ -24,6 +24,7 @@ type Props = {
   defaultText?: string;
   defaultValue?: UserList;
   createNew?: boolean;
+  recommended_id?: number;
   size?: 'sm' | 'md' | 'lg';
 };
 
@@ -44,6 +45,12 @@ const ListSelect = (props: Props) => {
 
     return forceSelected || props.defaultValue;
   }, [forceSelected, props.defaultValue]);
+
+  useEffect(() => {
+    if (!props.recommended_id || !sorted || forceSelected) return;
+    const recommended = sorted.find((l) => l.linkedListId === props.recommended_id);
+    if (recommended) handleSelect(recommended);
+  }, [sorted, props.recommended_id, forceSelected]);
 
   const handleSelect = (list: UserList) => {
     setSelected(list);
@@ -81,6 +88,7 @@ const ListSelect = (props: Props) => {
         rightIcon={<ChevronDownIcon />}
         size={props.size}
         fontSize={{ base: 'xs', md: 'sm' }}
+        isLoading={isLoading || authLoading}
       >
         {selectedList && (
           <>

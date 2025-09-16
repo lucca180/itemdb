@@ -18,7 +18,6 @@ import {
   useMediaQuery,
   HStack,
   UnorderedList,
-  Badge,
 } from '@chakra-ui/react';
 import Image from 'next/image';
 import HeaderCard from '../../../components/Card/HeaderCard';
@@ -41,6 +40,7 @@ import { Breadcrumbs } from '../../../components/Breadcrumbs/Breadcrumbs';
 import { loadTranslation } from '@utils/load-translation';
 import { GetServerSidePropsContext } from 'next';
 import { getRawBody } from '../../api/v1/restock';
+import { dynamicListCan } from '@utils/utils';
 
 type Props = {
   items?: { [index: number | string]: number };
@@ -427,10 +427,29 @@ const ImportItems = (props: ImportItemsProps) => {
             </Text>
           )}
         </Flex>
-        <Flex flex="1" flexFlow="column" gap={3} alignItems={{ base: 'center', md: 'flex-start' }}>
+        <Flex flex="1" flexFlow="column" gap={5} alignItems={{ base: 'center', md: 'flex-start' }}>
           <FormControl>
             <FormLabel color="gray.300">{t('Lists.import-target-list')}</FormLabel>
-            <ListSelect defaultValue={importInfo.list} onChange={handleListChange} createNew />
+            <Flex gap={2} flexFlow="column" flexWrap="wrap" alignItems={'flex-start'}>
+              <ListSelect
+                defaultValue={importInfo.list}
+                onChange={handleListChange}
+                createNew
+                recommended_id={recommended_list?.internal_id}
+              />
+              {recommended_list && (
+                <>
+                  <Text fontSize={'xs'} color="gray.300">
+                    {t('General.or')}
+                  </Text>
+                  <CreateLinkedListButton
+                    list={recommended_list}
+                    isImport
+                    onCreate={handleLinkedList}
+                  />
+                </>
+              )}
+            </Flex>
           </FormControl>
           <FormControl>
             <FormLabel color="gray.300">{t('General.action')}</FormLabel>
@@ -440,20 +459,10 @@ const ImportItems = (props: ImportItemsProps) => {
               maxW="220px"
               onChange={handleActionChange}
             >
-              <option
-                value="add"
-                disabled={
-                  !!importInfo.list?.dynamicType && importInfo.list?.dynamicType !== 'addOnly'
-                }
-              >
+              <option value="add" disabled={!dynamicListCan(importInfo.list, 'add')}>
                 {t('Lists.add-these-items')}
               </option>
-              <option
-                value="remove"
-                disabled={
-                  !!importInfo.list?.dynamicType && importInfo.list?.dynamicType === 'fullSync'
-                }
-              >
+              <option value="remove" disabled={!dynamicListCan(importInfo.list, 'remove')}>
                 {t('Lists.remove-these-items')}
               </option>
               <option value="hide">{t('Lists.mark-as-hidden')}</option>
@@ -477,16 +486,6 @@ const ImportItems = (props: ImportItemsProps) => {
             <Button onClick={handleImport} isDisabled={!importInfo.list}>
               {t('General.submit')}
             </Button>
-            {recommended_list && (
-              <>
-                <Text>{t('General.or')}</Text>
-                <CreateLinkedListButton
-                  list={recommended_list}
-                  isImport
-                  onCreate={handleLinkedList}
-                />
-              </>
-            )}
           </HStack>
           <Flex bg="whiteAlpha.300" p={3} borderRadius={'md'} maxW="1000px" my={3}>
             <Text fontSize={'sm'} textAlign={'center'}>
@@ -653,7 +652,6 @@ const ImportInfo = () => {
       </OrderedList>
       <Flex bg="whiteAlpha.300" p={3} borderRadius={'md'} maxW="1000px" my={3}>
         <Text>
-          <Badge colorScheme="green">{t('Layout.new')}</Badge> -{' '}
           {t.rich('Lists.adv-import-cta', {
             b: (chunk) => <b>{chunk}</b>,
             Link: (chunk) => (

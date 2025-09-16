@@ -1,6 +1,6 @@
 import { ItemProcess, Items, PriceProcess } from '@prisma/generated/client';
 import { mean, standardDeviation } from 'simple-statistics';
-import { ItemData, ItemFindAt, ListItemInfo, ShopInfo, TradeData } from '../types';
+import { ItemData, ItemFindAt, ListItemInfo, ShopInfo, TradeData, UserList } from '../types';
 import Color from 'color';
 
 export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
@@ -1716,4 +1716,25 @@ export const sortListItems = (
   }
 
   return 0;
+};
+
+export const dynamicListCan = (list: UserList | undefined, permission: 'add' | 'remove') => {
+  if (!list) return false;
+
+  if (!list.dynamicType) return true;
+
+  // fullSync lists can't be modified manually
+  if (list.dynamicType === 'fullSync') return false;
+
+  if (permission === 'add') {
+    if (list.dynamicType === 'addOnly') return true;
+    if (list.dynamicType === 'removeOnly') return false;
+  }
+
+  if (permission === 'remove') {
+    if (list.dynamicType === 'addOnly') return false;
+    if (list.dynamicType === 'removeOnly') return true;
+  }
+
+  return true;
 };
