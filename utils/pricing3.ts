@@ -115,7 +115,7 @@ function filterMostRecent(priceProcessList: PriceProcess2[], forceMode = false) 
 
   // data is low confidence, skip
   if (meanWeight < 0.5 && differenceInCalendarDays(Date.now(), lastDate) <= 30) {
-    console.warn('processPrices3: low quality data', filtered[0]?.item_iid, meanWeight, filtered);
+    // console.warn('processPrices3: low quality data', filtered[0]?.item_iid, meanWeight, filtered);
     return [];
   }
 
