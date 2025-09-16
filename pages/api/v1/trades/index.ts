@@ -250,7 +250,7 @@ export const processTradePrice = async (
       )
         return [];
 
-      const transaction = [
+      const transaction: any = [
         prisma.tradeItems.update({
           where: {
             internal_id: item.internal_id,
@@ -260,19 +260,16 @@ export const processTradePrice = async (
           },
         }),
 
-        prisma.tradeItems.updateMany({
-          where: {
-            order: item.order,
-            trade: {
-              hash: tradeHash,
-              processed: false,
-              priced: false,
-            },
-          },
-          data: {
-            price: item.price,
-          },
-        }),
+        prisma.$executeRaw(Prisma.sql`
+          UPDATE TradeItems ti
+          JOIN Trades t0
+            ON ti.trade_id = t0.trade_id
+          AND t0.hash = ${tradeHash}
+          AND t0.processed = 0
+          AND t0.priced = 0
+          SET ti.price = ${item.price}
+          WHERE ti.order = ${item.order}
+        `),
       ];
 
       if (isUpdate && originalTrade.tradesUpdated) {
