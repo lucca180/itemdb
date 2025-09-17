@@ -171,7 +171,7 @@ const ItemRestock = (props: Props) => {
             <Text flex="1" fontSize="xs" textAlign="right">
               {lastSeen?.restock && (
                 <>
-                  {new Date(lastSeen?.restock).toLocaleString(undefined, {
+                  {format.dateTime(new Date(lastSeen.restock), {
                     year: 'numeric',
                     month: 'short',
                     day: 'numeric',
@@ -189,7 +189,7 @@ const ItemRestock = (props: Props) => {
             <Tooltip
               hasArrow
               label={t('Restock.ht-next-discount-day', {
-                x: nextThirdWednesday().toLocaleString(undefined, {
+                x: format.dateTime(nextThirdWednesday(), {
                   month: 'short',
                   day: 'numeric',
                 }),
