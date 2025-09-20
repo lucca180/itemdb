@@ -161,6 +161,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
       canRead: itemData.useTypes.canRead,
       canOpen: itemData.useTypes.canOpen,
       slug: itemSlug,
+      flags: itemData.itemFlags,
     },
   });
 
@@ -202,7 +203,7 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 // ------------- //
 
-export const getItem = async (id_name: number | string) => {
+export const getItem = async (id_name: number | string, includeFlags = false) => {
   const isID = !isNaN(Number(id_name));
 
   let query;
@@ -229,7 +230,9 @@ export const getItem = async (id_name: number | string) => {
 
   const result = resultRaw[0];
 
-  const item: ItemData = rawToItemData(result);
+  const item: ItemData = rawToItemData(result, {
+    includeFlags: includeFlags,
+  });
 
   if (
     item.isNC &&

@@ -527,6 +527,20 @@ export const InfoTab = (props: infoTabProps) => {
               />
             </FormControl>
           </HStack>
+          <FormControl>
+            <FormLabel color="gray.300">Item Flags</FormLabel>
+            <Input
+              variant="filled"
+              type="text"
+              name="itemFlags"
+              size="sm"
+              value={item.itemFlags ?? ''}
+              onChange={handleChange}
+              color={item.itemFlags == itemProps.itemFlags ? 'gray.400' : '#fff'}
+              isDisabled={!isAdmin}
+            />
+            <FormHelperText fontSize={'xs'}>Use comma for multiple flags</FormHelperText>
+          </FormControl>
         </>
       )}
       <FormControl>

@@ -432,7 +432,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
   const isIdNumber = !isNaN(Number(id));
 
   if (isIdNumber) {
-    item = await getItem(Number(id));
+    item = await getItem(Number(id), true);
     if (!item) return { notFound: true };
 
     if (item.slug)
@@ -442,7 +442,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
           permanent: true,
         },
       };
-  } else item = await getItem(id);
+  } else item = await getItem(id, true);
 
   if (!item) return { notFound: true };
 
