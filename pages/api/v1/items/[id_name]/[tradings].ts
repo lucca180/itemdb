@@ -86,7 +86,7 @@ const getRestockData = async (name: string) => {
   });
 
   const items = await getManyItems({
-    id: restockRaw.map((p) => p.item_iid?.toString() ?? ''),
+    id: [...new Set(restockRaw.map((p) => p.item_iid?.toString() ?? '')).values()],
   });
 
   let totalStock = 0;
@@ -213,8 +213,9 @@ const getAuctionData = async (name: string, onlySold = false) => {
     orderBy: { addedAt: 'desc' },
   });
 
+  // auction always has the same item
   const items = await getManyItems({
-    id: auctionRaw.map((p) => p.item_iid.toString()),
+    id: [auctionRaw[0]?.item_iid.toString() ?? ''],
   });
 
   // only include < 30 min or closed auctions
