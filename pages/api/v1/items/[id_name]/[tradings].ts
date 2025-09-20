@@ -8,12 +8,12 @@ import {
   TradeData,
 } from '@types';
 import prisma from '@utils/prisma';
-import { getManyItems } from '../many';
 import { CheckAuth } from '@utils/googleCloud';
 import { contributeCheck } from '../../restock/wrapped-check';
 import { Prisma } from '@prisma/generated/client';
 import { medianSorted } from 'simple-statistics';
 import { removeOutliersCombined } from '@utils/pricing3';
+import { getItem } from '.';
 
 const LEBRON_URL = process.env.LEBRON_API_URL;
 
@@ -85,9 +85,7 @@ const getRestockData = async (name: string) => {
     orderBy: { addedAt: 'desc' },
   });
 
-  const items = await getManyItems({
-    id: [...new Set(restockRaw.map((p) => p.item_iid?.toString() ?? '')).values()],
-  });
+  const item = await getItem(restockRaw[0]?.item_iid || 0);
 
   let totalStock = 0;
 
@@ -95,7 +93,7 @@ const getRestockData = async (name: string) => {
     totalStock += p.stock;
     return {
       internal_id: p.internal_id,
-      item: items[p.item_iid?.toString() ?? ''],
+      item_iid: p.item_iid,
       stock: p.stock,
       price: p.price,
       addedAt: p.addedAt.toJSON(),
@@ -104,6 +102,7 @@ const getRestockData = async (name: string) => {
 
   return {
     recent: restock.slice(0, 40),
+    item: item,
     appearances: restock.length,
     totalStock: totalStock,
     period: MAX_DAYS,
@@ -214,9 +213,7 @@ const getAuctionData = async (name: string, onlySold = false) => {
   });
 
   // auction always has the same item
-  const items = await getManyItems({
-    id: [auctionRaw[0]?.item_iid.toString() ?? ''],
-  });
+  const item = await getItem(auctionRaw[0]?.item_iid || 0);
 
   // only include < 30 min or closed auctions
   if (onlySold) {
@@ -237,7 +234,7 @@ const getAuctionData = async (name: string, onlySold = false) => {
     return {
       auction_id: p.neo_id,
       internal_id: p.internal_id,
-      item: items[p.item_iid?.toString() ?? ''],
+      item_iid: p.item_iid,
       price: p.price,
       owner: p.owner ?? 'unknown',
       isNF: !!p.otherInfo?.toLowerCase().split(',').includes('nf'),
@@ -262,6 +259,7 @@ const getAuctionData = async (name: string, onlySold = false) => {
 
   return {
     recent: auctions.slice(0, 40),
+    item: item,
     total: totalAuctions,
     sold: soldAuctions,
     uniqueOwners: uniqueOwners.size,

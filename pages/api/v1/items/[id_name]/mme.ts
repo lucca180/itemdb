@@ -34,7 +34,11 @@ export const getMMEData = async (item: ItemData): Promise<ItemMMEData | null> =>
   if (!isMME(item.name)) return null;
   const mmeName = item.name.match(mmeRegex)![0];
 
-  const search = await doSearch(mmeName, { ...defaultFilters, limit: 1000 }, false);
+  const search = await doSearch(
+    `"${mmeName}"`,
+    { ...defaultFilters, limit: 1000, mode: 'boolean' },
+    false
+  );
 
   if (!search) return null;
   const mmeItems = search.content.filter((i) => i.name.match(mmeRegex)?.[0] === mmeName);

@@ -113,7 +113,7 @@ export type ItemLastSeen = {
 
 export type ItemRestockData = {
   internal_id: number;
-  item: ItemData;
+  item_iid: number | null;
   stock: number;
   price: number;
   addedAt: string;
@@ -143,7 +143,7 @@ export type TradeData = {
 export type ItemAuctionData = {
   internal_id: number;
   auction_id: number | null;
-  item: ItemData;
+  item_iid: number | null;
   price: number;
   addedAt: string;
   owner: string;
@@ -194,7 +194,7 @@ export type SearchFilters = {
   colorType: string;
   sortBy: string;
   sortDir: string;
-  mode: 'name' | 'description' | 'all' | 'fuzzy' | 'not' | 'natural';
+  mode: 'name' | 'description' | 'all' | 'fuzzy' | 'not' | 'natural' | 'boolean';
   limit: number;
   page: number;
 };

@@ -34,6 +34,7 @@ export type AuctionHistoryProps = {
 
 type AuctionHistoryResponse = {
   recent: ItemAuctionData[];
+  item: ItemData | null;
   total: number;
   sold: number;
   uniqueOwners: number;

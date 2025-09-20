@@ -29,6 +29,7 @@ export type RestockHistoryProps = {
 
 type RestockHistoryResponse = {
   recent: ItemRestockData[];
+  item: ItemData | null;
   appearances: number;
   totalStock: number;
 };
