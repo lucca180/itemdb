@@ -198,7 +198,7 @@ const Layout = (props: Props) => {
                     data-umami-event="profile-menu-button"
                   >
                     {isLargerThanMD && (
-                      <Box as="span">{t('Layout.hi-user', { name: user.username })}</Box>
+                      <Box as="span">{t('Layout.hi-user', { name: user.username ?? '' })}</Box>
                     )}
                     <Icon
                       as={BsFillPersonFill}
@@ -211,7 +211,7 @@ const Layout = (props: Props) => {
                       <MenuGroup
                         title={
                           !isLargerThanMD
-                            ? `${t('Layout.hello-user', { name: user.username })}`
+                            ? `${t('Layout.hello-user', { name: user.username ?? '' })}`
                             : undefined
                         }
                       >

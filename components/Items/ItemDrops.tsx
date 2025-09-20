@@ -238,7 +238,7 @@ const DropText = ({ pool, itemOpenable, isFirst }: DropTextProps) => {
         <>
           {t.rich(isGram ? 'Drops.gram-multiple' : 'Drops.multiple', {
             b: (text) => <b>{text}</b>,
-            isFirst: isFirst,
+            isFirst: Boolean(isFirst).toString(),
             type: poolName,
             min: openable.minDrop,
             max: openable.maxDrop,
@@ -250,7 +250,7 @@ const DropText = ({ pool, itemOpenable, isFirst }: DropTextProps) => {
       <>
         {t.rich(isGram ? 'Drops.gram-single' : 'Drops.single', {
           b: (text) => <b>{text}</b>,
-          isFirst: isFirst,
+          isFirst: Boolean(isFirst).toString(),
           type: poolName,
           min: openable.minDrop || openable.maxDrop,
         })}
@@ -264,11 +264,11 @@ const DropText = ({ pool, itemOpenable, isFirst }: DropTextProps) => {
         <>
           {t.rich('Drops.chance-multiple', {
             b: (text) => <b>{text}</b>,
-            isFirst: isFirst,
+            isFirst: Boolean(isFirst).toString(),
             min: pool.minDrop,
             max: pool.maxDrop,
             type: pool.isLE ? 'le' : pool.name,
-            isGram: isGram,
+            isGram: Boolean(isGram).toString(),
             chance: pool.openings ? getChance(pool.openings, itemOpenable.openings) : 0,
           })}
         </>
@@ -278,10 +278,10 @@ const DropText = ({ pool, itemOpenable, isFirst }: DropTextProps) => {
       <>
         {t.rich('Drops.chance-single', {
           b: (text) => <b>{text}</b>,
-          isFirst: isFirst,
+          isFirst: Boolean(isFirst).toString(),
           min: pool.minDrop || pool.maxDrop,
           type: pool.isLE ? 'le' : pool.name,
-          isGram: isGram,
+          isGram: Boolean(isGram).toString(),
           chance: pool.openings ? getChance(pool.openings, itemOpenable.openings) : 0,
         })}
       </>

@@ -10,7 +10,7 @@ import {
   Flex,
   IconButton,
 } from '@chakra-ui/react';
-import { ContributeWallData, ItemRestockData, ShopInfo } from '../../../types';
+import { ContributeWallData, ItemData, ItemRestockData, ShopInfo } from '../../../types';
 import { restockShopInfo, slugify } from '../../../utils/utils';
 import { createTranslator, useTranslations } from 'next-intl';
 import Layout from '../../../components/Layout';
@@ -34,7 +34,7 @@ const RestockHistory = (props: RestockHistoryPageProps) => {
   const { shopInfo } = props;
   const [mode, setMode] = useState('30days');
   const [isLoading, setLoading] = useState(false);
-  const [restockData, setRestockData] = useState<ItemRestockData[] | null>();
+  const [restockData, setRestockData] = useState<(ItemRestockData & { item: ItemData })[] | null>();
   const [sortMode, setSortMode] = useState('price');
   const [wall, setWall] = useState<ContributeWallData | null>(null);
 
@@ -122,12 +122,12 @@ const RestockHistory = (props: RestockHistoryPageProps) => {
             value={mode}
             disabled={isLoading}
           >
-            <option value="30days">{t('General.x-days', { x: 30, long: false })}</option>
-            <option value="7days">{t('General.x-days', { x: 7, long: false })}</option>
-            <option value="3days">{t('General.x-days', { x: 3, long: false })}</option>
+            <option value="30days">{t('General.x-days', { x: 30, long: 'false' })}</option>
+            <option value="7days">{t('General.x-days', { x: 7, long: 'false' })}</option>
+            <option value="3days">{t('General.x-days', { x: 3, long: 'false' })}</option>
             <option value="1day">{t('General.1-day')}</option>
             <option value="1hour">{t('General.1-hour')}</option>
-            <option value="30min">{t('General.x-minutes', { x: 30, long: false })}</option>
+            <option value="30min">{t('General.x-minutes', { x: 30, long: 'false' })}</option>
           </Select>
           <Select
             variant="filled"
@@ -217,7 +217,10 @@ export async function getStaticPaths() {
   return { paths: [], fallback: 'blocking' };
 }
 
-const sortRestock = (restock: ItemRestockData[] | null | undefined, mode: string) => {
+const sortRestock = (
+  restock: (ItemRestockData & { item: ItemData })[] | null | undefined,
+  mode: string
+) => {
   if (!restock) return restock;
   if (mode === 'price') {
     return restock.sort((a, b) => {

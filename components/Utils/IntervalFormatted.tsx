@@ -12,18 +12,18 @@ export const IntervalFormatted = (props: IntervalFormattedProps) => {
 
   if (ms < 60 * 1000) {
     const val = !precision ? Math.round(ms / 1000) : (ms / 1000).toFixed(precision);
-    return <>{t('General.x-seconds', { x: val.toString(), long })}</>;
+    return <>{t('General.x-seconds', { x: val.toString(), long: Boolean(long).toString() })}</>;
   }
 
   if (ms < 60 * 60 * 1000) {
     const val = !precision ? Math.round(ms / 60000) : (ms / 60000).toFixed(precision);
-    return <>{t('General.x-minutes', { x: val, long })}</>;
+    return <>{t('General.x-minutes', { x: val, long: Boolean(long).toString() })}</>;
   }
 
   if (ms < 24 * 60 * 60 * 1000) {
     const val = !precision ? Math.round(ms / 3600000) : (ms / 3600000).toFixed(precision);
-    return <>{t('General.x-hours', { x: val, long })}</>;
+    return <>{t('General.x-hours', { x: val, long: Boolean(long).toString() })}</>;
   }
   const val = !precision ? Math.round(ms / 86400000) : (ms / 86400000).toFixed(precision);
-  return <>{t('General.x-days', { x: val, long })}</>;
+  return <>{t('General.x-days', { x: val, long: Boolean(long).toString() })}</>;
 };

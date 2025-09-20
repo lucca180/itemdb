@@ -205,7 +205,7 @@ export const DynamicListInfo = (props: DynamicListModalInfoProps) => {
         <ListItem fontSize={'sm'} color="gray.400">
           <ListIcon as={BsCheckCircleFill} color="green.300" />
           {t('Lists.dynamic-listModalCurrentSearch', {
-            resultCount: resultCount,
+            resultCount: resultCount ?? 0,
           })}
         </ListItem>
         {dynamicType === 'addOnly' && (

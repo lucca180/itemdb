@@ -509,7 +509,7 @@ const ListPage = (props: ListPageProps) => {
         title: `${list.name} - ${
           list.official
             ? t('General.official-list')
-            : t('Lists.owner-username-s-lists', { username: list.owner.username })
+            : t('Lists.owner-username-s-lists', { username: list.owner.username ?? '' })
         }`,
         nofollow: !list.official,
         noindex: !list.official,

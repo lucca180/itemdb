@@ -411,7 +411,7 @@ const UserListsPage = (props: Props) => {
               {owner.username && <UserAchiev achievements={props.achievements} />}
             </Stack>
             <Heading size={{ base: 'lg', md: undefined }}>
-              {t('Lists.owner-username-s-lists', { username: owner.username })}{' '}
+              {t('Lists.owner-username-s-lists', { username: owner.username ?? '' })}{' '}
               {!loading && (
                 <Badge fontSize="lg" verticalAlign="middle">
                   {listsIds.length}
@@ -438,7 +438,7 @@ const UserListsPage = (props: Props) => {
                           {chunk}
                         </Badge>
                       ),
-                      username: owner.username,
+                      username: owner.username ?? '',
                       items: seekItems,
                     })}
                   </Text>
@@ -453,7 +453,7 @@ const UserListsPage = (props: Props) => {
                           {chunk}
                         </Badge>
                       ),
-                      username: owner.username,
+                      username: owner.username ?? '',
                       items: tradeItems,
                     })}
                   </Text>

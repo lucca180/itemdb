@@ -314,7 +314,7 @@ const ListHeader = (props: ListHeaderProps) => {
                     {chunk}
                   </Link>
                 ),
-                username: list.owner.username,
+                username: list.owner.username ?? '',
               })}
               {!list.dynamicType && (
                 <>

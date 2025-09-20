@@ -90,7 +90,7 @@ const DuplicatedItemModal = (props: DuplicatedItemModalProps) => {
               <Text color="gray.300">
                 {t.rich('ItemPage.x-is-already-in-y', {
                   x: item.name,
-                  y: list?.name,
+                  y: list?.name ?? '',
                   b: (chunk) => <b>{chunk}</b>,
                 })}
                 <br />

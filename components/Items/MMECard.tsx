@@ -22,7 +22,7 @@ const MMECard = (props: Props) => {
           {t.rich('ItemPage.mme-text', {
             b: (children) => <b>{children}</b>,
             name: mmeData.name,
-            isMini: mmeData.isMini,
+            isMini: mmeData.isMini.toString(),
           })}
         </Text>
         <Flex wrap="wrap" gap={2} alignItems="center" justifyContent={'center'}>

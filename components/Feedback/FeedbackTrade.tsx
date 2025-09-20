@@ -147,7 +147,9 @@ const FeedbackTrade = (props: Props) => {
             {isAllEqual && trade && trade.items.length > 1 && (
               <Badge colorScheme="yellow">{t('Feedback.all-equal')}</Badge>
             )}
-            <Badge colorScheme="blue">{t('Feedback.x-items', { x: trade?.items.length })}</Badge>
+            <Badge colorScheme="blue">
+              {t('Feedback.x-items', { x: trade?.items.length ?? -1 })}
+            </Badge>
           </Center>
           <Flex flexFlow="column" gap={6}>
             <Sticky

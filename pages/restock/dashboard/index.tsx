@@ -338,7 +338,7 @@ const RestockDashboard = (props: RestockDashboardProps) => {
             isDisabled={!importCount}
             isLoading={importCount === null}
           >
-            {t('Restock.import-x-sessions', { x: importCount })}
+            {t('Restock.import-x-sessions', { x: importCount ?? -1 })}
           </Button>
         )}
         <Select

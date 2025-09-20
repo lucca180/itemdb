@@ -164,7 +164,7 @@ export const EffectText = (props: EffectTextProps) => {
               />
             </Link>
           ),
-          random: isChance,
+          random: Boolean(isChance).toString(),
           species: species && species.length > 0 ? 'true' : 'false',
           Neopet: () => (
             <>
@@ -183,7 +183,7 @@ export const EffectText = (props: EffectTextProps) => {
             minVal: minVal ?? 0,
             maxVal: maxVal ?? 0,
             StrVal: () => (strVal ? <b>{strVal}</b> : <></>),
-            random: isChance,
+            random: Boolean(isChance).toString(),
             species: species && species.length > 0 ? 'true' : 'false',
             Neopet: () => (
               <>
@@ -199,8 +199,8 @@ export const EffectText = (props: EffectTextProps) => {
         <>
           {t.rich('Effects.effects-colorSpecies', {
             b: (chunk) => <b>{chunk}</b>,
-            isAll: !!speciesTarget && !!colorTarget,
-            random: isChance,
+            isAll: Boolean(!!speciesTarget && !!colorTarget).toString(),
+            random: Boolean(isChance).toString(),
             species: species && species.length > 0 ? 'true' : 'false',
             TargetType: () => (
               <>
@@ -240,7 +240,7 @@ export const EffectText = (props: EffectTextProps) => {
         <>
           {t.rich('Effects.effects-petpetColor', {
             b: (chunk) => <b>{chunk}</b>,
-            random: isChance,
+            random: Boolean(isChance).toString(),
             Target1: () => (
               <>
                 {colorTarget && (

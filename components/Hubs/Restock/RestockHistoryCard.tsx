@@ -1,11 +1,11 @@
 import { Flex, Link, Image, Badge, HStack, Text } from '@chakra-ui/react';
-import { ItemRestockData } from '../../../types';
+import { ItemData, ItemRestockData } from '../../../types';
 import NextLink from 'next/link';
 import Color from 'color';
 import { useFormatter, useTranslations } from 'next-intl';
 
 type Props = {
-  restock: ItemRestockData;
+  restock: ItemRestockData & { item: ItemData };
 };
 
 const RestockHistoryCard = (props: Props) => {

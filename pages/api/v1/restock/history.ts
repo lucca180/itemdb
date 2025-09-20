@@ -4,7 +4,7 @@ import prisma from '../../../../utils/prisma';
 import { CheckAuth } from '../../../../utils/googleCloud';
 import { contributeCheck } from './wrapped-check';
 import { getManyItems } from '../items/many';
-import { ItemRestockData } from '../../../../types';
+import { ItemData, ItemRestockData } from '../../../../types';
 import { RestockAuctionHistory } from '@prisma/generated/client';
 
 const MODE_COST: { [cost: string]: number } = {
@@ -63,9 +63,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     id: restockRaw.map((p) => p.item_iid?.toString() ?? ''),
   });
 
-  const restock: ItemRestockData[] = restockRaw.map((p): ItemRestockData => {
+  const restock: ItemRestockData[] = restockRaw.map((p): ItemRestockData & { item: ItemData } => {
     return {
       internal_id: p.internal_id,
+      item_iid: p.item_iid,
       item: items[p.item_iid?.toString() ?? ''],
       stock: p.stock,
       price: p.price,
