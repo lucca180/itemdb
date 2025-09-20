@@ -303,7 +303,11 @@ type DropPoolProps = {
 };
 
 export const DropPool = (props: DropPoolProps) => {
-  const { pool, itemOpenable, item, dropData, isFirst, forceOddsText, hideOdds } = props;
+  const { pool, itemOpenable, item, dropData, isFirst, forceOddsText } = props;
+
+  const shouldHideOdds = props.hideOdds
+    ? true
+    : pool.openings < Math.max(pool.items.length * 2, 10);
 
   const isChoice = itemOpenable.isChoice;
   const itemDrops = itemOpenable.drops;
@@ -338,7 +342,7 @@ export const DropPool = (props: DropPoolProps) => {
                 item={item}
                 disablePrefetch
                 small
-                odds={!hideOdds ? drop.dropRate : undefined}
+                odds={!shouldHideOdds ? drop.dropRate : undefined}
                 isLE={drop.isLE}
               />
             );
