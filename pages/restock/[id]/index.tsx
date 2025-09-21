@@ -67,11 +67,11 @@ const sortTypes = {
   item_id: 'restock-order',
 };
 
-const INITIAL_MIN_PROFIT = '3000';
+const INITIAL_MIN_PROFIT = 1000;
 
 const RESTOCK_FILTER = (shopInfo: ShopInfo): SearchFilters => ({
   ...defaultFilters,
-  restockProfit: INITIAL_MIN_PROFIT,
+  restockProfit: INITIAL_MIN_PROFIT.toString(),
   category: [shopIDToCategory[shopInfo.id]],
   rarity: ['1', '99'],
   limit: 10000,
@@ -425,10 +425,12 @@ export async function getStaticProps(context: GetStaticPropsContext) {
   if (Number(shopInfo.id) < 0) return { notFound: true };
 
   const filters: SearchFilters = RESTOCK_FILTER(shopInfo);
-
+  filters.restockProfit = ''; // we need all the items to calculate stuff
   const result = await doSearch('', filters, false);
 
-  const resultItems = result.content.sort((a, b) => sortItems(a, b, 'price', 'desc'));
+  const resultItems = result.content
+    .filter((a) => (getRestockProfit(a) ?? 0) >= INITIAL_MIN_PROFIT)
+    .sort((a, b) => sortItems(a, b, 'price', 'desc'));
 
   const props: RestockShopPageProps = {
     shopInfo: shopInfo,
