@@ -509,7 +509,7 @@ RestockShop.getLayout = function getLayout(page: ReactElement, props: RestockSho
   return (
     <Layout
       SEO={{
-        title: `${shopInfo.name} | ${t('Restock.neopets-restock-helper')}`,
+        title: `${shopInfo.name} | Neopets Shops`,
         description: t('Restock.shop-desc', {
           0: shopInfo.name,
           category: shopInfo.category,
