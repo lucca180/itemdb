@@ -775,7 +775,10 @@
     "group-tag-help": "Isso pode ser usado para agrupar listas em seu perfil selecionando o modo List Groups nas configurações do seu perfil",
     "adv-import-cta": "Você também pode importar suas listas de outros sites, como <b>Dress To Impress</b> e <b>JN</b> usando o nosso <Link>Petpage Importer</Link>",
     "import-adv-tip": "Dica: você pode <Link>importar suas listas</Link> de outros sites diretamente para o itemdb",
-    "importing-x-items": "Importando {x} itens"
+    "importing-x-items": "Importando {x} itens",
+    "newest-lists": "Listas Mais Recentes",
+    "trending-lists": "Listas Populares",
+    "no-lists-found": "Nenhuma lista encontrada :("
   },
   "Restock": {
     "est-profit": "Lucro Est.",

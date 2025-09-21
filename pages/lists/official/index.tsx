@@ -28,6 +28,7 @@ import { useRouter } from 'next/router';
 import { Breadcrumbs } from '../../../components/Breadcrumbs/Breadcrumbs';
 import { loadTranslation } from '@utils/load-translation';
 import { GetServerSidePropsContext } from 'next';
+import { getTrendingLists } from '../../api/v1/beta/trending';
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data as UserList[]);
 
@@ -37,6 +38,7 @@ const ApplyListModal = dynamic<ApplyListModalProps>(
 
 type Props = {
   lists: UserList[];
+  trendingLists: UserList[];
   messages: any;
   locale: string;
 };
@@ -44,10 +46,14 @@ type Props = {
 const OfficialListsPage = (props: Props) => {
   const t = useTranslations();
   const router = useRouter();
+  const { trendingLists } = props;
   const { user, authLoading } = useAuth();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [filteredLists, setFilteredLists] = useState<UserList[]>();
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    (router.query.cat as string) || 'all'
+  );
+  const [isSearch, setIsSearch] = useState(false);
   const rowSize = useBreakpointValue({ base: 2, xl: 3 }, { fallback: 'xl' });
 
   const { data: lists, isLoading } = useSWRImmutable(
@@ -97,9 +103,12 @@ const OfficialListsPage = (props: Props) => {
       newFilteredLists = allLists.filter((x) => x.officialTag === selectedCategory);
 
     if (!search) {
+      setIsSearch(false);
       setFilteredLists(newFilteredLists);
       return;
     }
+
+    setIsSearch(true);
 
     const searchLower = search.toLowerCase();
     setFilteredLists(
@@ -205,20 +214,49 @@ const OfficialListsPage = (props: Props) => {
           </Flex>
         </Flex>
         <Flex mt={0} gap={4} flexFlow="column">
-          <ViewportList items={groupedLists} viewportRef={null} initialPrerender={3} overscan={3}>
-            {(group, index) => (
-              <Flex gap={[3]} key={index} justifyContent="center" flexWrap={'wrap'}>
-                {group.map((list) => (
-                  <UserListCard key={list.internal_id} list={list} />
+          {trendingLists.length > 0 && selectedCategory === 'all' && !isSearch && (
+            <Flex flexFlow="column" gap={3} bg="blackAlpha.500" p={4} borderRadius="md">
+              <Heading size="md">{t('Lists.trending-lists')}</Heading>
+              <Flex gap={3} justifyContent="center" flexWrap={'wrap'}>
+                {trendingLists.map((list) => (
+                  <UserListCard
+                    key={list.internal_id}
+                    list={list}
+                    utm_content="official-trending"
+                  />
                 ))}
               </Flex>
-            )}
-          </ViewportList>
-          {isLoading && (
-            <Center>
-              <Spinner />
-            </Center>
+            </Flex>
           )}
+          <Flex flexFlow="column" gap={3} bg="blackAlpha.500" p={4} borderRadius="md">
+            {!isSearch && actualLists.length && (
+              <Heading size="md">
+                {selectedCategory === 'all' ? t('Lists.newest-lists') : selectedCategory}
+              </Heading>
+            )}
+
+            <ViewportList items={groupedLists} viewportRef={null} initialPrerender={3} overscan={3}>
+              {(group, index) => (
+                <Flex gap={[3]} key={index} justifyContent="center" flexWrap={'wrap'}>
+                  {group.map((list) => (
+                    <UserListCard key={list.internal_id} list={list} />
+                  ))}
+                </Flex>
+              )}
+            </ViewportList>
+
+            {!actualLists?.length && !isLoading && (
+              <Text as="div" textAlign="center" py={10} fontSize="lg" fontWeight="bold">
+                {t('Lists.no-lists-found')}
+              </Text>
+            )}
+
+            {isLoading && (
+              <Center>
+                <Spinner />
+              </Center>
+            )}
+          </Flex>
         </Flex>
       </Flex>
     </>
@@ -229,15 +267,18 @@ export default OfficialListsPage;
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const category = context.query?.cat as string | undefined;
-  const lists = category
-    ? await getOfficialListsCat(category, 15)
-    : await getUserLists('official', null, 15);
+
+  const [lists, trendingLists] = await Promise.all([
+    category ? await getOfficialListsCat(category, 15) : await getUserLists('official', null, 15),
+    getTrendingLists(9),
+  ]);
 
   context.res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=300');
 
   return {
     props: {
       lists,
+      trendingLists,
       messages: await loadTranslation(context.locale as string, 'lists/official/index'),
       locale: context.locale,
     },
