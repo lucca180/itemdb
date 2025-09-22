@@ -135,7 +135,7 @@ const NcTradeReportPage = (props: NcTradeReportPageProps) => {
         </Heading>
         <Text fontSize={'sm'} color="gray.300">
           {t.rich('Owls.faq-7', {
-            Link: (chunk) => <Link href="/lebron">{chunk}</Link>,
+            Link: (chunk) => <Link href="/articles/lebron">{chunk}</Link>,
           })}
         </Text>
       </Flex>
