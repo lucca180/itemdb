@@ -159,8 +159,8 @@ const ListPage = (props: ListPageProps) => {
       return searchItemInfoIds.length;
     }
 
-    return list.itemCount;
-  }, [list, itemInfo, searchItemInfoIds]);
+    return isLoading ? list.itemCount : Object.keys(itemInfo).length;
+  }, [list, isLoading, itemInfo, searchItemInfoIds]);
 
   useEffect(() => {
     if (router.isReady) {
@@ -777,7 +777,7 @@ const ListPage = (props: ListPageProps) => {
             <Flex px={[1, 3]} flexFlow="column">
               <ItemList
                 onClick={selectItem}
-                ids={itemInfoIds
+                ids={(searchItemInfoIds ?? itemInfoIds)
                   .filter((a) => itemInfo[a].isHighlight)
                   .sort((a, b) =>
                     items[itemInfo[a].item_iid]?.name?.localeCompare(
