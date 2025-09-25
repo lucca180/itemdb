@@ -532,9 +532,12 @@ const LastSeenCard = (props: LastSeenCardProps) => {
   const t = useTranslations();
   const format = useFormatter();
 
+  const canOpenModal = !!lastSeen && !!onClick && !doesNotRestock;
+
   const track = () => {
     window.umami?.track(`seen-${type}`);
-    props.onClick?.();
+
+    if (canOpenModal) onClick();
   };
 
   const lastSeenTypes = {
@@ -564,7 +567,7 @@ const LastSeenCard = (props: LastSeenCardProps) => {
       p={2}
       borderRadius={'md'}
       onClick={track}
-      cursor={!!onClick && !!lastSeen ? 'pointer' : undefined}
+      cursor={canOpenModal ? 'pointer' : 'not-allowed'}
     >
       <Text display={'flex'} alignItems={'center'} gap={1}>
         <Image
@@ -582,7 +585,11 @@ const LastSeenCard = (props: LastSeenCardProps) => {
         {!lastSeen && !isLoading && !doesNotRestock && !isAlways && t('General.never')}
         {!lastSeen && !isLoading && !doesNotRestock && isAlways && t('General.always')}
         {isLoading && <SkeletonText mt={1} skeletonHeight="3" noOfLines={1} />}
-        {type === 'restock' && doesNotRestock && t('ItemPage.does-not-restock')}
+        {!lastSeen &&
+          !isLoading &&
+          type === 'restock' &&
+          doesNotRestock &&
+          t('ItemPage.does-not-restock')}
       </Text>
     </Flex>
   );
