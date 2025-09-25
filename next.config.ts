@@ -6,6 +6,7 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   cacheMaxMemorySize: 0,
+  compress: false, // cloudflare does it for us
   productionBrowserSourceMaps: true,
   skipMiddlewareUrlNormalize: true,
   i18n: {
@@ -46,6 +47,9 @@ const nextConfig: NextConfig = {
   distDir: process.env.BUILD_DIR || '.next',
   experimental: {
     reactCompiler: true,
+    webpackBuildWorker: true,
+    parallelServerCompiles: true,
+    optimizeRouterScrolling: true,
     largePageDataBytes: 512 * 1000,
     optimizePackageImports: [
       '@sentry/nextjs',
@@ -60,6 +64,13 @@ const nextConfig: NextConfig = {
       '@emotion/styled',
       '@dnd-kit/core',
       '@dnd-kit/sortable',
+      'chance',
+      'color',
+      'axios',
+      'simple-statistics',
+      'fancy-canvas',
+      '@date-fns/tz',
+      '@date-fns/utc',
     ],
   },
   async headers() {
