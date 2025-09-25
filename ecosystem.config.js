@@ -4,11 +4,11 @@ module.exports = {
       name: 'itemdb-web',
       script: './node_modules/.bin/next',
       args: 'start -p 4000 -H 127.0.0.1',
-      instances: '4',
+      instances: '6',
       exec_mode: 'cluster',
       time: true,
       merge_logs: true,
-      max_memory_restart: '4000M',
+      max_memory_restart: '2000M',
     },
     {
       name: 'itemdb-green',
