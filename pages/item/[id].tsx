@@ -54,6 +54,7 @@ import { ItemBreadcrumb } from '../../components/Breadcrumbs/ItemBreadcrumb';
 import { loadTranslation } from '@utils/load-translation';
 import { getNCTradeInsights } from '../api/v1/mall/[iid]/insights';
 import FeedbackButton from '@components/Feedback/FeedbackButton';
+import FF_PointsCard from '@components/Hubs/FaerieFest2023/PointsCard';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -390,6 +391,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
             />
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>
+            <FF_PointsCard key={getKey('ff-points')} item={item} />
             {item.isNC && props.ncMallData && (
               <NcMallCard key={getKey('nc-mall-card')} item={item} ncMallData={props.ncMallData} />
             )}

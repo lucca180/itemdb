@@ -149,6 +149,7 @@ const ListPage = (props: ListPageProps) => {
       addedAt: 'added-at',
       faerieFest: 'recycling-points',
       item_id: 'item-id',
+      quantity: 'quantity',
     };
   }, [list.officialTag]);
 

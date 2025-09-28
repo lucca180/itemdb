@@ -1230,6 +1230,7 @@
     "added-at": "Adicionado Em",
     "recycling-points": "Pontos de Reciclagem",
     "item-id": "Item ID",
-    "custom": "Personalizado"
+    "custom": "Personalizado",
+    "quantity": "Quantidade"
   }
 }

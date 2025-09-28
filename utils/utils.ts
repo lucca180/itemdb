@@ -410,11 +410,12 @@ export function rarityToCCPoints(item: ItemData) {
 
   const rarity = item.rarity ?? 0;
 
-  if (rarity <= 79 || rarity === 101) return 1;
-  if (rarity <= 89) return 2;
-  if (rarity <= 97) return 6;
-  if (rarity <= 100) return 4;
-  if (rarity <= 179) return 8;
+  if (rarity <= 79) return 3;
+  if (rarity <= 89) return 5;
+  if (rarity <= 97) return 8;
+  if (rarity <= 100) return 6;
+  if (rarity === 101) return 1;
+  if (rarity <= 179) return 10;
 
   return 0;
 }
@@ -1713,6 +1714,9 @@ export const sortListItems = (
 
     if (sortDir === 'asc') return (ffA || 1000) - (ffB || 1000);
     else return ffB - ffA;
+  } else if (sortBy === 'quantity') {
+    if (sortDir === 'asc') return a.amount - b.amount;
+    else return b.amount - a.amount;
   }
 
   return 0;

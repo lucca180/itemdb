@@ -1229,6 +1229,7 @@
     "added-at": "Added At",
     "recycling-points": "Recycling Points",
     "item-id": "Item ID",
-    "custom": "Custom"
+    "custom": "Custom",
+    "quantity": "Quantity"
   }
 }
