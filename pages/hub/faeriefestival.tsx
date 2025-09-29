@@ -79,7 +79,7 @@ const FaeriesFest2023 = () => {
           <SearchCard
             title="10 points"
             description="All items that give you 10 points to spend at the Prize Shop"
-            link="/search?s=&rarity[]=102&rarity[]=179"
+            link="/search?s=&rarity[]=102&rarity[]=179&sortBy=price&price[]=1&price[]="
             color="#40A464"
             coverURL="https://images.neopets.com/items/om_peppers2.gif"
             footerText="r102 - r179"
@@ -87,7 +87,7 @@ const FaeriesFest2023 = () => {
           <SearchCard
             title="8 points"
             description="All items that give you 8 points to spend at the Prize Shop"
-            link="/search?s=&rarity[]=90&rarity[]=97"
+            link="/search?s=&rarity[]=90&rarity[]=97&sortBy=price&price[]=1&price[]="
             color="#C71F1D"
             coverURL="https://images.neopets.com/items/toy_bobble_abominable.gif"
             footerText="r90 - r97"
@@ -95,7 +95,7 @@ const FaeriesFest2023 = () => {
           <SearchCard
             title="6 points"
             description="All items that give you 6 points to spend at the Prize Shop (except Sticky Snowballs)"
-            link="/search?s=&rarity[]=98&rarity[]=100"
+            link="/search?s=&rarity[]=98&rarity[]=100&sortBy=price&price[]=1&price[]="
             color="#515C66"
             coverURL="https://images.neopets.com/items/toy_faerie_grey.gif"
             footerText="r98 - r100"
@@ -103,7 +103,7 @@ const FaeriesFest2023 = () => {
           <SearchCard
             title="5 points"
             description="All items that give you 5 points to spend at the Prize Shop"
-            link="/search?s=&rarity[]=80&rarity[]=89"
+            link="/search?s=&rarity[]=80&rarity[]=89&sortBy=price&price[]=1&price[]="
             color="#6C3C44"
             coverURL="https://images.neopets.com/items/clo_bg_8bitprideflag.gif"
             footerText="r80 - r89"
@@ -111,7 +111,7 @@ const FaeriesFest2023 = () => {
           <SearchCard
             title="3 points"
             description="All items that give you 3 points to spend at the Prize Shop"
-            link="/search?s=&rarity[]=1&rarity[]=79"
+            link="/search?s=&rarity[]=1&rarity[]=79&sortBy=price&price[]=1&price[]="
             color="#065DD2"
             coverURL="https://images.neopets.com/items/bluetradingcardback.gif"
             footerText="r1 - r79"
@@ -119,7 +119,7 @@ const FaeriesFest2023 = () => {
           <SearchCard
             title="1 points"
             description="All items that give you 1 point to spend at the Prize Shop"
-            link="/search?s=&rarity[]=101&rarity[]=101"
+            link="/search?s=&rarity[]=101&rarity[]=101&sortBy=price&price[]=1&price[]="
             color="#8484BC"
             coverURL="https://images.neopets.com/items/om_chokato3.gif"
             footerText="r101"
