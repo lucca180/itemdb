@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
-import { getItemFindAtLinks, isMissingInfo } from '../../../../utils/utils';
+import { getItemFindAtLinks, isMissingInfo, rarityToCCPoints } from '../../../../utils/utils';
 import { ItemData } from '../../../../types';
 import { Prisma } from '@prisma/generated/client';
 import qs from 'qs';
@@ -224,6 +224,7 @@ export const rawToItemData = (raw: any, options: RawToItemOptions = {}): ItemDat
           discountEnd: result.discountEnd ? result.discountEnd.toJSON() : null,
           discountPrice: result.discountPrice,
         },
+    ff_points: rarityToCCPoints(result) || null,
   };
 
   if (options.includeFlags && result.flags) {

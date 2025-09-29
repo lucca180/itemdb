@@ -93,7 +93,9 @@ async function pricePage(itemData) {
       if(item.rarity) {
         var color1 = setColor(item.rarity)
 
-        priceStr += `<small style='color:${color1}'><b>r${intl.format(item.rarity)}</b></small>`;
+        priceStr += `<small style='color:${color1}'><b>r${item.rarity}</b>`;
+        if(item.ff_points) priceStr += ` - <b>${item.ff_points} pts</b>`;
+        priceStr += `</small> `
       }
 
       if(item.status === 'no trade'){
