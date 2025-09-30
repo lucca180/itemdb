@@ -408,7 +408,9 @@ export function getDateNST(timestamp?: number) {
 export function rarityToCCPoints(item: ItemData) {
   if (item.internal_id === 289) return 1;
 
-  const rarity = item.rarity ?? 0;
+  if (!item.rarity) return 0;
+
+  const rarity = item.rarity;
 
   if (rarity <= 79) return 3;
   if (rarity <= 89) return 5;
