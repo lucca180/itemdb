@@ -23,13 +23,14 @@ import { MdHelp } from 'react-icons/md';
 type Props = {
   item: ItemData;
   lastSeen: ItemLastSeen | null;
-  isHT?: boolean; // is hidden tower item
 };
 
 const ItemRestock = (props: Props) => {
   const t = useTranslations();
   const format = useFormatter();
-  const { item, lastSeen, isHT } = props;
+  const { item, lastSeen } = props;
+
+  const isHT = item.findAt.restockShop?.includes('hiddentower938');
 
   const todayNST = getDateNST();
   const todayDate = todayNST.getDate();
