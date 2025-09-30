@@ -31,7 +31,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 export const getSingleItemColor = async (item: ItemData, force = false) => {
   if (!force && item.color?.hex) {
     const itemColor = await getItemColor([item.image_id]);
-    return itemColor[item.image_id];
+
+    if (itemColor[item.image_id]) return itemColor[item.image_id];
+    else force = true;
   }
 
   if (force && item.color.hex) {
