@@ -1,9 +1,8 @@
-import { Text, Link } from '@chakra-ui/react';
-import NextLink from 'next/link';
+import { Text } from '@chakra-ui/react';
 import { ItemData } from '../../../types';
 import { rarityToCCPoints } from '../../../utils/utils';
 import CardBase from '../../Card/CardBase';
-
+import Link from '@components/Utils/MainLink';
 type Props = {
   item: ItemData;
 };
@@ -18,7 +17,7 @@ const FF_PointsCard = (props: Props) => {
   return (
     <CardBase
       title={
-        <Link as={NextLink} href="/hub/faeriefestival">
+        <Link href="/hub/faeriefestival" trackEvent="ff-card">
           Faerie Festival
         </Link>
       }
@@ -26,12 +25,12 @@ const FF_PointsCard = (props: Props) => {
     >
       <Text textAlign={'center'}>
         {item.rarity && (
-          <Link as={NextLink} href="/hub/faeriefestival">
+          <Link href="/hub/faeriefestival" trackEvent="ff-card">
             {points} point{points > 1 ? 's' : ''}
           </Link>
         )}
         {!item.rarity && (
-          <Link as={NextLink} href="/contribute">
+          <Link href="/contribute" trackEvent="ff-card">
             <Text fontSize={'sm'}>
               We don&apos;t know this item rarity <br />
               Want to help?

@@ -152,12 +152,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
           <FFHomeCard>
             <Flex flexWrap="wrap" gap={4} justifyContent="center" sx={{ img: { filter: 'none' } }}>
               {ffLists.map((list) => (
-                <UserListCard
-                  isSmall
-                  key={list.internal_id}
-                  list={list}
-                  utm_content="faerie-festival"
-                />
+                <UserListCard isSmall key={list.internal_id} list={list} utm_content="ff-lists" />
               ))}
             </Flex>
           </FFHomeCard>
