@@ -70,14 +70,14 @@ export const getTrendingItems = async (limit: number) => {
 const FEATURED_SLUGS = process.env.FEATURED_LISTS?.split(',') ?? [];
 const FEATURED_UNTIL = process.env.FEATURED_UNTIL ? Number(process.env.FEATURED_UNTIL) : null;
 
-export const getTrendingLists = async (limit: number) => {
+export const getTrendingLists = async (limit: number, excludeCats: string[] = []) => {
   const statsRes = (await client.getWebsiteMetrics('df660da1-6f93-4dda-9da5-5028fb9db292', {
     startAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).getTime(),
     endAt: Date.now(),
     type: 'url',
     // @ts-expect-error missing type
     search: 'lists/official/',
-    limit: limit * 2,
+    limit: limit * 3,
   })) as WebsiteMetrics;
 
   const popularListsStats: any = {};
@@ -123,7 +123,7 @@ export const getTrendingLists = async (limit: number) => {
     rawToList(listRaw, listRaw.user)
   );
 
-  return sortedLists.slice(0, limit);
+  return sortedLists.filter((x) => !excludeCats.includes(x.officialTag ?? '')).slice(0, limit);
 };
 
 export const getTrendingShops = async (limit: number) => {
@@ -181,6 +181,33 @@ export const getTVWLists = async (limit: number) => {
 
   const otherLists = isFeaturedActive
     ? tvwLists.filter((list) => !FEATURED_TVW_SLUGS.includes(list.slug ?? ''))
+    : tvwLists;
+
+  const sortedLists: UserList[] = [...featuredLists, ...otherLists];
+
+  return sortedLists.slice(0, limit);
+};
+
+export const getTrendingCatLists = async (cat: string, limit: number) => {
+  const lists = await getTrendingLists(10000);
+  const tvwLists = lists.filter((list) => list.officialTag?.toLowerCase() === cat.toLowerCase());
+
+  const envKey = cat.split(' ').join('_').toUpperCase();
+
+  const FEATURED_UNTIL = process.env[`FEATURED_${envKey}_UNTIL`]
+    ? Number(process.env[`FEATURED_${envKey}_UNTIL`])
+    : 0;
+
+  const FEATURED_SLUGS = process.env[`FEATURED_${envKey}_LISTS`]?.split(',') ?? [];
+
+  const isFeaturedActive = FEATURED_UNTIL ? Date.now() < FEATURED_UNTIL : false;
+
+  const featuredLists = (
+    isFeaturedActive ? tvwLists.filter((list) => FEATURED_SLUGS.includes(list.slug ?? '')) : []
+  ).sort((a, b) => FEATURED_SLUGS.indexOf(a.slug ?? '') - FEATURED_SLUGS.indexOf(b.slug ?? ''));
+
+  const otherLists = isFeaturedActive
+    ? tvwLists.filter((list) => !FEATURED_SLUGS.includes(list.slug ?? ''))
     : tvwLists;
 
   const sortedLists: UserList[] = [...featuredLists, ...otherLists];

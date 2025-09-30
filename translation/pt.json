@@ -21,7 +21,8 @@
     "new-free-items": "Novos <Highlight>Itens Grátis</Highlight> nos últimos {days} dias",
     "new-free-items-text": "Inclui itens de Neopontos e exclui roupas exclusivas de PB e de códigos de item raro",
     "new-paid-items": "Novos <Highlight>Itens Pagos</Highlight> nos últimos {days} dias",
-    "new-paid-items-text": "Inclui itens NC e de códigos de itens raros"
+    "new-paid-items-text": "Inclui itens NC e de códigos de itens raros",
+    "more-guides-and-tools": "Mais Guias e Ferramentas"
   },
   "BetaStats": {
     "items-in-db": "Itens no banco de dados",

@@ -18,8 +18,19 @@ import Logo from '../../public/hub/faeriefest2023-logo.png';
 import SearchCard from '../../components/Hubs/FaerieFest2023/SearchCard';
 import { ReactElement } from 'react';
 import { loadTranslation } from '@utils/load-translation';
+import { getTrendingCatLists } from '../api/v1/beta/trending';
+import { UserList } from '@types';
+import UserListCard from '@components/UserLists/ListCard';
 
-const FaeriesFest2023 = () => {
+const EVENT_YEAR = 2025;
+
+type FaeriesFestivalProps = {
+  lists: UserList[];
+};
+
+const FaeriesFestival = (props: FaeriesFestivalProps) => {
+  const { lists } = props;
+
   return (
     <>
       <Box
@@ -125,7 +136,7 @@ const FaeriesFest2023 = () => {
             footerText="r101"
           />
         </Flex>
-        {/* <Center flexFlow="column" gap={1} mt={5}>
+        <Center flexFlow="column" gap={1} mt={5}>
           <Heading color="whiteAlpha.900">📦Faerie Donation Capsule</Heading>
           <Heading as="h3" size="sm" color="whiteAlpha.700">
             All drops from the Faerie Donation Capsule
@@ -138,7 +149,7 @@ const FaeriesFest2023 = () => {
             link="/search?s=&rarity[]=99&rarity[]=99"
             color="#EC5CDC"
             coverURL="https://images.neopets.com/items/sta_queen_fyora.gif"
-            footerText="15% odds"
+            footerText="15% chance"
           />
           <SearchCard
             title="r96 - r98"
@@ -146,7 +157,7 @@ const FaeriesFest2023 = () => {
             link="/search?s=&rarity[]=96&rarity[]=98"
             color="#F70808"
             coverURL="https://images.neopets.com/items/sta_sloth_charm.gif"
-            footerText="25% odds"
+            footerText="25% chance"
           />
           <SearchCard
             title="r90 - r95"
@@ -154,34 +165,20 @@ const FaeriesFest2023 = () => {
             link="/search?s=&rarity[]=90&rarity[]=95"
             color="#F4C412"
             coverURL="https://images.neopets.com/items/toy_faerie_siyana.gif"
-            footerText="60% odds"
+            footerText="60% chance"
           />
-        </Flex> */}
-        {/* <Center flexFlow="column" gap={1} mt={5}>
-          <Heading color="whiteAlpha.900">🛍️Prize Shop</Heading>
+        </Flex>
+        <Center flexFlow="column" gap={1} mt={5}>
+          <Heading color="whiteAlpha.900">🛍️Official Lists</Heading>
           <Heading as="h3" size="sm" color="whiteAlpha.700">
-            All items you can buy at each team&apos;s prize shop
+            Some curated lists to help you get the best items at the Faerie Festival event
           </Heading>
         </Center>
         <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
-          <SearchCard
-            title="Jhudora's Team"
-            description="All items from Jhudora's Team prize shop"
-            link="/lists/official/4921"
-            color="#ae3baf"
-            coverURL="https://images.neopets.com/faeriefestival/2023/np/jhudora-happy-face.png"
-            footerText="Lists"
-          />
-          <SearchCard
-            title="Illusen's Team"
-            description="All items from Illusen's Team prize shop"
-            link="/lists/official/4920"
-            color="#84B12A"
-            coverURL="https://images.neopets.com/faeriefestival/2023/np/illusen-happy-face.png"
-            footerText="Lists"
-          />
-        </Flex> */}
-
+          {lists.map((list) => (
+            <UserListCard isSmall key={list.internal_id} list={list} />
+          ))}
+        </Flex>
         <Center flexFlow="column" gap={1} mt={5}>
           <Heading color="whiteAlpha.900">🔧Utilities</Heading>
           <Heading as="h3" size="sm" color="whiteAlpha.700">
@@ -227,18 +224,24 @@ const FaeriesFest2023 = () => {
   );
 };
 
-export default FaeriesFest2023;
+export default FaeriesFestival;
 
 export async function getStaticProps(context: any) {
+  const lists = (await getTrendingCatLists('Faerie Festival', 100)).filter(
+    (l) => new Date(l.createdAt).getFullYear() === EVENT_YEAR
+  );
+
   return {
     props: {
+      lists: lists,
       messages: await loadTranslation(context.locale as string, 'hub/faeriefestival'),
       locale: context.locale,
     },
+    revalidate: 300,
   };
 }
 
-FaeriesFest2023.getLayout = function getLayout(page: ReactElement) {
+FaeriesFestival.getLayout = function getLayout(page: ReactElement) {
   // const t = createTranslator({ messages: props.messages, locale: props.locale });
   return (
     <Layout

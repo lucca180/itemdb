@@ -21,7 +21,8 @@
     "new-paid-items": "New <Highlight>Paid Items</Highlight> in the last {days} days",
     "new-paid-items-text": "Includes NC items and from rare item codes",
     "new-free-items": "New <Highlight>Free Items</Highlight> in the last {days} days",
-    "new-free-items-text": "Includes Neopoint Items and excludes PB exclusive clothes and rare item codes"
+    "new-free-items-text": "Includes Neopoint Items and excludes PB exclusive clothes and rare item codes",
+    "more-guides-and-tools": "More Guides and Tools"
   },
   "BetaStats": {
     "items-in-db": "Items in the database",

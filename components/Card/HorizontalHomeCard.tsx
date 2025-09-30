@@ -20,12 +20,24 @@ type HorizontalHomeCard = {
   sx?: FlexProps['sx'];
   isSmall?: boolean;
   isPriority?: boolean;
+  viewAllText?: string;
 };
 
 export const HorizontalHomeCard = (props: HorizontalHomeCard) => {
   const t = useTranslations();
-  const { children, title, image, viewAllLink, w, h, bgOpacity, utm_content, isSmall, isPriority } =
-    props;
+  const {
+    children,
+    title,
+    image,
+    viewAllLink,
+    w,
+    h,
+    bgOpacity,
+    utm_content,
+    isSmall,
+    isPriority,
+    viewAllText,
+  } = props;
   const color = Color(props.color);
   const rgb = color.rgb().array();
 
@@ -72,7 +84,7 @@ export const HorizontalHomeCard = (props: HorizontalHomeCard) => {
                   trackEvent={utm_content}
                   trackEventLabel={utm_content ? 'view-all' : undefined}
                 >
-                  {t('General.view-all')}
+                  {viewAllText ? viewAllText : t('General.view-all')}
                 </Button>
               )}
             </Flex>
@@ -115,6 +127,53 @@ export const TVWHomeCard = ({ children }: { children: React.ReactNode }) => {
           backgroundImage:
             "url('https://images.neopets.com/plots/tvw/home/images/void-pattern.png')",
           opacity: 0.5,
+          zIndex: -1,
+        },
+      }}
+      innerStyle={{
+        border: '2px solid #f3a4ff7d',
+      }}
+    >
+      {children}
+    </HorizontalHomeCard>
+  );
+};
+
+export const FFHomeCard = ({ children }: { children: React.ReactNode }) => {
+  const t = useTranslations();
+  return (
+    <HorizontalHomeCard
+      color="#5436ab"
+      h={50}
+      w={50}
+      image="https://images.neopets.com/faeriefestival/2025/np/prizeshop-icon.png"
+      viewAllLink="/hub/faeriefestival"
+      title={'Faerie Festival'}
+      isSmall
+      utm_content="ff-lists"
+      viewAllText={t('HomePage.more-guides-and-tools')}
+      sx={{
+        position: 'relative',
+        isolation: 'isolate',
+        overflow: 'hidden',
+        img: {
+          filter: 'drop-shadow(0 0 5px #f3a4ff)',
+        },
+        h2: {
+          textShadow: '0 0 10px #f3a4ff',
+        },
+        '::before': {
+          content: "''",
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundImage: "url('https://images.neopets.com/faeriefestival/2025/np/bg.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: 0.5,
+          filter: 'blur(10px) brightness(0.5)',
           zIndex: -1,
         },
       }}

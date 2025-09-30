@@ -38,6 +38,12 @@ export const ListBreadcrumb = (props: ListBreadcrumb) => {
           name: 'The Void Within',
           item: '/hub/the-void-within',
         });
+      } else if (category === 'Faerie Festival') {
+        breadList.push({
+          position: 3,
+          name: 'Faerie Festival',
+          item: '/hub/faeriefestival',
+        });
       } else if (listCategoriesData[slugify(category)]) {
         const { name } = listCategoriesData[slugify(category)];
         breadList.push({
