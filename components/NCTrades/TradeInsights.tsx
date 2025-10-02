@@ -70,7 +70,9 @@ export const TradeInsights = (props: TradeInsightsProps) => {
                   item={item}
                 />
               )}
-              {(release as UserList).name && <ListReleaseCard release={release as UserList} />}
+              {(release as UserList).name && (
+                <ListReleaseCard release={release as UserList} item={item} />
+              )}
             </Flex>
           );
         })}
@@ -220,6 +222,7 @@ const DiscountedText = (props: DiscountedTextProps) => {
 
 type ListReleaseCardProps = {
   release: UserList;
+  item?: ItemData;
 };
 
 const isEventActive = (release: UserList) => {
@@ -241,7 +244,9 @@ const ListReleaseCard = (props: ListReleaseCardProps) => {
   const t = useTranslations();
   const isActive = isEventActive(release);
   const item = release.itemInfo?.[0];
-  const seriesStart = item?.seriesStart || release.seriesStart;
+  const seriesStart =
+    item?.seriesStart ||
+    dateMax(new Date(release.seriesStart || 0), new Date(props.item?.firstSeen || 0));
   const seriesEnd = item?.seriesEnd || release.seriesEnd;
 
   return (
@@ -277,4 +282,8 @@ const ListReleaseCard = (props: ListReleaseCardProps) => {
       </Text>
     </>
   );
+};
+
+const dateMax = (...dates: Date[]) => {
+  return dates.reduce((max, date) => (date > max ? date : max), new Date(0));
 };
