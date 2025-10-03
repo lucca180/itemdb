@@ -1,7 +1,7 @@
 export const LATEST_VERSIONS_CODE = {
-  itemdb_script: 195,
+  itemdb_script: 196,
   itemdb_restock: 201,
-  itemdb_sdbPricer: 150,
+  itemdb_sdbPricer: 154,
 };
 
 export const showScriptCTA = (): false | 'notFound' | 'outdated' => {
