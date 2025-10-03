@@ -76,16 +76,16 @@ export const getTrendingLists = async (limit: number, excludeCats: string[] = []
     endAt: Date.now(),
     type: 'url',
     // @ts-expect-error missing type
-    search: 'lists/official/',
+    search: '/lists/official/',
     limit: limit * 3,
   })) as WebsiteMetrics;
 
   const popularListsStats: any = {};
 
   statsRes.data.map((pageData) => {
+    if (!pageData.x.startsWith('/lists/official/')) return;
     const slug = pageData.x.split('/').pop();
     if (!slug) return;
-
     popularListsStats[slug] = {
       slug: slug,
       pageviews: pageData.y,
@@ -107,7 +107,6 @@ export const getTrendingLists = async (limit: number, excludeCats: string[] = []
   const sorted = lists.sort((a, b) => {
     const aPageViews = popularListsStats[a.slug!]?.pageviews ?? 0;
     const bPageViews = popularListsStats[b.slug!]?.pageviews ?? 0;
-
     return bPageViews - aPageViews;
   });
 
@@ -190,7 +189,7 @@ export const getTVWLists = async (limit: number) => {
 
 export const getTrendingCatLists = async (cat: string, limit: number) => {
   const lists = await getTrendingLists(10000);
-  const tvwLists = lists.filter((list) => list.officialTag?.toLowerCase() === cat.toLowerCase());
+  const targetLists = lists.filter((list) => list.officialTag?.toLowerCase() === cat.toLowerCase());
 
   const envKey = cat.split(' ').join('_').toUpperCase();
 
@@ -203,14 +202,13 @@ export const getTrendingCatLists = async (cat: string, limit: number) => {
   const isFeaturedActive = FEATURED_UNTIL ? Date.now() < FEATURED_UNTIL : false;
 
   const featuredLists = (
-    isFeaturedActive ? tvwLists.filter((list) => FEATURED_SLUGS.includes(list.slug ?? '')) : []
+    isFeaturedActive ? targetLists.filter((list) => FEATURED_SLUGS.includes(list.slug ?? '')) : []
   ).sort((a, b) => FEATURED_SLUGS.indexOf(a.slug ?? '') - FEATURED_SLUGS.indexOf(b.slug ?? ''));
 
   const otherLists = isFeaturedActive
-    ? tvwLists.filter((list) => !FEATURED_SLUGS.includes(list.slug ?? ''))
-    : tvwLists;
+    ? targetLists.filter((list) => !FEATURED_SLUGS.includes(list.slug ?? ''))
+    : targetLists;
 
   const sortedLists: UserList[] = [...featuredLists, ...otherLists];
-
   return sortedLists.slice(0, limit);
 };
