@@ -296,14 +296,17 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
           const itemCategory = item.category?.toLowerCase() ?? '';
 
           if (
-            (genericCats.includes(dbCatetory) && !genericCats.includes(itemCategory)) ||
-            (!categoryToShopID[dbCatetory] && categoryToShopID[itemCategory])
+            genericCats.includes(dbCatetory) &&
+            !genericCats.includes(itemCategory) &&
+            !categoryToShopID[dbCatetory] &&
+            categoryToShopID[itemCategory]
           )
             dbItem.category = item.category;
           else if (
             itemCategory !== dbCatetory &&
             categoryToShopID[itemCategory] &&
-            categoryToShopID[dbCatetory]
+            categoryToShopID[dbCatetory] &&
+            !genericCats.includes(itemCategory)
           )
             throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
         } else throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
