@@ -167,7 +167,11 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
             >
               <Flex alignItems={'center'}>
                 <Image
-                  src="https://images.neopets.com/caption/sm_caption_1100.gif"
+                  src={
+                    newItemCount.paidItems > newItemCount.freeItems * 2
+                      ? 'https://images.neopets.com/caption/sm_caption_1100.gif'
+                      : 'https://images.neopets.com/nt/ntimages/332_nc_mall.gif'
+                  }
                   alt="tax beast thumbnail"
                   width={100}
                   height={100}
