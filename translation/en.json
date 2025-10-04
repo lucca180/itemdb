@@ -633,7 +633,8 @@
     "importing-x-items": "Importing {x} items",
     "trending-lists": "Trending Lists",
     "newest-lists": "Newest Lists",
-    "no-lists-found": "No lists found :("
+    "no-lists-found": "No lists found :(",
+    "xx-unique-items-yy-total": "{itemCount} unique items ({qtyCount} total)"
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",

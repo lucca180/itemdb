@@ -163,6 +163,18 @@ const ListPage = (props: ListPageProps) => {
     return isLoading ? list.itemCount : Object.keys(itemInfo).length;
   }, [list, isLoading, itemInfo, searchItemInfoIds]);
 
+  const qtyCount = useMemo(() => {
+    let count = 0;
+
+    if (isLoading) return list.itemCount;
+
+    (searchItemInfoIds ?? itemInfoIds).forEach((id) => {
+      count += itemInfo[id]?.amount ?? 0;
+    });
+
+    return count;
+  }, [isLoading, itemInfo, itemInfoIds, searchItemInfoIds]);
+
   useEffect(() => {
     if (router.isReady) {
       init();
@@ -627,9 +639,16 @@ const ListPage = (props: ListPageProps) => {
               {(isOwner || list.official || list.canBeLinked) && !list.linkedListId && (
                 <CreateLinkedListButton list={list} isLoading={isLoading} />
               )}
-              <Text as="div" textColor={'gray.300'} fontSize="sm">
-                {t('Lists.itemcount-items', { itemCount })}
-              </Text>
+              {(!qtyCount || itemCount === qtyCount) && (
+                <Text as="div" textColor={'gray.300'} fontSize="sm">
+                  {t('Lists.itemcount-items', { itemCount })}
+                </Text>
+              )}
+              {!!qtyCount && qtyCount !== itemCount && (
+                <Text as="div" textColor={'gray.300'} fontSize="sm">
+                  {t('Lists.xx-unique-items-yy-total', { itemCount, qtyCount })}
+                </Text>
+              )}
             </HStack>
           )}
           {isEdit && (
