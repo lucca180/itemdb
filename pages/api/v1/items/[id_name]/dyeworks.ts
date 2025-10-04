@@ -38,7 +38,11 @@ export const getDyeworksData = async (item: ItemData): Promise<DyeworksData | nu
     ? item.name.split(':').slice(1).join(':').trim()
     : item.name;
 
-  const search = await doSearch(notDyeworksName, { ...defaultFilters, limit: 1000 }, false);
+  const search = await doSearch(
+    notDyeworksName,
+    { ...defaultFilters, limit: 1000, mode: 'boolean' },
+    false
+  );
   if (!search.content.length) return null;
 
   const dyes = search.content.filter(
