@@ -1679,16 +1679,8 @@ export const sortListItems = (
 
     return (itemB.rarity ?? 0) - (itemA.rarity ?? 0);
   } else if (sortBy === 'price') {
-    if (sortDir === 'asc')
-      return (
-        (itemA.price.value ?? Infinity) - (itemB.price.value ?? Infinity) ||
-        (itemA.ncValue?.minValue ?? -1) - (itemB.ncValue?.minValue ?? -1)
-      );
-    else
-      return (
-        (itemB.price.value ?? Infinity) - (itemA.price.value ?? Infinity) ||
-        (itemB.ncValue?.minValue ?? -1) - (itemA.ncValue?.minValue ?? -1)
-      );
+    if (sortDir === 'asc') return getSortPrice(itemA) - getSortPrice(itemB);
+    else return getSortPrice(itemB) - getSortPrice(itemA);
   } else if (sortBy === 'item_id') {
     if (sortDir === 'asc') return (itemA.item_id ?? 0) - (itemB.item_id ?? 0);
 
@@ -1722,6 +1714,18 @@ export const sortListItems = (
   }
 
   return 0;
+};
+
+const getSortPrice = (item: ItemData) => {
+  if (item.status === 'no trade') return -1;
+  if (item.price.value) return item.price.value;
+
+  if (item.isNC) {
+    if (item.ncValue?.minValue) return item.ncValue.minValue;
+    else return -1;
+  }
+
+  return Infinity;
 };
 
 export const dynamicListCan = (list: UserList | undefined, permission: 'add' | 'remove') => {
