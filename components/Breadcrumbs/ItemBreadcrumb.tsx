@@ -47,14 +47,14 @@ export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
       if (!shopInfo || !shopInfo.name) return breadList;
 
       breadList[2] = {
-        position: 2,
+        position: 3,
         name: shopInfo.name,
         item: `/restock/${slugify(shopInfo.name)}`,
       };
     } else if (officialLists && officialLists.length === 1) {
       const list = officialLists[0];
       breadList[2] = {
-        position: 2,
+        position: 3,
         name: list.name,
         item: `/lists/official/${list.slug}`,
       };
