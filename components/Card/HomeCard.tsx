@@ -81,24 +81,28 @@ export const HomeCard = (props: HomeCardProps) => {
         <Divider borderColor={'whiteAlpha.300'} mt={3} />
         {!useItemCard && (
           <Flex flexFlow={'column'}>
-            {items.slice(perPage * page, perPage * (page + 1)).map((item) => (
+            {items.map((item, i) => (
               <HomeItem
                 key={item.internal_id + title}
                 menuKey={item.internal_id + title}
                 utm_content={utm_content}
                 item={item}
+                hidden={i < perPage * page || i >= perPage * (page + 1)}
               />
             ))}
           </Flex>
         )}
         {useItemCard && (
           <Flex flexWrap={'wrap'} gap={2} my={3} justifyContent={'center'}>
-            {items.slice(perPage * page, perPage * (page + 1)).map((item) => (
+            {items.map((item, i) => (
               <ItemCard
                 uniqueID={title}
                 key={item.internal_id + title}
                 item={item}
                 utm_content={utm_content}
+                style={{
+                  display: i < perPage * page || i >= perPage * (page + 1) ? 'none' : undefined,
+                }}
               />
             ))}
           </Flex>
@@ -144,10 +148,12 @@ const HomeItem = ({
   item,
   menuKey,
   utm_content,
+  hidden,
 }: {
   item: ItemData;
   menuKey: string;
   utm_content?: string;
+  hidden?: boolean;
 }) => {
   const [isMobile] = useMediaQuery('(hover: none)');
 
@@ -160,6 +166,7 @@ const HomeItem = ({
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         //@ts-ignore
         disableWhileShiftPressed
+        display={hidden ? 'none' : undefined}
       >
         <Link
           as={MainLink}

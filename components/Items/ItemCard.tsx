@@ -89,16 +89,16 @@ const ItemCardBase = (props: ItemProps) => {
         //@ts-ignore
         disableWhileShiftPressed
         disable={isMobile ? true : undefined}
-        style={props.style}
+        sx={props.style}
       >
         <Link
           as={disableLink ? undefined : MainLink}
-          style={props.style}
           prefetch={disableLink || disablePrefetch !== false ? false : undefined}
           trackEvent={utm_content || undefined}
           trackEventLabel={item.slug || undefined}
           href={disableLink ? undefined : '/item/' + (item.slug ?? item.internal_id)}
           _hover={{ textDecoration: 'none' }}
+          sx={props.style}
           // pointerEvents={disableLink ? 'none' : 'initial'}
         >
           <Box
