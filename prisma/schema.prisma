@@ -3,6 +3,7 @@ generator client {
   previewFeatures = ["nativeDistinct", "relationJoins"]
   output          = "./generated"
   moduleFormat    = "esm"
+  engineType      = "client"
 }
 
 datasource db {
