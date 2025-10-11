@@ -90,12 +90,12 @@ export class dti {
     };
   }
 
-  public static async fetchOutfitPreview(itemNames: string[]) {
+  public static async fetchOutfitPreview(itemNames: string[], petId?: number) {
     const pet = dti.getRandomPet();
 
     const variables = {
       itemNames: itemNames,
-      species: pet.species.id,
+      species: petId ?? pet.species.id,
       color: pet.color.id,
     };
 

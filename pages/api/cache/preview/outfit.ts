@@ -16,8 +16,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   if (req.method !== 'GET' || !req.url)
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
-
-  const { refresh, hash, parent_iid } = req.query;
+  let start = Date.now();
+  const { refresh, hash, parent_iid, petId } = req.query;
   const reqQuery = qs.parse(req.url.split('?')[1]) as any;
 
   let canvas;
@@ -35,14 +35,16 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       },
     });
 
+    start = updateServerTime('item-lookup', start, res);
     if (!items || !items.length) return res.status(404).send('Item not found');
 
     const pathHash = objectHash(items.map((item) => item.internal_id).sort());
     const path = `preview/${pathHash}.png`;
 
-    const exists = await cdnExists(path);
-
     const forceRefresh = refresh === 'true';
+    const exists = forceRefresh ? null : await cdnExists(path);
+
+    start = updateServerTime('cdn-check', start, res);
 
     if (exists && !forceRefresh) {
       res.setHeader('Cache-Control', 'public, max-age=2592000');
@@ -56,8 +58,14 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     } else {
       canvas = createCanvas(600, 600);
       ctx = canvas.getContext('2d');
+      start = updateServerTime('canvas-setup', start, res);
 
-      const imagesURLs = await handleRegularStyle(items.map((item) => item.name));
+      const imagesURLs = await handleRegularStyle(
+        items.map((item) => item.name),
+        petId ? Number(petId) : undefined
+      );
+      start = updateServerTime('dti-fetch', start, res);
+
       if (imagesURLs.length === 0) throw new Error('No layers found');
 
       const imagesPromises = [];
@@ -65,14 +73,15 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       for (const img of imagesURLs) {
         imagesPromises.push(loadImage(img));
       }
-
       const images = await Promise.all(imagesPromises);
+      start = updateServerTime('load-images', start, res);
 
       for (const img of images) ctx.drawImage(img, 0, 0, 600, 600);
+      start = updateServerTime('draw-images', start, res);
 
       const buffer = await canvas.encode('webp', 100);
 
-      await uploadToS3(path, buffer, 'image/webp');
+      start = updateServerTime('encode-image', start, res);
 
       res.writeHead(200, {
         'Content-Type': 'image/webp',
@@ -81,6 +90,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       });
 
       res.end(buffer);
+
+      await uploadToS3(path, buffer, 'image/webp');
+
+      updateServerTime('upload-image', start, res);
 
       if (forceRefresh && parent_iid) {
         const chance = new Chance();
@@ -125,8 +138,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 }
 
-const handleRegularStyle = async (itemNames: string[]): Promise<string[]> => {
-  const outfitPreview = await dti.fetchOutfitPreview(itemNames);
+const handleRegularStyle = async (itemNames: string[], petId?: number): Promise<string[]> => {
+  const outfitPreview = await dti.fetchOutfitPreview(itemNames, petId);
 
   if (!outfitPreview || !outfitPreview.length) {
     throw new Error('Item Preview not found');
@@ -146,4 +159,16 @@ const handleRegularStyle = async (itemNames: string[]): Promise<string[]> => {
   }
 
   return imagesURLs;
+};
+
+const updateServerTime = (label: string, startTime: number, response: NextApiResponse) => {
+  const endTime = Date.now();
+  const value = endTime - startTime;
+  const serverTime = response.getHeader('Server-Timing') || '';
+  const newServerTime = serverTime
+    ? `${serverTime}, ${label};dur=${value}`
+    : `${label};dur=${value}`;
+
+  response.setHeader('Server-Timing', newServerTime);
+  return endTime;
 };

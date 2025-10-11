@@ -6,6 +6,7 @@ import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@utils/auth';
 import { FaRotateRight } from 'react-icons/fa6';
+import { getSpeciesId } from '@utils/pet-utils';
 
 type Props = {
   item: ItemData;
@@ -31,6 +32,10 @@ const ItemOutfit = (props: Props) => {
     const cacheHash = item.cacheHash ? 'hash=' + item.cacheHash : '';
     const isRefresh = refresh ? 'refresh=' + true + '&refresh_id=' + refresh : '';
     let url = '/api/cache/preview/outfit?parent_iid=' + item.internal_id + '&';
+
+    const speciesName = item.name.replace(/Day Y\d+ Mini Mystery Capsule/i, '').trim();
+    const speciesID = getSpeciesId(speciesName);
+    if (speciesID) url += `petId=${speciesID}&`;
 
     outfitList.forEach((iid) => {
       url += `iid[]=${iid}&`;
