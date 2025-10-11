@@ -10,7 +10,6 @@ concurrency:
 jobs:
   deploy-itemdb-green:
     name: itemdb Green (backup) - Deploy
-    needs: deploy-itemdb-blue
     runs-on: ubuntu-latest
     steps:
       - name: itemdb Green (backup) - Update
@@ -33,6 +32,7 @@ jobs:
             pm2 stop ecosystem.config.js --only itemdb-green --update-env
   deploy-itemdb-blue:
     name: itemdb blue (main) - Deploy
+    needs: deploy-itemdb-green
     runs-on: ubuntu-latest
     steps:
       - name: itemdb Blue (main) - Deploy
