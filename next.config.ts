@@ -45,11 +45,10 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 2592000,
   },
   distDir: process.env.BUILD_DIR || '.next',
+  reactCompiler: true,
   experimental: {
-    reactCompiler: true,
     webpackBuildWorker: true,
     parallelServerCompiles: true,
-    optimizeRouterScrolling: true,
     largePageDataBytes: 512 * 1000,
     optimizePackageImports: [
       '@sentry/nextjs',

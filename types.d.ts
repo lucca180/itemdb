@@ -189,7 +189,8 @@ export type SearchFilters = {
   ncValue: string[]; // [min, max]
   petpetColor: string[];
   petpetSpecies: string[];
-  petpetOnlyPaintable: boolean;
+  petpetOnlyPaintable?: boolean;
+  petpetOnlyCanonical?: boolean;
   restockProfit: string; // min profit margin
   restockIncludeUnpriced: boolean;
   colorTolerance: string; // color tolerance
