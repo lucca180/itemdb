@@ -8,31 +8,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 jobs:
-  deploy-itemdb-blue:
-    name: itemdb blue (main) - Deploy
-    runs-on: ubuntu-latest
-    steps:
-      - name: itemdb Blue (main) - Deploy
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          script: |
-            cd /home/itemdb/
-            git fetch origin main
-            git reset --hard FETCH_HEAD
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            yarn install --immutable
-            npx prisma migrate deploy
-            pm2 stop ecosystem.config.js --only itemdb-web
-            pm2 start itemdb-green
-            yarn build-intl
-            yarn build || exit
-            yarn postbuild
-            pm2 stop itemdb-green
-            pm2 reload ecosystem.config.js --only itemdb-web --update-env
   deploy-itemdb-green:
     name: itemdb Green (backup) - Deploy
     needs: deploy-itemdb-blue
@@ -51,7 +26,32 @@ jobs:
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             yarn install --immutable
+            npx prisma migrate deploy
             yarn build-intl
             yarn build-turbo || exit
             yarn postbuild
             pm2 stop ecosystem.config.js --only itemdb-green --update-env
+  deploy-itemdb-blue:
+    name: itemdb blue (main) - Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: itemdb Blue (main) - Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            cd /home/itemdb/
+            git fetch origin main
+            git reset --hard FETCH_HEAD
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            yarn install --immutable
+            pm2 stop ecosystem.config.js --only itemdb-web
+            pm2 start itemdb-green
+            yarn build-intl
+            yarn build || exit
+            yarn postbuild
+            pm2 stop itemdb-green
+            pm2 reload ecosystem.config.js --only itemdb-web --update-env
