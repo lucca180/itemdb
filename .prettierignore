@@ -13,3 +13,4 @@ utils/views/*
 package.json
 *.lock
 prisma/generated/**
+next-env.d.ts
