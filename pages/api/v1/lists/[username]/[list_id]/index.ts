@@ -149,6 +149,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
             isHighlight: item.isHighlight,
             isHidden: item.isHidden,
             amount: item.amount,
+            seriesStart: item.seriesStart,
+            seriesEnd: item.seriesEnd,
           };
         }),
         skipDuplicates: true,
