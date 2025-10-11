@@ -78,6 +78,7 @@ const MMECard = dynamic(() => import('../../components/Items/MMECard'));
 const DyeCard = dynamic(() => import('../../components/Items/DyeCard'));
 const NcMallCard = dynamic(() => import('../../components/Items/NCMallCard'));
 const PetpetCard = dynamic(() => import('../../components/Items/PetpetCard'));
+const ItemOutfit = dynamic(() => import('../../components/Items/ItemOutfit'));
 
 type ItemPageProps = {
   item: ItemData;
@@ -398,6 +399,13 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
             {item.findAt.restockShop && (
               <ItemRestock key={getKey('item-restock')} item={item} lastSeen={props.lastSeen} />
             )}
+            {!item.isWearable && itemOpenable && isPetDayCapsule(item.name) && (
+              <ItemOutfit
+                key={getKey('item-outfit')}
+                outfitList={Object.keys(itemOpenable.drops).map((iid) => parseInt(iid))}
+                item={item}
+              />
+            )}
             {(item.isWearable || colorSpeciesEffect) && (
               <ItemPreview
                 key={getKey('item-preview')}
@@ -579,3 +587,5 @@ ItemPage.getLayout = function getLayout(page: ReactElement, props: ItemPageProps
     </Layout>
   );
 };
+
+const isPetDayCapsule = (name: string) => /Day Y\d+ Mini Mystery Capsule/i.test(name);

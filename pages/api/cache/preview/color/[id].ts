@@ -10,6 +10,8 @@ import {
 } from '../../../../../utils/pet-utils';
 import { checkPetColorExists } from '../../../v1/tools/petcolors';
 import prisma from '../../../../../utils/prisma';
+import { revalidateItem } from '../../../v1/items/[id_name]/effects';
+import { Chance } from 'chance';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -20,7 +22,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (req.method !== 'GET')
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
-  const { id, refresh } = req.query;
+  const { id, refresh, hash, iid } = req.query;
 
   let canvas;
   let ctx;
@@ -63,7 +65,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     if (exists && !forceRefresh) {
       res.setHeader('Cache-Control', forceRefresh ? 'no-cache' : 'public, max-age=2592000');
 
-      res.redirect(301, `https://cdn.itemdb.com.br/${path}`);
+      const urlPath = `https://cdn.itemdb.com.br/${path}`;
+      const cacheKeyPath = hash ? `?hash=${hash}` : '';
+
+      res.redirect(urlPath + cacheKeyPath);
 
       return;
     } else {
@@ -93,6 +98,22 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       });
 
       res.end(buffer);
+
+      if (forceRefresh && iid) {
+        const chance = new Chance();
+        const item = await prisma.items.findUnique({
+          where: { internal_id: Number(iid) },
+        });
+
+        if (!item) return;
+
+        await prisma.items.update({
+          where: { internal_id: item.internal_id },
+          data: { imgCacheOverride: chance.hash({ length: 10 }) },
+        });
+
+        await revalidateItem(item.slug!, res);
+      }
 
       return;
     }

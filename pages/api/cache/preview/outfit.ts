@@ -5,6 +5,8 @@ import { cdnExists, uploadToS3 } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
 import qs from 'qs';
 import objectHash from 'object-hash';
+import { Chance } from 'chance';
+import { revalidateItem } from '../../v1/items/[id_name]/effects';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -15,7 +17,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (req.method !== 'GET' || !req.url)
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
-  const { refresh } = req.query;
+  const { refresh, hash, parent_iid } = req.query;
   const reqQuery = qs.parse(req.url.split('?')[1]) as any;
 
   let canvas;
@@ -35,17 +37,20 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     if (!items || !items.length) return res.status(404).send('Item not found');
 
-    const hash = objectHash(items.map((item) => item.internal_id).sort());
-    const path = `preview/${hash}.png`;
+    const pathHash = objectHash(items.map((item) => item.internal_id).sort());
+    const path = `preview/${pathHash}.png`;
 
     const exists = await cdnExists(path);
 
     const forceRefresh = refresh === 'true';
 
     if (exists && !forceRefresh) {
-      res.setHeader('Cache-Control', forceRefresh ? 'no-cache' : 'public, max-age=2592000');
+      res.setHeader('Cache-Control', 'public, max-age=2592000');
 
-      res.redirect(301, `https://cdn.itemdb.com.br/${path}`);
+      const urlPath = `https://cdn.itemdb.com.br/${path}`;
+      const cacheKeyPath = hash ? `?hash=${hash}` : '';
+
+      res.redirect(urlPath + cacheKeyPath);
 
       return;
     } else {
@@ -76,6 +81,22 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       });
 
       res.end(buffer);
+
+      if (forceRefresh && parent_iid) {
+        const chance = new Chance();
+        const item = await prisma.items.findUnique({
+          where: { internal_id: Number(parent_iid) },
+        });
+
+        if (!item) return;
+
+        await prisma.items.update({
+          where: { internal_id: item.internal_id },
+          data: { imgCacheOverride: chance.hash({ length: 10 }) },
+        });
+
+        await revalidateItem(item.slug!, res);
+      }
 
       return;
     }
