@@ -2,10 +2,12 @@
 import { Box } from '@chakra-ui/react';
 import Color from 'color';
 import { createChart, ColorType, LineStyle } from 'lightweight-charts';
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { ColorData, ItemData, PriceData, UserList } from '../../types';
 import { VertLine } from './VerticalLine';
 import { useFormatter } from 'next-intl';
+import { format } from 'date-fns';
+import { tz } from '@date-fns/tz';
 
 export type ChartComponentProps = {
   color: ItemData['color'] | ColorData;
@@ -71,7 +73,9 @@ const ChartComponent = (props: ChartComponentProps) => {
 
     const dataClone = data.map((p) => {
       return {
-        time: p.addedAt.split('T')[0],
+        time: format(p.addedAt, 'yyyy-MM-dd', {
+          in: tz('America/Los_Angeles'),
+        }),
         value: p.value,
       };
     });
