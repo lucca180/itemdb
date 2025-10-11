@@ -1051,7 +1051,8 @@
   "Articles": {
     "all-articles": "All Articles",
     "recommended-articles": "Recommended Articles",
-    "posted-at-date": "Posted at {date}"
+    "posted-at-date": "Posted at {date}",
+    "updated-x": "Updated {x}"
   },
   "Error": {
     "page-not-found": "Page not Found",

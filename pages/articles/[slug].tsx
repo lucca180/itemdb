@@ -71,6 +71,10 @@ const ArticlePage = (props: ArticlePageProps) => {
               month: 'long',
               day: 'numeric',
             }),
+          })}{' '}
+          -{' '}
+          {t('Articles.updated-x', {
+            x: formatter.relativeTime(new Date(post.updated)),
           })}
         </Text>
       </HeaderCard>

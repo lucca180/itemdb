@@ -29,7 +29,7 @@ export const wp_getBySlug = async (slug: string): Promise<WP_Article | null> => 
     },
   });
 
-  const posts = posts_res.data.map(async (post: WP_REST_API_Post) => {
+  const posts: Promise<WP_Article>[] = posts_res.data.map(async (post: WP_REST_API_Post) => {
     const thumbUrl: string | null =
       ((post._embedded?.['wp:featuredmedia']?.[0] as any)?.source_url || '').replace(
         'https://',
@@ -45,6 +45,7 @@ export const wp_getBySlug = async (slug: string): Promise<WP_Article | null> => 
       excerpt: he.decode(post.excerpt.rendered.replace(/<[^>]+>/g, '')),
       slug: post.slug,
       date: post.date_gmt,
+      updated: post.modified_gmt,
       thumbnail: thumbUrl || null,
       palette: palette,
     };

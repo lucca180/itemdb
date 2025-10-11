@@ -59,6 +59,7 @@ export const wp_getLatestPosts = async (
       excerpt: he.decode(post.excerpt.rendered.replace(/<[^>]+>/g, '')),
       slug: post.slug,
       date: post.date_gmt,
+      updated: post.modified_gmt,
       thumbnail: thumburl || null,
       palette: thumburl ? await getImagePalette(thumburl, true) : null,
     };

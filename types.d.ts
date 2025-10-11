@@ -316,6 +316,7 @@ export type WP_Article = {
   excerpt: string;
   slug: string;
   date: string;
+  updated: string;
   thumbnail: string | null;
   palette: Record<ColorType, Pallete> | null;
 };

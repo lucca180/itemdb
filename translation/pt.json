@@ -1052,7 +1052,8 @@
   "Articles": {
     "all-articles": "Todos os Artigos",
     "recommended-articles": "Artigos Recomendados",
-    "posted-at-date": "Postado em {date}"
+    "posted-at-date": "Postado em {date}",
+    "updated-x": "Atualizado {x}"
   },
   "Error": {
     "404-text-1": "A página que você procura não existe :(",
