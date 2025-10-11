@@ -93,10 +93,10 @@ const PetpetCard = (props: Props) => {
               borderRadius={'md'}
             >
               {petpetData.cheapest.items.map((i, index) => (
-                <>
-                  <ItemCard uniqueID={'cheapest'} key={i.internal_id} item={i} small />
+                <React.Fragment key={i.internal_id}>
+                  <ItemCard uniqueID={'cheapest'} item={i} small />
                   {index + 1 < petpetData.cheapest!.items.length && <Center>+</Center>}
-                </>
+                </React.Fragment>
               ))}
             </Flex>
           </>
@@ -170,15 +170,10 @@ const PetpetCard = (props: Props) => {
                         borderRadius={'md'}
                       >
                         {way.map((i, index) => (
-                          <>
-                            <ItemCard
-                              uniqueID={'alternatives_' + i}
-                              key={i.internal_id}
-                              item={i}
-                              small
-                            />
+                          <React.Fragment key={i.internal_id}>
+                            <ItemCard uniqueID={'alternatives_' + i} item={i} small />
                             {index + 1 < way.length && <Center>+</Center>}
-                          </>
+                          </React.Fragment>
                         ))}
                       </Flex>
                     ))}
