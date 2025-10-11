@@ -50,6 +50,7 @@ const nextConfig: NextConfig = {
     webpackBuildWorker: true,
     parallelServerCompiles: true,
     largePageDataBytes: 512 * 1000,
+    turbopackFileSystemCacheForDev: true,
     optimizePackageImports: [
       '@sentry/nextjs',
       'axios',
