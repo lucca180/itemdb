@@ -362,7 +362,7 @@ export async function doSearch(
 
   let petpetJoin = Prisma.empty;
   const petpetSQL = [];
-  if (petpetColor.length > 0 || petpetSpecies.length > 0) {
+  if (petpetColor.length > 0 || petpetSpecies.length > 0 || petpetOnlyPaintable) {
     petpetJoin = Prisma.sql`LEFT JOIN PetpetColors as pc on pc.item_iid = a.internal_id`;
 
     if (petpetSpecies.length > 0)
