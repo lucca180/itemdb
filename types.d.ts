@@ -279,6 +279,9 @@ export type UserList = {
   seriesType: 'listCreation' | 'itemAddition' | 'listDates' | null;
   seriesStart: string | null;
   seriesEnd: string | null;
+
+  highlight: string | null;
+  highlightText: string | null;
 };
 
 export type ObligatoryUserList = Required<Pick<UserList, 'itemInfo'>> & UserList;

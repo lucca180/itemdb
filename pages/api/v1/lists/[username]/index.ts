@@ -64,6 +64,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     officialTag,
     canBeLinked,
     listUserTag,
+    highlight,
+    highlightText,
   } = req.body;
 
   try {
@@ -111,6 +113,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         visibility: visibility as 'public' | 'private' | 'unlisted',
         slug: slug,
         user_id: user.id,
+        highlight: highlight?.trim() ?? undefined,
+        highlightText: highlightText?.trim() ?? undefined,
       },
     });
 
@@ -375,6 +379,10 @@ export const rawToList = (
     seriesType: listRaw.seriesType,
     seriesStart: listRaw.seriesStart?.toJSON() ?? null,
     seriesEnd: listRaw.seriesEnd?.toJSON() ?? null,
+
+    highlight: listRaw.highlight ?? null,
+    highlightText: listRaw.highlightText ?? null,
+
     itemInfo: !includeItems
       ? []
       : listRaw.items?.map((item) => {

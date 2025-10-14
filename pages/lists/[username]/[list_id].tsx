@@ -73,6 +73,8 @@ const AddListItemsModal = dynamic<AddListItemsModalProps>(
   () => import('../../../components/Modal/AddListItemsModal')
 );
 
+const Markdown = dynamic(() => import('../../../components/Utils/Markdown'), { ssr: false });
+
 const UserListCard = dynamic(() => import('../../../components/UserLists/ListCard'));
 
 type ExtendedListItemInfo = ListItemInfo & { hasChanged?: boolean };
@@ -783,11 +785,37 @@ const ListPage = (props: ListPageProps) => {
         {(searchItemInfoIds ?? itemInfoIds).filter(
           (a) => !!itemInfo && itemInfo[a].isHighlight && (!itemInfo[a].isHidden || isEdit)
         ).length > 0 && (
-          <Flex gap={3} flexFlow="column" p={3} bg="gray.700" borderRadius="md">
+          <Flex
+            gap={3}
+            flexFlow="column"
+            p={3}
+            bg="blackAlpha.500"
+            borderRadius="md"
+            boxShadow={'lg'}
+          >
             <Center flexFlow="column">
-              <Heading size="lg" mb={3}>
-                {list.official ? t('Lists.exclusives') : t('Lists.highlights')}
-              </Heading>
+              <Flex
+                mb={3}
+                alignItems="center"
+                gap={1}
+                flexWrap="wrap"
+                justifyContent="center"
+                textAlign={'center'}
+                flexFlow={'column'}
+              >
+                <Heading size="lg">
+                  {list.highlight
+                    ? list.highlight
+                    : list.official
+                      ? t('Lists.exclusives')
+                      : t('Lists.highlights')}
+                </Heading>
+                {list.highlightText && (
+                  <Text as="div" fontSize={'sm'} color="whiteAlpha.800">
+                    <Markdown>{list.highlightText}</Markdown>
+                  </Text>
+                )}
+              </Flex>
               {isEdit && (
                 <Text fontSize="xs" fontStyle="italic">
                   {t('Lists.highlights-text')}

@@ -106,6 +106,9 @@ const CreateListModal = (props: CreateListModalProps) => {
         seriesEnd: list.seriesEnd,
         listUserTag: list.userTag || undefined,
         canBeLinked: (list.canBeLinked as boolean | string) == 'true',
+
+        highlight: list.highlight,
+        highlightText: list.highlightText,
       };
 
       const username = list.owner?.username ?? user.username;
@@ -406,6 +409,35 @@ const CreateListModal = (props: CreateListModalProps) => {
                   value={list.userTag ?? ''}
                 />
                 <FormHelperText fontSize={'xs'}>{t('Lists.group-tag-help')}</FormHelperText>
+              </FormControl>
+              <FormControl>
+                <FormLabel color="gray.300">{t('Lists.highlights-title')}</FormLabel>
+                <Input
+                  variant="filled"
+                  name="highlight"
+                  onChange={handleChange}
+                  value={list.highlight ?? ''}
+                />
+                <FormHelperText fontSize={'xs'}>{t('Lists.highlights-title-help')}</FormHelperText>
+              </FormControl>
+              <FormControl>
+                <FormLabel color="gray.300">{t('Lists.highlights-description')}</FormLabel>
+                <Textarea
+                  variant="filled"
+                  name="highlightText"
+                  onChange={handleChange}
+                  value={list.highlightText ?? ''}
+                />
+                <FormHelperText fontSize={'xs'}>
+                  {t.rich('Lists.markdown-tip', {
+                    Link: (children) => (
+                      <Link href="https://commonmark.org/help/" color="gray.300" isExternal>
+                        {children}
+                      </Link>
+                    ),
+                    Small: (children) => <Text display={'inline'}>{children}</Text>,
+                  })}
+                </FormHelperText>
               </FormControl>
             </Stack>
           )}

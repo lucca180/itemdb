@@ -635,7 +635,10 @@
     "trending-lists": "Trending Lists",
     "newest-lists": "Newest Lists",
     "no-lists-found": "No lists found :(",
-    "xx-unique-items-yy-total": "{itemCount} unique items ({qtyCount} total)"
+    "xx-unique-items-yy-total": "{itemCount} unique items ({qtyCount} total)",
+    "highlights-title": "Highlights Title",
+    "highlights-title-help": "The title for your highlights section",
+    "highlights-description": "Highlights Description"
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",

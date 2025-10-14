@@ -452,6 +452,9 @@ model UserList {
 
   items ListItems[]
 
+  highlight     String?
+  highlightText String? @db.Text
+
   @@unique([slug, user_id])
   @@index([official_tag, official])
   @@index([official, createdAt])
