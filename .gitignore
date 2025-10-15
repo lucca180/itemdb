@@ -26,3 +26,5 @@ translation/tree-shake/
 
 itemDataExtractor-admin.user.js
 certificates
+
+next-env.d.ts
