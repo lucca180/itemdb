@@ -57,7 +57,12 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 
     const itemInfo = rawToListItems(itemInfoRaw);
 
-    if (isQueryEmpty) return res.status(200).json(itemInfo);
+    if (isQueryEmpty) {
+      const result = itemInfo.filter(
+        (item) => !item.isHidden || (user && user.id === list.owner.id)
+      );
+      return res.status(200).json(result);
+    }
 
     const isOwner = !!(user && user.id === list.owner.id);
 
@@ -76,7 +81,11 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 };
 
-// this assumes you already verified the user is the owner of the list
+/**
+ * This assumes you already verified the user is the owner of the list
+ *
+ * It does not return hidden items anyways...
+ **/
 export const preloadListItems = async (list: UserList, limit = 30) => {
   const itemInfoRaw = await prisma.listItems.findMany({
     where: { list_id: list.internal_id },

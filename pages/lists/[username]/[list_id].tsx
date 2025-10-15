@@ -116,7 +116,7 @@ const ListPage = (props: ListPageProps) => {
   const [sortInfo, setSortInfo] = useState<{
     sortBy: string;
     sortDir: string;
-  }>({ sortBy: 'name', sortDir: 'asc' });
+  }>({ sortBy: props.list.sortBy, sortDir: props.list.sortDir });
 
   const [items, setItems] = useState<{ [item_iid: string]: ItemData }>(preloadData.items);
   const [itemSelect, setItemSelect] = useState<number[]>([]);

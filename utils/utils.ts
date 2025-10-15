@@ -1,7 +1,6 @@
 import { ItemProcess, Items, PriceProcess } from '@prisma/generated/client';
 import { mean, standardDeviation } from 'simple-statistics';
 import { ItemData, ItemFindAt, ListItemInfo, ShopInfo, TradeData, UserList } from '../types';
-import Color from 'color';
 
 export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
   const findAt: ItemFindAt = {
@@ -1692,10 +1691,8 @@ export const sortListItems = (
     if (sortDir === 'asc') return dateA.getTime() - dateB.getTime();
     else return dateB.getTime() - dateA.getTime();
   } else if (sortBy === 'color') {
-    const colorA = new Color(itemA.color.hex);
-    const colorB = new Color(itemB.color.hex);
-    const hsvA = colorA.hsv().array();
-    const hsvB = colorB.hsv().array();
+    const hsvA = itemA.color.hsv;
+    const hsvB = itemB.color.hsv;
 
     if (sortDir === 'asc') return hsvB[0] - hsvA[0] || hsvB[1] - hsvA[1] || hsvB[2] - hsvA[2];
     else return hsvA[0] - hsvB[0] || hsvA[1] - hsvB[1] || hsvA[2] - hsvB[2];
