@@ -58,12 +58,18 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 
   if (type === 'tradePrice') {
+    // cool neggs are a issue...
+    if (parsed.trade.wishlist.toLowerCase().includes('cool negg') && user?.role !== 'ADMIN') {
+      voteMultiplier = 1;
+    }
+
     shoudContinue = await processTradeFeedback(
       parsed.trade as TradeData,
       parseInt(subject_id),
       user_id,
       voteMultiplier >= MAX_VOTE_MULTIPLIER
     );
+
     // const autopriced = await processSimilarTrades(
     //   parsed.trade as TradeData,
     //   parseInt(subject_id),
