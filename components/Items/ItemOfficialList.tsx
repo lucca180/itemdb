@@ -104,11 +104,11 @@ const ItemOfficialLists = (props: Props) => {
               sx={{ 'b, strong': { color: 'white' }, textWrap: 'pretty' }}
               as="div"
             >
-              <Markdown>
-                {(list.description || t('ItemPage.list-no-description')).split(/[\r\n]+/)[0]}
-              </Markdown>
+              <OfficialText list={list} />
             </Text>
-            {list.itemInfo?.[0].isHighlight && <Badge>{t('ItemPage.exclusive')}</Badge>}
+            {list.itemInfo?.[0].isHighlight && (
+              <Badge>{list.highlight ?? t('ItemPage.exclusive')}</Badge>
+            )}
           </Flex>
         ))}
       </Flex>
@@ -124,3 +124,14 @@ const ItemOfficialLists = (props: Props) => {
 };
 
 export default ItemOfficialLists;
+
+const OfficialText = ({ list }: { list: UserList }) => {
+  const t = useTranslations();
+  const isHighlight = list.itemInfo?.[0].isHighlight;
+
+  if (isHighlight && list.highlightText) return <Markdown>{list.highlightText}</Markdown>;
+
+  if (list.description) return <Markdown>{list.description.split(/[\r\n]+/)[0]}</Markdown>;
+
+  return <Markdown>{t('ItemPage.list-no-description')}</Markdown>;
+};
