@@ -29,8 +29,6 @@ export type ItemData = {
   mallData: ItemMallData | null;
   cacheHash: string | null;
   itemFlags?: string | null;
-
-  ff_points?: number | null;
 };
 
 export type ItemFindAt = {

@@ -11,7 +11,7 @@ import { ArticleCard } from '../components/Articles/ArticlesCard';
 import { wp_getLatestPosts } from './api/wp/posts';
 import NextLink from 'next/link';
 import Color from 'color';
-import { getTrendingCatLists, getTrendingItems, getTrendingLists } from './api/v1/beta/trending';
+import { getTrendingItems, getTrendingLists } from './api/v1/beta/trending';
 import { createTranslator, useFormatter, useTranslations } from 'next-intl';
 import { getNCMallItemsData } from './api/v1/mall';
 import { getLatestItems } from './api/v1/items';
@@ -19,7 +19,7 @@ import { getLatestPricedItems } from './api/v1/prices';
 import { NextPageWithLayout } from './_app';
 import { HomeCard } from '../components/Card/HomeCard';
 import UserListCard from '../components/UserLists/ListCard';
-import { FFHomeCard, HorizontalHomeCard } from '../components/Card/HorizontalHomeCard';
+import { HorizontalHomeCard } from '../components/Card/HorizontalHomeCard';
 import useSWR from 'swr';
 import { loadTranslation } from '@utils/load-translation';
 import { getNewItemsInfo } from './api/v1/beta/new-items';
@@ -39,7 +39,6 @@ type Props = {
   latestNcMall: ItemData[];
   leavingNcMall: ItemData[];
   trendingLists: UserList[];
-  ffLists: UserList[];
   newItemCount: {
     freeItems: number;
     paidItems: number;
@@ -67,7 +66,6 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
     trendingLists,
     newItemCount,
     latestPrices,
-    ffLists,
   } = props;
 
   const { data: latestItems } = useSWR<ItemData[]>(`api/v1/items?limit=20`, (url) => fetcher(url), {
@@ -148,15 +146,6 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
             </Text>
           )}
         </HorizontalHomeCard>
-        {ffLists.length > 0 && (
-          <FFHomeCard>
-            <Flex flexWrap="wrap" gap={4} justifyContent="center" sx={{ img: { filter: 'none' } }}>
-              {ffLists.map((list) => (
-                <UserListCard isSmall key={list.internal_id} list={list} utm_content="ff-lists" />
-              ))}
-            </Flex>
-          </FFHomeCard>
-        )}
         {newItemCount && (
           <Flex gap={4} flexWrap={'wrap'} flexFlow={{ base: 'column', lg: 'row' }}>
             <HorizontalHomeCard
@@ -350,7 +339,6 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
     leavingNcMall,
     trendingLists,
     newItemCount,
-    ffLists,
   ] = await Promise.all([
     getLatestItems(20, true).catch(() => []),
     getLatestItems(18, true, true).catch(() => []),
@@ -362,9 +350,8 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
       count: null,
     })) as Promise<LatestPricesRes>,
     getNCMallItemsData(18, true).catch(() => []),
-    getTrendingLists(3, ['Faerie Festival']).catch(() => []),
+    getTrendingLists(3).catch(() => []),
     getNewItemsInfo(7).catch(() => null),
-    getTrendingCatLists('Faerie Festival', 3).catch(() => []),
   ]);
 
   return {
@@ -378,7 +365,6 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
       leavingNcMall,
       trendingLists: trendingLists,
       newItemCount,
-      ffLists,
       messages: await loadTranslation(context.locale, 'index'),
       locale: context.locale,
     },
