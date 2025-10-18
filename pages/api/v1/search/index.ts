@@ -95,7 +95,8 @@ export async function doSearch(
   const ncValueFilter = (filters.ncValue as string[]) ?? [];
   const petpetColor = (filters.petpetColor as string[]) ?? [];
   const petpetSpecies = (filters.petpetSpecies as string[]) ?? [];
-  const petpetOnlyPaintable = (filters.petpetOnlyPaintable as boolean) ?? false;
+  const petpetOnlyPaintable = (filters.petpetOnlyPaintable as boolean) ?? undefined;
+  const petpetOnlyCanonical = (filters.petpetOnlyCanonical as boolean) ?? undefined;
   const restockProfit = (filters.restockProfit as string) ?? '';
 
   let colorFilter = (filters.color as string) ?? '';
@@ -362,7 +363,12 @@ export async function doSearch(
 
   let petpetJoin = Prisma.empty;
   const petpetSQL = [];
-  if (petpetColor.length > 0 || petpetSpecies.length > 0 || petpetOnlyPaintable) {
+  if (
+    petpetColor.length > 0 ||
+    petpetSpecies.length > 0 ||
+    typeof petpetOnlyPaintable !== 'undefined' ||
+    typeof petpetOnlyCanonical !== 'undefined'
+  ) {
     petpetJoin = Prisma.sql`LEFT JOIN PetpetColors as pc on pc.item_iid = a.internal_id`;
 
     if (petpetSpecies.length > 0)
@@ -371,7 +377,11 @@ export async function doSearch(
     if (petpetColor.length > 0)
       petpetSQL.push(Prisma.sql`color_id in (${Prisma.join(petpetColor)})`);
 
-    if (petpetOnlyPaintable) petpetSQL.push(Prisma.sql`isUnpaintable = 0`);
+    if (typeof petpetOnlyPaintable !== 'undefined')
+      petpetSQL.push(Prisma.sql`isUnpaintable = ${petpetOnlyPaintable ? 1 : 0}`);
+
+    if (typeof petpetOnlyCanonical !== 'undefined')
+      petpetSQL.push(Prisma.sql`p2Canonical = ${petpetOnlyCanonical ? 1 : 0}`);
   }
 
   let colorSql_inside;
@@ -512,7 +522,7 @@ export async function doSearch(
           ${zoneFilterSQL.length > 0 ? Prisma.sql`, w.zone_label` : Prisma.empty}
           ${
             petpetSQL.length > 0
-              ? Prisma.sql`, pc.color_id, pc.petpet_id, pc.isUnpaintable`
+              ? Prisma.sql`, pc.isCanonical as p2Canonical, pc.color_id, pc.petpet_id, pc.isUnpaintable`
               : Prisma.empty
           }
         FROM Items as a
