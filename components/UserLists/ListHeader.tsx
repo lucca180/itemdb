@@ -122,7 +122,7 @@ const ListHeader = (props: ListHeaderProps) => {
         return !itemData.isNC && !item.isHidden;
       })
       .map((item) => item.item_iid);
-  }, [itemInfo]);
+  }, [itemInfo, items]);
 
   return (
     <Box>
@@ -146,7 +146,13 @@ const ListHeader = (props: ListHeaderProps) => {
         zIndex={-1}
       />
       <Box pt={2}>{list.official && <ListBreadcrumb list={list} />}</Box>
-      <Flex gap={{ base: 3, md: 6 }} pt={4} alignItems="center">
+      <Flex
+        gap={{ base: 3, md: 6 }}
+        pt={4}
+        alignItems="center"
+        flexFlow={{ base: 'column', md: 'row' }}
+        textAlign={{ base: 'center', md: 'left' }}
+      >
         <Flex
           position="relative"
           p={{ base: 1, md: 2 }}
@@ -208,7 +214,12 @@ const ListHeader = (props: ListHeaderProps) => {
           )}
         </Flex>
         <Box>
-          <Stack direction="row" mb={1} alignItems="center">
+          <Stack
+            direction="row"
+            mb={1}
+            alignItems="center"
+            justifyContent={{ base: 'center', md: 'flex-start' }}
+          >
             {!list.official && list.purpose !== 'none' && (
               <Badge borderRadius="md" colorScheme={color.isLight() ? 'black' : 'gray'}>
                 {t('Lists.' + list.purpose)}
@@ -263,6 +274,7 @@ const ListHeader = (props: ListHeaderProps) => {
             as={'h1'}
             display="inline-flex"
             alignItems={'center'}
+            justifyContent={{ base: 'center', md: 'flex-start' }}
             gap={1}
           >
             {list.name}
@@ -306,7 +318,13 @@ const ListHeader = (props: ListHeaderProps) => {
               />
             )}
           </Heading>
-          <Stack direction="row" mb={1} alignItems="center" flexWrap="wrap">
+          <Stack
+            direction="row"
+            mb={1}
+            alignItems="center"
+            flexWrap="wrap"
+            justifyContent={{ base: 'center', md: 'flex-start' }}
+          >
             <Text fontSize={{ base: 'xs', md: 'sm' }}>
               {t.rich(list.official ? 'Lists.curatedBy' : 'Lists.by', {
                 Link: (chunk) => (
@@ -355,7 +373,12 @@ const ListHeader = (props: ListHeaderProps) => {
             </Text>
           )}
 
-          <Stack mt={{ base: 2, md: 3 }} flexFlow={'row'} alignItems={'center'}>
+          <Stack
+            mt={{ base: 2, md: 3 }}
+            flexFlow={'row'}
+            alignItems={'center'}
+            justifyContent={{ base: 'center', md: 'flex-start' }}
+          >
             {(!!NPPrice || !!NCPrice) && (
               <Flex
                 display={'inline-flex'}
