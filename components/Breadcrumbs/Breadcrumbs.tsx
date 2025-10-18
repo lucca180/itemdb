@@ -41,6 +41,10 @@ export const Breadcrumbs = (props: BreadcrumbsProps) => {
               as={i === breadcrumbList.length - 1 ? undefined : NextLink}
               href={removeLink(crumb.item)}
               prefetch={i === breadcrumbList.length - 1 ? undefined : false}
+              whiteSpace={'nowrap'}
+              overflow={'hidden'}
+              textOverflow={'ellipsis'}
+              maxW={`${90 / breadcrumbList.length}vw`}
             >
               {crumb.name}
             </BreadcrumbLink>
