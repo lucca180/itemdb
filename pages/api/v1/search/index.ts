@@ -95,9 +95,12 @@ export async function doSearch(
   const ncValueFilter = (filters.ncValue as string[]) ?? [];
   const petpetColor = (filters.petpetColor as string[]) ?? [];
   const petpetSpecies = (filters.petpetSpecies as string[]) ?? [];
-  const petpetOnlyPaintable = (filters.p2OnlyPaintable as boolean) ?? undefined;
-  const petpetOnlyCanonical = (filters.p2OnlyCanonical as boolean) ?? undefined;
   const restockProfit = (filters.restockProfit as string) ?? '';
+
+  const petpetPaintable =
+    typeof filters.p2Paintable !== 'undefined' ? (filters.p2Paintable as any) == 'true' : undefined;
+  const petpetCanonical =
+    typeof filters.p2Canonical !== 'undefined' ? (filters.p2Canonical as any) == 'true' : undefined;
 
   let colorFilter = (filters.color as string) ?? '';
 
@@ -366,8 +369,8 @@ export async function doSearch(
   if (
     petpetColor.length > 0 ||
     petpetSpecies.length > 0 ||
-    typeof petpetOnlyPaintable !== 'undefined' ||
-    typeof petpetOnlyCanonical !== 'undefined'
+    typeof petpetPaintable !== 'undefined' ||
+    typeof petpetCanonical !== 'undefined'
   ) {
     petpetJoin = Prisma.sql`LEFT JOIN PetpetColors as pc on pc.item_iid = a.internal_id`;
 
@@ -377,11 +380,11 @@ export async function doSearch(
     if (petpetColor.length > 0)
       petpetSQL.push(Prisma.sql`color_id in (${Prisma.join(petpetColor)})`);
 
-    if (typeof petpetOnlyPaintable !== 'undefined')
-      petpetSQL.push(Prisma.sql`isUnpaintable = ${petpetOnlyPaintable ? 1 : 0}`);
+    if (typeof petpetPaintable !== 'undefined')
+      petpetSQL.push(Prisma.sql`isUnpaintable = ${petpetPaintable ? 0 : 1}`);
 
-    if (typeof petpetOnlyCanonical !== 'undefined')
-      petpetSQL.push(Prisma.sql`p2Canonical = ${petpetOnlyCanonical ? 1 : 0}`);
+    if (typeof petpetCanonical !== 'undefined')
+      petpetSQL.push(Prisma.sql`p2Canonical = ${petpetCanonical ? 1 : 0}`);
   }
 
   let colorSql_inside;

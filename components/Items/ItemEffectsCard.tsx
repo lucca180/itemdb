@@ -247,7 +247,7 @@ export const EffectText = (props: EffectTextProps) => {
                   <Link
                     href={`/search?s=&petpetColor[]=${getPetpetColorId(
                       colorTarget
-                    )}&p2OnlyPaintable=true`}
+                    )}&p2Paintable=true`}
                   >
                     {colorTarget}
                   </Link>

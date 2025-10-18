@@ -174,6 +174,8 @@ export type SearchStats = {
   saleStatus: Record<string, number>;
 };
 
+// WARNING: think twice before changing the filter signature
+// because IT WILL affect every single dynamic list
 export type SearchFilters = {
   category: string[];
   zone: string[];
@@ -187,8 +189,8 @@ export type SearchFilters = {
   ncValue: string[]; // [min, max]
   petpetColor: string[];
   petpetSpecies: string[];
-  p2OnlyPaintable?: boolean;
-  p2OnlyCanonical?: boolean;
+  p2Paintable?: boolean;
+  p2Canonical?: boolean;
   restockProfit: string; // min profit margin
   restockIncludeUnpriced: boolean;
   colorTolerance: string; // color tolerance
