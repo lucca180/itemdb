@@ -95,8 +95,8 @@ export async function doSearch(
   const ncValueFilter = (filters.ncValue as string[]) ?? [];
   const petpetColor = (filters.petpetColor as string[]) ?? [];
   const petpetSpecies = (filters.petpetSpecies as string[]) ?? [];
-  const petpetOnlyPaintable = (filters.petpetOnlyPaintable as boolean) ?? undefined;
-  const petpetOnlyCanonical = (filters.petpetOnlyCanonical as boolean) ?? undefined;
+  const petpetOnlyPaintable = (filters.p2OnlyPaintable as boolean) ?? undefined;
+  const petpetOnlyCanonical = (filters.p2OnlyCanonical as boolean) ?? undefined;
   const restockProfit = (filters.restockProfit as string) ?? '';
 
   let colorFilter = (filters.color as string) ?? '';
