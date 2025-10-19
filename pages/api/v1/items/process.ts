@@ -199,7 +199,7 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
       dbItemList.length === 0 ||
       (item.item_id && dbItemList.every((x) => x.item_id && x.item_id !== item.item_id))
     ) {
-      if (!item.isWearable) item.isWearable = await detectWearable(item.image);
+      if (!item.isWearable) item.isWearable = await detectWearable(item.image).catch(() => false);
       usedSlugs.add(itemSlug);
       return {
         name: item.name,
