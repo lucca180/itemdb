@@ -44,9 +44,12 @@ export const getSingleItemColor = async (item: ItemData, force = false) => {
     });
   }
 
-  const palette = await getPalette(item);
+  let palette = await getPalette(item);
   if (!palette) {
-    throw 'Invalid Pallete for item ' + item.internal_id;
+    console.error('Invalid Pallete for item ' + item.internal_id + ', using fallback image');
+
+    palette = await getPalette({ ...item, image: 'https://itemdb.com.br/item-error.png' });
+    if (!palette) throw new Error('Could not get fallback palette');
   }
 
   await prisma.itemColor.createMany({

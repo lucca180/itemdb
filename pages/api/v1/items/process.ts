@@ -26,17 +26,18 @@ const TARNUM_KEY = process.env.TARNUM_KEY;
 const usedSlugs = new Set<string>();
 
 let manualChecks: any = [];
-
+const isDev = process.env.NODE_ENV === 'development';
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   if (
-    !req.headers.authorization ||
-    (req.headers.authorization !== TARNUM_KEY && !req.headers.authorization.includes('Bearer'))
+    !isDev &&
+    (!req.headers.authorization ||
+      (req.headers.authorization !== TARNUM_KEY && !req.headers.authorization.includes('Bearer')))
   )
     return res.status(401).json({ error: 'Unauthorized' });
 
-  if (req.headers.authorization.includes('Bearer')) {
+  if (!isDev && req.headers.authorization?.includes('Bearer')) {
     try {
       const user = (await CheckAuth(req)).user;
       if (!user || !user.isAdmin) return res.status(403).json({ error: 'Forbidden' });
@@ -56,6 +57,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   offset = isNaN(offset) ? 0 : offset;
 
   const checkAll = req.body.checkAll === 'true';
+  const skipColors = req.query.skipColors === 'true';
 
   const processList = await prisma.itemProcess.findMany({
     where: {
@@ -101,7 +103,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     .filter((x) => !!x) as ItemColor[];
 
   // only create items that have a color
-  itemAddList = itemAddList.filter((x) => itemColorAddList.some((y) => y.image_id === x.image_id));
+  itemAddList = itemAddList.filter(
+    (x) => skipColors || itemColorAddList.some((y) => y.image_id === x.image_id)
+  );
 
   const result = await prisma.$transaction([
     prisma.items.createMany({ data: itemAddList, skipDuplicates: true }),
