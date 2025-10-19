@@ -665,6 +665,14 @@ export type LebronTrade = {
   notes: string;
 };
 
+export type WearableData = {
+  zone_label: string[];
+  zone_plain_label: string[];
+  species_name: string[];
+  canonicalZones: string[];
+  canonicalSpecies: string;
+};
+
 // ------- DTI -------- //
 
 export type DTISpecies = {

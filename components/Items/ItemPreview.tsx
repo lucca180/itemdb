@@ -1,16 +1,15 @@
 import { AspectRatio, Box, Button, Flex, IconButton, Link, Skeleton, Text } from '@chakra-ui/react';
 import React, { useMemo, useState, memo, useCallback } from 'react';
 import Image from 'next/image';
-import { ItemData, ItemEffect } from '../../types';
+import { ItemData, ItemEffect, WearableData } from '../../types';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { useTranslations } from 'next-intl';
-import { WearableData } from '@prisma/generated/client';
 import { useAuth } from '@utils/auth';
 import { FaRotateRight } from 'react-icons/fa6';
 
 type Props = {
   item: ItemData;
-  wearableData?: WearableData[] | null;
+  wearableData?: WearableData | null;
   colorSpeciesEffect?: ItemEffect | null;
 };
 
@@ -26,30 +25,6 @@ const ItemPreview = (props: Props) => {
   const isWearable = item.isWearable;
 
   if (isLoaded && isLoaded !== item.internal_id) setIsLoaded(0);
-
-  const zonesData = useMemo(() => {
-    if (!wearableData) return [];
-    const zones: { [id: string]: { label: string; species: string[] } } = {};
-
-    wearableData
-      .filter((x) => x.isCanonical)
-      .forEach((data) => {
-        if (!zones[data.zone_plain_label])
-          zones[data.zone_plain_label] = {
-            label: data.zone_label,
-            species: [],
-          };
-
-        if (
-          data.species_name &&
-          !zones[data.zone_plain_label].species.includes(data.species_name)
-        ) {
-          zones[data.zone_plain_label].species.push(data.species_name);
-        }
-      });
-
-    return Object.values(zones);
-  }, [wearableData]);
 
   const refreshPreview = () => {
     setRefresh((prev) => prev + 1);
@@ -213,10 +188,12 @@ const ItemPreview = (props: Props) => {
         </Flex>
       )}
       <Box p={1} textAlign="center" bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}>
-        {zonesData.length > 0 && (
+        {wearableData && wearableData.zone_label.length > 0 && (
           <Text fontSize="xs" p={1}>
             <b>{t('ItemPage.occupies')}:</b>{' '}
-            {zonesData.map((x, i) => x.label + (i + 1 == zonesData.length ? '' : ', '))}
+            {wearableData.zone_label.map(
+              (x, i) => x + (i + 1 == wearableData.zone_label.length ? '' : ', ')
+            )}
           </Text>
         )}
         <Text fontSize="xs">

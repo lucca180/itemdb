@@ -306,7 +306,11 @@
     "drops-same-change": "Cada item tem chances iguais dentro de cada pool",
     "official-drops-desc": "Essas são as chances oficiais de drops do Centro NC fornecido pela TNT. Nossos cálculos podem diferir dos oficiais por diferentes razões e cabe a você em que confiar mais. <Link>Fonte</Link>",
     "official-nc-mall-drops": "Chances Oficiais do Centro NC",
-    "outfit-preview": "Outfit Preview"
+    "outfit-preview": "Outfit Preview",
+    "exclusive-0-clothes-guide": "Guia de Roupas Exclusivas de <b>{0}</b>",
+    "related-painting": "Maneira mais barata de pintar seu Neopet <b>{color}</b>!",
+    "related-links": "Links Relacionados",
+    "price-calculator-tool": "Calculadora de Preços"
   },
   "Button": {
     "feedback": "Feedback",

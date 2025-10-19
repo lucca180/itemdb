@@ -17,6 +17,7 @@ import {
   PriceData,
   TradeData,
   UserList,
+  WearableData,
 } from '../../types';
 import FindAtCard from '../../components/Items/FindAtCard';
 import ItemInfoCard from '../../components/Items/InfoCard';
@@ -40,7 +41,6 @@ import { getLastSeen } from '../api/v1/prices/stats';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '../../utils/auth';
 import { getItemEffects } from '../api/v1/items/[id_name]/effects';
-import type { WearableData } from '@prisma/generated/client';
 import { getWearableData } from '../api/v1/items/[id_name]/wearable';
 import { getItemNCMall } from '../api/v1/items/[id_name]/ncmall';
 import { getItemRecipes } from '../api/v1/items/[id_name]/recipes';
@@ -54,6 +54,7 @@ import { ItemBreadcrumb } from '../../components/Breadcrumbs/ItemBreadcrumb';
 import { loadTranslation } from '@utils/load-translation';
 import { getNCTradeInsights } from '../api/v1/mall/[iid]/insights';
 import FeedbackButton from '@components/Feedback/FeedbackButton';
+import RelatedLinksCard from '@components/Items/RelatedLinks';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -94,7 +95,7 @@ type ItemPageProps = {
   NPTrades: TradeData[];
   NPPrices: PriceData[];
   itemEffects: ItemEffect[];
-  wearableData: WearableData[] | null;
+  wearableData: WearableData | null;
   ncMallData: NCMallData | null;
   itemRecipes: ItemRecipe[] | null;
   mmeData: ItemMMEData | null;
@@ -418,6 +419,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
             {!item.isNC && item.status === 'active' && (
               <TradeCard key={getKey('trade-card')} item={item} trades={trades} />
             )}
+            <RelatedLinksCard key={getKey('related-links')} item={item} itemEffects={itemEffects} />
           </Flex>
         </Flex>
       </Flex>
@@ -500,7 +502,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
           ? getLastSeen({ item_id: item.item_id, name: item.name, image_id: item.image_id })
           : null, // 8
         getItemEffects(item), // 9
-        item.isWearable ? getWearableData(item.internal_id) : null, // 10
+        item.isWearable ? (getWearableData(item.internal_id) as Promise<WearableData>) : null, // 10
         item.isNC ? getItemNCMall(item.internal_id) : null, // 11
         !item.isNC ? getItemRecipes(item.internal_id) : null, // 12
         isMME(item.name) ? getMMEData(item) : null, // 13

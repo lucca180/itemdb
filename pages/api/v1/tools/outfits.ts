@@ -34,7 +34,7 @@ export const getSpeciesOutfits = async (species: string) => {
       AND i.name REGEXP ${`\\b${species}(\\b|\\s)`}
       AND i.internal_id > 0
     GROUP BY w.item_iid
-    HAVING COUNT(DISTINCT w.species_name) <= 3;
+    HAVING COUNT(DISTINCT w.species_name) <= 3 and SUM(w.species_name = ${species}) > 0;
   `) as { item_iid: number }[];
 
   const itemData = await getManyItems({

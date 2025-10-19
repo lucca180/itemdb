@@ -193,6 +193,14 @@ export const getSpeciesId = (species: string) => {
   return parseInt(x);
 };
 
+export const getSpeciesFromString = (name: string) => {
+  const species = Object.values(allSpecies).find((species) =>
+    name.toLowerCase().split(' ').includes(species.toLowerCase())
+  );
+
+  return species;
+};
+
 export const petpetSpecies: { [id: string]: string } = {
   '1': 'Abominable Snowball',
   '2': 'Acko',

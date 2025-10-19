@@ -12,6 +12,7 @@ export interface MainLinkProps {
   trackEvent?: string;
   trackEventLabel?: string;
   isExternal?: boolean;
+  style?: React.CSSProperties;
 }
 const MainLink: React.FC<MainLinkProps> = React.forwardRef(
   (
@@ -24,6 +25,7 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
       trackEvent,
       trackEventLabel,
       isExternal,
+      style,
     }: MainLinkProps,
     ref: React.Ref<HTMLAnchorElement> | undefined
   ) => {
@@ -60,6 +62,7 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
           target={target || (isExternal ? '_blank' : undefined)}
           href={href || '/'}
           onClick={handleTracking}
+          style={style}
         >
           {children}
         </NextLink>
@@ -72,6 +75,7 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
         target={target || (isExternal ? '_blank' : undefined)}
         href={href || '/'}
         onClick={handleClick}
+        style={style}
       >
         {children}
       </a>

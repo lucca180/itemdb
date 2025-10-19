@@ -305,7 +305,11 @@
     "official-nc-mall-drops": "Official NC Mall Drops",
     "drops-same-change": "Every item has equal chances inside each pool",
     "official-drops-desc": "This is the official NC Mall drops provided by TNT. Our calculations may differ from the official ones by different reasons and it's up to you which one to trust more. <Link>Source</Link>",
-    "outfit-preview": "Outfit Preview"
+    "outfit-preview": "Outfit Preview",
+    "exclusive-0-clothes-guide": "Exclusive <b>{0}</b> Clothes Guide",
+    "related-painting": "Cheapest way of painting your Neopet <b>{color}</b>!",
+    "related-links": "Related Links",
+    "price-calculator-tool": "Price Calculator Tool"
   },
   "Button": {
     "feedback": "Feedback",
