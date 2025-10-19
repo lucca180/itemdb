@@ -11,11 +11,11 @@ import {
   Skeleton,
   Text,
 } from '@chakra-ui/react';
-import { formatDistanceToNow, isToday } from 'date-fns';
+import { isToday } from 'date-fns';
 import NextLink from 'next/link';
-import React from 'react';
 import { UserList } from '../../types';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
+import { tz } from '@date-fns/tz';
 
 type Props = {
   data: UserList[];
@@ -26,6 +26,7 @@ type Props = {
 
 const MatchTable = (props: Props) => {
   const t = useTranslations();
+  const formatter = useFormatter();
   const { data, matches, type, isLoading } = props;
   const sortedData = data.sort(
     (a, b) => new Date(b.owner.lastSeen).getTime() - new Date(a.owner.lastSeen).getTime()
@@ -103,9 +104,11 @@ const MatchTable = (props: Props) => {
                 </Td>
               )}
               <Td>
-                {isToday(new Date(list.owner.lastSeen))
+                {isToday(new Date(list.owner.lastSeen), {
+                  in: tz('America/Los_Angeles'),
+                })
                   ? t('General.today')
-                  : formatDistanceToNow(new Date(list.owner.lastSeen), { addSuffix: true })}
+                  : formatter.relativeTime(new Date(list.owner.lastSeen))}
               </Td>
             </Tr>
           ))}
