@@ -36,7 +36,7 @@
     "@napi-rs/canvas": "^0.1.80",
     "@prisma/adapter-mariadb": "^6.17.1",
     "@prisma/client": "6.17.1",
-    "@sentry/nextjs": "^10.20.0",
+    "@sentry/nextjs": "^10.21.0",
     "@tycrek/discord-hookr": "^0.1.0",
     "@umami/api-client": "^0.80.0",
     "axios": "^1.12.2",
