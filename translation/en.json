@@ -309,7 +309,8 @@
     "exclusive-0-clothes-guide": "Exclusive <b>{0}</b> Clothes Guide",
     "related-painting": "Cheapest way of painting your Neopet <b>{color}</b>!",
     "related-links": "Related Links",
-    "price-calculator-tool": "Price Calculator Tool"
+    "price-calculator-tool": "Price Calculator Tool",
+    "create-your-0-checklist": "Create your <b>{0}</b> checklist"
   },
   "Button": {
     "feedback": "Feedback",
