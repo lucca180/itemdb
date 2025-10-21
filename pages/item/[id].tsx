@@ -419,7 +419,12 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
             {!item.isNC && item.status === 'active' && (
               <TradeCard key={getKey('trade-card')} item={item} trades={trades} />
             )}
-            <RelatedLinksCard key={getKey('related-links')} item={item} itemEffects={itemEffects} />
+            <RelatedLinksCard
+              key={getKey('related-links')}
+              item={item}
+              itemEffects={itemEffects}
+              lists={lists}
+            />
           </Flex>
         </Flex>
       </Flex>
