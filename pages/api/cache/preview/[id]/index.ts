@@ -6,7 +6,6 @@ import prisma from '../../../../../utils/prisma';
 import axios from 'axios';
 import { DTIBodiesAndTheirZones, DTIItemPreview } from '../../../../../types';
 import { Items, Prisma } from '@prisma/generated/client';
-import { getSpeciesId } from '../../../../../utils/pet-utils';
 import { Chance } from 'chance';
 import { revalidateItem } from '../../../v1/items/[id_name]/effects';
 
@@ -185,13 +184,12 @@ const handleAltStyle = async (
   itemName: string,
   item_id: number | null
 ): Promise<string[]> => {
-  const specieName = itemName.split(' ').at(-1)?.toLowerCase();
-  if (!specieName) return [];
+  const dtiRes = await axios.get(`https://impress.openneo.net/species/0/alt-styles.json`, {
+    headers: {
+      'User-Agent': 'itemdb (https://itemdb.com.br/;)',
+    },
+  });
 
-  const specieID = getSpeciesId(specieName) ?? handleEssenceToken(specieName);
-  if (!specieID) return [];
-
-  const dtiRes = await axios.get(`https://impress.openneo.net/species/${specieID}/alt-styles.json`);
   const dtiData = dtiRes.data as any[];
 
   // hotfixes thumbnail_url being wrong
@@ -239,52 +237,4 @@ const processDTIData = async (
     data: dataArr,
     skipDuplicates: true,
   });
-};
-
-// handle essence tokens (i hate this)
-const handleEssenceToken = (name: string): number | null => {
-  switch (name) {
-    case 'kass':
-      return 12;
-    case 'aurrick':
-      return 28;
-    case 'edna':
-      return 54;
-    case 'hannah':
-      return 50;
-    case 'jeran':
-      return 31;
-    case 'kelland':
-      return 46;
-    case 'lyra':
-      return 52;
-    case 'nyx':
-      return 2;
-    case 'sophie':
-      return 19;
-    case 'vira':
-      return 1;
-    case 'sasha':
-      return 9;
-    case 'talek':
-      return 10;
-    case 'kankrik':
-      return 14;
-    case 'galem':
-      return 16;
-    case 'nilo':
-      return 22;
-    case 'rufus':
-      return 26;
-    case 'jacques':
-      return 29;
-    case 'kayla':
-      return 54;
-    case 'kelpbeard':
-      return 25;
-    case 'isca':
-      return 2;
-    default:
-      return null;
-  }
 };
