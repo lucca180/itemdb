@@ -141,6 +141,17 @@ const alerts = {
     bg: 'purple.600',
     color: 'pink.100',
   },
+  spooky: {
+    message: 'spooky',
+    link: '/lists/official?cat=Festival%20of%20Fears',
+    img: {
+      src: 'https://images.neopets.com/themes/h5/basic/images/fof-icon.png',
+      h: 28,
+      w: 28,
+    },
+    bg: 'orange.600',
+    color: 'orange.100',
+  },
 };
 
 export const SiteAlert = () => {
@@ -195,7 +206,7 @@ export const SiteAlert = () => {
 const getAlert = () => {
   const todayNST = getDateNST();
 
-  if (todayNST.getTime() < 1754967599000) return alerts.tvw;
+  if (todayNST.getTime() < 1761361199000) return alerts.spooky;
   if (isThirdWednesday(todayNST)) return alerts.hiddenTower;
   if (todayNST.getDate() === 3) return alerts.hpd;
   else if (todayNST.getMonth() === 4 && todayNST.getDate() === 12) return alerts.tyrannia;
