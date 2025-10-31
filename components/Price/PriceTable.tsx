@@ -255,6 +255,26 @@ const PriceItem = (
       </Tr>
     );
 
+  if (price.isUnconfirmed)
+    return (
+      <Tr key={'0'} h={50} bg={bgColor} border={0} borderLeft={`3px solid ${props.itemColor}`}>
+        <Td colSpan={4}>
+          <Flex flexFlow={'column'} alignItems={'center'} gap={2}>
+            <Text textAlign={'center'}>{t('ItemPage.unconfirmed-price')}</Text>
+            <Text
+              textAlign={'center'}
+              color={'whiteAlpha.700'}
+              maxW="90%"
+              fontSize={'sm'}
+              whiteSpace={'normal'}
+            >
+              {t('ItemPage.unconfirmed-price-text')}
+            </Text>
+          </Flex>
+        </Td>
+      </Tr>
+    );
+
   return (
     <React.Fragment key={price.addedAt}>
       <Tr

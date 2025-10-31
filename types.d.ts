@@ -102,6 +102,7 @@ export type PriceData = {
   inflated: boolean;
   context?: string | null;
   isLatest: boolean;
+  isUnconfirmed?: boolean;
 };
 
 export type ItemLastSeen = {

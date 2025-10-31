@@ -311,7 +311,9 @@
     "related-painting": "Maneira mais barata de pintar seu Neopet <b>{color}</b>!",
     "related-links": "Links Relacionados",
     "price-calculator-tool": "Calculadora de Preços",
-    "create-your-0-checklist": "Crie seu <b>{0}</b> checklist"
+    "create-your-0-checklist": "Crie seu <b>{0}</b> checklist",
+    "unconfirmed-price": "Preço não confirmado",
+    "unconfirmed-price-text": "Estamos confirmando um novo preço para este item e ele ficará visível depois de verificado"
   },
   "Button": {
     "feedback": "Feedback",
