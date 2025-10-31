@@ -130,7 +130,7 @@ const ItemPriceCard = (props: Props) => {
     if (!prices || prices.length < 2) return null;
     const priceZeroIndex = prices.findIndex((p) => p.isLatest);
     const priceOne = prices[priceZeroIndex + 1];
-    if (!price || !priceOne.value) return null;
+    if (!price || !priceOne?.value) return null;
     return (price.value ?? 0) - priceOne.value;
   }, [prices]);
 
