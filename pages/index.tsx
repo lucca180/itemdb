@@ -1,5 +1,5 @@
 import { Box, Flex, Heading, Highlight, Link, SimpleGrid, Stack, Text } from '@chakra-ui/react';
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
 import Layout from '../components/Layout';
 import logo from '../public/logo_white_compressed.webp';
 import NextImage from 'next/image';
@@ -11,7 +11,7 @@ import { ArticleCard } from '../components/Articles/ArticlesCard';
 import { wp_getLatestPosts } from './api/wp/posts';
 import NextLink from 'next/link';
 import Color from 'color';
-import { getTrendingCatLists, getTrendingItems, getTrendingLists } from './api/v1/beta/trending';
+import { getTrendingItems, getTrendingLists } from './api/v1/beta/trending';
 import { createTranslator, useFormatter, useTranslations } from 'next-intl';
 import { getNCMallItemsData } from './api/v1/mall';
 import { getLatestItems } from './api/v1/items';
@@ -19,7 +19,7 @@ import { getLatestPricedItems } from './api/v1/prices';
 import { NextPageWithLayout } from './_app';
 import { HomeCard } from '../components/Card/HomeCard';
 import UserListCard from '../components/UserLists/ListCard';
-import { HalloweenHomeCard, HorizontalHomeCard } from '../components/Card/HorizontalHomeCard';
+import { HorizontalHomeCard } from '../components/Card/HorizontalHomeCard';
 import useSWR from 'swr';
 import { loadTranslation } from '@utils/load-translation';
 import { getNewItemsInfo } from './api/v1/beta/new-items';
@@ -39,7 +39,6 @@ type Props = {
   latestNcMall: ItemData[];
   leavingNcMall: ItemData[];
   trendingLists: UserList[];
-  trendingCatLists: UserList[];
   newItemCount: {
     freeItems: number;
     paidItems: number;
@@ -67,7 +66,6 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
     trendingLists,
     newItemCount,
     latestPrices,
-    trendingCatLists,
   } = props;
 
   const { data: latestItems } = useSWR<ItemData[]>(`api/v1/items?limit=20`, (url) => fetcher(url), {
@@ -148,13 +146,6 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
             </Text>
           )}
         </HorizontalHomeCard>
-        <HalloweenHomeCard>
-          <Flex flexWrap="wrap" gap={4} justifyContent="center" sx={{ img: { filter: 'none' } }}>
-            {trendingCatLists.map((list) => (
-              <UserListCard key={list.internal_id} list={list} utm_content="featured-lists" />
-            ))}
-          </Flex>
-        </HalloweenHomeCard>
         {newItemCount && (
           <Flex gap={4} flexWrap={'wrap'} flexFlow={{ base: 'column', lg: 'row' }}>
             <HorizontalHomeCard
@@ -348,7 +339,6 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
     leavingNcMall,
     trendingLists,
     newItemCount,
-    trendingCatLists,
   ] = await Promise.all([
     getLatestItems(20, true).catch(() => []),
     getLatestItems(18, true, true).catch(() => []),
@@ -360,9 +350,8 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
       count: null,
     })) as Promise<LatestPricesRes>,
     getNCMallItemsData(18, true).catch(() => []),
-    getTrendingLists(3, ['Festival of Fears']).catch(() => []),
+    getTrendingLists(3).catch(() => []),
     getNewItemsInfo(7).catch(() => null),
-    getTrendingCatLists('Festival of Fears', 3).catch(() => []),
   ]);
 
   return {
@@ -376,7 +365,6 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
       leavingNcMall,
       trendingLists: trendingLists,
       newItemCount,
-      trendingCatLists,
       messages: await loadTranslation(context.locale, 'index'),
       locale: context.locale,
     },
