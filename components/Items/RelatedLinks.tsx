@@ -1,6 +1,6 @@
 import { Flex, Text, Image } from '@chakra-ui/react';
 import React from 'react';
-import { ItemData, ItemEffect, UserList } from '../../types';
+import { ItemData, ItemEffect, ItemPetpetData, UserList } from '../../types';
 import CardBase from '../Card/CardBase';
 import { useTranslations } from 'next-intl';
 import MainLink from '@components/Utils/MainLink';
@@ -9,13 +9,13 @@ import {
   getPetpetSpeciesFromString,
   getPetpetSpeciesId,
   getSpeciesFromString,
-  petpetColors,
 } from '@utils/pet-utils';
 
 type Props = {
   item: ItemData;
   itemEffects?: ItemEffect[];
   lists?: UserList[];
+  petpetData?: ItemPetpetData | null;
 };
 
 const RelatedLinksCard = (props: Props) => {
@@ -23,6 +23,7 @@ const RelatedLinksCard = (props: Props) => {
   const relatedLinks = useRelatedLinks(props.item, {
     itemEffects: props.itemEffects,
     lists: props.lists,
+    petpetData: props.petpetData || undefined,
   });
   const { item } = props;
   const color = item.color.rgb;
@@ -82,11 +83,12 @@ const RelatedLink = (props: RelatedLinkProps) => {
 type RelatedOthers = {
   itemEffects?: ItemEffect[];
   lists?: UserList[];
+  petpetData?: ItemPetpetData;
 };
 
 const useRelatedLinks = (item: ItemData, rest: RelatedOthers) => {
   const t = useTranslations();
-  const { itemEffects, lists } = rest;
+  const { itemEffects, lists, petpetData } = rest;
   const relatedLinks: RelatedLinkProps[] = [];
 
   // ------ Species Related Links ------ //
@@ -186,8 +188,10 @@ const useRelatedLinks = (item: ItemData, rest: RelatedOthers) => {
   });
 
   // ------ Petpet Related Links ------ //
-  const petpetColor = itemEffects?.find((effect) => effect.type === 'petpetColor')?.colorTarget;
-  const colorId = getPetpetColorId(petpetColor || '');
+  const petpetColor =
+    itemEffects?.find((effect) => effect.type === 'petpetColor')?.colorTarget ||
+    petpetData?.color.name;
+  const colorId = getPetpetColorId(petpetColor || '') || petpetData?.color.id;
 
   if (colorId && petpetColor) {
     relatedLinks.push({

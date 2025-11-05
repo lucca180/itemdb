@@ -424,6 +424,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
               item={item}
               itemEffects={itemEffects}
               lists={lists}
+              petpetData={petpetData}
             />
           </Flex>
         </Flex>
