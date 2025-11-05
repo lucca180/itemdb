@@ -764,7 +764,7 @@ export const petpetColors: { [id: string]: string } = {
   '51': 'Chocolate',
   '52': 'Strawberry',
   '53': '25th Anniversary',
-  '54': 'Void',
+  '54': 'Tattoo',
   '1001': '8-bit',
   '1002': 'Chocolate',
   '1003': 'Gold',
