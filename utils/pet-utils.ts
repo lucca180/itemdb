@@ -178,6 +178,7 @@ export const allSpecies: { [id: string]: string } = {
 };
 
 export const getPetColorId = (color: string) => {
+  if (!color) return null;
   const x = Object.keys(allNeopetsColors).find(
     (x) => allNeopetsColors[x].toLowerCase() === color.toLowerCase()
   );
@@ -186,6 +187,7 @@ export const getPetColorId = (color: string) => {
 };
 
 export const getSpeciesId = (species: string) => {
+  if (!species) return null;
   const x = Object.keys(allSpecies).find(
     (x) => allSpecies[x].toLowerCase() === species.toLowerCase()
   );
@@ -194,10 +196,10 @@ export const getSpeciesId = (species: string) => {
 };
 
 export const getSpeciesFromString = (name: string) => {
+  if (!name) return null;
   const species = Object.values(allSpecies).find((species) =>
     name.toLowerCase().split(' ').includes(species.toLowerCase())
   );
-
   return species;
 };
 
@@ -797,6 +799,7 @@ export const petpetColors: { [id: string]: string } = {
 };
 
 export const getPetpetSpeciesId = (species: string) => {
+  if (!species) return null;
   const x = Object.keys(petpetSpecies).find(
     (x) => petpetSpecies[x].toLowerCase() === species.toLowerCase()
   );
@@ -805,9 +808,18 @@ export const getPetpetSpeciesId = (species: string) => {
 };
 
 export const getPetpetColorId = (color: string) => {
+  if (!color) return null;
   const x = Object.keys(petpetColors).find(
     (x) => petpetColors[x].toLowerCase() === color.toLowerCase()
   );
   if (!x) return null;
   return parseInt(x);
+};
+
+export const getPetpetSpeciesFromString = (name: string) => {
+  if (!name) return null;
+  const species = Object.values(petpetSpecies).find((species) =>
+    name.toLowerCase().split(' ').includes(species.toLowerCase())
+  );
+  return species;
 };
