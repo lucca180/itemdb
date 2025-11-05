@@ -458,10 +458,6 @@ export const halloweenShops = [
   'Spooky Furniture',
   'Spooky Petpet',
   'Haunted Weaponry',
-  'Neovian Antiques',
-  'Neovian Attire',
-  'Neovian Pastries',
-  'Neovian Press',
 ];
 
 export const restockBlackMarketItems = [

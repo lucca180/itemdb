@@ -13,7 +13,7 @@ export const MAX_PAST_DAYS = 60;
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
 const EVENT_MODE = process.env.EVENT_MODE === 'true';
-const MIN_LAST_UPDATE = EVENT_MODE ? 3 : 7;
+const MIN_LAST_UPDATE = EVENT_MODE ? 3 : 5;
 
 const USE_NEW_ALGORITHM = process.env.USE_NEW_ALGORITHM === 'true';
 
@@ -276,7 +276,8 @@ export const doProcessPrices = async (
           newPrice.price,
           allItemData.map((x) => x.internal_id),
           newPrice.latestDate,
-          newPriceAlgorithm?.price
+          newPriceAlgorithm?.price,
+          forceMode
         ).then((_) => {
           if (_) processedIDs.push(...allIDs);
           return _;
@@ -340,7 +341,8 @@ async function updateOrAddDB(
   priceValue: number,
   usedIDs: number[],
   latestDate: Date,
-  newPrice?: number
+  newPrice?: number,
+  forceMode = false
 ): Promise<Prisma.ItemPricesUncheckedCreateInput | undefined> {
   const newPriceData: Prisma.ItemPricesUncheckedCreateInput = {
     item_iid: priceData.item_iid,
@@ -371,6 +373,7 @@ async function updateOrAddDB(
       return newPriceData;
     }
 
+    const isInflation = !!oldPriceRaw.noInflation_id;
     const oldPrice = oldPriceRaw.price.toNumber();
 
     const daysSinceLastUpdate = differenceInCalendarDays(latestDate, oldPriceRaw.addedAt);
@@ -383,15 +386,27 @@ async function updateOrAddDB(
       return undefined;
     }
 
-    if (daysSinceLastUpdate < 3 && priceDiff < 100000) return undefined;
+    if (!forceMode && daysSinceLastUpdate < 3 && priceDiff < 100000) return undefined;
 
-    if (daysSinceLastUpdate < MIN_LAST_UPDATE && variation < 30 && priceDiff < 25000)
+    if (!forceMode && daysSinceLastUpdate < MIN_LAST_UPDATE && variation < 30 && priceDiff < 25000)
       return undefined;
 
-    if ((variation <= 5 || priceDiff < 2500) && daysSinceLastUpdate <= 15 && !EVENT_MODE)
+    /*
+      ignore small variations
+      don't ignore if event mode is active
+      or if the price is inflated
+      or if force mode is active
+    */
+    if (
+      (variation <= 5 || priceDiff < 2500) &&
+      daysSinceLastUpdate <= 15 &&
+      !EVENT_MODE &&
+      !isInflation &&
+      !forceMode
+    )
       return undefined;
 
-    if (!oldPriceRaw.noInflation_id && priceDiff >= 90000) {
+    if (!isInflation && priceDiff >= 90000) {
       if (oldPrice < priceValue && variation >= 75) {
         newPriceData.noInflation_id = oldPriceRaw.internal_id;
         throw 'inflation';
@@ -404,7 +419,7 @@ async function updateOrAddDB(
     }
 
     // update an inflated price
-    if (oldPriceRaw.noInflation_id) {
+    if (isInflation) {
       const allPrices = await prisma.itemPrices.findMany({
         where: {
           item_iid: oldPriceRaw.item_iid,

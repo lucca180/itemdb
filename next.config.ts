@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
   cacheMaxMemorySize: 0,
   compress: false, // cloudflare does it for us
   productionBrowserSourceMaps: true,
-  skipMiddlewareUrlNormalize: true,
+  skipProxyUrlNormalize: true,
   i18n: {
     locales: ['en', 'pt'],
     defaultLocale: 'en',

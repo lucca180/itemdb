@@ -11,11 +11,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   const id_name = req.query.id_name as string;
+  const includeUnconfirmed = req.query.includeUnconfirmed === 'true';
   const id = Number(id_name);
 
   const name = isNaN(id) ? id_name : undefined;
 
-  const prices = await getItemPrices({ iid: id, name });
+  const prices = await getItemPrices({ iid: id, name, includeUnconfirmed });
 
   res.json(prices);
 }
@@ -23,14 +24,15 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 type ItemPricesArgs = {
   iid?: number | undefined;
   name?: string;
+  includeUnconfirmed?: boolean;
 };
 export const getItemPrices = async (args: ItemPricesArgs) => {
-  const { iid } = args;
+  const { iid, includeUnconfirmed } = args;
 
   const pricesRaw = await prisma.itemPrices.findMany({
     where: {
       item_iid: !isNaN(iid ?? NaN) ? iid : undefined,
-      manual_check: null,
+      manual_check: includeUnconfirmed ? undefined : null,
     },
     orderBy: { addedAt: 'desc' },
     take: 100,
@@ -44,6 +46,7 @@ export const getItemPrices = async (args: ItemPricesArgs) => {
       inflated: !!p.noInflation_id,
       context: p.priceContext,
       isLatest: !!p.isLatest,
+      isUnconfirmed: p.manual_check !== null,
     };
   });
 

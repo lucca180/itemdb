@@ -1,5 +1,5 @@
 import { Box, Flex, Heading, Highlight, Link, SimpleGrid, Stack, Text } from '@chakra-ui/react';
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
 import Layout from '../components/Layout';
 import logo from '../public/logo_white_compressed.webp';
 import NextImage from 'next/image';

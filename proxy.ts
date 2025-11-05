@@ -22,7 +22,6 @@ const isDev = process.env.NODE_ENV === 'development';
 
 export const config = {
   matcher: ['/api/:path*', '/:path*'],
-  runtime: 'nodejs',
 };
 
 export async function proxy(request: NextRequest) {

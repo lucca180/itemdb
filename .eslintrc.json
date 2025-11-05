@@ -13,6 +13,7 @@
         "ignoreReadBeforeAssign": false
       }
     ],
+    "react-hooks/use-memo": "warn",
     // wrongly assuming that you will type things correctly :pray:
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-unused-vars": ["warn", {

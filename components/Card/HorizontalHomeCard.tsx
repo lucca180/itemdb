@@ -185,3 +185,50 @@ export const FFHomeCard = ({ children }: { children: React.ReactNode }) => {
     </HorizontalHomeCard>
   );
 };
+
+export const HalloweenHomeCard = ({ children }: { children: React.ReactNode }) => {
+  // const t = useTranslations();
+  return (
+    <HorizontalHomeCard
+      color="#54ACB4"
+      h={50}
+      w={50}
+      image="https://images.neopets.com/festivaloffears/images/goodiebag-icon.png"
+      // viewAllLink="/hub/faeriefestival"
+      title={'Festival of Fears'}
+      isSmall
+      utm_content="halloween-lists"
+      // viewAllText={t('HomePage.more-guides-and-tools')}
+      sx={{
+        position: 'relative',
+        isolation: 'isolate',
+        overflow: 'hidden',
+        img: {
+          filter: 'drop-shadow(0 0 5px #54ACB4)',
+        },
+        h2: {
+          textShadow: '0 0 10px #54ACB4',
+        },
+        '::before': {
+          content: "''",
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundImage: "url('https://images.neopets.com/festivaloffears/images/fof-bg.webp')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: 0.5,
+          filter: 'blur(10px) brightness(0.5)',
+          zIndex: -1,
+        },
+      }}
+      innerStyle={{
+        border: '2px solid #54ACB47d',
+      }}
+    >
+      {children}
+    </HorizontalHomeCard>
+  );
+};

@@ -143,6 +143,16 @@ export const SearchBar = (props: Props) => {
     [isOpen]
   );
 
+  const doTrack = (type: string) => {
+    if (window?.umami) {
+      window.umami?.track('omni-search', {
+        type: type,
+      });
+    }
+
+    onClose();
+  };
+
   return (
     <Popover
       returnFocusOnClose={false}
@@ -223,7 +233,7 @@ export const SearchBar = (props: Props) => {
                           bg: `rgba(${item.color.rgb[0]},${item.color.rgb[1]}, ${item.color.rgb[2]},.35)`,
                         }}
                         fontSize={{ base: 'xs', sm: 'sm', md: 'md' }}
-                        onClick={onClose}
+                        onClick={() => doTrack('item')}
                       >
                         <Image
                           src={item.image}
@@ -266,7 +276,7 @@ export const SearchBar = (props: Props) => {
                           bg: `${list.colorHex}23`,
                         }}
                         fontSize={{ base: 'xs', sm: 'sm', md: 'md' }}
-                        onClick={onClose}
+                        onClick={() => doTrack('official-list')}
                       >
                         <Image
                           src={list.coverURL!}
@@ -281,7 +291,6 @@ export const SearchBar = (props: Props) => {
                           <Text display={{ base: 'none', lg: 'block' }} fontSize={'xs'}>
                             {stripMarkdown(list.description ?? '')}
                           </Text>
-                          {/* <ItemCardBadge item={item} /> */}
                         </Flex>
                       </Link>
                     ))}
@@ -311,7 +320,7 @@ export const SearchBar = (props: Props) => {
                           bg: `${shop.color}23`,
                         }}
                         fontSize={{ base: 'xs', sm: 'sm', md: 'md' }}
-                        onClick={onClose}
+                        onClick={() => doTrack('restock-shop')}
                       >
                         <Image
                           objectPosition={'center'}

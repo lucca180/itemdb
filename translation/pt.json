@@ -311,7 +311,9 @@
     "related-painting": "Maneira mais barata de pintar seu Neopet <b>{color}</b>!",
     "related-links": "Links Relacionados",
     "price-calculator-tool": "Calculadora de Preços",
-    "create-your-0-checklist": "Crie seu <b>{0}</b> checklist"
+    "create-your-0-checklist": "Crie seu <b>{0}</b> checklist",
+    "unconfirmed-price": "Preço não confirmado",
+    "unconfirmed-price-text": "Estamos confirmando um novo preço para este item e ele ficará visível depois de verificado"
   },
   "Button": {
     "feedback": "Feedback",
@@ -789,7 +791,8 @@
     "xx-unique-items-yy-total": "{itemCount} itens únicos ({qtyCount} total)",
     "highlights-description": "Destaques - Descrição",
     "highlights-title": "Destaques - Título",
-    "highlights-title-help": "O título da sua seção de destaques"
+    "highlights-title-help": "O título da sua seção de destaques",
+    "highlights-official-fallback": "Itens originalmente obtidos exclusivamente aqui"
   },
   "Restock": {
     "est-profit": "Lucro Est.",
@@ -1147,7 +1150,8 @@
     "hiddenTower": "3% de desconto na <Link>Torre Oculta</Link> hoje para contas com 60 meses ou mais!",
     "owls-trades": "<b>Novo</b> - Agora você pode reportar suas <b>Trocas NC</b> para o Owls usando o itemdb! <Link>Saiba mais</Link>",
     "year2": "Estamos comemorando <b>2 anos de itemdb</b> e queremos ouvir seu feedback neste <Link>formulário rápido</Link>!",
-    "tvw": "Neopia está em perigo! Confira nossa central do plot <Link>The Void Within</Link> e descubra listas e recursos para te ajudar no plot!"
+    "tvw": "Neopia está em perigo! Confira nossa central do plot <Link>The Void Within</Link> e descubra listas e recursos para te ajudar no plot!",
+    "spooky": "<b>Inflação de Itens de Buscas</b> - Devido ao <Link>Festival of Fears</Link> diversos itens de buscas tiveram seu preço significativamente aumentados. Tenha cuidado ao comprar pois os preços podem estar maior que o normal."
   },
   "Owls": {
     "confirm-and-submit": "Confirmar e Enviar",

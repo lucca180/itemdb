@@ -310,7 +310,9 @@
     "related-painting": "Cheapest way of painting your Neopet <b>{color}</b>!",
     "related-links": "Related Links",
     "price-calculator-tool": "Price Calculator Tool",
-    "create-your-0-checklist": "Create your <b>{0}</b> checklist"
+    "create-your-0-checklist": "Create your <b>{0}</b> checklist",
+    "unconfirmed-price": "Unconfirmed Price",
+    "unconfirmed-price-text": "We're confirming a new price for this item and it will be visible to once verified"
   },
   "Button": {
     "feedback": "Feedback",
@@ -643,7 +645,8 @@
     "xx-unique-items-yy-total": "{itemCount} unique items ({qtyCount} total)",
     "highlights-title": "Highlights Title",
     "highlights-title-help": "The title for your highlights section",
-    "highlights-description": "Highlights Description"
+    "highlights-description": "Highlights Description",
+    "highlights-official-fallback": "Items originally obtained here only"
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",
@@ -1146,7 +1149,8 @@
     "hiddenTower": "3% off at the <Link>Hidden Tower</Link> today for account age 60 months or older!",
     "owls-trades": "<b>New</b> - Now you can report your <b>NC Trades</b> to Owls using itemdb! <Link>Learn more</Link>",
     "year2": "We're celebrating <b>2 years of itemdb</b> and would love to hear your feedback in this <Link>quick form</Link>!",
-    "tvw": "Neopia is in danger! Check out our <Link>The Void Within Plot Hub</Link> and find out lists and resources to help you through the plot!"
+    "tvw": "Neopia is in danger! Check out our <Link>The Void Within Plot Hub</Link> and find out lists and resources to help you through the plot!",
+    "spooky": "<b>Quest Items Inflation</b> - Due to <Link>Festival of Fears</Link> multiple quest items have seen significant price increases. Please be cautious when purchasing these items as prices may be higher than usual."
   },
   "Owls": {
     "items-you-offered": "Items You Offered",

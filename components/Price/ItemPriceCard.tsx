@@ -104,7 +104,7 @@ const ItemPriceCard = (props: Props) => {
   );
 
   const { data: prices } = useSWR<PriceData[]>(
-    `/api/v1/items/${props.item.internal_id}/prices`,
+    `/api/v1/items/${props.item.internal_id}/prices?includeUnconfirmed=true`,
     (url) => fetcher(url),
     { fallbackData: props.prices }
   );
@@ -124,14 +124,14 @@ const ItemPriceCard = (props: Props) => {
     { fallbackData: props.lastSeen }
   );
 
-  const price = prices?.[0]?.isLatest ? prices[0] : null;
+  const price = prices?.find((p) => p.isLatest);
 
   const priceDiff = useMemo(() => {
     if (!prices || prices.length < 2) return null;
-    const priceZero = prices[0]?.isLatest ? prices[0] : null;
-    const priceOne = prices[1];
-    if (!priceZero || !priceOne.value) return null;
-    return (priceZero.value ?? 0) - priceOne.value;
+    const priceZeroIndex = prices.findIndex((p) => p.isLatest);
+    const priceOne = prices[priceZeroIndex + 1];
+    if (!price || !priceOne?.value) return null;
+    return (price.value ?? 0) - priceOne.value;
   }, [prices]);
 
   useEffect(() => {
