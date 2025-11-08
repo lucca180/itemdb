@@ -1,15 +1,21 @@
 import { Flex, Text, Image } from '@chakra-ui/react';
 import React from 'react';
-import { ItemData, ItemEffect, UserList } from '../../types';
+import { ItemData, ItemEffect, ItemPetpetData, UserList } from '../../types';
 import CardBase from '../Card/CardBase';
 import { useTranslations } from 'next-intl';
 import MainLink from '@components/Utils/MainLink';
-import { getSpeciesFromString } from '@utils/pet-utils';
+import {
+  getPetpetColorId,
+  getPetpetSpeciesFromString,
+  getPetpetSpeciesId,
+  getSpeciesFromString,
+} from '@utils/pet-utils';
 
 type Props = {
   item: ItemData;
   itemEffects?: ItemEffect[];
   lists?: UserList[];
+  petpetData?: ItemPetpetData | null;
 };
 
 const RelatedLinksCard = (props: Props) => {
@@ -17,6 +23,7 @@ const RelatedLinksCard = (props: Props) => {
   const relatedLinks = useRelatedLinks(props.item, {
     itemEffects: props.itemEffects,
     lists: props.lists,
+    petpetData: props.petpetData || undefined,
   });
   const { item } = props;
   const color = item.color.rgb;
@@ -76,11 +83,12 @@ const RelatedLink = (props: RelatedLinkProps) => {
 type RelatedOthers = {
   itemEffects?: ItemEffect[];
   lists?: UserList[];
+  petpetData?: ItemPetpetData;
 };
 
 const useRelatedLinks = (item: ItemData, rest: RelatedOthers) => {
   const t = useTranslations();
-  const { itemEffects, lists } = rest;
+  const { itemEffects, lists, petpetData } = rest;
   const relatedLinks: RelatedLinkProps[] = [];
 
   // ------ Species Related Links ------ //
@@ -178,5 +186,37 @@ const useRelatedLinks = (item: ItemData, rest: RelatedOthers) => {
       });
     }
   });
+
+  // ------ Petpet Related Links ------ //
+  const petpetColor =
+    itemEffects?.find((effect) => effect.type === 'petpetColor')?.colorTarget ||
+    petpetData?.color.name;
+  const colorId = getPetpetColorId(petpetColor || '') || petpetData?.color.id;
+
+  if (colorId && petpetColor) {
+    relatedLinks.push({
+      href: `/search?s=&petpetColor[]=${colorId}`,
+      imageUrl: `https://images.neopets.com/themes/h5/hauntedwoods/images/community-icon.svg?d=20210209`,
+      alt: petpetColor,
+      trackEvent: 'related-link',
+      trackEventLabel: 'petpet-color',
+      children: t('ItemPage.all-x-petpets', { 0: petpetColor }),
+    });
+  }
+
+  const petpetSpecies = getPetpetSpeciesFromString(item.name);
+  const specieId = getPetpetSpeciesId(petpetSpecies ?? '');
+
+  if (petpetSpecies && specieId) {
+    relatedLinks.push({
+      href: `/search?s=&petpetSpecies[]=${specieId}`,
+      imageUrl: `https://images.neopets.com/themes/h5/basic/images/v3/adoptpet-icon.svg`,
+      alt: petpetSpecies,
+      trackEvent: 'related-link',
+      trackEventLabel: 'petpet-species',
+      children: t('ItemPage.all-x-petpets', { 0: petpetSpecies }),
+    });
+  }
+
   return relatedLinks;
 };

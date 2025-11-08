@@ -312,7 +312,8 @@
     "price-calculator-tool": "Price Calculator Tool",
     "create-your-0-checklist": "Create your <b>{0}</b> checklist",
     "unconfirmed-price": "Unconfirmed Price",
-    "unconfirmed-price-text": "We're confirming a new price for this item and it will be visible to once verified"
+    "unconfirmed-price-text": "We're confirming a new price for this item and it will be visible to once verified",
+    "all-x-petpets": "All {0} Petpets"
   },
   "Button": {
     "feedback": "Feedback",
