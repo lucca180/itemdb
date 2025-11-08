@@ -194,7 +194,11 @@ const EditProfileModal = (props: EditProfileModalProps) => {
                 />
                 <FormHelperText>Required</FormHelperText>
               </FormControl> */}
-
+              <FormControl>
+                <FormLabel color="gray.300">{t('General.email-address')}</FormLabel>
+                <Input variant="filled" disabled value={userProfile.email ?? ''} />
+                <FormHelperText fontSize={'xs'}>{t('Profile.email-helper')}</FormHelperText>
+              </FormControl>
               <FormControl>
                 <FormLabel color="gray.300">{t('Login.neopets-username')}</FormLabel>
                 <Input

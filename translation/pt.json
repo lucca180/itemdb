@@ -1028,7 +1028,8 @@
     "fill-required-fields": "Preencha todos os campos obrigatórios",
     "profile-image-url": "URL da imagem do perfil",
     "color-helper": "Deixe #000000 e nós vamos escolher uma cor para você com base na sua imagem de perfil",
-    "list-groups-helper": "<b>List Groups</b> irá usar o campo \"Profile Tag\" para agrupar as listas no seu perfil"
+    "list-groups-helper": "<b>List Groups</b> irá usar o campo \"Profile Tag\" para agrupar as listas no seu perfil",
+    "email-helper": "Isso não pode ser alterado"
   },
   "FAQ": {
     "text-1": "Aqui você encontra as perguntas mais frequentes sobre o itemdb.",
