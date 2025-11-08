@@ -139,7 +139,7 @@ const ItemPriceCard = (props: Props) => {
   }, [displayState]);
 
   const needHelp = useMemo(() => {
-    if (!priceStatus || !user) return false;
+    if (!priceStatus) return false;
 
     if (priceStatus.dataStatus.fresh >= 10) return false;
 
@@ -153,9 +153,16 @@ const ItemPriceCard = (props: Props) => {
       needVoting: priceStatus.waitingTrades.needVoting,
     };
 
-    if (!price) return res;
+    const shouldShow =
+      !price || (differenceInCalendarDays(new Date(), new Date(price.addedAt)) > 15 && hasTrades);
 
-    if (differenceInCalendarDays(new Date(), new Date(price.addedAt)) > 15 && hasTrades) return res;
+    if (shouldShow) {
+      window.umami?.track('need-help-view', {
+        name: item.name,
+      });
+
+      return res;
+    }
 
     return false;
   }, [user, priceStatus, price]);
