@@ -141,6 +141,7 @@ const CreatePriceModal = (props: CreatePriceModalModalProps) => {
                   name="addedAt"
                   onChange={(e) => setAddedAt(e.target.value)}
                   value={addedAt}
+                  max={new Date().toISOString().split('T')[0]}
                 />
               </FormControl>
             </VStack>
