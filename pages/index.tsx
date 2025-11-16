@@ -232,7 +232,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
           {latestItems && (
             <HomeCard
               utm_content="latest-items"
-              href="/search?s=&sortBy=added&sortDir=desc&utm_content=latest-items"
+              href="/search?s=&sortBy=added&sortDir=desc"
               color="#e7db7a"
               image="https://images.neopets.com/prehistoric/outskirts/fearslayer_9h4v3cfj.png"
               items={latestItems}
