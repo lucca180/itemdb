@@ -69,10 +69,10 @@ const sortTypes = {
 
 const INITIAL_MIN_PROFIT = 1000;
 
-const RESTOCK_FILTER = (shopInfo: ShopInfo): SearchFilters => ({
+export const RESTOCK_FILTER = (shopId: string | number): SearchFilters => ({
   ...defaultFilters,
   restockProfit: INITIAL_MIN_PROFIT.toString(),
-  category: [shopIDToCategory[shopInfo.id]],
+  category: [shopIDToCategory[shopId]],
   rarity: ['1', '99'],
   limit: 10000,
   sortBy: 'price',
@@ -92,7 +92,7 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
   const [sortInfo, setSortInfo] = useState({ sortBy: 'price', sortDir: 'desc' });
   const [loading, setLoading] = useState(true);
   const [itemSearch, setItemSearch] = useState<string>('');
-  const [filters, setFilters] = useState<SearchFilters>(RESTOCK_FILTER(shopInfo));
+  const [filters, setFilters] = useState<SearchFilters>(RESTOCK_FILTER(shopInfo.id));
   const [stats, setStats] = useState<SearchStats | null>(null);
   const [isFiltered, setFiltered] = useState(false);
 
@@ -113,7 +113,7 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
 
   const init = async (forceStats = false) => {
     setLoading(true);
-    const filters = RESTOCK_FILTER(shopInfo);
+    const filters = RESTOCK_FILTER(shopInfo.id);
 
     if (!stats || forceStats) {
       axios
@@ -196,7 +196,7 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
   };
 
   const resetFilters = (force = false) => {
-    setFilters(RESTOCK_FILTER(shopInfo));
+    setFilters(RESTOCK_FILTER(shopInfo.id));
     setItemSearch('');
     init(force);
     setFiltered(false);
@@ -424,7 +424,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 
   if (Number(shopInfo.id) < 0) return { notFound: true };
 
-  const filters: SearchFilters = RESTOCK_FILTER(shopInfo);
+  const filters: SearchFilters = RESTOCK_FILTER(shopInfo.id);
   filters.restockProfit = ''; // we need all the items to calculate stuff
   const result = await doSearch('', filters, false);
 
