@@ -488,7 +488,10 @@
     "x-removed": "{x} removidos",
     "added": "Adicionado",
     "removed": "Removido",
-    "refresh": "Atualizar"
+    "refresh": "Atualizar",
+    "album-item": "Item de Album",
+    "canonical-petpet": "Petpet Canônico",
+    "paintable-petpet": "Petpet Pintável"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",

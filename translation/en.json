@@ -487,7 +487,10 @@
     "x-removed": "{x} removed",
     "removed": "Removed",
     "added": "Added",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "album-item": "Album Item",
+    "paintable-petpet": "Paintable Petpet",
+    "canonical-petpet": "Canonical Petpet"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",

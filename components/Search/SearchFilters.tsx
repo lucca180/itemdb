@@ -319,6 +319,34 @@ const SearchFilters = (props: Props) => {
                 <Badge>{stats?.saleStatus?.hts ?? 0}</Badge>
               </Text>
             </NegCheckbox>
+            <Divider />
+            <NegCheckbox
+              value="collectible"
+              onChange={(val) => handleCheckChange(val, 'type', 'collectible')}
+              checklist={filters.type}
+            >
+              <Text fontSize={'sm'}>
+                <Badge colorScheme="yellow">{t('General.album-item')}</Badge>
+              </Text>
+            </NegCheckbox>
+            <NegCheckbox
+              value="p2Paintable"
+              onChange={(val) => handleCheckChange(val, 'type', 'p2Paintable')}
+              checklist={filters.type}
+            >
+              <Text fontSize={'sm'}>
+                <Badge colorScheme="pink">{t('General.paintable-petpet')}</Badge>
+              </Text>
+            </NegCheckbox>
+            <NegCheckbox
+              value="p2Canonical"
+              onChange={(val) => handleCheckChange(val, 'type', 'p2Canonical')}
+              checklist={filters.type}
+            >
+              <Text fontSize={'sm'}>
+                <Badge colorScheme="pink">{t('General.canonical-petpet')}</Badge>
+              </Text>
+            </NegCheckbox>
           </VStack>
         </AccordionPanel>
       </AccordionItem>

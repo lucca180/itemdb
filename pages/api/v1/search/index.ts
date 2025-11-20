@@ -97,9 +97,9 @@ export async function doSearch(
   const petpetSpecies = (filters.petpetSpecies as string[]) ?? [];
   const restockProfit = (filters.restockProfit as string) ?? '';
 
-  const petpetPaintable =
+  let petpetPaintable =
     typeof filters.p2Paintable !== 'undefined' ? (filters.p2Paintable as any) == 'true' : undefined;
-  const petpetCanonical =
+  let petpetCanonical =
     typeof filters.p2Canonical !== 'undefined' ? (filters.p2Canonical as any) == 'true' : undefined;
 
   let colorFilter = (filters.color as string) ?? '';
@@ -190,8 +190,9 @@ export async function doSearch(
       'ets',
       'regular',
       'collectible',
+      'p2Paintable',
+      'p2Canonical',
     ];
-
     if (typeNeg.length > 0) {
       const type_column = typeNeg.filter((o: string) => !skipColumns.includes(o));
 
@@ -217,6 +218,9 @@ export async function doSearch(
           Prisma.sql`not exists (select 1 from listitems li left join userlist l on l.internal_id = li.list_id where li.item_iid = temp.internal_id and l.official = 1 and l.official_tag = 'stamps')`
         );
       }
+
+      if (typeNeg.includes('p2Paintable')) petpetPaintable = false;
+      if (typeNeg.includes('p2Canonical')) petpetCanonical = false;
     }
 
     if (typeTrue.length > 0) {
@@ -244,6 +248,9 @@ export async function doSearch(
           Prisma.sql`exists (select 1 from listitems li left join userlist l on l.internal_id = li.list_id where li.item_iid = temp.internal_id and l.official = 1 and l.official_tag = 'stamps')`
         );
       }
+
+      if (typeTrue.includes('p2Paintable')) petpetPaintable = true;
+      if (typeTrue.includes('p2Canonical')) petpetCanonical = true;
     }
   }
 
@@ -384,7 +391,8 @@ export async function doSearch(
       petpetSQL.push(Prisma.sql`isUnpaintable = ${petpetPaintable ? 0 : 1}`);
 
     if (typeof petpetCanonical !== 'undefined')
-      petpetSQL.push(Prisma.sql`p2Canonical = ${petpetCanonical ? 1 : 0}`);
+      if (petpetCanonical) petpetSQL.push(Prisma.sql`p2Canonical = 1`);
+      else petpetSQL.push(Prisma.sql`(petpet_id is not null and p2Canonical IS NULL)`);
   }
 
   let colorSql_inside;
