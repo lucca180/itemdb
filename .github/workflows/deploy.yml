@@ -30,6 +30,7 @@ jobs:
             yarn build-turbo || exit
             yarn postbuild
             pm2 stop ecosystem.config.js --only itemdb-green --update-env
+            yarn test
   deploy-itemdb-blue:
     name: itemdb blue (main) - Deploy
     needs: deploy-itemdb-green
