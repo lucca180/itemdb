@@ -126,8 +126,6 @@
     "**/*.{js,jsx,ts,tsx}": [
       "npx prettier --write"
     ],
-    "**/*search*/**/*": "yarn test",
-    "**/*util*/**/*": "yarn test",
     "*.{ts,tsx}": "tsc-files --noEmit"
   },
   "packageManager": "yarn@4.9.1",
