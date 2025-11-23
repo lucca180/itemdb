@@ -795,3 +795,7 @@ declare global {
     itemdb_restock_cleanAll?: () => void; //backwards compatibility
   }
 }
+
+declare module '*.jpg';
+declare module '*.png';
+declare module '*.svg';

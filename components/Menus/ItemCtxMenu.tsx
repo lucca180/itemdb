@@ -347,7 +347,7 @@ const FindAtCtx = (props: FindAtCtxProps) => {
               height={26}
               quality="100"
             />
-            <Text>{t('General.action-house')}</Text>
+            <Text>{t('General.auction-house')}</Text>
           </HStack>
         </CtxMenuItem>
       )}
