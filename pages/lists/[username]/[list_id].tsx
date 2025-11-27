@@ -523,7 +523,7 @@ const ListPage = (props: ListPageProps) => {
       SEO={{
         title: `${list.name} - ${
           list.official
-            ? t('General.official-list')
+            ? t('Lists.neopets-lists')
             : t('Lists.owner-username-s-lists', { username: list.owner.username ?? '' })
         }`,
         nofollow: !list.official,

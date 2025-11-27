@@ -649,7 +649,8 @@
     "highlights-title": "Highlights Title",
     "highlights-title-help": "The title for your highlights section",
     "highlights-description": "Highlights Description",
-    "highlights-official-fallback": "Items originally obtained here only"
+    "highlights-official-fallback": "Items originally obtained here only",
+    "neopets-lists": "Neopets Lists"
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",
@@ -756,7 +757,7 @@
     "approve": "Approve",
     "upvote": "Upvote",
     "in-1": "<b>Item Notes</b> are used to provide additional information about the item such as it's functions or effects. Please be sure to check the veracity of the information provided before upvoting it :)",
-    "keyboard-submit": "You can hit <Kbd>ENTER</Kbd> in the last price box (or in the first one, if the trade has'nt a specified price) to submit",
+    "keyboard-submit": "You can hit <Kbd>ENTER</Kbd> in the last price box (or in the first one, if the trade hasn't a specified price) to submit",
     "10-02-2024-policy-changes": "[10/02/2024] Policy Changes",
     "new-policy-1": "We understand that Baby Paint Brushes are an important factor for selling items in the trading post. Therefore, from now on, you can consider the price of <b>Baby Paint Brushes as 600k</b> when specified as <b>part of the payment</b> in the wishlist.",
     "new-policy-2": "However, prioritize the price listed in pure Neopoints if both are listed. This new guideline applies <b>ONLY to the Baby Paint Brush</b>. We will update this guideline in the event of future fluctuations in the market.",
@@ -909,7 +910,7 @@
     "wrapped-vote-text": "<Link>Vote</Link> on <b>{needVotes}</b> more pricing suggestions",
     "wrapped-text3": "After that, you will be able to see (and download!) your Restock Card for the next 24 hours without needing to help us again.",
     "wrapped-text4": "Why do I need to do this?",
-    "wrapped-text5": "itemdb is open source and completely free. All expenses are paid from our own pocket.<br></br><br></br> Besides that, we are a small team and pricing trades takes a lot of our free time.<br></br><br></br> So, instead of fixing bugs, creating new Official Lists or adding new features, most of our time is spent on trying to make itemdb prices more acurate by pricing trades.<br></br><br></br> We absolutely hate to \"lock\" any features behind a \"contribute-wall\" (?), but we need your help to keep itemdb prices always updated.",
+    "wrapped-text5": "itemdb is open source and completely free. All expenses are paid from our own pocket.<br></br><br></br> Besides that, we are a small team and pricing trades takes a lot of our free time.<br></br><br></br> So, instead of fixing bugs, creating new Official Lists or adding new features, most of our time is spent on trying to make itemdb prices more accurate by pricing trades.<br></br><br></br> We absolutely hate to \"lock\" any features behind a \"contribute-wall\" (?), but we need your help to keep itemdb prices always updated.",
     "image-copied-to-clipboard": "Image copied to clipboard",
     "stocked-at-date": "Stocked at {date}",
     "contribute-wall-1": "Before showing the Restock History for this shop, within your selected timeframe, <b>we need your help</b> to make itemdb more accurate.",
@@ -934,8 +935,8 @@
     "favorite-buy-tooltip": "Bought {0} times",
     "from-x": "from {0}",
     "hide-misses-helper-txt": "Hide all information about your missed restocks.",
-    "hide-comparations": "Hide Comparations",
-    "hide-comparations-helper-txt": "Hide all comparations with previous sessions. You may need to refresh to see the changes.",
+    "hide-comparations": "Hide Comparisons",
+    "hide-comparations-helper-txt": "Hide all comparisons with previous sessions. You may need to refresh to see the changes.",
     "dashboard-options": "Dashboard Options",
     "hidden-tower": "Hidden Tower - 3% off",
     "ht-next-discount-day": "Discount Day Price | Next at {x}",
