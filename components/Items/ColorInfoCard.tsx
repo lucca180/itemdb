@@ -1,8 +1,19 @@
-import { Box, Center, Flex, Icon, Link, SimpleGrid, Text } from '@chakra-ui/react';
+import {
+  Box,
+  Button,
+  Center,
+  Flex,
+  Icon,
+  IconButton,
+  Link,
+  Text,
+  useToast,
+} from '@chakra-ui/react';
 import React from 'react';
 import { AiFillEyeInvisible } from 'react-icons/ai';
 import { FullItemColors } from '../../types';
 import { useTranslations } from 'next-intl';
+import { BiCopy, BiSearch } from 'react-icons/bi';
 type Props = {
   colors: FullItemColors;
 };
@@ -18,6 +29,8 @@ const colorKeysOrder: (keyof FullItemColors)[] = [
 
 const ColorInfoCard = (props: Props) => {
   const t = useTranslations();
+  const toast = useToast();
+  const [showMore, setShowMore] = React.useState(false);
   const { colors } = props;
   const color = colors.vibrant.rgb;
 
@@ -25,15 +38,27 @@ const ColorInfoCard = (props: Props) => {
     (color) => color.population === 0 && color.hex === '#FFFFFF'
   );
 
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+
+    window.umami?.track('color-info-card', { action: 'copy text' });
+
+    toast({
+      title: t('Layout.copied-to-clipboard'),
+      description: text,
+      status: 'success',
+      duration: 2000,
+      isClosable: true,
+    });
+  };
+
+  const toggleShowMore = () => {
+    setShowMore(!showMore);
+    window.umami?.track('color-info-card', { action: showMore ? 'show less' : 'show more' });
+  };
+
   return (
-    <Flex
-      // flex={1}
-      // height='100%'
-      borderTopRadius="md"
-      overflow="hidden"
-      flexFlow="column"
-      boxShadow="sm"
-    >
+    <Flex borderTopRadius="md" overflow="hidden" flexFlow="column" boxShadow="sm">
       <Box
         p={2}
         textAlign="center"
@@ -47,7 +72,6 @@ const ColorInfoCard = (props: Props) => {
         bg="gray.600"
         boxShadow="md"
         gap={4}
-        // textAlign='center'
         flexWrap="wrap"
         justifyContent="center"
         alignItems="center"
@@ -55,33 +79,52 @@ const ColorInfoCard = (props: Props) => {
         borderBottomRadius="md"
       >
         {!isInvisible && (
-          <SimpleGrid columns={3} gap={3}>
-            {colorKeysOrder.map((key) => (
-              <Link
-                key={colors[key].type}
-                rel="nofollow"
-                href={'/search?s=' + encodeURIComponent(colors[key].hex)}
+          <Flex flexFlow={'column'} w="100%" gap={2} alignItems={'center'}>
+            {[...colorKeysOrder].splice(0, showMore ? colorKeysOrder.length : 3).map((key) => (
+              <Flex
+                h="40px"
+                w="100%"
+                maxW="250px"
+                py={1}
+                px={3}
+                bg={colors[key].hex}
+                borderRadius="md"
+                justifyContent="space-between"
               >
-                <Flex
-                  minW="50px"
-                  h="50px"
-                  p={1}
-                  bg={colors[key].hex}
-                  borderRadius="sm"
-                  justifyContent="center"
-                  alignItems="center"
-                  flexFlow="column"
-                >
-                  <Text fontSize="xs" textShadow="0px 0px 4px #000">
-                    {colors[key].hex}
-                  </Text>
-                  <Text fontSize="0.6rem" fontWeight="bold" textShadow="0px 0px 4px #000">
+                <Flex flexFlow={'column'}>
+                  <Text fontSize="xs" fontWeight="bold" textShadow="0px 0px 4px #000">
                     {colors[key].type}
                   </Text>
+                  <Text fontSize="0.6rem" textShadow="0px 0px 4px #000">
+                    {colors[key].hex}
+                  </Text>
                 </Flex>
-              </Link>
+                <Flex justifyContent={'center'} alignItems="center" gap={2}>
+                  <IconButton
+                    as={Link}
+                    rel="nofollow"
+                    href={'/search?s=' + encodeURIComponent(colors[key].hex)}
+                    icon={<BiSearch />}
+                    aria-label="Search Hex"
+                    size="xs"
+                    boxShadow={'lg'}
+                  />
+                  <IconButton
+                    icon={<BiCopy />}
+                    aria-label="Copy Hex"
+                    size="xs"
+                    boxShadow={'lg'}
+                    onClick={() => handleCopy(colors[key].hex)}
+                  />
+                </Flex>
+              </Flex>
             ))}
-          </SimpleGrid>
+          </Flex>
+        )}
+        {!isInvisible && (
+          <Button size="xs" onClick={toggleShowMore}>
+            {showMore ? t('ItemPage.show-less') : t('ItemPage.show-more')}
+          </Button>
         )}
         {isInvisible && (
           <Center flexFlow="column" gap={1}>
