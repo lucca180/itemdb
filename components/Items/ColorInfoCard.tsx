@@ -14,6 +14,7 @@ import { AiFillEyeInvisible } from 'react-icons/ai';
 import { FullItemColors } from '../../types';
 import { useTranslations } from 'next-intl';
 import { BiCopy, BiSearch } from 'react-icons/bi';
+import Color from 'color';
 type Props = {
   colors: FullItemColors;
 };
@@ -80,45 +81,49 @@ const ColorInfoCard = (props: Props) => {
       >
         {!isInvisible && (
           <Flex flexFlow={'column'} w="100%" gap={2} alignItems={'center'}>
-            {[...colorKeysOrder].splice(0, showMore ? colorKeysOrder.length : 3).map((key) => (
-              <Flex
-                h="40px"
-                w="100%"
-                maxW="250px"
-                py={1}
-                px={3}
-                bg={colors[key].hex}
-                borderRadius="md"
-                justifyContent="space-between"
-              >
-                <Flex flexFlow={'column'}>
-                  <Text fontSize="xs" fontWeight="bold" textShadow="0px 0px 4px #000">
-                    {colors[key].type}
-                  </Text>
-                  <Text fontSize="0.6rem" textShadow="0px 0px 4px #000">
-                    {colors[key].hex}
-                  </Text>
+            {[...colorKeysOrder].splice(0, showMore ? colorKeysOrder.length : 3).map((key) => {
+              const isLight = Color(colors[key].hex).isLight();
+              return (
+                <Flex
+                  h="40px"
+                  w="100%"
+                  maxW="250px"
+                  py={1}
+                  px={3}
+                  bg={colors[key].hex}
+                  borderRadius="md"
+                  justifyContent="space-between"
+                  color={isLight ? 'blackAlpha.800' : 'whiteAlpha.800'}
+                >
+                  <Flex flexFlow={'column'}>
+                    <Text fontSize="xs" fontWeight="bold">
+                      {colors[key].type}
+                    </Text>
+                    <Text fontSize="0.6rem">{colors[key].hex}</Text>
+                  </Flex>
+                  <Flex justifyContent={'center'} alignItems="center" gap={2}>
+                    <IconButton
+                      as={Link}
+                      rel="nofollow"
+                      href={'/search?s=' + encodeURIComponent(colors[key].hex)}
+                      icon={<BiSearch />}
+                      aria-label="Search Hex"
+                      size="xs"
+                      color={isLight ? 'blackAlpha.800' : 'whiteAlpha.800'}
+                      colorScheme={isLight ? 'blackAlpha' : 'whiteAlpha'}
+                    />
+                    <IconButton
+                      icon={<BiCopy />}
+                      aria-label="Copy Hex"
+                      size="xs"
+                      color={isLight ? 'blackAlpha.800' : 'whiteAlpha.800'}
+                      colorScheme={isLight ? 'blackAlpha' : 'whiteAlpha'}
+                      onClick={() => handleCopy(colors[key].hex)}
+                    />
+                  </Flex>
                 </Flex>
-                <Flex justifyContent={'center'} alignItems="center" gap={2}>
-                  <IconButton
-                    as={Link}
-                    rel="nofollow"
-                    href={'/search?s=' + encodeURIComponent(colors[key].hex)}
-                    icon={<BiSearch />}
-                    aria-label="Search Hex"
-                    size="xs"
-                    boxShadow={'lg'}
-                  />
-                  <IconButton
-                    icon={<BiCopy />}
-                    aria-label="Copy Hex"
-                    size="xs"
-                    boxShadow={'lg'}
-                    onClick={() => handleCopy(colors[key].hex)}
-                  />
-                </Flex>
-              </Flex>
-            ))}
+              );
+            })}
           </Flex>
         )}
         {!isInvisible && (
