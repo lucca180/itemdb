@@ -364,6 +364,9 @@ async function updateOrAddDB(
       orderBy: { addedAt: 'desc' },
     });
 
+    // Skip processing if the previous price entry requires manual check
+    if (oldPriceRaw?.manual_check) return undefined;
+
     if (!oldPriceRaw) {
       const item = await prisma.items.findFirst({ where: { internal_id: priceData.item_iid } });
 
