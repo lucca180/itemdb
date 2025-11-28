@@ -262,13 +262,20 @@ export const EffectText = (props: EffectTextProps) => {
 };
 
 const PetImage = ({ pet, comma }: { pet: string; comma?: boolean }) => {
+  let img = `https://images.neopets.com/community/hub/calendar/events/${pet.toLowerCase()}.png`;
+  if (pet.toLowerCase() === 'varwolf') {
+    img = `/icons/varwolf.png`;
+  }
+  if (pet.toLowerCase() === 'vandagyre') {
+    img = `https://images.neopets.com/neoboards/smilies/vandagyre.gif`;
+  }
   return (
     <Box display={'inline'} textTransform={'capitalize'} whiteSpace={'pre'}>
       <b>{pet}</b>{' '}
       <Image
         verticalAlign={'sub'}
         display="inline"
-        src={`https://images.neopets.com/community/hub/calendar/events/${pet.toLowerCase()}.png`}
+        src={img}
         width={'18px'}
         height={'18px'}
         alt={pet}

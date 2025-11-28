@@ -98,9 +98,17 @@ const useRelatedLinks = (item: ItemData, rest: RelatedOthers) => {
   );
 
   if (speciesName) {
+    let img = `https://images.neopets.com/community/hub/calendar/events/${speciesName.toLowerCase()}.png`;
+    if (speciesName.toLowerCase() === 'varwolf') {
+      img = `/icons/varwolf.png`;
+    }
+    if (speciesName.toLowerCase() === 'vandagyre') {
+      img = `https://images.neopets.com/neoboards/smilies/vandagyre.gif`;
+    }
+
     relatedLinks.push({
       href: `/tools/rainbow-pool/${speciesName?.toLowerCase()}`,
-      imageUrl: `https://images.neopets.com/community/hub/calendar/events/${speciesName.toLowerCase()}.png`,
+      imageUrl: img,
       alt: speciesName,
       trackEvent: 'related-link',
       trackEventLabel: 'rainbow-pool',
