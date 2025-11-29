@@ -319,70 +319,22 @@ const createRestockHistory = async (dataList: RestockAuction[]) => {
 };
 
 const processLastSeen = async (lastSeen: { [key: string]: { [id: number]: Date } }) => {
-  const allIdsRaw = Object.values(lastSeen).map((x) => Object.keys(x));
+  const ops = [];
 
-  const allIds = new Set(allIdsRaw.flat());
-
-  const lastSeenItems = await prisma.lastSeen.findMany({
-    where: {
-      item_iid: {
-        in: Array.from(allIds).map((x) => Number(x)),
-      },
-    },
-  });
-
-  const createData: Prisma.LastSeenCreateManyInput[] = [];
-  const updatePromises: any[] = [];
-
-  Object.keys(lastSeen).map((type) =>
-    Object.entries(lastSeen[type]).map(([x, date]) => {
-      const lastSeen = lastSeenItems.find((y) => y.item_iid === Number(x) && y.type === type);
-      if (!lastSeen) {
-        createData.push({
-          item_iid: Number(x),
-          type: type,
-          lastSeen: date,
-        });
-
-        return;
-      }
-
-      if (lastSeen.lastSeen > date) return;
-
-      updatePromises.push(
-        prisma.lastSeen.update({
-          where: {
-            internal_id: lastSeen.internal_id,
-          },
-          data: {
-            lastSeen: date,
-          },
-        })
+  for (const type of Object.keys(lastSeen)) {
+    for (const [id, date] of Object.entries(lastSeen[type])) {
+      ops.push(
+        prisma.$executeRaw`
+          INSERT INTO lastSeen (item_iid, type, lastSeen)
+          VALUES (${Number(id)}, ${type}, ${date})
+          ON DUPLICATE KEY UPDATE lastSeen = GREATEST(lastSeen, VALUES(lastSeen))
+        `
       );
-    })
-  );
-
-  await prisma.lastSeen.createMany({
-    data: createData,
-    skipDuplicates: true,
-  });
-
-  for (const batch of chunk(updatePromises, 10)) {
-    let tries = 0;
-    while (tries < 3) {
-      try {
-        await Promise.all(batch);
-        break;
-      } catch (e: any) {
-        if (['P2002', 'P2034'].includes(e.code) && tries < 3) {
-          tries++;
-          await exponentialBackoff(tries);
-          continue;
-        }
-        console.error('Update Last Seen Error:', e);
-        throw e;
-      }
     }
+  }
+
+  for (const batch of chunk(ops, 20)) {
+    await Promise.all(batch);
   }
 };
 
