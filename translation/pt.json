@@ -490,7 +490,8 @@
     "refresh": "Atualizar",
     "album-item": "Item de Album",
     "canonical-petpet": "Petpet Canônico",
-    "paintable-petpet": "Petpet Pintável"
+    "paintable-petpet": "Petpet Pintável",
+    "itemdb-data-license": "Estes dados são licenciados sob <Link>CC BY-NC-SA 4.0</Link>"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",
@@ -796,7 +797,12 @@
     "highlights-title": "Destaques - Título",
     "highlights-title-help": "O título da sua seção de destaques",
     "highlights-official-fallback": "Itens originalmente obtidos exclusivamente aqui",
-    "neopets-lists": "Listas Neopets"
+    "neopets-lists": "Listas Neopets",
+    "download-csv": "Baixar CSV",
+    "export-as-csv": "Exportar como CSV",
+    "export-list": "Exportar Lista",
+    "export-list-text1": "Você pode baixar os dados dos itens desta lista em formato CSV e importar para seu aplicativo de planilha favorito.",
+    "export-list-text2": "Apenas os primeiros 2.000 itens serão incluídos na exportação."
   },
   "Restock": {
     "est-profit": "Lucro Est.",

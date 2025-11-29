@@ -15,8 +15,8 @@ import {
   Image as ChakraImage,
 } from '@chakra-ui/react';
 import { ColorInstance } from 'color';
-import { BiLinkExternal } from 'react-icons/bi';
-import { MdWarning } from 'react-icons/md';
+import { BiLinkExternal, BiSpreadsheet } from 'react-icons/bi';
+import { MdOutlineSimCardDownload, MdWarning } from 'react-icons/md';
 import NextLink from 'next/link';
 import { ItemData, ListItemInfo, UserList } from '../../types';
 import { useMemo } from 'react';
@@ -33,12 +33,15 @@ import { MAX_ITEMS_LIST_PRICE, ListPriceHistoryModalProps } from '../Modal/ListP
 import { AiOutlineAreaChart } from 'react-icons/ai';
 import Image from '../Utils/Image';
 import { ListBreadcrumb } from '../Breadcrumbs/ListBreadcrumb';
+import { BsFiletypeCsv } from 'react-icons/bs';
+import { LuFileSpreadsheet } from 'react-icons/lu';
 
 const Markdown = dynamic(() => import('../Utils/Markdown'));
 const ListPriceHistoryModal = dynamic<ListPriceHistoryModalProps>(
   () => import('../Modal/ListPriceHistoryModal')
 );
 const DynamicHistoryModal = dynamic(() => import('../Modal/DynamicListLogsModal'));
+const ExportListDataModal = dynamic(() => import('../Modal/ExportListModal'));
 
 type ListHeaderProps = {
   list: UserList;
@@ -57,7 +60,7 @@ const ListHeader = (props: ListHeaderProps) => {
   const { list, color, items, itemInfo, canEdit: isOwner, setOpenCreateModal, isLoading } = props;
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isOpenDynamic, onOpen: onOpenDynamic, onClose: onCloseDynamic } = useDisclosure();
-
+  const { isOpen: isOpenExport, onOpen: onOpenExport, onClose: onCloseExport } = useDisclosure();
   const { user } = useAuth();
   const rgb = color.rgb().array();
 
@@ -136,6 +139,9 @@ const ListHeader = (props: ListHeaderProps) => {
       )}
       {isOpenDynamic && (
         <DynamicHistoryModal list={list} isOpen={isOpenDynamic} onClose={onCloseDynamic} />
+      )}
+      {isOpenExport && (
+        <ExportListDataModal list={list} isOpen={isOpenExport} onClose={onCloseExport} />
       )}
       <Box
         position="absolute"
@@ -315,6 +321,24 @@ const ListHeader = (props: ListHeaderProps) => {
                     </span>
                   </Tooltip>
                 }
+              />
+            )}
+            {(list.official || isOwner) && (
+              <IconButton
+                ml={1}
+                aria-label="Export as CSV"
+                data-umami-event="export-list"
+                size="sm"
+                onClick={onOpenExport}
+                icon={
+                  <Tooltip hasArrow label={t('Lists.export-as-csv')} placement="top">
+                    <span>
+                      <LuFileSpreadsheet />
+                    </span>
+                  </Tooltip>
+                }
+                bg="blackAlpha.300"
+                borderRadius={'md'}
               />
             )}
           </Heading>
