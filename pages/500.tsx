@@ -31,7 +31,7 @@ export default Error500Page;
 export async function getStaticProps(context: any) {
   return {
     props: {
-      messages: await loadTranslation(context.locale, '500'),
+      messages: await import(`../translation/${context.locale}.json`).then((res) => res.default),
     },
   };
 }
