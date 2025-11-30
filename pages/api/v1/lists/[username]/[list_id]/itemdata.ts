@@ -1,10 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getList } from '.';
-import { CheckAuth } from '../../../../../../utils/googleCloud';
-import prisma from '../../../../../../utils/prisma';
-import { getManyItems } from '../../../items/many';
 import requestIp from 'request-ip';
 import { redis_setItemCount } from '@utils/redis';
+import { ListService } from '@services/ListService';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -19,7 +16,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const { username, list_id: list_id_or_slug, asObject } = req.query;
-  const isOfficial = username === 'official';
   let startTime = Date.now();
   if (
     !username ||
@@ -30,76 +26,30 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   )
     return res.status(400).json({ error: 'Bad Request' });
 
-  let user = null;
-
   try {
-    user = (await CheckAuth(req)).user;
-  } catch (e) {}
-  startTime = updateServerTime('auth-check', startTime, res);
+    startTime = updateServerTime('init list service', startTime, res);
+    const listService = await ListService.initReq(req);
 
-  try {
-    const list = await getList(username, list_id_or_slug, user, isOfficial);
-    if (!list) return res.status(404).json({ error: 'List not found' });
-    startTime = updateServerTime('list-check', startTime, res);
-    const isOwner = !!(user && user.id === list.owner.id);
-
-    const itemInfoRaw = await prisma.listItems.findMany({
-      where: { list_id: list.internal_id, isHidden: !isOwner ? false : undefined },
-      select: {
-        item_iid: true,
-      },
-    });
-
-    startTime = updateServerTime('get-list-item', startTime, res);
-
-    if (!itemInfoRaw.length) return res.status(200).json([]);
-
-    const itemData = await getManyItems({
-      id: itemInfoRaw.map((item) => item.item_iid.toString()),
+    const itemData = await listService.getListItems({
+      username,
+      list_id_or_slug,
+      asObject: asObject === 'true',
     });
 
     startTime = updateServerTime('get-item-data', startTime, res);
 
-    const itemArray = Object.values(itemData);
+    if (!itemData) return res.status(404).json({ error: 'List not found' });
 
     const ip = requestIp.getClientIp(req);
-    redis_setItemCount(ip, itemArray.length, req);
+    redis_setItemCount(ip, Object.keys(itemData).length, req);
 
     updateServerTime('set-redis', startTime, res);
 
-    if (asObject === 'true') return res.status(200).json(itemData);
-
-    return res.status(200).json(itemArray);
+    return res.status(200).json(itemData);
   } catch (e: any) {
     console.error(e);
     res.status(500).json({ error: 'Internal Server Error' });
   }
-};
-
-// this function does not check if user is owner of the list
-// only returns public data
-export const getListItems = async (list_id_or_slug: string, username: string) => {
-  const isOfficial = username === 'official';
-
-  const list = await getList(username, list_id_or_slug, null, isOfficial);
-  if (!list) return null;
-
-  const isOwner = false;
-
-  const itemInfoRaw = await prisma.listItems.findMany({
-    where: { list_id: list.internal_id, isHidden: !isOwner ? false : undefined },
-    select: {
-      item_iid: true,
-    },
-  });
-
-  if (!itemInfoRaw.length) return [];
-
-  const itemData = await getManyItems({
-    id: itemInfoRaw.map((item) => item.item_iid.toString()),
-  });
-
-  return Object.values(itemData);
 };
 
 const updateServerTime = (label: string, startTime: number, response: NextApiResponse) => {

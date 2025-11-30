@@ -1,12 +1,11 @@
 import Color from 'color';
-import { startOfDay } from 'date-fns';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Vibrant } from 'node-vibrant/node';
-import { ColorType, ListItemInfo, User, UserList } from '../../../../../types';
+import { ColorType, User, UserList } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 import { slugify } from '../../../../../utils/utils';
-import { ListItems, UserList as RawList, User as RawUser } from '@prisma/generated/client';
+import { ListService, rawToList } from '@services/ListService';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -28,22 +27,17 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   if (!username || typeof username !== 'string')
     return res.status(400).json({ error: 'Bad Request' });
 
+  const listService = await ListService.initReq(req);
+
   if (officialTag && username === 'official') {
-    const result = await getOfficialListsCat(officialTag as string, 3000);
+    const result = await listService.getOfficialListsCat(officialTag as string, 3000);
     return res.status(200).json(result);
   }
 
-  let user = null;
-
   try {
-    user = (await CheckAuth(req)).user;
-  } catch (e) {}
-
-  try {
-    const lists = await getUserLists(username, user);
+    const lists = await listService.getUserLists({ username });
 
     return res.status(200).json(lists);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     console.error(e);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -195,54 +189,6 @@ const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 };
 
-// ----------- //
-
-export const getUserLists = async (
-  username: string,
-  user?: User | null,
-  limit = -1,
-  officialTag?: string
-) => {
-  const isOfficial = username === 'official';
-
-  const listsRaw = await prisma.userList.findMany({
-    where: !isOfficial
-      ? {
-          visibility: user?.username === username ? undefined : 'public',
-          user: {
-            username: username,
-          },
-        }
-      : {
-          official: true,
-          official_tag: officialTag || undefined,
-        },
-    include: {
-      items: true,
-      user: true,
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-    take: limit > 0 ? limit : undefined,
-  });
-
-  if (!listsRaw || listsRaw.length === 0) return [];
-
-  const lists: UserList[] = listsRaw
-    .map((list) => rawToList(list, list.user))
-    .sort((a, b) =>
-      isOfficial
-        ? new Date(b.createdAt) < new Date(a.createdAt)
-          ? -1
-          : 1
-        : (a.order ?? 0) - (b.order ?? 0) ||
-          (new Date(b.updatedAt) < new Date(a.updatedAt) ? -1 : 1)
-    );
-
-  return lists;
-};
-
 // ---- COLORS ---- //
 
 type Palette = {
@@ -334,106 +280,4 @@ export const createListSlug = async (name: string, userId: string, isOfficial: b
   }
 
   return slug;
-};
-
-export const rawToList = (
-  listRaw: RawList & { items?: ListItems[] },
-  owner: User | RawUser,
-  includeItems = false
-): UserList => {
-  return {
-    internal_id: listRaw.internal_id,
-    name: listRaw.name,
-    description: listRaw.description,
-    coverURL: listRaw.cover_url,
-    colorHex: listRaw.colorHex,
-    purpose: listRaw.purpose,
-    official: listRaw.official,
-    visibility: listRaw.visibility,
-
-    owner: {
-      id: owner.id,
-      username: owner.username,
-      neopetsUser: (owner as RawUser)?.neo_user ?? (owner as User).neopetsUser,
-      lastSeen: startOfDay((owner as RawUser).last_login ?? (owner as User).lastLogin).toJSON(),
-    },
-
-    createdAt: listRaw.createdAt.toJSON(),
-    updatedAt: listRaw.updatedAt.toJSON(),
-
-    sortBy: listRaw.sortBy,
-    sortDir: listRaw.sortDir,
-    order: listRaw.order ?? 0,
-
-    dynamicType: listRaw.dynamicType,
-    lastSync: listRaw.lastSync?.toJSON() ?? null,
-    linkedListId: listRaw.linkedListId ?? null,
-    canBeLinked: listRaw.official || listRaw.canBeLinked,
-
-    officialTag: listRaw.official_tag ?? null,
-    userTag: listRaw.listUserTag ?? null,
-
-    itemCount: listRaw.items?.filter((x) => !x.isHidden).length ?? -1,
-
-    slug: listRaw.slug,
-    seriesType: listRaw.seriesType,
-    seriesStart: listRaw.seriesStart?.toJSON() ?? null,
-    seriesEnd: listRaw.seriesEnd?.toJSON() ?? null,
-
-    highlight: listRaw.highlight ?? null,
-    highlightText: listRaw.highlightText ?? null,
-
-    itemInfo: !includeItems
-      ? []
-      : listRaw.items?.map((item) => {
-          return {
-            internal_id: item.internal_id,
-            list_id: item.list_id,
-            item_iid: item.item_iid,
-            addedAt: item.addedAt.toJSON(),
-            updatedAt: item.updatedAt.toJSON(),
-            amount: item.amount,
-            capValue: item.capValue,
-            imported: item.imported,
-            order: item.order,
-            isHighlight: item.isHighlight,
-            isHidden: item.isHidden,
-            seriesStart: item.seriesStart?.toJSON() ?? null,
-            seriesEnd: item.seriesEnd?.toJSON() ?? null,
-          };
-        }),
-  };
-};
-
-export const rawToListItems = (items: ListItems[]): ListItemInfo[] => {
-  return items.map((item) => ({
-    internal_id: item.internal_id,
-    list_id: item.list_id,
-    item_iid: item.item_iid,
-    addedAt: item.addedAt.toJSON(),
-    updatedAt: item.updatedAt.toJSON(),
-    amount: item.amount,
-    capValue: item.capValue,
-    imported: item.imported,
-    order: item.order,
-    isHighlight: item.isHighlight,
-    isHidden: item.isHidden,
-    seriesStart: item.seriesStart?.toJSON() ?? null,
-    seriesEnd: item.seriesEnd?.toJSON() ?? null,
-  }));
-};
-
-export const getOfficialListsCat = async (tag: string, limit = 15) => {
-  const lists = await getUserLists('official', null, -1, tag);
-
-  tag = tag.toLowerCase();
-
-  const filteredLists = lists
-    .filter((list) => {
-      if (tag === 'uncategorized') return !list.officialTag;
-      return list.officialTag?.toLowerCase() === tag;
-    })
-    .sort((a, b) => a.name.localeCompare(b.name));
-
-  return filteredLists.splice(0, limit ?? 15);
 };
