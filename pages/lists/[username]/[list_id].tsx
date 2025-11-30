@@ -34,6 +34,7 @@ import Color from 'color';
 import { SelectItemsCheckbox } from '../../../components/Input/SelectItemsCheckbox';
 import { ItemActionModalProps } from '../../../components/Modal/ItemActionModal';
 import { GetServerSidePropsContext } from 'next';
+import { getList } from '../../api/v1/lists/[username]/[list_id]';
 
 import { CreateListModalProps } from '../../../components/Modal/CreateListModal';
 
