@@ -12,7 +12,6 @@ import HeaderCard from '../../../../components/Card/HeaderCard';
 import Layout from '../../../../components/Layout';
 import UserListCard from '../../../../components/UserLists/ListCard';
 import { UserList } from '../../../../types';
-import { getOfficialListsCat } from '../../../api/v1/lists/[username]';
 import { createTranslator, useTranslations } from 'next-intl';
 import useSWRImmutable from 'swr/immutable';
 import axios from 'axios';
@@ -21,6 +20,7 @@ import { ViewportList } from 'react-viewport-list';
 import { SearchList } from '../../../../components/Search/SearchLists';
 import { Breadcrumbs } from '../../../../components/Breadcrumbs/Breadcrumbs';
 import { loadTranslation } from '@utils/load-translation';
+import { ListService } from '@services/ListService';
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data as UserList[]);
 
@@ -198,7 +198,9 @@ export async function getServerSideProps(context: any) {
     };
   }
 
-  const lists = (await getOfficialListsCat(tag, 3000))
+  const listService = ListService.init();
+
+  const lists = (await listService.getOfficialListsCat(tag, 3000))
     .sort((a, b) => sortLists(a, b, listCategoriesData[category].featured))
     .splice(0, 15);
 

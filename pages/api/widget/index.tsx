@@ -6,7 +6,6 @@ import { getLatestPricedItems } from '../v1/prices';
 import { ItemData } from '../../../types';
 import { getTrendingItems } from '../v1/beta/trending';
 import { getNCMallItemsData } from '../v1/mall';
-import { getListItems } from '../v1/lists/[username]/[list_id]/itemdata';
 import { ListService } from '@services/ListService';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
