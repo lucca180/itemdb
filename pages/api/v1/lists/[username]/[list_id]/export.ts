@@ -1,7 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { AsyncParser } from '@json2csv/node';
+import { CheckAuth } from '@utils/googleCloud';
+import { getList } from '.';
+import prisma from '@utils/prisma';
+import { getManyItems } from '../../../items/many';
 import { sortListItems } from '@utils/utils';
-import { ListService } from '@services/ListService';
+import { rawToListItems } from '..';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -30,27 +34,25 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
   if (!username || !list_id_or_slug || Array.isArray(username) || Array.isArray(list_id_or_slug))
     return res.status(400).json({ error: 'Bad Request' });
 
-  const listService = await ListService.initReq(req);
-  const list = await listService.getList({
-    username,
-    listId: Number(list_id_or_slug),
-    isOfficial,
-  });
+  let user = null;
+
+  try {
+    user = (await CheckAuth(req)).user;
+  } catch (e) {}
+
+  const list = await getList(username, list_id_or_slug, user, isOfficial);
 
   if (!list) return res.status(404).json({ error: 'List not found' });
 
-  const itemInfoProm = listService.getListItemInfo({
-    list: list,
+  const itemInfoRaw = await prisma.listItems.findMany({
+    where: { list_id: list.internal_id },
   });
 
-  const itemDataProm = listService.getListItems({
-    list: list,
-    asObject: true,
+  const itemInfo = rawToListItems(itemInfoRaw);
+
+  const itemDataRaw = await getManyItems({
+    id: itemInfoRaw.map((item) => item.item_iid.toString()),
   });
-
-  const [itemInfo, itemDataRaw] = await Promise.all([itemInfoProm, itemDataProm]);
-
-  if (!itemInfo || !itemDataRaw) return res.status(404).json({ error: 'List not found' });
 
   const sortedItemInfo = itemInfo.sort((a, b) => {
     if (a.isHighlight && !b.isHighlight) return -1;

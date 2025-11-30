@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { expect, test, describe } from 'vitest';
-import { doSearch } from '../pages/api/v1/search';
+import { doSearch } from '../../pages/api/v1/search';
 import { SearchFilters } from '@types';
-import { RESTOCK_FILTER } from '../pages/restock/[id]';
+import { RESTOCK_FILTER } from '../../pages/restock/[id]';
 
 const itemdb = axios.create({
   baseURL: 'http://itemdb.com.br/api/v1/',

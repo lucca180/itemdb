@@ -51,10 +51,10 @@ import { defaultFilters } from '../../../utils/parseFilters';
 import { getFiltersDiff } from '../../search';
 import { AddListItemsModalProps } from '../../../components/Modal/AddListItemsModal';
 import { ItemList } from '../../../components/UserLists/ItemList';
+import { preloadListItems } from '../../api/v1/lists/[username]/[list_id]/items';
 import { getSimilarLists } from '../../api/v1/lists/[username]/[list_id]/similar';
 import { loadTranslation } from '@utils/load-translation';
 import { getListMatch } from '../../api/v1/lists/match/[...usernames]';
-import { ListService } from '@services/ListService';
 
 const CreateListModal = dynamic<CreateListModalProps>(
   () => import('../../../components/Modal/CreateListModal')
@@ -914,20 +914,19 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   if (!username || !list_id || Array.isArray(username) || Array.isArray(list_id))
     return { notFound: true };
 
-  const listService = await ListService.initReq(context.req as any);
+  let user = null;
 
-  const user = listService.user;
+  try {
+    const res = await CheckAuth((context.req ?? null) as any);
+    user = res?.user;
+  } catch (err) {}
 
   const isNum = /^\d+$/.test(list_id);
 
   const parsedId = !isNum ? undefined : parseInt(list_id as string);
   const slug = isNum ? undefined : list_id;
 
-  const list = await listService.getList({
-    username,
-    listId: parsedId,
-    listSlug: slug,
-  });
+  const list = await getList(username, (parsedId ?? slug)!, user, username === 'official');
 
   if (!list) return { notFound: true };
 
@@ -950,7 +949,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       },
     };
   }
-
   const isOwner = user && user.id === list.owner.id;
 
   const shouldGetMatches = !!list && !!user && list.purpose !== 'none' && !isOwner;
@@ -960,7 +958,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     list.purpose === 'trading' ? list.owner.username! : (user?.username ?? '');
 
   const [preloadData, similarLists, matches] = await Promise.all([
-    listService.preloadListItems({ list, limit: 30 }),
+    preloadListItems(list, 30),
     list.official ? getSimilarLists(list, 3) : [],
     shouldGetMatches
       ? (
@@ -971,15 +969,15 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       : [],
   ]);
 
-  const { itemMap, infoIds } = getSortedItemInfo(preloadData!.items, list, preloadData!.itemData);
+  const { itemMap, infoIds } = getSortedItemInfo(preloadData.items, list, preloadData.itemData);
 
   const props: ListPageProps = {
     list,
     preloadData: {
       itemMap,
       infoIds,
-      itemInfo: preloadData!.items,
-      items: preloadData!.itemData,
+      itemInfo: preloadData.items,
+      items: preloadData.itemData,
     },
     similarLists,
     matches,

@@ -30,6 +30,7 @@ import { ReactElement, useEffect, useMemo, useState } from 'react';
 import { ItemData, UserList } from '../../../types';
 import ItemCard from '../../../components/Items/ItemCard';
 import { useAuth } from '../../../utils/auth';
+import { getList } from '../../api/v1/lists/[username]/[list_id]';
 import { CreateLinkedListButton } from '../../../components/DynamicLists/CreateLinkedList';
 import { useRouter } from 'next/router';
 import DynamicIcon from '../../../public/icons/dynamic.png';
@@ -40,7 +41,6 @@ import { loadTranslation } from '@utils/load-translation';
 import { GetServerSidePropsContext } from 'next';
 import { getRawBody } from '../../api/v1/restock';
 import { dynamicListCan } from '@utils/utils';
-import { ListService } from '@services/ListService';
 
 type Props = {
   items?: { [index: number | string]: number };
@@ -117,15 +117,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     items = JSON.parse(parsed.itemDataJson ?? 'null');
   }
 
-  const listService = ListService.init();
-
-  const list = list_id
-    ? await listService.getList({
-        username: 'official',
-        listId: Number(list_id),
-        isOfficial: true,
-      })
-    : null;
+  const list = list_id ? await getList('official', Number(list_id), null, true) : null;
 
   return {
     props: {

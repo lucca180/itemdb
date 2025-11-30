@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../../../utils/prisma';
-import { rawToList } from '@services/ListService';
+import { getList } from '.';
+import { rawToList } from '..';
 import { UserList } from '../../../../../../types';
-import { ListService } from '@services/ListService';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -32,14 +32,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   )
     return res.status(400).json({ error: 'Bad Request' });
 
-  const listService = ListService.init();
-
-  const list = await listService.getList({
-    username: username as string,
-    list_id_or_slug: list_id_or_slug,
-    isOfficial,
-  });
-
+  const list = await getList(username, list_id_or_slug, null, isOfficial);
   if (!list) return res.status(404).json({ error: 'List not found' });
 
   const result = await getSimilarLists(list, limit);

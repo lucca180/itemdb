@@ -42,9 +42,6 @@
       ],
       "@translations/*": [
         "./translations/*"
-      ],
-      "@services/*": [
-        "./services/*"
       ]
     },
     "typeRoots": [

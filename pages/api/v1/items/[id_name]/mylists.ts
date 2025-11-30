@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { ObligatoryUserList } from '../../../../../types';
 import prisma from '../../../../../utils/prisma';
 import { CheckAuth } from '../../../../../utils/googleCloud';
-import { rawToList } from '@services/ListService';
+import { rawToList } from '../../lists/[username]';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {

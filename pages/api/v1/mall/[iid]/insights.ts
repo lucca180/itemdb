@@ -3,7 +3,7 @@ import { getItem } from '../../items/[id_name]';
 import prisma from '@utils/prisma';
 import { getManyItems } from '../../items/many';
 import { InsightsResponse } from '@types';
-import { rawToList } from '@services/ListService';
+import { rawToList } from '../../lists/[username]';
 import { OpenableItems } from '@prisma/generated/client';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {

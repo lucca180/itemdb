@@ -16,6 +16,7 @@ import { ApplyListModalProps } from '../../../components/Modal/OfficialListApply
 import UserListCard from '../../../components/UserLists/ListCard';
 import { UserList } from '../../../types';
 import { useAuth } from '../../../utils/auth';
+import { getOfficialListsCat, getUserLists } from '../../api/v1/lists/[username]';
 import dynamic from 'next/dynamic';
 import { createTranslator, useTranslations } from 'next-intl';
 import useSWRImmutable from 'swr/immutable';
@@ -28,7 +29,6 @@ import { Breadcrumbs } from '../../../components/Breadcrumbs/Breadcrumbs';
 import { loadTranslation } from '@utils/load-translation';
 import { GetServerSidePropsContext } from 'next';
 import { getTrendingLists } from '../../api/v1/beta/trending';
-import { ListService } from '@services/ListService';
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data as UserList[]);
 
@@ -267,14 +267,9 @@ export default OfficialListsPage;
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const category = context.query?.cat as string | undefined;
-  const listService = ListService.init();
+
   const [lists, trendingLists] = await Promise.all([
-    category
-      ? await listService.getOfficialListsCat(category, 15)
-      : await listService.getUserLists({
-          username: 'official',
-          limit: 15,
-        }),
+    category ? await getOfficialListsCat(category, 15) : await getUserLists('official', null, 15),
     getTrendingLists(9),
   ]);
 

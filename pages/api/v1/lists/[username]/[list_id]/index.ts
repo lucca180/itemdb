@@ -1,12 +1,12 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { createListSlug, getImagePalette } from '..';
-import { ListItemInfo } from '../../../../../../types';
+import { createListSlug, getImagePalette, rawToList } from '..';
+import { ListItemInfo, UserList, User } from '../../../../../../types';
 import { CheckAuth } from '../../../../../../utils/googleCloud';
 import prisma from '../../../../../../utils/prisma';
+import { syncDynamicList } from './dynamic';
 import { SeriesType } from '@prisma/generated/client';
 import { UTCDate } from '@date-fns/utc';
 import { slugify } from '@utils/utils';
-import { ListService } from '@services/ListService';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -30,15 +30,14 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   if (!username || !list_id_or_slug || Array.isArray(username) || Array.isArray(list_id_or_slug))
     return res.status(400).json({ error: 'Bad Request' });
 
+  let user = null;
+
   try {
-    const listService = await ListService.initReq(req);
+    user = (await CheckAuth(req)).user;
+  } catch (e) {}
 
-    const list = await listService.getList({
-      username: username,
-      list_id_or_slug: list_id_or_slug,
-      isOfficial: isOfficial,
-    });
-
+  try {
+    const list = await getList(username, list_id_or_slug, user, isOfficial);
     return res.status(200).json(list);
   } catch (e: any) {
     console.error(e);
@@ -66,7 +65,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     if (!list) return res.status(404).json({ error: 'List not found' });
 
     if (list.user_id !== user.id && !user.isAdmin)
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(404).json({ error: 'List not found' });
 
     const itemInfo = req.body.itemInfo as ListItemInfo[];
 
@@ -462,4 +461,67 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
     console.error(e);
     res.status(500).json({ error: 'Internal Server Error' });
   }
+};
+
+export const getList = async (
+  username: string,
+  list_id_or_slug: number | string,
+  userOrToken?: User | null | string,
+  isOfficial = false
+) => {
+  let list_id;
+  let slug;
+
+  if (typeof list_id_or_slug === 'string' && isNaN(Number(list_id_or_slug))) slug = list_id_or_slug;
+  else if (typeof list_id_or_slug === 'number' || !isNaN(Number(list_id_or_slug)))
+    list_id = Number(list_id_or_slug);
+  else throw new Error('Invalid list_id_or_slug');
+
+  const listRaw = await prisma.userList.findFirst({
+    where: {
+      internal_id: list_id,
+      slug: slug,
+      official: isOfficial || undefined,
+      user: {
+        username: isOfficial ? undefined : username,
+      },
+    },
+    include: {
+      items: true,
+      user: true,
+    },
+  });
+
+  let user = userOrToken as User | null;
+
+  try {
+    if (typeof userOrToken === 'string') {
+      user = (await CheckAuth(null, userOrToken)).user;
+    }
+  } catch (e) {}
+
+  if (
+    !listRaw ||
+    (!listRaw.official && listRaw.visibility === 'private' && listRaw.user_id !== user?.id)
+  )
+    return null;
+
+  if (listRaw.dynamicType) await syncDynamicList(listRaw.internal_id);
+
+  if (!listRaw.slug) {
+    const slug = await createListSlug(listRaw.name, listRaw.user_id, listRaw.official);
+    await prisma.userList.update({
+      where: {
+        internal_id: listRaw.internal_id,
+      },
+      data: {
+        slug: slug,
+      },
+    });
+
+    listRaw.slug = slug;
+  }
+
+  const list: UserList = rawToList(listRaw, listRaw.user);
+  return list;
 };

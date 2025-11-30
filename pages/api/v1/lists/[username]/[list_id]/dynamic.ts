@@ -5,7 +5,7 @@ import prisma from '../../../../../../utils/prisma';
 import { doSearch } from '../../../search';
 import { Prisma } from '@prisma/generated/client';
 import { isSameHour } from 'date-fns';
-import { ListService } from '@services/ListService';
+import { getList } from '.';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   // return res.status(405).json({ error: 'Method not allowed' });
@@ -31,15 +31,14 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   if (!username || !list_id_or_slug || Array.isArray(username) || Array.isArray(list_id_or_slug))
     return res.status(400).json({ error: 'Bad Request' });
 
-  const listService = await ListService.initReq(req);
-  const list = await listService.getList({
-    username,
-    list_id_or_slug,
-    isOfficial,
-  });
-  if (!list) return res.status(404).json({ error: 'List not found' });
+  let user = null;
 
-  const user = listService.user;
+  try {
+    user = (await CheckAuth(req)).user;
+  } catch (e) {}
+
+  const list = await getList(username, list_id_or_slug, user, isOfficial);
+  if (!list) return res.status(404).json({ error: 'List not found' });
 
   const canShow = isOfficial || list.owner.username === user?.username;
   if (!canShow) return res.status(403).json({ error: 'Unauthorized' });
