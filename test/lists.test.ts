@@ -11,27 +11,29 @@ const testList = {
 const privateList = 651;
 
 describe.concurrent('List Service tests', () => {
-  test("Get user's list as guest", async () => {
-    const listService = ListService.init();
-    const lists = await listService.getUserLists({ username: 'lucca' });
+  describe.concurrent('Get User Lists tests', () => {
+    test("Get user's list as guest", async () => {
+      const listService = ListService.init();
+      const lists = await listService.getUserLists({ username: 'lucca' });
 
-    const hasHidden = lists.some((l) => l.visibility !== 'public');
+      const hasHidden = lists.some((l) => l.visibility !== 'public');
 
-    expect(lists.length).toBeGreaterThan(0);
-    expect(hasHidden).toBe(false);
-  });
+      expect(lists.length).toBeGreaterThan(0);
+      expect(hasHidden).toBe(false);
+    });
 
-  test("Get user's list as owner", async () => {
-    const listService = ListService.initUser({
-      id: 'Ty0G4IOIm4dr3IYJpMx8bIFMs433',
-      username: 'lucca',
-    } as any);
-    const lists = await listService.getUserLists({ username: 'lucca' });
+    test("Get user's list as owner", async () => {
+      const listService = ListService.initUser({
+        id: 'Ty0G4IOIm4dr3IYJpMx8bIFMs433',
+        username: 'lucca',
+      } as any);
+      const lists = await listService.getUserLists({ username: 'lucca' });
 
-    const hasHidden = lists.some((l) => l.visibility !== 'public');
+      const hasHidden = lists.some((l) => l.visibility !== 'public');
 
-    expect(lists.length).toBeGreaterThan(0);
-    expect(hasHidden).toBe(true);
+      expect(lists.length).toBeGreaterThan(0);
+      expect(hasHidden).toBe(true);
+    });
   });
 
   describe.concurrent('Valid List as Guest tests', () => {
