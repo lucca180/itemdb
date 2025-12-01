@@ -9,6 +9,7 @@ import { startOfDay } from 'date-fns';
 import { doSearch } from '../pages/api/v1/search';
 import { sortListItems } from '@utils/utils';
 import { getManyItems } from '../pages/api/v1/items/many';
+import { defaultFilters } from '@utils/parseFilters';
 
 export class ListService {
   user: User | null = null;
@@ -184,7 +185,9 @@ export class ListService {
 
     const isOwner = !!(this.user && this.user.id === list.owner.id);
 
-    const queryRes = await doSearch('', undefined, false, list.internal_id, isOwner);
+    const filters = { ...defaultFilters, limit: 100000 };
+
+    const queryRes = await doSearch('', filters, false, list.internal_id, isOwner);
 
     if (!params.asObject) return queryRes.content;
 
