@@ -1,13 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getList } from '.';
-import { CheckAuth } from '../../../../../../utils/googleCloud';
 import qs from 'qs';
-import { doSearch } from '../../../search';
-import prisma from '../../../../../../utils/prisma';
-import { ItemData, UserList } from '../../../../../../types';
-import { rawToListItems } from '..';
-import { getManyItems } from '../../../items/many';
-import { sortListItems } from '../../../../../../utils/utils';
+import { ListService } from '@services/ListService';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -22,7 +15,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const { username, list_id: list_id_or_slug } = req.query;
-  const isOfficial = username === 'official';
 
   if (
     !username ||
@@ -41,74 +33,21 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   reqQuery.page = 1;
   reqQuery.limit = 10000;
 
-  let user = null;
-
   try {
-    user = (await CheckAuth(req)).user;
-  } catch (e) {}
+    const listService = await ListService.initReq(req);
 
-  try {
-    const list = await getList(username, list_id_or_slug, user, isOfficial);
-    if (!list) return res.status(404).json({ error: 'List not found' });
-
-    const itemInfoRaw = await prisma.listItems.findMany({
-      where: { list_id: list.internal_id },
+    const result = await listService.getListItemInfo({
+      username,
+      list_id_or_slug,
+      query: isQueryEmpty ? undefined : query,
+      searchFilters: isQueryEmpty ? undefined : (reqQuery as any),
     });
 
-    const itemInfo = rawToListItems(itemInfoRaw);
-
-    if (isQueryEmpty) {
-      const result = itemInfo.filter(
-        (item) => !item.isHidden || (user && user.id === list.owner.id)
-      );
-      return res.status(200).json(result);
-    }
-
-    const isOwner = !!(user && user.id === list.owner.id);
-
-    const queryRes = await doSearch(query, reqQuery, false, list.internal_id, isOwner);
-
-    const itemIDs = new Set(queryRes.content.map((item) => item.internal_id));
-
-    const result = itemInfo.filter(
-      (item) => itemIDs.has(item.item_iid) && (!item.isHidden || isOwner)
-    );
+    if (!result) return res.status(404).json({ error: 'List not found' });
 
     return res.status(200).json(result);
   } catch (e: any) {
     console.error(e);
     res.status(500).json({ error: 'Internal Server Error' });
   }
-};
-
-/**
- * This assumes you already verified the user is the owner of the list
- *
- * It does not return hidden items anyways...
- **/
-export const preloadListItems = async (list: UserList, limit = 30) => {
-  const itemInfoRaw = await prisma.listItems.findMany({
-    where: { list_id: list.internal_id },
-  });
-
-  const itemInfo = rawToListItems(itemInfoRaw);
-
-  // we're preloading so hidden items don't show in the first load
-  const result = itemInfo.filter((item) => !item.isHidden || !item);
-  const itemData = await getManyItems({ id: result.map((item) => item.item_iid.toString()) });
-
-  const sortedItemInfo = result.sort((a, b) => {
-    if (a.isHighlight && !b.isHighlight) return -1;
-    if (!a.isHighlight && b.isHighlight) return 1;
-    return sortListItems(a, b, list.sortBy, list.sortDir, itemData);
-  });
-
-  const finalResult = sortedItemInfo.splice(0, limit);
-
-  const finalItemData: { [id: string]: ItemData } = {};
-  finalResult.forEach((item) => {
-    finalItemData[item.item_iid] = itemData[item.item_iid];
-  });
-
-  return { items: finalResult, itemData: finalItemData };
 };

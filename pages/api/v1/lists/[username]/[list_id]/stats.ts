@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getList } from '.';
-import { CheckAuth } from '../../../../../../utils/googleCloud';
 import { getSearchStats } from '../../../search/stats';
+import { ListService } from '@services/ListService';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -27,14 +26,14 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   )
     return res.status(400).json({ error: 'Bad Request' });
 
-  let user = null;
-
   try {
-    user = (await CheckAuth(req)).user;
-  } catch (e) {}
-
-  try {
-    const list = await getList(username, list_id_or_slug, user, isOfficial);
+    const listService = await ListService.initReq(req);
+    const user = listService.user;
+    const list = await listService.getList({
+      username,
+      list_id_or_slug,
+      isOfficial,
+    });
     if (!list) return res.status(404).json({ error: 'List not found' });
 
     const isOwner = !!(user && user.id === list.owner.id);

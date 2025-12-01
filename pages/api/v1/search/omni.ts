@@ -6,7 +6,7 @@ import prisma from '../../../../utils/prisma';
 import { UserList } from '../../../../types';
 import Fuse from 'fuse.js';
 import { restockShopInfo } from '../../../../utils/utils';
-import { rawToList } from '../lists/[username]';
+import { rawToList } from '@services/ListService';
 import { UserList as RawList, User as RawUser } from '@prisma/generated/client';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {

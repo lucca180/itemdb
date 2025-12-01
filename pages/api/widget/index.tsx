@@ -6,7 +6,7 @@ import { getLatestPricedItems } from '../v1/prices';
 import { ItemData } from '../../../types';
 import { getTrendingItems } from '../v1/beta/trending';
 import { getNCMallItemsData } from '../v1/mall';
-import { getListItems } from '../v1/lists/[username]/[list_id]/itemdata';
+import { ListService } from '@services/ListService';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const widgetType = (req.query.type as string) || 'latest-items';
@@ -41,7 +41,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const list_owner = req.query.list_owner as string;
     if (!list_id || !list_owner) return res.status(400).send('Required fields missing');
 
-    const listItems = await getListItems(list_id, list_owner);
+    const listService = ListService.initUser(null);
+
+    const listItems = await listService.getListItems({ listId: list_id, username: list_owner });
 
     if (!listItems) return res.status(404).send('List not found');
 

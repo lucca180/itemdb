@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { getManyItems } from '../items/many';
 import prisma from '../../../../utils/prisma';
 import { UserList } from '../../../../types';
-import { rawToList } from '../lists/[username]';
+import { rawToList } from '@services/ListService';
 import { getClient } from '@umami/api-client';
 import { restockShopInfo, slugify } from '../../../../utils/utils';
 
