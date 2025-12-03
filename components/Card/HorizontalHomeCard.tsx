@@ -232,3 +232,50 @@ export const HalloweenHomeCard = ({ children }: { children: React.ReactNode }) =
     </HorizontalHomeCard>
   );
 };
+
+export const WinterStarlightCard = ({ children }: { children: React.ReactNode }) => {
+  const t = useTranslations();
+  return (
+    <HorizontalHomeCard
+      color="#54ACB4"
+      h={50}
+      w={50}
+      image="https://images.neopets.com/themes/h5/basic/images/advent-icon.png"
+      viewAllLink="/lists/official?cat=Winter%20Starlight%202025"
+      title={'Winter Starlight Celebration'}
+      isSmall
+      utm_content="winter-lists"
+      viewAllText={t('HomePage.more-guides-and-tools')}
+      sx={{
+        position: 'relative',
+        isolation: 'isolate',
+        overflow: 'hidden',
+        img: {
+          filter: 'drop-shadow(0 0 5px #b45454ff)',
+        },
+        h2: {
+          textShadow: '0 0 10px #b45454ff',
+        },
+        '::before': {
+          content: "''",
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundImage: "url('https://portal.neopets.com/images/lands/terror_mountain.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: 0.5,
+          filter: 'blur(10px) brightness(0.5)',
+          zIndex: -1,
+        },
+      }}
+      innerStyle={{
+        border: '2px solid #54b491ff',
+      }}
+    >
+      {children}
+    </HorizontalHomeCard>
+  );
+};

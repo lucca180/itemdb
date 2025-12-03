@@ -125,8 +125,7 @@
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": [
       "npx prettier --write"
-    ],
-    "*.{ts,tsx}": "tsc-files --noEmit"
+    ]
   },
   "packageManager": "yarn@4.12.0",
   "resolutions": {

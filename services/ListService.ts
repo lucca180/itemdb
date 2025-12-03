@@ -9,6 +9,7 @@ import { startOfDay } from 'date-fns';
 import { doSearch } from '../pages/api/v1/search';
 import { sortListItems } from '@utils/utils';
 import { getManyItems } from '../pages/api/v1/items/many';
+import { defaultFilters } from '@utils/parseFilters';
 
 export class ListService {
   user: User | null = null;
@@ -18,14 +19,23 @@ export class ListService {
   }
 
   static async initReq(request: NextApiRequest) {
-    const user = (await CheckAuth(request)).user;
-    return ListService.initUser(user);
+    try {
+      const user = (await CheckAuth(request)).user;
+      return ListService.initUser(user);
+    } catch (e) {
+      return ListService.initUser(null);
+    }
   }
 
   static async initUserOrToken(user_or_token: User | string | null) {
     let user = user_or_token as User | null;
-    if (typeof user_or_token === 'string') {
-      user = (await CheckAuth(null, user_or_token)).user;
+
+    try {
+      if (typeof user_or_token === 'string') {
+        user = (await CheckAuth(null, user_or_token)).user;
+      }
+    } catch (e) {
+      user = null;
     }
 
     return ListService.initUser(user);
@@ -54,7 +64,7 @@ export class ListService {
 
     const listRaw = await prisma.userList.findFirst({
       where: {
-        internal_id: Number(listId),
+        internal_id: listId ? Number(listId) : undefined,
         slug: listSlug,
         official: isOfficial || undefined,
         user: {
@@ -176,7 +186,9 @@ export class ListService {
 
     const isOwner = !!(this.user && this.user.id === list.owner.id);
 
-    const queryRes = await doSearch('', undefined, false, list.internal_id, isOwner);
+    const filters = { ...defaultFilters, limit: 100000 };
+
+    const queryRes = await doSearch('', filters, false, list.internal_id, isOwner);
 
     if (!params.asObject) return queryRes.content;
 
