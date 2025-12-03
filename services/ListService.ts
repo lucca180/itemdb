@@ -38,7 +38,7 @@ export class ListService {
   }
 
   async getList(params: GetListParams) {
-    let { listId, listSlug, isOfficial, username, list_id_or_slug } = params;
+    let { listId, listSlug, isOfficial, username, list_id_or_slug, skipSync } = params;
 
     isOfficial = isOfficial || username === 'official';
 
@@ -69,7 +69,7 @@ export class ListService {
 
     if (!listRaw || !ListService.canSeeList(listRaw, this.user)) return null;
 
-    if (listRaw.dynamicType) await syncDynamicList(listRaw.internal_id);
+    if (listRaw.dynamicType && !skipSync) await syncDynamicList(listRaw.internal_id);
 
     if (!listRaw.slug) {
       const slug = await createListSlug(listRaw.name, listRaw.user_id, listRaw.official);
@@ -170,7 +170,8 @@ export class ListService {
   ): Promise<Record<string, ItemData> | ItemData[] | null>;
 
   async getListItems(params: GetListItemsParams & { asObject?: boolean }) {
-    const list = params.list ?? (await this.getList(params as GetListParams));
+    const list =
+      params.list ?? (await this.getList({ ...params, skipSync: true } as GetListParams));
     if (!list) return null;
 
     const isOwner = !!(this.user && this.user.id === list.owner.id);
@@ -189,7 +190,8 @@ export class ListService {
 
   async getListItemInfo(params: GetListItemParams) {
     const { query, searchFilters } = params;
-    const list = params.list ?? (await this.getList(params as GetListParams));
+    const list =
+      params.list ?? (await this.getList({ ...params, skipSync: true } as GetListParams));
     if (!list) return null;
     const isOwner = !!(this.user && this.user.id === list.owner.id);
 
@@ -223,7 +225,8 @@ export class ListService {
   preloadListItems = async (params: GetListItemsParams & { limit?: number }) => {
     const { limit = 30 } = params;
 
-    const list = params.list ?? (await this.getList(params as GetListParams));
+    const list =
+      params.list ?? (await this.getList({ ...params, skipSync: true } as GetListParams));
     if (!list) return null;
 
     const itemInfoRaw = await prisma.listItems.findMany({
@@ -269,6 +272,7 @@ type GetListParams = {
   listSlug?: string;
   list_id_or_slug?: string | number;
   isOfficial?: boolean;
+  skipSync?: boolean;
 };
 
 type GetUserListsParams = {
