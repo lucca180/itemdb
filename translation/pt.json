@@ -802,7 +802,8 @@
     "export-as-csv": "Exportar como CSV",
     "export-list": "Exportar Lista",
     "export-list-text1": "Você pode baixar os dados dos itens desta lista em formato CSV e importar para seu aplicativo de planilha favorito.",
-    "export-list-text2": "Apenas os primeiros 2.000 itens serão incluídos na exportação."
+    "export-list-text2": "Apenas os primeiros 2.000 itens serão incluídos na exportação.",
+    "dynamic-disclaimer": "Esta é uma Lista Dinâmica <b>{x}</b>. Algumas limitações podem se aplicar - <Link>saiba mais</Link>."
   },
   "Restock": {
     "est-profit": "Lucro Est.",

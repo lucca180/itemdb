@@ -17,6 +17,7 @@ import {
   IconButton,
   useDisclosure,
   Link,
+  Tooltip,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -661,25 +662,29 @@ const ListPage = (props: ListPageProps) => {
                   onClick={handleSelectCheckbox}
                 />
               </Box>
-              <Box>
-                <Button
-                  isDisabled={!itemSelect.length || !dynamicListCan(list, 'remove')}
-                  colorScheme="red"
-                  variant="outline"
-                  onClick={() => setSelectionAction('delete')}
-                >
-                  {t('Lists.delete-items')}
-                </Button>
-              </Box>
-              <Box>
-                <Button
-                  isDisabled={!itemSelect.length || !dynamicListCan(list, 'remove')}
-                  variant="outline"
-                  onClick={() => setSelectionAction('move')}
-                >
-                  {t('Lists.move-items')}
-                </Button>
-              </Box>
+              {dynamicListCan(list, 'remove') && (
+                <>
+                  <Box>
+                    <Button
+                      isDisabled={!itemSelect.length}
+                      colorScheme="red"
+                      variant="outline"
+                      onClick={() => setSelectionAction('delete')}
+                    >
+                      {t('Lists.delete-items')}
+                    </Button>
+                  </Box>
+                  <Box>
+                    <Button
+                      isDisabled={!itemSelect.length}
+                      variant="outline"
+                      onClick={() => setSelectionAction('move')}
+                    >
+                      {t('Lists.move-items')}
+                    </Button>
+                  </Box>
+                </>
+              )}
               <Box>
                 <Button
                   isDisabled={!itemSelect.length}

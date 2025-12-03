@@ -15,8 +15,8 @@ import {
   Image as ChakraImage,
 } from '@chakra-ui/react';
 import { ColorInstance } from 'color';
-import { BiLinkExternal, BiSpreadsheet } from 'react-icons/bi';
-import { MdOutlineSimCardDownload, MdWarning } from 'react-icons/md';
+import { BiLinkExternal } from 'react-icons/bi';
+import { MdWarning } from 'react-icons/md';
 import NextLink from 'next/link';
 import { ItemData, ListItemInfo, UserList } from '../../types';
 import { useMemo } from 'react';
@@ -33,7 +33,6 @@ import { MAX_ITEMS_LIST_PRICE, ListPriceHistoryModalProps } from '../Modal/ListP
 import { AiOutlineAreaChart } from 'react-icons/ai';
 import Image from '../Utils/Image';
 import { ListBreadcrumb } from '../Breadcrumbs/ListBreadcrumb';
-import { BsFiletypeCsv } from 'react-icons/bs';
 import { LuFileSpreadsheet } from 'react-icons/lu';
 
 const Markdown = dynamic(() => import('../Utils/Markdown'));
@@ -281,20 +280,19 @@ const ListHeader = (props: ListHeaderProps) => {
             display="inline-flex"
             alignItems={'center'}
             justifyContent={{ base: 'center', md: 'flex-start' }}
-            gap={1}
+            gap={2}
           >
             {list.name}
 
             {!!list.dynamicType && (
               <IconButton
                 ml={1}
-                colorScheme={color.isLight() ? 'blackAlpha' : 'gray'}
                 aria-label="Dynamic List History"
                 data-umami-event="dynamic-list-history"
                 size="sm"
                 onClick={list.official || isOwner ? onOpenDynamic : undefined}
                 icon={
-                  <Tooltip hasArrow label={`Dynamic List`} placement="top">
+                  <Tooltip hasArrow label={t('DynamicList.dynamic-list-history')} placement="top">
                     <NextImage
                       src={DynamicIcon}
                       alt="lightning bolt"
@@ -325,7 +323,6 @@ const ListHeader = (props: ListHeaderProps) => {
             )}
             {(list.official || isOwner) && (
               <IconButton
-                ml={1}
                 aria-label="Export as CSV"
                 data-umami-event="export-list"
                 size="sm"

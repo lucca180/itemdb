@@ -15,6 +15,7 @@ import {
   AccordionPanel,
   Box,
   Flex,
+  Link,
 } from '@chakra-ui/react';
 import axios, { AxiosRequestConfig } from 'axios';
 import { useEffect, useState } from 'react';
@@ -77,6 +78,17 @@ const DynamicListLogsModal = (props: DynamicListLogsModalProps) => {
         <ModalHeader>{t('DynamicList.dynamic-list-history')}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
+          <Text fontSize="xs" textAlign={'center'} mb={4} color="gray.400">
+            {t.rich('Lists.dynamic-disclaimer', {
+              x: list.dynamicType || '',
+              b: (chunk) => <b>{chunk}</b>,
+              Link: (chunk) => (
+                <Link href="/articles/checklists-and-dynamic-lists" isExternal color="gray.300">
+                  {chunk}
+                </Link>
+              ),
+            })}
+          </Text>
           {loading && (
             <Center>
               <Spinner />

@@ -3,6 +3,7 @@ import ItemCard from '../Items/ItemCard';
 import { ItemData, ListItemInfo, UserList } from '../../types';
 import { VStack, Box } from '@chakra-ui/react';
 import dynamic from 'next/dynamic';
+import { dynamicListCan } from '@utils/utils';
 
 const EditableFields = dynamic(() => import('./EditableFields'));
 
@@ -89,7 +90,7 @@ export function EditableItemCard(props: EditableItemCardProps) {
           sortType={sortType}
           disableLink={editMode}
           onSelect={() => onClick(null, true)}
-          onListAction={props.onListAction}
+          onListAction={dynamicListCan(props.list, 'remove') ? props.onListAction : undefined}
           selected={isSelected}
           disablePrefetch
           capValue={isTrading ? (itemInfo?.capValue ?? undefined) : undefined}

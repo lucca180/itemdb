@@ -656,7 +656,8 @@
     "export-list": "Export List",
     "export-list-text1": "You can download this list item data in CSV format and import to your favorite spreadsheet app.",
     "download-csv": "Download CSV",
-    "export-list-text2": "Please note that only the first 2,000 items will be included in the export."
+    "export-list-text2": "Please note that only the first 2,000 items will be included in the export.",
+    "dynamic-disclaimer": "This is a <b>{x}</b> Dynamic List. Some limitations may apply - <Link>learn more</Link>."
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",
