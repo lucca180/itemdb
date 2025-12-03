@@ -633,7 +633,7 @@ const ListPage = (props: ListPageProps) => {
         >
           {!isEdit && (
             <HStack>
-              {canEdit && (
+              {canEdit && dynamicListCan(list, 'add') && (
                 <Button variant="solid" onClick={onOpenInsert} isLoading={isLoading}>
                   {t('Lists.add-items')}
                 </Button>
