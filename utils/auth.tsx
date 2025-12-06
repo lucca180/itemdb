@@ -74,11 +74,13 @@ export function AuthProvider({ children }: any) {
   useEffect(() => {
     const handle = setInterval(
       async () => {
-        getAuth().then(async (res) => {
-          const { auth } = res;
-          const user = auth.currentUser;
-          if (user) await user.getIdToken(true);
-        });
+        getAuth()
+          .then(async (res) => {
+            const { auth } = res;
+            const user = auth.currentUser;
+            if (user) await user.getIdToken(true);
+          })
+          .catch(() => {});
       },
       10 * 60 * 1000
     );

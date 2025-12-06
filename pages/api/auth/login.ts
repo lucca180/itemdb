@@ -13,35 +13,33 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
   try {
-    const authRes = await CheckAuth(req);
+    const authRes = await CheckAuth(req, undefined, undefined, true);
     const decodedToken = authRes.decodedToken;
-    const user = authRes.user;
-    let dbUser;
+
     if (!decodedToken.email) return res.status(401).json({ error: 'Unauthorized' });
 
-    if (!user) {
-      dbUser = await prisma.user.create({
-        data: {
-          id: decodedToken.uid,
-          email: decodedToken.email,
-          last_ip: requestIp.getClientIp(req),
-          last_login: new Date(),
-        },
-      });
-    } else
-      dbUser = await prisma.user.update({
-        where: { id: decodedToken.uid },
-        data: {
-          last_ip: requestIp.getClientIp(req),
-          last_login: new Date(),
-        },
-      });
+    const ip = requestIp.getClientIp(req) || '';
+
+    const dbUser = await prisma.user.upsert({
+      where: { id: decodedToken.uid },
+      update: {
+        last_ip: ip,
+        last_login: new Date(),
+      },
+      create: {
+        id: decodedToken.uid,
+        email: decodedToken.email,
+        last_ip: ip,
+        last_login: new Date(),
+      },
+    });
 
     if (!dbUser) return res.status(401).json({ error: 'Unauthorized' });
 
     const token = req.headers.authorization?.split('Bearer ')[1];
+    const session = req.cookies.session;
     const cookies = [];
-    if (token) {
+    if (token && !session) {
       const sessionCookie = await Auth.createSessionCookie(token, { expiresIn: expiresIn });
       res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
       cookies.push(
@@ -49,7 +47,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       );
     }
 
-    if (dbUser.pref_lang) {
+    if (dbUser.pref_lang && dbUser.pref_lang !== req.cookies.NEXT_LOCALE) {
       cookies.push(
         `NEXT_LOCALE=${dbUser.pref_lang};Path=/;Max-Age=2147483647;SameSite=None;Secure;`
       );
