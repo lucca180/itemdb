@@ -100,7 +100,7 @@ export class ListService {
   }
 
   async getUserLists(params: GetUserListsParams) {
-    const { username, limit = -1, officialTag } = params;
+    const { username, limit = -1, officialTag, includeItems } = params;
     const isOfficial = username === 'official';
 
     const listsRaw = await prisma.userList.findMany({
@@ -128,7 +128,7 @@ export class ListService {
     if (!listsRaw || listsRaw.length === 0) return [];
 
     const lists: UserList[] = listsRaw
-      .map((list) => rawToList(list, list.user))
+      .map((list) => rawToList(list, list.user, includeItems))
       .sort((a, b) =>
         isOfficial
           ? new Date(b.createdAt) < new Date(a.createdAt)
@@ -266,6 +266,36 @@ export class ListService {
 
     return { items: finalResult, itemData: finalItemData };
   };
+
+  async getListCost(params: GetListCostParams) {
+    if (!params.list_ids || params.list_ids.length === 0) return {};
+
+    const listItems = await prisma.listItems.findMany({
+      where: {
+        list_id: { in: params.list_ids },
+      },
+      select: {
+        list_id: true,
+        item_iid: true,
+        amount: true,
+      },
+    });
+
+    const itemIds = Array.from(new Set(listItems.map((li) => li.item_iid)));
+    const itemsData = await getManyItems({ id: itemIds.map((id) => id.toString()) });
+
+    const listCosts: { [list_id: number]: number } = {};
+    listItems.forEach((li) => {
+      const itemData = itemsData[li.item_iid];
+      if (!itemData) return;
+      const itemCost = (itemData.price.value ?? 0) * li.amount;
+
+      if (!listCosts[li.list_id]) listCosts[li.list_id] = 0;
+      listCosts[li.list_id] += itemCost;
+    });
+
+    return listCosts;
+  }
 }
 
 type GetListItemsParams = Partial<GetListParams> & {
@@ -291,6 +321,11 @@ type GetUserListsParams = {
   username: string;
   limit?: number;
   officialTag?: string;
+  includeItems?: boolean;
+};
+
+type GetListCostParams = {
+  list_ids?: number[];
 };
 
 const toListIdAndSlug = (list_id_or_slug: string | number) => {
