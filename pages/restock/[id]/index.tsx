@@ -239,7 +239,7 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
         </Text>
         <Text as="h3">
           <Link
-            href={`/search?s=&category[]=${shopIDToCategory[shopInfo.id]}&rarity[]=1&rarity[]=99`}
+            href={`/search?s=&category[]=${shopIDToCategory[shopInfo.id]}&rarity[]=1&rarity[]=100`}
           >
             {t('Restock.view-all-items-from-this-shop')}
             <Image

@@ -951,7 +951,7 @@
     "discounted-price": "Dia de Desconto",
     "random-event-price": "Preço Evento Aleatório",
     "trending-shops": "Lojas Populares",
-    "shop-info-category": "<b>{name}</b> restoca itens r1 - r99 da categoria <Link>{category}</Link>",
+    "shop-info-category": "<b>{name}</b> restoca itens da categoria <Link>{category}</Link>",
     "about-this-shop": "Sobre Essa Loja",
     "ats-total-items": "<b>{totalItems} itens diferentes</b> podem estocar nessa loja, dos quais <b>{profitableCount}</b> {profitableCount, plural, =1 {é <b>lucrativo</b>} other {são <b>lucrativos</b>}}",
     "ats-avg-profit": "O lucro médio para os itens nesta loja é <b>{x} NP</b>",
