@@ -111,6 +111,7 @@ const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
     },
     orderBy: { addedAt: 'desc' },
     include: { items: true },
+    take: 50,
   });
 
   if (similarList.length === 0) return null;
