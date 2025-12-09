@@ -178,7 +178,12 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       instantBuy: lot.instantBuy || null,
       createdAt: lot.createdAt ? new Date(lot.createdAt) : null,
       items: {
-        create: [...itemList],
+        create: itemList.map((item) => ({
+          item_iid: item.item_iid,
+          order: item.order,
+          amount: item.amount || 1,
+          price: item.price || null,
+        })),
       },
     };
 

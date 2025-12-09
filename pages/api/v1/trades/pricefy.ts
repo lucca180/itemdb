@@ -87,6 +87,7 @@ const getPopularItem = async (skipList?: string[]) => {
   const rawQuery = (await prisma.$queryRaw`
     select name, count(name) as count, max(t.addedAt) as max_addedAt FROM trades t 
     left join tradeitems ti2 on t.trade_id = ti2.trade_id
+    left join items i2 on ti2.item_iid = i2.internal_id
     where processed = 0 and EXISTS (
         SELECT 1 
         FROM trades t2
