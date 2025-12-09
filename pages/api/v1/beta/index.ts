@@ -52,7 +52,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
       SELECT 1 
       FROM trades t2
       LEFT JOIN tradeitems ti ON t2.trade_id = ti.trade_id
-      LEFT JOIN items i ON i.name = ti.name AND i.image_id = ti.image_id
+      LEFT JOIN items i ON i.internal_id = ti.item_iid
       LEFT JOIN itemprices p ON p.item_iid = i.internal_id AND p.isLatest = 1 AND p.addedAt > t.addedAt
       WHERE t.trade_id = t2.trade_id and t.addedAt >= ${DATE_LIMIT}
       AND p.price IS NULL

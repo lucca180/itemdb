@@ -82,7 +82,8 @@ const getTradeFeedback = async (itemName: string, limit: number, user_id: string
     SELECT f.feedback_id FROM feedbacks f 
     left join trades t on f.subject_id = t.trade_id and f.type = 'tradePrice'
     left join tradeitems ti on t.trade_id = ti.trade_id
-    where f.type = 'tradePrice' and ti.name = ${itemName} and f.processed = 0
+    left join items i on ti.item_iid = i.internal_id
+    where f.type = 'tradePrice' and i.name = ${itemName} and f.processed = 0
   `) as { feedback_id: number }[];
 
   const feedbackRaw = await prisma.feedbacks.findMany({

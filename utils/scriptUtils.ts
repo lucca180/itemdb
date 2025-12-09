@@ -1,5 +1,5 @@
 export const LATEST_VERSIONS_CODE = {
-  itemdb_script: 196,
+  itemdb_script: 1100,
   itemdb_restock: 201,
   itemdb_sdbPricer: 154,
 };
