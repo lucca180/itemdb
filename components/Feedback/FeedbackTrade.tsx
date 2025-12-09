@@ -167,14 +167,15 @@ const FeedbackTrade = (props: Props) => {
                 p={2}
                 bg={isSticky ? 'gray.800' : undefined}
               >
-                {!!trade?.instantBuy && (
-                  <Text mb={2}>
-                    Instant Buy -{' '}
-                    <Badge colorScheme="yellow">{format.number(trade.instantBuy)}</Badge>
-                  </Text>
-                )}
                 <b>{t('ItemPage.wishlist')}</b>
                 <Text>{trade?.wishlist}</Text>
+                {!!trade?.instantBuy && (
+                  <Text mb={2}>
+                    <Badge colorScheme="orange">
+                      Instant Buy - {format.number(trade.instantBuy)} NP
+                    </Badge>
+                  </Text>
+                )}
               </Flex>
             </Sticky>
 
@@ -286,8 +287,12 @@ const ItemTrade = (props: ItemTradeProps) => {
             isExternal
             tabIndex={-1}
           >
+            {item.amount > 1 && (
+              <Badge colorScheme="yellow" mr={1} textTransform={'none'}>
+                {item.amount}x
+              </Badge>
+            )}
             {item.name}
-            {item.amount > 1 && <Badge colorScheme="yellow">x{item.amount}</Badge>}
           </Link>
           <FormControl>
             <HStack>

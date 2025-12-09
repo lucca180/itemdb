@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.9.6
+// @version      1.10.0
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -11,7 +11,7 @@
 // @exclude      *://*.nc.neopets.com/*
 // @exclude      *://*images.neopets.com/*
 // @icon         https://itemdb.com.br/favicon.ico
-// @require      https://raw.githubusercontent.com/lucca180/itemdb/cefb1bf6f9a9797ba7934e45c64d97ac27fbb1fe/userscripts/hash.min.js#sha256-qvScLSSeFxxVSGjWWNbTgwuqM2IffRSeYkXbGffQNzA=
+// @require      https://raw.githubusercontent.com/lucca180/itemdb/504cff75392e2a39a5aa6878fd87ac42f438e3c7/userscripts/hash.min.js#sha256-OR/o15BAHX1QDoCX/pOFJ/+cMrVqLuqbKQxdP0yW+vc=
 // @connect      itemdb.com.br
 // @connect      neopets.com
 // @grant        GM_xmlhttpRequest
@@ -185,62 +185,45 @@ const itemdb_script = function() {
   }
 
   function handleTrades() {
-    const lots = $('.content td > table td table');
-    lots.each(function (i) {
-      const link = $(this).prevAll('a').eq(0).attr('href');
+    document.addEventListener('idb:tradingLots', (e) => {
+      const lots = e.detail.lots;
+      lots.forEach((lot) => {
+        const trade = {
+          tradeID: lot.lot_id,
+          owner: lot.owner.slice(0, 3).padEnd(6, '*'),
+          wishList: lot.wishlist,
+          instantBuy: lot.instant_buy_amount,
+          items: [],
+        }
 
-      if (!link) return;
-
-      const owner = link.match(/(?<=offender=)[^=&]+/gi)?.[0];
-      const tradeID = link.match(/(?<=tradeLot=)\d+/gi)?.[0];
-      const wishList = link.match(/(?<=tradeWishlist=).+/gi)?.[0];
-      if (tradeHistory[tradeID]) return;
-      tradeHistory[tradeID] = true;
-
-      const trade = {
-        tradeID: tradeID,
-        wishList: wishList,
-        owner: owner.slice(0, 3).padEnd(6, '*'),
-        items: [],
-      };
-
-      // each item
-      $(this)
-        .find('tr')
-        .each(function (i2) {
-          const itemName = $(this).find('td').first().text().trim();
-
-          const img = $(this).find('img').first().attr('src');
-          const description = $(this).find('img').first().attr('alt');
-          const rarityStr = $(this).find('td').eq(1).text().match(/(?:- r|rarity |artifact - )(\d+)/gi)?.[0]
-          const rarity = rarityStr ? rarityStr.match(/\d+/)[0] : undefined;
-
-          const item = {
-            img: img,
-            description: description,
-            name: itemName,
-            rarity: rarity ?? undefined,
-          };
-
-          trade.items.push({
-            img: img,
-            description: description,
-            name: itemName,
+        lot.items.forEach((itemData, i2) => {
+          const tradeItem = {
+            name: itemData.name,
+            img: itemData.img_url,
+            amount: itemData.amount,
             order: i2,
-          });
-
+          }
+          
+          trade.items.push(tradeItem);
+          const item = {
+            name: itemData.name,
+            img: itemData.img_url,
+            description: itemData.description,
+            rarity: itemData.sub_name.match(/(?<=- r|rarity |artifact - )(\d+)/gi)?.[0],
+          }
+          
           const itemKey = genItemKey(item);
           if (!itemsHistory[itemKey]) {
             itemsObj[itemKey] = item;
             itemsHistory[itemKey] = true;
           }
-        });
+        })
 
-      tradeList.push(trade);
+        tradeList.push(trade);
+      })
+      submitItems();
+      submitTrades();
     });
-
-    submitItems();
-    submitTrades();
   }
 
   function handleMyShop() {
@@ -705,10 +688,10 @@ const itemdb_script = function() {
       submitItems();
     }
 
-   setInterval(() => {
-      if(resItemData) resItemData.map(x => handleData(x));
-      resItemData = [];
-    }, 1000);
+    
+    window.addEventListener('idb:ucChamberData', (e) => {
+      handleData(e.detail);
+    });
   }
 
   // ------ itembd (battledome) ------ //
@@ -1418,8 +1401,8 @@ function watchItemRequests(paramName){
   }
 }
 
-function watchFetchItemRequests(paramName) {
-  unsafeWindow.fetch = async (...args) => {
+function watchFetchItemRequests(paramName, eventName) {
+  (unsafeWindow ?? window).fetch = async (...args) => {
     const response = await originalFetch(...args);
     const clonedResponse = response.clone();
     const responseText = await clonedResponse.text();
@@ -1428,7 +1411,9 @@ function watchFetchItemRequests(paramName) {
         const requestData = JSON.parse(responseText);
         // check if the request contains the item data we want, if not we ignore it
         if (typeof requestData[paramName] !== 'undefined') {
-          resItemData.push(requestData);
+          document.dispatchEvent(
+            new CustomEvent(eventName, { detail: requestData })
+          );
         }
       } catch (error) {}
     }
@@ -1436,10 +1421,12 @@ function watchFetchItemRequests(paramName) {
     return response;
   };
 }
+
 // **ONLY** watch requests in these pages
 if (URLHas('petlookup.phtml')) watchItemRequests('viewdata');
-if (URLHas('/stylingchamber/')) watchFetchItemRequests('userStyles');
+if (URLHas('/stylingchamber/')) watchFetchItemRequests('userStyles', 'idb:ucChamberData');
 if (URLHas('customise')) watchItemRequests('editordata');
+if (URLHas('trading')) watchFetchItemRequests('lots', 'idb:tradingLots');
 
 // for troubleshooting use
 unsafeWindow.itemdb_script = script_info;

@@ -146,6 +146,8 @@ const getTradeData = async (name: string | number, onlyPriced = false) => {
         owner: p.owner,
         priced: p.priced,
         hash: p.hash,
+        instantBuy: p.instantBuy || null,
+        createdAt: p.createdAt ? p.createdAt.toJSON() : null,
         items: p.items.map((i) => ({
           internal_id: i.internal_id,
           trade_id: i.trade_id,
@@ -156,13 +158,14 @@ const getTradeData = async (name: string | number, onlyPriced = false) => {
           price: i.price?.toNumber() || null,
           order: i.order,
           addedAt: i.addedAt.toJSON(),
+          amount: i.amount,
         })),
         wishlist: p.wishlist,
         processed: p.processed,
         addedAt: p.addedAt.toJSON(),
       };
     })
-    .filter((p) => p !== null) as TradeData[];
+    .filter((p) => p !== null);
 
   return {
     recent: tradeList.slice(0, 40),

@@ -81,10 +81,14 @@ const TradeTable = (props: Props) => {
             </Flex>
             <Flex flexFlow="column" justifyContent="center">
               <Text wordBreak={'break-word'} whiteSpace={'pre-line'} fontSize="sm">
+                {item.amount > 1 && (
+                  <Badge mr={1} colorScheme="yellow" textTransform={'none'}>
+                    {item.amount}x
+                  </Badge>
+                )}
                 <Link as={NextLink} href={`/item/${slugify(item.name)}`} prefetch={false}>
                   {item.name}
                 </Link>
-                {item.amount > 1 && <Badge colorScheme="yellow">x{item.amount}</Badge>}
               </Text>
               {item.price && (
                 <Text fontSize="xs" opacity="0.8">
@@ -109,7 +113,7 @@ const TradeTable = (props: Props) => {
         >
           {!!data.instantBuy && (
             <Text mb={2}>
-              Instant Buy - <Badge colorScheme="yellow">{format.number(data.instantBuy)}</Badge>
+              <Badge colorScheme="orange">Instant Buy - {format.number(data.instantBuy)} NP</Badge>
             </Text>
           )}
           <b>{t('ItemPage.wishlist')}</b>
