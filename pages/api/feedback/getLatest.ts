@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../utils/prisma';
-import { FeedbackParsed } from '../../../types';
+import { FeedbackParsed, TradeData } from '../../../types';
 import { CheckAuth } from '../../../utils/googleCloud';
 import requestIp from 'request-ip';
 import { Feedbacks } from '@prisma/generated/client';
@@ -64,6 +64,29 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       take: parseInt(limit),
     });
   }
+  const itemIds = feedbackRaw
+    .map((f) => {
+      if (f.type !== 'tradePrice') return -1;
+      const parsed = JSON.parse(f.json as string) as FeedbackParsed;
+      const tradeInfo = parsed.content.trade as TradeData;
+      console.log(tradeInfo);
+      return tradeInfo.items.map((i) => i.item_iid);
+    })
+    .flat()
+    .filter((id) => id !== -1 && !!id) as number[];
+
+  const uniqueItemIds = Array.from(new Set(itemIds));
+
+  const itemData = await prisma.items.findMany({
+    where: {
+      internal_id: { in: uniqueItemIds },
+    },
+    select: {
+      internal_id: true,
+      name: true,
+      image: true,
+    },
+  });
 
   const feedbacks = [];
   for (const feedback of feedbackRaw) {
@@ -71,7 +94,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const parsed = JSON.parse(json) as FeedbackParsed;
 
     if (ip_address === parsed.ip) continue;
-    feedbacks.push(feedback);
+    feedbacks.push(fixTrade(feedback, itemData));
   }
 
   res.json(feedbackRaw);
@@ -147,4 +170,26 @@ const getWishlists = async (limit: number) => {
   `) as { wishlist: string }[];
 
   return wishlists;
+};
+
+// we removed name and image from tradeitem table so now we need to fix report voting cause we need this info lol
+const fixTrade = (
+  feedback: Feedbacks,
+  itemData: { internal_id: number; name: string; image: string | null }[]
+) => {
+  const parsed = JSON.parse(feedback.json as string) as FeedbackParsed;
+  const tradeInfo = parsed.content.trade as TradeData;
+  console.log(tradeInfo);
+  tradeInfo.items = tradeInfo.items.map((item) => {
+    const itemInfo = itemData.find((i) => i.internal_id === item.item_iid);
+    if (itemInfo) {
+      item.name = itemInfo.name;
+      item.image = itemInfo.image!;
+    }
+    return item;
+  });
+
+  parsed.content.trade = tradeInfo;
+  feedback.json = JSON.stringify(parsed);
+  return feedback;
 };
