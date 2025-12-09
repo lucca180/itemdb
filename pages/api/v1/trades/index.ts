@@ -163,6 +163,15 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       isPriced = true;
     }
 
+    const createItems: Prisma.TradeItemsUncheckedCreateWithoutTradeInput[] = itemList.map(
+      (item) => ({
+        item_iid: item.item_iid,
+        order: item.order,
+        amount: item.amount || 1,
+        price: item.price || null,
+      })
+    );
+
     const tradeData: Prisma.TradesCreateInput = {
       trade_id: Number(lot.tradeID),
       wishlist: lot.wishList.trim(),
@@ -178,12 +187,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       instantBuy: lot.instantBuy || null,
       createdAt: lot.createdAt ? new Date(lot.createdAt) : null,
       items: {
-        create: itemList.map((item) => ({
-          item_iid: item.item_iid,
-          order: item.order,
-          amount: item.amount || 1,
-          price: item.price || null,
-        })),
+        create: createItems,
       },
     };
 
@@ -211,26 +215,13 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const tradesFulfilled = result
     .filter((x) => x.status === 'fulfilled')
-    .map((x: any) => x.value) as any as Trades &
-    {
-      items: TradeItems[];
-    }[];
+    .map((x: any) => x.value) as unknown as (Trades & {
+    items: TradeItems[];
+  })[];
 
   await updateLastSeenTrades(tradesFulfilled);
-
-  const allTrades = await prisma.trades.findMany({
-    where: {
-      trade_id: {
-        in: tradesFulfilled.map((x: any) => x.trade_id),
-      },
-      processed: false,
-    },
-    include: {
-      items: true,
-    },
-  });
-
-  await Promise.all([autoPriceTrades2(allTrades), newCreatePriceProcessFlow(toPriceProcess)]);
+  await newCreatePriceProcessFlow(toPriceProcess, true);
+  await autoPriceTrades2(tradesFulfilled.filter((x) => !x.processed));
 
   res.json(result);
 };
@@ -448,10 +439,9 @@ export const getItemTrades = async (args: getItemTradesArgs) => {
 };
 
 const updateLastSeenTrades = async (
-  trades: Trades &
-    {
-      items: TradeItems[];
-    }[]
+  trades: (Trades & {
+    items: TradeItems[];
+  })[]
 ) => {
   const items_iid = trades
     .map((x) => x.items.map((i) => i.item_iid))
@@ -515,11 +505,12 @@ const tradeItemToProcessItem = (
   trade: Prisma.TradesCreateInput
 ): Prisma.PriceProcess2CreateManyInput[] => {
   return tradeItems
-    .filter((x) => x.price)
+    .filter((x) => !!x.price)
     .map((item) => ({
       item_iid: item.item_iid!,
       price: item.price as number,
       neo_id: item.trade_id,
+      stock: item.amount || 1,
       type: 'trade',
       addedAt: item.addedAt,
       owner: trade.owner,
