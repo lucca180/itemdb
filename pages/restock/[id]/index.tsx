@@ -73,7 +73,7 @@ export const RESTOCK_FILTER = (shopId: string | number): SearchFilters => ({
   ...defaultFilters,
   restockProfit: INITIAL_MIN_PROFIT.toString(),
   category: [shopIDToCategory[shopId]],
-  rarity: ['1', '99'],
+  rarity: ['1', '100'],
   limit: 10000,
   sortBy: 'price',
   sortDir: 'desc',

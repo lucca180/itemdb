@@ -633,7 +633,7 @@ const getRestockQuery = (
   (temp.rarity <= 84 AND temp.price - GREATEST(100, temp.est_val * 1.9) * ${multiplier} >= ${minProfit} ) OR
   (temp.rarity >= 85 AND temp.rarity <= 89 AND temp.price - GREATEST(2500, temp.est_val * 1.9) * ${multiplier} >= ${minProfit} ) OR
   (temp.rarity >= 90 AND temp.rarity <= 94 AND temp.price - GREATEST(5000, temp.est_val * 1.9) * ${multiplier} >= ${minProfit} ) OR
-  (temp.rarity >= 95 AND temp.rarity <= 99 AND temp.price - GREATEST(1000, temp.est_val * 1.9) * ${multiplier} >= ${minProfit} ) 
+  (temp.rarity >= 95 AND temp.rarity <= 100 AND temp.price - GREATEST(1000, temp.est_val * 1.9) * ${multiplier} >= ${minProfit} ) 
   ${includeUnpriced ? Prisma.sql` OR temp.price IS NULL` : Prisma.empty}
 )
 `;

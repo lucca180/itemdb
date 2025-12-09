@@ -60,11 +60,11 @@ export const RarityView = (props: Props) => {
   );
 };
 
-const rarityGroups = [85, 94, 99];
+const rarityGroups = [85, 94, 100];
 const rarityText: { [range: string]: string } = {
   'r1-r85': 'rarity-range-1',
   'r86-r94': 'rarity-range-2',
-  'r95-r99': 'rarity-range-3',
+  'r95-r100': 'rarity-range-3',
   unknown: 'Unknown',
 };
 
@@ -82,7 +82,7 @@ const groupItems = (items: ItemData[]) => {
     } else if (item.rarity <= rarityGroups[1]) {
       groups['r86-r94'] = [...(groups['r86-r94'] ?? []), item];
     } else {
-      groups['r95-r99'] = [...(groups['r95-r99'] ?? []), item];
+      groups['r95-r100'] = [...(groups['r95-r100'] ?? []), item];
     }
   });
 

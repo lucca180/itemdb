@@ -488,7 +488,7 @@ export const getRestockPrice = (
   } else if (item.rarity <= 94) {
     minPrice = Math.max(minPrice, 5000);
     maxPrice = Math.max(maxPrice, 5000);
-  } else if (item.rarity <= 99) {
+  } else if (item.rarity <= 100) {
     minPrice = Math.max(minPrice, 10000);
     maxPrice = Math.max(maxPrice, 10000);
   } else if (item.rarity === 200) {
