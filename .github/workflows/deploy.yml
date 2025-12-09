@@ -30,7 +30,11 @@ jobs:
             yarn build-turbo || exit
             yarn postbuild
             pm2 stop ecosystem.config.js --only itemdb-green --update-env
-            yarn test
+            if git log -1 --pretty=%B | grep -q '\[skip test\]'; then
+              echo "Skipping tests"
+            else
+              yarn test
+            fi
   deploy-itemdb-blue:
     name: itemdb blue (main) - Deploy
     needs: deploy-itemdb-green
