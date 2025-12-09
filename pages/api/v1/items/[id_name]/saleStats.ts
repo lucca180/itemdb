@@ -272,9 +272,11 @@ const getTradeSales = async (iid: number, dayLimit = 15) => {
       const isLastOne = i === trades.length - 1;
       const isFromLastXDays = trade.addedAt > new Date(Date.now() - dayLimit * 24 * 60 * 60 * 1000);
 
-      const stock = trade.items.filter(
-        (i) => i.name === item.name && i.image_id === item.image_id
-      ).length;
+      const stock = trade.items
+        .filter((i) => i.item_iid === item.internal_id)
+        .reduce((acc, curr) => {
+          return acc + (curr.amount || 1);
+        }, 0);
 
       if (stock < lastStock) {
         itemSold += lastStock - stock;

@@ -113,7 +113,7 @@ const getTradeData = async (name: string | number, onlyPriced = false) => {
   const tradeRaw = await prisma.trades.findMany({
     where: {
       items: {
-        some: typeof name === 'string' ? { name: name } : { item_iid: name },
+        some: typeof name === 'string' ? { item: { name: name } } : { item_iid: name },
       },
       addedAt: {
         gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * MAX_DAYS),
@@ -121,7 +121,11 @@ const getTradeData = async (name: string | number, onlyPriced = false) => {
       priced: onlyPriced ? true : undefined,
     },
     include: {
-      items: true,
+      items: {
+        include: {
+          item: true,
+        },
+      },
     },
     orderBy: { addedAt: 'desc' },
   });
@@ -131,7 +135,7 @@ const getTradeData = async (name: string | number, onlyPriced = false) => {
 
   const tradeList: TradeData[] = tradeRaw
     .map((p) => {
-      const item = p.items.find((i) => i.name === name);
+      const item = p.items.find((i) => i.item?.name === name);
 
       if (item && !!item.price?.toNumber() && p.priced) priced++;
       if (onlyPriced && item && !item.price?.toNumber()) return null;
@@ -145,9 +149,9 @@ const getTradeData = async (name: string | number, onlyPriced = false) => {
         items: p.items.map((i) => ({
           internal_id: i.internal_id,
           trade_id: i.trade_id,
-          name: i.name,
-          image: i.image,
-          image_id: i.image_id,
+          name: i.item?.name || '',
+          image: i.item?.image || '',
+          image_id: i.item?.image_id || '',
           item_iid: i.item_iid || null,
           price: i.price?.toNumber() || null,
           order: i.order,

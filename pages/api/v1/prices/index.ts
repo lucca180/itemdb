@@ -156,7 +156,10 @@ export const getLatestPricedItems = async (limit: number, includeCount = false) 
 };
 
 export const newCreatePriceProcessFlow = async (
-  dataList: Prisma.PriceProcessCreateInput[] | PriceProcess[],
+  dataList:
+    | Prisma.PriceProcess2UncheckedCreateInput[]
+    | Prisma.PriceProcessCreateInput[]
+    | PriceProcess[],
   skipLastSeen = false,
   skipProcessed = false
 ) => {
@@ -169,14 +172,16 @@ export const newCreatePriceProcessFlow = async (
   };
 
   dataList.map((item) => {
-    if (item.item_id) {
+    if ('item_id' in item && item.item_id) {
       itemInfo['item_id'].add(item.item_id.toString());
-    } else if (item.image_id && item.name) {
+    } else if ('image_id' in item && item.image_id && item.name) {
       itemInfo['name_image_id'].add([item.name, item.image_id]);
-    } else if (item.image_id) {
+    } else if ('image_id' in item && item.image_id) {
       itemInfo['image_id'].add(item.image_id);
-    } else if (item.name) {
+    } else if ('name' in item && item.name) {
       itemInfo['name'].add(item.name);
+    } else if ('item_iid' in item && item.item_iid) {
+      itemInfo['id'].add(item.item_iid.toString());
     }
   });
 
@@ -229,7 +234,7 @@ export const newCreatePriceProcessFlow = async (
 
   const newRestockAuction = dataList
     .map((raw): RestockAuction | null => {
-      if (!['restock', 'auction'].includes(raw.type)) return null;
+      if (!['restock', 'auction'].includes(raw.type) || !('otherInfo' in raw)) return null;
       const itemData = findItem(raw, allItems);
       if (!itemData) return null;
 
@@ -414,9 +419,15 @@ const newHandleAuction = async (dataList: RestockAuction[]) => {
 };
 
 const findItem = (
-  rawInput: Prisma.PriceProcessCreateInput,
+  rawInput: Prisma.PriceProcessCreateInput | Prisma.PriceProcess2UncheckedCreateInput,
   list: { [identifier: string]: ItemData }
 ) => {
+  if ('item_iid' in rawInput) {
+    const item = list[rawInput.item_iid.toString()];
+    if (item) return item;
+    return null;
+  }
+
   const { name, image_id, item_id } = rawInput;
 
   if (item_id) {

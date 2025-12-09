@@ -128,14 +128,17 @@ export type TradeData = {
   processed: boolean;
   priced: boolean;
   hash: string | null;
+  instantBuy?: number | null;
+  createdAt?: string | null;
   items: {
     internal_id: number;
-    item_iid: number | null;
-    trade_id: number;
     name: string;
     image: string;
     image_id: string;
+    item_iid: number | null;
+    trade_id: number;
     order: number;
+    amount: number;
     addedAt: string;
     price: number | null;
   }[];

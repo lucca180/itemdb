@@ -1,5 +1,4 @@
 import { Box, Text, Divider, Flex, Link, Badge, Tooltip, IconButton } from '@chakra-ui/react';
-import React from 'react';
 import { ItemData, TradeData } from '../../types';
 import Image from 'next/image';
 import { genItemKey, slugify } from '../../utils/utils';
@@ -18,6 +17,7 @@ const TradeTable = (props: Props) => {
   const t = useTranslations();
   const format = useFormatter();
   const { data, featuredItem } = props;
+
   return (
     <Flex flexFlow="column" w="100%" flex={1} mb={3}>
       <Flex flexFlow="column">
@@ -84,6 +84,7 @@ const TradeTable = (props: Props) => {
                 <Link as={NextLink} href={`/item/${slugify(item.name)}`} prefetch={false}>
                   {item.name}
                 </Link>
+                {item.amount > 1 && <Badge colorScheme="yellow">x{item.amount}</Badge>}
               </Text>
               {item.price && (
                 <Text fontSize="xs" opacity="0.8">
@@ -106,6 +107,11 @@ const TradeTable = (props: Props) => {
           flexFlow="column"
           p={2}
         >
+          {!!data.instantBuy && (
+            <Text mb={2}>
+              Instant Buy - <Badge colorScheme="yellow">{format.number(data.instantBuy)}</Badge>
+            </Text>
+          )}
           <b>{t('ItemPage.wishlist')}</b>
           <Text>{data.wishlist}</Text>
         </Flex>

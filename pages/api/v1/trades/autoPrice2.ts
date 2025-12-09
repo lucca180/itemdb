@@ -115,16 +115,12 @@ const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
 
   if (similarList.length === 0) return null;
 
-  const isAllItemsTheSame = trade.items.every(
-    (t) => t.name === trade.items[0].name && t.image_id === trade.items[0].image_id
-  );
+  const isAllItemsTheSame = trade.items.every((t) => t.item_iid === trade.items[0].item_iid);
 
   // let unpriced = null;
 
   const similar = similarList.find((t) => {
-    const isTheSame = t.items.every(
-      (t2) => t2.name === t.items[0].name && t2.image_id === t.items[0].image_id
-    );
+    const isTheSame = t.items.every((t2) => t2.item_iid === t.items[0].item_iid);
 
     // const isSimilar = t.items.length === trade.items.length && isTheSame === isAllItemsTheSame;
     // const isAllEmpty = t.items.every((item) => !item.price);
@@ -204,14 +200,16 @@ const findCanonical = async (trade: Trades & { items: TradeItems[] }) => {
 const checkTradeEstPrice = async (trade: Trades & { items: TradeItems[] }) => {
   // if (trade.items.length === 1) return false;
 
-  const itemsQuery = trade.items.map((item) => [item.name, item.image_id]) as [string, string][];
+  const itemsQuery = trade.items
+    .map((item) => item.item_iid?.toString())
+    .filter((id) => !!id) as string[];
 
-  const itemsData = await getManyItems({ name_image_id: itemsQuery });
+  const itemsData = await getManyItems({ id: itemsQuery });
 
   let priceSum = 0;
 
   for (const item of trade.items) {
-    const itemData = itemsData[`${encodeURI(item.name.toLowerCase())}_${item.image_id}`];
+    const itemData = itemsData[item.item_iid!.toString()];
 
     if (!itemData) return false;
 

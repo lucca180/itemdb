@@ -50,17 +50,20 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       processed: t.processed,
       priced: t.priced,
       hash: t.hash,
+      instantBuy: t.instantBuy,
+      createdAt: t.createdAt?.toJSON() || null,
       items: t.items.map((i) => {
         return {
           internal_id: i.internal_id,
           trade_id: i.trade_id,
-          name: i.name,
-          image: i.image,
-          image_id: i.image_id,
+          name: i.item?.name || '',
+          image: i.item?.image || '',
+          image_id: i.item?.image_id || '',
           item_iid: i.item_iid || null,
           order: i.order,
           price: i.price?.toNumber() || null,
           addedAt: i.addedAt.toJSON(),
+          amount: i.amount,
         };
       }),
     };
@@ -120,11 +123,11 @@ const getPrecifyTrades = async (
         : undefined,
       items: {
         some: {
-          name: itemName,
+          item: { name: itemName },
         },
       },
     },
-    include: { items: true },
+    include: { items: { include: { item: true } } },
     distinct: 'hash',
     orderBy: order,
     take: limit,

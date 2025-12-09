@@ -19,7 +19,7 @@ import Image from 'next/image';
 import CustomNumberInput from '../Input/CustomNumber';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { BsArrowLeft, BsArrowLeftRight, BsCheck2 } from 'react-icons/bs';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import { FeedbackExperimentsModalProps } from '../Modal/FeedbackExperimentsModal';
 import { AiOutlineExperiment } from 'react-icons/ai';
 import { useAuth } from '../../utils/auth';
@@ -52,6 +52,7 @@ const FeedbackTrade = (props: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { userPref } = useAuth();
   const t = useTranslations();
+  const format = useFormatter();
   const { handleSkip, handleSubmit, handleUndo, hasUndo } = props;
   const [forceTrade, setTrade] = useState<TradeData | undefined>(props.trade);
   const [isSticky, setIsSticky] = useState(false);
@@ -166,6 +167,12 @@ const FeedbackTrade = (props: Props) => {
                 p={2}
                 bg={isSticky ? 'gray.800' : undefined}
               >
+                {!!trade?.instantBuy && (
+                  <Text mb={2}>
+                    Instant Buy -{' '}
+                    <Badge colorScheme="yellow">{format.number(trade.instantBuy)}</Badge>
+                  </Text>
+                )}
                 <b>{t('ItemPage.wishlist')}</b>
                 <Text>{trade?.wishlist}</Text>
               </Flex>
@@ -280,6 +287,7 @@ const ItemTrade = (props: ItemTradeProps) => {
             tabIndex={-1}
           >
             {item.name}
+            {item.amount > 1 && <Badge colorScheme="yellow">x{item.amount}</Badge>}
           </Link>
           <FormControl>
             <HStack>

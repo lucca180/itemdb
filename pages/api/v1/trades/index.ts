@@ -35,10 +35,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
-  const name = req.query.name as string;
-  const image_id = req.query.image_id as string | undefined;
+  const item_iid = req.query.item_iid as string | undefined;
 
-  const trades = await getItemTrades({ name, image_id });
+  if (!item_iid) return res.status(400).json({ error: 'Missing item_iid' });
+
+  const trades = await getItemTrades({ item_iid: Number(item_iid) });
   return res.json(trades);
 };
 
@@ -56,7 +57,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   if (lang !== 'en') return res.status(400).json('Language must be english');
 
   const promiseArr = [];
-
+  const toPriceProcess = [] as Prisma.PriceProcess2UncheckedCreateInput[];
   let itemDataRaw: { [key: string]: ItemData } = {};
 
   for (const lot of tradeLots) {
@@ -66,12 +67,14 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       image_id: string;
       order: number;
       item_iid: number | null;
+      amount: number;
+      price?: number;
     }[] = [];
 
-    const fetchList: [string, string][] = [];
+    let fetchList: [string, string][] = [];
 
     for (const item of lot.items) {
-      let { name, img, order } = item;
+      let { name, img, order, amount } = item;
       let imageId;
 
       if (!name || !img) continue;
@@ -95,6 +98,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         image_id: imageId as string,
         item_iid: itemData ? itemData.internal_id : null,
         order: order,
+        amount: amount || 1,
       };
 
       itemList.push(x);
@@ -105,6 +109,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     const itemReq = await getManyItems({
       name_image_id: fetchList,
     });
+
+    fetchList = [];
 
     itemDataRaw = { ...itemDataRaw, ...itemReq };
 
@@ -145,28 +151,52 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       (item) => item.name === itemList[0].name && item.image_id === itemList[0].image_id
     );
 
+    const itemCount = itemList.reduce((acc, item) => acc + (item.amount || 1), 0);
+
+    let isPriced = false;
+
+    if (isAllItemsEqual && lot.instantBuy) {
+      const uniquePrice = Math.floor(lot.instantBuy / itemCount);
+      itemList.forEach((item) => {
+        item['price'] = uniquePrice;
+      });
+      isPriced = true;
+    }
+
+    const tradeData: Prisma.TradesCreateInput = {
+      trade_id: Number(lot.tradeID),
+      wishlist: lot.wishList.trim(),
+      owner: lot.owner,
+      ip_address: requestIp.getClientIp(req),
+      priced:
+        isPriced || (!lot.instantBuy && (lot.wishList === 'none' || shouldSkipTrade(lot.wishList))),
+      processed:
+        isPriced || (!lot.instantBuy && (lot.wishList === 'none' || shouldSkipTrade(lot.wishList))),
+      isAllItemsEqual: isAllItemsEqual,
+      itemsCount: itemCount,
+      hash: newTradeHash,
+      instantBuy: lot.instantBuy || null,
+      createdAt: lot.createdAt ? new Date(lot.createdAt) : null,
+      items: {
+        create: [...itemList],
+      },
+    };
+
     // its not possible to use createMany with multiple related records
     // so we have to try to create the trade and then create the items
     const prom = prisma.trades.create({
-      data: {
-        trade_id: Number(lot.tradeID),
-        wishlist: lot.wishList.trim(),
-        owner: lot.owner,
-        ip_address: requestIp.getClientIp(req),
-        priced: lot.wishList === 'none' || shouldSkipTrade(lot.wishList),
-        processed: lot.wishList === 'none' || shouldSkipTrade(lot.wishList),
-        isAllItemsEqual: isAllItemsEqual,
-        itemsCount: itemList.length,
-        hash: newTradeHash,
-        items: {
-          create: [...itemList],
-        },
-      },
+      data: tradeData,
       include: {
         items: true,
       },
     });
 
+    toPriceProcess.push(
+      ...tradeItemToProcessItem(
+        tradeData.items!.create as Prisma.TradeItemsCreateManyInput[],
+        tradeData
+      )
+    );
     promiseArr.push(prom);
   }
 
@@ -195,7 +225,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     },
   });
 
-  await autoPriceTrades2(allTrades);
+  await Promise.all([autoPriceTrades2(allTrades), newCreatePriceProcessFlow(toPriceProcess)]);
 
   res.json(result);
 };
@@ -327,37 +357,18 @@ export const processTradePrice = async (
     });
   }
 
-  const addPriceProcess: Prisma.PriceProcessCreateInput[] = [];
-
-  const itemHistory: { [id: string]: Items } = {};
+  const addPriceProcess: Prisma.PriceProcess2UncheckedCreateInput[] = [];
 
   for (const item of itemUpdate.filter((x) => x.price)) {
-    if (!item.image_id || !item.name) throw 'processTradePrice: Missing image_id or name';
-
-    let dbItem: Items | null = itemHistory[`${item.name}-${item.image_id}`];
-
-    if (!dbItem) {
-      dbItem = await prisma.items.findFirst({
-        where: {
-          name: item.name,
-          image_id: item.image_id,
-        },
-      });
-
-      if (dbItem) itemHistory[`${item.name}-${item.image_id}`] = dbItem;
-    }
+    if (!item.item_iid) throw 'processTradePrice: Missing item_iid';
 
     addPriceProcess.push({
-      name: item.name,
+      item_iid: item.item_iid,
       price: item.price!.toNumber(),
-      image: item.image,
-      image_id: item.image_id,
-      item_id: dbItem ? dbItem.item_id : undefined,
       neo_id: item.trade_id,
       type: 'trade',
       owner: item.trade.owner,
       addedAt: item.trade.addedAt,
-      language: 'en',
       ip_address: req ? requestIp.getClientIp(req) : undefined,
     });
   }
@@ -371,31 +382,31 @@ export const processTradePrice = async (
 };
 
 type getItemTradesArgs = {
-  name?: string;
-  image_id?: string;
   item_iid?: number;
 };
 
 export const getItemTrades = async (args: getItemTradesArgs) => {
-  const { name, image_id, item_iid } = args;
+  const { item_iid } = args;
 
-  if (!name && !image_id && !item_iid) {
-    throw new Error(
-      'getItemTrades: At least one argument (name, image_id, item_iid) must be provided'
-    );
+  if (!item_iid) {
+    throw new Error('getItemTrades: At least one argument (item_iid) must be provided');
   }
 
   const tradeRaw = await prisma.trades.findMany({
     where: {
       items: {
         some: {
-          name: name || undefined,
-          image_id: image_id || undefined,
-          item_iid: item_iid || undefined,
+          item_iid: item_iid,
         },
       },
     },
-    include: { items: true },
+    include: {
+      items: {
+        include: {
+          item: true,
+        },
+      },
+    },
     orderBy: { trade_id: 'desc' },
     take: 20,
   });
@@ -409,17 +420,20 @@ export const getItemTrades = async (args: getItemTradesArgs) => {
       processed: t.processed,
       priced: t.priced,
       hash: t.hash,
+      instantBuy: t.instantBuy || null,
+      createdAt: t.createdAt ? t.createdAt.toJSON() : null,
       items: t.items.map((i) => {
         return {
+          name: i.item?.name || '',
+          image: i.item?.image || '',
+          image_id: i.item?.image_id || '',
           internal_id: i.internal_id,
           trade_id: i.trade_id,
-          name: i.name,
-          image: i.image,
-          image_id: i.image_id,
           item_iid: i.item_iid || null,
           price: i.price?.toNumber() || null,
           order: i.order,
           addedAt: i.addedAt.toJSON(),
+          amount: i.amount || 1,
         };
       }),
     };
@@ -474,12 +488,10 @@ const getTradeItems = async (trade_id: number, hash: string | null) => {
   return res.map((x) => ({
     internal_id: x.internal_id,
     trade_id: x.trade_id,
-    name: x.name,
-    image: x.image,
-    image_id: x.image_id,
     order: x.order,
     price: x.price,
     addedAt: x.addedAt,
+    item_iid: x.item_iid,
     trade: {
       trade_id: x.trade_id,
       owner: x.owner,
@@ -491,4 +503,21 @@ const getTradeItems = async (trade_id: number, hash: string | null) => {
       tradesUpdated: x.tradesUpdated,
     },
   }));
+};
+
+const tradeItemToProcessItem = (
+  tradeItems: Prisma.TradeItemsCreateManyInput[],
+  trade: Prisma.TradesCreateInput
+): Prisma.PriceProcess2CreateManyInput[] => {
+  return tradeItems
+    .filter((x) => x.price)
+    .map((item) => ({
+      item_iid: item.item_iid!,
+      price: item.price as number,
+      neo_id: item.trade_id,
+      type: 'trade',
+      addedAt: item.addedAt,
+      owner: trade.owner,
+      ip_address: trade.ip_address,
+    }));
 };

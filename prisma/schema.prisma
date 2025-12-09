@@ -243,14 +243,14 @@ model PriceProcessHistory {
 }
 
 model Trades {
-  trade_id   Int      @id
+  trade_id   Int       @id
   owner      String
-  wishlist   String   @db.Text
+  wishlist   String    @db.Text
   ip_address String?
-  addedAt    DateTime @default(now())
-
-  processed Boolean @default(false)
-  priced    Boolean @default(false)
+  addedAt    DateTime  @default(now())
+  createdAt  DateTime?
+  processed  Boolean   @default(false)
+  priced     Boolean   @default(false)
 
   hash          String?
   tradesUpdated String? @db.Text
@@ -262,6 +262,7 @@ model Trades {
   isCanonical     Boolean?
   isAllItemsEqual Boolean?
   itemsCount      Int      @default(0)
+  instantBuy      Int?
 
   @@unique([wishlist(length: 300), isCanonical, isAllItemsEqual, itemsCount])
   @@index([processed, hash])
@@ -273,19 +274,15 @@ model TradeItems {
   internal_id Int      @id @default(autoincrement())
   trade_id    Int
   trade       Trades   @relation(fields: [trade_id], references: [trade_id], onDelete: Cascade, onUpdate: Cascade)
-  name        String
-  image       String
-  image_id    String
   order       Int
   price       Decimal? @db.Decimal(11, 0)
   addedAt     DateTime @default(now())
-
-  item_iid Int?
-  item     Items? @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+  amount      Int      @default(1)
+  item_iid    Int?
+  item        Items?   @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
 
   @@unique([trade_id, order])
   @@index([order, trade_id, item_iid])
-  @@index([name, image_id])
 }
 
 model Tags {
