@@ -69,7 +69,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       if (f.type !== 'tradePrice') return -1;
       const parsed = JSON.parse(f.json as string) as FeedbackParsed;
       const tradeInfo = parsed.content.trade as TradeData;
-      console.log(tradeInfo);
+
       return tradeInfo.items.map((i) => i.item_iid);
     })
     .flat()
@@ -179,7 +179,7 @@ const fixTrade = (
 ) => {
   const parsed = JSON.parse(feedback.json as string) as FeedbackParsed;
   const tradeInfo = parsed.content.trade as TradeData;
-  console.log(tradeInfo);
+
   tradeInfo.items = tradeInfo.items.map((item) => {
     const itemInfo = itemData.find((i) => i.internal_id === item.item_iid);
     if (itemInfo) {
