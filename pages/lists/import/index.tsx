@@ -105,17 +105,9 @@ export default ImportPage;
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const body = await parseBody(context.req, '4mb');
-  let items = JSON.parse(body?.itemDataJson ?? 'null');
+  let items = JSON.parse(body?.itemDataJson || 'null');
   const indexType = body?.indexType ?? 'item_id';
   const list_id = body?.list_id ?? null;
-
-  // nextjs parseBody is weird...
-  if (context.req.method === 'POST' && !items) {
-    const rawBody = await getRawBody(context.req);
-    const qs = await import('query-string');
-    const parsed = qs.default.parse(rawBody.text) as any;
-    items = JSON.parse(parsed.itemDataJson ?? 'null');
-  }
 
   const listService = ListService.init();
 
