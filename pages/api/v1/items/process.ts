@@ -287,9 +287,13 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
 
         // check if we're gaining info with description
         else if (key === 'description' && item.description && dbItem.description) {
-          if (dbItem.description.trim().length < item.description.trim().length) {
-            if (item.description.trim().includes(dbItem.description.trim()))
-              dbItem.description = item.description.trim();
+          const dbDescNorm = normalizeText(dbItem.description);
+          const itemDescNorm = normalizeText(item.description);
+
+          if (dbDescNorm === itemDescNorm) continue;
+          if (dbDescNorm.trim().length < itemDescNorm.trim().length) {
+            if (itemDescNorm.trim().includes(dbDescNorm.trim()))
+              dbItem.description = itemDescNorm.trim();
             else throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
           }
         }
@@ -524,3 +528,10 @@ const cleanSpecialType = (specialType: string) => {
 
   return types.join(',');
 };
+
+function normalizeText(str: string): string {
+  return str
+    .replace(/\r\n/g, '\n') // Windows → Unix
+    .replace(/\r/g, '\n') // Mac antigo → Unix
+    .trim(); // opcional
+}

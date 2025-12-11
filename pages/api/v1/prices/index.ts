@@ -387,11 +387,11 @@ const newHandleAuction = async (dataList: RestockAuction[]) => {
     .filter((x) => x !== undefined);
 
   try {
-    for (const batch of chunk(auctionData, 10)) {
+    for (const batch of chunk(auctionData, 5)) {
       await transactionRetry(() => prisma.$transaction(batch), 3);
     }
 
-    for (const batch of chunk(upsertPriceProcess, 10)) {
+    for (const batch of chunk(upsertPriceProcess, 5)) {
       await transactionRetry(() => prisma.$transaction(batch), 3);
     }
   } catch (e) {
