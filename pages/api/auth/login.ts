@@ -6,7 +6,7 @@ import { User, UserRoles } from '../../../types';
 import { startOfDay } from 'date-fns';
 import { User as PrismaUser } from '@prisma/generated/client';
 
-const expiresIn = 14 * 24 * 60 * 60 * 1000; // 31 days in milliseconds;
+const expiresIn = 24 * 60 * 60 * 1000;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
@@ -40,10 +40,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const session = req.cookies.session;
     const cookies = [];
     if (token && !session) {
-      const sessionCookie = await Auth.createSessionCookie(token, { expiresIn: expiresIn });
+      const sessionCookie = await Auth.createSessionCookie(token, { expiresIn: expiresIn * 14 });
       res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
+
+      // expire cookie before token expires
       cookies.push(
-        `session=${sessionCookie};Path=/;httpOnly=true;secure=true;SameSite=Lax;Max-Age=${expiresIn};`
+        `session=${sessionCookie};Path=/;httpOnly=true;secure=true;SameSite=Lax;Max-Age=${expiresIn * 12};`
       );
     }
 
