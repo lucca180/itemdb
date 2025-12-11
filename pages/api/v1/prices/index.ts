@@ -278,48 +278,30 @@ export const newCreatePriceProcessFlow = async (
 };
 
 const createPriceProcess = async (dataList: Prisma.PriceProcess2CreateManyInput[]) => {
-  let tries = 0;
+  const create = prisma.priceProcess2.createMany({
+    data: dataList,
+    skipDuplicates: true,
+  });
 
-  while (tries < 3) {
-    try {
-      const x = await prisma.priceProcess2.createMany({
-        data: dataList,
-        skipDuplicates: true,
-      });
-
-      return x;
-    } catch (e: any) {
-      if (['P2002', 'P2034'].includes(e.code) && tries < 3) {
-        tries++;
-        await exponentialBackoff(tries);
-        continue;
-      }
-      console.error('Create Price Process Error:', e);
-      throw e;
-    }
+  try {
+    return await transactionRetry(() => create, 3);
+  } catch (e) {
+    console.error('Create Price Process Error:', e);
+    throw e;
   }
 };
 
 const createRestockHistory = async (dataList: RestockAuction[]) => {
-  let tries = 0;
+  const create = prisma.restockAuctionHistory.createMany({
+    data: dataList.map(removePriceProcess),
+    skipDuplicates: true,
+  });
 
-  while (tries < 3) {
-    try {
-      const x = await prisma.restockAuctionHistory.createMany({
-        data: dataList.map(removePriceProcess),
-        skipDuplicates: true,
-      });
-
-      return x;
-    } catch (e: any) {
-      if (['P2002', 'P2034'].includes(e.code) && tries < 3) {
-        tries++;
-        await exponentialBackoff(tries);
-        continue;
-      }
-      console.error('Create Restock History Error:', e);
-      throw e;
-    }
+  try {
+    return await transactionRetry(() => create, 3);
+  } catch (e) {
+    console.error('Create Restock History Error:', e);
+    throw e;
   }
 };
 
@@ -344,8 +326,9 @@ const processLastSeen = async (lastSeen: { [key: string]: { [id: number]: Date }
 };
 
 const newHandleAuction = async (dataList: RestockAuction[]) => {
-  let tries = 0;
-  const auctionData = dataList.map((auction) =>
+  const sortedData = [...dataList].sort((a, b) => a.neo_id! - b.neo_id!);
+
+  const auctionData = sortedData.map((auction) =>
     prisma.restockAuctionHistory.upsert({
       where: {
         type_neo_id: {
@@ -359,10 +342,11 @@ const newHandleAuction = async (dataList: RestockAuction[]) => {
   );
 
   const filteredStr = ['< 30 min', 'closed'];
-  const filteredAuctions = dataList.filter(
+  const filteredAuctions = sortedData.filter(
     (x) => x.price > 1000000 && filteredStr.some((y) => x.otherInfo?.toLowerCase().includes(y))
   );
 
+  const now = new Date();
   const isSold = (auction: RestockAuction) =>
     !auction.otherInfo?.includes('nobody') ? ', auctionSold' : '';
 
@@ -394,27 +378,25 @@ const newHandleAuction = async (dataList: RestockAuction[]) => {
             update: {
               price: auction.price,
               ip_address:
-                auction.ip_address + isSold(auction) + `, auctionUpdated(${new Date().getTime()})`,
-              addedAt: new Date(),
+                auction.ip_address + isSold(auction) + `, auctionUpdated(${now.getTime()})`,
+              addedAt: now,
             },
           })
         : undefined
     )
     .filter((x) => x !== undefined);
 
-  while (tries < 3) {
-    try {
-      const x = await prisma.$transaction([...auctionData, ...upsertPriceProcess]);
-      return x;
-    } catch (e: any) {
-      if (['P2002', 'P2034'].includes(e.code) && tries < 3) {
-        tries++;
-        await exponentialBackoff(tries);
-        continue;
-      }
-      console.error('Handle New Auction Error:', e);
-      throw e;
+  try {
+    for (const batch of chunk(auctionData, 10)) {
+      await transactionRetry(() => prisma.$transaction(batch), 3);
     }
+
+    for (const batch of chunk(upsertPriceProcess, 10)) {
+      await transactionRetry(() => prisma.$transaction(batch), 3);
+    }
+  } catch (e) {
+    console.error('Handle Auction Error:', e);
+    throw e;
   }
 };
 
@@ -474,4 +456,21 @@ const shouldAddToPriceProcess = (item: ItemData) => {
   if (price >= 500000 || timeDiff >= 30) return true;
 
   return false;
+};
+
+const transactionRetry = async <T>(operation: () => Promise<T>, maxRetries = 3): Promise<T> => {
+  let attempts = 0;
+  while (attempts < maxRetries) {
+    try {
+      return await operation();
+    } catch (error: any) {
+      if (['P2034'].includes(error.code) && attempts < maxRetries - 1) {
+        attempts++;
+        await exponentialBackoff(attempts);
+      } else {
+        throw error;
+      }
+    }
+  }
+  throw new Error('Max retries reached');
 };

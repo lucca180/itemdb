@@ -161,7 +161,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       return res.json(result);
     } catch (e: any) {
       // prevent race condition
-      if (['P2002', 'P2034'].includes(e.code) && tries < 3) {
+      if (['P2034'].includes(e.code) && tries < 3) {
         tries++;
         continue;
       }
