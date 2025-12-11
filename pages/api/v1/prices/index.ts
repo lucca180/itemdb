@@ -464,7 +464,7 @@ const transactionRetry = async <T>(operation: () => Promise<T>, maxRetries = 3):
     try {
       return await operation();
     } catch (error: any) {
-      if (['P2034'].includes(error.code) && attempts < maxRetries - 1) {
+      if (['P2002', 'P2034'].includes(error.code) && attempts < maxRetries - 1) {
         attempts++;
         await exponentialBackoff(attempts);
       } else {
