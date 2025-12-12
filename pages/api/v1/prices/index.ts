@@ -405,7 +405,7 @@ const findItem = (
   list: { [identifier: string]: ItemData }
 ) => {
   if ('item_iid' in rawInput) {
-    const item = list[rawInput.item_iid.toString()];
+    const item = list[rawInput.item_iid?.toString()];
     if (item) return item;
     return null;
   }
