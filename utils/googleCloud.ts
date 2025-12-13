@@ -26,7 +26,6 @@ export const CheckAuth = async (
   } catch (err) {
     if ((!req || !req.cookies.session) && !session) throw err;
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     decodedToken = await Auth.verifySessionCookie((session ?? req?.cookies.session)!);
   }
 

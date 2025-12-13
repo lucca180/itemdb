@@ -89,6 +89,10 @@ export function AuthProvider({ children }: any) {
 
   const doLogin = async (fireUser: FirebaseUser) => {
     try {
+      // prevent multiple logins
+      const location = window.location;
+      if (location.pathname.startsWith('/login')) return;
+
       if (!fireUser) {
         throw 'No user found';
       }
