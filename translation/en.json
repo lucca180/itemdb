@@ -530,7 +530,7 @@
     "import-click-pets-intelligence-number": "click on your pet's intelligence number",
     "import-then-click-the-booktastic-books-read-list-link": "then click the Booktastic Books read list link",
     "click-import-button": "Click the <ImportButton></ImportButton> button",
-    "import-text-3": "A new tab will open with a list of items that can be imported. Then you choose your target list and if you want to import, remove or hide the items from that list",
+    "import-text-3": "A new tab will open showing the items available for import, where you can choose the destination list (or create one) and the action (add, remove, or hide).",
     "import-text-4": "You can also make a <Dynamic>Dynamic Checklist</Dynamic> based on one of our <Official>Official Lists</Official>!",
     "import-is-it-safe": "Is it safe?",
     "import-text-5": "The script will only send the data of the items you want to import. No data from your neopets account <i>(or the page source code)</i> is sent to our servers.",
@@ -658,7 +658,11 @@
     "export-list-text1": "You can download this list item data in CSV format and import to your favorite spreadsheet app.",
     "download-csv": "Download CSV",
     "export-list-text2": "Please note that only the first 2,000 items will be included in the export.",
-    "dynamic-disclaimer": "This is a <b>{x}</b> Dynamic List. Some limitations may apply - <Link>learn more</Link>."
+    "dynamic-disclaimer": "This is a <b>{x}</b> Dynamic List. Some limitations may apply - <Link>learn more</Link>.",
+    "how-checklists-works": "How Checklists Works?",
+    "checklists-text-1": "Checklists are powered by our <b>Dynamic Lists</b> system. When you create a checklist, it stays connected to the original list (or even a search query). If new items are added, your checklist updates automatically—so you never miss anything.",
+    "checklists-text-2": "When importing items, you can choose the <b>Hide option</b> to automatically hide items you already own. This helps you focus only on what you still need to collect.",
+    "checklists-text-3": "You can create a checklist from any <Link>Official List</Link> or directly while importing items. Dynamic Lists are very powerful, so we recommend reading <Link2>our article</Link2> to learn more about how they work."
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",

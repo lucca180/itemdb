@@ -3,10 +3,7 @@ import {
   Flex,
   Heading,
   Link,
-  ListItem,
-  OrderedList,
   Text,
-  Box,
   FormControl,
   FormLabel,
   Select,
@@ -15,14 +12,10 @@ import {
   VStack,
   Button,
   useToast,
-  useMediaQuery,
   HStack,
-  UnorderedList,
 } from '@chakra-ui/react';
-import Image from 'next/image';
 import HeaderCard from '../../../components/Card/HeaderCard';
 import Layout from '../../../components/Layout';
-import icon from '../../../public/logo_icon.svg';
 import { parseBody } from 'next/dist/server/api-utils/node/parse-body';
 import ListSelect from '../../../components/UserLists/ListSelect';
 import axios from 'axios';
@@ -32,15 +25,14 @@ import ItemCard from '../../../components/Items/ItemCard';
 import { useAuth } from '../../../utils/auth';
 import { CreateLinkedListButton } from '../../../components/DynamicLists/CreateLinkedList';
 import { useRouter } from 'next/router';
-import DynamicIcon from '../../../public/icons/dynamic.png';
 import NextLink from 'next/link';
 import { createTranslator, useTranslations } from 'next-intl';
 import { Breadcrumbs } from '../../../components/Breadcrumbs/Breadcrumbs';
 import { loadTranslation } from '@utils/load-translation';
 import { GetServerSidePropsContext } from 'next';
-import { getRawBody } from '../../api/v1/restock';
 import { dynamicListCan } from '@utils/utils';
 import { ListService } from '@services/ListService';
+import { ImportInfo } from '@components/Import/ImportInfo';
 
 type Props = {
   items?: { [index: number | string]: number };
@@ -502,202 +494,5 @@ const ImportItems = (props: ImportItemsProps) => {
         </Flex>
       </Flex>
     </>
-  );
-};
-
-const ImportInfo = () => {
-  const t = useTranslations();
-  const [isLargerThanMD] = useMediaQuery('(min-width: 48em)', { fallback: true });
-
-  return (
-    <>
-      <Heading size="lg">{t('Lists.import-step-by-step')}</Heading>
-      {!isLargerThanMD && (
-        <Text fontSize="sm" color="red.400">
-          {t('Lists.import-this-guide-may-not-work-on-mobile-devices')}
-        </Text>
-      )}
-      <OrderedList spacing={2}>
-        <ListItem>
-          {t.rich('Lists.import-text-1', {
-            Link: (chunk) => (
-              <Link href="https://www.tampermonkey.net/" isExternal>
-                {chunk}
-              </Link>
-            ),
-          })}
-        </ListItem>
-        <ListItem>
-          {t.rich('Lists.import-text-2', {
-            Link: (chunk) => (
-              <Link
-                href="https://github.com/lucca180/itemdb/raw/main/userscripts/listImporter.user.js"
-                isExternal
-              >
-                {chunk}
-              </Link>
-            ),
-          })}
-        </ListItem>
-        <ListItem>
-          {t('Lists.importer-text-3')}
-          <UnorderedList spacing={1} mb={3}>
-            <ListItem>
-              <Link href="https://www.neopets.com/closet.phtml" isExternal>
-                {t('General.closet')}
-              </Link>
-            </ListItem>
-            <ListItem>
-              <Link href="https://www.neopets.com/gallery/quickremove.phtml" isExternal>
-                {t('General.gallery-quick-remove')}
-              </Link>
-            </ListItem>
-            <ListItem>
-              <Link href="https://www.neopets.com/safetydeposit.phtml" isExternal>
-                {t('General.safety-deposit-box')}
-              </Link>
-            </ListItem>
-            <ListItem>
-              <Link href="https://www.neopets.com/gourmet_club.phtml" isExternal>
-                <Image
-                  src={DynamicIcon}
-                  alt="lightning bolt"
-                  width={8}
-                  style={{ display: 'inline' }}
-                />{' '}
-                {t('General.gourmet-club')} - {t('General.checklist')}
-              </Link>
-            </ListItem>
-            <ListItem>
-              <Link href="https://www.neopets.com/games/neodeck/index.phtml" isExternal>
-                <Image
-                  src={DynamicIcon}
-                  alt="lightning bolt"
-                  width={8}
-                  style={{ display: 'inline' }}
-                />{' '}
-                {t('General.neodeck')} - {t('General.checklist')}
-              </Link>
-            </ListItem>
-            <ListItem>
-              <Link
-                href="https://www.neopets.com/stamps.phtml?type=album&page_id=1&owner="
-                isExternal
-              >
-                <Image
-                  src={DynamicIcon}
-                  alt="lightning bolt"
-                  width={8}
-                  style={{ display: 'inline' }}
-                />{' '}
-                {t('General.stamp-album')} - {t('General.checklist')}
-              </Link>
-            </ListItem>
-            <ListItem>
-              <Link href="https://www.neopets.com/quickref.phtml" isExternal>
-                <Image
-                  src={DynamicIcon}
-                  alt="lightning bolt"
-                  width={8}
-                  style={{ display: 'inline' }}
-                />{' '}
-                {t('General.book-award')} - {t('General.checklist')}
-              </Link>{' '}
-              <Text fontSize={'sm'} pl={3} mb={1} color="gray.400">
-                {' '}
-                - {t('Lists.import-click-pets-intelligence-number')}
-              </Text>
-            </ListItem>
-            <ListItem>
-              <Link href="https://www.neopets.com/quickref.phtml" isExternal>
-                <Image
-                  src={DynamicIcon}
-                  alt="lightning bolt"
-                  width={8}
-                  style={{ display: 'inline' }}
-                />{' '}
-                {t('General.booktastic-books-award')} - Checklist
-              </Link>{' '}
-              <Text fontSize={'sm'} pl={3} mb={1} color="gray.400">
-                {' '}
-                - {t('Lists.import-click-pets-intelligence-number')}
-                <br />- {t('Lists.import-then-click-the-booktastic-books-read-list-link')}
-              </Text>
-            </ListItem>
-          </UnorderedList>
-        </ListItem>
-        <ListItem>
-          {t.rich('Lists.click-import-button', {
-            ImportButton: () => <ImportButton />,
-          })}
-        </ListItem>
-        <ListItem>
-          {t('Lists.import-text-3')}
-          <Text fontSize="sm">
-            <Image src={DynamicIcon} alt="lightning bolt" width={8} style={{ display: 'inline' }} />{' '}
-            {t.rich('Lists.import-text-4', {
-              Dynamic: (chunk) => (
-                <Link as={NextLink} href={'/articles/checklists-and-dynamic-lists'}>
-                  {chunk}
-                </Link>
-              ),
-              Official: (chunk) => (
-                <Link as={NextLink} href={'/lists/official'}>
-                  {chunk}
-                </Link>
-              ),
-            })}
-          </Text>
-        </ListItem>
-      </OrderedList>
-      <Flex bg="whiteAlpha.300" p={3} borderRadius={'md'} maxW="1000px" my={3}>
-        <Text>
-          {t.rich('Lists.adv-import-cta', {
-            b: (chunk) => <b>{chunk}</b>,
-            Link: (chunk) => (
-              <Link as={NextLink} prefetch={false} href={'/lists/import/advanced'}>
-                {chunk}
-              </Link>
-            ),
-          })}
-        </Text>
-      </Flex>
-      <Heading size="md" mt={3}>
-        {t('Lists.import-is-it-safe')}
-      </Heading>
-      <Text>
-        {t.rich('Lists.import-text-5', {
-          i: (chunk) => <i>{chunk}</i>,
-        })}
-        <br />
-        {t.rich('Lists.import-text-6', {
-          b: (chunk) => <b>{chunk}</b>,
-          Link: (chunk) => (
-            <Link href="https://github.com/lucca180/itemdb/" isExternal>
-              {chunk}
-            </Link>
-          ),
-        })}
-      </Text>
-    </>
-  );
-};
-
-const ImportButton = () => {
-  return (
-    <Box
-      display="inline-flex"
-      alignItems="center"
-      bg="#2D3748"
-      borderRadius="3px"
-      gap="5px"
-      p="5px"
-      justifyContent="center"
-      cursor="pointer"
-      verticalAlign="middle"
-    >
-      <Image src={icon} alt="itemdb logo" width={25} quality="100" />
-      <Text fontSize="sm">Import to itemdb</Text>
-    </Box>
   );
 };

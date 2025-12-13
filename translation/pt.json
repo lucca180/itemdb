@@ -673,7 +673,7 @@
     "import-target-list": "Lista",
     "import-text-1": "Instale a extensão <Link>Tampermonkey</Link> no seu navegador se você ainda não tiver.",
     "import-text-2": "Instale o <Link>itemdb List Importer</Link> script",
-    "import-text-3": "Uma nova aba irá abrir com a lista de itens que podem ser importados. Você então poderá escolher para qual lista você quer importar, remover ou ocultar os itens",
+    "import-text-3": "Uma nova aba abrirá com os itens disponíveis para importação e você poderá escolher a lista de destino (ou criar uma) e a ação (adicionar, remover ou ocultar itens)",
     "import-text-4": "Você também pode fazer um <Dynamic>Dynamic Checklist</Dynamic> baseado em uma das nossas <Official>Listas Oficiais</Official>!",
     "import-text-5": "O script enviará apenas os dados dos itens que você deseja importar. Nenhum dado da sua conta neopets <i>(ou do código fonte da página)</i> é enviado para nossos servidores.",
     "import-text-6": "Não confia em nós? O itemdb é <b>código aberto</b> e você sempre pode dar uma <Link>olhada em nosso código</Link>!",
@@ -805,7 +805,11 @@
     "export-list": "Exportar Lista",
     "export-list-text1": "Você pode baixar os dados dos itens desta lista em formato CSV e importar para seu aplicativo de planilha favorito.",
     "export-list-text2": "Apenas os primeiros 2.000 itens serão incluídos na exportação.",
-    "dynamic-disclaimer": "Esta é uma Lista Dinâmica <b>{x}</b>. Algumas limitações podem se aplicar - <Link>saiba mais</Link>."
+    "dynamic-disclaimer": "Esta é uma Lista Dinâmica <b>{x}</b>. Algumas limitações podem se aplicar - <Link>saiba mais</Link>.",
+    "checklists-text-1": "As checklists são baseadas no nosso sistema de <b>Listas Dinâmicas</b>. Quando você cria uma checklist, ela permanece conectada à lista original (ou até mesmo a uma pesquisa). Sempre que novos itens são adicionados, seu checklist é atualizado automaticamente — assim você nunca perde nenhum item novo.",
+    "checklists-text-2": "Ao importar itens, você pode escolher a opção <b>Ocultar</b> para ocultar automaticamente os itens que você já possui. Isso ajuda você a se concentrar apenas no que ainda precisa coletar.",
+    "checklists-text-3": "Você pode criar um checklist a partir de qualquer <Link>Lista Oficial</Link> ou diretamente durante a importação de itens. As Listas Dinâmicas são muito poderosas, por isso recomendamos ler <Link2>nosso artigo</Link2> para saber mais sobre como elas funcionam.",
+    "how-checklists-works": "Como Checklists funcionam?"
   },
   "Restock": {
     "est-profit": "Lucro Est.",
