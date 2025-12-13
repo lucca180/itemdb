@@ -211,6 +211,22 @@ export const ImportInfo = () => {
         </Text>
       </Flex>
       <Heading size="md" mt={3}>
+        {t('Lists.scripts-troubleshooting')}
+      </Heading>
+      <Flex
+        fontSize={'sm'}
+        color="gray.400"
+        flexFlow="column"
+        gap={2}
+        sx={{ b: { color: 'white' } }}
+      >
+        <Text>
+          {t.rich('Lists.scripts-troubleshooting-text', {
+            Link: (chunk) => <Link href="/articles/help-my-scripts-are-not-working">{chunk}</Link>,
+          })}
+        </Text>
+      </Flex>
+      <Heading size="md" mt={3}>
         {t('Lists.import-is-it-safe')}
       </Heading>
       <Flex

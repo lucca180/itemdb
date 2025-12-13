@@ -809,7 +809,9 @@
     "checklists-text-1": "As checklists são baseadas no nosso sistema de <b>Listas Dinâmicas</b>. Quando você cria uma checklist, ela permanece conectada à lista original (ou até mesmo a uma pesquisa). Sempre que novos itens são adicionados, seu checklist é atualizado automaticamente — assim você nunca perde nenhum item novo.",
     "checklists-text-2": "Ao importar itens, você pode escolher a opção <b>Ocultar</b> para ocultar automaticamente os itens que você já possui. Isso ajuda você a se concentrar apenas no que ainda precisa coletar.",
     "checklists-text-3": "Você pode criar um checklist a partir de qualquer <Link>Lista Oficial</Link> ou diretamente durante a importação de itens. As Listas Dinâmicas são muito poderosas, por isso recomendamos ler <Link2>nosso artigo</Link2> para saber mais sobre como elas funcionam.",
-    "how-checklists-works": "Como Checklists funcionam?"
+    "how-checklists-works": "Como Checklists funcionam?",
+    "scripts-troubleshooting": "Meu script não está funcionando, o que eu faço?",
+    "scripts-troubleshooting-text": "Dependendo do seu navegador, etapas adicionais podem ser necessárias para ativar userscripts - <Link>saiba mais</Link>."
   },
   "Restock": {
     "est-profit": "Lucro Est.",
