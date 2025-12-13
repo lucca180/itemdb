@@ -9,6 +9,7 @@ import {
   FormLabel,
   FormHelperText,
   Divider,
+  Switch,
 } from '@chakra-ui/react';
 import Layout from '../../components/Layout';
 import { createTranslator, useFormatter, useTranslations } from 'next-intl';
@@ -22,6 +23,7 @@ const PriceCalculator = () => {
   const t = useTranslations();
   const formatter = useFormatter();
   const [askingPrice, setAskingPrice] = useState<number>();
+  const [isPremium, setIsPremium] = useState(false);
   const [calcMode, setCalcMode] = useState<
     'pure' | 'babyPB' | 'startPrice' | 'minIncrement' | 'babyPBNoLimit'
   >('pure');
@@ -29,7 +31,8 @@ const PriceCalculator = () => {
   const tradingValue = useMemo(() => {
     if (!askingPrice) return { pure: 0, babyPB: 0 };
 
-    const MAX_TP_VALUE = 2000000;
+    const MAX_TP_VALUE = isPremium ? 20000000 : 10000000;
+    const MAX_TP_ITEMS = isPremium ? 25 : 15;
 
     if (calcMode === 'pure') {
       let pureVal = askingPrice > MAX_TP_VALUE ? MAX_TP_VALUE : askingPrice;
@@ -45,7 +48,8 @@ const PriceCalculator = () => {
       if (askingPrice < 600000) return { pure: askingPrice, babyPB: 0 };
       let babyPBVal = Math.floor(askingPrice / 600000);
 
-      if (calcMode === 'babyPB' && askingPrice <= 8000000) babyPBVal = Math.min(babyPBVal, 10);
+      if (calcMode === 'babyPB' && askingPrice <= 8000000)
+        babyPBVal = Math.min(babyPBVal, MAX_TP_ITEMS);
 
       const pureVal = askingPrice - babyPBVal * 600000;
 
@@ -53,7 +57,7 @@ const PriceCalculator = () => {
     }
 
     return { pure: 0, babyPB: 0 };
-  }, [askingPrice, calcMode]);
+  }, [askingPrice, calcMode, isPremium]);
 
   const auctionValue = useMemo(() => {
     if (!askingPrice) return { startPrice: 0, minIncrement: 0 };
@@ -109,7 +113,7 @@ const PriceCalculator = () => {
           objectFit={'cover'}
           borderRadius={'md'}
           boxShadow={'md'}
-          alt="happy zafara painting a picture"
+          alt=""
         />
         <Heading as="h1" size="lg">
           {t('Calculator.pricing-calculator')}
@@ -159,6 +163,12 @@ const PriceCalculator = () => {
                   {t('Calculator.auction-max-minimum-increment')}
                 </option>
               </Select>
+            </FormControl>
+            <FormControl display="flex" alignItems="center">
+              <FormLabel htmlFor="premium-member" mb="0" fontSize={'sm'}>
+                Premium Member?
+              </FormLabel>
+              <Switch id="premium-member" onChange={(e) => setIsPremium(e.target.checked)} />
             </FormControl>
             {(!!tradingValue.pure || !!tradingValue.babyPB) && (
               <>

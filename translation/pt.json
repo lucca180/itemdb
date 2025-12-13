@@ -1224,9 +1224,9 @@
     "price-helper-text": "Digite o preço pelo qual deseja vender seu item. Você pode usar os atalhos k, m, b para multiplicar o valor :)",
     "pricing-calculator": "Calculadora de Preços",
     "tp-max-baby-paint-brush-amount": "TP - Maximizar Pinceis Bebê",
-    "tp-max-baby-paint-brush-amount-no-10-item-limit": "TP - Maximizar Pinceis Bebê (sem limite de 10 itens)",
+    "tp-max-baby-paint-brush-amount-no-10-item-limit": "TP - Maximizar Pinceis Bebê (sem limite de itens)",
     "tp-max-pure-value": "TP - Maximizar Valor a Vista",
-    "tp-warning": "A quantidade máxima de itens no mesmo lote de trocas é 10",
+    "tp-warning": "A quantidade máxima de itens no mesmo lote de troca é 15 (ou 20, para membros premium)",
     "you-should-ask-for": "Você deve pedir:",
     "your-asking-price-in-nps": "Seu preço em NPs",
     "your-auction-should-be": "Seu leilão deve ser:"

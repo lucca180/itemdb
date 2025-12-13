@@ -1221,11 +1221,11 @@
     "price-helper-text": "Enter the price you want to sell your item for. You can use the shortcuts K, M, B to multiply the value :)",
     "tp-max-pure-value": "TP - Max Pure Value",
     "tp-max-baby-paint-brush-amount": "TP - Max Baby Paint Brush Amount",
-    "tp-max-baby-paint-brush-amount-no-10-item-limit": "TP - Max Baby Paint Brush Amount (no 10 item limit)",
+    "tp-max-baby-paint-brush-amount-no-10-item-limit": "TP - Max Baby Paint Brush Amount (no item limit)",
     "auction-max-start-price": "Auction - Max Start Price",
     "auction-max-minimum-increment": "Auction - Max Minimum Increment",
     "you-should-ask-for": "You should ask for:",
-    "tp-warning": "The maximum amount of items in the same trade lot is 10",
+    "tp-warning": "The maximum amount of items in the same trade lot is 15 (or 20, for premium members)",
     "your-auction-should-be": "Your auction should be:",
     "auction-warning": "The maximum initial value for an auction is 100.000.000 NP",
     "auction-helper-text": "So the first bid will need to be at least {x} NP"
