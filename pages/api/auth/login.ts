@@ -39,13 +39,19 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const token = req.headers.authorization?.split('Bearer ')[1];
     const session = req.cookies.session;
     const cookies = [];
-    if (token && !session) {
+
+    // temporarily overwrite sessionCookie to fix expiration issue
+    const isFixed = req.cookies.fixedCookie;
+
+    if (token && (!session || !isFixed)) {
       const sessionCookie = await Auth.createSessionCookie(token, { expiresIn: expiresIn * 14 });
       res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
 
+      cookies.push(`fixedCookie=1;Path=/;Max-Age=2147483647;SameSite=None;Secure;`);
+
       // expire cookie before token expires
       cookies.push(
-        `session=${sessionCookie};Path=/;httpOnly=true;secure=true;SameSite=Lax;Max-Age=${expiresIn * 12};`
+        `session=${sessionCookie};Path=/;httpOnly=true;secure=true;SameSite=Lax;Max-Age=${(expiresIn * 13) / 1000};`
       );
     }
 
