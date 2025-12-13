@@ -491,7 +491,8 @@
     "album-item": "Item de Album",
     "canonical-petpet": "Petpet Canônico",
     "paintable-petpet": "Petpet Pintável",
-    "itemdb-data-license": "Estes dados são licenciados sob <Link>CC BY-NC-SA 4.0</Link>"
+    "itemdb-data-license": "Estes dados são licenciados sob <Link>CC BY-NC-SA 4.0</Link>",
+    "subject": "Assunto"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",
@@ -636,7 +637,8 @@
     "last-price-is-crazy-unrealistic": "O último preço é louco/irrealista",
     "last-price-is-outdated": "O último preço está desatualizado",
     "select-reason": "Selecione o motivo...",
-    "suggested-price": "Preço Sugerido"
+    "suggested-price": "Preço Sugerido",
+    "subject-help-text": "Sobre o que é a sua mensagem?"
   },
   "Lists": {
     "add-to-list": "Adicionar a Lista",

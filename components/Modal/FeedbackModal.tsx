@@ -34,6 +34,12 @@ export type FeedbackModalProps = {
   item?: ItemData;
 };
 
+type FeedbackFormData = {
+  subject?: string;
+  email?: string;
+  message?: string;
+};
+
 const FeedbackModal = (props: FeedbackModalProps) => {
   const t = useTranslations();
   const { user } = useAuth();
@@ -42,21 +48,21 @@ const FeedbackModal = (props: FeedbackModalProps) => {
   const [isLoading, setLoading] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
-  const [email, setEmail] = useState<string>(user?.email ?? '');
-  const [message, setMessage] = useState<string>('');
+  const [feedbackInfo, setFeedbackInfo] = useState<FeedbackFormData>({});
 
   useEffect(() => {
-    setEmail(user?.email ?? '');
+    setFeedbackInfo((prev) => ({ ...prev, email: user?.email ?? '' }));
   }, [user]);
 
   const saveChanges = async () => {
     setLoading(true);
     try {
       const res = await axios.post('/api/feedback/send', {
-        email: email,
+        email: feedbackInfo.email ?? undefined,
         subject_id: item?.internal_id ?? undefined,
         json: JSON.stringify({
-          message: message,
+          message: feedbackInfo.message ?? '',
+          subject: feedbackInfo.subject ?? '',
           scriptInfo: {
             restock: window.itemdb_restock?.version ?? null,
             itemData: window.itemdb_script?.version ?? null,
@@ -79,11 +85,17 @@ const FeedbackModal = (props: FeedbackModalProps) => {
   };
 
   const handleCancel = () => {
-    setMessage('');
+    setFeedbackInfo({});
     setError(false);
     setIsSuccess(false);
     setLoading(false);
     onClose();
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    const updatedInfo = { ...feedbackInfo, [name]: value };
+    setFeedbackInfo(updatedInfo);
   };
 
   return (
@@ -99,15 +111,35 @@ const FeedbackModal = (props: FeedbackModalProps) => {
                 <FormLabel color="gray.300">
                   {t('General.email-address')} ({t('General.optional')})
                 </FormLabel>
-                <Input variant="filled" onChange={(e) => setEmail(e.target.value)} value={email} />
+                <Input
+                  size="sm"
+                  variant="filled"
+                  name="email"
+                  onChange={handleChange}
+                  value={feedbackInfo.email ?? ''}
+                />
                 <FormHelperText fontSize={'xs'}>{t('Feedback.modalHelper')}</FormHelperText>
+              </FormControl>
+              <FormControl>
+                <FormLabel color="gray.300">
+                  {t('General.subject')} ({t('General.optional')})
+                </FormLabel>
+                <Input
+                  size="sm"
+                  variant="filled"
+                  name="subject"
+                  onChange={handleChange}
+                  value={feedbackInfo.subject ?? ''}
+                />
+                <FormHelperText fontSize={'xs'}>{t('Feedback.subject-help-text')}</FormHelperText>
               </FormControl>
               <FormControl>
                 <FormLabel color="gray.300">{t('Feedback.modalLabel')}</FormLabel>
                 <Textarea
                   variant="filled"
-                  onChange={(e) => setMessage(e.target.value)}
-                  value={message}
+                  name="message"
+                  onChange={handleChange}
+                  value={feedbackInfo.message ?? ''}
                 />
                 <FormHelperText fontSize={'xs'}>{t('Feedback.bug-helper-text')}</FormHelperText>
               </FormControl>
@@ -153,7 +185,10 @@ const FeedbackModal = (props: FeedbackModalProps) => {
               <Button variant="ghost" onClick={handleCancel} mr={3}>
                 {t('General.cancel')}
               </Button>
-              <Button onClick={saveChanges} disabled={!message}>
+              <Button
+                onClick={saveChanges}
+                disabled={!feedbackInfo.message || feedbackInfo.message.trim() === ''}
+              >
                 {t('General.send')}
               </Button>
             </>

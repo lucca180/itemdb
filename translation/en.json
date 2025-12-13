@@ -490,7 +490,8 @@
     "album-item": "Album Item",
     "paintable-petpet": "Paintable Petpet",
     "canonical-petpet": "Canonical Petpet",
-    "itemdb-data-license": "This data is licensed under <Link>CC BY-NC-SA 4.0</Link>"
+    "itemdb-data-license": "This data is licensed under <Link>CC BY-NC-SA 4.0</Link>",
+    "subject": "Subject"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",
@@ -662,7 +663,7 @@
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",
     "modalLabel": "Write your feedback, requests and ideas (or bug reports)",
-    "modalContributeCallback": "Missing items? Outdated prices? <Link>Check this instead</Link>",
+    "modalContributeCallback": "Missing item data? Outdated prices? <Link>Check this instead</Link>",
     "done": "Done",
     "thanks": "We appreciate your comments and feedback",
     "suggest-changes": "Suggest Changes",
@@ -802,7 +803,8 @@
     "select-reason": "Select reason...",
     "last-price-is-outdated": "Last price is outdated",
     "last-price-is-crazy-unrealistic": "Last price is crazy/unrealistic",
-    "suggested-price": "Suggested Price"
+    "suggested-price": "Suggested Price",
+    "subject-help-text": "What is your message about?"
   },
   "Restock": {
     "restock-info": "Restock Info",

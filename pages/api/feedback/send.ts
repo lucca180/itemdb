@@ -58,7 +58,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 
   if (type === 'tradePrice') {
-    // cool neggs are a issue...
+    // cool neggs is an issue...
     if (parsed.trade.wishlist.toLowerCase().includes('cool negg') && user?.role !== 'ADMIN') {
       voteMultiplier = 1;
     }
@@ -317,18 +317,27 @@ const submitMailFeedback = async (
   if (type === 'officialApply')
     subject_id = `https://itemdb.com.br/lists/${data.content.username}/${subject_id}`;
 
+  const subject = data.content.subject || type;
+  let message = data.content.message || data.content.justification || '';
+  message = message.replace(/\n/g, '<br/>');
+
+  const encoded = Buffer.from(JSON.stringify(data)).toString('base64');
+
   await resend.emails.send({
     from: 'itemdb <noreply@itemdb.com.br>',
     to: 'lucca@itemdb.com.br',
-    subject: `[itemdb] ${type}`,
+    replyTo: email || 'noreply@itemdb.com.br',
+    subject: `[itemdb] ${subject}`,
     html: `
-      <b>feedback_id</b>: ${id}<br/>
-      <b>sender email</b>: ${email}<br/>
-      <b>subject_id</b>: ${subject_id}<br/>
-      <b>ip</b>: ${data.ip}<br/>
-      <b>pageRef</b>: ${data.pageRef}<br/><br/>
-      <b>data</b>: ${data.content.message ?? data.content.justification}<br/><br/>
-      <b>rawData</b>: ${JSON.stringify(data)}
+      ${message}<br/><br/>
+      <small style="opacity: 0.65;">--- debug info ---<br/>
+      <b>feedback_id</b>: ${id} | 
+      ${subject_id ? `<b>subject_id</b>: ${subject_id} | ` : ''}
+      <b>pageRef</b>: ${data.pageRef} | 
+      <b>ip</b>: ${data.ip} | 
+      ${data.content.userAgent ? `<b>userAgent</b>: ${data.content.userAgent}<br/><br/>` : ''}
+      ${encoded}
+      </small>
     `,
   });
 };
