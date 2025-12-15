@@ -11,6 +11,14 @@ import { allCategories } from '@utils/allCats';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '2mb',
+    },
+  },
+};
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
   if (req.method === 'POST') return POST(req, res);
