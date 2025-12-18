@@ -313,7 +313,11 @@
     "create-your-0-checklist": "Create your <b>{0}</b> checklist",
     "unconfirmed-price": "Unconfirmed Price",
     "unconfirmed-price-text": "We're confirming a new price for this item and it will be visible to once verified",
-    "all-x-petpets": "All {0} Petpets"
+    "all-x-petpets": "All {0} Petpets",
+    "price-history": "Price History",
+    "selling": "Selling",
+    "buying": "Buying",
+    "price-chart": "Price Chart"
   },
   "Button": {
     "feedback": "Feedback",

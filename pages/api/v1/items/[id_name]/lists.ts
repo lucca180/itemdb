@@ -49,21 +49,25 @@ export const getItemLists = async (
     },
   });
 
-  return listsRaw.map((list) => {
-    const newList = rawToList(list, list.user, includeItems);
-    if (includeItems) return newList;
-    const item = list.items.find((item) => item.item_iid === id)!;
+  return listsRaw
+    .map((list) => {
+      const newList = rawToList(list, list.user, includeItems);
+      if (includeItems) return newList;
+      const item = list.items.find((item) => item.item_iid === id)!;
 
-    newList.itemInfo = [
-      {
-        ...item,
-        addedAt: item.addedAt.toJSON(),
-        updatedAt: item.updatedAt.toJSON(),
-        seriesStart: item.seriesStart?.toJSON() ?? null,
-        seriesEnd: item.seriesEnd?.toJSON() ?? null,
-      },
-    ];
+      newList.itemInfo = [
+        {
+          ...item,
+          addedAt: item.addedAt.toJSON(),
+          updatedAt: item.updatedAt.toJSON(),
+          seriesStart: item.seriesStart?.toJSON() ?? null,
+          seriesEnd: item.seriesEnd?.toJSON() ?? null,
+        },
+      ];
 
-    return newList;
-  });
+      return newList;
+    })
+    .filter(
+      (list) => new Date(list.owner.lastSeen).getTime() > Date.now() - 365 * 24 * 60 * 60 * 1000
+    );
 };

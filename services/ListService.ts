@@ -10,6 +10,7 @@ import { doSearch } from '../pages/api/v1/search';
 import { sortListItems } from '@utils/utils';
 import { getManyItems } from '../pages/api/v1/items/many';
 import { defaultFilters } from '@utils/parseFilters';
+import { tz } from '@date-fns/tz';
 
 export class ListService {
   user: User | null = null;
@@ -320,7 +321,9 @@ export const rawToList = (
       id: owner.id,
       username: owner.username,
       neopetsUser: (owner as RawUser)?.neo_user ?? (owner as User).neopetsUser,
-      lastSeen: startOfDay((owner as RawUser).last_login ?? (owner as User).lastLogin).toJSON(),
+      lastSeen: startOfDay((owner as RawUser).last_login ?? (owner as User).lastLogin, {
+        in: tz('America/Los_Angeles'),
+      }).toJSON(),
     },
 
     createdAt: listRaw.createdAt.toJSON(),

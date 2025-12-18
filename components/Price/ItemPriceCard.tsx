@@ -21,11 +21,11 @@ import {
   CloseButton,
   useToast,
   Box,
+  ButtonGroup,
 } from '@chakra-ui/react';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ItemData, ItemLastSeen, PriceData, PricingInfo, UserList } from '../../types';
 import { ChartComponentProps } from '../Charts/PriceChart';
-import { AiOutlineAreaChart, AiOutlineTable } from 'react-icons/ai';
 import PriceTable from './PriceTable';
 import { MinusIcon } from '@chakra-ui/icons';
 import CardBase from '../Card/CardBase';
@@ -55,6 +55,8 @@ import TPIcon from '../../public/icons/tradingpost.png';
 import Image from 'next/image';
 import { SeenHistoryModalProps } from '../SeenHistory/SeenHistoryModal';
 import { CreatePriceModalModalProps } from '../Modal/CreatePriceModal';
+import MatchTable from '@components/NCTrades/MatchTable';
+import { shouldShowTradeLists } from '@utils/utils';
 
 const ChartComponent = dynamic<ChartComponentProps>(() => import('../Charts/PriceChart'));
 const LastSeenModal = dynamic<LastSeenModalProps>(() => import('../Modal/LastSeenModal'));
@@ -80,6 +82,7 @@ type Props = {
   prices: PriceData[];
   lastSeen: ItemLastSeen | null;
   lists?: UserList[];
+  tradeLists?: UserList[];
 };
 
 const ItemPriceCard = (props: Props) => {
@@ -92,11 +95,11 @@ const ItemPriceCard = (props: Props) => {
   const saleStatusModal = useDisclosure();
   const adminCreatePrice = useDisclosure();
   const { item } = props;
-  const [displayState, setDisplay] = useState('table');
+  const [displayState, setDisplay] = useState<'table' | 'chart' | 'seeking' | 'trading'>('table');
   const isNoTrade = item.status?.toLowerCase() === 'no trade';
   const [selectedPrice, setSelectedPrice] = useState<PriceData | null>(null);
   const [seenHistory, setSeenHistory] = useState<string | null>(null);
-
+  const shouldShowLists = shouldShowTradeLists(item);
   const rgbColor = item.color.rgb;
   const { data: priceStatus, isLoading: isPriceStatusLoading } = useSWRImmutable<PricingInfo>(
     `/api/v1/prices/${item.internal_id}/status`,
@@ -253,6 +256,61 @@ const ItemPriceCard = (props: Props) => {
       <CardBase color={rgbColor} title={t('ItemPage.price-overview')}>
         <Flex gap={3} flexFlow="column">
           {!!needHelp && <HelpNeeded item={item} helpData={needHelp} />}
+
+          {(shouldShowLists || prices.length > 0) && (
+            <Flex
+              justifyContent={{ base: 'flex-start', md: 'center' }}
+              gap={2}
+              alignItems="center"
+              pb={1.5}
+              mb={1.5}
+              overflow={'auto'}
+            >
+              <ButtonGroup size="sm" isAttached variant="outline">
+                <Button
+                  colorScheme={displayState === 'table' ? 'blue' : ''}
+                  isActive={displayState === 'table'}
+                  onClick={() => setDisplay('table')}
+                  data-umami-event="price-card-buttons"
+                  data-umami-event-label={'table'}
+                >
+                  {t('ItemPage.price-history')}
+                </Button>
+
+                {shouldShowLists && (
+                  <Button
+                    colorScheme={displayState === 'trading' ? 'cyan' : ''}
+                    isActive={displayState === 'trading'}
+                    onClick={() => setDisplay('trading')}
+                    data-umami-event="price-card-buttons"
+                    data-umami-event-label={'trading'}
+                  >
+                    {t('ItemPage.selling')}
+                  </Button>
+                )}
+                {shouldShowLists && (
+                  <Button
+                    colorScheme={displayState === 'seeking' ? 'purple' : ''}
+                    isActive={displayState === 'seeking'}
+                    onClick={() => setDisplay('seeking')}
+                    data-umami-event="price-card-buttons"
+                    data-umami-event-label={'seeking'}
+                  >
+                    {t('ItemPage.buying')}
+                  </Button>
+                )}
+                <Button
+                  colorScheme={displayState === 'chart' ? 'yellow' : ''}
+                  isActive={displayState === 'chart'}
+                  onClick={() => setDisplay('chart')}
+                  data-umami-event="price-card-buttons"
+                  data-umami-event-label={'chart'}
+                >
+                  {t('ItemPage.price-chart')}
+                </Button>
+              </ButtonGroup>
+            </Flex>
+          )}
           <Flex
             flexFlow={{ base: 'column', md: 'row' }}
             alignItems={{ base: 'inherit', md: 'center' }}
@@ -318,87 +376,51 @@ const ItemPriceCard = (props: Props) => {
                   <Icon as={FaFlag} mr={1} verticalAlign={'center'} /> {t('ItemPage.wrong-price')}
                 </Button>
               )}
+              <HStack mt={2} gap={2}>
+                {user?.isAdmin && (
+                  <IconButton
+                    onClick={adminCreatePrice.onOpen}
+                    size="xs"
+                    aria-label="Table"
+                    icon={<MdOutlineAdd />}
+                  />
+                )}
+                {user?.isAdmin && (
+                  <IconButton
+                    onClick={forceUpdatePrices}
+                    size="xs"
+                    aria-label="Table"
+                    icon={<LuAtom />}
+                  />
+                )}
+              </HStack>
             </Flex>
             <Flex flexFlow="column" width="100%" maxW={'580px'}>
-              {prices.length == 0 && (
-                <HStack ml="auto" mr={2} mb={2} gap={0}>
-                  {user?.isAdmin && (
-                    <IconButton
-                      onClick={adminCreatePrice.onOpen}
-                      size="sm"
-                      aria-label="Table"
-                      icon={<MdOutlineAdd />}
-                      mr={2}
-                    />
-                  )}
-                  {user?.isAdmin && (
-                    <IconButton
-                      onClick={forceUpdatePrices}
-                      size="sm"
-                      aria-label="Table"
-                      icon={<LuAtom />}
-                      mr={2}
-                    />
-                  )}
-                </HStack>
+              {displayState === 'chart' && prices.length > 0 && (
+                <ChartComponent lists={props.lists} color={item.color} data={prices} />
               )}
-              {prices.length > 0 && (
-                <>
-                  <HStack ml="auto" mr={2} mb={2} gap={0}>
-                    {user?.isAdmin && (
-                      <IconButton
-                        onClick={adminCreatePrice.onOpen}
-                        size="sm"
-                        aria-label="Table"
-                        icon={<MdOutlineAdd />}
-                        mr={2}
-                      />
-                    )}
-                    {user?.isAdmin && (
-                      <IconButton
-                        onClick={forceUpdatePrices}
-                        size="sm"
-                        aria-label="Table"
-                        icon={<LuAtom />}
-                        mr={2}
-                      />
-                    )}
-
-                    {displayState === 'table' && (
-                      <IconButton
-                        onClick={() => setDisplay('chart')}
-                        size="sm"
-                        aria-label="Chart"
-                        icon={<AiOutlineAreaChart />}
-                      />
-                    )}
-                    {displayState === 'chart' && (
-                      <IconButton
-                        onClick={() => setDisplay('table')}
-                        size="sm"
-                        aria-label="Table"
-                        icon={<AiOutlineTable />}
-                      />
-                    )}
-                  </HStack>
-                  {displayState === 'chart' && (
-                    <ChartComponent lists={props.lists} color={item.color} data={prices} />
-                  )}
-                  {displayState === 'table' && (
-                    <Box bg="blackAlpha.300" borderRadius={'md'} overflow={'hidden'}>
-                      <PriceTable
-                        item={item}
-                        color={item.color.hex}
-                        lists={props.lists}
-                        data={prices}
-                        isAdmin={user?.isAdmin}
-                        onEdit={(price) => setSelectedPrice(price)}
-                      />
-                    </Box>
-                  )}
-                </>
+              {displayState === 'table' && prices.length > 0 && (
+                <Box bg="blackAlpha.300" borderRadius={'md'} overflow={'hidden'}>
+                  <PriceTable
+                    item={item}
+                    color={item.color.hex}
+                    lists={props.lists}
+                    data={prices}
+                    isAdmin={user?.isAdmin}
+                    onEdit={(price) => setSelectedPrice(price)}
+                  />
+                </Box>
               )}
-              {prices.length == 0 && (
+              {['seeking', 'trading'].includes(displayState) && (
+                <Box bg="blackAlpha.300" borderRadius={'md'} overflow={'hidden'}>
+                  <MatchTable
+                    data={props.tradeLists?.filter((list) => list.purpose === displayState) || []}
+                    matches={null}
+                    type={displayState as 'seeking' | 'trading'}
+                  />
+                </Box>
+              )}
+              {!['seeking', 'trading'].includes(displayState) && prices.length === 0 && (
                 <Flex justifyContent="center" alignItems="center" minH={150}>
                   <Text fontSize="xs" color="gray.200" textAlign={'center'}>
                     {t('ItemPage.no-data')} <br />
@@ -420,7 +442,6 @@ const ItemPriceCard = (props: Props) => {
           >
             {t('ItemPage.seen-at')} <Icon boxSize={'12px'} as={MdHelp} ml={1} />
           </HeadingLine>
-
           <HStack
             justifyContent={{ base: 'center', md: 'space-around' }}
             textAlign="center"

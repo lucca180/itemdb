@@ -314,7 +314,11 @@
     "create-your-0-checklist": "Crie seu <b>{0}</b> checklist",
     "unconfirmed-price": "Preço não confirmado",
     "unconfirmed-price-text": "Estamos confirmando um novo preço para este item e ele ficará visível depois de verificado",
-    "all-x-petpets": "Todos os Petpets {0}"
+    "all-x-petpets": "Todos os Petpets {0}",
+    "buying": "Comprando",
+    "price-chart": "Gráfico de Preços",
+    "price-history": "Histórico de Preços",
+    "selling": "Vendendo"
   },
   "Button": {
     "feedback": "Feedback",

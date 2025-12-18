@@ -55,6 +55,7 @@ import { loadTranslation } from '@utils/load-translation';
 import { getNCTradeInsights } from '../api/v1/mall/[iid]/insights';
 import FeedbackButton from '@components/Feedback/FeedbackButton';
 import RelatedLinksCard from '@components/Items/RelatedLinks';
+import { shouldShowTradeLists } from '@utils/utils';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -356,6 +357,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
                 lastSeen={props.lastSeen}
                 prices={props.NPPrices}
                 lists={props.lists}
+                tradeLists={tradeLists}
               />
             )}
             {item.isNC && (
@@ -499,7 +501,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
         getSingleItemColor(item), //0
         getItemLists(item.internal_id, true, false), // 1
         getSimilarItems(item), // 2
-        item.isNC ? getItemLists(item.internal_id, false, false) : [], // 3
+        shouldShowTradeLists(item) ? getItemLists(item.internal_id, false, false) : [], // 3
         item.useTypes.canOpen !== 'false' ? getItemDrops(item.internal_id, item.isNC) : null, // 4
         getItemParent(item.internal_id, 4), // 5
         !item.isNC ? getItemPrices({ iid: item.internal_id, includeUnconfirmed: true }) : [], // 6

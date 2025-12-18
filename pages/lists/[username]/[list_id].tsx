@@ -588,43 +588,6 @@ const ListPage = (props: ListPageProps) => {
         setOpenCreateModal={setOpenCreateModal}
       />
       <Flex mt={5} gap={6} flexFlow="column">
-        {matches.length > 0 && (
-          <>
-            <Box>
-              <Heading size={{ base: 'md', md: 'lg' }}>
-                {t.rich('Lists.you-plus-list', {
-                  Badge: (chunk) => (
-                    <Badge fontSize={0} verticalAlign="middle">
-                      {chunk}
-                    </Badge>
-                  ),
-                  matches: matches.length,
-                  listName: list.name,
-                })}
-              </Heading>
-              <Text color="gray.400" fontSize={{ base: 'sm', md: 'md' }}>
-                {!list.official && list.purpose === 'trading'
-                  ? t('Lists.aka-seek')
-                  : t('Lists.aka-have')}
-              </Text>
-            </Box>
-            <Flex gap={3} flexWrap="wrap" w="100%" justifyContent="center">
-              {matches
-                .sort((a, b) => sortListItems(a, b, 'name', 'asc', items))
-                .map((itemMatch) => (
-                  <ItemCard
-                    uniqueID="list-match"
-                    item={items[itemMatch.item_iid]}
-                    key={itemMatch.item_iid}
-                    capValue={itemMatch.capValue}
-                    quantity={itemMatch.amount}
-                  />
-                ))}
-            </Flex>
-
-            <Divider />
-          </>
-        )}
         <Flex
           justifyContent={'space-between'}
           alignItems="center"
@@ -784,6 +747,43 @@ const ListPage = (props: ListPageProps) => {
               />
             </FormControl>
           </Center>
+        )}
+
+        {matches.length > 0 && (
+          <Flex flexFlow={'column'} gap={3} bg={'blackAlpha.400'} p={4} borderRadius="md">
+            <Box>
+              <Heading size={'md'}>
+                {t.rich('Lists.you-plus-list', {
+                  Badge: (chunk) => (
+                    <Badge fontSize={0} verticalAlign="middle">
+                      {chunk}
+                    </Badge>
+                  ),
+                  matches: matches.length,
+                  listName: list.name,
+                })}
+              </Heading>
+              <Text color="gray.400" fontSize={'sm'}>
+                {!list.official && list.purpose === 'trading'
+                  ? t('Lists.aka-seek')
+                  : t('Lists.aka-have')}
+              </Text>
+            </Box>
+            <Flex gap={3} flexWrap="wrap" w="100%" justifyContent="center">
+              {matches
+                .sort((a, b) => sortListItems(a, b, sortInfo.sortBy, sortInfo.sortDir, items))
+                .map((itemMatch) => (
+                  <ItemCard
+                    small
+                    uniqueID="list-match"
+                    item={items[itemMatch.item_iid]}
+                    key={itemMatch.item_iid}
+                    capValue={itemMatch.capValue}
+                    quantity={itemMatch.amount}
+                  />
+                ))}
+            </Flex>
+          </Flex>
         )}
 
         {(searchItemInfoIds ?? itemInfoIds).filter(

@@ -34,7 +34,7 @@ const MatchTable = (props: Props) => {
 
   return (
     <TableContainer
-      minH={{ base: 100, md: 100 }}
+      minH={{ base: 150, md: 150 }}
       maxH={{ base: 200, md: 300 }}
       w="100%"
       borderRadius="sm"
@@ -70,7 +70,7 @@ const MatchTable = (props: Props) => {
           )}
           {sortedData.map((list) => (
             <Tr key={list.internal_id}>
-              <Td>
+              <Td maxW="200px" overflow="hidden" textOverflow="ellipsis">
                 <Link
                   as={NextLink}
                   href={`/lists/${list.owner.username}/${list.slug ?? list.internal_id}`}

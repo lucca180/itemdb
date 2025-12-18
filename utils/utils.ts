@@ -1,6 +1,7 @@
 import { ItemProcess, Items, PriceProcess } from '@prisma/generated/client';
 import { mean, standardDeviation } from 'simple-statistics';
 import { ItemData, ItemFindAt, ListItemInfo, ShopInfo, TradeData, UserList } from '../types';
+import { differenceInCalendarDays } from 'date-fns';
 
 export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
   const findAt: ItemFindAt = {
@@ -1740,4 +1741,19 @@ export const dynamicListCan = (list: UserList | undefined, permission: 'add' | '
   }
 
   return true;
+};
+
+export const shouldShowTradeLists = (item: ItemData) => {
+  if (item.status === 'no trade') return false;
+
+  if (item.firstSeen && differenceInCalendarDays(new Date(), new Date(item.firstSeen)) < 2)
+    return false;
+
+  if (item.isNC) return true;
+  if (!item.price.value) return true;
+  if (item.price.inflated) return true;
+  if (item.price.value > 500000) return true;
+  if (differenceInCalendarDays(new Date(item.price.addedAt!), new Date()) >= 30) return true;
+
+  return false;
 };
