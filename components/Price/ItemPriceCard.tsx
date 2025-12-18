@@ -268,7 +268,7 @@ const ItemPriceCard = (props: Props) => {
             >
               <ButtonGroup size="sm" isAttached variant="outline">
                 <Button
-                  colorScheme={displayState === 'table' ? 'blue' : ''}
+                  colorScheme={displayState === 'table' ? 'green' : ''}
                   isActive={displayState === 'table'}
                   onClick={() => setDisplay('table')}
                   data-umami-event="price-card-buttons"
@@ -279,7 +279,7 @@ const ItemPriceCard = (props: Props) => {
 
                 {shouldShowLists && (
                   <Button
-                    colorScheme={displayState === 'trading' ? 'cyan' : ''}
+                    colorScheme={displayState === 'trading' ? 'blue' : ''}
                     isActive={displayState === 'trading'}
                     onClick={() => setDisplay('trading')}
                     data-umami-event="price-card-buttons"
