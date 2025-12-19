@@ -155,14 +155,12 @@ const sentryWebpackPluginOptions: SentryBuildOptions = {
   org: 'lucca-4p',
   project: 'itemdb',
   silent: true,
-  autoInstrumentMiddleware: false,
   authToken: process.env.SENTRY_AUTH_TOKEN,
   sourcemaps: {
     disable: false, // Enable source maps (default: false)
     ignore: ['**/node_modules/**'],
     deleteSourcemapsAfterUpload: false,
   },
-  disableLogger: true,
   widenClientFileUpload: true,
 };
 
