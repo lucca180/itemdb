@@ -606,12 +606,12 @@ const ListPage = (props: ListPageProps) => {
               )}
               {(!qtyCount || itemCount === qtyCount) && (
                 <Text as="div" textColor={'gray.300'} fontSize="sm">
-                  {t('Lists.itemcount-items', { itemCount })}
+                  {t('Lists.itemcount-items', { itemCount: itemCount ?? -1 })}
                 </Text>
               )}
               {!!qtyCount && qtyCount !== itemCount && (
                 <Text as="div" textColor={'gray.300'} fontSize="sm">
-                  {t('Lists.xx-unique-items-yy-total', { itemCount, qtyCount })}
+                  {t('Lists.xx-unique-items-yy-total', { itemCount: itemCount ?? -1, qtyCount })}
                 </Text>
               )}
             </HStack>
@@ -851,7 +851,7 @@ const ListPage = (props: ListPageProps) => {
         )}
         {isLoading && !itemInfoIds.length && (
           <Flex gap={3} justifyContent={'center'} wrap={'wrap'}>
-            {Array.from({ length: Math.min(8 * 5, list.itemCount) }).map((_, i) => (
+            {Array.from({ length: Math.min(8 * 5, list.itemCount ?? -1) }).map((_, i) => (
               <ItemCard uniqueID={`loading`} key={i} isLoading />
             ))}
           </Flex>

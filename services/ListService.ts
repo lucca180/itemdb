@@ -302,9 +302,16 @@ const toListIdAndSlug = (list_id_or_slug: string | number) => {
   }
 };
 
+type RequiredUser = {
+  id: string;
+  username: string;
+  neo_user: string;
+  last_login: string;
+};
+
 export const rawToList = (
   listRaw: RawList & { items?: ListItems[] },
-  owner: User | RawUser,
+  owner: RawUser | User | RequiredUser,
   includeItems = false
 ): UserList => {
   return {
@@ -314,14 +321,14 @@ export const rawToList = (
     coverURL: listRaw.cover_url,
     colorHex: listRaw.colorHex,
     purpose: listRaw.purpose,
-    official: listRaw.official,
+    official: !!listRaw.official,
     visibility: listRaw.visibility,
 
     owner: {
       id: owner.id,
       username: owner.username,
-      neopetsUser: (owner as RawUser)?.neo_user ?? (owner as User).neopetsUser,
-      lastSeen: startOfDay((owner as RawUser).last_login ?? (owner as User).lastLogin, {
+      neopetsUser: (owner as RequiredUser)?.neo_user ?? (owner as User).neopetsUser,
+      lastSeen: startOfDay((owner as RequiredUser).last_login ?? (owner as User).lastLogin, {
         in: tz('America/Los_Angeles'),
       }).toJSON(),
     },
@@ -336,7 +343,7 @@ export const rawToList = (
     dynamicType: listRaw.dynamicType,
     lastSync: listRaw.lastSync?.toJSON() ?? null,
     linkedListId: listRaw.linkedListId ?? null,
-    canBeLinked: listRaw.official || listRaw.canBeLinked,
+    canBeLinked: !!(listRaw.official || listRaw.canBeLinked),
 
     officialTag: listRaw.official_tag ?? null,
     userTag: listRaw.listUserTag ?? null,
@@ -360,15 +367,15 @@ export const rawToListItems = (items: ListItems[]): ListItemInfo[] => {
     internal_id: item.internal_id,
     list_id: item.list_id,
     item_iid: item.item_iid,
-    addedAt: item.addedAt.toJSON(),
-    updatedAt: item.updatedAt.toJSON(),
+    addedAt: new Date(item.addedAt).toJSON(),
+    updatedAt: new Date(item.updatedAt).toJSON(),
     amount: item.amount,
     capValue: item.capValue,
-    imported: item.imported,
+    imported: !!item.imported,
     order: item.order,
-    isHighlight: item.isHighlight,
-    isHidden: item.isHidden,
-    seriesStart: item.seriesStart?.toJSON() ?? null,
-    seriesEnd: item.seriesEnd?.toJSON() ?? null,
+    isHighlight: !!item.isHighlight,
+    isHidden: !!item.isHidden,
+    seriesStart: item.seriesStart ? new Date(item.seriesStart).toJSON() : null,
+    seriesEnd: item.seriesEnd ? new Date(item.seriesEnd).toJSON() : null,
   }));
 };

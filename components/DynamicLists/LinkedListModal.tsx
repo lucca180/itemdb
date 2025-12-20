@@ -110,7 +110,7 @@ const LinkedListModal = (props: LinkedListModalProps) => {
               {t('DynamicList.linkedLists-desc')}
             </Text>
             <DynamicListInfo
-              resultCount={list.itemCount}
+              resultCount={list.itemCount ?? -1}
               dynamicType={dynamicType}
               setDynamicType={setDynamicType}
             />
@@ -146,7 +146,7 @@ const LinkedListModal = (props: LinkedListModalProps) => {
               variant="ghost"
               colorScheme={'orange'}
               onClick={createDynamic}
-              isDisabled={list.itemCount > 4000}
+              isDisabled={(list.itemCount ?? -1) > 4000}
             >
               <Image
                 src={DynamicIcon}

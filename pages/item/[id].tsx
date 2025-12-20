@@ -499,9 +499,9 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     async () => {
       return Promise.all([
         getSingleItemColor(item), //0
-        getItemLists(item.internal_id, true, false), // 1
+        getItemLists(item.internal_id, true), // 1
         getSimilarItems(item), // 2
-        shouldShowTradeLists(item) ? getItemLists(item.internal_id, false, false) : [], // 3
+        shouldShowTradeLists(item) ? getItemLists(item.internal_id, false) : [], // 3
         item.useTypes.canOpen !== 'false' ? getItemDrops(item.internal_id, item.isNC) : null, // 4
         getItemParent(item.internal_id, 4), // 5
         !item.isNC ? getItemPrices({ iid: item.internal_id, includeUnconfirmed: true }) : [], // 6
