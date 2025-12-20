@@ -36,6 +36,7 @@ import { useRouter } from 'next/router';
 import { CanonicalTradeModalProps } from '../../components/Modal/CanonicalTradeModal';
 import { Breadcrumbs } from '../../components/Breadcrumbs/Breadcrumbs';
 import { loadTranslation } from '@utils/load-translation';
+import { NewPolicyReminder } from '@components/Feedback/NewPolicyReminder';
 
 const ReportFeedbackModal = dynamic<ReportFeedbackModalProps>(
   () => import('../../components/Modal/ReportFeedbackModal')
@@ -47,7 +48,7 @@ const CanonicalTradeModal = dynamic<CanonicalTradeModalProps>(
 
 const AUTO_PRICE_UID = 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1';
 
-const FeedbackVotingPage = () => {
+const FeedbackVotingPage = (props: { shouldShowReminder: boolean }) => {
   const t = useTranslations();
   const router = useRouter();
   const { user, authLoading } = useAuth();
@@ -212,7 +213,7 @@ const FeedbackVotingPage = () => {
         gap={6}
         alignItems={{ base: 'center', md: 'flex-start' }}
         flexFlow={{ base: 'column', md: 'row' }}
-        sx={{ b: { color: 'blue.200' } }}
+        // sx={{ b: { color: 'blue.200' } }}
       >
         <CardBase
           chakraWrapper={{ flex: 2 }}
@@ -256,6 +257,7 @@ const FeedbackVotingPage = () => {
           h="100%"
           w="100%"
         >
+          {props.shouldShowReminder && <NewPolicyReminder />}
           {isLoading && (
             <Center>
               <Spinner size="lg" />
@@ -371,9 +373,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       };
     }
 
+    const shouldShowReminder = !(context.req.cookies['bbpb_new_policy_reminder'] === 'true');
+
     return {
       props: {
         messages: await loadTranslation(context.locale as string, 'feedback/vote'),
+        shouldShowReminder,
         locale: context.locale,
       },
     };

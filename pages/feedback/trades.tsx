@@ -33,8 +33,9 @@ import { createTranslator, useTranslations } from 'next-intl';
 import { useRouter } from 'next/router';
 import { Breadcrumbs } from '../../components/Breadcrumbs/Breadcrumbs';
 import { loadTranslation } from '@utils/load-translation';
+import { NewPolicyReminder } from '@components/Feedback/NewPolicyReminder';
 
-const FeedbackSuggest = () => {
+const FeedbackSuggest = (props: { shouldShowReminder: boolean }) => {
   const t = useTranslations();
   const router = useRouter();
   const { user, authLoading } = useAuth();
@@ -204,6 +205,7 @@ const FeedbackSuggest = () => {
           w="100%"
           gap={4}
         >
+          {props.shouldShowReminder && <NewPolicyReminder />}
           {!isLoading && currentTrade && (
             <>
               <FeedbackTrade
@@ -270,19 +272,21 @@ export const TradeGuidelines = () => {
           b: (chunk) => <b>{chunk}</b>,
         })}
       </Text>
-      <Alert status={'info'} my={6} variant="subtle" borderRadius={'md'}>
+      <Alert status={'warning'} my={6} variant="solid" borderRadius={'md'}>
         <AlertIcon />
         <Box w="100%">
-          <AlertTitle>{t('Feedback.10-02-2024-policy-changes')}</AlertTitle>
+          <AlertTitle>{t('Feedback.20-12-2025-new-baby-paint-brush-policy')}</AlertTitle>
           <AlertDescription fontSize="xs">
-            {t.rich('Feedback.new-policy-1', {
-              b: (chunk) => <b>{chunk}</b>,
-            })}
-            <br />
-            <br />
-            {t.rich('Feedback.new-policy-2', {
-              b: (chunk) => <b>{chunk}</b>,
-            })}
+            <Text mb={2}>
+              {t.rich('Feedback.new-policy-2025-1', {
+                b: (chunk) => <b>{chunk}</b>,
+              })}
+            </Text>
+            <Text>
+              {t.rich('Feedback.new-policy-2025-2', {
+                b: (chunk) => <b>{chunk}</b>,
+              })}
+            </Text>
           </AlertDescription>
         </Box>
       </Alert>
@@ -379,9 +383,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       };
     }
 
+    const shouldShowReminder = !(context.req.cookies['bbpb_new_policy_reminder'] === 'true');
+
     return {
       props: {
         messages: await loadTranslation(context.locale as string, 'feedback/trades'),
+        shouldShowReminder,
         locale: context.locale,
       },
     };

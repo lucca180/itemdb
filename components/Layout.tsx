@@ -406,7 +406,7 @@ const Layout = (props: Props) => {
                   <b>{t('Layout.contribute')}</b>
                 </Text>
                 <ChakraLink href="/contribute">Item Data Extractor</ChakraLink>
-                <ChakraLink href="/feedback">{t('Feedback.vote-suggestions')}</ChakraLink>
+                <ChakraLink href="/feedback/vote">{t('Feedback.vote-suggestions')}</ChakraLink>
                 <ChakraLink href="/feedback/trades">{t('Layout.trade-pricing')}</ChakraLink>
                 <ChakraLink href="/contribute">+ {t('Layout.more')}</ChakraLink>
               </Flex>

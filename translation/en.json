@@ -751,7 +751,7 @@
     "pt-5": "However if the 'valuable item' is WAY more valuable than the others you can assume the wishlist is referring to it.",
     "pt-6": "Divide the lot unique price by the number of items if the items are different",
     "pt-7": "Eg: 'paperclip trade - 10 items 100np' -> it's not right to assume that each item costs 10NP",
-    "pt-8": "Use other item's price to compose the lot price (except for Baby PBs)",
+    "pt-8": "Use other item's price to compose the lot price",
     "pt-9": "Eg: '6 Cool Negg + 100k' or '2m + ETS' -> leave it blank",
     "pt-10": "However if the other item's price is negligible, you can just assume the value in pure",
     "pt-11": "Price '1NP' or 'paperclip' kind of trades",
@@ -814,7 +814,12 @@
     "last-price-is-outdated": "Last price is outdated",
     "last-price-is-crazy-unrealistic": "Last price is crazy/unrealistic",
     "suggested-price": "Suggested Price",
-    "subject-help-text": "What is your message about?"
+    "subject-help-text": "What is your message about?",
+    "20-12-2025-new-baby-paint-brush-policy": "[20/12/2025] New Baby Paint Brush Policy",
+    "new-policy-2025-1": "After the Trading Post revamp, the market value of <b>Baby Paint Brushes</b> became <b>highly volatile</b> due to increased offer limits and the Instant Buy feature.",
+    "new-policy-2025-2": "Because of this, Baby Paint Brushes should <b>NOT be used to calculate trade prices</b>. If Baby Paint Brushes are listed in the wishlist and there is no explicit total value in Neopoints, you <b>MUST leave the value blank</b>.",
+    "updated-trade-pricing-policy": "Updated Trade Pricing Policy",
+    "review-pricing-policy": "Please review the new trade pricing policy to stay informed about Baby Paint Brush changes."
   },
   "Restock": {
     "restock-info": "Restock Info",

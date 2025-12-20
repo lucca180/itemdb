@@ -581,7 +581,7 @@
     "pt-5": "No entanto, se o 'item valioso' for MUITO mais valioso do que os outros, você pode presumir que a lista de desejos se refere a ele.",
     "pt-6": "Dividir o preço único do lote pelo número de itens, se os itens forem diferentes",
     "pt-7": "Ex.: 'paperclip trade - 10 items 100np' -> não é correto presumir que cada item custa 10NP",
-    "pt-8": "Utilizar o preço de outro item para compor o preço do lote (exceto baby pb)",
+    "pt-8": "Utilizar o preço de outro item para compor o preço do lote",
     "pt-9": "Ex: '6 Cool Negg + 100k' ou '2m + ETS' -> deixe em branco",
     "trade-pricing-guidelines": "Diretrizes de Precificação de Trocas",
     "dos": "O que fazer",
@@ -642,7 +642,12 @@
     "last-price-is-outdated": "O último preço está desatualizado",
     "select-reason": "Selecione o motivo...",
     "suggested-price": "Preço Sugerido",
-    "subject-help-text": "Sobre o que é a sua mensagem?"
+    "subject-help-text": "Sobre o que é a sua mensagem?",
+    "20-12-2025-new-baby-paint-brush-policy": "[20/12/2025] Nova política para Baby Paint Brush",
+    "new-policy-2025-1": "Após o revamp do Posto de Trocas, o valor de mercado dos <b>Baby Paint Brushes</b> se tornou altamente volátil devido ao aumento dos limites de oferta e do Instant Buy.",
+    "new-policy-2025-2": "Por isso, a partir de agora, Pincéis Bebê <b>NÃO devem mais ser usados para compor o preço das trocas</b>. Se pincéis bebê estiverem na wishlist e não houver um valor total explicito em neopontos você <b>DEVE deixar o valor EM BRANCO</b>",
+    "updated-trade-pricing-policy": "Atualização na Política de Precificação",
+    "review-pricing-policy": "Por favor, revise a nova política de precificação para se manter informado sobre as alterações a cerca dos Baby Paint Brush."
   },
   "Lists": {
     "add-to-list": "Adicionar a Lista",

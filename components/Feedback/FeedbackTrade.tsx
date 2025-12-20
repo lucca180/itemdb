@@ -24,8 +24,8 @@ import { FeedbackExperimentsModalProps } from '../Modal/FeedbackExperimentsModal
 import { AiOutlineExperiment } from 'react-icons/ai';
 import { useAuth } from '../../utils/auth';
 import dynamic from 'next/dynamic';
-import { FaCalculator } from 'react-icons/fa';
-import { TradeCalculatorModalProps } from './TradeCalculatorModal';
+// import { FaCalculator } from 'react-icons/fa';
+// import { TradeCalculatorModalProps } from './TradeCalculatorModal';
 //@ts-expect-error missing types
 import Sticky from 'react-stickynode';
 
@@ -33,9 +33,9 @@ const FeedbackExperimentsModal = dynamic<FeedbackExperimentsModalProps>(
   () => import('../Modal/FeedbackExperimentsModal')
 );
 
-const TradeCalculatorModal = dynamic<TradeCalculatorModalProps>(
-  () => import('./TradeCalculatorModal')
-);
+// const TradeCalculatorModal = dynamic<TradeCalculatorModalProps>(
+//   () => import('./TradeCalculatorModal')
+// );
 
 type Props = {
   trade?: TradeData;
@@ -265,7 +265,7 @@ const ItemTrade = (props: ItemTradeProps) => {
 
   return (
     <>
-      {isOpen && (
+      {/* {isOpen && (
         <TradeCalculatorModal
           trade={props.trade}
           isOpen={isOpen}
@@ -273,7 +273,7 @@ const ItemTrade = (props: ItemTradeProps) => {
           useShortcuts={props.useShortcuts}
           finalRef={ref as any}
         />
-      )}
+      )} */}
       <Flex gap={3}>
         <Box>
           <Image src={item.image} width={80} height={80} alt={item.name} />
@@ -314,13 +314,13 @@ const ItemTrade = (props: ItemTradeProps) => {
                 value={item.price?.toString()}
                 onChange={(val) => handleChange(val)}
               />
-              <IconButton
+              {/* <IconButton
                 tabIndex={-1}
                 size="sm"
                 icon={<FaCalculator />}
                 onClick={onOpen}
                 aria-label="Calculator"
-              />
+              /> */}
             </HStack>
             <FormHelperText fontSize="xs">
               {t('Feedback.leave-empty-if-price-is-not-specified')}
