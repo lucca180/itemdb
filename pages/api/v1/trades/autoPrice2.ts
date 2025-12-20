@@ -236,9 +236,15 @@ const checkTradeEstPrice = async (trade: Trades & { items: TradeItems[] }) => {
 const checkInstaBuy = async (trade: Trades & { items: TradeItems[] }) => {
   if (!trade.instantBuy) return false;
 
-  const items = trade.items
-    .map((item) => itemDataCache.get(item.item_iid!.toString()))
-    .filter((i) => !!i) as ItemData[];
+  const items = trade.items.map((item) =>
+    itemDataCache.get(item.item_iid!.toString())
+  ) as ItemData[];
+
+  // there is a very small chance an item is not found, in that case we skip the trade
+  if (items.includes(undefined!)) {
+    console.error('Item data not found for trade:', trade.trade_id);
+    return false;
+  }
 
   const hasItemUnpriced = items.some(
     (item) =>
