@@ -5,6 +5,7 @@ import { processTradePrice } from '.';
 import { MAX_VOTE_MULTIPLIER } from '../../feedback/vote';
 import { getManyItems } from '../items/many';
 import { differenceInCalendarDays } from 'date-fns';
+import { ItemData } from '@types';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
@@ -95,12 +96,12 @@ export const autoPriceTrades2 = async (tradeRaw: (Trades & { items: TradeItems[]
   return await prisma.$transaction([feedbacks, updateTrades]);
 };
 
-const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
-  // we have a lot of "cool negg" trades that are not following our guidelines
-  // so let's just skip them for now
-  if (trade.wishlist.toLowerCase().includes('cool negg')) return null;
+const banWords = ['cool negg', 'baby', 'bby', 'bb'];
 
-  const shouldSkip = await checkTradeEstPrice(trade);
+const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
+  if (banWords.some((word) => trade.wishlist.toLowerCase().includes(word))) return null;
+
+  const shouldSkip = (await checkTradeEstPrice(trade)) || (await checkInstaBuy(trade));
   if (shouldSkip) return null;
 
   const similarList = await prisma.trades.findMany({
@@ -118,23 +119,11 @@ const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
 
   const isAllItemsTheSame = trade.items.every((t) => t.item_iid === trade.items[0].item_iid);
 
-  // let unpriced = null;
-
   const similar = similarList.find((t) => {
     const isTheSame = t.items.every((t2) => t2.item_iid === t.items[0].item_iid);
 
-    // const isSimilar = t.items.length === trade.items.length && isTheSame === isAllItemsTheSame;
-    // const isAllEmpty = t.items.every((item) => !item.price);
-
-    // // if (isAllEmpty && isSimilar) {
-    // //   unpriced = t;
-    // //   return false;
-    // // }
-
     return t.items.length === trade.items.length && isTheSame === isAllItemsTheSame;
   });
-
-  // if (!similar && unpriced) similar = unpriced;
 
   if (!similar) return null;
 
@@ -197,6 +186,8 @@ const findCanonical = async (trade: Trades & { items: TradeItems[] }) => {
   return null;
 };
 
+const itemDataCache = new Map<string, ItemData>();
+
 // this will skip trade pricing if the trade is est price is less than 100k
 const checkTradeEstPrice = async (trade: Trades & { items: TradeItems[] }) => {
   // if (trade.items.length === 1) return false;
@@ -205,12 +196,19 @@ const checkTradeEstPrice = async (trade: Trades & { items: TradeItems[] }) => {
     .map((item) => item.item_iid?.toString())
     .filter((id) => !!id) as string[];
 
-  const itemsData = await getManyItems({ id: itemsQuery });
+  if (itemsQuery.length === 0) return false;
+
+  const uniqueIds = itemsQuery.filter((id) => !itemDataCache.has(id));
+
+  const itemsData = await getManyItems({ id: uniqueIds });
+  Object.entries(itemsData).forEach(([id, data]) => {
+    itemDataCache.set(id, data);
+  });
 
   let priceSum = 0;
 
   for (const item of trade.items) {
-    const itemData = itemsData[item.item_iid!.toString()];
+    const itemData = itemDataCache.get(item.item_iid!.toString());
 
     if (!itemData) return false;
 
@@ -232,4 +230,52 @@ const checkTradeEstPrice = async (trade: Trades & { items: TradeItems[] }) => {
   await processTradePrice(trade as any);
 
   return true;
+};
+
+// this will check if the trade has an instant buy and if the most expensive item is worth more than 80% of the insta buy
+const checkInstaBuy = async (trade: Trades & { items: TradeItems[] }) => {
+  if (!trade.instantBuy) return false;
+
+  const items = trade.items
+    .map((item) => itemDataCache.get(item.item_iid!.toString()))
+    .filter((i) => !!i) as ItemData[];
+
+  const hasItemUnpriced = items.some(
+    (item) =>
+      !item.price.value ||
+      item.price.inflated ||
+      differenceInCalendarDays(new Date(), new Date(item.price.addedAt ?? 0)) > 30
+  );
+  if (hasItemUnpriced) return false;
+
+  const mostExpensiveItem = items.reduce(
+    (prev, current) => ((prev.price.value ?? 0) > (current.price.value ?? 0) ? prev : current),
+    items[0]
+  );
+
+  const otherItems = trade.items.filter(
+    (item) => item.internal_id !== mostExpensiveItem.internal_id
+  );
+
+  const otherItemsValue = otherItems.reduce((sum, item) => {
+    const itemData = itemDataCache.get(item.item_iid!.toString());
+    return sum + (itemData?.price.value ?? 0) * item.amount;
+  }, 0);
+
+  if (otherItemsValue <= (mostExpensiveItem.price.value ?? 0) * 0.2) {
+    trade.items = trade.items.map((item) => {
+      if (item.item_iid === mostExpensiveItem.internal_id) {
+        return {
+          ...item,
+          price: Math.floor(trade.instantBuy! / item.amount) as any,
+        };
+      }
+      return item;
+    });
+
+    await processTradePrice(trade as any);
+    return true;
+  }
+
+  return false;
 };
