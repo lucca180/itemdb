@@ -99,6 +99,11 @@ const FeedbackTrade = (props: Props) => {
 
   const isAllEmpty = useMemo(() => trade?.items.every((item) => !item.price), [trade]);
 
+  const itemCount = useMemo(
+    () => trade?.items.reduce((sum, item) => sum + (item.amount ?? 1), 0) ?? 0,
+    [trade]
+  );
+
   return (
     <>
       <FeedbackExperimentsModal isOpen={isOpen} onClose={onClose} />
@@ -145,12 +150,10 @@ const FeedbackTrade = (props: Props) => {
           chakra={{ bg: 'gray.700' }}
         >
           <Center gap={1}>
-            {isAllEqual && trade && trade.items.length > 1 && (
+            {isAllEqual && trade && itemCount > 1 && (
               <Badge colorScheme="yellow">{t('Feedback.all-equal')}</Badge>
             )}
-            <Badge colorScheme="blue">
-              {t('Feedback.x-items', { x: trade?.items.length ?? -1 })}
-            </Badge>
+            <Badge colorScheme="blue">{t('Feedback.x-items', { x: itemCount })}</Badge>
           </Center>
           <Flex flexFlow="column" gap={6}>
             <Sticky
@@ -301,12 +304,12 @@ const ItemTrade = (props: ItemTradeProps) => {
                 wrapperProps={{
                   variant: 'filled',
                   size: 'sm',
-                  placeholder: t('General.np-price'),
+                  placeholder: t('Feedback.unit-price-in-neopoints'),
                   flex: 1,
                 }}
                 inputProps={{
                   ref: ref,
-                  placeholder: t('General.np-price'),
+                  placeholder: t('Feedback.unit-price-in-neopoints'),
                   textAlign: 'left',
                   onKeyDown: handleKeyDown,
                   name: item.trade_id + item.name + item.order,
@@ -323,6 +326,14 @@ const ItemTrade = (props: ItemTradeProps) => {
               /> */}
             </HStack>
             <FormHelperText fontSize="xs">
+              {item.amount > 1 && (
+                <>
+                  {t.rich('Feedback.multiple-amount-msg', {
+                    b: (children) => <b>{children}</b>,
+                  })}
+                  <br />
+                </>
+              )}
               {t('Feedback.leave-empty-if-price-is-not-specified')}
             </FormHelperText>
           </FormControl>

@@ -268,7 +268,7 @@ const checkInstaBuy = async (trade: Trades & { items: TradeItems[] }) => {
     return sum + (itemData?.price.value ?? 0) * item.amount;
   }, 0);
 
-  if (otherItemsValue <= (mostExpensiveItem.price.value ?? 0) * 0.2) {
+  if (otherItemsValue <= (mostExpensiveItem.price.value ?? 0) * 0.25) {
     trade.items = trade.items.map((item) => {
       if (item.item_iid === mostExpensiveItem.internal_id) {
         return {
@@ -279,6 +279,12 @@ const checkInstaBuy = async (trade: Trades & { items: TradeItems[] }) => {
       return item;
     });
 
+    await processTradePrice(trade as any);
+    return true;
+  }
+
+  // different items with similar value and insta buy is low -> skip
+  if (trade.instantBuy < 500000) {
     await processTradePrice(trade as any);
     return true;
   }

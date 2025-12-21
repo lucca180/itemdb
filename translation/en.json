@@ -819,7 +819,9 @@
     "new-policy-2025-1": "After the Trading Post revamp, the market value of <b>Baby Paint Brushes</b> became <b>highly volatile</b> due to increased offer limits and the Instant Buy feature.",
     "new-policy-2025-2": "Because of this, Baby Paint Brushes should <b>NOT be used to calculate trade prices</b>. If Baby Paint Brushes are listed in the wishlist and there is no explicit total value in Neopoints, you <b>MUST leave the value blank</b>.",
     "updated-trade-pricing-policy": "Updated Trade Pricing Policy",
-    "review-pricing-policy": "Please review the new trade pricing policy to stay informed about Baby Paint Brush changes."
+    "review-pricing-policy": "Please review the new trade pricing policy to stay informed about Baby Paint Brush changes.",
+    "unit-price-in-neopoints": "Price per unit in Neopoints",
+    "multiple-amount-msg": "Please enter the <b>price per unit</b> for this item. Divide the total price by the amount if necessary."
   },
   "Restock": {
     "restock-info": "Restock Info",

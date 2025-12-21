@@ -647,7 +647,9 @@
     "new-policy-2025-1": "Após o revamp do Posto de Trocas, o valor de mercado dos <b>Baby Paint Brushes</b> se tornou altamente volátil devido ao aumento dos limites de oferta e do Instant Buy.",
     "new-policy-2025-2": "Por isso, a partir de agora, Pincéis Bebê <b>NÃO devem mais ser usados para compor o preço das trocas</b>. Se pincéis bebê estiverem na wishlist e não houver um valor total explicito em neopontos você <b>DEVE deixar o valor EM BRANCO</b>",
     "updated-trade-pricing-policy": "Atualização na Política de Precificação",
-    "review-pricing-policy": "Por favor, revise a nova política de precificação para se manter informado sobre as alterações a cerca dos Baby Paint Brush."
+    "review-pricing-policy": "Por favor, revise a nova política de precificação para se manter informado sobre as alterações a cerca dos Baby Paint Brush.",
+    "multiple-amount-msg": "Por favor insira o <b>valor unitário</b> para este item. Divida o valor total pela quantidade - se necessário.",
+    "unit-price-in-neopoints": "Preço unitário em Neopontos"
   },
   "Lists": {
     "add-to-list": "Adicionar a Lista",
