@@ -222,10 +222,10 @@ const checkTradeEstPrice = async (trade: Trades & { items: TradeItems[] }) => {
     )
       return false;
 
-    priceSum += itemData.price.value;
+    priceSum += itemData.price.value * item.amount;
   }
 
-  if (priceSum >= Math.max(300000, trade.items.length * 100000)) return false;
+  if (priceSum >= 800000 || trade.instantBuy) return false;
 
   await processTradePrice(trade as any);
 
@@ -284,7 +284,7 @@ const checkInstaBuy = async (trade: Trades & { items: TradeItems[] }) => {
   }
 
   // different items with similar value and insta buy is low -> skip
-  if (trade.instantBuy < 500000) {
+  if (trade.instantBuy < 800000) {
     await processTradePrice(trade as any);
     return true;
   }
