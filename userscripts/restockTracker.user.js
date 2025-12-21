@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Restock Tracker
-// @version      2.0.1
+// @version      2.0.2
 // @author       itemdb
 // @namespace    itemdb
 // @description  Tracks your restock metrics
@@ -221,13 +221,11 @@ function handleRestockHaggle(){
 
 function handleIgloo() {
   const shopId = '-2';
-  const items = $('form[name="items_for_sale"] td')
+  const items = $('.igs-item')
   const session = getSession(shopId);
-
+  
   items.each(function (i) {
-    const itemData = $(this).find('a');
-    const itemEl = itemData[0];
-    const itemID = itemEl.href.match(/(?<=obj_info_id\=)\d+/)?.[0];
+    const itemID = $(this).attr('id')
     const price = $(this).text().match(/(?<=Cost\s*:\s*)[\d,]+/)?.[0];
     // const timestamp in 5 min intervals
     const stockId = Math.round(Date.now()/(1000 * 60 * 5)) + Number(itemID);
