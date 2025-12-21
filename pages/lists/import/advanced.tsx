@@ -19,7 +19,7 @@ const AdvancedImportPage = () => {
 
   const handleChange = (value: string) => {
     let data;
-    if (value.includes('I made this list on Dress to Impress')) {
+    if (value.includes('dti-item')) {
       data = handleDTIImport(value);
     } else if (value.includes("This list was created at Jellyneo's Item Database!")) {
       data = handleJNImport(value);

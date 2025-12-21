@@ -90,6 +90,7 @@ const ColorInfoCard = (props: Props) => {
                   maxW="250px"
                   py={1}
                   px={3}
+                  key={key}
                   bg={colors[key].hex}
                   borderRadius="md"
                   justifyContent="space-between"
