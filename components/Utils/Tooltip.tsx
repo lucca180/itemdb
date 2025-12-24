@@ -3,13 +3,13 @@ import { Popover, PopoverTrigger, PopoverContent, PopoverArrow } from '@chakra-u
 type TooltipProps = {
   children: React.ReactNode;
   label?: React.ReactNode;
+  position?: 'top' | 'bottom' | 'left' | 'right';
 };
 
 const Tooltip = (props: TooltipProps) => {
-  const { children, label } = props;
-
+  const { children, label, position = 'top' } = props;
   return (
-    <Popover placement="top" isLazy>
+    <Popover placement={position} isLazy>
       <PopoverTrigger>{children}</PopoverTrigger>
       <PopoverContent
         border={0}

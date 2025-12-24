@@ -822,7 +822,8 @@
     "checklists-text-3": "Você pode criar um checklist a partir de qualquer <Link>Lista Oficial</Link> ou diretamente durante a importação de itens. As Listas Dinâmicas são muito poderosas, por isso recomendamos ler <Link2>nosso artigo</Link2> para saber mais sobre como elas funcionam.",
     "how-checklists-works": "Como Checklists funcionam?",
     "scripts-troubleshooting": "Meu script não está funcionando, o que eu faço?",
-    "scripts-troubleshooting-text": "Dependendo do seu navegador, etapas adicionais podem ser necessárias para ativar userscripts - <Link>saiba mais</Link>."
+    "scripts-troubleshooting-text": "Dependendo do seu navegador, etapas adicionais podem ser necessárias para ativar userscripts - <Link>saiba mais</Link>.",
+    "itemcount-info-tooltip": "Itens Únicos Visíveis - {unique}<br></br>{hidden, plural, =0 {} other {Itens Únicos Ocultos - #<br></br>}}Total de Itens - {total}"
   },
   "Restock": {
     "est-profit": "Lucro Est.",

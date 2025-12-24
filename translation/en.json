@@ -668,7 +668,8 @@
     "checklists-text-2": "When importing items, you can choose the <b>Hide option</b> to automatically hide items you already own. This helps you focus only on what you still need to collect.",
     "checklists-text-3": "You can create a checklist from any <Link>Official List</Link> or directly while importing items. Dynamic Lists are very powerful, so we recommend reading <Link2>our article</Link2> to learn more about how they work.",
     "scripts-troubleshooting-text": "Depending on your browser additional steps might be required to enable userscripts - <Link>learn more</Link>.",
-    "scripts-troubleshooting": "My script isn't working, what do I do?"
+    "scripts-troubleshooting": "My script isn't working, what do I do?",
+    "itemcount-info-tooltip": "Visible Unique Items - {unique}<br></br>{hidden, plural, =0 {} other {Hidden Unique Items - #<br></br>}}Total Items - {total}"
   },
   "Feedback": {
     "modalHelper": "If you want to receive a response please enter your email address",

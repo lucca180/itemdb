@@ -56,6 +56,8 @@ import { getSimilarLists } from '../../api/v1/lists/[username]/[list_id]/similar
 import { loadTranslation } from '@utils/load-translation';
 import { getListMatch } from '../../api/v1/lists/match/[...usernames]';
 import { ListService } from '@services/ListService';
+import { BiHelpCircle } from 'react-icons/bi';
+import A11yTooltip from '@components/Utils/Tooltip';
 
 const CreateListModal = dynamic<CreateListModalProps>(
   () => import('../../../components/Modal/CreateListModal')
@@ -166,15 +168,35 @@ const ListPage = (props: ListPageProps) => {
   }, [list, isLoading, itemInfo, searchItemInfoIds]);
 
   const qtyCount = useMemo(() => {
-    let count = 0;
+    const countObj = {
+      total: 0,
+      totalQty: 0,
 
-    if (isLoading) return list.itemCount;
+      hidden: 0,
+      hiddenQty: 0,
+
+      visible: 0,
+      visibleQty: 0,
+    };
+
+    if (isLoading) {
+      countObj.total = list.itemCount ?? 0;
+    }
 
     (searchItemInfoIds ?? itemInfoIds).forEach((id) => {
-      count += itemInfo[id]?.amount ?? 0;
+      countObj.totalQty += itemInfo[id]?.amount ?? 1;
+      countObj.total += 1;
+
+      if (itemInfo[id]?.isHidden) {
+        countObj.hidden += 1;
+        countObj.hiddenQty += itemInfo[id]?.amount ?? 1;
+      } else {
+        countObj.visible += 1;
+        countObj.visibleQty += itemInfo[id]?.amount ?? 1;
+      }
     });
 
-    return count;
+    return countObj;
   }, [isLoading, itemInfo, itemInfoIds, searchItemInfoIds]);
 
   useEffect(() => {
@@ -604,16 +626,27 @@ const ListPage = (props: ListPageProps) => {
               {(isOwner || list.official || list.canBeLinked) && !list.linkedListId && (
                 <CreateLinkedListButton list={list} isLoading={isLoading} />
               )}
-              {(!qtyCount || itemCount === qtyCount) && (
+              <HStack gap={1}>
                 <Text as="div" textColor={'gray.300'} fontSize="sm">
-                  {t('Lists.itemcount-items', { itemCount: itemCount ?? -1 })}
+                  {t('Lists.itemcount-items', { itemCount: qtyCount.visibleQty })}
                 </Text>
-              )}
-              {!!qtyCount && qtyCount !== itemCount && (
-                <Text as="div" textColor={'gray.300'} fontSize="sm">
-                  {t('Lists.xx-unique-items-yy-total', { itemCount: itemCount ?? -1, qtyCount })}
-                </Text>
-              )}
+                <A11yTooltip
+                  position="right"
+                  label={t.rich('Lists.itemcount-info-tooltip', {
+                    br: () => <br />,
+                    unique: qtyCount.visible,
+                    hidden: qtyCount.hidden,
+                    total: qtyCount.totalQty,
+                  })}
+                >
+                  <IconButton
+                    icon={<BiHelpCircle />}
+                    aria-label="Item Count Info"
+                    size="xs"
+                    variant={'ghost'}
+                  />
+                </A11yTooltip>
+              </HStack>
             </HStack>
           )}
           {isEdit && (
