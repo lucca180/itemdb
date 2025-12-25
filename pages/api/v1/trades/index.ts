@@ -122,6 +122,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
     itemDataRaw = { ...itemDataRaw, ...itemReq };
 
+    let isMissingInfo = false;
+
     itemList.forEach((item) => {
       if (!item.item_iid) {
         const itemData = itemReq[`${encodeURI(item.name.toLowerCase())}_${item.image_id}`];
@@ -129,9 +131,13 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
           item.item_iid = itemData.internal_id;
         } else {
           item.item_iid = null;
+          isMissingInfo = true;
         }
       }
     });
+
+    // if we are missing item info, skip the trade
+    if (isMissingInfo) continue;
 
     const oldTradeHash = hash({
       wishlist: lot.wishList,
