@@ -88,7 +88,9 @@ const getPopularItem = async (skipList?: string[]) => {
     select name, count(name) as count, max(t.addedAt) as max_addedAt FROM trades t 
     left join tradeitems ti2 on t.trade_id = ti2.trade_id
     left join items i2 on ti2.item_iid = i2.internal_id
-    where processed = 0 and EXISTS (
+    where processed = 0 and
+    i2.name IS NOT NULL and 
+    EXISTS (
         SELECT 1 
         FROM trades t2
         LEFT JOIN tradeitems ti ON t2.trade_id = ti.trade_id

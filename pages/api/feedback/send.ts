@@ -321,8 +321,6 @@ const submitMailFeedback = async (
   let message = data.content.message || data.content.justification || '';
   message = message.replace(/\n/g, '<br/>');
 
-  const encoded = Buffer.from(JSON.stringify(data)).toString('base64');
-
   await resend.emails.send({
     from: 'itemdb <noreply@itemdb.com.br>',
     to: 'lucca@itemdb.com.br',
@@ -330,13 +328,12 @@ const submitMailFeedback = async (
     subject: `[itemdb] ${subject}`,
     html: `
       ${message}<br/><br/>
-      <small style="opacity: 0.65;">--- debug info ---<br/>
+      <small style="opacity: 0.5;">--- debug info ---<br/>
       <b>feedback_id</b>: ${id} | 
       ${subject_id ? `<b>subject_id</b>: ${subject_id} | ` : ''}
       <b>pageRef</b>: ${data.pageRef} | 
       <b>ip</b>: ${data.ip} | 
       ${data.content.userAgent ? `<b>userAgent</b>: ${data.content.userAgent}<br/><br/>` : ''}
-      ${encoded}
       </small>
     `,
   });
