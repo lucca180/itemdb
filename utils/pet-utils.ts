@@ -773,6 +773,7 @@ export const petpetColors: { [id: string]: string } = {
   '1004': 'Ice',
   '1005': 'Jelly',
   '1006': 'Picnic',
+  '1007': 'Alien',
   '2001': 'Birthday',
   '2002': 'Sand',
   '2003': 'Void',
