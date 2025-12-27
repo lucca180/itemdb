@@ -6,6 +6,7 @@ import { ItemPrices, PriceProcess2, Prisma } from '@prisma/generated/client';
 import { differenceInCalendarDays, differenceInDays } from 'date-fns';
 import { processPrices2 } from '../../../../utils/pricing';
 import { processPrices3 } from '@utils/pricing3';
+import { LogService } from '@services/ActionLogService';
 
 export const MAX_DAYS = 30;
 export const MAX_PAST_DAYS = 60;
@@ -364,8 +365,7 @@ async function updateOrAddDB(
       orderBy: { addedAt: 'desc' },
     });
 
-    // Skip processing if the previous price entry requires manual check
-    if (oldPriceRaw?.manual_check) return undefined;
+    const isPendingCheck = !!oldPriceRaw?.manual_check;
 
     if (!oldPriceRaw) {
       const item = await prisma.items.findFirst({ where: { internal_id: priceData.item_iid } });
@@ -384,6 +384,8 @@ async function updateOrAddDB(
     const priceDiff = Math.abs(oldPrice - priceValue);
 
     if (daysSinceLastUpdate <= 1) return undefined;
+
+    forceMode = forceMode || isPendingCheck;
 
     if (latestDate < oldPriceRaw.addedAt) {
       return undefined;
@@ -454,6 +456,39 @@ async function updateOrAddDB(
         lastNormalPrice >= priceValue
       )
         newPriceData.noInflation_id = null;
+    }
+
+    // auto-approve inflation prices if the new price is also inflated
+    if (isPendingCheck && newPriceData.noInflation_id) {
+      await prisma.itemPrices.update({
+        where: { internal_id: oldPriceRaw.internal_id },
+        data: { manual_check: null },
+      });
+
+      await LogService.createLog(
+        'inflationAutoApprove',
+        {
+          newPrice: Number(newPriceData.price),
+          oldPrice: oldPriceRaw.price.toNumber(),
+        },
+        newPriceData.item_iid?.toString()
+      );
+    }
+
+    // delete inflation price if the new price is normal and was added recently
+    if (isPendingCheck && daysSinceLastUpdate <= 5 && !newPriceData.noInflation_id) {
+      await prisma.itemPrices.delete({
+        where: { internal_id: oldPriceRaw.internal_id },
+      });
+
+      await LogService.createLog(
+        'inflationDelete',
+        {
+          newPrice: Number(newPriceData.price),
+          oldPrice: oldPriceRaw.price.toNumber(),
+        },
+        newPriceData.item_iid?.toString()
+      );
     }
 
     return newPriceData;
