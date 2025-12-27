@@ -6,6 +6,7 @@ import { MAX_VOTE_MULTIPLIER } from '../../feedback/vote';
 import { getManyItems } from '../items/many';
 import { differenceInCalendarDays } from 'date-fns';
 import { ItemData } from '@types';
+import { shouldSkipTrade } from '@utils/utils';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
@@ -284,7 +285,7 @@ const checkInstaBuy = async (trade: Trades & { items: TradeItems[] }) => {
   }
 
   // different items with similar value and insta buy is low -> skip
-  if (trade.instantBuy < 800000) {
+  if (trade.instantBuy < 800000 || trade.wishlist === 'none' || shouldSkipTrade(trade.wishlist)) {
     await processTradePrice(trade as any);
     return true;
   }
