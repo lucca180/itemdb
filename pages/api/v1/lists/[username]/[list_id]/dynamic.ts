@@ -6,6 +6,7 @@ import { doSearch } from '../../../search';
 import { Prisma } from '@prisma/generated/client';
 import { isSameHour } from 'date-fns';
 import { ListService } from '@services/ListService';
+import { LogService } from '@services/ActionLogService';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   // return res.status(405).json({ error: 'Method not allowed' });
@@ -305,7 +306,12 @@ export const syncDynamicList = async (list_id: number, force = false) => {
       },
     }),
     !isLogEmpty && !firstSync
-      ? createLog('dynamicListSync', logData, targetList.internal_id.toString(), 'itemdb_system')
+      ? LogService.createLog(
+          'dynamicListSync',
+          logData,
+          targetList.internal_id.toString(),
+          'itemdb_system'
+        )
       : null,
   ]);
 
@@ -316,16 +322,4 @@ type DynamicSyncLog = {
   added: number[];
   removed: number[];
   runtime: number;
-};
-
-// this should be moved to a log service
-const createLog = async (actionType: string, data: any, subjectId?: string, uid?: string) => {
-  await prisma.actionLogs.create({
-    data: {
-      actionType,
-      logData: data,
-      subject_id: subjectId,
-      user_id: uid === 'itemdb_system' ? 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1' : uid,
-    },
-  });
 };

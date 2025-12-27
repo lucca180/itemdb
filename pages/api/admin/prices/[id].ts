@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { CheckAuth } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
 import { User } from '@types';
+import { LogService } from '@services/ActionLogService';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   let user: User | null = null;
@@ -65,17 +66,15 @@ const POST = async (req: NextApiRequest, res: NextApiResponse, user: User) => {
     },
   });
 
-  await prisma.actionLogs.create({
-    data: {
-      actionType: 'editPrice',
-      subject_id: item_iid.toString(),
-      logData: {
-        originalPrice,
-        updatedPrice: updated,
-      },
-      user_id: user.id,
+  await LogService.createLog(
+    'editPrice',
+    {
+      originalPrice,
+      updatedPrice: updated,
     },
-  });
+    item_iid.toString(),
+    user.id
+  );
 
   return res.json(updated);
 };
@@ -99,14 +98,12 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse, user: User) => 
     },
   });
 
-  await prisma.actionLogs.create({
-    data: {
-      actionType: 'deletePrice',
-      subject_id: originalPrice.item_iid?.toString(),
-      logData: originalPrice,
-      user_id: user.id,
-    },
-  });
+  await LogService.createLog(
+    'deletePrice',
+    originalPrice,
+    originalPrice.item_iid?.toString(),
+    user.id
+  );
 
   if (!originalPrice.isLatest) return res.json(true);
 

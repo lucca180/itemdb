@@ -18,6 +18,7 @@ import { CheckAuth } from '../../../../utils/googleCloud';
 import { ItemData } from '../../../../types';
 import { sendNewItemsHook } from '../../../../utils/discord-hooks';
 import { syncAllDynamicLists } from '../lists/sync';
+import { LogService } from '@services/ActionLogService';
 
 type ValueOf<T> = T[keyof T];
 
@@ -368,7 +369,7 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
       where: { internal_id: dbItem.internal_id },
     });
 
-    await saveLogChanges(dbItem, changeObj);
+    await LogService.createLog('itemUpdate', changeObj, dbItem.internal_id.toString());
 
     return undefined;
   } catch (e: any) {
@@ -489,17 +490,6 @@ const checkPlay = (category?: string | null) =>
   allPlayCats.filter((x) => x.toLowerCase() === category?.toLowerCase()).length > 0;
 const checkRead = (category?: string | null) =>
   allBooksCats.filter((x) => x.toLowerCase() === category?.toLowerCase()).length > 0;
-
-const saveLogChanges = async (item: Item, changes: ItemChangesLog) => {
-  await prisma.actionLogs.create({
-    data: {
-      actionType: 'itemUpdate',
-      subject_id: item.internal_id.toString(),
-      user_id: 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1',
-      logData: changes,
-    },
-  });
-};
 
 export type ItemChangesLog = {
   [key in keyof Item | keyof ItemData]?: {

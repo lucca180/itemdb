@@ -4,6 +4,7 @@ import prisma from '../../../../utils/prisma';
 import { ItemPrices } from '@prisma/generated/client';
 import { slugify } from '../../../../utils/utils';
 import { User } from '@types';
+import { LogService } from '@services/ActionLogService';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   let user: User | null = null;
@@ -202,15 +203,13 @@ const handleItemUpdate = async (id: number, field: string, value: string, user: 
     },
   });
 
-  await prisma.actionLogs.create({
-    data: {
-      subject_id: id.toString(),
-      actionType: 'conflictResolve',
-      logData: {
-        field,
-        value,
-      },
-      user_id: user.id,
+  await LogService.createLog(
+    'itemUpdate',
+    {
+      field,
+      value,
     },
-  });
+    id.toString(),
+    user.id
+  );
 };

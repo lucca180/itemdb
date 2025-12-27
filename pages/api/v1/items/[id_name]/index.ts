@@ -13,6 +13,7 @@ import { ItemChangesLog } from '../process';
 import { rawToItemData } from '../many';
 import { getNCValue } from '../../mall/[iid]';
 import { UTCDate } from '@date-fns/utc';
+import { LogService } from '@services/ActionLogService';
 
 const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
 const NC_VALUES_TYPE = process.env.NC_VALUES_TYPE; // 'itemdb' or 'lebron'
@@ -381,12 +382,5 @@ const logChanges = async (originalItem: Items, updatedItem: Items, uid: string) 
     }
   }
 
-  await prisma.actionLogs.create({
-    data: {
-      actionType: 'itemUpdate',
-      subject_id: updatedItem.internal_id.toString(),
-      user_id: uid,
-      logData: changes,
-    },
-  });
+  await LogService.createLog('itemUpdate', changes, updatedItem.internal_id.toString(), uid);
 };
