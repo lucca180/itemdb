@@ -375,6 +375,11 @@ const submitHookFeedback = async (params: PriceCheckParams) => {
       inline: true,
     })
     .addField({
+      name: 'Preço Atual',
+      value: item.price.value ? intl.format(item.price.value) : 'n/a',
+      inline: true,
+    })
+    .addField({
       name: 'Preço Sugerido',
       value: suggestedPrice ? intl.format(Number(suggestedPrice)) : '???',
       inline: true,
