@@ -7,6 +7,7 @@ import { addMonths, differenceInCalendarDays, format, parse, startOfMonth } from
 import { getManyItemsPriceHistory } from '../prices/history';
 import { calculateStats, defaultStats } from '.';
 import { getItem } from '../items/[id_name]';
+import { chunk } from 'lodash';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
@@ -95,7 +96,7 @@ async function PATCH(req: NextApiRequest, res: NextApiResponse) {
       },
     });
 
-    let lastMonth = parse(lastProcessed?.dateType ?? '01-24', 'MM-yy', new Date());
+    let lastMonth = parse(lastProcessed?.dateType ?? '01-25', 'MM-yy', new Date());
     let nextMonth = lastProcessed ? addMonths(lastMonth, 1) : lastMonth;
 
     if (nextMonth >= startOfMonth(new Date())) {
@@ -179,7 +180,7 @@ const processMonth = async (user_id: string, month: number, year = 2024) => {
     });
   });
 
-  const allItemsPrices = await getManyItemsPriceHistory({ item_ids: Array.from(allItemsID) });
+  const allItemsPrices = await bulkGetMany(Array.from(allItemsID));
 
   Object.values(allItemsPrices).map((prices) => {
     priceHistoryMap.set(prices[0].item_iid, prices);
@@ -381,4 +382,16 @@ export const getWrapped = async (user_id: string, year: number) => {
   };
 
   return { wrapped, monthly: monthlyStats };
+};
+
+const bulkGetMany = async (item_iids: number[]) => {
+  const batchSize = 10;
+
+  let results = {};
+  for (let batch of chunk(item_iids, batchSize)) {
+    const res = await getManyItemsPriceHistory({ item_iids: batch });
+    results = { ...results, ...res };
+  }
+
+  return results as Awaited<ReturnType<typeof getManyItemsPriceHistory>>;
 };
