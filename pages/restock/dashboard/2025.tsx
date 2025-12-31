@@ -605,7 +605,7 @@ const Wrapped2025 = (props: Wrapped2025Props) => {
         </Flex>
         <Flex>
           <Text fontSize={'sm'}>
-            You should visit this page back again in 2025 to check out the updated stats with the
+            You should visit this page back again in 2026 to check out the updated stats with the
             December data!
           </Text>
         </Flex>
