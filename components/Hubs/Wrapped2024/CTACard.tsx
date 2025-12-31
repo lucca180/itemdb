@@ -14,7 +14,7 @@ export const RestockedCTACard = () => {
     isLoading ||
     !data ||
     data.status === 'notReady' ||
-    data.status === userPref?.dashboard_wrappedHide
+    data.status === userPref?.dashboard_wrappedHide2025
   )
     return null;
 
@@ -26,7 +26,7 @@ export const RestockedCTACard = () => {
       position={'relative'}
       borderRadius={'md'}
       overflow={'hidden'}
-      boxShadow={'md'}
+      boxShadow={'sm'}
       textAlign={'center'}
       _before={{
         content: '""',
@@ -37,7 +37,7 @@ export const RestockedCTACard = () => {
         top: 0,
         zIndex: -1,
         opacity: 0.75,
-        filter: 'brightness(0.65)',
+        filter: 'brightness(0.5)',
         background: 'url(/img/bg1.svg)',
         bgSize: 'cover',
         bgPos: 'center',
@@ -55,7 +55,7 @@ export const RestockedCTACard = () => {
     >
       <Flex flexFlow={'column'} p={3} w={'100%'}>
         <CloseButton
-          onClick={() => updatePref('dashboard_wrappedHide', data.status)}
+          onClick={() => updatePref('dashboard_wrappedHide2025', data.status)}
           position={'absolute'}
           top={1}
           right={1}
@@ -64,13 +64,13 @@ export const RestockedCTACard = () => {
           <>
             <Heading
               as={NextLink}
-              href="/restock/dashboard/2024"
+              href="/restock/dashboard/2025"
               fontWeight={'extrabold'}
               textAlign={'center'}
             >
               Join the{' '}
               <Text as="span" color="#D2FF72">
-                2024 Restock Review
+                2025 Restock Review
               </Text>{' '}
               Waitlist
             </Heading>
@@ -83,14 +83,14 @@ export const RestockedCTACard = () => {
           <>
             <Heading
               as={NextLink}
-              href="/restock/dashboard/2024"
+              href="/restock/dashboard/2025"
               fontWeight={'extrabold'}
               textAlign={'center'}
               size="lg"
             >
               The{' '}
               <Text as="span" color="#D2FF72">
-                2024 Restock Review
+                2025 Restock Review
               </Text>{' '}
               is waiting for you
             </Heading>

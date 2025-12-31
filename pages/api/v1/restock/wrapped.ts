@@ -35,7 +35,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
     where: {
       user_id_year: {
         user_id: user.id,
-        year: Number(year ?? '2024'),
+        year: Number(year ?? '2025'),
       },
     },
   });
@@ -147,7 +147,7 @@ async function PATCH(req: NextApiRequest, res: NextApiResponse) {
   return res.status(200).json({ success: true });
 }
 
-const processMonth = async (user_id: string, month: number, year = 2024) => {
+const processMonth = async (user_id: string, month: number, year = 2025) => {
   const sessions = await prisma.restockSession.findMany({
     where: {
       user_id,
@@ -223,7 +223,7 @@ export const getWrapped = async (user_id: string, year: number) => {
     where: {
       user_id_year: {
         user_id: user_id,
-        year: Number(year ?? '2024'),
+        year: Number(year ?? '2025'),
       },
     },
   });
@@ -357,13 +357,13 @@ export const getWrapped = async (user_id: string, year: number) => {
     .sort((a, b) => (b.item.price.value ?? 0) - (a.item.price.value ?? 0))
     .slice(0, 10);
 
-  wrapped.mostExpensiveBought = wrapped.hottestBought[0].item;
+  wrapped.mostExpensiveBought = wrapped.hottestBought[0]?.item ?? null;
 
   wrapped.hottestLost = wrapped.hottestLost
     .sort((a, b) => (b.item.price.value ?? 0) - (a.item.price.value ?? 0))
     .slice(0, 10);
 
-  wrapped.mostExpensiveLost = wrapped.hottestLost[0].item;
+  wrapped.mostExpensiveLost = wrapped.hottestLost[0]?.item ?? null;
 
   wrapped.avgRefreshTime = sumAvgRefreshTime / wrapped.totalRefreshes;
   wrapped.avgReactionTime = sumAvgReactionTime / wrapped.totalClicks;

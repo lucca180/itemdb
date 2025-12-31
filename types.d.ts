@@ -476,7 +476,7 @@ type UserPreferences = {
   dashboard_hideMisses?: boolean;
   dashboard_hidePrev?: boolean;
 
-  dashboard_wrappedHide?: 'notJoined' | 'notReady' | 'ready';
+  dashboard_wrappedHide2025?: 'notJoined' | 'notReady' | 'ready';
 };
 
 type ItemEffect = {
