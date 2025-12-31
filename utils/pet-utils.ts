@@ -710,6 +710,7 @@ export const petpetSpecies: { [id: string]: string } = {
   '1107': 'Toothygrin',
   '1108': 'Scorf',
   '1109': 'Lumidrax',
+  '1110': 'Chinpilla',
 };
 
 export const petpetColors: { [id: string]: string } = {
