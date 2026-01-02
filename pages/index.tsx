@@ -39,7 +39,7 @@ type Props = {
   latestNcMall: ItemData[];
   leavingNcMall: ItemData[];
   trendingLists: UserList[];
-  winterLists: UserList[];
+  // winterLists: UserList[];
   newItemCount: {
     freeItems: number;
     paidItems: number;
@@ -67,7 +67,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
     trendingLists,
     newItemCount,
     latestPrices,
-    winterLists,
+    // winterLists,
   } = props;
 
   const { data: latestItems } = useSWR<ItemData[]>(`api/v1/items?limit=20`, (url) => fetcher(url), {
@@ -148,20 +148,6 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
             </Text>
           )}
         </HorizontalHomeCard>
-        {winterLists?.length > 0 && (
-          <WinterStarlightCard>
-            <Flex flexWrap="wrap" gap={4} justifyContent="center" sx={{ img: { filter: 'none' } }}>
-              {winterLists.map((list) => (
-                <UserListCard
-                  isSmall
-                  key={list.internal_id}
-                  list={list}
-                  utm_content="winter-lists"
-                />
-              ))}
-            </Flex>
-          </WinterStarlightCard>
-        )}
         {newItemCount && (
           <Flex gap={4} flexWrap={'wrap'} flexFlow={{ base: 'column', lg: 'row' }}>
             <HorizontalHomeCard
@@ -355,7 +341,7 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
     leavingNcMall,
     trendingLists,
     newItemCount,
-    winterLists,
+    // winterLists,
   ] = await Promise.all([
     getLatestItems(20, true).catch(() => []),
     getLatestItems(18, true, true).catch(() => []),
@@ -367,9 +353,9 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
       count: null,
     })) as Promise<LatestPricesRes>,
     getNCMallItemsData(18, true).catch(() => []),
-    getTrendingLists(3, ['Winter Starlight 2025']).catch(() => []),
+    getTrendingLists(3).catch(() => []),
     getNewItemsInfo(7).catch(() => null),
-    getTrendingCatLists('Winter Starlight 2025', 3).catch(() => []),
+    // getTrendingCatLists('Winter Starlight 2025', 3).catch(() => []),
   ]);
 
   return {
@@ -383,7 +369,7 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
       leavingNcMall,
       trendingLists: trendingLists,
       newItemCount,
-      winterLists,
+      // winterLists,
       messages: await loadTranslation(context.locale, 'index'),
       locale: context.locale,
     },
