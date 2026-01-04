@@ -318,7 +318,9 @@
     "buying": "Comprando",
     "price-chart": "Gráfico de Preços",
     "price-history": "Histórico de Preços",
-    "selling": "Vendendo"
+    "selling": "Vendendo",
+    "sold-median-price": "Mediana de Preços Vendidos",
+    "median-price": "Mediana de Preços"
   },
   "Button": {
     "feedback": "Feedback",

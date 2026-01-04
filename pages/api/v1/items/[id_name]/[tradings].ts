@@ -251,13 +251,8 @@ const getAuctionData = async (name: string, onlySold = false) => {
     };
   });
 
-  const now = new Date();
   const recentAuctions = auctions
-    .filter((p) => {
-      const addedAt = new Date(p.addedAt);
-      const diff = now.getTime() - addedAt.getTime();
-      return diff <= 1000 * 60 * 60 * 24 * 7;
-    })
+    .slice(0, 40)
     .map((p) => p.price)
     .sort((a, b) => a - b);
 

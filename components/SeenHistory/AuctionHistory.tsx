@@ -104,13 +104,13 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
           loading={loading}
         />
         <SeenHistoryStatusCard
-          title={t('ItemPage.x-day-median', { x: 7 })}
+          title={t('ItemPage.median-price')}
           status={data?.priceMedian ?? '???'}
           loading={loading}
           isNP
         />
         <SeenHistoryStatusCard
-          title={t('ItemPage.sold-x-day-median', { x: 7 })}
+          title={t('ItemPage.sold-median-price')}
           status={soldData?.priceMedian ?? '???'}
           loading={!wall && !soldData}
           isNP

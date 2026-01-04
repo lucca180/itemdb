@@ -317,7 +317,9 @@
     "price-history": "Price History",
     "selling": "Selling",
     "buying": "Buying",
-    "price-chart": "Price Chart"
+    "price-chart": "Price Chart",
+    "median-price": "Median Price",
+    "sold-median-price": "Sold Median Price"
   },
   "Button": {
     "feedback": "Feedback",
