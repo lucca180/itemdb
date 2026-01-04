@@ -131,8 +131,19 @@ const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
   const updatedItems: any[] = [...trade.items];
 
   for (const similarItem of similar.items) {
-    updatedItems[similarItem.order].price = similarItem.price;
+    const item = updatedItems[similarItem.order];
+    if (similarItem.amount !== 1 && item.amount !== similarItem.amount && similarItem.price)
+      continue;
+
     updatedItems[similarItem.order].addedAt = updatedItems[similarItem.order].addedAt.toJSON();
+
+    if (similarItem.amount === 1 && item.amount !== 1 && similarItem.price) {
+      const adjustedPrice = Math.floor(Number(similarItem.price) / item.amount);
+      updatedItems[similarItem.order].price = adjustedPrice;
+      continue;
+    }
+
+    updatedItems[similarItem.order].price = similarItem.price;
   }
 
   const isAllEmpty = updatedItems.every((item) => !item.price);
@@ -226,7 +237,7 @@ const checkTradeEstPrice = async (trade: Trades & { items: TradeItems[] }) => {
     priceSum += itemData.price.value * item.amount;
   }
 
-  if (priceSum >= 800000 || trade.instantBuy) return false;
+  if (priceSum >= 1000000 || trade.instantBuy) return false;
 
   await processTradePrice(trade as any);
 
@@ -285,7 +296,7 @@ const checkInstaBuy = async (trade: Trades & { items: TradeItems[] }) => {
   }
 
   // different items with similar value and insta buy is low -> skip
-  if (trade.instantBuy < 800000 || trade.wishlist === 'none' || shouldSkipTrade(trade.wishlist)) {
+  if (trade.wishlist === 'none' || shouldSkipTrade(trade.wishlist)) {
     await processTradePrice(trade as any);
     return true;
   }
