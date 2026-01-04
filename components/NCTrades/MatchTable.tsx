@@ -12,10 +12,10 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { isToday } from 'date-fns';
-import NextLink from 'next/link';
 import { UserList } from '../../types';
 import { useFormatter, useTranslations } from 'next-intl';
 import { tz } from '@date-fns/tz';
+import MainLink from '@components/Utils/MainLink';
 
 type Props = {
   data: UserList[];
@@ -59,7 +59,7 @@ const MatchTable = (props: Props) => {
                 <Text fontSize={'xs'} mt={2} color="whiteAlpha.600">
                   {t.rich('Lists.import-adv-tip', {
                     Link: (chunks) => (
-                      <Link color="whiteAlpha.800" href="/lists/import?utm_content=import-tip">
+                      <Link color="whiteAlpha.800" href="/lists/import">
                         {chunks}
                       </Link>
                     ),
@@ -71,17 +71,22 @@ const MatchTable = (props: Props) => {
           {sortedData.map((list) => (
             <Tr key={list.internal_id}>
               <Td maxW="200px" overflow="hidden" textOverflow="ellipsis">
-                <Link
-                  as={NextLink}
+                <MainLink
                   href={`/lists/${list.owner.username}/${list.slug ?? list.internal_id}`}
+                  trackEvent="match-table"
+                  trackEventLabel="list-name"
                 >
                   {list.name}
-                </Link>
+                </MainLink>
               </Td>
               <Td>
-                <Link as={NextLink} href={`/lists/${list.owner.username}`}>
+                <MainLink
+                  href={`/lists/${list.owner.username}`}
+                  trackEvent="match-table"
+                  trackEventLabel="owner-username"
+                >
                   {list.owner.username}
-                </Link>
+                </MainLink>
               </Td>
               {!isLoading && matches && (
                 <Td>

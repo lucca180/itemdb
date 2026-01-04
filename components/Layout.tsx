@@ -16,7 +16,6 @@ import {
   MenuGroup,
   Center,
   Spinner,
-  Link as ChakraLink,
   Select,
   Portal,
 } from '@chakra-ui/react';
@@ -45,6 +44,7 @@ import { DropdownButton, DropdownOption } from './Menus/HeaderDropdown';
 import { SiteAlert } from './Utils/SiteAlert';
 import { getScriptStatus } from '../utils/scriptUtils';
 import FeedbackButton from './Feedback/FeedbackButton';
+import MainLink from './Utils/MainLink';
 
 const LanguageToast = dynamic<LanguageToastProps>(() => import('./Modal/LanguageToast'));
 const LoginModal = dynamic<LoginModalProps>(() => import('./Modal/LoginModal'));
@@ -350,9 +350,9 @@ const Layout = (props: Props) => {
               justifyContent="center"
               alignItems={['center', 'center', 'flex-end']}
             >
-              <ChakraLink href="https://magnetismotimes.com/" isExternal>
+              <MainLink href="https://magnetismotimes.com/" isExternal>
                 <NextImage src={mt_logo} width={202} height={50} alt="Magnetismo Times logo" />
-              </ChakraLink>
+              </MainLink>
               <Text fontSize="xs" color="gray.500" position={'relative'}>
                 {t('Layout.made-in')}{' '}
                 <NextImage
@@ -362,9 +362,9 @@ const Layout = (props: Props) => {
                   style={{ display: 'inline', verticalAlign: 'middle', margin: '0 0px' }}
                 />{' '}
                 {t('Layout.by')}{' '}
-                <ChakraLink href="https://magnetismotimes.com/" isExternal>
+                <MainLink href="https://magnetismotimes.com/" isExternal>
                   Magnetismo Times
-                </ChakraLink>
+                </MainLink>
                 <br />© 1999-{new Date().getFullYear()} NeoPets, Inc. All rights reserved. Used
                 with permission.
               </Text>
@@ -398,33 +398,89 @@ const Layout = (props: Props) => {
                 <Text fontSize="xs" mb={2} textTransform="uppercase" color="gray.500">
                   <b>{t('Layout.resources')}</b>
                 </Text>
-                <ChakraLink href="/articles/lebron">Lebron</ChakraLink>
-                <ChakraLink href="https://docs.itemdb.com.br" isExternal>
+                <MainLink
+                  href="/articles/lebron"
+                  trackEvent="footer-links"
+                  trackEventLabel="lebron"
+                >
+                  Lebron
+                </MainLink>
+                <MainLink
+                  href="https://docs.itemdb.com.br"
+                  isExternal
+                  trackEvent="footer-links"
+                  trackEventLabel="api-docs"
+                >
                   {t('Layout.devs')}
-                </ChakraLink>
-                <ChakraLink href="/lists/official">{t('Layout.official-lists')}</ChakraLink>
-                <ChakraLink href="/articles/userscripts">{t('Layout.userscripts')}</ChakraLink>
-                <ChakraLink href="/public-data">{t('Layout.public-data')}</ChakraLink>
+                </MainLink>
+                <MainLink
+                  href="/lists/official"
+                  trackEvent="footer-links"
+                  trackEventLabel="official-lists"
+                >
+                  {t('Layout.official-lists')}
+                </MainLink>
+                <MainLink
+                  href="/articles/userscripts"
+                  trackEvent="footer-links"
+                  trackEventLabel="userscripts"
+                >
+                  {t('Layout.userscripts')}
+                </MainLink>
+                <MainLink
+                  href="/public-data"
+                  trackEvent="footer-links"
+                  trackEventLabel="public-data"
+                >
+                  {t('Layout.public-data')}
+                </MainLink>
               </Flex>
               <Flex flex="1" flexFlow={'column'} fontSize="xs" gap={2} color="gray.300">
                 <Text fontSize="xs" mb={2} textTransform="uppercase" color="gray.500">
                   <b>{t('Layout.contribute')}</b>
                 </Text>
-                <ChakraLink href="/contribute">Item Data Extractor</ChakraLink>
-                <ChakraLink href="/feedback/vote">{t('Feedback.vote-suggestions')}</ChakraLink>
-                <ChakraLink href="/feedback/trades">{t('Layout.trade-pricing')}</ChakraLink>
-                <ChakraLink href="/contribute">+ {t('Layout.more')}</ChakraLink>
+                <MainLink href="/contribute" trackEvent="footer-links" trackEventLabel="contribute">
+                  Item Data Extractor
+                </MainLink>
+                <MainLink href="/feedback/vote" trackEvent="footer-links" trackEventLabel="vote">
+                  {t('Feedback.vote-suggestions')}
+                </MainLink>
+                <MainLink
+                  href="/feedback/trades"
+                  trackEvent="footer-links"
+                  trackEventLabel="trade-pricing"
+                >
+                  {t('Layout.trade-pricing')}
+                </MainLink>
+                <MainLink href="/contribute" trackEvent="footer-links" trackEventLabel="more">
+                  + {t('Layout.more')}
+                </MainLink>
               </Flex>
               <Flex flex="1" flexFlow={'column'} fontSize="xs" gap={2} color="gray.300">
                 <Text fontSize="xs" mb={2} textTransform="uppercase" color="gray.500">
                   <b>itemdb</b>
                 </Text>
-                <ChakraLink href="/privacy">{t('Layout.privacy-policy')}</ChakraLink>
-                <ChakraLink href="/terms">{t('Layout.terms-of-use')}</ChakraLink>
-                <ChakraLink href="/feedback">{t('Feedback.contact-us')}</ChakraLink>
-                <ChakraLink href="https://github.com/lucca180/itemdb/" isExternal>
+                <MainLink
+                  href="/privacy"
+                  trackEvent="footer-links"
+                  trackEventLabel="privacy-policy"
+                >
+                  {t('Layout.privacy-policy')}
+                </MainLink>
+                <MainLink href="/terms" trackEvent="footer-links" trackEventLabel="terms-of-use">
+                  {t('Layout.terms-of-use')}
+                </MainLink>
+                <MainLink href="/feedback" trackEvent="footer-links" trackEventLabel="contact-us">
+                  {t('Feedback.contact-us')}
+                </MainLink>
+                <MainLink
+                  href="https://github.com/lucca180/itemdb/"
+                  isExternal
+                  trackEvent="footer-links"
+                  trackEventLabel="source-code"
+                >
                   {t('Layout.source-code')}
-                </ChakraLink>
+                </MainLink>
               </Flex>
             </Flex>
           </Flex>
