@@ -296,7 +296,7 @@ const checkInstaBuy = async (trade: Trades & { items: TradeItems[] }) => {
   }
 
   // different items with similar value and insta buy is low -> skip
-  if (trade.wishlist === 'none' || shouldSkipTrade(trade.wishlist)) {
+  if (trade.instantBuy < 1000000 || trade.wishlist === 'none' || shouldSkipTrade(trade.wishlist)) {
     await processTradePrice(trade as any);
     return true;
   }
