@@ -47,9 +47,12 @@ const checkURL = (url: string) => {
     'openneo.net',
     'neomerch.com',
   ];
+  try {
+    const urlObj = new URL(url);
+    //check if the url is from domain (excluding subdomains)
 
-  const urlObj = new URL(url);
-  //check if the url is from domain (excluding subdomains)
-
-  return allowedDomains.some((domain) => urlObj.hostname.endsWith(domain));
+    return allowedDomains.some((domain) => urlObj.hostname.endsWith(domain));
+  } catch {
+    return false;
+  }
 };

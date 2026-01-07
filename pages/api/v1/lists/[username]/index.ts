@@ -234,24 +234,28 @@ export const getImagePalette = async (
 };
 
 export const CHECK_IMG_URL = (image_url: string) => {
-  const domain = new URL(image_url);
-  const hostname = domain.hostname;
-  if (
-    ![
-      'itemdb.com.br',
-      'magnetismotimes.com',
-      'images.neopets.com',
-      'pets.neopets.com',
-      'neopets.com',
-      'www.neopets.com',
-      'uploads.neopets.com',
-      'imgur.com',
-      'i.imgur.com',
-    ].includes(hostname)
-  )
-    throw 'Invalid domain';
+  try {
+    const domain = new URL(image_url);
+    const hostname = domain.hostname;
+    if (
+      ![
+        'itemdb.com.br',
+        'magnetismotimes.com',
+        'images.neopets.com',
+        'pets.neopets.com',
+        'neopets.com',
+        'www.neopets.com',
+        'uploads.neopets.com',
+        'imgur.com',
+        'i.imgur.com',
+      ].includes(hostname)
+    )
+      throw 'Invalid domain';
 
-  if (!image_url.match(/\.(jpeg|jpg|gif|png)$/)) throw 'Invalid image format';
+    if (!image_url.match(/\.(jpeg|jpg|gif|png)$/)) throw 'Invalid image format';
+  } catch (e) {
+    throw 'Invalid image URL';
+  }
 };
 
 export const createListSlug = async (name: string, userId: string, isOfficial: boolean) => {
