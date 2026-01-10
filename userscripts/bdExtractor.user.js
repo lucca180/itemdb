@@ -1,19 +1,14 @@
 // ==UserScript==
 // @name         itemdb - Battledome Extractor
-// @version      1.10.0
+// @version      0.0.1
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets battledome data
 // @website      https://itemdb.com.br
 // @match        *://*.neopets.com/dome/*
 // @match        *://*.itemdb.com.br/*
-// @exclude      *://*.neopets.com/login/*
-// @exclude      *://*.nc.neopets.com/*
-// @exclude      *://*images.neopets.com/*
 // @icon         https://itemdb.com.br/favicon.ico
-// @require      https://raw.githubusercontent.com/lucca180/itemdb/504cff75392e2a39a5aa6878fd87ac42f438e3c7/userscripts/hash.min.js#sha256-OR/o15BAHX1QDoCX/pOFJ/+cMrVqLuqbKQxdP0yW+vc=
 // @connect      itemdb.com.br
-// @connect      localhost
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -22,21 +17,6 @@
 // @run-at       document-start
 // @noframes
 // ==/UserScript==
-
-/* 
-We are loading an external script (@require) that is only used to generate the cryptographic hash 
-that ensures that the data sent to the server has not been altered.
-
-This external script is accompanied by a SHA256 key. If any changes occur in this file, 
-its key will change, and if this userscript is not updated with the new key, 
-tampermonkey will not load the external script.
-
-This ensures that no one will modify this external script without your knowledge.
-
-The code of the external script has been obfuscated to prevent malicious actors from 
-replicating the hash and inserting false information into the itemdb.
-*/
-
 
 const script_info = {
   version: GM_info.script.version,
@@ -420,7 +400,6 @@ const itemdb_script = function() {
     return {attacks, roundLog};
   }
 
-  /* Helper para parsear HTML solto */
   function docFromHTML(html) {
     return new DOMParser().parseFromString(html, 'text/html');
   }
@@ -436,21 +415,21 @@ const itemdb_script = function() {
   // ----------- //
 
   // Here we send the data to the server
-
   async function submitBattle(battleData) {
     if(checkTranslation()) return;
     
     const pageLang = GM_getValue('pageLang', 'unknown');
     
-    if(pageLang !== nl) return console.error('Language error');
+    if(pageLang !== nl || nl !== 'en' || pageLang !== 'en') 
+      return console.error('[itemdb] Language error');
 
     // anonymize player name
     battleData.p1.name = 'anonymized'
 
     GM_xmlhttpRequest({
       method: 'POST',
-      // url: 'https://itemdb.com.br/api/v1/bd',
-      url: 'http://localhost:3000/api/v1/bd',
+      url: 'https://itemdb.com.br/api/v1/bd',
+      // url: 'http://localhost:3000/api/v1/bd',
       headers: {
         'Content-Type': 'application/json',
         'itemdb-version': script_info.versionCode,
@@ -475,11 +454,6 @@ const itemdb_script = function() {
       "html.translated-ltr, html.translated-rtl, ya-tr-span, *[_msttexthash], *[x-bergamot-translated]"
     );
   }
-}
-
-// this function is used to generate a unique key for each item based on the information we got for it
-function genItemKey(item) {
-  return idb?.hashKey(item);
 }
 
 // only runs the script if the page is fully loaded
