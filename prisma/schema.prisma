@@ -76,6 +76,7 @@ model Items {
   NCTradeItems          ncTradeItems[]
   ncValues              ncValues[]
   TradeItems            TradeItems[]
+  bdEffects             bdEffects[]
 
   @@index([image_id])
   @@index([name, image_id])
@@ -804,6 +805,33 @@ model ncValues {
 
   @@unique([item_iid, isLatest])
   @@index([item_iid, addedAt])
+}
+
+model bdProcess {
+  internal_id Int     @id @default(autoincrement())
+  battle_id   Int     @unique
+  owner       String?
+  battle_data Json
+
+  item_list String
+
+  addedAt     DateTime  @default(now())
+  processed   Boolean   @default(false)
+  ip_address  String?
+  processedAt DateTime?
+
+  @@index([item_list, processed])
+}
+
+model bdEffects {
+  internal_id Int   @id @default(autoincrement())
+  item_iid    Int
+  item        Items @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+
+  type    String
+  amount  Int
+  note    String?
+  credits String?
 }
 
 // -------- DISMANTLING PRICE PROCESS --------- //
