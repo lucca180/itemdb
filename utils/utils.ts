@@ -25,6 +25,10 @@ export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
     else findAt.dti = `https://impress.openneo.net/items?q=${cleanItem(item)}`;
   }
 
+  if (item.rarity === 200) {
+    findAt.restockShop = `https://www.neopets.com/faerieland/hiddentower938.phtml`;
+  }
+
   if (item.type !== 'np' || item.status?.toLowerCase() === 'no trade') return findAt;
 
   findAt.auction = `https://www.neopets.com/genie.phtml?type=process_genie&criteria=exact&auctiongenie=${cleanItem(
@@ -44,10 +48,6 @@ export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
     findAt.restockShop = `https://www.neopets.com/objects.phtml?type=shop&obj_type=${
       categoryToShopID[item.category.toLowerCase()]
     }`;
-  }
-
-  if (item.rarity === 200) {
-    findAt.restockShop = `https://www.neopets.com/faerieland/hiddentower938.phtml`;
   }
 
   if (item.rarity && item.rarity <= 98) {
