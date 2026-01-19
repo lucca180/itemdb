@@ -60,7 +60,13 @@ const ItemBdCard = (props: Props) => {
           {bdData.defense && (
             <BDSection title={t('General.defense')}>
               {bdData.defense.map(({ type, value }, index) => (
-                <BDBadge key={index} iconType={type as BDIconTypes} value={value} reverse />
+                <BDBadge
+                  key={index}
+                  iconType={type as BDIconTypes}
+                  value={value}
+                  reverse
+                  isDefend
+                />
               ))}
             </BDSection>
           )}
@@ -76,7 +82,7 @@ const ItemBdCard = (props: Props) => {
           {bdData.other && (
             <BDSection title={t('General.others')}>
               {Object.entries(bdData.other).map(([key, value]) => (
-                <BDBadge key={key} iconType={key as BDIconTypes} value={value} isDefend />
+                <BDBadge key={key} iconType={key as BDIconTypes} value={value} />
               ))}
             </BDSection>
           )}
@@ -169,7 +175,7 @@ const BDIcon = (props: { type: string; isDefend?: boolean }) => {
     return {
       url: 'https://images.neopets.com/bd2/ui/damage.png',
       pos: `${pos.x}px ${pos.y}px`,
-      isIcon: true,
+      title: type === 'hp' ? 'Heal' : type.charAt(0).toUpperCase() + type.slice(1),
     };
   }, [type, isDefend]);
 
@@ -185,7 +191,7 @@ const BDIcon = (props: { type: string; isDefend?: boolean }) => {
       bgSize={iconData.bgSize}
       bgRepeat={'no-repeat'}
       display={'inline-block'}
-      title={iconData.isIcon ? type.charAt(0).toUpperCase() + type.slice(1) : undefined}
+      title={iconData.title}
     ></Box>
   );
 };
