@@ -34,6 +34,7 @@
     "@hello-pangea/color-picker": "^3.2.2",
     "@hugocxl/react-to-image": "^0.0.9",
     "@json2csv/node": "^7.0.6",
+    "@microlink/react-json-view": "^1.27.1",
     "@napi-rs/canvas": "^0.1.82",
     "@prisma/adapter-mariadb": "7.2.0",
     "@prisma/client": "7.2.0",

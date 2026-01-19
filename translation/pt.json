@@ -498,7 +498,11 @@
     "canonical-petpet": "Petpet Canônico",
     "paintable-petpet": "Petpet Pintável",
     "itemdb-data-license": "Estes dados são licenciados sob <Link>CC BY-NC-SA 4.0</Link>",
-    "subject": "Assunto"
+    "subject": "Assunto",
+    "attack": "Ataque",
+    "defense": "Defesa",
+    "others": "Outros",
+    "reflect": "Reflexão"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",

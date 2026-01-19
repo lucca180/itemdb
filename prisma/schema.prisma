@@ -828,10 +828,11 @@ model bdEffects {
   item_iid    Int
   item        Items @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
 
-  type    String
-  amount  Int
-  note    String?
-  credits String?
+  type  String
+  value String
+
+  @@unique([item_iid, type])
+  @@index([type, item_iid])
 }
 
 // -------- DISMANTLING PRICE PROCESS --------- //

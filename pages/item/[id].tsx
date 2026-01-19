@@ -3,6 +3,7 @@ import React, { ReactElement, useMemo, useState } from 'react';
 import Layout from '../../components/Layout';
 import Image from 'next/image';
 import {
+  BDData,
   FullItemColors,
   InsightsResponse,
   ItemData,
@@ -56,6 +57,8 @@ import { getNCTradeInsights } from '../api/v1/mall/[iid]/insights';
 import FeedbackButton from '@components/Feedback/FeedbackButton';
 import RelatedLinksCard from '@components/Items/RelatedLinks';
 import { shouldShowTradeLists } from '@utils/utils';
+import ItemBdCard from '@components/Items/ItemBdCard';
+import { getBDData } from '../api/v1/items/[id_name]/bd';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -103,6 +106,7 @@ type ItemPageProps = {
   dyeData: DyeworksData | null;
   petpetData: ItemPetpetData | null;
   ncInsights: InsightsResponse | null;
+  bdData: BDData | null;
   messages: any;
   locale: string | undefined;
 };
@@ -394,6 +398,9 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
             />
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>
+            {props.bdData && (
+              <ItemBdCard key={getKey('item-bd-card')} item={item} bdData={props.bdData} />
+            )}
             {item.isNC && props.ncMallData && (
               <NcMallCard key={getKey('nc-mall-card')} item={item} ncMallData={props.ncMallData} />
             )}
@@ -485,6 +492,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     dyeData,
     petpetData,
     ncInsights,
+    bdData,
   ] = await Sentry.startSpan(
     {
       name: 'itemLoad',
@@ -519,6 +527,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
           ? getPetpetData(item)
           : null, // 15
         item.isNC ? getNCTradeInsights(item.internal_id) : null, // 16
+        item.isBD ? getBDData(item.internal_id) : null, // 17
       ]);
     }
   );
@@ -544,6 +553,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     dyeData: dyeData,
     petpetData: petpetData,
     ncInsights: ncInsights,
+    bdData: bdData,
     messages: await loadTranslation(context.locale ?? 'en', 'item/[id]'),
     locale: context.locale,
   };

@@ -1,9 +1,11 @@
+import { BattleData } from '@types';
 import prisma from '@utils/prisma';
 import { NextApiRequest, NextApiResponse } from 'next';
 import requestIp from 'request-ip';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') return POST(req, res);
+  if (req.method === 'PUT') return PUT(req, res);
 
   if (req.method == 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Methods', 'POST');
@@ -11,75 +13,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 
   return res.status(405).json({ error: 'Method not allowed' });
-}
-
-type BattleData = {
-  battleId: number;
-  result: 'win' | 'lose' | 'draw';
-  attacks: BattleAttack[];
-  roundLogs: {
-    round: number;
-    p1: {
-      hp: number;
-      isFrozen: boolean;
-      usedFreezingAbility: boolean;
-    };
-    p2: {
-      hp: number;
-      isFrozen: boolean;
-      usedFreezingAbility: boolean;
-    };
-  }[];
-  p1: {
-    stats?: {
-      maxHP: number;
-      agility: number;
-      strength: number;
-      defense: number;
-    };
-    name: string;
-    fullHP: number;
-  };
-  p2: {
-    name: string;
-    fullHP: number;
-  };
-  difficulty: number;
-  prizes: {
-    type: 'np' | 'item';
-    amount: number;
-    item_id: number | null;
-  };
-};
-
-type BattleAttack = {
-  round: number;
-  text: string;
-  player: 'p1' | 'p2';
-  weapon: string;
-  isAbility: boolean;
-  weaponMaxUses: number | null;
-  damage: BattleDmg | BattleHeal | BattleDefense;
-};
-
-interface BattleDmg {
-  type: string;
-  label: string;
-  amount: number;
-}
-
-interface BattleHeal extends BattleDmg {
-  healInfo: {
-    isOverHeal: boolean;
-    percent: number;
-  };
-}
-
-interface BattleDefense extends BattleDmg {
-  defenseInfo: {
-    prevDmg: number;
-    percent: number;
-  };
 }
 
 async function POST(req: NextApiRequest, res: NextApiResponse) {
@@ -101,7 +34,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
   });
 
   const ids = itemData.map((item) => item.internal_id);
-  console.log(data);
+
   await prisma.bdProcess.create({
     data: {
       battle_id: data.battleId,
@@ -110,6 +43,66 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
       ip_address: requestIp.getClientIp(req),
     },
   });
+
+  return res.json({ success: true });
+}
+
+type PutRequestBody = {
+  item_iid: number;
+  addOrEdit?: BDDataEntry[];
+  remove?: string[];
+};
+
+export type BDDataEntry = {
+  type: string;
+  value: string | number;
+  key: string;
+};
+
+// Handle adding, editing, and removing BD effects for a specific item
+async function PUT(req: NextApiRequest, res: NextApiResponse) {
+  const { item_iid, addOrEdit, remove } = req.body as PutRequestBody;
+
+  if (!item_iid || (!addOrEdit && !remove)) {
+    return res.status(400).json({ error: 'Invalid request body' });
+  }
+
+  if (addOrEdit && addOrEdit.length > 0) {
+    const updatePromises = [];
+
+    for (const entry of addOrEdit) {
+      if (!entry.key) continue;
+      updatePromises.push(
+        prisma.bdEffects.upsert({
+          where: {
+            item_iid_type: {
+              item_iid: item_iid,
+              type: entry.key,
+            },
+          },
+          create: {
+            item_iid: item_iid,
+            type: entry.key,
+            value: entry.value.toString(),
+          },
+          update: {
+            value: entry.value.toString(),
+          },
+        })
+      );
+    }
+
+    await Promise.all(updatePromises);
+  }
+
+  if (remove && remove.length > 0) {
+    await prisma.bdEffects.deleteMany({
+      where: {
+        item_iid: item_iid,
+        type: { in: remove },
+      },
+    });
+  }
 
   return res.json({ success: true });
 }

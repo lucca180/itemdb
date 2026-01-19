@@ -765,8 +765,98 @@ export type DTIPetAppearance = {
   };
 };
 
-//
+// ------ BD Types ----- //
 
+export type BattleData = {
+  battleId: number;
+  result: 'win' | 'lose' | 'draw';
+  attacks: BattleAttack[];
+  roundLogs: {
+    round: number;
+    p1: {
+      hp: number;
+      isFrozen: boolean;
+      usedFreezingAbility: boolean;
+    };
+    p2: {
+      hp: number;
+      isFrozen: boolean;
+      usedFreezingAbility: boolean;
+    };
+  }[];
+  p1: {
+    stats?: {
+      maxHP: number;
+      agility: number;
+      strength: number;
+      defense: number;
+    };
+    name: string;
+    fullHP: number;
+  };
+  p2: {
+    name: string;
+    fullHP: number;
+  };
+  difficulty: number;
+  prizes: {
+    type: 'np' | 'item';
+    amount: number;
+    item_id: number | null;
+  };
+};
+
+export type BattleAttack = {
+  round: number;
+  text: string;
+  player: 'p1' | 'p2';
+  weapon: string;
+  isAbility: boolean;
+  weaponMaxUses: number | null;
+  damage: (BattleDmg | BattleHeal | BattleDefense)[];
+};
+
+export interface BattleDmg {
+  type: string;
+  label: string;
+  amount: number;
+}
+
+export interface BattleHeal extends BattleDmg {
+  healInfo: {
+    isOverHeal: boolean;
+    percent: number;
+  };
+}
+
+export interface BattleDefense extends BattleDmg {
+  defenseInfo: {
+    prevDmg: number;
+    percent: number;
+  };
+}
+
+export type BDIconTypes =
+  | 'air'
+  | 'darkness'
+  | 'dark'
+  | 'earth'
+  | 'fire'
+  | 'light'
+  | 'water'
+  | 'hp'
+  | 'physical';
+
+export type BDData = {
+  attack?: { type: BDIconTypes; key: string; value: number | string }[];
+  defense?: { type: BDIconTypes; key: string; value: number | string }[];
+  reflect?: { type: BDIconTypes; key: string; value: number | string }[];
+  other?: { [key: string]: string };
+  processing?: boolean;
+  notes?: string;
+};
+
+// ------ Global Window Types ----- //
 declare global {
   interface Window {
     itemdb_restock?: {

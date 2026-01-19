@@ -497,7 +497,11 @@
     "paintable-petpet": "Paintable Petpet",
     "canonical-petpet": "Canonical Petpet",
     "itemdb-data-license": "This data is licensed under <Link>CC BY-NC-SA 4.0</Link>",
-    "subject": "Subject"
+    "subject": "Subject",
+    "attack": "Attack",
+    "defense": "Defense",
+    "reflect": "Reflect",
+    "others": "Others"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",
