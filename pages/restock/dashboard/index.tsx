@@ -54,7 +54,6 @@ import { getRestockStats } from '../../api/v1/restock';
 import { IntervalFormatted } from '../../../components/Utils/IntervalFormatted';
 import { loadTranslation } from '@utils/load-translation';
 import FeedbackButton from '@components/Feedback/FeedbackButton';
-import { RestockedCTACard } from '@components/Hubs/Wrapped2024/CTACard';
 
 const RestockWrappedModal = dynamic(() => import('../../../components/Modal/RestockWrappedModal'));
 
@@ -460,7 +459,6 @@ const RestockDashboard = (props: RestockDashboardProps) => {
       {!sessionStats && (
         <>
           <Center flexFlow={'column'} gap={2}>
-            <RestockedCTACard />
             <Heading as="h1" size="lg">
               {t('Restock.itemdbs-restock-dashboard')}
             </Heading>
@@ -624,9 +622,6 @@ const RestockDashboard = (props: RestockDashboardProps) => {
               </Alert>
             </Center>
           )}
-          <Center>
-            <RestockedCTACard />
-          </Center>
           <Flex
             mb={8}
             mt={{ base: 8, md: 1 }}

@@ -255,11 +255,6 @@ const Layout = (props: Props) => {
             />
           </DropdownButton>
           <DropdownButton bg={props.mainColor} label={t('Layout.restock')} href="/restock">
-            <DropdownOption
-              label={'2025 Restock Review'}
-              href="/restock/dashboard/2025"
-              newUntil={1767744000000}
-            />
             <DropdownOption label={t('Layout.restock-dashboard')} href="/restock/dashboard" />
             <DropdownOption label={'Neopian Fresh Foods'} href="/restock/neopian-fresh-foods" />
             <DropdownOption label={"Cog's Tog"} href="/restock/cogs-togs" />
