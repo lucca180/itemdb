@@ -20,6 +20,8 @@ type NCMallData = {
   discountPrice?: number;
   isAvailable: boolean;
   isBuyable: boolean;
+  isBundle: boolean;
+  bundleContent?: number[];
 };
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
@@ -63,6 +65,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   const inexistentIds = [];
 
+  const bundles = [];
+
   for (const id in ncMallData) {
     const item = ncMallData[id];
     const dbItem = allItems.find((i) => item.id === i.item_id);
@@ -78,6 +82,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         inexistentIds.push(item.id);
 
       if (!item.isAvailable || !item.isBuyable) continue;
+
+      if (item.isBundle) bundles.push({ item, dbItem });
 
       create.push({
         item_iid: dbItem.internal_id,
@@ -98,10 +104,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       }
 
       if (!item.isAvailable || !item.isBuyable) continue;
+      if (item.isBundle) bundles.push({ item, dbItem });
 
       removeIds.delete(item.id);
       const existentData = allCurrentData.find((data) => data.item_id === item.id);
       if (!checkDataChanged(existentData!, item)) continue;
+
       update.push(
         prisma.ncMallData.update({
           where: {
@@ -147,6 +155,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       category: 'Special',
       type: 'nc',
       description: item.description,
+      status: item.isBundle ? 'no trade' : undefined,
     };
   });
 
@@ -171,6 +180,16 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     prisma.ncMallData.createMany({ data: create, skipDuplicates: true }),
     ...update,
   ]);
+
+  const prom = [];
+  for (const bundle of bundles) {
+    if (!bundle.dbItem) continue;
+
+    prom.push(processBundle(bundle.item, bundle.dbItem?.internal_id));
+  }
+
+  await Promise.all(prom);
+
   res.json(response);
 }
 
@@ -185,4 +204,78 @@ const checkDataChanged = (currentData: dbMallData, newData: NCMallData) => {
     currentData.price !== newData.price ||
     currentData.discountPrice !== newData.discountPrice
   );
+};
+
+const processBundle = async (data: NCMallData, parent_iid: number) => {
+  const contentIds = new Set<number>(data.bundleContent || []);
+  if (contentIds.size === 0) return null;
+
+  const allItemsProm = prisma.items.findMany({
+    where: {
+      item_id: {
+        in: Array.from(contentIds),
+      },
+    },
+    select: {
+      item_id: true,
+      internal_id: true,
+    },
+  });
+
+  const itemOpeningsProm = prisma.openableItems.findFirst({
+    where: {
+      parent_iid: parent_iid,
+    },
+  });
+
+  const [allItems, existingOpenings] = await Promise.all([allItemsProm, itemOpeningsProm]);
+
+  if (existingOpenings) return null;
+
+  const bundleSize = data.bundleContent!.length || 0;
+
+  if (contentIds.size === 1) {
+    const name = `normal-${bundleSize}-${bundleSize}`;
+
+    const item_iid = allItems.find((i) => i.item_id === data.bundleContent![0])?.internal_id;
+
+    if (!item_iid) return null;
+
+    await prisma.openableItems.create({
+      data: {
+        parent_iid: parent_iid,
+        item_iid: item_iid,
+        prizePool: name,
+        opening_id: 'ncmall-sync',
+      },
+    });
+
+    return true;
+  }
+
+  if (contentIds.size === bundleSize) {
+    const name = 'normal';
+    const createMany = [];
+
+    for (const contentId of contentIds) {
+      const item_iid = allItems.find((i) => i.item_id === contentId)?.internal_id;
+      if (!item_iid) return null;
+
+      createMany.push({
+        parent_iid: parent_iid,
+        item_iid: item_iid,
+        prizePool: name,
+        opening_id: 'ncmall-sync',
+      });
+    }
+
+    await prisma.openableItems.createMany({
+      data: createMany,
+      skipDuplicates: true,
+    });
+
+    return true;
+  }
+
+  return null;
 };
