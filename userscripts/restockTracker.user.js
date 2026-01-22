@@ -1,14 +1,13 @@
 // ==UserScript==
 // @name         itemdb - Restock Tracker
-// @version      2.0.2
+// @version      2.0.3
 // @author       itemdb
 // @namespace    itemdb
 // @description  Tracks your restock metrics
 // @website      https://itemdb.com.br
 // @match        *://*.neopets.com/objects.phtml*
 // @match        *://*.neopets.com/haggle.phtml*
-// @match        *://*.neopets.com/winter/igloo2.phtml*
-// @match        *://*.neopets.com/winter/process_igloo.phtml*
+// @match        *://*.neopets.com/winter/igloo.phtml*
 // @match        *://*.neopets.com/halloween/garage.phtml*
 // @match        *://itemdb.com.br/*
 // @icon         https://itemdb.com.br/favicon.ico
@@ -235,6 +234,8 @@ function handleIgloo() {
       timestamp: Date.now(),
       stock_price: price
     };
+
+    $(this).on('click', () => handleIglooBuy(itemID, price));
   });
 
   const lastRefresh = Date.now();
@@ -244,50 +245,50 @@ function handleIgloo() {
   setSession(shopId, session);
 }
 
-function handleIglooHaggle() {
-  let url = window.location.href;
-  if(!url.includes("obj_info_id")) url = document.referrer;
-  
-  const shopId = "-2";
-  const session = getSession(shopId);
+function handleIglooBuy(id, price) {
+   document.addEventListener('idbrestock:igloo', (e) => {
+      const shopId = '-2';
+      const session = getSession(shopId);
+      const data = e.detail;
 
-  let id = url.match(/(?<=obj_info_id\=)\d+/)?.[0];
-  let stockId = Math.round(Date.now()/(1000 * 60 * 5)) + Number(id);
-  
-  const sessionItem = session.items[stockId];
+      let isSoldOut = false;
+      let isBought = data?.success || false;
 
-  const isBought = document.querySelector("body > center > p").textContent.includes("Thanks for buying")
-  const isSoldOut = document.querySelector("body > center > p").textContent.includes("Sorry, we dont have any more of those left :(");
+      if(data?.error) 
+        isSoldOut = data.errMsg.includes("any more of those left");
 
-  if(!isBought && !isSoldOut) return;
+      if(!isBought && !isSoldOut) return;
+      
+      let stockId = Math.round(Date.now()/(1000 * 60 * 5)) + Number(id);
 
-  const buyVal = sessionItem?.stock_price || null;
-  
-  let click = {
-    item_id: id,
-    restock_id: stockId,
-    soldOut_timestamp: null,
-    haggle_timestamp: null,
-    buy_timestamp: null,
-    buy_price: null
-  };
+      const buyVal = price || null;
+      
+      let click = {
+        item_id: id,
+        restock_id: stockId,
+        soldOut_timestamp: null,
+        haggle_timestamp: null,
+        buy_timestamp: null,
+        buy_price: null
+      };
 
-  session.clicks.push(click);
+      session.clicks.push(click);
 
-  let clickIndex = session.clicks.length - 1;
-  
-  if(isSoldOut) {
-    click.soldOut_timestamp = Date.now();
-  }
+      let clickIndex = session.clicks.length - 1;
+      
+      if(isSoldOut) {
+        click.soldOut_timestamp = Date.now();
+      }
 
-  if(isBought) {
-    click.buy_timestamp = Date.now();
-    click.buy_price = buyVal;
-  }
+      if(isBought) {
+        click.buy_timestamp = Date.now();
+        click.buy_price = buyVal;
+      }
 
-  session.clicks[clickIndex] = click;
+      session.clicks[clickIndex] = click;
 
-  setSession(shopId, session);
+      setSession(shopId, session);
+   });
 }
 
 function handleAttic() {
@@ -400,8 +401,35 @@ unsafeWindow.itemdb_restock.cleanAll = cleanAll;
 
 if (URLHas('obj_type')) handleGeneralShops();
 if (URLHas('haggle.phtml')) handleRestockHaggle();
-if (URLHas('igloo2.phtml')) handleIgloo();
-if (URLHas('process_igloo.phtml')) handleIglooHaggle();
+if (URLHas('igloo.phtml')) handleIgloo();
 if (URLHas('garage.phtml')) handleAttic();
 
 if (URLHas('idb_clear')) cleanAll();
+
+const originalFetch = window.fetch;
+
+function watchFetchItemRequests(endpoint, eventName) {
+  (unsafeWindow ?? window).fetch = async (...args) => {
+    const response = await originalFetch(...args);
+    const url = args[0];
+
+    if(!url.includes(endpoint)) return response;
+    
+    const clonedResponse = response.clone();
+    const responseText = await clonedResponse.text();
+    if (responseText.includes("{")) {
+      try {
+        const requestData = JSON.parse(responseText);
+    
+        document.dispatchEvent(
+          new CustomEvent(eventName, { detail: requestData })
+        );
+        
+      } catch (error) {}
+    }
+    
+    return response;
+  };
+}
+
+if (URLHas('igloo.phtml')) watchFetchItemRequests('igloo.php', 'idbrestock:igloo');
