@@ -129,7 +129,7 @@ export const getItemDrops = async (
   let hasManual = false;
 
   drops.map((drop) => {
-    if (drop.opening_id === 'manual') {
+    if (drop.opening_id === 'manual' || drop.opening_id === 'ncmall-sync') {
       hasManual = true;
       return;
     }
