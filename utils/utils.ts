@@ -1705,14 +1705,20 @@ export const sortListItems = (
   } else if (sortBy === 'quantity') {
     if (sortDir === 'asc') return a.amount - b.amount;
     else return b.amount - a.amount;
+  } else if (sortBy === 'price_qty') {
+    const priceA = getSortPrice(itemA, a, true);
+    const priceB = getSortPrice(itemB, b, true);
+
+    if (sortDir === 'asc') return priceA - priceB;
+    else return priceB - priceA;
   }
 
   return 0;
 };
 
-const getSortPrice = (item: ItemData) => {
+const getSortPrice = (item: ItemData, listInfo?: ListItemInfo | undefined, qty = false) => {
   if (item.status === 'no trade') return -1;
-  if (item.price.value) return item.price.value;
+  if (item.price.value) return item.price.value * (qty ? listInfo?.amount || 1 : 1);
 
   if (item.isNC) {
     if (item.ncValue?.minValue) return item.ncValue.minValue;

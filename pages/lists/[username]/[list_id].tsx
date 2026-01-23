@@ -154,6 +154,7 @@ const ListPage = (props: ListPageProps) => {
       faerieFest: 'recycling-points',
       item_id: 'item-id',
       quantity: 'quantity',
+      price_qty: 'price-quantity',
     };
   }, [list.officialTag]);
 

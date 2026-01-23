@@ -46,6 +46,7 @@ const ItemCardBase = (props: ItemProps) => {
     uniqueID,
   } = props;
   const [isMobile] = useMediaQuery('(hover: none)');
+  const format = useFormatter();
 
   const color = item?.color.rgb;
 
@@ -131,10 +132,16 @@ const ItemCardBase = (props: ItemProps) => {
               </Text>
             )}
 
-            {['faerieFest', 'item_id', 'rarity'].includes(sortType ?? '') && (
+            {['faerieFest', 'item_id', 'rarity', 'quantity', 'price_qty'].includes(
+              sortType ?? ''
+            ) && (
               <Text fontSize={'xs'} fontWeight="bold">
                 {sortType === 'rarity' && item.rarity && `r${item.rarity}`}
                 {sortType === 'item_id' && item.item_id && `#${item.item_id}`}
+                {['quantity', 'price_qty'].includes(sortType ?? '') &&
+                  item.price.value &&
+                  (quantity ?? 0) > 1 &&
+                  `${format.number(item.price.value * (quantity ?? 1))} NP Total`}
                 {sortType === 'faerieFest' &&
                   !!rarityToCCPoints(item) &&
                   `${rarityToCCPoints(item)} point${rarityToCCPoints(item) > 1 ? 's' : ''}`}

@@ -1284,6 +1284,7 @@
     "recycling-points": "Recycling Points",
     "item-id": "Item ID",
     "custom": "Custom",
-    "quantity": "Quantity"
+    "quantity": "Quantity",
+    "price-quantity": "Price/Quantity"
   }
 }

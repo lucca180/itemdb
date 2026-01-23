@@ -358,6 +358,8 @@ const CreateListModal = (props: CreateListModalProps) => {
                   <option value="addedAt">{t('General.added-at')}</option>
                   <option value="faerieFest">{t('General.recycling-points')}</option>
                   <option value="item_id">{t('General.item-id')}</option>
+                  <option value="quantity">{t('General.quantity')}</option>
+                  <option value="price_qty">{t('SortTypes.price-quantity')}</option>
                 </Select>
                 <FormHelperText>
                   {list.sortBy === 'custom' && t('Lists.custom-sort-msg')}
