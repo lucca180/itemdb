@@ -217,6 +217,7 @@ const getAuctionData = async (name: string, onlySold = false) => {
       type: 'auction',
     },
     orderBy: { addedAt: 'desc' },
+    take: 125,
   });
 
   // auction always has the same item
