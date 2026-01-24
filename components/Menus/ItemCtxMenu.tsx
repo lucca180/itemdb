@@ -342,8 +342,8 @@ const FindAtCtx = (props: FindAtCtxProps) => {
           <HStack>
             <Image
               src={AuctionIcon}
-              alt="Action House"
-              title="Action House"
+              alt="Auction House"
+              title="Auction House"
               height={26}
               quality="100"
             />

@@ -49,7 +49,13 @@ const FindAtCard = (props: Props) => {
             trackEventLabel="Shop Wizard"
             rel="noopener"
           >
-            <Image src={SWIcon} alt="Shop Wizard" title="Shop Wizard" height={32} quality="100" />
+            <Image
+              src={SWIcon}
+              alt="Shop Wizard"
+              title={t('General.shop-wizard')}
+              height={32}
+              quality="100"
+            />
           </Link>
         )}
         {item.findAt.auction && (
@@ -63,8 +69,8 @@ const FindAtCard = (props: Props) => {
           >
             <Image
               src={AuctionIcon}
-              alt="Action House"
-              title="Action House"
+              alt="Auction House"
+              title={t('General.auction-house')}
               height={32}
               quality="100"
             />
@@ -79,7 +85,13 @@ const FindAtCard = (props: Props) => {
             trackEventLabel="Trading Post"
             rel="noopener"
           >
-            <Image src={TPIcon} alt="Trading Post" title="Trading Post" height={32} quality="100" />
+            <Image
+              src={TPIcon}
+              alt="Trading Post"
+              title={t('General.trading-post')}
+              height={32}
+              quality="100"
+            />
           </Link>
         )}
         {item.findAt.safetyDeposit && (
@@ -94,7 +106,7 @@ const FindAtCard = (props: Props) => {
             <Image
               src={SDBIcon}
               alt="Safety Deposit Box"
-              title="Safety Deposit Box"
+              title={t('General.safety-deposit-box')}
               height={32}
               quality="100"
             />
@@ -109,7 +121,13 @@ const FindAtCard = (props: Props) => {
             trackEventLabel="Closet"
             rel="noopener"
           >
-            <Image src={ClosetIcon} alt="Closet" title="Closet" height={32} quality="100" />
+            <Image
+              src={ClosetIcon}
+              alt="Closet"
+              title={t('General.closet')}
+              height={32}
+              quality="100"
+            />
           </Link>
         )}
         {item.findAt.restockShop && (
@@ -124,7 +142,7 @@ const FindAtCard = (props: Props) => {
             <Image
               src={ShopIcon}
               alt="Restock Shop"
-              title="Restock Shop"
+              title={t('General.restock-shop')}
               height={32}
               quality="100"
             />
@@ -142,7 +160,7 @@ const FindAtCard = (props: Props) => {
             <Image
               src={NeosearchIcon}
               alt="Neopets Search"
-              title="Neopets Search"
+              title={t('General.neopets-search')}
               height={32}
               quality="100"
             />
