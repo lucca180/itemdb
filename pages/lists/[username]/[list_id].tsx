@@ -624,7 +624,7 @@ const ListPage = (props: ListPageProps) => {
                   {t('Lists.add-items')}
                 </Button>
               )}
-              {(isOwner || list.official || list.canBeLinked) && !list.linkedListId && (
+              {(isOwner || list.official || list.canBeLinked) && (
                 <CreateLinkedListButton list={list} isLoading={isLoading} />
               )}
               <HStack gap={1}>
