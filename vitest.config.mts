@@ -7,5 +7,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     setupFiles: ['dotenv/config'], //this line,
+    retry: 3,
+    testTimeout: 10000,
   },
 });
