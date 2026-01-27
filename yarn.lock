@@ -12709,7 +12709,7 @@ __metadata:
     react-vertical-timeline-component: "npm:3.5.3"
     react-viewport-list: "npm:^7.1.2"
     request-ip: "npm:^3.3.0"
-    resend: "npm:^6.9.0"
+    resend: "npm:^6.8.0"
     simple-statistics: "npm:^7.8.8"
     swr: "npm:^2.3.8"
     ts-node: "npm:10.9.2"
@@ -16395,7 +16395,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"resend@npm:^6.9.0":
+"resend@npm:^6.8.0":
   version: 6.9.0
   resolution: "resend@npm:6.9.0"
   dependencies:
