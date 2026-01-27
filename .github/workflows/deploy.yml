@@ -30,11 +30,6 @@ jobs:
             yarn build-turbo || exit
             yarn postbuild
             pm2 stop ecosystem.config.js --only itemdb-green --update-env
-            if git log -1 --pretty=%B | grep -q '\[skip test\]'; then
-              echo "Skipping tests"
-            else
-              yarn test
-            fi
   run-tests:
     name: Run tests
     runs-on: ubuntu-latest
