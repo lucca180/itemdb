@@ -19,7 +19,11 @@ import { getLatestPricedItems } from './api/v1/prices';
 import { NextPageWithLayout } from './_app';
 import { HomeCard } from '../components/Card/HomeCard';
 import UserListCard from '../components/UserLists/ListCard';
-import { HorizontalHomeCard, WinterStarlightCard } from '../components/Card/HorizontalHomeCard';
+import {
+  HorizontalHomeCard,
+  NeopiesCard,
+  WinterStarlightCard,
+} from '../components/Card/HorizontalHomeCard';
 import useSWR from 'swr';
 import { loadTranslation } from '@utils/load-translation';
 import { getNewItemsInfo } from './api/v1/beta/new-items';
@@ -39,7 +43,7 @@ type Props = {
   latestNcMall: ItemData[];
   leavingNcMall: ItemData[];
   trendingLists: UserList[];
-  // winterLists: UserList[];
+  eventLists: UserList[];
   newItemCount: {
     freeItems: number;
     paidItems: number;
@@ -67,7 +71,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
     trendingLists,
     newItemCount,
     latestPrices,
-    // winterLists,
+    eventLists,
   } = props;
 
   const { data: latestItems } = useSWR<ItemData[]>(`api/v1/items?limit=20`, (url) => fetcher(url), {
@@ -148,6 +152,20 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
             </Text>
           )}
         </HorizontalHomeCard>
+        {eventLists.length > 0 && (
+          <NeopiesCard>
+            <Flex flexWrap="wrap" gap={4} justifyContent="center">
+              {eventLists.map((list) => (
+                <UserListCard
+                  key={list.internal_id}
+                  list={list}
+                  isSmall
+                  utm_content="featured-lists"
+                />
+              ))}
+            </Flex>
+          </NeopiesCard>
+        )}
         {newItemCount && (
           <Flex gap={4} flexWrap={'wrap'} flexFlow={{ base: 'column', lg: 'row' }}>
             <HorizontalHomeCard
@@ -341,7 +359,7 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
     leavingNcMall,
     trendingLists,
     newItemCount,
-    // winterLists,
+    eventLists,
   ] = await Promise.all([
     getLatestItems(20, true).catch(() => []),
     getLatestItems(18, true, true).catch(() => []),
@@ -353,9 +371,9 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
       count: null,
     })) as Promise<LatestPricesRes>,
     getNCMallItemsData(18, true).catch(() => []),
-    getTrendingLists(3).catch(() => []),
+    getTrendingLists(3, ['Neopies 2026']).catch(() => []),
     getNewItemsInfo(7).catch(() => null),
-    // getTrendingCatLists('Winter Starlight 2025', 3).catch(() => []),
+    getTrendingCatLists('Neopies 2026', 3).catch(() => []),
   ]);
 
   return {
@@ -369,7 +387,7 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
       leavingNcMall,
       trendingLists: trendingLists,
       newItemCount,
-      // winterLists,
+      eventLists,
       messages: await loadTranslation(context.locale, 'index'),
       locale: context.locale,
     },

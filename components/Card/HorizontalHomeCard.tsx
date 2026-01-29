@@ -71,6 +71,7 @@ export const HorizontalHomeCard = (props: HorizontalHomeCard) => {
                 height={h ?? 70}
                 alt={title!}
                 priority={isPriority}
+                className="card-icon"
               />
             )}
             {title && <Heading size={'lg'}>{title}</Heading>}
@@ -273,6 +274,50 @@ export const WinterStarlightCard = ({ children }: { children: React.ReactNode })
       }}
       innerStyle={{
         border: '2px solid #54b491ff',
+      }}
+    >
+      {children}
+    </HorizontalHomeCard>
+  );
+};
+
+export const NeopiesCard = ({ children }: { children: React.ReactNode }) => {
+  const t = useTranslations();
+  return (
+    <HorizontalHomeCard
+      color="#b45454"
+      h={50}
+      w={50}
+      image="https://images.neopets.com/faq/neopie_80x80.png"
+      viewAllLink="/lists/official?cat=Neopies%202026"
+      title={'Neopies 2026'}
+      isSmall
+      utm_content="neopies-lists"
+      viewAllText={t('General.view-all')}
+      sx={{
+        position: 'relative',
+        isolation: 'isolate',
+        overflow: 'hidden',
+        '.card-icon': {
+          filter: 'drop-shadow(0 0 5px #ddc146ff)',
+        },
+        '::before': {
+          content: "''",
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundImage: "url('https://images.neopets.com/neopies/y23/images/banner_stage.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: 0.5,
+          filter: 'blur(10px) brightness(0.5)',
+          zIndex: -1,
+        },
+      }}
+      innerStyle={{
+        border: '2px solid #ddc146',
       }}
     >
       {children}
