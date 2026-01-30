@@ -19,11 +19,7 @@ import { getLatestPricedItems } from './api/v1/prices';
 import { NextPageWithLayout } from './_app';
 import { HomeCard } from '../components/Card/HomeCard';
 import UserListCard from '../components/UserLists/ListCard';
-import {
-  HorizontalHomeCard,
-  NeopiesCard,
-  WinterStarlightCard,
-} from '../components/Card/HorizontalHomeCard';
+import { HorizontalHomeCard, NeopiesCard } from '../components/Card/HorizontalHomeCard';
 import useSWR from 'swr';
 import { loadTranslation } from '@utils/load-translation';
 import { getNewItemsInfo } from './api/v1/beta/new-items';
@@ -160,7 +156,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
                   key={list.internal_id}
                   list={list}
                   isSmall
-                  utm_content="featured-lists"
+                  utm_content="neopies-lists"
                 />
               ))}
             </Flex>
