@@ -259,11 +259,7 @@ export const doProcessPrices = async (
     const item = allItemData[0];
 
     try {
-      const newPrice = USE_NEW_ALGORITHM
-        ? processPrices3(allItemData, forceMode)
-        : processPrices2(allItemData, forceMode);
-
-      const newPriceAlgorithm = USE_NEW_ALGORITHM ? null : processPrices3(allItemData, forceMode);
+      const newPrice = processPrices3(allItemData, forceMode);
 
       if (!newPrice) continue;
 
@@ -277,7 +273,6 @@ export const doProcessPrices = async (
           newPrice.price,
           allItemData.map((x) => x.internal_id),
           newPrice.latestDate,
-          newPriceAlgorithm?.price,
           forceMode
         ).then((_) => {
           if (_) processedIDs.push(...allIDs);
@@ -342,13 +337,11 @@ async function updateOrAddDB(
   priceValue: number,
   usedIDs: number[],
   latestDate: Date,
-  newPrice?: number,
   forceMode = false
 ): Promise<Prisma.ItemPricesUncheckedCreateInput | undefined> {
   const newPriceData: Prisma.ItemPricesUncheckedCreateInput = {
     item_iid: priceData.item_iid,
     price: priceValue,
-    newPrice: newPrice ?? null,
     manual_check: null,
     isLatest: true,
     addedAt: latestDate,
@@ -383,9 +376,9 @@ async function updateOrAddDB(
     const variation = coefficientOfVariation([oldPrice, priceValue]);
     const priceDiff = Math.abs(oldPrice - priceValue);
 
-    if (daysSinceLastUpdate <= 1) return undefined;
-
     forceMode = forceMode || isPendingCheck;
+
+    if (!forceMode && daysSinceLastUpdate <= 1) return undefined;
 
     if (latestDate < oldPriceRaw.addedAt) {
       return undefined;
