@@ -87,6 +87,7 @@ export default function SortableLists(props: SortableListsProps) {
     const { active } = event;
 
     setActiveId(Number(active.id));
+    window?.umami?.track('sortable-drag', { type: 'list-card' });
   }
 
   function handleDragEnd(event: DragEndEvent) {

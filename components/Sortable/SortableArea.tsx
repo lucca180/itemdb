@@ -57,6 +57,7 @@ export default function SortableArea(props: ListViewportProps) {
   function handleDragStart(event: DragStartEvent) {
     const { active } = event;
     setActiveId(Number(active.id));
+    window?.umami?.track('sortable-drag', { type: 'item-card' });
   }
 
   function handleDragEnd(event: DragEndEvent) {
