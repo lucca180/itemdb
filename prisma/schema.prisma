@@ -386,7 +386,7 @@ model Feedbacks {
   processedAt DateTime?
 
   user_id String?
-  user    User?   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user    User?   @relation(fields: [user_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   vote FeedbackVotes[]
 
@@ -400,7 +400,7 @@ model FeedbackVotes {
   feedback    Feedbacks @relation(fields: [feedback_id], references: [feedback_id], onDelete: Cascade, onUpdate: Cascade)
 
   user_id String?
-  user    User?   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user    User?   @relation(fields: [user_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   voteWeight Int @default(1)
 
