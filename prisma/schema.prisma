@@ -337,6 +337,8 @@ model User {
   WrappedSettings WrappedSettings[]
   ActionLogs      ActionLogs[]
   NCTrade         ncTrade[]
+
+  apiKeys apiKeys[]
 }
 
 model OpenableItems {
@@ -833,6 +835,20 @@ model bdEffects {
 
   @@unique([item_iid, type])
   @@index([type, item_iid])
+}
+
+model apiKeys {
+  key_id  Int    @id @default(autoincrement())
+  api_key String @unique
+  limit   Int    @default(5000)
+
+  name        String?
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  active      Boolean  @default(true)
+
+  user_id String?
+  user    User?   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 // -------- DISMANTLING PRICE PROCESS --------- //
