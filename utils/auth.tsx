@@ -10,23 +10,25 @@ const getAuth = () => import('./firebase/auth');
 type AuthContextType = {
   user: User | null;
   userToken: string | null;
-  signout: () => void;
+  signout: () => Promise<void>;
   authLoading: boolean;
   setUser: (user: User) => void;
   updatePref: (key: keyof UserPreferences, value: UserPreferences[keyof UserPreferences]) => void;
   userPref: UserPreferences | null;
+  resetUser: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   userToken: null,
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  signout: () => {},
+  signout: async () => {},
   authLoading: true,
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   setUser: () => {},
   updatePref: () => {},
   userPref: null,
+  resetUser: async () => {},
 });
 
 const storageLocal = createJSONStorage<UserPreferences | null>(() => localStorage);
@@ -121,10 +123,8 @@ export function AuthProvider({ children }: any) {
   };
 
   const signout = async () => {
-    const auth = (await getAuth()).auth;
-    auth.signOut();
     await axios.get('/api/auth/logout');
-    setUser(null);
+    await resetUser();
     location.reload();
   };
 
@@ -134,6 +134,14 @@ export function AuthProvider({ children }: any) {
   ) => {
     const newPref = { ...(userPref ?? undefined), [key]: value };
     setUserPref(newPref);
+  };
+
+  const resetUser = async () => {
+    const auth = (await getAuth()).auth;
+    await auth.signOut();
+    setUser(null);
+    setUserToken(null);
+    setUserPref(null);
   };
 
   return (
@@ -146,6 +154,7 @@ export function AuthProvider({ children }: any) {
         setUser,
         updatePref,
         userPref,
+        resetUser,
       }}
     >
       {children}

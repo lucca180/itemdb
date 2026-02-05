@@ -16,7 +16,7 @@ const PrivacyPolicyPage = () => {
         color="#7AB92A"
       >
         <Heading as="h1" size="lg">
-          Privacy Policy (August 2023)
+          Privacy Policy (Feb 2026)
         </Heading>
         <Text as="h2" size={{ base: 'sm', md: undefined }}>
           itemdb collects some personal data during its use. No information is sold or used for
@@ -41,15 +41,6 @@ const PrivacyPolicyPage = () => {
             include:
           </Text>
           <UnorderedList spacing={3}>
-            <ListItem>
-              <Link href="https://simpleanalytics.com" isExternal>
-                SimpleAnalytics
-              </Link>
-              <Text fontSize="sm" color="gray.400">
-                We need this data to understand how you use our website so we can improve its design
-                and functionality.
-              </Text>
-            </ListItem>
             <ListItem>
               <Link href="https://www.cloudflare.com/">Cloudflare</Link>
               <Text fontSize="sm" color="gray.400">
@@ -96,17 +87,26 @@ const PrivacyPolicyPage = () => {
             users to trade with.
           </Text>
           <Text>
-            We can also label your items in a list as "imported", this means that the item was
-            imported to your list from Neopets using an importer tool. This is done to ensure that
-            any cap price you set for an NC Item is legit and a fake price to inflate the item
-            market price. We currently do not display publicly this information and the Neopets
-            account username where the item was imported from is not collected or stored.
-          </Text>
-          <Text>
-            Your lists may be labed as "official" by the itemdb staff. This means that the list
+            Your lists may be labeled as "official" by the itemdb staff. This means that the list
             curated by you has a public utility. Your itemdb username will be displayed as list
             curator. All official lists will be visible to all users of the site. You cannot delete
             an official list. If you wish to be removed from an official list, please contact us.
+          </Text>
+          <Heading size="lg">Account Deletion</Heading>
+          <Text>
+            You can delete your itemdb account at any time. This will remove every personal data we
+            have about you, including - but not limited to - your email address, lists and restock
+            sessions. This action is irreversible.
+          </Text>
+          <Text>
+            Your personally identifiable contributions - such as Official Lists, Feedback, Trade
+            Pricing/Votes, NC Trade Reports, etc. - will be anonymized and kept on the site to
+            preserve their public utility.
+          </Text>
+          <Text>
+            Logs containing your Ip Address might be kept for abuse prevention and security
+            purposes. These logs are not public and cannot be linked back to you or to your account
+            after deletion.
           </Text>
         </Flex>
       </Flex>

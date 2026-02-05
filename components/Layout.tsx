@@ -388,7 +388,12 @@ const Layout = (props: Props) => {
                 </Select>
               </Flex>
             </Flex>
-            <Flex flexFlow={['row']} gap={[3, 12]} justifyContent="center">
+            <Flex
+              flexFlow={['row']}
+              gap={[3, 12]}
+              justifyContent="center"
+              sx={{ 'a:hover': { textDecoration: 'underline' } }}
+            >
               <Flex flex="1" flexFlow={'column'} fontSize="xs" gap={2} color="gray.300">
                 <Text fontSize="xs" mb={2} textTransform="uppercase" color="gray.500">
                   <b>{t('Layout.resources')}</b>
@@ -460,7 +465,7 @@ const Layout = (props: Props) => {
                   trackEvent="footer-links"
                   trackEventLabel="privacy-policy"
                 >
-                  {t('Layout.privacy-policy')}
+                  {t('Layout.privacy-policy')} (Feb 2026)
                 </MainLink>
                 <MainLink href="/terms" trackEvent="footer-links" trackEventLabel="terms-of-use">
                   {t('Layout.terms-of-use')}
