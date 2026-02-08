@@ -159,7 +159,7 @@ export const getItemDrops = async (
         item_iid: drop.item_iid,
         dropRate: dropsData[drop.item_iid]?.dropRate ?? 0,
         notes: drop.notes,
-        isLE: drop.limitedEdition,
+        isLE: dropsData[drop.item_iid]?.isLE || drop.limitedEdition,
         pool: dropsData[drop.item_iid]?.pool ?? null,
       };
 
