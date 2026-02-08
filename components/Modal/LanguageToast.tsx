@@ -16,12 +16,6 @@ const LanguageToast = (props: LanguageToastProps) => {
   const toast = useToast();
   const router = useRouter();
 
-  useEffect(() => {
-    if (!router.isReady) return;
-
-    checkLanguage();
-  }, [router.isReady]);
-
   const handleAction = async (action: 'dismiss' | 'change', prefLang: string) => {
     const { pathname, asPath, query } = router;
 
@@ -73,6 +67,12 @@ const LanguageToast = (props: LanguageToastProps) => {
 
     sessionStorage.setItem('language-toast', 'true');
   };
+
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    checkLanguage();
+  }, [router.isReady]);
 
   return null;
 };

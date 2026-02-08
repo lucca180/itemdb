@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import requestIp from 'request-ip';
 import hash from 'object-hash';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 // import { checkHash } from '../../../../utils/hash';
 import { getManyItems } from './many';
 import { Prisma } from '@prisma/generated/client';

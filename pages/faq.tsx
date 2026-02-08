@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 import { Flex, Heading, Text, Link, Grid } from '@chakra-ui/react';
 import {
   MdAttachMoney,

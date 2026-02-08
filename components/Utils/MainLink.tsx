@@ -31,6 +31,12 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
   ) => {
     const router = useRouter();
 
+    const handleTracking = () => {
+      if (trackEvent) {
+        window.umami?.track(trackEvent, { label: trackEventLabel });
+      }
+    };
+
     const handleClick = React.useCallback(
       async (e: React.MouseEvent<HTMLElement>) => {
         if (href && !(e.ctrlKey || e.metaKey)) {
@@ -45,14 +51,8 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
           return await router.push(href);
         }
       },
-      [router, href, isExternal]
+      [router, href, isExternal, handleTracking, target]
     );
-
-    const handleTracking = () => {
-      if (trackEvent) {
-        window.umami?.track(trackEvent, { label: trackEventLabel });
-      }
-    };
 
     if (prefetch)
       return (

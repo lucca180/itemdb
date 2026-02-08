@@ -30,15 +30,6 @@ const ItemSelect = (props: Props) => {
   const [items, setItems] = React.useState<ItemData[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
 
-  useEffect(() => {
-    if (!query) return;
-    setIsLoading(true);
-
-    const timer = setTimeout(() => loadItems(), 300);
-
-    return () => clearTimeout(timer);
-  }, [query]);
-
   const loadItems = async () => {
     const res = await axios.get('/api/v1/search', {
       params: {
@@ -58,6 +49,16 @@ const ItemSelect = (props: Props) => {
     onChange?.(item.originalValue ?? item.value);
     setQuery('');
   };
+
+  useEffect(() => {
+    if (!query) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsLoading(true);
+
+    const timer = setTimeout(() => loadItems(), 300);
+
+    return () => clearTimeout(timer);
+  }, [query]);
 
   return (
     <AutoComplete

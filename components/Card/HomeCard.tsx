@@ -163,7 +163,6 @@ const HomeItem = ({
       <CtxTrigger
         id={menuKey}
         disable={isMobile ? true : undefined}
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         //@ts-ignore
         disableWhileShiftPressed
         display={hidden ? 'none' : undefined}

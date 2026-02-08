@@ -46,7 +46,6 @@ export const EffectsCard = (props: EffectsCardProps) => {
       <ItemCtxMenu menuId={props.uniqueID + item.internal_id.toString()} item={item} />
       <CtxTrigger
         id={props.uniqueID + item.internal_id.toString()}
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         //@ts-ignore
         disableWhileShiftPressed
         disable={isMobile ? true : undefined}

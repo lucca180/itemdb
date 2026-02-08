@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Button, useDisclosure } from '@chakra-ui/react';
 import { DynamicListModalProps } from './DynamicListModal';
 import Dynamic from 'next/dynamic';

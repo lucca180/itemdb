@@ -21,6 +21,11 @@ export const SearchList = (props: Props) => {
     inputRef.current?.focus();
   };
 
+  const reset = () => {
+    setSearch('');
+    props.onChange('');
+  };
+
   const captureKey = (e: KeyboardEvent) => {
     if (e.key === 'F3' || ((e.ctrlKey || e.metaKey) && e.key === 'f')) {
       e.preventDefault();
@@ -45,11 +50,6 @@ export const SearchList = (props: Props) => {
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
     props.onChange(e.target.value);
-  };
-
-  const reset = () => {
-    setSearch('');
-    props.onChange('');
   };
 
   return (

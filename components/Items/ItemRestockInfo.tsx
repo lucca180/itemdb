@@ -33,7 +33,6 @@ const ItemRestock = (props: Props) => {
   const isHT = item.findAt.restockShop?.includes('hiddentower938');
 
   const todayNST = getDateNST();
-  const todayDate = todayNST.getDate();
 
   const specialDay = useMemo(() => {
     if (!item.category) return null;
@@ -71,7 +70,7 @@ const ItemRestock = (props: Props) => {
       return 'halloween';
 
     return '';
-  }, [todayDate, item]);
+  }, [todayNST, item]);
 
   const restockPrice = getRestockPrice(item);
   const originalRestockPrice = getRestockPrice(item, true);

@@ -47,10 +47,6 @@ const OfficialListsCatPage = (props: Props) => {
     }
   );
 
-  useEffect(() => {
-    handleFilter(catInfo.id);
-  }, [data]);
-
   const handleFilter = (value: string) => {
     if (!data) return;
 
@@ -102,6 +98,11 @@ const OfficialListsCatPage = (props: Props) => {
       }, [] as UserList[][]),
     [lists, rowSize]
   );
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    handleFilter(catInfo.id);
+  }, [data]);
 
   return (
     <>

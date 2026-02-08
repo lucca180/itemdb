@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 //@ts-nocheck
 import CalHeatmap from 'cal-heatmap';
 import Tooltip from 'cal-heatmap/plugins/Tooltip';
@@ -111,7 +110,7 @@ export default function CalendarHeatmap(props: CalendarHeatmapProps) {
             text: (date, value) => tooltipText(date, value, chartType, formater),
           },
         ],
-      ],
+      ]
     );
   }, [chartData, chartType]);
 
@@ -153,7 +152,7 @@ function tooltipText(
   date: Date,
   value: number | null,
   chartType: ChartTypes,
-  formater: ReturnType<typeof useFormatter>,
+  formater: ReturnType<typeof useFormatter>
 ) {
   const valueSrt = format(value ?? 0);
   const dateStr = formater.dateTime(date, {

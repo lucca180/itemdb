@@ -43,7 +43,7 @@ export const RestockBreadcrumb = (props: RestockBreadcrumb) => {
     }
 
     return breadList;
-  }, [shopData, router.locale]);
+  }, [shopData, router.locale, t, slugify, props.isHistory]);
 
   return <Breadcrumbs breadcrumbList={breadcrumbList} />;
 };

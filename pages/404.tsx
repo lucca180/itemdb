@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 import { Heading, Text, Link, Center, Image, Box } from '@chakra-ui/react';
 import Layout from '../components/Layout';
 import { useTranslations } from 'next-intl';

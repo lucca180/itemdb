@@ -55,12 +55,6 @@ const DynamicListLogsModal = (props: DynamicListLogsModalProps) => {
     fetcher
   );
 
-  useEffect(() => {
-    if (data) {
-      fetchItemData();
-    }
-  }, [data]);
-
   const fetchItemData = async () => {
     if (!data) return;
 
@@ -70,6 +64,13 @@ const DynamicListLogsModal = (props: DynamicListLogsModalProps) => {
 
     setItemData(res.data);
   };
+
+  useEffect(() => {
+    if (data) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      fetchItemData();
+    }
+  }, [data]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} isCentered scrollBehavior="inside">

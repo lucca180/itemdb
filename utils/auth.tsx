@@ -21,10 +21,10 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   userToken: null,
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+
   signout: async () => {},
   authLoading: true,
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+
   setUser: () => {},
   updatePref: () => {},
   userPref: null,

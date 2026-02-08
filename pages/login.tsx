@@ -40,11 +40,6 @@ const LoginPage = () => {
   const { user, authLoading, setUser } = useAuth();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  useEffect(() => {
-    if (!router.isReady || authLoading) return;
-    init();
-  }, [router.isReady, authLoading]);
-
   const init = async () => {
     setIsLoading(true);
     const { auth, isSignInWithEmailLink, signInWithEmailLink } = await getAuth();
@@ -95,6 +90,12 @@ const LoginPage = () => {
       router.replace(decodeURIComponent(redirectTo));
     } else onOpen();
   };
+
+  useEffect(() => {
+    if (!router.isReady || authLoading) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    init();
+  }, [router.isReady, authLoading]);
 
   const doConfirm = () => {
     if (!email.match(mailRegex)) {

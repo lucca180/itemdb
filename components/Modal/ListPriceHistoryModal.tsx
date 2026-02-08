@@ -38,11 +38,6 @@ export default function ListPriceHistoryModal(props: ListPriceHistoryModalProps)
   const [idsPerDay, setIdsPerDay] = useState<{ [day: string]: number[] }>({});
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (!isOpen || !item_iids.length) return;
-    init();
-  }, [item_iids, isOpen]);
-
   const init = async () => {
     setIsLoading(true);
     const res = await axios.post('/api/v1/prices/history', { item_iids: item_iids });
@@ -89,6 +84,12 @@ export default function ListPriceHistoryModal(props: ListPriceHistoryModalProps)
     setIdsPerDay(idsPerDay);
     setIsLoading(false);
   };
+
+  useEffect(() => {
+    if (!isOpen || !item_iids.length) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    init();
+  }, [item_iids, isOpen]);
 
   return (
     <>

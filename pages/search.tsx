@@ -79,23 +79,38 @@ const SearchPage = () => {
   const [isLargerThanLG] = useMediaQuery('(min-width: 62em)', { fallback: true });
   const { isOpen, onOpen, onClose } = useDisclosure();
 
+  const parseQueryString = () => {
+    const queryStrings = queryString.parse(router.asPath, {
+      arrayFormat: 'bracket',
+      parseNumbers: true,
+    });
+
+    const queryFilters = getFiltersDiff(queryStrings);
+    const currentFilters = getFiltersDiff(filters);
+
+    if (!isEqual(currentFilters, queryFilters)) {
+      setFilters({ ...defaultFilters, ...queryFilters });
+
+      return false;
+    } else if (router.query.s !== searchQuery && searchQuery !== null) {
+      setFilters((oldFilters) => ({
+        ...oldFilters,
+        page: 1,
+      }));
+
+      return false;
+    }
+
+    return true;
+  };
+
   useEffect(() => {
     // skip initial render
     if (!router.isReady || !prevFilter.current) return;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     parseQueryString();
-  }, [router.query, router.isReady]);
-
-  useEffect(() => {
-    if (!router.isReady) return;
-
-    // parse initial query string and set filters
-    if (!prevFilter.current && !parseQueryString()) return;
-
-    doSearch(undefined, shouldUpdateCount(filters, prevFilter.current));
-    changeQueryString();
-    prevFilter.current = filters;
-  }, [filters, router.isReady]);
+  }, [router.query, router.isReady, parseQueryString]);
 
   const doSearch = async (fetchStats = false, fetchCount = false) => {
     if (router.query.s !== searchQuery) {
@@ -130,7 +145,6 @@ const SearchPage = () => {
 
     try {
       ABORT_CONTROLLER.abort();
-      // eslint-disable-next-line react-compiler/react-compiler
       ABORT_CONTROLLER = new AbortController();
 
       if (fetchCount) {
@@ -180,6 +194,39 @@ const SearchPage = () => {
     }
   };
 
+  const changeQueryString = () => {
+    const query = (router.query.s as string) ?? '';
+
+    if (!prevFilter.current) return;
+    const newParams = getFiltersDiff(filters);
+    const oldParams = getFiltersDiff(prevFilter.current);
+
+    if (isEqual(newParams, oldParams)) return;
+
+    let paramsString = queryString.stringify(newParams, {
+      arrayFormat: 'bracket',
+      encode: false,
+    });
+
+    paramsString = paramsString ? '&' + paramsString : '';
+
+    router.push(router.pathname + '?s=' + encodeURIComponent(query) + paramsString, undefined, {
+      shallow: true,
+    });
+  };
+
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    // parse initial query string and set filters
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (!prevFilter.current && !parseQueryString()) return;
+
+    doSearch(undefined, shouldUpdateCount(filters, prevFilter.current));
+    changeQueryString();
+    prevFilter.current = filters;
+  }, [filters, router.isReady]);
+
   const selectItem = (id?: number, checkAll?: boolean) => {
     if (!id && !checkAll) setSelectedItems([]);
     else if (checkAll) {
@@ -221,52 +268,6 @@ const SearchPage = () => {
   const changePage = (page: number) => {
     setFilters((oldFilters) => ({ ...oldFilters, page: page }));
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-  };
-
-  const parseQueryString = () => {
-    const queryStrings = queryString.parse(router.asPath, {
-      arrayFormat: 'bracket',
-      parseNumbers: true,
-    });
-
-    const queryFilters = getFiltersDiff(queryStrings);
-    const currentFilters = getFiltersDiff(filters);
-
-    if (!isEqual(currentFilters, queryFilters)) {
-      setFilters({ ...defaultFilters, ...queryFilters });
-
-      return false;
-    } else if (router.query.s !== searchQuery && searchQuery !== null) {
-      setFilters((oldFilters) => ({
-        ...oldFilters,
-        page: 1,
-      }));
-
-      return false;
-    }
-
-    return true;
-  };
-
-  const changeQueryString = () => {
-    const query = (router.query.s as string) ?? '';
-
-    if (!prevFilter.current) return;
-    const newParams = getFiltersDiff(filters);
-    const oldParams = getFiltersDiff(prevFilter.current);
-
-    if (isEqual(newParams, oldParams)) return;
-
-    let paramsString = queryString.stringify(newParams, {
-      arrayFormat: 'bracket',
-      encode: false,
-    });
-
-    paramsString = paramsString ? '&' + paramsString : '';
-
-    router.push(router.pathname + '?s=' + encodeURIComponent(query) + paramsString, undefined, {
-      shallow: true,
-    });
   };
 
   const handleAddItemToList = async (list_id: number) => {

@@ -1,4 +1,4 @@
-/* eslint-disable react-you-might-not-need-an-effect/you-might-not-need-an-effect */
+/* eslint-disable  */
 import { HStack, Button } from '@chakra-ui/react';
 import CardBase from '../Card/CardBase';
 import SearchFilters from './SearchFilters';

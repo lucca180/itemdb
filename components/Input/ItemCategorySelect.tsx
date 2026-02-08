@@ -21,10 +21,6 @@ const ItemCatSelect = (props: Props) => {
   const { value, onChange, name, color } = props;
   const [options, setOptions] = React.useState<string[]>([]);
 
-  useEffect(() => {
-    loadOptions();
-  }, []);
-
   const loadOptions = async () => {
     const res = await axios.get('/api/search/stats');
     const data = res.data as SearchStats;
@@ -37,6 +33,11 @@ const ItemCatSelect = (props: Props) => {
       target: { name, value: item.value },
     } as React.ChangeEvent<HTMLInputElement>);
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadOptions();
+  }, []);
 
   return (
     <AutoComplete rollNavigation onSelectOption={onSelectOption}>

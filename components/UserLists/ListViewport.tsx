@@ -54,7 +54,7 @@ export default function ListViewport(props: ListViewportProps) {
   }, [props.ids, forceIds]);
 
   const debouncedOnChange = useCallback(
-    // eslint-disable-next-line react-compiler/react-compiler
+    // eslint-disable-next-line react-hooks/use-memo
     debounce(
       (
         id: number,

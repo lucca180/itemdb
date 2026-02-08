@@ -22,7 +22,7 @@ const NeoColorSelect = (props: Props) => {
 
   const allColorsSorted = useMemo(
     () => Object.values(!isPetpet ? allNeopetsColors : petpetColors).sort(),
-    []
+    [allNeopetsColors, petpetColors, isPetpet]
   );
 
   return (

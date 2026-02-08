@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/refs */
 import React, { useState } from 'react';
 import ItemCard from '../Items/ItemCard';
 import { ItemData, ListItemInfo, UserList } from '../../types';

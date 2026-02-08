@@ -67,17 +67,6 @@ const NCTrade = (props: Props) => {
     return Math.min(lebronCount + tradeCount, 20);
   }, [lebronTradeHistory, tradeHistory]);
 
-  useEffect(() => {
-    if (isNoTrade) return;
-    setLebronTradeHistory(null);
-    getTradeHistory();
-  }, [item.internal_id]);
-
-  useEffect(() => {
-    if (authLoading || !user || isNoTrade || !lists) return;
-    init();
-  }, [lists, user, authLoading]);
-
   const init = async () => {
     if (!user || !user.username || (!seeking.length && !trading.length)) {
       setMatch({ seeking: {}, trading: {} });
@@ -121,6 +110,19 @@ const NCTrade = (props: Props) => {
     setTradeHistory(rawHistory.data.trades);
     setIsHistoryLoading(false);
   };
+
+  useEffect(() => {
+    if (isNoTrade) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLebronTradeHistory(null);
+    getTradeHistory();
+  }, [item.internal_id]);
+
+  useEffect(() => {
+    if (authLoading || !user || isNoTrade || !lists) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    init();
+  }, [lists, user, authLoading]);
 
   if (isNoTrade && !hasInsights)
     return (

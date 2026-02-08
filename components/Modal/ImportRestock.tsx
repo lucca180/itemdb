@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import {
   Modal,
   ModalOverlay,
@@ -47,11 +46,6 @@ const ImportRestockModal = (props: ImportRestockModalProps) => {
   const allChecked =
     selectedSessions.length === allSessions.length || selectedSessions.length === MAX_SESSIONS;
   const isIndeterminate = !!selectedSessions.length && !allChecked;
-
-  useEffect(() => {
-    if (!isOpen) return;
-    init();
-  }, [isOpen]);
 
   const init = async () => {
     if (!window) return;
@@ -153,6 +147,12 @@ const ImportRestockModal = (props: ImportRestockModalProps) => {
     setConfirmImport(null);
     onClose();
   };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    init();
+  }, [isOpen]);
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} isCentered scrollBehavior="inside">

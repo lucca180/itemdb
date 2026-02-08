@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 // next.config.js
 
 import { SentryBuildOptions, withSentryConfig } from '@sentry/nextjs';

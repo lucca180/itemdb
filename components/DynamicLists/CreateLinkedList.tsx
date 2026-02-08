@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Button, useDisclosure, Text, Box, VStack } from '@chakra-ui/react';
 import Dynamic from 'next/dynamic';
 

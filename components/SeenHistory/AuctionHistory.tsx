@@ -56,10 +56,6 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
     fetcher
   );
 
-  useEffect(() => {
-    init();
-  }, []);
-
   const init = async () => {
     setWall(null);
     try {
@@ -77,6 +73,11 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
       }
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    init();
+  }, []);
 
   return (
     <Flex flexFlow="column">

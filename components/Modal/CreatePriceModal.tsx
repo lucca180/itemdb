@@ -87,7 +87,6 @@ const CreatePriceModal = (props: CreatePriceModalModalProps) => {
       <AlertDialog
         isOpen={isOpen}
         leastDestructiveRef={cancelRef as any}
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
         onClose={() => {}}
         isCentered
       >

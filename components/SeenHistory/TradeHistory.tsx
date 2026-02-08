@@ -48,10 +48,6 @@ export const TradeHistory = (props: TradeHistoryProps) => {
     fetcher
   );
 
-  useEffect(() => {
-    init();
-  }, []);
-
   const init = async () => {
     setWall(null);
     try {
@@ -69,6 +65,11 @@ export const TradeHistory = (props: TradeHistoryProps) => {
       }
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    init();
+  }, []);
 
   return (
     <Flex flexFlow="column">

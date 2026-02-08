@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { coefficientOfVariation } from '../../../../utils/utils';
 import { ItemPrices, PriceProcess2, Prisma } from '@prisma/generated/client';
 import { differenceInCalendarDays, differenceInDays } from 'date-fns';
-import { processPrices2 } from '../../../../utils/pricing';
 import { processPrices3 } from '@utils/pricing3';
 import { LogService } from '@services/ActionLogService';
 
@@ -15,8 +13,6 @@ const TARNUM_KEY = process.env.TARNUM_KEY;
 
 const EVENT_MODE = process.env.EVENT_MODE === 'true';
 const MIN_LAST_UPDATE = EVENT_MODE ? 3 : 5;
-
-const USE_NEW_ALGORITHM = process.env.USE_NEW_ALGORITHM === 'true';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {

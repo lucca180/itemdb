@@ -142,17 +142,6 @@ const RestockDashboard = (props: RestockDashboardProps) => {
     };
   }, [sessionStats, pastSessionStats]);
 
-  useEffect(() => {
-    if (!user) return;
-
-    setTimeout(() => {
-      handleImport();
-      track();
-    }, 2000);
-
-    if (!sessionStats) init();
-  }, []);
-
   const init = async (customFilter?: PeriodFilter) => {
     customFilter = customFilter ?? filter ?? defaultFilter;
     setAlertMsg({ type: 'loading', title: t('Restock.loading-your-restock-sessions') });
@@ -296,6 +285,18 @@ const RestockDashboard = (props: RestockDashboardProps) => {
       itemdbScript: window.itemdb_script?.version ?? null,
     });
   };
+
+  useEffect(() => {
+    if (!user) return;
+
+    setTimeout(() => {
+      handleImport();
+      track();
+    }, 2000);
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (!sessionStats) init();
+  }, []);
 
   return (
     <>

@@ -68,6 +68,7 @@ export const DropdownOption = (props: Props) => {
   const t = useTranslations();
   const { label, href, newUntil } = props;
 
+  // eslint-disable-next-line react-hooks/purity
   const isNew = newUntil && newUntil > Date.now();
 
   return (

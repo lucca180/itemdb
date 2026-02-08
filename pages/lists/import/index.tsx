@@ -97,7 +97,7 @@ export default ImportPage;
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const body = await parseBody(context.req, '4mb');
-  let items = JSON.parse(body?.itemDataJson || 'null');
+  const items = JSON.parse(body?.itemDataJson || 'null');
   const indexType = body?.indexType ?? 'item_id';
   const list_id = body?.list_id ?? null;
 
@@ -179,10 +179,6 @@ const ImportItems = (props: ImportItemsProps) => {
   useEffect(() => {
     return () => toast.closeAll();
   });
-
-  useEffect(() => {
-    init();
-  }, [items]);
 
   const loadedItems = useMemo(
     () =>
@@ -380,6 +376,11 @@ const ImportItems = (props: ImportItemsProps) => {
       list,
     });
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    init();
+  }, [items]);
 
   return (
     <>

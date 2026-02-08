@@ -37,10 +37,6 @@ const AdminEditPriceModal = (props: AdminEditPriceModalProps) => {
   const [newInflation, setNewInflation] = React.useState<undefined | boolean>(undefined);
   const [priceContext, setPriceContext] = React.useState(props.itemPrice?.context ?? '');
 
-  useEffect(() => {
-    setNewPriceVal(itemPrice?.value ?? null);
-  }, [itemPrice]);
-
   const onConfirm = async () => {
     if (!itemPrice) return;
     setLoading(true);
@@ -86,6 +82,11 @@ const AdminEditPriceModal = (props: AdminEditPriceModalProps) => {
     setNewPriceVal(price);
   };
 
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setNewPriceVal(itemPrice?.value ?? null);
+  }, [itemPrice]);
+
   if (!props.itemPrice) return null;
 
   if (msg)
@@ -112,7 +113,6 @@ const AdminEditPriceModal = (props: AdminEditPriceModalProps) => {
       <AlertDialog
         isOpen={isOpen}
         leastDestructiveRef={cancelRef as any}
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
         onClose={() => {}}
         isCentered
       >

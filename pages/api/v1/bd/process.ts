@@ -66,7 +66,7 @@ export const getBDProcessData = async (itemData: ItemData | Items | number) => {
   const battleData = rawData.map((entry) => JSON.parse(entry.battle_data as string) as BattleData);
 
   const processed = processWeapon(battleData, itemData.name);
-  console.log('Processed BD Data:', processed);
+  // console.log('Processed BD Data:', processed);
   // if (processed.entries < 20) return null;
 
   return processed;
@@ -76,7 +76,7 @@ const processWeapon = (bdData: BattleData[], weapon: string) => {
   const iconMap = new Map<string, { [dmg: number]: number }>();
   let entries = 0;
   let freezeEntries = 0;
-  let maxUses = {};
+  // const maxUses = {};
   // get icons
   bdData.forEach((battle) => {
     const attacks = battle.attacks.filter((atk) => atk.weapon === weapon);

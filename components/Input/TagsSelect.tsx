@@ -1,3 +1,4 @@
+// @ts-nocheck (not using this file rn)
 import React, { useEffect, useCallback } from 'react';
 import {
   AutoComplete,
@@ -48,7 +49,7 @@ const TagSelect = (props: Props) => {
     setOptions(newOptions);
   };
 
-  // eslint-disable-next-line react-compiler/react-compiler
+  // eslint-disable-next-line react-hooks/use-memo
   const debouncedLoad = useCallback(debounce(loadOptions, 250), []);
 
   return (

@@ -66,8 +66,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const finalUser = rawToUser(dbUser);
 
     res.json(finalUser);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     console.error(e);
     res.status(401).json({ error: 'Unauthorized' });

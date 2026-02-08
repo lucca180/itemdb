@@ -21,14 +21,14 @@ const rgb = color.rgb().array();
 
 const LeavingMallPage = (props: LeavingMallPageProps) => {
   const t = useTranslations();
-  const formater = useFormatter();
+  const formatter = useFormatter();
   const { mallData, itemData } = props;
 
   const itemsPerDate = useMemo(() => {
     const dates: { [date: string]: NCMallData[] } = {};
     mallData.forEach((data) => {
       if (!data.saleEnd) return;
-      const dateFormatted = formater.dateTime(new Date(data.saleEnd), {
+      const dateFormatted = formatter.dateTime(new Date(data.saleEnd), {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
@@ -38,7 +38,7 @@ const LeavingMallPage = (props: LeavingMallPageProps) => {
     });
 
     return dates;
-  }, [mallData]);
+  }, [mallData, formatter]);
 
   return (
     <>

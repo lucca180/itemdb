@@ -46,7 +46,6 @@ const RestockHub: NextPageWithLayout<any> = (props: RestockHubProps) => {
   const [selDiff, setSelDiff] = useState<string[]>([]);
 
   const todayNST = getDateNST();
-  const todayDate = todayNST.getDate();
 
   const specialDay = useMemo(() => {
     if (todayNST.getDate() === 3) return 'hpd';
@@ -55,7 +54,7 @@ const RestockHub: NextPageWithLayout<any> = (props: RestockHubProps) => {
     if (todayNST.getMonth() === 8 && todayNST.getDate() === 20) return 'festival';
     if (todayNST.getMonth() === 9 && todayNST.getDate() === 31) return 'halloween';
     return '';
-  }, [todayDate]);
+  }, [todayNST]);
 
   const handleCat = (cat: string) => {
     if (selCats.includes(cat)) {

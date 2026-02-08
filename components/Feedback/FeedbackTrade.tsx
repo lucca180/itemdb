@@ -213,7 +213,7 @@ type ItemTradeProps = {
 
 const ItemTrade = (props: ItemTradeProps) => {
   const t = useTranslations();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  // const { onOpen, onClose } = useDisclosure();
   const ref = useRef<HTMLInputElement>(null);
   const setFocus = useRef(false);
   const { item } = props;
@@ -225,6 +225,7 @@ const ItemTrade = (props: ItemTradeProps) => {
       ref.current.focus();
       setFocus.current = true;
     }
+    // eslint-disable-next-line react-hooks/refs
   }, [ref.current]);
 
   const handleChange = (val: string) => {
@@ -240,7 +241,7 @@ const ItemTrade = (props: ItemTradeProps) => {
     }
 
     if (e.key.toLowerCase() === 'c') {
-      onOpen();
+      // onOpen();
     }
 
     if (!item.price || !props.useShortcuts) return;
@@ -258,13 +259,13 @@ const ItemTrade = (props: ItemTradeProps) => {
     }
   };
 
-  const closeModal = (val?: string) => {
-    if (val) {
-      handleChange(val);
-    }
+  // const closeModal = (val?: string) => {
+  //   if (val) {
+  //     handleChange(val);
+  //   }
 
-    onClose();
-  };
+  //   onClose();
+  // };
 
   return (
     <>

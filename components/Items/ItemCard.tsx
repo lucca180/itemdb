@@ -86,7 +86,6 @@ const ItemCardBase = (props: ItemProps) => {
       />
       <CtxTrigger
         id={item.internal_id.toString() + '-' + uniqueID}
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         //@ts-ignore
         disableWhileShiftPressed
         disable={isMobile ? true : undefined}

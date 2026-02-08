@@ -19,10 +19,6 @@ const FeedbackItem = (props: Props) => {
 
   const tagsStr = tags.map((tag) => tag.name);
 
-  useEffect(() => {
-    if (item_iid) fetchItem();
-  }, [item_iid]);
-
   const fetchItem = async () => {
     const itemPromise = axios.get('/api/v1/items/' + item_iid);
 
@@ -47,6 +43,11 @@ const FeedbackItem = (props: Props) => {
     setShouldHideTags(hideTags);
     setShouldHideNotes(hideNotes);
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (item_iid) fetchItem();
+  }, [item_iid]);
 
   return (
     <Flex flexFlow="column" gap={3}>

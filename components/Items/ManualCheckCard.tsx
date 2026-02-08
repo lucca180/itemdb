@@ -27,11 +27,6 @@ const ManualCheckCard = (props: Props) => {
   const [conflictField, setConflictField] = useState<string | null>(null);
   const toast = useToast();
 
-  useEffect(() => {
-    if (!user || !user.isAdmin) return;
-    init();
-  }, [user, item]);
-
   const init = async () => {
     const res = await axios.get(`/api/admin/manual/${item.internal_id}`);
 
@@ -81,6 +76,12 @@ const ManualCheckCard = (props: Props) => {
       loading: { title: 'Please wait' },
     });
   };
+
+  useEffect(() => {
+    if (!user || !user.isAdmin) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    init();
+  }, [user, item]);
 
   if (!user || !user.isAdmin || !manualCheck) return null;
 

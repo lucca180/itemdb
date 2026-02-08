@@ -1,8 +1,7 @@
-/* eslint-disable react/no-unescaped-entities */
 import { Heading, Text, Center, Image } from '@chakra-ui/react';
 import Layout from '../components/Layout';
 import { useTranslations } from 'next-intl';
-import { loadTranslation } from '@utils/load-translation';
+// import { loadTranslation } from '@utils/load-translation';
 
 const Error500Page = () => {
   const t = useTranslations();

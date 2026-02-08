@@ -1,11 +1,11 @@
 import Color from 'color';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Vibrant } from 'node-vibrant/node';
-import { ColorType, User, UserList } from '../../../../../types';
+import { ColorType, UserList } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 import { slugify } from '../../../../../utils/utils';
-import { ListService, rawToList } from '@services/ListService';
+import { ListService } from '@services/ListService';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -182,7 +182,6 @@ const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
     const result = await prisma.$transaction(updateLists);
 
     return res.status(200).json({ success: true, message: result });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     console.error(e);
     res.status(500).json({ error: 'Internal Server Error' });

@@ -34,7 +34,6 @@ const ListChartComponent = (props: ListChartComponentProps) => {
       },
       crosshair: {
         vertLine: {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
           width: 8,
           color: '#C3BCDB44',

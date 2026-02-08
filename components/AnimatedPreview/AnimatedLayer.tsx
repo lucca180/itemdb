@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-head-element */
-/* eslint-disable @next/next/no-sync-scripts */
+
 /* eslint-disable @next/next/no-img-element */
 
 type AnimatedLayerProps = {

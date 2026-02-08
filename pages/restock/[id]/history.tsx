@@ -38,10 +38,6 @@ const RestockHistory = (props: RestockHistoryPageProps) => {
   const [sortMode, setSortMode] = useState('price');
   const [wall, setWall] = useState<ContributeWallData | null>(null);
 
-  useEffect(() => {
-    init();
-  }, []);
-
   const init = async (newMode?: string) => {
     setLoading(true);
     setWall(null);
@@ -74,6 +70,11 @@ const RestockHistory = (props: RestockHistoryPageProps) => {
     setSortMode(e.target.value);
     setRestockData(sortRestock(restockData, e.target.value));
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    init();
+  }, []);
 
   return (
     <>

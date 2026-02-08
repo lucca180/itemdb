@@ -34,8 +34,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const user = rawToUser(dbUser, true);
 
     res.json(user);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     console.error(e);
     res.status(400).json({ error: e?.message ?? 'Something went wrong' });

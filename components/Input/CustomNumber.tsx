@@ -1,6 +1,6 @@
-/* eslint-disable react-you-might-not-need-an-effect/you-might-not-need-an-effect */
+/* eslint-disable react-hooks/preserve-manual-memoization */
 import { NumberInput, NumberInputField } from '@chakra-ui/react';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import debounce from 'lodash/debounce';
 
 const intl = new Intl.NumberFormat('en-US', { style: 'decimal' });
@@ -22,17 +22,22 @@ const CustomNumberInput = (props: Props) => {
   useEffect(() => {
     const propsVal = props.value ?? '';
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (typeof propsVal !== 'undefined' && propsVal !== value) setValue(propsVal);
     if (typeof propsVal === 'undefined') setValue('');
   }, [props.value]);
 
-  const debouncedOnChange = useCallback(
-    // eslint-disable-next-line react-compiler/react-compiler
-    debounce((newValue: string) => {
+  const debouncedOnChange = useMemo(() => {
+    return debounce((newValue: string) => {
       props.onChange?.(newValue);
-    }, 250),
-    [props.onChange]
-  );
+    }, 250);
+  }, [props.onChange]);
+
+  useEffect(() => {
+    return () => {
+      debouncedOnChange.cancel();
+    };
+  }, [debouncedOnChange]);
 
   const onChange = (val: string) => {
     const parsedVal = val || val === '0' ? val.replace(/[\.\,]+/g, '') : '';

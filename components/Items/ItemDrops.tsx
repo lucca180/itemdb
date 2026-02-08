@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 import {
   Flex,
   Text,
@@ -53,12 +52,6 @@ const ItemDrops = (props: Props) => {
     [pools]
   );
 
-  useEffect(() => {
-    if (SKIP_ITEMS.includes(item.internal_id)) return;
-
-    init();
-  }, [item.internal_id]);
-
   const init = async () => {
     const itemRes = await axios.post(`/api/v1/items/many`, {
       id: Object.keys(itemDrops),
@@ -67,6 +60,13 @@ const ItemDrops = (props: Props) => {
     setDropData(Object.values(itemRes.data));
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (SKIP_ITEMS.includes(item.internal_id)) return;
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    init();
+  }, [item.internal_id]);
 
   if (SKIP_ITEMS.includes(item.internal_id)) return null;
 

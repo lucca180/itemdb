@@ -63,12 +63,7 @@ const ConfirmDeleteItem = (props: Props) => {
 
   if (loading)
     return (
-      <AlertDialog
-        isOpen
-        leastDestructiveRef={cancelRef as any}
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        onClose={() => {}}
-      >
+      <AlertDialog isOpen leastDestructiveRef={cancelRef as any} onClose={() => {}}>
         <AlertDialogOverlay>
           <AlertDialogContent>
             <AlertDialogHeader fontSize="lg" fontWeight="bold">

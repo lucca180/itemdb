@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import { Fragment } from 'react';
 import { ItemData } from '../../types';
 import { isMallDiscounted } from '@components/Items/NCMallCard';

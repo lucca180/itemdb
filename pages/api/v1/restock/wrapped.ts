@@ -388,7 +388,7 @@ const bulkGetMany = async (item_iids: number[]) => {
   const batchSize = 10;
 
   let results = {};
-  for (let batch of chunk(item_iids, batchSize)) {
+  for (const batch of chunk(item_iids, batchSize)) {
     const res = await getManyItemsPriceHistory({ item_iids: batch });
     results = { ...results, ...res };
   }

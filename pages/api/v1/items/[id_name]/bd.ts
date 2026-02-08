@@ -46,7 +46,7 @@ export const getBDData = async (item_iid: number): Promise<BDData | null> => {
 
   for (const effect of bdData) {
     if (terms.some((term) => effect.type.startsWith(term))) {
-      const [type, icon, _] = effect.type.split('_') as [
+      const [type, icon] = effect.type.split('_') as [
         'attack' | 'defense' | 'reflect',
         BDIconTypes,
         number,

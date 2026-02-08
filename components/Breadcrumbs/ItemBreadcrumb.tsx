@@ -61,7 +61,8 @@ export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
     }
 
     return breadList;
-  }, [item, router.locale]);
+  }, [item, router.locale, category, t, officialLists]);
+
   const productJson = getItemJSONLD(item);
   return (
     <>

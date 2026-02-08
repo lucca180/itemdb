@@ -67,7 +67,7 @@ export const ListBreadcrumb = (props: ListBreadcrumb) => {
     });
 
     return breadList;
-  }, [list, router.locale]);
+  }, [list, category, t, router.locale]);
 
   return <Breadcrumbs breadcrumbList={breadcrumbList} />;
 };

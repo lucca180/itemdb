@@ -67,7 +67,7 @@ export default function EditBdInfoModal(props: EditBdInfoModalProps) {
     const updatedSection = [...(bdData[section] ?? [])];
     updatedSection[index].type = newValue;
 
-    let keyBase = `${section}_${newValue}`;
+    const keyBase = `${section}_${newValue}`;
     let key = keyBase;
     let count = 1;
 

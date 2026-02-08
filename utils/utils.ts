@@ -82,7 +82,7 @@ export function genItemKey(
   ignoreID = false
 ) {
   const image_id = item.image_id ?? '';
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
   //@ts-ignore
   const item_id = item?.item_id ?? '';
 

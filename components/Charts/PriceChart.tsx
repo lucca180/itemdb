@@ -1,4 +1,3 @@
-/* eslint-disable react-you-might-not-need-an-effect/you-might-not-need-an-effect */
 import { Box } from '@chakra-ui/react';
 import Color from 'color';
 import { createChart, ColorType, LineStyle } from 'lightweight-charts';
@@ -39,7 +38,6 @@ const ChartComponent = (props: ChartComponentProps) => {
       },
       crosshair: {
         vertLine: {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
           width: 8,
           color: '#C3BCDB44',

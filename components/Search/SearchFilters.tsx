@@ -1,4 +1,4 @@
-/* eslint-disable react-you-might-not-need-an-effect/you-might-not-need-an-effect */
+/* eslint-disable  */
 import {
   Accordion,
   AccordionItem,
@@ -98,7 +98,6 @@ const SearchFilters = (props: Props) => {
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
     const newFilters = [...filters[filterType]].filter(
       (f) => f !== defaultValue && f !== `!${defaultValue}`

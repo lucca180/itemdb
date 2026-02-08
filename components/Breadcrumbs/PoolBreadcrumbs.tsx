@@ -52,7 +52,7 @@ export const PoolBreadcrumbs = (props: PoolBreadcrumbsProps) => {
     }
 
     return breadList;
-  }, [petColorData, router.locale]);
+  }, [petColorData, router.locale, t]);
 
   return <Breadcrumbs breadcrumbList={breadcrumbList} />;
 };

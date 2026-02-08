@@ -33,7 +33,7 @@ export const ArticleBreadcrumb = (props: ArticleBreadcrumb) => {
     ];
 
     return breadList;
-  }, [article, router.locale]);
+  }, [article, router.locale, t]);
 
   return <Breadcrumbs breadcrumbList={breadcrumbList} />;
 };

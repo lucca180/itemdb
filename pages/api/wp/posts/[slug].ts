@@ -3,7 +3,7 @@ import type { WP_REST_API_Post } from 'wp-types';
 import { getImagePalette } from '../../v1/lists/[username]';
 import { wp } from '.';
 import { WP_Article } from '../../../../types';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
 // @ts-ignore
 import he from 'he';
 

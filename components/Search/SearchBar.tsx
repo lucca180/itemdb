@@ -22,7 +22,7 @@ import {
   Badge,
   Box,
 } from '@chakra-ui/react';
-import React, { useCallback } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import SearchMenu from '../Menus/SearchMenu';
 import { useRouter } from 'next/router';
 import axios from 'axios';
@@ -76,6 +76,17 @@ export const SearchBar = (props: Props) => {
       onClose();
     },
   });
+
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
+  const debouncedPreSearch = useMemo(() => {
+    return debounce((newValue: string) => {
+      preSearch(newValue);
+    }, 375);
+  }, []);
+
+  useEffect(() => {
+    return () => debouncedPreSearch.cancel();
+  }, [debouncedPreSearch]);
 
   const submit = (e: any) => {
     e.preventDefault();
@@ -134,14 +145,6 @@ export const SearchBar = (props: Props) => {
 
     setLoading(false);
   };
-
-  const debouncedPreSearch = useCallback(
-    // eslint-disable-next-line react-compiler/react-compiler
-    debounce((newValue: string) => {
-      preSearch(newValue);
-    }, 375),
-    [isOpen]
-  );
 
   const doTrack = (type: string) => {
     if (window?.umami) {
@@ -211,7 +214,6 @@ export const SearchBar = (props: Props) => {
                     />
                     <CtxTrigger
                       id={`omni-search-${item.internal_id}`}
-                      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                       //@ts-ignore
                       disableWhileShiftPressed
                       disable={isMobile ? true : undefined}

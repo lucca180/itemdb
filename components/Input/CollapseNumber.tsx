@@ -30,6 +30,11 @@ export const CollapseNumber = (props: Props) => {
     inputRef.current?.focus();
   };
 
+  const reset = () => {
+    setVal(undefined);
+    props.onChange(undefined);
+  };
+
   const captureKey = (e: KeyboardEvent) => {
     if (e.key === 'Escape') {
       e.preventDefault();
@@ -54,11 +59,6 @@ export const CollapseNumber = (props: Props) => {
     setVal(parse(val) || undefined);
 
     if (!isNaN(Number(e.target.value))) props.onChange(parse(val) || undefined);
-  };
-
-  const reset = () => {
-    setVal(undefined);
-    props.onChange(undefined);
   };
 
   return (

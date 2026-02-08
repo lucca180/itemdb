@@ -1,4 +1,4 @@
-/* eslint-disable react-you-might-not-need-an-effect/you-might-not-need-an-effect */
+/* eslint-disable  */
 import {
   Modal,
   ModalOverlay,

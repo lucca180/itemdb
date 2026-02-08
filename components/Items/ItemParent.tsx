@@ -22,10 +22,6 @@ const ItemParent = (props: Props) => {
   const color = item.color.rgb;
   const [showMore, { toggle }] = useBoolean(false);
 
-  useEffect(() => {
-    init();
-  }, [parentItems]);
-
   const init = async () => {
     if (parentItems.length === parentData.length) return;
     const itemRes = await axios.post(`/api/v1/items/many`, {
@@ -34,6 +30,11 @@ const ItemParent = (props: Props) => {
 
     setParentData(Object.values(itemRes.data));
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    init();
+  }, [parentItems]);
 
   return (
     <CardBase title={t('ItemPage.found-inside')} color={color}>

@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 import { Flex, Heading, Text } from '@chakra-ui/react';
 import { ArticleCard } from '../../components/Articles/ArticlesCard';
 import HeaderCard from '../../components/Card/HeaderCard';
