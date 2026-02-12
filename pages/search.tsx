@@ -110,7 +110,7 @@ const SearchPage = () => {
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
     parseQueryString();
-  }, [router.query, router.isReady, parseQueryString]);
+  }, [router.query, router.isReady]);
 
   const doSearch = async (fetchStats = false, fetchCount = false) => {
     if (router.query.s !== searchQuery) {
