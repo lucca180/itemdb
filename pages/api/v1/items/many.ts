@@ -3,7 +3,7 @@ import prisma from '../../../../utils/prisma';
 import { getItemFindAtLinks, isMissingInfo } from '../../../../utils/utils';
 import { ItemData } from '../../../../types';
 import { Prisma } from '@prisma/generated/client';
-import qs from 'qs';
+import queryString from 'query-string';
 import requestIp from 'request-ip';
 import { redis_setItemCount } from '@utils/redis';
 
@@ -36,7 +36,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       name: req.body.name,
       slug: req.body.slug,
     };
-  else if (req.method == 'GET' && req.url) reqData = qs.parse(req.url.split('?')[1]);
+  else if (req.method == 'GET' && req.url)
+    reqData = queryString.parse(req.url.split('?')[1], {
+      arrayFormat: 'bracket',
+    });
+
   if (!reqData) return res.status(400).json({ error: 'Invalid request' });
 
   const ids = reqData.id as string[];

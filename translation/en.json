@@ -983,7 +983,7 @@
     "ats-avg-profit": "The average profit for the items in this shop is <b>{x} NP</b>",
     "no-script-error": "We didn't detected the <Link>Restock Tracker Script</Link> installed on your browser. <Help>Need help?</Help>",
     "text-10": "Finally, come back here and <b>import your sessions</b>",
-    "text-11": "Only the sessions you choose to import will be sended to our servers",
+    "text-11": "Only the sessions you choose to import will be sent to our servers",
     "total-saved-haggling": "Total Saved Haggling",
     "estimated-revenue-0": "Estimated Revenue - {0}",
     "your-estimate-profit": "Your Estimate Profit",

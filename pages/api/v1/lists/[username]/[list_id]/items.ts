@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import qs from 'qs';
+import queryString from 'query-string';
 import { ListService } from '@services/ListService';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
@@ -25,7 +25,9 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   )
     return res.status(400).json({ error: 'Bad Request' });
 
-  const reqQuery = qs.parse(req.url.split('?')[1]) as any;
+  const reqQuery = queryString.parse(req.url.split('?')[1], {
+    arrayFormat: 'bracket',
+  }) as any;
 
   const isQueryEmpty = Object.keys(reqQuery).length === 0;
 

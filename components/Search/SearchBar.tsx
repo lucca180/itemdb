@@ -30,7 +30,7 @@ import { ItemData, ShopInfo, UserList } from '../../types';
 import NextLink from 'next/link';
 import debounce from 'lodash/debounce';
 import ItemCtxMenu, { CtxTrigger } from '../Menus/ItemCtxMenu';
-import qs from 'qs';
+import queryString from 'query-string';
 import { getFiltersDiff } from '../../pages/search';
 import { parseFilters } from '../../utils/parseFilters';
 import { useTranslations } from 'next-intl';
@@ -91,20 +91,20 @@ export const SearchBar = (props: Props) => {
   const submit = (e: any) => {
     e.preventDefault();
 
-    const queryStrings = qs.parse(router.asPath, {
-      ignoreQueryPrefix: true,
+    const queryStrings = queryString.parse(router.asPath.split('?')[1] || '', {
+      arrayFormat: 'bracket',
     });
+
     const queryFilters = getFiltersDiff(queryStrings);
 
     const [filters, query] = parseFilters(search);
 
     const params = getFiltersDiff(filters);
 
-    let paramsString = qs.stringify(
+    let paramsString = queryString.stringify(
       { ...queryFilters, ...params },
       {
-        arrayFormat: 'brackets',
-        encode: false,
+        arrayFormat: 'bracket',
       }
     );
 
