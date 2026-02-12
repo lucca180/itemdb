@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import qs from 'qs';
+import queryString from 'query-string';
 import { defaultFilters, parseFilters } from '../../../../utils/parseFilters';
 import { doSearch } from '.';
 import prisma from '../../../../utils/prisma';
@@ -22,7 +22,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
-  const reqQuery = qs.parse(req.url!.split('?')[1]) as any;
+  const reqQuery = queryString.parse(req.url!.split('?')[1], {
+    arrayFormat: 'bracket',
+  }) as any;
   const query = (reqQuery.s as string)?.trim() ?? '';
 
   const searchFilters = { ...defaultFilters };

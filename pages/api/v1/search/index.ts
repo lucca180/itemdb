@@ -10,7 +10,7 @@ import {
 import { ItemData, SearchFilters } from '../../../../types';
 import Color from 'color';
 import { Prisma } from '@prisma/generated/client';
-import qs from 'qs';
+import queryString from 'query-string';
 import { parseFilters } from '../../../../utils/parseFilters';
 import requestIp from 'request-ip';
 import { redis_setItemCount } from '@utils/redis';
@@ -22,7 +22,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (req.method !== 'GET' || !req.url)
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
-  const reqQuery = qs.parse(req.url.split('?')[1]) as any;
+  const reqQuery = queryString.parse(req.url.split('?')[1], {
+    arrayFormat: 'bracket',
+  }) as any;
   const query = (reqQuery.s as string)?.trim() ?? '';
   const skipStats = reqQuery.skipStats === 'true';
   const onlyStats = reqQuery.onlyStats === 'true';

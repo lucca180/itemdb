@@ -3,7 +3,7 @@ import { dti, getVisibleLayers } from '../../../../utils/impress';
 import { createCanvas, loadImage } from '@napi-rs/canvas';
 import { cdnExists, uploadToS3 } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
-import qs from 'qs';
+import queryString from 'query-string';
 import objectHash from 'object-hash';
 import { Chance } from 'chance';
 import { revalidateItem } from '../../v1/items/[id_name]/effects';
@@ -18,7 +18,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
   let start = Date.now();
   const { refresh, hash, parent_iid, petId } = req.query;
-  const reqQuery = qs.parse(req.url.split('?')[1]) as any;
+  const reqQuery = queryString.parse(req.url.split('?')[1]) as any;
 
   let canvas;
   let ctx;
