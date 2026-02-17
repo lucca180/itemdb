@@ -33,8 +33,10 @@ export const config = {
 };
 
 export async function proxy(request: NextRequest) {
+  const response = NextResponse.next();
+
   if (request.nextUrl.pathname.startsWith('/_next') || PUBLIC_FILE.test(request.nextUrl.pathname)) {
-    return NextResponse.next();
+    return response;
   }
 
   if (MAINTENANCE_MODE) {
@@ -42,7 +44,7 @@ export async function proxy(request: NextRequest) {
   }
 
   if (request.nextUrl.pathname.startsWith('/api/')) {
-    if (skipAPIMiddleware) return NextResponse.next();
+    if (skipAPIMiddleware) return response;
 
     return apiMiddleware(request);
   }
@@ -51,18 +53,14 @@ export async function proxy(request: NextRequest) {
 
   const locale = request.cookies.get('NEXT_LOCALE')?.value;
 
+  updateServerTime('regular-middleware', startTime, response);
+
   let ip =
     requestIp.getClientIp(request as any) || request.headers.get('X-Forwarded-For')?.split(',')[0];
   ip = ip ? normalizeIP(ip) : undefined;
 
   const proof = generateSiteProof(ip);
-  request.headers.set('x-itemdb-proof', proof);
-
-  const response = NextResponse.next({ request });
-
-  // response.cookies.set({ name: 'itemdb-proof', value: proof });
-
-  updateServerTime('regular-middleware', startTime, response);
+  response.cookies.set({ name: 'itemdb-proof', value: proof });
 
   if (!locale || locale === request.nextUrl.locale || !VALID_LOCALES.includes(locale))
     return response;

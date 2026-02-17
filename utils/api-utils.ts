@@ -15,7 +15,6 @@ export function generateSiteProof(ip?: string) {
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function verifySiteProof(proof: string, ip?: string) {
   try {
     const payload = jwt.verify(proof, process.env.SITE_PROOF_SECRET!) as jwt.JwtPayload;
@@ -24,9 +23,9 @@ export function verifySiteProof(proof: string, ip?: string) {
       return false;
     }
 
-    // if (ip && payload.ip && payload.ip !== ip) {
-    //   return false;
-    // }
+    if (ip && payload.ip && payload.ip !== ip) {
+      return false;
+    }
 
     return true;
   } catch {
