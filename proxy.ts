@@ -118,9 +118,11 @@ export const apiMiddleware = async (request: NextRequest) => {
     updateServerTime('api-middleware', startTime, response);
     return response;
   } else if (itemdb_proof) {
-    const e = new Error('Invalid site proof', {
+    const e = new Error('Incorrect site proof', {
       cause: itemdb_proof,
     });
+
+    response.cookies.set({ name: 'itemdb-proof', value: '', maxAge: 0 });
 
     Sentry.captureException(e);
   }
