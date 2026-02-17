@@ -13,7 +13,7 @@ describe.concurrent('API Access tests', () => {
     const request = new NextRequest('http://localhost/api/v1/items', {
       method: 'GET',
       headers: {
-        'x-itemdb-proof': proof,
+        'x-itemdb-proof': proof.token,
       },
     });
 
