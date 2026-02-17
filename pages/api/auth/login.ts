@@ -51,7 +51,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
       // expire cookie before token expires
       cookies.push(
-        `session=${sessionCookie};Path=/;httpOnly=true;secure=true;SameSite=Lax;Max-Age=${(expiresIn * 13) / 1000};`
+        `session=${sessionCookie};Path=/;httpOnly=true;secure=true;SameSite=Strict;Max-Age=${(expiresIn * 13) / 1000};`
       );
     }
 

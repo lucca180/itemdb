@@ -677,6 +677,17 @@ export type WearableData = {
   canonicalSpecies: string;
 };
 
+export type APIKeyData = {
+  key_id: number;
+  api_key?: string;
+  name: string | null;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+  active: boolean;
+  limit: number;
+};
+
 // ------- DTI -------- //
 
 export type DTISpecies = {
@@ -884,6 +895,8 @@ declare global {
       identify: (payload: any) => Promise<void>;
       track: (event: string, payload?: any) => Promise<void>;
     };
+
+    __itemdb_proof__?: string;
 
     itemdb_restock_cleanAll?: () => void; //backwards compatibility
   }

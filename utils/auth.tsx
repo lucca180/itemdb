@@ -4,6 +4,7 @@ import { useAtom } from 'jotai';
 import { atomWithStorage, createJSONStorage } from 'jotai/utils';
 import { User, UserPreferences } from '../types';
 import axios from 'axios';
+import { getCookies } from 'cookies-next/client';
 
 const getAuth = () => import('./firebase/auth');
 
@@ -54,6 +55,7 @@ export function AuthProvider({ children }: any) {
         if (!newUser) {
           setUserToken(null);
           setAuthLoading(false);
+          getSession();
           return;
         }
 
@@ -62,6 +64,7 @@ export function AuthProvider({ children }: any) {
         }
 
         const token = await newUser.getIdToken();
+        getSession();
         setUserToken(token);
         setAuthLoading(false);
       });
@@ -79,9 +82,13 @@ export function AuthProvider({ children }: any) {
         getAuth().then(async (res) => {
           const { auth } = res;
           const user = auth.currentUser;
+
           try {
             if (user) await user.getIdToken(true);
-          } catch (e) {}
+          } catch (e) {
+          } finally {
+            getSession();
+          }
         });
       },
       10 * 60 * 1000
@@ -119,6 +126,20 @@ export function AuthProvider({ children }: any) {
       setUser(userData);
     } catch (e: any) {
       console.error(e);
+    }
+  };
+
+  const getSession = async () => {
+    try {
+      const cookies = getCookies();
+
+      if (cookies && cookies['idb-session-exp']) return;
+
+      const res = await axios.get('/api/auth/getSession');
+      return res.data;
+    } catch (e) {
+      console.error('getSession error', e);
+      return null;
     }
   };
 
@@ -169,3 +190,22 @@ export const useAuth = () => {
 const checkEqual = (a: object, b: object) => {
   return JSON.stringify(a) === JSON.stringify(b);
 };
+
+axios.interceptors.request.use((config) => {
+  if (!config) return config;
+
+  const url = new URL(config.url ?? '', window.location.origin);
+
+  const isTrusted = url.origin === window.location.origin || url.hostname.endsWith('itemdb.com.br');
+
+  if (!isTrusted) {
+    return config;
+  }
+  const cookies = getCookies() || {};
+  const proof = cookies['itemdb-proof'];
+  if (proof) {
+    config.headers['X-itemdb-Proof'] = proof;
+  }
+
+  return config;
+});

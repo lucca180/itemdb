@@ -840,11 +840,12 @@ model bdEffects {
 model apiKeys {
   key_id  Int    @id @default(autoincrement())
   api_key String @unique
-  limit   Int    @default(5000)
+  limit   Int
 
   name        String?
   description String?  @db.Text
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   active      Boolean  @default(true)
 
   user_id String?

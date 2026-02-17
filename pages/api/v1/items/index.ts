@@ -7,6 +7,7 @@ import hash from 'object-hash';
 import { getManyItems } from './many';
 import { Prisma } from '@prisma/generated/client';
 import { allCategories } from '@utils/allCats';
+import { redis_setItemCount } from '@utils/redis';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
@@ -36,6 +37,9 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const includeOld = req.query.includeOld ? req.query.includeOld === 'true' : false;
 
   const items = await getLatestItems(limit, !includeOld);
+
+  const ip = requestIp.getClientIp(req);
+  await redis_setItemCount(ip, items.length, req);
 
   return res.status(200).json(items);
 };
