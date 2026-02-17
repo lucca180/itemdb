@@ -80,6 +80,7 @@ export function AuthProvider({ children }: any) {
   useEffect(() => {
     const handle = setInterval(
       async () => {
+        if (document.visibilityState !== 'visible') return;
         getAuth().then(async (res) => {
           const { auth } = res;
           const user = auth.currentUser;
@@ -169,6 +170,7 @@ export function AuthProvider({ children }: any) {
 
   const checkProof = () => {
     const proof = getCookie('itemdb-proof');
+
     if (navigator.cookieEnabled && document.cookie && !proof) {
       console.error('Site proof cookie is missing, refreshing');
       captureException(new Error('Site proof cookie is missing, refreshing'));
