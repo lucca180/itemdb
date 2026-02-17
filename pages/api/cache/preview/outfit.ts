@@ -18,7 +18,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
   let start = Date.now();
   const { refresh, hash, parent_iid, petId } = req.query;
-  const reqQuery = queryString.parse(req.url.split('?')[1]) as any;
+  const reqQuery = queryString.parse(req.url.split('?')[1], {
+    arrayFormat: 'bracket',
+  }) as any;
 
   let canvas;
   let ctx;
