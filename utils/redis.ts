@@ -2,6 +2,7 @@ import { Redis as RedisRaw } from 'ioredis';
 import { Chance } from 'chance';
 import { NextApiRequest } from 'next/types';
 import prisma from './prisma';
+import { normalizeIP } from './api-utils';
 
 const chance = new Chance();
 
@@ -67,6 +68,7 @@ export const getSession = async (sessionToken?: string, checkOnly = false) => {
 
 export const checkBan = async (ip?: string) => {
   if (!redis) return;
+  ip = ip ? normalizeIP(ip) : undefined;
   const isBanned = await redis.get(`ban:${ip}`);
 
   if (isBanned) throw API_ERROR_CODES.limitExceeded;
@@ -89,6 +91,7 @@ export const redis_setItemCount = async (
     if (req.headers['x-itemdb-key'])
       return incrementApiKey(req.headers['x-itemdb-key'] as string, itemCount);
 
+    ip = normalizeIP(ip);
     const newVal = await redis.incrby(ip, itemCount);
 
     if (newVal >= LIMIT_COUNT) {

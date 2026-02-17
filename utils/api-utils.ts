@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { NextRequest } from 'next/server';
+import ipaddr from 'ipaddr.js';
 
 // ------- site proof ---------- //
 export function generateSiteProof(ip?: string) {
@@ -71,4 +72,15 @@ export function isLikelyBrowser(req: NextRequest) {
     isLikely: score >= 3,
     score,
   };
+}
+
+export function normalizeIP(ip: string) {
+  const addr = ipaddr.parse(ip);
+
+  if (addr.kind() === 'ipv6') {
+    const parts = (addr as ipaddr.IPv6).parts.slice(0, 4);
+    return parts.join(':') + '::/64';
+  }
+
+  return ip;
 }

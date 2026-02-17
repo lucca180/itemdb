@@ -3,7 +3,7 @@ import { NextRequest } from 'next/server';
 import requestIp from 'request-ip';
 import { LRUCache } from 'lru-cache';
 import * as Redis from '@utils/redis';
-import { generateSiteProof, isLikelyBrowser, verifySiteProof } from '@utils/api-utils';
+import { generateSiteProof, isLikelyBrowser, normalizeIP, verifySiteProof } from '@utils/api-utils';
 import Sentry from '@sentry/nextjs';
 const API_SKIPS = {
   GET: [/^\/api\/auth.*$/, /^\/api\/widget.*$/],
@@ -55,8 +55,9 @@ export async function proxy(request: NextRequest) {
 
   updateServerTime('regular-middleware', startTime, response);
 
-  const ip =
+  let ip =
     requestIp.getClientIp(request as any) || request.headers.get('X-Forwarded-For')?.split(',')[0];
+  ip = ip ? normalizeIP(ip) : undefined;
 
   const proof = generateSiteProof(ip);
   response.cookies.set({ name: 'itemdb-proof', value: proof });
@@ -96,8 +97,9 @@ export const apiMiddleware = async (request: NextRequest) => {
 
   const startTime = Date.now();
 
-  const ip =
+  let ip =
     requestIp.getClientIp(request as any) || request.headers.get('X-Forwarded-For')?.split(',')[0];
+  ip = ip ? normalizeIP(ip) : undefined;
 
   // request is trusted if it has a valid site proof, skip all checks
   const itemdb_proof = request.headers.get('x-itemdb-proof');

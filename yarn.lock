@@ -12036,6 +12036,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ipaddr.js@npm:^2.3.0":
+  version: 2.3.0
+  resolution: "ipaddr.js@npm:2.3.0"
+  checksum: 10c0/084bab99e2f6875d7a62adc3325e1c64b038a12c9521e35fb967b5e263a8b3afb1b8884dd77c276092331f5d63298b767491e10997ef147c62da01b143780bbd
+  languageName: node
+  linkType: hard
+
 "is-array-buffer@npm:^3.0.4":
   version: 3.0.4
   resolution: "is-array-buffer@npm:3.0.4"
@@ -12583,6 +12590,7 @@ __metadata:
     html-to-image: "npm:^1.11.13"
     husky: "npm:^9.1.7"
     ioredis: "npm:^5.9.2"
+    ipaddr.js: "npm:^2.3.0"
     jotai: "npm:^2.17.1"
     jsdom: "npm:^27.2.0"
     jsonwebtoken: "npm:^9.0.3"
