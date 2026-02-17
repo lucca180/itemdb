@@ -61,7 +61,7 @@ export async function proxy(request: NextRequest) {
 
   if (isLikelyBrowser(request).isLikely) {
     const proof = generateSiteProof(ip);
-    response.cookies.set({ name: 'itemdb-proof', value: proof });
+    response.cookies.set({ name: 'itemdb-proof', value: proof.token, maxAge: proof.expiresIn });
   }
 
   if (!locale || locale === request.nextUrl.locale || !VALID_LOCALES.includes(locale))
@@ -110,6 +110,10 @@ export const apiMiddleware = async (request: NextRequest) => {
     // set on both request and response (redis func uses this)
     request.headers.set('x-itemdb-valid', 'true');
     response.headers.set('x-itemdb-valid', 'true');
+
+    // regenerate proof to extend its validity and set it on the response cookie
+    const proof = generateSiteProof(ip, 'long');
+    response.cookies.set({ name: 'itemdb-proof', value: proof.token, maxAge: proof.expiresIn });
 
     updateServerTime('api-middleware', startTime, response);
     return response;

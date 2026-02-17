@@ -5,6 +5,7 @@ import { atomWithStorage, createJSONStorage } from 'jotai/utils';
 import { User, UserPreferences } from '../types';
 import axios from 'axios';
 import { getCookies } from 'cookies-next/client';
+import { captureException } from '@sentry/nextjs';
 
 const getAuth = () => import('./firebase/auth');
 
@@ -87,6 +88,7 @@ export function AuthProvider({ children }: any) {
             if (user) await user.getIdToken(true);
           } catch (e) {
           } finally {
+            checkProof();
             getSession();
           }
         });
@@ -163,6 +165,14 @@ export function AuthProvider({ children }: any) {
     setUser(null);
     setUserToken(null);
     setUserPref(null);
+  };
+
+  const checkProof = () => {
+    const cookies = getCookies();
+    if (cookies && !cookies['itemdb-proof']) {
+      captureException(new Error('Site proof cookie is missing'));
+      // location.reload();
+    }
   };
 
   return (
