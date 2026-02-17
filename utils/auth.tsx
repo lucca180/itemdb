@@ -201,10 +201,10 @@ axios.interceptors.request.use((config) => {
   if (!isTrusted) {
     return config;
   }
-  const cookies = getCookies() || {};
-  const proof = cookies['itemdb-proof'];
+  const proof = document.querySelector('meta[name="site-proof"]')?.getAttribute('content');
+
   if (proof) {
-    config.headers['X-itemdb-Proof'] = proof;
+    config.headers['x-itemdb-proof'] = proof;
   }
 
   return config;
