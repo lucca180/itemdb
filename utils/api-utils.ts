@@ -75,12 +75,17 @@ export function isLikelyBrowser(req: NextRequest) {
 }
 
 export function normalizeIP(ip: string) {
-  const addr = ipaddr.parse(ip);
+  if (!ip) return ip;
+  try {
+    const addr = ipaddr.parse(ip);
 
-  if (addr.kind() === 'ipv6') {
-    const parts = (addr as ipaddr.IPv6).parts.slice(0, 4);
-    return parts.join(':') + '::/64';
+    if (addr.kind() === 'ipv6') {
+      const parts = (addr as ipaddr.IPv6).parts.slice(0, 4);
+      return parts.join(':') + '::/64';
+    }
+
+    return ip;
+  } catch (e) {
+    return ip;
   }
-
-  return ip;
 }
