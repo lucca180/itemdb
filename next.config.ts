@@ -4,6 +4,9 @@ import { SentryBuildOptions, withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  generateBuildId: async () => {
+    return process.env.BUILD_ID || 'dev';
+  },
   cacheMaxMemorySize: 0,
   compress: false, // cloudflare does it for us
   productionBrowserSourceMaps: true,

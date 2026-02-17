@@ -6,7 +6,7 @@ import * as Redis from '@utils/redis';
 import { generateSiteProof, isLikelyBrowser, normalizeIP, verifySiteProof } from '@utils/api-utils';
 import Sentry from '@sentry/nextjs';
 const API_SKIPS = {
-  GET: [/^\/api\/auth.*$/, /^\/api\/widget.*$/],
+  GET: [/^\/api\/auth.*$/, /^\/api\/widget.*$/, /^\/api\/build-id.*$/],
   POST: [
     /^\/api\/auth.*$/,
     /^\/api\/v1\/prices$/,

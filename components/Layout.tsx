@@ -45,6 +45,7 @@ import { SiteAlert } from './Utils/SiteAlert';
 import { getScriptStatus } from '../utils/scriptUtils';
 import FeedbackButton from './Feedback/FeedbackButton';
 import MainLink from './Utils/MainLink';
+import { useVersionCheck } from '@utils/versionCheck';
 
 const LanguageToast = dynamic<LanguageToastProps>(() => import('./Modal/LanguageToast'));
 const LoginModal = dynamic<LoginModalProps>(() => import('./Modal/LoginModal'));
@@ -58,6 +59,7 @@ type Props = {
 };
 
 const Layout = (props: Props) => {
+  useVersionCheck();
   const t = useTranslations();
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -360,8 +362,8 @@ const Layout = (props: Props) => {
                 <MainLink href="https://magnetismotimes.com/" isExternal>
                   Magnetismo Times
                 </MainLink>
-                <br />© 1999-{new Date().getFullYear()} NeoPets, Inc. All rights reserved. Used
-                with permission.
+                <br />© 1999-{new Date().getFullYear()} NeoPets, Inc. All rights reserved. Used with
+                permission.
               </Text>
               <Flex alignItems={'flex-end'} gap={4}>
                 <FeedbackButton
