@@ -61,7 +61,12 @@ export async function proxy(request: NextRequest) {
 
   if (isLikelyBrowser(request).isLikely) {
     const proof = generateSiteProof(ip);
-    response.cookies.set({ name: 'itemdb-proof', value: proof.token, maxAge: proof.expiresIn });
+    response.cookies.set({
+      name: 'itemdb-proof',
+      value: proof.token,
+      maxAge: proof.expiresIn,
+      sameSite: 'strict',
+    });
   }
 
   if (!locale || locale === request.nextUrl.locale || !VALID_LOCALES.includes(locale))
@@ -113,7 +118,12 @@ export const apiMiddleware = async (request: NextRequest) => {
 
     // regenerate proof to extend its validity and set it on the response cookie
     const proof = generateSiteProof(ip, 'long');
-    response.cookies.set({ name: 'itemdb-proof', value: proof.token, maxAge: proof.expiresIn });
+    response.cookies.set({
+      name: 'itemdb-proof',
+      value: proof.token,
+      maxAge: proof.expiresIn,
+      sameSite: 'strict',
+    });
 
     updateServerTime('api-middleware', startTime, response);
     return response;
