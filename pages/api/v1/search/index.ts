@@ -19,7 +19,7 @@ const ENV_FUZZY_SEARCH = process.env.HAS_FUZZY_SEARCH === 'true';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET' || !req.url)
-    throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
+    return res.status(405).json({ error: 'Method not allowed' });
 
   const reqQuery = queryString.parse(req.url.split('?')[1], {
     arrayFormat: 'bracket',

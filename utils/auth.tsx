@@ -144,7 +144,7 @@ export function AuthProvider({ children }: any) {
   };
 
   const signout = async () => {
-    await axios.get('/api/auth/logout');
+    await axios.post('/api/auth/logout');
     await resetUser();
     location.reload();
   };
