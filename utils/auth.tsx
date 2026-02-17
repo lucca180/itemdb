@@ -4,7 +4,7 @@ import { useAtom } from 'jotai';
 import { atomWithStorage, createJSONStorage } from 'jotai/utils';
 import { User, UserPreferences } from '../types';
 import axios from 'axios';
-import { getCookies } from 'cookies-next/client';
+import { getCookie } from 'cookies-next/client';
 import { captureException } from '@sentry/nextjs';
 
 const getAuth = () => import('./firebase/auth');
@@ -88,12 +88,12 @@ export function AuthProvider({ children }: any) {
             if (user) await user.getIdToken(true);
           } catch (e) {
           } finally {
+            await getSession();
             checkProof();
-            getSession();
           }
         });
       },
-      10 * 60 * 1000
+      15 * 60 * 1000
     );
     return () => clearInterval(handle);
   }, []);
@@ -133,9 +133,9 @@ export function AuthProvider({ children }: any) {
 
   const getSession = async () => {
     try {
-      const cookies = getCookies();
+      const sessionExp = getCookie('idb-session-exp');
 
-      if (cookies && cookies['idb-session-exp']) return;
+      if (!navigator.cookieEnabled || (document.cookie && sessionExp)) return;
 
       const res = await axios.get('/api/auth/getSession');
       return res.data;
@@ -168,10 +168,11 @@ export function AuthProvider({ children }: any) {
   };
 
   const checkProof = () => {
-    const cookies = getCookies();
-    if (cookies && !cookies['itemdb-proof']) {
-      captureException(new Error('Site proof cookie is missing'));
-      // location.reload();
+    const proof = getCookie('itemdb-proof');
+    if (navigator.cookieEnabled && document.cookie && !proof) {
+      console.error('Site proof cookie is missing, refreshing');
+      captureException(new Error('Site proof cookie is missing, refreshing'));
+      location.reload();
     }
   };
 
@@ -211,11 +212,9 @@ axios.interceptors.request.use((config) => {
   if (!isTrusted) {
     return config;
   }
-  const cookies = getCookies() || {};
-  const proof = cookies['itemdb-proof'];
-  if (proof) {
-    config.headers['X-itemdb-Proof'] = proof;
-  }
+
+  const proof = getCookie('itemdb-proof');
+  if (proof) config.headers['X-itemdb-Proof'] = proof;
 
   return config;
 });

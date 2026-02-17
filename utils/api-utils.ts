@@ -4,7 +4,7 @@ import ipaddr from 'ipaddr.js';
 
 // ------- site proof ---------- //
 export function generateSiteProof(ip?: string, type = 'short') {
-  const expiration = type === 'short' ? 2 : 30;
+  const expiration = type === 'short' ? 5 : 30;
   return {
     token: jwt.sign(
       {
@@ -13,7 +13,7 @@ export function generateSiteProof(ip?: string, type = 'short') {
         ctx: 'browser',
       },
       process.env.SITE_PROOF_SECRET!,
-      { expiresIn: type === 'short' ? '2m' : '30m' }
+      { expiresIn: type === 'short' ? '5m' : '30m' }
     ),
     expiresIn: expiration * 60,
   };

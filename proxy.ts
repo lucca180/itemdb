@@ -4,7 +4,7 @@ import requestIp from 'request-ip';
 import { LRUCache } from 'lru-cache';
 import * as Redis from '@utils/redis';
 import { generateSiteProof, isLikelyBrowser, normalizeIP, verifySiteProof } from '@utils/api-utils';
-import Sentry from '@sentry/nextjs';
+
 const API_SKIPS = {
   GET: [/^\/api\/auth.*$/, /^\/api\/widget.*$/, /^\/api\/build-id.*$/],
   POST: [
@@ -118,13 +118,7 @@ export const apiMiddleware = async (request: NextRequest) => {
     updateServerTime('api-middleware', startTime, response);
     return response;
   } else if (itemdb_proof) {
-    const e = new Error('Incorrect site proof', {
-      cause: itemdb_proof,
-    });
-
     response.cookies.set({ name: 'itemdb-proof', value: '', maxAge: 0 });
-
-    Sentry.captureException(e);
   }
 
   // check ip ban
