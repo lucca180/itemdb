@@ -59,8 +59,10 @@ export async function proxy(request: NextRequest) {
     requestIp.getClientIp(request as any) || request.headers.get('X-Forwarded-For')?.split(',')[0];
   ip = ip ? normalizeIP(ip) : undefined;
 
-  const proof = generateSiteProof(ip);
-  response.cookies.set({ name: 'itemdb-proof', value: proof });
+  if (isLikelyBrowser(request).isLikely) {
+    const proof = generateSiteProof(ip);
+    response.cookies.set({ name: 'itemdb-proof', value: proof });
+  }
 
   if (!locale || locale === request.nextUrl.locale || !VALID_LOCALES.includes(locale))
     return response;
