@@ -94,3 +94,14 @@ export function normalizeIP(ip: string) {
     return ip;
   }
 }
+
+// -------- api token ---------- //
+
+export function verifyApiToken(token: string) {
+  try {
+    const payload = jwt.verify(token, process.env.SITE_PROOF_SECRET!) as jwt.JwtPayload;
+    return payload;
+  } catch {
+    return false;
+  }
+}

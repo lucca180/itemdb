@@ -3,7 +3,13 @@ import { NextRequest } from 'next/server';
 import requestIp from 'request-ip';
 import { LRUCache } from 'lru-cache';
 import * as Redis from '@utils/redis';
-import { generateSiteProof, isLikelyBrowser, normalizeIP, verifySiteProof } from '@utils/api-utils';
+import {
+  generateSiteProof,
+  isLikelyBrowser,
+  normalizeIP,
+  verifyApiToken,
+  verifySiteProof,
+} from '@utils/api-utils';
 
 const API_SKIPS = {
   GET: [/^\/api\/auth.*$/, /^\/api\/widget.*$/, /^\/api\/build-id.*$/],
@@ -173,11 +179,12 @@ export const apiMiddleware = async (request: NextRequest) => {
     }
   }
 
-  // request is coming from a non-browser source -> check api key
-  const apiKey = request.headers.get('x-itemdb-key');
-  if (apiKey) {
+  // request is coming from a non-browser source -> check api token
+  const apiToken = request.headers.get('x-itemdb-token');
+  const tokenPayload = apiToken ? verifyApiToken(apiToken) : null;
+  if (apiToken && tokenPayload) {
     try {
-      const keyData = await Redis.checkApiKey(apiKey);
+      const keyData = await Redis.checkApiToken(apiToken);
       if (keyData) {
         updateServerTime('api-middleware', startTime, response);
         return response;

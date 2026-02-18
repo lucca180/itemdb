@@ -3,6 +3,7 @@ import { expect, test, describe } from 'vitest';
 import { NextRequest } from 'next/server';
 import { apiMiddleware } from '../proxy';
 import { createSession, redis_setItemCount } from '@utils/redis';
+import { generateAPIToken } from '../pages/api/auth/token';
 
 describe.concurrent('API Access tests', () => {
   test('Access API with valid proof', async () => {
@@ -115,12 +116,27 @@ describe.concurrent('API Access tests', () => {
   });
 
   describe.concurrent('API Key tests', async () => {
+    let apiToken: string;
+    let limitedToken: string;
+
+    test.beforeAll(async () => {
+      apiToken = await generateAPIToken(process.env.TEST_VALID_API_KEY || '');
+      expect(apiToken).toBeDefined();
+
+      limitedToken = await generateAPIToken('707cb8a43fa941788393a6cc39757e9c');
+      expect(limitedToken).toBeDefined();
+
+      await generateAPIToken('c441522904be4c4795221afea59a628f').catch((e) => {
+        expect(e).toBeInstanceOf(Error);
+      });
+    });
+
     test('Access API with Valid API Key', async () => {
       const request = new NextRequest('http://localhost/api/v1/items', {
         method: 'GET',
       });
 
-      request.headers.set('x-itemdb-key', process.env.TEST_VALID_API_KEY || '');
+      request.headers.set('x-itemdb-token', apiToken);
 
       const response = await apiMiddleware(request);
       expect(response.headers.get('x-itemdb-block')).toBeNull();
@@ -132,7 +148,7 @@ describe.concurrent('API Access tests', () => {
         method: 'GET',
       });
 
-      request.headers.set('x-itemdb-key', '707cb8a43fa941788393a6cc39757e9c');
+      request.headers.set('x-itemdb-token', limitedToken);
 
       const response = await apiMiddleware(request);
       expect(response.status).toBe(429);
@@ -143,10 +159,11 @@ describe.concurrent('API Access tests', () => {
         method: 'GET',
       });
 
-      request.headers.set('x-itemdb-key', 'c441522904be4c4795221afea59a628f');
+      request.headers.set('x-itemdb-token', 'c441522904be4c4795221afea59a628f');
 
       const response = await apiMiddleware(request);
-      expect(response.status).toBe(401);
+      expect(response.headers.get('x-itemdb-block')).toBe('true');
+      expect(response.status).toBe(200); // change this after block is effective
     });
   });
 });

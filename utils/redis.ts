@@ -1,8 +1,8 @@
 import { Redis as RedisRaw } from 'ioredis';
 import { Chance } from 'chance';
 import { NextApiRequest } from 'next/types';
-import prisma from './prisma';
 import { normalizeIP } from './api-utils';
+import jwt from 'jsonwebtoken';
 
 const chance = new Chance();
 
@@ -88,8 +88,8 @@ export const redis_setItemCount = async (
 
     if (isValidProof) return;
 
-    if (req.headers['x-itemdb-key'])
-      return incrementApiKey(req.headers['x-itemdb-key'] as string, itemCount);
+    if (req.headers['x-itemdb-token'])
+      return incrementApiKey(req.headers['x-itemdb-token'] as string, itemCount);
 
     ip = normalizeIP(ip);
     const newVal = await redis.incrby(ip, itemCount);
@@ -117,20 +117,22 @@ export const redis_setItemCount = async (
   }
 };
 
-// ------- api key ------- //
+// ------- api token ------- //
 
-export const checkApiKey = async (apiKey: string | null | undefined) => {
+export const checkApiToken = async (token: string) => {
   if (!redis) throw API_ERROR_CODES.noRedis;
-  if (!apiKey) return API_ERROR_CODES.invalidKey;
+  if (!token) return API_ERROR_CODES.invalidKey;
 
-  const keyData = await redis.get(`apiKey:${apiKey}`);
+  const payload = jwt.decode(token) as jwt.JwtPayload | null;
+  if (!payload || !payload.sub) return API_ERROR_CODES.invalidKey;
+  const keyId = payload.sub;
+  const limit = payload.limit;
+
+  if (limit === -1) return true; // unlimited key
+
+  const keyData = await redis.get(`apiKey:${keyId}`);
 
   if (keyData && !isNaN(Number(keyData))) {
-    const keyLimit = await redis.get(`apiKeyLimit:${apiKey}`);
-    const limit = keyLimit ? parseInt(keyLimit) : 0;
-
-    if (limit === -1) return true; // unlimited key
-
     if (Number(keyData) >= limit) {
       throw API_ERROR_CODES.limitExceeded;
     }
@@ -138,27 +140,19 @@ export const checkApiKey = async (apiKey: string | null | undefined) => {
     return true;
   }
 
-  const dbKey = await prisma.apiKeys.findUnique({
-    where: {
-      api_key: apiKey,
-      active: true,
-    },
-  });
-
-  if (!dbKey) throw API_ERROR_CODES.invalidKey;
-
-  await redis.set(`apiKey:${apiKey}`, 0, 'EX', 24 * 60 * 60);
-  await redis.set(`apiKeyLimit:${apiKey}`, dbKey.limit, 'EX', 24 * 60 * 60);
+  await redis.set(`apiKey:${keyId}`, 0, 'EX', 24 * 60 * 60);
 };
 
-const incrementApiKey = async (apiKey: string | null | undefined, incrementBy: number) => {
-  if (!apiKey || !redis) return;
+const incrementApiKey = async (token: string | null | undefined, incrementBy: number) => {
+  if (!token || !redis) return;
 
-  const newVal = await redis.incrby(`apiKey:${apiKey}`, incrementBy);
-  await redis.expire(`apiKey:${apiKey}`, 24 * 60 * 60);
-  await redis.expire(`apiKeyLimit:${apiKey}`, 24 * 60 * 60);
+  const payload = jwt.decode(token) as jwt.JwtPayload | null;
+  if (!payload || !payload.sub || !payload.limit) return;
+  const keyId = payload.sub;
+  const limit = payload.limit;
 
-  const limit = await redis.get(`apiKeyLimit:${apiKey}`);
+  const newVal = await redis.incrby(`apiKey:${keyId}`, incrementBy);
+  await redis.expire(`apiKey:${keyId}`, 24 * 60 * 60);
 
   if (limit === '-1') return; // unlimited key
 
