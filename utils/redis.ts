@@ -8,7 +8,7 @@ const chance = new Chance();
 
 const LIMIT_COUNT = 20000;
 // const LIMIT_COUNT = 1000; ---> new value after new changes
-const INITIAL_BAN_HOURS = 2;
+const INITIAL_BAN_MINUTES = 5;
 const skipAPIMiddleware =
   process.env.SKIP_API_MIDDLEWARE === 'true' || process.env.NODE_ENV === 'development';
 
@@ -98,13 +98,8 @@ export const redis_setItemCount = async (
       const isBanned = await redis.get(`ban:${ip}`);
       if (isBanned) return;
 
-      const banCount = (await redis.get(`bCount:${ip}`)) || '0';
-      await redis.set(
-        `ban:${ip}`,
-        newVal,
-        'EX',
-        2 ** Number(banCount) * INITIAL_BAN_HOURS * 60 * 60
-      );
+      const banCount = (await redis.get(`bCount:${ip}`)) || '1';
+      await redis.set(`ban:${ip}`, newVal, 'EX', 2 ** Number(banCount) * INITIAL_BAN_MINUTES * 60);
 
       await redis.incr(`bCount:${ip}`);
       await redis.expire(`bCount:${ip}`, 30 * 24 * 60 * 60);
