@@ -3,7 +3,7 @@ import type { User as FirebaseUser } from 'firebase/auth';
 import { useAtom } from 'jotai';
 import { atomWithStorage, createJSONStorage } from 'jotai/utils';
 import { User, UserPreferences } from '../types';
-import axios from 'axios';
+import axios, { InternalAxiosRequestConfig } from 'axios';
 import { getCookie } from 'cookies-next/client';
 import { captureException } from '@sentry/nextjs';
 
@@ -204,7 +204,9 @@ const checkEqual = (a: object, b: object) => {
   return JSON.stringify(a) === JSON.stringify(b);
 };
 
-axios.interceptors.request.use((config) => {
+axios.interceptors.request.use((config) => requestInterceptor(config));
+
+export const requestInterceptor = (config: InternalAxiosRequestConfig) => {
   if (!config) return config;
 
   const url = new URL(config.url ?? '', window.location.origin);
@@ -219,4 +221,4 @@ axios.interceptors.request.use((config) => {
   if (proof) config.headers['X-itemdb-Proof'] = proof;
 
   return config;
-});
+};

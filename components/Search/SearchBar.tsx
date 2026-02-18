@@ -38,10 +38,6 @@ import { ItemCardBadge } from '../Items/ItemCard';
 import { slugify, stripMarkdown } from '../../utils/utils';
 import HeadingLine from '../Utils/HeadingLine';
 
-const Axios = axios.create({
-  baseURL: '/api/v1/',
-});
-
 type Props = {
   onSubmit: (e: any, search: string, params: string) => void;
 };
@@ -131,7 +127,7 @@ export const SearchBar = (props: Props) => {
     if (!isOpen) onToggle();
 
     try {
-      const searchRes = await Axios.get('search/omni', {
+      const searchRes = await axios.get('/api/v1/search/omni', {
         params: {
           s: newSearch.trim(),
           limit: 5,

@@ -36,6 +36,7 @@ import { useLists } from '../utils/useLists';
 import queryString from 'query-string';
 import isEqual from 'lodash/isEqual';
 import { loadTranslation } from '@utils/load-translation';
+import { requestInterceptor } from '@utils/auth';
 
 const SearchFilterModal = dynamic<SearchFilterModalProps>(
   () => import('../components/Search/SearchFiltersModal')
@@ -46,6 +47,8 @@ const SearchFilterCard = dynamic(() => import('../components/Search/SearchFilter
 const itemdb = axios.create({
   baseURL: '/api/v1/',
 });
+
+itemdb.interceptors.request.use((config) => requestInterceptor(config));
 
 itemdb.interceptors.response.use(
   (response) => response,
