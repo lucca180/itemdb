@@ -17,6 +17,16 @@ export function useVersionCheck() {
     const currentBuild = window.__NEXT_DATA__?.buildId;
 
     if (data.buildId !== currentBuild) {
+      const reloadedFor = sessionStorage.getItem('reloaded-for-build');
+
+      if (reloadedFor === data.buildId) {
+        console.error(
+          `Version mismatch detected. Current build: ${currentBuild}, latest build: ${data.buildId}`
+        );
+        return;
+      }
+
+      sessionStorage.setItem('reloaded-for-build', data.buildId);
       window.location.reload();
     }
   }, [data]);
