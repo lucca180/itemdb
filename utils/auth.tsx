@@ -5,7 +5,6 @@ import { atomWithStorage, createJSONStorage } from 'jotai/utils';
 import { User, UserPreferences } from '../types';
 import axios, { InternalAxiosRequestConfig } from 'axios';
 import { getCookie } from 'cookies-next/client';
-import { captureException } from '@sentry/nextjs';
 
 const getAuth = () => import('./firebase/auth');
 
@@ -170,11 +169,14 @@ export function AuthProvider({ children }: any) {
 
   const checkProof = () => {
     const proof = getCookie('itemdb-proof');
+    const hasReloaded = sessionStorage.getItem('reloaded-for-proof');
 
-    if (navigator.cookieEnabled && document.cookie && !proof) {
-      console.error('Site proof cookie is missing, refreshing');
-      captureException(new Error('Site proof cookie is missing, refreshing'));
+    if (navigator.cookieEnabled && document.cookie && !proof && !hasReloaded) {
+      console.warn('Site proof cookie is missing, refreshing');
+      sessionStorage.setItem('reloaded-for-proof', 'true');
       location.reload();
+    } else if (proof && hasReloaded) {
+      sessionStorage.removeItem('reloaded-for-proof');
     }
   };
 

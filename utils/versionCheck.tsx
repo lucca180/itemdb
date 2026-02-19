@@ -26,6 +26,7 @@ export function useVersionCheck() {
         return;
       }
 
+      console.warn('New version detected, reloading page');
       sessionStorage.setItem('reloaded-for-build', data.buildId);
       window.location.reload();
     }
