@@ -11,7 +11,6 @@
 // @match        *://*.neopets.com/halloween/garage.phtml*
 // @match        *://itemdb.com.br/*
 // @icon         https://itemdb.com.br/favicon.ico
-// @connect      itemdb.com.br
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_listValues

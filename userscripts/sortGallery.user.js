@@ -1,6 +1,6 @@
   // ==UserScript==
   // @name         itemdb - Sort Gallery
-  // @version      1.0.1
+  // @version      1.0.2
   // @author       itemdb
   // @namespace    itemdb
   // @description  Sorts your gallery by color
@@ -88,6 +88,7 @@
     const res = await fetch('https://itemdb.com.br/api/v1/items/colors', {
       method: 'POST',
       keepalive: true,
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },
