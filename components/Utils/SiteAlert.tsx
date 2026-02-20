@@ -75,28 +75,6 @@ const alerts = {
     bg: 'red.900',
     color: 'whiteAlpha.900',
   },
-  weeklyQuests: {
-    message: 'quest-log',
-    link: '/tools/data-collecting',
-    img: {
-      src: 'https://images.neopets.com/quests/images/CompletedQuest.png',
-      h: 28,
-      w: 28,
-    },
-    bg: '#b4ff53c7',
-    color: 'blackAlpha.900',
-  },
-  anniversary: {
-    message: 'anniversary',
-    link: '/tools/data-collecting',
-    img: {
-      src: 'https://images.neopets.com/themes/h5/basic/images/birthday25-icon.png',
-      h: 28,
-      w: 28,
-    },
-    bg: '#53ffffc7',
-    color: 'blackAlpha.900',
-  },
   hiddenTower: {
     message: 'hiddenTower',
     link: '/lists/official/hidden-tower',
@@ -108,49 +86,16 @@ const alerts = {
     bg: 'pink.300',
     color: 'blackAlpha.800',
   },
-  owlsReporting: {
-    message: 'owls-trades',
-    link: '/mall/report',
+  apiChanges: {
+    message: 'apiChanges',
+    link: 'https://itemdb.com.br/articles/incoming-changes-to-itemdb-api',
     img: {
-      src: 'https://images.neopets.com/themes/h5/altadorcup/images/transferlog-icon.png',
+      src: 'https://images.neopets.com/themes/022_lqc_d2d1a/events/warning.png',
       h: 28,
       w: 28,
     },
-    bg: 'blue.200',
-    color: 'blackAlpha.800',
-  },
-  year2: {
-    message: 'year2',
-    link: 'https://app.youform.com/forms/dxu5ne0p',
-    img: {
-      src: 'https://images.neopets.com/themes/h5/altadorcup/images/quickstock-icon.png',
-      h: 28,
-      w: 28,
-    },
-    bg: 'gray.900',
-    color: 'whiteAlpha.800',
-  },
-  tvw: {
-    message: 'tvw',
-    link: '/hub/the-void-within',
-    img: {
-      src: 'https://images.neopets.com/plots/tvw/activities/void-collection/images/void-attractor.png',
-      h: 28,
-      w: 28,
-    },
-    bg: 'purple.600',
-    color: 'pink.100',
-  },
-  spooky: {
-    message: 'spooky',
-    link: '/lists/official?cat=Festival%20of%20Fears',
-    img: {
-      src: 'https://images.neopets.com/themes/h5/basic/images/fof-icon.png',
-      h: 28,
-      w: 28,
-    },
-    bg: 'orange.600',
-    color: 'orange.100',
+    bg: 'red.200',
+    color: 'blackAlpha.900',
   },
 };
 
@@ -206,7 +151,6 @@ export const SiteAlert = () => {
 const getAlert = () => {
   const todayNST = getDateNST();
 
-  if (todayNST.getTime() < 1761361199000) return alerts.spooky;
   if (isThirdWednesday(todayNST)) return alerts.hiddenTower;
   if (todayNST.getDate() === 3) return alerts.hpd;
   else if (todayNST.getMonth() === 4 && todayNST.getDate() === 12) return alerts.tyrannia;
@@ -216,6 +160,8 @@ const getAlert = () => {
   if (todayNST.getMonth() === 8 && todayNST.getDate() === 20) return alerts.faerieFestival;
 
   if (todayNST.getMonth() === 9 && todayNST.getDate() === 31) return alerts.halloween;
+
+  if (todayNST.getTime() < 1771977599000) return alerts.apiChanges;
 
   return alerts.default;
 };

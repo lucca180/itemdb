@@ -1182,13 +1182,8 @@
     "usuki-day": "Usuki Day - <Link>Usukiland</Link> with 66.6% off",
     "faerie-festival": "Faerie Festival - <Link>Faerieland Shops</Link> with 50% off (except Faerie Furniture and Faerie Weapon)",
     "halloween": "Halloween - <Link>Haunted Woods Shops</Link> with 50% off (except Neovia)",
-    "quest-log": "We need data on the new prize pool for the Quest Log. <Link>Click here to help</Link>",
-    "anniversary": "Hey, we need data from the Wheel of Celebration prizes. <Link>Click here to help</Link>.",
     "hiddenTower": "3% off at the <Link>Hidden Tower</Link> today for account age 60 months or older!",
-    "owls-trades": "<b>New</b> - Now you can report your <b>NC Trades</b> to Owls using itemdb! <Link>Learn more</Link>",
-    "year2": "We're celebrating <b>2 years of itemdb</b> and would love to hear your feedback in this <Link>quick form</Link>!",
-    "tvw": "Neopia is in danger! Check out our <Link>The Void Within Plot Hub</Link> and find out lists and resources to help you through the plot!",
-    "spooky": "<b>Quest Items Inflation</b> - Due to <Link>Festival of Fears</Link> multiple quest items have seen significant price increases. Please be cautious when purchasing these items as prices may be higher than usual."
+    "apiChanges": "Important Changes - We're making significant changes on how itemdb api access works. Please check <Link>this post</Link> for more details"
   },
   "Owls": {
     "items-you-offered": "Items You Offered",
