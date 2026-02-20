@@ -1,20 +1,20 @@
-import { Flex, Heading, Text } from '@chakra-ui/react';
+import { Button, Flex, Heading, Text } from '@chakra-ui/react';
 import { ArticleCard } from '../../components/Articles/ArticlesCard';
 import HeaderCard from '../../components/Card/HeaderCard';
 import Layout from '../../components/Layout';
 import { WP_Article } from '../../types';
 import { wp_getLatestPosts } from '../api/wp/posts';
 import { createTranslator, useTranslations } from 'next-intl';
-import { ReactElement } from 'react';
+import { ReactElement, useState } from 'react';
 import { loadTranslation } from '@utils/load-translation';
 
 type Props = {
-  allPosts: WP_Article[];
+  groupedPosts: { [key: string]: WP_Article[] };
 };
 
 const ArticlesPage = (props: Props) => {
   const t = useTranslations();
-  const { allPosts } = props;
+  const { groupedPosts } = props;
 
   return (
     <>
@@ -33,11 +33,9 @@ const ArticlesPage = (props: Props) => {
         </Text>
       </HeaderCard>
       <Flex flexFlow="column" gap={3}>
-        <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
-          {allPosts.map((article) => (
-            <ArticleCard vertical key={article.id} article={article} />
-          ))}
-        </Flex>
+        {Object.entries(groupedPosts).map(([category, posts]) => (
+          <ArticleSection key={category} title={category} articles={posts} limit={6} />
+        ))}
       </Flex>
     </>
   );
@@ -48,11 +46,21 @@ export default ArticlesPage;
 export async function getStaticProps(context: any) {
   const allPosts = await wp_getLatestPosts(100);
 
+  const groupedPosts: { [key: string]: WP_Article[] } = {};
+
+  allPosts.forEach((post) => {
+    const category = post.category || 'Uncategorized';
+    if (!groupedPosts[category]) {
+      groupedPosts[category] = [];
+    }
+    groupedPosts[category].push(post);
+  });
+
   return {
     props: {
       messages: await loadTranslation(context.locale as string, 'articles/index'),
       locale: context.locale,
-      allPosts,
+      groupedPosts,
     },
     revalidate: 60, // In seconds
   };
@@ -80,5 +88,50 @@ ArticlesPage.getLayout = function getLayout(page: ReactElement, props: any) {
     >
       {page}
     </Layout>
+  );
+};
+
+const ArticleSection = ({
+  title,
+  articles,
+  limit,
+}: {
+  title: string;
+  articles: WP_Article[];
+  limit?: number;
+}) => {
+  const t = useTranslations();
+  const [showMore, setShowMore] = useState(false);
+
+  const displayedArticles = showMore ? articles : articles.slice(0, limit || Infinity);
+
+  const toggleShowMore = () => {
+    setShowMore((prev) => !prev);
+  };
+
+  return (
+    <Flex
+      bg="blackAlpha.500"
+      gap={3}
+      flexFlow="column"
+      flexWrap="wrap"
+      justifyContent={'center'}
+      p={5}
+      borderRadius="md"
+    >
+      <Heading size="md">{title}</Heading>
+
+      <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
+        {displayedArticles.map((article) => (
+          <ArticleCard vertical key={article.id} article={article} />
+        ))}
+      </Flex>
+
+      {articles.length > (limit || Infinity) && (
+        <Button onClick={toggleShowMore} alignSelf="center" mt={3} size={'sm'}>
+          {showMore ? t('ItemPage.show-less') : t('ItemPage.show-more')}
+        </Button>
+      )}
+    </Flex>
   );
 };

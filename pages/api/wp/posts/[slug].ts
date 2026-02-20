@@ -37,6 +37,8 @@ export const wp_getBySlug = async (slug: string): Promise<WP_Article | null> => 
       ) || null;
 
     const palette = thumbUrl ? await getImagePalette(isLebron(post.slug, thumbUrl), true) : null;
+    const terms: any[] = post._embedded?.['wp:term']?.flat() || [];
+    const categories = terms.filter((t) => t?.taxonomy === 'category');
 
     return {
       id: post.id,
@@ -46,6 +48,7 @@ export const wp_getBySlug = async (slug: string): Promise<WP_Article | null> => 
       slug: post.slug,
       date: post.date_gmt,
       updated: post.modified_gmt,
+      category: categories.length > 0 ? categories[0].name : 'Uncategorized',
       thumbnail: thumbUrl || null,
       palette: palette,
     };

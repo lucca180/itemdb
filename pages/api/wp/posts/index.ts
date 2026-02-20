@@ -52,6 +52,9 @@ export const wp_getLatestPosts = async (
         'https://i0.wp.com/'
       ) || null;
 
+    const terms: any[] = post._embedded?.['wp:term']?.flat() || [];
+    const categories = terms.filter((t) => t?.taxonomy === 'category');
+
     return {
       id: post.id,
       title: he.decode(post.title.rendered),
@@ -61,6 +64,7 @@ export const wp_getLatestPosts = async (
       date: post.date_gmt,
       updated: post.modified_gmt,
       thumbnail: thumburl || null,
+      category: categories.length > 0 ? categories[0].name : 'Uncategorized',
       palette: thumburl ? await getImagePalette(thumburl, true) : null,
     };
   });

@@ -325,6 +325,7 @@ export type WP_Article = {
   date: string;
   updated: string;
   thumbnail: string | null;
+  category: string | null;
   palette: Record<ColorType, Pallete> | null;
 };
 
