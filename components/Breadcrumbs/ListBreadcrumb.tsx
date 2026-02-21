@@ -8,17 +8,19 @@ import { slugify } from '../../utils/utils';
 
 type ListBreadcrumb = {
   list: UserList;
+  show?: number;
+  skipCurrent?: boolean;
 };
 
 export const ListBreadcrumb = (props: ListBreadcrumb) => {
-  const { list } = props;
+  const { list, show, skipCurrent } = props;
   const t = useTranslations();
   const router = useRouter();
 
   const category = list.officialTag ?? null;
 
   const breadcrumbList = useMemo(() => {
-    const breadList = [
+    const breadList: { position: number; name: string; item: string; skip?: boolean }[] = [
       {
         position: 1,
         name: t('Layout.home'),
@@ -59,17 +61,26 @@ export const ListBreadcrumb = (props: ListBreadcrumb) => {
         });
       }
     }
+    if (!skipCurrent)
+      breadList.push({
+        position: breadList.length + 1,
+        name: list.name,
+        item: `/lists/official/${list.slug ?? list.internal_id}`,
+      });
 
-    breadList.push({
-      position: breadList.length + 1,
-      name: list.name,
-      item: `/lists/official/${list.slug ?? list.internal_id}`,
-    });
+    if (show) {
+      // if show is defined, we only want to show the last `show` items in the breadcrumb, so we mark the others with skip
+      breadList.forEach((crumb) => {
+        if (crumb.position <= breadList.length - show) {
+          crumb.skip = true;
+        }
+      });
+    }
 
     return breadList;
-  }, [list, category, t, router.locale]);
+  }, [list, category, t, router.locale, show, skipCurrent]);
 
-  return <Breadcrumbs breadcrumbList={breadcrumbList} />;
+  return <Breadcrumbs breadcrumbList={breadcrumbList} linkLast={skipCurrent} />;
 };
 
 // capitalize first letter of each word in a string

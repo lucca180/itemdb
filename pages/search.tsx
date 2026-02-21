@@ -39,6 +39,7 @@ import { loadTranslation } from '@utils/load-translation';
 import { requestInterceptor } from '@utils/auth';
 import { generateListJWT } from '@utils/api-utils';
 import { GetServerSidePropsContext } from 'next/types';
+import { ListBreadcrumb } from '@components/Breadcrumbs/ListBreadcrumb';
 const Markdown = dynamic(() => import('../components/Utils/Markdown'));
 
 const SearchFilterModal = dynamic<SearchFilterModalProps>(
@@ -71,6 +72,7 @@ let ABORT_CONTROLLER = new AbortController();
 type SearchPageProps = {
   listJWT?: string | null;
   userList?: UserList | null;
+  searchTip: number;
 };
 
 const SearchPage = (props: SearchPageProps) => {
@@ -119,7 +121,6 @@ const SearchPage = (props: SearchPageProps) => {
     // skip initial render
     if (!router.isReady || !prevFilter.current) return;
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     parseQueryString();
   }, [router.query, router.isReady]);
 
@@ -240,7 +241,6 @@ const SearchPage = (props: SearchPageProps) => {
     if (!router.isReady) return;
 
     // parse initial query string and set filters
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!prevFilter.current && !parseQueryString()) return;
 
     doSearch(undefined, shouldUpdateCount(filters, prevFilter.current));
@@ -321,7 +321,7 @@ const SearchPage = (props: SearchPageProps) => {
   return (
     <Layout
       SEO={{
-        title: `${router.query.s ? `${router.query.s} -` : ''} ${t('Search.search')}`,
+        title: PageTitle(router.query.s as string, props.userList),
         canonical: 'https://itemdb.com.br/search',
         noindex: true,
         nofollow: true,
@@ -504,7 +504,7 @@ const SearchPage = (props: SearchPageProps) => {
             color="whiteAlpha.600"
             display={{ base: 'none', lg: 'block' }}
           >
-            <SearchTips />
+            <SearchTips searchTip={props.searchTip} />
           </Text>
           {!isLargerThanLG && props.userList && <SpecialListSearch userList={props.userList} />}
           {searchResult && (
@@ -576,10 +576,14 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
+  const totalTips = 4;
+  const searchTip = new Date().getMinutes() % totalTips;
+
   return {
     props: {
       listJWT,
       userList,
+      searchTip,
       messages: await loadTranslation(context.locale!, 'search'),
     },
   };
@@ -611,10 +615,9 @@ const shouldUpdateCount = (newFilter: SearchFiltersType, prevFilter: SearchFilte
   return keys.some((key) => !dontUpdateCountKeys.includes(key));
 };
 
-const SearchTips = () => {
+const SearchTips = (props: { searchTip: number }) => {
+  const { searchTip } = props;
   const t = useTranslations();
-  const totalTips = 4;
-  const searchTip = new Date().getMinutes() % totalTips;
 
   return (
     <>
@@ -660,7 +663,6 @@ const SearchTips = () => {
 };
 
 const SpecialListSearch = (props: { userList: UserList }) => {
-  const t = useTranslations();
   return (
     <Flex
       bg="blackAlpha.400"
@@ -671,8 +673,8 @@ const SpecialListSearch = (props: { userList: UserList }) => {
       alignItems="center"
       textAlign={'center'}
     >
-      <Text color="whiteAlpha.500" fontSize={'xs'}>
-        {t('Search.special-list-search')}
+      <Text opacity={0.66} fontSize={'xs'} as="div">
+        <ListBreadcrumb list={props.userList} show={2} skipCurrent />
       </Text>
       <Text mb={2} fontSize="lg" fontWeight="bold">
         {props.userList.name}
@@ -687,4 +689,13 @@ const SpecialListSearch = (props: { userList: UserList }) => {
       </Text>
     </Flex>
   );
+};
+
+const PageTitle = (query: string, userList?: UserList | null) => {
+  const t = useTranslations();
+
+  if (userList) return `${userList.name} - ${t('Lists.neopets-lists')}`;
+  if (query) return `${query} - ${t('Search.search')}`;
+
+  return t('Search.search');
 };

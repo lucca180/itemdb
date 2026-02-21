@@ -9,11 +9,13 @@ type BreadcrumbsProps = {
     position: number;
     name: string;
     item: string;
+    skip?: boolean;
   }[];
+  linkLast?: boolean;
 };
 
 export const Breadcrumbs = (props: BreadcrumbsProps) => {
-  const { breadcrumbList } = props;
+  const { breadcrumbList, linkLast = false } = props;
   const router = useRouter();
 
   const getLink = (url: string) => {
@@ -35,12 +37,16 @@ export const Breadcrumbs = (props: BreadcrumbsProps) => {
         color="whiteAlpha.800"
       >
         {formattedBreadcrumbList.map((crumb, i) => (
-          <BreadcrumbItem key={crumb.position} isCurrentPage={i === breadcrumbList.length - 1}>
+          <BreadcrumbItem
+            key={crumb.position}
+            isCurrentPage={i === breadcrumbList.length - 1 && !linkLast}
+            display={crumb.skip ? 'none' : undefined}
+          >
             <BreadcrumbLink
               data-umami-event="breadcrumb-link"
-              as={i === breadcrumbList.length - 1 ? undefined : NextLink}
+              as={i === breadcrumbList.length - 1 && !linkLast ? undefined : NextLink}
               href={removeLink(crumb.item)}
-              prefetch={i === breadcrumbList.length - 1 ? undefined : false}
+              prefetch={i === breadcrumbList.length - 1 && !linkLast ? undefined : false}
               whiteSpace={'nowrap'}
               overflow={'hidden'}
               textOverflow={'ellipsis'}
