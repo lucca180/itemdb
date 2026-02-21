@@ -16,7 +16,7 @@ import axios from 'axios';
 import Image from 'next/image';
 import { useState } from 'react';
 import DynamicIcon from '../../public/icons/dynamic.png';
-import { UserList } from '../../types';
+import { DynamicListTypes, UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import { useTranslations } from 'next-intl';
 import { DynamicListInfo } from './DynamicListModal';
@@ -38,7 +38,7 @@ const LinkedListModal = (props: LinkedListModalProps) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
 
-  const [dynamicType, setDynamicType] = useState<'addOnly' | 'removeOnly' | 'fullSync'>('fullSync');
+  const [dynamicType, setDynamicType] = useState<DynamicListTypes>('fullSync');
 
   const createDynamic = async () => {
     if (!user) return;

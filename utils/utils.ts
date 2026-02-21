@@ -1,6 +1,14 @@
 import { ItemProcess, Items, PriceProcess } from '@prisma/generated/client';
 import { mean, standardDeviation } from 'simple-statistics';
-import { ItemData, ItemFindAt, ListItemInfo, ShopInfo, TradeData, UserList } from '../types';
+import {
+  DynamicListTypes,
+  ItemData,
+  ItemFindAt,
+  ListItemInfo,
+  ShopInfo,
+  TradeData,
+  UserList,
+} from '../types';
 import { differenceInCalendarDays } from 'date-fns';
 
 export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
@@ -1345,7 +1353,7 @@ export const msIntervalFormatted = (ms: number, long = false, precision = 0) => 
 
 export const isDynamicActionDisabled = (
   action: 'move' | 'add' | 'remove',
-  dynamicType: 'addOnly' | 'removeOnly' | 'fullSync' | null
+  dynamicType: DynamicListTypes | null
 ) => {
   if (!dynamicType) return false;
 
