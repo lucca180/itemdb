@@ -19,7 +19,7 @@ const TARNUM_KEY = process.env.TARNUM_KEY;
 export const config = {
   api: {
     bodyParser: {
-      sizeLimit: '2mb',
+      sizeLimit: '4mb',
     },
   },
 };

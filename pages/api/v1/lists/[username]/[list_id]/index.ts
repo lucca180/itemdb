@@ -8,6 +8,14 @@ import { UTCDate } from '@date-fns/utc';
 import { slugify } from '@utils/utils';
 import { ListService } from '@services/ListService';
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '4mb',
+    },
+  },
+};
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
   if (req.method === 'POST') return POST(req, res);
@@ -15,7 +23,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (req.method === 'DELETE') return DELETE(req, res);
 
   if (req.method == 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
     return res.status(200).json({});
   }
 
