@@ -660,6 +660,7 @@ const SearchTips = () => {
 };
 
 const SpecialListSearch = (props: { userList: UserList }) => {
+  const t = useTranslations();
   return (
     <Flex
       bg="blackAlpha.400"
@@ -671,12 +672,17 @@ const SpecialListSearch = (props: { userList: UserList }) => {
       textAlign={'center'}
     >
       <Text color="whiteAlpha.500" fontSize={'xs'}>
-        Special List Search
+        {t('Search.special-list-search')}
       </Text>
       <Text mb={2} fontSize="lg" fontWeight="bold">
         {props.userList.name}
       </Text>
-      <Text fontSize="sm" as="div" color="whiteAlpha.800">
+      <Text
+        fontSize="sm"
+        as="div"
+        color="whiteAlpha.700"
+        sx={{ a: { color: 'whiteAlpha.800', fontWeight: 'bold' } }}
+      >
         {props.userList.description && <Markdown>{props.userList.description}</Markdown>}
       </Text>
     </Flex>

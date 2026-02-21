@@ -271,7 +271,7 @@ const ListPurpose = ({ purpose }: { purpose: 'seeking' | 'trading' | 'none' }) =
   return translation[purpose];
 };
 
-const getListLink = (list: UserList) => {
+export const getListLink = (list: UserList) => {
   if (list.dynamicType === 'search') {
     return `/search?list_id=${list.internal_id}`;
   }

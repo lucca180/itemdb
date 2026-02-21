@@ -10,6 +10,7 @@ import Color from 'color';
 import { useTranslations } from 'next-intl';
 import Image from '../Utils/Image';
 import MainLink from '@components/Utils/MainLink';
+import { getListLink } from '@components/UserLists/ListCard';
 
 const Markdown = dynamic(() => import('../Utils/Markdown'));
 
@@ -60,7 +61,7 @@ const ItemOfficialLists = (props: Props) => {
                 borderRadius={'md'}
                 overflow={'hidden'}
                 as={NextLink}
-                href={`/lists/official/${list.slug ?? list.internal_id}`}
+                href={getListLink(list)}
                 prefetch={false}
               >
                 {list.coverURL && (
@@ -79,7 +80,7 @@ const ItemOfficialLists = (props: Props) => {
             </Flex>
             <Text
               as={MainLink}
-              href={`/lists/official/${list.slug ?? list.internal_id}`}
+              href={getListLink(list)}
               sx={{ color: 'white !important;', textWrap: 'balance' }}
               textAlign="center"
               fontSize="sm"
