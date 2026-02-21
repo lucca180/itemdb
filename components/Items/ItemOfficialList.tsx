@@ -103,6 +103,7 @@ const ItemOfficialLists = (props: Props) => {
               color="whiteAlpha.800"
               sx={{ 'b, strong': { color: 'white' }, textWrap: 'pretty' }}
               as="div"
+              noOfLines={3}
             >
               <OfficialText list={list} />
             </Text>
