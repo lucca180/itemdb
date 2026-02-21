@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { syncDynamicList } from './[username]/[list_id]/dynamic';
+import { chunk } from 'lodash';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
@@ -35,9 +36,7 @@ export const syncAllDynamicLists = async () => {
     },
   });
 
-  const promises = dynamicOfficialLists.map((list) => {
-    return syncDynamicList(list.internal_id, true);
-  });
-
-  await Promise.all(promises);
+  for (const batch of chunk(dynamicOfficialLists, 3)) {
+    await Promise.all(batch.map((list) => syncDynamicList(list.internal_id, true)));
+  }
 };
