@@ -183,7 +183,7 @@ export class ListService {
   async getListItems(params: GetListItemsParams & { asObject?: boolean }) {
     const list =
       params.list ?? (await this.getList({ ...params, skipSync: true } as GetListParams));
-    if (!list) return null;
+    if (!list || list.dynamicType === 'search') return null;
 
     const isOwner = !!(this.user && this.user.id === list.owner.id);
 
@@ -205,7 +205,7 @@ export class ListService {
     const { query, searchFilters } = params;
     const list =
       params.list ?? (await this.getList({ ...params, skipSync: true } as GetListParams));
-    if (!list) return null;
+    if (!list || list.dynamicType === 'search') return null;
     const isOwner = !!(this.user && this.user.id === list.owner.id);
 
     const itemInfoRaw = await prisma.listItems.findMany({
@@ -240,7 +240,7 @@ export class ListService {
 
     const list =
       params.list ?? (await this.getList({ ...params, skipSync: true } as GetListParams));
-    if (!list) return null;
+    if (!list || list.dynamicType === 'search') return null;
 
     const itemInfoRaw = await prisma.listItems.findMany({
       where: { list_id: list.internal_id },

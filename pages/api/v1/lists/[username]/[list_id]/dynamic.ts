@@ -92,7 +92,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const { queryData, linked_id, dynamicType } = req.body;
 
-  if (!['addOnly', 'removeOnly', 'fullSync'].includes(dynamicType))
+  if (!['addOnly', 'removeOnly', 'fullSync', 'search'].includes(dynamicType))
     return res.status(400).json({ error: 'Invalid dynamic type' });
 
   try {
@@ -187,13 +187,15 @@ export const syncDynamicList = async (list_id: number, force = false) => {
   const firstSync = !targetList.lastSync;
 
   const { linkedListId, dynamicType } = targetList;
-  const dynamicQuery = targetList.dynamicQuery as ExtendedSearchQuery;
+  let dynamicQueries = targetList.dynamicQuery as ExtendedSearchQuery | ExtendedSearchQuery[];
 
   const logData: DynamicSyncLog = {
     added: [],
     removed: [],
     runtime: 0,
   };
+
+  const isFullSync = dynamicType === 'fullSync' || dynamicType === 'search';
 
   if (linkedListId) {
     if (dynamicType === 'addOnly' || dynamicType === 'fullSync' || firstSync) {
@@ -241,16 +243,29 @@ export const syncDynamicList = async (list_id: number, force = false) => {
     }
   }
 
-  if (dynamicQuery) {
-    dynamicQuery.limit = 4000;
-    dynamicQuery.page = 0;
+  if (dynamicQueries) {
+    if (!Array.isArray(dynamicQueries)) dynamicQueries = [dynamicQueries];
+    const idsSet = new Set<number>();
 
-    const searchRes = await doSearch(dynamicQuery.s, dynamicQuery, false);
+    const prom = [];
 
-    let item_iids = searchRes.content.map((item) => item.internal_id);
+    for (const dynamicQuery of dynamicQueries) {
+      dynamicQuery.limit = dynamicType === 'search' ? 100000 : 4000;
+      dynamicQuery.page = 0;
+
+      const searchProm = doSearch(dynamicQuery.s, dynamicQuery, false).then((searchRes) => {
+        searchRes.content.map((item) => idsSet.add(item.internal_id));
+      });
+
+      prom.push(searchProm);
+    }
+
+    await Promise.all(prom);
+
+    let item_iids = Array.from(idsSet);
     item_iids = item_iids.length > 0 ? item_iids : [-1]; // join() throws an error if the array is empty
 
-    if (dynamicType === 'addOnly' || dynamicType === 'fullSync' || firstSync) {
+    if (dynamicType === 'addOnly' || isFullSync || firstSync) {
       const res = (await prisma.$queryRaw`
         select internal_id from items where internal_id in (${Prisma.join(item_iids)})
         and internal_id not in (select item_iid from listitems where list_id = ${list_id})
@@ -271,7 +286,7 @@ export const syncDynamicList = async (list_id: number, force = false) => {
       });
     }
 
-    if (dynamicType === 'removeOnly' || dynamicType === 'fullSync' || firstSync) {
+    if (dynamicType === 'removeOnly' || isFullSync || firstSync) {
       const res = (await prisma.$queryRaw`
         select item_iid from listitems where list_id = ${list_id} 
         and item_iid not in (${Prisma.join(item_iids)})

@@ -14,6 +14,7 @@ import { parseFilters } from '../../../../utils/parseFilters';
 import requestIp from 'request-ip';
 import { redis_setItemCount } from '@utils/redis';
 import { rawToItemData } from '../items/many';
+import { verifyListJWT } from '@utils/api-utils';
 
 const ENV_FUZZY_SEARCH = process.env.HAS_FUZZY_SEARCH === 'true';
 
@@ -31,8 +32,19 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   reqQuery.page = parseInt(reqQuery.page as string) || 1;
   reqQuery.limit = parseInt(reqQuery.limit as string) || 48;
   reqQuery.limit = Math.min(reqQuery.limit, 3000);
+  const list_id = parseInt(reqQuery.list_id as string) || 0;
 
-  const result = await doSearch(query, reqQuery, !skipStats, 0, false, onlyStats);
+  if (list_id && !isNaN(list_id)) {
+    const listJWT = req.headers['x-itemdb-list-jwt'] as string | undefined;
+
+    if (!listJWT) return res.status(401).json({ error: 'Unauthorized' });
+
+    const listIdFromJWT = verifyListJWT(listJWT);
+
+    if (listIdFromJWT !== list_id) return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const result = await doSearch(query, reqQuery, !skipStats, list_id, false, onlyStats);
 
   const ip = requestIp.getClientIp(req);
   redis_setItemCount(ip, result.content.length, req);

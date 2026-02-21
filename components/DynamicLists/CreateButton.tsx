@@ -22,6 +22,10 @@ export const CreateDynamicListButton = (props: CreateDynamicListButtonProps) => 
   const t = useTranslations();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { resultCount, isLoading, filters, query, isMobile, removeMargin } = props;
+
+  // you cannot create a dynamic list from a list search
+  if (filters?.list_id) return null;
+
   return (
     <>
       {isOpen && (

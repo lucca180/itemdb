@@ -22,6 +22,7 @@ export const defaultFilters: SearchFilters = {
   sortBy: 'name',
   sortDir: 'asc',
   mode: 'name',
+  list_id: 0,
   limit: 48,
   page: 1,
 };

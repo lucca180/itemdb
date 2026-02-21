@@ -17,7 +17,7 @@ import {
 import React, { useEffect, useRef, useState } from 'react';
 import Layout from '../components/Layout';
 import ItemCard from '../components/Items/ItemCard';
-import { SearchStats } from '../types';
+import { SearchStats, UserList } from '../types';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { SearchFilters as SearchFiltersType, SearchResults } from '../types';
@@ -37,6 +37,9 @@ import queryString from 'query-string';
 import isEqual from 'lodash/isEqual';
 import { loadTranslation } from '@utils/load-translation';
 import { requestInterceptor } from '@utils/auth';
+import { generateListJWT } from '@utils/api-utils';
+import { GetServerSidePropsContext } from 'next/types';
+const Markdown = dynamic(() => import('../components/Utils/Markdown'));
 
 const SearchFilterModal = dynamic<SearchFilterModalProps>(
   () => import('../components/Search/SearchFiltersModal')
@@ -65,7 +68,12 @@ const rgb = color.rgb().round().array();
 
 let ABORT_CONTROLLER = new AbortController();
 
-const SearchPage = () => {
+type SearchPageProps = {
+  listJWT?: string | null;
+  userList?: UserList | null;
+};
+
+const SearchPage = (props: SearchPageProps) => {
   const router = useRouter();
   const t = useTranslations();
   const format = useFormatter();
@@ -83,7 +91,7 @@ const SearchPage = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const parseQueryString = () => {
-    const queryStrings = queryString.parse(router.asPath, {
+    const queryStrings = queryString.parse(router.asPath.split('?')[1] || '', {
       arrayFormat: 'bracket',
       parseNumbers: true,
     });
@@ -160,6 +168,9 @@ const SearchPage = () => {
               limit: 1,
               onlyStats: true,
             },
+            headers: {
+              'x-itemdb-list-jwt': props.listJWT ?? undefined,
+            },
           })
           .then((res) => setTotalResults(res.data.totalResults))
           .catch();
@@ -171,6 +182,10 @@ const SearchPage = () => {
             signal: ABORT_CONTROLLER.signal,
             params: {
               s: query,
+              list_id: params.list_id,
+            },
+            headers: {
+              'x-itemdb-list-jwt': props.listJWT ?? undefined,
             },
           })
           .then((res) => setStatus(res.data));
@@ -183,6 +198,9 @@ const SearchPage = () => {
             ...params,
             skipStats: true,
             s: query,
+          },
+          headers: {
+            'x-itemdb-list-jwt': props.listJWT ?? undefined,
           },
         })
         .then((res) => setResult(res.data));
@@ -362,13 +380,15 @@ const SearchPage = () => {
           <Box display={{ base: 'block', lg: 'none' }}>
             {!isLargerThanLG && (
               <HStack gap={2}>
-                <CreateDynamicListButton
-                  resultCount={searchResult?.totalResults}
-                  isLoading={!searchResult}
-                  filters={filters}
-                  query={searchQuery ?? ''}
-                  isMobile
-                />
+                {!props.userList && (
+                  <CreateDynamicListButton
+                    resultCount={searchResult?.totalResults}
+                    isLoading={!searchResult}
+                    filters={filters}
+                    query={searchQuery ?? ''}
+                    isMobile
+                  />
+                )}
                 <IconButton
                   aria-label="search filters"
                   onClick={onOpen}
@@ -458,6 +478,7 @@ const SearchPage = () => {
           maxW={{ base: 'none', md: '275px' }}
           w="100%"
         >
+          {props.userList && <SpecialListSearch userList={props.userList} />}
           <SearchFilterCard
             filters={filters}
             stats={searchStatus}
@@ -465,15 +486,16 @@ const SearchPage = () => {
             resetFilters={resetFilters}
             applyFilters={applyFilterChange}
           />
-
-          <Flex justifyContent={'center'}>
-            <CreateDynamicListButton
-              resultCount={totalResults ?? undefined}
-              isLoading={!searchResult}
-              filters={filters}
-              query={searchQuery ?? ''}
-            />
-          </Flex>
+          {!props.userList && (
+            <Flex justifyContent={'center'}>
+              <CreateDynamicListButton
+                resultCount={totalResults ?? undefined}
+                isLoading={!searchResult}
+                filters={filters}
+                query={searchQuery ?? ''}
+              />
+            </Flex>
+          )}
         </Box>
         <Box flex="1">
           <Text
@@ -484,6 +506,7 @@ const SearchPage = () => {
           >
             <SearchTips />
           </Text>
+          {!isLargerThanLG && props.userList && <SpecialListSearch userList={props.userList} />}
           {searchResult && (
             <Pagination
               mt={2}
@@ -539,10 +562,25 @@ const SearchPage = () => {
 
 export default SearchPage;
 
-export async function getStaticProps(context: any) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const list_id = context.query?.list_id ? parseInt(context.query.list_id as string) : undefined;
+
+  let listJWT = null;
+  let userList = null;
+
+  if (list_id && !isNaN(list_id)) {
+    const result = await generateListJWT(list_id, context.req as any);
+    if (result) {
+      listJWT = result.token;
+      userList = result.list;
+    }
+  }
+
   return {
     props: {
-      messages: await loadTranslation(context.locale, 'search'),
+      listJWT,
+      userList,
+      messages: await loadTranslation(context.locale!, 'search'),
     },
   };
 }
@@ -618,5 +656,29 @@ const SearchTips = () => {
           ),
         })}
     </>
+  );
+};
+
+const SpecialListSearch = (props: { userList: UserList }) => {
+  return (
+    <Flex
+      bg="blackAlpha.400"
+      p={4}
+      borderRadius="md"
+      mb={4}
+      flexDir="column"
+      alignItems="center"
+      textAlign={'center'}
+    >
+      <Text color="whiteAlpha.500" fontSize={'xs'}>
+        Special List Search
+      </Text>
+      <Text mb={2} fontSize="lg" fontWeight="bold">
+        {props.userList.name}
+      </Text>
+      <Text fontSize="sm" as="div" color="whiteAlpha.800">
+        {props.userList.description && <Markdown>{props.userList.description}</Markdown>}
+      </Text>
+    </Flex>
   );
 };

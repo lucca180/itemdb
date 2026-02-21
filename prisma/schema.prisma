@@ -472,6 +472,7 @@ enum DynamicListType {
   addOnly
   removeOnly
   fullSync
+  search
 }
 
 enum UserListPurpose {

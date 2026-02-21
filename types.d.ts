@@ -199,6 +199,7 @@ export type SearchFilters = {
   restockIncludeUnpriced: boolean;
   colorTolerance: string; // color tolerance
   colorType: string;
+  list_id: number;
   sortBy: string;
   sortDir: string;
   mode: 'name' | 'description' | 'all' | 'fuzzy' | 'not' | 'natural' | 'boolean';
@@ -273,7 +274,7 @@ export type UserList = {
   officialTag: string | null;
   userTag: string | null;
 
-  dynamicType: 'addOnly' | 'removeOnly' | 'fullSync' | null;
+  dynamicType: DynamicListTypes | null;
   lastSync: string | null;
   linkedListId: number | null;
   canBeLinked: boolean;
@@ -287,6 +288,8 @@ export type UserList = {
   highlight: string | null;
   highlightText: string | null;
 };
+
+export type DynamicListTypes = 'addOnly' | 'removeOnly' | 'fullSync' | 'search';
 
 export type ObligatoryUserList = Required<Pick<UserList, 'itemInfo'>> & UserList;
 

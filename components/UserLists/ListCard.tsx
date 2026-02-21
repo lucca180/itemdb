@@ -97,9 +97,7 @@ const UserListCard = (props: Props) => {
       >
         <Link
           as={NextLink}
-          href={`/lists/${list.official ? 'official' : list.owner.username}/${
-            list.slug ?? list.internal_id
-          }`}
+          href={getListLink(list)}
           data-umami-event={utm_content}
           data-umami-event-label={utm_content ? list.slug : undefined}
           prefetch={false}
@@ -148,9 +146,7 @@ const UserListCard = (props: Props) => {
             >
               <Link
                 as={NextLink}
-                href={`/lists/${list.official ? 'official' : list.owner.username}/${
-                  list.slug ?? list.internal_id
-                }`}
+                href={getListLink(list)}
                 prefetch={false}
                 data-umami-event={utm_content}
                 data-umami-event-label={utm_content ? list.slug : undefined}
@@ -272,4 +268,12 @@ const ListPurpose = ({ purpose }: { purpose: 'seeking' | 'trading' | 'none' }) =
   };
 
   return translation[purpose];
+};
+
+const getListLink = (list: UserList) => {
+  if (list.dynamicType === 'search') {
+    return `/lists/search?list_id=${list.internal_id}`;
+  }
+
+  return `/lists/${list.official ? 'official' : list.owner.username}/${list.slug ?? list.internal_id}`;
 };

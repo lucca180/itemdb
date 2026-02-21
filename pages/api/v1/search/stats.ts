@@ -3,6 +3,7 @@ import prisma from '../../../../utils/prisma';
 import { Prisma } from '@prisma/generated/client';
 import Color from 'color';
 import { parseFilters } from '../../../../utils/parseFilters';
+import { verifyListJWT } from '@utils/api-utils';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET')
@@ -11,7 +12,23 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const query = (req.query.s as string)?.trim() ?? '';
   const forceCategory = req.query.forceCategory as string | undefined;
   const isRestock = req.query.isRestock === 'true' || undefined;
+
+  const listId = req.query.list_id ? Number(req.query.list_id) : undefined;
+
+  const list = listId ? { id: listId, includeHidden: false } : undefined;
+
+  if (listId && !isNaN(listId)) {
+    const listJWT = req.headers['x-itemdb-list-jwt'] as string | undefined;
+
+    if (!listJWT) return res.status(401).json({ error: 'Unauthorized' });
+
+    const listIdFromJWT = verifyListJWT(listJWT);
+
+    if (listIdFromJWT !== listId) return res.status(401).json({ error: 'Unauthorized' });
+  }
+
   const result = await getSearchStats(query, {
+    list,
     forceCategory,
     isRestock,
   });

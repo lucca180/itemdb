@@ -1,6 +1,8 @@
 import jwt from 'jsonwebtoken';
 import { NextRequest } from 'next/server';
 import ipaddr from 'ipaddr.js';
+import { NextApiRequest } from 'next';
+import { ListService } from '@services/ListService';
 
 // ------- site proof ---------- //
 export function generateSiteProof(ip?: string, type = 'short') {
@@ -103,5 +105,43 @@ export function verifyApiToken(token: string) {
     return payload;
   } catch {
     return false;
+  }
+}
+
+// -------- search lists -------- //
+
+export async function generateListJWT(listId: number, req: NextApiRequest) {
+  const listService = await ListService.initReq(req);
+  const list = await listService.getList({
+    listId: listId,
+    username: 'official',
+  });
+
+  if (!list) return null;
+
+  const token = jwt.sign(
+    {
+      aud: 'itemdb.com.br',
+      listId,
+      ctx: 'list_access',
+    },
+    process.env.SITE_PROOF_SECRET!,
+    { expiresIn: '15m' }
+  );
+
+  return { token, list };
+}
+
+export function verifyListJWT(token: string) {
+  try {
+    const payload = jwt.verify(token, process.env.SITE_PROOF_SECRET!) as jwt.JwtPayload;
+
+    if (payload.aud !== 'itemdb.com.br' || payload.ctx !== 'list_access') {
+      return null;
+    }
+
+    return payload.listId as number;
+  } catch {
+    return null;
   }
 }

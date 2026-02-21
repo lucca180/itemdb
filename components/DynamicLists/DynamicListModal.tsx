@@ -26,7 +26,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { BsCheckCircleFill, BsExclamationCircleFill, BsXCircleFill } from 'react-icons/bs';
 import DynamicIcon from '../../public/icons/dynamic.png';
-import { ExtendedSearchQuery, UserList } from '../../types';
+import { DynamicListTypes, ExtendedSearchQuery, UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import { useTranslations } from 'next-intl';
 import { useLists } from '../../utils/useLists';
@@ -47,7 +47,7 @@ const DynamicListModal = (props: DynamicListModalProps) => {
   const [error, setError] = useState<boolean>(false);
   const { revalidate } = useLists();
 
-  const [dynamicType, setDynamicType] = useState<'addOnly' | 'removeOnly' | 'fullSync'>('addOnly');
+  const [dynamicType, setDynamicType] = useState<DynamicListTypes>('addOnly');
 
   const createDynamic = async () => {
     if (!searchQuery || !user) return;
@@ -155,7 +155,7 @@ const DynamicListModal = (props: DynamicListModalProps) => {
               variant="ghost"
               colorScheme={'orange'}
               onClick={createDynamic}
-              isDisabled={!!resultCount && resultCount > 4000}
+              isDisabled={!!resultCount && resultCount > 4000 && dynamicType !== 'search'}
             >
               <Image
                 src={DynamicIcon}
@@ -174,11 +174,13 @@ const DynamicListModal = (props: DynamicListModalProps) => {
 
 type DynamicListModalInfoProps = {
   resultCount?: number;
-  dynamicType: 'addOnly' | 'removeOnly' | 'fullSync';
-  setDynamicType: (type: 'addOnly' | 'removeOnly' | 'fullSync') => void;
+  dynamicType: DynamicListTypes;
+  setDynamicType: (type: DynamicListTypes) => void;
 };
+
 export const DynamicListInfo = (props: DynamicListModalInfoProps) => {
   const { resultCount, dynamicType, setDynamicType } = props;
+  const { user } = useAuth();
   const t = useTranslations();
   return (
     <>
@@ -193,11 +195,12 @@ export const DynamicListInfo = (props: DynamicListModalInfoProps) => {
           value={dynamicType}
           variant="solid"
           bg={'blackAlpha.300'}
-          onChange={(e) => setDynamicType(e.target.value as 'addOnly' | 'removeOnly' | 'fullSync')}
+          onChange={(e) => setDynamicType(e.target.value as DynamicListTypes)}
         >
           <option value="addOnly">{t('Lists.add-only')}</option>
           <option value="removeOnly">{t('Lists.remove-only')}</option>
           <option value="fullSync">{t('Lists.full-sync')}</option>
+          {user?.isAdmin && <option value="search">Search (Official Lists only)</option>}
         </Select>
         <FormHelperText>{t('Lists.dynamic-listModalChange')}</FormHelperText>
       </FormControl>
@@ -265,7 +268,7 @@ export const DynamicListInfo = (props: DynamicListModalInfoProps) => {
             </ListItem>
           </>
         )}
-        {dynamicType === 'fullSync' && (
+        {['fullSync', 'search'].includes(dynamicType) && (
           <>
             <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'green.200' } }}>
               <ListIcon as={BsCheckCircleFill} color="green.300" />

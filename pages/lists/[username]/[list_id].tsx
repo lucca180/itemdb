@@ -970,6 +970,15 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   if (!list) return { notFound: true };
 
+  if (list.dynamicType === 'search') {
+    return {
+      redirect: {
+        destination: `/search?list_id=${list.internal_id}`,
+        permanent: true,
+      },
+    };
+  }
+
   if (parsedId && list.slug) {
     let actualUsername = username;
     if (list.official) actualUsername = 'official';
