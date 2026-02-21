@@ -15,7 +15,7 @@ import DynamicIcon from '../../public/icons/dynamic.png';
 import Color from 'color';
 import NextLink from 'next/link';
 import { useMemo } from 'react';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { FaPencilAlt, FaShareAlt } from 'react-icons/fa';
 import Image from '../Utils/Image';
@@ -42,6 +42,7 @@ type Props = {
 
 const UserListCard = (props: Props) => {
   const t = useTranslations();
+  const formatter = useFormatter();
   const toast = useToast();
   const { list, matches, isSelected, disableLink, utm_content, isSmall, canEdit } = props;
   const { isOpen, onToggle } = useDisclosure();
@@ -223,7 +224,7 @@ const UserListCard = (props: Props) => {
             )}
 
             <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>
-              {list.itemCount} {t('General.items')}
+              {formatter.number(list.itemCount ?? 0)} {t('General.items')}
             </Badge>
 
             {!list.official && list.purpose === 'trading' && !!matchCount && (
@@ -272,7 +273,7 @@ const ListPurpose = ({ purpose }: { purpose: 'seeking' | 'trading' | 'none' }) =
 
 const getListLink = (list: UserList) => {
   if (list.dynamicType === 'search') {
-    return `/lists/search?list_id=${list.internal_id}`;
+    return `/search?list_id=${list.internal_id}`;
   }
 
   return `/lists/${list.official ? 'official' : list.owner.username}/${list.slug ?? list.internal_id}`;

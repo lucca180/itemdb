@@ -86,7 +86,7 @@ export async function doSearch(
 
   if (page < 0) page = 0;
   if (limit < 1) limit = 1;
-  if (limit > 10000) limit = 10000;
+  if (limit > 100000) limit = 100000;
 
   let categoryFilters = (filters.category as string[]) ?? [];
   let typeFilters = (filters.type as string[]) ?? [];
