@@ -228,7 +228,15 @@ const updateServerTime = (label: string, startTime: number, response: NextRespon
   response.headers.set('Server-Timing', newServerTime);
 };
 
-const allowedOrigins = ['itemdb.com.br', 'neopets.com', 'www.neopets.com', 'impress.openneo.net'];
+const allowedOrigins = [
+  'itemdb.com.br',
+  'neopets.com',
+  'www.neopets.com',
+  'impress.openneo.net',
+  'magnetismotimes.com',
+  'castleneo.com',
+  'www.castleneo.com',
+];
 
 const addCors = (request: NextRequest, response: NextResponse) => {
   const origin = request.headers.get('origin');
