@@ -16,7 +16,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   const name = isNaN(id) ? id_name : undefined;
 
-  const prices = await getItemPrices({ iid: id, name, includeUnconfirmed });
+  const prices = await getItemPrices({ iid: id, name, includeUnconfirmed, limit: -1 });
 
   res.json(prices);
 }
@@ -25,9 +25,10 @@ type ItemPricesArgs = {
   iid?: number | undefined;
   name?: string;
   includeUnconfirmed?: boolean;
+  limit?: number;
 };
 export const getItemPrices = async (args: ItemPricesArgs) => {
-  const { iid, includeUnconfirmed } = args;
+  const { iid, includeUnconfirmed, limit = 100 } = args;
 
   const pricesRaw = await prisma.itemPrices.findMany({
     where: {
@@ -35,7 +36,7 @@ export const getItemPrices = async (args: ItemPricesArgs) => {
       manual_check: includeUnconfirmed ? undefined : null,
     },
     orderBy: { addedAt: 'desc' },
-    take: 100,
+    take: limit > 0 ? limit : undefined,
   });
 
   const prices: PriceData[] = pricesRaw.map((p) => {
