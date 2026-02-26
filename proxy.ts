@@ -117,22 +117,26 @@ export const apiMiddleware = async (request: NextRequest) => {
     requestIp.getClientIp(request as any) || request.headers.get('X-Forwarded-For')?.split(',')[0];
   ip = ip ? normalizeIP(ip) : undefined;
 
+  const isBrowser = isLikelyBrowser(request).isLikely;
+
   // request is trusted if it has a valid site proof, skip all checks
   const itemdb_proof = request.headers.get('x-itemdb-proof');
   request.headers.delete('x-itemdb-valid');
-  if (itemdb_proof && verifySiteProof(itemdb_proof, ip || undefined)) {
+  if (itemdb_proof && verifySiteProof(itemdb_proof)) {
     // set on both request and response (redis func uses this)
     request.headers.set('x-itemdb-valid', 'true');
     response.headers.set('x-itemdb-valid', 'true');
 
-    // regenerate proof to extend its validity and set it on the response cookie
-    const proof = generateSiteProof(ip, 'long');
-    response.cookies.set({
-      name: 'itemdb-proof',
-      value: proof.token,
-      maxAge: proof.expiresIn,
-      sameSite: 'strict',
-    });
+    // check if proof is close to expiration, if so, refresh it
+    if (!verifySiteProof(itemdb_proof, 300) && isBrowser) {
+      const proof = generateSiteProof(ip, 'long');
+      response.cookies.set({
+        name: 'itemdb-proof',
+        value: proof.token,
+        maxAge: proof.expiresIn,
+        sameSite: 'strict',
+      });
+    }
 
     updateServerTime('api-middleware', startTime, response);
     return response;
@@ -153,7 +157,7 @@ export const apiMiddleware = async (request: NextRequest) => {
   }
 
   // request is coming from a cross-origin source (probably userscripts)
-  if (isLikelyBrowser(request).isLikely) {
+  if (isBrowser) {
     // console.log('[Warning] - Request without valid proof, but has browser-like headers.');
     const sessionCookie = request.cookies.get('idb-session-id');
     const cacheSession = sessionCache.get(sessionCookie?.value || '');

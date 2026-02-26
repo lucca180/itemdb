@@ -21,8 +21,7 @@ export function generateSiteProof(ip?: string, type = 'short') {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function verifySiteProof(proof: string, ip?: string) {
+export function verifySiteProof(proof: string, maxAge = 0) {
   try {
     const payload = jwt.verify(proof, process.env.SITE_PROOF_SECRET!) as jwt.JwtPayload;
 
@@ -30,9 +29,11 @@ export function verifySiteProof(proof: string, ip?: string) {
       return false;
     }
 
-    // if (ip && payload.ip && payload.ip !== ip) {
-    //   return false;
-    // }
+    // check if expiration is close
+    const now = Math.floor(Date.now() / 1000);
+    if (maxAge && payload.exp && payload.exp - now < maxAge) {
+      return false;
+    }
 
     return true;
   } catch {
