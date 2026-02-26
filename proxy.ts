@@ -75,8 +75,7 @@ export async function proxy(request: NextRequest) {
     });
   }
 
-  // set this cookie to bypass cache on document pages
-  response.cookies.set('cloudflare-skip-cache', '1');
+  // bypass cache on document pages
   response.headers.set('Cache-Control', 'no-cache, must-revalidate');
 
   if (!locale || locale === request.nextUrl.locale || !VALID_LOCALES.includes(locale))

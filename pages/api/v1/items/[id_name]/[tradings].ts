@@ -49,12 +49,20 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const onlySold = req.query.sold === 'true';
     if (onlySold && !(await checkGoal(req, res))) return;
 
+    if (onlySold) {
+      res.setHeader('Cache-Control', 'max-age=0, s-maxage=120, must-revalidate');
+    }
+
     const auction = await getAuctionData(name, onlySold);
     return res.json(auction);
   }
 
   if (type === 'lebron') {
     const lebron = await getLebronItemData(name);
+
+    // trade report data doesn't change often and can be cached for a bit longer
+    res.setHeader('Cache-Control', 'max-age=0, s-maxage=300, must-revalidate');
+
     return res.json(lebron);
   }
 
