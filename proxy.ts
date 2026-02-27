@@ -174,9 +174,9 @@ export const apiMiddleware = async (request: NextRequest) => {
   }
 
   // request is coming from a cross-origin source (probably userscripts)
+  const sessionCookie = request.cookies.get('idb-session-id');
   if (isBrowser) {
     // console.log('[Warning] - Request without valid proof, but has browser-like headers.');
-    const sessionCookie = request.cookies.get('idb-session-id');
     const cacheSession = sessionCache.get(sessionCookie?.value || '');
 
     if (cacheSession) {
@@ -246,13 +246,18 @@ export const apiMiddleware = async (request: NextRequest) => {
   // everything else will be blocked in a near future.
   response.headers.set('x-itemdb-block', 'true');
 
+  // ------- track metrics ----------- //
+  let type = 'unauthenticated';
+  if (sessionCookie) type += '-session';
+  if (isBrowser) type += '-browser';
+  else type += '-non-browser';
+
   Sentry.metrics.count('api.requests', 1, {
     attributes: {
-      type: isBrowser ? 'unauthenticated-browser' : 'unauthenticated-non-browser',
+      type: type,
     },
   });
 
-  // console.warn(`[WARNING] - this request will be blocked in a near future`);
   // return NextResponse.json({ error: 'Invalid access' }, { status: 401 });
 
   updateServerTime('api-middleware', startTime, response);
