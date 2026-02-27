@@ -441,6 +441,11 @@ const CreateListModal = (props: CreateListModalProps) => {
                   })}
                 </FormHelperText>
               </FormControl>
+              {props.list && (
+                <Text fontSize={'xs'} color="gray.400">
+                  list_id: {props.list.internal_id}
+                </Text>
+              )}
             </Stack>
           )}
 
