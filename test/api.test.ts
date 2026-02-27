@@ -61,6 +61,15 @@ describe.concurrent('API Access tests', () => {
 
   describe.concurrent('Session Token tests', async () => {
     let session: string;
+    const headers = {
+      'user-agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36',
+      'sec-fetch-site': 'none',
+      'sec-fetch-mode': 'cors',
+      'sec-fetch-dest': 'empty',
+      'accept-language': 'en-US,en;q=0.9',
+      accept: 'application/json',
+    };
 
     test.beforeAll(async () => {
       session = (await createSession()).session;
@@ -70,13 +79,7 @@ describe.concurrent('API Access tests', () => {
     test.sequential('Access API with session token', async () => {
       const request = new NextRequest('http://localhost/api/v1/items', {
         method: 'GET',
-        headers: {
-          'sec-fetch-site': 'none',
-          'sec-fetch-mode': 'cors',
-          'sec-fetch-dest': 'empty',
-          'accept-language': 'en-US,en;q=0.9',
-          accept: 'application/json',
-        },
+        headers: headers,
       });
 
       request.cookies.set('idb-session-id', session);
@@ -90,6 +93,7 @@ describe.concurrent('API Access tests', () => {
       const request = new NextRequest('http://localhost/api/v1/items', {
         method: 'GET',
         headers: {
+          ...headers,
           'X-Forwarded-For': 'test-ip',
         },
       });
@@ -105,6 +109,7 @@ describe.concurrent('API Access tests', () => {
     test('Access API with invalid session token', async () => {
       const request = new NextRequest('http://localhost/api/v1/items', {
         method: 'GET',
+        headers: headers,
       });
 
       request.cookies.set('idb-session-id', 'invalid-session');
