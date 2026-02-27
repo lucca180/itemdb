@@ -8,11 +8,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 jobs:
-  deploy-itemdb-green:
-    name: itemdb Green (backup) - Deploy
+  run-tests:
+    name: Run tests
     runs-on: ubuntu-latest
     steps:
-      - name: itemdb Green (backup) - Update
+      - name: Run tests
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -26,17 +26,17 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             yarn install --immutable
             npx prisma migrate deploy
-            export BUILD_ID=$(git rev-parse HEAD)
-            yarn build-intl
-            yarn build-turbo || exit
-            yarn postbuild
-            pm2 stop ecosystem.config.js --only itemdb-green --update-env
-  run-tests:
-    name: Run tests
+            if git log -1 --pretty=%B | grep -q '\[skip test\]'; then
+              echo "Skipping tests"
+            else
+              yarn test
+            fi
+  deploy-itemdb-green:
+    name: itemdb Green (backup) - Deploy
+    needs: run-tests
     runs-on: ubuntu-latest
-    needs: deploy-itemdb-green
     steps:
-      - name: Run tests
+      - name: itemdb Green (backup) - Update
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -46,14 +46,14 @@ jobs:
             cd /home/itemdb-green/
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            if git log -1 --pretty=%B | grep -q '\[skip test\]'; then
-              echo "Skipping tests"
-            else
-              yarn test
-            fi
+            export BUILD_ID=$(git rev-parse HEAD)
+            yarn build-intl
+            yarn build-turbo || exit
+            yarn postbuild
+            pm2 stop ecosystem.config.js --only itemdb-green --update-env
   deploy-itemdb-blue:
     name: itemdb blue (main) - Deploy
-    needs: run-tests
+    needs: deploy-itemdb-green
     runs-on: ubuntu-latest
     steps:
       - name: itemdb Blue (main) - Deploy
