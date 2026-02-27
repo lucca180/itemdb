@@ -203,6 +203,9 @@ export const apiMiddleware = async (request: NextRequest) => {
           });
 
           return response;
+        } else if (!isValidSession) {
+          // if session is invalid, clear cookie
+          response.cookies.set({ name: 'idb-session-id', value: '', maxAge: 0 });
         }
       } catch (e) {
         console.error('Error validating session in middleware', e);
