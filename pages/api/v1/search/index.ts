@@ -10,11 +10,12 @@ import { ItemData, SearchFilters } from '../../../../types';
 import Color from 'color';
 import { Prisma } from '@prisma/generated/client';
 import queryString from 'query-string';
-import { parseFilters } from '../../../../utils/parseFilters';
+import { defaultFilters, parseFilters } from '../../../../utils/parseFilters';
 import requestIp from 'request-ip';
 import { redis_setItemCount } from '@utils/redis';
 import { rawToItemData } from '../items/many';
 import { verifyListJWT } from '@utils/api-utils';
+import * as Sentry from '@sentry/nextjs';
 
 const ENV_FUZZY_SEARCH = process.env.HAS_FUZZY_SEARCH === 'true';
 
@@ -45,6 +46,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 
   const result = await doSearch(query, reqQuery, !skipStats, list_id, false, onlyStats);
+  if (!onlyStats) trackUsage(query, reqQuery);
 
   const ip = requestIp.getClientIp(req);
   redis_setItemCount(ip, result.content.length, req);
@@ -631,12 +633,6 @@ export async function doSearch(
   };
 }
 
-// SELECT *,
-// (POWER(h-15,2)+POWER(s-100,2)+POWER(l-45,2)) as dist
-// FROM ItemColor
-// WHERE (POWER(h-15,2)+POWER(s-100,2)+POWER(l-45,2)) <= 750
-// ORDER BY dist
-
 const getRestockQuery = (
   multiplier: number,
   minProfit: number,
@@ -650,3 +646,42 @@ const getRestockQuery = (
   ${includeUnpriced ? Prisma.sql` OR temp.price IS NULL` : Prisma.empty}
 )
 `;
+
+const trackUsage = (query: string, filters?: SearchFilters) => {
+  const originalQuery = query;
+  const [queryFilters, querySanitized] = parseFilters(originalQuery, false);
+
+  query = querySanitized.trim() ?? '';
+
+  filters = { ...queryFilters, ...filters };
+
+  const usage: any = {};
+
+  const fullFields = ['sortBy', 'sortDir', 'mode', 'limit', 'type', 'zone'];
+  const skipFields = ['page', 'skipStats'];
+
+  for (const [key, value] of Object.entries(filters)) {
+    if (
+      typeof value === 'undefined' ||
+      value === null ||
+      (value as any)?.length === 0 ||
+      value === defaultFilters[key as keyof typeof defaultFilters] ||
+      skipFields.includes(key)
+    )
+      continue;
+
+    if (fullFields.includes(key)) {
+      if (Array.isArray(value)) {
+        const arr = usage[key] ?? [];
+        arr.push(...value);
+        usage[key] = arr;
+      } else {
+        usage[key] = value;
+      }
+    } else usage[key] = (usage[key] ?? 0) + 1;
+  }
+
+  Sentry.metrics.count('api.search', 1, {
+    attributes: usage,
+  });
+};

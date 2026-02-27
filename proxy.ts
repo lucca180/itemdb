@@ -10,6 +10,7 @@ import {
   verifyApiToken,
   verifySiteProof,
 } from '@utils/api-utils';
+import * as Sentry from '@sentry/nextjs';
 
 const API_SKIPS = {
   GET: [/^\/api\/auth.*$/, /^\/api\/widget.*$/, /^\/api\/build-id.*$/],
@@ -138,6 +139,12 @@ export const apiMiddleware = async (request: NextRequest) => {
       });
     }
 
+    Sentry.metrics.count('api.requests', 1, {
+      attributes: {
+        type: 'site-proof',
+      },
+    });
+
     updateServerTime('api-middleware', startTime, response);
     return response;
   } else if (itemdb_proof) {
@@ -164,6 +171,11 @@ export const apiMiddleware = async (request: NextRequest) => {
 
     if (cacheSession) {
       updateServerTime('api-middleware', startTime, response);
+      Sentry.metrics.count('api.requests', 1, {
+        attributes: {
+          type: 'cache-session',
+        },
+      });
       return response;
     }
 
@@ -174,6 +186,13 @@ export const apiMiddleware = async (request: NextRequest) => {
           // console.log('[Warning] - Request without valid proof, but has browser-like headers.');
           sessionCache.set(sessionCookie.value, true, { ttl: 1000 * 60 * 5 });
           updateServerTime('api-middleware', startTime, response);
+
+          Sentry.metrics.count('api.requests', 1, {
+            attributes: {
+              type: 'session',
+            },
+          });
+
           return response;
         }
       } catch (e) {
@@ -194,6 +213,11 @@ export const apiMiddleware = async (request: NextRequest) => {
       const keyData = await Redis.checkApiToken(apiToken);
       if (keyData) {
         updateServerTime('api-middleware', startTime, response);
+        Sentry.metrics.count('api.requests', 1, {
+          attributes: {
+            type: 'api-token',
+          },
+        });
         return response;
       }
     } catch (e) {
@@ -211,6 +235,12 @@ export const apiMiddleware = async (request: NextRequest) => {
 
   // everything else will be blocked in a near future.
   response.headers.set('x-itemdb-block', 'true');
+
+  Sentry.metrics.count('api.requests', 1, {
+    attributes: {
+      type: 'unauthenticated',
+    },
+  });
 
   // console.warn(`[WARNING] - this request will be blocked in a near future`);
   // return NextResponse.json({ error: 'Invalid access' }, { status: 401 });
