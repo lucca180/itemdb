@@ -45,7 +45,6 @@ export function verifySiteProof(proof: string, maxAge = 0) {
 
 export function isLikelyBrowser(req: NextRequest) {
   let score = 0;
-
   const headers = req.headers;
 
   const userAgent = headers.get('user-agent') || '';
@@ -55,30 +54,63 @@ export function isLikelyBrowser(req: NextRequest) {
   const acceptLanguage = headers.get('accept-language');
   const accept = headers.get('accept');
   const origin = headers.get('origin');
+  const referer = headers.get('referer');
 
   if (secFetchSite && secFetchMode && secFetchDest) {
+    score += 3;
+
+    if (
+      ['same-origin', 'same-site', 'cross-site', 'none'].includes(secFetchSite) &&
+      ['navigate', 'cors', 'no-cors'].includes(secFetchMode)
+    ) {
+      score += 1;
+    }
+  }
+
+  if (acceptLanguage) {
+    const langs = acceptLanguage
+      .split(',')
+      .map((x) => x.trim())
+      .filter(Boolean);
+    if (langs.length >= 1) {
+      score += 1;
+    }
+    if (langs.length >= 2) {
+      score += 1;
+    }
+  }
+
+  if (accept && accept.includes('text/html')) {
     score += 2;
-  }
-
-  if (acceptLanguage && acceptLanguage.includes(',')) {
+  } else if (accept && accept !== '*/*') {
     score += 1;
   }
 
-  if (accept?.includes('application/json')) {
+  if (/Mozilla\/5\.0.*(?:Chrome|Firefox|Safari|Edg)/.test(userAgent)) {
     score += 1;
   }
 
-  if (/Chrome|Firefox|Safari|Edg/.test(userAgent)) {
+  if (origin || referer) {
     score += 1;
   }
 
-  if (origin) {
-    score += 1;
+  if (accept === '*/*') {
+    score -= 2;
   }
+
+  if (!userAgent || /curl|postman|insomnia|python|axios|fetch/i.test(userAgent)) {
+    score -= 3;
+  }
+
+  if (!acceptLanguage) {
+    score -= 1;
+  }
+
+  const finalScore = Math.max(0, score);
 
   return {
-    isLikely: score >= 3,
-    score,
+    isLikely: finalScore >= 5,
+    score: finalScore,
   };
 }
 
