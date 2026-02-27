@@ -109,6 +109,11 @@ export const apiMiddleware = async (request: NextRequest) => {
 
   if (skips.some((skip) => skip.test(request.nextUrl.pathname))) {
     response.headers.set('x-itemdb-skip', 'true');
+    Sentry.metrics.count('api.requests', 1, {
+      attributes: {
+        type: 'skip-route',
+      },
+    });
     return response;
   }
 
@@ -158,6 +163,11 @@ export const apiMiddleware = async (request: NextRequest) => {
     } catch (e) {
       if (e === Redis.API_ERROR_CODES.limitExceeded) {
         updateServerTime('api-middleware', startTime, response);
+        Sentry.metrics.count('api.requests', 1, {
+          attributes: {
+            type: 'rate-limited-request',
+          },
+        });
         return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
       }
     }
@@ -238,7 +248,7 @@ export const apiMiddleware = async (request: NextRequest) => {
 
   Sentry.metrics.count('api.requests', 1, {
     attributes: {
-      type: 'unauthenticated',
+      type: isBrowser ? 'unauthenticated-browser' : 'unauthenticated-non-browser',
     },
   });
 

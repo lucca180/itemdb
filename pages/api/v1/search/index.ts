@@ -45,8 +45,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     if (listIdFromJWT !== list_id) return res.status(401).json({ error: 'Unauthorized' });
   }
 
+  const startTime = performance.now();
   const result = await doSearch(query, reqQuery, !skipStats, list_id, false, onlyStats);
-  if (!onlyStats) trackUsage(query, reqQuery);
+  const duration = performance.now() - startTime;
+
+  if (!onlyStats) trackUsage(query, reqQuery, duration);
 
   const ip = requestIp.getClientIp(req);
   redis_setItemCount(ip, result.content.length, req);
@@ -647,7 +650,7 @@ const getRestockQuery = (
 )
 `;
 
-const trackUsage = (query: string, filters?: SearchFilters) => {
+const trackUsage = (query: string, filters: SearchFilters, duration: number) => {
   const originalQuery = query;
   const [queryFilters, querySanitized] = parseFilters(originalQuery, false);
 
@@ -682,6 +685,11 @@ const trackUsage = (query: string, filters?: SearchFilters) => {
   }
 
   Sentry.metrics.count('api.search', 1, {
+    attributes: usage,
+  });
+
+  Sentry.metrics.distribution('api.search.duration', duration, {
+    unit: 'milliseconds',
     attributes: usage,
   });
 };
