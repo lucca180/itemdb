@@ -24,7 +24,7 @@ const API_SKIPS = {
 } as const;
 
 const sessionCache = new LRUCache({
-  max: 250,
+  max: 1000,
 });
 
 const PUBLIC_FILE = /\.(.*)$/;
@@ -193,8 +193,7 @@ export const apiMiddleware = async (request: NextRequest) => {
       try {
         const isValidSession = await Redis.getSession(sessionCookie.value, true);
         if (!!isValidSession) {
-          // console.log('[Warning] - Request without valid proof, but has browser-like headers.');
-          sessionCache.set(sessionCookie.value, true, { ttl: 1000 * 60 * 5 });
+          sessionCache.set(sessionCookie.value, true, { ttl: 1000 * 60 * 30 });
           updateServerTime('api-middleware', startTime, response);
 
           Sentry.metrics.count('api.requests', 1, {
