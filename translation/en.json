@@ -320,7 +320,8 @@
     "price-chart": "Price Chart",
     "median-price": "Median Price",
     "sold-median-price": "Sold Median Price",
-    "avatars": "Avatars"
+    "avatars": "Avatars",
+    "item-list": "Item List"
   },
   "Button": {
     "feedback": "Feedback",
