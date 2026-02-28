@@ -39,6 +39,7 @@ const ApplyListModal = dynamic<ApplyListModalProps>(
 type Props = {
   lists: UserList[];
   trendingLists: UserList[];
+  canEdit: boolean;
   messages: any;
   locale: string;
 };
@@ -56,13 +57,13 @@ const OfficialListsPage = (props: Props) => {
   const [isSearch, setIsSearch] = useState(false);
   const rowSize = useBreakpointValue({ base: 2, xl: 3 }, { fallback: 'xl' });
 
-  const { data: lists, isLoading } = useSWRImmutable(
-    `/api/v1/lists/official?includeItems=false`,
-    fetcher,
-    {
-      shouldRetryOnError: false,
-    }
-  );
+  const {
+    data: lists,
+    isLoading,
+    mutate,
+  } = useSWRImmutable(`/api/v1/lists/official?includeItems=false`, fetcher, {
+    shouldRetryOnError: false,
+  });
 
   const categories = useMemo(() => {
     if (!lists) return [];
@@ -220,9 +221,11 @@ const OfficialListsPage = (props: Props) => {
               <Flex gap={3} justifyContent="center" flexWrap={'wrap'}>
                 {trendingLists.map((list) => (
                   <UserListCard
+                    canEdit={props.canEdit}
                     key={list.internal_id}
                     list={list}
                     utm_content="official-trending"
+                    refresh={mutate}
                   />
                 ))}
               </Flex>
@@ -239,7 +242,12 @@ const OfficialListsPage = (props: Props) => {
               {(group, index) => (
                 <Flex gap={[3]} key={index} justifyContent="center" flexWrap={'wrap'}>
                   {group.map((list) => (
-                    <UserListCard key={list.internal_id} list={list} />
+                    <UserListCard
+                      canEdit={props.canEdit}
+                      key={list.internal_id}
+                      list={list}
+                      refresh={mutate}
+                    />
                   ))}
                 </Flex>
               )}
@@ -267,7 +275,13 @@ export default OfficialListsPage;
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const category = context.query?.cat as string | undefined;
-  const listService = ListService.init();
+
+  let canEdit = false;
+
+  const listService = await ListService.initReq(context.req as any);
+
+  canEdit = listService.user?.isAdmin ?? false;
+
   const [lists, trendingLists] = await Promise.all([
     category
       ? await listService.getOfficialListsCat(category, 15)
@@ -286,6 +300,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       trendingLists,
       messages: await loadTranslation(context.locale as string, 'lists/official/index'),
       locale: context.locale,
+      canEdit,
     },
   };
 }
