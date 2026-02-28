@@ -33,7 +33,7 @@ const VALID_LOCALES = ['en', 'pt'];
 const skipAPIMiddleware = process.env.SKIP_API_MIDDLEWARE === 'true';
 const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === 'true';
 
-const isDev = false; //process.env.NODE_ENV === 'development'; // temporarily disable dev mode to test rate limit caching
+const isDev = process.env.NODE_ENV === 'development';
 
 export const config = {
   matcher: ['/api/:path*', '/:path*'],
