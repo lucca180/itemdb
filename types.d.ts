@@ -871,6 +871,19 @@ export type BDData = {
   notes?: string;
 };
 
+export type AvyData = {
+  name: string;
+  solution: string;
+  img: string;
+  releaseDate: string | null;
+  list: {
+    id: number;
+    name: string;
+    description: string | null;
+    slug: string;
+  } | null;
+};
+
 // ------ Global Window Types ----- //
 declare global {
   interface Window {

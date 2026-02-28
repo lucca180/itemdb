@@ -3,6 +3,7 @@ import React, { ReactElement, useMemo, useState } from 'react';
 import Layout from '../../components/Layout';
 import Image from 'next/image';
 import {
+  AvyData,
   BDData,
   FullItemColors,
   InsightsResponse,
@@ -59,6 +60,8 @@ import RelatedLinksCard from '@components/Items/RelatedLinks';
 import { shouldShowTradeLists } from '@utils/utils';
 import ItemBdCard from '@components/Items/ItemBdCard';
 import { getBDData } from '../api/v1/items/[id_name]/bd';
+import { getAvyData } from '../api/v1/items/[id_name]/avys';
+import ItemAvyCard from '@components/Items/ItemAvyCard';
 
 const EditItemModal = dynamic<EditItemModalProps>(
   () => import('../../components/Modal/EditItemModal')
@@ -90,6 +93,7 @@ type ItemPageProps = {
   similarItems: ItemData[];
   lists?: UserList[];
   tradeLists?: UserList[];
+  avyData: AvyData[] | null;
   itemOpenable: ItemOpenable | null;
   itemParent: {
     parents_iid: number[];
@@ -127,6 +131,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
     dyeData,
     petpetData,
     ncInsights,
+    avyData,
   } = props;
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { user } = useAuth();
@@ -422,6 +427,9 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
                 wearableData={props.wearableData}
               />
             )}
+            {avyData && avyData.length > 0 && (
+              <ItemAvyCard key={getKey('item-avy-card')} item={item} avyData={avyData} />
+            )}
             {itemParent.parents_iid.length > 0 && (
               <ItemParent key={getKey('item-parent')} item={item} parent={itemParent} />
             )}
@@ -493,6 +501,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     petpetData,
     ncInsights,
     bdData,
+    avyData,
   ] = await Sentry.startSpan(
     {
       name: 'itemLoad',
@@ -528,6 +537,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
           : null, // 15
         item.isNC ? getNCTradeInsights(item.internal_id) : null, // 16
         item.isBD ? getBDData(item.internal_id) : null, // 17
+        getAvyData(item.internal_id), // 18
       ]);
     }
   );
@@ -554,6 +564,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     petpetData: petpetData,
     ncInsights: ncInsights,
     bdData: bdData,
+    avyData: avyData,
     messages: await loadTranslation(context.locale ?? 'en', 'item/[id]'),
     locale: context.locale,
   };

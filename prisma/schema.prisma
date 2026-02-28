@@ -77,6 +77,7 @@ model Items {
   ncValues              ncValues[]
   TradeItems            TradeItems[]
   bdEffects             bdEffects[]
+  avatarSolutions       AvatarSolution[]
 
   @@index([image_id])
   @@index([name, image_id])
@@ -450,8 +451,9 @@ model UserList {
 
   items ListItems[]
 
-  highlight     String?
-  highlightText String? @db.Text
+  highlight       String?
+  highlightText   String?          @db.Text
+  avatarSolutions AvatarSolution[]
 
   @@unique([slug, user_id])
   @@index([official_tag, official])
@@ -851,6 +853,23 @@ model apiKeys {
 
   user_id String?
   user    User?   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model AvatarSolution {
+  internal_id Int       @id @default(autoincrement())
+  avy_id      String    @unique
+  name        String
+  image       String
+  releasedAt  DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  list_id Int?
+  list    UserList? @relation(fields: [list_id], references: [internal_id], onDelete: SetNull, onUpdate: Cascade)
+
+  item_iid Int?
+  item     Items? @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+
+  solution String @db.Text
 }
 
 // -------- DISMANTLING PRICE PROCESS --------- //

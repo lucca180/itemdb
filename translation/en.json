@@ -319,7 +319,8 @@
     "buying": "Buying",
     "price-chart": "Price Chart",
     "median-price": "Median Price",
-    "sold-median-price": "Sold Median Price"
+    "sold-median-price": "Sold Median Price",
+    "avatars": "Avatars"
   },
   "Button": {
     "feedback": "Feedback",
