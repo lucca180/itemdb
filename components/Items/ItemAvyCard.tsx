@@ -27,7 +27,12 @@ const AvyCard = (props: Props) => {
           <Avy key={avy.name} avy={avy} />
         ))}
         {avyData.length > 3 && (
-          <Button onClick={() => setSeeMore(!seeMore)} size="xs">
+          <Button
+            onClick={() => setSeeMore(!seeMore)}
+            size="xs"
+            data-umami-event="avyCard"
+            data-umami-event-label="see-more"
+          >
             {seeMore ? t('ItemPage.show-less') : t('ItemPage.show-more')}
           </Button>
         )}
@@ -63,7 +68,13 @@ const Avy = (props: { avy: AvyData }) => {
         </Text>
         {avy.list && (
           <Text fontSize={'xs'}>
-            <Link href={`/lists/official/${avy.list.slug}`}>{t('ItemPage.item-list')}</Link>
+            <Link
+              trackEvent="avyCard"
+              trackEventLabel="item-list"
+              href={`/lists/official/${avy.list.slug}`}
+            >
+              {t('ItemPage.item-list')}
+            </Link>
           </Text>
         )}
       </Flex>
