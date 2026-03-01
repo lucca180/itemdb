@@ -59,7 +59,7 @@ import FeedbackButton from '@components/Feedback/FeedbackButton';
 import RelatedLinksCard from '@components/Items/RelatedLinks';
 import { shouldShowTradeLists } from '@utils/utils';
 import ItemBdCard from '@components/Items/ItemBdCard';
-import { getBDData } from '../api/v1/items/[id_name]/bd';
+// import { getBDData } from '../api/v1/items/[id_name]/bd';
 import { getAvyData } from '../api/v1/items/[id_name]/avys';
 import ItemAvyCard from '@components/Items/ItemAvyCard';
 
@@ -536,7 +536,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
           ? getPetpetData(item)
           : null, // 15
         item.isNC ? getNCTradeInsights(item.internal_id) : null, // 16
-        item.isBD ? getBDData(item.internal_id) : null, // 17
+        null, // item.isBD ? getBDData(item.internal_id) : null, // 17
         getAvyData(item.internal_id), // 18
       ]);
     }

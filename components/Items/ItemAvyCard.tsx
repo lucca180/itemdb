@@ -1,10 +1,11 @@
-import { Flex, Text } from '@chakra-ui/react';
+import { Button, Flex, Text } from '@chakra-ui/react';
 import { AvyData, ItemData } from '../../types';
 import CardBase from '../Card/CardBase';
 import { useTranslations } from 'next-intl';
 import Image from '@components/Utils/Image';
 import dynamic from 'next/dynamic';
 import Link from '@components/Utils/MainLink';
+import { useState } from 'react';
 
 const Markdown = dynamic(() => import('../Utils/Markdown'));
 
@@ -16,14 +17,20 @@ type Props = {
 const AvyCard = (props: Props) => {
   const t = useTranslations();
   const { item, avyData } = props;
+  const [seeMore, setSeeMore] = useState(false);
   const color = item.color.rgb;
 
   return (
     <CardBase title={t('ItemPage.avatars')} color={color}>
       <Flex gap={3} flexFlow={'column'}>
-        {avyData.map((avy) => (
+        {avyData.slice(0, seeMore ? avyData.length : 3).map((avy) => (
           <Avy key={avy.name} avy={avy} />
         ))}
+        {avyData.length > 3 && (
+          <Button onClick={() => setSeeMore(!seeMore)} size="xs">
+            {seeMore ? t('ItemPage.show-less') : t('ItemPage.show-more')}
+          </Button>
+        )}
       </Flex>
     </CardBase>
   );
