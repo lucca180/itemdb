@@ -546,7 +546,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
 
   const props: ItemPageProps = {
     item: item,
-    lists: lists,
+    lists: lists.filter((l) => l.officialTag !== 'Avatar'),
     similarItems: similarItems,
     colors: colors as FullItemColors,
     tradeLists: tradeLists,
