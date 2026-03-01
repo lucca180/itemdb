@@ -398,8 +398,11 @@ export async function doSearch(
     typeof petpetCanonical !== 'undefined'
   ) {
     petpetJoin = Prisma.sql`LEFT JOIN PetpetColors as pc on pc.item_iid = a.internal_id`;
+    const allP2 = petpetSpecies[0] === '-2';
 
-    if (petpetSpecies.length > 0)
+    if (allP2) petpetSQL.push(Prisma.sql`petpet_id is not null`);
+
+    if (!allP2 && petpetSpecies.length > 0)
       petpetSQL.push(Prisma.sql`petpet_id in (${Prisma.join(petpetSpecies)})`);
 
     if (petpetColor.length > 0)

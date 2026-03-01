@@ -57,7 +57,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       avy_id: avy.id,
       name: avy.altName || avy.name,
       image: avy.img,
-      updatedAt: new Date(),
+      updatedAt: new Date(avy.last_update * 1000),
       releasedAt: avy.releaseDate ? new Date(avy.releaseDate * 1000) : null,
       list_id: avy.itemdb.list_id ? Number(avy.itemdb.list_id) : null,
       item_iid: avy.itemdb.item_iid ? Number(avy.itemdb.item_iid) : null,
