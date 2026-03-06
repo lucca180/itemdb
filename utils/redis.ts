@@ -1,16 +1,11 @@
 import { Redis as RedisRaw } from 'ioredis';
-import { Chance } from 'chance';
 import { NextApiRequest } from 'next/types';
-import { normalizeIP } from './api-utils';
+import { generateSessionToken, normalizeIP, verifySessionToken } from './api-utils';
 import jwt from 'jsonwebtoken';
-
-const chance = new Chance();
 
 const LIMIT_COUNT = 10000;
 // const LIMIT_COUNT = 1000; ---> new value after new changes
 const INITIAL_BAN_MINUTES = 5;
-const skipAPIMiddleware =
-  process.env.SKIP_API_MIDDLEWARE === 'true' || process.env.NODE_ENV === 'development';
 
 export const SESSION_EXPIRE_LOGGED = 7 * 24 * 60 * 60; // 7 days in seconds
 export const SESSION_EXPIRE = 24 * 60 * 60; // 1 day in seconds
@@ -19,6 +14,7 @@ export const API_ERROR_CODES = {
   noRedis: 'no-redis',
   invalidKey: 'invalid-key',
   limitExceeded: 'limit-exceeded',
+  invalidSession: 'invalid-session',
 } as const;
 
 export let redis: RedisRaw;
@@ -38,32 +34,21 @@ if (
 }
 
 export const createSession = async (logged = false) => {
-  const newSessionId = chance.guid({ version: 5 });
-  await redis.set(
-    `guid:${newSessionId}`,
-    'true',
-    'EX',
-    logged ? SESSION_EXPIRE_LOGGED : SESSION_EXPIRE
-  );
+  const limit = logged ? 10000 : 2000; // ----> change on new version
+  const session = generateSessionToken(limit, logged ? SESSION_EXPIRE_LOGGED : SESSION_EXPIRE);
 
-  return { session: newSessionId, expires: logged ? SESSION_EXPIRE_LOGGED : SESSION_EXPIRE };
+  return {
+    session: session,
+    expires: logged ? SESSION_EXPIRE_LOGGED : SESSION_EXPIRE,
+    limit: limit,
+  };
 };
 
-export const getSession = async (sessionToken?: string, checkOnly = false) => {
-  if (!redis) throw 'no-redis';
+export const checkSession = async (sessionToken: string) => {
+  const payload = verifySessionToken(sessionToken);
+  if (!payload || !payload.sub) return false;
 
-  const sessionName = `guid:${sessionToken}`;
-  try {
-    const sessionData = sessionToken ? await redis.get(sessionName) : null;
-    if (sessionData) return sessionToken as string;
-
-    if (checkOnly) return false;
-
-    return (await createSession()).session;
-  } catch (e) {
-    console.error('Error accessing Redis:', e);
-    throw 'no-redis';
-  }
+  return payload.sub;
 };
 
 export const checkBan = async (ip?: string) => {
@@ -82,7 +67,7 @@ export const redis_setItemCount = async (
   req: NextApiRequest
 ) => {
   try {
-    if (skipAPIMiddleware || !ip || !itemCount || !redis) return;
+    if (!ip || !itemCount || !redis) return;
 
     const isValidProof = req.headers['x-itemdb-valid'] === 'true';
 
@@ -91,10 +76,24 @@ export const redis_setItemCount = async (
     if (req.headers['x-itemdb-token'])
       return incrementApiKey(req.headers['x-itemdb-token'] as string, itemCount);
 
+    let limit = LIMIT_COUNT;
+
+    const sessionCookie =
+      req.cookies['idb-session-id'] || (req.cookies as any).get('idb-session-id');
+
+    if (sessionCookie) {
+      const sessionToken = sessionCookie.value ?? sessionCookie;
+      const sessionData = verifySessionToken(sessionToken);
+
+      if (sessionData && sessionData.limit) {
+        limit = sessionData.limit;
+      }
+    }
+
     ip = normalizeIP(ip);
     const newVal = await redis.incrby(ip, itemCount);
 
-    if (newVal >= LIMIT_COUNT) {
+    if (newVal >= limit) {
       const isBanned = await redis.get(`ban:${ip}`);
       if (isBanned) return;
 
@@ -106,7 +105,7 @@ export const redis_setItemCount = async (
       return;
     }
 
-    await redis.pexpire(ip, 30 * 60 * 1000);
+    await redis.expire(ip, 30 * 60);
   } catch (e) {
     console.error('redis_setItemCount error', e);
   }
@@ -147,7 +146,7 @@ const incrementApiKey = async (token: string | null | undefined, incrementBy: nu
   const limit = payload.limit;
 
   const newVal = await redis.incrby(`apiKey:${keyId}`, incrementBy);
-  await redis.expire(`apiKey:${keyId}`, 24 * 60 * 60);
+  await redis.expire(`apiKey:${keyId}`, 30 * 60);
 
   if (limit === '-1') return; // unlimited key
 

@@ -3,6 +3,9 @@ import { NextRequest } from 'next/server';
 import ipaddr from 'ipaddr.js';
 import { NextApiRequest } from 'next';
 import { ListService } from '@services/ListService';
+import { Chance } from 'chance';
+
+const chance = new Chance();
 
 // ------- site proof ---------- //
 export function generateSiteProof(ip?: string, type = 'short') {
@@ -42,6 +45,33 @@ export function verifySiteProof(proof: string, maxAge = 0) {
 }
 
 // -------- user session ---------- //
+
+export function generateSessionToken(limit: number, expires: number = 7 * 24 * 60 * 60) {
+  return jwt.sign(
+    {
+      sub: chance.guid({ version: 5 }),
+      aud: 'itemdb.com.br',
+      ctx: 'session',
+      limit: limit,
+    },
+    process.env.SITE_PROOF_SECRET!,
+    { expiresIn: `${expires}s` }
+  );
+}
+
+export function verifySessionToken(token: string) {
+  try {
+    const payload = jwt.verify(token, process.env.SITE_PROOF_SECRET!) as jwt.JwtPayload;
+
+    if (payload.aud !== 'itemdb.com.br' || payload.ctx !== 'session') {
+      return null;
+    }
+
+    return payload;
+  } catch {
+    return null;
+  }
+}
 
 export function isLikelyBrowser(req: NextRequest) {
   let score = 0;

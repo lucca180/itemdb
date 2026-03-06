@@ -192,7 +192,7 @@ export const apiMiddleware = async (request: NextRequest) => {
 
     if (sessionCookie && sessionCookie.value) {
       try {
-        const isValidSession = await Redis.getSession(sessionCookie.value, true);
+        const isValidSession = await Redis.checkSession(sessionCookie.value);
         if (!!isValidSession) {
           sessionCache.set(sessionCookie.value, true, { ttl: 1000 * 60 * 30 });
           updateServerTime('api-middleware', startTime, response);

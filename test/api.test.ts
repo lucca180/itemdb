@@ -1,4 +1,4 @@
-import { generateSiteProof } from '@utils/api-utils';
+import { generateSiteProof, verifySessionToken } from '@utils/api-utils';
 import { expect, test, describe } from 'vitest';
 import { NextRequest } from 'next/server';
 import { apiMiddleware } from '../proxy';
@@ -61,6 +61,9 @@ describe.concurrent('API Access tests', () => {
 
   describe.concurrent('Session Token tests', async () => {
     let session: string;
+    let limit: number;
+    let sessionId: string;
+
     const headers = {
       'user-agent':
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36',
@@ -72,17 +75,24 @@ describe.concurrent('API Access tests', () => {
     };
 
     test.beforeAll(async () => {
-      session = (await createSession()).session;
+      const sessionData = await createSession();
+      session = sessionData.session;
+      limit = sessionData.limit;
+      sessionId = verifySessionToken(session)!.sub!;
+
+      expect(sessionId).toBeDefined();
       expect(session).toBeDefined();
     });
 
     test.sequential('Access API with session token', async () => {
       const request = new NextRequest('http://localhost/api/v1/items', {
         method: 'GET',
-        headers: headers,
+        headers: { ...headers, 'X-Forwarded-For': sessionId },
       });
 
       request.cookies.set('idb-session-id', session);
+
+      await redis_setItemCount(sessionId, limit - 1, request as any);
 
       const response = await apiMiddleware(request);
       expect(response.headers.get('x-itemdb-block')).toBeNull();
@@ -94,13 +104,13 @@ describe.concurrent('API Access tests', () => {
         method: 'GET',
         headers: {
           ...headers,
-          'X-Forwarded-For': 'test-ip',
+          'X-Forwarded-For': sessionId,
         },
       });
 
       request.cookies.set('idb-session-id', session);
 
-      await redis_setItemCount('test-ip', 500000, request as any);
+      await redis_setItemCount(sessionId, 2, request as any);
 
       const response = await apiMiddleware(request);
       expect(response.status).toBe(429);

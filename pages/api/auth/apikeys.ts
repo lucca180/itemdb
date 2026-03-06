@@ -73,7 +73,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
         user_id: user.id,
         name: name || '',
         description: description || '',
-        limit: 2500,
+        limit: 7500,
       },
     });
 
