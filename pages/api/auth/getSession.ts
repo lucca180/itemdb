@@ -16,10 +16,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   } catch (e) {}
 
   const { session, expires } = await createSession(!!user);
+  const expExpiration = expires - 18 * 60 * 60; // 18 hours earlier than the actual expiration to be safe
 
   const cookies = [
     `idb-session-id=${session}; Path=/; Max-Age=${expires}; HttpOnly; Secure; SameSite=None`,
-    `idb-session-exp=1; Path=/; Max-Age=${expires}; Secure; SameSite=Strict`,
+    `idb-session-exp=1; Path=/; Max-Age=${expExpiration}; Secure; SameSite=Strict`,
   ];
 
   res.setHeader('Set-Cookie', cookies);
