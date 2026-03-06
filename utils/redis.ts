@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 
 const chance = new Chance();
 
-const LIMIT_COUNT = 20000;
+const LIMIT_COUNT = 10000;
 // const LIMIT_COUNT = 1000; ---> new value after new changes
 const INITIAL_BAN_MINUTES = 5;
 const skipAPIMiddleware =

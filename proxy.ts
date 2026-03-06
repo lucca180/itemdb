@@ -66,7 +66,8 @@ export async function proxy(request: NextRequest) {
     requestIp.getClientIp(request as any) || request.headers.get('X-Forwarded-For')?.split(',')[0];
   ip = ip ? normalizeIP(ip) : undefined;
 
-  if (isLikelyBrowser(request).isLikely) {
+  const hasCookie = !!request.cookies.get('itemdb-proof')?.value;
+  if (isLikelyBrowser(request).isLikely && !hasCookie) {
     const proof = generateSiteProof(ip);
     response.cookies.set({
       name: 'itemdb-proof',
