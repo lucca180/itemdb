@@ -79,7 +79,7 @@ export const redis_setItemCount = async (
     let limit = LIMIT_COUNT;
 
     const sessionCookie =
-      req.cookies['idb-session-id'] || (req.cookies as any).get('idb-session-id');
+      req.cookies['idb-session-id'] || (req.cookies as any)?.get('idb-session-id');
 
     if (sessionCookie) {
       const sessionToken = sessionCookie.value ?? sessionCookie;
