@@ -62,8 +62,8 @@ export async function proxy(request: NextRequest) {
   request.headers.set('x-itemdb-score', score.toString());
   request.headers.set('x-itemdb-likely', isBrowser ? 'true' : 'false');
 
-  const hasCookie = request.cookies.has('itemdb-proof');
-  if (isBrowser && !hasCookie) {
+  const proofCookie = request.cookies.get('itemdb-proof')?.value || '';
+  if (isBrowser && !verifySiteProof(proofCookie, 120)) {
     const proof = generateSiteProof();
     response.cookies.set({
       name: 'itemdb-proof',

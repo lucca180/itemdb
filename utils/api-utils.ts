@@ -24,6 +24,7 @@ export function generateSiteProof(type = 'short') {
 }
 
 export function verifySiteProof(proof: string, maxAge = 0) {
+  if (!proof) return false;
   try {
     const payload = jwt.verify(proof, process.env.SITE_PROOF_SECRET!) as jwt.JwtPayload;
 

@@ -6,7 +6,15 @@ import { User, UserPreferences } from '../types';
 import axios, { InternalAxiosRequestConfig } from 'axios';
 import { getCookie } from 'cookies-next/client';
 
-const getAuth = () => import('./firebase/auth');
+let authModulePromise: Promise<typeof import('./firebase/auth')> | null = null;
+
+const getAuthModule = () => {
+  if (!authModulePromise) {
+    authModulePromise = import('./firebase/auth');
+  }
+
+  return authModulePromise;
+};
 
 type AuthContextType = {
   user: User | null;
@@ -48,7 +56,7 @@ export function AuthProvider({ children }: any) {
   const [authLoading, setAuthLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const unsubs = getAuth().then((res) => {
+    const unsubs = getAuthModule().then((res) => {
       const { auth } = res;
 
       return auth.onIdTokenChanged(async (newUser) => {
@@ -75,27 +83,45 @@ export function AuthProvider({ children }: any) {
     };
   }, []);
 
-  // force refresh the token every 10 minutes
+  // force refresh the token every 15 minutes
   useEffect(() => {
-    const handle = setInterval(
-      async () => {
-        if (document.visibilityState !== 'visible') return;
-        getAuth().then(async (res) => {
-          const { auth } = res;
-          const user = auth.currentUser;
+    const REFRESH_INTERVAL = 15 * 60 * 1000;
+    let lastCheckAt = Date.now();
 
-          try {
-            if (user) await user.getIdToken(true);
-          } catch (e) {
-          } finally {
-            await getSession();
-            checkProof();
-          }
-        });
-      },
-      15 * 60 * 1000
-    );
-    return () => clearInterval(handle);
+    const runRefresh = async () => {
+      if (document.visibilityState !== 'visible') return;
+
+      const { auth } = await getAuthModule();
+      const currentUser = auth.currentUser;
+
+      try {
+        if (currentUser) await currentUser.getIdToken(true);
+      } catch (e) {
+      } finally {
+        await getSession();
+        lastCheckAt = Date.now();
+      }
+    };
+
+    const handle = setInterval(() => {
+      runRefresh();
+    }, REFRESH_INTERVAL);
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState !== 'visible') return;
+
+      const now = Date.now();
+      if (now - lastCheckAt >= REFRESH_INTERVAL) {
+        runRefresh();
+      }
+    };
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      clearInterval(handle);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
   }, []);
 
   const doLogin = async (fireUser: FirebaseUser) => {
@@ -133,8 +159,9 @@ export function AuthProvider({ children }: any) {
 
   const getSession = async () => {
     try {
-      const sessionExp = getCookie('idb-session-exp');
+      checkProof();
 
+      const sessionExp = getCookie('idb-session-exp');
       if (!navigator.cookieEnabled || (document.cookie && sessionExp)) return;
 
       const res = await axios.get('/api/auth/getSession');
@@ -160,7 +187,7 @@ export function AuthProvider({ children }: any) {
   };
 
   const resetUser = async () => {
-    const auth = (await getAuth()).auth;
+    const auth = (await getAuthModule()).auth;
     await auth.signOut();
     setUser(null);
     setUserToken(null);
