@@ -62,18 +62,20 @@ export async function proxy(request: NextRequest) {
 
   updateServerTime('regular-middleware', startTime, response);
 
-  let ip =
-    requestIp.getClientIp(request as any) || request.headers.get('X-Forwarded-For')?.split(',')[0];
-  ip = ip ? normalizeIP(ip) : undefined;
+  const { score, isLikely: isBrowser } = isLikelyBrowser(request);
+  request.headers.set('x-itemdb-score', score.toString());
+  request.headers.set('x-itemdb-likely', isBrowser ? 'true' : 'false');
 
-  const hasCookie = !!request.cookies.get('itemdb-proof')?.value;
-  if (isLikelyBrowser(request).isLikely && !hasCookie) {
-    const proof = generateSiteProof(ip);
+  const hasCookie = request.cookies.has('itemdb-proof');
+  if (isBrowser && !hasCookie) {
+    const proof = generateSiteProof();
     response.cookies.set({
       name: 'itemdb-proof',
       value: proof.token,
       maxAge: proof.expiresIn,
-      sameSite: 'strict',
+      secure: true,
+      sameSite: 'lax',
+      httpOnly: false,
     });
   }
 
@@ -124,7 +126,9 @@ export const apiMiddleware = async (request: NextRequest) => {
     requestIp.getClientIp(request as any) || request.headers.get('X-Forwarded-For')?.split(',')[0];
   ip = ip ? normalizeIP(ip) : undefined;
 
-  const isBrowser = isLikelyBrowser(request).isLikely;
+  const { score, isLikely: isBrowser } = isLikelyBrowser(request);
+  request.headers.set('x-itemdb-score', score.toString());
+  request.headers.set('x-itemdb-likely', isBrowser ? 'true' : 'false');
 
   // request is trusted if it has a valid site proof, skip all checks
   const itemdb_proof = request.headers.get('x-itemdb-proof');
@@ -136,12 +140,14 @@ export const apiMiddleware = async (request: NextRequest) => {
 
     // check if proof is close to expiration, if so, refresh it
     if (!verifySiteProof(itemdb_proof, 300) && isBrowser) {
-      const proof = generateSiteProof(ip, 'long');
+      const proof = generateSiteProof('long');
       response.cookies.set({
         name: 'itemdb-proof',
         value: proof.token,
         maxAge: proof.expiresIn,
-        sameSite: 'strict',
+        secure: true,
+        sameSite: 'lax',
+        httpOnly: false,
       });
     }
 

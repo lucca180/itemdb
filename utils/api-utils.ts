@@ -8,13 +8,12 @@ import { Chance } from 'chance';
 const chance = new Chance();
 
 // ------- site proof ---------- //
-export function generateSiteProof(ip?: string, type = 'short') {
+export function generateSiteProof(type = 'short') {
   const expiration = type === 'short' ? 5 : 30;
   return {
     token: jwt.sign(
       {
         aud: 'itemdb.com.br',
-        ip: ip || null,
         ctx: 'browser',
       },
       process.env.SITE_PROOF_SECRET!,
