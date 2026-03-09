@@ -25,7 +25,24 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
   return res.status(200).json(sorted);
 }
 
-const client = getClient();
+export const getUmamiEnv = () => {
+  const suffix = Date.now() > Number(process.env.UMAMI_SWITCH_STOP || Infinity) ? '_2' : '';
+
+  return {
+    url: process.env[`NEXT_PUBLIC_UMAMI_URL${suffix}`] || '',
+    id: process.env[`NEXT_PUBLIC_UMAMI_ID${suffix}`] || '',
+    user_id: process.env[`UMAMI_API_CLIENT_USER_ID${suffix}`] || '',
+    secret: process.env[`UMAMI_API_CLIENT_SECRET${suffix}`] || '',
+    endpoint: process.env[`UMAMI_API_CLIENT_ENDPOINT${suffix}`] || '',
+  };
+};
+
+const env = getUmamiEnv();
+const client = getClient({
+  userId: env.user_id,
+  secret: env.secret,
+  apiEndpoint: env.endpoint,
+});
 
 type WebsiteMetrics = {
   data: {

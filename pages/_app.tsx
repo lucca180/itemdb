@@ -56,9 +56,9 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
             <DefaultSeo {...getDefaultSEO(router.locale ?? 'en')} />
             {getLayout(<Component {...pageProps} />, pageProps)}
             <Script
-              src={'https://umami.itemdb.com.br/plutonita.js'}
-              data-website-id={process.env.NEXT_PUBLIC_UMAMI_ID}
-              data-host-url={'https://umami.itemdb.com.br'}
+              src={process.env.NEXT_PUBLIC_UMAMI_URL_2 + '/plutonita.js'}
+              data-website-id={process.env.NEXT_PUBLIC_UMAMI_ID_2}
+              data-host-url={process.env.NEXT_PUBLIC_UMAMI_URL_2}
               data-before-send="beforeSendHandler"
               defer
             />
