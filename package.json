@@ -60,7 +60,6 @@
     "jsonwebtoken": "^9.0.3",
     "lightweight-charts": "^4.2.2",
     "lodash": "^4.17.23",
-    "lru-cache": "^11.2.6",
     "mailgen": "^2.0.32",
     "next": "16.1.6",
     "next-intl": "^4.3.9",

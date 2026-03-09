@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 import requestIp from 'request-ip';
-import { LRUCache } from 'lru-cache';
 import * as Redis from '@utils/redis';
 import {
   generateSiteProof,
@@ -11,6 +10,7 @@ import {
   verifySiteProof,
 } from '@utils/api-utils';
 import * as Sentry from '@sentry/nextjs';
+import { checkSession } from '@utils/redis';
 
 const API_SKIPS = {
   GET: [/^\/api\/auth.*$/, /^\/api\/widget.*$/, /^\/api\/build-id.*$/],
@@ -22,10 +22,6 @@ const API_SKIPS = {
     /^\/api\/v1\/items\/open$/,
   ],
 } as const;
-
-const sessionCache = new LRUCache({
-  max: 1000,
-});
 
 const PUBLIC_FILE = /\.(.*)$/;
 const VALID_LOCALES = ['en', 'pt'];
@@ -177,24 +173,10 @@ export const apiMiddleware = async (request: NextRequest) => {
   // request is coming from a cross-origin source (probably userscripts)
   const sessionCookie = request.cookies.get('idb-session-id');
   if (isBrowser) {
-    // console.log('[Warning] - Request without valid proof, but has browser-like headers.');
-    const cacheSession = sessionCache.get(sessionCookie?.value || '');
-
-    if (cacheSession) {
-      updateServerTime('api-middleware', startTime, response);
-      Sentry.metrics.count('api.requests', 1, {
-        attributes: {
-          type: 'cache-session',
-        },
-      });
-      return response;
-    }
-
     if (sessionCookie && sessionCookie.value) {
       try {
-        const sessionId = await Redis.checkSession(sessionCookie.value);
+        const sessionId = await checkSession(sessionCookie.value);
         if (!!sessionId) {
-          sessionCache.set(sessionId, true, { ttl: 1000 * 60 * 30 });
           updateServerTime('api-middleware', startTime, response);
 
           Sentry.metrics.count('api.requests', 1, {

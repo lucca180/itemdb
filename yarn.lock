@@ -12618,7 +12618,6 @@ __metadata:
     lightweight-charts: "npm:^4.2.2"
     lint-staged: "npm:16.2.7"
     lodash: "npm:^4.17.23"
-    lru-cache: "npm:^11.2.6"
     mailgen: "npm:^2.0.32"
     next: "npm:16.1.6"
     next-intl: "npm:^4.3.9"
@@ -13316,13 +13315,6 @@ __metadata:
   version: 11.2.2
   resolution: "lru-cache@npm:11.2.2"
   checksum: 10c0/72d7831bbebc85e2bdefe01047ee5584db69d641c48d7a509e86f66f6ee111b30af7ec3bd68a967d47b69a4b1fa8bbf3872630bd06a63b6735e6f0a5f1c8e83d
-  languageName: node
-  linkType: hard
-
-"lru-cache@npm:^11.2.6":
-  version: 11.2.6
-  resolution: "lru-cache@npm:11.2.6"
-  checksum: 10c0/73bbffb298760e71b2bfe8ebc16a311c6a60ceddbba919cfedfd8635c2d125fbfb5a39b71818200e67973b11f8d59c5a9e31d6f90722e340e90393663a66e5cd
   languageName: node
   linkType: hard
 
