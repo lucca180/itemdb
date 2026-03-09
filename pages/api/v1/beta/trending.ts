@@ -30,10 +30,11 @@ export const getUmamiEnv = () => {
 
   return {
     url: process.env[`NEXT_PUBLIC_UMAMI_URL${suffix}`] || '',
-    id: process.env[`NEXT_PUBLIC_UMAMI_ID${suffix}`] || '',
+    site_id: process.env[`NEXT_PUBLIC_UMAMI_ID${suffix}`] || '',
     user_id: process.env[`UMAMI_API_CLIENT_USER_ID${suffix}`] || '',
     secret: process.env[`UMAMI_API_CLIENT_SECRET${suffix}`] || '',
     endpoint: process.env[`UMAMI_API_CLIENT_ENDPOINT${suffix}`] || '',
+    type: !suffix ? 'url' : 'path',
   };
 };
 
@@ -52,10 +53,10 @@ type WebsiteMetrics = {
 };
 
 export const getTrendingItems = async (limit: number) => {
-  const statsRes = (await client.getWebsiteMetrics('df660da1-6f93-4dda-9da5-5028fb9db292', {
+  const statsRes = (await client.getWebsiteMetrics(env.site_id, {
     startAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).getTime(),
     endAt: Date.now(),
-    type: 'url',
+    type: env.type,
     // @ts-expect-error missing type
     search: 'item/',
     limit: limit + 10,
@@ -88,10 +89,10 @@ const FEATURED_SLUGS = process.env.FEATURED_LISTS?.split(',') ?? [];
 const FEATURED_UNTIL = process.env.FEATURED_UNTIL ? Number(process.env.FEATURED_UNTIL) : null;
 
 export const getTrendingLists = async (limit: number, excludeCats: string[] = []) => {
-  const statsRes = (await client.getWebsiteMetrics('df660da1-6f93-4dda-9da5-5028fb9db292', {
+  const statsRes = (await client.getWebsiteMetrics(env.site_id, {
     startAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).getTime(),
     endAt: Date.now(),
-    type: 'url',
+    type: env.type,
     // @ts-expect-error missing type
     search: '/lists/official/',
     limit: limit * 3,
@@ -143,10 +144,10 @@ export const getTrendingLists = async (limit: number, excludeCats: string[] = []
 };
 
 export const getTrendingShops = async (limit: number) => {
-  const statsRes = (await client.getWebsiteMetrics('df660da1-6f93-4dda-9da5-5028fb9db292', {
+  const statsRes = (await client.getWebsiteMetrics(env.site_id, {
     startAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).getTime(),
     endAt: Date.now(),
-    type: 'url',
+    type: env.type,
     // @ts-expect-error missing type
     search: 'restock/',
     limit: limit * 2,
