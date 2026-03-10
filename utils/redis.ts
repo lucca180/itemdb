@@ -105,9 +105,10 @@ export const redis_setItemCount = async (
       const ttl = Math.min(jitter, 2 * 60 * 60); // maximum 2 hours (may change latter)
 
       await redis.set(`ban:${ip}`, newVal, 'EX', ttl);
-
       await redis.incr(`bCount:${ip}`);
       await redis.expire(`bCount:${ip}`, 15 * 24 * 60 * 60);
+      await redis.expire(ip, Math.min(ttl, 30 * 60));
+
       return;
     }
 
