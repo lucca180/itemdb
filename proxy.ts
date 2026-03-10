@@ -91,17 +91,18 @@ export async function proxy(request: NextRequest) {
 // ---------- API Middleware ---------- //
 
 export const apiMiddleware = async (request: NextRequest) => {
-  const response = NextResponse.next();
-  addCors(request, response);
-  if (isDev) return response;
+  const { requestHeaders, response } = createForwardedContext(request);
+  if (isDev) return finalizeApiResponse(request, response);
   // Skip rate limit if key is provided
   if (request.headers.get('x-tarnum-skip') === process.env.TARNUM_KEY) {
-    return response;
+    return finalizeApiResponse(request, response);
   }
 
   if (request.method === 'OPTIONS') {
-    return response;
+    return finalizeApiResponse(request, response);
   }
+
+  const startTime = Date.now();
 
   //check if request pathname has a skip route
   const skips = API_SKIPS[request.method as keyof typeof API_SKIPS] || [];
@@ -113,25 +114,23 @@ export const apiMiddleware = async (request: NextRequest) => {
         type: 'skip-route',
       },
     });
-    return response;
+    return finalizeApiResponse(request, response, startTime);
   }
-
-  const startTime = Date.now();
 
   let ip =
     requestIp.getClientIp(request as any) || request.headers.get('X-Forwarded-For')?.split(',')[0];
   ip = ip ? normalizeIP(ip) : undefined;
 
   const { score, isLikely: isBrowser } = isLikelyBrowser(request);
-  request.headers.set('x-itemdb-score', score.toString());
-  request.headers.set('x-itemdb-likely', isBrowser ? 'true' : 'false');
+  requestHeaders.set('x-itemdb-score', score.toString());
+  requestHeaders.set('x-itemdb-likely', isBrowser ? 'true' : 'false');
 
   // request is trusted if it has a valid site proof, skip all checks
   const itemdb_proof = request.headers.get('x-itemdb-proof');
-  request.headers.delete('x-itemdb-valid');
+  requestHeaders.delete('x-itemdb-valid');
   if (itemdb_proof && verifySiteProof(itemdb_proof)) {
     // set on both request and response (redis func uses this)
-    request.headers.set('x-itemdb-valid', 'true');
+    requestHeaders.set('x-itemdb-valid', 'true');
     response.headers.set('x-itemdb-valid', 'true');
 
     // check if proof is close to expiration, if so, refresh it
@@ -153,8 +152,7 @@ export const apiMiddleware = async (request: NextRequest) => {
       },
     });
 
-    updateServerTime('api-middleware', startTime, response);
-    return response;
+    return finalizeApiResponse(request, response, startTime);
   } else if (itemdb_proof) {
     response.cookies.set({ name: 'itemdb-proof', value: '', maxAge: 0 });
   }
@@ -165,13 +163,16 @@ export const apiMiddleware = async (request: NextRequest) => {
       await Redis.checkBan(ip);
     } catch (e) {
       if (e === Redis.API_ERROR_CODES.limitExceeded) {
-        updateServerTime('api-middleware', startTime, response);
         Sentry.metrics.count('api.requests', 1, {
           attributes: {
             type: 'rate-limited-request',
           },
         });
-        return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+        return finalizeApiResponse(
+          request,
+          NextResponse.json({ error: 'Too many requests' }, { status: 429 }),
+          startTime
+        );
       }
     }
   }
@@ -181,17 +182,15 @@ export const apiMiddleware = async (request: NextRequest) => {
   if (isBrowser) {
     if (sessionCookie && sessionCookie.value) {
       try {
-        const sessionId = await checkSession(sessionCookie.value);
+        const sessionId = checkSession(sessionCookie.value);
         if (!!sessionId) {
-          updateServerTime('api-middleware', startTime, response);
-
           Sentry.metrics.count('api.requests', 1, {
             attributes: {
               type: 'session',
             },
           });
 
-          return response;
+          return finalizeApiResponse(request, response, startTime);
         } else if (!sessionId) {
           // if session is invalid, clear cookies
           response.cookies.set({ name: 'idb-session-id', value: '', maxAge: 0 });
@@ -200,8 +199,7 @@ export const apiMiddleware = async (request: NextRequest) => {
       } catch (e) {
         console.error('Error validating session in middleware', e);
         if (e === Redis.API_ERROR_CODES.noRedis) {
-          updateServerTime('api-middleware', startTime, response);
-          return response;
+          return finalizeApiResponse(request, response, startTime);
         }
       }
     }
@@ -214,23 +212,32 @@ export const apiMiddleware = async (request: NextRequest) => {
     try {
       const keyData = await Redis.checkApiToken(apiToken);
       if (keyData) {
-        updateServerTime('api-middleware', startTime, response);
         Sentry.metrics.count('api.requests', 1, {
           attributes: {
             type: 'api-token',
           },
         });
-        return response;
+        return finalizeApiResponse(request, response, startTime);
       }
     } catch (e) {
+      if (e === Redis.API_ERROR_CODES.noRedis) {
+        return finalizeApiResponse(request, response, startTime);
+      }
+
       if (e === Redis.API_ERROR_CODES.limitExceeded) {
-        updateServerTime('api-middleware', startTime, response);
-        return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+        return finalizeApiResponse(
+          request,
+          NextResponse.json({ error: 'Too many requests' }, { status: 429 }),
+          startTime
+        );
       }
 
       if (e === Redis.API_ERROR_CODES.invalidKey) {
-        updateServerTime('api-middleware', startTime, response);
-        return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
+        return finalizeApiResponse(
+          request,
+          NextResponse.json({ error: 'Invalid API key' }, { status: 401 }),
+          startTime
+        );
       }
     }
   }
@@ -252,8 +259,7 @@ export const apiMiddleware = async (request: NextRequest) => {
 
   // return NextResponse.json({ error: 'Invalid access' }, { status: 401 });
 
-  updateServerTime('api-middleware', startTime, response);
-  return response;
+  return finalizeApiResponse(request, response, startTime);
 };
 
 const updateServerTime = (label: string, startTime: number, response: NextResponse) => {
@@ -266,6 +272,27 @@ const updateServerTime = (label: string, startTime: number, response: NextRespon
     ? `${serverTime}, ${label};dur=${value}`
     : `${label};dur=${value}`;
   response.headers.set('Server-Timing', newServerTime);
+};
+
+const createForwardedContext = (request: NextRequest) => {
+  const requestHeaders = new Headers(request.headers);
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
+
+  return { requestHeaders, response };
+};
+
+const finalizeApiResponse = (request: NextRequest, response: NextResponse, startTime?: number) => {
+  addCors(request, response);
+
+  if (startTime !== undefined) {
+    updateServerTime('api-middleware', startTime, response);
+  }
+
+  return response;
 };
 
 const allowedOrigins = [

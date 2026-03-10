@@ -14,7 +14,6 @@ export const API_ERROR_CODES = {
   noRedis: 'no-redis',
   invalidKey: 'invalid-key',
   limitExceeded: 'limit-exceeded',
-  invalidSession: 'invalid-session',
 } as const;
 
 export let redis: RedisRaw;
@@ -26,14 +25,14 @@ if (
   process.env.REDIS_PASSWORD
 ) {
   redis = new RedisRaw({
-    port: process.env.REDIS_PORT as unknown as number,
+    port: Number(process.env.REDIS_PORT),
     host: process.env.REDIS_HOST,
     password: process.env.REDIS_PASSWORD,
     enableAutoPipelining: true,
   });
 }
 
-export const createSession = async (logged = false) => {
+export const createSession = (logged = false) => {
   const limit = logged ? 10000 : 3000; // ----> change on new version
   const session = generateSessionToken(limit, logged ? SESSION_EXPIRE_LOGGED : SESSION_EXPIRE);
 
@@ -44,7 +43,7 @@ export const createSession = async (logged = false) => {
   };
 };
 
-export const checkSession = async (sessionToken: string) => {
+export const checkSession = (sessionToken: string) => {
   const payload = verifySessionToken(sessionToken);
   if (!payload || !payload.sub) return false;
 
@@ -54,6 +53,7 @@ export const checkSession = async (sessionToken: string) => {
 export const checkBan = async (ip?: string) => {
   if (!redis) return;
   ip = ip ? normalizeIP(ip) : undefined;
+  if (!ip) return;
   const isBanned = await redis.get(`ban:${ip}`);
 
   if (isBanned) throw API_ERROR_CODES.limitExceeded;
@@ -91,6 +91,9 @@ export const redis_setItemCount = async (
     }
 
     ip = normalizeIP(ip);
+
+    if (!ip) return;
+
     const newVal = await redis.incrby(ip, itemCount);
 
     if (newVal >= limit) {
@@ -122,12 +125,17 @@ export const redis_setItemCount = async (
 
 export const checkApiToken = async (token: string) => {
   if (!redis) throw API_ERROR_CODES.noRedis;
-  if (!token) return API_ERROR_CODES.invalidKey;
+  if (!token) throw API_ERROR_CODES.invalidKey;
 
+  // we already validated the token in middleware,
+  // so we can just decode it here
   const payload = jwt.decode(token) as jwt.JwtPayload | null;
-  if (!payload || !payload.sub) return API_ERROR_CODES.invalidKey;
+  if (!payload || !payload.sub || payload.limit === undefined || payload.limit === null)
+    throw API_ERROR_CODES.invalidKey;
   const keyId = payload.sub;
-  const limit = payload.limit;
+  const limit = Number(payload.limit);
+
+  if (Number.isNaN(limit)) throw API_ERROR_CODES.invalidKey;
 
   if (limit === -1) return true; // unlimited key
 
@@ -142,22 +150,30 @@ export const checkApiToken = async (token: string) => {
   }
 
   await redis.set(`apiKey:${keyId}`, 0, 'EX', 24 * 60 * 60);
+
+  return true;
 };
 
 const incrementApiKey = async (token: string | null | undefined, incrementBy: number) => {
   if (!token || !redis) return;
 
   const payload = jwt.decode(token) as jwt.JwtPayload | null;
-  if (!payload || !payload.sub || !payload.limit) return;
+  if (!payload || !payload.sub || payload.limit === undefined || payload.limit === null) {
+    throw API_ERROR_CODES.invalidKey;
+  }
   const keyId = payload.sub;
-  const limit = payload.limit;
+  const limit = Number(payload.limit);
+
+  if (Number.isNaN(limit)) {
+    throw API_ERROR_CODES.invalidKey;
+  }
 
   const newVal = await redis.incrby(`apiKey:${keyId}`, incrementBy);
   await redis.expire(`apiKey:${keyId}`, 30 * 60);
 
-  if (limit === '-1') return; // unlimited key
+  if (limit === -1) return; // unlimited key
 
-  if (limit && newVal >= parseInt(limit)) {
+  if (limit && newVal >= limit) {
     throw API_ERROR_CODES.limitExceeded;
   }
 
