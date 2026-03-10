@@ -34,7 +34,7 @@ if (
 }
 
 export const createSession = async (logged = false) => {
-  const limit = logged ? 10000 : 2000; // ----> change on new version
+  const limit = logged ? 10000 : 3000; // ----> change on new version
   const session = generateSessionToken(limit, logged ? SESSION_EXPIRE_LOGGED : SESSION_EXPIRE);
 
   return {
@@ -98,10 +98,16 @@ export const redis_setItemCount = async (
       if (isBanned) return;
 
       const banCount = (await redis.get(`bCount:${ip}`)) || '1';
-      await redis.set(`ban:${ip}`, newVal, 'EX', 2 ** Number(banCount) * INITIAL_BAN_MINUTES * 60);
+
+      const base = Number(banCount) ** 2 * INITIAL_BAN_MINUTES * 60;
+      const jitter = Math.floor(base * (0.8 + Math.random() * 0.4));
+
+      const ttl = Math.min(jitter, 2 * 60 * 60); // maximum 2 hours (may change latter)
+
+      await redis.set(`ban:${ip}`, newVal, 'EX', ttl);
 
       await redis.incr(`bCount:${ip}`);
-      await redis.expire(`bCount:${ip}`, 30 * 24 * 60 * 60);
+      await redis.expire(`bCount:${ip}`, 15 * 24 * 60 * 60);
       return;
     }
 
