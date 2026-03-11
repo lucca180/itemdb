@@ -13,6 +13,11 @@ import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import type { NextPage } from 'next';
 import { onIntlError } from '../utils/intlHandler';
+import { installProofInterceptor } from '@utils/http/proofInterceptor';
+
+if (typeof window !== 'undefined') {
+  installProofInterceptor();
+}
 
 const VALID_LOCALES = {
   en: '',
