@@ -40,9 +40,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     if (!listJWT) return res.status(401).json({ error: 'Unauthorized' });
 
-    const listIdFromJWT = verifyListJWT(listJWT);
-
-    if (listIdFromJWT !== list_id) return res.status(401).json({ error: 'Unauthorized' });
+    if (!verifyListJWT(listJWT, list_id)) return res.status(401).json({ error: 'Unauthorized' });
   }
 
   const startTime = performance.now();

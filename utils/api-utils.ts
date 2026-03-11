@@ -14,7 +14,7 @@ export function generateSiteProof(type = 'short') {
     token: jwt.sign(
       {
         aud: 'itemdb.com.br',
-        ctx: 'browser',
+        ctx: 'site-proof',
       },
       process.env.SITE_PROOF_SECRET!,
       { expiresIn: type === 'short' ? '5m' : '30m' }
@@ -28,7 +28,7 @@ export function verifySiteProof(proof: string, maxAge = 0) {
   try {
     const payload = jwt.verify(proof, process.env.SITE_PROOF_SECRET!) as jwt.JwtPayload;
 
-    if (payload.aud !== 'itemdb.com.br') {
+    if (payload.aud !== 'itemdb.com.br' || payload.ctx !== 'site-proof') {
       return false;
     }
 
@@ -165,6 +165,11 @@ export function normalizeIP(ip: string) {
 export function verifyApiToken(token: string) {
   try {
     const payload = jwt.verify(token, process.env.SITE_PROOF_SECRET!) as jwt.JwtPayload;
+
+    if (payload.aud !== 'itemdb.com.br' || payload.ctx !== 'api-token') {
+      return false;
+    }
+
     return payload;
   } catch {
     return false;
@@ -195,16 +200,20 @@ export async function generateListJWT(listId: number, req: NextApiRequest) {
   return { token, list };
 }
 
-export function verifyListJWT(token: string) {
+export function verifyListJWT(token: string, list_id: number) {
   try {
     const payload = jwt.verify(token, process.env.SITE_PROOF_SECRET!) as jwt.JwtPayload;
 
-    if (payload.aud !== 'itemdb.com.br' || payload.ctx !== 'list_access') {
-      return null;
+    if (
+      payload.aud !== 'itemdb.com.br' ||
+      payload.ctx !== 'list_access' ||
+      payload.listId !== list_id
+    ) {
+      return false;
     }
 
-    return payload.listId as number;
+    return true;
   } catch {
-    return null;
+    return false;
   }
 }

@@ -31,14 +31,14 @@ export const generateAPIToken = async (apiKey: string) => {
 
   const token = jwt.sign(
     {
+      aud: 'itemdb.com.br',
+      ctx: 'api-token',
       sub: keyData.key_id,
       limit: keyData.limit,
     },
     process.env.SITE_PROOF_SECRET!,
     {
       expiresIn: '1h',
-      issuer: 'itemdb',
-      audience: 'itemdb-api',
     }
   );
 
