@@ -3,7 +3,7 @@ import type { User as FirebaseUser } from 'firebase/auth';
 import { useAtom } from 'jotai';
 import { atomWithStorage, createJSONStorage } from 'jotai/utils';
 import { User, UserPreferences } from '../types';
-import axios, { InternalAxiosRequestConfig } from 'axios';
+import axios from 'axios';
 import { getCookie } from 'cookies-next/client';
 
 let authModulePromise: Promise<typeof import('./firebase/auth')> | null = null;
@@ -231,23 +231,4 @@ export const useAuth = () => {
 
 const checkEqual = (a: object, b: object) => {
   return JSON.stringify(a) === JSON.stringify(b);
-};
-
-axios.interceptors.request.use((config) => requestInterceptor(config));
-
-export const requestInterceptor = (config: InternalAxiosRequestConfig) => {
-  if (!config) return config;
-
-  const url = new URL(config.url ?? '', window.location.origin);
-
-  const isTrusted = url.origin === window.location.origin || url.hostname.endsWith('itemdb.com.br');
-
-  if (!isTrusted) {
-    return config;
-  }
-
-  const proof = getCookie('itemdb-proof');
-  if (proof) config.headers['X-itemdb-Proof'] = proof;
-
-  return config;
 };

@@ -36,7 +36,7 @@ import { useLists } from '../utils/useLists';
 import queryString from 'query-string';
 import isEqual from 'lodash/isEqual';
 import { loadTranslation } from '@utils/load-translation';
-import { requestInterceptor } from '@utils/auth';
+import { installProofInterceptor } from '@utils/http/proofInterceptor';
 import { generateListJWT } from '@utils/api-utils';
 import { GetServerSidePropsContext } from 'next/types';
 import { ListBreadcrumb } from '@components/Breadcrumbs/ListBreadcrumb';
@@ -52,7 +52,7 @@ const itemdb = axios.create({
   baseURL: '/api/v1/',
 });
 
-itemdb.interceptors.request.use((config) => requestInterceptor(config));
+installProofInterceptor(itemdb);
 
 itemdb.interceptors.response.use(
   (response) => response,
