@@ -36,8 +36,8 @@
     "@json2csv/node": "^7.0.6",
     "@microlink/react-json-view": "^1.27.1",
     "@napi-rs/canvas": "^0.1.93",
-    "@prisma/adapter-mariadb": "7.5.0",
-    "@prisma/client": "7.5.0",
+    "@prisma/adapter-mariadb": "7.4.2",
+    "@prisma/client": "7.4.2",
     "@sentry/nextjs": "^10.43.0",
     "@tycrek/discord-hookr": "^0.1.0",
     "@umami/api-client": "^0.80.0",
@@ -114,7 +114,7 @@
     "jsdom": "^27.2.0",
     "lint-staged": "16.2.7",
     "prettier": "3.8.1",
-    "prisma": "7.5.0",
+    "prisma": "7.4.2",
     "ts-node": "10.9.2",
     "tsc-files": "^1.1.4",
     "typescript": "^5.9.3",
@@ -128,9 +128,6 @@
       "npx prettier --write",
       "yarn lint-fix"
     ]
-  },
-  "engines": {
-    "node": ">=22.0.0"
   },
   "packageManager": "yarn@4.12.0",
   "resolutions": {
