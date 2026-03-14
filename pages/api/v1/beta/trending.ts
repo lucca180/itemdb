@@ -26,7 +26,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
 }
 
 export const getUmamiEnv = () => {
-  const suffix = Date.now() > Number(process.env.UMAMI_SWITCH_STOP || Infinity) ? '_2' : '';
+  const suffix = '_2';
 
   return {
     url: process.env[`NEXT_PUBLIC_UMAMI_URL${suffix}`] || '',
