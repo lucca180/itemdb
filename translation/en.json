@@ -504,7 +504,8 @@
     "defense": "Defense",
     "reflect": "Reflect",
     "others": "Others",
-    "clear": "Clear"
+    "clear": "Clear",
+    "item": "Item"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",

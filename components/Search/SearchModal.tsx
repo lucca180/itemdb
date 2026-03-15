@@ -31,7 +31,7 @@ import { slugify } from '@utils/utils';
 import axios from 'axios';
 import debounce from 'lodash/debounce';
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { GrSearchAdvanced } from 'react-icons/gr';
 import { IoSearchOutline } from 'react-icons/io5';
 import { MdArrowDownward, MdArrowUpward, MdOutlineKeyboardReturn } from 'react-icons/md';
@@ -43,12 +43,14 @@ import { useTranslations } from 'next-intl';
 type SearchCard =
   | { index: number; type: 'item'; data: ItemData }
   | { index: number; type: 'list'; data: UserList }
+  | { index: number; type: 'my-lists'; data: UserList }
   | { index: number; type: 'shop'; data: ShopInfo }
   | { index: number; type: 'search'; query: string; url: string };
 
 type SearchResult = {
   items: ItemData[];
-  lists: UserList[];
+  officialLists: UserList[];
+  userLists: UserList[];
   restockShop: ShopInfo[];
 };
 
@@ -72,8 +74,9 @@ export const SearchModal = (props: SearchModalProps) => {
   const items = searchCards.filter((card) => card.type === 'item');
   const lists = searchCards.filter((card) => card.type === 'list');
   const shops = searchCards.filter((card) => card.type === 'shop');
-  let latestKey = 0;
+  const myLists = searchCards.filter((card) => card.type === 'my-lists');
 
+  let latestVersion = 0;
   const latestSearches = useMemo(() => {
     if (typeof window === 'undefined') return [];
     try {
@@ -86,10 +89,10 @@ export const SearchModal = (props: SearchModalProps) => {
     } catch {
       return [];
     }
-  }, [latestKey]);
+  }, [latestVersion]);
 
   const showJumpTo =
-    [items.length, lists.length, shops.length].filter((x) => Boolean(x)).length > 1;
+    [items.length, lists.length, shops.length, myLists.length].filter((x) => Boolean(x)).length > 1;
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -97,66 +100,70 @@ export const SearchModal = (props: SearchModalProps) => {
     setSearch((router.query.s as string) ?? '');
   }, [router.isReady, router.query.s, isOpen]);
 
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.target && (e.target as HTMLElement).id !== 'omni-search') return;
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (!isOpen) return;
+      if (e.target && (e.target as HTMLElement).id !== 'omni-search') return;
 
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
+      const cardList = searchCards.length > 0 ? searchCards : latestSearches;
+      const maxIndex = cardList.length;
 
-      setFocusedIndex((prev) => {
-        return Math.min(prev + 1, searchCards.length || latestSearches.length);
-      });
-    }
-
-    if (e.key === 'ArrowUp') {
-      e.preventDefault();
-
-      setFocusedIndex((prev) => {
-        return Math.max(prev - 1, 0);
-      });
-    }
-
-    if (e.key === 'Enter') {
-      e.preventDefault();
-
-      setFocusedIndex((current) => {
-        if (current === 0) {
-          goAdvancedSearch();
-
-          setLatest({ type: 'search', query: search, index: 0, url: getSearchUrl(search) });
-
-          return current;
+      switch (e.key) {
+        case 'ArrowDown': {
+          e.preventDefault();
+          setFocusedIndex((prev) => Math.min(prev + 1, maxIndex));
+          break;
         }
-        const cardList = searchCards.length > 0 ? searchCards : latestSearches.slice().reverse();
-        const card = cardList.find((c) => c.index === current);
-
-        if (card) {
-          let url = '';
-          if (card.type === 'item') {
-            url = `/item/${card.data.slug}`;
-          } else if (card.type === 'list') {
-            url = getListLink(card.data);
-          } else if (card.type === 'shop') {
-            url = `/restock/${slugify(card.data.name)}`;
-          }
-          if (url) {
-            setLatest(card);
-            router.push(url);
-            onClose();
-          }
+        case 'ArrowUp': {
+          e.preventDefault();
+          setFocusedIndex((prev) => Math.max(prev - 1, 0));
+          break;
         }
+        case 'Enter': {
+          e.preventDefault();
 
-        return current;
-      });
-    }
-  };
+          setFocusedIndex((current) => {
+            if (current === 0) {
+              const searchValue = search.trim();
+              if (!searchValue) return current;
 
-  const setListeners = () => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  };
+              const searchUrl = getSearchUrl(searchValue);
+              setLatest({ type: 'search', query: searchValue, index: 0, url: searchUrl });
+              router.push(searchUrl);
+              onClose();
+              return current;
+            }
+
+            const card = cardList.find((c) => c.index === current);
+            if (!card) return current;
+
+            let url = '';
+            if (card.type === 'item') {
+              url = `/item/${card.data.slug}`;
+            } else if (card.type === 'list' || card.type === 'my-lists') {
+              url = getListLink(card.data);
+            } else if (card.type === 'shop') {
+              url = `/restock/${slugify(card.data.name)}`;
+            } else if (card.type === 'search') {
+              url = card.url;
+            }
+
+            if (url) {
+              setLatest(card);
+              router.push(url);
+              onClose();
+            }
+
+            return current;
+          });
+          break;
+        }
+        default:
+          break;
+      }
+    },
+    [isOpen, latestSearches, onClose, router, search, searchCards]
+  );
 
   useEffect(() => {
     document.getElementById(`omni-search-el-${focusedIndex}`)?.scrollIntoView({
@@ -166,10 +173,14 @@ export const SearchModal = (props: SearchModalProps) => {
   }, [focusedIndex]);
 
   useEffect(() => {
-    const cleanup = setListeners();
+    if (!isOpen) return;
 
-    return cleanup;
-  }, [searchCards]);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyDown, isOpen]);
 
   const clearSearch = () => {
     setSearch('');
@@ -214,7 +225,8 @@ export const SearchModal = (props: SearchModalProps) => {
 
       const cards: SearchCard[] = [
         ...result.items.map((item) => ({ index: i++, type: 'item', data: item }) as const),
-        ...result.lists.map((list) => ({ index: i++, type: 'list', data: list }) as const),
+        ...result.officialLists.map((list) => ({ index: i++, type: 'list', data: list }) as const),
+        ...result.userLists.map((list) => ({ index: i++, type: 'my-lists', data: list }) as const),
         ...result.restockShop.map((shop) => ({ index: i++, type: 'shop', data: shop }) as const),
       ];
 
@@ -264,7 +276,10 @@ export const SearchModal = (props: SearchModalProps) => {
         if (c.type === 'item' && card.type === 'item') {
           return c.data.internal_id === card.data.internal_id;
         }
-        if (c.type === 'list' && card.type === 'list') {
+        if (
+          (c.type === 'list' && card.type === 'list') ||
+          (c.type === 'my-lists' && card.type === 'my-lists')
+        ) {
           return c.data.internal_id === card.data.internal_id;
         }
         if (c.type === 'shop' && card.type === 'shop') {
@@ -285,10 +300,11 @@ export const SearchModal = (props: SearchModalProps) => {
       arr.unshift(card);
 
       localStorage.setItem('omni_latestSearches', JSON.stringify(arr));
-      latestKey++;
     } catch (e) {
       console.error('Failed to set latest search', e);
       localStorage.removeItem('omni_latestSearches');
+    } finally {
+      latestVersion++;
     }
   };
 
@@ -327,13 +343,6 @@ export const SearchModal = (props: SearchModalProps) => {
     paramsString = paramsString ? '&' + paramsString : '';
 
     return `/search?s=${encodeURIComponent(query)}${paramsString}`;
-  };
-
-  const goAdvancedSearch = () => {
-    const url = getSearchUrl();
-
-    router.push(url);
-    onClose();
   };
 
   return (
@@ -394,6 +403,7 @@ export const SearchModal = (props: SearchModalProps) => {
                   query={search}
                   index={0}
                   isFocus={focusedIndex === 0}
+                  url={getSearchUrl()}
                   onClick={() =>
                     handleClick({
                       type: 'search',
@@ -402,7 +412,6 @@ export const SearchModal = (props: SearchModalProps) => {
                       url: getSearchUrl(search),
                     })
                   }
-                  url={getSearchUrl()}
                 />
               </Flex>
             </Flex>
@@ -417,17 +426,19 @@ export const SearchModal = (props: SearchModalProps) => {
                   if (card.type === 'item') {
                     return (
                       <SearchItem
+                        showLabel
                         key={index}
                         index={index + 1}
-                        isFocus={focusedIndex === index + 1}
                         item={card.data}
+                        isFocus={focusedIndex === index + 1}
                         onClick={() => handleClick(card)}
                       />
                     );
                   }
-                  if (card.type === 'list') {
+                  if (card.type === 'list' || card.type === 'my-lists') {
                     return (
                       <SearchList
+                        showLabel
                         key={index}
                         index={index + 1}
                         isFocus={focusedIndex === index + 1}
@@ -439,6 +450,7 @@ export const SearchModal = (props: SearchModalProps) => {
                   if (card.type === 'shop') {
                     return (
                       <SearchShop
+                        showLabel
                         key={index}
                         index={index + 1}
                         isFocus={focusedIndex === index + 1}
@@ -453,9 +465,9 @@ export const SearchModal = (props: SearchModalProps) => {
                         key={index}
                         index={index + 1}
                         isFocus={focusedIndex === index + 1}
+                        url={card.url}
                         query={card.query}
                         onClick={() => handleClick(card)}
-                        url={card.url}
                       />
                     );
                   }
@@ -490,7 +502,7 @@ export const SearchModal = (props: SearchModalProps) => {
                         colorScheme="green"
                         onClick={() => jumpToType('list')}
                       >
-                        {t('Lists.Lists')}
+                        {t('General.official-lists')}
                       </Button>
                     )}
                     {shops.length > 0 && (
@@ -501,6 +513,16 @@ export const SearchModal = (props: SearchModalProps) => {
                         onClick={() => jumpToType('shop')}
                       >
                         {t('General.restock-shops')}
+                      </Button>
+                    )}
+                    {myLists.length > 0 && (
+                      <Button
+                        size="xs"
+                        variant={'ghost'}
+                        colorScheme="orange"
+                        onClick={() => jumpToType('my-lists')}
+                      >
+                        {t('Layout.my-lists')}
                       </Button>
                     )}
                   </HStack>
@@ -533,7 +555,7 @@ export const SearchModal = (props: SearchModalProps) => {
                 {lists.length > 0 && (
                   <Flex as="section" flexFlow={'column'} gap={2}>
                     <Heading fontSize={'sm'} color="whiteAlpha.700">
-                      {t('Lists.Lists')}
+                      {t('General.official-lists')}
                     </Heading>
                     <Flex
                       flexFlow={'column'}
@@ -570,6 +592,29 @@ export const SearchModal = (props: SearchModalProps) => {
                           isFocus={focusedIndex === card.index}
                           key={card.data.id}
                           shop={card.data}
+                          onClick={() => handleClick(card)}
+                        />
+                      ))}
+                    </Flex>
+                  </Flex>
+                )}
+                {myLists.length > 0 && (
+                  <Flex as="section" flexFlow={'column'} gap={2}>
+                    <Heading fontSize={'sm'} color="whiteAlpha.700">
+                      {t('Layout.my-lists')}
+                    </Heading>
+                    <Flex
+                      flexFlow={'column'}
+                      gap={2}
+                      role="listbox"
+                      aria-labelledby="omni-search-label"
+                    >
+                      {myLists.map((card) => (
+                        <SearchList
+                          index={card.index}
+                          isFocus={focusedIndex === card.index}
+                          key={card.data.internal_id}
+                          list={card.data}
                           onClick={() => handleClick(card)}
                         />
                       ))}
@@ -619,12 +664,15 @@ const SearchItem = ({
   isFocus,
   index,
   onClick,
+  showLabel,
 }: {
   item: ItemData;
   isFocus: boolean;
   index: number;
   onClick: () => void;
+  showLabel?: boolean;
 }) => {
+  const t = useTranslations();
   return (
     <>
       <ItemCtxMenu
@@ -669,14 +717,21 @@ const SearchItem = ({
               aria-hidden
             />
           </Link>
-          <HStack alignItems={'baseline'} gap={2}>
-            <Link href={`/item/${item.slug}`} prefetch={false} onClick={onClick}>
-              <Text fontSize="sm" color="whiteAlpha.900">
-                {item.name}
-              </Text>
-            </Link>
-            <ItemCardBadge item={item} />
-          </HStack>
+          <Link href={`/item/${item.slug}`} prefetch={false} onClick={onClick}>
+            <VStack alignItems={'flex-start'} gap={0}>
+              {showLabel && (
+                <Text fontSize="xs" color="whiteAlpha.600">
+                  {t('General.item')}
+                </Text>
+              )}
+              <HStack alignItems={'baseline'} gap={2}>
+                <Text fontSize="sm" color="whiteAlpha.900">
+                  {item.name}
+                </Text>
+                <ItemCardBadge item={item} />
+              </HStack>
+            </VStack>
+          </Link>
         </Flex>
       </CtxTrigger>
     </>
@@ -688,12 +743,15 @@ const SearchList = ({
   isFocus,
   index,
   onClick,
+  showLabel,
 }: {
   list: UserList;
   isFocus: boolean;
   index: number;
   onClick: () => void;
+  showLabel?: boolean;
 }) => {
+  const t = useTranslations();
   return (
     <Flex
       flex="1"
@@ -710,7 +768,7 @@ const SearchList = ({
     >
       <Link href={getListLink(list)} prefetch={false} aria-hidden tabIndex={-1} onClick={onClick}>
         <Image
-          src={list.coverURL || '/icon.png'}
+          src={list.coverURL || 'https://itemdb.com.br/logo_icon.svg'}
           alt=""
           width={'30px'}
           height={'30px'}
@@ -720,9 +778,16 @@ const SearchList = ({
         />
       </Link>
       <Link href={getListLink(list)} prefetch={false} onClick={onClick}>
-        <Text fontSize="sm" color="whiteAlpha.900">
-          {list.name}
-        </Text>
+        <VStack alignItems={'flex-start'} gap={0}>
+          {showLabel && (
+            <Text fontSize="xs" color="whiteAlpha.600">
+              {t('Lists.List')}
+            </Text>
+          )}
+          <Text fontSize="sm" color="whiteAlpha.900">
+            {list.name}
+          </Text>
+        </VStack>
       </Link>
     </Flex>
   );
@@ -733,12 +798,15 @@ const SearchShop = ({
   isFocus,
   index,
   onClick,
+  showLabel,
 }: {
   shop: ShopInfo;
   isFocus: boolean;
   index: number;
   onClick: () => void;
+  showLabel?: boolean;
 }) => {
+  const t = useTranslations();
   return (
     <Flex
       flex="1"
@@ -770,9 +838,16 @@ const SearchShop = ({
         />
       </Link>
       <Link href={`/restock/${slugify(shop.name)}`} prefetch={false} onClick={onClick}>
-        <Text fontSize="sm" color="whiteAlpha.900">
-          {shop.name}
-        </Text>
+        <VStack alignItems={'flex-start'} gap={0}>
+          {showLabel && (
+            <Text fontSize="xs" color="whiteAlpha.600">
+              {t('General.restock-shop')}
+            </Text>
+          )}
+          <Text fontSize="sm" color="whiteAlpha.900">
+            {shop.name}
+          </Text>
+        </VStack>
       </Link>
     </Flex>
   );
@@ -809,7 +884,7 @@ const SearchQuery = ({
       aria-selected={isFocus}
       onClick={onClick}
     >
-      <Box w="40px" display={'flex'} alignItems="center" justifyContent={'center'}>
+      <Box w="30px" display={'flex'} alignItems="center" justifyContent={'center'}>
         <Icon as={GrSearchAdvanced} boxSize={'20px'} />
       </Box>
       <VStack alignItems={'flex-start'} gap={0}>

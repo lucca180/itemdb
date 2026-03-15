@@ -24,12 +24,11 @@ import {
   shopIDToCategory,
   slugify,
 } from '../../../utils/utils';
-import { defaultFilters } from '../../../utils/parseFilters';
+import { defaultFilters, getFiltersDiff } from '../../../utils/parseFilters';
 import { ReactElement, useEffect, useState } from 'react';
 import { SortSelect } from '../../../components/Input/SortSelect';
 import { SearchList } from '../../../components/Search/SearchLists';
 import axios from 'axios';
-import { getFiltersDiff } from '../../search';
 import { createTranslator, useFormatter, useTranslations } from 'next-intl';
 import { RarityView } from '../../../components/Hubs/Restock/RarityView';
 import { VirtualizedItemList } from '../../../components/Utils/VirtualizedItemList';

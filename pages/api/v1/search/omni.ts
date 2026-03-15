@@ -3,11 +3,12 @@ import queryString from 'query-string';
 import { defaultFilters, parseFilters } from '../../../../utils/parseFilters';
 import { doSearch } from '.';
 import prisma from '../../../../utils/prisma';
-import { UserList } from '../../../../types';
+import { User, UserList } from '../../../../types';
 import Fuse from 'fuse.js';
 import { restockShopInfo } from '../../../../utils/utils';
 import { rawToList } from '@services/ListService';
-import { UserList as RawList, User as RawUser } from '@prisma/generated/client';
+import { Prisma, UserList as RawList, User as RawUser } from '@prisma/generated/client';
+import { CheckAuth } from '@utils/googleCloud';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET' && req.url) return GET(req, res);
@@ -22,6 +23,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
+  let user: User | null = null;
+  try {
+    user = (await CheckAuth(req)).user;
+    if (!user || !user.isAdmin) throw new Error('Unauthorized');
+  } catch (e) {}
+
   const reqQuery = queryString.parse(req.url!.split('?')[1], {
     arrayFormat: 'bracket',
   }) as any;
@@ -33,9 +40,14 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const searchProm = doSearch(query, searchFilters, false);
 
-  const listProm = getListsRaw(query, 5);
+  const officialListsRaw = getListsRaw(query, 5);
+  const userListsRaw = user ? getListsRaw(query, 5, user?.id) : [];
 
-  let [searchRes, listRes] = await Promise.all([searchProm, listProm]);
+  let [searchRes, listRes, userListsRes] = await Promise.all([
+    searchProm,
+    officialListsRaw,
+    userListsRaw,
+  ]);
 
   if (!searchRes.content.length) {
     searchFilters.sortBy = 'name';
@@ -43,7 +55,8 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     searchRes = await doSearch(query, searchFilters, false);
   }
 
-  const userLists: UserList[] = listRes.map((listRaw) => rawToList(listRaw, listRaw.user));
+  const officialLists: UserList[] = listRes.map((listRaw) => rawToList(listRaw, listRaw.user));
+  const userLists: UserList[] = userListsRes.map((listRaw) => rawToList(listRaw, listRaw.user));
 
   const fuze = new Fuse(
     Object.values(restockShopInfo).filter((x) => Number(x.id) > 0),
@@ -57,23 +70,31 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const shop = fuze.search(query);
   const result = shop.map((x) => x.item).slice(0, 2);
 
-  return res.status(200).json({ items: searchRes.content, lists: userLists, restockShop: result });
+  return res.status(200).json({
+    items: searchRes.content,
+    officialLists: officialLists,
+    userLists,
+    restockShop: result,
+  });
 };
 
-const getListsRaw = async (query: string, limit = 3) => {
+const getListsRaw = async (query: string, limit = 3, userId?: string) => {
   const originalQuery = query;
   const [, querySanitized] = parseFilters(originalQuery, false);
   query = querySanitized.trim() ?? '';
 
+  const filter = userId ? Prisma.sql`ul.user_id = ${userId}` : Prisma.sql`ul.official = 1`;
+
   const listsRaw: (RawList & RawUser)[] = await prisma.$queryRaw`
     select ul.*, u.username, u.neo_user, u.last_login from UserList ul 
     left join User u on ul.user_id = u.id
-    where ul.official = 1
-    and (MATCH (ul.name, ul.description) AGAINST (${query} IN NATURAL LANGUAGE MODE) OR ul.name LIKE ${`%${originalQuery}%`} OR ul.description LIKE ${`%${originalQuery}%`})
+    where ${filter}
+    and (MATCH (ul.name, ul.description) AGAINST (${originalQuery} IN NATURAL LANGUAGE MODE) OR ul.name LIKE ${`%${originalQuery}%`} OR ul.description LIKE ${`%${originalQuery}%`})
     order by
       name = ${originalQuery} DESC,
-      match (ul.name) AGAINST (${query} IN NATURAL LANGUAGE MODE) DESC,
+      match (ul.name) AGAINST (${originalQuery} IN NATURAL LANGUAGE MODE) DESC,
       updatedAt DESC
+    LIMIT ${limit}
   `;
 
   return [...listsRaw]

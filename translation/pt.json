@@ -505,7 +505,8 @@
     "defense": "Defesa",
     "others": "Outros",
     "reflect": "Reflexão",
-    "clear": "Limpar"
+    "clear": "Limpar",
+    "item": "Item"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",
