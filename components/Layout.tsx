@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -29,7 +29,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { LoginModalProps } from './Modal/LoginModal';
 import { useAuth } from '../utils/auth';
-import { AiFillHeart } from 'react-icons/ai';
 import { BsBoxArrowInRight, BsFillPersonFill } from 'react-icons/bs';
 import { NextSeo, NextSeoProps } from 'next-seo';
 import { SearchBar } from './Search/SearchBar';
@@ -102,11 +101,6 @@ const Layout = (props: Props) => {
     router.push(router.asPath, router.asPath, { locale: prefLang });
   };
 
-  const onSubmit = (e: any, search: string, params: string) => {
-    e.preventDefault();
-    router.push(`/search?s=${encodeURIComponent(search)}${params}`);
-  };
-
   return (
     <>
       <NextSeo {...props.SEO} />
@@ -148,7 +142,7 @@ const Layout = (props: Props) => {
           </Flex>
           <Flex flex="1 1 auto" justifyContent="center" alignItems="center">
             <Box maxW="650px" h="100%" flex="1">
-              <SearchBar onSubmit={onSubmit} />
+              <SearchBar />
             </Box>
           </Flex>
           <Box
@@ -160,20 +154,6 @@ const Layout = (props: Props) => {
             maxW="30%"
             minW="15%"
           >
-            <Button
-              as={Link}
-              prefetch={false}
-              href="/contribute"
-              colorScheme="whiteAlpha"
-              data-umami-event="heart-button"
-              bg="gray.100"
-              _hover={{ color: 'red.400' }}
-              _active={{ bg: 'gray.200' }}
-              color="red.500"
-              display={{ base: 'none', sm: 'inherit' }}
-            >
-              <Icon as={AiFillHeart} boxSize="18px" />
-            </Button>
             {!user && (
               <Button
                 variant="filled"

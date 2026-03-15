@@ -503,7 +503,8 @@
     "attack": "Attack",
     "defense": "Defense",
     "reflect": "Reflect",
-    "others": "Others"
+    "others": "Others",
+    "clear": "Clear"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",
@@ -1027,7 +1028,12 @@
     "tip-dynamic-lists": "you can create <Link>Dynamic List</Link> to keep it always up to date with your search",
     "tip-price-calculator": "Looking to sell an item? Use our <Link>Price Calculator</Link> to get your TP wishlist / auctions values right",
     "tip-advanced-import": "Want to migrate to itemdb? We can help you migrate your lists from other sites thanks to our <Link>Advanced Import</Link>",
-    "special-list-search": "Special List Search"
+    "special-list-search": "Special List Search",
+    "recent-searches": "Recent Searches",
+    "omni-placeholder": "Search items, lists and restock shops",
+    "jump-to": "Jump to",
+    "navigate": "Navigate",
+    "select": "Select"
   },
   "DynamicList": {
     "addOnly-1": "New items that match the search query <b>will be added</b> to the list.",

@@ -33,7 +33,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const searchProm = doSearch(query, searchFilters, false);
 
-  const listProm = getListsRaw(query);
+  const listProm = getListsRaw(query, 5);
 
   let [searchRes, listRes] = await Promise.all([searchProm, listProm]);
 
@@ -55,7 +55,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   );
 
   const shop = fuze.search(query);
-  const result = shop.map((x) => x.item).slice(0, 1);
+  const result = shop.map((x) => x.item).slice(0, 2);
 
   return res.status(200).json({ items: searchRes.content, lists: userLists, restockShop: result });
 };
@@ -72,6 +72,7 @@ const getListsRaw = async (query: string, limit = 3) => {
     and (MATCH (ul.name, ul.description) AGAINST (${query} IN NATURAL LANGUAGE MODE) OR ul.name LIKE ${`%${originalQuery}%`} OR ul.description LIKE ${`%${originalQuery}%`})
     order by
       name = ${originalQuery} DESC,
+      match (ul.name) AGAINST (${query} IN NATURAL LANGUAGE MODE) DESC,
       updatedAt DESC
   `;
 

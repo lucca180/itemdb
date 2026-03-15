@@ -504,7 +504,8 @@
     "attack": "Ataque",
     "defense": "Defesa",
     "others": "Outros",
-    "reflect": "Reflexão"
+    "reflect": "Reflexão",
+    "clear": "Limpar"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",
@@ -1028,7 +1029,12 @@
     "tip-dynamic-lists": "você pode criar uma <Link>Lista Dinâmica</Link> para mantê-la sempre atualizada com sua busca",
     "tip-advanced-import": "Quer migrar para o itemdb? Podemos te ajudar a migrar suas listas de outros sites usando nossa <Link>Importação Avançada</Link>",
     "tip-price-calculator": "Vai vender um item? Use nossa <Link>Calculadora de Preços</Link> para deixar sua lista de desejos do TP e/ou valores do leilão certinhos",
-    "special-list-search": "Pesquisa Especial de Lista"
+    "special-list-search": "Pesquisa Especial de Lista",
+    "jump-to": "Pular para",
+    "navigate": "Navegar",
+    "omni-placeholder": "Procure por itens, listas e lojas de restock",
+    "recent-searches": "Buscas Recentes",
+    "select": "Selecionar"
   },
   "DynamicList": {
     "addOnly-1": "Novos itens que corresponderem à pesquisa <b>serão adicionados</b> a lista.",

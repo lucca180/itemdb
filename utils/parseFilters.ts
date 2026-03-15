@@ -451,3 +451,21 @@ function removeInvalidParentheses(s: string) {
 
   return s;
 }
+
+export const getFiltersDiff = (
+  a: { [id: string]: any },
+  b?: SearchFilters
+): Partial<SearchFilters> => {
+  if (!b) b = defaultFilters;
+  const keys = Object.keys(b) as (keyof SearchFilters)[];
+  const diff = {} as {
+    [key in keyof SearchFilters]: any;
+  };
+
+  for (const key of keys) {
+    if (a[key] && a[key] != b[key] && JSON.stringify(a[key]) != JSON.stringify(b[key]))
+      diff[key] = a[key];
+  }
+
+  return diff as Partial<SearchFilters>;
+};

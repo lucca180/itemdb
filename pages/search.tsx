@@ -26,7 +26,7 @@ import { SearchFilterModalProps } from '../components/Search/SearchFiltersModal'
 import { BsFilter } from 'react-icons/bs';
 import { SelectItemsCheckbox } from '../components/Input/SelectItemsCheckbox';
 import ListSelect from '../components/UserLists/ListSelect';
-import { defaultFilters } from '../utils/parseFilters';
+import { defaultFilters, getFiltersDiff } from '../utils/parseFilters';
 import { CreateDynamicListButton } from '../components/DynamicLists/CreateButton';
 import Color from 'color';
 import NextLink from 'next/link';
@@ -588,24 +588,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     },
   };
 }
-
-export const getFiltersDiff = (
-  a: { [id: string]: any },
-  b?: SearchFiltersType
-): Partial<SearchFiltersType> => {
-  if (!b) b = defaultFilters;
-  const keys = Object.keys(b) as (keyof SearchFiltersType)[];
-  const diff = {} as {
-    [key in keyof SearchFiltersType]: any;
-  };
-
-  for (const key of keys) {
-    if (a[key] && a[key] != b[key] && JSON.stringify(a[key]) != JSON.stringify(b[key]))
-      diff[key] = a[key];
-  }
-
-  return diff as Partial<SearchFiltersType>;
-};
 
 const shouldUpdateCount = (newFilter: SearchFiltersType, prevFilter: SearchFiltersType | null) => {
   const diff = getFiltersDiff(newFilter, prevFilter ?? undefined);
