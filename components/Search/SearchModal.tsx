@@ -226,8 +226,8 @@ export const SearchModal = (props: SearchModalProps) => {
       const cards: SearchCard[] = [
         ...result.items.map((item) => ({ index: i++, type: 'item', data: item }) as const),
         ...result.officialLists.map((list) => ({ index: i++, type: 'list', data: list }) as const),
-        ...result.userLists.map((list) => ({ index: i++, type: 'my-lists', data: list }) as const),
         ...result.restockShop.map((shop) => ({ index: i++, type: 'shop', data: shop }) as const),
+        ...result.userLists.map((list) => ({ index: i++, type: 'my-lists', data: list }) as const),
       ];
 
       setSearchCards(cards);
@@ -527,7 +527,7 @@ export const SearchModal = (props: SearchModalProps) => {
                     )}
                   </HStack>
                 )}
-                {searchCards.filter((card) => card.type === 'item').length > 0 && (
+                {items.length > 0 && (
                   <Flex as="section" flexFlow={'column'} gap={2}>
                     <Heading fontSize={'sm'} color="whiteAlpha.700">
                       {t('General.items')}
@@ -538,17 +538,15 @@ export const SearchModal = (props: SearchModalProps) => {
                       role="listbox"
                       aria-labelledby="omni-search-label"
                     >
-                      {searchCards
-                        .filter((card) => card.type === 'item')
-                        .map((card) => (
-                          <SearchItem
-                            index={card.index}
-                            isFocus={focusedIndex === card.index}
-                            key={card.data.internal_id}
-                            item={card.data}
-                            onClick={() => handleClick(card)}
-                          />
-                        ))}
+                      {items.map((card) => (
+                        <SearchItem
+                          index={card.index}
+                          isFocus={focusedIndex === card.index}
+                          key={card.data.internal_id}
+                          item={card.data}
+                          onClick={() => handleClick(card)}
+                        />
+                      ))}
                     </Flex>
                   </Flex>
                 )}
