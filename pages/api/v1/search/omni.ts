@@ -3,9 +3,9 @@ import queryString from 'query-string';
 import { defaultFilters, parseFilters } from '../../../../utils/parseFilters';
 import { doSearch } from '.';
 import prisma from '../../../../utils/prisma';
-import { User, UserList } from '../../../../types';
+import { ShopInfo, User, UserList } from '../../../../types';
 import Fuse from 'fuse.js';
-import { restockShopInfo } from '../../../../utils/utils';
+import { categoryToShopID, restockShopInfo } from '../../../../utils/utils';
 import { rawToList } from '@services/ListService';
 import { Prisma, UserList as RawList, User as RawUser } from '@prisma/generated/client';
 import { CheckAuth } from '@utils/googleCloud';
@@ -68,13 +68,40 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   );
 
   const shop = fuze.search(query);
-  const result = shop.map((x) => x.item).slice(0, 2);
+
+  const maxShopResults = 3;
+  const shops = shop.map((x) => x.item).slice(0, maxShopResults);
+  const items = searchRes.content;
+
+  // If we don't have enough shop results,
+  // let's try to find some based on the categories of the items we found
+  if (shops.length < maxShopResults) {
+    const allCategories = new Map<string, number>();
+    items.forEach((item) => {
+      if (!item.category) return;
+      const a = allCategories.get(item.category) ?? 0;
+      allCategories.set(item.category, a + 1);
+    });
+
+    const sortedCategories = Array.from(allCategories.entries()).sort((a, b) => b[1] - a[1]);
+    const topCategories = sortedCategories.slice(0, 3).map((x) => x[0]);
+
+    const additionalShops = topCategories
+      .map((category) => {
+        const categoryInfo = restockShopInfo[categoryToShopID[category.toLowerCase()]];
+        if (categoryInfo && Number(categoryInfo.id) > 0) return categoryInfo;
+        return null;
+      })
+      .filter((x) => Boolean(x)) as ShopInfo[];
+
+    shops.push(...additionalShops.slice(0, maxShopResults - shops.length));
+  }
 
   return res.status(200).json({
     items: searchRes.content,
     officialLists: officialLists,
     userLists,
-    restockShop: result,
+    restockShop: shops,
   });
 };
 
