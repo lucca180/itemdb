@@ -306,8 +306,10 @@ const createRestockHistory = async (dataList: RestockAuction[]) => {
 
 const processLastSeen = async (lastSeen: { [key: string]: { [id: number]: Date } }) => {
   const ops = [];
+  const validTypes = ['restock', 'auction', 'trade', 'sw'];
 
   for (const type of Object.keys(lastSeen)) {
+    if (!validTypes.includes(type)) continue;
     for (const [id, date] of Object.entries(lastSeen[type])) {
       ops.push(
         prisma.$executeRaw`
