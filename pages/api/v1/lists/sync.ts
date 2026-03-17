@@ -1,7 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { syncDynamicList } from './[username]/[list_id]/dynamic';
-import { chunk } from 'lodash';
+import { shuffle } from 'lodash';
+import pMap from 'p-map';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
@@ -24,7 +25,7 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
 }
 
 export const syncAllDynamicLists = async () => {
-  const dynamicOfficialLists = await prisma.userList.findMany({
+  let dynamicOfficialLists = await prisma.userList.findMany({
     where: {
       official: true,
       dynamicType: {
@@ -36,7 +37,12 @@ export const syncAllDynamicLists = async () => {
     },
   });
 
-  for (const batch of chunk(dynamicOfficialLists, 3)) {
-    await Promise.all(batch.map((list) => syncDynamicList(list.internal_id, true)));
-  }
+  // Shuffle the lists to ensure a more even distribution of load when syncing
+  // it's possible that we have a cluster of BIG lists if sorted by internal_id,
+  // so lets try shuffling things
+  dynamicOfficialLists = shuffle(dynamicOfficialLists);
+
+  await pMap(dynamicOfficialLists, (list) => syncDynamicList(list.internal_id, true), {
+    concurrency: 7,
+  });
 };

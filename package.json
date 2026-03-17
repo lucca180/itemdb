@@ -68,6 +68,7 @@
     "nextjs-progressbar": "^0.0.16",
     "node-vibrant": "^4.0.4",
     "object-hash": "^3.0.0",
+    "p-map": "^7.0.4",
     "pixelmatch": "^7.1.0",
     "query-string": "^9.3.1",
     "rctx-contextmenu": "^1.4.1",
