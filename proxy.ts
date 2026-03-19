@@ -309,21 +309,25 @@ const addCors = (request: NextRequest, response: NextResponse) => {
   const origin = request.headers.get('origin');
   if (!origin) return;
 
-  const url = new URL(origin || '');
-  if (!allowedOrigins.includes(url.hostname)) {
-    return;
-  }
+  try {
+    const url = new URL(origin || '');
+    if (!allowedOrigins.includes(url.hostname)) {
+      return;
+    }
 
-  if (origin) {
-    response.headers.set(
-      'Access-Control-Allow-Headers',
-      'Content-Type, Authorization, x-itemdb-proof, x-itemdb-token, x-itemdb-key'
-    );
-    response.headers.set(
-      'Access-Control-Expose-Headers',
-      'Content-Type, Authorization, x-itemdb-proof, x-itemdb-token, x-itemdb-key, x-itemdb-block, x-itemdb-skip, x-itemdb-valid'
-    );
-    response.headers.set('Access-Control-Allow-Origin', origin);
-    response.headers.set('Access-Control-Allow-Credentials', 'true');
+    if (origin) {
+      response.headers.set(
+        'Access-Control-Allow-Headers',
+        'Content-Type, Authorization, x-itemdb-proof, x-itemdb-token, x-itemdb-key'
+      );
+      response.headers.set(
+        'Access-Control-Expose-Headers',
+        'Content-Type, Authorization, x-itemdb-proof, x-itemdb-token, x-itemdb-key, x-itemdb-block, x-itemdb-skip, x-itemdb-valid'
+      );
+      response.headers.set('Access-Control-Allow-Origin', origin);
+      response.headers.set('Access-Control-Allow-Credentials', 'true');
+    }
+  } catch (e) {
+    console.error('Error setting CORS headers', e);
   }
 };
