@@ -1,22 +1,28 @@
 // ==UserScript==
 // @name         itemdb - Stamp Album Helper
-// @version      1.0.1
+// @version      1.0.2
 // @author       originally EatWooloos, updated by itemdb
 // @namespace    itemdb
 // @description  Adds an info menu about your missing stamps
 // @icon         https://itemdb.com.br/favicon.ico
 // @match        *://*.neopets.com/stamps.phtml?type=album&page_id=*
+// @match        *://*.itemdb.com.br/*
 // @connect      itemdb.com.br
 // @grant        GM_xmlhttpRequest
+// @grant        unsafeWindow
 // ==/UserScript==
 
-let hasPremium;
-let owner;
-
-if (!document.URL.includes("progress")) {
-     hasPremium = !!$("#sswmenu .imgmenu").length;
-     owner = location.search.match(/owner=(.+)&*/)?.[1] || appInsightsUserName;
+// itemdb troubleshooting - https://itemdb.com.br/tools/troubleshooting
+const script_info = {
+  version: GM_info.script.version,
+  versionCode: Number(GM_info.script.version.replaceAll(".", ""))
 }
+
+if(typeof unsafeWindow !== "undefined") 
+  unsafeWindow.itemdb_albumHelper = script_info;
+else window.itemdb_albumHelper = script_info;
+
+if(!window.location.href.includes("neopets.com")) return;
 
 /****************************************************************************************
  *
@@ -31,10 +37,19 @@ if (!document.URL.includes("progress")) {
  *  Stamp list dinamically updated from itemdb.com.br
  *
  ****************************************************************************************/
+let hasPremium;
+let owner;
+
+if (!document.URL.includes("progress")) {
+     hasPremium = !!$("#sswmenu .imgmenu").length;
+     owner = location.search.match(/owner=(.+)&*/)?.[1] || appInsightsUserName;
+}
+
 let thisPage = {};
 
 const format = new Intl.NumberFormat().format;
 const albumID = location.search.match(/page_id=(\d+)&*/)[1];
+
 
 const getStampList = async () => {
   GM_xmlhttpRequest({

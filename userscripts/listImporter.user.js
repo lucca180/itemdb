@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - List Importer
-// @version      1.2.3
+// @version      1.2.4
 // @author       itemdb
 // @namespace    itemdb
 // @description  Imports items to your wishlists
@@ -13,10 +13,23 @@
 // @match        *://*.neopets.com/games/neodeck/index.phtml*
 // @match        *://*.neopets.com/books_read.phtml*
 // @match        *://*.neopets.com/moon/books_read.phtml*
+// @match        *://*.itemdb.com.br/*
 // @icon         https://itemdb.com.br/favicon.ico
-// @grant        none
+// @grant        unsafeWindow
 // @noframes
 // ==/UserScript==
+
+// itemdb troubleshooting - https://itemdb.com.br/tools/troubleshooting
+const script_info = {
+  version: GM_info.script.version,
+  versionCode: Number(GM_info.script.version.replaceAll(".", ""))
+}
+
+if(typeof unsafeWindow !== "undefined") 
+  unsafeWindow.itemdb_listImporter = script_info;
+else window.itemdb_listImporter = script_info;
+
+if(!window.location.href.includes("neopets.com")) return;
 
 const items = {};
 let indexType = 'item_id';

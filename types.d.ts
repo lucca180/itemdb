@@ -885,6 +885,11 @@ export type AvyData = {
 };
 
 // ------ Global Window Types ----- //
+
+type ScriptInfo = {
+  version: string;
+  versionCode: number;
+};
 declare global {
   interface Window {
     itemdb_restock?: {
@@ -898,22 +903,15 @@ declare global {
       cleanAll: () => void;
     };
 
-    itemdb_script?: {
-      version: string;
-      versionCode: number;
-    };
-
-    itemdb_sdbPricer?: {
-      version: string;
-      versionCode: number;
-    };
+    itemdb_script?: ScriptInfo;
+    itemdb_sdbPricer?: ScriptInfo;
+    itemdb_albumHelper?: ScriptInfo;
+    itemdb_listImporter?: ScriptInfo;
 
     umami?: {
       identify: (payload: any) => Promise<void>;
       track: (event: string, payload?: any) => Promise<void>;
     };
-
-    __itemdb_proof__?: string;
 
     itemdb_restock_cleanAll?: () => void; //backwards compatibility
   }

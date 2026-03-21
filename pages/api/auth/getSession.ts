@@ -2,12 +2,8 @@ import { CheckAuth } from '@utils/googleCloud';
 import { createSession } from '@utils/redis';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-const isDev = process.env.NODE_ENV === 'development';
-
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
-
-  if (isDev) return res.status(200).json({ success: true });
 
   let user = null;
 
@@ -15,7 +11,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     user = (await CheckAuth(req)).user;
   } catch (e) {}
 
-  const { session, expires } = await createSession(!!user);
+  const { session, expires } = createSession(!!user);
   const expExpiration = expires - 18 * 60 * 60; // 18 hours earlier than the actual expiration to be safe
 
   const cookies = [

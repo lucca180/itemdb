@@ -73,18 +73,31 @@ export function verifySessionToken(token: string) {
   }
 }
 
-export function isLikelyBrowser(req: NextRequest) {
+export function isLikelyBrowser(req: NextRequest | NextApiRequest) {
   let score = 0;
-  const headers = req.headers;
 
-  const userAgent = headers.get('user-agent') || '';
-  const secFetchSite = headers.get('sec-fetch-site');
-  const secFetchMode = headers.get('sec-fetch-mode');
-  const secFetchDest = headers.get('sec-fetch-dest');
-  const acceptLanguage = headers.get('accept-language');
-  const accept = headers.get('accept');
-  const origin = headers.get('origin');
-  const referer = headers.get('referer');
+  const getHeader = (name: string) => {
+    const nextRequestHeader = (req as NextRequest).headers?.get?.(name);
+    if (typeof nextRequestHeader === 'string') {
+      return nextRequestHeader;
+    }
+
+    const apiRequestHeader = (req as NextApiRequest).headers?.[name.toLowerCase()];
+    if (Array.isArray(apiRequestHeader)) {
+      return apiRequestHeader.join(', ');
+    }
+
+    return apiRequestHeader;
+  };
+
+  const userAgent = getHeader('user-agent') || '';
+  const secFetchSite = getHeader('sec-fetch-site');
+  const secFetchMode = getHeader('sec-fetch-mode');
+  const secFetchDest = getHeader('sec-fetch-dest');
+  const acceptLanguage = getHeader('accept-language');
+  const accept = getHeader('accept');
+  const origin = getHeader('origin');
+  const referer = getHeader('referer');
 
   if (secFetchSite && secFetchMode && secFetchDest) {
     score += 3;

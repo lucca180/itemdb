@@ -1,8 +1,20 @@
+import React from 'react';
+
 export const LATEST_VERSIONS_CODE = {
   itemdb_script: 1100,
-  itemdb_restock: 201,
+  itemdb_restock: 203,
   itemdb_sdbPricer: 154,
+  itemdb_albumHelper: 102,
+  itemdb_listImporter: 124,
 };
+
+export const DETECTABLE_SCRIPTS = [
+  'Item Data Extractor',
+  'Restock Tracker',
+  'SDB Pricer',
+  'Album Helper',
+  'List Importer',
+] as const;
 
 export const showScriptCTA = (): false | 'notFound' | 'outdated' => {
   if (!window) return false;
@@ -36,7 +48,13 @@ export const getScriptStatus = () => {
 
 const _getScriptStatus = () => {
   if (!window) return null;
-  const hasScript = !!(window.itemdb_restock || window.itemdb_script || window.itemdb_sdbPricer);
+  const hasScript = !!(
+    window.itemdb_restock ||
+    window.itemdb_script ||
+    window.itemdb_sdbPricer ||
+    window.itemdb_albumHelper ||
+    window.itemdb_listImporter
+  );
 
   if (!hasScript) return null;
 
@@ -62,26 +80,44 @@ const _getScriptStatus = () => {
       version: window.itemdb_sdbPricer?.version || '',
       link: 'https://github.com/lucca180/itemdb/raw/main/userscripts/sdbPricer.user.js',
     },
+    itemdb_albumHelper: {
+      name: 'Album Helper',
+      status: 'notFound',
+      versionCode: 0,
+      version: window.itemdb_albumHelper?.version || '',
+      link: 'https://github.com/lucca180/itemdb/raw/main/userscripts/albumHelper.user.js',
+    },
+    itemdb_listImporter: {
+      name: 'List Importer',
+      status: 'notFound',
+      versionCode: 0,
+      version: window.itemdb_listImporter?.version || '',
+      link: 'https://github.com/lucca180/itemdb/raw/main/userscripts/listImporter.user.js',
+    },
   };
 
-  if (window.itemdb_script) {
-    scriptStatus.itemdb_script.status =
-      window.itemdb_script.versionCode >= LATEST_VERSIONS_CODE.itemdb_script ? 'ok' : 'outdated';
-  }
+  const keys = Object.keys(scriptStatus) as (keyof typeof scriptStatus)[];
 
-  if (window.itemdb_restock) {
-    scriptStatus.itemdb_restock.status =
-      (window.itemdb_restock.versionCode ?? 0) >= LATEST_VERSIONS_CODE.itemdb_restock
-        ? 'ok'
-        : 'outdated';
-  }
-
-  if (window.itemdb_sdbPricer) {
-    scriptStatus.itemdb_sdbPricer.status =
-      window.itemdb_sdbPricer.versionCode >= LATEST_VERSIONS_CODE.itemdb_sdbPricer
-        ? 'ok'
-        : 'outdated';
+  for (const key of keys) {
+    const script = (window as any)[key];
+    if (script) {
+      scriptStatus[key].status =
+        script.versionCode >= LATEST_VERSIONS_CODE[key] ? 'ok' : 'outdated';
+    }
   }
 
   return scriptStatus;
+};
+
+export const useScriptStatus = () => {
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [scriptStatus, setScriptStatus] = React.useState<ReturnType<typeof getScriptStatus>>(null);
+
+  React.useEffect(() => {
+    const status = getScriptStatus();
+    setScriptStatus(status);
+    setIsLoading(false);
+  }, []);
+
+  return { isLoading, scriptStatus };
 };
