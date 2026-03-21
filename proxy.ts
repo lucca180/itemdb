@@ -307,7 +307,7 @@ const allowedOrigins = [
 
 const addCors = (request: NextRequest, response: NextResponse) => {
   const origin = request.headers.get('origin');
-  if (!origin) return;
+  if (!origin || origin === 'null') return;
 
   try {
     const url = new URL(origin || '');
@@ -327,7 +327,5 @@ const addCors = (request: NextRequest, response: NextResponse) => {
       response.headers.set('Access-Control-Allow-Origin', origin);
       response.headers.set('Access-Control-Allow-Credentials', 'true');
     }
-  } catch (e) {
-    console.error('Error setting CORS headers', e);
-  }
+  } catch {}
 };
