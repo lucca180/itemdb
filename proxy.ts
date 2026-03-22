@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server';
 import requestIp from 'request-ip';
 import * as Redis from '@utils/redis';
 import {
+  areChangesLive,
   generateSiteProof,
   isLikelyBrowser,
   normalizeIP,
@@ -257,7 +258,7 @@ export const apiMiddleware = async (request: NextRequest) => {
     },
   });
 
-  // return NextResponse.json({ error: 'Invalid access' }, { status: 401 });
+  if (areChangesLive()) return NextResponse.json({ error: 'Invalid access' }, { status: 401 });
 
   return finalizeApiResponse(request, response, startTime);
 };

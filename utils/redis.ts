@@ -1,14 +1,16 @@
 import { Redis as RedisRaw } from 'ioredis';
 import { NextApiRequest } from 'next/types';
-import { generateSessionToken, normalizeIP, verifySessionToken } from './api-utils';
+import { areChangesLive, generateSessionToken, normalizeIP, verifySessionToken } from './api-utils';
 import jwt from 'jsonwebtoken';
 
-const LIMIT_COUNT = 10000;
-// const LIMIT_COUNT = 1000; ---> new value after new changes
-const INITIAL_BAN_MINUTES = 5;
-
-export const SESSION_EXPIRE_LOGGED = 7 * 24 * 60 * 60; // 7 days in seconds
-export const SESSION_EXPIRE = 24 * 60 * 60; // 1 day in seconds
+const API_CONST = {
+  MIN_LIMIT_COUNT: areChangesLive() ? 3000 : 10000, // maximum items allowed before banning
+  LOGGED_LIMIT: areChangesLive() ? 3000 : 5000, // above but for logged users
+  SESSION_EXPIRE: 7 * 24 * 60 * 60, // how many seconds before session expires for non-logged users
+  SESSION_EXPIRE_LOGGED: 24 * 24 * 60 * 60, // same but for logged users
+  INITIAL_BAN_SECONDS: 5 * 60, // how many seconds the first ban should last
+  MAX_BAN_SECONDS: areChangesLive() ? 6 * 60 * 60 : 2 * 60 * 60, // maximum ban duration in seconds
+} as const;
 
 export const API_ERROR_CODES = {
   noRedis: 'no-redis',
@@ -33,12 +35,16 @@ if (
 }
 
 export const createSession = (logged = false) => {
-  const limit = logged ? 10000 : 3000; // ----> change on new version
-  const session = generateSessionToken(limit, logged ? SESSION_EXPIRE_LOGGED : SESSION_EXPIRE);
+  const { LOGGED_LIMIT, MIN_LIMIT_COUNT, SESSION_EXPIRE, SESSION_EXPIRE_LOGGED } = API_CONST;
+
+  const limit = logged ? LOGGED_LIMIT : MIN_LIMIT_COUNT;
+  const expires = logged ? SESSION_EXPIRE_LOGGED : SESSION_EXPIRE;
+
+  const session = generateSessionToken(limit, expires);
 
   return {
     session: session,
-    expires: logged ? SESSION_EXPIRE_LOGGED : SESSION_EXPIRE,
+    expires: expires,
     limit: limit,
   };
 };
@@ -76,7 +82,7 @@ export const redis_setItemCount = async (
     if (req.headers['x-itemdb-token'])
       return incrementApiKey(req.headers['x-itemdb-token'] as string, itemCount);
 
-    let limit = LIMIT_COUNT;
+    let limit = API_CONST.MIN_LIMIT_COUNT;
 
     const sessionCookie =
       req.cookies['idb-session-id'] || (req.cookies as any)?.get?.('idb-session-id');
@@ -102,10 +108,10 @@ export const redis_setItemCount = async (
 
       const banCount = (await redis.get(`bCount:${ip}`)) || '1';
 
-      const base = Number(banCount) ** 2 * INITIAL_BAN_MINUTES * 60;
+      const base = Number(banCount) ** 2 * API_CONST.INITIAL_BAN_SECONDS;
       const jitter = Math.floor(base * (0.8 + Math.random() * 0.4));
 
-      const ttl = Math.min(jitter, 2 * 60 * 60); // maximum 2 hours (may change latter)
+      const ttl = Math.min(jitter, API_CONST.MAX_BAN_SECONDS);
 
       await redis
         .multi()
@@ -133,8 +139,10 @@ export const checkApiToken = async (token: string) => {
   // we already validated the token in middleware,
   // so we can just decode it here
   const payload = jwt.decode(token) as jwt.JwtPayload | null;
+
   if (!payload || !payload.sub || payload.limit === undefined || payload.limit === null)
     throw API_ERROR_CODES.invalidKey;
+
   const keyId = payload.sub;
   const limit = Number(payload.limit);
 

@@ -39,7 +39,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const items = await getLatestItems(limit, !includeOld);
 
   const ip = requestIp.getClientIp(req);
-  await redis_setItemCount(ip, items.length, req);
+  redis_setItemCount(ip, items.length, req);
 
   return res.status(200).json(items);
 };

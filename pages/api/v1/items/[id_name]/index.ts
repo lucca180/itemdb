@@ -41,7 +41,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const item = await getItem(name ?? internal_id);
 
   const ip = requestIp.getClientIp(req);
-  await redis_setItemCount(ip, 1, req);
+  redis_setItemCount(ip, 1, req);
 
   return res.json(item);
 };
