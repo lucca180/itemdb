@@ -247,8 +247,8 @@ export const apiMiddleware = async (request: NextRequest) => {
   response.headers.set('x-itemdb-block', 'true');
 
   // ------- track metrics ----------- //
-  let type = 'unauthenticated';
-  if (sessionCookie) type += '-session';
+  let type = areChangesLive() ? 'blocked' : 'unauthenticated';
+  if (sessionCookie) type += '-invalid-session';
   if (isBrowser) type += '-browser';
   else type += '-non-browser';
 
