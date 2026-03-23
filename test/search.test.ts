@@ -6,6 +6,9 @@ import { RESTOCK_FILTER } from '../pages/restock/[id]';
 
 const itemdb = axios.create({
   baseURL: 'http://itemdb.com.br/api/v1/',
+  headers: {
+    'x-tarnum-skip': process.env.TARNUM_KEY || '',
+  },
 });
 
 type QueryType = Partial<SearchFilters> & { [key: string]: any };

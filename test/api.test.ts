@@ -35,8 +35,7 @@ describe.concurrent('API Access tests', () => {
     });
 
     const response = await apiMiddleware(request);
-    expect(response.headers.get('x-itemdb-block')).toBe('true');
-    expect(response.status).toBe(200); // change this after block is effective
+    expect(response.status).toBe(401); // change this after block is effective
   });
 
   test('Access Skip API route', async () => {
@@ -55,8 +54,7 @@ describe.concurrent('API Access tests', () => {
     });
 
     const response = await apiMiddleware(request);
-    expect(response.headers.get('x-itemdb-block')).toBe('true');
-    expect(response.status).toBe(200); // change this after block is effective
+    expect(response.status).toBe(401); // change this after block is effective
   });
 
   describe.concurrent('Session Token tests', async () => {
@@ -125,8 +123,7 @@ describe.concurrent('API Access tests', () => {
       request.cookies.set('idb-session-id', 'invalid-session');
 
       const response = await apiMiddleware(request);
-      expect(response.headers.get('x-itemdb-block')).toBe('true');
-      expect(response.status).toBe(200); // change this after block is effective
+      expect(response.status).toBe(401); // change this after block is effective
     });
   });
 
@@ -177,8 +174,7 @@ describe.concurrent('API Access tests', () => {
       request.headers.set('x-itemdb-token', 'c441522904be4c4795221afea59a628f');
 
       const response = await apiMiddleware(request);
-      expect(response.headers.get('x-itemdb-block')).toBe('true');
-      expect(response.status).toBe(200); // change this after block is effective
+      expect(response.status).toBe(401); // change this after block is effective
     });
   });
 });
