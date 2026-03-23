@@ -1193,7 +1193,7 @@
     "faerie-festival": "Faerie Festival - <Link>Faerieland Shops</Link> with 50% off (except Faerie Furniture and Faerie Weapon)",
     "halloween": "Halloween - <Link>Haunted Woods Shops</Link> with 50% off (except Neovia)",
     "hiddenTower": "3% off at the <Link>Hidden Tower</Link> today for account age 60 months or older!",
-    "apiChanges": "Important Changes - We're making significant changes on how itemdb api access works. Please check <Link>this post</Link> for more details"
+    "apiChanges": "Important Changes - itemdb api access changes are now live - please check <Link>this post</Link> for more details"
   },
   "Owls": {
     "items-you-offered": "Items You Offered",

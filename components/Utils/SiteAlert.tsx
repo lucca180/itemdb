@@ -161,7 +161,7 @@ const getAlert = () => {
 
   if (todayNST.getMonth() === 9 && todayNST.getDate() === 31) return alerts.halloween;
 
-  if (todayNST.getTime() < 1771977599000) return alerts.apiChanges;
+  if (todayNST.getTime() < 1774324800000) return alerts.apiChanges;
 
   return alerts.default;
 };
