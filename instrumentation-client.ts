@@ -15,6 +15,7 @@ if (isProd) {
     // Adjust this value in production, or use tracesSampler for greater control
     tracesSampleRate: 0.2,
     profileSessionSampleRate: 0.2,
+    ignoreErrors: ["Can't find variable: $", 'userscript.html'],
     // ...
     // Note: if you want to override the automatic release value, do not set a
     // `release` value here - use the environment variable `SENTRY_RELEASE`, so
