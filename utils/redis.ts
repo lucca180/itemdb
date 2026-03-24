@@ -4,8 +4,8 @@ import { areChangesLive, generateSessionToken, normalizeIP, verifySessionToken }
 import jwt from 'jsonwebtoken';
 
 const API_CONST = {
-  MIN_LIMIT_COUNT: areChangesLive() ? 3000 : 10000, // maximum items allowed before banning
-  LOGGED_LIMIT: areChangesLive() ? 3000 : 5000, // above but for logged users
+  MIN_LIMIT_COUNT: areChangesLive() ? 5000 : 10000, // maximum items allowed before banning
+  LOGGED_LIMIT: areChangesLive() ? 10000 : 10000, // above but for logged users
   SESSION_EXPIRE: 7 * 24 * 60 * 60, // how many seconds before session expires for non-logged users
   SESSION_EXPIRE_LOGGED: 24 * 24 * 60 * 60, // same but for logged users
   INITIAL_BAN_SECONDS: 5 * 60, // how many seconds the first ban should last
@@ -82,7 +82,7 @@ export const redis_setItemCount = async (
     if (req.headers['x-itemdb-token'])
       return incrementApiKey(req.headers['x-itemdb-token'] as string, itemCount);
 
-    let limit = API_CONST.MIN_LIMIT_COUNT;
+    let limit = API_CONST.MIN_LIMIT_COUNT as number;
 
     const sessionCookie =
       req.cookies['idb-session-id'] || (req.cookies as any)?.get?.('idb-session-id');
@@ -92,7 +92,7 @@ export const redis_setItemCount = async (
       const sessionData = verifySessionToken(sessionToken);
 
       if (sessionData && sessionData.limit) {
-        limit = sessionData.limit;
+        limit = Math.max(sessionData.limit, limit);
       }
     }
 
