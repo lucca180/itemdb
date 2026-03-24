@@ -88,7 +88,7 @@ const alerts = {
   },
   apiChanges: {
     message: 'apiChanges',
-    link: 'https://itemdb.com.br/articles/incoming-changes-to-itemdb-api',
+    link: 'https://itemdb.com.br/tools/troubleshooting',
     img: {
       src: 'https://images.neopets.com/themes/022_lqc_d2d1a/events/warning.png',
       h: 28,
@@ -161,7 +161,7 @@ const getAlert = () => {
 
   if (todayNST.getMonth() === 9 && todayNST.getDate() === 31) return alerts.halloween;
 
-  if (todayNST.getTime() < 1774324800000) return alerts.apiChanges;
+  if (todayNST.getTime() < 1774461600000) return alerts.apiChanges;
 
   return alerts.default;
 };
