@@ -483,6 +483,9 @@ const ScriptStatus = () => {
   return (
     <>
       <MenuDivider />
+      <MenuItem as={Link} prefetch={false} href={`/tools/troubleshooting`}>
+        {t('Layout.script-troubleshooting')}
+      </MenuItem>
       <Text px={3} pb={3} fontSize={'md'} color="white">
         {t('Layout.script-info')}
       </Text>
