@@ -164,7 +164,7 @@ export function AuthProvider({ children }: any) {
       const sessionExp = getCookie('idb-session-exp');
       if (!navigator.cookieEnabled || (document.cookie && sessionExp)) return;
 
-      const res = await axios.get('/api/auth/getSession');
+      const res = await axios.get('/api/v1/users/getSession');
       return res.data;
     } catch (e) {
       console.error('getSession error', e);

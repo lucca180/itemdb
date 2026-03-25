@@ -3,7 +3,6 @@ import { NextRequest } from 'next/server';
 import requestIp from 'request-ip';
 import * as Redis from '@utils/redis';
 import {
-  areChangesLive,
   generateSiteProof,
   isLikelyBrowser,
   normalizeIP,
@@ -129,6 +128,7 @@ export const apiMiddleware = async (request: NextRequest) => {
   // request is trusted if it has a valid site proof, skip all checks
   const itemdb_proof = request.headers.get('x-itemdb-proof');
   requestHeaders.delete('x-itemdb-valid');
+
   if (itemdb_proof && verifySiteProof(itemdb_proof)) {
     // set on both request and response (redis func uses this)
     requestHeaders.set('x-itemdb-valid', 'true');
@@ -193,9 +193,17 @@ export const apiMiddleware = async (request: NextRequest) => {
 
           return finalizeApiResponse(request, response, startTime);
         } else if (!sessionId) {
-          // if session is invalid, clear cookies
-          response.cookies.set({ name: 'idb-session-id', value: '', maxAge: 0 });
-          response.cookies.set({ name: 'idb-session-exp', value: '', maxAge: 0 });
+          Sentry.metrics.count('api.requests', 1, {
+            attributes: {
+              type: 'blocked-invalid-session',
+            },
+          });
+
+          const res = NextResponse.json({ error: 'Invalid access' }, { status: 401 });
+          res.cookies.set({ name: 'idb-session-id', value: '', maxAge: 0 });
+          res.cookies.set({ name: 'idb-session-exp', value: '', maxAge: 0 });
+
+          return res;
         }
       } catch (e) {
         console.error('Error validating session in middleware', e);
@@ -259,7 +267,7 @@ export const apiMiddleware = async (request: NextRequest) => {
   response.headers.set('x-itemdb-block', 'true');
 
   // ------- track metrics ----------- //
-  let type = areChangesLive() ? 'blocked' : 'unauthenticated';
+  let type = 'blocked';
   if (sessionCookie) type += '-invalid-session';
   if (isBrowser) type += '-browser';
   else type += '-non-browser';
@@ -270,9 +278,7 @@ export const apiMiddleware = async (request: NextRequest) => {
     },
   });
 
-  if (areChangesLive()) return NextResponse.json({ error: 'Invalid access' }, { status: 401 });
-
-  return finalizeApiResponse(request, response, startTime);
+  return NextResponse.json({ error: 'Invalid access' }, { status: 401 });
 };
 
 const updateServerTime = (label: string, startTime: number, response: NextResponse) => {
