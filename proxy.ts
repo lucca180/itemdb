@@ -226,6 +226,12 @@ export const apiMiddleware = async (request: NextRequest) => {
       }
 
       if (e === Redis.API_ERROR_CODES.limitExceeded) {
+        Sentry.metrics.count('api.requests', 1, {
+          attributes: {
+            type: 'api-rate-limit',
+          },
+        });
+
         return finalizeApiResponse(
           request,
           NextResponse.json({ error: 'Too many requests' }, { status: 429 }),
@@ -234,6 +240,12 @@ export const apiMiddleware = async (request: NextRequest) => {
       }
 
       if (e === Redis.API_ERROR_CODES.invalidKey) {
+        Sentry.metrics.count('api.requests', 1, {
+          attributes: {
+            type: 'api-invalid-key',
+          },
+        });
+
         return finalizeApiResponse(
           request,
           NextResponse.json({ error: 'Invalid API key' }, { status: 401 }),

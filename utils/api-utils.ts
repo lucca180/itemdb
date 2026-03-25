@@ -98,16 +98,21 @@ export function isLikelyBrowser(req: NextRequest | NextApiRequest) {
   const accept = getHeader('accept');
   const origin = getHeader('origin');
   const referer = getHeader('referer');
+  const ifNoneMatch = getHeader('if-none-match');
 
   if (secFetchSite && secFetchMode && secFetchDest) {
     score += 3;
 
     if (
       ['same-origin', 'same-site', 'cross-site', 'none'].includes(secFetchSite) &&
-      ['navigate', 'cors', 'no-cors'].includes(secFetchMode)
+      ['navigate', 'cors'].includes(secFetchMode)
     ) {
       score += 1;
     }
+  }
+
+  if (ifNoneMatch) {
+    score += 1;
   }
 
   if (acceptLanguage) {
@@ -129,7 +134,7 @@ export function isLikelyBrowser(req: NextRequest | NextApiRequest) {
     score += 1;
   }
 
-  if (/Mozilla\/5\.0.*(?:Chrome|Firefox|Safari|Edg)/.test(userAgent)) {
+  if (/Mozilla\/5\.0.*(?:Chrome|Firefox|Safari|Edg|OPR|SamsungBrowser)/.test(userAgent)) {
     score += 1;
   }
 
@@ -138,10 +143,10 @@ export function isLikelyBrowser(req: NextRequest | NextApiRequest) {
   }
 
   if (accept === '*/*') {
-    score -= 2;
+    score -= 1;
   }
 
-  if (!userAgent || /curl|postman|insomnia|python|axios|fetch/i.test(userAgent)) {
+  if (!userAgent || /curl|postman|insomnia|python|axios|fetch|requests/i.test(userAgent)) {
     score -= 3;
   }
 
