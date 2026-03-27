@@ -1067,8 +1067,9 @@
     "please-fill-all-fields": "Por favor preencha todos os campos",
     "username": "Nome de usuário",
     "username-already-taken": "Nome de Usuário já utilizado",
-    "email-sent": "Nós te enviamos um email com o link para entrar. Por favor cheque sua caixa de entrada.",
-    "login-modal-text": "Use seu email para <b>entrar</b> ou para <b>criar uma nova conta</b>"
+    "email-sent": "Nós enviamos um email com o link para entrar. Por favor cheque sua caixa de entrada.",
+    "login-modal-text": "Use seu email/nome de usuário para <b>entrar</b> ou apenas email para <b>criar uma nova conta</b>",
+    "email-address-or-username": "Endereço de e-mail ou nome de usuário"
   },
   "Profile": {
     "allowedDomains": "Somente imagens de neopets.com, magnetismotimes.com e itemdb.com.br são permitidas",

@@ -22,7 +22,6 @@ import { useTranslations } from 'next-intl';
 // import { useRouter } from 'next/router';
 // import { getAuth, sendSignInLinkToEmail } from 'firebase/auth';
 
-const mailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // const isProd = process.env.NODE_ENV === 'production';
 
 export type LoginModalProps = {
@@ -33,20 +32,16 @@ export type LoginModalProps = {
 const LoginModal = (props: LoginModalProps) => {
   const t = useTranslations();
   const { isOpen, onClose } = props;
-  const [email, setEmail] = useState<string>('');
+  const [cred, setCred] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isSent, setIsSent] = useState<boolean>(false);
   // const auth = getAuth();
   // const router = useRouter();
+  const mailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const doLogin = async () => {
     if (isSent) return onClose();
-
-    if (!email.match(mailRegex)) {
-      setError(t('Login.invalid-email-address'));
-      return;
-    }
 
     setIsLoading(true);
 
@@ -61,9 +56,10 @@ const LoginModal = (props: LoginModalProps) => {
       //   handleCodeInApp: true,
       // });
 
-      await sendEmail(email);
+      await sendEmail(cred);
 
-      window.localStorage.setItem('emailForSignIn', email);
+      if (cred.match(mailRegex)) window.localStorage.setItem('emailForSignIn', cred);
+
       setIsSent(true);
     } catch (e: any) {
       setError(e.message);
@@ -73,16 +69,16 @@ const LoginModal = (props: LoginModalProps) => {
     setIsLoading(false);
   };
 
-  const sendEmail = async (email: string) => {
+  const sendEmail = async (emailOrUsername: string) => {
     const res = await axios.post('/api/auth/sendLink', {
-      email,
+      cred: emailOrUsername,
     });
 
     return res.data;
   };
 
   const onEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
+    setCred(e.target.value);
     setError('');
   };
 
@@ -111,9 +107,9 @@ const LoginModal = (props: LoginModalProps) => {
           {!isLoading && !isSent && (
             <FormControl isInvalid={!!error} mt={4}>
               <Input
-                placeholder={t('General.email-address')}
-                type="email"
-                value={email}
+                placeholder={t('Login.email-address-or-username')}
+                type="text"
+                value={cred}
                 onChange={onEmailChange}
               />
               <FormErrorMessage>{error}</FormErrorMessage>
@@ -124,11 +120,6 @@ const LoginModal = (props: LoginModalProps) => {
               {t('Login.email-sent')}
             </Text>
           )}
-          {/* {email.includes('yahoo') && (
-            <Text color="gray.400" mt={2} fontSize="sm">
-              {t('Temp.yahoo-mail-error')}
-            </Text>
-          )} */}
         </ModalBody>
         <ModalFooter>
           {!isSent && !isLoading && (
@@ -140,7 +131,7 @@ const LoginModal = (props: LoginModalProps) => {
             </>
           )}
 
-          {isSent && !isLoading && <Button onClick={onClose}>Close</Button>}
+          {isSent && !isLoading && <Button onClick={onClose}>{t('General.close')}</Button>}
         </ModalFooter>
       </ModalContent>
     </Modal>

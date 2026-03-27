@@ -1066,8 +1066,9 @@
     "only-letters-numbers-and-underlines": "Only letters, numbers and underlines",
     "neopets-username": "Neopets Username",
     "username": "Username",
-    "email-sent": "We've sent you an email with a link to sign in. Please check your inbox.",
-    "login-modal-text": "Use your email to <b>sign in</b> or to <b>create a new account</b>"
+    "email-sent": "We've sent an email with a link to sign in. Please check your inbox.",
+    "login-modal-text": "Use your email/username to <b>sign in</b> or only your email to <b>create a new account</b>",
+    "email-address-or-username": "Email Address or Username"
   },
   "Profile": {
     "fill-required-fields": "Fill out all required fields",
