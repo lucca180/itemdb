@@ -1,6 +1,6 @@
 import prisma from '../../../utils/prisma';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { Auth, CheckAuth } from '../../../utils/googleCloud';
+import { CheckAuth } from '../../../utils/googleCloud';
 import { LogService } from '@services/ActionLogService';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
@@ -46,9 +46,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       },
       user.id
     );
-
-    Auth.revokeRefreshTokens(user.id).catch((e) => console.error('Error revoking tokens:', e));
-    Auth.deleteUser(user.id).catch((e) => console.error('Error deleting auth user:', e));
 
     res.setHeader(
       'Set-Cookie',

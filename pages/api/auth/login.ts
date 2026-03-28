@@ -1,34 +1,34 @@
 import prisma from '../../../utils/prisma';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { Auth, CheckAuth } from '../../../utils/googleCloud';
 import requestIp from 'request-ip';
 import { User, UserRoles } from '../../../types';
 import { startOfDay } from 'date-fns';
 import { User as PrismaUser } from '@prisma/generated/client';
-
-const expiresIn = 24 * 60 * 60 * 1000;
+import { consumeMagicToken } from '@utils/auth/magicLink';
+import { signSession, SESSION_DURATION_SECONDS } from '@utils/auth/jwt';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
     throw new Error(`The HTTP ${req.method} method is not supported at this route.`);
 
   try {
-    const authRes = await CheckAuth(req, undefined, undefined, true);
-    const decodedToken = authRes.decodedToken;
+    const { token, email } = req.body as { token: string; email: string };
 
-    if (!decodedToken.email) return res.status(401).json({ error: 'Unauthorized' });
+    if (!token || !email) return res.status(400).json({ error: 'token and email are required' });
+
+    await consumeMagicToken(token, email);
 
     const ip = requestIp.getClientIp(req) || '';
 
     const dbUser = await prisma.user.upsert({
-      where: { id: decodedToken.uid },
+      where: { email: email.toLowerCase() },
       update: {
         last_ip: ip,
         last_login: new Date(),
       },
       create: {
-        id: decodedToken.uid,
-        email: decodedToken.email,
+        id: crypto.randomUUID(),
+        email: email.toLowerCase(),
         last_ip: ip,
         last_login: new Date(),
       },
@@ -36,24 +36,15 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
     if (!dbUser) return res.status(401).json({ error: 'Unauthorized' });
 
-    const token = req.headers.authorization?.split('Bearer ')[1];
-    const session = req.cookies.session;
-    const cookies = [];
+    const sessionToken = await signSession({
+      uid: dbUser.id,
+      email: dbUser.email,
+      role: dbUser.role as UserRoles,
+    });
 
-    // temporarily overwrite sessionCookie to fix expiration issue
-    const isFixed = req.cookies.fixedCookie;
-
-    if (token && (!session || !isFixed)) {
-      const sessionCookie = await Auth.createSessionCookie(token, { expiresIn: expiresIn * 14 });
-      res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
-
-      cookies.push(`fixedCookie=1;Path=/;Max-Age=2147483647;SameSite=None;Secure;`);
-
-      // expire cookie before token expires
-      cookies.push(
-        `session=${sessionCookie};Path=/;httpOnly=true;secure=true;SameSite=Strict;Max-Age=${(expiresIn * 13) / 1000};`
-      );
-    }
+    const cookies = [
+      `session=${sessionToken};Path=/;HttpOnly;Secure;SameSite=Strict;Max-Age=${SESSION_DURATION_SECONDS};`,
+    ];
 
     if (dbUser.pref_lang && dbUser.pref_lang !== req.cookies.NEXT_LOCALE) {
       cookies.push(
@@ -61,10 +52,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       );
     }
 
-    if (cookies.length) res.setHeader('Set-Cookie', cookies);
+    res.setHeader('Set-Cookie', cookies);
 
     const finalUser = rawToUser(dbUser);
-
     res.json(finalUser);
   } catch (e: any) {
     console.error(e);

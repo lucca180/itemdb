@@ -1,24 +1,12 @@
 import React, { useState, useEffect, useContext, createContext } from 'react';
-import type { User as FirebaseUser } from 'firebase/auth';
 import { useAtom } from 'jotai';
 import { atomWithStorage, createJSONStorage } from 'jotai/utils';
 import { User, UserPreferences } from '../types';
 import axios from 'axios';
 import { getCookie } from 'cookies-next/client';
 
-let authModulePromise: Promise<typeof import('./firebase/auth')> | null = null;
-
-const getAuthModule = () => {
-  if (!authModulePromise) {
-    authModulePromise = import('./firebase/auth');
-  }
-
-  return authModulePromise;
-};
-
 type AuthContextType = {
   user: User | null;
-  userToken: string | null;
   signout: () => Promise<void>;
   authLoading: boolean;
   setUser: (user: User) => void;
@@ -29,7 +17,6 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  userToken: null,
 
   signout: async () => {},
   authLoading: true,
@@ -47,113 +34,21 @@ export const UserState = atomWithStorage<User | null>('UserState', null, storage
 
 export const UserPrefs = atomWithStorage<UserPreferences | null>('UserPrefs', null, storageLocal);
 
-let isDoingLogin = false;
-
 export function AuthProvider({ children }: any) {
   const [user, setUser] = useAtom(UserState);
   const [userPref, setUserPref] = useAtom(UserPrefs);
-  const [userToken, setUserToken] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState<boolean>(true);
 
-  useEffect(() => {
-    const unsubs = getAuthModule().then((res) => {
-      const { auth } = res;
+  const checkProof = () => {
+    const proof = getCookie('itemdb-proof');
+    const hasReloaded = sessionStorage.getItem('reloaded-for-proof');
 
-      return auth.onIdTokenChanged(async (newUser) => {
-        if (!newUser) {
-          setUserToken(null);
-          setAuthLoading(false);
-          getSession();
-          return;
-        }
-
-        if (newUser && newUser.uid !== user?.id) {
-          await doLogin(newUser);
-        }
-
-        const token = await newUser.getIdToken();
-        getSession();
-        setUserToken(token);
-        setAuthLoading(false);
-      });
-    });
-
-    return () => {
-      unsubs.then((unsubs) => unsubs());
-    };
-  }, []);
-
-  // force refresh the token every 15 minutes
-  useEffect(() => {
-    const REFRESH_INTERVAL = 15 * 60 * 1000;
-    let lastCheckAt = Date.now();
-
-    const runRefresh = async () => {
-      if (document.visibilityState !== 'visible') return;
-
-      const { auth } = await getAuthModule();
-      const currentUser = auth.currentUser;
-
-      try {
-        if (currentUser) await currentUser.getIdToken(true);
-      } catch (e) {
-      } finally {
-        await getSession();
-        lastCheckAt = Date.now();
-      }
-    };
-
-    const handle = setInterval(() => {
-      runRefresh();
-    }, REFRESH_INTERVAL);
-
-    const onVisibilityChange = () => {
-      if (document.visibilityState !== 'visible') return;
-
-      const now = Date.now();
-      if (now - lastCheckAt >= REFRESH_INTERVAL) {
-        runRefresh();
-      }
-    };
-
-    document.addEventListener('visibilitychange', onVisibilityChange);
-
-    return () => {
-      clearInterval(handle);
-      document.removeEventListener('visibilitychange', onVisibilityChange);
-    };
-  }, []);
-
-  const doLogin = async (fireUser: FirebaseUser) => {
-    try {
-      // prevent multiple logins
-      const location = window.location;
-      if (location.pathname.startsWith('/login')) return;
-
-      if (!fireUser) {
-        throw 'No user found';
-      }
-
-      const token = await fireUser.getIdToken();
-      if (!token) throw 'No token found';
-
-      if (isDoingLogin) return;
-
-      isDoingLogin = true;
-
-      const userRes = await axios.post('/api/auth/login', null, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      isDoingLogin = false;
-
-      const userData = userRes.data as User;
-
-      if (user && checkEqual(userData, user)) return;
-
-      setUser(userData);
-    } catch (e: any) {
-      console.error(e);
+    if (navigator.cookieEnabled && document.cookie && !proof && !hasReloaded) {
+      console.warn('Site proof cookie is missing, refreshing');
+      sessionStorage.setItem('reloaded-for-proof', 'true');
+      location.reload();
+    } else if (proof && hasReloaded) {
+      sessionStorage.removeItem('reloaded-for-proof');
     }
   };
 
@@ -178,6 +73,23 @@ export function AuthProvider({ children }: any) {
     location.reload();
   };
 
+  useEffect(() => {
+    axios
+      .get('/api/auth/me')
+      .then((res) => {
+        const userData = res.data as User;
+        if (user && checkEqual(userData, user)) return;
+        setUser(userData);
+      })
+      .catch(() => {
+        setUser(null);
+      })
+      .finally(() => {
+        setAuthLoading(false);
+        getSession();
+      });
+  }, []);
+
   const updatePref = async (
     key: keyof UserPreferences,
     value: UserPreferences[keyof UserPreferences]
@@ -187,31 +99,14 @@ export function AuthProvider({ children }: any) {
   };
 
   const resetUser = async () => {
-    const auth = (await getAuthModule()).auth;
-    await auth.signOut();
     setUser(null);
-    setUserToken(null);
     setUserPref(null);
-  };
-
-  const checkProof = () => {
-    const proof = getCookie('itemdb-proof');
-    const hasReloaded = sessionStorage.getItem('reloaded-for-proof');
-
-    if (navigator.cookieEnabled && document.cookie && !proof && !hasReloaded) {
-      console.warn('Site proof cookie is missing, refreshing');
-      sessionStorage.setItem('reloaded-for-proof', 'true');
-      location.reload();
-    } else if (proof && hasReloaded) {
-      sessionStorage.removeItem('reloaded-for-proof');
-    }
   };
 
   return (
     <AuthContext.Provider
       value={{
         user: user,
-        userToken: userToken,
         signout,
         authLoading,
         setUser,

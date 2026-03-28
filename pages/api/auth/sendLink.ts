@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { Auth } from '../../../utils/googleCloud';
 import { CreateEmailOptions, Resend } from 'resend';
 import { getEmail } from '@utils/email';
 import prisma from '@utils/prisma';
+import { createMagicToken } from '@utils/auth/magicLink';
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -16,7 +16,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     return res.status(405).json({ success: false, message: 'Method not allowed' });
 
   const cred = req.body.cred;
-  if (!RESEND_API_KEY) return res.status(500).json({ success: false, message: 'Bad server' });
+  if (!isDev && !RESEND_API_KEY)
+    return res.status(500).json({ success: false, message: 'Bad server' });
   if (!cred) return res.status(400).json({ success: false, message: 'No credential provided' });
 
   const isMail = cred.match(mailRegex);
@@ -39,23 +40,28 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 
   try {
-    const actionLink = await Auth.generateSignInWithEmailLink(email, {
-      url: isDev ? 'http://localhost:3000/login' : 'https://itemdb.com.br/login',
-    });
+    const origin = isDev
+      ? 'http://localhost:3000'
+      : (process.env.SITE_URL ?? 'https://itemdb.com.br');
 
-    if (isDev) console.warn(actionLink);
+    const actionLink = await createMagicToken(email, origin);
+    const fullLink = `${origin}/login?token=${actionLink}&email=${encodeURIComponent(email)}`;
 
-    const template = getEmail(actionLink);
+    // In dev the link is already printed to stdout by createMagicToken;
+    // only send a real email in production.
+    if (!isDev) {
+      const template = getEmail(fullLink);
 
-    const msg: CreateEmailOptions = {
-      from: 'itemdb <noreply@itemdb.com.br>',
-      to: email,
-      subject: 'itemdb - Login Link',
-      html: template.html,
-      text: template.text,
-    };
+      const msg: CreateEmailOptions = {
+        from: 'itemdb <noreply@itemdb.com.br>',
+        to: email,
+        subject: 'itemdb - Login Link',
+        html: template.html,
+        text: template.text,
+      };
 
-    await resend.emails.send(msg);
+      await resend.emails.send(msg);
+    }
 
     return res.status(200).json({ success: true, message: 'ok' });
   } catch (e) {

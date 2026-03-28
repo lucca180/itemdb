@@ -37,7 +37,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   )
     return res.status(401).json({ error: 'Unauthorized' });
 
-  if (!isDev && req.headers.authorization?.includes('Bearer')) {
+  if (
+    !isDev &&
+    req.headers.authorization !== TARNUM_KEY &&
+    !req.headers.authorization?.includes('Bearer')
+  ) {
     try {
       const user = (await CheckAuth(req)).user;
       if (!user || !user.isAdmin) return res.status(403).json({ error: 'Forbidden' });

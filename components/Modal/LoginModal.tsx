@@ -19,10 +19,6 @@ import Image from 'next/image';
 import { useState } from 'react';
 import logoIcon from '../../public/logo_white.svg';
 import { useTranslations } from 'next-intl';
-// import { useRouter } from 'next/router';
-// import { getAuth, sendSignInLinkToEmail } from 'firebase/auth';
-
-// const isProd = process.env.NODE_ENV === 'production';
 
 export type LoginModalProps = {
   isOpen: boolean;
@@ -36,8 +32,7 @@ const LoginModal = (props: LoginModalProps) => {
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isSent, setIsSent] = useState<boolean>(false);
-  // const auth = getAuth();
-  // const router = useRouter();
+
   const mailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const doLogin = async () => {
@@ -46,16 +41,6 @@ const LoginModal = (props: LoginModalProps) => {
     setIsLoading(true);
 
     try {
-      // If you are building locally, comment out `await sendEmail(email);` and uncomment the code below and the respective imports
-
-      // await sendSignInLinkToEmail(auth, email, {
-      //   url:
-      //     (isProd
-      //       ? 'https://itemdb.com.br/login'
-      //       : 'http://localhost:3000/login'),
-      //   handleCodeInApp: true,
-      // });
-
       await sendEmail(cred);
 
       if (cred.match(mailRegex)) window.localStorage.setItem('emailForSignIn', cred);

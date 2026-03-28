@@ -49,14 +49,6 @@ const PrivacyPolicyPage = () => {
               </Text>
             </ListItem>
             <ListItem>
-              <Link href="https://firebase.google.com/" isExternal>
-                Firebase
-              </Link>
-              <Text fontSize="sm" color="gray.400">
-                We use Firebase to help us store and manage user accounts.
-              </Text>
-            </ListItem>
-            <ListItem>
               <Link href="https://sentry.io/" isExternal>
                 Sentry
               </Link>

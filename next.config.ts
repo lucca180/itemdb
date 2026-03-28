@@ -59,7 +59,6 @@ const nextConfig: NextConfig = {
       'framer-motion',
       '@chakra-ui/react',
       '@chakra-ui/icons',
-      'firebase',
       'lightweight-charts',
       'lodash',
       '@emotion/react',

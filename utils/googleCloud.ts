@@ -1,48 +1,59 @@
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { DecodedIdToken, getAuth } from 'firebase-admin/auth';
 import type { NextApiRequest } from 'next';
 import prisma from './prisma';
 import { User as dbUser } from '@prisma/generated/client';
 import { rawToUser } from '../pages/api/auth/login';
+import { verifySession, VerifiedSession } from './auth/jwt';
 import { S3Client, PutObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
 import axios from 'axios';
 
-if (!getApps().length) initializeApp({ credential: cert('./firebase-key.json') });
+// Kept for backwards-compatibility — call sites that destructure `decodedToken`
+// use its `uid` and `email` fields, which we populate from the JWT payload.
+export type DecodedToken = {
+  uid: string;
+  email: string | undefined;
+  role: string;
+  exp: number;
+};
 
-export const Auth = getAuth();
+/** No-op shim — kept so import sites that reference `Auth` don't break. */
+export const Auth = {
+  // intentionally empty — Firebase Auth has been removed
+} as const;
 
 export const CheckAuth = async (
   req: NextApiRequest | null,
-  token?: string,
-  session?: string,
+  _token?: string,
+  sessionOverride?: string,
   skipUser = false
-) => {
-  token = token || req?.headers.authorization?.split('Bearer ')[1];
+): Promise<{ decodedToken: DecodedToken; user: ReturnType<typeof rawToUser> | null }> => {
+  const sessionCookie = sessionOverride ?? req?.cookies?.session;
+  if (!sessionCookie) throw new Error('No session cookie');
 
-  let decodedToken: DecodedIdToken;
+  let payload: VerifiedSession;
   try {
-    if (!token) throw new Error('No token provided');
-    decodedToken = await Auth.verifyIdToken(token);
-  } catch (err) {
-    if ((!req || !req.cookies.session) && !session) throw err;
-
-    decodedToken = await Auth.verifySessionCookie((session ?? req?.cookies.session)!);
+    payload = await verifySession(sessionCookie);
+  } catch {
+    throw new Error('Invalid or expired session');
   }
 
-  if (skipUser) return { decodedToken: decodedToken, user: null };
+  const decodedToken: DecodedToken = {
+    uid: payload.uid,
+    email: payload.email,
+    role: payload.role,
+    exp: payload.exp,
+  };
+
+  if (skipUser) return { decodedToken, user: null };
 
   const dbUser = (await prisma.user.findUnique({
-    where: { id: decodedToken.uid, email: decodedToken.email },
+    where: { id: payload.uid },
   })) as dbUser | null;
 
-  if (!dbUser) return { decodedToken: decodedToken, user: null };
+  if (!dbUser) return { decodedToken, user: null };
 
   const user = rawToUser(dbUser);
 
-  return {
-    decodedToken: decodedToken,
-    user: user,
-  };
+  return { decodedToken, user };
 };
 // ----------- S3 R2 MIGRATION ----------- //
 

@@ -13,7 +13,6 @@ import {
 import React, { ReactElement, useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import { useRouter } from 'next/router';
-// import { getAuth, isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
 import Image from 'next/image';
 import logoIcon from '../public/logo_white.svg';
 import axios from 'axios';
@@ -25,11 +24,8 @@ import { loadTranslation } from '@utils/load-translation';
 
 const mailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const getAuth = () => import('../utils/firebase/auth');
-
 const LoginPage = () => {
   const t = useTranslations();
-  // const auth = getAuth();
   const router = useRouter();
   const [email, setEmail] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -42,42 +38,32 @@ const LoginPage = () => {
 
   const init = async () => {
     setIsLoading(true);
-    const { auth, isSignInWithEmailLink, signInWithEmailLink } = await getAuth();
     const redirectTo = (router.query.redirect as string | undefined) ?? '/';
 
-    if (isSignInWithEmailLink(auth, window.location.href) && !user) {
-      let mailAddr = window.localStorage.getItem('emailForSignIn');
-      window.localStorage.removeItem('emailForSignIn');
+    const urlToken = router.query.token as string | undefined;
+    const urlEmail = router.query.email as string | undefined;
 
-      if (!mailAddr) mailAddr = email;
-      if (!mailAddr) {
-        setIsLoading(false);
-        return;
-      }
-
+    if (urlToken && urlEmail && !user) {
       try {
-        const userCred = await signInWithEmailLink(auth, mailAddr, window.location.href);
-
-        const token = await userCred.user.getIdToken();
-        const userRes = await axios.post('/api/auth/login', null, {
-          headers: { Authorization: `Bearer ${token}` },
+        const userRes = await axios.post('/api/auth/login', {
+          token: urlToken,
+          email: urlEmail,
         });
 
-        const user = userRes.data as User;
+        const userData = userRes.data as User;
 
-        if (!user.neopetsUser || !user.username) {
-          setNeopetsUser(user.neopetsUser || '');
-          setUsername(user.username || '');
+        if (!userData.neopetsUser || !userData.username) {
+          setNeopetsUser(userData.neopetsUser || '');
+          setUsername(userData.username || '');
           setIsLoading(false);
           return setNeedInfo(true);
         }
 
-        setUser(user);
-
+        setUser(userData);
         router.replace(decodeURIComponent(redirectTo));
       } catch (e: any) {
-        setError(e.message);
-        console.error(error);
+        setError(e.response?.data?.error ?? e.message);
+        setIsLoading(false);
       }
     } else if (user) {
       if (!user.neopetsUser || !user.username) {
@@ -134,27 +120,19 @@ const LoginPage = () => {
     }
 
     try {
-      const { auth } = await getAuth();
-      const token = await auth.currentUser?.getIdToken();
-      const userRes = await axios.post(
-        '/api/auth/alterUser',
-        {
-          neopetsUser: neopetsUser,
-          username: username,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const userRes = await axios.post('/api/auth/alterUser', {
+        neopetsUser: neopetsUser,
+        username: username,
+      });
 
-      const user = userRes.data as User;
+      const userData = userRes.data as User;
 
-      if (!user.neopetsUser || !user.username) {
+      if (!userData.neopetsUser || !userData.username) {
         setIsLoading(false);
         return setNeedInfo(true);
       }
 
-      setUser(user);
+      setUser(userData);
 
       router.replace(decodeURIComponent(redirectTo));
     } catch (e: any) {
