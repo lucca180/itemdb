@@ -1,32 +1,91 @@
 # itemdb - Neopets Open-Source item database
 
-[itemdb](https://itemdb.com.br/) is a database of information about Neopets items. It is built using **Next.js**, **MySQL** and **[Prisma](https://www.prisma.io/docs)**, and its foundation is a [userscript](https://github.com/lucca180/itemdb/blob/main/userscripts/itemDataExtractor.user.js) that can be used with browser extensions like Tampermonkey.
+[itemdb](https://itemdb.com.br/) is a database of information about Neopets items. It is built using **Next.js**, **MySQL** and **[Prisma](https://www.prisma.io/docs)**
 
 ## Running Locally
 
-First of all, you will need:
+### Prerequisites
 
-- MySQL 8
+- [Docker](https://docs.docker.com/get-docker/) (for the database)
 - Node.js 22+
 - Yarn
-- [Firebase project](https://console.firebase.google.com/u/0/)
 
-Then clone this repo, then run `yarn` to install all dependencies.
+### First-time setup
 
-Create your Firebase project. Make sure you have enabled email/password authentication. Then you will need to **generate the private key file** and place it in the root directory with the name `firebase-key.json`.
+**1. Clone the repo and install dependencies**
 
-You need also to fill the `utils\firebase\app.ts` file with your Firebase project configuration.
+```bash
+git clone https://github.com/lucca180/itemdb.git
+cd itemdb
+yarn
+npx prisma generate
+```
 
-Next, you will need to configure the `.env` file with your MySQL server connection string (check out [.env.default](https://github.com/lucca180/itemdb/blob/main/.env.default)) and make sure you have a database ready.
+**2. Configure environment variables**
 
-With all set, run `npx prisma migrate dev` to sync itemdb schema with your MySQL database. If everything went well, you can run the command `yarn dev`, and your local copy of itemdb will be available at `http://localhost:3000`.
+```bash
+cp .env.default .env.local
+```
 
-But it will be empty :(
+The defaults in `.env.local` work out of the box with the Docker database. No changes are needed for a basic local setup. See [.env.default](.env.default) for optional features (image uploads, Redis, email, etc.).
 
-We have a handy db dump available at [Public Data](https://itemdb.com.br/public-data) page that you can use to import to your local database.
+**3. Start the database**
 
-### Tips
+```bash
+docker compose up -d
+```
 
-- When importing the dump, be sure to skip foreign key checks to prevent errors. Also the correct order should be `items` -> `itemcolors` -> `itemprices`
-- If you try to login, the login url will be on your node console output. You can then change your user type to admin in the database to gain some superpowers.
-- If you want to test something that isn't disclosed here you can reach us via [Feedback](https://itemdb.com.br/feedback)
+This starts a MariaDB 11 container (`itemdb-db`) on `localhost:3306`.
+
+**4. Run database migrations**
+
+```bash
+npx prisma migrate dev
+```
+
+**5. Seed the database**
+
+The seed script creates two local test users and optionally imports item data dumps.
+
+```bash
+npx prisma db seed
+```
+
+To also import item data, download the dumps from the [Public Data](https://itemdb.com.br/public-data) page and place them inside the `prisma/` folder. The seed will automatically detect and import files named in this format, in this order:
+
+```
+prisma/items_<timestamp>.sql
+prisma/itemcolor_<timestamp>.sql
+prisma/itemprices_<timestamp>.sql
+```
+
+The Docker container must be running when the seed executes.
+
+**6. Start the app**
+
+```bash
+yarn dev
+```
+
+Your local copy of itemdb will be available at [http://localhost:3000](http://localhost:3000).
+
+### Test accounts
+
+After seeding, two accounts are available — use the magic-link login flow (the link is printed to your terminal):
+
+| Email | Role |
+|---|---|
+| `admin@itemdb.dev` | ADMIN |
+| `user@itemdb.dev` | USER |
+
+### Accessing the database directly
+
+```bash
+# MariaDB CLI inside the container
+docker exec -it itemdb-db mariadb -u db_user -pdb_pass itemdb
+
+# Or connect any GUI client (TablePlus, DBeaver, etc.) to:
+# Host: localhost  Port: 3306  User: db_user  Password: db_pass  Database: itemdb
+```
+
+If you want to test something that isn't disclosed here you can reach us via [Feedback](https://itemdb.com.br/feedback)

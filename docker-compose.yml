@@ -1,0 +1,24 @@
+services:
+  db:
+    container_name: itemdb-db
+    image: mariadb:11
+    restart: unless-stopped
+    command: --lower-case-table-names=1
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpassword
+      MARIADB_DATABASE: itemdb
+      MARIADB_USER: db_user
+      MARIADB_PASSWORD: db_pass
+    ports:
+      - '3306:3306'
+    volumes:
+      - itemdb_data:/var/lib/mysql
+    healthcheck:
+      test: ['CMD', 'healthcheck.sh', '--su-mysql', '--connect', '--innodb_initialized']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  itemdb_data:

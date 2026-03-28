@@ -35,7 +35,7 @@ export const getNCTradeInsights = async (item_iid: string | number): Promise<Ins
     SELECT t0.*
     FROM (
         SELECT * 
-        FROM itemdb2.OpenableItems
+        FROM OpenableItems
         WHERE item_iid = ${item_iid}
 
         UNION

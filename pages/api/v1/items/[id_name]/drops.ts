@@ -419,7 +419,7 @@ export const getItemParent = async (item_iid: number, itemLimit = 30) => {
     SELECT t0.*
     FROM (
         SELECT * 
-        FROM itemdb2.OpenableItems
+        FROM OpenableItems
         WHERE item_iid = ${item_iid}
 
         UNION
