@@ -1,15 +1,16 @@
 import { Redis as RedisRaw } from 'ioredis';
 import { NextApiRequest } from 'next/types';
-import { areChangesLive, generateSessionToken, normalizeIP, verifySessionToken } from './api-utils';
+import { generateSessionToken, normalizeIP, verifySessionToken } from './api-utils';
 import jwt from 'jsonwebtoken';
 
 const API_CONST = {
-  MIN_LIMIT_COUNT: areChangesLive() ? 5000 : 10000, // maximum items allowed before banning
-  LOGGED_LIMIT: areChangesLive() ? 10000 : 10000, // above but for logged users
+  MIN_LIMIT_COUNT: 5000, // maximum items allowed before banning
+  LOGGED_LIMIT: 10000, // above but for logged users
   SESSION_EXPIRE: 7 * 24 * 60 * 60, // how many seconds before session expires for non-logged users
   SESSION_EXPIRE_LOGGED: 24 * 24 * 60 * 60, // same but for logged users
   INITIAL_BAN_SECONDS: 5 * 60, // how many seconds the first ban should last
-  MAX_BAN_SECONDS: areChangesLive() ? 6 * 60 * 60 : 2 * 60 * 60, // maximum ban duration in seconds
+  MAX_BAN_SECONDS: 2 * 60 * 60, // maximum ban duration in seconds
+  BAN_COUNT_RESET_DAYS: 7, // after how many days the ban count should reset
 } as const;
 
 export const API_ERROR_CODES = {
@@ -117,7 +118,7 @@ export const redis_setItemCount = async (
         .multi()
         .set(`ban:${ip}`, newVal, 'EX', ttl)
         .incr(`bCount:${ip}`)
-        .expire(`bCount:${ip}`, 15 * 24 * 60 * 60)
+        .expire(`bCount:${ip}`, API_CONST.BAN_COUNT_RESET_DAYS * 24 * 60 * 60)
         .expire(ip, Math.min(ttl, 30 * 60))
         .exec();
 

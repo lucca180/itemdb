@@ -235,9 +235,3 @@ export function verifyListJWT(token: string, list_id: number) {
     return false;
   }
 }
-
-// ------------------------------ //
-
-export function areChangesLive() {
-  return Date.now() > 1774249200000;
-}
