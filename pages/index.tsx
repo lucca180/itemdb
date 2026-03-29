@@ -11,7 +11,7 @@ import { ArticleCard } from '../components/Articles/ArticlesCard';
 import { wp_getLatestPosts } from './api/wp/posts';
 import NextLink from 'next/link';
 import Color from 'color';
-import { getTrendingItems, getTrendingLists } from './api/v1/beta/trending';
+import { getTrendingCatLists, getTrendingItems, getTrendingLists } from './api/v1/beta/trending';
 import { createTranslator, useFormatter, useTranslations } from 'next-intl';
 import { getNCMallItemsData } from './api/v1/mall';
 import { getLatestItems } from './api/v1/items';
@@ -24,6 +24,7 @@ import useSWR from 'swr';
 import { loadTranslation } from '@utils/load-translation';
 import { getNewItemsInfo } from './api/v1/beta/new-items';
 import Image from '@components/Utils/Image';
+import { NeggsCard } from '@components/Card/EventCard';
 
 type LatestPricesRes = {
   count: number | null;
@@ -39,7 +40,7 @@ type Props = {
   latestNcMall: ItemData[];
   leavingNcMall: ItemData[];
   trendingLists: UserList[];
-  // eventLists: UserList[];
+  eventLists: UserList[];
   newItemCount: {
     freeItems: number;
     paidItems: number;
@@ -67,18 +68,12 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
     trendingLists,
     newItemCount,
     latestPrices,
-    // eventLists,
+    eventLists,
   } = props;
 
   const { data: latestItems } = useSWR<ItemData[]>(`api/v1/items?limit=20`, (url) => fetcher(url), {
     fallbackData: props.latestItems,
   });
-
-  // const { data: latestPrices } = useSWR<LatestPricesRes>(
-  //   `api/v1/prices?limit=16&count=true`,
-  //   (url) => fetcher(url),
-  //   { fallbackData: props.latestPrices }
-  // );
 
   return (
     <>
@@ -148,6 +143,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
             </Text>
           )}
         </HorizontalHomeCard>
+        {eventLists?.length > 0 && <NeggsCard lists={eventLists} />}
         {newItemCount && (
           <Flex gap={4} flexWrap={'wrap'} flexFlow={{ base: 'column', lg: 'row' }}>
             <HorizontalHomeCard
@@ -341,7 +337,7 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
     leavingNcMall,
     trendingLists,
     newItemCount,
-    // eventLists,
+    eventLists,
   ] = await Promise.all([
     getLatestItems(20, true).catch(() => []),
     getLatestItems(18, true, true).catch(() => []),
@@ -353,9 +349,9 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
       count: null,
     })) as Promise<LatestPricesRes>,
     getNCMallItemsData(18, true).catch(() => []),
-    getTrendingLists(3, ['']).catch(() => []),
+    getTrendingLists(3, ['Festival of Neggs 2026']).catch(() => []),
     getNewItemsInfo(7).catch(() => null),
-    // getTrendingCatLists('Neopies 2026', 3).catch(() => []),
+    getTrendingCatLists('Festival of Neggs 2026', 3).catch(() => []),
   ]);
 
   return {
@@ -369,7 +365,7 @@ export async function getStaticProps(context: any): Promise<{ props: Props; reva
       leavingNcMall,
       trendingLists: trendingLists,
       newItemCount,
-      // eventLists,
+      eventLists,
       messages: await loadTranslation(context.locale, 'index'),
       locale: context.locale,
     },
