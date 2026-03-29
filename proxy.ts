@@ -13,7 +13,12 @@ import * as Sentry from '@sentry/nextjs';
 import { checkSession } from '@utils/redis';
 
 const API_SKIPS = {
-  GET: [/^\/api\/auth.*$/, /^\/api\/widget.*$/, /^\/api\/build-id.*$/],
+  GET: [
+    /^\/api\/auth.*$/,
+    /^\/api\/widget.*$/,
+    /^\/api\/build-id.*$/,
+    /^\/api\/v1\/tools\/album-helper\/redirect$/,
+  ],
   POST: [
     /^\/api\/auth.*$/,
     /^\/api\/v1\/prices$/,

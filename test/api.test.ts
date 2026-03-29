@@ -48,6 +48,16 @@ describe.concurrent('API Access tests', () => {
     expect(response.status).toBe(200);
   });
 
+  test('Access Skip API route', async () => {
+    const request = new NextRequest('http://localhost/api/v1/tools/album-helper/redirect', {
+      method: 'GET',
+    });
+
+    const response = await apiMiddleware(request);
+    expect(response.headers.get('x-itemdb-skip')).toBe('true');
+    expect(response.status).toBe(200);
+  });
+
   test('Access API without proof, key or session', async () => {
     const request = new NextRequest('http://localhost/api/v1/items', {
       method: 'GET',
