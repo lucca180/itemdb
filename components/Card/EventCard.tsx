@@ -21,7 +21,7 @@ export const NeggsCard = (props: EventCardProps) => {
       viewAllLink="/lists/official?cat=Festival%20of%20Neggs%202026"
       title={'Festival of Neggs 2026'}
       isSmall
-      utm_content="neopies-lists"
+      utm_content="event-lists"
       viewAllText={t('General.view-all')}
       sx={{
         position: 'relative',
@@ -51,7 +51,7 @@ export const NeggsCard = (props: EventCardProps) => {
     >
       <Flex flexWrap="wrap" gap={4} justifyContent="center">
         {lists.map((list) => (
-          <UserListCard isSmall list={list} key={list.internal_id} />
+          <UserListCard utm_content="event-lists" isSmall list={list} key={list.internal_id} />
         ))}
       </Flex>
     </HorizontalHomeCard>
