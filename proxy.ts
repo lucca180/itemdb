@@ -169,11 +169,12 @@ export const apiMiddleware = async (request: NextRequest) => {
             type: 'rate-limited-request',
           },
         });
-        return finalizeApiResponse(
-          request,
-          NextResponse.json({ error: 'Too many requests' }, { status: 429 }),
-          startTime
-        );
+
+        const res = NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+        const ttl = await Redis.getBanTTL(ip);
+        res.headers.set('Retry-After', ttl.toString());
+
+        return finalizeApiResponse(request, res, startTime);
       }
     }
   }
@@ -229,9 +230,8 @@ export const apiMiddleware = async (request: NextRequest) => {
         return finalizeApiResponse(request, response, startTime);
       }
     } catch (e) {
-      if (e === Redis.API_ERROR_CODES.noRedis) {
+      if (e === Redis.API_ERROR_CODES.noRedis)
         return finalizeApiResponse(request, response, startTime);
-      }
 
       if (e === Redis.API_ERROR_CODES.limitExceeded) {
         Sentry.metrics.count('api.requests', 1, {
@@ -240,11 +240,11 @@ export const apiMiddleware = async (request: NextRequest) => {
           },
         });
 
-        return finalizeApiResponse(
-          request,
-          NextResponse.json({ error: 'Too many requests' }, { status: 429 }),
-          startTime
-        );
+        const res = NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+        const ttl = await Redis.getKeyTTL(apiToken);
+        res.headers.set('Retry-After', ttl.toString());
+
+        return finalizeApiResponse(request, res, startTime);
       }
 
       if (e === Redis.API_ERROR_CODES.invalidKey) {

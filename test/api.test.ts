@@ -112,6 +112,7 @@ describe.concurrent('API Access tests', () => {
 
       const response = await apiMiddleware(request);
       expect(response.status).toBe(429);
+      expect(response.headers.get('Retry-After')).toBeDefined();
     });
 
     test('Access API with invalid session token', async () => {
@@ -164,6 +165,7 @@ describe.concurrent('API Access tests', () => {
 
       const response = await apiMiddleware(request);
       expect(response.status).toBe(429);
+      expect(response.headers.get('Retry-After')).toBeDefined();
     });
 
     test('Access API with invalid API Key', async () => {

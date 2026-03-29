@@ -68,6 +68,12 @@ export const checkBan = async (ip?: string) => {
   return;
 };
 
+export const getBanTTL = async (ip: string) => {
+  if (!redis) return 0;
+  const ttl = await redis.ttl(`ban:${ip}`);
+  return ttl > 0 ? ttl : 0;
+};
+
 export const redis_setItemCount = async (
   ip: string | null | undefined,
   itemCount: number,
@@ -192,4 +198,13 @@ const incrementApiKey = async (token: string | null | undefined, incrementBy: nu
   }
 
   return;
+};
+
+export const getKeyTTL = async (token: string) => {
+  if (!token || !redis) return 0;
+  const payload = jwt.decode(token) as jwt.JwtPayload | null;
+  if (!payload || !payload.sub) return 0;
+  const keyId = payload.sub;
+  const ttl = await redis.ttl(`apiKey:${keyId}`);
+  return ttl > 0 ? ttl : 0;
 };
