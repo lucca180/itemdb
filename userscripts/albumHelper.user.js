@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Stamp Album Helper
-// @version      1.0.2
+// @version      1.0.3
 // @author       originally EatWooloos, updated by itemdb
 // @namespace    itemdb
 // @description  Adds an info menu about your missing stamps
@@ -312,7 +312,7 @@ if (hasPremium) {
 }
 
 const idbLogo = `<img src="https://itemdb.com.br/favicon.svg" style="width: 30px; height: 30px; vertical-align: middle;">`;
-$(".content").append(`<p style="text-align: center;"><a href="https://itemdb.com.br/api/v1/tools/album-helper?album_id=${albumID}&redirect=true" target="_blank">${idbLogo}&nbsp;Album info&nbsp;${idbLogo}</a></p>`);
+$(".content").append(`<p style="text-align: center;"><a href="https://itemdb.com.br/api/v1/tools/album-helper/redirect?album_id=${albumID}" target="_blank">${idbLogo}&nbsp;Album info&nbsp;${idbLogo}</a></p>`);
 
 // SSW icon
 $("body").on("click", ".stamp-ssw-helper", function () {

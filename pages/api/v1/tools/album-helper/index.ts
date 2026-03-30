@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import prisma from '../../../../utils/prisma';
-import { getManyItems } from '../items/many';
+import prisma from '../../../../../utils/prisma';
+import { getManyItems } from '../../items/many';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
