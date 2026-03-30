@@ -24,10 +24,11 @@ import { useFormatter, useTranslations } from 'next-intl';
 import { ReactElement } from 'react';
 import { ArticleBreadcrumb } from '../../components/Breadcrumbs/ArticlesBreadcrumb';
 import { loadTranslation } from '@utils/load-translation';
+import Color from 'color';
 
 export type ArticlePageProps = {
   post: WP_Article;
-  recomendations: WP_Article[];
+  recommendations: WP_Article[];
   messages: any;
   locale: string;
 };
@@ -35,7 +36,10 @@ export type ArticlePageProps = {
 const ArticlePage = (props: ArticlePageProps) => {
   const t = useTranslations();
   const formatter = useFormatter();
-  const { post, recomendations } = props;
+  const { post, recommendations } = props;
+
+  const color = Color(post.palette?.vibrant.hex ?? '#05B7E8');
+
   return (
     <>
       <HeaderCard
@@ -47,7 +51,7 @@ const ArticlePage = (props: ArticlePageProps) => {
               }
             : undefined
         }
-        color={post.palette?.lightvibrant.hex ?? '#05B7E8'}
+        color={color.lightness(55).hex()}
         breadcrumb={<ArticleBreadcrumb article={post} />}
         isCenter
       >
@@ -81,8 +85,10 @@ const ArticlePage = (props: ArticlePageProps) => {
         flexFlow="column"
         gap={3}
         sx={{
-          a: { color: post.palette?.vibrant.hex ?? 'cyan.300' },
-          'b,strong': { color: post.palette?.lightvibrant.hex ?? 'blue.300' },
+          a: { color: color.lightness(65).hex() ?? 'cyan.300' },
+          'b,strong': {
+            color: Color(post.palette?.lightvibrant.hex).lightness(60).hex() ?? 'blue.300',
+          },
           img: { my: 2 },
         }}
       >
@@ -90,7 +96,7 @@ const ArticlePage = (props: ArticlePageProps) => {
           {parse(post.content, options)}
         </Flex>
       </Flex>
-      {recomendations.length > 0 && (
+      {recommendations.length > 0 && (
         <Flex
           flexFlow={'column'}
           justifyContent={'center'}
@@ -103,7 +109,7 @@ const ArticlePage = (props: ArticlePageProps) => {
             {t('Articles.recommended-articles')}
           </Heading>
           <Flex gap={[2, 3]} overflow="auto" pb={3}>
-            {recomendations.slice(0, 3).map((article) => (
+            {recommendations.slice(0, 3).map((article) => (
               <ArticleCard key={article.id} article={article} vertical />
             ))}
           </Flex>
@@ -134,7 +140,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     props: {
       post,
       messages: await loadTranslation(context.locale as string, 'articles/[slug]'),
-      recomendations: recommended.filter((x) => x.id !== post.id),
+      recommendations: recommended.filter((x) => x.id !== post.id),
       locale: context.locale,
     },
     revalidate: 60,
@@ -148,12 +154,12 @@ ArticlePage.getLayout = function getLayout(page: ReactElement, props: ArticlePag
       SEO={{
         title: post.title,
         description: post.excerpt,
-        themeColor: post.palette?.lightvibrant.hex ?? '#05B7E8',
+        themeColor: post.palette?.vibrant.hex ?? '#05B7E8',
         openGraph: {
           images: [{ url: post.thumbnail ?? '', width: 150, height: 150, alt: post.title }],
         },
       }}
-      mainColor={`${post.palette?.lightvibrant.hex ?? '#05B7E8'}6b`}
+      mainColor={`${post.palette?.vibrant.hex ?? '#05B7E8'}6b`}
     >
       {page}
     </Layout>
