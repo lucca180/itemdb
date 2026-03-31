@@ -135,6 +135,11 @@ const nextConfig: NextConfig = {
         destination: '/api/v1/mall/:slug*',
         permanent: true,
       },
+      {
+        source: '/owls',
+        destination: '/articles/owls',
+        permanent: true,
+      },
     ];
   },
   transpilePackages: ['lightweight-charts', 'fancy-canvas'],

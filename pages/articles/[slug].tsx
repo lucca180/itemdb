@@ -125,7 +125,6 @@ export async function getStaticProps(context: GetStaticPropsContext) {
   const slug = context?.params?.slug as string;
 
   if (!slug) return { notFound: true };
-  if (slug === 'owls') return { redirect: { destination: '/owls', permanent: true } };
 
   const post = await wp_getBySlug(slug);
   if (!post) return { notFound: true };
