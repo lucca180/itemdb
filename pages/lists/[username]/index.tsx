@@ -398,6 +398,8 @@ const UserListsPage = (props: Props) => {
                 href={`http://www.neopets.com/userlookup.phtml?user=${owner.neopetsUser}`}
                 size="sm"
                 aria-label={t('General.userlookup')}
+                data-umami-event="user-interact"
+                data-umami-event-type="userlookup"
                 icon={<FaHouseUser />}
               />
               <IconButton
@@ -406,6 +408,8 @@ const UserListsPage = (props: Props) => {
                 href={`http://www.neopets.com/neomessages.phtml?type=send&recipient=${owner.neopetsUser}`}
                 size="sm"
                 aria-label={t('General.neomail')}
+                data-umami-event="user-interact"
+                data-umami-event-type="neomail"
                 icon={<FaEnvelope />}
               />
               {owner.username && <UserAchiev achievements={props.achievements} />}
