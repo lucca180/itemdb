@@ -63,12 +63,8 @@ export async function proxy(request: NextRequest) {
 
   updateServerTime('regular-middleware', startTime, response);
 
-  const { score, isLikely: isBrowser } = isLikelyBrowser(request);
-  request.headers.set('x-itemdb-score', score.toString());
-  request.headers.set('x-itemdb-likely', isBrowser ? 'true' : 'false');
-
   const proofCookie = request.cookies.get('itemdb-proof')?.value || '';
-  if (isBrowser && !verifySiteProof(proofCookie, 120)) {
+  if (!verifySiteProof(proofCookie, 120)) {
     const proof = generateSiteProof();
     response.cookies.set({
       name: 'itemdb-proof',
