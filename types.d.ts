@@ -191,8 +191,8 @@ export type SearchFilters = {
   weight: string[]; // [min, max]
   estVal: string[]; // [min, max]
   ncValue: string[]; // [min, max]
-  petpetColor: string[];
-  petpetSpecies: string[];
+  petpetColor: (string | number)[];
+  petpetSpecies: (string | number)[];
   p2Paintable?: boolean;
   p2Canonical?: boolean;
   restockProfit: string; // min profit margin

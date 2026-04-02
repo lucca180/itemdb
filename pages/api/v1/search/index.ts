@@ -396,7 +396,7 @@ export async function doSearch(
     typeof petpetCanonical !== 'undefined'
   ) {
     petpetJoin = Prisma.sql`LEFT JOIN PetpetColors as pc on pc.item_iid = a.internal_id`;
-    const allP2 = petpetSpecies[0] === '-2';
+    const allP2 = Number(petpetSpecies[0]) === -2;
 
     if (allP2) petpetSQL.push(Prisma.sql`petpet_id is not null`);
 
