@@ -41,6 +41,9 @@ export const getAvyData = async (item_iid: number) => {
         },
       ],
     },
+    orderBy: {
+      releasedAt: 'desc',
+    },
   });
 
   if (avyRaw.length === 0) return null;
