@@ -112,16 +112,18 @@ export const SearchModal = (props: SearchModalProps) => {
         case 'ArrowDown': {
           e.preventDefault();
           setFocusedIndex((prev) => Math.min(prev + 1, maxIndex));
+          track('omni-navigate', 'down');
           break;
         }
         case 'ArrowUp': {
           e.preventDefault();
           setFocusedIndex((prev) => Math.max(prev - 1, 0));
+          track('omni-navigate', 'up');
           break;
         }
         case 'Enter': {
           e.preventDefault();
-
+          track('omni-navigate', 'enter');
           setFocusedIndex((current) => {
             if (current === 0) {
               const searchValue = search.trim();
@@ -129,6 +131,8 @@ export const SearchModal = (props: SearchModalProps) => {
 
               const searchUrl = getSearchUrl(searchValue);
               setLatest({ type: 'search', query: searchValue, index: 0, url: searchUrl });
+              track('omni-search', !searchCards.length ? 'latest-enter-search' : 'enter-search');
+
               router.push(searchUrl);
               onClose();
               return current;
@@ -136,6 +140,11 @@ export const SearchModal = (props: SearchModalProps) => {
 
             const card = cardList.find((c) => c.index === current);
             if (!card) return current;
+
+            track(
+              'omni-search',
+              !searchCards.length ? 'latest-enter-' + card.type : 'enter-' + card.type
+            );
 
             let url = '';
             if (card.type === 'item') {
@@ -262,6 +271,8 @@ export const SearchModal = (props: SearchModalProps) => {
       setFocusedIndex(card.index);
       inputRef.current?.focus();
     }
+
+    track('omni-jump', type);
   };
 
   const setLatest = (card: SearchCard) => {
@@ -311,11 +322,7 @@ export const SearchModal = (props: SearchModalProps) => {
   const handleClick = (card: SearchCard) => {
     setLatest(card);
 
-    if (window?.umami) {
-      window.umami?.track('omni-search', {
-        type: !searchCards.length ? 'latest-' + card.type : card.type,
-      });
-    }
+    track('omni-search', !searchCards.length ? 'latest-' + card.type : card.type);
 
     onClose();
   };
@@ -343,6 +350,14 @@ export const SearchModal = (props: SearchModalProps) => {
     paramsString = paramsString ? '&' + paramsString : '';
 
     return `/search?s=${encodeURIComponent(query)}${paramsString}`;
+  };
+
+  const track = (event: string, type?: string) => {
+    if (window?.umami) {
+      window.umami?.track(event, {
+        type,
+      });
+    }
   };
 
   return (

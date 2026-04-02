@@ -258,6 +258,8 @@ const ListHeader = (props: ListHeaderProps) => {
                   href={`http://www.neopets.com/userlookup.phtml?user=${list.owner.neopetsUser}`}
                   borderRadius="md"
                   colorScheme={color.isLight() ? 'black' : 'gray'}
+                  data-umami-event="user-interact"
+                  data-umami-event-type="userlookup"
                 >
                   {t('General.userlookup')} <Icon as={BiLinkExternal} verticalAlign="text-top" />
                 </Badge>
@@ -268,6 +270,8 @@ const ListHeader = (props: ListHeaderProps) => {
                   href={`http://www.neopets.com/neomessages.phtml?type=send&recipient=${list.owner.neopetsUser}`}
                   borderRadius="md"
                   colorScheme={color.isLight() ? 'black' : 'gray'}
+                  data-umami-event="user-interact"
+                  data-umami-event-type="neomail"
                 >
                   {t('General.neomail')} <Icon as={BiLinkExternal} verticalAlign="text-top" />
                 </Badge>
