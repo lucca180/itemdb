@@ -41,7 +41,10 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const item = await getItem(name ?? internal_id);
 
   const ip = requestIp.getClientIp(req);
-  redis_setItemCount(ip, 1, req);
+
+  // make this route more expensive
+  // so we discourage using this route inside loops
+  await redis_setItemCount(ip, 10, req);
 
   return res.json(item);
 };

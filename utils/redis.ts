@@ -1,6 +1,11 @@
 import { Redis as RedisRaw } from 'ioredis';
 import { NextApiRequest } from 'next/types';
-import { generateSessionToken, normalizeIP, verifySessionToken } from './api-utils';
+import {
+  generateSessionToken,
+  normalizeIP,
+  verifySessionToken,
+  verifySiteProof,
+} from './api-utils';
 import jwt from 'jsonwebtoken';
 
 const API_CONST = {
@@ -82,9 +87,9 @@ export const redis_setItemCount = async (
   try {
     if (!ip || !itemCount || !redis) return;
 
-    const isValidProof = req.headers['x-itemdb-valid'] === 'true';
+    const isValidProof = req.headers['x-itemdb-proof'] as string | undefined;
 
-    if (isValidProof) return;
+    if (isValidProof && verifySiteProof(isValidProof)) return;
 
     if (req.headers['x-itemdb-token'])
       return incrementApiKey(req.headers['x-itemdb-token'] as string, itemCount);
