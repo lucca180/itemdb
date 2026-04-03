@@ -342,7 +342,7 @@ const addCors = (request: NextRequest, response: NextResponse) => {
       );
       response.headers.set(
         'Access-Control-Expose-Headers',
-        'Content-Type, Authorization, x-itemdb-proof, x-itemdb-token, x-itemdb-key, x-itemdb-block, x-itemdb-skip, x-itemdb-valid'
+        'Content-Type, Authorization, x-itemdb-proof, x-itemdb-token, x-itemdb-key, x-itemdb-block, x-itemdb-skip, x-itemdb-valid, sentry-trace, baggage, traceparent'
       );
       response.headers.set('Access-Control-Allow-Origin', origin);
       response.headers.set('Access-Control-Allow-Credentials', 'true');

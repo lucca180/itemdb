@@ -13,9 +13,14 @@ if (isProd) {
       SENTRY_DSN ||
       'https://d093bca7709346a6a45966764e1b1988@o1042114.ingest.us.sentry.io/4504761196216321',
     // Adjust this value in production, or use tracesSampler for greater control
-    tracesSampleRate: 0.2,
-    profileSessionSampleRate: 0.2,
-    ignoreErrors: ["Can't find variable: $", 'userscript.html'],
+    tracesSampleRate: 0.15,
+    profileSessionSampleRate: 0.15,
+    ignoreErrors: ["Can't find variable: $", 'userscript.html', 'window.RufflePlayer.config'],
+    sampleRate: 0.8,
+    tracePropagationTargets: [
+      'localhost', // For local development
+      /^\/api\//, // For same-origin API calls
+    ],
     // ...
     // Note: if you want to override the automatic release value, do not set a
     // `release` value here - use the environment variable `SENTRY_RELEASE`, so

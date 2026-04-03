@@ -22,7 +22,7 @@ export const API_ERROR_CODES = {
 export let redis: RedisRaw;
 
 if (
-  // process.env.NODE_ENV === 'production' &&
+  process.env.NODE_ENV === 'production' &&
   process.env.REDIS_PORT &&
   process.env.REDIS_HOST &&
   process.env.REDIS_PASSWORD
