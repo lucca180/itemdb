@@ -187,12 +187,12 @@ const incrementApiKey = async (token: string | null | undefined, incrementBy: nu
   }
 
   const newVal = await redis.incrby(`apiKey:${keyId}`, incrementBy);
-  await redis.expire(`apiKey:${keyId}`, 30 * 60);
+  await redis.expire(`apiKey:${keyId}`, 60 * 60);
 
   if (limit === -1) return; // unlimited key
 
   if (limit && newVal >= limit) {
-    await redis.expire(`apiKey:${keyId}`, 60 * 60);
+    await redis.expire(`apiKey:${keyId}`, 120 * 60);
     // it doesn't really matter what we return here...
     // throw API_ERROR_CODES.limitExceeded;
   }

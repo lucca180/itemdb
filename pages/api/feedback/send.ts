@@ -305,7 +305,7 @@ export const processSimilarTrades = async (trade: TradeData, trade_id: number, u
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const resend = new Resend(RESEND_API_KEY);
 
-const submitMailFeedback = async (
+export const submitMailFeedback = async (
   data: any,
   subject_id: string,
   email: string,

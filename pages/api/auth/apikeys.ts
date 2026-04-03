@@ -1,14 +1,16 @@
 import { CheckAuth } from '@utils/googleCloud';
 import prisma from '@utils/prisma';
 import { NextApiRequest, NextApiResponse } from 'next';
-
+import { submitMailFeedback } from '../feedback/send';
+import requestIp from 'request-ip';
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
   if (req.method === 'POST') return POST(req, res);
+  if (req.method === 'PUT') return PUT(req, res);
   if (req.method === 'DELETE') return DELETE(req, res);
 
   if (req.method == 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Methods', 'POST');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, DELETE, OPTIONS');
     return res.status(200).json({});
   }
 
@@ -36,9 +38,51 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
 
   try {
     user = (await CheckAuth(req)).user;
-    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+    if (!user || user.banned) return res.status(401).json({ error: 'Unauthorized' });
   } catch (e: any) {
-    console.error(e);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+
+  const { key_id, justification, newLimit } = req.body as {
+    key_id: number;
+    justification: string;
+    newLimit: number;
+  };
+
+  if (!key_id || !justification || !newLimit)
+    return res.status(400).json({ error: 'Missing fields' });
+
+  const apiKey = await prisma.apiKeys.findUnique({
+    where: {
+      key_id,
+    },
+  });
+
+  if (!apiKey || apiKey.user_id !== user.id)
+    return res.status(404).json({ error: 'API key not found' });
+  const ip = requestIp.getClientIp(req) || '';
+
+  const feedbackData = {
+    content: {
+      subject: `API Limit Increase Request`,
+      message: justification + `\n\nRequested new limit: ${newLimit}\nAPI Key ID: ${key_id}`,
+    },
+    ip: ip,
+    pageRef: `/tools/api`,
+  };
+
+  await submitMailFeedback(feedbackData, key_id.toString(), user.email, 0, 'api-limit-increase');
+
+  return res.status(200).json({ success: true });
+}
+
+async function PUT(req: NextApiRequest, res: NextApiResponse) {
+  let user;
+
+  try {
+    user = (await CheckAuth(req)).user;
+    if (!user || user.banned) return res.status(401).json({ error: 'Unauthorized' });
+  } catch (e: any) {
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 
@@ -73,7 +117,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
         user_id: user.id,
         name: name || '',
         description: description || '',
-        limit: 7500,
+        limit: 1000,
       },
     });
 

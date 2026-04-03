@@ -11,6 +11,7 @@ import {
   Box,
   Input,
   Textarea,
+  Link,
 } from '@chakra-ui/react';
 import HeaderCard from '../../components/Card/HeaderCard';
 import Layout from '../../components/Layout';
@@ -22,6 +23,7 @@ import { NextApiRequest, GetServerSidePropsContext } from 'next';
 import { CheckAuth } from '../../utils/googleCloud';
 import { loadTranslation } from '@utils/load-translation';
 import { getAPIKeys } from '../api/auth/apikeys';
+import IncreaseAPIModal from '@components/Modal/IncreaseAPILimitModal';
 
 type APIKeysPageProps = {
   apiKeys: APIKeyData[];
@@ -35,6 +37,7 @@ const APIKeysPage = (props: APIKeysPageProps) => {
   const toast = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [apiCreateResult, setApiCreateResult] = useState<APIKeyData | null>(null);
+  const [selectedKeyId, setSelectedKeyId] = useState<number | null>(null);
 
   const keys = [...props.apiKeys, ...(apiCreateResult ? [apiCreateResult] : [])];
 
@@ -58,7 +61,7 @@ const APIKeysPage = (props: APIKeysPageProps) => {
     setIsLoading(true);
 
     try {
-      const res = await axios.post('/api/auth/apikeys', { name, description });
+      const res = await axios.put('/api/auth/apikeys', { name, description });
       setApiCreateResult(res.data);
     } catch (e) {
       console.error(e);
@@ -96,6 +99,13 @@ const APIKeysPage = (props: APIKeysPageProps) => {
 
   return (
     <>
+      {selectedKeyId && (
+        <IncreaseAPIModal
+          isOpen={true}
+          onClose={() => setSelectedKeyId(null)}
+          key_id={selectedKeyId}
+        />
+      )}
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/nt/ntimages/147_grundo_programmer.gif',
@@ -165,6 +175,17 @@ const APIKeysPage = (props: APIKeysPageProps) => {
                     {apiKey.limit === -1 ? 'Unlimited' : apiKey.limit} items
                   </Text>
                 </Flex>
+              </Flex>
+              <Flex gap={2} mt={3}>
+                {apiKey.active && (
+                  <Button
+                    variant={'outline'}
+                    size={'xs'}
+                    onClick={() => setSelectedKeyId(apiKey.key_id)}
+                  >
+                    Request Limit Increase
+                  </Button>
+                )}
                 {apiKey.active && (
                   <Button
                     colorScheme="red"
@@ -179,7 +200,6 @@ const APIKeysPage = (props: APIKeysPageProps) => {
             </Box>
           ))}
         </Flex>
-
         <Flex
           flex={1}
           flexFlow={'column'}
@@ -217,6 +237,19 @@ const APIKeysPage = (props: APIKeysPageProps) => {
               Create API Key
             </Button>
           </Center>
+          <Text fontSize={'xs'} color="whiteAlpha.500" textAlign={'center'}>
+            By creating an API key, you agree to use our resources responsibly and follow our{' '}
+            <Link href="/terms" color="purple.400">
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link href="https://docs.itemdb.com.br/#general-rules" color="purple.400" isExternal>
+              Rules
+            </Link>
+            <br />
+            We reserve the right to revoke API keys and ban users that are found to be in violation
+            of our policies or are causing harm to our services.
+          </Text>
         </Flex>
       </Flex>
     </>
