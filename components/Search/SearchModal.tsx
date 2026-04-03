@@ -883,6 +883,7 @@ const SearchQuery = ({
   return (
     <Flex
       as={Link}
+      prefetch={false}
       href={url}
       bg={isFocus ? 'whiteAlpha.400' : 'whiteAlpha.200'}
       _hover={{ bg: 'whiteAlpha.400' }}
