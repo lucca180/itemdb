@@ -40,12 +40,15 @@ fi
 # ---------------------------------------------------------------------------
 # Load .env
 # ---------------------------------------------------------------------------
-if [ -f .env ]; then
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ENV_FILE="$SCRIPT_DIR/../.env"
+
+if [ -f "$ENV_FILE" ]; then
   set -a
-  . .env
+  . "$ENV_FILE"
   set +a
 else
-  echo ".env file not found!"
+  echo ".env file not found at $ENV_FILE"
   exit 1
 fi
 
