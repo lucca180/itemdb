@@ -43,14 +43,18 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ENV_FILE="$SCRIPT_DIR/../.env"
 
-if [ -f "$ENV_FILE" ]; then
-  set -a
-  . "$ENV_FILE"
-  set +a
-else
+if [ ! -f "$ENV_FILE" ]; then
   echo ".env file not found at $ENV_FILE"
   exit 1
 fi
+
+# Extract DATABASE_URL safely without sourcing the whole .env
+# Strips surrounding quotes and Windows CRLF line endings
+DATABASE_URL=$(grep -E '^DATABASE_URL=' "$ENV_FILE" \
+  | head -1 \
+  | sed -E 's/^DATABASE_URL=//' \
+  | tr -d '\r' \
+  | sed -E 's/^["'"'"']|["'"'"']$//g')
 
 if [ -z "${DATABASE_URL:-}" ]; then
   echo "DATABASE_URL not set in .env"
