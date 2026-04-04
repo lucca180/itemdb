@@ -72,8 +72,11 @@ DB_NAME=$(echo "$DATABASE_URL"     | sed -E 's#^mysql://[^@]+@[^/]+/([^?]+).*#\1
 
 MYSQL_CMD="mysql --batch --skip-column-names -h$DB_HOST -P$DB_PORT -u$DB_USER -p$DB_PASSWORD $DB_NAME"
 
+echo "[${TIMESTAMP:-init}] host=${DB_HOST} port=${DB_PORT} db=${DB_NAME} user=${DB_USER}"
+
 run_sql() {
-  $MYSQL_CMD -e "$1" 2>/dev/null
+  # Suppress only the "insecure password" warning, show all other errors
+  $MYSQL_CMD -e "$1" 2> >(grep -v "Warning: Using a password" >&2)
 }
 
 # ---------------------------------------------------------------------------
