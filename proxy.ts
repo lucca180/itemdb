@@ -115,6 +115,7 @@ export const apiMiddleware = async (request: NextRequest) => {
         type: 'skip-route',
       },
     });
+    Sentry.setTag('api_type', 'skip-route');
     return finalizeApiResponse(request, response, startTime);
   }
 
@@ -125,7 +126,7 @@ export const apiMiddleware = async (request: NextRequest) => {
   const { score, isLikely: isBrowser } = isLikelyBrowser(request);
   requestHeaders.set('x-itemdb-score', score.toString());
   requestHeaders.set('x-itemdb-likely', isBrowser ? 'true' : 'false');
-
+  Sentry.setTag('x-itemdb-score', score);
   // request is trusted if it has a valid site proof, skip all checks
   const itemdb_proof = request.headers.get('x-itemdb-proof');
   requestHeaders.delete('x-itemdb-valid');
@@ -153,7 +154,7 @@ export const apiMiddleware = async (request: NextRequest) => {
         type: 'site-proof',
       },
     });
-
+    Sentry.setTag('api_type', 'site-proof');
     return finalizeApiResponse(request, response, startTime);
   } else if (itemdb_proof) {
     response.cookies.set({ name: 'itemdb-proof', value: '', maxAge: 0 });
@@ -184,6 +185,7 @@ export const apiMiddleware = async (request: NextRequest) => {
   const sessionCookie = request.cookies.get('idb-session-id');
   if (isBrowser) {
     if (sessionCookie && sessionCookie.value) {
+      Sentry.setTag('api_type', 'session');
       try {
         const sessionId = checkSession(sessionCookie.value);
         if (!!sessionId) {
@@ -220,16 +222,18 @@ export const apiMiddleware = async (request: NextRequest) => {
   const apiToken = request.headers.get('x-itemdb-token');
   const tokenPayload = apiToken ? verifyApiToken(apiToken) : null;
   if (apiToken && tokenPayload) {
+    Sentry.setTag('api_type', 'api-token');
+    Sentry.setTag('api_key_id', tokenPayload.sub);
     try {
-      const keyData = await Redis.checkApiToken(apiToken);
-      if (keyData) {
-        Sentry.metrics.count('api.requests', 1, {
-          attributes: {
-            type: 'api-token',
-          },
-        });
-        return finalizeApiResponse(request, response, startTime);
-      }
+      await Redis.checkApiToken(apiToken);
+
+      Sentry.metrics.count('api.requests', 1, {
+        attributes: {
+          type: 'api-token',
+        },
+      });
+
+      return finalizeApiResponse(request, response, startTime);
     } catch (e) {
       if (e === Redis.API_ERROR_CODES.noRedis)
         return finalizeApiResponse(request, response, startTime);
@@ -278,6 +282,8 @@ export const apiMiddleware = async (request: NextRequest) => {
       type: type,
     },
   });
+
+  Sentry.setTag('api_type', 'undefined');
 
   return NextResponse.json({ error: 'Invalid access' }, { status: 401 });
 };
