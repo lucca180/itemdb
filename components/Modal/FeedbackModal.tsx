@@ -27,6 +27,7 @@ import { ItemData } from '../../types';
 import { useAuth } from '../../utils/auth';
 import { useTranslations } from 'next-intl';
 import { FiSend } from 'react-icons/fi';
+import { useScriptStatus } from '@utils/scriptUtils';
 
 export type FeedbackModalProps = {
   isOpen: boolean;
@@ -49,7 +50,7 @@ const FeedbackModal = (props: FeedbackModalProps) => {
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
   const [feedbackInfo, setFeedbackInfo] = useState<FeedbackFormData>({});
-
+  const { scriptStatus } = useScriptStatus();
   useEffect(() => {
     setFeedbackInfo((prev) => ({ ...prev, email: user?.email ?? '' }));
   }, [user]);
@@ -63,10 +64,11 @@ const FeedbackModal = (props: FeedbackModalProps) => {
         json: JSON.stringify({
           message: feedbackInfo.message ?? '',
           subject: feedbackInfo.subject ?? '',
-          scriptInfo: {
-            restock: window.itemdb_restock?.version ?? null,
-            itemData: window.itemdb_script?.version ?? null,
-          },
+          scriptInfo: scriptStatus
+            ? Object.fromEntries(
+                Object.entries(scriptStatus).map(([key, value]) => [key, value.version])
+              )
+            : {},
           userAgent: navigator.userAgent,
         }),
         type: 'feedback',
