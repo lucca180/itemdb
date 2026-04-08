@@ -6,7 +6,7 @@ export const LATEST_VERSIONS_CODE = {
   itemdb_sdbPricer: 154,
   itemdb_albumHelper: 103,
   itemdb_listImporter: 124,
-  itemdb_sortGallery: 103,
+  itemdb_sortGallery: 110,
 };
 
 export const DETECTABLE_SCRIPTS = [

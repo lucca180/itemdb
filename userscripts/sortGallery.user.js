@@ -1,6 +1,6 @@
   // ==UserScript==
   // @name         itemdb - Sort Gallery
-  // @version      1.0.3
+  // @version      1.1.0
   // @author       itemdb
   // @namespace    itemdb
   // @description  Sorts your gallery by color
@@ -8,7 +8,8 @@
   // @match        *://*.neopets.com/gallery/index.phtml*
   // @match        *://*.itemdb.com.br/*
   // @icon         https://itemdb.com.br/favicon.ico
-  // @grant        none
+  // @connect      itemdb.com.br
+  // @grant        GM_xmlhttpRequest
   // @noframes
   // ==/UserScript==
 
@@ -107,20 +108,19 @@
   }
 
   async function fetchColors(){
-    const res = await fetch('https://itemdb.com.br/api/v1/items/colors', {
+    const res = await GM.xmlHttpRequest({
       method: 'POST',
-      keepalive: true,
-      credentials: 'include',
+      url: 'https://itemdb.com.br/api/v1/items/colors',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
+      data: JSON.stringify({
         image_id: images_ids,
       }),
     });
 
-    if (res.ok) {
-      const data = await res.json();
+    if (res.status === 200) {
+      const data = JSON.parse(res.responseText);
       image_colors = data;
       colorFetched = true;
     } else {
