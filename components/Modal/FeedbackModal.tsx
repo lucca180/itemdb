@@ -145,7 +145,16 @@ const FeedbackModal = (props: FeedbackModalProps) => {
                 />
                 <FormHelperText fontSize={'xs'}>{t('Feedback.bug-helper-text')}</FormHelperText>
               </FormControl>
-              <Text fontSize="sm" color="gray.400" textAlign={'center'}>
+              <Text fontSize="xs" color="gray.400" textAlign={'center'}>
+                {t.rich('Feedback.script-issues-tool-cta', {
+                  Link: (chunks) => (
+                    <Link as={NextLink} href="/tools/troubleshooting" color="gray.200">
+                      {chunks}
+                    </Link>
+                  ),
+                })}
+              </Text>
+              {/* <Text fontSize="sm" color="gray.400" textAlign={'center'}>
                 {t.rich('Feedback.modalContributeCallback', {
                   Link: (chunks) => (
                     <Link as={NextLink} href="/contribute" color="gray.200">
@@ -153,7 +162,7 @@ const FeedbackModal = (props: FeedbackModalProps) => {
                     </Link>
                   ),
                 })}
-              </Text>
+              </Text> */}
             </Stack>
           )}
 

@@ -833,7 +833,8 @@
     "updated-trade-pricing-policy": "Updated Trade Pricing Policy",
     "review-pricing-policy": "Please review the new trade pricing policy to stay informed about Baby Paint Brush changes.",
     "unit-price-in-neopoints": "Price per unit in Neopoints",
-    "multiple-amount-msg": "Please enter the <b>price per unit</b> for this item. Divide the total price by the amount if necessary."
+    "multiple-amount-msg": "Please enter the <b>price per unit</b> for this item. Divide the total price by the amount if necessary.",
+    "script-issues-tool-cta": "Script Issues? Check our <Link>Troubleshooting Tool</Link>!"
   },
   "Restock": {
     "restock-info": "Restock Info",

@@ -660,7 +660,8 @@
     "updated-trade-pricing-policy": "Atualização na Política de Precificação",
     "review-pricing-policy": "Por favor, revise a nova política de precificação para se manter informado sobre as alterações a cerca dos Baby Paint Brush.",
     "multiple-amount-msg": "Por favor insira o <b>valor unitário</b> para este item. Divida o valor total pela quantidade - se necessário.",
-    "unit-price-in-neopoints": "Preço unitário em Neopontos"
+    "unit-price-in-neopoints": "Preço unitário em Neopontos",
+    "script-issues-tool-cta": "Problemas com Scripts? Confira nossa Ferramenta de <Link>Solução de Problemas</Link>!"
   },
   "Lists": {
     "add-to-list": "Adicionar a Lista",
