@@ -14,8 +14,8 @@ const API_CONST = {
   SESSION_EXPIRE: 7 * 24 * 60 * 60, // how many seconds before session expires for non-logged users
   SESSION_EXPIRE_LOGGED: 24 * 24 * 60 * 60, // same but for logged users
   INITIAL_BAN_SECONDS: 5 * 60, // how many seconds the first ban should last
-  MAX_BAN_SECONDS: 2 * 60 * 60, // maximum ban duration in seconds
-  BAN_COUNT_RESET_DAYS: 7, // after how many days the ban count should reset
+  MAX_BAN_SECONDS: 3 * 60 * 60, // maximum ban duration in seconds
+  BAN_COUNT_RESET_DAYS: 5, // after how many days the ban count should reset
 } as const;
 
 export const API_ERROR_CODES = {
@@ -99,6 +99,11 @@ export const redis_setItemCount = async (
     const sessionCookie =
       req.cookies['idb-session-id'] || (req.cookies as any)?.get?.('idb-session-id');
 
+    ip = normalizeIP(ip);
+
+    if (!ip) return;
+    const banCount = Number((await redis.get(`bCount:${ip}`)) || '0');
+
     if (sessionCookie) {
       const sessionToken = sessionCookie.value ?? sessionCookie;
       const sessionData = verifySessionToken(sessionToken);
@@ -106,11 +111,13 @@ export const redis_setItemCount = async (
       if (sessionData && sessionData.limit) {
         limit = Math.max(sessionData.limit, limit);
       }
+
+      // reduce limit based on ban count
+      if (banCount > 0) {
+        const ratio = Math.max(0.4, 1 - (banCount / 13) ** 2);
+        limit = Math.max(Math.floor(limit * ratio), 1);
+      }
     }
-
-    ip = normalizeIP(ip);
-
-    if (!ip) return;
 
     const newVal = await redis.incrby(ip, itemCount);
 
@@ -118,9 +125,7 @@ export const redis_setItemCount = async (
       const isBanned = await redis.get(`ban:${ip}`);
       if (isBanned) return;
 
-      const banCount = (await redis.get(`bCount:${ip}`)) || '1';
-
-      const base = Number(banCount) ** 2 * API_CONST.INITIAL_BAN_SECONDS;
+      const base = Number(banCount + 1) ** 2 * API_CONST.INITIAL_BAN_SECONDS;
       const jitter = Math.floor(base * (0.8 + Math.random() * 0.4));
 
       const ttl = Math.min(jitter, API_CONST.MAX_BAN_SECONDS);
