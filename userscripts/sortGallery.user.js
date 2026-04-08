@@ -1,15 +1,31 @@
   // ==UserScript==
   // @name         itemdb - Sort Gallery
-  // @version      1.0.2
+  // @version      1.0.3
   // @author       itemdb
   // @namespace    itemdb
   // @description  Sorts your gallery by color
   // @website      https://itemdb.com.br
   // @match        *://*.neopets.com/gallery/index.phtml*
+  // @match        *://*.itemdb.com.br/*
   // @icon         https://itemdb.com.br/favicon.ico
   // @grant        none
   // @noframes
   // ==/UserScript==
+
+  // itemdb troubleshooting - https://itemdb.com.br/tools/troubleshooting
+
+  const script_info = {
+    version: GM_info.script.version,
+    versionCode: Number(GM_info.script.version.replaceAll(".", ""))
+  }
+
+  if(typeof unsafeWindow !== "undefined") 
+    unsafeWindow.itemdb_sortGallery = script_info;
+  else window.itemdb_sortGallery = script_info;
+
+  if(!window.location.href.includes("neopets.com")) return;
+
+  // -------------------- //
 
   const items = {};
 
@@ -20,7 +36,8 @@
   function idbButton(){
     return `
     <div style="background-color:white;padding:4px;border-style:solid;border-width:1px;">
-      <p style="display: inline-flex;bjustify-content: center;align-items: center;gap: 5px; text-align: center;"> 
+      <p style="text-align: center; color: red;" id="itemdb-sorter-msgs"></p>
+      <p style="display: inline-flex;justify-content: center;align-items: center;gap: 5px; text-align: center;"> 
         <a href="http://itemdb.com.br/" target="_blank">  
         <img
             src="https://itemdb.com.br/logo_icon.svg"
@@ -56,6 +73,7 @@
 
   const images_ids = [];
   let image_colors = {};
+  let image_order = {};
   let colorFetched = false;
 
   function addButtons() {
@@ -77,11 +95,15 @@
       });
     }
 
+    setMsg('Fetching colors from itemdb...')
     if(!colorFetched)
       await fetchColors();
-    
+
+    setMsg('Sorting gallery by ' + type);
     sortImageIds(type);
     applySort();
+    setMsg('Success! Gallery sorted by ' + type);
+
   }
 
   async function fetchColors(){
@@ -102,7 +124,9 @@
       image_colors = data;
       colorFetched = true;
     } else {
-      console.error('[itemdb] fetchColors error:', res);
+      console.error('[itemdb - Gallery Sorter] fetchColors error:', res);
+      setMsg('Failed to fetch colors from itemdb', true);
+      throw new Error('Failed to fetch colors from itemdb');
     }
   }
 
@@ -129,12 +153,17 @@
 
       return aColor.hsv[0] - bColor.hsv[0] || aColor.hsv[1] - bColor.hsv[1] || aColor.hsv[2] - bColor.hsv[2];
     })
+
+    image_order = {};
+    images_ids.forEach((id, index) => {
+      image_order[id] = index;
+    });
   }
 
   function applySort(){
     const shiftList = []
     let itemsTrs = $('#gallery_form td');
-
+    let notFound = [];
     itemsTrs.each(function (i) {
       let image_id = $(this).find('.itemimg').attr('src')?.match(/[^\.\/]+(?=\.gif)/)?.[0];
       
@@ -144,7 +173,14 @@
       const input = $(this).find('.glry_rank');
       if(input.length){
         image_id = shiftList.shift();
-        let pos = images_ids.indexOf(image_id);
+        let pos = image_order[image_id];
+        
+        if(typeof pos === 'undefined') {
+          console.error('[itemdb - Gallery Sorter] Image ID not found in order:', image_id);
+          notFound.push(image_id);
+          pos = 0;
+        }
+
         pos = Math.max(0, pos+1);
         input.val(pos);
         // let changed_value = pos
@@ -155,6 +191,12 @@
         input.attr('data-new_rank','y');
       }
     });
+
+    if(notFound.length){
+      console.warn('[itemdb - Gallery Sorter] Some images were not found in the color data:', notFound);
+      setMsg('Some images were not found in the color data. Check console for details.', true);
+      throw new Error('[itemdb - Gallery Sorter] Missing images in color data');
+    }
   }
 
   function findMaxPopulation(colorData){
@@ -167,6 +209,13 @@
       }
     }
     return maxColor;
+  }
+
+  function setMsg(text, isError = false){
+    const msgEl = $('#itemdb-sorter-msgs');
+    text = isError ? `Error: ${text}` : text;
+    msgEl.text(text);
+    msgEl.css('font-weight', isError ? 'bold' : 'normal');
   }
 
   if (URLHas('dowhat=rank')) addButtons();

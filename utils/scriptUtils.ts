@@ -6,6 +6,7 @@ export const LATEST_VERSIONS_CODE = {
   itemdb_sdbPricer: 154,
   itemdb_albumHelper: 103,
   itemdb_listImporter: 124,
+  itemdb_sortGallery: 103,
 };
 
 export const DETECTABLE_SCRIPTS = [
@@ -14,12 +15,20 @@ export const DETECTABLE_SCRIPTS = [
   'SDB Pricer',
   'Album Helper',
   'List Importer',
+  'Gallery Sorter',
 ] as const;
 
 export const showScriptCTA = (): false | 'notFound' | 'outdated' => {
   if (!window) return false;
 
-  const hasScript = !!(window.itemdb_restock || window.itemdb_script || window.itemdb_sdbPricer);
+  const hasScript = !!(
+    window.itemdb_restock ||
+    window.itemdb_script ||
+    window.itemdb_sdbPricer ||
+    window.itemdb_albumHelper ||
+    window.itemdb_listImporter ||
+    window.itemdb_sortGallery
+  );
 
   if (!hasScript) return false;
 
@@ -53,7 +62,8 @@ const _getScriptStatus = () => {
     window.itemdb_script ||
     window.itemdb_sdbPricer ||
     window.itemdb_albumHelper ||
-    window.itemdb_listImporter
+    window.itemdb_listImporter ||
+    window.itemdb_sortGallery
   );
 
   if (!hasScript) return null;
@@ -93,6 +103,13 @@ const _getScriptStatus = () => {
       versionCode: 0,
       version: window.itemdb_listImporter?.version || '',
       link: 'https://github.com/lucca180/itemdb/raw/main/userscripts/listImporter.user.js',
+    },
+    itemdb_sortGallery: {
+      name: 'Gallery Sorter',
+      status: 'notFound',
+      versionCode: 0,
+      version: window.itemdb_sortGallery?.version || '',
+      link: 'https://github.com/lucca180/itemdb/raw/main/userscripts/sortGallery.user.js',
     },
   };
 

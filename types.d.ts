@@ -907,6 +907,7 @@ declare global {
     itemdb_sdbPricer?: ScriptInfo;
     itemdb_albumHelper?: ScriptInfo;
     itemdb_listImporter?: ScriptInfo;
+    itemdb_sortGallery?: ScriptInfo;
 
     umami?: {
       identify: (payload: any) => Promise<void>;
