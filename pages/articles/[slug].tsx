@@ -11,6 +11,10 @@ import {
   Tr,
   Tbody,
   Code,
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  AlertTitle,
 } from '@chakra-ui/react';
 import { GetStaticPropsContext } from 'next';
 import HeaderCard from '../../components/Card/HeaderCard';
@@ -24,6 +28,7 @@ import { useFormatter, useTranslations } from 'next-intl';
 import { ReactElement } from 'react';
 import { ArticleBreadcrumb } from '../../components/Breadcrumbs/ArticlesBreadcrumb';
 import { loadTranslation } from '@utils/load-translation';
+import { processShortcodes } from '@utils/shortcodes';
 import Color from 'color';
 
 export type ArticlePageProps = {
@@ -93,7 +98,7 @@ const ArticlePage = (props: ArticlePageProps) => {
         }}
       >
         <Flex flexFlow="column" gap={3} px={3} maxW={'900px'} w="100%" fontSize={'md'} mx={'auto'}>
-          {parse(post.content, options)}
+          {parse(processShortcodes(post.content), options)}
         </Flex>
       </Flex>
       {recommendations.length > 0 && (
@@ -238,5 +243,33 @@ const options: HTMLReactParserOptions = {
 
     if (domChildren instanceof Element && domChildren.name === 'code')
       return <Code>{domToReact(children, options)}</Code>;
+
+    if (domChildren instanceof Element && domChildren.name === 'sc-alert') {
+      const status = (domChildren.attribs.status ?? 'info') as
+        | 'info'
+        | 'warning'
+        | 'success'
+        | 'error';
+
+      const title = domChildren.attribs.title ?? '';
+
+      return (
+        <Alert
+          status={status}
+          display={'flex'}
+          flexFlow={'column'}
+          alignItems={'flex-start'}
+          borderRadius={'md'}
+        >
+          <Flex mb={1}>
+            <AlertIcon />
+            {title && <AlertTitle>{title}</AlertTitle>}
+          </Flex>
+          <AlertDescription display={'flex'} flexFlow={'column'} gap={2} fontSize={'sm'}>
+            {domToReact(children, options)}
+          </AlertDescription>
+        </Alert>
+      );
+    }
   },
 };
