@@ -64,7 +64,7 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps) => {
 
     if (latestDate < oldPriceRaw.addedAt) return false;
 
-    if (!forceMode && daysSinceLastUpdate < PRICING.MIN_LAST_UPDATE && zDiff <= 1) return false;
+    if (!forceMode && daysSinceLastUpdate < PRICING.MIN_LAST_UPDATE && zDiff <= 2.5) return false;
 
     /*
       ignore small variations
