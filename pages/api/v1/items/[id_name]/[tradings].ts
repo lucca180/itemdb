@@ -12,7 +12,7 @@ import { CheckAuth } from '@utils/googleCloud';
 import { contributeCheck } from '../../restock/wrapped-check';
 import { Prisma } from '@prisma/generated/client';
 import { medianSorted } from 'simple-statistics';
-import { removeOutliersCombined } from '@utils/pricing3';
+import { removeOutliersCombined } from '@utils/prices/pricing3';
 import { getItem } from '.';
 
 const LEBRON_URL = process.env.LEBRON_API_URL;

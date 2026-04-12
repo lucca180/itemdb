@@ -1,10 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
-import { coefficientOfVariation } from '../../../../utils/utils';
 import { ItemPrices, PriceProcess2, Prisma } from '@prisma/generated/client';
 import { differenceInCalendarDays, differenceInDays } from 'date-fns';
-import { processPrices3 } from '@utils/pricing3';
+import { processPrices3 } from '@utils/prices/pricing3';
 import { LogService } from '@services/ActionLogService';
+import { PRICING, zScore } from '@utils/prices/process-helpers';
 
 export const MAX_DAYS = 30;
 export const MAX_PAST_DAYS = 60;
@@ -347,12 +347,22 @@ async function updateOrAddDB(
   try {
     if (!priceData.item_iid) throw 'invalid data';
 
-    const oldPriceRaw = await prisma.itemPrices.findFirst({
+    const priceHistory = await prisma.itemPrices.findMany({
       where: {
-        item_iid: newPriceData.item_iid,
+        item_iid: priceData.item_iid,
       },
       orderBy: { addedAt: 'desc' },
+      select: {
+        price: true,
+        addedAt: true,
+        internal_id: true,
+        noInflation_id: true,
+        manual_check: true,
+      },
+      take: 30,
     });
+
+    const oldPriceRaw = priceHistory[0] || null;
 
     const isPendingCheck = !!oldPriceRaw?.manual_check;
 
@@ -369,7 +379,13 @@ async function updateOrAddDB(
     const oldPrice = oldPriceRaw.price.toNumber();
 
     const daysSinceLastUpdate = differenceInCalendarDays(latestDate, oldPriceRaw.addedAt);
-    const variation = coefficientOfVariation([oldPrice, priceValue]);
+
+    // get all price history except the current price and convert to number
+    const prices = priceHistory.map((x) => x.price.toNumber()).slice(1);
+    const zOld = zScore(oldPrice, prices);
+    const zNew = zScore(priceValue, prices);
+    const zDiff = Math.abs(zOld - zNew);
+
     const priceDiff = Math.abs(oldPrice - priceValue);
 
     forceMode = forceMode || isPendingCheck;
@@ -380,10 +396,7 @@ async function updateOrAddDB(
       return undefined;
     }
 
-    if (!forceMode && daysSinceLastUpdate < 3 && priceDiff < 100000) return undefined;
-
-    if (!forceMode && daysSinceLastUpdate < MIN_LAST_UPDATE && variation < 30 && priceDiff < 25000)
-      return undefined;
+    if (!forceMode && daysSinceLastUpdate < MIN_LAST_UPDATE && zDiff <= 1) return undefined;
 
     /*
       ignore small variations
@@ -391,57 +404,45 @@ async function updateOrAddDB(
       or if the price is inflated
       or if force mode is active
     */
-    if (
-      (variation <= 5 || priceDiff < 2500) &&
-      daysSinceLastUpdate <= 15 &&
-      !EVENT_MODE &&
-      !isInflation &&
-      !forceMode
-    )
+    if (zDiff <= 1.5 && daysSinceLastUpdate <= 15 && !EVENT_MODE && !isInflation && !forceMode)
       return undefined;
 
-    if (!isInflation && priceDiff >= 90000) {
-      if (oldPrice < priceValue && variation >= 75) {
-        newPriceData.noInflation_id = oldPriceRaw.internal_id;
-        throw 'inflation';
-      }
-
-      if (oldPrice < priceValue && priceValue >= 100000 && variation >= 50) {
-        newPriceData.noInflation_id = oldPriceRaw.internal_id;
-        throw 'inflation';
-      }
+    if (!isInflation && priceDiff >= PRICING.MIN_INFLATION_DIFF && zNew > 2.5) {
+      newPriceData.noInflation_id = oldPriceRaw.internal_id;
+      throw 'inflation';
     }
 
     // update an inflated price
     if (isInflation) {
-      const allPrices = await prisma.itemPrices.findMany({
-        where: {
-          item_iid: oldPriceRaw.item_iid,
-        },
-      });
-
-      const lastNormalPriceRaw = allPrices.find(
+      const lastNormalPriceRaw = priceHistory.find(
         (x) => x.internal_id === oldPriceRaw.noInflation_id
       );
+
       if (!lastNormalPriceRaw) throw 'inflation with no normal price';
 
       const lastNormalPrice = lastNormalPriceRaw.price.toNumber();
 
       const daysWithInflation = differenceInCalendarDays(latestDate, lastNormalPriceRaw.addedAt);
-      const inflationVariation = coefficientOfVariation([lastNormalPrice, priceValue]);
+      const normalZScore = zScore(lastNormalPrice, prices);
+      const zDiffNormal = Math.abs(zNew - normalZScore);
+      const percentDiff = Math.abs(priceValue - lastNormalPrice) / lastNormalPrice;
+
+      const inflationDiff = priceValue - lastNormalPrice;
 
       newPriceData.noInflation_id = oldPriceRaw.noInflation_id;
 
-      const pricesWithInflation = allPrices.filter(
+      const pricesWithInflation = priceHistory.filter(
         (x) =>
           x.addedAt > lastNormalPriceRaw.addedAt &&
           x.noInflation_id === lastNormalPriceRaw.internal_id
       );
 
+      const priceIsNearNormal = zDiffNormal < 2.5 && percentDiff < 0.2;
+
       if (
-        priceValue <= 90000 ||
-        (daysWithInflation >= 60 && variation < 30 && pricesWithInflation.length >= 3) ||
-        inflationVariation < 50 ||
+        inflationDiff <= PRICING.MIN_INFLATION_DIFF ||
+        (daysWithInflation >= 60 && zNew < 2.5 && pricesWithInflation.length >= 3) ||
+        priceIsNearNormal ||
         lastNormalPrice >= priceValue
       )
         newPriceData.noInflation_id = null;
