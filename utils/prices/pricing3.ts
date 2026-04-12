@@ -158,10 +158,13 @@ function logRound(value: number) {
   if (value === 0) return 0;
   if (value > 990000 && value < 1000000) return value; // avoid rounding buyable limit
 
-  const precision = -1 * Math.floor(log10(value) - 2);
+  const mag = Math.floor(log10(value));
+  const step =
+    mag % 2 === 0
+      ? 5 * Math.pow(10, mag - 2) // e.g. mag=4 → step=500
+      : Math.pow(10, mag - 1); // e.g. mag=5 → step=10,000
 
-  const multiplier = Math.pow(10, precision || 0);
-  return Math.round(value * multiplier) / multiplier;
+  return Math.round(Math.round(value / step) * step);
 }
 
 const log10 = (x: number) => Math.log(x) / Math.log(10);
