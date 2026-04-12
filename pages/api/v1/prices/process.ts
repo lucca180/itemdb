@@ -1,10 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { ItemPrices, PriceProcess2, Prisma } from '@prisma/generated/client';
-import { differenceInCalendarDays, differenceInDays } from 'date-fns';
+import { differenceInDays } from 'date-fns';
 import { processPrices3 } from '@utils/prices/pricing3';
-import { LogService } from '@services/ActionLogService';
-import { PRICING, zScore } from '@utils/prices/process-helpers';
+import { handleInflation, shouldUpdatePrice } from '@utils/prices/process-helpers';
 
 export const MAX_DAYS = 30;
 export const MAX_PAST_DAYS = 60;
@@ -335,7 +334,7 @@ async function updateOrAddDB(
   latestDate: Date,
   forceMode = false
 ): Promise<Prisma.ItemPricesUncheckedCreateInput | undefined> {
-  const newPriceData: Prisma.ItemPricesUncheckedCreateInput = {
+  let newPriceData: Prisma.ItemPricesUncheckedCreateInput = {
     item_iid: priceData.item_iid,
     price: priceValue,
     manual_check: null,
@@ -364,8 +363,6 @@ async function updateOrAddDB(
 
     const oldPriceRaw = priceHistory[0] || null;
 
-    const isPendingCheck = !!oldPriceRaw?.manual_check;
-
     if (!oldPriceRaw) {
       const item = await prisma.items.findFirst({ where: { internal_id: priceData.item_iid } });
 
@@ -375,110 +372,19 @@ async function updateOrAddDB(
       return newPriceData;
     }
 
-    const isInflation = !!oldPriceRaw.noInflation_id;
-    const oldPrice = oldPriceRaw.price.toNumber();
+    if (!shouldUpdatePrice({ latestDate, priceHistory, priceValue, forceMode })) return undefined;
 
-    const daysSinceLastUpdate = differenceInCalendarDays(latestDate, oldPriceRaw.addedAt);
+    const result = await handleInflation({
+      latestDate,
+      priceHistory,
+      priceValue,
+      newPriceData,
+    });
 
-    // get all price history except the current price and convert to number
-    const prices = priceHistory.map((x) => x.price.toNumber()).slice(1);
-    const zOld = zScore(oldPrice, prices);
-    const zNew = zScore(priceValue, prices);
-    const zDiff = Math.abs(zOld - zNew);
+    newPriceData = result.newPriceData;
 
-    const priceDiff = Math.abs(oldPrice - priceValue);
-
-    forceMode = forceMode || isPendingCheck;
-
-    if (!forceMode && daysSinceLastUpdate <= 1) return undefined;
-
-    if (latestDate < oldPriceRaw.addedAt) {
-      return undefined;
-    }
-
-    if (!forceMode && daysSinceLastUpdate < MIN_LAST_UPDATE && zDiff <= 1) return undefined;
-
-    /*
-      ignore small variations
-      don't ignore if event mode is active
-      or if the price is inflated
-      or if force mode is active
-    */
-    if (zDiff <= 1.5 && daysSinceLastUpdate <= 15 && !EVENT_MODE && !isInflation && !forceMode)
-      return undefined;
-
-    if (!isInflation && priceDiff >= PRICING.MIN_INFLATION_DIFF && zNew > 2.5) {
-      newPriceData.noInflation_id = oldPriceRaw.internal_id;
-      throw 'inflation';
-    }
-
-    // update an inflated price
-    if (isInflation) {
-      const lastNormalPriceRaw = priceHistory.find(
-        (x) => x.internal_id === oldPriceRaw.noInflation_id
-      );
-
-      if (!lastNormalPriceRaw) throw 'inflation with no normal price';
-
-      const lastNormalPrice = lastNormalPriceRaw.price.toNumber();
-
-      const daysWithInflation = differenceInCalendarDays(latestDate, lastNormalPriceRaw.addedAt);
-      const normalZScore = zScore(lastNormalPrice, prices);
-      const zDiffNormal = Math.abs(zNew - normalZScore);
-      const percentDiff = Math.abs(priceValue - lastNormalPrice) / lastNormalPrice;
-
-      const inflationDiff = priceValue - lastNormalPrice;
-
-      newPriceData.noInflation_id = oldPriceRaw.noInflation_id;
-
-      const pricesWithInflation = priceHistory.filter(
-        (x) =>
-          x.addedAt > lastNormalPriceRaw.addedAt &&
-          x.noInflation_id === lastNormalPriceRaw.internal_id
-      );
-
-      const priceIsNearNormal = zDiffNormal < 2.5 && percentDiff < 0.2;
-
-      if (
-        inflationDiff <= PRICING.MIN_INFLATION_DIFF ||
-        (daysWithInflation >= 60 && zNew < 2.5 && pricesWithInflation.length >= 3) ||
-        priceIsNearNormal ||
-        lastNormalPrice >= priceValue
-      )
-        newPriceData.noInflation_id = null;
-    }
-
-    // auto-approve inflation prices if the new price is also inflated
-    if (isPendingCheck && newPriceData.noInflation_id) {
-      await prisma.itemPrices.update({
-        where: { internal_id: oldPriceRaw.internal_id },
-        data: { manual_check: null },
-      });
-
-      await LogService.createLog(
-        'inflationAutoApprove',
-        {
-          newPrice: Number(newPriceData.price),
-          oldPrice: oldPriceRaw.price.toNumber(),
-        },
-        newPriceData.item_iid?.toString()
-      );
-    }
-
-    // delete inflation price if the new price is normal and was added recently
-    if (isPendingCheck && daysSinceLastUpdate <= 5 && !newPriceData.noInflation_id) {
-      await prisma.itemPrices.delete({
-        where: { internal_id: oldPriceRaw.internal_id },
-      });
-
-      await LogService.createLog(
-        'inflationDelete',
-        {
-          newPrice: Number(newPriceData.price),
-          oldPrice: oldPriceRaw.price.toNumber(),
-        },
-        newPriceData.item_iid?.toString()
-      );
+    if (result.isManualCheck) {
+      throw result.msg;
     }
 
     return newPriceData;
