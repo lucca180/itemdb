@@ -12,6 +12,7 @@ export const PRICING = {
   MIN_INFLATION_DIFF: 90000,
   MIN_LAST_UPDATE: EVENT_MODE ? 3 : 5,
   MIN_Z_SCORE: 4,
+  MAX_Z_DAYS: 90,
 } as const;
 
 // for a given number, calculate z-score
@@ -25,15 +26,17 @@ export const zScore = (x: number, data: number[]) => {
   return (x - meanVal) / stdVal;
 };
 
+type PriceHistory = {
+  addedAt: Date;
+  price: Decimal;
+  noInflation_id: number | null;
+  internal_id: number;
+  manual_check: string | null;
+};
+
 type ShouldUpdateProps = {
   latestDate: Date;
-  priceHistory: {
-    addedAt: Date;
-    price: Decimal;
-    noInflation_id: number | null;
-    internal_id: number;
-    manual_check: string | null;
-  }[];
+  priceHistory: PriceHistory[];
   priceValue: number;
   forceMode?: boolean;
 };
@@ -50,7 +53,7 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps) => {
   const daysSinceLastUpdate = differenceInCalendarDays(latestDate, oldPriceRaw.addedAt);
 
   // get all price history except the current price and convert to number
-  const prices = priceHistory.map((x) => x.price.toNumber()).slice(1);
+  const prices = getPrices(priceHistory.slice(1));
 
   // ---------- Z-SCORE VERSION ---------- //
   if (prices.length >= PRICING.MIN_Z_SCORE) {
@@ -122,13 +125,7 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps) => {
 export type handleInflationArgs = {
   newPriceData: Prisma.ItemPricesUncheckedCreateInput;
   latestDate: Date;
-  priceHistory: {
-    addedAt: Date;
-    price: Decimal;
-    noInflation_id: number | null;
-    internal_id: number;
-    manual_check: string | null;
-  }[];
+  priceHistory: PriceHistory[];
   priceValue: number;
 };
 
@@ -143,7 +140,7 @@ export const handleInflation = async (
 ): Promise<handleInflationReturn> => {
   const { latestDate, priceHistory, priceValue, newPriceData } = args;
 
-  const prices = priceHistory.map((x) => x.price.toNumber()).slice(1);
+  const prices = getPrices(priceHistory.slice(1));
 
   const oldPriceRaw = priceHistory[0];
   const oldPrice = oldPriceRaw.price.toNumber();
@@ -296,4 +293,13 @@ export const handleAutoApproval = async (args: handleInflationArgs) => {
       newPriceData.item_iid?.toString()
     );
   }
+};
+
+const getPrices = (history: PriceHistory[]) => {
+  let res = history.filter(
+    (x) => x.addedAt >= new Date(Date.now() - PRICING.MAX_Z_DAYS * 24 * 60 * 60 * 1000)
+  );
+  if (res.length < PRICING.MIN_Z_SCORE) res = history;
+
+  return res.map((x) => x.price.toNumber());
 };
