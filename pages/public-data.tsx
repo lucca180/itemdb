@@ -185,7 +185,7 @@ const S3ToExportData = (data: {
       description:
         "A dump of all price history in itemdb's database. Useful for setting up your own itemdb instance or for data analysis.",
       format: 'gzip, sql',
-      update: 'Every 2 Months',
+      update: 'Every 3 Months',
     },
   };
 
