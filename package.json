@@ -18,7 +18,8 @@
     "lint-fix": "eslint --fix",
     "prettier": "prettier --write .",
     "prepare": "husky install",
-    "postbuild": "next-sitemap"
+    "postbuild": "next-sitemap",
+    "dump:tables": "tsx scripts/dump-tables-to-r2.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.797.0",
