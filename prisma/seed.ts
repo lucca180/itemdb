@@ -9,12 +9,13 @@
  *   DATABASE_URL - MariaDB connection string (required)
  *
  * SQL dumps are read from the prisma/ folder in this order:
- *   items_(timestamp).sql
- *   itemcolor_(timestamp).sql
- *   itemprices_(timestamp).sql
+ *   items[_(timestamp)].sql
+ *   itemcolor[_(timestamp)].sql
+ *   itemprices[_(timestamp)].sql
  *
  * Only the most recent file is used when multiple matches exist for the same prefix.
  * Files can be plain .sql or gzip-compressed .sql.gz.
+ * Timestamp is optional (e.g., items.sql or items_20240413.sql both work).
  */
 
 import 'dotenv/config';
@@ -75,7 +76,7 @@ async function seedUsers() {
 // ---------------------------------------------------------------------------
 
 const DUMP_PREFIXES = ['items', 'itemcolor', 'itemprices'] as const;
-const DUMP_PATTERN = /^(items|itemcolor|itemprices)_[^/\\]+\.sql(\.gz)?$/i;
+const DUMP_PATTERN = /^(items|itemcolor|itemprices)(_[^/\\]+)?\.sql(\.gz)?$/i;
 
 function parseDatabaseUrl(url: string) {
   const parsed = new URL(url);
@@ -148,7 +149,7 @@ async function importDumps() {
   if (dumpFiles.length === 0) {
     console.log('\nNo dump files found in prisma/ — skipping import.');
     console.log(
-      '  Expected filenames: items_<timestamp>.sql, itemcolor_<timestamp>.sql, itemprices_<timestamp>.sql'
+      '  Expected filenames: items[_<timestamp>].sql, itemcolor[_<timestamp>].sql, itemprices[_<timestamp>].sql'
     );
     return;
   }

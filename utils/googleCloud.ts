@@ -3,7 +3,12 @@ import prisma from './prisma';
 import { User as dbUser } from '@prisma/generated/client';
 import { rawToUser } from '../pages/api/auth/login';
 import { verifySession, VerifiedSession } from './auth/jwt';
-import { S3Client, PutObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  HeadObjectCommand,
+  ListObjectsV2Command,
+} from '@aws-sdk/client-s3';
 import axios from 'axios';
 
 // Kept for backwards-compatibility — call sites that destructure `decodedToken`
@@ -116,5 +121,28 @@ export async function cdnExists(path: string, includeHeader = false): Promise<bo
     return response.status >= 200 && response.status < 300;
   } catch (error) {
     throw new Error(`Error checking CDN existence: ${error}`);
+  }
+}
+
+// check everything inside a S3 "folder" (prefix) and return a list with their meta data
+export async function getFolderMeta(path: string) {
+  try {
+    const response = await S3.send(
+      new ListObjectsV2Command({
+        Bucket: 'itemdb',
+        Prefix: path,
+      })
+    );
+
+    const metaList = response.Contents?.map((item) => ({
+      Key: item.Key,
+      LastModified: item.LastModified,
+      Size: item.Size,
+    }));
+
+    return metaList ?? [];
+  } catch (error) {
+    console.error('Error listing folder meta:', error);
+    throw new Error(`Error listing folder meta: ${error}`);
   }
 }

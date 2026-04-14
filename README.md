@@ -54,9 +54,9 @@ npx prisma db seed
 To also import item data, download the dumps from the [Public Data](https://itemdb.com.br/public-data) page and place them inside the `prisma/` folder. The seed will automatically detect and import files named in this format, in this order:
 
 ```
-prisma/items_<timestamp>.sql
-prisma/itemcolor_<timestamp>.sql
-prisma/itemprices_<timestamp>.sql
+prisma/items[_<timestamp>].sql
+prisma/itemcolor[_<timestamp>].sql
+prisma/itemprices[_<timestamp>].sql
 ```
 
 The Docker container must be running when the seed executes.

@@ -5,22 +5,28 @@ import {
   Link,
   Center,
   Image,
-  Button,
-  Icon,
   Box,
-  Flex,
-  Card,
-  CardBody,
-  CardHeader,
-  CardFooter,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
 } from '@chakra-ui/react';
-import { FiDownload } from 'react-icons/fi';
 import Layout from '../components/Layout';
 import { ReactElement } from 'react';
 import { loadTranslation } from '@utils/load-translation';
 import { FeedbackButton } from '@components/Modal/FeedbackModal';
+import { getFolderMeta } from '@utils/googleCloud';
 
-const RawDataPage = () => {
+type RawExportPageProps = {
+  messages: Record<string, string>;
+  dumps: ExportData[];
+};
+
+const RawDataPage = (props: RawExportPageProps) => {
+  const { dumps } = props;
   return (
     <>
       <Box
@@ -55,28 +61,46 @@ const RawDataPage = () => {
           You can also check out our <Link href="https://docs.itemdb.com.br">API</Link> for general
           uses.
         </Text>
-        <Flex my={5} gap={5} flexFlow={['column', 'row']}>
-          {rawExportData.map((data, i) => (
-            <Card key={i} variant={'outline'} w={'350px'}>
-              <CardHeader>
-                <Heading size="md">{data.name}</Heading>
-              </CardHeader>
-              <CardBody>
-                <Text>{data.description}</Text>
-              </CardBody>
-              <CardFooter color={'gray'} flexFlow={'column'}>
-                <Flex gap={1} justifyContent={'space-between'} fontSize={'xs'}>
-                  <Text>Date: {data.date}</Text>
-                  <Text>Size: {data.size}</Text>
-                  <Text>Format: {data.format}</Text>
-                </Flex>
-                <Button as={Link} href={data.link} isExternal variant="outline" size="sm" mt={3}>
-                  <Icon as={FiDownload} mr={1} /> Download
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </Flex>
+        <TableContainer
+          mt={8}
+          bg="blackAlpha.500"
+          w="100%"
+          sx={{ a: { color: 'blue.200' } }}
+          maxW={'1000px'}
+          borderRadius="md"
+          fontSize="sm"
+        >
+          <Table>
+            <Thead>
+              <Tr>
+                <Th>File</Th>
+                <Th>Description</Th>
+                <Th>Date</Th>
+                <Th>Size</Th>
+                <Th>Format</Th>
+                <Th>Auto Update?</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {[...dumps, ...rawExportData].map((data, i) => (
+                <Tr key={i}>
+                  <Td>
+                    <Link href={data.link} isExternal>
+                      {data.name}
+                    </Link>
+                  </Td>
+                  <Td fontSize="xs" whiteSpace={'normal'}>
+                    {data.description}
+                  </Td>
+                  <Td>{data.date}</Td>
+                  <Td>{data.size}</Td>
+                  <Td>{data.format}</Td>
+                  <Td>{data.update ?? 'No'}</Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        </TableContainer>
         <FeedbackButton mt={5} />
       </Center>
     </>
@@ -85,9 +109,14 @@ const RawDataPage = () => {
 
 export default RawDataPage;
 
-export async function getStaticProps(context: any) {
+export async function getServerSideProps(context: any) {
+  const x = await getFolderMeta('dumps/');
+
+  const exportDataFromS3 = x.map(S3ToExportData).filter((data) => data !== null);
+
   return {
     props: {
+      dumps: exportDataFromS3,
       messages: await loadTranslation(context.locale, 'public-data'),
     },
   };
@@ -101,7 +130,17 @@ RawDataPage.getLayout = function getLayout(page: ReactElement) {
   );
 };
 
-const rawExportData = [
+type ExportData = {
+  name: string;
+  description: string;
+  date: string;
+  size: string;
+  format: string;
+  link: string;
+  update?: string;
+};
+
+const rawExportData: ExportData[] = [
   {
     name: "itemdb's db dump",
     description:
@@ -112,14 +151,6 @@ const rawExportData = [
     link: 'https://cdn.itemdb.com.br/raw/itemdb-dump-2025-08-20.zip',
   },
   {
-    name: "itemdb's Item Data",
-    description: "A dump of all items in itemdb's database. Does not include prices or other data.",
-    date: '2024-04-14',
-    size: '4.23MB',
-    format: 'zip, csv',
-    link: 'https://firebasestorage.googleapis.com/v0/b/itemdb-1db58.appspot.com/o/raw%2Fitemdb_items_20240414.zip?alt=media&token=127d4c20-0e79-4c12-8cc4-68ec68ed5aa3',
-  },
-  {
     name: "itemdb's Restock History",
     description: "A dump of all restocks reports in itemdb's database.",
     date: '2024-04-14',
@@ -128,3 +159,48 @@ const rawExportData = [
     link: 'https://firebasestorage.googleapis.com/v0/b/itemdb-1db58.appspot.com/o/raw%2Fitemdb_restockHistory_20240414.zip?alt=media&token=c1606c35-e8d1-4b23-9158-5aa374101409',
   },
 ];
+
+const S3ToExportData = (data: {
+  Key: string | undefined;
+  LastModified: Date | undefined;
+  Size: number | undefined;
+}): ExportData | null => {
+  const dataMap = {
+    items: {
+      name: 'Item Data',
+      description:
+        "A dump of all items in itemdb's database. Does not include prices or other data. Useful for setting up your own itemdb instance or for data analysis.",
+      format: 'gzip, sql',
+      update: 'Every Month',
+    },
+    itemcolor: {
+      name: 'Item Colors',
+      description:
+        "A dump of all item colors in itemdb's database. Useful for setting up your own itemdb instance or for data analysis.",
+      format: 'gzip, sql',
+      update: 'Every Month',
+    },
+    itemprices: {
+      name: 'Item Prices',
+      description:
+        "A dump of all price history in itemdb's database. Useful for setting up your own itemdb instance or for data analysis.",
+      format: 'gzip, sql',
+      update: 'Every 2 Months',
+    },
+  };
+
+  const key = data.Key?.split('/').pop()?.split('.')[0].toLowerCase() ?? 'unknown';
+  const mappedData = dataMap[key as keyof typeof dataMap];
+
+  if (!mappedData) return null;
+
+  return {
+    name: mappedData.name,
+    description: mappedData.description,
+    format: mappedData.format,
+    size: data.Size ? `${(data.Size / (1024 * 1024)).toFixed(2)}MB` : 'unknown',
+    date: data.LastModified?.toISOString().split('T')[0] ?? 'unknown',
+    link: `https://cdn.itemdb.com.br/${data.Key}`,
+    update: mappedData.update,
+  };
+};
