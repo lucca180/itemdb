@@ -12,7 +12,7 @@ export const PRICING = {
   MIN_INFLATION_DIFF: 90000,
   MIN_LAST_UPDATE: EVENT_MODE ? 3 : 5,
   MIN_Z_SCORE: 4,
-  MAX_Z_DAYS: 90,
+  MAX_Z_DAYS: 180,
 } as const;
 
 // for a given number, calculate z-score

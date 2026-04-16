@@ -358,7 +358,7 @@ async function updateOrAddDB(
         noInflation_id: true,
         manual_check: true,
       },
-      take: 30,
+      take: 40,
     });
 
     const oldPriceRaw = priceHistory[0] || null;
