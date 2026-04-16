@@ -151,6 +151,7 @@ export const handleInflation = async (
   const zNew = zScore(priceValue, prices);
   const zOld = zScore(oldPrice, prices);
   const zDiff = Math.abs(zOld - zNew);
+  const percentDiff = priceDiff / oldPrice;
   const variation = coefficientOfVariation([oldPrice, priceValue]);
 
   const hasZScores = prices.length >= PRICING.MIN_Z_SCORE && standardDeviation(prices) > 0;
@@ -163,7 +164,8 @@ export const handleInflation = async (
       priceDiff >= PRICING.MIN_INFLATION_DIFF &&
       zNew >= 2.5 &&
       zDiff >= 2 &&
-      priceValue > oldPrice
+      priceValue > oldPrice &&
+      percentDiff >= 0.2
     ) {
       newPriceData.noInflation_id = oldPriceRaw.internal_id;
       return {
