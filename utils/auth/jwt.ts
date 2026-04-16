@@ -9,8 +9,8 @@ export type SessionPayload = {
 
 export type VerifiedSession = SessionPayload & { exp: number };
 
-export const SESSION_DURATION_SECONDS = 13 * 24 * 60 * 60; // 13 days
-const SESSION_REFRESH_THRESHOLD_SECONDS = 7 * 24 * 60 * 60; // refresh if < 7 days remain
+export const SESSION_DURATION_SECONDS = 100 * 24 * 60 * 60; // 100 days
+const SESSION_REFRESH_THRESHOLD_SECONDS = 30 * 24 * 60 * 60; // refresh if < 30 days remain
 
 const getSecret = () => {
   const secret = process.env.JWT_SECRET;
@@ -31,7 +31,7 @@ export const verifySession = async (token: string): Promise<VerifiedSession> => 
   return payload as unknown as VerifiedSession;
 };
 
-/** Returns true when the session has less than 7 days remaining. */
+/** Returns true when the session has less than 30 days remaining. */
 export const needsRefresh = (exp: number): boolean => {
   const secondsRemaining = exp - Math.floor(Date.now() / 1000);
   return secondsRemaining < SESSION_REFRESH_THRESHOLD_SECONDS;

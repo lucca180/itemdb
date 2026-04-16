@@ -70,12 +70,18 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps) => {
     if (!forceMode && daysSinceLastUpdate < PRICING.MIN_LAST_UPDATE && zDiff <= 2.5) return false;
 
     /*
-      ignore small variations
+        wait for small variations or very huge variations
         don't ignore if event mode is active
         or if the price is inflated
         or if force mode is active
       */
-    if (zDiff <= 1.5 && daysSinceLastUpdate <= 15 && !EVENT_MODE && !isInflation && !forceMode)
+    if (
+      (zDiff <= 1.5 || zDiff >= 3) &&
+      daysSinceLastUpdate <= 15 &&
+      !EVENT_MODE &&
+      !isInflation &&
+      !forceMode
+    )
       return false;
 
     return true;
@@ -165,7 +171,7 @@ export const handleInflation = async (
       zNew >= 2.5 &&
       zDiff >= 2 &&
       priceValue > oldPrice &&
-      percentDiff >= 0.2
+      percentDiff >= 0.35
     ) {
       newPriceData.noInflation_id = oldPriceRaw.internal_id;
       return {
