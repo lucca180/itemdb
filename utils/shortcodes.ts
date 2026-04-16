@@ -35,5 +35,6 @@ export function processShortcodes(html: string): string {
       (_, attrs = '', inner: string) => `<sc-${name}${normalizeAttrs(attrs)}>${inner}</sc-${name}>`
     );
   }
-  return result;
+
+  return result.replaceAll('\r', '');
 }
