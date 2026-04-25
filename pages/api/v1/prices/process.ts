@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { ItemPrices, PriceProcess2, Prisma } from '@prisma/generated/client';
-import { differenceInDays } from 'date-fns';
+import { differenceInCalendarDays } from 'date-fns';
 import { processPrices3 } from '@utils/prices/pricing3';
 import { handleInflation, shouldUpdatePrice } from '@utils/prices/process-helpers';
 
@@ -367,7 +367,7 @@ async function updateOrAddDB(
       const item = await prisma.items.findFirst({ where: { internal_id: priceData.item_iid } });
 
       // do not add prices for new items
-      if (differenceInDays(latestDate, item!.addedAt) < 2) return undefined;
+      if (differenceInCalendarDays(latestDate, item!.addedAt) < 2) return undefined;
 
       return newPriceData;
     }
