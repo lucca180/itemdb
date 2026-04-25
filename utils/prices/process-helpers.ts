@@ -65,27 +65,19 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps) => {
 
     forceMode = forceMode || isPendingCheck;
 
-    if (!forceMode && daysSinceLastUpdate <= 1) return false;
-
-    if (latestDate < oldPriceRaw.addedAt) return false;
+    if (latestDate < oldPriceRaw.addedAt || daysSinceLastUpdate <= 1) return false;
 
     if (!forceMode && daysSinceLastUpdate < PRICING.MIN_LAST_UPDATE && zDiff <= 2.5) return false;
 
-    /*
-        wait for small variations or very huge variations
-        don't ignore if event mode is active
-        or if the price is inflated
-        or if force mode is active
-      */
-    if (
-      (zDiff <= 1.5 || zNew >= 3) &&
-      percentDiff < 0.5 &&
-      daysSinceLastUpdate <= 10 &&
-      !EVENT_MODE &&
-      !isInflation &&
-      !forceMode
-    )
-      return false;
+    const specialMode = EVENT_MODE || isInflation || forceMode;
+
+    if (!specialMode) return true;
+
+    // clear outlier: wait for more data before pricing
+    if (zNew >= 3 && daysSinceLastUpdate <= 10) return false;
+
+    // insignificant change: wait — but price if percentDiff is expressive (>= 75%)
+    if (zDiff <= 1.5 && percentDiff < 0.75 && daysSinceLastUpdate <= 10) return false;
 
     return true;
   }
