@@ -61,6 +61,8 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps) => {
     const zNew = zScore(priceValue, prices);
     const zDiff = Math.abs(zOld - zNew);
 
+    const percentDiff = Math.abs(priceValue - oldPrice) / oldPrice;
+
     forceMode = forceMode || isPendingCheck;
 
     if (!forceMode && daysSinceLastUpdate <= 1) return false;
@@ -77,7 +79,8 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps) => {
       */
     if (
       (zDiff <= 1.5 || zNew >= 3) &&
-      daysSinceLastUpdate <= 15 &&
+      percentDiff < 0.5 &&
+      daysSinceLastUpdate <= 10 &&
       !EVENT_MODE &&
       !isInflation &&
       !forceMode
