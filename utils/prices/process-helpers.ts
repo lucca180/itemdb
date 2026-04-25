@@ -76,7 +76,7 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps) => {
         or if force mode is active
       */
     if (
-      (zDiff <= 1.5 || zDiff >= 3) &&
+      (zDiff <= 1.5 || zNew >= 3) &&
       daysSinceLastUpdate <= 15 &&
       !EVENT_MODE &&
       !isInflation &&
