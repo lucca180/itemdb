@@ -71,7 +71,7 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps) => {
 
     const specialMode = EVENT_MODE || isInflation || forceMode;
 
-    if (!specialMode) return true;
+    if (specialMode) return true;
 
     // clear outlier: wait for more data before pricing
     if (zNew >= 3 && daysSinceLastUpdate <= 10) return false;
