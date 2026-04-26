@@ -76,8 +76,9 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps) => {
     // clear outlier: wait for more data before pricing
     if (zNew >= 3 && daysSinceLastUpdate <= 10) return false;
 
-    // insignificant change: wait — but price if percentDiff is expressive (>= 75%)
-    if (zDiff <= 1.5 && percentDiff < 0.75 && daysSinceLastUpdate <= 10) return false;
+    // insignificant change: wait — but price if percentDiff is expressive
+    if (zDiff <= 1.5 && percentDiff < varThresholds(oldPrice) && daysSinceLastUpdate <= 10)
+      return false;
 
     return true;
   }
@@ -313,4 +314,12 @@ const getPrices = (history: PriceHistory[]) => {
   if (res.length < PRICING.MIN_Z_SCORE) res = history;
 
   return res.map((x) => x.price.toNumber());
+};
+
+const varThresholds = (price: number) => {
+  if (price < 1000) return 2;
+  if (price < 10000) return 0.75;
+  if (price < 50000) return 0.5;
+  if (price < 1_000_000) return 0.4;
+  return 0.2;
 };
