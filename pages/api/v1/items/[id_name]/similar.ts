@@ -3,8 +3,7 @@ import { getItem } from '.';
 import { ItemData, SearchFilters } from '../../../../../types';
 import { doSearch } from '../../search';
 import { defaultFilters } from '../../../../../utils/parseFilters';
-import { redis_setItemCount } from '@utils/redis';
-import requestIp from 'request-ip';
+import { redis_setDataCount } from '@utils/redis';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
@@ -20,8 +19,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   const similarItems = await getSimilarItems(item);
 
-  const ip = requestIp.getClientIp(req);
-  await redis_setItemCount(ip, similarItems.length, req);
+  await redis_setDataCount(similarItems.length, req);
 
   return res.json(similarItems);
 }

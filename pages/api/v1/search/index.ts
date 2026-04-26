@@ -11,8 +11,7 @@ import Color from 'color';
 import { Prisma } from '@prisma/generated/client';
 import queryString from 'query-string';
 import { defaultFilters, parseFilters } from '../../../../utils/parseFilters';
-import requestIp from 'request-ip';
-import { redis_setItemCount } from '@utils/redis';
+import { redis_setDataCount } from '@utils/redis';
 import { rawToItemData } from '../items/many';
 import { verifyListJWT } from '@utils/api-utils';
 import * as Sentry from '@sentry/nextjs';
@@ -49,8 +48,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   if (!onlyStats) trackUsage(query, reqQuery, duration);
 
-  const ip = requestIp.getClientIp(req);
-  redis_setItemCount(ip, result.content.length, req);
+  redis_setDataCount(result.content.length, req);
 
   res.json(result);
 }

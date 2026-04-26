@@ -172,7 +172,7 @@ const APIKeysPage = (props: APIKeysPageProps) => {
                   )}
                   <Text fontSize={'xs'} color="gray.400">
                     Created At: {formatter.dateTime(new Date(apiKey.createdAt))} | Limit:{' '}
-                    {apiKey.limit === -1 ? 'Unlimited' : apiKey.limit} items
+                    {apiKey.limit === -1 ? 'Unlimited' : apiKey.limit} data points
                   </Text>
                 </Flex>
               </Flex>

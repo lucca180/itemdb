@@ -7,6 +7,7 @@ import {
   verifySiteProof,
 } from './api-utils';
 import jwt from 'jsonwebtoken';
+import requestIp from 'request-ip';
 
 const API_CONST = {
   MIN_LIMIT_COUNT: 5000, // maximum items allowed before banning
@@ -77,6 +78,11 @@ export const getBanTTL = async (ip: string) => {
   if (!redis) return 0;
   const ttl = await redis.ttl(`ban:${ip}`);
   return ttl > 0 ? ttl : 0;
+};
+
+export const redis_setDataCount = async (count: number, req: NextApiRequest) => {
+  const ip = requestIp.getClientIp(req);
+  return redis_setItemCount(ip, count, req);
 };
 
 export const redis_setItemCount = async (
@@ -196,16 +202,11 @@ const incrementApiKey = async (token: string | null | undefined, incrementBy: nu
     throw API_ERROR_CODES.invalidKey;
   }
 
-  const newVal = await redis.incrby(`apiKey:${keyId}`, incrementBy);
-  await redis.expire(`apiKey:${keyId}`, 60 * 60);
-
-  if (limit === -1) return; // unlimited key
-
-  if (limit && newVal >= limit) {
-    await redis.expire(`apiKey:${keyId}`, 120 * 60);
-    // it doesn't really matter what we return here...
-    // throw API_ERROR_CODES.limitExceeded;
-  }
+  await redis
+    .multi()
+    .incrby(`apiKey:${keyId}`, incrementBy)
+    .expire(`apiKey:${keyId}`, 120 * 60)
+    .exec();
 
   return;
 };

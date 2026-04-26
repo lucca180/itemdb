@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import requestIp from 'request-ip';
-import { redis_setItemCount } from '@utils/redis';
+import { redis_setDataCount } from '@utils/redis';
 import { ListService } from '@services/ListService';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
@@ -40,8 +39,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (!itemData) return res.status(404).json({ error: 'List not found' });
 
-    const ip = requestIp.getClientIp(req);
-    redis_setItemCount(ip, Object.keys(itemData).length, req);
+    redis_setDataCount(Object.keys(itemData).length, req);
 
     updateServerTime('set-redis', startTime, res);
 

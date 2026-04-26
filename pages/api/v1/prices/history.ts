@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { ItemPriceData } from '../../../../types';
+import { redis_setDataCount } from '@utils/redis';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') return POST(req, res);
@@ -21,6 +22,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   const pricesByIid = await getManyItemsPriceHistory({ item_iids });
+
+  redis_setDataCount(Object.keys(pricesByIid).length, req);
 
   return res.status(200).json(pricesByIid);
 };

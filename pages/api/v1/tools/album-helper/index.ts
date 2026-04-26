@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../../utils/prisma';
 import { getManyItems } from '../../items/many';
+import { redis_setDataCount } from '@utils/redis';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -72,6 +73,8 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       itemData: item,
     };
   });
+
+  redis_setDataCount(Object.keys(items).length, req);
 
   return res.status(200).json(data);
 };

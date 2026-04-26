@@ -6,6 +6,7 @@ import prisma from '../../../../../utils/prisma';
 import { OpenableItems, WearableData } from '@prisma/generated/client';
 import { revalidateItem } from './effects';
 import { getManyItems } from '../many';
+import { redis_setDataCount } from '@utils/redis';
 
 const catType = ['trinkets', 'accessories', 'clothing', 'le', 'choice'];
 const catTypeZone = ['trinkets', 'accessories', 'clothing'];
@@ -35,6 +36,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     item.useTypes.canOpen !== 'false' ? getItemDrops(item.internal_id, item.isNC) : null,
     getItemParent(item.internal_id),
   ]);
+
+  redis_setDataCount(Object.keys(drops?.drops || {}).length, req);
 
   return res.status(200).json({ drops: drops, parents: parents });
 }

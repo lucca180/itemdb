@@ -6,8 +6,7 @@ import { Items, Prisma } from '@prisma/generated/client';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import { differenceInCalendarDays } from 'date-fns';
 import { getSaleStats } from './saleStats';
-import requestIp from 'request-ip';
-import { redis_setItemCount } from '@utils/redis';
+import { redis_setDataCount } from '@utils/redis';
 import { revalidateItem } from './effects';
 import { ItemChangesLog } from '../process';
 import { rawToItemData } from '../many';
@@ -40,11 +39,9 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const item = await getItem(name ?? internal_id);
 
-  const ip = requestIp.getClientIp(req);
-
   // make this route more expensive
   // so we discourage using this route inside loops
-  await redis_setItemCount(ip, 10, req);
+  await redis_setDataCount(10, req);
 
   return res.json(item);
 };

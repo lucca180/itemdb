@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { ItemLastSeen } from '../../../../types';
+import { redis_setDataCount } from '@utils/redis';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -16,6 +17,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const image_id = req.query.image_id as string | undefined;
 
   const lastSeen = await getLastSeen({ item_iid, item_id, name, image_id });
+
+  redis_setDataCount(4, req);
 
   res.json(lastSeen);
 }

@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { PriceData } from '../../../../../types';
 import prisma from '../../../../../utils/prisma';
+import { redis_setDataCount } from '@utils/redis';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -17,7 +18,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const name = isNaN(id) ? id_name : undefined;
 
   const prices = await getItemPrices({ iid: id, name, includeUnconfirmed, limit: -1 });
-
+  redis_setDataCount(prices.length, req);
   res.json(prices);
 }
 

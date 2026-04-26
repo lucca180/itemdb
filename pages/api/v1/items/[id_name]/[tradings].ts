@@ -14,6 +14,7 @@ import { Prisma } from '@prisma/generated/client';
 import { medianSorted } from 'simple-statistics';
 import { removeOutliersCombined } from '@utils/prices/pricing3';
 import { getItem } from '.';
+import { redis_setDataCount } from '@utils/redis';
 
 const LEBRON_URL = process.env.LEBRON_API_URL;
 
@@ -34,6 +35,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   if (type === 'restock') {
     const restock = await getRestockData(name);
+    redis_setDataCount(restock.recent.length, req);
     return res.json(restock);
   }
 
@@ -42,6 +44,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     if (onlyPriced && !(await checkGoal(req, res))) return;
 
     const trade = await getTradeData(name, onlyPriced);
+
+    redis_setDataCount(trade.recent.length, req);
     return res.json(trade);
   }
 
@@ -54,6 +58,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     }
 
     const auction = await getAuctionData(name, onlySold);
+
+    redis_setDataCount(auction.recent.length, req);
     return res.json(auction);
   }
 
