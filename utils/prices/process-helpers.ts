@@ -62,6 +62,7 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps) => {
     const zDiff = Math.abs(zOld - zNew);
 
     const percentDiff = Math.abs(priceValue - oldPrice) / oldPrice;
+    const absDiff = Math.abs(priceValue - oldPrice);
 
     forceMode = forceMode || isPendingCheck;
 
@@ -72,6 +73,8 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps) => {
     const specialMode = EVENT_MODE || isInflation || forceMode;
 
     if (specialMode) return true;
+
+    if (absDiff < 1000 && daysSinceLastUpdate <= 15) return false;
 
     // clear outlier: wait for more data before pricing
     if (zNew >= 3 && daysSinceLastUpdate <= 10) return false;
@@ -320,6 +323,6 @@ const varThresholds = (price: number) => {
   if (price < 1000) return 2;
   if (price < 10000) return 0.75;
   if (price < 50000) return 0.5;
-  if (price < 1_000_000) return 0.4;
-  return 0.2;
+
+  return 0.4;
 };
