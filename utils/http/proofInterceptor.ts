@@ -29,7 +29,10 @@ export const requestInterceptor = (config: InternalAxiosRequestConfig) => {
   if (!isTrustedHost) return config;
 
   const proof = getCookie(SITE_PROOF_COOKIE);
-  if (proof) config.headers[SITE_PROOF_HEADER] = proof;
+  if (proof) {
+    config.headers[SITE_PROOF_HEADER] = proof;
+    config.headers['X-Requested-With'] = 'itemdb-web';
+  }
 
   return config;
 };
