@@ -229,11 +229,6 @@ export const formatEffect = (effect: PrimsaItemEffect) => {
   return JSON.parse(JSON.stringify(obj)) as ItemEffect;
 };
 
-export const revalidateItem = async (slug: string, res: NextApiResponse, onlyGenerated = true) => {
-  const options = onlyGenerated ? undefined : { unstable_onlyGenerated: false };
-
-  return Promise.allSettled([
-    res.revalidate(`/item/${slug}`, options),
-    res.revalidate(`/pt/item/${slug}`, options),
-  ]);
+export const revalidateItem = async (slug: string, res: NextApiResponse) => {
+  return Promise.allSettled([res.revalidate(`/item/${slug}`), res.revalidate(`/pt/item/${slug}`)]);
 };

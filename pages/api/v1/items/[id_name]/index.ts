@@ -198,7 +198,7 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
     where: { internal_id: internal_id },
   });
 
-  if (item?.slug) await revalidateItem(item.slug, res, false);
+  if (item?.slug) await revalidateItem(item.slug, res);
 
   return res.status(200).json({ success: true });
 };
