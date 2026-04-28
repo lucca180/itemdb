@@ -56,7 +56,7 @@ const TheVoidWithinHub = (props: TheVoidWithinHubProps) => {
 
       <Center flexFlow="column" gap={5} sx={{ 'h1, h2, b': { textShadow: '0 0 10px #f3a4ff' } }}>
         <Flex flexFlow={'column'} textAlign={'center'} gap={2} mb={5}>
-          <Heading color="whiteAlpha.900">The Void Within - Lost in the Dark</Heading>
+          <Heading color="whiteAlpha.900">The Void Within</Heading>
           <Text fontSize="md" color="whiteAlpha.800" maxW="1000px">
             Nyx and the Gang are back into Neopia’s epic struggle against the immutable, grey, and
             shadowy shades threatening to overtake the planet in <b>The Void Within</b> Neopets
