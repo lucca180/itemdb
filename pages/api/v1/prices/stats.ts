@@ -5,7 +5,7 @@ import { redis_setDataCount } from '@utils/redis';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Methods', 'POST');
+    res.setHeader('Access-Control-Allow-Methods', 'GET');
     return res.status(200).json({});
   }
 
@@ -19,6 +19,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const lastSeen = await getLastSeen({ item_iid, item_id, name, image_id });
 
   redis_setDataCount(4, req);
+
+  res.setHeader('Cache-Control', 'max-age 0, s-maxage 120, stale-while-revalidate 120');
 
   res.json(lastSeen);
 }

@@ -6,12 +6,13 @@ let cachedBuildId: string | null = null;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   try {
-    res.setHeader('Cache-Control', 'no-store');
     if (isDev) return res.status(200).json({ buildId: 'development' });
 
     if (!cachedBuildId) {
       cachedBuildId = fs.readFileSync('.next/BUILD_ID', 'utf8');
     }
+
+    res.setHeader('Cache-Control', 'max-age 0, s-maxage 60, stale-while-revalidate 300');
 
     res.status(200).json({
       buildId: cachedBuildId.trim(),

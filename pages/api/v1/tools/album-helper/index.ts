@@ -74,6 +74,9 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     };
   });
 
+  // Cache for 10 minutes, but allow stale data for up to 12 hours while we revalidate
+  res.setHeader('Cache-Control', 'max-age 0, s-maxage 600, stale-while-revalidate 43200');
+
   redis_setDataCount(Object.keys(items).length, req);
 
   return res.status(200).json(data);
