@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.10.0
+// @version      1.10.1
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -1088,7 +1088,7 @@ const itemdb_script = function() {
         img: image
       }
 
-      const ignoreEvents = ["safetydeposit", "donate", "drop", "stockshop", "stockgallery", "give", "auction"];
+      const ignoreEvents = ["safetydeposit", "donate", "drop", "stockshop", "stockgallery", "give", "auction", "stamp"];
 
       const submitButton = $('#iteminfo_select_action > div');
 
@@ -1096,7 +1096,7 @@ const itemdb_script = function() {
         if(Date.now() - pageLoad > 1.5*60*1000) return;
 
         const selectedAction = $('#iteminfo_select_action select').find(":selected").val();
-        if(ignoreEvents.includes(selectedAction)) return;
+        if(ignoreEvents.includes(selectedAction) || !selectedAction || selectedAction.toLowerCase().includes("groom")) return;
         
         const allItems = {};
       
