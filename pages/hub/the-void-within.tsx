@@ -30,6 +30,17 @@ type TheVoidWithinHubProps = {
 const TheVoidWithinHub = (props: TheVoidWithinHubProps) => {
   const { lists } = props;
 
+  const listGroups = lists.reduce((groups: { [key: string]: UserList[] }, list) => {
+    const groupKey = list.officialTag[1] || '';
+
+    if (!groups[groupKey]) {
+      groups[groupKey] = [];
+    }
+
+    groups[groupKey].push(list);
+    return groups;
+  }, {});
+
   return (
     <>
       <Box
@@ -54,7 +65,11 @@ const TheVoidWithinHub = (props: TheVoidWithinHubProps) => {
         </Link>
       </Center>
 
-      <Center flexFlow="column" gap={5} sx={{ 'h1, h2, b': { textShadow: '0 0 10px #f3a4ff' } }}>
+      <Center
+        flexFlow="column"
+        gap={5}
+        sx={{ 'h1, h2, h3, b': { textShadow: '0 0 10px #f3a4ff' } }}
+      >
         <Flex flexFlow={'column'} textAlign={'center'} gap={2} mb={5}>
           <Heading color="whiteAlpha.900">The Void Within</Heading>
           <Text fontSize="md" color="whiteAlpha.800" maxW="1000px">
@@ -72,11 +87,20 @@ const TheVoidWithinHub = (props: TheVoidWithinHubProps) => {
             The Void Within plot
           </Text>
         </Center>
-        <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
-          {lists.map((list) => (
-            <UserListCard key={list.slug} list={list} />
-          ))}
-        </Flex>
+        {Object.keys(listGroups).map((groupKey) => (
+          <Center flexFlow="column" gap={1} key={groupKey} w="100%">
+            {groupKey && (
+              <Heading as="h3" size="md" color="whiteAlpha.900" mb={3} mt={5}>
+                {groupKey}
+              </Heading>
+            )}
+            <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
+              {listGroups[groupKey].map((list) => (
+                <UserListCard key={list.slug} list={list} />
+              ))}
+            </Flex>
+          </Center>
+        ))}
       </Center>
     </>
   );
