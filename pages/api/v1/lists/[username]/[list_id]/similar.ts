@@ -73,7 +73,9 @@ export const getSimilarLists = async (list: UserList, limit: number) => {
         }
       : {
           official: true,
-          official_tag: list.officialTag,
+          official_tag: {
+            contains: list.officialTag[0],
+          },
           NOT: {
             internal_id: list.internal_id,
           },

@@ -114,7 +114,11 @@ export class ListService {
           }
         : {
             official: true,
-            official_tag: officialTag || undefined,
+            official_tag: officialTag
+              ? {
+                  contains: officialTag,
+                }
+              : undefined,
           },
       include: {
         items: true,
@@ -153,8 +157,8 @@ export class ListService {
 
     const filteredLists = lists
       .filter((list) => {
-        if (tag === 'uncategorized') return !list.officialTag;
-        return list.officialTag?.toLowerCase() === tag;
+        if (tag === 'uncategorized') return list.officialTag.length === 0;
+        return list.officialTag.some((officialTag) => officialTag.toLowerCase() === tag);
       })
       .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -345,7 +349,7 @@ export const rawToList = (
     linkedListId: listRaw.linkedListId ?? null,
     canBeLinked: !!(listRaw.official || listRaw.canBeLinked),
 
-    officialTag: listRaw.official_tag ?? null,
+    officialTag: splitOfficialTag(listRaw.official_tag),
     userTag: listRaw.listUserTag ?? null,
 
     itemCount: listRaw.items?.filter((x) => !x.isHidden).length ?? -1,
@@ -361,6 +365,12 @@ export const rawToList = (
     itemInfo: !includeItems ? [] : rawToListItems(listRaw.items ?? []),
   };
 };
+
+const splitOfficialTag = (officialTag: string | null) =>
+  officialTag
+    ?.split(',')
+    .map((tag) => tag.trim())
+    .filter(Boolean) ?? [];
 
 export const rawToListItems = (items: ListItems[]): ListItemInfo[] => {
   return items.map((item) => ({

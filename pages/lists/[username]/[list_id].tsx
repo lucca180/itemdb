@@ -148,7 +148,9 @@ const ListPage = (props: ListPageProps) => {
       price: 'price',
       rarity: 'rarity',
       color: 'color',
-      custom: list.officialTag?.toLowerCase() === 'stamps' ? 'album-order' : 'custom',
+      custom: list.officialTag.some((officialTag) => officialTag.toLowerCase() === 'stamps')
+        ? 'album-order'
+        : 'custom',
       addedAt: 'added-at',
       faerieFest: 'recycling-points',
       item_id: 'item-id',
@@ -319,7 +321,10 @@ const ListPage = (props: ListPageProps) => {
   const handleSortChange = (sortBy: string, sortDir: string) => {
     if (!list) return;
 
-    if (sortBy === 'custom' && list.officialTag?.toLowerCase() === 'stamps') {
+    if (
+      sortBy === 'custom' &&
+      list.officialTag.some((officialTag) => officialTag.toLowerCase() === 'stamps')
+    ) {
       sortDir = 'asc';
     }
 
@@ -750,7 +755,7 @@ const ListPage = (props: ListPageProps) => {
             {t('General.tip')}: {t('Lists.user-list-tip-1')}
           </Text>
         )}
-        {list.officialTag === 'Stamps' && (
+        {list.officialTag.includes('Stamps') && (
           <Text
             textAlign={'center'}
             fontSize="xs"

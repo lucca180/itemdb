@@ -37,6 +37,8 @@ export type CreateListModalProps = {
   refresh?: () => void;
 };
 
+type EditableList = Partial<Omit<UserList, 'officialTag'> & { officialTag: string | string[] }>;
+
 const defaultList: Partial<UserList> = {
   name: '',
   description: '',
@@ -78,7 +80,7 @@ const CreateListModal = (props: CreateListModalProps) => {
   const { isOpen, onClose } = props;
   const [isLoading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
-  const [list, setList] = useState(props.list ?? defaultList);
+  const [list, setList] = useState<EditableList>(props.list ?? defaultList);
   const { revalidate } = useLists();
   const [colorPalette, setColorPalette] = useState<string[]>(defaultColors);
 
@@ -96,7 +98,11 @@ const CreateListModal = (props: CreateListModalProps) => {
         purpose: list.purpose,
         colorHex: list.colorHex,
         official: user.isAdmin ? list.official : undefined,
-        officialTag: user.isAdmin ? list.officialTag : undefined,
+        officialTag: user.isAdmin
+          ? Array.isArray(list.officialTag)
+            ? list.officialTag.join(',')
+            : list.officialTag
+          : undefined,
         sortInfo: {
           sortBy: list.sortBy,
           sortDir: list.sortDir,
@@ -213,7 +219,11 @@ const CreateListModal = (props: CreateListModalProps) => {
                           variant="filled"
                           name="officialTag"
                           onChange={handleChange}
-                          value={list.officialTag ?? ''}
+                          value={
+                            Array.isArray(list.officialTag)
+                              ? list.officialTag.join(', ')
+                              : (list.officialTag ?? '')
+                          }
                         />
                       </FormControl>
                       <FormControl>

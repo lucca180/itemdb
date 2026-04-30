@@ -54,12 +54,16 @@ const OfficialListsCatPage = (props: Props) => {
       setLists(data);
     } else if (value.toLowerCase() === 'uncategorized') {
       setLists(
-        data.filter((x) => !x.officialTag).sort((a, b) => sortLists(a, b, catInfo.featured))
+        data
+          .filter((x) => x.officialTag.length === 0)
+          .sort((a, b) => sortLists(a, b, catInfo.featured))
       );
     } else {
       setLists(
         data
-          .filter((x) => x.officialTag?.toLowerCase() === value.toLowerCase())
+          .filter((x) =>
+            x.officialTag.some((officialTag) => officialTag.toLowerCase() === value.toLowerCase())
+          )
           .sort((a, b) => sortLists(a, b, catInfo.featured))
       );
     }
@@ -69,8 +73,10 @@ const OfficialListsCatPage = (props: Props) => {
     if (!data) return;
     let filteredLists = data;
 
-    filteredLists = data.filter(
-      (x) => x.officialTag?.toLowerCase() === selectedCategory.toLowerCase()
+    filteredLists = data.filter((x) =>
+      x.officialTag.some(
+        (officialTag) => officialTag.toLowerCase() === selectedCategory.toLowerCase()
+      )
     );
 
     if (!search) {

@@ -271,7 +271,7 @@ export type UserList = {
   itemInfo?: ListItemInfo[];
   itemCount: number | null;
 
-  officialTag: string | null;
+  officialTag: string[];
   userTag: string | null;
 
   dynamicType: DynamicListTypes | null;

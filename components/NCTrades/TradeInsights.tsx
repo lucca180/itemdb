@@ -253,7 +253,7 @@ const ListReleaseCard = (props: ListReleaseCardProps) => {
     <>
       <HStack>
         {isActive && <Badge colorScheme="yellow">{t('ItemPage.buyable-now')}</Badge>}
-        {release.officialTag && <Badge colorScheme="orange">{release.officialTag}</Badge>}
+        {release.officialTag.length && <Badge colorScheme="orange">{release.officialTag[0]}</Badge>}
       </HStack>
       <Text>
         <Link

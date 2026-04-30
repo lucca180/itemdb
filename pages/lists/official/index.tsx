@@ -67,9 +67,11 @@ const OfficialListsPage = (props: Props) => {
 
   const categories = useMemo(() => {
     if (!lists) return [];
-    const newCats = [...new Set(lists.map((list) => list.officialTag || 'Uncategorized'))].sort(
-      (a, b) => a.localeCompare(b)
-    );
+    const newCats = [
+      ...new Set(
+        lists.flatMap((list) => (list.officialTag.length ? list.officialTag : 'Uncategorized'))
+      ),
+    ].sort((a, b) => a.localeCompare(b));
     return newCats;
   }, [lists]);
 
@@ -82,13 +84,13 @@ const OfficialListsPage = (props: Props) => {
       return lists;
     } else if (value === 'Uncategorized') {
       const filtered = lists
-        .filter((x) => !x.officialTag)
+        .filter((x) => x.officialTag.length === 0)
         .sort((a, b) => a.name.localeCompare(b.name));
       setFilteredLists(filtered);
       return filtered;
     } else {
       const filtered = lists
-        .filter((x) => x.officialTag === value)
+        .filter((x) => x.officialTag.includes(value))
         .sort((a, b) => a.name.localeCompare(b.name));
       setFilteredLists(filtered);
       return filtered;
@@ -101,7 +103,7 @@ const OfficialListsPage = (props: Props) => {
     let newFilteredLists = allLists;
 
     if (selectedCategory != 'all')
-      newFilteredLists = allLists.filter((x) => x.officialTag === selectedCategory);
+      newFilteredLists = allLists.filter((x) => x.officialTag.includes(selectedCategory));
 
     if (!search) {
       setIsSearch(false);

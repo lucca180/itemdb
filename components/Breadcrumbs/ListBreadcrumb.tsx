@@ -17,7 +17,7 @@ export const ListBreadcrumb = (props: ListBreadcrumb) => {
   const t = useTranslations();
   const router = useRouter();
 
-  const category = list.officialTag ?? null;
+  const category = list.officialTag[0] ?? null;
 
   const breadcrumbList = useMemo(() => {
     const breadList: { position: number; name: string; item: string; skip?: boolean }[] = [

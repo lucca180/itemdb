@@ -140,7 +140,9 @@ export const getTrendingLists = async (limit: number, excludeCats: string[] = []
     rawToList(listRaw, listRaw.user)
   );
 
-  return sortedLists.filter((x) => !excludeCats.includes(x.officialTag ?? '')).slice(0, limit);
+  return sortedLists
+    .filter((x) => !x.officialTag.some((officialTag) => excludeCats.includes(officialTag)))
+    .slice(0, limit);
 };
 
 export const getTrendingShops = async (limit: number) => {
@@ -186,7 +188,7 @@ const FEATURED_TVW_UNTIL = process.env.FEATURED_TVW_UNTIL
 
 export const getTVWLists = async (limit: number) => {
   const lists = await getTrendingLists(10000);
-  const tvwLists = lists.filter((list) => list.officialTag === 'The Void Within');
+  const tvwLists = lists.filter((list) => list.officialTag.includes('The Void Within'));
 
   const isFeaturedActive = FEATURED_TVW_UNTIL ? Date.now() < FEATURED_TVW_UNTIL : false;
 
@@ -207,7 +209,9 @@ export const getTVWLists = async (limit: number) => {
 
 export const getTrendingCatLists = async (cat: string, limit: number) => {
   const lists = await getTrendingLists(10000);
-  const targetLists = lists.filter((list) => list.officialTag?.toLowerCase() === cat.toLowerCase());
+  const targetLists = lists.filter((list) =>
+    list.officialTag.some((officialTag) => officialTag.toLowerCase() === cat.toLowerCase())
+  );
 
   const envKey = cat.split(' ').join('_').toUpperCase();
 

@@ -180,7 +180,10 @@ const useRelatedLinks = (item: ItemData, rest: RelatedOthers) => {
       return;
     }
 
-    if (list.officialTag?.toLowerCase() === 'stamps' && list.visibility === 'public') {
+    if (
+      list.officialTag.some((officialTag) => officialTag.toLowerCase() === 'stamps') &&
+      list.visibility === 'public'
+    ) {
       relatedLinks.push({
         href: `/lists/import`,
         imageUrl: `https://images.neopets.com/themes/h5/basic/images/v3/stamps-icon.svg`,
