@@ -49,6 +49,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 
 export const getSimilarLists = async (list: UserList, limit: number) => {
   const name = list.name;
+  const exactOfficialTag = list.officialTag.join(',');
 
   const similarIdsRaw = (await prisma.$queryRaw`
     select internal_id from userlist
@@ -65,37 +66,57 @@ export const getSimilarLists = async (list: UserList, limit: number) => {
     .filter((id) => id !== list.internal_id);
 
   const similarLists = await prisma.userList.findMany({
-    where: similarIds.length
-      ? {
+    where: {
+      OR: [
+        {
           internal_id: {
             in: similarIds,
           },
-        }
-      : {
-          official: true,
-          official_tag: {
-            contains: list.officialTag[0],
-          },
-          NOT: {
-            internal_id: list.internal_id,
-          },
         },
+        similarIds.length < limit
+          ? {
+              official: true,
+              OR: [
+                {
+                  official_tag: exactOfficialTag,
+                },
+                {
+                  official_tag: {
+                    contains: list.officialTag[0],
+                  },
+                },
+              ],
+              NOT: {
+                internal_id: list.internal_id,
+              },
+            }
+          : {},
+      ],
+    },
     include: {
       items: true,
       user: true,
     },
   });
 
+  if (!similarLists.length) return [];
+
   similarLists.sort((a, b) => {
     const aPos = similarIds.indexOf(a.internal_id);
     const bPos = similarIds.indexOf(b.internal_id);
-    if (aPos === -1 && bPos === -1) return 0;
+
+    if (aPos === -1 && bPos === -1) {
+      const aExactTag = a.official_tag === exactOfficialTag;
+      const bExactTag = b.official_tag === exactOfficialTag;
+      if (aExactTag && !bExactTag) return -1;
+      if (!aExactTag && bExactTag) return 1;
+      return 0;
+    }
+
     if (aPos === -1) return 1;
     if (bPos === -1) return -1;
     return aPos - bPos;
   });
-
-  if (!similarLists.length) return [];
 
   const result = similarLists.slice(0, limit).map((list) => rawToList(list, list.user, false));
 

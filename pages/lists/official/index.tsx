@@ -67,12 +67,10 @@ const OfficialListsPage = (props: Props) => {
 
   const categories = useMemo(() => {
     if (!lists) return [];
-    const newCats = [
-      ...new Set(
-        lists.flatMap((list) => (list.officialTag.length ? list.officialTag : 'Uncategorized'))
-      ),
-    ].sort((a, b) => a.localeCompare(b));
-    return newCats;
+    const newCats = lists
+      .map((x) => x.officialTag[0] || 'Uncategorized')
+      .sort((a, b) => a.localeCompare(b));
+    return Array.from(new Set(newCats).values());
   }, [lists]);
 
   const handleFilter = (value: string) => {
