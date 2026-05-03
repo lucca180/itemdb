@@ -87,20 +87,22 @@ const TheVoidWithinHub = (props: TheVoidWithinHubProps) => {
             The Void Within plot
           </Text>
         </Center>
-        {Object.keys(listGroups).map((groupKey) => (
-          <Center flexFlow="column" gap={1} key={groupKey} w="100%">
-            {groupKey && (
-              <Heading as="h3" size="md" color="whiteAlpha.900" mb={3} mt={5}>
-                {groupKey}
-              </Heading>
-            )}
-            <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
-              {listGroups[groupKey].map((list) => (
-                <UserListCard key={list.slug} list={list} />
-              ))}
-            </Flex>
-          </Center>
-        ))}
+        {Object.keys(listGroups)
+          .sort()
+          .map((groupKey) => (
+            <Center flexFlow="column" gap={1} key={groupKey} w="100%">
+              {groupKey && (
+                <Heading as="h3" size="md" color="whiteAlpha.900" mb={3} mt={5}>
+                  {groupKey}
+                </Heading>
+              )}
+              <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
+                {listGroups[groupKey].map((list) => (
+                  <UserListCard key={list.slug} list={list} />
+                ))}
+              </Flex>
+            </Center>
+          ))}
       </Center>
     </>
   );
