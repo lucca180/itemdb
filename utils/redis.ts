@@ -93,9 +93,15 @@ export const redis_setItemCount = async (
   try {
     if (!ip || !itemCount || !redis) return;
 
-    const isValidProof = req.headers['x-itemdb-proof'] as string | undefined;
+    const itemdbProof = getHeaderString(req.headers['x-itemdb-proof']);
+    const isValidProof =
+      itemdbProof &&
+      verifySiteProof(itemdbProof, 0, {
+        method: req.method,
+        pathname: getRequestPathname(req),
+      });
 
-    if (isValidProof && verifySiteProof(isValidProof)) return;
+    if (isValidProof) return;
 
     if (req.headers['x-itemdb-token'])
       return incrementApiKey(req.headers['x-itemdb-token'] as string, itemCount);
@@ -219,3 +225,16 @@ export const getKeyTTL = async (token: string) => {
   const ttl = await redis.ttl(`apiKey:${keyId}`);
   return ttl > 0 ? ttl : 0;
 };
+
+function getHeaderString(value: string | string[] | undefined) {
+  if (Array.isArray(value)) return value[0];
+  return value;
+}
+
+function getRequestPathname(req: NextApiRequest) {
+  try {
+    return new URL(req.url || '/', 'https://itemdb.com.br').pathname;
+  } catch {
+    return req.url?.split('?')[0] || '/';
+  }
+}

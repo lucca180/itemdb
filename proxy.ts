@@ -7,6 +7,7 @@ import {
   isLikelyBrowser,
   normalizeIP,
   verifyApiToken,
+  verifySiteChallenge,
   verifySiteProof,
 } from '@utils/api-utils';
 import * as Sentry from '@sentry/nextjs';
@@ -64,7 +65,7 @@ export async function proxy(request: NextRequest) {
   updateServerTime('regular-middleware', startTime, response);
 
   const proofCookie = request.cookies.get('itemdb-proof')?.value || '';
-  if (!verifySiteProof(proofCookie, 120)) {
+  if (!verifySiteChallenge(proofCookie, 120)) {
     const proof = generateSiteProof();
     response.cookies.set({
       name: 'itemdb-proof',
@@ -129,15 +130,16 @@ export const apiMiddleware = async (request: NextRequest) => {
   Sentry.setTag('x-itemdb-score', score);
   // request is trusted if it has a valid site proof, skip all checks
   const itemdb_proof = request.headers.get('x-itemdb-proof');
-  requestHeaders.delete('x-itemdb-valid');
 
-  if (itemdb_proof && verifySiteProof(itemdb_proof)) {
-    // set on both request and response (redis func uses this)
-    requestHeaders.set('x-itemdb-valid', 'true');
-    response.headers.set('x-itemdb-valid', 'true');
+  const proofContext = {
+    method: request.method,
+    pathname: request.nextUrl.pathname,
+  };
 
+  if (itemdb_proof && verifySiteProof(itemdb_proof, 0, proofContext)) {
     // check if proof is close to expiration, if so, refresh it
-    if (!verifySiteProof(itemdb_proof, 300) && isBrowser) {
+    const challenge = itemdb_proof.slice(0, itemdb_proof.lastIndexOf(':'));
+    if (!verifySiteChallenge(challenge, 300) && isBrowser) {
       const proof = generateSiteProof('long');
       response.cookies.set({
         name: 'itemdb-proof',
@@ -348,7 +350,7 @@ const addCors = (request: NextRequest, response: NextResponse) => {
       );
       response.headers.set(
         'Access-Control-Expose-Headers',
-        'Content-Type, Authorization, x-itemdb-proof, x-itemdb-token, x-itemdb-key, x-itemdb-block, x-itemdb-skip, x-itemdb-valid, sentry-trace, baggage, traceparent'
+        'Content-Type, Authorization, x-itemdb-proof, x-itemdb-token, x-itemdb-key, x-itemdb-block, x-itemdb-skip, sentry-trace, baggage, traceparent'
       );
       response.headers.set('Access-Control-Allow-Origin', origin);
       response.headers.set('Access-Control-Allow-Credentials', 'true');

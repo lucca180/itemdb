@@ -1,9 +1,10 @@
-import { generateSiteProof, verifySessionToken } from '@utils/api-utils';
+import { generateSiteProof, getSiteProofInput, verifySessionToken } from '@utils/api-utils';
 import { expect, test, describe } from 'vitest';
 import { NextRequest } from 'next/server';
 import { apiMiddleware } from '../proxy';
 import { createSession, redis_setItemCount } from '@utils/redis';
 import { generateAPIToken } from '../pages/api/auth/token';
+import { createHash } from 'crypto';
 
 describe.concurrent('API Access tests', () => {
   test('Access API with valid proof', async () => {
@@ -11,15 +12,16 @@ describe.concurrent('API Access tests', () => {
 
     expect(proof).toBeDefined();
 
+    const solvedProof = solveSiteProof(proof.token, 'GET', '/api/v1/items');
+
     const request = new NextRequest('http://localhost/api/v1/items', {
       method: 'GET',
       headers: {
-        'x-itemdb-proof': proof.token,
+        'x-itemdb-proof': solvedProof,
       },
     });
 
     const response = await apiMiddleware(request);
-    expect(response.headers.get('x-itemdb-valid')).toBe('true');
     expect(response.status).toBe(200);
   });
 
@@ -36,6 +38,48 @@ describe.concurrent('API Access tests', () => {
 
     const response = await apiMiddleware(request);
     expect(response.status).toBe(401); // change this after block is effective
+  });
+
+  test('Access API with proof solved for another path', async () => {
+    const proof = generateSiteProof();
+    const solvedProof = solveSiteProof(proof.token, 'GET', '/api/v1/search');
+
+    const request = new NextRequest('http://localhost/api/v1/items', {
+      method: 'GET',
+      headers: {
+        'x-itemdb-proof': solvedProof,
+      },
+    });
+
+    const response = await apiMiddleware(request);
+    expect(response.status).toBe(401);
+  });
+
+  test('Valid proof skips item count without x-itemdb-valid forwarding header', async () => {
+    const proof = generateSiteProof();
+    const solvedProof = solveSiteProof(proof.token, 'GET', '/api/v1/items');
+
+    const request = {
+      method: 'GET',
+      url: '/api/v1/items',
+      headers: {
+        'x-itemdb-proof': solvedProof,
+      },
+      cookies: {},
+    } as any;
+
+    await redis_setItemCount('proof-test', 999_999, request);
+
+    const response = await apiMiddleware(
+      new NextRequest('http://localhost/api/v1/items', {
+        method: 'GET',
+        headers: {
+          'X-Forwarded-For': 'proof-test',
+          'x-itemdb-proof': solvedProof,
+        },
+      })
+    );
+    expect(response.status).toBe(200);
   });
 
   test('Access Skip API route', async () => {
@@ -190,3 +234,36 @@ describe.concurrent('API Access tests', () => {
     });
   });
 });
+
+function solveSiteProof(challenge: string, method: string, pathname: string) {
+  const payload = JSON.parse(Buffer.from(challenge.split('.')[1], 'base64url').toString('utf8'));
+  const difficulty = Number(payload.difficulty);
+
+  for (let counter = 0; counter < 10_000_000; counter++) {
+    const input = getSiteProofInput(challenge, counter, { method, pathname });
+    const hash = createHash('sha256').update(input).digest();
+
+    if (hasLeadingZeroBits(hash, difficulty)) {
+      return `${challenge}:${counter}`;
+    }
+  }
+
+  throw new Error('Unable to solve site proof');
+}
+
+function hasLeadingZeroBits(hash: Uint8Array, bits: number) {
+  let remaining = bits;
+
+  for (const byte of hash) {
+    if (remaining <= 0) return true;
+    if (remaining >= 8) {
+      if (byte !== 0) return false;
+      remaining -= 8;
+      continue;
+    }
+
+    return byte >> (8 - remaining) === 0;
+  }
+
+  return true;
+}

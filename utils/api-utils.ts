@@ -4,10 +4,27 @@ import ipaddr from 'ipaddr.js';
 import { NextApiRequest } from 'next';
 import { ListService } from '@services/ListService';
 import { Chance } from 'chance';
+import { createHash, randomBytes } from 'crypto';
 
 const chance = new Chance();
 
 // ------- site proof ---------- //
+const DEFAULT_SITE_PROOF_DIFFICULTY = 8;
+const MAX_SITE_PROOF_DIFFICULTY = 24;
+const SITE_PROOF_VERSION = 2;
+
+type SiteProofContext = {
+  method?: string | null;
+  pathname?: string | null;
+};
+
+type SiteProofPayload = jwt.JwtPayload & {
+  ctx?: string;
+  nonce?: string;
+  difficulty?: number;
+  v?: number;
+};
+
 export function generateSiteProof(type = 'short') {
   const expiration = type === 'short' ? 5 : 30;
   return {
@@ -15,6 +32,9 @@ export function generateSiteProof(type = 'short') {
       {
         aud: 'itemdb.com.br',
         ctx: 'site-proof',
+        difficulty: getSiteProofDifficulty(),
+        nonce: randomBytes(16).toString('base64url'),
+        v: SITE_PROOF_VERSION,
       },
       process.env.SITE_PROOF_SECRET!,
       { expiresIn: type === 'short' ? '5m' : '30m' }
@@ -23,12 +43,45 @@ export function generateSiteProof(type = 'short') {
   };
 }
 
-export function verifySiteProof(proof: string, maxAge = 0) {
-  if (!proof) return false;
-  try {
-    const payload = jwt.verify(proof, process.env.SITE_PROOF_SECRET!) as jwt.JwtPayload;
+export function verifySiteChallenge(challenge: string, maxAge = 0) {
+  const payload = decodeSiteChallenge(challenge, maxAge);
+  return !!payload;
+}
 
-    if (payload.aud !== 'itemdb.com.br' || payload.ctx !== 'site-proof') {
+export function verifySiteProof(proof: string, maxAge = 0, context: SiteProofContext = {}) {
+  if (!proof) return false;
+
+  const separatorIndex = proof.lastIndexOf(':');
+  if (separatorIndex <= 0 || separatorIndex === proof.length - 1) {
+    return false;
+  }
+
+  const challenge = proof.slice(0, separatorIndex);
+  const solution = proof.slice(separatorIndex + 1);
+  if (!/^\d+$/.test(solution)) return false;
+
+  const payload = decodeSiteChallenge(challenge, maxAge);
+  if (!payload) return false;
+
+  const difficulty = Number(payload.difficulty);
+  if (!Number.isInteger(difficulty) || difficulty < 0 || difficulty > 30) return false;
+
+  const proofInput = getSiteProofInput(challenge, solution, context);
+  const hash = createHash('sha256').update(proofInput).digest();
+
+  return hasLeadingZeroBits(hash, difficulty);
+}
+
+function decodeSiteChallenge(challenge: string, maxAge = 0) {
+  try {
+    const payload = jwt.verify(challenge, process.env.SITE_PROOF_SECRET!) as SiteProofPayload;
+
+    if (
+      payload.aud !== 'itemdb.com.br' ||
+      payload.ctx !== 'site-proof' ||
+      payload.v !== SITE_PROOF_VERSION ||
+      !payload.nonce
+    ) {
       return false;
     }
 
@@ -38,10 +91,45 @@ export function verifySiteProof(proof: string, maxAge = 0) {
       return false;
     }
 
-    return true;
+    return payload;
   } catch {
     return false;
   }
+}
+
+export function getSiteProofInput(
+  challenge: string,
+  solution: string | number,
+  context: SiteProofContext = {}
+) {
+  const method = (context.method || 'GET').toUpperCase();
+  const pathname = context.pathname || '/';
+
+  return `${challenge}.${method}.${pathname}.${solution}`;
+}
+
+function hasLeadingZeroBits(hash: Uint8Array | Buffer, bits: number) {
+  let remaining = bits;
+
+  for (const byte of hash) {
+    if (remaining <= 0) return true;
+    if (remaining >= 8) {
+      if (byte !== 0) return false;
+      remaining -= 8;
+      continue;
+    }
+
+    return byte >> (8 - remaining) === 0;
+  }
+
+  return true;
+}
+
+function getSiteProofDifficulty() {
+  const value = Number(process.env.SITE_PROOF_DIFFICULTY || DEFAULT_SITE_PROOF_DIFFICULTY);
+  if (!Number.isFinite(value)) return DEFAULT_SITE_PROOF_DIFFICULTY;
+
+  return Math.max(0, Math.min(Math.floor(value), MAX_SITE_PROOF_DIFFICULTY));
 }
 
 // -------- user session ---------- //
