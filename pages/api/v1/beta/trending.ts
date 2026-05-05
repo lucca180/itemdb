@@ -95,7 +95,7 @@ export const getTrendingLists = async (limit: number, excludeCats: string[] = []
     type: env.type,
     // @ts-expect-error missing type
     search: '/lists/official/',
-    limit: limit * 3,
+    limit: limit * 10,
   })) as WebsiteMetrics;
 
   const popularListsStats: any = {};
