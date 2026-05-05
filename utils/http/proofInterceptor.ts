@@ -45,7 +45,9 @@ export const requestInterceptor = async (config: InternalAxiosRequestConfig) => 
       setHeader(config, SITE_PROOF_HEADER, solvedProof);
       setHeader(config, 'X-Requested-With', 'itemdb-web');
     }
-  } else console.error('Site proof cookie not found. Unable to attach site proof to request.');
+  }
+
+  console.error('Site proof not found. Unable to attach site proof to request.');
 
   return config;
 };
