@@ -82,22 +82,24 @@ const RawDataPage = (props: RawExportPageProps) => {
               </Tr>
             </Thead>
             <Tbody>
-              {[...dumps, ...rawExportData].map((data, i) => (
-                <Tr key={i}>
-                  <Td>
-                    <Link href={data.link} isExternal>
-                      {data.name}
-                    </Link>
-                  </Td>
-                  <Td fontSize="xs" whiteSpace={'normal'}>
-                    {data.description}
-                  </Td>
-                  <Td>{data.date}</Td>
-                  <Td>{data.size}</Td>
-                  <Td>{data.format}</Td>
-                  <Td>{data.update ?? 'No'}</Td>
-                </Tr>
-              ))}
+              {[...dumps, ...rawExportData]
+                .sort((a, b) => b.date.localeCompare(a.date))
+                .map((data, i) => (
+                  <Tr key={i}>
+                    <Td>
+                      <Link href={data.link} isExternal>
+                        {data.name}
+                      </Link>
+                    </Td>
+                    <Td fontSize="xs" whiteSpace={'normal'}>
+                      {data.description}
+                    </Td>
+                    <Td>{data.date}</Td>
+                    <Td>{data.size}</Td>
+                    <Td>{data.format}</Td>
+                    <Td>{data.update ?? 'No'}</Td>
+                  </Tr>
+                ))}
             </Tbody>
           </Table>
         </TableContainer>
