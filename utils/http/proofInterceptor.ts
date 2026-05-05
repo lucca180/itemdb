@@ -39,15 +39,19 @@ export const requestInterceptor = async (config: InternalAxiosRequestConfig) => 
   if (!isTrustedHost) return config;
 
   const proof = getCookie(SITE_PROOF_COOKIE);
+
+  let hasProof = false;
+
   if (proof) {
     const solvedProof = await solveSiteProof(String(proof), config.method, url.pathname);
     if (solvedProof) {
       setHeader(config, SITE_PROOF_HEADER, solvedProof);
       setHeader(config, 'X-Requested-With', 'itemdb-web');
+      hasProof = true;
     }
   }
 
-  console.error('Site proof not found. Unable to attach site proof to request.');
+  if (!hasProof) console.error('Site proof not found. Unable to attach site proof to request.');
 
   return config;
 };
