@@ -153,7 +153,7 @@ const PriceTable = (props: Props) => {
         <Tbody>
           {sortedData.map((price, index) => (
             <PriceItem
-              key={price.addedAt}
+              key={price.addedAt + '_item' + (price.marker ? '_marker' : '')}
               price={price}
               data={sortedData}
               index={index}
@@ -200,7 +200,12 @@ const PriceItem = (
 
   if (isMarker)
     return (
-      <Tr key={price.addedAt} h={42} bg={bgColor} borderLeft={`3px solid ${price.color}85`}>
+      <Tr
+        key={price.addedAt + '_marker'}
+        h={42}
+        bg={bgColor}
+        borderLeft={`3px solid ${price.color}85`}
+      >
         <Td colSpan={isAdmin ? 4 : 3} border={0}>
           <Flex flexFlow={'column'} alignItems={'center'} gap={2}>
             <Badge>
@@ -229,7 +234,13 @@ const PriceItem = (
 
   if (price.value === 0)
     return (
-      <Tr key={'0'} h={50} bg={bgColor} border={0} borderLeft={`3px solid ${props.itemColor}`}>
+      <Tr
+        key={price.addedAt}
+        h={50}
+        bg={bgColor}
+        border={0}
+        borderLeft={`3px solid ${props.itemColor}`}
+      >
         <Td colSpan={isAdmin ? 3 : 4}>
           <Flex flexFlow={'column'} alignItems={'center'} gap={2}>
             {format.dateTime(new Date(price.addedAt!), {
@@ -257,7 +268,13 @@ const PriceItem = (
 
   if (price.isUnconfirmed)
     return (
-      <Tr key={'0'} h={50} bg={bgColor} border={0} borderLeft={`3px solid ${props.itemColor}`}>
+      <Tr
+        key={'unconfirmed'}
+        h={50}
+        bg={bgColor}
+        border={0}
+        borderLeft={`3px solid ${props.itemColor}`}
+      >
         <Td colSpan={4}>
           <Flex flexFlow={'column'} alignItems={'center'} gap={2}>
             <Text textAlign={'center'}>{t('ItemPage.unconfirmed-price')}</Text>
@@ -278,7 +295,6 @@ const PriceItem = (
   return (
     <React.Fragment key={price.addedAt}>
       <Tr
-        key={price.addedAt}
         bg={bgColor}
         border={0}
         borderLeft={price.color ? `3px solid ${price.color}85` : undefined}
