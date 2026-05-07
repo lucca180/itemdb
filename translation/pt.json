@@ -507,7 +507,8 @@
     "others": "Outros",
     "reflect": "Reflexão",
     "clear": "Limpar",
-    "item": "Item"
+    "item": "Item",
+    "now": "Agora"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",

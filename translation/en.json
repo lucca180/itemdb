@@ -506,7 +506,8 @@
     "reflect": "Reflect",
     "others": "Others",
     "clear": "Clear",
-    "item": "Item"
+    "item": "Item",
+    "now": "Now"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",

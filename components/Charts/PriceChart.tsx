@@ -10,7 +10,7 @@ import {
 } from 'lightweight-charts';
 import { useEffect, useRef } from 'react';
 import { ColorData, ItemData, PriceData, UserList } from '../../types';
-import { useFormatter } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import { format } from 'date-fns';
 import { tz } from '@date-fns/tz';
 
@@ -22,6 +22,7 @@ export type ChartComponentProps = {
 
 const ChartComponent = (props: ChartComponentProps) => {
   const formatter = useFormatter();
+  const t = useTranslations();
   const { data, color, lists } = props;
   const RBG = Color.rgb(color.rgb).round().array();
   const backgroundColor = 'transparent';
@@ -135,7 +136,7 @@ const ChartComponent = (props: ChartComponentProps) => {
             month: 'short',
             day: 'numeric',
           })
-        : 'Now';
+        : t('General.now');
       dates.textContent = `${startDate} - ${endDate}`;
       dates.style.opacity = '0.78';
 
