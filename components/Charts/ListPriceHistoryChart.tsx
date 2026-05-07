@@ -1,6 +1,6 @@
 import { Box } from '@chakra-ui/react';
 import { ColorInstance } from 'color';
-import { createChart, ColorType, LineStyle } from 'lightweight-charts';
+import { createChart, ColorType, LineStyle, AreaSeries } from 'lightweight-charts';
 import { useFormatter } from 'next-intl';
 import React, { useEffect, useRef } from 'react';
 
@@ -61,7 +61,7 @@ const ListChartComponent = (props: ListChartComponentProps) => {
     });
 
     // ------- prices ------- //
-    const newSeries = chart.addAreaSeries({
+    const newSeries = chart.addSeries(AreaSeries, {
       lineColor,
       topColor: areaTopColor,
       bottomColor: areaBottomColor,
@@ -81,7 +81,7 @@ const ListChartComponent = (props: ListChartComponentProps) => {
 
     // ------- no data ------- //
 
-    // const lineSeries = chart.addLineSeries({ color: '#2962FF', priceScaleId: 'left' });
+    // const lineSeries = chart.addSeries(LineSeries, { color: '#2962FF', priceScaleId: 'left' });
 
     // const noDataData = Object.entries(props.noDataData).map((p) => {
     //   return {

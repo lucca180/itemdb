@@ -6,8 +6,8 @@ import {
   ISeriesApi,
   ISeriesPrimitive,
   ISeriesPrimitiveAxisView,
-  ISeriesPrimitivePaneRenderer,
-  ISeriesPrimitivePaneView,
+  IPrimitivePaneRenderer,
+  IPrimitivePaneView,
   SeriesOptionsMap,
   SeriesType,
   Time,
@@ -47,7 +47,7 @@ export function positionsLine(
   return { position, length: lineBitmapWidth };
 }
 
-class VertLinePaneRenderer implements ISeriesPrimitivePaneRenderer {
+class VertLinePaneRenderer implements IPrimitivePaneRenderer {
   _x: Coordinate | null = null;
   _options: VertLineOptions;
   constructor(x: Coordinate | null, options: VertLineOptions) {
@@ -65,7 +65,7 @@ class VertLinePaneRenderer implements ISeriesPrimitivePaneRenderer {
   }
 }
 
-class VertLinePaneView implements ISeriesPrimitivePaneView {
+class VertLinePaneView implements IPrimitivePaneView {
   _source: VertLine;
   _x: Coordinate | null = null;
   _options: VertLineOptions;

@@ -11573,7 +11573,7 @@ __metadata:
     jotai: "npm:^2.18.1"
     jsdom: "npm:^27.2.0"
     jsonwebtoken: "npm:^9.0.3"
-    lightweight-charts: "npm:^4.2.2"
+    lightweight-charts: "npm:^5.2.0"
     lint-staged: "npm:16.2.7"
     lodash: "npm:^4.18.1"
     mailgen: "npm:^2.0.32"
@@ -12083,12 +12083,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lightweight-charts@npm:^4.2.2":
-  version: 4.2.2
-  resolution: "lightweight-charts@npm:4.2.2"
+"lightweight-charts@npm:^5.2.0":
+  version: 5.2.0
+  resolution: "lightweight-charts@npm:5.2.0"
   dependencies:
     fancy-canvas: "npm:2.1.0"
-  checksum: 10c0/7bc71bf4b25c2a2cfc8dca25bbea56e61178472c7ae915b62ceb045433cbe097fb26a6d16345280c283fb443370fd8a3be239abacaa92694f19e9123b46577cb
+  checksum: 10c0/73e67701445397c3aec4887d94e8cbd29fa1f19086146a5372a24a697795e4e0fd9404e9d699f255b3a8865fe0bcc14e958cb4e13ea96ec270f1a9bb2f0b750e
   languageName: node
   linkType: hard
 
