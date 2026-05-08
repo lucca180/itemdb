@@ -7,12 +7,15 @@ import {
   AreaSeries,
   Time,
   isBusinessDay,
+  createSeriesMarkers,
 } from 'lightweight-charts';
+import type { SeriesMarker } from 'lightweight-charts';
 import { useEffect, useRef } from 'react';
 import { ColorData, ItemData, PriceData, UserList } from '../../types';
 import { useFormatter, useTranslations } from 'next-intl';
 import { format } from 'date-fns';
 import { tz } from '@date-fns/tz';
+import { stripMarkdown } from '@utils/utils';
 
 export type ChartComponentProps = {
   color: ItemData['color'] | ColorData;
@@ -82,6 +85,7 @@ const ChartComponent = (props: ChartComponentProps) => {
       endTime: null,
     });
     const visibleSeriesBySegment = new Map<string, ReturnType<typeof chart.addSeries>>();
+    const contextByMarkerId = new Map<string, ChartPoint>();
 
     chartSegments.forEach((segment, index) => {
       const isLastSegment = index === chartSegments.length - 1;
@@ -95,6 +99,27 @@ const ChartComponent = (props: ChartComponentProps) => {
 
       newSeries.setData(segment.data);
       visibleSeriesBySegment.set(segment.id, newSeries);
+
+      const contextMarkers = segment.data
+        .filter((point) => !!point.context)
+        .map((point) => {
+          const markerId = `price-context-${segment.id}-${point.time}`;
+          contextByMarkerId.set(markerId, point);
+
+          return {
+            id: markerId,
+            time: point.time,
+            position: 'atPriceMiddle',
+            price: point.value,
+            shape: 'circle',
+            color: '#fff',
+            size: 0.75,
+          } satisfies SeriesMarker<Time>;
+        });
+
+      if (contextMarkers.length) {
+        createSeriesMarkers(newSeries, contextMarkers, { zOrder: 'top', autoScale: false });
+      }
     });
 
     chart.timeScale().fitContent();
@@ -115,7 +140,7 @@ const ChartComponent = (props: ChartComponentProps) => {
     tooltip.style.transform = 'translate(-50%, calc(-100% - 12px))';
     chartContainerRef.current.appendChild(tooltip);
 
-    const setTooltipContent = (series: ChartSeriesInfo) => {
+    const setSeriesTooltipContent = (series: ChartSeriesInfo) => {
       const title = document.createElement('div');
       title.textContent = series.name;
       title.style.fontWeight = '700';
@@ -143,9 +168,48 @@ const ChartComponent = (props: ChartComponentProps) => {
       tooltip.replaceChildren(title, type, dates);
     };
 
+    const setPriceContextTooltipContent = (point: ChartPoint) => {
+      const title = document.createElement('div');
+      title.textContent = t('ItemPage.price-context');
+      title.style.fontWeight = '700';
+      title.style.color = lineColor;
+      title.style.marginBottom = '4px';
+
+      const price = document.createElement('div');
+      price.textContent = `${formatter.number(point.value)} NP`;
+      price.style.marginBottom = '4px';
+
+      const date = document.createElement('div');
+      date.textContent = formatter.dateTime(new Date(point.addedAt), {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+      date.style.opacity = '0.78';
+      date.style.marginBottom = '6px';
+
+      const context = document.createElement('div');
+      context.textContent = point.context ?? '';
+      context.style.whiteSpace = 'pre-wrap';
+
+      tooltip.replaceChildren(title, price, date, context);
+    };
+
     chart.subscribeCrosshairMove((param) => {
       if (!param.point || param.point.x < 0 || param.point.y < 0 || !param.time) {
         tooltip.style.display = 'none';
+        return;
+      }
+
+      const markerId = param.hoveredInfo?.objectId;
+      const contextPoint =
+        typeof markerId === 'string' ? contextByMarkerId.get(markerId) : undefined;
+
+      if (contextPoint) {
+        setPriceContextTooltipContent(contextPoint);
+        tooltip.style.display = 'block';
+        tooltip.style.left = `${param.point.x}px`;
+        tooltip.style.top = `${param.point.y}px`;
         return;
       }
 
@@ -166,7 +230,7 @@ const ChartComponent = (props: ChartComponentProps) => {
         return;
       }
 
-      setTooltipContent(hoveredSeries);
+      setSeriesTooltipContent(hoveredSeries);
       tooltip.style.display = 'block';
       tooltip.style.left = `${param.point.x}px`;
       tooltip.style.top = `${param.point.y}px`;
@@ -190,10 +254,12 @@ export default ChartComponent;
 type ChartPoint = {
   time: string;
   value: number;
+  addedAt: string;
+  context?: string | null;
 };
 
 const getChartData = (data: PriceData[]) => {
-  const dataByDay = new Map<string, ChartPoint & { addedAtTime: number }>();
+  const dataByDay = new Map<ChartPoint['time'], ChartPoint & { addedAtTime: number }>();
 
   data.forEach((price) => {
     const time = format(price.addedAt, 'yyyy-MM-dd', {
@@ -206,6 +272,8 @@ const getChartData = (data: PriceData[]) => {
       dataByDay.set(time, {
         time,
         value: price.value,
+        addedAt: price.addedAt,
+        context: price.context ? stripMarkdown(price.context) : null,
         addedAtTime,
       });
     }
@@ -213,7 +281,7 @@ const getChartData = (data: PriceData[]) => {
 
   return [...dataByDay.values()]
     .sort((a, b) => timeToEpoch(a.time) - timeToEpoch(b.time))
-    .map(({ time, value }) => ({ time, value }));
+    .map(({ time, value, addedAt, context }) => ({ time, value, addedAt, context }));
 };
 
 type ChartSegment = {
