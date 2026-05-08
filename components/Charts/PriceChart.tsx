@@ -8,8 +8,9 @@ import {
   Time,
   isBusinessDay,
   createSeriesMarkers,
+  TrackingModeExitMode,
 } from 'lightweight-charts';
-import type { SeriesMarker } from 'lightweight-charts';
+import type { MouseEventParams, SeriesMarker } from 'lightweight-charts';
 import { useEffect, useRef } from 'react';
 import { ColorData, ItemData, PriceData, UserList } from '../../types';
 import { useFormatter, useTranslations } from 'next-intl';
@@ -33,14 +34,17 @@ const ChartComponent = (props: ChartComponentProps) => {
   const textColor = 'white';
   const areaTopColor = `rgb(${RBG[0]}, ${RBG[1]}, ${RBG[2]})`;
   const areaBottomColor = `rgba(${RBG[0]}, ${RBG[1]}, ${RBG[2]}, 0.28)`;
-  const chartContainerRef = useRef<any>(undefined);
+  const chartContainerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    const chartContainer = chartContainerRef.current;
+    if (!chartContainer) return;
+
     const handleResize = () => {
-      chart.applyOptions({ width: chartContainerRef.current.clientWidth });
+      chart.applyOptions({ width: chartContainer.clientWidth });
     };
 
-    const chart = createChart(chartContainerRef.current, {
+    const chart = createChart(chartContainer, {
       layout: {
         background: { type: ColorType.Solid, color: backgroundColor },
         textColor,
@@ -59,7 +63,10 @@ const ChartComponent = (props: ChartComponentProps) => {
           labelBackgroundColor: areaTopColor,
         },
       },
-      width: chartContainerRef.current.clientWidth,
+      trackingMode: {
+        exitMode: TrackingModeExitMode.OnTouchEnd,
+      },
+      width: chartContainer.clientWidth,
       height: 200,
     });
 
@@ -84,8 +91,9 @@ const ChartComponent = (props: ChartComponentProps) => {
       startTime: Number.NEGATIVE_INFINITY,
       endTime: null,
     });
-    const visibleSeriesBySegment = new Map<string, ReturnType<typeof chart.addSeries>>();
     const contextByMarkerId = new Map<string, ChartPoint>();
+    const seriesByTime = new Map<ChartPoint['time'], ChartSeriesInstance[]>();
+    let lastTooltipKey: string | null = null;
 
     chartSegments.forEach((segment, index) => {
       const isLastSegment = index === chartSegments.length - 1;
@@ -98,7 +106,19 @@ const ChartComponent = (props: ChartComponentProps) => {
       });
 
       newSeries.setData(segment.data);
-      visibleSeriesBySegment.set(segment.id, newSeries);
+      const seriesInstance = {
+        segment,
+        series: newSeries,
+        dataByTime: new Map(segment.data.map((point) => [point.time, point])),
+      };
+
+      segment.data.forEach((point) => {
+        if (segment.id === 'default' && !point.context) return;
+
+        const seriesForTime = seriesByTime.get(point.time) ?? [];
+        seriesForTime.push(seriesInstance);
+        seriesByTime.set(point.time, seriesForTime);
+      });
 
       const contextMarkers = segment.data
         .filter((point) => !!point.context)
@@ -138,9 +158,17 @@ const ChartComponent = (props: ChartComponentProps) => {
     tooltip.style.lineHeight = '1.35';
     tooltip.style.pointerEvents = 'none';
     tooltip.style.transform = 'translate(-50%, calc(-100% - 12px))';
-    chartContainerRef.current.appendChild(tooltip);
+    chartContainer.appendChild(tooltip);
 
-    const setSeriesTooltipContent = (series: ChartSeriesInfo) => {
+    const hideTooltip = () => {
+      tooltip.style.display = 'none';
+      lastTooltipKey = null;
+    };
+
+    const setSeriesTooltipContent = (series: ChartSeriesTooltipInfo) => {
+      const tooltipKey = `series:${series.id}`;
+      if (lastTooltipKey === tooltipKey) return;
+
       const title = document.createElement('div');
       title.textContent = series.name;
       title.style.fontWeight = '700';
@@ -166,9 +194,13 @@ const ChartComponent = (props: ChartComponentProps) => {
       dates.style.opacity = '0.78';
 
       tooltip.replaceChildren(title, type, dates);
+      lastTooltipKey = tooltipKey;
     };
 
     const setPriceContextTooltipContent = (point: ChartPoint) => {
+      const tooltipKey = `context:${point.time}:${point.addedAt}`;
+      if (lastTooltipKey === tooltipKey) return;
+
       const title = document.createElement('div');
       title.textContent = t('ItemPage.price-context');
       title.style.fontWeight = '700';
@@ -193,58 +225,181 @@ const ChartComponent = (props: ChartComponentProps) => {
       context.style.whiteSpace = 'pre-wrap';
 
       tooltip.replaceChildren(title, price, date, context);
+      lastTooltipKey = tooltipKey;
     };
 
-    chart.subscribeCrosshairMove((param) => {
-      if (!param.point || param.point.x < 0 || param.point.y < 0 || !param.time) {
-        tooltip.style.display = 'none';
-        return;
-      }
+    const getClosestSeriesPoint = (
+      point: { x: number; y: number },
+      time: Time,
+      seriesData?: MouseEventParams<Time>['seriesData']
+    ) => {
+      const timeKey = timeToChartDateKey(time);
 
-      const markerId = param.hoveredInfo?.objectId;
+      if (!timeKey) return null;
+
+      return (seriesByTime.get(timeKey) ?? []).reduce<ClosestSeriesPoint | null>(
+        (closest, chartSeriesItem) => {
+          const chartPoint = chartSeriesItem.dataByTime.get(timeKey);
+          const crosshairData = seriesData?.get(chartSeriesItem.series);
+          const value =
+            crosshairData && 'value' in crosshairData ? crosshairData.value : chartPoint?.value;
+
+          if (typeof value !== 'number') return closest;
+
+          const yCoordinate = chartSeriesItem.series.priceToCoordinate(value);
+
+          if (typeof yCoordinate !== 'number') return closest;
+
+          const distance = Math.abs(point.y - yCoordinate);
+
+          if (!closest || distance < closest.distance) {
+            return {
+              ...chartSeriesItem,
+              point: chartPoint,
+              value,
+              yCoordinate,
+              distance,
+            };
+          }
+
+          return closest;
+        },
+        null
+      );
+    };
+
+    const positionTooltip = (point: { x: number; y: number }) => {
+      tooltip.style.display = 'block';
+      tooltip.style.left = `${point.x}px`;
+      tooltip.style.top = `${point.y}px`;
+
+      const tooltipBounds = tooltip.getBoundingClientRect();
+      const overflowsLeft = point.x - tooltipBounds.width / 2 < 0;
+      const overflowsRight = point.x + tooltipBounds.width / 2 > chartContainer.clientWidth;
+
+      tooltip.style.transform = `translate(${
+        overflowsLeft ? '0' : overflowsRight ? '-100%' : '-50%'
+      }, calc(-100% - 12px))`;
+    };
+
+    const showTooltip = (
+      point: { x: number; y: number },
+      time: Time,
+      options?: {
+        markerId?: unknown;
+        requireNearLine?: boolean;
+        seriesData?: MouseEventParams<Time>['seriesData'];
+        closestSeriesPoint?: ClosestSeriesPoint | null;
+      }
+    ) => {
+      if (point.x < 0 || point.y < 0) return (hideTooltip(), false);
+
+      const markerId = options?.markerId;
       const contextPoint =
         typeof markerId === 'string' ? contextByMarkerId.get(markerId) : undefined;
 
       if (contextPoint) {
         setPriceContextTooltipContent(contextPoint);
-        tooltip.style.display = 'block';
-        tooltip.style.left = `${param.point.x}px`;
-        tooltip.style.top = `${param.point.y}px`;
+        positionTooltip(point);
+        return true;
+      }
+
+      const closestSeriesPoint =
+        options?.closestSeriesPoint ?? getClosestSeriesPoint(point, time, options?.seriesData);
+
+      if (!closestSeriesPoint) {
+        hideTooltip();
+        return false;
+      }
+
+      if (options?.requireNearLine && point.y < closestSeriesPoint.yCoordinate - 4) {
+        hideTooltip();
+        return false;
+      }
+
+      if (closestSeriesPoint.point?.context && closestSeriesPoint.distance <= 12) {
+        setPriceContextTooltipContent(closestSeriesPoint.point);
+        positionTooltip(point);
+        return true;
+      }
+
+      if (closestSeriesPoint.segment.id === 'default') {
+        hideTooltip();
+        return false;
+      }
+
+      setSeriesTooltipContent(closestSeriesPoint.segment);
+      positionTooltip(point);
+      return true;
+    };
+
+    chart.subscribeCrosshairMove((param) => {
+      if (!param.point || !param.time) {
+        hideTooltip();
         return;
       }
 
-      const hoveredSeries = getSeriesAtTime(seriesInfo, timeToEpoch(param.time));
-
-      if (!hoveredSeries) {
-        tooltip.style.display = 'none';
-        return;
-      }
-
-      const areaSeries = visibleSeriesBySegment.get(hoveredSeries.id);
-      const seriesData = areaSeries ? param.seriesData.get(areaSeries) : null;
-      const value = seriesData && 'value' in seriesData ? seriesData.value : null;
-      const yCoordinate = typeof value === 'number' ? areaSeries?.priceToCoordinate(value) : null;
-
-      if (typeof yCoordinate === 'number' && param.point.y < yCoordinate - 4) {
-        tooltip.style.display = 'none';
-        return;
-      }
-
-      setSeriesTooltipContent(hoveredSeries);
-      tooltip.style.display = 'block';
-      tooltip.style.left = `${param.point.x}px`;
-      tooltip.style.top = `${param.point.y}px`;
+      showTooltip(param.point, param.time, {
+        markerId: param.hoveredInfo?.objectId,
+        requireNearLine: true,
+        seriesData: param.seriesData,
+      });
     });
 
     window.addEventListener('resize', handleResize);
 
+    const showTouchTooltip = (event: PointerEvent) => {
+      if (event.pointerType !== 'touch' && event.pointerType !== 'pen') return;
+
+      const bounds = chartContainer.getBoundingClientRect();
+      const point = {
+        x: event.clientX - bounds.left,
+        y: event.clientY - bounds.top,
+      };
+      const time = chart.timeScale().coordinateToTime(point.x);
+
+      if (!time) {
+        hideTooltip();
+        chart.clearCrosshairPosition();
+        return;
+      }
+
+      const closestSeriesPoint = getClosestSeriesPoint(point, time);
+
+      if (closestSeriesPoint) {
+        chart.setCrosshairPosition(
+          closestSeriesPoint.value,
+          closestSeriesPoint.point?.time ?? time,
+          closestSeriesPoint.series
+        );
+      }
+
+      showTooltip(point, time, { closestSeriesPoint });
+    };
+
+    const hideTouchTooltip = (event: PointerEvent) => {
+      if (event.pointerType !== 'touch' && event.pointerType !== 'pen') return;
+
+      hideTooltip();
+      chart.clearCrosshairPosition();
+    };
+
+    chartContainer.addEventListener('pointerdown', showTouchTooltip);
+    chartContainer.addEventListener('pointermove', showTouchTooltip);
+    chartContainer.addEventListener('pointerleave', hideTouchTooltip);
+    chartContainer.addEventListener('pointercancel', hideTouchTooltip);
+
     return () => {
       window.removeEventListener('resize', handleResize);
+      chartContainer.removeEventListener('pointerdown', showTouchTooltip);
+      chartContainer.removeEventListener('pointermove', showTouchTooltip);
+      chartContainer.removeEventListener('pointerleave', hideTouchTooltip);
+      chartContainer.removeEventListener('pointercancel', hideTouchTooltip);
       tooltip.remove();
 
       chart.remove();
     };
-  }, [data, color, lists, formatter]);
+  }, [data, color, lists, formatter, t]);
 
   return <Box flex="1" position="relative" ref={chartContainerRef} />;
 };
@@ -297,6 +452,21 @@ type ChartSegment = {
 
 type ChartSeriesInfo = Omit<ChartSegment, 'data'> & {
   seriesType: NonNullable<UserList['seriesType']>;
+};
+
+type ChartSeriesTooltipInfo = Omit<ChartSegment, 'data'>;
+
+type ChartSeriesInstance = {
+  segment: ChartSegment;
+  series: ReturnType<ReturnType<typeof createChart>['addSeries']>;
+  dataByTime: Map<ChartPoint['time'], ChartPoint>;
+};
+
+type ClosestSeriesPoint = ChartSeriesInstance & {
+  point?: ChartPoint;
+  value: number;
+  yCoordinate: number;
+  distance: number;
 };
 
 const getSeriesInfo = (lists?: UserList[]): ChartSeriesInfo[] => {
@@ -380,4 +550,19 @@ const timeToEpoch = (time: Time) => {
   }
 
   return time * 1000;
+};
+
+const timeToChartDateKey = (time: Time) => {
+  if (isBusinessDay(time)) {
+    return `${time.year}-${String(time.month).padStart(2, '0')}-${String(time.day).padStart(
+      2,
+      '0'
+    )}`;
+  }
+
+  if (typeof time === 'string') {
+    return time;
+  }
+
+  return null;
 };
