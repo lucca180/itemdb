@@ -417,9 +417,33 @@ export const getItemDrops = async (
   return openableData;
 };
 
+type ParentOpenableItem = OpenableItems & {
+  parent_flags: string | null;
+  parent_name: string;
+};
+
+const isKnownParentDrop = (drop: ParentOpenableItem) => {
+  if (!drop.parent_flags?.includes('no-unknown')) return true;
+  if (drop.prizePool || drop.limitedEdition) return true;
+
+  const notesList = drop.notes?.toLowerCase().split(',') ?? [];
+  const hasKnownNote = notesList.some(
+    (note) => catType.includes(note) || !!note.match(/cat\d+y\d+/gim) || !!note.match(/cat\d+/gim)
+  );
+
+  if (hasKnownNote) return true;
+
+  const hasGBCInName = drop.parent_name.toLowerCase().includes('gift box mystery capsule');
+  if (hasGBCInName && giftBoxes.includes(drop.item_iid)) return true;
+
+  return false;
+};
+
 export const getItemParent = async (item_iid: number, itemLimit = 30) => {
-  const drops = await prisma.$queryRaw<OpenableItems[]>`
+  const drops = await prisma.$queryRaw<ParentOpenableItem[]>`
     SELECT t0.*
+      , j2.flags AS parent_flags
+      , j2.name AS parent_name
     FROM (
         SELECT * 
         FROM OpenableItems
@@ -443,7 +467,8 @@ export const getItemParent = async (item_iid: number, itemLimit = 30) => {
       (drop) =>
         drop.parent_iid &&
         !SKIP_ITEMS.includes(drop.parent_iid) &&
-        !SKIP_ITEMS.includes(drop.item_iid)
+        !SKIP_ITEMS.includes(drop.item_iid) &&
+        isKnownParentDrop(drop)
     )
     .map((drop) => {
       if (!drop.parent_iid) return;
