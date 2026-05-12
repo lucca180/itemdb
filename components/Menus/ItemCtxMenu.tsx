@@ -9,12 +9,13 @@ import {
   HStack,
   Text,
   Kbd,
+  PortalManager,
 } from '@chakra-ui/react';
 import { ContextMenu, ContextMenuItem, Submenu, ContextMenuTrigger } from 'rctx-contextmenu';
 import { ItemData, ListItemInfo, UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import axios from 'axios';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { DuplicatedItemModalProps } from '../Modal/DuplicatedItemModal';
 import dynamic from 'next/dynamic';
 import DynamicIcon from '../../public/icons/dynamic.png';
@@ -30,15 +31,19 @@ import NeosearchIcon from '../../public/icons/neosearch.svg';
 import Image from 'next/image';
 import { useLists } from '../../utils/useLists';
 import { dynamicListCan } from '@utils/utils';
+import { ViewportList } from 'react-viewport-list';
 
 const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
   () => import('../Modal/DuplicatedItemModal')
 );
 
+const CONTEXT_MENU_Z_INDEX = 9999;
+const CONTEXT_MENU_TOOLTIP_Z_INDEX = CONTEXT_MENU_Z_INDEX + 1;
+
 const CtxMenu = chakra(ContextMenu, {
   baseStyle: {
     background: 'gray.800 !important',
-    zIndex: '9999 !important',
+    zIndex: `${CONTEXT_MENU_Z_INDEX} !important`,
     // padding: "0 !important"
   },
 });
@@ -60,8 +65,8 @@ const CtxSubmenu = chakra(Submenu, {
       },
     },
     '.submenu__item': {
-      maxH: 420,
-      overflowY: 'auto',
+      maxH: 'none',
+      overflowY: 'visible',
       background: 'gray.800 !important',
       borderColor: 'gray.600 !important',
       '.contextmenu__item': {
@@ -102,6 +107,7 @@ const ItemCtxMenu = (props: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedList, setSelectedList] = useState<UserList | undefined>();
   const [duplicatedItem, setDuplicatedItem] = useState<ListItemInfo | undefined>();
+  const listSubmenuRef = useRef<HTMLDivElement | null>(null);
 
   const sortedLists = useMemo(() => [...lists].sort(SortListByChange), [lists]);
 
@@ -219,50 +225,65 @@ const ItemCtxMenu = (props: Props) => {
         )}
         <CtxMenuItem onClick={handleOpenInNewTab}>{t('Layout.open-in-a-new-tab')}</CtxMenuItem>
         <CtxSubmenu title={t('Layout.add-item-to-list')}>
-          {sortedLists &&
-            sortedLists.map((list) => (
-              <CtxMenuItem
-                onClick={() => addItemToList(list.internal_id)}
-                key={list.internal_id}
-                disabled={!dynamicListCan(list, 'add')}
+          <PortalManager zIndex={CONTEXT_MENU_TOOLTIP_Z_INDEX}>
+            <Box ref={listSubmenuRef} maxH="420px" overflowY="auto">
+              <ViewportList
+                items={sortedLists}
+                viewportRef={listSubmenuRef}
+                itemSize={42}
+                initialPrerender={8}
+                overscan={8}
               >
-                {list.name}
-                {list.purpose !== 'none' && !list.official && (
-                  <Tooltip label={`${list.purpose}`} fontSize="sm" placement="top">
-                    <Badge ml={1}>{list.purpose === 'seeking' ? 's' : 't'}</Badge>
-                  </Tooltip>
+                {(list) => (
+                  <CtxMenuItem
+                    onClick={() => addItemToList(list.internal_id)}
+                    key={list.internal_id}
+                    disabled={!dynamicListCan(list, 'add')}
+                  >
+                    {list.name}
+                    {list.purpose !== 'none' && !list.official && (
+                      <Tooltip label={`${list.purpose}`} fontSize="sm" placement="top">
+                        <Badge ml={1}>{list.purpose === 'seeking' ? 's' : 't'}</Badge>
+                      </Tooltip>
+                    )}
+                    {list.official && (
+                      <Tooltip label={`official`} fontSize="sm" placement="top">
+                        <Badge ml={1} colorScheme="blue">
+                          ✓
+                        </Badge>
+                      </Tooltip>
+                    )}
+                    {list.dynamicType && (
+                      <Tooltip
+                        label={`${list.dynamicType} Dynamic List`}
+                        fontSize="sm"
+                        placement="top"
+                      >
+                        <Badge
+                          ml={1}
+                          colorScheme="orange"
+                          display={'inline-flex'}
+                          alignItems="center"
+                          p={'2px'}
+                        >
+                          <NextImage
+                            src={DynamicIcon}
+                            alt="lightning bolt"
+                            width={8}
+                            style={{ display: 'inline' }}
+                          />
+                        </Badge>
+                      </Tooltip>
+                    )}
+                  </CtxMenuItem>
                 )}
-                {list.official && (
-                  <Tooltip label={`official`} fontSize="sm" placement="top">
-                    <Badge ml={1} colorScheme="blue">
-                      ✓
-                    </Badge>
-                  </Tooltip>
-                )}
-                {list.dynamicType && (
-                  <Tooltip label={`${list.dynamicType} Dynamic List`} fontSize="sm" placement="top">
-                    <Badge
-                      ml={1}
-                      colorScheme="orange"
-                      display={'inline-flex'}
-                      alignItems="center"
-                      p={'2px'}
-                    >
-                      <NextImage
-                        src={DynamicIcon}
-                        alt="lightning bolt"
-                        width={8}
-                        style={{ display: 'inline' }}
-                      />
-                    </Badge>
-                  </Tooltip>
-                )}
-              </CtxMenuItem>
-            ))}
-          {(!user || (lists && !lists.length)) && (
-            <CtxMenuItem disabled>{t('ItemPage.no-lists-found')}</CtxMenuItem>
-          )}
-          {isLoading && <CtxMenuItem disabled>{t('Layout.loading')}...</CtxMenuItem>}
+              </ViewportList>
+            </Box>
+            {(!user || (lists && !lists.length)) && !isLoading && (
+              <CtxMenuItem disabled>{t('ItemPage.no-lists-found')}</CtxMenuItem>
+            )}
+            {isLoading && <CtxMenuItem disabled>{t('Layout.loading')}...</CtxMenuItem>}
+          </PortalManager>
         </CtxSubmenu>
         <CtxSubmenu title={t('General.search-at')}>
           <FindAtCtx item={item} />
