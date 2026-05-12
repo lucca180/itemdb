@@ -78,8 +78,8 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps) => {
     // clear outlier: wait for more data before pricing
     if (zNew >= 3 && daysSinceLastUpdate <= 10) return false;
 
-    // insignificant change: wait, but price if the new value is historically unusual
-    if ((zNewAbs <= 1.5 || percentDiff < varThresholds(oldPrice)) && daysSinceLastUpdate <= 10)
+    // insignificant change: wait
+    if (zNewAbs <= 2 && percentDiff < varThresholds(oldPrice) && daysSinceLastUpdate <= 10)
       return false;
 
     return true;

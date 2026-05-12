@@ -39,6 +39,18 @@ const historyEntry = (
 });
 
 describe('process price z-score rules', () => {
+  test('price for small prices', () => {
+    const priceHistory = [
+      historyEntry(4_000, 4, { internal_id: 1 }),
+      historyEntry(4_700, 30),
+      historyEntry(3_640, 40),
+      historyEntry(4_000, 50),
+      historyEntry(3_580, 60),
+    ] as any;
+
+    expect(shouldUpdatePrice({ latestDate, priceHistory, priceValue: 5000 })).toBe(true);
+  });
+
   test('price when the old price was already abnormal but the new price is still unusual', () => {
     const priceHistory = [
       historyEntry(14_000_000, 4, { internal_id: 1 }),
@@ -75,7 +87,7 @@ describe('process price z-score rules', () => {
     expect(shouldUpdatePrice({ latestDate, priceHistory, priceValue: 101_000 })).toBe(false);
   });
 
-  test.only('skips inflation if its too close from previous outlier', async () => {
+  test('skips inflation if its too close from previous outlier', async () => {
     const priceHistory = [
       historyEntry(300_000, 12, { internal_id: 42 }),
       historyEntry(100_000, 20),
