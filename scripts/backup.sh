@@ -86,6 +86,7 @@ if [ ! -f "$LATEST_FILE" ]; then
   
   clean_r2_bucket
   upload_to_s3 "$FULL_PATH.tar.gz"
+  rm -rf "$FULL_PATH"
   echo "Full backup completed and uploaded."
   exit 0
 fi
@@ -110,4 +111,5 @@ echo "$INCR_PATH" > "$LATEST_FILE"
 echo "Backup ended, compacting..."
 tar -vczf "$INCR_PATH.tar.gz" -C "$INCR_BACKUP_DIR" "incr-$TODAY"
 upload_to_s3 "$INCR_PATH.tar.gz"
+rm -rf "$INCR_PATH"
 echo "Incremental backup completed and uploaded."
