@@ -3,15 +3,14 @@ import prisma from '../../../../utils/prisma';
 import { ItemPrices, PriceProcess2, Prisma } from '@prisma/generated/client';
 import { differenceInCalendarDays } from 'date-fns';
 import { processPrices3 } from '@utils/prices/pricing3';
-import { handleInflation, shouldUpdatePrice } from '@utils/prices/process-helpers';
+import { handleInflation, PRICING, shouldUpdatePrice } from '@utils/prices/process-helpers';
 
 export const MAX_DAYS = 30;
 export const MAX_PAST_DAYS = 60;
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
-const EVENT_MODE = process.env.EVENT_MODE === 'true';
-const MIN_LAST_UPDATE = EVENT_MODE ? 3 : 5;
+const MIN_LAST_UPDATE = PRICING.MIN_LAST_UPDATE;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
