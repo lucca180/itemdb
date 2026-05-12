@@ -18,12 +18,12 @@ import ItemSelect from '../Input/ItemSelect';
 import axios from 'axios';
 import { useAuth } from '../../utils/auth';
 import { ItemData, ListItemInfo, UserList } from '../../types';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { DuplicatedItemModalProps } from './DuplicatedItemModal';
 
 const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
-  () => import('./DuplicatedItemModal'),
+  () => import('./DuplicatedItemModal')
 );
 export type AddListItemsModalProps = {
   isOpen: boolean;
@@ -39,6 +39,17 @@ export default function AddListItemsModal(props: AddListItemsModalProps) {
   const [duplicatedItem, setDuplicatedItem] = useState<ItemData | undefined>();
   const toast = useToast();
   const { user } = useAuth();
+  const itemSelectRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const frame = requestAnimationFrame(() => {
+      itemSelectRef.current?.focus();
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [isOpen]);
 
   const addItemToList = async (item: ItemData) => {
     if (!user || !item) return;
@@ -59,7 +70,7 @@ export default function AddListItemsModal(props: AddListItemsModalProps) {
               item_iid: item.internal_id,
             },
           ],
-        },
+        }
       );
       if (res.data.success) {
         toast.update(toastId, {
@@ -100,7 +111,7 @@ export default function AddListItemsModal(props: AddListItemsModalProps) {
           list={list}
         />
       )}
-      <Modal isOpen={isOpen} onClose={onClose} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} isCentered initialFocusRef={itemSelectRef}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>{t('Lists.add-items-to-list')}</ModalHeader>
@@ -108,6 +119,7 @@ export default function AddListItemsModal(props: AddListItemsModalProps) {
           <ModalBody fontSize={'sm'} sx={{ a: { color: 'blue.200' } }}>
             <Flex flexFlow="column" justifyContent={'center'} alignItems={'center'} gap={2}>
               <ItemSelect
+                ref={itemSelectRef}
                 placeholder={t('General.search-items')}
                 onChange={(a) => addItemToList(a)}
               />

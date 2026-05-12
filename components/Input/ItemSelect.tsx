@@ -23,7 +23,7 @@ type Props = {
   limit?: number;
 };
 
-const ItemSelect = (props: Props) => {
+const ItemSelect = React.forwardRef<HTMLInputElement, Props>((props, ref) => {
   const t = useTranslations();
   const [query, setQuery] = React.useState('');
   const { onChange, color, creatable, limit } = props;
@@ -69,6 +69,7 @@ const ItemSelect = (props: Props) => {
       creatable={creatable}
     >
       <AutoCompleteInput
+        ref={ref}
         placeholder={props.placeholder ?? 'Add Item'}
         isDisabled={props.isDisabled}
         variant="filled"
@@ -110,6 +111,8 @@ const ItemSelect = (props: Props) => {
       </AutoCompleteList>
     </AutoComplete>
   );
-};
+});
+
+ItemSelect.displayName = 'ItemSelect';
 
 export default ItemSelect;

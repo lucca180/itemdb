@@ -18,6 +18,7 @@ import {
   useDisclosure,
   Link,
   Tooltip,
+  Kbd,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -57,6 +58,7 @@ import { getListMatch } from '../../api/v1/lists/match/[...usernames]';
 import { ListService } from '@services/ListService';
 import { BiHelpCircle } from 'react-icons/bi';
 import A11yTooltip from '@components/Utils/Tooltip';
+import { useKeyboardShortcut } from '@utils/useKeyboardShortcut';
 
 const CreateListModal = dynamic<CreateListModalProps>(
   () => import('../../../components/Modal/CreateListModal')
@@ -222,6 +224,21 @@ const ListPage = (props: ListPageProps) => {
     setItemInfo(preloadData.itemMap);
     setItems(preloadData.items);
   }, [preloadData]);
+
+  useKeyboardShortcut('a', onOpenInsert, {
+    enabled:
+      canEdit &&
+      !isEdit &&
+      !isLoading &&
+      !isOpenInsert &&
+      !isOpen &&
+      !openCreateModal &&
+      !selectionAction &&
+      dynamicListCan(list, 'add'),
+    altKey: false,
+    ctrlKey: false,
+    metaKey: false,
+  });
 
   const isFiltered = useMemo(() => {
     return rawItemInfo.length !== Object.keys(itemInfo).length;
@@ -625,7 +642,10 @@ const ListPage = (props: ListPageProps) => {
             <HStack>
               {canEdit && dynamicListCan(list, 'add') && (
                 <Button variant="solid" onClick={onOpenInsert} isLoading={isLoading}>
-                  {t('Lists.add-items')}
+                  {t('Lists.add-items')}{' '}
+                  <Kbd ml={2} fontSize="xs">
+                    A
+                  </Kbd>
                 </Button>
               )}
               {(isOwner || list.official || list.canBeLinked) && (
