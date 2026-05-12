@@ -62,13 +62,8 @@ export function EditableItemCard(props: EditableItemCardProps) {
   };
 
   const onClick = (e: React.MouseEvent<any> | null, force = false) => {
-    if (!editMode && !e?.ctrlKey && !force) return;
+    if (!editMode && !force) return;
 
-    if (e?.ctrlKey) {
-      force = true;
-      e.preventDefault();
-      e.stopPropagation();
-    }
     setSelected(!isSelected);
     props.onClick?.(id, force);
   };
