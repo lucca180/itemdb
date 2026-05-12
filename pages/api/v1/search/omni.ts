@@ -43,13 +43,15 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const officialListsRaw = getListsRaw(query, 5);
   const userListsRaw = user ? getListsRaw(query, 5, user?.id) : [];
 
+  const only = reqQuery.only as string[] | undefined;
+
   let [searchRes, listRes, userListsRes] = await Promise.all([
-    searchProm,
-    officialListsRaw,
-    userListsRaw,
+    only && !only.includes('items') ? Promise.resolve({ content: [] }) : searchProm,
+    only && !only.includes('officialLists') ? Promise.resolve([]) : officialListsRaw,
+    only && !only.includes('userLists') ? Promise.resolve([]) : userListsRaw,
   ]);
 
-  if (!searchRes.content.length) {
+  if (!searchRes.content.length && (!only || only.includes('items'))) {
     searchFilters.sortBy = 'name';
     searchFilters.mode = 'fuzzy';
     searchRes = await doSearch(query, searchFilters, false);

@@ -8,7 +8,7 @@ import {
   Item,
 } from '@choc-ui/chakra-autocomplete';
 import axios from 'axios';
-import { ItemData, SearchFilters, SearchResults } from '../../types';
+import { ItemData, SearchFilters } from '../../types';
 import { Flex, Image } from '@chakra-ui/react';
 import { ItemCardBadge } from '../Items/ItemCard';
 import { useTranslations } from 'next-intl';
@@ -31,17 +31,16 @@ const ItemSelect = React.forwardRef<HTMLInputElement, Props>((props, ref) => {
   const [isLoading, setIsLoading] = React.useState(false);
 
   const loadItems = async () => {
-    const res = await axios.get('/api/v1/search', {
+    const res = await axios.get('/api/v1/search/omni', {
       params: {
+        only: ['items'],
         ...props.searchFilter,
         limit: limit || 5,
-        skipStats: true,
         s: query,
-        sortBy: 'match',
       },
     });
-    const data = res.data as SearchResults;
-    setItems(data.content);
+    const data = res.data.items as ItemData[];
+    setItems(data);
     setIsLoading(false);
   };
 
