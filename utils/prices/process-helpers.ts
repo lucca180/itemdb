@@ -10,7 +10,7 @@ const EVENT_MODE = process.env.EVENT_MODE === 'true';
 
 export const PRICING = {
   MIN_INFLATION_DIFF: 90000,
-  MIN_LAST_UPDATE: EVENT_MODE ? 3 : 5,
+  MIN_LAST_UPDATE: 3,
   MIN_Z_SCORE: 4,
   MAX_Z_DAYS: 180,
 } as const;
@@ -53,13 +53,12 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps) => {
   const daysSinceLastUpdate = differenceInCalendarDays(latestDate, oldPriceRaw.addedAt);
 
   // get all price history except the current price and convert to number
-  const prices = getPrices(priceHistory.slice(1));
+  const prices = getPrices(priceHistory);
 
   // ---------- Z-SCORE VERSION ---------- //
   if (prices.length >= PRICING.MIN_Z_SCORE) {
-    const zOld = zScore(oldPrice, prices);
     const zNew = zScore(priceValue, prices);
-    const zDiff = Math.abs(zOld - zNew);
+    const zNewAbs = Math.abs(zNew);
 
     const percentDiff = Math.abs(priceValue - oldPrice) / oldPrice;
     const absDiff = Math.abs(priceValue - oldPrice);
@@ -68,7 +67,7 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps) => {
 
     if (latestDate < oldPriceRaw.addedAt || daysSinceLastUpdate <= 1) return false;
 
-    if (!forceMode && daysSinceLastUpdate < PRICING.MIN_LAST_UPDATE && zDiff <= 2.5) return false;
+    if (!forceMode && daysSinceLastUpdate < PRICING.MIN_LAST_UPDATE && zNewAbs < 2.5) return false;
 
     const specialMode = EVENT_MODE || isInflation || forceMode;
 
@@ -79,8 +78,8 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps) => {
     // clear outlier: wait for more data before pricing
     if (zNew >= 3 && daysSinceLastUpdate <= 10) return false;
 
-    // insignificant change: wait — but price if percentDiff is expressive
-    if (zDiff <= 1.5 && percentDiff < varThresholds(oldPrice) && daysSinceLastUpdate <= 10)
+    // insignificant change: wait, but price if the new value is historically unusual
+    if ((zNewAbs <= 1.5 || percentDiff < varThresholds(oldPrice)) && daysSinceLastUpdate <= 10)
       return false;
 
     return true;
@@ -154,8 +153,6 @@ export const handleInflation = async (
   const isInflation = !!oldPriceRaw.noInflation_id;
 
   const zNew = zScore(priceValue, prices);
-  const zOld = zScore(oldPrice, prices);
-  const zDiff = Math.abs(zOld - zNew);
   const percentDiff = priceDiff / oldPrice;
   const variation = coefficientOfVariation([oldPrice, priceValue]);
 
@@ -168,7 +165,6 @@ export const handleInflation = async (
       !isInflation &&
       priceDiff >= PRICING.MIN_INFLATION_DIFF &&
       zNew >= 2.5 &&
-      zDiff >= 2 &&
       priceValue > oldPrice &&
       percentDiff >= 0.35
     ) {
