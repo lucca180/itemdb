@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Restock Tracker
-// @version      2.0.3
+// @version      2.0.4
 // @author       itemdb
 // @namespace    itemdb
 // @description  Tracks your restock metrics
@@ -217,6 +217,8 @@ function handleRestockHaggle(){
   setSession(shopId, session);
 }
 
+let iglooPendingClick = null;
+
 function handleIgloo() {
   const shopId = '-2';
   const items = $('.igs-item')
@@ -234,7 +236,7 @@ function handleIgloo() {
       stock_price: price
     };
 
-    $(this).on('click', () => handleIglooBuy(itemID, price));
+    $(this).on('click', () => handleIglooBuy(itemID, price, stockId));
   });
 
   const lastRefresh = Date.now();
@@ -244,50 +246,54 @@ function handleIgloo() {
   setSession(shopId, session);
 }
 
-function handleIglooBuy(id, price) {
-   document.addEventListener('idbrestock:igloo', (e) => {
-      const shopId = '-2';
-      const session = getSession(shopId);
-      const data = e.detail;
+function handleIglooBuy(id, price, stockId) {
+  iglooPendingClick = { id, price, stockId };
+}
 
-      let isSoldOut = false;
-      let isBought = data?.success || false;
+function handleIglooResponse(e) {
+  if(!iglooPendingClick) return;
 
-      if(data?.error) 
-        isSoldOut = data.errMsg.includes("any more of those left");
+  const shopId = '-2';
+  const session = getSession(shopId);
+  const data = e.detail;
+  const pendingClick = iglooPendingClick;
+  iglooPendingClick = null;
 
-      if(!isBought && !isSoldOut) return;
-      
-      let stockId = Math.round(Date.now()/(1000 * 60 * 5)) + Number(id);
+  let isSoldOut = false;
+  let isBought = data?.success || false;
 
-      const buyVal = price || null;
-      
-      let click = {
-        item_id: id,
-        restock_id: stockId,
-        soldOut_timestamp: null,
-        haggle_timestamp: null,
-        buy_timestamp: null,
-        buy_price: null
-      };
+  if(data?.error) 
+    isSoldOut = data.errMsg.includes("any more of those left");
 
-      session.clicks.push(click);
+  if(!isBought && !isSoldOut) return;
 
-      let clickIndex = session.clicks.length - 1;
-      
-      if(isSoldOut) {
-        click.soldOut_timestamp = Date.now();
-      }
+  const buyVal = pendingClick.price || null;
 
-      if(isBought) {
-        click.buy_timestamp = Date.now();
-        click.buy_price = buyVal;
-      }
+  let click = {
+    item_id: pendingClick.id,
+    restock_id: pendingClick.stockId,
+    soldOut_timestamp: null,
+    haggle_timestamp: null,
+    buy_timestamp: null,
+    buy_price: null
+  };
 
-      session.clicks[clickIndex] = click;
+  session.clicks.push(click);
 
-      setSession(shopId, session);
-   });
+  let clickIndex = session.clicks.length - 1;
+
+  if(isSoldOut) {
+    click.soldOut_timestamp = Date.now();
+  }
+
+  if(isBought) {
+    click.buy_timestamp = Date.now();
+    click.buy_price = buyVal;
+  }
+
+  session.clicks[clickIndex] = click;
+
+  setSession(shopId, session);
 }
 
 function handleAttic() {
@@ -431,4 +437,7 @@ function watchFetchItemRequests(endpoint, eventName) {
   };
 }
 
-if (URLHas('igloo.phtml')) watchFetchItemRequests('igloo.php', 'idbrestock:igloo');
+if (URLHas('igloo.phtml')) {
+  document.addEventListener('idbrestock:igloo', handleIglooResponse);
+  watchFetchItemRequests('igloo.php', 'idbrestock:igloo');
+}

@@ -34,7 +34,7 @@ if(!window.location.href.includes("neopets.com")) return;
  *  This script uses some functionality from diceroll's Search Helper script
  *  (https://github.com/diceroll123/NeoSearchHelper)
  *
- *  Stamp list dinamically updated from itemdb.com.br
+ *  Stamp list dynamically updated from itemdb.com.br
  *
  ****************************************************************************************/
 let hasPremium;
