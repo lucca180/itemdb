@@ -1,9 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { Prisma } from '@prisma/generated/client';
-import Color from 'color';
-import { parseFilters } from '../../../../utils/parseFilters';
 import { verifyListJWT } from '@utils/api-utils';
+import { buildSearchQueryParts } from './queryBuilder';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET')
@@ -45,120 +44,77 @@ type SearchStatsParams = {
 
 export const getSearchStats = async (resQuery: string, params?: SearchStatsParams) => {
   const { list, forceCategory, isRestock } = params || {};
-  const originalQuery = resQuery.trim() ?? '';
-  const [, newQuery] = parseFilters(originalQuery, false);
+  const queryParts = buildSearchQueryParts({
+    query: resQuery.trim() ?? '',
+    list,
+    forceCategory,
+    isRestock,
+    applyQueryFilters: false,
+  });
+  const zoneQueryParts = buildSearchQueryParts({
+    query: resQuery.trim() ?? '',
+    list,
+    forceCategory,
+    isRestock,
+    includeZone: true,
+    applyQueryFilters: false,
+  });
 
-  const query = newQuery;
-  const isColorSearch = query.match(/#[0-9A-Fa-f]{6}$/gm);
-  let l, a, b;
-
-  if (isColorSearch) {
-    const color = Color(query);
-    [l, a, b] = color.lab().array();
-  }
-
-  const fulltext =
-    !isColorSearch && (query || originalQuery)
-      ? Prisma.sql`and (MATCH (a.name) AGAINST (${query} IN BOOLEAN MODE) OR a.name LIKE ${`%${originalQuery}%`})`
-      : Prisma.empty;
-
-  const groups = [
-    'category',
-    'isWearable',
-    'status',
-    'type',
-    'isNeohome',
-    'isBD',
-    'canEat',
-    'canRead',
-    'canPlay',
-    'zone_label',
-    'saleStatus',
+  const groups: { key: string; column: Prisma.Sql; source: 'filtered' | 'zone_filtered' }[] = [
+    { key: 'category', column: Prisma.sql`filtered.category`, source: 'filtered' },
+    { key: 'isWearable', column: Prisma.sql`filtered.isWearable`, source: 'filtered' },
+    { key: 'status', column: Prisma.sql`filtered.status`, source: 'filtered' },
+    { key: 'type', column: Prisma.sql`filtered.type`, source: 'filtered' },
+    { key: 'isNeohome', column: Prisma.sql`filtered.isNeohome`, source: 'filtered' },
+    { key: 'isBD', column: Prisma.sql`filtered.isBD`, source: 'filtered' },
+    { key: 'canEat', column: Prisma.sql`filtered.canEat`, source: 'filtered' },
+    { key: 'canRead', column: Prisma.sql`filtered.canRead`, source: 'filtered' },
+    { key: 'canPlay', column: Prisma.sql`filtered.canPlay`, source: 'filtered' },
+    { key: 'zone_label', column: Prisma.sql`zone_filtered.zone_label`, source: 'zone_filtered' },
+    { key: 'saleStatus', column: Prisma.sql`filtered.stats`, source: 'filtered' },
   ];
 
-  const hiddenQuery = !list?.includeHidden ? Prisma.sql`AND isHidden = 0` : Prisma.empty;
-
-  const queries = [];
-
-  for (const group of groups) {
-    let column;
-    if (group === 'isWearable') column = Prisma.sql`a.isWearable`;
-    else if (group === 'isNeohome') column = Prisma.sql`a.isNeohome`;
-    else if (group === 'status') column = Prisma.sql`a.status`;
-    else if (group === 'type') column = Prisma.sql`a.type`;
-    else if (group === 'isBD') column = Prisma.sql`a.isBD`;
-    else if (group === 'canEat') column = Prisma.sql`a.canEat`;
-    else if (group === 'canRead') column = Prisma.sql`a.canRead`;
-    else if (group === 'canPlay') column = Prisma.sql`a.canPlay`;
-    else if (group === 'zone_label') column = Prisma.sql`w.zone_label`;
-    else if (group === 'saleStatus') column = Prisma.sql`s.stats as saleStatus`;
-    else column = Prisma.sql`a.category`;
-
-    const groupBy = group === 'saleStatus' ? Prisma.sql`s.stats` : column;
-
-    const sqlQuery = prisma.$queryRaw`
-      SELECT ${column}, count(*) as count
-      FROM Items as a
-
-      ${
-        group === 'saleStatus'
-          ? Prisma.sql`LEFT JOIN SaleStats as s on a.internal_id = s.item_iid and s.isLatest = 1`
-          : Prisma.empty
-      }
-
-      ${
-        isColorSearch
-          ? Prisma.sql`LEFT JOIN (
-            SELECT image_id, min((POWER(lab_l-${l},2)+POWER(lab_a-${a},2)+POWER(lab_b-${b},2))) as dist
-            FROM ItemColor
-            GROUP BY image_id 
-            having dist <= 750
-        ) as d on a.image_id = d.image_id
-      `
-          : Prisma.empty
-      }
-      
-      ${
-        group === 'zone_label'
-          ? Prisma.sql`LEFT JOIN WearableData w on w.item_iid = a.internal_id and w.isCanonical = 1`
-          : Prisma.empty
-      }
-
-      where 1 = 1 ${fulltext} and a.canonical_id is null 
-      
-      ${!!isColorSearch ? Prisma.sql`and d.dist is not null` : Prisma.empty}
-      
-      ${
-        list?.id
-          ? Prisma.sql`AND exists (SELECT 1 FROM ListItems WHERE list_id = ${list.id} and item_iid = a.internal_id ${hiddenQuery})`
-          : Prisma.empty
-      }
-
-      ${forceCategory ? Prisma.sql`AND a.category = ${forceCategory}` : Prisma.empty}
-
-      ${isRestock ? Prisma.sql`AND a.rarity <= 100` : Prisma.empty}
-
-      group by ${groupBy}
+  const statsQueries = groups.map((group) => {
+    return Prisma.sql`
+      SELECT ${group.key} as facet, ${group.column} as value, count(*) as count
+      FROM ${Prisma.raw(group.source)}
+      group by ${group.column}
     `;
+  });
 
-    queries.push(sqlQuery);
-  }
+  const resultRaw = (await prisma.$queryRaw`
+    WITH filtered AS (
+      SELECT *
+      FROM (
+        ${queryParts.tempQuery}
+      ) as temp
+      ${queryParts.whereQuery}
+    ),
+    zone_filtered AS (
+      SELECT *
+      FROM (
+        ${zoneQueryParts.tempQuery}
+      ) as temp
+      ${zoneQueryParts.whereQuery}
+    )
+    ${Prisma.join(statsQueries, ' UNION ALL ')}
+  `) as any[];
 
-  const resultRaw = await Promise.all(queries);
   const result: { [id: string]: { [id: string]: number } | number } = {};
 
-  for (let i = 0; i < groups.length; i++) {
-    const group = groups[i];
-    const groupData = resultRaw[i] as any[];
-    const x: { [id: string]: number } = {};
+  for (const group of groups) result[group.key] = {};
 
-    for (const data of groupData) {
-      let name = data[group]?.toString() || 'Unknown';
-      name = name === '0' ? 'false' : name === '1' ? 'true' : name;
-      x[name] = x[name] ? x[name] + Number(data.count) : Number(data.count);
-    }
+  for (const data of resultRaw) {
+    const group = data.facet?.toString();
+    const groupResult = result[group] as { [id: string]: number } | undefined;
 
-    result[group] = x;
+    if (!groupResult) continue;
+
+    let name = data.value?.toString() || 'Unknown';
+    name = name === '0' ? 'false' : name === '1' ? 'true' : name;
+    groupResult[name] = groupResult[name]
+      ? groupResult[name] + Number(data.count)
+      : Number(data.count);
   }
 
   return result;
