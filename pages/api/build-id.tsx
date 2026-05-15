@@ -12,7 +12,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       cachedBuildId = fs.readFileSync('.next/BUILD_ID', 'utf8');
     }
 
-    res.setHeader('Cache-Control', 'max-age 0, s-maxage 60, stale-while-revalidate 300');
+    res.setHeader('Cache-Control', 'max-age 0, s-maxage 60, stale-while-revalidate 60');
 
     res.status(200).json({
       buildId: cachedBuildId.trim(),
