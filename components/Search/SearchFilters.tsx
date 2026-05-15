@@ -1,4 +1,3 @@
-/* eslint-disable  */
 import {
   Accordion,
   AccordionItem,
@@ -15,8 +14,10 @@ import {
   Input,
   Select,
   Divider,
+  Button,
+  Center,
 } from '@chakra-ui/react';
-import { useEffect, useRef, useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { SearchStats, SearchFilters as SearchFiltersType } from '../../types';
 import CustomNumberInput from '../Input/CustomNumber';
 import NegCheckbox from '../Input/NegCheckbox';
@@ -43,651 +44,348 @@ const ALL_COLORS = [
 ];
 
 const ALL_COLORS_CODE = ALL_COLORS.map(([hex]) => hex);
+const CUSTOM_COLOR_FALLBACK = '#c4bce4';
+const RANGE_LIMIT = 5;
+
+type ChecklistFilter = 'category' | 'type' | 'zone' | 'status';
+type RangeFilter = 'price' | 'rarity' | 'weight' | 'estVal' | 'ncValue';
+type ScalarNumberFilter = 'restockProfit' | 'colorTolerance';
+type NumberFilter = RangeFilter | ScalarNumberFilter;
+type SelectFilter = 'colorType' | 'mode';
+type FacetEntry = [string, number];
+
+const getCustomColorValue = (color: string) =>
+  color && !ALL_COLORS_CODE.includes(color.toLowerCase()) ? color : CUSTOM_COLOR_FALLBACK;
 
 const SearchFilters = (props: Props) => {
   const t = useTranslations();
-  const { stats, isColorSearch } = props;
+  const { filters, stats, isColorSearch } = props;
   const [showMoreCat, setCat] = useBoolean();
   const [showMoreZone, setZone] = useBoolean();
-  const [filters, setFilters] = useState<SearchFiltersType>(props.filters);
-  const [colorVal, setColorVal] = useState<string>(
-    props.filters.color && !ALL_COLORS_CODE.includes(props.filters.color.toLowerCase())
-      ? props.filters.color
-      : '#c4bce4'
-  );
+  const [customColor, setCustomColor] = useState({
+    filterColor: filters.color,
+    value: getCustomColorValue(filters.color),
+  });
 
-  const isFirstLoad = useRef(true);
+  if (customColor.filterColor !== filters.color) {
+    setCustomColor({
+      filterColor: filters.color,
+      value: getCustomColorValue(filters.color),
+    });
+  }
 
-  useEffect(() => {
-    if (isFirstLoad.current) {
-      isFirstLoad.current = false;
-      return;
-    }
+  const colorVal =
+    customColor.filterColor === filters.color
+      ? customColor.value
+      : getCustomColorValue(filters.color);
 
-    setFilters(props.filters);
-    setColorVal(
-      props.filters.color && !ALL_COLORS_CODE.includes(props.filters.color.toLowerCase())
-        ? props.filters.color
-        : '#c4bce4'
-    );
-  }, [props.filters]);
+  const updateFilters = (newFilters: SearchFiltersType) => {
+    props.onChange?.(newFilters);
+  };
 
   const handleCheckChange = (
     newFilter: string,
-    filterType: keyof typeof filters,
+    filterType: ChecklistFilter,
     defaultValue: string
   ) => {
-    if (
-      [
-        'price',
-        'ncValue',
-        'rarity',
-        'weight',
-        'estVal',
-        'sortBy',
-        'order',
-        'page',
-        'limit',
-      ].includes(filterType)
-    )
-      return;
-
-    if (filterType === 'color') {
-      setFilters({ ...filters, color: newFilter });
-      if (props.onChange) props.onChange({ ...filters, color: newFilter });
-      return;
-    }
-
-    //@ts-ignore
-    const newFilters = [...filters[filterType]].filter(
+    const newFilters = filters[filterType].filter(
       (f) => f !== defaultValue && f !== `!${defaultValue}`
     );
 
     if (newFilter) newFilters.push(newFilter);
 
-    setFilters({
-      ...filters,
-      [filterType]: newFilters,
-    });
-
-    if (props.onChange) props.onChange({ ...filters, [filterType]: newFilters });
+    updateFilters({ ...filters, [filterType]: newFilters });
   };
 
-  const handleNumberChange = (
-    newVal: string,
-    index: number,
-    filterType:
-      | 'price'
-      | 'rarity'
-      | 'weight'
-      | 'estVal'
-      | 'ncValue'
-      | 'restockProfit'
-      | 'colorTolerance'
-  ) => {
-    let newFilters = filters;
-    if (!['restockProfit', 'colorTolerance'].includes(filterType)) {
+  const handleColorChange = (newFilter: string) => {
+    updateFilters({ ...filters, color: newFilter });
+  };
+
+  const handleNumberChange = (newVal: string, index: number, filterType: NumberFilter) => {
+    if (isRangeFilter(filterType)) {
       const tuple = [...filters[filterType]];
       tuple[index] = newVal;
-      newFilters = { ...filters, [filterType]: tuple };
-    } else newFilters = { ...filters, [filterType]: newVal };
+      updateFilters({ ...filters, [filterType]: tuple });
+      return;
+    }
 
-    setFilters(newFilters);
-    props.onChange?.(newFilters);
+    updateFilters({ ...filters, [filterType]: newVal });
   };
 
-  const handleSelectChange = (newVal: string, filterType: 'colorType' | 'mode') => {
-    setFilters({ ...filters, [filterType]: newVal });
-    props.onChange?.({ ...filters, [filterType]: newVal });
+  const handleSelectChange = (newVal: string, filterType: SelectFilter) => {
+    updateFilters({ ...filters, [filterType]: newVal });
   };
+
+  const categoryEntries = stats
+    ? Object.entries(getCategories(stats.category, filters.category))
+        .sort((a, b) => sortCategories(a[0], b[0], filters.category, !showMoreCat))
+        .slice(0, showMoreCat ? undefined : RANGE_LIMIT)
+    : [];
+
+  const zoneEntries = stats
+    ? Object.entries(stats.zone_label)
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .filter(([name]) => name !== 'Unknown')
+        .slice(0, showMoreZone ? undefined : RANGE_LIMIT)
+    : [];
+
+  const statusEntries = stats ? Object.entries(stats.status).sort((a, b) => b[1] - a[1]) : [];
+
+  const typeGroups = [
+    [
+      badgeOption('np', <Badge colorScheme="green">NP</Badge>, stats?.type.np),
+      badgeOption('nc', <Badge colorScheme="purple">NC</Badge>, stats?.type.nc),
+      badgeOption('pb', <Badge colorScheme="yellow">PB</Badge>, stats?.type.pb),
+    ],
+    [
+      badgeOption(
+        'wearable',
+        <Badge colorScheme="blue">{t('General.wearable')}</Badge>,
+        stats?.isWearable.true
+      ),
+      badgeOption(
+        'neohome',
+        <Badge colorScheme="cyan">{t('General.neohome')}</Badge>,
+        stats?.isNeohome?.true
+      ),
+      badgeOption(
+        'battledome',
+        <Badge colorScheme="red">{t('General.battledome')}</Badge>,
+        stats?.isBD?.true
+      ),
+    ],
+    [
+      badgeOption(
+        'canRead',
+        <Badge colorScheme="orange">{t('General.readable')}</Badge>,
+        stats?.canRead?.true
+      ),
+      badgeOption(
+        'canEat',
+        <Badge colorScheme="orange">{t('General.edible')}</Badge>,
+        stats?.canEat?.true
+      ),
+      badgeOption(
+        'canPlay',
+        <Badge colorScheme="orange">{t('General.playable')}</Badge>,
+        stats?.canPlay?.true
+      ),
+    ],
+    [
+      badgeOption('ets', <Badge colorScheme="green">Easy to Sell</Badge>, stats?.saleStatus?.ets),
+      badgeOption('regular', <Badge colorScheme="gray">Regular</Badge>, stats?.saleStatus?.regular),
+      badgeOption('hts', <Badge colorScheme="red">Hard To Sell</Badge>, stats?.saleStatus?.hts),
+    ],
+    [
+      badgeOption('collectible', <Badge colorScheme="yellow">{t('General.album-item')}</Badge>),
+      badgeOption('p2Paintable', <Badge colorScheme="pink">{t('General.paintable-petpet')}</Badge>),
+      badgeOption('p2Canonical', <Badge colorScheme="pink">{t('General.canonical-petpet')}</Badge>),
+    ],
+  ];
 
   return (
     <Accordion defaultIndex={[0]} allowToggle>
-      <AccordionItem>
-        <h2>
-          <AccordionButton>
-            <Box as="span" flex="1" textAlign="left" fontSize="sm" color="gray.300">
-              {t('General.category')}{' '}
-              {filters.category.length > 0 && <Badge>{filters.category.length}</Badge>}
-            </Box>
-            <AccordionIcon />
-          </AccordionButton>
-        </h2>
-        <AccordionPanel pb={4}>
-          <VStack alignItems="flex-start">
-            {stats &&
-              Object.entries(getCategories(stats.category, filters.category))
-                .sort((a, b) => sortCategories(a[0], b[0], filters.category, !showMoreCat))
-                .slice(0, showMoreCat ? undefined : 5)
-                .map((cat) => (
-                  <NegCheckbox
-                    key={cat[0]}
-                    value={cat[0]}
-                    onChange={(val) => handleCheckChange(val, 'category', cat[0])}
-                    checklist={filters.category}
-                  >
-                    <Text fontSize={'sm'} textTransform="capitalize">
-                      {cat[0]} <Badge>{cat[1]}</Badge>
-                    </Text>
-                  </NegCheckbox>
-                ))}
-            {stats && Object.keys(stats.category).length > 5 && (
-              <Text
-                fontSize="sm"
-                color="gray.300"
-                cursor="pointer"
-                onClick={setCat.toggle}
-                textAlign="center"
-              >
-                {showMoreCat ? t('Search.show-less') : t('Search.show-more')}
-              </Text>
-            )}
+      <FilterSection title={t('General.category')} count={filters.category.length}>
+        <FacetCheckboxList
+          entries={categoryEntries}
+          checklist={filters.category}
+          filterType="category"
+          isLoaded={!!stats}
+          onChange={handleCheckChange}
+        />
+        <ShowMoreButton
+          isVisible={!!stats && Object.keys(stats.category).length > RANGE_LIMIT}
+          isExpanded={showMoreCat}
+          onToggle={setCat.toggle}
+          showLessText={t('Search.show-less')}
+          showMoreText={t('Search.show-more')}
+        />
+      </FilterSection>
 
-            {!stats && [...Array(5)].map((_, i) => <Skeleton key={i} w="100%" h="25px" />)}
-          </VStack>
-        </AccordionPanel>
-      </AccordionItem>
-      <AccordionItem>
-        <h2>
-          <AccordionButton>
-            <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              {t('General.type')} {filters.type.length > 0 && <Badge>{filters.type.length}</Badge>}
-            </Box>
-            <AccordionIcon />
-          </AccordionButton>
-        </h2>
-        <AccordionPanel pb={4}>
-          <VStack alignItems="flex-start">
-            <NegCheckbox
-              value="np"
-              onChange={(val) => handleCheckChange(val, 'type', 'np')}
+      <FilterSection title={t('General.type')} count={filters.type.length}>
+        <VStack alignItems="flex-start">
+          {typeGroups.map((group, groupIndex) => (
+            <TypeOptionGroup
+              key={groupIndex}
+              options={group}
               checklist={filters.type}
-            >
-              <Text fontSize={'sm'}>
-                <Badge colorScheme="green">NP</Badge> <Badge>{stats?.type.np ?? 0}</Badge>
-              </Text>
-            </NegCheckbox>
-            <NegCheckbox
-              value="nc"
-              onChange={(val) => handleCheckChange(val, 'type', 'nc')}
-              checklist={filters.type}
-            >
-              <Text fontSize={'sm'}>
-                <Badge colorScheme="purple">NC</Badge> <Badge>{stats?.type.nc ?? 0}</Badge>
-              </Text>
-            </NegCheckbox>
-            <NegCheckbox
-              value="pb"
-              onChange={(val) => handleCheckChange(val, 'type', 'pb')}
-              checklist={filters.type}
-            >
-              <Text fontSize={'sm'}>
-                <Badge colorScheme="yellow">PB</Badge> <Badge>{stats?.type.pb ?? 0}</Badge>
-              </Text>
-            </NegCheckbox>
-            <Divider />
-            <NegCheckbox
-              value="wearable"
-              onChange={(val) => handleCheckChange(val, 'type', 'wearable')}
-              checklist={filters.type}
-            >
-              <Text fontSize={'sm'}>
-                <Badge colorScheme="blue">{t('General.wearable')}</Badge>{' '}
-                <Badge>{stats?.isWearable.true ?? 0}</Badge>
-              </Text>
-            </NegCheckbox>
-            <NegCheckbox
-              value="neohome"
-              onChange={(val) => handleCheckChange(val, 'type', 'neohome')}
-              checklist={filters.type}
-            >
-              <Text fontSize={'sm'}>
-                <Badge colorScheme="cyan">{t('General.neohome')}</Badge>{' '}
-                <Badge>{stats?.isNeohome?.true ?? 0}</Badge>
-              </Text>
-            </NegCheckbox>
-            <NegCheckbox
-              value="battledome"
-              onChange={(val) => handleCheckChange(val, 'type', 'battledome')}
-              checklist={filters.type}
-            >
-              <Text fontSize={'sm'}>
-                <Badge colorScheme="red">{t('General.battledome')}</Badge>{' '}
-                <Badge>{stats?.isBD?.true ?? 0}</Badge>
-              </Text>
-            </NegCheckbox>
-            <Divider />
-            <NegCheckbox
-              value="canRead"
-              onChange={(val) => handleCheckChange(val, 'type', 'canRead')}
-              checklist={filters.type}
-            >
-              <Text fontSize={'sm'}>
-                <Badge colorScheme="orange">{t('General.readable')}</Badge>{' '}
-                <Badge>{stats?.canRead?.true ?? 0}</Badge>
-              </Text>
-            </NegCheckbox>
-            <NegCheckbox
-              value="canEat"
-              onChange={(val) => handleCheckChange(val, 'type', 'canEat')}
-              checklist={filters.type}
-            >
-              <Text fontSize={'sm'}>
-                <Badge colorScheme="orange">{t('General.edible')}</Badge>{' '}
-                <Badge>{stats?.canEat?.true ?? 0}</Badge>
-              </Text>
-            </NegCheckbox>
-            <NegCheckbox
-              value="canPlay"
-              onChange={(val) => handleCheckChange(val, 'type', 'canPlay')}
-              checklist={filters.type}
-            >
-              <Text fontSize={'sm'}>
-                <Badge colorScheme="orange">{t('General.playable')}</Badge>{' '}
-                <Badge>{stats?.canPlay?.true ?? 0}</Badge>
-              </Text>
-            </NegCheckbox>
-            <Divider />
-            <NegCheckbox
-              value="ets"
-              onChange={(val) => handleCheckChange(val, 'type', 'ets')}
-              checklist={filters.type}
-            >
-              <Text fontSize={'sm'}>
-                <Badge colorScheme="green">Easy to Sell</Badge>{' '}
-                <Badge>{stats?.saleStatus?.ets ?? 0}</Badge>
-              </Text>
-            </NegCheckbox>
-            <NegCheckbox
-              value="regular"
-              onChange={(val) => handleCheckChange(val, 'type', 'regular')}
-              checklist={filters.type}
-            >
-              <Text fontSize={'sm'}>
-                <Badge colorScheme="gray">Regular</Badge>{' '}
-                <Badge>{stats?.saleStatus?.regular ?? 0}</Badge>
-              </Text>
-            </NegCheckbox>
-            <NegCheckbox
-              value="hts"
-              onChange={(val) => handleCheckChange(val, 'type', 'hts')}
-              checklist={filters.type}
-            >
-              <Text fontSize={'sm'}>
-                <Badge colorScheme="red">Hard To Sell</Badge>{' '}
-                <Badge>{stats?.saleStatus?.hts ?? 0}</Badge>
-              </Text>
-            </NegCheckbox>
-            <Divider />
-            <NegCheckbox
-              value="collectible"
-              onChange={(val) => handleCheckChange(val, 'type', 'collectible')}
-              checklist={filters.type}
-            >
-              <Text fontSize={'sm'}>
-                <Badge colorScheme="yellow">{t('General.album-item')}</Badge>
-              </Text>
-            </NegCheckbox>
-            <NegCheckbox
-              value="p2Paintable"
-              onChange={(val) => handleCheckChange(val, 'type', 'p2Paintable')}
-              checklist={filters.type}
-            >
-              <Text fontSize={'sm'}>
-                <Badge colorScheme="pink">{t('General.paintable-petpet')}</Badge>
-              </Text>
-            </NegCheckbox>
-            <NegCheckbox
-              value="p2Canonical"
-              onChange={(val) => handleCheckChange(val, 'type', 'p2Canonical')}
-              checklist={filters.type}
-            >
-              <Text fontSize={'sm'}>
-                <Badge colorScheme="pink">{t('General.canonical-petpet')}</Badge>
-              </Text>
-            </NegCheckbox>
-          </VStack>
-        </AccordionPanel>
-      </AccordionItem>
-      <AccordionItem>
-        <h2>
-          <AccordionButton>
-            <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              <Badge colorScheme="green">NP</Badge> {t('General.price-range')}{' '}
-              {filters.price.filter((a) => a || a === '0').length > 0 && (
-                <Badge>{filters.price.filter((a) => a || a === '0').length}</Badge>
-              )}
-            </Box>
-            <AccordionIcon />
-          </AccordionButton>
-        </h2>
-        <AccordionPanel pb={4}>
-          <HStack>
-            <CustomNumberInput
-              onChange={(val) => handleNumberChange(val, 0, 'price')}
-              value={filters.price[0]}
+              onChange={(val, option) => handleCheckChange(val, 'type', option)}
+              withDivider={groupIndex > 0}
             />
-            <Text fontSize="sm" color="gray.300">
-              {t('General.to')}
+          ))}
+        </VStack>
+      </FilterSection>
+
+      <RangeFilterSection
+        title={
+          <>
+            <Badge colorScheme="green">NP</Badge> {t('General.price-range')}
+          </>
+        }
+        filterType="price"
+        values={filters.price}
+        onChange={handleNumberChange}
+        toText={t('General.to')}
+      />
+      <RangeFilterSection
+        title="NC Value"
+        filterType="ncValue"
+        values={filters.ncValue}
+        onChange={handleNumberChange}
+        toText={t('General.to')}
+      />
+      <RangeFilterSection
+        title={t('General.rarity')}
+        filterType="rarity"
+        values={filters.rarity}
+        onChange={handleNumberChange}
+        toText={t('General.to')}
+      />
+      <RangeFilterSection
+        title={t('General.weight')}
+        filterType="weight"
+        values={filters.weight}
+        onChange={handleNumberChange}
+        toText={t('General.to')}
+      />
+      <RangeFilterSection
+        title={t('General.est-val')}
+        filterType="estVal"
+        values={filters.estVal}
+        onChange={handleNumberChange}
+        toText={t('General.to')}
+      />
+
+      <FilterSection title={t('Search.min-restock-profit')} count={filters.restockProfit ? 1 : 0}>
+        <HStack>
+          <CustomNumberInput
+            onChange={(val) => handleNumberChange(val, 0, 'restockProfit')}
+            value={filters.restockProfit}
+            wrapperProps={{ bg: 'blackAlpha.400', borderRadius: 'md' }}
+            inputProps={{ borderRadius: 'md' }}
+          />
+        </HStack>
+      </FilterSection>
+
+      <FilterSection title={t('General.wearable-zone')} count={filters.zone.length}>
+        <FacetCheckboxList
+          entries={zoneEntries}
+          checklist={filters.zone}
+          filterType="zone"
+          isLoaded={!!stats}
+          onChange={handleCheckChange}
+        />
+        <ShowMoreButton
+          isVisible={!!stats && Object.keys(stats.zone_label).length > RANGE_LIMIT}
+          isExpanded={showMoreZone}
+          onToggle={setZone.toggle}
+          showLessText={t('Search.show-less')}
+          showMoreText={t('Search.show-more')}
+        />
+      </FilterSection>
+
+      <FilterSection title={t('General.status')} count={filters.status.length}>
+        <FacetCheckboxList
+          entries={statusEntries}
+          checklist={filters.status}
+          filterType="status"
+          isLoaded={!!stats}
+          onChange={handleCheckChange}
+        />
+      </FilterSection>
+
+      <FilterSection title={t('General.color')} count={filters.color.length > 0 ? 1 : 0}>
+        <VStack alignItems="flex-start">
+          {ALL_COLORS.map(([hex, name]) => (
+            <NegCheckbox
+              disabled={isColorSearch}
+              key={hex}
+              value={hex}
+              onChange={handleColorChange}
+              checklist={[filters.color.toLowerCase()]}
+            >
+              <Text as="div" fontSize="sm">
+                <ColorBox color={hex} /> {name}
+              </Text>
+            </NegCheckbox>
+          ))}
+          <HStack justifyContent="center">
+            <NegCheckbox
+              disabled={isColorSearch}
+              value={colorVal}
+              onChange={handleColorChange}
+              checklist={[filters.color]}
+            >
+              <ColorBox color={colorVal} />
+            </NegCheckbox>
+            <Input
+              placeholder={t('Search.custom-color')}
+              disabled={isColorSearch}
+              value={colorVal}
+              size="xs"
+              variant="filled"
+              bg="blackAlpha.400"
+              borderRadius="md"
+              onChange={(e) =>
+                setCustomColor({ filterColor: filters.color, value: e.target.value })
+              }
+              maxLength={7}
+            />
+          </HStack>
+          <HStack>
+            <Text flex="1 0 auto" fontSize="xs">
+              {t('Search.color-type')}
+            </Text>
+            <Select
+              variant="filled"
+              bg="blackAlpha.400"
+              borderRadius="md"
+              size="xs"
+              value={filters.colorType}
+              disabled={isColorSearch}
+              onChange={(e) => handleSelectChange(e.target.value, 'colorType')}
+            >
+              <option value="population">{t('Search.most-prominent')}</option>
+              <option value="vibrant">Vibrant</option>
+              <option value="darkvibrant">Dark Vibrant</option>
+              <option value="lightvibrant">Light Vibrant</option>
+              <option value="muted">Muted</option>
+              <option value="darkmuted">Dark Muted</option>
+              <option value="lightmuted">Light Muted</option>
+            </Select>
+          </HStack>
+          <HStack>
+            <Text flex="1 0 auto" fontSize="xs">
+              {t('Search.tolerance')}
             </Text>
             <CustomNumberInput
-              onChange={(val) => handleNumberChange(val, 1, 'price')}
-              value={filters.price[1]}
+              onChange={(val) => handleNumberChange(val, 0, 'colorTolerance')}
+              value={filters.colorTolerance}
+              wrapperProps={{ size: 'xs', bg: 'blackAlpha.400', borderRadius: 'md' }}
+              inputProps={{ textAlign: 'left', borderRadius: 'md', bg: 'transparent' }}
             />
           </HStack>
-        </AccordionPanel>
-      </AccordionItem>
-      <AccordionItem>
-        <h2>
-          <AccordionButton>
-            <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              NC Value
-              {filters.ncValue.filter((a) => a || a === '0').length > 0 && (
-                <Badge>{filters.ncValue.filter((a) => a || a === '0').length}</Badge>
-              )}
-            </Box>
-            <AccordionIcon />
-          </AccordionButton>
-        </h2>
-        <AccordionPanel pb={4}>
-          <HStack>
-            <CustomNumberInput
-              onChange={(val) => handleNumberChange(val, 0, 'ncValue')}
-              value={filters.ncValue[0]}
-            />
-            <Text fontSize="sm" color="gray.300">
-              {t('General.to')}
-            </Text>
-            <CustomNumberInput
-              onChange={(val) => handleNumberChange(val, 1, 'ncValue')}
-              value={filters.ncValue[1]}
-            />
-          </HStack>
-        </AccordionPanel>
-      </AccordionItem>
-      <AccordionItem>
-        <h2>
-          <AccordionButton>
-            <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              {t('General.rarity')}{' '}
-              {filters.rarity.filter((a) => a || a === '0').length > 0 && (
-                <Badge>{filters.rarity.filter((a) => a || a === '0').length}</Badge>
-              )}
-            </Box>
-            <AccordionIcon />
-          </AccordionButton>
-        </h2>
-        <AccordionPanel pb={4}>
-          <HStack>
-            <CustomNumberInput
-              onChange={(val) => handleNumberChange(val, 0, 'rarity')}
-              value={filters.rarity[0]}
-            />
-            <Text fontSize="sm" color="gray.300">
-              {t('General.to')}
-            </Text>
-            <CustomNumberInput
-              onChange={(val) => handleNumberChange(val, 1, 'rarity')}
-              value={filters.rarity[1]}
-            />
-          </HStack>
-        </AccordionPanel>
-      </AccordionItem>
-      <AccordionItem>
-        <h2>
-          <AccordionButton>
-            <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              {t('General.weight')}{' '}
-              {filters.weight.filter((a) => a || a === '0').length > 0 && (
-                <Badge>{filters.weight.filter((a) => a || a === '0').length}</Badge>
-              )}
-            </Box>
-            <AccordionIcon />
-          </AccordionButton>
-        </h2>
-        <AccordionPanel pb={4}>
-          <HStack>
-            <CustomNumberInput
-              onChange={(val) => handleNumberChange(val, 0, 'weight')}
-              value={filters.weight[0]}
-            />
-            <Text fontSize="sm" color="gray.300">
-              {t('General.to')}
-            </Text>
-            <CustomNumberInput
-              onChange={(val) => handleNumberChange(val, 1, 'weight')}
-              value={filters.weight[1]}
-            />
-          </HStack>
-        </AccordionPanel>
-      </AccordionItem>
-      <AccordionItem>
-        <h2>
-          <AccordionButton>
-            <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              {t('General.est-val')}{' '}
-              {filters.estVal.filter((a) => a || a === '0').length > 0 && (
-                <Badge>{filters.estVal.filter((a) => a || a === '0').length}</Badge>
-              )}
-            </Box>
-            <AccordionIcon />
-          </AccordionButton>
-        </h2>
-        <AccordionPanel pb={4}>
-          <HStack>
-            <CustomNumberInput
-              onChange={(val) => handleNumberChange(val, 0, 'estVal')}
-              value={filters.estVal[0]}
-            />
-            <Text fontSize="sm" color="gray.300">
-              {t('General.to')}
-            </Text>
-            <CustomNumberInput
-              onChange={(val) => handleNumberChange(val, 1, 'estVal')}
-              value={filters.estVal[1]}
-            />
-          </HStack>
-        </AccordionPanel>
-      </AccordionItem>
-      <AccordionItem>
-        <h2>
-          <AccordionButton>
-            <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              {t('Search.min-restock-profit')} {filters.restockProfit && <Badge>1</Badge>}
-            </Box>
-            <AccordionIcon />
-          </AccordionButton>
-        </h2>
-        <AccordionPanel pb={4}>
-          <HStack>
-            <CustomNumberInput
-              onChange={(val) => handleNumberChange(val, 0, 'restockProfit')}
-              value={filters.restockProfit}
-            />
-          </HStack>
-        </AccordionPanel>
-      </AccordionItem>
-      <AccordionItem>
-        <h2>
-          <AccordionButton>
-            <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              {t('General.wearable-zone')}{' '}
-              {filters.zone.length > 0 && <Badge>{filters.zone.length}</Badge>}
-            </Box>
-            <AccordionIcon />
-          </AccordionButton>
-        </h2>
-        <AccordionPanel pb={4}>
-          <VStack alignItems="flex-start">
-            {stats &&
-              Object.entries(stats.zone_label)
-                .sort((a, b) => a[0].localeCompare(b[0]))
-                .filter((a) => a[0] !== 'Unknown')
-                .slice(0, showMoreZone ? undefined : 5)
-                .map((stat) => (
-                  <NegCheckbox
-                    key={stat[0]}
-                    value={stat[0]}
-                    onChange={(val) => handleCheckChange(val, 'zone', stat[0])}
-                    checklist={filters.zone}
-                  >
-                    <Text fontSize={'sm'} textTransform="capitalize">
-                      {stat[0]} <Badge>{stat[1]}</Badge>
-                    </Text>
-                  </NegCheckbox>
-                ))}
-            {stats && Object.keys(stats.category).length > 5 && (
-              <Text
-                fontSize="sm"
-                color="gray.300"
-                cursor="pointer"
-                onClick={setZone.toggle}
-                textAlign="center"
-              >
-                {showMoreZone ? t('Search.show-less') : t('Search.show-more')}
-              </Text>
-            )}
-            {!stats && [...Array(5)].map((_, i) => <Skeleton key={i} w="100%" h="25px" />)}
-          </VStack>
-        </AccordionPanel>
-      </AccordionItem>
-      <AccordionItem>
-        <h2>
-          <AccordionButton>
-            <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              {t('General.status')}{' '}
-              {filters.status.length > 0 && <Badge>{filters.status.length}</Badge>}
-            </Box>
-            <AccordionIcon />
-          </AccordionButton>
-        </h2>
-        <AccordionPanel pb={4}>
-          <VStack alignItems="flex-start">
-            {stats &&
-              Object.entries(stats.status)
-                .sort((a, b) => b[1] - a[1])
-                .map((stat) => (
-                  <NegCheckbox
-                    key={stat[0]}
-                    value={stat[0]}
-                    onChange={(val) => handleCheckChange(val, 'status', stat[0])}
-                    checklist={filters.status}
-                  >
-                    <Text fontSize={'sm'} textTransform="capitalize">
-                      {stat[0]} <Badge>{stat[1]}</Badge>
-                    </Text>
-                  </NegCheckbox>
-                ))}
-            {!stats && [...Array(5)].map((_, i) => <Skeleton key={i} w="100%" h="25px" />)}
-          </VStack>
-        </AccordionPanel>
-      </AccordionItem>
-      <AccordionItem>
-        <h2>
-          <AccordionButton>
-            <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-              {t('General.color')} {filters.color.length > 0 && <Badge>1</Badge>}
-            </Box>
-            <AccordionIcon />
-          </AccordionButton>
-        </h2>
-        <AccordionPanel pb={4}>
-          <VStack alignItems="flex-start">
-            {ALL_COLORS.map(([hex, name]) => (
-              <NegCheckbox
-                disabled={isColorSearch}
-                key={hex}
-                value={hex}
-                onChange={(val) => handleCheckChange(val, 'color', hex)}
-                checklist={[filters.color.toLowerCase()]}
-              >
-                <Text as="div" fontSize={'sm'}>
-                  <ColorBox color={hex} /> {name}
-                </Text>
-              </NegCheckbox>
-            ))}
-            <HStack justifyContent={'center'}>
-              <NegCheckbox
-                disabled={isColorSearch}
-                value={colorVal}
-                onChange={(val) => handleCheckChange(val, 'color', colorVal)}
-                checklist={[filters.color]}
-              >
-                <ColorBox color={colorVal} />
-              </NegCheckbox>
-              <Input
-                placeholder={t('Search.custom-color')}
-                disabled={isColorSearch}
-                defaultValue={colorVal}
-                size="xs"
-                variant="filled"
-                bg="whiteAlpha.200"
-                onChange={(e) => setColorVal(e.target.value)}
-                maxLength={7}
-              />
-            </HStack>
-            <HStack>
-              <Text flex="1 0 auto" fontSize={'xs'}>
-                {t('Search.color-type')}
-              </Text>
-              <Select
-                variant={'filled'}
-                bg={'whiteAlpha.200'}
-                size="xs"
-                value={filters.colorType}
-                disabled={isColorSearch}
-                onChange={(e) => handleSelectChange(e.target.value, 'colorType')}
-              >
-                <option value="population">{t('Search.most-prominent')}</option>
-                <option value="vibrant">Vibrant</option>
-                <option value="darkvibrant">Dark Vibrant</option>
-                <option value="lightvibrant">Light Vibrant</option>
-                <option value="muted">Muted</option>
-                <option value="darkmuted">Dark Muted</option>
-                <option value="lightmuted">Light Muted</option>
-              </Select>
-            </HStack>
-            <HStack>
-              <Text flex="1 0 auto" fontSize={'xs'}>
-                {t('Search.tolerance')}
-              </Text>
-              <CustomNumberInput
-                wrapperProps={{ size: 'xs' }}
-                inputProps={{ textAlign: 'left' }}
-                onChange={(val) => handleNumberChange(val, 0, 'colorTolerance')}
-                value={filters.colorTolerance}
-              />
-            </HStack>
-          </VStack>
-        </AccordionPanel>
-      </AccordionItem>
+        </VStack>
+      </FilterSection>
+
       {!props.isLists && (
-        <AccordionItem>
-          <h2>
-            <AccordionButton>
-              <Box as="span" flex="1" fontSize="sm" textAlign="left" color="gray.300">
-                {t('General.search-mode')} {filters.mode !== 'name' && <Badge>1</Badge>}
-              </Box>
-              <AccordionIcon />
-            </AccordionButton>
-          </h2>
-          <AccordionPanel pb={4}>
-            <HStack>
-              <Select
-                size="sm"
-                variant={'filled'}
-                bg={'whiteAlpha.200'}
-                value={filters.mode}
-                onChange={(e) => handleSelectChange(e.target.value, 'mode')}
-              >
-                <option value="name">{t('General.item-name')}</option>
-                <option value="description">{t('General.item-description')}</option>
-                <option value="all">{t('General.item-name-and-description')}</option>
-                <option value="not">{t('General.name-not-contains')}</option>
-              </Select>
-            </HStack>
-          </AccordionPanel>
-        </AccordionItem>
+        <FilterSection title={t('General.search-mode')} count={filters.mode !== 'name' ? 1 : 0}>
+          <HStack>
+            <Select
+              size="sm"
+              variant="filled"
+              bg="blackAlpha.400"
+              borderRadius="md"
+              value={filters.mode}
+              onChange={(e) => handleSelectChange(e.target.value, 'mode')}
+            >
+              <option value="name">{t('General.item-name')}</option>
+              <option value="description">{t('General.item-description')}</option>
+              <option value="all">{t('General.item-name-and-description')}</option>
+              <option value="not">{t('General.name-not-contains')}</option>
+            </Select>
+          </HStack>
+        </FilterSection>
       )}
     </Accordion>
   );
@@ -695,15 +393,150 @@ const SearchFilters = (props: Props) => {
 
 export default SearchFilters;
 
-const ColorBox = (props: { color: string }) => (
-  <Box
-    display="inline-block"
-    verticalAlign="middle"
-    bg={props.color}
-    width="15px"
-    height="15px"
-  ></Box>
+const FilterSection = (props: { title: ReactNode; count?: number; children: ReactNode }) => (
+  <AccordionItem>
+    <h2>
+      <AccordionButton>
+        <Box as="span" flex="1" textAlign="left" fontSize="sm" color="gray.300">
+          {props.title} {!!props.count && <Badge>{props.count}</Badge>}
+        </Box>
+        <AccordionIcon />
+      </AccordionButton>
+    </h2>
+    <AccordionPanel pb={4}>{props.children}</AccordionPanel>
+  </AccordionItem>
 );
+
+const RangeFilterSection = (props: {
+  title: ReactNode;
+  filterType: RangeFilter;
+  values: string[];
+  onChange: (newVal: string, index: number, filterType: NumberFilter) => void;
+  toText: string;
+}) => (
+  <FilterSection title={props.title} count={countFilledValues(props.values)}>
+    <HStack>
+      <CustomNumberInput
+        onChange={(val) => props.onChange(val, 0, props.filterType)}
+        value={props.values[0]}
+        wrapperProps={{ bg: 'blackAlpha.400', borderRadius: 'md' }}
+        inputProps={{ borderRadius: 'md' }}
+      />
+      <Text fontSize="sm" color="gray.300">
+        {props.toText}
+      </Text>
+      <CustomNumberInput
+        onChange={(val) => props.onChange(val, 1, props.filterType)}
+        value={props.values[1]}
+        wrapperProps={{ bg: 'blackAlpha.400', borderRadius: 'md' }}
+        inputProps={{ borderRadius: 'md' }}
+      />
+    </HStack>
+  </FilterSection>
+);
+
+const FacetCheckboxList = (props: {
+  entries: FacetEntry[];
+  checklist: string[];
+  filterType: ChecklistFilter;
+  isLoaded: boolean;
+  onChange: (newFilter: string, filterType: ChecklistFilter, defaultValue: string) => void;
+}) => (
+  <VStack alignItems="flex-start">
+    {props.isLoaded &&
+      props.entries.map(([name, count]) => (
+        <NegCheckbox
+          key={name}
+          value={name}
+          onChange={(val) => props.onChange(val, props.filterType, name)}
+          checklist={props.checklist}
+        >
+          <Text fontSize="sm" textTransform="capitalize">
+            {name} <Badge>{count}</Badge>
+          </Text>
+        </NegCheckbox>
+      ))}
+    {!props.isLoaded && <FilterSkeletons />}
+  </VStack>
+);
+
+type TypeOption = {
+  value: string;
+  label: ReactNode;
+  count?: number;
+};
+
+const TypeOptionGroup = (props: {
+  options: TypeOption[];
+  checklist: string[];
+  withDivider: boolean;
+  onChange: (newFilter: string, defaultValue: string) => void;
+}) => (
+  <>
+    {props.withDivider && <Divider />}
+    {props.options.map((option) => (
+      <NegCheckbox
+        key={option.value}
+        value={option.value}
+        onChange={(val) => props.onChange(val, option.value)}
+        checklist={props.checklist}
+      >
+        <Text fontSize="sm">
+          {option.label} {typeof option.count !== 'undefined' && <Badge>{option.count ?? 0}</Badge>}
+        </Text>
+      </NegCheckbox>
+    ))}
+  </>
+);
+
+const ShowMoreButton = (props: {
+  isVisible: boolean;
+  isExpanded: boolean;
+  onToggle: () => void;
+  showLessText: string;
+  showMoreText: string;
+}) => {
+  if (!props.isVisible) return null;
+
+  return (
+    <Center mt={3}>
+      <Button
+        size="xs"
+        variant={'ghost'}
+        color="gray.300"
+        cursor="pointer"
+        onClick={props.onToggle}
+        textAlign="center"
+      >
+        {props.isExpanded ? props.showLessText : props.showMoreText}
+      </Button>
+    </Center>
+  );
+};
+
+const FilterSkeletons = () => (
+  <>
+    {[...Array(5)].map((_, i) => (
+      <Skeleton key={i} w="100%" h="25px" />
+    ))}
+  </>
+);
+
+const ColorBox = (props: { color: string }) => (
+  <Box display="inline-block" verticalAlign="middle" bg={props.color} width="15px" height="15px" />
+);
+
+const badgeOption = (value: string, label: ReactNode, count?: number): TypeOption => ({
+  value,
+  label,
+  count,
+});
+
+const isRangeFilter = (filterType: NumberFilter): filterType is RangeFilter =>
+  !['restockProfit', 'colorTolerance'].includes(filterType);
+
+const countFilledValues = (values: string[]) =>
+  values.filter((value) => value || value === '0').length;
 
 const sortCategories = (a: string, b: string, selected: string[], selectedFirst = false) => {
   selected = selected.map((s) => s.toLowerCase());
@@ -722,17 +555,16 @@ const sortCategories = (a: string, b: string, selected: string[], selectedFirst 
 };
 
 const getCategories = (catStats: Record<string, number>, selected: string[]) => {
-  //check if there is a selected category that is not in the stats
   const stats = Object.keys(catStats).map((s) => s.toLowerCase());
+  const nextCatStats = { ...catStats };
   const selectedStats = selected.filter(
     (s) => !stats.includes(s.toLowerCase()) && !stats.includes(`!${s.toLowerCase()}`)
   );
 
-  // if there is, add it to the stats
   selectedStats.forEach((s) => {
     const key = s.startsWith('!') ? s.slice(1) : s;
-    if (!catStats[key]) catStats[key] = 0;
+    if (!nextCatStats[key]) nextCatStats[key] = 0;
   });
 
-  return catStats;
+  return nextCatStats;
 };
