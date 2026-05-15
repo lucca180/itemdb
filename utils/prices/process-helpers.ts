@@ -63,23 +63,29 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps) => {
     const percentDiff = Math.abs(priceValue - oldPrice) / oldPrice;
     const absDiff = Math.abs(priceValue - oldPrice);
 
+    const minUpdate = PRICING.MIN_LAST_UPDATE;
+
     forceMode = forceMode || isPendingCheck;
 
     if (latestDate < oldPriceRaw.addedAt || daysSinceLastUpdate <= 1) return false;
 
-    if (!forceMode && daysSinceLastUpdate < PRICING.MIN_LAST_UPDATE && zNewAbs < 2.5) return false;
+    if (!forceMode && daysSinceLastUpdate < minUpdate && zNewAbs < 2.5) return false;
 
     const specialMode = EVENT_MODE || isInflation || forceMode;
 
     if (specialMode) return true;
 
-    if (absDiff < 1000 && daysSinceLastUpdate <= 15) return false;
+    if (absDiff < 1000 && daysSinceLastUpdate <= minUpdate * 2) return false;
 
     // clear outlier: wait for more data before pricing
-    if (zNew >= 3 && daysSinceLastUpdate <= 10) return false;
+    if (zNew >= 3 && daysSinceLastUpdate <= minUpdate * 1.5) return false;
 
     // insignificant change: wait
-    if (zNewAbs <= 2 && percentDiff < varThresholds(oldPrice) && daysSinceLastUpdate <= 10)
+    if (
+      zNewAbs <= 2 &&
+      percentDiff < varThresholds(oldPrice) &&
+      daysSinceLastUpdate <= minUpdate * 2
+    )
       return false;
 
     return true;
