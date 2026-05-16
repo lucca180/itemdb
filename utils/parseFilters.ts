@@ -463,11 +463,7 @@ export const getFiltersDiff = (
   };
 
   for (const key of keys) {
-    if (
-      Object.prototype.hasOwnProperty.call(a, key) &&
-      a[key] != b[key] &&
-      JSON.stringify(a[key]) != JSON.stringify(b[key])
-    )
+    if (a[key] && a[key] != b[key] && JSON.stringify(a[key]) != JSON.stringify(b[key]))
       diff[key] = a[key];
   }
 
