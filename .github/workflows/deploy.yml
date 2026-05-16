@@ -40,6 +40,8 @@ jobs:
 
             yarn install --immutable
 
+            npx prisma migrate deploy
+
             if git log -1 --pretty=%B | grep -q '\[skip test\]'; then
               echo "Skipping tests"
             else
@@ -113,12 +115,11 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             export BUILD_ID=$(git rev-parse HEAD)
 
-            npx prisma migrate deploy
-
             pm2 reload ecosystem.config.js --only "$TARGET_NAME" --update-env || \
               pm2 start ecosystem.config.js --only "$TARGET_NAME" --update-env
 
             sleep 10
+
             if ! curl --fail --retry 20 --retry-delay 3 --retry-connrefused "http://127.0.0.1:$TARGET_PORT/api/health"; then
               pm2 status
               pm2 logs "$TARGET_NAME" --lines 80 --nostream || true
@@ -130,6 +131,8 @@ jobs:
 
             sudo nginx -t
             sudo systemctl reload nginx
+
+            sleep 10
 
             if ! curl --fail --retry 20 --retry-delay 3 --retry-connrefused "$PUBLIC_HEALTH_URL"; then
               echo "Public health check failed. Rolling back to port $PREVIOUS_PORT"
