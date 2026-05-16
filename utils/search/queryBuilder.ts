@@ -1,13 +1,8 @@
 import Color from 'color';
 import { Prisma } from '@prisma/generated/client';
-import { SearchFilters } from '../../../../types';
-import { parseFilters } from '../../../../utils/parseFilters';
-import {
-  faerielandShops,
-  getDateNST,
-  halloweenShops,
-  tyrannianShops,
-} from '../../../../utils/utils';
+import { SearchFilters } from '../../types';
+import { parseFilters } from '../parseFilters';
+import { faerielandShops, getDateNST, halloweenShops, tyrannianShops } from '../utils';
 
 const validColorTypes = [
   'vibrant',

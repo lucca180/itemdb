@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { Prisma } from '@prisma/generated/client';
 import { verifyListJWT } from '@utils/api-utils';
-import { buildSearchQueryParts } from './queryBuilder';
+import { buildSearchQueryParts } from '../../../../utils/search/queryBuilder';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET')

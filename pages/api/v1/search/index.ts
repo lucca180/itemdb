@@ -8,7 +8,7 @@ import { redis_setDataCount } from '@utils/redis';
 import { rawToItemData } from '../items/many';
 import { verifyListJWT } from '@utils/api-utils';
 import * as Sentry from '@sentry/nextjs';
-import { buildSearchQueryParts } from './queryBuilder';
+import { buildSearchQueryParts } from '../../../../utils/search/queryBuilder';
 
 const ENV_FUZZY_SEARCH = process.env.HAS_FUZZY_SEARCH === 'true';
 
