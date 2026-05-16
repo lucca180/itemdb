@@ -35,11 +35,10 @@ import dynamic from 'next/dynamic';
 import { useLists } from '../utils/useLists';
 import queryString from 'query-string';
 import isEqual from 'lodash/isEqual';
-import { loadTranslation } from '@utils/load-translation';
 import { installProofInterceptor } from '@utils/http/proofInterceptor';
-import { generateListJWT } from '@utils/api-utils';
-import { GetServerSidePropsContext } from 'next/types';
 import { ListBreadcrumb } from '@components/Breadcrumbs/ListBreadcrumb';
+import { isCanceledSearchError, shouldUpdateCount } from '@utils/search/searchPageHelpers';
+import { GetServerSidePropsContext } from 'next/types';
 const Markdown = dynamic(() => import('../components/Utils/Markdown'));
 
 const SearchFilterModal = dynamic<SearchFilterModalProps>(
@@ -67,12 +66,15 @@ itemdb.interceptors.response.use(
 const color = Color('#4A5568');
 const rgb = color.rgb().round().array();
 
-let ABORT_CONTROLLER = new AbortController();
-
 type SearchPageProps = {
   listJWT?: string | null;
   userList?: UserList | null;
   searchTip: number;
+  initialFilters?: SearchFiltersType | null;
+  initialSearchQuery?: string;
+  initialSearchResult?: SearchResults | null;
+  initialTotalResults?: number | null;
+  initialSearchStatus?: SearchStats | null;
 };
 
 const SearchPage = (props: SearchPageProps) => {
@@ -81,14 +83,23 @@ const SearchPage = (props: SearchPageProps) => {
   const format = useFormatter();
   const { addItemToList } = useLists();
   const toast = useToast();
-  const [totalResults, setTotalResults] = useState<number | null>(null);
+  const [totalResults, setTotalResults] = useState<number | null>(props.initialTotalResults ?? null);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
-  const [searchResult, setResult] = useState<SearchResults | null>(null);
-  const [searchQuery, setQuery] = useState<string | null>(null);
-  const [isColorSearch, setIsColorSearch] = useState<boolean>(false);
-  const [filters, setFilters] = useState<SearchFiltersType>(defaultFilters);
-  const [searchStatus, setStatus] = useState<SearchStats | null>(null);
+  const [searchResult, setResult] = useState<SearchResults | null>(
+    props.initialSearchResult ?? null
+  );
+  const [searchQuery, setQuery] = useState<string | null>(props.initialSearchQuery ?? null);
+  const [isColorSearch, setIsColorSearch] = useState<boolean>(
+    !!props.initialSearchQuery?.match(/^#[0-9A-Fa-f]{6}$/)
+  );
+  const [filters, setFilters] = useState<SearchFiltersType>(props.initialFilters ?? defaultFilters);
+  const [searchStatus, setStatus] = useState<SearchStats | null>(
+    props.initialSearchStatus ?? null
+  );
   const prevFilter = useRef<SearchFiltersType>(null);
+  const hasInitialSearch = useRef(!!props.initialSearchResult);
+  const abortController = useRef<AbortController | null>(null);
+  const searchRequestId = useRef(0);
   const [isLargerThanLG] = useMediaQuery('(min-width: 62em)', { fallback: true });
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -124,6 +135,10 @@ const SearchPage = (props: SearchPageProps) => {
     parseQueryString();
   }, [router.query, router.isReady]);
 
+  useEffect(() => {
+    return () => abortController.current?.abort();
+  }, []);
+
   const doSearch = async (fetchStats = false, fetchCount = false) => {
     if (router.query.s !== searchQuery) {
       fetchStats = true;
@@ -149,62 +164,87 @@ const SearchPage = (props: SearchPageProps) => {
     const params = getFiltersDiff(filters);
     setResult(null);
 
-    fetchStats = fetchStats || !totalResults;
+    fetchStats = fetchStats || !searchStatus;
     fetchCount = fetchCount || !searchResult;
 
     if (fetchStats) setStatus(null);
     if (fetchCount) setTotalResults(null);
 
     try {
-      ABORT_CONTROLLER.abort();
-      ABORT_CONTROLLER = new AbortController();
+      abortController.current?.abort();
+      const controller = new AbortController();
+      abortController.current = controller;
+      const requestId = searchRequestId.current + 1;
+      searchRequestId.current = requestId;
+      const headers = {
+        'x-itemdb-list-jwt': props.listJWT ?? undefined,
+      };
 
       if (fetchCount) {
         itemdb
           .get('search', {
-            signal: ABORT_CONTROLLER.signal,
+            signal: controller.signal,
             params: {
               ...params,
               s: query,
               limit: 1,
               onlyStats: true,
             },
-            headers: {
-              'x-itemdb-list-jwt': props.listJWT ?? undefined,
-            },
+            headers,
           })
-          .then((res) => setTotalResults(res.data.totalResults))
-          .catch();
+          .then((res) => {
+            if (controller.signal.aborted || requestId !== searchRequestId.current) return;
+            setTotalResults(res.data.totalResults);
+          })
+          .catch((err) => {
+            if (!isCanceledSearchError(err)) console.error(err);
+          });
       }
 
       if (fetchStats) {
         itemdb
           .get('search/stats', {
-            signal: ABORT_CONTROLLER.signal,
+            signal: controller.signal,
             params: {
               s: query,
               list_id: params.list_id,
             },
-            headers: {
-              'x-itemdb-list-jwt': props.listJWT ?? undefined,
-            },
+            headers,
           })
-          .then((res) => setStatus(res.data));
+          .then((res) => {
+            if (controller.signal.aborted || requestId !== searchRequestId.current) return;
+            setStatus(res.data);
+          })
+          .catch((err) => {
+            if (!isCanceledSearchError(err)) console.error(err);
+          });
       }
 
       itemdb
         .get('search', {
-          signal: ABORT_CONTROLLER.signal,
+          signal: controller.signal,
           params: {
             ...params,
             skipStats: true,
             s: query,
           },
-          headers: {
-            'x-itemdb-list-jwt': props.listJWT ?? undefined,
-          },
+          headers,
         })
-        .then((res) => setResult(res.data));
+        .then((res) => {
+          if (controller.signal.aborted || requestId !== searchRequestId.current) return;
+          setResult(res.data);
+        })
+        .catch((err) => {
+          if (isCanceledSearchError(err)) return;
+
+          toast({
+            title: t('General.an-error-occurred'),
+            description: t('General.try-again-later'),
+            status: 'error',
+            duration: null,
+            isClosable: true,
+          });
+        });
     } catch (err) {
       toast({
         title: t('General.an-error-occurred'),
@@ -237,11 +277,48 @@ const SearchPage = (props: SearchPageProps) => {
     });
   };
 
+  const loadSearchStats = () => {
+    const query = (router.query.s as string) ?? '';
+    const params = getFiltersDiff(filters);
+
+    setStatus(null);
+    abortController.current?.abort();
+    const controller = new AbortController();
+    abortController.current = controller;
+    const requestId = searchRequestId.current + 1;
+    searchRequestId.current = requestId;
+
+    itemdb
+      .get('search/stats', {
+        signal: controller.signal,
+        params: {
+          s: query,
+          list_id: params.list_id,
+        },
+        headers: {
+          'x-itemdb-list-jwt': props.listJWT ?? undefined,
+        },
+      })
+      .then((res) => {
+        if (controller.signal.aborted || requestId !== searchRequestId.current) return;
+        setStatus(res.data);
+      })
+      .catch((err) => {
+        if (!isCanceledSearchError(err)) console.error(err);
+      });
+  };
+
   useEffect(() => {
     if (!router.isReady) return;
 
     // parse initial query string and set filters
     if (!prevFilter.current && !parseQueryString()) return;
+    if (!prevFilter.current && hasInitialSearch.current) {
+      prevFilter.current = filters;
+      hasInitialSearch.current = false;
+      if (!searchStatus) loadSearchStats();
+      return;
+    }
 
     doSearch(undefined, shouldUpdateCount(filters, prevFilter.current));
     changeQueryString();
@@ -359,7 +436,11 @@ const SearchPage = (props: SearchPageProps) => {
                 allChecked={selectedItems.length === searchResult.content.length}
                 onClick={(checkAll) => selectItem(undefined, checkAll)}
                 defaultText={t('Search.showing', {
-                  val1: format.number(searchResult.resultsPerPage * (searchResult.page - 1) + 1),
+                  val1: format.number(
+                    totalResults === 0
+                      ? 0
+                      : searchResult.resultsPerPage * (searchResult.page - 1) + 1
+                  ),
                   val2: format.number(
                     Math.min(searchResult.resultsPerPage * searchResult.page, totalResults)
                   ),
@@ -390,7 +471,7 @@ const SearchPage = (props: SearchPageProps) => {
                   />
                 )}
                 <IconButton
-                  aria-label="search filters"
+                  aria-label={t('Search.search-filters')}
                   onClick={onOpen}
                   icon={<BsFilter />}
                   display={{ base: 'inherit', lg: 'none' }}
@@ -563,39 +644,9 @@ const SearchPage = (props: SearchPageProps) => {
 export default SearchPage;
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const list_id = context.query?.list_id ? parseInt(context.query.list_id as string) : undefined;
-
-  let listJWT = null;
-  let userList = null;
-
-  if (list_id && !isNaN(list_id)) {
-    const result = await generateListJWT(list_id, context.req as any);
-    if (result) {
-      listJWT = result.token;
-      userList = result.list;
-    }
-  }
-
-  const totalTips = 4;
-  const searchTip = new Date().getMinutes() % totalTips;
-
-  return {
-    props: {
-      listJWT,
-      userList,
-      searchTip,
-      messages: await loadTranslation(context.locale!, 'search'),
-    },
-  };
+  const { getSearchPageServerProps } = await import('@utils/search/searchPageServerProps');
+  return getSearchPageServerProps(context);
 }
-
-const shouldUpdateCount = (newFilter: SearchFiltersType, prevFilter: SearchFiltersType | null) => {
-  const diff = getFiltersDiff(newFilter, prevFilter ?? undefined);
-  const keys = Object.keys(diff) as (keyof SearchFiltersType)[];
-  const dontUpdateCountKeys = ['page', 'resultsPerPage', 'sortDir', 'sortBy'];
-
-  return keys.some((key) => !dontUpdateCountKeys.includes(key));
-};
 
 const SearchTips = (props: { searchTip: number }) => {
   const { searchTip } = props;
