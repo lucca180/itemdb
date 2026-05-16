@@ -40,6 +40,10 @@ const APP_ROUTER_LOCALIZED_ROUTES = [
     appPath: '/privacy',
     localizedPath: '/privacy',
   },
+  {
+    appPath: '/terms',
+    localizedPath: '/terms',
+  },
 ] as const;
 
 const skipAPIMiddleware = process.env.SKIP_API_MIDDLEWARE === 'true';

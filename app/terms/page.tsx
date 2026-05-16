@@ -2,14 +2,13 @@ import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
 import Layout from '@components/Layout';
 import { getStaticAppPageProps } from '@utils/appPage';
-import { PrivacyPageClient } from './PrivacyPageClient';
+import { TermsPageClient } from './TermsPageClient';
 
-const description =
-  'itemdb collects some personal data during its use. Here we will detail more about how we collect, process, and use your data.';
+const description = 'This page outlines the terms of use for itemdb, its features, and API.';
 const pageConfig = {
-  title: 'Privacy Policy',
+  title: 'Terms of Use',
   description,
-  pathname: '/privacy',
+  pathname: '/terms',
   noindex: true,
   nofollow: true,
 } as const;
@@ -20,13 +19,13 @@ export async function generateMetadata(): Promise<Metadata> {
   return getStaticAppPageProps(locale, pageConfig).metadata;
 }
 
-export default async function PrivacyPage() {
+export default async function TermsPage() {
   const locale = await getLocale();
   const pageProps = getStaticAppPageProps(locale, pageConfig);
 
   return (
-    <Layout disableNextSeo SEO={pageProps.seo} mainColor="#7AB92Ac7">
-      <PrivacyPageClient />
+    <Layout disableNextSeo SEO={pageProps.seo} mainColor="#a5aa9fc7">
+      <TermsPageClient />
     </Layout>
   );
 }

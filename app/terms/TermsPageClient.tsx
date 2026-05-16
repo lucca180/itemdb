@@ -1,10 +1,9 @@
-import { Flex, Heading, Text } from '@chakra-ui/react';
-import HeaderCard from '../components/Card/HeaderCard';
-import Layout from '../components/Layout';
-import { ReactElement } from 'react';
-import { loadTranslation } from '@utils/load-translation';
+'use client';
 
-const TermsPage = () => {
+import { Flex, Heading, Text } from '@chakra-ui/react';
+import HeaderCard from '@components/Card/HeaderCard';
+
+export function TermsPageClient() {
   return (
     <>
       <HeaderCard
@@ -91,33 +90,4 @@ const TermsPage = () => {
       </Flex>
     </>
   );
-};
-
-export default TermsPage;
-
-export async function getStaticProps(context: any) {
-  return {
-    props: {
-      messages: await loadTranslation(context.locale, 'terms'),
-      locale: context.locale,
-    },
-  };
 }
-
-TermsPage.getLayout = function getLayout(page: ReactElement) {
-  const canonical = 'https://itemdb.com.br/terms';
-
-  return (
-    <Layout
-      SEO={{
-        title: 'Terms of Use',
-        description: 'This page outlines the terms of use for itemdb, its features, and API.',
-        canonical: canonical,
-        noindex: true,
-      }}
-      mainColor="#a5aa9fc7"
-    >
-      {page}
-    </Layout>
-  );
-};
