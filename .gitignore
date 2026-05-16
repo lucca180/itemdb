@@ -28,3 +28,4 @@ itemDataExtractor-admin.user.js
 certificates
 
 next-env.d.ts
+.playwright-mcp/

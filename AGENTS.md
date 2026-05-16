@@ -7,6 +7,18 @@
 
 - Avoid running global commands such as `prettier`. Instead, use more contained commands that target specific files or directories. This helps prevent unintended changes to files that you did not intend to modify.
 
+- Avoid running `yarn build` unless you are sure that your changes require it. Building the project can be time-consuming, and it is often not necessary for small changes.
+
+- Avoid changing project configs such as `tsconfig.json`, `eslint.config.js`, `next.config.ts`. ALWAYS confirm with users before making changes to these files, as they can have wide-reaching effects on the project and may require additional adjustments to work properly.
+
+- NEVER change the `package.json` file without confirming with users first. This file contains important information about the project, including dependencies and scripts, and changes to it can have significant consequences.
+
+- NEVER EVER add, remove or update dependencies without confirming with users first.
+
+- When checking for Chakra UI docs, always refer to the official Chakra UI documentation at https://v2.chakra-ui.com/docs/getting-started. Make sure you're looking at the correct version of the documentation that matches the version of Chakra UI being used in the project (v2 in this case).
+
+- Always prefer using import aliases (e.g., `@utils`, `@components`) instead of relative paths (e.g., `../../utils`, `../components`). This improves readability and maintainability of the code.
+
 ## Testing instructions
 
 - When changing API routes, test them by running `yarn test` in the terminal. You can also run only the test suite related to the changed API route by using `yarn test -- <path-to-test-file>`.
