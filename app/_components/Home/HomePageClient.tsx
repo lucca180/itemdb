@@ -1,37 +1,28 @@
-import { Box, Flex, Heading, Highlight, Link, SimpleGrid, Stack, Text } from '@chakra-ui/react';
-import { ReactElement } from 'react';
-import Layout from '../components/Layout';
-import logo from '../public/logo_white_compressed.webp';
-import NextImage from 'next/image';
-import ItemCard from '../components/Items/ItemCard';
-import { ItemData, UserList, WP_Article } from '../types';
-import BetaStatsCard from '../components/Beta/BetaStatsCard';
-import axios, { AxiosRequestConfig } from 'axios';
-import { ArticleCard } from '../components/Articles/ArticlesCard';
-import { wp_getLatestPosts } from './api/wp/posts';
-import NextLink from 'next/link';
-import Color from 'color';
-import { getTrendingCatLists, getTrendingItems, getTrendingLists } from './api/v1/beta/trending';
-import { createTranslator, useFormatter, useTranslations } from 'next-intl';
-import { getNCMallItemsData } from './api/v1/mall';
-import { getLatestItems } from './api/v1/items';
-import { getLatestPricedItems } from './api/v1/prices';
-import { NextPageWithLayout } from './_app';
-import { HomeCard } from '../components/Card/HomeCard';
-import UserListCard from '../components/UserLists/ListCard';
-import { HorizontalHomeCard } from '../components/Card/HorizontalHomeCard';
-import useSWR from 'swr';
-import { loadTranslation } from '@utils/load-translation';
-import { getNewItemsInfo } from './api/v1/beta/new-items';
-import Image from '@components/Utils/Image';
-import { TVWHomeCard } from '@components/Card/EventCard';
+'use client';
 
-type LatestPricesRes = {
+import type { ReactNode } from 'react';
+import { Flex, Heading, SimpleGrid, Stack, Text } from '@chakra-ui/react';
+import type { AxiosRequestConfig } from 'axios';
+import axios from 'axios';
+import { useFormatter, useTranslations } from 'next-intl';
+import useSWR from 'swr';
+import type { ItemData, UserList, WP_Article } from '../../../types';
+import { HomeCard } from '@components/Card/HomeCard';
+import BetaStatsCard from '@components/Beta/BetaStatsCard';
+import { HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
+import { TVWHomeCard } from '@components/Card/EventCard';
+import ItemCard from '@components/Items/ItemCard';
+import Image from '@components/Utils/Image';
+import UserListCard from '@components/UserLists/ListCard';
+import { LatestArticlesSection } from './LatestArticlesSection';
+
+export type LatestPricesRes = {
   count: number | null;
   items: ItemData[];
 };
 
-type Props = {
+export type HomePageClientProps = {
+  hero: ReactNode;
   latestItems: ItemData[];
   latestPrices: LatestPricesRes;
   latestWearable: ItemData[];
@@ -45,21 +36,17 @@ type Props = {
     freeItems: number;
     paidItems: number;
   } | null;
-  messages: any;
-  locale: string;
 };
 
-const color = Color('#4A5568');
-const rgb = color.rgb().round().array();
-
-const fetcher = <T,>(url: string, config?: AxiosRequestConfig<any>): Promise<T> =>
+const fetcher = <T,>(url: string, config?: AxiosRequestConfig): Promise<T> =>
   axios.get<T>(url, config).then((res) => res.data);
 
-const HomePage: NextPageWithLayout<Props> = (props: Props) => {
+export function HomePageClient(props: HomePageClientProps) {
   const t = useTranslations();
   const formatter = useFormatter();
 
   const {
+    hero,
     latestWearable,
     latestPosts,
     latestNcMall,
@@ -71,47 +58,17 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
     eventLists,
   } = props;
 
-  const { data: latestItems } = useSWR<ItemData[]>(`api/v1/items?limit=20`, (url) => fetcher(url), {
-    fallbackData: props.latestItems,
-  });
+  const { data: latestItems } = useSWR<ItemData[]>(
+    '/api/v1/items?limit=20',
+    (url) => fetcher(url),
+    {
+      fallbackData: props.latestItems,
+    }
+  );
 
   return (
     <>
-      <Box textAlign="center" display="flex" flexFlow="column" alignItems="center" mt="50px">
-        <Box
-          position="absolute"
-          h="40vh"
-          left="0"
-          width="100%"
-          mt="-50px"
-          bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.6) 80%)`}
-          zIndex={-1}
-        />
-        <NextImage
-          src={logo}
-          alt="itemdb logo"
-          width={500}
-          quality="100"
-          priority
-          fetchPriority="high"
-        />
-        <Heading size="sm" as="h1" mt={4} lineHeight={1.5}>
-          <Highlight
-            query={t('HomePage.open-source')}
-            styles={{
-              px: '2',
-              py: '1',
-              rounded: 'full',
-              bg: 'gray.100',
-            }}
-          >
-            {t('HomePage.title')}
-          </Highlight>{' '}
-          <Link color={color.lightness(70).hex()} href="/faq">
-            {t('HomePage.is-it-safe')}
-          </Link>
-        </Heading>
-      </Box>
+      {hero}
       <Flex mt={8} gap={8} flexFlow="column">
         <HorizontalHomeCard
           color="#2e333b"
@@ -135,7 +92,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
               [...Array(16)].map((_, i) => <ItemCard uniqueID="latest-prices" key={i} />)}
           </Flex>
           {latestPrices?.count && (
-            <Text textAlign={'right'} mt={4} fontSize={'xs'} color={'whiteAlpha.400'}>
+            <Text textAlign="right" mt={4} fontSize="xs" color="whiteAlpha.400">
               {t('HomePage.x-prices-updated-last-y', {
                 count: formatter.number(latestPrices.count),
                 time: '48h',
@@ -145,14 +102,14 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
         </HorizontalHomeCard>
         {eventLists?.length > 0 && <TVWHomeCard lists={eventLists} />}
         {newItemCount && (
-          <Flex gap={4} flexWrap={'wrap'} flexFlow={{ base: 'column', lg: 'row' }}>
+          <Flex gap={4} flexWrap="wrap" flexFlow={{ base: 'column', lg: 'row' }}>
             <HorizontalHomeCard
               color="#B794F4"
               bgOpacity="0.75"
               innerStyle={{ border: 0, py: 2 }}
               style={{ flex: '1' }}
             >
-              <Flex alignItems={'center'}>
+              <Flex alignItems="center">
                 <Image
                   src={
                     newItemCount.paidItems > newItemCount.freeItems * 2
@@ -162,8 +119,8 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
                   alt="tax beast thumbnail"
                   width={100}
                   height={100}
-                  quality="100"
-                  borderRadius={'md'}
+                  quality={100}
+                  borderRadius="md"
                 />
                 <Flex flexFlow="column" ml={3}>
                   <Text fontSize="lg" fontWeight="bold">
@@ -176,7 +133,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
                       days: 7,
                     })}
                   </Text>
-                  <Text fontSize="4xl" fontWeight={'bold'}>
+                  <Text fontSize="4xl" fontWeight="bold">
                     {newItemCount.paidItems}
                   </Text>
                   <Text fontSize="xs" color="whiteAlpha.700">
@@ -191,14 +148,14 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
               innerStyle={{ border: 0, py: 2 }}
               style={{ flex: '1' }}
             >
-              <Flex alignItems={'center'}>
+              <Flex alignItems="center">
                 <Image
                   src="https://images.neopets.com/nt/ntimages/475_money_tree.gif"
                   alt="money tree thumbnail"
                   width={100}
                   height={100}
-                  quality="100"
-                  borderRadius={'md'}
+                  quality={100}
+                  borderRadius="md"
                 />
                 <Flex flexFlow="column" ml={3}>
                   <Text fontSize="lg" fontWeight="bold">
@@ -211,7 +168,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
                       days: 7,
                     })}
                   </Text>
-                  <Text fontSize="4xl" fontWeight={'bold'}>
+                  <Text fontSize="4xl" fontWeight="bold">
                     {newItemCount.freeItems}
                   </Text>
                   <Text fontSize="xs" color="whiteAlpha.800">
@@ -222,11 +179,7 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
             </HorizontalHomeCard>
           </Flex>
         )}
-        <SimpleGrid
-          columns={{ base: 1, lg: 3 }}
-          spacing={{ base: 4, xl: 8 }}
-          justifyItems={'center'}
-        >
+        <SimpleGrid columns={{ base: 1, lg: 3 }} spacing={{ base: 4, xl: 8 }} justifyItems="center">
           {latestItems && (
             <HomeCard
               utm_content="latest-items"
@@ -306,86 +259,9 @@ const HomePage: NextPageWithLayout<Props> = (props: Props) => {
             </Heading>
             <BetaStatsCard />
           </Flex>
-          <Flex flex={1} flexFlow={'column'}>
-            <Heading size="md" textAlign="center" mb={5}>
-              <Link as={NextLink} href="/articles">
-                {t('HomePage.latest-articles')}
-              </Link>
-            </Heading>
-            <Flex flexFlow={'column'} gap={2}>
-              {latestPosts.map((post) => (
-                <ArticleCard key={post.id} article={post} />
-              ))}
-            </Flex>
-          </Flex>
+          <LatestArticlesSection articles={latestPosts} title={t('HomePage.latest-articles')} />
         </Stack>
       </Flex>
     </>
   );
-};
-
-export default HomePage;
-
-export async function getStaticProps(context: any): Promise<{ props: Props; revalidate: number }> {
-  const [
-    latestItems,
-    latestWearable,
-    latestPosts,
-    trendingItems,
-    latestNcMall,
-    latestPrices,
-    leavingNcMall,
-    trendingLists,
-    newItemCount,
-    eventLists,
-  ] = await Promise.all([
-    getLatestItems(20, true).catch(() => []),
-    getLatestItems(18, true, true).catch(() => []),
-    wp_getLatestPosts(5).catch(() => []),
-    getTrendingItems(20).catch(() => []),
-    getNCMallItemsData(20).catch(() => []),
-    getLatestPricedItems(16, true).catch(() => ({
-      items: [],
-      count: null,
-    })) as Promise<LatestPricesRes>,
-    getNCMallItemsData(18, true).catch(() => []),
-    getTrendingLists(3, ['The Void Within']).catch(() => []),
-    getNewItemsInfo(7).catch(() => null),
-    getTrendingCatLists('The Void Within', 3).catch(() => []),
-  ]);
-
-  return {
-    props: {
-      latestItems,
-      latestWearable,
-      latestPosts,
-      trendingItems,
-      latestNcMall,
-      latestPrices,
-      leavingNcMall,
-      trendingLists: trendingLists,
-      newItemCount,
-      eventLists,
-      messages: await loadTranslation(context.locale, 'index'),
-      locale: context.locale,
-    },
-    revalidate: 180,
-  };
 }
-
-HomePage.getLayout = function getLayout(page: ReactElement, props: Props) {
-  const t = createTranslator({
-    messages: props.messages,
-    locale: props.locale,
-  });
-  return (
-    <Layout
-      mainColor={color.alpha(0.9).hexa()}
-      SEO={{
-        description: t('HomePage.seo-description'),
-      }}
-    >
-      {page}
-    </Layout>
-  );
-};

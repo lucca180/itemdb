@@ -37,6 +37,10 @@ type Locale = (typeof VALID_LOCALES)[number];
 
 const APP_ROUTER_LOCALIZED_ROUTES = [
   {
+    appPath: '/',
+    localizedPath: '/',
+  },
+  {
     appPath: '/privacy',
     localizedPath: '/privacy',
   },

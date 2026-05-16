@@ -27,6 +27,7 @@
 - `@types` -> `./types.d.ts`
 - `@translations` -> `/translations`
 - `@services` -> `/services`
+- `@assets` -> `/public`
 
 ## App router migration guidelines
 

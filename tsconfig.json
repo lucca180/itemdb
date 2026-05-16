@@ -45,6 +45,9 @@
       ],
       "@services/*": [
         "./services/*"
+      ],
+      "@assets/*": [
+        "./public/*"
       ]
     },
     "typeRoots": [
