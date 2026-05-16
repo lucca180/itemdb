@@ -8,6 +8,7 @@ This project uses a small blue/green deploy setup:
 - GitHub Actions updates, builds, and tests the inactive environment;
 - after a local health check passes, the workflow updates the Nginx snippet and reloads Nginx;
 - if the public health check fails, the workflow rolls back to the previous port.
+- after the public health check passes, the workflow stops the previous PM2 process to avoid keeping an idle server running.
 
 ## Changes in this project
 
@@ -75,11 +76,14 @@ The third step only runs if the build passes:
 3. updates the target clone to the exact commit again;
 4. runs `npx prisma migrate deploy`;
 5. reloads or starts the target PM2 process;
-6. checks `http://127.0.0.1:<port>/api/health`;
-7. rewrites the Nginx snippet;
-8. runs `sudo nginx -t` and `sudo systemctl reload nginx`;
-9. checks the public health URL;
-10. if the public check fails, writes the previous port back to the snippet and reloads Nginx again.
+6. waits briefly for startup;
+7. checks `http://127.0.0.1:<port>/api/health` with retries;
+8. prints PM2 status and recent logs if the target never becomes healthy, then stops the target process;
+9. rewrites the Nginx snippet;
+10. runs `sudo nginx -t` and `sudo systemctl reload nginx`;
+11. checks the public health URL with retries;
+12. if the public check fails, writes the previous port back to the snippet, reloads Nginx again, and stops the target process;
+13. if the public check passes, stops the previous PM2 process.
 
 By default, the public health URL is `https://itemdb.com.br/api/health`. For another domain, set the `PUBLIC_HEALTH_URL` GitHub Actions variable.
 
@@ -180,6 +184,12 @@ git clone git@github.com:org/app.git /home/app-green
 13. Check the public health endpoint.
 
 14. If it fails, write the previous port back to the snippet and reload Nginx.
+
+15. If the local health check fails, print PM2 status/logs and stop the target process.
+
+16. If the public health check fails, roll back the snippet and stop the failed target process.
+
+17. If the public health check passes, stop the previous process to free CPU and memory.
 
 ## Database migrations
 
