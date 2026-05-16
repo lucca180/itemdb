@@ -31,7 +31,16 @@ const API_SKIPS = {
 } as const;
 
 const PUBLIC_FILE = /\.(.*)$/;
-const VALID_LOCALES = ['en', 'pt'];
+const DEFAULT_LOCALE = 'en';
+const VALID_LOCALES = ['en', 'pt'] as const;
+type Locale = (typeof VALID_LOCALES)[number];
+
+const APP_ROUTER_LOCALIZED_ROUTES = [
+  {
+    appPath: '/privacy',
+    localizedPath: '/privacy',
+  },
+] as const;
 
 const skipAPIMiddleware = process.env.SKIP_API_MIDDLEWARE === 'true';
 const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === 'true';
@@ -63,26 +72,27 @@ export async function proxy(request: NextRequest) {
 
   const locale = request.cookies.get('NEXT_LOCALE')?.value;
 
-  updateServerTime('regular-middleware', startTime, response);
-
   const proofCookie = request.cookies.get('itemdb-proof')?.value || '';
-  if (!verifySiteChallenge(proofCookie, 120)) {
-    const proof = generateSiteProof();
-    response.cookies.set({
-      name: 'itemdb-proof',
-      value: proof.token,
-      maxAge: proof.expiresIn,
-      secure: true,
-      sameSite: 'lax',
-      httpOnly: false,
-    });
+
+  const localizedRoute = getAppRouterLocalizedRoute(request);
+  if (localizedRoute) {
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-itemdb-locale', localizedRoute.locale);
+
+    return finalizePageResponse(
+      NextResponse.rewrite(new URL(localizedRoute.appPath, request.url), {
+        request: {
+          headers: requestHeaders,
+        },
+      }),
+      startTime,
+      proofCookie
+    );
   }
 
-  // bypass cache on document pages
-  response.headers.set('Cache-Control', 'no-cache, must-revalidate');
+  finalizePageResponse(response, startTime, proofCookie);
 
-  if (!locale || locale === request.nextUrl.locale || !VALID_LOCALES.includes(locale))
-    return response;
+  if (!locale || locale === request.nextUrl.locale || !isLocale(locale)) return response;
 
   const redirectResponse = NextResponse.redirect(
     new URL(`/${locale}${request.nextUrl.pathname}${request.nextUrl.search}`, request.url)
@@ -301,6 +311,70 @@ const updateServerTime = (label: string, startTime: number, response: NextRespon
     ? `${serverTime}, ${label};dur=${value}`
     : `${label};dur=${value}`;
   response.headers.set('Server-Timing', newServerTime);
+};
+
+const finalizePageResponse = (response: NextResponse, startTime: number, proofCookie: string) => {
+  updateServerTime('regular-middleware', startTime, response);
+
+  if (!verifySiteChallenge(proofCookie, 120)) {
+    const proof = generateSiteProof();
+    response.cookies.set({
+      name: 'itemdb-proof',
+      value: proof.token,
+      maxAge: proof.expiresIn,
+      secure: true,
+      sameSite: 'lax',
+      httpOnly: false,
+    });
+  }
+
+  // bypass cache on document pages
+  response.headers.set('Cache-Control', 'no-cache, must-revalidate');
+
+  return response;
+};
+
+const getAppRouterLocalizedRoute = (request: NextRequest) => {
+  const pathLocale = getPathLocale(request.nextUrl.pathname);
+  const locale = pathLocale ?? getNextUrlLocale(request.nextUrl.locale);
+  if (!locale) return null;
+
+  const pathname = pathLocale
+    ? stripLocalePrefix(request.nextUrl.pathname, pathLocale)
+    : request.nextUrl.pathname;
+
+  const route = APP_ROUTER_LOCALIZED_ROUTES.find(({ localizedPath }) => pathname === localizedPath);
+  if (!route) return null;
+
+  return {
+    appPath: route.appPath,
+    locale,
+  };
+};
+
+const getPathLocale = (pathname: string): Locale | null => {
+  const firstSegment = pathname.split('/')[1];
+  if (!isLocale(firstSegment) || firstSegment === DEFAULT_LOCALE) return null;
+
+  return firstSegment;
+};
+
+const getNextUrlLocale = (locale: string): Locale | null => {
+  if (!isLocale(locale) || locale === DEFAULT_LOCALE) return null;
+
+  return locale;
+};
+
+const isLocale = (locale: string): locale is Locale => {
+  return VALID_LOCALES.includes(locale as Locale);
+};
+
+const stripLocalePrefix = (pathname: string, locale: Locale) => {
+  const prefix = `/${locale}`;
+  if (pathname === prefix) return '/';
+  if (pathname.startsWith(`${prefix}/`)) return pathname.slice(prefix.length);
+
+  return pathname;
 };
 
 const createForwardedContext = (request: NextRequest) => {

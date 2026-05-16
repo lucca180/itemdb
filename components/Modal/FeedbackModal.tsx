@@ -21,7 +21,7 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import NextLink from 'next/link';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/compat/router';
 import { useEffect, useState } from 'react';
 import { ItemData } from '../../types';
 import { useAuth } from '../../utils/auth';
@@ -72,7 +72,7 @@ const FeedbackModal = (props: FeedbackModalProps) => {
           userAgent: navigator.userAgent,
         }),
         type: 'feedback',
-        pageInfo: router.asPath,
+        pageInfo: router?.asPath || window.location.pathname,
       });
 
       setLoading(false);

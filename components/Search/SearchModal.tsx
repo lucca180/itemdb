@@ -36,7 +36,7 @@ import { GrSearchAdvanced } from 'react-icons/gr';
 import { IoSearchOutline } from 'react-icons/io5';
 import { MdArrowDownward, MdArrowUpward, MdOutlineKeyboardReturn } from 'react-icons/md';
 import queryString from 'query-string';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/compat/router';
 import { getFiltersDiff, parseFilters } from '@utils/parseFilters';
 import { useTranslations } from 'next-intl';
 
@@ -95,10 +95,10 @@ export const SearchModal = (props: SearchModalProps) => {
     [items.length, lists.length, shops.length, myLists.length].filter((x) => Boolean(x)).length > 1;
 
   useEffect(() => {
-    if (!router.isReady) return;
+    if (!router?.isReady) return;
     clearSearch();
     setSearch((router.query.s as string) ?? '');
-  }, [router.isReady, router.query.s, isOpen]);
+  }, [router?.isReady, router?.query.s, isOpen]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -133,7 +133,7 @@ export const SearchModal = (props: SearchModalProps) => {
               setLatest({ type: 'search', query: searchValue, index: 0, url: searchUrl });
               track('omni-search', !searchCards.length ? 'latest-enter-search' : 'enter-search');
 
-              router.push(searchUrl);
+              navigate(searchUrl);
               onClose();
               return current;
             }
@@ -159,7 +159,7 @@ export const SearchModal = (props: SearchModalProps) => {
 
             if (url) {
               setLatest(card);
-              router.push(url);
+              navigate(url);
               onClose();
             }
 
@@ -330,7 +330,10 @@ export const SearchModal = (props: SearchModalProps) => {
   const getSearchUrl = (searchQuery?: string) => {
     searchQuery = searchQuery || search;
 
-    const queryStrings = queryString.parse(router.asPath.split('?')[1] || '', {
+    const currentPath =
+      router?.asPath ??
+      (typeof window !== 'undefined' ? `${window.location.pathname}${window.location.search}` : '');
+    const queryStrings = queryString.parse(currentPath.split('?')[1] || '', {
       arrayFormat: 'bracket',
     });
 
@@ -350,6 +353,11 @@ export const SearchModal = (props: SearchModalProps) => {
     paramsString = paramsString ? '&' + paramsString : '';
 
     return `/search?s=${encodeURIComponent(query)}${paramsString}`;
+  };
+
+  const navigate = (url: string) => {
+    if (router) return router.push(url);
+    window.location.assign(url);
   };
 
   const track = (event: string, type?: string) => {

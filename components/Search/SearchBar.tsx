@@ -11,7 +11,7 @@ import {
 } from '@chakra-ui/react';
 import React from 'react';
 import SearchMenu from '../Menus/SearchMenu';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/compat/router';
 import { useTranslations } from 'next-intl';
 import { SearchModal } from './SearchModal';
 
@@ -23,12 +23,12 @@ export const SearchBar = () => {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  const isMac = /Mac/i.test(navigator ? navigator.userAgent : '');
+  const isMac = typeof navigator !== 'undefined' ? /Mac/i.test(navigator.userAgent) : false;
 
   React.useEffect(() => {
-    if (!router.isReady) return;
+    if (!router?.isReady) return;
     setSearch((router.query.s as string) ?? '');
-  }, [router.isReady, router.query.s]);
+  }, [router?.isReady, router?.query.s]);
 
   const handleClose = () => {
     onClose();

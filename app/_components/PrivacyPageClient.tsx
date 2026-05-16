@@ -1,11 +1,10 @@
+'use client';
+
 /* eslint-disable react/no-unescaped-entities */
 import { Flex, Heading, Text, Link, ListItem, UnorderedList } from '@chakra-ui/react';
-import HeaderCard from '../components/Card/HeaderCard';
-import Layout from '../components/Layout';
-import { ReactElement } from 'react';
-import { loadTranslation } from '@utils/load-translation';
+import HeaderCard from '../../components/Card/HeaderCard';
 
-const PrivacyPolicyPage = () => {
+export function PrivacyPageClient() {
   return (
     <>
       <HeaderCard
@@ -104,34 +103,4 @@ const PrivacyPolicyPage = () => {
       </Flex>
     </>
   );
-};
-
-export default PrivacyPolicyPage;
-
-export async function getStaticProps(context: any) {
-  return {
-    props: {
-      messages: await loadTranslation(context.locale, 'privacy'),
-      locale: context.locale,
-    },
-  };
 }
-
-PrivacyPolicyPage.getLayout = function getLayout(page: ReactElement) {
-  const canonical = 'https://itemdb.com.br/privacy';
-
-  return (
-    <Layout
-      SEO={{
-        title: 'Privacy Policy',
-        description:
-          'itemdb collects some personal data during its use. Here we will detail more about how we collect, process, and use your data.',
-        canonical: canonical,
-        noindex: true,
-      }}
-      mainColor="#7AB92Ac7"
-    >
-      {page}
-    </Layout>
-  );
-};

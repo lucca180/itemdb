@@ -1,6 +1,6 @@
 import { Flex, useToast, Text, Button } from '@chakra-ui/react';
 import { getCookies } from 'cookies-next';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/compat/router';
 import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 
@@ -17,7 +17,11 @@ const LanguageToast = (props: LanguageToastProps) => {
   const router = useRouter();
 
   const handleAction = async (action: 'dismiss' | 'change', prefLang: string) => {
-    const { pathname, asPath, query } = router;
+    const pathname = router?.pathname ?? window.location.pathname;
+    const asPath =
+      router?.asPath ??
+      `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    const query = router?.query ?? {};
 
     if (action === 'dismiss') {
       toast.update('language-toast', {
@@ -26,14 +30,15 @@ const LanguageToast = (props: LanguageToastProps) => {
         isClosable: true,
       });
 
-      prefLang = router.locale || 'en';
+      prefLang = router?.locale || getLocaleFromPath(asPath);
 
       await saveLang(prefLang);
     } else {
       toast.close('language-toast');
 
       await saveLang(prefLang);
-      router.push({ pathname, query }, asPath, { locale: prefLang });
+      if (router) router.push({ pathname, query }, asPath, { locale: prefLang });
+      else window.location.assign(getLocalizedPath(asPath, prefLang));
     }
   };
 
@@ -55,7 +60,8 @@ const LanguageToast = (props: LanguageToastProps) => {
       }
     }
 
-    if (!prefLang || router.locale === prefLang) return;
+    if (!prefLang || (router?.locale ?? getLocaleFromPath(window.location.pathname)) === prefLang)
+      return;
 
     toast({
       id: 'language-toast',
@@ -69,10 +75,10 @@ const LanguageToast = (props: LanguageToastProps) => {
   };
 
   useEffect(() => {
-    if (!router.isReady) return;
+    if (router && !router.isReady) return;
 
     checkLanguage();
-  }, [router.isReady]);
+  }, [router?.isReady]);
 
   return null;
 };
@@ -114,3 +120,17 @@ const ToastMsg = ({ prefLang, handleAction }: ToastMsgProps) => {
 };
 
 export default LanguageToast;
+
+function getLocaleFromPath(path: string) {
+  return path.startsWith('/pt/') || path === '/pt' ? 'pt' : 'en';
+}
+
+function stripLocalePrefix(path: string) {
+  return path.replace(/^\/pt(?=\/|$)/, '') || '/';
+}
+
+function getLocalizedPath(path: string, locale: string) {
+  const normalizedPath = stripLocalePrefix(path);
+  if (locale === 'pt') return `/pt${normalizedPath === '/' ? '' : normalizedPath}`;
+  return normalizedPath;
+}

@@ -1,0 +1,9 @@
+[mcp_servers.next-devtools]
+args = [
+    "-y",
+    "next-devtools-mcp@latest",
+]
+command = "npx"
+
+[mcp_servers.next-devtools.tools.nextjs_docs]
+approval_mode = "approve"

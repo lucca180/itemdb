@@ -1,3 +1,5 @@
+'use client';
+
 import { ReactNode, useEffect } from 'react';
 import {
   Box,
@@ -26,7 +28,7 @@ import logo_icon from '../public/logo_icon.svg';
 import mt_logo from '../public/magnetismo-logo.png';
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/compat/router';
 import { LoginModalProps } from './Modal/LoginModal';
 import { useAuth } from '../utils/auth';
 import { BsBoxArrowInRight, BsFillPersonFill } from 'react-icons/bs';
@@ -34,7 +36,7 @@ import { NextSeo, NextSeoProps } from 'next-seo';
 import { SearchBar } from './Search/SearchBar';
 import Color from 'color';
 import Brazil from '../public/icons/brazil.png';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { LanguageToastProps } from './Modal/LanguageToast';
 import axios from 'axios';
 import { setCookie } from 'cookies-next';
@@ -53,6 +55,7 @@ type Props = {
   children?: ReactNode;
   loading?: boolean;
   SEO?: NextSeoProps;
+  disableNextSeo?: boolean;
   mainColor?: string;
   fullWidth?: boolean;
 };
@@ -61,6 +64,14 @@ const Layout = (props: Props) => {
   useVersionCheck();
   const t = useTranslations();
   const router = useRouter();
+  const intlLocale = useLocale();
+  const isAppRouter = !router;
+  const currentLocale = router?.locale ?? intlLocale ?? 'en';
+  const currentPath =
+    router?.asPath ??
+    (typeof window !== 'undefined'
+      ? `${window.location.pathname}${window.location.search}${window.location.hash}`
+      : '/');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { user, signout, authLoading } = useAuth();
   const [isLargerThanMD] = useMediaQuery('(min-width: 48em)', {
@@ -72,14 +83,14 @@ const Layout = (props: Props) => {
   const rgb = color.rgb().round().array();
 
   useEffect(() => {
-    if (!router.isReady) return;
+    if (router && !router.isReady) return;
     checkLogin();
-  }, [router.isReady]);
+  }, [router?.isReady, currentPath, user]);
 
   const checkLogin = () => {
     if (!user) return;
 
-    if (!user.username && !['/', '/login'].includes(router.asPath)) router.push('/login');
+    if (!user.username && !['/', '/login'].includes(currentPath)) navigate('/login');
   };
 
   const saveLang = async (prefLang: string) => {
@@ -98,12 +109,19 @@ const Layout = (props: Props) => {
 
   const changeLang = async (prefLang: string) => {
     await saveLang(prefLang);
-    router.push(router.asPath, router.asPath, { locale: prefLang });
+    if (!isAppRouter && router) return router.push(currentPath, currentPath, { locale: prefLang });
+
+    window.location.assign(getLocalizedPath(currentPath, prefLang));
+  };
+
+  const navigate = (href: string) => {
+    if (!isAppRouter && router) return router.push(href);
+    window.location.assign(href);
   };
 
   return (
     <>
-      <NextSeo {...props.SEO} />
+      {!props.disableNextSeo && <NextSeo {...props.SEO} />}
       {isOpen && <LoginModal isOpen={isOpen} onClose={onClose} />}
       <LanguageToast saveLang={saveLang} />
       <Flex flexFlow="column" minH="100vh">
@@ -359,7 +377,7 @@ const Layout = (props: Props) => {
                   bg="whiteAlpha.200"
                   size="xs"
                   variant="filled"
-                  defaultValue={router.locale ?? 'en'}
+                  defaultValue={currentLocale}
                   flex="1"
                   minW="120px"
                   h="25px"
@@ -534,3 +552,13 @@ const ScriptStatus = () => {
     </>
   );
 };
+
+function stripLocalePrefix(path: string) {
+  return path.replace(/^\/pt(?=\/|$)/, '') || '/';
+}
+
+function getLocalizedPath(path: string, locale: string) {
+  const normalizedPath = stripLocalePrefix(path);
+  if (locale === 'pt') return `/pt${normalizedPath === '/' ? '' : normalizedPath}`;
+  return normalizedPath;
+}

@@ -1,4 +1,4 @@
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/compat/router';
 import type { HTMLAttributeAnchorTarget } from 'react';
 import React from 'react';
 import NextLink from 'next/link';
@@ -48,7 +48,9 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
             return window.open(href, '_blank');
           }
 
-          return await router.push(href);
+          if (router) return await router.push(href);
+          window.location.assign(href);
+          return;
         }
       },
       [router, href, isExternal, handleTracking, target]

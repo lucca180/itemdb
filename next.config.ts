@@ -2,6 +2,7 @@
 
 import { SentryBuildOptions, withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
+import createNextIntlPlugin from 'next-intl/plugin';
 
 const nextConfig: NextConfig = {
   generateBuildId: async () => {
@@ -170,4 +171,6 @@ const sentryWebpackPluginOptions: SentryBuildOptions = {
   widenClientFileUpload: true,
 };
 
-export default withSentryConfig(nextConfig, sentryWebpackPluginOptions);
+const withNextIntl = createNextIntlPlugin();
+
+export default withNextIntl(withSentryConfig(nextConfig, sentryWebpackPluginOptions));
