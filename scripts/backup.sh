@@ -40,6 +40,45 @@ LATEST_FILE="$BACKUP_DIR/latest_all"
 
 mkdir -p "$FULL_BACKUP_DIR" "$INCR_BACKUP_DIR"
 
+require_checkpoint() {
+  local backup_path="$1"
+
+  if [ -f "$backup_path/xtrabackup_checkpoints" ]; then
+    return 0
+  fi
+
+  local backup_tar="$backup_path.tar.gz"
+  if [ -f "$backup_tar" ]; then
+    echo "Backup metadata missing at $backup_path; restoring local copy from $backup_tar..."
+    tar -xzf "$backup_tar" -C "$(dirname "$backup_path")"
+  fi
+
+  if [ ! -f "$backup_path/xtrabackup_checkpoints" ]; then
+    echo "Cannot use $backup_path as an incremental base."
+    echo "Expected metadata file: $backup_path/xtrabackup_checkpoints"
+    echo "Create a new full backup with: $0 rotate && $0"
+    exit 1
+  fi
+}
+
+delete_old_backup_dir() {
+  local backup_path="$1"
+  local current_path="$2"
+
+  if [ "$backup_path" = "$current_path" ]; then
+    return 0
+  fi
+
+  case "$backup_path" in
+    "$FULL_BACKUP_DIR"/*|"$INCR_BACKUP_DIR"/*)
+      if [ -d "$backup_path" ]; then
+        echo "Deleting old local backup folder: $backup_path"
+        rm -rf "$backup_path"
+      fi
+      ;;
+  esac
+}
+
 # Function to upload to R2
 upload_to_s3() {
   local file="$1"
@@ -86,13 +125,13 @@ if [ ! -f "$LATEST_FILE" ]; then
   
   clean_r2_bucket
   upload_to_s3 "$FULL_PATH.tar.gz"
-  rm -rf "$FULL_PATH"
   echo "Full backup completed and uploaded."
   exit 0
 fi
 
 # Otherwise run incremental backup
 LATEST_PATH=$(cat "$LATEST_FILE")
+require_checkpoint "$LATEST_PATH"
 echo "Running incremental backup based on $LATEST_PATH..."
 INCR_PATH="$INCR_BACKUP_DIR/incr-$TODAY"
 
@@ -111,5 +150,5 @@ echo "$INCR_PATH" > "$LATEST_FILE"
 echo "Backup ended, compacting..."
 tar -vczf "$INCR_PATH.tar.gz" -C "$INCR_BACKUP_DIR" "incr-$TODAY"
 upload_to_s3 "$INCR_PATH.tar.gz"
-rm -rf "$INCR_PATH"
+delete_old_backup_dir "$LATEST_PATH" "$INCR_PATH"
 echo "Incremental backup completed and uploaded."
