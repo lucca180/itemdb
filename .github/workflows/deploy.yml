@@ -6,74 +6,125 @@ on:
       - master
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
-  run-tests:
-    name: Run tests
+  deploy:
+    name: Blue/green deploy
     runs-on: ubuntu-latest
     steps:
-      - name: Run tests
-        uses: appleboy/ssh-action@master
+      - name: Test inactive environment
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
-            cd /home/itemdb-green/
-            git fetch origin main
-            git reset --hard FETCH_HEAD
+            set -euo pipefail
+
+            ACTIVE_CONF="/etc/nginx/snippets/itemdb-active-backend.conf"
+            BRANCH="${{ github.ref_name }}"
+            COMMIT_SHA="${{ github.sha }}"
+
+            if grep -q "4000" "$ACTIVE_CONF"; then
+              TARGET_DIR="/home/itemdb-green"
+            else
+              TARGET_DIR="/home/itemdb"
+            fi
+
+            cd "$TARGET_DIR"
+            git fetch origin "$BRANCH"
+            git reset --hard "$COMMIT_SHA"
+
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
             yarn install --immutable
-            npx prisma migrate deploy
+
             if git log -1 --pretty=%B | grep -q '\[skip test\]'; then
               echo "Skipping tests"
             else
               yarn test
             fi
-  deploy-itemdb-green:
-    name: itemdb Green (backup) - Deploy
-    needs: run-tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: itemdb Green (backup) - Update
-        uses: appleboy/ssh-action@master
+      - name: Build inactive environment
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
-            cd /home/itemdb-green/
+            set -euo pipefail
+
+            ACTIVE_CONF="/etc/nginx/snippets/itemdb-active-backend.conf"
+            BRANCH="${{ github.ref_name }}"
+            COMMIT_SHA="${{ github.sha }}"
+
+            if grep -q "4000" "$ACTIVE_CONF"; then
+              TARGET_DIR="/home/itemdb-green"
+            else
+              TARGET_DIR="/home/itemdb"
+            fi
+
+            cd "$TARGET_DIR"
+            git fetch origin "$BRANCH"
+            git reset --hard "$COMMIT_SHA"
+
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
             export BUILD_ID=$(git rev-parse HEAD)
             yarn build-intl
-            yarn build-turbo || exit
+            yarn build
             yarn postbuild
-            pm2 stop ecosystem.config.js --only itemdb-green --update-env
-  deploy-itemdb-blue:
-    name: itemdb blue (main) - Deploy
-    needs: deploy-itemdb-green
-    runs-on: ubuntu-latest
-    steps:
-      - name: itemdb Blue (main) - Deploy
-        uses: appleboy/ssh-action@master
+      - name: Switch traffic
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
-            cd /home/itemdb/
-            git fetch origin main
-            git reset --hard FETCH_HEAD
+            set -euo pipefail
+
+            ACTIVE_CONF="/etc/nginx/snippets/itemdb-active-backend.conf"
+            PUBLIC_HEALTH_URL="${{ vars.PUBLIC_HEALTH_URL || 'https://itemdb.com.br/api/health' }}"
+            BRANCH="${{ github.ref_name }}"
+            COMMIT_SHA="${{ github.sha }}"
+
+            if grep -q "4000" "$ACTIVE_CONF"; then
+              TARGET_NAME="itemdb-green"
+              TARGET_DIR="/home/itemdb-green"
+              TARGET_PORT="4001"
+              PREVIOUS_PORT="4000"
+            else
+              TARGET_NAME="itemdb-web"
+              TARGET_DIR="/home/itemdb"
+              TARGET_PORT="4000"
+              PREVIOUS_PORT="4001"
+            fi
+
+            cd "$TARGET_DIR"
+            git fetch origin "$BRANCH"
+            git reset --hard "$COMMIT_SHA"
+
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            yarn install --immutable
-            pm2 stop ecosystem.config.js --only itemdb-web
-            pm2 start itemdb-green
             export BUILD_ID=$(git rev-parse HEAD)
-            yarn build-intl
-            yarn build || exit
-            yarn postbuild
-            pm2 stop itemdb-green
-            pm2 reload ecosystem.config.js --only itemdb-web --update-env
+
+            npx prisma migrate deploy
+
+            pm2 reload ecosystem.config.js --only "$TARGET_NAME" --update-env || \
+              pm2 start ecosystem.config.js --only "$TARGET_NAME" --update-env
+
+            curl --fail --retry 20 --retry-delay 2 "http://127.0.0.1:$TARGET_PORT/api/health"
+
+            echo "proxy_pass http://127.0.0.1:$TARGET_PORT;" | sudo tee "$ACTIVE_CONF" > /dev/null
+
+            sudo nginx -t
+            sudo systemctl reload nginx
+
+            if ! curl --fail --retry 10 --retry-delay 2 "$PUBLIC_HEALTH_URL"; then
+              echo "Public health check failed. Rolling back to port $PREVIOUS_PORT"
+              echo "proxy_pass http://127.0.0.1:$PREVIOUS_PORT;" | sudo tee "$ACTIVE_CONF" > /dev/null
+              sudo nginx -t
+              sudo systemctl reload nginx
+              exit 1
+            fi
