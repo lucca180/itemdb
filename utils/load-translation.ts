@@ -41,7 +41,7 @@ const _loadTranslation = async (locale: string, relativePath: string) => {
       },
     ];
 
-    if (!relativePath) return translations;
+    if (!relativePath || !treeshake) return translations;
 
     const result = {} as {
       [namespace: string]: { [key: string]: string };
@@ -74,6 +74,9 @@ const _loadTranslation = async (locale: string, relativePath: string) => {
     return result;
   } catch (e) {
     console.error('⚠️ Using default file for ', relativePath);
+
+    const translations = await import(`../translation/${locale}.json`).then((res) => res.default);
+
     return translations;
   }
 };
