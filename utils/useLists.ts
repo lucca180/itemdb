@@ -13,6 +13,11 @@ export const useLists = () => {
     !user ? null : `/api/v1/lists/${user.username}`,
     fetcher,
     {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+      revalidateIfStale: true,
+      revalidateOnMount: true,
+      dedupingInterval: 30000,
       focusThrottleInterval: 30000,
     }
   );
