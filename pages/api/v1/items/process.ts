@@ -18,6 +18,7 @@ import { ItemData } from '../../../../types';
 import { sendNewItemsHook } from '../../../../utils/discord-hooks';
 import { syncAllDynamicLists } from '../lists/sync';
 import { LogService } from '@services/ActionLogService';
+import { revalidateTag } from 'next/cache';
 
 type ValueOf<T> = T[keyof T];
 
@@ -136,6 +137,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     processOpenables(),
     newItems ? syncAllDynamicLists() : undefined,
   ]);
+
+  // revalidate the home page if we added new items
+  if (newItems) revalidateTag('home-latest-items', 'max');
 
   return res.json({ ...result, manualChecks });
 }

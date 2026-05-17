@@ -144,7 +144,7 @@ export const HomeCard = (props: HomeCardProps) => {
   );
 };
 
-const HomeItem = ({
+export const HomeItem = ({
   item,
   menuKey,
   utm_content,

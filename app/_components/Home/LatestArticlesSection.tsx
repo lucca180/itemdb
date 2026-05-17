@@ -4,14 +4,24 @@ import type { CSSProperties } from 'react';
 import type { WP_Article } from '@types';
 import { Flex, styled } from '@styled/jsx';
 import { wp_getLatestPosts } from '../../../pages/api/wp/posts';
+import { unstable_cache } from 'next/cache';
 
 type LatestArticlesSectionProps = {
   title: string;
   limit?: number;
 };
 
+const getCachedLatestItems = unstable_cache(
+  async (limit: number) => wp_getLatestPosts(limit).catch(() => []),
+  ['home-articles', 'latest-articles'],
+  {
+    tags: ['home-latest-articles'],
+    revalidate: 180,
+  }
+);
+
 export async function LatestArticlesSection({ title, limit = 5 }: LatestArticlesSectionProps) {
-  const articles = await wp_getLatestPosts(limit).catch(() => []);
+  const articles = await getCachedLatestItems(limit);
 
   return (
     <Flex flex={1} flexFlow="column">

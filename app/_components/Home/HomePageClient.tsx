@@ -1,11 +1,8 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import { Flex, Heading, SimpleGrid, Stack, Text } from '@chakra-ui/react';
-import type { AxiosRequestConfig } from 'axios';
-import axios from 'axios';
 import { useTranslations } from 'next-intl';
-import useSWR from 'swr';
 import type { ItemData, UserList } from '@types';
 import { HomeCard } from '@components/Card/HomeCard';
 import { HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
@@ -18,10 +15,10 @@ export type HomePageClientProps = {
   latestPricesSection: ReactNode;
   latestArticlesSection: ReactNode;
   statsSection: ReactNode;
-  latestItems: ItemData[];
+  latestItemsCard: ReactNode;
   latestWearable: ItemData[];
-  trendingItems: ItemData[];
-  latestNcMall: ItemData[];
+  trendingItemsCard: ReactNode;
+  latestNcMallCard: ReactNode;
   leavingNcMall: ItemData[];
   trendingLists: UserList[];
   eventLists: UserList[];
@@ -30,9 +27,6 @@ export type HomePageClientProps = {
     paidItems: number;
   } | null;
 };
-
-const fetcher = <T,>(url: string, config?: AxiosRequestConfig): Promise<T> =>
-  axios.get<T>(url, config).then((res) => res.data);
 
 export function HomePageClient(props: HomePageClientProps) {
   const t = useTranslations();
@@ -43,21 +37,14 @@ export function HomePageClient(props: HomePageClientProps) {
     latestArticlesSection,
     statsSection,
     latestWearable,
-    latestNcMall,
-    trendingItems,
+    latestItemsCard,
+    latestNcMallCard,
+    trendingItemsCard,
     leavingNcMall,
     trendingLists,
     newItemCount,
     eventLists,
   } = props;
-
-  const { data: latestItems } = useSWR<ItemData[]>(
-    '/api/v1/items?limit=20',
-    (url) => fetcher(url),
-    {
-      fallbackData: props.latestItems,
-    }
-  );
 
   return (
     <>
@@ -144,34 +131,9 @@ export function HomePageClient(props: HomePageClientProps) {
           </Flex>
         )}
         <SimpleGrid columns={{ base: 1, lg: 3 }} spacing={{ base: 4, xl: 8 }} justifyItems="center">
-          {latestItems && (
-            <HomeCard
-              utm_content="latest-items"
-              href="/search?s=&sortBy=added&sortDir=desc"
-              color="#e7db7a"
-              image="https://images.neopets.com/prehistoric/outskirts/fearslayer_9h4v3cfj.png"
-              items={latestItems}
-              title={t('HomePage.latest-discoveries')}
-            />
-          )}
-          {trendingItems && (
-            <HomeCard
-              utm_content="trending-items"
-              color="#AE445A"
-              title={t('HomePage.trending-items')}
-              image="https://images.neopets.com/themes/h5/common/communitycentral/images/icon-neoboards.png"
-              items={trendingItems}
-            />
-          )}
-          {latestNcMall && (
-            <HomeCard
-              utm_content="latest-nc-mall"
-              color="#BED754"
-              title={t('HomePage.new-in-nc-mall')}
-              image="https://images.neopets.com/neggfest/y19/mall/nc.png"
-              items={latestNcMall}
-            />
-          )}
+          <Fragment key="latest-items-card">{latestItemsCard}</Fragment>
+          <Fragment key="trending-items-card">{trendingItemsCard}</Fragment>
+          <Fragment key="latest-nc-mall-card">{latestNcMallCard}</Fragment>
         </SimpleGrid>
         <HorizontalHomeCard
           color="#4A5568"

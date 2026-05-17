@@ -7,16 +7,16 @@ import Layout from '@components/Layout';
 import { getItemDbCanonical, normalizeItemDbLocale } from '@utils/appPage';
 import { getDefaultSEO } from '@utils/SEO';
 import { loadTranslation } from '@utils/load-translation';
-import {
-  getTrendingCatLists,
-  getTrendingItems,
-  getTrendingLists,
-} from '@pages/api/v1/beta/trending';
+import { getTrendingCatLists, getTrendingLists } from '@pages/api/v1/beta/trending';
 import { getNewItemsInfo } from '@pages/api/v1/beta/new-items';
 import { getLatestItems } from '@pages/api/v1/items/index';
-import { getNCMallItemsData } from '@pages/api/v1/mall/index';
 import { HomeHero } from './_components/Home/HomeHero';
 import { HomePageClient } from './_components/Home/HomePageClient';
+import {
+  LatestItemsHomeCard,
+  TrendingItemsHomeCard,
+  LatestNcMallHomeCard,
+} from './_components/Home/HomeServerCards';
 import { LatestArticlesSection } from './_components/Home/LatestArticlesSection';
 import { LatestPricesSection } from './_components/Home/LatestPricesSection';
 import StatsCard, { StatsCardLoading } from './_components/Home/StatsCard';
@@ -33,34 +33,22 @@ async function getHomePageDescription(locale: string) {
 }
 
 async function getHomePageData() {
-  const [
-    latestItems,
-    latestWearable,
-    trendingItems,
-    latestNcMall,
-    leavingNcMall,
-    trendingLists,
-    newItemCount,
-    eventLists,
-  ] = await Promise.all([
-    getLatestItems(20, true).catch(() => []),
-    getLatestItems(18, true, true).catch(() => []),
-    getTrendingItems(20).catch(() => []),
-    getNCMallItemsData(20).catch(() => []),
-    getNCMallItemsData(18, true).catch(() => []),
-    getTrendingLists(3, ['The Void Within']).catch(() => []),
-    getNewItemsInfo(7).catch(() => null),
-    getTrendingCatLists('The Void Within', 3).catch(() => []),
-  ]);
+  const [latestWearable, leavingNcMall, trendingLists, newItemCount, eventLists] =
+    await Promise.all([
+      getLatestItems(18, true, true).catch(() => []),
+      import('@pages/api/v1/mall/index').then(({ getNCMallItemsData }) =>
+        getNCMallItemsData(18, true).catch(() => [])
+      ),
+      getTrendingLists(3, ['The Void Within']).catch(() => []),
+      getNewItemsInfo(7).catch(() => null),
+      getTrendingCatLists('The Void Within', 3).catch(() => []),
+    ]);
 
   return {
     hero: null,
     latestArticlesSection: null,
     statsSection: null,
-    latestItems,
     latestWearable,
-    trendingItems,
-    latestNcMall,
     leavingNcMall,
     trendingLists,
     newItemCount,
@@ -125,6 +113,9 @@ export default async function HomePage() {
             safetyLinkLabel={t('HomePage.is-it-safe')}
           />
         }
+        latestItemsCard={<LatestItemsHomeCard />}
+        trendingItemsCard={<TrendingItemsHomeCard />}
+        latestNcMallCard={<LatestNcMallHomeCard />}
         latestPricesSection={<LatestPricesSection />}
         latestArticlesSection={<LatestArticlesSection title={t('HomePage.latest-articles')} />}
         statsSection={
