@@ -20,6 +20,8 @@ import {
 import { LatestArticlesSection } from './_components/Home/Sections/LatestArticlesSection';
 import { LatestPricesSection } from './_components/Home/Sections/LatestPricesSection';
 import StatsCard, { StatsCardLoading } from './_components/Home/Cards/StatsCard';
+import { getNCMallItemsData } from '@pages/api/v1/mall';
+import { unstable_cache } from 'next/cache';
 
 export const revalidate = 180;
 
@@ -32,16 +34,59 @@ async function getHomePageDescription(locale: string) {
   return t('HomePage.seo-description');
 }
 
+const cachedTrendingLists = unstable_cache(
+  () => getTrendingLists(3, ['The Void Within']).catch(() => []),
+  ['home-page-trending-lists'],
+  {
+    tags: ['home-trending-lists'],
+    revalidate: 3600,
+  }
+);
+
+const cachedTrendingCatLists = unstable_cache(
+  () => getTrendingCatLists('The Void Within', 3).catch(() => []),
+  ['home-page-trending-cat-lists'],
+  {
+    tags: ['home-trending-cat-lists'],
+    revalidate: 3600,
+  }
+);
+
+const cachedNewItemCount = unstable_cache(
+  () => getNewItemsInfo(7).catch(() => null),
+  ['home-page-new-item-count'],
+  {
+    tags: ['home-new-item-count'],
+    revalidate: 300,
+  }
+);
+
+const cachedLatestWearableItems = unstable_cache(
+  () => getLatestItems(18, true, true).catch(() => []),
+  ['home-page-latest-wearable-items'],
+  {
+    tags: ['home-latest-wearable-items'],
+    revalidate: 300,
+  }
+);
+
+const cachedLatestNcMallItems = unstable_cache(
+  () => getNCMallItemsData(18, true).catch(() => []),
+  ['home-page-latest-nc-mall-items'],
+  {
+    tags: ['home-latest-nc-mall-items'],
+    revalidate: 600,
+  }
+);
+
 async function getHomePageData() {
   const [latestWearable, leavingNcMall, trendingLists, newItemCount, eventLists] =
     await Promise.all([
-      getLatestItems(18, true, true).catch(() => []),
-      import('@pages/api/v1/mall/index').then(({ getNCMallItemsData }) =>
-        getNCMallItemsData(18, true).catch(() => [])
-      ),
-      getTrendingLists(3, ['The Void Within']).catch(() => []),
-      getNewItemsInfo(7).catch(() => null),
-      getTrendingCatLists('The Void Within', 3).catch(() => []),
+      cachedLatestWearableItems(),
+      cachedLatestNcMallItems(),
+      cachedTrendingLists(),
+      cachedNewItemCount(),
+      cachedTrendingCatLists(),
     ]);
 
   return {
