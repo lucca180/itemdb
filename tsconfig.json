@@ -51,6 +51,12 @@
       ],
       "@styled/*": [
         "./styled-system/*"
+      ],
+      "@pages/*": [
+        "./pages/*"
+      ],
+      "@app/*": [
+        "./app/*"
       ]
     },
     "typeRoots": [

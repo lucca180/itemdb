@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Color from 'color';
+import { Suspense } from 'react';
 import { createTranslator } from 'next-intl';
 import { getLocale } from 'next-intl/server';
 import Layout from '@components/Layout';
@@ -13,6 +14,7 @@ import {
   type LatestPricesRes,
 } from './_components/Home/HomePageClient';
 import { LatestArticlesSection } from './_components/Home/LatestArticlesSection';
+import StatsCard, { StatsCardLoading } from './_components/Home/StatsCard';
 import {
   getTrendingCatLists,
   getTrendingItems,
@@ -67,6 +69,7 @@ async function getHomePageData(): Promise<HomePageClientProps> {
   return {
     hero: null,
     latestArticlesSection: null,
+    statsSection: null,
     latestItems,
     latestWearable,
     trendingItems,
@@ -137,6 +140,21 @@ export default async function HomePage() {
           />
         }
         latestArticlesSection={<LatestArticlesSection title={t('HomePage.latest-articles')} />}
+        statsSection={
+          <Suspense
+            fallback={
+              <StatsCardLoading
+                itemsInDbLabel={t('BetaStats.items-in-db')}
+                completeItemsLabel={t('BetaStats.complete-items')}
+                processQueueLabel={t('BetaStats.process-queue')}
+                tradePricingQueueLabel={t('BetaStats.trade-pricing-queue')}
+                feedbackVotingQueueLabel={t('BetaStats.feedback-voting-queue')}
+              />
+            }
+          >
+            <StatsCard />
+          </Suspense>
+        }
       />
     </Layout>
   );

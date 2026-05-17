@@ -8,7 +8,6 @@ import { useFormatter, useTranslations } from 'next-intl';
 import useSWR from 'swr';
 import type { ItemData, UserList } from '../../../types';
 import { HomeCard } from '@components/Card/HomeCard';
-import BetaStatsCard from '@components/Beta/BetaStatsCard';
 import { HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
 import { TVWHomeCard } from '@components/Card/EventCard';
 import ItemCard from '@components/Items/ItemCard';
@@ -23,6 +22,7 @@ export type LatestPricesRes = {
 export type HomePageClientProps = {
   hero: ReactNode;
   latestArticlesSection: ReactNode;
+  statsSection: ReactNode;
   latestItems: ItemData[];
   latestPrices: LatestPricesRes;
   latestWearable: ItemData[];
@@ -47,6 +47,7 @@ export function HomePageClient(props: HomePageClientProps) {
   const {
     hero,
     latestArticlesSection,
+    statsSection,
     latestWearable,
     latestNcMall,
     trendingItems,
@@ -256,7 +257,7 @@ export function HomePageClient(props: HomePageClientProps) {
             <Heading size="md" mb={{ base: 5, lg: 0 }}>
               {t('HomePage.stats')}
             </Heading>
-            <BetaStatsCard />
+            {statsSection}
           </Flex>
           {latestArticlesSection}
         </Stack>

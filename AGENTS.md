@@ -28,6 +28,9 @@
 - `@translations` -> `/translations`
 - `@services` -> `/services`
 - `@assets` -> `/public`
+- `@styled` -> `/styled-system`
+- `@pages` -> `/pages`
+- `@app` -> `/app`
 
 ## App router migration guidelines
 

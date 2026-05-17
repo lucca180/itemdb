@@ -5,6 +5,14 @@ import { CheckAuth } from '../../../../utils/googleCloud';
 import { User } from '../../../../types';
 import { subDays } from 'date-fns';
 
+export type BetaStats = {
+  itemToProcess: number;
+  itemsMissingInfo: number;
+  itemsTotal: number;
+  tradeQueue: number;
+  feedbackVoting: number;
+};
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
 
@@ -17,10 +25,16 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
+  const stats = await getBetaStats(req.cookies.session);
+
+  return res.status(200).json(stats);
+}
+
+export async function getBetaStats(sessionOverride?: string): Promise<BetaStats> {
   let user: User | null = null;
 
   try {
-    user = (await CheckAuth(req)).user;
+    user = (await CheckAuth(null, undefined, sessionOverride)).user;
   } catch (e) {}
 
   const itemProcess = prisma.itemProcess.count({
@@ -88,11 +102,11 @@ async function GET(req: NextApiRequest, res: NextApiResponse<any>) {
     feedbackVoting.catch(() => 0),
   ]);
 
-  return res.status(200).json({
+  return {
     itemToProcess: itemToProcessCount,
     itemsMissingInfo: itemsMissingInfoCount,
     itemsTotal: itemsTotalCount,
     tradeQueue: Number(tradeQueueCount[0].count.toString()),
     feedbackVoting: feedbackVotingCount,
-  });
+  };
 }
