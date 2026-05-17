@@ -218,11 +218,11 @@ const ItemCtxMenu = (props: Props) => {
         preventHideOnResize
         appendTo="body"
       >
-        {props.onSelect ? (
-          <CtxMenuItem onClick={onSelect}>{t('Layout.select-item')}</CtxMenuItem>
-        ) : (
-          <></>
-        )}
+        <Box display={props.onSelect ? undefined : 'none'}>
+          {props.onSelect && (
+            <CtxMenuItem onClick={onSelect}>{t('Layout.select-item')}</CtxMenuItem>
+          )}
+        </Box>
         <CtxMenuItem onClick={handleOpenInNewTab}>{t('Layout.open-in-a-new-tab')}</CtxMenuItem>
         <CtxSubmenu title={t('Layout.add-item-to-list')}>
           <PortalManager zIndex={CONTEXT_MENU_TOOLTIP_Z_INDEX}>

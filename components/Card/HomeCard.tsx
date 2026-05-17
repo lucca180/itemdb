@@ -15,7 +15,7 @@ import ItemCard, { ItemCardBadge, ItemImage } from '../Items/ItemCard';
 import ItemCtxMenu, { CtxTrigger } from '../Menus/ItemCtxMenu';
 import MainLink from '../Utils/MainLink';
 import { GoChevronLeft, GoChevronRight } from 'react-icons/go';
-import { useState } from 'react';
+import { useState, type MouseEvent } from 'react';
 import { useTranslations } from 'next-intl';
 
 type HomeCardProps = {
@@ -156,16 +156,29 @@ export const HomeItem = ({
   hidden?: boolean;
 }) => {
   const [isMobile] = useMediaQuery('(hover: none)');
+  const [isContextMenuLoaded, setIsContextMenuLoaded] = useState(false);
+  const loadContextMenu = () => {
+    if (!isMobile) setIsContextMenuLoaded(true);
+  };
+  const loadContextMenuOnRightClick = (event: MouseEvent) => {
+    if (event.button === 2) loadContextMenu();
+  };
 
   return (
     <>
-      <ItemCtxMenu item={item} menuId={menuKey} />
+      {isContextMenuLoaded && <ItemCtxMenu item={item} menuId={menuKey} />}
       <CtxTrigger
         id={menuKey}
         disable={isMobile ? true : undefined}
         //@ts-ignore
         disableWhileShiftPressed
         display={hidden ? 'none' : undefined}
+        attributes={{
+          onPointerEnter: loadContextMenu,
+          onFocus: loadContextMenu,
+          onMouseDownCapture: loadContextMenuOnRightClick,
+          onContextMenuCapture: loadContextMenu,
+        }}
       >
         <Link
           as={MainLink}

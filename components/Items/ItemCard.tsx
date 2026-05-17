@@ -47,6 +47,7 @@ const ItemCardBase = (props: ItemProps) => {
     uniqueID,
   } = props;
   const [isMobile] = useMediaQuery('(hover: none)');
+  const [isContextMenuLoaded, setIsContextMenuLoaded] = useState(false);
   const format = useFormatter();
 
   const color = item?.color.rgb;
@@ -76,21 +77,35 @@ const ItemCardBase = (props: ItemProps) => {
     );
 
   const profit = getRestockProfit(item);
+  const loadContextMenu = () => {
+    if (!isMobile) setIsContextMenuLoaded(true);
+  };
+  const loadContextMenuOnRightClick = (event: React.MouseEvent) => {
+    if (event.button === 2) loadContextMenu();
+  };
 
   return (
     <>
-      <ItemCtxMenu
-        menuId={item.internal_id.toString() + '-' + uniqueID}
-        item={item}
-        onSelect={props.onSelect}
-        onListAction={onListAction}
-      />
+      {isContextMenuLoaded && (
+        <ItemCtxMenu
+          menuId={item.internal_id.toString() + '-' + uniqueID}
+          item={item}
+          onSelect={props.onSelect}
+          onListAction={onListAction}
+        />
+      )}
       <CtxTrigger
         id={item.internal_id.toString() + '-' + uniqueID}
         //@ts-ignore
         disableWhileShiftPressed
         disable={isMobile ? true : undefined}
         sx={props.style}
+        attributes={{
+          onPointerEnter: loadContextMenu,
+          onFocus: loadContextMenu,
+          onMouseDownCapture: loadContextMenuOnRightClick,
+          onContextMenuCapture: loadContextMenu,
+        }}
       >
         <Link
           as={disableLink ? undefined : MainLink}
