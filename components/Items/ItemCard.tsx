@@ -1,3 +1,4 @@
+'use client';
 import { Badge, Box, Icon, Skeleton, Text, Link, Tooltip, useMediaQuery } from '@chakra-ui/react';
 import React, { useState } from 'react';
 import Image from 'next/image';

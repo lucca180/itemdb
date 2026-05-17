@@ -14,7 +14,7 @@ export default [
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       'react-hooks/exhaustive-deps': 'off',
       'react/no-children-prop': 'off',
-      'react-hooks/preserve-manual-memoization': 'warn',
+      // 'react-hooks/preserve-manual-memoization': 'warn',
       'prefer-const': [
         'error',
         {
@@ -44,6 +44,7 @@ export default [
       'public/**',
       'eslint.config.mjs',
       'pages/api/_dev',
+      'styled-system/**',
     ],
   },
 ];

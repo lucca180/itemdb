@@ -4,27 +4,21 @@ import type { ReactNode } from 'react';
 import { Flex, Heading, SimpleGrid, Stack, Text } from '@chakra-ui/react';
 import type { AxiosRequestConfig } from 'axios';
 import axios from 'axios';
-import { useFormatter, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import useSWR from 'swr';
-import type { ItemData, UserList } from '../../../types';
+import type { ItemData, UserList } from '@types';
 import { HomeCard } from '@components/Card/HomeCard';
 import { HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
 import { TVWHomeCard } from '@components/Card/EventCard';
-import ItemCard from '@components/Items/ItemCard';
 import Image from '@components/Utils/Image';
 import UserListCard from '@components/UserLists/ListCard';
 
-export type LatestPricesRes = {
-  count: number | null;
-  items: ItemData[];
-};
-
 export type HomePageClientProps = {
   hero: ReactNode;
+  latestPricesSection: ReactNode;
   latestArticlesSection: ReactNode;
   statsSection: ReactNode;
   latestItems: ItemData[];
-  latestPrices: LatestPricesRes;
   latestWearable: ItemData[];
   trendingItems: ItemData[];
   latestNcMall: ItemData[];
@@ -42,10 +36,10 @@ const fetcher = <T,>(url: string, config?: AxiosRequestConfig): Promise<T> =>
 
 export function HomePageClient(props: HomePageClientProps) {
   const t = useTranslations();
-  const formatter = useFormatter();
 
   const {
     hero,
+    latestPricesSection,
     latestArticlesSection,
     statsSection,
     latestWearable,
@@ -54,7 +48,6 @@ export function HomePageClient(props: HomePageClientProps) {
     leavingNcMall,
     trendingLists,
     newItemCount,
-    latestPrices,
     eventLists,
   } = props;
 
@@ -70,36 +63,7 @@ export function HomePageClient(props: HomePageClientProps) {
     <>
       {hero}
       <Flex mt={8} gap={8} flexFlow="column">
-        <HorizontalHomeCard
-          color="#2e333b"
-          h={70}
-          w={70}
-          image="https://images.neopets.com/quests/images/neopoint-bag.png"
-          title={t('HomePage.latest-prices')}
-          isPriority
-        >
-          <Flex flexWrap="wrap" gap={4} justifyContent="center">
-            {latestPrices &&
-              latestPrices.items.map((item) => (
-                <ItemCard
-                  uniqueID="latest-prices"
-                  item={item}
-                  key={item.internal_id}
-                  utm_content="latest-prices"
-                />
-              ))}
-            {!latestPrices &&
-              [...Array(16)].map((_, i) => <ItemCard uniqueID="latest-prices" key={i} />)}
-          </Flex>
-          {latestPrices?.count && (
-            <Text textAlign="right" mt={4} fontSize="xs" color="whiteAlpha.400">
-              {t('HomePage.x-prices-updated-last-y', {
-                count: formatter.number(latestPrices.count),
-                time: '48h',
-              })}
-            </Text>
-          )}
-        </HorizontalHomeCard>
+        {latestPricesSection}
         {eventLists?.length > 0 && <TVWHomeCard lists={eventLists} />}
         {newItemCount && (
           <Flex gap={4} flexWrap="wrap" flexFlow={{ base: 'column', lg: 'row' }}>

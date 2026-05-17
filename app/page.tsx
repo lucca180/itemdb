@@ -7,23 +7,19 @@ import Layout from '@components/Layout';
 import { getItemDbCanonical, normalizeItemDbLocale } from '@utils/appPage';
 import { getDefaultSEO } from '@utils/SEO';
 import { loadTranslation } from '@utils/load-translation';
-import { HomeHero } from './_components/Home/HomeHero';
-import {
-  HomePageClient,
-  type HomePageClientProps,
-  type LatestPricesRes,
-} from './_components/Home/HomePageClient';
-import { LatestArticlesSection } from './_components/Home/LatestArticlesSection';
-import StatsCard, { StatsCardLoading } from './_components/Home/StatsCard';
 import {
   getTrendingCatLists,
   getTrendingItems,
   getTrendingLists,
-} from '../pages/api/v1/beta/trending';
-import { getNewItemsInfo } from '../pages/api/v1/beta/new-items';
-import { getLatestItems } from '../pages/api/v1/items/index';
-import { getNCMallItemsData } from '../pages/api/v1/mall/index';
-import { getLatestPricedItems } from '../pages/api/v1/prices/index';
+} from '@pages/api/v1/beta/trending';
+import { getNewItemsInfo } from '@pages/api/v1/beta/new-items';
+import { getLatestItems } from '@pages/api/v1/items/index';
+import { getNCMallItemsData } from '@pages/api/v1/mall/index';
+import { HomeHero } from './_components/Home/HomeHero';
+import { HomePageClient } from './_components/Home/HomePageClient';
+import { LatestArticlesSection } from './_components/Home/LatestArticlesSection';
+import { LatestPricesSection } from './_components/Home/LatestPricesSection';
+import StatsCard, { StatsCardLoading } from './_components/Home/StatsCard';
 
 export const revalidate = 180;
 
@@ -36,20 +32,12 @@ async function getHomePageDescription(locale: string) {
   return t('HomePage.seo-description');
 }
 
-async function getHomePageData(): Promise<HomePageClientProps> {
-  const latestPricesPromise: Promise<LatestPricesRes> = getLatestPricedItems(16, true)
-    .then((result) => result as LatestPricesRes)
-    .catch(() => ({
-      items: [],
-      count: null,
-    }));
-
+async function getHomePageData() {
   const [
     latestItems,
     latestWearable,
     trendingItems,
     latestNcMall,
-    latestPrices,
     leavingNcMall,
     trendingLists,
     newItemCount,
@@ -59,7 +47,6 @@ async function getHomePageData(): Promise<HomePageClientProps> {
     getLatestItems(18, true, true).catch(() => []),
     getTrendingItems(20).catch(() => []),
     getNCMallItemsData(20).catch(() => []),
-    latestPricesPromise,
     getNCMallItemsData(18, true).catch(() => []),
     getTrendingLists(3, ['The Void Within']).catch(() => []),
     getNewItemsInfo(7).catch(() => null),
@@ -74,7 +61,6 @@ async function getHomePageData(): Promise<HomePageClientProps> {
     latestWearable,
     trendingItems,
     latestNcMall,
-    latestPrices,
     leavingNcMall,
     trendingLists,
     newItemCount,
@@ -126,12 +112,12 @@ export default async function HomePage() {
   const locale = await getLocale();
   const messages = await loadTranslation(locale, 'page', true);
   const t = createTranslator({ messages, locale });
-  const data = await getHomePageData();
+  const homePageClientData = await getHomePageData();
 
   return (
     <Layout disableNextSeo mainColor={mainColor}>
       <HomePageClient
-        {...data}
+        {...homePageClientData}
         hero={
           <HomeHero
             title={t('HomePage.title')}
@@ -139,6 +125,7 @@ export default async function HomePage() {
             safetyLinkLabel={t('HomePage.is-it-safe')}
           />
         }
+        latestPricesSection={<LatestPricesSection />}
         latestArticlesSection={<LatestArticlesSection title={t('HomePage.latest-articles')} />}
         statsSection={
           <Suspense
