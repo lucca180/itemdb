@@ -3,7 +3,7 @@ import { createListSlug, getImagePalette } from '..';
 import { ListItemInfo } from '../../../../../../types';
 import { CheckAuth } from '../../../../../../utils/googleCloud';
 import prisma from '../../../../../../utils/prisma';
-import { SeriesType } from '@prisma/generated/client';
+import { Prisma, SeriesType } from '@prisma/generated/client';
 import { UTCDate } from '@date-fns/utc';
 import { slugify } from '@utils/utils';
 import { ListService } from '@services/ListService';
@@ -314,22 +314,19 @@ const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
   if (!username || !list_id || Array.isArray(username) || Array.isArray(list_id))
     return res.status(400).json({ error: 'Bad Request' });
 
-  const items = req.body.items as {
-    item_iid: string;
-    capValue: string | undefined;
-    amount: string | undefined;
-    imported: boolean;
-  }[];
+  const items = req.body.items as PutListItemInput[];
 
   if (!items) return res.status(400).json({ error: 'Bad Request' });
 
   try {
+    const parsedListId = Number(list_id);
+
     const { user } = await CheckAuth(req);
     if (!user || user.banned) return res.status(401).json({ error: 'Unauthorized' });
 
     const list = await prisma.userList.findUnique({
       where: {
-        internal_id: parseInt(list_id),
+        internal_id: parsedListId,
       },
       include: {
         items: alertDuplicates === 'true',
@@ -342,55 +339,28 @@ const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
       return res.status(403).json({ error: 'Forbidden' });
 
     if (alertDuplicates === 'true') {
-      const itemIids = new Set(items.map((item) => parseInt(item.item_iid)));
+      const itemIids = new Set(items.map((item) => Number(item.item_iid)));
       const hasDuplicates = list.items.filter((item) => itemIids.has(item.item_iid));
 
       if (hasDuplicates.length) {
         return res.status(400).json({ error: 'Duplicate Items', data: hasDuplicates });
       }
     }
-
-    const transactions = [];
-
-    for (const item of items) {
-      const { item_iid, capValue, amount, imported } = item;
-
-      const listItem = prisma.listItems.upsert({
-        where: {
-          list_id_item_iid: {
-            list_id: parseInt(list_id),
-            item_iid: parseInt(item_iid),
-          },
-        },
-        create: {
-          list_id: parseInt(list_id),
-          item_iid: parseInt(item_iid),
-          capValue: capValue ? parseInt(capValue) : undefined,
-          amount: amount ? parseInt(amount) : undefined,
-          imported: imported,
-        },
-        update: {
-          list_id: parseInt(list_id),
-          item_iid: parseInt(item_iid),
-          capValue: capValue ? parseInt(capValue) : undefined,
-          amount: amount ? parseInt(amount) : undefined,
-          imported: imported,
-        },
-      });
-
-      transactions.push(listItem);
-    }
+    const bulkListItemsUpsertQuery = buildBulkListItemsUpsertQuery(parsedListId, items);
 
     const updateList = prisma.userList.update({
       where: {
-        internal_id: parseInt(list_id),
+        internal_id: parsedListId,
       },
       data: {
         updatedAt: new Date(),
       },
     });
 
-    const result = await prisma.$transaction([...transactions, updateList]);
+    const result = await prisma.$transaction([
+      ...(bulkListItemsUpsertQuery ? [prisma.$executeRaw(bulkListItemsUpsertQuery)] : []),
+      updateList,
+    ]);
 
     return res.status(200).json({ success: true, message: result });
   } catch (e: any) {
@@ -470,4 +440,43 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
     console.error(e);
     res.status(500).json({ error: 'Internal Server Error' });
   }
+};
+
+type PutListItemInput = {
+  item_iid: string;
+  capValue: string | undefined;
+  amount: string | undefined;
+  imported: boolean;
+};
+
+const buildBulkListItemsUpsertQuery = (listId: number, items: PutListItemInput[]) => {
+  if (items.length === 0) return null;
+
+  const values = items.map((item) => {
+    return Prisma.sql`(
+      ${listId},
+      ${Number(item.item_iid)},
+      ${item.capValue ? Number(item.capValue) : 0},
+      ${item.amount ? Number(item.amount) : 1},
+      ${item.imported ?? false},
+      NOW()
+    )`;
+  });
+
+  return Prisma.sql`
+    INSERT INTO ListItems (
+      list_id,
+      item_iid,
+      capValue,
+      amount,
+      imported,
+      updatedAt
+    )
+    VALUES ${Prisma.join(values)}
+    ON DUPLICATE KEY UPDATE
+      capValue = COALESCE(VALUES(capValue), capValue),
+      amount = COALESCE(VALUES(amount), amount),
+      imported = VALUES(imported),
+      updatedAt = NOW()
+  `;
 };
