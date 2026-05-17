@@ -1,6 +1,6 @@
 import { Items as Item, ItemProcess, Items, ItemColor, Prisma } from '@prisma/generated/client';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import prisma from '../../../../utils/prisma';
+import prisma from '@utils/prisma';
 import { Vibrant } from 'node-vibrant/node';
 import {
   allBooksCats,
@@ -8,17 +8,17 @@ import {
   allPlayCats,
   categoryToShopID,
   genItemKey,
+  revalidatePath,
   slugify,
-} from '../../../../utils/utils';
+} from '@utils/utils';
 import Color from 'color';
-import { detectWearable } from '../../../../utils/detectWearable';
+import { detectWearable } from '@utils/detectWearable';
 import { processOpenableItems } from './open';
-import { CheckAuth } from '../../../../utils/googleCloud';
-import { ItemData } from '../../../../types';
-import { sendNewItemsHook } from '../../../../utils/discord-hooks';
+import { CheckAuth } from '@utils/googleCloud';
+import { ItemData } from '@types';
+import { sendNewItemsHook } from '@utils/discord-hooks';
 import { syncAllDynamicLists } from '../lists/sync';
 import { LogService } from '@services/ActionLogService';
-import { revalidateTag } from 'next/cache';
 
 type ValueOf<T> = T[keyof T];
 
@@ -139,7 +139,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   ]);
 
   // revalidate the home page if we added new items
-  if (newItems) revalidateTag('home-latest-items', 'max');
+  if (newItems) await revalidatePath('/', res);
 
   return res.json({ ...result, manualChecks });
 }

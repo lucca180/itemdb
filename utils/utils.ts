@@ -10,6 +10,7 @@ import {
   UserList,
 } from '../types';
 import { differenceInCalendarDays } from 'date-fns';
+import type { NextApiResponse } from 'next';
 
 export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
   const findAt: ItemFindAt = {
@@ -1770,4 +1771,8 @@ export const shouldShowTradeLists = (item: ItemData) => {
   if (differenceInCalendarDays(new Date(item.price.addedAt!), new Date()) >= 30) return true;
 
   return false;
+};
+
+export const revalidatePath = async (path: string, res: NextApiResponse) => {
+  return Promise.allSettled([res.revalidate(path), res.revalidate(`/pt${path}`)]);
 };
