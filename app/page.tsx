@@ -10,16 +10,16 @@ import { loadTranslation } from '@utils/load-translation';
 import { getTrendingCatLists, getTrendingLists } from '@pages/api/v1/beta/trending';
 import { getNewItemsInfo } from '@pages/api/v1/beta/new-items';
 import { getLatestItems } from '@pages/api/v1/items/index';
-import { HomeHero } from './_components/Home/HomeHero';
+import { HomeHero } from './_components/Home/Sections/HomeHero';
 import { HomePageClient } from './_components/Home/HomePageClient';
 import {
   LatestItemsHomeCard,
   TrendingItemsHomeCard,
   LatestNcMallHomeCard,
-} from './_components/Home/HomeServerCards';
-import { LatestArticlesSection } from './_components/Home/LatestArticlesSection';
-import { LatestPricesSection } from './_components/Home/LatestPricesSection';
-import StatsCard, { StatsCardLoading } from './_components/Home/StatsCard';
+} from './_components/Home/Cards/HomeServerCards';
+import { LatestArticlesSection } from './_components/Home/Sections/LatestArticlesSection';
+import { LatestPricesSection } from './_components/Home/Sections/LatestPricesSection';
+import StatsCard, { StatsCardLoading } from './_components/Home/Cards/StatsCard';
 
 export const revalidate = 180;
 

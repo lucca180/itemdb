@@ -3,7 +3,7 @@ import NextImage from 'next/image';
 import type { CSSProperties } from 'react';
 import type { WP_Article } from '@types';
 import { Flex, styled } from '@styled/jsx';
-import { wp_getLatestPosts } from '../../../pages/api/wp/posts';
+import { wp_getLatestPosts } from '../../../../pages/api/wp/posts';
 import { unstable_cache } from 'next/cache';
 
 type LatestArticlesSectionProps = {
