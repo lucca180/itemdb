@@ -12,10 +12,10 @@ const SearchMenu = () => {
       </MenuButton>
       <Portal>
         <MenuList>
-          <MenuItem as={Link} href="/search">
+          <MenuItem as={Link} href="/search" prefetch={false}>
             {t('Layout.advanced-search')}
           </MenuItem>
-          <MenuItem as={Link} href="/lists/official">
+          <MenuItem as={Link} href="/lists/official" prefetch={false}>
             {t('Layout.official-lists')}
           </MenuItem>
         </MenuList>

@@ -10,10 +10,12 @@ import {
   Kbd,
 } from '@chakra-ui/react';
 import React from 'react';
+import dynamic from 'next/dynamic';
 import SearchMenu from '../Menus/SearchMenu';
 import { useRouter } from 'next/compat/router';
 import { useTranslations } from 'next-intl';
-import { SearchModal } from './SearchModal';
+
+const SearchModal = dynamic(() => import('./SearchModal').then((mod) => mod.SearchModal));
 
 export const SearchBar = () => {
   const t = useTranslations();
@@ -57,7 +59,7 @@ export const SearchBar = () => {
 
   return (
     <>
-      <SearchModal isOpen={isOpen} onClose={handleClose} />
+      {isOpen && <SearchModal isOpen={isOpen} onClose={handleClose} />}
       <InputGroup maxW="700px" w="100%" h="100%" maxH="50px">
         <InputLeftElement
           pointerEvents="none"

@@ -56,7 +56,7 @@ export function HomeHero({ title, highlightQuery, safetyLinkLabel }: HomeHeroPro
       />
       <styled.h1 mt={4} fontSize="1rem" fontWeight="bold" lineHeight={1.5}>
         {renderHighlightedText(title, highlightQuery)}{' '}
-        <Link href="/faq">
+        <Link href="/faq" prefetch={false}>
           <styled.span color={'gray.400'} _hover={{ textDecoration: 'underline' }}>
             {safetyLinkLabel}
           </styled.span>

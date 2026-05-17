@@ -58,7 +58,6 @@ export async function LatestPricesSection() {
             width={70}
             height={70}
             alt={t('HomePage.latest-prices')}
-            priority
           />
           <styled.h2 fontSize="3xl" fontWeight="bold" lineHeight="1.2">
             {t('HomePage.latest-prices')}

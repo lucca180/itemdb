@@ -143,8 +143,6 @@ const Layout = (props: Props) => {
               height="50px"
               width="auto"
               quality={100}
-              priority
-              fetchPriority="high"
               display={{ base: 'inherit', md: 'none' }}
             />
             <Image
@@ -153,8 +151,6 @@ const Layout = (props: Props) => {
               alt="itemdb logo"
               width={175}
               quality={100}
-              priority
-              fetchPriority="high"
               display={{ base: 'none', md: 'inherit' }}
             />
           </Flex>
