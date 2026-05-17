@@ -1,6 +1,7 @@
-import { Box, Heading, Highlight, Link } from '@chakra-ui/react';
-import Color from 'color';
+import Link from 'next/link';
+import type { ReactNode } from 'react';
 import NextImage from 'next/image';
+import { Flex, styled } from '@styled/jsx';
 import logo from '@assets/logo_white_compressed.webp';
 
 type HomeHeroProps = {
@@ -9,19 +10,40 @@ type HomeHeroProps = {
   safetyLinkLabel: string;
 };
 
-const color = Color('#4A5568');
-const rgb = color.rgb().round().array();
+function renderHighlightedText(title: string, highlightQuery: string): ReactNode {
+  if (!highlightQuery) return title;
+
+  const parts = title.split(highlightQuery);
+
+  if (parts.length === 1) return title;
+
+  return parts.flatMap((part, index) => [
+    part,
+    index < parts.length - 1 ? (
+      <styled.span
+        key={`highlight-${index}`}
+        px="2"
+        py="1"
+        borderRadius="full"
+        bg="gray.100"
+        color="gray.800"
+      >
+        {highlightQuery}
+      </styled.span>
+    ) : null,
+  ]);
+}
 
 export function HomeHero({ title, highlightQuery, safetyLinkLabel }: HomeHeroProps) {
   return (
-    <Box textAlign="center" display="flex" flexFlow="column" alignItems="center" mt="50px">
-      <Box
+    <Flex textAlign="center" flexFlow="column" alignItems="center" mt="50px">
+      <styled.div
         position="absolute"
         h="40vh"
         left="0"
         width="100%"
         mt="-50px"
-        bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.6) 80%)`}
+        bgGradient={`linear-gradient(to top, rgba(0, 0, 0, 0) 0, rgba(74, 85, 104, .6) 80%);`}
         zIndex={-1}
       />
       <NextImage
@@ -32,22 +54,14 @@ export function HomeHero({ title, highlightQuery, safetyLinkLabel }: HomeHeroPro
         priority
         fetchPriority="high"
       />
-      <Heading size="sm" as="h1" mt={4} lineHeight={1.5}>
-        <Highlight
-          query={highlightQuery}
-          styles={{
-            px: '2',
-            py: '1',
-            rounded: 'full',
-            bg: 'gray.100',
-          }}
-        >
-          {title}
-        </Highlight>{' '}
-        <Link color={color.lightness(70).hex()} href="/faq">
-          {safetyLinkLabel}
+      <styled.h1 mt={4} fontSize="1rem" fontWeight="bold" lineHeight={1.5}>
+        {renderHighlightedText(title, highlightQuery)}{' '}
+        <Link href="/faq">
+          <styled.span color={'gray.400'} _hover={{ textDecoration: 'underline' }}>
+            {safetyLinkLabel}
+          </styled.span>
         </Link>
-      </Heading>
-    </Box>
+      </styled.h1>
+    </Flex>
   );
 }
