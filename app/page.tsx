@@ -12,6 +12,7 @@ import {
   type HomePageClientProps,
   type LatestPricesRes,
 } from './_components/Home/HomePageClient';
+import { LatestArticlesSection } from './_components/Home/LatestArticlesSection';
 import {
   getTrendingCatLists,
   getTrendingItems,
@@ -21,7 +22,6 @@ import { getNewItemsInfo } from '../pages/api/v1/beta/new-items';
 import { getLatestItems } from '../pages/api/v1/items/index';
 import { getNCMallItemsData } from '../pages/api/v1/mall/index';
 import { getLatestPricedItems } from '../pages/api/v1/prices/index';
-import { wp_getLatestPosts } from '../pages/api/wp/posts/index';
 
 export const revalidate = 180;
 
@@ -45,7 +45,6 @@ async function getHomePageData(): Promise<HomePageClientProps> {
   const [
     latestItems,
     latestWearable,
-    latestPosts,
     trendingItems,
     latestNcMall,
     latestPrices,
@@ -56,7 +55,6 @@ async function getHomePageData(): Promise<HomePageClientProps> {
   ] = await Promise.all([
     getLatestItems(20, true).catch(() => []),
     getLatestItems(18, true, true).catch(() => []),
-    wp_getLatestPosts(5).catch(() => []),
     getTrendingItems(20).catch(() => []),
     getNCMallItemsData(20).catch(() => []),
     latestPricesPromise,
@@ -68,9 +66,9 @@ async function getHomePageData(): Promise<HomePageClientProps> {
 
   return {
     hero: null,
+    latestArticlesSection: null,
     latestItems,
     latestWearable,
-    latestPosts,
     trendingItems,
     latestNcMall,
     latestPrices,
@@ -138,6 +136,7 @@ export default async function HomePage() {
             safetyLinkLabel={t('HomePage.is-it-safe')}
           />
         }
+        latestArticlesSection={<LatestArticlesSection title={t('HomePage.latest-articles')} />}
       />
     </Layout>
   );

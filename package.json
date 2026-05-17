@@ -5,6 +5,7 @@
   "keywords": [],
   "license": "MPL-2.0",
   "scripts": {
+    "prepare": "panda codegen && husky install",
     "dev": "next dev --turbopack",
     "build": "npx prisma generate && next build",
     "build-turbo": "npx prisma generate && next build --turbopack",
@@ -16,13 +17,13 @@
     "lint": "eslint",
     "lint-fix": "eslint --fix",
     "prettier": "prettier --write .",
-    "prepare": "husky install",
     "postbuild": "next-sitemap",
     "dump:tables": "tsx scripts/dump-tables-to-r2.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.797.0",
     "@chakra-ui/icons": "^2.2.4",
+    "@chakra-ui/panda-preset": "^3.35.0",
     "@chakra-ui/react": "2.10.7",
     "@choc-ui/chakra-autocomplete": "^5.8.4",
     "@date-fns/tz": "^1.4.1",
@@ -89,6 +90,7 @@
     "@eslint/js": "^10.0.1",
     "@next/bundle-analyzer": "16.2.6",
     "@next/eslint-plugin-next": "16.2.6",
+    "@pandacss/dev": "^1.11.1",
     "@swc-jotai/react-refresh": "^0.5.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",

@@ -1,19 +1,23 @@
-import { Badge, Card, CardBody, Flex, Heading, HStack, Stack, Text } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import NextImage from 'next/image';
+import type { CSSProperties } from 'react';
 import type { WP_Article } from '@types';
+import { Flex, styled } from '@styled/jsx';
+import { wp_getLatestPosts } from '../../../pages/api/wp/posts';
 
 type LatestArticlesSectionProps = {
-  articles: WP_Article[];
   title: string;
+  limit?: number;
 };
 
-export function LatestArticlesSection({ articles, title }: LatestArticlesSectionProps) {
+export async function LatestArticlesSection({ title, limit = 5 }: LatestArticlesSectionProps) {
+  const articles = await wp_getLatestPosts(limit).catch(() => []);
+
   return (
     <Flex flex={1} flexFlow="column">
-      <Heading size="md" textAlign="center" mb={5}>
+      <styled.h2 fontSize="xl" fontWeight="bold" lineHeight="1.2" textAlign="center" mb={5}>
         <NextLink href="/articles">{title}</NextLink>
-      </Heading>
+      </styled.h2>
       <Flex flexFlow="column" gap={2}>
         {articles.map((post) => (
           <LatestArticleCard key={post.id} article={post} />
@@ -25,7 +29,15 @@ export function LatestArticlesSection({ articles, title }: LatestArticlesSection
 
 function LatestArticleCard({ article }: { article: WP_Article }) {
   const rgb = article.palette?.lightvibrant.rgb ?? [0, 0, 0];
+  const baseBackground = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.15)`;
+  const hoverBackground = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.5)`;
+
   const isNew = new Date(article.date) > new Date(new Date().setDate(new Date().getDate() - 7));
+
+  const cardStyle = {
+    '--article-card-bg': baseBackground,
+    '--article-card-hover-bg': hoverBackground,
+  } as CSSProperties;
 
   return (
     <NextLink prefetch={false} href={`/articles/${article.slug}`}>
@@ -35,14 +47,15 @@ function LatestArticleCard({ article }: { article: WP_Article }) {
         w="100%"
         alignItems="center"
         borderRadius="md"
-        bg={`rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},.15)`}
+        bg="var(--article-card-bg)"
+        style={cardStyle}
         _hover={{
           textDecoration: 'none',
-          bg: `rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},.5)`,
+          bg: 'var(--article-card-hover-bg)',
         }}
       >
-        <Card bg="transparent" boxShadow="none">
-          <CardBody p={0}>
+        <styled.div bg="transparent" boxShadow="none">
+          <styled.div p={0}>
             <NextImage
               src={article.thumbnail ?? '/logo.png'}
               alt="article thumbnail"
@@ -56,15 +69,32 @@ function LatestArticleCard({ article }: { article: WP_Article }) {
                 objectFit: 'cover',
               }}
             />
-          </CardBody>
-        </Card>
-        <Stack gap={1}>
-          <HStack>
-            {isNew && <Badge colorScheme="yellow">New</Badge>}
-            <Heading size="md">{article.title}</Heading>
-          </HStack>
-          <Text fontSize="xs">{article.excerpt}</Text>
-        </Stack>
+          </styled.div>
+        </styled.div>
+        <Flex flexDirection="column" gap={1}>
+          <Flex alignItems="center" gap={2}>
+            {isNew && (
+              <styled.span
+                display="inline-flex"
+                alignItems="center"
+                px={1}
+                minH={5}
+                borderRadius="xs"
+                bg="yellow.200/20"
+                color="yellow.200"
+                fontSize="xs"
+                fontWeight="bold"
+                textTransform="uppercase"
+              >
+                New
+              </styled.span>
+            )}
+            <styled.h3 fontSize="xl" fontWeight="bold" lineHeight="1.2">
+              {article.title}
+            </styled.h3>
+          </Flex>
+          <styled.p fontSize="xs">{article.excerpt}</styled.p>
+        </Flex>
       </Flex>
     </NextLink>
   );

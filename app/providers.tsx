@@ -23,7 +23,7 @@ const colorModeManager =
 
 export function Providers({ children }: ProvidersProps) {
   return (
-    <ChakraProvider theme={theme} colorModeManager={colorModeManager}>
+    <ChakraProvider theme={theme} colorModeManager={colorModeManager} resetCSS={false}>
       <Provider>
         {/* <Next13ProgressBar color="#718096" showOnShallow={true} /> */}
         <AuthProvider>{children}</AuthProvider>

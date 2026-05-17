@@ -48,6 +48,9 @@
       ],
       "@assets/*": [
         "./public/*"
+      ],
+      "@styled/*": [
+        "./styled-system/*"
       ]
     },
     "typeRoots": [
@@ -65,7 +68,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
+    ".next/dev/types/**/*.ts",
+    "styled-system"
   ],
   "ts-node": {
     "compilerOptions": {

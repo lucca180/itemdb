@@ -6,7 +6,7 @@ import type { AxiosRequestConfig } from 'axios';
 import axios from 'axios';
 import { useFormatter, useTranslations } from 'next-intl';
 import useSWR from 'swr';
-import type { ItemData, UserList, WP_Article } from '../../../types';
+import type { ItemData, UserList } from '../../../types';
 import { HomeCard } from '@components/Card/HomeCard';
 import BetaStatsCard from '@components/Beta/BetaStatsCard';
 import { HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
@@ -14,7 +14,6 @@ import { TVWHomeCard } from '@components/Card/EventCard';
 import ItemCard from '@components/Items/ItemCard';
 import Image from '@components/Utils/Image';
 import UserListCard from '@components/UserLists/ListCard';
-import { LatestArticlesSection } from './LatestArticlesSection';
 
 export type LatestPricesRes = {
   count: number | null;
@@ -23,10 +22,10 @@ export type LatestPricesRes = {
 
 export type HomePageClientProps = {
   hero: ReactNode;
+  latestArticlesSection: ReactNode;
   latestItems: ItemData[];
   latestPrices: LatestPricesRes;
   latestWearable: ItemData[];
-  latestPosts: WP_Article[];
   trendingItems: ItemData[];
   latestNcMall: ItemData[];
   leavingNcMall: ItemData[];
@@ -47,8 +46,8 @@ export function HomePageClient(props: HomePageClientProps) {
 
   const {
     hero,
+    latestArticlesSection,
     latestWearable,
-    latestPosts,
     latestNcMall,
     trendingItems,
     leavingNcMall,
@@ -259,7 +258,7 @@ export function HomePageClient(props: HomePageClientProps) {
             </Heading>
             <BetaStatsCard />
           </Flex>
-          <LatestArticlesSection articles={latestPosts} title={t('HomePage.latest-articles')} />
+          {latestArticlesSection}
         </Stack>
       </Flex>
     </>
