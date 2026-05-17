@@ -5,6 +5,7 @@ import { Flex, styled } from '@styled/jsx';
 import type { ItemData } from '@types';
 import { getLatestPricedItems } from '@pages/api/v1/prices/index';
 import { LatestPricesItemsClient } from './LatestPricesItemsClient';
+import { unstable_cache } from 'next/cache';
 
 export type LatestPricesRes = {
   count: number | null;
@@ -15,14 +16,14 @@ const color = Color('#2e333b');
 const rgb = color.rgb().array();
 const borderColor = color.lightness(50).alpha(0.3).hexa();
 
-async function getLatestPrices(): Promise<LatestPricesRes> {
-  return getLatestPricedItems(16, true)
-    .then((result) => result as LatestPricesRes)
-    .catch(() => ({
-      items: [],
-      count: null,
-    }));
-}
+const getLatestPrices = unstable_cache(
+  async () => getLatestPricedItems(16, true).catch(() => ({ items: [], count: null })),
+  ['home-server-cards', 'latest-prices'],
+  {
+    tags: ['home-latest-prices'],
+    revalidate: 300,
+  }
+) as () => Promise<LatestPricesRes>;
 
 export async function LatestPricesSection() {
   const t = await getTranslations();

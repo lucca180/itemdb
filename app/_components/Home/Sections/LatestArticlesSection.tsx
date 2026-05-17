@@ -11,7 +11,7 @@ type LatestArticlesSectionProps = {
   limit?: number;
 };
 
-const getCachedLatestItems = unstable_cache(
+const getCachedLatestArticles = unstable_cache(
   async (limit: number) => wp_getLatestPosts(limit).catch(() => []),
   ['home-articles', 'latest-articles'],
   {
@@ -21,7 +21,7 @@ const getCachedLatestItems = unstable_cache(
 );
 
 export async function LatestArticlesSection({ title, limit = 5 }: LatestArticlesSectionProps) {
-  const articles = await getCachedLatestItems(limit);
+  const articles = await getCachedLatestArticles(limit);
 
   return (
     <Flex flex={1} flexFlow="column">
