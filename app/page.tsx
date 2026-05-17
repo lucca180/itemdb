@@ -28,7 +28,7 @@ export const revalidate = 180;
 const mainColor = Color('#4A5568').alpha(0.9).hexa();
 
 async function getHomePageDescription(locale: string) {
-  const messages = await loadTranslation(locale, 'index');
+  const messages = await loadTranslation(locale, 'page', true);
   const t = createTranslator({ messages, locale });
 
   return t('HomePage.seo-description');
@@ -123,7 +123,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function HomePage() {
   const locale = await getLocale();
-  const messages = await loadTranslation(locale, 'index');
+  const messages = await loadTranslation(locale, 'page', true);
   const t = createTranslator({ messages, locale });
   const data = await getHomePageData();
 

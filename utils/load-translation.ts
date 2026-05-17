@@ -6,13 +6,13 @@ const treeShakeExists = () => {
 };
 
 // wanted to move this code to the intlHandler.ts but without updating EVERY import in the codebase
-export const loadTranslation = (locale: string, relativePath: string) => {
+export const loadTranslation = (locale: string, relativePath: string, isApp = false) => {
   return process.env.NODE_ENV === 'development' || !treeShakeExists()
     ? import(`../translation/${locale}.json`).then((res) => res.default)
-    : _loadTranslation(locale, relativePath);
+    : _loadTranslation(locale, relativePath, isApp);
 };
 
-const _loadTranslation = async (locale: string, relativePath: string) => {
+const _loadTranslation = async (locale: string, relativePath: string, isApp: boolean) => {
   if (!locale) locale = 'en';
 
   let translations: {
@@ -30,7 +30,7 @@ const _loadTranslation = async (locale: string, relativePath: string) => {
   try {
     [translations, treeshake] = (await Promise.all([
       import(`../translation/${locale}.json`),
-      import(`../translation/tree-shake/${relativePath}.json`),
+      import(`../translation/tree-shake/${isApp ? 'app' : 'pages'}/${relativePath}.json`),
     ])) as [
       {
         [namespace: string]: { [key: string]: string };
