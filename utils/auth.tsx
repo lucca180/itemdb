@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useContext, createContext } from 'react';
+import React, { useState, useEffect, useContext, createContext, ReactNode } from 'react';
 import { useAtom } from 'jotai';
 import { atomWithStorage, createJSONStorage } from 'jotai/utils';
-import { User, UserPreferences } from '../types';
+import { User, UserPreferences } from '@types';
 import axios from 'axios';
 import { getCookie } from 'cookies-next/client';
 
@@ -34,7 +34,12 @@ export const UserState = atomWithStorage<User | null>('UserState', null, storage
 
 export const UserPrefs = atomWithStorage<UserPreferences | null>('UserPrefs', null, storageLocal);
 
-export function AuthProvider({ children }: any) {
+type AuthProviderProps = {
+  children: ReactNode;
+  initialUser?: User | null;
+};
+
+export function AuthProvider({ children, initialUser }: AuthProviderProps) {
   const [user, setUser] = useAtom(UserState);
   const [userPref, setUserPref] = useAtom(UserPrefs);
   const [authLoading, setAuthLoading] = useState<boolean>(true);
@@ -74,21 +79,47 @@ export function AuthProvider({ children }: any) {
   };
 
   useEffect(() => {
-    axios
-      .get('/api/auth/me')
-      .then((res) => {
+    let isMounted = true;
+
+    const syncFromClientApi = async () => {
+      try {
+        const res = await axios.get('/api/auth/me');
         const userData = res.data as User;
-        if (user && checkEqual(userData, user)) return;
+
+        if (!isMounted || (user && checkEqual(userData, user))) return;
         setUser(userData);
-      })
-      .catch(() => {
-        setUser(null);
-      })
-      .finally(() => {
+      } catch {
+        if (isMounted) setUser(null);
+      } finally {
+        if (!isMounted) return;
         setAuthLoading(false);
-        getSession();
-      });
-  }, []);
+        void getSession();
+      }
+    };
+
+    const syncFromInitialUser = async () => {
+      if (initialUser && (!user || !checkEqual(initialUser, user))) {
+        setUser(initialUser);
+      }
+
+      if (!initialUser && user) {
+        setUser(null);
+      }
+
+      setAuthLoading(false);
+      await getSession();
+    };
+
+    if (typeof initialUser !== 'undefined') {
+      void syncFromInitialUser();
+    } else {
+      void syncFromClientApi();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [initialUser]);
 
   const updatePref = async (
     key: keyof UserPreferences,

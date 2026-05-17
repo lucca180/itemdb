@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import './global.css';
 import '../utils/global.css';
 import { Providers } from './providers';
+import { getPreloadedAuthState } from '@app/utils/preloadData';
 
 export const metadata: Metadata = {
   title: {
@@ -19,12 +20,13 @@ type RootLayoutProps = {
 
 export default async function RootLayout({ children }: RootLayoutProps) {
   const locale = await getLocale();
+  const initialAuthState = await getPreloadedAuthState();
 
   return (
     <html lang={locale} data-theme="dark">
       <body>
         <NextIntlClientProvider>
-          <Providers>{children}</Providers>
+          <Providers initialAuthState={initialAuthState}>{children}</Providers>
         </NextIntlClientProvider>
       </body>
     </html>
