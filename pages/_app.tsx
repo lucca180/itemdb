@@ -68,14 +68,6 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
               data-performance="true"
               defer
             />
-            <Script
-              defer
-              src={process.env.NEXT_PUBLIC_UMAMI_URL_2 + '/recorder.js'}
-              data-website-id={process.env.NEXT_PUBLIC_UMAMI_ID_2}
-              data-sample-rate="0.1"
-              data-mask-level="moderate"
-              data-max-duration="300000"
-            />
             <Script id="pathOverwriter">
               {`function beforeSendHandler(type, payload) {
                     const url = payload.url;
