@@ -1,16 +1,15 @@
 'use client';
 
 import { Fragment, type ReactNode } from 'react';
-import { Flex, Heading, SimpleGrid, Stack, Text } from '@chakra-ui/react';
+import { Flex, Heading, SimpleGrid, Stack } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
 import type { UserList } from '@types';
-import { HorizontalHomeCard } from '@app/_components/Home/Cards/HorizontalHomeCard';
 import { TVWHomeCard } from '@components/Card/EventCard';
-import Image from '@components/Utils/Image';
 
 export type HomePageClientProps = {
   hero: ReactNode;
   latestPricesSection: ReactNode;
+  newItemsSection: ReactNode;
   latestArticlesSection: ReactNode;
   statsSection: ReactNode;
   latestItemsCard: ReactNode;
@@ -20,10 +19,6 @@ export type HomePageClientProps = {
   leavingNcMallCard: ReactNode;
   latestWearableCard: ReactNode;
   eventLists: UserList[];
-  newItemCount: {
-    freeItems: number;
-    paidItems: number;
-  } | null;
 };
 
 export function HomePageClient(props: HomePageClientProps) {
@@ -32,6 +27,7 @@ export function HomePageClient(props: HomePageClientProps) {
   const {
     hero,
     latestPricesSection,
+    newItemsSection,
     latestArticlesSection,
     statsSection,
     latestItemsCard,
@@ -40,7 +36,6 @@ export function HomePageClient(props: HomePageClientProps) {
     featuredListsCard,
     leavingNcMallCard,
     latestWearableCard,
-    newItemCount,
     eventLists,
   } = props;
 
@@ -50,84 +45,7 @@ export function HomePageClient(props: HomePageClientProps) {
       <Flex mt={8} gap={8} flexFlow="column">
         {latestPricesSection}
         {eventLists?.length > 0 && <TVWHomeCard lists={eventLists} />}
-        {newItemCount && (
-          <Flex gap={4} flexWrap="wrap" flexFlow={{ base: 'column', lg: 'row' }}>
-            <HorizontalHomeCard
-              color="#B794F4"
-              bgOpacity="0.75"
-              innerStyle={{ border: 0, py: 2 }}
-              style={{ flex: '1' }}
-            >
-              <Flex alignItems="center">
-                <Image
-                  src={
-                    newItemCount.paidItems > newItemCount.freeItems * 2
-                      ? 'https://images.neopets.com/caption/sm_caption_1100.gif'
-                      : 'https://images.neopets.com/nt/ntimages/332_nc_mall.gif'
-                  }
-                  alt="tax beast thumbnail"
-                  width={100}
-                  height={100}
-                  quality={100}
-                  borderRadius="md"
-                />
-                <Flex flexFlow="column" ml={3}>
-                  <Text fontSize="lg" fontWeight="bold">
-                    {t.rich('HomePage.new-paid-items', {
-                      Highlight: (chunks) => (
-                        <Text as="span" color="purple.700" bg="purple.200" px={1} borderRadius="md">
-                          {chunks}
-                        </Text>
-                      ),
-                      days: 7,
-                    })}
-                  </Text>
-                  <Text fontSize="4xl" fontWeight="bold">
-                    {newItemCount.paidItems}
-                  </Text>
-                  <Text fontSize="xs" color="whiteAlpha.700">
-                    {t('HomePage.new-paid-items-text')}
-                  </Text>
-                </Flex>
-              </Flex>
-            </HorizontalHomeCard>
-            <HorizontalHomeCard
-              color="#F6AD55"
-              bgOpacity="0.75"
-              innerStyle={{ border: 0, py: 2 }}
-              style={{ flex: '1' }}
-            >
-              <Flex alignItems="center">
-                <Image
-                  src="https://images.neopets.com/nt/ntimages/475_money_tree.gif"
-                  alt="money tree thumbnail"
-                  width={100}
-                  height={100}
-                  quality={100}
-                  borderRadius="md"
-                />
-                <Flex flexFlow="column" ml={3}>
-                  <Text fontSize="lg" fontWeight="bold">
-                    {t.rich('HomePage.new-free-items', {
-                      Highlight: (chunks) => (
-                        <Text as="span" color="orange.600" bg="orange.100" px={1} borderRadius="md">
-                          {chunks}
-                        </Text>
-                      ),
-                      days: 7,
-                    })}
-                  </Text>
-                  <Text fontSize="4xl" fontWeight="bold">
-                    {newItemCount.freeItems}
-                  </Text>
-                  <Text fontSize="xs" color="whiteAlpha.800">
-                    {t('HomePage.new-free-items-text')}
-                  </Text>
-                </Flex>
-              </Flex>
-            </HorizontalHomeCard>
-          </Flex>
-        )}
+        {newItemsSection}
         <SimpleGrid columns={{ base: 1, lg: 3 }} spacing={{ base: 4, xl: 8 }} justifyItems="center">
           <Fragment key="latest-items-card">{latestItemsCard}</Fragment>
           <Fragment key="trending-items-card">{trendingItemsCard}</Fragment>

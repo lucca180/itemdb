@@ -1,3 +1,5 @@
+'use client';
+
 // Image.js
 import { chakra } from '@chakra-ui/react';
 import Image from 'next/image';

@@ -3,26 +3,29 @@ import Link from 'next/link';
 import Color from 'color';
 import { useTranslations } from 'next-intl';
 import NextImage from 'next/image';
+import { css } from '@styled/css';
 import { Flex, styled, type FlexProps } from '@styled/jsx';
 import type { SystemStyleObject } from '@styled/types';
 
-type HorizontalHomeCard = {
+type HorizontalHomeCardProps = {
   title?: string;
   image?: string;
-  color: string;
+  headerColor: string;
   children?: ReactNode;
   viewAllLink?: string;
   w?: number;
   h?: number;
   bgOpacity?: string;
-  style?: FlexProps;
-  innerStyle?: FlexProps;
+  rootCss?: SystemStyleObject;
+  innerCss?: SystemStyleObject;
+  style?: SystemStyleObject;
+  innerStyle?: SystemStyleObject;
   utm_content?: string;
   sx?: SystemStyleObject;
   isSmall?: boolean;
   isPriority?: boolean;
   viewAllText?: string;
-};
+} & Omit<FlexProps, 'color' | 'children' | 'title' | 'image' | 'w' | 'h' | 'style' | 'css'>;
 
 const StyledLink = styled(Link);
 
@@ -57,7 +60,7 @@ const viewAllLinkStyles = {
   },
 } as const;
 
-export const HorizontalHomeCard = (props: HorizontalHomeCard) => {
+export const HorizontalHomeCard = (props: HorizontalHomeCardProps) => {
   const t = useTranslations();
   const {
     children,
@@ -71,12 +74,19 @@ export const HorizontalHomeCard = (props: HorizontalHomeCard) => {
     isSmall,
     isPriority,
     viewAllText,
+    rootCss,
+    innerCss,
+    sx,
+    style,
+    innerStyle,
+    ...restProps
   } = props;
-  const color = Color(props.color);
+  const color = Color(props.headerColor);
   const rgb = color.rgb().array();
 
   return (
     <Flex
+      {...restProps}
       w="100%"
       flexFlow={'column'}
       p={2}
@@ -85,8 +95,7 @@ export const HorizontalHomeCard = (props: HorizontalHomeCard) => {
       style={{
         backgroundImage: `linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},${bgOpacity ?? '0.45'}) 0%)`,
       }}
-      {...props.style}
-      css={props.sx}
+      css={css.raw([sx, rootCss, style])}
     >
       <Flex
         w="100%"
@@ -96,7 +105,7 @@ export const HorizontalHomeCard = (props: HorizontalHomeCard) => {
         borderRadius={'lg'}
         border={`2px solid`}
         style={{ borderColor: color.lightness(50).alpha(0.3).hexa() }}
-        {...props.innerStyle}
+        css={css.raw([innerCss, innerStyle])}
       >
         {(image || title || viewAllLink) && (
           <Flex alignItems={'center'} gap={4} flexShrink={0} h={isSmall ? 'auto' : '70px'} mb={3}>

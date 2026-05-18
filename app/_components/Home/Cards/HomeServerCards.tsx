@@ -132,7 +132,7 @@ export function FeaturedListsHomeCard() {
     <Suspense
       fallback={
         <HorizontalHomeCard
-          color="#4A5568"
+          headerColor="#4A5568"
           image="https://images.neopets.com/themes/h5/newyears/images/transferlog-icon.png"
           title="Featured Lists"
           viewAllLink="/lists/official"
@@ -151,7 +151,7 @@ async function FeaturedListsHomeCardContent() {
 
   return (
     <HorizontalHomeCard
-      color="#4A5568"
+      headerColor="#4A5568"
       image="https://images.neopets.com/themes/h5/newyears/images/transferlog-icon.png"
       title={t('HomePage.featured-lists')}
       viewAllLink="/lists/official"

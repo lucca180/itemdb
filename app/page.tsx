@@ -8,7 +8,6 @@ import { getItemDbCanonical, normalizeItemDbLocale } from '@utils/appPage';
 import { getDefaultSEO } from '@utils/SEO';
 import { loadTranslation } from '@utils/load-translation';
 import { getTrendingCatLists } from '@pages/api/v1/beta/trending';
-import { getNewItemsInfo } from '@pages/api/v1/beta/new-items';
 import { HomeHero } from './_components/Home/Sections/HomeHero';
 import { HomePageClient } from './_components/Home/HomePageClient';
 import {
@@ -18,7 +17,8 @@ import {
   LatestWearableHomeCard,
   TrendingItemsHomeCard,
   LatestNcMallHomeCard,
-} from './_components/Home/Cards/HomeServerCards';
+} from '@app/_components/Home/Cards/HomeServerCards';
+import { NewItemsCountSection } from '@app/_components/Home/Cards/NewItemsCountSection';
 import { LatestArticlesSection } from './_components/Home/Sections/LatestArticlesSection';
 import { LatestPricesSection } from './_components/Home/Sections/LatestPricesSection';
 import StatsCard, { StatsCardLoading } from './_components/Home/Cards/StatsCard';
@@ -44,26 +44,13 @@ const cachedTrendingCatLists = unstable_cache(
   }
 );
 
-const cachedNewItemCount = unstable_cache(
-  () => getNewItemsInfo(7).catch(() => null),
-  ['home-page-new-item-count'],
-  {
-    tags: ['home-new-item-count'],
-    revalidate: 300,
-  }
-);
-
 async function getHomePageData() {
-  const [newItemCount, eventLists] = await Promise.all([
-    cachedNewItemCount(),
-    cachedTrendingCatLists(),
-  ]);
+  const eventLists = await cachedTrendingCatLists();
 
   return {
     hero: null,
     latestArticlesSection: null,
     statsSection: null,
-    newItemCount,
     eventLists,
   };
 }
@@ -126,6 +113,7 @@ export default async function HomePage() {
           />
         }
         latestItemsCard={<LatestItemsHomeCard />}
+        newItemsSection={<NewItemsCountSection />}
         trendingItemsCard={<TrendingItemsHomeCard />}
         featuredListsCard={<FeaturedListsHomeCard />}
         latestNcMallCard={<LatestNcMallHomeCard />}
