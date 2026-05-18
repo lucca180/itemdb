@@ -1,37 +1,15 @@
 'use client';
 
 import { ReactNode, useEffect } from 'react';
-import {
-  Box,
-  Button,
-  Flex,
-  Menu,
-  MenuButton,
-  MenuDivider,
-  MenuItem,
-  MenuList,
-  Text,
-  useDisclosure,
-  Image,
-  Icon,
-  useMediaQuery,
-  MenuGroup,
-  Center,
-  Spinner,
-  Select,
-  Portal,
-} from '@chakra-ui/react';
+import { Box, Flex, Text, Image, Center, Spinner, Select } from '@chakra-ui/react';
 
 import NextImage from 'next/image';
 import logo from '../public/logo_white_compressed.svg';
 import logo_icon from '../public/logo_icon.svg';
 import mt_logo from '../public/magnetismo-logo.png';
-import { ChevronDownIcon } from '@chakra-ui/icons';
 import Link from 'next/link';
 import { useRouter } from 'next/compat/router';
-import { LoginModalProps } from './Modal/LoginModal';
 import { useAuth } from '../utils/auth';
-import { BsBoxArrowInRight, BsFillPersonFill } from 'react-icons/bs';
 import { NextSeo, NextSeoProps } from 'next-seo';
 import { SearchBar } from './Search/SearchBar';
 import Color from 'color';
@@ -43,13 +21,12 @@ import { setCookie } from 'cookies-next';
 import dynamic from 'next/dynamic';
 import { DropdownButton, DropdownOption } from './Menus/HeaderDropdown';
 import { SiteAlert } from './Utils/SiteAlert';
-import { getScriptStatus } from '../utils/scriptUtils';
 import FeedbackButton from './Feedback/FeedbackButton';
 import MainLink from './Utils/MainLink';
 import { useVersionCheck } from '@utils/versionCheck';
+import { AuthButton } from './Layout/AuthButton';
 
 const LanguageToast = dynamic<LanguageToastProps>(() => import('./Modal/LanguageToast'));
-const LoginModal = dynamic<LoginModalProps>(() => import('./Modal/LoginModal'));
 
 type Props = {
   children?: ReactNode;
@@ -72,12 +49,7 @@ const Layout = (props: Props) => {
     (typeof window !== 'undefined'
       ? `${window.location.pathname}${window.location.search}${window.location.hash}`
       : '/');
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const { user, signout, authLoading } = useAuth();
-  const [isLargerThanMD] = useMediaQuery('(min-width: 48em)', {
-    ssr: true,
-    fallback: false,
-  });
+  const { user } = useAuth();
 
   const color = Color('#4A5568');
   const rgb = color.rgb().round().array();
@@ -122,7 +94,6 @@ const Layout = (props: Props) => {
   return (
     <>
       {!props.disableNextSeo && <NextSeo {...props.SEO} />}
-      {isOpen && <LoginModal isOpen={isOpen} onClose={onClose} />}
       <LanguageToast saveLang={saveLang} />
       <Flex flexFlow="column" minH="100vh">
         <SiteAlert />
@@ -159,74 +130,7 @@ const Layout = (props: Props) => {
               <SearchBar />
             </Box>
           </Flex>
-          <Box
-            // as={ClientOnly}
-            display="flex"
-            gap={{ base: 2, md: 3 }}
-            alignItems="center"
-            justifyContent="flex-end"
-            maxW="30%"
-            minW="15%"
-          >
-            {!user && (
-              <Button
-                variant="filled"
-                bg="gray.700"
-                _hover={{ bg: 'gray.600' }}
-                onClick={onOpen}
-                px={{ base: 0, md: 4 }}
-                isLoading={authLoading}
-              >
-                <Icon as={BsBoxArrowInRight} boxSize="18px" mr={2} verticalAlign="text-top" />
-                <Box as="span" display={{ base: 'none', md: 'inline' }}>
-                  {t('Layout.login')}
-                </Box>
-              </Button>
-            )}
-            {user && (
-              <>
-                <Menu>
-                  <MenuButton
-                    as={Button}
-                    rightIcon={<ChevronDownIcon />}
-                    px={{ base: 2, md: 4 }}
-                    textAlign="center"
-                    data-umami-event="profile-menu-button"
-                  >
-                    {isLargerThanMD && (
-                      <Box as="span">{t('Layout.hi-user', { name: user.username ?? '' })}</Box>
-                    )}
-                    <Icon
-                      as={BsFillPersonFill}
-                      display={{ base: 'inherit', md: 'none' }}
-                      boxSize="18px"
-                    />
-                  </MenuButton>
-                  <Portal>
-                    <MenuList>
-                      <MenuGroup
-                        title={
-                          !isLargerThanMD
-                            ? `${t('Layout.hello-user', { name: user.username ?? '' })}`
-                            : undefined
-                        }
-                      >
-                        <MenuItem as={Link} prefetch={false} href={`/lists/${user.username}`}>
-                          {t('Layout.my-lists')}
-                        </MenuItem>
-                        <MenuItem as={Link} prefetch={false} href={`/contribute`}>
-                          {t('Layout.how-to-contribute')}
-                        </MenuItem>
-                      </MenuGroup>
-                      {isLargerThanMD && <ScriptStatus />}
-                      <MenuDivider />
-                      <MenuItem onClick={signout}>{t('Layout.logout')}</MenuItem>
-                    </MenuList>
-                  </Portal>
-                </Menu>
-              </>
-            )}
-          </Box>
+          <AuthButton />
         </Flex>
         <Flex
           bg={props.mainColor}
@@ -487,67 +391,6 @@ const Layout = (props: Props) => {
 };
 
 export default Layout;
-
-const ScriptStatus = () => {
-  const scriptStatus = getScriptStatus();
-  const t = useTranslations();
-
-  if (!scriptStatus) return null;
-
-  return (
-    <>
-      <MenuDivider />
-      <Text px={3} pb={3} fontSize={'md'} color="white">
-        {t('Layout.script-info')}
-      </Text>
-      {Object.values(scriptStatus).map((script) => {
-        if (script.status === 'notFound' && script.name !== 'Item Data Extractor') return null;
-        return (
-          <Flex
-            key={script.name}
-            alignItems="center"
-            gap={2}
-            fontSize="xs"
-            color="whiteAlpha.700"
-            px={3}
-            pb={2}
-          >
-            <Text>
-              {script.name} {script.version ? `- ${script.version}` : ''}
-            </Text>
-            {script.status === 'outdated' && (
-              <Button
-                as="a"
-                href={script.link}
-                target="_blank"
-                size={'xs'}
-                variant={'outline'}
-                colorScheme="orange"
-              >
-                {t('Layout.update-available')}
-              </Button>
-            )}
-            {script.status === 'notFound' && (
-              <Button
-                as="a"
-                href={script.link}
-                target="_blank"
-                size={'xs'}
-                variant={'outline'}
-                colorScheme="green"
-              >
-                {t('Restock.install-now')}
-              </Button>
-            )}
-          </Flex>
-        );
-      })}
-      <MenuItem as={Link} prefetch={false} href={`/tools/troubleshooting`} fontSize={'sm'}>
-        {t('Layout.troubleshooting')}
-      </MenuItem>
-    </>
-  );
-};
 
 function stripLocalePrefix(path: string) {
   return path.replace(/^\/pt(?=\/|$)/, '') || '/';

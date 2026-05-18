@@ -5,7 +5,6 @@ import {
   InputLeftElement,
   Input,
   InputRightElement,
-  useMediaQuery,
   Flex,
   Kbd,
 } from '@chakra-ui/react';
@@ -20,7 +19,6 @@ const SearchModal = dynamic(() => import('./SearchModal'));
 export const SearchBar = () => {
   const t = useTranslations();
   const [search, setSearch] = React.useState<string>('');
-  const [isLargerThanMD] = useMediaQuery('(min-width: 769px)');
   const { isOpen, onToggle, onClose } = useDisclosure();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -74,19 +72,25 @@ export const SearchBar = () => {
           onFocus={onToggle}
           value={search}
           ref={inputRef}
-          placeholder={isLargerThanMD ? t('Layout.search-by') : t('Layout.search-the-database')}
+          placeholder={t('Layout.search-by')}
           _focus={{ bg: 'gray.700' }}
           readOnly
           h="100%"
         />
         <InputRightElement mr={1} h="100%" w="auto" display={'flex'} gap={2}>
           <>
-            {isLargerThanMD && (
-              <Flex opacity={0.5} gap={1} userSelect={'none'} pointerEvents={'none'} aria-hidden>
-                <Kbd fontSize={'xs'}>{isMac ? '⌘' : 'Ctrl'}</Kbd>
-                <Kbd fontSize={'xs'}>K</Kbd>
-              </Flex>
-            )}
+            <Flex
+              opacity={0.5}
+              gap={1}
+              userSelect={'none'}
+              pointerEvents={'none'}
+              aria-hidden="true"
+              display={{ base: 'none', md: 'flex' }}
+              alignItems={'center'}
+            >
+              <Kbd fontSize={'xs'}>{isMac ? '⌘' : 'Ctrl'}</Kbd>
+              <Kbd fontSize={'xs'}>K</Kbd>
+            </Flex>
             <SearchMenu />
           </>
         </InputRightElement>

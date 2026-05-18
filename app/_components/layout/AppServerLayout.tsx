@@ -120,10 +120,15 @@ export default async function AppServerLayout(props: AppServerLayoutProps) {
         py={5}
       >
         <Link prefetch={false} href="/" style={{ flex: '0 0 auto' }}>
-          <styled.div display={{ base: 'inherit', md: 'none' }}>
-            <NextImage src={logoIcon} alt="itemdb logo" height={50} style={{ width: 'auto' }} />
+          <styled.div display={{ base: 'inline', md: 'none' }}>
+            <NextImage
+              src={logoIcon}
+              alt="itemdb logo"
+              height={50}
+              style={{ width: 'auto', maxHeight: '50px' }}
+            />
           </styled.div>
-          <styled.div display={{ base: 'none', md: 'inherit' }}>
+          <styled.div display={{ base: 'none', md: 'inline' }}>
             <NextImage src={logo} alt="itemdb logo" width={175} />
           </styled.div>
         </Link>
@@ -132,16 +137,7 @@ export default async function AppServerLayout(props: AppServerLayoutProps) {
             <LayoutSearchIsland />
           </styled.div>
         </Flex>
-        <styled.div
-          display="flex"
-          gap={{ base: 2, md: 3 }}
-          alignItems="center"
-          justifyContent="flex-end"
-          maxW="30%"
-          minW="15%"
-        >
-          <LayoutAuthIsland />
-        </styled.div>
+        <LayoutAuthIsland />
       </Flex>
 
       <Flex

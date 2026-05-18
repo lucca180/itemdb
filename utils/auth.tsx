@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useContext, createContext, ReactNode } from 'react';
-import { useAtom } from 'jotai';
-import { atomWithStorage, createJSONStorage } from 'jotai/utils';
+import { useState, useEffect, useContext, createContext, ReactNode } from 'react';
+import { atom, useAtom } from 'jotai';
+import { atomWithStorage, useHydrateAtoms } from 'jotai/utils';
 import { User, UserPreferences } from '@types';
 import axios from 'axios';
 import { getCookie } from 'cookies-next/client';
@@ -27,12 +27,8 @@ const AuthContext = createContext<AuthContextType>({
   resetUser: async () => {},
 });
 
-const storageLocal = createJSONStorage<UserPreferences | null>(() => localStorage);
-const storageSession = createJSONStorage<User | null>(() => sessionStorage);
-
-export const UserState = atomWithStorage<User | null>('UserState', null, storageSession);
-
-export const UserPrefs = atomWithStorage<UserPreferences | null>('UserPrefs', null, storageLocal);
+const UserState = atom<User | null | undefined>(null);
+export const UserPrefs = atomWithStorage<UserPreferences | null>('UserPrefs', null);
 
 type AuthProviderProps = {
   children: ReactNode;
@@ -40,9 +36,10 @@ type AuthProviderProps = {
 };
 
 export function AuthProvider({ children, initialUser }: AuthProviderProps) {
+  useHydrateAtoms([[UserState, initialUser]]);
   const [user, setUser] = useAtom(UserState);
   const [userPref, setUserPref] = useAtom(UserPrefs);
-  const [authLoading, setAuthLoading] = useState<boolean>(true);
+  const [authLoading, setAuthLoading] = useState<boolean>(typeof initialUser === 'undefined');
 
   const checkProof = () => {
     const proof = getCookie('itemdb-proof');
@@ -97,24 +94,9 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
       }
     };
 
-    const syncFromInitialUser = async () => {
-      if (initialUser && (!user || !checkEqual(initialUser, user))) {
-        setUser(initialUser);
-      }
-
-      if (!initialUser && user) {
-        setUser(null);
-      }
-
-      setAuthLoading(false);
-      await getSession();
-    };
-
-    if (typeof initialUser !== 'undefined') {
-      void syncFromInitialUser();
-    } else {
+    if (typeof initialUser === 'undefined') {
       void syncFromClientApi();
-    }
+    } else setAuthLoading(false);
 
     return () => {
       isMounted = false;
@@ -137,7 +119,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
   return (
     <AuthContext.Provider
       value={{
-        user: user,
+        user: user ?? null,
         signout,
         authLoading,
         setUser,
