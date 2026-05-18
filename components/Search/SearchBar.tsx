@@ -15,7 +15,7 @@ import SearchMenu from '../Menus/SearchMenu';
 import { useRouter } from 'next/compat/router';
 import { useTranslations } from 'next-intl';
 
-const SearchModal = dynamic(() => import('./SearchModal').then((mod) => mod.SearchModal));
+const SearchModal = dynamic(() => import('./SearchModal'));
 
 export const SearchBar = () => {
   const t = useTranslations();

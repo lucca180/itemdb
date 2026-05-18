@@ -61,7 +61,7 @@ type SearchModalProps = {
   onClose: () => void;
 };
 
-export const SearchModal = (props: SearchModalProps) => {
+const SearchModal = (props: SearchModalProps) => {
   const t = useTranslations();
   const router = useRouter();
   const { isOpen, onClose } = props;
@@ -679,6 +679,8 @@ export const SearchModal = (props: SearchModalProps) => {
     </Modal>
   );
 };
+
+export default SearchModal;
 
 const SearchItem = ({
   item,
