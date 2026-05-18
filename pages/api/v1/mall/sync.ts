@@ -6,7 +6,6 @@ import { revalidatePath } from '@utils/utils';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 const TARNUM_SERVER = process.env.TARNUM_SERVER;
-const ITEMDB_SERVER = process.env.ITEMDB_SERVER;
 
 type NCMallData = {
   id: number;
@@ -160,7 +159,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     };
   });
 
-  const createItemRes = await fetch(ITEMDB_SERVER + '/api/v1/items', {
+  const createItemRes = await fetch('https://itemdb.com.br/api/v1/items', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
