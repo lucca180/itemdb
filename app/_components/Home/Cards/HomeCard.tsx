@@ -145,13 +145,12 @@ export const HomeCard = (props: HomeCardProps) => {
         {isLoading && useItemCard && <HomeCardLoadingItemGrid title={title} perPage={perPage} />}
         {!useItemCard && (
           <Flex flexFlow={'column'} display={isLoading ? 'none' : undefined}>
-            {items.map((item, i) => (
+            {items.slice(perPage * page, perPage * (page + 1)).map((item) => (
               <HomeItem
                 key={item.internal_id + title}
                 menuKey={item.internal_id + title}
                 utm_content={utm_content}
                 item={item}
-                hidden={i < perPage * page || i >= perPage * (page + 1)}
               />
             ))}
           </Flex>
@@ -162,17 +161,14 @@ export const HomeCard = (props: HomeCardProps) => {
             gap={2}
             my={3}
             justifyContent={'center'}
-            display={isLoading ? 'none' : undefined}
+            display={isLoading ? 'none' : 'flex'}
           >
-            {items.map((item, i) => (
+            {items.slice(perPage * page, perPage * (page + 1)).map((item) => (
               <ItemCard
                 uniqueID={title}
                 key={item.internal_id + title}
                 item={item}
                 utm_content={utm_content}
-                style={{
-                  display: i < perPage * page || i >= perPage * (page + 1) ? 'none' : undefined,
-                }}
               />
             ))}
           </Flex>

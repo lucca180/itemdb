@@ -3,12 +3,10 @@
 import { Fragment, type ReactNode } from 'react';
 import { Flex, Heading, SimpleGrid, Stack, Text } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
-import type { ItemData, UserList } from '@types';
-import { HomeCard } from '@components/Card/HomeCard';
-import { HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
+import type { UserList } from '@types';
+import { HorizontalHomeCard } from '@app/_components/Home/Cards/HorizontalHomeCard';
 import { TVWHomeCard } from '@components/Card/EventCard';
 import Image from '@components/Utils/Image';
-import UserListCard from '@components/UserLists/ListCard';
 
 export type HomePageClientProps = {
   hero: ReactNode;
@@ -16,11 +14,11 @@ export type HomePageClientProps = {
   latestArticlesSection: ReactNode;
   statsSection: ReactNode;
   latestItemsCard: ReactNode;
-  latestWearable: ItemData[];
   trendingItemsCard: ReactNode;
+  featuredListsCard: ReactNode;
   latestNcMallCard: ReactNode;
-  leavingNcMall: ItemData[];
-  trendingLists: UserList[];
+  leavingNcMallCard: ReactNode;
+  latestWearableCard: ReactNode;
   eventLists: UserList[];
   newItemCount: {
     freeItems: number;
@@ -36,12 +34,12 @@ export function HomePageClient(props: HomePageClientProps) {
     latestPricesSection,
     latestArticlesSection,
     statsSection,
-    latestWearable,
     latestItemsCard,
     latestNcMallCard,
     trendingItemsCard,
-    leavingNcMall,
-    trendingLists,
+    featuredListsCard,
+    leavingNcMallCard,
+    latestWearableCard,
     newItemCount,
     eventLists,
   } = props;
@@ -135,48 +133,10 @@ export function HomePageClient(props: HomePageClientProps) {
           <Fragment key="trending-items-card">{trendingItemsCard}</Fragment>
           <Fragment key="latest-nc-mall-card">{latestNcMallCard}</Fragment>
         </SimpleGrid>
-        <HorizontalHomeCard
-          color="#4A5568"
-          image="https://images.neopets.com/themes/h5/newyears/images/transferlog-icon.png"
-          title={t('HomePage.featured-lists')}
-          viewAllLink="/lists/official"
-          utm_content="featured-lists"
-        >
-          <Flex flexWrap="wrap" gap={4} justifyContent="center">
-            {trendingLists.map((list) => (
-              <UserListCard key={list.internal_id} list={list} utm_content="featured-lists" />
-            ))}
-          </Flex>
-        </HorizontalHomeCard>
+        {featuredListsCard}
         <Stack direction={{ base: 'column', lg: 'row' }} spacing={{ base: 4, xl: 8 }}>
-          {leavingNcMall && (
-            <HomeCard
-              useItemCard
-              href="/mall/leaving"
-              utm_content="leaving-nc-mall"
-              color="#CB9DF0"
-              image="https://images.neopets.com/themes/h5/altadorcup/images/calendar-icon.png"
-              items={leavingNcMall}
-              title={t('HomePage.leaving-nc-mall')}
-              h={70}
-              w={70}
-              perPage={9}
-            />
-          )}
-          {latestWearable && (
-            <HomeCard
-              useItemCard
-              utm_content="latest-wearable"
-              href="/search?s=&sortBy=added&sortDir=desc&type[]=wearable&utm_content=latest-wearable"
-              color="#59cde2"
-              image="https://images.neopets.com/themes/h5/basic/images/customise-icon.svg"
-              items={latestWearable}
-              title={t('HomePage.new-clothes')}
-              w={70}
-              h={70}
-              perPage={9}
-            />
-          )}
+          {leavingNcMallCard}
+          {latestWearableCard}
         </Stack>
         <Stack direction={{ base: 'column', lg: 'row' }} mt={2} gap={{ base: 8, lg: 3 }}>
           <Flex flexFlow="column" flex={1} alignItems="center">

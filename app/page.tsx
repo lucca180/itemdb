@@ -7,20 +7,21 @@ import Layout from '@components/Layout';
 import { getItemDbCanonical, normalizeItemDbLocale } from '@utils/appPage';
 import { getDefaultSEO } from '@utils/SEO';
 import { loadTranslation } from '@utils/load-translation';
-import { getTrendingCatLists, getTrendingLists } from '@pages/api/v1/beta/trending';
+import { getTrendingCatLists } from '@pages/api/v1/beta/trending';
 import { getNewItemsInfo } from '@pages/api/v1/beta/new-items';
-import { getLatestItems } from '@pages/api/v1/items/index';
 import { HomeHero } from './_components/Home/Sections/HomeHero';
 import { HomePageClient } from './_components/Home/HomePageClient';
 import {
+  FeaturedListsHomeCard,
+  LeavingNcMallHomeCard,
   LatestItemsHomeCard,
+  LatestWearableHomeCard,
   TrendingItemsHomeCard,
   LatestNcMallHomeCard,
 } from './_components/Home/Cards/HomeServerCards';
 import { LatestArticlesSection } from './_components/Home/Sections/LatestArticlesSection';
 import { LatestPricesSection } from './_components/Home/Sections/LatestPricesSection';
 import StatsCard, { StatsCardLoading } from './_components/Home/Cards/StatsCard';
-import { getNCMallItemsData } from '@pages/api/v1/mall';
 import { unstable_cache } from 'next/cache';
 
 export const revalidate = 180;
@@ -33,15 +34,6 @@ async function getHomePageDescription(locale: string) {
 
   return t('HomePage.seo-description');
 }
-
-const cachedTrendingLists = unstable_cache(
-  () => getTrendingLists(3, ['The Void Within']).catch(() => []),
-  ['home-page-trending-lists'],
-  {
-    tags: ['home-trending-lists'],
-    revalidate: 3600,
-  }
-);
 
 const cachedTrendingCatLists = unstable_cache(
   () => getTrendingCatLists('The Void Within', 3).catch(() => []),
@@ -61,41 +53,16 @@ const cachedNewItemCount = unstable_cache(
   }
 );
 
-const cachedLatestWearableItems = unstable_cache(
-  () => getLatestItems(18, true, true).catch(() => []),
-  ['home-page-latest-wearable-items'],
-  {
-    tags: ['home-latest-wearable-items'],
-    revalidate: 300,
-  }
-);
-
-const cachedLatestNcMallItems = unstable_cache(
-  () => getNCMallItemsData(18, true).catch(() => []),
-  ['home-page-latest-nc-mall-items'],
-  {
-    tags: ['home-latest-nc-mall-items'],
-    revalidate: 600,
-  }
-);
-
 async function getHomePageData() {
-  const [latestWearable, leavingNcMall, trendingLists, newItemCount, eventLists] =
-    await Promise.all([
-      cachedLatestWearableItems(),
-      cachedLatestNcMallItems(),
-      cachedTrendingLists(),
-      cachedNewItemCount(),
-      cachedTrendingCatLists(),
-    ]);
+  const [newItemCount, eventLists] = await Promise.all([
+    cachedNewItemCount(),
+    cachedTrendingCatLists(),
+  ]);
 
   return {
     hero: null,
     latestArticlesSection: null,
     statsSection: null,
-    latestWearable,
-    leavingNcMall,
-    trendingLists,
     newItemCount,
     eventLists,
   };
@@ -160,7 +127,10 @@ export default async function HomePage() {
         }
         latestItemsCard={<LatestItemsHomeCard />}
         trendingItemsCard={<TrendingItemsHomeCard />}
+        featuredListsCard={<FeaturedListsHomeCard />}
         latestNcMallCard={<LatestNcMallHomeCard />}
+        leavingNcMallCard={<LeavingNcMallHomeCard />}
+        latestWearableCard={<LatestWearableHomeCard />}
         latestPricesSection={<LatestPricesSection />}
         latestArticlesSection={<LatestArticlesSection title={t('HomePage.latest-articles')} />}
         statsSection={

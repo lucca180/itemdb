@@ -3,6 +3,12 @@
     "next-devtools": {
       "command": "npx",
       "args": ["-y", "next-devtools-mcp@latest"]
+    },
+    "lighthouse": {
+      "command": "npx",
+      "args": ["lighthouse-mcp"],
+      "disabled": false,
+      "autoApprove": []
     }
   }
 }
