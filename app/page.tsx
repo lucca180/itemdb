@@ -4,7 +4,7 @@ import { Fragment, Suspense } from 'react';
 import { Flex, Grid, styled } from '@styled/jsx';
 import { createTranslator } from 'next-intl';
 import { getLocale } from 'next-intl/server';
-import Layout from '@components/Layout';
+import AppServerLayout from '@app/_components/layout/AppServerLayout';
 import { getItemDbCanonical, normalizeItemDbLocale } from '@utils/appPage';
 import { getDefaultSEO } from '@utils/SEO';
 import { loadTranslation } from '@utils/load-translation';
@@ -80,7 +80,7 @@ export default async function HomePage() {
   const t = createTranslator({ messages, locale });
 
   return (
-    <Layout disableNextSeo mainColor={mainColor}>
+    <AppServerLayout disableNextSeo mainColor={mainColor}>
       <HomeHero
         title={t('HomePage.title')}
         highlightQuery={t('HomePage.open-source')}
@@ -132,6 +132,6 @@ export default async function HomePage() {
           <LatestArticlesSection title={t('HomePage.latest-articles')} />
         </Flex>
       </Flex>
-    </Layout>
+    </AppServerLayout>
   );
 }

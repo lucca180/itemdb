@@ -80,3 +80,9 @@ const _loadTranslation = async (locale: string, relativePath: string, isApp: boo
     return translations;
   }
 };
+
+export const appLoadTranslation = async (locale: string) => {
+  const translations = await import(`../translation/${locale}.json`).then((res) => res.default);
+
+  return translations;
+};

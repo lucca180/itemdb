@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
-import Layout from '@components/Layout';
+import AppServerLayout from '@app/_components/layout/AppServerLayout';
 import { getStaticAppPageProps } from '@utils/appPage';
 import { PrivacyPageClient } from './PrivacyPageClient';
 
@@ -21,12 +21,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function PrivacyPage() {
-  const locale = await getLocale();
-  const pageProps = getStaticAppPageProps(locale, pageConfig);
-
   return (
-    <Layout disableNextSeo SEO={pageProps.seo} mainColor="#7AB92Ac7">
+    <AppServerLayout disableNextSeo mainColor="#7AB92Ac7">
       <PrivacyPageClient />
-    </Layout>
+    </AppServerLayout>
   );
 }

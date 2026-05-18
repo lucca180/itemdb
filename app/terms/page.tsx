@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
-import Layout from '@components/Layout';
+import AppServerLayout from '@app/_components/layout/AppServerLayout';
 import { getStaticAppPageProps } from '@utils/appPage';
 import { TermsPageClient } from './TermsPageClient';
 
@@ -20,12 +20,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function TermsPage() {
-  const locale = await getLocale();
-  const pageProps = getStaticAppPageProps(locale, pageConfig);
-
   return (
-    <Layout disableNextSeo SEO={pageProps.seo} mainColor="#a5aa9fc7">
+    <AppServerLayout disableNextSeo mainColor="#a5aa9fc7">
       <TermsPageClient />
-    </Layout>
+    </AppServerLayout>
   );
 }

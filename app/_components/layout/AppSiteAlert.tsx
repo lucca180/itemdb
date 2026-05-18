@@ -1,45 +1,53 @@
-import { Flex, Text, Link } from '@chakra-ui/react';
-import { useTranslations } from 'next-intl';
+import { Flex, styled } from '@styled/jsx';
+import { token } from '@styled/tokens';
 import Image from 'next/image';
-import NextLink from 'next/link';
+import Link from 'next/link';
+import { createTranslator } from 'next-intl';
+import { appLoadTranslation } from '@utils/load-translation';
 import { getCurrentSiteAlert } from '@utils/siteAlert';
+import { connection } from 'next/server';
 
-export const SiteAlert = () => {
-  const t = useTranslations();
+type AppSiteAlertProps = {
+  locale: string;
+};
+
+export async function AppSiteAlert({ locale }: AppSiteAlertProps) {
+  connection();
+  const messages = await appLoadTranslation(locale);
+  const t = createTranslator({ messages, locale });
   const alert = getCurrentSiteAlert();
 
   return (
-    <Flex bg={alert.bg}>
+    <Flex style={{ background: token.var(`colors.${alert.bg}`) }}>
       <Flex
         w="full"
         maxW="8xl"
         marginX="auto"
-        alignItems={'center'}
+        alignItems="center"
         gap={1}
-        fontSize={'xs'}
-        minH={'30px'}
+        fontSize="xs"
+        minH="30px"
         px={1}
       >
         {alert.img && (
           <Link
-            as={NextLink}
             href={alert.link}
+            style={{ display: 'inline-flex' }}
             data-umami-event="site-alert-click"
             data-umami-event-label={alert.message}
           >
             <Image src={alert.img.src} width={alert.img.w} height={alert.img.h} alt="alert icon" />
           </Link>
         )}
-        <Text color={alert.color}>
+        <styled.p style={{ color: token.var(`colors.${alert.color}`) }}>
           {!!alert.message &&
-            t.rich('SiteAlert.' + alert.message, {
+            t.rich(`SiteAlert.${alert.message}`, {
               b: (children) => <b>{children}</b>,
               Link: (children) => (
                 <Link
-                  as={NextLink}
                   href={alert.link}
-                  fontWeight="bold"
-                  isExternal
+                  style={{ fontWeight: 'bold' }}
+                  target={alert.link.startsWith('http') ? '_blank' : undefined}
                   data-umami-event="site-alert-click"
                   data-umami-event-label={alert.message}
                 >
@@ -47,8 +55,8 @@ export const SiteAlert = () => {
                 </Link>
               ),
             })}
-        </Text>
+        </styled.p>
       </Flex>
     </Flex>
   );
-};
+}
