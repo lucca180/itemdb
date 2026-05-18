@@ -1,15 +1,14 @@
 import type { Metadata } from 'next';
 import Color from 'color';
-import { Suspense } from 'react';
+import { Fragment, Suspense } from 'react';
+import { Flex, Grid, styled } from '@styled/jsx';
 import { createTranslator } from 'next-intl';
 import { getLocale } from 'next-intl/server';
 import Layout from '@components/Layout';
 import { getItemDbCanonical, normalizeItemDbLocale } from '@utils/appPage';
 import { getDefaultSEO } from '@utils/SEO';
 import { loadTranslation } from '@utils/load-translation';
-import { getTrendingCatLists } from '@pages/api/v1/beta/trending';
 import { HomeHero } from './_components/Home/Sections/HomeHero';
-import { HomePageClient } from './_components/Home/HomePageClient';
 import {
   FeaturedListsHomeCard,
   LeavingNcMallHomeCard,
@@ -18,11 +17,11 @@ import {
   TrendingItemsHomeCard,
   LatestNcMallHomeCard,
 } from '@app/_components/Home/Cards/HomeServerCards';
+import { TVWHomeCard } from '@app/_components/Home/Cards/EventCard';
 import { NewItemsCountSection } from '@app/_components/Home/Cards/NewItemsCountSection';
 import { LatestArticlesSection } from './_components/Home/Sections/LatestArticlesSection';
 import { LatestPricesSection } from './_components/Home/Sections/LatestPricesSection';
 import StatsCard, { StatsCardLoading } from './_components/Home/Cards/StatsCard';
-import { unstable_cache } from 'next/cache';
 
 export const revalidate = 180;
 
@@ -33,26 +32,6 @@ async function getHomePageDescription(locale: string) {
   const t = createTranslator({ messages, locale });
 
   return t('HomePage.seo-description');
-}
-
-const cachedTrendingCatLists = unstable_cache(
-  () => getTrendingCatLists('The Void Within', 3).catch(() => []),
-  ['home-page-trending-cat-lists'],
-  {
-    tags: ['home-trending-cat-lists'],
-    revalidate: 3600,
-  }
-);
-
-async function getHomePageData() {
-  const eventLists = await cachedTrendingCatLists();
-
-  return {
-    hero: null,
-    latestArticlesSection: null,
-    statsSection: null,
-    eventLists,
-  };
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -99,44 +78,60 @@ export default async function HomePage() {
   const locale = await getLocale();
   const messages = await loadTranslation(locale, 'page', true);
   const t = createTranslator({ messages, locale });
-  const homePageClientData = await getHomePageData();
 
   return (
     <Layout disableNextSeo mainColor={mainColor}>
-      <HomePageClient
-        {...homePageClientData}
-        hero={
-          <HomeHero
-            title={t('HomePage.title')}
-            highlightQuery={t('HomePage.open-source')}
-            safetyLinkLabel={t('HomePage.is-it-safe')}
-          />
-        }
-        latestItemsCard={<LatestItemsHomeCard />}
-        newItemsSection={<NewItemsCountSection />}
-        trendingItemsCard={<TrendingItemsHomeCard />}
-        featuredListsCard={<FeaturedListsHomeCard />}
-        latestNcMallCard={<LatestNcMallHomeCard />}
-        leavingNcMallCard={<LeavingNcMallHomeCard />}
-        latestWearableCard={<LatestWearableHomeCard />}
-        latestPricesSection={<LatestPricesSection />}
-        latestArticlesSection={<LatestArticlesSection title={t('HomePage.latest-articles')} />}
-        statsSection={
-          <Suspense
-            fallback={
-              <StatsCardLoading
-                itemsInDbLabel={t('BetaStats.items-in-db')}
-                completeItemsLabel={t('BetaStats.complete-items')}
-                processQueueLabel={t('BetaStats.process-queue')}
-                tradePricingQueueLabel={t('BetaStats.trade-pricing-queue')}
-                feedbackVotingQueueLabel={t('BetaStats.feedback-voting-queue')}
-              />
-            }
-          >
-            <StatsCard />
-          </Suspense>
-        }
+      <HomeHero
+        title={t('HomePage.title')}
+        highlightQuery={t('HomePage.open-source')}
+        safetyLinkLabel={t('HomePage.is-it-safe')}
       />
+      <Flex mt={8} gap={8} flexFlow="column">
+        <LatestPricesSection />
+        <TVWHomeCard />
+        <NewItemsCountSection />
+        <Grid
+          gridTemplateColumns={{ base: 'minmax(0, 1fr)', lg: 'repeat(3, minmax(0, 1fr))' }}
+          gap={{ base: 4, xl: 8 }}
+          justifyItems="center"
+        >
+          <Fragment key="latest-items-card">
+            <LatestItemsHomeCard />
+          </Fragment>
+          <Fragment key="trending-items-card">
+            <TrendingItemsHomeCard />
+          </Fragment>
+          <Fragment key="latest-nc-mall-card">
+            <LatestNcMallHomeCard />
+          </Fragment>
+        </Grid>
+        <FeaturedListsHomeCard />
+        <Flex flexDirection={{ base: 'column', lg: 'row' }} gap={{ base: 4, xl: 8 }}>
+          <LeavingNcMallHomeCard />
+          <LatestWearableHomeCard />
+        </Flex>
+        <Flex flexDirection={{ base: 'column', lg: 'row' }} mt={2} gap={{ base: 8, lg: 3 }}>
+          <Flex flexFlow="column" flex={1} alignItems="center">
+            <styled.h2 fontSize="xl" fontWeight="semibold" lineHeight="1.2" mb={{ base: 5, lg: 0 }}>
+              {t('HomePage.stats')}
+            </styled.h2>
+            <Suspense
+              fallback={
+                <StatsCardLoading
+                  itemsInDbLabel={t('BetaStats.items-in-db')}
+                  completeItemsLabel={t('BetaStats.complete-items')}
+                  processQueueLabel={t('BetaStats.process-queue')}
+                  tradePricingQueueLabel={t('BetaStats.trade-pricing-queue')}
+                  feedbackVotingQueueLabel={t('BetaStats.feedback-voting-queue')}
+                />
+              }
+            >
+              <StatsCard />
+            </Suspense>
+          </Flex>
+          <LatestArticlesSection title={t('HomePage.latest-articles')} />
+        </Flex>
+      </Flex>
     </Layout>
   );
 }

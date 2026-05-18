@@ -66,6 +66,7 @@ export const HorizontalHomeCard = (props: HorizontalHomeCardProps) => {
     children,
     title,
     image,
+    headerColor,
     viewAllLink,
     w,
     h,
@@ -81,7 +82,7 @@ export const HorizontalHomeCard = (props: HorizontalHomeCardProps) => {
     innerStyle,
     ...restProps
   } = props;
-  const color = Color(props.headerColor);
+  const color = Color(headerColor);
   const rgb = color.rgb().array();
 
   return (

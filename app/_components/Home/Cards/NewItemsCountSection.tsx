@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { unstable_cache } from 'next/cache';
 import NextImage from 'next/image';
-import { Flex, Text } from '@chakra-ui/react';
+import { Flex, styled } from '@styled/jsx';
 import { getTranslations } from 'next-intl/server';
 import { getNewItemsInfo } from '@pages/api/v1/beta/new-items';
 import { HorizontalHomeCard } from '@app/_components/Home/Cards/HorizontalHomeCard';
@@ -51,22 +51,22 @@ async function NewItemsCountSectionContent() {
             style={{ borderRadius: '0.375rem' }}
           />
           <Flex flexFlow="column" ml={3}>
-            <Text fontSize="lg" fontWeight="bold">
+            <styled.p fontSize="lg" fontWeight="bold">
               {t.rich('HomePage.new-paid-items', {
                 Highlight: (chunks) => (
-                  <Text as="span" color="purple.700" bg="purple.200" px={1} borderRadius="md">
+                  <styled.span color="purple.700" bg="purple.200" px={1} borderRadius="md">
                     {chunks}
-                  </Text>
+                  </styled.span>
                 ),
                 days: 7,
               })}
-            </Text>
-            <Text fontSize="4xl" fontWeight="bold">
+            </styled.p>
+            <styled.p fontSize="4xl" fontWeight="bold">
               {newItemCount.paidItems}
-            </Text>
-            <Text fontSize="xs" color="whiteAlpha.700">
+            </styled.p>
+            <styled.p fontSize="xs" color="whiteAlpha.700">
               {t('HomePage.new-paid-items-text')}
-            </Text>
+            </styled.p>
           </Flex>
         </Flex>
       </HorizontalHomeCard>
@@ -86,22 +86,22 @@ async function NewItemsCountSectionContent() {
             style={{ borderRadius: '0.375rem' }}
           />
           <Flex flexFlow="column" ml={3}>
-            <Text fontSize="lg" fontWeight="bold">
+            <styled.p fontSize="lg" fontWeight="bold">
               {t.rich('HomePage.new-free-items', {
                 Highlight: (chunks) => (
-                  <Text as="span" color="orange.600" bg="orange.100" px={1} borderRadius="md">
+                  <styled.span color="orange.600" bg="orange.100" px={1} borderRadius="md">
                     {chunks}
-                  </Text>
+                  </styled.span>
                 ),
                 days: 7,
               })}
-            </Text>
-            <Text fontSize="4xl" fontWeight="bold">
+            </styled.p>
+            <styled.p fontSize="4xl" fontWeight="bold">
               {newItemCount.freeItems}
-            </Text>
-            <Text fontSize="xs" color="whiteAlpha.800">
+            </styled.p>
+            <styled.p fontSize="xs" color="whiteAlpha.800">
               {t('HomePage.new-free-items-text')}
-            </Text>
+            </styled.p>
           </Flex>
         </Flex>
       </HorizontalHomeCard>
