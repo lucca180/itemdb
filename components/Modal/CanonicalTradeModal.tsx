@@ -13,6 +13,7 @@ import {
 import { TradeData } from '../../types';
 import { useMemo, useState } from 'react';
 import axios from 'axios';
+import { getCanonicalItemsCount, isTradeAllItemsEqual } from '@utils/tradeCanonical';
 
 export type CanonicalTradeModalProps = {
   isOpen: boolean;
@@ -25,13 +26,8 @@ export default function CanonicalTradeModal(props: CanonicalTradeModalProps) {
   const { isOpen, onClose, trade, refresh } = props;
   const [isLoading, setIsLoading] = useState(false);
 
-  const isAllEqual = useMemo(
-    () =>
-      trade.items.every(
-        (item) => item.name === trade.items[0].name && item.image_id === trade.items[0].image_id
-      ),
-    [trade.items]
-  );
+  const isAllEqual = useMemo(() => isTradeAllItemsEqual(trade), [trade]);
+  const itemCount = useMemo(() => getCanonicalItemsCount(trade.items), [trade.items]);
 
   const handleClose = async () => {
     if (isLoading) return;
@@ -66,9 +62,9 @@ export default function CanonicalTradeModal(props: CanonicalTradeModalProps) {
           >
             <Text textAlign={'center'}>
               Are you sure that this pricing also applies for <b>EVERY</b>{' '}
-              <Badge colorScheme="cyan">{trade.items.length} items</Badge>
+              <Badge colorScheme="cyan">{itemCount} items</Badge>
               <Badge colorScheme="yellow" ml={1}>
-                {isAllEqual ? 'all equal items' : 'diferent items'}
+                {isAllEqual ? 'all equal items' : 'different items'}
               </Badge>{' '}
               trade lots?
             </Text>

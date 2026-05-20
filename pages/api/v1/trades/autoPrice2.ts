@@ -7,6 +7,7 @@ import { getManyItems } from '../items/many';
 import { differenceInCalendarDays } from 'date-fns';
 import { ItemData } from '@types';
 import { shouldSkipTrade } from '@utils/utils';
+import { getTradeItemByOrder, normalizeCanonicalWishlist } from '@utils/tradeCanonical';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
@@ -169,16 +170,28 @@ const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
 };
 
 const findCanonical = async (trade: Trades & { items: TradeItems[] }) => {
+  const normalizedWishlist = normalizeCanonicalWishlist(trade.wishlist);
+  const [canonicalMatch] = (await prisma.$queryRaw`
+    SELECT trade_id FROM Trades
+    WHERE isCanonical = 1
+      AND isAllItemsEqual = ${trade.isAllItemsEqual}
+      AND itemsCount = ${trade.itemsCount}
+      AND LOWER(REPLACE(REPLACE(REPLACE(REPLACE(wishlist, ' ', ''), '\n', ''), '\r', ''), '\t', '')) = ${normalizedWishlist}
+    ORDER BY trade_id DESC
+    LIMIT 1
+  `) as { trade_id: number }[];
+
+  if (!canonicalMatch) return trade;
+
   const canonical = await prisma.trades.findUnique({
     where: {
-      wishlist_isCanonical_isAllItemsEqual_itemsCount: {
-        wishlist: trade.wishlist,
-        isCanonical: true,
-        isAllItemsEqual: trade.isAllItemsEqual!,
-        itemsCount: trade.itemsCount,
+      trade_id: canonicalMatch.trade_id,
+    },
+    include: {
+      items: {
+        orderBy: { order: 'asc' },
       },
     },
-    include: { items: true },
   });
 
   if (!canonical) return trade;
@@ -186,8 +199,11 @@ const findCanonical = async (trade: Trades & { items: TradeItems[] }) => {
   const updatedItems: any[] = [...trade.items];
 
   for (const canonicalItem of canonical.items) {
-    updatedItems[canonicalItem.order].price = canonicalItem.price;
-    updatedItems[canonicalItem.order].addedAt = updatedItems[canonicalItem.order].addedAt.toJSON();
+    const item = getTradeItemByOrder(updatedItems, canonicalItem.order);
+    if (!item) throw new Error(`Missing trade item order ${canonicalItem.order}`);
+
+    item.price = canonicalItem.price;
+    item.addedAt = item.addedAt.toJSON();
   }
 
   await processTradePrice({

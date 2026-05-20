@@ -3,6 +3,7 @@ import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 import { processTradePrice } from '..';
 import { FeedbackParsed, TradeData } from '../../../../../types';
+import { getTradeItemByOrder, normalizeCanonicalWishlist } from '@utils/tradeCanonical';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -72,50 +73,33 @@ export const applyCanonicalTrade = async (id: string) => {
   if (canonTrade.isAllItemsEqual === null || !canonTrade.itemsCount)
     throw { error: 'Canonical Trade Missing Data' };
 
-  try {
-    await prisma.trades.update({
-      where: { trade_id: Number(id) },
-      data: {
-        isCanonical: true,
-      },
-    });
-  } catch (e: any) {
-    await prisma.trades.updateMany({
-      where: {
-        wishlist: canonicalTrade.wishlist,
-        isCanonical: true,
-        isAllItemsEqual: canonTrade.isAllItemsEqual,
-        itemsCount: canonTrade.itemsCount,
-      },
-      data: {
-        isCanonical: null,
-      },
-    });
+  const normalizedWishlist = normalizeCanonicalWishlist(canonicalTrade.wishlist);
 
-    await prisma.trades.update({
-      where: { trade_id: Number(id) },
-      data: {
-        isCanonical: true,
-      },
-    });
-  }
+  const tradeIds = (await prisma.$queryRaw`
+    SELECT t.trade_id FROM Trades t
+    WHERE t.priced = 0
+      AND t.isCanonical IS NULL
+      AND t.isAllItemsEqual = ${canonTrade.isAllItemsEqual}
+      AND t.itemsCount = ${canonTrade.itemsCount}
+      AND LOWER(REPLACE(REPLACE(REPLACE(REPLACE(t.wishlist, ' ', ''), '\n', ''), '\r', ''), '\t', '')) = ${normalizedWishlist}
+      AND NOT EXISTS (
+        SELECT 1 FROM TradeItems ti
+        WHERE ti.trade_id = t.trade_id
+          AND ti.price IS NOT NULL
+      )
+  `) as { trade_id: number }[];
 
   const trades = await prisma.trades.findMany({
     where: {
-      priced: false,
-      isAllItemsEqual: canonTrade.isAllItemsEqual,
-      isCanonical: null,
-      itemsCount: canonTrade.itemsCount,
-      wishlist: canonicalTrade.wishlist,
-      items: {
-        none: {
-          price: {
-            not: null,
-          },
-        },
+      trade_id: {
+        in: tradeIds.map((trade) => trade.trade_id),
       },
     },
-    include: { items: true },
+    include: {
+      items: {
+        orderBy: { order: 'asc' },
+      },
+    },
   });
 
   const allTrades = [canonicalTrade, ...trades];
@@ -127,12 +111,15 @@ export const applyCanonicalTrade = async (id: string) => {
     let skip = false;
 
     for (const canonicalItem of canonicalTrade.items) {
-      if (updatedItems[canonicalItem.order].price && trade.trade_id !== canonicalTrade.trade_id) {
+      const item = getTradeItemByOrder(updatedItems, canonicalItem.order);
+      if (!item) throw { error: `Missing trade item order ${canonicalItem.order}` };
+
+      if (item.price && trade.trade_id !== canonicalTrade.trade_id) {
         skip = true;
         break;
       }
 
-      updatedItems[canonicalItem.order].price = canonicalItem.price;
+      item.price = canonicalItem.price;
     }
 
     if (i % 10 === 0) console.warn(`Processed ${i} of ${allTrades.length} trades`);
@@ -148,19 +135,46 @@ export const applyCanonicalTrade = async (id: string) => {
 
   const allIds = trades.map((t) => t.trade_id);
   allIds.push(Number(id));
-  await prisma.feedbacks.updateMany({
-    where: {
-      type: 'tradePrice',
-      subject_id: {
-        in: allIds,
+
+  const previousCanonicalIds = (await prisma.$queryRaw`
+    SELECT trade_id FROM Trades
+    WHERE isCanonical = 1
+      AND isAllItemsEqual = ${canonTrade.isAllItemsEqual}
+      AND itemsCount = ${canonTrade.itemsCount}
+      AND LOWER(REPLACE(REPLACE(REPLACE(REPLACE(wishlist, ' ', ''), '\n', ''), '\r', ''), '\t', '')) = ${normalizedWishlist}
+  `) as { trade_id: number }[];
+
+  await prisma.$transaction([
+    prisma.trades.updateMany({
+      where: {
+        trade_id: {
+          in: previousCanonicalIds.map((trade) => trade.trade_id),
+        },
       },
-      processed: false,
-    },
-    data: {
-      processed: true,
-      approved: false,
-    },
-  });
+      data: {
+        isCanonical: null,
+      },
+    }),
+    prisma.trades.update({
+      where: { trade_id: Number(id) },
+      data: {
+        isCanonical: true,
+      },
+    }),
+    prisma.feedbacks.updateMany({
+      where: {
+        type: 'tradePrice',
+        subject_id: {
+          in: allIds,
+        },
+        processed: false,
+      },
+      data: {
+        processed: true,
+        approved: false,
+      },
+    }),
+  ]);
 
   return allIds.length;
 };
