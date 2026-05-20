@@ -1,5 +1,8 @@
 @layer reset, base, tokens, recipes, utilities;
 
+body {
+    background: #1A202C;
+}
 
 ::selection {
     background-color: var(--global-color-selection, #0073ff4d);

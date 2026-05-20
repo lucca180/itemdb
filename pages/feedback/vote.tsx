@@ -334,7 +334,7 @@ const FeedbackVotingPage = (props: { shouldShowReminder: boolean }) => {
                   />
                 )}
               </CardBase>
-              <Flex justifyContent="center" mt={4} gap={4}>
+              <Flex justifyContent="center" flexFlow={{ base: 'column', md: 'row' }} mt={4} gap={4}>
                 <Button
                   leftIcon={<Icon as={BsArrowDownCircleFill} />}
                   colorScheme="red"
