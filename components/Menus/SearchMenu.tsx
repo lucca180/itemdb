@@ -1,7 +1,8 @@
 import { ChevronDownIcon } from '@chakra-ui/icons';
-import { Menu, MenuButton, IconButton, MenuList, MenuItem, Portal } from '@chakra-ui/react';
+import { Menu, MenuButton, IconButton, MenuList, MenuItem } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+import ClientPortal from '@components/Utils/ClientPortal';
 
 const SearchMenu = () => {
   const t = useTranslations();
@@ -10,7 +11,7 @@ const SearchMenu = () => {
       <MenuButton size="sm" as={IconButton} data-umami-event="search-menu-button">
         <ChevronDownIcon boxSize="20px" />
       </MenuButton>
-      <Portal>
+      <ClientPortal>
         <MenuList>
           <MenuItem as={Link} href="/search" prefetch={false}>
             {t('Layout.advanced-search')}
@@ -19,7 +20,7 @@ const SearchMenu = () => {
             {t('Layout.official-lists')}
           </MenuItem>
         </MenuList>
-      </Portal>
+      </ClientPortal>
     </Menu>
   );
 };

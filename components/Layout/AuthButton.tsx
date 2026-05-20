@@ -7,7 +7,6 @@ import {
   Icon,
   Menu,
   MenuButton,
-  Portal,
   MenuList,
   MenuGroup,
   MenuItem,
@@ -23,6 +22,7 @@ import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { BsBoxArrowInRight, BsFillPersonFill } from 'react-icons/bs';
+import ClientPortal from '@components/Utils/ClientPortal';
 
 const LoginModal = dynamic(() => import('../Modal/LoginModal'));
 
@@ -92,7 +92,7 @@ export const AuthButton = (props: AuthButtonProps) => {
                   boxSize="18px"
                 />
               </MenuButton>
-              <Portal>
+              <ClientPortal>
                 <MenuList>
                   <MenuGroup
                     title={t('Layout.hello-user', { name: user.username ?? '' })}
@@ -111,7 +111,7 @@ export const AuthButton = (props: AuthButtonProps) => {
                   <MenuDivider />
                   <MenuItem onClick={signout}>{t('Layout.logout')}</MenuItem>
                 </MenuList>
-              </Portal>
+              </ClientPortal>
             </Menu>
           </>
         )}
