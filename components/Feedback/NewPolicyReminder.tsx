@@ -15,7 +15,15 @@ export const NewPolicyReminder = () => {
   if (!shouldShow) return null;
 
   return (
-    <Alert status="warning" borderRadius="md" boxShadow="md" padding={4} mb={3} position="relative">
+    <Alert
+      status="warning"
+      variant={'left-accent'}
+      borderRadius="md"
+      boxShadow="md"
+      padding={4}
+      mb={3}
+      position="relative"
+    >
       <AlertIcon />
       <Box flex="1">
         <AlertTitle fontSize={'md'}>{t('Feedback.updated-trade-pricing-policy')}</AlertTitle>

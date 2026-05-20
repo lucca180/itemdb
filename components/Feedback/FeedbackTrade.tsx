@@ -12,6 +12,9 @@ import {
   Text,
   useDisclosure,
   Link,
+  Alert,
+  AlertIcon,
+  AlertDescription,
 } from '@chakra-ui/react';
 import { TradeData } from '../../types';
 import CardBase from '../Card/CardBase';
@@ -179,9 +182,24 @@ const FeedbackTrade = (props: Props) => {
                     </Badge>
                   </Text>
                 )}
+                {trade?.wishlist.includes('Cool Negg') && (
+                  <Alert
+                    status="error"
+                    variant="left-accent"
+                    borderRadius="md"
+                    mt={1}
+                    textAlign={'left'}
+                  >
+                    <AlertIcon />
+                    <AlertDescription fontSize={'xs'}>
+                      {t.rich('Feedback.cool-negg-alert', {
+                        b: (children) => <b>{children}</b>,
+                      })}
+                    </AlertDescription>
+                  </Alert>
+                )}
               </Flex>
             </Sticky>
-
             {trade?.items.map((item, i) => (
               <ItemTrade
                 trade={trade}

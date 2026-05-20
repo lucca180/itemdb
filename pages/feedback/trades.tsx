@@ -272,7 +272,7 @@ export const TradeGuidelines = () => {
           b: (chunk) => <b>{chunk}</b>,
         })}
       </Text>
-      <Alert status={'warning'} my={6} variant="solid" borderRadius={'md'}>
+      <Alert my={6} variant="left-accent" borderRadius={'md'}>
         <AlertIcon />
         <Box w="100%">
           <AlertTitle>{t('Feedback.20-12-2025-new-baby-paint-brush-policy')}</AlertTitle>
