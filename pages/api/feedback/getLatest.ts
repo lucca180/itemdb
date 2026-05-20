@@ -17,6 +17,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const target = req.query.itemName as string;
   let wishlist = req.query.wishlist as string;
   const order = req.query.order as string;
+  const skipList = req.query.skipList ? (req.query.skipList as string).split(',').map(Number) : [];
 
   let user_id;
   let user;
@@ -39,11 +40,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 
   if (wishlist) {
-    feedbackRaw = await getTradeFeedbackWishlist(wishlist, parseInt(limit), user_id);
+    feedbackRaw = await getTradeFeedbackWishlist(wishlist, parseInt(limit), user_id, skipList);
   }
 
   if (target) {
-    feedbackRaw = await getTradeFeedback(target, parseInt(limit), user_id);
+    feedbackRaw = await getTradeFeedback(target, parseInt(limit), user_id, skipList);
   }
 
   if (!feedbackRaw.length) {
@@ -58,6 +59,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           none: {
             user_id: user_id,
           },
+        },
+        feedback_id: {
+          notIn: skipList.filter((id) => !Number.isNaN(id)),
         },
       },
       orderBy: { addedAt: 'asc' },
@@ -100,7 +104,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   res.json(feedbackRaw);
 }
 
-const getTradeFeedback = async (itemName: string, limit: number, user_id: string) => {
+const getTradeFeedback = async (
+  itemName: string,
+  limit: number,
+  user_id: string,
+  skipList: number[]
+) => {
   const feedbackIds = (await prisma.$queryRaw`
     SELECT f.feedback_id FROM feedbacks f 
     left join trades t on f.subject_id = t.trade_id and f.type = 'tradePrice'
@@ -113,6 +122,7 @@ const getTradeFeedback = async (itemName: string, limit: number, user_id: string
     where: {
       feedback_id: {
         in: feedbackIds.map((f) => f.feedback_id),
+        notIn: skipList.filter((id) => !Number.isNaN(id)),
       },
       user_id: {
         not: user_id,
@@ -130,7 +140,12 @@ const getTradeFeedback = async (itemName: string, limit: number, user_id: string
   return feedbackRaw;
 };
 
-const getTradeFeedbackWishlist = async (wishlist: string, limit: number, user_id: string) => {
+const getTradeFeedbackWishlist = async (
+  wishlist: string,
+  limit: number,
+  user_id: string,
+  skipList: number[]
+) => {
   const feedbackIds = (await prisma.$queryRaw`
     SELECT f.feedback_id FROM feedbacks f 
     left join trades t on f.subject_id = t.trade_id and f.type = 'tradePrice'
@@ -142,6 +157,7 @@ const getTradeFeedbackWishlist = async (wishlist: string, limit: number, user_id
     where: {
       feedback_id: {
         in: feedbackIds.map((f) => f.feedback_id),
+        notIn: skipList.filter((id) => !Number.isNaN(id)),
       },
       user_id: {
         not: user_id,

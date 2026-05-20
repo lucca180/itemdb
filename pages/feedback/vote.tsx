@@ -17,7 +17,7 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import Link from 'next/link';
-import { useState, useEffect, ReactElement } from 'react';
+import { useState, useEffect, ReactElement, useRef } from 'react';
 import { BsArrowDownCircleFill, BsArrowUpCircleFill } from 'react-icons/bs';
 import CardBase from '../../components/Card/CardBase';
 import HeaderCard from '../../components/Card/HeaderCard';
@@ -57,6 +57,7 @@ const FeedbackVotingPage = (props: { shouldShowReminder: boolean }) => {
   const [currentFeedback, setCurrentFeedback] = useState<Feedback>();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
+  const skippedFeedbacks = useRef<number[]>([]);
   const {
     isOpen: isCanonicalOpen,
     onOpen: onCanonicalOpen,
@@ -92,6 +93,14 @@ const FeedbackVotingPage = (props: { shouldShowReminder: boolean }) => {
 
         handleVote('downvote');
       }
+
+      if (e.key.toLowerCase() === 's') {
+        if (!currentFeedback) {
+          return init();
+        }
+
+        handleSkip();
+      }
     };
 
     window.addEventListener('keydown', handleKeyPress);
@@ -110,6 +119,7 @@ const FeedbackVotingPage = (props: { shouldShowReminder: boolean }) => {
           itemName: router.query.target,
           wishlist: router.query.wishlist,
           order: router.query.order,
+          skipList: skippedFeedbacks.current.join(','),
         },
       });
 
@@ -128,6 +138,26 @@ const FeedbackVotingPage = (props: { shouldShowReminder: boolean }) => {
       setError(e.message);
     }
     setIsLoading(false);
+  };
+
+  const handleSkip = async () => {
+    if (!currentFeedback) return;
+
+    setError('');
+
+    skippedFeedbacks.current.push(currentFeedback.feedback_id);
+
+    const newFeedbacks = feedbacks.filter((f) => f.feedback_id !== currentFeedback.feedback_id);
+
+    if (!newFeedbacks.length) {
+      setFeedbacks([]);
+      setCurrentFeedback(undefined);
+      await init();
+      return;
+    }
+
+    setFeedbacks(newFeedbacks);
+    setCurrentFeedback(newFeedbacks[0]);
   };
 
   const handleVote = async (action: 'upvote' | 'downvote') => {
@@ -312,6 +342,9 @@ const FeedbackVotingPage = (props: { shouldShowReminder: boolean }) => {
                   variant="solid"
                 >
                   {isAdmin ? t('Feedback.reprove') : t('Feedback.downvote')} (A)
+                </Button>
+                <Button onClick={handleSkip} variant="outline">
+                  {t('General.skip')} (S)
                 </Button>
                 {isAdmin && <Button onClick={onCanonicalOpen}>🏷️</Button>}
                 <Button
