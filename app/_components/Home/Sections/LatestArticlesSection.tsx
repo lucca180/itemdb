@@ -64,22 +64,20 @@ function LatestArticleCard({ article }: { article: WP_Article }) {
           bg: 'var(--article-card-hover-bg)',
         }}
       >
-        <styled.div bg="transparent" boxShadow="none">
-          <styled.div p={0}>
-            <NextImage
-              src={article.thumbnail ?? '/logo.png'}
-              alt="article thumbnail"
-              quality={100}
-              width={150}
-              height={150}
-              style={{
-                width: '60px',
-                height: '60px',
-                borderRadius: '0.375rem',
-                objectFit: 'cover',
-              }}
-            />
-          </styled.div>
+        <styled.div p={0} flexShrink={0}>
+          <NextImage
+            src={article.thumbnail ?? '/logo.png'}
+            alt="article thumbnail"
+            quality={100}
+            width={150}
+            height={150}
+            style={{
+              width: '60px',
+              height: '60px',
+              borderRadius: '0.375rem',
+              objectFit: 'cover',
+            }}
+          />
         </styled.div>
         <Flex flexDirection="column" gap={1}>
           <Flex alignItems="center" gap={2}>
