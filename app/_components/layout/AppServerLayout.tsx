@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import Color from 'color';
 import { Flex, styled } from '@styled/jsx';
+import { headers } from 'next/headers';
 import NextImage from 'next/image';
 import Link from 'next/link';
 import { createTranslator } from 'next-intl';
@@ -28,6 +29,8 @@ type AppServerLayoutProps = {
 
 export default async function AppServerLayout(props: AppServerLayoutProps) {
   const locale = await getLocale();
+  const requestHeaders = await headers();
+  const currentPath = requestHeaders.get('x-itemdb-current-path') ?? '/';
   const messages = await appLoadTranslation(locale);
   const t = createTranslator({ messages, locale });
   const color = Color('#4A5568');
@@ -230,7 +233,7 @@ export default async function AppServerLayout(props: AppServerLayoutProps) {
                 h="25px"
                 borderRadius="md"
               />
-              <LayoutLocaleIsland />
+              <LayoutLocaleIsland locale={locale} currentPath={currentPath} />
             </Flex>
           </Flex>
 

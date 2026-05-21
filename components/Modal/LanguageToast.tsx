@@ -3,8 +3,7 @@ import { getCookies } from 'cookies-next';
 import { useRouter } from 'next/compat/router';
 import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-
-const VALID_LOCALES = ['en', 'pt'];
+import { isValidLocale } from '@utils/locales';
 
 export type LanguageToastProps = {
   saveLang: (prefLang: string) => Promise<void>;
@@ -54,7 +53,7 @@ const LanguageToast = (props: LanguageToastProps) => {
     let prefLang = 'en';
 
     for (const lang of languages) {
-      if (VALID_LOCALES.includes(lang)) {
+      if (isValidLocale(lang)) {
         prefLang = lang;
         break;
       }

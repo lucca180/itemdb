@@ -1,62 +1,62 @@
-'use client';
-
-import { Select } from '@chakra-ui/react';
-import { useLocale } from 'next-intl';
-import axios from 'axios';
-import { setCookie } from 'cookies-next';
-import { useAuth } from '@utils/auth';
-import LanguageToast from '@components/Modal/LanguageToast';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { getCurrentUser } from '@utils/auth/getCurrentUser';
+import { isValidLocale } from '@utils/locales';
+import prisma from '@utils/prisma';
+import { LayoutLocaleSelectClient } from './LayoutLocaleSelectClient';
 import { getLocalizedPath } from './layoutUtils';
 
-export function LayoutLocaleIsland() {
-  const locale = useLocale();
-  const { user } = useAuth();
+type LayoutLocaleIslandProps = {
+  locale: string;
+  currentPath: string;
+};
 
-  const saveLang = async (prefLang: string) => {
-    setCookie('NEXT_LOCALE', prefLang, {
-      expires: new Date('2030-01-01'),
-      sameSite: 'none',
-      secure: true,
-    });
+function isLocale(value: FormDataEntryValue | null): value is LayoutLocaleIslandProps['locale'] {
+  return typeof value === 'string' && isValidLocale(value);
+}
 
-    if (!user) {
+export function LayoutLocaleIsland({ locale, currentPath }: LayoutLocaleIslandProps) {
+  async function changeLocaleAction(formData: FormData) {
+    'use server';
+
+    const prefLang = formData.get('prefLang');
+
+    if (!isLocale(prefLang)) {
       return;
     }
 
-    await axios.post(`/api/v1/users/${user.username}`, {
-      prefLang,
-      neopetsUser: user.neopetsUser,
-      username: user.username,
+    const cookieStore = await cookies();
+    cookieStore.set('NEXT_LOCALE', prefLang, {
+      expires: new Date('2030-01-01'),
+      sameSite: 'none',
+      secure: true,
+      path: '/',
     });
-  };
 
-  const changeLang = async (prefLang: string) => {
-    const currentPath =
-      typeof window === 'undefined'
-        ? '/'
-        : `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    const targetPath = getLocalizedPath(currentPath, prefLang);
+    const sessionCookie = cookieStore.get('session')?.value;
 
-    await saveLang(prefLang);
-    window.location.assign(getLocalizedPath(currentPath, prefLang));
-  };
+    if (!sessionCookie) {
+      redirect(targetPath);
+    }
 
-  return (
-    <>
-      <LanguageToast saveLang={saveLang} />
-      <Select
-        borderRadius="md"
-        bg="whiteAlpha.200"
-        size="xs"
-        variant="filled"
-        defaultValue={locale}
-        flex="1"
-        minW="120px"
-        h="25px"
-        onChange={(e) => void changeLang(e.target.value)}
-      >
-        <option value="en">English</option>
-        <option value="pt">Português</option>
-      </Select>
-    </>
-  );
+    try {
+      const { user } = await getCurrentUser({ sessionCookie });
+
+      if (!user) {
+        redirect(targetPath);
+      }
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { pref_lang: prefLang },
+      });
+    } catch {
+      // Persisting the cookie is enough to switch the locale for guests or on DB failures.
+    }
+
+    redirect(targetPath);
+  }
+
+  return <LayoutLocaleSelectClient action={changeLocaleAction} locale={locale} />;
 }

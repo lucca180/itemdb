@@ -1,10 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { CheckAuth } from '../../../../../utils/googleCloud';
+import { isValidLocale } from '../../../../../utils/locales';
 import prisma from '../../../../../utils/prisma';
 import { getImagePalette } from '../../lists/[username]';
 import { rawToUser } from '../../../auth/login';
-
-const VALID_LANGS = ['en', 'pt'];
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -38,7 +37,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   let { neopetsUser, username, profileColor, profileImage, description, prefLang, profileMode } =
     req.body;
 
-  if (!prefLang || !VALID_LANGS.includes(prefLang)) prefLang = undefined;
+  if (!isValidLocale(prefLang)) prefLang = undefined;
 
   try {
     const authRes = await CheckAuth(req);

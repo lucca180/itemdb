@@ -14,15 +14,11 @@ import Head from 'next/head';
 import type { NextPage } from 'next';
 import { onIntlError } from '../utils/intlHandler';
 import { installProofInterceptor } from '@utils/http/proofInterceptor';
+import { getLocalePrefix, VALID_LOCALES } from '@utils/locales';
 
 if (typeof window !== 'undefined') {
   installProofInterceptor();
 }
-
-const VALID_LOCALES = {
-  en: '',
-  pt: '/pt',
-};
 
 export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: React.ReactElement, props: P) => React.ReactNode;
@@ -48,12 +44,14 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
             onError={(e) => onIntlError(e, { path: router.asPath })}
           >
             <Head>
-              {Object.entries(VALID_LOCALES).map(([key, value]) => (
+              {VALID_LOCALES.map((locale) => (
                 <link
                   rel="alternate"
-                  key={key}
-                  hrefLang={key}
-                  href={removeUTM(`https://itemdb.com.br${value}${router.asPath}`)}
+                  key={locale}
+                  hrefLang={locale}
+                  href={removeUTM(
+                    `https://itemdb.com.br${getLocalePrefix(locale)}${router.asPath}`
+                  )}
                 />
               ))}
             </Head>

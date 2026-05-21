@@ -11,6 +11,8 @@ import {
   verifySiteProof,
 } from '@utils/api-utils';
 import * as Sentry from '@sentry/nextjs';
+import type { AppLocale } from '@utils/locales';
+import { DEFAULT_LOCALE, isValidLocale } from '@utils/locales';
 import { checkSession } from '@utils/redis';
 
 const API_SKIPS = {
@@ -31,9 +33,7 @@ const API_SKIPS = {
 } as const;
 
 const PUBLIC_FILE = /\.(.*)$/;
-const DEFAULT_LOCALE = 'en';
-const VALID_LOCALES = ['en', 'pt'] as const;
-type Locale = (typeof VALID_LOCALES)[number];
+type Locale = AppLocale;
 
 const APP_ROUTER_LOCALIZED_ROUTES = [
   {
@@ -60,10 +60,8 @@ export const config = {
 };
 
 export async function proxy(request: NextRequest) {
-  const response = NextResponse.next();
-
   if (request.nextUrl.pathname.startsWith('/_next') || PUBLIC_FILE.test(request.nextUrl.pathname)) {
-    return response;
+    return NextResponse.next();
   }
 
   if (MAINTENANCE_MODE) {
@@ -71,7 +69,7 @@ export async function proxy(request: NextRequest) {
   }
 
   if (request.nextUrl.pathname.startsWith('/api/')) {
-    if (skipAPIMiddleware) return response;
+    if (skipAPIMiddleware) return NextResponse.next();
 
     return apiMiddleware(request);
   }
@@ -83,8 +81,17 @@ export async function proxy(request: NextRequest) {
   const proofCookie = request.cookies.get('itemdb-proof')?.value || '';
 
   const localizedRoute = getAppRouterLocalizedRoute(request);
+  const currentPath = getRequestCurrentPath(request, localizedRoute);
+  const pageRequestHeaders = new Headers(request.headers);
+  pageRequestHeaders.set('x-itemdb-current-path', currentPath);
+  const response = NextResponse.next({
+    request: {
+      headers: pageRequestHeaders,
+    },
+  });
+
   if (localizedRoute) {
-    const requestHeaders = new Headers(request.headers);
+    const requestHeaders = new Headers(pageRequestHeaders);
     requestHeaders.set('x-itemdb-locale', localizedRoute.locale);
 
     return finalizePageResponse(
@@ -100,7 +107,7 @@ export async function proxy(request: NextRequest) {
 
   finalizePageResponse(response, startTime, proofCookie);
 
-  if (!locale || locale === request.nextUrl.locale || !isLocale(locale)) return response;
+  if (!locale || locale === request.nextUrl.locale || !isValidLocale(locale)) return response;
 
   const redirectResponse = NextResponse.redirect(
     new URL(`/${locale}${request.nextUrl.pathname}${request.nextUrl.search}`, request.url)
@@ -344,7 +351,11 @@ const finalizePageResponse = (response: NextResponse, startTime: number, proofCo
 
 const getAppRouterLocalizedRoute = (request: NextRequest) => {
   const pathLocale = getPathLocale(request.nextUrl.pathname);
-  const locale = pathLocale ?? getNextUrlLocale(request.nextUrl.locale);
+  const cookieLocale = request.cookies.get('NEXT_LOCALE')?.value;
+  const locale =
+    pathLocale ??
+    (isValidLocale(cookieLocale) ? cookieLocale : null) ??
+    getNextUrlLocale(request.nextUrl.locale);
   if (!locale) return null;
 
   const pathname = pathLocale
@@ -357,24 +368,33 @@ const getAppRouterLocalizedRoute = (request: NextRequest) => {
   return {
     appPath: route.appPath,
     locale,
+    currentPath: withLocalePrefix(route.localizedPath, locale),
   };
+};
+
+const getRequestCurrentPath = (
+  request: NextRequest,
+  localizedRoute: ReturnType<typeof getAppRouterLocalizedRoute>
+) => {
+  const searchParams = new URLSearchParams(request.nextUrl.search);
+  searchParams.delete('_rsc');
+  const search = searchParams.toString();
+  const pathname = localizedRoute?.currentPath ?? request.nextUrl.pathname;
+
+  return `${pathname}${search ? `?${search}` : ''}`;
 };
 
 const getPathLocale = (pathname: string): Locale | null => {
   const firstSegment = pathname.split('/')[1];
-  if (!isLocale(firstSegment) || firstSegment === DEFAULT_LOCALE) return null;
+  if (!isValidLocale(firstSegment) || firstSegment === DEFAULT_LOCALE) return null;
 
   return firstSegment;
 };
 
 const getNextUrlLocale = (locale: string): Locale | null => {
-  if (!isLocale(locale) || locale === DEFAULT_LOCALE) return null;
+  if (!isValidLocale(locale) || locale === DEFAULT_LOCALE) return null;
 
   return locale;
-};
-
-const isLocale = (locale: string): locale is Locale => {
-  return VALID_LOCALES.includes(locale as Locale);
 };
 
 const stripLocalePrefix = (pathname: string, locale: Locale) => {
@@ -383,6 +403,14 @@ const stripLocalePrefix = (pathname: string, locale: Locale) => {
   if (pathname.startsWith(`${prefix}/`)) return pathname.slice(prefix.length);
 
   return pathname;
+};
+
+const withLocalePrefix = (pathname: string, locale: Locale) => {
+  if (locale === DEFAULT_LOCALE) {
+    return pathname;
+  }
+
+  return pathname === '/' ? `/${locale}` : `/${locale}${pathname}`;
 };
 
 const createForwardedContext = (request: NextRequest) => {

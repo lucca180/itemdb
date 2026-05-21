@@ -1,15 +1,7 @@
 import { cookies, headers } from 'next/headers';
 import { getRequestConfig } from 'next-intl/server';
-
-const VALID_LOCALES = ['en', 'pt'] as const;
-type Locale = (typeof VALID_LOCALES)[number];
-
-const DEFAULT_LOCALE: Locale = 'en';
+import { DEFAULT_LOCALE, isValidLocale } from '@utils/locales';
 const TIME_ZONE = 'America/Los_Angeles';
-
-function isLocale(locale: string | undefined | null): locale is Locale {
-  return locale !== undefined && VALID_LOCALES.includes(locale as Locale);
-}
 
 export default getRequestConfig(async () => {
   const requestHeaders = await headers();
@@ -17,9 +9,9 @@ export default getRequestConfig(async () => {
 
   const headerLocale = requestHeaders.get('x-itemdb-locale');
   const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value;
-  const locale = isLocale(headerLocale)
+  const locale = isValidLocale(headerLocale)
     ? headerLocale
-    : isLocale(cookieLocale)
+    : isValidLocale(cookieLocale)
       ? cookieLocale
       : DEFAULT_LOCALE;
 
