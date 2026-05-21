@@ -31,6 +31,7 @@ export async function AppSiteAlert({ locale }: AppSiteAlertProps) {
       >
         {alert.img && (
           <Link
+            prefetch={false}
             href={alert.link}
             style={{ display: 'inline-flex' }}
             data-umami-event="site-alert-click"
@@ -45,6 +46,7 @@ export async function AppSiteAlert({ locale }: AppSiteAlertProps) {
               b: (children) => <b>{children}</b>,
               Link: (children) => (
                 <Link
+                  prefetch={false}
                   href={alert.link}
                   style={{ fontWeight: 'bold' }}
                   target={alert.link.startsWith('http') ? '_blank' : undefined}
