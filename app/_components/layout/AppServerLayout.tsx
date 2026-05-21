@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import Color from 'color';
 import { Flex, styled } from '@styled/jsx';
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import NextImage from 'next/image';
 import Link from 'next/link';
 import { createTranslator } from 'next-intl';
@@ -18,6 +18,8 @@ import { LayoutLocaleIsland } from './LayoutLocaleIsland';
 import { LayoutNavMenuIsland } from './LayoutNavMenuIsland';
 import { LayoutSearchIsland } from './LayoutSearchIsland';
 import type { LayoutNavSection } from './layoutUtils';
+import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
+import { redirect } from 'next/navigation';
 
 type AppServerLayoutProps = {
   children?: ReactNode;
@@ -35,6 +37,14 @@ export default async function AppServerLayout(props: AppServerLayoutProps) {
   const t = createTranslator({ messages, locale });
   const color = Color('#4A5568');
   const rgb = color.rgb().round().array();
+
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get('session')?.value;
+  const { user } = sessionCookie ? await getServerCurrentUser() : { user: null };
+
+  if (user && !user.username && !currentPath.includes('/login')) {
+    redirect('/login');
+  }
 
   const navSections: LayoutNavSection[] = [
     { label: t('Layout.home'), href: '/' },
@@ -140,7 +150,7 @@ export default async function AppServerLayout(props: AppServerLayoutProps) {
             <LayoutSearchIsland />
           </styled.div>
         </Flex>
-        <LayoutAuthIsland />
+        <LayoutAuthIsland initialUser={user} />
       </Flex>
 
       <Flex

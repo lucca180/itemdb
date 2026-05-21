@@ -1,21 +1,29 @@
-import { cookies } from 'next/headers';
-import { getCurrentUser } from '@utils/auth/getCurrentUser';
 import type { User } from '@types';
+import prisma from '@utils/prisma';
+import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 
 export type PreloadedAuthState = {
   user: User | null;
 };
 
 export async function getPreloadedAuthState(): Promise<PreloadedAuthState> {
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get('session')?.value;
-
-  if (!sessionCookie) {
-    return { user: null };
-  }
+  const { user } = await getServerCurrentUser();
 
   try {
-    const { user } = await getCurrentUser({ sessionCookie, updateLastLogin: true });
+    if (user) {
+      // Keep the lightweight "last seen" update without re-fetching auth state.
+      prisma.user
+        .update({
+          where: { id: user.id },
+          data: {
+            last_ip: '',
+            last_login: new Date(),
+          },
+        })
+        .then(() => {})
+        .catch(() => {});
+    }
+
     return { user };
   } catch {
     return { user: null };

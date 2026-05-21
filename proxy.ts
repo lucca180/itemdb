@@ -11,8 +11,13 @@ import {
   verifySiteProof,
 } from '@utils/api-utils';
 import * as Sentry from '@sentry/nextjs';
-import type { AppLocale } from '@utils/locales';
-import { DEFAULT_LOCALE, isValidLocale } from '@utils/locales';
+import {
+  getCurrentPath,
+  getLocalizedAppRoute,
+  isValidLocale,
+  type LocalizedAppRoute,
+} from '@utils/locales';
+import { createForwardedContext, finalizeApiResponse, finalizePageResponse } from '@utils/proxy';
 import { checkSession } from '@utils/redis';
 
 const API_SKIPS = {
@@ -33,7 +38,6 @@ const API_SKIPS = {
 } as const;
 
 const PUBLIC_FILE = /\.(.*)$/;
-type Locale = AppLocale;
 
 const APP_ROUTER_LOCALIZED_ROUTES = [
   {
@@ -48,7 +52,7 @@ const APP_ROUTER_LOCALIZED_ROUTES = [
     appPath: '/terms',
     localizedPath: '/terms',
   },
-] as const;
+] as const satisfies readonly LocalizedAppRoute[];
 
 const skipAPIMiddleware = process.env.SKIP_API_MIDDLEWARE === 'true';
 const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === 'true';
@@ -80,8 +84,17 @@ export async function proxy(request: NextRequest) {
 
   const proofCookie = request.cookies.get('itemdb-proof')?.value || '';
 
-  const localizedRoute = getAppRouterLocalizedRoute(request);
-  const currentPath = getRequestCurrentPath(request, localizedRoute);
+  const localizedRoute = getLocalizedAppRoute({
+    pathname: request.nextUrl.pathname,
+    cookieLocale: locale,
+    nextUrlLocale: request.nextUrl.locale,
+    routes: APP_ROUTER_LOCALIZED_ROUTES,
+  });
+  const currentPath = getCurrentPath(
+    request.nextUrl.pathname,
+    request.nextUrl.search,
+    localizedRoute?.currentPath
+  );
   const pageRequestHeaders = new Headers(request.headers);
   pageRequestHeaders.set('x-itemdb-current-path', currentPath);
   const response = NextResponse.next({
@@ -100,12 +113,11 @@ export async function proxy(request: NextRequest) {
           headers: requestHeaders,
         },
       }),
-      startTime,
-      proofCookie
+      { startTime, proofCookie }
     );
   }
 
-  finalizePageResponse(response, startTime, proofCookie);
+  finalizePageResponse(response, { startTime, proofCookie });
 
   if (!locale || locale === request.nextUrl.locale || !isValidLocale(locale)) return response;
 
@@ -314,157 +326,4 @@ export const apiMiddleware = async (request: NextRequest) => {
   Sentry.setTag('api_type', 'undefined');
 
   return NextResponse.json({ error: 'Invalid access' }, { status: 401 });
-};
-
-const updateServerTime = (label: string, startTime: number, response: NextResponse) => {
-  const endTime = Date.now();
-  const value = endTime - startTime;
-
-  const serverTime = response.headers.get('Server-Timing') || '';
-
-  const newServerTime = serverTime
-    ? `${serverTime}, ${label};dur=${value}`
-    : `${label};dur=${value}`;
-  response.headers.set('Server-Timing', newServerTime);
-};
-
-const finalizePageResponse = (response: NextResponse, startTime: number, proofCookie: string) => {
-  updateServerTime('regular-middleware', startTime, response);
-
-  if (!verifySiteChallenge(proofCookie, 120)) {
-    const proof = generateSiteProof();
-    response.cookies.set({
-      name: 'itemdb-proof',
-      value: proof.token,
-      maxAge: proof.expiresIn,
-      secure: true,
-      sameSite: 'lax',
-      httpOnly: false,
-    });
-  }
-
-  // bypass cache on document pages
-  response.headers.set('Cache-Control', 'no-cache, must-revalidate');
-
-  return response;
-};
-
-const getAppRouterLocalizedRoute = (request: NextRequest) => {
-  const pathLocale = getPathLocale(request.nextUrl.pathname);
-  const cookieLocale = request.cookies.get('NEXT_LOCALE')?.value;
-  const locale =
-    pathLocale ??
-    (isValidLocale(cookieLocale) ? cookieLocale : null) ??
-    getNextUrlLocale(request.nextUrl.locale);
-  if (!locale) return null;
-
-  const pathname = pathLocale
-    ? stripLocalePrefix(request.nextUrl.pathname, pathLocale)
-    : request.nextUrl.pathname;
-
-  const route = APP_ROUTER_LOCALIZED_ROUTES.find(({ localizedPath }) => pathname === localizedPath);
-  if (!route) return null;
-
-  return {
-    appPath: route.appPath,
-    locale,
-    currentPath: withLocalePrefix(route.localizedPath, locale),
-  };
-};
-
-const getRequestCurrentPath = (
-  request: NextRequest,
-  localizedRoute: ReturnType<typeof getAppRouterLocalizedRoute>
-) => {
-  const searchParams = new URLSearchParams(request.nextUrl.search);
-  searchParams.delete('_rsc');
-  const search = searchParams.toString();
-  const pathname = localizedRoute?.currentPath ?? request.nextUrl.pathname;
-
-  return `${pathname}${search ? `?${search}` : ''}`;
-};
-
-const getPathLocale = (pathname: string): Locale | null => {
-  const firstSegment = pathname.split('/')[1];
-  if (!isValidLocale(firstSegment) || firstSegment === DEFAULT_LOCALE) return null;
-
-  return firstSegment;
-};
-
-const getNextUrlLocale = (locale: string): Locale | null => {
-  if (!isValidLocale(locale) || locale === DEFAULT_LOCALE) return null;
-
-  return locale;
-};
-
-const stripLocalePrefix = (pathname: string, locale: Locale) => {
-  const prefix = `/${locale}`;
-  if (pathname === prefix) return '/';
-  if (pathname.startsWith(`${prefix}/`)) return pathname.slice(prefix.length);
-
-  return pathname;
-};
-
-const withLocalePrefix = (pathname: string, locale: Locale) => {
-  if (locale === DEFAULT_LOCALE) {
-    return pathname;
-  }
-
-  return pathname === '/' ? `/${locale}` : `/${locale}${pathname}`;
-};
-
-const createForwardedContext = (request: NextRequest) => {
-  const requestHeaders = new Headers(request.headers);
-  const response = NextResponse.next({
-    request: {
-      headers: requestHeaders,
-    },
-  });
-
-  return { requestHeaders, response };
-};
-
-const finalizeApiResponse = (request: NextRequest, response: NextResponse, startTime?: number) => {
-  addCors(request, response);
-
-  if (startTime !== undefined) {
-    updateServerTime('api-middleware', startTime, response);
-  }
-
-  return response;
-};
-
-const allowedOrigins = [
-  'itemdb.com.br',
-  'neopets.com',
-  'www.neopets.com',
-  'impress.openneo.net',
-  'magnetismotimes.com',
-  'castleneo.com',
-  'www.castleneo.com',
-];
-
-const addCors = (request: NextRequest, response: NextResponse) => {
-  const origin = request.headers.get('origin');
-  if (!origin || origin === 'null') return;
-
-  try {
-    const url = new URL(origin || '');
-    if (!allowedOrigins.includes(url.hostname)) {
-      return;
-    }
-
-    if (origin) {
-      response.headers.set(
-        'Access-Control-Allow-Headers',
-        'Content-Type, Authorization, x-itemdb-proof, x-itemdb-token, x-itemdb-key'
-      );
-      response.headers.set(
-        'Access-Control-Expose-Headers',
-        'Content-Type, Authorization, x-itemdb-proof, x-itemdb-token, x-itemdb-key, x-itemdb-block, x-itemdb-skip, sentry-trace, baggage, traceparent'
-      );
-      response.headers.set('Access-Control-Allow-Origin', origin);
-      response.headers.set('Access-Control-Allow-Credentials', 'true');
-    }
-  } catch {}
 };
