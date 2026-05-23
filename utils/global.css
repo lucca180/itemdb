@@ -12,7 +12,7 @@
 }
 
 ::selection {
-    background-color: var(--global-color-selection, #0073ff4d);
+  background-color: var(--global-color-selection, #0073ff4d);
 }
 
 @keyframes restock2024 {
