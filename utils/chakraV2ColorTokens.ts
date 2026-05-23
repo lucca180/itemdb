@@ -211,7 +211,7 @@ export const chakraV2SemanticColorTokens = {
       value: { _light: '{colors.black}', _dark: '{colors.white}' },
     },
     panel: {
-      value: { _light: '{colors.white}', _dark: '{colors.gray.800}' },
+      value: { _light: '{colors.white}', _dark: '{colors.gray.700}' },
     },
     error: {
       value: { _light: '{colors.red.50}', _dark: '{colors.red.900}' },

@@ -179,7 +179,6 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
             justifyContent="center"
             gap={2}
             alignItems="center"
-            boxShadow="sm"
             textAlign="center"
             flex="0 0 auto"
             minW="100px"
@@ -258,7 +257,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
                 </Badge>
               )}
             </Stack>
-            <Heading as="h1" size={{ base: 'lg', md: undefined }}>
+            <Heading as="h1" size={{ base: 'lg', md: '3xl' }} fontWeight={'bold'}>
               {item.name}
             </Heading>
             <Text fontSize={{ base: 'sm', md: 'inherit' }} as="h2">
