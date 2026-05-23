@@ -51,7 +51,6 @@ export default function LastSeenModal(props: LastSeenModalProps) {
                 ),
                 Source: (chunks) => (
                   <Link
-                    asChild
                     href="https://github.com/lucca180/itemdb"
                     target="_blank"
                     rel="noreferrer"
@@ -66,7 +65,7 @@ export default function LastSeenModal(props: LastSeenModalProps) {
               <Button size="sm" variant="ghost" onClick={onClose}>
                 {t('General.close')}
               </Button>
-              <Button asChild size="sm" colorPalette="gray" ml={3}>
+              <Button asChild size="sm" colorPalette="whiteAlpha" variant="subtle" ml={3}>
                 <NextLink href="/contribute" target="_blank">
                   {t('General.contribute-with-itemdb')}{' '}
                   <Icon boxSize="12px" as={FaExternalLinkAlt} ml={1} />

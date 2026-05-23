@@ -1,6 +1,10 @@
 import { createSystem, defaultConfig } from '@chakra-ui/react';
 import { Inter } from 'next/font/google';
-import { chakraV2ColorTokens, chakraV2SemanticColorTokens } from '@utils/chakraV2ColorTokens';
+import {
+  chakraV2ColorTokens,
+  chakraV2SemanticColorTokens,
+} from '@utils/styling/chakraV2ColorTokens';
+import { badgeRecipe, buttonRecipe, inputRecipe } from '@utils/styling/recipes';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -15,6 +19,12 @@ export const system = createSystem(defaultConfig, {
     },
     semanticTokens: {
       colors: chakraV2SemanticColorTokens,
+    },
+    recipes: {
+      badge: badgeRecipe,
+      input: inputRecipe,
+      textarea: inputRecipe,
+      button: buttonRecipe,
     },
   },
   globalCss: {

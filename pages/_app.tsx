@@ -14,7 +14,7 @@ import type { NextPage } from 'next';
 import { onIntlError } from '../utils/intlHandler';
 import { installProofInterceptor } from '@utils/http/proofInterceptor';
 import { getLocalePrefix, VALID_LOCALES } from '@utils/locales';
-import { system } from '@utils/theme';
+import { system } from '@utils/styling/theme';
 import { Toaster } from '@components/ui/toaster';
 import { ColorModeProvider } from '@components/ui/color-mode';
 

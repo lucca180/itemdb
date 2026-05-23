@@ -14,7 +14,8 @@ const FeedbackButton = (props: FeedbackButtonProps) => {
     <>
       {open && <FeedbackModal isOpen={open} onClose={onClose} />}
       <Button
-        variant="outline"
+        variant="subtle"
+        colorPalette="whiteAlpha"
         size="sm"
         onClick={onOpen}
         data-umami-event="feedback-button"

@@ -13,7 +13,7 @@ import {
   useDisclosure,
   Image as ChakraImage,
 } from '@chakra-ui/react';
-import { useToast } from '@utils/toast';
+import { useToast } from '@utils/styling/toast';
 import { ColorInstance } from 'color';
 import { BiLinkExternal } from 'react-icons/bi';
 import { MdWarning } from 'react-icons/md';

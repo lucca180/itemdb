@@ -17,7 +17,7 @@ import {
   Link,
   Kbd,
 } from '@chakra-ui/react';
-import { useToast } from '@utils/toast';
+import { useToast } from '@utils/styling/toast';
 import axios from 'axios';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Layout from '../../../components/Layout';

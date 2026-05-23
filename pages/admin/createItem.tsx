@@ -1,5 +1,5 @@
 import { Button, Center, Heading, Link, Spinner, Tabs, Text } from '@chakra-ui/react';
-import { useToast } from '@utils/toast';
+import { useToast } from '@utils/styling/toast';
 import axios from 'axios';
 import { NextApiRequest, GetServerSidePropsContext } from 'next';
 import React, { useState } from 'react';

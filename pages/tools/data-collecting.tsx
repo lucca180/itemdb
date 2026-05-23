@@ -1,5 +1,5 @@
 import { Box, Button, Center, Field, Flex, Heading, NativeSelect, Text } from '@chakra-ui/react';
-import { useToast } from '@utils/toast';
+import { useToast } from '@utils/styling/toast';
 import HeaderCard from '@components/Card/HeaderCard';
 import Layout from '@components/Layout';
 import { createTranslator, useTranslations } from 'next-intl';

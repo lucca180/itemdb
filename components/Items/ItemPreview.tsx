@@ -1,8 +1,9 @@
 import { AspectRatio, Box, Button, Flex, IconButton, Link, Skeleton, Text } from '@chakra-ui/react';
+import CardBase from '@components/Card/CardBase';
 import React, { useMemo, useState, memo, useCallback } from 'react';
 import Image from 'next/image';
 import { ItemData, ItemEffect, WearableData } from '../../types';
-import { ExternalLinkIcon } from '@utils/chakraIcons';
+import { ExternalLinkIcon } from '@utils/styling/chakraIcons';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@utils/auth';
 import { FaRotateRight } from 'react-icons/fa6';
@@ -79,41 +80,35 @@ const ItemPreview = (props: Props) => {
   );
 
   return (
-    <Flex
-      width="fit-content"
-      borderRadius="md"
-      overflow="hidden"
-      flexFlow="column"
-      boxShadow="sm"
-      w="100%"
+    <CardBase
+      title={
+        <>
+          <Text>{t('ItemPage.item-preview')}</Text>
+          {isWearable && (
+            <Flex justifyContent={'center'} gap={2} mt={1}>
+              <Button
+                size="xs"
+                variant={variation === 'static' ? 'solid' : 'ghost'}
+                onClick={() => handleVarChange('static')}
+              >
+                Static
+              </Button>
+              <Button
+                size="xs"
+                variant={variation === 'animated' ? 'solid' : 'ghost'}
+                onClick={() => handleVarChange('animated')}
+              >
+                HTML5
+              </Button>
+            </Flex>
+          )}
+        </>
+      }
+      color={color}
+      noPadding
+      chakraWrapper={{ width: 'fit-content', borderRadius: 'md', w: '100%' }}
+      chakraTitle={{ as: 'div', display: 'flex', flexFlow: 'column' }}
     >
-      <Flex
-        p={2}
-        textAlign="center"
-        fontWeight="bold"
-        flexFlow="column"
-        bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}
-      >
-        <Text>{t('ItemPage.item-preview')}</Text>
-        {isWearable && (
-          <Flex justifyContent={'center'} gap={2} mt={1}>
-            <Button
-              size="xs"
-              variant={variation === 'static' ? 'solid' : 'ghost'}
-              onClick={() => handleVarChange('static')}
-            >
-              Static
-            </Button>
-            <Button
-              size="xs"
-              variant={variation === 'animated' ? 'solid' : 'ghost'}
-              onClick={() => handleVarChange('animated')}
-            >
-              HTML5
-            </Button>
-          </Flex>
-        )}
-      </Flex>
       {variation === 'static' && (
         <Flex
           position="relative"
@@ -211,7 +206,7 @@ const ItemPreview = (props: Props) => {
           </Link>
         </Text>
       </Box>
-    </Flex>
+    </CardBase>
   );
 };
 

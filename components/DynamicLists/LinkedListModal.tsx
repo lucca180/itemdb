@@ -1,5 +1,5 @@
 import { Button, Center, CloseButton, Dialog, Portal, Spinner, Text } from '@chakra-ui/react';
-import { useToast } from '@utils/toast';
+import { useToast } from '@utils/styling/toast';
 import axios from 'axios';
 import Image from 'next/image';
 import { useState } from 'react';

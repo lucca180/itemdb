@@ -8,7 +8,7 @@ import {
   Portal,
   Link,
 } from '@chakra-ui/react';
-import { useToast } from '@utils/toast';
+import { useToast } from '@utils/styling/toast';
 import { useTranslations } from 'next-intl';
 import NextLink from 'next/link';
 import ItemSelect from '../Input/ItemSelect';

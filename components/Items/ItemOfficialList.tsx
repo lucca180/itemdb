@@ -30,14 +30,14 @@ const ItemOfficialLists = (props: Props) => {
   return (
     <CardBase
       title={<Link href="/lists/official">{t('General.official-lists')}</Link>}
-      color={item.color.rgb}
+      color={item.color.hex}
     >
       <Flex
         gap={3}
         flexFlow="row"
         justifyContent="center"
         flexWrap={'wrap'}
-        css={{ a: { color: color.lightness(70).hex() } }}
+        css={{ '& a': { color: color.lightness(70).hex() } }}
       >
         {officialLists.map((list) => (
           <Flex
@@ -50,7 +50,6 @@ const ItemOfficialLists = (props: Props) => {
             w="200px"
             borderRadius={'md'}
             gap={1}
-            boxShadow={'sm'}
             alignItems={'center'}
           >
             <Flex mt="-20px" justifyContent={'center'}>

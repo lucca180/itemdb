@@ -271,25 +271,19 @@ const Layout = (props: Props) => {
                 permission.
               </Text>
               <Flex alignItems={'flex-end'} gap={4}>
-                <FeedbackButton
-                  bg="whiteAlpha.200"
-                  variant={'solid'}
-                  size="xs"
-                  flex="1"
-                  h="25px"
-                  borderRadius="md"
-                />
+                <FeedbackButton size="xs" flex="1" h="25px" borderRadius="md" />
                 <NativeSelect.Root
                   size="xs"
                   variant="subtle"
                   flex="1"
                   minW="120px"
                   borderRadius="md"
-                  bg="whiteAlpha.200"
                   h="25px"
                 >
                   <NativeSelect.Field
+                    h="25px"
                     defaultValue={currentLocale}
+                    bg="whiteAlpha.200"
                     onChange={(e: ChangeEvent<HTMLSelectElement>) => changeLang(e.target.value)}
                   >
                     <option value="en">English</option>
@@ -303,7 +297,7 @@ const Layout = (props: Props) => {
               flexFlow={['row']}
               gap={[3, 12]}
               justifyContent="center"
-              css={{ 'a:hover': { textDecoration: 'underline' } }}
+              css={{ '& a:hover': { textDecoration: 'underline' } }}
             >
               <Flex flex="1" flexFlow={'column'} fontSize="xs" gap={2} color="gray.300">
                 <Text fontSize="xs" mb={2} textTransform="uppercase" color="gray.500">

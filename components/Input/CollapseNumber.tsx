@@ -1,4 +1,4 @@
-import { CloseIcon } from '@utils/chakraIcons';
+import { CloseIcon } from '@utils/styling/chakraIcons';
 import { InputGroup, IconButton, Input } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
 import { useState, useRef, useEffect } from 'react';

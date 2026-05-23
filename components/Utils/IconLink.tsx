@@ -19,6 +19,7 @@ export const IconLink = (
     <Link
       target={isExternal ? '_blank' : rest.target}
       rel={isExternal ? 'noreferrer' : rest.rel}
+      display="inline"
       {...Object.fromEntries(
         Object.entries(rest).filter(([key]) => !ignoreProps.includes(key) && key !== 'isExternal')
       )}

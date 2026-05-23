@@ -194,6 +194,24 @@ export const chakraV2ColorTokens = {
  * `{colors.*}` and inherit the v2 primitives above.
  */
 export const chakraV2SemanticColorTokens = {
+  whiteAlpha: {
+    solid: { value: '{colors.whiteAlpha.500}' },
+    contrast: { value: '{colors.black}' },
+    fg: { value: '{colors.whiteAlpha.900}' },
+    muted: { value: '{colors.whiteAlpha.100}' },
+    subtle: { value: '{colors.whiteAlpha.200}' },
+    emphasized: { value: '{colors.whiteAlpha.300}' },
+    focusRing: { value: '{colors.whiteAlpha.500}' },
+  },
+  blackAlpha: {
+    solid: { value: '{colors.blackAlpha.500}' },
+    contrast: { value: '{colors.white}' },
+    fg: { value: '{colors.blackAlpha.700}' },
+    muted: { value: '{colors.blackAlpha.100}' },
+    subtle: { value: '{colors.blackAlpha.200}' },
+    emphasized: { value: '{colors.blackAlpha.300}' },
+    focusRing: { value: '{colors.blackAlpha.500}' },
+  },
   bg: {
     DEFAULT: {
       value: { _light: '{colors.white}', _dark: '{colors.gray.800}' },

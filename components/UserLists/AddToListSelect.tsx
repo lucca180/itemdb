@@ -1,5 +1,5 @@
 import { Menu, Button, Badge, Tooltip, Portal, useDisclosure } from '@chakra-ui/react';
-import { useToast } from '@utils/toast';
+import { useToast } from '@utils/styling/toast';
 import axios from 'axios';
 import { useMemo, useState } from 'react';
 import { ItemData, ListItemInfo, UserList } from '../../types';
@@ -116,7 +116,9 @@ const AddToListSelect = (props: Props) => {
       )}
       <Menu.Root lazyMount>
         <Menu.Trigger asChild>
-          <Button variant="solid">{t('Lists.add-to-list')}</Button>
+          <Button colorPalette="whiteAlpha" variant="subtle">
+            {t('Lists.add-to-list')}
+          </Button>
         </Menu.Trigger>
         <Portal>
           <Menu.Positioner>

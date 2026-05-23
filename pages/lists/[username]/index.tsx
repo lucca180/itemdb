@@ -16,7 +16,7 @@ import {
   Spinner,
   IconButton,
 } from '@chakra-ui/react';
-import { useToast } from '@utils/toast';
+import { useToast } from '@utils/styling/toast';
 import axios from 'axios';
 import React, { useEffect, useMemo, useState } from 'react';
 import Layout from '../../../components/Layout';

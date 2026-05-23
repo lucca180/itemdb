@@ -10,7 +10,7 @@ import {
   Spinner,
   Text,
 } from '@chakra-ui/react';
-import { useToast } from '@utils/toast';
+import { useToast } from '@utils/styling/toast';
 import { useTranslations } from 'next-intl';
 import { RestockWrappedCard } from '../Hubs/Restock/WrappedCard';
 import { RestockStats } from '../../types';

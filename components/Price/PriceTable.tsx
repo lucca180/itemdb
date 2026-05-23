@@ -1,7 +1,7 @@
 import { Table, Text, IconButton, Flex, Icon, Link, Box, Badge } from '@chakra-ui/react';
 import React, { useMemo } from 'react';
 import { ItemData, PriceData, UserList } from '../../types';
-import { MinusIcon } from '@utils/chakraIcons';
+import { MinusIcon } from '@utils/styling/chakraIcons';
 import { useFormatter, useTranslations } from 'next-intl';
 import { BiEditAlt } from 'react-icons/bi';
 import { FaCaretDown, FaCaretUp } from 'react-icons/fa';
@@ -240,7 +240,13 @@ const PriceItem = (
         </Table.Cell>
         {isAdmin && (
           <Table.Cell px={1}>
-            <IconButton onClick={() => onEdit?.(price as PriceData)} size="xs" aria-label="Edit">
+            <IconButton
+              onClick={() => onEdit?.(price as PriceData)}
+              size="2xs"
+              colorPalette="whiteAlpha"
+              variant="subtle"
+              aria-label="Edit"
+            >
               <BiEditAlt />
             </IconButton>
           </Table.Cell>
@@ -333,7 +339,13 @@ const PriceItem = (
         </Table.Cell>
         {isAdmin && (
           <Table.Cell px={1}>
-            <IconButton onClick={() => onEdit?.(price as PriceData)} size="xs" aria-label="Edit">
+            <IconButton
+              onClick={() => onEdit?.(price as PriceData)}
+              size="2xs"
+              aria-label="Edit"
+              colorPalette="whiteAlpha"
+              variant="subtle"
+            >
               <BiEditAlt />
             </IconButton>
           </Table.Cell>

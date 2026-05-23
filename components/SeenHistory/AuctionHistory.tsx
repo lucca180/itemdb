@@ -103,12 +103,12 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
       <Flex flexFlow="column" bg="gray.800" p={2} borderRadius={'lg'} gap={2}>
         <Tabs.Root
           defaultValue="recent"
-          variant="enclosed"
-          colorPalette="gray"
+          variant="subtle"
+          colorPalette="whiteAlpha"
           lazyMount
           unmountOnExit
         >
-          <Tabs.List justifyContent="center">
+          <Tabs.List justifyContent="center" w="100%">
             <Tabs.Trigger value="recent">
               {t('ItemPage.latest-x-auctions', {
                 x: 40,
@@ -155,27 +155,27 @@ const AuctionHistoryTable = (props: Props) => {
       maxW="1000px"
       borderRadius="md"
     >
-      <Table.Root h="100%" variant="line" colorPalette="gray" size="sm" bg="gray.600" striped>
+      <Table.Root h="100%" variant="outline" size="md" bg="gray.600" striped>
         <Table.Header>
           <Table.Row whiteSpace="wrap">
-            <Table.ColumnHeader textAlign="center" fontSize="0.6rem">
+            <Table.ColumnHeader textAlign="center" fontSize="xs" maxW="150px">
               {t('ItemPage.last-known-price')}
             </Table.ColumnHeader>
-            <Table.ColumnHeader textAlign="center" fontSize="0.6rem">
+            <Table.ColumnHeader textAlign="center" fontSize="xs">
               {t('ItemPage.time-left')}
             </Table.ColumnHeader>
-            <Table.ColumnHeader textAlign="center" fontSize="0.6rem">
+            <Table.ColumnHeader textAlign="center" fontSize="xs">
               {t('ItemPage.has-a-buyer')}
             </Table.ColumnHeader>
-            <Table.ColumnHeader textAlign="center" fontSize="0.6rem">
+            <Table.ColumnHeader textAlign="center" fontSize="xs">
               {t('ItemPage.owner')}
             </Table.ColumnHeader>
-            <Table.ColumnHeader textAlign="center" fontSize="0.6rem">
+            <Table.ColumnHeader textAlign="center" fontSize="xs">
               {t('ItemPage.last-seen')}
             </Table.ColumnHeader>
           </Table.Row>
         </Table.Header>
-        <Table.Body fontSize="xs" color="gray.200">
+        <Table.Body fontSize="xs">
           {sortedData.map((auction, index) => (
             <AuctionItem key={auction.internal_id} auction={auction} index={index} />
           ))}

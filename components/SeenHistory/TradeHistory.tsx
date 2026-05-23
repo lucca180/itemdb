@@ -101,12 +101,12 @@ export const TradeHistory = (props: TradeHistoryProps) => {
       <Flex flexFlow="column" bg="gray.800" p={2} borderRadius={'lg'} gap={2}>
         <Tabs.Root
           defaultValue="recent"
-          variant="enclosed"
-          colorPalette="gray"
+          variant="subtle"
+          colorPalette="whiteAlpha"
           lazyMount
           unmountOnExit
         >
-          <Tabs.List justifyContent="center">
+          <Tabs.List justifyContent="center" w="100%">
             <Tabs.Trigger value="recent">
               {t('ItemPage.latest-x-trades', {
                 x: 40,

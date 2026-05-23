@@ -1,5 +1,5 @@
 import { Alert, Button, Flex } from '@chakra-ui/react';
-import { useToast } from '@utils/toast';
+import { useToast } from '@utils/styling/toast';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { ItemData } from '../../types';

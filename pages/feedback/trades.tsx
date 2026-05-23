@@ -1,4 +1,4 @@
-import { ExternalLinkIcon } from '@utils/chakraIcons';
+import { ExternalLinkIcon } from '@utils/styling/chakraIcons';
 import {
   Alert,
   Box,

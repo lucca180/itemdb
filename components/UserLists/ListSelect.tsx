@@ -1,4 +1,4 @@
-import { ChevronDownIcon } from '@utils/chakraIcons';
+import { ChevronDownIcon } from '@utils/styling/chakraIcons';
 import { Menu, Button, Badge, Tooltip, Portal, Text, Input, Box } from '@chakra-ui/react';
 import axios from 'axios';
 import { useEffect, useMemo, useRef, useState } from 'react';

@@ -20,7 +20,13 @@ export const DropdownButton = (props: Props) => {
 
   if (shouldBeLink) {
     return (
-      <Button asChild size={{ base: 'xs', sm: 'sm' }} variant="ghost">
+      <Button
+        asChild
+        size={{ base: 'xs', sm: 'sm' }}
+        variant="ghost"
+        colorPalette="whiteAlpha"
+        h={8}
+      >
         <NextLink href={href} prefetch={false}>
           {label}
         </NextLink>
@@ -36,10 +42,13 @@ export const DropdownButton = (props: Props) => {
     >
       <Popover.Trigger asChild>
         <Button
+          colorPalette="whiteAlpha"
           size={{ base: 'xs', sm: 'sm' }}
-          variant={isOpen ? undefined : 'ghost'}
+          variant={'ghost'}
           onMouseEnter={() => setIsOpen(true)}
           onMouseLeave={() => setIsOpen(false)}
+          px={3}
+          h={8}
         >
           {label}
         </Button>
@@ -53,7 +62,7 @@ export const DropdownButton = (props: Props) => {
             border="0"
             overflow={'hidden'}
             borderRadius={'sm'}
-            boxShadow={'base'}
+            boxShadow={'sm'}
             onMouseEnter={() => setIsOpen(true)}
             onMouseLeave={() => setIsOpen(false)}
           >
@@ -77,6 +86,7 @@ export const DropdownOption = (props: Props) => {
   return (
     <Button
       asChild
+      colorPalette="whiteAlpha"
       size="sm"
       variant="ghost"
       fontWeight={'normal'}

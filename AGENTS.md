@@ -15,7 +15,7 @@
 
 - NEVER EVER add, remove or update dependencies without confirming with user first.
 
-- When checking for Chakra UI docs, always refer to the official Chakra UI documentation at https://v2.chakra-ui.com/docs/getting-started. Make sure you're looking at the correct version of the documentation that matches the version of Chakra UI being used in the project (v2 in this case).
+- When checking for Chakra UI docs, always refer to the official Chakra UI documentation at https://chakra-ui.com/docs/getting-started. Make sure you're looking at the correct version of the documentation that matches the version of Chakra UI being used in the project (v3 in this case). You can also use the Chakra MCP server to get specific information about Chakra UI components and their usage.
 
 - ALWAYS use import aliases (e.g., `@utils`, `@components`) instead of relative paths (e.g., `../../utils`, `../components`). This improves readability and maintainability of the code.
 

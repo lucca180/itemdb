@@ -15,12 +15,12 @@ import {
   Box,
   ButtonGroup,
 } from '@chakra-ui/react';
-import { useToast } from '@utils/toast';
+import { useToast } from '@utils/styling/toast';
 import { useEffect, useMemo, useState } from 'react';
 import { ItemData, ItemLastSeen, PriceData, PricingInfo, UserList } from '../../types';
 import { ChartComponentProps } from '../Charts/PriceChart';
 import PriceTable from './PriceTable';
-import { MinusIcon } from '@utils/chakraIcons';
+import { MinusIcon } from '@utils/styling/chakraIcons';
 import CardBase from '../Card/CardBase';
 import { MdHelp, MdMoneyOff, MdOutlineAdd } from 'react-icons/md';
 import dynamic from 'next/dynamic';
@@ -259,9 +259,10 @@ const ItemPriceCard = (props: Props) => {
               mb={1.5}
               overflow={'auto'}
             >
-              <ButtonGroup size="sm" attached variant="outline">
+              <ButtonGroup size="sm" attached variant="outline" outlineColor="whiteAlpha.300">
                 <Button
                   colorPalette={displayState === 'table' ? 'green' : ''}
+                  borderColor={displayState === 'table' ? 'green.500' : 'whiteAlpha.500'}
                   data-active={displayState === 'table' ? true : undefined}
                   onClick={() => setDisplay('table')}
                   data-umami-event="price-card-buttons"
@@ -273,6 +274,7 @@ const ItemPriceCard = (props: Props) => {
                 {shouldShowLists && (
                   <Button
                     colorPalette={displayState === 'trading' ? 'blue' : ''}
+                    borderColor={displayState === 'trading' ? 'blue.500' : 'whiteAlpha.500'}
                     data-active={displayState === 'trading' ? true : undefined}
                     onClick={() => setDisplay('trading')}
                     data-umami-event="price-card-buttons"
@@ -284,6 +286,7 @@ const ItemPriceCard = (props: Props) => {
                 {shouldShowLists && (
                   <Button
                     colorPalette={displayState === 'seeking' ? 'purple' : ''}
+                    borderColor={displayState === 'seeking' ? 'purple.500' : 'whiteAlpha.500'}
                     data-active={displayState === 'seeking' ? true : undefined}
                     onClick={() => setDisplay('seeking')}
                     data-umami-event="price-card-buttons"
@@ -294,6 +297,7 @@ const ItemPriceCard = (props: Props) => {
                 )}
                 <Button
                   colorPalette={displayState === 'chart' ? 'yellow' : ''}
+                  borderColor={displayState === 'chart' ? 'yellow.500' : 'whiteAlpha.500'}
                   data-active={displayState === 'chart' ? true : undefined}
                   onClick={() => setDisplay('chart')}
                   data-umami-event="price-card-buttons"
@@ -363,7 +367,8 @@ const ItemPriceCard = (props: Props) => {
               </Stat.Root>
               {price?.value && (
                 <Button
-                  size="xs"
+                  mt={1}
+                  size="2xs"
                   onClick={wrongPriceModal.onOpen}
                   colorPalette="red"
                   variant={'ghost'}
@@ -374,12 +379,24 @@ const ItemPriceCard = (props: Props) => {
               )}
               <HStack mt={2} gap={2}>
                 {user?.isAdmin && (
-                  <IconButton onClick={adminCreatePrice.onOpen} size="xs" aria-label="Table">
+                  <IconButton
+                    onClick={adminCreatePrice.onOpen}
+                    size="2xs"
+                    colorPalette="whiteAlpha"
+                    variant="subtle"
+                    aria-label="Add Price"
+                  >
                     <MdOutlineAdd />
                   </IconButton>
                 )}
                 {user?.isAdmin && (
-                  <IconButton onClick={forceUpdatePrices} size="xs" aria-label="Table">
+                  <IconButton
+                    onClick={forceUpdatePrices}
+                    colorPalette="whiteAlpha"
+                    variant="subtle"
+                    size="2xs"
+                    aria-label="Force Update Prices"
+                  >
                     <LuAtom />
                   </IconButton>
                 )}

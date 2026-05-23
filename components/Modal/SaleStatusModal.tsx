@@ -100,7 +100,14 @@ export default function SaleStatusModal(props: SaleStatusModalProps) {
                   }),
                 })}
               </Text>
-              <Alert.Root borderRadius={'md'} status="warning" fontSize={'xs'} my={3}>
+              <Alert.Root
+                borderRadius={'md'}
+                status="warning"
+                bg="colorPalette.500/15"
+                variant="subtle"
+                fontSize={'xs'}
+                my={3}
+              >
                 <Alert.Indicator />
                 <Alert.Content>
                   <Text>
@@ -114,7 +121,7 @@ export default function SaleStatusModal(props: SaleStatusModalProps) {
               {!voted && (
                 <Flex
                   flexFlow={'column'}
-                  bg="blackAlpha.600"
+                  bg="blackAlpha.400"
                   borderRadius={'md'}
                   p={2}
                   mt={4}
@@ -137,7 +144,7 @@ export default function SaleStatusModal(props: SaleStatusModalProps) {
                       size="xs"
                       onClick={() => sendVote('regular')}
                       variant={'outline'}
-                      colorPalette="gray"
+                      colorPalette="yellow"
                       loading={loading}
                     >
                       Regular

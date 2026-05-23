@@ -123,7 +123,7 @@ const ItemCardBase = (props: ItemProps) => {
             />
           </Box>
         ) : (
-          <Link asChild _hover={{ textDecoration: 'none' }} style={props.style}>
+          <Link asChild _hover={{ textDecoration: 'none' }} outline={'none'} style={props.style}>
             <MainLink
               prefetch={disablePrefetch !== false ? false : undefined}
               trackEvent={utm_content || undefined}
@@ -187,7 +187,11 @@ const ItemCardContent = ({
     flexFlow="column"
     justifyContent="center"
     alignItems="center"
-    boxShadow={selected ? 'outline' : 'lg'}
+    boxShadow={
+      selected
+        ? 'outline'
+        : '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);'
+    }
     filter={highlight ? 'drop-shadow(0px 0px 5px #f0f03d)' : undefined}
     textAlign="center"
     cursor="pointer"

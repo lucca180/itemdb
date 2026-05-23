@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 import { BreadcrumbJsonLd } from 'next-seo';
-import { ChevronRightIcon } from '@utils/chakraIcons';
+import { ChevronRightIcon } from '@utils/styling/chakraIcons';
 import { Breadcrumb } from '@chakra-ui/react';
 import MainLink from '@components/Utils/MainLink';
 import { useRouter } from 'next/router';
@@ -31,8 +31,8 @@ export const Breadcrumbs = (props: BreadcrumbsProps) => {
 
   return (
     <>
-      <Breadcrumb.Root fontSize={'xs'} color="whiteAlpha.800">
-        <Breadcrumb.List gap="2px">
+      <Breadcrumb.Root color="whiteAlpha.800">
+        <Breadcrumb.List fontSize={'xs'} gap="2px">
           {formattedBreadcrumbList.map((crumb, i) => (
             <Fragment key={crumb.position}>
               <Breadcrumb.Item display={crumb.skip ? 'none' : undefined}>
@@ -52,6 +52,8 @@ export const Breadcrumbs = (props: BreadcrumbsProps) => {
                     overflow={'hidden'}
                     textOverflow={'ellipsis'}
                     maxW={`${90 / breadcrumbList.length}vw`}
+                    color="whiteAlpha.700"
+                    _hover={{ textDecoration: 'underline' }}
                   >
                     <MainLink
                       href={removeLink(crumb.item)}

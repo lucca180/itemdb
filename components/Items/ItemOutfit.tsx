@@ -1,8 +1,9 @@
 import { AspectRatio, Box, Flex, IconButton, Link, Skeleton, Text } from '@chakra-ui/react';
+import CardBase from '@components/Card/CardBase';
 import { useMemo, useState, memo, useCallback } from 'react';
 import Image from 'next/image';
 import { ItemData } from '../../types';
-import { ExternalLinkIcon } from '@utils/chakraIcons';
+import { ExternalLinkIcon } from '@utils/styling/chakraIcons';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@utils/auth';
 import { FaRotateRight } from 'react-icons/fa6';
@@ -45,23 +46,12 @@ const ItemOutfit = (props: Props) => {
   }, [item, outfitList, refresh]);
 
   return (
-    <Flex
-      width="fit-content"
-      borderRadius="md"
-      overflow="hidden"
-      flexFlow="column"
-      boxShadow="sm"
-      w="100%"
+    <CardBase
+      title={t('ItemPage.outfit-preview')}
+      color={color}
+      noPadding
+      chakraWrapper={{ width: 'fit-content', borderRadius: 'md', w: '100%' }}
     >
-      <Flex
-        p={2}
-        textAlign="center"
-        fontWeight="bold"
-        flexFlow="column"
-        bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}
-      >
-        <Text>{t('ItemPage.outfit-preview')}</Text>
-      </Flex>
       <Flex
         position="relative"
         bg="gray.600"
@@ -131,7 +121,7 @@ const ItemOutfit = (props: Props) => {
           </Link>
         </Text>
       </Box>
-    </Flex>
+    </CardBase>
   );
 };
 

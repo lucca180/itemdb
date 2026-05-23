@@ -13,7 +13,7 @@ import {
   Portal,
   NativeSelect,
 } from '@chakra-ui/react';
-import { useToast } from '@utils/toast';
+import { useToast } from '@utils/styling/toast';
 import { useTranslations } from 'next-intl';
 import axios from 'axios';
 import { BDData, BDIconTypes, ItemData } from '../../types';

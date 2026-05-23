@@ -11,7 +11,7 @@ import {
   Button,
   HStack,
 } from '@chakra-ui/react';
-import { useToast } from '@utils/toast';
+import { useToast } from '@utils/styling/toast';
 import HeaderCard from '../../../components/Card/HeaderCard';
 import Layout from '../../../components/Layout';
 import { parseBody } from 'next/dist/server/api-utils/node/parse-body';

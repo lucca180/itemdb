@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDownIcon } from '@utils/chakraIcons';
+import { ChevronDownIcon } from '@utils/styling/chakraIcons';
 import { Box, Button, Icon, Menu, Portal, Text, Flex, useDisclosure } from '@chakra-ui/react';
 import { User } from '@types';
 import { useAuth } from '@utils/auth';
@@ -56,6 +56,8 @@ export const AuthButton = (props: AuthButtonProps) => {
             <Menu.Trigger asChild>
               <Button
                 cursor="pointer"
+                variant="subtle"
+                colorPalette="whiteAlpha"
                 px={{ base: 2, md: 4 }}
                 textAlign="center"
                 data-umami-event="profile-menu-button"
@@ -82,15 +84,25 @@ export const AuthButton = (props: AuthButtonProps) => {
               <Menu.Positioner>
                 <Menu.Content>
                   <Menu.ItemGroup>
-                    <Menu.ItemGroupLabel>
+                    <Menu.ItemGroupLabel color="whiteAlpha.600">
                       {t('Layout.hello-user', { name: user.username ?? '' })}
                     </Menu.ItemGroupLabel>
-                    <Menu.Item value="my-lists" asChild>
+                    <Menu.Item
+                      value="my-lists"
+                      asChild
+                      _hover={{ bg: 'blackAlpha.400' }}
+                      cursor="pointer"
+                    >
                       <NextLink prefetch={false} href={`/lists/${user.username}`}>
                         {t('Layout.my-lists')}
                       </NextLink>
                     </Menu.Item>
-                    <Menu.Item value="contribute" asChild>
+                    <Menu.Item
+                      value="contribute"
+                      asChild
+                      _hover={{ bg: 'blackAlpha.400' }}
+                      cursor="pointer"
+                    >
                       <NextLink prefetch={false} href="/contribute">
                         {t('Layout.how-to-contribute')}
                       </NextLink>
@@ -100,7 +112,12 @@ export const AuthButton = (props: AuthButtonProps) => {
                     <ScriptStatus />
                   </Box>
                   <Menu.Separator />
-                  <Menu.Item value="logout" onClick={signout}>
+                  <Menu.Item
+                    value="logout"
+                    onClick={signout}
+                    _hover={{ bg: 'blackAlpha.400' }}
+                    cursor="pointer"
+                  >
                     {t('Layout.logout')}
                   </Menu.Item>
                 </Menu.Content>
@@ -122,7 +139,7 @@ const ScriptStatus = () => {
   return (
     <>
       <Menu.Separator />
-      <Text px={3} pb={3} fontSize={'md'} color="white">
+      <Text px={2} pb={3} fontSize={'sm'} color="white">
         {t('Layout.script-info')}
       </Text>
       {Object.values(scriptStatus).map((script) => {
@@ -157,7 +174,13 @@ const ScriptStatus = () => {
           </Flex>
         );
       })}
-      <Menu.Item value="troubleshooting" asChild fontSize={'sm'}>
+      <Menu.Item
+        value="troubleshooting"
+        asChild
+        fontSize={'sm'}
+        _hover={{ bg: 'blackAlpha.400' }}
+        cursor="pointer"
+      >
         <NextLink prefetch={false} href="/tools/troubleshooting">
           {t('Layout.troubleshooting')}
         </NextLink>

@@ -8,7 +8,7 @@ import {
   CloseButton,
   Portal,
 } from '@chakra-ui/react';
-import { useToast } from '@utils/toast';
+import { useToast } from '@utils/styling/toast';
 import axios from 'axios';
 import { useState } from 'react';
 import { ListItemInfo, ObligatoryUserList, UserList } from '../../types';

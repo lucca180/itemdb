@@ -138,7 +138,7 @@ const ItemRestock = (props: Props) => {
           )}
         </Center>
         <HStack>
-          <Tag.Root size="md" fontWeight="bold" as="h3">
+          <Tag.Root size="md" fontWeight="bold" as="h3" colorPalette={'whiteAlpha'}>
             <Tag.Label>{t('Restock.est-profit')}</Tag.Label>
           </Tag.Root>
           <Flex flexFlow={'column'} flex="1">
@@ -165,7 +165,7 @@ const ItemRestock = (props: Props) => {
           </Flex>
         </HStack>
         <HStack>
-          <Tag.Root size="md" fontWeight="bold" as="h3">
+          <Tag.Root size="md" fontWeight="bold" as="h3" colorPalette={'whiteAlpha'}>
             <Tag.Label>{t('Restock.restock-price')}</Tag.Label>
           </Tag.Root>
           <Flex flexFlow={'column'} flex="1">
@@ -185,7 +185,7 @@ const ItemRestock = (props: Props) => {
         </HStack>
         {!isHT && (
           <HStack>
-            <Tag.Root size="md" fontWeight="bold" as="h3">
+            <Tag.Root size="md" fontWeight="bold" as="h3" colorPalette={'whiteAlpha'}>
               <Tag.Label>{t('Restock.latest-restock')}</Tag.Label>
             </Tag.Root>
             <Text flex="1" fontSize="xs" textAlign="right">
