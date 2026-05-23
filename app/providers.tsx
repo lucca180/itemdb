@@ -5,6 +5,7 @@ import { Toaster } from '@components/ui/toaster';
 import { Provider } from 'jotai';
 import type { ReactNode } from 'react';
 import { system } from '@utils/theme';
+import { ColorModeProvider } from '@components/ui/color-mode';
 import { AuthProvider } from '@utils/auth';
 import { installProofInterceptor } from '@utils/http/proofInterceptor';
 import type { PreloadedAuthState } from '@app/utils/preloadData';
@@ -22,13 +23,15 @@ if (typeof window !== 'undefined') {
 export function Providers({ children, initialAuthState }: ProvidersProps) {
   return (
     <ChakraProvider value={system}>
-      <Provider>
-        {/* <Next13ProgressBar color="#718096" showOnShallow={true} /> */}
-        <AuthProvider initialUser={initialAuthState?.user}>
-          {children}
-          <Toaster />
-        </AuthProvider>
-      </Provider>
+      <ColorModeProvider>
+        <Provider>
+          {/* <Next13ProgressBar color="#718096" showOnShallow={true} /> */}
+          <AuthProvider initialUser={initialAuthState?.user}>
+            {children}
+            <Toaster />
+          </AuthProvider>
+        </Provider>
+      </ColorModeProvider>
     </ChakraProvider>
   );
 }

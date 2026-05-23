@@ -24,7 +24,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
   const initialAuthState = await getPreloadedAuthState();
 
   return (
-    <html lang={locale} data-theme="dark">
+    <html lang={locale} className="dark" data-theme="dark" suppressHydrationWarning>
       <body>
         <Script
           src={process.env.NEXT_PUBLIC_UMAMI_URL_2 + '/plutonita.js'}

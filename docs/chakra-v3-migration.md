@@ -467,7 +467,7 @@ Completed in branch:
 2. `pages/_app.tsx` now uses `ChakraProvider value={system}`.
 3. `app/providers.tsx` now uses `ChakraProvider value={system}`.
 4. Old `cookieStorageManager`, `cookieStorageManagerSSR`, and `colorModeManager` usage was removed.
-5. Dark mode is currently forced with `<Html data-theme="dark">` in `pages/_document.tsx`.
+5. Dark mode is forced with `className="dark"` on `<html>` (Chakra v3 `.dark` condition) plus `ColorModeProvider` (`next-themes`, `forcedTheme="dark"`) in `_app.tsx` / `app/providers.tsx`. `data-theme="dark"` is kept for compatibility but is not sufficient alone.
 
 Still pending in this phase:
 
