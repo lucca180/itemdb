@@ -1,4 +1,4 @@
-import { Box, Flex, Link } from '@chakra-ui/react';
+import { Box, Flex } from '@chakra-ui/react';
 import React from 'react';
 import Image from 'next/image';
 import { ItemData } from '../../types';
@@ -41,13 +41,11 @@ const FindAtCard = (props: Props) => {
         textAlign="center"
       >
         {item.findAt.shopWizard && (
-          <Link
-            as={MainLink}
+          <MainLink
             href={item.findAt.shopWizard}
             isExternal
             trackEvent="find-at"
             trackEventLabel="Shop Wizard"
-            rel="noopener"
           >
             <Image
               src={SWIcon}
@@ -56,16 +54,14 @@ const FindAtCard = (props: Props) => {
               height={32}
               quality="100"
             />
-          </Link>
+          </MainLink>
         )}
         {item.findAt.auction && (
-          <Link
-            as={MainLink}
+          <MainLink
             href={item.findAt.auction}
             isExternal
             trackEvent="find-at"
             trackEventLabel="Auction House"
-            rel="noopener"
           >
             <Image
               src={AuctionIcon}
@@ -74,16 +70,14 @@ const FindAtCard = (props: Props) => {
               height={32}
               quality="100"
             />
-          </Link>
+          </MainLink>
         )}
         {item.findAt.trading && (
-          <Link
-            as={MainLink}
+          <MainLink
             href={item.findAt.trading}
             isExternal
             trackEvent="find-at"
             trackEventLabel="Trading Post"
-            rel="noopener"
           >
             <Image
               src={TPIcon}
@@ -92,16 +86,14 @@ const FindAtCard = (props: Props) => {
               height={32}
               quality="100"
             />
-          </Link>
+          </MainLink>
         )}
         {item.findAt.safetyDeposit && (
-          <Link
-            as={MainLink}
+          <MainLink
             href={item.findAt.safetyDeposit}
             isExternal
             trackEvent="find-at"
             trackEventLabel="Safety Deposit Box"
-            rel="noopener"
           >
             <Image
               src={SDBIcon}
@@ -110,16 +102,14 @@ const FindAtCard = (props: Props) => {
               height={32}
               quality="100"
             />
-          </Link>
+          </MainLink>
         )}
         {item.findAt.closet && (
-          <Link
-            as={MainLink}
+          <MainLink
             href={item.findAt.closet}
             isExternal
             trackEvent="find-at"
             trackEventLabel="Closet"
-            rel="noopener"
           >
             <Image
               src={ClosetIcon}
@@ -128,16 +118,14 @@ const FindAtCard = (props: Props) => {
               height={32}
               quality="100"
             />
-          </Link>
+          </MainLink>
         )}
         {item.findAt.restockShop && (
-          <Link
-            as={MainLink}
+          <MainLink
             href={item.findAt.restockShop}
             isExternal
             trackEvent="find-at"
             trackEventLabel="Restock Shop"
-            rel="noopener"
           >
             <Image
               src={ShopIcon}
@@ -146,16 +134,14 @@ const FindAtCard = (props: Props) => {
               height={32}
               quality="100"
             />
-          </Link>
+          </MainLink>
         )}
         {item.findAt.neosearch && (
-          <Link
-            as={MainLink}
+          <MainLink
             href={item.findAt.neosearch}
             isExternal
             trackEvent="find-at"
             trackEventLabel="Neopets Search"
-            rel="noopener"
           >
             <Image
               src={NeosearchIcon}
@@ -164,7 +150,7 @@ const FindAtCard = (props: Props) => {
               height={32}
               quality="100"
             />
-          </Link>
+          </MainLink>
         )}
       </Flex>
     </Flex>

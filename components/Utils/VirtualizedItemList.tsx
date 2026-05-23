@@ -1,6 +1,6 @@
-import { useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ItemData } from '../../types';
-import { Box, Flex, useSize } from '@chakra-ui/react';
+import { Box, Flex } from '@chakra-ui/react';
 import { ViewportList } from 'react-viewport-list';
 import ItemCard from '../Items/ItemCard';
 
@@ -11,10 +11,31 @@ type VirtualizedItemListProps = {
   uniqueID?: string;
 };
 
+function useElementSize(ref: React.RefObject<HTMLElement | null>) {
+  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    const observer = new ResizeObserver(([entry]) => {
+      setSize({
+        width: entry.contentRect.width,
+        height: entry.contentRect.height,
+      });
+    });
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [ref]);
+
+  return size;
+}
+
 export const VirtualizedItemList = (props: VirtualizedItemListProps) => {
   const { items, sortType } = props;
   const elementRef = useRef(null);
-  const dimensions = useSize(elementRef, { observeMutation: true });
+  const dimensions = useElementSize(elementRef);
 
   const groupedItems = useMemo(
     () =>

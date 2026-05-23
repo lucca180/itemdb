@@ -1,13 +1,5 @@
-import { SearchIcon } from '@chakra-ui/icons';
-import {
-  InputGroup,
-  useDisclosure,
-  InputLeftElement,
-  Input,
-  InputRightElement,
-  Flex,
-  Kbd,
-} from '@chakra-ui/react';
+import { SearchIcon } from '@utils/chakraIcons';
+import { InputGroup, useDisclosure, Input, Flex, Kbd } from '@chakra-ui/react';
 import React from 'react';
 import dynamic from 'next/dynamic';
 import SearchMenu from '../Menus/SearchMenu';
@@ -19,11 +11,15 @@ const SearchModal = dynamic(() => import('./SearchModal'));
 export const SearchBar = () => {
   const t = useTranslations();
   const [search, setSearch] = React.useState<string>('');
-  const { isOpen, onToggle, onClose } = useDisclosure();
+  const { open: isOpen, onToggle, onClose } = useDisclosure();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  const isMac = typeof navigator !== 'undefined' ? /Mac/i.test(navigator.userAgent) : false;
+  const [isMac, setIsMac] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsMac(/Mac/i.test(navigator.userAgent));
+  }, []);
 
   React.useEffect(() => {
     if (!router?.isReady) return;
@@ -58,27 +54,15 @@ export const SearchBar = () => {
   return (
     <>
       {isOpen && <SearchModal isOpen={isOpen} onClose={handleClose} />}
-      <InputGroup maxW="700px" w="100%" h="100%" maxH="50px">
-        <InputLeftElement
-          pointerEvents="none"
-          children={<SearchIcon color="gray.300" />}
-          h="100%"
-        />
-        <Input
-          variant="filled"
-          bg="gray.700"
-          type="text"
-          fontSize={{ base: 'sm', md: 'md' }}
-          onFocus={onToggle}
-          value={search}
-          ref={inputRef}
-          placeholder={t('Layout.search-by')}
-          _focus={{ bg: 'gray.700' }}
-          readOnly
-          h="100%"
-        />
-        <InputRightElement mr={1} h="100%" w="auto" display={'flex'} gap={2}>
-          <>
+      <InputGroup
+        maxW="700px"
+        w="100%"
+        h="100%"
+        maxH="50px"
+        startElement={<SearchIcon color="gray.300" />}
+        startElementProps={{ pointerEvents: 'none', h: '100%' }}
+        endElement={
+          <Flex mr={1} h="100%" w="auto" gap={2} alignItems="center">
             <Flex
               opacity={0.5}
               gap={1}
@@ -92,8 +76,23 @@ export const SearchBar = () => {
               <Kbd fontSize={'xs'}>K</Kbd>
             </Flex>
             <SearchMenu />
-          </>
-        </InputRightElement>
+          </Flex>
+        }
+        endElementProps={{ h: '100%', w: 'auto', display: 'flex', alignItems: 'center' }}
+      >
+        <Input
+          variant="subtle"
+          bg="gray.700"
+          type="text"
+          fontSize={{ base: 'sm', md: 'md' }}
+          onFocus={onToggle}
+          value={search}
+          ref={inputRef}
+          placeholder={t('Layout.search-by')}
+          _focus={{ bg: 'gray.700' }}
+          readOnly
+          h="100%"
+        />
       </InputGroup>
     </>
   );

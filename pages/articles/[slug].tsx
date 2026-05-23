@@ -1,21 +1,4 @@
-import {
-  Flex,
-  Heading,
-  Text,
-  Link,
-  ListItem,
-  UnorderedList,
-  Table,
-  TableContainer,
-  Td,
-  Tr,
-  Tbody,
-  Code,
-  Alert,
-  AlertDescription,
-  AlertIcon,
-  AlertTitle,
-} from '@chakra-ui/react';
+import { Flex, Heading, Text, Link, List, Table, Code, Alert } from '@chakra-ui/react';
 import { GetStaticPropsContext } from 'next';
 import HeaderCard from '../../components/Card/HeaderCard';
 import Layout from '../../components/Layout';
@@ -64,10 +47,10 @@ const ArticlePage = (props: ArticlePageProps) => {
           {parse(post.title)}
         </Heading>
         <Text
-          size={{ base: 'sm', md: undefined }}
+          fontSize={{ base: 'sm', md: 'inherit' }}
           as="h2"
           textAlign="center"
-          maxW={'900px'}
+          maxW="900px"
           mx="auto"
         >
           {post.excerpt}
@@ -89,7 +72,7 @@ const ArticlePage = (props: ArticlePageProps) => {
       <Flex
         flexFlow="column"
         gap={3}
-        sx={{
+        css={{
           a: { color: color.lightness(65).hex() ?? 'cyan.300' },
           'b,strong': {
             color: Color(post.palette?.lightvibrant.hex).lightness(60).hex() ?? 'blue.300',
@@ -205,40 +188,50 @@ const options: HTMLReactParserOptions = {
 
     if (domChildren instanceof Element && domChildren.name === 'a')
       return (
-        <Link href={domChildren.attribs.href} isExternal={domChildren.attribs.target === '_blank'}>
+        <Link
+          href={domChildren.attribs.href}
+          target={domChildren.attribs.target === '_blank' ? '_blank' : undefined}
+          rel={domChildren.attribs.target === '_blank' ? 'noreferrer' : undefined}
+        >
           {domToReact(children, options)}
         </Link>
       );
 
     if (domChildren instanceof Element && domChildren.name === 'ul')
-      return <UnorderedList spacing={1}>{domToReact(children, options)}</UnorderedList>;
+      return (
+        <List.Root as="ul" gap={1}>
+          {domToReact(children, options)}
+        </List.Root>
+      );
 
     if (domChildren instanceof Element && domChildren.name === 'li')
-      return <ListItem>{domToReact(children, options)}</ListItem>;
+      return <List.Item>{domToReact(children, options)}</List.Item>;
 
     if (domChildren instanceof Element && domChildren.name === 'table')
       return (
-        <TableContainer my={3} border="1px solid rgba(255,255,255,0.3)" borderRadius={'sm'}>
-          <Table variant="striped">{domToReact(children, options)}</Table>
-        </TableContainer>
+        <Table.ScrollArea my={3} border="1px solid rgba(255,255,255,0.3)" borderRadius="sm">
+          <Table.Root variant="line" striped>
+            {domToReact(children, options)}
+          </Table.Root>
+        </Table.ScrollArea>
       );
 
     if (domChildren instanceof Element && domChildren.name === 'tbody')
-      return <Tbody>{domToReact(children, options)}</Tbody>;
+      return <Table.Body>{domToReact(children, options)}</Table.Body>;
 
     if (domChildren instanceof Element && domChildren.name === 'tr')
-      return <Tr>{domToReact(children, options)}</Tr>;
+      return <Table.Row>{domToReact(children, options)}</Table.Row>;
 
     if (domChildren instanceof Element && domChildren.name === 'td')
       return (
-        <Td
-          whiteSpace={'normal'}
-          textAlign={'center'}
-          fontSize={'sm'}
-          sx={{ img: { display: 'inline-block' } }}
+        <Table.Cell
+          whiteSpace="normal"
+          textAlign="center"
+          fontSize="sm"
+          css={{ img: { display: 'inline-block' } }}
         >
           {domToReact(children, options)}
-        </Td>
+        </Table.Cell>
       );
 
     if (domChildren instanceof Element && domChildren.name === 'code')
@@ -254,21 +247,21 @@ const options: HTMLReactParserOptions = {
       const title = domChildren.attribs.title ?? '';
 
       return (
-        <Alert
+        <Alert.Root
           status={status}
-          display={'flex'}
-          flexFlow={'column'}
-          alignItems={'flex-start'}
-          borderRadius={'md'}
+          display="flex"
+          flexFlow="column"
+          alignItems="flex-start"
+          borderRadius="md"
         >
-          <Flex mb={1}>
-            <AlertIcon />
-            {title && <AlertTitle>{title}</AlertTitle>}
-          </Flex>
-          <AlertDescription display={'flex'} flexFlow={'column'} gap={2} fontSize={'sm'}>
-            {domToReact(children, options)}
-          </AlertDescription>
-        </Alert>
+          <Alert.Indicator />
+          <Alert.Content>
+            {title && <Alert.Title mb={1}>{title}</Alert.Title>}
+            <Alert.Description display="flex" flexFlow="column" gap={2} fontSize="sm">
+              {domToReact(children, options)}
+            </Alert.Description>
+          </Alert.Content>
+        </Alert.Root>
       );
     }
   },

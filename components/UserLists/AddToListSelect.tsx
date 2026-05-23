@@ -1,15 +1,5 @@
-import {
-  Menu,
-  MenuButton,
-  Button,
-  MenuList,
-  MenuItem,
-  MenuDivider,
-  Tooltip,
-  useToast,
-  Badge,
-  useDisclosure,
-} from '@chakra-ui/react';
+import { Menu, Button, Badge, Tooltip, Portal, useDisclosure } from '@chakra-ui/react';
+import { useToast } from '@utils/toast';
 import axios from 'axios';
 import { useMemo, useState } from 'react';
 import { ItemData, ListItemInfo, UserList } from '../../types';
@@ -35,7 +25,7 @@ const AddToListSelect = (props: Props) => {
   const { item } = props;
   const { user, authLoading } = useAuth();
   const { lists, isLoading, revalidate } = useLists();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
   const [selectedList, setSelectedList] = useState<UserList | undefined>();
   const [duplicatedItem, setDuplicatedItem] = useState<ListItemInfo | undefined>();
   const toast = useToast();
@@ -117,92 +107,105 @@ const AddToListSelect = (props: Props) => {
     <>
       {duplicatedItem && (
         <DuplicatedItemModal
-          isOpen={isOpen}
+          isOpen={open}
           item={item}
           list={selectedList}
           onClose={onClose}
           itemInfo={duplicatedItem}
         />
       )}
-      <Menu isLazy>
-        <MenuButton as={Button} variant="solid">
-          {t('Lists.add-to-list')}
-        </MenuButton>
-        <MenuList maxH="50vh" overflow="auto">
-          {sorted.length !== 0 && (
-            <>
-              {sorted.map((list) => (
-                <MenuItem
-                  key={list.internal_id}
-                  onClick={() => addItemToList(list.internal_id)}
-                  isDisabled={isDynamicActionDisabled('add', list.dynamicType)}
-                  whiteSpace={'wrap'}
-                  maxW={'90vw'}
-                >
-                  {/* {list.itemInfo.some((i) => i.item_iid === item.internal_id) && (
-                    <Tooltip label={t('Lists.already-in-this-list')} fontSize="sm" placement="top">
-                      <span>
-                        <Icon verticalAlign="middle" as={BsBookmarkCheckFill} mr={2} />
-                      </span>
-                    </Tooltip>
-                  )} */}
-                  {list.name}
-                  {list.purpose !== 'none' && !list.official && (
-                    <Tooltip label={`${list.purpose}`} fontSize="sm" placement="top">
-                      <Badge ml={1}>{list.purpose === 'seeking' ? 's' : 't'}</Badge>
-                    </Tooltip>
-                  )}
-                  {list.official && (
-                    <Tooltip label={`official`} fontSize="sm" placement="top">
-                      <Badge ml={1} colorScheme="blue">
-                        ✓
-                      </Badge>
-                    </Tooltip>
-                  )}
-                  {list.dynamicType && (
-                    <Tooltip
-                      label={`${list.dynamicType} ${t('General.dynamic-list')}`}
-                      fontSize="sm"
-                      placement="top"
+      <Menu.Root lazyMount>
+        <Menu.Trigger asChild>
+          <Button variant="solid">{t('Lists.add-to-list')}</Button>
+        </Menu.Trigger>
+        <Portal>
+          <Menu.Positioner>
+            <Menu.Content maxH="50vh" overflow="auto">
+              {sorted.length !== 0 && (
+                <>
+                  {sorted.map((list) => (
+                    <Menu.Item
+                      key={list.internal_id}
+                      value={String(list.internal_id)}
+                      onClick={() => addItemToList(list.internal_id)}
+                      disabled={isDynamicActionDisabled('add', list.dynamicType)}
+                      whiteSpace={'wrap'}
+                      maxW={'90vw'}
                     >
-                      <Badge
-                        ml={1}
-                        colorScheme="orange"
-                        display={'inline-flex'}
-                        alignItems="center"
-                        p={'2px'}
-                      >
-                        <NextImage
-                          src={DynamicIcon}
-                          alt="lightning bolt"
-                          width={8}
-                          style={{ display: 'inline' }}
-                        />
-                      </Badge>
-                    </Tooltip>
-                  )}
-                </MenuItem>
-              ))}
-              <MenuDivider />
-            </>
-          )}
+                      {list.name}
+                      {list.purpose !== 'none' && !list.official && (
+                        <Tooltip.Root positioning={{ placement: 'top' }}>
+                          <Tooltip.Trigger asChild>
+                            <Badge ml={1}>{list.purpose === 'seeking' ? 's' : 't'}</Badge>
+                          </Tooltip.Trigger>
+                          <Tooltip.Positioner>
+                            <Tooltip.Content fontSize="sm">{list.purpose}</Tooltip.Content>
+                          </Tooltip.Positioner>
+                        </Tooltip.Root>
+                      )}
+                      {list.official && (
+                        <Tooltip.Root positioning={{ placement: 'top' }}>
+                          <Tooltip.Trigger asChild>
+                            <Badge ml={1} colorPalette="blue">
+                              ✓
+                            </Badge>
+                          </Tooltip.Trigger>
+                          <Tooltip.Positioner>
+                            <Tooltip.Content fontSize="sm">official</Tooltip.Content>
+                          </Tooltip.Positioner>
+                        </Tooltip.Root>
+                      )}
+                      {list.dynamicType && (
+                        <Tooltip.Root positioning={{ placement: 'top' }}>
+                          <Tooltip.Trigger asChild>
+                            <Badge
+                              ml={1}
+                              colorPalette="orange"
+                              display={'inline-flex'}
+                              alignItems="center"
+                              p={'2px'}
+                            >
+                              <NextImage
+                                src={DynamicIcon}
+                                alt="lightning bolt"
+                                width={8}
+                                style={{ display: 'inline' }}
+                              />
+                            </Badge>
+                          </Tooltip.Trigger>
+                          <Tooltip.Positioner>
+                            <Tooltip.Content fontSize="sm">
+                              {list.dynamicType} {t('General.dynamic-list')}
+                            </Tooltip.Content>
+                          </Tooltip.Positioner>
+                        </Tooltip.Root>
+                      )}
+                    </Menu.Item>
+                  ))}
+                  <Menu.Separator />
+                </>
+              )}
 
-          {user && !authLoading && !isLoading && (
-            <MenuItem onClick={createNewList}>+ {t('Lists.create-new-list')}</MenuItem>
-          )}
+              {user && !authLoading && !isLoading && (
+                <Menu.Item value="create-new" onClick={createNewList}>
+                  + {t('Lists.create-new-list')}
+                </Menu.Item>
+              )}
 
-          {(authLoading || isLoading) && (
-            <MenuItem justifyContent="center" disabled>
-              {t('Layout.loading')}....
-            </MenuItem>
-          )}
-          {!user && !authLoading && (
-            <MenuItem justifyContent="center" disabled>
-              {t('Lists.login-to-use-lists')}
-            </MenuItem>
-          )}
-        </MenuList>
-      </Menu>
+              {(authLoading || isLoading) && (
+                <Menu.Item value="loading" justifyContent="center" disabled>
+                  {t('Layout.loading')}....
+                </Menu.Item>
+              )}
+              {!user && !authLoading && (
+                <Menu.Item value="login-required" justifyContent="center" disabled>
+                  {t('Lists.login-to-use-lists')}
+                </Menu.Item>
+              )}
+            </Menu.Content>
+          </Menu.Positioner>
+        </Portal>
+      </Menu.Root>
     </>
   );
 };

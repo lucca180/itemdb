@@ -1,20 +1,7 @@
-import {
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Tr,
-  Text,
-  IconButton,
-  Flex,
-  Icon,
-  Link,
-  Box,
-  Badge,
-} from '@chakra-ui/react';
+import { Table, Text, IconButton, Flex, Icon, Link, Box, Badge } from '@chakra-ui/react';
 import React, { useMemo } from 'react';
 import { ItemData, PriceData, UserList } from '../../types';
-import { MinusIcon } from '@chakra-ui/icons';
+import { MinusIcon } from '@utils/chakraIcons';
 import { useFormatter, useTranslations } from 'next-intl';
 import { BiEditAlt } from 'react-icons/bi';
 import { FaCaretDown, FaCaretUp } from 'react-icons/fa';
@@ -140,17 +127,15 @@ const PriceTable = (props: Props) => {
   }, [data, lists]);
 
   return (
-    <TableContainer
+    <Table.ScrollArea
       minH={{ base: 100 }}
       maxH={{ base: 200, md: 300 }}
       w="100%"
       borderRadius="sm"
-      overflowX="auto"
-      overflowY="auto"
-      sx={{ a: { color: linkColor } }}
+      css={{ a: { color: linkColor } }}
     >
-      <Table h="100%" size="sm" sx={{ td: { border: 0 } }}>
-        <Tbody>
+      <Table.Root h="100%" size="sm" css={{ '& td': { border: 0 } }}>
+        <Table.Body>
           {sortedData.map((price, index) => (
             <PriceItem
               key={price.addedAt + '_item' + (price.marker ? '_marker' : '')}
@@ -163,9 +148,9 @@ const PriceTable = (props: Props) => {
               itemColor={item.color.hex}
             />
           ))}
-        </Tbody>
-      </Table>
-    </TableContainer>
+        </Table.Body>
+      </Table.Root>
+    </Table.ScrollArea>
   );
 };
 
@@ -200,25 +185,25 @@ const PriceItem = (
 
   if (isMarker)
     return (
-      <Tr
+      <Table.Row
         key={price.addedAt + '_marker'}
         h={42}
         bg={bgColor}
         borderLeft={`3px solid ${price.color}85`}
       >
-        <Td colSpan={isAdmin ? 4 : 3} border={0}>
+        <Table.Cell colSpan={isAdmin ? 4 : 3} border={0}>
           <Flex flexFlow={'column'} alignItems={'center'} gap={2}>
             <Badge>
               <MarkerText markerType={price.markerType} />
             </Badge>
-            <Link
-              as={MainLink}
-              trackEvent="price-marker"
-              trackEventLabel={price.slug}
-              href={`/lists/official/${price.slug}`}
-              sx={{ color: price.color + ' !important' }}
-            >
-              {price.title}
+            <Link asChild css={{ color: price.color + ' !important' }}>
+              <MainLink
+                trackEvent="price-marker"
+                trackEventLabel={price.slug}
+                href={`/lists/official/${price.slug}`}
+              >
+                {price.title}
+              </MainLink>
             </Link>
             <Text fontSize={'xs'}>
               {format.dateTime(new Date(price.addedAt!), {
@@ -228,20 +213,20 @@ const PriceItem = (
               })}
             </Text>
           </Flex>
-        </Td>
-      </Tr>
+        </Table.Cell>
+      </Table.Row>
     );
 
   if (price.value === 0)
     return (
-      <Tr
+      <Table.Row
         key={price.addedAt}
         h={50}
         bg={bgColor}
         border={0}
         borderLeft={`3px solid ${props.itemColor}`}
       >
-        <Td colSpan={isAdmin ? 3 : 4}>
+        <Table.Cell colSpan={isAdmin ? 3 : 4}>
           <Flex flexFlow={'column'} alignItems={'center'} gap={2}>
             {format.dateTime(new Date(price.addedAt!), {
               year: 'numeric',
@@ -252,30 +237,27 @@ const PriceItem = (
               {t('ItemPage.unknown-price-msg')}
             </Text>
           </Flex>
-        </Td>
+        </Table.Cell>
         {isAdmin && (
-          <Td px={1}>
-            <IconButton
-              onClick={() => onEdit?.(price as PriceData)}
-              size="xs"
-              aria-label="Edit"
-              icon={<BiEditAlt />}
-            />
-          </Td>
+          <Table.Cell px={1}>
+            <IconButton onClick={() => onEdit?.(price as PriceData)} size="xs" aria-label="Edit">
+              <BiEditAlt />
+            </IconButton>
+          </Table.Cell>
         )}
-      </Tr>
+      </Table.Row>
     );
 
   if (price.isUnconfirmed)
     return (
-      <Tr
+      <Table.Row
         key={'unconfirmed'}
         h={50}
         bg={bgColor}
         border={0}
         borderLeft={`3px solid ${props.itemColor}`}
       >
-        <Td colSpan={4}>
+        <Table.Cell colSpan={4}>
           <Flex flexFlow={'column'} alignItems={'center'} gap={2}>
             <Text textAlign={'center'}>{t('ItemPage.unconfirmed-price')}</Text>
             <Text
@@ -288,18 +270,18 @@ const PriceItem = (
               {t('ItemPage.unconfirmed-price-text')}
             </Text>
           </Flex>
-        </Td>
-      </Tr>
+        </Table.Cell>
+      </Table.Row>
     );
 
   return (
     <React.Fragment key={price.addedAt}>
-      <Tr
+      <Table.Row
         bg={bgColor}
         border={0}
         borderLeft={price.color ? `3px solid ${price.color}85` : undefined}
       >
-        <Td>
+        <Table.Cell>
           <Flex alignItems={'center'}>
             <Flex flexFlow={'column'}>
               {price.inflated && (
@@ -310,8 +292,8 @@ const PriceItem = (
               {format.number(price.value!)} NP
             </Flex>
           </Flex>
-        </Td>
-        <Td px={1}>
+        </Table.Cell>
+        <Table.Cell px={1}>
           {!!nextPrice?.value && (
             <Flex alignItems={'center'}>
               {!!(price.value! - nextPrice?.value) && (
@@ -341,28 +323,25 @@ const PriceItem = (
               </Text>
             </Flex>
           )}
-        </Td>
-        <Td px={1}>
+        </Table.Cell>
+        <Table.Cell px={1}>
           {format.dateTime(new Date(price.addedAt!), {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
           })}
-        </Td>
+        </Table.Cell>
         {isAdmin && (
-          <Td px={1}>
-            <IconButton
-              onClick={() => onEdit?.(price as PriceData)}
-              size="xs"
-              aria-label="Edit"
-              icon={<BiEditAlt />}
-            />
-          </Td>
+          <Table.Cell px={1}>
+            <IconButton onClick={() => onEdit?.(price as PriceData)} size="xs" aria-label="Edit">
+              <BiEditAlt />
+            </IconButton>
+          </Table.Cell>
         )}
-      </Tr>
+      </Table.Row>
       {!!price.context && (
-        <Tr bg={bgColor} border={0}>
-          <Td colSpan={4}>
+        <Table.Row bg={bgColor} border={0}>
+          <Table.Cell colSpan={4}>
             <Box
               whiteSpace={'normal'}
               fontSize={'0.8rem'}
@@ -377,8 +356,8 @@ const PriceItem = (
               </Text>
               <Markdown>{price.context}</Markdown>
             </Box>
-          </Td>
-        </Tr>
+          </Table.Cell>
+        </Table.Row>
       )}
     </React.Fragment>
   );

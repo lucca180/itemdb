@@ -64,7 +64,7 @@ const SearchCard = (props: Props) => {
       <Flex flexFlow="column" gap={2}>
         <Text
           fontWeight="bold"
-          noOfLines={2}
+          lineClamp={2}
           color={color.isLight() ? 'blackAlpha.800' : undefined}
         >
           <Link as={NextLink} href={link}>
@@ -75,7 +75,7 @@ const SearchCard = (props: Props) => {
           fontSize="xs"
           color={color.isLight() ? 'blackAlpha.700' : undefined}
           flex={1}
-          noOfLines={4}
+          lineClamp={4}
         >
           {description}
         </Text>
@@ -83,7 +83,7 @@ const SearchCard = (props: Props) => {
           <Text
             fontWeight="bold"
             fontSize="xs"
-            noOfLines={2}
+            lineClamp={2}
             color={color.isLight() ? 'blackAlpha.700' : undefined}
           >
             {rarityRange}

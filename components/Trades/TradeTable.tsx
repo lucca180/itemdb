@@ -1,4 +1,4 @@
-import { Box, Text, Divider, Flex, Link, Badge, Tooltip, IconButton } from '@chakra-ui/react';
+import { Box, Text, Separator, Flex, Link, Badge, Tooltip, IconButton } from '@chakra-ui/react';
 import { ItemData, TradeData } from '../../types';
 import Image from 'next/image';
 import { genItemKey, slugify } from '../../utils/utils';
@@ -24,11 +24,16 @@ const TradeTable = (props: Props) => {
         <Flex justifyContent={'space-between'} alignItems={'center'}>
           <Box fontSize="xs" px={3} py={2}>
             {props.isAuto && (
-              <Tooltip label={t('Feedback.this-trade-was-auto-priced')} placement="top" hasArrow>
-                <Badge colorScheme="blue" fontSize={'11px'} size="xs" mr={1}>
-                  Auto
-                </Badge>
-              </Tooltip>
+              <Tooltip.Root positioning={{ placement: 'top' }}>
+                <Tooltip.Trigger asChild>
+                  <Badge colorPalette="blue" fontSize={'11px'} size="xs" mr={1} cursor="default">
+                    Auto
+                  </Badge>
+                </Tooltip.Trigger>
+                <Tooltip.Positioner>
+                  <Tooltip.Content>{t('Feedback.this-trade-was-auto-priced')}</Tooltip.Content>
+                </Tooltip.Positioner>
+              </Tooltip.Root>
             )}
             <Text
               color="gray.200"
@@ -53,13 +58,14 @@ const TradeTable = (props: Props) => {
           </Box>
           {!!props.onReport && !props.isAuto && (
             <IconButton
-              icon={<FaFlag />}
               aria-label="Report Trade"
               onClick={props.onReport}
               size={'xs'}
-              colorScheme="red"
+              colorPalette="red"
               variant={'ghost'}
-            />
+            >
+              <FaFlag />
+            </IconButton>
           )}
         </Flex>
         {data.items.map((item) => (
@@ -75,19 +81,23 @@ const TradeTable = (props: Props) => {
             }
           >
             <Flex w={50} flexShrink="0" justifyContent="center" alignItems="center">
-              <Link as={NextLink} href={`/item/${slugify(item.name)}`} prefetch={false}>
-                <Image src={item.image} width={50} height={50} alt={item.name} />
+              <Link asChild>
+                <NextLink href={`/item/${slugify(item.name)}`} prefetch={false}>
+                  <Image src={item.image} width={50} height={50} alt={item.name} />
+                </NextLink>
               </Link>
             </Flex>
             <Flex flexFlow="column" justifyContent="center">
               <Text wordBreak={'break-word'} whiteSpace={'pre-line'} fontSize="sm">
                 {item.amount > 1 && (
-                  <Badge mr={1} colorScheme="yellow" textTransform={'none'}>
+                  <Badge mr={1} colorPalette="yellow" textTransform={'none'}>
                     {item.amount}x
                   </Badge>
                 )}
-                <Link as={NextLink} href={`/item/${slugify(item.name)}`} prefetch={false}>
-                  {item.name}
+                <Link asChild>
+                  <NextLink href={`/item/${slugify(item.name)}`} prefetch={false}>
+                    {item.name}
+                  </NextLink>
                 </Link>
               </Text>
               {item.price && (
@@ -113,14 +123,14 @@ const TradeTable = (props: Props) => {
         >
           {!!data.instantBuy && (
             <Text mb={2}>
-              <Badge colorScheme="orange">Instant Buy - {format.number(data.instantBuy)} NP</Badge>
+              <Badge colorPalette="orange">Instant Buy - {format.number(data.instantBuy)} NP</Badge>
             </Text>
           )}
           <b>{t('ItemPage.wishlist')}</b>
           <Text>{data.wishlist}</Text>
         </Flex>
       </Flex>
-      <Divider mt={4} />
+      <Separator mt={4} />
     </Flex>
   );
 };

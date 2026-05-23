@@ -8,13 +8,20 @@ export const IconLink = (
     iconWidth?: number | `${number}`;
     iconHeight?: number | `${number}`;
     iconStyle?: React.CSSProperties;
+    isExternal?: boolean;
   }
 ) => {
   if (!props.href) return null;
 
+  const { isExternal, ...rest } = props;
+
   return (
     <Link
-      {...Object.fromEntries(Object.entries(props).filter(([key]) => !ignoreProps.includes(key)))}
+      target={isExternal ? '_blank' : rest.target}
+      rel={isExternal ? 'noreferrer' : rest.rel}
+      {...Object.fromEntries(
+        Object.entries(rest).filter(([key]) => !ignoreProps.includes(key) && key !== 'isExternal')
+      )}
     >
       {props.children}
       {getIcon(props.href) && (

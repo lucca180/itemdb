@@ -2,10 +2,10 @@ import {
   Flex,
   Heading,
   Text,
-  Divider,
+  Separator,
   Button,
   useDisclosure,
-  Select,
+  NativeSelect,
   useBreakpointValue,
   Center,
   Spinner,
@@ -20,7 +20,7 @@ import dynamic from 'next/dynamic';
 import { createTranslator, useTranslations } from 'next-intl';
 import useSWRImmutable from 'swr/immutable';
 import axios from 'axios';
-import { ReactElement, useMemo, useState } from 'react';
+import { ChangeEvent, ReactElement, useMemo, useState } from 'react';
 import { ViewportList } from 'react-viewport-list';
 import { SearchList } from '../../../components/Search/SearchLists';
 import { useRouter } from 'next/router';
@@ -49,7 +49,7 @@ const OfficialListsPage = (props: Props) => {
   const router = useRouter();
   const { trendingLists } = props;
   const { user, authLoading } = useAuth();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open: isOpen, onOpen, onClose } = useDisclosure();
   const [filteredLists, setFilteredLists] = useState<UserList[]>();
   const [selectedCategory, setSelectedCategory] = useState<string>(
     (router.query.cat as string) || 'all'
@@ -165,13 +165,13 @@ const OfficialListsPage = (props: Props) => {
         <Heading as="h1" size="lg">
           {t('General.official-lists')}
         </Heading>
-        <Text size={{ base: 'sm', md: undefined }}>
+        <Text fontSize={{ base: 'sm', md: undefined }}>
           {t.rich('Lists.officialList-subheader', {
             br: () => <br />,
           })}
         </Text>
       </HeaderCard>
-      <Divider />
+      <Separator />
       <Flex flexFlow="column" gap={3}>
         <Flex
           flexFlow={{ base: 'column', sm: 'row' }}
@@ -181,10 +181,10 @@ const OfficialListsPage = (props: Props) => {
           alignItems="center"
         >
           <Flex alignItems="center" gap={3}>
-            <Button variant="solid" isLoading={authLoading} onClick={onOpen} isDisabled={!user}>
+            <Button variant="solid" loading={authLoading} onClick={onOpen} disabled={!user}>
               + {t('Lists.official-apply-list')}
             </Button>
-            <Text as="div" textColor={'gray.300'} fontSize="sm">
+            <Text as="div" color={'gray.300'} fontSize="sm">
               {actualLists && (
                 <>
                   {actualLists.length} {t('General.lists')}
@@ -194,24 +194,28 @@ const OfficialListsPage = (props: Props) => {
           </Flex>
           <Flex flex="1" justifyContent="flex-end" alignItems={'center'} gap={3}>
             <SearchList onChange={handleSearch} disabled={isLoading} />
-            <Text as="div" textColor={'gray.300'} flex="0 0 auto" fontSize="sm">
+            <Text as="div" color={'gray.300'} flex="0 0 auto" fontSize="sm">
               {t('Lists.filter-by-type')}
             </Text>
-            <Select
-              isDisabled={!categories.length}
-              onChange={(e) => handleFilter(e.target.value)}
-              value={selectedCategory}
+            <NativeSelect.Root
+              disabled={!categories.length}
               maxW="150px"
-              variant="outlined"
               size="sm"
+              variant="outline"
             >
-              <option value="all">{t('Lists.show-all')}</option>
-              {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </Select>
+              <NativeSelect.Field
+                onChange={(e: ChangeEvent<HTMLSelectElement>) => handleFilter(e.target.value)}
+                value={selectedCategory}
+              >
+                <option value="all">{t('Lists.show-all')}</option>
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
           </Flex>
         </Flex>
         <Flex mt={0} gap={4} flexFlow="column">

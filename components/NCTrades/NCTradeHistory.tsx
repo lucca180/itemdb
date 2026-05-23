@@ -1,14 +1,12 @@
 import {
   Box,
   Card,
-  CardBody,
   Flex,
   Heading,
-  ListItem,
+  List,
   Stack,
-  StackDivider,
+  StackSeparator,
   Text,
-  UnorderedList,
   Center,
   Link,
   Button,
@@ -59,8 +57,10 @@ const NCTradeHistory = (props: Props) => {
         <Text fontSize="sm" opacity="0.75">
           {t('ItemPage.no-trade-history')}.
         </Text>
-        <Button as={NextLink} prefetch={false} href="/mall/report" size={'xs'}>
-          {t('ItemPage.report-your-nc-trades')}
+        <Button asChild size={'xs'}>
+          <NextLink prefetch={false} href="/mall/report">
+            {t('ItemPage.report-your-nc-trades')}
+          </NextLink>
         </Button>
       </Center>
     );
@@ -109,8 +109,8 @@ export const NCTradeCard = (props: NCTradeCardProps) => {
   const color: number[] = item?.color.rgb ?? [71, 178, 248];
 
   return (
-    <Card bg={'blackAlpha.500'} textAlign={'left'} borderRadius={'xl'}>
-      <CardBody>
+    <Card.Root bg={'blackAlpha.500'} textAlign={'left'} borderRadius={'xl'}>
+      <Card.Body>
         <Heading size="sm" mb={3} opacity="0.75">
           {isValidDate(new Date(trade.tradeDate)) &&
             format.dateTime(new UTCDate(trade.tradeDate), {
@@ -121,14 +121,14 @@ export const NCTradeCard = (props: NCTradeCardProps) => {
             })}
           {!isValidDate(new Date(trade.tradeDate)) && t('General.unknown-date')}
         </Heading>
-        <Stack divider={<StackDivider />} spacing="3">
+        <Stack separator={<StackSeparator />} gap="3">
           <Box>
             <Heading size="xs" textTransform="uppercase" mb={2}>
               {t('ItemPage.traded')}
             </Heading>
-            <UnorderedList>
+            <List.Root as="ul" gap={1} ps={4}>
               {trade.itemsSent.split('+').map((traded, i) => (
-                <ListItem p={1} key={i} fontSize="xs">
+                <List.Item p={1} key={i} fontSize="xs">
                   <Link
                     p={1}
                     borderRadius="md"
@@ -142,17 +142,17 @@ export const NCTradeCard = (props: NCTradeCardProps) => {
                   >
                     {traded}
                   </Link>
-                </ListItem>
+                </List.Item>
               ))}
-            </UnorderedList>
+            </List.Root>
           </Box>
           <Box>
             <Heading size="xs" textTransform="uppercase" mb={2}>
               {t('ItemPage.traded-for')}
             </Heading>
-            <UnorderedList>
+            <List.Root as="ul" gap={1} ps={4}>
               {trade.itemsReceived.split('+').map((traded, i) => (
-                <ListItem p={1} key={i} fontSize="xs">
+                <List.Item p={1} key={i} fontSize="xs">
                   <Link
                     p={1}
                     borderRadius="md"
@@ -166,9 +166,9 @@ export const NCTradeCard = (props: NCTradeCardProps) => {
                   >
                     {traded}
                   </Link>
-                </ListItem>
+                </List.Item>
               ))}
-            </UnorderedList>
+            </List.Root>
           </Box>
           {trade.notes && (
             <Box>
@@ -181,8 +181,8 @@ export const NCTradeCard = (props: NCTradeCardProps) => {
             </Box>
           )}
         </Stack>
-      </CardBody>
-    </Card>
+      </Card.Body>
+    </Card.Root>
   );
 };
 

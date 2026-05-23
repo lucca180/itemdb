@@ -1,19 +1,17 @@
 import {
-  Divider,
+  Separator,
   Flex,
   Heading,
   Link,
   Text,
-  FormControl,
-  FormLabel,
-  Select,
+  Field,
+  NativeSelect,
   Checkbox,
-  CheckboxGroup,
   VStack,
   Button,
-  useToast,
   HStack,
 } from '@chakra-ui/react';
+import { useToast } from '@utils/toast';
 import HeaderCard from '../../../components/Card/HeaderCard';
 import Layout from '../../../components/Layout';
 import { parseBody } from 'next/dist/server/api-utils/node/parse-body';
@@ -78,12 +76,12 @@ const ImportPage = (props: Props) => {
         <Heading as="h1" size="lg">
           {t('Lists.checklists-and-importing-items')}
         </Heading>
-        <Text as="div" sx={{ a: { color: '#b8e9a9' } }}>
+        <Text as="div" css={{ a: { color: '#b8e9a9' } }}>
           {t('Lists.import-page-description')}
         </Text>
       </HeaderCard>
-      <Flex flexFlow="column" gap={3} sx={{ a: { color: '#b8e9a9' } }}>
-        <Divider />
+      <Flex flexFlow="column" gap={3} css={{ a: { color: '#b8e9a9' } }}>
+        <Separator />
         {!items && <ImportInfo />}
         {items && !!indexType && (
           <ImportItems items={items} indexType={indexType} recommended_list={recommended_list} />
@@ -354,7 +352,11 @@ const ImportItems = (props: ImportItemsProps) => {
     });
   };
 
-  const handleIgnoreChange = (ignore: ('np' | 'nc' | 'quantity')[]) => {
+  const toggleIgnore = (value: 'np' | 'nc' | 'quantity') => {
+    const ignore = importInfo.ignore.includes(value)
+      ? importInfo.ignore.filter((item) => item !== value)
+      : [...importInfo.ignore, value];
+
     setImportInfo({
       ...importInfo,
       ignore,
@@ -397,7 +399,7 @@ const ImportItems = (props: ImportItemsProps) => {
         </Text>
       )}
       <Flex flexFlow={{ base: 'column-reverse', md: 'row' }} gap={6}>
-        <Flex flex="2" sx={{ a: { color: 'initial' } }} flexFlow="column">
+        <Flex flex="2" css={{ a: { color: 'initial' } }} flexFlow="column">
           <Flex flexWrap="wrap" gap={3} justifyContent="center">
             {itemData &&
               loadedItems
@@ -421,8 +423,8 @@ const ImportItems = (props: ImportItemsProps) => {
           )}
         </Flex>
         <Flex flex="1" flexFlow="column" gap={5} alignItems={{ base: 'center', md: 'flex-start' }}>
-          <FormControl>
-            <FormLabel color="gray.300">{t('Lists.import-target-list')}</FormLabel>
+          <Field.Root>
+            <Field.Label color="gray.300">{t('Lists.import-target-list')}</Field.Label>
             <Flex gap={2} flexFlow="column" flexWrap="wrap" alignItems={'flex-start'}>
               <ListSelect
                 defaultValue={importInfo.list}
@@ -443,40 +445,47 @@ const ImportItems = (props: ImportItemsProps) => {
                 </>
               )}
             </Flex>
-          </FormControl>
-          <FormControl>
-            <FormLabel color="gray.300">{t('General.action')}</FormLabel>
-            <Select
-              value={importInfo.action}
-              variant="filled"
-              maxW="220px"
-              onChange={handleActionChange}
-            >
-              <option value="add" disabled={!dynamicListCan(importInfo.list, 'add')}>
-                {t('Lists.add-these-items')}
-              </option>
-              <option value="remove" disabled={!dynamicListCan(importInfo.list, 'remove')}>
-                {t('Lists.remove-these-items')}
-              </option>
-              <option value="hide">{t('Lists.mark-as-hidden')}</option>
-            </Select>
-          </FormControl>
-          <FormControl>
-            <FormLabel color="gray.300">{t('General.ignore')}</FormLabel>
-            <CheckboxGroup
-              colorScheme="green"
-              value={importInfo.ignore}
-              onChange={handleIgnoreChange}
-            >
-              <VStack justifyContent="flex-start" alignItems="flex-start">
-                <Checkbox value="np">{t('General.np-items')}</Checkbox>
-                <Checkbox value="nc">{t('General.nc-items')}</Checkbox>
-                <Checkbox value="quantity">{t('General.quantities')}</Checkbox>
-              </VStack>
-            </CheckboxGroup>
-          </FormControl>
+          </Field.Root>
+          <Field.Root>
+            <Field.Label color="gray.300">{t('General.action')}</Field.Label>
+            <NativeSelect.Root variant="subtle" maxW="220px">
+              <NativeSelect.Field value={importInfo.action} onChange={handleActionChange}>
+                <option value="add" disabled={!dynamicListCan(importInfo.list, 'add')}>
+                  {t('Lists.add-these-items')}
+                </option>
+                <option value="remove" disabled={!dynamicListCan(importInfo.list, 'remove')}>
+                  {t('Lists.remove-these-items')}
+                </option>
+                <option value="hide">{t('Lists.mark-as-hidden')}</option>
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
+          </Field.Root>
+          <Field.Root>
+            <Field.Label color="gray.300">{t('General.ignore')}</Field.Label>
+            <VStack justifyContent="flex-start" alignItems="flex-start">
+              {(['np', 'nc', 'quantity'] as const).map((value) => (
+                <Checkbox.Root
+                  key={value}
+                  colorPalette="green"
+                  checked={importInfo.ignore.includes(value)}
+                  onCheckedChange={() => toggleIgnore(value)}
+                >
+                  <Checkbox.HiddenInput value={value} />
+                  <Checkbox.Control />
+                  <Checkbox.Label>
+                    {value === 'np'
+                      ? t('General.np-items')
+                      : value === 'nc'
+                        ? t('General.nc-items')
+                        : t('General.quantities')}
+                  </Checkbox.Label>
+                </Checkbox.Root>
+              ))}
+            </VStack>
+          </Field.Root>
           <HStack mt={3}>
-            <Button onClick={handleImport} isDisabled={!importInfo.list}>
+            <Button onClick={handleImport} disabled={!importInfo.list}>
               {t('General.submit')}
             </Button>
           </HStack>
@@ -485,8 +494,10 @@ const ImportItems = (props: ImportItemsProps) => {
               {t.rich('Lists.adv-import-cta', {
                 b: (chunk) => <b>{chunk}</b>,
                 Link: (chunk) => (
-                  <Link as={NextLink} prefetch={false} href={'/lists/import/advanced'}>
-                    {chunk}
+                  <Link asChild>
+                    <NextLink href={'/lists/import/advanced'} prefetch={false}>
+                      {chunk}
+                    </NextLink>
                   </Link>
                 ),
               })}

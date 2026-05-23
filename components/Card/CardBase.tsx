@@ -1,4 +1,4 @@
-import { Box, Flex, FlexProps } from '@chakra-ui/react';
+import { Box, type BoxProps, Flex, type FlexProps } from '@chakra-ui/react';
 import Color from 'color';
 import React from 'react';
 
@@ -7,7 +7,7 @@ type Props = {
   title?: React.ReactNode;
   color?: [number, number, number] | number[] | string;
   noPadding?: boolean;
-  chakra?: FlexProps;
+  chakra?: BoxProps;
   chakraWrapper?: FlexProps;
 };
 

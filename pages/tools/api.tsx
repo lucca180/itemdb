@@ -1,26 +1,24 @@
 import {
-  Center,
-  Heading,
-  Text,
-  Flex,
-  FormControl,
-  FormHelperText,
-  FormLabel,
   Button,
-  useToast,
   Box,
+  Center,
+  Field,
+  Flex,
+  Heading,
   Input,
-  Textarea,
   Link,
+  Text,
+  Textarea,
 } from '@chakra-ui/react';
-import HeaderCard from '../../components/Card/HeaderCard';
-import Layout from '../../components/Layout';
+import { useToast } from '@utils/toast';
+import HeaderCard from '@components/Card/HeaderCard';
+import Layout from '@components/Layout';
 import { useFormatter } from 'next-intl';
-import { APIKeyData } from '../../types';
+import { APIKeyData } from '@types';
 import { ReactElement, useState } from 'react';
 import axios from 'axios';
 import { NextApiRequest, GetServerSidePropsContext } from 'next';
-import { CheckAuth } from '../../utils/googleCloud';
+import { CheckAuth } from '@utils/googleCloud';
 import { loadTranslation } from '@utils/load-translation';
 import { getAPIKeys } from '../api/auth/apikeys';
 import IncreaseAPIModal from '@components/Modal/IncreaseAPILimitModal';
@@ -116,7 +114,7 @@ const APIKeysPage = (props: APIKeysPageProps) => {
         <Heading as="h1" size="lg">
           API Keys
         </Heading>
-        <Text size={{ base: 'sm', md: undefined }}>Create and manage your itemdb API Keys</Text>
+        <Text fontSize={{ base: 'sm', md: undefined }}>Create and manage your itemdb API Keys</Text>
       </HeaderCard>
       <Flex
         flexFlow={{ base: 'column-reverse', md: 'row' }}
@@ -153,22 +151,22 @@ const APIKeysPage = (props: APIKeysPageProps) => {
                   <Text fontWeight={'bold'}>{apiKey.name}</Text>
                   <Text fontSize={'sm'}>{apiKey.description}</Text>
                   {apiKey.api_key && (
-                    <FormControl my={3} fontSize={'xs'} bg="blackAlpha.500" p={2} borderRadius="md">
-                      <FormLabel fontSize={'sm'} color="whiteAlpha.600">
+                    <Field.Root my={3} fontSize="xs" bg="blackAlpha.500" p={2} borderRadius="md">
+                      <Field.Label fontSize="sm" color="whiteAlpha.600">
                         API Key
-                      </FormLabel>
+                      </Field.Label>
                       <Input
                         size="sm"
                         value={apiKey.api_key}
-                        isReadOnly
-                        variant={'filled'}
+                        readOnly
+                        variant={'subtle'}
                         maxW="400px"
                       />
-                      <FormHelperText fontSize={'xs'} color="whiteAlpha.600">
+                      <Field.HelperText fontSize="xs" color="whiteAlpha.600">
                         This is the only time you will see this key, make sure to copy it and keep
                         it secure.
-                      </FormHelperText>
-                    </FormControl>
+                      </Field.HelperText>
+                    </Field.Root>
                   )}
                   <Text fontSize={'xs'} color="gray.400">
                     Created At: {formatter.dateTime(new Date(apiKey.createdAt))} | Limit:{' '}
@@ -188,7 +186,7 @@ const APIKeysPage = (props: APIKeysPageProps) => {
                 )}
                 {apiKey.active && (
                   <Button
-                    colorScheme="red"
+                    colorPalette="red"
                     variant={'outline'}
                     size={'xs'}
                     onClick={() => deleteKey(apiKey.key_id)}
@@ -214,25 +212,25 @@ const APIKeysPage = (props: APIKeysPageProps) => {
             You can have up to 3 API Keys at a time. Deleting a key still counts towards your limit
             for 24 hours.
           </Text>
-          <FormControl isDisabled={isCreateDisabled}>
-            <FormLabel>Name</FormLabel>
-            <Input id="api-key-name" name="name" variant={'filled'} />
-            <FormHelperText>Give your API key a name to identify it later</FormHelperText>
-          </FormControl>
-          <FormControl isDisabled={isCreateDisabled}>
-            <FormLabel>Description</FormLabel>
-            <Textarea id="api-key-description" name="description" variant={'filled'} />
-            <FormHelperText>
+          <Field.Root disabled={isCreateDisabled}>
+            <Field.Label>Name</Field.Label>
+            <Input id="api-key-name" name="name" variant={'subtle'} />
+            <Field.HelperText>Give your API key a name to identify it later</Field.HelperText>
+          </Field.Root>
+          <Field.Root disabled={isCreateDisabled}>
+            <Field.Label>Description</Field.Label>
+            <Textarea id="api-key-description" name="description" variant={'subtle'} />
+            <Field.HelperText>
               Provide a brief description on what you will use this API key for
-            </FormHelperText>
-          </FormControl>
+            </Field.HelperText>
+          </Field.Root>
           <Center mt={3}>
             <Button
-              colorScheme="purple"
+              colorPalette="purple"
               maxW="200px"
-              isLoading={isLoading}
+              loading={isLoading}
               onClick={createKey}
-              isDisabled={isCreateDisabled}
+              disabled={isCreateDisabled}
             >
               Create API Key
             </Button>
@@ -243,7 +241,12 @@ const APIKeysPage = (props: APIKeysPageProps) => {
               Terms of Service
             </Link>{' '}
             and{' '}
-            <Link href="https://docs.itemdb.com.br/#general-rules" color="purple.400" isExternal>
+            <Link
+              href="https://docs.itemdb.com.br/#general-rules"
+              color="purple.400"
+              target="_blank"
+              rel="noreferrer"
+            >
               Rules
             </Link>
             <br />

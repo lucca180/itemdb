@@ -3,26 +3,17 @@ import {
   Box,
   Button,
   Center,
-  Divider,
+  Separator,
   Flex,
-  FormControl,
-  FormHelperText,
-  FormLabel,
+  Field,
   Heading,
   Input,
-  Step,
-  StepIcon,
-  StepIndicator,
-  StepNumber,
-  Stepper,
-  StepSeparator,
-  StepStatus,
-  StepTitle,
+  Steps,
   Text,
   Textarea,
-  useSteps,
   Link,
 } from '@chakra-ui/react';
+import { BsCheckCircleFill } from 'react-icons/bs';
 import Layout from '../../components/Layout';
 import HeaderCard from '../../components/Card/HeaderCard';
 import { createTranslator, useTranslations } from 'next-intl';
@@ -40,7 +31,7 @@ import { UTCDate } from '@date-fns/utc';
 
 const ItemSelect = dynamic(() => import('../../components/Input/ItemSelect'), {
   ssr: false,
-  loading: () => <Input variant={'filled'} placeholder="Add Item" />,
+  loading: () => <Input variant="subtle" placeholder="Add Item" />,
 });
 
 type NcTradeReportPageProps = {
@@ -87,7 +78,7 @@ const NcTradeReportPage = (props: NcTradeReportPageProps) => {
         <Text as="h2">{t('Owls.description')}</Text>
       </HeaderCard>
       <NCTradeReportCard user={user} />
-      <Divider my={8} />
+      <Separator my={8} />
       <Flex
         flexFlow={'column'}
         gap={4}
@@ -95,7 +86,7 @@ const NcTradeReportPage = (props: NcTradeReportPageProps) => {
         borderRadius={'md'}
         w="100%"
         maxW="900px"
-        sx={{ a: { color: 'yellow.300' }, b: { color: 'orange.200' } }}
+        css={{ a: { color: 'yellow.300' }, b: { color: 'orange.200' } }}
       >
         <Heading as={'h3'} size="md">
           {t('Owls.faq-1')}
@@ -104,7 +95,7 @@ const NcTradeReportPage = (props: NcTradeReportPageProps) => {
           {t.rich('Owls.faq-2', {
             b: (chunk) => <b>{chunk}</b>,
             Link: (chunk) => (
-              <Link href="https://www.neopets.com/~Personalvalues" isExternal>
+              <Link href="https://www.neopets.com/~Personalvalues" target="_blank" rel="noreferrer">
                 {chunk}
               </Link>
             ),
@@ -118,12 +109,12 @@ const NcTradeReportPage = (props: NcTradeReportPageProps) => {
             br: () => <br />,
             b: (chunk) => <b>{chunk}</b>,
             DTI: (chunk) => (
-              <Link href="https://impress.openneo.net/" isExternal>
+              <Link href="https://impress.openneo.net/" target="_blank" rel="noreferrer">
                 {chunk}
               </Link>
             ),
             Eya: (chunk) => (
-              <Link href="https://www.neopets.com/~Eya" isExternal>
+              <Link href="https://www.neopets.com/~Eya" target="_blank" rel="noreferrer">
                 {chunk}
               </Link>
             ),
@@ -211,10 +202,9 @@ const NCTradeReportCard = (props: NCTradeReportProps) => {
     { title: t('Owls.success') },
   ];
 
-  const { activeStep, goToNext, goToPrevious, setActiveStep } = useSteps({
-    index: 0,
-    count: steps.length,
-  });
+  const [activeStep, setActiveStep] = useState(0);
+  const goToNext = () => setActiveStep((step) => Math.min(step + 1, steps.length - 1));
+  const goToPrevious = () => setActiveStep((step) => Math.max(step - 1, 0));
   const [offered, setOffered] = useState<NCTradeItem[]>([]);
   const [received, setReceived] = useState<NCTradeItem[]>([]);
   const [notes, setNotes] = useState<string>('');
@@ -342,24 +332,32 @@ const NCTradeReportCard = (props: NCTradeReportProps) => {
       {user && (
         <>
           <Flex w="100%" overflow={'auto'} pb={2}>
-            <Stepper w="100%" minW="900px" size="sm" index={activeStep} colorScheme="yellow">
-              {steps.map((step, index) => (
-                <Step key={index}>
-                  <StepIndicator>
-                    <StepStatus
-                      complete={<StepIcon />}
-                      incomplete={<StepNumber />}
-                      active={<StepNumber />}
-                    />
-                  </StepIndicator>
-
-                  <Box flexShrink="0">
-                    <StepTitle>{step.title}</StepTitle>
-                  </Box>
-                  <StepSeparator />
-                </Step>
-              ))}
-            </Stepper>
+            <Steps.Root
+              w="100%"
+              minW="900px"
+              size="sm"
+              step={activeStep}
+              onStepChange={(e) => setActiveStep(e.step)}
+              count={steps.length}
+              colorPalette="yellow"
+            >
+              <Steps.List>
+                {steps.map((step, index) => (
+                  <Steps.Item key={index} index={index}>
+                    <Steps.Indicator>
+                      <Steps.Status
+                        complete={<BsCheckCircleFill />}
+                        incomplete={<Steps.Number />}
+                      />
+                    </Steps.Indicator>
+                    <Box flexShrink="0">
+                      <Steps.Title>{step.title}</Steps.Title>
+                    </Box>
+                    <Steps.Separator />
+                  </Steps.Item>
+                ))}
+              </Steps.List>
+            </Steps.Root>
           </Flex>
           <Center mt={8} flexFlow={'column'} gap={4}>
             <Flex
@@ -443,7 +441,7 @@ const NCTradeReportCard = (props: NCTradeReportProps) => {
                           <Button
                             size="xs"
                             variant={'ghost'}
-                            colorScheme="red"
+                            colorPalette="red"
                             onClick={() => removeItem(index)}
                           >
                             {t('General.delete')}
@@ -455,37 +453,36 @@ const NCTradeReportCard = (props: NCTradeReportProps) => {
                           justifyContent={'center'}
                           gap={3}
                         >
-                          <Text
-                            fontSize={'sm'}
-                            as={item.item ? Link : undefined}
-                            href={item.item ? `/item/${item.item.slug}` : undefined}
-                            isExternal
-                          >
-                            {item.itemName}
-                          </Text>
-                          <FormControl size="xs" isRequired>
-                            <FormLabel fontSize={'xs'} color="gray.300">
+                          {item.item ? (
+                            <Link href={`/item/${item.item.slug}`} fontSize="sm">
+                              {item.itemName}
+                            </Link>
+                          ) : (
+                            <Text fontSize="sm">{item.itemName}</Text>
+                          )}
+                          <Field.Root required>
+                            <Field.Label fontSize="xs" color="gray.300">
                               {t('Owls.your-cap-personal-value')}
-                            </FormLabel>
+                            </Field.Label>
                             <Input
-                              variant="filled"
+                              variant="subtle"
                               name="personalValue"
                               size="xs"
                               onChange={(e) => handleChange(e, index)}
                               value={item.personalValue}
                             />
-                            <FormHelperText fontSize={'xs'}>
+                            <Field.HelperText fontSize="xs">
                               {t.rich('Owls.pv-helper', {
                                 b: (chunk) => <b>{chunk}</b>,
                               })}
-                            </FormHelperText>
-                          </FormControl>
-                          <FormControl size="xs" isRequired>
-                            <FormLabel fontSize={'xs'} color="gray.300">
+                            </Field.HelperText>
+                          </Field.Root>
+                          <Field.Root required>
+                            <Field.Label fontSize="xs" color="gray.300">
                               {t('General.quantity')}
-                            </FormLabel>
+                            </Field.Label>
                             <Input
-                              variant="filled"
+                              variant="subtle"
                               type="number"
                               min="1"
                               name="quantity"
@@ -493,7 +490,7 @@ const NCTradeReportCard = (props: NCTradeReportProps) => {
                               onChange={(e) => handleChange(e, index)}
                               size="xs"
                             />
-                          </FormControl>
+                          </Field.Root>
                         </Flex>
                       </Flex>
                     ))}
@@ -509,34 +506,34 @@ const NCTradeReportCard = (props: NCTradeReportProps) => {
               )}
               {activeStep === 2 && (
                 <>
-                  <FormControl size="xs">
-                    <FormLabel fontSize={'xs'} color="gray.300">
+                  <Field.Root>
+                    <Field.Label fontSize="xs" color="gray.300">
                       {t('Owls.when-did-this-trade-happen')}
-                    </FormLabel>
+                    </Field.Label>
                     <Input
                       type="date"
-                      variant="filled"
+                      variant="subtle"
                       size="md"
                       value={date || new Date().toISOString().split('T')[0]}
                       max={new Date().toISOString().split('T')[0]}
                       onChange={(e) => setDate(e.target.value)}
                     />
-                  </FormControl>
-                  <FormControl size="xs">
-                    <FormLabel fontSize={'xs'} color="gray.300">
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label fontSize="xs" color="gray.300">
                       {t('Owls.notes-and-comments-optional')}
-                    </FormLabel>
+                    </Field.Label>
                     <Textarea
                       maxLength={200}
-                      variant="filled"
+                      variant="subtle"
                       size="xs"
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                     />
-                    <FormHelperText textAlign={'left'} fontSize={'xs'}>
+                    <Field.HelperText textAlign="left" fontSize="xs">
                       {t('Owls.please-send-your-notes-and-comments-in-english')}
-                    </FormHelperText>
-                  </FormControl>
+                    </Field.HelperText>
+                  </Field.Root>
                 </>
               )}
               {activeStep === 3 && (
@@ -555,29 +552,29 @@ const NCTradeReportCard = (props: NCTradeReportProps) => {
                 <Button
                   variant={'ghost'}
                   onClick={goToPrevious}
-                  isDisabled={activeStep === 0}
-                  isLoading={isLoading}
+                  disabled={activeStep === 0}
+                  loading={isLoading}
                 >
                   {t('General.back')}
                 </Button>
               )}
               {activeStep < 3 && (
-                <Button colorScheme="orange" variant={'ghost'} onClick={validateContinue}>
+                <Button colorPalette="orange" variant={'ghost'} onClick={validateContinue}>
                   {t('General.next')}
                 </Button>
               )}
               {activeStep === 3 && (
                 <Button
-                  colorScheme="orange"
+                  colorPalette="orange"
                   variant={'ghost'}
                   onClick={submitTrade}
-                  isLoading={isLoading}
+                  loading={isLoading}
                 >
                   {t('General.submit')}
                 </Button>
               )}
               {activeStep === 4 && (
-                <Button colorScheme="yellow" variant={'ghost'} onClick={reset}>
+                <Button colorPalette="yellow" variant={'ghost'} onClick={reset}>
                   {t('Owls.send-another-trade')}
                 </Button>
               )}

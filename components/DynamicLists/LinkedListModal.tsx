@@ -1,26 +1,14 @@
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
-  Button,
-  Text,
-  Spinner,
-  Center,
-  useToast,
-} from '@chakra-ui/react';
+import { Button, Center, CloseButton, Dialog, Portal, Spinner, Text } from '@chakra-ui/react';
+import { useToast } from '@utils/toast';
 import axios from 'axios';
 import Image from 'next/image';
 import { useState } from 'react';
 import DynamicIcon from '../../public/icons/dynamic.png';
-import { DynamicListTypes, UserList } from '../../types';
-import { useAuth } from '../../utils/auth';
+import { DynamicListTypes, UserList } from '@types';
+import { useAuth } from '@utils/auth';
 import { useTranslations } from 'next-intl';
 import { DynamicListInfo } from './DynamicListModal';
-import { useLists } from '../../utils/useLists';
+import { useLists } from '@utils/useLists';
 
 export type LinkedListModalProps = {
   isOpen: boolean;
@@ -85,81 +73,99 @@ const LinkedListModal = (props: LinkedListModalProps) => {
   };
 
   const doClose = () => {
-    if (loading) return false;
+    if (loading) return;
     onClose();
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={doClose} isCentered>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader display={'flex'} alignItems="center">
-          Create{' '}
-          <Image
-            src={DynamicIcon}
-            alt="lightning bolt"
-            width={16}
-            style={{ margin: '0 5px', display: 'inline' }}
-          />{' '}
-          Linked List
-        </ModalHeader>
-        <ModalCloseButton />
-        {!error && !loading && (
-          <ModalBody>
-            <Text fontSize="sm" color="gray.400">
-              {t('DynamicList.linkedLists-desc')}
-            </Text>
-            <DynamicListInfo
-              resultCount={list.itemCount ?? -1}
-              dynamicType={dynamicType}
-              setDynamicType={setDynamicType}
-            />
-          </ModalBody>
-        )}
+    <Dialog.Root
+      open={isOpen}
+      placement="center"
+      closeOnEscape={!loading}
+      closeOnInteractOutside={!loading}
+      onOpenChange={(details) => {
+        if (!details.open) doClose();
+      }}
+    >
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header display="flex" alignItems="center">
+              <Dialog.Title>
+                Create{' '}
+                <Image
+                  src={DynamicIcon}
+                  alt="lightning bolt"
+                  width={16}
+                  style={{ margin: '0 5px', display: 'inline' }}
+                />{' '}
+                Linked List
+              </Dialog.Title>
+            </Dialog.Header>
+            {!loading && (
+              <Dialog.CloseTrigger asChild>
+                <CloseButton />
+              </Dialog.CloseTrigger>
+            )}
+            {!error && !loading && (
+              <Dialog.Body>
+                <Text fontSize="sm" color="gray.400">
+                  {t('DynamicList.linkedLists-desc')}
+                </Text>
+                <DynamicListInfo
+                  resultCount={list.itemCount ?? -1}
+                  dynamicType={dynamicType}
+                  setDynamicType={setDynamicType}
+                />
+              </Dialog.Body>
+            )}
 
-        {error && (
-          <ModalBody>
-            <Text color="red.300" textAlign={'center'}>
-              {t('General.something-went-wrong')}
-              <br />
-              {t('General.refreshPage')}
-            </Text>
-          </ModalBody>
-        )}
+            {error && (
+              <Dialog.Body>
+                <Text color="red.300" textAlign="center">
+                  {t('General.something-went-wrong')}
+                  <br />
+                  {t('General.refreshPage')}
+                </Text>
+              </Dialog.Body>
+            )}
 
-        {loading && !error && (
-          <ModalBody>
-            <Center>
-              <Spinner />
-            </Center>
-          </ModalBody>
-        )}
+            {loading && !error && (
+              <Dialog.Body>
+                <Center>
+                  <Spinner />
+                </Center>
+              </Dialog.Body>
+            )}
 
-        <ModalFooter>
-          {!loading && (
-            <Button variant="ghost" mr={3} onClick={doClose}>
-              {t('General.close')}
-            </Button>
-          )}
-          {!error && !loading && (
-            <Button
-              variant="ghost"
-              colorScheme={'orange'}
-              onClick={createDynamic}
-              isDisabled={(list.itemCount ?? -1) > 4000}
-            >
-              <Image
-                src={DynamicIcon}
-                alt="lightning bolt"
-                width={12}
-                style={{ margin: '0 5px', display: 'inline' }}
-              />{' '}
-              {t('General.create')}
-            </Button>
-          )}
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+            <Dialog.Footer>
+              {!loading && (
+                <Button variant="ghost" mr={3} onClick={doClose}>
+                  {t('General.close')}
+                </Button>
+              )}
+              {!error && !loading && (
+                <Button
+                  variant="ghost"
+                  colorPalette="orange"
+                  onClick={createDynamic}
+                  disabled={(list.itemCount ?? -1) > 4000}
+                >
+                  <Image
+                    src={DynamicIcon}
+                    alt="lightning bolt"
+                    width={12}
+                    style={{ margin: '0 5px', display: 'inline' }}
+                  />{' '}
+                  {t('General.create')}
+                </Button>
+              )}
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

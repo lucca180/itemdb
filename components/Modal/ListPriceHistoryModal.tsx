@@ -1,14 +1,4 @@
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  Text,
-  Center,
-  Spinner,
-} from '@chakra-ui/react';
+import { Text, Center, Spinner, Dialog, CloseButton, Portal } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { ItemPriceData } from '../../types';
@@ -36,10 +26,10 @@ export default function ListPriceHistoryModal(props: ListPriceHistoryModalProps)
   const { isOpen, onClose, item_iids, listColor } = props;
   const [pricePerDay, setPricePerDay] = useState<{ [day: string]: number }>({});
   const [idsPerDay, setIdsPerDay] = useState<{ [day: string]: number[] }>({});
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   const init = async () => {
-    setIsLoading(true);
+    setLoading(true);
     const res = await axios.post('/api/v1/prices/history', { item_iids: item_iids });
 
     const data = res.data as {
@@ -47,7 +37,7 @@ export default function ListPriceHistoryModal(props: ListPriceHistoryModalProps)
     };
 
     const perDay: { [day: string]: number } = {};
-    const idsPerDay: { [day: string]: number[] } = {};
+    const idsPerDayLocal: { [day: string]: number[] } = {};
 
     Object.keys(data).forEach((iid) => {
       data[Number(iid)].forEach((price) => {
@@ -56,11 +46,11 @@ export default function ListPriceHistoryModal(props: ListPriceHistoryModalProps)
         if (!perDay[date]) perDay[date] = 0;
         perDay[date] += price.value;
 
-        if (!idsPerDay[date]) idsPerDay[date] = [];
-        idsPerDay[date].push(price.item_iid);
+        if (!idsPerDayLocal[date]) idsPerDayLocal[date] = [];
+        idsPerDayLocal[date].push(price.item_iid);
 
         for (const otherId of Object.keys(data)) {
-          if (Number(iid) === Number(otherId) || idsPerDay[date].includes(Number(otherId)))
+          if (Number(iid) === Number(otherId) || idsPerDayLocal[date].includes(Number(otherId)))
             continue;
 
           const otherPrice = data[Number(otherId)].find((p) => {
@@ -75,14 +65,14 @@ export default function ListPriceHistoryModal(props: ListPriceHistoryModalProps)
           if (!otherPrice) continue;
 
           perDay[date] += otherPrice.value!;
-          idsPerDay[date].push(otherPrice.item_iid);
+          idsPerDayLocal[date].push(otherPrice.item_iid);
         }
       });
     });
 
     setPricePerDay(perDay);
-    setIdsPerDay(idsPerDay);
-    setIsLoading(false);
+    setIdsPerDay(idsPerDayLocal);
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -92,47 +82,60 @@ export default function ListPriceHistoryModal(props: ListPriceHistoryModalProps)
   }, [item_iids, isOpen]);
 
   return (
-    <>
-      <Modal isOpen={isOpen} onClose={onClose} isCentered size="xl">
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>{t('Lists.list-price-history')}</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            {isLoading && (
-              <Center>
-                <Spinner />
-              </Center>
-            )}
-            {!isLoading && !!Object.keys(pricePerDay).length && (
-              <>
-                <ListChartComponent
-                  color={listColor}
-                  priceData={pricePerDay}
-                  noDataData={idsPerDay}
-                />
-                <Text textAlign={'center'} fontSize="xs" color="gray.400">
-                  {t('Lists.graph-warning')}
-                </Text>
-              </>
-            )}
-            {!isLoading &&
-              Object.keys(pricePerDay).length === 0 &&
-              item_iids.length <= MAX_ITEMS_LIST_PRICE && (
-                <Text textAlign={'center'} fontSize="sm" color="gray.200" mb={5}>
-                  {t('Lists.no-price-history')}
-                </Text>
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={({ open }) => {
+        if (!open) onClose();
+      }}
+      placement="center"
+      size="xl"
+    >
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>
+              <Dialog.Title>{t('Lists.list-price-history')}</Dialog.Title>
+            </Dialog.Header>
+            <Dialog.CloseTrigger asChild>
+              <CloseButton size="sm" />
+            </Dialog.CloseTrigger>
+            <Dialog.Body>
+              {loading && (
+                <Center>
+                  <Spinner />
+                </Center>
               )}
-            {!isLoading &&
-              Object.keys(pricePerDay).length === 0 &&
-              item_iids.length > MAX_ITEMS_LIST_PRICE && (
-                <Text textAlign={'center'} fontSize="sm" color="gray.200" mb={5}>
-                  {t('Lists.price-history-max', { MAX_ITEMS: MAX_ITEMS_LIST_PRICE })}
-                </Text>
+              {!loading && !!Object.keys(pricePerDay).length && (
+                <>
+                  <ListChartComponent
+                    color={listColor}
+                    priceData={pricePerDay}
+                    noDataData={idsPerDay}
+                  />
+                  <Text textAlign={'center'} fontSize="xs" color="gray.400">
+                    {t('Lists.graph-warning')}
+                  </Text>
+                </>
               )}
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-    </>
+              {!loading &&
+                Object.keys(pricePerDay).length === 0 &&
+                item_iids.length <= MAX_ITEMS_LIST_PRICE && (
+                  <Text textAlign={'center'} fontSize="sm" color="gray.200" mb={5}>
+                    {t('Lists.no-price-history')}
+                  </Text>
+                )}
+              {!loading &&
+                Object.keys(pricePerDay).length === 0 &&
+                item_iids.length > MAX_ITEMS_LIST_PRICE && (
+                  <Text textAlign={'center'} fontSize="sm" color="gray.200" mb={5}>
+                    {t('Lists.price-history-max', { MAX_ITEMS: MAX_ITEMS_LIST_PRICE })}
+                  </Text>
+                )}
+            </Dialog.Body>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 }

@@ -9,15 +9,14 @@ import {
   Image,
   Button,
   Center,
-  Divider,
-  FormControl,
-  FormLabel,
+  Separator,
+  Field,
   HStack,
   Switch,
-  useToast,
   Spinner,
   IconButton,
 } from '@chakra-ui/react';
+import { useToast } from '@utils/toast';
 import axios from 'axios';
 import React, { useEffect, useMemo, useState } from 'react';
 import Layout from '../../../components/Layout';
@@ -249,7 +248,7 @@ const UserListsPage = (props: Props) => {
       id: 'unsavedChanges',
       description: (
         <>
-          <Button variant="solid" colorScheme="blackAlpha" onClick={handleSaveChanges} size="sm">
+          <Button variant="solid" colorPalette="blackAlpha" onClick={handleSaveChanges} size="sm">
             {t('General.save-changes')}
           </Button>
         </>
@@ -383,7 +382,7 @@ const UserListsPage = (props: Props) => {
                 variant="solid"
                 mt={2}
                 onClick={() => setOpenEditProfileModal(true)}
-                colorScheme={color.isLight() ? 'blackAlpha' : 'gray'}
+                colorPalette={color.isLight() ? 'blackAlpha' : 'gray'}
                 size="sm"
               >
                 {t('Lists.edit-profile')}
@@ -392,26 +391,28 @@ const UserListsPage = (props: Props) => {
           </Box>
           <Flex flexFlow={'column'} h={'100%'} gap={2} alignItems={'flex-start'}>
             <Stack direction="row" mb={1} flexWrap="wrap">
-              <IconButton
-                as={Link}
-                isExternal
-                href={`http://www.neopets.com/userlookup.phtml?user=${owner.neopetsUser}`}
-                size="sm"
-                aria-label={t('General.userlookup')}
-                data-umami-event="user-interact"
-                data-umami-event-type="userlookup"
-                icon={<FaHouseUser />}
-              />
-              <IconButton
-                as={Link}
-                isExternal
-                href={`http://www.neopets.com/neomessages.phtml?type=send&recipient=${owner.neopetsUser}`}
-                size="sm"
-                aria-label={t('General.neomail')}
-                data-umami-event="user-interact"
-                data-umami-event-type="neomail"
-                icon={<FaEnvelope />}
-              />
+              <IconButton asChild size="sm" aria-label={t('General.userlookup')}>
+                <Link
+                  href={`http://www.neopets.com/userlookup.phtml?user=${owner.neopetsUser}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  data-umami-event="user-interact"
+                  data-umami-event-type="userlookup"
+                >
+                  <FaHouseUser />
+                </Link>
+              </IconButton>
+              <IconButton asChild size="sm" aria-label={t('General.neomail')}>
+                <Link
+                  href={`http://www.neopets.com/neomessages.phtml?type=send&recipient=${owner.neopetsUser}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  data-umami-event="user-interact"
+                  data-umami-event-type="neomail"
+                >
+                  <FaEnvelope />
+                </Link>
+              </IconButton>
               {owner.username && <UserAchiev achievements={props.achievements} />}
             </Stack>
             <Heading size={{ base: 'lg', md: undefined }}>
@@ -438,7 +439,7 @@ const UserListsPage = (props: Props) => {
                   <Text fontSize={{ base: 'xs', md: 'sm' }} fontWeight="bold">
                     {t.rich('Lists.profile-match-want', {
                       Badge: (chunk) => (
-                        <Badge borderRadius="md" verticalAlign="middle" colorScheme="green">
+                        <Badge borderRadius="md" verticalAlign="middle" colorPalette="green">
                           {chunk}
                         </Badge>
                       ),
@@ -449,11 +450,11 @@ const UserListsPage = (props: Props) => {
                   <Text
                     fontSize={{ base: 'xs', md: 'sm' }}
                     fontWeight="bold"
-                    sx={{ marginTop: '0 !important' }}
+                    css={{ marginTop: '0 !important' }}
                   >
                     {t.rich('Lists.profile-match-have', {
                       Badge: (chunk) => (
-                        <Badge borderRadius="md" verticalAlign="middle" colorScheme="blue">
+                        <Badge borderRadius="md" verticalAlign="middle" colorPalette="blue">
                           {chunk}
                         </Badge>
                       ),
@@ -468,17 +469,17 @@ const UserListsPage = (props: Props) => {
         </Flex>
       </Box>
 
-      <Divider mt={5} />
+      <Separator mt={5} />
 
       <Flex justifyContent={'space-between'} flexWrap="wrap" gap={3} alignItems="center" py={3}>
         <HStack>
           {isOwner && (
-            <Button isLoading={loading} variant="solid" onClick={() => setOpenCreateModal(true)}>
+            <Button loading={loading} variant="solid" onClick={() => setOpenCreateModal(true)}>
               + {t('Lists.new-list')}
             </Button>
           )}
           {!isEdit && !loading && (
-            <Text as="div" textColor={'gray.300'} fontSize="sm">
+            <Text as="div" color={'gray.300'} fontSize="sm">
               {listsIds.length} {t('General.lists')}
             </Text>
           )}
@@ -492,12 +493,12 @@ const UserListsPage = (props: Props) => {
                 />
               </Box>
               <Button
-                isDisabled={!selectedLists.length}
-                colorScheme="red"
-                leftIcon={<FaTrash />}
+                disabled={!selectedLists.length}
+                colorPalette="red"
                 variant="ghost"
                 onClick={() => setOpenDeleteModal(true)}
               >
+                <FaTrash />
                 {t('General.delete')}
               </Button>
               <Box></Box>
@@ -506,12 +507,23 @@ const UserListsPage = (props: Props) => {
         </HStack>
         <HStack flex="0 0 auto">
           {isOwner && (
-            <FormControl isDisabled={loading} display="flex" alignItems="center">
-              <FormLabel mb="0" textColor={'gray.300'} fontSize="sm">
-                {t('General.edit-mode')}
-              </FormLabel>
-              <Switch colorScheme="whiteAlpha" isChecked={isEdit} onChange={toggleEdit} />
-            </FormControl>
+            <Field.Root disabled={loading} display="flex" alignItems="center">
+              <Switch.Root
+                colorPalette="whiteAlpha"
+                checked={isEdit}
+                onCheckedChange={() => toggleEdit()}
+                display="flex"
+                alignItems="center"
+              >
+                <Switch.HiddenInput />
+                <Switch.Label mb="0" color={'gray.300'} fontSize="sm">
+                  {t('General.edit-mode')}
+                </Switch.Label>
+                <Switch.Control>
+                  <Switch.Thumb />
+                </Switch.Control>
+              </Switch.Root>
+            </Field.Root>
           )}
         </HStack>
       </Flex>

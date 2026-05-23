@@ -1,18 +1,5 @@
-import { ChevronDownIcon } from '@chakra-ui/icons';
-import {
-  Menu,
-  MenuButton,
-  Button,
-  MenuList,
-  MenuItem,
-  Badge,
-  Tooltip,
-  MenuDivider,
-  Portal,
-  Text,
-  Input,
-  Box,
-} from '@chakra-ui/react';
+import { ChevronDownIcon } from '@utils/chakraIcons';
+import { Menu, Button, Badge, Tooltip, Portal, Text, Input, Box } from '@chakra-ui/react';
 import axios from 'axios';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { UserList } from '../../types';
@@ -109,179 +96,199 @@ const ListSelect = (props: Props) => {
   };
 
   return (
-    <Menu
-      isLazy
-      isOpen={isMenuOpen}
-      autoSelect={!showSearch}
-      onOpen={() => setIsMenuOpen(true)}
-      onClose={() => {
-        setIsMenuOpen(false);
-        setListSearch('');
+    <Menu.Root
+      lazyMount
+      open={isMenuOpen}
+      onOpenChange={(details) => {
+        setIsMenuOpen(details.open);
+        if (!details.open) setListSearch('');
       }}
     >
-      <MenuButton
-        whiteSpace={'normal'}
-        as={Button}
-        variant="solid"
-        rightIcon={<ChevronDownIcon />}
-        size={props.size}
-        fontSize={{ base: 'xs', md: 'sm' }}
-        isLoading={isLoading || authLoading}
-      >
-        {selectedList && (
-          <>
-            <Text
-              as="span"
-              display="inline-block"
-              maxW={{ base: '140px', md: '220px' }}
-              overflow="hidden"
-              textOverflow="ellipsis"
-              verticalAlign="bottom"
-              whiteSpace="nowrap"
-              title={selectedList.name}
-            >
-              {selectedList.name}
-            </Text>
-            {selectedList.purpose !== 'none' && !selectedList.official && (
-              <Badge ml={1}>{selectedList.purpose === 'seeking' ? 's' : 't'}</Badge>
-            )}
-            {selectedList.official && (
-              <Badge ml={1} colorScheme="blue">
-                ✓
-              </Badge>
-            )}
-            {selectedList.dynamicType && (
-              <Badge
-                ml={1}
-                colorScheme="orange"
-                display={'inline-flex'}
-                alignItems="center"
-                p={'2px'}
-              >
-                <NextImage
-                  src={DynamicIcon}
-                  alt="lightning bolt"
-                  width={8}
-                  style={{ display: 'inline' }}
-                />
-              </Badge>
-            )}
-          </>
-        )}
-        {!selectedList && (props.defaultText ?? t('Lists.select-list'))}
-      </MenuButton>
-      <Portal>
-        <MenuList ref={menuListRef} zIndex="popover" maxH="30vh" overflow="auto">
-          {showSearch && (
-            <Box p={2}>
-              <Input
-                ref={searchInputRef}
-                size="sm"
-                value={listSearch}
-                placeholder={t('Search.search')}
-                variant={'filled'}
-                bg="blackAlpha.300"
-                borderRadius={'md'}
-                onChange={(e) => setListSearch(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-                onFocus={(e) => e.target.select()}
-                onKeyDown={(e) => e.stopPropagation()}
-              />
-            </Box>
-          )}
-          {sorted.length !== 0 && (
+      <Menu.Trigger asChild>
+        <Button
+          whiteSpace={'normal'}
+          variant="solid"
+          size={props.size}
+          fontSize={{ base: 'xs', md: 'sm' }}
+          loading={isLoading || authLoading}
+        >
+          {selectedList && (
             <>
-              <ViewportList
-                items={filteredLists}
-                viewportRef={menuListRef}
-                itemSize={40}
-                initialPrerender={8}
-                overscan={8}
+              <Text
+                as="span"
+                display="inline-block"
+                maxW={{ base: '140px', md: '220px' }}
+                overflow="hidden"
+                textOverflow="ellipsis"
+                verticalAlign="bottom"
+                whiteSpace="nowrap"
+                title={selectedList.name}
               >
-                {(list) => (
-                  <MenuItem key={list.internal_id} onClick={() => handleSelect(list)}>
-                    <Text
-                      as="span"
-                      flex="1"
-                      maxW={'220px'}
-                      minW={0}
-                      overflow="hidden"
-                      textOverflow="ellipsis"
-                      whiteSpace="nowrap"
-                      title={list.name}
-                    >
-                      {list.name}
-                    </Text>
-                    {list.purpose !== 'none' && !list.official && (
-                      <Tooltip label={`${list.purpose}`} fontSize="sm" placement="top">
-                        <Badge ml={1}>{list.purpose === 'seeking' ? 's' : 't'}</Badge>
-                      </Tooltip>
-                    )}
-                    {list.official && (
-                      <Tooltip label={`official`} fontSize="sm" placement="top">
-                        <Badge ml={1} colorScheme="blue">
-                          ✓
-                        </Badge>
-                      </Tooltip>
-                    )}
-                    {list.dynamicType && (
-                      <Tooltip
-                        label={`${list.dynamicType} Dynamic List`}
-                        fontSize="sm"
-                        placement="top"
-                      >
-                        <Badge
-                          ml={1}
-                          colorScheme="orange"
-                          display={'inline-flex'}
-                          alignItems="center"
-                          p={'2px'}
-                        >
-                          <NextImage
-                            src={DynamicIcon}
-                            alt="lightning bolt"
-                            width={8}
-                            style={{ display: 'inline' }}
-                          />
-                        </Badge>
-                      </Tooltip>
-                    )}
-                  </MenuItem>
-                )}
-              </ViewportList>
-              {filteredLists.length === 0 && (
-                <MenuItem justifyContent="center" disabled>
-                  {t('ItemPage.no-lists-found')}
-                </MenuItem>
+                {selectedList.name}
+              </Text>
+              {selectedList.purpose !== 'none' && !selectedList.official && (
+                <Badge ml={1}>{selectedList.purpose === 'seeking' ? 's' : 't'}</Badge>
               )}
-              {props.createNew && <MenuDivider />}
+              {selectedList.official && (
+                <Badge ml={1} colorPalette="blue">
+                  ✓
+                </Badge>
+              )}
+              {selectedList.dynamicType && (
+                <Badge
+                  ml={1}
+                  colorPalette="orange"
+                  display={'inline-flex'}
+                  alignItems="center"
+                  p={'2px'}
+                >
+                  <NextImage
+                    src={DynamicIcon}
+                    alt="lightning bolt"
+                    width={8}
+                    style={{ display: 'inline' }}
+                  />
+                </Badge>
+              )}
             </>
           )}
+          {!selectedList && (props.defaultText ?? t('Lists.select-list'))}
+          <ChevronDownIcon />
+        </Button>
+      </Menu.Trigger>
+      <Portal>
+        <Menu.Positioner>
+          <Menu.Content ref={menuListRef} zIndex="popover" maxH="30vh" overflow="auto">
+            {showSearch && (
+              <Box p={2}>
+                <Input
+                  ref={searchInputRef}
+                  size="sm"
+                  value={listSearch}
+                  placeholder={t('Search.search')}
+                  variant={'subtle'}
+                  bg="blackAlpha.300"
+                  borderRadius={'md'}
+                  onChange={(e) => setListSearch(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  onFocus={(e) => e.target.select()}
+                  onKeyDown={(e) => e.stopPropagation()}
+                />
+              </Box>
+            )}
+            {sorted.length !== 0 && (
+              <>
+                <ViewportList
+                  items={filteredLists}
+                  viewportRef={menuListRef}
+                  itemSize={40}
+                  initialPrerender={8}
+                  overscan={8}
+                >
+                  {(list) => (
+                    <Menu.Item
+                      key={list.internal_id}
+                      value={String(list.internal_id)}
+                      onClick={() => handleSelect(list)}
+                    >
+                      <Text
+                        as="span"
+                        flex="1"
+                        maxW={'220px'}
+                        minW={0}
+                        overflow="hidden"
+                        textOverflow="ellipsis"
+                        whiteSpace="nowrap"
+                        title={list.name}
+                      >
+                        {list.name}
+                      </Text>
+                      {list.purpose !== 'none' && !list.official && (
+                        <Tooltip.Root positioning={{ placement: 'top' }}>
+                          <Tooltip.Trigger asChild>
+                            <Badge ml={1}>{list.purpose === 'seeking' ? 's' : 't'}</Badge>
+                          </Tooltip.Trigger>
+                          <Tooltip.Positioner>
+                            <Tooltip.Content fontSize="sm">{list.purpose}</Tooltip.Content>
+                          </Tooltip.Positioner>
+                        </Tooltip.Root>
+                      )}
+                      {list.official && (
+                        <Tooltip.Root positioning={{ placement: 'top' }}>
+                          <Tooltip.Trigger asChild>
+                            <Badge ml={1} colorPalette="blue">
+                              ✓
+                            </Badge>
+                          </Tooltip.Trigger>
+                          <Tooltip.Positioner>
+                            <Tooltip.Content fontSize="sm">official</Tooltip.Content>
+                          </Tooltip.Positioner>
+                        </Tooltip.Root>
+                      )}
+                      {list.dynamicType && (
+                        <Tooltip.Root positioning={{ placement: 'top' }}>
+                          <Tooltip.Trigger asChild>
+                            <Badge
+                              ml={1}
+                              colorPalette="orange"
+                              display={'inline-flex'}
+                              alignItems="center"
+                              p={'2px'}
+                            >
+                              <NextImage
+                                src={DynamicIcon}
+                                alt="lightning bolt"
+                                width={8}
+                                style={{ display: 'inline' }}
+                              />
+                            </Badge>
+                          </Tooltip.Trigger>
+                          <Tooltip.Positioner>
+                            <Tooltip.Content fontSize="sm">
+                              {list.dynamicType} Dynamic List
+                            </Tooltip.Content>
+                          </Tooltip.Positioner>
+                        </Tooltip.Root>
+                      )}
+                    </Menu.Item>
+                  )}
+                </ViewportList>
+                {filteredLists.length === 0 && (
+                  <Menu.Item value="no-lists" disabled justifyContent="center">
+                    {t('ItemPage.no-lists-found')}
+                  </Menu.Item>
+                )}
+                {props.createNew && <Menu.Separator />}
+              </>
+            )}
 
-          {user && !isLoading && lists.length === 0 && (
-            <MenuItem justifyContent="center" disabled>
-              {t('ItemPage.no-lists-found')}
-            </MenuItem>
-          )}
+            {user && !isLoading && lists.length === 0 && (
+              <Menu.Item value="empty-lists" disabled justifyContent="center">
+                {t('ItemPage.no-lists-found')}
+              </Menu.Item>
+            )}
 
-          {isLoading && (
-            <MenuItem justifyContent="center" disabled>
-              {t('Layout.loading')}...
-            </MenuItem>
-          )}
+            {isLoading && (
+              <Menu.Item value="loading" disabled justifyContent="center">
+                {t('Layout.loading')}...
+              </Menu.Item>
+            )}
 
-          {!user && !authLoading && (
-            <MenuItem justifyContent="center" disabled>
-              {t('Lists.login-to-use-lists')}
-            </MenuItem>
-          )}
+            {!user && !authLoading && (
+              <Menu.Item value="login-required" disabled justifyContent="center">
+                {t('Lists.login-to-use-lists')}
+              </Menu.Item>
+            )}
 
-          {user && !isLoading && props.createNew && (
-            <MenuItem onClick={createNewList}>+ {t('Lists.create-new-list')}</MenuItem>
-          )}
-        </MenuList>
+            {user && !isLoading && props.createNew && (
+              <Menu.Item value="create-new" onClick={createNewList}>
+                + {t('Lists.create-new-list')}
+              </Menu.Item>
+            )}
+          </Menu.Content>
+        </Menu.Positioner>
       </Portal>
-    </Menu>
+    </Menu.Root>
   );
 };
 

@@ -1,24 +1,18 @@
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
   Button,
-  FormControl,
   Text,
-  FormLabel,
   Input,
   Stack,
   Spinner,
   Center,
-  FormHelperText,
-  Select,
+  Field,
+  NativeSelect,
   Textarea,
   Link,
   useDisclosure,
+  Dialog,
+  CloseButton,
+  Portal,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -65,7 +59,7 @@ const EditProfileModal = (props: EditProfileModalProps) => {
   const [isLoading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const {
-    isOpen: isDeleteUserModalOpen,
+    open: isDeleteUserModalOpen,
     onOpen: onOpenDeleteUserModal,
     onClose: onCloseDeleteUserModal,
   } = useDisclosure();
@@ -180,138 +174,167 @@ const EditProfileModal = (props: EditProfileModalProps) => {
       {isDeleteUserModalOpen && (
         <DeleteUserModal isOpen={isDeleteUserModalOpen} onClose={onCloseDeleteUserModal} />
       )}
-      <Modal isOpen={isOpen} onClose={handleCancel} isCentered scrollBehavior="inside">
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>{t('Lists.edit-profile')}</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            {error && (
-              <Center>
-                <Text fontSize="sm" textAlign="center" color="red.400">
-                  {error}
-                  <br />
-                </Text>
-              </Center>
-            )}
-            {!isLoading && (
-              <Stack gap={3}>
-                {/* <FormControl>
-                <FormLabel color="gray.300">Username</FormLabel>
+      <Dialog.Root
+        open={isOpen}
+        onOpenChange={({ open }) => {
+          if (!open) handleCancel();
+        }}
+        placement="center"
+        scrollBehavior="inside"
+      >
+        <Portal>
+          <Dialog.Backdrop />
+          <Dialog.Positioner>
+            <Dialog.Content>
+              <Dialog.Header>
+                <Dialog.Title>{t('Lists.edit-profile')}</Dialog.Title>
+              </Dialog.Header>
+              <Dialog.CloseTrigger asChild>
+                <CloseButton size="sm" />
+              </Dialog.CloseTrigger>
+              <Dialog.Body>
+                {error && (
+                  <Center>
+                    <Text fontSize="sm" textAlign="center" color="red.400">
+                      {error}
+                      <br />
+                    </Text>
+                  </Center>
+                )}
+                {!isLoading && (
+                  <Stack gap={3}>
+                    {/* <Field.Root>
+                <Field.Label color="gray.300">Username</Field.Label>
                 <Input
-                  variant="filled"
+                  variant="subtle"
                   name="username"
                   onChange={handleChange}
                   value={userProfile.username ?? ''}
                 />
-                <FormHelperText>Required</FormHelperText>
-              </FormControl> */}
-                <FormControl>
-                  <FormLabel color="gray.300">{t('General.email-address')}</FormLabel>
-                  <Input variant="filled" disabled value={userProfile.email ?? ''} />
-                  <FormHelperText fontSize={'xs'}>{t('Profile.email-helper')}</FormHelperText>
-                </FormControl>
-                <FormControl>
-                  <FormLabel color="gray.300">{t('Login.neopets-username')}</FormLabel>
-                  <Input
-                    variant="filled"
-                    name="neopetsUser"
-                    onChange={handleChange}
-                    value={userProfile.neopetsUser ?? ''}
-                  />
-                </FormControl>
+                <Field.HelperText>Required</Field.HelperText>
+              </Field.Root> */}
+                    <Field.Root>
+                      <Field.Label color="gray.300">{t('General.email-address')}</Field.Label>
+                      <Input variant="subtle" disabled value={userProfile.email ?? ''} />
+                      <Field.HelperText fontSize={'xs'}>
+                        {t('Profile.email-helper')}
+                      </Field.HelperText>
+                    </Field.Root>
+                    <Field.Root>
+                      <Field.Label color="gray.300">{t('Login.neopets-username')}</Field.Label>
+                      <Input
+                        variant="subtle"
+                        name="neopetsUser"
+                        onChange={handleChange}
+                        value={userProfile.neopetsUser ?? ''}
+                      />
+                    </Field.Root>
 
-                <FormControl>
-                  <FormLabel color="gray.300">{t('General.description')}</FormLabel>
-                  <Textarea
-                    variant="filled"
-                    name="description"
-                    onChange={handleChange}
-                    value={userProfile.description ?? ''}
-                  />
-                  <FormHelperText fontSize={'xs'}>
-                    {t.rich('Lists.markdown-tip', {
-                      Link: (children) => (
-                        <Link href="https://commonmark.org/help/" color="gray.300" isExternal>
-                          {children}
-                        </Link>
-                      ),
-                      Small: (children) => <Text display={'inline'}>{children}</Text>,
-                    })}
-                  </FormHelperText>
-                </FormControl>
-                <FormControl>
-                  <FormLabel color="gray.300">{t('Profile.profile-image-url')} (150x150)</FormLabel>
-                  <Input
-                    variant="filled"
-                    name="profileImage"
-                    onChange={handleChange}
-                    value={userProfile.profileImage ?? ''}
-                  />
-                  <FormHelperText fontSize={'xs'}>{t('Profile.allowedDomains')}</FormHelperText>
-                </FormControl>
-                <FormControl>
-                  <FormLabel color="gray.300">Profile Mode</FormLabel>
-                  <Select
-                    onChange={handleChange}
-                    value={userProfile.profileMode ?? 'default'}
-                    variant={'filled'}
-                    name="profileMode"
-                  >
-                    <option value={'default'}>Default</option>
-                    <option value={'groups'}>List Groups</option>
-                  </Select>
-                  <FormHelperText fontSize={'xs'}>
-                    {t.rich('Profile.list-groups-helper', {
-                      b: (children) => <b>{children}</b>,
-                    })}
-                  </FormHelperText>
-                </FormControl>
-                <FormControl>
-                  <FormLabel color="gray.300">{t('General.color')}</FormLabel>
+                    <Field.Root>
+                      <Field.Label color="gray.300">{t('General.description')}</Field.Label>
+                      <Textarea
+                        variant="subtle"
+                        name="description"
+                        onChange={handleChange}
+                        value={userProfile.description ?? ''}
+                      />
+                      <Field.HelperText fontSize={'xs'}>
+                        {t.rich('Lists.markdown-tip', {
+                          Link: (children) => (
+                            <Link
+                              href="https://commonmark.org/help/"
+                              color="gray.300"
+                              target="_blank"
+                            >
+                              {children}
+                            </Link>
+                          ),
+                          Small: (children) => <Text display={'inline'}>{children}</Text>,
+                        })}
+                      </Field.HelperText>
+                    </Field.Root>
+                    <Field.Root>
+                      <Field.Label color="gray.300">
+                        {t('Profile.profile-image-url')} (150x150)
+                      </Field.Label>
+                      <Input
+                        variant="subtle"
+                        name="profileImage"
+                        onChange={handleChange}
+                        value={userProfile.profileImage ?? ''}
+                      />
+                      <Field.HelperText fontSize={'xs'}>
+                        {t('Profile.allowedDomains')}
+                      </Field.HelperText>
+                    </Field.Root>
+                    <Field.Root>
+                      <Field.Label color="gray.300">Profile Mode</Field.Label>
+                      <NativeSelect.Root variant="subtle">
+                        <NativeSelect.Field
+                          onChange={handleChange}
+                          value={userProfile.profileMode ?? 'default'}
+                          name="profileMode"
+                        >
+                          <option value={'default'}>Default</option>
+                          <option value={'groups'}>List Groups</option>
+                        </NativeSelect.Field>
+                        <NativeSelect.Indicator />
+                      </NativeSelect.Root>
+                      <Field.HelperText fontSize={'xs'}>
+                        {t.rich('Profile.list-groups-helper', {
+                          b: (children) => <b>{children}</b>,
+                        })}
+                      </Field.HelperText>
+                    </Field.Root>
+                    <Field.Root>
+                      <Field.Label color="gray.300">{t('General.color')}</Field.Label>
+                      <Center>
+                        <TwitterPicker
+                          styles={colorPickerStyles}
+                          triangle="hide"
+                          color={userProfile.profileColor || '#000000'}
+                          onChangeComplete={handleColorChange}
+                        />
+                      </Center>
+                      <Field.HelperText fontSize={'xs'}>
+                        {t('Profile.color-helper')}
+                      </Field.HelperText>
+                    </Field.Root>
+                    <Field.Root>
+                      <Center>
+                        <Button
+                          size="xs"
+                          variant={'outline'}
+                          colorPalette="red"
+                          onClick={onOpenDeleteUserModal}
+                        >
+                          Delete Account
+                        </Button>
+                      </Center>
+                    </Field.Root>
+                  </Stack>
+                )}
+
+                {isLoading && (
                   <Center>
-                    <TwitterPicker
-                      styles={colorPickerStyles}
-                      triangle="hide"
-                      color={userProfile.profileColor || '#000000'}
-                      onChangeComplete={handleColorChange}
-                    />
+                    <Spinner />
                   </Center>
-                  <FormHelperText fontSize={'xs'}>{t('Profile.color-helper')}</FormHelperText>
-                </FormControl>
-                <FormControl>
-                  <Center>
-                    <Button
-                      size="xs"
-                      variant={'outline'}
-                      colorScheme="red"
-                      onClick={onOpenDeleteUserModal}
-                    >
-                      Delete Account
+                )}
+              </Dialog.Body>
+              <Dialog.Footer>
+                {!isLoading && (
+                  <>
+                    <Button variant="ghost" onClick={handleCancel} mr={3}>
+                      {t('General.cancel')}
                     </Button>
-                  </Center>
-                </FormControl>
-              </Stack>
-            )}
-
-            {isLoading && (
-              <Center>
-                <Spinner />
-              </Center>
-            )}
-          </ModalBody>
-          <ModalFooter>
-            {!isLoading && (
-              <>
-                <Button variant="ghost" onClick={handleCancel} mr={3}>
-                  {t('General.cancel')}
-                </Button>
-                <Button onClick={saveChanges}>{t('General.save')}</Button>
-              </>
-            )}
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+                    <Button onClick={saveChanges}>{t('General.save')}</Button>
+                  </>
+                )}
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
     </>
   );
 };

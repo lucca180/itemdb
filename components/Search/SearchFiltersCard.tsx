@@ -43,10 +43,10 @@ const SearchFilterCard = (props: Props) => {
           isColorSearch={isColorSearch}
         />
         <HStack justifyContent="center" my={3} px={2}>
-          <Button variant="ghost" onClick={resetFilters} colorScheme="gray" size="sm">
+          <Button variant="ghost" onClick={resetFilters} colorPalette="gray" size="sm">
             {t('General.reset')}
           </Button>
-          <Button variant="ghost" colorScheme="green" size="sm" onClick={applyFilters}>
+          <Button variant="ghost" colorPalette="green" size="sm" onClick={applyFilters}>
             {t('Search.apply-filters')}
           </Button>
         </HStack>

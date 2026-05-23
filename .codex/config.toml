@@ -7,3 +7,10 @@ command = "npx"
 
 [mcp_servers.next-devtools.tools.nextjs_docs]
 approval_mode = "approve"
+
+[mcp_servers.chakra-ui-3]
+args = [
+    "-y",
+    "@chakra-ui/react-mcp",
+]
+command = "npx"

@@ -1,6 +1,6 @@
-import { Button, Flex, useBoolean } from '@chakra-ui/react';
+import { Button, Flex } from '@chakra-ui/react';
 import axios from 'axios';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ItemData } from '../../types';
 import CardBase from '../Card/CardBase';
 import ItemCard from './ItemCard';
@@ -20,7 +20,7 @@ const ItemParent = (props: Props) => {
   const { item } = props;
   const { parents_iid: parentItems } = props.parent;
   const color = item.color.rgb;
-  const [showMore, { toggle }] = useBoolean(false);
+  const [showMore, setShowMore] = useState(false);
 
   const init = async () => {
     if (parentItems.length === parentData.length) return;
@@ -56,7 +56,7 @@ const ItemParent = (props: Props) => {
       </Flex>
       {parentItems.length > 4 && (
         <Flex justifyContent="center" mt={3}>
-          <Button size={'sm'} onClick={toggle}>
+          <Button size={'sm'} onClick={() => setShowMore((current) => !current)}>
             {!showMore ? t('ItemPage.show-more') : t('ItemPage.show-less')}
           </Button>
         </Flex>

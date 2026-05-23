@@ -3,7 +3,7 @@ import {
   Center,
   Heading,
   Image,
-  Divider,
+  Separator,
   Text,
   Link,
   Button,
@@ -81,7 +81,7 @@ const NeedInfoPage = () => {
           })}
         </Text>
       </Center>
-      <Divider my={3} />
+      <Separator my={3} />
       <Center gap={3}>
         <TypeButton field="item_id" selectedField={field} setField={setField} disabled={isLoading}>
           {t('General.item-id')}
@@ -122,12 +122,12 @@ const NeedInfoPage = () => {
       </Center>
       <Center mt={5} gap={3}>
         {!isLoading && (
-          <Button isDisabled={page <= 1} onClick={() => setPage(page - 1)}>
+          <Button disabled={page <= 1} onClick={() => setPage(page - 1)}>
             {t('MissingHub.prev-page')}
           </Button>
         )}
         {!isLoading && (
-          <Button isDisabled={!items.length} onClick={() => setPage(page + 1)}>
+          <Button disabled={!items.length} onClick={() => setPage(page + 1)}>
             {t('MissingHub.next-page')}
           </Button>
         )}
@@ -180,8 +180,8 @@ const TypeButton = ({ selectedField, field, setField, children, disabled }: Type
     <Button
       size="sm"
       onClick={() => setField(field)}
-      colorScheme={selectedField === field ? 'yellow' : undefined}
-      isDisabled={disabled}
+      colorPalette={selectedField === field ? 'yellow' : undefined}
+      disabled={disabled}
     >
       {children}
     </Button>

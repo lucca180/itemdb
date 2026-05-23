@@ -14,7 +14,7 @@ export const ShopInfoCard = (props: ShopInfoProps) => {
       justifyContent={'center'}
       alignItems={'center'}
       textAlign={'center'}
-      sx={{ textWrap: 'balance' }}
+      css={{ textWrap: 'balance' }}
     >
       {props.children}
     </Flex>

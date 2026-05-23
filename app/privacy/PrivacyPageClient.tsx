@@ -1,7 +1,7 @@
 'use client';
 
 /* eslint-disable react/no-unescaped-entities */
-import { Flex, Heading, Text, Link, ListItem, UnorderedList } from '@chakra-ui/react';
+import { Flex, Heading, Link, List, Text } from '@chakra-ui/react';
 import HeaderCard from '../../components/Card/HeaderCard';
 
 export function PrivacyPageClient() {
@@ -17,14 +17,14 @@ export function PrivacyPageClient() {
         <Heading as="h1" size="lg">
           Privacy Policy (Feb 2026)
         </Heading>
-        <Text as="h2" size={{ base: 'sm', md: undefined }}>
+        <Text as="h2" fontSize={{ base: 'sm', md: 'md' }}>
           itemdb collects some personal data during its use. No information is sold or used for
           advertising.
           <br />
           Here we will detail more about how we collect, process, and use your data.
         </Text>
       </HeaderCard>
-      <Flex flexFlow="column" gap={3} sx={{ a: { color: '#7AB92A' }, b: { color: '#7AB92A' } }}>
+      <Flex flexFlow="column" gap={3} css={{ a: { color: '#7AB92A' }, b: { color: '#7AB92A' } }}>
         <Flex flexFlow="column" gap={3} maxW="1000px">
           <Heading size="lg">What data do we collect and how we use it?</Heading>
           <Text>
@@ -39,23 +39,23 @@ export function PrivacyPageClient() {
             process data about your use of the site such as IP address and cookies. These services
             include:
           </Text>
-          <UnorderedList spacing={3}>
-            <ListItem>
+          <List.Root as="ul" gap={3} listStyle="disc" ps={6}>
+            <List.Item>
               <Link href="https://www.cloudflare.com/">Cloudflare</Link>
               <Text fontSize="sm" color="gray.400">
                 We use Cloudflare to help protect our site from attacks and to help speed up your
                 experience.
               </Text>
-            </ListItem>
-            <ListItem>
-              <Link href="https://sentry.io/" isExternal>
+            </List.Item>
+            <List.Item>
+              <Link href="https://sentry.io/" target="_blank" rel="noopener noreferrer">
                 Sentry
               </Link>
               <Text fontSize="sm" color="gray.400">
                 We use Sentry to help us track errors and crashes on the site.
               </Text>
-            </ListItem>
-          </UnorderedList>
+            </List.Item>
+          </List.Root>
           <Heading size="lg">Your Contributions and Creations</Heading>
           <Text>
             You may choose to contribute to the site by using our Item Data Extractor script. This

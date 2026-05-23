@@ -3,17 +3,17 @@ import {
   Center,
   Heading,
   Image,
-  Divider,
+  Separator,
   Text,
   Button,
   Spinner,
   VStack,
-  Select,
+  NativeSelect,
 } from '@chakra-ui/react';
 import Layout from '../../components/Layout';
 import { createTranslator, useTranslations } from 'next-intl';
 import Color from 'color';
-import { ReactElement, useEffect, useState } from 'react';
+import { ChangeEvent, ReactElement, useEffect, useState } from 'react';
 import axios from 'axios';
 import { ItemData, ItemEffect } from '../../types';
 import { EffectsCard } from '../../components/Hubs/Effects/EffectsCard';
@@ -93,7 +93,7 @@ const ItemEffectPage = () => {
         <Heading as="h1">{t('ItemEffects.item-effect-hub')}</Heading>
         <Text>{t('ItemEffects.cta')}</Text>
       </Center>
-      <Divider my={3} />
+      <Separator my={3} />
       <Center gap={3} flexWrap={'wrap'}>
         <TypeButton field="stats" selectedField={field} setField={setField} disabled={isLoading}>
           {t('ItemEffects.stats-change')}
@@ -126,20 +126,19 @@ const ItemEffectPage = () => {
       </Center>
       {field === 'stats' && (
         <Center mt={3}>
-          <Select
-            maxW={200}
-            size="sm"
-            variant={'filled'}
-            colorScheme="pink"
-            onChange={(e) => setStatsName(e.target.value)}
-          >
-            <option value="all">All Stats</option>
-            {statsType.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </Select>
+          <NativeSelect.Root maxW={200} size="sm" variant="subtle" colorPalette="pink">
+            <NativeSelect.Field
+              onChange={(e: ChangeEvent<HTMLSelectElement>) => setStatsName(e.target.value)}
+            >
+              <option value="all">All Stats</option>
+              {statsType.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </NativeSelect.Field>
+            <NativeSelect.Indicator />
+          </NativeSelect.Root>
         </Center>
       )}
       <Center alignItems={'stretch'} flexWrap={'wrap'} gap={3} mt={3}>
@@ -156,13 +155,13 @@ const ItemEffectPage = () => {
       </Center>
       <Center mt={5} gap={3}>
         {!isLoading && (
-          <Button isDisabled={page <= 1} onClick={() => setPage(page - 1)}>
+          <Button disabled={page <= 1} onClick={() => setPage(page - 1)}>
             {t('MissingHub.prev-page')}
           </Button>
         )}
         {!isLoading && (
           <Button
-            isDisabled={!items.length || items.length < LIMIT_PER_PAGE}
+            disabled={!items.length || items.length < LIMIT_PER_PAGE}
             onClick={() => setPage(page + 1)}
           >
             {t('MissingHub.next-page')}
@@ -213,8 +212,8 @@ const TypeButton = ({ selectedField, field, setField, children, disabled }: Type
     <Button
       size="sm"
       onClick={() => setField(field)}
-      colorScheme={selectedField === field ? 'pink' : undefined}
-      isDisabled={disabled}
+      colorPalette={selectedField === field ? 'pink' : undefined}
+      disabled={disabled}
     >
       {children}
     </Button>

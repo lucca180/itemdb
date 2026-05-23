@@ -1,14 +1,5 @@
-import {
-  Box,
-  Button,
-  Center,
-  Flex,
-  Icon,
-  IconButton,
-  Link,
-  Text,
-  useToast,
-} from '@chakra-ui/react';
+import { Box, Button, Center, Flex, Icon, IconButton, Link, Text } from '@chakra-ui/react';
+import { useToast } from '@utils/toast';
 import React from 'react';
 import { AiFillEyeInvisible } from 'react-icons/ai';
 import { FullItemColors } from '../../types';
@@ -104,23 +95,28 @@ const ColorInfoCard = (props: Props) => {
                   </Flex>
                   <Flex justifyContent={'center'} alignItems="center" gap={2}>
                     <IconButton
-                      as={Link}
-                      rel="nofollow"
-                      href={'/search?s=' + encodeURIComponent(colors[key].hex)}
-                      icon={<BiSearch />}
+                      asChild
                       aria-label="Search Hex"
                       size="xs"
                       color={isLight ? 'blackAlpha.800' : 'whiteAlpha.800'}
-                      colorScheme={isLight ? 'blackAlpha' : 'whiteAlpha'}
-                    />
+                      colorPalette={isLight ? 'blackAlpha' : 'whiteAlpha'}
+                    >
+                      <Link
+                        rel="nofollow"
+                        href={'/search?s=' + encodeURIComponent(colors[key].hex)}
+                      >
+                        <BiSearch />
+                      </Link>
+                    </IconButton>
                     <IconButton
-                      icon={<BiCopy />}
                       aria-label="Copy Hex"
                       size="xs"
                       color={isLight ? 'blackAlpha.800' : 'whiteAlpha.800'}
-                      colorScheme={isLight ? 'blackAlpha' : 'whiteAlpha'}
+                      colorPalette={isLight ? 'blackAlpha' : 'whiteAlpha'}
                       onClick={() => handleCopy(colors[key].hex)}
-                    />
+                    >
+                      <BiCopy />
+                    </IconButton>
                   </Flex>
                 </Flex>
               );

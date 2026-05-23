@@ -46,7 +46,7 @@ const ItemCardBase = (props: ItemProps) => {
     utm_content,
     uniqueID,
   } = props;
-  const [isMobile] = useMediaQuery('(hover: none)');
+  const [isMobile] = useMediaQuery(['(hover: none)'], { fallback: [false] });
   const [isContextMenuLoaded, setIsContextMenuLoaded] = useState(false);
   const format = useFormatter();
 
@@ -54,7 +54,7 @@ const ItemCardBase = (props: ItemProps) => {
 
   if (!item || isLoading || !color)
     return (
-      <Link as={'a'} _hover={{ textDecoration: 'none' }} pointerEvents="none" style={props.style}>
+      <Box as="a" _hover={{ textDecoration: 'none' }} pointerEvents="none" style={props.style}>
         <Box
           w={{ base: 100, md: small ? 100 : 150 }}
           py={{ base: 2, md: small ? 2 : 4 }}
@@ -73,7 +73,7 @@ const ItemCardBase = (props: ItemProps) => {
           <Skeleton w="80px" h="80px" />
           <Skeleton w="80px" h="12px" mt={2} />
         </Box>
-      </Link>
+      </Box>
     );
 
   const profit = getRestockProfit(item);
@@ -99,7 +99,7 @@ const ItemCardBase = (props: ItemProps) => {
         //@ts-ignore
         disableWhileShiftPressed
         disable={isMobile ? true : undefined}
-        sx={props.style}
+        css={props.style}
         attributes={{
           onPointerEnter: loadContextMenu,
           onFocus: loadContextMenu,
@@ -107,67 +107,119 @@ const ItemCardBase = (props: ItemProps) => {
           onContextMenuCapture: loadContextMenu,
         }}
       >
-        <Link
-          as={disableLink ? undefined : MainLink}
-          prefetch={disableLink || disablePrefetch !== false ? false : undefined}
-          trackEvent={utm_content || undefined}
-          trackEventLabel={item.slug || undefined}
-          href={disableLink ? undefined : '/item/' + (item.slug ?? item.internal_id)}
-          _hover={{ textDecoration: 'none' }}
-          sx={props.style}
-          // pointerEvents={disableLink ? 'none' : 'initial'}
-        >
-          <Box
-            w={{ base: 100, md: small ? 100 : 150 }}
-            py={{ base: 2, md: small ? 2 : 4 }}
-            px={1}
-            bg="gray.700"
-            bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${color[0]},${color[1]}, ${color[2]},.45) 35%)`}
-            h="100%"
-            borderRadius="md"
-            display="flex"
-            flexFlow="column"
-            justifyContent="center"
-            alignItems="center"
-            boxShadow={selected ? 'outline' : 'lg'}
-            filter={highlight ? 'drop-shadow(0px 0px 5px #f0f03d)' : undefined}
-            textAlign="center"
-            cursor="pointer"
-            textDecoration="none"
-            gap={2}
-          >
-            <ItemImage item={item} />
-            <Text fontSize={{ base: 'xs', md: small ? 'xs' : 'sm' }}>{item.name}</Text>
-
-            <ItemCardBadge {...props} profit={profit} />
-
-            {(quantity ?? 0) > 1 && (
-              <Text fontSize={'xs'} fontWeight="bold">
-                {quantity}x
-              </Text>
-            )}
-
-            {['faerieFest', 'item_id', 'rarity', 'quantity', 'price_qty'].includes(
-              sortType ?? ''
-            ) && (
-              <Text fontSize={'xs'} fontWeight="bold">
-                {sortType === 'rarity' && item.rarity && `r${item.rarity}`}
-                {sortType === 'item_id' && item.item_id && `#${item.item_id}`}
-                {['quantity', 'price_qty'].includes(sortType ?? '') &&
-                  item.price.value &&
-                  (quantity ?? 0) > 1 &&
-                  `${format.number(item.price.value * (quantity ?? 1))} NP Total`}
-                {sortType === 'faerieFest' &&
-                  !!rarityToCCPoints(item) &&
-                  `${rarityToCCPoints(item)} point${rarityToCCPoints(item) > 1 ? 's' : ''}`}
-              </Text>
-            )}
+        {disableLink ? (
+          <Box _hover={{ textDecoration: 'none' }} style={props.style}>
+            <ItemCardContent
+              item={item}
+              color={color}
+              small={small}
+              selected={selected}
+              highlight={highlight}
+              quantity={quantity}
+              sortType={sortType}
+              format={format}
+              profit={profit}
+              props={props}
+            />
           </Box>
-        </Link>
+        ) : (
+          <Link asChild _hover={{ textDecoration: 'none' }} style={props.style}>
+            <MainLink
+              prefetch={disablePrefetch !== false ? false : undefined}
+              trackEvent={utm_content || undefined}
+              trackEventLabel={item.slug || undefined}
+              href={'/item/' + (item.slug ?? item.internal_id)}
+            >
+              <ItemCardContent
+                item={item}
+                color={color}
+                small={small}
+                selected={selected}
+                highlight={highlight}
+                quantity={quantity}
+                sortType={sortType}
+                format={format}
+                profit={profit}
+                props={props}
+              />
+            </MainLink>
+          </Link>
+        )}
       </CtxTrigger>
     </>
   );
 };
+
+type ItemCardContentProps = {
+  item: ItemData;
+  color: number[];
+  small?: boolean;
+  selected?: boolean;
+  highlight?: boolean;
+  quantity?: number;
+  sortType?: string;
+  format: ReturnType<typeof useFormatter>;
+  profit: number | null | undefined;
+  props: ItemProps;
+};
+
+const ItemCardContent = ({
+  item,
+  color,
+  small,
+  selected,
+  highlight,
+  quantity,
+  sortType,
+  format,
+  profit,
+  props,
+}: ItemCardContentProps) => (
+  <Box
+    w={{ base: 100, md: small ? 100 : 150 }}
+    py={{ base: 2, md: small ? 2 : 4 }}
+    px={1}
+    bg="gray.700"
+    bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${color[0]},${color[1]}, ${color[2]},.45) 35%)`}
+    h="100%"
+    borderRadius="md"
+    display="flex"
+    flexFlow="column"
+    justifyContent="center"
+    alignItems="center"
+    boxShadow={selected ? 'outline' : 'lg'}
+    filter={highlight ? 'drop-shadow(0px 0px 5px #f0f03d)' : undefined}
+    textAlign="center"
+    cursor="pointer"
+    textDecoration="none"
+    gap={2}
+  >
+    <ItemImage item={item} />
+    <Text fontSize={{ base: 'xs', md: small ? 'xs' : 'sm' }}>{item.name}</Text>
+
+    <ItemCardBadge {...props} profit={profit} />
+
+    {(quantity ?? 0) > 1 && (
+      <Text fontSize={'xs'} fontWeight="bold">
+        {quantity}x
+      </Text>
+    )}
+
+    {['faerieFest', 'item_id', 'rarity', 'quantity', 'price_qty'].includes(sortType ?? '') && (
+      <Text fontSize={'xs'} fontWeight="bold">
+        {sortType === 'rarity' && item.rarity && `r${item.rarity}`}
+        {sortType === 'item_id' && item.item_id && `#${item.item_id}`}
+        {['quantity', 'price_qty'].includes(sortType ?? '') &&
+          item.price.value &&
+          (quantity ?? 0) > 1 &&
+          `${format.number(item.price.value * (quantity ?? 1))} NP Total`}
+        {sortType === 'faerieFest' &&
+          !!rarityToCCPoints(item) &&
+          `${rarityToCCPoints(item)} point${rarityToCCPoints(item) > 1 ? 's' : ''}`}
+      </Text>
+    )}
+  </Box>
+);
 
 const ItemCard = React.memo(ItemCardBase);
 
@@ -188,11 +240,17 @@ export const ItemCardBadge = (props: ItemCardBadgeProps) => {
   return (
     <>
       {item.price.value && item.price.inflated && (
-        <Tooltip label={t('General.inflation')} aria-label="Inflation Tooltip" placement="top">
-          <Badge colorScheme="red" whiteSpace="normal">
-            <Icon as={AiFillWarning} verticalAlign="middle" /> {format.number(item.price.value)} NP
-          </Badge>
-        </Tooltip>
+        <Tooltip.Root positioning={{ placement: 'top' }}>
+          <Tooltip.Trigger asChild>
+            <Badge colorPalette="red" whiteSpace="normal" cursor="default">
+              <Icon as={AiFillWarning} verticalAlign="middle" /> {format.number(item.price.value)}{' '}
+              NP
+            </Badge>
+          </Tooltip.Trigger>
+          <Tooltip.Positioner>
+            <Tooltip.Content>{t('General.inflation')}</Tooltip.Content>
+          </Tooltip.Positioner>
+        </Tooltip.Root>
       )}
 
       {item.price.value && !item.price.inflated && (
@@ -201,19 +259,19 @@ export const ItemCardBadge = (props: ItemCardBadgeProps) => {
 
       {item.type === 'np' && item.status === 'no trade' && <Badge>No Trade</Badge>}
 
-      {item.type === 'pb' && <Badge colorScheme="yellow">PB</Badge>}
+      {item.type === 'pb' && <Badge colorPalette="yellow">PB</Badge>}
 
       {item.isNC && !capValue && !item.mallData && !item.ncValue && item.status !== 'no trade' && (
-        <Badge colorScheme="purple">NC</Badge>
+        <Badge colorPalette="purple">NC</Badge>
       )}
 
       {item.isNC && !capValue && !item.mallData && !item.ncValue && item.status === 'no trade' && (
-        <Badge colorScheme="purple">NC - No Trade</Badge>
+        <Badge colorPalette="purple">NC - No Trade</Badge>
       )}
 
       {item.isNC && item.ncValue && !capValue && !item.mallData && (
         <Badge
-          colorScheme={item.ncValue.source === 'lebron' ? 'yellow' : 'purple'}
+          colorPalette={item.ncValue.source === 'lebron' ? 'yellow' : 'purple'}
           whiteSpace="normal"
         >
           {item.ncValue.range} Caps
@@ -221,7 +279,7 @@ export const ItemCardBadge = (props: ItemCardBadgeProps) => {
       )}
 
       {item.isNC && item.mallData && (
-        <Badge colorScheme={isDiscounted ? 'orange' : 'purple'} whiteSpace="normal">
+        <Badge colorPalette={isDiscounted ? 'orange' : 'purple'} whiteSpace="normal">
           {item.mallData.price > 0 &&
             `${format.number(
               isDiscounted ? (item.mallData.discountPrice ?? -1) : item.mallData.price
@@ -231,19 +289,20 @@ export const ItemCardBadge = (props: ItemCardBadgeProps) => {
       )}
 
       {item.isNC && Number(capValue) > 0 && (
-        <Tooltip
-          label="User Asking Price in GBCs - Not Official"
-          aria-label="Not Official NC Price Tooltip"
-          placement="top"
-        >
-          <Badge colorScheme="purple" whiteSpace="normal">
-            <Icon as={AiFillInfoCircle} verticalAlign="middle" /> NC - {capValue} CAPS
-          </Badge>
-        </Tooltip>
+        <Tooltip.Root positioning={{ placement: 'top' }}>
+          <Tooltip.Trigger asChild>
+            <Badge colorPalette="purple" whiteSpace="normal" cursor="default">
+              <Icon as={AiFillInfoCircle} verticalAlign="middle" /> NC - {capValue} CAPS
+            </Badge>
+          </Tooltip.Trigger>
+          <Tooltip.Positioner>
+            <Tooltip.Content>User Asking Price in GBCs - Not Official</Tooltip.Content>
+          </Tooltip.Positioner>
+        </Tooltip.Root>
       )}
 
       {!!odds && (
-        <Badge colorScheme={isLE ? 'green' : 'white'} whiteSpace="pre-wrap" textAlign={'center'}>
+        <Badge colorPalette={isLE ? 'green' : 'white'} whiteSpace="pre-wrap" textAlign={'center'}>
           {isLE ? 'LE' : ''} {odds.toFixed(2)}%
         </Badge>
       )}
@@ -251,30 +310,44 @@ export const ItemCardBadge = (props: ItemCardBadgeProps) => {
       {sortType === 'profit' && !!profit && (
         <>
           {profit <= 1000 && (
-            <>
-              <Tooltip
-                hasArrow
-                label={
-                  profit > 0
-                    ? t('Restock.estimated-profit-is-less-than')
-                    : t('Restock.estimated-loss')
-                }
-                placement="top"
-              >
-                <Badge colorScheme="red" display="flex" alignItems={'center'} gap={1}>
+            <Tooltip.Root positioning={{ placement: 'top' }}>
+              <Tooltip.Trigger asChild>
+                <Badge
+                  colorPalette="red"
+                  display="flex"
+                  alignItems={'center'}
+                  gap={1}
+                  cursor="default"
+                >
                   {format.number(profit)} NP <MdHelp size={'0.7rem'} />
                 </Badge>
-              </Tooltip>
-            </>
+              </Tooltip.Trigger>
+              <Tooltip.Positioner>
+                <Tooltip.Content>
+                  {profit > 0
+                    ? t('Restock.estimated-profit-is-less-than')
+                    : t('Restock.estimated-loss')}
+                </Tooltip.Content>
+              </Tooltip.Positioner>
+            </Tooltip.Root>
           )}
           {profit > 1000 && (
-            <>
-              <Tooltip hasArrow label={t('Restock.estimated-profit')} placement="top">
-                <Badge colorScheme="green" display="flex" alignItems={'center'} gap={1}>
+            <Tooltip.Root positioning={{ placement: 'top' }}>
+              <Tooltip.Trigger asChild>
+                <Badge
+                  colorPalette="green"
+                  display="flex"
+                  alignItems={'center'}
+                  gap={1}
+                  cursor="default"
+                >
                   {format.number(profit)} NP <MdHelp size={'0.7rem'} />
                 </Badge>
-              </Tooltip>
-            </>
+              </Tooltip.Trigger>
+              <Tooltip.Positioner>
+                <Tooltip.Content>{t('Restock.estimated-profit')}</Tooltip.Content>
+              </Tooltip.Positioner>
+            </Tooltip.Root>
           )}
         </>
       )}

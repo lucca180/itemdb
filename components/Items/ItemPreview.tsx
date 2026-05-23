@@ -2,7 +2,7 @@ import { AspectRatio, Box, Button, Flex, IconButton, Link, Skeleton, Text } from
 import React, { useMemo, useState, memo, useCallback } from 'react';
 import Image from 'next/image';
 import { ItemData, ItemEffect, WearableData } from '../../types';
-import { ExternalLinkIcon } from '@chakra-ui/icons';
+import { ExternalLinkIcon } from '@utils/chakraIcons';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@utils/auth';
 import { FaRotateRight } from 'react-icons/fa6';
@@ -126,7 +126,7 @@ const ItemPreview = (props: Props) => {
           _hover={
             user && !user?.banned && !!isLoaded
               ? {
-                  '.refresh-button': {
+                  '& .refresh-button': {
                     display: 'flex',
                   },
                 }
@@ -144,30 +144,31 @@ const ItemPreview = (props: Props) => {
             className="refresh-button"
             display={'none'}
             onClick={refreshPreview}
-            isDisabled={refresh >= 2}
+            disabled={refresh >= 2}
             shadow={'md'}
             bg="gray.700"
             _hover={{
               bg: 'gray.800',
             }}
             aria-label="Refresh Preview"
-            icon={<FaRotateRight />}
-          />
-          <Skeleton minW={300} minH={300} h="100%" w="100%" isLoaded={!!isLoaded}>
+          >
+            <FaRotateRight />
+          </IconButton>
+          {!isLoaded ? (
+            <Skeleton minW={300} minH={300} h="100%" w="100%" />
+          ) : (
             <AspectRatio ratio={1}>
-              <>
-                <Image
-                  src={previewUrl}
-                  alt="Item Preview"
-                  unoptimized
-                  fill
-                  priority
-                  onLoadStart={() => setIsLoaded(0)}
-                  onLoad={() => setIsLoaded(item.internal_id)}
-                />
-              </>
+              <Image
+                src={previewUrl}
+                alt="Item Preview"
+                unoptimized
+                fill
+                priority
+                onLoadStart={() => setIsLoaded(0)}
+                onLoad={() => setIsLoaded(item.internal_id)}
+              />
             </AspectRatio>
-          </Skeleton>
+          )}
         </Flex>
       )}
       {(variation === 'animated' || !!isIframeLoaded) && (
@@ -177,14 +178,16 @@ const ItemPreview = (props: Props) => {
           h="100%"
           display={variation === 'animated' ? 'flex' : 'none'}
         >
-          <Skeleton minW={300} minH={300} h="100%" w="100%" isLoaded={!!isIframeLoaded}>
+          {!isIframeLoaded ? (
+            <Skeleton minW={300} minH={300} h="100%" w="100%" />
+          ) : (
             <AnimatedPreview
               key={'animated-iframe-' + item.image_id}
               imageId={item.image_id}
               onLoadStart={handleIframeLoadStart}
               onLoad={handleIframeLoad}
             />
-          </Skeleton>
+          )}
         </Flex>
       )}
       <Box p={1} textAlign="center" bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}>
@@ -198,7 +201,12 @@ const ItemPreview = (props: Props) => {
         )}
         <Text fontSize="xs">
           {t('ItemPage.powered-by')}{' '}
-          <Link href={item.findAt.dti ?? undefined} isExternal fontWeight="bold">
+          <Link
+            href={item.findAt.dti ?? undefined}
+            target="_blank"
+            rel="noreferrer"
+            fontWeight="bold"
+          >
             Dress To Impress <ExternalLinkIcon mx="1px" verticalAlign="baseline" />
           </Link>
         </Text>

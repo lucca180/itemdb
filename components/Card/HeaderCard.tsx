@@ -54,7 +54,8 @@ const HeaderCard = (props: Props) => {
           {!image && (
             <Image
               src={icon}
-              width={{ base: '50px', md: '80px' }}
+              width={80}
+              w={{ base: '50px', md: '80px' }}
               style={{ opacity: 0.85, flex: 1 }}
               alt={'itemdb logo'}
             />

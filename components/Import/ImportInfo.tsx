@@ -1,23 +1,13 @@
-import {
-  useMediaQuery,
-  Heading,
-  OrderedList,
-  ListItem,
-  UnorderedList,
-  Flex,
-  Text,
-  Link,
-  Box,
-} from '@chakra-ui/react';
+import { Flex, Box, Heading, Link, List, Text, useMediaQuery } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import DynamicIcon from '../../public/icons/dynamic.png';
+import DynamicIcon from '@assets/icons/dynamic.png';
 import NextLink from 'next/link';
-import icon from '../../public/logo_icon.svg';
+import icon from '@assets/logo_icon.svg';
 
 export const ImportInfo = () => {
   const t = useTranslations();
-  const [isLargerThanMD] = useMediaQuery('(min-width: 48em)', { fallback: true });
+  const [isLargerThanMD] = useMediaQuery(['(min-width: 48em)'], { fallback: [true] });
 
   return (
     <Flex flexFlow="column" gap={3} maxW="1000px">
@@ -27,48 +17,74 @@ export const ImportInfo = () => {
           {t('Lists.import-this-guide-may-not-work-on-mobile-devices')}
         </Text>
       )}
-      <OrderedList spacing={2} bg="whiteAlpha.100" m={0} px={10} py={5} borderRadius={'md'}>
-        <ListItem>
+      <List.Root
+        as="ol"
+        gap={2}
+        bg="whiteAlpha.100"
+        m={0}
+        px={10}
+        py={5}
+        borderRadius={'md'}
+        listStyle="decimal"
+      >
+        <List.Item>
           {t.rich('Lists.import-text-1', {
             Link: (chunk) => (
-              <Link href="https://www.tampermonkey.net/" isExternal>
+              <Link href="https://www.tampermonkey.net/" target="_blank" rel="noopener noreferrer">
                 {chunk}
               </Link>
             ),
           })}
-        </ListItem>
-        <ListItem>
+        </List.Item>
+        <List.Item>
           {t.rich('Lists.import-text-2', {
             Link: (chunk) => (
               <Link
                 href="https://github.com/lucca180/itemdb/raw/main/userscripts/listImporter.user.js"
-                isExternal
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 {chunk}
               </Link>
             ),
           })}
-        </ListItem>
-        <ListItem>
+        </List.Item>
+        <List.Item>
           {t('Lists.importer-text-3')}
-          <UnorderedList spacing={1} mb={3}>
-            <ListItem>
-              <Link href="https://www.neopets.com/closet.phtml" isExternal>
+          <List.Root as="ul" gap={1} mb={3} listStyle="disc">
+            <List.Item>
+              <Link
+                href="https://www.neopets.com/closet.phtml"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 {t('General.closet')}
               </Link>
-            </ListItem>
-            <ListItem>
-              <Link href="https://www.neopets.com/gallery/quickremove.phtml" isExternal>
+            </List.Item>
+            <List.Item>
+              <Link
+                href="https://www.neopets.com/gallery/quickremove.phtml"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 {t('General.gallery-quick-remove')}
               </Link>
-            </ListItem>
-            <ListItem>
-              <Link href="https://www.neopets.com/safetydeposit.phtml" isExternal>
+            </List.Item>
+            <List.Item>
+              <Link
+                href="https://www.neopets.com/safetydeposit.phtml"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 {t('General.safety-deposit-box')}
               </Link>
-            </ListItem>
-            <ListItem>
-              <Link href="https://www.neopets.com/gourmet_club.phtml" isExternal>
+            </List.Item>
+            <List.Item>
+              <Link
+                href="https://www.neopets.com/gourmet_club.phtml"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Image
                   src={DynamicIcon}
                   alt="lightning bolt"
@@ -77,9 +93,13 @@ export const ImportInfo = () => {
                 />{' '}
                 {t('General.gourmet-club')} - {t('General.checklist')}
               </Link>
-            </ListItem>
-            <ListItem>
-              <Link href="https://www.neopets.com/games/neodeck/index.phtml" isExternal>
+            </List.Item>
+            <List.Item>
+              <Link
+                href="https://www.neopets.com/games/neodeck/index.phtml"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Image
                   src={DynamicIcon}
                   alt="lightning bolt"
@@ -88,11 +108,12 @@ export const ImportInfo = () => {
                 />{' '}
                 {t('General.neodeck')} - {t('General.checklist')}
               </Link>
-            </ListItem>
-            <ListItem>
+            </List.Item>
+            <List.Item>
               <Link
                 href="https://www.neopets.com/stamps.phtml?type=album&page_id=1&owner="
-                isExternal
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <Image
                   src={DynamicIcon}
@@ -102,9 +123,13 @@ export const ImportInfo = () => {
                 />{' '}
                 {t('General.stamp-album')} - {t('General.checklist')}
               </Link>
-            </ListItem>
-            <ListItem>
-              <Link href="https://www.neopets.com/quickref.phtml" isExternal>
+            </List.Item>
+            <List.Item>
+              <Link
+                href="https://www.neopets.com/quickref.phtml"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Image
                   src={DynamicIcon}
                   alt="lightning bolt"
@@ -117,9 +142,13 @@ export const ImportInfo = () => {
                 {' '}
                 - {t('Lists.import-click-pets-intelligence-number')}
               </Text>
-            </ListItem>
-            <ListItem>
-              <Link href="https://www.neopets.com/quickref.phtml" isExternal>
+            </List.Item>
+            <List.Item>
+              <Link
+                href="https://www.neopets.com/quickref.phtml"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Image
                   src={DynamicIcon}
                   alt="lightning bolt"
@@ -133,42 +162,44 @@ export const ImportInfo = () => {
                 - {t('Lists.import-click-pets-intelligence-number')}
                 <br />- {t('Lists.import-then-click-the-booktastic-books-read-list-link')}
               </Text>
-            </ListItem>
-          </UnorderedList>
-        </ListItem>
-        <ListItem>
+            </List.Item>
+          </List.Root>
+        </List.Item>
+        <List.Item>
           {t.rich('Lists.click-import-button', {
             ImportButton: () => <ImportButton />,
           })}
-        </ListItem>
-        <ListItem>
+        </List.Item>
+        <List.Item>
           {t('Lists.import-text-3')}
           <Flex alignItems={'center'} gap={1} mt={1}>
             <Image src={DynamicIcon} alt="lightning bolt" width={8} style={{ display: 'inline' }} />{' '}
             <Text fontSize="sm" color="gray.400">
               {t.rich('Lists.import-text-4', {
                 Dynamic: (chunk) => (
-                  <Link as={NextLink} href={'/articles/checklists-and-dynamic-lists'}>
-                    {chunk}
+                  <Link asChild>
+                    <NextLink href={'/articles/checklists-and-dynamic-lists'}>{chunk}</NextLink>
                   </Link>
                 ),
                 Official: (chunk) => (
-                  <Link as={NextLink} href={'/lists/official'}>
-                    {chunk}
+                  <Link asChild>
+                    <NextLink href={'/lists/official'}>{chunk}</NextLink>
                   </Link>
                 ),
               })}
             </Text>
           </Flex>
-        </ListItem>
-      </OrderedList>
+        </List.Item>
+      </List.Root>
       <Flex bg="whiteAlpha.200" p={3} borderRadius={'md'} my={3}>
         <Text fontSize="sm">
           {t.rich('Lists.adv-import-cta', {
             b: (chunk) => <b>{chunk}</b>,
             Link: (chunk) => (
-              <Link as={NextLink} prefetch={false} href={'/lists/import/advanced'}>
-                {chunk}
+              <Link asChild>
+                <NextLink prefetch={false} href={'/lists/import/advanced'}>
+                  {chunk}
+                </NextLink>
               </Link>
             ),
           })}
@@ -182,7 +213,7 @@ export const ImportInfo = () => {
         color="gray.400"
         flexFlow="column"
         gap={2}
-        sx={{ b: { color: 'white' } }}
+        css={{ b: { color: 'white' } }}
       >
         <Text>
           {t.rich('Lists.checklists-text-1', {
@@ -198,13 +229,17 @@ export const ImportInfo = () => {
           {t.rich('Lists.checklists-text-3', {
             b: (chunk) => <b>{chunk}</b>,
             Link2: (chunk) => (
-              <Link as={NextLink} prefetch={false} href={'/articles/checklists-and-dynamic-lists'}>
-                {chunk}
+              <Link asChild>
+                <NextLink prefetch={false} href={'/articles/checklists-and-dynamic-lists'}>
+                  {chunk}
+                </NextLink>
               </Link>
             ),
             Link: (chunk) => (
-              <Link as={NextLink} prefetch={false} href={'/lists/official'}>
-                {chunk}
+              <Link asChild>
+                <NextLink prefetch={false} href={'/lists/official'}>
+                  {chunk}
+                </NextLink>
               </Link>
             ),
           })}
@@ -218,7 +253,7 @@ export const ImportInfo = () => {
         color="gray.400"
         flexFlow="column"
         gap={2}
-        sx={{ b: { color: 'white' } }}
+        css={{ b: { color: 'white' } }}
       >
         <Text>
           {t.rich('Lists.scripts-troubleshooting-text', {
@@ -234,7 +269,7 @@ export const ImportInfo = () => {
         color="gray.400"
         flexFlow="column"
         gap={2}
-        sx={{ b: { color: 'white' } }}
+        css={{ b: { color: 'white' } }}
       >
         <Text>
           {t.rich('Lists.import-text-5', {
@@ -245,7 +280,11 @@ export const ImportInfo = () => {
           {t.rich('Lists.import-text-6', {
             b: (chunk) => <b>{chunk}</b>,
             Link: (chunk) => (
-              <Link href="https://github.com/lucca180/itemdb/" isExternal>
+              <Link
+                href="https://github.com/lucca180/itemdb/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 {chunk}
               </Link>
             ),
@@ -269,7 +308,7 @@ const ImportButton = () => {
       cursor="pointer"
       verticalAlign="middle"
     >
-      <Image src={icon} alt="itemdb logo" width={25} quality="100" />
+      <Image src={icon} alt="itemdb logo" width={25} quality={100} />
       <Text fontSize="sm">Import to itemdb</Text>
     </Box>
   );

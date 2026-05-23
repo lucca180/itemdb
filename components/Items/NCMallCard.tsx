@@ -27,7 +27,7 @@ const NcMallCard = (props: Props) => {
     <CardBase title={t('ItemPage.nc-mall-info')} color={item.color.rgb}>
       <Flex flexFlow={'column'} gap={2}>
         <Center flexFlow="column" gap={2}>
-          <Link href={getNCMallLink(item)} isExternal>
+          <Link href={getNCMallLink(item)} target="_blank" rel="noreferrer">
             <Image
               src={'https://images.neopets.com/ncmall/shopkeepers/exclusive_shop1.png'}
               width={600}
@@ -38,30 +38,30 @@ const NcMallCard = (props: Props) => {
             />
           </Link>
           {isBuyable && !isDiscounted && (
-            <Badge fontSize="xs" colorScheme={'yellow'}>
+            <Badge fontSize="xs" colorPalette={'yellow'}>
               {t('ItemPage.buyable-right-now')}
             </Badge>
           )}
           {isBuyable && isDiscounted && (
-            <Badge fontSize="xs" colorScheme={'orange'}>
+            <Badge fontSize="xs" colorPalette={'orange'}>
               {t('ItemPage.on-sale')}
             </Badge>
           )}
           {!isBuyable && (
-            <Badge fontSize="xs" colorScheme={'red'}>
+            <Badge fontSize="xs" colorPalette={'red'}>
               {t('ItemPage.retired')}
             </Badge>
           )}
         </Center>
         <HStack>
-          <Tag size="md" fontWeight="bold" as="h3">
-            {t('General.price')}
-          </Tag>
+          <Tag.Root size="md" fontWeight="bold" as="h3">
+            <Tag.Label>{t('General.price')}</Tag.Label>
+          </Tag.Root>
           <Flex flexFlow={'column'} flex="1" alignItems={'flex-end'} gap={1}>
             {isDiscounted && (
               <Badge
                 fontSize="xs"
-                colorScheme={isDiscounted ? 'orange' : undefined}
+                colorPalette={isDiscounted ? 'orange' : undefined}
                 textAlign={'right'}
               >
                 {ncMallData.discountPrice} NC <br /> {t('General.until')}{' '}
@@ -76,7 +76,7 @@ const NcMallCard = (props: Props) => {
             )}
             <Badge
               fontSize="xs"
-              colorScheme={isDiscounted ? undefined : 'purple'}
+              colorPalette={isDiscounted ? undefined : 'purple'}
               textDecoration={isDiscounted ? 'line-through' : undefined}
             >
               {ncMallData.price > 0 && `${ncMallData.price} NC`}
@@ -86,9 +86,9 @@ const NcMallCard = (props: Props) => {
         </HStack>
         {startDate && (
           <HStack>
-            <Tag size="md" fontWeight="bold" as="h3">
-              {t('ItemPage.since')}
-            </Tag>
+            <Tag.Root size="md" fontWeight="bold" as="h3">
+              <Tag.Label>{t('ItemPage.since')}</Tag.Label>
+            </Tag.Root>
             <Flex flexFlow={'column'} flex="1" alignItems={'flex-end'} gap={1}>
               <Text fontSize="xs" textAlign={'right'}>
                 {format.dateTime(startDate, {
@@ -102,9 +102,9 @@ const NcMallCard = (props: Props) => {
         )}
         {endDate && (
           <HStack>
-            <Tag size="md" fontWeight="bold" as="h3">
-              {t('ItemPage.until')}
-            </Tag>
+            <Tag.Root size="md" fontWeight="bold" as="h3">
+              <Tag.Label>{t('ItemPage.until')}</Tag.Label>
+            </Tag.Root>
             <Flex flexFlow={'column'} flex="1" alignItems={'flex-end'} gap={1}>
               <Text fontSize="xs" textAlign={'right'}>
                 {format.dateTime(endDate, {

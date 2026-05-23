@@ -1,5 +1,5 @@
 /* eslint-disable  */
-import { Skeleton, AspectRatio } from '@chakra-ui/react';
+import { Skeleton, AspectRatio, Box } from '@chakra-ui/react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
@@ -19,7 +19,10 @@ export const SkeletonImage = (props: SkeletonImageProps) => {
   }, [loadkey]);
 
   return (
-    <Skeleton w={width ?? 300} h={height ?? 300} isLoaded={!!isLoaded} borderRadius={'md'}>
+    <Box w={width ?? 300} h={height ?? 300} position="relative" borderRadius={'md'}>
+      {!isLoaded && (
+        <Skeleton borderRadius={'md'} w="100%" h="100%" position="absolute" inset={0} />
+      )}
       <AspectRatio ratio={1}>
         <Image
           src={url}
@@ -29,8 +32,9 @@ export const SkeletonImage = (props: SkeletonImageProps) => {
           priority
           onLoadStart={() => setIsLoaded(null)}
           onLoad={() => setIsLoaded(loadkey)}
+          style={{ opacity: isLoaded ? 1 : 0 }}
         />
       </AspectRatio>
-    </Skeleton>
+    </Box>
   );
 };

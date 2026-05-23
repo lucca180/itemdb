@@ -19,14 +19,7 @@ const ItemInfoCard = (props: Props) => {
   const rarityString = rarityStr(item.rarity ?? 0);
 
   return (
-    <Flex
-      // flex={1}
-      // height='100%'
-      borderTopRadius="md"
-      overflow="hidden"
-      flexFlow="column"
-      boxShadow="sm"
-    >
+    <Flex borderTopRadius="md" overflow="hidden" flexFlow="column" boxShadow="sm">
       <Box
         p={2}
         textAlign="center"
@@ -41,22 +34,21 @@ const ItemInfoCard = (props: Props) => {
         boxShadow="md"
         gap={4}
         flexFlow="column"
-        // textAlign='center'
         h="100%"
         borderBottomRadius="md"
       >
         <HStack>
-          <Tag size="lg" fontWeight="bold" as="h3">
-            {t('General.item-id')}
-          </Tag>
+          <Tag.Root size="lg" fontWeight="bold" as="h3">
+            <Tag.Label>{t('General.item-id')}</Tag.Label>
+          </Tag.Root>
           <Text flex="1" textAlign="right">
             {item.item_id ?? '???'}
           </Text>
         </HStack>
         <HStack>
-          <Tag size="lg" fontWeight="bold" as="h3">
-            {t('General.rarity')}
-          </Tag>
+          <Tag.Root size="lg" fontWeight="bold" as="h3">
+            <Tag.Label>{t('General.rarity')}</Tag.Label>
+          </Tag.Root>
           <Text flex="1" textAlign="right">
             r{item.rarity ?? '???'}
             {item.rarity && rarityString && (
@@ -70,34 +62,37 @@ const ItemInfoCard = (props: Props) => {
           </Text>
         </HStack>
         <HStack>
-          <Tag size="lg" fontWeight="bold" as="h3">
-            {t('General.weight')}
-          </Tag>
+          <Tag.Root size="lg" fontWeight="bold" as="h3">
+            <Tag.Label>{t('General.weight')}</Tag.Label>
+          </Tag.Root>
           <Text flex="1" textAlign="right">
             {item.weight ?? '???'} lbs
           </Text>
         </HStack>
         <HStack>
-          <Tooltip
-            hasArrow
-            label={t('ItemPage.est-val-warning')}
-            bg="gray.700"
-            placement="top"
-            color="white"
-          >
-            <Tag size="lg" fontWeight="bold" as="h3">
-              {t('General.est-val')} <MdHelp size={'0.8rem'} style={{ marginLeft: '0.2rem' }} />
-            </Tag>
-          </Tooltip>
+          <Tooltip.Root positioning={{ placement: 'top' }}>
+            <Tooltip.Trigger asChild>
+              <Tag.Root size="lg" fontWeight="bold" as="h3" cursor="default">
+                <Tag.Label>
+                  {t('General.est-val')} <MdHelp size={'0.8rem'} style={{ marginLeft: '0.2rem' }} />
+                </Tag.Label>
+              </Tag.Root>
+            </Tooltip.Trigger>
+            <Tooltip.Positioner>
+              <Tooltip.Content bg="gray.700" color="white" fontSize="sm">
+                {t('ItemPage.est-val-warning')}
+              </Tooltip.Content>
+            </Tooltip.Positioner>
+          </Tooltip.Root>
 
           <Text flex="1" textAlign="right">
             {item.estVal != null ? format.number(item.estVal) : '???'} NP
           </Text>
         </HStack>
         <HStack>
-          <Tag size="lg" fontWeight="bold" as="h3">
-            {t('General.category')}
-          </Tag>
+          <Tag.Root size="lg" fontWeight="bold" as="h3">
+            <Tag.Label>{t('General.category')}</Tag.Label>
+          </Tag.Root>
           <Text flex="1" textAlign="right" textTransform="capitalize">
             <Link
               color={color.lightness(70).hex()}
@@ -108,26 +103,26 @@ const ItemInfoCard = (props: Props) => {
           </Text>
         </HStack>
         <HStack>
-          <Tag size="lg" fontWeight="bold" as="h3">
-            {t('General.status')}
-          </Tag>
+          <Tag.Root size="lg" fontWeight="bold" as="h3">
+            <Tag.Label>{t('General.status')}</Tag.Label>
+          </Tag.Root>
           <Text flex="1" textAlign="right" textTransform="capitalize">
             {item.status ?? 'Active'}
           </Text>
         </HStack>
         <HStack>
-          <Tag size="lg" fontWeight="bold" as="h3">
-            {t('General.itemdb-id')}
-          </Tag>
+          <Tag.Root size="lg" fontWeight="bold" as="h3">
+            <Tag.Label>{t('General.itemdb-id')}</Tag.Label>
+          </Tag.Root>
           <Text flex="1" textAlign="right" textTransform="capitalize">
             {item.internal_id}
           </Text>
         </HStack>
         {item.firstSeen && (
           <HStack>
-            <Tag size="lg" fontWeight="bold" as="h3">
-              {t('ItemPage.first-seen')}
-            </Tag>
+            <Tag.Root size="lg" fontWeight="bold" as="h3">
+              <Tag.Label>{t('ItemPage.first-seen')}</Tag.Label>
+            </Tag.Root>
             <Text flex="1" textAlign="right">
               {format.dateTime(new Date(item.firstSeen), {
                 year: 'numeric',

@@ -1,5 +1,6 @@
 'use client';
-import { Flex, Divider, styled } from '@styled/jsx';
+import { Separator } from '@chakra-ui/react';
+import { Flex, styled } from '@styled/jsx';
 import { skeleton } from '@styled/recipes';
 import { HomeItem } from '@components/Card/HomeCard';
 import ItemCard from '@components/Items/ItemCard';
@@ -140,7 +141,7 @@ export const HomeCard = (props: HomeCardProps) => {
             {title}
           </styled.h2>
         </Flex>
-        <Divider borderColor={'whiteAlpha.300'} mt={3} />
+        <Separator borderColor={'whiteAlpha.300'} mt={3} />
         {isLoading && !useItemCard && <HomeCardLoadingRows />}
         {isLoading && useItemCard && <HomeCardLoadingItemGrid title={title} perPage={perPage} />}
         {!useItemCard && (

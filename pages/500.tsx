@@ -11,7 +11,7 @@ const Error500Page = () => {
         height="75vh"
         flexFlow="column"
         gap={3}
-        sx={{ a: { color: 'blue.300' } }}
+        css={{ a: { color: 'blue.300' } }}
         textAlign="center"
       >
         <Heading mb={3}>{t('General.something-went-wrong')} :(</Heading>

@@ -1,21 +1,4 @@
-import {
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Tr,
-  Text,
-  Th,
-  Thead,
-  Flex,
-  HStack,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
-  Spinner,
-} from '@chakra-ui/react';
+import { Table, Text, Flex, HStack, Tabs, Spinner } from '@chakra-ui/react';
 import React, { useEffect } from 'react';
 import { ContributeWallData, ItemAuctionData, ItemData } from '../../types';
 import { useFormatter, useTranslations } from 'next-intl';
@@ -118,31 +101,35 @@ export const AuctionHistory = (props: AuctionHistoryProps) => {
         />
       </HStack>
       <Flex flexFlow="column" bg="gray.800" p={2} borderRadius={'lg'} gap={2}>
-        <Tabs align="center" variant="soft-rounded" colorScheme="gray" isLazy>
-          <TabList>
-            <Tab>
+        <Tabs.Root
+          defaultValue="recent"
+          variant="enclosed"
+          colorPalette="gray"
+          lazyMount
+          unmountOnExit
+        >
+          <Tabs.List justifyContent="center">
+            <Tabs.Trigger value="recent">
               {t('ItemPage.latest-x-auctions', {
                 x: 40,
               })}
-            </Tab>
-            <Tab>
+            </Tabs.Trigger>
+            <Tabs.Trigger value="sold">
               {t('ItemPage.latest-x-sold', {
                 x: 40,
               })}
-            </Tab>
-          </TabList>
-          <TabPanels>
-            <TabPanel pb={0} px={1}>
-              {!loading && <AuctionHistoryTable data={data?.recent ?? []} />}
-              {loading && <Spinner />}
-            </TabPanel>
-            <TabPanel pb={0} px={1}>
-              {wall && <ContributeWall textType="ItemPage" color={item.color.hex} wall={wall} />}
-              {!wall && soldData && <AuctionHistoryTable data={soldData.recent ?? []} />}
-              {!wall && !soldData && <Spinner />}
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
+            </Tabs.Trigger>
+          </Tabs.List>
+          <Tabs.Content value="recent" pb={0} px={1}>
+            {!loading && <AuctionHistoryTable data={data?.recent ?? []} />}
+            {loading && <Spinner />}
+          </Tabs.Content>
+          <Tabs.Content value="sold" pb={0} px={1}>
+            {wall && <ContributeWall textType="ItemPage" color={item.color.hex} wall={wall} />}
+            {!wall && soldData && <AuctionHistoryTable data={soldData.recent ?? []} />}
+            {!wall && !soldData && <Spinner />}
+          </Tabs.Content>
+        </Tabs.Root>
         <Text textAlign={'center'} fontSize={'xs'} mt={1} color="whiteAlpha.600">
           {t('ItemPage.auction-disclaimer')}
         </Text>
@@ -161,42 +148,40 @@ const AuctionHistoryTable = (props: Props) => {
   const t = useTranslations();
 
   return (
-    <TableContainer
+    <Table.ScrollArea
       minH={{ base: 100, md: 200 }}
       maxH={{ base: 200, md: 500 }}
       w="100%"
       maxW="1000px"
       borderRadius="md"
-      overflowX="auto"
-      overflowY="auto"
     >
-      <Table h="100%" variant="striped" colorScheme="gray" size="sm" bg={'gray.600'}>
-        <Thead>
-          <Tr whiteSpace={'wrap'}>
-            <Th textAlign={'center'} fontSize={'0.6rem'}>
+      <Table.Root h="100%" variant="line" colorPalette="gray" size="sm" bg="gray.600" striped>
+        <Table.Header>
+          <Table.Row whiteSpace="wrap">
+            <Table.ColumnHeader textAlign="center" fontSize="0.6rem">
               {t('ItemPage.last-known-price')}
-            </Th>
-            <Th textAlign={'center'} fontSize={'0.6rem'}>
+            </Table.ColumnHeader>
+            <Table.ColumnHeader textAlign="center" fontSize="0.6rem">
               {t('ItemPage.time-left')}
-            </Th>
-            <Th textAlign={'center'} fontSize={'0.6rem'}>
+            </Table.ColumnHeader>
+            <Table.ColumnHeader textAlign="center" fontSize="0.6rem">
               {t('ItemPage.has-a-buyer')}
-            </Th>
-            <Th textAlign={'center'} fontSize={'0.6rem'}>
+            </Table.ColumnHeader>
+            <Table.ColumnHeader textAlign="center" fontSize="0.6rem">
               {t('ItemPage.owner')}
-            </Th>
-            <Th textAlign={'center'} fontSize={'0.6rem'}>
+            </Table.ColumnHeader>
+            <Table.ColumnHeader textAlign="center" fontSize="0.6rem">
               {t('ItemPage.last-seen')}
-            </Th>
-          </Tr>
-        </Thead>
-        <Tbody fontSize={'xs'} color="gray.200">
+            </Table.ColumnHeader>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body fontSize="xs" color="gray.200">
           {sortedData.map((auction, index) => (
             <AuctionItem key={auction.internal_id} auction={auction} index={index} />
           ))}
-        </Tbody>
-      </Table>
-    </TableContainer>
+        </Table.Body>
+      </Table.Root>
+    </Table.ScrollArea>
   );
 };
 
@@ -206,24 +191,24 @@ const AuctionItem = (props: { auction: ItemAuctionData; index: number }) => {
   const t = useTranslations();
 
   return (
-    <Tr key={auction.internal_id}>
-      <Td>
+    <Table.Row>
+      <Table.Cell>
         <Text>{format.number(auction.price)} NP</Text>
-      </Td>
-      <Td>
+      </Table.Cell>
+      <Table.Cell>
         <Text>
           {auction.isNF && '[NF]'} {auction.timeLeft}
         </Text>
-      </Td>
-      <Td>
+      </Table.Cell>
+      <Table.Cell>
         <Text color={auction.hasBuyer ? 'green.200' : 'undefined'}>
           {auction.hasBuyer ? t('General.yes') : t('General.no')}
         </Text>
-      </Td>
-      <Td>
+      </Table.Cell>
+      <Table.Cell>
         <Text>{auction.owner}</Text>
-      </Td>
-      <Td>
+      </Table.Cell>
+      <Table.Cell>
         <Text>
           {format.dateTime(new Date(auction.addedAt), {
             dateStyle: 'short',
@@ -232,7 +217,7 @@ const AuctionItem = (props: { auction: ItemAuctionData; index: number }) => {
           })}{' '}
           NST
         </Text>
-      </Td>
-    </Tr>
+      </Table.Cell>
+    </Table.Row>
   );
 };

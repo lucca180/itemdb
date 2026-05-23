@@ -13,6 +13,7 @@ type Props = {
 const NegCheckbox = (props: Props) => {
   const [isChecked, setValue] = useState(false);
   const [isIndefinite, setIsIndefinite] = useState(false);
+  const checkedState = props.disabled ? false : isIndefinite ? 'indeterminate' : isChecked;
 
   useEffect(() => {
     if (!props.checklist || !props.value) return;
@@ -47,16 +48,17 @@ const NegCheckbox = (props: Props) => {
   };
 
   return (
-    <Checkbox
-      onChange={handleChange}
-      colorScheme={isIndefinite ? 'red' : undefined}
-      isIndeterminate={!props.disabled && isIndefinite}
-      isChecked={!props.disabled && isChecked}
+    <Checkbox.Root
+      checked={checkedState}
+      colorPalette={isIndefinite ? 'red' : undefined}
+      onCheckedChange={handleChange}
       value={props.value}
       disabled={props.disabled}
     >
-      {props.children}
-    </Checkbox>
+      <Checkbox.HiddenInput />
+      <Checkbox.Control />
+      <Checkbox.Label>{props.children}</Checkbox.Label>
+    </Checkbox.Root>
   );
 };
 

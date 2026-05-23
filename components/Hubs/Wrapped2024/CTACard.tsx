@@ -1,7 +1,7 @@
-import { Flex, Heading, Text, CloseButton } from '@chakra-ui/react';
+import { CloseButton, Flex, Heading, Link, Text } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import useSWR from 'swr';
-import { useAuth } from '../../../utils/auth';
+import { useAuth } from '@utils/auth';
 
 const fetcher = (url: string) =>
   fetch(url).then((res) => res.json() as Promise<{ status: 'notJoined' | 'notReady' | 'ready' }>);
@@ -62,17 +62,16 @@ export const RestockedCTACard = () => {
         />
         {data.status === 'notJoined' && (
           <>
-            <Heading
-              as={NextLink}
-              href="/restock/dashboard/2025"
-              fontWeight={'extrabold'}
-              textAlign={'center'}
-            >
-              Join the{' '}
-              <Text as="span" color="#D2FF72">
-                2025 Restock Review
-              </Text>{' '}
-              Waitlist
+            <Heading fontWeight={'extrabold'} textAlign={'center'}>
+              <Link asChild>
+                <NextLink href="/restock/dashboard/2025">
+                  Join the{' '}
+                  <Text as="span" color="#D2FF72">
+                    2025 Restock Review
+                  </Text>{' '}
+                  Waitlist
+                </NextLink>
+              </Link>
             </Heading>
             <Text fontSize={'sm'} mt={3}>
               Let&apos;s take a look on everything that happened in your restock year
@@ -81,18 +80,16 @@ export const RestockedCTACard = () => {
         )}
         {data.status === 'ready' && (
           <>
-            <Heading
-              as={NextLink}
-              href="/restock/dashboard/2025"
-              fontWeight={'extrabold'}
-              textAlign={'center'}
-              size="lg"
-            >
-              The{' '}
-              <Text as="span" color="#D2FF72">
-                2025 Restock Review
-              </Text>{' '}
-              is waiting for you
+            <Heading fontWeight={'extrabold'} textAlign={'center'} size="lg">
+              <Link asChild>
+                <NextLink href="/restock/dashboard/2025">
+                  The{' '}
+                  <Text as="span" color="#D2FF72">
+                    2025 Restock Review
+                  </Text>{' '}
+                  is waiting for you
+                </NextLink>
+              </Link>
             </Heading>
             <Text fontSize={'sm'} mt={3}>
               Let&apos;s take a look on everything that happened in your restock year

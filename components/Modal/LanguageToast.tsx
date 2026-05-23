@@ -1,4 +1,5 @@
-import { Flex, useToast, Text, Button } from '@chakra-ui/react';
+import { Flex, Text, Button } from '@chakra-ui/react';
+import { useToast } from '@utils/toast';
 import { getCookies } from 'cookies-next';
 import { useRouter } from 'next/compat/router';
 import { useEffect } from 'react';
@@ -93,10 +94,10 @@ const ToastMsg = ({ prefLang, handleAction }: ToastMsgProps) => {
       <Flex flexFlow={'column'} gap={1}>
         <Text>Você pode trocar o idioma do itemdb, se quiser...</Text>
         <Flex gap={3}>
-          <Button colorScheme="blackAlpha" onClick={() => handleAction('dismiss', prefLang)}>
+          <Button colorPalette="blackAlpha" onClick={() => handleAction('dismiss', prefLang)}>
             ✋ I speak English
           </Button>
-          <Button colorScheme="blackAlpha" onClick={() => handleAction('change', prefLang)}>
+          <Button colorPalette="blackAlpha" onClick={() => handleAction('change', prefLang)}>
             👍 Mudar para Português
           </Button>
         </Flex>
@@ -107,10 +108,10 @@ const ToastMsg = ({ prefLang, handleAction }: ToastMsgProps) => {
       <Flex flexFlow={'column'} gap={1}>
         <Text>You can switch itemdb&apos;s language, if you wish</Text>
         <Flex gap={3}>
-          <Button colorScheme="blackAlpha" onClick={() => handleAction('dismiss', prefLang)}>
+          <Button colorPalette="blackAlpha" onClick={() => handleAction('dismiss', prefLang)}>
             ✋ Eu falo Português
           </Button>
-          <Button colorScheme="blackAlpha" onClick={() => handleAction('change', prefLang)}>
+          <Button colorPalette="blackAlpha" onClick={() => handleAction('change', prefLang)}>
             👍 Switch to English
           </Button>
         </Flex>

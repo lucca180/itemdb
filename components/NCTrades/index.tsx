@@ -9,9 +9,6 @@ import {
   Skeleton,
   Spinner,
   Stat,
-  StatHelpText,
-  StatLabel,
-  StatNumber,
   Text,
 } from '@chakra-ui/react';
 import axios from 'axios';
@@ -146,11 +143,11 @@ const NCTrade = (props: Props) => {
             mb={1.5}
             overflow={'auto'}
           >
-            <ButtonGroup size="sm" isAttached variant="outline">
+            <ButtonGroup size="sm" attached variant="outline">
               {hasInsights && (
                 <Button
-                  colorScheme={tableType === 'insights' ? 'blue' : ''}
-                  isActive={tableType === 'insights'}
+                  colorPalette={tableType === 'insights' ? 'blue' : ''}
+                  data-active={tableType === 'insights' ? true : undefined}
                   onClick={() => setTableType('insights')}
                   data-umami-event="nc-trade-buttons"
                   data-umami-event-label={'insights'}
@@ -159,8 +156,8 @@ const NCTrade = (props: Props) => {
                 </Button>
               )}
               <Button
-                colorScheme={tableType === 'seeking' ? 'cyan' : ''}
-                isActive={tableType === 'seeking'}
+                colorPalette={tableType === 'seeking' ? 'cyan' : ''}
+                data-active={tableType === 'seeking' ? true : undefined}
                 onClick={() => setTableType('seeking')}
                 data-umami-event="nc-trade-buttons"
                 data-umami-event-label={'seeking'}
@@ -168,8 +165,8 @@ const NCTrade = (props: Props) => {
                 {seeking.length} {t('ItemPage.seeking')}
               </Button>
               <Button
-                colorScheme={tableType === 'trading' ? 'purple' : ''}
-                isActive={tableType === 'trading'}
+                colorPalette={tableType === 'trading' ? 'purple' : ''}
+                data-active={tableType === 'trading' ? true : undefined}
                 onClick={() => setTableType('trading')}
                 data-umami-event="nc-trade-buttons"
                 data-umami-event-label={'trading'}
@@ -177,20 +174,24 @@ const NCTrade = (props: Props) => {
                 {trading.length} {t('ItemPage.trading')}
               </Button>
               <Button
-                colorScheme={tableType === 'ncTrading' ? 'yellow' : ''}
-                isActive={tableType === 'ncTrading'}
+                colorPalette={tableType === 'ncTrading' ? 'yellow' : ''}
+                data-active={tableType === 'ncTrading' ? true : undefined}
                 onClick={() => setTableType('ncTrading')}
                 data-umami-event="nc-trade-buttons"
                 data-umami-event-label={'owls-trading'}
               >
-                <Skeleton
-                  isLoaded={(lebronTradeHistory ?? tradeHistory) !== null}
-                  startColor={item.color.hex}
-                  mr={1}
-                  borderRadius={'sm'}
-                >
+                {(lebronTradeHistory ?? tradeHistory) !== null ? (
                   <span>{tradeCount}</span>
-                </Skeleton>{' '}
+                ) : (
+                  <Skeleton
+                    as="span"
+                    display="inline-block"
+                    w="1.5em"
+                    h="1em"
+                    mr={1}
+                    borderRadius="sm"
+                  />
+                )}{' '}
                 {t('ItemPage.owls-trades')}
               </Button>
             </ButtonGroup>
@@ -199,7 +200,7 @@ const NCTrade = (props: Props) => {
         <Flex flex={1} flexFlow={{ base: 'column', md: 'row' }} gap={3}>
           {!isNoTrade && (
             <Badge
-              colorScheme={item.ncValue && item.ncValue.source === 'lebron' ? 'yellow' : 'purple'}
+              colorPalette={item.ncValue && item.ncValue.source === 'lebron' ? 'yellow' : 'purple'}
               fontSize="xs"
               minW="15%"
               maxW={{ base: '100%', md: '25%' }}
@@ -208,53 +209,50 @@ const NCTrade = (props: Props) => {
               alignSelf={'center'}
               borderRadius={'md'}
             >
-              <Stat flex="initial" textAlign="center">
-                <StatLabel
-                  fontSize="xs"
-                  as={item.ncValue?.source === 'lebron' ? Link : undefined}
-                  href="/articles/lebron"
-                  isExternal
-                >
+              <Stat.Root flex="initial" textAlign="center">
+                <Stat.Label fontSize="xs">
                   {!item.ncValue && t('ItemPage.nc-guide-value')}
-                  {item.ncValue &&
-                    (item.ncValue.source === 'itemdb'
-                      ? t('ItemPage.itemdb-value')
-                      : t('ItemPage.lebron-value'))}
-                </StatLabel>
+                  {item.ncValue?.source === 'itemdb' && t('ItemPage.itemdb-value')}
+                  {item.ncValue?.source === 'lebron' && (
+                    <Link href="/articles/lebron" target="_blank" rel="noreferrer">
+                      {t('ItemPage.lebron-value')}
+                    </Link>
+                  )}
+                </Stat.Label>
                 {!item.ncValue && (
                   <>
-                    <StatNumber mb={0}>???</StatNumber>
+                    <Stat.ValueText mb={0}>???</Stat.ValueText>
                     <Text fontSize="xs" as="span">
                       {t('ItemPage.no-enough-data')}
                     </Text>
-                    <StatHelpText fontSize="xs" mt={1} mb={0} fontWeight={'medium'} opacity={1}>
-                      <Link as={Link} href="/mall/report" isExternal>
+                    <Stat.HelpText fontSize="xs" mt={1} mb={0} fontWeight="medium" opacity={1}>
+                      <Link href="/mall/report" target="_blank" rel="noreferrer">
                         {t('ItemPage.report-your-nc-trades')}
                       </Link>
-                    </StatHelpText>
+                    </Stat.HelpText>
                   </>
                 )}
                 {item.ncValue && (
                   <>
-                    <StatNumber mb={0}>
+                    <Stat.ValueText mb={0}>
                       {item.ncValue.range}
                       <Text fontSize="xs" as="span">
                         {' '}
                         caps
                       </Text>
-                    </StatNumber>
+                    </Stat.ValueText>
 
-                    <StatHelpText fontSize="xs" mb={0}>
+                    <Stat.HelpText fontSize="xs" mb={0}>
                       {format(new Date(item.ncValue.addedAt), 'PP')}{' '}
-                    </StatHelpText>
+                    </Stat.HelpText>
                   </>
                 )}
-              </Stat>
+              </Stat.Root>
             </Badge>
           )}
           {isNoTrade && (
             <Badge
-              colorScheme="gray"
+              colorPalette="gray"
               fontSize="xs"
               minW="15%"
               maxW={{ base: '100%', md: '25%' }}
@@ -263,15 +261,15 @@ const NCTrade = (props: Props) => {
               alignSelf={'center'}
               borderRadius={'md'}
             >
-              <Stat flex="initial" textAlign="center">
-                <StatLabel>
-                  <Icon mt={2} boxSize={'24px'} as={TbGiftOff} />
-                </StatLabel>
-                <StatNumber mb={1}>{t('ItemPage.no-trade')}</StatNumber>
-                <StatHelpText fontSize="xs" mt={0} fontWeight={'medium'}>
+              <Stat.Root flex="initial" textAlign="center">
+                <Stat.Label>
+                  <Icon mt={2} boxSize="24px" as={TbGiftOff} />
+                </Stat.Label>
+                <Stat.ValueText mb={1}>{t('ItemPage.no-trade')}</Stat.ValueText>
+                <Stat.HelpText fontSize="xs" mt={0} fontWeight="medium">
                   {t('ItemPage.no-trade-help-text')}
-                </StatHelpText>
-              </Stat>
+                </Stat.HelpText>
+              </Stat.Root>
             </Badge>
           )}
           <Flex flexFlow="column" flex="1" overflow="hidden">
@@ -314,13 +312,8 @@ const NCTrade = (props: Props) => {
           >
             {t.rich('ItemPage.report-owls-cta', {
               Link: (chunk) => (
-                <Link
-                  as={NextLink}
-                  href="/mall/report?utm_content=owls-cta"
-                  color="whiteAlpha.800"
-                  isExternal
-                >
-                  {chunk}
+                <Link asChild color="whiteAlpha.800">
+                  <NextLink href="/mall/report?utm_content=owls-cta">{chunk}</NextLink>
                 </Link>
               ),
             })}

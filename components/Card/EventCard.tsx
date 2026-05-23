@@ -25,7 +25,7 @@ export const NeggsCard = (props: EventCardProps) => {
       isSmall
       utm_content="event-lists"
       viewAllText={t('General.view-all')}
-      sx={{
+      css={{
         position: 'relative',
         isolation: 'isolate',
         overflow: 'hidden',
@@ -72,7 +72,7 @@ export const TVWHomeCard = (props: EventCardProps) => {
       title={'The Void Within'}
       isSmall
       utm_content="tvw-lists"
-      sx={{
+      css={{
         position: 'relative',
         isolation: 'isolate',
         overflow: 'hidden',

@@ -1,5 +1,4 @@
 import { ChakraProvider } from '@chakra-ui/react';
-import theme from '../utils/theme';
 import '../utils/global.css';
 import { Provider } from 'jotai';
 import { DefaultSeo } from 'next-seo';
@@ -15,6 +14,8 @@ import type { NextPage } from 'next';
 import { onIntlError } from '../utils/intlHandler';
 import { installProofInterceptor } from '@utils/http/proofInterceptor';
 import { getLocalePrefix, VALID_LOCALES } from '@utils/locales';
+import { system } from '@utils/theme';
+import { Toaster } from '@components/ui/toaster';
 
 if (typeof window !== 'undefined') {
   installProofInterceptor();
@@ -33,7 +34,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   const getLayout = Component.getLayout ?? ((page) => page);
 
   return (
-    <ChakraProvider theme={theme}>
+    <ChakraProvider value={system}>
       <Provider>
         <AuthProvider>
           <NextIntlClientProvider
@@ -58,6 +59,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
             <NextNProgress color="#718096" showOnShallow={true} />
             <DefaultSeo {...getDefaultSEO(router.locale ?? 'en')} />
             {getLayout(<Component {...pageProps} />, pageProps)}
+            <Toaster />
             <Script
               src={process.env.NEXT_PUBLIC_UMAMI_URL_2 + '/plutonita.js'}
               data-website-id={process.env.NEXT_PUBLIC_UMAMI_ID_2}

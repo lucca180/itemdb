@@ -9,10 +9,10 @@ type FeedbackButtonProps = React.ComponentProps<typeof Button>;
 
 const FeedbackButton = (props: FeedbackButtonProps) => {
   const t = useTranslations();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
   return (
     <>
-      {isOpen && <FeedbackModal isOpen={isOpen} onClose={onClose} />}
+      {open && <FeedbackModal isOpen={open} onClose={onClose} />}
       <Button
         variant="outline"
         size="sm"

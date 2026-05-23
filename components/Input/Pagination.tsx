@@ -1,4 +1,4 @@
-import { HStack, Button, Select, Box, IconButton } from '@chakra-ui/react';
+import { HStack, Button, NativeSelect, Box, IconButton } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
 import { BiFirstPage, BiLastPage } from 'react-icons/bi';
 
@@ -21,28 +21,21 @@ const Pagination = (props: Props) => {
   if (currentPage == null || totalPages == null || !setPage)
     return (
       <HStack mt={mt ?? 4} mb={mb} justifyContent="center">
-        <IconButton
-          size="sm"
-          isDisabled
-          aria-label="Jump to first page button"
-          color="gray.300"
-          icon={<BiFirstPage size="24px" />}
-        />
-        <Button size="sm" isDisabled>
+        <IconButton size="sm" disabled aria-label="Jump to first page button" color="gray.300">
+          <BiFirstPage size="24px" />
+        </IconButton>
+        <Button size="sm" disabled>
           {t('General.back')}
         </Button>
         <Box>
-          <Button size="sm" isLoading />
+          <Button size="sm" loading />
         </Box>
-        <Button size="sm" isDisabled>
+        <Button size="sm" disabled>
           {t('General.next')}
         </Button>
-        <IconButton
-          size="sm"
-          isDisabled
-          aria-label="Jump to last page button"
-          icon={<BiLastPage size="24px" />}
-        />
+        <IconButton size="sm" disabled aria-label="Jump to last page button">
+          <BiLastPage size="24px" />
+        </IconButton>
       </HStack>
     );
 
@@ -50,46 +43,44 @@ const Pagination = (props: Props) => {
     <HStack mt={mt ?? 4} mb={mb} justifyContent="center">
       <IconButton
         size="sm"
-        isDisabled={currentPage <= 1}
+        disabled={currentPage <= 1}
         onClick={() => setPage(1)}
         aria-label="Jump to first page button"
         color="gray.300"
-        icon={<BiFirstPage size="24px" />}
-      />
-      <Button size="sm" isDisabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)}>
+      >
+        <BiFirstPage size="24px" />
+      </IconButton>
+      <Button size="sm" disabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)}>
         {t('General.back')}
       </Button>
       <Box>
-        <Select
-          size="sm"
-          name="sortBy"
-          variant="filled"
-          value={currentPage}
-          onChange={handleChange}
-          disabled={!props.totalPages}
-        >
-          {[...Array(props.totalPages || 1)].map((_, i) => (
-            <option key={i + 1} value={i + 1}>
-              {i + 1}
-            </option>
-          ))}
-        </Select>
+        <NativeSelect.Root size="sm" variant="subtle" disabled={!props.totalPages}>
+          <NativeSelect.Field name="sortBy" value={currentPage} onChange={handleChange}>
+            {[...Array(props.totalPages || 1)].map((_, i) => (
+              <option key={i + 1} value={i + 1}>
+                {i + 1}
+              </option>
+            ))}
+          </NativeSelect.Field>
+          <NativeSelect.Indicator />
+        </NativeSelect.Root>
       </Box>
       <Button
         size="sm"
-        isDisabled={currentPage >= totalPages}
+        disabled={currentPage >= totalPages}
         onClick={() => setPage(currentPage + 1)}
       >
         {t('General.next')}
       </Button>
       <IconButton
         size="sm"
-        isDisabled={currentPage >= totalPages}
+        disabled={currentPage >= totalPages}
         onClick={() => setPage(totalPages)}
         aria-label="Jump to last page button"
         color="gray.300"
-        icon={<BiLastPage size="24px" />}
-      />
+      >
+        <BiLastPage size="24px" />
+      </IconButton>
     </HStack>
   );
 };

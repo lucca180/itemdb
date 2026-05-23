@@ -1,18 +1,13 @@
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  FormControl,
   Text,
   Input,
-  ModalFooter,
   Button,
   Center,
-  FormErrorMessage,
   Spinner,
+  Field,
+  Dialog,
+  CloseButton,
+  Portal,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import Image from 'next/image';
@@ -68,58 +63,72 @@ const LoginModal = (props: LoginModalProps) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader></ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <Center flexFlow="column">
-            <Image src={logoIcon} alt="itemdb logo" width={225} quality={100} />
-            {!isSent && (
-              <Text color="gray.200" mt={4} fontSize="sm">
-                {t.rich('Login.login-modal-text', {
-                  b: (children) => <b>{children}</b>,
-                })}
-              </Text>
-            )}
-          </Center>
-          {isLoading && (
-            <Center>
-              <Spinner mt={4} size="lg" />
-            </Center>
-          )}
-          {!isLoading && !isSent && (
-            <FormControl isInvalid={!!error} mt={4}>
-              <Input
-                placeholder={t('Login.email-address-or-username')}
-                type="text"
-                value={cred}
-                onChange={onEmailChange}
-              />
-              <FormErrorMessage>{error}</FormErrorMessage>
-            </FormControl>
-          )}
-          {isSent && (
-            <Text color="gray.200" mt={6} fontSize="sm" textAlign="center">
-              {t('Login.email-sent')}
-            </Text>
-          )}
-        </ModalBody>
-        <ModalFooter>
-          {!isSent && !isLoading && (
-            <>
-              <Button onClick={onClose} variant="ghost" mr={3}>
-                {t('General.cancel')}
-              </Button>
-              <Button onClick={doLogin}>{t('General.continue')}</Button>
-            </>
-          )}
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={({ open }) => {
+        if (!open) onClose();
+      }}
+      placement="center"
+    >
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>
+              <Dialog.Title />
+            </Dialog.Header>
+            <Dialog.CloseTrigger asChild>
+              <CloseButton size="sm" />
+            </Dialog.CloseTrigger>
+            <Dialog.Body>
+              <Center flexFlow="column">
+                <Image src={logoIcon} alt="itemdb logo" width={225} quality={100} />
+                {!isSent && (
+                  <Text color="gray.200" mt={4} fontSize="sm">
+                    {t.rich('Login.login-modal-text', {
+                      b: (children) => <b>{children}</b>,
+                    })}
+                  </Text>
+                )}
+              </Center>
+              {isLoading && (
+                <Center>
+                  <Spinner mt={4} size="lg" />
+                </Center>
+              )}
+              {!isLoading && !isSent && (
+                <Field.Root invalid={!!error} mt={4}>
+                  <Input
+                    placeholder={t('Login.email-address-or-username')}
+                    type="text"
+                    value={cred}
+                    onChange={onEmailChange}
+                  />
+                  <Field.ErrorText>{error}</Field.ErrorText>
+                </Field.Root>
+              )}
+              {isSent && (
+                <Text color="gray.200" mt={6} fontSize="sm" textAlign="center">
+                  {t('Login.email-sent')}
+                </Text>
+              )}
+            </Dialog.Body>
+            <Dialog.Footer>
+              {!isSent && !isLoading && (
+                <>
+                  <Button onClick={onClose} variant="ghost" mr={3}>
+                    {t('General.cancel')}
+                  </Button>
+                  <Button onClick={doLogin}>{t('General.continue')}</Button>
+                </>
+              )}
 
-          {isSent && !isLoading && <Button onClick={onClose}>{t('General.close')}</Button>}
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+              {isSent && !isLoading && <Button onClick={onClose}>{t('General.close')}</Button>}
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

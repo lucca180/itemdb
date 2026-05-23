@@ -39,7 +39,6 @@ const ItemRestock = (props: Props) => {
     const category = item.category.toLowerCase();
 
     if (isHT) {
-      //check if is the third wednesday of the month
       if (isThirdWednesday()) return 'ht';
       return;
     }
@@ -70,7 +69,7 @@ const ItemRestock = (props: Props) => {
       return 'halloween';
 
     return '';
-  }, [todayNST, item]);
+  }, [todayNST, item, isHT]);
 
   const restockPrice = getRestockPrice(item);
   const originalRestockPrice = getRestockPrice(item, true);
@@ -86,41 +85,62 @@ const ItemRestock = (props: Props) => {
     <CardBase title={t('Restock.restock-info')} color={item.color.rgb}>
       <Flex flexFlow={'column'} gap={2}>
         <Center flexFlow="column" gap={2}>
-          <Link
-            as={NextLink}
-            href={
-              !isHT ? `/restock/${slugify(shopInfo?.name ?? '')}` : '/lists/official/hidden-tower'
-            }
-          >
-            <Image
-              src={
-                !isHT
-                  ? `https://images.neopets.com/shopkeepers/w${
-                      categoryToShopID[item.category.toLowerCase()]
-                    }.gif`
-                  : 'https://images.neopets.com/faerieland/tower_1.gif'
+          <Link asChild _hover={{ textDecoration: 'none' }}>
+            <NextLink
+              href={
+                !isHT ? `/restock/${slugify(shopInfo?.name ?? '')}` : '/lists/official/hidden-tower'
               }
-              priority
-              alt={item.category.toLowerCase() + ' shop'}
-              width={276}
-              height={92}
-            />
+            >
+              <Image
+                src={
+                  !isHT
+                    ? `https://images.neopets.com/shopkeepers/w${
+                        categoryToShopID[item.category.toLowerCase()]
+                      }.gif`
+                    : 'https://images.neopets.com/faerieland/tower_1.gif'
+                }
+                priority
+                alt={item.category.toLowerCase() + ' shop'}
+                width={276}
+                height={92}
+              />
+            </NextLink>
           </Link>
-          {specialDay === 'hpd' && <Tag colorScheme={'green'}>{t('Restock.half-price-day')}</Tag>}
+          {specialDay === 'hpd' && (
+            <Tag.Root colorPalette={'green'}>
+              <Tag.Label>{t('Restock.half-price-day')}</Tag.Label>
+            </Tag.Root>
+          )}
           {specialDay === 'tyrannia' && (
-            <Tag colorScheme={'orange'}>{t('Restock.tyrannian-victory-day')}</Tag>
+            <Tag.Root colorPalette={'orange'}>
+              <Tag.Label>{t('Restock.tyrannian-victory-day')}</Tag.Label>
+            </Tag.Root>
           )}
-          {specialDay === 'usukicon' && <Tag colorScheme={'pink'}>{t('Restock.usuki-day')}</Tag>}
+          {specialDay === 'usukicon' && (
+            <Tag.Root colorPalette={'pink'}>
+              <Tag.Label>{t('Restock.usuki-day')}</Tag.Label>
+            </Tag.Root>
+          )}
           {specialDay === 'festival' && (
-            <Tag colorScheme={'purple'}>{t('Restock.faerie-festival')}</Tag>
+            <Tag.Root colorPalette={'purple'}>
+              <Tag.Label>{t('Restock.faerie-festival')}</Tag.Label>
+            </Tag.Root>
           )}
-          {specialDay === 'halloween' && <Tag colorScheme={'orange'}>{t('Restock.halloween')}</Tag>}
-          {specialDay === 'ht' && <Tag colorScheme={'pink'}>{t('Restock.hidden-tower')}</Tag>}
+          {specialDay === 'halloween' && (
+            <Tag.Root colorPalette={'orange'}>
+              <Tag.Label>{t('Restock.halloween')}</Tag.Label>
+            </Tag.Root>
+          )}
+          {specialDay === 'ht' && (
+            <Tag.Root colorPalette={'pink'}>
+              <Tag.Label>{t('Restock.hidden-tower')}</Tag.Label>
+            </Tag.Root>
+          )}
         </Center>
         <HStack>
-          <Tag size="md" fontWeight="bold" as="h3">
-            {t('Restock.est-profit')}
-          </Tag>
+          <Tag.Root size="md" fontWeight="bold" as="h3">
+            <Tag.Label>{t('Restock.est-profit')}</Tag.Label>
+          </Tag.Root>
           <Flex flexFlow={'column'} flex="1">
             <Text
               flex="1"
@@ -145,9 +165,9 @@ const ItemRestock = (props: Props) => {
           </Flex>
         </HStack>
         <HStack>
-          <Tag size="md" fontWeight="bold" as="h3">
-            {t('Restock.restock-price')}
-          </Tag>
+          <Tag.Root size="md" fontWeight="bold" as="h3">
+            <Tag.Label>{t('Restock.restock-price')}</Tag.Label>
+          </Tag.Root>
           <Flex flexFlow={'column'} flex="1">
             <Text fontSize="xs" textAlign="right" color={specialDay ? 'green.200' : undefined}>
               {format.number(restockPrice[0])} NP{' '}
@@ -165,9 +185,9 @@ const ItemRestock = (props: Props) => {
         </HStack>
         {!isHT && (
           <HStack>
-            <Tag size="md" fontWeight="bold" as="h3">
-              {t('Restock.latest-restock')}
-            </Tag>
+            <Tag.Root size="md" fontWeight="bold" as="h3">
+              <Tag.Label>{t('Restock.latest-restock')}</Tag.Label>
+            </Tag.Root>
             <Text flex="1" fontSize="xs" textAlign="right">
               {lastSeen?.restock && (
                 <>
@@ -186,20 +206,26 @@ const ItemRestock = (props: Props) => {
         )}
         {isHT && (
           <HStack>
-            <Tooltip
-              hasArrow
-              label={t('Restock.ht-next-discount-day', {
-                x: format.dateTime(nextThirdWednesday(), {
-                  month: 'short',
-                  day: 'numeric',
-                }),
-              })}
-            >
-              <Tag size="md" fontWeight="bold" as="h3">
-                {t('Restock.discounted-price')}{' '}
-                <MdHelp size={'0.8rem'} style={{ marginLeft: '0.2rem' }} />
-              </Tag>
-            </Tooltip>
+            <Tooltip.Root positioning={{ placement: 'top' }}>
+              <Tooltip.Trigger asChild>
+                <Tag.Root size="md" fontWeight="bold" as="h3" cursor="default">
+                  <Tag.Label>
+                    {t('Restock.discounted-price')}{' '}
+                    <MdHelp size={'0.8rem'} style={{ marginLeft: '0.2rem' }} />
+                  </Tag.Label>
+                </Tag.Root>
+              </Tooltip.Trigger>
+              <Tooltip.Positioner>
+                <Tooltip.Content>
+                  {t('Restock.ht-next-discount-day', {
+                    x: format.dateTime(nextThirdWednesday(), {
+                      month: 'short',
+                      day: 'numeric',
+                    }),
+                  })}
+                </Tooltip.Content>
+              </Tooltip.Positioner>
+            </Tooltip.Root>
             <Text flex="1" fontSize="xs" textAlign="right">
               {format.number(Math.round(item.estVal * 0.97))} NP
             </Text>
@@ -207,9 +233,9 @@ const ItemRestock = (props: Props) => {
         )}
         {isHT && (
           <HStack>
-            <Tag size="md" fontWeight="bold" as="h3">
-              {t('Restock.random-event-price')}
-            </Tag>
+            <Tag.Root size="md" fontWeight="bold" as="h3">
+              <Tag.Label>{t('Restock.random-event-price')}</Tag.Label>
+            </Tag.Root>
             <Text flex="1" fontSize="xs" textAlign="right">
               {format.number(Math.round(item.estVal * 0.9))} NP
             </Text>

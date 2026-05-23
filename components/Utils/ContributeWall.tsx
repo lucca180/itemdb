@@ -1,14 +1,4 @@
-import {
-  Center,
-  Box,
-  Accordion,
-  AccordionItem,
-  AccordionButton,
-  AccordionIcon,
-  AccordionPanel,
-  Text,
-  Link,
-} from '@chakra-ui/react';
+import { Center, Box, Accordion, Text, Link } from '@chakra-ui/react';
 import Color from 'color';
 import { useTranslations } from 'next-intl';
 import { ContributeWallData } from '../../types';
@@ -32,7 +22,7 @@ export const ContributeWall = (props: ContributeWallProps) => {
         mt={8}
         gap={3}
         maxW="1000px"
-        sx={{
+        css={{
           a: { color: Color(color).lightness(70).hex() },
           b: { color: Color(color).lightness(60).hex() },
         }}
@@ -51,7 +41,7 @@ export const ContributeWall = (props: ContributeWallProps) => {
           <Text textAlign={'center'} fontSize={'sm'}>
             {t.rich('Restock.wrapped-precify-text', {
               Link: (chunk) => (
-                <Link href="/feedback/trades?utm_content=cta-wall" isExternal>
+                <Link href="/feedback/trades?utm_content=cta-wall" target="_blank" rel="noreferrer">
                   {chunk}
                 </Link>
               ),
@@ -62,7 +52,7 @@ export const ContributeWall = (props: ContributeWallProps) => {
           <Text textAlign={'center'} fontSize={'sm'}>
             {t.rich('Restock.wrapped-vote-text', {
               Link: (chunk) => (
-                <Link href="/feedback/vote?utm_content=cta-wall" isExternal>
+                <Link href="/feedback/vote?utm_content=cta-wall" target="_blank" rel="noreferrer">
                   {chunk}
                 </Link>
               ),
@@ -81,54 +71,54 @@ export const ContributeWall = (props: ContributeWallProps) => {
               b: (chunk) => <b>{chunk}</b>,
             })}
         </Text>
-        <Accordion allowToggle w="100%" mt={5}>
-          <AccordionItem>
-            <h2>
-              <AccordionButton>
-                <Box as="span" flex="1" textAlign="left">
-                  {t('Restock.wrapped-text4')}
-                </Box>
-                <AccordionIcon />
-              </AccordionButton>
-            </h2>
-            <AccordionPanel pb={4} fontSize={'sm'}>
-              {t.rich('Restock.wrapped-text5', {
-                br: () => <br />,
-              })}
-            </AccordionPanel>
-          </AccordionItem>
-          <AccordionItem>
-            <h2>
-              <AccordionButton>
-                <Box as="span" flex="1" textAlign="left">
-                  {t('Restock.contribute-wall-3')}
-                </Box>
-                <AccordionIcon />
-              </AccordionButton>
-            </h2>
-            <AccordionPanel pb={4} fontSize={'sm'}>
-              {t.rich('Restock.contribute-wall-4', {
-                b: (chunk) => <b>{chunk}</b>,
-                br: () => <br />,
-              })}
-            </AccordionPanel>
-          </AccordionItem>
-          <AccordionItem>
-            <h2>
-              <AccordionButton>
-                <Box as="span" flex="1" textAlign="left">
-                  {t('Restock.contribute-wall-5')}
-                </Box>
-                <AccordionIcon />
-              </AccordionButton>
-            </h2>
-            <AccordionPanel pb={4} fontSize={'sm'}>
-              {t.rich('Restock.contribute-wall-6', {
-                br: () => <br />,
-              })}
-            </AccordionPanel>
-          </AccordionItem>
-        </Accordion>
+        <Accordion.Root collapsible w="100%" mt={5}>
+          <Accordion.Item value="wrapped-text4">
+            <Accordion.ItemTrigger>
+              <Box as="span" flex="1" textAlign="left">
+                {t('Restock.wrapped-text4')}
+              </Box>
+              <Accordion.ItemIndicator />
+            </Accordion.ItemTrigger>
+            <Accordion.ItemContent>
+              <Accordion.ItemBody pb={4} fontSize="sm">
+                {t.rich('Restock.wrapped-text5', {
+                  br: () => <br />,
+                })}
+              </Accordion.ItemBody>
+            </Accordion.ItemContent>
+          </Accordion.Item>
+          <Accordion.Item value="contribute-wall-3">
+            <Accordion.ItemTrigger>
+              <Box as="span" flex="1" textAlign="left">
+                {t('Restock.contribute-wall-3')}
+              </Box>
+              <Accordion.ItemIndicator />
+            </Accordion.ItemTrigger>
+            <Accordion.ItemContent>
+              <Accordion.ItemBody pb={4} fontSize="sm">
+                {t.rich('Restock.contribute-wall-4', {
+                  b: (chunk) => <b>{chunk}</b>,
+                  br: () => <br />,
+                })}
+              </Accordion.ItemBody>
+            </Accordion.ItemContent>
+          </Accordion.Item>
+          <Accordion.Item value="contribute-wall-5">
+            <Accordion.ItemTrigger>
+              <Box as="span" flex="1" textAlign="left">
+                {t('Restock.contribute-wall-5')}
+              </Box>
+              <Accordion.ItemIndicator />
+            </Accordion.ItemTrigger>
+            <Accordion.ItemContent>
+              <Accordion.ItemBody pb={4} fontSize="sm">
+                {t.rich('Restock.contribute-wall-6', {
+                  br: () => <br />,
+                })}
+              </Accordion.ItemBody>
+            </Accordion.ItemContent>
+          </Accordion.Item>
+        </Accordion.Root>
       </Center>
     </Center>
   );

@@ -1,4 +1,4 @@
-import { Box, Center, Heading, Image, Divider, Text, Flex, HStack } from '@chakra-ui/react';
+import { Box, Center, Heading, Image, Separator, Text, Flex, HStack } from '@chakra-ui/react';
 import Layout from '../../components/Layout';
 import { createTranslator, useFormatter, useTranslations } from 'next-intl';
 import Color from 'color';
@@ -50,7 +50,7 @@ const LeavingMallPage = (props: LeavingMallPageProps) => {
         bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]},${rgb[1]},${rgb[2]},.8) 70%)`}
         zIndex={-1}
       />
-      <Center my={6} flexFlow="column" gap={2} sx={{ a: { color: color.lightness(90).hex() } }}>
+      <Center my={6} flexFlow="column" gap={2} css={{ a: { color: color.lightness(90).hex() } }}>
         <Box h="auto" overflow={'hidden'} borderRadius="md" boxShadow={'md'}>
           <Image
             w={600}
@@ -71,14 +71,14 @@ const LeavingMallPage = (props: LeavingMallPageProps) => {
           })}
         </Text>
       </Center>
-      <Divider my={3} />
+      <Separator my={3} />
       <Flex flexFlow={'column'} alignItems={'stretch'} flexWrap={'wrap'} gap={3} mt={3}>
         {Object.entries(itemsPerDate).map(([date, mallData]: [string, NCMallData[]]) => (
           <>
             <Heading as="h2" size="lg">
               {date}
             </Heading>
-            <HStack spacing={3} alignItems={'stretch'} flexWrap={'wrap'}>
+            <HStack gap={3} alignItems={'stretch'} flexWrap={'wrap'}>
               {mallData.map((mall) => {
                 const item = itemData.find((item) => item.internal_id === mall.item_iid);
                 if (!item) return null;

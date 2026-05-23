@@ -1,23 +1,17 @@
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
   Button,
-  FormControl,
   Text,
-  FormLabel,
   Input,
   Stack,
   Textarea,
   Spinner,
   Center,
-  FormHelperText,
+  Field,
   Link,
   Icon,
+  Dialog,
+  CloseButton,
+  Portal,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import NextLink from 'next/link';
@@ -46,7 +40,7 @@ const FeedbackModal = (props: FeedbackModalProps) => {
   const { user } = useAuth();
   const router = useRouter();
   const { isOpen, onClose, item } = props;
-  const [isLoading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
   const [feedbackInfo, setFeedbackInfo] = useState<FeedbackFormData>({});
@@ -101,112 +95,122 @@ const FeedbackModal = (props: FeedbackModalProps) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleCancel} isCentered scrollBehavior="inside">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>{t('Feedback.contact-us')}</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          {!isLoading && !isSuccess && !error && (
-            <Stack gap={5}>
-              <FormControl>
-                <FormLabel color="gray.300">
-                  {t('General.email-address')} ({t('General.optional')})
-                </FormLabel>
-                <Input
-                  size="sm"
-                  variant="filled"
-                  name="email"
-                  onChange={handleChange}
-                  value={feedbackInfo.email ?? ''}
-                />
-                <FormHelperText fontSize={'xs'}>{t('Feedback.modalHelper')}</FormHelperText>
-              </FormControl>
-              <FormControl>
-                <FormLabel color="gray.300">
-                  {t('General.subject')} ({t('General.optional')})
-                </FormLabel>
-                <Input
-                  size="sm"
-                  variant="filled"
-                  name="subject"
-                  onChange={handleChange}
-                  value={feedbackInfo.subject ?? ''}
-                />
-                <FormHelperText fontSize={'xs'}>{t('Feedback.subject-help-text')}</FormHelperText>
-              </FormControl>
-              <FormControl>
-                <FormLabel color="gray.300">{t('Feedback.modalLabel')}</FormLabel>
-                <Textarea
-                  variant="filled"
-                  name="message"
-                  onChange={handleChange}
-                  value={feedbackInfo.message ?? ''}
-                />
-                <FormHelperText fontSize={'xs'}>{t('Feedback.bug-helper-text')}</FormHelperText>
-              </FormControl>
-              <Text fontSize="xs" color="gray.400" textAlign={'center'}>
-                {t.rich('Feedback.script-issues-tool-cta', {
-                  Link: (chunks) => (
-                    <Link as={NextLink} href="/tools/troubleshooting" color="gray.200">
-                      {chunks}
-                    </Link>
-                  ),
-                })}
-              </Text>
-              {/* <Text fontSize="sm" color="gray.400" textAlign={'center'}>
-                {t.rich('Feedback.modalContributeCallback', {
-                  Link: (chunks) => (
-                    <Link as={NextLink} href="/contribute" color="gray.200">
-                      {chunks}
-                    </Link>
-                  ),
-                })}
-              </Text> */}
-            </Stack>
-          )}
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={({ open }) => {
+        if (!open) handleCancel();
+      }}
+      placement="center"
+      scrollBehavior="inside"
+    >
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>
+              <Dialog.Title>{t('Feedback.contact-us')}</Dialog.Title>
+            </Dialog.Header>
+            <Dialog.CloseTrigger asChild>
+              <CloseButton size="sm" />
+            </Dialog.CloseTrigger>
+            <Dialog.Body>
+              {!loading && !isSuccess && !error && (
+                <Stack gap={5}>
+                  <Field.Root>
+                    <Field.Label color="gray.300">
+                      {t('General.email-address')} ({t('General.optional')})
+                    </Field.Label>
+                    <Input
+                      size="sm"
+                      variant="subtle"
+                      name="email"
+                      onChange={handleChange}
+                      value={feedbackInfo.email ?? ''}
+                    />
+                    <Field.HelperText fontSize={'xs'}>{t('Feedback.modalHelper')}</Field.HelperText>
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label color="gray.300">
+                      {t('General.subject')} ({t('General.optional')})
+                    </Field.Label>
+                    <Input
+                      size="sm"
+                      variant="subtle"
+                      name="subject"
+                      onChange={handleChange}
+                      value={feedbackInfo.subject ?? ''}
+                    />
+                    <Field.HelperText fontSize={'xs'}>
+                      {t('Feedback.subject-help-text')}
+                    </Field.HelperText>
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label color="gray.300">{t('Feedback.modalLabel')}</Field.Label>
+                    <Textarea
+                      variant="subtle"
+                      name="message"
+                      onChange={handleChange}
+                      value={feedbackInfo.message ?? ''}
+                    />
+                    <Field.HelperText fontSize={'xs'}>
+                      {t('Feedback.bug-helper-text')}
+                    </Field.HelperText>
+                  </Field.Root>
+                  <Text fontSize="xs" color="gray.400" textAlign={'center'}>
+                    {t.rich('Feedback.script-issues-tool-cta', {
+                      Link: (chunks) => (
+                        <Link asChild color="gray.200">
+                          <NextLink href="/tools/troubleshooting">{chunks}</NextLink>
+                        </Link>
+                      ),
+                    })}
+                  </Text>
+                </Stack>
+              )}
 
-          {isLoading && (
-            <Center>
-              <Spinner />
-            </Center>
-          )}
-          {isSuccess && (
-            <Center>
-              <Text fontSize="sm" textAlign="center">
-                {t('Feedback.done')}
-                <br />
-                {t('Feedback.thanks')} :)
-              </Text>
-            </Center>
-          )}
-          {error && (
-            <Center>
-              <Text fontSize="sm" textAlign="center" color="red.400">
-                {t('General.an-error-has-occurred')}!
-                <br />
-                {t('General.refreshPage')}
-              </Text>
-            </Center>
-          )}
-        </ModalBody>
-        <ModalFooter>
-          {!isLoading && !isSuccess && !error && (
-            <>
-              <Button variant="ghost" onClick={handleCancel} mr={3}>
-                {t('General.cancel')}
-              </Button>
-              <Button
-                onClick={saveChanges}
-                disabled={!feedbackInfo.message || feedbackInfo.message.trim() === ''}
-              >
-                {t('General.send')}
-              </Button>
-            </>
-          )}
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+              {loading && (
+                <Center>
+                  <Spinner />
+                </Center>
+              )}
+              {isSuccess && (
+                <Center>
+                  <Text fontSize="sm" textAlign="center">
+                    {t('Feedback.done')}
+                    <br />
+                    {t('Feedback.thanks')} :)
+                  </Text>
+                </Center>
+              )}
+              {error && (
+                <Center>
+                  <Text fontSize="sm" textAlign="center" color="red.400">
+                    {t('General.an-error-has-occurred')}!
+                    <br />
+                    {t('General.refreshPage')}
+                  </Text>
+                </Center>
+              )}
+            </Dialog.Body>
+            <Dialog.Footer>
+              {!loading && !isSuccess && !error && (
+                <>
+                  <Button variant="ghost" onClick={handleCancel} mr={3}>
+                    {t('General.cancel')}
+                  </Button>
+                  <Button
+                    onClick={saveChanges}
+                    disabled={!feedbackInfo.message || feedbackInfo.message.trim() === ''}
+                  >
+                    {t('General.send')}
+                  </Button>
+                </>
+              )}
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

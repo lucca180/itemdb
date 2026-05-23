@@ -29,7 +29,7 @@ export const SeenHistoryStatusCard = (props: SeenHistoryStatusCardProps) => {
             {props.isNP && 'NP'}
           </>
         )}
-        {props.loading && <SkeletonText noOfLines={1} skeletonHeight="3" />}
+        {props.loading && <SkeletonText noOfLines={1} />}
       </Text>
     </Flex>
   );

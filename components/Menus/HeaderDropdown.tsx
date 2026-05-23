@@ -1,19 +1,9 @@
-import {
-  Popover,
-  PopoverBody,
-  PopoverContent,
-  PopoverTrigger,
-  Button,
-  Flex,
-  useBoolean,
-  Badge,
-  useMediaQuery,
-} from '@chakra-ui/react';
-import React from 'react';
+import { Popover, Button, Flex, Badge, useMediaQuery, Portal } from '@chakra-ui/react';
+import React, { useState } from 'react';
 import NextLink from 'next/link';
 import { useTranslations } from 'next-intl';
+
 type Props = {
-  // onSubmit: (e: any, search: string, params: string) => void;
   label: string;
   href: string;
   bg?: string;
@@ -23,44 +13,57 @@ type Props = {
 
 export const DropdownButton = (props: Props) => {
   const { label, href, children, bg } = props;
-  const [isOpen, setIsOpen] = useBoolean();
-  const [isMobile] = useMediaQuery('(hover: none)', { fallback: false });
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMobile] = useMediaQuery(['(hover: none)'], { fallback: [false] });
 
-  const shouldBeLink = !children || !isMobile;
+  const shouldBeLink = !children || isMobile;
+
+  if (shouldBeLink) {
+    return (
+      <Button asChild size={{ base: 'xs', sm: 'sm' }} variant="ghost">
+        <NextLink href={href} prefetch={false}>
+          {label}
+        </NextLink>
+      </Button>
+    );
+  }
 
   return (
-    <Popover
-      isOpen={!children ? false : undefined}
-      placement="bottom"
-      trigger="hover"
-      onOpen={setIsOpen.on}
-      onClose={setIsOpen.off}
+    <Popover.Root
+      open={isOpen}
+      onOpenChange={(e) => setIsOpen(e.open)}
+      positioning={{ placement: 'bottom' }}
     >
-      <PopoverTrigger>
+      <Popover.Trigger asChild>
         <Button
           size={{ base: 'xs', sm: 'sm' }}
           variant={isOpen ? undefined : 'ghost'}
-          as={shouldBeLink ? NextLink : undefined}
-          prefetch={shouldBeLink ? false : undefined}
-          href={shouldBeLink ? href : undefined}
+          onMouseEnter={() => setIsOpen(true)}
+          onMouseLeave={() => setIsOpen(false)}
         >
           {label}
         </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        w="100%"
-        bg="gray.600"
-        mt={'-5px'}
-        border="0"
-        overflow={'hidden'}
-        borderRadius={'sm'}
-        boxShadow={'base'}
-      >
-        <PopoverBody p={0} bg={bg}>
-          <Flex flexFlow={'column'}>{children}</Flex>
-        </PopoverBody>
-      </PopoverContent>
-    </Popover>
+      </Popover.Trigger>
+      <Portal>
+        <Popover.Positioner>
+          <Popover.Content
+            w="100%"
+            bg="gray.600"
+            mt={'-5px'}
+            border="0"
+            overflow={'hidden'}
+            borderRadius={'sm'}
+            boxShadow={'base'}
+            onMouseEnter={() => setIsOpen(true)}
+            onMouseLeave={() => setIsOpen(false)}
+          >
+            <Popover.Body p={0} bg={bg}>
+              <Flex flexFlow={'column'}>{children}</Flex>
+            </Popover.Body>
+          </Popover.Content>
+        </Popover.Positioner>
+      </Portal>
+    </Popover.Root>
   );
 };
 
@@ -73,25 +76,25 @@ export const DropdownOption = (props: Props) => {
 
   return (
     <Button
+      asChild
       size="sm"
       variant="ghost"
       fontWeight={'normal'}
       justifyContent={'flex-start'}
-      as={NextLink}
-      prefetch={false}
-      href={href}
       py={4}
       px={3}
       borderRadius={0}
       data-umami-event="dropdown-link"
       data-umami-event-label={label}
     >
-      {label}
-      {isNew && (
-        <Badge as="span" colorScheme="orange" ml={1}>
-          {t('Layout.new')}
-        </Badge>
-      )}
+      <NextLink href={href} prefetch={false}>
+        {label}
+        {isNew && (
+          <Badge as="span" colorPalette="orange" ml={1}>
+            {t('Layout.new')}
+          </Badge>
+        )}
+      </NextLink>
     </Button>
   );
 };

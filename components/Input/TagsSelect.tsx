@@ -55,7 +55,7 @@ const TagSelect = (props: Props) => {
   return (
     <AutoComplete defaultValues={valueProps} multiple onChange={(vals) => onChange(vals)} creatable>
       <AutoCompleteInput
-        variant="filled"
+        variant="subtle"
         value={inputVal}
         onChange={onInputChange}
         bg="whiteAlpha.50"

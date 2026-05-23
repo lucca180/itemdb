@@ -1,7 +1,8 @@
+import { Fragment } from 'react';
 import { BreadcrumbJsonLd } from 'next-seo';
-import { ChevronRightIcon } from '@chakra-ui/icons';
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from '@chakra-ui/react';
-import NextLink from 'next/link';
+import { ChevronRightIcon } from '@utils/chakraIcons';
+import { Breadcrumb } from '@chakra-ui/react';
+import MainLink from '@components/Utils/MainLink';
 import { useRouter } from 'next/router';
 
 type BreadcrumbsProps = {
@@ -30,33 +31,48 @@ export const Breadcrumbs = (props: BreadcrumbsProps) => {
 
   return (
     <>
-      <Breadcrumb
-        spacing="2px"
-        fontSize={'xs'}
-        separator={<ChevronRightIcon color="whiteAlpha.800" />}
-        color="whiteAlpha.800"
-      >
-        {formattedBreadcrumbList.map((crumb, i) => (
-          <BreadcrumbItem
-            key={crumb.position}
-            isCurrentPage={i === breadcrumbList.length - 1 && !linkLast}
-            display={crumb.skip ? 'none' : undefined}
-          >
-            <BreadcrumbLink
-              data-umami-event="breadcrumb-link"
-              as={i === breadcrumbList.length - 1 && !linkLast ? undefined : NextLink}
-              href={removeLink(crumb.item)}
-              prefetch={i === breadcrumbList.length - 1 && !linkLast ? undefined : false}
-              whiteSpace={'nowrap'}
-              overflow={'hidden'}
-              textOverflow={'ellipsis'}
-              maxW={`${90 / breadcrumbList.length}vw`}
-            >
-              {crumb.name}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-        ))}
-      </Breadcrumb>
+      <Breadcrumb.Root fontSize={'xs'} color="whiteAlpha.800">
+        <Breadcrumb.List gap="2px">
+          {formattedBreadcrumbList.map((crumb, i) => (
+            <Fragment key={crumb.position}>
+              <Breadcrumb.Item display={crumb.skip ? 'none' : undefined}>
+                {i === breadcrumbList.length - 1 && !linkLast ? (
+                  <Breadcrumb.CurrentLink
+                    whiteSpace={'nowrap'}
+                    overflow={'hidden'}
+                    textOverflow={'ellipsis'}
+                    maxW={`${90 / breadcrumbList.length}vw`}
+                  >
+                    {crumb.name}
+                  </Breadcrumb.CurrentLink>
+                ) : (
+                  <Breadcrumb.Link
+                    asChild
+                    whiteSpace={'nowrap'}
+                    overflow={'hidden'}
+                    textOverflow={'ellipsis'}
+                    maxW={`${90 / breadcrumbList.length}vw`}
+                  >
+                    <MainLink
+                      href={removeLink(crumb.item)}
+                      prefetch={false}
+                      trackEvent="breadcrumb-link"
+                      trackEventLabel={crumb.name}
+                    >
+                      {crumb.name}
+                    </MainLink>
+                  </Breadcrumb.Link>
+                )}
+              </Breadcrumb.Item>
+              {i < formattedBreadcrumbList.length - 1 && (
+                <Breadcrumb.Separator>
+                  <ChevronRightIcon color="whiteAlpha.800" />
+                </Breadcrumb.Separator>
+              )}
+            </Fragment>
+          ))}
+        </Breadcrumb.List>
+      </Breadcrumb.Root>
       <BreadcrumbJsonLd itemListElements={formattedBreadcrumbList} />
     </>
   );

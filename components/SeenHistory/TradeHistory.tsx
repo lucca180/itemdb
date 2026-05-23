@@ -1,16 +1,4 @@
-import {
-  Text,
-  Flex,
-  HStack,
-  Box,
-  Spinner,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
-  Center,
-} from '@chakra-ui/react';
+import { Text, Flex, HStack, Box, Spinner, Tabs, Center } from '@chakra-ui/react';
 import React, { useEffect } from 'react';
 import { ContributeWallData, ItemData, TradeData } from '../../types';
 import { useFormatter, useTranslations } from 'next-intl';
@@ -111,61 +99,65 @@ export const TradeHistory = (props: TradeHistoryProps) => {
         />
       </HStack>
       <Flex flexFlow="column" bg="gray.800" p={2} borderRadius={'lg'} gap={2}>
-        <Tabs align="center" variant="soft-rounded" colorScheme="gray" isLazy>
-          <TabList>
-            <Tab>
+        <Tabs.Root
+          defaultValue="recent"
+          variant="enclosed"
+          colorPalette="gray"
+          lazyMount
+          unmountOnExit
+        >
+          <Tabs.List justifyContent="center">
+            <Tabs.Trigger value="recent">
               {t('ItemPage.latest-x-trades', {
                 x: 40,
               })}
-            </Tab>
-            <Tab>
+            </Tabs.Trigger>
+            <Tabs.Trigger value="priced">
               {t('ItemPage.latest-x-with-price', {
                 x: 40,
               })}
-            </Tab>
-          </TabList>
-          <TabPanels textAlign={'left'}>
-            <TabPanel>
-              {!loading && (
-                <Box maxH="500px" overflow={'auto'}>
-                  {data?.recent.map((t) => (
-                    <TradeTable featuredItem={item} key={t.trade_id} data={t} />
-                  ))}
-                </Box>
-              )}
-              {!loading && data && data.recent.length === 0 && (
-                <Text textAlign={'center'} fontSize={'xs'} color="whiteAlpha.600">
-                  {t('ItemPage.no-trade-history')}
-                </Text>
-              )}
-              {loading && (
-                <Center>
-                  <Spinner />
-                </Center>
-              )}
-            </TabPanel>
-            <TabPanel>
-              {wall && <ContributeWall textType="ItemPage" color={item.color.hex} wall={wall} />}
-              {!wall && soldData && (
-                <Box maxH="500px" overflow={'auto'}>
-                  {soldData.recent.map((t) => (
-                    <TradeTable featuredItem={item} key={t.trade_id} data={t} />
-                  ))}
-                </Box>
-              )}
-              {!wall && soldData && soldData.recent.length === 0 && (
-                <Text textAlign={'center'} fontSize={'xs'} color="whiteAlpha.600">
-                  {t('ItemPage.no-trade-history')}
-                </Text>
-              )}
-              {!wall && !soldData && (
-                <Center>
-                  <Spinner />
-                </Center>
-              )}
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
+            </Tabs.Trigger>
+          </Tabs.List>
+          <Tabs.Content value="recent" textAlign="left">
+            {!loading && (
+              <Box maxH="500px" overflow="auto">
+                {data?.recent.map((trade) => (
+                  <TradeTable featuredItem={item} key={trade.trade_id} data={trade} />
+                ))}
+              </Box>
+            )}
+            {!loading && data && data.recent.length === 0 && (
+              <Text textAlign="center" fontSize="xs" color="whiteAlpha.600">
+                {t('ItemPage.no-trade-history')}
+              </Text>
+            )}
+            {loading && (
+              <Center>
+                <Spinner />
+              </Center>
+            )}
+          </Tabs.Content>
+          <Tabs.Content value="priced" textAlign="left">
+            {wall && <ContributeWall textType="ItemPage" color={item.color.hex} wall={wall} />}
+            {!wall && soldData && (
+              <Box maxH="500px" overflow="auto">
+                {soldData.recent.map((trade) => (
+                  <TradeTable featuredItem={item} key={trade.trade_id} data={trade} />
+                ))}
+              </Box>
+            )}
+            {!wall && soldData && soldData.recent.length === 0 && (
+              <Text textAlign="center" fontSize="xs" color="whiteAlpha.600">
+                {t('ItemPage.no-trade-history')}
+              </Text>
+            )}
+            {!wall && !soldData && (
+              <Center>
+                <Spinner />
+              </Center>
+            )}
+          </Tabs.Content>
+        </Tabs.Root>
         <Text textAlign={'center'} fontSize={'xs'} mt={3}>
           {t('ItemPage.seen-history-psa')}
         </Text>

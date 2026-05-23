@@ -1,15 +1,6 @@
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
   Button,
-  FormControl,
   Text,
-  FormLabel,
   Input,
   Stack,
   Textarea,
@@ -17,10 +8,13 @@ import {
   Badge,
   Spinner,
   Center,
-  FormHelperText,
-  Select,
-  Divider,
+  Field,
+  NativeSelect,
+  Separator,
   Link,
+  Dialog,
+  CloseButton,
+  Portal,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useState } from 'react';
@@ -181,313 +175,353 @@ const CreateListModal = (props: CreateListModalProps) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleCancel} isCentered scrollBehavior="inside">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>
-          {props.list ? t('Button.edit') : t('General.create')} {t('Lists.List')}
-        </ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          {!isLoading && !error && (
-            <Stack gap={3}>
-              {props.list && user?.id !== props.list?.owner.id && user?.isAdmin && (
-                <Text textAlign="center" color="red.300">
-                  {t('Lists.admin-edit-msg')}
-                </Text>
-              )}
-              {user?.isAdmin && (
-                <Stack gap={3} mb={3}>
-                  <FormControl>
-                    <Checkbox
-                      isChecked={list.official}
-                      onChange={(value) =>
-                        setList({
-                          ...list,
-                          official: value.target.checked,
-                        })
-                      }
-                    >
-                      <Badge colorScheme="blue">✓ {t('General.official')}</Badge>
-                    </Checkbox>
-                  </FormControl>
-                  {list.official && (
-                    <>
-                      <FormControl>
-                        <FormLabel color="gray.300">{t('Lists.official-tag')}</FormLabel>
-                        <Input
-                          variant="filled"
-                          name="officialTag"
-                          onChange={handleChange}
-                          value={
-                            Array.isArray(list.officialTag)
-                              ? list.officialTag.join(', ')
-                              : (list.officialTag ?? '')
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={({ open }) => {
+        if (!open) handleCancel();
+      }}
+      placement="center"
+      scrollBehavior="inside"
+    >
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>
+              <Dialog.Title>
+                {props.list ? t('Button.edit') : t('General.create')} {t('Lists.List')}
+              </Dialog.Title>
+            </Dialog.Header>
+            <Dialog.CloseTrigger asChild>
+              <CloseButton size="sm" />
+            </Dialog.CloseTrigger>
+            <Dialog.Body>
+              {!isLoading && !error && (
+                <Stack gap={3}>
+                  {props.list && user?.id !== props.list?.owner.id && user?.isAdmin && (
+                    <Text textAlign="center" color="red.300">
+                      {t('Lists.admin-edit-msg')}
+                    </Text>
+                  )}
+                  {user?.isAdmin && (
+                    <Stack gap={3} mb={3}>
+                      <Field.Root>
+                        <Checkbox.Root
+                          checked={!!list.official}
+                          onCheckedChange={({ checked }) =>
+                            setList({
+                              ...list,
+                              official: !!checked,
+                            })
                           }
-                        />
-                      </FormControl>
-                      <FormControl>
-                        <FormLabel color="gray.300">Series Type</FormLabel>
-                        <Select
-                          variant="filled"
-                          name="seriesType"
-                          onChange={handleChange}
-                          value={list.seriesType ?? 'none'}
                         >
-                          <option value="none">None</option>
-                          <option value="listCreation">List Creation</option>
-                          <option value="itemAddition">Item Addition</option>
-                          <option value="listDates">Series Dates</option>
-                        </Select>
-                      </FormControl>
-                      {list.seriesType === 'listDates' && (
+                          <Checkbox.HiddenInput />
+                          <Checkbox.Control />
+                          <Checkbox.Label>
+                            <Badge colorPalette="blue">✓ {t('General.official')}</Badge>
+                          </Checkbox.Label>
+                        </Checkbox.Root>
+                      </Field.Root>
+                      {list.official && (
                         <>
-                          <FormControl>
-                            <FormLabel color="gray.300">Series Start</FormLabel>
+                          <Field.Root>
+                            <Field.Label color="gray.300">{t('Lists.official-tag')}</Field.Label>
                             <Input
-                              variant="filled"
-                              type="date"
-                              name="seriesStart"
+                              variant="subtle"
+                              name="officialTag"
                               onChange={handleChange}
-                              value={list.seriesStart?.split('T')[0] ?? ''}
+                              value={
+                                Array.isArray(list.officialTag)
+                                  ? list.officialTag.join(', ')
+                                  : (list.officialTag ?? '')
+                              }
                             />
-                          </FormControl>
-                          <FormControl>
-                            <FormLabel color="gray.300">Series End</FormLabel>
-                            <Input
-                              variant="filled"
-                              type="date"
-                              name="seriesEnd"
-                              onChange={handleChange}
-                              min={list.seriesStart || undefined}
-                              value={list.seriesEnd?.split('T')[0] ?? ''}
-                            />
-                          </FormControl>
+                          </Field.Root>
+                          <Field.Root>
+                            <Field.Label color="gray.300">Series Type</Field.Label>
+                            <NativeSelect.Root variant="subtle">
+                              <NativeSelect.Field
+                                name="seriesType"
+                                onChange={handleChange}
+                                value={list.seriesType ?? 'none'}
+                              >
+                                <option value="none">None</option>
+                                <option value="listCreation">List Creation</option>
+                                <option value="itemAddition">Item Addition</option>
+                                <option value="listDates">Series Dates</option>
+                              </NativeSelect.Field>
+                              <NativeSelect.Indicator />
+                            </NativeSelect.Root>
+                          </Field.Root>
+                          {list.seriesType === 'listDates' && (
+                            <>
+                              <Field.Root>
+                                <Field.Label color="gray.300">Series Start</Field.Label>
+                                <Input
+                                  variant="subtle"
+                                  type="date"
+                                  name="seriesStart"
+                                  onChange={handleChange}
+                                  value={list.seriesStart?.split('T')[0] ?? ''}
+                                />
+                              </Field.Root>
+                              <Field.Root>
+                                <Field.Label color="gray.300">Series End</Field.Label>
+                                <Input
+                                  variant="subtle"
+                                  type="date"
+                                  name="seriesEnd"
+                                  onChange={handleChange}
+                                  min={list.seriesStart || undefined}
+                                  value={list.seriesEnd?.split('T')[0] ?? ''}
+                                />
+                              </Field.Root>
+                            </>
+                          )}
                         </>
                       )}
-                    </>
+                      <Separator />
+                    </Stack>
                   )}
-                  <Divider />
+
+                  <Field.Root invalid={/^\d+$/.test(list.name ?? '')}>
+                    <Field.Label color="gray.300">{t('ItemPage.list-name')}</Field.Label>
+                    <Input variant="subtle" name="name" onChange={handleChange} value={list.name} />
+                    <Field.HelperText fontSize={'xs'}>{t('General.required')}</Field.HelperText>
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label color="gray.300">{t('General.description')}</Field.Label>
+                    <Textarea
+                      variant="subtle"
+                      name="description"
+                      onChange={handleChange}
+                      value={list.description ?? ''}
+                    />
+                    <Field.HelperText fontSize={'xs'}>
+                      {t.rich('Lists.markdown-tip', {
+                        Link: (children) => (
+                          <Link
+                            href="https://commonmark.org/help/"
+                            color="gray.300"
+                            target="_blank"
+                          >
+                            {children}
+                          </Link>
+                        ),
+                        Small: (children) => <Text display={'inline'}>{children}</Text>,
+                      })}
+                    </Field.HelperText>
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label color="gray.300">
+                      {t('Lists.cover-image-url')} (150x150)
+                    </Field.Label>
+                    <Input
+                      variant="subtle"
+                      name="coverURL"
+                      onChange={handleChange}
+                      value={list.coverURL ?? ''}
+                    />
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label color="gray.300">{t('General.color')}</Field.Label>
+                    <Center flexFlow={'column'} gap={2}>
+                      <TwitterPicker
+                        styles={colorPickerStyles}
+                        triangle="hide"
+                        colors={colorPalette}
+                        color={list.colorHex ?? '#000000'}
+                        onChangeComplete={handleColorChange}
+                      />
+                      <Button
+                        size={'xs'}
+                        onClick={loadColorPalette}
+                        disabled={!isValidHttpUrl(list.coverURL)}
+                      >
+                        {t('Lists.load-cover-image-palette')}
+                      </Button>
+                    </Center>
+                    <Field.HelperText fontSize={'xs'}>{t('Lists.color-helper')}</Field.HelperText>
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label color="gray.300">{t('General.visibility')}</Field.Label>
+                    <NativeSelect.Root variant="subtle">
+                      <NativeSelect.Field
+                        name="visibility"
+                        onChange={handleChange}
+                        value={list.visibility}
+                      >
+                        <option value="public">{t('General.public')}</option>
+                        <option value="unlisted">{t('General.unlisted')}</option>
+                        <option value="private">{t('General.private')}</option>
+                      </NativeSelect.Field>
+                      <NativeSelect.Indicator />
+                    </NativeSelect.Root>
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label color="gray.300">{t('Lists.purpose')}</Field.Label>
+                    <NativeSelect.Root variant="subtle">
+                      <NativeSelect.Field
+                        name="purpose"
+                        onChange={handleChange}
+                        value={list.purpose}
+                      >
+                        <option value="none">{t('Lists.none')}</option>
+                        <option value="seeking">{t('Lists.seeking-these-items')}</option>
+                        <option value="trading">{t('Lists.trading-these-items')}</option>
+                      </NativeSelect.Field>
+                      <NativeSelect.Indicator />
+                    </NativeSelect.Root>
+                    <Field.HelperText fontSize={'xs'}>
+                      {t('Lists.seeking-trading-msg')}
+                    </Field.HelperText>
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label color="gray.300">{t('Lists.default-sorting')}</Field.Label>
+                    <NativeSelect.Root variant="subtle">
+                      <NativeSelect.Field name="sortBy" onChange={handleChange} value={list.sortBy}>
+                        <option value="name">{t('General.name')}</option>
+                        <option value="price">{t('General.price')}</option>
+                        <option value="rarity">{t('General.rarity')}</option>
+                        <option value="color">{t('General.color')}</option>
+                        <option value="custom">{t('General.custom')}</option>
+                        <option value="addedAt">{t('General.added-at')}</option>
+                        <option value="faerieFest">{t('General.recycling-points')}</option>
+                        <option value="item_id">{t('General.item-id')}</option>
+                        <option value="quantity">{t('General.quantity')}</option>
+                        <option value="price_qty">{t('SortTypes.price-quantity')}</option>
+                      </NativeSelect.Field>
+                      <NativeSelect.Indicator />
+                    </NativeSelect.Root>
+                    <Field.HelperText>
+                      {list.sortBy === 'custom' && t('Lists.custom-sort-msg')}
+                    </Field.HelperText>
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label color="gray.300">{t('General.sort-direction')}</Field.Label>
+                    <NativeSelect.Root variant="subtle">
+                      <NativeSelect.Field
+                        name="sortDir"
+                        onChange={handleChange}
+                        value={list.sortDir}
+                      >
+                        <option value="asc">{t('General.ascending')}</option>
+                        <option value="desc">{t('General.descending')}</option>
+                      </NativeSelect.Field>
+                      <NativeSelect.Indicator />
+                    </NativeSelect.Root>
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label color="gray.300">{t('Lists.can-be-linked')}</Field.Label>
+                    <NativeSelect.Root variant="subtle">
+                      <NativeSelect.Field
+                        name="canBeLinked"
+                        onChange={handleChange}
+                        value={list.canBeLinked?.toString() ?? 'true'}
+                      >
+                        <option value="true">{t('General.yes')}</option>
+                        <option value="false">{t('General.no')}</option>
+                      </NativeSelect.Field>
+                      <NativeSelect.Indicator />
+                    </NativeSelect.Root>
+                    <Field.HelperText fontSize={'xs'}>
+                      {t.rich('Lists.can-be-linked-help', {
+                        Link: (children) => (
+                          <Link
+                            href="/articles/checklists-and-dynamic-lists"
+                            target="_blank"
+                            color={'whiteAlpha.800'}
+                          >
+                            {children}
+                          </Link>
+                        ),
+                      })}
+                    </Field.HelperText>
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label color="gray.300">{t('Lists.group-tag')}</Field.Label>
+                    <Input
+                      variant="subtle"
+                      name="userTag"
+                      onChange={handleChange}
+                      value={list.userTag ?? ''}
+                    />
+                    <Field.HelperText fontSize={'xs'}>{t('Lists.group-tag-help')}</Field.HelperText>
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label color="gray.300">{t('Lists.highlights-title')}</Field.Label>
+                    <Input
+                      variant="subtle"
+                      name="highlight"
+                      onChange={handleChange}
+                      value={list.highlight ?? ''}
+                    />
+                    <Field.HelperText fontSize={'xs'}>
+                      {t('Lists.highlights-title-help')}
+                    </Field.HelperText>
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label color="gray.300">{t('Lists.highlights-description')}</Field.Label>
+                    <Textarea
+                      variant="subtle"
+                      name="highlightText"
+                      onChange={handleChange}
+                      value={list.highlightText ?? ''}
+                    />
+                    <Field.HelperText fontSize={'xs'}>
+                      {t.rich('Lists.markdown-tip', {
+                        Link: (children) => (
+                          <Link
+                            href="https://commonmark.org/help/"
+                            color="gray.300"
+                            target="_blank"
+                          >
+                            {children}
+                          </Link>
+                        ),
+                        Small: (children) => <Text display={'inline'}>{children}</Text>,
+                      })}
+                    </Field.HelperText>
+                  </Field.Root>
+                  {props.list && (
+                    <Text fontSize={'xs'} color="gray.400">
+                      list_id: {props.list.internal_id}
+                    </Text>
+                  )}
                 </Stack>
               )}
 
-              <FormControl>
-                <FormLabel color="gray.300">{t('ItemPage.list-name')}</FormLabel>
-                <Input
-                  variant="filled"
-                  name="name"
-                  onChange={handleChange}
-                  value={list.name}
-                  isInvalid={/^\d+$/.test(list.name ?? '')}
-                />
-                <FormHelperText fontSize={'xs'}>{t('General.required')}</FormHelperText>
-              </FormControl>
-              <FormControl>
-                <FormLabel color="gray.300">{t('General.description')}</FormLabel>
-                <Textarea
-                  variant="filled"
-                  name="description"
-                  onChange={handleChange}
-                  value={list.description ?? ''}
-                />
-                <FormHelperText fontSize={'xs'}>
-                  {t.rich('Lists.markdown-tip', {
-                    Link: (children) => (
-                      <Link href="https://commonmark.org/help/" color="gray.300" isExternal>
-                        {children}
-                      </Link>
-                    ),
-                    Small: (children) => <Text display={'inline'}>{children}</Text>,
-                  })}
-                </FormHelperText>
-              </FormControl>
-              <FormControl>
-                <FormLabel color="gray.300">{t('Lists.cover-image-url')} (150x150)</FormLabel>
-                <Input
-                  variant="filled"
-                  name="coverURL"
-                  onChange={handleChange}
-                  value={list.coverURL ?? ''}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel color="gray.300">{t('General.color')}</FormLabel>
-                <Center flexFlow={'column'} gap={2}>
-                  <TwitterPicker
-                    styles={colorPickerStyles}
-                    triangle="hide"
-                    colors={colorPalette}
-                    color={list.colorHex ?? '#000000'}
-                    onChangeComplete={handleColorChange}
-                  />
-                  <Button
-                    size={'xs'}
-                    onClick={loadColorPalette}
-                    isDisabled={!isValidHttpUrl(list.coverURL)}
-                  >
-                    {t('Lists.load-cover-image-palette')}
-                  </Button>
+              {isLoading && (
+                <Center>
+                  <Spinner />
                 </Center>
-                <FormHelperText fontSize={'xs'}>{t('Lists.color-helper')}</FormHelperText>
-              </FormControl>
-              <FormControl>
-                <FormLabel color="gray.300">{t('General.visibility')}</FormLabel>
-                <Select
-                  variant="filled"
-                  name="visibility"
-                  onChange={handleChange}
-                  value={list.visibility}
-                >
-                  <option value="public">{t('General.public')}</option>
-                  <option value="unlisted">{t('General.unlisted')}</option>
-                  <option value="private">{t('General.private')}</option>
-                </Select>
-              </FormControl>
-              <FormControl>
-                <FormLabel color="gray.300">{t('Lists.purpose')}</FormLabel>
-                <Select
-                  variant="filled"
-                  name="purpose"
-                  onChange={handleChange}
-                  value={list.purpose}
-                >
-                  <option value="none">{t('Lists.none')}</option>
-                  <option value="seeking">{t('Lists.seeking-these-items')}</option>
-                  <option value="trading">{t('Lists.trading-these-items')}</option>
-                </Select>
-                <FormHelperText fontSize={'xs'}>{t('Lists.seeking-trading-msg')}</FormHelperText>
-              </FormControl>
-              <FormControl>
-                <FormLabel color="gray.300">{t('Lists.default-sorting')}</FormLabel>
-                <Select variant="filled" name="sortBy" onChange={handleChange} value={list.sortBy}>
-                  <option value="name">{t('General.name')}</option>
-                  <option value="price">{t('General.price')}</option>
-                  <option value="rarity">{t('General.rarity')}</option>
-                  <option value="color">{t('General.color')}</option>
-                  <option value="custom">{t('General.custom')}</option>
-                  <option value="addedAt">{t('General.added-at')}</option>
-                  <option value="faerieFest">{t('General.recycling-points')}</option>
-                  <option value="item_id">{t('General.item-id')}</option>
-                  <option value="quantity">{t('General.quantity')}</option>
-                  <option value="price_qty">{t('SortTypes.price-quantity')}</option>
-                </Select>
-                <FormHelperText>
-                  {list.sortBy === 'custom' && t('Lists.custom-sort-msg')}
-                </FormHelperText>
-              </FormControl>
-              <FormControl>
-                <FormLabel color="gray.300">{t('General.sort-direction')}</FormLabel>
-                <Select
-                  variant="filled"
-                  name="sortDir"
-                  onChange={handleChange}
-                  value={list.sortDir}
-                >
-                  <option value="asc">{t('General.ascending')}</option>
-                  <option value="desc">{t('General.descending')}</option>
-                </Select>
-              </FormControl>
-              <FormControl>
-                <FormLabel color="gray.300">{t('Lists.can-be-linked')}</FormLabel>
-                <Select
-                  variant="filled"
-                  name="canBeLinked"
-                  onChange={handleChange}
-                  value={list.canBeLinked?.toString() ?? 'true'}
-                >
-                  <option value="true">{t('General.yes')}</option>
-                  <option value="false">{t('General.no')}</option>
-                </Select>
-                <FormHelperText fontSize={'xs'}>
-                  {t.rich('Lists.can-be-linked-help', {
-                    Link: (children) => (
-                      <Link
-                        href="/articles/checklists-and-dynamic-lists"
-                        isExternal
-                        color={'whiteAlpha.800'}
-                      >
-                        {children}
-                      </Link>
-                    ),
-                  })}
-                </FormHelperText>
-              </FormControl>
-              <FormControl>
-                <FormLabel color="gray.300">{t('Lists.group-tag')}</FormLabel>
-                <Input
-                  variant="filled"
-                  name="userTag"
-                  onChange={handleChange}
-                  value={list.userTag ?? ''}
-                />
-                <FormHelperText fontSize={'xs'}>{t('Lists.group-tag-help')}</FormHelperText>
-              </FormControl>
-              <FormControl>
-                <FormLabel color="gray.300">{t('Lists.highlights-title')}</FormLabel>
-                <Input
-                  variant="filled"
-                  name="highlight"
-                  onChange={handleChange}
-                  value={list.highlight ?? ''}
-                />
-                <FormHelperText fontSize={'xs'}>{t('Lists.highlights-title-help')}</FormHelperText>
-              </FormControl>
-              <FormControl>
-                <FormLabel color="gray.300">{t('Lists.highlights-description')}</FormLabel>
-                <Textarea
-                  variant="filled"
-                  name="highlightText"
-                  onChange={handleChange}
-                  value={list.highlightText ?? ''}
-                />
-                <FormHelperText fontSize={'xs'}>
-                  {t.rich('Lists.markdown-tip', {
-                    Link: (children) => (
-                      <Link href="https://commonmark.org/help/" color="gray.300" isExternal>
-                        {children}
-                      </Link>
-                    ),
-                    Small: (children) => <Text display={'inline'}>{children}</Text>,
-                  })}
-                </FormHelperText>
-              </FormControl>
-              {props.list && (
-                <Text fontSize={'xs'} color="gray.400">
-                  list_id: {props.list.internal_id}
-                </Text>
               )}
-            </Stack>
-          )}
-
-          {isLoading && (
-            <Center>
-              <Spinner />
-            </Center>
-          )}
-          {error && (
-            <Center>
-              <Text fontSize="sm" textAlign="center" color="red.400">
-                {t('General.an-error-has-occurred')}!
-                <br />
-                {t('General.refreshPage')}
-              </Text>
-            </Center>
-          )}
-        </ModalBody>
-        <ModalFooter>
-          {!isLoading && !error && (
-            <>
-              <Button variant="ghost" onClick={handleCancel} mr={3}>
-                {t('General.cancel')}
-              </Button>
-              <Button onClick={saveChanges} isDisabled={!list.name}>
-                {props.list ? t('General.save') : t('General.create')}
-              </Button>
-            </>
-          )}
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+              {error && (
+                <Center>
+                  <Text fontSize="sm" textAlign="center" color="red.400">
+                    {t('General.an-error-has-occurred')}!
+                    <br />
+                    {t('General.refreshPage')}
+                  </Text>
+                </Center>
+              )}
+            </Dialog.Body>
+            <Dialog.Footer>
+              {!isLoading && !error && (
+                <>
+                  <Button variant="ghost" onClick={handleCancel} mr={3}>
+                    {t('General.cancel')}
+                  </Button>
+                  <Button onClick={saveChanges} disabled={!list.name}>
+                    {props.list ? t('General.save') : t('General.create')}
+                  </Button>
+                </>
+              )}
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

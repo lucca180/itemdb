@@ -55,11 +55,11 @@ const ShopCard = (props: Props) => {
             {shop.name}
           </Text>
         </Link>
-        <HStack justifyContent={'center'} spacing={2}>
+        <HStack justifyContent={'center'} gap={2}>
           <Badge>{shop.category}</Badge>
           {shop.difficulty != 'Medium' && (
             <Badge
-              colorScheme={
+              colorPalette={
                 shop.difficulty === 'Beginner'
                   ? 'green'
                   : shop.difficulty === 'Advanced'

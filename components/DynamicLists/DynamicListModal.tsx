@@ -1,35 +1,26 @@
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
-  Button,
-  Text,
-  Select,
-  FormControl,
-  FormLabel,
-  List,
-  ListIcon,
-  ListItem,
-  FormHelperText,
   Alert,
-  AlertIcon,
-  Spinner,
+  Button,
   Center,
-  useToast,
+  CloseButton,
+  Dialog,
+  Field,
+  List,
+  NativeSelect,
+  Portal,
+  Spinner,
+  Text,
 } from '@chakra-ui/react';
+import { useToast } from '@utils/toast';
 import axios from 'axios';
 import Image from 'next/image';
 import { useState } from 'react';
 import { BsCheckCircleFill, BsExclamationCircleFill, BsXCircleFill } from 'react-icons/bs';
 import DynamicIcon from '../../public/icons/dynamic.png';
-import { DynamicListTypes, ExtendedSearchQuery, UserList } from '../../types';
-import { useAuth } from '../../utils/auth';
+import { DynamicListTypes, ExtendedSearchQuery, UserList } from '@types';
+import { useAuth } from '@utils/auth';
 import { useTranslations } from 'next-intl';
-import { useLists } from '../../utils/useLists';
+import { useLists } from '@utils/useLists';
 
 export type DynamicListModalProps = {
   isOpen: boolean;
@@ -94,81 +85,99 @@ const DynamicListModal = (props: DynamicListModalProps) => {
   };
 
   const doClose = () => {
-    if (loading) return false;
+    if (loading) return;
     onClose();
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={doClose} isCentered>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader display={'flex'} alignItems="center">
-          Create{' '}
-          <Image
-            src={DynamicIcon}
-            alt="lightning bolt"
-            width={16}
-            style={{ margin: '0 5px', display: 'inline' }}
-          />{' '}
-          {t('General.dynamic-list')}
-        </ModalHeader>
-        <ModalCloseButton />
-        {!error && !loading && (
-          <ModalBody>
-            <Text fontSize="sm" color="gray.400">
-              {t('Lists.dynamic-listModalText')}
-            </Text>
-            <DynamicListInfo
-              dynamicType={dynamicType}
-              setDynamicType={setDynamicType}
-              resultCount={resultCount}
-            />
-          </ModalBody>
-        )}
+    <Dialog.Root
+      open={isOpen}
+      placement="center"
+      closeOnEscape={!loading}
+      closeOnInteractOutside={!loading}
+      onOpenChange={(details) => {
+        if (!details.open) doClose();
+      }}
+    >
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header display="flex" alignItems="center">
+              <Dialog.Title>
+                Create{' '}
+                <Image
+                  src={DynamicIcon}
+                  alt="lightning bolt"
+                  width={16}
+                  style={{ margin: '0 5px', display: 'inline' }}
+                />{' '}
+                {t('General.dynamic-list')}
+              </Dialog.Title>
+            </Dialog.Header>
+            {!loading && (
+              <Dialog.CloseTrigger asChild>
+                <CloseButton />
+              </Dialog.CloseTrigger>
+            )}
+            {!error && !loading && (
+              <Dialog.Body>
+                <Text fontSize="sm" color="gray.400">
+                  {t('Lists.dynamic-listModalText')}
+                </Text>
+                <DynamicListInfo
+                  dynamicType={dynamicType}
+                  setDynamicType={setDynamicType}
+                  resultCount={resultCount}
+                />
+              </Dialog.Body>
+            )}
 
-        {error && (
-          <ModalBody>
-            <Text color="red.300" textAlign={'center'}>
-              {t('General.something-went-wrong')}
-              <br />
-              {t('General.refreshPage')}.
-            </Text>
-          </ModalBody>
-        )}
+            {error && (
+              <Dialog.Body>
+                <Text color="red.300" textAlign="center">
+                  {t('General.something-went-wrong')}
+                  <br />
+                  {t('General.refreshPage')}.
+                </Text>
+              </Dialog.Body>
+            )}
 
-        {loading && !error && (
-          <ModalBody>
-            <Center>
-              <Spinner />
-            </Center>
-          </ModalBody>
-        )}
+            {loading && !error && (
+              <Dialog.Body>
+                <Center>
+                  <Spinner />
+                </Center>
+              </Dialog.Body>
+            )}
 
-        <ModalFooter>
-          {!loading && (
-            <Button variant="ghost" mr={3} onClick={doClose}>
-              {t('General.close')}
-            </Button>
-          )}
-          {!error && !loading && (
-            <Button
-              variant="ghost"
-              colorScheme={'orange'}
-              onClick={createDynamic}
-              isDisabled={!!resultCount && resultCount > 4000 && dynamicType !== 'search'}
-            >
-              <Image
-                src={DynamicIcon}
-                alt="lightning bolt"
-                width={12}
-                style={{ margin: '0 5px', display: 'inline' }}
-              />{' '}
-              {t('General.create')}
-            </Button>
-          )}
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+            <Dialog.Footer>
+              {!loading && (
+                <Button variant="ghost" mr={3} onClick={doClose}>
+                  {t('General.close')}
+                </Button>
+              )}
+              {!error && !loading && (
+                <Button
+                  variant="ghost"
+                  colorPalette="orange"
+                  onClick={createDynamic}
+                  disabled={!!resultCount && resultCount > 4000 && dynamicType !== 'search'}
+                >
+                  <Image
+                    src={DynamicIcon}
+                    alt="lightning bolt"
+                    width={12}
+                    style={{ margin: '0 5px', display: 'inline' }}
+                  />{' '}
+                  {t('General.create')}
+                </Button>
+              )}
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 
@@ -184,124 +193,148 @@ export const DynamicListInfo = (props: DynamicListModalInfoProps) => {
   const t = useTranslations();
   return (
     <>
-      <Alert size="sm" status="warning" mt={5} borderRadius={'md'}>
-        <AlertIcon />
-        {t('Lists.dynamic-listsModalLimit')}
-      </Alert>
+      <Alert.Root size="sm" status="warning" mt={5} borderRadius="md">
+        <Alert.Indicator />
+        <Alert.Title>{t('Lists.dynamic-listsModalLimit')}</Alert.Title>
+      </Alert.Root>
 
-      <FormControl my={5}>
-        <FormLabel>{t('Lists.dynamic-type')}</FormLabel>
-        <Select
-          value={dynamicType}
-          variant="solid"
-          bg={'blackAlpha.300'}
-          onChange={(e) => setDynamicType(e.target.value as DynamicListTypes)}
-        >
-          <option value="addOnly">{t('Lists.add-only')}</option>
-          <option value="removeOnly">{t('Lists.remove-only')}</option>
-          <option value="fullSync">{t('Lists.full-sync')}</option>
-          {user?.isAdmin && <option value="search">Search (Official Lists only)</option>}
-        </Select>
-        <FormHelperText>{t('Lists.dynamic-listModalChange')}</FormHelperText>
-      </FormControl>
-      <List spacing={2}>
-        <ListItem fontSize={'sm'} color="gray.400">
-          <ListIcon as={BsCheckCircleFill} color="green.300" />
+      <Field.Root my={5}>
+        <Field.Label>{t('Lists.dynamic-type')}</Field.Label>
+        <NativeSelect.Root>
+          <NativeSelect.Field
+            value={dynamicType}
+            bg="blackAlpha.300"
+            onChange={(e) => setDynamicType(e.target.value as DynamicListTypes)}
+          >
+            <option value="addOnly">{t('Lists.add-only')}</option>
+            <option value="removeOnly">{t('Lists.remove-only')}</option>
+            <option value="fullSync">{t('Lists.full-sync')}</option>
+            {user?.isAdmin && <option value="search">Search (Official Lists only)</option>}
+          </NativeSelect.Field>
+          <NativeSelect.Indicator />
+        </NativeSelect.Root>
+        <Field.HelperText>{t('Lists.dynamic-listModalChange')}</Field.HelperText>
+      </Field.Root>
+      <List.Root gap={2} variant="plain">
+        <List.Item fontSize="sm" color="gray.400">
+          <List.Indicator asChild color="green.300">
+            <BsCheckCircleFill />
+          </List.Indicator>
           {t('Lists.dynamic-listModalCurrentSearch', {
             resultCount: resultCount ?? 0,
           })}
-        </ListItem>
+        </List.Item>
         {dynamicType === 'addOnly' && (
           <>
-            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'green.200' } }}>
-              <ListIcon as={BsCheckCircleFill} color="green.300" />
+            <List.Item fontSize="sm" color="gray.400" css={{ b: { color: 'green.200' } }}>
+              <List.Indicator asChild color="green.300">
+                <BsCheckCircleFill />
+              </List.Indicator>
               {t.rich('DynamicList.addOnly-1', {
                 b: (text) => <b>{text}</b>,
               })}
-            </ListItem>
-            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'green.200' } }}>
-              <ListIcon as={BsCheckCircleFill} color="green.300" />
+            </List.Item>
+            <List.Item fontSize="sm" color="gray.400" css={{ b: { color: 'green.200' } }}>
+              <List.Indicator asChild color="green.300">
+                <BsCheckCircleFill />
+              </List.Indicator>
               {t.rich('DynamicList.addOnly-2', {
                 b: (text) => <b>{text}</b>,
               })}
-            </ListItem>
-            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'orange.200' } }}>
-              <ListIcon as={BsExclamationCircleFill} color="orange.300" />
+            </List.Item>
+            <List.Item fontSize="sm" color="gray.400" css={{ b: { color: 'orange.200' } }}>
+              <List.Indicator asChild color="orange.300">
+                <BsExclamationCircleFill />
+              </List.Indicator>
               {t.rich('DynamicList.addOnly-3', {
                 b: (text) => <b>{text}</b>,
               })}
-            </ListItem>
-            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'red.200' } }}>
-              <ListIcon as={BsXCircleFill} color="red.300" />
+            </List.Item>
+            <List.Item fontSize="sm" color="gray.400" css={{ b: { color: 'red.200' } }}>
+              <List.Indicator asChild color="red.300">
+                <BsXCircleFill />
+              </List.Indicator>
               {t.rich('DynamicList.addOnly-4', {
                 b: (text) => <b>{text}</b>,
                 i: (text) => <i>{text}</i>,
               })}
-            </ListItem>
+            </List.Item>
           </>
         )}
         {dynamicType === 'removeOnly' && (
           <>
-            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'orange.200' } }}>
-              <ListIcon as={BsExclamationCircleFill} color="orange.300" />
+            <List.Item fontSize="sm" color="gray.400" css={{ b: { color: 'orange.200' } }}>
+              <List.Indicator asChild color="orange.300">
+                <BsExclamationCircleFill />
+              </List.Indicator>
               {t.rich('DynamicList.removeOnly-1', {
                 b: (text) => <b>{text}</b>,
               })}
-            </ListItem>
-            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'red.200' } }}>
-              <ListIcon as={BsXCircleFill} color="red.300" />
+            </List.Item>
+            <List.Item fontSize="sm" color="gray.400" css={{ b: { color: 'red.200' } }}>
+              <List.Indicator asChild color="red.300">
+                <BsXCircleFill />
+              </List.Indicator>
               {t.rich('DynamicList.removeOnly-2', {
                 b: (text) => <b>{text}</b>,
               })}
-            </ListItem>
-            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'green.200' } }}>
-              <ListIcon as={BsCheckCircleFill} color="green.300" />
+            </List.Item>
+            <List.Item fontSize="sm" color="gray.400" css={{ b: { color: 'green.200' } }}>
+              <List.Indicator asChild color="green.300">
+                <BsCheckCircleFill />
+              </List.Indicator>
               {t.rich('DynamicList.removeOnly-3', {
                 b: (text) => <b>{text}</b>,
               })}
-            </ListItem>
-            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'green.200' } }}>
-              <ListIcon as={BsCheckCircleFill} color="green.300" />
+            </List.Item>
+            <List.Item fontSize="sm" color="gray.400" css={{ b: { color: 'green.200' } }}>
+              <List.Indicator asChild color="green.300">
+                <BsCheckCircleFill />
+              </List.Indicator>
               {t.rich('DynamicList.removeOnly-4', {
                 b: (text) => <b>{text}</b>,
               })}
-            </ListItem>
+            </List.Item>
           </>
         )}
         {['fullSync', 'search'].includes(dynamicType) && (
           <>
-            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'green.200' } }}>
-              <ListIcon as={BsCheckCircleFill} color="green.300" />
+            <List.Item fontSize="sm" color="gray.400" css={{ b: { color: 'green.200' } }}>
+              <List.Indicator asChild color="green.300">
+                <BsCheckCircleFill />
+              </List.Indicator>
               {t.rich('DynamicList.fullSync-1', {
                 b: (text) => <b>{text}</b>,
               })}
-            </ListItem>
-            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'red.200' } }}>
-              <ListIcon as={BsXCircleFill} color="red.300" />
+            </List.Item>
+            <List.Item fontSize="sm" color="gray.400" css={{ b: { color: 'red.200' } }}>
+              <List.Indicator asChild color="red.300">
+                <BsXCircleFill />
+              </List.Indicator>
               {t.rich('DynamicList.fullSync-2', {
                 b: (text) => <b>{text}</b>,
               })}
-            </ListItem>
-            <ListItem fontSize={'sm'} color="gray.400">
-              <ListIcon
-                as={BsCheckCircleFill}
-                color="green.300"
-                sx={{ b: { color: 'green.200' } }}
-              />
+            </List.Item>
+            <List.Item fontSize="sm" color="gray.400" css={{ b: { color: 'green.200' } }}>
+              <List.Indicator asChild color="green.300">
+                <BsCheckCircleFill />
+              </List.Indicator>
               {t.rich('DynamicList.fullSync-3', {
                 b: (text) => <b>{text}</b>,
               })}
-            </ListItem>
-            <ListItem fontSize={'sm'} color="gray.400" sx={{ b: { color: 'red.200' } }}>
-              <ListIcon as={BsXCircleFill} color="red.300" />
+            </List.Item>
+            <List.Item fontSize="sm" color="gray.400" css={{ b: { color: 'red.200' } }}>
+              <List.Indicator asChild color="red.300">
+                <BsXCircleFill />
+              </List.Indicator>
               {t.rich('DynamicList.fullSync-4', {
                 b: (text) => <b>{text}</b>,
                 i: (text) => <i>{text}</i>,
               })}
-            </ListItem>
+            </List.Item>
           </>
         )}
-      </List>
+      </List.Root>
     </>
   );
 };

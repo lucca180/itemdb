@@ -31,7 +31,7 @@ const RestockItem = (props: Props) => {
     return null;
   }, [item, clickData]);
 
-  const isBait = profit && profit <= 0;
+  const isBait = profit !== null && profit <= 0;
 
   const boughtTime = restockItem
     ? differenceInMilliseconds(
@@ -55,113 +55,115 @@ const RestockItem = (props: Props) => {
     : -1;
 
   return (
-    <Link
-      as={NextLink}
-      prefetch={!disablePrefetch ? undefined : false}
-      href={'/item/' + (item.slug ?? item.internal_id)}
-      _hover={{ textDecoration: 'none' }}
-    >
-      <Flex
-        bg="gray.700"
-        p={2}
-        bgGradient={`linear(to-r, rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.5), rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.35) 99%)`}
-        borderRadius={'md'}
-        boxShadow={'md'}
-        gap={2}
+    <Link asChild _hover={{ textDecoration: 'none' }}>
+      <NextLink
+        prefetch={!disablePrefetch ? undefined : false}
+        href={'/item/' + (item.slug ?? item.internal_id)}
       >
-        <Image
-          src={item.image}
-          alt={item.name}
-          boxSize="50px"
-          objectFit="cover"
-          borderRadius="md"
-        />
         <Flex
-          alignItems={'flex-start'}
-          gap={1}
-          flexFlow={'column'}
-          justifyContent={'center'}
-          textAlign={'left'}
+          bg="gray.700"
+          p={2}
+          bgGradient={`linear(to-r, rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.5), rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.35) 99%)`}
+          borderRadius={'md'}
+          boxShadow={'md'}
+          gap={2}
         >
-          <HStack>
-            <Text as="span" fontSize={'md'}>
-              {item.name}
-            </Text>
-            {item.price.value && <Badge>{format.number(item.price.value)} NP</Badge>}
-            {isBait && (
-              <Tooltip
-                hasArrow
-                label={
-                  profit > 0
-                    ? t('Restock.estimated-profit-is-less-than')
-                    : t('Restock.estimated-loss')
-                }
-                // bg="gray.700"
-                placement="top"
-                // color="white"
-              >
-                <Badge colorScheme="red" display="flex" alignItems={'center'} gap={1}>
-                  {format.number(profit)} NP <MdHelp size={'0.7rem'} />
-                </Badge>
-              </Tooltip>
+          <Image
+            src={item.image}
+            alt={item.name}
+            boxSize="50px"
+            objectFit="cover"
+            borderRadius="md"
+          />
+          <Flex
+            alignItems={'flex-start'}
+            gap={1}
+            flexFlow={'column'}
+            justifyContent={'center'}
+            textAlign={'left'}
+          >
+            <HStack>
+              <Text as="span" fontSize={'md'}>
+                {item.name}
+              </Text>
+              {item.price.value && <Badge>{format.number(item.price.value)} NP</Badge>}
+              {isBait && (
+                <Tooltip.Root positioning={{ placement: 'top' }}>
+                  <Tooltip.Trigger asChild>
+                    <Badge colorPalette="red" display="flex" alignItems={'center'} gap={1}>
+                      {format.number(profit)} NP <MdHelp size={'0.7rem'} />
+                    </Badge>
+                  </Tooltip.Trigger>
+                  <Tooltip.Positioner>
+                    <Tooltip.Content bg="gray.700" color="white" fontSize="xs">
+                      {profit > 0
+                        ? t('Restock.estimated-profit-is-less-than')
+                        : t('Restock.estimated-loss')}
+                      <Tooltip.Arrow>
+                        <Tooltip.ArrowTip />
+                      </Tooltip.Arrow>
+                    </Tooltip.Content>
+                  </Tooltip.Positioner>
+                </Tooltip.Root>
+              )}
+            </HStack>
+
+            {boughtTime > 0 && (
+              <Text as="span" fontSize={'xs'}>
+                {t.rich('Restock.bought-in-x-at-y', {
+                  b: (children) => <b>{children}</b>,
+                  x: restockItem.notTrust ? '???' : msIntervalFormatted(boughtTime, true, 2),
+                  y:
+                    format.dateTime(clickData.buy_timestamp ?? 0, {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: 'numeric',
+                      minute: 'numeric',
+                      timeZone: 'America/Los_Angeles',
+                    }) + ' NST',
+                })}
+              </Text>
             )}
-          </HStack>
 
-          {boughtTime > 0 && (
-            <Text as="span" fontSize={'xs'}>
-              {t.rich('Restock.bought-in-x-at-y', {
-                b: (children) => <b>{children}</b>,
-                x: restockItem.notTrust ? '???' : msIntervalFormatted(boughtTime, true, 2),
-                y:
-                  format.dateTime(clickData.buy_timestamp ?? 0, {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: 'numeric',
-                    minute: 'numeric',
-                    timeZone: 'America/Los_Angeles',
-                  }) + ' NST',
-              })}
-            </Text>
-          )}
+            {boughtTime < 0 && lostHaggle > 0 && (
+              <Text as="span" fontSize={'xs'}>
+                {t.rich('Restock.lost-haggling', {
+                  b: (children) => <b>{children}</b>,
+                  x: restockItem.notTrust ? '???' : msIntervalFormatted(lostHaggle, true, 2),
+                  y:
+                    format.dateTime(clickData.haggle_timestamp ?? 0, {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: 'numeric',
+                      minute: 'numeric',
+                      timeZone: 'America/Los_Angeles',
+                    }) + ' NST',
+                })}
+              </Text>
+            )}
 
-          {boughtTime < 0 && lostHaggle > 0 && (
-            <Text as="span" fontSize={'xs'}>
-              {t.rich('Restock.lost-haggling', {
-                b: (children) => <b>{children}</b>,
-                x: restockItem.notTrust ? '???' : msIntervalFormatted(lostHaggle, true, 2),
-                y:
-                  format.dateTime(clickData.haggle_timestamp ?? 0, {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: 'numeric',
-                    minute: 'numeric',
-                    timeZone: 'America/Los_Angeles',
-                  }) + ' NST',
-              })}
-            </Text>
-          )}
-
-          {boughtTime < 0 && lostHaggle < 0 && lostNoHaggle > 0 && (
-            <Text as="span" fontSize={'xs'}>
-              {t.rich('Restock.lost-no-haggle', {
-                b: (children) => <b>{children}</b>,
-                x: restockItem.notTrust ? '???' : msIntervalFormatted(lostNoHaggle, true, 2),
-                y:
-                  format.dateTime(clickData.soldOut_timestamp ?? 0, {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: 'numeric',
-                    minute: 'numeric',
-                    timeZone: 'America/Los_Angeles',
-                  }) + ' NST',
-              })}
-            </Text>
-          )}
+            {boughtTime < 0 && lostHaggle < 0 && lostNoHaggle > 0 && (
+              <Text as="span" fontSize={'xs'}>
+                {t.rich('Restock.lost-no-haggle', {
+                  b: (children) => <b>{children}</b>,
+                  x: restockItem.notTrust ? '???' : msIntervalFormatted(lostNoHaggle, true, 2),
+                  y:
+                    format.dateTime(clickData.soldOut_timestamp ?? 0, {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: 'numeric',
+                      minute: 'numeric',
+                      timeZone: 'America/Los_Angeles',
+                    }) + ' NST',
+                })}
+              </Text>
+            )}
+          </Flex>
         </Flex>
-      </Flex>
+      </NextLink>
     </Link>
   );
 };

@@ -1,6 +1,6 @@
 import {
   Button,
-  Divider,
+  Separator,
   Flex,
   HStack,
   Link,
@@ -85,7 +85,7 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
   const format = useFormatter();
   const { shopInfo, totalItems, profitableCount, similarShops } = props;
   const { userPref, updatePref } = useAuth();
-  const { isOpen, onClose, onOpen } = useDisclosure();
+  const { open, onClose, onOpen } = useDisclosure();
   const [filteredItems, setFilteredItems] = useState<ItemData[]>(props.initialItems ?? []);
   const [itemList, setItemList] = useState<ItemData[]>(props.initialItems ?? []);
   const [sortInfo, setSortInfo] = useState({ sortBy: 'price', sortDir: 'desc' });
@@ -203,10 +203,10 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
 
   return (
     <>
-      {isOpen && (
+      {open && (
         <SearchFilterModal
           isLists
-          isOpen={isOpen}
+          isOpen={open}
           onClose={onClose}
           filters={filters}
           stats={stats}
@@ -216,12 +216,13 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
         />
       )}
       <RestockHeader shop={shopInfo}>
-        <Text as="h2" sx={{ a: { color: shopColor.lightness(70).hex() } }} textAlign={'center'}>
+        <Text as="h2" css={{ a: { color: shopColor.lightness(70).hex() } }} textAlign={'center'}>
           {t.rich('Restock.profitable-items-from', {
             Link: (chunk) => (
               <Link
                 href={`https://www.neopets.com/objects.phtml?type=shop&obj_type=${shopInfo.id}`}
-                isExternal
+                target="_blank"
+                rel="noreferrer"
               >
                 {chunk}
                 <Image
@@ -296,7 +297,7 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
           </ShopInfoCard>
         </HStack>
       </RestockHeader>
-      <Divider my={3} />
+      <Separator my={3} />
 
       <Flex
         justifyContent={'space-between'}
@@ -313,7 +314,7 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
             query={itemSearch || undefined}
             filters={filters}
           />
-          <Text as="div" textColor={'gray.300'} fontSize="sm">
+          <Text as="div" color={'gray.300'} fontSize="sm">
             {!loading && (
               <>
                 {filteredItems?.length ?? itemList?.length ?? 0} {t('General.items').toLowerCase()}
@@ -328,21 +329,22 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
           justifyContent={['center', 'flex-end']}
           flexWrap={'wrap'}
         >
-          <Button isLoading={loading} onClick={toggleView}>
+          <Button loading={loading} onClick={toggleView}>
             {viewType === 'rarity' ? t('Restock.use-classic-view') : t('Restock.use-rarity-view')}
           </Button>
           <IconButton
-            isLoading={loading}
+            loading={loading}
             aria-label="search filters"
             onClick={onOpen}
-            icon={<BsFilter />}
-            colorScheme={isFiltered ? 'blue' : undefined}
-          />
+            colorPalette={isFiltered ? 'blue' : undefined}
+          >
+            <BsFilter />
+          </IconButton>
           <SearchList disabled={loading} onChange={handleSearch} />
           <HStack>
             <Text
               flex="0 0 auto"
-              textColor={'gray.300'}
+              color={'gray.300'}
               fontSize="sm"
               display={{ base: 'none', md: 'inherit' }}
             >

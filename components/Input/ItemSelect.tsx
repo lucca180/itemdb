@@ -70,10 +70,10 @@ const ItemSelect = React.forwardRef<HTMLInputElement, Props>((props, ref) => {
       <AutoCompleteInput
         ref={ref}
         placeholder={props.placeholder ?? 'Add Item'}
-        isDisabled={props.isDisabled}
-        variant="filled"
+        disabled={props.isDisabled}
+        variant="subtle"
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
         color={color}
         bg="whiteAlpha.50"
         textTransform="capitalize"

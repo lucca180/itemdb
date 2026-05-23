@@ -1,9 +1,9 @@
 /* eslint-disable @next/next/no-css-tags */
 import { VerticalTimeline, VerticalTimelineElement } from 'react-vertical-timeline-component';
-import { RestockStats } from '../../../types';
+import { RestockStats } from '@types';
 import { useFormatter } from 'next-intl';
 import { FaCalendar } from 'react-icons/fa';
-import { Flex, Tab, TabList, TabPanel, TabPanels, Tabs, Text } from '@chakra-ui/react';
+import { Flex, Tabs, Text } from '@chakra-ui/react';
 import RestockItem from '../Restock/RestockItemCard';
 import { addDays, isLastDayOfMonth } from 'date-fns';
 
@@ -89,40 +89,48 @@ const WrappedTimeline = (props: WrappedTimelineProps) => {
                   <b>{format.number(month.totalLost.value)} NP</b>
                 </Text>
               </Flex>
-              <Tabs variant="soft-rounded" colorScheme="green" align="center" mt={3}>
-                <TabList>
-                  <Tab color={'white'}>Hottest Buys</Tab>
-                  <Tab color={'white'}>Worst Losses</Tab>
-                </TabList>
-                <TabPanels>
-                  <TabPanel>
-                    <Flex flexWrap={'wrap'} flexFlow={'column'} gap={2}>
-                      {month.hottestBought.slice(0, 5).map((bought, i) => (
-                        <RestockItem
-                          disablePrefetch
-                          item={bought.item}
-                          clickData={bought.click}
-                          restockItem={bought.restockItem}
-                          key={i}
-                        />
-                      ))}
-                    </Flex>
-                  </TabPanel>
-                  <TabPanel>
-                    <Flex flexWrap={'wrap'} flexFlow={'column'} gap={2} mt={2}>
-                      {month.hottestLost.slice(0, 5).map((bought, i) => (
-                        <RestockItem
-                          disablePrefetch
-                          item={bought.item}
-                          clickData={bought.click}
-                          restockItem={bought.restockItem}
-                          key={i}
-                        />
-                      ))}
-                    </Flex>
-                  </TabPanel>
-                </TabPanels>
-              </Tabs>
+              <Tabs.Root
+                defaultValue="hottest-buys"
+                variant="subtle"
+                colorPalette="green"
+                justify="center"
+                mt={3}
+              >
+                <Tabs.List>
+                  <Tabs.Trigger value="hottest-buys" color={'white'}>
+                    Hottest Buys
+                  </Tabs.Trigger>
+                  <Tabs.Trigger value="worst-losses" color={'white'}>
+                    Worst Losses
+                  </Tabs.Trigger>
+                </Tabs.List>
+                <Tabs.Content value="hottest-buys">
+                  <Flex flexWrap={'wrap'} flexFlow={'column'} gap={2}>
+                    {month.hottestBought.slice(0, 5).map((bought, i) => (
+                      <RestockItem
+                        disablePrefetch
+                        item={bought.item}
+                        clickData={bought.click}
+                        restockItem={bought.restockItem}
+                        key={i}
+                      />
+                    ))}
+                  </Flex>
+                </Tabs.Content>
+                <Tabs.Content value="worst-losses">
+                  <Flex flexWrap={'wrap'} flexFlow={'column'} gap={2} mt={2}>
+                    {month.hottestLost.slice(0, 5).map((bought, i) => (
+                      <RestockItem
+                        disablePrefetch
+                        item={bought.item}
+                        clickData={bought.click}
+                        restockItem={bought.restockItem}
+                        key={i}
+                      />
+                    ))}
+                  </Flex>
+                </Tabs.Content>
+              </Tabs.Root>
             </Flex>
           </VerticalTimelineElement>
         ))}

@@ -1,11 +1,5 @@
-import { CloseIcon } from '@chakra-ui/icons';
-import {
-  InputGroup,
-  IconButton,
-  Input,
-  InputLeftElement,
-  InputRightElement,
-} from '@chakra-ui/react';
+import { CloseIcon } from '@utils/chakraIcons';
+import { InputGroup, IconButton, Input } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
 import { useState, useRef, useEffect } from 'react';
 import { MdOutlineAttachMoney } from 'react-icons/md';
@@ -62,24 +56,35 @@ export const CollapseNumber = (props: Props) => {
   };
 
   return (
-    <InputGroup w="auto" minW="40px" bg="whiteAlpha.200" borderRadius={'md'}>
-      <InputLeftElement>
+    <InputGroup
+      w="auto"
+      minW="40px"
+      bg="whiteAlpha.200"
+      borderRadius="md"
+      startElement={
         <IconButton
-          isDisabled={props.disabled}
+          disabled={props.disabled}
           onClick={setFocus}
-          aria-label="Search list"
-          icon={<MdOutlineAttachMoney />}
+          aria-label="Focus minimum profit input"
           variant="ghost"
-        />
-      </InputLeftElement>
-
+        >
+          <MdOutlineAttachMoney />
+        </IconButton>
+      }
+      endElement={
+        value ? (
+          <IconButton onClick={reset} size="xs" aria-label="Clear search" variant="ghost">
+            <CloseIcon boxSize="8px" />
+          </IconButton>
+        ) : undefined
+      }
+    >
       <Input
-        // type="number"
-        variant={'solid'}
+        variant="subtle"
         bg="transparent"
         maxW="175px"
         placeholder={t('General.min-profit')}
-        fontSize={'sm'}
+        fontSize="sm"
         onChange={onChange}
         value={format(value)}
         w={value ? '175px' : '0'}
@@ -97,18 +102,6 @@ export const CollapseNumber = (props: Props) => {
           },
         }}
       />
-
-      {value && (
-        <InputRightElement>
-          <IconButton
-            onClick={reset}
-            size="xs"
-            aria-label="Clear search"
-            icon={<CloseIcon boxSize={'8px'} />}
-            variant="ghost"
-          />
-        </InputRightElement>
-      )}
     </InputGroup>
   );
 };

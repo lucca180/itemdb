@@ -31,11 +31,13 @@ const NeoColorSelect = (props: Props) => {
       value={valueProps}
       rollNavigation
       multiple={isMultiple}
-      onChange={(vals) => onChange?.(vals)}
+      onChange={(vals: string[] | string) =>
+        onChange?.(Array.isArray(vals) ? (vals[0] ?? '') : vals)
+      }
     >
-      <AutoCompleteInput variant="filled" placeholder={placeHolder} disabled={disabled}>
-        {({ tags }) =>
-          tags.map((tag, tid) => (
+      <AutoCompleteInput variant="subtle" placeholder={placeHolder} disabled={disabled}>
+        {({ tags }: { tags: { label: string; onRemove: () => void }[] }) =>
+          tags.map((tag: { label: string; onRemove: () => void }, tid: number) => (
             <AutoCompleteTag key={tid} label={tag.label} onRemove={tag.onRemove} />
           ))
         }

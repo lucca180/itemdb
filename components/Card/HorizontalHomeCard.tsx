@@ -1,8 +1,10 @@
-import { Flex, Heading, Button, FlexProps } from '@chakra-ui/react';
+import { Button, Flex, Heading, type FlexProps } from '@chakra-ui/react';
 import Color from 'color';
 import NextImage from 'next/image';
-import MainLink from '../Utils/MainLink';
+import MainLink from '@components/Utils/MainLink';
 import { useTranslations } from 'next-intl';
+
+type NestedCssObject = Record<string, unknown>;
 
 type HorizontalHomeCard = {
   // lists: UserList[];
@@ -17,7 +19,8 @@ type HorizontalHomeCard = {
   style?: FlexProps;
   innerStyle?: FlexProps;
   utm_content?: string;
-  sx?: FlexProps['sx'];
+  css?: NestedCssObject;
+  sx?: NestedCssObject;
   isSmall?: boolean;
   isPriority?: boolean;
   viewAllText?: string;
@@ -50,7 +53,7 @@ export const HorizontalHomeCard = (props: HorizontalHomeCard) => {
       borderRadius={'md'}
       bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},${bgOpacity ?? '0.45'}) 0%)`}
       {...props.style}
-      sx={props.sx}
+      css={props.css ?? props.sx}
     >
       <Flex
         w="100%"
@@ -77,15 +80,14 @@ export const HorizontalHomeCard = (props: HorizontalHomeCard) => {
             {title && <Heading size={'lg'}>{title}</Heading>}
             <Flex flex={1} justifyContent={'flex-end'}>
               {viewAllLink && (
-                <Button
-                  as={MainLink}
-                  href={viewAllLink}
-                  variant={'ghost'}
-                  size={'sm'}
-                  trackEvent={utm_content}
-                  trackEventLabel={utm_content ? 'view-all' : undefined}
-                >
-                  {viewAllText ? viewAllText : t('General.view-all')}
+                <Button asChild variant={'ghost'} size={'sm'}>
+                  <MainLink
+                    href={viewAllLink}
+                    trackEvent={utm_content}
+                    trackEventLabel={utm_content ? 'view-all' : undefined}
+                  >
+                    {viewAllText ? viewAllText : t('General.view-all')}
+                  </MainLink>
                 </Button>
               )}
             </Flex>
@@ -110,7 +112,7 @@ export const FFHomeCard = ({ children }: { children: React.ReactNode }) => {
       isSmall
       utm_content="ff-lists"
       viewAllText={t('HomePage.more-guides-and-tools')}
-      sx={{
+      css={{
         position: 'relative',
         isolation: 'isolate',
         overflow: 'hidden',
@@ -157,7 +159,7 @@ export const HalloweenHomeCard = ({ children }: { children: React.ReactNode }) =
       isSmall
       utm_content="halloween-lists"
       // viewAllText={t('HomePage.more-guides-and-tools')}
-      sx={{
+      css={{
         position: 'relative',
         isolation: 'isolate',
         overflow: 'hidden',
@@ -204,7 +206,7 @@ export const WinterStarlightCard = ({ children }: { children: React.ReactNode })
       isSmall
       utm_content="winter-lists"
       viewAllText={t('HomePage.more-guides-and-tools')}
-      sx={{
+      css={{
         position: 'relative',
         isolation: 'isolate',
         overflow: 'hidden',
@@ -251,7 +253,7 @@ export const NeopiesCard = ({ children }: { children: React.ReactNode }) => {
       isSmall
       utm_content="neopies-lists"
       viewAllText={t('General.view-all')}
-      sx={{
+      css={{
         position: 'relative',
         isolation: 'isolate',
         overflow: 'hidden',

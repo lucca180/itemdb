@@ -6,14 +6,14 @@ import {
   HStack,
   IconButton,
   Image,
-  Select,
+  NativeSelect,
   Skeleton,
   Text,
   useDisclosure,
   useMediaQuery,
-  useToast,
   Link,
 } from '@chakra-ui/react';
+import { useToast } from '@utils/toast';
 import React, { useEffect, useRef, useState } from 'react';
 import Layout from '../components/Layout';
 import ItemCard from '../components/Items/ItemCard';
@@ -89,8 +89,8 @@ const SearchPage = (props: SearchPageProps) => {
   const [filters, setFilters] = useState<SearchFiltersType>(defaultFilters);
   const [searchStatus, setStatus] = useState<SearchStats | null>(null);
   const prevFilter = useRef<SearchFiltersType>(null);
-  const [isLargerThanLG] = useMediaQuery('(min-width: 62em)', { fallback: true });
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isLargerThanLG] = useMediaQuery(['(min-width: 62em)'], { fallback: [true] });
+  const { open, onOpen, onClose } = useDisclosure();
 
   const parseQueryString = () => {
     const queryStrings = queryString.parse(router.asPath.split('?')[1] || '', {
@@ -328,9 +328,9 @@ const SearchPage = (props: SearchPageProps) => {
       }}
       mainColor="#4A5568c7"
     >
-      {isOpen && (
+      {open && (
         <SearchFilterModal
-          isOpen={isOpen}
+          isOpen={open}
           onClose={onClose}
           filters={filters}
           stats={searchStatus}
@@ -352,7 +352,7 @@ const SearchPage = (props: SearchPageProps) => {
         textAlign={'center'}
       >
         <HStack justifyContent={'space-between'}>
-          <Flex textColor={'gray.300'} fontSize={{ base: 'xs', sm: 'sm' }} gap={3}>
+          <Flex color={'gray.300'} fontSize={{ base: 'xs', sm: 'sm' }} gap={3}>
             {totalResults !== null && searchResult && (
               <SelectItemsCheckbox
                 checked={selectedItems}
@@ -392,9 +392,10 @@ const SearchPage = (props: SearchPageProps) => {
                 <IconButton
                   aria-label="search filters"
                   onClick={onOpen}
-                  icon={<BsFilter />}
                   display={{ base: 'inherit', lg: 'none' }}
-                />
+                >
+                  <BsFilter />
+                </IconButton>
               </HStack>
             )}
           </Box>
@@ -408,53 +409,53 @@ const SearchPage = (props: SearchPageProps) => {
           gap={2}
           alignItems="center"
         >
-          <Text flex="0 0 auto" textColor={'gray.300'} fontSize={{ base: 'xs', sm: 'sm' }}>
+          <Text flex="0 0 auto" color={'gray.300'} fontSize={{ base: 'xs', sm: 'sm' }}>
             {t('General.sort-by')}
           </Text>
           <HStack gap={2} flex="0 1 auto">
-            <Select
-              name="sortBy"
-              variant="filled"
-              value={filters.sortBy}
-              onChange={handleSelectChange}
-              size="sm"
-              fontSize={['xs', 'sm']}
-              isDisabled={!searchResult}
-            >
-              <option value="name">{t('General.name')}</option>
-              <option value="price">{t('General.price')}</option>
-              <option value="ncValue">{t('ItemPage.nc-value')}</option>
-              <option value="rarity">{t('General.rarity')}</option>
-              <option value="color">{t('General.color')}</option>
-              <option value="weight">{t('General.weight')}</option>
-              <option value="estVal">{t('General.est-val')}</option>
-              <option value="id">{t('General.id')}</option>
-            </Select>
-            <Select
-              name="sortDir"
-              variant="filled"
-              value={filters.sortDir}
-              onChange={handleSelectChange}
-              size="sm"
-              fontSize={['xs', 'sm']}
-              isDisabled={!searchResult}
-            >
-              <option value="asc">{t('General.ascending')}</option>
-              <option value="desc">{t('General.descending')}</option>
-            </Select>
-            <Select
-              name="limit"
-              variant="filled"
-              value={filters.limit}
-              onChange={handleSelectChange}
-              size="sm"
-              fontSize={['xs', 'sm']}
-              isDisabled={!searchResult}
-            >
-              <option value="30">{t('General.x-per-page', { x: 30 })}</option>
-              <option value="48">{t('General.x-per-page', { x: 48 })}</option>
-              <option value="96">{t('General.x-per-page', { x: 96 })}</option>
-            </Select>
+            <NativeSelect.Root variant="subtle" size="sm" disabled={!searchResult} minW="110px">
+              <NativeSelect.Field
+                name="sortBy"
+                value={filters.sortBy}
+                onChange={handleSelectChange}
+                fontSize={['xs', 'sm']}
+              >
+                <option value="name">{t('General.name')}</option>
+                <option value="price">{t('General.price')}</option>
+                <option value="ncValue">{t('ItemPage.nc-value')}</option>
+                <option value="rarity">{t('General.rarity')}</option>
+                <option value="color">{t('General.color')}</option>
+                <option value="weight">{t('General.weight')}</option>
+                <option value="estVal">{t('General.est-val')}</option>
+                <option value="id">{t('General.id')}</option>
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
+            <NativeSelect.Root variant="subtle" size="sm" disabled={!searchResult} minW="110px">
+              <NativeSelect.Field
+                name="sortDir"
+                value={filters.sortDir}
+                onChange={handleSelectChange}
+                fontSize={['xs', 'sm']}
+              >
+                <option value="asc">{t('General.ascending')}</option>
+                <option value="desc">{t('General.descending')}</option>
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
+            <NativeSelect.Root variant="subtle" size="sm" disabled={!searchResult} minW="110px">
+              <NativeSelect.Field
+                name="limit"
+                value={String(filters.limit)}
+                onChange={handleSelectChange}
+                fontSize={['xs', 'sm']}
+              >
+                <option value="30">{t('General.x-per-page', { x: 30 })}</option>
+                <option value="48">{t('General.x-per-page', { x: 48 })}</option>
+                <option value="96">{t('General.x-per-page', { x: 96 })}</option>
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
           </HStack>
         </Flex>
       </Flex>
@@ -665,7 +666,7 @@ const SpecialListSearch = (props: { userList: UserList }) => {
         fontSize="sm"
         as="div"
         color="whiteAlpha.700"
-        sx={{ a: { color: 'whiteAlpha.800', fontWeight: 'bold' } }}
+        css={{ a: { color: 'whiteAlpha.800', fontWeight: 'bold' } }}
       >
         {props.userList.description && <Markdown>{props.userList.description}</Markdown>}
       </Text>

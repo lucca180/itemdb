@@ -1,31 +1,28 @@
 import {
   Badge,
+  Alert,
   Box,
   Button,
   Center,
+  Field,
   Flex,
-  FormControl,
-  FormHelperText,
   HStack,
   Icon,
   IconButton,
+  Link,
   Text,
   useDisclosure,
-  Link,
-  Alert,
-  AlertIcon,
-  AlertDescription,
 } from '@chakra-ui/react';
-import { TradeData } from '../../types';
-import CardBase from '../Card/CardBase';
+import { TradeData } from '@types';
+import CardBase from '@components/Card/CardBase';
 import Image from 'next/image';
-import CustomNumberInput from '../Input/CustomNumber';
+import CustomNumberInput from '@components/Input/CustomNumber';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { BsArrowLeft, BsArrowLeftRight, BsCheck2 } from 'react-icons/bs';
 import { useFormatter, useTranslations } from 'next-intl';
-import { FeedbackExperimentsModalProps } from '../Modal/FeedbackExperimentsModal';
+import { FeedbackExperimentsModalProps } from '@components/Modal/FeedbackExperimentsModal';
 import { AiOutlineExperiment } from 'react-icons/ai';
-import { useAuth } from '../../utils/auth';
+import { useAuth } from '@utils/auth';
 import dynamic from 'next/dynamic';
 // import { FaCalculator } from 'react-icons/fa';
 // import { TradeCalculatorModalProps } from './TradeCalculatorModal';
@@ -52,7 +49,7 @@ type Props = {
 type TradeItems = TradeData['items'][0];
 
 const FeedbackTrade = (props: Props) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
   const { userPref } = useAuth();
   const t = useTranslations();
   const format = useFormatter();
@@ -109,43 +106,26 @@ const FeedbackTrade = (props: Props) => {
 
   return (
     <>
-      <FeedbackExperimentsModal isOpen={isOpen} onClose={onClose} />
+      <FeedbackExperimentsModal isOpen={open} onClose={onClose} />
       <Flex flexFlow={{ base: 'column-reverse', md: 'column' }} gap={4}>
         <Flex alignItems="center">
           <HStack gap={4} flex="1" justifyContent="center">
-            <Button
-              leftIcon={<Icon as={BsArrowLeft} />}
-              colorScheme="gray"
-              variant="solid"
-              isDisabled={!hasUndo}
-              onClick={handleUndo}
-            >
+            <Button colorPalette="gray" variant="solid" disabled={!hasUndo} onClick={handleUndo}>
+              <Icon as={BsArrowLeft} mr={2} />
               {t('General.back')}
             </Button>
-            <Button
-              leftIcon={<Icon as={BsArrowLeftRight} />}
-              colorScheme="gray"
-              variant="outline"
-              onClick={() => handleSkip?.()}
-            >
+            <Button colorPalette="gray" variant="outline" onClick={() => handleSkip?.()}>
+              <Icon as={BsArrowLeftRight} mr={2} />
               {t('General.skip')}
             </Button>
-            <Button
-              leftIcon={<Icon as={BsCheck2} />}
-              colorScheme="green"
-              variant="solid"
-              mr={2}
-              onClick={doSubmit}
-            >
+            <Button colorPalette="green" variant="solid" mr={2} onClick={doSubmit}>
+              <Icon as={BsCheck2} mr={2} />
               {t('General.submit')}
             </Button>
           </HStack>
-          <IconButton
-            aria-label="experiments"
-            icon={<AiOutlineExperiment />}
-            size="sm"
-            onClick={onOpen}
-          />
+          <IconButton aria-label="experiments" size="sm" onClick={onOpen}>
+            <AiOutlineExperiment />
+          </IconButton>
         </Flex>
         <CardBase
           chakraWrapper={{ flex: 1, id: 'tradeCard' }}
@@ -154,9 +134,9 @@ const FeedbackTrade = (props: Props) => {
         >
           <Center gap={1}>
             {isAllEqual && trade && itemCount > 1 && (
-              <Badge colorScheme="yellow">{t('Feedback.all-equal')}</Badge>
+              <Badge colorPalette="yellow">{t('Feedback.all-equal')}</Badge>
             )}
-            <Badge colorScheme="blue">{t('Feedback.x-items', { x: itemCount })}</Badge>
+            <Badge colorPalette="blue">{t('Feedback.x-items', { x: itemCount })}</Badge>
           </Center>
           <Flex flexFlow="column" gap={6}>
             <Sticky
@@ -177,26 +157,22 @@ const FeedbackTrade = (props: Props) => {
                 <Text>{trade?.wishlist}</Text>
                 {!!trade?.instantBuy && (
                   <Text mb={2}>
-                    <Badge colorScheme="orange">
+                    <Badge colorPalette="orange">
                       Instant Buy - {format.number(trade.instantBuy)} NP
                     </Badge>
                   </Text>
                 )}
                 {trade?.wishlist.includes('Cool Negg') && (
-                  <Alert
-                    status="error"
-                    variant="left-accent"
-                    borderRadius="md"
-                    mt={1}
-                    textAlign={'left'}
-                  >
-                    <AlertIcon />
-                    <AlertDescription fontSize={'xs'}>
-                      {t.rich('Feedback.cool-negg-alert', {
-                        b: (children) => <b>{children}</b>,
-                      })}
-                    </AlertDescription>
-                  </Alert>
+                  <Alert.Root status="error" variant="outline" borderRadius="md" mt={1}>
+                    <Alert.Indicator />
+                    <Alert.Content textAlign="left">
+                      <Alert.Description fontSize="xs">
+                        {t.rich('Feedback.cool-negg-alert', {
+                          b: (children) => <b>{children}</b>,
+                        })}
+                      </Alert.Description>
+                    </Alert.Content>
+                  </Alert.Root>
                 )}
               </Flex>
             </Sticky>
@@ -306,17 +282,18 @@ const ItemTrade = (props: ItemTradeProps) => {
             wordBreak={'break-word'}
             whiteSpace={'pre-line'}
             fontSize="sm"
-            isExternal
+            target="_blank"
+            rel="noreferrer"
             tabIndex={-1}
           >
             {item.amount > 1 && (
-              <Badge colorScheme="yellow" mr={1} textTransform={'none'}>
+              <Badge colorPalette="yellow" mr={1} textTransform={'none'}>
                 {item.amount}x
               </Badge>
             )}
             {item.name}
           </Link>
-          <FormControl>
+          <Field.Root>
             <HStack>
               <CustomNumberInput
                 skipDebounce
@@ -344,7 +321,7 @@ const ItemTrade = (props: ItemTradeProps) => {
                 aria-label="Calculator"
               /> */}
             </HStack>
-            <FormHelperText fontSize="xs">
+            <Field.HelperText fontSize="xs">
               {item.amount > 1 && (
                 <>
                   {t.rich('Feedback.multiple-amount-msg', {
@@ -354,8 +331,8 @@ const ItemTrade = (props: ItemTradeProps) => {
                 </>
               )}
               {t('Feedback.leave-empty-if-price-is-not-specified')}
-            </FormHelperText>
-          </FormControl>
+            </Field.HelperText>
+          </Field.Root>
         </Flex>
       </Flex>
     </>

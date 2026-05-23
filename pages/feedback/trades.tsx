@@ -1,9 +1,6 @@
-import { ExternalLinkIcon } from '@chakra-ui/icons';
+import { ExternalLinkIcon } from '@utils/chakraIcons';
 import {
   Alert,
-  AlertDescription,
-  AlertIcon,
-  AlertTitle,
   Box,
   Button,
   Center,
@@ -13,8 +10,6 @@ import {
   Kbd,
   Link,
   List,
-  ListIcon,
-  ListItem,
   Spinner,
   Text,
 } from '@chakra-ui/react';
@@ -181,7 +176,7 @@ const FeedbackSuggest = (props: { shouldShowReminder: boolean }) => {
         <Heading as="h1" size="lg">
           {t('Feedback.the-feedback-system')}
         </Heading>
-        <Text size={{ base: 'sm', md: undefined }}>
+        <Text fontSize={{ base: 'sm', md: undefined }}>
           {t('Feedback.feedback-system-description')}
         </Text>
       </HeaderCard>
@@ -272,11 +267,11 @@ export const TradeGuidelines = () => {
           b: (chunk) => <b>{chunk}</b>,
         })}
       </Text>
-      <Alert my={6} variant="left-accent" borderRadius={'md'}>
-        <AlertIcon />
-        <Box w="100%">
-          <AlertTitle>{t('Feedback.20-12-2025-new-baby-paint-brush-policy')}</AlertTitle>
-          <AlertDescription fontSize="xs">
+      <Alert.Root my={6} variant="subtle" borderRadius={'md'}>
+        <Alert.Indicator />
+        <Alert.Content w="100%">
+          <Alert.Title>{t('Feedback.20-12-2025-new-baby-paint-brush-policy')}</Alert.Title>
+          <Alert.Description fontSize="xs">
             <Text mb={2}>
               {t.rich('Feedback.new-policy-2025-1', {
                 b: (chunk) => <b>{chunk}</b>,
@@ -287,16 +282,18 @@ export const TradeGuidelines = () => {
                 b: (chunk) => <b>{chunk}</b>,
               })}
             </Text>
-          </AlertDescription>
-        </Box>
-      </Alert>
+          </Alert.Description>
+        </Alert.Content>
+      </Alert.Root>
       <Heading size="md" mt={6} color="red.300">
         <Icon as={BsXLg} verticalAlign="middle" /> {t('Feedback.donts')}
       </Heading>
       <Text>{t('Feedback.pt-2')}</Text>
-      <List mt={3} spacing={3}>
-        <ListItem>
-          <ListIcon as={BsXCircleFill} color="red.300" />
+      <List.Root mt={3} gap={3}>
+        <List.Item>
+          <List.Indicator asChild color="red.300">
+            <BsXCircleFill />
+          </List.Indicator>
           {t('Feedback.pt-3')}
           <br />
           <Text fontSize="xs" color="gray.400">
@@ -305,17 +302,21 @@ export const TradeGuidelines = () => {
           <Text fontSize="xs" color="gray.400">
             {t('Feedback.pt-5')}
           </Text>
-        </ListItem>
-        <ListItem>
-          <ListIcon as={BsXCircleFill} color="red.300" />
+        </List.Item>
+        <List.Item>
+          <List.Indicator asChild color="red.300">
+            <BsXCircleFill />
+          </List.Indicator>
           {t('Feedback.pt-6')}
           <br />
           <Text fontSize="xs" color="gray.400">
             {t('Feedback.pt-7')}
           </Text>
-        </ListItem>
-        <ListItem>
-          <ListIcon as={BsXCircleFill} color="red.300" />
+        </List.Item>
+        <List.Item>
+          <List.Indicator asChild color="red.300">
+            <BsXCircleFill />
+          </List.Indicator>
           {t('Feedback.pt-8')}
           <br />
           <Text fontSize="xs" color="gray.400">
@@ -324,22 +325,26 @@ export const TradeGuidelines = () => {
           <Text fontSize="xs" color="gray.400">
             {t('Feedback.pt-10')}
           </Text>
-        </ListItem>
-        <ListItem>
-          <ListIcon as={BsXCircleFill} color="red.300" />
+        </List.Item>
+        <List.Item>
+          <List.Indicator asChild color="red.300">
+            <BsXCircleFill />
+          </List.Indicator>
           {t('Feedback.pt-11')}
           <br />
           <Text fontSize="xs" color="gray.400">
             {t('Feedback.pt-12')}{' '}
           </Text>
-        </ListItem>
-      </List>
+        </List.Item>
+      </List.Root>
       <Heading size="md" mt={6} color="green.300">
         <Icon as={BsCheckLg} verticalAlign="middle" /> {t('Feedback.dos')}
       </Heading>
-      <List mt={3} spacing={3}>
-        <ListItem>
-          <ListIcon as={BsCheckCircleFill} color="green.300" />
+      <List.Root mt={3} gap={3}>
+        <List.Item>
+          <List.Indicator asChild color="green.300">
+            <BsCheckCircleFill />
+          </List.Indicator>
           {t('Feedback.pt-13')}
           <br />
           <Text fontSize="xs" color="gray.400">
@@ -348,26 +353,32 @@ export const TradeGuidelines = () => {
           <Text fontSize="xs" color="gray.400">
             {t('Feedback.pt-15')}
           </Text>
-        </ListItem>
-        <ListItem>
-          <ListIcon as={BsCheckCircleFill} color="green.300" />
+        </List.Item>
+        <List.Item>
+          <List.Indicator asChild color="green.300">
+            <BsCheckCircleFill />
+          </List.Indicator>
           {t('Feedback.pt-16')}
           <br />
-        </ListItem>
-        <ListItem>
-          <ListIcon as={BsCheckCircleFill} color="green.300" />
+        </List.Item>
+        <List.Item>
+          <List.Indicator asChild color="green.300">
+            <BsCheckCircleFill />
+          </List.Indicator>
           {t('Feedback.pt-17')}
           <br />
           <Text fontSize="xs" color="gray.400">
             {t('Feedback.pt-18')}
           </Text>
-        </ListItem>
-        <ListItem>
-          <ListIcon as={BsCheckCircleFill} color="green.300" />
+        </List.Item>
+        <List.Item>
+          <List.Indicator asChild color="green.300">
+            <BsCheckCircleFill />
+          </List.Indicator>
           {t('Feedback.pt-19')}
           <br />
-        </ListItem>
-      </List>
+        </List.Item>
+      </List.Root>
     </Box>
   );
 };

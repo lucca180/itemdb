@@ -1,15 +1,29 @@
 /* eslint-disable react-hooks/preserve-manual-memoization */
-import { NumberInput, NumberInputField } from '@chakra-ui/react';
+import { NumberInput } from '@chakra-ui/react';
 import { useEffect, useMemo, useState } from 'react';
 import debounce from 'lodash/debounce';
 
 const intl = new Intl.NumberFormat('en-US', { style: 'decimal' });
 
+type CustomNumberRootProps = Omit<
+  React.ComponentProps<typeof NumberInput.Root>,
+  'disabled' | 'variant'
+> & {
+  disabled?: boolean;
+  isDisabled?: boolean;
+  placeholder?: string;
+  variant?: 'outline' | 'subtle' | 'flushed' | 'filled';
+};
+
+type CustomNumberInputProps = Omit<React.ComponentProps<typeof NumberInput.Input>, 'variant'> & {
+  variant?: string;
+};
+
 type Props = {
   value?: string;
   onChange?: (newValue: string) => void;
-  inputProps?: React.ComponentProps<typeof NumberInputField>;
-  wrapperProps?: React.ComponentProps<typeof NumberInput>;
+  inputProps?: CustomNumberInputProps;
+  wrapperProps?: CustomNumberRootProps;
   skipDebounce?: boolean;
 };
 
@@ -46,19 +60,30 @@ const CustomNumberInput = (props: Props) => {
     else props.onChange?.(parsedVal);
   };
 
+  const {
+    disabled,
+    isDisabled,
+    placeholder: _placeholder,
+    variant,
+    ...wrapperProps
+  } = props.wrapperProps ?? {};
+  const { variant: _inputVariant, ...inputProps } = props.inputProps ?? {};
+
   return (
-    <NumberInput
+    <NumberInput.Root
       min={0}
       step={1}
       size="sm"
-      onChange={onChange}
+      onValueChange={({ value: nextValue }) => onChange(nextValue)}
       value={format(value)}
-      variant="filled"
-      bg={'whiteAlpha.200'}
-      {...props.wrapperProps}
+      variant={variant === 'filled' ? 'subtle' : (variant ?? 'subtle')}
+      bg="whiteAlpha.200"
+      disabled={disabled ?? isDisabled}
+      {...wrapperProps}
     >
-      <NumberInputField paddingEnd={1} paddingStart={1} textAlign="center" {...props.inputProps} />
-    </NumberInput>
+      <NumberInput.Control />
+      <NumberInput.Input paddingEnd={1} paddingStart={1} textAlign="center" {...inputProps} />
+    </NumberInput.Root>
   );
 };
 

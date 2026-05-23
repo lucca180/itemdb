@@ -4,10 +4,6 @@ import {
   HStack,
   IconButton,
   Stat,
-  StatArrow,
-  StatHelpText,
-  StatLabel,
-  StatNumber,
   Text,
   Center,
   SkeletonText,
@@ -15,19 +11,16 @@ import {
   Button,
   Badge,
   Alert,
-  AlertDescription,
-  AlertIcon,
-  AlertTitle,
   CloseButton,
-  useToast,
   Box,
   ButtonGroup,
 } from '@chakra-ui/react';
+import { useToast } from '@utils/toast';
 import { useEffect, useMemo, useState } from 'react';
 import { ItemData, ItemLastSeen, PriceData, PricingInfo, UserList } from '../../types';
 import { ChartComponentProps } from '../Charts/PriceChart';
 import PriceTable from './PriceTable';
-import { MinusIcon } from '@chakra-ui/icons';
+import { MinusIcon } from '@utils/chakraIcons';
 import CardBase from '../Card/CardBase';
 import { MdHelp, MdMoneyOff, MdOutlineAdd } from 'react-icons/md';
 import dynamic from 'next/dynamic';
@@ -221,25 +214,25 @@ const ItemPriceCard = (props: Props) => {
           item={item}
         />
       )}
-      {adminCreatePrice.isOpen && (
+      {adminCreatePrice.open && (
         <CreatePriceModal isOpen={true} onClose={adminCreatePrice.onClose} item={item} />
       )}
-      {lastSeenModal.isOpen && (
-        <LastSeenModal isOpen={lastSeenModal.isOpen} onClose={lastSeenModal.onClose} />
+      {lastSeenModal.open && (
+        <LastSeenModal isOpen={lastSeenModal.open} onClose={lastSeenModal.onClose} />
       )}
-      {wrongPriceModal.isOpen && (
+      {wrongPriceModal.open && (
         <WrongPriceModal
           item={item}
           data={priceStatus}
           isLoading={isPriceStatusLoading}
-          isOpen={wrongPriceModal.isOpen}
+          isOpen={wrongPriceModal.open}
           onClose={wrongPriceModal.onClose}
         />
       )}
-      {saleStatusModal.isOpen && item.saleStatus && (
+      {saleStatusModal.open && item.saleStatus && (
         <SaleStatusModal
           item_iid={item.internal_id}
-          isOpen={saleStatusModal.isOpen}
+          isOpen={saleStatusModal.open}
           onClose={saleStatusModal.onClose}
           saleStatus={item.saleStatus}
         />
@@ -266,10 +259,10 @@ const ItemPriceCard = (props: Props) => {
               mb={1.5}
               overflow={'auto'}
             >
-              <ButtonGroup size="sm" isAttached variant="outline">
+              <ButtonGroup size="sm" attached variant="outline">
                 <Button
-                  colorScheme={displayState === 'table' ? 'green' : ''}
-                  isActive={displayState === 'table'}
+                  colorPalette={displayState === 'table' ? 'green' : ''}
+                  data-active={displayState === 'table' ? true : undefined}
                   onClick={() => setDisplay('table')}
                   data-umami-event="price-card-buttons"
                   data-umami-event-label={'table'}
@@ -279,8 +272,8 @@ const ItemPriceCard = (props: Props) => {
 
                 {shouldShowLists && (
                   <Button
-                    colorScheme={displayState === 'trading' ? 'blue' : ''}
-                    isActive={displayState === 'trading'}
+                    colorPalette={displayState === 'trading' ? 'blue' : ''}
+                    data-active={displayState === 'trading' ? true : undefined}
                     onClick={() => setDisplay('trading')}
                     data-umami-event="price-card-buttons"
                     data-umami-event-label={'trading'}
@@ -290,8 +283,8 @@ const ItemPriceCard = (props: Props) => {
                 )}
                 {shouldShowLists && (
                   <Button
-                    colorScheme={displayState === 'seeking' ? 'purple' : ''}
-                    isActive={displayState === 'seeking'}
+                    colorPalette={displayState === 'seeking' ? 'purple' : ''}
+                    data-active={displayState === 'seeking' ? true : undefined}
                     onClick={() => setDisplay('seeking')}
                     data-umami-event="price-card-buttons"
                     data-umami-event-label={'seeking'}
@@ -300,8 +293,8 @@ const ItemPriceCard = (props: Props) => {
                   </Button>
                 )}
                 <Button
-                  colorScheme={displayState === 'chart' ? 'yellow' : ''}
-                  isActive={displayState === 'chart'}
+                  colorPalette={displayState === 'chart' ? 'yellow' : ''}
+                  data-active={displayState === 'chart' ? true : undefined}
                   onClick={() => setDisplay('chart')}
                   data-umami-event="price-card-buttons"
                   data-umami-event-label={'chart'}
@@ -321,55 +314,58 @@ const ItemPriceCard = (props: Props) => {
               {item.saleStatus && (
                 <>
                   {item.saleStatus.status === 'ets' && (
-                    <Badge onClick={saleStatusModal.onOpen} colorScheme="green" cursor={'pointer'}>
+                    <Badge onClick={saleStatusModal.onOpen} colorPalette="green" cursor={'pointer'}>
                       Easy to Sell <Icon verticalAlign={'middle'} boxSize={'14px'} as={MdHelp} />
                     </Badge>
                   )}
                   {item.saleStatus.status === 'hts' && (
-                    <Badge onClick={saleStatusModal.onOpen} colorScheme="red" cursor={'pointer'}>
+                    <Badge onClick={saleStatusModal.onOpen} colorPalette="red" cursor={'pointer'}>
                       Hard to Sell <Icon verticalAlign={'middle'} boxSize={'14px'} as={MdHelp} />
                     </Badge>
                   )}
                   {item.saleStatus.status === 'regular' && (
-                    <Badge onClick={saleStatusModal.onOpen} colorScheme="gray" cursor={'pointer'}>
+                    <Badge onClick={saleStatusModal.onOpen} colorPalette="gray" cursor={'pointer'}>
                       Regular <Icon verticalAlign={'middle'} boxSize={'14px'} as={MdHelp} />
                     </Badge>
                   )}
                 </>
               )}
-              <Stat flex="initial" textAlign="center" minW="20%">
+              <Stat.Root flex="initial" textAlign="center" minW="20%">
                 {price?.inflated && (
                   <Text fontWeight="bold" color="red.300">
                     {t('General.inflation')}
                   </Text>
                 )}
                 {price?.value && (
-                  <StatNumber whiteSpace={'nowrap'}>{format.number(price.value)} NP</StatNumber>
+                  <Stat.ValueText whiteSpace={'nowrap'}>
+                    {format.number(price.value)} NP
+                  </Stat.ValueText>
                 )}
-                {!price?.value && <StatNumber>??? NP</StatNumber>}
+                {!price?.value && <Stat.ValueText>??? NP</Stat.ValueText>}
                 {price?.addedAt && (
-                  <StatLabel>
+                  <Stat.Label>
                     {format.dateTime(new Date(price.addedAt), {
                       year: 'numeric',
                       month: 'short',
                       day: 'numeric',
                     })}
-                  </StatLabel>
+                  </Stat.Label>
                 )}
-                {!price?.addedAt && <StatHelpText>{t('ItemPage.no-info')}</StatHelpText>}
+                {!price?.addedAt && <Stat.HelpText>{t('ItemPage.no-info')}</Stat.HelpText>}
                 {priceDiff !== null && (
-                  <StatHelpText>
-                    {!!priceDiff && <StatArrow type={priceDiff > 0 ? 'increase' : 'decrease'} />}
+                  <Stat.HelpText>
+                    {!!priceDiff && priceDiff > 0 && <Stat.UpIndicator />}
+                    {!!priceDiff && priceDiff < 0 && <Stat.DownIndicator />}
                     {priceDiff === 0 && <MinusIcon mr={1} boxSize="16px" />}
                     {format.number(priceDiff)} NP
-                  </StatHelpText>
+                  </Stat.HelpText>
                 )}
-              </Stat>
+              </Stat.Root>
               {price?.value && (
                 <Button
                   size="xs"
                   onClick={wrongPriceModal.onOpen}
-                  colorScheme="red"
+                  colorPalette="red"
                   variant={'ghost'}
                   data-umami-event="wrong-price-button"
                 >
@@ -378,20 +374,14 @@ const ItemPriceCard = (props: Props) => {
               )}
               <HStack mt={2} gap={2}>
                 {user?.isAdmin && (
-                  <IconButton
-                    onClick={adminCreatePrice.onOpen}
-                    size="xs"
-                    aria-label="Table"
-                    icon={<MdOutlineAdd />}
-                  />
+                  <IconButton onClick={adminCreatePrice.onOpen} size="xs" aria-label="Table">
+                    <MdOutlineAdd />
+                  </IconButton>
                 )}
                 {user?.isAdmin && (
-                  <IconButton
-                    onClick={forceUpdatePrices}
-                    size="xs"
-                    aria-label="Table"
-                    icon={<LuAtom />}
-                  />
+                  <IconButton onClick={forceUpdatePrices} size="xs" aria-label="Table">
+                    <LuAtom />
+                  </IconButton>
                 )}
               </HStack>
             </Flex>
@@ -457,7 +447,6 @@ const ItemPriceCard = (props: Props) => {
             <LastSeenCard
               type="auction"
               lastSeen={lastSeen?.auction}
-              data-umami-event="copy-link"
               isLoading={!lastSeen}
               onClick={() => setSeenHistory('auction')}
             />
@@ -491,50 +480,52 @@ const HelpNeeded = (props: HelpNeededProps) => {
   if (hideHelp) return null;
 
   return (
-    <Alert status="warning" flexFlow="column" borderRadius={'md'}>
-      <AlertIcon />
-      <AlertTitle>{t('Feedback.we-need-your-help')}</AlertTitle>
-      <AlertDescription
-        textAlign={'center'}
-        display={'flex'}
-        flexFlow="column"
-        gap={3}
-        fontSize={'sm'}
-      >
-        {t('Feedback.price-update-txt')}
-        <HStack justifyContent={'center'}>
-          {!!helpData.needPricing && (
-            <Button
-              as={Link}
-              href={`/feedback/trades?target=${item.name}`}
-              prefetch={false}
-              target="_blank"
-              size="sm"
-              data-umami-event="help-needed"
-              data-umami-event-label="price-trades"
-            >
-              {t('Feedback.price-x-trade-lots', {
-                x: helpData.needPricing,
-              })}
-            </Button>
-          )}
-          {!!helpData.needVoting && (
-            <Button
-              as={Link}
-              href={`/feedback/vote?target=${item.name}`}
-              prefetch={false}
-              target="_blank"
-              size="sm"
-              data-umami-event="help-needed"
-              data-umami-event-label="vote-suggestions"
-            >
-              {t('Feedback.vote-x-suggestions', {
-                x: helpData.needVoting,
-              })}
-            </Button>
-          )}
-        </HStack>
-      </AlertDescription>
+    <Alert.Root status="warning" flexFlow="column" borderRadius={'md'}>
+      <Alert.Indicator />
+      <Alert.Content>
+        <Alert.Title>{t('Feedback.we-need-your-help')}</Alert.Title>
+        <Alert.Description
+          textAlign={'center'}
+          display={'flex'}
+          flexFlow="column"
+          gap={3}
+          fontSize={'sm'}
+        >
+          {t('Feedback.price-update-txt')}
+          <HStack justifyContent={'center'}>
+            {!!helpData.needPricing && (
+              <Button asChild size="sm">
+                <Link
+                  href={`/feedback/trades?target=${item.name}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  data-umami-event="help-needed"
+                  data-umami-event-label="price-trades"
+                >
+                  {t('Feedback.price-x-trade-lots', {
+                    x: helpData.needPricing,
+                  })}
+                </Link>
+              </Button>
+            )}
+            {!!helpData.needVoting && (
+              <Button asChild size="sm">
+                <Link
+                  href={`/feedback/vote?target=${item.name}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  data-umami-event="help-needed"
+                  data-umami-event-label="vote-suggestions"
+                >
+                  {t('Feedback.vote-x-suggestions', {
+                    x: helpData.needVoting,
+                  })}
+                </Link>
+              </Button>
+            )}
+          </HStack>
+        </Alert.Description>
+      </Alert.Content>
       <CloseButton
         alignSelf="flex-start"
         position="absolute"
@@ -542,7 +533,7 @@ const HelpNeeded = (props: HelpNeededProps) => {
         top={0}
         onClick={() => setHideHelp(true)}
       />
-    </Alert>
+    </Alert.Root>
   );
 };
 
@@ -612,7 +603,7 @@ const LastSeenCard = (props: LastSeenCardProps) => {
         {lastSeen && format.relativeTime(new Date(lastSeen))}
         {!lastSeen && !isLoading && !doesNotRestock && !isAlways && t('General.never')}
         {!lastSeen && !isLoading && !doesNotRestock && isAlways && t('General.always')}
-        {isLoading && <SkeletonText mt={1} skeletonHeight="3" noOfLines={1} />}
+        {isLoading && <SkeletonText noOfLines={1} />}
         {!lastSeen &&
           !isLoading &&
           type === 'restock' &&

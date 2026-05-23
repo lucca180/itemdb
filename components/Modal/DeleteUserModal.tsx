@@ -1,15 +1,5 @@
-import {
-  AlertDialog,
-  AlertDialogOverlay,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogBody,
-  AlertDialogFooter,
-  Button,
-  Text,
-  Input,
-  useToast,
-} from '@chakra-ui/react';
+import { Button, Text, Input, Dialog, CloseButton, Portal } from '@chakra-ui/react';
+import { useToast } from '@utils/toast';
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import axios from 'axios';
@@ -24,7 +14,6 @@ const DeleteUserModal = (props: Props) => {
   const t = useTranslations();
   const toast = useToast();
   const { isOpen, onClose } = props;
-  const cancelRef = React.useRef(null);
   const [email, setEmail] = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const { resetUser } = useAuth();
@@ -54,51 +43,59 @@ const DeleteUserModal = (props: Props) => {
   };
 
   return (
-    <AlertDialog
-      isOpen={isOpen}
-      leastDestructiveRef={cancelRef as any}
-      onClose={onClose}
-      isCentered
+    <Dialog.Root
+      role="alertdialog"
+      open={isOpen}
+      onOpenChange={({ open }) => {
+        if (!open && !loading) onClose();
+      }}
+      placement="center"
       size="xl"
     >
-      <AlertDialogOverlay>
-        <AlertDialogContent>
-          <AlertDialogHeader fontSize="lg" fontWeight="bold">
-            Delete Account - Are you sure?
-          </AlertDialogHeader>
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>
+              <Dialog.Title fontSize="lg" fontWeight="bold">
+                Delete Account - Are you sure?
+              </Dialog.Title>
+            </Dialog.Header>
+            <Dialog.CloseTrigger asChild>
+              <CloseButton size="sm" disabled={loading} />
+            </Dialog.CloseTrigger>
+            <Dialog.Body>
+              <Text>
+                All your account data - including lists, restock sessions etc. - will be permanently
+                deleted. This <b>CANNOT</b> be undone.
+              </Text>
 
-          <AlertDialogBody>
-            <Text>
-              All your account data - including lists, restock sessions etc. - will be permanently
-              deleted. This <b>CANNOT</b> be undone.
-            </Text>
-
-            <Input
-              mt={3}
-              variant={'filled'}
-              placeholder="Type your account email to confirm"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </AlertDialogBody>
-
-          <AlertDialogFooter>
-            <Button ref={cancelRef} onClick={onClose} isDisabled={loading}>
-              {t('General.cancel')}
-            </Button>
-            <Button
-              colorScheme="red"
-              onClick={onConfirm}
-              ml={3}
-              isDisabled={!email}
-              isLoading={loading}
-            >
-              {t('General.delete')}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialogOverlay>
-    </AlertDialog>
+              <Input
+                mt={3}
+                variant={'subtle'}
+                placeholder="Type your account email to confirm"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </Dialog.Body>
+            <Dialog.Footer>
+              <Button onClick={onClose} disabled={loading}>
+                {t('General.cancel')}
+              </Button>
+              <Button
+                colorPalette="red"
+                onClick={onConfirm}
+                ml={3}
+                disabled={!email}
+                loading={loading}
+              >
+                {t('General.delete')}
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

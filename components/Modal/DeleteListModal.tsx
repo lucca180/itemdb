@@ -1,16 +1,4 @@
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
-  Button,
-  Text,
-  Spinner,
-  Center,
-} from '@chakra-ui/react';
+import { Button, Text, Spinner, Center, Dialog, CloseButton, Portal } from '@chakra-ui/react';
 import axios from 'axios';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
@@ -27,7 +15,7 @@ export type DeleteListModalProps = {
 const DeleteListModal = (props: DeleteListModalProps) => {
   const t = useTranslations();
   const { isOpen, onClose, selectedLists: listsIds, refresh, username } = props;
-  const [isLoading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
   const { revalidate } = useLists();
 
@@ -60,45 +48,60 @@ const DeleteListModal = (props: DeleteListModalProps) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} isCentered scrollBehavior="inside">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader textTransform="capitalize">
-          {t('Lists.delete-length-lists', { lists: listsIds.length })}
-        </ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          {!isLoading && !error && (
-            <Text color="gray.300">
-              {t.rich('Lists.delete-lists-confirmation', {
-                b: (chunk) => <b>{chunk}</b>,
-                br: () => <br />,
-                lists: listsIds.length,
-              })}
-            </Text>
-          )}
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={({ open }) => {
+        if (!open) handleClose();
+      }}
+      placement="center"
+      scrollBehavior="inside"
+    >
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>
+              <Dialog.Title textTransform="capitalize">
+                {t('Lists.delete-length-lists', { lists: listsIds.length })}
+              </Dialog.Title>
+            </Dialog.Header>
+            <Dialog.CloseTrigger asChild>
+              <CloseButton size="sm" />
+            </Dialog.CloseTrigger>
+            <Dialog.Body>
+              {!loading && !error && (
+                <Text color="gray.300">
+                  {t.rich('Lists.delete-lists-confirmation', {
+                    b: (chunk) => <b>{chunk}</b>,
+                    br: () => <br />,
+                    lists: listsIds.length,
+                  })}
+                </Text>
+              )}
 
-          {error && (
-            <Text color="red.500">{t('General.an-error-occured-please-try-again-later')}</Text>
-          )}
-          {isLoading && (
-            <Center>
-              <Spinner />
-            </Center>
-          )}
-        </ModalBody>
-        <ModalFooter>
-          <Button variant="ghost" mr={3} onClick={handleClose}>
-            {t('General.cancel')}
-          </Button>
-          {!isLoading && !error && (
-            <Button onClick={confirmDelete} colorScheme="red">
-              {t('General.delete')}
-            </Button>
-          )}
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+              {error && (
+                <Text color="red.500">{t('General.an-error-occured-please-try-again-later')}</Text>
+              )}
+              {loading && (
+                <Center>
+                  <Spinner />
+                </Center>
+              )}
+            </Dialog.Body>
+            <Dialog.Footer>
+              <Button variant="ghost" mr={3} onClick={handleClose}>
+                {t('General.cancel')}
+              </Button>
+              {!loading && !error && (
+                <Button onClick={confirmDelete} colorPalette="red">
+                  {t('General.delete')}
+                </Button>
+              )}
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

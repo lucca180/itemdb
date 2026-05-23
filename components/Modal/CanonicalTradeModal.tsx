@@ -1,15 +1,4 @@
-import {
-  Button,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
-  Text,
-  Badge,
-} from '@chakra-ui/react';
+import { Button, Text, Badge, Dialog, CloseButton, Portal } from '@chakra-ui/react';
 import { TradeData } from '../../types';
 import { useMemo, useState } from 'react';
 import axios from 'axios';
@@ -24,19 +13,18 @@ export type CanonicalTradeModalProps = {
 
 export default function CanonicalTradeModal(props: CanonicalTradeModalProps) {
   const { isOpen, onClose, trade, refresh } = props;
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const isAllEqual = useMemo(() => isTradeAllItemsEqual(trade), [trade]);
   const itemCount = useMemo(() => getCanonicalItemsCount(trade.items), [trade.items]);
 
   const handleClose = async () => {
-    if (isLoading) return;
-
+    if (loading) return;
     onClose();
   };
 
   const handleSetCanonical = async () => {
-    setIsLoading(true);
+    setLoading(true);
     const res = await axios.post(`/api/v1/trades/${trade.trade_id}/canonical`);
 
     if (res.status === 200) {
@@ -44,46 +32,58 @@ export default function CanonicalTradeModal(props: CanonicalTradeModalProps) {
       onClose();
     }
 
-    setIsLoading(false);
+    setLoading(false);
   };
 
   return (
-    <>
-      <Modal isOpen={isOpen} onClose={handleClose} isCentered>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Canonical Trade</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody
-            fontSize={'sm'}
-            sx={{
-              a: { color: 'blue.200' },
-            }}
-          >
-            <Text textAlign={'center'}>
-              Are you sure that this pricing also applies for <b>EVERY</b>{' '}
-              <Badge colorScheme="cyan">{itemCount} items</Badge>
-              <Badge colorScheme="yellow" ml={1}>
-                {isAllEqual ? 'all equal items' : 'different items'}
-              </Badge>{' '}
-              trade lots?
-            </Text>
-          </ModalBody>
-          <ModalFooter justifyContent={'center'} alignItems={'center'} gap={5}>
-            <Button variant={'ghost'} colorScheme="red" onClick={handleClose} isLoading={isLoading}>
-              No
-            </Button>
-            <Button
-              variant={'ghost'}
-              colorScheme="green"
-              onClick={handleSetCanonical}
-              isLoading={isLoading}
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={({ open }) => {
+        if (!open) handleClose();
+      }}
+      placement="center"
+    >
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>
+              <Dialog.Title>Canonical Trade</Dialog.Title>
+            </Dialog.Header>
+            <Dialog.CloseTrigger asChild>
+              <CloseButton size="sm" />
+            </Dialog.CloseTrigger>
+            <Dialog.Body
+              fontSize={'sm'}
+              css={{
+                a: { color: 'blue.200' },
+              }}
             >
-              Yes
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-    </>
+              <Text textAlign={'center'}>
+                Are you sure that this pricing also applies for <b>EVERY</b>{' '}
+                <Badge colorPalette="cyan">{itemCount} items</Badge>
+                <Badge colorPalette="yellow" ml={1}>
+                  {isAllEqual ? 'all equal items' : 'different items'}
+                </Badge>{' '}
+                trade lots?
+              </Text>
+            </Dialog.Body>
+            <Dialog.Footer justifyContent={'center'} alignItems={'center'} gap={5}>
+              <Button variant={'ghost'} colorPalette="red" onClick={handleClose} loading={loading}>
+                No
+              </Button>
+              <Button
+                variant={'ghost'}
+                colorPalette="green"
+                onClick={handleSetCanonical}
+                loading={loading}
+              >
+                Yes
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 }

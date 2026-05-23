@@ -44,7 +44,8 @@ const FaeriesFestival = (props: FaeriesFestivalProps) => {
         <Link
           display={'inline'}
           href="https://www.neopets.com/faeriefestival/index.phtml"
-          isExternal
+          target="_blank"
+          rel="noreferrer"
           position={'absolute'}
           top={['-40px', '-50px', '-60px']}
         >
@@ -59,7 +60,11 @@ const FaeriesFestival = (props: FaeriesFestivalProps) => {
             dropShadow="lg"
           />
         </Link>
-        <Link href="https://www.neopets.com/faeriefestival/index.phtml" isExternal>
+        <Link
+          href="https://www.neopets.com/faeriefestival/index.phtml"
+          target="_blank"
+          rel="noreferrer"
+        >
           <Image
             as={NextImage}
             //@ts-ignore

@@ -9,6 +9,10 @@
       "args": ["lighthouse-mcp"],
       "disabled": false,
       "autoApprove": []
+    },
+    "chakra-ui": {
+      "command": "npx",
+      "args": ["-y", "@chakra-ui/react-mcp"]
     }
   }
 }

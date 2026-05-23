@@ -1,7 +1,15 @@
 'use client';
 
-import { ReactNode, useEffect } from 'react';
-import { Box, Flex, Text, Image, Center, Spinner, Select } from '@chakra-ui/react';
+import { ChangeEvent, ReactNode, useEffect } from 'react';
+import {
+  Box,
+  Flex,
+  Text,
+  Center,
+  Spinner,
+  NativeSelect,
+  Link as ChakraLink,
+} from '@chakra-ui/react';
 
 import NextImage from 'next/image';
 import logo from '../public/logo_white_compressed.svg';
@@ -106,25 +114,24 @@ const Layout = (props: Props) => {
           px={{ base: 2, md: 4 }}
           py={5}
         >
-          <Flex as={Link} prefetch={false} href="/" flex={'0 0 auto'}>
-            <Image
-              as={NextImage}
-              src={logo_icon}
-              alt="itemdb logo"
-              height="50px"
-              width="auto"
-              quality={100}
-              display={{ base: 'inherit', md: 'none' }}
-            />
-            <Image
-              as={NextImage}
-              src={logo}
-              alt="itemdb logo"
-              width={175}
-              quality={100}
-              display={{ base: 'none', md: 'inherit' }}
-            />
-          </Flex>
+          <ChakraLink asChild flex="0 0 auto">
+            <Link href="/" prefetch={false}>
+              <Flex>
+                <Box display={{ base: 'inherit', md: 'none' }}>
+                  <NextImage
+                    src={logo_icon}
+                    alt="itemdb logo"
+                    height={50}
+                    style={{ height: '50px', width: 'auto' }}
+                    quality={100}
+                  />
+                </Box>
+                <Box display={{ base: 'none', md: 'inherit' }}>
+                  <NextImage src={logo} alt="itemdb logo" width={175} quality={100} />
+                </Box>
+              </Flex>
+            </Link>
+          </ChakraLink>
           <Flex flex="1 1 auto" justifyContent="center" alignItems="center">
             <Box maxW="650px" h="100%" flex="1">
               <SearchBar />
@@ -272,27 +279,31 @@ const Layout = (props: Props) => {
                   h="25px"
                   borderRadius="md"
                 />
-                <Select
-                  borderRadius="md"
-                  bg="whiteAlpha.200"
+                <NativeSelect.Root
                   size="xs"
-                  variant="filled"
-                  defaultValue={currentLocale}
+                  variant="subtle"
                   flex="1"
                   minW="120px"
+                  borderRadius="md"
+                  bg="whiteAlpha.200"
                   h="25px"
-                  onChange={(e) => changeLang(e.target.value)}
                 >
-                  <option value="en">English</option>
-                  <option value="pt">Português</option>
-                </Select>
+                  <NativeSelect.Field
+                    defaultValue={currentLocale}
+                    onChange={(e: ChangeEvent<HTMLSelectElement>) => changeLang(e.target.value)}
+                  >
+                    <option value="en">English</option>
+                    <option value="pt">Português</option>
+                  </NativeSelect.Field>
+                  <NativeSelect.Indicator />
+                </NativeSelect.Root>
               </Flex>
             </Flex>
             <Flex
               flexFlow={['row']}
               gap={[3, 12]}
               justifyContent="center"
-              sx={{ 'a:hover': { textDecoration: 'underline' } }}
+              css={{ 'a:hover': { textDecoration: 'underline' } }}
             >
               <Flex flex="1" flexFlow={'column'} fontSize="xs" gap={2} color="gray.300">
                 <Text fontSize="xs" mb={2} textTransform="uppercase" color="gray.500">

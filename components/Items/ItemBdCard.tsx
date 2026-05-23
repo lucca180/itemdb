@@ -31,7 +31,7 @@ const ItemBdCard = (props: Props) => {
   const { user } = useAuth();
   const { item, bdData } = props;
   const color = item.color.rgb;
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open: isOpen, onOpen, onClose } = useDisclosure();
 
   if (!bdData) return null;
   if (bdData.processing && !user?.isAdmin) return null;
@@ -125,7 +125,7 @@ const BDBadge = (props: BDBadgeProps) => {
       gap={1}
       fontSize={'xs'}
       textTransform={'none'}
-      colorScheme={iconColorScheme[iconType]}
+      colorPalette={iconColorScheme[iconType]}
       flexFlow={reverse ? 'row-reverse' : 'row'}
     >
       <BDIcon type={iconType} isDefend={isDefend} />
@@ -142,7 +142,6 @@ const BDIcon = (props: { type: string; isDefend?: boolean }) => {
       return {
         url: 'https://images.neopets.com/battledome/icons/snowflake_icon.gif',
         bgSize: '20px 20px',
-        // pos: { x: 0, y: 0 },
       };
     }
 
