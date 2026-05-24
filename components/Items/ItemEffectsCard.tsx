@@ -27,7 +27,7 @@ const ItemEffectsCard = (props: Props) => {
         flexFlow="row"
         justifyContent="center"
         flexWrap={'wrap'}
-        css={{ a: { color: color.lightness(70).hex() } }}
+        css={{ '& a': { color: color.lightness(70).hex() } }}
       >
         {effects.map((effect, i) => (
           <EffectCard key={i} effect={effect} />
@@ -96,7 +96,6 @@ export const EffectCard = (props: EffectCardProps) => {
       w="200px"
       borderRadius={'md'}
       gap={1}
-      boxShadow={'sm'}
     >
       <Flex mt="-20px" justifyContent={'center'}>
         <Flex width={'32px'} height={'32px'} bg="white" borderRadius={'lg'} overflow={'hidden'}>

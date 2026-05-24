@@ -50,7 +50,12 @@ const LeavingMallPage = (props: LeavingMallPageProps) => {
         bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]},${rgb[1]},${rgb[2]},.8) 70%)`}
         zIndex={-1}
       />
-      <Center my={6} flexFlow="column" gap={2} css={{ a: { color: color.lightness(90).hex() } }}>
+      <Center
+        my={6}
+        flexFlow="column"
+        gap={2}
+        css={{ '& a': { color: color.lightness(90).hex() } }}
+      >
         <Box h="auto" overflow={'hidden'} borderRadius="md" boxShadow={'md'}>
           <Image
             w={600}

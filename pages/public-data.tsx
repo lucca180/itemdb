@@ -27,7 +27,7 @@ const RawDataPage = (props: RawExportPageProps) => {
         mt={8}
         flexFlow="column"
         gap={2}
-        css={{ a: { color: 'blue.300' } }}
+        css={{ '& a': { color: 'blue.300' } }}
         textAlign="center"
       >
         <Image
@@ -57,7 +57,7 @@ const RawDataPage = (props: RawExportPageProps) => {
           mt={8}
           bg="blackAlpha.500"
           w="100%"
-          css={{ a: { color: 'blue.200' } }}
+          css={{ '& a': { color: 'blue.200' } }}
           maxW={'1000px'}
           borderRadius="md"
           fontSize="sm"

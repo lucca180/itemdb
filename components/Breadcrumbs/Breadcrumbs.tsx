@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 import { BreadcrumbJsonLd } from 'next-seo';
-import { ChevronRightIcon } from '@utils/styling/chakraIcons';
+import { ChevronRightIcon } from '@utils/theme/chakraIcons';
 import { Breadcrumb } from '@chakra-ui/react';
 import MainLink from '@components/Utils/MainLink';
 import { useRouter } from 'next/router';

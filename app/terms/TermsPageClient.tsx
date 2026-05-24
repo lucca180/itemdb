@@ -20,7 +20,11 @@ export function TermsPageClient() {
           This page outlines the terms of use for itemdb, its features, and API.
         </Text>
       </HeaderCard>
-      <Flex flexFlow="column" gap={3} css={{ a: { color: '#cec2c2' }, b: { color: '#ffffff' } }}>
+      <Flex
+        flexFlow="column"
+        gap={3}
+        css={{ '& a': { color: '#cec2c2' }, b: { color: '#ffffff' } }}
+      >
         <Flex flexFlow="column" gap={3} maxW="1000px">
           <Heading size="lg">Absolutely no cheating.</Heading>
           <Text>

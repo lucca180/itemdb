@@ -1,4 +1,4 @@
-import { ExternalLinkIcon } from '@utils/styling/chakraIcons';
+import { ExternalLinkIcon } from '@utils/theme/chakraIcons';
 import {
   Accordion,
   Box,

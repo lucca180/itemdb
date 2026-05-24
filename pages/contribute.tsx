@@ -52,7 +52,11 @@ const ContributePage = () => {
         </Heading>
         <Text as="h2">{t('Feedback.contribute-description')}</Text>
       </HeaderCard>
-      <Flex flexFlow="column" gap={3} css={{ a: { color: '#ffee71' }, b: { color: '#8ea7f1' } }}>
+      <Flex
+        flexFlow="column"
+        gap={3}
+        css={{ '& a': { color: '#ffee71' }, b: { color: '#8ea7f1' } }}
+      >
         <Tabs.Root colorPalette="yellow" defaultValue="extractor">
           <Tabs.List>
             <Tabs.Trigger value="extractor">{t('Feedback.item-data-extractor')}</Tabs.Trigger>

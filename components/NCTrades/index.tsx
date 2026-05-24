@@ -147,6 +147,7 @@ const NCTrade = (props: Props) => {
               {hasInsights && (
                 <Button
                   colorPalette={tableType === 'insights' ? 'blue' : ''}
+                  borderColor={tableType === 'insights' ? undefined : 'whiteAlpha.800'}
                   data-active={tableType === 'insights' ? true : undefined}
                   onClick={() => setTableType('insights')}
                   data-umami-event="nc-trade-buttons"
@@ -157,6 +158,7 @@ const NCTrade = (props: Props) => {
               )}
               <Button
                 colorPalette={tableType === 'seeking' ? 'cyan' : ''}
+                borderColor={tableType === 'seeking' ? undefined : 'whiteAlpha.800'}
                 data-active={tableType === 'seeking' ? true : undefined}
                 onClick={() => setTableType('seeking')}
                 data-umami-event="nc-trade-buttons"
@@ -166,6 +168,7 @@ const NCTrade = (props: Props) => {
               </Button>
               <Button
                 colorPalette={tableType === 'trading' ? 'purple' : ''}
+                borderColor={tableType === 'trading' ? undefined : 'whiteAlpha.800'}
                 data-active={tableType === 'trading' ? true : undefined}
                 onClick={() => setTableType('trading')}
                 data-umami-event="nc-trade-buttons"
@@ -175,6 +178,7 @@ const NCTrade = (props: Props) => {
               </Button>
               <Button
                 colorPalette={tableType === 'ncTrading' ? 'yellow' : ''}
+                borderColor={tableType === 'ncTrading' ? undefined : 'whiteAlpha.800'}
                 data-active={tableType === 'ncTrading' ? true : undefined}
                 onClick={() => setTableType('ncTrading')}
                 data-umami-event="nc-trade-buttons"
@@ -208,8 +212,9 @@ const NCTrade = (props: Props) => {
               textTransform="initial"
               alignSelf={'center'}
               borderRadius={'md'}
+              textAlign="center"
             >
-              <Stat.Root flex="initial" textAlign="center">
+              <Stat.Root flex="initial" justifyContent="center" alignItems="center" w="full">
                 <Stat.Label fontSize="xs">
                   {!item.ncValue && t('ItemPage.nc-guide-value')}
                   {item.ncValue?.source === 'itemdb' && t('ItemPage.itemdb-value')}
@@ -242,7 +247,7 @@ const NCTrade = (props: Props) => {
                       </Text>
                     </Stat.ValueText>
 
-                    <Stat.HelpText fontSize="xs" mb={0}>
+                    <Stat.HelpText fontSize="xs" mb={0} color="yellow.200">
                       {format(new Date(item.ncValue.addedAt), 'PP')}{' '}
                     </Stat.HelpText>
                   </>
@@ -261,7 +266,13 @@ const NCTrade = (props: Props) => {
               alignSelf={'center'}
               borderRadius={'md'}
             >
-              <Stat.Root flex="initial" textAlign="center">
+              <Stat.Root
+                flex="initial"
+                justifyContent="center"
+                alignItems="center"
+                w="full"
+                textAlign="center"
+              >
                 <Stat.Label>
                   <Icon mt={2} boxSize="24px" as={TbGiftOff} />
                 </Stat.Label>

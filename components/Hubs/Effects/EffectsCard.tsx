@@ -93,7 +93,7 @@ export const EffectsCard = (props: EffectsCardProps) => {
       {item.effects && item.effects.length > 0 && (
         <>
           <Separator my={3} />
-          <Flex flexFlow={'column'} gap={2} css={{ a: { color: color.lightness(70).hex() } }}>
+          <Flex flexFlow={'column'} gap={2} css={{ '& a': { color: color.lightness(70).hex() } }}>
             {item.effects.map((effect) => (
               <HStack
                 key={effect.internal_id}

@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDownIcon } from '@utils/styling/chakraIcons';
+import { ChevronDownIcon } from '@utils/theme/chakraIcons';
 import { Box, Button, Icon, Menu, Portal, Text, Flex, useDisclosure } from '@chakra-ui/react';
 import { User } from '@types';
 import { useAuth } from '@utils/auth';

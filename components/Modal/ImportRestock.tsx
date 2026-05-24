@@ -10,7 +10,7 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react';
-import { useToast } from '@utils/styling/toast';
+import { useToast } from '@utils/theme/toast';
 import { formatDistance } from 'date-fns';
 import { useEffect, useRef, useState } from 'react';
 import { RestockSession } from '../../types';

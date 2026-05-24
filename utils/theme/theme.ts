@@ -1,10 +1,7 @@
 import { createSystem, defaultConfig } from '@chakra-ui/react';
 import { Inter } from 'next/font/google';
-import {
-  chakraV2ColorTokens,
-  chakraV2SemanticColorTokens,
-} from '@utils/styling/chakraV2ColorTokens';
-import { badgeRecipe, buttonRecipe, inputRecipe } from '@utils/styling/recipes';
+import { chakraV2ColorTokens, chakraV2SemanticColorTokens } from '@utils/theme/chakraV2ColorTokens';
+import { badgeRecipe, buttonRecipe, inputRecipe } from '@utils/theme/recipes';
 
 const inter = Inter({ subsets: ['latin'] });
 

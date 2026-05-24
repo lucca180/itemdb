@@ -13,7 +13,7 @@ import {
   useMediaQuery,
   Link,
 } from '@chakra-ui/react';
-import { useToast } from '@utils/styling/toast';
+import { useToast } from '@utils/theme/toast';
 import React, { useEffect, useRef, useState } from 'react';
 import Layout from '../components/Layout';
 import ItemCard from '../components/Items/ItemCard';
@@ -666,7 +666,7 @@ const SpecialListSearch = (props: { userList: UserList }) => {
         fontSize="sm"
         as="div"
         color="whiteAlpha.700"
-        css={{ a: { color: 'whiteAlpha.800', fontWeight: 'bold' } }}
+        css={{ '& a': { color: 'whiteAlpha.800', fontWeight: 'bold' } }}
       >
         {props.userList.description && <Markdown>{props.userList.description}</Markdown>}
       </Text>

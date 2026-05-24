@@ -369,17 +369,18 @@ const SearchModal = (props: SearchModalProps) => {
       onOpenChange={({ open }) => {
         if (!open) onClose();
       }}
-      placement="center"
+      placement="top"
+      size={{ lgDown: 'full', lg: 'lg' }}
       restoreFocus={false}
     >
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner>
           <Dialog.Content
-            maxW={{ md: '2xl' }}
-            w={{ base: '100vw', md: 'auto' }}
-            maxH={{ base: '100dvh', md: 'auto' }}
-            m={{ base: 0, md: 'auto' }}
+            // maxW={{ md: '2xl' }}
+            // w={{ base: '100vw', md: 'auto' }}
+            // maxH={{ base: '100dvh', md: 'auto' }}
+            // m={{ base: 0, md: 'auto' }}
             borderRadius={{ base: 0, md: 'md' }}
             p={0}
             overflow="hidden"
@@ -920,7 +921,7 @@ const SearchQuery = ({
 }) => {
   const t = useTranslations();
   return (
-    <ChakraLink asChild>
+    <ChakraLink asChild w="100%" _hover={{ textDecoration: 'none' }}>
       <Link href={url} prefetch={false} onClick={onClick}>
         <Flex
           bg={isFocus ? 'whiteAlpha.400' : 'whiteAlpha.200'}

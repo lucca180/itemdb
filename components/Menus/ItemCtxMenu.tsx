@@ -9,7 +9,7 @@ import {
   Text,
   Kbd,
 } from '@chakra-ui/react';
-import { useToast } from '@utils/styling/toast';
+import { useToast } from '@utils/theme/toast';
 import { ContextMenu, ContextMenuItem, Submenu, ContextMenuTrigger } from 'rctx-contextmenu';
 import { ItemData, ListItemInfo, UserList } from '../../types';
 import { useAuth } from '../../utils/auth';

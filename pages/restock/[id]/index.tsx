@@ -216,7 +216,11 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
         />
       )}
       <RestockHeader shop={shopInfo}>
-        <Text as="h2" css={{ a: { color: shopColor.lightness(70).hex() } }} textAlign={'center'}>
+        <Text
+          as="h2"
+          css={{ '& a': { color: shopColor.lightness(70).hex() } }}
+          textAlign={'center'}
+        >
           {t.rich('Restock.profitable-items-from', {
             Link: (chunk) => (
               <Link

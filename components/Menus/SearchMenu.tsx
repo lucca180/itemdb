@@ -1,4 +1,4 @@
-import { ChevronDownIcon } from '@utils/styling/chakraIcons';
+import { ChevronDownIcon } from '@utils/theme/chakraIcons';
 import { Menu, IconButton } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';

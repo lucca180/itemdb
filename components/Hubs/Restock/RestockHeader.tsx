@@ -77,7 +77,7 @@ const RestockHeader = (props: Props) => {
         mb={6}
         flexFlow="column"
         gap={2}
-        css={{ a: { color: Color(shopInfo.color).lightness(70).hex() } }}
+        css={{ '& a': { color: Color(shopInfo.color).lightness(70).hex() } }}
       >
         {!isHistory && (
           <HStack>

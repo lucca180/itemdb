@@ -67,7 +67,7 @@ const AdvancedImportPage = () => {
         <Heading as="h1" size="lg">
           {t('Lists.import-from-pps')}
         </Heading>
-        <Text as="div" css={{ a: { color: '#b8e9a9' } }}>
+        <Text as="div" css={{ '& a': { color: '#b8e9a9' } }}>
           {t('Lists.import-advanced-description')}
         </Text>
       </HeaderCard>
@@ -81,7 +81,7 @@ const AdvancedImportPage = () => {
           {t('Lists.import-adv-2')}
         </Text>
       </Text>
-      <Center flexFlow="column" gap={3} css={{ a: { color: '#b8e9a9' } }} mt={3}>
+      <Center flexFlow="column" gap={3} css={{ '& a': { color: '#b8e9a9' } }} mt={3}>
         <Flex
           asChild
           flexFlow="column"

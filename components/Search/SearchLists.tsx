@@ -1,4 +1,4 @@
-import { CloseIcon, SearchIcon } from '@utils/styling/chakraIcons';
+import { CloseIcon, SearchIcon } from '@utils/theme/chakraIcons';
 import { InputGroup, IconButton, Input } from '@chakra-ui/react';
 import { useState, useRef, useEffect } from 'react';
 

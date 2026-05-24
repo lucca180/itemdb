@@ -15,12 +15,12 @@ import {
   Box,
   ButtonGroup,
 } from '@chakra-ui/react';
-import { useToast } from '@utils/styling/toast';
+import { useToast } from '@utils/theme/toast';
 import { useEffect, useMemo, useState } from 'react';
 import { ItemData, ItemLastSeen, PriceData, PricingInfo, UserList } from '../../types';
 import { ChartComponentProps } from '../Charts/PriceChart';
 import PriceTable from './PriceTable';
-import { MinusIcon } from '@utils/styling/chakraIcons';
+import { MinusIcon } from '@utils/theme/chakraIcons';
 import CardBase from '../Card/CardBase';
 import { MdHelp, MdMoneyOff, MdOutlineAdd } from 'react-icons/md';
 import dynamic from 'next/dynamic';

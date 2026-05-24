@@ -14,7 +14,7 @@ import {
   IconButton,
   Tooltip,
 } from '@chakra-ui/react';
-import { useToast } from '@utils/styling/toast';
+import { useToast } from '@utils/theme/toast';
 import Layout from '../../../components/Layout';
 import { createTranslator, useFormatter, useTranslations } from 'next-intl';
 import NextImage from 'next/image';

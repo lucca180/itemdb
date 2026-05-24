@@ -10,7 +10,7 @@ import {
   Text,
   Textarea,
 } from '@chakra-ui/react';
-import { useToast } from '@utils/styling/toast';
+import { useToast } from '@utils/theme/toast';
 import HeaderCard from '@components/Card/HeaderCard';
 import Layout from '@components/Layout';
 import { useFormatter } from 'next-intl';

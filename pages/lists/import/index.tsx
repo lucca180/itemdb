@@ -11,7 +11,7 @@ import {
   Button,
   HStack,
 } from '@chakra-ui/react';
-import { useToast } from '@utils/styling/toast';
+import { useToast } from '@utils/theme/toast';
 import HeaderCard from '../../../components/Card/HeaderCard';
 import Layout from '../../../components/Layout';
 import { parseBody } from 'next/dist/server/api-utils/node/parse-body';
@@ -76,11 +76,11 @@ const ImportPage = (props: Props) => {
         <Heading as="h1" size="lg">
           {t('Lists.checklists-and-importing-items')}
         </Heading>
-        <Text as="div" css={{ a: { color: '#b8e9a9' } }}>
+        <Text as="div" css={{ '& a': { color: '#b8e9a9' } }}>
           {t('Lists.import-page-description')}
         </Text>
       </HeaderCard>
-      <Flex flexFlow="column" gap={3} css={{ a: { color: '#b8e9a9' } }}>
+      <Flex flexFlow="column" gap={3} css={{ '& a': { color: '#b8e9a9' } }}>
         <Separator />
         {!items && <ImportInfo />}
         {items && !!indexType && (
@@ -399,7 +399,7 @@ const ImportItems = (props: ImportItemsProps) => {
         </Text>
       )}
       <Flex flexFlow={{ base: 'column-reverse', md: 'row' }} gap={6}>
-        <Flex flex="2" css={{ a: { color: 'initial' } }} flexFlow="column">
+        <Flex flex="2" css={{ '& a': { color: 'initial' } }} flexFlow="column">
           <Flex flexWrap="wrap" gap={3} justifyContent="center">
             {itemData &&
               loadedItems

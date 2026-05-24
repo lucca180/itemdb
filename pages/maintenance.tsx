@@ -23,7 +23,7 @@ const MaintenancePage = () => {
         flex="1"
         flexFlow="column"
         gap={3}
-        css={{ a: { color: 'blue.300' } }}
+        css={{ '& a': { color: 'blue.300' } }}
         textAlign="center"
       >
         <Heading mb={3}>We're under maintenance</Heading>

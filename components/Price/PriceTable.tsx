@@ -1,7 +1,7 @@
 import { Table, Text, IconButton, Flex, Icon, Link, Box, Badge } from '@chakra-ui/react';
 import React, { useMemo } from 'react';
 import { ItemData, PriceData, UserList } from '../../types';
-import { MinusIcon } from '@utils/styling/chakraIcons';
+import { MinusIcon } from '@utils/theme/chakraIcons';
 import { useFormatter, useTranslations } from 'next-intl';
 import { BiEditAlt } from 'react-icons/bi';
 import { FaCaretDown, FaCaretUp } from 'react-icons/fa';
@@ -132,7 +132,7 @@ const PriceTable = (props: Props) => {
       maxH={{ base: 200, md: 300 }}
       w="100%"
       borderRadius="sm"
-      css={{ a: { color: linkColor } }}
+      css={{ '& a': { color: linkColor } }}
     >
       <Table.Root h="100%" size="sm" css={{ '& td': { border: 0 } }}>
         <Table.Body>

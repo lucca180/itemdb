@@ -3,7 +3,7 @@ import CardBase from '@components/Card/CardBase';
 import { useMemo, useState, memo, useCallback } from 'react';
 import Image from 'next/image';
 import { ItemData } from '../../types';
-import { ExternalLinkIcon } from '@utils/styling/chakraIcons';
+import { ExternalLinkIcon } from '@utils/theme/chakraIcons';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@utils/auth';
 import { FaRotateRight } from 'react-icons/fa6';

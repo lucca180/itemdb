@@ -10,7 +10,7 @@ import {
   HStack,
   useDisclosure,
 } from '@chakra-ui/react';
-import { useToast } from '@utils/styling/toast';
+import { useToast } from '@utils/theme/toast';
 import { ListItemInfo, UserList } from '../../types';
 import icon from '../../public/logo_icon.svg';
 import DynamicIcon from '../../public/icons/dynamic.png';
@@ -177,7 +177,7 @@ const UserListCard = (props: Props) => {
             flex={1}
             lineClamp={4}
             as="div"
-            css={{ a: { fontWeight: 'bold' } }}
+            css={{ '& a': { fontWeight: 'bold' } }}
           >
             <Markdown>
               {(list.description || t('ItemPage.list-no-description')).split(/[\r\n]+/)[0]}

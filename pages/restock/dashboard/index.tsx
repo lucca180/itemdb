@@ -506,7 +506,7 @@ const RestockDashboard = (props: RestockDashboardProps) => {
             maxW="750px"
             my={4}
             fontSize="sm"
-            css={{ a: { color: 'yellow.200' } }}
+            css={{ '& a': { color: 'yellow.200' } }}
             bg={'blackAlpha.500'}
           >
             <Alert.Indicator />
@@ -532,7 +532,7 @@ const RestockDashboard = (props: RestockDashboardProps) => {
             listStyle="revert"
             mt={3}
             pl={3}
-            css={{ a: { color: 'green.200' }, b: { color: 'green.200' } }}
+            css={{ '& a': { color: 'green.200' }, b: { color: 'green.200' } }}
             gap={2}
           >
             {!user && (

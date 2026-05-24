@@ -86,7 +86,7 @@ const NcTradeReportPage = (props: NcTradeReportPageProps) => {
         borderRadius={'md'}
         w="100%"
         maxW="900px"
-        css={{ a: { color: 'yellow.300' }, b: { color: 'orange.200' } }}
+        css={{ '& a': { color: 'yellow.300' }, b: { color: 'orange.200' } }}
       >
         <Heading as={'h3'} size="md">
           {t('Owls.faq-1')}

@@ -31,7 +31,11 @@ const WhyUsPage = () => {
         </Heading>
         <Text fontSize={{ base: 'sm', md: undefined }}>{t('FAQ.text-1')}</Text>
       </HeaderCard>
-      <Flex flexFlow="column" gap={3} css={{ a: { color: 'cyan.400' }, b: { color: 'blue.300' } }}>
+      <Flex
+        flexFlow="column"
+        gap={3}
+        css={{ '& a': { color: 'cyan.400' }, b: { color: 'blue.300' } }}
+      >
         <Flex flexFlow="column" gap={3} maxW="1000px">
           <Heading size="md">{t('FAQ.what-is-the-itemdb')}</Heading>
           <Text>

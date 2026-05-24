@@ -60,7 +60,7 @@ const Avy = (props: { avy: AvyData }) => {
       <Flex
         flexFlow={'column'}
         gap={1}
-        css={{ a: { color: 'whiteAlpha.800' }, 'a:hover': { textDecoration: 'underline' } }}
+        css={{ '& a': { color: 'whiteAlpha.800' }, 'a:hover': { textDecoration: 'underline' } }}
       >
         <Text fontWeight={'semibold'}>{avy.name}</Text>
         <Text fontSize={'xs'} color="whiteAlpha.600" as="div">

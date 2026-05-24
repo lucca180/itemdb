@@ -9,7 +9,7 @@ import {
   CloseButton,
   Portal,
 } from '@chakra-ui/react';
-import { useToast } from '@utils/styling/toast';
+import { useToast } from '@utils/theme/toast';
 import axios from 'axios';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';

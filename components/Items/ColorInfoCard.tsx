@@ -1,6 +1,6 @@
 import { Button, Center, Flex, Icon, IconButton, Link, Text } from '@chakra-ui/react';
 import CardBase from '@components/Card/CardBase';
-import { useToast } from '@utils/styling/toast';
+import { useToast } from '@utils/theme/toast';
 import React from 'react';
 import { AiFillEyeInvisible } from 'react-icons/ai';
 import { FullItemColors } from '../../types';

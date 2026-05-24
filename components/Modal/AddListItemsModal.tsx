@@ -8,7 +8,7 @@ import {
   Portal,
   Link,
 } from '@chakra-ui/react';
-import { useToast } from '@utils/styling/toast';
+import { useToast } from '@utils/theme/toast';
 import { useTranslations } from 'next-intl';
 import NextLink from 'next/link';
 import ItemSelect from '../Input/ItemSelect';
@@ -126,7 +126,7 @@ export default function AddListItemsModal(props: AddListItemsModalProps) {
               <Dialog.CloseTrigger asChild>
                 <CloseButton size="sm" />
               </Dialog.CloseTrigger>
-              <Dialog.Body fontSize={'sm'} css={{ a: { color: 'blue.200' } }}>
+              <Dialog.Body fontSize={'sm'} css={{ '& a': { color: 'blue.200' } }}>
                 <Flex flexFlow="column" justifyContent={'center'} alignItems={'center'} gap={2}>
                   <ItemSelect
                     ref={itemSelectRef}

@@ -369,7 +369,7 @@ export const InfoTab = (props: infoTabProps) => {
     <Flex flexFlow="column" gap={4} maxH="500px" px={3} overflow={'auto'}>
       {!isAdmin && (
         <>
-          <Text fontSize="sm" css={{ a: { color: 'blue.300' } }}>
+          <Text fontSize="sm" css={{ '& a': { color: 'blue.300' } }}>
             {t.rich('Feedback.correctItemInfo', {
               Link: (chunks) => (
                 <Link asChild color="gray.200">

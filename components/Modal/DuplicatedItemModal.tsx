@@ -10,7 +10,7 @@ import {
   Flex,
   Box,
 } from '@chakra-ui/react';
-import { useToast } from '@utils/styling/toast';
+import { useToast } from '@utils/theme/toast';
 import axios from 'axios';
 import { useState } from 'react';
 import { ItemData, UserList, ListItemInfo, ObligatoryUserList } from '../../types';

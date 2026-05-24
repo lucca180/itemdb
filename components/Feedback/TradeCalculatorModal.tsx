@@ -89,7 +89,7 @@ export default function TradeCalculatorModal(props: TradeCalculatorModalProps) {
             <Dialog.CloseTrigger asChild>
               <CloseButton size="sm" />
             </Dialog.CloseTrigger>
-            <Dialog.Body fontSize="sm" css={{ a: { color: 'blue.200' } }}>
+            <Dialog.Body fontSize="sm" css={{ '& a': { color: 'blue.200' } }}>
               <Alert.Root
                 mb={3}
                 size="sm"

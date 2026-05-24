@@ -1,4 +1,4 @@
-import { ChevronDownIcon } from '@utils/styling/chakraIcons';
+import { ChevronDownIcon } from '@utils/theme/chakraIcons';
 import { Box, Button, Menu, Portal } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
 import { AiOutlineArrowUp } from 'react-icons/ai';

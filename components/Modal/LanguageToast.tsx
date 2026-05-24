@@ -1,5 +1,5 @@
 import { Flex, Text, Button } from '@chakra-ui/react';
-import { useToast } from '@utils/styling/toast';
+import { useToast } from '@utils/theme/toast';
 import { getCookies } from 'cookies-next';
 import { useRouter } from 'next/compat/router';
 import { useEffect } from 'react';

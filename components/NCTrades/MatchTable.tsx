@@ -27,7 +27,14 @@ const MatchTable = (props: Props) => {
       w="100%"
       borderRadius="sm"
     >
-      <Table.Root h="100%" variant="line" colorPalette="gray" size="sm" striped>
+      <Table.Root
+        h="100%"
+        variant="outline"
+        colorPalette="blackAlpha"
+        bg="blackAlpha.300"
+        size="sm"
+        striped
+      >
         <Table.Header>
           <Table.Row>
             <Table.ColumnHeader>{t('ItemPage.list-name')}</Table.ColumnHeader>
@@ -85,13 +92,15 @@ const MatchTable = (props: Props) => {
                     </Badge>
                   )}
                   {!matches[list.owner.username ?? '']?.length && (
-                    <Badge>{t('ItemPage.no-matches')}</Badge>
+                    <Badge colorPalette="whiteAlpha" variant="solid">
+                      {t('ItemPage.no-matches')}
+                    </Badge>
                   )}
                 </Table.Cell>
               )}
               {isLoading && (
                 <Table.Cell>
-                  <Skeleton w="100px" h="10px" />
+                  <Skeleton bg="whiteAlpha.400" w="100px" h="10px" />
                 </Table.Cell>
               )}
               <Table.Cell>

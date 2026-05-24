@@ -13,7 +13,7 @@ import {
   Portal,
   NativeSelect,
 } from '@chakra-ui/react';
-import { useToast } from '@utils/styling/toast';
+import { useToast } from '@utils/theme/toast';
 import { useTranslations } from 'next-intl';
 import axios from 'axios';
 import { BDData, BDIconTypes, ItemData } from '../../types';
@@ -191,7 +191,7 @@ export default function EditBdInfoModal(props: EditBdInfoModalProps) {
             <Dialog.CloseTrigger asChild>
               <CloseButton size="sm" />
             </Dialog.CloseTrigger>
-            <Dialog.Body fontSize={'sm'} css={{ a: { color: 'blue.200' } }}>
+            <Dialog.Body fontSize={'sm'} css={{ '& a': { color: 'blue.200' } }}>
               <SimpleGrid columns={3} gap={6}>
                 {['attack', 'defense', 'reflect'].map((section) => (
                   <Flex flex="1" key={section} flexDirection={'column'} mb={4} gap={3}>

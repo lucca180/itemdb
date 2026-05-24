@@ -83,7 +83,7 @@ export default function WrongPriceModal(props: WrongPriceModalProps) {
             </Dialog.CloseTrigger>
             <Dialog.Body
               fontSize={'sm'}
-              css={{ a: { color: 'blue.200' }, b: { color: 'blue.300' } }}
+              css={{ '& a': { color: 'blue.200' }, b: { color: 'blue.300' } }}
             >
               {t('ItemPage.wrongPrice-0')}
               <Accordion.Root bg="gray.800" size="sm" p={2} my={3} borderRadius={'md'} collapsible>

@@ -13,7 +13,7 @@ import {
   useDisclosure,
   Image as ChakraImage,
 } from '@chakra-ui/react';
-import { useToast } from '@utils/styling/toast';
+import { useToast } from '@utils/theme/toast';
 import { ColorInstance } from 'color';
 import { BiLinkExternal } from 'react-icons/bi';
 import { MdWarning } from 'react-icons/md';
@@ -402,7 +402,7 @@ const ListHeader = (props: ListHeaderProps) => {
             <Text
               mt={{ base: 2, md: 3 }}
               fontSize={{ base: 'sm', md: 'md' }}
-              css={{ a: { color: color.lightness(70).hex() } }}
+              css={{ '& a': { color: color.lightness(70).hex() } }}
               as="h2"
             >
               <Markdown skipParagraph>{list.description}</Markdown>

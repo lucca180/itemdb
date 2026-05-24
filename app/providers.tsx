@@ -4,7 +4,7 @@ import { ChakraProvider } from '@chakra-ui/react';
 import { Toaster } from '@components/ui/toaster';
 import { Provider } from 'jotai';
 import type { ReactNode } from 'react';
-import { system } from '@utils/styling/theme';
+import { system } from '@utils/theme/theme';
 import { ColorModeProvider } from '@components/ui/color-mode';
 import { AuthProvider } from '@utils/auth';
 import { installProofInterceptor } from '@utils/http/proofInterceptor';

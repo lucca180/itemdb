@@ -11,7 +11,7 @@ import {
   Badge,
   useDisclosure,
 } from '@chakra-ui/react';
-import { useToast } from '@utils/styling/toast';
+import { useToast } from '@utils/theme/toast';
 import React, { useMemo } from 'react';
 import { ItemData, ObligatoryUserList } from '../../types';
 import CardBase from '../Card/CardBase';

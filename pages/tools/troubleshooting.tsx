@@ -143,7 +143,10 @@ const StatusCheck = (props: StatusCheckProps) => {
               <Alert.Description
                 fontSize={'xs'}
                 color={'whiteAlpha.700'}
-                css={{ a: { color: 'whiteAlpha.900' }, 'a:hover': { textDecoration: 'underline' } }}
+                css={{
+                  '& a': { color: 'whiteAlpha.900' },
+                  'a:hover': { textDecoration: 'underline' },
+                }}
               >
                 {description}
               </Alert.Description>

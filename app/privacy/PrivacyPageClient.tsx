@@ -24,7 +24,11 @@ export function PrivacyPageClient() {
           Here we will detail more about how we collect, process, and use your data.
         </Text>
       </HeaderCard>
-      <Flex flexFlow="column" gap={3} css={{ a: { color: '#7AB92A' }, b: { color: '#7AB92A' } }}>
+      <Flex
+        flexFlow="column"
+        gap={3}
+        css={{ '& a': { color: '#7AB92A' }, b: { color: '#7AB92A' } }}
+      >
         <Flex flexFlow="column" gap={3} maxW="1000px">
           <Heading size="lg">What data do we collect and how we use it?</Heading>
           <Text>
