@@ -288,7 +288,7 @@ const EditProfileModal = (props: EditProfileModalProps) => {
                     </Field.Root>
                     <Field.Root>
                       <Field.Label color="gray.300">{t('General.color')}</Field.Label>
-                      <Center>
+                      <Center w="100%">
                         <TwitterPicker
                           styles={colorPickerStyles}
                           triangle="hide"
@@ -300,7 +300,7 @@ const EditProfileModal = (props: EditProfileModalProps) => {
                         {t('Profile.color-helper')}
                       </Field.HelperText>
                     </Field.Root>
-                    <Field.Root>
+                    <Field.Root mt={3}>
                       <Center>
                         <Button
                           size="xs"

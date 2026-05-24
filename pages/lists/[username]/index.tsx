@@ -356,7 +356,7 @@ const UserListsPage = (props: Props) => {
             flexFlow="column"
             justifyContent="center"
             alignItems="center"
-            boxShadow="sm"
+            boxShadow="inset"
             textAlign="center"
             flex="0 0 auto"
             minW={{ base: '100px', md: '150px' }}
@@ -383,10 +383,10 @@ const UserListsPage = (props: Props) => {
             )}
             {isOwner && (
               <Button
-                variant="solid"
+                variant="subtle"
                 mt={2}
                 onClick={() => setOpenEditProfileModal(true)}
-                colorPalette={color.isLight() ? 'blackAlpha' : 'gray'}
+                colorPalette={color.isLight() ? 'blackAlpha' : 'whiteAlpha'}
                 size="sm"
               >
                 {t('Lists.edit-profile')}
@@ -395,7 +395,13 @@ const UserListsPage = (props: Props) => {
           </Box>
           <Flex flexFlow={'column'} h={'100%'} gap={2} alignItems={'flex-start'}>
             <Stack direction="row" mb={1} flexWrap="wrap">
-              <IconButton asChild size="sm" aria-label={t('General.userlookup')}>
+              <IconButton
+                asChild
+                size="xs"
+                colorPalette={'whiteAlpha'}
+                variant="subtle"
+                aria-label={t('General.userlookup')}
+              >
                 <Link
                   href={`http://www.neopets.com/userlookup.phtml?user=${owner.neopetsUser}`}
                   target="_blank"
@@ -406,7 +412,13 @@ const UserListsPage = (props: Props) => {
                   <FaHouseUser />
                 </Link>
               </IconButton>
-              <IconButton asChild size="sm" aria-label={t('General.neomail')}>
+              <IconButton
+                asChild
+                size="xs"
+                colorPalette={'whiteAlpha'}
+                variant="subtle"
+                aria-label={t('General.neomail')}
+              >
                 <Link
                   href={`http://www.neopets.com/neomessages.phtml?type=send&recipient=${owner.neopetsUser}`}
                   target="_blank"
@@ -419,7 +431,7 @@ const UserListsPage = (props: Props) => {
               </IconButton>
               {owner.username && <UserAchiev achievements={props.achievements} />}
             </Stack>
-            <Heading size={{ base: 'lg', md: undefined }}>
+            <Heading size={{ base: 'xl', md: '3xl' }} fontWeight="bold">
               {t('Lists.owner-username-s-lists', { username: owner.username ?? '' })}{' '}
               {!loading && (
                 <Badge fontSize="lg" verticalAlign="middle">
@@ -478,7 +490,12 @@ const UserListsPage = (props: Props) => {
       <Flex justifyContent={'space-between'} flexWrap="wrap" gap={3} alignItems="center" py={3}>
         <HStack>
           {isOwner && (
-            <Button loading={loading} variant="solid" onClick={() => setOpenCreateModal(true)}>
+            <Button
+              loading={loading}
+              variant="subtle"
+              colorPalette="whiteAlpha"
+              onClick={() => setOpenCreateModal(true)}
+            >
               + {t('Lists.new-list')}
             </Button>
           )}
@@ -523,8 +540,8 @@ const UserListsPage = (props: Props) => {
                 <Switch.Label mb="0" color={'gray.300'} fontSize="sm">
                   {t('General.edit-mode')}
                 </Switch.Label>
-                <Switch.Control>
-                  <Switch.Thumb />
+                <Switch.Control bg="whiteAlpha.400">
+                  <Switch.Thumb bg="white" />
                 </Switch.Control>
               </Switch.Root>
             </Field.Root>

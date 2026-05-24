@@ -13,13 +13,13 @@ export const SelectItemsCheckbox = (props: Props) => {
   const { allChecked, checked, onClick, defaultText } = props;
   return (
     <Checkbox.Root
-      colorPalette="gray"
+      colorPalette="whiteAlpha"
       checked={checked?.length ? (!allChecked ? 'indeterminate' : true) : false}
       onCheckedChange={() => onClick?.(!allChecked)}
       cursor="pointer"
     >
       <Checkbox.HiddenInput />
-      <Checkbox.Control cursor="pointer" />
+      <Checkbox.Control borderColor="whiteAlpha.300" cursor="pointer" />
       <Checkbox.Label>
         <Text fontSize={{ base: 'xs', md: 'sm' }}>
           {!defaultText || checked?.length

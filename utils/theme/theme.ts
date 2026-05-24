@@ -1,7 +1,7 @@
 import { createSystem, defaultConfig } from '@chakra-ui/react';
 import { Inter } from 'next/font/google';
 import { chakraV2ColorTokens, chakraV2SemanticColorTokens } from '@utils/theme/chakraV2ColorTokens';
-import { badgeRecipe, buttonRecipe, inputRecipe } from '@utils/theme/recipes';
+import { badgeRecipe, buttonRecipe, inputRecipe, nativeSelectRecipe } from '@utils/theme/recipes';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -22,6 +22,10 @@ export const system = createSystem(defaultConfig, {
       input: inputRecipe,
       textarea: inputRecipe,
       button: buttonRecipe,
+      iconButton: buttonRecipe,
+    },
+    slotRecipes: {
+      nativeSelect: nativeSelectRecipe,
     },
   },
   globalCss: {

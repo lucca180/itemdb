@@ -74,12 +74,7 @@ const Pagination = (props: Props) => {
       </Button>
       <Box>
         <NativeSelect.Root size="sm" variant="subtle" disabled={!props.totalPages}>
-          <NativeSelect.Field
-            bg={'whiteAlpha.100'}
-            name="sortBy"
-            value={currentPage}
-            onChange={handleChange}
-          >
+          <NativeSelect.Field name="sortBy" value={currentPage} onChange={handleChange}>
             {[...Array(props.totalPages || 1)].map((_, i) => (
               <option key={i + 1} value={i + 1}>
                 {i + 1}

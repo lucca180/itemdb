@@ -95,7 +95,7 @@ const UserListCard = (props: Props) => {
         w={{ base: '100%', sm: isSmall ? '350px' : '375px' }}
         gap={3}
         ml="40px"
-        boxShadow={isSelected ? 'outline' : undefined}
+        outline={isSelected ? '3px solid rgba(66, 153, 225, 0.6)' : undefined}
         bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.6) 0%)`}
         pointerEvents={disableLink ? 'none' : 'initial'}
       >
@@ -116,7 +116,8 @@ const UserListCard = (props: Props) => {
               flex="0 0 auto"
               borderRadius="md"
               overflow="hidden"
-              boxShadow={isSelected ? 'outline' : 'md'}
+              boxShadow={'inset'}
+              outline={isSelected ? '3px solid rgba(66, 153, 225, 0.6)' : undefined}
               justifyContent="center"
               alignItems="center"
             >
@@ -139,34 +140,39 @@ const UserListCard = (props: Props) => {
         </Link>
         <Flex flexFlow="column" gap={2} w="100%">
           <HStack justifyContent={'space-between'} alignItems={'flex-start'}>
-            <Text
+            <Link
+              asChild
+              data-umami-event={utm_content}
+              data-umami-event-label={utm_content ? list.slug : undefined}
+              color={color.isLight() ? 'blackAlpha.800' : undefined}
               fontWeight="bold"
               lineClamp={2}
-              color={color.isLight() ? 'blackAlpha.800' : undefined}
             >
-              <Link
-                asChild
-                data-umami-event={utm_content}
-                data-umami-event-label={utm_content ? list.slug : undefined}
-              >
-                <NextLink href={getListLink(list)} prefetch={false}>
-                  {list.name}
-                </NextLink>
-              </Link>
-            </Text>
+              <NextLink href={getListLink(list)} prefetch={false}>
+                {list.name}
+              </NextLink>
+            </Link>
             <HStack>
               {list.visibility !== 'private' && (
                 <IconButton
                   onClick={copyLink}
                   data-umami-event="copy-link"
-                  size="xs"
+                  size="2xs"
+                  variant="subtle"
+                  colorPalette="whiteAlpha"
                   aria-label="Share Link"
                 >
                   <FaShareAlt />
                 </IconButton>
               )}
               {canEdit && (
-                <IconButton onClick={onToggle} size="xs" aria-label="Edit List">
+                <IconButton
+                  onClick={onToggle}
+                  size="2xs"
+                  variant="subtle"
+                  colorPalette="whiteAlpha"
+                  aria-label="Edit List"
+                >
                   <FaPencilAlt />
                 </IconButton>
               )}
@@ -178,7 +184,7 @@ const UserListCard = (props: Props) => {
             flex={1}
             lineClamp={4}
             as="div"
-            css={{ '& a': { fontWeight: 'bold' } }}
+            css={{ '& a': { fontWeight: 'bold', color: 'inherit' } }}
           >
             <Markdown>
               {(list.description || t('ItemPage.list-no-description')).split(/[\r\n]+/)[0]}
@@ -187,11 +193,12 @@ const UserListCard = (props: Props) => {
           <Flex gap={1} flexWrap="wrap">
             {!!list.dynamicType && (
               <Badge
-                colorPalette={color.isLight() ? 'black' : 'orange'}
+                colorPalette={color.isLight() ? 'blackAlpha' : 'whiteAlpha'}
                 display="inline-flex"
                 ml={1}
                 p={'2px'}
                 alignItems={'center'}
+                variant="solid"
               >
                 <Image src={DynamicIcon} alt="Dynamic List" w={'8px'} />
               </Badge>
@@ -205,28 +212,28 @@ const UserListCard = (props: Props) => {
             )}
 
             {!list.official && list.visibility !== 'public' && (
-              <Badge colorPalette={color.isLight() ? 'black' : 'gray'}>
+              <Badge colorPalette={color.isLight() ? 'blackAlpha' : 'whiteAlpha'} variant="solid">
                 <ListVisibility visibility={list.visibility} />
               </Badge>
             )}
 
             {!list.official && list.purpose !== 'none' && (
-              <Badge colorPalette={color.isLight() ? 'black' : 'gray'}>
+              <Badge colorPalette={color.isLight() ? 'blackAlpha' : 'whiteAlpha'} variant="solid">
                 <ListPurpose purpose={list.purpose} />
               </Badge>
             )}
 
-            <Badge colorPalette={color.isLight() ? 'black' : 'gray'}>
+            <Badge colorPalette={color.isLight() ? 'blackAlpha' : 'gray'} variant="solid">
               {formatter.number(list.itemCount ?? 0)} {t('General.items')}
             </Badge>
 
             {!list.official && list.purpose === 'trading' && !!matchCount && (
-              <Badge colorPalette={color.isLight() ? 'black' : 'gray'}>
+              <Badge colorPalette={color.isLight() ? 'blackAlpha' : 'whiteAlpha'} variant="solid">
                 {t('Lists.list-want', { matchCount })}
               </Badge>
             )}
             {!list.official && list.purpose === 'seeking' && !!matchCount && (
-              <Badge colorPalette={color.isLight() ? 'black' : 'gray'}>
+              <Badge colorPalette={color.isLight() ? 'blackAlpha' : 'whiteAlpha'} variant="solid">
                 {t('Lists.list-have', { matchCount })}
               </Badge>
             )}

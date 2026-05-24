@@ -209,9 +209,9 @@ const ListHeader = (props: ListHeaderProps) => {
           )}
           {(isOwner || user?.isAdmin) && (
             <Button
-              variant="solid"
+              variant="subtle"
               mt={3}
-              colorPalette={color.isLight() ? 'blackAlpha' : 'gray'}
+              colorPalette={color.isLight() ? 'blackAlpha' : 'whiteAlpha'}
               onClick={() => setOpenCreateModal?.(true)}
               size="sm"
               loading={isLoading}

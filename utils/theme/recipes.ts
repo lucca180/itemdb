@@ -1,4 +1,4 @@
-import { defineRecipe, Button } from '@chakra-ui/react';
+import { defineRecipe, defineSlotRecipe } from '@chakra-ui/react';
 
 export const badgeRecipe = defineRecipe({
   className: 'chakra-badge',
@@ -94,6 +94,39 @@ export const inputRecipe = defineRecipe({
   },
   defaultVariants: {
     variant: 'subtle',
+  },
+});
+
+export const nativeSelectRecipe = defineSlotRecipe({
+  slots: ['root', 'field', 'indicator'],
+  base: {
+    field: {
+      bg: 'whiteAlpha.100',
+    },
+  },
+  variants: {
+    variant: {
+      outline: {
+        field: {
+          bg: 'whiteAlpha.100',
+        },
+      },
+      subtle: {
+        field: {
+          bg: 'whiteAlpha.100',
+        },
+      },
+      plain: {
+        field: {
+          bg: 'whiteAlpha.100',
+        },
+      },
+      ghost: {
+        field: {
+          bg: 'whiteAlpha.100',
+        },
+      },
+    },
   },
 });
 
