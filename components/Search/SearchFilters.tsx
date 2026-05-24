@@ -425,14 +425,16 @@ const FilterSection = (props: {
   children: ReactNode;
 }) => (
   <Accordion.Item value={props.value}>
-    <Accordion.ItemTrigger>
+    <Accordion.ItemTrigger px={3}>
       <Box as="span" flex="1" textAlign="left" fontSize="sm" color="gray.300">
         {props.title} {!!props.count && <Badge>{props.count}</Badge>}
       </Box>
       <Accordion.ItemIndicator />
     </Accordion.ItemTrigger>
     <Accordion.ItemContent>
-      <Accordion.ItemBody pb={4}>{props.children}</Accordion.ItemBody>
+      <Accordion.ItemBody pb={4} px={3}>
+        {props.children}
+      </Accordion.ItemBody>
     </Accordion.ItemContent>
   </Accordion.Item>
 );

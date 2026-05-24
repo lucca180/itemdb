@@ -107,7 +107,8 @@ const ListSelect = (props: Props) => {
       <Menu.Trigger asChild>
         <Button
           whiteSpace={'normal'}
-          variant="solid"
+          colorPalette={'whiteAlpha'}
+          variant="subtle"
           size={props.size}
           fontSize={{ base: 'xs', md: 'sm' }}
           loading={isLoading || authLoading}
@@ -190,6 +191,8 @@ const ListSelect = (props: Props) => {
                       key={list.internal_id}
                       value={String(list.internal_id)}
                       onClick={() => handleSelect(list)}
+                      _hover={{ bg: 'whiteAlpha.100' }}
+                      cursor="pointer"
                     >
                       <Text
                         as="span"

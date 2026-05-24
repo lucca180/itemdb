@@ -71,13 +71,13 @@ const ItemCardBase = (props: ItemProps) => {
           flexFlow="column"
           justifyContent="center"
           alignItems="center"
-          boxShadow="sm"
+          boxShadow={'inset'}
           textAlign="center"
           cursor="pointer"
           flex="1 1 auto"
         >
-          <Skeleton w="80px" h="80px" />
-          <Skeleton w="80px" h="12px" mt={2} />
+          <Skeleton w="80px" h="80px" bg="whiteAlpha.300" />
+          <Skeleton w="80px" h="12px" mt={2} bg="whiteAlpha.300" />
         </Box>
       </Box>
     );
@@ -198,10 +198,9 @@ const ItemCardContent = ({
     justifyContent="center"
     alignItems="center"
     boxShadow={
-      selected
-        ? 'outline'
-        : '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);'
+      selected ? 'none' : '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);'
     }
+    outline={selected ? '3px solid rgba(66, 153, 225, 0.6)' : undefined}
     filter={highlight ? 'drop-shadow(0px 0px 5px #f0f03d)' : undefined}
     textAlign="center"
     cursor="pointer"

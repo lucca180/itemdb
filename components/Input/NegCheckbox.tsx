@@ -54,9 +54,15 @@ const NegCheckbox = (props: Props) => {
       onCheckedChange={handleChange}
       value={props.value}
       disabled={props.disabled}
+      size="sm"
+      cursor={props.disabled ? 'not-allowed' : 'pointer'}
     >
       <Checkbox.HiddenInput />
-      <Checkbox.Control />
+      <Checkbox.Control
+        borderColor={'whiteAlpha.300'}
+        borderWidth="2px"
+        cursor={props.disabled ? 'not-allowed' : 'pointer'}
+      />
       <Checkbox.Label>{props.children}</Checkbox.Label>
     </Checkbox.Root>
   );

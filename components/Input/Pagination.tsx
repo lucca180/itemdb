@@ -21,19 +21,31 @@ const Pagination = (props: Props) => {
   if (currentPage == null || totalPages == null || !setPage)
     return (
       <HStack mt={mt ?? 4} mb={mb} justifyContent="center">
-        <IconButton size="sm" disabled aria-label="Jump to first page button" color="gray.300">
+        <IconButton
+          size="sm"
+          colorPalette={'whiteAlpha'}
+          variant="subtle"
+          disabled
+          aria-label="Jump to first page button"
+        >
           <BiFirstPage size="24px" />
         </IconButton>
-        <Button size="sm" disabled>
+        <Button size="sm" colorPalette={'whiteAlpha'} variant="subtle" disabled>
           {t('General.back')}
         </Button>
         <Box>
           <Button size="sm" loading />
         </Box>
-        <Button size="sm" disabled>
+        <Button size="sm" colorPalette={'whiteAlpha'} variant="subtle" disabled>
           {t('General.next')}
         </Button>
-        <IconButton size="sm" disabled aria-label="Jump to last page button">
+        <IconButton
+          size="sm"
+          colorPalette={'whiteAlpha'}
+          variant="subtle"
+          disabled
+          aria-label="Jump to last page button"
+        >
           <BiLastPage size="24px" />
         </IconButton>
       </HStack>
@@ -46,16 +58,28 @@ const Pagination = (props: Props) => {
         disabled={currentPage <= 1}
         onClick={() => setPage(1)}
         aria-label="Jump to first page button"
-        color="gray.300"
+        colorPalette={'whiteAlpha'}
+        variant="subtle"
       >
         <BiFirstPage size="24px" />
       </IconButton>
-      <Button size="sm" disabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)}>
+      <Button
+        size="sm"
+        colorPalette={'whiteAlpha'}
+        variant="subtle"
+        disabled={currentPage <= 1}
+        onClick={() => setPage(currentPage - 1)}
+      >
         {t('General.back')}
       </Button>
       <Box>
         <NativeSelect.Root size="sm" variant="subtle" disabled={!props.totalPages}>
-          <NativeSelect.Field name="sortBy" value={currentPage} onChange={handleChange}>
+          <NativeSelect.Field
+            bg={'whiteAlpha.100'}
+            name="sortBy"
+            value={currentPage}
+            onChange={handleChange}
+          >
             {[...Array(props.totalPages || 1)].map((_, i) => (
               <option key={i + 1} value={i + 1}>
                 {i + 1}
@@ -69,6 +93,8 @@ const Pagination = (props: Props) => {
         size="sm"
         disabled={currentPage >= totalPages}
         onClick={() => setPage(currentPage + 1)}
+        colorPalette={'whiteAlpha'}
+        variant="subtle"
       >
         {t('General.next')}
       </Button>
@@ -77,7 +103,8 @@ const Pagination = (props: Props) => {
         disabled={currentPage >= totalPages}
         onClick={() => setPage(totalPages)}
         aria-label="Jump to last page button"
-        color="gray.300"
+        colorPalette={'whiteAlpha'}
+        variant="subtle"
       >
         <BiLastPage size="24px" />
       </IconButton>
