@@ -114,10 +114,12 @@ const RestockHeader = (props: Props) => {
             alt={`${shopInfo.name} thumbnail`}
             borderRadius="md"
             objectFit={'cover'}
-            boxShadow={'md'}
+            boxShadow={'sm'}
           />
         </Link>
-        <Heading as="h1">{shopInfo.name}</Heading>
+        <Heading as="h1" size="4xl" fontWeight={'bold'}>
+          {shopInfo.name}
+        </Heading>
         {props.children}
         {!isHistory && (
           <Text mt={3} fontSize="sm" textAlign={'center'}>
@@ -129,7 +131,7 @@ const RestockHeader = (props: Props) => {
                     src={'/favicon.svg'}
                     width={'18px'}
                     height={'18px'}
-                    style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '0.2rem' }}
+                    style={{ display: 'inline', verticalAlign: 'middle' }}
                     alt="link icon"
                   />
                 </Link>

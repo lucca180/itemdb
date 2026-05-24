@@ -233,7 +233,7 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
                   src={'/icons/neopets.png'}
                   width={'16px'}
                   height={'16px'}
-                  style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '0.2rem' }}
+                  style={{ display: 'inline', verticalAlign: 'middle' }}
                   alt="link icon"
                 />
               </Link>
@@ -250,7 +250,7 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
               src={'/favicon.svg'}
               width={'18px'}
               height={'18px'}
-              style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '0.2rem' }}
+              style={{ display: 'inline', verticalAlign: 'middle' }}
               alt="link icon"
             />
           </Link>
@@ -394,7 +394,7 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
         </Link>
       </Text>
       <Flex flexFlow="column" mt={10} gap={3} p={5} borderRadius={'lg'} bg="blackAlpha.500">
-        <Heading size="lg">{t('Restock.similar-shops')}</Heading>
+        <Heading size="2xl">{t('Restock.similar-shops')}</Heading>
         <Flex gap={5} flexWrap="wrap" justifyContent={'center'}>
           {similarShops.map((shop) => (
             <ShopCard key={shop.id} shop={shop} />

@@ -45,7 +45,7 @@ export const RarityView = (props: Props) => {
           gap={3}
           borderRadius={'md'}
         >
-          <Heading size="lg" textAlign="center">
+          <Heading size="3xl" textAlign="center" fontWeight={'bold'}>
             {t('Restock.rarity-range', { range })}
           </Heading>
           <Text textAlign={'center'}>{t(`Restock.${rarityText[range]}`)}</Text>

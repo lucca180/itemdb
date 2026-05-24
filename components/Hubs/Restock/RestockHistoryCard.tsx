@@ -22,9 +22,9 @@ const RestockHistoryCard = (props: Props) => {
         <Flex
           bg="gray.700"
           p={2}
-          bgGradient={`linear(to-r, rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.5), rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.35) 99%)`}
+          bgImage={`linear-gradient(to right, rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.5), rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.35) 99%)`}
           borderRadius={'md'}
-          boxShadow={'md'}
+          boxShadow={'sm'}
           alignItems={'center'}
           gap={2}
           w="400px"

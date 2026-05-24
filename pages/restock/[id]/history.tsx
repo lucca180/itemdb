@@ -115,14 +115,8 @@ const RestockHistory = (props: RestockHistoryPageProps) => {
       <Separator />
       <Center mt={2}>
         <HStack>
-          <NativeSelect.Root
-            variant="subtle"
-            size="sm"
-            bg="blackAlpha.300"
-            borderRadius={'md'}
-            disabled={isLoading}
-          >
-            <NativeSelect.Field onChange={handleModeChange} value={mode}>
+          <NativeSelect.Root variant="subtle" size="sm" borderRadius={'md'} disabled={isLoading}>
+            <NativeSelect.Field onChange={handleModeChange} value={mode} bg="blackAlpha.300">
               <option value="30days">{t('General.x-days', { x: 30, long: 'false' })}</option>
               <option value="7days">{t('General.x-days', { x: 7, long: 'false' })}</option>
               <option value="3days">{t('General.x-days', { x: 3, long: 'false' })}</option>
@@ -132,14 +126,8 @@ const RestockHistory = (props: RestockHistoryPageProps) => {
             </NativeSelect.Field>
             <NativeSelect.Indicator />
           </NativeSelect.Root>
-          <NativeSelect.Root
-            variant="subtle"
-            size="sm"
-            bg="blackAlpha.300"
-            borderRadius={'md'}
-            disabled={isLoading}
-          >
-            <NativeSelect.Field onChange={handleSortChange} value={sortMode}>
+          <NativeSelect.Root variant="subtle" size="sm" borderRadius={'md'} disabled={isLoading}>
+            <NativeSelect.Field onChange={handleSortChange} value={sortMode} bg="blackAlpha.300">
               <option value="price">{t('Restock.price-order')}</option>
               <option value="addedAt">{t('Restock.chronological-order')}</option>
             </NativeSelect.Field>
