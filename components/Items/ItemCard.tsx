@@ -54,7 +54,12 @@ const ItemCardBase = (props: ItemProps) => {
 
   if (!item || isLoading || !color)
     return (
-      <Box as="a" _hover={{ textDecoration: 'none' }} pointerEvents="none" style={props.style}>
+      <Box
+        as="a"
+        _hover={{ textDecoration: 'none' }}
+        pointerEvents="none"
+        style={{ ...props.style, display: 'flex', alignSelf: 'stretch', height: '100%' }}
+      >
         <Box
           w={{ base: 100, md: small ? 100 : 150 }}
           py={{ base: 2, md: small ? 2 : 4 }}
@@ -69,6 +74,7 @@ const ItemCardBase = (props: ItemProps) => {
           boxShadow="sm"
           textAlign="center"
           cursor="pointer"
+          flex="1 1 auto"
         >
           <Skeleton w="80px" h="80px" />
           <Skeleton w="80px" h="12px" mt={2} />
@@ -99,7 +105,7 @@ const ItemCardBase = (props: ItemProps) => {
         //@ts-ignore
         disableWhileShiftPressed
         disable={isMobile ? true : undefined}
-        css={props.style}
+        style={{ ...props.style, display: 'flex', alignSelf: 'stretch' }}
         attributes={{
           onPointerEnter: loadContextMenu,
           onFocus: loadContextMenu,
@@ -108,7 +114,10 @@ const ItemCardBase = (props: ItemProps) => {
         }}
       >
         {disableLink ? (
-          <Box _hover={{ textDecoration: 'none' }} style={props.style}>
+          <Box
+            _hover={{ textDecoration: 'none' }}
+            style={{ display: 'flex', height: '100%', width: '100%' }}
+          >
             <ItemCardContent
               item={item}
               color={color}
@@ -123,12 +132,13 @@ const ItemCardBase = (props: ItemProps) => {
             />
           </Box>
         ) : (
-          <Link asChild _hover={{ textDecoration: 'none' }} outline={'none'} style={props.style}>
+          <Link asChild _hover={{ textDecoration: 'none' }} outline={'none'}>
             <MainLink
               prefetch={disablePrefetch !== false ? false : undefined}
               trackEvent={utm_content || undefined}
               trackEventLabel={item.slug || undefined}
               href={'/item/' + (item.slug ?? item.internal_id)}
+              style={{ display: 'flex', height: '100%', width: '100%' }}
             >
               <ItemCardContent
                 item={item}
@@ -197,6 +207,7 @@ const ItemCardContent = ({
     cursor="pointer"
     textDecoration="none"
     gap={2}
+    flex="1 1 auto"
   >
     <ItemImage item={item} />
     <Text fontSize={{ base: 'xs', md: small ? 'xs' : 'sm' }}>{item.name}</Text>
