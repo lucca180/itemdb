@@ -227,111 +227,135 @@ export const DynamicListInfo = (props: DynamicListModalInfoProps) => {
         </List.Item>
         {dynamicType === 'addOnly' && (
           <>
-            <List.Item fontSize="sm" color="gray.400" css={{ b: { color: 'green.200' } }}>
+            <List.Item fontSize="sm" color="gray.400" css={{ '& b': { color: 'green.200' } }}>
               <List.Indicator asChild color="green.300">
                 <BsCheckCircleFill />
               </List.Indicator>
-              {t.rich('DynamicList.addOnly-1', {
-                b: (text) => <b>{text}</b>,
-              })}
+              <Text>
+                {t.rich('DynamicList.addOnly-1', {
+                  b: (text) => <b>{text}</b>,
+                })}
+              </Text>
             </List.Item>
-            <List.Item fontSize="sm" color="gray.400" css={{ b: { color: 'green.200' } }}>
+            <List.Item fontSize="sm" color="gray.400" css={{ '& b': { color: 'green.200' } }}>
               <List.Indicator asChild color="green.300">
                 <BsCheckCircleFill />
               </List.Indicator>
-              {t.rich('DynamicList.addOnly-2', {
-                b: (text) => <b>{text}</b>,
-              })}
+              <Text>
+                {t.rich('DynamicList.addOnly-2', {
+                  b: (text) => <b>{text}</b>,
+                })}
+              </Text>
             </List.Item>
-            <List.Item fontSize="sm" color="gray.400" css={{ b: { color: 'orange.200' } }}>
+            <List.Item fontSize="sm" color="gray.400" css={{ '& b': { color: 'orange.200' } }}>
               <List.Indicator asChild color="orange.300">
                 <BsExclamationCircleFill />
               </List.Indicator>
-              {t.rich('DynamicList.addOnly-3', {
-                b: (text) => <b>{text}</b>,
-              })}
+              <Text>
+                {t.rich('DynamicList.addOnly-3', {
+                  b: (text) => <b>{text}</b>,
+                })}
+              </Text>
             </List.Item>
-            <List.Item fontSize="sm" color="gray.400" css={{ b: { color: 'red.200' } }}>
+            <List.Item fontSize="sm" color="gray.400" css={{ '& b': { color: 'red.200' } }}>
               <List.Indicator asChild color="red.300">
                 <BsXCircleFill />
               </List.Indicator>
-              {t.rich('DynamicList.addOnly-4', {
-                b: (text) => <b>{text}</b>,
-                i: (text) => <i>{text}</i>,
-              })}
+              <Text>
+                {t.rich('DynamicList.addOnly-4', {
+                  b: (text) => <b>{text}</b>,
+                  i: (text) => <i>{text}</i>,
+                })}
+              </Text>
             </List.Item>
           </>
         )}
         {dynamicType === 'removeOnly' && (
           <>
-            <List.Item fontSize="sm" color="gray.400" css={{ b: { color: 'orange.200' } }}>
+            <List.Item fontSize="sm" color="gray.400" css={{ '& b': { color: 'orange.200' } }}>
               <List.Indicator asChild color="orange.300">
                 <BsExclamationCircleFill />
               </List.Indicator>
-              {t.rich('DynamicList.removeOnly-1', {
-                b: (text) => <b>{text}</b>,
-              })}
+              <Text>
+                {t.rich('DynamicList.removeOnly-1', {
+                  b: (text) => <b>{text}</b>,
+                })}
+              </Text>
             </List.Item>
-            <List.Item fontSize="sm" color="gray.400" css={{ b: { color: 'red.200' } }}>
+            <List.Item fontSize="sm" color="gray.400" css={{ '& b': { color: 'red.200' } }}>
               <List.Indicator asChild color="red.300">
                 <BsXCircleFill />
               </List.Indicator>
-              {t.rich('DynamicList.removeOnly-2', {
-                b: (text) => <b>{text}</b>,
-              })}
+              <Text>
+                {t.rich('DynamicList.removeOnly-2', {
+                  b: (text) => <b>{text}</b>,
+                })}
+              </Text>
             </List.Item>
-            <List.Item fontSize="sm" color="gray.400" css={{ b: { color: 'green.200' } }}>
+            <List.Item fontSize="sm" color="gray.400" css={{ '& b': { color: 'green.200' } }}>
               <List.Indicator asChild color="green.300">
                 <BsCheckCircleFill />
               </List.Indicator>
-              {t.rich('DynamicList.removeOnly-3', {
-                b: (text) => <b>{text}</b>,
-              })}
+              <Text>
+                {t.rich('DynamicList.removeOnly-3', {
+                  b: (text) => <b>{text}</b>,
+                })}
+              </Text>
             </List.Item>
-            <List.Item fontSize="sm" color="gray.400" css={{ b: { color: 'green.200' } }}>
+            <List.Item fontSize="sm" color="gray.400" css={{ '& b': { color: 'green.200' } }}>
               <List.Indicator asChild color="green.300">
                 <BsCheckCircleFill />
               </List.Indicator>
-              {t.rich('DynamicList.removeOnly-4', {
-                b: (text) => <b>{text}</b>,
-              })}
+              <Text>
+                {t.rich('DynamicList.removeOnly-4', {
+                  b: (text) => <b>{text}</b>,
+                })}
+              </Text>
             </List.Item>
           </>
         )}
         {['fullSync', 'search'].includes(dynamicType) && (
           <>
-            <List.Item fontSize="sm" color="gray.400" css={{ b: { color: 'green.200' } }}>
+            <List.Item fontSize="sm" color="gray.400" css={{ '& b': { color: 'green.200' } }}>
               <List.Indicator asChild color="green.300">
                 <BsCheckCircleFill />
               </List.Indicator>
-              {t.rich('DynamicList.fullSync-1', {
-                b: (text) => <b>{text}</b>,
-              })}
+              <Text>
+                {t.rich('DynamicList.fullSync-1', {
+                  b: (text) => <b>{text}</b>,
+                })}
+              </Text>
             </List.Item>
-            <List.Item fontSize="sm" color="gray.400" css={{ b: { color: 'red.200' } }}>
+            <List.Item fontSize="sm" color="gray.400" css={{ '& b': { color: 'red.200' } }}>
               <List.Indicator asChild color="red.300">
                 <BsXCircleFill />
               </List.Indicator>
-              {t.rich('DynamicList.fullSync-2', {
-                b: (text) => <b>{text}</b>,
-              })}
+              <Text>
+                {t.rich('DynamicList.fullSync-2', {
+                  b: (text) => <b>{text}</b>,
+                })}
+              </Text>
             </List.Item>
-            <List.Item fontSize="sm" color="gray.400" css={{ b: { color: 'green.200' } }}>
+            <List.Item fontSize="sm" color="gray.400" css={{ '& b': { color: 'green.200' } }}>
               <List.Indicator asChild color="green.300">
                 <BsCheckCircleFill />
               </List.Indicator>
-              {t.rich('DynamicList.fullSync-3', {
-                b: (text) => <b>{text}</b>,
-              })}
+              <Text>
+                {t.rich('DynamicList.fullSync-3', {
+                  b: (text) => <b>{text}</b>,
+                })}
+              </Text>
             </List.Item>
-            <List.Item fontSize="sm" color="gray.400" css={{ b: { color: 'red.200' } }}>
+            <List.Item fontSize="sm" color="gray.400" css={{ '& b': { color: 'red.200' } }}>
               <List.Indicator asChild color="red.300">
                 <BsXCircleFill />
               </List.Indicator>
-              {t.rich('DynamicList.fullSync-4', {
-                b: (text) => <b>{text}</b>,
-                i: (text) => <i>{text}</i>,
-              })}
+              <Text>
+                {t.rich('DynamicList.fullSync-4', {
+                  b: (text) => <b>{text}</b>,
+                  i: (text) => <i>{text}</i>,
+                })}
+              </Text>
             </List.Item>
           </>
         )}

@@ -209,11 +209,11 @@ const ListHeader = (props: ListHeaderProps) => {
           )}
           {(isOwner || user?.isAdmin) && (
             <Button
-              variant="subtle"
+              variant="solid"
               mt={3}
               colorPalette={color.isLight() ? 'blackAlpha' : 'whiteAlpha'}
               onClick={() => setOpenCreateModal?.(true)}
-              size="sm"
+              size="xs"
               loading={isLoading}
             >
               {t('Lists.edit-list-info')}
@@ -283,7 +283,8 @@ const ListHeader = (props: ListHeaderProps) => {
             )}
           </Stack>
           <Heading
-            size={{ base: 'lg', md: undefined }}
+            size={{ base: 'lg', md: '3xl' }}
+            fontWeight="bold"
             as={'h1'}
             display="inline-flex"
             alignItems={'center'}
@@ -299,7 +300,7 @@ const ListHeader = (props: ListHeaderProps) => {
                     ml={1}
                     aria-label="Dynamic List History"
                     data-umami-event="dynamic-list-history"
-                    size="sm"
+                    size="xs"
                     onClick={list.official || isOwner ? onOpenDynamic : undefined}
                     bg="blackAlpha.300"
                     borderRadius={'md'}
@@ -324,7 +325,7 @@ const ListHeader = (props: ListHeaderProps) => {
                     onClick={copyLink}
                     data-umami-event="copy-link"
                     bg="blackAlpha.300"
-                    size="sm"
+                    size="xs"
                     aria-label={t('Layout.copy-link')}
                   >
                     <FaShareAlt />
@@ -341,7 +342,7 @@ const ListHeader = (props: ListHeaderProps) => {
                   <IconButton
                     aria-label="Export as CSV"
                     data-umami-event="export-list"
-                    size="sm"
+                    size="xs"
                     onClick={onOpenExport}
                     bg="blackAlpha.300"
                     borderRadius={'md'}
@@ -443,7 +444,6 @@ const ListHeader = (props: ListHeaderProps) => {
                         <>
                           <b>{format.number(NPPrice)} NP</b>
                           <Image
-                            as={NextImage}
                             display="inline"
                             verticalAlign="bottom"
                             src={NPBag}
@@ -462,7 +462,7 @@ const ListHeader = (props: ListHeaderProps) => {
                             {format.number(NCPrice)} {t('General.caps')}
                           </b>{' '}
                           <Image
-                            as={NextImage}
+                            as="span"
                             display="inline"
                             verticalAlign="bottom"
                             src={GiftBox}

@@ -52,6 +52,7 @@ export const SearchList = (props: Props) => {
       minW="40px"
       bg="whiteAlpha.200"
       borderRadius={'md'}
+      startElementProps={{ px: 0, w: '40px' }}
       startElement={
         <IconButton
           onClick={setFocus}
@@ -78,6 +79,7 @@ export const SearchList = (props: Props) => {
         fontSize={'sm'}
         onChange={onChange}
         value={search}
+        border={0}
         w={search ? '175px' : '0'}
         p={search ? undefined : 0}
         ref={inputRef}

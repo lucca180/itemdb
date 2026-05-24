@@ -131,8 +131,51 @@ export const nativeSelectRecipe = defineSlotRecipe({
 });
 
 export const buttonRecipe = defineRecipe({
-  defaultVariants: {
-    // variant: 'subtle',
+  base: {
     colorPalette: 'whiteAlpha',
+  },
+  variants: {
+    variant: {
+      subtle: {},
+    },
+  },
+  defaultVariants: {
+    variant: 'subtle',
+  },
+});
+
+export const switchRecipe = defineSlotRecipe({
+  slots: ['root', 'control', 'label', 'thumb', 'indicator'],
+  variants: {
+    variant: {
+      solid: {
+        control: {
+          bg: 'whiteAlpha.400',
+          _checked: {
+            bg: 'whiteAlpha.500',
+          },
+        },
+        thumb: {
+          bg: 'white',
+          _checked: {
+            bg: 'white',
+          },
+        },
+      },
+      raised: {
+        control: {
+          bg: 'whiteAlpha.400',
+          _checked: {
+            bg: 'whiteAlpha.500',
+          },
+        },
+        thumb: {
+          bg: 'white',
+          _checked: {
+            bg: 'white',
+          },
+        },
+      },
+    },
   },
 });

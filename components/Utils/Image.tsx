@@ -108,6 +108,7 @@ const Image = forwardRef<HTMLImageElement, ImageProps>(function Image(props, ref
   return (
     <Box
       {...boxProps}
+      asChild
       w={w}
       h={h}
       minW={minW}

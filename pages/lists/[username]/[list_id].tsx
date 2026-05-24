@@ -643,7 +643,7 @@ const ListPage = (props: ListPageProps) => {
           {!isEdit && (
             <HStack>
               {canEdit && dynamicListCan(list, 'add') && (
-                <Button variant="solid" onClick={onOpenInsert} loading={isLoading}>
+                <Button onClick={onOpenInsert} loading={isLoading}>
                   {t('Lists.add-items')}{' '}
                   <Kbd ml={2} fontSize="xs">
                     A
@@ -871,7 +871,7 @@ const ListPage = (props: ListPageProps) => {
             p={3}
             bg="blackAlpha.500"
             borderRadius="md"
-            boxShadow={'lg'}
+            boxShadow={'sm'}
           >
             <Center flexFlow="column">
               <Flex
@@ -883,7 +883,7 @@ const ListPage = (props: ListPageProps) => {
                 textAlign={'center'}
                 flexFlow={'column'}
               >
-                <Heading size="lg">
+                <Heading size="xl">
                   {list.highlight
                     ? list.highlight
                     : list.official
