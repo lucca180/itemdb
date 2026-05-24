@@ -33,6 +33,7 @@ const DeleteUserModal = (props: Props) => {
     } catch (e) {
       setLoading(false);
       toast({
+        id: 'delete-user-error',
         title: t('General.an-error-has-occurred'),
         description: 'Please contact itemdb team via feedback page if the issue persists.',
         status: 'error',

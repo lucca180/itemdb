@@ -64,9 +64,13 @@ const ManualCheckCard = (props: Props) => {
       .then(() => setManualCheck(null));
 
     toast.promise(promise, {
-      success: { title: 'Success', description: 'Thank you' },
-      error: { title: 'Something wrong', description: 'Please try again later' },
-      loading: { title: 'Please wait' },
+      success: { id: 'manual-check-success', title: 'Success', description: 'Thank you' },
+      error: {
+        id: 'manual-check-error',
+        title: 'Something wrong',
+        description: 'Please try again later',
+      },
+      loading: { id: 'manual-check-loading', title: 'Please wait' },
     });
   };
 

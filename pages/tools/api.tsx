@@ -47,6 +47,7 @@ const APIKeysPage = (props: APIKeysPageProps) => {
 
     if (!name || !description) {
       toast({
+        id: 'api-key-missing-fields',
         title: 'Missing fields',
         description: 'Please fill in both the name and description fields to create an API key.',
         status: 'warning',
@@ -64,6 +65,7 @@ const APIKeysPage = (props: APIKeysPageProps) => {
     } catch (e) {
       console.error(e);
       toast({
+        id: 'api-key-create-error',
         title: 'Error creating API Key',
         description: 'An error occurred while creating the API key.',
         status: 'error',
@@ -82,13 +84,16 @@ const APIKeysPage = (props: APIKeysPageProps) => {
 
     toast.promise(prom, {
       loading: {
+        id: 'api-key-delete-loading',
         title: 'Deleting Key',
       },
       success: {
+        id: 'api-key-delete-success',
         title: 'Key Deleted',
         description: 'Refreshing the page to update the list of keys',
       },
       error: {
+        id: 'api-key-delete-error',
         title: 'Error deleting API Key',
         description: 'An error occurred while deleting the API key.',
       },

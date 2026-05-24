@@ -51,6 +51,7 @@ const RestockWrappedModal = (props: RestockWrappedModalProps) => {
     },
     onError: (err) => {
       toast({
+        id: 'restock-wrapped-render-error',
         title: 'Error',
         description: t('General.an-error-occured-please-try-again-later'),
         status: 'error',
@@ -132,6 +133,7 @@ const RestockWrappedModal = (props: RestockWrappedModalProps) => {
       await navigator.share(data);
     } catch (err: any) {
       toast({
+        id: 'restock-wrapped-share-error',
         title: 'Error',
         description: err.message,
         status: 'error',
@@ -158,6 +160,7 @@ const RestockWrappedModal = (props: RestockWrappedModalProps) => {
       ]);
 
       toast({
+        id: 'restock-wrapped-copy-success',
         title: t('General.success'),
         description: t('Restock.image-copied-to-clipboard'),
         status: 'success',
@@ -165,6 +168,7 @@ const RestockWrappedModal = (props: RestockWrappedModalProps) => {
       });
     } catch (err: any) {
       toast({
+        id: 'restock-wrapped-copy-error',
         title: 'Error',
         description: t('General.an-error-occured-please-try-again-later'),
         status: 'error',

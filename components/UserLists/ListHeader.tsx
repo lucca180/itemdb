@@ -109,6 +109,7 @@ const ListHeader = (props: ListHeaderProps) => {
       `${window.location.origin}/lists/${userName}/${list.slug ?? list.internal_id}`
     );
     toast({
+      id: 'list-header-copy-link',
       title: t('General.link-copied'),
       status: 'success',
       duration: 3000,

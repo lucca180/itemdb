@@ -102,6 +102,7 @@ const CreateItem = () => {
   const createItem = async () => {
     if (!item.name || !item.image) {
       toast({
+        id: 'create-item-missing-fields',
         title: 'Missing required fields.',
         description: 'Please fill out the name and image fields.',
         status: 'error',
@@ -133,6 +134,7 @@ const CreateItem = () => {
     };
 
     const toastID = toast({
+      id: 'create-item',
       title: 'Creating item...',
       status: 'info',
       duration: null,
@@ -157,6 +159,7 @@ const CreateItem = () => {
         await axios.post('/api/v1/items/process', null);
 
         toast.update(toastID, {
+          id: toastID,
           title: 'Item created.',
           description: 'The item was successfully created.',
           status: 'success',
@@ -168,6 +171,7 @@ const CreateItem = () => {
     } catch (err) {
       console.error(err);
       toast.update(toastID, {
+        id: toastID,
         title: 'Error creating item.',
         description: 'There was an error creating the item.',
         status: 'error',

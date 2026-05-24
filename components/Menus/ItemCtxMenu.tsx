@@ -121,6 +121,7 @@ const ItemCtxMenu = (props: Props) => {
     window.umami?.track('item-ctx-menu', { action: 'copy text' });
 
     toast({
+      id: 'item-ctx-copy',
       title: t('Layout.copied-to-clipboard'),
       description: text,
       status: 'success',
@@ -135,6 +136,7 @@ const ItemCtxMenu = (props: Props) => {
     window.umami?.track('item-ctx-menu', { action: 'open' });
 
     const toastId = toast({
+      id: 'item-ctx-add-to-list',
       title: t('Layout.adding-item-to-list'),
       status: 'info',
       duration: null,
@@ -154,6 +156,7 @@ const ItemCtxMenu = (props: Props) => {
       );
       if (res.data.success) {
         toast.update(toastId, {
+          id: toastId,
           title: t('Lists.item-added-to-list'),
           status: 'success',
           duration: 5000,
@@ -171,6 +174,7 @@ const ItemCtxMenu = (props: Props) => {
       }
 
       toast.update(toastId, {
+        id: toastId,
         title: t('General.an-error-occurred'),
         description: t('Layout.error-adding-item-to-list'),
         status: 'error',

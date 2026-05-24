@@ -77,7 +77,13 @@ export const TradeInsights = (props: TradeInsightsProps) => {
           );
         })}
         {releases.length > 2 && (
-          <Button size={'xs'} color="whiteAlpha.700" cursor="pointer" onClick={toggleShowMore}>
+          <Button
+            size={'xs'}
+            variant="subtle"
+            colorPalette="whiteAlpha"
+            cursor="pointer"
+            onClick={toggleShowMore}
+          >
             {showMore ? t('ItemPage.show-less') : t('ItemPage.show-more')}
           </Button>
         )}

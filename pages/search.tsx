@@ -207,6 +207,7 @@ const SearchPage = (props: SearchPageProps) => {
         .then((res) => setResult(res.data));
     } catch (err) {
       toast({
+        id: 'search-error',
         title: t('General.an-error-occurred'),
         description: t('General.try-again-later'),
         status: 'error',
@@ -295,9 +296,18 @@ const SearchPage = (props: SearchPageProps) => {
     const listPromise = addItemToList(list_id, selectedItems);
 
     toast.promise(listPromise, {
-      success: { title: t('Lists.items-added-to-list'), duration: 3000 },
-      error: { title: t('General.oops'), description: t('Lists.errorOccurred') },
+      success: {
+        id: 'search-add-items-success',
+        title: t('Lists.items-added-to-list'),
+        duration: 3000,
+      },
+      error: {
+        id: 'search-add-items-error',
+        title: t('General.oops'),
+        description: t('Lists.errorOccurred'),
+      },
       loading: {
+        id: 'search-add-items-loading',
         title: `${t('Lists.adding-items-to-list')}...`,
         description: `${t('Lists.this-may-take-a-while-please-wait')}...`,
         duration: null,

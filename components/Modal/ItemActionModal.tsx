@@ -44,6 +44,7 @@ const ItemActionModal = (props: ItemActionModalProps) => {
 
       if (res.status === 200) {
         toast({
+          id: 'item-action-success',
           title: t('General.success'),
           status: 'success',
           duration: 3000,

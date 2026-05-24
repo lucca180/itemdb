@@ -34,6 +34,7 @@ export default function IncreaseAPIModal(props: IncreaseAPIModalProps) {
     try {
       await axios.post('/api/auth/apikeys', { key_id, newLimit, justification });
       toast({
+        id: 'api-limit-increase-success',
         title: 'API Limit Increase Requested',
         description:
           'Your request has been submitted. We will get back to you as soon as possible.',
@@ -43,6 +44,7 @@ export default function IncreaseAPIModal(props: IncreaseAPIModalProps) {
     } catch (e) {
       console.error(e);
       toast({
+        id: 'api-limit-increase-error',
         title: 'Error requesting API limit increase',
         description: t('General.try-again-later'),
         status: 'error',

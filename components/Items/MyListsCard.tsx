@@ -73,12 +73,13 @@ const ItemMyLists = (props: Props) => {
       .then(() => mutate());
 
     toast.promise(promise, {
-      success: { title: t('General.changes-saved') },
+      success: { id: 'my-lists-action-success', title: t('General.changes-saved') },
       error: {
+        id: 'my-lists-action-error',
         title: t('General.something-went-wrong'),
         description: t('General.try-again-later'),
       },
-      loading: { title: `${t('General.saving')}...` },
+      loading: { id: 'my-lists-action-loading', title: `${t('General.saving')}...` },
     });
   };
 

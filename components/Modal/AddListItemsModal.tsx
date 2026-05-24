@@ -52,6 +52,7 @@ export default function AddListItemsModal(props: AddListItemsModalProps) {
     if (!user || !item) return;
 
     const toastId = toast({
+      id: 'add-list-item',
       title: t('Layout.adding-item-to-list'),
       status: 'info',
       duration: null,
@@ -71,6 +72,7 @@ export default function AddListItemsModal(props: AddListItemsModalProps) {
       );
       if (res.data.success) {
         toast.update(toastId, {
+          id: toastId,
           title: t('Lists.item-added-to-list'),
           description: t('Lists.need-refresh'),
           status: 'success',
@@ -89,6 +91,7 @@ export default function AddListItemsModal(props: AddListItemsModalProps) {
       }
 
       toast.update(toastId, {
+        id: toastId,
         title: t('General.an-error-occurred'),
         description: t('Layout.error-adding-item-to-list'),
         status: 'error',

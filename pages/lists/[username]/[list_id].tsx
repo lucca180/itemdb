@@ -300,6 +300,7 @@ const ListPage = (props: ListPageProps) => {
       console.error(err);
 
       toast({
+        id: 'list-page-init-error',
         title: t('General.an-error-occurred'),
         description: typeof err === 'string' ? err : t('General.try-again-later'),
         status: 'error',
@@ -486,6 +487,7 @@ const ListPage = (props: ListPageProps) => {
     toast.closeAll();
 
     const x = toast({
+      id: 'list-page-save-changes',
       title: `${t('General.saving-changes')}...`,
       status: 'info',
       duration: null,
@@ -501,6 +503,7 @@ const ListPage = (props: ListPageProps) => {
 
       if (res.data.success) {
         toast.update(x, {
+          id: x,
           title: t('Feedback.changes-saved'),
           status: 'success',
           duration: 5000,
@@ -512,6 +515,7 @@ const ListPage = (props: ListPageProps) => {
     } catch (err) {
       console.error(err);
       toast.update(x, {
+        id: x,
         title: t('General.an-error-occurred'),
         description: t('General.try-again-later'),
         status: 'error',

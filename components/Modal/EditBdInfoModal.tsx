@@ -123,9 +123,13 @@ export default function EditBdInfoModal(props: EditBdInfoModalProps) {
     });
 
     toast.promise(prom, {
-      success: { title: 'Success', description: 'Thank you' },
-      error: { title: 'Something wrong', description: 'Please try again later' },
-      loading: { title: 'Please wait' },
+      success: { id: 'edit-bd-info-success', title: 'Success', description: 'Thank you' },
+      error: {
+        id: 'edit-bd-info-error',
+        title: 'Something wrong',
+        description: 'Please try again later',
+      },
+      loading: { id: 'edit-bd-info-loading', title: 'Please wait' },
     });
 
     prom.then(() => onClose()).catch((e) => console.error(e));

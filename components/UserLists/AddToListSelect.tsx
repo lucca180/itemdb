@@ -48,6 +48,7 @@ const AddToListSelect = (props: Props) => {
       );
       if (res.data.success) {
         toast({
+          id: 'add-to-list-success',
           title: t('Lists.item-added-to-list'),
           status: 'success',
           duration: 5000,
@@ -66,6 +67,7 @@ const AddToListSelect = (props: Props) => {
       }
 
       toast({
+        id: 'add-to-list-error',
         title: t('General.an-error-occurred'),
         status: 'error',
         duration: 5000,
@@ -96,6 +98,7 @@ const AddToListSelect = (props: Props) => {
       console.error(err);
 
       toast({
+        id: 'create-list-for-item-error',
         title: t('General.an-error-occurred'),
         status: 'error',
         duration: 5000,

@@ -79,6 +79,7 @@ const ImportRestockModal = (props: ImportRestockModalProps) => {
       if (!isSerializable(sessions)) {
         console.error('Invalid session data:', sessions);
         toast({
+          id: 'import-restock-invalid-session',
           title: t('General.error'),
           description: <ResetToastMsg />,
           status: 'error',
@@ -106,6 +107,7 @@ const ImportRestockModal = (props: ImportRestockModalProps) => {
       refresh();
     } catch (e) {
       toast({
+        id: 'import-restock-error',
         title: t('General.error'),
         description: t('General.something-went-wrong-please-try-again-later'),
         status: 'error',

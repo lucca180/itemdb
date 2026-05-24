@@ -256,6 +256,7 @@ const ImportItems = (props: ImportItemsProps) => {
 
     if (!importData.length) {
       toast({
+        id: 'import-list-no-data',
         title: t('General.error'),
         description: t('Lists.import-error'),
         status: 'error',
@@ -266,6 +267,7 @@ const ImportItems = (props: ImportItemsProps) => {
     }
 
     const toastInfo = toast({
+      id: 'import-list',
       title: t('Lists.import-toast-title', {
         action: importInfo.action === 'add' ? t('General.importing') : t('General.removing'),
       }),
@@ -300,6 +302,7 @@ const ImportItems = (props: ImportItemsProps) => {
       }
 
       toast.update(toastInfo, {
+        id: toastInfo,
         title: t('General.success'),
         description: t('Lists.import-success', {
           action:
@@ -318,6 +321,7 @@ const ImportItems = (props: ImportItemsProps) => {
     } catch (e) {
       console.error(e);
       toast.update(toastInfo, {
+        id: toastInfo,
         title: t('General.error'),
         description: t('Lists.import-error-action', {
           action:

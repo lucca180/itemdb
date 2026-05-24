@@ -53,6 +53,7 @@ const DynamicListModal = (props: DynamicListModalProps) => {
       });
 
       toast({
+        id: 'dynamic-list-created',
         title: t('Lists.dynamic-list-created'),
         status: 'success',
         duration: 5000,

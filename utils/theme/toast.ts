@@ -6,7 +6,7 @@ import { toaster } from '@components/ui/toaster';
 type ToastStatus = 'success' | 'error' | 'warning' | 'info' | 'loading';
 
 type ToastOptions = {
-  id?: string;
+  id: string;
   title?: ReactNode;
   description?: ReactNode;
   status?: ToastStatus;
@@ -20,8 +20,12 @@ type PromiseToastOptions = {
   error?: Omit<ToastOptions, 'status'>;
 };
 
-const normalizeOptions = (options: ToastOptions = {}) => ({
-  id: options.id,
+let toastCounter = 0;
+
+const createToastInstanceId = (id: string) => `${id}-${Date.now()}-${toastCounter++}`;
+
+const normalizeOptions = (options: ToastOptions, id = options.id) => ({
+  id,
   title: options.title,
   description: options.description,
   type: options.status ?? 'info',
@@ -31,7 +35,8 @@ const normalizeOptions = (options: ToastOptions = {}) => ({
 
 export function useToast() {
   const create = useCallback(
-    (options: ToastOptions) => (toaster as any).create(normalizeOptions(options)),
+    (options: ToastOptions) =>
+      (toaster as any).create(normalizeOptions(options, createToastInstanceId(options.id))),
     []
   );
   const update = useCallback((id: string, options: ToastOptions) => {

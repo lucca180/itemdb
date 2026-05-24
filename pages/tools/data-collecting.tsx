@@ -59,12 +59,17 @@ const DataCollectingPage = () => {
 
     const resProm = axios.post('/api/v1/tools/data-collecting', obj);
     toast.promise(resProm, {
-      success: { title: t('General.success'), description: t('General.thank-you') },
+      success: {
+        id: 'data-collecting-success',
+        title: t('General.success'),
+        description: t('General.thank-you'),
+      },
       error: {
+        id: 'data-collecting-error',
         title: t('General.something-went-wrong'),
         description: t('General.try-again-later'),
       },
-      loading: { title: t('General.sending-dots') },
+      loading: { id: 'data-collecting-loading', title: t('General.sending-dots') },
     });
 
     await resProm;

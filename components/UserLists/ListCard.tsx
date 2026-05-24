@@ -71,6 +71,7 @@ const UserListCard = (props: Props) => {
       `${window.location.origin}/lists/${userName}/${list.slug ?? list.internal_id}`
     );
     toast({
+      id: 'list-card-copy-link',
       title: t('General.link-copied'),
       status: 'success',
       duration: 3000,

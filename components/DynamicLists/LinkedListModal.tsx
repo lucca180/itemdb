@@ -42,6 +42,7 @@ const LinkedListModal = (props: LinkedListModalProps) => {
 
       onCreate?.({ ...newList, dynamicType: dynamicType, linkedListId: list.internal_id });
       toast({
+        id: 'linked-list-created',
         title: t('Lists.linked-list-created'),
         status: 'success',
         duration: 5000,

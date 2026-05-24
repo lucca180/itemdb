@@ -37,6 +37,7 @@ const ColorInfoCard = (props: Props) => {
     window.umami?.track('color-info-card', { action: 'copy text' });
 
     toast({
+      id: 'color-info-card-copy',
       title: t('Layout.copied-to-clipboard'),
       description: text,
       status: 'success',

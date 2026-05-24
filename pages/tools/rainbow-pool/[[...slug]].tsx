@@ -213,6 +213,7 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
     navigator.clipboard.writeText(`${window.location.origin}${router.asPath}`);
 
     toast({
+      id: 'rainbow-pool-copy-link',
       title: t('General.link-copied'),
       status: 'success',
       duration: 3000,

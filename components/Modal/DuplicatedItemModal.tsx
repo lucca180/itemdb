@@ -50,6 +50,7 @@ const DuplicatedItemModal = (props: DuplicatedItemModalProps) => {
       });
       if (res.data.success) {
         toast({
+          id: 'duplicated-item-added',
           title: t('Lists.item-added-to-list'),
           status: 'success',
           duration: 5000,

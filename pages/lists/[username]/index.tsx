@@ -200,6 +200,7 @@ const UserListsPage = (props: Props) => {
       console.error(err);
 
       toast({
+        id: 'user-lists-init-error',
         title: 'An error occurred',
         description: typeof err === 'string' ? err : 'Please try again later',
         status: 'error',
@@ -262,6 +263,7 @@ const UserListsPage = (props: Props) => {
     toast.closeAll();
 
     const x = toast({
+      id: 'user-lists-save-changes',
       title: `${t('General.saving-changes')}...`,
       status: 'info',
       duration: null,
@@ -276,6 +278,7 @@ const UserListsPage = (props: Props) => {
 
       if (res.data.success) {
         toast.update(x, {
+          id: x,
           title: t('Feedback.changes-saved'),
           status: 'success',
           duration: 5000,
@@ -287,6 +290,7 @@ const UserListsPage = (props: Props) => {
       console.error(err);
 
       toast.update(x, {
+        id: x,
         title: t('General.an-error-occurred'),
         description: t('General.try-again-later'),
         status: 'error',

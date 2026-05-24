@@ -25,6 +25,7 @@ const LanguageToast = (props: LanguageToastProps) => {
 
     if (action === 'dismiss') {
       toast.update('language-toast', {
+        id: 'language-toast',
         description: t('Layout.you-can-change-lang'),
         duration: 5000,
         isClosable: true,

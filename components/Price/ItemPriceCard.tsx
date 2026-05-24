@@ -172,14 +172,17 @@ const ItemPriceCard = (props: Props) => {
 
     toast.promise(resultProm, {
       loading: {
+        id: 'force-update-prices-loading',
         title: 'Running Price Process Algorithm',
       },
       success: {
+        id: 'force-update-prices-success',
         title: 'Algorithm Completed',
         description:
           'Prices may have been updated - if not, please gather more data before trying again',
       },
       error: {
+        id: 'force-update-prices-error',
         title: 'An error occurred',
         description: 'Please DO NOT try again.',
       },
