@@ -30,7 +30,7 @@ export const AuthButton = (props: AuthButtonProps) => {
       {isOpen && <LoginModal isOpen={isOpen} onClose={onClose} />}
       <Box
         display="flex"
-        gap={{ base: 2, md: 3 }}
+        gap={{ base: 1, md: 3 }}
         alignItems="center"
         justifyContent="flex-end"
         maxW="30%"
@@ -53,12 +53,12 @@ export const AuthButton = (props: AuthButtonProps) => {
         )}
         {user && (
           <Menu.Root>
-            <Menu.Trigger asChild>
+            <Menu.Trigger asChild gap={0}>
               <Button
                 cursor="pointer"
                 variant="subtle"
                 colorPalette="whiteAlpha"
-                px={{ base: 2, md: 4 }}
+                px={{ base: 1, md: 4 }}
                 textAlign="center"
                 data-umami-event="profile-menu-button"
               >

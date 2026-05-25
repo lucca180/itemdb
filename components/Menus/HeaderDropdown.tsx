@@ -15,43 +15,43 @@ export const DropdownButton = (props: Props) => {
   const { label, href, children, bg } = props;
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile] = useMediaQuery(['(hover: none)'], { fallback: [false] });
-
-  const shouldBeLink = !children || isMobile;
-
-  if (shouldBeLink) {
-    return (
-      <Button
-        asChild
-        size={{ base: 'xs', sm: 'sm' }}
-        variant="ghost"
-        colorPalette="whiteAlpha"
-        h={8}
-      >
-        <NextLink href={href} prefetch={false}>
-          {label}
-        </NextLink>
-      </Button>
-    );
-  }
+  const shouldBeLink = !children || !isMobile;
 
   return (
     <Popover.Root
-      open={isOpen}
+      open={!children ? false : isOpen}
       onOpenChange={(e) => setIsOpen(e.open)}
       positioning={{ placement: 'bottom' }}
     >
       <Popover.Trigger asChild>
-        <Button
-          colorPalette="whiteAlpha"
-          size={{ base: 'xs', sm: 'sm' }}
-          variant={'ghost'}
-          onMouseEnter={() => setIsOpen(true)}
-          onMouseLeave={() => setIsOpen(false)}
-          px={3}
-          h={8}
-        >
-          {label}
-        </Button>
+        {shouldBeLink ? (
+          <Button
+            asChild
+            colorPalette="whiteAlpha"
+            size={{ base: 'xs', sm: 'sm' }}
+            variant={'ghost'}
+            onMouseEnter={() => setIsOpen(true)}
+            onMouseLeave={() => setIsOpen(false)}
+            px={3}
+            h={8}
+          >
+            <NextLink href={href} prefetch={false}>
+              {label}
+            </NextLink>
+          </Button>
+        ) : (
+          <Button
+            colorPalette="whiteAlpha"
+            size={{ base: 'xs', sm: 'sm' }}
+            variant={'ghost'}
+            onMouseEnter={() => setIsOpen(true)}
+            onMouseLeave={() => setIsOpen(false)}
+            px={3}
+            h={8}
+          >
+            {label}
+          </Button>
+        )}
       </Popover.Trigger>
       <Portal>
         <Popover.Positioner>

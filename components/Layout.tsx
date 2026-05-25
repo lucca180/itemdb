@@ -139,76 +139,86 @@ const Layout = (props: Props) => {
           </Flex>
           <AuthButton />
         </Flex>
-        <Flex
-          bg={props.mainColor}
-          justifyContent={'center'}
-          alignItems={'center'}
-          py={1}
-          gap={{ base: 1, md: 3 }}
-        >
-          <DropdownButton label={t('Layout.home')} href="/" />
-          <DropdownButton bg={props.mainColor} label={t('Layout.articles')} href="/articles">
-            <DropdownOption label={t('Layout.userscripts')} href="/articles/userscripts" />
-            <DropdownOption label={'The Void Within'} href="/hub/the-void-within" />
-            <DropdownOption label={t('Layout.patch-notes')} href="/articles" />
-            <DropdownOption label={t('Layout.how-to-contribute')} href="/contribute" />
-            <DropdownOption
-              label={t('Layout.sort-galleries-by-color')}
-              href="/articles/sort-gallery"
-            />
-            <DropdownOption
-              label={t('Layout.advanced-search-queries')}
-              href="/articles/advanced-search-queries"
-            />
-          </DropdownButton>
-          <DropdownButton bg={props.mainColor} label={t('Layout.restock')} href="/restock">
-            <DropdownOption label={t('Layout.restock-dashboard')} href="/restock/dashboard" />
-            <DropdownOption label={'Neopian Fresh Foods'} href="/restock/neopian-fresh-foods" />
-            <DropdownOption label={"Cog's Tog"} href="/restock/cogs-togs" />
-            <DropdownOption
-              label={t('Restock.restock-history')}
-              href="/restock/neopian-fresh-foods/history"
-            />
-            <DropdownOption label={t('Layout.view-all-shops')} href="/restock/" />
-          </DropdownButton>
-          <DropdownButton bg={props.mainColor} label={t('Lists.Lists')} href="/lists/official">
-            <DropdownOption label={t('Layout.import-items-and-checklists')} href="/lists/import" />
-            <DropdownOption
-              label={t('Layout.dailies-and-freebies')}
-              href="/lists/official/cat/dailies"
-            />
-            <DropdownOption
-              label={t('Layout.exclusive-clothes')}
-              href="/hub/outfits/aisha"
-              newUntil={1748735999000}
-            />
-            <DropdownOption
-              label={t('General.dynamic-lists')}
-              href="/articles/checklists-and-dynamic-lists"
-            />
-            <DropdownOption label={t('HomePage.leaving-nc-mall')} href="/mall/leaving" />
-            <DropdownOption label={'Quest Log'} href="/lists/official/cat/quest-log" />
-            <DropdownOption label={t('Layout.all-official-lists')} href="/lists/official" />
-          </DropdownButton>
-          <DropdownButton bg={props.mainColor} label={t('Layout.tools')} href="/tools/rainbow-pool">
-            <DropdownOption label={t('Layout.sdb-pricer')} href="/articles/userscripts" />
-            <DropdownOption label={t('Layout.userscripts')} href="/articles/userscripts" />
-            <DropdownOption label={t('Layout.rainbow-pool-tool')} href="/tools/rainbow-pool" />
-            <DropdownOption label={t('Layout.item-effects')} href="/hub/item-effects" />
-            <DropdownOption label={t('Layout.restock-dashboard')} href="/restock/dashboard" />
-            <DropdownOption
-              label={t('Calculator.pricing-calculator')}
-              href="/tools/price-calculator"
-            />
-          </DropdownButton>
-          <DropdownButton bg={props.mainColor} label={t('Layout.contribute')} href="/contribute">
-            <DropdownOption label={'Item Data Extractor'} href="/contribute" />
-            <DropdownOption label={t('Layout.missing-info-hub')} href="/hub/missing-info" />
-            <DropdownOption label={t('Layout.trade-pricing')} href="/feedback/trades" />
-            <DropdownOption label={t('Feedback.suggestion-voting')} href="/feedback/vote" />
-            <DropdownOption label={t('Layout.feedback-and-ideas')} href="/feedback" />
-            <DropdownOption label={t('Layout.report-your-nc-trades')} href="/mall/report" />
-          </DropdownButton>
+        <Flex bg={props.mainColor} as="nav" justifyContent="center">
+          <Flex
+            margin={'0 auto'}
+            maxW="100%"
+            alignItems={'center'}
+            py={1}
+            gap={{ base: 1, md: 3 }}
+            overflowX="auto"
+          >
+            <DropdownButton label={t('Layout.home')} href="/" />
+            <DropdownButton bg={props.mainColor} label={t('Layout.articles')} href="/articles">
+              <DropdownOption label={t('Layout.userscripts')} href="/articles/userscripts" />
+              <DropdownOption label={'The Void Within'} href="/hub/the-void-within" />
+              <DropdownOption label={t('Layout.patch-notes')} href="/articles" />
+              <DropdownOption label={t('Layout.how-to-contribute')} href="/contribute" />
+              <DropdownOption
+                label={t('Layout.sort-galleries-by-color')}
+                href="/articles/sort-gallery"
+              />
+              <DropdownOption
+                label={t('Layout.advanced-search-queries')}
+                href="/articles/advanced-search-queries"
+              />
+            </DropdownButton>
+            <DropdownButton bg={props.mainColor} label={t('Layout.restock')} href="/restock">
+              <DropdownOption label={t('Layout.restock-dashboard')} href="/restock/dashboard" />
+              <DropdownOption label={'Neopian Fresh Foods'} href="/restock/neopian-fresh-foods" />
+              <DropdownOption label={"Cog's Tog"} href="/restock/cogs-togs" />
+              <DropdownOption
+                label={t('Restock.restock-history')}
+                href="/restock/neopian-fresh-foods/history"
+              />
+              <DropdownOption label={t('Layout.view-all-shops')} href="/restock/" />
+            </DropdownButton>
+            <DropdownButton bg={props.mainColor} label={t('Lists.Lists')} href="/lists/official">
+              <DropdownOption
+                label={t('Layout.import-items-and-checklists')}
+                href="/lists/import"
+              />
+              <DropdownOption
+                label={t('Layout.dailies-and-freebies')}
+                href="/lists/official/cat/dailies"
+              />
+              <DropdownOption
+                label={t('Layout.exclusive-clothes')}
+                href="/hub/outfits/aisha"
+                newUntil={1748735999000}
+              />
+              <DropdownOption
+                label={t('General.dynamic-lists')}
+                href="/articles/checklists-and-dynamic-lists"
+              />
+              <DropdownOption label={t('HomePage.leaving-nc-mall')} href="/mall/leaving" />
+              <DropdownOption label={'Quest Log'} href="/lists/official/cat/quest-log" />
+              <DropdownOption label={t('Layout.all-official-lists')} href="/lists/official" />
+            </DropdownButton>
+            <DropdownButton
+              bg={props.mainColor}
+              label={t('Layout.tools')}
+              href="/tools/rainbow-pool"
+            >
+              <DropdownOption label={t('Layout.sdb-pricer')} href="/articles/userscripts" />
+              <DropdownOption label={t('Layout.userscripts')} href="/articles/userscripts" />
+              <DropdownOption label={t('Layout.rainbow-pool-tool')} href="/tools/rainbow-pool" />
+              <DropdownOption label={t('Layout.item-effects')} href="/hub/item-effects" />
+              <DropdownOption label={t('Layout.restock-dashboard')} href="/restock/dashboard" />
+              <DropdownOption
+                label={t('Calculator.pricing-calculator')}
+                href="/tools/price-calculator"
+              />
+            </DropdownButton>
+            <DropdownButton bg={props.mainColor} label={t('Layout.contribute')} href="/contribute">
+              <DropdownOption label={'Item Data Extractor'} href="/contribute" />
+              <DropdownOption label={t('Layout.missing-info-hub')} href="/hub/missing-info" />
+              <DropdownOption label={t('Layout.trade-pricing')} href="/feedback/trades" />
+              <DropdownOption label={t('Feedback.suggestion-voting')} href="/feedback/vote" />
+              <DropdownOption label={t('Layout.feedback-and-ideas')} href="/feedback" />
+              <DropdownOption label={t('Layout.report-your-nc-trades')} href="/mall/report" />
+            </DropdownButton>
+          </Flex>
         </Flex>
         <Box
           as="main"

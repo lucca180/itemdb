@@ -78,7 +78,7 @@ export const SearchBar = () => {
             <SearchMenu />
           </Flex>
         }
-        endElementProps={{ h: '100%', w: 'auto', display: 'flex', alignItems: 'center' }}
+        endElementProps={{ h: '100%', w: 'auto', display: 'flex', alignItems: 'center', px: 0 }}
       >
         <Input
           variant="subtle"
