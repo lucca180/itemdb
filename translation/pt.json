@@ -663,7 +663,7 @@
     "multiple-amount-msg": "Por favor insira o <b>valor unitário</b> para este item. Divida o valor total pela quantidade - se necessário.",
     "unit-price-in-neopoints": "Preço unitário em Neopontos",
     "script-issues-tool-cta": "Problemas com Scripts? Confira nossa Ferramenta de <Link>Solução de Problemas</Link>!",
-    "cool-negg-alert": "NÃO utilize o valor <b>Cool Negg</b> para compor o preço do lote. Verifique as diretrizes para mais informações."
+    "cool-negg-alert": "NÃO utilize o valor de <b>Cool Negg</b> para compor o preço do lote. Verifique as diretrizes para mais informações."
   },
   "Lists": {
     "add-to-list": "Adicionar a Lista",

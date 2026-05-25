@@ -110,11 +110,16 @@ const FeedbackTrade = (props: Props) => {
       <Flex flexFlow={{ base: 'column-reverse', md: 'column' }} gap={4}>
         <Flex alignItems="center">
           <HStack gap={4} flex="1" justifyContent="center">
-            <Button colorPalette="gray" variant="solid" disabled={!hasUndo} onClick={handleUndo}>
+            <Button
+              colorPalette="whiteAlpha"
+              variant="subtle"
+              disabled={!hasUndo}
+              onClick={handleUndo}
+            >
               <Icon as={BsArrowLeft} mr={2} />
               {t('General.back')}
             </Button>
-            <Button colorPalette="gray" variant="outline" onClick={() => handleSkip?.()}>
+            <Button colorPalette="gray" variant="subtle" onClick={() => handleSkip?.()}>
               <Icon as={BsArrowLeftRight} mr={2} />
               {t('General.skip')}
             </Button>
@@ -162,8 +167,8 @@ const FeedbackTrade = (props: Props) => {
                     </Badge>
                   </Text>
                 )}
-                {trade?.wishlist.includes('Cool Negg') && (
-                  <Alert.Root status="error" variant="outline" borderRadius="md" mt={1}>
+                {trade?.wishlist.toLowerCase().includes('cool negg') && (
+                  <Alert.Root status="error" variant="surface" borderRadius="md" mt={2}>
                     <Alert.Indicator />
                     <Alert.Content textAlign="left">
                       <Alert.Description fontSize="xs">
@@ -241,14 +246,17 @@ const ItemTrade = (props: ItemTradeProps) => {
     if (!item.price || !props.useShortcuts) return;
 
     if (e.key.toLowerCase() === 'k') {
+      e.preventDefault();
       handleChange(item.price.toString() + '000');
     }
 
     if (e.key.toLowerCase() === 'm') {
+      e.preventDefault();
       handleChange(item.price.toString() + '000000');
     }
 
     if (e.key.toLowerCase() === 'b') {
+      e.preventDefault();
       handleChange(item.price.toString() + '000000000');
     }
   };
@@ -294,14 +302,15 @@ const ItemTrade = (props: ItemTradeProps) => {
             {item.name}
           </Link>
           <Field.Root>
-            <HStack>
+            <HStack w="100%">
               <CustomNumberInput
                 skipDebounce
                 wrapperProps={{
-                  variant: 'filled',
+                  variant: 'subtle',
                   size: 'sm',
                   placeholder: t('Feedback.unit-price-in-neopoints'),
                   flex: 1,
+                  w: '100%',
                 }}
                 inputProps={{
                   ref: ref,
@@ -309,6 +318,7 @@ const ItemTrade = (props: ItemTradeProps) => {
                   textAlign: 'left',
                   onKeyDown: handleKeyDown,
                   name: item.trade_id + item.name + item.order,
+                  bg: 'whiteAlpha.200',
                 }}
                 value={item.price?.toString()}
                 onChange={(val) => handleChange(val)}

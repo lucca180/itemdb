@@ -18,6 +18,10 @@ body {
   background-color: var(--global-color-selection, #0073ff4d);
 }
 
+:focus-visible {
+  outline: none;
+}
+
 @keyframes restock2024 {
   from {
     transform: translate(0, 0);

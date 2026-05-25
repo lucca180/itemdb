@@ -217,7 +217,7 @@ const FeedbackSuggest = (props: { shouldShowReminder: boolean }) => {
                 display={{ base: 'none', md: 'initial' }}
               >
                 {t.rich('Feedback.keyboard-submit', {
-                  Kbd: (chunk) => <Kbd>{chunk}</Kbd>,
+                  Kbd: (chunk) => <Kbd bg="whiteAlpha.200">{chunk}</Kbd>,
                 })}
               </Text>
             </>

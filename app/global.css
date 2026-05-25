@@ -1,9 +1,0 @@
-@layer reset, base, tokens, recipes, utilities;
-
-body {
-  background: #1a202c;
-}
-
-::selection {
-  background-color: var(--global-color-selection, #0073ff4d);
-}
