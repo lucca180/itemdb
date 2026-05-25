@@ -53,7 +53,7 @@ export const HorizontalHomeCard = (props: HorizontalHomeCard) => {
       p={2}
       bg="gray.700"
       borderRadius={'md'}
-      bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},${bgOpacity ?? '0.45'}) 0%)`}
+      bgImage={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},${bgOpacity ?? '0.45'}) 0%)`}
       {...props.style}
       css={props.css ?? props.sx}
     >

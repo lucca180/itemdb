@@ -44,8 +44,8 @@ export function HomeHero({ title, highlightQuery, safetyLinkLabel }: HomeHeroPro
         position="absolute"
         h="40vh"
         left="0"
-        width="100vw"
-        top="-50px"
+        width="100%"
+        mt="-50px"
         bgGradient="linear-gradient(to top, rgba(0, 0, 0, 0) 0, rgba(74, 85, 104, 0.6) 80%)"
         zIndex={-1}
       />

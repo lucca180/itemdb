@@ -34,6 +34,8 @@ export const DropdownButton = (props: Props) => {
             onMouseLeave={() => setIsOpen(false)}
             px={3}
             h={8}
+            outline={'none'}
+            _focus={{ outline: 'none' }}
           >
             <NextLink href={href} prefetch={false}>
               {label}
@@ -48,6 +50,8 @@ export const DropdownButton = (props: Props) => {
             onMouseLeave={() => setIsOpen(false)}
             px={3}
             h={8}
+            outline={'none'}
+            _focus={{ outline: 'none' }}
           >
             {label}
           </Button>
@@ -96,6 +100,8 @@ export const DropdownOption = (props: Props) => {
       borderRadius={0}
       data-umami-event="dropdown-link"
       data-umami-event-label={label}
+      outline={'none'}
+      _focus={{ outline: 'none', bg: 'whiteAlpha.200' }}
     >
       <NextLink href={href} prefetch={false}>
         {label}

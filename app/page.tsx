@@ -112,7 +112,7 @@ export default async function HomePage() {
         </Flex>
         <Flex direction={{ base: 'column', lg: 'row' }} mt={2} gap={{ base: 8, lg: 3 }}>
           <Flex direction="column" flex={1} alignItems="center">
-            <Heading as="h2" size="xl" lineHeight="1.2" mb={{ base: 5, lg: 0 }}>
+            <Heading as="h2" size="md" lineHeight="1.2" mb={{ base: 5, lg: 0 }}>
               {t('HomePage.stats')}
             </Heading>
             <Suspense

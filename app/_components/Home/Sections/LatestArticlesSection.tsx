@@ -25,7 +25,7 @@ export async function LatestArticlesSection({ title, limit = 5 }: LatestArticles
 
   return (
     <Flex flex={1} direction="column">
-      <Heading as="h2" size="xl" lineHeight="1.2" textAlign="center" mb={5}>
+      <Heading as="h2" size="md" lineHeight="1.2" textAlign="center" mb={5}>
         <NextLink href="/articles">{title}</NextLink>
       </Heading>
       <Flex direction="column" gap={2}>
@@ -98,7 +98,7 @@ function LatestArticleCard({ article }: { article: WP_Article }) {
                 New
               </Box>
             )}
-            <Heading as="h3" size="xl" lineHeight="1.2">
+            <Heading as="h3" size="md" lineHeight="1.2">
               {article.title}
             </Heading>
           </Flex>

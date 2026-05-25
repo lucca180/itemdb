@@ -76,13 +76,13 @@ export const TVWHomeCard = (props: EventCardProps) => {
         position: 'relative',
         isolation: 'isolate',
         overflow: 'hidden',
-        img: {
+        '& img': {
           filter: 'drop-shadow(0 0 5px #f3a4ff)',
         },
-        h2: {
+        '& h2': {
           textShadow: '0 0 10px #f3a4ff',
         },
-        '::before': {
+        '&::before': {
           content: "''",
           position: 'absolute',
           top: 0,
