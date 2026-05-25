@@ -774,7 +774,7 @@ const RestockDashboard = (props: RestockDashboardProps) => {
                     data-umami-event="script-cta"
                     data-umami-event-label="contribute"
                   >
-                    <a href="/contribute">{t('General.learn-more')}</a>
+                    <NextLink href="/contribute">{t('General.learn-more')}</NextLink>
                   </Button>
                 </HStack>
               </Flex>
@@ -833,7 +833,7 @@ const RestockDashboard = (props: RestockDashboardProps) => {
               </Flex>
             </Flex>
             <Flex flexFlow={'column'} textAlign={'center'} gap={3} flex={1}>
-              <Tabs.Root flex={1} colorPalette="green" variant="outline" defaultValue="restocks">
+              <Tabs.Root flex={1} variant="subtle" defaultValue="restocks">
                 <Tabs.List>
                   <Tabs.Trigger
                     value="restocks"

@@ -55,7 +55,7 @@ const RestockItem = (props: Props) => {
     : -1;
 
   return (
-    <Link asChild _hover={{ textDecoration: 'none' }}>
+    <Link asChild _hover={{ textDecoration: 'none' }} w="100%">
       <NextLink
         prefetch={!disablePrefetch ? undefined : false}
         href={'/item/' + (item.slug ?? item.internal_id)}
@@ -63,10 +63,11 @@ const RestockItem = (props: Props) => {
         <Flex
           bg="gray.700"
           p={2}
-          bgGradient={`linear(to-r, rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.5), rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.35) 99%)`}
+          bgImage={`linear-gradient(to right, rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.5), rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.35) 99%)`}
           borderRadius={'md'}
-          boxShadow={'md'}
+          boxShadow={'sm'}
           gap={2}
+          w="100%"
         >
           <Image
             src={item.image}
