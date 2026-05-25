@@ -25,7 +25,7 @@ const ArticlesPage = (props: Props) => {
         }}
         color="#E4DA0A"
       >
-        <Heading size="lg" as="h1">
+        <Heading size="3xl" fontWeight="bold" as="h1">
           {t('Articles.all-articles')}
         </Heading>
         <Text fontSize={{ base: 'sm', md: undefined }} as="h2">
