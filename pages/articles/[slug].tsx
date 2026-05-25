@@ -43,7 +43,7 @@ const ArticlePage = (props: ArticlePageProps) => {
         breadcrumb={<ArticleBreadcrumb article={post} />}
         isCenter
       >
-        <Heading size="3xl" fontWeight="bold" as="h1" textAlign="center">
+        <Heading size="lg" as="h1" textAlign="center">
           {parse(post.title)}
         </Heading>
         <Text
@@ -95,7 +95,7 @@ const ArticlePage = (props: ArticlePageProps) => {
           px={3}
           my={16}
         >
-          <Heading size="xl" fontWeight="bold" as="h3" my={2}>
+          <Heading size="md" as="h3" my={2}>
             {t('Articles.recommended-articles')}
           </Heading>
           <Flex gap={[2, 3]} overflow="auto" pb={3}>
@@ -169,21 +169,21 @@ const options: HTMLReactParserOptions = {
 
     if (domChildren instanceof Element && domChildren.name === 'h2')
       return (
-        <Heading size="2xl" fontWeight="bold" as="h2" my={3}>
+        <Heading size="lg" as="h2" my={3}>
           {domToReact(children, options)}
         </Heading>
       );
 
     if (domChildren instanceof Element && domChildren.name === 'h3')
       return (
-        <Heading size="xl" fontWeight="bold" as="h3" my={2}>
+        <Heading size="md" as="h3" my={2}>
           {domToReact(children, options)}
         </Heading>
       );
 
     if (domChildren instanceof Element && domChildren.name === 'h4')
       return (
-        <Heading size="lg" fontWeight="bold" as="h4" my={2}>
+        <Heading size="sm" as="h4" my={2}>
           {domToReact(children, options)}
         </Heading>
       );

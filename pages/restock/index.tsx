@@ -113,9 +113,7 @@ const RestockHub: NextPageWithLayout<any> = (props: RestockHubProps) => {
           borderRadius="md"
           boxShadow={'sm'}
         />
-        <Heading as="h1" size="4xl" fontWeight={'bold'}>
-          {t('Restock.restock-hub')}
-        </Heading>
+        <Heading as="h1">{t('Restock.restock-hub')}</Heading>
         <Text>
           {t.rich('Restock.call-to-action', {
             b: (children) => <b>{children}</b>,

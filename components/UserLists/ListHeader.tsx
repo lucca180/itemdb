@@ -283,8 +283,7 @@ const ListHeader = (props: ListHeaderProps) => {
             )}
           </Stack>
           <Heading
-            size={{ base: 'lg', md: '3xl' }}
-            fontWeight="bold"
+            size={{ base: 'lg', md: undefined }}
             as={'h1'}
             display="inline-flex"
             alignItems={'center'}

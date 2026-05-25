@@ -394,7 +394,7 @@ const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockSho
         </Link>
       </Text>
       <Flex flexFlow="column" mt={10} gap={3} p={5} borderRadius={'lg'} bg="blackAlpha.500">
-        <Heading size="2xl">{t('Restock.similar-shops')}</Heading>
+        <Heading size="lg">{t('Restock.similar-shops')}</Heading>
         <Flex gap={5} flexWrap="wrap" justifyContent={'center'}>
           {similarShops.map((shop) => (
             <ShopCard key={shop.id} shop={shop} />

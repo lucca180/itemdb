@@ -431,7 +431,7 @@ const UserListsPage = (props: Props) => {
               </IconButton>
               {owner.username && <UserAchiev achievements={props.achievements} />}
             </Stack>
-            <Heading size={{ base: 'xl', md: '3xl' }} fontWeight="bold">
+            <Heading size={{ base: 'lg', md: undefined }} fontWeight="bold">
               {t('Lists.owner-username-s-lists', { username: owner.username ?? '' })}{' '}
               {!loading && (
                 <Badge fontSize="lg" verticalAlign="middle">

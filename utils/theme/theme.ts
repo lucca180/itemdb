@@ -1,4 +1,4 @@
-import { createSystem, defaultConfig } from '@chakra-ui/react';
+import { createSystem, defaultConfig, defineRecipe } from '@chakra-ui/react';
 import { Inter } from 'next/font/google';
 import { chakraV2ColorTokens, chakraV2SemanticColorTokens } from '@utils/theme/chakraV2ColorTokens';
 import {
@@ -10,6 +10,61 @@ import {
 } from '@utils/theme/recipes';
 
 const inter = Inter({ subsets: ['latin'] });
+
+const headingRecipe = defineRecipe({
+  base: {
+    fontFamily: 'heading',
+    fontWeight: 'bold',
+  },
+  variants: {
+    size: {
+      xs: {
+        fontSize: 'sm',
+        lineHeight: 1.2,
+      },
+      sm: {
+        fontSize: 'md',
+        lineHeight: 1.2,
+      },
+      md: {
+        fontSize: 'xl',
+        lineHeight: 1.2,
+      },
+      lg: {
+        fontSize: ['2xl', null, '3xl'],
+        lineHeight: [1.33, null, 1.2],
+      },
+      xl: {
+        fontSize: ['3xl', null, '4xl'],
+        lineHeight: [1.33, null, 1.2],
+      },
+      '2xl': {
+        fontSize: ['4xl', null, '5xl'],
+        lineHeight: [1.2, null, 1],
+      },
+      '3xl': {
+        fontSize: ['5xl', null, '6xl'],
+        lineHeight: 1,
+      },
+      '4xl': {
+        fontSize: ['6xl', null, '7xl'],
+        lineHeight: 1,
+      },
+      '5xl': {
+        textStyle: '5xl',
+      },
+      '6xl': {
+        textStyle: '6xl',
+      },
+      '7xl': {
+        textStyle: '7xl',
+      },
+    },
+  },
+  defaultVariants: {
+    size: 'xl',
+  },
+});
 
 export const system = createSystem(defaultConfig, {
   theme: {
@@ -28,6 +83,7 @@ export const system = createSystem(defaultConfig, {
     },
     recipes: {
       badge: badgeRecipe,
+      heading: headingRecipe,
       input: inputRecipe,
       textarea: inputRecipe,
       button: buttonRecipe,

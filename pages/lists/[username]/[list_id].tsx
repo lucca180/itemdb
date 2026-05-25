@@ -883,7 +883,7 @@ const ListPage = (props: ListPageProps) => {
                 textAlign={'center'}
                 flexFlow={'column'}
               >
-                <Heading size="xl">
+                <Heading size="lg">
                   {list.highlight
                     ? list.highlight
                     : list.official

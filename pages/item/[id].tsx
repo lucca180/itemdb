@@ -257,7 +257,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
                 </Badge>
               )}
             </Stack>
-            <Heading as="h1" size={{ base: 'lg', md: '3xl' }} fontWeight={'bold'}>
+            <Heading as="h1" size={{ base: 'lg', md: undefined }} fontWeight={'bold'}>
               {item.name}
             </Heading>
             <Text fontSize={{ base: 'sm', md: 'inherit' }} as="h2">

@@ -117,9 +117,7 @@ const RestockHeader = (props: Props) => {
             boxShadow={'sm'}
           />
         </Link>
-        <Heading as="h1" size="4xl" fontWeight={'bold'}>
-          {shopInfo.name}
-        </Heading>
+        <Heading as="h1">{shopInfo.name}</Heading>
         {props.children}
         {!isHistory && (
           <Text mt={3} fontSize="sm" textAlign={'center'}>
