@@ -1,10 +1,10 @@
 import Color from 'color';
 import NextImage from 'next/image';
+import { Flex, Heading, Text } from '@chakra-ui/react';
 import { getFormatter, getTranslations } from 'next-intl/server';
-import { Flex, styled } from '@styled/jsx';
 import type { ItemData } from '@types';
+import { LatestPricesItemsClient } from '@components/Home/LatestPricesItemsClient';
 import { getLatestPricedItems } from '@pages/api/v1/prices/index';
-import { LatestPricesItemsClient } from './LatestPricesItemsClient';
 import { unstable_cache } from 'next/cache';
 
 export type LatestPricesRes = {
@@ -59,20 +59,20 @@ export async function LatestPricesSection() {
             height={70}
             alt={t('HomePage.latest-prices')}
           />
-          <styled.h2 fontSize="3xl" fontWeight="bold" lineHeight="1.2">
+          <Heading as="h2" size="lg" lineHeight="1.2">
             {t('HomePage.latest-prices')}
-          </styled.h2>
+          </Heading>
         </Flex>
 
         <LatestPricesItemsClient items={latestPrices.items} />
 
         {latestPrices.count && (
-          <styled.p textAlign="right" mt={4} fontSize="xs" color="whiteAlpha.400">
+          <Text textAlign="right" mt={4} fontSize="xs" color="whiteAlpha.400">
             {t('HomePage.x-prices-updated-last-y', {
               count: formatter.number(latestPrices.count),
               time: '48h',
             })}
-          </styled.p>
+          </Text>
         )}
       </Flex>
     </Flex>

@@ -1,3 +1,5 @@
+'use client';
+
 import { Button, Flex, Heading, type FlexProps } from '@chakra-ui/react';
 import Color from 'color';
 import NextImage from 'next/image';

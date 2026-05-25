@@ -1,14 +1,14 @@
 import type { Metadata } from 'next';
 import Color from 'color';
 import { Fragment, Suspense } from 'react';
-import { Flex, Grid, styled } from '@styled/jsx';
+import { Flex, Grid, Heading } from '@chakra-ui/react';
 import { createTranslator } from 'next-intl';
 import { getLocale } from 'next-intl/server';
-import AppServerLayout from '@app/_components/layout/AppServerLayout';
+import { HomeHero } from '@components/Home/HomeHero';
+import Layout from '@components/Layout';
 import { getItemDbCanonical, normalizeItemDbLocale } from '@utils/appPage';
 import { getDefaultSEO } from '@utils/SEO';
 import { loadTranslation } from '@utils/load-translation';
-import { HomeHero } from './_components/Home/Sections/HomeHero';
 import {
   FeaturedListsHomeCard,
   LeavingNcMallHomeCard,
@@ -80,18 +80,18 @@ export default async function HomePage() {
   const t = createTranslator({ messages, locale });
 
   return (
-    <AppServerLayout disableNextSeo mainColor={mainColor}>
+    <Layout disableNextSeo mainColor={mainColor}>
       <HomeHero
         title={t('HomePage.title')}
         highlightQuery={t('HomePage.open-source')}
         safetyLinkLabel={t('HomePage.is-it-safe')}
       />
-      <Flex mt={8} gap={8} flexFlow="column">
+      <Flex mt={8} gap={8} flexDirection="column">
         <LatestPricesSection />
         <TVWHomeCard />
         <NewItemsCountSection />
         <Grid
-          gridTemplateColumns={{ base: 'minmax(0, 1fr)', lg: 'repeat(3, minmax(0, 1fr))' }}
+          templateColumns={{ base: 'minmax(0, 1fr)', lg: 'repeat(3, minmax(0, 1fr))' }}
           gap={{ base: 4, xl: 8 }}
           justifyItems="center"
         >
@@ -106,15 +106,15 @@ export default async function HomePage() {
           </Fragment>
         </Grid>
         <FeaturedListsHomeCard />
-        <Flex flexDirection={{ base: 'column', lg: 'row' }} gap={{ base: 4, xl: 8 }}>
+        <Flex direction={{ base: 'column', lg: 'row' }} gap={{ base: 4, xl: 8 }}>
           <LeavingNcMallHomeCard />
           <LatestWearableHomeCard />
         </Flex>
-        <Flex flexDirection={{ base: 'column', lg: 'row' }} mt={2} gap={{ base: 8, lg: 3 }}>
-          <Flex flexFlow="column" flex={1} alignItems="center">
-            <styled.h2 fontSize="xl" fontWeight="semibold" lineHeight="1.2" mb={{ base: 5, lg: 0 }}>
+        <Flex direction={{ base: 'column', lg: 'row' }} mt={2} gap={{ base: 8, lg: 3 }}>
+          <Flex direction="column" flex={1} alignItems="center">
+            <Heading as="h2" size="xl" lineHeight="1.2" mb={{ base: 5, lg: 0 }}>
               {t('HomePage.stats')}
-            </styled.h2>
+            </Heading>
             <Suspense
               fallback={
                 <StatsCardLoading
@@ -132,6 +132,6 @@ export default async function HomePage() {
           <LatestArticlesSection title={t('HomePage.latest-articles')} />
         </Flex>
       </Flex>
-    </AppServerLayout>
+    </Layout>
   );
 }

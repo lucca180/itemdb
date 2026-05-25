@@ -4,9 +4,9 @@ import { getTranslations } from 'next-intl/server';
 import { getTrendingItems, getTrendingLists } from '@pages/api/v1/beta/trending';
 import { getLatestItems } from '@pages/api/v1/items/index';
 import { getNCMallItemsData } from '@pages/api/v1/mall/index';
-import { HomeCard } from './HomeCard';
-import { HorizontalHomeCard } from './HorizontalHomeCard';
-import { FeaturedListsGrid } from './FeaturedListsGrid';
+import { HomeCard } from '@components/Card/HomeCard';
+import { HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
+import { FeaturedListsGrid } from '@components/Home/FeaturedListsGrid';
 
 const getCachedLatestItems = unstable_cache(
   async () => getLatestItems(20, true).catch(() => []),
@@ -132,7 +132,7 @@ export function FeaturedListsHomeCard() {
     <Suspense
       fallback={
         <HorizontalHomeCard
-          headerColor="#4A5568"
+          color="#4A5568"
           image="https://images.neopets.com/themes/h5/newyears/images/transferlog-icon.png"
           title="Featured Lists"
           viewAllLink="/lists/official"
@@ -151,7 +151,7 @@ async function FeaturedListsHomeCardContent() {
 
   return (
     <HorizontalHomeCard
-      headerColor="#4A5568"
+      color="#4A5568"
       image="https://images.neopets.com/themes/h5/newyears/images/transferlog-icon.png"
       title={t('HomePage.featured-lists')}
       viewAllLink="/lists/official"
