@@ -79,7 +79,7 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [petColorData, setPetColorData] = useState<PetColorData | null>(props.petColorData);
   const [error, setError] = useState<string>('');
-  const [isImgLoading, setIsImgLoading] = useState<boolean>(false);
+  const [loadedPreviewUrl, setLoadedPreviewUrl] = useState('');
   const [speciesInfo, setSpeciesInfo] = useState<SpeciesInfo | null>(props.speciesInfo);
 
   const isPerfectCheapest = useMemo(() => {
@@ -109,6 +109,12 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
     }
   }, [petColorData]);
 
+  const previewUrl = useMemo(() => {
+    if (!petColorData?.thumbnail.species || !petColorData?.thumbnail.color) return '';
+
+    return `/api/cache/preview/color/${petColorData.thumbnail.species}_${petColorData.thumbnail.color}.png`;
+  }, [petColorData]);
+
   useEffect(() => {
     setError('');
   }, [species, color]);
@@ -121,7 +127,6 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
     try {
       setIsLoading(true);
       setPetColorData(null);
-      setIsImgLoading(true);
       const res = await axios.get(`/api/v1/tools/petcolors`, {
         params: {
           speciesTarget: newSpecies ?? species,
@@ -342,22 +347,26 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
                 justifyContent={'center'}
                 alignItems={'center'}
                 borderRadius={'md'}
-                bg={isImgLoading ? undefined : 'blackAlpha.400'}
+                bg="blackAlpha.400"
               >
                 <Box borderRadius={'md'} position="relative">
-                  {isImgLoading && <Skeleton borderRadius={'md'} w="150px" h="150px" />}
-                  <NextImage
-                    src={`/api/cache/preview/color/${petColorData.thumbnail.species ?? ''}_${
-                      petColorData.thumbnail.color ?? ''
-                    }.png`}
-                    width={150}
-                    height={150}
-                    alt={`${species} ${color}`}
-                    unoptimized
-                    onLoadStart={() => setIsImgLoading(true)}
-                    onLoad={() => setIsImgLoading(false)}
-                    style={{ display: isImgLoading ? 'none' : 'block' }}
-                  />
+                  <Skeleton
+                    borderRadius={'md'}
+                    w="150px"
+                    h="150px"
+                    loading={loadedPreviewUrl !== previewUrl}
+                  >
+                    <NextImage
+                      key={previewUrl}
+                      src={previewUrl}
+                      width={150}
+                      height={150}
+                      alt={`${species} ${color}`}
+                      unoptimized
+                      loading="eager"
+                      onLoad={() => setLoadedPreviewUrl(previewUrl)}
+                    />
+                  </Skeleton>
                   <Text fontSize="xs">
                     {t('ItemPage.powered-by')}
                     <br />

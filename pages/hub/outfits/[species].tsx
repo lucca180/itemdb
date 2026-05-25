@@ -44,8 +44,8 @@ const OutfitPage = (props: OutfitPageProps) => {
         <Image
           borderRadius="md"
           boxShadow={'md'}
-          width={'600'}
-          height={'200'}
+          width={600}
+          height={200}
           quality={90}
           w={'100%'}
           maxW={'600px'}

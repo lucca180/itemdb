@@ -134,6 +134,7 @@ const PriceCalculator = () => {
               <Field.Label fontSize={'sm'}>{t('Calculator.your-asking-price-in-nps')}</Field.Label>
               <MultiplyInput
                 wrapperProps={{
+                  w: '100%',
                   bg: 'initial',
                   size: 'sm',
                 }}
