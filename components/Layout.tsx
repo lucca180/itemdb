@@ -21,7 +21,7 @@ import { useAuth } from '../utils/auth';
 import { NextSeo, NextSeoProps } from 'next-seo';
 import { SearchBar } from './Search/SearchBar';
 import Color from 'color';
-import Brazil from '../public/icons/brazil.png';
+import Brasil from '../public/icons/brasil.png';
 import { useLocale, useTranslations } from 'next-intl';
 import { LanguageToastProps } from './Modal/LanguageToast';
 import axios from 'axios';
@@ -33,6 +33,11 @@ import FeedbackButton from './Feedback/FeedbackButton';
 import MainLink from './Utils/MainLink';
 import { useVersionCheck } from '@utils/versionCheck';
 import { AuthButton } from './Layout/AuthButton';
+import {
+  getLayoutFooterColumns,
+  getLayoutNavSections,
+  getLocalizedPath,
+} from '@components/Layout/layoutData';
 
 const LanguageToast = dynamic<LanguageToastProps>(() => import('./Modal/LanguageToast'));
 
@@ -58,6 +63,9 @@ const Layout = (props: Props) => {
       ? `${window.location.pathname}${window.location.search}${window.location.hash}`
       : '/');
   const { user } = useAuth();
+  const translate = (key: string) => t(key);
+  const navSections = getLayoutNavSections(translate);
+  const footerColumns = getLayoutFooterColumns(translate);
 
   const color = Color('#4A5568');
   const rgb = color.rgb().round().array();
@@ -148,76 +156,23 @@ const Layout = (props: Props) => {
             gap={{ base: 1, md: 3 }}
             overflowX="auto"
           >
-            <DropdownButton label={t('Layout.home')} href="/" />
-            <DropdownButton bg={props.mainColor} label={t('Layout.articles')} href="/articles">
-              <DropdownOption label={t('Layout.userscripts')} href="/articles/userscripts" />
-              <DropdownOption label={'The Void Within'} href="/hub/the-void-within" />
-              <DropdownOption label={t('Layout.patch-notes')} href="/articles" />
-              <DropdownOption label={t('Layout.how-to-contribute')} href="/contribute" />
-              <DropdownOption
-                label={t('Layout.sort-galleries-by-color')}
-                href="/articles/sort-gallery"
-              />
-              <DropdownOption
-                label={t('Layout.advanced-search-queries')}
-                href="/articles/advanced-search-queries"
-              />
-            </DropdownButton>
-            <DropdownButton bg={props.mainColor} label={t('Layout.restock')} href="/restock">
-              <DropdownOption label={t('Layout.restock-dashboard')} href="/restock/dashboard" />
-              <DropdownOption label={'Neopian Fresh Foods'} href="/restock/neopian-fresh-foods" />
-              <DropdownOption label={"Cog's Tog"} href="/restock/cogs-togs" />
-              <DropdownOption
-                label={t('Restock.restock-history')}
-                href="/restock/neopian-fresh-foods/history"
-              />
-              <DropdownOption label={t('Layout.view-all-shops')} href="/restock/" />
-            </DropdownButton>
-            <DropdownButton bg={props.mainColor} label={t('Lists.Lists')} href="/lists/official">
-              <DropdownOption
-                label={t('Layout.import-items-and-checklists')}
-                href="/lists/import"
-              />
-              <DropdownOption
-                label={t('Layout.dailies-and-freebies')}
-                href="/lists/official/cat/dailies"
-              />
-              <DropdownOption
-                label={t('Layout.exclusive-clothes')}
-                href="/hub/outfits/aisha"
-                newUntil={1748735999000}
-              />
-              <DropdownOption
-                label={t('General.dynamic-lists')}
-                href="/articles/checklists-and-dynamic-lists"
-              />
-              <DropdownOption label={t('HomePage.leaving-nc-mall')} href="/mall/leaving" />
-              <DropdownOption label={'Quest Log'} href="/lists/official/cat/quest-log" />
-              <DropdownOption label={t('Layout.all-official-lists')} href="/lists/official" />
-            </DropdownButton>
-            <DropdownButton
-              bg={props.mainColor}
-              label={t('Layout.tools')}
-              href="/tools/rainbow-pool"
-            >
-              <DropdownOption label={t('Layout.sdb-pricer')} href="/articles/userscripts" />
-              <DropdownOption label={t('Layout.userscripts')} href="/articles/userscripts" />
-              <DropdownOption label={t('Layout.rainbow-pool-tool')} href="/tools/rainbow-pool" />
-              <DropdownOption label={t('Layout.item-effects')} href="/hub/item-effects" />
-              <DropdownOption label={t('Layout.restock-dashboard')} href="/restock/dashboard" />
-              <DropdownOption
-                label={t('Calculator.pricing-calculator')}
-                href="/tools/price-calculator"
-              />
-            </DropdownButton>
-            <DropdownButton bg={props.mainColor} label={t('Layout.contribute')} href="/contribute">
-              <DropdownOption label={'Item Data Extractor'} href="/contribute" />
-              <DropdownOption label={t('Layout.missing-info-hub')} href="/hub/missing-info" />
-              <DropdownOption label={t('Layout.trade-pricing')} href="/feedback/trades" />
-              <DropdownOption label={t('Feedback.suggestion-voting')} href="/feedback/vote" />
-              <DropdownOption label={t('Layout.feedback-and-ideas')} href="/feedback" />
-              <DropdownOption label={t('Layout.report-your-nc-trades')} href="/mall/report" />
-            </DropdownButton>
+            {navSections.map((section) => (
+              <DropdownButton
+                key={section.href}
+                bg={section.options?.length ? props.mainColor : undefined}
+                label={section.label}
+                href={section.href}
+              >
+                {section.options?.map((option, index) => (
+                  <DropdownOption
+                    key={`${section.href}-${option.href}-${index}`}
+                    label={option.label}
+                    href={option.href}
+                    newUntil={option.newUntil}
+                  />
+                ))}
+              </DropdownButton>
+            ))}
           </Flex>
         </Flex>
         <Box
@@ -268,8 +223,8 @@ const Layout = (props: Props) => {
               <Text fontSize="xs" color="gray.500" position={'relative'}>
                 {t('Layout.made-in')}{' '}
                 <NextImage
-                  src={Brazil}
-                  alt="Brazil Flag"
+                  src={Brasil}
+                  alt="Brasil Flag"
                   width={18}
                   style={{ display: 'inline', verticalAlign: 'middle', margin: '0 0px' }}
                 />{' '}
@@ -309,94 +264,31 @@ const Layout = (props: Props) => {
               justifyContent="center"
               css={{ '& a:hover': { textDecoration: 'underline' } }}
             >
-              <Flex flex="1" flexFlow={'column'} fontSize="xs" gap={2} color="gray.300">
-                <Text fontSize="xs" mb={2} textTransform="uppercase" color="gray.500">
-                  <b>{t('Layout.resources')}</b>
-                </Text>
-                <MainLink
-                  href="/articles/lebron"
-                  trackEvent="footer-links"
-                  trackEventLabel="lebron"
+              {footerColumns.map((column) => (
+                <Flex
+                  key={column.title}
+                  flex="1"
+                  flexFlow={'column'}
+                  fontSize="xs"
+                  gap={2}
+                  color="gray.300"
                 >
-                  Lebron
-                </MainLink>
-                <MainLink
-                  href="https://docs.itemdb.com.br"
-                  isExternal
-                  trackEvent="footer-links"
-                  trackEventLabel="api-docs"
-                >
-                  {t('Layout.devs')}
-                </MainLink>
-                <MainLink
-                  href="/lists/official"
-                  trackEvent="footer-links"
-                  trackEventLabel="official-lists"
-                >
-                  {t('Layout.official-lists')}
-                </MainLink>
-                <MainLink
-                  href="/articles/userscripts"
-                  trackEvent="footer-links"
-                  trackEventLabel="userscripts"
-                >
-                  {t('Layout.userscripts')}
-                </MainLink>
-                <MainLink
-                  href="/public-data"
-                  trackEvent="footer-links"
-                  trackEventLabel="public-data"
-                >
-                  {t('Layout.public-data')}
-                </MainLink>
-              </Flex>
-              <Flex flex="1" flexFlow={'column'} fontSize="xs" gap={2} color="gray.300">
-                <Text fontSize="xs" mb={2} textTransform="uppercase" color="gray.500">
-                  <b>{t('Layout.contribute')}</b>
-                </Text>
-                <MainLink href="/contribute" trackEvent="footer-links" trackEventLabel="contribute">
-                  Item Data Extractor
-                </MainLink>
-                <MainLink href="/feedback/vote" trackEvent="footer-links" trackEventLabel="vote">
-                  {t('Feedback.vote-suggestions')}
-                </MainLink>
-                <MainLink
-                  href="/feedback/trades"
-                  trackEvent="footer-links"
-                  trackEventLabel="trade-pricing"
-                >
-                  {t('Layout.trade-pricing')}
-                </MainLink>
-                <MainLink href="/contribute" trackEvent="footer-links" trackEventLabel="more">
-                  + {t('Layout.more')}
-                </MainLink>
-              </Flex>
-              <Flex flex="1" flexFlow={'column'} fontSize="xs" gap={2} color="gray.300">
-                <Text fontSize="xs" mb={2} textTransform="uppercase" color="gray.500">
-                  <b>itemdb</b>
-                </Text>
-                <MainLink
-                  href="/privacy"
-                  trackEvent="footer-links"
-                  trackEventLabel="privacy-policy"
-                >
-                  {t('Layout.privacy-policy')} (Feb 2026)
-                </MainLink>
-                <MainLink href="/terms" trackEvent="footer-links" trackEventLabel="terms-of-use">
-                  {t('Layout.terms-of-use')}
-                </MainLink>
-                <MainLink href="/feedback" trackEvent="footer-links" trackEventLabel="contact-us">
-                  {t('Feedback.contact-us')}
-                </MainLink>
-                <MainLink
-                  href="https://github.com/lucca180/itemdb/"
-                  isExternal
-                  trackEvent="footer-links"
-                  trackEventLabel="source-code"
-                >
-                  {t('Layout.source-code')}
-                </MainLink>
-              </Flex>
+                  <Text fontSize="xs" mb={2} textTransform="uppercase" color="gray.500">
+                    <b>{column.title}</b>
+                  </Text>
+                  {column.links.map((link, index) => (
+                    <MainLink
+                      key={`${column.title}-${link.href}-${index}`}
+                      href={link.href}
+                      isExternal={link.isExternal}
+                      trackEvent="footer-links"
+                      trackEventLabel={link.trackEventLabel}
+                    >
+                      {link.label}
+                    </MainLink>
+                  ))}
+                </Flex>
+              ))}
             </Flex>
           </Flex>
         </Box>
@@ -406,13 +298,3 @@ const Layout = (props: Props) => {
 };
 
 export default Layout;
-
-function stripLocalePrefix(path: string) {
-  return path.replace(/^\/pt(?=\/|$)/, '') || '/';
-}
-
-function getLocalizedPath(path: string, locale: string) {
-  const normalizedPath = stripLocalePrefix(path);
-  if (locale === 'pt') return `/pt${normalizedPath === '/' ? '' : normalizedPath}`;
-  return normalizedPath;
-}

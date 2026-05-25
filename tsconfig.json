@@ -30,7 +30,6 @@
       "@translations/*": ["./translations/*"],
       "@services/*": ["./services/*"],
       "@assets/*": ["./public/*"],
-      "@styled/*": ["./styled-system/*"],
       "@pages/*": ["./pages/*"],
       "@app/*": ["./app/*"]
     },
@@ -43,8 +42,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "styled-system"
+    ".next/dev/types/**/*.ts"
   ],
   "ts-node": {
     "compilerOptions": {

@@ -1,5 +1,4 @@
-import { Flex, styled } from '@styled/jsx';
-import { token } from '@styled/tokens';
+import { Flex, Text } from '@chakra-ui/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { createTranslator } from 'next-intl';
@@ -12,13 +11,13 @@ type AppSiteAlertProps = {
 };
 
 export async function AppSiteAlert({ locale }: AppSiteAlertProps) {
-  connection();
+  await connection();
   const messages = await appLoadTranslation(locale);
   const t = createTranslator({ messages, locale });
   const alert = getCurrentSiteAlert();
 
   return (
-    <Flex style={{ background: token.var(`colors.${alert.bg}`) }}>
+    <Flex bg={alert.bg}>
       <Flex
         w="full"
         maxW="8xl"
@@ -40,7 +39,7 @@ export async function AppSiteAlert({ locale }: AppSiteAlertProps) {
             <Image src={alert.img.src} width={alert.img.w} height={alert.img.h} alt="alert icon" />
           </Link>
         )}
-        <styled.p style={{ color: token.var(`colors.${alert.color}`) }}>
+        <Text as="p" color={alert.color}>
           {!!alert.message &&
             t.rich(`SiteAlert.${alert.message}`, {
               b: (children) => <b>{children}</b>,
@@ -57,7 +56,7 @@ export async function AppSiteAlert({ locale }: AppSiteAlertProps) {
                 </Link>
               ),
             })}
-        </styled.p>
+        </Text>
       </Flex>
     </Flex>
   );

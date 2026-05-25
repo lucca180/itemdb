@@ -108,17 +108,16 @@ export const HomeCard = (props: HomeCardProps) => {
             justifyContent={'center'}
             display={isLoading ? 'none' : 'flex'}
           >
-            {items.map((item, i) => (
-              <ItemCard
-                uniqueID={title}
-                key={item.internal_id + title}
-                item={item}
-                utm_content={utm_content}
-                style={{
-                  display: i < perPage * page || i >= perPage * (page + 1) ? 'none' : undefined,
-                }}
-              />
-            ))}
+            {items
+              .filter((_, i) => i >= perPage * page && i < perPage * (page + 1))
+              .map((item) => (
+                <ItemCard
+                  uniqueID={title}
+                  key={item.internal_id + title}
+                  item={item}
+                  utm_content={utm_content}
+                />
+              ))}
           </Flex>
         )}
         <Flex flex="1" alignItems={'flex-end'} justifyContent={'center'} mt={3} gap={1}>
@@ -221,7 +220,7 @@ export const HomeItem = ({
           onContextMenuCapture: loadContextMenu,
         }}
       >
-        <Link asChild _hover={{ textDecoration: 'none' }}>
+        <Link asChild _hover={{ textDecoration: 'none' }} w="100%">
           <MainLink
             prefetch={false}
             href={'/item/' + (item.slug ?? item.internal_id)}

@@ -106,13 +106,11 @@ function StatCard(props: StatCardProps) {
         <IconComponent />
       </Box>
       <Flex direction="column" gap={1} w="100%">
-        {hasValue ? (
+        <Skeleton h="1.3rem" w="70%" mb={1} borderRadius="sm" loading={!hasValue}>
           <Heading as="h3" fontSize="2xl">
             {props.value}
           </Heading>
-        ) : (
-          <Skeleton h="1.3rem" w="70%" mb={1} borderRadius="sm" />
-        )}
+        </Skeleton>
         <Text as="h4" color="gray.300" fontWeight="400" fontSize="sm">
           {props.children}
         </Text>

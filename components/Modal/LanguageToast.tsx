@@ -5,6 +5,7 @@ import { useRouter } from 'next/compat/router';
 import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { isValidLocale } from '@utils/locales';
+import { getLocalizedPath } from '@components/Layout/layoutData';
 
 export type LanguageToastProps = {
   saveLang: (prefLang: string) => Promise<void>;
@@ -124,14 +125,4 @@ export default LanguageToast;
 
 function getLocaleFromPath(path: string) {
   return path.startsWith('/pt/') || path === '/pt' ? 'pt' : 'en';
-}
-
-function stripLocalePrefix(path: string) {
-  return path.replace(/^\/pt(?=\/|$)/, '') || '/';
-}
-
-function getLocalizedPath(path: string, locale: string) {
-  const normalizedPath = stripLocalePrefix(path);
-  if (locale === 'pt') return `/pt${normalizedPath === '/' ? '' : normalizedPath}`;
-  return normalizedPath;
 }

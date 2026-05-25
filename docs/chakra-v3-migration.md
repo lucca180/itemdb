@@ -310,8 +310,6 @@ Package versions at the time this plan was written:
 |---------|-----------------|
 | `@chakra-ui/react` | `^3.35.0` |
 | `@chakra-ui/icons` | removed |
-| `@chakra-ui/panda-preset` | `^3.35.0` |
-| `@pandacss/dev` | `^1.11.1` |
 | `next` | `16.2.6` |
 | `react` | `19.2.6` |
 
