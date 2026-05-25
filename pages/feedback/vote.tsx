@@ -13,7 +13,7 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import Link from 'next/link';
-import { useState, useEffect, ReactElement, useRef } from 'react';
+import { useState, useEffect, ReactElement, useRef, useCallback } from 'react';
 import { BsArrowDownCircleFill, BsArrowUpCircleFill } from 'react-icons/bs';
 import CardBase from '../../components/Card/CardBase';
 import HeaderCard from '../../components/Card/HeaderCard';
@@ -62,51 +62,7 @@ const FeedbackVotingPage = (props: { shouldShowReminder: boolean }) => {
 
   const isAdmin = user?.role === 'ADMIN';
 
-  useEffect(() => {
-    if (!authLoading) {
-      init();
-    }
-  }, [authLoading]);
-
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      const targetName = (e.target as any).nodeName;
-
-      if (['INPUT', 'TEXTAREA'].includes(targetName) || isLoading) return;
-
-      if (e.key.toLowerCase() === 'd') {
-        if (!currentFeedback) {
-          return init();
-        }
-
-        handleVote('upvote');
-      }
-
-      if (e.key.toLowerCase() === 'a') {
-        if (!currentFeedback) {
-          return init();
-        }
-
-        handleVote('downvote');
-      }
-
-      if (e.key.toLowerCase() === 's') {
-        if (!currentFeedback) {
-          return init();
-        }
-
-        handleSkip();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyPress);
-    };
-  }, [isLoading]);
-
-  const init = async () => {
+  const init = useCallback(async () => {
     setError('');
     setIsLoading(true);
     try {
@@ -134,10 +90,13 @@ const FeedbackVotingPage = (props: { shouldShowReminder: boolean }) => {
       setError(e.message);
     }
     setIsLoading(false);
-  };
+  }, [router.query.order, router.query.target, router.query.wishlist]);
 
-  const handleSkip = async () => {
-    if (!currentFeedback) return;
+  const handleSkip = useCallback(async () => {
+    if (!currentFeedback) {
+      await init();
+      return;
+    }
 
     setError('');
 
@@ -154,38 +113,76 @@ const FeedbackVotingPage = (props: { shouldShowReminder: boolean }) => {
 
     setFeedbacks(newFeedbacks);
     setCurrentFeedback(newFeedbacks[0]);
-  };
+  }, [currentFeedback, feedbacks, init]);
 
-  const handleVote = async (action: 'upvote' | 'downvote') => {
-    setError('');
-    setIsLoading(true);
-    try {
-      if (!currentFeedback) throw new Error('No feedback selected');
-
-      const res = await axios.post('/api/feedback/vote', {
-        action,
-        feedback_id: currentFeedback?.feedback_id,
-      });
-
-      if (res.data.success) {
-        const newFeedbacks = feedbacks.filter(
-          (f) => f.feedback_id !== currentFeedback?.feedback_id
-        );
-
-        if (!newFeedbacks.length) {
-          return init();
+  const handleVote = useCallback(
+    async (action: 'upvote' | 'downvote') => {
+      setError('');
+      setIsLoading(true);
+      try {
+        if (!currentFeedback) {
+          await init();
+          return;
         }
 
-        setFeedbacks(newFeedbacks);
-        setCurrentFeedback(newFeedbacks[0]);
-      } else throw new Error(res.data.message);
-    } catch (e: any) {
-      console.error(e);
-      setError(e.message);
-    }
+        const res = await axios.post('/api/feedback/vote', {
+          action,
+          feedback_id: currentFeedback?.feedback_id,
+        });
 
-    setIsLoading(false);
-  };
+        if (res.data.success) {
+          const newFeedbacks = feedbacks.filter(
+            (f) => f.feedback_id !== currentFeedback?.feedback_id
+          );
+
+          if (!newFeedbacks.length) {
+            return init();
+          }
+
+          setFeedbacks(newFeedbacks);
+          setCurrentFeedback(newFeedbacks[0]);
+        } else throw new Error(res.data.message);
+      } catch (e: any) {
+        console.error(e);
+        setError(e.message);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [currentFeedback, feedbacks, init]
+  );
+
+  useEffect(() => {
+    if (!authLoading) {
+      void init();
+    }
+  }, [authLoading, init]);
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      const targetName = (e.target as HTMLElement | null)?.nodeName;
+
+      if (['INPUT', 'TEXTAREA'].includes(targetName ?? '') || isLoading) return;
+
+      if (e.key.toLowerCase() === 'd') {
+        void handleVote('upvote');
+      }
+
+      if (e.key.toLowerCase() === 'a') {
+        void handleVote('downvote');
+      }
+
+      if (e.key.toLowerCase() === 's') {
+        void handleSkip();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [handleSkip, handleVote, isLoading]);
 
   return (
     <>
