@@ -22,15 +22,20 @@ type CustomNumberRootProps = Omit<
 type CustomNumberInputProps = React.ComponentProps<typeof NumberInput.Input>;
 
 type Props = {
-  value?: string;
+  value?: string | number | null;
   onChange?: (newValue: string) => void;
   inputProps?: CustomNumberInputProps;
   wrapperProps?: CustomNumberRootProps;
   skipDebounce?: boolean;
 };
 
-const normalizeValue = (val?: string) => (val ? val.replace(/[\.\,]+/g, '') : '');
-const formatValue = (val?: string) => {
+const normalizeValue = (val?: string | number | null) => {
+  if (typeof val === 'number') return String(val);
+  if (!val) return '';
+  return val.replace(/[\.\,]+/g, '');
+};
+
+const formatValue = (val?: string | number | null) => {
   const normalizedValue = normalizeValue(val);
   return normalizedValue ? numberFormatter.format(Number(normalizedValue)) : '';
 };
