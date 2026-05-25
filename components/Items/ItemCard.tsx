@@ -58,7 +58,7 @@ const ItemCardBase = (props: ItemProps) => {
         as="a"
         _hover={{ textDecoration: 'none' }}
         pointerEvents="none"
-        style={{ ...props.style, display: 'flex', alignSelf: 'stretch', height: '100%' }}
+        style={{ ...props.style }}
       >
         <Box
           w={{ base: 100, md: small ? 100 : 150 }}
