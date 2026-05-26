@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.10.1
+// @version      1.10.2
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -386,47 +386,36 @@ const itemdb_script = function() {
   }
 
   function handleCloset() {
-    const trs = $('form table').eq(2).find('tr').slice(1, -1);
+    document.addEventListener('idb:closetItemData', (e) => {
+      const itemList = e.detail.items;
+      item_list = {};
+      for (const itemData of itemList) {
+        let type = 'np';
+        if(itemData.is_paintbrush) type = 'pb';
+        if(itemData.is_nc) type = 'nc';
 
-    trs.each(function (i) {
-      const tds = $(this).find('td');
-      const img = tds.first().find('img').first().attr('src');
+        const item = {
+          name: itemData.obj_name,
+          img: itemData.image_url,
+          description: itemData.obj_desc,
+          rarity: itemData.obj_rarity,
+          weight: type === 'pb' ? 1 : undefined,
+          estVal: type === 'pb' ? 0 : undefined,
+          subText: "(wearable)",
+          category: itemData.category_name,
+          itemId: itemData.obj_info_id,
+          type: type,
+        };
 
-      let itemName = tds.eq(1).find('b').first().clone().children().remove().end().text();
-      if(!itemName) itemName = tds.eq(1).clone().children().remove().end().text();
-      let subText = tds.eq(1).find('.medText').text();
-      const description = tds.eq(2).text().trim();
-      const category = tds.eq(3).text();
-      let itemId = tds.last().find('input').attr('name').match(/\d+/)?.[0];
-
-      let type;
-
-      if(!itemId) {
-        itemId = tds.last().find('.delete_pb')[0].dataset.item_id;
-        type = 'pb';
+        const itemKey = genItemKey(item);
+        if (!itemsHistory[itemKey]) {
+          itemsObj[itemKey] = item;
+          itemsHistory[itemKey] = true;
+        }
       }
 
-      const item = {
-        name: itemName,
-        img: img,
-        description: description,
-        rarity: type === 'pb' ? 101 : undefined,
-        weight: type === 'pb' ? 1 : undefined,
-        estVal: type === 'pb' ? 0 : undefined,
-        subText: subText + " (wearable) ",
-        category: category,
-        itemId: itemId,
-        type: type,
-      };
-
-      const itemKey = genItemKey(item);
-      if (!itemsHistory[itemKey]) {
-        itemsObj[itemKey] = item;
-        itemsHistory[itemKey] = true;
-      }
-    });
-
-    submitItems();
+      submitItems();
+    })
   }
 
   function handleSearch() {
@@ -1401,32 +1390,70 @@ function watchItemRequests(paramName){
   }
 }
 
-function watchFetchItemRequests(paramName, eventName) {
-  (unsafeWindow ?? window).fetch = async (...args) => {
-    const response = await originalFetch(...args);
-    const clonedResponse = response.clone();
-    const responseText = await clonedResponse.text();
-    if (responseText.includes("{")) {
+function registerFetchWatcher({ match, eventName }) {
+  const targetWindow = unsafeWindow ?? window;
+  if (!targetWindow.__idbFetchWatchers) {
+    targetWindow.__idbFetchWatchers = [];
+  }
+
+  if (!targetWindow.__idbFetchPatched) {
+    targetWindow.__idbFetchPatched = true;
+
+    const originalFetch = targetWindow.fetch;
+
+    targetWindow.fetch = async (...args) => {
+      const response = await originalFetch(...args);
+      const clonedResponse = response.clone();
+
+      let responseText = '';
       try {
-        const requestData = JSON.parse(responseText);
-        // check if the request contains the item data we want, if not we ignore it
-        if (typeof requestData[paramName] !== 'undefined') {
-          document.dispatchEvent(
-            new CustomEvent(eventName, { detail: requestData })
-          );
-        }
-      } catch (error) {}
-    }
-    
-    return response;
-  };
+        responseText = await clonedResponse.text();
+      } catch {
+        return response;
+      }
+
+      let requestData;
+      try {
+        requestData = JSON.parse(responseText);
+      } catch {
+        return response;
+      }
+
+      for (const watcher of targetWindow.__idbFetchWatchers) {
+        try {
+          if (watcher.match({ args, requestData, response })) {
+            document.dispatchEvent(
+              new CustomEvent(watcher.eventName, { detail: requestData })
+            );
+          }
+        } catch {}
+      }
+
+      return response;
+    };
+  }
+
+  console.log('Adding watcher:', { match, eventName });
+
+  targetWindow.__idbFetchWatchers.push({ match, eventName });
 }
 
 // **ONLY** watch requests in these pages
 if (URLHas('petlookup.phtml')) watchItemRequests('viewdata');
-if (URLHas('/stylingchamber/')) watchFetchItemRequests('userStyles', 'idb:ucChamberData');
 if (URLHas('customise')) watchItemRequests('editordata');
-if (URLHas('trading')) watchFetchItemRequests('lots', 'idb:tradingLots');
+if (URLHas('/stylingchamber/')) 
+  registerFetchWatcher({
+    eventName: 'idb:ucChamberData',
+    match: ({ requestData }) => typeof requestData.userStyles !== 'undefined',
+  });
+if (URLHas('trading')) registerFetchWatcher({
+  eventName: 'idb:tradingLots',
+  match: ({ requestData }) => typeof requestData.lots !== 'undefined',
+});
+if (URLHas('closet')) registerFetchWatcher({
+  eventName: 'idb:closetItemData',
+  match: ({ requestData }) => typeof requestData.items !== 'undefined',
+});
 
 // for troubleshooting use
 unsafeWindow.itemdb_script = script_info;
