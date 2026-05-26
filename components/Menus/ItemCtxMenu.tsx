@@ -139,7 +139,7 @@ const ItemCtxMenu = (props: Props) => {
       id: 'item-ctx-add-to-list',
       title: t('Layout.adding-item-to-list'),
       status: 'info',
-      duration: null,
+      duration: Infinity,
       isClosable: true,
     });
 

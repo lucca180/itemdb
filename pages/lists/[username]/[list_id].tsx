@@ -467,16 +467,16 @@ const ListPage = (props: ListPageProps) => {
       id: 'unsavedChanges',
       description: (
         <Flex gap={2}>
-          <Button variant="solid" onClick={saveChanges} colorPalette="blackAlpha" size="sm">
+          <Button onClick={saveChanges} colorPalette="whiteAlpha" size="sm">
             {t('General.save-changes')}
           </Button>
-          <Button variant="solid" onClick={() => init(true)} colorPalette="blackAlpha" size="sm">
+          <Button onClick={() => init(true)} colorPalette="whiteAlpha" size="sm">
             {t('General.cancel')}
           </Button>
         </Flex>
       ),
       status: 'info',
-      duration: null,
+      duration: Infinity,
       // isClosable: true,
     });
   };
@@ -489,8 +489,8 @@ const ListPage = (props: ListPageProps) => {
     const x = toast({
       id: 'list-page-save-changes',
       title: `${t('General.saving-changes')}...`,
-      status: 'info',
-      duration: null,
+      status: 'loading',
+      duration: Infinity,
     });
 
     const changedItems = Object.values(itemInfo).filter((item) => item.hasChanged);

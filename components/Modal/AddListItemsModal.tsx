@@ -55,7 +55,7 @@ export default function AddListItemsModal(props: AddListItemsModalProps) {
       id: 'add-list-item',
       title: t('Layout.adding-item-to-list'),
       status: 'info',
-      duration: null,
+      duration: Infinity,
       isClosable: true,
     });
 

@@ -255,7 +255,7 @@ const UserListsPage = (props: Props) => {
         </>
       ),
       status: 'info',
-      duration: null,
+      duration: Infinity,
     });
   };
 
@@ -265,8 +265,8 @@ const UserListsPage = (props: Props) => {
     const x = toast({
       id: 'user-lists-save-changes',
       title: `${t('General.saving-changes')}...`,
-      status: 'info',
-      duration: null,
+      status: 'loading',
+      duration: Infinity,
     });
 
     try {

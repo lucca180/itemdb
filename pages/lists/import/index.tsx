@@ -279,8 +279,8 @@ const ImportItems = (props: ImportItemsProps) => {
               ? t('Lists.toast-hide')
               : t('Lists.toast-remove'),
       }),
-      status: 'info',
-      duration: null,
+      status: 'loading',
+      duration: Infinity,
     });
 
     try {

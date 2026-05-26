@@ -310,7 +310,7 @@ const SearchPage = (props: SearchPageProps) => {
         id: 'search-add-items-loading',
         title: `${t('Lists.adding-items-to-list')}...`,
         description: `${t('Lists.this-may-take-a-while-please-wait')}...`,
-        duration: null,
+        duration: Infinity,
         isClosable: true,
       },
     });
