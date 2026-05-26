@@ -215,13 +215,16 @@ const ItemCtxMenu = (props: Props) => {
       <CtxMenu
         id={menuId ?? item.internal_id.toString()}
         onShow={onShowMenu}
-        onHide={props.onHide}
+        onHide={() => props.onHide?.()}
+        onMouseLeave={() => {}}
         preventHideOnResize
         appendTo="body"
       >
         <Box display={props.onSelect ? undefined : 'none'}>
-          {props.onSelect && (
+          {props.onSelect ? (
             <CtxMenuItem onClick={onSelect}>{t('Layout.select-item')}</CtxMenuItem>
+          ) : (
+            <></>
           )}
         </Box>
         <CtxMenuItem onClick={handleOpenInNewTab}>{t('Layout.open-in-a-new-tab')}</CtxMenuItem>
