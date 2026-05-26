@@ -1,21 +1,13 @@
-import {
-  Alert,
-  AlertDescription,
-  AlertIcon,
-  AlertTitle,
-  Button,
-  Box,
-  Text,
-} from '@chakra-ui/react';
+import { Alert, Button, Text } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
-import Link from 'next/link';
+import NextLink from 'next/link';
 import React from 'react';
 
 const MissingInfoCard = () => {
   const t = useTranslations();
 
   return (
-    <Alert
+    <Alert.Root
       status="error"
       borderRadius="md"
       variant="subtle"
@@ -24,17 +16,17 @@ const MissingInfoCard = () => {
       justifyContent="center"
       textAlign="center"
     >
-      <AlertIcon />
-      <Box>
-        <AlertTitle>{t('ItemPage.missingInfoTitle')}</AlertTitle>
-        <AlertDescription>
+      <Alert.Indicator />
+      <Alert.Content>
+        <Alert.Title>{t('ItemPage.missingInfoTitle')}</Alert.Title>
+        <Alert.Description>
           <Text fontSize="sm">{t('ItemPage.missingInfoDescription')}</Text>
-          <Button mt={2} as={Link} href="/contribute" size="sm">
-            {t('General.learnHelp')}!
+          <Button asChild mt={2} size="sm">
+            <NextLink href="/contribute">{t('General.learnHelp')}!</NextLink>
           </Button>
-        </AlertDescription>
-      </Box>
-    </Alert>
+        </Alert.Description>
+      </Alert.Content>
+    </Alert.Root>
   );
 };
 

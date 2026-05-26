@@ -42,8 +42,8 @@ const ItemCatSelect = (props: Props) => {
   return (
     <AutoComplete rollNavigation onSelectOption={onSelectOption}>
       <AutoCompleteInput
-        isDisabled={props.isDisabled}
-        variant="filled"
+        disabled={props.isDisabled}
+        variant="subtle"
         value={value}
         onChange={onChange}
         name={name}

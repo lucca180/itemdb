@@ -1,24 +1,13 @@
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
   Text,
   Flex,
   Table,
-  TableCaption,
-  Tbody,
-  Td,
-  Tr,
   Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
   Box,
   Link,
+  Dialog,
+  CloseButton,
+  Portal,
 } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
 
@@ -32,68 +21,90 @@ const OfficialOddsModal = (props: OddsModalProps) => {
   const { isOpen, onClose } = props;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered size="2xl">
-      <ModalOverlay />
-      <ModalContent pt={0}>
-        <ModalHeader>{t('ItemPage.official-nc-mall-drops')}</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <Text fontSize={'sm'} mb={3} color={'gray.400'}>
-            {t.rich('ItemPage.official-drops-desc', {
-              Link: (c) => (
-                <Link
-                  href="https://classic.support.neopets.com/hc/en-us/articles/37898249845261-NC-Mall-Drop-Rates"
-                  isExternal
-                  color="gray.200"
-                >
-                  {c}
-                </Link>
-              ),
-            })}
-          </Text>
-          <Accordion allowToggle defaultIndex={[0]} allowMultiple>
-            {categories.map((cat) => (
-              <AccordionItem bg="blackAlpha.400" key={cat} p={2} borderRadius={'md'} mb={2}>
-                <h2>
-                  <AccordionButton>
-                    <Box as="span" flex="1" textAlign="left" color="gray.400">
-                      {cat}
-                    </Box>
-                    <AccordionIcon />
-                  </AccordionButton>
-                </h2>
-                <AccordionPanel p={0}>
-                  <Table variant="simple" fontSize={'sm'} size="sm">
-                    <TableCaption m={0} color="whiteAlpha.700">
-                      {t('ItemPage.drops-same-change')}
-                    </TableCaption>
-                    <Tbody>
-                      {odds
-                        .filter((a) => a.category === cat)
-                        .map((o) => (
-                          <Tr key={o.title}>
-                            <Td w="30%">{o.title}</Td>
-                            {o.odds.map((odd) => (
-                              <Td key={odd.desc}>
-                                <Flex textAlign={'center'} flexFlow={'column'} gap={1}>
-                                  {odd.val > 0 && <Text>{`${odd.val}%`}</Text>}
-                                  <Text color="whiteAlpha.600" fontSize={'xs'}>
-                                    {odd.desc}
-                                  </Text>
-                                </Flex>
-                              </Td>
-                            ))}
-                          </Tr>
-                        ))}
-                    </Tbody>
-                  </Table>
-                </AccordionPanel>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </ModalBody>
-      </ModalContent>
-    </Modal>
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={({ open }) => {
+        if (!open) onClose();
+      }}
+      placement="center"
+    >
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content pt={0} maxW="2xl" w="full">
+            <Dialog.Header>
+              <Dialog.Title>{t('ItemPage.official-nc-mall-drops')}</Dialog.Title>
+            </Dialog.Header>
+            <Dialog.CloseTrigger asChild>
+              <CloseButton size="sm" />
+            </Dialog.CloseTrigger>
+            <Dialog.Body>
+              <Text fontSize={'sm'} mb={3} color={'gray.400'}>
+                {t.rich('ItemPage.official-drops-desc', {
+                  Link: (c) => (
+                    <Link
+                      href="https://classic.support.neopets.com/hc/en-us/articles/37898249845261-NC-Mall-Drop-Rates"
+                      target="_blank"
+                      rel="noreferrer"
+                      color="gray.200"
+                    >
+                      {c}
+                    </Link>
+                  ),
+                })}
+              </Text>
+              <Accordion.Root collapsible multiple defaultValue={[categories[0]]}>
+                {categories.map((cat) => (
+                  <Accordion.Item
+                    bg="blackAlpha.400"
+                    key={cat}
+                    value={cat}
+                    p={2}
+                    borderRadius={'md'}
+                    mb={2}
+                  >
+                    <Accordion.ItemTrigger>
+                      <Box as="span" flex="1" textAlign="left" color="gray.400">
+                        {cat}
+                      </Box>
+                      <Accordion.ItemIndicator />
+                    </Accordion.ItemTrigger>
+                    <Accordion.ItemContent>
+                      <Accordion.ItemBody p={0}>
+                        <Table.Root variant="line" fontSize={'sm'} size="sm">
+                          <Table.Caption m={0} color="whiteAlpha.700">
+                            {t('ItemPage.drops-same-change')}
+                          </Table.Caption>
+                          <Table.Body>
+                            {odds
+                              .filter((a) => a.category === cat)
+                              .map((o) => (
+                                <Table.Row key={o.title}>
+                                  <Table.Cell w="30%">{o.title}</Table.Cell>
+                                  {o.odds.map((odd) => (
+                                    <Table.Cell key={odd.desc}>
+                                      <Flex textAlign={'center'} flexFlow={'column'} gap={1}>
+                                        {odd.val > 0 && <Text>{`${odd.val}%`}</Text>}
+                                        <Text color="whiteAlpha.600" fontSize={'xs'}>
+                                          {odd.desc}
+                                        </Text>
+                                      </Flex>
+                                    </Table.Cell>
+                                  ))}
+                                </Table.Row>
+                              ))}
+                          </Table.Body>
+                        </Table.Root>
+                      </Accordion.ItemBody>
+                    </Accordion.ItemContent>
+                  </Accordion.Item>
+                ))}
+              </Accordion.Root>
+            </Dialog.Body>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

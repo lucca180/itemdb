@@ -1,4 +1,4 @@
-import { Alert, AlertIcon, Box, AlertTitle, AlertDescription, CloseButton } from '@chakra-ui/react';
+import { Alert, Box, CloseButton } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
 import { setCookie } from 'cookies-next';
 import { useState } from 'react';
@@ -15,20 +15,22 @@ export const NewPolicyReminder = () => {
   if (!shouldShow) return null;
 
   return (
-    <Alert
+    <Alert.Root
       status="warning"
-      variant={'left-accent'}
+      variant="subtle"
       borderRadius="md"
       boxShadow="md"
       padding={4}
       mb={3}
       position="relative"
     >
-      <AlertIcon />
-      <Box flex="1">
-        <AlertTitle fontSize={'md'}>{t('Feedback.updated-trade-pricing-policy')}</AlertTitle>
-        <AlertDescription fontSize={'xs'}>{t('Feedback.review-pricing-policy')}</AlertDescription>
-      </Box>
+      <Alert.Indicator />
+      <Alert.Content>
+        <Box flex="1">
+          <Alert.Title fontSize="md">{t('Feedback.updated-trade-pricing-policy')}</Alert.Title>
+          <Alert.Description fontSize="xs">{t('Feedback.review-pricing-policy')}</Alert.Description>
+        </Box>
+      </Alert.Content>
       <CloseButton
         alignSelf="flex-start"
         position="relative"
@@ -36,6 +38,6 @@ export const NewPolicyReminder = () => {
         top={-1}
         onClick={onClose}
       />
-    </Alert>
+    </Alert.Root>
   );
 };

@@ -50,46 +50,50 @@ export const StatsCard = (props: StatsCardProps) => {
       overflow={'hidden'}
     >
       <Flex pt={4} pb={1} px={3}>
-        <Tooltip
-          hasArrow
-          isDisabled={!labelTooltip}
-          label={labelTooltip}
-          bg="blackAlpha.900"
-          placement="top"
-          fontSize={'xs'}
-          color="white"
-        >
-          <Text color="whiteAlpha.700" fontSize={'xs'} cursor={'default'}>
-            {label}
-            {!!labelTooltip && <Icon as={MdHelp} verticalAlign={'middle'} ml={1} />}
-          </Text>
-        </Tooltip>
+        <Tooltip.Root positioning={{ placement: 'top' }} disabled={!labelTooltip}>
+          <Tooltip.Trigger asChild>
+            <Text color="whiteAlpha.700" fontSize={'xs'} cursor={'default'}>
+              {label}
+              {!!labelTooltip && <Icon as={MdHelp} verticalAlign={'middle'} ml={1} />}
+            </Text>
+          </Tooltip.Trigger>
+          <Tooltip.Positioner>
+            <Tooltip.Content bg="blackAlpha.900" color="white" fontSize="xs">
+              {labelTooltip}
+              <Tooltip.Arrow>
+                <Tooltip.ArrowTip />
+              </Tooltip.Arrow>
+            </Tooltip.Content>
+          </Tooltip.Positioner>
+        </Tooltip.Root>
       </Flex>
       <Flex justifyContent={'space-between'} alignItems={'center'} flex={1} pb={4} px={3} gap={3}>
         <Text fontSize={'xl'} fontWeight={'semibold'}>
           {stat}
         </Text>
         {badgeStat && (
-          <Tooltip
-            hasArrow
-            isDisabled={!badgeTooltip}
-            label={badgeTooltip}
-            bg="blackAlpha.900"
-            fontSize={'xs'}
-            placement="top"
-            color="white"
-          >
-            <Badge
-              colorScheme={badgeColor}
-              p={1}
-              borderRadius={'lg'}
-              display="flex"
-              alignItems={'center'}
-            >
-              <Icon as={badgeIconType === 'up' ? FaArrowTrendUp : FaArrowTrendDown} mr={1} />
-              {badgeStat}
-            </Badge>
-          </Tooltip>
+          <Tooltip.Root positioning={{ placement: 'top' }} disabled={!badgeTooltip}>
+            <Tooltip.Trigger asChild>
+              <Badge
+                colorPalette={badgeColor}
+                p={1}
+                borderRadius={'lg'}
+                display="flex"
+                alignItems={'center'}
+              >
+                <Icon as={badgeIconType === 'up' ? FaArrowTrendUp : FaArrowTrendDown} mr={1} />
+                {badgeStat}
+              </Badge>
+            </Tooltip.Trigger>
+            <Tooltip.Positioner>
+              <Tooltip.Content bg="blackAlpha.900" color="white" fontSize="xs">
+                {badgeTooltip}
+                <Tooltip.Arrow>
+                  <Tooltip.ArrowTip />
+                </Tooltip.Arrow>
+              </Tooltip.Content>
+            </Tooltip.Positioner>
+          </Tooltip.Root>
         )}
       </Flex>
       <Flex bg="blackAlpha.700" px={4} py={1} fontSize={'xs'} color="whiteAlpha.700">

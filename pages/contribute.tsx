@@ -4,22 +4,11 @@ import {
   Text,
   Link,
   List,
-  ListIcon,
-  ListItem,
   useMediaQuery,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
   Tabs,
   Button,
   Icon,
-  UnorderedList,
   Alert,
-  AlertDescription,
-  AlertIcon,
-  AlertTitle,
-  Box,
 } from '@chakra-ui/react';
 import { BsCheckCircleFill, BsXCircleFill } from 'react-icons/bs';
 import HeaderCard from '../components/Card/HeaderCard';
@@ -63,29 +52,31 @@ const ContributePage = () => {
         </Heading>
         <Text as="h2">{t('Feedback.contribute-description')}</Text>
       </HeaderCard>
-      <Flex flexFlow="column" gap={3} sx={{ a: { color: '#ffee71' }, b: { color: '#8ea7f1' } }}>
-        <Tabs colorScheme="yellow">
-          <TabList>
-            <Tab>{t('Feedback.item-data-extractor')}</Tab>
-            <Tab>{t('Feedback.feedback-system')}</Tab>
-            <Tab>{t('Feedback.creating-official-lists')}</Tab>
-            <Tab>{t('Feedback.where-to-find-data')}</Tab>
-          </TabList>
-          <TabPanels>
-            <TabPanel>
-              <ItemDataExtractor />
-            </TabPanel>
-            <TabPanel>
-              <FeedbackSystem />
-            </TabPanel>
-            <TabPanel>
-              <OfficialLists />
-            </TabPanel>
-            <TabPanel>
-              <WhereToFindInfo />
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
+      <Flex
+        flexFlow="column"
+        gap={3}
+        css={{ '& a': { color: '#ffee71' }, b: { color: '#8ea7f1' } }}
+      >
+        <Tabs.Root colorPalette="yellow" defaultValue="extractor">
+          <Tabs.List>
+            <Tabs.Trigger value="extractor">{t('Feedback.item-data-extractor')}</Tabs.Trigger>
+            <Tabs.Trigger value="feedback">{t('Feedback.feedback-system')}</Tabs.Trigger>
+            <Tabs.Trigger value="official">{t('Feedback.creating-official-lists')}</Tabs.Trigger>
+            <Tabs.Trigger value="where">{t('Feedback.where-to-find-data')}</Tabs.Trigger>
+          </Tabs.List>
+          <Tabs.Content value="extractor">
+            <ItemDataExtractor />
+          </Tabs.Content>
+          <Tabs.Content value="feedback">
+            <FeedbackSystem />
+          </Tabs.Content>
+          <Tabs.Content value="official">
+            <OfficialLists />
+          </Tabs.Content>
+          <Tabs.Content value="where">
+            <WhereToFindInfo />
+          </Tabs.Content>
+        </Tabs.Root>
       </Flex>
     </>
   );
@@ -95,7 +86,7 @@ export default ContributePage;
 
 const ItemDataExtractor = () => {
   const t = useTranslations();
-  const [isLargerThanMD] = useMediaQuery('(min-width: 48em)', { fallback: true });
+  const [isLargerThanMD] = useMediaQuery(['(min-width: 48em)'], { fallback: [true] });
   return (
     <Flex flexFlow="column" gap={3} maxW="1000px">
       <Heading size="lg">{t('Feedback.the-item-data-extractor')}</Heading>
@@ -110,7 +101,8 @@ const ItemDataExtractor = () => {
           Link: (chunk) => (
             <Link
               href="https://github.com/lucca180/itemdb/raw/main/userscripts/itemDataExtractor.user.js"
-              isExternal
+              target="_blank"
+              rel="noreferrer"
             >
               {chunk}
             </Link>
@@ -122,7 +114,8 @@ const ItemDataExtractor = () => {
           Link: (chunk) => (
             <Link
               href="https://github.com/lucca180/itemdb/raw/main/userscripts/itemDataExtractor.user.js"
-              isExternal
+              target="_blank"
+              rel="noreferrer"
             >
               {chunk}
             </Link>
@@ -133,7 +126,7 @@ const ItemDataExtractor = () => {
       <Text>
         {t.rich('Feedback.ide-3', {
           Link: (chunk) => (
-            <Link href="https://github.com/lucca180/itemdb" isExternal>
+            <Link href="https://github.com/lucca180/itemdb" target="_blank" rel="noreferrer">
               {chunk}
             </Link>
           ),
@@ -144,54 +137,63 @@ const ItemDataExtractor = () => {
       <Heading size="md" mt={3}>
         {t('Feedback.how-to-install')}
       </Heading>
-      <Alert status="warning" borderRadius={'md'}>
-        <AlertIcon />
-        <Box>
-          <AlertTitle>Manifest V3</AlertTitle>
-          <AlertDescription>
+      <Alert.Root status="warning" borderRadius={'md'}>
+        <Alert.Indicator />
+        <Alert.Content>
+          <Alert.Title>Manifest V3</Alert.Title>
+          <Alert.Description>
             {t.rich('Feedback.manifest-v3-text', {
               Link: (chunk) => (
-                <Link href="https://www.tampermonkey.net/faq.php#Q209" isExternal>
+                <Link
+                  href="https://www.tampermonkey.net/faq.php#Q209"
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   {chunk}
                 </Link>
               ),
             })}
-          </AlertDescription>
-        </Box>
-      </Alert>
-      <UnorderedList spacing={3}>
-        <ListItem>
+          </Alert.Description>
+        </Alert.Content>
+      </Alert.Root>
+      <List.Root as="ul" gap={3} ps={6}>
+        <List.Item>
           {t.rich('Feedback.ide-4', {
             Link: (chunk) => (
-              <Link href="https://www.tampermonkey.net/" isExternal>
+              <Link href="https://www.tampermonkey.net/" target="_blank" rel="noreferrer">
                 {chunk}
               </Link>
             ),
           })}
-        </ListItem>
-        <ListItem>
+        </List.Item>
+        <List.Item>
           {t.rich('Feedback.ide-5', {
             Link: (chunk) => (
               <Link
                 href="https://github.com/lucca180/itemdb/raw/main/userscripts/itemDataExtractor.user.js"
-                isExternal
+                target="_blank"
+                rel="noreferrer"
               >
                 {chunk}
               </Link>
             ),
           })}
-        </ListItem>
-      </UnorderedList>
+        </List.Item>
+      </List.Root>
       <Heading size="md" mt={3}>
         {t('Feedback.what-is-sent-to-itemdb')}
       </Heading>
-      <List spacing={3}>
-        <ListItem>
-          <ListIcon as={BsCheckCircleFill} color="green.300" />
+      <List.Root gap={3}>
+        <List.Item>
+          <List.Indicator asChild color="green.300">
+            <BsCheckCircleFill />
+          </List.Indicator>
           {t('Feedback.ide-6')}
-        </ListItem>
-        <ListItem>
-          <ListIcon as={BsCheckCircleFill} color="green.300" />
+        </List.Item>
+        <List.Item>
+          <List.Indicator asChild color="green.300">
+            <BsCheckCircleFill />
+          </List.Indicator>
           {t.rich('Feedback.ide-7', {
             Text: (chunk) => (
               <Text fontSize="sm" color="gray.400">
@@ -200,9 +202,11 @@ const ItemDataExtractor = () => {
             ),
             b: (chunk) => <b>{chunk}</b>,
           })}
-        </ListItem>
-        <ListItem>
-          <ListIcon as={BsCheckCircleFill} color="green.300" />
+        </List.Item>
+        <List.Item>
+          <List.Indicator asChild color="green.300">
+            <BsCheckCircleFill />
+          </List.Indicator>
           {t.rich('Feedback.ide-8', {
             Text: (chunk) => (
               <Text fontSize="sm" color="gray.400">
@@ -210,9 +214,11 @@ const ItemDataExtractor = () => {
               </Text>
             ),
           })}
-        </ListItem>
-        <ListItem>
-          <ListIcon as={BsCheckCircleFill} color="green.300" />
+        </List.Item>
+        <List.Item>
+          <List.Indicator asChild color="green.300">
+            <BsCheckCircleFill />
+          </List.Indicator>
           {t.rich('Feedback.ide-9', {
             Text: (chunk) => (
               <Text fontSize="sm" color="gray.400">
@@ -220,9 +226,11 @@ const ItemDataExtractor = () => {
               </Text>
             ),
           })}
-        </ListItem>
-        <ListItem>
-          <ListIcon as={BsCheckCircleFill} color="green.300" />
+        </List.Item>
+        <List.Item>
+          <List.Indicator asChild color="green.300">
+            <BsCheckCircleFill />
+          </List.Indicator>
           {t.rich('Feedback.ide-10', {
             Text: (chunk) => (
               <Text fontSize="sm" color="gray.400">
@@ -230,14 +238,16 @@ const ItemDataExtractor = () => {
               </Text>
             ),
           })}
-        </ListItem>
-      </List>
+        </List.Item>
+      </List.Root>
       <Heading size="md" mt={3}>
         {t('Feedback.what-is-not-sent-to-itemdb')}
       </Heading>
-      <List spacing={3}>
-        <ListItem>
-          <ListIcon as={BsXCircleFill} color="red.300" />
+      <List.Root gap={3}>
+        <List.Item>
+          <List.Indicator asChild color="red.300">
+            <BsXCircleFill />
+          </List.Indicator>
 
           {t.rich('Feedback.ide-11', {
             Text: (chunk) => (
@@ -246,8 +256,8 @@ const ItemDataExtractor = () => {
               </Text>
             ),
           })}
-        </ListItem>
-      </List>
+        </List.Item>
+      </List.Root>
     </Flex>
   );
 };
@@ -323,98 +333,114 @@ const WhereToFindInfo = () => {
           b: (chunk) => <b>{chunk}</b>,
         })}
       </Text>
-      <UnorderedList spacing={2}>
-        <ListItem>
-          <Link href="https://www.neopets.com/inventory.phtml" isExternal>
+      <List.Root as="ul" gap={2} ps={6}>
+        <List.Item>
+          <Link href="https://www.neopets.com/inventory.phtml" target="_blank" rel="noreferrer">
             {t('General.Inventory')}
           </Link>{' '}
           - {t('General.name')}, {t('General.description')}, {t('General.Image')},{' '}
           {t('General.category')}, {t('General.rarity')}, {t('General.est-val')},{' '}
           {t('General.weight')}
-        </ListItem>
-        <ListItem>
-          <Link href="https://www.neopets.com/safetydeposit.phtml" isExternal>
+        </List.Item>
+        <List.Item>
+          <Link href="https://www.neopets.com/safetydeposit.phtml" target="_blank" rel="noreferrer">
             {t('General.safety-deposit-box')}
           </Link>{' '}
           - {t('General.item-id')}, {t('General.name')}, {t('General.description')},{' '}
           {t('General.Image')}, {t('General.category')} {t('Feedback.except-for-nc-items')}
-        </ListItem>
-        <ListItem>
-          <Link href="https://www.neopets.com/island/tradingpost.phtml" isExternal>
+        </List.Item>
+        <List.Item>
+          <Link
+            href="https://www.neopets.com/island/tradingpost.phtml"
+            target="_blank"
+            rel="noreferrer"
+          >
             {t('General.trading-post')}
           </Link>{' '}
           - {t('General.name')}, {t('General.description')}, {t('General.Image')}
-        </ListItem>
-        <ListItem>
-          <Link href="https://www.neopets.com/market.phtml?type=your" isExternal>
+        </List.Item>
+        <List.Item>
+          <Link
+            href="https://www.neopets.com/market.phtml?type=your"
+            target="_blank"
+            rel="noreferrer"
+          >
             {t('Feedback.shops-your-shop-or-restock')}
           </Link>{' '}
           - {t('General.item-id')}, {t('General.name')}, {t('General.description')},{' '}
           {t('General.Image')}, {t('General.category')}
-        </ListItem>
-        <ListItem>
-          <Link href="https://www.neopets.com/market_map.phtml" isExternal>
+        </List.Item>
+        <List.Item>
+          <Link href="https://www.neopets.com/market_map.phtml" target="_blank" rel="noreferrer">
             {t('Feedback.user-shops')}
           </Link>{' '}
           - {t('General.item-id')}, {t('General.name')}, {t('General.description')},{' '}
           {t('General.Image')}
-        </ListItem>
-        <ListItem>
-          <Link href="https://www.neopets.com/gallery/" isExternal>
+        </List.Item>
+        <List.Item>
+          <Link href="https://www.neopets.com/gallery/" target="_blank" rel="noreferrer">
             {t('Feedback.gallery-front-page')}
           </Link>{' '}
           - {t('General.name')}, {t('General.description')}, {t('General.Image')}
-        </ListItem>
-        <ListItem>
-          <Link href="https://www.neopets.com/gallery/quickremove.phtml" isExternal>
+        </List.Item>
+        <List.Item>
+          <Link
+            href="https://www.neopets.com/gallery/quickremove.phtml"
+            target="_blank"
+            rel="noreferrer"
+          >
             {t('Feedback.gallery-admin-page')}
           </Link>{' '}
           - {t('General.item-id')}, {t('General.name')}, {t('General.Image')}
-        </ListItem>
-        <ListItem>
-          <Link href="https://www.neopets.com/closet.phtml" isExternal>
+        </List.Item>
+        <List.Item>
+          <Link href="https://www.neopets.com/closet.phtml" target="_blank" rel="noreferrer">
             {t('General.closet')}
           </Link>{' '}
           - {t('General.item-id')}, {t('General.name')}, {t('General.description')},{' '}
           {t('General.Image')}, {t('General.category')}
-        </ListItem>
-        <ListItem>
-          <Link href="https://www.neopets.com/search.phtml" isExternal>
+        </List.Item>
+        <List.Item>
+          <Link href="https://www.neopets.com/search.phtml" target="_blank" rel="noreferrer">
             {t('Feedback.search-page')}
           </Link>{' '}
           - {t('General.name')}, {t('General.description')}, {t('General.Image')},{' '}
           {t('General.category')}, {t('General.rarity')}, {t('General.est-val')},{' '}
           {t('General.weight')}
-        </ListItem>
-        <ListItem>
-          <Link href="https://www.neopets.com/neohome/shed" isExternal>
+        </List.Item>
+        <List.Item>
+          <Link href="https://www.neopets.com/neohome/shed" target="_blank" rel="noreferrer">
             {t('Feedback.storage-shed')}
           </Link>{' '}
           - {t('General.item-id')}, {t('General.name')}, {t('General.description')},{' '}
           {t('General.Image')}, {t('General.category')}
-        </ListItem>
-        <ListItem>
-          <Link href="http://ncmall.neopets.com/mall/shop.phtml?page=&cat=" isExternal>
+        </List.Item>
+        <List.Item>
+          <Link
+            href="http://ncmall.neopets.com/mall/shop.phtml?page=&cat="
+            target="_blank"
+            rel="noreferrer"
+          >
             {t('General.nc-mall')}
           </Link>{' '}
           - {t('General.item-id')}, {t('General.name')}, {t('General.description')},{' '}
           {t('General.Image')}
-        </ListItem>
-        <ListItem>
-          <Link href="https://www.neopets.com/customise/" isExternal>
+        </List.Item>
+        <List.Item>
+          <Link href="https://www.neopets.com/customise/" target="_blank" rel="noreferrer">
             {t('Feedback.customization-page')}
           </Link>{' '}
           - {t('Feedback.everything')} {t('General.item-id')}, {t('General.name')},{' '}
           {t('General.description')}, {t('General.Image')}, {t('General.category')},{' '}
           {t('General.rarity')}, {t('General.est-val')}, {t('General.weight')}
-        </ListItem>
-        <ListItem>
-          <Link href="https://www.neopets.com/ncma/" isExternal>
+        </List.Item>
+        <List.Item>
+          <Link href="https://www.neopets.com/ncma/" target="_blank" rel="noreferrer">
             {t('Feedback.nc-journal')}
           </Link>{' '}
           - {t('General.item-id')}, {t('General.name')}, {t('General.Image')}
-        </ListItem>
-      </UnorderedList>
+        </List.Item>
+      </List.Root>
     </Flex>
   );
 };

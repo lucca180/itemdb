@@ -1,24 +1,19 @@
 import {
   Button,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
   Text,
   Flex,
-  useToast,
-  Select,
   Input,
   IconButton,
   SimpleGrid,
   Textarea,
-  FormControl,
-  FormLabel,
+  Field,
   Box,
+  Dialog,
+  CloseButton,
+  Portal,
+  NativeSelect,
 } from '@chakra-ui/react';
+import { useToast } from '@utils/theme/toast';
 import { useTranslations } from 'next-intl';
 import axios from 'axios';
 import { BDData, BDIconTypes, ItemData } from '../../types';
@@ -128,9 +123,13 @@ export default function EditBdInfoModal(props: EditBdInfoModalProps) {
     });
 
     toast.promise(prom, {
-      success: { title: 'Success', description: 'Thank you' },
-      error: { title: 'Something wrong', description: 'Please try again later' },
-      loading: { title: 'Please wait' },
+      success: { id: 'edit-bd-info-success', title: 'Success', description: 'Thank you' },
+      error: {
+        id: 'edit-bd-info-error',
+        title: 'Something wrong',
+        description: 'Please try again later',
+      },
+      loading: { id: 'edit-bd-info-loading', title: 'Please wait' },
     });
 
     prom.then(() => onClose()).catch((e) => console.error(e));
@@ -179,178 +178,204 @@ export default function EditBdInfoModal(props: EditBdInfoModalProps) {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered size="6xl">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Edit BD Info</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody fontSize={'sm'} sx={{ a: { color: 'blue.200' } }}>
-          <SimpleGrid columns={3} spacing={6}>
-            {['attack', 'defense', 'reflect'].map((section) => (
-              <Flex flex="1" key={section} flexDirection={'column'} mb={4} gap={3}>
-                <Text fontWeight={'bold'} mb={2} textTransform={'capitalize'}>
-                  {section}
-                </Text>
-                {((bdData[section as keyof typeof bdData] as any[]) ?? []).map(
-                  ({ type, value }, index) => (
-                    <Flex gap={2} key={index}>
-                      <Select
-                        placeholder="Select Type"
-                        size="sm"
-                        variant={'filled'}
-                        value={type}
-                        disabled={!!type}
-                        onChange={(e) =>
-                          setIcon(
-                            section as 'attack' | 'defense' | 'reflect',
-                            index,
-                            e.target.value as BDIconTypes
-                          )
-                        }
-                      >
-                        {icons.map((icon) => (
-                          <option key={icon} value={icon}>
-                            {icon.charAt(0).toUpperCase() + icon.slice(1)}
-                          </option>
-                        ))}
-                      </Select>
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={({ open }) => {
+        if (!open) onClose();
+      }}
+      placement="center"
+    >
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content maxW="6xl" w="full">
+            <Dialog.Header>
+              <Dialog.Title>Edit BD Info</Dialog.Title>
+            </Dialog.Header>
+            <Dialog.CloseTrigger asChild>
+              <CloseButton size="sm" />
+            </Dialog.CloseTrigger>
+            <Dialog.Body fontSize={'sm'} css={{ '& a': { color: 'blue.200' } }}>
+              <SimpleGrid columns={3} gap={6}>
+                {['attack', 'defense', 'reflect'].map((section) => (
+                  <Flex flex="1" key={section} flexDirection={'column'} mb={4} gap={3}>
+                    <Text fontWeight={'bold'} mb={2} textTransform={'capitalize'}>
+                      {section}
+                    </Text>
+                    {((bdData[section as keyof typeof bdData] as any[]) ?? []).map(
+                      ({ type, value }, index) => (
+                        <Flex gap={2} key={index}>
+                          <NativeSelect.Root size="sm" variant="subtle" flex={1} disabled={!!type}>
+                            <NativeSelect.Field
+                              value={type}
+                              onChange={(e) =>
+                                setIcon(
+                                  section as 'attack' | 'defense' | 'reflect',
+                                  index,
+                                  e.target.value as BDIconTypes
+                                )
+                              }
+                            >
+                              <option value="" disabled>
+                                Select Type
+                              </option>
+                              {icons.map((icon) => (
+                                <option key={icon} value={icon}>
+                                  {icon.charAt(0).toUpperCase() + icon.slice(1)}
+                                </option>
+                              ))}
+                            </NativeSelect.Field>
+                            <NativeSelect.Indicator />
+                          </NativeSelect.Root>
+                          <Input
+                            onChange={(e) =>
+                              handleChange(section as 'attack' | 'defense', index, e.target.value)
+                            }
+                            placeholder="Value"
+                            size="sm"
+                            variant={'subtle'}
+                            value={value}
+                            flex={1}
+                          />
+                          <IconButton
+                            size="sm"
+                            onClick={() => deleteIcon(section as 'attack' | 'defense', index)}
+                            aria-label="delete icon"
+                          >
+                            <BiTrash />
+                          </IconButton>
+                        </Flex>
+                      )
+                    )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => addNewEntry(section as 'attack' | 'defense')}
+                    >
+                      Add new
+                    </Button>
+                  </Flex>
+                ))}
+                <Flex flexDirection={'column'} mb={4} gap={3}>
+                  <Text fontWeight={'bold'} mb={2} textTransform={'capitalize'}>
+                    Other
+                  </Text>
+                  <SimpleGrid columns={2} gap={2}>
+                    <Field.Root>
+                      <Field.Label fontSize="xs">Use Type</Field.Label>
+                      <NativeSelect.Root size="sm" variant="subtle">
+                        <NativeSelect.Field
+                          name="use"
+                          value={bdData.other?.use ?? ''}
+                          onChange={(e) => handleOthers('use', e.target.value)}
+                        >
+                          <option value="">Use Type</option>
+                          {usesType.map((type) => (
+                            <option key={type} value={type}>
+                              {type}
+                            </option>
+                          ))}
+                        </NativeSelect.Field>
+                        <NativeSelect.Indicator />
+                      </NativeSelect.Root>
+                    </Field.Root>
+                    <Field.Root>
+                      <Field.Label fontSize="xs">Fragility</Field.Label>
+                      <NativeSelect.Root size="sm" variant="subtle">
+                        <NativeSelect.Field
+                          name="fragility"
+                          value={bdData.other?.fragility ?? ''}
+                          onChange={(e) => handleOthers('fragility', e.target.value)}
+                        >
+                          <option value="">Fragility</option>
+                          {fragility.map((type) => (
+                            <option key={type} value={type}>
+                              {type}
+                            </option>
+                          ))}
+                        </NativeSelect.Field>
+                        <NativeSelect.Indicator />
+                      </NativeSelect.Root>
+                    </Field.Root>
+                    <Field.Root>
+                      <Field.Label fontSize="xs">Freeze Chance</Field.Label>
                       <Input
-                        onChange={(e) =>
-                          handleChange(section as 'attack' | 'defense', index, e.target.value)
-                        }
-                        placeholder="Value"
+                        placeholder="Freeze"
                         size="sm"
-                        variant={'filled'}
-                        value={value}
+                        variant={'subtle'}
+                        value={bdData.other?.freeze ?? ''}
+                        onChange={(e) => handleOthers('freeze', e.target.value)}
                       />
-                      <IconButton
-                        icon={<BiTrash />}
+                    </Field.Root>
+                    <Field.Root>
+                      <Field.Label fontSize="xs">Equip Limit</Field.Label>
+                      <Input
+                        placeholder="Limit"
                         size="sm"
-                        onClick={() => deleteIcon(section as 'attack' | 'defense', index)}
-                        aria-label="delete icon"
+                        variant={'subtle'}
+                        value={bdData.other?.limit ?? ''}
+                        onChange={(e) => handleOthers('limit', e.target.value)}
                       />
-                    </Flex>
-                  )
-                )}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => addNewEntry(section as 'attack' | 'defense')}
-                >
-                  Add new
-                </Button>
-              </Flex>
-            ))}
-            <Flex flexDirection={'column'} mb={4} gap={3}>
-              <Text fontWeight={'bold'} mb={2} textTransform={'capitalize'}>
-                Other
-              </Text>
-              <SimpleGrid columns={2} gap={2}>
-                <FormControl>
-                  <FormLabel fontSize="xs">Use Type</FormLabel>
-                  <Select
-                    placeholder="Use Type"
-                    size="sm"
-                    name="use"
-                    variant={'filled'}
-                    value={bdData.other?.use ?? ''}
-                    onChange={(e) => handleOthers('use', e.target.value)}
+                    </Field.Root>
+                    <Field.Root>
+                      <Field.Label fontSize="xs">Heal</Field.Label>
+                      <Input
+                        placeholder="Heal"
+                        size="sm"
+                        variant={'subtle'}
+                        value={bdData.other?.hp ?? ''}
+                        onChange={(e) => handleOthers('hp', e.target.value)}
+                      />
+                    </Field.Root>
+                  </SimpleGrid>
+                </Flex>
+                <Flex flexDirection={'column'} mb={4} gap={3}>
+                  <Text fontWeight={'bold'} mb={2} textTransform={'capitalize'}>
+                    Notes
+                  </Text>
+                  <Textarea
+                    placeholder="Notes"
+                    value={bdData.notes ?? ''}
+                    variant={'subtle'}
+                    onChange={(e) => setBdData((prev) => ({ ...prev, notes: e.target.value }))}
+                  />
+                </Flex>
+                <Flex flexDirection={'column'} mb={4} gap={3}>
+                  <Text fontWeight={'bold'} mb={2} textTransform={'capitalize'}>
+                    Processed Data
+                  </Text>
+                  <Box
+                    overflow="auto"
+                    maxHeight="300px"
+                    borderRadius="md"
+                    bg="blackAlpha.400"
+                    p={2}
                   >
-                    {usesType.map((type) => (
-                      <option key={type} value={type}>
-                        {type}
-                      </option>
-                    ))}
-                  </Select>
-                </FormControl>
-                <FormControl>
-                  <FormLabel fontSize="xs">Fragility</FormLabel>
-                  <Select
-                    placeholder="Fragility"
-                    size="sm"
-                    name="fragility"
-                    variant={'filled'}
-                    value={bdData.other?.fragility ?? ''}
-                    onChange={(e) => handleOthers('fragility', e.target.value)}
-                  >
-                    {fragility.map((type) => (
-                      <option key={type} value={type}>
-                        {type}
-                      </option>
-                    ))}
-                  </Select>
-                </FormControl>
-                <FormControl>
-                  <FormLabel fontSize="xs">Freeze Chance</FormLabel>
-                  <Input
-                    placeholder="Freeze"
-                    size="sm"
-                    variant={'filled'}
-                    value={bdData.other?.freeze ?? ''}
-                    onChange={(e) => handleOthers('freeze', e.target.value)}
-                  />
-                </FormControl>
-                <FormControl>
-                  <FormLabel fontSize="xs">Equip Limit</FormLabel>
-                  <Input
-                    placeholder="Limit"
-                    size="sm"
-                    variant={'filled'}
-                    value={bdData.other?.limit ?? ''}
-                    onChange={(e) => handleOthers('limit', e.target.value)}
-                  />
-                </FormControl>
-                <FormControl>
-                  <FormLabel fontSize="xs">Heal</FormLabel>
-                  <Input
-                    placeholder="Heal"
-                    size="sm"
-                    variant={'filled'}
-                    value={bdData.other?.hp ?? ''}
-                    onChange={(e) => handleOthers('hp', e.target.value)}
-                  />
-                </FormControl>
+                    <ReactJsonView
+                      theme={'google'}
+                      src={data}
+                      collapsed={3}
+                      name={false}
+                      displayDataTypes={false}
+                      enableClipboard={false}
+                      style={{ background: 'transparent' }}
+                    />
+                  </Box>
+                </Flex>
               </SimpleGrid>
-            </Flex>
-            <Flex flexDirection={'column'} mb={4} gap={3}>
-              <Text fontWeight={'bold'} mb={2} textTransform={'capitalize'}>
-                Notes
-              </Text>
-              <Textarea
-                placeholder="Notes"
-                value={bdData.notes ?? ''}
-                variant={'filled'}
-                onChange={(e) => setBdData((prev) => ({ ...prev, notes: e.target.value }))}
-              />
-            </Flex>
-            <Flex flexDirection={'column'} mb={4} gap={3}>
-              <Text fontWeight={'bold'} mb={2} textTransform={'capitalize'}>
-                Processed Data
-              </Text>
-              <Box overflow="auto" maxHeight="300px" borderRadius="md" bg="blackAlpha.400" p={2}>
-                <ReactJsonView
-                  theme={'google'}
-                  src={data}
-                  collapsed={3}
-                  name={false}
-                  displayDataTypes={false}
-                  enableClipboard={false}
-                  style={{ background: 'transparent' }}
-                />
-              </Box>
-            </Flex>
-          </SimpleGrid>
-        </ModalBody>
-        <ModalFooter>
-          <Button variant="ghost" onClick={onClose} size="sm">
-            {t('General.close')}
-          </Button>
-          <Button variant="ghost" onClick={handleSave} size="sm">
-            Save
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+            </Dialog.Body>
+            <Dialog.Footer>
+              <Button variant="ghost" onClick={onClose} size="sm">
+                {t('General.close')}
+              </Button>
+              <Button variant="ghost" onClick={handleSave} size="sm">
+                Save
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 }
 

@@ -1,20 +1,14 @@
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
   Button,
-  FormControl,
   Text,
-  FormLabel,
+  Field,
   Spinner,
   Center,
-  FormHelperText,
-  useToast,
+  Dialog,
+  CloseButton,
+  Portal,
 } from '@chakra-ui/react';
+import { useToast } from '@utils/theme/toast';
 import axios from 'axios';
 import { useState } from 'react';
 import { ListItemInfo, ObligatoryUserList, UserList } from '../../types';
@@ -34,7 +28,7 @@ const ItemActionModal = (props: ItemActionModalProps) => {
   const t = useTranslations();
   const toast = useToast();
   const { isOpen, onClose, action, selectedItems, list, refresh } = props;
-  const [isLoading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
   const [dest, setDest] = useState<UserList>();
 
@@ -50,6 +44,7 @@ const ItemActionModal = (props: ItemActionModalProps) => {
 
       if (res.status === 200) {
         toast({
+          id: 'item-action-success',
           title: t('General.success'),
           status: 'success',
           duration: 3000,
@@ -74,58 +69,75 @@ const ItemActionModal = (props: ItemActionModalProps) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} isCentered scrollBehavior="inside">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader textTransform="capitalize">
-          {action === 'move' && t('Lists.move-n-items', { items: selectedItems.length })}
-          {action === 'delete' && t('Lists.delete-items-items', { items: selectedItems.length })}
-          {action === 'copy' && t('Lists.copying-items-items', { items: selectedItems.length })}
-        </ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          {!isLoading && !error && ['copy', 'move'].includes(action) && (
-            <FormControl>
-              <FormLabel color="gray.300">{t('Lists.destination')}</FormLabel>
-              <ListSelect onChange={setDest} />
-              <FormHelperText>{t('Lists.move-text')}</FormHelperText>
-            </FormControl>
-          )}
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={({ open }) => {
+        if (!open) handleClose();
+      }}
+      placement="center"
+      scrollBehavior="inside"
+    >
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>
+              <Dialog.Title textTransform="capitalize">
+                {action === 'move' && t('Lists.move-n-items', { items: selectedItems.length })}
+                {action === 'delete' &&
+                  t('Lists.delete-items-items', { items: selectedItems.length })}
+                {action === 'copy' &&
+                  t('Lists.copying-items-items', { items: selectedItems.length })}
+              </Dialog.Title>
+            </Dialog.Header>
+            <Dialog.CloseTrigger asChild>
+              <CloseButton size="sm" />
+            </Dialog.CloseTrigger>
+            <Dialog.Body>
+              {!loading && !error && ['copy', 'move'].includes(action) && (
+                <Field.Root>
+                  <Field.Label color="gray.300">{t('Lists.destination')}</Field.Label>
+                  <ListSelect onChange={setDest} />
+                  <Field.HelperText>{t('Lists.move-text')}</Field.HelperText>
+                </Field.Root>
+              )}
 
-          {!isLoading && !error && action === 'delete' && (
-            <Text color="gray.300">
-              {t.rich('Lists.delete-items-confirmation', {
-                b: (chunk) => <b>{chunk}</b>,
-                br: () => <br />,
-                listName: list.name,
-                items: selectedItems.length,
-              })}
-            </Text>
-          )}
+              {!loading && !error && action === 'delete' && (
+                <Text color="gray.300">
+                  {t.rich('Lists.delete-items-confirmation', {
+                    b: (chunk) => <b>{chunk}</b>,
+                    br: () => <br />,
+                    listName: list.name,
+                    items: selectedItems.length,
+                  })}
+                </Text>
+              )}
 
-          {error && (
-            <Text color="red.500">{t('General.an-error-occured-please-try-again-later')}</Text>
-          )}
-          {isLoading && (
-            <Center>
-              <Spinner />
-            </Center>
-          )}
-        </ModalBody>
-        <ModalFooter>
-          {!isLoading && !error && (
-            <>
-              <Button variant="ghost" mr={3} onClick={handleClose}>
-                {t('General.cancel')}
-              </Button>
-              <Button onClick={saveChanges} isDisabled={action === 'move' && !dest}>
-                {t('General.confirm')}
-              </Button>
-            </>
-          )}
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+              {error && (
+                <Text color="red.500">{t('General.an-error-occured-please-try-again-later')}</Text>
+              )}
+              {loading && (
+                <Center>
+                  <Spinner />
+                </Center>
+              )}
+            </Dialog.Body>
+            <Dialog.Footer>
+              {!loading && !error && (
+                <>
+                  <Button variant="ghost" mr={3} onClick={handleClose}>
+                    {t('General.cancel')}
+                  </Button>
+                  <Button onClick={saveChanges} disabled={action === 'move' && !dest}>
+                    {t('General.confirm')}
+                  </Button>
+                </>
+              )}
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

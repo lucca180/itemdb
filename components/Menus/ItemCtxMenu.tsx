@@ -1,16 +1,15 @@
 import {
   Badge,
   chakra,
-  Divider,
+  Separator,
   Tooltip,
-  useToast,
   Box,
   useDisclosure,
   HStack,
   Text,
   Kbd,
-  PortalManager,
 } from '@chakra-ui/react';
+import { useToast } from '@utils/theme/toast';
 import { ContextMenu, ContextMenuItem, Submenu, ContextMenuTrigger } from 'rctx-contextmenu';
 import { ItemData, ListItemInfo, UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
@@ -41,7 +40,7 @@ const CONTEXT_MENU_Z_INDEX = 9999;
 const CONTEXT_MENU_TOOLTIP_Z_INDEX = CONTEXT_MENU_Z_INDEX + 1;
 
 const CtxMenu = chakra(ContextMenu, {
-  baseStyle: {
+  base: {
     background: 'gray.800 !important',
     zIndex: `${CONTEXT_MENU_Z_INDEX} !important`,
     // padding: "0 !important"
@@ -49,7 +48,7 @@ const CtxMenu = chakra(ContextMenu, {
 });
 
 const CtxMenuItem = chakra(ContextMenuItem, {
-  baseStyle: {
+  base: {
     _hover: {
       background: 'gray.700 !important',
     },
@@ -57,35 +56,33 @@ const CtxMenuItem = chakra(ContextMenuItem, {
 });
 
 const CtxSubmenu = chakra(Submenu, {
-  baseStyle: {
+  base: {
     _hover: {
       background: 'gray.700 !important',
       '& > .contextmenu__item': {
         background: 'gray.700 !important',
       },
     },
-    '.submenu__item': {
+    '& > .contextmenu__item:after': {
+      borderColor: 'transparent transparent transparent #fff !important',
+    },
+    '& .submenu__item': {
       maxH: 'none',
       overflowY: 'visible',
       background: 'gray.800 !important',
       borderColor: 'gray.600 !important',
-      '.contextmenu__item': {
-        background: 'gray.800 !important',
-      },
     },
-
-    '& > .contextmenu__item:after': {
-      borderColor: 'transparent transparent transparent #fff !important',
+    '& .submenu__item .contextmenu__item': {
+      background: 'gray.800 !important',
     },
-
-    '.submenu__item > .contextmenu__item:hover': {
+    '& .submenu__item > .contextmenu__item:hover': {
       background: 'gray.700 !important',
     },
   },
 });
 
 export const CtxTrigger = chakra(ContextMenuTrigger, {
-  baseStyle: {
+  base: {
     display: 'inline',
   },
 });
@@ -104,7 +101,7 @@ const ItemCtxMenu = (props: Props) => {
   const toast = useToast();
   const { user } = useAuth();
   const { lists, isLoading } = useLists();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open: isOpen, onOpen, onClose } = useDisclosure();
   const [selectedList, setSelectedList] = useState<UserList | undefined>();
   const [duplicatedItem, setDuplicatedItem] = useState<ListItemInfo | undefined>();
   const listSubmenuRef = useRef<HTMLDivElement | null>(null);
@@ -124,6 +121,7 @@ const ItemCtxMenu = (props: Props) => {
     window.umami?.track('item-ctx-menu', { action: 'copy text' });
 
     toast({
+      id: 'item-ctx-copy',
       title: t('Layout.copied-to-clipboard'),
       description: text,
       status: 'success',
@@ -138,6 +136,7 @@ const ItemCtxMenu = (props: Props) => {
     window.umami?.track('item-ctx-menu', { action: 'open' });
 
     const toastId = toast({
+      id: 'item-ctx-add-to-list',
       title: t('Layout.adding-item-to-list'),
       status: 'info',
       duration: null,
@@ -157,6 +156,7 @@ const ItemCtxMenu = (props: Props) => {
       );
       if (res.data.success) {
         toast.update(toastId, {
+          id: toastId,
           title: t('Lists.item-added-to-list'),
           status: 'success',
           duration: 5000,
@@ -174,6 +174,7 @@ const ItemCtxMenu = (props: Props) => {
       }
 
       toast.update(toastId, {
+        id: toastId,
         title: t('General.an-error-occurred'),
         description: t('Layout.error-adding-item-to-list'),
         status: 'error',
@@ -225,46 +226,55 @@ const ItemCtxMenu = (props: Props) => {
         </Box>
         <CtxMenuItem onClick={handleOpenInNewTab}>{t('Layout.open-in-a-new-tab')}</CtxMenuItem>
         <CtxSubmenu title={t('Layout.add-item-to-list')}>
-          <PortalManager zIndex={CONTEXT_MENU_TOOLTIP_Z_INDEX}>
-            <Box ref={listSubmenuRef} maxH="420px" overflowY="auto">
-              <ViewportList
-                items={sortedLists}
-                viewportRef={listSubmenuRef}
-                itemSize={42}
-                initialPrerender={8}
-                overscan={8}
-              >
-                {(list) => (
-                  <CtxMenuItem
-                    onClick={() => addItemToList(list.internal_id)}
-                    key={list.internal_id}
-                    disabled={!dynamicListCan(list, 'add')}
-                  >
-                    {list.name}
-                    {list.purpose !== 'none' && !list.official && (
-                      <Tooltip label={`${list.purpose}`} fontSize="sm" placement="top">
-                        <Badge ml={1}>{list.purpose === 'seeking' ? 's' : 't'}</Badge>
-                      </Tooltip>
-                    )}
-                    {list.official && (
-                      <Tooltip label={`official`} fontSize="sm" placement="top">
-                        <Badge ml={1} colorScheme="blue">
+          <Box ref={listSubmenuRef} maxH="420px" overflowY="auto">
+            <ViewportList
+              items={sortedLists}
+              viewportRef={listSubmenuRef}
+              itemSize={42}
+              initialPrerender={8}
+              overscan={8}
+            >
+              {(list) => (
+                <CtxMenuItem
+                  onClick={() => addItemToList(list.internal_id)}
+                  key={list.internal_id}
+                  disabled={!dynamicListCan(list, 'add')}
+                >
+                  {list.name}
+                  {list.purpose !== 'none' && !list.official && (
+                    <Tooltip.Root positioning={{ placement: 'top' }}>
+                      <Tooltip.Trigger asChild>
+                        <Badge ml={1} cursor="default">
+                          {list.purpose === 'seeking' ? 's' : 't'}
+                        </Badge>
+                      </Tooltip.Trigger>
+                      <Tooltip.Positioner style={{ zIndex: CONTEXT_MENU_TOOLTIP_Z_INDEX }}>
+                        <Tooltip.Content fontSize="sm">{list.purpose}</Tooltip.Content>
+                      </Tooltip.Positioner>
+                    </Tooltip.Root>
+                  )}
+                  {list.official && (
+                    <Tooltip.Root positioning={{ placement: 'top' }}>
+                      <Tooltip.Trigger asChild>
+                        <Badge ml={1} colorPalette="blue" cursor="default">
                           ✓
                         </Badge>
-                      </Tooltip>
-                    )}
-                    {list.dynamicType && (
-                      <Tooltip
-                        label={`${list.dynamicType} Dynamic List`}
-                        fontSize="sm"
-                        placement="top"
-                      >
+                      </Tooltip.Trigger>
+                      <Tooltip.Positioner style={{ zIndex: CONTEXT_MENU_TOOLTIP_Z_INDEX }}>
+                        <Tooltip.Content fontSize="sm">official</Tooltip.Content>
+                      </Tooltip.Positioner>
+                    </Tooltip.Root>
+                  )}
+                  {list.dynamicType && (
+                    <Tooltip.Root positioning={{ placement: 'top' }}>
+                      <Tooltip.Trigger asChild>
                         <Badge
                           ml={1}
-                          colorScheme="orange"
+                          colorPalette="orange"
                           display={'inline-flex'}
                           alignItems="center"
                           p={'2px'}
+                          cursor="default"
                         >
                           <NextImage
                             src={DynamicIcon}
@@ -273,22 +283,27 @@ const ItemCtxMenu = (props: Props) => {
                             style={{ display: 'inline' }}
                           />
                         </Badge>
-                      </Tooltip>
-                    )}
-                  </CtxMenuItem>
-                )}
-              </ViewportList>
-            </Box>
-            {(!user || (lists && !lists.length)) && !isLoading && (
-              <CtxMenuItem disabled>{t('ItemPage.no-lists-found')}</CtxMenuItem>
-            )}
-            {isLoading && <CtxMenuItem disabled>{t('Layout.loading')}...</CtxMenuItem>}
-          </PortalManager>
+                      </Tooltip.Trigger>
+                      <Tooltip.Positioner style={{ zIndex: CONTEXT_MENU_TOOLTIP_Z_INDEX }}>
+                        <Tooltip.Content fontSize="sm">
+                          {list.dynamicType} Dynamic List
+                        </Tooltip.Content>
+                      </Tooltip.Positioner>
+                    </Tooltip.Root>
+                  )}
+                </CtxMenuItem>
+              )}
+            </ViewportList>
+          </Box>
+          {(!user || (lists && !lists.length)) && !isLoading && (
+            <CtxMenuItem disabled>{t('ItemPage.no-lists-found')}</CtxMenuItem>
+          )}
+          {isLoading && <CtxMenuItem disabled>{t('Layout.loading')}...</CtxMenuItem>}
         </CtxSubmenu>
         <CtxSubmenu title={t('General.search-at')}>
           <FindAtCtx item={item} />
         </CtxSubmenu>
-        <Divider />
+        <Separator />
         <CtxMenuItem onClick={() => handleCopy(item.image)}>
           {t('Layout.copy-image-url')}
         </CtxMenuItem>
@@ -299,7 +314,7 @@ const ItemCtxMenu = (props: Props) => {
         </CtxMenuItem>
         <CtxMenuItem onClick={() => handleCopy(item.name)}>{t('Layout.copy-text')}</CtxMenuItem>
         <Box display={!!onListAction ? 'inherit' : 'none'}>
-          <Divider />
+          <Separator />
           <CtxMenuItem onClick={() => handleListAction('move')}>
             {t('Layout.move-to-list')}
           </CtxMenuItem>
@@ -307,7 +322,7 @@ const ItemCtxMenu = (props: Props) => {
             {t('Layout.delete-from-this-list')}
           </CtxMenuItem>
         </Box>
-        <Divider />
+        <Separator />
         <Text p={2} pb={0} textAlign={'center'} fontSize={'xs'}>
           {t.rich('Layout.ctxMenuTip', {
             Kbd: (children) => <Kbd>{children}</Kbd>,

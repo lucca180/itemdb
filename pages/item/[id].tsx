@@ -179,7 +179,6 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
             justifyContent="center"
             gap={2}
             alignItems="center"
-            boxShadow="sm"
             textAlign="center"
             flex="0 0 auto"
             minW="100px"
@@ -189,117 +188,76 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
           </Flex>
           <Box>
             <Stack direction="row" mb={1} wrap="wrap" gap={0.5}>
-              {
-                <Badge
-                  as={Link}
-                  prefetch={false}
-                  borderRadius="md"
-                  href={`/search?s=&category[]=${item.category ?? 'Unknown'}`}
-                >
+              <Badge borderRadius="md" asChild>
+                <Link prefetch={false} href={`/search?s=&category[]=${item.category ?? 'Unknown'}`}>
                   {item.category ?? '???'}
-                </Badge>
-              }
+                </Link>
+              </Badge>
               {item.type === 'np' && (
-                <Badge
-                  colorScheme="green"
-                  borderRadius="md"
-                  as={Link}
-                  prefetch={false}
-                  href="/search?s=&type[]=np"
-                >
-                  NP
+                <Badge colorPalette="green" borderRadius="md" asChild>
+                  <Link prefetch={false} href="/search?s=&type[]=np">
+                    NP
+                  </Link>
                 </Badge>
               )}
               {item.type === 'nc' && (
-                <Badge
-                  colorScheme="purple"
-                  borderRadius="md"
-                  as={Link}
-                  prefetch={false}
-                  href="/search?s=&type[]=nc"
-                >
-                  NC
+                <Badge colorPalette="purple" borderRadius="md" asChild>
+                  <Link prefetch={false} href="/search?s=&type[]=nc">
+                    NC
+                  </Link>
                 </Badge>
               )}
               {item.type === 'pb' && (
-                <Badge
-                  colorScheme="yellow"
-                  borderRadius="md"
-                  as={Link}
-                  prefetch={false}
-                  href="/search?s=&type[]=pb"
-                >
-                  PB
+                <Badge colorPalette="yellow" borderRadius="md" asChild>
+                  <Link prefetch={false} href="/search?s=&type[]=pb">
+                    PB
+                  </Link>
                 </Badge>
               )}
               {item.isWearable && (
-                <Badge
-                  colorScheme="blue"
-                  borderRadius="md"
-                  as={Link}
-                  prefetch={false}
-                  href="/search?s=&type[]=wearable"
-                >
-                  {t('General.wearable')}
+                <Badge colorPalette="blue" borderRadius="md" asChild>
+                  <Link prefetch={false} href="/search?s=&type[]=wearable">
+                    {t('General.wearable')}
+                  </Link>
                 </Badge>
               )}
               {item.isNeohome && (
-                <Badge
-                  colorScheme="cyan"
-                  borderRadius="md"
-                  as={Link}
-                  prefetch={false}
-                  href="/search?s=&type[]=neohome"
-                >
-                  {t('General.neohome')}
+                <Badge colorPalette="cyan" borderRadius="md" asChild>
+                  <Link prefetch={false} href="/search?s=&type[]=neohome">
+                    {t('General.neohome')}
+                  </Link>
                 </Badge>
               )}
               {item.isBD && (
-                <Badge
-                  colorScheme="red"
-                  borderRadius="md"
-                  as={Link}
-                  prefetch={false}
-                  href="/search?s=&type[]=battledome"
-                >
-                  {t('General.battledome')}
+                <Badge colorPalette="red" borderRadius="md" asChild>
+                  <Link prefetch={false} href="/search?s=&type[]=battledome">
+                    {t('General.battledome')}
+                  </Link>
                 </Badge>
               )}
               {item.useTypes.canEat === 'true' && (
-                <Badge
-                  colorScheme="orange"
-                  borderRadius="md"
-                  as={Link}
-                  prefetch={false}
-                  href="/search?s=&type[]=canEat"
-                >
-                  {t('General.edible')}
+                <Badge colorPalette="orange" borderRadius="md" asChild>
+                  <Link prefetch={false} href="/search?s=&type[]=canEat">
+                    {t('General.edible')}
+                  </Link>
                 </Badge>
               )}
               {item.useTypes.canRead === 'true' && (
-                <Badge
-                  colorScheme="orange"
-                  borderRadius="md"
-                  as={Link}
-                  prefetch={false}
-                  href="/search?s=&type[]=canRead"
-                >
-                  {t('General.readable')}
+                <Badge colorPalette="orange" borderRadius="md" asChild>
+                  <Link prefetch={false} href="/search?s=&type[]=canRead">
+                    {t('General.readable')}
+                  </Link>
                 </Badge>
               )}
               {item.useTypes.canPlay === 'true' && (
-                <Badge
-                  colorScheme="orange"
-                  borderRadius="md"
-                  as={Link}
-                  prefetch={false}
-                  href="/search?s=&type[]=canPlay"
-                >
-                  {t('General.playable')}
+                <Badge colorPalette="orange" borderRadius="md" asChild>
+                  <Link prefetch={false} href="/search?s=&type[]=canPlay">
+                    {t('General.playable')}
+                  </Link>
                 </Badge>
               )}
             </Stack>
-            <Heading as="h1" size={{ base: 'lg', md: undefined }}>
+            <Heading as="h1" size={{ base: 'lg', md: undefined }} fontWeight={'bold'}>
               {item.name}
             </Heading>
             <Text fontSize={{ base: 'sm', md: 'inherit' }} as="h2">
@@ -333,7 +291,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
           {colors && <ColorInfoCard key={getKey('color-info')} colors={colors} />}
           {/* <ItemTags toggleModal={() => setIsEditModalOpen(true)} item={item} tags={tags} /> */}
           <Flex justifyContent="center" gap={1}>
-            <FeedbackButton colorScheme="red" variant={'ghost'}>
+            <FeedbackButton colorPalette="red" variant={'ghost'}>
               {t('ItemPage.report-error')}
             </FeedbackButton>
             {user?.isAdmin && (

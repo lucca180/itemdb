@@ -1,15 +1,4 @@
-import {
-  Center,
-  Flex,
-  FormControl,
-  Input,
-  Text,
-  Spinner,
-  Button,
-  FormHelperText,
-  FormLabel,
-  useDisclosure,
-} from '@chakra-ui/react';
+import { Center, Flex, Field, Input, Text, Spinner, Button, useDisclosure } from '@chakra-ui/react';
 import React, { ReactElement, useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import { useRouter } from 'next/router';
@@ -34,7 +23,7 @@ const LoginPage = () => {
   const [neopetsUser, setNeopetsUser] = useState<string>('');
   const [username, setUsername] = useState<string>('');
   const { user, authLoading, setUser } = useAuth();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open: isOpen, onOpen, onClose } = useDisclosure();
 
   const init = async () => {
     setIsLoading(true);
@@ -179,14 +168,14 @@ const LoginPage = () => {
             <Text mt={4} textAlign="center">
               {t('Login.please-confirm-your-email-address')}
             </Text>
-            <FormControl isInvalid={!!error}>
+            <Field.Root invalid={!!error}>
               <Input
                 placeholder={t('General.email-address')}
                 type="email"
                 value={email}
                 onChange={onEmailChange}
               />
-            </FormControl>
+            </Field.Root>
             <Button onClick={doConfirm}>{t('General.continue')}</Button>
           </Flex>
         )}
@@ -205,26 +194,26 @@ const LoginPage = () => {
                 {error}
               </Text>
             )}
-            <FormControl>
-              <FormLabel>{t('Login.itemdb-username')}</FormLabel>
+            <Field.Root>
+              <Field.Label>{t('Login.itemdb-username')}</Field.Label>
               <Input
                 placeholder={t('Login.username')}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                variant="filled"
+                variant="subtle"
               />
-              <FormHelperText>{t('Login.only-letters-numbers-and-underlines')}</FormHelperText>
-            </FormControl>
-            <FormControl>
-              <FormLabel>{t('Login.neopets-username')}</FormLabel>
+              <Field.HelperText>{t('Login.only-letters-numbers-and-underlines')}</Field.HelperText>
+            </Field.Root>
+            <Field.Root>
+              <Field.Label>{t('Login.neopets-username')}</Field.Label>
               <Input
                 placeholder={t('Login.neopets-username')}
                 value={neopetsUser}
                 onChange={(e) => setNeopetsUser(e.target.value)}
-                variant="filled"
+                variant="subtle"
               />
-              <FormHelperText>{t('Login.neopetsUsernameReason')}</FormHelperText>
-            </FormControl>
+              <Field.HelperText>{t('Login.neopetsUsernameReason')}</Field.HelperText>
+            </Field.Root>
             <Button onClick={saveChanges}>{t('General.continue')}</Button>
           </Flex>
         )}

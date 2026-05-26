@@ -1,6 +1,6 @@
 'use client';
 
-import { Select } from '@chakra-ui/react';
+import { NativeSelect } from '@chakra-ui/react';
 import { useRef } from 'react';
 
 type LayoutLocaleSelectClientProps = {
@@ -13,28 +13,32 @@ export function LayoutLocaleSelectClient({ action, locale }: LayoutLocaleSelectC
 
   return (
     <form ref={formRef} action={action}>
-      <Select
-        name="prefLang"
+      <NativeSelect.Root
         borderRadius="md"
         bg="whiteAlpha.200"
         size="xs"
-        variant="filled"
-        defaultValue={locale}
+        variant="subtle"
         flex="1"
         minW="120px"
         h="25px"
         border="0"
         color="white"
-        _hover={{ bg: 'whiteAlpha.300' }}
-        _focusVisible={{
-          bg: 'whiteAlpha.300',
-          boxShadow: '0 0 0 1px rgba(255,255,255,0.2)',
-        }}
-        onChange={() => formRef.current?.requestSubmit()}
       >
-        <option value="en">English</option>
-        <option value="pt">Português</option>
-      </Select>
+        <NativeSelect.Field
+          name="prefLang"
+          defaultValue={locale}
+          onChange={() => formRef.current?.requestSubmit()}
+          _hover={{ bg: 'whiteAlpha.300' }}
+          _focusVisible={{
+            bg: 'whiteAlpha.300',
+            boxShadow: '0 0 0 1px rgba(255,255,255,0.2)',
+          }}
+        >
+          <option value="en">English</option>
+          <option value="pt">Português</option>
+        </NativeSelect.Field>
+        <NativeSelect.Indicator />
+      </NativeSelect.Root>
     </form>
   );
 }

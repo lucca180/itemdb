@@ -1,7 +1,9 @@
+'use client';
+
+import { Box, Flex, Heading, Link as ChakraLink } from '@chakra-ui/react';
 import Link from 'next/link';
-import type { ReactNode } from 'react';
 import NextImage from 'next/image';
-import { Flex, styled } from '@styled/jsx';
+import type { ReactNode } from 'react';
 import logo from '@assets/logo_white_compressed.webp';
 
 type HomeHeroProps = {
@@ -20,30 +22,31 @@ function renderHighlightedText(title: string, highlightQuery: string): ReactNode
   return parts.flatMap((part, index) => [
     part,
     index < parts.length - 1 ? (
-      <styled.span
+      <Box
+        as="span"
         key={`highlight-${index}`}
-        px="2"
-        py="1"
+        px={2}
+        py={1}
         borderRadius="full"
         bg="gray.100"
         color="gray.800"
       >
         {highlightQuery}
-      </styled.span>
+      </Box>
     ) : null,
   ]);
 }
 
 export function HomeHero({ title, highlightQuery, safetyLinkLabel }: HomeHeroProps) {
   return (
-    <Flex textAlign="center" flexFlow="column" alignItems="center" mt="50px">
-      <styled.div
+    <Flex textAlign="center" direction="column" alignItems="center" mt="50px">
+      <Box
         position="absolute"
         h="40vh"
         left="0"
         width="100%"
         mt="-50px"
-        bgGradient={`linear-gradient(to top, rgba(0, 0, 0, 0) 0, rgba(74, 85, 104, .6) 80%);`}
+        bgGradient="linear-gradient(to top, rgba(0, 0, 0, 0) 0, rgba(74, 85, 104, 0.6) 80%)"
         zIndex={-1}
       />
       <NextImage
@@ -54,14 +57,14 @@ export function HomeHero({ title, highlightQuery, safetyLinkLabel }: HomeHeroPro
         priority
         fetchPriority="high"
       />
-      <styled.h1 mt={4} fontSize="1rem" fontWeight="bold" lineHeight={1.5}>
+      <Heading as="h1" mt={4} fontSize="1rem" fontWeight="bold" lineHeight={1.5}>
         {renderHighlightedText(title, highlightQuery)}{' '}
-        <Link href="/faq" prefetch={false}>
-          <styled.span color={'gray.400'} _hover={{ textDecoration: 'underline' }}>
+        <ChakraLink asChild color="gray.400" _hover={{ textDecoration: 'underline' }}>
+          <Link href="/faq" prefetch={false}>
             {safetyLinkLabel}
-          </styled.span>
-        </Link>
-      </styled.h1>
+          </Link>
+        </ChakraLink>
+      </Heading>
     </Flex>
   );
 }

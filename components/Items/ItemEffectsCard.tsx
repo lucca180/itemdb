@@ -27,7 +27,7 @@ const ItemEffectsCard = (props: Props) => {
         flexFlow="row"
         justifyContent="center"
         flexWrap={'wrap'}
-        sx={{ a: { color: color.lightness(70).hex() } }}
+        css={{ '& a': { color: color.lightness(70).hex() } }}
       >
         {effects.map((effect, i) => (
           <EffectCard key={i} effect={effect} />
@@ -96,7 +96,6 @@ export const EffectCard = (props: EffectCardProps) => {
       w="200px"
       borderRadius={'md'}
       gap={1}
-      boxShadow={'sm'}
     >
       <Flex mt="-20px" justifyContent={'center'}>
         <Flex width={'32px'} height={'32px'} bg="white" borderRadius={'lg'} overflow={'hidden'}>
@@ -116,7 +115,7 @@ export const EffectCard = (props: EffectCardProps) => {
         textAlign="center"
         fontSize="sm"
         color="whiteAlpha.800"
-        sx={{ 'b, strong': { color: 'white' } }}
+        css={{ 'b, strong': { color: 'white' } }}
         as="div"
       >
         <EffectText effect={props.effect} />
@@ -153,7 +152,12 @@ export const EffectText = (props: EffectTextProps) => {
         t.rich(`Effects.effects-${type === 'disease' ? 'disease' : 'cure-disease'}`, {
           b: (chunk) => <b>{chunk}</b>,
           Disease: () => (
-            <Link href="https://www.neopets.com/hospital.phtml" whiteSpace={'pre'} isExternal>
+            <Link
+              href="https://www.neopets.com/hospital.phtml"
+              whiteSpace={'pre'}
+              target="_blank"
+              rel="noreferrer"
+            >
               {getDiseaseTranslation(name, locale)}
               <NextImage
                 src={'/icons/neopets.png'}
@@ -211,7 +215,11 @@ export const EffectText = (props: EffectTextProps) => {
             Target1: () => (
               <>
                 {colorTarget && (
-                  <Link href={`/tools/rainbow-pool/${colorTarget.toLowerCase()}`} isExternal>
+                  <Link
+                    href={`/tools/rainbow-pool/${colorTarget.toLowerCase()}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     {colorTarget}
                   </Link>
                 )}

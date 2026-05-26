@@ -1,15 +1,8 @@
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalBody,
-  ModalFooter,
+  Dialog,
   Button,
   Input,
   InputGroup,
-  InputLeftElement,
-  Icon,
-  InputRightElement,
   CloseButton,
   Text,
   Flex,
@@ -19,9 +12,11 @@ import {
   Image,
   Box,
   HStack,
-  VisuallyHidden,
+  Icon,
   SkeletonText,
   Skeleton,
+  Portal,
+  Link as ChakraLink,
 } from '@chakra-ui/react';
 import { ItemCardBadge } from '@components/Items/ItemCard';
 import ItemCtxMenu, { CtxTrigger } from '@components/Menus/ItemCtxMenu';
@@ -369,314 +364,349 @@ const SearchModal = (props: SearchModalProps) => {
   };
 
   return (
-    <Modal
-      size={{ base: 'full', md: '2xl' }}
-      isOpen={isOpen}
-      onClose={onClose}
-      returnFocusOnClose={false}
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={({ open }) => {
+        if (!open) onClose();
+      }}
+      placement="top"
+      size={{ lgDown: 'full', lg: 'lg' }}
+      restoreFocus={false}
     >
-      <ModalOverlay />
-      <ModalContent>
-        <InputGroup outline={'none'} border={'none !important'}>
-          <InputLeftElement pointerEvents="none" h="100%">
-            <InputLeftElement
-              pointerEvents="none"
-              children={
-                <Icon as={IoSearchOutline} color="gray.500" boxSize={'24px'} aria-hidden="true" />
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content
+            // maxW={{ md: '2xl' }}
+            // w={{ base: '100vw', md: 'auto' }}
+            // maxH={{ base: '100dvh', md: 'auto' }}
+            // m={{ base: 0, md: 'auto' }}
+            borderRadius={{ base: 0, md: 'md' }}
+            p={0}
+            overflow="hidden"
+          >
+            <InputGroup
+              outline="none"
+              border="none !important"
+              startElement={
+                <Icon as={IoSearchOutline} color="gray.500" boxSize="24px" aria-hidden />
               }
-              h="100%"
-            />
-            <VisuallyHidden as="label" htmlFor="omni-search" id="omni-search-label">
+              startElementProps={{ pointerEvents: 'none', h: '100%' }}
+              endElement={
+                <>
+                  <Button size="xs" variant="ghost" onClick={clearSearch}>
+                    {t('General.clear')}
+                  </Button>
+                  <CloseButton onClick={onClose} />
+                </>
+              }
+              endElementProps={{ h: '100%', w: 'auto' }}
+            >
+              <Input
+                ref={inputRef}
+                autoComplete="off"
+                id="omni-search"
+                variant="subtle"
+                placeholder={t('Search.omni-placeholder')}
+                size="lg"
+                bg="blackAlpha.600"
+                borderBottomRadius="none"
+                pl="40px"
+                onChange={handleSearchChange}
+                value={search}
+                fontSize={{ base: 'sm', lg: 'md' }}
+                border="none !important"
+                _hover={{ bg: 'blackAlpha.600' }}
+                _focus={{
+                  bg: 'blackAlpha.600',
+                  outline: 'none',
+                  border: 'none',
+                }}
+              />
+            </InputGroup>
+            <label
+              htmlFor="omni-search"
+              id="omni-search-label"
+              style={{
+                position: 'absolute',
+                width: '1px',
+                height: '1px',
+                padding: 0,
+                margin: '-1px',
+                overflow: 'hidden',
+                clip: 'rect(0, 0, 0, 0)',
+                whiteSpace: 'nowrap',
+                borderWidth: 0,
+              }}
+            >
               {t('Search.search')}
-            </VisuallyHidden>
-          </InputLeftElement>
-          <Input
-            ref={inputRef}
-            autoComplete="off"
-            id="omni-search"
-            variant="filled"
-            placeholder={t('Search.omni-placeholder')}
-            size="lg"
-            bg="blackAlpha.600"
-            borderBottomRadius={'none'}
-            pl="40px"
-            onChange={handleSearchChange}
-            value={search}
-            fontSize={{ base: 'sm', lg: 'md' }}
-            border={'none !important'}
-            _hover={{ bg: 'blackAlpha.600' }}
-            _focus={{
-              bg: 'blackAlpha.600',
-              outline: 'none',
-              border: 'none',
-            }}
-          />
-          <InputRightElement h="100%" w="auto">
-            <Button size="xs" variant={'ghost'} onClick={clearSearch}>
-              {t('General.clear')}
-            </Button>
-            <CloseButton onClick={onClose} />
-          </InputRightElement>
-        </InputGroup>
-        <ModalBody px="10px" maxH={{ base: '100%', md: '500px' }} overflowY="auto">
-          {search && (
-            <Flex flexFlow="column" gap={4} py={2}>
-              <Flex role="listbox" aria-labelledby="omni-search-label">
-                <SearchQuery
-                  query={search}
-                  index={0}
-                  isFocus={focusedIndex === 0}
-                  url={getSearchUrl()}
-                  onClick={() =>
-                    handleClick({
-                      type: 'search',
-                      query: search,
-                      index: 0,
-                      url: getSearchUrl(search),
-                    })
-                  }
-                />
-              </Flex>
-            </Flex>
-          )}
-          {!loading && searchCards.length === 0 && latestSearches.length > 0 && (
-            <Flex flexFlow="column" gap={4} py={2}>
-              <Heading fontSize={'sm'} color="whiteAlpha.700">
-                {t('Search.recent-searches')}
-              </Heading>
-              <Flex role="listbox" aria-labelledby="omni-search-label" flexFlow={'column'} gap={2}>
-                {latestSearches.map((card, index) => {
-                  if (card.type === 'item') {
-                    return (
-                      <SearchItem
-                        showLabel
-                        key={index}
-                        index={index + 1}
-                        item={card.data}
-                        isFocus={focusedIndex === index + 1}
-                        onClick={() => handleClick(card)}
-                      />
-                    );
-                  }
-                  if (card.type === 'list' || card.type === 'my-lists') {
-                    return (
-                      <SearchList
-                        showLabel
-                        key={index}
-                        index={index + 1}
-                        isFocus={focusedIndex === index + 1}
-                        list={card.data}
-                        onClick={() => handleClick(card)}
-                      />
-                    );
-                  }
-                  if (card.type === 'shop') {
-                    return (
-                      <SearchShop
-                        showLabel
-                        key={index}
-                        index={index + 1}
-                        isFocus={focusedIndex === index + 1}
-                        shop={card.data}
-                        onClick={() => handleClick(card)}
-                      />
-                    );
-                  }
-                  if (card.type === 'search') {
-                    return (
-                      <SearchQuery
-                        key={index}
-                        index={index + 1}
-                        isFocus={focusedIndex === index + 1}
-                        url={card.url}
-                        query={card.query}
-                        onClick={() => handleClick(card)}
-                      />
-                    );
-                  }
-                })}
-              </Flex>
-            </Flex>
-          )}
+            </label>
+            <Dialog.Body px="10px" maxH={{ base: '100%', md: '500px' }} overflowY="auto">
+              {search && (
+                <Flex flexFlow="column" gap={4} py={2}>
+                  <Flex role="listbox" aria-labelledby="omni-search-label">
+                    <SearchQuery
+                      query={search}
+                      index={0}
+                      isFocus={focusedIndex === 0}
+                      url={getSearchUrl()}
+                      onClick={() =>
+                        handleClick({
+                          type: 'search',
+                          query: search,
+                          index: 0,
+                          url: getSearchUrl(search),
+                        })
+                      }
+                    />
+                  </Flex>
+                </Flex>
+              )}
+              {!loading && searchCards.length === 0 && latestSearches.length > 0 && (
+                <Flex flexFlow="column" gap={4} py={2}>
+                  <Heading fontSize={'sm'} color="whiteAlpha.700">
+                    {t('Search.recent-searches')}
+                  </Heading>
+                  <Flex
+                    role="listbox"
+                    aria-labelledby="omni-search-label"
+                    flexFlow={'column'}
+                    gap={2}
+                  >
+                    {latestSearches.map((card, index) => {
+                      if (card.type === 'item') {
+                        return (
+                          <SearchItem
+                            showLabel
+                            key={index}
+                            index={index + 1}
+                            item={card.data}
+                            isFocus={focusedIndex === index + 1}
+                            onClick={() => handleClick(card)}
+                          />
+                        );
+                      }
+                      if (card.type === 'list' || card.type === 'my-lists') {
+                        return (
+                          <SearchList
+                            showLabel
+                            key={index}
+                            index={index + 1}
+                            isFocus={focusedIndex === index + 1}
+                            list={card.data}
+                            onClick={() => handleClick(card)}
+                          />
+                        );
+                      }
+                      if (card.type === 'shop') {
+                        return (
+                          <SearchShop
+                            showLabel
+                            key={index}
+                            index={index + 1}
+                            isFocus={focusedIndex === index + 1}
+                            shop={card.data}
+                            onClick={() => handleClick(card)}
+                          />
+                        );
+                      }
+                      if (card.type === 'search') {
+                        return (
+                          <SearchQuery
+                            key={index}
+                            index={index + 1}
+                            isFocus={focusedIndex === index + 1}
+                            url={card.url}
+                            query={card.query}
+                            onClick={() => handleClick(card)}
+                          />
+                        );
+                      }
+                    })}
+                  </Flex>
+                </Flex>
+              )}
 
-          <Flex flexFlow="column" gap={4} py={2}>
-            {loading && <SearchSkeleton />}
-            {!loading && (
-              <>
-                {showJumpTo && (
-                  <HStack>
-                    <Text fontSize={'xs'} color="whiteAlpha.500">
-                      {t('Search.jump-to')}
-                    </Text>
+              <Flex flexFlow="column" gap={4} py={2}>
+                {loading && <SearchSkeleton />}
+                {!loading && (
+                  <>
+                    {showJumpTo && (
+                      <HStack>
+                        <Text fontSize={'xs'} color="whiteAlpha.500">
+                          {t('Search.jump-to')}
+                        </Text>
+                        {items.length > 0 && (
+                          <Button
+                            size="xs"
+                            variant={'ghost'}
+                            colorPalette="blue"
+                            onClick={() => jumpToType('item')}
+                          >
+                            {t('General.items')}
+                          </Button>
+                        )}
+                        {lists.length > 0 && (
+                          <Button
+                            size="xs"
+                            variant={'ghost'}
+                            colorPalette="green"
+                            onClick={() => jumpToType('list')}
+                          >
+                            {t('General.official-lists')}
+                          </Button>
+                        )}
+                        {shops.length > 0 && (
+                          <Button
+                            size="xs"
+                            variant={'ghost'}
+                            colorPalette="purple"
+                            onClick={() => jumpToType('shop')}
+                          >
+                            {t('General.restock-shops')}
+                          </Button>
+                        )}
+                        {myLists.length > 0 && (
+                          <Button
+                            size="xs"
+                            variant={'ghost'}
+                            colorPalette="orange"
+                            onClick={() => jumpToType('my-lists')}
+                          >
+                            {t('Layout.my-lists')}
+                          </Button>
+                        )}
+                      </HStack>
+                    )}
                     {items.length > 0 && (
-                      <Button
-                        size="xs"
-                        variant={'ghost'}
-                        colorScheme="blue"
-                        onClick={() => jumpToType('item')}
-                      >
-                        {t('General.items')}
-                      </Button>
+                      <Flex as="section" flexFlow={'column'} gap={2}>
+                        <Heading fontSize={'sm'} color="whiteAlpha.700">
+                          {t('General.items')}
+                        </Heading>
+                        <Flex
+                          flexFlow={'column'}
+                          gap={2}
+                          role="listbox"
+                          aria-labelledby="omni-search-label"
+                        >
+                          {items.map((card) => (
+                            <SearchItem
+                              index={card.index}
+                              isFocus={focusedIndex === card.index}
+                              key={card.data.internal_id}
+                              item={card.data}
+                              onClick={() => handleClick(card)}
+                            />
+                          ))}
+                        </Flex>
+                      </Flex>
                     )}
                     {lists.length > 0 && (
-                      <Button
-                        size="xs"
-                        variant={'ghost'}
-                        colorScheme="green"
-                        onClick={() => jumpToType('list')}
-                      >
-                        {t('General.official-lists')}
-                      </Button>
+                      <Flex as="section" flexFlow={'column'} gap={2}>
+                        <Heading fontSize={'sm'} color="whiteAlpha.700">
+                          {t('General.official-lists')}
+                        </Heading>
+                        <Flex
+                          flexFlow={'column'}
+                          gap={2}
+                          role="listbox"
+                          aria-labelledby="omni-search-label"
+                        >
+                          {lists.map((card) => (
+                            <SearchList
+                              index={card.index}
+                              isFocus={focusedIndex === card.index}
+                              key={card.data.internal_id}
+                              list={card.data}
+                              onClick={() => handleClick(card)}
+                            />
+                          ))}
+                        </Flex>
+                      </Flex>
                     )}
                     {shops.length > 0 && (
-                      <Button
-                        size="xs"
-                        variant={'ghost'}
-                        colorScheme="purple"
-                        onClick={() => jumpToType('shop')}
-                      >
-                        {t('General.restock-shops')}
-                      </Button>
+                      <Flex as="section" flexFlow={'column'} gap={2}>
+                        <Heading fontSize={'sm'} color="whiteAlpha.700">
+                          {t('General.restock-shops')}
+                        </Heading>
+                        <Flex
+                          flexFlow={'column'}
+                          gap={2}
+                          role="listbox"
+                          aria-labelledby="omni-search-label"
+                        >
+                          {shops.map((card) => (
+                            <SearchShop
+                              index={card.index}
+                              isFocus={focusedIndex === card.index}
+                              key={card.data.id}
+                              shop={card.data}
+                              onClick={() => handleClick(card)}
+                            />
+                          ))}
+                        </Flex>
+                      </Flex>
                     )}
                     {myLists.length > 0 && (
-                      <Button
-                        size="xs"
-                        variant={'ghost'}
-                        colorScheme="orange"
-                        onClick={() => jumpToType('my-lists')}
-                      >
-                        {t('Layout.my-lists')}
-                      </Button>
+                      <Flex as="section" flexFlow={'column'} gap={2}>
+                        <Heading fontSize={'sm'} color="whiteAlpha.700">
+                          {t('Layout.my-lists')}
+                        </Heading>
+                        <Flex
+                          flexFlow={'column'}
+                          gap={2}
+                          role="listbox"
+                          aria-labelledby="omni-search-label"
+                        >
+                          {myLists.map((card) => (
+                            <SearchList
+                              index={card.index}
+                              isFocus={focusedIndex === card.index}
+                              key={card.data.internal_id}
+                              list={card.data}
+                              onClick={() => handleClick(card)}
+                            />
+                          ))}
+                        </Flex>
+                      </Flex>
                     )}
-                  </HStack>
+                  </>
                 )}
-                {items.length > 0 && (
-                  <Flex as="section" flexFlow={'column'} gap={2}>
-                    <Heading fontSize={'sm'} color="whiteAlpha.700">
-                      {t('General.items')}
-                    </Heading>
-                    <Flex
-                      flexFlow={'column'}
-                      gap={2}
-                      role="listbox"
-                      aria-labelledby="omni-search-label"
-                    >
-                      {items.map((card) => (
-                        <SearchItem
-                          index={card.index}
-                          isFocus={focusedIndex === card.index}
-                          key={card.data.internal_id}
-                          item={card.data}
-                          onClick={() => handleClick(card)}
-                        />
-                      ))}
-                    </Flex>
-                  </Flex>
-                )}
-                {lists.length > 0 && (
-                  <Flex as="section" flexFlow={'column'} gap={2}>
-                    <Heading fontSize={'sm'} color="whiteAlpha.700">
-                      {t('General.official-lists')}
-                    </Heading>
-                    <Flex
-                      flexFlow={'column'}
-                      gap={2}
-                      role="listbox"
-                      aria-labelledby="omni-search-label"
-                    >
-                      {lists.map((card) => (
-                        <SearchList
-                          index={card.index}
-                          isFocus={focusedIndex === card.index}
-                          key={card.data.internal_id}
-                          list={card.data}
-                          onClick={() => handleClick(card)}
-                        />
-                      ))}
-                    </Flex>
-                  </Flex>
-                )}
-                {shops.length > 0 && (
-                  <Flex as="section" flexFlow={'column'} gap={2}>
-                    <Heading fontSize={'sm'} color="whiteAlpha.700">
-                      {t('General.restock-shops')}
-                    </Heading>
-                    <Flex
-                      flexFlow={'column'}
-                      gap={2}
-                      role="listbox"
-                      aria-labelledby="omni-search-label"
-                    >
-                      {shops.map((card) => (
-                        <SearchShop
-                          index={card.index}
-                          isFocus={focusedIndex === card.index}
-                          key={card.data.id}
-                          shop={card.data}
-                          onClick={() => handleClick(card)}
-                        />
-                      ))}
-                    </Flex>
-                  </Flex>
-                )}
-                {myLists.length > 0 && (
-                  <Flex as="section" flexFlow={'column'} gap={2}>
-                    <Heading fontSize={'sm'} color="whiteAlpha.700">
-                      {t('Layout.my-lists')}
-                    </Heading>
-                    <Flex
-                      flexFlow={'column'}
-                      gap={2}
-                      role="listbox"
-                      aria-labelledby="omni-search-label"
-                    >
-                      {myLists.map((card) => (
-                        <SearchList
-                          index={card.index}
-                          isFocus={focusedIndex === card.index}
-                          key={card.data.internal_id}
-                          list={card.data}
-                          onClick={() => handleClick(card)}
-                        />
-                      ))}
-                    </Flex>
-                  </Flex>
-                )}
-              </>
-            )}
-          </Flex>
-        </ModalBody>
-        <ModalFooter
-          display={{ base: 'none', md: 'flex' }}
-          bg="blackAlpha.600"
-          py={3}
-          justifyContent={'flex-start'}
-          px="10px"
-        >
-          <Flex gap={4} color="whiteAlpha.700">
-            <Flex alignItems={'center'} gap={1}>
-              <Kbd>
-                <MdArrowUpward />
-              </Kbd>
-              <Kbd>
-                <MdArrowDownward />
-              </Kbd>
-              <Text fontSize={'xs'}>{t('Search.navigate')}</Text>
-            </Flex>
-            <Flex alignItems={'center'} gap={1}>
-              <Kbd>
-                <MdOutlineKeyboardReturn />
-              </Kbd>
-              <Text fontSize={'xs'}>{t('Search.select')}</Text>
-            </Flex>
-            <Flex alignItems={'center'} gap={1}>
-              <Kbd>esc</Kbd>
-              <Text fontSize={'xs'}>{t('General.close')}</Text>
-            </Flex>
-          </Flex>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+              </Flex>
+            </Dialog.Body>
+            <Dialog.Footer
+              display={{ base: 'none', md: 'flex' }}
+              bg="blackAlpha.600"
+              py={3}
+              justifyContent="flex-start"
+              px="10px"
+            >
+              <Flex gap={4} color="whiteAlpha.700">
+                <Flex alignItems="center" gap={1}>
+                  <Kbd>
+                    <MdArrowUpward />
+                  </Kbd>
+                  <Kbd>
+                    <MdArrowDownward />
+                  </Kbd>
+                  <Text fontSize="xs">{t('Search.navigate')}</Text>
+                </Flex>
+                <Flex alignItems="center" gap={1}>
+                  <Kbd>
+                    <MdOutlineKeyboardReturn />
+                  </Kbd>
+                  <Text fontSize="xs">{t('Search.select')}</Text>
+                </Flex>
+                <Flex alignItems="center" gap={1}>
+                  <Kbd>esc</Kbd>
+                  <Text fontSize="xs">{t('General.close')}</Text>
+                </Flex>
+              </Flex>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 
@@ -891,40 +921,40 @@ const SearchQuery = ({
 }) => {
   const t = useTranslations();
   return (
-    <Flex
-      as={Link}
-      prefetch={false}
-      href={url}
-      bg={isFocus ? 'whiteAlpha.400' : 'whiteAlpha.200'}
-      _hover={{ bg: 'whiteAlpha.400' }}
-      flex="1"
-      px={3}
-      py={2}
-      borderRadius={'sm'}
-      alignItems="center"
-      gap={3}
-      id={`omni-search-el-${index}`}
-      role="option"
-      aria-selected={isFocus}
-      onClick={onClick}
-    >
-      <Box w="30px" display={'flex'} alignItems="center" justifyContent={'center'}>
-        <Icon as={GrSearchAdvanced} boxSize={'20px'} />
-      </Box>
-      <VStack alignItems={'flex-start'} gap={0}>
-        <Text fontSize="xs" color="whiteAlpha.600">
-          {t('Layout.advanced-search')}
-        </Text>
-        <Text>{query}</Text>
-      </VStack>
-    </Flex>
+    <ChakraLink asChild w="100%" _hover={{ textDecoration: 'none' }}>
+      <Link href={url} prefetch={false} onClick={onClick}>
+        <Flex
+          bg={isFocus ? 'whiteAlpha.400' : 'whiteAlpha.200'}
+          _hover={{ bg: 'whiteAlpha.400' }}
+          flex="1"
+          px={3}
+          py={2}
+          borderRadius="sm"
+          alignItems="center"
+          gap={3}
+          id={`omni-search-el-${index}`}
+          role="option"
+          aria-selected={isFocus}
+        >
+          <Box w="30px" display="flex" alignItems="center" justifyContent="center">
+            <Icon as={GrSearchAdvanced} boxSize="20px" />
+          </Box>
+          <VStack alignItems="flex-start" gap={0}>
+            <Text fontSize="xs" color="whiteAlpha.600">
+              {t('Layout.advanced-search')}
+            </Text>
+            <Text>{query}</Text>
+          </VStack>
+        </Flex>
+      </Link>
+    </ChakraLink>
   );
 };
 
 const SearchSkeleton = () => {
   return (
     <Flex as="section" flexFlow={'column'} gap={2}>
-      <SkeletonText w="70px" noOfLines={1} skeletonHeight="3" />
+      <SkeletonText w="70px" noOfLines={1} />
       <Flex flexFlow={'column'} gap={2}>
         {Array.from({ length: 5 }).map((_, index) => (
           <Skeleton key={index} height="40px" borderRadius={'sm'} />

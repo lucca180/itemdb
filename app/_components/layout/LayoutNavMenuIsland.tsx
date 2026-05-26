@@ -1,7 +1,7 @@
 'use client';
 
 import { DropdownButton, DropdownOption } from '@components/Menus/HeaderDropdown';
-import type { LayoutNavSection } from './layoutUtils';
+import type { LayoutNavSection } from '@components/Layout/layoutData';
 
 type LayoutNavMenuIslandProps = {
   mainColor?: string;

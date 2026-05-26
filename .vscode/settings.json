@@ -3,7 +3,5 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "i18n-ally.localesPaths": ["translation"], // E.g. "messages"
   "i18n-ally.keystyle": "nested",
-  "cSpell.words": [
-    "Unpaintable"
-  ]
+  "cSpell.words": ["Unpaintable"]
 }

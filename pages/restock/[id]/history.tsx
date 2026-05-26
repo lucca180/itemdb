@@ -1,11 +1,11 @@
 import {
-  Divider,
+  Separator,
   Link,
   Text,
   Image,
   Center,
   HStack,
-  Select,
+  NativeSelect,
   Spinner,
   Flex,
   IconButton,
@@ -84,7 +84,8 @@ const RestockHistory = (props: RestockHistoryPageProps) => {
             Link: (chunk) => (
               <Link
                 href={`https://www.neopets.com/objects.phtml?type=shop&obj_type=${shopInfo.id}`}
-                isExternal
+                target="_blank"
+                rel="noreferrer"
               >
                 {chunk}
                 <Image
@@ -111,45 +112,36 @@ const RestockHistory = (props: RestockHistoryPageProps) => {
           </Link>
         </Text>
       </RestockHeader>
-      <Divider />
+      <Separator />
       <Center mt={2}>
         <HStack>
-          <Select
-            variant="filled"
-            size="sm"
-            bg="blackAlpha.300"
-            borderRadius={'md'}
-            onChange={handleModeChange}
-            value={mode}
-            disabled={isLoading}
-          >
-            <option value="30days">{t('General.x-days', { x: 30, long: 'false' })}</option>
-            <option value="7days">{t('General.x-days', { x: 7, long: 'false' })}</option>
-            <option value="3days">{t('General.x-days', { x: 3, long: 'false' })}</option>
-            <option value="1day">{t('General.1-day')}</option>
-            <option value="1hour">{t('General.1-hour')}</option>
-            <option value="30min">{t('General.x-minutes', { x: 30, long: 'false' })}</option>
-          </Select>
-          <Select
-            variant="filled"
-            size="sm"
-            bg="blackAlpha.300"
-            borderRadius={'md'}
-            disabled={isLoading}
-            onChange={handleSortChange}
-            value={sortMode}
-          >
-            <option value="price">{t('Restock.price-order')}</option>
-            <option value="addedAt">{t('Restock.chronological-order')}</option>
-          </Select>
+          <NativeSelect.Root variant="subtle" size="sm" borderRadius={'md'} disabled={isLoading}>
+            <NativeSelect.Field onChange={handleModeChange} value={mode} bg="blackAlpha.300">
+              <option value="30days">{t('General.x-days', { x: 30, long: 'false' })}</option>
+              <option value="7days">{t('General.x-days', { x: 7, long: 'false' })}</option>
+              <option value="3days">{t('General.x-days', { x: 3, long: 'false' })}</option>
+              <option value="1day">{t('General.1-day')}</option>
+              <option value="1hour">{t('General.1-hour')}</option>
+              <option value="30min">{t('General.x-minutes', { x: 30, long: 'false' })}</option>
+            </NativeSelect.Field>
+            <NativeSelect.Indicator />
+          </NativeSelect.Root>
+          <NativeSelect.Root variant="subtle" size="sm" borderRadius={'md'} disabled={isLoading}>
+            <NativeSelect.Field onChange={handleSortChange} value={sortMode} bg="blackAlpha.300">
+              <option value="price">{t('Restock.price-order')}</option>
+              <option value="addedAt">{t('Restock.chronological-order')}</option>
+            </NativeSelect.Field>
+            <NativeSelect.Indicator />
+          </NativeSelect.Root>
           <IconButton
-            icon={<MdRefresh />}
             size="sm"
             bg="blackAlpha.300"
             aria-label="Refresh"
             onClick={() => init()}
-            isDisabled={isLoading}
-          />
+            disabled={isLoading}
+          >
+            <MdRefresh />
+          </IconButton>
         </HStack>
       </Center>
       {!wall && (

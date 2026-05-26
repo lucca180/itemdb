@@ -1,26 +1,18 @@
 import {
+  Alert,
+  Box,
   Button,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
-  FormControl,
-  FormLabel,
+  CloseButton,
+  Dialog,
+  Field,
   Text,
   VStack,
-  ModalProps,
   Kbd,
-  Alert,
-  AlertTitle,
-  AlertDescription,
-  Box,
+  Portal,
 } from '@chakra-ui/react';
 import { useFormatter, useTranslations } from 'next-intl';
-import CustomNumberInput from '../Input/CustomNumber';
 import { useMemo, useRef, useState } from 'react';
+import CustomNumberInput from '@components/Input/CustomNumber';
 import { TradeData } from '../../types';
 
 export type TradeCalculatorModalProps = {
@@ -28,7 +20,7 @@ export type TradeCalculatorModalProps = {
   trade: TradeData;
   onClose: (val?: string) => void;
   useShortcuts?: boolean;
-  finalRef?: ModalProps['finalFocusRef'];
+  finalRef?: React.RefObject<HTMLElement | null>;
 };
 
 export default function TradeCalculatorModal(props: TradeCalculatorModalProps) {
@@ -78,91 +70,108 @@ export default function TradeCalculatorModal(props: TradeCalculatorModalProps) {
   };
 
   return (
-    <>
-      <Modal
-        isOpen={isOpen}
-        onClose={() => onClose()}
-        isCentered
-        initialFocusRef={babyPBRef as any}
-        finalFocusRef={props.finalRef}
-      >
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>{t('Feedback.price-calculator')}</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody fontSize={'sm'} sx={{ a: { color: 'blue.200' } }}>
-            <Alert mb={3} size={'sm'} justifyContent={'center'} borderRadius={'md'} p={1}>
-              <Box textAlign={'center'}>
-                <AlertTitle>Wishlist</AlertTitle>
-                <AlertDescription>{trade.wishlist}</AlertDescription>
-              </Box>
-            </Alert>
-            <Text color="gray.400" textAlign={'center'} fontSize={'xs'}>
-              {t.rich('Feedback.calculator-tip', {
-                Kbd: (children) => <Kbd>{children}</Kbd>,
-              })}
-            </Text>
-            <VStack mt={6}>
-              <FormControl>
-                <FormLabel fontSize="sm">
-                  {t('Feedback.calculator-baby-paint-brush-amount')}
-                </FormLabel>
-                <CustomNumberInput
-                  skipDebounce
-                  wrapperProps={{
-                    variant: 'filled',
-                    size: 'sm',
-                  }}
-                  inputProps={{
-                    textAlign: 'left',
-                    name: 'purePrice',
-                    ref: babyPBRef,
-                    onKeyDown: handleKeyDownBabyPB,
-                  }}
-                  value={babyPB}
-                  onChange={(val) => setBabyPB(val)}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel fontSize="sm">{t('Feedback.calculator-pure-price')}</FormLabel>
-                <CustomNumberInput
-                  skipDebounce
-                  wrapperProps={{
-                    variant: 'filled',
-                    size: 'sm',
-                  }}
-                  inputProps={{
-                    ref: pureRef,
-                    textAlign: 'left',
-                    onKeyDown: handleKeyDown,
-                    name: 'purePrice',
-                  }}
-                  value={purePrice}
-                  onChange={(val) => setPurePrice(val)}
-                />
-              </FormControl>
-
-              <Text>
-                {t('Feedback.calculator-final-price')}: {format.number(finalPrice)} NP
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={({ open }) => {
+        if (!open) onClose();
+      }}
+      placement="center"
+      initialFocusEl={() => babyPBRef.current}
+      finalFocusEl={() => props.finalRef?.current ?? null}
+    >
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>
+              <Dialog.Title>{t('Feedback.price-calculator')}</Dialog.Title>
+            </Dialog.Header>
+            <Dialog.CloseTrigger asChild>
+              <CloseButton size="sm" />
+            </Dialog.CloseTrigger>
+            <Dialog.Body fontSize="sm" css={{ '& a': { color: 'blue.200' } }}>
+              <Alert.Root
+                mb={3}
+                size="sm"
+                justifyContent="center"
+                borderRadius="md"
+                p={1}
+                status="info"
+              >
+                <Alert.Content>
+                  <Box textAlign="center">
+                    <Alert.Title>Wishlist</Alert.Title>
+                    <Alert.Description>{trade.wishlist}</Alert.Description>
+                  </Box>
+                </Alert.Content>
+              </Alert.Root>
+              <Text color="gray.400" textAlign="center" fontSize="xs">
+                {t.rich('Feedback.calculator-tip', {
+                  Kbd: (children) => <Kbd>{children}</Kbd>,
+                })}
               </Text>
-            </VStack>
-          </ModalBody>
+              <VStack mt={6}>
+                <Field.Root>
+                  <Field.Label fontSize="sm">
+                    {t('Feedback.calculator-baby-paint-brush-amount')}
+                  </Field.Label>
+                  <CustomNumberInput
+                    skipDebounce
+                    wrapperProps={{
+                      variant: 'filled',
+                      size: 'sm',
+                    }}
+                    inputProps={{
+                      textAlign: 'left',
+                      name: 'purePrice',
+                      ref: babyPBRef,
+                      onKeyDown: handleKeyDownBabyPB,
+                    }}
+                    value={babyPB}
+                    onChange={(val) => setBabyPB(val)}
+                  />
+                </Field.Root>
+                <Field.Root>
+                  <Field.Label fontSize="sm">{t('Feedback.calculator-pure-price')}</Field.Label>
+                  <CustomNumberInput
+                    skipDebounce
+                    wrapperProps={{
+                      variant: 'filled',
+                      size: 'sm',
+                    }}
+                    inputProps={{
+                      ref: pureRef,
+                      textAlign: 'left',
+                      onKeyDown: handleKeyDown,
+                      name: 'purePrice',
+                    }}
+                    value={purePrice}
+                    onChange={(val) => setPurePrice(val)}
+                  />
+                </Field.Root>
 
-          <ModalFooter>
-            <Button variant="ghost" onClick={() => onClose()} size="sm">
-              {t('General.close')}
-            </Button>
+                <Text>
+                  {t('Feedback.calculator-final-price')}: {format.number(finalPrice)} NP
+                </Text>
+              </VStack>
+            </Dialog.Body>
 
-            <Button
-              onClick={() => onClose(finalPrice ? finalPrice.toString() : undefined)}
-              size="sm"
-              ml={3}
-            >
-              {t('Feedback.calculator-set-price')}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-    </>
+            <Dialog.Footer>
+              <Button variant="ghost" onClick={() => onClose()} size="sm">
+                {t('General.close')}
+              </Button>
+
+              <Button
+                onClick={() => onClose(finalPrice ? finalPrice.toString() : undefined)}
+                size="sm"
+                ml={3}
+              >
+                {t('Feedback.calculator-set-price')}
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 }

@@ -15,7 +15,7 @@ const FeedbackModal = dynamic<FeedbackModalProps>(
 
 const FeedbackPage = () => {
   const t = useTranslations();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open: isOpen, onOpen, onClose } = useDisclosure();
 
   return (
     <>
@@ -45,7 +45,7 @@ const FeedbackPage = () => {
         <Heading as="h1" size="lg">
           {t('Feedback.the-feedback-system')}
         </Heading>
-        <Text size={{ base: 'sm', md: undefined }}>
+        <Text fontSize={{ base: 'sm', md: undefined }}>
           {t('Feedback.feedback-system-description')}
         </Text>
       </HeaderCard>
@@ -114,26 +114,8 @@ const FeedbackCard = ({
   href?: string;
   onClick?: () => void;
 }) => {
-  return (
-    <Card
-      w={275}
-      h={['auto', 350]}
-      direction={'column'}
-      alignItems={'center'}
-      overflow="hidden"
-      variant="outline"
-      rounded={'xl'}
-      p={[3, 8]}
-      boxShadow={'lg'}
-      bg="gray.700"
-      gap={2}
-      textAlign={'center'}
-      cursor={'pointer'}
-      _hover={{ bg: 'gray.800' }}
-      as={href ? Link : undefined}
-      href={href}
-      onClick={onClick}
-    >
+  const cardContent = (
+    <>
       <Box w="200px" h="200px" overflow={'hidden'}>
         <Image src={icon} objectFit={'cover'} alt="trading post" />
       </Box>
@@ -143,6 +125,34 @@ const FeedbackCard = ({
       <Text fontSize={'xs'} color="gray.400">
         {description}
       </Text>
-    </Card>
+    </>
+  );
+
+  const cardProps = {
+    w: 275,
+    h: ['auto', 350] as const,
+    overflow: 'hidden' as const,
+    variant: 'outline' as const,
+    rounded: 'xl' as const,
+    p: [3, 8] as const,
+    boxShadow: 'lg' as const,
+    bg: 'gray.700',
+    gap: 2,
+    textAlign: 'center' as const,
+    _hover: { bg: 'gray.800' },
+  };
+
+  if (href) {
+    return (
+      <Card.Root {...cardProps} asChild cursor="pointer">
+        <Link href={href}>{cardContent}</Link>
+      </Card.Root>
+    );
+  }
+
+  return (
+    <Card.Root {...cardProps} cursor="pointer" onClick={onClick}>
+      {cardContent}
+    </Card.Root>
   );
 };

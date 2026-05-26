@@ -1,15 +1,5 @@
 /* eslint-disable  */
-import {
-  Button,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Flex,
-} from '@chakra-ui/react';
+import { Button, CloseButton, Dialog, Flex, Portal } from '@chakra-ui/react';
 import SearchFilters from './SearchFilters';
 import { SearchFilters as SearchFiltersType, SearchStats } from '../../types';
 import { useTranslations } from 'next-intl';
@@ -54,30 +44,55 @@ const SearchFilterModal = (props: SearchFilterModalProps) => {
   };
 
   return (
-    <Modal isOpen={!!isOpen} onClose={onClose} isCentered scrollBehavior="inside">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>{t('Search.search-filters')}</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <SearchFilters
-            onChange={handleChange}
-            isLists={isLists}
-            filters={filters}
-            stats={stats}
-            isColorSearch={isColorSearch}
-          />
-        </ModalBody>
-        <ModalFooter as={Flex} gap={3}>
-          <Button variant="outline" onClick={resetFiltersAndClose} colorScheme="gray" size="sm">
-            {t('General.reset')}
-          </Button>
-          <Button variant="outline" colorScheme="green" size="sm" onClick={applyFiltersAndClose}>
-            {t('Search.apply-filters')}
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+    <Dialog.Root
+      open={!!isOpen}
+      onOpenChange={({ open }) => {
+        if (!open) onClose();
+      }}
+      placement="center"
+      scrollBehavior="inside"
+    >
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>
+              <Dialog.Title>{t('Search.search-filters')}</Dialog.Title>
+            </Dialog.Header>
+            <Dialog.CloseTrigger asChild>
+              <CloseButton size="sm" />
+            </Dialog.CloseTrigger>
+            <Dialog.Body>
+              <SearchFilters
+                onChange={handleChange}
+                isLists={isLists}
+                filters={filters}
+                stats={stats}
+                isColorSearch={isColorSearch}
+              />
+            </Dialog.Body>
+            <Dialog.Footer as={Flex} gap={3}>
+              <Button
+                variant="outline"
+                onClick={resetFiltersAndClose}
+                colorPalette="gray"
+                size="sm"
+              >
+                {t('General.reset')}
+              </Button>
+              <Button
+                variant="outline"
+                colorPalette="green"
+                size="sm"
+                onClick={applyFiltersAndClose}
+              >
+                {t('Search.apply-filters')}
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

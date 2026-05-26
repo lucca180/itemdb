@@ -28,7 +28,7 @@ const ArticlesPage = (props: Props) => {
         <Heading size="lg" as="h1">
           {t('Articles.all-articles')}
         </Heading>
-        <Text size={{ base: 'sm', md: undefined }} as="h2">
+        <Text fontSize={{ base: 'sm', md: undefined }} as="h2">
           {/* Check out all itemdb articles */}
         </Text>
       </HeaderCard>

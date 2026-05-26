@@ -1,8 +1,8 @@
-import { Box, Center, Heading, Divider, Text, Flex, Select, Link } from '@chakra-ui/react';
+import { Box, Center, Heading, Separator, Text, Flex, NativeSelect, Link } from '@chakra-ui/react';
 import Layout from '@components/Layout';
 import { createTranslator, useTranslations } from 'next-intl';
 import Color from 'color';
-import { ReactElement } from 'react';
+import { ChangeEvent, ReactElement } from 'react';
 import ItemCard from '@components/Items/ItemCard';
 import { ItemData } from '@types';
 import { getSpeciesOutfits } from '../../api/v1/tools/outfits';
@@ -44,8 +44,8 @@ const OutfitPage = (props: OutfitPageProps) => {
         <Image
           borderRadius="md"
           boxShadow={'md'}
-          width={'600'}
-          height={'200'}
+          width={600}
+          height={200}
           quality={90}
           w={'100%'}
           maxW={'600px'}
@@ -62,27 +62,31 @@ const OutfitPage = (props: OutfitPageProps) => {
         <Text maxW="900px" textAlign={'center'}>
           {t('OutfitPage.description', { specie: species })}
         </Text>
-        <Select
+        <NativeSelect.Root
           mt={3}
-          variant="filled"
+          variant="subtle"
           minW={175}
           maxW={200}
           bg={'blackAlpha.400'}
           size="sm"
-          onChange={(e) => changeSpecies(e.target.value)}
-          value={species}
         >
-          <option value="">{t('PetColors.select-species')}</option>
-          {Object.values(allSpecies)
-            .sort()
-            .map((species) => (
-              <option key={species} value={species}>
-                {species}
-              </option>
-            ))}
-        </Select>
+          <NativeSelect.Field
+            onChange={(e: ChangeEvent<HTMLSelectElement>) => changeSpecies(e.target.value)}
+            value={species}
+          >
+            <option value="">{t('PetColors.select-species')}</option>
+            {Object.values(allSpecies)
+              .sort()
+              .map((speciesOption) => (
+                <option key={speciesOption} value={speciesOption}>
+                  {speciesOption}
+                </option>
+              ))}
+          </NativeSelect.Field>
+          <NativeSelect.Indicator />
+        </NativeSelect.Root>
       </Center>
-      <Divider my={3} />
+      <Separator my={3} />
       <Flex flexFlow={'column'} alignItems="center" gap={7} mt={5}>
         {Object.entries(outfits).map(([line, outfit], i) => {
           return (

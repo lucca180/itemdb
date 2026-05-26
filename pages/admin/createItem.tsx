@@ -1,17 +1,5 @@
-import {
-  Button,
-  Center,
-  Heading,
-  Link,
-  Spinner,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
-  Text,
-  useToast,
-} from '@chakra-ui/react';
+import { Button, Center, Heading, Link, Spinner, Tabs, Text } from '@chakra-ui/react';
+import { useToast } from '@utils/theme/toast';
 import axios from 'axios';
 import { NextApiRequest, GetServerSidePropsContext } from 'next';
 import React, { useState } from 'react';
@@ -114,6 +102,7 @@ const CreateItem = () => {
   const createItem = async () => {
     if (!item.name || !item.image) {
       toast({
+        id: 'create-item-missing-fields',
         title: 'Missing required fields.',
         description: 'Please fill out the name and image fields.',
         status: 'error',
@@ -145,6 +134,7 @@ const CreateItem = () => {
     };
 
     const toastID = toast({
+      id: 'create-item',
       title: 'Creating item...',
       status: 'info',
       duration: null,
@@ -169,6 +159,7 @@ const CreateItem = () => {
         await axios.post('/api/v1/items/process', null);
 
         toast.update(toastID, {
+          id: toastID,
           title: 'Item created.',
           description: 'The item was successfully created.',
           status: 'success',
@@ -180,6 +171,7 @@ const CreateItem = () => {
     } catch (err) {
       console.error(err);
       toast.update(toastID, {
+        id: toastID,
         title: 'Error creating item.',
         description: 'There was an error creating the item.',
         status: 'error',
@@ -218,7 +210,7 @@ const CreateItem = () => {
         <Heading as="h1" size="lg">
           Create New Item
         </Heading>
-        <Text size={{ base: 'sm', md: undefined }}>
+        <Text fontSize={{ base: 'sm', md: undefined }}>
           Preffer to use the{' '}
           <Link href="/contribute" fontWeight="bold">
             Item Data Extractor
@@ -229,33 +221,31 @@ const CreateItem = () => {
           item is created.
         </Text>
       </HeaderCard>
-      <Tabs variant="line" colorScheme="gray" isLazy>
-        <TabList>
-          <Tab>Item Info</Tab>
-          <Tab>Categories and Tags</Tab>
-        </TabList>
-        <TabPanels>
-          <TabPanel>
-            <InfoTab
-              item={item as ItemData}
-              itemProps={defaultItem as ItemData}
-              onChange={handleChange}
-            />
-          </TabPanel>
-          <TabPanel>
-            <CategoriesTab
-              categories={[]}
-              tags={tags}
-              onSelectChange={() => {}}
-              item={item as ItemData}
-              itemProps={defaultItem as ItemData}
-              onChange={handleTagsChange}
-            />
-          </TabPanel>
-        </TabPanels>
-      </Tabs>
+      <Tabs.Root variant="line" colorPalette="gray" lazyMount defaultValue="info">
+        <Tabs.List>
+          <Tabs.Trigger value="info">Item Info</Tabs.Trigger>
+          <Tabs.Trigger value="categories">Categories and Tags</Tabs.Trigger>
+        </Tabs.List>
+        <Tabs.Content value="info">
+          <InfoTab
+            item={item as ItemData}
+            itemProps={defaultItem as ItemData}
+            onChange={handleChange}
+          />
+        </Tabs.Content>
+        <Tabs.Content value="categories">
+          <CategoriesTab
+            categories={[]}
+            tags={tags}
+            onSelectChange={() => {}}
+            item={item as ItemData}
+            itemProps={defaultItem as ItemData}
+            onChange={handleTagsChange}
+          />
+        </Tabs.Content>
+      </Tabs.Root>
       <Center>
-        <Button colorScheme="green" onClick={createItem}>
+        <Button colorPalette="green" onClick={createItem}>
           Create Item
         </Button>
       </Center>

@@ -1,11 +1,5 @@
-import { CloseIcon, SearchIcon } from '@chakra-ui/icons';
-import {
-  InputGroup,
-  IconButton,
-  Input,
-  InputLeftElement,
-  InputRightElement,
-} from '@chakra-ui/react';
+import { CloseIcon, SearchIcon } from '@utils/theme/chakraIcons';
+import { InputGroup, IconButton, Input } from '@chakra-ui/react';
 import { useState, useRef, useEffect } from 'react';
 
 type Props = {
@@ -53,46 +47,49 @@ export const SearchList = (props: Props) => {
   };
 
   return (
-    <InputGroup w="auto" minW="40px" bg="whiteAlpha.200" borderRadius={'md'}>
-      <InputLeftElement>
+    <InputGroup
+      w="auto"
+      minW="40px"
+      bg="whiteAlpha.200"
+      borderRadius={'md'}
+      startElementProps={{ px: 0, w: '40px' }}
+      startElement={
         <IconButton
           onClick={setFocus}
           aria-label="Search list"
-          icon={<SearchIcon />}
           variant="ghost"
-          isDisabled={props.disabled}
-        />
-      </InputLeftElement>
-
+          disabled={props.disabled}
+          size="sm"
+        >
+          <SearchIcon />
+        </IconButton>
+      }
+      endElement={
+        search ? (
+          <IconButton onClick={reset} size="xs" aria-label="Clear search" variant="ghost">
+            <CloseIcon boxSize={'8px'} />
+          </IconButton>
+        ) : undefined
+      }
+    >
       <Input
-        variant={'solid'}
+        variant={'subtle'}
         bg="transparent"
         maxW="175px"
         fontSize={'sm'}
         onChange={onChange}
         value={search}
+        border={0}
         w={search ? '175px' : '0'}
         p={search ? undefined : 0}
         ref={inputRef}
         transition="width 0.5s ease"
-        isDisabled={props.disabled}
+        disabled={props.disabled}
         _focus={{
           w: '175px',
           pl: search ? undefined : 10,
         }}
       />
-
-      {search && (
-        <InputRightElement>
-          <IconButton
-            onClick={reset}
-            size="xs"
-            aria-label="Clear search"
-            icon={<CloseIcon boxSize={'8px'} />}
-            variant="ghost"
-          />
-        </InputRightElement>
-      )}
     </InputGroup>
   );
 };

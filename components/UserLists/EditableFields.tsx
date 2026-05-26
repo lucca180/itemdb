@@ -1,16 +1,4 @@
-import {
-  VStack,
-  InputGroup,
-  InputLeftAddon,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
-  Checkbox,
-  Text,
-  Input,
-} from '@chakra-ui/react';
+import { VStack, NumberInput, Checkbox, Text, Input, Flex, Box } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
 import { EditableItemCardProps } from './EditableItemCard';
 import { ListItemInfo } from '../../types';
@@ -23,98 +11,119 @@ export type EditableFieldsProps = EditableItemCardProps & {
   itemInfo: ListItemInfo | undefined;
 };
 
+const fieldLabelProps = {
+  fontSize: 'xs',
+  px: 2,
+  py: 1,
+  bg: 'whiteAlpha.200',
+  borderLeftRadius: 'md',
+  whiteSpace: 'nowrap' as const,
+};
+
+const NumberField = ({
+  label,
+  ...props
+}: {
+  label: string;
+} & React.ComponentProps<typeof NumberInput.Root>) => (
+  <Flex align="stretch" w="100%">
+    <Box {...fieldLabelProps}>{label}</Box>
+    <NumberInput.Root flex={1} size="xs" variant="subtle" borderRightRadius="md" {...props}>
+      <NumberInput.Input />
+      <NumberInput.Control />
+    </NumberInput.Root>
+  </Flex>
+);
+
 const EditableFields = (props: EditableFieldsProps) => {
   const { id, item, isTrading, handleItemInfoChange, itemInfo, list } = props;
 
   const t = useTranslations();
 
   return (
-    <VStack maxW="150px">
-      <InputGroup size="xs">
-        <InputLeftAddon children={t('General.quantity')} />
-        <NumberInput
-          max={999}
-          min={1}
-          variant="filled"
-          defaultValue={itemInfo?.amount}
-          onChange={(value) => handleItemInfoChange(Number(value || 1), 'amount')}
-        >
-          <NumberInputField />
-          <NumberInputStepper>
-            <NumberIncrementStepper />
-            <NumberDecrementStepper />
-          </NumberInputStepper>
-        </NumberInput>
-      </InputGroup>
-      <InputGroup size="xs">
-        <InputLeftAddon children={t('General.order')} />
-        <NumberInput
-          min={0}
-          variant="filled"
-          defaultValue={itemInfo?.order ?? 0}
-          onChange={(value) => handleItemInfoChange(Number(value || 0), 'order')}
-        >
-          <NumberInputField />
-          <NumberInputStepper>
-            <NumberIncrementStepper />
-            <NumberDecrementStepper />
-          </NumberInputStepper>
-        </NumberInput>
-      </InputGroup>
+    <VStack maxW="150px" gap={2} align="stretch">
+      <NumberField
+        label={t('General.quantity')}
+        max={999}
+        min={1}
+        defaultValue={String(itemInfo?.amount ?? 1)}
+        onValueChange={({ value }: { value: string }) =>
+          handleItemInfoChange(Number(value || 1), 'amount')
+        }
+      />
+      <NumberField
+        label={t('General.order')}
+        min={0}
+        defaultValue={String(itemInfo?.order ?? 0)}
+        onValueChange={({ value }: { value: string }) =>
+          handleItemInfoChange(Number(value || 0), 'order')
+        }
+      />
       {item.isNC && isTrading && (
-        <InputGroup size="xs">
-          <InputLeftAddon children={t('General.cap-value')} />
-          <NumberInput
-            defaultValue={itemInfo?.capValue ?? undefined}
-            min={0}
-            max={99}
-            variant="filled"
-            onChange={(value) => handleItemInfoChange(Number(value || 0), 'capValue')}
-          >
-            <NumberInputField />
-            <NumberInputStepper>
-              <NumberIncrementStepper />
-              <NumberDecrementStepper />
-            </NumberInputStepper>
-          </NumberInput>
-        </InputGroup>
+        <NumberField
+          label={t('General.cap-value')}
+          defaultValue={itemInfo?.capValue != null ? String(itemInfo.capValue) : undefined}
+          min={0}
+          max={99}
+          onValueChange={({ value }: { value: string }) =>
+            handleItemInfoChange(Number(value || 0), 'capValue')
+          }
+        />
       )}
       {list?.official && list.seriesType && (
         <>
-          <InputGroup size="xs">
-            <InputLeftAddon children={'Start'} />
+          <Flex align="stretch" w="100%">
+            <Box {...fieldLabelProps}>Start</Box>
             <Input
+              flex={1}
+              size="xs"
               type="date"
-              variant="filled"
+              variant="subtle"
+              borderRightRadius="md"
               value={itemInfo?.seriesStart?.split('T')[0] || ''}
               onChange={(e) => handleItemInfoChange(e.target.value, 'seriesStart')}
             />
-          </InputGroup>
-          <InputGroup size="xs">
-            <InputLeftAddon children={'End'} />
+          </Flex>
+          <Flex align="stretch" w="100%">
+            <Box {...fieldLabelProps}>End</Box>
             <Input
+              flex={1}
+              size="xs"
               type="date"
-              variant="filled"
+              variant="subtle"
+              borderRightRadius="md"
               value={itemInfo?.seriesEnd?.split('T')[0] || ''}
               onChange={(e) => handleItemInfoChange(e.target.value, 'seriesEnd')}
             />
-          </InputGroup>
+          </Flex>
         </>
       )}
-      <Checkbox
+      <Checkbox.Root
         defaultChecked={itemInfo?.isHighlight}
         size="sm"
-        onChange={(value) => props.onChange?.(id, Number(value.target.checked), 'isHighlight')}
+        onCheckedChange={(details) =>
+          props.onChange?.(id, Number(details.checked === true), 'isHighlight')
+        }
       >
-        <Text fontSize="xs">{t('Lists.highlight')}?</Text>
-      </Checkbox>
-      <Checkbox
+        <Checkbox.HiddenInput />
+        <Checkbox.Control />
+        <Checkbox.Label>
+          <Text fontSize="xs">{t('Lists.highlight')}?</Text>
+        </Checkbox.Label>
+      </Checkbox.Root>
+      <Checkbox.Root
         defaultChecked={itemInfo?.isHidden}
         size="sm"
-        onChange={(value) => props.onChange?.(id, Number(value.target.checked), 'isHidden')}
+        onCheckedChange={(details) =>
+          props.onChange?.(id, Number(details.checked === true), 'isHidden')
+        }
       >
-        <Text fontSize="xs">{t('Lists.hidden')}?</Text>
-      </Checkbox>
+        <Checkbox.HiddenInput />
+        <Checkbox.Control />
+        <Checkbox.Label>
+          <Text fontSize="xs">{t('Lists.hidden')}?</Text>
+        </Checkbox.Label>
+      </Checkbox.Root>
     </VStack>
   );
 };

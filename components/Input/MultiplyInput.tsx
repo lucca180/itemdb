@@ -1,13 +1,27 @@
-import { NumberInput, NumberInputField } from '@chakra-ui/react';
-import CustomNumberInput from './CustomNumber';
+import { NumberInput } from '@chakra-ui/react';
 import { useState } from 'react';
+import CustomNumberInput from '@components/Input/CustomNumber';
+
+type MultiplyInputRootProps = Omit<
+  React.ComponentProps<typeof NumberInput.Root>,
+  'disabled' | 'variant'
+> & {
+  disabled?: boolean;
+  isDisabled?: boolean;
+  placeholder?: string;
+  variant?: 'outline' | 'subtle' | 'flushed' | 'filled';
+};
+
+type MultiplyInputFieldProps = Omit<React.ComponentProps<typeof NumberInput.Input>, 'variant'> & {
+  variant?: string;
+};
 
 type MultiplyInputProps = {
   disableShortcuts?: boolean;
   onChange?: (val?: string) => void;
   onEnter?: (val?: string) => void;
-  wrapperProps?: React.ComponentProps<typeof NumberInput>;
-  inputProps?: React.ComponentProps<typeof NumberInputField>;
+  wrapperProps?: MultiplyInputRootProps;
+  inputProps?: MultiplyInputFieldProps;
 };
 
 export const MultiplyInput = (props: MultiplyInputProps) => {

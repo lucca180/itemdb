@@ -8,18 +8,16 @@ import {
   Text,
   Button,
   Center,
-  Divider,
+  Separator,
   HStack,
-  FormControl,
-  FormLabel,
+  Field,
   Switch,
-  useToast,
   IconButton,
   useDisclosure,
   Link,
-  Tooltip,
   Kbd,
 } from '@chakra-ui/react';
+import { useToast } from '@utils/theme/toast';
 import axios from 'axios';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Layout from '../../../components/Layout';
@@ -102,8 +100,8 @@ const ListPage = (props: ListPageProps) => {
   const t = useTranslations();
   const router = useRouter();
   const toast = useToast();
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const { isOpen: isOpenInsert, onOpen: onOpenInsert, onClose: onCloseInsert } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
+  const { open: isOpenInsert, onOpen: onOpenInsert, onClose: onCloseInsert } = useDisclosure();
   const { canEdit, isOwner, locale, preloadData, similarLists, matches } = props;
 
   const [forceList, setList] = useState<UserList>(props.list);
@@ -231,7 +229,7 @@ const ListPage = (props: ListPageProps) => {
       !isEdit &&
       !isLoading &&
       !isOpenInsert &&
-      !isOpen &&
+      !open &&
       !openCreateModal &&
       !selectionAction &&
       dynamicListCan(list, 'add'),
@@ -302,6 +300,7 @@ const ListPage = (props: ListPageProps) => {
       console.error(err);
 
       toast({
+        id: 'list-page-init-error',
         title: t('General.an-error-occurred'),
         description: typeof err === 'string' ? err : t('General.try-again-later'),
         status: 'error',
@@ -468,10 +467,10 @@ const ListPage = (props: ListPageProps) => {
       id: 'unsavedChanges',
       description: (
         <Flex gap={2}>
-          <Button variant="solid" onClick={saveChanges} colorScheme="blackAlpha" size="sm">
+          <Button variant="solid" onClick={saveChanges} colorPalette="blackAlpha" size="sm">
             {t('General.save-changes')}
           </Button>
-          <Button variant="solid" onClick={() => init(true)} colorScheme="blackAlpha" size="sm">
+          <Button variant="solid" onClick={() => init(true)} colorPalette="blackAlpha" size="sm">
             {t('General.cancel')}
           </Button>
         </Flex>
@@ -488,6 +487,7 @@ const ListPage = (props: ListPageProps) => {
     toast.closeAll();
 
     const x = toast({
+      id: 'list-page-save-changes',
       title: `${t('General.saving-changes')}...`,
       status: 'info',
       duration: null,
@@ -503,6 +503,7 @@ const ListPage = (props: ListPageProps) => {
 
       if (res.data.success) {
         toast.update(x, {
+          id: x,
           title: t('Feedback.changes-saved'),
           status: 'success',
           duration: 5000,
@@ -514,6 +515,7 @@ const ListPage = (props: ListPageProps) => {
     } catch (err) {
       console.error(err);
       toast.update(x, {
+        id: x,
         title: t('General.an-error-occurred'),
         description: t('General.try-again-later'),
         status: 'error',
@@ -589,10 +591,10 @@ const ListPage = (props: ListPageProps) => {
       }}
       mainColor={`${color.hex()}b8`}
     >
-      {isOpen && (
+      {open && (
         <SearchFilterModal
           isLists
-          isOpen={isOpen}
+          isOpen={open}
           onClose={onClose}
           filters={filters}
           stats={listStats}
@@ -641,7 +643,7 @@ const ListPage = (props: ListPageProps) => {
           {!isEdit && (
             <HStack>
               {canEdit && dynamicListCan(list, 'add') && (
-                <Button variant="solid" onClick={onOpenInsert} isLoading={isLoading}>
+                <Button onClick={onOpenInsert} loading={isLoading}>
                   {t('Lists.add-items')}{' '}
                   <Kbd ml={2} fontSize="xs">
                     A
@@ -652,7 +654,7 @@ const ListPage = (props: ListPageProps) => {
                 <CreateLinkedListButton list={list} isLoading={isLoading} />
               )}
               <HStack gap={1}>
-                <Text as="div" textColor={'gray.300'} fontSize="sm">
+                <Text as="div" color={'gray.300'} fontSize="sm">
                   {t('Lists.itemcount-items', { itemCount: qtyCount.visibleQty })}
                 </Text>
                 <A11yTooltip
@@ -664,12 +666,9 @@ const ListPage = (props: ListPageProps) => {
                     total: qtyCount.totalQty,
                   })}
                 >
-                  <IconButton
-                    icon={<BiHelpCircle />}
-                    aria-label="Item Count Info"
-                    size="xs"
-                    variant={'ghost'}
-                  />
+                  <IconButton aria-label="Item Count Info" size="xs" variant="ghost">
+                    <BiHelpCircle />
+                  </IconButton>
                 </A11yTooltip>
               </HStack>
             </HStack>
@@ -687,8 +686,8 @@ const ListPage = (props: ListPageProps) => {
                 <>
                   <Box>
                     <Button
-                      isDisabled={!itemSelect.length}
-                      colorScheme="red"
+                      disabled={!itemSelect.length}
+                      colorPalette="red"
                       variant="outline"
                       onClick={() => setSelectionAction('delete')}
                     >
@@ -697,7 +696,7 @@ const ListPage = (props: ListPageProps) => {
                   </Box>
                   <Box>
                     <Button
-                      isDisabled={!itemSelect.length}
+                      disabled={!itemSelect.length}
                       variant="outline"
                       onClick={() => setSelectionAction('move')}
                     >
@@ -708,7 +707,7 @@ const ListPage = (props: ListPageProps) => {
               )}
               <Box>
                 <Button
-                  isDisabled={!itemSelect.length}
+                  disabled={!itemSelect.length}
                   variant="outline"
                   onClick={() => setSelectionAction('copy')}
                 >
@@ -725,31 +724,38 @@ const ListPage = (props: ListPageProps) => {
             flexWrap={'wrap'}
           >
             <IconButton
-              isLoading={isLoading}
+              loading={isLoading}
               aria-label="search filters"
               onClick={onOpen}
-              icon={<BsFilter />}
-              colorScheme={isFiltered ? 'blue' : undefined}
-            />
+              colorPalette={isFiltered ? 'blue' : undefined}
+            >
+              <BsFilter />
+            </IconButton>
             <SearchList disabled={isLoading} onChange={handleSearch} />
             {canEdit && (
-              <FormControl
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                w={'auto'}
-                isDisabled={isLoading}
-              >
-                <FormLabel mb="0" textColor={'gray.300'} fontSize="sm">
-                  {t('General.edit-mode')}
-                </FormLabel>
-                <Switch colorScheme="whiteAlpha" isChecked={isEdit} onChange={toggleEdit} />
-              </FormControl>
+              <Field.Root display="flex" alignItems="center" justifyContent="center" w="auto">
+                <Switch.Root
+                  colorPalette="whiteAlpha"
+                  checked={isEdit}
+                  onCheckedChange={toggleEdit}
+                  display="flex"
+                  alignItems="center"
+                  disabled={isLoading}
+                >
+                  <Switch.HiddenInput />
+                  <Switch.Label mb="0" color="gray.300" fontSize="sm">
+                    {t('General.edit-mode')}
+                  </Switch.Label>
+                  <Switch.Control>
+                    <Switch.Thumb />
+                  </Switch.Control>
+                </Switch.Root>
+              </Field.Root>
             )}
             <HStack>
               <Text
                 flex="0 0 auto"
-                textColor={'gray.300'}
+                color={'gray.300'}
                 fontSize="sm"
                 display={{ base: 'none', md: 'inherit' }}
               >
@@ -785,7 +791,12 @@ const ListPage = (props: ListPageProps) => {
             {t('General.tip')}:{' '}
             {t.rich('Lists.stamp-script-tip', {
               Link: (chunk) => (
-                <Link color="gray.200" href="/articles/userscripts" isExternal>
+                <Link
+                  color="gray.200"
+                  href="/articles/userscripts"
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   {chunk}
                 </Link>
               ),
@@ -794,16 +805,23 @@ const ListPage = (props: ListPageProps) => {
         )}
         {isEdit && sortInfo.sortBy === 'custom' && (
           <Center>
-            <FormControl display="flex" alignItems="center" justifyContent="center">
-              <FormLabel mb="0" textColor={'gray.300'}>
-                {t('Lists.lock-sort')}
-              </FormLabel>
-              <Switch
-                colorScheme="whiteAlpha"
-                isChecked={lockSort}
-                onChange={() => setLockSort(!lockSort)}
-              />
-            </FormControl>
+            <Field.Root display="flex" alignItems="center" justifyContent="center">
+              <Switch.Root
+                colorPalette="whiteAlpha"
+                checked={lockSort}
+                onCheckedChange={() => setLockSort(!lockSort)}
+                display="flex"
+                alignItems="center"
+              >
+                <Switch.HiddenInput />
+                <Switch.Label mb="0" color="gray.300">
+                  {t('Lists.lock-sort')}
+                </Switch.Label>
+                <Switch.Control>
+                  <Switch.Thumb />
+                </Switch.Control>
+              </Switch.Root>
+            </Field.Root>
           </Center>
         )}
 
@@ -853,7 +871,7 @@ const ListPage = (props: ListPageProps) => {
             p={3}
             bg="blackAlpha.500"
             borderRadius="md"
-            boxShadow={'lg'}
+            boxShadow={'sm'}
           >
             <Center flexFlow="column">
               <Flex

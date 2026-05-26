@@ -10,10 +10,10 @@ import {
   Box,
   Link,
   IconButton,
-  useToast,
   useDisclosure,
   Image as ChakraImage,
 } from '@chakra-ui/react';
+import { useToast } from '@utils/theme/toast';
 import { ColorInstance } from 'color';
 import { BiLinkExternal } from 'react-icons/bi';
 import { MdWarning } from 'react-icons/md';
@@ -57,9 +57,9 @@ const ListHeader = (props: ListHeaderProps) => {
   const format = useFormatter();
   const toast = useToast();
   const { list, color, items, itemInfo, canEdit: isOwner, setOpenCreateModal, isLoading } = props;
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const { isOpen: isOpenDynamic, onOpen: onOpenDynamic, onClose: onCloseDynamic } = useDisclosure();
-  const { isOpen: isOpenExport, onOpen: onOpenExport, onClose: onCloseExport } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
+  const { open: isOpenDynamic, onOpen: onOpenDynamic, onClose: onCloseDynamic } = useDisclosure();
+  const { open: isOpenExport, onOpen: onOpenExport, onClose: onCloseExport } = useDisclosure();
   const { user } = useAuth();
   const rgb = color.rgb().array();
 
@@ -109,6 +109,7 @@ const ListHeader = (props: ListHeaderProps) => {
       `${window.location.origin}/lists/${userName}/${list.slug ?? list.internal_id}`
     );
     toast({
+      id: 'list-header-copy-link',
       title: t('General.link-copied'),
       status: 'success',
       duration: 3000,
@@ -128,10 +129,10 @@ const ListHeader = (props: ListHeaderProps) => {
 
   return (
     <Box>
-      {isOpen && (
+      {open && (
         <ListPriceHistoryModal
           listColor={color}
-          isOpen={isOpen}
+          isOpen={open}
           onClose={onClose}
           item_iids={item_iids}
         />
@@ -176,7 +177,8 @@ const ListHeader = (props: ListHeaderProps) => {
             <Image
               priority
               src={icon}
-              width={{ base: '50px', md: '80px' }}
+              width={80}
+              w={{ base: '50px', md: '80px' }}
               style={{ opacity: 0.85, flex: 1 }}
               alt={'List Cover'}
             />
@@ -209,10 +211,10 @@ const ListHeader = (props: ListHeaderProps) => {
             <Button
               variant="solid"
               mt={3}
-              colorScheme={color.isLight() ? 'blackAlpha' : 'gray'}
+              colorPalette={color.isLight() ? 'blackAlpha' : 'whiteAlpha'}
               onClick={() => setOpenCreateModal?.(true)}
-              size="sm"
-              isLoading={isLoading}
+              size="xs"
+              loading={isLoading}
             >
               {t('Lists.edit-list-info')}
             </Button>
@@ -226,25 +228,19 @@ const ListHeader = (props: ListHeaderProps) => {
             justifyContent={{ base: 'center', md: 'flex-start' }}
           >
             {!list.official && list.purpose !== 'none' && (
-              <Badge borderRadius="md" colorScheme={color.isLight() ? 'black' : 'gray'}>
+              <Badge borderRadius="md" colorPalette={color.isLight() ? 'black' : 'gray'}>
                 {t('Lists.' + list.purpose)}
               </Badge>
             )}
             {list.official && (
-              <Badge
-                as={NextLink}
-                href="/lists/official"
-                borderRadius="md"
-                colorScheme="blue"
-                variant="solid"
-              >
-                ✓ {t('General.official')}
+              <Badge asChild borderRadius="md" colorPalette="blue" variant="solid">
+                <NextLink href="/lists/official">✓ {t('General.official')}</NextLink>
               </Badge>
             )}
             {!list.official && list.visibility !== 'public' && (
               <Badge
                 borderRadius="md"
-                colorScheme={color.isLight() ? 'black' : 'gray'}
+                colorPalette={color.isLight() ? 'black' : 'gray'}
                 variant="solid"
               >
                 {t('Lists.' + list.visibility)}
@@ -253,27 +249,35 @@ const ListHeader = (props: ListHeaderProps) => {
             {!list.official && list.owner.neopetsUser && list.purpose !== 'none' && (
               <>
                 <Badge
-                  as={Link}
-                  isExternal
-                  href={`http://www.neopets.com/userlookup.phtml?user=${list.owner.neopetsUser}`}
+                  asChild
                   borderRadius="md"
-                  colorScheme={color.isLight() ? 'black' : 'gray'}
+                  colorPalette={color.isLight() ? 'black' : 'gray'}
                   data-umami-event="user-interact"
                   data-umami-event-type="userlookup"
                 >
-                  {t('General.userlookup')} <Icon as={BiLinkExternal} verticalAlign="text-top" />
+                  <Link
+                    href={`http://www.neopets.com/userlookup.phtml?user=${list.owner.neopetsUser}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {t('General.userlookup')} <Icon as={BiLinkExternal} verticalAlign="text-top" />
+                  </Link>
                 </Badge>
 
                 <Badge
-                  as={Link}
-                  isExternal
-                  href={`http://www.neopets.com/neomessages.phtml?type=send&recipient=${list.owner.neopetsUser}`}
+                  asChild
                   borderRadius="md"
-                  colorScheme={color.isLight() ? 'black' : 'gray'}
+                  colorPalette={color.isLight() ? 'black' : 'gray'}
                   data-umami-event="user-interact"
                   data-umami-event-type="neomail"
                 >
-                  {t('General.neomail')} <Icon as={BiLinkExternal} verticalAlign="text-top" />
+                  <Link
+                    href={`http://www.neopets.com/neomessages.phtml?type=send&recipient=${list.owner.neopetsUser}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {t('General.neomail')} <Icon as={BiLinkExternal} verticalAlign="text-top" />
+                  </Link>
                 </Badge>
               </>
             )}
@@ -289,58 +293,66 @@ const ListHeader = (props: ListHeaderProps) => {
             {list.name}
 
             {!!list.dynamicType && (
-              <IconButton
-                ml={1}
-                aria-label="Dynamic List History"
-                data-umami-event="dynamic-list-history"
-                size="sm"
-                onClick={list.official || isOwner ? onOpenDynamic : undefined}
-                icon={
-                  <Tooltip hasArrow label={t('DynamicList.dynamic-list-history')} placement="top">
+              <Tooltip.Root positioning={{ placement: 'top' }}>
+                <Tooltip.Trigger asChild>
+                  <IconButton
+                    ml={1}
+                    aria-label="Dynamic List History"
+                    data-umami-event="dynamic-list-history"
+                    size="xs"
+                    onClick={list.official || isOwner ? onOpenDynamic : undefined}
+                    bg="blackAlpha.300"
+                    borderRadius={'md'}
+                  >
                     <NextImage
                       src={DynamicIcon}
                       alt="lightning bolt"
                       width={12}
                       style={{ display: 'inline' }}
                     />
-                  </Tooltip>
-                }
-                bg="blackAlpha.300"
-                borderRadius={'md'}
-              />
+                  </IconButton>
+                </Tooltip.Trigger>
+                <Tooltip.Positioner>
+                  <Tooltip.Content>{t('DynamicList.dynamic-list-history')}</Tooltip.Content>
+                </Tooltip.Positioner>
+              </Tooltip.Root>
             )}
             {list.visibility !== 'private' && (
-              <IconButton
-                onClick={copyLink}
-                data-umami-event="copy-link"
-                bg="blackAlpha.300"
-                size="sm"
-                aria-label={t('Layout.copy-link')}
-                icon={
-                  <Tooltip hasArrow label={t('Layout.copy-link')} placement="top">
-                    <span>
-                      <FaShareAlt />
-                    </span>
-                  </Tooltip>
-                }
-              />
+              <Tooltip.Root positioning={{ placement: 'top' }}>
+                <Tooltip.Trigger asChild>
+                  <IconButton
+                    onClick={copyLink}
+                    data-umami-event="copy-link"
+                    bg="blackAlpha.300"
+                    size="xs"
+                    aria-label={t('Layout.copy-link')}
+                  >
+                    <FaShareAlt />
+                  </IconButton>
+                </Tooltip.Trigger>
+                <Tooltip.Positioner>
+                  <Tooltip.Content>{t('Layout.copy-link')}</Tooltip.Content>
+                </Tooltip.Positioner>
+              </Tooltip.Root>
             )}
             {(list.official || isOwner) && (
-              <IconButton
-                aria-label="Export as CSV"
-                data-umami-event="export-list"
-                size="sm"
-                onClick={onOpenExport}
-                icon={
-                  <Tooltip hasArrow label={t('Lists.export-as-csv')} placement="top">
-                    <span>
-                      <LuFileSpreadsheet />
-                    </span>
-                  </Tooltip>
-                }
-                bg="blackAlpha.300"
-                borderRadius={'md'}
-              />
+              <Tooltip.Root positioning={{ placement: 'top' }}>
+                <Tooltip.Trigger asChild>
+                  <IconButton
+                    aria-label="Export as CSV"
+                    data-umami-event="export-list"
+                    size="xs"
+                    onClick={onOpenExport}
+                    bg="blackAlpha.300"
+                    borderRadius={'md'}
+                  >
+                    <LuFileSpreadsheet />
+                  </IconButton>
+                </Tooltip.Trigger>
+                <Tooltip.Positioner>
+                  <Tooltip.Content>{t('Lists.export-as-csv')}</Tooltip.Content>
+                </Tooltip.Positioner>
+              </Tooltip.Root>
             )}
           </Heading>
           <Stack
@@ -353,8 +365,8 @@ const ListHeader = (props: ListHeaderProps) => {
             <Text fontSize={{ base: 'xs', md: 'sm' }}>
               {t.rich(list.official ? 'Lists.curatedBy' : 'Lists.by', {
                 Link: (chunk) => (
-                  <Link as={NextLink} fontWeight="bold" href={'/lists/' + list.owner.username}>
-                    {chunk}
+                  <Link asChild fontWeight="bold">
+                    <NextLink href={'/lists/' + list.owner.username}>{chunk}</NextLink>
                   </Link>
                 ),
                 username: list.owner.username ?? '',
@@ -391,7 +403,7 @@ const ListHeader = (props: ListHeaderProps) => {
             <Text
               mt={{ base: 2, md: 3 }}
               fontSize={{ base: 'sm', md: 'md' }}
-              sx={{ a: { color: color.lightness(70).hex() } }}
+              css={{ '& a': { color: color.lightness(70).hex() } }}
               as="h2"
             >
               <Markdown skipParagraph>{list.description}</Markdown>
@@ -413,70 +425,68 @@ const ListHeader = (props: ListHeaderProps) => {
                 borderRadius={'md'}
                 alignItems="flex-start"
               >
-                <Tooltip
-                  hasArrow
-                  label={t('Lists.unpricedItems', { 0: unpricedItems })}
-                  placement="top"
-                  isDisabled={!unpricedItems}
-                >
-                  <Text fontSize="sm">
-                    {!!unpricedItems && (
-                      <span>
-                        <Icon
-                          as={MdWarning}
-                          boxSize={'1rem'}
-                          mr="0.2rem"
-                          verticalAlign="text-top"
-                        />
-                      </span>
-                    )}
-                    {t('Lists.this-list-costs-aprox')}{' '}
-                    {!!NPPrice && (
-                      <>
-                        <b>{format.number(NPPrice)} NP</b>
-                        <Image
-                          as={NextImage}
-                          display="inline"
-                          verticalAlign="bottom"
-                          src={NPBag}
-                          width="24px"
-                          height="24px"
-                          alt="gift box icon"
-                          mt="-7px"
-                          ml="3px"
-                        />
-                      </>
-                    )}{' '}
-                    {!!NPPrice && !!NCPrice && t('General.and')}{' '}
-                    {!!NCPrice && (
-                      <>
-                        <b>
-                          {format.number(NCPrice)} {t('General.caps')}
-                        </b>{' '}
-                        <Image
-                          as={NextImage}
-                          display="inline"
-                          verticalAlign="bottom"
-                          src={GiftBox}
-                          width="24px"
-                          height="24px"
-                          alt="gift box icon"
-                        />
-                      </>
-                    )}
-                  </Text>
-                </Tooltip>
+                <Tooltip.Root positioning={{ placement: 'top' }} disabled={!unpricedItems}>
+                  <Tooltip.Trigger asChild>
+                    <Text fontSize="sm" cursor={unpricedItems ? 'default' : undefined}>
+                      {!!unpricedItems && (
+                        <span>
+                          <Icon
+                            as={MdWarning}
+                            boxSize={'1rem'}
+                            mr="0.2rem"
+                            verticalAlign="text-top"
+                          />
+                        </span>
+                      )}
+                      {t('Lists.this-list-costs-aprox')}{' '}
+                      {!!NPPrice && (
+                        <>
+                          <b>{format.number(NPPrice)} NP</b>
+                          <Image
+                            display="inline"
+                            verticalAlign="bottom"
+                            src={NPBag}
+                            width={24}
+                            height={24}
+                            alt="gift box icon"
+                            mt="-7px"
+                            ml="3px"
+                          />
+                        </>
+                      )}{' '}
+                      {!!NPPrice && !!NCPrice && t('General.and')}{' '}
+                      {!!NCPrice && (
+                        <>
+                          <b>
+                            {format.number(NCPrice)} {t('General.caps')}
+                          </b>{' '}
+                          <Image
+                            as="span"
+                            display="inline"
+                            verticalAlign="bottom"
+                            src={GiftBox}
+                            width={24}
+                            height={24}
+                            alt="gift box icon"
+                          />
+                        </>
+                      )}
+                    </Text>
+                  </Tooltip.Trigger>
+                  {!!unpricedItems && (
+                    <Tooltip.Positioner>
+                      <Tooltip.Content>
+                        {t('Lists.unpricedItems', { 0: unpricedItems })}
+                      </Tooltip.Content>
+                    </Tooltip.Positioner>
+                  )}
+                </Tooltip.Root>
               </Flex>
             )}
             {item_iids.length > 0 && item_iids.length < MAX_ITEMS_LIST_PRICE && (
-              <IconButton
-                onClick={onOpen}
-                size="sm"
-                py={1}
-                bg="blackAlpha.300"
-                aria-label="Chart"
-                icon={<AiOutlineAreaChart />}
-              />
+              <IconButton onClick={onOpen} size="sm" py={1} bg="blackAlpha.300" aria-label="Chart">
+                <AiOutlineAreaChart />
+              </IconButton>
             )}
           </Stack>
         </Box>

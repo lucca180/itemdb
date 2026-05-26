@@ -1,4 +1,4 @@
-import { Heading, Text, Flex, Center, Textarea, Divider, Button } from '@chakra-ui/react';
+import { Heading, Text, Flex, Center, Textarea, Separator, Button } from '@chakra-ui/react';
 import Layout from '../../../components/Layout';
 import { ReactElement, useState } from 'react';
 import { createTranslator, useTranslations } from 'next-intl';
@@ -67,12 +67,12 @@ const AdvancedImportPage = () => {
         <Heading as="h1" size="lg">
           {t('Lists.import-from-pps')}
         </Heading>
-        <Text as="div" sx={{ a: { color: '#b8e9a9' } }}>
+        <Text as="div" css={{ '& a': { color: '#b8e9a9' } }}>
           {t('Lists.import-advanced-description')}
         </Text>
       </HeaderCard>
-      <Divider mb={3} />
-      <Text fontSize={'md'} sx={{ b: { color: '#b8e9a9' } }}>
+      <Separator mb={3} />
+      <Text fontSize={'md'} css={{ b: { color: '#b8e9a9' } }}>
         {t.rich('Lists.import-adv-1', {
           b: (chunks) => <b>{chunks}</b>,
         })}
@@ -81,8 +81,9 @@ const AdvancedImportPage = () => {
           {t('Lists.import-adv-2')}
         </Text>
       </Text>
-      <Center flexFlow="column" gap={3} sx={{ a: { color: '#b8e9a9' } }} mt={3}>
+      <Center flexFlow="column" gap={3} css={{ '& a': { color: '#b8e9a9' } }} mt={3}>
         <Flex
+          asChild
           flexFlow="column"
           bg="blackAlpha.400"
           borderRadius={'md'}
@@ -91,24 +92,22 @@ const AdvancedImportPage = () => {
           maxW={'900px'}
           justifyContent={'center'}
           alignItems={'center'}
-          as={'form'}
-          method="POST"
-          target="_blank"
-          action="/lists/import"
         >
-          <input type="hidden" name="itemDataJson" value={itemDataJson} />
-          <input type="hidden" name="indexType" value="name_image_id" />
-          <Textarea
-            placeholder={t('Lists.paste-pp-code')}
-            size="md"
-            variant={'filled'}
-            onChange={(e) => handleChange(e.target.value)}
-            value={ppCode}
-            w="100%"
-          />
-          <Button colorScheme="green" mt={3} type="submit">
-            {t('Lists.import-items')}
-          </Button>
+          <form method="POST" target="_blank" action="/lists/import">
+            <input type="hidden" name="itemDataJson" value={itemDataJson} />
+            <input type="hidden" name="indexType" value="name_image_id" />
+            <Textarea
+              placeholder={t('Lists.paste-pp-code')}
+              size="md"
+              variant={'subtle'}
+              onChange={(e) => handleChange(e.target.value)}
+              value={ppCode}
+              w="100%"
+            />
+            <Button colorPalette="green" mt={3} type="submit">
+              {t('Lists.import-items')}
+            </Button>
+          </form>
         </Flex>
       </Center>
     </>

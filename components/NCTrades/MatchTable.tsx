@@ -1,16 +1,4 @@
-import {
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Tr,
-  Th,
-  Thead,
-  Badge,
-  Link,
-  Skeleton,
-  Text,
-} from '@chakra-ui/react';
+import { Table, Badge, Link, Skeleton, Text } from '@chakra-ui/react';
 import { isToday } from 'date-fns';
 import { UserList } from '../../types';
 import { useFormatter, useTranslations } from 'next-intl';
@@ -33,30 +21,35 @@ const MatchTable = (props: Props) => {
   );
 
   return (
-    <TableContainer
+    <Table.ScrollArea
       minH={{ base: 150, md: 150 }}
       maxH={{ base: 200, md: 300 }}
       w="100%"
       borderRadius="sm"
-      overflowX="auto"
-      overflowY="auto"
     >
-      <Table h="100%" variant="striped" colorScheme="gray" size="sm">
-        <Thead>
-          <Tr>
-            <Th>{t('ItemPage.list-name')}</Th>
-            <Th>{t('ItemPage.owner')}</Th>
-            {matches && <Th>{t('ItemPage.match')}</Th>}
-            <Th>{t('ItemPage.last-seen')}</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
+      <Table.Root
+        h="100%"
+        variant="outline"
+        colorPalette="blackAlpha"
+        bg="blackAlpha.300"
+        size="sm"
+        striped
+      >
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeader>{t('ItemPage.list-name')}</Table.ColumnHeader>
+            <Table.ColumnHeader>{t('ItemPage.owner')}</Table.ColumnHeader>
+            {matches && <Table.ColumnHeader>{t('ItemPage.match')}</Table.ColumnHeader>}
+            <Table.ColumnHeader>{t('ItemPage.last-seen')}</Table.ColumnHeader>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
           {!data.length && (
-            <Tr>
-              <Td colSpan={4} textAlign="center">
+            <Table.Row>
+              <Table.Cell colSpan={4} textAlign="center">
                 {t('ItemPage.no-lists-found')} :(
                 <br />
-                <Text fontSize={'xs'} mt={2} color="whiteAlpha.600">
+                <Text fontSize="xs" mt={2} color="whiteAlpha.600">
                   {t.rich('Lists.import-adv-tip', {
                     Link: (chunks) => (
                       <Link color="whiteAlpha.800" href="/lists/import">
@@ -65,12 +58,12 @@ const MatchTable = (props: Props) => {
                     ),
                   })}
                 </Text>
-              </Td>
-            </Tr>
+              </Table.Cell>
+            </Table.Row>
           )}
           {sortedData.map((list) => (
-            <Tr key={list.internal_id}>
-              <Td maxW="200px" overflow="hidden" textOverflow="ellipsis">
+            <Table.Row key={list.internal_id}>
+              <Table.Cell maxW="200px" overflow="hidden" textOverflow="ellipsis">
                 <MainLink
                   href={`/lists/${list.owner.username}/${list.slug ?? list.internal_id}`}
                   trackEvent="match-table"
@@ -78,8 +71,8 @@ const MatchTable = (props: Props) => {
                 >
                   {list.name}
                 </MainLink>
-              </Td>
-              <Td>
+              </Table.Cell>
+              <Table.Cell>
                 <MainLink
                   href={`/lists/${list.owner.username}`}
                   trackEvent="match-table"
@@ -87,11 +80,11 @@ const MatchTable = (props: Props) => {
                 >
                   {list.owner.username}
                 </MainLink>
-              </Td>
+              </Table.Cell>
               {!isLoading && matches && (
-                <Td>
+                <Table.Cell>
                   {matches[list.owner.username ?? '']?.length && (
-                    <Badge colorScheme="green">
+                    <Badge colorPalette="green">
                       {matches[list.owner.username ?? '']?.length || 'none'}{' '}
                       {t('General.items').toLowerCase()}{' '}
                       {type === 'seeking' ? t('General.they') : t('General.you')}{' '}
@@ -99,27 +92,29 @@ const MatchTable = (props: Props) => {
                     </Badge>
                   )}
                   {!matches[list.owner.username ?? '']?.length && (
-                    <Badge>{t('ItemPage.no-matches')}</Badge>
+                    <Badge colorPalette="whiteAlpha" variant="solid">
+                      {t('ItemPage.no-matches')}
+                    </Badge>
                   )}
-                </Td>
+                </Table.Cell>
               )}
               {isLoading && (
-                <Td>
-                  <Skeleton w="100px" h="10px" />
-                </Td>
+                <Table.Cell>
+                  <Skeleton bg="whiteAlpha.400" w="100px" h="10px" />
+                </Table.Cell>
               )}
-              <Td>
+              <Table.Cell>
                 {isToday(new Date(list.owner.lastSeen), {
                   in: tz('America/Los_Angeles'),
                 })
                   ? t('General.today')
                   : formatter.relativeTime(new Date(list.owner.lastSeen))}
-              </Td>
-            </Tr>
+              </Table.Cell>
+            </Table.Row>
           ))}
-        </Tbody>
-      </Table>
-    </TableContainer>
+        </Table.Body>
+      </Table.Root>
+    </Table.ScrollArea>
   );
 };
 

@@ -71,7 +71,7 @@ const Wrapped2025 = (props: Wrapped2025Props) => {
             autoFlow={'dense'}
             autoRows={'max-content'}
             position={'absolute'}
-            sx={{
+            css={{
               mask: 'linear-gradient(0, black 45%, rgba(0, 0, 0, 0) 95%)',
             }}
             animation={'restock2024 100s ease-out alternate infinite'}
@@ -161,7 +161,7 @@ const Wrapped2025 = (props: Wrapped2025Props) => {
           autoFlow={'dense'}
           autoRows={'max-content'}
           position={'absolute'}
-          sx={{
+          css={{
             mask: 'linear-gradient(0, black 45%, rgba(0, 0, 0, 0) 95%)',
           }}
           animation={'restock2024 100s ease-out alternate infinite'}
@@ -376,7 +376,7 @@ const Wrapped2025 = (props: Wrapped2025Props) => {
             fontWeight={'extrabold'}
             maxW={'800px'}
             textAlign={'center'}
-            sx={{ textWrap: 'balance' }}
+            css={{ textWrap: 'balance' }}
             display={'block'}
           >
             But not only of{' '}
@@ -467,7 +467,7 @@ const Wrapped2025 = (props: Wrapped2025Props) => {
             fontWeight={'extrabold'}
             maxW={'800px'}
             textAlign={'center'}
-            sx={{ textWrap: 'balance' }}
+            css={{ textWrap: 'balance' }}
             display={'block'}
           >
             Now let's talk about you,{' '}
@@ -531,7 +531,7 @@ const Wrapped2025 = (props: Wrapped2025Props) => {
             fontWeight={'extrabold'}
             maxW={'800px'}
             textAlign={'center'}
-            sx={{ textWrap: 'balance' }}
+            css={{ textWrap: 'balance' }}
             display={'block'}
           >
             Overview of Your 2025
@@ -581,7 +581,7 @@ const Wrapped2025 = (props: Wrapped2025Props) => {
             fontWeight={'extrabold'}
             maxW={'800px'}
             textAlign={'center'}
-            sx={{ textWrap: 'balance' }}
+            css={{ textWrap: 'balance' }}
             display={'block'}
           >
             We had a{' '}

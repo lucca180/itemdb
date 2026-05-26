@@ -52,7 +52,7 @@ const TheVoidWithinHub = (props: TheVoidWithinHubProps) => {
         zIndex={-1}
       />
       <Center position={'relative'} mt={3} mb={6}>
-        <Link href="https://www.neopets.com/tvw/" isExternal>
+        <Link href="https://www.neopets.com/tvw/" target="_blank" rel="noreferrer">
           <Image
             as={NextImage}
             //@ts-expect-error chakra-ui types are not compatible with next/image
@@ -68,7 +68,7 @@ const TheVoidWithinHub = (props: TheVoidWithinHubProps) => {
       <Center
         flexFlow="column"
         gap={5}
-        sx={{ 'h1, h2, h3, b': { textShadow: '0 0 10px #f3a4ff' } }}
+        css={{ 'h1, h2, h3, b': { textShadow: '0 0 10px #f3a4ff' } }}
       >
         <Flex flexFlow={'column'} textAlign={'center'} gap={2} mb={5}>
           <Heading color="whiteAlpha.900">The Void Within</Heading>

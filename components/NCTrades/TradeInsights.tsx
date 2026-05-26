@@ -77,7 +77,13 @@ export const TradeInsights = (props: TradeInsightsProps) => {
           );
         })}
         {releases.length > 2 && (
-          <Button size={'xs'} color="whiteAlpha.700" cursor="pointer" onClick={toggleShowMore}>
+          <Button
+            size={'xs'}
+            variant="subtle"
+            colorPalette="whiteAlpha"
+            cursor="pointer"
+            onClick={toggleShowMore}
+          >
             {showMore ? t('ItemPage.show-less') : t('ItemPage.show-more')}
           </Button>
         )}
@@ -118,12 +124,12 @@ const MallReleaseCard = (props: MallReleaseCardProps) => {
   return (
     <>
       <HStack>
-        {isBuyable(release) && <Badge colorScheme="yellow">{t('ItemPage.buyable-now')}</Badge>}
+        {isBuyable(release) && <Badge colorPalette="yellow">{t('ItemPage.buyable-now')}</Badge>}
         {!isDirect && (
-          <Badge colorScheme={isLE ? 'green' : 'gray'}>{isLE ? 'LE' : 'Cap'} Prize</Badge>
+          <Badge colorPalette={isLE ? 'green' : 'gray'}>{isLE ? 'LE' : 'Cap'} Prize</Badge>
         )}
         <Badge
-          colorScheme={'purple'}
+          colorPalette={'purple'}
           textDecoration={
             (isBuyable(release) && isDiscounted) || (!isBuyable(release) && hasDiscountPrice)
               ? 'line-through'
@@ -137,7 +143,7 @@ const MallReleaseCard = (props: MallReleaseCardProps) => {
           <Tooltip
             label={<DiscountedText discountBegin={discountBegin} discountEnd={discountEnd} />}
           >
-            <Badge colorScheme={'orange'} cursor="pointer">
+            <Badge colorPalette={'orange'} cursor="pointer">
               {release.discountPrice > 0 && `${formatter.number(release.discountPrice)} NC`}
               <Icon as={MdHelp} boxSize="12px" ml={1} verticalAlign={'middle'} />
             </Badge>
@@ -146,25 +152,27 @@ const MallReleaseCard = (props: MallReleaseCardProps) => {
       </HStack>
       <Text>
         {isDirect && (
-          <Link
-            as={MainLink}
-            href={getNCMallLink(item)}
-            isExternal
-            trackEvent="nc-insights"
-            trackEventLabel={'nc-mall-link'}
-          >
-            {t('Owls.direct-purchase')}
+          <Link asChild>
+            <MainLink
+              href={getNCMallLink(item)}
+              target="_blank"
+              trackEvent="nc-insights"
+              trackEventLabel={'nc-mall-link'}
+            >
+              {t('Owls.direct-purchase')}
+            </MainLink>
           </Link>
         )}
         {!isDirect && capItem && (
-          <Link
-            as={MainLink}
-            href={`/item/${capItem.slug}`}
-            prefetch={false}
-            trackEvent="nc-insights"
-            trackEventLabel={item.name}
-          >
-            {capItem.name}
+          <Link asChild>
+            <MainLink
+              href={`/item/${capItem.slug}`}
+              prefetch={false}
+              trackEvent="nc-insights"
+              trackEventLabel={item.name}
+            >
+              {capItem.name}
+            </MainLink>
           </Link>
         )}
       </Text>
@@ -252,18 +260,21 @@ const ListReleaseCard = (props: ListReleaseCardProps) => {
   return (
     <>
       <HStack>
-        {isActive && <Badge colorScheme="yellow">{t('ItemPage.buyable-now')}</Badge>}
-        {release.officialTag.length && <Badge colorScheme="orange">{release.officialTag[0]}</Badge>}
+        {isActive && <Badge colorPalette="yellow">{t('ItemPage.buyable-now')}</Badge>}
+        {release.officialTag.length && (
+          <Badge colorPalette="orange">{release.officialTag[0]}</Badge>
+        )}
       </HStack>
       <Text>
-        <Link
-          as={MainLink}
-          href={`/lists/official/${release.slug}`}
-          prefetch={false}
-          trackEvent="nc-insights"
-          trackEventLabel={release.name}
-        >
-          {release.name}
+        <Link asChild>
+          <MainLink
+            href={`/lists/official/${release.slug}`}
+            prefetch={false}
+            trackEvent="nc-insights"
+            trackEventLabel={release.name}
+          >
+            {release.name}
+          </MainLink>
         </Link>
       </Text>
       <Text fontSize={'xs'} color="whiteAlpha.700">

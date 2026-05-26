@@ -8,7 +8,7 @@ const before = {
 };
 
 export default chakra(Text, {
-  baseStyle: {
+  base: {
     display: 'flex',
     flexDirection: 'row',
     _before: { ...before, marginRight: '10px' },

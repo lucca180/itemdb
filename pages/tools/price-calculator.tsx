@@ -1,21 +1,19 @@
 import {
-  Heading,
-  Text,
-  Center,
   Box,
+  Center,
+  Field,
   Flex,
-  Select,
-  FormControl,
-  FormLabel,
-  FormHelperText,
-  Divider,
+  Heading,
+  NativeSelect,
+  Separator,
   Switch,
+  Text,
 } from '@chakra-ui/react';
-import Layout from '../../components/Layout';
+import Layout from '@components/Layout';
 import { createTranslator, useFormatter, useTranslations } from 'next-intl';
 import { ReactElement, useMemo, useState } from 'react';
-import Image from '../../components/Utils/Image';
-import { MultiplyInput } from '../../components/Input/MultiplyInput';
+import Image from '@components/Utils/Image';
+import { MultiplyInput } from '@components/Input/MultiplyInput';
 import { loadTranslation } from '@utils/load-translation';
 import FeedbackButton from '@components/Feedback/FeedbackButton';
 
@@ -118,7 +116,7 @@ const PriceCalculator = () => {
         <Heading as="h1" size="lg">
           {t('Calculator.pricing-calculator')}
         </Heading>
-        <Text maxW={'700px'} textAlign={'center'} fontSize={'sm'} sx={{ textWrap: 'pretty' }}>
+        <Text maxW={'700px'} textAlign={'center'} fontSize={'sm'} css={{ textWrap: 'pretty' }}>
           {t('Calculator.description')}
         </Text>
         <Center mt={8} w="100%">
@@ -132,10 +130,11 @@ const PriceCalculator = () => {
             maxW="500px"
             textAlign={'left'}
           >
-            <FormControl>
-              <FormLabel fontSize={'sm'}>{t('Calculator.your-asking-price-in-nps')}</FormLabel>
+            <Field.Root>
+              <Field.Label fontSize={'sm'}>{t('Calculator.your-asking-price-in-nps')}</Field.Label>
               <MultiplyInput
                 wrapperProps={{
+                  w: '100%',
                   bg: 'initial',
                   size: 'sm',
                 }}
@@ -144,35 +143,57 @@ const PriceCalculator = () => {
                 }}
                 onChange={handleChange}
               />
-              <FormHelperText fontSize={'xs'}>{t('Calculator.price-helper-text')}</FormHelperText>
-            </FormControl>
-            <FormControl>
-              <Select
-                size={'sm'}
-                variant={'filled'}
-                onChange={(e) => setCalcMode(e.target.value as any)}
-                value={calcMode}
+              <Field.HelperText fontSize={'xs'}>
+                {t('Calculator.price-helper-text')}
+              </Field.HelperText>
+            </Field.Root>
+            <Field.Root>
+              <NativeSelect.Root size="sm" variant="subtle">
+                <NativeSelect.Field
+                  onChange={(e) =>
+                    setCalcMode(
+                      e.target.value as
+                        | 'pure'
+                        | 'babyPB'
+                        | 'startPrice'
+                        | 'minIncrement'
+                        | 'babyPBNoLimit'
+                    )
+                  }
+                  value={calcMode}
+                >
+                  <option value="pure">{t('Calculator.tp-max-pure-value')}</option>
+                  <option value="babyPB">{t('Calculator.tp-max-baby-paint-brush-amount')}</option>
+                  <option value="babyPBNoLimit">
+                    {t('Calculator.tp-max-baby-paint-brush-amount-no-10-item-limit')}
+                  </option>
+                  <option value="startPrice">{t('Calculator.auction-max-start-price')}</option>
+                  <option value="minIncrement">
+                    {t('Calculator.auction-max-minimum-increment')}
+                  </option>
+                </NativeSelect.Field>
+                <NativeSelect.Indicator />
+              </NativeSelect.Root>
+            </Field.Root>
+            <Field.Root>
+              <Switch.Root
+                display="flex"
+                alignItems="center"
+                checked={isPremium}
+                onCheckedChange={(e) => setIsPremium(e.checked)}
               >
-                <option value="pure">{t('Calculator.tp-max-pure-value')}</option>
-                <option value="babyPB">{t('Calculator.tp-max-baby-paint-brush-amount')}</option>
-                <option value="babyPBNoLimit">
-                  {t('Calculator.tp-max-baby-paint-brush-amount-no-10-item-limit')}
-                </option>
-                <option value="startPrice">{t('Calculator.auction-max-start-price')}</option>
-                <option value="minIncrement">
-                  {t('Calculator.auction-max-minimum-increment')}
-                </option>
-              </Select>
-            </FormControl>
-            <FormControl display="flex" alignItems="center">
-              <FormLabel htmlFor="premium-member" mb="0" fontSize={'sm'}>
-                Premium Member?
-              </FormLabel>
-              <Switch id="premium-member" onChange={(e) => setIsPremium(e.target.checked)} />
-            </FormControl>
+                <Switch.HiddenInput />
+                <Switch.Label fontSize="sm" mb="0">
+                  Premium Member?
+                </Switch.Label>
+                <Switch.Control>
+                  <Switch.Thumb />
+                </Switch.Control>
+              </Switch.Root>
+            </Field.Root>
             {(!!tradingValue.pure || !!tradingValue.babyPB) && (
               <>
-                <Divider />
+                <Separator />
                 <Text textAlign={'center'} color={'whiteAlpha.700'}>
                   {t('Calculator.you-should-ask-for')}
                 </Text>
@@ -192,7 +213,7 @@ const PriceCalculator = () => {
             )}
             {(!!auctionValue.startPrice || !!auctionValue.minIncrement) && (
               <>
-                <Divider />
+                <Separator />
                 <Text textAlign={'center'} color={'whiteAlpha.700'}>
                   {t('Calculator.your-auction-should-be')}
                 </Text>

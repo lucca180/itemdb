@@ -1,12 +1,4 @@
-import {
-  Heading,
-  Text,
-  Flex,
-  Alert,
-  AlertIcon,
-  AlertDescription,
-  AlertTitle,
-} from '@chakra-ui/react';
+import { Heading, Text, Flex, Alert } from '@chakra-ui/react';
 import HeaderCard from '../../components/Card/HeaderCard';
 import Layout from '../../components/Layout';
 import { ReactElement, ReactNode } from 'react';
@@ -44,7 +36,7 @@ const TroubleshootingPage = (props: TroubleshootingPageProps) => {
         <Heading as="h1" size="lg">
           Script Troubleshooting Tool
         </Heading>
-        <Text size={{ base: 'sm', md: undefined }}>
+        <Text fontSize={{ base: 'sm', md: undefined }}>
           Your itemdb userscripts are not working? Use this tool to help us figure out what the
           issue is!
         </Text>
@@ -134,7 +126,7 @@ TroubleshootingPage.getLayout = function getLayout(page: ReactElement) {
 
 type StatusCheckProps = {
   title: string;
-  status: 'error' | 'info' | 'warning' | 'success' | 'loading';
+  status: 'error' | 'info' | 'warning' | 'success';
   description?: string | ReactNode;
 };
 
@@ -142,21 +134,26 @@ const StatusCheck = (props: StatusCheckProps) => {
   const { title, status, description } = props;
   return (
     <>
-      <Alert status={status} bg="transparent">
-        <AlertIcon />
-        <Flex flexFlow={'column'}>
-          <AlertTitle fontSize="sm">{title}</AlertTitle>
-          {description && (
-            <AlertDescription
-              fontSize={'xs'}
-              color={'whiteAlpha.700'}
-              sx={{ a: { color: 'whiteAlpha.900' }, 'a:hover': { textDecoration: 'underline' } }}
-            >
-              {description}
-            </AlertDescription>
-          )}
-        </Flex>
-      </Alert>
+      <Alert.Root status={status} bg="transparent">
+        <Alert.Indicator />
+        <Alert.Content>
+          <Flex flexFlow={'column'}>
+            <Alert.Title fontSize="sm">{title}</Alert.Title>
+            {description && (
+              <Alert.Description
+                fontSize={'xs'}
+                color={'whiteAlpha.700'}
+                css={{
+                  '& a': { color: 'whiteAlpha.900' },
+                  'a:hover': { textDecoration: 'underline' },
+                }}
+              >
+                {description}
+              </Alert.Description>
+            )}
+          </Flex>
+        </Alert.Content>
+      </Alert.Root>
     </>
   );
 };
@@ -166,7 +163,7 @@ const StatusCheck = (props: StatusCheckProps) => {
 const ScriptStatus = () => {
   const { isLoading, scriptStatus } = useScriptStatus();
 
-  if (isLoading) return <StatusCheck title="Detecting your itemdb scripts..." status="loading" />;
+  if (isLoading) return <StatusCheck title="Detecting your itemdb scripts..." status="info" />;
 
   if (!scriptStatus)
     return (
@@ -264,8 +261,7 @@ const IpBanStatus = ({ isIpBan }: { isIpBan: boolean }) => {
 const AccountStatus = () => {
   const { user, authLoading } = useAuth();
 
-  if (authLoading)
-    return <StatusCheck title="Checking itemdb account status..." status="loading" />;
+  if (authLoading) return <StatusCheck title="Checking itemdb account status..." status="info" />;
 
   if (!user)
     return (

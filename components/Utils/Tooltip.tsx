@@ -1,4 +1,4 @@
-import { Popover, PopoverTrigger, PopoverContent, PopoverArrow } from '@chakra-ui/react';
+import { Tooltip as ChakraTooltip } from '@chakra-ui/react';
 
 type TooltipProps = {
   children: React.ReactNode;
@@ -9,21 +9,22 @@ type TooltipProps = {
 const Tooltip = (props: TooltipProps) => {
   const { children, label, position = 'top' } = props;
   return (
-    <Popover placement={position} isLazy>
-      <PopoverTrigger>{children}</PopoverTrigger>
-      <PopoverContent
-        border={0}
-        boxShadow="md"
-        bg="gray.700"
-        color="white"
-        p={1}
-        w="max-content"
-        fontSize={'xs'}
-      >
-        <PopoverArrow />
-        {label}
-      </PopoverContent>
-    </Popover>
+    <ChakraTooltip.Root positioning={{ placement: position }} openDelay={200}>
+      <ChakraTooltip.Trigger asChild>{children}</ChakraTooltip.Trigger>
+      <ChakraTooltip.Positioner>
+        <ChakraTooltip.Content
+          border={0}
+          boxShadow="md"
+          bg="gray.700"
+          color="white"
+          p={1}
+          w="max-content"
+          fontSize={'xs'}
+        >
+          {label}
+        </ChakraTooltip.Content>
+      </ChakraTooltip.Positioner>
+    </ChakraTooltip.Root>
   );
 };
 

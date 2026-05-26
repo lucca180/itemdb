@@ -1,8 +1,9 @@
 import { AspectRatio, Box, Button, Flex, IconButton, Link, Skeleton, Text } from '@chakra-ui/react';
+import CardBase from '@components/Card/CardBase';
 import React, { useMemo, useState, memo, useCallback } from 'react';
 import Image from 'next/image';
 import { ItemData, ItemEffect, WearableData } from '../../types';
-import { ExternalLinkIcon } from '@chakra-ui/icons';
+import { ExternalLinkIcon } from '@utils/theme/chakraIcons';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@utils/auth';
 import { FaRotateRight } from 'react-icons/fa6';
@@ -15,8 +16,8 @@ type Props = {
 
 const ItemPreview = (props: Props) => {
   const t = useTranslations();
-  const [isLoaded, setIsLoaded] = useState(0);
-  const [isIframeLoaded, setIsIframeLoaded] = useState(0);
+  const [loadedPreviewUrl, setLoadedPreviewUrl] = useState('');
+  const [loadedIframeImageId, setLoadedIframeImageId] = useState('');
   const [refresh, setRefresh] = useState(0);
   const { user } = useAuth();
   const [variation, setVariation] = useState('static');
@@ -24,11 +25,9 @@ const ItemPreview = (props: Props) => {
   const color = item.color.rgb;
   const isWearable = item.isWearable;
 
-  if (isLoaded && isLoaded !== item.internal_id) setIsLoaded(0);
-
   const refreshPreview = () => {
     setRefresh((prev) => prev + 1);
-    setIsLoaded(0);
+    setLoadedPreviewUrl('');
   };
 
   const previewUrl = useMemo(() => {
@@ -72,48 +71,45 @@ const ItemPreview = (props: Props) => {
     setVariation(newVariation);
   };
 
-  const handleIframeLoadStart = useCallback(() => setIsIframeLoaded(0), []);
+  const handleIframeLoadStart = useCallback(() => setLoadedIframeImageId(''), []);
   const handleIframeLoad = useCallback(
-    () => setIsIframeLoaded(item.internal_id),
-    [item.internal_id]
+    () => setLoadedIframeImageId(item.image_id),
+    [item.image_id]
   );
 
   return (
-    <Flex
-      width="fit-content"
-      borderRadius="md"
-      overflow="hidden"
-      flexFlow="column"
-      boxShadow="sm"
-      w="100%"
+    <CardBase
+      title={
+        <>
+          <Text>{t('ItemPage.item-preview')}</Text>
+          {isWearable && (
+            <Flex justifyContent={'center'} gap={2} mt={1}>
+              <Button
+                size="2xs"
+                colorPalette="whiteAlpha"
+                variant={variation === 'static' ? 'subtle' : 'ghost'}
+                onClick={() => handleVarChange('static')}
+              >
+                Static
+              </Button>
+              <Button
+                size="2xs"
+                colorPalette="whiteAlpha"
+                variant={variation === 'animated' ? 'subtle' : 'ghost'}
+                onClick={() => handleVarChange('animated')}
+              >
+                HTML5
+              </Button>
+            </Flex>
+          )}
+        </>
+      }
+      color={color}
+      noPadding
+      chakraWrapper={{ width: 'fit-content', borderRadius: 'md', w: '100%' }}
+      chakraTitle={{ as: 'div', display: 'flex', flexFlow: 'column' }}
+      chakra={{ h: 'auto' }}
     >
-      <Flex
-        p={2}
-        textAlign="center"
-        fontWeight="bold"
-        flexFlow="column"
-        bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}
-      >
-        <Text>{t('ItemPage.item-preview')}</Text>
-        {isWearable && (
-          <Flex justifyContent={'center'} gap={2} mt={1}>
-            <Button
-              size="xs"
-              variant={variation === 'static' ? 'solid' : 'ghost'}
-              onClick={() => handleVarChange('static')}
-            >
-              Static
-            </Button>
-            <Button
-              size="xs"
-              variant={variation === 'animated' ? 'solid' : 'ghost'}
-              onClick={() => handleVarChange('animated')}
-            >
-              HTML5
-            </Button>
-          </Flex>
-        )}
-      </Flex>
       {variation === 'static' && (
         <Flex
           position="relative"
@@ -122,11 +118,10 @@ const ItemPreview = (props: Props) => {
           flexWrap="wrap"
           justifyContent="center"
           alignItems="center"
-          h="100%"
           _hover={
-            user && !user?.banned && !!isLoaded
+            user && !user?.banned && !!loadedPreviewUrl
               ? {
-                  '.refresh-button': {
+                  '& .refresh-button': {
                     display: 'flex',
                   },
                 }
@@ -139,52 +134,64 @@ const ItemPreview = (props: Props) => {
             top={0}
             right={0}
             m={2}
-            size="sm"
+            size="xs"
             data-umami-event="refresh-preview"
             className="refresh-button"
             display={'none'}
             onClick={refreshPreview}
-            isDisabled={refresh >= 2}
-            shadow={'md'}
+            disabled={refresh >= 2}
+            shadow={'sm'}
             bg="gray.700"
+            color="white"
             _hover={{
               bg: 'gray.800',
             }}
             aria-label="Refresh Preview"
-            icon={<FaRotateRight />}
-          />
-          <Skeleton minW={300} minH={300} h="100%" w="100%" isLoaded={!!isLoaded}>
-            <AspectRatio ratio={1}>
-              <>
-                <Image
-                  src={previewUrl}
-                  alt="Item Preview"
-                  unoptimized
-                  fill
-                  priority
-                  onLoadStart={() => setIsLoaded(0)}
-                  onLoad={() => setIsLoaded(item.internal_id)}
-                />
-              </>
-            </AspectRatio>
+          >
+            <FaRotateRight />
+          </IconButton>
+          <Skeleton minW={300} w="100%" aspectRatio={1} loading={loadedPreviewUrl !== previewUrl}>
+            <Box aspectRatio={1} position="relative" w="100%">
+              <Image
+                key={previewUrl}
+                src={previewUrl}
+                alt="Item Preview"
+                unoptimized
+                fill
+                sizes="300px"
+                loading="eager"
+                onLoad={() => setLoadedPreviewUrl(previewUrl)}
+                style={{ objectFit: 'contain' }}
+              />
+            </Box>
           </Skeleton>
         </Flex>
       )}
-      {(variation === 'animated' || !!isIframeLoaded) && (
+      {(variation === 'animated' || !!loadedIframeImageId) && (
         <Flex
           position="relative"
           bg="gray.600"
-          h="100%"
+          w="100%"
+          aspectRatio={1}
           display={variation === 'animated' ? 'flex' : 'none'}
         >
-          <Skeleton minW={300} minH={300} h="100%" w="100%" isLoaded={!!isIframeLoaded}>
-            <AnimatedPreview
-              key={'animated-iframe-' + item.image_id}
-              imageId={item.image_id}
-              onLoadStart={handleIframeLoadStart}
-              onLoad={handleIframeLoad}
+          {loadedIframeImageId !== item.image_id && (
+            <Skeleton
+              position="absolute"
+              inset={0}
+              zIndex={1}
+              minW={300}
+              minH={300}
+              h="100%"
+              w="100%"
             />
-          </Skeleton>
+          )}
+          <AnimatedPreview
+            key={'animated-iframe-' + item.image_id}
+            imageId={item.image_id}
+            onLoadStart={handleIframeLoadStart}
+            onLoad={handleIframeLoad}
+          />
         </Flex>
       )}
       <Box p={1} textAlign="center" bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}>
@@ -198,12 +205,17 @@ const ItemPreview = (props: Props) => {
         )}
         <Text fontSize="xs">
           {t('ItemPage.powered-by')}{' '}
-          <Link href={item.findAt.dti ?? undefined} isExternal fontWeight="bold">
+          <Link
+            href={item.findAt.dti ?? undefined}
+            target="_blank"
+            rel="noreferrer"
+            fontWeight="bold"
+          >
             Dress To Impress <ExternalLinkIcon mx="1px" verticalAlign="baseline" />
           </Link>
         </Text>
       </Box>
-    </Flex>
+    </CardBase>
   );
 };
 
@@ -224,7 +236,7 @@ const AnimatedPreview = memo(({ imageId, onLoadStart, onLoad }: AnimatedPreviewP
   }, [onLoad]);
 
   return (
-    <AspectRatio ratio={1}>
+    <AspectRatio ratio={1} w="100%">
       <iframe
         id="animated-preview-iframe"
         key={'animated-iframe-' + imageId}

@@ -1,26 +1,18 @@
 import {
   Box,
   Center,
-  Divider,
+  Separator,
   Flex,
   Heading,
   Text,
   Link,
   SimpleGrid,
-  Select,
-  UnorderedList,
-  ListItem,
+  NativeSelect,
+  List,
   Alert,
-  AlertIcon,
-  AlertDescription,
-  AlertTitle,
   Button,
   Icon,
   useDisclosure,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
   Tabs,
   CloseButton,
   IconButton,
@@ -71,6 +63,11 @@ type AlertMsg = {
   type: 'loading' | 'info' | 'warning' | 'success' | 'error' | undefined;
 };
 
+const getAlertStatus = (type: AlertMsg['type']) => {
+  if (type === 'loading') return 'info';
+  return type;
+};
+
 type PeriodFilter = { timePeriod: number; shops: number | string; timestamp: number | null };
 
 const defaultFilter: PeriodFilter = { timePeriod: 30, shops: 'all', timestamp: null };
@@ -94,8 +91,8 @@ const RestockDashboard = (props: RestockDashboardProps) => {
   const t = useTranslations();
   const formatter = useFormatter();
   const { userPref } = useAuth();
-  const { isOpen: isOpenOptions, onOpen: onOpenOptions, onClose: onCloseOptions } = useDisclosure();
-  const { isOpen: isWrappedOpen, onOpen: onWrappedOpen, onClose: onWrappedClose } = useDisclosure();
+  const { open: isOpenOptions, onOpen: onOpenOptions, onClose: onCloseOptions } = useDisclosure();
+  const { open: isWrappedOpen, onOpen: onWrappedOpen, onClose: onWrappedClose } = useDisclosure();
   const [openImport, setOpenImport] = useState<boolean>(false);
   const [sessionStats, setSessionStats] = useState<RestockStats | null>(
     props.initialCurrentStats ?? null
@@ -263,14 +260,19 @@ const RestockDashboard = (props: RestockDashboardProps) => {
 
   const handleSelectChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
+    const nextValue = name === 'timePeriod' ? Number(value) : value;
 
-    init({ ...(filter ?? defaultFilter), [name]: value, timestamp: null });
+    init({ ...(filter ?? defaultFilter), [name]: nextValue, timestamp: null });
 
-    setFilter((prev) => ({ ...(prev ?? defaultFilter), [name]: value, timestamp: null }));
+    setFilter((prev) => ({ ...(prev ?? defaultFilter), [name]: nextValue, timestamp: null }));
 
-    setCookie('restockFilter2025', JSON.stringify({ ...filter, [name]: value, timestamp: null }), {
-      expires: new Date('2030-01-01'),
-    });
+    setCookie(
+      'restockFilter2025',
+      JSON.stringify({ ...filter, [name]: nextValue, timestamp: null }),
+      {
+        expires: new Date('2030-01-01'),
+      }
+    );
   };
 
   const track = async () => {
@@ -336,92 +338,102 @@ const RestockDashboard = (props: RestockDashboardProps) => {
             borderRadius={'3xl'}
             _hover={{ bg: 'blackAlpha.300' }}
             onClick={() => setOpenImport(true)}
-            isDisabled={!importCount}
-            isLoading={importCount === null}
+            disabled={!importCount}
+            loading={importCount === null}
           >
             {t('Restock.import-x-sessions', { x: importCount ?? -1 })}
           </Button>
         )}
-        <Select
+        <NativeSelect.Root
           maxW="170px"
-          variant={'filled'}
-          colorScheme="blackAlpha"
+          variant="subtle"
+          colorPalette="blackAlpha"
           bg="blackAlpha.500"
           color="green.100"
           size="sm"
           borderRadius={'3xl'}
-          name="timePeriod"
-          value={(filter ?? defaultFilter).timePeriod}
-          onChange={handleSelectChange}
           _hover={{ bg: 'blackAlpha.300' }}
           _focusVisible={{ bg: 'blackAlpha.300' }}
-          sx={{ option: { color: 'white' } }}
         >
-          {filter?.timestamp && (
-            <option value={filter.timePeriod}>{formatter.dateTime(filter.timestamp)}</option>
-          )}
-          <option value={0.08325}>{t('General.last-x-hours', { x: 2 })}</option>
-          <option value={0.5}>{t('General.last-x-hours', { x: 12 })}</option>
-          <option value={1}>{t('General.last-x-hours', { x: 24 })}</option>
-          <option value={7}>{t('General.last-x-days', { x: 7 })}</option>
-          <option value={30}>{t('General.last-x-days', { x: 30 })}</option>
-          <option value={60}>{t('General.last-x-days', { x: 60 })}</option>
-          <option value={90}>{t('General.last-x-days', { x: 90 })}</option>
-        </Select>
-        <Select
+          <NativeSelect.Field
+            name="timePeriod"
+            value={String((filter ?? defaultFilter).timePeriod)}
+            onChange={handleSelectChange}
+            css={{ option: { color: 'white' } }}
+          >
+            {filter?.timestamp && (
+              <option value={filter.timePeriod}>{formatter.dateTime(filter.timestamp)}</option>
+            )}
+            <option value={0.08325}>{t('General.last-x-hours', { x: 2 })}</option>
+            <option value={0.5}>{t('General.last-x-hours', { x: 12 })}</option>
+            <option value={1}>{t('General.last-x-hours', { x: 24 })}</option>
+            <option value={7}>{t('General.last-x-days', { x: 7 })}</option>
+            <option value={30}>{t('General.last-x-days', { x: 30 })}</option>
+            <option value={60}>{t('General.last-x-days', { x: 60 })}</option>
+            <option value={90}>{t('General.last-x-days', { x: 90 })}</option>
+          </NativeSelect.Field>
+          <NativeSelect.Indicator />
+        </NativeSelect.Root>
+        <NativeSelect.Root
           maxW="150px"
-          variant={'filled'}
+          variant="subtle"
           bg="blackAlpha.500"
           color="green.100"
           size="sm"
           borderRadius={'3xl'}
-          name="shops"
-          value={(filter ?? defaultFilter).shops}
-          onChange={handleSelectChange}
           _hover={{ bg: 'blackAlpha.300' }}
           _focusVisible={{ bg: 'blackAlpha.300' }}
-          sx={{ option: { color: 'white' } }}
         >
-          <option value="all">{t('Restock.all-shops')}</option>
-          {shopList.map((shopId) => (
-            <option key={shopId} value={shopId}>
-              {restockShopInfo[shopId].name}
-            </option>
-          ))}
-        </Select>
+          <NativeSelect.Field
+            name="shops"
+            value={String((filter ?? defaultFilter).shops)}
+            onChange={handleSelectChange}
+            css={{ option: { color: 'white' } }}
+          >
+            <option value="all">{t('Restock.all-shops')}</option>
+            {shopList.map((shopId) => (
+              <option key={shopId} value={shopId}>
+                {restockShopInfo[shopId].name}
+              </option>
+            ))}
+          </NativeSelect.Field>
+          <NativeSelect.Indicator />
+        </NativeSelect.Root>
         {sessionStats && (
           <>
             <IconButton
               bg="blackAlpha.500"
               color="green.100"
               aria-label="Open Dashboard Options"
-              icon={<FaCog />}
               onClick={onOpenOptions}
               size="sm"
-            />
+            >
+              <FaCog />
+            </IconButton>
             <IconButton
               bg="blackAlpha.500"
               color="green.100"
               aria-label="Restock Wrapped Button"
               onClick={onWrappedOpen}
-              icon={<FaFileDownload />}
               size="sm"
-            />
+            >
+              <FaFileDownload />
+            </IconButton>
           </>
         )}
       </Flex>
       {noScript && (
         <Center flexFlow={'column'} my={3}>
-          <Alert
+          <Alert.Root
             status={noScript === 'outdated' ? 'warning' : 'error'}
             maxW="500px"
             variant="subtle"
             borderRadius={'md'}
             bg={'blackAlpha.500'}
           >
-            <AlertIcon />
-            <Box w="100%">
-              <AlertDescription fontSize="sm">
+            <Alert.Indicator />
+            <Alert.Content w="100%">
+              <Alert.Description fontSize="sm">
                 {t.rich(
                   noScript === 'outdated' ? 'Restock.outdated-script' : 'Restock.no-script-error',
                   {
@@ -429,7 +441,8 @@ const RestockDashboard = (props: RestockDashboardProps) => {
                       <Link
                         href="https://github.com/lucca180/itemdb/raw/main/userscripts/restockTracker.user.js"
                         color={noScript === 'outdated' ? 'yellow.100' : 'red.200'}
-                        isExternal
+                        target="_blank"
+                        rel="noreferrer"
                       >
                         {chunk}
                       </Link>
@@ -445,8 +458,8 @@ const RestockDashboard = (props: RestockDashboardProps) => {
                     ),
                   }
                 )}
-              </AlertDescription>
-            </Box>
+              </Alert.Description>
+            </Alert.Content>
             <CloseButton
               alignSelf="flex-start"
               position="relative"
@@ -454,7 +467,7 @@ const RestockDashboard = (props: RestockDashboardProps) => {
               top={-1}
               onClick={() => setNoScript(null)}
             />
-          </Alert>
+          </Alert.Root>
         </Center>
       )}
       {!sessionStats && (
@@ -465,59 +478,65 @@ const RestockDashboard = (props: RestockDashboardProps) => {
             </Heading>
             <Text>{t('Restock.text-1')}</Text>
           </Center>
-          <Divider my={6} />
+          <Separator my={6} />
 
           {alertMsg && (
             <Center flexFlow={'column'} my={3}>
-              <Alert
-                status={alertMsg.type}
+              <Alert.Root
+                status={getAlertStatus(alertMsg.type)}
                 maxW="500px"
                 variant="subtle"
                 borderRadius={'md'}
                 bg={'blackAlpha.500'}
               >
-                <AlertIcon />
-                <Box>
-                  {alertMsg.title && <AlertTitle>{alertMsg.title}</AlertTitle>}
+                <Alert.Indicator />
+                <Alert.Content>
+                  {alertMsg.title && <Alert.Title>{alertMsg.title}</Alert.Title>}
                   {alertMsg.description && (
-                    <AlertDescription fontSize="sm">{alertMsg.description}</AlertDescription>
+                    <Alert.Description fontSize="sm">{alertMsg.description}</Alert.Description>
                   )}
-                </Box>
-              </Alert>
+                </Alert.Content>
+              </Alert.Root>
             </Center>
           )}
           <Heading size="md">{t('Restock.how-to-use')}</Heading>
-          <Alert
+          <Alert.Root
             status="warning"
             borderRadius={'md'}
             maxW="750px"
             my={4}
             fontSize="sm"
-            sx={{ a: { color: 'yellow.200' } }}
+            css={{ '& a': { color: 'yellow.200' } }}
             bg={'blackAlpha.500'}
           >
-            <AlertIcon />
-            <Box>
-              <AlertTitle>Manifest V3</AlertTitle>
-              <AlertDescription>
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Title>Manifest V3</Alert.Title>
+              <Alert.Description>
                 {t.rich('Feedback.manifest-v3-text', {
                   Link: (chunk) => (
-                    <Link href="/articles/help-my-scripts-are-not-working" isExternal>
+                    <Link
+                      href="/articles/help-my-scripts-are-not-working"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       {chunk}
                     </Link>
                   ),
                 })}
-              </AlertDescription>
-            </Box>
-          </Alert>
-          <UnorderedList
+              </Alert.Description>
+            </Alert.Content>
+          </Alert.Root>
+          <List.Root
+            as="ul"
+            listStyle="revert"
             mt={3}
             pl={3}
-            sx={{ a: { color: 'green.200' }, b: { color: 'green.200' } }}
-            spacing={2}
+            css={{ '& a': { color: 'green.200' }, b: { color: 'green.200' } }}
+            gap={2}
           >
             {!user && (
-              <ListItem>
+              <List.Item>
                 <Text>
                   {t.rich('Restock.text-2', {
                     Link: (chunk) => (
@@ -527,25 +546,25 @@ const RestockDashboard = (props: RestockDashboardProps) => {
                     ),
                   })}
                 </Text>
-              </ListItem>
+              </List.Item>
             )}
-            <ListItem>
+            <List.Item>
               {t.rich('Restock.text-3', {
                 Link: (chunk) => (
-                  <Link as={NextLink} href="https://www.tampermonkey.net/" isExternal>
+                  <Link href="https://www.tampermonkey.net/" target="_blank" rel="noreferrer">
                     {chunk}
                   </Link>
                 ),
               })}
-            </ListItem>
-            <ListItem>
+            </List.Item>
+            <List.Item>
               <Text>
                 {t.rich('Restock.text-4', {
                   Link: (chunk) => (
                     <Link
-                      as={NextLink}
                       href="https://github.com/lucca180/itemdb/raw/main/userscripts/restockTracker.user.js"
-                      isExternal
+                      target="_blank"
+                      rel="noreferrer"
                     >
                       {chunk}
                     </Link>
@@ -557,15 +576,15 @@ const RestockDashboard = (props: RestockDashboardProps) => {
                 <br />
                 {t('Restock.text-6')}{' '}
               </Text>
-            </ListItem>
-            <ListItem>
+            </List.Item>
+            <List.Item>
               <Text>
                 {t.rich('Restock.text-7', {
                   Link: (chunk) => (
                     <Link
-                      as={NextLink}
                       href="https://github.com/lucca180/itemdb/raw/main/userscripts/itemDataExtractor.user.js"
-                      isExternal
+                      target="_blank"
+                      rel="noreferrer"
                     >
                       {chunk}
                     </Link>
@@ -581,8 +600,8 @@ const RestockDashboard = (props: RestockDashboardProps) => {
                   ),
                 })}
               </Text>
-            </ListItem>
-            <ListItem>
+            </List.Item>
+            <List.Item>
               <Text>{t('Restock.go-restock')} </Text>
               <Text fontSize="sm" color="gray.400">
                 {t.rich('Restock.text-9', {
@@ -593,8 +612,8 @@ const RestockDashboard = (props: RestockDashboardProps) => {
                   ),
                 })}
               </Text>
-            </ListItem>
-            <ListItem>
+            </List.Item>
+            <List.Item>
               <Text>
                 {t.rich('Restock.text-10', {
                   b: (chunk) => <b>{chunk}</b>,
@@ -603,8 +622,8 @@ const RestockDashboard = (props: RestockDashboardProps) => {
               <Text fontSize="sm" color="gray.400">
                 {t('Restock.text-11')}
               </Text>
-            </ListItem>
-          </UnorderedList>
+            </List.Item>
+          </List.Root>
         </>
       )}
 
@@ -612,15 +631,20 @@ const RestockDashboard = (props: RestockDashboardProps) => {
         <>
           {alertMsg && (
             <Center flexFlow={'column'} my={3}>
-              <Alert status={alertMsg.type} maxW="500px" variant="subtle" borderRadius={'md'}>
-                <AlertIcon />
-                <Box>
-                  {alertMsg.title && <AlertTitle>{alertMsg.title}</AlertTitle>}
+              <Alert.Root
+                status={getAlertStatus(alertMsg.type)}
+                maxW="500px"
+                variant="subtle"
+                borderRadius={'md'}
+              >
+                <Alert.Indicator />
+                <Alert.Content>
+                  {alertMsg.title && <Alert.Title>{alertMsg.title}</Alert.Title>}
                   {alertMsg.description && (
-                    <AlertDescription fontSize="sm">{alertMsg.description}</AlertDescription>
+                    <Alert.Description fontSize="sm">{alertMsg.description}</Alert.Description>
                   )}
-                </Box>
-              </Alert>
+                </Alert.Content>
+              </Alert.Root>
             </Center>
           )}
           <Flex
@@ -644,39 +668,42 @@ const RestockDashboard = (props: RestockDashboardProps) => {
                   {formatter.number(sessionStats.estProfit ?? sessionStats.estRevenue)} NP
                 </Heading>
                 {(profitDiff ?? revenueDiff) && (
-                  <Tooltip
-                    hasArrow
-                    label={t('Restock.from-x-with-y-items', {
-                      0: formatter.number(
-                        pastSessionStats!.estProfit ?? pastSessionStats!.estRevenue
-                      ),
-                      1: pastSessionStats!.totalBought.count,
-                    })}
-                    bg="blackAlpha.900"
-                    fontSize={'xs'}
-                    placement="top"
-                    color="white"
-                  >
-                    <Badge
-                      variant={'solid'}
-                      color={(profitDiff ?? revenueDiff)!.isPositive ? 'green.100' : 'red.200'}
-                      bg={'blackAlpha.500'}
-                      p={1}
-                      borderRadius={'lg'}
-                      display="flex"
-                      alignItems={'center'}
-                    >
-                      <Icon
-                        as={
-                          (profitDiff ?? revenueDiff)!.isPositive
-                            ? FaArrowTrendUp
-                            : FaArrowTrendDown
-                        }
-                        mr={1}
-                      />
-                      {(profitDiff ?? revenueDiff)!.diffPercentage.toFixed(0)}%
-                    </Badge>
-                  </Tooltip>
+                  <Tooltip.Root positioning={{ placement: 'top' }}>
+                    <Tooltip.Trigger asChild>
+                      <Badge
+                        variant={'solid'}
+                        color={(profitDiff ?? revenueDiff)!.isPositive ? 'green.100' : 'red.200'}
+                        bg={'blackAlpha.500'}
+                        p={1}
+                        borderRadius={'lg'}
+                        display="flex"
+                        alignItems={'center'}
+                      >
+                        <Icon
+                          as={
+                            (profitDiff ?? revenueDiff)!.isPositive
+                              ? FaArrowTrendUp
+                              : FaArrowTrendDown
+                          }
+                          mr={1}
+                        />
+                        {(profitDiff ?? revenueDiff)!.diffPercentage.toFixed(0)}%
+                      </Badge>
+                    </Tooltip.Trigger>
+                    <Tooltip.Positioner>
+                      <Tooltip.Content bg="blackAlpha.900" color="white" fontSize="xs">
+                        {t('Restock.from-x-with-y-items', {
+                          0: formatter.number(
+                            pastSessionStats!.estProfit ?? pastSessionStats!.estRevenue
+                          ),
+                          1: pastSessionStats!.totalBought.count,
+                        })}
+                        <Tooltip.Arrow>
+                          <Tooltip.ArrowTip />
+                        </Tooltip.Arrow>
+                      </Tooltip.Content>
+                    </Tooltip.Positioner>
+                  </Tooltip.Root>
                 )}
               </HStack>
               <HStack mt={3} fontSize={'sm'} fontWeight={'500'} color="green.100" flexWrap={'wrap'}>
@@ -724,35 +751,37 @@ const RestockDashboard = (props: RestockDashboardProps) => {
                 </Text>
                 <HStack>
                   <Button
-                    as={Link}
-                    href="https://github.com/lucca180/itemdb/raw/main/userscripts/itemDataExtractor.user.js"
-                    isExternal
+                    asChild
                     size="xs"
-                    colorScheme="white"
+                    colorPalette="white"
                     variant={'ghost'}
                     data-umami-event="script-cta"
                     data-umami-event-label="install-now"
                   >
-                    {t('Restock.install-now')}
+                    <a
+                      href="https://github.com/lucca180/itemdb/raw/main/userscripts/itemDataExtractor.user.js"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {t('Restock.install-now')}
+                    </a>
                   </Button>
                   <Button
-                    as={Link}
-                    href="/contribute"
-                    isExternal
+                    asChild
                     size="xs"
-                    colorScheme="white"
+                    colorPalette="white"
                     variant={'ghost'}
                     data-umami-event="script-cta"
                     data-umami-event-label="contribute"
                   >
-                    {t('General.learn-more')}
+                    <NextLink href="/contribute">{t('General.learn-more')}</NextLink>
                   </Button>
                 </HStack>
               </Flex>
             )}
           </Flex>
-          <Divider />
-          <SimpleGrid mt={3} columns={[2, 2, 2, 4, 4]} spacing={[2, 3]}>
+          <Separator />
+          <SimpleGrid mt={3} columns={[2, 2, 2, 4, 4]} gap={[2, 3]}>
             <StatsCard type="reactionTime" session={sessionStats} pastSession={pastSessionStats} />
             <StatsCard type="fastestBuy" session={sessionStats} pastSession={pastSessionStats} />
             <StatsCard type="refreshTime" session={sessionStats} pastSession={pastSessionStats} />
@@ -776,14 +805,14 @@ const RestockDashboard = (props: RestockDashboardProps) => {
             {t('General.tip')}:{' '}
             {t.rich('Search.' + props.tip.tag, {
               Link: (chunk) => (
-                <Link
-                  as={NextLink}
-                  href={props.tip.href + '?utm_content=site-tip'}
-                  color="whiteAlpha.800"
-                  target="_blank"
-                  prefetch={false}
-                >
-                  {chunk}
+                <Link asChild color="whiteAlpha.800">
+                  <NextLink
+                    href={props.tip.href + '?utm_content=site-tip'}
+                    target="_blank"
+                    prefetch={false}
+                  >
+                    {chunk}
+                  </NextLink>
                 </Link>
               ),
             })}
@@ -804,116 +833,116 @@ const RestockDashboard = (props: RestockDashboardProps) => {
               </Flex>
             </Flex>
             <Flex flexFlow={'column'} textAlign={'center'} gap={3} flex={1}>
-              <Tabs flex={1} colorScheme="green" variant={'soft-rounded'}>
-                <TabList>
-                  <Tab
+              <Tabs.Root flex={1} variant="subtle" defaultValue="restocks">
+                <Tabs.List>
+                  <Tabs.Trigger
+                    value="restocks"
                     color="green.50"
                     opacity={'0.5'}
                     _selected={{ color: 'green.100', bg: 'blackAlpha.500', opacity: 1 }}
                   >
                     {t('Restock.hottest-restocks')}
-                  </Tab>
-                  <Tab
+                  </Tabs.Trigger>
+                  <Tabs.Trigger
+                    value="losses"
                     color="green.50"
                     opacity={'0.5'}
                     _selected={{ color: 'green.100', bg: 'blackAlpha.500', opacity: 1 }}
                   >
                     {t('Restock.worst-losses')}
-                  </Tab>
-                  <Tab
+                  </Tabs.Trigger>
+                  <Tabs.Trigger
+                    value="baits"
                     color="green.50"
                     opacity={'0.5'}
                     _selected={{ color: 'green.100', bg: 'blackAlpha.500', opacity: 1 }}
                   >
                     {t('Restock.worst-baits')}
-                  </Tab>
-                </TabList>
-                <TabPanels>
-                  <TabPanel px={0}>
-                    <Flex flexFlow={'column'} gap={3}>
-                      <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
-                        {userPref?.dashboard_hideMisses && (
-                          <Center flexFlow="column" h="300px">
-                            <Icon as={FaEyeSlash} fontSize="50px" color="gray.600" />
-                            <Text fontSize={'sm'} color="gray.400"></Text>
-                          </Center>
-                        )}
-                        {!userPref?.dashboard_hideMisses &&
-                          sessionStats.hottestRestocks.map((item, i) => (
-                            <ItemCard
-                              uniqueID={`hottest-restock`}
-                              disablePrefetch
-                              item={item}
-                              key={i}
-                            />
-                          ))}
-                      </Flex>
-                      <Text fontSize={'sm'}>
-                        {t.rich('Restock.history-dashboard-cta', {
-                          Link: (chunk) => (
-                            <Link
-                              color="green.200"
-                              as={NextLink}
-                              isExternal
-                              href={`/restock/${sessionStats.mostPopularShop.shopId}/history`}
-                            >
-                              {chunk}
-                            </Link>
-                          ),
-                        })}
+                  </Tabs.Trigger>
+                </Tabs.List>
+                <Tabs.Content value="restocks" px={0}>
+                  <Flex flexFlow={'column'} gap={3}>
+                    <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
+                      {userPref?.dashboard_hideMisses && (
+                        <Center flexFlow="column" h="300px">
+                          <Icon as={FaEyeSlash} fontSize="50px" color="gray.600" />
+                          <Text fontSize={'sm'} color="gray.400"></Text>
+                        </Center>
+                      )}
+                      {!userPref?.dashboard_hideMisses &&
+                        sessionStats.hottestRestocks.map((item, i) => (
+                          <ItemCard
+                            uniqueID={`hottest-restock`}
+                            disablePrefetch
+                            item={item}
+                            key={i}
+                          />
+                        ))}
+                    </Flex>
+                    <Text fontSize={'sm'}>
+                      {t.rich('Restock.history-dashboard-cta', {
+                        Link: (chunk) => (
+                          <Link
+                            color="green.200"
+                            as={NextLink}
+                            href={`/restock/${sessionStats.mostPopularShop.shopId}/history`}
+                          >
+                            {chunk}
+                          </Link>
+                        ),
+                      })}
+                    </Text>
+                  </Flex>
+                </Tabs.Content>
+                <Tabs.Content value="losses" px={0}>
+                  <Flex gap={3} flexFlow="column" justifyContent={'center'}>
+                    {userPref?.dashboard_hideMisses && (
+                      <Center flexFlow="column" h="300px">
+                        <Icon as={FaEyeSlash} fontSize="50px" color="gray.600" />
+                      </Center>
+                    )}
+                    {!userPref?.dashboard_hideMisses &&
+                      sessionStats.hottestLost.map((lost, i) => (
+                        <RestockItem
+                          disablePrefetch
+                          item={lost.item}
+                          clickData={lost.click}
+                          restockItem={lost.restockItem}
+                          key={i}
+                        />
+                      ))}
+                    {!userPref?.dashboard_hideMisses && sessionStats.hottestLost.length === 0 && (
+                      <Text fontSize={'xs'} color="gray.400">
+                        {t('Restock.you-didnt-lose-anything-youre-awesome')}
                       </Text>
-                    </Flex>
-                  </TabPanel>
-                  <TabPanel px={0}>
-                    <Flex gap={3} flexFlow="column" justifyContent={'center'}>
-                      {userPref?.dashboard_hideMisses && (
-                        <Center flexFlow="column" h="300px">
-                          <Icon as={FaEyeSlash} fontSize="50px" color="gray.600" />
-                        </Center>
-                      )}
-                      {!userPref?.dashboard_hideMisses &&
-                        sessionStats.hottestLost.map((lost, i) => (
-                          <RestockItem
-                            disablePrefetch
-                            item={lost.item}
-                            clickData={lost.click}
-                            restockItem={lost.restockItem}
-                            key={i}
-                          />
-                        ))}
-                      {!userPref?.dashboard_hideMisses && sessionStats.hottestLost.length === 0 && (
-                        <Text fontSize={'xs'} color="gray.400">
-                          {t('Restock.you-didnt-lose-anything-youre-awesome')}
-                        </Text>
-                      )}
-                    </Flex>
-                  </TabPanel>
-                  <TabPanel px={0}>
-                    <Flex gap={3} flexFlow="column" justifyContent={'center'}>
-                      {userPref?.dashboard_hideMisses && (
-                        <Center flexFlow="column" h="300px">
-                          <Icon as={FaEyeSlash} fontSize="50px" color="gray.600" />
-                        </Center>
-                      )}
-                      {!userPref?.dashboard_hideMisses &&
-                        sessionStats.worstBaits.map((bait, i) => (
-                          <RestockItem
-                            disablePrefetch
-                            item={bait.item}
-                            clickData={bait.click}
-                            restockItem={bait.restockItem}
-                            key={i}
-                          />
-                        ))}
-                      {!userPref?.dashboard_hideMisses && sessionStats.worstBaits.length === 0 && (
-                        <Text fontSize={'xs'} color="gray.400">
-                          {t('Restock.you-didnt-fall-for-any-bait-items')}
-                        </Text>
-                      )}
-                    </Flex>
-                  </TabPanel>
-                </TabPanels>
-              </Tabs>
+                    )}
+                  </Flex>
+                </Tabs.Content>
+                <Tabs.Content value="baits" px={0}>
+                  <Flex gap={3} flexFlow="column" justifyContent={'center'}>
+                    {userPref?.dashboard_hideMisses && (
+                      <Center flexFlow="column" h="300px">
+                        <Icon as={FaEyeSlash} fontSize="50px" color="gray.600" />
+                      </Center>
+                    )}
+                    {!userPref?.dashboard_hideMisses &&
+                      sessionStats.worstBaits.map((bait, i) => (
+                        <RestockItem
+                          disablePrefetch
+                          item={bait.item}
+                          clickData={bait.click}
+                          restockItem={bait.restockItem}
+                          key={i}
+                        />
+                      ))}
+                    {!userPref?.dashboard_hideMisses && sessionStats.worstBaits.length === 0 && (
+                      <Text fontSize={'xs'} color="gray.400">
+                        {t('Restock.you-didnt-fall-for-any-bait-items')}
+                      </Text>
+                    )}
+                  </Flex>
+                </Tabs.Content>
+              </Tabs.Root>
             </Flex>
           </Flex>
           {/* {chartData && <CalendarHeatmap onClick={setCustomTimestamp} chartData={chartData} />} */}

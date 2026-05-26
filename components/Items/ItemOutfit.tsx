@@ -1,8 +1,9 @@
 import { AspectRatio, Box, Flex, IconButton, Link, Skeleton, Text } from '@chakra-ui/react';
+import CardBase from '@components/Card/CardBase';
 import { useMemo, useState, memo, useCallback } from 'react';
 import Image from 'next/image';
 import { ItemData } from '../../types';
-import { ExternalLinkIcon } from '@chakra-ui/icons';
+import { ExternalLinkIcon } from '@utils/theme/chakraIcons';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@utils/auth';
 import { FaRotateRight } from 'react-icons/fa6';
@@ -45,23 +46,12 @@ const ItemOutfit = (props: Props) => {
   }, [item, outfitList, refresh]);
 
   return (
-    <Flex
-      width="fit-content"
-      borderRadius="md"
-      overflow="hidden"
-      flexFlow="column"
-      boxShadow="sm"
-      w="100%"
+    <CardBase
+      title={t('ItemPage.outfit-preview')}
+      color={color}
+      noPadding
+      chakraWrapper={{ width: 'fit-content', borderRadius: 'md', w: '100%' }}
     >
-      <Flex
-        p={2}
-        textAlign="center"
-        fontWeight="bold"
-        flexFlow="column"
-        bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}
-      >
-        <Text>{t('ItemPage.outfit-preview')}</Text>
-      </Flex>
       <Flex
         position="relative"
         bg="gray.600"
@@ -73,7 +63,7 @@ const ItemOutfit = (props: Props) => {
         _hover={
           user && !user?.banned && !!isLoaded
             ? {
-                '.refresh-button': {
+                '& .refresh-button': {
                   display: 'flex',
                 },
               }
@@ -91,41 +81,47 @@ const ItemOutfit = (props: Props) => {
           className="refresh-button"
           display={'none'}
           onClick={refreshPreview}
-          isDisabled={refresh >= 2}
+          disabled={refresh >= 2}
           shadow={'md'}
           bg="gray.700"
           _hover={{
             bg: 'gray.800',
           }}
           aria-label="Refresh Preview"
-          icon={<FaRotateRight />}
-        />
-        <Skeleton minW={300} minH={300} h="100%" w="100%" isLoaded={!!isLoaded}>
+        >
+          <FaRotateRight />
+        </IconButton>
+        {!isLoaded ? (
+          <Skeleton minW={300} minH={300} h="100%" w="100%" />
+        ) : (
           <AspectRatio ratio={1}>
-            <>
-              <Image
-                src={previewUrl}
-                alt="Item Preview"
-                unoptimized
-                fill
-                priority
-                onLoadStart={() => setIsLoaded(0)}
-                onLoad={() => setIsLoaded(item.internal_id)}
-              />
-            </>
+            <Image
+              src={previewUrl}
+              alt="Item Preview"
+              unoptimized
+              fill
+              priority
+              onLoadStart={() => setIsLoaded(0)}
+              onLoad={() => setIsLoaded(item.internal_id)}
+            />
           </AspectRatio>
-        </Skeleton>
+        )}
       </Flex>
 
       <Box p={1} textAlign="center" bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}>
         <Text fontSize="xs">
           {t('ItemPage.powered-by')}{' '}
-          <Link href="https://impress.openneo.net/" isExternal fontWeight="bold">
+          <Link
+            href="https://impress.openneo.net/"
+            target="_blank"
+            rel="noreferrer"
+            fontWeight="bold"
+          >
             Dress To Impress <ExternalLinkIcon mx="1px" verticalAlign="baseline" />
           </Link>
         </Text>
       </Box>
-    </Flex>
+    </CardBase>
   );
 };
 

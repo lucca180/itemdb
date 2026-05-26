@@ -1,19 +1,13 @@
 import {
-  AlertDialog,
-  AlertDialogOverlay,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogBody,
-  AlertDialogFooter,
   Button,
-  FormControl,
-  FormLabel,
+  CloseButton,
+  Dialog,
+  Field,
   HStack,
+  Portal,
   Switch,
-  FormHelperText,
   VStack,
 } from '@chakra-ui/react';
-import React from 'react';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '../../utils/auth';
 
@@ -22,71 +16,83 @@ export type DashboardOptionsModalProps = {
   onClose: () => void;
 };
 
+type DashboardPrefKey = 'dashboard_hideMisses' | 'dashboard_hidePrev';
+
 const DashboardOptionsModal = (props: DashboardOptionsModalProps) => {
   const t = useTranslations();
-  const cancelRef = React.useRef(null);
   const { userPref, updatePref } = useAuth();
   const { isOpen, onClose } = props;
 
-  const handleSwitch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const key = event.target.id as keyof typeof userPref;
-    const value = event.target.checked;
-
-    updatePref(key, value);
-  };
+  const handleSwitch = (key: DashboardPrefKey, checked: boolean) => updatePref(key, checked);
 
   return (
-    <AlertDialog
-      isOpen={isOpen}
-      leastDestructiveRef={cancelRef as any}
-      onClose={onClose}
-      isCentered
+    <Dialog.Root
+      role="alertdialog"
+      open={isOpen}
+      onOpenChange={({ open }) => {
+        if (!open) onClose();
+      }}
+      placement="center"
     >
-      <AlertDialogOverlay>
-        <AlertDialogContent>
-          <AlertDialogHeader fontSize="lg" fontWeight="bold">
-            {t('Restock.dashboard-options')}
-          </AlertDialogHeader>
-          <AlertDialogBody>
-            <VStack gap={5}>
-              <FormControl display="flex" alignItems="center">
-                <Switch
-                  isChecked={userPref?.dashboard_hideMisses ?? false}
-                  onChange={handleSwitch}
-                  id="dashboard_hideMisses"
-                />
-                <VStack justifyContent={'flex-start'} ml={2} alignItems={'flex-start'}>
-                  <FormLabel htmlFor="dashboard_hideMisses" mb="0">
-                    {t('Restock.hide-misses')}
-                  </FormLabel>
-                  <FormHelperText m={0}>{t('Restock.hide-misses-helper-txt')}</FormHelperText>
-                </VStack>
-              </FormControl>
-              <FormControl display="flex" alignItems="center">
-                <Switch
-                  isChecked={userPref?.dashboard_hidePrev ?? false}
-                  onChange={handleSwitch}
-                  id="dashboard_hidePrev"
-                />
-                <VStack justifyContent={'flex-start'} ml={2} alignItems={'flex-start'}>
-                  <FormLabel htmlFor="dashboard_hidePrev" mb="0">
-                    {t('Restock.hide-comparations')}
-                  </FormLabel>
-                  <FormHelperText m={0}>{t('Restock.hide-comparations-helper-txt')}</FormHelperText>
-                </VStack>
-              </FormControl>
-            </VStack>
-          </AlertDialogBody>
-          <AlertDialogFooter>
-            <HStack>
-              <Button ref={cancelRef} onClick={onClose}>
-                {t('General.close')}
-              </Button>
-            </HStack>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialogOverlay>
-    </AlertDialog>
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>
+              <Dialog.Title>{t('Restock.dashboard-options')}</Dialog.Title>
+            </Dialog.Header>
+            <Dialog.CloseTrigger asChild>
+              <CloseButton size="sm" />
+            </Dialog.CloseTrigger>
+            <Dialog.Body>
+              <VStack gap={5}>
+                <Field.Root>
+                  <Switch.Root
+                    checked={userPref?.dashboard_hideMisses ?? false}
+                    onCheckedChange={({ checked }) =>
+                      handleSwitch('dashboard_hideMisses', !!checked)
+                    }
+                    display="flex"
+                    alignItems="center"
+                  >
+                    <Switch.HiddenInput id="dashboard_hideMisses" />
+                    <Switch.Control />
+                    <VStack justifyContent={'flex-start'} ml={2} alignItems={'flex-start'} gap={0}>
+                      <Switch.Label>{t('Restock.hide-misses')}</Switch.Label>
+                      <Field.HelperText m={0}>
+                        {t('Restock.hide-misses-helper-txt')}
+                      </Field.HelperText>
+                    </VStack>
+                  </Switch.Root>
+                </Field.Root>
+                <Field.Root>
+                  <Switch.Root
+                    checked={userPref?.dashboard_hidePrev ?? false}
+                    onCheckedChange={({ checked }) => handleSwitch('dashboard_hidePrev', !!checked)}
+                    display="flex"
+                    alignItems="center"
+                  >
+                    <Switch.HiddenInput id="dashboard_hidePrev" />
+                    <Switch.Control />
+                    <VStack justifyContent={'flex-start'} ml={2} alignItems={'flex-start'} gap={0}>
+                      <Switch.Label>{t('Restock.hide-comparations')}</Switch.Label>
+                      <Field.HelperText m={0}>
+                        {t('Restock.hide-comparations-helper-txt')}
+                      </Field.HelperText>
+                    </VStack>
+                  </Switch.Root>
+                </Field.Root>
+              </VStack>
+            </Dialog.Body>
+            <Dialog.Footer>
+              <HStack>
+                <Button onClick={onClose}>{t('General.close')}</Button>
+              </HStack>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

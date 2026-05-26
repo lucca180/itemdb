@@ -29,7 +29,7 @@ const ShopCard = (props: Props) => {
       position={'relative'}
       bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.50) 0%)`}
       // mt={'75px'}
-      boxShadow={'md'}
+      boxShadow={'sm'}
       pt={'40px'}
       flexFlow={'column'}
     >
@@ -48,18 +48,20 @@ const ShopCard = (props: Props) => {
       <Flex flexFlow={'column'} gap={3} justifyContent="center" flex="1" px={{ base: 2, md: 3 }}>
         <Link
           as={NextLink}
+          asChild
           href={`/restock/${slugify(shop.name)}`}
           _hover={{ textDecoration: 'none' }}
+          display="block"
         >
           <Text textAlign={'center'} fontSize="xl" fontWeight={'bold'}>
             {shop.name}
           </Text>
         </Link>
-        <HStack justifyContent={'center'} spacing={2}>
+        <HStack justifyContent={'center'} gap={2}>
           <Badge>{shop.category}</Badge>
           {shop.difficulty != 'Medium' && (
             <Badge
-              colorScheme={
+              colorPalette={
                 shop.difficulty === 'Beginner'
                   ? 'green'
                   : shop.difficulty === 'Advanced'

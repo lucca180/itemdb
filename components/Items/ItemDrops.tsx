@@ -5,7 +5,6 @@ import {
   Badge,
   Center,
   Alert,
-  AlertIcon,
   Link,
   HStack,
   Button,
@@ -36,7 +35,7 @@ const ItemDrops = (props: Props) => {
   const t = useTranslations();
   const [isLoading, setLoading] = React.useState(true);
   const [dropData, setDropData] = React.useState<ItemData[]>([]);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open: isOpen, onOpen, onClose } = useDisclosure();
   const { item, itemOpenable } = props;
 
   const color = item.color.rgb;
@@ -86,10 +85,12 @@ const ItemDrops = (props: Props) => {
       {isOpen && <OfficialOddsModal isOpen={isOpen} onClose={onClose} />}
       {!itemOpenable.isGBC && <HelpNeeded />}
       {itemOpenable.isGBC && (
-        <Alert borderRadius={5} mb={3}>
-          <AlertIcon />
-          <Text fontSize="sm">{t.rich('Drops.gbc', { b: (text) => <b>{text}</b> })}</Text>
-        </Alert>
+        <Alert.Root status="info" borderRadius={5} mb={3}>
+          <Alert.Indicator />
+          <Alert.Content>
+            <Text fontSize="sm">{t.rich('Drops.gbc', { b: (text) => <b>{text}</b> })}</Text>
+          </Alert.Content>
+        </Alert.Root>
       )}
 
       {isChoice && (itemOpenable.minDrop > 1 || itemOpenable.maxDrop > 1) && (
@@ -141,8 +142,8 @@ const ItemDrops = (props: Props) => {
             openings: itemOpenable.openings,
             itemName: item.name,
             Link: (text) => (
-              <Link as={NextLink} href="/contribute" color="gray.400">
-                {text}
+              <Link asChild color="gray.400">
+                <NextLink href="/contribute">{text}</NextLink>
               </Link>
             ),
           })}
@@ -317,11 +318,13 @@ export const DropPool = (props: DropPoolProps) => {
     <Flex alignItems="center" key={pool.name} flexFlow="column" mb={3}>
       {isChoice && !pool.isLE && <CatImage cat={pool.name} item_iid={item.internal_id} />}
       {(pool.name === 'bonus' || pool.isLE) && (
-        <Alert status="success" variant="subtle" textAlign={'center'} mb={3}>
-          <Text textAlign={'center'} fontSize="sm" flex="1">
-            <DropText pool={pool} itemOpenable={itemOpenable} />
-          </Text>
-        </Alert>
+        <Alert.Root status="success" variant="subtle" textAlign={'center'} mb={3}>
+          <Alert.Content>
+            <Text textAlign={'center'} fontSize="sm" flex="1">
+              <DropText pool={pool} itemOpenable={itemOpenable} />
+            </Text>
+          </Alert.Content>
+        </Alert.Root>
       )}
       {!isChoice && pool.name !== 'bonus' && !pool.isLE && (
         <Text textAlign={'center'} fontSize="sm" flex="1" mb={3}>
@@ -354,8 +357,8 @@ export const DropPool = (props: DropPoolProps) => {
             b: (text) => <b>{text}</b>,
             openings: pool.openings,
             Link: (text) => (
-              <Link as={NextLink} href="/contribute" color="gray.400">
-                {text}
+              <Link asChild color="gray.400">
+                <NextLink href="/contribute">{text}</NextLink>
               </Link>
             ),
           })}
@@ -385,31 +388,31 @@ const HelpNeeded = () => {
       <Text fontSize="md" color="white" fontWeight={'bold'}>
         {t('ItemPage.drops-script-cta')}
       </Text>
-      <Text fontSize="sm" color="whiteAlpha.900" maxW="500px" sx={{ textWrap: 'pretty' }}>
+      <Text fontSize="sm" color="whiteAlpha.900" maxW="500px" css={{ textWrap: 'pretty' }}>
         {t.rich('ItemPage.drops-script-cta-text', {
           b: (text) => <b>{text}</b>,
         })}
       </Text>
       <HStack mt={1}>
-        <Button
-          as={Link}
-          size="sm"
-          href="https://github.com/lucca180/itemdb/raw/main/userscripts/itemDataExtractor.user.js"
-          isExternal
-          data-umami-event="help-needed"
-          data-umami-event-label="install"
-        >
-          {t('Restock.install-now')}
+        <Button asChild size="sm">
+          <Link
+            href="https://github.com/lucca180/itemdb/raw/main/userscripts/itemDataExtractor.user.js"
+            target="_blank"
+            rel="noreferrer"
+            data-umami-event="help-needed"
+            data-umami-event-label="install"
+          >
+            {t('Restock.install-now')}
+          </Link>
         </Button>
-        <Button
-          as={Link}
-          size="sm"
-          href="/contribute"
-          isExternal
-          data-umami-event="help-needed"
-          data-umami-event-label="learn-more"
-        >
-          {t('General.learn-more')}
+        <Button asChild size="sm">
+          <Link
+            href="/contribute"
+            data-umami-event="help-needed"
+            data-umami-event-label="learn-more"
+          >
+            {t('General.learn-more')}
+          </Link>
         </Button>
       </HStack>
     </Flex>

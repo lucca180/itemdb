@@ -1,4 +1,4 @@
-import { Center, Divider, Flex, Heading, Spinner, Tag, Text } from '@chakra-ui/react';
+import { Center, Separator, Flex, Heading, Spinner, Tag, Text } from '@chakra-ui/react';
 import axios from 'axios';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
@@ -66,14 +66,17 @@ const FeedbackItem = (props: Props) => {
               {item.description}
             </Text>
           </Flex>
-          <Divider />
+          <Separator />
           <Heading size="md" textAlign="center">
             Now
           </Heading>
           {!shouldHideTags && (
             <>
               <Heading size="sm" textAlign="center">
-                Tags <Tag size="sm">{tags.length}</Tag>
+                Tags{' '}
+                <Tag.Root size="sm">
+                  <Tag.Label>{tags.length}</Tag.Label>
+                </Tag.Root>
               </Heading>
               <Flex
                 flexFlow="row"
@@ -83,12 +86,12 @@ const FeedbackItem = (props: Props) => {
                 textAlign="center"
               >
                 {tags.map((tag) => (
-                  <Tag
+                  <Tag.Root
                     key={tag.tag_id}
-                    colorScheme={!itemTags.includes(tag.name) ? 'red' : undefined}
+                    colorPalette={!itemTags.includes(tag.name) ? 'red' : undefined}
                   >
-                    {tag.name}
-                  </Tag>
+                    <Tag.Label>{tag.name}</Tag.Label>
+                  </Tag.Root>
                 ))}
                 {tags.length === 0 && (
                   <Text fontSize={'xs'} color="gray.400">
@@ -108,14 +111,17 @@ const FeedbackItem = (props: Props) => {
               </Text>
             </>
           )}
-          <Divider />
+          <Separator />
           <Heading size="md" textAlign="center">
             Suggested Changes
           </Heading>
           {!shouldHideTags && (
             <>
               <Heading size="sm" textAlign="center">
-                Tags <Tag size="sm">{itemTags.length}</Tag>
+                Tags{' '}
+                <Tag.Root size="sm">
+                  <Tag.Label>{itemTags.length}</Tag.Label>
+                </Tag.Root>
               </Heading>
               <Flex
                 flexFlow="row"
@@ -125,9 +131,9 @@ const FeedbackItem = (props: Props) => {
                 textAlign="center"
               >
                 {itemTags.map((tag, i) => (
-                  <Tag key={i} colorScheme={!tagsStr.includes(tag) ? 'green' : undefined}>
-                    {tag}
-                  </Tag>
+                  <Tag.Root key={i} colorPalette={!tagsStr.includes(tag) ? 'green' : undefined}>
+                    <Tag.Label>{tag}</Tag.Label>
+                  </Tag.Root>
                 ))}
                 {itemTags.length === 0 && (
                   <Text fontSize={'xs'} color="gray.400">

@@ -1,10 +1,10 @@
 import { Suspense } from 'react';
 import { unstable_cache } from 'next/cache';
 import NextImage from 'next/image';
-import { Flex, styled } from '@styled/jsx';
+import { Box, Flex, Text } from '@chakra-ui/react';
 import { getTranslations } from 'next-intl/server';
 import { getNewItemsInfo } from '@pages/api/v1/beta/new-items';
-import { HorizontalHomeCard } from '@app/_components/Home/Cards/HorizontalHomeCard';
+import { HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
 
 const getCachedNewItemsCount = unstable_cache(
   async () => getNewItemsInfo(7).catch(() => null),
@@ -32,10 +32,10 @@ async function NewItemsCountSectionContent() {
   return (
     <Flex gap={4} flexWrap="wrap" flexFlow={{ base: 'column', lg: 'row' }}>
       <HorizontalHomeCard
-        headerColor="#B794F4"
+        color="#B794F4"
         bgOpacity="0.75"
-        innerCss={{ border: 0, py: 2 }}
-        rootCss={{ flex: '1' }}
+        innerStyle={{ border: 0, py: 2 }}
+        style={{ flex: '1' }}
       >
         <Flex alignItems="center">
           <NextImage
@@ -50,31 +50,31 @@ async function NewItemsCountSectionContent() {
             quality={100}
             style={{ borderRadius: '0.375rem' }}
           />
-          <Flex flexFlow="column" ml={3}>
-            <styled.p fontSize="lg" fontWeight="bold">
+          <Flex direction="column" ml={3}>
+            <Text fontSize="lg" fontWeight="bold">
               {t.rich('HomePage.new-paid-items', {
                 Highlight: (chunks) => (
-                  <styled.span color="purple.700" bg="purple.200" px={1} borderRadius="md">
+                  <Box as="span" color="purple.700" bg="purple.200" px={1} borderRadius="md">
                     {chunks}
-                  </styled.span>
+                  </Box>
                 ),
                 days: 7,
               })}
-            </styled.p>
-            <styled.p fontSize="4xl" fontWeight="bold">
+            </Text>
+            <Text fontSize="4xl" fontWeight="bold">
               {newItemCount.paidItems}
-            </styled.p>
-            <styled.p fontSize="xs" color="whiteAlpha.700">
+            </Text>
+            <Text fontSize="xs" color="whiteAlpha.700">
               {t('HomePage.new-paid-items-text')}
-            </styled.p>
+            </Text>
           </Flex>
         </Flex>
       </HorizontalHomeCard>
       <HorizontalHomeCard
-        headerColor="#F6AD55"
+        color="#F6AD55"
         bgOpacity="0.75"
-        innerCss={{ border: 0, py: 2 }}
-        rootCss={{ flex: '1' }}
+        innerStyle={{ border: 0, py: 2 }}
+        style={{ flex: '1' }}
       >
         <Flex alignItems="center">
           <NextImage
@@ -85,23 +85,23 @@ async function NewItemsCountSectionContent() {
             quality={100}
             style={{ borderRadius: '0.375rem' }}
           />
-          <Flex flexFlow="column" ml={3}>
-            <styled.p fontSize="lg" fontWeight="bold">
+          <Flex direction="column" ml={3}>
+            <Text fontSize="lg" fontWeight="bold">
               {t.rich('HomePage.new-free-items', {
                 Highlight: (chunks) => (
-                  <styled.span color="orange.600" bg="orange.100" px={1} borderRadius="md">
+                  <Box as="span" color="orange.600" bg="orange.100" px={1} borderRadius="md">
                     {chunks}
-                  </styled.span>
+                  </Box>
                 ),
                 days: 7,
               })}
-            </styled.p>
-            <styled.p fontSize="4xl" fontWeight="bold">
+            </Text>
+            <Text fontSize="4xl" fontWeight="bold">
               {newItemCount.freeItems}
-            </styled.p>
-            <styled.p fontSize="xs" color="whiteAlpha.800">
+            </Text>
+            <Text fontSize="xs" color="whiteAlpha.800">
               {t('HomePage.new-free-items-text')}
-            </styled.p>
+            </Text>
           </Flex>
         </Flex>
       </HorizontalHomeCard>

@@ -1,39 +1,28 @@
 /* eslint-disable  */
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
   Button,
-  FormControl,
   Text,
-  FormLabel,
   Input,
   Stack,
   Textarea,
-  Divider,
+  Separator,
   HStack,
   Flex,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
   Tabs,
   Checkbox,
-  CheckboxGroup,
   Badge,
   Spinner,
   Center,
-  FormHelperText,
+  Field,
   Link,
   Icon,
   useDisclosure,
   Image,
-  Select,
+  NativeSelect,
   VStack,
+  Dialog,
+  CloseButton,
+  Portal,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
@@ -97,8 +86,8 @@ const EditItemModal = (props: EditItemModalProps) => {
   const [isLoading, setLoading] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
-  const [tabIndex, setTabIndex] = useState(0);
-  const { onOpen: onDeleteOpen, isOpen: isDeleteOpen, onClose: onDeleteClose } = useDisclosure();
+  const [tabValue, setTabValue] = useState('info');
+  const { onOpen: onDeleteOpen, open: isDeleteOpen, onClose: onDeleteClose } = useDisclosure();
   const router = useRouter();
 
   const isAdmin = user?.role === 'ADMIN';
@@ -224,117 +213,137 @@ const EditItemModal = (props: EditItemModalProps) => {
   return (
     <>
       <ConfirmDeleteItem isOpen={isDeleteOpen} onClose={onDeleteClose} item={item} />
-      <Modal isOpen={isOpen} onClose={handleCancel} isCentered size="lg">
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>
-            {isAdmin ? t('Button.edit') : t('Feedback.suggest-changes')} - {itemProps.name}
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            {!isLoading && !isSuccess && !error && (
-              <Tabs
-                variant="line"
-                colorScheme="gray"
-                isLazy
-                onChange={(index) => setTabIndex(index)}
-              >
-                <TabList>
-                  <Tab>{t('ItemPage.item-info')}</Tab>
-                  {isAdmin && <Tab>{t('ItemPage.categories')}</Tab>}
-                  {isAdmin && <Tab>{t('ItemPage.drops')}</Tab>}
-                  {isAdmin && <Tab>Item Effects</Tab>}
-                  {isAdmin && <Tab>Petpet</Tab>}
-                </TabList>
-                <TabPanels>
-                  <TabPanel>
-                    <InfoTab item={item} itemProps={itemProps} onChange={handleChange} />
-                  </TabPanel>
-                  {isAdmin && (
-                    <TabPanel>
-                      <CategoriesTab
-                        categories={categories}
-                        tags={tags}
-                        item={item}
-                        itemProps={itemProps}
-                        onSelectChange={handleSelectChange}
-                        onChange={handleTagsChange}
-                      />
-                    </TabPanel>
+      <Dialog.Root
+        open={isOpen}
+        onOpenChange={({ open }) => {
+          if (!open) handleCancel();
+        }}
+        placement="center"
+        size="lg"
+      >
+        <Portal>
+          <Dialog.Backdrop />
+          <Dialog.Positioner>
+            <Dialog.Content>
+              <Dialog.Header>
+                <Dialog.Title>
+                  {isAdmin ? t('Button.edit') : t('Feedback.suggest-changes')} - {itemProps.name}
+                </Dialog.Title>
+              </Dialog.Header>
+              <Dialog.CloseTrigger asChild>
+                <CloseButton size="sm" />
+              </Dialog.CloseTrigger>
+              <Dialog.Body>
+                {!isLoading && !isSuccess && !error && (
+                  <Tabs.Root
+                    variant="line"
+                    colorPalette="gray"
+                    lazyMount
+                    unmountOnExit
+                    value={tabValue}
+                    onValueChange={(e) => setTabValue(e.value)}
+                  >
+                    <Tabs.List>
+                      <Tabs.Trigger value="info">{t('ItemPage.item-info')}</Tabs.Trigger>
+                      {isAdmin && (
+                        <Tabs.Trigger value="categories">{t('ItemPage.categories')}</Tabs.Trigger>
+                      )}
+                      {isAdmin && <Tabs.Trigger value="drops">{t('ItemPage.drops')}</Tabs.Trigger>}
+                      {isAdmin && <Tabs.Trigger value="effects">Item Effects</Tabs.Trigger>}
+                      {isAdmin && <Tabs.Trigger value="petpet">Petpet</Tabs.Trigger>}
+                    </Tabs.List>
+                    <Tabs.Content value="info">
+                      <InfoTab item={item} itemProps={itemProps} onChange={handleChange} />
+                    </Tabs.Content>
+                    {isAdmin && (
+                      <Tabs.Content value="categories">
+                        <CategoriesTab
+                          categories={categories}
+                          tags={tags}
+                          item={item}
+                          itemProps={itemProps}
+                          onSelectChange={handleSelectChange}
+                          onChange={handleTagsChange}
+                        />
+                      </Tabs.Content>
+                    )}
+                    {isAdmin && (
+                      <Tabs.Content value="drops">
+                        <OpenableTab itemOpenable={itemOpenable} item={item} />
+                      </Tabs.Content>
+                    )}
+                    {isAdmin && (
+                      <Tabs.Content value="effects">
+                        <EffectsTab item={item} itemEffects={itemEffects} />
+                      </Tabs.Content>
+                    )}
+                    {isAdmin && (
+                      <Tabs.Content value="petpet">
+                        <PetpetTab item={item} petpetData={petpetData} />
+                      </Tabs.Content>
+                    )}
+                  </Tabs.Root>
+                )}
+                {isLoading && (
+                  <Center>
+                    <Spinner />
+                  </Center>
+                )}
+                {isSuccess && !isAdmin && (
+                  <Center>
+                    <Text fontSize="sm" textAlign="center">
+                      {t('Feedback.thank-you')}!
+                      <br />
+                      {t('Feedback.receivedSuggestion')}
+                    </Text>
+                  </Center>
+                )}
+                {isSuccess && isAdmin && (
+                  <Center>
+                    <Text fontSize="sm" textAlign="center">
+                      {t('Feedback.changes-saved')}!
+                      <br />
+                      {t('Feedback.caching')}
+                    </Text>
+                  </Center>
+                )}
+                {error && (
+                  <Center>
+                    <Text fontSize="sm" textAlign="center" color="red.400">
+                      {t('General.an-error-has-occurred')}!
+                      <br />
+                      {t('General.refreshPage')}
+                    </Text>
+                  </Center>
+                )}
+              </Dialog.Body>
+              <Dialog.Footer>
+                {!isLoading &&
+                  !isSuccess &&
+                  !error &&
+                  (tabValue === 'info' || tabValue === 'categories') && (
+                    <>
+                      <Button
+                        variant="outline"
+                        colorPalette="red"
+                        onClick={onDeleteOpen}
+                        display={isAdmin ? 'inherit' : 'none'}
+                      >
+                        <Icon as={FiTrash} mr={1} /> {t('ItemPage.delete-item')}
+                      </Button>
+                      <Button onClick={handleCancel} variant="ghost" mx={3}>
+                        {t('General.cancel')}
+                      </Button>
+                      <Button onClick={isAdmin ? saveChanges : sendFeedback}>
+                        {isAdmin ? t('General.save') : t('General.send')}
+                      </Button>
+                    </>
                   )}
-                  {isAdmin && (
-                    <TabPanel>
-                      <OpenableTab itemOpenable={itemOpenable} item={item} />
-                    </TabPanel>
-                  )}
-                  {isAdmin && (
-                    <TabPanel>
-                      <EffectsTab item={item} itemEffects={itemEffects} />
-                    </TabPanel>
-                  )}
-                  {isAdmin && (
-                    <TabPanel>
-                      <PetpetTab item={item} petpetData={petpetData} />
-                    </TabPanel>
-                  )}
-                </TabPanels>
-              </Tabs>
-            )}
-            {isLoading && (
-              <Center>
-                <Spinner />
-              </Center>
-            )}
-            {isSuccess && !isAdmin && (
-              <Center>
-                <Text fontSize="sm" textAlign="center">
-                  {t('Feedback.thank-you')}!
-                  <br />
-                  {t('Feedback.receivedSuggestion')}
-                </Text>
-              </Center>
-            )}
-            {isSuccess && isAdmin && (
-              <Center>
-                <Text fontSize="sm" textAlign="center">
-                  {t('Feedback.changes-saved')}!
-                  <br />
-                  {t('Feedback.caching')}
-                </Text>
-              </Center>
-            )}
-            {error && (
-              <Center>
-                <Text fontSize="sm" textAlign="center" color="red.400">
-                  {t('General.an-error-has-occurred')}!
-                  <br />
-                  {t('General.refreshPage')}
-                </Text>
-              </Center>
-            )}
-          </ModalBody>
-          <ModalFooter>
-            {!isLoading && !isSuccess && !error && tabIndex <= 1 && (
-              <>
-                <Button
-                  variant="outline"
-                  colorScheme="red"
-                  onClick={onDeleteOpen}
-                  display={isAdmin ? 'inherit' : 'none'}
-                >
-                  <Icon as={FiTrash} mr={1} /> {t('ItemPage.delete-item')}
-                </Button>
-                <Button onClick={handleCancel} variant="ghost" mx={3}>
-                  {t('General.cancel')}
-                </Button>
-                <Button onClick={isAdmin ? saveChanges : sendFeedback}>
-                  {isAdmin ? t('General.save') : t('General.send')}
-                </Button>
-              </>
-            )}
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
     </>
   );
 };
@@ -360,11 +369,11 @@ export const InfoTab = (props: infoTabProps) => {
     <Flex flexFlow="column" gap={4} maxH="500px" px={3} overflow={'auto'}>
       {!isAdmin && (
         <>
-          <Text fontSize="sm" sx={{ a: { color: 'blue.300' } }}>
+          <Text fontSize="sm" css={{ '& a': { color: 'blue.300' } }}>
             {t.rich('Feedback.correctItemInfo', {
               Link: (chunks) => (
-                <Link as={NextLink} href="/contribute" color="gray.200">
-                  {chunks}
+                <Link asChild color="gray.200">
+                  <NextLink href="/contribute">{chunks}</NextLink>
                 </Link>
               ),
             })}
@@ -379,133 +388,133 @@ export const InfoTab = (props: infoTabProps) => {
       {isAdmin && (
         <>
           <Stack>
-            <FormControl>
-              <FormLabel color="gray.300">{t('General.item-name')}</FormLabel>
+            <Field.Root>
+              <Field.Label color="gray.300">{t('General.item-name')}</Field.Label>
               <Input
-                variant="filled"
+                variant="subtle"
                 type="text"
                 name="name"
                 size="sm"
                 value={item.name}
                 onChange={handleChange}
-                isDisabled={!isAdmin}
+                disabled={!isAdmin}
                 color={item.name === itemProps.name ? 'gray.400' : '#fff'}
               />
-            </FormControl>
-            <FormControl>
-              <FormLabel color="gray.300">{t('General.description')}</FormLabel>
+            </Field.Root>
+            <Field.Root>
+              <Field.Label color="gray.300">{t('General.description')}</Field.Label>
               <Textarea
                 color={item.description === itemProps.description ? 'gray.400' : '#fff'}
                 value={item.description}
-                variant="filled"
+                variant="subtle"
                 name="description"
                 onChange={handleChange}
-                isDisabled={!isAdmin}
+                disabled={!isAdmin}
                 size="sm"
               />
-            </FormControl>
-            <FormControl>
-              <FormLabel color="gray.300">{t('General.image-url')}</FormLabel>
+            </Field.Root>
+            <Field.Root>
+              <Field.Label color="gray.300">{t('General.image-url')}</Field.Label>
               <Input
-                variant="filled"
+                variant="subtle"
                 type="text"
                 name="image"
                 size="sm"
                 value={item.image}
                 onChange={handleChange}
-                isDisabled={!isAdmin}
+                disabled={!isAdmin}
                 color={item.image === itemProps.image ? 'gray.400' : '#fff'}
               />
-            </FormControl>
+            </Field.Root>
             <HStack>
-              <FormControl>
-                <FormLabel color="gray.300">{t('General.canonical-id')}</FormLabel>
+              <Field.Root>
+                <Field.Label color="gray.300">{t('General.canonical-id')}</Field.Label>
                 <Input
-                  variant="filled"
+                  variant="subtle"
                   type="text"
                   name="canonical_id"
                   size="sm"
                   value={item.canonical_id ?? ''}
                   onChange={handleChange}
-                  isDisabled={!isAdmin}
+                  disabled={!isAdmin}
                   color={item.canonical_id == itemProps.canonical_id ? 'gray.400' : '#fff'}
                 />
-              </FormControl>
-              <FormControl>
-                <FormLabel color="gray.300">{t('ItemPage.first-seen')}</FormLabel>
+              </Field.Root>
+              <Field.Root>
+                <Field.Label color="gray.300">{t('ItemPage.first-seen')}</Field.Label>
                 <Input
-                  variant="filled"
+                  variant="subtle"
                   type="date"
                   name="firstSeen"
                   size="sm"
                   value={item.firstSeen ? toDateInput(item.firstSeen) : undefined}
                   onChange={handleChange}
-                  isDisabled={!isAdmin}
+                  disabled={!isAdmin}
                   color={item.firstSeen == itemProps.firstSeen ? 'gray.400' : '#fff'}
                 />
-              </FormControl>
+              </Field.Root>
             </HStack>
           </Stack>
-          <Divider />
+          <Separator />
           <HStack>
-            <FormControl>
-              <FormLabel color="gray.300">{t('General.item-id')}</FormLabel>
+            <Field.Root>
+              <Field.Label color="gray.300">{t('General.item-id')}</Field.Label>
               <Input
-                variant="filled"
+                variant="subtle"
                 type="text"
                 name="item_id"
                 size="sm"
                 value={item.item_id ?? ''}
                 onChange={handleChange}
-                isDisabled={!isAdmin}
+                disabled={!isAdmin}
                 color={item.item_id == itemProps.item_id ? 'gray.400' : '#fff'}
               />
-            </FormControl>
-            <FormControl>
-              <FormLabel color="gray.300">{t('General.rarity')}</FormLabel>
+            </Field.Root>
+            <Field.Root>
+              <Field.Label color="gray.300">{t('General.rarity')}</Field.Label>
               <Input
-                variant="filled"
+                variant="subtle"
                 type="text"
                 name="rarity"
                 size="sm"
                 value={item.rarity ?? ''}
                 onChange={handleChange}
-                isDisabled={!isAdmin}
+                disabled={!isAdmin}
                 color={item.rarity == itemProps.rarity ? 'gray.400' : '#fff'}
               />
-            </FormControl>
+            </Field.Root>
           </HStack>
           <HStack>
-            <FormControl>
-              <FormLabel color="gray.300">{t('General.est-val')}</FormLabel>
+            <Field.Root>
+              <Field.Label color="gray.300">{t('General.est-val')}</Field.Label>
               <Input
-                variant="filled"
+                variant="subtle"
                 type="text"
                 name="estVal"
                 size="sm"
                 value={item.estVal ?? ''}
                 onChange={handleChange}
-                isDisabled={!isAdmin}
+                disabled={!isAdmin}
                 color={item.estVal == itemProps.estVal ? 'gray.400' : '#fff'}
               />
-            </FormControl>
-            <FormControl>
-              <FormLabel color="gray.300">{t('General.weight')}</FormLabel>
+            </Field.Root>
+            <Field.Root>
+              <Field.Label color="gray.300">{t('General.weight')}</Field.Label>
               <Input
-                variant="filled"
+                variant="subtle"
                 type="text"
                 name="weight"
                 size="sm"
                 value={item.weight ?? ''}
                 onChange={handleChange}
-                isDisabled={!isAdmin}
+                disabled={!isAdmin}
                 color={item.weight == itemProps.weight ? 'gray.400' : '#fff'}
               />
-            </FormControl>
+            </Field.Root>
           </HStack>
           <HStack>
-            <FormControl>
-              <FormLabel color="gray.300">{t('General.category')}</FormLabel>
+            <Field.Root>
+              <Field.Label color="gray.300">{t('General.category')}</Field.Label>
               <ItemCatSelect
                 name="category"
                 value={item.category ?? ''}
@@ -513,11 +522,11 @@ export const InfoTab = (props: infoTabProps) => {
                 isDisabled={!isAdmin}
                 color={item.category == itemProps.category ? 'gray.400' : '#fff'}
               />
-            </FormControl>
+            </Field.Root>
           </HStack>
           <HStack>
-            <FormControl>
-              <FormLabel color="gray.300">{t('General.status')}</FormLabel>
+            <Field.Root>
+              <Field.Label color="gray.300">{t('General.status')}</Field.Label>
               <ItemStatusSelect
                 name="status"
                 value={item.status ?? ''}
@@ -525,46 +534,46 @@ export const InfoTab = (props: infoTabProps) => {
                 isDisabled={!isAdmin}
                 color={item.status == itemProps.status ? 'gray.400' : '#fff'}
               />
-            </FormControl>
+            </Field.Root>
           </HStack>
-          <FormControl>
-            <FormLabel color="gray.300">Item Flags</FormLabel>
+          <Field.Root>
+            <Field.Label color="gray.300">Item Flags</Field.Label>
             <Input
-              variant="filled"
+              variant="subtle"
               type="text"
               name="itemFlags"
               size="sm"
               value={item.itemFlags ?? ''}
               onChange={handleChange}
               color={item.itemFlags == itemProps.itemFlags ? 'gray.400' : '#fff'}
-              isDisabled={!isAdmin}
+              disabled={!isAdmin}
             />
-            <FormHelperText fontSize={'xs'}>Use comma for multiple flags</FormHelperText>
-          </FormControl>
+            <Field.HelperText fontSize={'xs'}>Use comma for multiple flags</Field.HelperText>
+          </Field.Root>
         </>
       )}
-      <FormControl>
-        <FormLabel color="gray.300">{t('ItemPage.notes')}</FormLabel>
+      <Field.Root>
+        <Field.Label color="gray.300">{t('ItemPage.notes')}</Field.Label>
         <Textarea
           color={item.comment === itemProps.comment ? 'gray.400' : '#fff'}
           value={item.comment ?? ''}
-          variant="filled"
+          variant="subtle"
           name="comment"
           onChange={handleChange}
           size="sm"
         />
-        <FormHelperText>
+        <Field.HelperText>
           {t('ItemPage.modalDoNotCopy')}
           <br />
           {t.rich('Feedback.modalContributeCallback', {
             Link: (chunks) => (
-              <Link as={NextLink} href="/contribute" color="gray.300">
-                {chunks}
+              <Link asChild color="gray.300">
+                <NextLink href="/contribute">{chunks}</NextLink>
               </Link>
             ),
           })}
-        </FormHelperText>
-      </FormControl>
+        </Field.HelperText>
+      </Field.Root>
     </Flex>
   );
 };
@@ -623,105 +632,123 @@ export const CategoriesTab = (props: TagSelectProps) => {
   return (
     <Stack flexFlow="column" gap={4}>
       {isAdmin && (
-        <FormControl>
-          <FormLabel color="gray.300">{t('ItemPage.special-tags')}</FormLabel>
-          <CheckboxGroup value={specialTags} onChange={handleSpecialTags}>
-            <Stack spacing={3} direction="row" wrap="wrap" justifyContent="center">
-              <Checkbox value="np">
-                <Badge colorScheme="green">NP</Badge>
-              </Checkbox>
-              <Checkbox value="nc">
-                <Badge colorScheme="purple">NC</Badge>
-              </Checkbox>
-              <Checkbox value="pb">
-                <Badge colorScheme="yellow">PB</Badge>
-              </Checkbox>
-              <Checkbox value="wearable">
-                <Badge colorScheme="blue">{t('General.wearable')}</Badge>
-              </Checkbox>
-              <Checkbox value="neohome">
-                <Badge colorScheme="cyan">{t('General.neohome')}</Badge>
-              </Checkbox>
-              <Checkbox value="battledome">
-                <Badge colorScheme="red">{t('General.battledome')}</Badge>
-              </Checkbox>
-            </Stack>
-          </CheckboxGroup>
-        </FormControl>
+        <Field.Root>
+          <Field.Label color="gray.300">{t('ItemPage.special-tags')}</Field.Label>
+          <Stack gap={3} direction="row" wrap="wrap" justifyContent="center">
+            {(
+              [
+                { value: 'np', label: <Badge colorPalette="green">NP</Badge> },
+                { value: 'nc', label: <Badge colorPalette="purple">NC</Badge> },
+                { value: 'pb', label: <Badge colorPalette="yellow">PB</Badge> },
+                {
+                  value: 'wearable',
+                  label: <Badge colorPalette="blue">{t('General.wearable')}</Badge>,
+                },
+                {
+                  value: 'neohome',
+                  label: <Badge colorPalette="cyan">{t('General.neohome')}</Badge>,
+                },
+                {
+                  value: 'battledome',
+                  label: <Badge colorPalette="red">{t('General.battledome')}</Badge>,
+                },
+              ] as const
+            ).map(({ value, label }) => (
+              <Checkbox.Root
+                key={value}
+                checked={specialTags.includes(value)}
+                onCheckedChange={({ checked }) => {
+                  const next = checked
+                    ? [...specialTags, value]
+                    : specialTags.filter((tag) => tag !== value);
+                  handleSpecialTags(next);
+                }}
+              >
+                <Checkbox.HiddenInput />
+                <Checkbox.Control />
+                <Checkbox.Label>{label}</Checkbox.Label>
+              </Checkbox.Root>
+            ))}
+          </Stack>
+        </Field.Root>
       )}
-      <FormControl>
-        <FormLabel color="gray.300">{t('ItemPage.usage-type')}</FormLabel>
+      <Field.Root>
+        <Field.Label color="gray.300">{t('ItemPage.usage-type')}</Field.Label>
         <Stack>
           <Stack direction="row" alignItems={'center'}>
-            <Badge colorScheme="orange">{t('General.readable')}</Badge>
-            <Select
-              size="sm"
-              variant={'filled'}
-              value={item.useTypes.canRead}
-              onChange={onSelectChange}
-              name="canRead"
-            >
-              <option value="unknown">Unknown</option>
-              <option value="true">True</option>
-              <option value="false">False</option>
-            </Select>
+            <Badge colorPalette="orange">{t('General.readable')}</Badge>
+            <NativeSelect.Root size="sm" variant="subtle">
+              <NativeSelect.Field
+                value={item.useTypes.canRead}
+                onChange={onSelectChange}
+                name="canRead"
+              >
+                <option value="unknown">Unknown</option>
+                <option value="true">True</option>
+                <option value="false">False</option>
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
           </Stack>
 
           <Stack direction="row" alignItems={'center'}>
-            <Badge colorScheme="orange">{t('General.edible')}</Badge>
-            <Select
-              size="sm"
-              variant={'filled'}
-              value={item.useTypes.canEat}
-              onChange={onSelectChange}
-              name="canEat"
-            >
-              <option value="unknown">Unknown</option>
-              <option value="true">True</option>
-              <option value="false">False</option>
-            </Select>
+            <Badge colorPalette="orange">{t('General.edible')}</Badge>
+            <NativeSelect.Root size="sm" variant="subtle">
+              <NativeSelect.Field
+                value={item.useTypes.canEat}
+                onChange={onSelectChange}
+                name="canEat"
+              >
+                <option value="unknown">Unknown</option>
+                <option value="true">True</option>
+                <option value="false">False</option>
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
           </Stack>
 
           <Stack direction="row" alignItems={'center'}>
-            <Badge colorScheme="orange">{t('General.playable')}</Badge>
-            <Select
-              size="sm"
-              variant={'filled'}
-              value={item.useTypes.canPlay}
-              onChange={onSelectChange}
-              name="canPlay"
-            >
-              <option value="unknown">Unknown</option>
-              <option value="true">True</option>
-              <option value="false">False</option>
-            </Select>
+            <Badge colorPalette="orange">{t('General.playable')}</Badge>
+            <NativeSelect.Root size="sm" variant="subtle">
+              <NativeSelect.Field
+                value={item.useTypes.canPlay}
+                onChange={onSelectChange}
+                name="canPlay"
+              >
+                <option value="unknown">Unknown</option>
+                <option value="true">True</option>
+                <option value="false">False</option>
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
           </Stack>
 
           <Stack direction="row" alignItems={'center'}>
-            <Badge colorScheme="orange">{t('General.openable')}</Badge>
-            <Select
-              size="sm"
-              variant={'filled'}
-              value={item.useTypes.canOpen}
-              onChange={onSelectChange}
-              name="canOpen"
-            >
-              <option value="unknown">Unknown</option>
-              <option value="true">True</option>
-              <option value="false">False</option>
-            </Select>
+            <Badge colorPalette="orange">{t('General.openable')}</Badge>
+            <NativeSelect.Root size="sm" variant="subtle">
+              <NativeSelect.Field
+                value={item.useTypes.canOpen}
+                onChange={onSelectChange}
+                name="canOpen"
+              >
+                <option value="unknown">Unknown</option>
+                <option value="true">True</option>
+                <option value="false">False</option>
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
           </Stack>
         </Stack>
-      </FormControl>
-      {/* <FormControl>
-        <FormLabel color="gray.300">Tags (max. 15)</FormLabel>
+      </Field.Root>
+      {/* <Field.Root>
+        <Field.Label color="gray.300">Tags (max. 15)</Field.Label>
         <TagSelect
           value={tags}
           onChange={(vals) => handleChange(vals, 'tags')}
           type="tags"
           disabled={categories.length >= 15}
         />
-        <FormHelperText>
+        <Field.HelperText>
           Prefer to use existing tags instead of creating new ones.
           <br />
           <br />
@@ -729,8 +756,8 @@ export const CategoriesTab = (props: TagSelectProps) => {
           <br />
           <br />
           Tags must not contain words that are in the item name
-        </FormHelperText>
-      </FormControl> */}
+        </Field.HelperText>
+      </Field.Root> */}
     </Stack>
   );
 };
@@ -825,11 +852,11 @@ export const OpenableTab = (props: OpenableTabProps) => {
       <Flex flexFlow={'column'} bg="blackAlpha.300" p={2} gap={3}>
         <Input
           size="sm"
-          variant="filled"
+          variant="subtle"
           placeholder="Pool Name"
           onChange={(e) => setNewPoolName(e.target.value)}
         />
-        <Button size="sm" onClick={createPool} isDisabled={!newPoolName}>
+        <Button size="sm" onClick={createPool} disabled={!newPoolName}>
           Create New Pool
         </Button>
       </Flex>
@@ -855,7 +882,7 @@ export const OpenableTab = (props: OpenableTabProps) => {
                       <Text fontSize={'sm'}>{itemData.name}</Text>
                       <Button
                         size="xs"
-                        colorScheme="red"
+                        colorPalette="red"
                         onClick={() => updatePool(pool.name, itemData, 'remove')}
                         variant="ghost"
                       >
@@ -1016,52 +1043,58 @@ export const EffectsTab = (props: EffectsTabProps) => {
       {effects.map((effect, i) => (
         <VStack key={i} bg="blackAlpha.300" p={2} borderRadius={'sm'}>
           <HStack>
-            <Select
-              value={effect.type}
-              name="type"
-              onChange={(e) => handleChange(e, i)}
-              variant="filled"
-            >
-              <option value="cureDisease">Cure Disease</option>
-              <option value="disease">Cause Disease</option>
-              <option value="heal">Heal HP</option>
-              <option value="stats">Stats</option>
-              <option value="colorSpecies">Color/Species Change</option>
-              <option value="petpetColor">Petpet Color Change</option>
-              <option value="other">Other</option>
-            </Select>
-            {['disease', 'cureDisease'].includes(effect.type) && (
-              <Select
-                name="name"
-                variant="filled"
-                value={effect.name}
+            <NativeSelect.Root variant="subtle">
+              <NativeSelect.Field
+                value={effect.type}
+                name="type"
                 onChange={(e) => handleChange(e, i)}
               >
-                <option>Select Disease</option>
-                {deseaseList_en
-                  .slice()
-                  .sort((a, b) => a.localeCompare(b))
-                  .map((disease) => (
-                    <option key={disease} value={disease}>
-                      {disease}
-                    </option>
-                  ))}
-              </Select>
+                <option value="cureDisease">Cure Disease</option>
+                <option value="disease">Cause Disease</option>
+                <option value="heal">Heal HP</option>
+                <option value="stats">Stats</option>
+                <option value="colorSpecies">Color/Species Change</option>
+                <option value="petpetColor">Petpet Color Change</option>
+                <option value="other">Other</option>
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
+            {['disease', 'cureDisease'].includes(effect.type) && (
+              <NativeSelect.Root variant="subtle">
+                <NativeSelect.Field
+                  name="name"
+                  value={effect.name}
+                  onChange={(e) => handleChange(e, i)}
+                >
+                  <option>Select Disease</option>
+                  {deseaseList_en
+                    .slice()
+                    .sort((a, b) => a.localeCompare(b))
+                    .map((disease) => (
+                      <option key={disease} value={disease}>
+                        {disease}
+                      </option>
+                    ))}
+                </NativeSelect.Field>
+                <NativeSelect.Indicator />
+              </NativeSelect.Root>
             )}
             {effect.type === 'stats' && (
-              <Select
-                name="name"
-                variant="filled"
-                value={effect.name}
-                onChange={(e) => handleChange(e, i)}
-              >
-                <option>Select Stats</option>
-                {statsType.map((stat) => (
-                  <option key={stat} value={stat}>
-                    {stat}
-                  </option>
-                ))}
-              </Select>
+              <NativeSelect.Root variant="subtle">
+                <NativeSelect.Field
+                  name="name"
+                  value={effect.name}
+                  onChange={(e) => handleChange(e, i)}
+                >
+                  <option>Select Stats</option>
+                  {statsType.map((stat) => (
+                    <option key={stat} value={stat}>
+                      {stat}
+                    </option>
+                  ))}
+                </NativeSelect.Field>
+                <NativeSelect.Indicator />
+              </NativeSelect.Root>
             )}
           </HStack>
 
@@ -1073,7 +1106,7 @@ export const EffectsTab = (props: EffectsTabProps) => {
                 name="minVal"
                 type="number"
                 placeholder="Min Value"
-                variant="filled"
+                variant="subtle"
               />
               <Input
                 onChange={(e) => handleChange(e, i)}
@@ -1081,7 +1114,7 @@ export const EffectsTab = (props: EffectsTabProps) => {
                 name="maxVal"
                 type="number"
                 placeholder="Max Value"
-                variant="filled"
+                variant="subtle"
               />
               <Input
                 onChange={(e) => handleChange(e, i)}
@@ -1089,7 +1122,7 @@ export const EffectsTab = (props: EffectsTabProps) => {
                 name="strVal"
                 type="input"
                 placeholder="strVal (text)"
-                variant="filled"
+                variant="subtle"
               />
             </HStack>
           )}
@@ -1127,20 +1160,22 @@ export const EffectsTab = (props: EffectsTabProps) => {
             value={effect.text ?? undefined}
             onChange={(e) => handleChange(e, i)}
             placeholder="Notes (accept markdown - optional)"
-            variant="filled"
+            variant="subtle"
             autoComplete="off"
           />
-          <Select
-            name="isChance"
-            value={effect.isChance.toString()}
-            onChange={(e) => handleChange(e, i)}
-            variant="filled"
-          >
-            <option value="false">Not Random</option>
-            <option value="true">Random</option>
-          </Select>
+          <NativeSelect.Root variant="subtle">
+            <NativeSelect.Field
+              name="isChance"
+              value={effect.isChance.toString()}
+              onChange={(e) => handleChange(e, i)}
+            >
+              <option value="false">Not Random</option>
+              <option value="true">Random</option>
+            </NativeSelect.Field>
+            <NativeSelect.Indicator />
+          </NativeSelect.Root>
           <HStack>
-            <Button onClick={() => removeEffect(i)} colorScheme="red" variant={'ghost'}>
+            <Button onClick={() => removeEffect(i)} colorPalette="red" variant={'ghost'}>
               Delete Effect
             </Button>
           </HStack>
@@ -1148,7 +1183,7 @@ export const EffectsTab = (props: EffectsTabProps) => {
       ))}
       <Button onClick={addEffect}>Add New Effect</Button>
       {unsavedChanges && (
-        <Button onClick={saveChanges} colorScheme="green" variant={'outline'} isLoading={isLoading}>
+        <Button onClick={saveChanges} colorPalette="green" variant={'outline'} loading={isLoading}>
           Save Effects
         </Button>
       )}
@@ -1276,32 +1311,36 @@ export const PetpetTab = (props: PetpetTabProps) => {
             placeHolder="Species"
           />
         </HStack>
-        <Select
-          name="isCanonical"
-          value={petpetInfo.isCanonical.toString()}
-          onChange={(e) => handleChange(e)}
-          variant="filled"
-        >
-          <option value="false">Not Canonical</option>
-          <option value="true">Canonical</option>
-        </Select>
-        <Select
-          name="isUnpaintable"
-          value={petpetInfo.isUnpaintable.toString()}
-          onChange={(e) => handleChange(e)}
-          variant="filled"
-        >
-          <option value="false">Paintable</option>
-          <option value="true">Unpaintable</option>
-        </Select>
+        <NativeSelect.Root variant="subtle">
+          <NativeSelect.Field
+            name="isCanonical"
+            value={petpetInfo.isCanonical.toString()}
+            onChange={(e) => handleChange(e)}
+          >
+            <option value="false">Not Canonical</option>
+            <option value="true">Canonical</option>
+          </NativeSelect.Field>
+          <NativeSelect.Indicator />
+        </NativeSelect.Root>
+        <NativeSelect.Root variant="subtle">
+          <NativeSelect.Field
+            name="isUnpaintable"
+            value={petpetInfo.isUnpaintable.toString()}
+            onChange={(e) => handleChange(e)}
+          >
+            <option value="false">Paintable</option>
+            <option value="true">Unpaintable</option>
+          </NativeSelect.Field>
+          <NativeSelect.Indicator />
+        </NativeSelect.Root>
       </VStack>
       {unsavedChanges && (
-        <Button onClick={saveChanges} colorScheme="green" variant={'outline'} isLoading={isLoading}>
+        <Button onClick={saveChanges} colorPalette="green" variant={'outline'} loading={isLoading}>
           Save Petpet
         </Button>
       )}
       {!!petpetData && (
-        <Button onClick={deleteData} colorScheme="red" variant={'outline'} isLoading={isLoading}>
+        <Button onClick={deleteData} colorPalette="red" variant={'outline'} loading={isLoading}>
           Delete Petpet Data
         </Button>
       )}

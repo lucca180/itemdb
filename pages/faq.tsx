@@ -29,23 +29,23 @@ const WhyUsPage = () => {
         <Heading as="h1" size="lg">
           {t('FAQ.why-itemdb')}
         </Heading>
-        <Text size={{ base: 'sm', md: undefined }}>{t('FAQ.text-1')}</Text>
+        <Text fontSize={{ base: 'sm', md: undefined }}>{t('FAQ.text-1')}</Text>
       </HeaderCard>
-      <Flex flexFlow="column" gap={3} sx={{ a: { color: 'cyan.400' }, b: { color: 'blue.300' } }}>
+      <Flex
+        flexFlow="column"
+        gap={3}
+        css={{ '& a': { color: 'cyan.400' }, b: { color: 'blue.300' } }}
+      >
         <Flex flexFlow="column" gap={3} maxW="1000px">
           <Heading size="md">{t('FAQ.what-is-the-itemdb')}</Heading>
           <Text>
             {t.rich('FAQ.text-2', {
               Link1: (chunk) => (
-                <Link href="https://github.com/lucca180/itemdb/" isExternal>
+                <Link href="https://github.com/lucca180/itemdb/" target="_blank" rel="noreferrer">
                   {chunk}
                 </Link>
               ),
-              Link2: (chunk) => (
-                <Link href="/contribute" isExternal>
-                  {chunk}
-                </Link>
-              ),
+              Link2: (chunk) => <Link href="/contribute">{chunk}</Link>,
             })}
             <br />
             <br />
@@ -61,13 +61,9 @@ const WhyUsPage = () => {
             <br />
             {t.rich('FAQ.text-4', {
               Link: (chunk) => <Link href="/terms">{chunk}</Link>,
-              Link1: (chunk) => (
-                <Link href="/articles/sort-gallery" isExternal>
-                  {chunk}
-                </Link>
-              ),
+              Link1: (chunk) => <Link href="/articles/sort-gallery">{chunk}</Link>,
               Link2: (chunk) => (
-                <Link href="https://docs.itemdb.com.br" isExternal>
+                <Link href="https://docs.itemdb.com.br" target="_blank" rel="noreferrer">
                   {chunk}
                 </Link>
               ),
@@ -80,12 +76,12 @@ const WhyUsPage = () => {
           <Text>
             {t.rich('FAQ.text-is-safe', {
               Gramps: (chunk) => (
-                <Link href="https://www.youtube.com/@mrsgrandpatv" isExternal>
+                <Link href="https://www.youtube.com/@mrsgrandpatv" target="_blank" rel="noreferrer">
                   {chunk}
                 </Link>
               ),
               Safe: (chunk) => (
-                <Link href="/img/tnt-support.png" isExternal>
+                <Link href="/img/tnt-support.png" target="_blank" rel="noreferrer">
                   {chunk}
                 </Link>
               ),
@@ -143,7 +139,7 @@ const WhyUsPage = () => {
               <>
                 {t.rich('FAQ.text-9', {
                   Link: (chunk) => (
-                    <Link href="https://impress.openneo.net/" isExternal>
+                    <Link href="https://impress.openneo.net/" target="_blank" rel="noreferrer">
                       {chunk}
                     </Link>
                   ),
@@ -172,7 +168,7 @@ const WhyUsPage = () => {
           <Text>
             {t.rich('FAQ.text-12', {
               Link: (chunk) => (
-                <Link href="http://magnetismotimes.com/" isExternal>
+                <Link href="http://magnetismotimes.com/" target="_blank" rel="noreferrer">
                   {chunk}
                 </Link>
               ),

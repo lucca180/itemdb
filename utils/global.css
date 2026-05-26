@@ -1,3 +1,6 @@
+body {
+  background: transparent;
+}
 ::-webkit-scrollbar {
   width: 7px;
   height: 7px;
@@ -12,7 +15,11 @@
 }
 
 ::selection {
-    background-color: var(--global-color-selection, #0073ff4d);
+  background-color: var(--global-color-selection, #0073ff4d);
+}
+
+:focus-visible {
+  outline: none;
 }
 
 @keyframes restock2024 {

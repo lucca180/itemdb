@@ -1,12 +1,33 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ListItemInfo, ItemData, UserList } from '../../types';
 import debounce from 'lodash/debounce';
 import { ViewportList } from 'react-viewport-list';
-import { Box, Flex, useSize } from '@chakra-ui/react';
+import { Box, Flex } from '@chakra-ui/react';
 import { EditableItemCard, EditableItemCardProps } from './EditableItemCard';
 import dynamic from 'next/dynamic';
 
 const SortableItem = dynamic<EditableItemCardProps>(() => import('../Sortable/SortableItemCard'));
+
+function useElementSize(ref: React.RefObject<HTMLElement | null>) {
+  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    const observer = new ResizeObserver(([entry]) => {
+      setSize({
+        width: entry.contentRect.width,
+        height: entry.contentRect.height,
+      });
+    });
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [ref]);
+
+  return size;
+}
 
 export type ListViewportProps = {
   ids: number[];
@@ -36,7 +57,7 @@ export type ListViewportProps = {
 
 export default function ListViewport(props: ListViewportProps) {
   const elementRef = useRef(null);
-  const dimensions = useSize(elementRef, { observeMutation: true });
+  const dimensions = useElementSize(elementRef);
 
   const { itemInfo, items, editMode, activateSort, list } = props;
   const [forceIds, setIds] = useState(props.ids);

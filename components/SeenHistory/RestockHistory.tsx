@@ -1,17 +1,4 @@
-import {
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Tr,
-  Text,
-  Th,
-  Thead,
-  Flex,
-  HStack,
-  Spinner,
-  Center,
-} from '@chakra-ui/react';
+import { Table, Text, Flex, HStack, Spinner, Center } from '@chakra-ui/react';
 import React from 'react';
 import { ItemData, ItemRestockData } from '../../types';
 import { useFormatter, useTranslations } from 'next-intl';
@@ -110,30 +97,28 @@ const RestockHistoryTable = (props: Props) => {
   const t = useTranslations();
 
   return (
-    <TableContainer
+    <Table.ScrollArea
       minH={{ base: 100, md: 200 }}
       maxH={{ base: 200, md: 500 }}
       w="100%"
       maxW="1000"
       borderRadius="sm"
-      overflowX="auto"
-      overflowY="auto"
     >
-      <Table h="100%" variant="striped" colorScheme="gray" size="sm" bg={'gray.600'}>
-        <Thead>
-          <Tr>
-            <Th>{t('General.price')}</Th>
-            <Th>{t('ItemPage.units-in-stock')}</Th>
-            <Th>{t('ItemPage.seen-at')}</Th>
-          </Tr>
-        </Thead>
-        <Tbody fontSize={'xs'} color="gray.200">
+      <Table.Root h="100%" variant="line" colorPalette="gray" size="sm" bg="gray.600" striped>
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeader>{t('General.price')}</Table.ColumnHeader>
+            <Table.ColumnHeader>{t('ItemPage.units-in-stock')}</Table.ColumnHeader>
+            <Table.ColumnHeader>{t('ItemPage.seen-at')}</Table.ColumnHeader>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body fontSize="xs" color="gray.200">
           {sortedData.map((restock, index) => (
             <RestockItem key={restock.internal_id} restock={restock} index={index} />
           ))}
-        </Tbody>
-      </Table>
-    </TableContainer>
+        </Table.Body>
+      </Table.Root>
+    </Table.ScrollArea>
   );
 };
 
@@ -142,14 +127,14 @@ const RestockItem = (props: { restock: ItemRestockData; index: number }) => {
   const format = useFormatter();
 
   return (
-    <Tr key={restock.internal_id}>
-      <Td>
+    <Table.Row>
+      <Table.Cell>
         <Text>{format.number(restock.price)} NP</Text>
-      </Td>
-      <Td>
+      </Table.Cell>
+      <Table.Cell>
         <Text>{restock.stock}</Text>
-      </Td>
-      <Td>
+      </Table.Cell>
+      <Table.Cell>
         <Text>
           {format.dateTime(new Date(restock.addedAt), {
             dateStyle: 'short',
@@ -158,7 +143,7 @@ const RestockItem = (props: { restock: ItemRestockData; index: number }) => {
           })}{' '}
           NST
         </Text>
-      </Td>
-    </Tr>
+      </Table.Cell>
+    </Table.Row>
   );
 };

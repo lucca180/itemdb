@@ -77,7 +77,7 @@ const RestockHeader = (props: Props) => {
         mb={6}
         flexFlow="column"
         gap={2}
-        sx={{ a: { color: Color(shopInfo.color).lightness(70).hex() } }}
+        css={{ '& a': { color: Color(shopInfo.color).lightness(70).hex() } }}
       >
         {!isHistory && (
           <HStack>
@@ -87,7 +87,7 @@ const RestockHeader = (props: Props) => {
             {shopInfo.difficulty.toLowerCase() !== 'medium' && (
               <Link as={NextLink} href="/restock">
                 <Badge
-                  colorScheme={shopInfo.difficulty.toLowerCase() === 'beginner' ? 'green' : 'red'}
+                  colorPalette={shopInfo.difficulty.toLowerCase() === 'beginner' ? 'green' : 'red'}
                 >
                   {shopInfo.difficulty}
                 </Badge>
@@ -97,12 +97,13 @@ const RestockHeader = (props: Props) => {
         )}
         {isHistory && (
           <HStack>
-            <Badge colorScheme="orange">Restock History</Badge>
+            <Badge colorPalette="orange">Restock History</Badge>
           </HStack>
         )}
         <Link
           href={`https://www.neopets.com/objects.phtml?type=shop&obj_type=${shopInfo.id}`}
-          isExternal
+          target="_blank"
+          rel="noreferrer"
         >
           <ChakraImage
             priority
@@ -113,7 +114,7 @@ const RestockHeader = (props: Props) => {
             alt={`${shopInfo.name} thumbnail`}
             borderRadius="md"
             objectFit={'cover'}
-            boxShadow={'md'}
+            boxShadow={'sm'}
           />
         </Link>
         <Heading as="h1">{shopInfo.name}</Heading>
@@ -128,7 +129,7 @@ const RestockHeader = (props: Props) => {
                     src={'/favicon.svg'}
                     width={'18px'}
                     height={'18px'}
-                    style={{ display: 'inline', verticalAlign: 'middle', marginLeft: '0.2rem' }}
+                    style={{ display: 'inline', verticalAlign: 'middle' }}
                     alt="link icon"
                   />
                 </Link>
@@ -136,15 +137,31 @@ const RestockHeader = (props: Props) => {
             })}
           </Text>
         )}
-        {specialDay === 'hpd' && <Tag colorScheme={'green'}>{t('Restock.half-price-day')}</Tag>}
+        {specialDay === 'hpd' && (
+          <Tag.Root colorPalette="green">
+            <Tag.Label>{t('Restock.half-price-day')}</Tag.Label>
+          </Tag.Root>
+        )}
         {specialDay === 'tyrannia' && (
-          <Tag colorScheme={'orange'}>{t('Restock.tyrannian-victory-day')}</Tag>
+          <Tag.Root colorPalette="orange">
+            <Tag.Label>{t('Restock.tyrannian-victory-day')}</Tag.Label>
+          </Tag.Root>
         )}
-        {specialDay === 'usukicon' && <Tag colorScheme={'pink'}>{t('Restock.usuki-day')}</Tag>}
+        {specialDay === 'usukicon' && (
+          <Tag.Root colorPalette="pink">
+            <Tag.Label>{t('Restock.usuki-day')}</Tag.Label>
+          </Tag.Root>
+        )}
         {specialDay === 'festival' && (
-          <Tag colorScheme={'purple'}>{t('Restock.faerie-festival')}</Tag>
+          <Tag.Root colorPalette="purple">
+            <Tag.Label>{t('Restock.faerie-festival')}</Tag.Label>
+          </Tag.Root>
         )}
-        {specialDay === 'halloween' && <Tag colorScheme={'orange'}>{t('Restock.halloween')}</Tag>}
+        {specialDay === 'halloween' && (
+          <Tag.Root colorPalette="orange">
+            <Tag.Label>{t('Restock.halloween')}</Tag.Label>
+          </Tag.Root>
+        )}
       </Center>
     </>
   );

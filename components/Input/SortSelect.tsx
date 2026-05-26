@@ -1,5 +1,5 @@
-import { ChevronDownIcon } from '@chakra-ui/icons';
-import { Menu, MenuButton, Button, MenuList, MenuItem } from '@chakra-ui/react';
+import { ChevronDownIcon } from '@utils/theme/chakraIcons';
+import { Box, Button, Menu, Portal } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
 import { AiOutlineArrowUp } from 'react-icons/ai';
 
@@ -31,17 +31,25 @@ export const SortSelect = (props: Props) => {
   };
 
   return (
-    <Menu>
-      <MenuButton as={Button} rightIcon={<ChevronDownIcon />} isDisabled={disabled}>
-        {t('SortTypes.' + sortTypes[sortBy])}
-      </MenuButton>
-      <MenuList>
-        {Object.entries(sortTypes).map(([key, val]) => (
-          <MenuItem key={key} value={key} onClick={() => onclick(key)}>
-            {t('SortTypes.' + val)} {key === sortBy && arrow}
-          </MenuItem>
-        ))}
-      </MenuList>
-    </Menu>
+    <Menu.Root>
+      <Menu.Trigger asChild>
+        <Button disabled={disabled}>
+          {t('SortTypes.' + sortTypes[sortBy])}
+          <ChevronDownIcon />
+        </Button>
+      </Menu.Trigger>
+      <Portal>
+        <Menu.Positioner>
+          <Menu.Content>
+            {Object.entries(sortTypes).map(([key, val]) => (
+              <Menu.Item key={key} value={key} onClick={() => onclick(key)}>
+                <Box flex="1">{t('SortTypes.' + val)}</Box>
+                {key === sortBy && arrow}
+              </Menu.Item>
+            ))}
+          </Menu.Content>
+        </Menu.Positioner>
+      </Portal>
+    </Menu.Root>
   );
 };

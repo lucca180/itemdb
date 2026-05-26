@@ -1,26 +1,15 @@
-import {
-  Center,
-  Heading,
-  Text,
-  Flex,
-  Select,
-  FormControl,
-  FormHelperText,
-  FormLabel,
-  Button,
-  useToast,
-  Box,
-} from '@chakra-ui/react';
-import HeaderCard from '../../components/Card/HeaderCard';
-import Layout from '../../components/Layout';
+import { Box, Button, Center, Field, Flex, Heading, NativeSelect, Text } from '@chakra-ui/react';
+import { useToast } from '@utils/theme/toast';
+import HeaderCard from '@components/Card/HeaderCard';
+import Layout from '@components/Layout';
 import { createTranslator, useTranslations } from 'next-intl';
-import ItemSelect from '../../components/Input/ItemSelect';
-import { ItemData } from '../../types';
+import ItemSelect from '@components/Input/ItemSelect';
+import { ItemData } from '@types';
 import { ReactElement, useState } from 'react';
-import ItemCard from '../../components/Items/ItemCard';
+import ItemCard from '@components/Items/ItemCard';
 import axios from 'axios';
 import { NextApiRequest, GetServerSidePropsContext } from 'next';
-import { CheckAuth } from '../../utils/googleCloud';
+import { CheckAuth } from '@utils/googleCloud';
 import { loadTranslation } from '@utils/load-translation';
 
 const DATA_COLLECTING_OPTIONS: {
@@ -70,12 +59,17 @@ const DataCollectingPage = () => {
 
     const resProm = axios.post('/api/v1/tools/data-collecting', obj);
     toast.promise(resProm, {
-      success: { title: t('General.success'), description: t('General.thank-you') },
+      success: {
+        id: 'data-collecting-success',
+        title: t('General.success'),
+        description: t('General.thank-you'),
+      },
       error: {
+        id: 'data-collecting-error',
         title: t('General.something-went-wrong'),
         description: t('General.try-again-later'),
       },
-      loading: { title: t('General.sending-dots') },
+      loading: { id: 'data-collecting-loading', title: t('General.sending-dots') },
     });
 
     await resProm;
@@ -95,7 +89,7 @@ const DataCollectingPage = () => {
         <Heading as="h1" size="lg">
           Data Collecting Tool
         </Heading>
-        <Text size={{ base: 'sm', md: undefined }}>
+        <Text fontSize={{ base: 'sm', md: undefined }}>
           This tool is designed to help us collect certain data that we can&apos;t capture
           automatically (mostly some prize pools)
         </Text>
@@ -107,34 +101,36 @@ const DataCollectingPage = () => {
         gap={8}
       >
         <Flex flexFlow={'column'} w="100%" maxW={'500px'}>
-          <FormControl my={5}>
-            <FormLabel>Type</FormLabel>
-            <Select
-              variant="solid"
-              bg={'blackAlpha.300'}
-              onChange={(e) => setType(e.target.value)}
-              value={type}
-            >
-              <option value="">Select Type</option>
-              {Object.values(DATA_COLLECTING_OPTIONS).map((option) => (
-                <option key={option.id} value={option.id}>
-                  {option.name}
-                </option>
-              ))}
-            </Select>
-            <FormHelperText>
+          <Field.Root my={5}>
+            <Field.Label>Type</Field.Label>
+            <NativeSelect.Root>
+              <NativeSelect.Field
+                bg="blackAlpha.300"
+                onChange={(e) => setType(e.target.value)}
+                value={type}
+              >
+                <option value="">Select Type</option>
+                {Object.values(DATA_COLLECTING_OPTIONS).map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.name}
+                  </option>
+                ))}
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
+            <Field.HelperText>
               We&apos;re only seeking data from these places right now. We can add more in the
               future!
-            </FormHelperText>
-          </FormControl>
+            </Field.HelperText>
+          </Field.Root>
           <Box my={5}>
-            <FormLabel>Item</FormLabel>
+            <Text mb={2}>Item</Text>
             <ItemSelect isDisabled={!type} onChange={onChange} />
           </Box>
           <Center mt={4} gap={3}>
             <Button
               disabled={!itemList.length}
-              colorScheme="gray"
+              colorPalette="gray"
               variant="ghost"
               onClick={() => setItemList([])}
             >
@@ -142,7 +138,7 @@ const DataCollectingPage = () => {
             </Button>
             <Button
               disabled={!itemList.length}
-              colorScheme="green"
+              colorPalette="green"
               variant="ghost"
               onClick={submit}
             >

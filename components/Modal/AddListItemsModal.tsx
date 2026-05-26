@@ -1,17 +1,14 @@
 import {
   Button,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
   Text,
   Flex,
-  useToast,
   useDisclosure,
+  Dialog,
+  CloseButton,
+  Portal,
+  Link,
 } from '@chakra-ui/react';
+import { useToast } from '@utils/theme/toast';
 import { useTranslations } from 'next-intl';
 import NextLink from 'next/link';
 import ItemSelect from '../Input/ItemSelect';
@@ -34,7 +31,7 @@ export type AddListItemsModalProps = {
 export default function AddListItemsModal(props: AddListItemsModalProps) {
   const t = useTranslations();
   const { isOpen, onClose, list } = props;
-  const { isOpen: isDupOpen, onOpen: onDupOpen, onClose: onDupClose } = useDisclosure();
+  const { open: isDupOpen, onOpen: onDupOpen, onClose: onDupClose } = useDisclosure();
   const [duplicatedItemInfo, setDuplicatedItemInfo] = useState<ListItemInfo | undefined>();
   const [duplicatedItem, setDuplicatedItem] = useState<ItemData | undefined>();
   const toast = useToast();
@@ -55,6 +52,7 @@ export default function AddListItemsModal(props: AddListItemsModalProps) {
     if (!user || !item) return;
 
     const toastId = toast({
+      id: 'add-list-item',
       title: t('Layout.adding-item-to-list'),
       status: 'info',
       duration: null,
@@ -74,6 +72,7 @@ export default function AddListItemsModal(props: AddListItemsModalProps) {
       );
       if (res.data.success) {
         toast.update(toastId, {
+          id: toastId,
           title: t('Lists.item-added-to-list'),
           description: t('Lists.need-refresh'),
           status: 'success',
@@ -92,6 +91,7 @@ export default function AddListItemsModal(props: AddListItemsModalProps) {
       }
 
       toast.update(toastId, {
+        id: toastId,
         title: t('General.an-error-occurred'),
         description: t('Layout.error-adding-item-to-list'),
         status: 'error',
@@ -111,32 +111,51 @@ export default function AddListItemsModal(props: AddListItemsModalProps) {
           list={list}
         />
       )}
-      <Modal isOpen={isOpen} onClose={onClose} isCentered initialFocusRef={itemSelectRef}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>{t('Lists.add-items-to-list')}</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody fontSize={'sm'} sx={{ a: { color: 'blue.200' } }}>
-            <Flex flexFlow="column" justifyContent={'center'} alignItems={'center'} gap={2}>
-              <ItemSelect
-                ref={itemSelectRef}
-                placeholder={t('General.search-items')}
-                onChange={(a) => addItemToList(a)}
-              />
-              <Text fontSize="xs" color="whiteAlpha.600">
-                {t.rich('Lists.import-modal-cta', {
-                  Link: (chunk) => <NextLink href="/lists/import">{chunk}</NextLink>,
-                })}
-              </Text>
-            </Flex>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="ghost" onClick={onClose} size="sm">
-              {t('General.close')}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <Dialog.Root
+        open={isOpen}
+        onOpenChange={({ open }) => {
+          if (!open) onClose();
+        }}
+        placement="center"
+        initialFocusEl={() => itemSelectRef.current}
+      >
+        <Portal>
+          <Dialog.Backdrop />
+          <Dialog.Positioner>
+            <Dialog.Content>
+              <Dialog.Header>
+                <Dialog.Title>{t('Lists.add-items-to-list')}</Dialog.Title>
+              </Dialog.Header>
+              <Dialog.CloseTrigger asChild>
+                <CloseButton size="sm" />
+              </Dialog.CloseTrigger>
+              <Dialog.Body fontSize={'sm'} css={{ '& a': { color: 'blue.200' } }}>
+                <Flex flexFlow="column" justifyContent={'center'} alignItems={'center'} gap={2}>
+                  <ItemSelect
+                    ref={itemSelectRef}
+                    placeholder={t('General.search-items')}
+                    onChange={(a) => addItemToList(a)}
+                  />
+                  <Text fontSize="xs" color="whiteAlpha.600">
+                    {t.rich('Lists.import-modal-cta', {
+                      Link: (chunk) => (
+                        <Link asChild>
+                          <NextLink href="/lists/import">{chunk}</NextLink>
+                        </Link>
+                      ),
+                    })}
+                  </Text>
+                </Flex>
+              </Dialog.Body>
+              <Dialog.Footer>
+                <Button variant="ghost" onClick={onClose} size="sm">
+                  {t('General.close')}
+                </Button>
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
     </>
   );
 }

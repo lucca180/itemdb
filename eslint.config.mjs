@@ -44,7 +44,6 @@ export default [
       'public/**',
       'eslint.config.mjs',
       'pages/api/_dev',
-      'styled-system/**',
     ],
   },
 ];

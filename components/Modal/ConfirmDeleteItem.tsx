@@ -1,13 +1,4 @@
-import {
-  AlertDialog,
-  AlertDialogOverlay,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogBody,
-  AlertDialogFooter,
-  Button,
-  Spinner,
-} from '@chakra-ui/react';
+import { Button, Spinner, Dialog, Portal } from '@chakra-ui/react';
 import axios from 'axios';
 import React from 'react';
 import { ItemData } from '../../types';
@@ -22,7 +13,6 @@ type Props = {
 const ConfirmDeleteItem = (props: Props) => {
   const t = useTranslations();
   const { isOpen, onClose, item } = props;
-  const cancelRef = React.useRef(null);
   const [loading, setLoading] = React.useState(false);
   const [msg, setMsg] = React.useState('');
 
@@ -42,64 +32,85 @@ const ConfirmDeleteItem = (props: Props) => {
     }
   };
 
+  const dialogOpen = msg ? true : loading ? true : isOpen;
+  const handleOpenChange = ({ open }: { open: boolean }) => {
+    if (!open && !loading) onClose();
+  };
+
   if (msg)
     return (
-      <AlertDialog isOpen leastDestructiveRef={cancelRef as any} onClose={onClose}>
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              {t('Lists.delete-item-name', { x: item.name })}?
-            </AlertDialogHeader>
-            <AlertDialogBody>{msg}</AlertDialogBody>
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={onClose}>
-                {t('General.close')}
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
+      <Dialog.Root role="alertdialog" open onOpenChange={handleOpenChange} placement="center">
+        <Portal>
+          <Dialog.Backdrop />
+          <Dialog.Positioner>
+            <Dialog.Content>
+              <Dialog.Header>
+                <Dialog.Title fontSize="lg" fontWeight="bold">
+                  {t('Lists.delete-item-name', { x: item.name })}?
+                </Dialog.Title>
+              </Dialog.Header>
+              <Dialog.Body>{msg}</Dialog.Body>
+              <Dialog.Footer>
+                <Button onClick={onClose}>{t('General.close')}</Button>
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
     );
 
   if (loading)
     return (
-      <AlertDialog isOpen leastDestructiveRef={cancelRef as any} onClose={() => {}}>
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              {t('Lists.delete-item-name', { x: item.name })}?
-            </AlertDialogHeader>
-            <AlertDialogBody>
-              <Spinner />
-            </AlertDialogBody>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
+      <Dialog.Root role="alertdialog" open onOpenChange={() => {}} placement="center">
+        <Portal>
+          <Dialog.Backdrop />
+          <Dialog.Positioner>
+            <Dialog.Content>
+              <Dialog.Header>
+                <Dialog.Title fontSize="lg" fontWeight="bold">
+                  {t('Lists.delete-item-name', { x: item.name })}?
+                </Dialog.Title>
+              </Dialog.Header>
+              <Dialog.Body>
+                <Spinner />
+              </Dialog.Body>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
     );
 
   return (
-    <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef as any} onClose={onClose}>
-      <AlertDialogOverlay>
-        <AlertDialogContent>
-          <AlertDialogHeader fontSize="lg" fontWeight="bold">
-            {t('Lists.delete-item-name', { x: item.name })}??
-          </AlertDialogHeader>
-
-          <AlertDialogBody>
-            {t('General.are-you-sure-you-cant-undo-this-action-afterwards')}
-          </AlertDialogBody>
-
-          <AlertDialogFooter>
-            <Button ref={cancelRef} onClick={onClose}>
-              {t('General.cancel')}
-            </Button>
-            <Button colorScheme="red" onClick={onConfirm} ml={3}>
-              {t('General.delete')}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialogOverlay>
-    </AlertDialog>
+    <Dialog.Root
+      role="alertdialog"
+      open={dialogOpen}
+      onOpenChange={handleOpenChange}
+      placement="center"
+    >
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>
+              <Dialog.Title fontSize="lg" fontWeight="bold">
+                {t('Lists.delete-item-name', { x: item.name })}??
+              </Dialog.Title>
+            </Dialog.Header>
+            <Dialog.Body>
+              {t('General.are-you-sure-you-cant-undo-this-action-afterwards')}
+            </Dialog.Body>
+            <Dialog.Footer>
+              <Button variant="outline" onClick={onClose}>
+                {t('General.cancel')}
+              </Button>
+              <Button colorPalette="red" onClick={onConfirm} ml={3}>
+                {t('General.delete')}
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

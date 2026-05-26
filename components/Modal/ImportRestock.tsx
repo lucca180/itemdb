@@ -1,28 +1,22 @@
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
-  Text,
-  Stack,
-  Flex,
-  CheckboxGroup,
-  Checkbox,
   Button,
-  Spinner,
   Center,
-  useToast,
+  Checkbox,
+  CloseButton,
+  Dialog,
+  Flex,
+  Portal,
+  Spinner,
+  Stack,
+  Text,
 } from '@chakra-ui/react';
+import { useToast } from '@utils/theme/toast';
 import { formatDistance } from 'date-fns';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { RestockSession } from '../../types';
 import { restockShopInfo } from '../../utils/utils';
 import axios from 'axios';
 import { useFormatter, useTranslations } from 'next-intl';
-import { useRef } from 'react';
 import { ViewportList } from 'react-viewport-list';
 
 export type ImportRestockModalProps = {
@@ -70,9 +64,7 @@ const ImportRestockModal = (props: ImportRestockModalProps) => {
     );
   };
 
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-
+  const toggleSessionSelection = (value: string) => {
     if (selectedSessions.includes(value)) {
       setSelectedSessions(selectedSessions.filter((x) => x !== value));
     } else if (selectedSessions.length < MAX_SESSIONS) {
@@ -87,6 +79,7 @@ const ImportRestockModal = (props: ImportRestockModalProps) => {
       if (!isSerializable(sessions)) {
         console.error('Invalid session data:', sessions);
         toast({
+          id: 'import-restock-invalid-session',
           title: t('General.error'),
           description: <ResetToastMsg />,
           status: 'error',
@@ -114,6 +107,7 @@ const ImportRestockModal = (props: ImportRestockModalProps) => {
       refresh();
     } catch (e) {
       toast({
+        id: 'import-restock-error',
         title: t('General.error'),
         description: t('General.something-went-wrong-please-try-again-later'),
         status: 'error',
@@ -154,27 +148,26 @@ const ImportRestockModal = (props: ImportRestockModalProps) => {
     init();
   }, [isOpen]);
 
-  return (
-    <Modal isOpen={isOpen} onClose={handleClose} isCentered scrollBehavior="inside">
-      <ModalOverlay />
+  const renderDialogContent = () => (
+    <Dialog.Content>
+      <Dialog.Header>
+        <Dialog.Title>{t('Restock.import-sessions')}</Dialog.Title>
+      </Dialog.Header>
+      <Dialog.CloseTrigger asChild>
+        <CloseButton size="sm" />
+      </Dialog.CloseTrigger>
       {loading && (
-        <ModalContent>
-          <ModalHeader>{t('Restock.import-sessions')}</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Center>
-              <Spinner />
-            </Center>
-          </ModalBody>
-        </ModalContent>
+        <Dialog.Body>
+          <Center>
+            <Spinner />
+          </Center>
+        </Dialog.Body>
       )}
       {confirmImport && !loading && (
-        <ModalContent>
-          <ModalHeader>{t('Restock.import-sessions')}</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
+        <>
+          <Dialog.Body>
             {confirmImport === 'import' && (
-              <Text fontSize="sm" sx={{ b: { color: 'green.200' } }}>
+              <Text fontSize="sm" css={{ b: { color: 'green.200' } }}>
                 {t.rich('Restock.import-modal-1', {
                   b: (chunk) => <b>{chunk}</b>,
                   x: selectedSessions.length,
@@ -186,33 +179,31 @@ const ImportRestockModal = (props: ImportRestockModalProps) => {
               </Text>
             )}
             {confirmImport === 'discard' && (
-              <Text fontSize="sm" sx={{ b: { color: 'red.300' } }}>
+              <Text fontSize="sm" css={{ b: { color: 'red.300' } }}>
                 {t.rich('Restock.import-modal-3', {
                   b: (chunk) => <b>{chunk}</b>,
                 })}
               </Text>
             )}
-          </ModalBody>
-          <ModalFooter>
+          </Dialog.Body>
+          <Dialog.Footer>
             <Button size="sm" variant={'ghost'} mr={3} onClick={() => setConfirmImport(null)}>
               {t('General.back')}
             </Button>
             <Button
               size="sm"
-              colorScheme={confirmImport === 'import' ? 'green' : 'red'}
+              colorPalette={confirmImport === 'import' ? 'green' : 'red'}
               onClick={doThings}
             >
               {t('General.confirm')}
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </Dialog.Footer>
+        </>
       )}
 
       {!confirmImport && !loading && (
-        <ModalContent>
-          <ModalHeader>{t('Restock.import-sessions')}</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
+        <>
+          <Dialog.Body>
             <Text fontSize="sm">
               {t('Restock.import-modal-4')} {t('Restock.import-modal-5')}
             </Text>
@@ -220,70 +211,76 @@ const ImportRestockModal = (props: ImportRestockModalProps) => {
               {t('Restock.dashboard-limits', { x: MAX_SESSIONS })}
             </Text>
             <Flex mt={3} maxH="300px" overflow={'auto'} direction="column" px={1} ref={ref}>
-              <Checkbox
+              <Checkbox.Root
                 mb={1}
-                isChecked={allChecked}
-                isIndeterminate={isIndeterminate}
-                colorScheme="green"
-                onChange={(e) =>
-                  e.target.checked
+                checked={isIndeterminate ? 'indeterminate' : allChecked}
+                colorPalette="green"
+                onCheckedChange={({ checked }) =>
+                  checked
                     ? setSelectedSessions(
                         allSessions.slice(0, MAX_SESSIONS).map((x, i) => i.toString())
                       )
                     : setSelectedSessions([])
                 }
               >
-                {allSessions.length <= MAX_SESSIONS &&
-                  t('Restock.import-modal-import-all-x', { x: allSessions.length })}
-                {allSessions.length > MAX_SESSIONS &&
-                  t('Restock.import-latest-x-sessions', { x: MAX_SESSIONS })}
-              </Checkbox>
-              <CheckboxGroup colorScheme="green" value={selectedSessions}>
-                <Stack pl={3} spacing={3} direction="column">
-                  <ViewportList viewportRef={ref} items={allSessions}>
-                    {(session, i) => (
-                      <Checkbox value={i.toString()} key={i} onChange={handleCheckboxChange}>
-                        <Flex flexFlow="column">
-                          <Text color="whiteAlpha.700">
-                            {t('Restock.import-modal-x-time-at-y-store', {
-                              x: formatDistance(session.lastRefresh, session.startDate),
-                              y: restockShopInfo[session.shopId].name,
-                            })}
-                          </Text>
-                          <Text as="span" fontSize={'xs'} color="whiteAlpha.500">
-                            {' '}
-                            {t('Restock.import-modal-x-items-restocked', {
-                              x: Object.keys(session.items).length,
-                            })}{' '}
-                            |{' '}
-                            {t('Restock.import-modal-x-bought', {
-                              x: session.clicks.filter((x) => x.buy_timestamp).length,
-                            })}{' '}
-                          </Text>
-                          <Text fontSize="xs" color="whiteAlpha.500">
-                            {format.dateTime(session.startDate, {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                            })}
-                          </Text>
-                        </Flex>
-                      </Checkbox>
-                    )}
-                  </ViewportList>
-                </Stack>
-              </CheckboxGroup>
+                <Checkbox.HiddenInput />
+                <Checkbox.Control />
+                <Checkbox.Label>
+                  {allSessions.length <= MAX_SESSIONS &&
+                    t('Restock.import-modal-import-all-x', { x: allSessions.length })}
+                  {allSessions.length > MAX_SESSIONS &&
+                    t('Restock.import-latest-x-sessions', { x: MAX_SESSIONS })}
+                </Checkbox.Label>
+              </Checkbox.Root>
+              <Stack pl={3} gap={3} direction="column">
+                <ViewportList viewportRef={ref} items={allSessions}>
+                  {(session, i) => {
+                    const value = i.toString();
+                    return (
+                      <Checkbox.Root
+                        key={i}
+                        checked={selectedSessions.includes(value)}
+                        onCheckedChange={() => toggleSessionSelection(value)}
+                      >
+                        <Checkbox.HiddenInput value={value} />
+                        <Checkbox.Control />
+                        <Checkbox.Label>
+                          <Flex flexFlow="column">
+                            <Text color="whiteAlpha.700">
+                              {t('Restock.import-modal-x-time-at-y-store', {
+                                x: formatDistance(session.lastRefresh, session.startDate),
+                                y: restockShopInfo[session.shopId].name,
+                              })}
+                            </Text>
+                            <Text as="span" fontSize={'xs'} color="whiteAlpha.500">
+                              {t('Restock.import-modal-x-items-restocked', {
+                                x: Object.keys(session.items).length,
+                              })}{' '}
+                              |{' '}
+                              {t('Restock.import-modal-x-bought', {
+                                x: session.clicks.filter((x) => x.buy_timestamp).length,
+                              })}{' '}
+                            </Text>
+                            <Text fontSize="xs" color="whiteAlpha.500">
+                              {format.dateTime(session.startDate, {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                              })}
+                            </Text>
+                          </Flex>
+                        </Checkbox.Label>
+                      </Checkbox.Root>
+                    );
+                  }}
+                </ViewportList>
+              </Stack>
             </Flex>
-            {/* {!allChecked && selectedSessions.length > 0 && (
-             <Text fontSize="xs" textAlign={'center'} mt={3} color="whiteAlpha.800">
-               Other {allSessions.length - selectedSessions.length} sessions will be discarded
-             </Text>
-           )} */}
-          </ModalBody>
-          <ModalFooter>
+          </Dialog.Body>
+          <Dialog.Footer>
             <Button
               size="sm"
-              colorScheme="red"
+              colorPalette="red"
               variant={'ghost'}
               mr={3}
               onClick={() => setConfirmImport('discard')}
@@ -292,16 +289,32 @@ const ImportRestockModal = (props: ImportRestockModalProps) => {
             </Button>
             <Button
               size="sm"
-              colorScheme="green"
+              colorPalette="green"
               onClick={() => setConfirmImport('import')}
-              isDisabled={!selectedSessions.length || selectedSessions.length > MAX_SESSIONS}
+              disabled={!selectedSessions.length || selectedSessions.length > MAX_SESSIONS}
             >
               {t('Restock.import-modal-import-x-sessions', { x: selectedSessions.length })}
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </Dialog.Footer>
+        </>
       )}
-    </Modal>
+    </Dialog.Content>
+  );
+
+  return (
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={({ open }) => {
+        if (!open) handleClose();
+      }}
+      placement="center"
+      scrollBehavior="inside"
+    >
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>{renderDialogContent()}</Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 
@@ -365,7 +378,7 @@ const ResetToastMsg = () => {
   return (
     <Flex flexFlow={'column'} gap={1}>
       <Text>{t('Restock.corrupt-sessions')}</Text>
-      <Button colorScheme="blackAlpha" onClick={resetAll}>
+      <Button colorPalette="blackAlpha" onClick={resetAll}>
         {t('Restock.reset-data')}
       </Button>
     </Flex>

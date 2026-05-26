@@ -1,19 +1,5 @@
 /* eslint-disable react/no-unescaped-entities */
-import {
-  Heading,
-  Text,
-  Link,
-  Center,
-  Image,
-  Box,
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
-} from '@chakra-ui/react';
+import { Heading, Text, Link, Center, Image, Box, Table } from '@chakra-ui/react';
 import Layout from '../components/Layout';
 import { ReactElement } from 'react';
 import { loadTranslation } from '@utils/load-translation';
@@ -37,7 +23,13 @@ const RawDataPage = (props: RawExportPageProps) => {
         bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,hsla(215, 31.80%, 56.30%, 0.70) 70%)`}
         zIndex={-1}
       />
-      <Center mt={8} flexFlow="column" gap={2} sx={{ a: { color: 'blue.300' } }} textAlign="center">
+      <Center
+        mt={8}
+        flexFlow="column"
+        gap={2}
+        css={{ '& a': { color: 'blue.300' } }}
+        textAlign="center"
+      >
         <Image
           src="https://images.neopets.com/ncmall/shopkeepers/cashshop_homestructure.png"
           borderRadius={'md'}
@@ -52,7 +44,7 @@ const RawDataPage = (props: RawExportPageProps) => {
         <Text>
           By using this data, you agree to our <Link href="/terms">Terms of Service</Link> and
           comply with the{' '}
-          <Link href="https://www.mozilla.org/en-US/MPL/2.0/" isExternal>
+          <Link href="https://www.mozilla.org/en-US/MPL/2.0/" target="_blank" rel="noreferrer">
             MPL-2.0 license
           </Link>
           .
@@ -61,48 +53,48 @@ const RawDataPage = (props: RawExportPageProps) => {
           You can also check out our <Link href="https://docs.itemdb.com.br">API</Link> for general
           uses.
         </Text>
-        <TableContainer
+        <Table.ScrollArea
           mt={8}
           bg="blackAlpha.500"
           w="100%"
-          sx={{ a: { color: 'blue.200' } }}
+          css={{ '& a': { color: 'blue.200' } }}
           maxW={'1000px'}
           borderRadius="md"
           fontSize="sm"
         >
-          <Table>
-            <Thead>
-              <Tr>
-                <Th>File</Th>
-                <Th>Description</Th>
-                <Th>Date</Th>
-                <Th>Size</Th>
-                <Th>Format</Th>
-                <Th>Auto Update?</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
+          <Table.Root variant="line" size="sm">
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeader>File</Table.ColumnHeader>
+                <Table.ColumnHeader>Description</Table.ColumnHeader>
+                <Table.ColumnHeader>Date</Table.ColumnHeader>
+                <Table.ColumnHeader>Size</Table.ColumnHeader>
+                <Table.ColumnHeader>Format</Table.ColumnHeader>
+                <Table.ColumnHeader>Auto Update?</Table.ColumnHeader>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
               {[...dumps, ...rawExportData]
                 .sort((a, b) => b.date.localeCompare(a.date))
                 .map((data, i) => (
-                  <Tr key={i}>
-                    <Td>
-                      <Link href={data.link} isExternal>
+                  <Table.Row key={i}>
+                    <Table.Cell>
+                      <Link href={data.link} target="_blank" rel="noreferrer">
                         {data.name}
                       </Link>
-                    </Td>
-                    <Td fontSize="xs" whiteSpace={'normal'}>
+                    </Table.Cell>
+                    <Table.Cell fontSize="xs" whiteSpace={'normal'}>
                       {data.description}
-                    </Td>
-                    <Td>{data.date}</Td>
-                    <Td>{data.size}</Td>
-                    <Td>{data.format}</Td>
-                    <Td>{data.update ?? 'No'}</Td>
-                  </Tr>
+                    </Table.Cell>
+                    <Table.Cell>{data.date}</Table.Cell>
+                    <Table.Cell>{data.size}</Table.Cell>
+                    <Table.Cell>{data.format}</Table.Cell>
+                    <Table.Cell>{data.update ?? 'No'}</Table.Cell>
+                  </Table.Row>
                 ))}
-            </Tbody>
-          </Table>
-        </TableContainer>
+            </Table.Body>
+          </Table.Root>
+        </Table.ScrollArea>
         <FeedbackButton mt={5} />
       </Center>
     </>

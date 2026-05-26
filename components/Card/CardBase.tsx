@@ -1,4 +1,4 @@
-import { Box, Flex, FlexProps } from '@chakra-ui/react';
+import { Box, type BoxProps, Flex, type FlexProps } from '@chakra-ui/react';
 import Color from 'color';
 import React from 'react';
 
@@ -7,12 +7,13 @@ type Props = {
   title?: React.ReactNode;
   color?: [number, number, number] | number[] | string;
   noPadding?: boolean;
-  chakra?: FlexProps;
+  chakra?: BoxProps;
+  chakraTitle?: BoxProps;
   chakraWrapper?: FlexProps;
 };
 
 const CardBase = (props: Props) => {
-  const color =
+  const rgb =
     typeof props.color === 'string'
       ? Color(props.color).rgb().round().array()
       : props.color || [74, 85, 104];
@@ -24,7 +25,6 @@ const CardBase = (props: Props) => {
       borderTopRadius="md"
       overflow="hidden"
       flexFlow="column"
-      boxShadow="sm"
       {...props.chakraWrapper}
     >
       <Box
@@ -32,7 +32,8 @@ const CardBase = (props: Props) => {
         textAlign="center"
         fontWeight="bold"
         as={'h3'}
-        bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}
+        bg={`rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, .6)`}
+        {...props.chakraTitle}
       >
         {props.title}
       </Box>

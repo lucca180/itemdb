@@ -8,9 +8,9 @@ import {
   IconButton,
   Image as ChakraImg,
   HStack,
-  useToast,
   useDisclosure,
 } from '@chakra-ui/react';
+import { useToast } from '@utils/theme/toast';
 import { ListItemInfo, UserList } from '../../types';
 import icon from '../../public/logo_icon.svg';
 import DynamicIcon from '../../public/icons/dynamic.png';
@@ -47,7 +47,7 @@ const UserListCard = (props: Props) => {
   const formatter = useFormatter();
   const toast = useToast();
   const { list, matches, isSelected, disableLink, utm_content, isSmall, canEdit } = props;
-  const { isOpen, onToggle } = useDisclosure();
+  const { open, onToggle } = useDisclosure();
   const color = Color(list?.colorHex || '#4A5568');
   const rgb = color.rgb().array();
 
@@ -71,6 +71,7 @@ const UserListCard = (props: Props) => {
       `${window.location.origin}/lists/${userName}/${list.slug ?? list.internal_id}`
     );
     toast({
+      id: 'list-card-copy-link',
       title: t('General.link-copied'),
       status: 'success',
       duration: 3000,
@@ -80,8 +81,8 @@ const UserListCard = (props: Props) => {
 
   return (
     <>
-      {canEdit && isOpen && (
-        <CreateListModal list={list} isOpen={isOpen} onClose={onToggle} refresh={props.refresh} />
+      {canEdit && open && (
+        <CreateListModal list={list} isOpen={open} onClose={onToggle} refresh={props.refresh} />
       )}
       <Flex
         bg="gray.700"
@@ -94,86 +95,86 @@ const UserListCard = (props: Props) => {
         w={{ base: '100%', sm: isSmall ? '350px' : '375px' }}
         gap={3}
         ml="40px"
-        boxShadow={isSelected ? 'outline' : undefined}
+        outline={isSelected ? '3px solid rgba(66, 153, 225, 0.6)' : undefined}
         bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.6) 0%)`}
         pointerEvents={disableLink ? 'none' : 'initial'}
       >
         <Link
-          as={NextLink}
-          href={getListLink(list)}
+          asChild
           data-umami-event={utm_content}
           data-umami-event-label={utm_content ? list.slug : undefined}
-          prefetch={false}
           _hover={{ textDecoration: 'none' }}
         >
-          <Flex
-            position="relative"
-            w={{ base: '100px', sm: isSmall ? '100px' : '150px' }}
-            h={{ base: '100px', sm: isSmall ? '100px' : '150px' }}
-            ml="-50px"
-            bg="gray.700"
-            bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, .75) 0%)`}
-            flex="0 0 auto"
-            borderRadius="md"
-            overflow="hidden"
-            boxShadow={isSelected ? 'outline' : 'md'}
-            justifyContent="center"
-            alignItems="center"
-          >
-            {!list.coverURL && (
-              <Image src={icon} width={75} style={{ opacity: 0.85 }} alt={'List Cover'} />
-            )}
+          <NextLink href={getListLink(list)} prefetch={false}>
+            <Flex
+              position="relative"
+              w={{ base: '100px', sm: isSmall ? '100px' : '150px' }}
+              h={{ base: '100px', sm: isSmall ? '100px' : '150px' }}
+              ml="-50px"
+              bg="gray.700"
+              bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, .75) 0%)`}
+              flex="0 0 auto"
+              borderRadius="md"
+              overflow="hidden"
+              boxShadow={'inset'}
+              outline={isSelected ? '3px solid rgba(66, 153, 225, 0.6)' : undefined}
+              justifyContent="center"
+              alignItems="center"
+            >
+              {!list.coverURL && (
+                <Image src={icon} width={75} style={{ opacity: 0.85 }} alt={'List Cover'} />
+              )}
 
-            {list.coverURL && (
-              <Image
-                quality={90}
-                as={list.official ? undefined : ChakraImg}
-                src={list.coverURL}
-                width={140}
-                height={140}
-                w={{ base: '95px', sm: isSmall ? '95px' : '140px' }}
-                h={{ base: '95px', sm: isSmall ? '95px' : '140px' }}
-                alt={'List Cover'}
-                objectFit="cover"
-                borderRadius="md"
-              />
-            )}
-          </Flex>
+              {list.coverURL && (
+                <ChakraImg
+                  src={list.coverURL}
+                  w={{ base: '95px', sm: isSmall ? '95px' : '140px' }}
+                  h={{ base: '95px', sm: isSmall ? '95px' : '140px' }}
+                  alt={'List Cover'}
+                  objectFit="cover"
+                  borderRadius="md"
+                />
+              )}
+            </Flex>
+          </NextLink>
         </Link>
         <Flex flexFlow="column" gap={2} w="100%">
           <HStack justifyContent={'space-between'} alignItems={'flex-start'}>
-            <Text
-              fontWeight="bold"
-              noOfLines={2}
+            <Link
+              asChild
+              data-umami-event={utm_content}
+              data-umami-event-label={utm_content ? list.slug : undefined}
               color={color.isLight() ? 'blackAlpha.800' : undefined}
+              fontWeight="bold"
+              lineClamp={2}
             >
-              <Link
-                as={NextLink}
-                href={getListLink(list)}
-                prefetch={false}
-                data-umami-event={utm_content}
-                data-umami-event-label={utm_content ? list.slug : undefined}
-              >
+              <NextLink href={getListLink(list)} prefetch={false}>
                 {list.name}
-              </Link>
-            </Text>
+              </NextLink>
+            </Link>
             <HStack>
               {list.visibility !== 'private' && (
                 <IconButton
                   onClick={copyLink}
                   data-umami-event="copy-link"
-                  size="xs"
+                  size="2xs"
+                  variant="subtle"
+                  colorPalette="whiteAlpha"
                   aria-label="Share Link"
-                  icon={<FaShareAlt />}
-                />
+                >
+                  <FaShareAlt />
+                </IconButton>
               )}
               {canEdit && (
                 <IconButton
                   onClick={onToggle}
-                  size="xs"
+                  size="2xs"
+                  variant="subtle"
+                  colorPalette="whiteAlpha"
                   aria-label="Edit List"
-                  icon={<FaPencilAlt />}
-                />
+                >
+                  <FaPencilAlt />
+                </IconButton>
               )}
             </HStack>
           </HStack>
@@ -181,9 +182,9 @@ const UserListCard = (props: Props) => {
             fontSize="xs"
             color={color.isLight() ? 'blackAlpha.700' : undefined}
             flex={1}
-            noOfLines={4}
+            lineClamp={4}
             as="div"
-            sx={{ a: { fontWeight: 'bold' } }}
+            css={{ '& a': { fontWeight: 'bold', color: 'inherit' } }}
           >
             <Markdown>
               {(list.description || t('ItemPage.list-no-description')).split(/[\r\n]+/)[0]}
@@ -192,50 +193,47 @@ const UserListCard = (props: Props) => {
           <Flex gap={1} flexWrap="wrap">
             {!!list.dynamicType && (
               <Badge
-                colorScheme={color.isLight() ? 'black' : 'orange'}
+                colorPalette={color.isLight() ? 'blackAlpha' : 'whiteAlpha'}
                 display="inline-flex"
                 ml={1}
                 p={'2px'}
                 alignItems={'center'}
+                variant="solid"
               >
                 <Image src={DynamicIcon} alt="Dynamic List" w={'8px'} />
               </Badge>
             )}
             {list.official && (
-              <Badge
-                as={NextLink}
-                href="/lists/official"
-                prefetch={false}
-                colorScheme="blue"
-                variant="solid"
-              >
-                ✓ {t('General.official')}
+              <Badge asChild colorPalette="blue" variant="solid">
+                <NextLink href="/lists/official" prefetch={false}>
+                  ✓ {t('General.official')}
+                </NextLink>
               </Badge>
             )}
 
             {!list.official && list.visibility !== 'public' && (
-              <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>
+              <Badge colorPalette={color.isLight() ? 'blackAlpha' : 'whiteAlpha'} variant="solid">
                 <ListVisibility visibility={list.visibility} />
               </Badge>
             )}
 
             {!list.official && list.purpose !== 'none' && (
-              <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>
+              <Badge colorPalette={color.isLight() ? 'blackAlpha' : 'whiteAlpha'} variant="solid">
                 <ListPurpose purpose={list.purpose} />
               </Badge>
             )}
 
-            <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>
+            <Badge colorPalette={color.isLight() ? 'blackAlpha' : 'gray'} variant="solid">
               {formatter.number(list.itemCount ?? 0)} {t('General.items')}
             </Badge>
 
             {!list.official && list.purpose === 'trading' && !!matchCount && (
-              <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>
+              <Badge colorPalette={color.isLight() ? 'blackAlpha' : 'whiteAlpha'} variant="solid">
                 {t('Lists.list-want', { matchCount })}
               </Badge>
             )}
             {!list.official && list.purpose === 'seeking' && !!matchCount && (
-              <Badge colorScheme={color.isLight() ? 'black' : 'gray'}>
+              <Badge colorPalette={color.isLight() ? 'blackAlpha' : 'whiteAlpha'} variant="solid">
                 {t('Lists.list-have', { matchCount })}
               </Badge>
             )}

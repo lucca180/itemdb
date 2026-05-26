@@ -18,7 +18,9 @@ export default function FeatureCard(props: FeatureCardProps) {
       gap={3}
       boxShadow="md"
     >
-      <Avatar bg={color ?? 'gray.500'} icon={icon} />
+      <Avatar.Root bg={color ?? 'gray.500'} color="white">
+        <Avatar.Fallback>{icon}</Avatar.Fallback>
+      </Avatar.Root>
       <Heading size="md">{title}</Heading>
       <Text fontSize={'md'} opacity="0.78">
         {children}

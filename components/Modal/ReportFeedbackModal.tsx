@@ -1,19 +1,14 @@
 import {
   Button,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
   Text,
   Flex,
   Textarea,
-  FormControl,
-  FormLabel,
+  Field,
   Center,
   Spinner,
+  Dialog,
+  CloseButton,
+  Portal,
 } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
 import axios from 'axios';
@@ -33,7 +28,7 @@ export default function ReportFeedbackModal(props: ReportFeedbackModalProps) {
   const router = useRouter();
 
   const { isOpen, onClose, feedback } = props;
-  const [isLoading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState(false);
   const [reason, setReason] = useState('');
@@ -67,90 +62,102 @@ export default function ReportFeedbackModal(props: ReportFeedbackModalProps) {
   };
 
   return (
-    <>
-      <Modal isOpen={isOpen} onClose={onClose} isCentered>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>{t('Feedback.report-feedback')}</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody fontSize={'sm'} sx={{ b: { color: 'red.300' } }}>
-            {!isLoading && !isSuccess && !error && (
-              <>
-                <Text textAlign={'center'}>
-                  {t.rich('Feedback.report-text1', {
-                    b: (children) => <b>{children}</b>,
-                  })}
-                </Text>
-                <Flex
-                  flexFlow="column"
-                  justifyContent={'center'}
-                  alignItems={'center'}
-                  gap={2}
-                  my={4}
-                >
-                  <FormControl>
-                    <FormLabel color="gray.400" fontSize={'xs'}>
-                      {t('Feedback.report-form-label')}
-                    </FormLabel>
-                    <Textarea
-                      variant="filled"
-                      name="description"
-                      size="sm"
-                      onChange={(e) => setReason(e.target.value)}
-                      value={reason}
-                    />
-                  </FormControl>
-                </Flex>
-                <Text textAlign={'center'} fontSize="xs">
-                  {t.rich('Feedback.report-text2', {
-                    b: (children) => <b>{children}</b>,
-                  })}
-                </Text>
-              </>
-            )}
-            {isLoading && (
-              <Center>
-                <Spinner />
-              </Center>
-            )}
-            {isSuccess && (
-              <Center>
-                <Text fontSize="sm" textAlign="center">
-                  {t('Feedback.done')}
-                  <br />
-                  {t('Feedback.will-investigate')}
-                </Text>
-              </Center>
-            )}
-            {error && (
-              <Center>
-                <Text fontSize="sm" textAlign="center" color="red.400">
-                  {t('General.an-error-has-occurred')}!
-                  <br />
-                  {t('General.refreshPage')}
-                </Text>
-              </Center>
-            )}
-          </ModalBody>
-          <ModalFooter>
-            <Flex gap={3}>
-              <Button variant="ghost" colorScheme="red" onClick={onClose} size="sm">
-                {t('General.close')}
-              </Button>
-              {!isLoading && !isSuccess && !error && (
-                <Button
-                  variant="ghost"
-                  onClick={saveChnages}
-                  size="sm"
-                  isDisabled={reason.length < 20}
-                >
-                  {t('General.submit')}
-                </Button>
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={({ open }) => {
+        if (!open) onClose();
+      }}
+      placement="center"
+    >
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>
+              <Dialog.Title>{t('Feedback.report-feedback')}</Dialog.Title>
+            </Dialog.Header>
+            <Dialog.CloseTrigger asChild>
+              <CloseButton size="sm" />
+            </Dialog.CloseTrigger>
+            <Dialog.Body fontSize={'sm'} css={{ b: { color: 'red.300' } }}>
+              {!loading && !isSuccess && !error && (
+                <>
+                  <Text textAlign={'center'}>
+                    {t.rich('Feedback.report-text1', {
+                      b: (children) => <b>{children}</b>,
+                    })}
+                  </Text>
+                  <Flex
+                    flexFlow="column"
+                    justifyContent={'center'}
+                    alignItems={'center'}
+                    gap={2}
+                    my={4}
+                  >
+                    <Field.Root>
+                      <Field.Label color="gray.400" fontSize={'xs'}>
+                        {t('Feedback.report-form-label')}
+                      </Field.Label>
+                      <Textarea
+                        variant="subtle"
+                        name="description"
+                        size="sm"
+                        onChange={(e) => setReason(e.target.value)}
+                        value={reason}
+                      />
+                    </Field.Root>
+                  </Flex>
+                  <Text textAlign={'center'} fontSize="xs">
+                    {t.rich('Feedback.report-text2', {
+                      b: (children) => <b>{children}</b>,
+                    })}
+                  </Text>
+                </>
               )}
-            </Flex>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-    </>
+              {loading && (
+                <Center>
+                  <Spinner />
+                </Center>
+              )}
+              {isSuccess && (
+                <Center>
+                  <Text fontSize="sm" textAlign="center">
+                    {t('Feedback.done')}
+                    <br />
+                    {t('Feedback.will-investigate')}
+                  </Text>
+                </Center>
+              )}
+              {error && (
+                <Center>
+                  <Text fontSize="sm" textAlign="center" color="red.400">
+                    {t('General.an-error-has-occurred')}!
+                    <br />
+                    {t('General.refreshPage')}
+                  </Text>
+                </Center>
+              )}
+            </Dialog.Body>
+            <Dialog.Footer>
+              <Flex gap={3}>
+                <Button variant="ghost" colorPalette="red" onClick={onClose} size="sm">
+                  {t('General.close')}
+                </Button>
+                {!loading && !isSuccess && !error && (
+                  <Button
+                    variant="ghost"
+                    onClick={saveChnages}
+                    size="sm"
+                    disabled={reason.length < 20}
+                  >
+                    {t('General.submit')}
+                  </Button>
+                )}
+              </Flex>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 }

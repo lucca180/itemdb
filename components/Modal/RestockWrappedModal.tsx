@@ -1,25 +1,16 @@
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
-  Center,
+  Accordion,
   Button,
-  Icon,
+  Box,
+  Center,
+  CloseButton,
+  Dialog,
+  Link,
+  Portal,
   Spinner,
   Text,
-  Link,
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
-  Box,
-  useToast,
 } from '@chakra-ui/react';
+import { useToast } from '@utils/theme/toast';
 import { useTranslations } from 'next-intl';
 import { RestockWrappedCard } from '../Hubs/Restock/WrappedCard';
 import { RestockStats } from '../../types';
@@ -60,6 +51,7 @@ const RestockWrappedModal = (props: RestockWrappedModalProps) => {
     },
     onError: (err) => {
       toast({
+        id: 'restock-wrapped-render-error',
         title: 'Error',
         description: t('General.an-error-occured-please-try-again-later'),
         status: 'error',
@@ -141,6 +133,7 @@ const RestockWrappedModal = (props: RestockWrappedModalProps) => {
       await navigator.share(data);
     } catch (err: any) {
       toast({
+        id: 'restock-wrapped-share-error',
         title: 'Error',
         description: err.message,
         status: 'error',
@@ -167,6 +160,7 @@ const RestockWrappedModal = (props: RestockWrappedModalProps) => {
       ]);
 
       toast({
+        id: 'restock-wrapped-copy-success',
         title: t('General.success'),
         description: t('Restock.image-copied-to-clipboard'),
         status: 'success',
@@ -174,6 +168,7 @@ const RestockWrappedModal = (props: RestockWrappedModalProps) => {
       });
     } catch (err: any) {
       toast({
+        id: 'restock-wrapped-copy-error',
         title: 'Error',
         description: t('General.an-error-occured-please-try-again-later'),
         status: 'error',
@@ -184,136 +179,151 @@ const RestockWrappedModal = (props: RestockWrappedModalProps) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered scrollBehavior="inside">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Restock Card</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          {wrappedCheck?.canWrapped && (
-            <Center flexFlow={'column'}>
-              <RestockWrappedCard
-                stats={stats}
-                timePeriod={timePeriod}
-                bgGradient={bgGradient}
-                innerRef={imgRef}
-              />
-              <Center mt={3} gap={2}>
-                <Button
-                  colorScheme="gray"
-                  onClick={getBgColor}
-                  isLoading={state.isLoading}
-                  size="sm"
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={({ open }) => {
+        if (!open) onClose();
+      }}
+      placement="center"
+      scrollBehavior="inside"
+    >
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>
+              <Dialog.Title>Restock Card</Dialog.Title>
+            </Dialog.Header>
+            <Dialog.CloseTrigger asChild>
+              <CloseButton size="sm" />
+            </Dialog.CloseTrigger>
+            <Dialog.Body>
+              {wrappedCheck?.canWrapped && (
+                <Center flexFlow={'column'}>
+                  <RestockWrappedCard
+                    stats={stats}
+                    timePeriod={timePeriod}
+                    bgGradient={bgGradient}
+                    innerRef={imgRef}
+                  />
+                  <Center mt={3} gap={2}>
+                    <Button
+                      colorPalette="gray"
+                      onClick={getBgColor}
+                      loading={state.isLoading}
+                      size="sm"
+                    >
+                      <FaDice />
+                    </Button>
+                    <Button
+                      colorPalette="gray"
+                      onClick={() => doAction('copy')}
+                      loading={state.isLoading}
+                      size="sm"
+                    >
+                      <FaCopy />
+                    </Button>
+                    {!!navigator.canShare && (
+                      <Button
+                        colorPalette="gray"
+                        onClick={() => doAction('share')}
+                        loading={state.isLoading}
+                        size="sm"
+                      >
+                        <FaShareAlt />
+                      </Button>
+                    )}
+                    <Button
+                      colorPalette="gray"
+                      onClick={() => doAction('download')}
+                      loading={state.isLoading}
+                      size="sm"
+                    >
+                      <FaDownload />
+                    </Button>
+                  </Center>
+                </Center>
+              )}
+              {!wrappedCheck && (
+                <Center flexFlow={'column'}>
+                  <Spinner />
+                  {t('Layout.loading')}
+                </Center>
+              )}
+              {wrappedCheck && !wrappedCheck.canWrapped && (
+                <Center
+                  flexFlow={'column'}
+                  css={{ b: { color: 'green.200' }, a: { color: 'green.300' } }}
                 >
-                  <Icon as={FaDice} />
-                </Button>
-                <Button
-                  colorScheme="gray"
-                  onClick={() => doAction('copy')}
-                  isLoading={state.isLoading}
-                  size="sm"
-                >
-                  <Icon as={FaCopy} />
-                </Button>
-                {!!navigator.canShare && (
-                  <Button
-                    colorScheme="gray"
-                    onClick={() => doAction('share')}
-                    isLoading={state.isLoading}
-                    size="sm"
-                  >
-                    <Icon as={FaShareAlt} />
-                  </Button>
-                )}
-                <Button
-                  colorScheme="gray"
-                  onClick={() => doAction('download')}
-                  isLoading={state.isLoading}
-                  size="sm"
-                >
-                  <Icon as={FaDownload} />
-                </Button>
-              </Center>
-            </Center>
-          )}
-          {!wrappedCheck && (
-            <Center flexFlow={'column'}>
-              <Spinner />
-              {t('Layout.loading')}
-            </Center>
-          )}
-          {wrappedCheck && !wrappedCheck.canWrapped && (
-            <Center
-              flexFlow={'column'}
-              sx={{ b: { color: 'green.200' }, a: { color: 'green.300' } }}
-            >
-              <Text textAlign={'center'} fontSize={'sm'}>
-                {t.rich('Restock.wrapped-text1', {
-                  b: (chunk) => <b>{chunk}</b>,
-                })}
-              </Text>
-              <Text textAlign={'center'} fontSize={'sm'}>
-                <br />
-                {t('Restock.wrapped-text2')}
-                <br />
-                <br />
-              </Text>
-              <Text textAlign={'center'} fontSize={'sm'}>
-                {t.rich('Restock.wrapped-precify-text', {
-                  Link: (chunk) => (
-                    <Link href="/feedback/trades" isExternal>
-                      {chunk}
-                    </Link>
-                  ),
-                  b: (chunk) => <b>{chunk}</b>,
-                  needTrades: wrappedCheck.needTrades,
-                })}
-              </Text>
-              <Text textAlign={'center'} fontSize={'sm'}>
-                {t.rich('Restock.wrapped-vote-text', {
-                  Link: (chunk) => (
-                    <Link href="/feedback/vote" isExternal>
-                      {chunk}
-                    </Link>
-                  ),
-                  b: (chunk) => <b>{chunk}</b>,
-                  needVotes: wrappedCheck.needVotes,
-                })}
-                <br />
-                <br />
-              </Text>
-              <Text textAlign={'center'} fontSize={'sm'}>
-                {t('Restock.wrapped-text3')}
-              </Text>
-              <Accordion allowToggle w="100%" mt={5}>
-                <AccordionItem>
-                  <h2>
-                    <AccordionButton>
-                      <Box as="span" flex="1" textAlign="left">
-                        {t('Restock.wrapped-text4')}
-                      </Box>
-                      <AccordionIcon />
-                    </AccordionButton>
-                  </h2>
-                  <AccordionPanel pb={4} fontSize={'sm'}>
-                    {t.rich('Restock.wrapped-text5', {
-                      br: () => <br />,
+                  <Text textAlign={'center'} fontSize={'sm'}>
+                    {t.rich('Restock.wrapped-text1', {
+                      b: (chunk) => <b>{chunk}</b>,
                     })}
-                  </AccordionPanel>
-                </AccordionItem>
-              </Accordion>
-            </Center>
-          )}
-        </ModalBody>
-        <ModalFooter justifyContent={'center'}>
-          {wrappedCheck && wrappedCheck.canWrapped && (
-            <Text fontSize={'xs'} textAlign={'center'} color="gray.400">
-              Leave your feedback and ideas using the Feedback button!
-            </Text>
-          )}
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+                  </Text>
+                  <Text textAlign={'center'} fontSize={'sm'}>
+                    <br />
+                    {t('Restock.wrapped-text2')}
+                    <br />
+                    <br />
+                  </Text>
+                  <Text textAlign={'center'} fontSize={'sm'}>
+                    {t.rich('Restock.wrapped-precify-text', {
+                      Link: (chunk) => (
+                        <Link href="/feedback/trades" target="_blank" rel="noreferrer">
+                          {chunk}
+                        </Link>
+                      ),
+                      b: (chunk) => <b>{chunk}</b>,
+                      needTrades: wrappedCheck.needTrades,
+                    })}
+                  </Text>
+                  <Text textAlign={'center'} fontSize={'sm'}>
+                    {t.rich('Restock.wrapped-vote-text', {
+                      Link: (chunk) => (
+                        <Link href="/feedback/vote" target="_blank" rel="noreferrer">
+                          {chunk}
+                        </Link>
+                      ),
+                      b: (chunk) => <b>{chunk}</b>,
+                      needVotes: wrappedCheck.needVotes,
+                    })}
+                    <br />
+                    <br />
+                  </Text>
+                  <Text textAlign={'center'} fontSize={'sm'}>
+                    {t('Restock.wrapped-text3')}
+                  </Text>
+                  <Accordion.Root collapsible w="100%" mt={5}>
+                    <Accordion.Item value="wrapped-info">
+                      <Accordion.ItemTrigger>
+                        <Box as="span" flex="1" textAlign="left">
+                          {t('Restock.wrapped-text4')}
+                        </Box>
+                        <Accordion.ItemIndicator />
+                      </Accordion.ItemTrigger>
+                      <Accordion.ItemContent>
+                        <Accordion.ItemBody pb={4} fontSize={'sm'}>
+                          {t.rich('Restock.wrapped-text5', {
+                            br: () => <br />,
+                          })}
+                        </Accordion.ItemBody>
+                      </Accordion.ItemContent>
+                    </Accordion.Item>
+                  </Accordion.Root>
+                </Center>
+              )}
+            </Dialog.Body>
+            <Dialog.Footer justifyContent={'center'}>
+              {wrappedCheck && wrappedCheck.canWrapped && (
+                <Text fontSize={'xs'} textAlign={'center'} color="gray.400">
+                  Leave your feedback and ideas using the Feedback button!
+                </Text>
+              )}
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

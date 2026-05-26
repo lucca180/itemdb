@@ -1,24 +1,20 @@
 import {
-  AlertDialog,
-  AlertDialogOverlay,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogBody,
-  AlertDialogFooter,
   Button,
-  Spinner,
-  FormControl,
-  FormLabel,
   Checkbox,
-  VStack,
+  CloseButton,
+  Dialog,
+  Field,
   HStack,
+  Portal,
+  Spinner,
   Textarea,
+  VStack,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import React, { useEffect } from 'react';
-import { ItemData, PriceData } from '../../types';
 import { useTranslations } from 'next-intl';
-import CustomNumberInput from '../Input/CustomNumber';
+import CustomNumberInput from '@components/Input/CustomNumber';
+import { ItemData, PriceData } from '../../types';
 
 export type AdminEditPriceModalProps = {
   isOpen: boolean;
@@ -30,7 +26,6 @@ export type AdminEditPriceModalProps = {
 const AdminEditPriceModal = (props: AdminEditPriceModalProps) => {
   const t = useTranslations();
   const { isOpen, onClose, item, itemPrice } = props;
-  const cancelRef = React.useRef(null);
   const [loading, setLoading] = React.useState(false);
   const [msg, setMsg] = React.useState('');
   const [newPriceVal, setNewPriceVal] = React.useState(props.itemPrice?.value ?? null);
@@ -89,106 +84,95 @@ const AdminEditPriceModal = (props: AdminEditPriceModalProps) => {
 
   if (!props.itemPrice) return null;
 
-  if (msg)
-    return (
-      <AlertDialog isOpen leastDestructiveRef={cancelRef as any} onClose={onClose} isCentered>
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Edit Price
-            </AlertDialogHeader>
-            <AlertDialogBody>{msg}</AlertDialogBody>
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={onClose}>
-                {t('General.close')}
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
-    );
-
-  if (loading)
-    return (
-      <AlertDialog
-        isOpen={isOpen}
-        leastDestructiveRef={cancelRef as any}
-        onClose={() => {}}
-        isCentered
-      >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Edit Price
-            </AlertDialogHeader>
-            <AlertDialogBody>
-              <Spinner />
-            </AlertDialogBody>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
-    );
-
   return (
-    <AlertDialog isOpen leastDestructiveRef={cancelRef as any} onClose={onClose} isCentered>
-      <AlertDialogOverlay>
-        <AlertDialogContent>
-          <AlertDialogHeader fontSize="lg" fontWeight="bold">
-            Edit Price
-          </AlertDialogHeader>
-          <AlertDialogBody>
-            <VStack gap={5}>
-              <FormControl>
-                <FormLabel>New Price</FormLabel>
-                <CustomNumberInput
-                  skipDebounce
-                  wrapperProps={{
-                    variant: 'filled',
-                    size: 'sm',
-                    placeholder: t('General.np-price'),
-                  }}
-                  inputProps={{
-                    placeholder: t('General.np-price'),
-                    textAlign: 'left',
-                  }}
-                  value={newPriceVal?.toString()}
-                  onChange={(val) => handleChange(val)}
-                />
-              </FormControl>
-              <FormControl>
-                <Checkbox
-                  defaultChecked={props.itemPrice.inflated}
-                  onChange={(e) => setNewInflation(e.target.checked)}
-                >
-                  Inflation?
-                </Checkbox>
-              </FormControl>
-              <FormControl>
-                <FormLabel>Price Context</FormLabel>
-                <Textarea
-                  variant="filled"
-                  onChange={(e) => setPriceContext(e.target.value)}
-                  value={priceContext}
-                />
-              </FormControl>
-            </VStack>
-          </AlertDialogBody>
-          <AlertDialogFooter>
-            <HStack>
-              <Button onClick={deletePrice} colorScheme="red" variant={'ghost'}>
-                Delete Price
-              </Button>
-              <Button ref={cancelRef} onClick={onClose}>
-                {t('General.close')}
-              </Button>
-              <Button colorScheme="green" onClick={onConfirm}>
-                {t('General.save')}
-              </Button>
-            </HStack>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialogOverlay>
-    </AlertDialog>
+    <Dialog.Root
+      role="alertdialog"
+      open={isOpen}
+      onOpenChange={({ open }) => {
+        if (!open && !loading) onClose();
+      }}
+      placement="center"
+      closeOnEscape={!loading}
+      closeOnInteractOutside={!loading}
+    >
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>
+              <Dialog.Title>Edit Price</Dialog.Title>
+            </Dialog.Header>
+            {!loading && (
+              <Dialog.CloseTrigger asChild>
+                <CloseButton size="sm" />
+              </Dialog.CloseTrigger>
+            )}
+            <Dialog.Body>
+              {msg ? (
+                msg
+              ) : loading ? (
+                <Spinner />
+              ) : (
+                <VStack gap={5}>
+                  <Field.Root>
+                    <Field.Label>New Price</Field.Label>
+                    <CustomNumberInput
+                      skipDebounce
+                      wrapperProps={{
+                        variant: 'filled',
+                        size: 'sm',
+                        placeholder: t('General.np-price'),
+                      }}
+                      inputProps={{
+                        placeholder: t('General.np-price'),
+                        textAlign: 'left',
+                      }}
+                      value={newPriceVal?.toString()}
+                      onChange={(val) => handleChange(val)}
+                    />
+                  </Field.Root>
+                  <Field.Root>
+                    <Checkbox.Root
+                      checked={newInflation ?? props.itemPrice.inflated}
+                      onCheckedChange={({ checked }) => setNewInflation(!!checked)}
+                    >
+                      <Checkbox.HiddenInput />
+                      <Checkbox.Control />
+                      <Checkbox.Label>Inflation?</Checkbox.Label>
+                    </Checkbox.Root>
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label>Price Context</Field.Label>
+                    <Textarea
+                      variant="subtle"
+                      onChange={(e) => setPriceContext(e.target.value)}
+                      value={priceContext}
+                    />
+                  </Field.Root>
+                </VStack>
+              )}
+            </Dialog.Body>
+            {!loading && (
+              <Dialog.Footer>
+                <HStack>
+                  {!msg && (
+                    <Button onClick={deletePrice} colorPalette="red" variant="ghost">
+                      Delete Price
+                    </Button>
+                  )}
+                  <Button onClick={onClose}>{t('General.close')}</Button>
+                  {!msg && (
+                    <Button colorPalette="green" onClick={onConfirm}>
+                      {t('General.save')}
+                    </Button>
+                  )}
+                </HStack>
+              </Dialog.Footer>
+            )}
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

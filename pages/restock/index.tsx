@@ -1,7 +1,7 @@
 import {
   Box,
   Center,
-  Divider,
+  Separator,
   Flex,
   Heading,
   Text,
@@ -111,7 +111,7 @@ const RestockHub: NextPageWithLayout<any> = (props: RestockHubProps) => {
           src="https://images.neopets.com/ncmall/shopkeepers/cashshop_limited.png"
           alt="Restock Hub thumbnail"
           borderRadius="md"
-          boxShadow={'md'}
+          boxShadow={'sm'}
         />
         <Heading as="h1">{t('Restock.restock-hub')}</Heading>
         <Text>
@@ -129,20 +129,32 @@ const RestockHub: NextPageWithLayout<any> = (props: RestockHubProps) => {
           })}
         </Text>
         {specialDay === 'hpd' && (
-          <Tag colorScheme={'green'}>{t('Restock.half-price-day-all-shops-with-50-off')}</Tag>
+          <Tag.Root colorPalette="green">
+            <Tag.Label>{t('Restock.half-price-day-all-shops-with-50-off')}</Tag.Label>
+          </Tag.Root>
         )}
         {specialDay === 'tyrannia' && (
-          <Tag colorScheme={'orange'}>{t('Restock.tyrannian-hub')}</Tag>
+          <Tag.Root colorPalette="orange">
+            <Tag.Label>{t('Restock.tyrannian-hub')}</Tag.Label>
+          </Tag.Root>
         )}
-        {specialDay === 'usukicon' && <Tag colorScheme={'pink'}>{t('Restock.hub-usuki-day')}</Tag>}
+        {specialDay === 'usukicon' && (
+          <Tag.Root colorPalette="pink">
+            <Tag.Label>{t('Restock.hub-usuki-day')}</Tag.Label>
+          </Tag.Root>
+        )}
         {specialDay === 'festival' && (
-          <Tag colorScheme={'purple'}>{t('Restock.faerie-festival-hub')}</Tag>
+          <Tag.Root colorPalette="purple">
+            <Tag.Label>{t('Restock.faerie-festival-hub')}</Tag.Label>
+          </Tag.Root>
         )}
         {specialDay === 'halloween' && (
-          <Tag colorScheme={'orange'}>{t('Restock.halloween-hub')}</Tag>
+          <Tag.Root colorPalette="orange">
+            <Tag.Label>{t('Restock.halloween-hub')}</Tag.Label>
+          </Tag.Root>
         )}
       </Center>
-      <Divider />
+      <Separator />
       <HStack my={3} justifyContent="space-between" flexWrap={'wrap'}>
         <HStack flexWrap={'wrap'}>
           <Text fontSize={'sm'}>{t('ItemPage.categories')}:</Text>
@@ -150,7 +162,7 @@ const RestockHub: NextPageWithLayout<any> = (props: RestockHubProps) => {
             <Button
               size="sm"
               key={cat}
-              colorScheme={selCats.includes(cat) ? 'cyan' : undefined}
+              colorPalette={selCats.includes(cat) ? 'cyan' : undefined}
               onClick={() => handleCat(cat)}
             >
               {cat}
@@ -163,7 +175,7 @@ const RestockHub: NextPageWithLayout<any> = (props: RestockHubProps) => {
             <Button
               size="sm"
               key={diff}
-              colorScheme={
+              colorPalette={
                 selDiff.includes(diff)
                   ? diff === 'Beginner'
                     ? 'green'
@@ -214,7 +226,7 @@ const RestockHub: NextPageWithLayout<any> = (props: RestockHubProps) => {
           );
         })}
       </Flex>
-      <Divider mt={5} />
+      <Separator mt={5} />
       <Flex flexFlow="column" gap={3} justifyContent={'center'}>
         <RestockQuestionsLD />
         <Heading size={'md'} as="h3" mt={5}>

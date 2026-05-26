@@ -1,10 +1,6 @@
-import { ExternalLinkIcon } from '@chakra-ui/icons';
+import { ExternalLinkIcon } from '@utils/theme/chakraIcons';
 import {
   Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
   Box,
   Button,
   Center,
@@ -17,7 +13,7 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import Link from 'next/link';
-import { useState, useEffect, ReactElement, useRef } from 'react';
+import { useState, useEffect, ReactElement, useRef, useCallback } from 'react';
 import { BsArrowDownCircleFill, BsArrowUpCircleFill } from 'react-icons/bs';
 import CardBase from '../../components/Card/CardBase';
 import HeaderCard from '../../components/Card/HeaderCard';
@@ -52,65 +48,21 @@ const FeedbackVotingPage = (props: { shouldShowReminder: boolean }) => {
   const t = useTranslations();
   const router = useRouter();
   const { user, authLoading } = useAuth();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open: isOpen, onOpen, onClose } = useDisclosure();
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [currentFeedback, setCurrentFeedback] = useState<Feedback>();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const skippedFeedbacks = useRef<number[]>([]);
   const {
-    isOpen: isCanonicalOpen,
+    open: isCanonicalOpen,
     onOpen: onCanonicalOpen,
     onClose: onCanonicalClose,
   } = useDisclosure();
 
   const isAdmin = user?.role === 'ADMIN';
 
-  useEffect(() => {
-    if (!authLoading) {
-      init();
-    }
-  }, [authLoading]);
-
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      const targetName = (e.target as any).nodeName;
-
-      if (['INPUT', 'TEXTAREA'].includes(targetName) || isLoading) return;
-
-      if (e.key.toLowerCase() === 'd') {
-        if (!currentFeedback) {
-          return init();
-        }
-
-        handleVote('upvote');
-      }
-
-      if (e.key.toLowerCase() === 'a') {
-        if (!currentFeedback) {
-          return init();
-        }
-
-        handleVote('downvote');
-      }
-
-      if (e.key.toLowerCase() === 's') {
-        if (!currentFeedback) {
-          return init();
-        }
-
-        handleSkip();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyPress);
-    };
-  }, [isLoading]);
-
-  const init = async () => {
+  const init = useCallback(async () => {
     setError('');
     setIsLoading(true);
     try {
@@ -138,10 +90,13 @@ const FeedbackVotingPage = (props: { shouldShowReminder: boolean }) => {
       setError(e.message);
     }
     setIsLoading(false);
-  };
+  }, [router.query.order, router.query.target, router.query.wishlist]);
 
-  const handleSkip = async () => {
-    if (!currentFeedback) return;
+  const handleSkip = useCallback(async () => {
+    if (!currentFeedback) {
+      await init();
+      return;
+    }
 
     setError('');
 
@@ -158,38 +113,76 @@ const FeedbackVotingPage = (props: { shouldShowReminder: boolean }) => {
 
     setFeedbacks(newFeedbacks);
     setCurrentFeedback(newFeedbacks[0]);
-  };
+  }, [currentFeedback, feedbacks, init]);
 
-  const handleVote = async (action: 'upvote' | 'downvote') => {
-    setError('');
-    setIsLoading(true);
-    try {
-      if (!currentFeedback) throw new Error('No feedback selected');
-
-      const res = await axios.post('/api/feedback/vote', {
-        action,
-        feedback_id: currentFeedback?.feedback_id,
-      });
-
-      if (res.data.success) {
-        const newFeedbacks = feedbacks.filter(
-          (f) => f.feedback_id !== currentFeedback?.feedback_id
-        );
-
-        if (!newFeedbacks.length) {
-          return init();
+  const handleVote = useCallback(
+    async (action: 'upvote' | 'downvote') => {
+      setError('');
+      setIsLoading(true);
+      try {
+        if (!currentFeedback) {
+          await init();
+          return;
         }
 
-        setFeedbacks(newFeedbacks);
-        setCurrentFeedback(newFeedbacks[0]);
-      } else throw new Error(res.data.message);
-    } catch (e: any) {
-      console.error(e);
-      setError(e.message);
-    }
+        const res = await axios.post('/api/feedback/vote', {
+          action,
+          feedback_id: currentFeedback?.feedback_id,
+        });
 
-    setIsLoading(false);
-  };
+        if (res.data.success) {
+          const newFeedbacks = feedbacks.filter(
+            (f) => f.feedback_id !== currentFeedback?.feedback_id
+          );
+
+          if (!newFeedbacks.length) {
+            return init();
+          }
+
+          setFeedbacks(newFeedbacks);
+          setCurrentFeedback(newFeedbacks[0]);
+        } else throw new Error(res.data.message);
+      } catch (e: any) {
+        console.error(e);
+        setError(e.message);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [currentFeedback, feedbacks, init]
+  );
+
+  useEffect(() => {
+    if (!authLoading) {
+      void init();
+    }
+  }, [authLoading, init]);
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      const targetName = (e.target as HTMLElement | null)?.nodeName;
+
+      if (['INPUT', 'TEXTAREA'].includes(targetName ?? '') || isLoading) return;
+
+      if (e.key.toLowerCase() === 'd') {
+        void handleVote('upvote');
+      }
+
+      if (e.key.toLowerCase() === 'a') {
+        void handleVote('downvote');
+      }
+
+      if (e.key.toLowerCase() === 's') {
+        void handleSkip();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [handleSkip, handleVote, isLoading]);
 
   return (
     <>
@@ -234,7 +227,7 @@ const FeedbackVotingPage = (props: { shouldShowReminder: boolean }) => {
         <Heading as="h1" size="lg">
           {t('Feedback.the-feedback-system')}
         </Heading>
-        <Text size={{ base: 'sm', md: undefined }}>
+        <Text fontSize={{ base: 'sm', md: undefined }}>
           {t('Feedback.feedback-system-description')}
         </Text>
       </HeaderCard>
@@ -243,7 +236,7 @@ const FeedbackVotingPage = (props: { shouldShowReminder: boolean }) => {
         gap={6}
         alignItems={{ base: 'center', md: 'flex-start' }}
         flexFlow={{ base: 'column', md: 'row' }}
-        // sx={{ b: { color: 'blue.200' } }}
+        // css={{ b: { color: 'blue.200' } }}
       >
         <CardBase
           chakraWrapper={{ flex: 2 }}
@@ -251,30 +244,21 @@ const FeedbackVotingPage = (props: { shouldShowReminder: boolean }) => {
           chakra={{ bg: 'gray.700' }}
         >
           <Text>{t('Feedback.fds-pg-2')}</Text>
-          <Accordion allowMultiple mt={4}>
-            <AccordionItem>
-              <AccordionButton>
+          <Accordion.Root collapsible multiple mt={4}>
+            <Accordion.Item value="trade-pricing">
+              <Accordion.ItemTrigger>
                 <Box as="span" flex="1" textAlign="left">
                   <Text fontWeight={'bold'}>{t('Layout.trade-pricing')} </Text>
                 </Box>
-                <AccordionIcon />
-              </AccordionButton>
-              <AccordionPanel pb={4}>
-                <TradeGuidelines />
-              </AccordionPanel>
-            </AccordionItem>
-            {/* <AccordionItem>
-              <AccordionButton>
-                <Box as="span" flex="1" textAlign="left">
-                  <Text fontWeight={'bold'}>{t('Feedback.item-notes')}</Text>
-                </Box>
-                <AccordionIcon />
-              </AccordionButton>
-              <AccordionPanel pb={4}>
-                <TagAndNotesGuidelines />
-              </AccordionPanel>
-            </AccordionItem> */}
-          </Accordion>
+                <Accordion.ItemIndicator />
+              </Accordion.ItemTrigger>
+              <Accordion.ItemContent>
+                <Accordion.ItemBody pb={4}>
+                  <TradeGuidelines />
+                </Accordion.ItemBody>
+              </Accordion.ItemContent>
+            </Accordion.Item>
+          </Accordion.Root>
           <Center mt={4} fontStyle="italic" fontSize="sm">
             {/* I love democracy - Sheev */}
           </Center>
@@ -335,12 +319,8 @@ const FeedbackVotingPage = (props: { shouldShowReminder: boolean }) => {
                 )}
               </CardBase>
               <Flex justifyContent="center" flexFlow={{ base: 'column', md: 'row' }} mt={4} gap={4}>
-                <Button
-                  leftIcon={<Icon as={BsArrowDownCircleFill} />}
-                  colorScheme="red"
-                  onClick={() => handleVote('downvote')}
-                  variant="solid"
-                >
+                <Button colorPalette="red" onClick={() => handleVote('downvote')} variant="solid">
+                  <Icon as={BsArrowDownCircleFill} />
                   {isAdmin ? t('Feedback.reprove') : t('Feedback.downvote')} (A)
                 </Button>
                 <Button onClick={handleSkip} variant="outline">
@@ -348,12 +328,12 @@ const FeedbackVotingPage = (props: { shouldShowReminder: boolean }) => {
                 </Button>
                 {isAdmin && <Button onClick={onCanonicalOpen}>🏷️</Button>}
                 <Button
-                  leftIcon={<Icon as={BsArrowUpCircleFill} />}
-                  colorScheme="green"
+                  colorPalette="green"
                   variant="solid"
                   onClick={() => handleVote('upvote')}
                   mr={2}
                 >
+                  <Icon as={BsArrowUpCircleFill} />
                   {isAdmin ? t('Feedback.approve') : t('Feedback.upvote')} (D)
                 </Button>
               </Flex>

@@ -34,7 +34,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   }) as any;
   const query = (reqQuery.s as string)?.trim() ?? '';
 
-  const searchFilters = { ...defaultFilters };
+  const searchFilters = { ...defaultFilters, ...reqQuery };
   searchFilters.sortBy = 'match';
   searchFilters.limit = Number(reqQuery.limit) || 5;
 

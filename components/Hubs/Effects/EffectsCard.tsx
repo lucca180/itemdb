@@ -1,24 +1,24 @@
 import {
   Badge,
   Box,
-  Divider,
   Flex,
   HStack,
   Icon,
+  Link,
+  Separator,
   Text,
   Tooltip,
   useMediaQuery,
-  Link,
 } from '@chakra-ui/react';
-import { ItemData, ItemEffect } from '../../../types';
-import Image from 'next/image';
-import { AiFillWarning } from 'react-icons/ai';
-import { useFormatter, useTranslations } from 'next-intl';
-import { EffectText, EffectTypes } from '../../Items/ItemEffectsCard';
-import Color from 'color';
-import ItemCtxMenu, { CtxTrigger } from '../../Menus/ItemCtxMenu';
-import MainLink from '../../Utils/MainLink';
 import { ItemImage } from '@components/Items/ItemCard';
+import ItemCtxMenu, { CtxTrigger } from '@components/Menus/ItemCtxMenu';
+import MainLink from '@components/Utils/MainLink';
+import Color from 'color';
+import Image from 'next/image';
+import { useFormatter, useTranslations } from 'next-intl';
+import { AiFillWarning } from 'react-icons/ai';
+import { ItemData, ItemEffect } from '../../../types';
+import { EffectText, EffectTypes } from '../../Items/ItemEffectsCard';
 
 type EffectsCardProps = {
   item: ItemData & { effects?: ItemEffect[] };
@@ -31,7 +31,7 @@ export const EffectsCard = (props: EffectsCardProps) => {
   const { item } = props;
   const color = Color(item.color.hex);
   const rgb = color.rgb().array();
-  const [isMobile] = useMediaQuery('(hover: none)');
+  const [isMobile] = useMediaQuery(['(hover: none)'], { fallback: [false] });
 
   return (
     <Flex
@@ -50,51 +50,50 @@ export const EffectsCard = (props: EffectsCardProps) => {
         disableWhileShiftPressed
         disable={isMobile ? true : undefined}
       >
-        <Link
-          as={MainLink}
-          prefetch={false}
-          href={'/item/' + (item.slug ?? item.internal_id)}
-          _hover={{ textDecoration: 'none' }}
-          color="white"
-        >
-          <Flex gap={2}>
-            <Box w="50px" h="50px">
-              <ItemImage item={item} width={50} height={50} />
-            </Box>
-            <Flex flexFlow={'column'} gap={1}>
-              <Text fontSize={'sm'}>{item.name}</Text>
-              <Flex gap={1}>
-                {item.status === 'no trade' && <Badge fontSize={'xs'}>No Trade</Badge>}
+        <Link asChild _hover={{ textDecoration: 'none' }} color="white">
+          <MainLink prefetch={false} href={'/item/' + (item.slug ?? item.internal_id)}>
+            <Flex gap={2}>
+              <Box w="50px" h="50px">
+                <ItemImage item={item} width={50} height={50} />
+              </Box>
+              <Flex flexFlow={'column'} gap={1}>
+                <Text fontSize={'sm'}>{item.name}</Text>
+                <Flex gap={1}>
+                  {item.status === 'no trade' && <Badge fontSize={'xs'}>No Trade</Badge>}
 
-                {item.price.value && !item.price.inflated && (
-                  <Badge whiteSpace="normal">{format.number(item.price.value)} NP</Badge>
-                )}
+                  {item.price.value && !item.price.inflated && (
+                    <Badge whiteSpace="normal">{format.number(item.price.value)} NP</Badge>
+                  )}
 
-                {item.price.value && item.price.inflated && (
-                  <Tooltip
-                    label={t('General.inflation')}
-                    aria-label="Inflation Tooltip"
-                    placement="top"
-                  >
-                    <Badge colorScheme="red" whiteSpace="normal">
-                      <Icon as={AiFillWarning} verticalAlign="middle" />{' '}
-                      {format.number(item.price.value)} NP
-                    </Badge>
-                  </Tooltip>
-                )}
+                  {item.price.value && item.price.inflated && (
+                    <Tooltip.Root positioning={{ placement: 'top' }}>
+                      <Tooltip.Trigger asChild>
+                        <Badge colorPalette="red" whiteSpace="normal">
+                          <Icon as={AiFillWarning} verticalAlign="middle" />{' '}
+                          {format.number(item.price.value)} NP
+                        </Badge>
+                      </Tooltip.Trigger>
+                      <Tooltip.Positioner>
+                        <Tooltip.Content bg="blackAlpha.900" color="white" fontSize="xs">
+                          {t('General.inflation')}
+                        </Tooltip.Content>
+                      </Tooltip.Positioner>
+                    </Tooltip.Root>
+                  )}
 
-                {item.isNC && <Badge colorScheme="purple">NC</Badge>}
+                  {item.isNC && <Badge colorPalette="purple">NC</Badge>}
 
-                {item.type === 'pb' && <Badge colorScheme="yellow">PB</Badge>}
+                  {item.type === 'pb' && <Badge colorPalette="yellow">PB</Badge>}
+                </Flex>
               </Flex>
             </Flex>
-          </Flex>
+          </MainLink>
         </Link>
       </CtxTrigger>
       {item.effects && item.effects.length > 0 && (
         <>
-          <Divider my={3} />
-          <Flex flexFlow={'column'} gap={2} sx={{ a: { color: color.lightness(70).hex() } }}>
+          <Separator my={3} />
+          <Flex flexFlow={'column'} gap={2} css={{ '& a': { color: color.lightness(70).hex() } }}>
             {item.effects.map((effect) => (
               <HStack
                 key={effect.internal_id}
@@ -115,7 +114,7 @@ export const EffectsCard = (props: EffectsCardProps) => {
                 <Text
                   fontSize="xs"
                   color="whiteAlpha.800"
-                  sx={{ 'b, strong': { color: 'white' } }}
+                  css={{ 'b, strong': { color: 'white' } }}
                   as="div"
                 >
                   <EffectText effect={effect} />

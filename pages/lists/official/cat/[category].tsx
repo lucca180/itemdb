@@ -2,7 +2,7 @@ import {
   Flex,
   Heading,
   Text,
-  Divider,
+  Separator,
   useBreakpointValue,
   Skeleton,
   Spinner,
@@ -143,9 +143,9 @@ const OfficialListsCatPage = (props: Props) => {
         <Heading as="h1" size="lg">
           {catInfo.name}
         </Heading>
-        <Text size={{ base: 'sm', md: undefined }}>{catInfo.description}</Text>
+        <Text fontSize={{ base: 'sm', md: undefined }}>{catInfo.description}</Text>
       </HeaderCard>
-      <Divider />
+      <Separator />
       <Flex flexFlow="column" gap={3}>
         <Flex
           flexFlow={{ base: 'column', sm: 'row' }}
@@ -155,15 +155,17 @@ const OfficialListsCatPage = (props: Props) => {
           alignItems="center"
         >
           <Flex alignItems="center" gap={3}>
-            <Skeleton isLoaded={!isLoading}>
-              <Text as="div" textColor={'gray.300'} fontSize="sm">
+            {!isLoading ? (
+              <Text as="div" color={'gray.300'} fontSize="sm">
                 {lists && (
                   <>
                     {lists.length} {t('General.lists')}
                   </>
                 )}
               </Text>
-            </Skeleton>
+            ) : (
+              <Skeleton h="20px" w="80px" />
+            )}
           </Flex>
           <Flex flex="1" justifyContent="flex-end" alignItems={'center'} gap={3}>
             <SearchList onChange={handleSearch} disabled={isLoading} />

@@ -4,7 +4,7 @@ import { getCurrentUser } from '@utils/auth/getCurrentUser';
 import { isValidLocale } from '@utils/locales';
 import prisma from '@utils/prisma';
 import { LayoutLocaleSelectClient } from './LayoutLocaleSelectClient';
-import { getLocalizedPath } from './layoutUtils';
+import { getLocalizedPath } from '@components/Layout/layoutData';
 
 type LayoutLocaleIslandProps = {
   locale: string;

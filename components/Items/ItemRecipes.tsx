@@ -44,7 +44,7 @@ const ItemRecipes = (props: Props) => {
             <Text
               textAlign={'center'}
               fontSize={'sm'}
-              sx={{ a: { color: color.lightness(70).hex() } }}
+              css={{ '& a': { color: color.lightness(70).hex() } }}
             >
               {t.rich('ItemPage.cooking-pot-text', {
                 Link: (children) => (
@@ -92,7 +92,7 @@ const ItemRecipes = (props: Props) => {
             <Text
               textAlign={'center'}
               fontSize={'sm'}
-              sx={{ a: { color: color.lightness(70).hex() } }}
+              css={{ '& a': { color: color.lightness(70).hex() } }}
             >
               {repairDetails.itemType === 'broken' && (
                 <>

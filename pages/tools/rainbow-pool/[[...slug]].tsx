@@ -6,15 +6,15 @@ import {
   Button,
   Box,
   Flex,
-  Select,
+  NativeSelect,
   HStack,
   Badge,
   Skeleton,
   Link,
   IconButton,
   Tooltip,
-  useToast,
 } from '@chakra-ui/react';
+import { useToast } from '@utils/theme/toast';
 import Layout from '../../../components/Layout';
 import { createTranslator, useFormatter, useTranslations } from 'next-intl';
 import NextImage from 'next/image';
@@ -24,7 +24,7 @@ import {
   getPetColorId,
   getSpeciesId,
 } from '../../../utils/pet-utils';
-import { ReactElement, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, ReactElement, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { ItemData } from '../../../types';
 import ItemCard from '../../../components/Items/ItemCard';
@@ -79,7 +79,7 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [petColorData, setPetColorData] = useState<PetColorData | null>(props.petColorData);
   const [error, setError] = useState<string>('');
-  const [isImgLoading, setIsImgLoading] = useState<boolean>(false);
+  const [loadedPreviewUrl, setLoadedPreviewUrl] = useState('');
   const [speciesInfo, setSpeciesInfo] = useState<SpeciesInfo | null>(props.speciesInfo);
 
   const isPerfectCheapest = useMemo(() => {
@@ -109,6 +109,12 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
     }
   }, [petColorData]);
 
+  const previewUrl = useMemo(() => {
+    if (!petColorData?.thumbnail.species || !petColorData?.thumbnail.color) return '';
+
+    return `/api/cache/preview/color/${petColorData.thumbnail.species}_${petColorData.thumbnail.color}.png`;
+  }, [petColorData]);
+
   useEffect(() => {
     setError('');
   }, [species, color]);
@@ -121,7 +127,6 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
     try {
       setIsLoading(true);
       setPetColorData(null);
-      setIsImgLoading(true);
       const res = await axios.get(`/api/v1/tools/petcolors`, {
         params: {
           speciesTarget: newSpecies ?? species,
@@ -213,6 +218,7 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
     navigator.clipboard.writeText(`${window.location.origin}${router.asPath}`);
 
     toast({
+      id: 'rainbow-pool-copy-link',
       title: t('General.link-copied'),
       status: 'success',
       duration: 3000,
@@ -247,54 +253,52 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
           alt="happy zafara painting a picture"
         />
         <Heading as="h1">{t('PetColors.pet-color-tool')}</Heading>
-        <Text maxW={'700px'} textAlign={'center'} sx={{ textWrap: 'pretty' }}>
+        <Text maxW={'700px'} textAlign={'center'} css={{ textWrap: 'pretty' }}>
           {t('PetColors.cta')}
         </Text>
-        <Text size="sm" color="red.300">
+        <Text fontSize="sm" color="red.300">
           {error}
         </Text>
         <HStack mt={3} flexWrap={{ base: 'wrap', sm: 'initial' }}>
-          <Select
-            variant="filled"
-            minW={150}
-            bg={'blackAlpha.400'}
-            size="sm"
-            onChange={(e) => setColor(e.target.value)}
-            value={color}
-          >
-            <option value="">{t('PetColors.select-color')}</option>
-            {Object.values(allNeopetsColors)
-              .sort()
-              .map((color) => (
-                <option key={color} value={color}>
-                  {color}
-                </option>
-              ))}
-          </Select>
-          <Select
-            variant="filled"
-            minW={175}
-            bg={'blackAlpha.400'}
-            size="sm"
-            onChange={(e) => setSpecies(e.target.value)}
-            value={species}
-          >
-            <option value="">{t('PetColors.select-species')}</option>
-            {Object.values(allSpecies)
-              .sort()
-              .map((species) => (
-                <option key={species} value={species}>
-                  {species}
-                </option>
-              ))}
-          </Select>
+          <NativeSelect.Root size="sm" variant="subtle" minW={150} bg={'blackAlpha.400'}>
+            <NativeSelect.Field
+              onChange={(e: ChangeEvent<HTMLSelectElement>) => setColor(e.target.value)}
+              value={color}
+            >
+              <option value="">{t('PetColors.select-color')}</option>
+              {Object.values(allNeopetsColors)
+                .sort()
+                .map((colorOption) => (
+                  <option key={colorOption} value={colorOption}>
+                    {colorOption}
+                  </option>
+                ))}
+            </NativeSelect.Field>
+            <NativeSelect.Indicator />
+          </NativeSelect.Root>
+          <NativeSelect.Root size="sm" variant="subtle" minW={175} bg={'blackAlpha.400'}>
+            <NativeSelect.Field
+              onChange={(e: ChangeEvent<HTMLSelectElement>) => setSpecies(e.target.value)}
+              value={species}
+            >
+              <option value="">{t('PetColors.select-species')}</option>
+              {Object.values(allSpecies)
+                .sort()
+                .map((speciesOption) => (
+                  <option key={speciesOption} value={speciesOption}>
+                    {speciesOption}
+                  </option>
+                ))}
+            </NativeSelect.Field>
+            <NativeSelect.Indicator />
+          </NativeSelect.Root>
         </HStack>
         <Button
           size="sm"
           bg={'blackAlpha.400'}
-          isDisabled={!color && !species}
+          disabled={!color && !species}
           onClick={() => doSearch()}
-          isLoading={isLoading}
+          loading={isLoading}
         >
           {t('Search.search')}
         </Button>
@@ -316,20 +320,22 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
               <Heading fontSize="md" as="h2">
                 {title}
               </Heading>
-              <IconButton
-                onClick={copyLink}
-                data-umami-event="copy-link"
-                bg="blackAlpha.300"
-                size="xs"
-                aria-label={t('Layout.copy-link')}
-                icon={
-                  <Tooltip hasArrow label={t('Layout.copy-link')} placement="top">
-                    <span>
-                      <FaShareAlt />
-                    </span>
-                  </Tooltip>
-                }
-              />
+              <Tooltip.Root positioning={{ placement: 'top' }}>
+                <Tooltip.Trigger asChild>
+                  <IconButton
+                    onClick={copyLink}
+                    data-umami-event="copy-link"
+                    bg="blackAlpha.300"
+                    size="xs"
+                    aria-label={t('Layout.copy-link')}
+                  >
+                    <FaShareAlt />
+                  </IconButton>
+                </Tooltip.Trigger>
+                <Tooltip.Positioner>
+                  <Tooltip.Content>{t('Layout.copy-link')}</Tooltip.Content>
+                </Tooltip.Positioner>
+              </Tooltip.Root>
             </HStack>
             {speciesInfo && (
               <Text fontSize="sm">
@@ -341,28 +347,39 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
                 justifyContent={'center'}
                 alignItems={'center'}
                 borderRadius={'md'}
-                bg={isImgLoading ? undefined : 'blackAlpha.400'}
+                bg="blackAlpha.400"
               >
-                <Skeleton isLoaded={!isImgLoading} borderRadius={'md'}>
-                  <NextImage
-                    src={`/api/cache/preview/color/${petColorData.thumbnail.species ?? ''}_${
-                      petColorData.thumbnail.color ?? ''
-                    }.png`}
-                    width={'150'}
-                    height={'150'}
-                    alt={`${species} ${color}`}
-                    unoptimized
-                    onLoadStart={() => setIsImgLoading(true)}
-                    onLoad={() => setIsImgLoading(false)}
-                  />
+                <Box borderRadius={'md'} position="relative">
+                  <Skeleton
+                    borderRadius={'md'}
+                    w="150px"
+                    h="150px"
+                    loading={loadedPreviewUrl !== previewUrl}
+                  >
+                    <NextImage
+                      key={previewUrl}
+                      src={previewUrl}
+                      width={150}
+                      height={150}
+                      alt={`${species} ${color}`}
+                      unoptimized
+                      loading="eager"
+                      onLoad={() => setLoadedPreviewUrl(previewUrl)}
+                    />
+                  </Skeleton>
                   <Text fontSize="xs">
                     {t('ItemPage.powered-by')}
                     <br />
-                    <Link href="https://impress.openneo.net/" isExternal fontWeight="bold">
+                    <Link
+                      href="https://impress.openneo.net/"
+                      target="_blank"
+                      rel="noreferrer"
+                      fontWeight="bold"
+                    >
                       Dress To Impress
                     </Link>
                   </Text>
-                </Skeleton>
+                </Box>
               </Flex>
               {!!petColorData.perfectMatch.length && (
                 <Flex
@@ -374,9 +391,9 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
                   borderRadius={'md'}
                   p={3}
                 >
-                  <Badge colorScheme="green">{t('PetColors.perfect-match')}</Badge>
+                  <Badge colorPalette="green">{t('PetColors.perfect-match')}</Badge>
                   {isPerfectCheapest && (
-                    <Badge colorScheme="orange">{t('PetColors.cheapest-way')}</Badge>
+                    <Badge colorPalette="orange">{t('PetColors.cheapest-way')}</Badge>
                   )}
                   <Flex flexWrap={'wrap'} gap={2} justifyContent={'center'} flex={1}>
                     {petColorData.perfectMatch.map((item) => (
@@ -394,7 +411,7 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
                   borderRadius={'md'}
                   p={3}
                 >
-                  <Badge colorScheme="orange">{t('PetColors.cheapest-way')}</Badge>
+                  <Badge colorPalette="orange">{t('PetColors.cheapest-way')}</Badge>
                   <Flex flexWrap={'wrap'} gap={2} justifyContent={'center'} flex={1}>
                     {petColorData.cheapestChange.map((item) => (
                       <ItemCard uniqueID="cheapest" small key={item.internal_id} item={item} />
@@ -411,7 +428,7 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
                   borderRadius={'md'}
                   p={3}
                 >
-                  <Badge colorScheme="blue">{t('PetColors.color-change')}</Badge>
+                  <Badge colorPalette="blue">{t('PetColors.color-change')}</Badge>
                   {!!petColorData.colorChanges.length && (
                     <Flex flexWrap={'wrap'} gap={2} justifyContent={'center'} flex={1}>
                       {petColorData.colorChanges.map((item) => (
@@ -438,7 +455,7 @@ const PetColorToolPage = (props: PetColorToolPageProps) => {
                   borderRadius={'md'}
                   p={3}
                 >
-                  <Badge colorScheme="purple">{t('PetColors.species-change')}</Badge>
+                  <Badge colorPalette="purple">{t('PetColors.species-change')}</Badge>
                   <Flex flexWrap={'wrap'} gap={2} justifyContent={'center'} flex={1}>
                     {petColorData.speciesChanges.map((item) => (
                       <ItemCard uniqueID="species" small key={item.internal_id} item={item} />

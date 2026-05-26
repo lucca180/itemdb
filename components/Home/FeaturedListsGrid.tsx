@@ -1,5 +1,5 @@
+import { Flex } from '@chakra-ui/react';
 import type { UserList } from '@types';
-import { Flex } from '@styled/jsx';
 import UserListCard from '@components/UserLists/ListCard';
 
 type FeaturedListsGridProps = {

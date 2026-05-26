@@ -2,7 +2,7 @@ import NextLink from 'next/link';
 import NextImage from 'next/image';
 import type { CSSProperties } from 'react';
 import type { WP_Article } from '@types';
-import { Flex, styled } from '@styled/jsx';
+import { Box, Flex, Heading, Text } from '@chakra-ui/react';
 import { wp_getLatestPosts } from '../../../../pages/api/wp/posts';
 import { unstable_cache } from 'next/cache';
 
@@ -24,11 +24,11 @@ export async function LatestArticlesSection({ title, limit = 5 }: LatestArticles
   const articles = await getCachedLatestArticles(limit);
 
   return (
-    <Flex flex={1} flexFlow="column">
-      <styled.h2 fontSize="xl" fontWeight="bold" lineHeight="1.2" textAlign="center" mb={5}>
+    <Flex flex={1} direction="column">
+      <Heading as="h2" size="md" lineHeight="1.2" textAlign="center" mb={5}>
         <NextLink href="/articles">{title}</NextLink>
-      </styled.h2>
-      <Flex flexFlow="column" gap={2}>
+      </Heading>
+      <Flex direction="column" gap={2}>
         {articles.map((post) => (
           <LatestArticleCard key={post.id} article={post} />
         ))}
@@ -64,7 +64,7 @@ function LatestArticleCard({ article }: { article: WP_Article }) {
           bg: 'var(--article-card-hover-bg)',
         }}
       >
-        <styled.div p={0} flexShrink={0}>
+        <Box p={0} flexShrink={0}>
           <NextImage
             src={article.thumbnail ?? '/logo.png'}
             alt="article thumbnail"
@@ -78,11 +78,12 @@ function LatestArticleCard({ article }: { article: WP_Article }) {
               objectFit: 'cover',
             }}
           />
-        </styled.div>
+        </Box>
         <Flex flexDirection="column" gap={1}>
           <Flex alignItems="center" gap={2}>
             {isNew && (
-              <styled.span
+              <Box
+                as="span"
                 display="inline-flex"
                 alignItems="center"
                 px={1}
@@ -95,13 +96,13 @@ function LatestArticleCard({ article }: { article: WP_Article }) {
                 textTransform="uppercase"
               >
                 New
-              </styled.span>
+              </Box>
             )}
-            <styled.h3 fontSize="xl" fontWeight="bold" lineHeight="1.2">
+            <Heading as="h3" size="md" lineHeight="1.2">
               {article.title}
-            </styled.h3>
+            </Heading>
           </Flex>
-          <styled.p fontSize="xs">{article.excerpt}</styled.p>
+          <Text fontSize="xs">{article.excerpt}</Text>
         </Flex>
       </Flex>
     </NextLink>

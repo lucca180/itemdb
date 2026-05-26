@@ -1,30 +1,51 @@
 /* eslint-disable react-hooks/preserve-manual-memoization */
-import { NumberInput, NumberInputField } from '@chakra-ui/react';
+import { NumberInput } from '@chakra-ui/react';
 import { useEffect, useMemo, useState } from 'react';
 import debounce from 'lodash/debounce';
 
-const intl = new Intl.NumberFormat('en-US', { style: 'decimal' });
+type NumberInputVariant = React.ComponentProps<typeof NumberInput.Root>['variant'] | 'filled';
+const numberFormatter = new Intl.NumberFormat('en-US', {
+  style: 'decimal',
+  useGrouping: true,
+});
+
+type CustomNumberRootProps = Omit<
+  React.ComponentProps<typeof NumberInput.Root>,
+  'disabled' | 'variant'
+> & {
+  disabled?: boolean;
+  isDisabled?: boolean;
+  placeholder?: string;
+  variant?: NumberInputVariant;
+};
+
+type CustomNumberInputProps = React.ComponentProps<typeof NumberInput.Input>;
 
 type Props = {
-  value?: string;
+  value?: string | number | null;
   onChange?: (newValue: string) => void;
-  inputProps?: React.ComponentProps<typeof NumberInputField>;
-  wrapperProps?: React.ComponentProps<typeof NumberInput>;
+  inputProps?: CustomNumberInputProps;
+  wrapperProps?: CustomNumberRootProps;
   skipDebounce?: boolean;
 };
 
-const format = (val: number | string) => (val || val === 0 ? intl.format(Number(val)) : '');
-const parse = (val: string) => (val ? parseInt(val.replace(/[\.\,]+/g, '')) : '');
+const normalizeValue = (val?: string | number | null) => {
+  if (typeof val === 'number') return String(val);
+  if (!val) return '';
+  return val.replace(/[\.\,]+/g, '');
+};
+
+const formatValue = (val?: string | number | null) => {
+  const normalizedValue = normalizeValue(val);
+  return normalizedValue ? numberFormatter.format(Number(normalizedValue)) : '';
+};
 
 const CustomNumberInput = (props: Props) => {
-  const [value, setValue] = useState<number | string>('');
+  const [displayValue, setDisplayValue] = useState('');
 
   useEffect(() => {
-    const propsVal = props.value ?? '';
-
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (typeof propsVal !== 'undefined' && propsVal !== value) setValue(propsVal);
-    if (typeof propsVal === 'undefined') setValue('');
+    setDisplayValue(formatValue(props.value));
   }, [props.value]);
 
   const debouncedOnChange = useMemo(() => {
@@ -40,25 +61,47 @@ const CustomNumberInput = (props: Props) => {
   }, [debouncedOnChange]);
 
   const onChange = (val: string) => {
-    const parsedVal = val || val === '0' ? val.replace(/[\.\,]+/g, '') : '';
-    setValue(parse(val));
-    if (!props.skipDebounce) debouncedOnChange(parsedVal);
-    else props.onChange?.(parsedVal);
+    const normalizedValue = normalizeValue(val);
+    setDisplayValue(formatValue(normalizedValue));
+    if (!props.skipDebounce) debouncedOnChange(normalizedValue);
+    else props.onChange?.(normalizedValue);
   };
 
+  const {
+    disabled,
+    isDisabled,
+    placeholder: wrapperPlaceholder,
+    variant,
+    ...wrapperProps
+  } = props.wrapperProps ?? {};
+  const inputProps = props.inputProps ?? {};
+  const resolvedVariant = variant === 'filled' ? 'subtle' : variant;
+
   return (
-    <NumberInput
+    <NumberInput.Root
       min={0}
       step={1}
       size="sm"
-      onChange={onChange}
-      value={format(value)}
-      variant="filled"
-      bg={'whiteAlpha.200'}
-      {...props.wrapperProps}
+      formatOptions={{
+        useGrouping: true,
+        style: 'decimal',
+      }}
+      onValueChange={({ value: nextValue }) => onChange(nextValue)}
+      value={displayValue}
+      variant={resolvedVariant ?? 'subtle'}
+      bg="whiteAlpha.100"
+      disabled={disabled ?? isDisabled}
+      {...wrapperProps}
     >
-      <NumberInputField paddingEnd={1} paddingStart={1} textAlign="center" {...props.inputProps} />
-    </NumberInput>
+      <NumberInput.Control />
+      <NumberInput.Input
+        paddingEnd={1}
+        paddingStart={1}
+        placeholder={inputProps.placeholder ?? wrapperPlaceholder}
+        textAlign="center"
+        {...inputProps}
+      />
+    </NumberInput.Root>
   );
 };
 

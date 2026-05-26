@@ -1,15 +1,4 @@
-import {
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
-  Box,
-  Center,
-  Flex,
-  Link,
-  Text,
-} from '@chakra-ui/react';
+import { Accordion, Box, Center, Flex, Link, Text } from '@chakra-ui/react';
 import React from 'react';
 import { ItemData, ItemPetpetData } from '../../types';
 import CardBase from '../Card/CardBase';
@@ -43,7 +32,6 @@ const PetpetCard = (props: Props) => {
               ColorLink: (chunk) => (
                 <Link
                   href={`/search?s=&petpetColor[]=${petpetData.color.id}`}
-                  isExternal
                   color={color.lightness(70).hex()}
                 >
                   {chunk}
@@ -52,7 +40,6 @@ const PetpetCard = (props: Props) => {
               SpeciesLink: (chunk) => (
                 <Link
                   href={`/search?s=&petpetSpecies[]=${petpetData.species.id}`}
-                  isExternal
                   color={color.lightness(70).hex()}
                 >
                   {chunk}
@@ -69,7 +56,6 @@ const PetpetCard = (props: Props) => {
                 Link: (chunk) => (
                   <Link
                     href={`/search?s=&petpetSpecies[]=${petpetData.species.id}`}
-                    isExternal
                     color={color.lightness(70).hex()}
                   >
                     {chunk}
@@ -111,7 +97,6 @@ const PetpetCard = (props: Props) => {
                 SpeciesLink: (chunk) => (
                   <Link
                     href={`/search?s=&petpetSpecies[]=${petpetData.species.id}`}
-                    isExternal
                     color={color.lightness(70).hex()}
                   >
                     {chunk}
@@ -120,7 +105,8 @@ const PetpetCard = (props: Props) => {
                 Link: (chunk) => (
                   <IconLink
                     href="https://www.neopets.com/pool/puddle.phtml"
-                    isExternal
+                    target="_blank"
+                    rel="noreferrer"
                     color={color.lightness(70).hex()}
                   >
                     {chunk}
@@ -148,39 +134,41 @@ const PetpetCard = (props: Props) => {
         )}
         {petpetData.alternativeWays && !!petpetData.alternativeWays.length && (
           <>
-            <Accordion allowToggle minW={'70%'} variant={'filled'}>
-              <AccordionItem bg="blackAlpha.300">
-                <AccordionButton>
+            <Accordion.Root collapsible minW={'70%'} variant={'enclosed'}>
+              <Accordion.Item value="alternatives" bg="blackAlpha.300">
+                <Accordion.ItemTrigger>
                   <Box as="span" flex="1" fontSize={'sm'} textAlign="left">
                     {t('ItemPage.other-ways-of-getting-this-petpet')}
                   </Box>
-                  <AccordionIcon />
-                </AccordionButton>
-                <AccordionPanel pb={4}>
-                  <Flex flexFlow={'column'} gap={5}>
-                    {petpetData.alternativeWays.map((way, i) => (
-                      <Flex
-                        key={i}
-                        minW={'50%'}
-                        wrap="wrap"
-                        gap={2}
-                        justifyContent={'center'}
-                        bg="blackAlpha.600"
-                        p={3}
-                        borderRadius={'md'}
-                      >
-                        {way.map((i, index) => (
-                          <React.Fragment key={i.internal_id}>
-                            <ItemCard uniqueID={'alternatives_' + i} item={i} small />
-                            {index + 1 < way.length && <Center>+</Center>}
-                          </React.Fragment>
-                        ))}
-                      </Flex>
-                    ))}
-                  </Flex>
-                </AccordionPanel>
-              </AccordionItem>
-            </Accordion>
+                  <Accordion.ItemIndicator />
+                </Accordion.ItemTrigger>
+                <Accordion.ItemContent>
+                  <Accordion.ItemBody pb={4}>
+                    <Flex flexFlow={'column'} gap={5}>
+                      {petpetData.alternativeWays.map((way, i) => (
+                        <Flex
+                          key={i}
+                          minW={'50%'}
+                          wrap="wrap"
+                          gap={2}
+                          justifyContent={'center'}
+                          bg="blackAlpha.600"
+                          p={3}
+                          borderRadius={'md'}
+                        >
+                          {way.map((i, index) => (
+                            <React.Fragment key={i.internal_id}>
+                              <ItemCard uniqueID={'alternatives_' + i} item={i} small />
+                              {index + 1 < way.length && <Center>+</Center>}
+                            </React.Fragment>
+                          ))}
+                        </Flex>
+                      ))}
+                    </Flex>
+                  </Accordion.ItemBody>
+                </Accordion.ItemContent>
+              </Accordion.Item>
+            </Accordion.Root>
           </>
         )}
       </Flex>

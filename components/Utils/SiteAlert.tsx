@@ -21,13 +21,15 @@ export const SiteAlert = () => {
         px={1}
       >
         {alert.img && (
-          <Link
-            as={NextLink}
-            href={alert.link}
-            data-umami-event="site-alert-click"
-            data-umami-event-label={alert.message}
-          >
-            <Image src={alert.img.src} width={alert.img.w} height={alert.img.h} alt="alert icon" />
+          <Link asChild data-umami-event="site-alert-click" data-umami-event-label={alert.message}>
+            <NextLink href={alert.link}>
+              <Image
+                src={alert.img.src}
+                width={alert.img.w}
+                height={alert.img.h}
+                alt="alert icon"
+              />
+            </NextLink>
           </Link>
         )}
         <Text color={alert.color}>
@@ -36,14 +38,14 @@ export const SiteAlert = () => {
               b: (children) => <b>{children}</b>,
               Link: (children) => (
                 <Link
-                  as={NextLink}
-                  href={alert.link}
+                  asChild
                   fontWeight="bold"
-                  isExternal
                   data-umami-event="site-alert-click"
                   data-umami-event-label={alert.message}
                 >
-                  {children}
+                  <NextLink href={alert.link} target="_blank" rel="noreferrer">
+                    {children}
+                  </NextLink>
                 </Link>
               ),
             })}

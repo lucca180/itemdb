@@ -1,5 +1,4 @@
 import { ChakraProvider } from '@chakra-ui/react';
-import theme from '../utils/theme';
 import '../utils/global.css';
 import { Provider } from 'jotai';
 import { DefaultSeo } from 'next-seo';
@@ -15,6 +14,9 @@ import type { NextPage } from 'next';
 import { onIntlError } from '../utils/intlHandler';
 import { installProofInterceptor } from '@utils/http/proofInterceptor';
 import { getLocalePrefix, VALID_LOCALES } from '@utils/locales';
+import { system } from '@utils/theme/theme';
+import { Toaster } from '@components/ui/toaster';
+import { ColorModeProvider } from '@components/ui/color-mode';
 
 if (typeof window !== 'undefined') {
   installProofInterceptor();
@@ -33,41 +35,43 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   const getLayout = Component.getLayout ?? ((page) => page);
 
   return (
-    <ChakraProvider theme={theme}>
-      <Provider>
-        <AuthProvider>
-          <NextIntlClientProvider
-            locale={router.locale}
-            messages={pageProps.messages}
-            timeZone={'America/Los_Angeles'}
-            now={new Date()}
-            onError={(e) => onIntlError(e, { path: router.asPath })}
-          >
-            <Head>
-              {VALID_LOCALES.map((locale) => (
-                <link
-                  rel="alternate"
-                  key={locale}
-                  hrefLang={locale}
-                  href={removeUTM(
-                    `https://itemdb.com.br${getLocalePrefix(locale)}${router.asPath}`
-                  )}
-                />
-              ))}
-            </Head>
-            <NextNProgress color="#718096" showOnShallow={true} />
-            <DefaultSeo {...getDefaultSEO(router.locale ?? 'en')} />
-            {getLayout(<Component {...pageProps} />, pageProps)}
-            <Script
-              src={process.env.NEXT_PUBLIC_UMAMI_URL_2 + '/plutonita.js'}
-              data-website-id={process.env.NEXT_PUBLIC_UMAMI_ID_2}
-              data-host-url={process.env.NEXT_PUBLIC_UMAMI_URL_2}
-              data-before-send="beforeSendHandler"
-              data-performance="true"
-              defer
-            />
-            <Script id="pathOverwriter">
-              {`function beforeSendHandler(type, payload) {
+    <ChakraProvider value={system}>
+      <ColorModeProvider>
+        <Provider>
+          <AuthProvider>
+            <NextIntlClientProvider
+              locale={router.locale}
+              messages={pageProps.messages}
+              timeZone={'America/Los_Angeles'}
+              now={new Date()}
+              onError={(e) => onIntlError(e, { path: router.asPath })}
+            >
+              <Head>
+                {VALID_LOCALES.map((locale) => (
+                  <link
+                    rel="alternate"
+                    key={locale}
+                    hrefLang={locale}
+                    href={removeUTM(
+                      `https://itemdb.com.br${getLocalePrefix(locale)}${router.asPath}`
+                    )}
+                  />
+                ))}
+              </Head>
+              <NextNProgress color="#718096" showOnShallow={true} />
+              <DefaultSeo {...getDefaultSEO(router.locale ?? 'en')} />
+              {getLayout(<Component {...pageProps} />, pageProps)}
+              <Toaster />
+              <Script
+                src={process.env.NEXT_PUBLIC_UMAMI_URL_2 + '/plutonita.js'}
+                data-website-id={process.env.NEXT_PUBLIC_UMAMI_ID_2}
+                data-host-url={process.env.NEXT_PUBLIC_UMAMI_URL_2}
+                data-before-send="beforeSendHandler"
+                data-performance="true"
+                defer
+              />
+              <Script id="pathOverwriter">
+                {`function beforeSendHandler(type, payload) {
                     const url = payload.url;
                     if(['es', 'pt'].includes(url.split("/")[3])) {
                       payload.url = url.replace("/pt", "");
@@ -75,10 +79,11 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
 
                     return payload;
                 }`}
-            </Script>
-          </NextIntlClientProvider>
-        </AuthProvider>
-      </Provider>
+              </Script>
+            </NextIntlClientProvider>
+          </AuthProvider>
+        </Provider>
+      </ColorModeProvider>
     </ChakraProvider>
   );
 }

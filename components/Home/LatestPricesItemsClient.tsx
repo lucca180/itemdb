@@ -1,6 +1,6 @@
 'use client';
 
-import { Flex } from '@styled/jsx';
+import { Flex } from '@chakra-ui/react';
 import type { ItemData } from '@types';
 import ItemCard from '@components/Items/ItemCard';
 

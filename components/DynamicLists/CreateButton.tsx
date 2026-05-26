@@ -20,7 +20,7 @@ type CreateDynamicListButtonProps = {
 
 export const CreateDynamicListButton = (props: CreateDynamicListButtonProps) => {
   const t = useTranslations();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
   const { resultCount, isLoading, filters, query, isMobile, removeMargin } = props;
 
   // you cannot create a dynamic list from a list search
@@ -28,9 +28,9 @@ export const CreateDynamicListButton = (props: CreateDynamicListButtonProps) => 
 
   return (
     <>
-      {isOpen && (
+      {open && (
         <DynamicListModal
-          isOpen={isOpen}
+          isOpen={open}
           onClose={onClose}
           resultCount={resultCount}
           searchQuery={{ ...filters!, s: query ?? '' }}
@@ -40,10 +40,10 @@ export const CreateDynamicListButton = (props: CreateDynamicListButtonProps) => 
         <Button
           variant="ghost"
           textAlign={'center'}
-          colorScheme="orange"
+          colorPalette="orange"
           size="sm"
           onClick={onOpen}
-          isLoading={isLoading}
+          loading={isLoading}
           mt={removeMargin ? undefined : 3}
           data-umami-event="dynamic-list-create"
         >
@@ -56,10 +56,10 @@ export const CreateDynamicListButton = (props: CreateDynamicListButtonProps) => 
         <Button
           variant="solid"
           // textAlign={'center'}
-          colorScheme="orange"
+          colorPalette="orange"
           size="sm"
           onClick={onOpen}
-          isLoading={isLoading}
+          loading={isLoading}
           h={10}
           minW={10}
           // mt={3}
