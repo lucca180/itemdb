@@ -15,6 +15,8 @@ const MissingInfoCard = () => {
       alignItems="center"
       justifyContent="center"
       textAlign="center"
+      bg="red.400/30"
+      color="white"
     >
       <Alert.Indicator />
       <Alert.Content>

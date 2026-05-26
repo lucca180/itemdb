@@ -92,6 +92,8 @@ const ManualCheckCard = (props: Props) => {
       textAlign="center"
       minHeight="200px"
       borderRadius={'md'}
+      bg="red.400/30"
+      color="white"
     >
       <Alert.Indicator boxSize="40px" mr={0} />
       <Alert.Content>

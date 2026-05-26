@@ -321,23 +321,44 @@ const ItemPriceCard = (props: Props) => {
               {item.saleStatus && (
                 <>
                   {item.saleStatus.status === 'ets' && (
-                    <Badge onClick={saleStatusModal.onOpen} colorPalette="green" cursor={'pointer'}>
+                    <Badge
+                      onClick={saleStatusModal.onOpen}
+                      colorPalette="green"
+                      cursor={'pointer'}
+                      mb={1}
+                    >
                       Easy to Sell <Icon verticalAlign={'middle'} boxSize={'14px'} as={MdHelp} />
                     </Badge>
                   )}
                   {item.saleStatus.status === 'hts' && (
-                    <Badge onClick={saleStatusModal.onOpen} colorPalette="red" cursor={'pointer'}>
+                    <Badge
+                      onClick={saleStatusModal.onOpen}
+                      colorPalette="red"
+                      cursor={'pointer'}
+                      mb={1}
+                    >
                       Hard to Sell <Icon verticalAlign={'middle'} boxSize={'14px'} as={MdHelp} />
                     </Badge>
                   )}
                   {item.saleStatus.status === 'regular' && (
-                    <Badge onClick={saleStatusModal.onOpen} colorPalette="gray" cursor={'pointer'}>
+                    <Badge
+                      onClick={saleStatusModal.onOpen}
+                      colorPalette="gray"
+                      cursor={'pointer'}
+                      mb={1}
+                    >
                       Regular <Icon verticalAlign={'middle'} boxSize={'14px'} as={MdHelp} />
                     </Badge>
                   )}
                 </>
               )}
-              <Stat.Root flex="initial" textAlign="center" minW="20%">
+              <Stat.Root
+                flex="initial"
+                textAlign="center"
+                minW="20%"
+                alignItems={'center'}
+                justifyContent={'center'}
+              >
                 {price?.inflated && (
                   <Text fontWeight="bold" color="red.300">
                     {t('General.inflation')}
