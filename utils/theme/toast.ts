@@ -21,8 +21,11 @@ type PromiseToastOptions = {
 };
 
 let toastCounter = 0;
+const toastIdMap = new Map<string, string>();
 
 const createToastInstanceId = (id: string) => `${id}-${Date.now()}-${toastCounter++}`;
+
+const resolveToastId = (id: string) => toastIdMap.get(id) ?? id;
 
 const normalizeOptions = (options: ToastOptions, id = options.id) => ({
   id,
@@ -34,21 +37,23 @@ const normalizeOptions = (options: ToastOptions, id = options.id) => ({
 });
 
 export function useToast() {
-  const create = useCallback(
-    (options: ToastOptions) =>
-      (toaster as any).create(normalizeOptions(options, createToastInstanceId(options.id))),
-    []
-  );
+  const create = useCallback((options: ToastOptions) => {
+    const instanceId = createToastInstanceId(options.id);
+    toastIdMap.set(options.id, instanceId);
+    return (toaster as any).create(normalizeOptions(options, instanceId));
+  }, []);
   const update = useCallback((id: string, options: ToastOptions) => {
-    (toaster as any).update(id, normalizeOptions(options));
+    (toaster as any).update(resolveToastId(id), normalizeOptions(options, resolveToastId(id)));
   }, []);
   const close = useCallback((id: string) => {
-    (toaster as any).dismiss(id);
+    (toaster as any).dismiss(resolveToastId(id));
+    toastIdMap.delete(id);
   }, []);
   const closeAll = useCallback(() => {
     (toaster as any).dismiss();
+    toastIdMap.clear();
   }, []);
-  const isActive = useCallback((id: string) => (toaster as any).isVisible(id), []);
+  const isActive = useCallback((id: string) => (toaster as any).isVisible(resolveToastId(id)), []);
   const promise = useCallback(async <T>(value: Promise<T>, options: PromiseToastOptions) => {
     return (toaster as any).promise(value, {
       loading: options.loading
