@@ -38,8 +38,8 @@ export const AuthButton = (props: AuthButtonProps) => {
       >
         {!user && (
           <Button
-            variant="solid"
-            bg="gray.700"
+            variant="subtle"
+            colorPalette="whiteAlpha"
             _hover={{ bg: 'gray.600' }}
             onClick={onOpen}
             px={{ base: 0, md: 4 }}
