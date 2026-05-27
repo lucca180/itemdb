@@ -1,17 +1,17 @@
   // ==UserScript==
   // @name         itemdb - Safety Deposit Box Pricer
-  // @version      1.5.4
+  // @version      1.6.0
   // @author       itemdb
   // @namespace    itemdb
-  // @description  Shows the market price for your sdb/closet items
+  // @description  Shows the market price for your sdb
   // @website      https://itemdb.com.br
   // @match        *://*.itemdb.com.br/*
   // @match        *://*.neopets.com/safetydeposit.phtml*
-  // @match        *://*.neopets.com/closet.phtml*
   // @icon         https://itemdb.com.br/favicon.ico
   // @connect      itemdb.com.br
   // @grant        GM_xmlhttpRequest
   // @noframes
+  // @run-at       document-start
   // ==/UserScript==
 
 // function to check if the current url contains a word
@@ -26,18 +26,9 @@ const script_info = {
 
 unsafeWindow.itemdb_sdbPricer = script_info;
 
-async function fetchPriceData(){
-  const trs = $('form table').eq(2).find('tr').slice(1, -1);
+const itemInfo = {};
 
-  const IDs = [];
-
-  trs.each(function (i) {
-    const tds = $(this).find('td');
-    const itemId = tds.last().find('input').attr('name').match(/\d+/)?.[0] ?? tds.last().find('input').data('item_id')
-
-    IDs.push(itemId);
-  });
-
+async function fetchPriceData(IDs) {
   GM_xmlhttpRequest({
     method: 'POST',
     url: 'https://itemdb.com.br/api/v1/items/many',
@@ -58,30 +49,23 @@ async function fetchPriceData(){
   });
 }
 
-async function pricePage(itemData) {
-  const trs = $('form table').eq(2).find('tr').slice(1, -1);
+async function watchSDBItems() {
+  console.log('[itemdb] Watching for items in the safety deposit box...');
+  document.addEventListener('idb:sdbPricer:safetyDeposit', function(e) {
+    console.log('[itemdb] Detected items in safety deposit box, fetching price data...', e.detail);
+    const items = e.detail.data.items;
+    const itemIDs = items.map(i => {
 
-  let headingSelector = '.content > form > table:nth-child(3) > tbody > tr:nth-child(1) > td:nth-last-child(2)';
-  if(URLHas('closet')) headingSelector = "form[action='process_closet.phtml'] th:nth-of-type(5)";
+      itemInfo[i.obj_info_id] = i;
+      return i.obj_info_id;
+    });
+    fetchPriceData(itemIDs);
+  });
+}
 
-  $(headingSelector)
-  .before('<td align="center" class="contentModuleHeaderAlt" style="text-align: center; width: 70px;" noWrap><img src="https://itemdb.com.br/logo_icon.svg" style="vertical-align: middle;" width="25px" height="auto"/> <b>Price</b></td>');
-
-  let footerSelector = '.content > form > table:nth-child(3) > tbody > tr:last-child > td';
-  if(URLHas('closet')) footerSelector = "form[action='process_closet.phtml'] tbody tr:last-of-type td"
-
-  $(footerSelector).before("<td></td>");
-
+function getPriceStr(item, itemQty) {
   const intl = new Intl.NumberFormat();
-
-  let grandTotal = 0
-
-  trs.each(function (i) {
-    const tds = $(this).find('td');
-    const itemId = tds.last().find('input').attr('name').match(/\d+/)?.[0] ?? tds.last().find('input').data('item_id');
-
-    const item = itemData[itemId];
-    let priceStr = '<div style="display: flex;flex-flow: column;justify-content: center;align-items: center; gap: .3rem;">';
+  let priceStr = '<div style="display: flex;flex-flow: row; gap: .3rem; font-size: 14px; align-items: center; flex-wrap: wrap; max-width: 200px;"><img src="https://itemdb.com.br/logo_icon.svg" style="vertical-align: middle;" width="20px" height="auto"/> ';
 
     /*
       * If items are missing from the DB, wrap the conditions inside a try -> catch.
@@ -90,13 +74,13 @@ async function pricePage(itemData) {
     try {
       if(!item) throw 'no item';
 
-      if(item.rarity) {
-        var color1 = setColor(item.rarity)
+      // if(item.rarity) {
+      //   var color1 = setColor(item.rarity)
 
-        priceStr += `<small style='color:${color1}'><b>r${item.rarity}</b>`;
-        if(item.ff_points) priceStr += ` - <b>${item.ff_points} pts</b>`;
-        priceStr += `</small> `
-      }
+      //   priceStr += `<small style='color:${color1}'><b>r${item.rarity}</b>`;
+      //   if(item.ff_points) priceStr += ` - <b>${item.ff_points} pts</b>`;
+      //   priceStr += `</small> `
+      // }
 
       if(item.status === 'no trade'){
         priceStr += `<a href="https://itemdb.com.br/item/${item.slug}?utm_content=sdbPricer" target="_blank">No Trade</a>`;
@@ -125,13 +109,12 @@ async function pricePage(itemData) {
         priceStr += `<a href="https://itemdb.com.br/item/${item.slug}?utm_content=sdbPricer" target="_blank">${item.price.inflated ? "⚠ " : ""}${intl.format(item.price.value)} NP</a>`;
         priceStr += `</div>`;
 
-        const itemQtyCol = tds.eq(-2)[0];
-        const itemQty = parseInt(itemQtyCol.textContent)
+        let grandTotal = 0;
         const totalValue = item.price.value * itemQty;
         grandTotal += totalValue
 
         if (itemQty > 1){
-            priceStr += `<small style='color: #000000'><b>${intl.format(totalValue)} NP total</b></small> `
+            priceStr += `<small style='color: #000000'><b>(${intl.format(totalValue)} NP total)</b></small> `
         }
       }
 
@@ -140,25 +123,34 @@ async function pricePage(itemData) {
       }
     } catch(e) { // We're not catching any specific error, as any error that may surface it will be handled with the "We need more info" referral link.
       console.error(e)
-      priceStr = `<a>Not Found</a>`;
+      priceStr += `<a>Not Found</a>`;
       priceStr += `<br/><small><a href="https://itemdb.com.br/contribute?utm_content=sdbPricer" target="_blank"><i>We need info about this item<br/>Learn how to Help</i></a></small>`
     }
 
     priceStr += '</div>';
-    tds.eq( -2 ).before(`<td align="center" width="150px">${priceStr}</td>`);
+    return priceStr;
+}
+
+const pricePage = (itemData) => {
+  if(URLHas('/safetydeposit')) priceSDB(itemData);
+  // if(URLHas('/closet')) priceCloset(itemData);
+}
+
+function priceSDB(itemData) {
+  const table = $('.sdb-table');
+
+  table.find('tr').slice(1).each(function() {
+    const item_id = $(this).find('.sdb-item-img-wrap input').attr('id')?.match(/\d+/)?.at(0);
+
+    const item = itemData[item_id];
+    if(!item) return;
+    
+    const qty = itemInfo[item_id].amount || 1;
+
+    const priceStr = getPriceStr(item, qty);
+
+    $(this).find('.sdb-item-info').append(`${priceStr}`);
   })
-
-    $(footerSelector).parent().before(`
-<tr bgcolor="silver">
-  <th colspan="3" class="contentModuleHeaderAlt" style="text-align: center;"></th>
-  <th class="contentModuleHeaderAlt" style="text-align: right;">Total:</th>
-  <td align="center" class="contentModuleHeaderAlt" style="text-align: center; width: 70px;" nowrap="">
-    <b>${intl.format(grandTotal)} NP</b>
-  </td>
-  <th colspan="2" class="contentModuleHeaderAlt" style="text-align: center;"></th>
-</tr>
-`);
-
 }
 
 function setColor(rarity) {
@@ -172,4 +164,58 @@ function setColor(rarity) {
   return '#ec69ff';                   // Neocash | Artifact - 500
 }
 
-if (URLHas('safetydeposit') || URLHas('closet')) fetchPriceData();
+function registerFetchWatcher({ match, eventName }) {
+  const targetWindow = unsafeWindow ?? window;
+
+  if (!targetWindow.__idbFetchWatchers) {
+    targetWindow.__idbFetchWatchers = [];
+  }
+
+  if (!targetWindow.__idbFetchPatched) {
+    targetWindow.__idbFetchPatched = true;
+
+    const originalFetch = targetWindow.fetch;
+
+    targetWindow.fetch = async (...args) => {
+      const response = await originalFetch(...args);
+      const clonedResponse = response.clone();
+
+      let responseText = '';
+      try {
+        responseText = await clonedResponse.text();
+      } catch {
+        return response;
+      }
+
+      let requestData;
+      try {
+        requestData = JSON.parse(responseText);
+      } catch {
+        return response;
+      }
+
+      for (const watcher of targetWindow.__idbFetchWatchers) {
+        try {
+          if (watcher.match({ args, requestData, response })) {
+            document.dispatchEvent(
+              new CustomEvent(watcher.eventName, { detail: requestData })
+            );
+          }
+        } catch {}
+      }
+
+      return response;
+    };
+  }
+  console.log('Registering fetch watcher for event:', eventName);
+  targetWindow.__idbFetchWatchers.push({ match, eventName });
+}
+
+if(URLHas('/safetydeposit')) {
+  watchSDBItems();
+  registerFetchWatcher({
+    eventName: 'idb:sdbPricer:safetyDeposit',
+    match: ({ requestData }) => typeof requestData.data.items !== 'undefined',
+  });
+}
+
