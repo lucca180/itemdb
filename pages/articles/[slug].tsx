@@ -251,14 +251,17 @@ const options: HTMLReactParserOptions = {
       return (
         <Alert.Root
           status={status}
-          display="flex"
-          flexFlow="column"
-          alignItems="flex-start"
-          borderRadius="md"
+          variant="surface"
+          borderStartWidth="3px"
+          borderStartColor="colorPalette.solid"
+          css={{
+            '& b,& strong': { color: 'inherit' },
+            '& a': { color: 'inherit', textDecoration: 'underline' },
+          }}
         >
           <Alert.Indicator />
           <Alert.Content>
-            {title && <Alert.Title mb={1}>{title}</Alert.Title>}
+            {title && <Alert.Title fontWeight={'bold'}>{title}</Alert.Title>}
             <Alert.Description display="flex" flexFlow="column" gap={2} fontSize="sm">
               {domToReact(children, options)}
             </Alert.Description>
