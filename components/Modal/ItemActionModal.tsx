@@ -10,9 +10,9 @@ import {
 } from '@chakra-ui/react';
 import { useToast } from '@utils/theme/toast';
 import axios from 'axios';
-import { useState } from 'react';
-import { ListItemInfo, ObligatoryUserList, UserList } from '../../types';
-import ListSelect from '../UserLists/ListSelect';
+import { useRef, useState } from 'react';
+import { ListItemInfo, ObligatoryUserList, UserList } from '@types';
+import ListSelect from '@components/UserLists/ListSelect';
 import { useTranslations } from 'next-intl';
 
 export type ItemActionModalProps = {
@@ -31,6 +31,7 @@ const ItemActionModal = (props: ItemActionModalProps) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
   const [dest, setDest] = useState<UserList>();
+  const contentRef = useRef<HTMLDivElement | null>(null);
 
   const saveChanges = async () => {
     setLoading(true);
@@ -43,14 +44,15 @@ const ItemActionModal = (props: ItemActionModalProps) => {
       });
 
       if (res.status === 200) {
+        refresh();
         toast({
           id: 'item-action-success',
           title: t('General.success'),
           status: 'success',
-          duration: 3000,
+          offset: { base: 20, md: 16 },
+          duration: 5000,
           isClosable: true,
         });
-        refresh();
         handleClose();
         setLoading(false);
       } else throw res.data;
@@ -80,7 +82,7 @@ const ItemActionModal = (props: ItemActionModalProps) => {
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner>
-          <Dialog.Content>
+          <Dialog.Content ref={contentRef}>
             <Dialog.Header>
               <Dialog.Title textTransform="capitalize">
                 {action === 'move' && t('Lists.move-n-items', { items: selectedItems.length })}
@@ -97,7 +99,7 @@ const ItemActionModal = (props: ItemActionModalProps) => {
               {!loading && !error && ['copy', 'move'].includes(action) && (
                 <Field.Root>
                   <Field.Label color="gray.300">{t('Lists.destination')}</Field.Label>
-                  <ListSelect onChange={setDest} />
+                  <ListSelect onChange={setDest} portalRef={contentRef} />
                   <Field.HelperText>{t('Lists.move-text')}</Field.HelperText>
                 </Field.Root>
               )}

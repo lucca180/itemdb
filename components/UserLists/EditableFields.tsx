@@ -6,7 +6,14 @@ import { ListItemInfo } from '../../types';
 export type EditableFieldsProps = EditableItemCardProps & {
   handleItemInfoChange: (
     value: number | string,
-    field: 'amount' | 'capValue' | 'isHighlight' | 'order' | 'seriesStart' | 'seriesEnd'
+    field:
+      | 'amount'
+      | 'capValue'
+      | 'isHighlight'
+      | 'isHidden'
+      | 'order'
+      | 'seriesStart'
+      | 'seriesEnd'
   ) => void;
   itemInfo: ListItemInfo | undefined;
 };
@@ -36,7 +43,7 @@ const NumberField = ({
 );
 
 const EditableFields = (props: EditableFieldsProps) => {
-  const { id, item, isTrading, handleItemInfoChange, itemInfo, list } = props;
+  const { item, isTrading, handleItemInfoChange, itemInfo, list } = props;
 
   const t = useTranslations();
 
@@ -99,10 +106,10 @@ const EditableFields = (props: EditableFieldsProps) => {
         </>
       )}
       <Checkbox.Root
-        defaultChecked={itemInfo?.isHighlight}
+        checked={!!itemInfo?.isHighlight}
         size="sm"
         onCheckedChange={(details) =>
-          props.onChange?.(id, Number(details.checked === true), 'isHighlight')
+          handleItemInfoChange(Number(details.checked === true), 'isHighlight')
         }
       >
         <Checkbox.HiddenInput />
@@ -112,10 +119,10 @@ const EditableFields = (props: EditableFieldsProps) => {
         </Checkbox.Label>
       </Checkbox.Root>
       <Checkbox.Root
-        defaultChecked={itemInfo?.isHidden}
+        checked={!!itemInfo?.isHidden}
         size="sm"
         onCheckedChange={(details) =>
-          props.onChange?.(id, Number(details.checked === true), 'isHidden')
+          handleItemInfoChange(Number(details.checked === true), 'isHidden')
         }
       >
         <Checkbox.HiddenInput />

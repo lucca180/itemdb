@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, type ReactNode } from 'react';
+import type { SystemStyleObject } from '@chakra-ui/react';
 import { toaster } from '@components/ui/toaster';
 
 type ToastStatus = 'success' | 'error' | 'warning' | 'info' | 'loading';
@@ -12,6 +13,7 @@ type ToastOptions = {
   status?: ToastStatus;
   duration?: number | null;
   isClosable?: boolean;
+  offset?: SystemStyleObject['marginBottom'];
 };
 
 type PromiseToastOptions = {
@@ -34,6 +36,7 @@ const normalizeOptions = (options: ToastOptions, id = options.id) => ({
   type: options.status ?? 'info',
   duration: options.duration === null ? undefined : options.duration,
   closable: options.isClosable,
+  meta: options.offset !== undefined ? { offset: options.offset } : undefined,
 });
 
 export function useToast() {

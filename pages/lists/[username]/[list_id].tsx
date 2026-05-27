@@ -31,7 +31,6 @@ import {
 import { useRouter } from 'next/router';
 import ItemCard from '../../../components/Items/ItemCard';
 import Color from 'color';
-import { SelectItemsCheckbox } from '../../../components/Input/SelectItemsCheckbox';
 import { ItemActionModalProps } from '../../../components/Modal/ItemActionModal';
 import { GetServerSidePropsContext } from 'next';
 
@@ -43,7 +42,7 @@ import { CreateLinkedListButton } from '../../../components/DynamicLists/CreateL
 import { dynamicListCan, sortListItems, stripMarkdown } from '../../../utils/utils';
 import { SearchList } from '../../../components/Search/SearchLists';
 import { SortSelect } from '../../../components/Input/SortSelect';
-import { CheckAuth } from '../../../utils/googleCloud';
+import { SelectItemsCheckbox } from '@components/Input/SelectItemsCheckbox';
 import { useTranslations } from 'next-intl';
 import { BsFilter } from 'react-icons/bs';
 import { SearchFilterModalProps } from '../../../components/Search/SearchFiltersModal';
@@ -72,6 +71,14 @@ const SearchFilterModal = dynamic<SearchFilterModalProps>(
 
 const AddListItemsModal = dynamic<AddListItemsModalProps>(
   () => import('../../../components/Modal/AddListItemsModal')
+);
+
+const SelectedItemsActionBar = dynamic(() =>
+  import('@components/UserLists/SelectedItemsActionBar').then((mod) => mod.SelectedItemsActionBar)
+);
+
+const UnsavedChangesActionBar = dynamic(() =>
+  import('@components/UserLists/UnsavedChangesActionBar').then((mod) => mod.UnsavedChangesActionBar)
 );
 
 const Markdown = dynamic(() => import('../../../components/Utils/Markdown'), { ssr: false });
@@ -125,6 +132,7 @@ const ListPage = (props: ListPageProps) => {
   const [isEdit, setEdit] = useState<boolean>(false);
   const [lockSort, setLockSort] = useState<boolean>(true);
   const [selectionAction, setSelectionAction] = useState<'move' | 'delete' | 'copy' | ''>('');
+  const [hasChanges, setHasChangesState] = useState<boolean>(false);
 
   const [isLoading, setLoading] = useState<boolean>(true);
   const [searchItemInfoIds, setSearchItemInfoIds] = useState<number[] | null>(null);
@@ -244,6 +252,7 @@ const ListPage = (props: ListPageProps) => {
 
   const init = async (force = false) => {
     setLoading(true);
+    setHasChangesState(false);
     toast.closeAll();
     searchQuery.current = '';
     setSearchItemInfoIds(null);
@@ -460,30 +469,13 @@ const ListPage = (props: ListPageProps) => {
   );
 
   const setHasChanges = () => {
-    if (toast.isActive('unsavedChanges')) return;
-
-    toast({
-      title: t('General.you-have-unsaved-changes'),
-      id: 'unsavedChanges',
-      description: (
-        <Flex gap={2}>
-          <Button onClick={saveChanges} colorPalette="whiteAlpha" size="sm">
-            {t('General.save-changes')}
-          </Button>
-          <Button onClick={() => init(true)} colorPalette="whiteAlpha" size="sm">
-            {t('General.cancel')}
-          </Button>
-        </Flex>
-      ),
-      status: 'info',
-      duration: Infinity,
-      // isClosable: true,
-    });
+    setHasChangesState(true);
   };
 
   const saveChanges = async () => {
     if (!list) return;
 
+    setHasChangesState(false);
     toast.closeAll();
 
     const x = toast({
@@ -514,6 +506,7 @@ const ListPage = (props: ListPageProps) => {
       } else throw res.data.error;
     } catch (err) {
       console.error(err);
+      setHasChangesState(true);
       toast.update(x, {
         id: x,
         title: t('General.an-error-occurred'),
@@ -552,6 +545,34 @@ const ListPage = (props: ListPageProps) => {
       setHasChanges();
     },
     [itemInfo]
+  );
+
+  const selectedItems = useMemo(() => {
+    return itemSelect.map((id) => itemInfo[id]).filter(Boolean);
+  }, [itemInfo, itemSelect]);
+
+  const handleSelectedItemsBulkChange = useCallback(
+    (field: 'isHidden' | 'isHighlight', value: boolean) => {
+      const newInfo = { ...itemInfo };
+      let hasChanged = false;
+
+      for (const id of itemSelect) {
+        if (!newInfo[id] || newInfo[id][field] === value) continue;
+
+        newInfo[id] = {
+          ...newInfo[id],
+          [field]: value,
+          hasChanged: true,
+        };
+        hasChanged = true;
+      }
+
+      if (!hasChanged) return;
+
+      setItemInfo(newInfo);
+      setHasChanges();
+    },
+    [itemInfo, itemSelect]
   );
 
   const cntxAction = useCallback(
@@ -682,41 +703,8 @@ const ListPage = (props: ListPageProps) => {
                   onClick={handleSelectCheckbox}
                 />
               </Box>
-              {dynamicListCan(list, 'remove') && (
-                <>
-                  <Box>
-                    <Button
-                      disabled={!itemSelect.length}
-                      colorPalette="red"
-                      variant="outline"
-                      onClick={() => setSelectionAction('delete')}
-                    >
-                      {t('Lists.delete-items')}
-                    </Button>
-                  </Box>
-                  <Box>
-                    <Button
-                      disabled={!itemSelect.length}
-                      variant="outline"
-                      onClick={() => setSelectionAction('move')}
-                    >
-                      {t('Lists.move-items')}
-                    </Button>
-                  </Box>
-                </>
-              )}
-              <Box>
-                <Button
-                  disabled={!itemSelect.length}
-                  variant="outline"
-                  onClick={() => setSelectionAction('copy')}
-                >
-                  {t('Lists.copy-items')}
-                </Button>
-              </Box>
             </Flex>
           )}
-
           <HStack
             flex="0 0 auto"
             minW={{ base: 'none', md: 400 }}
@@ -965,6 +953,25 @@ const ListPage = (props: ListPageProps) => {
             ))}
           </Flex>
         </Flex>
+      )}
+      {isEdit && itemSelect.length > 0 && (
+        <SelectedItemsActionBar
+          selectedItems={selectedItems}
+          totalItems={Object.values(itemInfo).length}
+          canRemove={dynamicListCan(list, 'remove')}
+          onSelectItems={handleSelectCheckbox}
+          onClearSelection={() => setItemSelect([])}
+          onToggleField={handleSelectedItemsBulkChange}
+          onAction={setSelectionAction}
+        />
+      )}
+      {hasChanges && (
+        <UnsavedChangesActionBar
+          open={hasChanges}
+          offsetBottom={isEdit && itemSelect.length > 0}
+          onCancel={() => init(true)}
+          onSave={saveChanges}
+        />
       )}
     </Layout>
   );

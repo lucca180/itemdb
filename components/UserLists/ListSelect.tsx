@@ -1,12 +1,13 @@
 import { ChevronDownIcon } from '@utils/theme/chakraIcons';
 import { Menu, Button, Badge, Tooltip, Portal, Text, Input, Box } from '@chakra-ui/react';
 import axios from 'axios';
+import type { RefObject } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { UserList } from '../../types';
-import { useAuth } from '../../utils/auth';
-import DynamicIcon from '../../public/icons/dynamic.png';
+import { UserList } from '@types';
+import { useAuth } from '@utils/auth';
+import DynamicIcon from '@assets/icons/dynamic.png';
 import NextImage from 'next/image';
-import { useLists } from '../../utils/useLists';
+import { useLists } from '@utils/useLists';
 import { useTranslations } from 'next-intl';
 import { ViewportList } from 'react-viewport-list';
 
@@ -18,6 +19,7 @@ type Props = {
   recommended_id?: number;
   size?: 'sm' | 'md' | 'lg';
   searchThreshold?: number;
+  portalRef?: RefObject<HTMLElement | null>;
 };
 
 const LIST_SEARCH_THRESHOLD = 8;
@@ -76,7 +78,7 @@ const ListSelect = (props: Props) => {
   const createNewList = async () => {
     if (!user) return;
     try {
-      const getRandomName = (await import('../../utils/randomName')).getRandomName;
+      const getRandomName = (await import('@utils/randomName')).getRandomName;
 
       const res = await axios.post(`/api/v1/lists/${user.username}`, {
         name: getRandomName(),
@@ -157,7 +159,7 @@ const ListSelect = (props: Props) => {
           <ChevronDownIcon />
         </Button>
       </Menu.Trigger>
-      <Portal>
+      <Portal container={props.portalRef}>
         <Menu.Positioner>
           <Menu.Content ref={menuListRef} zIndex="popover" maxH="30vh" overflow="auto">
             {showSearch && (

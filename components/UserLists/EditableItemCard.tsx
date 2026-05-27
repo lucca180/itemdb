@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/refs */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ItemCard from '../Items/ItemCard';
 import { ItemData, ListItemInfo, UserList } from '../../types';
 import { VStack, Box } from '@chakra-ui/react';
@@ -42,11 +42,22 @@ export function EditableItemCard(props: EditableItemCardProps) {
   const [itemInfo, setItemInfo] = useState<ListItemInfo | undefined>(props.itemInfo);
   const [shouldSelect, setSelected] = useState<boolean>(selected ?? false);
 
+  useEffect(() => {
+    setItemInfo(props.itemInfo);
+  }, [props.itemInfo]);
+
   const isSelected = editMode && (props.selected ?? shouldSelect ?? false);
 
   const handleItemInfoChange = (
     value: number | string | null,
-    field: 'amount' | 'capValue' | 'isHighlight' | 'order' | 'seriesStart' | 'seriesEnd'
+    field:
+      | 'amount'
+      | 'capValue'
+      | 'isHighlight'
+      | 'isHidden'
+      | 'order'
+      | 'seriesStart'
+      | 'seriesEnd'
   ) => {
     if (!itemInfo) return;
     const newInfo = { ...itemInfo } as any;
@@ -54,7 +65,7 @@ export function EditableItemCard(props: EditableItemCardProps) {
     if (['seriesStart', 'seriesEnd'].includes(field)) {
       newInfo[field] = value as string | null;
     } else {
-      if (field === 'isHighlight') newInfo[field] = !!value;
+      if (field === 'isHighlight' || field === 'isHidden') newInfo[field] = !!value;
       else newInfo[field] = value as number;
     }
     setItemInfo(newInfo);

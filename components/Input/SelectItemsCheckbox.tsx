@@ -1,4 +1,5 @@
 import { Checkbox, Text } from '@chakra-ui/react';
+import type { TextProps } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
 
 type Props = {
@@ -6,11 +7,12 @@ type Props = {
   checked?: any[];
   onClick?: (checkAll: boolean) => void;
   defaultText?: string;
+  size?: TextProps['fontSize'];
 };
 
 export const SelectItemsCheckbox = (props: Props) => {
   const t = useTranslations();
-  const { allChecked, checked, onClick, defaultText } = props;
+  const { allChecked, checked, onClick, defaultText, size } = props;
   return (
     <Checkbox.Root
       colorPalette="whiteAlpha"
@@ -21,7 +23,7 @@ export const SelectItemsCheckbox = (props: Props) => {
       <Checkbox.HiddenInput />
       <Checkbox.Control borderColor="whiteAlpha.300" cursor="pointer" />
       <Checkbox.Label>
-        <Text fontSize={{ base: 'xs', md: 'sm' }}>
+        <Text fontSize={size ?? { base: 'xs', md: 'sm' }}>
           {!defaultText || checked?.length
             ? t('Button.items-selected', { items: checked?.length ?? 0 })
             : `${defaultText}`}
