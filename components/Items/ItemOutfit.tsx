@@ -1,8 +1,8 @@
-import { AspectRatio, Box, Flex, IconButton, Link, Skeleton, Text } from '@chakra-ui/react';
+import { Box, Flex, IconButton, Link, Skeleton, Text } from '@chakra-ui/react';
 import CardBase from '@components/Card/CardBase';
-import { useMemo, useState, memo, useCallback } from 'react';
+import { useMemo, useState } from 'react';
 import Image from 'next/image';
-import { ItemData } from '../../types';
+import { ItemData } from '@types';
 import { ExternalLinkIcon } from '@utils/theme/chakraIcons';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@utils/auth';
@@ -16,17 +16,15 @@ type Props = {
 
 const ItemOutfit = (props: Props) => {
   const t = useTranslations();
-  const [isLoaded, setIsLoaded] = useState(0);
+  const [loadedPreviewUrl, setLoadedPreviewUrl] = useState('');
   const [refresh, setRefresh] = useState(0);
   const { user } = useAuth();
   const { outfitList, item } = props;
   const color = item.color.rgb;
 
-  if (isLoaded && isLoaded !== item.internal_id) setIsLoaded(0);
-
   const refreshPreview = () => {
     setRefresh((prev) => prev + 1);
-    setIsLoaded(0);
+    setLoadedPreviewUrl('');
   };
 
   const previewUrl = useMemo(() => {
@@ -51,6 +49,7 @@ const ItemOutfit = (props: Props) => {
       color={color}
       noPadding
       chakraWrapper={{ width: 'fit-content', borderRadius: 'md', w: '100%' }}
+      chakra={{ h: 'auto' }}
     >
       <Flex
         position="relative"
@@ -59,9 +58,8 @@ const ItemOutfit = (props: Props) => {
         flexWrap="wrap"
         justifyContent="center"
         alignItems="center"
-        h="100%"
         _hover={
-          user && !user?.banned && !!isLoaded
+          user && !user?.banned && !!loadedPreviewUrl
             ? {
                 '& .refresh-button': {
                   display: 'flex',
@@ -76,14 +74,15 @@ const ItemOutfit = (props: Props) => {
           top={0}
           right={0}
           m={2}
-          size="sm"
+          size="xs"
           data-umami-event="refresh-preview"
           className="refresh-button"
           display={'none'}
           onClick={refreshPreview}
           disabled={refresh >= 2}
-          shadow={'md'}
+          shadow={'sm'}
           bg="gray.700"
+          color="white"
           _hover={{
             bg: 'gray.800',
           }}
@@ -91,21 +90,21 @@ const ItemOutfit = (props: Props) => {
         >
           <FaRotateRight />
         </IconButton>
-        {!isLoaded ? (
-          <Skeleton minW={300} minH={300} h="100%" w="100%" />
-        ) : (
-          <AspectRatio ratio={1}>
+        <Skeleton minW={300} w="100%" aspectRatio={1} loading={loadedPreviewUrl !== previewUrl}>
+          <Box aspectRatio={1} position="relative" w="100%">
             <Image
+              key={previewUrl}
               src={previewUrl}
               alt="Item Preview"
               unoptimized
               fill
-              priority
-              onLoadStart={() => setIsLoaded(0)}
-              onLoad={() => setIsLoaded(item.internal_id)}
+              sizes="300px"
+              loading="eager"
+              onLoad={() => setLoadedPreviewUrl(previewUrl)}
+              style={{ objectFit: 'contain' }}
             />
-          </AspectRatio>
-        )}
+          </Box>
+        </Skeleton>
       </Flex>
 
       <Box p={1} textAlign="center" bg={`rgba(${color[0]}, ${color[1]}, ${color[2]}, .6)`}>
@@ -126,39 +125,3 @@ const ItemOutfit = (props: Props) => {
 };
 
 export default ItemOutfit;
-interface AnimatedPreviewProps {
-  imageId: string;
-  onLoadStart: () => void;
-  onLoad: () => void;
-}
-
-const AnimatedPreview = memo(({ imageId, onLoadStart, onLoad }: AnimatedPreviewProps) => {
-  const handleLoadStart = useCallback(() => {
-    onLoadStart();
-  }, [onLoadStart]);
-
-  const handleLoad = useCallback(() => {
-    onLoad();
-  }, [onLoad]);
-
-  return (
-    <AspectRatio ratio={1}>
-      <iframe
-        id="animated-preview-iframe"
-        key={'animated-iframe-' + imageId}
-        src={`/api/cache/preview/${imageId}/animated`}
-        onLoadStart={handleLoadStart}
-        onLoad={handleLoad}
-        style={{
-          width: '100%',
-          height: '100%',
-          border: 'none',
-          pointerEvents: 'none',
-          background: 'transparent',
-        }}
-      />
-    </AspectRatio>
-  );
-});
-
-AnimatedPreview.displayName = 'AnimatedPreview';
