@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.10.2
+// @version      1.10.3
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -136,52 +136,40 @@ const itemdb_script = function() {
   }
 
   function handleSDB() {
-    const allTrs = $('form table').eq(2).find('tr').clone();
+    document.addEventListener('idb:safetyDepositData', function(e) {
+      const itemList = e.detail.data.items;
+      item_list = {};
+      for (const itemData of itemList) {
+        let type = 'np';
+        if(itemData.is_nc) type = 'nc';
 
-    // SDB page can have lots of other scripts changing stuff
-    // we're validating if the headers we care about are still there
-    const validateSDB = ["Image", "Name", "Description", "Type"];
-    
-    let isValid = true;
-    allTrs.first().find('td').map(function (i) {
-      const text = $(this).text().trim();
-      if (validateSDB[i] && validateSDB[i].toLowerCase() !== text.toLowerCase()) {
-        isValid = false;
+        let subText = ''
+        if(itemData.can_closet) subText += '(wearable) ';
+        if(itemData.is_notrade) subText += '(no trade) ';
+        const item = {
+          name: itemData.obj_name,
+          img: 'https://images.neopets.com/items/'+itemData.obj_filename,
+          description: itemData.obj_desc,
+          rarity: itemData.obj_rarity,
+          subText: subText,
+          category: itemData.type_name,
+          itemId: itemData.obj_info_id,
+          isBD: itemData.can_equip,
+          type: type,
+          // canPlay: itemData.can_play,
+          // canRead: itemData.can_read,
+          // canFeed: itemData.can_feed,
+        };
+
+        const itemKey = genItemKey(item);
+        if (!itemsHistory[itemKey]) {
+          itemsObj[itemKey] = item;
+          itemsHistory[itemKey] = true;
+        }
       }
-    });
 
-    console.log('[itemdb]: Valid SDB headers?', isValid);
-    if (!isValid) return;
-    
-
-    allTrs.slice(1, -1).each(function (i) {
-      const tds = $(this).find('td');
-      const img = tds.first().find('img').first().attr('src');
-
-      const itemName = tds.eq(1).find('b').first().clone().children().remove().end().text();
-
-      const subText = tds.eq(1).find('.medText').text();
-      const description = tds.eq(2).text();
-      const category = tds.eq(3).text();
-      const itemId = tds.last().find('input').attr('name').match(/\d+/)[0];
-
-      const item = {
-        name: itemName,
-        img: img,
-        description: description,
-        subText: subText,
-        category: category,
-        itemId: itemId,
-      };
-
-      const itemKey = genItemKey(item);
-      if (!itemsHistory[itemKey]) {
-        itemsObj[itemKey] = item;
-        itemsHistory[itemKey] = true;
-      }
-    });
-
-    submitItems();
+      submitItems();
+    })
   }
 
   function handleTrades() {
@@ -482,34 +470,6 @@ const itemdb_script = function() {
     });
 
     submitItems();
-  }
-
-  function handleNCMall() {
-    window.addEventListener('hashchange', () => {
-      const filteredItems = desc_arr.filter(n => n);
-      for(const itemData of filteredItems){
-        let subText = ''
-        if(itemData.isWearable) subText += ' (wearable) '
-        if(itemData.isNeohome) subText += ' (neohome) '
-
-        const item = {
-          itemId: itemData.id,
-          name: itemData.name,
-          subText: subText,
-          img: `https://images.neopets.com/items/${itemData.imageFile}.gif`,
-          description: itemData.description,
-          type: 'nc',
-        }
-
-        const itemKey = genItemKey(item);
-        if (!itemsHistory[itemKey]) {
-          itemsObj[itemKey] = item;
-          itemsHistory[itemKey] = true;
-        }
-      }
-
-      submitItems();
-    })
   }
 
   function handleNCJournal(){
@@ -1433,8 +1393,6 @@ function registerFetchWatcher({ match, eventName }) {
     };
   }
 
-  console.log('Adding watcher:', { match, eventName });
-
   targetWindow.__idbFetchWatchers.push({ match, eventName });
 }
 
@@ -1453,6 +1411,10 @@ if (URLHas('trading')) registerFetchWatcher({
 if (URLHas('closet')) registerFetchWatcher({
   eventName: 'idb:closetItemData',
   match: ({ requestData }) => typeof requestData.items !== 'undefined',
+});
+if (URLHas('safetydeposit')) registerFetchWatcher({
+  eventName: 'idb:safetyDepositData',
+  match: ({ requestData }) => typeof requestData.data.items !== 'undefined',
 });
 
 // for troubleshooting use

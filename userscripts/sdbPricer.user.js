@@ -50,9 +50,7 @@ async function fetchPriceData(IDs) {
 }
 
 async function watchSDBItems() {
-  console.log('[itemdb] Watching for items in the safety deposit box...');
   document.addEventListener('idb:sdbPricer:safetyDeposit', function(e) {
-    console.log('[itemdb] Detected items in safety deposit box, fetching price data...', e.detail);
     const items = e.detail.data.items;
     const itemIDs = items.map(i => {
 
@@ -207,7 +205,7 @@ function registerFetchWatcher({ match, eventName }) {
       return response;
     };
   }
-  console.log('Registering fetch watcher for event:', eventName);
+
   targetWindow.__idbFetchWatchers.push({ match, eventName });
 }
 

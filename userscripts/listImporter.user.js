@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - List Importer
-// @version      1.3.0
+// @version      1.3.1
 // @author       itemdb
 // @namespace    itemdb
 // @description  Imports items to your wishlists
@@ -161,18 +161,7 @@ const itemdb_importer = function() {
   }
 
   function collectSDBItems() {
-    const items = {};
-    const trs = $('form table').eq(2).find('tr').clone().slice(1, -1);
-
-    trs.each(function () {
-      const tds = $(this).find('td');
-      const quantity = tds.eq(-2).text();
-      const itemId = tds.last().find('input').attr('name').match(/\d+/)[0];
-
-      items[itemId] = Number(quantity);
-    });
-
-    return items;
+    return item_list;
   }
 
   function collectGalleryRemoveItems() {
@@ -246,8 +235,9 @@ const itemdb_importer = function() {
 
   if (URLHas('safetydeposit'))
     mountImportButton({
-      target: $('#content > table > tbody > tr > td.content > table'),
+      target: $('.sdb-header-bar'),
       collector: handleSDB,
+      where: 'before',
       withBreak: true,
     });
   if (URLHas('gallery/quickremove.phtml'))
@@ -297,8 +287,16 @@ const watchClosetChanges = () => {
     for (const item of itemList) {
       item_list[item.obj_info_id] = item.qty;
     }
+  })
+}
 
-    console.log('itemdb List Importer: Closet data updated', item_list);
+const watchSDBChanges = () => {
+  document.addEventListener('idb:importer:sdb', (e) => {
+    const itemList = e.detail.data.items;
+    item_list = {};
+    for (const item of itemList) {
+      item_list[item.obj_info_id] = item.amount;
+    }
   })
 }
 
@@ -356,4 +354,13 @@ if (URLHas('/closet')) {
   });
 
   watchClosetChanges();
+}
+
+if (URLHas('/safetydeposit')) {
+  registerFetchWatcher({
+    eventName: 'idb:importer:sdb',
+    match: ({ requestData }) => typeof requestData.data.items !== 'undefined',
+  });
+
+  watchSDBChanges();
 }
