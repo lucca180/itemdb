@@ -1230,7 +1230,7 @@
     "when-did-this-trade-happen": "When did this trade happen?",
     "notes-and-comments-optional": "Notes and Comments (Optional)",
     "please-send-your-notes-and-comments-in-english": " ",
-    "send-error": "An error occurred while submitting the trade. Please refresh the page and try again.",
+    "send-error": "An error occurred while submitting the trade. If your trade has brand new items it may be possible that Lebron doesn't have them in their database yet. Please wait a bit and try again.",
     "login-required": "You must be logged in to report a trade",
     "create-account-cta": "Don't have an account? It takes less than 2 minutes to create one!",
     "confirm": "Confirm",
