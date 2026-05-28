@@ -135,6 +135,7 @@ const ItemMyLists = (props: Props) => {
                         verticalAlign="middle"
                         display={'inline-flex'}
                         alignItems="center"
+                        colorPalette="whiteAlpha"
                       >
                         <Tag.Label>
                           {list.name}
@@ -169,7 +170,10 @@ const ItemMyLists = (props: Props) => {
                       verticalAlign="middle"
                       fontSize={'xs'}
                       as="div"
-                      css={{ p: { display: 'inline' }, a: { color: color.lightness(70).hex() } }}
+                      css={{
+                        '& p': { display: 'inline' },
+                        '& a': { color: color.lightness(70).hex() },
+                      }}
                     >
                       -{' '}
                       <Markdown>

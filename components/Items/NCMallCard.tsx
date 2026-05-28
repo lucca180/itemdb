@@ -54,7 +54,7 @@ const NcMallCard = (props: Props) => {
           )}
         </Center>
         <HStack>
-          <Tag.Root size="md" fontWeight="bold" as="h3">
+          <Tag.Root size="md" fontWeight="bold" as="h3" colorPalette="whiteAlpha">
             <Tag.Label>{t('General.price')}</Tag.Label>
           </Tag.Root>
           <Flex flexFlow={'column'} flex="1" alignItems={'flex-end'} gap={1}>
@@ -86,7 +86,7 @@ const NcMallCard = (props: Props) => {
         </HStack>
         {startDate && (
           <HStack>
-            <Tag.Root size="md" fontWeight="bold" as="h3">
+            <Tag.Root size="md" fontWeight="bold" as="h3" colorPalette="whiteAlpha">
               <Tag.Label>{t('ItemPage.since')}</Tag.Label>
             </Tag.Root>
             <Flex flexFlow={'column'} flex="1" alignItems={'flex-end'} gap={1}>
@@ -102,7 +102,7 @@ const NcMallCard = (props: Props) => {
         )}
         {endDate && (
           <HStack>
-            <Tag.Root size="md" fontWeight="bold" as="h3">
+            <Tag.Root size="md" fontWeight="bold" as="h3" colorPalette="whiteAlpha">
               <Tag.Label>{t('ItemPage.until')}</Tag.Label>
             </Tag.Root>
             <Flex flexFlow={'column'} flex="1" alignItems={'flex-end'} gap={1}>
