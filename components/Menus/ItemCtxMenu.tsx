@@ -10,7 +10,9 @@ import {
   Kbd,
 } from '@chakra-ui/react';
 import { useToast } from '@utils/theme/toast';
-import { ContextMenu, ContextMenuItem, Submenu, ContextMenuTrigger } from 'rctx-contextmenu';
+import { ContextMenu, ContextMenuItem, Submenu } from 'rctx-contextmenu';
+
+export { CtxTrigger } from '@components/Menus/ItemCtxTrigger';
 import { ItemData, ListItemInfo, UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import axios from 'axios';
@@ -78,12 +80,6 @@ const CtxSubmenu = chakra(Submenu, {
     '& .submenu__item > .contextmenu__item:hover': {
       background: 'gray.700 !important',
     },
-  },
-});
-
-export const CtxTrigger = chakra(ContextMenuTrigger, {
-  base: {
-    display: 'inline',
   },
 });
 

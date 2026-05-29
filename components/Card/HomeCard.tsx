@@ -11,15 +11,18 @@ import {
   Text,
   useMediaQuery,
 } from '@chakra-ui/react';
+import dynamic from 'next/dynamic';
 import NextImage from 'next/image';
 import { ItemData } from '@types';
 import Color from 'color';
 import ItemCard, { ItemCardBadge, ItemImage } from '@components/Items/ItemCard';
-import ItemCtxMenu, { CtxTrigger } from '@components/Menus/ItemCtxMenu';
+import { CtxTrigger } from '@components/Menus/ItemCtxTrigger';
 import MainLink from '@components/Utils/MainLink';
 import { GoChevronLeft, GoChevronRight } from 'react-icons/go';
 import { useState, type MouseEvent } from 'react';
 import { useTranslations } from 'next-intl';
+
+const ItemCtxMenu = dynamic(() => import('@components/Menus/ItemCtxMenu'), { ssr: false });
 
 type HomeCardProps = {
   items?: ItemData[];
@@ -199,7 +202,10 @@ export const HomeItem = ({
   const [isMobile] = useMediaQuery(['(hover: none)']);
   const [isContextMenuLoaded, setIsContextMenuLoaded] = useState(false);
   const loadContextMenu = () => {
-    if (!isMobile) setIsContextMenuLoaded(true);
+    if (!isMobile) {
+      void import('@components/Menus/ItemCtxMenu');
+      setIsContextMenuLoaded(true);
+    }
   };
   const loadContextMenuOnRightClick = (event: MouseEvent) => {
     if (event.button === 2) loadContextMenu();

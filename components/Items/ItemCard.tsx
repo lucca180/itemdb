@@ -1,10 +1,13 @@
 'use client';
 import { Badge, Box, Icon, Skeleton, Text, Link, Tooltip, useMediaQuery } from '@chakra-ui/react';
+import dynamic from 'next/dynamic';
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { ItemData } from '../../types';
 import { AiFillInfoCircle, AiFillWarning } from 'react-icons/ai';
-import ItemCtxMenu, { CtxTrigger } from '../Menus/ItemCtxMenu';
+import { CtxTrigger } from '@components/Menus/ItemCtxTrigger';
+
+const ItemCtxMenu = dynamic(() => import('@components/Menus/ItemCtxMenu'), { ssr: false });
 import { getRestockProfit, rarityToCCPoints } from '../../utils/utils';
 import { useFormatter, useTranslations } from 'next-intl';
 import MainLink from '../Utils/MainLink';
@@ -84,7 +87,10 @@ const ItemCardBase = (props: ItemProps) => {
 
   const profit = getRestockProfit(item);
   const loadContextMenu = () => {
-    if (!isMobile) setIsContextMenuLoaded(true);
+    if (!isMobile) {
+      void import('@components/Menus/ItemCtxMenu');
+      setIsContextMenuLoaded(true);
+    }
   };
   const loadContextMenuOnRightClick = (event: React.MouseEvent) => {
     if (event.button === 2) loadContextMenu();
