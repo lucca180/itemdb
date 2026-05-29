@@ -160,14 +160,7 @@ export default async function AppServerLayout(props: AppServerLayoutProps) {
               permission.
             </Text>
             <Flex alignItems="flex-end" gap={4}>
-              <LayoutFeedbackIsland
-                bg="whiteAlpha.200"
-                variant="solid"
-                size="xs"
-                flex="1"
-                h="25px"
-                borderRadius="md"
-              />
+              <LayoutFeedbackIsland size="xs" flex="1" h="25px" borderRadius="md" />
               <LayoutLocaleIsland locale={locale} currentPath={currentPath} />
             </Flex>
           </Flex>

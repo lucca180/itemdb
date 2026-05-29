@@ -1,8 +1,9 @@
+import { Suspense } from 'react';
 import NextLink from 'next/link';
 import NextImage from 'next/image';
 import type { CSSProperties } from 'react';
 import type { WP_Article } from '@types';
-import { Box, Flex, Heading, Text } from '@chakra-ui/react';
+import { Box, Flex, Heading, Skeleton, Text } from '@chakra-ui/react';
 import { wp_getLatestPosts } from '../../../../pages/api/wp/posts';
 import { unstable_cache } from 'next/cache';
 
@@ -20,7 +21,44 @@ const getCachedLatestArticles = unstable_cache(
   }
 );
 
-export async function LatestArticlesSection({ title, limit = 5 }: LatestArticlesSectionProps) {
+export function LatestArticlesSection({ title, limit = 5 }: LatestArticlesSectionProps) {
+  return (
+    <Suspense fallback={<LatestArticlesSectionFallback title={title} limit={limit} />}>
+      <LatestArticlesSectionContent title={title} limit={limit} />
+    </Suspense>
+  );
+}
+
+function LatestArticlesSectionFallback({ title, limit }: { title: string; limit: number }) {
+  return (
+    <Flex flex={1} direction="column">
+      <Heading as="h2" size="md" lineHeight="1.2" textAlign="center" mb={5}>
+        <NextLink href="/articles">{title}</NextLink>
+      </Heading>
+      <Flex direction="column" gap={2}>
+        {Array.from({ length: limit }, (_, index) => (
+          <Flex
+            key={index}
+            p={3}
+            gap={3}
+            w="100%"
+            alignItems="center"
+            borderRadius="md"
+            bg="whiteAlpha.100"
+          >
+            <Skeleton w="60px" h="60px" borderRadius="md" flexShrink={0} />
+            <Flex direction="column" gap={2} flex={1}>
+              <Skeleton h="4" w="80%" />
+              <Skeleton h="3" w="full" />
+            </Flex>
+          </Flex>
+        ))}
+      </Flex>
+    </Flex>
+  );
+}
+
+async function LatestArticlesSectionContent({ title, limit = 5 }: LatestArticlesSectionProps) {
   const articles = await getCachedLatestArticles(limit);
 
   return (
