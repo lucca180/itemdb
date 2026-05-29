@@ -1231,7 +1231,7 @@
     "when-did-this-trade-happen": "Quando essa troca aconteceu?",
     "notes-and-comments-optional": "Notas e Comentários (Opcional)",
     "please-send-your-notes-and-comments-in-english": "Por favor, envie suas notas e comentários em inglês!",
-    "send-error": "Ocorreu um erro ao enviar a troca. Atualize a página e tente novamente.",
+    "send-error": "Ocorreu um erro ao enviar a troca. Se sua troca possui um item novo é possivel que ele ainda não esteja disponível no banco de dados do Lebron. Por favor, tente novamente mais tarde.",
     "create-account-cta": "Não tem uma conta? Demora menos de 2 minutos para criar uma!",
     "login-required": "Você precisa estar logado no itemdb para reportar uma troca",
     "confirm": "Confirmar",

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
-import AppServerLayout from '@app/_components/layout/AppServerLayout';
+import AppServerLayout from '@components/Layout/AppServerLayout';
 import { getStaticAppPageProps } from '@utils/appPage';
 import { TermsPageClient } from './TermsPageClient';
 

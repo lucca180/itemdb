@@ -1,5 +1,3 @@
-'use client';
-
 import { Box, Flex, Heading, Link as ChakraLink } from '@chakra-ui/react';
 import Link from 'next/link';
 import NextImage from 'next/image';

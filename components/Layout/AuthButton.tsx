@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { ChevronDownIcon } from '@utils/theme/chakraIcons';
 import { Box, Button, Icon, Menu, Portal, Text, Flex, useDisclosure } from '@chakra-ui/react';
 import { User } from '@types';
@@ -188,3 +190,26 @@ const ScriptStatus = () => {
     </>
   );
 };
+
+type LayoutAuthProps = {
+  initialUser?: User | null;
+};
+
+export function LayoutAuth({ initialUser }: LayoutAuthProps) {
+  const router = useRouter();
+  const pathname = usePathname() ?? '/';
+  const { user } = useAuth();
+  const resolvedUser = user ?? initialUser;
+
+  useEffect(() => {
+    if (!resolvedUser) {
+      return;
+    }
+
+    if (!resolvedUser.username && !['/', '/login'].includes(pathname)) {
+      router.push('/login');
+    }
+  }, [pathname, router, resolvedUser]);
+
+  return <AuthButton initialUser={initialUser} />;
+}
