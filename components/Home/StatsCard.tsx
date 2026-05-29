@@ -107,7 +107,7 @@ function StatCard(props: StatCardProps) {
       </Box>
       <Flex direction="column" gap={1} w="100%">
         <Skeleton h="1.3rem" w="70%" mb={1} borderRadius="sm" loading={!hasValue}>
-          <Heading as="h3" fontSize="2xl">
+          <Heading as="h3" unstyled fontSize="2xl" fontWeight="bold" lineHeight={1.2}>
             {props.value}
           </Heading>
         </Skeleton>

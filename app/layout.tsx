@@ -3,6 +3,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
 import type { ReactNode } from 'react';
 import '@utils/global.css';
+import { inter } from '@utils/theme/fonts';
 import { Providers } from './providers';
 import { getPreloadedAuthState } from '@app/utils/preloadData';
 import Script from 'next/script';
@@ -23,7 +24,12 @@ export default async function RootLayout({ children }: RootLayoutProps) {
   const initialAuthState = await getPreloadedAuthState();
 
   return (
-    <html lang={locale} className="dark" data-theme="dark" suppressHydrationWarning>
+    <html
+      lang={locale}
+      className={`${inter.className} dark`}
+      data-theme="dark"
+      suppressHydrationWarning
+    >
       <body>
         <Script
           src={process.env.NEXT_PUBLIC_UMAMI_URL_2 + '/plutonita.js'}

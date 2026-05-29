@@ -1,5 +1,5 @@
 import { createSystem, defaultConfig, defineRecipe } from '@chakra-ui/react';
-import { Inter } from 'next/font/google';
+import { inter } from '@utils/theme/fonts';
 import { chakraV2ColorTokens, chakraV2SemanticColorTokens } from '@utils/theme/chakraV2ColorTokens';
 import {
   badgeRecipe,
@@ -8,8 +8,6 @@ import {
   nativeSelectRecipe,
   switchRecipe,
 } from '@utils/theme/recipes';
-
-const inter = Inter({ subsets: ['latin'] });
 
 const headingRecipe = defineRecipe({
   base: {

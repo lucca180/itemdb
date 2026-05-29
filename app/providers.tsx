@@ -1,6 +1,7 @@
 'use client';
 
 import { ChakraProvider } from '@chakra-ui/react';
+import { EmotionRegistry } from '@app/EmotionRegistry';
 import { Toaster } from '@components/ui/toaster';
 import { Provider } from 'jotai';
 import type { ReactNode } from 'react';
@@ -22,16 +23,18 @@ if (typeof window !== 'undefined') {
 
 export function Providers({ children, initialAuthState }: ProvidersProps) {
   return (
-    <ChakraProvider value={system}>
-      <ColorModeProvider>
-        <Provider>
-          {/* <Next13ProgressBar color="#718096" showOnShallow={true} /> */}
-          <AuthProvider initialUser={initialAuthState?.user}>
-            {children}
-            <Toaster />
-          </AuthProvider>
-        </Provider>
-      </ColorModeProvider>
-    </ChakraProvider>
+    <EmotionRegistry>
+      <ChakraProvider value={system}>
+        <ColorModeProvider>
+          <Provider>
+            {/* <Next13ProgressBar color="#718096" showOnShallow={true} /> */}
+            <AuthProvider initialUser={initialAuthState?.user}>
+              {children}
+              <Toaster />
+            </AuthProvider>
+          </Provider>
+        </ColorModeProvider>
+      </ChakraProvider>
+    </EmotionRegistry>
   );
 }
