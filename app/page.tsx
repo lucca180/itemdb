@@ -5,7 +5,7 @@ import { Flex, Grid, Heading } from '@chakra-ui/react';
 import { createTranslator } from 'next-intl';
 import { getLocale } from 'next-intl/server';
 import { HomeHero } from '@components/Home/HomeHero';
-import AppServerLayout from '@app/_components/layout/AppServerLayout';
+import AppServerLayout from '@components/Layout/AppServerLayout';
 import { getItemDbCanonical, normalizeItemDbLocale } from '@utils/appPage';
 import { getDefaultSEO } from '@utils/SEO';
 import { loadTranslation } from '@utils/load-translation';

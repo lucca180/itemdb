@@ -3,19 +3,19 @@ import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@utils/auth/getCurrentUser';
 import { isValidLocale } from '@utils/locales';
 import prisma from '@utils/prisma';
-import { LayoutLocaleSelectClient } from './LayoutLocaleSelectClient';
+import { LayoutLocaleSelect } from '@components/Layout/LayoutLocale';
 import { getLocalizedPath } from '@components/Layout/layoutData';
 
-type LayoutLocaleIslandProps = {
+type LayoutLocaleServerProps = {
   locale: string;
   currentPath: string;
 };
 
-function isLocale(value: FormDataEntryValue | null): value is LayoutLocaleIslandProps['locale'] {
+function isLocale(value: FormDataEntryValue | null): value is LayoutLocaleServerProps['locale'] {
   return typeof value === 'string' && isValidLocale(value);
 }
 
-export function LayoutLocaleIsland({ locale, currentPath }: LayoutLocaleIslandProps) {
+export function LayoutLocaleServer({ locale, currentPath }: LayoutLocaleServerProps) {
   async function changeLocaleAction(formData: FormData) {
     'use server';
 
@@ -58,5 +58,5 @@ export function LayoutLocaleIsland({ locale, currentPath }: LayoutLocaleIslandPr
     redirect(targetPath);
   }
 
-  return <LayoutLocaleSelectClient action={changeLocaleAction} locale={locale} />;
+  return <LayoutLocaleSelect action={changeLocaleAction} locale={locale} />;
 }
