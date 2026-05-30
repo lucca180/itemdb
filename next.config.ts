@@ -145,7 +145,7 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  transpilePackages: ['lightweight-charts', 'fancy-canvas'],
+  transpilePackages: ['lightweight-charts', 'fancy-canvas', 'next-intl'],
   compiler: {
     define: {
       // __SENTRY_TRACING__: 'false',
