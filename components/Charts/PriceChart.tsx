@@ -82,7 +82,8 @@ const ChartComponent = (props: ChartComponentProps) => {
     const chartData = getChartData(data);
 
     const seriesInfo = getSeriesInfo(lists).sort((a, b) => a.startTime - b.startTime);
-    const chartSegments = getChartSegments(chartData, seriesInfo, {
+    const seriesPointInfo = getSeriesPointInfo(lists, chartData);
+    const defaultSeries = {
       id: 'default',
       name: 'Price history',
       lineColor,
@@ -90,8 +91,9 @@ const ChartComponent = (props: ChartComponentProps) => {
       bottomColor: areaBottomColor,
       startTime: Number.NEGATIVE_INFINITY,
       endTime: null,
-    });
-    const contextByMarkerId = new Map<string, ChartPoint>();
+    };
+    const chartSegments = getChartSegments(chartData, seriesInfo, defaultSeries);
+    const contextByMarkerId = new Map<string, ChartMarkerPoint>();
     const seriesByTime = new Map<ChartPoint['time'], ChartSeriesInstance[]>();
     let lastTooltipKey: string | null = null;
 
@@ -124,7 +126,7 @@ const ChartComponent = (props: ChartComponentProps) => {
         .filter((point) => !!point.context)
         .map((point) => {
           const markerId = `price-context-${segment.id}-${point.time}`;
-          contextByMarkerId.set(markerId, point);
+          contextByMarkerId.set(markerId, { type: 'priceContext', point });
 
           return {
             id: markerId,
@@ -137,8 +139,31 @@ const ChartComponent = (props: ChartComponentProps) => {
           } satisfies SeriesMarker<Time>;
         });
 
-      if (contextMarkers.length) {
-        createSeriesMarkers(newSeries, contextMarkers, { zOrder: 'top', autoScale: false });
+      const seriesPointMarkers = seriesPointInfo
+        .filter((pointInfo) => {
+          const pointSegment = getSeriesAtTime(seriesInfo, pointInfo.startTime) ?? defaultSeries;
+
+          return pointSegment.id === segment.id && seriesInstance.dataByTime.has(pointInfo.time);
+        })
+        .map((pointInfo) => {
+          const markerId = `series-point-${pointInfo.id}-${pointInfo.time}`;
+          contextByMarkerId.set(markerId, { type: 'seriesPoint', point: pointInfo });
+
+          return {
+            id: markerId,
+            time: pointInfo.time,
+            position: 'atPriceMiddle',
+            price: pointInfo.value,
+            shape: 'circle',
+            color: pointInfo.lineColor,
+            size: 0.75,
+          } satisfies SeriesMarker<Time>;
+        });
+
+      const markers = [...contextMarkers, ...seriesPointMarkers];
+
+      if (markers.length) {
+        createSeriesMarkers(newSeries, markers, { zOrder: 'top', autoScale: false });
       }
     });
 
@@ -228,6 +253,28 @@ const ChartComponent = (props: ChartComponentProps) => {
       lastTooltipKey = tooltipKey;
     };
 
+    const setSeriesPointTooltipContent = (point: ChartSeriesPointInfo) => {
+      const tooltipKey = `series-point:${point.id}:${point.time}`;
+      if (lastTooltipKey === tooltipKey) return;
+
+      const title = document.createElement('div');
+      title.textContent = point.name;
+      title.style.fontWeight = '700';
+      title.style.color = point.lineColor;
+      title.style.marginBottom = '4px';
+
+      const date = document.createElement('div');
+      date.textContent = formatter.dateTime(new Date(point.addedAt), {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+      date.style.opacity = '0.78';
+
+      tooltip.replaceChildren(title, date);
+      lastTooltipKey = tooltipKey;
+    };
+
     const getClosestSeriesPoint = (
       point: { x: number; y: number },
       time: Time,
@@ -298,8 +345,14 @@ const ChartComponent = (props: ChartComponentProps) => {
       const contextPoint =
         typeof markerId === 'string' ? contextByMarkerId.get(markerId) : undefined;
 
-      if (contextPoint) {
-        setPriceContextTooltipContent(contextPoint);
+      if (contextPoint?.type === 'priceContext') {
+        setPriceContextTooltipContent(contextPoint.point);
+        positionTooltip(point);
+        return true;
+      }
+
+      if (contextPoint?.type === 'seriesPoint') {
+        setSeriesPointTooltipContent(contextPoint.point);
         positionTooltip(point);
         return true;
       }
@@ -456,6 +509,26 @@ type ChartSeriesInfo = Omit<ChartSegment, 'data'> & {
 
 type ChartSeriesTooltipInfo = Omit<ChartSegment, 'data'>;
 
+type ChartSeriesPointInfo = {
+  id: string;
+  name: string;
+  lineColor: string;
+  startTime: number;
+  time: ChartPoint['time'];
+  value: ChartPoint['value'];
+  addedAt: string;
+};
+
+type ChartMarkerPoint =
+  | {
+      type: 'priceContext';
+      point: ChartPoint;
+    }
+  | {
+      type: 'seriesPoint';
+      point: ChartSeriesPointInfo;
+    };
+
 type ChartSeriesInstance = {
   segment: ChartSegment;
   series: ReturnType<ReturnType<typeof createChart>['addSeries']>;
@@ -477,10 +550,10 @@ const getSeriesInfo = (lists?: UserList[]): ChartSeriesInfo[] => {
 
         const color = Color(list.colorHex ?? '#000').lightness(70);
         const startDate = getListSeriesStart(list);
+        const endDate = list.itemInfo?.[0].seriesEnd || list.seriesEnd;
 
         if (!startDate) return null;
-
-        const endDate = list.itemInfo?.[0].seriesEnd || list.seriesEnd;
+        if (list.seriesType === 'itemAddition' && !endDate) return null;
 
         return {
           id: `${list.internal_id}`,
@@ -494,6 +567,45 @@ const getSeriesInfo = (lists?: UserList[]): ChartSeriesInfo[] => {
         };
       })
       .filter((series): series is ChartSeriesInfo => !!series) ?? []
+  );
+};
+
+const getSeriesPointInfo = (lists: UserList[] | undefined, chartData: ChartPoint[]) => {
+  return (
+    lists
+      ?.map((list) => {
+        if (list.seriesType !== 'itemAddition') return null;
+
+        const endDate = list.itemInfo?.[0].seriesEnd || list.seriesEnd;
+        if (endDate) return null;
+
+        const startDate = getListSeriesStart(list);
+        if (!startDate) return null;
+
+        const chartPoint = getClosestChartPoint(chartData, new Date(startDate).getTime());
+        if (!chartPoint) return null;
+
+        const color = Color(list.colorHex ?? '#000').lightness(70);
+
+        return {
+          id: `${list.internal_id}`,
+          name: list.name,
+          lineColor: color.hex(),
+          startTime: new Date(startDate).getTime(),
+          time: chartPoint.time,
+          value: chartPoint.value,
+          addedAt: startDate,
+        };
+      })
+      .filter((point): point is ChartSeriesPointInfo => !!point) ?? []
+  );
+};
+
+const getClosestChartPoint = (chartData: ChartPoint[], time: number) => {
+  if (!chartData.length) return null;
+
+  return (
+    chartData.find((point) => timeToEpoch(point.time) >= time) ?? chartData[chartData.length - 1]
   );
 };
 
