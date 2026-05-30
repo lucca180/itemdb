@@ -3,7 +3,7 @@
 import { ChangeEvent, useRef } from 'react';
 import { NativeSelect } from '@chakra-ui/react';
 import { useRouter } from 'next/compat/router';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import axios from 'axios';
 import { setCookie } from 'cookies-next';
 import { useAuth } from '@utils/auth';
@@ -15,10 +15,14 @@ type LayoutLocaleSelectProps = {
 };
 
 export function LayoutLocaleSelect({ action, locale }: LayoutLocaleSelectProps) {
+  const t = useTranslations();
   const formRef = useRef<HTMLFormElement>(null);
 
   return (
     <form ref={formRef} action={action}>
+      <label htmlFor="prefLang" style={{ display: 'none' }}>
+        {t('General.select-language')}
+      </label>
       <LocaleSelect defaultValue={locale} onChange={() => formRef.current?.requestSubmit()} />
     </form>
   );

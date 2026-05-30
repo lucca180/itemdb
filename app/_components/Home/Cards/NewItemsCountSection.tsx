@@ -89,7 +89,7 @@ async function NewItemsCountSectionContent() {
             <Text fontSize="lg" fontWeight="bold">
               {t.rich('HomePage.new-free-items', {
                 Highlight: (chunks) => (
-                  <Box as="span" color="orange.600" bg="orange.100" px={1} borderRadius="md">
+                  <Box as="span" color="#8b3003" bg="orange.100" px={1} borderRadius="md">
                     {chunks}
                   </Box>
                 ),

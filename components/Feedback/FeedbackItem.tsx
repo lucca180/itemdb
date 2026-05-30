@@ -60,7 +60,7 @@ const FeedbackItem = (props: Props) => {
       {item && (
         <>
           <Flex flexFlow="column" justifyContent="center" alignItems="center" textAlign="center">
-            <Image src={item.image} alt={item.name} width={60} height={60} />
+            <Image src={item.image} alt="" width={60} height={60} />
             <Text>{item.name}</Text>
             <Text fontSize={'xs'} color="gray.400">
               {item.description}

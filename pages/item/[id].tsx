@@ -184,7 +184,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
             minW="100px"
             minH="100px"
           >
-            <Image src={item.image} width={80} height={80} alt={item.name} unoptimized />
+            <Image src={item.image} width={80} height={80} alt="" unoptimized />
           </Flex>
           <Box>
             <Stack direction="row" mb={1} wrap="wrap" gap={0.5}>

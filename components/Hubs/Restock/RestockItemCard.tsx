@@ -69,13 +69,7 @@ const RestockItem = (props: Props) => {
           gap={2}
           w="100%"
         >
-          <Image
-            src={item.image}
-            alt={item.name}
-            boxSize="50px"
-            objectFit="cover"
-            borderRadius="md"
-          />
+          <Image src={item.image} alt="" boxSize="50px" objectFit="cover" borderRadius="md" />
           <Flex
             alignItems={'flex-start'}
             gap={1}

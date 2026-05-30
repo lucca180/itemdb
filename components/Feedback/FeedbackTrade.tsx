@@ -282,7 +282,7 @@ const ItemTrade = (props: ItemTradeProps) => {
       )} */}
       <Flex gap={3}>
         <Box>
-          <Image src={item.image} width={80} height={80} alt={item.name} />
+          <Image src={item.image} width={80} height={80} alt="" />
         </Box>
         <Flex flex={1} flexFlow="column" justifyContent="center" gap={1}>
           <Link

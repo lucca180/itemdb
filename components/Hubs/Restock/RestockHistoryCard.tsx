@@ -31,13 +31,7 @@ const RestockHistoryCard = (props: Props) => {
           h="100%"
           minH="80px"
         >
-          <Image
-            src={item.image}
-            alt={item.name}
-            boxSize="50px"
-            objectFit="cover"
-            borderRadius="md"
-          />
+          <Image src={item.image} alt="" boxSize="50px" objectFit="cover" borderRadius="md" />
           <Flex alignItems={'flex-start'} gap={1} flexFlow={'column'} justifyContent={'center'}>
             <HStack gap={1}>
               <Text fontSize="sm">{item.name}</Text>

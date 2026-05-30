@@ -391,7 +391,7 @@ export const ItemImage = (props: { item: ItemData } & Partial<ImageProps>) => {
       width={80}
       height={80}
       unoptimized
-      alt={item.name}
+      alt=""
       title={item.description}
       onError={() => setError(true)}
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

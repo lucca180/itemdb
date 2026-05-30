@@ -83,7 +83,7 @@ const TradeTable = (props: Props) => {
             <Flex w={50} flexShrink="0" justifyContent="center" alignItems="center">
               <Link asChild>
                 <NextLink href={`/item/${slugify(item.name)}`} prefetch={false}>
-                  <Image src={item.image} width={50} height={50} alt={item.name} />
+                  <Image src={item.image} width={50} height={50} alt="" />
                 </NextLink>
               </Link>
             </Flex>

@@ -508,7 +508,8 @@
     "reflect": "Reflexão",
     "clear": "Limpar",
     "item": "Item",
-    "now": "Agora"
+    "now": "Agora",
+    "select-language": "Selecionar Idioma"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",

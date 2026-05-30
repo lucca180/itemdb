@@ -507,7 +507,8 @@
     "others": "Others",
     "clear": "Clear",
     "item": "Item",
-    "now": "Now"
+    "now": "Now",
+    "select-language": "Select Language"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",
