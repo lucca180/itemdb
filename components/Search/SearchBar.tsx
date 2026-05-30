@@ -82,6 +82,8 @@ export const SearchBar = () => {
       >
         <Input
           variant="subtle"
+          name="search"
+          autoComplete="off"
           bg="gray.700"
           type="text"
           fontSize={{ base: 'sm', md: 'md' }}

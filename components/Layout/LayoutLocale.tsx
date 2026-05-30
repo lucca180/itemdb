@@ -70,6 +70,7 @@ const LocaleSelect = (props: { defaultValue: string; onChange: (value: string) =
   return (
     <NativeSelect.Root size="xs" variant="subtle" flex="1" minW="120px" borderRadius="md" h="25px">
       <NativeSelect.Field
+        id="prefLang"
         name="prefLang"
         h="25px"
         defaultValue={props.defaultValue}
