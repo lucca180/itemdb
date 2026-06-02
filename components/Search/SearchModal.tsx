@@ -954,10 +954,10 @@ const SearchQuery = ({
 const SearchSkeleton = () => {
   return (
     <Flex as="section" flexFlow={'column'} gap={2}>
-      <SkeletonText w="70px" noOfLines={1} />
+      <SkeletonText w="70px" noOfLines={1} bg="whiteAlpha.200" />
       <Flex flexFlow={'column'} gap={2}>
         {Array.from({ length: 5 }).map((_, index) => (
-          <Skeleton key={index} height="40px" borderRadius={'sm'} />
+          <Skeleton key={index} height="40px" borderRadius={'sm'} bg="whiteAlpha.200" />
         ))}
       </Flex>
     </Flex>
