@@ -1,5 +1,9 @@
 import { describe, expect, test, vi } from 'vitest';
 
+vi.hoisted(() => {
+  vi.stubEnv('EVENT_MODE', 'false');
+});
+
 vi.mock('@utils/prisma', () => ({
   default: {
     itemPrices: {
