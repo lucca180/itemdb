@@ -1,5 +1,5 @@
 import type { ElementType, ReactNode } from 'react';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import { Box, Flex, Heading, Link, Skeleton, Text } from '@chakra-ui/react';
 import {
   CiBadgeDollar,
@@ -122,12 +122,12 @@ function StatCard(props: StatCardProps) {
 function LinkedStatLabel({ href, children }: LinkedStatLabelProps) {
   return (
     <Link asChild color="gray.300" _hover={{ color: 'whiteAlpha.900' }}>
-      <NextLink href={href}>
+      <MainLink href={href}>
         <Box as="span" display="inline-flex" alignItems="center" gap={1}>
           {children}
           <LuExternalLink />
         </Box>
-      </NextLink>
+      </MainLink>
     </Link>
   );
 }

@@ -9,7 +9,7 @@ import { useAuth } from '@utils/auth';
 import { getScriptStatus } from '@utils/scriptUtils';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import { BsBoxArrowInRight, BsFillPersonFill } from 'react-icons/bs';
 
 const LoginModal = dynamic(() => import('../Modal/LoginModal'));
@@ -95,9 +95,9 @@ export const AuthButton = (props: AuthButtonProps) => {
                       _hover={{ bg: 'blackAlpha.400' }}
                       cursor="pointer"
                     >
-                      <NextLink prefetch={false} href={`/lists/${user.username}`}>
+                      <MainLink prefetch={false} href={`/lists/${user.username}`}>
                         {t('Layout.my-lists')}
-                      </NextLink>
+                      </MainLink>
                     </Menu.Item>
                     <Menu.Item
                       value="contribute"
@@ -105,9 +105,9 @@ export const AuthButton = (props: AuthButtonProps) => {
                       _hover={{ bg: 'blackAlpha.400' }}
                       cursor="pointer"
                     >
-                      <NextLink prefetch={false} href="/contribute">
+                      <MainLink prefetch={false} href="/contribute">
                         {t('Layout.how-to-contribute')}
-                      </NextLink>
+                      </MainLink>
                     </Menu.Item>
                   </Menu.ItemGroup>
                   <Box display={{ base: 'none', md: 'block' }}>
@@ -183,9 +183,9 @@ const ScriptStatus = () => {
         _hover={{ bg: 'blackAlpha.400' }}
         cursor="pointer"
       >
-        <NextLink prefetch={false} href="/tools/troubleshooting">
+        <MainLink prefetch={false} href="/tools/troubleshooting">
           {t('Layout.troubleshooting')}
-        </NextLink>
+        </MainLink>
       </Menu.Item>
     </>
   );

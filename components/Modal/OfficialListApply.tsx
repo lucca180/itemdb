@@ -13,6 +13,7 @@ import {
   Portal,
 } from '@chakra-ui/react';
 import axios from 'axios';
+import MainLink from '@components/Utils/MainLink';
 import { useState } from 'react';
 import { useAuth } from '../../utils/auth';
 import ListSelect from '../UserLists/ListSelect';
@@ -132,8 +133,10 @@ const ApplyListModal = (props: ApplyListModalProps) => {
                     <Text fontSize="sm" textAlign="center" color="whiteAlpha.800">
                       {t.rich('Lists.official-agree-terms', {
                         Link: (chunk) => (
-                          <Link href="/terms" color="green.200" target="_blank" rel="noreferrer">
-                            {chunk}
+                          <Link asChild color="green.200" target="_blank" rel="noreferrer">
+                            <MainLink href="/terms" target="_blank">
+                              {chunk}
+                            </MainLink>
                           </Link>
                         ),
                       })}

@@ -2,7 +2,7 @@ import { Box, Text, Separator, Flex, Link, Badge, Tooltip, IconButton } from '@c
 import { ItemData, TradeData } from '../../types';
 import Image from 'next/image';
 import { genItemKey, slugify } from '../../utils/utils';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import { useFormatter, useTranslations } from 'next-intl';
 import { FaFlag } from 'react-icons/fa';
 
@@ -82,9 +82,9 @@ const TradeTable = (props: Props) => {
           >
             <Flex w={50} flexShrink="0" justifyContent="center" alignItems="center">
               <Link asChild>
-                <NextLink href={`/item/${slugify(item.name)}`} prefetch={false}>
+                <MainLink href={`/item/${slugify(item.name)}`} prefetch={false}>
                   <Image src={item.image} width={50} height={50} alt="" />
-                </NextLink>
+                </MainLink>
               </Link>
             </Flex>
             <Flex flexFlow="column" justifyContent="center">
@@ -95,9 +95,9 @@ const TradeTable = (props: Props) => {
                   </Badge>
                 )}
                 <Link asChild>
-                  <NextLink href={`/item/${slugify(item.name)}`} prefetch={false}>
+                  <MainLink href={`/item/${slugify(item.name)}`} prefetch={false}>
                     {item.name}
-                  </NextLink>
+                  </MainLink>
                 </Link>
               </Text>
               {item.price && (

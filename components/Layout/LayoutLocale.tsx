@@ -2,12 +2,12 @@
 
 import { ChangeEvent, useRef } from 'react';
 import { NativeSelect } from '@chakra-ui/react';
-import { useRouter } from 'next/compat/router';
 import { useLocale, useTranslations } from 'next-intl';
 import axios from 'axios';
 import { setCookie } from 'cookies-next';
 import { useAuth } from '@utils/auth';
-import { getLocalizedPath } from '@components/Layout/layoutData';
+import { usePathname, useRouter } from '@i18n/navigation';
+import type { AppLocale } from '@utils/locales';
 
 type LayoutLocaleSelectProps = {
   action: (formData: FormData) => void | Promise<void>;
@@ -30,14 +30,9 @@ export function LayoutLocaleSelect({ action, locale }: LayoutLocaleSelectProps) 
 
 export function LayoutLocalePages() {
   const router = useRouter();
+  const pathname = usePathname();
   const intlLocale = useLocale();
-  const isAppRouter = !router;
-  const currentLocale = router?.locale ?? intlLocale ?? 'en';
-  const currentPath =
-    router?.asPath ??
-    (typeof window !== 'undefined'
-      ? `${window.location.pathname}${window.location.search}${window.location.hash}`
-      : '/');
+  const currentLocale = intlLocale ?? 'en';
   const { user } = useAuth();
 
   const saveLang = async (prefLang: string) => {
@@ -56,11 +51,7 @@ export function LayoutLocalePages() {
 
   const changeLang = async (prefLang: string) => {
     await saveLang(prefLang);
-    if (!isAppRouter && router) {
-      return router.push(currentPath, currentPath, { locale: prefLang });
-    }
-
-    window.location.assign(getLocalizedPath(currentPath, prefLang));
+    router.replace(pathname, { locale: prefLang as AppLocale });
   };
 
   return <LocaleSelect defaultValue={currentLocale} onChange={changeLang} />;

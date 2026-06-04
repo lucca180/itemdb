@@ -1,6 +1,6 @@
 import { Badge, Link, Text, Image, Box, HStack, Center, Heading, Tag } from '@chakra-ui/react';
 import Color from 'color';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import { ShopInfo } from '../../../types';
 import {
   faerielandShops,
@@ -81,16 +81,22 @@ const RestockHeader = (props: Props) => {
       >
         {!isHistory && (
           <HStack>
-            <Link as={NextLink} href="/restock">
-              <Badge>{shopInfo.category}</Badge>
+            <Link asChild>
+              <MainLink href="/restock" prefetch={false}>
+                <Badge>{shopInfo.category}</Badge>
+              </MainLink>
             </Link>
             {shopInfo.difficulty.toLowerCase() !== 'medium' && (
-              <Link as={NextLink} href="/restock">
-                <Badge
-                  colorPalette={shopInfo.difficulty.toLowerCase() === 'beginner' ? 'green' : 'red'}
-                >
-                  {shopInfo.difficulty}
-                </Badge>
+              <Link asChild>
+                <MainLink href="/restock" prefetch={false}>
+                  <Badge
+                    colorPalette={
+                      shopInfo.difficulty.toLowerCase() === 'beginner' ? 'green' : 'red'
+                    }
+                  >
+                    {shopInfo.difficulty}
+                  </Badge>
+                </MainLink>
               </Link>
             )}
           </HStack>
@@ -123,15 +129,17 @@ const RestockHeader = (props: Props) => {
           <Text mt={3} fontSize="sm" textAlign={'center'}>
             {t.rich('Restock.history-cta', {
               Link: (chunk) => (
-                <Link href={`/restock/${slugify(shopInfo.name)}/history`}>
-                  {chunk}
-                  <Image
-                    src={'/favicon.svg'}
-                    width={'18px'}
-                    height={'18px'}
-                    style={{ display: 'inline', verticalAlign: 'middle' }}
-                    alt="link icon"
-                  />
+                <Link asChild>
+                  <MainLink href={`/restock/${slugify(shopInfo.name)}/history`} prefetch={false}>
+                    {chunk}
+                    <Image
+                      src={'/favicon.svg'}
+                      width={'18px'}
+                      height={'18px'}
+                      style={{ display: 'inline', verticalAlign: 'middle' }}
+                      alt="link icon"
+                    />
+                  </MainLink>
                 </Link>
               ),
             })}

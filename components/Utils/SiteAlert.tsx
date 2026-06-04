@@ -1,17 +1,22 @@
 'use client';
 
 import { Link } from '@chakra-ui/react';
-import { useTranslations } from 'next-intl';
-import NextLink from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
+import MainLink from '@components/Utils/MainLink';
 import { getCurrentSiteAlert } from '@utils/siteAlert';
 import { SiteAlertBar } from '@components/Layout/siteAlert';
+import { getLocalizedHref, isLocalizableHref, type AppLocale } from '@utils/locales';
 
 export const SiteAlert = () => {
   const t = useTranslations();
+  const locale = useLocale() as AppLocale;
   const alert = getCurrentSiteAlert();
+  const linkHref = isLocalizableHref(alert.link)
+    ? getLocalizedHref(alert.link, locale)
+    : alert.link;
 
   return (
-    <SiteAlertBar alert={alert}>
+    <SiteAlertBar alert={alert} linkHref={linkHref}>
       {!!alert.message &&
         t.rich(`SiteAlert.${alert.message}`, {
           b: (children) => <b>{children}</b>,
@@ -22,9 +27,13 @@ export const SiteAlert = () => {
               data-umami-event="site-alert-click"
               data-umami-event-label={alert.message}
             >
-              <NextLink href={alert.link} target="_blank" rel="noreferrer">
+              <MainLink
+                href={alert.link}
+                target={isLocalizableHref(alert.link) ? undefined : '_blank'}
+                isExternal={!isLocalizableHref(alert.link)}
+              >
                 {children}
-              </NextLink>
+              </MainLink>
             </Link>
           ),
         })}

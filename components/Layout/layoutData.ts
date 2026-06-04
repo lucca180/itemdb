@@ -170,17 +170,3 @@ export function getLayoutFooterColumns(t: LayoutTranslate): LayoutFooterColumn[]
     },
   ];
 }
-
-export function stripLocalePrefix(path: string) {
-  return path.replace(/^\/pt(?=\/|$)/, '') || '/';
-}
-
-export function getLocalizedPath(path: string, locale: string) {
-  const normalizedPath = stripLocalePrefix(path);
-
-  if (locale === 'pt') {
-    return `/pt${normalizedPath === '/' ? '' : normalizedPath}`;
-  }
-
-  return normalizedPath;
-}

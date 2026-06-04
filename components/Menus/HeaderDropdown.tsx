@@ -1,6 +1,6 @@
 import { Popover, Button, Flex, Badge, useMediaQuery, Portal } from '@chakra-ui/react';
 import React, { useState } from 'react';
-import NextLink from 'next/link';
+import { Link } from '@i18n/navigation';
 import { useTranslations } from 'next-intl';
 
 type Props = {
@@ -37,9 +37,7 @@ export const DropdownButton = (props: Props) => {
             outline={'none'}
             _focus={{ outline: 'none' }}
           >
-            <NextLink href={href} prefetch={false}>
-              {label}
-            </NextLink>
+            <Link href={href}>{label}</Link>
           </Button>
         ) : (
           <Button
@@ -103,14 +101,14 @@ export const DropdownOption = (props: Props) => {
       outline={'none'}
       _focus={{ outline: 'none', bg: 'whiteAlpha.200' }}
     >
-      <NextLink href={href} prefetch={false}>
+      <Link href={href}>
         {label}
         {isNew && (
           <Badge as="span" colorPalette="orange" ml={1}>
             {t('Layout.new')}
           </Badge>
         )}
-      </NextLink>
+      </Link>
     </Button>
   );
 };

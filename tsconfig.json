@@ -31,7 +31,8 @@
       "@services/*": ["./services/*"],
       "@assets/*": ["./public/*"],
       "@pages/*": ["./pages/*"],
-      "@app/*": ["./app/*"]
+      "@app/*": ["./app/*"],
+      "@i18n/*": ["./i18n/*"]
     },
     "typeRoots": ["node_modules/@types", "types.d.ts"]
   },

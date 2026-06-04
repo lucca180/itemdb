@@ -15,7 +15,7 @@ import React, { useEffect, useMemo } from 'react';
 import { ItemData, ItemOpenable, PrizePoolData } from '../../types';
 import CardBase from '../Card/CardBase';
 import ItemCard from './ItemCard';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { showScriptCTA } from '../../utils/scriptUtils';
@@ -143,7 +143,7 @@ const ItemDrops = (props: Props) => {
             itemName: item.name,
             Link: (text) => (
               <Link asChild color="gray.400">
-                <NextLink href="/contribute">{text}</NextLink>
+                <MainLink href="/contribute">{text}</MainLink>
               </Link>
             ),
           })}
@@ -358,7 +358,7 @@ export const DropPool = (props: DropPoolProps) => {
             openings: pool.openings,
             Link: (text) => (
               <Link asChild color="gray.400">
-                <NextLink href="/contribute">{text}</NextLink>
+                <MainLink href="/contribute">{text}</MainLink>
               </Link>
             ),
           })}
@@ -406,13 +406,9 @@ const HelpNeeded = () => {
           </Link>
         </Button>
         <Button asChild size="sm">
-          <Link
-            href="/contribute"
-            data-umami-event="help-needed"
-            data-umami-event-label="learn-more"
-          >
+          <MainLink href="/contribute" trackEvent="help-needed" trackEventLabel="learn-more">
             {t('General.learn-more')}
-          </Link>
+          </MainLink>
         </Button>
       </HStack>
     </Flex>

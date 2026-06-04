@@ -1,8 +1,14 @@
-import { Html, Head, Main, NextScript, DocumentProps } from 'next/document';
+import { Html, Head, Main, NextScript, DocumentProps, DocumentContext } from 'next/document';
+import Document from 'next/document';
+import { resolvePageLocale } from '@utils/locales';
 
-export default function Document(props: DocumentProps) {
+type ItemDbDocumentProps = DocumentProps & {
+  locale: string;
+};
+
+export default function ItemDbDocument(props: ItemDbDocumentProps) {
   return (
-    <Html lang={props.locale ?? 'en'} className="dark" data-theme="dark" suppressHydrationWarning>
+    <Html lang={props.locale} className="dark" data-theme="dark" suppressHydrationWarning>
       <Head>
         <link rel="icon" href="/favicon.ico" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -14,3 +20,15 @@ export default function Document(props: DocumentProps) {
     </Html>
   );
 }
+
+ItemDbDocument.getInitialProps = async (ctx: DocumentContext) => {
+  const initialProps = await Document.getInitialProps(ctx);
+  const locale = resolvePageLocale(
+    typeof ctx.query?.locale === 'string' ? ctx.query.locale : undefined
+  );
+
+  return {
+    ...initialProps,
+    locale,
+  };
+};

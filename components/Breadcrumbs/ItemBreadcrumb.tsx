@@ -1,6 +1,5 @@
 import { ItemData, UserList } from '../../types';
-import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/router';
+import { useLocale, useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { Breadcrumbs } from './Breadcrumbs';
 import { categoryToShopID, restockShopInfo, slugify } from '../../utils/utils';
@@ -14,7 +13,7 @@ type ItemBreadcrumbProps = {
 export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
   const { item, officialLists } = props;
   const t = useTranslations();
-  const router = useRouter();
+  const locale = useLocale();
   const category = (item.category ?? 'unknown').toLowerCase();
 
   const breadcrumbList = useMemo(() => {
@@ -61,7 +60,7 @@ export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
     }
 
     return breadList;
-  }, [item, router.locale, category, t, officialLists]);
+  }, [item, locale, category, t, officialLists]);
 
   const productJson = getItemJSONLD(item);
   return (

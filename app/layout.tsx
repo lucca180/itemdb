@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
-import { NextIntlClientProvider } from 'next-intl';
-import { getLocale } from 'next-intl/server';
 import type { ReactNode } from 'react';
+import { getLocale } from 'next-intl/server';
 import '@utils/global.css';
 import { inter } from '@utils/theme/fonts';
 import { Providers } from './providers';
@@ -49,9 +48,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
               return payload;
           }`}
         </Script>
-        <NextIntlClientProvider>
-          <Providers initialAuthState={initialAuthState}>{children}</Providers>
-        </NextIntlClientProvider>
+        <Providers initialAuthState={initialAuthState}>{children}</Providers>
       </body>
     </html>
   );

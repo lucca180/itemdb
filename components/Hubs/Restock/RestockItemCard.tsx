@@ -1,6 +1,6 @@
 import { Badge, Flex, Link, Text, Image, HStack, Tooltip } from '@chakra-ui/react';
 import Color from 'color';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import { ItemData, RestockSession } from '../../../types';
 import { getRestockProfitOnDate, msIntervalFormatted } from '../../../utils/utils';
 import { differenceInMilliseconds } from 'date-fns';
@@ -56,7 +56,7 @@ const RestockItem = (props: Props) => {
 
   return (
     <Link asChild _hover={{ textDecoration: 'none' }} w="100%">
-      <NextLink
+      <MainLink
         prefetch={!disablePrefetch ? undefined : false}
         href={'/item/' + (item.slug ?? item.internal_id)}
       >
@@ -158,7 +158,7 @@ const RestockItem = (props: Props) => {
             )}
           </Flex>
         </Flex>
-      </NextLink>
+      </MainLink>
     </Link>
   );
 };

@@ -1,6 +1,5 @@
 import { ShopInfo } from '../../types';
-import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/router';
+import { useLocale, useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { slugify } from '../../utils/utils';
 import { Breadcrumbs } from './Breadcrumbs';
@@ -13,7 +12,7 @@ type RestockBreadcrumb = {
 export const RestockBreadcrumb = (props: RestockBreadcrumb) => {
   const { shopData } = props;
   const t = useTranslations();
-  const router = useRouter();
+  const locale = useLocale();
 
   const breadcrumbList = useMemo(() => {
     const breadList = [
@@ -43,7 +42,7 @@ export const RestockBreadcrumb = (props: RestockBreadcrumb) => {
     }
 
     return breadList;
-  }, [shopData, router.locale, t, slugify, props.isHistory]);
+  }, [shopData, locale, t, props.isHistory]);
 
   return <Breadcrumbs breadcrumbList={breadcrumbList} />;
 };

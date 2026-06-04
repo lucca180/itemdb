@@ -1,6 +1,7 @@
 import { Center, Box, Accordion, Text, Link } from '@chakra-ui/react';
 import Color from 'color';
 import { useTranslations } from 'next-intl';
+import MainLink from '@components/Utils/MainLink';
 import { ContributeWallData } from '../../types';
 
 type ContributeWallProps = {
@@ -41,8 +42,10 @@ export const ContributeWall = (props: ContributeWallProps) => {
           <Text textAlign={'center'} fontSize={'sm'}>
             {t.rich('Restock.wrapped-precify-text', {
               Link: (chunk) => (
-                <Link href="/feedback/trades?utm_content=cta-wall" target="_blank" rel="noreferrer">
-                  {chunk}
+                <Link asChild target="_blank" rel="noreferrer">
+                  <MainLink href="/feedback/trades?utm_content=cta-wall" target="_blank">
+                    {chunk}
+                  </MainLink>
                 </Link>
               ),
               b: (chunk) => <b>{chunk}</b>,
@@ -52,8 +55,10 @@ export const ContributeWall = (props: ContributeWallProps) => {
           <Text textAlign={'center'} fontSize={'sm'}>
             {t.rich('Restock.wrapped-vote-text', {
               Link: (chunk) => (
-                <Link href="/feedback/vote?utm_content=cta-wall" target="_blank" rel="noreferrer">
-                  {chunk}
+                <Link asChild target="_blank" rel="noreferrer">
+                  <MainLink href="/feedback/vote?utm_content=cta-wall" target="_blank">
+                    {chunk}
+                  </MainLink>
                 </Link>
               ),
               b: (chunk) => <b>{chunk}</b>,

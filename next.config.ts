@@ -12,11 +12,6 @@ const nextConfig: NextConfig = {
   compress: false, // cloudflare does it for us
   productionBrowserSourceMaps: true,
   skipProxyUrlNormalize: true,
-  i18n: {
-    locales: ['en', 'pt'],
-    defaultLocale: 'en',
-    localeDetection: false,
-  },
   images: {
     qualities: [100, 90],
     remotePatterns: [

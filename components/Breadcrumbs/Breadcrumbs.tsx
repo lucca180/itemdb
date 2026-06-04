@@ -3,7 +3,8 @@ import { BreadcrumbJsonLd } from 'next-seo';
 import { ChevronRightIcon } from '@utils/theme/chakraIcons';
 import { Breadcrumb } from '@chakra-ui/react';
 import MainLink from '@components/Utils/MainLink';
-import { useRouter } from 'next/router';
+import { useLocale } from 'next-intl';
+import { getLocalizedHref, type AppLocale } from '@utils/locales';
 
 type BreadcrumbsProps = {
   breadcrumbList: {
@@ -17,16 +18,11 @@ type BreadcrumbsProps = {
 
 export const Breadcrumbs = (props: BreadcrumbsProps) => {
   const { breadcrumbList, linkLast = false } = props;
-  const router = useRouter();
-
-  const getLink = (url: string) => {
-    const locale = router.locale === 'en' ? '' : `/${router.locale}`;
-    return `https://itemdb.com.br${locale}${url}`;
-  };
+  const locale = useLocale() as AppLocale;
 
   const formattedBreadcrumbList = breadcrumbList.map((crumb) => ({
     ...crumb,
-    item: getLink(crumb.item),
+    item: `https://itemdb.com.br${getLocalizedHref(crumb.item, locale)}`,
   }));
 
   return (
@@ -56,7 +52,7 @@ export const Breadcrumbs = (props: BreadcrumbsProps) => {
                     _hover={{ textDecoration: 'underline' }}
                   >
                     <MainLink
-                      href={removeLink(crumb.item)}
+                      href={breadcrumbList[i].item}
                       prefetch={false}
                       trackEvent="breadcrumb-link"
                       trackEventLabel={crumb.name}
@@ -78,8 +74,4 @@ export const Breadcrumbs = (props: BreadcrumbsProps) => {
       <BreadcrumbJsonLd itemListElements={formattedBreadcrumbList} />
     </>
   );
-};
-
-const removeLink = (url: string) => {
-  return url.replace('https://itemdb.com.br', '');
 };

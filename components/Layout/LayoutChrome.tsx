@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import Color from 'color';
 import { Box, Center, Flex, Spinner, Text } from '@chakra-ui/react';
 import NextImage from 'next/image';
-import Link from 'next/link';
+import { Link } from '@i18n/navigation';
 import logo from '@assets/logo_white_compressed.svg';
 import logoIcon from '@assets/logo_icon.svg';
 import mtLogo from '@assets/magnetismo-logo.png';
@@ -39,7 +39,7 @@ function getLayoutFooterGradientRgb() {
 
 function LayoutLogo() {
   return (
-    <Link prefetch={false} href="/" style={{ flex: '0 0 auto' }}>
+    <Link href="/" style={{ flex: '0 0 auto' }}>
       <Box display={{ base: 'inline', md: 'none' }}>
         <NextImage
           src={logoIcon}

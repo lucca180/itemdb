@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { SearchFilters } from '@types';
-import { RESTOCK_FILTER } from '../pages/restock/[id]';
+import { RESTOCK_FILTER } from '@utils/restock-filters';
 
 export const itemdb = axios.create({
   baseURL: 'http://itemdb.com.br/api/v1/',

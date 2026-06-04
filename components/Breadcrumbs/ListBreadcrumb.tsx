@@ -1,9 +1,8 @@
 import { UserList } from '../../types';
-import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/router';
+import { useLocale, useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { Breadcrumbs } from './Breadcrumbs';
-import { listCategoriesData } from '../../pages/lists/official/cat/[category]';
+import { listCategoriesData } from '@pages/[locale]/lists/official/cat/[category]';
 import { slugify } from '../../utils/utils';
 
 type ListBreadcrumb = {
@@ -15,7 +14,7 @@ type ListBreadcrumb = {
 export const ListBreadcrumb = (props: ListBreadcrumb) => {
   const { list, show, skipCurrent } = props;
   const t = useTranslations();
-  const router = useRouter();
+  const locale = useLocale();
 
   const category = list.officialTag[0] ?? null;
 
@@ -78,7 +77,7 @@ export const ListBreadcrumb = (props: ListBreadcrumb) => {
     }
 
     return breadList;
-  }, [list, category, t, router.locale, show, skipCurrent]);
+  }, [list, category, t, locale, show, skipCurrent]);
 
   return <Breadcrumbs breadcrumbList={breadcrumbList} linkLast={skipCurrent} />;
 };

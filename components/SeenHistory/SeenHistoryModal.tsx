@@ -1,7 +1,7 @@
 import { Text, Link, Dialog, CloseButton, Portal } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
 import { ItemData } from '../../types';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import dynamic from 'next/dynamic';
 import { RestockHistoryProps } from './RestockHistory';
 import { TradeHistoryProps } from './TradeHistory';
@@ -64,7 +64,7 @@ export default function SeenHistoryModal(props: SeenHistoryModalProps) {
                   b: (chunk) => <b>{chunk}</b>,
                   Link: (chunk) => (
                     <Link asChild color="gray.400">
-                      <NextLink href="/contribute">{chunk}</NextLink>
+                      <MainLink href="/contribute">{chunk}</MainLink>
                     </Link>
                   ),
                 })}

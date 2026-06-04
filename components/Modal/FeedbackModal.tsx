@@ -14,7 +14,7 @@ import {
   Portal,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import { useRouter } from 'next/compat/router';
 import { useEffect, useState } from 'react';
 import { ItemData } from '../../types';
@@ -160,7 +160,7 @@ const FeedbackModal = (props: FeedbackModalProps) => {
                     {t.rich('Feedback.script-issues-tool-cta', {
                       Link: (chunks) => (
                         <Link asChild color="gray.200">
-                          <NextLink href="/tools/troubleshooting">{chunks}</NextLink>
+                          <MainLink href="/tools/troubleshooting">{chunks}</MainLink>
                         </Link>
                       ),
                     })}

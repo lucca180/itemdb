@@ -1,10 +1,9 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@utils/auth/getCurrentUser';
-import { isValidLocale } from '@utils/locales';
+import { getLocalizedHref, isValidLocale, type AppLocale } from '@utils/locales';
 import prisma from '@utils/prisma';
 import { LayoutLocaleSelect } from '@components/Layout/LayoutLocale';
-import { getLocalizedPath } from '@components/Layout/layoutData';
 
 type LayoutLocaleServerProps = {
   locale: string;
@@ -33,7 +32,7 @@ export function LayoutLocaleServer({ locale, currentPath }: LayoutLocaleServerPr
       path: '/',
     });
 
-    const targetPath = getLocalizedPath(currentPath, prefLang);
+    const targetPath = getLocalizedHref(currentPath, prefLang as AppLocale);
     const sessionCookie = cookieStore.get('session')?.value;
 
     if (!sessionCookie) {

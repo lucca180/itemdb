@@ -1,5 +1,6 @@
 import { Button, Center, Flex, Icon, IconButton, Link, Text } from '@chakra-ui/react';
 import CardBase from '@components/Card/CardBase';
+import MainLink from '@components/Utils/MainLink';
 import { useToast } from '@utils/theme/toast';
 import React from 'react';
 import { AiFillEyeInvisible } from 'react-icons/ai';
@@ -103,8 +104,13 @@ const ColorInfoCard = (props: Props) => {
                       },
                     }}
                   >
-                    <Link rel="nofollow" href={'/search?s=' + encodeURIComponent(colors[key].hex)}>
-                      <BiSearch />
+                    <Link asChild rel="nofollow">
+                      <MainLink
+                        prefetch={false}
+                        href={'/search?s=' + encodeURIComponent(colors[key].hex)}
+                      >
+                        <BiSearch />
+                      </MainLink>
                     </Link>
                   </IconButton>
                   <IconButton

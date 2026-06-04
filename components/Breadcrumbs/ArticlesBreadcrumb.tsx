@@ -1,6 +1,5 @@
 import { WP_Article } from '../../types';
-import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/router';
+import { useLocale, useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { Breadcrumbs } from './Breadcrumbs';
 
@@ -11,7 +10,7 @@ type ArticleBreadcrumb = {
 export const ArticleBreadcrumb = (props: ArticleBreadcrumb) => {
   const { article } = props;
   const t = useTranslations();
-  const router = useRouter();
+  const locale = useLocale();
 
   const breadcrumbList = useMemo(() => {
     const breadList = [
@@ -33,7 +32,7 @@ export const ArticleBreadcrumb = (props: ArticleBreadcrumb) => {
     ];
 
     return breadList;
-  }, [article, router.locale, t]);
+  }, [article, locale, t]);
 
   return <Breadcrumbs breadcrumbList={breadcrumbList} />;
 };

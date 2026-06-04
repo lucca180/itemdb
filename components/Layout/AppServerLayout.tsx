@@ -1,9 +1,7 @@
 import type { ReactNode } from 'react';
 import { cookies, headers } from 'next/headers';
-import { createTranslator } from 'next-intl';
-import { getLocale } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
-import { appLoadTranslation } from '@utils/load-translation';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { AppSiteAlert } from '@components/Layout/siteAlert';
 import { LayoutAuth } from '@components/Layout/AuthButton';
@@ -21,10 +19,9 @@ type AppServerLayoutProps = {
 
 export default async function AppServerLayout(props: AppServerLayoutProps) {
   const locale = await getLocale();
+  const t = await getTranslations();
   const requestHeaders = await headers();
   const currentPath = requestHeaders.get('x-itemdb-current-path') ?? '/';
-  const messages = await appLoadTranslation(locale);
-  const t = createTranslator({ messages, locale });
 
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get('session')?.value;

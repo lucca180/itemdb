@@ -5,10 +5,10 @@ import {
   ISitemapField,
 } from 'next-sitemap';
 import { GetServerSideProps } from 'next';
-import prisma from '../../utils/prisma';
-import { restockShopInfo, slugify } from '../../utils/utils';
-import { listCategoriesData } from '../lists/official/cat/[category]';
-import { allSpecies, allNeopetsColors } from '../../utils/pet-utils';
+import prisma from '@utils/prisma';
+import { restockShopInfo, slugify } from '@utils/utils';
+import { listCategoriesData } from '@pages/[locale]/lists/official/cat/[category]';
+import { allSpecies, allNeopetsColors } from '@utils/pet-utils';
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const page = ctx.query.page as string;

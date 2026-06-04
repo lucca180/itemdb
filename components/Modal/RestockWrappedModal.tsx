@@ -13,6 +13,7 @@ import {
 import { useToast } from '@utils/theme/toast';
 import { useTranslations } from 'next-intl';
 import { RestockWrappedCard } from '../Hubs/Restock/WrappedCard';
+import MainLink from '@components/Utils/MainLink';
 import { RestockStats } from '../../types';
 import { useToPng } from '@hugocxl/react-to-image';
 import Color from 'color';
@@ -269,8 +270,10 @@ const RestockWrappedModal = (props: RestockWrappedModalProps) => {
                   <Text textAlign={'center'} fontSize={'sm'}>
                     {t.rich('Restock.wrapped-precify-text', {
                       Link: (chunk) => (
-                        <Link href="/feedback/trades" target="_blank" rel="noreferrer">
-                          {chunk}
+                        <Link asChild target="_blank" rel="noreferrer">
+                          <MainLink href="/feedback/trades" target="_blank">
+                            {chunk}
+                          </MainLink>
                         </Link>
                       ),
                       b: (chunk) => <b>{chunk}</b>,
@@ -280,8 +283,10 @@ const RestockWrappedModal = (props: RestockWrappedModalProps) => {
                   <Text textAlign={'center'} fontSize={'sm'}>
                     {t.rich('Restock.wrapped-vote-text', {
                       Link: (chunk) => (
-                        <Link href="/feedback/vote" target="_blank" rel="noreferrer">
-                          {chunk}
+                        <Link asChild target="_blank" rel="noreferrer">
+                          <MainLink href="/feedback/vote" target="_blank">
+                            {chunk}
+                          </MainLink>
                         </Link>
                       ),
                       b: (chunk) => <b>{chunk}</b>,

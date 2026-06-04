@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import NextImage from 'next/image';
 import type { CSSProperties } from 'react';
 import type { WP_Article } from '@types';
@@ -33,7 +33,7 @@ function LatestArticlesSectionFallback({ title, limit }: { title: string; limit:
   return (
     <Flex flex={1} direction="column">
       <Heading as="h2" size="md" lineHeight="1.2" textAlign="center" mb={5}>
-        <NextLink href="/articles">{title}</NextLink>
+        <MainLink href="/articles">{title}</MainLink>
       </Heading>
       <Flex direction="column" gap={2}>
         {Array.from({ length: limit }, (_, index) => (
@@ -64,7 +64,7 @@ async function LatestArticlesSectionContent({ title, limit = 5 }: LatestArticles
   return (
     <Flex flex={1} direction="column">
       <Heading as="h2" size="md" lineHeight="1.2" textAlign="center" mb={5}>
-        <NextLink href="/articles">{title}</NextLink>
+        <MainLink href="/articles">{title}</MainLink>
       </Heading>
       <Flex direction="column" gap={2}>
         {articles.map((post) => (
@@ -88,7 +88,7 @@ function LatestArticleCard({ article }: { article: WP_Article }) {
   } as CSSProperties;
 
   return (
-    <NextLink prefetch={false} href={`/articles/${article.slug}`}>
+    <MainLink prefetch={false} href={`/articles/${article.slug}`}>
       <Flex
         p={3}
         gap={3}
@@ -143,6 +143,6 @@ function LatestArticleCard({ article }: { article: WP_Article }) {
           <Text fontSize="xs">{article.excerpt}</Text>
         </Flex>
       </Flex>
-    </NextLink>
+    </MainLink>
   );
 }

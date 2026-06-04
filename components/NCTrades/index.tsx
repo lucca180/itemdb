@@ -19,7 +19,7 @@ import { InsightsResponse, ItemData, LebronTrade, NCTradeReport, UserList } from
 import { useAuth } from '../../utils/auth';
 import CardBase from '../Card/CardBase';
 import MatchTable from './MatchTable';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import NCTradeHistory from './NCTradeHistory';
 import { useTranslations } from 'next-intl';
 import { TradeInsights } from './TradeInsights';
@@ -219,8 +219,10 @@ const NCTrade = (props: Props) => {
                   {!item.ncValue && t('ItemPage.nc-guide-value')}
                   {item.ncValue?.source === 'itemdb' && t('ItemPage.itemdb-value')}
                   {item.ncValue?.source === 'lebron' && (
-                    <Link href="/articles/lebron" target="_blank" rel="noreferrer">
-                      {t('ItemPage.lebron-value')}
+                    <Link asChild target="_blank" rel="noreferrer">
+                      <MainLink href="/articles/lebron" target="_blank">
+                        {t('ItemPage.lebron-value')}
+                      </MainLink>
                     </Link>
                   )}
                 </Stat.Label>
@@ -231,8 +233,10 @@ const NCTrade = (props: Props) => {
                       {t('ItemPage.no-enough-data')}
                     </Text>
                     <Stat.HelpText fontSize="xs" mt={1} mb={0} fontWeight="medium" opacity={1}>
-                      <Link href="/mall/report" target="_blank" rel="noreferrer">
-                        {t('ItemPage.report-your-nc-trades')}
+                      <Link asChild target="_blank" rel="noreferrer">
+                        <MainLink href="/mall/report" target="_blank">
+                          {t('ItemPage.report-your-nc-trades')}
+                        </MainLink>
                       </Link>
                     </Stat.HelpText>
                   </>
@@ -324,7 +328,7 @@ const NCTrade = (props: Props) => {
             {t.rich('ItemPage.report-owls-cta', {
               Link: (chunk) => (
                 <Link asChild color="whiteAlpha.800">
-                  <NextLink href="/mall/report?utm_content=owls-cta">{chunk}</NextLink>
+                  <MainLink href="/mall/report?utm_content=owls-cta">{chunk}</MainLink>
                 </Link>
               ),
             })}

@@ -1,5 +1,5 @@
 import { CloseButton, Flex, Heading, Link, Text } from '@chakra-ui/react';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import useSWR from 'swr';
 import { useAuth } from '@utils/auth';
 
@@ -64,13 +64,13 @@ export const RestockedCTACard = () => {
           <>
             <Heading fontWeight={'extrabold'} textAlign={'center'}>
               <Link asChild>
-                <NextLink href="/restock/dashboard/2025">
+                <MainLink href="/restock/dashboard/2025">
                   Join the{' '}
                   <Text as="span" color="#D2FF72">
                     2025 Restock Review
                   </Text>{' '}
                   Waitlist
-                </NextLink>
+                </MainLink>
               </Link>
             </Heading>
             <Text fontSize={'sm'} mt={3}>
@@ -82,13 +82,13 @@ export const RestockedCTACard = () => {
           <>
             <Heading fontWeight={'extrabold'} textAlign={'center'} size="lg">
               <Link asChild>
-                <NextLink href="/restock/dashboard/2025">
+                <MainLink href="/restock/dashboard/2025">
                   The{' '}
                   <Text as="span" color="#D2FF72">
                     2025 Restock Review
                   </Text>{' '}
                   is waiting for you
-                </NextLink>
+                </MainLink>
               </Link>
             </Heading>
             <Text fontSize={'sm'} mt={3}>

@@ -10,7 +10,7 @@ import {
 } from '@chakra-ui/react';
 import { useToast } from '@utils/theme/toast';
 import { useTranslations } from 'next-intl';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import ItemSelect from '../Input/ItemSelect';
 import axios from 'axios';
 import { useAuth } from '../../utils/auth';
@@ -140,7 +140,7 @@ export default function AddListItemsModal(props: AddListItemsModalProps) {
                     {t.rich('Lists.import-modal-cta', {
                       Link: (chunk) => (
                         <Link asChild>
-                          <NextLink href="/lists/import">{chunk}</NextLink>
+                          <MainLink href="/lists/import">{chunk}</MainLink>
                         </Link>
                       ),
                     })}

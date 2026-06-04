@@ -25,7 +25,7 @@ import { ItemData, UserList, ShopInfo } from '@types';
 import { slugify } from '@utils/utils';
 import axios from 'axios';
 import debounce from 'lodash/debounce';
-import Link from 'next/link';
+import { Link } from '@i18n/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { GrSearchAdvanced } from 'react-icons/gr';
 import { IoSearchOutline } from 'react-icons/io5';
@@ -33,7 +33,8 @@ import { MdArrowDownward, MdArrowUpward, MdOutlineKeyboardReturn } from 'react-i
 import queryString from 'query-string';
 import { useRouter } from 'next/compat/router';
 import { getFiltersDiff, parseFilters } from '@utils/parseFilters';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { getLocalizedHref, type AppLocale } from '@utils/locales';
 
 type SearchCard =
   | { index: number; type: 'item'; data: ItemData }
@@ -58,6 +59,7 @@ type SearchModalProps = {
 
 const SearchModal = (props: SearchModalProps) => {
   const t = useTranslations();
+  const locale = useLocale() as AppLocale;
   const router = useRouter();
   const { isOpen, onClose } = props;
   const [search, setSearch] = useState<string>('');
@@ -347,7 +349,7 @@ const SearchModal = (props: SearchModalProps) => {
 
     paramsString = paramsString ? '&' + paramsString : '';
 
-    return `/search?s=${encodeURIComponent(query)}${paramsString}`;
+    return getLocalizedHref(`/search?s=${encodeURIComponent(query)}${paramsString}`, locale);
   };
 
   const navigate = (url: string) => {

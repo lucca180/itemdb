@@ -52,8 +52,8 @@ const MatchTable = (props: Props) => {
                 <Text fontSize="xs" mt={2} color="whiteAlpha.600">
                   {t.rich('Lists.import-adv-tip', {
                     Link: (chunks) => (
-                      <Link color="whiteAlpha.800" href="/lists/import">
-                        {chunks}
+                      <Link asChild color="whiteAlpha.800">
+                        <MainLink href="/lists/import">{chunks}</MainLink>
                       </Link>
                     ),
                   })}
