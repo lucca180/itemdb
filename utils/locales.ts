@@ -47,6 +47,10 @@ export function getLocalizedHref(pathWithSearch: string, locale: AppLocale) {
   return `${withLocalePrefix(internalPath, locale)}${search}`;
 }
 
+export function getLocalizedLoginRedirect(locale: AppLocale, redirectPath: string) {
+  return `${withLocalePrefix('/login', locale)}?redirect=${encodeURIComponent(redirectPath)}`;
+}
+
 export function isLocalizableHref(href: string, isExternal?: boolean) {
   if (isExternal) return false;
   if (

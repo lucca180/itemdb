@@ -1,4 +1,4 @@
-import { resolvePageLocale } from '@utils/locales';
+import { resolvePageLocale, withLocalePrefix } from '@utils/locales';
 import {
   Button,
   Separator,
@@ -26,7 +26,7 @@ import {
   shopIDToCategory,
   slugify,
 } from '@utils/utils';
-import { defaultFilters, getFiltersDiff } from '@utils/parseFilters';
+import { getFiltersDiff } from '@utils/parseFilters';
 import { ReactElement, useEffect, useState } from 'react';
 import { SortSelect } from '@components/Input/SortSelect';
 import { SearchList } from '@components/Search/SearchLists';
@@ -419,7 +419,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     shopInfo = restockShopInfo[id];
     return {
       redirect: {
-        destination: `/restock/${slugify(shopInfo.name)}`,
+        destination: withLocalePrefix(`/restock/${slugify(shopInfo.name)}`, locale),
         permanent: true,
       },
     };

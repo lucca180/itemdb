@@ -18,7 +18,7 @@ import {
   Kbd,
 } from '@chakra-ui/react';
 import { useToast } from '@utils/theme/toast';
-import { resolvePageLocale, getPageRouterHref } from '@utils/locales';
+import { resolvePageLocale, getPageRouterHref, withLocalePrefix } from '@utils/locales';
 import axios from 'axios';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Layout from '@components/Layout';
@@ -1024,7 +1024,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   if (list.dynamicType === 'search') {
     return {
       redirect: {
-        destination: `/search?list_id=${list.internal_id}`,
+        destination: withLocalePrefix(`/search?list_id=${list.internal_id}`, locale),
         permanent: true,
       },
     };
@@ -1035,7 +1035,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     if (list.official) actualUsername = 'official';
     return {
       redirect: {
-        destination: `/lists/${actualUsername}/${list.slug}`,
+        destination: withLocalePrefix(`/lists/${actualUsername}/${list.slug}`, locale),
         permanent: true,
       },
     };
@@ -1044,7 +1044,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   if (list.official && username !== 'official') {
     return {
       redirect: {
-        destination: `/lists/official/${list.slug ?? list.internal_id}`,
+        destination: withLocalePrefix(`/lists/official/${list.slug ?? list.internal_id}`, locale),
         permanent: true,
       },
     };

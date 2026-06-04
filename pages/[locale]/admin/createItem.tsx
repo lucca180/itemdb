@@ -1,4 +1,4 @@
-import { resolvePageLocale } from '@utils/locales';
+import { getLocalizedLoginRedirect, resolvePageLocale } from '@utils/locales';
 import { Button, Center, Heading, Link, Spinner, Tabs, Text } from '@chakra-ui/react';
 import { useToast } from '@utils/theme/toast';
 import axios from 'axios';
@@ -272,7 +272,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   } catch (e) {
     return {
       redirect: {
-        destination: `/login?redirect=${encodeURIComponent(context.resolvedUrl)}`,
+        destination: getLocalizedLoginRedirect(locale, context.resolvedUrl),
         permanent: false,
       },
     };

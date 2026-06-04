@@ -1,4 +1,4 @@
-import { resolvePageLocale } from '@utils/locales';
+import { getLocalizedLoginRedirect, resolvePageLocale } from '@utils/locales';
 import { ExternalLinkIcon } from '@utils/theme/chakraIcons';
 import {
   Accordion,
@@ -400,7 +400,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   } catch (e) {
     return {
       redirect: {
-        destination: `/login?redirect=${encodeURIComponent(context.resolvedUrl)}`,
+        destination: getLocalizedLoginRedirect(locale, context.resolvedUrl),
         permanent: false,
       },
     };

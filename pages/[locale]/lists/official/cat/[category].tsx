@@ -1,4 +1,4 @@
-import { resolvePageLocale } from '@utils/locales';
+import { resolvePageLocale, withLocalePrefix } from '@utils/locales';
 import {
   Flex,
   Heading,
@@ -203,7 +203,7 @@ export async function getServerSideProps(context: any) {
   if (!listCategoriesData[category]) {
     return {
       redirect: {
-        destination: '/lists/official?cat=' + category,
+        destination: withLocalePrefix('/lists/official?cat=' + category, locale),
         permanent: false,
       },
     };

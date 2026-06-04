@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_LOCALE,
   getLocalizedHref,
+  getLocalizedLoginRedirect,
   getLocalePrefix,
   getPageRouterBasePath,
   getPageRouterHref,
@@ -46,6 +47,15 @@ describe('i18n routing helpers', () => {
     expect(localizeInternalHref('https://example.com', 'pt')).toBe('https://example.com');
     expect(localizeInternalHref('/api/v1/items', 'pt')).toBe('/api/v1/items');
     expect(localizeInternalHref('/faq', 'pt', { isExternal: true })).toBe('/faq');
+  });
+
+  it('builds localized login redirects', () => {
+    expect(getLocalizedLoginRedirect('en', '/admin/createItem')).toBe(
+      '/login?redirect=%2Fadmin%2FcreateItem'
+    );
+    expect(getLocalizedLoginRedirect('pt', '/pt/admin/createItem')).toBe(
+      '/pt/login?redirect=%2Fpt%2Fadmin%2FcreateItem'
+    );
   });
 
   it('builds canonical URL paths', () => {

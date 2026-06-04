@@ -1,4 +1,4 @@
-import { resolvePageLocale } from '@utils/locales';
+import { resolvePageLocale, withLocalePrefix } from '@utils/locales';
 import {
   Separator,
   Link,
@@ -192,7 +192,7 @@ export async function getStaticProps(context: GetStaticPropsContext) {
     shopInfo = restockShopInfo[id];
     return {
       redirect: {
-        destination: `/restock/${slugify(shopInfo.name)}/history`,
+        destination: withLocalePrefix(`/restock/${slugify(shopInfo.name)}/history`, locale),
         permanent: true,
       },
     };

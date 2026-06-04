@@ -1,4 +1,4 @@
-import { getPageRouterHref, resolvePageLocale } from '@utils/locales';
+import { getPageRouterHref, resolvePageLocale, withLocalePrefix } from '@utils/locales';
 /* eslint-disable  */
 import {
   Heading,
@@ -503,7 +503,7 @@ export async function getStaticProps(context: any) {
     if (!preloadData) {
       return {
         redirect: {
-          destination: '/tools/rainbow-pool',
+          destination: withLocalePrefix('/tools/rainbow-pool', locale),
         },
       };
     }
@@ -514,9 +514,12 @@ export async function getStaticProps(context: any) {
     ) {
       return {
         redirect: {
-          destination: `/tools/rainbow-pool/${
-            (preloadData.speciesName?.toLowerCase() ?? '') + '/'
-          }${preloadData.colorName?.toLowerCase() ?? ''}`,
+          destination: withLocalePrefix(
+            `/tools/rainbow-pool/${
+              (preloadData.speciesName?.toLowerCase() ?? '') + '/'
+            }${preloadData.colorName?.toLowerCase() ?? ''}`,
+            locale
+          ),
         },
       };
     }
