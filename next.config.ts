@@ -45,6 +45,7 @@ const nextConfig: NextConfig = {
   distDir: process.env.BUILD_DIR || '.next',
   reactCompiler: true,
   experimental: {
+    globalNotFound: true,
     webpackBuildWorker: true,
     parallelServerCompiles: true,
     largePageDataBytes: 512 * 1000,

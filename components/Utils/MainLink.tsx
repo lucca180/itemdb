@@ -16,6 +16,7 @@ export interface MainLinkProps {
   trackEventLabel?: string;
   isExternal?: boolean;
   style?: React.CSSProperties;
+  hardNavigation?: boolean;
 }
 
 const MainLink: React.FC<MainLinkProps> = React.forwardRef(
@@ -30,6 +31,7 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
       trackEventLabel,
       isExternal,
       style,
+      hardNavigation,
     }: MainLinkProps,
     ref: React.Ref<HTMLAnchorElement> | undefined
   ) => {
@@ -63,7 +65,7 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
       [router, href, internalPath, isExternal, handleTracking, target, resolvedHref]
     );
 
-    if (isExternal || !isInternal) {
+    if (isExternal || !isInternal || hardNavigation) {
       return (
         <a
           ref={ref}

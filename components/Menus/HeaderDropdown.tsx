@@ -1,7 +1,8 @@
 import { Popover, Button, Flex, Badge, useMediaQuery, Portal } from '@chakra-ui/react';
 import React, { useState } from 'react';
 import { Link } from '@i18n/navigation';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { localizeInternalHref, type AppLocale } from '@utils/locales';
 
 type Props = {
   label: string;
@@ -9,13 +10,16 @@ type Props = {
   bg?: string;
   children?: React.ReactNode;
   newUntil?: number;
+  hardNavigation?: boolean;
 };
 
 export const DropdownButton = (props: Props) => {
   const { label, href, children, bg } = props;
+  const locale = useLocale() as AppLocale;
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile] = useMediaQuery(['(hover: none)'], { fallback: [false] });
   const shouldBeLink = !children || !isMobile;
+  const hardHref = localizeInternalHref(href, locale);
 
   return (
     <Popover.Root
@@ -37,7 +41,11 @@ export const DropdownButton = (props: Props) => {
             outline={'none'}
             _focus={{ outline: 'none' }}
           >
-            <Link href={href}>{label}</Link>
+            {props.hardNavigation ? (
+              <a href={hardHref}>{label}</a>
+            ) : (
+              <Link href={href}>{label}</Link>
+            )}
           </Button>
         ) : (
           <Button
@@ -80,7 +88,9 @@ export const DropdownButton = (props: Props) => {
 
 export const DropdownOption = (props: Props) => {
   const t = useTranslations();
+  const locale = useLocale() as AppLocale;
   const { label, href, newUntil } = props;
+  const hardHref = localizeInternalHref(href, locale);
 
   // eslint-disable-next-line react-hooks/purity
   const isNew = newUntil && newUntil > Date.now();
@@ -101,14 +111,25 @@ export const DropdownOption = (props: Props) => {
       outline={'none'}
       _focus={{ outline: 'none', bg: 'whiteAlpha.200' }}
     >
-      <Link href={href}>
-        {label}
-        {isNew && (
-          <Badge as="span" colorPalette="orange" ml={1}>
-            {t('Layout.new')}
-          </Badge>
-        )}
-      </Link>
+      {props.hardNavigation ? (
+        <a href={hardHref}>
+          {label}
+          {isNew && (
+            <Badge as="span" colorPalette="orange" ml={1}>
+              {t('Layout.new')}
+            </Badge>
+          )}
+        </a>
+      ) : (
+        <Link href={href}>
+          {label}
+          {isNew && (
+            <Badge as="span" colorPalette="orange" ml={1}>
+              {t('Layout.new')}
+            </Badge>
+          )}
+        </Link>
+      )}
     </Button>
   );
 };

@@ -15,6 +15,7 @@ type AppServerLayoutProps = {
   disableNextSeo?: boolean;
   mainColor?: string;
   fullWidth?: boolean;
+  hardNavigation?: boolean;
 };
 
 export default async function AppServerLayout(props: AppServerLayoutProps) {
@@ -54,6 +55,7 @@ export default async function AppServerLayout(props: AppServerLayoutProps) {
           <LayoutLocaleServer locale={locale} currentPath={currentPath} />
         </>
       }
+      hardNavigation={props.hardNavigation}
     >
       {props.children}
     </LayoutChrome>

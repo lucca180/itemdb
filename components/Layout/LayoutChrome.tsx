@@ -5,6 +5,7 @@ import Color from 'color';
 import { Box, Center, Flex, Spinner, Text } from '@chakra-ui/react';
 import NextImage from 'next/image';
 import { Link } from '@i18n/navigation';
+import { useLocale } from 'next-intl';
 import logo from '@assets/logo_white_compressed.svg';
 import logoIcon from '@assets/logo_icon.svg';
 import mtLogo from '@assets/magnetismo-logo.png';
@@ -14,6 +15,7 @@ import { SearchBar } from '@components/Search/SearchBar';
 import FeedbackButton from '@components/Feedback/FeedbackButton';
 import MainLink from '@components/Utils/MainLink';
 import type { LayoutFooterColumn, LayoutNavSection } from '@components/Layout/layoutData';
+import { localizeInternalHref, type AppLocale } from '@utils/locales';
 
 const LAYOUT_BASE_COLOR = '#4A5568';
 
@@ -31,15 +33,17 @@ export type LayoutChromeProps = {
   search: ReactNode;
   auth: ReactNode;
   footerActions: ReactNode;
+  hardNavigation?: boolean;
 };
 
 function getLayoutFooterGradientRgb() {
   return Color(LAYOUT_BASE_COLOR).rgb().round().array();
 }
 
-function LayoutLogo() {
-  return (
-    <Link href="/" style={{ flex: '0 0 auto' }}>
+function LayoutLogo({ hardNavigation }: { hardNavigation?: boolean }) {
+  const locale = useLocale() as AppLocale;
+  const content = (
+    <>
       <Box display={{ base: 'inline', md: 'none' }}>
         <NextImage
           src={logoIcon}
@@ -51,6 +55,20 @@ function LayoutLogo() {
       <Box display={{ base: 'none', md: 'inline' }}>
         <NextImage src={logo} alt="itemdb logo" width={175} />
       </Box>
+    </>
+  );
+
+  if (hardNavigation) {
+    return (
+      <a href={localizeInternalHref('/', locale)} style={{ flex: '0 0 auto' }}>
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <Link href="/" style={{ flex: '0 0 auto' }}>
+      {content}
     </Link>
   );
 }
@@ -58,9 +76,11 @@ function LayoutLogo() {
 function LayoutNavMenu({
   mainColor,
   sections,
+  hardNavigation,
 }: {
   mainColor?: string;
   sections: LayoutNavSection[];
+  hardNavigation?: boolean;
 }) {
   return (
     <>
@@ -70,6 +90,7 @@ function LayoutNavMenu({
           bg={section.options?.length ? mainColor : undefined}
           label={section.label}
           href={section.href}
+          hardNavigation={hardNavigation}
         >
           {section.options?.map((option, index) => (
             <DropdownOption
@@ -77,6 +98,7 @@ function LayoutNavMenu({
               label={option.label}
               href={option.href}
               newUntil={option.newUntil}
+              hardNavigation={hardNavigation}
             />
           ))}
         </DropdownButton>
@@ -85,7 +107,13 @@ function LayoutNavMenu({
   );
 }
 
-function LayoutFooterColumns({ columns }: { columns: LayoutFooterColumn[] }) {
+function LayoutFooterColumns({
+  columns,
+  hardNavigation,
+}: {
+  columns: LayoutFooterColumn[];
+  hardNavigation?: boolean;
+}) {
   return (
     <>
       {columns.map((column) => (
@@ -100,6 +128,7 @@ function LayoutFooterColumns({ columns }: { columns: LayoutFooterColumn[] }) {
               isExternal={link.isExternal}
               trackEvent="footer-links"
               trackEventLabel={link.trackEventLabel}
+              hardNavigation={hardNavigation}
             >
               {link.label}
             </MainLink>
@@ -115,11 +144,13 @@ function LayoutFooter({
   byLabel,
   footerColumns,
   footerActions,
+  hardNavigation,
 }: {
   madeInLabel: string;
   byLabel: string;
   footerColumns: LayoutFooterColumn[];
   footerActions: ReactNode;
+  hardNavigation?: boolean;
 }) {
   const rgb = getLayoutFooterGradientRgb();
 
@@ -176,7 +207,7 @@ function LayoutFooter({
           justifyContent="center"
           css={{ '& a:hover': { textDecoration: 'underline' } }}
         >
-          <LayoutFooterColumns columns={footerColumns} />
+          <LayoutFooterColumns columns={footerColumns} hardNavigation={hardNavigation} />
         </Flex>
       </Flex>
     </Flex>
@@ -197,6 +228,7 @@ export function LayoutChrome({
   search,
   auth,
   footerActions,
+  hardNavigation,
 }: LayoutChromeProps) {
   return (
     <Flex flexFlow="column" minH="100vh">
@@ -210,7 +242,7 @@ export function LayoutChrome({
         px={{ base: 2, md: 4 }}
         py={5}
       >
-        <LayoutLogo />
+        <LayoutLogo hardNavigation={hardNavigation} />
         <Flex flex="1 1 auto" justifyContent="center" alignItems="center">
           <Box maxW="650px" h="100%" flex="1">
             {search}
@@ -229,7 +261,11 @@ export function LayoutChrome({
         overflowX="auto"
       >
         <Flex margin="0 auto" maxW="100%" alignItems="center" py={1} gap={{ base: 1, md: 3 }}>
-          <LayoutNavMenu mainColor={mainColor} sections={navSections} />
+          <LayoutNavMenu
+            mainColor={mainColor}
+            sections={navSections}
+            hardNavigation={hardNavigation}
+          />
         </Flex>
       </Flex>
 
@@ -257,6 +293,7 @@ export function LayoutChrome({
         byLabel={byLabel}
         footerColumns={footerColumns}
         footerActions={footerActions}
+        hardNavigation={hardNavigation}
       />
     </Flex>
   );
