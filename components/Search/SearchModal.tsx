@@ -374,9 +374,6 @@ const SearchModal = (props: SearchModalProps) => {
       placement="top"
       size={{ lgDown: 'full', lg: 'lg' }}
       restoreFocus={false}
-      persistentElements={[
-        () => (typeof document !== 'undefined' ? document.querySelector('.contextmenu') : null),
-      ]}
     >
       <Portal>
         <Dialog.Backdrop />

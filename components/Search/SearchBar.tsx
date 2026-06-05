@@ -53,7 +53,7 @@ export const SearchBar = () => {
 
   return (
     <>
-      {isOpen && <SearchModal isOpen={isOpen} onClose={handleClose} />}
+      <SearchModal isOpen={isOpen} onClose={handleClose} />
       <InputGroup
         maxW="700px"
         w="100%"
