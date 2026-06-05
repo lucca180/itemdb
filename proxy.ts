@@ -11,26 +11,13 @@ import {
   verifySiteProof,
 } from '@utils/api-utils';
 import * as Sentry from '@sentry/nextjs';
+import createIntlMiddleware from 'next-intl/middleware';
 import { getCurrentPath } from '@utils/locales';
 import { createForwardedContext, finalizeApiResponse, finalizePageResponse } from '@utils/proxy';
 import { checkSession } from '@utils/redis';
-import type createIntlMiddleware from 'next-intl/middleware';
+import { routing } from './i18n/routing';
 
-type IntlMiddleware = ReturnType<typeof createIntlMiddleware>;
-
-let handleI18nRouting: IntlMiddleware | null = null;
-
-async function getIntlMiddleware() {
-  if (!handleI18nRouting) {
-    const [{ default: createMiddleware }, { routing }] = await Promise.all([
-      import('next-intl/middleware'),
-      import('./i18n/routing'),
-    ]);
-    handleI18nRouting = createMiddleware(routing);
-  }
-
-  return handleI18nRouting;
-}
+const handleI18nRouting = createIntlMiddleware(routing);
 
 const API_SKIPS = {
   GET: [
@@ -60,7 +47,7 @@ export const config = {
   matcher: ['/api/:path*', '/:path*'],
 };
 
-export async function proxy(request: NextRequest) {
+export function proxy(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/_next') || PUBLIC_FILE.test(request.nextUrl.pathname)) {
     return NextResponse.next();
   }
@@ -83,8 +70,10 @@ export async function proxy(request: NextRequest) {
 
   const intlRequest = new NextRequest(request.url, {
     headers: pageRequestHeaders,
+    method: request.method,
   });
-  const intlResponse = (await getIntlMiddleware())(intlRequest);
+
+  const intlResponse = handleI18nRouting(intlRequest);
 
   return finalizePageResponse(intlResponse, { startTime, proofCookie });
 }

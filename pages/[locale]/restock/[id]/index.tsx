@@ -44,6 +44,7 @@ import ShopCard from '@components/Hubs/Restock/ShopCard';
 import { loadTranslation } from '@utils/load-translation';
 import { BsFilter } from 'react-icons/bs';
 import dynamic from 'next/dynamic';
+import { INITIAL_MIN_PROFIT, RESTOCK_FILTER } from '@utils/restock-filters';
 
 const SearchFilterModal = dynamic(() => import('@components/Search/SearchFiltersModal'));
 
@@ -67,8 +68,6 @@ const sortTypes = {
   color: 'color',
   item_id: 'restock-order',
 };
-
-import { INITIAL_MIN_PROFIT, RESTOCK_FILTER } from '@utils/restock-filters';
 
 const RestockShop: NextPageWithLayout<RestockShopPageProps> = (props: RestockShopPageProps) => {
   const t = useTranslations();
