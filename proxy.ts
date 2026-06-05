@@ -11,14 +11,13 @@ import {
   verifySiteProof,
 } from '@utils/api-utils';
 import * as Sentry from '@sentry/nextjs';
-import {
-  getCurrentPath,
-  getLocalizedAppRoute,
-  isValidLocale,
-  type LocalizedAppRoute,
-} from '@utils/locales';
+import createIntlMiddleware from 'next-intl/middleware';
+import { getCurrentPath } from '@utils/locales';
 import { createForwardedContext, finalizeApiResponse, finalizePageResponse } from '@utils/proxy';
 import { checkSession } from '@utils/redis';
+import { routing } from './i18n/routing';
+
+const handleI18nRouting = createIntlMiddleware(routing);
 
 const API_SKIPS = {
   GET: [
@@ -39,21 +38,6 @@ const API_SKIPS = {
 
 const PUBLIC_FILE = /\.(.*)$/;
 
-const APP_ROUTER_LOCALIZED_ROUTES = [
-  {
-    appPath: '/',
-    localizedPath: '/',
-  },
-  {
-    appPath: '/privacy',
-    localizedPath: '/privacy',
-  },
-  {
-    appPath: '/terms',
-    localizedPath: '/terms',
-  },
-] as const satisfies readonly LocalizedAppRoute[];
-
 const skipAPIMiddleware = process.env.SKIP_API_MIDDLEWARE === 'true';
 const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === 'true';
 
@@ -63,7 +47,7 @@ export const config = {
   matcher: ['/api/:path*', '/:path*'],
 };
 
-export async function proxy(request: NextRequest) {
+export function proxy(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/_next') || PUBLIC_FILE.test(request.nextUrl.pathname)) {
     return NextResponse.next();
   }
@@ -79,53 +63,19 @@ export async function proxy(request: NextRequest) {
   }
 
   const startTime = Date.now();
-
-  const locale = request.cookies.get('NEXT_LOCALE')?.value;
-
   const proofCookie = request.cookies.get('itemdb-proof')?.value || '';
-
-  const localizedRoute = getLocalizedAppRoute({
-    pathname: request.nextUrl.pathname,
-    cookieLocale: locale,
-    nextUrlLocale: request.nextUrl.locale,
-    routes: APP_ROUTER_LOCALIZED_ROUTES,
-  });
-  const currentPath = getCurrentPath(
-    request.nextUrl.pathname,
-    request.nextUrl.search,
-    localizedRoute?.currentPath
-  );
+  const currentPath = getCurrentPath(request.nextUrl.pathname, request.nextUrl.search);
   const pageRequestHeaders = new Headers(request.headers);
   pageRequestHeaders.set('x-itemdb-current-path', currentPath);
-  const response = NextResponse.next({
-    request: {
-      headers: pageRequestHeaders,
-    },
+
+  const intlRequest = new NextRequest(request.url, {
+    headers: pageRequestHeaders,
+    method: request.method,
   });
 
-  if (localizedRoute) {
-    const requestHeaders = new Headers(pageRequestHeaders);
-    requestHeaders.set('x-itemdb-locale', localizedRoute.locale);
+  const intlResponse = handleI18nRouting(intlRequest);
 
-    return finalizePageResponse(
-      NextResponse.rewrite(new URL(localizedRoute.appPath, request.url), {
-        request: {
-          headers: requestHeaders,
-        },
-      }),
-      { startTime, proofCookie }
-    );
-  }
-
-  finalizePageResponse(response, { startTime, proofCookie });
-
-  if (!locale || locale === request.nextUrl.locale || !isValidLocale(locale)) return response;
-
-  const redirectResponse = NextResponse.redirect(
-    new URL(`/${locale}${request.nextUrl.pathname}${request.nextUrl.search}`, request.url)
-  );
-
-  return redirectResponse;
+  return finalizePageResponse(intlResponse, { startTime, proofCookie });
 }
 
 // ---------- API Middleware ---------- //

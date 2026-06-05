@@ -1,7 +1,7 @@
 import { ChevronDownIcon } from '@utils/theme/chakraIcons';
 import { Menu, IconButton } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
-import Link from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import ClientPortal from '@components/Utils/ClientPortal';
 
 const SearchMenu = () => {
@@ -28,9 +28,9 @@ const SearchMenu = () => {
               _hover={{ bg: 'blackAlpha.400' }}
               cursor="pointer"
             >
-              <Link href="/search" prefetch={false}>
+              <MainLink href="/search" prefetch={false}>
                 {t('Layout.advanced-search')}
-              </Link>
+              </MainLink>
             </Menu.Item>
             <Menu.Item
               value="official-lists"
@@ -38,9 +38,9 @@ const SearchMenu = () => {
               _hover={{ bg: 'blackAlpha.400' }}
               cursor="pointer"
             >
-              <Link href="/lists/official" prefetch={false}>
+              <MainLink href="/lists/official" prefetch={false}>
                 {t('Layout.official-lists')}
-              </Link>
+              </MainLink>
             </Menu.Item>
           </Menu.Content>
         </Menu.Positioner>

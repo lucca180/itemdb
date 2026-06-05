@@ -1,19 +1,18 @@
-import { cookies, headers } from 'next/headers';
+import { hasLocale } from 'next-intl';
 import { getRequestConfig } from 'next-intl/server';
-import { DEFAULT_LOCALE, isValidLocale } from '@utils/locales';
+import { headers } from 'next/headers';
+import { routing } from './routing';
+import { getPathLocale } from '@utils/locales';
+
 const TIME_ZONE = 'America/Los_Angeles';
 
-export default getRequestConfig(async () => {
+export default getRequestConfig(async ({ requestLocale }) => {
+  const requested = await requestLocale;
   const requestHeaders = await headers();
-  const cookieStore = await cookies();
-
-  const headerLocale = requestHeaders.get('x-itemdb-locale');
-  const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value;
-  const locale = isValidLocale(headerLocale)
-    ? headerLocale
-    : isValidLocale(cookieLocale)
-      ? cookieLocale
-      : DEFAULT_LOCALE;
+  const pathLocale = getPathLocale(requestHeaders.get('x-itemdb-current-path') ?? '/');
+  const locale = hasLocale(routing.locales, requested)
+    ? requested
+    : (pathLocale ?? routing.defaultLocale);
 
   return {
     locale,

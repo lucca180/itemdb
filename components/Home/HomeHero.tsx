@@ -1,5 +1,5 @@
 import { Box, Flex, Heading, Link as ChakraLink } from '@chakra-ui/react';
-import Link from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import NextImage from 'next/image';
 import type { ReactNode } from 'react';
 import logo from '@assets/logo_white_compressed.webp';
@@ -58,9 +58,9 @@ export function HomeHero({ title, highlightQuery, safetyLinkLabel }: HomeHeroPro
       <Heading as="h1" unstyled mt={4} fontSize="1rem" fontWeight="bold" lineHeight={1.5}>
         {renderHighlightedText(title, highlightQuery)}{' '}
         <ChakraLink asChild color="gray.400" _hover={{ textDecoration: 'underline' }}>
-          <Link href="/faq" prefetch={false}>
+          <MainLink href="/faq" prefetch={false}>
             {safetyLinkLabel}
-          </Link>
+          </MainLink>
         </ChakraLink>
       </Heading>
     </Flex>

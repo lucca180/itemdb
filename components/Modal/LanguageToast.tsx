@@ -1,11 +1,10 @@
 import { Flex, Text, Button } from '@chakra-ui/react';
 import { useToast } from '@utils/theme/toast';
 import { getCookies } from 'cookies-next';
-import { useRouter } from 'next/compat/router';
 import { useEffect } from 'react';
-import { useTranslations } from 'next-intl';
-import { isValidLocale } from '@utils/locales';
-import { getLocalizedPath } from '@components/Layout/layoutData';
+import { useLocale, useTranslations } from 'next-intl';
+import { isValidLocale, type AppLocale } from '@utils/locales';
+import { usePathname, useRouter } from '@i18n/navigation';
 
 export type LanguageToastProps = {
   saveLang: (prefLang: string) => Promise<void>;
@@ -16,14 +15,10 @@ const LanguageToast = (props: LanguageToastProps) => {
   const t = useTranslations();
   const toast = useToast();
   const router = useRouter();
+  const pathname = usePathname();
+  const locale = useLocale();
 
   const handleAction = async (action: 'dismiss' | 'change', prefLang: string) => {
-    const pathname = router?.pathname ?? window.location.pathname;
-    const asPath =
-      router?.asPath ??
-      `${window.location.pathname}${window.location.search}${window.location.hash}`;
-    const query = router?.query ?? {};
-
     if (action === 'dismiss') {
       toast.update('language-toast', {
         id: 'language-toast',
@@ -32,15 +27,14 @@ const LanguageToast = (props: LanguageToastProps) => {
         isClosable: true,
       });
 
-      prefLang = router?.locale || getLocaleFromPath(asPath);
+      prefLang = getLocaleFromPath(window.location.pathname);
 
       await saveLang(prefLang);
     } else {
       toast.close('language-toast');
 
       await saveLang(prefLang);
-      if (router) router.push({ pathname, query }, asPath, { locale: prefLang });
-      else window.location.assign(getLocalizedPath(asPath, prefLang));
+      router.replace(pathname, { locale: prefLang as AppLocale });
     }
   };
 
@@ -62,8 +56,7 @@ const LanguageToast = (props: LanguageToastProps) => {
       }
     }
 
-    if (!prefLang || (router?.locale ?? getLocaleFromPath(window.location.pathname)) === prefLang)
-      return;
+    if (!prefLang || locale === prefLang) return;
 
     toast({
       id: 'language-toast',
@@ -77,10 +70,8 @@ const LanguageToast = (props: LanguageToastProps) => {
   };
 
   useEffect(() => {
-    if (router && !router.isReady) return;
-
     checkLanguage();
-  }, [router?.isReady]);
+  }, []);
 
   return null;
 };

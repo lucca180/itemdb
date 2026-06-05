@@ -1,6 +1,6 @@
 import { Alert, Button, Text } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import React from 'react';
 
 const MissingInfoCard = () => {
@@ -24,7 +24,7 @@ const MissingInfoCard = () => {
         <Alert.Description>
           <Text fontSize="sm">{t('ItemPage.missingInfoDescription')}</Text>
           <Button asChild mt={2} size="sm">
-            <NextLink href="/contribute">{t('General.learnHelp')}!</NextLink>
+            <MainLink href="/contribute">{t('General.learnHelp')}!</MainLink>
           </Button>
         </Alert.Description>
       </Alert.Content>

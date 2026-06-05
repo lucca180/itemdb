@@ -2,7 +2,7 @@ import { Flex, Link, Text, Image } from '@chakra-ui/react';
 import icon from '../../../public/logo_icon.svg';
 import NextImage from 'next/image';
 import Color from 'color';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 
 type Props = {
   color?: string;
@@ -31,35 +31,37 @@ const SearchCard = (props: Props) => {
       ml="40px"
       bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.75) 0%)`}
     >
-      <Link as={NextLink} href={link} _hover={{ textDecoration: 'none' }}>
-        <Flex
-          position="relative"
-          w={{ base: '100px', sm: '100px' }}
-          h={{ base: '100px', sm: '100px' }}
-          ml="-50px"
-          bg="gray.700"
-          bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, .85) 0%)`}
-          flex="0 0 auto"
-          borderRadius="md"
-          overflow="hidden"
-          justifyContent="center"
-          alignItems="center"
-        >
-          {!coverURL && (
-            <NextImage src={icon} width={75} style={{ opacity: 0.85 }} alt={'List Cover'} />
-          )}
+      <Link asChild _hover={{ textDecoration: 'none' }}>
+        <MainLink href={link} prefetch={false}>
+          <Flex
+            position="relative"
+            w={{ base: '100px', sm: '100px' }}
+            h={{ base: '100px', sm: '100px' }}
+            ml="-50px"
+            bg="gray.700"
+            bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, .85) 0%)`}
+            flex="0 0 auto"
+            borderRadius="md"
+            overflow="hidden"
+            justifyContent="center"
+            alignItems="center"
+          >
+            {!coverURL && (
+              <NextImage src={icon} width={75} style={{ opacity: 0.85 }} alt={'List Cover'} />
+            )}
 
-          {coverURL && (
-            <Image
-              src={coverURL}
-              w={{ base: '80px', sm: '80px' }}
-              h={{ base: '80px', sm: '80px' }}
-              alt={'List Cover'}
-              objectFit="cover"
-              borderRadius="md"
-            />
-          )}
-        </Flex>
+            {coverURL && (
+              <Image
+                src={coverURL}
+                w={{ base: '80px', sm: '80px' }}
+                h={{ base: '80px', sm: '80px' }}
+                alt={'List Cover'}
+                objectFit="cover"
+                borderRadius="md"
+              />
+            )}
+          </Flex>
+        </MainLink>
       </Link>
       <Flex flexFlow="column" gap={2}>
         <Text
@@ -67,8 +69,10 @@ const SearchCard = (props: Props) => {
           lineClamp={2}
           color={color.isLight() ? 'blackAlpha.800' : undefined}
         >
-          <Link as={NextLink} href={link}>
-            {title}
+          <Link asChild>
+            <MainLink href={link} prefetch={false}>
+              {title}
+            </MainLink>
           </Link>
         </Text>
         <Text

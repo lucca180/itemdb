@@ -15,7 +15,7 @@ import { ListItemInfo, UserList } from '../../types';
 import icon from '../../public/logo_icon.svg';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import Color from 'color';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import { useMemo } from 'react';
 import { useFormatter, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
@@ -105,7 +105,7 @@ const UserListCard = (props: Props) => {
           data-umami-event-label={utm_content ? list.slug : undefined}
           _hover={{ textDecoration: 'none' }}
         >
-          <NextLink href={getListLink(list)} prefetch={false}>
+          <MainLink href={getListLink(list)} prefetch={false}>
             <Flex
               position="relative"
               w={{ base: '100px', sm: isSmall ? '100px' : '150px' }}
@@ -136,7 +136,7 @@ const UserListCard = (props: Props) => {
                 />
               )}
             </Flex>
-          </NextLink>
+          </MainLink>
         </Link>
         <Flex flexFlow="column" gap={2} w="100%">
           <HStack justifyContent={'space-between'} alignItems={'flex-start'}>
@@ -148,9 +148,9 @@ const UserListCard = (props: Props) => {
               fontWeight="bold"
               lineClamp={2}
             >
-              <NextLink href={getListLink(list)} prefetch={false}>
+              <MainLink href={getListLink(list)} prefetch={false}>
                 {list.name}
-              </NextLink>
+              </MainLink>
             </Link>
             <HStack>
               {list.visibility !== 'private' && (
@@ -205,9 +205,9 @@ const UserListCard = (props: Props) => {
             )}
             {list.official && (
               <Badge asChild colorPalette="blue" variant="solid">
-                <NextLink href="/lists/official" prefetch={false}>
+                <MainLink href="/lists/official" prefetch={false}>
                   ✓ {t('General.official')}
-                </NextLink>
+                </MainLink>
               </Badge>
             )}
 

@@ -15,7 +15,7 @@ import { useToast } from '@utils/theme/toast';
 import React, { useMemo } from 'react';
 import { ItemData, ObligatoryUserList } from '../../types';
 import CardBase from '../Card/CardBase';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import Image from 'next/image';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import dynamic from 'next/dynamic';
@@ -125,7 +125,7 @@ const ItemMyLists = (props: Props) => {
               <List.Item key={i}>
                 <Flex alignItems={'center'} gap={2}>
                   <Link asChild whiteSpace="nowrap">
-                    <NextLink
+                    <MainLink
                       href={`/lists/${list.owner.username}/${list.slug ?? list.internal_id}`}
                     >
                       <Tag.Root
@@ -149,7 +149,7 @@ const ItemMyLists = (props: Props) => {
                           )}
                         </Tag.Label>
                       </Tag.Root>
-                    </NextLink>
+                    </MainLink>
                   </Link>
                   <Flex flex="1" flexFlow={'row'} gap={1}>
                     <HStack gap={1}>

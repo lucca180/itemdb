@@ -1,0 +1,163 @@
+import { getLocaleStaticPaths, resolvePageLocale } from '@utils/locales';
+import {
+  // Alert,
+  // AlertDescription,
+  // AlertIcon,
+  Box,
+  Center,
+  Flex,
+  Heading,
+  Image,
+  Link,
+  Text,
+} from '@chakra-ui/react';
+import NextImage from 'next/image';
+import Layout from '@components/Layout';
+
+import Banner from '@assets/hub/tvw-banner.png';
+
+import { ReactElement } from 'react';
+import { loadTranslation } from '@utils/load-translation';
+import { UserList } from '@types';
+import UserListCard from '@components/UserLists/ListCard';
+import { getTVWLists } from '@pages/api/v1/beta/trending';
+
+type TheVoidWithinHubProps = {
+  messages: any;
+  locale: string;
+  lists: UserList[];
+};
+
+const TheVoidWithinHub = (props: TheVoidWithinHubProps) => {
+  const { lists } = props;
+
+  const listGroups = lists.reduce((groups: { [key: string]: UserList[] }, list) => {
+    const groupKey = list.officialTag[1] || '';
+
+    if (!groups[groupKey]) {
+      groups[groupKey] = [];
+    }
+
+    groups[groupKey].push(list);
+    return groups;
+  }, {});
+
+  return (
+    <>
+      <Box
+        position="absolute"
+        h="650px"
+        left="0"
+        width="100%"
+        bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(112, 62, 215,.5) 70%)`}
+        zIndex={-1}
+      />
+      <Center position={'relative'} mt={3} mb={6}>
+        <Link href="https://www.neopets.com/tvw/" target="_blank" rel="noreferrer">
+          <Image
+            as={NextImage}
+            //@ts-expect-error chakra-ui types are not compatible with next/image
+            src={Banner}
+            quality={100}
+            alt="The Void Within Banner"
+            borderRadius={'md'}
+            boxShadow="lg"
+          />
+        </Link>
+      </Center>
+
+      <Center
+        flexFlow="column"
+        gap={5}
+        css={{ 'h1, h2, h3, b': { textShadow: '0 0 10px #f3a4ff' } }}
+      >
+        <Flex flexFlow={'column'} textAlign={'center'} gap={2} mb={5}>
+          <Heading color="whiteAlpha.900">The Void Within</Heading>
+          <Text fontSize="md" color="whiteAlpha.800" maxW="1000px">
+            Nyx and the Gang are back into Neopia’s epic struggle against the immutable, grey, and
+            shadowy shades threatening to overtake the planet in <b>The Void Within</b> Neopets
+            Plot!
+          </Text>
+        </Flex>
+        <Center flexFlow="column" gap={1}>
+          <Heading as="h2" size="lg" color="whiteAlpha.900">
+            Official Lists
+          </Heading>
+          <Text fontSize="sm" color="whiteAlpha.800" maxW="1000px">
+            With itemdb you can find the best prizes and guides to help you get the best items from
+            The Void Within plot
+          </Text>
+        </Center>
+        {Object.keys(listGroups)
+          .sort()
+          .map((groupKey) => (
+            <Center flexFlow="column" gap={1} key={groupKey} w="100%">
+              {groupKey && (
+                <Heading as="h3" size="md" color="whiteAlpha.900" mb={3} mt={5}>
+                  {groupKey}
+                </Heading>
+              )}
+              <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
+                {listGroups[groupKey].map((list) => (
+                  <UserListCard key={list.slug} list={list} />
+                ))}
+              </Flex>
+            </Center>
+          ))}
+      </Center>
+    </>
+  );
+};
+
+export default TheVoidWithinHub;
+
+export async function getStaticProps(context: any) {
+  const locale = resolvePageLocale(context.params?.locale as string);
+  const lists = await getTVWLists(3000);
+
+  return {
+    props: {
+      lists: lists,
+      messages: await loadTranslation(locale as string, 'hub/the-void-within'),
+      locale: locale,
+    },
+    revalidate: 300,
+  };
+}
+
+TheVoidWithinHub.getLayout = function getLayout(page: ReactElement, props: { locale: string }) {
+  const { locale } = props;
+  // const t = createTranslator({ messages: props.messages, locale: props.locale });
+
+  let canonical = 'https://itemdb.com.br/hub/the-void-within';
+  if (locale && locale !== 'en') canonical = `https://itemdb.com.br/${locale}/hub/the-void-within`;
+
+  return (
+    <Layout
+      SEO={{
+        canonical: canonical,
+        title: 'The Void Within Plot Prize Guide',
+        description:
+          "Nyx and the Gang are back into Neopia's epic struggle against the immutable, grey, and shadowy shades threatening to overtake the planet in The Void Within Neopets Plot! Find the best prizes and guides to help you get the best many neopoints on The Void Within plot",
+        themeColor: '#8564df',
+        openGraph: {
+          images: [
+            {
+              url: 'https://images.neopets.com/plots/tvw/rewards/images/achievements/94n7e5ffbi.png',
+              width: 150,
+              height: 150,
+              alt: 'The Void Within Plot Paint Brush',
+            },
+          ],
+        },
+      }}
+      mainColor="#8564df"
+    >
+      {page}
+    </Layout>
+  );
+};
+
+export async function getStaticPaths() {
+  return getLocaleStaticPaths();
+}

@@ -1,14 +1,44 @@
 import type { ReactNode } from 'react';
+
 import { Flex, Text } from '@chakra-ui/react';
+
 import Image from 'next/image';
-import Link from 'next/link';
-import { createTranslator } from 'next-intl';
+
+import { getTranslations } from 'next-intl/server';
+
 import { connection } from 'next/server';
-import { appLoadTranslation } from '@utils/load-translation';
+
 import { getCurrentSiteAlert } from '@utils/siteAlert';
+
 import type { SiteAlertConfig } from '@utils/siteAlert';
 
-export function SiteAlertBar({ alert, children }: { alert: SiteAlertConfig; children: ReactNode }) {
+import { getLocalizedHref, isLocalizableHref, type AppLocale } from '@utils/locales';
+
+function getAlertHref(link: string, locale: AppLocale) {
+  if (!isLocalizableHref(link)) {
+    return link;
+  }
+
+  return getLocalizedHref(link, locale);
+}
+
+export function SiteAlertBar({
+  alert,
+
+  children,
+
+  linkHref,
+}: {
+  alert: SiteAlertConfig;
+
+  children: ReactNode;
+
+  linkHref?: string;
+}) {
+  const href = linkHref ?? alert.link;
+
+  const isExternal = !isLocalizableHref(href);
+
   return (
     <Flex bg={alert.bg}>
       <Flex
@@ -22,16 +52,18 @@ export function SiteAlertBar({ alert, children }: { alert: SiteAlertConfig; chil
         px={1}
       >
         {alert.img && (
-          <Link
-            prefetch={false}
-            href={alert.link}
+          <a
+            href={href}
             style={{ display: 'inline-flex' }}
             data-umami-event="site-alert-click"
             data-umami-event-label={alert.message}
+            target={isExternal ? '_blank' : undefined}
+            rel={isExternal ? 'noopener noreferrer' : undefined}
           >
             <Image src={alert.img.src} width={alert.img.w} height={alert.img.h} alt="alert icon" />
-          </Link>
+          </a>
         )}
+
         <Text as="p" color={alert.color}>
           {children}
         </Text>
@@ -46,26 +78,34 @@ type AppSiteAlertProps = {
 
 export async function AppSiteAlert({ locale }: AppSiteAlertProps) {
   await connection();
-  const messages = await appLoadTranslation(locale);
-  const t = createTranslator({ messages, locale });
+
+  const t = await getTranslations({ locale });
+
   const alert = getCurrentSiteAlert();
 
+  const appLocale = locale as AppLocale;
+
+  const linkHref = getAlertHref(alert.link, appLocale);
+
+  const isExternal = !isLocalizableHref(linkHref);
+
   return (
-    <SiteAlertBar alert={alert}>
+    <SiteAlertBar alert={alert} linkHref={linkHref}>
       {!!alert.message &&
         t.rich(`SiteAlert.${alert.message}`, {
           b: (children) => <b>{children}</b>,
+
           Link: (children) => (
-            <Link
-              prefetch={false}
-              href={alert.link}
+            <a
+              href={linkHref}
               style={{ fontWeight: 'bold' }}
-              target={alert.link.startsWith('http') ? '_blank' : undefined}
+              target={isExternal ? '_blank' : undefined}
+              rel={isExternal ? 'noopener noreferrer' : undefined}
               data-umami-event="site-alert-click"
               data-umami-event-label={alert.message}
             >
               {children}
-            </Link>
+            </a>
           ),
         })}
     </SiteAlertBar>

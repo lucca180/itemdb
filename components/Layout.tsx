@@ -2,7 +2,8 @@
 
 import { ReactNode, useEffect } from 'react';
 import { useRouter } from 'next/compat/router';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { getLocalizedHref, getPathLocale, stripLocalePrefix, type AppLocale } from '@utils/locales';
 import { NextSeo, NextSeoProps } from 'next-seo';
 import dynamic from 'next/dynamic';
 import { useVersionCheck } from '@utils/versionCheck';
@@ -28,6 +29,7 @@ type Props = {
 const Layout = (props: Props) => {
   useVersionCheck();
   const t = useTranslations();
+  const locale = useLocale() as AppLocale;
   const router = useRouter();
   const { user } = useAuth();
   const currentPath =
@@ -47,9 +49,17 @@ const Layout = (props: Props) => {
   const checkLogin = () => {
     if (!user) return;
 
-    if (!user.username && !['/', '/login'].includes(currentPath)) {
-      if (router) return router.push('/login');
-      window.location.assign('/login');
+    const internalPath = (() => {
+      const pathOnly = currentPath.split('?')[0].split('#')[0];
+      const pathLocale = getPathLocale(pathOnly);
+      if (!pathLocale) return pathOnly;
+      return stripLocalePrefix(pathOnly, pathLocale);
+    })();
+
+    if (!user.username && !['/', '/login'].includes(internalPath)) {
+      const loginPath = getLocalizedHref('/login', locale);
+      if (router) return router.push(loginPath);
+      window.location.assign(loginPath);
     }
   };
 

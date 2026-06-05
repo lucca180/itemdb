@@ -1,6 +1,6 @@
 import { Badge, Flex, Link, Text, Box, HStack } from '@chakra-ui/react';
 import Color from 'color';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import { ShopInfo } from '../../../types';
 import { slugify } from '../../../utils/utils';
 import NextImage from 'next/image';
@@ -34,28 +34,25 @@ const ShopCard = (props: Props) => {
       flexFlow={'column'}
     >
       <Box mt="-40px">
-        <Link as={NextLink} href={`/restock/${slugify(shop.name)}`}>
-          <NextImage
-            width={325}
-            height={108.33}
-            src={`https://images.neopets.com/shopkeepers/w${shop.id}.gif`}
-            alt={`${shop.name} thumbnail`}
-            style={{ borderRadius: '0.375rem' }}
-            // boxShadow={'md'}
-          />
+        <Link asChild _hover={{ textDecoration: 'none' }}>
+          <MainLink href={`/restock/${slugify(shop.name)}`} prefetch={false}>
+            <NextImage
+              width={325}
+              height={108.33}
+              src={`https://images.neopets.com/shopkeepers/w${shop.id}.gif`}
+              alt={`${shop.name} thumbnail`}
+              style={{ borderRadius: '0.375rem' }}
+            />
+          </MainLink>
         </Link>
       </Box>
       <Flex flexFlow={'column'} gap={3} justifyContent="center" flex="1" px={{ base: 2, md: 3 }}>
-        <Link
-          as={NextLink}
-          asChild
-          href={`/restock/${slugify(shop.name)}`}
-          _hover={{ textDecoration: 'none' }}
-          display="block"
-        >
-          <Text textAlign={'center'} fontSize="xl" fontWeight={'bold'}>
-            {shop.name}
-          </Text>
+        <Link asChild _hover={{ textDecoration: 'none' }} display="block">
+          <MainLink href={`/restock/${slugify(shop.name)}`} prefetch={false}>
+            <Text textAlign={'center'} fontSize="xl" fontWeight={'bold'}>
+              {shop.name}
+            </Text>
+          </MainLink>
         </Link>
         <HStack justifyContent={'center'} gap={2}>
           <Badge>{shop.category}</Badge>

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import type { NextSeoProps } from 'next-seo';
+import { getPathname } from '@i18n/navigation';
 
 export type ItemDbLocale = 'en' | 'pt';
 
@@ -54,5 +55,5 @@ export function normalizeItemDbLocale(locale: string): ItemDbLocale {
 }
 
 export function getItemDbCanonical(pathname: `/${string}`, locale: ItemDbLocale) {
-  return `https://itemdb.com.br${locale === 'pt' ? '/pt' : ''}${pathname}`;
+  return `https://itemdb.com.br${getPathname({ locale, href: pathname })}`;
 }

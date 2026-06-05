@@ -12,11 +12,6 @@ const nextConfig: NextConfig = {
   compress: false, // cloudflare does it for us
   productionBrowserSourceMaps: true,
   skipProxyUrlNormalize: true,
-  i18n: {
-    locales: ['en', 'pt'],
-    defaultLocale: 'en',
-    localeDetection: false,
-  },
   images: {
     qualities: [100, 90],
     remotePatterns: [
@@ -50,6 +45,7 @@ const nextConfig: NextConfig = {
   distDir: process.env.BUILD_DIR || '.next',
   reactCompiler: true,
   experimental: {
+    globalNotFound: true,
     webpackBuildWorker: true,
     parallelServerCompiles: true,
     largePageDataBytes: 512 * 1000,

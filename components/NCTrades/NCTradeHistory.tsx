@@ -11,12 +11,12 @@ import {
   Link,
   Button,
 } from '@chakra-ui/react';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import { ItemData, NCTradeReport, LebronTrade } from '../../types';
 import { useFormatter, useTranslations } from 'next-intl';
 import { UTCDate } from '@date-fns/utc';
 import { useMemo } from 'react';
-import { tradeReportToLebronTrade } from '../../pages/mall/report';
+import { tradeReportToLebronTrade } from '@pages/[locale]/mall/report';
 
 type Props = {
   item: ItemData;
@@ -58,9 +58,9 @@ const NCTradeHistory = (props: Props) => {
           {t('ItemPage.no-trade-history')}.
         </Text>
         <Button asChild size={'xs'}>
-          <NextLink prefetch={false} href="/mall/report">
+          <MainLink prefetch={false} href="/mall/report">
             {t('ItemPage.report-your-nc-trades')}
-          </NextLink>
+          </MainLink>
         </Button>
       </Center>
     );
@@ -74,8 +74,10 @@ const NCTradeHistory = (props: Props) => {
         <Text fontSize="xs" textAlign="center" mt={2} color="whiteAlpha.600">
           {t.rich('ItemPage.owls-credits', {
             Link: (chunks) => (
-              <Link href="/articles/lebron" target="_blank" color="whiteAlpha.800">
-                {chunks}
+              <Link asChild target="_blank" color="whiteAlpha.800">
+                <MainLink href="/articles/lebron" target="_blank">
+                  {chunks}
+                </MainLink>
               </Link>
             ),
           })}

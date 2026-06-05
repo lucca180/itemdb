@@ -1,6 +1,6 @@
 import { Button, Link, Icon, Dialog, CloseButton, Portal } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
 export type LastSeenModalProps = {
@@ -34,7 +34,7 @@ export default function LastSeenModal(props: LastSeenModalProps) {
               {t.rich('ItemPage.last-seen-works', {
                 Link: (chunks) => (
                   <Link asChild target="_blank" color={'blue.200'}>
-                    <NextLink href="/contribute">{chunks}</NextLink>
+                    <MainLink href="/contribute">{chunks}</MainLink>
                   </Link>
                 ),
               })}
@@ -46,7 +46,7 @@ export default function LastSeenModal(props: LastSeenModalProps) {
               {t.rich('ItemPage.last-seen-works-3', {
                 Privacy: (chunks) => (
                   <Link asChild target="_blank" color={'blue.200'}>
-                    <NextLink href="/privacy">{chunks}</NextLink>
+                    <MainLink href="/privacy">{chunks}</MainLink>
                   </Link>
                 ),
                 Source: (chunks) => (
@@ -66,10 +66,10 @@ export default function LastSeenModal(props: LastSeenModalProps) {
                 {t('General.close')}
               </Button>
               <Button asChild size="sm" colorPalette="whiteAlpha" variant="subtle" ml={3}>
-                <NextLink href="/contribute" target="_blank">
+                <MainLink href="/contribute" target="_blank">
                   {t('General.contribute-with-itemdb')}{' '}
                   <Icon boxSize="12px" as={FaExternalLinkAlt} ml={1} />
-                </NextLink>
+                </MainLink>
               </Button>
             </Dialog.Footer>
           </Dialog.Content>

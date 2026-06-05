@@ -1,7 +1,10 @@
-import { useRouter } from 'next/compat/router';
+'use client';
+
 import type { HTMLAttributeAnchorTarget } from 'react';
 import React from 'react';
-import NextLink from 'next/link';
+import { Link, useRouter } from '@i18n/navigation';
+import { useLocale } from 'next-intl';
+import { isLocalizableHref, localizeInternalHref, type AppLocale } from '@utils/locales';
 
 export interface MainLinkProps {
   href?: string;
@@ -13,7 +16,9 @@ export interface MainLinkProps {
   trackEventLabel?: string;
   isExternal?: boolean;
   style?: React.CSSProperties;
+  hardNavigation?: boolean;
 }
+
 const MainLink: React.FC<MainLinkProps> = React.forwardRef(
   (
     {
@@ -26,10 +31,15 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
       trackEventLabel,
       isExternal,
       style,
+      hardNavigation,
     }: MainLinkProps,
     ref: React.Ref<HTMLAnchorElement> | undefined
   ) => {
     const router = useRouter();
+    const locale = useLocale() as AppLocale;
+    const internalPath = href || '/';
+    const resolvedHref = localizeInternalHref(href, locale, { isExternal });
+    const isInternal = isLocalizableHref(internalPath, isExternal);
 
     const handleTracking = () => {
       if (trackEvent) {
@@ -45,37 +55,53 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
           handleTracking();
 
           if (isExternal || target === '_blank') {
-            return window.open(href, '_blank');
+            return window.open(isExternal ? href : resolvedHref, '_blank');
           }
 
-          if (router) return await router.push(href);
-          window.location.assign(href);
+          await router.push(internalPath);
           return;
         }
       },
-      [router, href, isExternal, handleTracking, target]
+      [router, href, internalPath, isExternal, handleTracking, target, resolvedHref]
     );
 
-    if (prefetch)
+    if (isExternal || !isInternal || hardNavigation) {
       return (
-        <NextLink
+        <a
           ref={ref}
           className={className}
           target={target || (isExternal ? '_blank' : undefined)}
-          href={href || '/'}
+          href={resolvedHref}
+          onClick={trackEvent ? handleTracking : undefined}
+          style={style}
+          rel={isExternal ? 'noopener noreferrer' : undefined}
+        >
+          {children}
+        </a>
+      );
+    }
+
+    if (prefetch) {
+      return (
+        <Link
+          ref={ref}
+          className={className}
+          target={target}
+          href={internalPath}
           onClick={handleTracking}
           style={style}
         >
           {children}
-        </NextLink>
+        </Link>
       );
+    }
 
     return (
       <a
         ref={ref}
         className={className}
-        target={target || (isExternal ? '_blank' : undefined)}
-        href={href || '/'}
+        target={target}
+        href={resolvedHref}
         onClick={handleClick}
         style={style}
       >

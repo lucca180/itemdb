@@ -37,7 +37,7 @@ import axios, { AxiosRequestConfig } from 'axios';
 import { SaleStatusModalProps } from '../Modal/SaleStatusModal';
 import { FaFlag } from 'react-icons/fa';
 import { differenceInCalendarDays } from 'date-fns';
-import Link from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import HeadingLine from '../Utils/HeadingLine';
 
 import AuctionIcon from '../../public/icons/auction.png';
@@ -536,32 +536,30 @@ const HelpNeeded = (props: HelpNeededProps) => {
           <HStack justifyContent={'center'}>
             {!!helpData.needPricing && (
               <Button asChild size="sm">
-                <Link
+                <MainLink
                   href={`/feedback/trades?target=${item.name}`}
                   target="_blank"
-                  rel="noreferrer"
-                  data-umami-event="help-needed"
-                  data-umami-event-label="price-trades"
+                  trackEvent="help-needed"
+                  trackEventLabel="price-trades"
                 >
                   {t('Feedback.price-x-trade-lots', {
                     x: helpData.needPricing,
                   })}
-                </Link>
+                </MainLink>
               </Button>
             )}
             {!!helpData.needVoting && (
               <Button asChild size="sm">
-                <Link
+                <MainLink
                   href={`/feedback/vote?target=${item.name}`}
                   target="_blank"
-                  rel="noreferrer"
-                  data-umami-event="help-needed"
-                  data-umami-event-label="vote-suggestions"
+                  trackEvent="help-needed"
+                  trackEventLabel="vote-suggestions"
                 >
                   {t('Feedback.vote-x-suggestions', {
                     x: helpData.needVoting,
                   })}
-                </Link>
+                </MainLink>
               </Button>
             )}
           </HStack>

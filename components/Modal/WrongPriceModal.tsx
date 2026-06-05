@@ -13,7 +13,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import axios from 'axios';
 import router from 'next/router';
 import { useState } from 'react';
@@ -103,12 +103,12 @@ export default function WrongPriceModal(props: WrongPriceModalProps) {
                           <List.Root as="ul" ps={6} gap={2}>
                             <List.Item>
                               <Link asChild>
-                                <NextLink
+                                <MainLink
                                   prefetch={false}
                                   href={`/feedback/trades?target=${item.name}`}
                                 >
                                   {t('ItemPage.waiting-pricing')}
-                                </NextLink>
+                                </MainLink>
                               </Link>{' '}
                               -{' '}
                               {t('ItemPage.x-entries', { x: data?.waitingTrades.needPricing ?? 0 })}
@@ -118,12 +118,12 @@ export default function WrongPriceModal(props: WrongPriceModalProps) {
                             </List.Item>
                             <List.Item>
                               <Link asChild>
-                                <NextLink
+                                <MainLink
                                   href={`/feedback/vote?target=${item.name}`}
                                   prefetch={false}
                                 >
                                   {t('ItemPage.waiting-votes')}
-                                </NextLink>
+                                </MainLink>
                               </Link>{' '}
                               -{' '}
                               {t('ItemPage.x-entries', { x: data?.waitingTrades.needVoting ?? 0 })}
@@ -172,7 +172,7 @@ export default function WrongPriceModal(props: WrongPriceModalProps) {
                     {t.rich('ItemPage.wrongPrice-2', {
                       Link: (chunk) => (
                         <Link asChild>
-                          <NextLink href="/contribute">{chunk}</NextLink>
+                          <MainLink href="/contribute">{chunk}</MainLink>
                         </Link>
                       ),
                     })}
@@ -187,16 +187,16 @@ export default function WrongPriceModal(props: WrongPriceModalProps) {
                     {t.rich('ItemPage.wrongPrice-5', {
                       Link1: (chunk) => (
                         <Link asChild>
-                          <NextLink prefetch={false} href={`/feedback/trades?target=${item.name}`}>
+                          <MainLink prefetch={false} href={`/feedback/trades?target=${item.name}`}>
                             {chunk}
-                          </NextLink>
+                          </MainLink>
                         </Link>
                       ),
                       Link2: (chunk) => (
                         <Link asChild>
-                          <NextLink href={`/feedback/vote?target=${item.name}`} prefetch={false}>
+                          <MainLink href={`/feedback/vote?target=${item.name}`} prefetch={false}>
                             {chunk}
-                          </NextLink>
+                          </MainLink>
                         </Link>
                       ),
                     })}

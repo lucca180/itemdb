@@ -1,6 +1,6 @@
 import { Flex, Link, Image, Badge, HStack, Text } from '@chakra-ui/react';
 import { ItemData, ItemRestockData } from '../../../types';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import Color from 'color';
 import { useFormatter, useTranslations } from 'next-intl';
 
@@ -18,7 +18,7 @@ const RestockHistoryCard = (props: Props) => {
 
   return (
     <Link asChild _hover={{ textDecoration: 'none' }}>
-      <NextLink prefetch={false} href={'/item/' + (item.slug ?? item.internal_id)}>
+      <MainLink prefetch={false} href={'/item/' + (item.slug ?? item.internal_id)}>
         <Flex
           bg="gray.700"
           p={2}
@@ -54,7 +54,7 @@ const RestockHistoryCard = (props: Props) => {
             </Text>
           </Flex>
         </Flex>
-      </NextLink>
+      </MainLink>
     </Link>
   );
 };

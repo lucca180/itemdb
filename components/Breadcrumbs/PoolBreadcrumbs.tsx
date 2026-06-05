@@ -1,8 +1,7 @@
-import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/router';
+import { useLocale, useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { Breadcrumbs } from './Breadcrumbs';
-import { PetColorData } from '../../pages/tools/rainbow-pool/[[...slug]]';
+import { PetColorData } from '@pages/[locale]/tools/rainbow-pool/[[...slug]]';
 
 type PoolBreadcrumbsProps = {
   petColorData: PetColorData | null;
@@ -11,7 +10,7 @@ type PoolBreadcrumbsProps = {
 export const PoolBreadcrumbs = (props: PoolBreadcrumbsProps) => {
   const { petColorData } = props;
   const t = useTranslations();
-  const router = useRouter();
+  const locale = useLocale();
 
   const breadcrumbList = useMemo(() => {
     const breadList = [
@@ -52,7 +51,7 @@ export const PoolBreadcrumbs = (props: PoolBreadcrumbsProps) => {
     }
 
     return breadList;
-  }, [petColorData, router.locale, t]);
+  }, [petColorData, locale, t]);
 
   return <Breadcrumbs breadcrumbList={breadcrumbList} />;
 };

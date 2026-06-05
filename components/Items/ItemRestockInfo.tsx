@@ -16,7 +16,7 @@ import {
 } from '../../utils/utils';
 import CardBase from '../Card/CardBase';
 import Image from 'next/image';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import { useFormatter, useTranslations } from 'next-intl';
 import { MdHelp } from 'react-icons/md';
 
@@ -86,7 +86,7 @@ const ItemRestock = (props: Props) => {
       <Flex flexFlow={'column'} gap={2}>
         <Center flexFlow="column" gap={2}>
           <Link asChild _hover={{ textDecoration: 'none' }}>
-            <NextLink
+            <MainLink
               href={
                 !isHT ? `/restock/${slugify(shopInfo?.name ?? '')}` : '/lists/official/hidden-tower'
               }
@@ -104,7 +104,7 @@ const ItemRestock = (props: Props) => {
                 width={276}
                 height={92}
               />
-            </NextLink>
+            </MainLink>
           </Link>
           {specialDay === 'hpd' && (
             <Tag.Root colorPalette={'green'}>

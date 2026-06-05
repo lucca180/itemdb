@@ -1,6 +1,6 @@
 import { Flex, Heading, Text, Link, Card, Stack, HStack, Badge } from '@chakra-ui/react';
 import { WP_Article } from '../../types';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import Image from '../Utils/Image';
 
 type Props = {
@@ -24,7 +24,7 @@ export const ArticleCard = (props: Props) => {
           bg: `rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},.5)`,
         }}
       >
-        <NextLink prefetch={false} href={`/articles/${article.slug}`}>
+        <MainLink prefetch={false} href={`/articles/${article.slug}`}>
           <Card.Root
             w={['150px', '200px']}
             h="100%"
@@ -51,7 +51,7 @@ export const ArticleCard = (props: Props) => {
               </Stack>
             </Card.Body>
           </Card.Root>
-        </NextLink>
+        </MainLink>
       </Link>
     );
 
@@ -70,7 +70,7 @@ export const ArticleCard = (props: Props) => {
         bg: `rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},0.5)`,
       }}
     >
-      <NextLink prefetch={false} href={`/articles/${article.slug}`}>
+      <MainLink prefetch={false} href={`/articles/${article.slug}`}>
         <Image
           src={article.thumbnail ?? '/logo.png'}
           alt="article thumbnail"
@@ -88,7 +88,7 @@ export const ArticleCard = (props: Props) => {
           </HStack>
           <Text fontSize="xs">{article.excerpt}</Text>
         </Flex>
-      </NextLink>
+      </MainLink>
     </Link>
   );
 };

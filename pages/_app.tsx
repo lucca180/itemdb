@@ -13,7 +13,7 @@ import Head from 'next/head';
 import type { NextPage } from 'next';
 import { onIntlError } from '../utils/intlHandler';
 import { installProofInterceptor } from '@utils/http/proofInterceptor';
-import { getLocalePrefix, VALID_LOCALES } from '@utils/locales';
+import { getLocalizedHref, VALID_LOCALES, type AppLocale } from '@utils/locales';
 import { system } from '@utils/theme/theme';
 import { Toaster } from '@components/ui/toaster';
 import { ColorModeProvider } from '@components/ui/color-mode';
@@ -32,6 +32,10 @@ type AppPropsWithLayout = AppProps & {
 
 function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   const router = useRouter();
+  const locale =
+    (typeof pageProps.locale === 'string' ? pageProps.locale : undefined) ??
+    (typeof router.query.locale === 'string' ? router.query.locale : undefined) ??
+    'en';
   const getLayout = Component.getLayout ?? ((page) => page);
 
   return (
@@ -40,26 +44,26 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
         <Provider>
           <AuthProvider>
             <NextIntlClientProvider
-              locale={router.locale}
+              locale={locale}
               messages={pageProps.messages}
               timeZone={'America/Los_Angeles'}
               now={new Date()}
               onError={(e) => onIntlError(e, { path: router.asPath })}
             >
               <Head>
-                {VALID_LOCALES.map((locale) => (
+                {VALID_LOCALES.map((alternateLocale) => (
                   <link
                     rel="alternate"
-                    key={locale}
-                    hrefLang={locale}
+                    key={alternateLocale}
+                    hrefLang={alternateLocale}
                     href={removeUTM(
-                      `https://itemdb.com.br${getLocalePrefix(locale)}${router.asPath}`
+                      `https://itemdb.com.br${getLocalizedHref(router.asPath, alternateLocale as AppLocale)}`
                     )}
                   />
                 ))}
               </Head>
               <NextNProgress color="#718096" showOnShallow={true} />
-              <DefaultSeo {...getDefaultSEO(router.locale ?? 'en')} />
+              <DefaultSeo {...getDefaultSEO(locale)} />
               {getLayout(<Component {...pageProps} />, pageProps)}
               <Toaster />
               <Script

@@ -20,18 +20,17 @@ Relevant Next.js docs used for this pattern:
 
 Use this flow for static or mostly static content pages that currently live in the Pages Router.
 
-1. Create `app/<route>/page.tsx`.
+1. Create `app/[locale]/<route>/page.tsx`.
 2. Keep `page.tsx` as a Server Component.
-3. If the visual body is large or needs client-only behavior, move it to `app/<route>/<RouteName>PageClient.tsx` with `'use client'`.
-4. Wrap the page in the existing [`Layout`](C:/Users/Lucca/itemdb/components/Layout.tsx).
+3. If the visual body is large or needs client-only behavior, move it to `app/[locale]/<route>/<RouteName>PageClient.tsx` with `'use client'`.
+4. Wrap the page in [`AppServerLayout`](C:/Users/Lucca/itemdb/components/Layout/AppServerLayout.tsx) for App Router pages, or the existing [`Layout`](C:/Users/Lucca/itemdb/components/Layout.tsx) when still on Pages Router.
 5. Use [`getStaticAppPageProps`](C:/Users/Lucca/itemdb/utils/appPage.ts) to generate:
    - localized canonical URL
    - `generateMetadata()` output
    - `SEO` props for `Layout`
-6. Prefer import aliases such as `@components/*` and `@utils/*`.
+6. Prefer import aliases such as `@components/*`, `@utils/*`, and `@i18n/navigation` for locale-aware links.
 7. Remove the old `pages/<route>.tsx` only after the new app route is in place.
-8. Update `proxy.ts` to point to the new app route.
-9. Verify lint, types, and runtime behavior on all locales.
+8. Verify lint, types, and runtime behavior on all locales (`/` and `/pt/...`).
 
 ## Base example
 

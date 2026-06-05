@@ -2,14 +2,13 @@ import { Badge, Flex, Link, Text } from '@chakra-ui/react';
 import React from 'react';
 import { ItemData, UserList } from '../../types';
 import CardBase from '../Card/CardBase';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import NextImage from 'next/image';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import dynamic from 'next/dynamic';
 import Color from 'color';
 import { useTranslations } from 'next-intl';
 import Image from '../Utils/Image';
-import MainLink from '@components/Utils/MainLink';
 import { getListLink } from '@components/UserLists/ListCard';
 
 const Markdown = dynamic(() => import('../Utils/Markdown'));
@@ -29,7 +28,11 @@ const ItemOfficialLists = (props: Props) => {
 
   return (
     <CardBase
-      title={<Link href="/lists/official">{t('General.official-lists')}</Link>}
+      title={
+        <Link asChild>
+          <MainLink href="/lists/official">{t('General.official-lists')}</MainLink>
+        </Link>
+      }
       color={item.color.hex}
     >
       <Flex
@@ -54,7 +57,7 @@ const ItemOfficialLists = (props: Props) => {
           >
             <Flex mt="-20px" justifyContent={'center'}>
               <Link asChild>
-                <NextLink href={getListLink(list)} prefetch={false}>
+                <MainLink href={getListLink(list)} prefetch={false}>
                   <Flex
                     width={'40px'}
                     height={'40px'}
@@ -75,7 +78,7 @@ const ItemOfficialLists = (props: Props) => {
                       />
                     )}
                   </Flex>
-                </NextLink>
+                </MainLink>
               </Link>
             </Flex>
             <Text textAlign="center" fontSize="sm" fontWeight="bold" css={{ textWrap: 'balance' }}>

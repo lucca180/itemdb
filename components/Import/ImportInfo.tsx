@@ -2,7 +2,7 @@ import { Flex, Box, Heading, Link, List, Text, useMediaQuery } from '@chakra-ui/
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import DynamicIcon from '@assets/icons/dynamic.png';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import icon from '@assets/logo_icon.svg';
 
 export const ImportInfo = () => {
@@ -178,12 +178,12 @@ export const ImportInfo = () => {
               {t.rich('Lists.import-text-4', {
                 Dynamic: (chunk) => (
                   <Link asChild>
-                    <NextLink href={'/articles/checklists-and-dynamic-lists'}>{chunk}</NextLink>
+                    <MainLink href={'/articles/checklists-and-dynamic-lists'}>{chunk}</MainLink>
                   </Link>
                 ),
                 Official: (chunk) => (
                   <Link asChild>
-                    <NextLink href={'/lists/official'}>{chunk}</NextLink>
+                    <MainLink href={'/lists/official'}>{chunk}</MainLink>
                   </Link>
                 ),
               })}
@@ -197,9 +197,9 @@ export const ImportInfo = () => {
             b: (chunk) => <b>{chunk}</b>,
             Link: (chunk) => (
               <Link asChild>
-                <NextLink prefetch={false} href={'/lists/import/advanced'}>
+                <MainLink prefetch={false} href={'/lists/import/advanced'}>
                   {chunk}
-                </NextLink>
+                </MainLink>
               </Link>
             ),
           })}
@@ -230,16 +230,16 @@ export const ImportInfo = () => {
             b: (chunk) => <b>{chunk}</b>,
             Link2: (chunk) => (
               <Link asChild>
-                <NextLink prefetch={false} href={'/articles/checklists-and-dynamic-lists'}>
+                <MainLink prefetch={false} href={'/articles/checklists-and-dynamic-lists'}>
                   {chunk}
-                </NextLink>
+                </MainLink>
               </Link>
             ),
             Link: (chunk) => (
               <Link asChild>
-                <NextLink prefetch={false} href={'/lists/official'}>
+                <MainLink prefetch={false} href={'/lists/official'}>
                   {chunk}
-                </NextLink>
+                </MainLink>
               </Link>
             ),
           })}
@@ -257,7 +257,9 @@ export const ImportInfo = () => {
       >
         <Text>
           {t.rich('Lists.scripts-troubleshooting-text', {
-            Link: (chunk) => <Link href="/articles/help-my-scripts-are-not-working">{chunk}</Link>,
+            Link: (chunk) => (
+              <MainLink href="/articles/help-my-scripts-are-not-working">{chunk}</MainLink>
+            ),
           })}
         </Text>
       </Flex>

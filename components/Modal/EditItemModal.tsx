@@ -43,7 +43,7 @@ import ItemStatusSelect from '../Input/ItemStatusSelect';
 import { FiTrash } from 'react-icons/fi';
 import dynamic from 'next/dynamic';
 import ItemSelect from '../Input/ItemSelect';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import { useTranslations } from 'next-intl';
 import SpeciesSelect from '../Input/SpeciesSelect';
 import { deseaseList_en } from '../../utils/utils';
@@ -373,7 +373,7 @@ export const InfoTab = (props: infoTabProps) => {
             {t.rich('Feedback.correctItemInfo', {
               Link: (chunks) => (
                 <Link asChild color="gray.200">
-                  <NextLink href="/contribute">{chunks}</NextLink>
+                  <MainLink href="/contribute">{chunks}</MainLink>
                 </Link>
               ),
             })}
@@ -568,7 +568,7 @@ export const InfoTab = (props: infoTabProps) => {
           {t.rich('Feedback.modalContributeCallback', {
             Link: (chunks) => (
               <Link asChild color="gray.300">
-                <NextLink href="/contribute">{chunks}</NextLink>
+                <MainLink href="/contribute">{chunks}</MainLink>
               </Link>
             ),
           })}

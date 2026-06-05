@@ -17,7 +17,7 @@ import { useToast } from '@utils/theme/toast';
 import { ColorInstance } from 'color';
 import { BiLinkExternal } from 'react-icons/bi';
 import { MdWarning } from 'react-icons/md';
-import NextLink from 'next/link';
+import MainLink from '@components/Utils/MainLink';
 import { ItemData, ListItemInfo, UserList } from '../../types';
 import { useMemo } from 'react';
 import { useAuth } from '../../utils/auth';
@@ -234,7 +234,7 @@ const ListHeader = (props: ListHeaderProps) => {
             )}
             {list.official && (
               <Badge asChild borderRadius="md" colorPalette="blue" variant="solid">
-                <NextLink href="/lists/official">✓ {t('General.official')}</NextLink>
+                <MainLink href="/lists/official">✓ {t('General.official')}</MainLink>
               </Badge>
             )}
             {!list.official && list.visibility !== 'public' && (
@@ -366,7 +366,7 @@ const ListHeader = (props: ListHeaderProps) => {
               {t.rich(list.official ? 'Lists.curatedBy' : 'Lists.by', {
                 Link: (chunk) => (
                   <Link asChild fontWeight="bold">
-                    <NextLink href={'/lists/' + list.owner.username}>{chunk}</NextLink>
+                    <MainLink href={'/lists/' + list.owner.username}>{chunk}</MainLink>
                   </Link>
                 ),
                 username: list.owner.username ?? '',
