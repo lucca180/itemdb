@@ -14,3 +14,7 @@ vi.mock('next/navigation', () => ({
   useSearchParams: vi.fn(() => new URLSearchParams()),
   notFound: vi.fn(),
 }));
+
+vi.mock('next-intl/middleware', () => ({
+  default: vi.fn(() => vi.fn(() => new Response(null, { status: 200 }))),
+}));
