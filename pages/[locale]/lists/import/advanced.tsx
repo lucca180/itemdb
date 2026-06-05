@@ -2,7 +2,7 @@ import { getLocaleStaticPaths, resolvePageLocale } from '@utils/locales';
 import { Heading, Text, Flex, Center, Textarea, Separator, Button } from '@chakra-ui/react';
 import Layout from '@components/Layout';
 import { ReactElement, useState } from 'react';
-import { createTranslator, useTranslations } from 'next-intl';
+import { createTranslator, useLocale, useTranslations } from 'next-intl';
 import HeaderCard from '@components/Card/HeaderCard';
 import * as cheerio from 'cheerio';
 import { Breadcrumbs } from '@components/Breadcrumbs/Breadcrumbs';
@@ -15,6 +15,7 @@ type AdvancedImportPageProps = {
 
 const AdvancedImportPage = () => {
   const t = useTranslations();
+  const locale = useLocale();
   const [ppCode, setPPCode] = useState<string>('');
   const [itemDataJson, setItemDataJson] = useState<string>('');
 
@@ -94,9 +95,10 @@ const AdvancedImportPage = () => {
           justifyContent={'center'}
           alignItems={'center'}
         >
-          <form method="POST" target="_blank" action="/lists/import">
+          <form method="POST" target="_blank" action="/api/v1/lists/import-session">
             <input type="hidden" name="itemDataJson" value={itemDataJson} />
             <input type="hidden" name="indexType" value="name_image_id" />
+            <input type="hidden" name="locale" value={locale} />
             <Textarea
               placeholder={t('Lists.paste-pp-code')}
               size="md"

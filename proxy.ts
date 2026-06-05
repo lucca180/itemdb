@@ -33,6 +33,7 @@ const API_SKIPS = {
     /^\/api\/v1\/trades$/,
     /^\/api\/v1\/items$/,
     /^\/api\/v1\/items\/open$/,
+    /^\/api\/v1\/lists\/import-session$/,
   ],
 } as const;
 

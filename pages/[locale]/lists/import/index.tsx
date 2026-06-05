@@ -10,6 +10,7 @@ import {
   VStack,
   Button,
   HStack,
+  Alert,
 } from '@chakra-ui/react';
 import { useToast } from '@utils/theme/toast';
 import { resolvePageLocale, getPageRouterHref } from '@utils/locales';
@@ -32,6 +33,8 @@ import { GetServerSidePropsContext } from 'next';
 import { dynamicListCan } from '@utils/utils';
 import { ListService } from '@services/ListService';
 import { ImportInfo } from '@components/Import/ImportInfo';
+import { getListImportSession } from '@utils/importSession';
+import { useScriptStatus } from '@utils/scriptUtils';
 
 type Props = {
   items?: { [index: number | string]: number };
@@ -44,6 +47,7 @@ type Props = {
 const ImportPage = (props: Props) => {
   const t = useTranslations();
   const { items, indexType, recommended_list } = props;
+
   return (
     <>
       <HeaderCard
@@ -83,6 +87,7 @@ const ImportPage = (props: Props) => {
       </HeaderCard>
       <Flex flexFlow="column" gap={3} css={{ '& a': { color: '#b8e9a9' } }}>
         <Separator />
+        <OutdatedListImporterAlert />
         {!items && <ImportInfo />}
         {items && !!indexType && (
           <ImportItems items={items} indexType={indexType} recommended_list={recommended_list} />
@@ -92,14 +97,52 @@ const ImportPage = (props: Props) => {
   );
 };
 
+const OutdatedListImporterAlert = () => {
+  const t = useTranslations();
+  const { scriptStatus } = useScriptStatus();
+  const listImporter = scriptStatus?.itemdb_listImporter;
+
+  if (!listImporter || listImporter?.status !== 'outdated') return null;
+
+  return (
+    <Alert.Root
+      status="warning"
+      variant="surface"
+      maxW="750px"
+      css={{ '& a': { color: 'colorPalette.100' } }}
+    >
+      <Alert.Indicator />
+      <Alert.Content>
+        <Alert.Title>{t('Lists.import-outdated-script-title')}</Alert.Title>
+        <Alert.Description>
+          {t.rich('Lists.import-outdated-script', {
+            Link: (chunk) => (
+              <Link asChild>
+                <MainLink href={listImporter?.link} isExternal>
+                  {chunk}
+                </MainLink>
+              </Link>
+            ),
+          })}
+        </Alert.Description>
+      </Alert.Content>
+    </Alert.Root>
+  );
+};
+
 export default ImportPage;
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const locale = resolvePageLocale(context.params?.locale as string);
-  const body = await parseBody(context.req, '4mb');
-  const items = JSON.parse(body?.itemDataJson || 'null');
-  const indexType = body?.indexType ?? 'item_id';
-  const list_id = body?.list_id ?? null;
+  const importToken = Array.isArray(context.query.importToken)
+    ? context.query.importToken[0]
+    : context.query.importToken;
+  const importSession = importToken ? await getListImportSession(importToken) : null;
+  const body =
+    !importSession && context.req.method === 'POST' ? await parseBody(context.req, '4mb') : null;
+  const items = importSession?.items ?? JSON.parse(body?.itemDataJson || 'null');
+  const indexType = importSession?.indexType ?? body?.indexType ?? 'item_id';
+  const list_id = importSession?.list_id ?? body?.list_id ?? null;
 
   const listService = ListService.init();
 

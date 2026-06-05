@@ -541,6 +541,8 @@
     "mark-as-hidden": "Mark as hidden",
     "import-step-by-step": "Step by Step",
     "import-this-guide-may-not-work-on-mobile-devices": "This guide may not work on mobile devices!",
+    "import-outdated-script-title": "Outdated Importer Script",
+    "import-outdated-script": "We detected that you're using an outdated version of the <Link>itemdb List Importer</Link>. Update it before importing to avoid issues.",
     "import-text-1": "Install <Link>Tampermonkey</Link> extension for your browser if you don't have it already.",
     "import-text-2": "Install the <Link>itemdb List Importer</Link> script",
     "importer-text-3": "Open one of the supported pages:",

@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - List Importer
-// @version      1.3.1
+// @version      1.3.2
 // @author       itemdb
 // @namespace    itemdb
 // @description  Imports items to your wishlists
@@ -62,7 +62,7 @@ const itemdb_importer = function() {
 
   function submitImport({ items, indexType, listId = '' }) {
     const form = document.createElement('form');
-    form.action = 'https://itemdb.com.br/lists/import';
+    form.action = 'https://itemdb.com.br/api/v1/lists/import-session';
     form.method = 'POST';
     form.target = '_blank';
     form.style.display = 'none';
@@ -188,10 +188,12 @@ const itemdb_importer = function() {
 
     tds.each(function () {
       const img = $(this).find('img');
-      if(!img.length) return;
+      const src = img.attr('src') ?? '';
+      if(!img.length || !src || !src.includes("images.neopets.com/items/")) return;
 
       const image_id = getImageID(img.attr('src'));
-      if(image_id === 'no_stamp') return;
+      const img_class = img.attr('class') ?? '';
+      if(image_id === 'no_stamp' || img_class.includes('fake-stamp')) return;
 
       items[image_id] = 1;
     });
