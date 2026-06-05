@@ -45,6 +45,7 @@ const CtxMenu = chakra(ContextMenu, {
   base: {
     background: 'gray.800 !important',
     zIndex: `${CONTEXT_MENU_Z_INDEX} !important`,
+    pointerEvents: 'auto !important',
     // padding: "0 !important"
   },
 });
@@ -77,7 +78,7 @@ const CtxSubmenu = chakra(Submenu, {
     '& .submenu__item .contextmenu__item': {
       background: 'gray.800 !important',
     },
-    '& .submenu__item > .contextmenu__item:hover': {
+    '& .contextmenu__item:hover': {
       background: 'gray.700 !important',
     },
   },
