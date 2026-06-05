@@ -1,68 +1,26 @@
-import { resolvePageLocale, withLocalePrefix } from '@utils/locales';
+'use client';
+
 import { Badge, Box, Button, Flex, Heading, Icon, Stack, Text } from '@chakra-ui/react';
-import React, { ReactElement, useMemo, useState } from 'react';
-import Layout from '@components/Layout';
+import { useMemo, useState } from 'react';
 import Image from 'next/image';
-import {
-  AvyData,
-  BDData,
-  FullItemColors,
-  InsightsResponse,
-  ItemData,
-  ItemEffect,
-  ItemLastSeen,
-  ItemMMEData,
-  ItemOpenable,
-  ItemPetpetData,
-  ItemRecipe,
-  NCMallData,
-  // ItemTag,
-  PriceData,
-  TradeData,
-  UserList,
-  WearableData,
-} from '@types';
 import FindAtCard from '@components/Items/FindAtCard';
 import ItemInfoCard from '@components/Items/InfoCard';
 import ColorInfoCard from '@components/Items/ColorInfoCard';
 import ItemOfficialLists from '@components/Items/ItemOfficialList';
-// import ItemTags from '@components/Items/ItemTags';
 import { FiEdit3 } from 'react-icons/fi';
 import type { EditItemModalProps } from '@components/Modal/EditItemModal';
 import AddToListSelect from '@components/UserLists/AddToListSelect';
-import { GetStaticPropsContext } from 'next';
-import { getItem } from '@pages/api/v1/items/[id_name]';
-import { getItemLists } from '@pages/api/v1/items/[id_name]/lists';
 import MainLink from '@components/Utils/MainLink';
-import { getSimilarItems } from '@pages/api/v1/items/[id_name]/similar';
 import SimilarItemsCard from '@components/Items/SimilarItemsCard';
-import { getItemDrops, getItemParent } from '@pages/api/v1/items/[id_name]/drops';
 import dynamic from 'next/dynamic';
-import { getItemPrices } from '@pages/api/v1/items/[id_name]/prices';
-import { getItemTrades } from '@pages/api/v1/trades';
-import { getLastSeen } from '@pages/api/v1/prices/stats';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@utils/auth';
-import { getItemEffects } from '@pages/api/v1/items/[id_name]/effects';
-import { getWearableData } from '@pages/api/v1/items/[id_name]/wearable';
-import { getItemNCMall } from '@pages/api/v1/items/[id_name]/ncmall';
-import { getItemRecipes } from '@pages/api/v1/items/[id_name]/recipes';
-import { NextPageWithLayout } from '@pages/_app';
-import { getMMEData, isMME } from '@pages/api/v1/items/[id_name]/mme';
-import { DyeworksData, getDyeworksData } from '@pages/api/v1/items/[id_name]/dyeworks';
-import { getSingleItemColor } from '@pages/api/v1/items/[id_name]/colors';
-import * as Sentry from '@sentry/nextjs';
-import { getPetpetData } from '@pages/api/v1/items/[id_name]/petpet';
 import { ItemBreadcrumb } from '@components/Breadcrumbs/ItemBreadcrumb';
-import { loadTranslation } from '@utils/load-translation';
-import { getNCTradeInsights } from '@pages/api/v1/mall/[iid]/insights';
 import FeedbackButton from '@components/Feedback/FeedbackButton';
 import RelatedLinksCard from '@components/Items/RelatedLinks';
-import { shouldShowTradeLists } from '@utils/utils';
 import ItemBdCard from '@components/Items/ItemBdCard';
-// import { getBDData } from '@pages/api/v1/items/[id_name]/bd';
-import { getAvyData } from '@pages/api/v1/items/[id_name]/avys';
 import ItemAvyCard from '@components/Items/ItemAvyCard';
+import type { ItemPageData } from '@app/utils/itemPage';
 
 const EditItemModal = dynamic<EditItemModalProps>(() => import('@components/Modal/EditItemModal'));
 
@@ -71,7 +29,6 @@ const MissingInfoCard = dynamic(() => import('@components/Items/MissingInfoCard'
 const ItemPriceCard = dynamic(() => import('@components/Price/ItemPriceCard'));
 const NCTrade = dynamic(() => import('@components/NCTrades'));
 const ItemEffectsCard = dynamic(() => import('@components/Items/ItemEffectsCard'));
-// const ItemOfficialLists = dynamic(() => import('@components/Items/ItemOfficialList'));
 const ItemMyLists = dynamic(() => import('@components/Items/MyListsCard'));
 const ItemComments = dynamic(() => import('@components/Items/ItemComments'));
 const ItemDrops = dynamic(() => import('@components/Items/ItemDrops'));
@@ -86,35 +43,9 @@ const NcMallCard = dynamic(() => import('@components/Items/NCMallCard'));
 const PetpetCard = dynamic(() => import('@components/Items/PetpetCard'));
 const ItemOutfit = dynamic(() => import('@components/Items/ItemOutfit'));
 
-type ItemPageProps = {
-  item: ItemData;
-  colors: FullItemColors;
-  similarItems: ItemData[];
-  lists?: UserList[];
-  tradeLists?: UserList[];
-  avyData: AvyData[] | null;
-  itemOpenable: ItemOpenable | null;
-  itemParent: {
-    parents_iid: number[];
-    itemData: ItemData[];
-  };
-  lastSeen: ItemLastSeen | null;
-  NPTrades: TradeData[];
-  NPPrices: PriceData[];
-  itemEffects: ItemEffect[];
-  wearableData: WearableData | null;
-  ncMallData: NCMallData | null;
-  itemRecipes: ItemRecipe[] | null;
-  mmeData: ItemMMEData | null;
-  dyeData: DyeworksData | null;
-  petpetData: ItemPetpetData | null;
-  ncInsights: InsightsResponse | null;
-  bdData: BDData | null;
-  messages: any;
-  locale: string | undefined;
-};
+const isPetDayCapsule = (name: string) => /Day Y\d+ Mini Mystery Capsule/i.test(name);
 
-const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
+export function ItemPageClient(props: ItemPageData) {
   const t = useTranslations();
   const {
     item,
@@ -166,7 +97,7 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
           zIndex={-1}
         />
         <Box pt={2}>
-          <ItemBreadcrumb item={item} officialLists={lists} />
+          <ItemBreadcrumb item={item} officialLists={lists} useAppDir />
         </Box>
         <Flex gap={{ base: 4, md: 8 }} pt={4} alignItems="center">
           <Flex
@@ -291,7 +222,6 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
 
           <ItemInfoCard key={getKey('item-info')} item={item} />
           {colors && <ColorInfoCard key={getKey('color-info')} colors={colors} />}
-          {/* <ItemTags toggleModal={() => setIsEditModalOpen(true)} item={item} tags={tags} /> */}
           <Flex justifyContent="center" gap={1}>
             <FeedbackButton colorPalette="red" variant={'ghost'}>
               {t('ItemPage.report-error')}
@@ -408,174 +338,4 @@ const ItemPage: NextPageWithLayout<ItemPageProps> = (props: ItemPageProps) => {
       </Flex>
     </>
   );
-};
-
-export default ItemPage;
-
-export async function getStaticProps(context: GetStaticPropsContext) {
-  const locale = resolvePageLocale(context.params?.locale as string);
-  const id = context.params?.id as string | undefined;
-  if (!id) return { notFound: true };
-  let item;
-
-  const isIdNumber = !isNaN(Number(id));
-
-  if (isIdNumber) {
-    item = await getItem(Number(id), true);
-    if (!item) return { notFound: true };
-
-    if (item.slug)
-      return {
-        redirect: {
-          destination: withLocalePrefix(`/item/${item.slug}`, locale),
-          permanent: true,
-        },
-      };
-  } else item = await getItem(id, true);
-
-  if (!item) return { notFound: true };
-
-  if (id !== item.slug)
-    return {
-      redirect: {
-        destination: withLocalePrefix(`/item/${item.slug}`, locale),
-        permanent: true,
-      },
-    };
-
-  const [
-    colors,
-    lists,
-    similarItems,
-    tradeLists,
-    itemOpenable,
-    itemParent,
-    itemPrices,
-    NPTrades,
-    lastSeen,
-    itemEffects,
-    wearableData,
-    NCMallData,
-    itemRecipes,
-    mmeData,
-    dyeData,
-    petpetData,
-    ncInsights,
-    bdData,
-    avyData,
-  ] = await Sentry.startSpan(
-    {
-      name: 'itemLoad',
-      attributes: {
-        itemName: item.name,
-        item_iid: item.internal_id,
-        isWearable: item.isWearable,
-        isNC: item.isNC,
-      },
-      forceTransaction: true,
-    },
-    async () => {
-      return Promise.all([
-        getSingleItemColor(item), //0
-        getItemLists(item.internal_id, true), // 1
-        getSimilarItems(item), // 2
-        shouldShowTradeLists(item) ? getItemLists(item.internal_id, false) : [], // 3
-        item.useTypes.canOpen !== 'false' ? getItemDrops(item.internal_id, item.isNC) : null, // 4
-        getItemParent(item.internal_id, 4), // 5
-        !item.isNC ? getItemPrices({ iid: item.internal_id, includeUnconfirmed: true }) : [], // 6
-        !item.isNC ? getItemTrades({ item_iid: item.internal_id }) : [], // 7
-        !item.isNC
-          ? getLastSeen({ item_id: item.item_id, name: item.name, image_id: item.image_id })
-          : null, // 8
-        getItemEffects(item), // 9
-        item.isWearable ? (getWearableData(item.internal_id) as Promise<WearableData>) : null, // 10
-        item.isNC ? getItemNCMall(item.internal_id) : null, // 11
-        !item.isNC ? getItemRecipes(item.internal_id) : null, // 12
-        isMME(item.name) ? getMMEData(item) : null, // 13
-        item.isNC && item.isWearable ? getDyeworksData(item) : null, // 14
-        !item.isNC && !item.isWearable && !item.isBD && !item.isNeohome
-          ? getPetpetData(item)
-          : null, // 15
-        item.isNC ? getNCTradeInsights(item.internal_id) : null, // 16
-        null, // item.isBD ? getBDData(item.internal_id) : null, // 17
-        getAvyData(item.internal_id), // 18
-      ]);
-    }
-  );
-
-  if (!colors) return { notFound: true };
-
-  const props: ItemPageProps = {
-    item: item,
-    lists: lists.filter((l) => !l.officialTag.includes('Avatar')),
-    similarItems: similarItems,
-    colors: colors as FullItemColors,
-    tradeLists: tradeLists,
-    itemOpenable: itemOpenable,
-    itemParent: itemParent,
-    NPTrades: NPTrades,
-    NPPrices: itemPrices,
-    lastSeen: lastSeen,
-    itemEffects: itemEffects,
-    wearableData: wearableData,
-    ncMallData: NCMallData,
-    itemRecipes: itemRecipes,
-    mmeData: mmeData,
-    dyeData: dyeData,
-    petpetData: petpetData,
-    ncInsights: ncInsights,
-    bdData: bdData,
-    avyData: avyData,
-    messages: await loadTranslation(locale ?? 'en', 'item/[id]'),
-    locale: locale,
-  };
-
-  return {
-    props,
-    revalidate: 60, // In seconds
-  };
 }
-
-export async function getStaticPaths() {
-  return { paths: [], fallback: 'blocking' };
-}
-
-const generateMetaDescription = (item: ItemData) => {
-  const metaDescription = truncateString(item.description, 130);
-
-  return metaDescription;
-};
-
-function truncateString(str: string, num: number) {
-  if (!str) return str;
-
-  if (str.length <= num) {
-    return str;
-  }
-
-  return str.slice(0, num) + '...';
-}
-
-ItemPage.getLayout = function getLayout(page: ReactElement, props: ItemPageProps) {
-  const { item, locale } = props;
-
-  let canonical = 'https://itemdb.com.br/item/' + item.slug;
-  if (locale && locale !== 'en') canonical = `https://itemdb.com.br/${locale}/item/${item.slug}`;
-
-  return (
-    <Layout
-      SEO={{
-        title: item.name,
-        themeColor: item.color.hex,
-        description: generateMetaDescription(item),
-        openGraph: { images: [{ url: item.image, width: 80, height: 80, alt: item.name }] },
-        canonical: canonical,
-      }}
-      mainColor={item.color.hex + '66'}
-    >
-      {page}
-    </Layout>
-  );
-};
-
-const isPetDayCapsule = (name: string) => /Day Y\d+ Mini Mystery Capsule/i.test(name);

@@ -8,7 +8,7 @@ import { differenceInCalendarDays } from 'date-fns';
 import { getSaleStats } from './saleStats';
 import { redis_setDataCount } from '@utils/redis';
 import { revalidateItem } from './effects';
-import { ItemChangesLog } from '../process';
+import type { ItemChangesLog } from '../process';
 import { rawToItemData } from '../many';
 import { getNCValue } from '../../mall/[iid]';
 import { UTCDate } from '@date-fns/utc';

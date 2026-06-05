@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { revalidatePath as revalidateAppPath } from 'next/cache';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import { ItemData, ItemEffect } from '../../../../../types';
 import prisma from '../../../../../utils/prisma';
@@ -230,5 +231,10 @@ export const formatEffect = (effect: PrimsaItemEffect) => {
 };
 
 export const revalidateItem = async (slug: string, res: NextApiResponse) => {
-  return Promise.allSettled([res.revalidate(`/item/${slug}`), res.revalidate(`/pt/item/${slug}`)]);
+  return Promise.allSettled([
+    res.revalidate(`/item/${slug}`),
+    res.revalidate(`/pt/item/${slug}`),
+    revalidateAppPath(`/item/${slug}`),
+    revalidateAppPath(`/pt/item/${slug}`),
+  ]);
 };

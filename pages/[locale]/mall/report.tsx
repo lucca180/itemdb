@@ -19,7 +19,7 @@ import Layout from '@components/Layout';
 import MainLink from '@components/Utils/MainLink';
 import HeaderCard from '@components/Card/HeaderCard';
 import { createTranslator, useTranslations } from 'next-intl';
-import { ItemData, LebronTrade, NCTradeItem, NCTradeReport, User } from '@types';
+import { ItemData, NCTradeItem, User } from '@types';
 import Image from '@components/Utils/Image';
 import icon from '@assets/logo_icon.svg';
 import { format } from 'date-fns';
@@ -29,7 +29,7 @@ import axios from 'axios';
 import { CheckAuth } from '@utils/googleCloud';
 import { Breadcrumbs } from '@components/Breadcrumbs/Breadcrumbs';
 import { loadTranslation } from '@utils/load-translation';
-import { UTCDate } from '@date-fns/utc';
+import { tradeReportToLebronTrade } from '@utils/ncTrades';
 
 const ItemSelect = dynamic(() => import('@components/Input/ItemSelect'), {
   ssr: false,
@@ -589,27 +589,4 @@ const NCTradeReportCard = (props: NCTradeReportProps) => {
       )}
     </>
   );
-};
-
-export const tradeReportToLebronTrade = (report: NCTradeReport): LebronTrade => {
-  const trade: LebronTrade = {
-    tradeDate: new UTCDate(report.date).getTime(),
-    notes: report.notes,
-    itemsSent: '',
-    itemsReceived: '',
-  };
-
-  report.offered.forEach((item, i) => {
-    if (i > 0) trade.itemsSent += ' + ';
-    if (item.quantity > 1) trade.itemsSent += `${item.quantity}x `;
-    trade.itemsSent += `${item.itemName} (${item.personalValue})`;
-  });
-
-  report.received.forEach((item, i) => {
-    if (i > 0) trade.itemsReceived += ' + ';
-    if (item.quantity > 1) trade.itemsReceived += `${item.quantity}x `;
-    trade.itemsReceived += `${item.itemName} (${item.personalValue})`;
-  });
-
-  return trade;
 };

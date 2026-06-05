@@ -16,7 +16,7 @@ import { ItemData, NCTradeReport, LebronTrade } from '../../types';
 import { useFormatter, useTranslations } from 'next-intl';
 import { UTCDate } from '@date-fns/utc';
 import { useMemo } from 'react';
-import { tradeReportToLebronTrade } from '@pages/[locale]/mall/report';
+import { tradeReportToLebronTrade } from '@utils/ncTrades';
 
 type Props = {
   item: ItemData;

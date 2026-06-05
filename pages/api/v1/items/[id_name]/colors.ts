@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getItem } from '.';
 import { getItemColor } from '../colors';
 import prisma from '../../../../../utils/prisma';
-import { getPalette } from '../process';
+import { getPalette } from '@utils/itemPalette';
 import { ItemData } from '../../../../../types';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {

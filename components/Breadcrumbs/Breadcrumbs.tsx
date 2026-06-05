@@ -14,10 +14,11 @@ type BreadcrumbsProps = {
     skip?: boolean;
   }[];
   linkLast?: boolean;
+  useAppDir?: boolean;
 };
 
 export const Breadcrumbs = (props: BreadcrumbsProps) => {
-  const { breadcrumbList, linkLast = false } = props;
+  const { breadcrumbList, linkLast = false, useAppDir = false } = props;
   const locale = useLocale() as AppLocale;
 
   const formattedBreadcrumbList = breadcrumbList.map((crumb) => ({
@@ -71,7 +72,7 @@ export const Breadcrumbs = (props: BreadcrumbsProps) => {
           ))}
         </Breadcrumb.List>
       </Breadcrumb.Root>
-      <BreadcrumbJsonLd itemListElements={formattedBreadcrumbList} />
+      <BreadcrumbJsonLd itemListElements={formattedBreadcrumbList} useAppDir={useAppDir} />
     </>
   );
 };
