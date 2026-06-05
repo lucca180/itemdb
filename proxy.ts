@@ -64,6 +64,7 @@ export function proxy(request: NextRequest) {
 
   const startTime = Date.now();
   const proofCookie = request.cookies.get('itemdb-proof')?.value || '';
+  const isDevRscRequest = isDev && request.nextUrl.searchParams.has('_rsc');
   const currentPath = getCurrentPath(request.nextUrl.pathname, request.nextUrl.search);
   const pageRequestHeaders = new Headers(request.headers);
   pageRequestHeaders.set('x-itemdb-current-path', currentPath);
@@ -75,7 +76,11 @@ export function proxy(request: NextRequest) {
 
   const intlResponse = handleI18nRouting(intlRequest);
 
-  return finalizePageResponse(intlResponse, { startTime, proofCookie });
+  return finalizePageResponse(intlResponse, {
+    startTime,
+    proofCookie,
+    skipSideEffects: isDevRscRequest,
+  });
 }
 
 // ---------- API Middleware ---------- //

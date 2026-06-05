@@ -36,9 +36,17 @@ export const updateServerTime = (label: string, startTime: number, response: Nex
 
 export const finalizePageResponse = (
   response: NextResponse,
-  { startTime, proofCookie }: { startTime: number; proofCookie: string }
+  {
+    startTime,
+    proofCookie,
+    skipSideEffects,
+  }: { startTime: number; proofCookie: string; skipSideEffects?: boolean }
 ) => {
   updateServerTime('regular-middleware', startTime, response);
+
+  if (skipSideEffects) {
+    return response;
+  }
 
   if (!verifySiteChallenge(proofCookie, 120)) {
     const proof = generateSiteProof();
