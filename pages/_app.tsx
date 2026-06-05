@@ -16,7 +16,6 @@ import { installProofInterceptor } from '@utils/http/proofInterceptor';
 import { getLocalizedHref, VALID_LOCALES, type AppLocale } from '@utils/locales';
 import { system } from '@utils/theme/theme';
 import { Toaster } from '@components/ui/toaster';
-import { ColorModeProvider } from '@components/ui/color-mode';
 
 if (typeof window !== 'undefined') {
   installProofInterceptor();
@@ -40,42 +39,41 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
 
   return (
     <ChakraProvider value={system}>
-      <ColorModeProvider>
-        <Provider>
-          <AuthProvider>
-            <NextIntlClientProvider
-              locale={locale}
-              messages={pageProps.messages}
-              timeZone={'America/Los_Angeles'}
-              now={new Date()}
-              onError={(e) => onIntlError(e, { path: router.asPath })}
-            >
-              <Head>
-                {VALID_LOCALES.map((alternateLocale) => (
-                  <link
-                    rel="alternate"
-                    key={alternateLocale}
-                    hrefLang={alternateLocale}
-                    href={removeUTM(
-                      `https://itemdb.com.br${getLocalizedHref(router.asPath, alternateLocale as AppLocale)}`
-                    )}
-                  />
-                ))}
-              </Head>
-              <NextNProgress color="#718096" showOnShallow={true} />
-              <DefaultSeo {...getDefaultSEO(locale)} />
-              {getLayout(<Component {...pageProps} />, pageProps)}
-              <Toaster />
-              <Script
-                src={process.env.NEXT_PUBLIC_UMAMI_URL_2 + '/plutonita.js'}
-                data-website-id={process.env.NEXT_PUBLIC_UMAMI_ID_2}
-                data-host-url={process.env.NEXT_PUBLIC_UMAMI_URL_2}
-                data-before-send="beforeSendHandler"
-                data-performance="true"
-                defer
-              />
-              <Script id="pathOverwriter">
-                {`function beforeSendHandler(type, payload) {
+      <Provider>
+        <AuthProvider>
+          <NextIntlClientProvider
+            locale={locale}
+            messages={pageProps.messages}
+            timeZone={'America/Los_Angeles'}
+            now={new Date()}
+            onError={(e) => onIntlError(e, { path: router.asPath })}
+          >
+            <Head>
+              {VALID_LOCALES.map((alternateLocale) => (
+                <link
+                  rel="alternate"
+                  key={alternateLocale}
+                  hrefLang={alternateLocale}
+                  href={removeUTM(
+                    `https://itemdb.com.br${getLocalizedHref(router.asPath, alternateLocale as AppLocale)}`
+                  )}
+                />
+              ))}
+            </Head>
+            <NextNProgress color="#718096" showOnShallow={true} />
+            <DefaultSeo {...getDefaultSEO(locale)} />
+            {getLayout(<Component {...pageProps} />, pageProps)}
+            <Toaster />
+            <Script
+              src={process.env.NEXT_PUBLIC_UMAMI_URL_2 + '/plutonita.js'}
+              data-website-id={process.env.NEXT_PUBLIC_UMAMI_ID_2}
+              data-host-url={process.env.NEXT_PUBLIC_UMAMI_URL_2}
+              data-before-send="beforeSendHandler"
+              data-performance="true"
+              defer
+            />
+            <Script id="pathOverwriter">
+              {`function beforeSendHandler(type, payload) {
                     const url = payload.url;
                     if(['es', 'pt'].includes(url.split("/")[3])) {
                       payload.url = url.replace("/pt", "");
@@ -83,11 +81,10 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
 
                     return payload;
                 }`}
-              </Script>
-            </NextIntlClientProvider>
-          </AuthProvider>
-        </Provider>
-      </ColorModeProvider>
+            </Script>
+          </NextIntlClientProvider>
+        </AuthProvider>
+      </Provider>
     </ChakraProvider>
   );
 }
