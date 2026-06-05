@@ -90,6 +90,7 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
           href={internalPath}
           onClick={handleTracking}
           style={style}
+          prefetch={prefetch}
         >
           {children}
         </Link>
