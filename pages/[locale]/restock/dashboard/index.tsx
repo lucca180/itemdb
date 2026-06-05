@@ -887,12 +887,12 @@ const RestockDashboard = (props: RestockDashboardProps) => {
                     <Text fontSize={'sm'}>
                       {t.rich('Restock.history-dashboard-cta', {
                         Link: (chunk) => (
-                          <Link
-                            color="green.200"
-                            asChild
-                            href={`/restock/${sessionStats.mostPopularShop.shopId}/history`}
-                          >
-                            {chunk}
+                          <Link color="green.200" asChild>
+                            <MainLink
+                              href={`/restock/${sessionStats.mostPopularShop.shopId}/history`}
+                            >
+                              {chunk}
+                            </MainLink>
                           </Link>
                         ),
                       })}

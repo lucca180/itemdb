@@ -13,7 +13,11 @@
 
 - NEVER change the `package.json` file without confirming with user first. This file contains important information about the project, including dependencies and scripts, and changes to it can have significant consequences.
 
+- NEVER run git commands such as `git commit`, `git push`, `git pull` without confirming with user first. This can lead to unintended consequences such as pushing incomplete work or pulling changes that you are not ready to integrate.
+
 - NEVER EVER add, remove or update dependencies without confirming with user first.
+
+- NEVER EVER run any SQL commands nor make any database changes without confirming with user first. This can lead to data loss or corruption if not done carefully.
 
 - When checking for Chakra UI docs, always refer to the official Chakra UI documentation at https://chakra-ui.com/docs/getting-started. Make sure you're looking at the correct version of the documentation that matches the version of Chakra UI being used in the project (v3 in this case). You can also use the Chakra MCP server to get specific information about Chakra UI components and their usage.
 
@@ -30,10 +34,6 @@
 - `@assets` -> `/public`
 - `@pages` -> `/pages`
 - `@app` -> `/app`
-
-## App router migration guidelines
-
-When migrating a route from the old `pagesRouter` to the new `appRouter`, follow the steps on the migration doc in `docs/app-router-migration.md`.
 
 ## Testing instructions
 
