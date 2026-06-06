@@ -1,3 +1,5 @@
+'use client';
+
 import { ItemData, UserList } from '../../types';
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo } from 'react';

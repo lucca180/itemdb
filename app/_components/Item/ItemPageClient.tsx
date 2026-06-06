@@ -1,8 +1,7 @@
 'use client';
 
-import { Badge, Box, Button, Flex, Heading, Icon, Stack, Text } from '@chakra-ui/react';
+import { Button, Flex, Icon } from '@chakra-ui/react';
 import { useMemo, useState } from 'react';
-import Image from 'next/image';
 import FindAtCard from '@components/Items/FindAtCard';
 import ItemInfoCard from '@components/Items/InfoCard';
 import ColorInfoCard from '@components/Items/ColorInfoCard';
@@ -10,12 +9,10 @@ import ItemOfficialLists from '@components/Items/ItemOfficialList';
 import { FiEdit3 } from 'react-icons/fi';
 import type { EditItemModalProps } from '@components/Modal/EditItemModal';
 import AddToListSelect from '@components/UserLists/AddToListSelect';
-import MainLink from '@components/Utils/MainLink';
 import SimilarItemsCard from '@components/Items/SimilarItemsCard';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@utils/auth';
-import { ItemBreadcrumb } from '@components/Breadcrumbs/ItemBreadcrumb';
 import FeedbackButton from '@components/Feedback/FeedbackButton';
 import RelatedLinksCard from '@components/Items/RelatedLinks';
 import ItemBdCard from '@components/Items/ItemBdCard';
@@ -66,7 +63,6 @@ export function ItemPageClient(props: ItemPageData) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { user } = useAuth();
 
-  const color = item?.color.rgb ?? [255, 255, 255];
   const colorSpeciesEffect = useMemo(() => {
     if (itemEffects.length === 0) return null;
     return itemEffects.find((effect) => effect.type === 'colorSpecies');
@@ -87,118 +83,6 @@ export function ItemPageClient(props: ItemPageData) {
           tags={[]}
         />
       )}
-      <Box>
-        <Box
-          position="absolute"
-          h="45vh"
-          left="0"
-          width="100%"
-          bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${color[0]},${color[1]}, ${color[2]},.5) 80%)`}
-          zIndex={-1}
-        />
-        <Box pt={2}>
-          <ItemBreadcrumb item={item} officialLists={lists} useAppDir />
-        </Box>
-        <Flex gap={{ base: 4, md: 8 }} pt={4} alignItems="center">
-          <Flex
-            position="relative"
-            p={2}
-            bg={`rgba(${color[0]},${color[1]}, ${color[2]},.4)`}
-            borderRadius="md"
-            flexFlow="column"
-            justifyContent="center"
-            gap={2}
-            alignItems="center"
-            textAlign="center"
-            flex="0 0 auto"
-            minW="100px"
-            minH="100px"
-          >
-            <Image src={item.image} width={80} height={80} alt="" unoptimized />
-          </Flex>
-          <Box>
-            <Stack direction="row" mb={1} wrap="wrap" gap={0.5}>
-              <Badge borderRadius="md" asChild>
-                <MainLink
-                  prefetch={false}
-                  href={`/search?s=&category[]=${item.category ?? 'Unknown'}`}
-                >
-                  {item.category ?? '???'}
-                </MainLink>
-              </Badge>
-              {item.type === 'np' && (
-                <Badge colorPalette="green" borderRadius="md" asChild>
-                  <MainLink prefetch={false} href="/search?s=&type[]=np">
-                    NP
-                  </MainLink>
-                </Badge>
-              )}
-              {item.type === 'nc' && (
-                <Badge colorPalette="purple" borderRadius="md" asChild>
-                  <MainLink prefetch={false} href="/search?s=&type[]=nc">
-                    NC
-                  </MainLink>
-                </Badge>
-              )}
-              {item.type === 'pb' && (
-                <Badge colorPalette="yellow" borderRadius="md" asChild>
-                  <MainLink prefetch={false} href="/search?s=&type[]=pb">
-                    PB
-                  </MainLink>
-                </Badge>
-              )}
-              {item.isWearable && (
-                <Badge colorPalette="blue" borderRadius="md" asChild>
-                  <MainLink prefetch={false} href="/search?s=&type[]=wearable">
-                    {t('General.wearable')}
-                  </MainLink>
-                </Badge>
-              )}
-              {item.isNeohome && (
-                <Badge colorPalette="cyan" borderRadius="md" asChild>
-                  <MainLink prefetch={false} href="/search?s=&type[]=neohome">
-                    {t('General.neohome')}
-                  </MainLink>
-                </Badge>
-              )}
-              {item.isBD && (
-                <Badge colorPalette="red" borderRadius="md" asChild>
-                  <MainLink prefetch={false} href="/search?s=&type[]=battledome">
-                    {t('General.battledome')}
-                  </MainLink>
-                </Badge>
-              )}
-              {item.useTypes.canEat === 'true' && (
-                <Badge colorPalette="orange" borderRadius="md" asChild>
-                  <MainLink prefetch={false} href="/search?s=&type[]=canEat">
-                    {t('General.edible')}
-                  </MainLink>
-                </Badge>
-              )}
-              {item.useTypes.canRead === 'true' && (
-                <Badge colorPalette="orange" borderRadius="md" asChild>
-                  <MainLink prefetch={false} href="/search?s=&type[]=canRead">
-                    {t('General.readable')}
-                  </MainLink>
-                </Badge>
-              )}
-              {item.useTypes.canPlay === 'true' && (
-                <Badge colorPalette="orange" borderRadius="md" asChild>
-                  <MainLink prefetch={false} href="/search?s=&type[]=canPlay">
-                    {t('General.playable')}
-                  </MainLink>
-                </Badge>
-              )}
-            </Stack>
-            <Heading as="h1" size={{ base: 'lg', md: undefined }} fontWeight={'bold'}>
-              {item.name}
-            </Heading>
-            <Text fontSize={{ base: 'sm', md: 'inherit' }} as="h2">
-              {item.description}
-            </Text>
-          </Box>
-        </Flex>
-      </Box>
 
       <Flex
         minH="500px"

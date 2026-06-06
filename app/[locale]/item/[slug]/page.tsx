@@ -3,7 +3,7 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import { getLocale } from 'next-intl/server';
 import { getPathname } from '@i18n/navigation';
 import AppServerLayout from '@components/Layout/AppServerLayout';
-import { ItemPageClient } from '@app/_components/Item/ItemPageClient';
+import { ItemPage as ItemPageView } from '@app/_components/Item/ItemPage';
 import { buildItemPageMetadata, resolveItemPage } from '@app/utils/itemPage';
 
 export const revalidate = 60;
@@ -40,7 +40,7 @@ export default async function ItemPage({ params }: ItemPageProps) {
 
   return (
     <AppServerLayout disableNextSeo mainColor={item.color.hex + '66'}>
-      <ItemPageClient {...result.data} />
+      <ItemPageView data={result.data} />
     </AppServerLayout>
   );
 }
