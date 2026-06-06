@@ -1,27 +1,23 @@
-'use client';
-
-/** Trade preview card for the mall report flow (Pages Router). */
-import { Box, Card, Heading, List, Stack, StackSeparator, Text, Link } from '@chakra-ui/react';
-import { ItemData, LebronTrade } from '../../types';
-import { useFormatter, useTranslations } from 'next-intl';
+import { Box, Card, Heading, Link, List, Stack, StackSeparator, Text } from '@chakra-ui/react';
 import { UTCDate } from '@date-fns/utc';
+import { getFormatter, getTranslations } from 'next-intl/server';
+import { Link as I18nLink } from '@i18n/navigation';
 import {
   getTradeItemSearchLink,
   isSameTradeItem,
   isValidTradeDate,
 } from '@app/_components/Item/NCTrade/ncTradeHistoryUtils';
+import type { ItemData, LebronTrade } from '@types';
 
-type NCTradeCardProps = {
+type Props = {
   trade: LebronTrade;
   item?: ItemData;
-  color?: number[];
 };
 
-export const NCTradeCard = (props: NCTradeCardProps) => {
-  const t = useTranslations();
-  const format = useFormatter();
-  const { trade, item } = props;
-  const color: number[] = item?.color.rgb ?? props.color ?? [71, 178, 248];
+export async function NCTradeHistoryCard({ trade, item }: Props) {
+  const t = await getTranslations();
+  const format = await getFormatter();
+  const color: number[] = item?.color.rgb ?? [71, 178, 248];
 
   return (
     <Card.Root bg="blackAlpha.500" textAlign="left" borderRadius="xl">
@@ -44,21 +40,21 @@ export const NCTradeCard = (props: NCTradeCardProps) => {
             <List.Root as="ul" gap={1} ps={4}>
               {trade.itemsSent.split('+').map((traded, i) => (
                 <List.Item p={1} key={i} fontSize="xs">
-                  <Link
-                    p={1}
-                    borderRadius="md"
-                    bg={
-                      item && isSameTradeItem(traded, item)
-                        ? `rgba(${color[0]},${color[1]}, ${color[2]},.4)`
-                        : undefined
-                    }
-                    href={
-                      item && isSameTradeItem(traded, item) ? '#' : getTradeItemSearchLink(traded)
-                    }
-                    target="_blank"
-                  >
-                    {traded}
-                  </Link>
+                  {item && isSameTradeItem(traded, item) ? (
+                    <Text
+                      p={1}
+                      borderRadius="md"
+                      bg={`rgba(${color[0]},${color[1]}, ${color[2]},.4)`}
+                    >
+                      {traded}
+                    </Text>
+                  ) : (
+                    <Link asChild p={1} borderRadius="md">
+                      <I18nLink href={getTradeItemSearchLink(traded)} target="_blank">
+                        {traded}
+                      </I18nLink>
+                    </Link>
+                  )}
                 </List.Item>
               ))}
             </List.Root>
@@ -70,21 +66,21 @@ export const NCTradeCard = (props: NCTradeCardProps) => {
             <List.Root as="ul" gap={1} ps={4}>
               {trade.itemsReceived.split('+').map((traded, i) => (
                 <List.Item p={1} key={i} fontSize="xs">
-                  <Link
-                    p={1}
-                    borderRadius="md"
-                    bg={
-                      item && isSameTradeItem(traded, item)
-                        ? `rgba(${color[0]},${color[1]}, ${color[2]},.4)`
-                        : undefined
-                    }
-                    href={
-                      item && isSameTradeItem(traded, item) ? '#' : getTradeItemSearchLink(traded)
-                    }
-                    target="_blank"
-                  >
-                    {traded}
-                  </Link>
+                  {item && isSameTradeItem(traded, item) ? (
+                    <Text
+                      p={1}
+                      borderRadius="md"
+                      bg={`rgba(${color[0]},${color[1]}, ${color[2]},.4)`}
+                    >
+                      {traded}
+                    </Text>
+                  ) : (
+                    <Link asChild p={1} borderRadius="md">
+                      <I18nLink href={getTradeItemSearchLink(traded)} target="_blank">
+                        {traded}
+                      </I18nLink>
+                    </Link>
+                  )}
                 </List.Item>
               ))}
             </List.Root>
@@ -103,4 +99,4 @@ export const NCTradeCard = (props: NCTradeCardProps) => {
       </Card.Body>
     </Card.Root>
   );
-};
+}

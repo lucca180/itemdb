@@ -14,9 +14,9 @@ import { Center, Icon, Text } from '@chakra-ui/react';
 import { TbGiftOff } from 'react-icons/tb';
 import { getTranslations } from 'next-intl/server';
 import CardBase from '@components/Card/CardBase';
-import MatchTable from '@components/NCTrades/MatchTable';
-import NCTradeHistory from '@components/NCTrades/NCTradeHistory';
-import { TradeInsights } from '@components/NCTrades/TradeInsights';
+import MatchTable from '@app/_components/Item/NCTrade/MatchTable';
+import NCTradeHistory from '@app/_components/Item/NCTrade/NCTradeHistory';
+import TradeInsights from '@app/_components/Item/NCTrade/TradeInsights';
 import {
   filterSeekingLists,
   filterTradingLists,
