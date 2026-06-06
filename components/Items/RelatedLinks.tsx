@@ -4,7 +4,7 @@ import { ItemData, ItemEffect, ItemPetpetData, UserList } from '@types';
 import CardBase from '@components/Card/CardBase';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@i18n/navigation';
-import { loadPetpetData } from '@app/utils/loadUtils';
+import { loadPetpetData } from '@app/_components/Item/loadUtils';
 import {
   getPetpetColorId,
   getPetpetSpeciesFromString,

@@ -2,30 +2,22 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 
-export default async function handle(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method == 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Methods', 'POST');
-    return res.status(200).json({});
-  }
+export type ListMatchTargetType = 'seeker' | 'offerer';
 
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-
-  // target: username of the user whose list we want to match against
-  // users: array of usernames of users whose lists we want to match
-  // targetType: 'seeker' or 'offerer', defaults to 'seeker'
-  let { target, users, targetType } = req.body;
-  if (!targetType) targetType = 'seeker';
-
-  if (!target || !users || !Array.isArray(users) || Array.isArray(target))
-    return res.status(400).json({ error: 'Bad Request' });
+export async function getListMatchesMany(
+  target: string,
+  users: string[],
+  targetType: ListMatchTargetType = 'seeker',
+  sessionCookie?: string
+): Promise<Record<string, number[]>> {
+  if (!target || !users.length) return {};
 
   let user = null;
 
   try {
-    user = (await CheckAuth(req)).user;
-  } catch (e) {}
+    user = (await CheckAuth(null, undefined, sessionCookie)).user;
+  } catch {}
 
-  // If the user is not the target, they can only see public lists
   const reqIsTarget = user?.username === target;
 
   const lists = await prisma.userList.findMany({
@@ -80,7 +72,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     )
   );
 
-  const userMatch: { [username: string]: number[] } = {};
+  const userMatch: Record<string, number[]> = {};
 
   for (const list of lists) {
     const match = list.items.filter((item) => targetItemsSet.has(item.item_iid));
@@ -88,6 +80,27 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       userMatch[list.user.username ?? list.user_id] = match.map((item) => item.item_iid);
     }
   }
+
+  return userMatch;
+}
+
+export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method == 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Methods', 'POST');
+    return res.status(200).json({});
+  }
+
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  let { target, users, targetType } = req.body;
+  if (!targetType) targetType = 'seeker';
+
+  if (!target || !users || !Array.isArray(users) || Array.isArray(target)) {
+    return res.status(400).json({ error: 'Bad Request' });
+  }
+
+  const sessionCookie = req.cookies?.session;
+  const userMatch = await getListMatchesMany(target, users, targetType, sessionCookie);
 
   return res.status(200).json(userMatch);
 }

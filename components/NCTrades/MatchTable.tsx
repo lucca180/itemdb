@@ -1,3 +1,6 @@
+'use client';
+
+/** Seeking/trading list matches table. Also used by NP `ItemPriceCard`. */
 import { Table, Badge, Link, Skeleton, Text } from '@chakra-ui/react';
 import { isToday } from 'date-fns';
 import { UserList } from '../../types';

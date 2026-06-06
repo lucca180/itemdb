@@ -1,3 +1,6 @@
+'use client';
+
+/** NC Mall release / event insights tab. Data from server; show-more is client-only. */
 import { Badge, Flex, HStack, Icon, Text, Link, Button } from '@chakra-ui/react';
 import { getNCMallDataDates, getNCMallLink, isMallDiscounted } from '@components/Items/NCMallCard';
 import MainLink from '@components/Utils/MainLink';
@@ -40,7 +43,7 @@ export const TradeInsights = (props: TradeInsightsProps) => {
   }, [insights]);
 
   return (
-    <Flex direction="column">
+    <Flex direction="column" w="100%">
       <Flex bg="blackAlpha.300" p={2} borderRadius={'xl'} maxW="500px" flexFlow={'column'} gap={1}>
         <HStack color="whiteAlpha.700" mb={2}>
           <Icon as={MdInsights} boxSize="24px" />

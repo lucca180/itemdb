@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import { unstable_cache } from 'next/cache';
 import CardBase from '@components/Card/CardBase';
 import { ItemAvyCardList } from '@app/_components/Item/Avy/ItemAvyCardList';
-import { getOfficialItemLists } from '@app/utils/loadUtils';
+import { getOfficialItemLists } from '@app/_components/Item/loadUtils';
 import { getAvyData } from '@pages/api/v1/items/[id_name]/avys';
 import { getTranslations } from 'next-intl/server';
 import type { ItemData } from '@types';

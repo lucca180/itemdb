@@ -42,7 +42,17 @@ type ItemPageProps = {
 };
 
 export async function ItemPage({ data }: ItemPageProps) {
-  const { item, lists, tradeLists, itemEffects, colors, lastSeen, ncMallData, wearableData } = data;
+  const {
+    item,
+    lists,
+    tradeLists,
+    itemEffects,
+    colors,
+    lastSeen,
+    ncMallData,
+    wearableData,
+    ncTradeInsights,
+  } = data;
 
   const t = await getTranslations();
   const editSectionLabels = {
@@ -104,7 +114,12 @@ export async function ItemPage({ data }: ItemPageProps) {
               />
             )}
             {item.isNC && (
-              <NCTradeSection key={getKey('nc-trade')} item={item} tradeLists={tradeLists} />
+              <NCTradeSection
+                key={getKey('nc-trade')}
+                item={item}
+                tradeLists={tradeLists}
+                insights={ncTradeInsights}
+              />
             )}
             {itemEffects.length > 0 && (
               <ItemEffectsCard key={getKey('item-effects')} item={item} effects={itemEffects} />

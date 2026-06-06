@@ -1,3 +1,6 @@
+'use client';
+
+/** Lebron + itemdb NC trade history list. Data fetched on server by `NCTradeSection`. */
 import {
   Box,
   Card,

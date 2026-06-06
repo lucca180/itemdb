@@ -5,7 +5,7 @@ import CardBase from '@components/Card/CardBase';
 import ItemCard from '@components/Items/ItemCard';
 import { IconLink } from '@components/Utils/IconLink';
 import { Link as I18nLink } from '@i18n/navigation';
-import { loadPetpetData } from '@app/utils/loadUtils';
+import { loadPetpetData } from '@app/_components/Item/loadUtils';
 import { getTranslations } from 'next-intl/server';
 import type { ItemData } from '@types';
 import type { ReactNode } from 'react';
