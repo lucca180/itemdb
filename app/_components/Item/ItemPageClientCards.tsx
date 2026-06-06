@@ -1,10 +1,8 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { Flex } from '@chakra-ui/react';
 import dynamic from 'next/dynamic';
-import FindAtCard from '@components/Items/FindAtCard';
-import ItemInfoCard from '@components/Items/InfoCard';
-import ColorInfoCard from '@components/Items/ColorInfoCard';
 import AddToListSelect from '@components/UserLists/AddToListSelect';
 import SimilarItemsCard from '@components/Items/SimilarItemsCard';
 import ItemBdCard from '@components/Items/ItemBdCard';
@@ -14,7 +12,6 @@ import type { DyeworksData } from '@pages/api/v1/items/[id_name]/dyeworks';
 import type {
   AvyData,
   BDData,
-  FullItemColors,
   InsightsResponse,
   ItemData,
   ItemLastSeen,
@@ -44,38 +41,37 @@ function cardKey(itemKey: number, suffix: string) {
   return `${itemKey}${suffix}`;
 }
 
-export function ItemPageSidebarDesktop({ item, itemKey }: { item: ItemData; itemKey: number }) {
+export function ItemPageSidebarDesktop({
+  item,
+  itemKey,
+  children,
+}: {
+  item: ItemData;
+  itemKey: number;
+  children?: ReactNode;
+}) {
   return (
     <Flex flexFlow="column" display={{ base: 'none', lg: 'flex' }} gap={5}>
       <AddToListSelect key={cardKey(itemKey, 'add-to-list')} item={item} />
-      <FindAtCard key={cardKey(itemKey, 'find-at')} item={item} />
+      {children}
     </Flex>
   );
 }
 
-export function ItemPageSidebarMobile({ item, itemKey }: { item: ItemData; itemKey: number }) {
+export function ItemPageSidebarMobile({
+  item,
+  itemKey,
+  children,
+}: {
+  item: ItemData;
+  itemKey: number;
+  children?: ReactNode;
+}) {
   return (
     <Flex flexFlow="column" gap={{ base: 4, md: 6 }} display={{ base: 'flex', lg: 'none' }}>
       <AddToListSelect key={cardKey(itemKey, 'add-to-list')} item={item} />
-      <FindAtCard key={cardKey(itemKey, 'find-at')} item={item} />
+      {children}
     </Flex>
-  );
-}
-
-export function ItemPageItemInfo({
-  item,
-  colors,
-  itemKey,
-}: {
-  item: ItemData;
-  colors: FullItemColors;
-  itemKey: number;
-}) {
-  return (
-    <>
-      <ItemInfoCard key={cardKey(itemKey, 'item-info')} item={item} />
-      {colors && <ColorInfoCard key={cardKey(itemKey, 'color-info')} colors={colors} />}
-    </>
   );
 }
 

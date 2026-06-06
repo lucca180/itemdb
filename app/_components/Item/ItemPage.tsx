@@ -11,7 +11,6 @@ import { ItemPageWearablePreview } from '@app/_components/Item/ItemPageWearableP
 import {
   ItemPageAvyCard,
   ItemPageBdCard,
-  ItemPageItemInfo,
   ItemPageMainColumn,
   ItemPageMainColumnExtras,
   ItemPageManualCheck,
@@ -27,6 +26,9 @@ import ItemOfficialLists from '@components/Items/ItemOfficialList';
 import NcMallCard from '@components/Items/NCMallCard';
 import ItemRestock from '@components/Items/ItemRestockInfo';
 import RelatedLinksCard from '@components/Items/RelatedLinks';
+import FindAtCard from '@components/Items/FindAtCard';
+import ItemInfoCard from '@components/Items/InfoCard';
+import ColorInfoCard from '@components/Items/ColorInfoCard';
 
 type ItemPageProps = {
   data: ItemPageData;
@@ -76,8 +78,11 @@ export async function ItemPage({ data }: ItemPageProps) {
           flexFlow="column"
           gap={5}
         >
-          <ItemPageSidebarDesktop item={item} itemKey={itemKey} />
-          <ItemPageItemInfo item={item} colors={colors} itemKey={itemKey} />
+          <ItemPageSidebarDesktop item={item} itemKey={itemKey}>
+            <FindAtCard item={item} />
+          </ItemPageSidebarDesktop>
+          <ItemInfoCard item={item} />
+          {colors && <ColorInfoCard colors={colors} />}
           <ItemPageEditSection
             item={item}
             itemOpenable={itemOpenable}
@@ -97,7 +102,9 @@ export async function ItemPage({ data }: ItemPageProps) {
               <ItemPageManualCheck item={item} itemKey={itemKey} />
             </ItemPageAdminOnly>
             {item.isMissingInfo && <MissingInfoCard key={getKey('missing-info')} />}
-            <ItemPageSidebarMobile item={item} itemKey={itemKey} />
+            <ItemPageSidebarMobile item={item} itemKey={itemKey}>
+              <FindAtCard item={item} />
+            </ItemPageSidebarMobile>
             <ItemPageMainColumn
               item={item}
               itemKey={itemKey}
