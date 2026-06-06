@@ -1,6 +1,6 @@
-import { Badge, Flex, HStack, Icon, Link, Text } from '@chakra-ui/react';
-import { getFormatter, getTranslations } from 'next-intl/server';
+import { Badge, Flex, HStack, Link, Text } from '@chakra-ui/react';
 import { MdHelp, MdInsights } from 'react-icons/md';
+import { getFormatter, getTranslations } from 'next-intl/server';
 import { Link as I18nLink } from '@i18n/navigation';
 import { getNCMallDataDates, getNCMallLink, isMallDiscounted } from '@components/Items/NCMallCard';
 import {
@@ -25,7 +25,7 @@ export async function TradeInsights({ item, insights }: Props) {
     <Flex direction="column" w="100%">
       <Flex bg="blackAlpha.300" p={2} borderRadius="xl" maxW="500px" flexFlow="column" gap={1}>
         <HStack color="whiteAlpha.700" mb={2}>
-          <Icon as={MdInsights} boxSize="24px" />
+          <MdInsights size={24} />
           <Text fontSize="sm" fontWeight="bold" color="whiteAlpha.800">
             {t('ItemPage.release-history')}
           </Text>
@@ -138,7 +138,10 @@ async function MallReleaseCard({ release, parentData, itemData, item }: MallRele
             {release.discountPrice > 0
               ? `${format.number(release.discountPrice)} NC`
               : t('ItemPage.free')}
-            <Icon as={MdHelp} boxSize="12px" ml={1} verticalAlign="middle" />
+            <MdHelp
+              size={12}
+              style={{ display: 'inline', marginLeft: '4px', verticalAlign: 'middle' }}
+            />
           </Badge>
         )}
       </HStack>

@@ -1,2 +1,2 @@
-/** Re-export for legacy imports — canonical shell is `@app/_components/Item/NCTrade/NCTradeCard`. */
-export { default } from '@app/_components/Item/NCTrade/NCTradeCard';
+/** NC Trade item-page shell is `@app/_components/Item/NCTrade/NCTradeSection` (server). */
+export { NCTradeSection as default } from '@app/_components/Item/NCTrade/NCTradeSection';

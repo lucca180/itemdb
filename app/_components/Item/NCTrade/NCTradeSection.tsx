@@ -1,18 +1,20 @@
 /**
  * NC Trade — server orchestrator (item page).
  *
+ * Server shell (CardBase, badge, panels). Client islands: tab bar + panel visibility.
+ *
  * Loading strategy:
  * - Insights preloaded in `loadItemPage` (blocks page render)
- * - Card shell and tab buttons render immediately
  * - Seeking panel content blocks (Suspense)
  * - Trading, owls history, and owls tab label stream in parallel
  */
 import { cache } from 'react';
 import { Suspense } from 'react';
 import { cookies } from 'next/headers';
-import { Center, Icon, Text } from '@chakra-ui/react';
+import { Badge, Center, Flex, Icon, Link, Stat, Text } from '@chakra-ui/react';
 import { TbGiftOff } from 'react-icons/tb';
 import { getTranslations } from 'next-intl/server';
+import { Link as I18nLink } from '@i18n/navigation';
 import CardBase from '@components/Card/CardBase';
 import MatchTable from '@app/_components/Item/NCTrade/MatchTable';
 import NCTradeHistory from '@app/_components/Item/NCTrade/NCTradeHistory';
@@ -21,7 +23,11 @@ import {
   filterSeekingLists,
   filterTradingLists,
 } from '@app/_components/Item/NCTrade/ncTradeListFilters';
-import { NCTradeCard, NCTradePanelSkeleton } from '@app/_components/Item/NCTrade/NCTradeCard';
+import { NCTradePanel } from '@app/_components/Item/NCTrade/NCTradePanel';
+import { NCTradePanelSkeleton } from '@app/_components/Item/NCTrade/NCTradePanelSkeleton';
+import { NCTradeTabBar } from '@app/_components/Item/NCTrade/NCTradeTabBar';
+import { NCTradeTabProvider } from '@app/_components/Item/NCTrade/NCTradeTabContext';
+import { NCTradeValueBadge } from '@app/_components/Item/NCTrade/NCTradeValueBadge';
 import { hasNCTradeInsights, loadLebronTradeHistory } from '@app/_components/Item/loadUtils';
 import { getListMatchesMany } from '@pages/api/v1/lists/match/many';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
@@ -96,7 +102,119 @@ async function NCTradeOwlsTabLabel({ item }: Pick<Props, 'item'>) {
   );
 }
 
-export function NCTradeSection({ item, tradeLists, insights }: Props) {
+async function NCTradeOwlsCta() {
+  const t = await getTranslations();
+
+  return (
+    <Text fontSize="xs" textAlign="center" justifySelf="flex-end" color="whiteAlpha.600" mt={1}>
+      {t.rich('ItemPage.report-owls-cta', {
+        Link: (chunk) => (
+          <Link asChild color="whiteAlpha.800">
+            <I18nLink href="/mall/report?utm_content=owls-cta">{chunk}</I18nLink>
+          </Link>
+        ),
+      })}
+    </Text>
+  );
+}
+
+async function NCTradeNoTradeBadge() {
+  const t = await getTranslations();
+
+  return (
+    <Badge
+      colorPalette="gray"
+      fontSize="xs"
+      minW="15%"
+      maxW={{ base: '100%', md: '25%' }}
+      whiteSpace="normal"
+      textTransform="initial"
+      alignSelf="center"
+      borderRadius="md"
+    >
+      <Stat.Root
+        flex="initial"
+        justifyContent="center"
+        alignItems="center"
+        w="full"
+        textAlign="center"
+      >
+        <Stat.Label>
+          <Icon mt={2} boxSize="24px" as={TbGiftOff} />
+        </Stat.Label>
+        <Stat.ValueText mb={1}>{t('ItemPage.no-trade')}</Stat.ValueText>
+        <Stat.HelpText fontSize="xs" mt={0} fontWeight="medium">
+          {t('ItemPage.no-trade-help-text')}
+        </Stat.HelpText>
+      </Stat.Root>
+    </Badge>
+  );
+}
+
+async function NCTradeTradeableCard({
+  item,
+  tradeLists,
+  insights,
+  hasInsights,
+}: Props & { hasInsights: boolean }) {
+  const t = await getTranslations();
+  const seeking = filterSeekingLists(tradeLists);
+  const trading = filterTradingLists(tradeLists);
+  const defaultTab = hasInsights ? 'insights' : 'seeking';
+
+  return (
+    <NCTradeTabProvider defaultTab={defaultTab}>
+      <CardBase title={t('ItemPage.nc-trade')} color={item.color.rgb}>
+        <Flex flexFlow="column" minH="200px">
+          <NCTradeTabBar
+            hasInsights={hasInsights}
+            seekingCount={seeking.length}
+            tradingCount={trading.length}
+            labels={{
+              insights: t('ItemPage.insights'),
+              seeking: t('ItemPage.seeking'),
+              trading: t('ItemPage.trading'),
+              owlsFallback: t('ItemPage.owls-trades'),
+            }}
+            owlsTabLabel={
+              <Suspense fallback={<span>…</span>}>
+                <NCTradeOwlsTabLabel item={item} />
+              </Suspense>
+            }
+          />
+          <Flex flex={1} flexFlow={{ base: 'column', md: 'row' }} gap={3}>
+            <NCTradeValueBadge item={item} />
+            <Flex flexFlow="column" flex="1" overflow="hidden">
+              {hasInsights && insights && (
+                <NCTradePanel tab="insights">
+                  <TradeInsights item={item} insights={insights} />
+                </NCTradePanel>
+              )}
+              <NCTradePanel tab="seeking">
+                <Suspense fallback={<NCTradePanelSkeleton />}>
+                  <NCTradeSeekingTab tradeLists={tradeLists} />
+                </Suspense>
+              </NCTradePanel>
+              <NCTradePanel tab="trading">
+                <Suspense fallback={<NCTradePanelSkeleton />}>
+                  <NCTradeTradingTab tradeLists={tradeLists} />
+                </Suspense>
+              </NCTradePanel>
+              <NCTradePanel tab="ncTrading">
+                <Suspense fallback={<NCTradePanelSkeleton />}>
+                  <NCTradeHistoryTab item={item} />
+                </Suspense>
+              </NCTradePanel>
+            </Flex>
+          </Flex>
+          <NCTradeOwlsCta />
+        </Flex>
+      </CardBase>
+    </NCTradeTabProvider>
+  );
+}
+
+export async function NCTradeSection({ item, tradeLists, insights }: Props) {
   if (!item.isNC) return null;
 
   const hasInsights = hasNCTradeInsights(insights);
@@ -106,46 +224,28 @@ export function NCTradeSection({ item, tradeLists, insights }: Props) {
       return <NCTradeNoTradeCard item={item} />;
     }
 
+    const t = await getTranslations();
+
     return (
-      <NCTradeCard
-        item={item}
-        isNoTrade
-        hasInsights
-        defaultTab="insights"
-        insightsPanel={<TradeInsights item={item} insights={insights} />}
-      />
+      <CardBase color={item.color.rgb} title={t('ItemPage.nc-trade')}>
+        <Flex flexFlow="column" minH="auto">
+          <Flex flex={1} flexFlow={{ base: 'column', md: 'row' }} gap={3}>
+            <NCTradeNoTradeBadge />
+            <Flex flexFlow="column" flex="1" overflow="hidden">
+              <TradeInsights item={item} insights={insights} />
+            </Flex>
+          </Flex>
+        </Flex>
+      </CardBase>
     );
   }
 
   return (
-    <NCTradeCard
+    <NCTradeTradeableCard
       item={item}
-      lists={tradeLists}
+      tradeLists={tradeLists}
+      insights={insights}
       hasInsights={hasInsights}
-      defaultTab={hasInsights ? 'insights' : 'seeking'}
-      insightsPanel={
-        hasInsights && insights ? <TradeInsights item={item} insights={insights} /> : undefined
-      }
-      seekingPanel={
-        <Suspense fallback={<NCTradePanelSkeleton />}>
-          <NCTradeSeekingTab tradeLists={tradeLists} />
-        </Suspense>
-      }
-      tradingTab={
-        <Suspense fallback={<NCTradePanelSkeleton />}>
-          <NCTradeTradingTab tradeLists={tradeLists} />
-        </Suspense>
-      }
-      historyTab={
-        <Suspense fallback={<NCTradePanelSkeleton />}>
-          <NCTradeHistoryTab item={item} />
-        </Suspense>
-      }
-      owlsTabLabel={
-        <Suspense fallback={<span>…</span>}>
-          <NCTradeOwlsTabLabel item={item} />
-        </Suspense>
-      }
     />
   );
 }
