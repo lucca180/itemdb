@@ -3,8 +3,8 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import { getLocale } from 'next-intl/server';
 import { getPathname } from '@i18n/navigation';
 import AppServerLayout from '@components/Layout/AppServerLayout';
-import { ItemPage as ItemPageView } from '@app/_components/Item/ItemPage';
-import { buildItemPageMetadata, resolveItemPage } from '@app/utils/itemPage';
+import { ItemPage as ItemPageView } from '@app/_components/Item/page/ItemPage';
+import { buildItemPageMetadata, resolveItemPage } from '@app/utils/loadItemPage';
 
 export const revalidate = 60;
 

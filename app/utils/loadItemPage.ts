@@ -8,10 +8,7 @@ import {
   ItemData,
   ItemEffect,
   ItemLastSeen,
-  ItemMMEData,
-  ItemOpenable,
   ItemPetpetData,
-  ItemRecipe,
   NCMallData,
   PriceData,
   TradeData,
@@ -22,17 +19,13 @@ import { getItemDbCanonical, normalizeItemDbLocale } from '@utils/appPage';
 import { shouldShowTradeLists } from '@utils/utils';
 import { getItem } from '@pages/api/v1/items/[id_name]';
 import { getItemLists } from '@pages/api/v1/items/[id_name]/lists';
-import { getSimilarItems } from '@pages/api/v1/items/[id_name]/similar';
-import { getItemDrops, getItemParent } from '@pages/api/v1/items/[id_name]/drops';
+import { getItemParent } from '@pages/api/v1/items/[id_name]/drops';
 import { getItemPrices } from '@pages/api/v1/items/[id_name]/prices';
 import { getItemTrades } from '@pages/api/v1/trades';
 import { getLastSeen } from '@pages/api/v1/prices/stats';
 import { getItemEffects } from '@pages/api/v1/items/[id_name]/effects';
 import { getWearableData } from '@pages/api/v1/items/[id_name]/wearable';
 import { getItemNCMall } from '@pages/api/v1/items/[id_name]/ncmall';
-import { getItemRecipes } from '@pages/api/v1/items/[id_name]/recipes';
-import { getMMEData, isMME } from '@pages/api/v1/items/[id_name]/mme';
-import { DyeworksData, getDyeworksData } from '@pages/api/v1/items/[id_name]/dyeworks';
 import { getSingleItemColor } from '@pages/api/v1/items/[id_name]/colors';
 import { getPetpetData } from '@pages/api/v1/items/[id_name]/petpet';
 import { getNCTradeInsights } from '@pages/api/v1/mall/[iid]/insights';
@@ -42,11 +35,9 @@ import * as Sentry from '@sentry/nextjs';
 export type ItemPageData = {
   item: ItemData;
   colors: FullItemColors;
-  similarItems: ItemData[];
   lists?: UserList[];
   tradeLists?: UserList[];
   avyData: AvyData[] | null;
-  itemOpenable: ItemOpenable | null;
   itemParent: {
     parents_iid: number[];
     itemData: ItemData[];
@@ -57,9 +48,6 @@ export type ItemPageData = {
   itemEffects: ItemEffect[];
   wearableData: WearableData | null;
   ncMallData: NCMallData | null;
-  itemRecipes: ItemRecipe[] | null;
-  mmeData: ItemMMEData | null;
-  dyeData: DyeworksData | null;
   petpetData: ItemPetpetData | null;
   ncInsights: InsightsResponse | null;
   bdData: BDData | null;
@@ -108,9 +96,7 @@ async function fetchItemPageData(item: ItemData): Promise<ItemPageData | null> {
   const [
     colors,
     lists,
-    similarItems,
     tradeLists,
-    itemOpenable,
     itemParent,
     itemPrices,
     NPTrades,
@@ -118,9 +104,6 @@ async function fetchItemPageData(item: ItemData): Promise<ItemPageData | null> {
     itemEffects,
     wearableData,
     NCMallData,
-    itemRecipes,
-    mmeData,
-    dyeData,
     petpetData,
     ncInsights,
     bdData,
@@ -140,10 +123,8 @@ async function fetchItemPageData(item: ItemData): Promise<ItemPageData | null> {
       return Promise.all([
         getSingleItemColor(item),
         getItemLists(item.internal_id, true),
-        getSimilarItems(item),
         shouldShowTradeLists(item) ? getItemLists(item.internal_id, false) : [],
-        item.useTypes.canOpen !== 'false' ? getItemDrops(item.internal_id, item.isNC) : null,
-        getItemParent(item.internal_id, 4),
+        getItemParent(item.internal_id),
         !item.isNC ? getItemPrices({ iid: item.internal_id, includeUnconfirmed: true }) : [],
         !item.isNC ? getItemTrades({ item_iid: item.internal_id }) : [],
         !item.isNC
@@ -152,9 +133,6 @@ async function fetchItemPageData(item: ItemData): Promise<ItemPageData | null> {
         getItemEffects(item),
         item.isWearable ? (getWearableData(item.internal_id) as Promise<WearableData>) : null,
         item.isNC ? getItemNCMall(item.internal_id) : null,
-        !item.isNC ? getItemRecipes(item.internal_id) : null,
-        isMME(item.name) ? getMMEData(item) : null,
-        item.isNC && item.isWearable ? getDyeworksData(item) : null,
         !item.isNC && !item.isWearable && !item.isBD && !item.isNeohome
           ? getPetpetData(item)
           : null,
@@ -170,10 +148,8 @@ async function fetchItemPageData(item: ItemData): Promise<ItemPageData | null> {
   return {
     item,
     lists: lists.filter((l) => !l.officialTag.includes('Avatar')),
-    similarItems,
     colors: colors as FullItemColors,
     tradeLists,
-    itemOpenable,
     itemParent,
     NPTrades,
     NPPrices: itemPrices,
@@ -181,9 +157,6 @@ async function fetchItemPageData(item: ItemData): Promise<ItemPageData | null> {
     itemEffects,
     wearableData,
     ncMallData: NCMallData,
-    itemRecipes,
-    mmeData,
-    dyeData,
     petpetData,
     ncInsights,
     bdData,

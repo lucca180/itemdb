@@ -2,8 +2,8 @@ import { Flex } from '@chakra-ui/react';
 import { ItemData, ItemEffect } from '@types';
 import CardBase from '@components/Card/CardBase';
 import Color from 'color';
-import { getTranslations } from 'next-intl/server';
-import { EffectCard } from '@components/Items/EffectCard';
+import { getLocale, getTranslations } from 'next-intl/server';
+import { EffectCard, EffectTypes } from '@components/Items/EffectCard';
 
 type Props = {
   item: ItemData;
@@ -12,6 +12,7 @@ type Props = {
 
 export default async function ItemEffectsCard(props: Props) {
   const t = await getTranslations();
+  const locale = await getLocale();
   const { item, effects } = props;
   const color = Color(item.color.hex);
 
@@ -24,9 +25,13 @@ export default async function ItemEffectsCard(props: Props) {
         flexWrap={'wrap'}
         css={{ '& a': { color: color.lightness(70).hex() } }}
       >
-        {effects.map((effect, i) => (
-          <EffectCard key={i} effect={effect} />
-        ))}
+        {effects.map((effect, i) => {
+          const effectType = effect.type;
+          //@ts-expect-error ts is dumb
+          const typeName = EffectTypes[effectType][`name_${locale}`];
+
+          return <EffectCard key={i} effect={effect} typeName={typeName} />;
+        })}
       </Flex>
     </CardBase>
   );

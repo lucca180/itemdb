@@ -24,7 +24,15 @@ export default async function ColorInfoCard(props: Props) {
         alignItems: 'center',
       }}
     >
-      <ColorInfoCardPalette colors={colors} />
+      <ColorInfoCardPalette
+        colors={colors}
+        labels={{
+          invisibleItem: t('ItemPage.invisible-item'),
+          showMore: t('ItemPage.show-more'),
+          showLess: t('ItemPage.show-less'),
+          copiedToClipboard: t('Layout.copied-to-clipboard'),
+        }}
+      />
     </CardBase>
   );
 }

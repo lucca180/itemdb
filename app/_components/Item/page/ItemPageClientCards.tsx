@@ -1,24 +1,19 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { Fragment } from 'react';
 import { Flex } from '@chakra-ui/react';
 import dynamic from 'next/dynamic';
 import AddToListSelect from '@components/UserLists/AddToListSelect';
-import SimilarItemsCard from '@components/Items/SimilarItemsCard';
 import ItemBdCard from '@components/Items/ItemBdCard';
 import ItemAvyCard from '@components/Items/ItemAvyCard';
-import type { ItemPageData } from '@app/utils/itemPage';
-import type { DyeworksData } from '@pages/api/v1/items/[id_name]/dyeworks';
 import type {
   AvyData,
   BDData,
   InsightsResponse,
   ItemData,
   ItemLastSeen,
-  ItemMMEData,
-  ItemOpenable,
   ItemPetpetData,
-  ItemRecipe,
   PriceData,
   TradeData,
   UserList,
@@ -29,12 +24,7 @@ const ItemPriceCard = dynamic(() => import('@components/Price/ItemPriceCard'));
 const NCTrade = dynamic(() => import('@components/NCTrades'));
 const ItemMyLists = dynamic(() => import('@components/Items/MyListsCard'));
 const ItemComments = dynamic(() => import('@components/Items/ItemComments'));
-const ItemDrops = dynamic(() => import('@components/Items/ItemDrops'));
-const ItemParent = dynamic(() => import('@components/Items/ItemParent'));
 const TradeCard = dynamic(() => import('@components/Trades/TradeCard'));
-const ItemRecipes = dynamic(() => import('@components/Items/ItemRecipes'));
-const MMECard = dynamic(() => import('@components/Items/MMECard'));
-const DyeCard = dynamic(() => import('@components/Items/DyeCard'));
 const PetpetCard = dynamic(() => import('@components/Items/PetpetCard'));
 
 function cardKey(itemKey: number, suffix: string) {
@@ -127,41 +117,18 @@ export function ItemPageMyLists({ item, itemKey }: { item: ItemData; itemKey: nu
 export function ItemPageMainColumnExtras({
   item,
   itemKey,
-  mmeData,
-  dyeData,
   petpetData,
-  itemRecipes,
-  itemOpenable,
-  similarItems,
 }: {
   item: ItemData;
   itemKey: number;
-  mmeData: ItemMMEData | null;
-  dyeData: DyeworksData | null;
   petpetData: ItemPetpetData | null;
-  itemRecipes: ItemRecipe[] | null;
-  itemOpenable: ItemOpenable | null;
-  similarItems: ItemData[];
 }) {
   return (
     <>
-      {mmeData && <MMECard key={cardKey(itemKey, 'mme-card')} item={item} mmeData={mmeData} />}
-      {dyeData && <DyeCard key={cardKey(itemKey, 'dye-card')} item={item} dyeData={dyeData} />}
       {petpetData && (
         <PetpetCard key={cardKey(itemKey, 'petpet-card')} item={item} petpetData={petpetData} />
       )}
-      {itemRecipes && itemRecipes.length > 0 && (
-        <ItemRecipes key={cardKey(itemKey, 'item-recipes')} item={item} recipes={itemRecipes} />
-      )}
       {item.comment && <ItemComments key={cardKey(itemKey, 'item-comments')} item={item} />}
-      {itemOpenable && (
-        <ItemDrops key={cardKey(itemKey, 'item-drops')} item={item} itemOpenable={itemOpenable} />
-      )}
-      <SimilarItemsCard
-        key={cardKey(itemKey, 'similar-items')}
-        item={item}
-        similarItems={similarItems}
-      />
     </>
   );
 }
@@ -188,18 +155,6 @@ export function ItemPageAvyCard({
   avyData: AvyData[];
 }) {
   return <ItemAvyCard key={cardKey(itemKey, 'item-avy-card')} item={item} avyData={avyData} />;
-}
-
-export function ItemPageParentCard({
-  item,
-  itemKey,
-  itemParent,
-}: {
-  item: ItemData;
-  itemKey: number;
-  itemParent: ItemPageData['itemParent'];
-}) {
-  return <ItemParent key={cardKey(itemKey, 'item-parent')} item={item} parent={itemParent} />;
 }
 
 export function ItemPageTradeCard({

@@ -1,27 +1,29 @@
 import { Accordion, Box } from '@chakra-ui/react';
-import { ItemData, ItemOpenable, PrizePoolData } from '../../types';
-import { DropPool } from '../Items/ItemDrops';
-import { useTranslations } from 'next-intl';
+import { DropPool } from '@app/_components/Item/drops/ItemDropPool';
+import type { UnknownCategoryLabels } from '@app/_components/Item/drops/ItemDropPool';
+import type { PoolTextData } from '@app/_components/Item/drops/buildItemDropsContentProps';
+import type { ItemData, ItemOpenable, PrizePoolData } from '@types';
 
 type OldPoolDropsProps = {
   pools: PrizePoolData[];
   itemOpenable: ItemOpenable;
   item: ItemData;
   dropData: ItemData[];
+  oldPoolTitles: string[];
+  poolTexts: Record<string, PoolTextData>;
+  unknownLabels: UnknownCategoryLabels;
 };
 
 const OldPoolDrops = (props: OldPoolDropsProps) => {
-  const { pools, itemOpenable, item, dropData } = props;
-  const t = useTranslations();
+  const { pools, itemOpenable, item, dropData, oldPoolTitles, poolTexts, unknownLabels } = props;
+
   return (
     <Accordion.Root collapsible bg="blackAlpha.500">
       {pools.map((pool, index) => (
         <Accordion.Item key={index} value={`pool-${index}`}>
           <Accordion.ItemTrigger>
             <Box as="span" flex="1" textAlign="left">
-              {t('ItemPage.old-pool-x', {
-                x: index + 1,
-              })}
+              {oldPoolTitles[index]}
             </Box>
             <Accordion.ItemIndicator />
           </Accordion.ItemTrigger>
@@ -32,7 +34,9 @@ const OldPoolDrops = (props: OldPoolDropsProps) => {
                 itemOpenable={itemOpenable}
                 item={item}
                 dropData={dropData}
-                forceOddsText
+                poolText={poolTexts[pool.name] ?? {}}
+                unknownLabels={unknownLabels}
+                hideOdds
               />
             </Accordion.ItemBody>
           </Accordion.ItemContent>

@@ -4,7 +4,6 @@ import { Button, Center, Flex, Icon, IconButton, Link, Text } from '@chakra-ui/r
 import { useToast } from '@utils/theme/toast';
 import { useState } from 'react';
 import { AiFillEyeInvisible } from 'react-icons/ai';
-import { useTranslations } from 'next-intl';
 import { BiCopy, BiSearch } from 'react-icons/bi';
 import Color from 'color';
 import { Link as I18nLink } from '@i18n/navigation';
@@ -21,10 +20,15 @@ const colorKeysOrder: (keyof FullItemColors)[] = [
 
 type ColorInfoCardPaletteProps = {
   colors: FullItemColors;
+  labels: {
+    invisibleItem: string;
+    showMore: string;
+    showLess: string;
+    copiedToClipboard: string;
+  };
 };
 
-export function ColorInfoCardPalette({ colors }: ColorInfoCardPaletteProps) {
-  const t = useTranslations();
+export function ColorInfoCardPalette({ colors, labels }: ColorInfoCardPaletteProps) {
   const toast = useToast();
   const [showMore, setShowMore] = useState(false);
 
@@ -39,7 +43,7 @@ export function ColorInfoCardPalette({ colors }: ColorInfoCardPaletteProps) {
 
     toast({
       id: 'color-info-card-copy',
-      title: t('Layout.copied-to-clipboard'),
+      title: labels.copiedToClipboard,
       description: text,
       status: 'success',
       duration: 2000,
@@ -61,7 +65,7 @@ export function ColorInfoCardPalette({ colors }: ColorInfoCardPaletteProps) {
       <Center flexFlow="column" gap={1}>
         <Icon as={AiFillEyeInvisible} boxSize="32px" opacity={0.4} />
         <Text fontSize="xs" color="gray.200">
-          {t('ItemPage.invisible-item')}
+          {labels.invisibleItem}
         </Text>
       </Center>
     );
@@ -139,7 +143,7 @@ export function ColorInfoCardPalette({ colors }: ColorInfoCardPaletteProps) {
         })}
       </Flex>
       <Button size="xs" colorPalette="whiteAlpha" variant="subtle" onClick={toggleShowMore}>
-        {showMore ? t('ItemPage.show-less') : t('ItemPage.show-more')}
+        {showMore ? labels.showLess : labels.showMore}
       </Button>
     </>
   );

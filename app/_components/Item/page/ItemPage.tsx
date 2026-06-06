@@ -1,13 +1,13 @@
 import { Flex } from '@chakra-ui/react';
-import type { ItemPageData } from '@app/utils/itemPage';
-import { ItemHeader } from '@app/_components/Item/ItemHeader';
+import type { ItemPageData } from '@app/utils/loadItemPage';
+import { ItemHeader } from '@app/_components/Item/page/ItemHeader';
 import {
   ItemPageAdminOnly,
   ItemPageEditSection,
   ItemPageUserOnly,
-} from '@app/_components/Item/ItemPageAuthGates';
-import { ItemPageOutfitSection } from '@app/_components/Item/ItemPageOutfitSection';
-import { ItemPageWearablePreview } from '@app/_components/Item/ItemPageWearablePreview';
+} from '@app/_components/Item/page/ItemPageAuthGates';
+import { ItemPageOutfitSectionLoader } from '@app/_components/Item/page/ItemPageOutfitSectionLoader';
+import { ItemPageWearablePreview } from '@app/_components/Item/page/ItemPageWearablePreview';
 import {
   ItemPageAvyCard,
   ItemPageBdCard,
@@ -15,11 +15,10 @@ import {
   ItemPageMainColumnExtras,
   ItemPageManualCheck,
   ItemPageMyLists,
-  ItemPageParentCard,
   ItemPageSidebarDesktop,
   ItemPageSidebarMobile,
   ItemPageTradeCard,
-} from '@app/_components/Item/ItemPageClientCards';
+} from '@app/_components/Item/page/ItemPageClientCards';
 import MissingInfoCard from '@components/Items/MissingInfoCard';
 import ItemEffectsCard from '@components/Items/ItemEffectsCard';
 import ItemOfficialLists from '@components/Items/ItemOfficialList';
@@ -29,6 +28,13 @@ import RelatedLinksCard from '@components/Items/RelatedLinks';
 import FindAtCard from '@components/Items/FindAtCard';
 import ItemInfoCard from '@components/Items/InfoCard';
 import ColorInfoCard from '@components/Items/ColorInfoCard';
+import { ItemDropsSection } from '@app/_components/Item/drops/ItemDropsSection';
+import MMECard from '@app/_components/Item/mme/MMECard';
+import DyeCard from '@app/_components/Item/dye/DyeCard';
+import ItemRecipesCard from '@app/_components/Item/recipes/ItemRecipesCard';
+import ItemParent from '@components/Items/ItemParent';
+import { SimilarItemsCard } from '@app/_components/Item/similarItems/SimilarItemsCard';
+import { getTranslations } from 'next-intl/server';
 
 type ItemPageProps = {
   data: ItemPageData;
@@ -39,23 +45,24 @@ export async function ItemPage({ data }: ItemPageProps) {
     item,
     lists,
     tradeLists,
-    itemOpenable,
     itemParent,
     NPTrades: trades,
     itemEffects,
-    itemRecipes,
-    mmeData,
-    dyeData,
     petpetData,
     ncInsights,
     avyData,
     colors,
     lastSeen,
-    similarItems,
     bdData,
     ncMallData,
     wearableData,
   } = data;
+
+  const t = await getTranslations();
+  const editSectionLabels = {
+    reportError: t('ItemPage.report-error'),
+    edit: t('Button.edit'),
+  };
 
   const itemKey = item.internal_id;
   const getKey = (str: string) => itemKey + str;
@@ -85,9 +92,9 @@ export async function ItemPage({ data }: ItemPageProps) {
           {colors && <ColorInfoCard colors={colors} />}
           <ItemPageEditSection
             item={item}
-            itemOpenable={itemOpenable}
             itemEffects={itemEffects}
             petpetData={petpetData}
+            labels={editSectionLabels}
           />
         </Flex>
         <Flex
@@ -123,16 +130,12 @@ export async function ItemPage({ data }: ItemPageProps) {
             <ItemPageUserOnly>
               <ItemPageMyLists item={item} itemKey={itemKey} />
             </ItemPageUserOnly>
-            <ItemPageMainColumnExtras
-              item={item}
-              itemKey={itemKey}
-              mmeData={mmeData}
-              dyeData={dyeData}
-              petpetData={petpetData}
-              itemRecipes={itemRecipes}
-              itemOpenable={itemOpenable}
-              similarItems={similarItems}
-            />
+            <ItemPageMainColumnExtras item={item} itemKey={itemKey} petpetData={petpetData} />
+            <MMECard key={getKey('mme-card')} item={item} />
+            <DyeCard key={getKey('dye-card')} item={item} />
+            <ItemRecipesCard key={getKey('item-recipes')} item={item} />
+            <ItemDropsSection key={getKey('item-drops')} item={item} />
+            <SimilarItemsCard key={getKey('similar-items')} item={item} />
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>
             {bdData && <ItemPageBdCard item={item} itemKey={itemKey} bdData={bdData} />}
@@ -142,7 +145,7 @@ export async function ItemPage({ data }: ItemPageProps) {
             {item.findAt.restockShop && (
               <ItemRestock key={getKey('item-restock')} item={item} lastSeen={lastSeen} />
             )}
-            {itemOpenable && <ItemPageOutfitSection item={item} itemOpenable={itemOpenable} />}
+            <ItemPageOutfitSectionLoader item={item} />
             <ItemPageWearablePreview
               item={item}
               itemEffects={itemEffects}
@@ -152,7 +155,7 @@ export async function ItemPage({ data }: ItemPageProps) {
               <ItemPageAvyCard item={item} itemKey={itemKey} avyData={avyData} />
             )}
             {itemParent.parents_iid.length > 0 && (
-              <ItemPageParentCard item={item} itemKey={itemKey} itemParent={itemParent} />
+              <ItemParent key={getKey('item-parent')} item={item} parent={itemParent} />
             )}
             {!item.isNC && item.status === 'active' && (
               <ItemPageTradeCard item={item} itemKey={itemKey} trades={trades} />

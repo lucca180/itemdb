@@ -48,13 +48,12 @@ export const EffectTypes = {
 
 type EffectCardProps = {
   effect: ItemEffect;
+  typeName: string;
 };
 
 export const EffectCard = (props: EffectCardProps) => {
   const effectType = props.effect.type;
-  const locale = useLocale();
-  //@ts-expect-error ts is dumb
-  const name = EffectTypes[effectType][`name_${locale}`];
+  const name = props.typeName;
 
   return (
     <Flex

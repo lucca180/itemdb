@@ -1,10 +1,7 @@
-import { Button, Flex } from '@chakra-ui/react';
-import axios from 'axios';
-import React, { useEffect, useState } from 'react';
-import { ItemData } from '../../types';
-import CardBase from '../Card/CardBase';
-import ItemCard from './ItemCard';
-import { useTranslations } from 'next-intl';
+import CardBase from '@components/Card/CardBase';
+import { ItemParentGrid } from '@components/Items/ItemParentGrid';
+import { getTranslations } from 'next-intl/server';
+import type { ItemData } from '@types';
 
 type Props = {
   item: ItemData;
@@ -14,55 +11,24 @@ type Props = {
   };
 };
 
-const ItemParent = (props: Props) => {
-  const t = useTranslations();
-  const [parentData, setParentData] = React.useState<ItemData[]>(props.parent.itemData);
-  const { item } = props;
-  const { parents_iid: parentItems } = props.parent;
-  const color = item.color.rgb;
-  const [showMore, setShowMore] = useState(false);
+export default async function ItemParent(props: Props) {
+  const t = await getTranslations();
+  const { item, parent } = props;
+  const parentData = [...parent.itemData].sort(
+    (a, b) => (b.item_id ?? b.internal_id) - (a.item_id ?? a.internal_id)
+  );
 
-  const init = async () => {
-    if (parentItems.length === parentData.length) return;
-    const itemRes = await axios.post(`/api/v1/items/many`, {
-      id: parentItems,
-    });
-
-    setParentData(Object.values(itemRes.data));
-  };
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    init();
-  }, [parentItems]);
+  if (parentData.length === 0) return null;
 
   return (
-    <CardBase title={t('ItemPage.found-inside')} color={color}>
-      <Flex gap={3} wrap="wrap" justifyContent="center">
-        {parentData
-          .sort((a, b) => (b.item_id ?? b.internal_id) - (a.item_id ?? a.internal_id))
-          .slice(0, showMore ? parentData.length : 4)
-          .map((item) => {
-            return (
-              <ItemCard
-                uniqueID={`found-inside`}
-                key={item.internal_id}
-                item={item}
-                small
-                utm_content="found-inside"
-              />
-            );
-          })}
-      </Flex>
-      {parentItems.length > 4 && (
-        <Flex justifyContent="center" mt={3}>
-          <Button size={'sm'} onClick={() => setShowMore((current) => !current)}>
-            {!showMore ? t('ItemPage.show-more') : t('ItemPage.show-less')}
-          </Button>
-        </Flex>
-      )}
+    <CardBase title={t('ItemPage.found-inside')} color={item.color.rgb}>
+      <ItemParentGrid
+        items={parentData}
+        labels={{
+          showMore: t('ItemPage.show-more'),
+          showLess: t('ItemPage.show-less'),
+        }}
+      />
     </CardBase>
   );
-};
-
-export default ItemParent;
+}
