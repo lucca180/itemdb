@@ -19,7 +19,6 @@ import { getItemDbCanonical, normalizeItemDbLocale } from '@utils/appPage';
 import { shouldShowTradeLists } from '@utils/utils';
 import { getItem } from '@pages/api/v1/items/[id_name]';
 import { getItemLists } from '@pages/api/v1/items/[id_name]/lists';
-import { getItemParent } from '@pages/api/v1/items/[id_name]/drops';
 import { getItemPrices } from '@pages/api/v1/items/[id_name]/prices';
 import { getItemTrades } from '@pages/api/v1/trades';
 import { getLastSeen } from '@pages/api/v1/prices/stats';
@@ -32,16 +31,14 @@ import { getNCTradeInsights } from '@pages/api/v1/mall/[iid]/insights';
 import { getAvyData } from '@pages/api/v1/items/[id_name]/avys';
 import * as Sentry from '@sentry/nextjs';
 
+const getOfficialItemLists = cache((internalId: number) => getItemLists(internalId, true));
+
 export type ItemPageData = {
   item: ItemData;
   colors: FullItemColors;
   lists?: UserList[];
   tradeLists?: UserList[];
   avyData: AvyData[] | null;
-  itemParent: {
-    parents_iid: number[];
-    itemData: ItemData[];
-  };
   lastSeen: ItemLastSeen | null;
   NPTrades: TradeData[];
   NPPrices: PriceData[];
@@ -97,7 +94,6 @@ async function fetchItemPageData(item: ItemData): Promise<ItemPageData | null> {
     colors,
     lists,
     tradeLists,
-    itemParent,
     itemPrices,
     NPTrades,
     lastSeen,
@@ -122,9 +118,8 @@ async function fetchItemPageData(item: ItemData): Promise<ItemPageData | null> {
     async () => {
       return Promise.all([
         getSingleItemColor(item),
-        getItemLists(item.internal_id, true),
+        getOfficialItemLists(item.internal_id),
         shouldShowTradeLists(item) ? getItemLists(item.internal_id, false) : [],
-        getItemParent(item.internal_id),
         !item.isNC ? getItemPrices({ iid: item.internal_id, includeUnconfirmed: true }) : [],
         !item.isNC ? getItemTrades({ item_iid: item.internal_id }) : [],
         !item.isNC
@@ -138,7 +133,9 @@ async function fetchItemPageData(item: ItemData): Promise<ItemPageData | null> {
           : null,
         item.isNC ? getNCTradeInsights(item.internal_id) : null,
         null,
-        getAvyData(item.internal_id),
+        getOfficialItemLists(item.internal_id).then((officialLists) =>
+          getAvyData(item.internal_id, officialLists)
+        ),
       ]);
     }
   );
@@ -150,7 +147,6 @@ async function fetchItemPageData(item: ItemData): Promise<ItemPageData | null> {
     lists: lists.filter((l) => !l.officialTag.includes('Avatar')),
     colors: colors as FullItemColors,
     tradeLists,
-    itemParent,
     NPTrades,
     NPPrices: itemPrices,
     lastSeen,
@@ -164,11 +160,7 @@ async function fetchItemPageData(item: ItemData): Promise<ItemPageData | null> {
   };
 }
 
-export const getItemPageData = cache(async (slug: string) => {
-  const item = await getItem(slug, true);
-  if (!item?.slug || slug !== item.slug) return null;
-  return fetchItemPageData(item);
-});
+export const getItemPageData = cache(async (item: ItemData) => fetchItemPageData(item));
 
 export const resolveItemPage = cache(async (slugParam: string): Promise<ItemPageRouteResult> => {
   if (!slugParam) return { type: 'notFound' };
@@ -186,7 +178,7 @@ export const resolveItemPage = cache(async (slugParam: string): Promise<ItemPage
     if (slugParam !== item.slug) return { type: 'redirect', href: `/item/${item.slug}` };
   }
 
-  const data = await getItemPageData(item.slug!);
+  const data = await getItemPageData(item);
   if (!data) return { type: 'notFound' };
 
   return { type: 'ok', data };

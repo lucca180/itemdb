@@ -2,16 +2,16 @@
 
 import { Text, Alert, Link, useDisclosure } from '@chakra-ui/react';
 import { useMemo } from 'react';
-import { DropPool, HelpNeeded } from '@app/_components/Item/drops/ItemDropPool';
+import { DropPool, HelpNeeded } from '@app/_components/Item/Drops/ItemDropPool';
 import dynamic from 'next/dynamic';
 import type {
   ItemDropsContentLabels,
   PoolTextData,
-} from '@app/_components/Item/drops/buildItemDropsContentProps';
+} from '@app/_components/Item/Drops/buildItemDropsContentProps';
 import type { ItemData, ItemOpenable } from '@types';
 import type { ReactNode } from 'react';
 
-const OldPoolDrops = dynamic(() => import('@app/_components/Item/drops/OldPoolDrops'));
+const OldPoolDrops = dynamic(() => import('@app/_components/Item/Drops/OldPoolDrops'));
 const OfficialOddsModal = dynamic(() => import('@components/Modal/OfficialOddsModal'));
 
 type Props = {

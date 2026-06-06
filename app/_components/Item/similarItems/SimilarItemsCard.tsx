@@ -2,8 +2,8 @@ import { Suspense } from 'react';
 import { Flex, Text } from '@chakra-ui/react';
 import CardBase from '@components/Card/CardBase';
 import ItemCard from '@components/Items/ItemCard';
-import { SimilarItemsCardFallbackShell } from '@app/_components/Item/similarItems/SimilarItemsCardFallbackShell';
-import { loadSimilarItemData } from '@app/_components/Item/similarItems/loadSimilarItems';
+import { SimilarItemsCardFallbackShell } from '@app/_components/Item/SimilarItems/SimilarItemsCardFallbackShell';
+import { loadSimilarItemData } from '@app/_components/Item/SimilarItems/loadSimilarItems';
 import { getTranslations } from 'next-intl/server';
 import type { ItemData } from '@types';
 
@@ -23,10 +23,7 @@ export async function SimilarItemsCard({ item }: Props) {
 }
 
 async function SimilarItemsCardContent({ item }: Props) {
-  const [similarItemData, t] = await Promise.all([
-    loadSimilarItemData(item.internal_id),
-    getTranslations(),
-  ]);
+  const [similarItemData, t] = await Promise.all([loadSimilarItemData(item), getTranslations()]);
 
   return (
     <CardBase title={t('ItemPage.suggestion')} color={item.color.rgb}>

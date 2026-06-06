@@ -1,8 +1,8 @@
 import { Suspense } from 'react';
 import { getTranslations } from 'next-intl/server';
-import ItemDrops from '@app/_components/Item/drops/ItemDrops';
-import { ItemDropsFallbackShell } from '@app/_components/Item/drops/ItemDropsFallbackShell';
-import { loadItemOpenableMeta } from '@app/_components/Item/drops/loadItemDrops';
+import ItemDrops from '@app/_components/Item/Drops/ItemDrops';
+import { ItemDropsFallbackShell } from '@app/_components/Item/Drops/ItemDropsFallbackShell';
+import { loadItemOpenableMeta } from '@app/_components/Item/Drops/loadItemDrops';
 import type { ItemData } from '@types';
 
 type Props = {

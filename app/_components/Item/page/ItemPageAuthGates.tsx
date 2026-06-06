@@ -30,27 +30,36 @@ export function ItemPageEditSection(props: ItemPageEditSectionProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [itemOpenable, setItemOpenable] = useState<ItemOpenable | null>(null);
   const [isItemOpenableLoading, setIsItemOpenableLoading] = useState(false);
+  const [itemOpenableLoadError, setItemOpenableLoadError] = useState(false);
   const { item, itemEffects, petpetData, labels } = props;
+
+  const loadItemOpenableForEdit = (slug: string) => {
+    setItemOpenableLoadError(false);
+    setItemOpenable(null);
+    setIsItemOpenableLoading(true);
+    fetchItemOpenable(slug)
+      .then((openable) => setItemOpenable(openable))
+      .catch(() => setItemOpenableLoadError(true))
+      .finally(() => setIsItemOpenableLoading(false));
+  };
 
   const handleOpenEdit = () => {
     setIsEditModalOpen(true);
 
     if (item.useTypes.canOpen === 'false' || !item.slug) {
       setItemOpenable(null);
+      setItemOpenableLoadError(false);
       setIsItemOpenableLoading(false);
       return;
     }
 
-    setItemOpenable(null);
-    setIsItemOpenableLoading(true);
-    fetchItemOpenable(item.slug)
-      .then((openable) => setItemOpenable(openable))
-      .finally(() => setIsItemOpenableLoading(false));
+    loadItemOpenableForEdit(item.slug);
   };
 
   const handleCloseEdit = () => {
     setIsEditModalOpen(false);
     setItemOpenable(null);
+    setItemOpenableLoadError(false);
     setIsItemOpenableLoading(false);
   };
 
@@ -61,6 +70,8 @@ export function ItemPageEditSection(props: ItemPageEditSectionProps) {
           isOpen={isEditModalOpen}
           itemOpenable={itemOpenable}
           isItemOpenableLoading={isItemOpenableLoading}
+          itemOpenableLoadError={itemOpenableLoadError}
+          onRetryItemOpenable={item.slug ? () => loadItemOpenableForEdit(item.slug!) : undefined}
           itemEffects={itemEffects}
           petpetData={petpetData}
           item={item}

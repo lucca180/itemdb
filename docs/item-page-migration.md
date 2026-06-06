@@ -4,7 +4,8 @@ Plano gradual para mover a UI de `/item/[slug]` de um monólito client para comp
 
 Rota: [`app/[locale]/item/[slug]/page.tsx`](../app/[locale]/item/[slug]/page.tsx)  
 Loader principal: [`app/utils/loadItemPage.ts`](../app/utils/loadItemPage.ts)  
-Orquestrador: [`app/_components/Item/page/ItemPage.tsx`](../app/_components/Item/page/ItemPage.tsx)
+Orquestrador: [`app/_components/Item/page/ItemPage.tsx`](../app/_components/Item/page/ItemPage.tsx)  
+Review fixes (pós PR #22): [`item-page-review-fixes.md`](./item-page-review-fixes.md)
 
 ## Estrutura (`app/_components/Item/`)
 
@@ -13,19 +14,31 @@ Item/
 ├── page/           # composição da página (ItemPage, header, client gates, sidebars)
 ├── drops/          # ItemDropsSection, loaders, ilhas client de drops
 ├── similarItems/   # SimilarItemsCard + fallback shell
+├── parent/         # ItemParent (server + fetch) + ItemParentGrid (client toggle)
 ├── mme/            # MMECard
 ├── dye/            # DyeCard
 └── recipes/        # ItemRecipesCard
 ```
 
-Cards genéricos de display (sem fetch App Router) permanecem em [`components/Items/`](../components/Items/) — ex.: `ItemParent`, `ItemEffectsCard`, `FindAtCard`.
+Cards genéricos de display (sem fetch App Router) permanecem em [`components/Items/`](../components/Items/) — ex.: `ItemEffectsCard`, `FindAtCard`, `ColorInfoCard`.
+
+### `parent/` — mínimo de arquivos
+
+Só **dois arquivos** (sem `loadItemParent.ts` separado):
+
+| Arquivo | Papel |
+|---------|--------|
+| [`ItemParent.tsx`](../app/_components/Item/parent/ItemParent.tsx) | Server: `unstable_cache` inline + `Suspense` + `CardBase` + i18n |
+| [`ItemParentGrid.tsx`](../app/_components/Item/parent/ItemParentGrid.tsx) | Client: toggle show more/less (única ilha necessária) |
+
+Fetch via `getItemParent` no server; **nenhum request no client**. Dados removidos de `loadItemPage` (self-contained como MME/dye/recipes). Só criar arquivo extra se a lógica de cache/load ficar grande demais para o componente server.
 
 ## Convenções
 
 | Critério | Onde |
 |----------|------|
 | Só renderiza props, `getTranslations` / `getFormatter` | [`components/Items/`](../components/Items/) (async server) |
-| Fetch, `unstable_cache`, Suspense, lógica App Router | [`app/_components/Item/<feature>/`](../app/_components/Item/) — loader co-localizado quando couber (`loadItemDrops.ts`, `loadSimilarItems.ts`, ou inline no componente) |
+| Fetch, `unstable_cache`, Suspense, lógica App Router | [`app/_components/Item/<feature>/`](../app/_components/Item/) — loader inline no componente server quando couber; arquivo `load*.ts` só se a lógica crescer demais |
 | Hooks, auth, modais, SWR | Client island (`'use client'`) |
 | Utils de loader | Prefixo `load*` — evitar mesmo nome que o componente |
 | `ItemCard` em server | Server components podem renderizar `<ItemCard />` direto; a fronteira client fica no `ItemCard`, não num wrapper grid |
@@ -34,7 +47,7 @@ Cards genéricos de display (sem fetch App Router) permanecem em [`components/It
 
 **Regra:** não alterar comportamento de componentes existentes sem confirmar efeitos colaterais (props, dados do loader, UX admin, etc.).
 
-**Preferência:** evitar arquivos novos quando o loader ou helper couber no componente server existente.
+**Preferência:** evitar arquivos novos — loader inline no server component (ex. `parent/ItemParent.tsx`, `MMECard.tsx`); ilha client separada só quando houver hooks/estado (`ItemParentGrid`, `ItemDropPool`).
 
 ---
 
@@ -51,7 +64,7 @@ Objetivo: **eliminar `useTranslations` / `useFormatter` das ilhas client da item
 ### Feito ✅
 
 - Fallbacks de Suspense (drops, similar items) — server passa `title`
-- `ItemParentGrid`, `ColorInfoCardPalette` — `labels` do shell server
+- `ItemParentGrid` (`app/_components/Item/parent/`), `ColorInfoCardPalette` — `labels` do shell server
 - `ItemPageEditSection` — `labels` de `ItemPage`
 - Drops (`ItemDropsContent`, `ItemDropPool`, `OldPoolDrops`) — copy pré-renderizada no server
 - Fase 4 (`MMECard`, `DyeCard`, `ItemRecipesCard`, `SimilarItemsCard`) — `getTranslations` no server
@@ -98,7 +111,7 @@ Server em `components/Items/`: `MissingInfoCard`, `NcMallCard`, `ItemEffectsCard
 
 - [`loadItemDrops.ts`](../app/_components/Item/drops/loadItemDrops.ts) com `unstable_cache`
 - `ItemDropsSection` — gate + Suspense; fetch fora do `loadItemPage`
-- `ItemParent` server + `ItemParentGrid` client (show more/less)
+- [`parent/ItemParent.tsx`](../app/_components/Item/parent/ItemParent.tsx) — fetch próprio (`unstable_cache` inline), gate interno (retorna `null` sem parents); [`ItemParentGrid.tsx`](../app/_components/Item/parent/ItemParentGrid.tsx) client só para show more/less; removido de `loadItemPage` e de `components/Items/`
 - Admin edit com lazy fetch de `itemOpenable`
 
 ### Fase 4 — Híbridos com `ItemCard` client ✅
@@ -107,7 +120,7 @@ Server em `components/Items/`: `MissingInfoCard`, `NcMallCard`, `ItemEffectsCard
 - [`MMECard`](../app/_components/Item/mme/MMECard.tsx) — server, fetch próprio (`unstable_cache` inline), gate `isMME`
 - [`DyeCard`](../app/_components/Item/dye/DyeCard.tsx) — server, fetch próprio, gate `isNC && isWearable`
 - [`ItemRecipesCard`](../app/_components/Item/recipes/ItemRecipesCard.tsx) — server, fetch próprio, gate `!isNC`; links via `IconLink`
-- Dados removidos de `loadItemPage` (`mmeData`, `dyeData`, `itemRecipes`)
+- Dados removidos de `loadItemPage` (`mmeData`, `dyeData`, `itemRecipes`, `itemParent`)
 - Sem grids client intermediários — server renderiza `<ItemCard />` direto
 
 ### Fase 5 — Híbridos complexos ⏳

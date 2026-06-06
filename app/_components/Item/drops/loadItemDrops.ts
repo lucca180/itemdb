@@ -1,5 +1,5 @@
 import { unstable_cache } from 'next/cache';
-import { getItemDrops } from '@pages/api/v1/items/[id_name]/drops';
+import { getItemDrops, SKIP_ITEMS } from '@pages/api/v1/items/[id_name]/drops';
 import { getManyItems } from '@pages/api/v1/items/many';
 import type { ItemData, ItemOpenable } from '@types';
 
@@ -10,8 +10,6 @@ import type { ItemData, ItemOpenable } from '@types';
  * - ItemOpenable: openable metadata (pools, odds, drop rates) — no full item records
  * - ItemData[]: full item records for each drop, used to render ItemCard
  */
-
-const SKIP_ITEMS = [61696, 65743];
 
 /** Combined openable meta + drop item records for the drops card. */
 export type ItemDropsCardData = {
@@ -33,7 +31,7 @@ const loadItemOpenableMetaCached = unstable_cache(
     return getItemDrops(internalId, isNC);
   },
   ['item-openable'],
-  { revalidate: 60 * 5 } // 5 minutes - drops data is relatively static, so we can cache a bit longer
+  { revalidate: 60 }
 );
 
 /**
@@ -53,7 +51,7 @@ const loadDropItemCardDataCached = unstable_cache(
     return fetchManyItemDataByIids(internalIds);
   },
   ['item-drop-items'],
-  { revalidate: 60 * 10 } // 10 minutes - item data is static, but we may want to pick up new items faster than the openable meta
+  { revalidate: 60 * 2 }
 );
 
 /**

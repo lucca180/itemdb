@@ -1,7 +1,7 @@
 import { Accordion, Box } from '@chakra-ui/react';
-import { DropPool } from '@app/_components/Item/drops/ItemDropPool';
-import type { UnknownCategoryLabels } from '@app/_components/Item/drops/ItemDropPool';
-import type { PoolTextData } from '@app/_components/Item/drops/buildItemDropsContentProps';
+import { DropPool } from '@app/_components/Item/Drops/ItemDropPool';
+import type { UnknownCategoryLabels } from '@app/_components/Item/Drops/ItemDropPool';
+import type { PoolTextData } from '@app/_components/Item/Drops/buildItemDropsContentProps';
 import type { ItemData, ItemOpenable, PrizePoolData } from '@types';
 
 type OldPoolDropsProps = {

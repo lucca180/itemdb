@@ -8,7 +8,7 @@ import { capInfoIds, capsulesInfo } from '@utils/ncCapsulesInfo';
 import type {
   HelpNeededLabels,
   PoolTextData,
-} from '@app/_components/Item/drops/buildItemDropsContentProps';
+} from '@app/_components/Item/Drops/buildItemDropsContentProps';
 import type { ItemData, ItemOpenable, PrizePoolData } from '@types';
 
 type UnknownCategoryLabels = {

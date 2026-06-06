@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link as I18nLink } from '@i18n/navigation';
 import { getTranslations } from 'next-intl/server';
-import { renderDropText } from '@app/_components/Item/drops/renderDropText';
+import { renderDropText } from '@app/_components/Item/Drops/renderDropText';
 import type { ItemData, ItemOpenable, PrizePoolData } from '@types';
 
 export type HelpNeededLabels = {

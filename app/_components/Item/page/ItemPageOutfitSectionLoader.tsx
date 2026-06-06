@@ -1,12 +1,12 @@
 import { Suspense } from 'react';
-import { getItemDrops } from '@pages/api/v1/items/[id_name]/drops';
+import { loadItemOpenableMeta } from '@app/_components/Item/Drops/loadItemDrops';
 import { ItemPageOutfitSection } from '@app/_components/Item/page/ItemPageOutfitSection';
 import type { ItemData } from '@types';
 
 const isPetDayCapsule = (name: string) => /Day Y\d+ Mini Mystery Capsule/i.test(name);
 
 async function ItemPageOutfitSectionContent({ item }: { item: ItemData }) {
-  const itemOpenable = await getItemDrops(item.internal_id, item.isNC);
+  const itemOpenable = await loadItemOpenableMeta(item);
   if (!itemOpenable) return null;
 
   return <ItemPageOutfitSection item={item} itemOpenable={itemOpenable} />;

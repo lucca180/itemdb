@@ -28,12 +28,12 @@ import RelatedLinksCard from '@components/Items/RelatedLinks';
 import FindAtCard from '@components/Items/FindAtCard';
 import ItemInfoCard from '@components/Items/InfoCard';
 import ColorInfoCard from '@components/Items/ColorInfoCard';
-import { ItemDropsSection } from '@app/_components/Item/drops/ItemDropsSection';
-import MMECard from '@app/_components/Item/mme/MMECard';
-import DyeCard from '@app/_components/Item/dye/DyeCard';
-import ItemRecipesCard from '@app/_components/Item/recipes/ItemRecipesCard';
-import ItemParent from '@components/Items/ItemParent';
-import { SimilarItemsCard } from '@app/_components/Item/similarItems/SimilarItemsCard';
+import { ItemDropsSection } from '@app/_components/Item/Drops/ItemDropsSection';
+import MMECard from '@app/_components/Item/MME/MMECard';
+import DyeCard from '@app/_components/Item/Dye/DyeCard';
+import ItemRecipesCard from '@app/_components/Item/Recipes/ItemRecipesCard';
+import { ItemParent } from '@app/_components/Item/ItemParent/ItemParent';
+import { SimilarItemsCard } from '@app/_components/Item/SimilarItems/SimilarItemsCard';
 import { getTranslations } from 'next-intl/server';
 
 type ItemPageProps = {
@@ -45,7 +45,6 @@ export async function ItemPage({ data }: ItemPageProps) {
     item,
     lists,
     tradeLists,
-    itemParent,
     NPTrades: trades,
     itemEffects,
     petpetData,
@@ -130,10 +129,10 @@ export async function ItemPage({ data }: ItemPageProps) {
             <ItemPageUserOnly>
               <ItemPageMyLists item={item} itemKey={itemKey} />
             </ItemPageUserOnly>
-            <ItemPageMainColumnExtras item={item} itemKey={itemKey} petpetData={petpetData} />
             <MMECard key={getKey('mme-card')} item={item} />
             <DyeCard key={getKey('dye-card')} item={item} />
             <ItemRecipesCard key={getKey('item-recipes')} item={item} />
+            <ItemPageMainColumnExtras item={item} itemKey={itemKey} petpetData={petpetData} />
             <ItemDropsSection key={getKey('item-drops')} item={item} />
             <SimilarItemsCard key={getKey('similar-items')} item={item} />
           </Flex>
@@ -154,9 +153,7 @@ export async function ItemPage({ data }: ItemPageProps) {
             {avyData && avyData.length > 0 && (
               <ItemPageAvyCard item={item} itemKey={itemKey} avyData={avyData} />
             )}
-            {itemParent.parents_iid.length > 0 && (
-              <ItemParent key={getKey('item-parent')} item={item} parent={itemParent} />
-            )}
+            <ItemParent key={getKey('item-parent')} item={item} />
             {!item.isNC && item.status === 'active' && (
               <ItemPageTradeCard item={item} itemKey={itemKey} trades={trades} />
             )}

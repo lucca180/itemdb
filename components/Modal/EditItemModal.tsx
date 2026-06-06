@@ -65,6 +65,8 @@ export type EditItemModalProps = {
   tags: ItemTag[];
   itemOpenable: ItemOpenable | null;
   isItemOpenableLoading?: boolean;
+  itemOpenableLoadError?: boolean;
+  onRetryItemOpenable?: () => void;
   itemEffects: ItemEffect[];
   petpetData: ItemPetpetData | null;
 };
@@ -79,6 +81,8 @@ const EditItemModal = (props: EditItemModalProps) => {
     tags: tagsProps,
     itemOpenable,
     isItemOpenableLoading,
+    itemOpenableLoadError,
+    onRetryItemOpenable,
     itemEffects,
     petpetData,
   } = props;
@@ -274,6 +278,8 @@ const EditItemModal = (props: EditItemModalProps) => {
                         <OpenableTab
                           itemOpenable={itemOpenable}
                           isItemOpenableLoading={isItemOpenableLoading}
+                          itemOpenableLoadError={itemOpenableLoadError}
+                          onRetryItemOpenable={onRetryItemOpenable}
                           item={item}
                         />
                       </Tabs.Content>
@@ -773,6 +779,8 @@ export const CategoriesTab = (props: TagSelectProps) => {
 type OpenableTabProps = {
   itemOpenable: ItemOpenable | null;
   isItemOpenableLoading?: boolean;
+  itemOpenableLoadError?: boolean;
+  onRetryItemOpenable?: () => void;
   item: ItemData;
 };
 
@@ -790,7 +798,13 @@ const defaultItemOpenable: ItemOpenable = {
 };
 
 export const OpenableTab = (props: OpenableTabProps) => {
-  const { itemOpenable: itemOpenableProps, isItemOpenableLoading, item } = props;
+  const {
+    itemOpenable: itemOpenableProps,
+    isItemOpenableLoading,
+    itemOpenableLoadError,
+    onRetryItemOpenable,
+    item,
+  } = props;
   const [itemOpenable, setItemOpenable] = useState<ItemOpenable | null>(
     itemOpenableProps ?? defaultItemOpenable
   );
@@ -800,17 +814,21 @@ export const OpenableTab = (props: OpenableTabProps) => {
 
   useEffect(() => {
     if (isItemOpenableLoading) return;
+    if (itemOpenableLoadError) {
+      setItemOpenable(null);
+      return;
+    }
     if (itemOpenableProps) {
       setItemOpenable(itemOpenableProps);
     } else if (itemOpenableProps === null) {
       setItemOpenable(defaultItemOpenable);
     }
-  }, [itemOpenableProps, isItemOpenableLoading]);
+  }, [itemOpenableProps, isItemOpenableLoading, itemOpenableLoadError]);
 
   useEffect(() => {
-    if (!itemOpenable || isItemOpenableLoading) return;
+    if (!itemOpenable || isItemOpenableLoading || itemOpenableLoadError) return;
     init();
-  }, [itemOpenable, isItemOpenableLoading]);
+  }, [itemOpenable, isItemOpenableLoading, itemOpenableLoadError]);
 
   const init = async () => {
     if (!itemOpenable) return;
@@ -867,6 +885,19 @@ export const OpenableTab = (props: OpenableTabProps) => {
     return (
       <Center py={8}>
         <Spinner />
+      </Center>
+    );
+  }
+
+  if (itemOpenableLoadError) {
+    return (
+      <Center py={8} flexDirection="column" gap={3}>
+        <Text color="red.400">Failed to load openable data.</Text>
+        {onRetryItemOpenable && (
+          <Button size="sm" onClick={onRetryItemOpenable}>
+            Retry
+          </Button>
+        )}
       </Center>
     );
   }
