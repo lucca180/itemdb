@@ -17,7 +17,12 @@ Item/
 ├── parent/         # ItemParent (server + fetch) + ItemParentGrid (client toggle)
 ├── mme/            # MMECard
 ├── dye/            # DyeCard
-└── recipes/        # ItemRecipesCard
+├── recipes/        # ItemRecipesCard
+├── petpet/         # PetpetCard
+├── comments/       # ItemCommentsCard
+├── avy/            # ItemAvyCard + ItemAvyCardList
+├── trade/          # TradeCardSection
+└── ncTrade/        # NCTradeSection
 ```
 
 Cards genéricos de display (sem fetch App Router) permanecem em [`components/Items/`](../components/Items/) — ex.: `ItemEffectsCard`, `FindAtCard`, `ColorInfoCard`.
@@ -67,7 +72,7 @@ Objetivo: **eliminar `useTranslations` / `useFormatter` das ilhas client da item
 - `ItemParentGrid` (`app/_components/Item/parent/`), `ColorInfoCardPalette` — `labels` do shell server
 - `ItemPageEditSection` — `labels` de `ItemPage`
 - Drops (`ItemDropsContent`, `ItemDropPool`, `OldPoolDrops`) — copy pré-renderizada no server
-- Fase 4 (`MMECard`, `DyeCard`, `ItemRecipesCard`, `SimilarItemsCard`) — `getTranslations` no server
+- Fase 5 (`PetpetCard`, `ItemCommentsCard`, `ItemAvyCard`, `TradeCardSection`, `NCTradeSection`) — fetch próprio; i18n no server onde possível
 - `EffectCard` — `typeName` passado do server (`ItemEffectsCard`)
 
 ### Pendente ⏳
@@ -75,7 +80,8 @@ Objetivo: **eliminar `useTranslations` / `useFormatter` das ilhas client da item
 - [`app/[locale]/layout.tsx`](../app/[locale]/layout.tsx) ainda passa `getMessages()` inteiro ao `NextIntlClientProvider`
 - `EffectText` dentro de `EffectCard` ( `t.rich` dinâmico por tipo de efeito)
 - **`ItemCard`** — `useTranslations` / `useFormatter` (compartilhado; afeta todos os grids)
-- Cards ainda 100% client via `ItemPageClientCards`: price, NC trade, petpet, comments, BD, avy, trade, my lists, etc.
+- Cards ainda client via `ItemPageClientCards`: price, my lists, sidebars, manual check
+- `NCTrade`, `TradeCard` — ilhas client com `useTranslations` (fetch já no server)
 
 ### Passos restantes
 
@@ -123,10 +129,16 @@ Server em `components/Items/`: `MissingInfoCard`, `NcMallCard`, `ItemEffectsCard
 - Dados removidos de `loadItemPage` (`mmeData`, `dyeData`, `itemRecipes`, `itemParent`)
 - Sem grids client intermediários — server renderiza `<ItemCard />` direto
 
-### Fase 5 — Híbridos complexos ⏳
+### Fase 5 — Híbridos complexos ✅
 
-- Split `NCTrade`, `ItemAvyCard`, `ItemBdCard`, `TradeCard`, `PetpetCard`, `ItemComments`
-- `PetpetCard` ainda em [`ItemPageClientCards`](../app/_components/Item/page/ItemPageClientCards.tsx)
+- [`PetpetCard`](../app/_components/Item/Petpet/PetpetCard.tsx) — server, fetch próprio, i18n no server
+- [`ItemCommentsCard`](../app/_components/Item/Comments/ItemCommentsCard.tsx) — server, sem fetch
+- [`ItemAvyCard`](../app/_components/Item/Avy/ItemAvyCard.tsx) — server + [`ItemAvyCardList`](../app/_components/Item/Avy/ItemAvyCardList.tsx) client (show more/less)
+- [`TradeCardSection`](../app/_components/Item/Trade/TradeCardSection.tsx) — server fetch trades + client [`TradeCard`](../components/Trades/TradeCard.tsx)
+- [`NCTradeSection`](../app/_components/Item/NCTrade/NCTradeSection.tsx) — server fetch insights + client [`NCTrade`](../components/NCTrades/index.tsx)
+- Dados removidos de `loadItemPage` (`petpetData`, `avyData`, `NPTrades`, `ncInsights`)
+- `RelatedLinksCard` e `ItemPageEditSection` fazem fetch lazy/próprio de petpet
+- `ItemPageClientCards` reduzido a price, my lists, sidebars, manual check
 
 ### Fase 6 — Encolher client ⏳
 

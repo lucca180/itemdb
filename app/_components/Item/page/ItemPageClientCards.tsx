@@ -1,31 +1,14 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { Fragment } from 'react';
 import { Flex } from '@chakra-ui/react';
 import dynamic from 'next/dynamic';
 import AddToListSelect from '@components/UserLists/AddToListSelect';
-import ItemBdCard from '@components/Items/ItemBdCard';
-import ItemAvyCard from '@components/Items/ItemAvyCard';
-import type {
-  AvyData,
-  BDData,
-  InsightsResponse,
-  ItemData,
-  ItemLastSeen,
-  ItemPetpetData,
-  PriceData,
-  TradeData,
-  UserList,
-} from '@types';
+import type { ItemData, ItemLastSeen, PriceData, UserList } from '@types';
 
 const ManualCheckCard = dynamic(() => import('@components/Items/ManualCheckCard'));
 const ItemPriceCard = dynamic(() => import('@components/Price/ItemPriceCard'));
-const NCTrade = dynamic(() => import('@components/NCTrades'));
 const ItemMyLists = dynamic(() => import('@components/Items/MyListsCard'));
-const ItemComments = dynamic(() => import('@components/Items/ItemComments'));
-const TradeCard = dynamic(() => import('@components/Trades/TradeCard'));
-const PetpetCard = dynamic(() => import('@components/Items/PetpetCard'));
 
 function cardKey(itemKey: number, suffix: string) {
   return `${itemKey}${suffix}`;
@@ -76,7 +59,6 @@ export function ItemPageMainColumn({
   NPPrices,
   lists,
   tradeLists,
-  ncInsights,
 }: {
   item: ItemData;
   itemKey: number;
@@ -84,87 +66,19 @@ export function ItemPageMainColumn({
   NPPrices: PriceData[];
   lists?: UserList[];
   tradeLists?: UserList[];
-  ncInsights: InsightsResponse | null;
 }) {
   return (
-    <>
-      {!item.isNC && (
-        <ItemPriceCard
-          key={cardKey(itemKey, 'price-card')}
-          item={item}
-          lastSeen={lastSeen}
-          prices={NPPrices}
-          lists={lists}
-          tradeLists={tradeLists}
-        />
-      )}
-      {item.isNC && (
-        <NCTrade
-          key={cardKey(itemKey, 'nc-trade')}
-          item={item}
-          lists={tradeLists}
-          insights={ncInsights}
-        />
-      )}
-    </>
+    <ItemPriceCard
+      key={cardKey(itemKey, 'price-card')}
+      item={item}
+      lastSeen={lastSeen}
+      prices={NPPrices}
+      lists={lists}
+      tradeLists={tradeLists}
+    />
   );
 }
 
 export function ItemPageMyLists({ item, itemKey }: { item: ItemData; itemKey: number }) {
   return <ItemMyLists key={cardKey(itemKey, 'my-lists')} item={item} />;
-}
-
-export function ItemPageMainColumnExtras({
-  item,
-  itemKey,
-  petpetData,
-}: {
-  item: ItemData;
-  itemKey: number;
-  petpetData: ItemPetpetData | null;
-}) {
-  return (
-    <>
-      {petpetData && (
-        <PetpetCard key={cardKey(itemKey, 'petpet-card')} item={item} petpetData={petpetData} />
-      )}
-      {item.comment && <ItemComments key={cardKey(itemKey, 'item-comments')} item={item} />}
-    </>
-  );
-}
-
-export function ItemPageBdCard({
-  item,
-  itemKey,
-  bdData,
-}: {
-  item: ItemData;
-  itemKey: number;
-  bdData: BDData;
-}) {
-  return <ItemBdCard key={cardKey(itemKey, 'item-bd-card')} item={item} bdData={bdData} />;
-}
-
-export function ItemPageAvyCard({
-  item,
-  itemKey,
-  avyData,
-}: {
-  item: ItemData;
-  itemKey: number;
-  avyData: AvyData[];
-}) {
-  return <ItemAvyCard key={cardKey(itemKey, 'item-avy-card')} item={item} avyData={avyData} />;
-}
-
-export function ItemPageTradeCard({
-  item,
-  itemKey,
-  trades,
-}: {
-  item: ItemData;
-  itemKey: number;
-  trades: TradeData[];
-}) {
-  return <TradeCard key={cardKey(itemKey, 'trade-card')} item={item} trades={trades} />;
 }

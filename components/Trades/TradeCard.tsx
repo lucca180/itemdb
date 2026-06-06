@@ -1,3 +1,5 @@
+'use client';
+
 import { Badge, Box, Flex, Skeleton, Text } from '@chakra-ui/react';
 import React, { useRef } from 'react';
 import { ItemData, TradeData } from '../../types';

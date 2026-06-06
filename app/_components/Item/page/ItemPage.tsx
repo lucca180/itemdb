@@ -9,15 +9,11 @@ import {
 import { ItemPageOutfitSectionLoader } from '@app/_components/Item/page/ItemPageOutfitSectionLoader';
 import { ItemPageWearablePreview } from '@app/_components/Item/page/ItemPageWearablePreview';
 import {
-  ItemPageAvyCard,
-  ItemPageBdCard,
   ItemPageMainColumn,
-  ItemPageMainColumnExtras,
   ItemPageManualCheck,
   ItemPageMyLists,
   ItemPageSidebarDesktop,
   ItemPageSidebarMobile,
-  ItemPageTradeCard,
 } from '@app/_components/Item/page/ItemPageClientCards';
 import MissingInfoCard from '@components/Items/MissingInfoCard';
 import ItemEffectsCard from '@components/Items/ItemEffectsCard';
@@ -34,6 +30,11 @@ import DyeCard from '@app/_components/Item/Dye/DyeCard';
 import ItemRecipesCard from '@app/_components/Item/Recipes/ItemRecipesCard';
 import { ItemParent } from '@app/_components/Item/ItemParent/ItemParent';
 import { SimilarItemsCard } from '@app/_components/Item/SimilarItems/SimilarItemsCard';
+import PetpetCard from '@app/_components/Item/Petpet/PetpetCard';
+import ItemCommentsCard from '@app/_components/Item/Comments/ItemCommentsCard';
+import ItemAvyCard from '@app/_components/Item/Avy/ItemAvyCard';
+import TradeCardSection from '@app/_components/Item/Trade/TradeCardSection';
+import NCTradeSection from '@app/_components/Item/NCTrade/NCTradeSection';
 import { getTranslations } from 'next-intl/server';
 
 type ItemPageProps = {
@@ -41,21 +42,7 @@ type ItemPageProps = {
 };
 
 export async function ItemPage({ data }: ItemPageProps) {
-  const {
-    item,
-    lists,
-    tradeLists,
-    NPTrades: trades,
-    itemEffects,
-    petpetData,
-    ncInsights,
-    avyData,
-    colors,
-    lastSeen,
-    bdData,
-    ncMallData,
-    wearableData,
-  } = data;
+  const { item, lists, tradeLists, itemEffects, colors, lastSeen, ncMallData, wearableData } = data;
 
   const t = await getTranslations();
   const editSectionLabels = {
@@ -89,12 +76,7 @@ export async function ItemPage({ data }: ItemPageProps) {
           </ItemPageSidebarDesktop>
           <ItemInfoCard item={item} />
           {colors && <ColorInfoCard colors={colors} />}
-          <ItemPageEditSection
-            item={item}
-            itemEffects={itemEffects}
-            petpetData={petpetData}
-            labels={editSectionLabels}
-          />
+          <ItemPageEditSection item={item} itemEffects={itemEffects} labels={editSectionLabels} />
         </Flex>
         <Flex
           flex="3"
@@ -111,15 +93,19 @@ export async function ItemPage({ data }: ItemPageProps) {
             <ItemPageSidebarMobile item={item} itemKey={itemKey}>
               <FindAtCard item={item} />
             </ItemPageSidebarMobile>
-            <ItemPageMainColumn
-              item={item}
-              itemKey={itemKey}
-              lastSeen={lastSeen}
-              NPPrices={data.NPPrices}
-              lists={lists}
-              tradeLists={tradeLists}
-              ncInsights={ncInsights}
-            />
+            {!item.isNC && (
+              <ItemPageMainColumn
+                item={item}
+                itemKey={itemKey}
+                lastSeen={lastSeen}
+                NPPrices={data.NPPrices}
+                lists={lists}
+                tradeLists={tradeLists}
+              />
+            )}
+            {item.isNC && (
+              <NCTradeSection key={getKey('nc-trade')} item={item} tradeLists={tradeLists} />
+            )}
             {itemEffects.length > 0 && (
               <ItemEffectsCard key={getKey('item-effects')} item={item} effects={itemEffects} />
             )}
@@ -132,12 +118,12 @@ export async function ItemPage({ data }: ItemPageProps) {
             <MMECard key={getKey('mme-card')} item={item} />
             <DyeCard key={getKey('dye-card')} item={item} />
             <ItemRecipesCard key={getKey('item-recipes')} item={item} />
-            <ItemPageMainColumnExtras item={item} itemKey={itemKey} petpetData={petpetData} />
+            <PetpetCard key={getKey('petpet-card')} item={item} />
+            {item.comment && <ItemCommentsCard key={getKey('item-comments')} item={item} />}
             <ItemDropsSection key={getKey('item-drops')} item={item} />
             <SimilarItemsCard key={getKey('similar-items')} item={item} />
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>
-            {bdData && <ItemPageBdCard item={item} itemKey={itemKey} bdData={bdData} />}
             {item.isNC && ncMallData && (
               <NcMallCard key={getKey('nc-mall-card')} item={item} ncMallData={ncMallData} />
             )}
@@ -150,19 +136,14 @@ export async function ItemPage({ data }: ItemPageProps) {
               itemEffects={itemEffects}
               wearableData={wearableData}
             />
-            {avyData && avyData.length > 0 && (
-              <ItemPageAvyCard item={item} itemKey={itemKey} avyData={avyData} />
-            )}
+            <ItemAvyCard key={getKey('item-avy-card')} item={item} />
             <ItemParent key={getKey('item-parent')} item={item} />
-            {!item.isNC && item.status === 'active' && (
-              <ItemPageTradeCard item={item} itemKey={itemKey} trades={trades} />
-            )}
+            <TradeCardSection key={getKey('trade-card')} item={item} />
             <RelatedLinksCard
               key={getKey('related-links')}
               item={item}
               itemEffects={itemEffects}
               lists={lists}
-              petpetData={petpetData}
             />
           </Flex>
         </Flex>

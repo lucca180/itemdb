@@ -1,17 +1,13 @@
 import { cache } from 'react';
 import type { Metadata } from 'next';
+import { getOfficialItemLists } from '@app/utils/loadUtils';
 import {
-  AvyData,
-  BDData,
   FullItemColors,
-  InsightsResponse,
   ItemData,
   ItemEffect,
   ItemLastSeen,
-  ItemPetpetData,
   NCMallData,
   PriceData,
-  TradeData,
   UserList,
   WearableData,
 } from '@types';
@@ -20,34 +16,23 @@ import { shouldShowTradeLists } from '@utils/utils';
 import { getItem } from '@pages/api/v1/items/[id_name]';
 import { getItemLists } from '@pages/api/v1/items/[id_name]/lists';
 import { getItemPrices } from '@pages/api/v1/items/[id_name]/prices';
-import { getItemTrades } from '@pages/api/v1/trades';
 import { getLastSeen } from '@pages/api/v1/prices/stats';
 import { getItemEffects } from '@pages/api/v1/items/[id_name]/effects';
 import { getWearableData } from '@pages/api/v1/items/[id_name]/wearable';
 import { getItemNCMall } from '@pages/api/v1/items/[id_name]/ncmall';
 import { getSingleItemColor } from '@pages/api/v1/items/[id_name]/colors';
-import { getPetpetData } from '@pages/api/v1/items/[id_name]/petpet';
-import { getNCTradeInsights } from '@pages/api/v1/mall/[iid]/insights';
-import { getAvyData } from '@pages/api/v1/items/[id_name]/avys';
 import * as Sentry from '@sentry/nextjs';
-
-const getOfficialItemLists = cache((internalId: number) => getItemLists(internalId, true));
 
 export type ItemPageData = {
   item: ItemData;
   colors: FullItemColors;
   lists?: UserList[];
   tradeLists?: UserList[];
-  avyData: AvyData[] | null;
   lastSeen: ItemLastSeen | null;
-  NPTrades: TradeData[];
   NPPrices: PriceData[];
   itemEffects: ItemEffect[];
   wearableData: WearableData | null;
   ncMallData: NCMallData | null;
-  petpetData: ItemPetpetData | null;
-  ncInsights: InsightsResponse | null;
-  bdData: BDData | null;
 };
 
 export type ItemPageRouteResult =
@@ -90,55 +75,33 @@ export function buildItemPageMetadata(item: ItemData, locale: string): Metadata 
 }
 
 async function fetchItemPageData(item: ItemData): Promise<ItemPageData | null> {
-  const [
-    colors,
-    lists,
-    tradeLists,
-    itemPrices,
-    NPTrades,
-    lastSeen,
-    itemEffects,
-    wearableData,
-    NCMallData,
-    petpetData,
-    ncInsights,
-    bdData,
-    avyData,
-  ] = await Sentry.startSpan(
-    {
-      name: 'itemLoad',
-      attributes: {
-        itemName: item.name,
-        item_iid: item.internal_id,
-        isWearable: item.isWearable,
-        isNC: item.isNC,
+  const [colors, lists, tradeLists, itemPrices, lastSeen, itemEffects, wearableData, NCMallData] =
+    await Sentry.startSpan(
+      {
+        name: 'itemLoad',
+        attributes: {
+          itemName: item.name,
+          item_iid: item.internal_id,
+          isWearable: item.isWearable,
+          isNC: item.isNC,
+        },
+        forceTransaction: true,
       },
-      forceTransaction: true,
-    },
-    async () => {
-      return Promise.all([
-        getSingleItemColor(item),
-        getOfficialItemLists(item.internal_id),
-        shouldShowTradeLists(item) ? getItemLists(item.internal_id, false) : [],
-        !item.isNC ? getItemPrices({ iid: item.internal_id, includeUnconfirmed: true }) : [],
-        !item.isNC ? getItemTrades({ item_iid: item.internal_id }) : [],
-        !item.isNC
-          ? getLastSeen({ item_id: item.item_id, name: item.name, image_id: item.image_id })
-          : null,
-        getItemEffects(item),
-        item.isWearable ? (getWearableData(item.internal_id) as Promise<WearableData>) : null,
-        item.isNC ? getItemNCMall(item.internal_id) : null,
-        !item.isNC && !item.isWearable && !item.isBD && !item.isNeohome
-          ? getPetpetData(item)
-          : null,
-        item.isNC ? getNCTradeInsights(item.internal_id) : null,
-        null,
-        getOfficialItemLists(item.internal_id).then((officialLists) =>
-          getAvyData(item.internal_id, officialLists)
-        ),
-      ]);
-    }
-  );
+      async () => {
+        return Promise.all([
+          getSingleItemColor(item),
+          getOfficialItemLists(item.internal_id),
+          shouldShowTradeLists(item) ? getItemLists(item.internal_id, false) : [],
+          !item.isNC ? getItemPrices({ iid: item.internal_id, includeUnconfirmed: true }) : [],
+          !item.isNC
+            ? getLastSeen({ item_id: item.item_id, name: item.name, image_id: item.image_id })
+            : null,
+          getItemEffects(item),
+          item.isWearable ? (getWearableData(item.internal_id) as Promise<WearableData>) : null,
+          item.isNC ? getItemNCMall(item.internal_id) : null,
+        ]);
+      }
+    );
 
   if (!colors) return null;
 
@@ -147,16 +110,11 @@ async function fetchItemPageData(item: ItemData): Promise<ItemPageData | null> {
     lists: lists.filter((l) => !l.officialTag.includes('Avatar')),
     colors: colors as FullItemColors,
     tradeLists,
-    NPTrades,
     NPPrices: itemPrices,
     lastSeen,
     itemEffects,
     wearableData,
     ncMallData: NCMallData,
-    petpetData,
-    ncInsights,
-    bdData,
-    avyData,
   };
 }
 

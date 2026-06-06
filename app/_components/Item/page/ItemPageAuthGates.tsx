@@ -9,11 +9,11 @@ import { useAuth } from '@utils/auth';
 import FeedbackButton from '@components/Feedback/FeedbackButton';
 import type { EditItemModalProps } from '@components/Modal/EditItemModal';
 import type { ItemPageData } from '@app/utils/loadItemPage';
-import type { ItemOpenable } from '@types';
+import type { ItemOpenable, ItemPetpetData } from '@types';
 
 const EditItemModal = dynamic<EditItemModalProps>(() => import('@components/Modal/EditItemModal'));
 
-type ItemPageEditSectionProps = Pick<ItemPageData, 'item' | 'itemEffects' | 'petpetData'> & {
+type ItemPageEditSectionProps = Pick<ItemPageData, 'item' | 'itemEffects'> & {
   labels: {
     reportError: string;
     edit: string;
@@ -25,13 +25,23 @@ async function fetchItemOpenable(slug: string): Promise<ItemOpenable | null> {
   return data.drops ?? null;
 }
 
+async function fetchPetpetData(slug: string): Promise<ItemPetpetData | null> {
+  const { data } = await axios.get<ItemPetpetData | null>(`/api/v1/items/${slug}/petpet`);
+  return data ?? null;
+}
+
+function shouldFetchPetpetData(item: ItemPageData['item']) {
+  return !item.isNC && !item.isWearable && !item.isBD && !item.isNeohome;
+}
+
 export function ItemPageEditSection(props: ItemPageEditSectionProps) {
   const { user } = useAuth();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [itemOpenable, setItemOpenable] = useState<ItemOpenable | null>(null);
   const [isItemOpenableLoading, setIsItemOpenableLoading] = useState(false);
   const [itemOpenableLoadError, setItemOpenableLoadError] = useState(false);
-  const { item, itemEffects, petpetData, labels } = props;
+  const [petpetData, setPetpetData] = useState<ItemPetpetData | null>(null);
+  const { item, itemEffects, labels } = props;
 
   const loadItemOpenableForEdit = (slug: string) => {
     setItemOpenableLoadError(false);
@@ -50,10 +60,17 @@ export function ItemPageEditSection(props: ItemPageEditSectionProps) {
       setItemOpenable(null);
       setItemOpenableLoadError(false);
       setIsItemOpenableLoading(false);
-      return;
+    } else {
+      loadItemOpenableForEdit(item.slug);
     }
 
-    loadItemOpenableForEdit(item.slug);
+    if (item.slug && shouldFetchPetpetData(item)) {
+      fetchPetpetData(item.slug)
+        .then(setPetpetData)
+        .catch(() => setPetpetData(null));
+    } else {
+      setPetpetData(null);
+    }
   };
 
   const handleCloseEdit = () => {
@@ -61,6 +78,7 @@ export function ItemPageEditSection(props: ItemPageEditSectionProps) {
     setItemOpenable(null);
     setItemOpenableLoadError(false);
     setIsItemOpenableLoading(false);
+    setPetpetData(null);
   };
 
   return (
