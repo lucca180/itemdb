@@ -1,10 +1,9 @@
 import { Alert, Button, Text } from '@chakra-ui/react';
-import { useTranslations } from 'next-intl';
-import MainLink from '@components/Utils/MainLink';
-import React from 'react';
+import { getTranslations } from 'next-intl/server';
+import { Link } from '@i18n/navigation';
 
-const MissingInfoCard = () => {
-  const t = useTranslations();
+export default async function MissingInfoCard() {
+  const t = await getTranslations();
 
   return (
     <Alert.Root
@@ -24,12 +23,10 @@ const MissingInfoCard = () => {
         <Alert.Description>
           <Text fontSize="sm">{t('ItemPage.missingInfoDescription')}</Text>
           <Button asChild mt={2} size="sm">
-            <MainLink href="/contribute">{t('General.learnHelp')}!</MainLink>
+            <Link href="/contribute">{t('General.learnHelp')}!</Link>
           </Button>
         </Alert.Description>
       </Alert.Content>
     </Alert.Root>
   );
-};
-
-export default MissingInfoCard;
+}

@@ -1,9 +1,8 @@
 import { Center, Flex, HStack, Tag, Text, Link, Badge } from '@chakra-ui/react';
-import React from 'react';
-import { ItemData, ItemMallData, NCMallData } from '../../types';
-import CardBase from '../Card/CardBase';
+import { ItemData, ItemMallData, NCMallData } from '@types';
+import CardBase from '@components/Card/CardBase';
 import Image from 'next/image';
-import { useFormatter, useTranslations } from 'next-intl';
+import { getFormatter, getTranslations } from 'next-intl/server';
 import { UTCDate } from '@date-fns/utc';
 
 type Props = {
@@ -11,9 +10,9 @@ type Props = {
   ncMallData: NCMallData;
 };
 
-const NcMallCard = (props: Props) => {
-  const t = useTranslations();
-  const format = useFormatter();
+export default async function NcMallCard(props: Props) {
+  const t = await getTranslations();
+  const format = await getFormatter();
   const { item, ncMallData } = props;
 
   const isDiscounted = isMallDiscounted(ncMallData);
@@ -119,9 +118,7 @@ const NcMallCard = (props: Props) => {
       </Flex>
     </CardBase>
   );
-};
-
-export default NcMallCard;
+}
 
 export const getNCMallDataDates = (ncMallData: NCMallData, item: ItemData) => {
   const startDate = ncMallData.saleBegin

@@ -22,6 +22,7 @@ import dynamic from 'next/dynamic';
 import { FaPencilAlt, FaShareAlt } from 'react-icons/fa';
 import Image from '../Utils/Image';
 import { CreateListModalProps } from '@components/Modal/CreateListModal';
+import { getListLink } from '@utils/listLink';
 const Markdown = dynamic(() => import('../Utils/Markdown'));
 
 const CreateListModal = dynamic<CreateListModalProps>(
@@ -269,12 +270,4 @@ const ListPurpose = ({ purpose }: { purpose: 'seeking' | 'trading' | 'none' }) =
   };
 
   return translation[purpose];
-};
-
-export const getListLink = (list: UserList) => {
-  if (list.dynamicType === 'search') {
-    return `/search?list_id=${list.internal_id}`;
-  }
-
-  return `/lists/${list.official ? 'official' : list.owner.username}/${list.slug ?? list.internal_id}`;
 };

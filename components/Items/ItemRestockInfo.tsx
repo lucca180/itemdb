@@ -1,6 +1,7 @@
-import { Center, Flex, HStack, Tag, Text, Link, Tooltip } from '@chakra-ui/react';
-import React, { useMemo } from 'react';
-import { ItemData, ItemLastSeen } from '../../types';
+import { Center, Flex, HStack, Tag, Text, Link } from '@chakra-ui/react';
+import { MdHelp } from 'react-icons/md';
+import Tooltip from '@components/Utils/Tooltip';
+import { ItemData, ItemLastSeen } from '@types';
 import {
   categoryToShopID,
   faerielandShops,
@@ -13,63 +14,25 @@ import {
   restockShopInfo,
   slugify,
   tyrannianShops,
-} from '../../utils/utils';
-import CardBase from '../Card/CardBase';
+} from '@utils/utils';
+import CardBase from '@components/Card/CardBase';
 import Image from 'next/image';
-import MainLink from '@components/Utils/MainLink';
-import { useFormatter, useTranslations } from 'next-intl';
-import { MdHelp } from 'react-icons/md';
+import { Link as I18nLink } from '@i18n/navigation';
+import { getFormatter, getTranslations } from 'next-intl/server';
 
 type Props = {
   item: ItemData;
   lastSeen: ItemLastSeen | null;
 };
 
-const ItemRestock = (props: Props) => {
-  const t = useTranslations();
-  const format = useFormatter();
+export default async function ItemRestock(props: Props) {
+  const t = await getTranslations();
+  const format = await getFormatter();
   const { item, lastSeen } = props;
 
   const isHT = item.findAt.restockShop?.includes('hiddentower938');
-
   const todayNST = getDateNST();
-
-  const specialDay = useMemo(() => {
-    if (!item.category) return null;
-    const category = item.category.toLowerCase();
-
-    if (isHT) {
-      if (isThirdWednesday()) return 'ht';
-      return;
-    }
-
-    if (todayNST.getDate() === 3) return 'hpd';
-    else if (
-      todayNST.getMonth() === 4 &&
-      todayNST.getDate() === 12 &&
-      tyrannianShops.map((x) => x.toLowerCase()).includes(category)
-    )
-      return 'tyrannia';
-
-    if (todayNST.getMonth() === 7 && todayNST.getDate() === 20 && category === 'usuki doll')
-      return 'usukicon';
-
-    if (
-      todayNST.getMonth() === 8 &&
-      todayNST.getDate() === 20 &&
-      faerielandShops.map((x) => x.toLowerCase()).includes(category)
-    )
-      return 'festival';
-
-    if (
-      todayNST.getMonth() === 9 &&
-      todayNST.getDate() === 31 &&
-      halloweenShops.map((x) => x.toLowerCase()).includes(category)
-    )
-      return 'halloween';
-
-    return '';
-  }, [todayNST, item, isHT]);
+  const specialDay = getRestockSpecialDay(item, isHT, todayNST);
 
   const restockPrice = getRestockPrice(item);
   const originalRestockPrice = getRestockPrice(item, true);
@@ -86,7 +49,7 @@ const ItemRestock = (props: Props) => {
       <Flex flexFlow={'column'} gap={2}>
         <Center flexFlow="column" gap={2}>
           <Link asChild _hover={{ textDecoration: 'none' }}>
-            <MainLink
+            <I18nLink
               href={
                 !isHT ? `/restock/${slugify(shopInfo?.name ?? '')}` : '/lists/official/hidden-tower'
               }
@@ -104,7 +67,7 @@ const ItemRestock = (props: Props) => {
                 width={276}
                 height={92}
               />
-            </MainLink>
+            </I18nLink>
           </Link>
           {specialDay === 'hpd' && (
             <Tag.Root colorPalette={'green'}>
@@ -205,45 +168,85 @@ const ItemRestock = (props: Props) => {
           </HStack>
         )}
         {isHT && (
-          <HStack>
-            <Tooltip.Root positioning={{ placement: 'top' }}>
-              <Tooltip.Trigger asChild>
-                <Tag.Root size="md" fontWeight="bold" as="h3" cursor="default">
+          <>
+            <HStack>
+              <Tooltip
+                label={t('Restock.ht-next-discount-day', {
+                  x: format.dateTime(nextThirdWednesday(), {
+                    month: 'short',
+                    day: 'numeric',
+                  }),
+                })}
+              >
+                <Tag.Root
+                  size="md"
+                  fontWeight="bold"
+                  as="h3"
+                  cursor="default"
+                  colorPalette={'whiteAlpha'}
+                >
                   <Tag.Label>
                     {t('Restock.discounted-price')}{' '}
                     <MdHelp size={'0.8rem'} style={{ marginLeft: '0.2rem' }} />
                   </Tag.Label>
                 </Tag.Root>
-              </Tooltip.Trigger>
-              <Tooltip.Positioner>
-                <Tooltip.Content>
-                  {t('Restock.ht-next-discount-day', {
-                    x: format.dateTime(nextThirdWednesday(), {
-                      month: 'short',
-                      day: 'numeric',
-                    }),
-                  })}
-                </Tooltip.Content>
-              </Tooltip.Positioner>
-            </Tooltip.Root>
-            <Text flex="1" fontSize="xs" textAlign="right">
-              {format.number(Math.round(item.estVal * 0.97))} NP
-            </Text>
-          </HStack>
-        )}
-        {isHT && (
-          <HStack>
-            <Tag.Root size="md" fontWeight="bold" as="h3">
-              <Tag.Label>{t('Restock.random-event-price')}</Tag.Label>
-            </Tag.Root>
-            <Text flex="1" fontSize="xs" textAlign="right">
-              {format.number(Math.round(item.estVal * 0.9))} NP
-            </Text>
-          </HStack>
+              </Tooltip>
+              <Text flex="1" fontSize="xs" textAlign="right">
+                {format.number(Math.round(item.estVal * 0.97))} NP
+              </Text>
+            </HStack>
+            <HStack>
+              <Tag.Root size="md" fontWeight="bold" as="h3" colorPalette={'whiteAlpha'}>
+                <Tag.Label>{t('Restock.random-event-price')}</Tag.Label>
+              </Tag.Root>
+              <Text flex="1" fontSize="xs" textAlign="right">
+                {format.number(Math.round(item.estVal * 0.9))} NP
+              </Text>
+            </HStack>
+          </>
         )}
       </Flex>
     </CardBase>
   );
-};
+}
 
-export default ItemRestock;
+function getRestockSpecialDay(item: ItemData, isHT: boolean | undefined, todayNST: Date) {
+  if (!item.category) return null;
+  const category = item.category.toLowerCase();
+
+  if (isHT) {
+    if (isThirdWednesday()) return 'ht';
+    return;
+  }
+
+  if (todayNST.getDate() === 3) return 'hpd';
+  if (
+    todayNST.getMonth() === 4 &&
+    todayNST.getDate() === 12 &&
+    tyrannianShops.map((x) => x.toLowerCase()).includes(category)
+  ) {
+    return 'tyrannia';
+  }
+
+  if (todayNST.getMonth() === 7 && todayNST.getDate() === 20 && category === 'usuki doll') {
+    return 'usukicon';
+  }
+
+  if (
+    todayNST.getMonth() === 8 &&
+    todayNST.getDate() === 20 &&
+    faerielandShops.map((x) => x.toLowerCase()).includes(category)
+  ) {
+    return 'festival';
+  }
+
+  if (
+    todayNST.getMonth() === 9 &&
+    todayNST.getDate() === 31 &&
+    halloweenShops.map((x) => x.toLowerCase()).includes(category)
+  ) {
+    return 'halloween';
+  }
+
+  return '';
+}

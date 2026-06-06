@@ -47,71 +47,53 @@ export async function ItemHeader({ item, lists }: ItemHeaderProps) {
         <Box>
           <Stack direction="row" mb={1} wrap="wrap" gap={0.5}>
             <Badge borderRadius="md" asChild>
-              <Link href={`/search?s=&category[]=${item.category ?? 'Unknown'}`} prefetch={false}>
+              <Link href={`/search?s=&category[]=${item.category ?? 'Unknown'}`}>
                 {item.category ?? '???'}
               </Link>
             </Badge>
             {item.type === 'np' && (
               <Badge colorPalette="green" borderRadius="md" asChild>
-                <Link href="/search?s=&type[]=np" prefetch={false}>
-                  NP
-                </Link>
+                <Link href="/search?s=&type[]=np">NP</Link>
               </Badge>
             )}
             {item.type === 'nc' && (
               <Badge colorPalette="purple" borderRadius="md" asChild>
-                <Link href="/search?s=&type[]=nc" prefetch={false}>
-                  NC
-                </Link>
+                <Link href="/search?s=&type[]=nc">NC</Link>
               </Badge>
             )}
             {item.type === 'pb' && (
               <Badge colorPalette="yellow" borderRadius="md" asChild>
-                <Link href="/search?s=&type[]=pb" prefetch={false}>
-                  PB
-                </Link>
+                <Link href="/search?s=&type[]=pb">PB</Link>
               </Badge>
             )}
             {item.isWearable && (
               <Badge colorPalette="blue" borderRadius="md" asChild>
-                <Link href="/search?s=&type[]=wearable" prefetch={false}>
-                  {t('General.wearable')}
-                </Link>
+                <Link href="/search?s=&type[]=wearable">{t('General.wearable')}</Link>
               </Badge>
             )}
             {item.isNeohome && (
               <Badge colorPalette="cyan" borderRadius="md" asChild>
-                <Link href="/search?s=&type[]=neohome" prefetch={false}>
-                  {t('General.neohome')}
-                </Link>
+                <Link href="/search?s=&type[]=neohome">{t('General.neohome')}</Link>
               </Badge>
             )}
             {item.isBD && (
               <Badge colorPalette="red" borderRadius="md" asChild>
-                <Link href="/search?s=&type[]=battledome" prefetch={false}>
-                  {t('General.battledome')}
-                </Link>
+                <Link href="/search?s=&type[]=battledome">{t('General.battledome')}</Link>
               </Badge>
             )}
             {item.useTypes.canEat === 'true' && (
               <Badge colorPalette="orange" borderRadius="md" asChild>
-                <Link href="/search?s=&type[]=canEat" prefetch={false}>
-                  {t('General.edible')}
-                </Link>
+                <Link href="/search?s=&type[]=canEat">{t('General.edible')}</Link>
               </Badge>
             )}
             {item.useTypes.canRead === 'true' && (
               <Badge colorPalette="orange" borderRadius="md" asChild>
-                <Link href="/search?s=&type[]=canRead" prefetch={false}>
-                  {t('General.readable')}
-                </Link>
+                <Link href="/search?s=&type[]=canRead">{t('General.readable')}</Link>
               </Badge>
             )}
             {item.useTypes.canPlay === 'true' && (
               <Badge colorPalette="orange" borderRadius="md" asChild>
-                <Link href="/search?s=&type[]=canPlay" prefetch={false}>
-                  {t('General.playable')}
-                </Link>
+                <Link href="/search?s=&type[]=canPlay">{t('General.playable')}</Link>
               </Badge>
             )}
           </Stack>
