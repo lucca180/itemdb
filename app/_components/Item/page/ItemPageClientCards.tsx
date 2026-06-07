@@ -4,10 +4,9 @@ import type { ReactNode } from 'react';
 import { Flex } from '@chakra-ui/react';
 import dynamic from 'next/dynamic';
 import AddToListSelect from '@components/UserLists/AddToListSelect';
-import type { ItemData, ItemLastSeen, PriceData, UserList } from '@types';
+import type { ItemData } from '@types';
 
 const ManualCheckCard = dynamic(() => import('@components/Items/ManualCheckCard'));
-const ItemPriceCard = dynamic(() => import('@components/Price/ItemPriceCard'));
 const ItemMyLists = dynamic(() => import('@components/Items/MyListsCard'));
 
 function cardKey(itemKey: number, suffix: string) {
@@ -50,33 +49,6 @@ export function ItemPageSidebarMobile({
 
 export function ItemPageManualCheck({ item, itemKey }: { item: ItemData; itemKey: number }) {
   return <ManualCheckCard key={cardKey(itemKey, 'manual-check')} item={item} />;
-}
-
-export function ItemPageMainColumn({
-  item,
-  itemKey,
-  lastSeen,
-  NPPrices,
-  lists,
-  tradeLists,
-}: {
-  item: ItemData;
-  itemKey: number;
-  lastSeen: ItemLastSeen | null;
-  NPPrices: PriceData[];
-  lists?: UserList[];
-  tradeLists?: UserList[];
-}) {
-  return (
-    <ItemPriceCard
-      key={cardKey(itemKey, 'price-card')}
-      item={item}
-      lastSeen={lastSeen}
-      prices={NPPrices}
-      lists={lists}
-      tradeLists={tradeLists}
-    />
-  );
 }
 
 export function ItemPageMyLists({ item, itemKey }: { item: ItemData; itemKey: number }) {

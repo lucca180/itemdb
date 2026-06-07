@@ -3,9 +3,13 @@ import { unstable_cache } from 'next/cache';
 import { getItem } from '@pages/api/v1/items/[id_name]';
 import { getLebronItemData } from '@pages/api/v1/items/[id_name]/[tradings]';
 import { getItemLists } from '@pages/api/v1/items/[id_name]/lists';
+import { getItemPrices } from '@pages/api/v1/items/[id_name]/prices';
 import { getPetpetData } from '@pages/api/v1/items/[id_name]/petpet';
 import { getNCTradeInsights } from '@pages/api/v1/mall/[iid]/insights';
-import type { InsightsResponse, ItemPetpetData, LebronTrade } from '@types';
+import { getLastSeen } from '@pages/api/v1/prices/stats';
+import { getPriceStatus } from '@pages/api/v1/prices/[iid]/status';
+import { shouldShowTradeLists } from '@utils/utils';
+import type { InsightsResponse, ItemData, ItemPetpetData, LebronTrade } from '@types';
 
 export function hasNCTradeInsights(insights: InsightsResponse | null | undefined) {
   if (!insights) return false;
@@ -13,6 +17,25 @@ export function hasNCTradeInsights(insights: InsightsResponse | null | undefined
 }
 
 export const getOfficialItemLists = cache((internalId: number) => getItemLists(internalId, true));
+
+export const loadNPPrices = cache((internalId: number) =>
+  getItemPrices({ iid: internalId, includeUnconfirmed: true })
+);
+
+export const loadLastSeen = unstable_cache(
+  (internal_id: number) => getLastSeen({ item_iid: internal_id }),
+  ['item-last-seen'],
+  { revalidate: 60 }
+);
+
+export const loadPriceStatus = cache((internalId: number, userId?: string) =>
+  getPriceStatus(internalId, userId)
+);
+
+export const loadTradeLists = cache(async (item: ItemData) => {
+  if (!shouldShowTradeLists(item)) return [];
+  return getItemLists(item.internal_id, false);
+});
 
 export const loadPetpetData = unstable_cache(
   async (internalId: number): Promise<ItemPetpetData | null> => {
@@ -37,7 +60,7 @@ export const loadNCTradeInsights = unstable_cache(
     return getNCTradeInsights(internalId);
   },
   ['item-nc-trade-insights'],
-  { revalidate: 60 * 60 }
+  { revalidate: 60 }
 );
 
 export const loadLebronTradeHistory = unstable_cache(
@@ -46,5 +69,5 @@ export const loadLebronTradeHistory = unstable_cache(
     return data?.reports ?? [];
   },
   ['item-lebron-trade-history'],
-  { revalidate: 60 * 5 }
+  { revalidate: 60 * 2 }
 );

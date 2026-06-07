@@ -9,7 +9,6 @@ import {
 import { ItemPageOutfitSectionLoader } from '@app/_components/Item/page/ItemPageOutfitSectionLoader';
 import { ItemPageWearablePreview } from '@app/_components/Item/page/ItemPageWearablePreview';
 import {
-  ItemPageMainColumn,
   ItemPageManualCheck,
   ItemPageMyLists,
   ItemPageSidebarDesktop,
@@ -35,6 +34,7 @@ import ItemCommentsCard from '@app/_components/Item/Comments/ItemCommentsCard';
 import ItemAvyCard from '@app/_components/Item/Avy/ItemAvyCard';
 import TradeCardSection from '@app/_components/Item/Trade/TradeCardSection';
 import NCTradeSection from '@app/_components/Item/NCTrade/NCTradeSection';
+import ItemPriceSection from '@app/_components/Item/Price/ItemPriceSection';
 import { getTranslations } from 'next-intl/server';
 
 type ItemPageProps = {
@@ -48,10 +48,11 @@ export async function ItemPage({ data }: ItemPageProps) {
     tradeLists,
     itemEffects,
     colors,
-    lastSeen,
     ncMallData,
     wearableData,
     ncTradeInsights,
+    npPrices,
+    npPriceStatus,
   } = data;
 
   const t = await getTranslations();
@@ -104,13 +105,12 @@ export async function ItemPage({ data }: ItemPageProps) {
               <FindAtCard item={item} />
             </ItemPageSidebarMobile>
             {!item.isNC && (
-              <ItemPageMainColumn
+              <ItemPriceSection
+                key={getKey('price')}
                 item={item}
-                itemKey={itemKey}
-                lastSeen={lastSeen}
-                NPPrices={data.NPPrices}
+                prices={npPrices}
+                priceStatus={npPriceStatus}
                 lists={lists}
-                tradeLists={tradeLists}
               />
             )}
             {item.isNC && (
@@ -142,9 +142,7 @@ export async function ItemPage({ data }: ItemPageProps) {
             {item.isNC && ncMallData && (
               <NcMallCard key={getKey('nc-mall-card')} item={item} ncMallData={ncMallData} />
             )}
-            {item.findAt.restockShop && (
-              <ItemRestock key={getKey('item-restock')} item={item} lastSeen={lastSeen} />
-            )}
+            {item.findAt.restockShop && <ItemRestock key={getKey('item-restock')} item={item} />}
             <ItemPageOutfitSectionLoader item={item} />
             <ItemPageWearablePreview
               item={item}

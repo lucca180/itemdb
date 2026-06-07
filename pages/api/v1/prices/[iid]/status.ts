@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { getItem } from '../../items/[id_name]';
 import prisma from '../../../../../utils/prisma';
 import { CheckAuth } from '../../../../../utils/googleCloud';
-import { User } from '../../../../../types';
+import { User, PricingInfo } from '../../../../../types';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -15,19 +15,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   return res.status(405).json({ error: 'Method not allowed' });
 }
 
-const GET = async (req: NextApiRequest, res: NextApiResponse) => {
-  let user: User | null = null;
-
-  try {
-    user = (await CheckAuth(req)).user;
-  } catch (e) {}
-
-  const item_iid = req.query.iid as string;
-
-  const item = await getItem(item_iid);
-  if (!item) {
-    return res.status(404).json({ error: 'Item not found' });
-  }
+export async function getPriceStatus(
+  itemIid: number | string,
+  userId?: string
+): Promise<PricingInfo | null> {
+  const item = await getItem(itemIid);
+  if (!item) return null;
 
   const GTE = new Date(
     Math.max(Date.now() - 1000 * 60 * 60 * 24 * 30, new Date(item.price.addedAt ?? 0).getTime())
@@ -61,10 +54,10 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     waitingPrice: trades.waitingPrice.length,
   };
 
-  if (user) {
+  if (userId) {
     const feedbackVotes = await prisma.feedbackVotes.count({
       where: {
-        user_id: user.id,
+        user_id: userId,
         feedback: {
           subject_id: {
             in: trades.waitingVote.map((x) => x.trade_id),
@@ -100,7 +93,6 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       } else return;
     }
 
-    // if data is from the last 3 days it is considered fresh
     if (price.addedAt >= new Date(Date.now() - 1000 * 60 * 60 * 24 * 4)) {
       dataStatus.fresh++;
     } else {
@@ -108,11 +100,28 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     }
   });
 
-  return res.status(200).json({
+  return {
     waitingTrades: {
       needPricing: count.waitingPrice ?? 0,
       needVoting: count.waitingVote ?? 0,
     },
     dataStatus,
-  });
+  };
+}
+
+const GET = async (req: NextApiRequest, res: NextApiResponse) => {
+  let user: User | null = null;
+
+  try {
+    user = (await CheckAuth(req)).user;
+  } catch (e) {}
+
+  const item_iid = req.query.iid as string;
+
+  const status = await getPriceStatus(item_iid, user?.id);
+  if (!status) {
+    return res.status(404).json({ error: 'Item not found' });
+  }
+
+  return res.status(200).json(status);
 };

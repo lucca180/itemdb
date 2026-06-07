@@ -1,7 +1,8 @@
 import { Center, Flex, HStack, Tag, Text, Link } from '@chakra-ui/react';
 import { MdHelp } from 'react-icons/md';
 import Tooltip from '@components/Utils/Tooltip';
-import { ItemData, ItemLastSeen } from '@types';
+import { ItemData } from '@types';
+import { loadLastSeen } from '@app/_components/Item/loadUtils';
 import {
   categoryToShopID,
   faerielandShops,
@@ -22,15 +23,15 @@ import { getFormatter, getTranslations } from 'next-intl/server';
 
 type Props = {
   item: ItemData;
-  lastSeen: ItemLastSeen | null;
 };
 
 export default async function ItemRestock(props: Props) {
   const t = await getTranslations();
   const format = await getFormatter();
-  const { item, lastSeen } = props;
-
+  const { item } = props;
   const isHT = item.findAt.restockShop?.includes('hiddentower938');
+
+  const lastSeen = !isHT ? await loadLastSeen(item.internal_id) : null;
   const todayNST = getDateNST();
   const specialDay = getRestockSpecialDay(item, isHT, todayNST);
 
