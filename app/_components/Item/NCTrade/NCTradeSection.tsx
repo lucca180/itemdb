@@ -87,13 +87,13 @@ async function NCTradeTradingTab({ tradeLists }: { tradeLists: UserList[] }) {
 }
 
 async function NCTradeHistoryTab({ item }: Pick<Props, 'item'>) {
-  const lebronTradeHistory = await loadLebronTradeHistory(item.name);
+  const lebronTradeHistory = await loadLebronTradeHistory(item.internal_id, item.name);
   return <NCTradeHistory item={item} ncTrades={lebronTradeHistory} tradeHistory={[]} />;
 }
 
 async function NCTradeOwlsTabLabel({ item }: Pick<Props, 'item'>) {
   const [lebronTradeHistory, t] = await Promise.all([
-    loadLebronTradeHistory(item.name),
+    loadLebronTradeHistory(item.internal_id, item.name),
     getTranslations(),
   ]);
   const tradeCount = Math.min(lebronTradeHistory.length, 20).toString();

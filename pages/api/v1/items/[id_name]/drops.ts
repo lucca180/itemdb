@@ -4,7 +4,7 @@ import { ItemDrop, ItemOpenable, PrizePoolData } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 import { OpenableItems, WearableData } from '@prisma/generated/client';
-import { revalidateItem } from './effects';
+import { ItemRevalidateTags, revalidateItem } from '@utils/revalidateItem';
 import { getManyItems } from '../many';
 import { redis_setDataCount } from '@utils/redis';
 
@@ -90,7 +90,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const newDrops = await getItemDrops(item.internal_id, item.isNC);
 
-  await revalidateItem(item.slug!, res);
+  await revalidateItem(item.internal_id, ItemRevalidateTags.drops(item.internal_id));
 
   return res.status(200).json({ dropUpdate: newDrops });
 };

@@ -6,6 +6,7 @@ import ItemCard from '@components/Items/ItemCard';
 import { getItem } from '@pages/api/v1/items/[id_name]';
 import { getDyeworksData, type DyeworksData } from '@pages/api/v1/items/[id_name]/dyeworks';
 import { getTranslations } from 'next-intl/server';
+import { itemSectionCacheTags } from '@utils/appCacheTags';
 import type { ItemData } from '@types';
 
 type Props = {
@@ -14,15 +15,17 @@ type Props = {
 
 type DyeCardType = 'dyeworks' | 'prismatic' | 'none';
 
-const loadDyeData = unstable_cache(
-  async (internalId: number): Promise<DyeworksData | null> => {
-    const cachedItem = await getItem(internalId, true);
-    if (!cachedItem?.isNC || !cachedItem.isWearable) return null;
-    return getDyeworksData(cachedItem);
-  },
-  ['item-dye'],
-  { revalidate: 60 * 60 }
-);
+async function loadDyeData(internalId: number): Promise<DyeworksData | null> {
+  return unstable_cache(
+    async () => {
+      const cachedItem = await getItem(internalId, true);
+      if (!cachedItem?.isNC || !cachedItem.isWearable) return null;
+      return getDyeworksData(cachedItem);
+    },
+    ['item-dye', String(internalId)],
+    { revalidate: 60 * 5, tags: [...itemSectionCacheTags(internalId, 'dye')] }
+  )();
+}
 
 function getDyeCardType(dyeData: DyeworksData): DyeCardType {
   if (dyeData.originalItem.name.toLowerCase().includes('dyeworks')) return 'dyeworks';

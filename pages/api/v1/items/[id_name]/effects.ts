@@ -1,9 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-// import { revalidatePath as revalidateAppPath } from 'next/cache';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import { ItemData, ItemEffect } from '../../../../../types';
 import prisma from '../../../../../utils/prisma';
 import { getItem } from '.';
+import { ItemRevalidateTags, revalidateItem } from '@utils/revalidateItem';
 import { ItemEffect as PrimsaItemEffect } from '@prisma/generated/client';
 import {
   allNeopetsColors,
@@ -63,7 +63,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     },
   });
 
-  await revalidateItem(item.slug!, res);
+  await revalidateItem(item.internal_id, ItemRevalidateTags.effects(item.internal_id));
   return res.status(200).json(formatEffect(newEffect));
 };
 
@@ -99,7 +99,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
   const { id_name } = req.query;
   const item = await getItem(id_name as string);
   if (item) {
-    await revalidateItem(item.slug!, res);
+    await revalidateItem(item.internal_id, ItemRevalidateTags.effects(item.internal_id));
   }
 
   return res.status(200).json(formatEffect(updated));
@@ -126,7 +126,7 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
   const { id_name } = req.query;
   const item = await getItem(id_name as string);
   if (item) {
-    await revalidateItem(item.slug!, res);
+    await revalidateItem(item.internal_id, ItemRevalidateTags.effects(item.internal_id));
   }
 
   return res.status(200).json({});
@@ -228,14 +228,4 @@ export const formatEffect = (effect: PrimsaItemEffect) => {
   };
 
   return JSON.parse(JSON.stringify(obj)) as ItemEffect;
-};
-
-//eslint-disable-next-line
-export const revalidateItem = async (slug: string, res: NextApiResponse) => {
-  // return Promise.allSettled([
-  //   res.revalidate(`/item/${slug}`),
-  //   res.revalidate(`/pt/item/${slug}`),
-  //   revalidateAppPath(`/item/${slug}`),
-  //   revalidateAppPath(`/pt/item/${slug}`),
-  // ]);
 };

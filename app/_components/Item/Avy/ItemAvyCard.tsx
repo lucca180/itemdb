@@ -5,20 +5,23 @@ import { ItemAvyCardList } from '@app/_components/Item/Avy/ItemAvyCardList';
 import { getOfficialItemLists } from '@app/_components/Item/loadUtils';
 import { getAvyData } from '@pages/api/v1/items/[id_name]/avys';
 import { getTranslations } from 'next-intl/server';
+import { itemSectionCacheTags } from '@utils/appCacheTags';
 import type { ItemData } from '@types';
 
 type Props = {
   item: ItemData;
 };
 
-const loadAvyData = unstable_cache(
-  async (internalId: number) => {
-    const officialLists = await getOfficialItemLists(internalId);
-    return getAvyData(internalId, officialLists);
-  },
-  ['item-avy-card'],
-  { revalidate: 60 * 60 }
-);
+async function loadAvyData(internalId: number) {
+  return unstable_cache(
+    async () => {
+      const officialLists = await getOfficialItemLists(internalId);
+      return getAvyData(internalId, officialLists);
+    },
+    ['item-avy-card', String(internalId)],
+    { revalidate: 60 * 5, tags: [...itemSectionCacheTags(internalId, 'avy')] }
+  )();
+}
 
 export async function ItemAvyCard({ item }: Props) {
   return (

@@ -7,9 +7,9 @@ import {
   allPlayCats,
   categoryToShopID,
   genItemKey,
-  revalidatePath,
   slugify,
 } from '@utils/utils';
+import { revalidateAppCache, HomeRevalidateTags } from '@utils/revalidateItem';
 import { getPalette } from '@utils/itemPalette';
 import { detectWearable } from '@utils/detectWearable';
 import { processOpenableItems } from './open';
@@ -137,8 +137,15 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     newItems ? syncAllDynamicLists() : undefined,
   ]);
 
-  // revalidate the home page if we added new items
-  if (newItems) await revalidatePath('/', res);
+  // revalidate home caches when new items are added
+  if (newItems) {
+    await revalidateAppCache([
+      HomeRevalidateTags.latestItems,
+      HomeRevalidateTags.latestWearableItems,
+      HomeRevalidateTags.newItemCount,
+      HomeRevalidateTags.trendingItems,
+    ]);
+  }
 
   return res.json({ ...result, manualChecks });
 }

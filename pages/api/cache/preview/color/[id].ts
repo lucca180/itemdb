@@ -10,7 +10,7 @@ import {
 } from '../../../../../utils/pet-utils';
 import { checkPetColorExists } from '../../../v1/tools/petcolors';
 import prisma from '../../../../../utils/prisma';
-import { revalidateItem } from '../../../v1/items/[id_name]/effects';
+import { ItemRevalidateTags, revalidateItem } from '@utils/revalidateItem';
 import { Chance } from 'chance';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
@@ -112,7 +112,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           data: { imgCacheOverride: chance.hash({ length: 10 }) },
         });
 
-        await revalidateItem(item.slug!, res);
+        await revalidateItem(item.internal_id, ItemRevalidateTags.colors(item.internal_id));
       }
 
       return;

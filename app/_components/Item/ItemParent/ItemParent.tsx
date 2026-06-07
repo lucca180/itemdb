@@ -4,23 +4,26 @@ import CardBase from '@components/Card/CardBase';
 import { ItemParentGrid } from '@app/_components/Item/ItemParent/ItemParentGrid';
 import { getItemParent } from '@pages/api/v1/items/[id_name]/drops';
 import { getTranslations } from 'next-intl/server';
+import { itemSectionCacheTags } from '@utils/appCacheTags';
 import type { ItemData } from '@types';
 
 type Props = {
   item: ItemData;
 };
 
-const loadItemParentData = unstable_cache(
-  async (internalId: number): Promise<ItemData[]> => {
-    const { itemData } = await getItemParent(internalId);
-    if (itemData.length === 0) return [];
-    return [...itemData].sort(
-      (a, b) => (b.item_id ?? b.internal_id) - (a.item_id ?? a.internal_id)
-    );
-  },
-  ['item-parent'],
-  { revalidate: 60 }
-);
+async function loadItemParentData(internalId: number): Promise<ItemData[]> {
+  return unstable_cache(
+    async () => {
+      const { itemData } = await getItemParent(internalId);
+      if (itemData.length === 0) return [];
+      return [...itemData].sort(
+        (a, b) => (b.item_id ?? b.internal_id) - (a.item_id ?? a.internal_id)
+      );
+    },
+    ['item-parent', String(internalId)],
+    { revalidate: 60 * 10, tags: [...itemSectionCacheTags(internalId, 'parent')] }
+  )();
+}
 
 export async function ItemParent({ item }: Props) {
   return (

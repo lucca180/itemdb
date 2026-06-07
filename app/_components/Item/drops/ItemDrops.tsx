@@ -12,7 +12,7 @@ type Props = {
 
 export default async function ItemDrops({ item, itemOpenable }: Props) {
   const [dropItems, t, contentProps] = await Promise.all([
-    loadDropItemCardData(Object.keys(itemOpenable.drops).map(Number)),
+    loadDropItemCardData(item.internal_id, Object.keys(itemOpenable.drops).map(Number)),
     getTranslations(),
     buildItemDropsContentProps(item, itemOpenable),
   ]);

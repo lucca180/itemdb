@@ -6,21 +6,24 @@ import ItemCard from '@components/Items/ItemCard';
 import { getItem } from '@pages/api/v1/items/[id_name]';
 import { getMMEData, isMME } from '@pages/api/v1/items/[id_name]/mme';
 import { getTranslations } from 'next-intl/server';
+import { itemSectionCacheTags } from '@utils/appCacheTags';
 import type { ItemData, ItemMMEData } from '@types';
 
 type Props = {
   item: ItemData;
 };
 
-const loadMMEData = unstable_cache(
-  async (internalId: number): Promise<ItemMMEData | null> => {
-    const cachedItem = await getItem(internalId, true);
-    if (!cachedItem || !isMME(cachedItem.name)) return null;
-    return getMMEData(cachedItem);
-  },
-  ['item-mme'],
-  { revalidate: 60 * 60 }
-);
+async function loadMMEData(internalId: number): Promise<ItemMMEData | null> {
+  return unstable_cache(
+    async () => {
+      const cachedItem = await getItem(internalId, true);
+      if (!cachedItem || !isMME(cachedItem.name)) return null;
+      return getMMEData(cachedItem);
+    },
+    ['item-mme', String(internalId)],
+    { revalidate: 60 * 10, tags: [...itemSectionCacheTags(internalId, 'mme')] }
+  )();
+}
 
 export async function MMECard({ item }: Props) {
   if (!isMME(item.name)) return null;

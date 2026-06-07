@@ -8,6 +8,7 @@ import { IconLink } from '@components/Utils/IconLink';
 import { getItem } from '@pages/api/v1/items/[id_name]';
 import { getItemRecipes } from '@pages/api/v1/items/[id_name]/recipes';
 import { getTranslations } from 'next-intl/server';
+import { itemSectionCacheTags } from '@utils/appCacheTags';
 import type { ItemData, ItemRecipe } from '@types';
 import type { ReactNode } from 'react';
 
@@ -21,15 +22,17 @@ type RepairRecipeDetails = {
   itemType: 'broken' | 'original';
 };
 
-const loadItemRecipes = unstable_cache(
-  async (internalId: number): Promise<ItemRecipe[]> => {
-    const cachedItem = await getItem(internalId, true);
-    if (!cachedItem || cachedItem.isNC) return [];
-    return getItemRecipes(cachedItem.internal_id);
-  },
-  ['item-recipes-card'],
-  { revalidate: 60 * 60 }
-);
+async function loadItemRecipes(internalId: number): Promise<ItemRecipe[]> {
+  return unstable_cache(
+    async () => {
+      const cachedItem = await getItem(internalId, true);
+      if (!cachedItem || cachedItem.isNC) return [];
+      return getItemRecipes(cachedItem.internal_id);
+    },
+    ['item-recipes-card', String(internalId)],
+    { revalidate: 60 * 10, tags: [...itemSectionCacheTags(internalId, 'recipes')] }
+  )();
+}
 
 function getRepairRecipeDetails(item: ItemData, recipes: ItemRecipe[]): RepairRecipeDetails | null {
   const recipe = recipes[0];

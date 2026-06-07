@@ -8,6 +8,7 @@ import { getPetpetData } from '@pages/api/v1/items/[id_name]/petpet';
 import { getNCTradeInsights } from '@pages/api/v1/mall/[iid]/insights';
 import { getLastSeen } from '@pages/api/v1/prices/stats';
 import { getPriceStatus } from '@pages/api/v1/prices/[iid]/status';
+import { itemSectionCacheTags } from '@utils/appCacheTags';
 import { shouldShowTradeLists } from '@utils/utils';
 import type {
   InsightsResponse,
@@ -34,26 +35,49 @@ export const loadItemPageLists = cache(
     (await getOfficialItemLists(internalId)).filter((list) => !list.officialTag.includes('Avatar'))
 );
 
-export const loadItemEffects = cache(
-  (item: ItemData): Promise<ItemEffect[]> => getItemEffects(item)
-);
+export async function loadItemEffects(item: ItemData): Promise<ItemEffect[]> {
+  const internalId = item.internal_id;
+  return unstable_cache(
+    async () => {
+      const fresh = await getItem(internalId, true);
+      return getItemEffects(fresh ?? item);
+    },
+    ['item-effects', String(internalId)],
+    { revalidate: 60 * 60, tags: [...itemSectionCacheTags(internalId, 'effects')] }
+  )();
+}
 
-export const loadItemColors = cache((item: ItemData) => getSingleItemColor(item));
+export async function loadItemColors(item: ItemData) {
+  const internalId = item.internal_id;
+  return unstable_cache(
+    async () => {
+      const fresh = await getItem(internalId, true);
+      return getSingleItemColor(fresh ?? item);
+    },
+    ['item-colors', String(internalId)],
+    { revalidate: 60 * 60, tags: [...itemSectionCacheTags(internalId, 'colors')] }
+  )();
+}
 
-export const loadItemWearableData = cache(
-  (internalId: number): Promise<WearableData> =>
-    getWearableData(internalId) as Promise<WearableData>
-);
+export async function loadItemWearableData(internalId: number): Promise<WearableData> {
+  return unstable_cache(
+    async () => getWearableData(internalId) as Promise<WearableData>,
+    ['item-wearable', String(internalId)],
+    { revalidate: 60 * 60, tags: [...itemSectionCacheTags(internalId, 'wearable')] }
+  )();
+}
 
 export const loadNPPrices = cache((internalId: number) =>
   getItemPrices({ iid: internalId, includeUnconfirmed: true })
 );
 
-export const loadLastSeen = unstable_cache(
-  (internal_id: number) => getLastSeen({ item_iid: internal_id }),
-  ['item-last-seen'],
-  { revalidate: 60 }
-);
+export async function loadLastSeen(internalId: number) {
+  return unstable_cache(
+    async () => getLastSeen({ item_iid: internalId }),
+    ['item-last-seen', String(internalId)],
+    { revalidate: 60, tags: [...itemSectionCacheTags(internalId, 'last-seen')] }
+  )();
+}
 
 export const loadPriceStatus = cache((internalId: number, userId?: string) =>
   getPriceStatus(internalId, userId)
@@ -64,37 +88,44 @@ export const loadTradeLists = cache(async (item: ItemData) => {
   return getItemLists(item.internal_id, false);
 });
 
-export const loadPetpetData = unstable_cache(
-  async (internalId: number): Promise<ItemPetpetData | null> => {
-    const cachedItem = await getItem(internalId, true);
-    if (
-      !cachedItem ||
-      cachedItem.isNC ||
-      cachedItem.isWearable ||
-      cachedItem.isBD ||
-      cachedItem.isNeohome
-    ) {
-      return null;
-    }
-    return getPetpetData(cachedItem);
-  },
-  ['item-petpet-data'],
-  { revalidate: 60 * 60 }
-);
+export async function loadPetpetData(internalId: number): Promise<ItemPetpetData | null> {
+  return unstable_cache(
+    async () => {
+      const cachedItem = await getItem(internalId, true);
+      if (
+        !cachedItem ||
+        cachedItem.isNC ||
+        cachedItem.isWearable ||
+        cachedItem.isBD ||
+        cachedItem.isNeohome
+      ) {
+        return null;
+      }
+      return getPetpetData(cachedItem);
+    },
+    ['item-petpet-data', String(internalId)],
+    { revalidate: 60 * 60, tags: [...itemSectionCacheTags(internalId, 'petpet')] }
+  )();
+}
 
-export const loadNCTradeInsights = unstable_cache(
-  async (internalId: number): Promise<InsightsResponse | null> => {
-    return getNCTradeInsights(internalId);
-  },
-  ['item-nc-trade-insights'],
-  { revalidate: 60 }
-);
+export async function loadNCTradeInsights(internalId: number): Promise<InsightsResponse | null> {
+  return unstable_cache(
+    async () => getNCTradeInsights(internalId),
+    ['item-nc-trade-insights', String(internalId)],
+    { revalidate: 3 * 60, tags: [...itemSectionCacheTags(internalId, 'nc-insights')] }
+  )();
+}
 
-export const loadLebronTradeHistory = unstable_cache(
-  async (itemName: string): Promise<LebronTrade[]> => {
-    const data = await getLebronItemData(itemName);
-    return data?.reports ?? [];
-  },
-  ['item-lebron-trade-history'],
-  { revalidate: 60 * 2 }
-);
+export async function loadLebronTradeHistory(
+  internalId: number,
+  itemName: string
+): Promise<LebronTrade[]> {
+  return unstable_cache(
+    async () => {
+      const data = await getLebronItemData(itemName);
+      return data?.reports ?? [];
+    },
+    ['item-lebron-trade-history', String(internalId), itemName],
+    { revalidate: 3 * 60, tags: [...itemSectionCacheTags(internalId, 'lebron')] }
+  )();
+}
