@@ -1,43 +1,26 @@
+'use client';
+
 import { Alert, Button, Flex } from '@chakra-ui/react';
 import { useToast } from '@utils/theme/toast';
 import axios from 'axios';
-import { useEffect, useState } from 'react';
-import { ItemData } from '../../types';
-import { useAuth } from '../../utils/auth';
+import { useRouter } from '@i18n/navigation';
 import type { ItemPrices, ItemProcess } from '@prisma/generated/client';
+import type { ItemData } from '@types';
 
 type Props = {
   item: ItemData;
+  type: 'inflation' | 'info';
+  manualCheck: ItemPrices | ItemProcess;
+  conflictField: string | null;
 };
 
 const intl = new Intl.NumberFormat();
 
-const ManualCheckCard = (props: Props) => {
-  const { item } = props;
-  const { user } = useAuth();
-  const [manualCheck, setManualCheck] = useState<ItemPrices | ItemProcess | undefined | null>();
-  const [type, setType] = useState<'inflation' | 'info'>();
-  const [conflictField, setConflictField] = useState<string | null>(null);
+export function ManualCheckCard({ item, type, manualCheck, conflictField }: Props) {
+  const router = useRouter();
   const toast = useToast();
 
-  const init = async () => {
-    const res = await axios.get(`/api/admin/manual/${item.internal_id}`);
-
-    if (res.data.inflation) {
-      setManualCheck(res.data.inflation);
-      setType('inflation');
-    } else if (res.data.info) {
-      setManualCheck(res.data.info);
-      setType('info');
-      const field =
-        (res.data.info as ItemProcess).manual_check?.split('Merge')[0].split("'")[1] ?? null;
-      setConflictField(field);
-    }
-  };
-
   const submitAction = async (action: 'approve' | 'reprove' | 'not_inflated' | 'correct') => {
-    if (!user || !user.isAdmin || !manualCheck) return;
-
     let correctInfo = undefined;
 
     if (action === 'correct' && conflictField) {
@@ -57,11 +40,11 @@ const ManualCheckCard = (props: Props) => {
     const promise = axios
       .post(`/api/admin/manual/${item.internal_id}`, {
         action,
-        type: type,
+        type,
         checkID: manualCheck.internal_id,
         correctInfo: correctInfo,
       })
-      .then(() => setManualCheck(null));
+      .then(() => router.refresh());
 
     toast.promise(promise, {
       success: { id: 'manual-check-success', title: 'Success', description: 'Thank you' },
@@ -73,14 +56,6 @@ const ManualCheckCard = (props: Props) => {
       loading: { id: 'manual-check-loading', title: 'Please wait' },
     });
   };
-
-  useEffect(() => {
-    if (!user || !user.isAdmin) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    init();
-  }, [user, item]);
-
-  if (!user || !user.isAdmin || !manualCheck) return null;
 
   return (
     <Alert.Root
@@ -130,9 +105,9 @@ const ManualCheckCard = (props: Props) => {
           <Alert.Description>
             Information conflict for <b>{conflictField}</b> field.
             <br />
-            Current: <b>{(item as any)[conflictField]}</b>
+            Current: <b>{(item as Record<string, unknown>)[conflictField] as string}</b>
             <br />
-            Incoming: <b>{(manualCheck as any)[conflictField]}</b>
+            Incoming: <b>{(manualCheck as Record<string, unknown>)[conflictField] as string}</b>
             <Flex mt={3} justifyContent="space-between">
               <Button colorPalette={'red'} variant="ghost" onClick={() => submitAction('reprove')}>
                 Ignore
@@ -157,6 +132,4 @@ const ManualCheckCard = (props: Props) => {
       </Alert.Content>
     </Alert.Root>
   );
-};
-
-export default ManualCheckCard;
+}

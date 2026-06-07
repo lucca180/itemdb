@@ -110,15 +110,3 @@ export function ItemPageEditSection(props: ItemPageEditSectionProps) {
     </>
   );
 }
-
-export function ItemPageAdminOnly({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
-  if (!user?.isAdmin) return null;
-  return children;
-}
-
-export function ItemPageUserOnly({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
-  if (!user) return null;
-  return children;
-}

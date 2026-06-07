@@ -1,19 +1,15 @@
 import { Flex } from '@chakra-ui/react';
 import type { ItemPageData } from '@app/utils/loadItemPage';
 import { ItemHeader } from '@app/_components/Item/page/ItemHeader';
-import {
-  ItemPageAdminOnly,
-  ItemPageEditSection,
-  ItemPageUserOnly,
-} from '@app/_components/Item/page/ItemPageAuthGates';
+import { ItemPageEditSection } from '@app/_components/Item/page/ItemPageAuthGates';
 import { ItemPageOutfitSectionLoader } from '@app/_components/Item/page/ItemPageOutfitSectionLoader';
 import { ItemPageWearablePreview } from '@app/_components/Item/page/ItemPageWearablePreview';
 import {
-  ItemPageManualCheck,
-  ItemPageMyLists,
   ItemPageSidebarDesktop,
   ItemPageSidebarMobile,
-} from '@app/_components/Item/page/ItemPageClientCards';
+} from '@app/_components/Item/page/ItemPageSidebar';
+import { ManualCheckSection } from '@app/_components/Item/ManualCheck/ManualCheckSection';
+import { MyListsSection } from '@app/_components/Item/MyLists/MyListsSection';
 import MissingInfoCard from '@components/Items/MissingInfoCard';
 import ItemEffectsCard from '@components/Items/ItemEffectsCard';
 import ItemOfficialLists from '@components/Items/ItemOfficialList';
@@ -82,7 +78,7 @@ export async function ItemPage({ data }: ItemPageProps) {
           flexFlow="column"
           gap={5}
         >
-          <ItemPageSidebarDesktop item={item} itemKey={itemKey}>
+          <ItemPageSidebarDesktop item={item}>
             <FindAtCard item={item} />
           </ItemPageSidebarDesktop>
           <ItemInfoCard item={item} />
@@ -97,11 +93,9 @@ export async function ItemPage({ data }: ItemPageProps) {
           w={{ base: '100%', md: 'auto' }}
         >
           <Flex flex="2" flexFlow="column" gap={{ base: 4, md: 6 }} maxW="800px">
-            <ItemPageAdminOnly>
-              <ItemPageManualCheck item={item} itemKey={itemKey} />
-            </ItemPageAdminOnly>
+            <ManualCheckSection item={item} />
             {item.isMissingInfo && <MissingInfoCard key={getKey('missing-info')} />}
-            <ItemPageSidebarMobile item={item} itemKey={itemKey}>
+            <ItemPageSidebarMobile item={item}>
               <FindAtCard item={item} />
             </ItemPageSidebarMobile>
             {!item.isNC && (
@@ -127,9 +121,7 @@ export async function ItemPage({ data }: ItemPageProps) {
             {lists && (
               <ItemOfficialLists key={getKey('official-lists')} item={item} lists={lists} />
             )}
-            <ItemPageUserOnly>
-              <ItemPageMyLists item={item} itemKey={itemKey} />
-            </ItemPageUserOnly>
+            <MyListsSection item={item} />
             <MMECard key={getKey('mme-card')} item={item} />
             <DyeCard key={getKey('dye-card')} item={item} />
             <ItemRecipesCard key={getKey('item-recipes')} item={item} />

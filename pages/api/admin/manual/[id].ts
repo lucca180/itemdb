@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { CheckAuth } from '../../../../utils/googleCloud';
 import prisma from '../../../../utils/prisma';
-import { ItemPrices } from '@prisma/generated/client';
+import { ItemPrices, ItemProcess } from '@prisma/generated/client';
 import { slugify } from '../../../../utils/utils';
 import { User } from '@types';
 import { LogService } from '@services/ActionLogService';
@@ -20,12 +20,15 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (req.method === 'POST') return POST(req, res, user);
 }
 
-const GET = async (req: NextApiRequest, res: NextApiResponse) => {
-  const id = req.query.id as string;
+export type ItemManualCheckData = {
+  inflation: ItemPrices | null;
+  info: ItemProcess | null;
+};
 
+export const getItemManualCheck = async (itemInternalId: number): Promise<ItemManualCheckData> => {
   const inflation = await prisma.itemPrices.findFirst({
     where: {
-      item_iid: Number(id),
+      item_iid: itemInternalId,
       manual_check: 'inflation',
     },
   });
@@ -35,12 +38,18 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
       processed: false,
       manual_check: {
         not: null,
-        contains: `(${id})`,
+        contains: `(${itemInternalId})`,
       },
     },
   });
 
-  return res.json({ inflation, info });
+  return { inflation, info };
+};
+
+const GET = async (req: NextApiRequest, res: NextApiResponse) => {
+  const id = req.query.id as string;
+  const data = await getItemManualCheck(Number(id));
+  return res.json(data);
 };
 
 const POST = async (req: NextApiRequest, res: NextApiResponse, user: User) => {

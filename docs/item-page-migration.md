@@ -24,7 +24,9 @@ Item/
 ├── Avy/            # ItemAvyCard + ItemAvyCardList
 ├── Trade/          # TradeCardSection
 ├── NCTrade/        # NCTradeSection + MatchTable, TradeInsights, NCTradeHistory, …
-└── Price/          # ItemPriceSection (server) + ItemPriceCard (client shell)
+├── Price/          # ItemPriceSection (server) + ItemPriceCard (client shell)
+├── MyLists/        # MyListsSection (server) + MyListsCard (client island)
+└── ManualCheck/    # ManualCheckSection (server) + ManualCheckCard (client island)
 ```
 
 Cards genéricos de display (sem fetch App Router) permanecem em [`components/Items/`](../components/Items/) — ex.: `ItemEffectsCard`, `FindAtCard`, `ColorInfoCard`.
@@ -125,25 +127,26 @@ Objetivo: **eliminar `useTranslations` / `useFormatter` das ilhas client da item
 - `EffectCard` — `typeName` passado do server; tipos em [`effectTypes.ts`](../components/Items/effectTypes.ts) (fix RSC)
 - **`NCTrade/`** — zero `useTranslations` na árvore da item page NC
 - **`ItemPriceSection`** — labels de tabs e copy estática no server; stat formatado no server
+- **`MyLists/`** — `MyListsSection` server + `MyListsCard` client com `labels` do server
+- **`ManualCheck/`** — `ManualCheckSection` server (auth admin) + `ManualCheckCard` client
+- **`ItemPageWearablePreview`** — server shell; gate + `colorSpeciesEffect` no server; `ItemPreview` client via dynamic
 
 ### Pendente ⏳ (item page)
 
 | Componente | Motivo |
 |------------|--------|
-| [`ItemPriceCard.tsx`](../app/_components/Item/Price/ItemPriceCard.tsx) | modais, empty states, last seen cards — `useTranslations` / `useFormatter` |
 | [`TradeCard`](../components/Trades/TradeCard.tsx) | título e copy da tabela |
 | [`ItemCard`](../components/Items/ItemCard.tsx) | compartilhado; afeta similar items, parent, MME, dye, recipes, avy |
-| [`MyListsCard`](../components/Items/MyListsCard.tsx) | via `ItemPageClientCards` |
-| [`ManualCheckCard`](../components/Items/ManualCheckCard.tsx) | admin |
+| [`AddToListSelect`](../components/UserLists/AddToListSelect.tsx) | sidebar; `useTranslations` + auth client |
 | `EffectText` em `EffectCard` | `t.rich` dinâmico por tipo de efeito |
 | [`EditItemModal`](../components/Modal/EditItemModal.tsx) | lazy fetch + copy client (`ItemPageAuthGates`) |
-| Wearable preview | [`ItemPageWearablePreview`](../app/_components/Item/page/ItemPageWearablePreview.tsx) → `ItemPreview` / `ItemOutfit` |
+| [`ItemPreview`](../components/Items/ItemPreview.tsx) | wearable preview client island |
 
 ### Passos restantes (i18n)
 
-1. **`ItemPriceCard`** — passar `labels` do server (como tabs já recebem)
-2. **`TradeCard`** — shell server passa strings
-3. **Modais compartilhados** — `EditItemModal`, modais de price (`CreatePriceModal`, etc.)
+1. **`TradeCard`** — shell server passa strings
+2. **Modais compartilhados** — `EditItemModal`, modais de price (`CreatePriceModal`, etc.)
+3. **`AddToListSelect`** — labels do server (sidebar)
 4. **Layout global** — restringir `getMessages()` a namespaces mínimos em [`layout.tsx`](../app/[locale]/layout.tsx)
 5. **Pages Router** — `_app.tsx` / modais compartilhados: por último ou quando a rota migrar
 
@@ -159,7 +162,7 @@ Objetivo: **eliminar `useTranslations` / `useFormatter` das ilhas client da item
 
 ### Fase 0 — Shell ✅
 
-- [`ItemPage.tsx`](../app/_components/Item/page/ItemPage.tsx) server + `ItemHeader` + `ItemPageClientCards`
+- [`ItemPage.tsx`](../app/_components/Item/page/ItemPage.tsx) server + `ItemHeader` + client islands mínimas (sidebar, edit)
 - Wiring em `page.tsx`
 
 ### Fase 1 — Vitórias rápidas ✅
@@ -198,7 +201,7 @@ Server em `components/Items/`: `MissingInfoCard`, `NcMallCard`, `ItemEffectsCard
 - Preload `npPrices` + `npPriceStatus` em `loadItemPage`
 - `getPriceStatus` compartilhado com API route; loaders em `loadUtils.ts`
 - Legacy `components/Price/*` removido
-- Wiring direto em `ItemPage` (fora de `ItemPageClientCards`)
+- Wiring direto em `ItemPage`
 
 **NCTrade**
 
@@ -206,24 +209,20 @@ Server em `components/Items/`: `MissingInfoCard`, `NcMallCard`, `ItemEffectsCard
 - Preload `ncTradeInsights` em `loadItemPage` (mantido — bloqueia render)
 - `components/NCTrades/index.tsx` → re-export apenas
 
-### Fase 7 — Encolher client ⏳
+### Fase 7 — Encolher client ✅
 
-[`ItemPageClientCards`](../app/_components/Item/page/ItemPageClientCards.tsx) hoje:
+- [`MyLists/`](../app/_components/Item/MyLists/) — `MyListsSection` server (auth + i18n) + `MyListsCard` client island
+- [`ManualCheck/`](../app/_components/Item/ManualCheck/) — `ManualCheckSection` server (auth admin) + `ManualCheckCard` client island
+- [`ItemPageWearablePreview`](../app/_components/Item/page/ItemPageWearablePreview.tsx) — server shell; `ItemPreview` client via dynamic
+- Sidebars desktop/mobile — layout server em `ItemPage`; só `AddToListSelect` permanece client
+- `ItemPageClientCards.tsx` removido; auth gates (`ItemPageAdminOnly` / `ItemPageUserOnly`) substituídos por checks server nas sections
 
-- Sidebars desktop/mobile (`AddToListSelect`)
-- `ItemPageManualCheck` → `ManualCheckCard`
-- `ItemPageMyLists` → `MyListsCard`
+Ainda client (necessário):
 
-Ainda client fora de `ItemPageClientCards`:
-
-- [`ItemPageAuthGates`](../app/_components/Item/page/ItemPageAuthGates.tsx) — auth gates, `EditItemModal`, lazy fetch openable/petpet
-- [`ItemPageWearablePreview`](../app/_components/Item/page/ItemPageWearablePreview.tsx) + outfit section
+- [`ItemPageAuthGates`](../app/_components/Item/page/ItemPageAuthGates.tsx) — `ItemPageEditSection`: auth, `EditItemModal`, lazy fetch openable/petpet
+- [`ItemPageOutfitSection`](../app/_components/Item/page/ItemPageOutfitSection.tsx) + `ItemOutfit` client
+- [`AddToListSelect`](../components/UserLists/AddToListSelect.tsx) — sidebar add-to-list
 - [`ItemBreadcrumb`](../components/Breadcrumbs/ItemBreadcrumb.tsx) em [`ItemHeader`](../app/_components/Item/page/ItemHeader.tsx) (server shell + breadcrumb client)
-
-Possíveis próximos passos (não bloqueiam “migração estrutural”):
-
-- Migrar `MyListsCard` / `ManualCheckCard` para server + ilha mínima
-- Mover wearable preview para padrão server shell + client preview only
 
 ---
 
@@ -233,8 +232,7 @@ Possíveis próximos passos (não bloqueiam “migração estrutural”):
 
 | Item | Prioridade | Notas |
 |------|------------|-------|
-| i18n client restante | Alta | `ItemPriceCard`, `TradeCard`, `ItemCard`, `MyListsCard`, `EditItemModal` — ver tabela acima |
-| Encolher `ItemPageClientCards` | Média | my lists + manual check ainda 100% client |
+| i18n client restante | Alta | `TradeCard`, `ItemCard`, `AddToListSelect`, `EditItemModal`, `ItemPreview` — ver tabela acima |
 | Breadcrumbs server | Baixa | revertido para client; refator mínima se valer a pena |
 
 ### B. Infra / qualidade (review fixes) ⏳

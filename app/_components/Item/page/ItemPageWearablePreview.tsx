@@ -1,10 +1,5 @@
-'use client';
-
-import { useMemo } from 'react';
-import dynamic from 'next/dynamic';
+import { ItemPageWearablePreviewClient } from '@app/_components/Item/page/ItemPageWearablePreviewClient';
 import type { ItemData, ItemEffect, WearableData } from '@types';
-
-const ItemPreview = dynamic(() => import('@components/Items/ItemPreview'));
 
 type ItemPageWearablePreviewProps = {
   item: ItemData;
@@ -17,14 +12,18 @@ export function ItemPageWearablePreview({
   itemEffects,
   wearableData,
 }: ItemPageWearablePreviewProps) {
-  const colorSpeciesEffect = useMemo(() => {
-    if (itemEffects.length === 0) return null;
-    return itemEffects.find((effect) => effect.type === 'colorSpecies') ?? null;
-  }, [itemEffects]);
+  const colorSpeciesEffect =
+    itemEffects.length > 0
+      ? (itemEffects.find((effect) => effect.type === 'colorSpecies') ?? null)
+      : null;
 
   if (!item.isWearable && !colorSpeciesEffect) return null;
 
   return (
-    <ItemPreview colorSpeciesEffect={colorSpeciesEffect} item={item} wearableData={wearableData} />
+    <ItemPageWearablePreviewClient
+      item={item}
+      colorSpeciesEffect={colorSpeciesEffect}
+      wearableData={wearableData}
+    />
   );
 }

@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Flex,
   Link,
@@ -12,74 +14,97 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import { useToast } from '@utils/theme/toast';
-import React, { useMemo } from 'react';
-import { ItemData, ObligatoryUserList } from '../../types';
-import CardBase from '../Card/CardBase';
+import React, { useEffect, useState } from 'react';
+import { useRouter } from '@i18n/navigation';
+import CardBase from '@components/Card/CardBase';
 import MainLink from '@components/Utils/MainLink';
 import Image from 'next/image';
-import DynamicIcon from '../../public/icons/dynamic.png';
+import DynamicIcon from '@assets/icons/dynamic.png';
 import dynamic from 'next/dynamic';
 import axios from 'axios';
 import Color from 'color';
-import useSWRImmutable from 'swr/immutable';
 import { BsThreeDotsVertical } from 'react-icons/bs';
-import { isDynamicActionDisabled } from '../../utils/utils';
-import { DuplicatedItemModalProps } from '../Modal/DuplicatedItemModal';
-import { ItemActionModalProps } from '../Modal/ItemActionModal';
-import { useTranslations } from 'next-intl';
+import { isDynamicActionDisabled } from '@utils/utils';
+import type { DuplicatedItemModalProps } from '@components/Modal/DuplicatedItemModal';
+import type { ItemActionModalProps } from '@components/Modal/ItemActionModal';
+import type { ItemData, ObligatoryUserList } from '@types';
 
-const Markdown = dynamic(() => import('../Utils/Markdown'));
+const Markdown = dynamic(() => import('@components/Utils/Markdown'));
 
-const ItemActionModal = dynamic<ItemActionModalProps>(() => import('../Modal/ItemActionModal'));
-const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
-  () => import('../Modal/DuplicatedItemModal')
+const ItemActionModal = dynamic<ItemActionModalProps>(
+  () => import('@components/Modal/ItemActionModal')
 );
-
-const fetcher = (url: string) => axios.get(url).then((res) => res.data as ObligatoryUserList[]);
+const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
+  () => import('@components/Modal/DuplicatedItemModal')
+);
 
 type Props = {
   item: ItemData;
+  labels: {
+    title: string;
+    changesSaved: string;
+    somethingWentWrong: string;
+    tryAgainLater: string;
+    saving: string;
+    hidden: string;
+    highlight: string;
+    listNoDescription: string;
+    markAsHidden: string;
+    unmarkAsHidden: string;
+    markAsHighlight: string;
+    unmarkAsHighlight: string;
+    changeQuantity: string;
+    deleteFromList: string;
+  };
+  lists: ObligatoryUserList[];
 };
 
-const ItemMyLists = (props: Props) => {
-  const t = useTranslations();
+export function MyListsCard({ item, labels, lists: serverLists }: Props) {
+  const router = useRouter();
   const { open: isOpen, onOpen, onClose } = useDisclosure();
   const { open: isActionOpen, onOpen: onActionOpen, onClose: onActionClose } = useDisclosure();
 
-  const [selectedList, setSelectedList] = React.useState<ObligatoryUserList | undefined>();
-  const { item } = props;
-  const { data, mutate } = useSWRImmutable(`/api/v1/items/${item.internal_id}/mylists`, fetcher, {
-    shouldRetryOnError: false,
-  });
+  const [lists, setLists] = useState(serverLists);
+  const [selectedList, setSelectedList] = useState<ObligatoryUserList | undefined>();
 
-  const lists = useMemo(() => data?.filter((list) => !list.official), [data]);
+  useEffect(() => {
+    setLists(serverLists);
+  }, [serverLists]);
 
   const color = Color(item.color.hex);
   const toast = useToast();
 
+  const refreshLists = () => router.refresh();
+
   const doAction = async (list: ObligatoryUserList, action: 'hide' | 'highlight') => {
+    const itemInfo = list.itemInfo[0];
+    const nextItemInfo = {
+      ...itemInfo,
+      isHidden: action === 'hide' ? !itemInfo.isHidden : itemInfo.isHidden,
+      isHighlight: action === 'highlight' ? !itemInfo.isHighlight : itemInfo.isHighlight,
+    };
+
     const promise = axios
       .post(`/api/v1/lists/${list.owner.username}/${list.internal_id}`, {
         list_id: list.internal_id,
-        itemInfo: [
-          {
-            ...list.itemInfo[0],
-            isHidden: action === 'hide' ? !list.itemInfo[0].isHidden : list.itemInfo[0].isHidden,
-            isHighlight:
-              action === 'highlight' ? !list.itemInfo[0].isHighlight : list.itemInfo[0].isHighlight,
-          },
-        ],
+        itemInfo: [nextItemInfo],
       })
-      .then(() => mutate());
+      .then(() => {
+        setLists((prev) =>
+          prev.map((entry) =>
+            entry.internal_id === list.internal_id ? { ...entry, itemInfo: [nextItemInfo] } : entry
+          )
+        );
+      });
 
     toast.promise(promise, {
-      success: { id: 'my-lists-action-success', title: t('General.changes-saved') },
+      success: { id: 'my-lists-action-success', title: labels.changesSaved },
       error: {
         id: 'my-lists-action-error',
-        title: t('General.something-went-wrong'),
-        description: t('General.try-again-later'),
+        title: labels.somethingWentWrong,
+        description: labels.tryAgainLater,
       },
-      loading: { id: 'my-lists-action-loading', title: `${t('General.saving')}...` },
+      loading: { id: 'my-lists-action-loading', title: `${labels.saving}...` },
     });
   };
 
@@ -93,7 +118,7 @@ const ItemMyLists = (props: Props) => {
     onActionOpen();
   };
 
-  if (!lists || !lists.length) return null;
+  if (!lists.length) return null;
 
   return (
     <>
@@ -103,14 +128,14 @@ const ItemMyLists = (props: Props) => {
           onClose={onClose}
           item={item}
           list={selectedList}
-          onChange={() => mutate()}
+          onChange={refreshLists}
           itemInfo={selectedList.itemInfo[0]}
         />
       )}
 
       {isActionOpen && selectedList && (
         <ItemActionModal
-          refresh={() => mutate()}
+          refresh={refreshLists}
           isOpen={isActionOpen}
           onClose={onActionClose}
           selectedItems={[selectedList.itemInfo[0]]}
@@ -118,7 +143,7 @@ const ItemMyLists = (props: Props) => {
           list={selectedList}
         />
       )}
-      <CardBase title={t('Layout.my-lists')} color={item.color.rgb}>
+      <CardBase title={labels.title} color={item.color.rgb}>
         <Flex gap={3} flexFlow="column">
           <List.Root gap={3}>
             {lists.map((list, i) => (
@@ -157,11 +182,11 @@ const ItemMyLists = (props: Props) => {
                         {list.itemInfo[0].amount}x
                       </Badge>
                       {list.itemInfo[0].isHidden && (
-                        <Badge fontSize={'0.7rem'}>{t('Lists.hidden')}</Badge>
+                        <Badge fontSize={'0.7rem'}>{labels.hidden}</Badge>
                       )}
                       {list.itemInfo[0].isHighlight && (
                         <Badge fontSize={'0.7rem'} colorPalette="orange">
-                          {t('Lists.highlight')}
+                          {labels.highlight}
                         </Badge>
                       )}
                     </HStack>
@@ -177,11 +202,7 @@ const ItemMyLists = (props: Props) => {
                     >
                       -{' '}
                       <Markdown>
-                        {
-                          (list.description || t('ItemPage.list-no-description')).split(
-                            /[\r\n]+/
-                          )[0]
-                        }
+                        {(list.description || labels.listNoDescription).split(/[\r\n]+/)[0]}
                       </Markdown>
                     </Text>
                   </Flex>
@@ -200,8 +221,8 @@ const ItemMyLists = (props: Props) => {
                             onClick={() => doAction(list, 'hide')}
                           >
                             {list.itemInfo[0].isHidden
-                              ? t('ItemPage.unmark-as-hidden')
-                              : t('ItemPage.mark-as-hidden')}
+                              ? labels.unmarkAsHidden
+                              : labels.markAsHidden}
                           </Menu.Item>
                           <Menu.Item
                             value="highlight"
@@ -209,15 +230,15 @@ const ItemMyLists = (props: Props) => {
                             onClick={() => doAction(list, 'highlight')}
                           >
                             {list.itemInfo[0].isHighlight
-                              ? t('ItemPage.unmark-as-highlight')
-                              : t('ItemPage.mark-as-highlight')}
+                              ? labels.unmarkAsHighlight
+                              : labels.markAsHighlight}
                           </Menu.Item>
                           <Menu.Item
                             value="quantity"
                             onClick={() => handleOpen(list)}
                             fontSize={'sm'}
                           >
-                            {t('ItemPage.change-quantity')}
+                            {labels.changeQuantity}
                           </Menu.Item>
                           <Menu.Item
                             value="delete"
@@ -226,7 +247,7 @@ const ItemMyLists = (props: Props) => {
                             color="red.300"
                             disabled={isDynamicActionDisabled('remove', list.dynamicType)}
                           >
-                            {t('ItemPage.delete-from-list')}
+                            {labels.deleteFromList}
                           </Menu.Item>
                         </Menu.Content>
                       </Menu.Positioner>
@@ -240,6 +261,4 @@ const ItemMyLists = (props: Props) => {
       </CardBase>
     </>
   );
-};
-
-export default ItemMyLists;
+}
