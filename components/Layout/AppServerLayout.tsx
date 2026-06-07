@@ -1,15 +1,15 @@
 import type { ReactNode } from 'react';
-import { cookies, headers } from 'next/headers';
-import { getLocale, getTranslations } from 'next-intl/server';
-import { redirect } from 'next/navigation';
-import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
+import { Suspense } from 'react';
+import { getTranslations } from 'next-intl/server';
 import { AppSiteAlert } from '@components/Layout/siteAlert';
-import { LayoutAuth } from '@components/Layout/AuthButton';
+import { AuthButtonSkeleton } from '@components/Layout/AuthButtonSkeleton';
+import { LayoutAuthServer } from '@components/Layout/LayoutAuthServer';
 import { LayoutChrome, LayoutFeedback, LayoutSearch } from '@components/Layout/LayoutChrome';
-import { LayoutLocaleServer } from '@components/Layout/LayoutLocaleServer';
+import { LayoutLocalePages } from '@components/Layout/LayoutLocale';
 import { getLayoutFooterColumns, getLayoutNavSections } from '@components/Layout/layoutData';
 
 type AppServerLayoutProps = {
+  locale: string;
   children?: ReactNode;
   loading?: boolean;
   disableNextSeo?: boolean;
@@ -19,19 +19,7 @@ type AppServerLayoutProps = {
 };
 
 export default async function AppServerLayout(props: AppServerLayoutProps) {
-  const locale = await getLocale();
   const t = await getTranslations();
-  const requestHeaders = await headers();
-  const currentPath = requestHeaders.get('x-itemdb-current-path') ?? '/';
-
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get('session')?.value;
-  const { user } = sessionCookie ? await getServerCurrentUser() : { user: null };
-
-  if (user && !user.username && !currentPath.includes('/login')) {
-    redirect('/login');
-  }
-
   const translate = (key: string) => t(key);
   const navSections = getLayoutNavSections(translate);
   const footerColumns = getLayoutFooterColumns(translate);
@@ -46,13 +34,17 @@ export default async function AppServerLayout(props: AppServerLayoutProps) {
       footerColumns={footerColumns}
       madeInLabel={t('Layout.made-in')}
       byLabel={t('Layout.by')}
-      siteAlert={<AppSiteAlert locale={locale} />}
+      siteAlert={<AppSiteAlert locale={props.locale} />}
       search={<LayoutSearch />}
-      auth={<LayoutAuth initialUser={user} />}
+      auth={
+        <Suspense fallback={<AuthButtonSkeleton />}>
+          <LayoutAuthServer />
+        </Suspense>
+      }
       footerActions={
         <>
           <LayoutFeedback size="xs" flex="1" h="25px" borderRadius="md" />
-          <LayoutLocaleServer locale={locale} currentPath={currentPath} />
+          <LayoutLocalePages />
         </>
       }
       hardNavigation={props.hardNavigation}

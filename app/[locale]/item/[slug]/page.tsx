@@ -4,6 +4,7 @@ import { getPathname } from '@i18n/navigation';
 import AppServerLayout from '@components/Layout/AppServerLayout';
 import { ItemPage as ItemPageView } from '@app/_components/Item/page/ItemPage';
 import { buildItemPageMetadata, resolveItemPage, resolveItemRoute } from '@app/utils/loadItemPage';
+import { setRequestLocale } from 'next-intl/server';
 
 export const revalidate = 60;
 
@@ -13,6 +14,7 @@ type ItemPageProps = {
 
 export async function generateMetadata({ params }: ItemPageProps): Promise<Metadata> {
   const { slug, locale } = await params;
+  setRequestLocale(locale);
   const result = await resolveItemRoute(slug);
 
   if (result.type === 'notFound') {
@@ -34,10 +36,12 @@ export default async function ItemPage({ params }: ItemPageProps) {
     notFound();
   }
 
+  setRequestLocale(locale);
+
   const { item } = result.data;
 
   return (
-    <AppServerLayout disableNextSeo mainColor={item.color.hex + '66'}>
+    <AppServerLayout locale={locale} disableNextSeo mainColor={item.color.hex + '66'}>
       <ItemPageView data={result.data} />
     </AppServerLayout>
   );
