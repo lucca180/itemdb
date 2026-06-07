@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { NextSeoProps } from 'next-seo';
 import { getPathname } from '@i18n/navigation';
+import SEOConfig, { getDefaultSEO } from '@utils/SEO';
 
 export type ItemDbLocale = 'en' | 'pt';
 
@@ -56,4 +57,46 @@ export function normalizeItemDbLocale(locale: string): ItemDbLocale {
 
 export function getItemDbCanonical(pathname: `/${string}`, locale: ItemDbLocale) {
   return `https://itemdb.com.br${getPathname({ locale, href: pathname })}`;
+}
+
+/** Site-wide App Router metadata defaults (mirrors Pages Router DefaultSeo). */
+export function buildAppMetadataDefaults(locale?: string): Metadata {
+  const defaultSeo = locale ? getDefaultSEO(locale) : SEOConfig;
+
+  return {
+    title: {
+      default: defaultSeo.defaultTitle ?? 'itemdb - Neopets Item Database',
+      template: defaultSeo.titleTemplate ?? '%s | itemdb - Neopets Item Database',
+    },
+    description: defaultSeo.description,
+    openGraph: {
+      type: 'website',
+      siteName: defaultSeo.openGraph?.siteName,
+      locale: defaultSeo.openGraph?.locale,
+      images: defaultSeo.openGraph?.images?.map((image) => ({
+        url: image.url,
+        width: image.width ?? undefined,
+        height: image.height ?? undefined,
+        alt: image.alt ?? undefined,
+      })),
+    },
+    twitter: {
+      card: 'summary',
+      site: defaultSeo.twitter?.site,
+    },
+  };
+}
+
+export function buildItemDbHreflangAlternates(pathname: `/${string}`) {
+  const en = getItemDbCanonical(pathname, 'en');
+  const pt = getItemDbCanonical(pathname, 'pt');
+
+  return {
+    canonical: en,
+    languages: {
+      en,
+      pt,
+      'x-default': en,
+    },
+  };
 }

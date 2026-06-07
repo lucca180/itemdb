@@ -8,27 +8,40 @@ Plano de endereçamento dos achados do [multi-model review](https://github.com/l
 
 | Fase | Tema | Status |
 |------|------|--------|
+| 0 | Correções pós-review (ordem cards) | ✅ Concluída |
 | 1 | Regressões e bugs claros | ✅ Concluída |
 | — | Migração `ItemParent` → `app/_components/Item/ItemParent/` | ✅ Concluída (extra) |
 | 2 | Dedupe de queries | ✅ Concluída |
+| 4 | SEO e metadata | ✅ Concluída |
 | 3 | Cache tags + invalidação admin | ⏳ Pendente |
-| 4 | Resiliência e UX de streaming | ⏳ Pendente |
-| 5 | Arquitetura ISR, bdData, testes | ⏳ Pendente |
+| 5 | Resiliência e UX de streaming | ⏳ Pendente |
+| 6 | Arquitetura ISR, bdData, testes | ⏳ Pendente |
 
 ```mermaid
 flowchart LR
   subgraph done [Concluído]
+    p0[Fase 0]
     p1[Fase 1]
     parent[ItemParent migrate]
     p2[Fase 2]
+    p4seo[Fase 4 SEO]
   end
   subgraph todo [Pendente]
     p3[Fase 3]
-    p4[Fase 4]
     p5[Fase 5]
+    p6[Fase 6]
   end
-  p1 --> parent --> p2 --> p3 --> p4 --> p5
+  p0 --> p1 --> parent --> p2 --> p4seo --> p3 --> p5 --> p6
 ```
+
+---
+
+## Fase 0 — Correções pós multi-model review ✅
+
+### 0.1 Ordem Petpet → Recipes ✅
+
+- **Arquivo:** [`ItemPage.tsx`](../app/_components/Item/page/ItemPage.tsx)
+- **Feito:** ordem restaurada para MME → Dye → **Petpet** → **Recipes** → Comments (paridade com `main`).
 
 ---
 
@@ -42,7 +55,7 @@ flowchart LR
 ### 1.2 Ordem dos cards na coluna principal ✅
 
 - **Arquivo:** [`ItemPage.tsx`](../app/_components/Item/page/ItemPage.tsx)
-- **Feito:** `ItemPageMainColumnExtras` (petpet + comments) movido para **depois** de MME → dye → recipes e **antes** de drops — paridade com a página Pages Router.
+- **Feito:** petpet + comments após MME → dye, **antes** de recipes e drops. Corrigido em Fase 0 (implementação inicial tinha recipes antes de petpet).
 
 ### 1.3 Parent items ✅ (abordagem diferente do plano original)
 
@@ -137,27 +150,57 @@ Arquivos afetados:
 
 ---
 
-## Fase 4 — Resiliência e UX de streaming ⏳
+## Fase 4 — SEO e metadata ✅
 
-| Item | Descrição |
-|------|-----------|
-| 4.1 Metadata leve | `resolveItemRoute(slug)` só com `getItem` + redirect/notFound para `generateMetadata` |
-| 4.2 Falha parcial | `Promise.allSettled` em `fetchItemPageData` com defaults seguros |
-| 4.3 Suspense shells | Fallbacks para MME, Dye, Recipes (hoje `null`) |
-| 4.4 Error boundaries | Wrapper por seção Suspense (drops, MME, dye, recipes, similar, parent) |
-| 4.5 `isPetDayCapsule` DRY | Extrair de outfit loader + section para util compartilhado |
-| 4.6 Nits | `lists` non-optional, `params.locale` em metadata, `maxW: 100vh` → `100%`, `MainLink` → `@i18n/navigation` em drops |
+Objetivo: paridade com `DefaultSeo` / [`utils/SEO.ts`](../utils/SEO.ts) no App Router.
+
+### 4.1 Defaults globais App Router ✅
+
+- **Arquivos:** [`app/layout.tsx`](../app/layout.tsx), [`utils/appPage.ts`](../utils/appPage.ts)
+- **Feito:** `buildAppMetadataDefaults()` — title template `%s | itemdb - Neopets Item Database`, description, OG siteName/locale/images, Twitter card/site.
+
+### 4.2 `buildItemPageMetadata` completo ✅
+
+- **Arquivo:** [`loadItemPage.ts`](../app/utils/loadItemPage.ts)
+- **Feito:** OG `type/url/title/description/siteName/locale`, Twitter title/description, `x-default` hreflang via `buildItemDbHreflangAlternates()`.
+
+### 4.3 Metadata leve (`resolveItemRoute`) ✅
+
+- **Arquivo:** [`loadItemPage.ts`](../app/utils/loadItemPage.ts)
+- **Feito:** `resolveItemRoute` — só `getItem` + redirect/notFound; `generateMetadata` não dispara preload de preços/NC.
+
+### 4.4 `params.locale` em metadata ✅
+
+- **Arquivo:** [`page.tsx`](../app/[locale]/item/[slug]/page.tsx)
+- **Feito:** `generateMetadata` usa `locale` de `params`, não `getLocale()`.
+
+### 4.5 Metadata em redirect ✅
+
+- **Arquivo:** [`page.tsx`](../app/[locale]/item/[slug]/page.tsx)
+- **Feito:** URLs numéricas/slug errado recebem metadata do item canônico (via `result.item`) antes do 308 — melhora link previews.
 
 ---
 
-## Fase 5 — Arquitetura, docs e testes ⏳
+## Fase 5 — Resiliência e UX de streaming ⏳
 
 | Item | Descrição |
 |------|-----------|
-| 5.1 ISR vs dynamic | `yarn build` → inspecionar rota item; `AppServerLayout` usa `cookies()`/`headers()` |
-| 5.2 `bdData` null | TODO ou remover do type até implementar `getBDData` |
-| 5.3 Testes | `resolveItemPage`, `SKIP_ITEMS`, smoke render por tipo de item |
-| 5.4 Checklist manual | NP/NC/wearable/openable/MME/dye/recipes/parent/admin; locales en+pt; lint+typecheck |
+| 5.1 Falha parcial | `Promise.allSettled` em `fetchItemPageData` com defaults seguros |
+| 5.2 Suspense shells | Fallbacks para MME, Dye, Recipes, ColorInfo, etc. (hoje `null`) |
+| 5.3 Error boundaries | Wrapper por seção Suspense (drops, MME, dye, recipes, similar, parent) |
+| 5.4 Cores | Regeneração de paleta (`force`) + skeleton no ColorInfoSection |
+| 5.5 Nits | `isPetDayCapsule` DRY, `maxW: 100vh` → `100%`, `MainLink` → `@i18n/navigation` em drops |
+
+---
+
+## Fase 6 — Arquitetura, docs e testes ⏳
+
+| Item | Descrição |
+|------|-----------|
+| 6.1 ISR vs dynamic | `yarn build` → inspecionar rota item; `AppServerLayout` usa `cookies()`/`headers()` |
+| 6.2 `bdData` removido | Documentar remoção intencional de ItemBdCard + API |
+| 6.3 Testes | `resolveItemPage`, `resolveItemRoute`, `SKIP_ITEMS`, smoke render por tipo de item |
+| 6.4 Checklist manual | NP/NC/wearable/openable/MME/dye/recipes/parent/admin; locales en+pt; lint+typecheck |
 
 ---
 
@@ -166,26 +209,30 @@ Arquivos afetados:
 | Severidade | Achado | Status |
 |------------|--------|--------|
 | Critical | Outfit loader sem cache | ✅ Fase 1.1 |
-| Critical | Card order regression | ✅ Fase 1.2 |
+| Critical | Card order regression (Petpet/Recipes) | ✅ Fase 0 |
 | Critical | Cache tags / ISR mismatch | ⏳ Fase 3 |
+| Warning | SEO title template / Twitter / OG defaults | ✅ Fase 4 |
+| Warning | Metadata dispara loader completo | ✅ Fase 4.3 |
+| Warning | Metadata vazia em redirect | ✅ Fase 4.5 |
 | Warning | `getItemParent` limit 4→30 | ✅ Substituído por migração parent/ |
 | Warning | Admin edit fetch sem error | ✅ Fase 1.4 |
 | Warning | Duplo `getItem` | ✅ Fase 2.1 |
 | Warning | Duplo `getItemLists` | ✅ Fase 2.2 |
 | Warning | `SKIP_ITEMS` duplicado | ✅ Fase 2.3 |
 | Warning | `revalidatePath` from Pages API | ⏳ Fase 3 |
-| Warning | Dynamic layout vs `revalidate=60` | ⏳ Fase 5.1 |
-| Warning | Metadata dispara loader completo | ⏳ Fase 4.1 |
+| Warning | Dynamic layout vs `revalidate=60` | ⏳ Fase 6.1 |
 | Nit | Similar items skeleton flash | ⏭️ Mantido fallback text |
-| Nit | Suspense fallbacks inconsistentes | ⏳ Fase 4.3 |
-| Nit | Sem testes automatizados | ⏳ Fase 5.3 |
+| Nit | Suspense fallbacks inconsistentes | ⏳ Fase 5 |
+| Nit | Sem testes automatizados | ⏳ Fase 6.3 |
+| Nit | `params.locale` em metadata | ✅ Fase 4.4 |
+| Nit | `x-default` hreflang | ✅ Fase 4.2 |
 
 ---
 
 ## Ordem de execução recomendada (restante)
 
 1. **Fase 3** — cache tags (PR dedicado, risco médio)
-2. **Fase 4** — resiliência incremental
-3. **Fase 5** — investigação ISR + testes
+2. **Fase 5** — resiliência incremental (cores, skeletons, Suspense)
+3. **Fase 6** — investigação ISR + testes
 
 Fases 1–2 e migração `parent/` podem ir no PR #22 ou follow-up imediato.

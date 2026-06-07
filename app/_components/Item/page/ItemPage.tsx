@@ -103,8 +103,8 @@ export async function ItemPage({ data }: ItemPageProps) {
             <MyListsSection item={item} />
             <MMECard key={getKey('mme-card')} item={item} />
             <DyeCard key={getKey('dye-card')} item={item} />
-            <ItemRecipesCard key={getKey('item-recipes')} item={item} />
             <PetpetCard key={getKey('petpet-card')} item={item} />
+            <ItemRecipesCard key={getKey('item-recipes')} item={item} />
             {item.comment && <ItemCommentsCard key={getKey('item-comments')} item={item} />}
             <ItemDropsSection key={getKey('item-drops')} item={item} />
             <SimilarItemsCard key={getKey('similar-items')} item={item} />

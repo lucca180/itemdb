@@ -5,14 +5,10 @@ import '@utils/global.css';
 import { inter } from '@utils/theme/fonts';
 import { Providers } from './providers';
 import { getPreloadedAuthState } from '@app/utils/preloadData';
+import { buildAppMetadataDefaults } from '@utils/appPage';
 import { AppScripts } from './AppScripts';
 
-export const metadata: Metadata = {
-  title: {
-    default: 'itemdb',
-    template: '%s | itemdb',
-  },
-};
+export const metadata: Metadata = buildAppMetadataDefaults();
 
 type RootLayoutProps = {
   children: ReactNode;

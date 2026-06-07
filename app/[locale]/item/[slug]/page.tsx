@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect } from 'next/navigation';
-import { getLocale } from 'next-intl/server';
 import { getPathname } from '@i18n/navigation';
 import AppServerLayout from '@components/Layout/AppServerLayout';
 import { ItemPage as ItemPageView } from '@app/_components/Item/page/ItemPage';
-import { buildItemPageMetadata, resolveItemPage } from '@app/utils/loadItemPage';
+import { buildItemPageMetadata, resolveItemPage, resolveItemRoute } from '@app/utils/loadItemPage';
 
 export const revalidate = 60;
 
@@ -13,15 +12,14 @@ type ItemPageProps = {
 };
 
 export async function generateMetadata({ params }: ItemPageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const locale = await getLocale();
-  const result = await resolveItemPage(slug);
+  const { slug, locale } = await params;
+  const result = await resolveItemRoute(slug);
 
-  if (result.type !== 'ok') {
+  if (result.type === 'notFound') {
     return {};
   }
 
-  return buildItemPageMetadata(result.data.item, locale);
+  return buildItemPageMetadata(result.item, locale);
 }
 
 export default async function ItemPage({ params }: ItemPageProps) {

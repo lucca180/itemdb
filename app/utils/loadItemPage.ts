@@ -7,7 +7,12 @@ import {
 } from '@app/_components/Item/loadUtils';
 import { InsightsResponse, ItemData, NCMallData, PriceData, PricingInfo } from '@types';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
-import { getItemDbCanonical, normalizeItemDbLocale } from '@utils/appPage';
+import {
+  buildItemDbHreflangAlternates,
+  getItemDbCanonical,
+  normalizeItemDbLocale,
+} from '@utils/appPage';
+import { getDefaultSEO } from '@utils/SEO';
 import { getItem } from '@pages/api/v1/items/[id_name]';
 import { getItemNCMall } from '@pages/api/v1/items/[id_name]/ncmall';
 import * as Sentry from '@sentry/nextjs';
@@ -27,6 +32,11 @@ export type ItemPageRouteResult =
   | { type: 'notFound' }
   | { type: 'ok'; data: ItemPageData };
 
+export type ItemPageRouteMetadataResult =
+  | { type: 'notFound' }
+  | { type: 'redirect'; href: `/item/${string}`; item: ItemData }
+  | { type: 'ok'; item: ItemData };
+
 function truncateString(str: string, num: number) {
   if (!str) return str;
   if (str.length <= num) return str;
@@ -41,25 +51,65 @@ export function buildItemPageMetadata(item: ItemData, locale: string): Metadata 
   const normalizedLocale = normalizeItemDbLocale(locale);
   const pathname = `/item/${item.slug}` as const;
   const canonical = getItemDbCanonical(pathname, normalizedLocale);
+  const hreflang = buildItemDbHreflangAlternates(pathname);
+  const description = getMetaDescription(item);
+  const defaultSeo = getDefaultSEO(locale);
 
   return {
     title: item.name,
-    description: getMetaDescription(item),
+    description,
     alternates: {
       canonical,
       languages: {
-        en: getItemDbCanonical(pathname, 'en'),
-        pt: getItemDbCanonical(pathname, 'pt'),
+        ...hreflang.languages,
       },
     },
     openGraph: {
+      type: 'website',
+      url: canonical,
+      title: item.name,
+      description,
+      siteName: defaultSeo.openGraph?.siteName,
+      locale: defaultSeo.openGraph?.locale,
       images: [{ url: item.image, width: 80, height: 80, alt: item.name }],
+    },
+    twitter: {
+      card: 'summary',
+      site: defaultSeo.twitter?.site,
+      title: item.name,
+      description,
     },
     other: {
       'theme-color': item.color.hex,
     },
   };
 }
+
+async function resolveItemSlug(slugParam: string): Promise<ItemPageRouteMetadataResult> {
+  if (!slugParam) return { type: 'notFound' };
+
+  const isIdNumber = !isNaN(Number(slugParam));
+  let item: ItemData | null | undefined;
+
+  if (isIdNumber) {
+    item = await getItem(Number(slugParam), true);
+    if (!item) return { type: 'notFound' };
+    if (item.slug) return { type: 'redirect', href: `/item/${item.slug}`, item };
+  } else {
+    item = await getItem(slugParam, true);
+    if (!item) return { type: 'notFound' };
+    if (slugParam !== item.slug) {
+      return { type: 'redirect', href: `/item/${item.slug}`, item };
+    }
+  }
+
+  return { type: 'ok', item };
+}
+
+/** Lightweight slug resolution for generateMetadata — no price/NC preload. */
+export const resolveItemRoute = cache(
+  async (slugParam: string): Promise<ItemPageRouteMetadataResult> => resolveItemSlug(slugParam)
+);
 
 async function fetchItemPageData(item: ItemData): Promise<ItemPageData> {
   const { user } = await getServerCurrentUser();
@@ -96,22 +146,12 @@ async function fetchItemPageData(item: ItemData): Promise<ItemPageData> {
 export const getItemPageData = cache(async (item: ItemData) => fetchItemPageData(item));
 
 export const resolveItemPage = cache(async (slugParam: string): Promise<ItemPageRouteResult> => {
-  if (!slugParam) return { type: 'notFound' };
+  const route = await resolveItemSlug(slugParam);
 
-  const isIdNumber = !isNaN(Number(slugParam));
-  let item: ItemData | null | undefined;
+  if (route.type === 'notFound') return { type: 'notFound' };
+  if (route.type === 'redirect') return { type: 'redirect', href: route.href };
 
-  if (isIdNumber) {
-    item = await getItem(Number(slugParam), true);
-    if (!item) return { type: 'notFound' };
-    if (item.slug) return { type: 'redirect', href: `/item/${item.slug}` };
-  } else {
-    item = await getItem(slugParam, true);
-    if (!item) return { type: 'notFound' };
-    if (slugParam !== item.slug) return { type: 'redirect', href: `/item/${item.slug}` };
-  }
-
-  const data = await getItemPageData(item);
+  const data = await getItemPageData(route.item);
 
   return { type: 'ok', data };
 });
