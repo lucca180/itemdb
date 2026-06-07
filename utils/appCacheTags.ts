@@ -62,8 +62,8 @@ export function itemSectionTag(internalId: number, scope: ItemPageCacheScope): I
 export function itemSectionCacheTags(
   internalId: number,
   scope: ItemPageCacheScope
-): readonly [ItemRootCacheTag, ItemSectionCacheTag, ItemPageCacheScope] {
-  return [itemRootTag(internalId), itemSectionTag(internalId, scope), scope];
+): readonly [ItemRootCacheTag, ItemSectionCacheTag] {
+  return [itemRootTag(internalId), itemSectionTag(internalId, scope)];
 }
 
 /** Presets for `revalidateItem` — map admin mutations to the smallest tag set. */
