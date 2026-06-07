@@ -23,6 +23,10 @@ import { getItemEffects } from '@pages/api/v1/items/[id_name]/effects';
 import { getSingleItemColor } from '@pages/api/v1/items/[id_name]/colors';
 import { getWearableData } from '@pages/api/v1/items/[id_name]/wearable';
 
+export const getCachedItem = cache((id_name: number | string, flags = false) =>
+  getItem(id_name, flags)
+);
+
 export function hasNCTradeInsights(insights: InsightsResponse | null | undefined) {
   if (!insights) return false;
   return insights.releases.length > 0 || insights.ncEvents.length > 0;

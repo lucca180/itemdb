@@ -1,6 +1,7 @@
 import { cache } from 'react';
 import type { Metadata } from 'next';
 import {
+  getCachedItem,
   loadNCTradeInsights,
   loadNPPrices,
   loadPriceStatus,
@@ -13,7 +14,6 @@ import {
   normalizeItemDbLocale,
 } from '@utils/appPage';
 import { getDefaultSEO } from '@utils/SEO';
-import { getItem } from '@pages/api/v1/items/[id_name]';
 import { getItemNCMall } from '@pages/api/v1/items/[id_name]/ncmall';
 import * as Sentry from '@sentry/nextjs';
 
@@ -92,11 +92,11 @@ async function resolveItemSlug(slugParam: string): Promise<ItemPageRouteMetadata
   let item: ItemData | null | undefined;
 
   if (isIdNumber) {
-    item = await getItem(Number(slugParam), true);
+    item = await getCachedItem(Number(slugParam), true);
     if (!item) return { type: 'notFound' };
     if (item.slug) return { type: 'redirect', href: `/item/${item.slug}`, item };
   } else {
-    item = await getItem(slugParam, true);
+    item = await getCachedItem(slugParam, true);
     if (!item) return { type: 'notFound' };
     if (slugParam !== item.slug) {
       return { type: 'redirect', href: `/item/${item.slug}`, item };
