@@ -5,7 +5,7 @@ import { getManyItems } from '../many';
 import { getItem } from '.';
 import { petpetColors, petpetSpecies } from '../../../../../utils/pet-utils';
 import { CheckAuth } from '../../../../../utils/googleCloud';
-import { revalidateItem } from './effects';
+import { ItemRevalidateTags, revalidateItem } from '@utils/revalidateItem';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -77,7 +77,7 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
     },
   });
 
-  await revalidateItem(item.slug!, res);
+  await revalidateItem(item.internal_id, ItemRevalidateTags.petpet(item.internal_id));
 
   return res.status(200).json(petpet);
 }

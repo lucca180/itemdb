@@ -2,7 +2,7 @@ import { Fragment } from 'react';
 import { BreadcrumbJsonLd } from 'next-seo';
 import { ChevronRightIcon } from '@utils/theme/chakraIcons';
 import { Breadcrumb } from '@chakra-ui/react';
-import MainLink from '@components/Utils/MainLink';
+import { Link } from '@i18n/navigation';
 import { useLocale } from 'next-intl';
 import { getLocalizedHref, type AppLocale } from '@utils/locales';
 
@@ -14,10 +14,11 @@ type BreadcrumbsProps = {
     skip?: boolean;
   }[];
   linkLast?: boolean;
+  useAppDir?: boolean;
 };
 
 export const Breadcrumbs = (props: BreadcrumbsProps) => {
-  const { breadcrumbList, linkLast = false } = props;
+  const { breadcrumbList, linkLast = false, useAppDir = false } = props;
   const locale = useLocale() as AppLocale;
 
   const formattedBreadcrumbList = breadcrumbList.map((crumb) => ({
@@ -51,14 +52,13 @@ export const Breadcrumbs = (props: BreadcrumbsProps) => {
                     color="whiteAlpha.700"
                     _hover={{ textDecoration: 'underline' }}
                   >
-                    <MainLink
+                    <Link
                       href={breadcrumbList[i].item}
-                      prefetch={false}
-                      trackEvent="breadcrumb-link"
-                      trackEventLabel={crumb.name}
+                      data-umami-event="breadcrumb-link"
+                      data-umami-event-label={crumb.name}
                     >
                       {crumb.name}
-                    </MainLink>
+                    </Link>
                   </Breadcrumb.Link>
                 )}
               </Breadcrumb.Item>
@@ -71,7 +71,7 @@ export const Breadcrumbs = (props: BreadcrumbsProps) => {
           ))}
         </Breadcrumb.List>
       </Breadcrumb.Root>
-      <BreadcrumbJsonLd itemListElements={formattedBreadcrumbList} />
+      <BreadcrumbJsonLd itemListElements={formattedBreadcrumbList} useAppDir={useAppDir} />
     </>
   );
 };

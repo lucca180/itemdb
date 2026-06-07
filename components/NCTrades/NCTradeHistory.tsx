@@ -1,102 +1,15 @@
-import {
-  Box,
-  Card,
-  Flex,
-  Heading,
-  List,
-  Stack,
-  StackSeparator,
-  Text,
-  Center,
-  Link,
-  Button,
-} from '@chakra-ui/react';
-import MainLink from '@components/Utils/MainLink';
-import { ItemData, NCTradeReport, LebronTrade } from '../../types';
+'use client';
+
+/** Trade preview card for the mall report flow (Pages Router). */
+import { Box, Card, Heading, List, Stack, StackSeparator, Text, Link } from '@chakra-ui/react';
+import { ItemData, LebronTrade } from '../../types';
 import { useFormatter, useTranslations } from 'next-intl';
 import { UTCDate } from '@date-fns/utc';
-import { useMemo } from 'react';
-import { tradeReportToLebronTrade } from '@pages/[locale]/mall/report';
-
-type Props = {
-  item: ItemData;
-  ncTrades: LebronTrade[] | null;
-  tradeHistory: NCTradeReport[] | null;
-};
-
-const NCTradeHistory = (props: Props) => {
-  const t = useTranslations();
-  const { item } = props;
-
-  const tradeHistory = useMemo(() => {
-    const trades: LebronTrade[] = [...(props.ncTrades ?? [])];
-
-    props.tradeHistory?.forEach((trade) => {
-      trades.push(tradeReportToLebronTrade(trade));
-    });
-
-    return getUniqueTrades(trades).sort((a, b) => {
-      const dateA = new Date(a.tradeDate);
-      const dateB = new Date(b.tradeDate);
-      return dateB.getTime() - dateA.getTime();
-    });
-  }, [props.tradeHistory, props.ncTrades]);
-
-  if (!tradeHistory)
-    return (
-      <Center>
-        <Text fontSize="sm" opacity="0.75">
-          {t('Layout.loading')}...
-        </Text>
-      </Center>
-    );
-
-  if (!tradeHistory.length)
-    return (
-      <Center flexFlow="column" gap={2}>
-        <Text fontSize="sm" opacity="0.75">
-          {t('ItemPage.no-trade-history')}.
-        </Text>
-        <Button asChild size={'xs'}>
-          <MainLink prefetch={false} href="/mall/report">
-            {t('ItemPage.report-your-nc-trades')}
-          </MainLink>
-        </Button>
-      </Center>
-    );
-
-  return (
-    <Flex flexFlow="column" maxH={300} overflow="auto" gap={3} w="100%">
-      <Flex maxW="500px" flexFlow="column" gap={3}>
-        {tradeHistory.map((trade, i) => (
-          <NCTradeCard key={i} trade={trade} item={item} />
-        ))}
-        <Text fontSize="xs" textAlign="center" mt={2} color="whiteAlpha.600">
-          {t.rich('ItemPage.owls-credits', {
-            Link: (chunks) => (
-              <Link asChild target="_blank" color="whiteAlpha.800">
-                <MainLink href="/articles/lebron" target="_blank">
-                  {chunks}
-                </MainLink>
-              </Link>
-            ),
-          })}
-        </Text>
-      </Flex>
-    </Flex>
-  );
-};
-
-export default NCTradeHistory;
-
-const isValidDate = (date: Date) => date instanceof Date && !isNaN(date.valueOf());
-const isSameItem = (tradeStr: string, item: ItemData) =>
-  tradeStr.toLowerCase().includes(item.name.toLowerCase());
-
-const getSearchLink = (tradeStr: string) => {
-  const itemName = tradeStr.trim().replaceAll(/\(?\d+-?\d+\)?$|\(?\d+\)?$/gm, '');
-  return `/search?s=${encodeURIComponent(itemName.trim())}`;
-};
+import {
+  getTradeItemSearchLink,
+  isSameTradeItem,
+  isValidTradeDate,
+} from '@app/_components/Item/NCTrade/ncTradeHistoryUtils';
 
 type NCTradeCardProps = {
   trade: LebronTrade;
@@ -108,20 +21,20 @@ export const NCTradeCard = (props: NCTradeCardProps) => {
   const t = useTranslations();
   const format = useFormatter();
   const { trade, item } = props;
-  const color: number[] = item?.color.rgb ?? [71, 178, 248];
+  const color: number[] = item?.color.rgb ?? props.color ?? [71, 178, 248];
 
   return (
-    <Card.Root bg={'blackAlpha.500'} textAlign={'left'} borderRadius={'xl'}>
+    <Card.Root bg="blackAlpha.500" textAlign="left" borderRadius="xl">
       <Card.Body>
         <Heading size="sm" mb={3} opacity="0.75">
-          {isValidDate(new Date(trade.tradeDate)) &&
+          {isValidTradeDate(new Date(trade.tradeDate)) &&
             format.dateTime(new UTCDate(trade.tradeDate), {
               year: 'numeric',
               month: 'long',
               day: 'numeric',
               timeZone: 'utc',
             })}
-          {!isValidDate(new Date(trade.tradeDate)) && t('General.unknown-date')}
+          {!isValidTradeDate(new Date(trade.tradeDate)) && t('General.unknown-date')}
         </Heading>
         <Stack separator={<StackSeparator />} gap="3">
           <Box>
@@ -135,11 +48,13 @@ export const NCTradeCard = (props: NCTradeCardProps) => {
                     p={1}
                     borderRadius="md"
                     bg={
-                      item && isSameItem(traded, item)
+                      item && isSameTradeItem(traded, item)
                         ? `rgba(${color[0]},${color[1]}, ${color[2]},.4)`
                         : undefined
                     }
-                    href={item && isSameItem(traded, item) ? '#' : getSearchLink(traded)}
+                    href={
+                      item && isSameTradeItem(traded, item) ? '#' : getTradeItemSearchLink(traded)
+                    }
                     target="_blank"
                   >
                     {traded}
@@ -159,11 +74,13 @@ export const NCTradeCard = (props: NCTradeCardProps) => {
                     p={1}
                     borderRadius="md"
                     bg={
-                      item && isSameItem(traded, item)
+                      item && isSameTradeItem(traded, item)
                         ? `rgba(${color[0]},${color[1]}, ${color[2]},.4)`
                         : undefined
                     }
-                    href={item && isSameItem(traded, item) ? '#' : getSearchLink(traded)}
+                    href={
+                      item && isSameTradeItem(traded, item) ? '#' : getTradeItemSearchLink(traded)
+                    }
                     target="_blank"
                   >
                     {traded}
@@ -186,17 +103,4 @@ export const NCTradeCard = (props: NCTradeCardProps) => {
       </Card.Body>
     </Card.Root>
   );
-};
-
-const getUniqueTrades = (trades: LebronTrade[]) => {
-  const uniqueTrades = new Map<string, LebronTrade>();
-
-  trades.forEach((trade) => {
-    const key = `${trade.itemsSent}-${trade.itemsReceived}-${trade.tradeDate}`;
-    if (!uniqueTrades.has(key)) {
-      uniqueTrades.set(key, trade);
-    }
-  });
-
-  return Array.from(uniqueTrades.values());
 };

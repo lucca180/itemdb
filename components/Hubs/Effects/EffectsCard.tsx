@@ -18,7 +18,7 @@ import Image from 'next/image';
 import { useFormatter, useTranslations } from 'next-intl';
 import { AiFillWarning } from 'react-icons/ai';
 import { ItemData, ItemEffect } from '../../../types';
-import { EffectText, EffectTypes } from '../../Items/ItemEffectsCard';
+import { EffectText, EffectTypes } from '@components/Items/EffectCard';
 
 type EffectsCardProps = {
   item: ItemData & { effects?: ItemEffect[] };

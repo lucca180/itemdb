@@ -25,7 +25,6 @@ import {
   Portal,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import {
   EditItemFeedbackJSON,
@@ -44,6 +43,7 @@ import { FiTrash } from 'react-icons/fi';
 import dynamic from 'next/dynamic';
 import ItemSelect from '../Input/ItemSelect';
 import MainLink from '@components/Utils/MainLink';
+import { usePathname } from '@i18n/navigation';
 import { useTranslations } from 'next-intl';
 import SpeciesSelect from '../Input/SpeciesSelect';
 import { deseaseList_en } from '../../utils/utils';
@@ -64,6 +64,9 @@ export type EditItemModalProps = {
   item: ItemData;
   tags: ItemTag[];
   itemOpenable: ItemOpenable | null;
+  isItemOpenableLoading?: boolean;
+  itemOpenableLoadError?: boolean;
+  onRetryItemOpenable?: () => void;
   itemEffects: ItemEffect[];
   petpetData: ItemPetpetData | null;
 };
@@ -77,6 +80,9 @@ const EditItemModal = (props: EditItemModalProps) => {
     item: itemProps,
     tags: tagsProps,
     itemOpenable,
+    isItemOpenableLoading,
+    itemOpenableLoadError,
+    onRetryItemOpenable,
     itemEffects,
     petpetData,
   } = props;
@@ -88,7 +94,7 @@ const EditItemModal = (props: EditItemModalProps) => {
   const [error, setError] = useState<boolean>(false);
   const [tabValue, setTabValue] = useState('info');
   const { onOpen: onDeleteOpen, open: isDeleteOpen, onClose: onDeleteClose } = useDisclosure();
-  const router = useRouter();
+  const pathname = usePathname();
 
   const isAdmin = user?.role === 'ADMIN';
 
@@ -182,7 +188,7 @@ const EditItemModal = (props: EditItemModalProps) => {
       if (!hasChanges) throw 'No changes made';
 
       const res = await axios.post('/api/feedback/send', {
-        pageInfo: router.asPath,
+        pageInfo: pathname,
         subject_id: item.internal_id,
         user_id: user?.id,
         email: user?.email,
@@ -269,7 +275,13 @@ const EditItemModal = (props: EditItemModalProps) => {
                     )}
                     {isAdmin && (
                       <Tabs.Content value="drops">
-                        <OpenableTab itemOpenable={itemOpenable} item={item} />
+                        <OpenableTab
+                          itemOpenable={itemOpenable}
+                          isItemOpenableLoading={isItemOpenableLoading}
+                          itemOpenableLoadError={itemOpenableLoadError}
+                          onRetryItemOpenable={onRetryItemOpenable}
+                          item={item}
+                        />
                       </Tabs.Content>
                     )}
                     {isAdmin && (
@@ -766,6 +778,9 @@ export const CategoriesTab = (props: TagSelectProps) => {
 
 type OpenableTabProps = {
   itemOpenable: ItemOpenable | null;
+  isItemOpenableLoading?: boolean;
+  itemOpenableLoadError?: boolean;
+  onRetryItemOpenable?: () => void;
   item: ItemData;
 };
 
@@ -783,7 +798,13 @@ const defaultItemOpenable: ItemOpenable = {
 };
 
 export const OpenableTab = (props: OpenableTabProps) => {
-  const { itemOpenable: itemOpenableProps, item } = props;
+  const {
+    itemOpenable: itemOpenableProps,
+    isItemOpenableLoading,
+    itemOpenableLoadError,
+    onRetryItemOpenable,
+    item,
+  } = props;
   const [itemOpenable, setItemOpenable] = useState<ItemOpenable | null>(
     itemOpenableProps ?? defaultItemOpenable
   );
@@ -792,9 +813,22 @@ export const OpenableTab = (props: OpenableTabProps) => {
   const [newPoolName, setNewPoolName] = useState<string>('');
 
   useEffect(() => {
-    if (!itemOpenable) return;
+    if (isItemOpenableLoading) return;
+    if (itemOpenableLoadError) {
+      setItemOpenable(null);
+      return;
+    }
+    if (itemOpenableProps) {
+      setItemOpenable(itemOpenableProps);
+    } else if (itemOpenableProps === null) {
+      setItemOpenable(defaultItemOpenable);
+    }
+  }, [itemOpenableProps, isItemOpenableLoading, itemOpenableLoadError]);
+
+  useEffect(() => {
+    if (!itemOpenable || isItemOpenableLoading || itemOpenableLoadError) return;
     init();
-  }, [itemOpenable]);
+  }, [itemOpenable, isItemOpenableLoading, itemOpenableLoadError]);
 
   const init = async () => {
     if (!itemOpenable) return;
@@ -846,6 +880,27 @@ export const OpenableTab = (props: OpenableTabProps) => {
 
     setItemOpenable(newOpenable);
   };
+
+  if (isItemOpenableLoading) {
+    return (
+      <Center py={8}>
+        <Spinner />
+      </Center>
+    );
+  }
+
+  if (itemOpenableLoadError) {
+    return (
+      <Center py={8} flexDirection="column" gap={3}>
+        <Text color="red.400">Failed to load openable data.</Text>
+        {onRetryItemOpenable && (
+          <Button size="sm" onClick={onRetryItemOpenable}>
+            Retry
+          </Button>
+        )}
+      </Center>
+    );
+  }
 
   return (
     <Flex flexFlow="column" gap={3}>

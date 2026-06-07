@@ -3,7 +3,6 @@ import Color from 'color';
 import { Fragment, Suspense } from 'react';
 import { Flex, Grid, Heading } from '@chakra-ui/react';
 import { createTranslator } from 'next-intl';
-import { getLocale } from 'next-intl/server';
 import { HomeHero } from '@components/Home/HomeHero';
 import AppServerLayout from '@components/Layout/AppServerLayout';
 import { getItemDbCanonical, normalizeItemDbLocale } from '@utils/appPage';
@@ -22,10 +21,15 @@ import { NewItemsCountSection } from '@app/_components/Home/Cards/NewItemsCountS
 import { LatestArticlesSection } from '@app/_components/Home/Sections/LatestArticlesSection';
 import { LatestPricesSection } from '@app/_components/Home/Sections/LatestPricesSection';
 import StatsCard, { StatsCardLoading } from '@app/_components/Home/Cards/StatsCard';
+import { setRequestLocale } from 'next-intl/server';
 
 export const revalidate = 180;
 
 const mainColor = Color('#4A5568').alpha(0.9).hexa();
+
+type HomePageProps = {
+  params: Promise<{ locale: string }>;
+};
 
 async function getHomePageDescription(locale: string) {
   const messages = await loadTranslation(locale, 'page', true);
@@ -34,8 +38,9 @@ async function getHomePageDescription(locale: string) {
   return t('HomePage.seo-description');
 }
 
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getLocale();
+export async function generateMetadata({ params }: HomePageProps): Promise<Metadata> {
+  const { locale } = await params;
+  setRequestLocale(locale);
   const normalizedLocale = normalizeItemDbLocale(locale);
   const canonical = getItemDbCanonical('/', normalizedLocale);
   const description = await getHomePageDescription(locale);
@@ -74,13 +79,14 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function HomePage() {
-  const locale = await getLocale();
+export default async function HomePage({ params }: HomePageProps) {
+  const { locale } = await params;
+  setRequestLocale(locale);
   const messages = await loadTranslation(locale, 'page', true);
   const t = createTranslator({ messages, locale });
 
   return (
-    <AppServerLayout disableNextSeo mainColor={mainColor}>
+    <AppServerLayout locale={locale} disableNextSeo mainColor={mainColor}>
       <HomeHero
         title={t('HomePage.title')}
         highlightQuery={t('HomePage.open-source')}

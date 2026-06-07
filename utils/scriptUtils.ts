@@ -19,7 +19,7 @@ export const DETECTABLE_SCRIPTS = [
 ] as const;
 
 export const showScriptCTA = (): false | 'notFound' | 'outdated' => {
-  if (!window) return false;
+  if (typeof window === 'undefined') return false;
 
   const hasScript = !!(
     window.itemdb_restock ||
@@ -56,7 +56,7 @@ export const getScriptStatus = () => {
 };
 
 const _getScriptStatus = () => {
-  if (!window) return null;
+  if (typeof window === 'undefined') return null;
   const hasScript = !!(
     window.itemdb_restock ||
     window.itemdb_script ||

@@ -4,7 +4,7 @@ import { ItemDrop, ItemOpenable, PrizePoolData } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 import { OpenableItems, WearableData } from '@prisma/generated/client';
-import { revalidateItem } from './effects';
+import { ItemRevalidateTags, revalidateItem } from '@utils/revalidateItem';
 import { getManyItems } from '../many';
 import { redis_setDataCount } from '@utils/redis';
 
@@ -12,7 +12,7 @@ const catType = ['trinkets', 'accessories', 'clothing', 'le', 'choice'];
 const catTypeZone = ['trinkets', 'accessories', 'clothing'];
 const giftBoxes = [65354, 17434, 860];
 
-const SKIP_ITEMS = [61696, 65743];
+export const SKIP_ITEMS = [61696, 65743];
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -90,7 +90,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const newDrops = await getItemDrops(item.internal_id, item.isNC);
 
-  await revalidateItem(item.slug!, res);
+  await revalidateItem(item.internal_id, ItemRevalidateTags.drops(item.internal_id));
 
   return res.status(200).json({ dropUpdate: newDrops });
 };
@@ -439,7 +439,7 @@ const isKnownParentDrop = (drop: ParentOpenableItem) => {
   return false;
 };
 
-export const getItemParent = async (item_iid: number, itemLimit = 30) => {
+export const getItemParent = async (item_iid: number, itemLimit?: number) => {
   const drops = await prisma.$queryRaw<ParentOpenableItem[]>`
     SELECT t0.*
       , j2.flags AS parent_flags
@@ -485,11 +485,14 @@ export const getItemParent = async (item_iid: number, itemLimit = 30) => {
     id: parentsArray.map((a) => a.toString()),
   });
 
-  const itemData = Object.values(itemDataRaw)
-    .sort((a, b) => (b.item_id ?? b.internal_id) - (a.item_id ?? a.internal_id))
-    .slice(0, itemLimit);
+  const itemData = Object.values(itemDataRaw).sort(
+    (a, b) => (b.item_id ?? b.internal_id) - (a.item_id ?? a.internal_id)
+  );
 
-  return { parents_iid: parentsArray, itemData: itemData };
+  return {
+    parents_iid: parentsArray,
+    itemData: itemLimit !== undefined ? itemData.slice(0, itemLimit) : itemData,
+  };
 };
 
 type MinMax = {

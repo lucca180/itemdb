@@ -1,3 +1,5 @@
+'use client';
+
 import { ItemData, UserList } from '../../types';
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo } from 'react';
@@ -8,10 +10,11 @@ import { ProductJsonLd, ProductJsonLdProps } from 'next-seo';
 type ItemBreadcrumbProps = {
   item: ItemData;
   officialLists?: UserList[];
+  useAppDir?: boolean;
 };
 
 export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
-  const { item, officialLists } = props;
+  const { item, officialLists, useAppDir = false } = props;
   const t = useTranslations();
   const locale = useLocale();
   const category = (item.category ?? 'unknown').toLowerCase();
@@ -65,8 +68,8 @@ export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
   const productJson = getItemJSONLD(item);
   return (
     <>
-      <Breadcrumbs breadcrumbList={breadcrumbList} />
-      {productJson && <ProductJsonLd {...productJson} />}
+      <Breadcrumbs breadcrumbList={breadcrumbList} useAppDir={useAppDir} />
+      {productJson && <ProductJsonLd {...productJson} useAppDir={useAppDir} />}
     </>
   );
 };

@@ -1772,7 +1772,3 @@ export const shouldShowTradeLists = (item: ItemData) => {
 
   return false;
 };
-
-export const revalidatePath = async (path: string, res: NextApiResponse) => {
-  return Promise.allSettled([res.revalidate(path), res.revalidate(`/pt${path}`)]);
-};

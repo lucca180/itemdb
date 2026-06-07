@@ -7,8 +7,8 @@ import { CheckAuth } from '../../../../../utils/googleCloud';
 import { differenceInCalendarDays } from 'date-fns';
 import { getSaleStats } from './saleStats';
 import { redis_setDataCount } from '@utils/redis';
-import { revalidateItem } from './effects';
-import { ItemChangesLog } from '../process';
+import { ItemRevalidateTags, revalidateItem } from '@utils/revalidateItem';
+import type { ItemChangesLog } from '../process';
 import { rawToItemData } from '../many';
 import { getNCValue } from '../../mall/[iid]';
 import { UTCDate } from '@date-fns/utc';
@@ -170,7 +170,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 
   // await processTags(itemTags, itemCats, internal_id);
 
-  await revalidateItem(item.slug!, res);
+  await revalidateItem(item.internal_id, ItemRevalidateTags.root(item.internal_id));
 
   return res.status(200).json({ success: true });
 };
@@ -198,7 +198,7 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
     where: { internal_id: internal_id },
   });
 
-  if (item?.slug) await revalidateItem(item.slug, res);
+  if (item?.slug) await revalidateItem(item.internal_id, ItemRevalidateTags.root(item.internal_id));
 
   return res.status(200).json({ success: true });
 };

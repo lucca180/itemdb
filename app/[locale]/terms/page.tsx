@@ -1,8 +1,12 @@
 import type { Metadata } from 'next';
-import { getLocale } from 'next-intl/server';
 import AppServerLayout from '@components/Layout/AppServerLayout';
 import { getStaticAppPageProps } from '@utils/appPage';
 import { TermsPageClient } from './TermsPageClient';
+import { setRequestLocale } from 'next-intl/server';
+import { use } from 'react';
+import { routing } from '@utils/locales';
+
+export const dynamic = 'force-static';
 
 const description = 'This page outlines the terms of use for itemdb, its features, and API.';
 const pageConfig = {
@@ -13,16 +17,27 @@ const pageConfig = {
   nofollow: true,
 } as const;
 
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getLocale();
+type TermsPageProps = {
+  params: Promise<{ locale: string }>;
+};
 
+export async function generateMetadata({ params }: TermsPageProps): Promise<Metadata> {
+  const { locale } = await params;
+  setRequestLocale(locale);
   return getStaticAppPageProps(locale, pageConfig).metadata;
 }
 
-export default async function TermsPage() {
+export default function TermsPage({ params }: TermsPageProps) {
+  const { locale } = use(params);
+  setRequestLocale(locale);
+
   return (
-    <AppServerLayout disableNextSeo mainColor="#a5aa9fc7">
+    <AppServerLayout locale={locale} disableNextSeo mainColor="#a5aa9fc7">
       <TermsPageClient />
     </AppServerLayout>
   );
+}
+
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
 }

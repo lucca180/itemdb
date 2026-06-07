@@ -1,0 +1,110 @@
+import { Badge, Box, Flex, Heading, Stack, Text } from '@chakra-ui/react';
+import Image from 'next/image';
+import { getTranslations } from 'next-intl/server';
+import { Link } from '@i18n/navigation';
+import { ItemBreadcrumb } from '@components/Breadcrumbs/ItemBreadcrumb';
+import { loadItemPageLists } from '@app/_components/Item/loadUtils';
+import type { ItemData } from '@types';
+
+type ItemHeaderProps = {
+  item: ItemData;
+};
+
+export async function ItemHeader({ item }: ItemHeaderProps) {
+  const [t, lists] = await Promise.all([getTranslations(), loadItemPageLists(item.internal_id)]);
+  const color = item.color.rgb ?? [255, 255, 255];
+
+  return (
+    <Box>
+      <Box
+        position="absolute"
+        h="45vh"
+        left="0"
+        width="100%"
+        bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${color[0]},${color[1]}, ${color[2]},.5) 80%)`}
+        zIndex={-1}
+      />
+      <Box pt={2}>
+        <ItemBreadcrumb item={item} officialLists={lists} useAppDir />
+      </Box>
+      <Flex gap={{ base: 4, md: 8 }} pt={4} alignItems="center">
+        <Flex
+          position="relative"
+          p={2}
+          bg={`rgba(${color[0]},${color[1]}, ${color[2]},.4)`}
+          borderRadius="md"
+          flexFlow="column"
+          justifyContent="center"
+          gap={2}
+          alignItems="center"
+          textAlign="center"
+          flex="0 0 auto"
+          minW="100px"
+          minH="100px"
+        >
+          <Image src={item.image} width={80} height={80} alt="" unoptimized />
+        </Flex>
+        <Box>
+          <Stack direction="row" mb={1} wrap="wrap" gap={0.5}>
+            <Badge borderRadius="md" asChild>
+              <Link href={`/search?s=&category[]=${item.category ?? 'Unknown'}`}>
+                {item.category ?? '???'}
+              </Link>
+            </Badge>
+            {item.type === 'np' && (
+              <Badge colorPalette="green" borderRadius="md" asChild>
+                <Link href="/search?s=&type[]=np">NP</Link>
+              </Badge>
+            )}
+            {item.type === 'nc' && (
+              <Badge colorPalette="purple" borderRadius="md" asChild>
+                <Link href="/search?s=&type[]=nc">NC</Link>
+              </Badge>
+            )}
+            {item.type === 'pb' && (
+              <Badge colorPalette="yellow" borderRadius="md" asChild>
+                <Link href="/search?s=&type[]=pb">PB</Link>
+              </Badge>
+            )}
+            {item.isWearable && (
+              <Badge colorPalette="blue" borderRadius="md" asChild>
+                <Link href="/search?s=&type[]=wearable">{t('General.wearable')}</Link>
+              </Badge>
+            )}
+            {item.isNeohome && (
+              <Badge colorPalette="cyan" borderRadius="md" asChild>
+                <Link href="/search?s=&type[]=neohome">{t('General.neohome')}</Link>
+              </Badge>
+            )}
+            {item.isBD && (
+              <Badge colorPalette="red" borderRadius="md" asChild>
+                <Link href="/search?s=&type[]=battledome">{t('General.battledome')}</Link>
+              </Badge>
+            )}
+            {item.useTypes.canEat === 'true' && (
+              <Badge colorPalette="orange" borderRadius="md" asChild>
+                <Link href="/search?s=&type[]=canEat">{t('General.edible')}</Link>
+              </Badge>
+            )}
+            {item.useTypes.canRead === 'true' && (
+              <Badge colorPalette="orange" borderRadius="md" asChild>
+                <Link href="/search?s=&type[]=canRead">{t('General.readable')}</Link>
+              </Badge>
+            )}
+            {item.useTypes.canPlay === 'true' && (
+              <Badge colorPalette="orange" borderRadius="md" asChild>
+                <Link href="/search?s=&type[]=canPlay">{t('General.playable')}</Link>
+              </Badge>
+            )}
+          </Stack>
+          <Heading as="h1" size={{ base: 'lg', md: undefined }} fontWeight="bold">
+            {item.name}
+          </Heading>
+          <Text fontSize={{ base: 'sm', md: 'inherit' }} as="h2">
+            {item.description}
+          </Text>
+        </Box>
+      </Flex>
+    </Box>
+  );
+}

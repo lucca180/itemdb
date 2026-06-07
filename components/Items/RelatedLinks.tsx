@@ -1,9 +1,14 @@
-import { Flex, Text, Image } from '@chakra-ui/react';
-import React from 'react';
-import { ItemData, ItemEffect, ItemPetpetData, UserList } from '../../types';
-import CardBase from '../Card/CardBase';
-import { useTranslations } from 'next-intl';
-import MainLink from '@components/Utils/MainLink';
+import { Flex, Image, Text } from '@chakra-ui/react';
+import type { ReactNode } from 'react';
+import { ItemData, ItemEffect, ItemPetpetData, UserList } from '@types';
+import CardBase from '@components/Card/CardBase';
+import { getTranslations } from 'next-intl/server';
+import { Link } from '@i18n/navigation';
+import {
+  loadItemPageLists,
+  loadItemEffects,
+  loadPetpetData,
+} from '@app/_components/Item/loadUtils';
 import {
   getPetpetColorId,
   getPetpetSpeciesFromString,
@@ -13,19 +18,21 @@ import {
 
 type Props = {
   item: ItemData;
-  itemEffects?: ItemEffect[];
-  lists?: UserList[];
-  petpetData?: ItemPetpetData | null;
 };
 
-const RelatedLinksCard = (props: Props) => {
-  const t = useTranslations();
-  const relatedLinks = useRelatedLinks(props.item, {
-    itemEffects: props.itemEffects,
-    lists: props.lists,
-    petpetData: props.petpetData || undefined,
-  });
+export default async function RelatedLinksCard(props: Props) {
   const { item } = props;
+  const [t, itemEffects, lists, petpetData] = await Promise.all([
+    getTranslations(),
+    loadItemEffects(item),
+    loadItemPageLists(item.internal_id),
+    loadPetpetData(item.internal_id),
+  ]);
+  const relatedLinks = buildRelatedLinks(item, t, {
+    itemEffects,
+    lists,
+    petpetData: petpetData || undefined,
+  });
   const color = item.color.rgb;
 
   if (relatedLinks.length === 0) return null;
@@ -34,50 +41,46 @@ const RelatedLinksCard = (props: Props) => {
     <CardBase title={t('ItemPage.related-links')} color={color}>
       <Flex gap={3} wrap="wrap" flexFlow={'column'}>
         {relatedLinks.map((link, index) => (
-          <RelatedLink key={index} {...link} />
+          <Link
+            key={index}
+            href={link.href}
+            data-umami-event={link.trackEvent}
+            data-umami-event-label={link.trackEventLabel}
+          >
+            <Text
+              fontSize={'sm'}
+              bg="whiteAlpha.200"
+              p={2}
+              borderRadius={5}
+              display={'inline-flex'}
+              alignItems={'center'}
+              gap={2}
+              w="100%"
+            >
+              <Image
+                verticalAlign={'sub'}
+                display="inline"
+                src={link.imageUrl}
+                width={'26px'}
+                height={'26px'}
+                alt={link.alt}
+              />
+              <span>{link.children}</span>
+            </Text>
+          </Link>
         ))}
       </Flex>
     </CardBase>
   );
-};
-
-export default RelatedLinksCard;
+}
 
 type RelatedLinkProps = {
   href: string;
   alt: string;
   imageUrl: string;
-  children: React.ReactNode;
+  children: ReactNode;
   trackEvent?: string;
   trackEventLabel?: string;
-};
-
-const RelatedLink = (props: RelatedLinkProps) => {
-  const { href, alt, imageUrl, children, trackEvent, trackEventLabel } = props;
-  return (
-    <MainLink href={href} trackEvent={trackEvent} trackEventLabel={trackEventLabel}>
-      <Text
-        fontSize={'sm'}
-        bg="whiteAlpha.200"
-        p={2}
-        borderRadius={5}
-        display={'inline-flex'}
-        alignItems={'center'}
-        gap={2}
-        w="100%"
-      >
-        <Image
-          verticalAlign={'sub'}
-          display="inline"
-          src={imageUrl}
-          width={'26px'}
-          height={'26px'}
-          alt={alt}
-        />
-        <span>{children}</span>
-      </Text>
-    </MainLink>
-  );
 };
 
 type RelatedOthers = {
@@ -86,12 +89,12 @@ type RelatedOthers = {
   petpetData?: ItemPetpetData;
 };
 
-const useRelatedLinks = (item: ItemData, rest: RelatedOthers) => {
-  const t = useTranslations();
+type Translate = Awaited<ReturnType<typeof getTranslations>>;
+
+function buildRelatedLinks(item: ItemData, t: Translate, rest: RelatedOthers) {
   const { itemEffects, lists, petpetData } = rest;
   const relatedLinks: RelatedLinkProps[] = [];
 
-  // ------ Species Related Links ------ //
   const speciesName = getSpeciesFromString(item.name);
   const colorEffect = itemEffects?.filter(
     (effect) => effect.type === 'colorSpecies' && effect.colorTarget
@@ -128,7 +131,6 @@ const useRelatedLinks = (item: ItemData, rest: RelatedOthers) => {
     });
   }
 
-  // ------ Price Related Links ------ //
   const isUnbuyable = (item.price?.value ?? 0) > 999999;
 
   if (isUnbuyable) {
@@ -142,7 +144,6 @@ const useRelatedLinks = (item: ItemData, rest: RelatedOthers) => {
     });
   }
 
-  // ------ Color Related Links ------ //
   if (colorEffect && colorEffect.length > 0) {
     colorEffect.forEach((effect) => {
       relatedLinks.push({
@@ -159,7 +160,6 @@ const useRelatedLinks = (item: ItemData, rest: RelatedOthers) => {
     });
   }
 
-  // ------ Lists Related Links ------ //
   const checklists = ['gourmet-food', 'neodeck', 'book-award', 'booktastic-book-award'];
   lists?.forEach((list) => {
     if (!list.official) return;
@@ -198,7 +198,6 @@ const useRelatedLinks = (item: ItemData, rest: RelatedOthers) => {
     }
   });
 
-  // ------ Petpet Related Links ------ //
   const petpetColor =
     itemEffects?.find((effect) => effect.type === 'petpetColor')?.colorTarget ||
     petpetData?.color.name;
@@ -230,4 +229,4 @@ const useRelatedLinks = (item: ItemData, rest: RelatedOthers) => {
   }
 
   return relatedLinks;
-};
+}

@@ -1,25 +1,21 @@
 import { Badge, Flex, Link, Text } from '@chakra-ui/react';
-import React from 'react';
-import { ItemData, UserList } from '../../types';
-import CardBase from '../Card/CardBase';
-import MainLink from '@components/Utils/MainLink';
+import { ItemData, UserList } from '@types';
+import CardBase from '@components/Card/CardBase';
 import NextImage from 'next/image';
-import DynamicIcon from '../../public/icons/dynamic.png';
-import dynamic from 'next/dynamic';
+import DynamicIcon from '@assets/icons/dynamic.png';
 import Color from 'color';
-import { useTranslations } from 'next-intl';
-import Image from '../Utils/Image';
-import { getListLink } from '@components/UserLists/ListCard';
-
-const Markdown = dynamic(() => import('../Utils/Markdown'));
+import { getTranslations } from 'next-intl/server';
+import { Link as I18nLink } from '@i18n/navigation';
+import { getListLink } from '@utils/listLink';
+import Markdown from '@components/Utils/Markdown';
 
 type Props = {
   item: ItemData;
   lists: UserList[];
 };
 
-const ItemOfficialLists = (props: Props) => {
-  const t = useTranslations();
+export default async function ItemOfficialLists(props: Props) {
+  const t = await getTranslations();
   const { item, lists } = props;
   const officialLists = lists.filter((list) => list.official && list.visibility === 'public');
   const color = Color(item.color.hex);
@@ -30,7 +26,7 @@ const ItemOfficialLists = (props: Props) => {
     <CardBase
       title={
         <Link asChild>
-          <MainLink href="/lists/official">{t('General.official-lists')}</MainLink>
+          <I18nLink href="/lists/official">{t('General.official-lists')}</I18nLink>
         </Link>
       }
       color={item.color.hex}
@@ -57,7 +53,7 @@ const ItemOfficialLists = (props: Props) => {
           >
             <Flex mt="-20px" justifyContent={'center'}>
               <Link asChild>
-                <MainLink href={getListLink(list)} prefetch={false}>
+                <I18nLink href={getListLink(list)}>
                   <Flex
                     width={'40px'}
                     height={'40px'}
@@ -66,38 +62,38 @@ const ItemOfficialLists = (props: Props) => {
                     overflow={'hidden'}
                   >
                     {list.coverURL && (
-                      <Image
+                      <NextImage
                         width={40}
                         height={40}
                         quality={90}
-                        objectFit={'cover'}
+                        style={{ objectFit: 'cover' }}
                         src={list.coverURL}
                         alt={list.name}
-                        w="40px"
-                        h="40px"
                       />
                     )}
                   </Flex>
-                </MainLink>
+                </I18nLink>
               </Link>
             </Flex>
             <Text textAlign="center" fontSize="sm" fontWeight="bold" css={{ textWrap: 'balance' }}>
-              <MainLink
-                href={getListLink(list)}
-                prefetch={false}
-                trackEvent="item-official-list"
-                style={{ color: 'white' }}
-              >
-                {list.name}{' '}
-                {list.dynamicType && (
-                  <NextImage
-                    src={DynamicIcon}
-                    alt="dynamic list"
-                    width={10}
-                    style={{ marginLeft: '2px', display: 'inline-block', verticalAlign: 'sub' }}
-                  />
-                )}
-              </MainLink>
+              <Link asChild>
+                <I18nLink
+                  href={getListLink(list)}
+                  data-umami-event="item-official-list"
+                  data-umami-event-label={list.slug}
+                  style={{ color: 'white' }}
+                >
+                  {list.name}{' '}
+                  {list.dynamicType && (
+                    <NextImage
+                      src={DynamicIcon}
+                      alt="dynamic list"
+                      width={10}
+                      style={{ marginLeft: '2px', display: 'inline-block', verticalAlign: 'sub' }}
+                    />
+                  )}
+                </I18nLink>
+              </Link>
             </Text>
             <Text
               textAlign="center"
@@ -115,21 +111,12 @@ const ItemOfficialLists = (props: Props) => {
           </Flex>
         ))}
       </Flex>
-      {officialLists.length === 0 && (
-        <Flex flexFlow="column" gap={2} justifyContent="center" alignItems="center">
-          <Text fontSize="sm" color="gray.200">
-            {t('ItemPage.no-official-list')}
-          </Text>
-        </Flex>
-      )}
     </CardBase>
   );
-};
+}
 
-export default ItemOfficialLists;
-
-const OfficialText = ({ list }: { list: UserList }) => {
-  const t = useTranslations();
+async function OfficialText({ list }: { list: UserList }) {
+  const t = await getTranslations();
   const isHighlight = list.itemInfo?.[0].isHighlight;
 
   if (isHighlight && list.highlightText) return <Markdown>{list.highlightText}</Markdown>;
@@ -137,4 +124,4 @@ const OfficialText = ({ list }: { list: UserList }) => {
   if (list.description) return <Markdown>{list.description.split(/[\r\n]+/)[0]}</Markdown>;
 
   return <Markdown>{t('ItemPage.list-no-description')}</Markdown>;
-};
+}

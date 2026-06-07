@@ -35,7 +35,7 @@ export default async function GlobalNotFound() {
         <AppScripts />
         <Providers>
           <IntlProvider locale={locale} messages={messages}>
-            <AppServerLayout mainColor="#ff6464c7" hardNavigation>
+            <AppServerLayout locale={locale} mainColor="#ff6464c7" hardNavigation>
               <NotFoundContent />
             </AppServerLayout>
           </IntlProvider>

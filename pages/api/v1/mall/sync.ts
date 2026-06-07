@@ -2,7 +2,7 @@ import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@utils/prisma';
 import { NcMallData as dbMallData, Prisma } from '@prisma/generated/client';
-import { revalidatePath } from '@utils/utils';
+import { revalidateAppCache, HomeRevalidateTags } from '@utils/revalidateItem';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 const TARNUM_SERVER = process.env.TARNUM_SERVER;
@@ -190,8 +190,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   await Promise.all(prom);
 
-  // revalidate the home page if we added new items
-  if (create.length > 0) await revalidatePath('/', res);
+  // revalidate home NC mall caches when new mall items are added
+  if (create.length > 0) {
+    await revalidateAppCache([HomeRevalidateTags.latestNcMall, HomeRevalidateTags.latestItems]);
+  }
 
   res.json(response);
 }

@@ -6,7 +6,7 @@ import prisma from '../../../../utils/prisma';
 import queryString from 'query-string';
 import objectHash from 'object-hash';
 import { Chance } from 'chance';
-import { revalidateItem } from '../../v1/items/[id_name]/effects';
+import { ItemRevalidateTags, revalidateItem } from '@utils/revalidateItem';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -110,7 +110,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           data: { imgCacheOverride: chance.hash({ length: 10 }) },
         });
 
-        await revalidateItem(item.slug!, res);
+        await revalidateItem(item.internal_id, ItemRevalidateTags.preview(item.internal_id));
       }
 
       return;

@@ -20,7 +20,7 @@ import {
 } from '@chakra-ui/react';
 import { ItemCardBadge } from '@components/Items/ItemCard';
 import ItemCtxMenu, { CtxTrigger } from '@components/Menus/ItemCtxMenu';
-import { getListLink } from '@components/UserLists/ListCard';
+import { getListLink } from '@utils/listLink';
 import { ItemData, UserList, ShopInfo } from '@types';
 import { slugify } from '@utils/utils';
 import axios from 'axios';

@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../../utils/prisma';
 import { getItem } from '.';
 import { getItemLists } from './lists';
-import { AvyData } from '@types';
+import { AvyData, UserList } from '@types';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -25,8 +25,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   res.json(result);
 }
 
-export const getAvyData = async (item_iid: number) => {
-  const officialLists = await getItemLists(item_iid, true);
+export const getAvyData = async (item_iid: number, officialLists?: UserList[]) => {
+  const lists = officialLists ?? (await getItemLists(item_iid, true));
 
   const avyRaw = await prisma.avatarSolution.findMany({
     where: {
@@ -36,7 +36,7 @@ export const getAvyData = async (item_iid: number) => {
         },
         {
           list_id: {
-            in: officialLists.map((list) => list.internal_id),
+            in: lists.map((list) => list.internal_id),
           },
         },
       ],
@@ -49,7 +49,7 @@ export const getAvyData = async (item_iid: number) => {
   if (avyRaw.length === 0) return null;
 
   const avyData: AvyData[] = avyRaw.map((avy) => {
-    const associatedList = officialLists.find((list) => list.internal_id === avy.list_id);
+    const associatedList = lists.find((list) => list.internal_id === avy.list_id);
     return {
       name: avy.name,
       solution: avy.solution,
