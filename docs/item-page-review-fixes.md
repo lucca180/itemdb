@@ -1,6 +1,6 @@
 # Review fixes — PR #22 (App Router Item Page)
 
-Plano de endereçamento dos achados do [multi-model review](https://github.com/lucca180/itemdb/pull/22). Complementa [`item-page-migration.md`](./item-page-migration.md).
+Plano de endereçamento dos achados do [multi-model review](https://github.com/lucca180/itemdb/pull/22). Complementa [`item-page-migration.md`](./item-page-migration.md). Migrações Price/NCTrade (Fase 6) documentadas lá.
 
 **Última atualização:** jun/2026
 
@@ -9,7 +9,7 @@ Plano de endereçamento dos achados do [multi-model review](https://github.com/l
 | Fase | Tema | Status |
 |------|------|--------|
 | 1 | Regressões e bugs claros | ✅ Concluída |
-| — | Migração `ItemParent` → `app/_components/Item/parent/` | ✅ Concluída (extra) |
+| — | Migração `ItemParent` → `app/_components/Item/ItemParent/` | ✅ Concluída (extra) |
 | 2 | Dedupe de queries | ✅ Concluída |
 | 3 | Cache tags + invalidação admin | ⏳ Pendente |
 | 4 | Resiliência e UX de streaming | ⏳ Pendente |
@@ -49,7 +49,7 @@ flowchart LR
 O plano original previa `getItemParent(..., 4)` no loader central. Evoluímos para:
 
 - Fetch completo no **server** (sem request no client)
-- Card movido para [`app/_components/Item/parent/`](../app/_components/Item/parent/)
+- Card movido para [`app/_components/Item/ItemParent/`](../app/_components/Item/ItemParent/)
 - `itemParent` **removido** de [`loadItemPage.ts`](../app/utils/loadItemPage.ts)
 - Dois arquivos: `ItemParent.tsx` (server + `unstable_cache` inline) + `ItemParentGrid.tsx` (client só para show more/less)
 
@@ -119,7 +119,7 @@ Arquivos afetados:
 - [`DyeCard.tsx`](../app/_components/Item/dye/DyeCard.tsx)
 - [`ItemRecipesCard.tsx`](../app/_components/Item/recipes/ItemRecipesCard.tsx)
 - [`loadSimilarItems.ts`](../app/_components/Item/similarItems/loadSimilarItems.ts)
-- [`ItemParent.tsx`](../app/_components/Item/parent/ItemParent.tsx)
+- [`ItemParent.tsx`](../app/_components/Item/ItemParent/ItemParent.tsx)
 
 ### 3.3 `revalidateTag` em `revalidateItem`
 

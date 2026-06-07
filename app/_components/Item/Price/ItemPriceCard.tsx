@@ -26,7 +26,6 @@ import { MdHelp, MdOutlineAdd } from 'react-icons/md';
 import { LuAtom } from 'react-icons/lu';
 import { FaFlag } from 'react-icons/fa';
 import { BiEditAlt } from 'react-icons/bi';
-import { useFormatter, useTranslations } from 'next-intl';
 import MainLink from '@components/Utils/MainLink';
 import HeadingLine from '@components/Utils/HeadingLine';
 import { useAuth } from '@utils/auth';
@@ -40,6 +39,12 @@ import type { SaleStatusModalProps } from '@components/Modal/SaleStatusModal';
 import type { CreatePriceModalModalProps } from '@components/Modal/CreatePriceModal';
 import type { SeenHistoryModalProps } from '@components/SeenHistory/SeenHistoryModal';
 import type { ItemData, PriceData, PricingInfo, UserList } from '@types';
+import type {
+  ItemPriceEmptyLabels,
+  ItemPriceHelpLabels,
+  ItemPriceStatLabels,
+  LastSeenCardData,
+} from '@app/_components/Item/Price/itemPriceUtils';
 import AuctionIcon from '@assets/icons/auction.png';
 import ShopIcon from '@assets/icons/shop.svg';
 import SWIcon from '@assets/icons/shopwizard.png';
@@ -316,6 +321,7 @@ export function PriceStatActions({
   hasKnownPrice,
   priceDiff,
   priceDiffLabel,
+  labels,
 }: {
   item: ItemData;
   inflated?: boolean;
@@ -325,8 +331,8 @@ export function PriceStatActions({
   hasKnownPrice: boolean;
   priceDiff?: number | null;
   priceDiffLabel?: string | null;
+  labels: ItemPriceStatLabels;
 }) {
-  const t = useTranslations();
   const toast = useToast();
   const { user } = useAuth();
   const { openWrongPrice, openSaleStatus, openCreatePrice } = useItemPriceModals();
@@ -385,12 +391,12 @@ export function PriceStatActions({
       >
         {inflated && (
           <Text fontWeight="bold" color="red.300">
-            {t('General.inflation')}
+            {labels.inflation}
           </Text>
         )}
         <Stat.ValueText whiteSpace="nowrap">{valueText}</Stat.ValueText>
         {dateLabel && <Stat.Label>{dateLabel}</Stat.Label>}
-        {showNoInfo && <Stat.HelpText>{t('ItemPage.no-info')}</Stat.HelpText>}
+        {showNoInfo && <Stat.HelpText>{labels.noInfo}</Stat.HelpText>}
         {priceDiffLabel != null && priceDiff !== null && (
           <Stat.HelpText>
             {!!priceDiff && priceDiff > 0 && <Stat.UpIndicator />}
@@ -409,7 +415,7 @@ export function PriceStatActions({
           variant="ghost"
           data-umami-event="wrong-price-button"
         >
-          <Icon as={FaFlag} mr={1} verticalAlign="center" /> {t('ItemPage.wrong-price')}
+          <Icon as={FaFlag} mr={1} verticalAlign="center" /> {labels.wrongPrice}
         </Button>
       )}
       <HStack mt={2} gap={2}>
@@ -454,15 +460,8 @@ export function PriceStatSkeleton() {
 
 // --- Help banner ---
 
-export function HelpNeeded({
-  item,
-  helpData,
-}: {
-  item: ItemData;
-  helpData: { needPricing: number; needVoting: number };
-}) {
+export function HelpNeeded({ item, labels }: { item: ItemData; labels: ItemPriceHelpLabels }) {
   const [hideHelp, setHideHelp] = useState(false);
-  const t = useTranslations();
 
   useEffect(() => {
     window.umami?.track('need-help-view', { name: item.name });
@@ -474,7 +473,7 @@ export function HelpNeeded({
     <Alert.Root status="warning" flexFlow="column" borderRadius="md">
       <Alert.Indicator />
       <Alert.Content>
-        <Alert.Title>{t('Feedback.we-need-your-help')}</Alert.Title>
+        <Alert.Title>{labels.title}</Alert.Title>
         <Alert.Description
           textAlign="center"
           display="flex"
@@ -482,9 +481,9 @@ export function HelpNeeded({
           gap={3}
           fontSize="sm"
         >
-          {t('Feedback.price-update-txt')}
+          {labels.description}
           <HStack justifyContent="center">
-            {!!helpData.needPricing && (
+            {labels.priceTradeLots && (
               <Button asChild size="sm">
                 <MainLink
                   href={`/feedback/trades?target=${item.name}`}
@@ -492,11 +491,11 @@ export function HelpNeeded({
                   trackEvent="help-needed"
                   trackEventLabel="price-trades"
                 >
-                  {t('Feedback.price-x-trade-lots', { x: helpData.needPricing })}
+                  {labels.priceTradeLots}
                 </MainLink>
               </Button>
             )}
-            {!!helpData.needVoting && (
+            {labels.voteSuggestions && (
               <Button asChild size="sm">
                 <MainLink
                   href={`/feedback/vote?target=${item.name}`}
@@ -504,7 +503,7 @@ export function HelpNeeded({
                   trackEvent="help-needed"
                   trackEventLabel="vote-suggestions"
                 >
-                  {t('Feedback.vote-x-suggestions', { x: helpData.needVoting })}
+                  {labels.voteSuggestions}
                 </MainLink>
               </Button>
             )}
@@ -524,16 +523,15 @@ export function HelpNeeded({
 
 // --- Empty state ---
 
-export function PriceEmptyPanel() {
-  const t = useTranslations();
+export function PriceEmptyPanel({ labels }: { labels: ItemPriceEmptyLabels }) {
   const { openWrongPrice } = useItemPriceModals();
 
   return (
     <Flex justifyContent="center" alignItems="center" minH={150}>
       <Text fontSize="xs" color="gray.200" textAlign="center">
-        {t('ItemPage.no-data')} <br />
+        {labels.noData} <br />
         <Button mt={1} size="xs" onClick={openWrongPrice}>
-          {t('General.learnHelp')}
+          {labels.learnHelp}
         </Button>
       </Text>
     </Flex>
@@ -560,37 +558,25 @@ export function PriceChartPanel({
 
 // --- Last seen ---
 
-type SeenType = 'sw' | 'tp' | 'auction' | 'restock';
-
-const SEEN_ICONS: Record<SeenType, { titleKey: string; icon: typeof SWIcon }> = {
-  sw: { titleKey: 'General.shop-wizard', icon: SWIcon },
-  tp: { titleKey: 'General.trading-post', icon: TPIcon },
-  auction: { titleKey: 'General.auction-house', icon: AuctionIcon },
-  restock: { titleKey: 'General.restock-shop', icon: ShopIcon },
+const SEEN_ICONS: Record<LastSeenCardData['type'], typeof SWIcon> = {
+  sw: SWIcon,
+  tp: TPIcon,
+  auction: AuctionIcon,
+  restock: ShopIcon,
 };
 
-function LastSeenCard({
-  type,
-  lastSeen,
-  doesNotRestock,
-  isAlways,
-}: {
-  type: SeenType;
-  lastSeen?: string | null;
-  doesNotRestock?: boolean;
-  isAlways?: boolean;
-}) {
-  const t = useTranslations();
-  const format = useFormatter();
+function LastSeenCard({ card }: { card: LastSeenCardData }) {
   const { openSeenHistory } = useItemPriceModals();
-  const canOpenModal = !!lastSeen && ['tp', 'auction', 'restock'].includes(type) && !doesNotRestock;
+  const { type, title, subtitle, canOpenModal } = card;
+  const isLoading = subtitle === undefined;
 
   const track = () => {
+    if (isLoading) return;
     window.umami?.track(`seen-${type}`);
     if (canOpenModal) openSeenHistory(type as 'tp' | 'auction' | 'restock');
   };
 
-  const { titleKey, icon } = SEEN_ICONS[type];
+  const icon = SEEN_ICONS[type];
 
   return (
     <Flex
@@ -600,24 +586,21 @@ function LastSeenCard({
       p={2}
       borderRadius="md"
       onClick={track}
-      cursor={canOpenModal ? 'pointer' : 'not-allowed'}
+      cursor={!isLoading && canOpenModal ? 'pointer' : 'not-allowed'}
     >
       <Text display="flex" alignItems="center" gap={1}>
         <Image
           src={icon}
-          alt={t(titleKey)}
-          title={t(titleKey)}
+          alt={title}
+          title={title}
           height={24}
           quality={100}
           style={{ display: 'inline-block' }}
         />
-        {t(titleKey)}
+        {title}
       </Text>
-      <Text opacity={0.8} suppressHydrationWarning>
-        {lastSeen && format.relativeTime(new Date(lastSeen))}
-        {!lastSeen && !doesNotRestock && !isAlways && t('General.never')}
-        {!lastSeen && !doesNotRestock && isAlways && t('General.always')}
-        {!lastSeen && type === 'restock' && doesNotRestock && t('ItemPage.does-not-restock')}
+      <Text opacity={0.8} minH="1.25rem">
+        {isLoading ? <Skeleton height="12px" width="60px" /> : subtitle}
       </Text>
     </Flex>
   );
@@ -638,49 +621,16 @@ export function LastSeenHelpHeading({ label }: { label: string }) {
   );
 }
 
-export function LastSeenCards({
-  item,
-  lastSeen,
-}: {
-  item: ItemData;
-  lastSeen: {
-    sw?: string | null;
-    tp?: string | null;
-    auction?: string | null;
-    restock?: string | null;
-  };
-}) {
+export function LastSeenCards({ cards }: { cards: LastSeenCardData[] }) {
   return (
     <HStack
       justifyContent={{ base: 'center', md: 'space-around' }}
       textAlign="center"
       flexWrap="wrap"
     >
-      <LastSeenCard type="sw" lastSeen={lastSeen?.sw} />
-      <LastSeenCard type="tp" lastSeen={lastSeen?.tp} />
-      <LastSeenCard type="auction" lastSeen={lastSeen?.auction} />
-      <LastSeenCard
-        type="restock"
-        lastSeen={lastSeen?.restock}
-        isAlways={item.findAt.restockShop?.includes('hiddentower')}
-        doesNotRestock={!item.findAt.restockShop}
-      />
+      {cards.map((card) => (
+        <LastSeenCard key={card.type} card={card} />
+      ))}
     </HStack>
-  );
-}
-
-export function LastSeenSkeleton() {
-  return (
-    <>
-      <Skeleton height="16px" width="100px" mb={2} />
-      <HStack justifyContent="space-around" flexWrap="wrap">
-        {[1, 2, 3, 4].map((i) => (
-          <Flex key={i} flexFlow="column" bg="gray.700" p={2} borderRadius="md" minW="120px">
-            <Skeleton height="14px" width="80px" mb={1} />
-            <Skeleton height="12px" width="60px" />
-          </Flex>
-        ))}
-      </HStack>
-    </>
   );
 }

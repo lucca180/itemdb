@@ -3,6 +3,104 @@ import { differenceInCalendarDays, isSameDay } from 'date-fns';
 import { tz } from '@date-fns/tz';
 import type { ItemData, PriceData, PricingInfo, UserList } from '@types';
 
+export type ItemPriceStatLabels = {
+  inflation: string;
+  noInfo: string;
+  wrongPrice: string;
+};
+
+export type ItemPriceHelpLabels = {
+  title: string;
+  description: string;
+  priceTradeLots: string | null;
+  voteSuggestions: string | null;
+};
+
+export type ItemPriceEmptyLabels = {
+  noData: string;
+  learnHelp: string;
+};
+
+export type LastSeenCardData = {
+  type: 'sw' | 'tp' | 'auction' | 'restock';
+  title: string;
+  subtitle?: string;
+  canOpenModal?: boolean;
+};
+
+type LastSeenData = {
+  sw?: string | null;
+  tp?: string | null;
+  auction?: string | null;
+  restock?: string | null;
+};
+
+type TranslateFn = (key: string) => string;
+type FormatFn = {
+  relativeTime: (date: Date) => string;
+};
+
+const LAST_SEEN_CARD_TYPES = ['sw', 'tp', 'auction', 'restock'] as const;
+
+const SEEN_TITLE_KEYS: Record<(typeof LAST_SEEN_CARD_TYPES)[number], string> = {
+  sw: 'General.shop-wizard',
+  tp: 'General.trading-post',
+  auction: 'General.auction-house',
+  restock: 'General.restock-shop',
+};
+
+export function buildLastSeenStaticCards(t: TranslateFn): LastSeenCardData[] {
+  return LAST_SEEN_CARD_TYPES.map((type) => ({
+    type,
+    title: t(SEEN_TITLE_KEYS[type]),
+  }));
+}
+
+export function buildLastSeenCards(
+  item: ItemData,
+  lastSeen: LastSeenData | null | undefined,
+  t: TranslateFn,
+  format: FormatFn
+): LastSeenCardData[] {
+  const isAlways = item.findAt.restockShop?.includes('hiddentower');
+  const doesNotRestock = !item.findAt.restockShop;
+
+  const buildSubtitle = (
+    type: LastSeenCardData['type'],
+    seen?: string | null,
+    restockDoesNotRestock?: boolean,
+    restockIsAlways?: boolean
+  ) => {
+    if (seen) return format.relativeTime(new Date(seen));
+    if (type === 'restock' && restockDoesNotRestock) return t('ItemPage.does-not-restock');
+    if (restockIsAlways) return t('General.always');
+    return t('General.never');
+  };
+
+  const buildCard = (
+    type: LastSeenCardData['type'],
+    seen?: string | null,
+    options?: { doesNotRestock?: boolean; isAlways?: boolean }
+  ): LastSeenCardData => {
+    const canOpenModal =
+      !!seen && ['tp', 'auction', 'restock'].includes(type) && !options?.doesNotRestock;
+
+    return {
+      type,
+      title: t(SEEN_TITLE_KEYS[type]),
+      subtitle: buildSubtitle(type, seen, options?.doesNotRestock, options?.isAlways),
+      canOpenModal,
+    };
+  };
+
+  return [
+    buildCard('sw', lastSeen?.sw),
+    buildCard('tp', lastSeen?.tp),
+    buildCard('auction', lastSeen?.auction),
+    buildCard('restock', lastSeen?.restock, { doesNotRestock, isAlways }),
+  ];
+}
+
 export type PriceOrMarker = Partial<PriceData> & {
   marker?: boolean;
   title?: string;

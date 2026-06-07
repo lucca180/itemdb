@@ -21,6 +21,8 @@ import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { shouldShowTradeLists } from '@utils/utils';
 import type { ItemData, PriceData, PricingInfo, UserList } from '@types';
 import {
+  buildLastSeenCards,
+  buildLastSeenStaticCards,
   buildPriceTableData,
   filterNPSeekingLists,
   filterNPTradingLists,
@@ -40,7 +42,6 @@ import {
   ItemPriceTabProvider,
   LastSeenCards,
   LastSeenHelpHeading,
-  LastSeenSkeleton,
   PriceChartPanel,
   PriceEmptyPanel,
   PriceStatActions,
@@ -293,8 +294,17 @@ async function PriceTableTab({
   prices: PriceData[];
   lists?: UserList[];
 }) {
-  const { user } = await getServerCurrentUser();
-  if (!prices.length) return <PriceEmptyPanel />;
+  const [{ user }, t] = await Promise.all([getServerCurrentUser(), getTranslations()]);
+  if (!prices.length) {
+    return (
+      <PriceEmptyPanel
+        labels={{
+          noData: t('ItemPage.no-data'),
+          learnHelp: t('General.learnHelp'),
+        }}
+      />
+    );
+  }
   return (
     <Box bg="blackAlpha.300" borderRadius="md" overflow="hidden">
       <PriceTable item={item} data={prices} lists={lists} isAdmin={!!user?.isAdmin} />
@@ -303,7 +313,7 @@ async function PriceTableTab({
 }
 
 async function PriceStatPanel({ item, prices }: { item: ItemData; prices: PriceData[] }) {
-  const format = await getFormatter();
+  const [format, t] = await Promise.all([getFormatter(), getTranslations()]);
   const price = getLatestPrice(prices);
   const priceDiff = getPriceDiff(prices);
 
@@ -325,11 +335,16 @@ async function PriceStatPanel({ item, prices }: { item: ItemData; prices: PriceD
       hasKnownPrice={!!price?.value}
       priceDiff={priceDiff}
       priceDiffLabel={priceDiff !== null ? `${format.number(priceDiff)} NP` : null}
+      labels={{
+        inflation: t('General.inflation'),
+        noInfo: t('ItemPage.no-info'),
+        wrongPrice: t('ItemPage.wrong-price'),
+      }}
     />
   );
 }
 
-function PriceHelpBanner({
+async function PriceHelpBanner({
   item,
   prices,
   priceStatus,
@@ -340,7 +355,23 @@ function PriceHelpBanner({
 }) {
   const helpData = getHelpNeededData(priceStatus, getLatestPrice(prices));
   if (!helpData) return null;
-  return <HelpNeeded item={item} helpData={helpData} />;
+
+  const t = await getTranslations();
+  return (
+    <HelpNeeded
+      item={item}
+      labels={{
+        title: t('Feedback.we-need-your-help'),
+        description: t('Feedback.price-update-txt'),
+        priceTradeLots: helpData.needPricing
+          ? t('Feedback.price-x-trade-lots', { x: helpData.needPricing })
+          : null,
+        voteSuggestions: helpData.needVoting
+          ? t('Feedback.vote-x-suggestions', { x: helpData.needVoting })
+          : null,
+      }}
+    />
+  );
 }
 
 async function NPSeekingTab({ item }: ItemProps) {
@@ -361,14 +392,13 @@ async function NPTradingTab({ item }: ItemProps) {
   );
 }
 
-async function LastSeenSection({ item }: ItemProps) {
-  const [lastSeen, t] = await Promise.all([loadLastSeen(item.internal_id), getTranslations()]);
-  return (
-    <>
-      <LastSeenHelpHeading label={t('ItemPage.seen-at')} />
-      <LastSeenCards item={item} lastSeen={lastSeen} />
-    </>
-  );
+async function LastSeenStats({ item }: ItemProps) {
+  const [lastSeen, t, format] = await Promise.all([
+    loadLastSeen(item.internal_id),
+    getTranslations(),
+    getFormatter(),
+  ]);
+  return <LastSeenCards cards={buildLastSeenCards(item, lastSeen, t, format)} />;
 }
 
 // --- Orchestrator ---
@@ -439,8 +469,9 @@ async function ItemPriceTradeableCard({ item, prices, priceStatus, lists }: Prop
             </Flex>
           </ItemPriceTabProvider>
 
-          <Suspense fallback={<LastSeenSkeleton />}>
-            <LastSeenSection item={item} />
+          <LastSeenHelpHeading label={t('ItemPage.seen-at')} />
+          <Suspense fallback={<LastSeenCards cards={buildLastSeenStaticCards(t)} />}>
+            <LastSeenStats item={item} />
           </Suspense>
         </Flex>
       </CardBase>
