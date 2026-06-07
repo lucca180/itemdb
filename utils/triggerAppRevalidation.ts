@@ -31,17 +31,21 @@ export async function triggerAppRevalidation(payload: AppRevalidationPayload): P
     'x-tarnum-skip': secret,
   };
 
-  const response = await fetch(`${getSiteBaseUrl()}/api/internal/revalidate`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({ tags, context }),
-  });
+  try {
+    const response = await fetch(`${getSiteBaseUrl()}/api/internal/revalidate`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ tags, context }),
+    });
 
-  if (!response.ok) {
-    const body = await response.text().catch(() => '');
-    console.error(
-      `[triggerAppRevalidation] failed (${response.status}): ${body || response.statusText}`,
-      context
-    );
+    if (!response.ok) {
+      const body = await response.text().catch(() => '');
+      console.error(
+        `[triggerAppRevalidation] failed (${response.status}): ${body || response.statusText}`,
+        context
+      );
+    }
+  } catch (error) {
+    console.error('[triggerAppRevalidation] request failed:', error, context);
   }
 }
