@@ -1,7 +1,7 @@
 import { Flex } from '@chakra-ui/react';
 import type { ItemPageData } from '@app/utils/loadItemPage';
 import { ItemHeader } from '@app/_components/Item/page/ItemHeader';
-import { ItemPageEditSection } from '@app/_components/Item/page/ItemPageAuthGates';
+import { ItemPageEditSectionLoader } from '@app/_components/Item/page/ItemPageEditSectionLoader';
 import { ItemPageOutfitSectionLoader } from '@app/_components/Item/page/ItemPageOutfitSectionLoader';
 import { ItemPageWearablePreview } from '@app/_components/Item/page/ItemPageWearablePreview';
 import {
@@ -10,15 +10,15 @@ import {
 } from '@app/_components/Item/page/ItemPageSidebar';
 import { ManualCheckSection } from '@app/_components/Item/ManualCheck/ManualCheckSection';
 import { MyListsSection } from '@app/_components/Item/MyLists/MyListsSection';
+import { ColorInfoSection } from '@app/_components/Item/ColorInfo/ColorInfoSection';
+import { ItemEffectsSection } from '@app/_components/Item/Effects/ItemEffectsSection';
+import { ItemOfficialListsSection } from '@app/_components/Item/OfficialLists/ItemOfficialListsSection';
 import MissingInfoCard from '@components/Items/MissingInfoCard';
-import ItemEffectsCard from '@components/Items/ItemEffectsCard';
-import ItemOfficialLists from '@components/Items/ItemOfficialList';
 import NcMallCard from '@components/Items/NCMallCard';
 import ItemRestock from '@components/Items/ItemRestockInfo';
 import RelatedLinksCard from '@components/Items/RelatedLinks';
 import FindAtCard from '@components/Items/FindAtCard';
 import ItemInfoCard from '@components/Items/InfoCard';
-import ColorInfoCard from '@components/Items/ColorInfoCard';
 import { ItemDropsSection } from '@app/_components/Item/Drops/ItemDropsSection';
 import MMECard from '@app/_components/Item/MME/MMECard';
 import DyeCard from '@app/_components/Item/Dye/DyeCard';
@@ -38,18 +38,7 @@ type ItemPageProps = {
 };
 
 export async function ItemPage({ data }: ItemPageProps) {
-  const {
-    item,
-    lists,
-    tradeLists,
-    itemEffects,
-    colors,
-    ncMallData,
-    wearableData,
-    ncTradeInsights,
-    npPrices,
-    npPriceStatus,
-  } = data;
+  const { item, ncMallData, ncTradeInsights, npPrices, npPriceStatus } = data;
 
   const t = await getTranslations();
   const editSectionLabels = {
@@ -62,7 +51,7 @@ export async function ItemPage({ data }: ItemPageProps) {
 
   return (
     <>
-      <ItemHeader item={item} lists={lists} />
+      <ItemHeader item={item} />
       <Flex
         minH="500px"
         gap={6}
@@ -82,8 +71,8 @@ export async function ItemPage({ data }: ItemPageProps) {
             <FindAtCard item={item} />
           </ItemPageSidebarDesktop>
           <ItemInfoCard item={item} />
-          {colors && <ColorInfoCard colors={colors} />}
-          <ItemPageEditSection item={item} itemEffects={itemEffects} labels={editSectionLabels} />
+          <ColorInfoSection item={item} />
+          <ItemPageEditSectionLoader item={item} labels={editSectionLabels} />
         </Flex>
         <Flex
           flex="3"
@@ -104,23 +93,13 @@ export async function ItemPage({ data }: ItemPageProps) {
                 item={item}
                 prices={npPrices}
                 priceStatus={npPriceStatus}
-                lists={lists}
               />
             )}
             {item.isNC && (
-              <NCTradeSection
-                key={getKey('nc-trade')}
-                item={item}
-                tradeLists={tradeLists}
-                insights={ncTradeInsights}
-              />
+              <NCTradeSection key={getKey('nc-trade')} item={item} insights={ncTradeInsights} />
             )}
-            {itemEffects.length > 0 && (
-              <ItemEffectsCard key={getKey('item-effects')} item={item} effects={itemEffects} />
-            )}
-            {lists && (
-              <ItemOfficialLists key={getKey('official-lists')} item={item} lists={lists} />
-            )}
+            <ItemEffectsSection key={getKey('item-effects')} item={item} />
+            <ItemOfficialListsSection key={getKey('official-lists')} item={item} />
             <MyListsSection item={item} />
             <MMECard key={getKey('mme-card')} item={item} />
             <DyeCard key={getKey('dye-card')} item={item} />
@@ -136,20 +115,11 @@ export async function ItemPage({ data }: ItemPageProps) {
             )}
             {item.findAt.restockShop && <ItemRestock key={getKey('item-restock')} item={item} />}
             <ItemPageOutfitSectionLoader item={item} />
-            <ItemPageWearablePreview
-              item={item}
-              itemEffects={itemEffects}
-              wearableData={wearableData}
-            />
+            <ItemPageWearablePreview item={item} />
             <ItemAvyCard key={getKey('item-avy-card')} item={item} />
             <ItemParent key={getKey('item-parent')} item={item} />
             <TradeCardSection key={getKey('trade-card')} item={item} />
-            <RelatedLinksCard
-              key={getKey('related-links')}
-              item={item}
-              itemEffects={itemEffects}
-              lists={lists}
-            />
+            <RelatedLinksCard key={getKey('related-links')} item={item} />
           </Flex>
         </Flex>
       </Flex>

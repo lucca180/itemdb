@@ -2,6 +2,7 @@
  * NP Price — server orchestrator (item page).
  *
  * Price data preloaded in `loadItemPage` (blocks page render).
+ * Official lists for the price table load via `loadItemPageLists`.
  * Seeking/trading and last seen stream via Suspense.
  * Client shell: ItemPriceCard.tsx
  */
@@ -16,7 +17,7 @@ import { Link as I18nLink } from '@i18n/navigation';
 import CardBase from '@components/Card/CardBase';
 import Markdown from '@components/Utils/Markdown';
 import MatchTable from '@app/_components/Item/NCTrade/MatchTable';
-import { loadLastSeen, loadTradeLists } from '@app/_components/Item/loadUtils';
+import { loadLastSeen, loadItemPageLists, loadTradeLists } from '@app/_components/Item/loadUtils';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { shouldShowTradeLists } from '@utils/utils';
 import type { ItemData, PriceData, PricingInfo, UserList } from '@types';
@@ -53,7 +54,6 @@ type ItemProps = { item: ItemData };
 type Props = ItemProps & {
   prices: PriceData[];
   priceStatus: PricingInfo | null;
-  lists?: UserList[];
 };
 
 // --- Price table (server) ---
@@ -415,8 +415,8 @@ function ItemPriceModalShell({
   );
 }
 
-async function ItemPriceTradeableCard({ item, prices, priceStatus, lists }: Props) {
-  const t = await getTranslations();
+async function ItemPriceTradeableCard({ item, prices, priceStatus }: Props) {
+  const [t, lists] = await Promise.all([getTranslations(), loadItemPageLists(item.internal_id)]);
   const shouldShowLists = shouldShowTradeLists(item);
 
   return (
@@ -491,12 +491,10 @@ async function ItemPriceNoTradeCard({ item }: ItemProps) {
   );
 }
 
-export async function ItemPriceSection({ item, prices, priceStatus, lists }: Props) {
+export async function ItemPriceSection({ item, prices, priceStatus }: Props) {
   if (item.isNC) return null;
   if (item.status?.toLowerCase() === 'no trade') return <ItemPriceNoTradeCard item={item} />;
-  return (
-    <ItemPriceTradeableCard item={item} prices={prices} priceStatus={priceStatus} lists={lists} />
-  );
+  return <ItemPriceTradeableCard item={item} prices={prices} priceStatus={priceStatus} />;
 }
 
 export default ItemPriceSection;

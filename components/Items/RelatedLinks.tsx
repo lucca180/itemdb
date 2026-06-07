@@ -4,7 +4,11 @@ import { ItemData, ItemEffect, ItemPetpetData, UserList } from '@types';
 import CardBase from '@components/Card/CardBase';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@i18n/navigation';
-import { loadPetpetData } from '@app/_components/Item/loadUtils';
+import {
+  loadItemPageLists,
+  loadItemEffects,
+  loadPetpetData,
+} from '@app/_components/Item/loadUtils';
 import {
   getPetpetColorId,
   getPetpetSpeciesFromString,
@@ -14,19 +18,21 @@ import {
 
 type Props = {
   item: ItemData;
-  itemEffects?: ItemEffect[];
-  lists?: UserList[];
 };
 
 export default async function RelatedLinksCard(props: Props) {
-  const t = await getTranslations();
-  const petpetData = await loadPetpetData(props.item.internal_id);
-  const relatedLinks = buildRelatedLinks(props.item, t, {
-    itemEffects: props.itemEffects,
-    lists: props.lists,
+  const { item } = props;
+  const [t, itemEffects, lists, petpetData] = await Promise.all([
+    getTranslations(),
+    loadItemEffects(item),
+    loadItemPageLists(item.internal_id),
+    loadPetpetData(item.internal_id),
+  ]);
+  const relatedLinks = buildRelatedLinks(item, t, {
+    itemEffects,
+    lists,
     petpetData: petpetData || undefined,
   });
-  const { item } = props;
   const color = item.color.rgb;
 
   if (relatedLinks.length === 0) return null;

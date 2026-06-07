@@ -28,14 +28,17 @@ import { NCTradePanelSkeleton } from '@app/_components/Item/NCTrade/NCTradePanel
 import { NCTradeTabBar } from '@app/_components/Item/NCTrade/NCTradeTabBar';
 import { NCTradeTabProvider } from '@app/_components/Item/NCTrade/NCTradeTabContext';
 import { NCTradeValueBadge } from '@app/_components/Item/NCTrade/NCTradeValueBadge';
-import { hasNCTradeInsights, loadLebronTradeHistory } from '@app/_components/Item/loadUtils';
+import {
+  hasNCTradeInsights,
+  loadLebronTradeHistory,
+  loadTradeLists,
+} from '@app/_components/Item/loadUtils';
 import { getListMatchesMany } from '@pages/api/v1/lists/match/many';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import type { InsightsResponse, ItemData, UserList } from '@types';
 
 type Props = {
   item: ItemData;
-  tradeLists?: UserList[];
   insights: InsightsResponse | null;
 };
 
@@ -67,7 +70,7 @@ const loadTradingMatches = cache(
   }
 );
 
-async function NCTradeSeekingTab({ tradeLists }: Pick<Props, 'tradeLists'>) {
+async function NCTradeSeekingTab({ tradeLists }: { tradeLists: UserList[] }) {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get('session')?.value;
   const seeking = filterSeekingLists(tradeLists);
@@ -75,7 +78,7 @@ async function NCTradeSeekingTab({ tradeLists }: Pick<Props, 'tradeLists'>) {
   return <MatchTable data={seeking} matches={matches} type="seeking" />;
 }
 
-async function NCTradeTradingTab({ tradeLists }: Pick<Props, 'tradeLists'>) {
+async function NCTradeTradingTab({ tradeLists }: { tradeLists: UserList[] }) {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get('session')?.value;
   const trading = filterTradingLists(tradeLists);
@@ -156,7 +159,12 @@ async function NCTradeTradeableCard({
   tradeLists,
   insights,
   hasInsights,
-}: Props & { hasInsights: boolean }) {
+}: {
+  item: ItemData;
+  tradeLists: UserList[];
+  insights: InsightsResponse | null;
+  hasInsights: boolean;
+}) {
   const t = await getTranslations();
   const seeking = filterSeekingLists(tradeLists);
   const trading = filterTradingLists(tradeLists);
@@ -214,9 +222,10 @@ async function NCTradeTradeableCard({
   );
 }
 
-export async function NCTradeSection({ item, tradeLists, insights }: Props) {
+export async function NCTradeSection({ item, insights }: Props) {
   if (!item.isNC) return null;
 
+  const tradeLists = await loadTradeLists(item);
   const hasInsights = hasNCTradeInsights(insights);
 
   if (item.status === 'no trade') {

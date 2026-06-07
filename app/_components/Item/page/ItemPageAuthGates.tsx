@@ -8,12 +8,13 @@ import dynamic from 'next/dynamic';
 import { useAuth } from '@utils/auth';
 import FeedbackButton from '@components/Feedback/FeedbackButton';
 import type { EditItemModalProps } from '@components/Modal/EditItemModal';
-import type { ItemPageData } from '@app/utils/loadItemPage';
-import type { ItemOpenable, ItemPetpetData } from '@types';
+import type { ItemData, ItemEffect, ItemOpenable, ItemPetpetData } from '@types';
 
 const EditItemModal = dynamic<EditItemModalProps>(() => import('@components/Modal/EditItemModal'));
 
-type ItemPageEditSectionProps = Pick<ItemPageData, 'item' | 'itemEffects'> & {
+type ItemPageEditSectionProps = {
+  item: ItemData;
+  itemEffects: ItemEffect[];
   labels: {
     reportError: string;
     edit: string;
@@ -30,7 +31,7 @@ async function fetchPetpetData(slug: string): Promise<ItemPetpetData | null> {
   return data ?? null;
 }
 
-function shouldFetchPetpetData(item: ItemPageData['item']) {
+function shouldFetchPetpetData(item: ItemData) {
   return !item.isNC && !item.isWearable && !item.isBD && !item.isNeohome;
 }
 

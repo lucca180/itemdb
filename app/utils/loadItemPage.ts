@@ -1,40 +1,19 @@
 import { cache } from 'react';
 import type { Metadata } from 'next';
 import {
-  getOfficialItemLists,
   loadNCTradeInsights,
   loadNPPrices,
   loadPriceStatus,
 } from '@app/_components/Item/loadUtils';
-import {
-  FullItemColors,
-  InsightsResponse,
-  ItemData,
-  ItemEffect,
-  NCMallData,
-  PriceData,
-  PricingInfo,
-  UserList,
-  WearableData,
-} from '@types';
+import { InsightsResponse, ItemData, NCMallData, PriceData, PricingInfo } from '@types';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { getItemDbCanonical, normalizeItemDbLocale } from '@utils/appPage';
-import { shouldShowTradeLists } from '@utils/utils';
 import { getItem } from '@pages/api/v1/items/[id_name]';
-import { getItemLists } from '@pages/api/v1/items/[id_name]/lists';
-import { getItemEffects } from '@pages/api/v1/items/[id_name]/effects';
-import { getWearableData } from '@pages/api/v1/items/[id_name]/wearable';
 import { getItemNCMall } from '@pages/api/v1/items/[id_name]/ncmall';
-import { getSingleItemColor } from '@pages/api/v1/items/[id_name]/colors';
 import * as Sentry from '@sentry/nextjs';
 
 export type ItemPageData = {
   item: ItemData;
-  colors: FullItemColors;
-  lists?: UserList[];
-  tradeLists?: UserList[];
-  itemEffects: ItemEffect[];
-  wearableData: WearableData | null;
   ncMallData: NCMallData | null;
   /** Preloaded for NC items — blocks page render until resolved. */
   ncTradeInsights: InsightsResponse | null;
@@ -82,18 +61,10 @@ export function buildItemPageMetadata(item: ItemData, locale: string): Metadata 
   };
 }
 
-async function fetchItemPageData(item: ItemData): Promise<ItemPageData | null> {
-  const [
-    colors,
-    lists,
-    tradeLists,
-    itemEffects,
-    wearableData,
-    NCMallData,
-    ncTradeInsights,
-    npPrices,
-    npPriceStatus,
-  ] = await Sentry.startSpan(
+async function fetchItemPageData(item: ItemData): Promise<ItemPageData> {
+  const { user } = await getServerCurrentUser();
+
+  const [ncMallData, ncTradeInsights, npPrices, npPriceStatus] = await Sentry.startSpan(
     {
       name: 'itemLoad',
       attributes: {
@@ -104,32 +75,18 @@ async function fetchItemPageData(item: ItemData): Promise<ItemPageData | null> {
       },
       forceTransaction: true,
     },
-    async () => {
-      const { user } = await getServerCurrentUser();
-      return Promise.all([
-        getSingleItemColor(item),
-        getOfficialItemLists(item.internal_id),
-        item.isNC && shouldShowTradeLists(item) ? getItemLists(item.internal_id, false) : [],
-        getItemEffects(item),
-        item.isWearable ? (getWearableData(item.internal_id) as Promise<WearableData>) : null,
+    async () =>
+      Promise.all([
         item.isNC ? getItemNCMall(item.internal_id) : null,
         item.isNC ? loadNCTradeInsights(item.internal_id) : null,
         !item.isNC ? loadNPPrices(item.internal_id) : [],
         !item.isNC ? loadPriceStatus(item.internal_id, user?.id) : null,
-      ]);
-    }
+      ])
   );
-
-  if (!colors) return null;
 
   return {
     item,
-    lists: lists.filter((l) => !l.officialTag.includes('Avatar')),
-    colors: colors as FullItemColors,
-    tradeLists,
-    itemEffects,
-    wearableData,
-    ncMallData: NCMallData,
+    ncMallData,
     ncTradeInsights,
     npPrices,
     npPriceStatus,
@@ -155,7 +112,6 @@ export const resolveItemPage = cache(async (slugParam: string): Promise<ItemPage
   }
 
   const data = await getItemPageData(item);
-  if (!data) return { type: 'notFound' };
 
   return { type: 'ok', data };
 });

@@ -9,7 +9,18 @@ import { getNCTradeInsights } from '@pages/api/v1/mall/[iid]/insights';
 import { getLastSeen } from '@pages/api/v1/prices/stats';
 import { getPriceStatus } from '@pages/api/v1/prices/[iid]/status';
 import { shouldShowTradeLists } from '@utils/utils';
-import type { InsightsResponse, ItemData, ItemPetpetData, LebronTrade } from '@types';
+import type {
+  InsightsResponse,
+  ItemData,
+  ItemEffect,
+  ItemPetpetData,
+  LebronTrade,
+  UserList,
+  WearableData,
+} from '@types';
+import { getItemEffects } from '@pages/api/v1/items/[id_name]/effects';
+import { getSingleItemColor } from '@pages/api/v1/items/[id_name]/colors';
+import { getWearableData } from '@pages/api/v1/items/[id_name]/wearable';
 
 export function hasNCTradeInsights(insights: InsightsResponse | null | undefined) {
   if (!insights) return false;
@@ -17,6 +28,22 @@ export function hasNCTradeInsights(insights: InsightsResponse | null | undefined
 }
 
 export const getOfficialItemLists = cache((internalId: number) => getItemLists(internalId, true));
+
+export const loadItemPageLists = cache(
+  async (internalId: number): Promise<UserList[]> =>
+    (await getOfficialItemLists(internalId)).filter((list) => !list.officialTag.includes('Avatar'))
+);
+
+export const loadItemEffects = cache(
+  (item: ItemData): Promise<ItemEffect[]> => getItemEffects(item)
+);
+
+export const loadItemColors = cache((item: ItemData) => getSingleItemColor(item));
+
+export const loadItemWearableData = cache(
+  (internalId: number): Promise<WearableData> =>
+    getWearableData(internalId) as Promise<WearableData>
+);
 
 export const loadNPPrices = cache((internalId: number) =>
   getItemPrices({ iid: internalId, includeUnconfirmed: true })

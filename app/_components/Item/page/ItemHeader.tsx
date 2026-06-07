@@ -3,15 +3,15 @@ import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@i18n/navigation';
 import { ItemBreadcrumb } from '@components/Breadcrumbs/ItemBreadcrumb';
-import type { ItemData, UserList } from '@types';
+import { loadItemPageLists } from '@app/_components/Item/loadUtils';
+import type { ItemData } from '@types';
 
 type ItemHeaderProps = {
   item: ItemData;
-  lists?: UserList[];
 };
 
-export async function ItemHeader({ item, lists }: ItemHeaderProps) {
-  const t = await getTranslations();
+export async function ItemHeader({ item }: ItemHeaderProps) {
+  const [t, lists] = await Promise.all([getTranslations(), loadItemPageLists(item.internal_id)]);
   const color = item.color.rgb ?? [255, 255, 255];
 
   return (
