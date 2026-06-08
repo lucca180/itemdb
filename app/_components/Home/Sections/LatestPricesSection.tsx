@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+// import { Suspense } from 'react';
 import { Text } from '@chakra-ui/react';
 import { getFormatter, getTranslations } from 'next-intl/server';
 import type { ItemData } from '@types';
@@ -27,18 +27,12 @@ async function getLatestPrices(): Promise<LatestPricesRes> {
   }
 }
 
-export function LatestPricesSection() {
-  return (
-    <Suspense fallback={null}>
-      <LatestPricesSectionContent />
-    </Suspense>
-  );
-}
-
-async function LatestPricesSectionContent() {
-  const t = await getTranslations();
-  const formatter = await getFormatter();
-  const latestPrices = await getLatestPrices();
+export async function LatestPricesSection() {
+  const [t, formatter, latestPrices] = await Promise.all([
+    getTranslations(),
+    getFormatter(),
+    getLatestPrices(),
+  ]);
 
   return (
     <HorizontalHomeCard
