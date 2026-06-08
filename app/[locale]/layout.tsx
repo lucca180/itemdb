@@ -11,6 +11,12 @@ import { Providers } from '@app/providers';
 import { buildAppMetadataDefaults } from '@utils/appPage';
 import { IntlProvider } from './IntlProvider';
 
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
+
+export const dynamicParams = false;
+
 export const metadata: Metadata = buildAppMetadataDefaults();
 
 type LocaleLayoutProps = {

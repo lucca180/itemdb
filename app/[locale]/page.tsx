@@ -22,6 +22,7 @@ import { LatestArticlesSection } from '@app/_components/Home/Sections/LatestArti
 import { LatestPricesSection } from '@app/_components/Home/Sections/LatestPricesSection';
 import StatsCard, { StatsCardLoading } from '@app/_components/Home/Cards/StatsCard';
 import { setRequestLocale } from 'next-intl/server';
+import { routing } from '@i18n/routing';
 
 export const revalidate = 180;
 
@@ -140,4 +141,8 @@ export default async function HomePage({ params }: HomePageProps) {
       </Flex>
     </AppServerLayout>
   );
+}
+
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
 }
