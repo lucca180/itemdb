@@ -85,6 +85,15 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-Accel-Buffering',
+            value: 'no',
+          },
+        ],
+      },
+      {
         // list more extensions here if needed; these are all the resources in the `public` folder including the subfolders
         source: '/:all*(svg|jpg|png|gif|ttf|ico)',
         locale: false,
