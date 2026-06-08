@@ -73,7 +73,9 @@ export async function ItemPage({ data }: ItemPageProps) {
           </ItemPageSidebarDesktop>
           <ItemInfoCard item={item} />
           <ColorInfoSection item={item} />
-          <ItemPageEditSectionLoader item={item} labels={editSectionLabels} />
+          <Suspense fallback={null}>
+            <ItemPageEditSectionLoader item={item} labels={editSectionLabels} />
+          </Suspense>
         </Flex>
         <Flex
           flex="3"

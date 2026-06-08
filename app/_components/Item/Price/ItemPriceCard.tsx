@@ -51,22 +51,46 @@ import ShopIcon from '@assets/icons/shop.svg';
 import SWIcon from '@assets/icons/shopwizard.png';
 import TPIcon from '@assets/icons/tradingpost.png';
 
-const ChartComponent = dynamic<ChartComponentProps>(() => import('@components/Charts/PriceChart'));
-const LastSeenModal = dynamic<LastSeenModalProps>(() => import('@components/Modal/LastSeenModal'));
+const ChartComponent = dynamic<ChartComponentProps>(() => import('@components/Charts/PriceChart'), {
+  ssr: false,
+  loading: () => (
+    <Flex minH="200px" w="100%" alignItems="center" justifyContent="center">
+      <Skeleton height="200px" width="100%" borderRadius="sm" />
+    </Flex>
+  ),
+});
+const LastSeenModal = dynamic<LastSeenModalProps>(() => import('@components/Modal/LastSeenModal'), {
+  ssr: false,
+});
 const WrongPriceModal = dynamic<WrongPriceModalProps>(
-  () => import('@components/Modal/WrongPriceModal')
+  () => import('@components/Modal/WrongPriceModal'),
+  {
+    ssr: false,
+  }
 );
 const SaleStatusModal = dynamic<SaleStatusModalProps>(
-  () => import('@components/Modal/SaleStatusModal')
+  () => import('@components/Modal/SaleStatusModal'),
+  {
+    ssr: false,
+  }
 );
 const CreatePriceModal = dynamic<CreatePriceModalModalProps>(
-  () => import('@components/Modal/CreatePriceModal')
+  () => import('@components/Modal/CreatePriceModal'),
+  {
+    ssr: false,
+  }
 );
 const SeenHistoryModal = dynamic<SeenHistoryModalProps>(
-  () => import('@components/SeenHistory/SeenHistoryModal')
+  () => import('@components/SeenHistory/SeenHistoryModal'),
+  {
+    ssr: false,
+  }
 );
 const AdminEditPriceModal = dynamic<AdminEditPriceModalProps>(
-  () => import('@components/Modal/AdminEditPriceModal')
+  () => import('@components/Modal/AdminEditPriceModal'),
+  {
+    ssr: false,
+  }
 );
 
 // --- Tab context ---
@@ -88,6 +112,10 @@ export function ItemPriceTabProvider({
   children: ReactNode;
 }) {
   const [activeTab, setActiveTab] = useState<ItemPriceTab>(defaultTab);
+
+  useEffect(() => {
+    void import('@components/Charts/PriceChart');
+  }, []);
 
   useEffect(() => {
     if (activeTab === 'chart') window.umami?.track('price-chart');
@@ -551,10 +579,20 @@ export function PriceChartPanel({
   lists?: UserList[];
 }) {
   const { activeTab } = useItemPriceTab();
+  const [mounted, setMounted] = useState(false);
 
-  if (activeTab !== 'chart' || !prices.length) return null;
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (activeTab === 'chart') setMounted(true);
+  }, [activeTab]);
 
-  return <ChartComponent lists={lists} color={item.color} data={prices} />;
+  if (!mounted || !prices.length) return null;
+
+  return (
+    <Box minH="200px" w="100%">
+      <ChartComponent lists={lists} color={item.color} data={prices} />
+    </Box>
+  );
 }
 
 // --- Last seen ---

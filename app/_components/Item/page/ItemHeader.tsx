@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { Badge, Box, Flex, Heading, Stack, Text } from '@chakra-ui/react';
 import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
@@ -10,8 +11,13 @@ type ItemHeaderProps = {
   item: ItemData;
 };
 
+async function ItemHeaderBreadcrumb({ item }: ItemHeaderProps) {
+  const lists = await loadItemPageLists(item.internal_id);
+  return <ItemBreadcrumb item={item} officialLists={lists} useAppDir />;
+}
+
 export async function ItemHeader({ item }: ItemHeaderProps) {
-  const [t, lists] = await Promise.all([getTranslations(), loadItemPageLists(item.internal_id)]);
+  const t = await getTranslations();
   const color = item.color.rgb ?? [255, 255, 255];
 
   return (
@@ -25,7 +31,9 @@ export async function ItemHeader({ item }: ItemHeaderProps) {
         zIndex={-1}
       />
       <Box pt={2}>
-        <ItemBreadcrumb item={item} officialLists={lists} useAppDir />
+        <Suspense fallback={<ItemBreadcrumb item={item} useAppDir />}>
+          <ItemHeaderBreadcrumb item={item} />
+        </Suspense>
       </Box>
       <Flex gap={{ base: 4, md: 8 }} pt={4} alignItems="center">
         <Flex

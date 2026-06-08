@@ -14,6 +14,7 @@ import {
 } from '@utils/appPage';
 import { getDefaultSEO } from '@utils/SEO';
 import * as Sentry from '@sentry/nextjs';
+import { cacheLife } from 'next/cache';
 
 export type ItemPageData = {
   item: ItemData;
@@ -83,6 +84,7 @@ export function buildItemPageMetadata(item: ItemData, locale: string): Metadata 
 }
 
 async function resolveItemSlug(slugParam: string): Promise<ItemPageRouteMetadataResult> {
+  'use cache';
   if (!slugParam) return { type: 'notFound' };
 
   const isIdNumber = !isNaN(Number(slugParam));
@@ -99,6 +101,8 @@ async function resolveItemSlug(slugParam: string): Promise<ItemPageRouteMetadata
       return { type: 'redirect', href: `/item/${item.slug}`, item };
     }
   }
+
+  cacheLife('itemFast');
 
   return { type: 'ok', item };
 }
@@ -137,14 +141,3 @@ async function fetchItemPageData(item: ItemData): Promise<ItemPageData> {
 }
 
 export const getItemPageData = cache(async (item: ItemData) => fetchItemPageData(item));
-
-export const resolveItemPage = cache(async (slugParam: string): Promise<ItemPageRouteResult> => {
-  const route = await resolveItemSlug(slugParam);
-
-  if (route.type === 'notFound') return { type: 'notFound' };
-  if (route.type === 'redirect') return { type: 'redirect', href: route.href };
-
-  const data = await getItemPageData(route.item);
-
-  return { type: 'ok', data };
-});

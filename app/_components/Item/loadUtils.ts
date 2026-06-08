@@ -25,9 +25,15 @@ import { getItemEffects } from '@pages/api/v1/items/[id_name]/effects';
 import { getSingleItemColor } from '@pages/api/v1/items/[id_name]/colors';
 import { getWearableData } from '@pages/api/v1/items/[id_name]/wearable';
 
-export const getCachedItem = cache((id_name: number | string, flags = false) =>
-  getItem(id_name, flags)
-);
+export const getCachedItem = cache(async (id_name: number | string, flags = false) => {
+  'use cache';
+  cacheLife('itemFast');
+  const item = await getItem(id_name, flags);
+  if (!item) return null;
+
+  applyItemSectionCacheTags(item.internal_id);
+  return item;
+});
 
 export function hasNCTradeInsights(insights: InsightsResponse | null | undefined) {
   if (!insights) return false;
@@ -94,7 +100,7 @@ async function loadNPPricesCached(internalId: number) {
   'use cache';
   applyItemSectionCacheTags(internalId, 'np-prices');
   cacheLife('itemFast');
-  return getItemPrices({ iid: internalId, includeUnconfirmed: true });
+  return getItemPrices({ iid: internalId, includeUnconfirmed: true, limit: -1 });
 }
 
 export const loadNPPrices = cache((internalId: number) => loadNPPricesCached(internalId));

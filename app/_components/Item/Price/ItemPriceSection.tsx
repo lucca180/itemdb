@@ -2,9 +2,8 @@
  * NP Price — server orchestrator (item page).
  *
  * NP prices preloaded in `loadItemPage` (blocks page render).
- * User-specific price status loads inside Suspense (session via `cookies()`).
- * Official lists for the price table load via `loadItemPageLists`.
- * Seeking/trading and last seen stream via Suspense.
+ * Card shell + price history render immediately from `prices`.
+ * Price status, official list markers, admin controls, seeking/trading, and last seen stream via Suspense.
  * Client shell: ItemPriceCard.tsx
  */
 import { Suspense, type ReactNode } from 'react';
@@ -26,7 +25,7 @@ import {
 } from '@app/_components/Item/loadUtils';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { shouldShowTradeLists } from '@utils/utils';
-import type { ItemData, PriceData, PricingInfo, UserList } from '@types';
+import type { ItemData, PriceData, UserList } from '@types';
 import {
   buildLastSeenCards,
   buildLastSeenStaticCards,
@@ -57,77 +56,55 @@ import {
 
 type ItemProps = { item: ItemData };
 
-type Props = ItemProps & {
-  prices: PriceData[];
-  priceStatus: PricingInfo | null;
-};
-
 type ItemPriceShellProps = ItemProps & {
   prices: PriceData[];
 };
 
+type ItemPriceLabels = {
+  t: Awaited<ReturnType<typeof getTranslations>>;
+  format: Awaited<ReturnType<typeof getFormatter>>;
+};
+
 // --- Price table (server) ---
 
-async function PriceTable({
-  data,
-  lists,
-  isAdmin,
-  item,
-}: {
-  data: PriceData[];
-  lists?: UserList[];
-  isAdmin?: boolean;
-  item: ItemData;
-}) {
-  const sortedData = buildPriceTableData(data, lists, item);
-  const linkColor = Color(item.color.hex).alpha(0.8).lightness(70).hexa();
-
-  return (
-    <Table.ScrollArea
-      minH={{ base: 100 }}
-      maxH={{ base: 200, md: 300 }}
-      w="100%"
-      borderRadius="sm"
-      css={{ '& a': { color: linkColor } }}
-    >
-      <Table.Root h="100%" size="sm" css={{ '& td': { border: 0 } }}>
-        <Table.Body>
-          {sortedData.map((price, index) => (
-            <PriceTableRow
-              key={price.addedAt + '_item' + (price.marker ? '_marker' : '')}
-              price={price}
-              sortedData={sortedData}
-              index={index}
-              isAdmin={isAdmin}
-              itemColor={item.color.hex}
-            />
-          ))}
-        </Table.Body>
-      </Table.Root>
-    </Table.ScrollArea>
-  );
+function getMarkerLabel(
+  t: ItemPriceLabels['t'],
+  markerType?: 'added-to' | 'available-at' | 'unavailable-at'
+) {
+  switch (markerType) {
+    case 'added-to':
+      return t('ItemPage.added-to');
+    case 'available-at':
+      return t('ItemPage.available-at');
+    case 'unavailable-at':
+      return t('ItemPage.unavailable-at');
+    default:
+      return '';
+  }
 }
 
-async function PriceTableRow({
+function PriceTableRow({
   price,
   sortedData,
   index,
   isAdmin,
   itemColor,
+  t,
+  format,
 }: {
   price: PriceOrMarker;
   sortedData: PriceOrMarker[];
   index: number;
   isAdmin?: boolean;
   itemColor: string;
+  t: ItemPriceLabels['t'];
+  format: ItemPriceLabels['format'];
 }) {
-  const format = await getFormatter();
-  const t = await getTranslations();
   const bgColor = index % 2 === 0 ? 'blackAlpha.400' : 'transparent';
   const nextPrice = getNextPrice(sortedData, index);
 
   if (price.marker) {
-    const markerLabel = await getMarkerLabel(price.markerType);
+    const markerLabel = getMarkerLabel(t, price.markerType);
     return (
       <Table.Row h={42} bg={bgColor} borderLeft={`3px solid ${price.color}85`}>
         <Table.Cell colSpan={isAdmin ? 4 : 3} border={0}>
@@ -279,32 +256,58 @@ async function PriceTableRow({
   );
 }
 
-async function getMarkerLabel(markerType?: 'added-to' | 'available-at' | 'unavailable-at') {
-  const t = await getTranslations();
-  switch (markerType) {
-    case 'added-to':
-      return t('ItemPage.added-to');
-    case 'available-at':
-      return t('ItemPage.available-at');
-    case 'unavailable-at':
-      return t('ItemPage.unavailable-at');
-    default:
-      return '';
-  }
+function PriceTableView({
+  data,
+  lists,
+  isAdmin,
+  item,
+  t,
+  format,
+}: {
+  data: PriceData[];
+  lists?: UserList[];
+  isAdmin?: boolean;
+  item: ItemData;
+  t: ItemPriceLabels['t'];
+  format: ItemPriceLabels['format'];
+}) {
+  const sortedData = buildPriceTableData(data, lists, item);
+  const linkColor = Color(item.color.hex).alpha(0.8).lightness(70).hexa();
+
+  return (
+    <Table.ScrollArea
+      minH={{ base: 100 }}
+      maxH={{ base: 200, md: 300 }}
+      w="100%"
+      borderRadius="sm"
+      css={{ '& a': { color: linkColor } }}
+    >
+      <Table.Root h="100%" size="sm" css={{ '& td': { border: 0 } }}>
+        <Table.Body>
+          {sortedData.map((price, index) => (
+            <PriceTableRow
+              key={price.addedAt + '_item' + (price.marker ? '_marker' : '')}
+              price={price}
+              sortedData={sortedData}
+              index={index}
+              isAdmin={isAdmin}
+              itemColor={item.color.hex}
+              t={t}
+              format={format}
+            />
+          ))}
+        </Table.Body>
+      </Table.Root>
+    </Table.ScrollArea>
+  );
 }
 
-// --- Tab panels (prices preloaded) ---
-
-async function PriceTableTab({
+function PriceTablePanel({
   item,
   prices,
-  lists,
-}: {
-  item: ItemData;
-  prices: PriceData[];
-  lists?: UserList[];
-}) {
-  const [{ user }, t] = await Promise.all([getServerCurrentUser(), getTranslations()]);
+  t,
+  format,
+}: ItemProps & ItemPriceShellProps & ItemPriceLabels) {
   if (!prices.length) {
     return (
       <PriceEmptyPanel
@@ -315,58 +318,48 @@ async function PriceTableTab({
       />
     );
   }
+
   return (
     <Box bg="blackAlpha.300" borderRadius="md" overflow="hidden">
-      <PriceTable item={item} data={prices} lists={lists} isAdmin={!!user?.isAdmin} />
+      <Suspense fallback={<PriceTableView item={item} data={prices} t={t} format={format} />}>
+        <PriceTableTabFull item={item} prices={prices} t={t} format={format} />
+      </Suspense>
     </Box>
   );
 }
 
-async function PriceStatPanel({ item, prices }: { item: ItemData; prices: PriceData[] }) {
-  const [format, t] = await Promise.all([getFormatter(), getTranslations()]);
-  const price = getLatestPrice(prices);
-  const priceDiff = getPriceDiff(prices);
+async function PriceTableTabFull({
+  item,
+  prices,
+  t,
+  format,
+}: ItemProps & ItemPriceShellProps & ItemPriceLabels) {
+  const [{ user }, lists] = await Promise.all([
+    getServerCurrentUser(),
+    loadItemPageLists(item.internal_id),
+  ]);
 
   return (
-    <PriceStatActions
+    <PriceTableView
       item={item}
-      inflated={price?.inflated}
-      valueText={price?.value ? `${format.number(price.value)} NP` : '??? NP'}
-      dateLabel={
-        price?.addedAt
-          ? format.dateTime(new Date(price.addedAt), {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-            })
-          : undefined
-      }
-      showNoInfo={!price?.addedAt}
-      hasKnownPrice={!!price?.value}
-      priceDiff={priceDiff}
-      priceDiffLabel={priceDiff !== null ? `${format.number(priceDiff)} NP` : null}
-      labels={{
-        inflation: t('General.inflation'),
-        noInfo: t('ItemPage.no-info'),
-        wrongPrice: t('ItemPage.wrong-price'),
-      }}
+      data={prices}
+      lists={lists}
+      isAdmin={!!user?.isAdmin}
+      t={t}
+      format={format}
     />
   );
 }
 
-async function PriceHelpBanner({
+async function PriceHelpBannerAsync({
   item,
   prices,
-  priceStatus,
-}: {
-  item: ItemData;
-  prices: PriceData[];
-  priceStatus: PricingInfo | null;
-}) {
+}: ItemProps & Pick<ItemPriceShellProps, 'prices'>) {
+  const [{ user }, t] = await Promise.all([getServerCurrentUser(), getTranslations()]);
+  const priceStatus = await loadPriceStatus(item.internal_id, user?.id);
   const helpData = getHelpNeededData(priceStatus, getLatestPrice(prices));
   if (!helpData) return null;
 
-  const t = await getTranslations();
   return (
     <HelpNeeded
       item={item}
@@ -413,27 +406,27 @@ async function LastSeenStats({ item }: ItemProps) {
 
 // --- Orchestrator ---
 
-function ItemPriceModalShell({
-  item,
-  priceStatus,
-  children,
-}: ItemProps & { priceStatus: PricingInfo | null; children: ReactNode }) {
+function ItemPriceModalShell({ item, children }: ItemProps & { children: ReactNode }) {
   return (
-    <ItemPriceModalProvider item={item} priceStatus={priceStatus}>
+    <ItemPriceModalProvider item={item} priceStatus={null}>
       {children}
     </ItemPriceModalProvider>
   );
 }
 
-async function ItemPriceTradeableCard({ item, prices, priceStatus }: Props) {
-  const [t, lists] = await Promise.all([getTranslations(), loadItemPageLists(item.internal_id)]);
+async function ItemPriceTradeableCard({ item, prices }: ItemPriceShellProps) {
+  const [t, format] = await Promise.all([getTranslations(), getFormatter()]);
   const shouldShowLists = shouldShowTradeLists(item);
+  const price = getLatestPrice(prices);
+  const priceDiff = getPriceDiff(prices);
 
   return (
-    <ItemPriceModalShell item={item} priceStatus={priceStatus}>
+    <ItemPriceModalShell item={item}>
       <CardBase color={item.color.rgb} title={t('ItemPage.price-overview')}>
         <Flex gap={3} flexFlow="column">
-          <PriceHelpBanner item={item} prices={prices} priceStatus={priceStatus} />
+          <Suspense fallback={null}>
+            <PriceHelpBannerAsync item={item} prices={prices} />
+          </Suspense>
 
           <ItemPriceTabProvider defaultTab="table">
             <ItemPriceTabBar
@@ -452,14 +445,36 @@ async function ItemPriceTradeableCard({ item, prices, priceStatus }: Props) {
               justifyContent={{ base: 'flex-start', md: 'space-around' }}
               gap={2}
             >
-              <PriceStatPanel item={item} prices={prices} />
+              <PriceStatActions
+                item={item}
+                inflated={price?.inflated}
+                valueText={price?.value ? `${format.number(price.value)} NP` : '??? NP'}
+                dateLabel={
+                  price?.addedAt
+                    ? format.dateTime(new Date(price.addedAt), {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })
+                    : undefined
+                }
+                showNoInfo={!price?.addedAt}
+                hasKnownPrice={!!price?.value}
+                priceDiff={priceDiff}
+                priceDiffLabel={priceDiff !== null ? `${format.number(priceDiff)} NP` : null}
+                labels={{
+                  inflation: t('General.inflation'),
+                  noInfo: t('ItemPage.no-info'),
+                  wrongPrice: t('ItemPage.wrong-price'),
+                }}
+              />
 
               <Flex flexFlow="column" width="100%" maxW="580px">
                 <ItemPricePanel tab="table">
-                  <PriceTableTab item={item} prices={prices} lists={lists} />
+                  <PriceTablePanel item={item} prices={prices} t={t} format={format} />
                 </ItemPricePanel>
                 <ItemPricePanel tab="chart">
-                  <PriceChartPanel item={item} prices={prices} lists={lists} />
+                  <PriceChartPanel item={item} prices={prices} />
                 </ItemPricePanel>
                 {shouldShowLists && (
                   <ItemPricePanel tab="trading">
@@ -489,12 +504,6 @@ async function ItemPriceTradeableCard({ item, prices, priceStatus }: Props) {
   );
 }
 
-async function ItemPriceSectionWithStatus({ item, prices }: ItemPriceShellProps) {
-  const { user } = await getServerCurrentUser();
-  const priceStatus = await loadPriceStatus(item.internal_id, user?.id);
-  return <ItemPriceTradeableCard item={item} prices={prices} priceStatus={priceStatus} />;
-}
-
 export async function ItemPriceSection({ item, prices }: ItemPriceShellProps) {
   if (item.isNC) return null;
   if (item.status?.toLowerCase() === 'no trade') {
@@ -508,11 +517,7 @@ export async function ItemPriceSection({ item, prices }: ItemPriceShellProps) {
       </CardBase>
     );
   }
-  return (
-    <Suspense fallback={null}>
-      <ItemPriceSectionWithStatus item={item} prices={prices} />
-    </Suspense>
-  );
+  return <ItemPriceTradeableCard item={item} prices={prices} />;
 }
 
 export default ItemPriceSection;

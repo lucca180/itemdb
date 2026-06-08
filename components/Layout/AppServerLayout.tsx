@@ -34,7 +34,11 @@ export default async function AppServerLayout(props: AppServerLayoutProps) {
       footerColumns={footerColumns}
       madeInLabel={t('Layout.made-in')}
       byLabel={t('Layout.by')}
-      siteAlert={<AppSiteAlert locale={props.locale} />}
+      siteAlert={
+        <Suspense fallback={null}>
+          <AppSiteAlert locale={props.locale} />
+        </Suspense>
+      }
       search={<LayoutSearch />}
       auth={
         <Suspense fallback={<AuthButtonSkeleton />}>
