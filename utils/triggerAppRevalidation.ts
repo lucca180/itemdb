@@ -11,7 +11,8 @@ function getRevalidateSecret(): string | undefined {
 }
 
 function getSiteBaseUrl(): string {
-  return process.env.SITE_URL ?? 'http://localhost:3000';
+  if (process.env.SITE_URL) return process.env.SITE_URL;
+  return process.env.NODE_ENV === 'production' ? 'https://itemdb.com.br' : 'http://localhost:3000';
 }
 
 export async function triggerAppRevalidation(payload: AppRevalidationPayload): Promise<void> {
