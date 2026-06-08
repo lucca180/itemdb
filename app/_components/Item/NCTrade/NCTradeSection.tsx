@@ -11,7 +11,7 @@
 import { cache } from 'react';
 import { Suspense } from 'react';
 import { cookies } from 'next/headers';
-import { Badge, Center, Flex, Icon, Link, Stat, Text } from '@chakra-ui/react';
+import { Badge, Center, Flex, Link, Stat, Text } from '@chakra-ui/react';
 import { TbGiftOff } from 'react-icons/tb';
 import { getTranslations } from 'next-intl/server';
 import { Link as I18nLink } from '@i18n/navigation';
@@ -143,7 +143,7 @@ async function NCTradeNoTradeBadge() {
         textAlign="center"
       >
         <Stat.Label>
-          <Icon mt={2} boxSize="24px" as={TbGiftOff} />
+          <TbGiftOff size={24} style={{ marginTop: '0.5rem' }} />
         </Stat.Label>
         <Stat.ValueText mb={1}>{t('ItemPage.no-trade')}</Stat.ValueText>
         <Stat.HelpText fontSize="xs" mt={0} fontWeight="medium">
@@ -265,7 +265,7 @@ async function NCTradeNoTradeCard({ item }: Pick<Props, 'item'>) {
   return (
     <CardBase color={item.color.rgb} title={t('ItemPage.nc-trade')}>
       <Center>
-        <Icon as={TbGiftOff} boxSize="100px" opacity={0.4} />
+        <TbGiftOff size={100} opacity={0.4} />
       </Center>
       <Text textAlign="center">{t('ItemPage.not-tradeable')}</Text>
     </CardBase>
