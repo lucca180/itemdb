@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Dialog,
   Button,
@@ -27,11 +29,11 @@ import axios from 'axios';
 import debounce from 'lodash/debounce';
 import { Link } from '@i18n/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/compat/router';
 import { GrSearchAdvanced } from 'react-icons/gr';
 import { IoSearchOutline } from 'react-icons/io5';
 import { MdArrowDownward, MdArrowUpward, MdOutlineKeyboardReturn } from 'react-icons/md';
 import queryString from 'query-string';
-import { useRouter } from 'next/compat/router';
 import { getFiltersDiff, parseFilters } from '@utils/parseFilters';
 import { useLocale, useTranslations } from 'next-intl';
 import { getLocalizedHref, type AppLocale } from '@utils/locales';
@@ -60,6 +62,7 @@ type SearchModalProps = {
 const SearchModal = (props: SearchModalProps) => {
   const t = useTranslations();
   const locale = useLocale() as AppLocale;
+  // null on App Router; Pages Router exposes query/asPath for navigation.
   const router = useRouter();
   const { isOpen, onClose } = props;
   const [search, setSearch] = useState<string>('');
@@ -91,11 +94,20 @@ const SearchModal = (props: SearchModalProps) => {
   const showJumpTo =
     [items.length, lists.length, shops.length, myLists.length].filter((x) => Boolean(x)).length > 1;
 
+  // Seed the modal input from the current URL when it opens.
   useEffect(() => {
-    if (!router?.isReady) return;
+    if (!isOpen) return;
     clearSearch();
-    setSearch((router.query.s as string) ?? '');
-  }, [router?.isReady, router?.query.s, isOpen]);
+
+    if (router?.isReady) {
+      setSearch((router.query.s as string) ?? '');
+      return;
+    }
+
+    if (typeof window !== 'undefined') {
+      setSearch(new URLSearchParams(window.location.search).get('s') ?? '');
+    }
+  }, [isOpen, router?.isReady, router?.query.s]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -121,54 +133,51 @@ const SearchModal = (props: SearchModalProps) => {
         case 'Enter': {
           e.preventDefault();
           track('omni-navigate', 'enter');
-          setFocusedIndex((current) => {
-            if (current === 0) {
-              const searchValue = search.trim();
-              if (!searchValue) return current;
 
+          // Side effects must stay out of setState updaters — onClose() updates SearchBar.
+          if (focusedIndex === 0) {
+            const searchValue = search.trim();
+            if (searchValue) {
               const searchUrl = getSearchUrl(searchValue);
               setLatest({ type: 'search', query: searchValue, index: 0, url: searchUrl });
               track('omni-search', !searchCards.length ? 'latest-enter-search' : 'enter-search');
-
               navigate(searchUrl);
               onClose();
-              return current;
             }
+            break;
+          }
 
-            const card = cardList.find((c) => c.index === current);
-            if (!card) return current;
+          const card = cardList.find((c) => c.index === focusedIndex);
+          if (!card) break;
 
-            track(
-              'omni-search',
-              !searchCards.length ? 'latest-enter-' + card.type : 'enter-' + card.type
-            );
+          track(
+            'omni-search',
+            !searchCards.length ? 'latest-enter-' + card.type : 'enter-' + card.type
+          );
 
-            let url = '';
-            if (card.type === 'item') {
-              url = `/item/${card.data.slug}`;
-            } else if (card.type === 'list' || card.type === 'my-lists') {
-              url = getListLink(card.data);
-            } else if (card.type === 'shop') {
-              url = `/restock/${slugify(card.data.name)}`;
-            } else if (card.type === 'search') {
-              url = card.url;
-            }
+          let url = '';
+          if (card.type === 'item') {
+            url = `/item/${card.data.slug}`;
+          } else if (card.type === 'list' || card.type === 'my-lists') {
+            url = getListLink(card.data);
+          } else if (card.type === 'shop') {
+            url = `/restock/${slugify(card.data.name)}`;
+          } else if (card.type === 'search') {
+            url = card.url;
+          }
 
-            if (url) {
-              setLatest(card);
-              navigate(url);
-              onClose();
-            }
-
-            return current;
-          });
+          if (url) {
+            setLatest(card);
+            navigate(url);
+            onClose();
+          }
           break;
         }
         default:
           break;
       }
     },
-    [isOpen, latestSearches, onClose, router, search, searchCards]
+    [focusedIndex, isOpen, latestSearches, locale, onClose, router, search, searchCards]
   );
 
   useEffect(() => {
@@ -324,9 +333,11 @@ const SearchModal = (props: SearchModalProps) => {
     onClose();
   };
 
+  // Internal path only — next-intl <Link> adds the locale prefix itself.
   const getSearchUrl = (searchQuery?: string) => {
     searchQuery = searchQuery || search;
 
+    // Preserve active search filters from the page the user is on.
     const currentPath =
       router?.asPath ??
       (typeof window !== 'undefined' ? `${window.location.pathname}${window.location.search}` : '');
@@ -349,12 +360,14 @@ const SearchModal = (props: SearchModalProps) => {
 
     paramsString = paramsString ? '&' + paramsString : '';
 
-    return getLocalizedHref(`/search?s=${encodeURIComponent(query)}${paramsString}`, locale);
+    return `/search?s=${encodeURIComponent(query)}${paramsString}`;
   };
 
+  // Programmatic navigation localizes once (unlike <Link>, which expects internal paths).
   const navigate = (url: string) => {
-    if (router) return router.push(url);
-    window.location.assign(url);
+    const href = getLocalizedHref(url, locale);
+    if (router) return router.push(href);
+    window.location.assign(href);
   };
 
   const track = (event: string, type?: string) => {
@@ -924,6 +937,7 @@ const SearchQuery = ({
   const t = useTranslations();
   return (
     <ChakraLink asChild w="100%" _hover={{ textDecoration: 'none' }}>
+      {/* url is an internal path; Link applies the locale prefix */}
       <Link href={url} prefetch={false} onClick={onClick}>
         <Flex
           bg={isFocus ? 'whiteAlpha.400' : 'whiteAlpha.200'}

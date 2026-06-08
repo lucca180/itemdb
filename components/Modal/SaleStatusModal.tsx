@@ -13,8 +13,6 @@ import { useFormatter, useTranslations } from 'next-intl';
 import { SaleStatus } from '../../types';
 import { useState } from 'react';
 import axios from 'axios';
-import { useRouter } from 'next/router';
-
 export type SaleStatusModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -29,7 +27,6 @@ export default function SaleStatusModal(props: SaleStatusModalProps) {
   const { status } = saleStatus;
   const [voted, setVoted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const sendVote = async (vote: 'hts' | 'ets' | 'regular') => {
     setLoading(true);
@@ -41,7 +38,7 @@ export default function SaleStatusModal(props: SaleStatusModalProps) {
         saleStatus: saleStatus,
       }),
       type: 'saleStatus',
-      pageInfo: router.asPath,
+      pageInfo: `${window.location.pathname}${window.location.search}`,
     });
     setLoading(false);
     if (res.data.success) {

@@ -1,12 +1,19 @@
+'use client';
+
 import { SearchIcon } from '@utils/theme/chakraIcons';
 import { InputGroup, useDisclosure, Input, Flex, Kbd } from '@chakra-ui/react';
 import React from 'react';
 import dynamic from 'next/dynamic';
-import SearchMenu from '../Menus/SearchMenu';
 import { useRouter } from 'next/compat/router';
 import { useTranslations } from 'next-intl';
+import SearchMenu from '../Menus/SearchMenu';
 
 const SearchModal = dynamic(() => import('./SearchModal'));
+
+function getSearchQueryFromUrl() {
+  if (typeof window === 'undefined') return '';
+  return new URLSearchParams(window.location.search).get('s') ?? '';
+}
 
 export const SearchBar = () => {
   const t = useTranslations();
@@ -21,9 +28,15 @@ export const SearchBar = () => {
     setIsMac(/Mac/i.test(navigator.userAgent));
   }, []);
 
+  // Mirror the current ?s= query in the read-only bar (Pages Router or App Router fallback).
   React.useEffect(() => {
-    if (!router?.isReady) return;
-    setSearch((router.query.s as string) ?? '');
+    if (router?.isReady) {
+      setSearch((router.query.s as string) ?? '');
+      return;
+    }
+
+    // compat router is null on App Router — read directly from the browser URL.
+    setSearch(getSearchQueryFromUrl());
   }, [router?.isReady, router?.query.s]);
 
   const handleClose = () => {

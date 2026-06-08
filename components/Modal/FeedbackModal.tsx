@@ -15,7 +15,6 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import MainLink from '@components/Utils/MainLink';
-import { useRouter } from 'next/compat/router';
 import { useEffect, useState } from 'react';
 import { ItemData } from '../../types';
 import { useAuth } from '../../utils/auth';
@@ -38,7 +37,6 @@ type FeedbackFormData = {
 const FeedbackModal = (props: FeedbackModalProps) => {
   const t = useTranslations();
   const { user } = useAuth();
-  const router = useRouter();
   const { isOpen, onClose, item } = props;
   const [loading, setLoading] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
@@ -66,7 +64,7 @@ const FeedbackModal = (props: FeedbackModalProps) => {
           userAgent: navigator.userAgent,
         }),
         type: 'feedback',
-        pageInfo: router?.asPath || window.location.pathname,
+        pageInfo: `${window.location.pathname}${window.location.search}`,
       });
 
       setLoading(false);

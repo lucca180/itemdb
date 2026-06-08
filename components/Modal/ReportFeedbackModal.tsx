@@ -15,8 +15,6 @@ import axios from 'axios';
 import { useAuth } from '../../utils/auth';
 import { Feedback } from '../../types';
 import { useState } from 'react';
-import { useRouter } from 'next/router';
-
 export type ReportFeedbackModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -25,7 +23,6 @@ export type ReportFeedbackModalProps = {
 
 export default function ReportFeedbackModal(props: ReportFeedbackModalProps) {
   const t = useTranslations();
-  const router = useRouter();
 
   const { isOpen, onClose, feedback } = props;
   const [loading, setLoading] = useState(false);
@@ -47,7 +44,7 @@ export default function ReportFeedbackModal(props: ReportFeedbackModalProps) {
           feedbackId: feedback.feedback_id,
         }),
         type: 'reportFeedback',
-        pageInfo: router.asPath,
+        pageInfo: `${window.location.pathname}${window.location.search}`,
       });
 
       setLoading(false);

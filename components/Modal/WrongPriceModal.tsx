@@ -15,7 +15,6 @@ import {
 import { useTranslations } from 'next-intl';
 import MainLink from '@components/Utils/MainLink';
 import axios from 'axios';
-import router from 'next/router';
 import { useState } from 'react';
 import { useAuth } from '@utils/auth';
 import { MultiplyInput } from '@components/Input/MultiplyInput';
@@ -51,7 +50,7 @@ export default function WrongPriceModal(props: WrongPriceModalProps) {
         }),
         user_id: user?.id,
         type: 'priceReport',
-        pageInfo: router.asPath,
+        pageInfo: `${window.location.pathname}${window.location.search}`,
       });
 
       setButtonLoading(false);
