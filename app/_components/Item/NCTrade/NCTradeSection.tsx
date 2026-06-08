@@ -4,7 +4,7 @@
  * Server shell (CardBase, badge, panels). Client islands: tab bar + panel visibility.
  *
  * Loading strategy:
- * - Insights preloaded in `loadItemPage` (blocks page render)
+ * - Insights loaded via `loadNCTradeInsights` in this section
  * - Seeking panel content blocks (Suspense)
  * - Trading, owls history, and owls tab label stream in parallel
  */
@@ -31,6 +31,7 @@ import { NCTradeValueBadge } from '@app/_components/Item/NCTrade/NCTradeValueBad
 import {
   hasNCTradeInsights,
   loadLebronTradeHistory,
+  loadNCTradeInsights,
   loadTradeLists,
 } from '@app/_components/Item/loadUtils';
 import { getListMatchesMany } from '@pages/api/v1/lists/match/many';
@@ -39,7 +40,6 @@ import type { InsightsResponse, ItemData, UserList } from '@types';
 
 type Props = {
   item: ItemData;
-  insights: InsightsResponse | null;
 };
 
 const loadSeekingMatches = cache(
@@ -222,10 +222,13 @@ async function NCTradeTradeableCard({
   );
 }
 
-export async function NCTradeSection({ item, insights }: Props) {
+export async function NCTradeSection({ item }: Props) {
   if (!item.isNC) return null;
 
-  const tradeLists = await loadTradeLists(item);
+  const [tradeLists, insights] = await Promise.all([
+    loadTradeLists(item),
+    loadNCTradeInsights(item.internal_id),
+  ]);
   const hasInsights = hasNCTradeInsights(insights);
 
   if (item.status === 'no trade') {

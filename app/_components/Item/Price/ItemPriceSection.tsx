@@ -1,8 +1,8 @@
 /**
  * NP Price — server orchestrator (item page).
  *
- * NP prices preloaded in `loadItemPage` (blocks page render).
- * Card shell + price history render immediately from `prices`.
+ * NP prices loaded via `loadNPPrices` in this section.
+ * Card shell + price history render from fetched prices.
  * Price status, official list markers, admin controls, seeking/trading, and last seen stream via Suspense.
  * Client shell: ItemPriceCard.tsx
  */
@@ -20,6 +20,7 @@ import MatchTable from '@app/_components/Item/NCTrade/MatchTable';
 import {
   loadLastSeen,
   loadItemPageLists,
+  loadNPPrices,
   loadPriceStatus,
   loadTradeLists,
 } from '@app/_components/Item/loadUtils';
@@ -59,6 +60,8 @@ type ItemProps = { item: ItemData };
 type ItemPriceShellProps = ItemProps & {
   prices: PriceData[];
 };
+
+type ItemPriceLoadedProps = ItemProps;
 
 type ItemPriceLabels = {
   t: Awaited<ReturnType<typeof getTranslations>>;
@@ -504,7 +507,7 @@ async function ItemPriceTradeableCard({ item, prices }: ItemPriceShellProps) {
   );
 }
 
-export async function ItemPriceSection({ item, prices }: ItemPriceShellProps) {
+export async function ItemPriceSection({ item }: ItemPriceLoadedProps) {
   if (item.isNC) return null;
   if (item.status?.toLowerCase() === 'no trade') {
     const t = await getTranslations();
@@ -517,6 +520,8 @@ export async function ItemPriceSection({ item, prices }: ItemPriceShellProps) {
       </CardBase>
     );
   }
+
+  const prices = await loadNPPrices(item.internal_id);
   return <ItemPriceTradeableCard item={item} prices={prices} />;
 }
 

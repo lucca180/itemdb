@@ -4,9 +4,8 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import { getPathname } from '@i18n/navigation';
 import AppServerLayout from '@components/Layout/AppServerLayout';
 import { ItemPage as ItemPageView } from '@app/_components/Item/page/ItemPage';
-import { buildItemPageMetadata, getItemPageData, resolveItemRoute } from '@app/utils/loadItemPage';
+import { buildItemPageMetadata, resolveItemRoute } from '@app/utils/loadItemPage';
 import { setRequestLocale } from 'next-intl/server';
-import { ItemData } from '@types';
 
 type ItemPageProps = {
   params: Promise<{ locale: string; slug: string }>;
@@ -44,18 +43,13 @@ async function ItemPageRoute({ params }: ItemPageProps) {
     notFound();
   }
 
-  const item = result.item;
+  setRequestLocale(locale);
+
+  const { item } = result;
+
   return (
     <AppServerLayout locale={locale} disableNextSeo mainColor={item.color.hex + '66'}>
-      <Suspense fallback={null}>
-        <ItemPageData item={result.item} />
-      </Suspense>
+      <ItemPageView item={item} />
     </AppServerLayout>
   );
-}
-
-async function ItemPageData({ item }: { item: ItemData }) {
-  const data = await getItemPageData(item);
-
-  return <ItemPageView data={data} />;
 }

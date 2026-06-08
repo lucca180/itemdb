@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { Flex } from '@chakra-ui/react';
-import type { ItemPageData } from '@app/utils/loadItemPage';
+import type { ItemData } from '@types';
 import { ItemHeader } from '@app/_components/Item/page/ItemHeader';
 import { ItemPageEditSectionLoader } from '@app/_components/Item/page/ItemPageEditSectionLoader';
 import { ItemPageOutfitSectionLoader } from '@app/_components/Item/page/ItemPageOutfitSectionLoader';
@@ -15,7 +15,7 @@ import { ColorInfoSection } from '@app/_components/Item/ColorInfo/ColorInfoSecti
 import { ItemEffectsSection } from '@app/_components/Item/Effects/ItemEffectsSection';
 import { ItemOfficialListsSection } from '@app/_components/Item/OfficialLists/ItemOfficialListsSection';
 import MissingInfoCard from '@components/Items/MissingInfoCard';
-import NcMallCard from '@components/Items/NCMallCard';
+import NCMallCardSection from '@app/_components/Item/NCMall/NCMallCardSection';
 import ItemRestock from '@components/Items/ItemRestockInfo';
 import RelatedLinksCard from '@components/Items/RelatedLinks';
 import FindAtCard from '@components/Items/FindAtCard';
@@ -35,12 +35,10 @@ import ItemPriceSection from '@app/_components/Item/Price/ItemPriceSection';
 import { getTranslations } from 'next-intl/server';
 
 type ItemPageProps = {
-  data: ItemPageData;
+  item: ItemData;
 };
 
-export async function ItemPage({ data }: ItemPageProps) {
-  const { item, ncMallData, ncTradeInsights, npPrices } = data;
-
+export async function ItemPage({ item }: ItemPageProps) {
   const t = await getTranslations();
   const editSectionLabels = {
     reportError: t('ItemPage.report-error'),
@@ -92,10 +90,8 @@ export async function ItemPage({ data }: ItemPageProps) {
             <ItemPageSidebarMobile item={item}>
               <FindAtCard item={item} />
             </ItemPageSidebarMobile>
-            {!item.isNC && <ItemPriceSection key={getKey('price')} item={item} prices={npPrices} />}
-            {item.isNC && (
-              <NCTradeSection key={getKey('nc-trade')} item={item} insights={ncTradeInsights} />
-            )}
+            {!item.isNC && <ItemPriceSection key={getKey('price')} item={item} />}
+            {item.isNC && <NCTradeSection key={getKey('nc-trade')} item={item} />}
             <ItemEffectsSection key={getKey('item-effects')} item={item} />
             <ItemOfficialListsSection key={getKey('official-lists')} item={item} />
             <Suspense fallback={null}>
@@ -110,9 +106,7 @@ export async function ItemPage({ data }: ItemPageProps) {
             <SimilarItemsCard key={getKey('similar-items')} item={item} />
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>
-            {item.isNC && ncMallData && (
-              <NcMallCard key={getKey('nc-mall-card')} item={item} ncMallData={ncMallData} />
-            )}
+            {item.isNC && <NCMallCardSection key={getKey('nc-mall-card')} item={item} />}
             {item.findAt.restockShop && <ItemRestock key={getKey('item-restock')} item={item} />}
             <ItemPageOutfitSectionLoader item={item} />
             <ItemPageWearablePreview item={item} />
