@@ -24,8 +24,6 @@ import StatsCard, { StatsCardLoading } from '@app/_components/Home/Cards/StatsCa
 import { setRequestLocale } from 'next-intl/server';
 import { routing } from '@i18n/routing';
 
-export const revalidate = 180;
-
 const mainColor = Color('#4A5568').alpha(0.9).hexa();
 
 type HomePageProps = {
@@ -80,7 +78,15 @@ export async function generateMetadata({ params }: HomePageProps): Promise<Metad
   };
 }
 
-export default async function HomePage({ params }: HomePageProps) {
+export default function HomePage({ params }: HomePageProps) {
+  return (
+    <Suspense fallback={null}>
+      <HomePageContent params={params} />
+    </Suspense>
+  );
+}
+
+async function HomePageContent({ params }: HomePageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
   const messages = await loadTranslation(locale, 'page', true);

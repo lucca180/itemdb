@@ -1,10 +1,10 @@
 import { Suspense } from 'react';
-import { unstable_cache } from 'next/cache';
+import { cacheLife } from 'next/cache';
 import CardBase from '@components/Card/CardBase';
 import { ItemParentGrid } from '@app/_components/Item/ItemParent/ItemParentGrid';
 import { getItemParent } from '@pages/api/v1/items/[id_name]/drops';
 import { getTranslations } from 'next-intl/server';
-import { itemSectionCacheTags } from '@utils/appCacheTags';
+import { applyItemSectionCacheTags } from '@utils/applyItemCacheTags';
 import type { ItemData } from '@types';
 
 type Props = {
@@ -12,17 +12,12 @@ type Props = {
 };
 
 async function loadItemParentData(internalId: number): Promise<ItemData[]> {
-  return unstable_cache(
-    async () => {
-      const { itemData } = await getItemParent(internalId);
-      if (itemData.length === 0) return [];
-      return [...itemData].sort(
-        (a, b) => (b.item_id ?? b.internal_id) - (a.item_id ?? a.internal_id)
-      );
-    },
-    ['item-parent', String(internalId)],
-    { revalidate: 60 * 10, tags: [...itemSectionCacheTags(internalId, 'parent')] }
-  )();
+  'use cache';
+  applyItemSectionCacheTags(internalId, 'parent');
+  cacheLife('itemMedium');
+  const { itemData } = await getItemParent(internalId);
+  if (itemData.length === 0) return [];
+  return [...itemData].sort((a, b) => (b.item_id ?? b.internal_id) - (a.item_id ?? a.internal_id));
 }
 
 export async function ItemParent({ item }: Props) {

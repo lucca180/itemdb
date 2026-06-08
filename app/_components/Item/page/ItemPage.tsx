@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { Flex } from '@chakra-ui/react';
 import type { ItemPageData } from '@app/utils/loadItemPage';
 import { ItemHeader } from '@app/_components/Item/page/ItemHeader';
@@ -38,7 +39,7 @@ type ItemPageProps = {
 };
 
 export async function ItemPage({ data }: ItemPageProps) {
-  const { item, ncMallData, ncTradeInsights, npPrices, npPriceStatus } = data;
+  const { item, ncMallData, ncTradeInsights, npPrices } = data;
 
   const t = await getTranslations();
   const editSectionLabels = {
@@ -82,25 +83,22 @@ export async function ItemPage({ data }: ItemPageProps) {
           w={{ base: '100%', md: 'auto' }}
         >
           <Flex flex="2" flexFlow="column" gap={{ base: 4, md: 6 }} maxW="800px">
-            <ManualCheckSection item={item} />
+            <Suspense fallback={null}>
+              <ManualCheckSection item={item} />
+            </Suspense>
             {item.isMissingInfo && <MissingInfoCard key={getKey('missing-info')} />}
             <ItemPageSidebarMobile item={item}>
               <FindAtCard item={item} />
             </ItemPageSidebarMobile>
-            {!item.isNC && (
-              <ItemPriceSection
-                key={getKey('price')}
-                item={item}
-                prices={npPrices}
-                priceStatus={npPriceStatus}
-              />
-            )}
+            {!item.isNC && <ItemPriceSection key={getKey('price')} item={item} prices={npPrices} />}
             {item.isNC && (
               <NCTradeSection key={getKey('nc-trade')} item={item} insights={ncTradeInsights} />
             )}
             <ItemEffectsSection key={getKey('item-effects')} item={item} />
             <ItemOfficialListsSection key={getKey('official-lists')} item={item} />
-            <MyListsSection item={item} />
+            <Suspense fallback={null}>
+              <MyListsSection item={item} />
+            </Suspense>
             <MMECard key={getKey('mme-card')} item={item} />
             <DyeCard key={getKey('dye-card')} item={item} />
             <PetpetCard key={getKey('petpet-card')} item={item} />

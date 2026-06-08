@@ -1,4 +1,4 @@
-/** Home page tags — must match `unstable_cache` tags in App Router home sections. */
+/** Home page tags — must match `'use cache'` tags in App Router home sections. */
 export const HOME_CACHE_TAGS = [
   'home-latest-items',
   'home-latest-nc-mall',
@@ -15,7 +15,7 @@ export type HomeCacheTag = (typeof HOME_CACHE_TAGS)[number];
 
 /**
  * Item page Data Cache scopes — one tag per card/loader (`item-{id}-{scope}`).
- * Every `unstable_cache` on the item page should use `itemSectionCacheTags(id, scope)`.
+ * Every `'use cache'` loader on the item page should use `itemSectionCacheTags(id, scope)`.
  */
 export const ITEM_PAGE_CACHE_SCOPES = [
   'mme',
@@ -29,11 +29,15 @@ export const ITEM_PAGE_CACHE_SCOPES = [
   'drops',
   'drop-items',
   'nc-insights',
+  'nc-mall',
   'lebron',
   'last-seen',
   'effects',
   'wearable',
   'colors',
+  'lists',
+  'np-prices',
+  'trade-lists',
 ] as const;
 
 export type ItemPageCacheScope = (typeof ITEM_PAGE_CACHE_SCOPES)[number];

@@ -1,5 +1,5 @@
 import { Popover, Button, Flex, Badge, useMediaQuery, Portal } from '@chakra-ui/react';
-import React, { useState } from 'react';
+import React, { useState, useSyncExternalStore } from 'react';
 import { Link } from '@i18n/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { localizeInternalHref, type AppLocale } from '@utils/locales';
@@ -12,6 +12,16 @@ type Props = {
   newUntil?: number;
   hardNavigation?: boolean;
 };
+
+const noopSubscribe = () => () => {};
+
+function useIsMenuItemNew(newUntil?: number) {
+  return useSyncExternalStore(
+    noopSubscribe,
+    () => Boolean(newUntil && newUntil > Date.now()),
+    () => false
+  );
+}
 
 export const DropdownButton = (props: Props) => {
   const { label, href, children, bg } = props;
@@ -91,9 +101,7 @@ export const DropdownOption = (props: Props) => {
   const locale = useLocale() as AppLocale;
   const { label, href, newUntil } = props;
   const hardHref = localizeInternalHref(href, locale);
-
-  // eslint-disable-next-line react-hooks/purity
-  const isNew = newUntil && newUntil > Date.now();
+  const isNew = useIsMenuItemNew(newUntil);
 
   return (
     <Button

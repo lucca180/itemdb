@@ -17,7 +17,6 @@ export function IntlProvider({ children, locale, messages }: IntlProviderProps) 
       locale={locale}
       messages={messages}
       timeZone="America/Los_Angeles"
-      now={new Date()}
       onError={(error) => onIntlError(error, {})}
     >
       {children}

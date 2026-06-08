@@ -7,6 +7,7 @@
 import dynamic from 'next/dynamic';
 import {
   Alert,
+  Box,
   Button,
   ButtonGroup,
   CloseButton,
@@ -599,9 +600,9 @@ function LastSeenCard({ card }: { card: LastSeenCardData }) {
         />
         {title}
       </Text>
-      <Text opacity={0.8} minH="1.25rem">
+      <Box opacity={0.8} minH="1.25rem" fontSize="sm">
         {isLoading ? <Skeleton height="12px" width="60px" /> : subtitle}
-      </Text>
+      </Box>
     </Flex>
   );
 }

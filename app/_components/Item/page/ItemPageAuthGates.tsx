@@ -1,11 +1,12 @@
 'use client';
 
-import { Button, Flex, Icon } from '@chakra-ui/react';
+import { Button, Flex, Icon, Text } from '@chakra-ui/react';
 import axios from 'axios';
 import { useState } from 'react';
-import { FiEdit3 } from 'react-icons/fi';
+import { FiEdit3, FiRefreshCw } from 'react-icons/fi';
 import dynamic from 'next/dynamic';
 import { useAuth } from '@utils/auth';
+import { itemRootTag } from '@utils/appCacheTags';
 import FeedbackButton from '@components/Feedback/FeedbackButton';
 import type { EditItemModalProps } from '@components/Modal/EditItemModal';
 import type { ItemData, ItemEffect, ItemOpenable, ItemPetpetData } from '@types';
@@ -42,6 +43,8 @@ export function ItemPageEditSection(props: ItemPageEditSectionProps) {
   const [isItemOpenableLoading, setIsItemOpenableLoading] = useState(false);
   const [itemOpenableLoadError, setItemOpenableLoadError] = useState(false);
   const [petpetData, setPetpetData] = useState<ItemPetpetData | null>(null);
+  const [isRefreshingCache, setIsRefreshingCache] = useState(false);
+  const [cacheRefreshError, setCacheRefreshError] = useState(false);
   const { item, itemEffects, labels } = props;
 
   const loadItemOpenableForEdit = (slug: string) => {
@@ -82,6 +85,21 @@ export function ItemPageEditSection(props: ItemPageEditSectionProps) {
     setPetpetData(null);
   };
 
+  const handleRefreshCache = async () => {
+    setIsRefreshingCache(true);
+    setCacheRefreshError(false);
+    try {
+      await axios.post('/api/internal/revalidate', {
+        tags: [itemRootTag(item.internal_id)],
+        context: { internalId: item.internal_id },
+      });
+      window.location.reload();
+    } catch {
+      setCacheRefreshError(true);
+      setIsRefreshingCache(false);
+    }
+  };
+
   return (
     <>
       {item && isEditModalOpen && (
@@ -98,14 +116,29 @@ export function ItemPageEditSection(props: ItemPageEditSectionProps) {
           tags={[]}
         />
       )}
-      <Flex justifyContent="center" gap={1}>
+      <Flex justifyContent="center" gap={1} flexWrap="wrap">
         <FeedbackButton colorPalette="red" variant="ghost">
           {labels.reportError}
         </FeedbackButton>
         {user?.isAdmin && (
-          <Button variant="outline" size="sm" onClick={handleOpenEdit}>
-            <Icon as={FiEdit3} mr={1} /> {labels.edit}
-          </Button>
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              loading={isRefreshingCache}
+              onClick={handleRefreshCache}
+            >
+              <Icon as={FiRefreshCw} mr={1} />
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleOpenEdit}>
+              <Icon as={FiEdit3} mr={1} /> {labels.edit}
+            </Button>
+          </>
+        )}
+        {cacheRefreshError && (
+          <Text fontSize="xs" color="red.300" w="100%" textAlign="center">
+            Cache refresh failed
+          </Text>
         )}
       </Flex>
     </>

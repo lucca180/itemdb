@@ -1,8 +1,8 @@
 import { Suspense } from 'react';
-import { unstable_cache } from 'next/cache';
+import { cacheLife } from 'next/cache';
 import TradeCard from '@components/Trades/TradeCard';
 import { getItemTrades } from '@pages/api/v1/trades';
-import { itemSectionCacheTags } from '@utils/appCacheTags';
+import { applyItemSectionCacheTags } from '@utils/applyItemCacheTags';
 import type { ItemData } from '@types';
 
 type Props = {
@@ -10,11 +10,10 @@ type Props = {
 };
 
 async function loadItemTrades(internalId: number) {
-  return unstable_cache(
-    async () => getItemTrades({ item_iid: internalId }),
-    ['item-trade-card', String(internalId)],
-    { revalidate: 60 * 5, tags: [...itemSectionCacheTags(internalId, 'trade')] }
-  )();
+  'use cache';
+  applyItemSectionCacheTags(internalId, 'trade');
+  cacheLife('itemSection');
+  return getItemTrades({ item_iid: internalId });
 }
 
 export async function TradeCardSection({ item }: Props) {

@@ -2,19 +2,17 @@ import { cache } from 'react';
 import type { Metadata } from 'next';
 import {
   getCachedItem,
+  loadNCMallData,
   loadNCTradeInsights,
   loadNPPrices,
-  loadPriceStatus,
 } from '@app/_components/Item/loadUtils';
-import { InsightsResponse, ItemData, NCMallData, PriceData, PricingInfo } from '@types';
-import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
+import { InsightsResponse, ItemData, NCMallData, PriceData } from '@types';
 import {
   buildItemDbHreflangAlternates,
   getItemDbCanonical,
   normalizeItemDbLocale,
 } from '@utils/appPage';
 import { getDefaultSEO } from '@utils/SEO';
-import { getItemNCMall } from '@pages/api/v1/items/[id_name]/ncmall';
 import * as Sentry from '@sentry/nextjs';
 
 export type ItemPageData = {
@@ -24,7 +22,6 @@ export type ItemPageData = {
   ncTradeInsights: InsightsResponse | null;
   /** Preloaded for NP items — blocks page render until resolved. */
   npPrices: PriceData[];
-  npPriceStatus: PricingInfo | null;
 };
 
 export type ItemPageRouteResult =
@@ -112,9 +109,7 @@ export const resolveItemRoute = cache(
 );
 
 async function fetchItemPageData(item: ItemData): Promise<ItemPageData> {
-  const { user } = await getServerCurrentUser();
-
-  const [ncMallData, ncTradeInsights, npPrices, npPriceStatus] = await Sentry.startSpan(
+  const [ncMallData, ncTradeInsights, npPrices] = await Sentry.startSpan(
     {
       name: 'itemLoad',
       attributes: {
@@ -127,10 +122,9 @@ async function fetchItemPageData(item: ItemData): Promise<ItemPageData> {
     },
     async () =>
       Promise.all([
-        item.isNC ? getItemNCMall(item.internal_id) : null,
+        item.isNC ? loadNCMallData(item.internal_id) : null,
         item.isNC ? loadNCTradeInsights(item.internal_id) : null,
         !item.isNC ? loadNPPrices(item.internal_id) : [],
-        !item.isNC ? loadPriceStatus(item.internal_id, user?.id) : null,
       ])
   );
 
@@ -139,7 +133,6 @@ async function fetchItemPageData(item: ItemData): Promise<ItemPageData> {
     ncMallData,
     ncTradeInsights,
     npPrices,
-    npPriceStatus,
   };
 }
 

@@ -15,8 +15,6 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-export const dynamicParams = false;
-
 export const metadata: Metadata = buildAppMetadataDefaults();
 
 type LocaleLayoutProps = {

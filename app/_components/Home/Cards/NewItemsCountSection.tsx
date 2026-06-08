@@ -1,19 +1,17 @@
 import { Suspense } from 'react';
-import { unstable_cache } from 'next/cache';
+import { cacheLife, cacheTag } from 'next/cache';
 import NextImage from 'next/image';
 import { Box, Flex, Text } from '@chakra-ui/react';
 import { getTranslations } from 'next-intl/server';
 import { getNewItemsInfo } from '@pages/api/v1/beta/new-items';
 import { HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
 
-const getCachedNewItemsCount = unstable_cache(
-  async () => getNewItemsInfo(7).catch(() => null),
-  ['home-server-cards', 'new-item-count'],
-  {
-    tags: ['home-new-item-count'],
-    revalidate: 300,
-  }
-);
+async function getCachedNewItemsCount() {
+  'use cache';
+  cacheTag('home-new-item-count');
+  cacheLife('homeSection');
+  return getNewItemsInfo(7).catch(() => null);
+}
 
 export function NewItemsCountSection() {
   return (

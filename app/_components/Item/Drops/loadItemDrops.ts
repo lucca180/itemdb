@@ -1,7 +1,7 @@
-import { unstable_cache } from 'next/cache';
+import { cacheLife } from 'next/cache';
 import { getItemDrops, SKIP_ITEMS } from '@pages/api/v1/items/[id_name]/drops';
 import { getManyItems } from '@pages/api/v1/items/many';
-import { itemSectionCacheTags } from '@utils/appCacheTags';
+import { applyItemSectionCacheTags } from '@utils/applyItemCacheTags';
 import type { ItemData, ItemOpenable } from '@types';
 
 /**
@@ -25,23 +25,34 @@ async function fetchManyItemDataByIids(internalIds: number[]): Promise<ItemData[
   return Object.values(items);
 }
 
+async function loadItemOpenableMetaCached(
+  internalId: number,
+  isNC: boolean
+): Promise<ItemOpenable | null> {
+  'use cache';
+  applyItemSectionCacheTags(internalId, 'drops');
+  cacheLife('itemFast');
+  if (SKIP_ITEMS.includes(internalId)) return null;
+  return getItemDrops(internalId, isNC);
+}
+
 /**
  * Returns ItemOpenable for an item (pools, odds, drop iids).
  * Returns null when the item cannot open or has no drop data.
  */
 export async function loadItemOpenableMeta(item: ItemData): Promise<ItemOpenable | null> {
   if (item.useTypes.canOpen === 'false') return null;
+  return loadItemOpenableMetaCached(item.internal_id, item.isNC);
+}
 
-  const { internal_id: internalId, isNC } = item;
-
-  return unstable_cache(
-    async () => {
-      if (SKIP_ITEMS.includes(internalId)) return null;
-      return getItemDrops(internalId, isNC);
-    },
-    ['item-openable', String(internalId), String(isNC)],
-    { revalidate: 60, tags: [...itemSectionCacheTags(internalId, 'drops')] }
-  )();
+async function loadDropItemCardDataCached(
+  parentInternalId: number,
+  dropInternalIds: number[]
+): Promise<ItemData[]> {
+  'use cache';
+  applyItemSectionCacheTags(parentInternalId, 'drop-items');
+  cacheLife('itemFast');
+  return fetchManyItemDataByIids(dropInternalIds);
 }
 
 /**
@@ -53,14 +64,8 @@ export async function loadDropItemCardData(
   dropInternalIds: number[]
 ): Promise<ItemData[]> {
   if (dropInternalIds.length === 0) return [];
-
-  const internalIdsKey = [...dropInternalIds].sort((a, b) => a - b).join(',');
-
-  return unstable_cache(
-    async () => fetchManyItemDataByIids(dropInternalIds),
-    ['item-drop-items', String(parentInternalId), internalIdsKey],
-    { revalidate: 60 * 2, tags: [...itemSectionCacheTags(parentInternalId, 'drop-items')] }
-  )();
+  const sortedIds = [...dropInternalIds].sort((a, b) => a - b);
+  return loadDropItemCardDataCached(parentInternalId, sortedIds);
 }
 
 /** Loads both ItemOpenable meta and drop ItemData in one call. */

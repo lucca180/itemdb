@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useSyncExternalStore, type ReactNode } from 'react';
 import Color from 'color';
 import { Box, Center, Flex, Spinner, Text } from '@chakra-ui/react';
 import NextImage from 'next/image';
@@ -18,6 +18,16 @@ import type { LayoutFooterColumn, LayoutNavSection } from '@components/Layout/la
 import { localizeInternalHref, type AppLocale } from '@utils/locales';
 
 const LAYOUT_BASE_COLOR = '#4A5568';
+
+const noopSubscribe = () => () => {};
+
+function useCopyrightYear() {
+  return useSyncExternalStore(
+    noopSubscribe,
+    () => new Date().getFullYear(),
+    () => 2026
+  );
+}
 
 export type LayoutChromeProps = {
   children?: ReactNode;
@@ -152,6 +162,7 @@ function LayoutFooter({
   footerActions: ReactNode;
   hardNavigation?: boolean;
 }) {
+  const copyrightYear = useCopyrightYear();
   const rgb = getLayoutFooterGradientRgb();
 
   return (
@@ -193,8 +204,7 @@ function LayoutFooter({
             <MainLink href="https://magnetismotimes.com/" isExternal>
               Magnetismo Times
             </MainLink>
-            <br />© 1999-{new Date().getFullYear()} NeoPets, Inc. All rights reserved. Used with
-            permission.
+            <br />© 1999-{copyrightYear} NeoPets, Inc. All rights reserved. Used with permission.
           </Text>
           <Flex alignItems="flex-end" gap={4}>
             {footerActions}

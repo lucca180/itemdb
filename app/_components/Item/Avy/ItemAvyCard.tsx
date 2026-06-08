@@ -1,11 +1,11 @@
 import { Suspense } from 'react';
-import { unstable_cache } from 'next/cache';
+import { cacheLife } from 'next/cache';
 import CardBase from '@components/Card/CardBase';
 import { ItemAvyCardList } from '@app/_components/Item/Avy/ItemAvyCardList';
 import { getOfficialItemLists } from '@app/_components/Item/loadUtils';
 import { getAvyData } from '@pages/api/v1/items/[id_name]/avys';
 import { getTranslations } from 'next-intl/server';
-import { itemSectionCacheTags } from '@utils/appCacheTags';
+import { applyItemSectionCacheTags } from '@utils/applyItemCacheTags';
 import type { ItemData } from '@types';
 
 type Props = {
@@ -13,14 +13,11 @@ type Props = {
 };
 
 async function loadAvyData(internalId: number) {
-  return unstable_cache(
-    async () => {
-      const officialLists = await getOfficialItemLists(internalId);
-      return getAvyData(internalId, officialLists);
-    },
-    ['item-avy-card', String(internalId)],
-    { revalidate: 60 * 5, tags: [...itemSectionCacheTags(internalId, 'avy')] }
-  )();
+  'use cache';
+  applyItemSectionCacheTags(internalId, 'avy', 'lists');
+  cacheLife('itemSection');
+  const officialLists = await getOfficialItemLists(internalId);
+  return getAvyData(internalId, officialLists);
 }
 
 export async function ItemAvyCard({ item }: Props) {

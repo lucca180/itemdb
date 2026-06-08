@@ -1,18 +1,16 @@
 import { Suspense } from 'react';
 import { Flex } from '@chakra-ui/react';
-import { unstable_cache } from 'next/cache';
+import { cacheLife, cacheTag } from 'next/cache';
 import { getTrendingCatLists } from '@pages/api/v1/beta/trending';
 import { HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
 import { TVWHomeCard as TVWClientCard } from '@components/Card/EventCard';
 
-const getCachedEventLists = unstable_cache(
-  async (category: string, limit: number) => getTrendingCatLists(category, limit).catch(() => []),
-  ['home-event-card-lists'],
-  {
-    tags: ['home-event-card-lists'],
-    revalidate: 3600,
-  }
-);
+async function getCachedEventLists(category: string, limit: number) {
+  'use cache';
+  cacheTag('home-event-card-lists');
+  cacheLife('homeSlow');
+  return getTrendingCatLists(category, limit).catch(() => []);
+}
 
 const tvwCardStyle = {
   position: 'relative',

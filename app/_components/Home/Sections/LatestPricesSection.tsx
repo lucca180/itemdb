@@ -1,26 +1,41 @@
+import { Suspense } from 'react';
 import { Text } from '@chakra-ui/react';
 import { getFormatter, getTranslations } from 'next-intl/server';
 import type { ItemData } from '@types';
 import { HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
 import { LatestPricesItemsClient } from '@components/Home/LatestPricesItemsClient';
 import { getLatestPricedItems } from '@pages/api/v1/prices/index';
-import { unstable_cache } from 'next/cache';
+import { cacheLife, cacheTag } from 'next/cache';
 
 export type LatestPricesRes = {
   count: number | null;
   items: ItemData[];
 };
 
-const getLatestPrices = unstable_cache(
-  async () => getLatestPricedItems(16, true).catch(() => ({ items: [], count: null })),
-  ['home-server-cards', 'latest-prices'],
-  {
-    tags: ['home-latest-prices'],
-    revalidate: 300,
+async function getLatestPrices(): Promise<LatestPricesRes> {
+  'use cache';
+  cacheTag('home-latest-prices');
+  cacheLife('homeSection');
+  try {
+    const result = await getLatestPricedItems(16, true);
+    if (Array.isArray(result)) {
+      return { items: result, count: null };
+    }
+    return result;
+  } catch {
+    return { items: [], count: null };
   }
-) as () => Promise<LatestPricesRes>;
+}
 
-export async function LatestPricesSection() {
+export function LatestPricesSection() {
+  return (
+    <Suspense fallback={null}>
+      <LatestPricesSectionContent />
+    </Suspense>
+  );
+}
+
+async function LatestPricesSectionContent() {
   const t = await getTranslations();
   const formatter = await getFormatter();
   const latestPrices = await getLatestPrices();

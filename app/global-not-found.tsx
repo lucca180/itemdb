@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { getLocale, getMessages, getTranslations } from 'next-intl/server';
 import { IntlProvider } from '@app/[locale]/IntlProvider';
 import { AppScripts } from '@app/AppScripts';
@@ -20,7 +21,15 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function GlobalNotFound() {
+export default function GlobalNotFound() {
+  return (
+    <Suspense fallback={null}>
+      <GlobalNotFoundContent />
+    </Suspense>
+  );
+}
+
+async function GlobalNotFoundContent() {
   const locale = await getLocale();
   const messages = await getMessages();
 

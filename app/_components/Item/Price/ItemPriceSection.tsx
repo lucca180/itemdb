@@ -1,7 +1,8 @@
 /**
  * NP Price — server orchestrator (item page).
  *
- * Price data preloaded in `loadItemPage` (blocks page render).
+ * NP prices preloaded in `loadItemPage` (blocks page render).
+ * User-specific price status loads inside Suspense (session via `cookies()`).
  * Official lists for the price table load via `loadItemPageLists`.
  * Seeking/trading and last seen stream via Suspense.
  * Client shell: ItemPriceCard.tsx
@@ -17,7 +18,12 @@ import { Link as I18nLink } from '@i18n/navigation';
 import CardBase from '@components/Card/CardBase';
 import Markdown from '@components/Utils/Markdown';
 import MatchTable from '@app/_components/Item/NCTrade/MatchTable';
-import { loadLastSeen, loadItemPageLists, loadTradeLists } from '@app/_components/Item/loadUtils';
+import {
+  loadLastSeen,
+  loadItemPageLists,
+  loadPriceStatus,
+  loadTradeLists,
+} from '@app/_components/Item/loadUtils';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { shouldShowTradeLists } from '@utils/utils';
 import type { ItemData, PriceData, PricingInfo, UserList } from '@types';
@@ -54,6 +60,10 @@ type ItemProps = { item: ItemData };
 type Props = ItemProps & {
   prices: PriceData[];
   priceStatus: PricingInfo | null;
+};
+
+type ItemPriceShellProps = ItemProps & {
+  prices: PriceData[];
 };
 
 // --- Price table (server) ---
@@ -479,22 +489,30 @@ async function ItemPriceTradeableCard({ item, prices, priceStatus }: Props) {
   );
 }
 
-async function ItemPriceNoTradeCard({ item }: ItemProps) {
-  const t = await getTranslations();
-  return (
-    <CardBase color={item.color.rgb} title={t('ItemPage.price-overview')}>
-      <Center>
-        <MdMoneyOff size={100} opacity={0.4} />
-      </Center>
-      <Text textAlign="center">{t('ItemPage.not-tradeable')}</Text>
-    </CardBase>
-  );
+async function ItemPriceSectionWithStatus({ item, prices }: ItemPriceShellProps) {
+  const { user } = await getServerCurrentUser();
+  const priceStatus = await loadPriceStatus(item.internal_id, user?.id);
+  return <ItemPriceTradeableCard item={item} prices={prices} priceStatus={priceStatus} />;
 }
 
-export async function ItemPriceSection({ item, prices, priceStatus }: Props) {
+export async function ItemPriceSection({ item, prices }: ItemPriceShellProps) {
   if (item.isNC) return null;
-  if (item.status?.toLowerCase() === 'no trade') return <ItemPriceNoTradeCard item={item} />;
-  return <ItemPriceTradeableCard item={item} prices={prices} priceStatus={priceStatus} />;
+  if (item.status?.toLowerCase() === 'no trade') {
+    const t = await getTranslations();
+    return (
+      <CardBase color={item.color.rgb} title={t('ItemPage.price-overview')}>
+        <Center>
+          <MdMoneyOff size={100} opacity={0.4} />
+        </Center>
+        <Text textAlign="center">{t('ItemPage.not-tradeable')}</Text>
+      </CardBase>
+    );
+  }
+  return (
+    <Suspense fallback={null}>
+      <ItemPriceSectionWithStatus item={item} prices={prices} />
+    </Suspense>
+  );
 }
 
 export default ItemPriceSection;

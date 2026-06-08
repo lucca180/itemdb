@@ -1,14 +1,14 @@
 import { Fragment, Suspense } from 'react';
-import { unstable_cache } from 'next/cache';
+import { cacheLife } from 'next/cache';
 import { Center, Flex, Text } from '@chakra-ui/react';
 import Color from 'color';
 import CardBase from '@components/Card/CardBase';
 import ItemCard from '@components/Items/ItemCard';
 import { IconLink } from '@components/Utils/IconLink';
-import { getItem } from '@pages/api/v1/items/[id_name]';
+import { getCachedItem } from '@app/_components/Item/loadUtils';
 import { getItemRecipes } from '@pages/api/v1/items/[id_name]/recipes';
 import { getTranslations } from 'next-intl/server';
-import { itemSectionCacheTags } from '@utils/appCacheTags';
+import { applyItemSectionCacheTags } from '@utils/applyItemCacheTags';
 import type { ItemData, ItemRecipe } from '@types';
 import type { ReactNode } from 'react';
 
@@ -23,15 +23,12 @@ type RepairRecipeDetails = {
 };
 
 async function loadItemRecipes(internalId: number): Promise<ItemRecipe[]> {
-  return unstable_cache(
-    async () => {
-      const cachedItem = await getItem(internalId, true);
-      if (!cachedItem || cachedItem.isNC) return [];
-      return getItemRecipes(cachedItem.internal_id);
-    },
-    ['item-recipes-card', String(internalId)],
-    { revalidate: 60 * 10, tags: [...itemSectionCacheTags(internalId, 'recipes')] }
-  )();
+  'use cache';
+  applyItemSectionCacheTags(internalId, 'recipes');
+  cacheLife('itemMedium');
+  const cachedItem = await getCachedItem(internalId, true);
+  if (!cachedItem || cachedItem.isNC) return [];
+  return getItemRecipes(cachedItem.internal_id);
 }
 
 function getRepairRecipeDetails(item: ItemData, recipes: ItemRecipe[]): RepairRecipeDetails | null {

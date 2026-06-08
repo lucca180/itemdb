@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { unstable_cache } from 'next/cache';
+import { cacheLife, cacheTag } from 'next/cache';
 import { getTranslations } from 'next-intl/server';
 import { getTrendingItems, getTrendingLists } from '@pages/api/v1/beta/trending';
 import { getLatestItems } from '@pages/api/v1/items/index';
@@ -8,59 +8,47 @@ import { HomeCard } from '@components/Card/HomeCard';
 import { HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
 import { FeaturedListsGrid } from '@components/Home/FeaturedListsGrid';
 
-const getCachedLatestItems = unstable_cache(
-  async () => getLatestItems(20, true).catch(() => []),
-  ['home-server-cards', 'latest-items'],
-  {
-    tags: ['home-latest-items'],
-    revalidate: 300,
-  }
-);
+async function getCachedLatestItems() {
+  'use cache';
+  cacheTag('home-latest-items');
+  cacheLife('homeSection');
+  return getLatestItems(20, true).catch(() => []);
+}
 
-const getCachedLatestNcMallItems = unstable_cache(
-  async () => getNCMallItemsData(20).catch(() => []),
-  ['home-server-cards', 'latest-nc-mall'],
-  {
-    tags: ['home-latest-nc-mall'],
-    revalidate: 600,
-  }
-);
+async function getCachedLatestNcMallItems() {
+  'use cache';
+  cacheTag('home-latest-nc-mall');
+  cacheLife({ stale: 600, revalidate: 600, expire: 3600 });
+  return getNCMallItemsData(20).catch(() => []);
+}
 
-const getCachedLeavingNcMallItems = unstable_cache(
-  async () => getNCMallItemsData(18, true).catch(() => []),
-  ['home-server-cards', 'leaving-nc-mall'],
-  {
-    tags: ['home-latest-nc-mall'],
-    revalidate: 600,
-  }
-);
+async function getCachedLeavingNcMallItems() {
+  'use cache';
+  cacheTag('home-latest-nc-mall');
+  cacheLife({ stale: 600, revalidate: 600, expire: 3600 });
+  return getNCMallItemsData(18, true).catch(() => []);
+}
 
-const getCachedLatestWearableItems = unstable_cache(
-  async () => getLatestItems(18, true, true).catch(() => []),
-  ['home-server-cards', 'latest-wearable'],
-  {
-    tags: ['home-latest-wearable-items'],
-    revalidate: 300,
-  }
-);
+async function getCachedLatestWearableItems() {
+  'use cache';
+  cacheTag('home-latest-wearable-items');
+  cacheLife('homeSection');
+  return getLatestItems(18, true, true).catch(() => []);
+}
 
-const getCachedTrendingItems = unstable_cache(
-  async () => getTrendingItems(20).catch(() => []),
-  ['home-server-cards', 'trending-items'],
-  {
-    tags: ['home-trending-items'],
-    revalidate: 3600,
-  }
-);
+async function getCachedTrendingItems() {
+  'use cache';
+  cacheTag('home-trending-items');
+  cacheLife('homeSlow');
+  return getTrendingItems(20).catch(() => []);
+}
 
-const getCachedFeaturedLists = unstable_cache(
-  async () => getTrendingLists(3, ['The Void Within']).catch(() => []),
-  ['home-server-cards', 'featured-lists'],
-  {
-    tags: ['home-trending-lists'],
-    revalidate: 3600,
-  }
-);
+async function getCachedFeaturedLists() {
+  'use cache';
+  cacheTag('home-trending-lists');
+  cacheLife('homeSlow');
+  return getTrendingLists(3, ['The Void Within']).catch(() => []);
+}
 
 export function LatestItemsHomeCard() {
   return (

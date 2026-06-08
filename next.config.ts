@@ -5,6 +5,15 @@ import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
 const nextConfig: NextConfig = {
+  cacheComponents: true,
+  cacheLife: {
+    itemFast: { stale: 60, revalidate: 60, expire: 300 },
+    itemSection: { stale: 300, revalidate: 300, expire: 3600 },
+    itemMedium: { stale: 600, revalidate: 600, expire: 3600 },
+    homeSection: { stale: 180, revalidate: 300, expire: 3600 },
+    homeFast: { stale: 180, revalidate: 180, expire: 3600 },
+    homeSlow: { stale: 3600, revalidate: 3600, expire: 86400 },
+  },
   generateBuildId: async () => {
     return process.env.BUILD_ID || 'dev';
   },
