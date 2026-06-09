@@ -1,18 +1,17 @@
 import type { ReactNode } from 'react';
-
 import { Flex, Text } from '@chakra-ui/react';
-
 import Image from 'next/image';
-
 import { getTranslations } from 'next-intl/server';
-
-import { connection } from 'next/server';
-
-import { getCurrentSiteAlert } from '@utils/siteAlert';
-
+import { getCurrentSiteAlert, siteAlerts } from '@utils/siteAlert';
 import type { SiteAlertConfig } from '@utils/siteAlert';
-
 import { getLocalizedHref, isLocalizableHref, type AppLocale } from '@utils/locales';
+import { cacheLife } from 'next/cache';
+
+export async function getCachedSiteAlert() {
+  'use cache';
+  cacheLife('seconds');
+  return getCurrentSiteAlert();
+}
 
 function getAlertHref(link: string, locale: AppLocale) {
   if (!isLocalizableHref(link)) {
@@ -22,21 +21,15 @@ function getAlertHref(link: string, locale: AppLocale) {
   return getLocalizedHref(link, locale);
 }
 
-export function SiteAlertBar({
-  alert,
-
-  children,
-
-  linkHref,
-}: {
-  alert: SiteAlertConfig;
-
-  children: ReactNode;
-
+type SiteAlertProps = {
+  alert?: SiteAlertConfig;
+  children?: ReactNode;
   linkHref?: string;
-}) {
-  const href = linkHref ?? alert.link;
+};
 
+export function SiteAlertBar({ alert, children, linkHref }: SiteAlertProps) {
+  alert = alert || siteAlerts.default;
+  const href = linkHref ?? alert.link;
   const isExternal = !isLocalizableHref(href);
 
   return (
@@ -77,11 +70,7 @@ type AppSiteAlertProps = {
 };
 
 export async function AppSiteAlert({ locale }: AppSiteAlertProps) {
-  await connection();
-
-  const t = await getTranslations({ locale });
-
-  const alert = getCurrentSiteAlert();
+  const [t, alert] = await Promise.all([getTranslations({ locale }), getCachedSiteAlert()]);
 
   const appLocale = locale as AppLocale;
 

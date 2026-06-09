@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Suspense } from 'react';
 import { getTranslations } from 'next-intl/server';
-import { AppSiteAlert } from '@components/Layout/siteAlert';
+import { AppSiteAlert, SiteAlertBar } from '@components/Layout/siteAlert';
 import { AuthButtonSkeleton } from '@components/Layout/AuthButtonSkeleton';
 import { LayoutAuthServer } from '@components/Layout/LayoutAuthServer';
 import { LayoutChrome, LayoutFeedback, LayoutSearch } from '@components/Layout/LayoutChrome';
@@ -35,7 +35,7 @@ export default async function AppServerLayout(props: AppServerLayoutProps) {
       madeInLabel={t('Layout.made-in')}
       byLabel={t('Layout.by')}
       siteAlert={
-        <Suspense fallback={null}>
+        <Suspense fallback={<SiteAlertBar />}>
           <AppSiteAlert locale={props.locale} />
         </Suspense>
       }
