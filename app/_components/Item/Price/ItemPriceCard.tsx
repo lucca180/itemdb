@@ -227,7 +227,6 @@ type ItemPriceModalContextValue = {
   openLastSeenHelp: () => void;
   openCreatePrice: () => void;
   openSeenHistory: (type: 'tp' | 'auction' | 'restock') => void;
-  priceStatus: PricingInfo | null;
 };
 
 const ItemPriceModalContext = createContext<ItemPriceModalContextValue | null>(null);
@@ -249,11 +248,9 @@ function usePriceEdit() {
 
 export function ItemPriceModalProvider({
   item,
-  priceStatus,
   children,
 }: {
   item: ItemData;
-  priceStatus: PricingInfo | null;
   children: ReactNode;
 }) {
   const [wrongPriceOpen, setWrongPriceOpen] = useState(false);
@@ -262,16 +259,28 @@ export function ItemPriceModalProvider({
   const [createPriceOpen, setCreatePriceOpen] = useState(false);
   const [seenHistory, setSeenHistory] = useState<'tp' | 'auction' | 'restock' | null>(null);
   const [selectedPrice, setSelectedPrice] = useState<PriceData | null>(null);
+  const [wrongPriceData, setWrongPriceData] = useState<PricingInfo>();
+  const [wrongPriceLoading, setWrongPriceLoading] = useState(false);
+
+  const openWrongPrice = () => {
+    setWrongPriceOpen(true);
+    setWrongPriceLoading(true);
+
+    axios
+      .get<PricingInfo>(`/api/v1/prices/${item.internal_id}/status`)
+      .then((res) => setWrongPriceData(res.data))
+      .catch(console.error)
+      .finally(() => setWrongPriceLoading(false));
+  };
 
   return (
     <ItemPriceModalContext.Provider
       value={{
-        openWrongPrice: () => setWrongPriceOpen(true),
+        openWrongPrice,
         openSaleStatus: () => setSaleStatusOpen(true),
         openLastSeenHelp: () => setLastSeenHelpOpen(true),
         openCreatePrice: () => setCreatePriceOpen(true),
         openSeenHistory: setSeenHistory,
-        priceStatus,
       }}
     >
       <PriceEditContext.Provider value={{ onEdit: setSelectedPrice }}>
@@ -286,8 +295,8 @@ export function ItemPriceModalProvider({
         {wrongPriceOpen && (
           <WrongPriceModal
             item={item}
-            data={priceStatus ?? undefined}
-            isLoading={false}
+            data={wrongPriceData}
+            isLoading={wrongPriceLoading}
             isOpen={wrongPriceOpen}
             onClose={() => setWrongPriceOpen(false)}
           />

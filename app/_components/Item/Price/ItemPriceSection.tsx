@@ -416,11 +416,7 @@ async function LastSeenStats({ item }: ItemProps) {
 // --- Orchestrator ---
 
 function ItemPriceModalShell({ item, children }: ItemProps & { children: ReactNode }) {
-  return (
-    <ItemPriceModalProvider item={item} priceStatus={null}>
-      {children}
-    </ItemPriceModalProvider>
-  );
+  return <ItemPriceModalProvider item={item}>{children}</ItemPriceModalProvider>;
 }
 
 async function ItemPriceTradeableCard({ item, prices }: ItemPriceShellProps) {

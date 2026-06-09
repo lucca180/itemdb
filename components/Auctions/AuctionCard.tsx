@@ -72,7 +72,7 @@ const AuctionCard = ({ auctions, item, totalSold, soldMedianPrice }: Props) => {
                   <Badge colorPalette={auction.hasBuyer ? 'green' : 'gray'} size="xs">
                     {auction.hasBuyer ? t('ItemPage.has-bids') : t('ItemPage.no-bids')}
                   </Badge>
-                  <Text fontSize="xs" color="whiteAlpha.600">
+                  <Text fontSize="xs" color="whiteAlpha.600" suppressHydrationWarning>
                     {format.relativeTime(new Date(auction.addedAt))}
                   </Text>
                 </Flex>
