@@ -339,7 +339,7 @@ async function PriceTableTabFull({
 }: ItemProps & ItemPriceShellProps & ItemPriceLabels) {
   const [{ user }, lists] = await Promise.all([
     getServerCurrentUser(),
-    loadItemPageLists(item.internal_id),
+    loadItemPageLists(item.internal_id, shouldShowTradeLists(item)),
   ]);
 
   return (

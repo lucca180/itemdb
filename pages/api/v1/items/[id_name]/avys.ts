@@ -26,7 +26,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 }
 
 export const getAvyData = async (item_iid: number, officialLists?: UserList[]) => {
-  const lists = officialLists ?? (await getItemLists(item_iid, true));
+  const lists = officialLists ?? (await getItemLists(item_iid, { includeOfficial: true })).official;
 
   const avyRaw = await prisma.avatarSolution.findMany({
     where: {

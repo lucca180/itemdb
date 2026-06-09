@@ -13,7 +13,7 @@ export async function MyListsSection({ item }: Props) {
 
   if (!user) return null;
 
-  const lists = (await getItemMyLists(item.internal_id, user.id)).filter((list) => !list.official);
+  const lists = (await getItemMyLists(item.internal_id, user)).filter((list) => !list.official);
 
   if (!lists.length) return null;
 

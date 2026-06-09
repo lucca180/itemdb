@@ -5,6 +5,7 @@ import { getTranslations } from 'next-intl/server';
 import { Link } from '@i18n/navigation';
 import { ItemBreadcrumb } from '@components/Breadcrumbs/ItemBreadcrumb';
 import { loadItemPageLists } from '@app/_components/Item/loadUtils';
+import { shouldShowTradeLists } from '@utils/utils';
 import type { ItemData } from '@types';
 
 type ItemHeaderProps = {
@@ -12,7 +13,7 @@ type ItemHeaderProps = {
 };
 
 async function ItemHeaderBreadcrumb({ item }: ItemHeaderProps) {
-  const lists = await loadItemPageLists(item.internal_id);
+  const lists = await loadItemPageLists(item.internal_id, shouldShowTradeLists(item));
   return <ItemBreadcrumb item={item} officialLists={lists} useAppDir />;
 }
 

@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { Flex, Image, Text } from '@chakra-ui/react';
 import type { ReactNode } from 'react';
 import { ItemData, ItemEffect, ItemPetpetData, UserList } from '@types';
@@ -9,6 +10,7 @@ import {
   loadItemEffects,
   loadPetpetData,
 } from '@app/_components/Item/loadUtils';
+import { shouldShowTradeLists } from '@utils/utils';
 import {
   getPetpetColorId,
   getPetpetSpeciesFromString,
@@ -20,12 +22,19 @@ type Props = {
   item: ItemData;
 };
 
-export default async function RelatedLinksCard(props: Props) {
-  const { item } = props;
+export default function RelatedLinksCard(props: Props) {
+  return (
+    <Suspense fallback={null}>
+      <RelatedLinksCardContent {...props} />
+    </Suspense>
+  );
+}
+
+async function RelatedLinksCardContent({ item }: Props) {
   const [t, itemEffects, lists, petpetData] = await Promise.all([
     getTranslations(),
     loadItemEffects(item),
-    loadItemPageLists(item.internal_id),
+    loadItemPageLists(item.internal_id, shouldShowTradeLists(item)),
     loadPetpetData(item.internal_id),
   ]);
   const relatedLinks = buildRelatedLinks(item, t, {

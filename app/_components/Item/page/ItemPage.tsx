@@ -102,7 +102,9 @@ export async function ItemPage({ item }: ItemPageProps) {
             <PetpetCard key={getKey('petpet-card')} item={item} />
             <ItemRecipesCard key={getKey('item-recipes')} item={item} />
             {item.comment && <ItemCommentsCard key={getKey('item-comments')} item={item} />}
-            <ItemDropsSection key={getKey('item-drops')} item={item} />
+            <Suspense fallback={null}>
+              <ItemDropsSection key={getKey('item-drops')} item={item} />
+            </Suspense>
             <SimilarItemsCard key={getKey('similar-items')} item={item} />
           </Flex>
           <Flex w={{ base: '100%', md: '300px' }} flexFlow="column" gap={6}>

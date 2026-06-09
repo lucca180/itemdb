@@ -40,20 +40,31 @@ export function hasNCTradeInsights(insights: InsightsResponse | null | undefined
   return insights.releases.length > 0 || insights.ncEvents.length > 0;
 }
 
-async function getOfficialItemListsCached(internalId: number) {
+async function loadItemListCollectionsCached(internalId: number, includeTrade: boolean) {
   'use cache';
-  applyItemSectionCacheTags(internalId, 'lists');
-  cacheLife('itemFast');
-  return getItemLists(internalId, true);
+  if (includeTrade) {
+    applyItemSectionCacheTags(internalId, 'lists', 'trade-lists');
+  } else {
+    applyItemSectionCacheTags(internalId, 'lists');
+  }
+  cacheLife('itemSection');
+  return getItemLists(internalId, { includeOfficial: true, includeTrade });
 }
 
-export const getOfficialItemLists = cache((internalId: number) =>
-  getOfficialItemListsCached(internalId)
+const loadItemListCollections = cache((internalId: number, includeTrade: boolean) =>
+  loadItemListCollectionsCached(internalId, includeTrade)
 );
 
+export const getOfficialItemLists = cache(async (internalId: number, includeTrade = false) => {
+  const { official } = await loadItemListCollections(internalId, includeTrade);
+  return official;
+});
+
 export const loadItemPageLists = cache(
-  async (internalId: number): Promise<UserList[]> =>
-    (await getOfficialItemLists(internalId)).filter((list) => !list.officialTag.includes('Avatar'))
+  async (internalId: number, includeTrade = false): Promise<UserList[]> =>
+    (await getOfficialItemLists(internalId, includeTrade)).filter(
+      (list) => !list.officialTag.includes('Avatar')
+    )
 );
 
 async function loadItemEffectsCached(
@@ -120,16 +131,10 @@ export const loadPriceStatus = cache((internalId: number, userId?: string) =>
   getPriceStatus(internalId, userId)
 );
 
-async function loadTradeListsCached(internalId: number) {
-  'use cache';
-  applyItemSectionCacheTags(internalId, 'trade-lists');
-  cacheLife('itemFast');
-  return getItemLists(internalId, false);
-}
-
 export const loadTradeLists = cache(async (item: ItemData) => {
   if (!shouldShowTradeLists(item)) return [];
-  return loadTradeListsCached(item.internal_id);
+  const { trade } = await loadItemListCollections(item.internal_id, true);
+  return trade;
 });
 
 async function loadPetpetDataCached(internalId: number): Promise<ItemPetpetData | null> {

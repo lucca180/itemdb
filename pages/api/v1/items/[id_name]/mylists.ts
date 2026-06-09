@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { ObligatoryUserList } from '../../../../../types';
+import { ObligatoryUserList, User } from '@types';
 import prisma from '../../../../../utils/prisma';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import { rawToList } from '@services/ListService';
@@ -26,18 +26,18 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const id = Number(id_name);
   if (isNaN(id)) return res.status(400).json({ error: 'Invalid Request' });
 
-  const listsRaw = await getItemMyLists(id, user.id);
+  const listsRaw = await getItemMyLists(id, user);
 
   res.json(listsRaw);
 }
 
 export const getItemMyLists = async (
   item_id: number,
-  user_id: string
+  user: User
 ): Promise<ObligatoryUserList[]> => {
   const listsRaw = await prisma.userList.findMany({
     where: {
-      user_id: user_id,
+      user_id: user.id,
       items: {
         some: {
           item_iid: item_id,
@@ -45,14 +45,17 @@ export const getItemMyLists = async (
       },
     },
     include: {
-      user: true,
-      items: true,
+      items: {
+        where: {
+          item_iid: item_id,
+        },
+      },
     },
   });
 
   return listsRaw.map((listRaw) => {
     const item = listRaw.items.find((item) => item.item_iid === item_id)!;
-    const list = rawToList(listRaw, listRaw.user);
+    const list = rawToList(listRaw, user);
 
     list.itemInfo = [
       {
