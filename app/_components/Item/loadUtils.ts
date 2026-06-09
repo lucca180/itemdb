@@ -45,18 +45,20 @@ export const getCachedItem = cache(async (id_name: number | string, flags = fals
 });
 
 const loadItemListCollections = cache(async (internalId: number, includeTrade: boolean) => {
-  'use cache';
   if (includeTrade) {
     applyItemSectionCacheTags(internalId, 'lists', 'trade-lists');
   } else {
     applyItemSectionCacheTags(internalId, 'lists');
   }
-  cacheLife('itemSection');
   return getItemLists(internalId, { includeOfficial: true, includeTrade });
 });
 
 export const getAllOfficialItemLists = cache(async (internalId: number, includeTrade = false) => {
+  'use cache';
   const { official } = await loadItemListCollections(internalId, includeTrade);
+
+  cacheLife('itemSection');
+
   return official;
 });
 
@@ -100,7 +102,7 @@ export const loadNPPrices = cache(async (internalId: number) => {
 export const loadLastSeen = cache(async (internalId: number) => {
   'use cache';
   applyItemSectionCacheTags(internalId, 'last-seen');
-  cacheLife('itemFast');
+  cacheLife('seconds');
   return getLastSeen({ item_iid: internalId });
 });
 
@@ -109,8 +111,15 @@ export const loadPriceStatus = cache((internalId: number, userId?: string) =>
 );
 
 export const loadTradeLists = cache(async (item: ItemData) => {
-  if (!shouldShowTradeLists(item)) return [];
+  'use cache';
+  if (!shouldShowTradeLists(item)) {
+    cacheLife('itemMedium');
+    return [];
+  }
   const { trade } = await loadItemListCollections(item.internal_id, true);
+
+  cacheLife('itemSection');
+
   return trade;
 });
 
@@ -135,7 +144,7 @@ export const loadNCTradeInsights = cache(
   async (internalId: number): Promise<InsightsResponse | null> => {
     'use cache';
     applyItemSectionCacheTags(internalId, 'nc-insights');
-    cacheLife('homeFast');
+    cacheLife('itemSection');
     return getNCTradeInsights(internalId);
   }
 );
@@ -151,7 +160,7 @@ export const loadLebronTradeHistory = cache(
   async (internalId: number, itemName: string): Promise<LebronTrade[]> => {
     'use cache';
     applyItemSectionCacheTags(internalId, 'lebron');
-    cacheLife('homeFast');
+    cacheLife('itemFast');
     const data = await getLebronItemData(itemName);
     return data?.reports ?? [];
   }
@@ -169,7 +178,7 @@ export const loadMMEData = cache(async (internalId: number): Promise<ItemMMEData
 export const loadDyeData = cache(async (internalId: number): Promise<DyeworksData | null> => {
   'use cache';
   applyItemSectionCacheTags(internalId, 'dye');
-  cacheLife('itemSection');
+  cacheLife('itemMedium');
   const cachedItem = await getCachedItem(internalId, true);
   if (!cachedItem?.isNC || !cachedItem.isWearable) return null;
   return getDyeworksData(cachedItem);
@@ -220,7 +229,7 @@ export const loadAvyData = cache(
   async (internalId: number, includeTrade: boolean): Promise<AvyData[] | null> => {
     'use cache';
     applyItemSectionCacheTags(internalId, 'avy', 'lists');
-    cacheLife('itemSection');
+    cacheLife('itemMedium');
     const officialLists = await getAllOfficialItemLists(internalId, includeTrade);
     return getAvyData(internalId, officialLists);
   }

@@ -7,9 +7,9 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const nextConfig: NextConfig = {
   cacheComponents: true,
   cacheLife: {
-    itemFast: { stale: 60, revalidate: 60, expire: 300 },
-    itemSection: { stale: 300, revalidate: 300, expire: 3600 },
-    itemMedium: { stale: 600, revalidate: 600, expire: 3600 },
+    itemFast: { stale: 180, revalidate: 300, expire: 600 },
+    itemSection: { stale: 300, revalidate: 600, expire: 3600 },
+    itemMedium: { stale: 600, revalidate: 900, expire: 3600 },
     homeSection: { stale: 180, revalidate: 300, expire: 3600 },
     homeFast: { stale: 180, revalidate: 180, expire: 3600 },
     homeSlow: { stale: 3600, revalidate: 3600, expire: 86400 },
