@@ -20,56 +20,63 @@ export async function getListMatchesMany(
 
   const reqIsTarget = user?.username === target;
 
-  const lists = await prisma.userList.findMany({
-    where: {
-      user: {
-        username: {
-          in: users,
-          not: target,
+  const [lists, targetLists] = await Promise.all([
+    prisma.userList.findMany({
+      where: {
+        user: {
+          username: {
+            in: users,
+            not: target,
+          },
+        },
+        official: false,
+        purpose: targetType === 'seeker' ? 'trading' : 'seeking',
+        visibility: 'public',
+      },
+      select: {
+        user_id: true,
+        items: {
+          where: {
+            isHidden: false,
+          },
+          select: {
+            item_iid: true,
+          },
+        },
+        user: {
+          select: {
+            username: true,
+          },
         },
       },
-      official: false,
-      purpose: targetType === 'seeker' ? 'trading' : 'seeking',
-      visibility: 'public',
-    },
-    include: {
-      items: {
-        where: {
-          isHidden: false,
+    }),
+    prisma.userList.findMany({
+      where: {
+        user: {
+          username: target,
         },
-        include: {
-          item: true,
+        official: false,
+        purpose: targetType === 'seeker' ? 'seeking' : 'trading',
+        visibility: reqIsTarget ? undefined : 'public',
+      },
+      select: {
+        items: {
+          where: {
+            isHidden: reqIsTarget ? undefined : false,
+            item: {
+              isNC: true,
+            },
+          },
+          select: {
+            item_iid: true,
+          },
         },
       },
-      user: true,
-    },
-  });
-
-  const targetLists = await prisma.userList.findMany({
-    where: {
-      user: {
-        username: target,
-      },
-      official: false,
-      purpose: targetType === 'seeker' ? 'seeking' : 'trading',
-      visibility: reqIsTarget ? undefined : 'public',
-    },
-    include: {
-      items: {
-        where: {
-          isHidden: reqIsTarget ? undefined : false,
-        },
-        include: {
-          item: true,
-        },
-      },
-    },
-  });
+    }),
+  ]);
 
   const targetItemsSet = new Set(
-    targetLists.flatMap((list) =>
-      list.items.filter((i) => i.item.isNC).map((item) => item.item_iid)
-    )
+    targetLists.flatMap((list) => list.items.map((item) => item.item_iid))
   );
 
   const userMatch: Record<string, number[]> = {};
