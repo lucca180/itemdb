@@ -55,14 +55,14 @@ const loadItemListCollections = cache(async (internalId: number, includeTrade: b
   return getItemLists(internalId, { includeOfficial: true, includeTrade });
 });
 
-export const getOfficialItemLists = cache(async (internalId: number, includeTrade = false) => {
+export const getAllOfficialItemLists = cache(async (internalId: number, includeTrade = false) => {
   const { official } = await loadItemListCollections(internalId, includeTrade);
   return official;
 });
 
-export const loadItemPageLists = cache(
+export const getOfficialItemLists = cache(
   async (internalId: number, includeTrade = false): Promise<UserList[]> =>
-    (await getOfficialItemLists(internalId, includeTrade)).filter(
+    (await getAllOfficialItemLists(internalId, includeTrade)).filter(
       (list) => !list.officialTag.includes('Avatar')
     )
 );
@@ -205,7 +205,7 @@ export const loadAvyData = cache(
     'use cache';
     applyItemSectionCacheTags(internalId, 'avy', 'lists');
     cacheLife('itemSection');
-    const officialLists = await getOfficialItemLists(internalId, includeTrade);
+    const officialLists = await getAllOfficialItemLists(internalId, includeTrade);
     return getAvyData(internalId, officialLists);
   }
 );

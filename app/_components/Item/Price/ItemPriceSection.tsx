@@ -19,7 +19,7 @@ import Markdown from '@components/Utils/Markdown';
 import MatchTable from '@app/_components/Item/NCTrade/MatchTable';
 import {
   loadLastSeen,
-  loadItemPageLists,
+  getOfficialItemLists,
   loadNPPrices,
   loadPriceStatus,
   loadTradeLists,
@@ -339,7 +339,7 @@ async function PriceTableTabFull({
 }: ItemProps & ItemPriceShellProps & ItemPriceLabels) {
   const [{ user }, lists] = await Promise.all([
     getServerCurrentUser(),
-    loadItemPageLists(item.internal_id, shouldShowTradeLists(item)),
+    getOfficialItemLists(item.internal_id, shouldShowTradeLists(item)),
   ]);
 
   return (
@@ -352,6 +352,12 @@ async function PriceTableTabFull({
       format={format}
     />
   );
+}
+
+async function PriceChartTabFull({ item, prices }: ItemProps & ItemPriceShellProps) {
+  const lists = await getOfficialItemLists(item.internal_id, shouldShowTradeLists(item));
+
+  return <PriceChartPanel item={item} prices={prices} lists={lists} />;
 }
 
 async function PriceHelpBannerAsync({
@@ -477,7 +483,9 @@ async function ItemPriceTradeableCard({ item, prices }: ItemPriceShellProps) {
                   <PriceTablePanel item={item} prices={prices} t={t} format={format} />
                 </ItemPricePanel>
                 <ItemPricePanel tab="chart">
-                  <PriceChartPanel item={item} prices={prices} />
+                  <Suspense fallback={<PriceChartPanel item={item} prices={prices} />}>
+                    <PriceChartTabFull item={item} prices={prices} />
+                  </Suspense>
                 </ItemPricePanel>
                 {shouldShowLists && (
                   <ItemPricePanel tab="trading">

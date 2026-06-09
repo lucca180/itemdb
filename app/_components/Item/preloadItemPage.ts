@@ -21,7 +21,7 @@ import {
   loadDyeData,
   loadItemColors,
   loadItemEffects,
-  loadItemPageLists,
+  getOfficialItemLists,
   loadItemParentData,
   loadItemRecipes,
   loadItemTrades,
@@ -45,7 +45,7 @@ function preload(promise: Promise<unknown>) {
 export function preloadItemPageData(item: ItemData): void {
   const includeTrade = needsTradeLists(item);
 
-  preload(loadItemPageLists(item.internal_id, includeTrade));
+  preload(getOfficialItemLists(item.internal_id, includeTrade));
   preload(loadItemEffects(item));
   preload(loadItemColors(item));
 

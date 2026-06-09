@@ -6,7 +6,7 @@ import CardBase from '@components/Card/CardBase';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@i18n/navigation';
 import {
-  loadItemPageLists,
+  getOfficialItemLists,
   loadItemEffects,
   loadPetpetData,
 } from '@app/_components/Item/loadUtils';
@@ -34,7 +34,7 @@ async function RelatedLinksCardContent({ item }: Props) {
   const [t, itemEffects, lists, petpetData] = await Promise.all([
     getTranslations(),
     loadItemEffects(item),
-    loadItemPageLists(item.internal_id, shouldShowTradeLists(item)),
+    getOfficialItemLists(item.internal_id, shouldShowTradeLists(item)),
     loadPetpetData(item.internal_id),
   ]);
   const relatedLinks = buildRelatedLinks(item, t, {
