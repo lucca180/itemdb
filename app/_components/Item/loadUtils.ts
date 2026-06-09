@@ -44,12 +44,7 @@ export const getCachedItem = cache(async (id_name: number | string, flags = fals
   return item;
 });
 
-export function hasNCTradeInsights(insights: InsightsResponse | null | undefined) {
-  if (!insights) return false;
-  return insights.releases.length > 0 || insights.ncEvents.length > 0;
-}
-
-async function loadItemListCollectionsCached(internalId: number, includeTrade: boolean) {
+const loadItemListCollections = cache(async (internalId: number, includeTrade: boolean) => {
   'use cache';
   if (includeTrade) {
     applyItemSectionCacheTags(internalId, 'lists', 'trade-lists');
@@ -58,11 +53,7 @@ async function loadItemListCollectionsCached(internalId: number, includeTrade: b
   }
   cacheLife('itemSection');
   return getItemLists(internalId, { includeOfficial: true, includeTrade });
-}
-
-const loadItemListCollections = cache((internalId: number, includeTrade: boolean) =>
-  loadItemListCollectionsCached(internalId, includeTrade)
-);
+});
 
 export const getOfficialItemLists = cache(async (internalId: number, includeTrade = false) => {
   const { official } = await loadItemListCollections(internalId, includeTrade);
@@ -76,65 +67,42 @@ export const loadItemPageLists = cache(
     )
 );
 
-async function loadItemEffectsCached(
-  internalId: number,
-  itemSnapshot: ItemData
-): Promise<ItemEffect[]> {
+export const loadItemEffects = cache(async (item: ItemData): Promise<ItemEffect[]> => {
   'use cache';
-  applyItemSectionCacheTags(internalId, 'effects');
+  applyItemSectionCacheTags(item.internal_id, 'effects');
   cacheLife('homeSlow');
-  const fresh = await getCachedItem(internalId, true);
-  return getItemEffects(fresh ?? itemSnapshot);
-}
+  const fresh = await getCachedItem(item.internal_id, true);
+  return getItemEffects(fresh ?? item);
+});
 
-export async function loadItemEffects(item: ItemData): Promise<ItemEffect[]> {
-  return loadItemEffectsCached(item.internal_id, item);
-}
-
-async function loadItemColorsCached(
-  internalId: number
-): Promise<Awaited<ReturnType<typeof getSingleItemColor>>> {
+export const loadItemColors = cache(async (item: ItemData) => {
   'use cache';
-  applyItemSectionCacheTags(internalId, 'colors');
+  applyItemSectionCacheTags(item.internal_id, 'colors');
   cacheLife('homeSlow');
-  const fresh = await getCachedItem(internalId, true);
-  return getSingleItemColor(fresh ?? ({ internal_id: internalId } as ItemData));
-}
+  const fresh = await getCachedItem(item.internal_id, true);
+  return getSingleItemColor(fresh ?? ({ internal_id: item.internal_id } as ItemData));
+});
 
-export async function loadItemColors(item: ItemData) {
-  return loadItemColorsCached(item.internal_id);
-}
-
-async function loadItemWearableDataCached(internalId: number): Promise<WearableData> {
+export const loadItemWearableData = cache(async (internalId: number): Promise<WearableData> => {
   'use cache';
   applyItemSectionCacheTags(internalId, 'wearable');
   cacheLife('homeSlow');
   return getWearableData(internalId) as Promise<WearableData>;
-}
+});
 
-export async function loadItemWearableData(internalId: number): Promise<WearableData> {
-  return loadItemWearableDataCached(internalId);
-}
-
-async function loadNPPricesCached(internalId: number) {
+export const loadNPPrices = cache(async (internalId: number) => {
   'use cache';
   applyItemSectionCacheTags(internalId, 'np-prices');
   cacheLife('itemFast');
   return getItemPrices({ iid: internalId, includeUnconfirmed: true, limit: -1 });
-}
+});
 
-export const loadNPPrices = cache((internalId: number) => loadNPPricesCached(internalId));
-
-async function loadLastSeenCached(internalId: number) {
+export const loadLastSeen = cache(async (internalId: number) => {
   'use cache';
   applyItemSectionCacheTags(internalId, 'last-seen');
   cacheLife('itemFast');
   return getLastSeen({ item_iid: internalId });
-}
-
-export async function loadLastSeen(internalId: number) {
-  return loadLastSeenCached(internalId);
-}
+});
 
 export const loadPriceStatus = cache((internalId: number, userId?: string) =>
   getPriceStatus(internalId, userId)
@@ -146,7 +114,7 @@ export const loadTradeLists = cache(async (item: ItemData) => {
   return trade;
 });
 
-async function loadPetpetDataCached(internalId: number): Promise<ItemPetpetData | null> {
+export const loadPetpetData = cache(async (internalId: number): Promise<ItemPetpetData | null> => {
   'use cache';
   applyItemSectionCacheTags(internalId, 'petpet');
   cacheLife('homeSlow');
@@ -161,127 +129,83 @@ async function loadPetpetDataCached(internalId: number): Promise<ItemPetpetData 
     return null;
   }
   return getPetpetData(cachedItem);
-}
+});
 
-export async function loadPetpetData(internalId: number): Promise<ItemPetpetData | null> {
-  return loadPetpetDataCached(internalId);
-}
+export const loadNCTradeInsights = cache(
+  async (internalId: number): Promise<InsightsResponse | null> => {
+    'use cache';
+    applyItemSectionCacheTags(internalId, 'nc-insights');
+    cacheLife('homeFast');
+    return getNCTradeInsights(internalId);
+  }
+);
 
-async function loadNCTradeInsightsCached(internalId: number): Promise<InsightsResponse | null> {
-  'use cache';
-  applyItemSectionCacheTags(internalId, 'nc-insights');
-  cacheLife('homeFast');
-  return getNCTradeInsights(internalId);
-}
-
-export async function loadNCTradeInsights(internalId: number): Promise<InsightsResponse | null> {
-  return loadNCTradeInsightsCached(internalId);
-}
-
-async function loadNCMallDataCached(internalId: number): Promise<NCMallData | null> {
+export const loadNCMallData = cache(async (internalId: number): Promise<NCMallData | null> => {
   'use cache';
   applyItemSectionCacheTags(internalId, 'nc-mall');
   cacheLife('itemSection');
   return getItemNCMall(internalId);
-}
+});
 
-export const loadNCMallData = cache((internalId: number) => loadNCMallDataCached(internalId));
+export const loadLebronTradeHistory = cache(
+  async (internalId: number, itemName: string): Promise<LebronTrade[]> => {
+    'use cache';
+    applyItemSectionCacheTags(internalId, 'lebron');
+    cacheLife('homeFast');
+    const data = await getLebronItemData(itemName);
+    return data?.reports ?? [];
+  }
+);
 
-async function loadLebronTradeHistoryCached(
-  internalId: number,
-  itemName: string
-): Promise<LebronTrade[]> {
-  'use cache';
-  applyItemSectionCacheTags(internalId, 'lebron');
-  cacheLife('homeFast');
-  const data = await getLebronItemData(itemName);
-  return data?.reports ?? [];
-}
-
-export async function loadLebronTradeHistory(
-  internalId: number,
-  itemName: string
-): Promise<LebronTrade[]> {
-  return loadLebronTradeHistoryCached(internalId, itemName);
-}
-
-async function loadMMEDataCached(internalId: number): Promise<ItemMMEData | null> {
+export const loadMMEData = cache(async (internalId: number): Promise<ItemMMEData | null> => {
   'use cache';
   applyItemSectionCacheTags(internalId, 'mme');
   cacheLife('itemMedium');
   const cachedItem = await getCachedItem(internalId, true);
   if (!cachedItem || !isMME(cachedItem.name)) return null;
   return getMMEData(cachedItem);
-}
+});
 
-export async function loadMMEData(internalId: number): Promise<ItemMMEData | null> {
-  return loadMMEDataCached(internalId);
-}
-
-async function loadDyeDataCached(internalId: number): Promise<DyeworksData | null> {
+export const loadDyeData = cache(async (internalId: number): Promise<DyeworksData | null> => {
   'use cache';
   applyItemSectionCacheTags(internalId, 'dye');
   cacheLife('itemSection');
   const cachedItem = await getCachedItem(internalId, true);
   if (!cachedItem?.isNC || !cachedItem.isWearable) return null;
   return getDyeworksData(cachedItem);
-}
+});
 
-export async function loadDyeData(internalId: number): Promise<DyeworksData | null> {
-  return loadDyeDataCached(internalId);
-}
-
-async function loadItemRecipesCached(internalId: number): Promise<ItemRecipe[]> {
+export const loadItemRecipes = cache(async (internalId: number): Promise<ItemRecipe[]> => {
   'use cache';
   applyItemSectionCacheTags(internalId, 'recipes');
   cacheLife('itemMedium');
   const cachedItem = await getCachedItem(internalId, true);
   if (!cachedItem || cachedItem.isNC) return [];
   return getItemRecipes(cachedItem.internal_id);
-}
+});
 
-export async function loadItemRecipes(internalId: number): Promise<ItemRecipe[]> {
-  return loadItemRecipesCached(internalId);
-}
-
-async function loadItemTradesCached(internalId: number) {
+export const loadItemTrades = cache(async (internalId: number) => {
   'use cache';
   applyItemSectionCacheTags(internalId, 'trade');
   cacheLife('itemSection');
   return getItemTrades({ item_iid: internalId });
-}
+});
 
-export async function loadItemTrades(internalId: number) {
-  return loadItemTradesCached(internalId);
-}
-
-async function loadItemParentDataCached(internalId: number): Promise<ItemData[]> {
+export const loadItemParentData = cache(async (internalId: number): Promise<ItemData[]> => {
   'use cache';
   applyItemSectionCacheTags(internalId, 'parent');
   cacheLife('itemMedium');
   const { itemData } = await getItemParent(internalId);
   if (itemData.length === 0) return [];
   return [...itemData].sort((a, b) => (b.item_id ?? b.internal_id) - (a.item_id ?? a.internal_id));
-}
+});
 
-export async function loadItemParentData(internalId: number): Promise<ItemData[]> {
-  return loadItemParentDataCached(internalId);
-}
-
-async function loadAvyDataCached(
-  internalId: number,
-  includeTrade: boolean
-): Promise<AvyData[] | null> {
-  'use cache';
-  applyItemSectionCacheTags(internalId, 'avy', 'lists');
-  cacheLife('itemSection');
-  const officialLists = await getOfficialItemLists(internalId, includeTrade);
-  return getAvyData(internalId, officialLists);
-}
-
-export async function loadAvyData(
-  internalId: number,
-  includeTrade: boolean
-): Promise<AvyData[] | null> {
-  return loadAvyDataCached(internalId, includeTrade);
-}
+export const loadAvyData = cache(
+  async (internalId: number, includeTrade: boolean): Promise<AvyData[] | null> => {
+    'use cache';
+    applyItemSectionCacheTags(internalId, 'avy', 'lists');
+    cacheLife('itemSection');
+    const officialLists = await getOfficialItemLists(internalId, includeTrade);
+    return getAvyData(internalId, officialLists);
+  }
+);

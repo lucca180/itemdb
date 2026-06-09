@@ -29,7 +29,6 @@ import { NCTradeTabBar } from '@app/_components/Item/NCTrade/NCTradeTabBar';
 import { NCTradeTabProvider } from '@app/_components/Item/NCTrade/NCTradeTabContext';
 import { NCTradeValueBadge } from '@app/_components/Item/NCTrade/NCTradeValueBadge';
 import {
-  hasNCTradeInsights,
   loadLebronTradeHistory,
   loadNCTradeInsights,
   loadTradeLists,
@@ -41,6 +40,11 @@ import type { InsightsResponse, ItemData, UserList } from '@types';
 type Props = {
   item: ItemData;
 };
+
+function hasNCTradeInsights(insights: InsightsResponse | null | undefined) {
+  if (!insights) return false;
+  return insights.releases.length > 0 || insights.ncEvents.length > 0;
+}
 
 const loadSeekingMatches = cache(
   async (tradeLists: UserList[] | undefined, sessionCookie?: string) => {
