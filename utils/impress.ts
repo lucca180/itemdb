@@ -215,3 +215,47 @@ export function getVisibleLayers(
 
   return visibleLayers;
 }
+
+export function resolveItemAppearanceConflicts(
+  itemAppearances: (DTICanonicalAppearance | null | undefined)[]
+) {
+  const resolvedAppearances: DTICanonicalAppearance[] = [];
+
+  for (const itemAppearance of itemAppearances) {
+    if (!itemAppearance) continue;
+
+    const itemZones = getAppearanceZones(itemAppearance);
+
+    const compatibleAppearances = resolvedAppearances.filter((resolvedAppearance) => {
+      const resolvedZones = getAppearanceZones(resolvedAppearance);
+
+      return !(
+        setsIntersect(itemZones.occupied, resolvedZones.occupiedOrRestricted) ||
+        setsIntersect(resolvedZones.occupied, itemZones.occupiedOrRestricted)
+      );
+    });
+
+    resolvedAppearances.length = 0;
+    resolvedAppearances.push(...compatibleAppearances, itemAppearance);
+  }
+
+  return resolvedAppearances;
+}
+
+const getAppearanceZones = (appearance: DTICanonicalAppearance) => {
+  const occupied = new Set(appearance.layers.map((layer) => layer.zone.id));
+  const restricted = appearance.restrictedZones.map((zone) => zone.id);
+
+  return {
+    occupied,
+    occupiedOrRestricted: new Set([...occupied, ...restricted]),
+  };
+};
+
+const setsIntersect = (first: Set<string>, second: Set<string>) => {
+  for (const value of first) {
+    if (second.has(value)) return true;
+  }
+
+  return false;
+};

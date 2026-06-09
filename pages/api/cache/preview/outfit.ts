@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { dti, getVisibleLayers } from '../../../../utils/impress';
+import { dti, getVisibleLayers, resolveItemAppearanceConflicts } from '@utils/impress';
 import { createCanvas, loadImage } from '@napi-rs/canvas';
-import { cdnExists, uploadToS3 } from '../../../../utils/googleCloud';
-import prisma from '../../../../utils/prisma';
+import { cdnExists, uploadToS3 } from '@utils/googleCloud';
+import prisma from '@utils/prisma';
 import queryString from 'query-string';
 import objectHash from 'object-hash';
 import { Chance } from 'chance';
@@ -29,10 +29,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (!itemsIds || !itemsIds.length) return res.status(400).send('No item iids provided');
 
   try {
+    const parsedItemIds = itemsIds.map((itemId) => parseInt(itemId));
     const items = await prisma.items.findMany({
       where: {
         internal_id: {
-          in: itemsIds.map((i) => parseInt(i)),
+          in: parsedItemIds,
         },
       },
     });
@@ -40,7 +41,15 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     start = updateServerTime('item-lookup', start, res);
     if (!items || !items.length) return res.status(404).send('Item not found');
 
-    const pathHash = objectHash(items.map((item) => item.internal_id).sort());
+    const itemsById = new Map(items.map((item) => [item.internal_id, item]));
+    const orderedItems = parsedItemIds
+      .map((itemId) => itemsById.get(itemId))
+      .filter((item) => item !== undefined);
+
+    const pathHash = objectHash({
+      version: 2,
+      itemIds: orderedItems.map((item) => item.internal_id),
+    });
     const path = `preview/${pathHash}.png`;
 
     const forceRefresh = refresh === 'true';
@@ -63,7 +72,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       start = updateServerTime('canvas-setup', start, res);
 
       const imagesURLs = await handleRegularStyle(
-        items.map((item) => item.name),
+        orderedItems.map((item) => item.name),
         petId ? Number(petId) : undefined
       );
       start = updateServerTime('dti-fetch', start, res);
@@ -147,10 +156,11 @@ const handleRegularStyle = async (itemNames: string[], petId?: number): Promise<
     throw new Error('Item Preview not found');
   }
 
-  const layers = getVisibleLayers(
-    outfitPreview[0].canonicalAppearance.body.canonicalAppearance,
+  const itemAppearances = resolveItemAppearanceConflicts(
     outfitPreview.map((item) => item.canonicalAppearance)
   );
+  const petAppearance = itemAppearances[0]?.body.canonicalAppearance;
+  const layers = getVisibleLayers(petAppearance, itemAppearances);
 
   if (layers.length === 0) throw 'No layers found';
 
