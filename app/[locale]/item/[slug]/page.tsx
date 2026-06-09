@@ -7,6 +7,7 @@ import { ItemPage as ItemPageView } from '@app/_components/Item/page/ItemPage';
 import { preloadItemPageData } from '@app/_components/Item/preloadItemPage';
 import { buildItemPageMetadata, resolveItemRoute } from '@app/utils/loadItemPage';
 import { setRequestLocale } from 'next-intl/server';
+import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 
 type ItemPageProps = {
   params: Promise<{ locale: string; slug: string }>;
@@ -26,7 +27,7 @@ export async function generateMetadata({ params }: ItemPageProps): Promise<Metad
 
 export default function ItemPage({ params }: ItemPageProps) {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<AppServerLayoutSkeleton />}>
       <ItemPageRoute params={params} />
     </Suspense>
   );

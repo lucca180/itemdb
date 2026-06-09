@@ -5,6 +5,7 @@ import { getStaticAppPageProps } from '@utils/appPage';
 import { TermsPageClient } from './TermsPageClient';
 import { setRequestLocale } from 'next-intl/server';
 import { routing } from '@utils/locales';
+import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 
 const description = 'This page outlines the terms of use for itemdb, its features, and API.';
 const pageConfig = {
@@ -27,7 +28,7 @@ export async function generateMetadata({ params }: TermsPageProps): Promise<Meta
 
 export default function TermsPage({ params }: TermsPageProps) {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<AppServerLayoutSkeleton mainColor="#a5aa9fc7" />}>
       <TermsPageContent params={params} />
     </Suspense>
   );

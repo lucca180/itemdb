@@ -23,6 +23,7 @@ import { LatestPricesSection } from '@app/_components/Home/Sections/LatestPrices
 import StatsCard, { StatsCardLoading } from '@app/_components/Home/Cards/StatsCard';
 import { setRequestLocale } from 'next-intl/server';
 import { routing } from '@i18n/routing';
+import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 
 const mainColor = Color('#4A5568').alpha(0.9).hexa();
 
@@ -80,7 +81,7 @@ export async function generateMetadata({ params }: HomePageProps): Promise<Metad
 
 export default function HomePage({ params }: HomePageProps) {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<AppServerLayoutSkeleton mainColor={mainColor} />}>
       <HomePageContent params={params} />
     </Suspense>
   );

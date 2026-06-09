@@ -1,12 +1,13 @@
 import type { ReactNode } from 'react';
 import { Suspense } from 'react';
 import { getTranslations } from 'next-intl/server';
-import { AppSiteAlert, SiteAlertBar } from '@components/Layout/siteAlert';
+import { AppSiteAlert } from '@components/Layout/siteAlert';
 import { AuthButtonSkeleton } from '@components/Layout/AuthButtonSkeleton';
 import { LayoutAuthServer } from '@components/Layout/LayoutAuthServer';
 import { LayoutChrome, LayoutFeedback, LayoutSearch } from '@components/Layout/LayoutChrome';
 import { LayoutLocalePages } from '@components/Layout/LayoutLocale';
 import { getLayoutFooterColumns, getLayoutNavSections } from '@components/Layout/layoutData';
+import { SiteAlertBar } from './SiteAlertBar';
 
 type AppServerLayoutProps = {
   locale: string;

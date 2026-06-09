@@ -2,22 +2,20 @@
 
 import { useSyncExternalStore, type ReactNode } from 'react';
 import Color from 'color';
-import { Box, Center, Flex, Spinner, Text } from '@chakra-ui/react';
+import { Center, Flex, Spinner, Text } from '@chakra-ui/react';
 import NextImage from 'next/image';
 import { Link } from '@i18n/navigation';
 import { useLocale } from 'next-intl';
-import logo from '@assets/logo_white_compressed.svg';
-import logoIcon from '@assets/logo_icon.svg';
 import mtLogo from '@assets/magnetismo-logo.png';
 import brasil from '@assets/icons/brasil.png';
 import { DropdownButton, DropdownOption } from '@components/Menus/HeaderDropdown';
 import { SearchBar } from '@components/Search/SearchBar';
 import FeedbackButton from '@components/Feedback/FeedbackButton';
+import { LAYOUT_BASE_COLOR, LayoutFrame } from '@components/Layout/LayoutFrame';
+import { LayoutLogoContent } from '@components/Layout/LayoutLogoContent';
 import MainLink from '@components/Utils/MainLink';
 import type { LayoutFooterColumn, LayoutNavSection } from '@components/Layout/layoutData';
 import { localizeInternalHref, type AppLocale } from '@utils/locales';
-
-const LAYOUT_BASE_COLOR = '#4A5568';
 
 const noopSubscribe = () => () => {};
 
@@ -52,33 +50,18 @@ function getLayoutFooterGradientRgb() {
 
 function LayoutLogo({ hardNavigation }: { hardNavigation?: boolean }) {
   const locale = useLocale() as AppLocale;
-  const content = (
-    <>
-      <Box display={{ base: 'inline', md: 'none' }}>
-        <NextImage
-          src={logoIcon}
-          alt="itemdb logo"
-          height={50}
-          style={{ width: 'auto', maxHeight: '50px' }}
-        />
-      </Box>
-      <Box display={{ base: 'none', md: 'inline' }}>
-        <NextImage src={logo} alt="itemdb logo" width={175} />
-      </Box>
-    </>
-  );
 
   if (hardNavigation) {
     return (
       <a href={localizeInternalHref('/', locale)} style={{ flex: '0 0 auto' }}>
-        {content}
+        <LayoutLogoContent />
       </a>
     );
   }
 
   return (
     <Link href="/" style={{ flex: '0 0 auto' }}>
-      {content}
+      <LayoutLogoContent />
     </Link>
   );
 }
@@ -240,72 +223,42 @@ export function LayoutChrome({
   footerActions,
   hardNavigation,
 }: LayoutChromeProps) {
+  const mainContent = loading ? (
+    <Center h="80vh" flexFlow="column" gap={3}>
+      <Spinner size="lg" />
+      <Text>{loadingLabel}</Text>
+    </Center>
+  ) : (
+    children
+  );
+
   return (
-    <Flex flexFlow="column" minH="100vh">
-      {siteAlert}
-      <Flex
-        as="header"
-        w="full"
-        maxW="8xl"
-        marginX="auto"
-        gap={{ base: 2, md: 4 }}
-        px={{ base: 2, md: 4 }}
-        py={5}
-      >
-        <LayoutLogo hardNavigation={hardNavigation} />
-        <Flex flex="1 1 auto" justifyContent="center" alignItems="center">
-          <Box maxW="650px" h="100%" flex="1">
-            {search}
-          </Box>
-        </Flex>
-        {auth}
-      </Flex>
-
-      <Flex
-        as="nav"
-        bg={mainColor}
-        justifyContent="center"
-        alignItems="center"
-        py={1}
-        gap={{ base: 1, md: 3 }}
-        overflowX="auto"
-      >
-        <Flex margin="0 auto" maxW="100%" alignItems="center" py={1} gap={{ base: 1, md: 3 }}>
-          <LayoutNavMenu
-            mainColor={mainColor}
-            sections={navSections}
-            hardNavigation={hardNavigation}
-          />
-        </Flex>
-      </Flex>
-
-      <Box
-        as="main"
-        flex="1"
-        w="full"
-        maxW={fullWidth ? undefined : '8xl'}
-        marginX="auto"
-        px={fullWidth ? undefined : 4}
-        pb={6}
-        h="100%"
-      >
-        {!loading && children}
-        {loading && (
-          <Center h="80vh" flexFlow="column" gap={3}>
-            <Spinner size="lg" />
-            <Text>{loadingLabel}</Text>
-          </Center>
-        )}
-      </Box>
-
-      <LayoutFooter
-        madeInLabel={madeInLabel}
-        byLabel={byLabel}
-        footerColumns={footerColumns}
-        footerActions={footerActions}
-        hardNavigation={hardNavigation}
-      />
-    </Flex>
+    <LayoutFrame
+      siteAlert={siteAlert}
+      logo={<LayoutLogo hardNavigation={hardNavigation} />}
+      search={search}
+      auth={auth}
+      navigation={
+        <LayoutNavMenu
+          mainColor={mainColor}
+          sections={navSections}
+          hardNavigation={hardNavigation}
+        />
+      }
+      footer={
+        <LayoutFooter
+          madeInLabel={madeInLabel}
+          byLabel={byLabel}
+          footerColumns={footerColumns}
+          footerActions={footerActions}
+          hardNavigation={hardNavigation}
+        />
+      }
+      mainColor={mainColor}
+      fullWidth={fullWidth}
+    >
+      {mainContent}
+    </LayoutFrame>
   );
 }
 
