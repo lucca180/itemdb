@@ -24,6 +24,7 @@ export const ITEM_PAGE_CACHE_SCOPES = [
   'parent',
   'similar',
   'avy',
+  'auction',
   'trade',
   'petpet',
   'drops',

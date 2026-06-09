@@ -212,12 +212,16 @@ export const getLebronItemData = async (name: string) => {
   }
 };
 
-const getAuctionData = async (name: string, onlySold = false) => {
+export const getAuctionData = async (name: string | number, onlySold = false) => {
   let auctionRaw = await prisma.restockAuctionHistory.findMany({
     where: {
-      item: {
-        name: name,
-      },
+      item:
+        typeof name === 'string'
+          ? {
+              name: name,
+            }
+          : undefined,
+      item_iid: typeof name === 'number' ? name : undefined,
       otherInfo: onlySold
         ? {
             not: {

@@ -15,6 +15,8 @@ describe('appCacheTags', () => {
     expect(itemRootTag(42)).toBe('item-42');
     expect(itemSectionTag(42, 'mme')).toBe('item-42-mme');
     expect(itemSectionCacheTags(7, 'drops')).toEqual(['item-7', 'item-7-drops']);
+    expect(itemSectionCacheTags(7, 'auction')).toEqual(['item-7', 'item-7-auction']);
+    expect(itemSectionCacheTags(7, 'trade')).toEqual(['item-7', 'item-7-trade']);
   });
 
   it('builds revalidation presets', () => {

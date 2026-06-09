@@ -144,6 +144,7 @@ Each card below defines its `'use cache'` function in the same file.
 | `loadItemRecipes` | [`ItemRecipesCard.tsx`](../app/_components/Item/Recipes/ItemRecipesCard.tsx) | `recipes` | `itemMedium` | `ItemRecipesCard` |
 | `loadItemParentData` | [`ItemParent.tsx`](../app/_components/Item/ItemParent/ItemParent.tsx) | `parent` | `itemMedium` | `ItemParent` |
 | `loadSimilarItemDataCached` | [`loadSimilarItems.ts`](../app/_components/Item/SimilarItems/loadSimilarItems.ts) | `similar` | `itemMedium` | `SimilarItemsCard` |
+| `loadItemAuctions` | [`AuctionCardSection.tsx`](../app/_components/Item/Auction/AuctionCardSection.tsx) | `auction` | `itemSection` | `AuctionCardSection` |
 | `loadItemTrades` | [`TradeCardSection.tsx`](../app/_components/Item/Trade/TradeCardSection.tsx) | `trade` | `itemSection` | `TradeCardSection` |
 
 **avy ↔ lists note:** `loadAvyData` tags `lists` in addition to `avy`, so avatars are invalidated when official lists change.
@@ -184,6 +185,7 @@ ItemPage
 ├── SimilarItemsCard          → loadSimilarItemData
 ├── ItemAvyCard               → loadAvyData (internal)
 ├── ItemParent                → loadItemParentData (internal)
+├── AuctionCardSection        → loadItemAuctions (internal)
 ├── TradeCardSection          → loadItemTrades (internal)
 ├── ItemRestockInfo           → loadLastSeen
 └── RelatedLinksCard          → loadItemEffects, loadItemPageLists, loadPetpetData

@@ -1,7 +1,7 @@
 import { cache } from 'react';
 import { cacheLife } from 'next/cache';
 import { getItem } from '@pages/api/v1/items/[id_name]';
-import { getLebronItemData } from '@pages/api/v1/items/[id_name]/[tradings]';
+import { getAuctionData, getLebronItemData } from '@pages/api/v1/items/[id_name]/[tradings]';
 import { getItemLists } from '@pages/api/v1/items/[id_name]/lists';
 import { getItemPrices } from '@pages/api/v1/items/[id_name]/prices';
 import { getPetpetData } from '@pages/api/v1/items/[id_name]/petpet';
@@ -182,6 +182,22 @@ export const loadItemRecipes = cache(async (internalId: number): Promise<ItemRec
   const cachedItem = await getCachedItem(internalId, true);
   if (!cachedItem || cachedItem.isNC) return [];
   return getItemRecipes(cachedItem.internal_id);
+});
+
+export const loadItemAuctions = cache(async (internalId: number) => {
+  'use cache';
+  applyItemSectionCacheTags(internalId, 'auction');
+  cacheLife('itemSection');
+  const [data, soldData] = await Promise.all([
+    getAuctionData(internalId),
+    getAuctionData(internalId, true),
+  ]);
+
+  return {
+    recent: data.recent.slice(0, 20),
+    totalSold: data.sold,
+    soldMedianPrice: soldData.priceMedian,
+  };
 });
 
 export const loadItemTrades = cache(async (internalId: number) => {

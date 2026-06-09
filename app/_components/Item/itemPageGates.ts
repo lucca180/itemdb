@@ -40,8 +40,14 @@ export function needsMME(item: ItemData) {
   return isMME(item.name);
 }
 
+export function needsAuctionCard(item: ItemData) {
+  if (item.isNC || item.status !== 'active' || item.price.value === null) return false;
+
+  return item.price.inflated ? item.price.value > 100_000 : item.price.value > 5_000_000;
+}
+
 export function needsTradeCard(item: ItemData) {
-  return !item.isNC && item.status === 'active';
+  return !item.isNC && item.status === 'active' && !needsAuctionCard(item);
 }
 
 export function needsRestockLastSeen(item: ItemData) {

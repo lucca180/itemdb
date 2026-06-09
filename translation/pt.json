@@ -151,6 +151,8 @@
     "powered-by": "Powered by",
     "trade-history": "Histórico de Trocas",
     "no-trade-history-card": "Ainda não vimos nenhuma troca com esse item",
+    "auction-history": "Histórico de Leilões",
+    "no-auction-history-card": "Ainda não vimos esse item na Casa de Leilões",
     "found-inside": "Encontrado Em",
     "categories": "Categorias",
     "delete-item": "Excluir Item",
@@ -323,7 +325,9 @@
     "sold-median-price": "Mediana de Preços Vendidos",
     "median-price": "Mediana de Preços",
     "avatars": "Avatares",
-    "item-list": "Lista de Itens"
+    "item-list": "Lista de Itens",
+    "has-bids": "Possui lances",
+    "no-bids": "Sem lances"
   },
   "Button": {
     "feedback": "Feedback",
@@ -509,7 +513,8 @@
     "clear": "Limpar",
     "item": "Item",
     "now": "Agora",
-    "select-language": "Selecionar Idioma"
+    "select-language": "Selecionar Idioma",
+    "unknown": "Desconhecido"
   },
   "Feedback": {
     "modalHelper": "Se você deseja receber uma resposta, digite seu endereço de e-mail",

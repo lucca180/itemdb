@@ -11,6 +11,7 @@ import {
   needsPetpet,
   needsRecipes,
   needsRestockLastSeen,
+  needsAuctionCard,
   needsTradeCard,
   needsTradeLists,
   needsWearableData,
@@ -24,6 +25,7 @@ import {
   getOfficialItemLists,
   loadItemParentData,
   loadItemRecipes,
+  loadItemAuctions,
   loadItemTrades,
   loadItemWearableData,
   loadLastSeen,
@@ -73,6 +75,7 @@ export function preloadItemPageData(item: ItemData): void {
   if (needsRecipes(item)) preload(loadItemRecipes(item.internal_id));
   if (needsDye(item)) preload(loadDyeData(item.internal_id));
   if (needsMME(item)) preload(loadMMEData(item.internal_id));
+  if (needsAuctionCard(item)) preload(loadItemAuctions(item.internal_id));
   if (needsTradeCard(item)) preload(loadItemTrades(item.internal_id));
   if (needsRestockLastSeen(item)) preload(loadLastSeen(item.internal_id));
   if (needsWearableData(item)) preload(loadItemWearableData(item.internal_id));

@@ -150,6 +150,8 @@
     "powered-by": "Powered by",
     "trade-history": "Trade History",
     "no-trade-history-card": "We haven't seen this item at the trading post yet",
+    "auction-history": "Auction History",
+    "no-auction-history-card": "We haven't seen this item at the Auction House yet",
     "found-inside": "Found Inside",
     "categories": "Categories",
     "drops": "Drops",
@@ -322,7 +324,9 @@
     "median-price": "Median Price",
     "sold-median-price": "Sold Median Price",
     "avatars": "Avatars",
-    "item-list": "Item List"
+    "item-list": "Item List",
+    "has-bids": "Has Bids",
+    "no-bids": "No Bids"
   },
   "Button": {
     "feedback": "Feedback",
@@ -508,7 +512,8 @@
     "clear": "Clear",
     "item": "Item",
     "now": "Now",
-    "select-language": "Select Language"
+    "select-language": "Select Language",
+    "unknown": "Unknown"
   },
   "Lists": {
     "item-added-to-list": "Item added to list",

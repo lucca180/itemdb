@@ -29,6 +29,7 @@ import { SimilarItemsCard } from '@app/_components/Item/SimilarItems/SimilarItem
 import PetpetCard from '@app/_components/Item/Petpet/PetpetCard';
 import ItemCommentsCard from '@app/_components/Item/Comments/ItemCommentsCard';
 import ItemAvyCard from '@app/_components/Item/Avy/ItemAvyCard';
+import AuctionCardSection from '@app/_components/Item/Auction/AuctionCardSection';
 import TradeCardSection from '@app/_components/Item/Trade/TradeCardSection';
 import NCTradeSection from '@app/_components/Item/NCTrade/NCTradeSection';
 import ItemPriceSection from '@app/_components/Item/Price/ItemPriceSection';
@@ -114,6 +115,7 @@ export async function ItemPage({ item }: ItemPageProps) {
             <ItemPageWearablePreview item={item} />
             <ItemAvyCard key={getKey('item-avy-card')} item={item} />
             <ItemParent key={getKey('item-parent')} item={item} />
+            <AuctionCardSection key={getKey('auction-card')} item={item} />
             <TradeCardSection key={getKey('trade-card')} item={item} />
             <RelatedLinksCard key={getKey('related-links')} item={item} />
           </Flex>

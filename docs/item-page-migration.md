@@ -22,6 +22,7 @@ Item/
 ├── Petpet/         # PetpetCard
 ├── Comments/       # ItemCommentsCard
 ├── Avy/            # ItemAvyCard + ItemAvyCardList
+├── Auction/        # AuctionCardSection
 ├── Trade/          # TradeCardSection
 ├── NCTrade/        # NCTradeSection + MatchTable, TradeInsights, NCTradeHistory, …
 ├── Price/          # ItemPriceSection (server) + ItemPriceCard (client shell)
@@ -135,6 +136,7 @@ Objetivo: **eliminar `useTranslations` / `useFormatter` das ilhas client da item
 
 | Componente | Motivo |
 |------------|--------|
+| [`AuctionCard`](../components/Auctions/AuctionCard.tsx) | título e copy da lista |
 | [`TradeCard`](../components/Trades/TradeCard.tsx) | título e copy da tabela |
 | [`ItemCard`](../components/Items/ItemCard.tsx) | compartilhado; afeta similar items, parent, MME, dye, recipes, avy |
 | [`AddToListSelect`](../components/UserLists/AddToListSelect.tsx) | sidebar; `useTranslations` + auth client |
@@ -144,11 +146,12 @@ Objetivo: **eliminar `useTranslations` / `useFormatter` das ilhas client da item
 
 ### Passos restantes (i18n)
 
-1. **`TradeCard`** — shell server passa strings
-2. **Modais compartilhados** — `EditItemModal`, modais de price (`CreatePriceModal`, etc.)
-3. **`AddToListSelect`** — labels do server (sidebar)
-4. **Layout global** — restringir `getMessages()` a namespaces mínimos em [`layout.tsx`](../app/[locale]/layout.tsx)
-5. **Pages Router** — `_app.tsx` / modais compartilhados: por último ou quando a rota migrar
+1. **`AuctionCard`** — shell server passa strings
+2. **`TradeCard`** — shell server passa strings
+3. **Modais compartilhados** — `EditItemModal`, modais de price (`CreatePriceModal`, etc.)
+4. **`AddToListSelect`** — labels do server (sidebar)
+5. **Layout global** — restringir `getMessages()` a namespaces mínimos em [`layout.tsx`](../app/[locale]/layout.tsx)
+6. **Pages Router** — `_app.tsx` / modais compartilhados: por último ou quando a rota migrar
 
 ### Critério de done (item page)
 
@@ -190,6 +193,7 @@ Server em `components/Items/`: `MissingInfoCard`, `NcMallCard`, `ItemEffectsCard
 ### Fase 5 — Híbridos complexos ✅
 
 - [`PetpetCard`](../app/_components/Item/Petpet/PetpetCard.tsx), [`ItemCommentsCard`](../app/_components/Item/Comments/ItemCommentsCard.tsx), [`ItemAvyCard`](../app/_components/Item/Avy/ItemAvyCard.tsx)
+- [`AuctionCardSection`](../app/_components/Item/Auction/AuctionCardSection.tsx) — server fetch + client `AuctionCard`
 - [`TradeCardSection`](../app/_components/Item/Trade/TradeCardSection.tsx) — server fetch + client `TradeCard`
 - Dados removidos de `loadItemPage` (`petpetData`, `avyData`, `NPTrades`)
 
@@ -232,7 +236,7 @@ Ainda client (necessário):
 
 | Item | Prioridade | Notas |
 |------|------------|-------|
-| i18n client restante | Alta | `TradeCard`, `ItemCard`, `AddToListSelect`, `EditItemModal`, `ItemPreview` — ver tabela acima |
+| i18n client restante | Alta | `AuctionCard`, `TradeCard`, `ItemCard`, `AddToListSelect`, `EditItemModal`, `ItemPreview` — ver tabela acima |
 | Breadcrumbs server | Baixa | revertido para client; refator mínima se valer a pena |
 
 ### B. Infra / qualidade (review fixes) ⏳
