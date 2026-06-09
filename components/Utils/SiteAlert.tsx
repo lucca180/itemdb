@@ -4,8 +4,8 @@ import { Link } from '@chakra-ui/react';
 import { useLocale, useTranslations } from 'next-intl';
 import MainLink from '@components/Utils/MainLink';
 import { getCurrentSiteAlert } from '@utils/siteAlert';
-import { SiteAlertBar } from '@components/Layout/siteAlert';
 import { getLocalizedHref, isLocalizableHref, type AppLocale } from '@utils/locales';
+import { SiteAlertBar } from '@components/Layout/SiteAlertBar';
 
 export const SiteAlert = () => {
   const t = useTranslations();
