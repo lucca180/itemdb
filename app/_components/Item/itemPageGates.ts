@@ -43,7 +43,7 @@ export function needsMME(item: ItemData) {
 export function needsAuctionCard(item: ItemData) {
   if (item.isNC || item.status !== 'active' || item.price.value === null) return false;
 
-  return item.price.inflated ? item.price.value > 100_000 : item.price.value > 5_000_000;
+  return item.price.inflated ? item.price.value > 800_000 : item.price.value > 5_000_000;
 }
 
 export function needsTradeCard(item: ItemData) {
