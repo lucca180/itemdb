@@ -1,29 +1,18 @@
 import { Suspense } from 'react';
-import { cacheLife } from 'next/cache';
 import { Flex, Text } from '@chakra-ui/react';
 import CardBase from '@components/Card/CardBase';
 import ItemCard from '@components/Items/ItemCard';
-import { getCachedItem } from '@app/_components/Item/loadUtils';
-import { getMMEData, isMME } from '@pages/api/v1/items/[id_name]/mme';
+import { needsMME } from '@app/_components/Item/itemPageGates';
+import { loadMMEData } from '@app/_components/Item/loadUtils';
 import { getTranslations } from 'next-intl/server';
-import { applyItemSectionCacheTags } from '@utils/applyItemCacheTags';
-import type { ItemData, ItemMMEData } from '@types';
+import type { ItemData } from '@types';
 
 type Props = {
   item: ItemData;
 };
 
-async function loadMMEData(internalId: number): Promise<ItemMMEData | null> {
-  'use cache';
-  applyItemSectionCacheTags(internalId, 'mme');
-  cacheLife('itemMedium');
-  const cachedItem = await getCachedItem(internalId, true);
-  if (!cachedItem || !isMME(cachedItem.name)) return null;
-  return getMMEData(cachedItem);
-}
-
 export async function MMECard({ item }: Props) {
-  if (!isMME(item.name)) return null;
+  if (!needsMME(item)) return null;
 
   return (
     <Suspense fallback={null}>

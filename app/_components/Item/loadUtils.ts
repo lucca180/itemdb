@@ -12,10 +12,13 @@ import { getPriceStatus } from '@pages/api/v1/prices/[iid]/status';
 import { applyItemSectionCacheTags } from '@utils/applyItemCacheTags';
 import { shouldShowTradeLists } from '@utils/utils';
 import type {
+  AvyData,
   InsightsResponse,
   ItemData,
   ItemEffect,
+  ItemMMEData,
   ItemPetpetData,
+  ItemRecipe,
   LebronTrade,
   NCMallData,
   UserList,
@@ -24,6 +27,12 @@ import type {
 import { getItemEffects } from '@pages/api/v1/items/[id_name]/effects';
 import { getSingleItemColor } from '@pages/api/v1/items/[id_name]/colors';
 import { getWearableData } from '@pages/api/v1/items/[id_name]/wearable';
+import { getMMEData, isMME } from '@pages/api/v1/items/[id_name]/mme';
+import { getDyeworksData, type DyeworksData } from '@pages/api/v1/items/[id_name]/dyeworks';
+import { getItemRecipes } from '@pages/api/v1/items/[id_name]/recipes';
+import { getItemTrades } from '@pages/api/v1/trades';
+import { getItemParent } from '@pages/api/v1/items/[id_name]/drops';
+import { getAvyData } from '@pages/api/v1/items/[id_name]/avys';
 
 export const getCachedItem = cache(async (id_name: number | string, flags = false) => {
   'use cache';
@@ -194,4 +203,85 @@ export async function loadLebronTradeHistory(
   itemName: string
 ): Promise<LebronTrade[]> {
   return loadLebronTradeHistoryCached(internalId, itemName);
+}
+
+async function loadMMEDataCached(internalId: number): Promise<ItemMMEData | null> {
+  'use cache';
+  applyItemSectionCacheTags(internalId, 'mme');
+  cacheLife('itemMedium');
+  const cachedItem = await getCachedItem(internalId, true);
+  if (!cachedItem || !isMME(cachedItem.name)) return null;
+  return getMMEData(cachedItem);
+}
+
+export async function loadMMEData(internalId: number): Promise<ItemMMEData | null> {
+  return loadMMEDataCached(internalId);
+}
+
+async function loadDyeDataCached(internalId: number): Promise<DyeworksData | null> {
+  'use cache';
+  applyItemSectionCacheTags(internalId, 'dye');
+  cacheLife('itemSection');
+  const cachedItem = await getCachedItem(internalId, true);
+  if (!cachedItem?.isNC || !cachedItem.isWearable) return null;
+  return getDyeworksData(cachedItem);
+}
+
+export async function loadDyeData(internalId: number): Promise<DyeworksData | null> {
+  return loadDyeDataCached(internalId);
+}
+
+async function loadItemRecipesCached(internalId: number): Promise<ItemRecipe[]> {
+  'use cache';
+  applyItemSectionCacheTags(internalId, 'recipes');
+  cacheLife('itemMedium');
+  const cachedItem = await getCachedItem(internalId, true);
+  if (!cachedItem || cachedItem.isNC) return [];
+  return getItemRecipes(cachedItem.internal_id);
+}
+
+export async function loadItemRecipes(internalId: number): Promise<ItemRecipe[]> {
+  return loadItemRecipesCached(internalId);
+}
+
+async function loadItemTradesCached(internalId: number) {
+  'use cache';
+  applyItemSectionCacheTags(internalId, 'trade');
+  cacheLife('itemSection');
+  return getItemTrades({ item_iid: internalId });
+}
+
+export async function loadItemTrades(internalId: number) {
+  return loadItemTradesCached(internalId);
+}
+
+async function loadItemParentDataCached(internalId: number): Promise<ItemData[]> {
+  'use cache';
+  applyItemSectionCacheTags(internalId, 'parent');
+  cacheLife('itemMedium');
+  const { itemData } = await getItemParent(internalId);
+  if (itemData.length === 0) return [];
+  return [...itemData].sort((a, b) => (b.item_id ?? b.internal_id) - (a.item_id ?? a.internal_id));
+}
+
+export async function loadItemParentData(internalId: number): Promise<ItemData[]> {
+  return loadItemParentDataCached(internalId);
+}
+
+async function loadAvyDataCached(
+  internalId: number,
+  includeTrade: boolean
+): Promise<AvyData[] | null> {
+  'use cache';
+  applyItemSectionCacheTags(internalId, 'avy', 'lists');
+  cacheLife('itemSection');
+  const officialLists = await getOfficialItemLists(internalId, includeTrade);
+  return getAvyData(internalId, officialLists);
+}
+
+export async function loadAvyData(
+  internalId: number,
+  includeTrade: boolean
+): Promise<AvyData[] | null> {
+  return loadAvyDataCached(internalId, includeTrade);
 }

@@ -1,28 +1,19 @@
 import { Suspense } from 'react';
-import { cacheLife } from 'next/cache';
 import { Flex, Text } from '@chakra-ui/react';
 import CardBase from '@components/Card/CardBase';
 import ItemCard from '@components/Items/ItemCard';
-import { getCachedItem } from '@app/_components/Item/loadUtils';
-import { getDyeworksData, type DyeworksData } from '@pages/api/v1/items/[id_name]/dyeworks';
+import { needsDye } from '@app/_components/Item/itemPageGates';
+import { loadDyeData } from '@app/_components/Item/loadUtils';
+import type { DyeworksData } from '@pages/api/v1/items/[id_name]/dyeworks';
 import { getTranslations } from 'next-intl/server';
-import { applyItemSectionCacheTags } from '@utils/applyItemCacheTags';
 import type { ItemData } from '@types';
+import type { ReactNode } from 'react';
 
 type Props = {
   item: ItemData;
 };
 
 type DyeCardType = 'dyeworks' | 'prismatic' | 'none';
-
-async function loadDyeData(internalId: number): Promise<DyeworksData | null> {
-  'use cache';
-  applyItemSectionCacheTags(internalId, 'dye');
-  cacheLife('itemSection');
-  const cachedItem = await getCachedItem(internalId, true);
-  if (!cachedItem?.isNC || !cachedItem.isWearable) return null;
-  return getDyeworksData(cachedItem);
-}
 
 function getDyeCardType(dyeData: DyeworksData): DyeCardType {
   if (dyeData.originalItem.name.toLowerCase().includes('dyeworks')) return 'dyeworks';
@@ -35,7 +26,7 @@ function getDyeCardType(dyeData: DyeworksData): DyeCardType {
 }
 
 export async function DyeCard({ item }: Props) {
-  if (!item.isNC || !item.isWearable) return null;
+  if (!needsDye(item)) return null;
 
   return (
     <Suspense fallback={null}>
@@ -69,11 +60,11 @@ async function DyeCardContent({ item }: Props) {
           {isOriginal &&
             t.rich(`DyeCard.${type}-x-variations`, {
               x: dyeData.dyes.length,
-              b: (c) => <b>{c}</b>,
+              b: (c: ReactNode) => <b>{c}</b>,
             })}
           {!isOriginal &&
             t.rich(`DyeCard.${type}-is-variation`, {
-              b: (c) => <b>{c}</b>,
+              b: (c: ReactNode) => <b>{c}</b>,
             })}
         </Text>
         <Flex wrap="wrap" gap={2} justifyContent={'center'}>
@@ -105,7 +96,7 @@ async function DyeCardContent({ item }: Props) {
           >
             <Text>{t('DyeCard.dyeworks-all-variants')}</Text>
             <Flex wrap="wrap" gap={2} justifyContent={'center'}>
-              {dyeData.dyes.map((dye) => (
+              {dyeData.dyes.map((dye: ItemData) => (
                 <ItemCard uniqueID="dyeworks-variant" key={dye.internal_id} item={dye} small />
               ))}
             </Flex>

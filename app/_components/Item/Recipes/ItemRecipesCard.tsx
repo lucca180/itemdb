@@ -1,14 +1,12 @@
 import { Fragment, Suspense } from 'react';
-import { cacheLife } from 'next/cache';
 import { Center, Flex, Text } from '@chakra-ui/react';
 import Color from 'color';
 import CardBase from '@components/Card/CardBase';
 import ItemCard from '@components/Items/ItemCard';
 import { IconLink } from '@components/Utils/IconLink';
-import { getCachedItem } from '@app/_components/Item/loadUtils';
-import { getItemRecipes } from '@pages/api/v1/items/[id_name]/recipes';
+import { needsRecipes } from '@app/_components/Item/itemPageGates';
+import { loadItemRecipes } from '@app/_components/Item/loadUtils';
 import { getTranslations } from 'next-intl/server';
-import { applyItemSectionCacheTags } from '@utils/applyItemCacheTags';
 import type { ItemData, ItemRecipe } from '@types';
 import type { ReactNode } from 'react';
 
@@ -21,15 +19,6 @@ type RepairRecipeDetails = {
   original: ItemData;
   itemType: 'broken' | 'original';
 };
-
-async function loadItemRecipes(internalId: number): Promise<ItemRecipe[]> {
-  'use cache';
-  applyItemSectionCacheTags(internalId, 'recipes');
-  cacheLife('itemMedium');
-  const cachedItem = await getCachedItem(internalId, true);
-  if (!cachedItem || cachedItem.isNC) return [];
-  return getItemRecipes(cachedItem.internal_id);
-}
 
 function getRepairRecipeDetails(item: ItemData, recipes: ItemRecipe[]): RepairRecipeDetails | null {
   const recipe = recipes[0];
@@ -53,7 +42,7 @@ function richIconLink(href: string, linkColor: string) {
 }
 
 export async function ItemRecipesCard({ item }: Props) {
-  if (item.isNC) return null;
+  if (!needsRecipes(item)) return null;
 
   return (
     <Suspense fallback={null}>

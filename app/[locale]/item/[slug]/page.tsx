@@ -4,6 +4,7 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import { getPathname } from '@i18n/navigation';
 import AppServerLayout from '@components/Layout/AppServerLayout';
 import { ItemPage as ItemPageView } from '@app/_components/Item/page/ItemPage';
+import { preloadItemPageData } from '@app/_components/Item/preloadItemPage';
 import { buildItemPageMetadata, resolveItemRoute } from '@app/utils/loadItemPage';
 import { setRequestLocale } from 'next-intl/server';
 
@@ -43,9 +44,10 @@ async function ItemPageRoute({ params }: ItemPageProps) {
     notFound();
   }
 
-  setRequestLocale(locale);
-
   const { item } = result;
+  preloadItemPageData(item);
+
+  setRequestLocale(locale);
 
   return (
     <AppServerLayout locale={locale} disableNextSeo mainColor={item.color.hex + '66'}>
