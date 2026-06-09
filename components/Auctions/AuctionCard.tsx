@@ -1,7 +1,7 @@
 'use client';
 
 import { Badge, Box, Button, Flex, Separator, SimpleGrid, Text } from '@chakra-ui/react';
-import { useFormatter, useTranslations } from 'next-intl';
+import { useFormatter, useNow, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import type { ItemAuctionData, ItemData } from '@types';
@@ -25,6 +25,9 @@ const SeenHistoryModal = dynamic<SeenHistoryModalProps>(
 
 const AuctionCard = ({ auctions, item, totalSold, soldMedianPrice }: Props) => {
   const t = useTranslations();
+  const now = useNow({
+    updateInterval: 1000 * 10,
+  });
   const format = useFormatter();
   const [historyOpen, setHistoryOpen] = useState(false);
   const entries = getAuctionCardEntries(auctions);
@@ -73,7 +76,7 @@ const AuctionCard = ({ auctions, item, totalSold, soldMedianPrice }: Props) => {
                     {auction.hasBuyer ? t('ItemPage.has-bids') : t('ItemPage.no-bids')}
                   </Badge>
                   <Text fontSize="xs" color="whiteAlpha.600" suppressHydrationWarning>
-                    {format.relativeTime(new Date(auction.addedAt))}
+                    {format.relativeTime(new Date(auction.addedAt), now)}
                   </Text>
                 </Flex>
               </Flex>
