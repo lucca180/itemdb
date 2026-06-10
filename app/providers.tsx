@@ -9,7 +9,7 @@ import { system } from '@utils/theme/theme';
 import { AuthProvider } from '@utils/auth';
 import { installProofInterceptor } from '@utils/http/proofInterceptor';
 import type { PreloadedAuthState } from '@app/utils/preloadData';
-// import { Next13ProgressBar } from 'next13-progressbar';
+import { ProgressProvider } from '@bprogress/next/app';
 
 type ProvidersProps = {
   children: ReactNode;
@@ -25,11 +25,12 @@ export function Providers({ children, initialAuthState }: ProvidersProps) {
     <EmotionRegistry>
       <ChakraProvider value={system}>
         <Provider>
-          {/* <Next13ProgressBar color="#718096" showOnShallow={true} /> */}
-          <AuthProvider initialUser={initialAuthState?.user}>
-            {children}
-            <Toaster />
-          </AuthProvider>
+          <ProgressProvider color="#718096">
+            <AuthProvider initialUser={initialAuthState?.user}>
+              {children}
+              <Toaster />
+            </AuthProvider>
+          </ProgressProvider>
         </Provider>
       </ChakraProvider>
     </EmotionRegistry>
