@@ -20,7 +20,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   const cookies = [
     `idb-session-id=${session}; Path=/; Max-Age=${expires}; HttpOnly; Secure; SameSite=None`,
-    `idb-session-exp=1; Path=/; Max-Age=${expExpiration}; Secure; SameSite=Strict`,
+    `idb-session-exp=1; Path=/; Max-Age=${expExpiration}; Secure; SameSite=Lax`,
   ];
 
   res.setHeader('Set-Cookie', cookies);

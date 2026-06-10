@@ -5,7 +5,7 @@ import { User, UserRoles } from '../../../types';
 import { startOfDay } from 'date-fns';
 import { User as PrismaUser } from '@prisma/generated/client';
 import { consumeMagicToken } from '@utils/auth/magicLink';
-import { signSession, SESSION_DURATION_SECONDS } from '@utils/auth/jwt';
+import { SESSION_DURATION_SECONDS, SESSION_VERSION, signSession } from '@utils/auth/jwt';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
@@ -40,10 +40,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       uid: dbUser.id,
       email: dbUser.email,
       role: dbUser.role as UserRoles,
+      sessionVersion: SESSION_VERSION,
     });
 
     const cookies = [
-      `session=${sessionToken};Path=/;HttpOnly;Secure;SameSite=Strict;Max-Age=${SESSION_DURATION_SECONDS};`,
+      `session=${sessionToken};Path=/;HttpOnly;Secure;SameSite=Lax;Max-Age=${SESSION_DURATION_SECONDS};`,
     ];
 
     if (dbUser.pref_lang && dbUser.pref_lang !== req.cookies.NEXT_LOCALE) {

@@ -1,7 +1,12 @@
 import type { NextApiRequest } from 'next';
 import prisma from '@utils/prisma';
 import { CheckAuth } from '@utils/googleCloud';
-import { SESSION_DURATION_SECONDS, needsRefresh, signSession } from '@utils/auth/jwt';
+import {
+  SESSION_DURATION_SECONDS,
+  SESSION_VERSION,
+  needsRefresh,
+  signSession,
+} from '@utils/auth/jwt';
 import type { UserRoles } from '@types';
 
 type GetCurrentUserOptions = {
@@ -28,15 +33,16 @@ export async function getCurrentUser(
 
   let refreshedSessionCookie: string | null = null;
 
-  if (needsRefresh(decodedToken.exp)) {
+  if (needsRefresh(decodedToken.exp) || decodedToken.sessionVersion !== SESSION_VERSION) {
     const newToken = await signSession({
       uid: user.id,
       email: user.email,
       role: user.role as UserRoles,
+      sessionVersion: SESSION_VERSION,
     });
 
     refreshedSessionCookie =
-      `session=${newToken};Path=/;HttpOnly;Secure;SameSite=Strict;` +
+      `session=${newToken};Path=/;HttpOnly;Secure;SameSite=Lax;` +
       `Max-Age=${SESSION_DURATION_SECONDS};`;
   }
 

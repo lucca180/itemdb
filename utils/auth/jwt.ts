@@ -1,13 +1,19 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { UserRoles } from '../../types';
 
+export const SESSION_VERSION = 2;
+
 export type SessionPayload = {
   uid: string;
   email: string;
   role: UserRoles;
+  sessionVersion: typeof SESSION_VERSION;
 };
 
-export type VerifiedSession = SessionPayload & { exp: number };
+export type VerifiedSession = Omit<SessionPayload, 'sessionVersion'> & {
+  sessionVersion?: SessionPayload['sessionVersion'];
+  exp: number;
+};
 
 export const SESSION_DURATION_SECONDS = 100 * 24 * 60 * 60; // 100 days
 const SESSION_REFRESH_THRESHOLD_SECONDS = 30 * 24 * 60 * 60; // refresh if < 30 days remain

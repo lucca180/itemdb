@@ -17,6 +17,7 @@ export type DecodedToken = {
   uid: string;
   email: string | undefined;
   role: string;
+  sessionVersion?: VerifiedSession['sessionVersion'];
   exp: number;
 };
 
@@ -45,6 +46,7 @@ export const CheckAuth = async (
     uid: payload.uid,
     email: payload.email,
     role: payload.role,
+    sessionVersion: payload.sessionVersion,
     exp: payload.exp,
   };
 
