@@ -4,8 +4,8 @@ import { useEffect } from 'react';
 const fetcher = (url: string) => fetch(url, { cache: 'no-store' }).then((r) => r.json());
 
 export function useVersionCheck() {
+  return; // disable during app router migration
   const currentBuild = typeof window !== 'undefined' ? window.__NEXT_DATA__?.buildId : undefined;
-
   const { data } = useSWR(currentBuild ? '/api/build-id' : null, fetcher, {
     refreshInterval: 60000, // 60s
     focusThrottleInterval: 60000, // 60s
