@@ -5,7 +5,11 @@ import { useFormatter, useNow, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import type { ItemAuctionData, ItemData } from '@types';
-import { getAuctionCardCount, getAuctionCardEntries } from '@components/Auctions/auctionCardUtils';
+import {
+  AUCTION_CARD_LIMIT,
+  getAuctionCardCount,
+  getAuctionCardEntries,
+} from '@components/Auctions/auctionCardUtils';
 import CardBase from '@components/Card/CardBase';
 import type { SeenHistoryModalProps } from '@components/SeenHistory/SeenHistoryModal';
 
@@ -83,9 +87,11 @@ const AuctionCard = ({ auctions, item, totalSold, soldMedianPrice }: Props) => {
             </Box>
           ))}
           <Flex p={2} flexFlow="column" gap={2}>
-            <Button size="xs" variant="subtle" onClick={() => setHistoryOpen(true)}>
-              {t('ItemPage.show-more')}
-            </Button>
+            {entries.length === AUCTION_CARD_LIMIT && (
+              <Button size="xs" variant="subtle" onClick={() => setHistoryOpen(true)}>
+                {t('ItemPage.show-more')}
+              </Button>
+            )}
             <Text textAlign="center" fontSize="2xs" color="whiteAlpha.600">
               {t('ItemPage.auction-disclaimer')}
             </Text>
