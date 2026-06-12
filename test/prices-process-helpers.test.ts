@@ -69,7 +69,7 @@ describe('process price z-score rules', () => {
 
   test('skip when the old price was already abnormal but the new price is still little unusual', () => {
     const priceHistory = [
-      historyEntry(103_000, 5, { internal_id: 1 }),
+      historyEntry(103_000, 3, { internal_id: 1 }),
       historyEntry(100_000, 20),
       historyEntry(102_000, 30),
       historyEntry(98_000, 40),
@@ -81,7 +81,7 @@ describe('process price z-score rules', () => {
 
   test('still ignores recent small changes near the historical normal', () => {
     const priceHistory = [
-      historyEntry(100_500, 6, { internal_id: 1 }),
+      historyEntry(100_500, 3, { internal_id: 1 }),
       historyEntry(100_000, 20),
       historyEntry(102_000, 30),
       historyEntry(98_000, 40),
