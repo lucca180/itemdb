@@ -75,17 +75,13 @@ export const shouldUpdatePrice = (args: ShouldUpdateProps) => {
 
     if (specialMode) return true;
 
-    if (absDiff < 1000 && daysSinceLastUpdate <= minUpdate * 2) return false;
+    if (absDiff < 1000 && daysSinceLastUpdate <= minUpdate * 1.5) return false;
 
     // clear outlier: wait for more data before pricing
-    if (zNew >= 3 && daysSinceLastUpdate <= minUpdate * 1.5) return false;
+    if (zNew >= 3.2 && daysSinceLastUpdate <= minUpdate) return false;
 
     // insignificant change: wait
-    if (
-      zNewAbs <= 2 &&
-      percentDiff < varThresholds(oldPrice) &&
-      daysSinceLastUpdate <= minUpdate * 2
-    )
+    if (zNewAbs <= 2 && percentDiff < varThresholds(oldPrice) && daysSinceLastUpdate <= minUpdate)
       return false;
 
     return true;
@@ -322,9 +318,9 @@ const getPrices = (history: PriceHistory[]) => {
 };
 
 const varThresholds = (price: number) => {
-  if (price < 1000) return 2;
-  if (price < 10000) return 0.75;
-  if (price < 50000) return 0.5;
+  if (price < 1_000) return 1.75;
+  if (price < 10_000) return 0.7;
+  if (price < 50_000) return 0.45;
 
   return 0.4;
 };
