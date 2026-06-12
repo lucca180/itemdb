@@ -5,6 +5,7 @@ import { useFormatter, useTranslations } from 'next-intl';
 import axios, { AxiosRequestConfig } from 'axios';
 import { SeenHistoryStatusCard } from './SeenHistoryStatusCard';
 import TradeTable from '../Trades/TradeTable';
+import { TradeRelistingDisclaimer } from '@components/Trades/TradeRelistingDisclaimer';
 import useSWRImmutable from 'swr/immutable';
 import { ContributeWall } from '../Utils/ContributeWall';
 
@@ -124,6 +125,7 @@ export const TradeHistory = (props: TradeHistoryProps) => {
                 {data?.recent.map((trade) => (
                   <TradeTable featuredItem={item} key={trade.trade_id} data={trade} />
                 ))}
+                {data && <TradeRelistingDisclaimer trades={data.recent} />}
               </Box>
             )}
             {!loading && data && data.recent.length === 0 && (

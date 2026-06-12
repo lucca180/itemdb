@@ -3,6 +3,7 @@ import TradeCard from '@components/Trades/TradeCard';
 import { needsTradeCard } from '@app/_components/Item/itemPageGates';
 import { loadItemTrades } from '@app/_components/Item/loadUtils';
 import type { ItemData } from '@types';
+import { shouldShowTradeRelisting } from '@utils/tradeRelisting';
 
 type Props = {
   item: ItemData;
@@ -19,7 +20,7 @@ export async function TradeCardSection({ item }: Props) {
 }
 
 async function TradeCardContent({ item }: Props) {
-  const trades = await loadItemTrades(item.internal_id);
+  const trades = await loadItemTrades(item.internal_id, shouldShowTradeRelisting(item));
   return <TradeCard trades={trades} item={item} />;
 }
 

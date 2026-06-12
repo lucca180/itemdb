@@ -212,11 +212,11 @@ export const loadItemAuctions = cache(async (internalId: number) => {
   };
 });
 
-export const loadItemTrades = cache(async (internalId: number) => {
+export const loadItemTrades = cache(async (internalId: number, includeRelisting: boolean) => {
   'use cache';
   applyItemSectionCacheTags(internalId, 'trade');
   cacheLife('itemSection');
-  const trades = await getTradeData(internalId);
+  const trades = await getTradeData(internalId, false, includeRelisting);
   return trades.recent.slice(0, 20);
 });
 

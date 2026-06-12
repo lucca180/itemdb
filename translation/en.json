@@ -167,6 +167,7 @@
     "owned-by": "Owned by",
     "seen-at": "Seen at",
     "relisting-history": "Seen in at least {count} listings from this owner since {date}",
+    "relisting-disclaimer": "Owner names are limited to their first three characters. Listings grouped under the same prefix may belong to different users.",
     "unspecified-price": "Unspecified Price",
     "wishlist": "Wishlist",
     "nc-buyable": "NC - Buyable",

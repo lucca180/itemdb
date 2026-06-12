@@ -15,7 +15,11 @@ import { medianSorted } from 'simple-statistics';
 import { removeOutliersCombined } from '@utils/prices/pricing3';
 import { getItem } from '.';
 import { redis_setDataCount } from '@utils/redis';
-import { addTradeRelistingHistory, findTradeTargetItem } from '@utils/tradeRelisting';
+import {
+  addTradeRelistingHistory,
+  findTradeTargetItem,
+  shouldShowTradeRelisting,
+} from '@utils/tradeRelisting';
 
 const LEBRON_URL = process.env.LEBRON_API_URL;
 
@@ -44,7 +48,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     const onlyPriced = req.query.priced === 'true';
     if (onlyPriced && !(await checkGoal(req, res))) return;
 
-    const trade = await getTradeData(name, onlyPriced);
+    const item = onlyPriced ? null : await getItem(name);
+    const includeRelisting = !!item && shouldShowTradeRelisting(item);
+    const trade = await getTradeData(name, onlyPriced, includeRelisting);
 
     redis_setDataCount(trade.recent.length, req);
     return res.json(trade);
@@ -124,7 +130,11 @@ const getRestockData = async (name: string) => {
   };
 };
 
-export const getTradeData = async (name: string | number, onlyPriced = false) => {
+export const getTradeData = async (
+  name: string | number,
+  onlyPriced = false,
+  includeRelisting = false
+) => {
   const target = typeof name === 'string' ? { itemName: name } : { itemIid: name };
   const tradeRaw = await prisma.trades.findMany({
     where: {
@@ -172,9 +182,9 @@ export const getTradeData = async (name: string | number, onlyPriced = false) =>
     };
   });
 
-  const tradeList = (onlyPriced ? allTrades : addTradeRelistingHistory(allTrades, target)).filter(
-    (trade) => !onlyPriced || !!findTradeTargetItem(trade, target)?.price
-  );
+  const tradeList = (
+    includeRelisting ? addTradeRelistingHistory(allTrades, target) : allTrades
+  ).filter((trade) => !onlyPriced || !!findTradeTargetItem(trade, target)?.price);
   const uniqueOwners = new Set(tradeList.map((trade) => trade.owner));
   const priced = tradeList.filter((trade) => {
     const item = findTradeTargetItem(trade, target);

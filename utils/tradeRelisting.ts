@@ -1,4 +1,4 @@
-import type { TradeData } from '@types';
+import type { ItemData, TradeData } from '@types';
 
 type TradeRelistingTarget = {
   itemIid?: number;
@@ -6,6 +6,9 @@ type TradeRelistingTarget = {
 };
 
 const normalize = (value: string) => value.trim().toLowerCase();
+
+export const shouldShowTradeRelisting = (item: Pick<ItemData, 'saleStatus'>) =>
+  item.saleStatus === null || item.saleStatus.status === 'hts';
 
 const isTargetItem = (item: TradeData['items'][number], target: TradeRelistingTarget) => {
   if (target.itemIid !== undefined) return item.item_iid === target.itemIid;

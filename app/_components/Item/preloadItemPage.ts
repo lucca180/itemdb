@@ -16,6 +16,7 @@ import {
   needsTradeLists,
   needsWearableData,
 } from '@app/_components/Item/itemPageGates';
+import { shouldShowTradeRelisting } from '@utils/tradeRelisting';
 import { loadItemOpenableMeta } from '@app/_components/Item/Drops/loadItemDrops';
 import {
   loadAvyData,
@@ -76,7 +77,9 @@ export function preloadItemPageData(item: ItemData): void {
   if (needsDye(item)) preload(loadDyeData(item.internal_id));
   if (needsMME(item)) preload(loadMMEData(item.internal_id));
   if (needsAuctionCard(item)) preload(loadItemAuctions(item.internal_id));
-  if (needsTradeCard(item)) preload(loadItemTrades(item.internal_id));
+  if (needsTradeCard(item)) {
+    preload(loadItemTrades(item.internal_id, shouldShowTradeRelisting(item)));
+  }
   if (needsRestockLastSeen(item)) preload(loadLastSeen(item.internal_id));
   if (needsWearableData(item)) preload(loadItemWearableData(item.internal_id));
 
