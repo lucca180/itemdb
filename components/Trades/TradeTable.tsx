@@ -110,6 +110,25 @@ const TradeTable = (props: Props) => {
                   {t('ItemPage.unspecified-price')}
                 </Text>
               )}
+              {item.relisting && (
+                <Badge
+                  mt={1}
+                  p={1}
+                  colorPalette="gray"
+                  size="xs"
+                  textTransform="none"
+                  whiteSpace="normal"
+                >
+                  {t('ItemPage.relisting-history', {
+                    count: item.relisting.count + 1,
+                    date: format.dateTime(new Date(item.relisting.since), {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    }),
+                  })}
+                </Badge>
+              )}
             </Flex>
           </Flex>
         ))}

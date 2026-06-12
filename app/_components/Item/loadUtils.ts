@@ -1,7 +1,11 @@
 import { cache } from 'react';
 import { cacheLife } from 'next/cache';
 import { getItem } from '@pages/api/v1/items/[id_name]';
-import { getAuctionData, getLebronItemData } from '@pages/api/v1/items/[id_name]/[tradings]';
+import {
+  getAuctionData,
+  getLebronItemData,
+  getTradeData,
+} from '@pages/api/v1/items/[id_name]/[tradings]';
 import { getItemLists } from '@pages/api/v1/items/[id_name]/lists';
 import { getItemPrices } from '@pages/api/v1/items/[id_name]/prices';
 import { getPetpetData } from '@pages/api/v1/items/[id_name]/petpet';
@@ -30,7 +34,6 @@ import { getWearableData } from '@pages/api/v1/items/[id_name]/wearable';
 import { getMMEData, isMME } from '@pages/api/v1/items/[id_name]/mme';
 import { getDyeworksData, type DyeworksData } from '@pages/api/v1/items/[id_name]/dyeworks';
 import { getItemRecipes } from '@pages/api/v1/items/[id_name]/recipes';
-import { getItemTrades } from '@pages/api/v1/trades';
 import { getItemParent } from '@pages/api/v1/items/[id_name]/drops';
 import { getAvyData } from '@pages/api/v1/items/[id_name]/avys';
 
@@ -213,7 +216,8 @@ export const loadItemTrades = cache(async (internalId: number) => {
   'use cache';
   applyItemSectionCacheTags(internalId, 'trade');
   cacheLife('itemSection');
-  return getItemTrades({ item_iid: internalId });
+  const trades = await getTradeData(internalId);
+  return trades.recent.slice(0, 20);
 });
 
 export const loadItemParentData = cache(async (internalId: number): Promise<ItemData[]> => {

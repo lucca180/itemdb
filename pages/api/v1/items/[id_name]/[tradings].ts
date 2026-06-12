@@ -15,6 +15,7 @@ import { medianSorted } from 'simple-statistics';
 import { removeOutliersCombined } from '@utils/prices/pricing3';
 import { getItem } from '.';
 import { redis_setDataCount } from '@utils/redis';
+import { addTradeRelistingHistory, findTradeTargetItem } from '@utils/tradeRelisting';
 
 const LEBRON_URL = process.env.LEBRON_API_URL;
 
@@ -123,7 +124,8 @@ const getRestockData = async (name: string) => {
   };
 };
 
-const getTradeData = async (name: string | number, onlyPriced = false) => {
+export const getTradeData = async (name: string | number, onlyPriced = false) => {
+  const target = typeof name === 'string' ? { itemName: name } : { itemIid: name };
   const tradeRaw = await prisma.trades.findMany({
     where: {
       items: {
@@ -144,46 +146,44 @@ const getTradeData = async (name: string | number, onlyPriced = false) => {
     orderBy: { addedAt: 'desc' },
   });
 
-  const uniqueOwners = new Set();
-  let priced = 0;
+  const allTrades: TradeData[] = tradeRaw.map((p) => {
+    return {
+      trade_id: p.trade_id,
+      owner: p.owner,
+      priced: p.priced,
+      hash: p.hash,
+      instantBuy: p.instantBuy || null,
+      createdAt: p.createdAt ? p.createdAt.toJSON() : null,
+      items: p.items.map((i) => ({
+        internal_id: i.internal_id,
+        trade_id: i.trade_id,
+        name: i.item?.name || '',
+        image: i.item?.image || '',
+        image_id: i.item?.image_id || '',
+        item_iid: i.item_iid || null,
+        price: i.price?.toNumber() || null,
+        order: i.order,
+        addedAt: i.addedAt.toJSON(),
+        amount: i.amount,
+      })),
+      wishlist: p.wishlist,
+      processed: p.processed,
+      addedAt: p.addedAt.toJSON(),
+    };
+  });
 
-  const tradeList: TradeData[] = tradeRaw
-    .map((p) => {
-      const item = p.items.find((i) => i.item?.name === name);
-
-      if (item && !!item.price?.toNumber() && p.priced) priced++;
-      if (onlyPriced && item && !item.price?.toNumber()) return null;
-
-      uniqueOwners.add(p.owner);
-      return {
-        trade_id: p.trade_id,
-        owner: p.owner,
-        priced: p.priced,
-        hash: p.hash,
-        instantBuy: p.instantBuy || null,
-        createdAt: p.createdAt ? p.createdAt.toJSON() : null,
-        items: p.items.map((i) => ({
-          internal_id: i.internal_id,
-          trade_id: i.trade_id,
-          name: i.item?.name || '',
-          image: i.item?.image || '',
-          image_id: i.item?.image_id || '',
-          item_iid: i.item_iid || null,
-          price: i.price?.toNumber() || null,
-          order: i.order,
-          addedAt: i.addedAt.toJSON(),
-          amount: i.amount,
-        })),
-        wishlist: p.wishlist,
-        processed: p.processed,
-        addedAt: p.addedAt.toJSON(),
-      };
-    })
-    .filter((p) => p !== null);
+  const tradeList = (onlyPriced ? allTrades : addTradeRelistingHistory(allTrades, target)).filter(
+    (trade) => !onlyPriced || !!findTradeTargetItem(trade, target)?.price
+  );
+  const uniqueOwners = new Set(tradeList.map((trade) => trade.owner));
+  const priced = tradeList.filter((trade) => {
+    const item = findTradeTargetItem(trade, target);
+    return trade.priced && !!item?.price;
+  }).length;
 
   return {
     recent: tradeList.slice(0, 40),
-    total: tradeRaw.length,
+    total: onlyPriced ? tradeRaw.length : tradeList.length,
     uniqueOwners: uniqueOwners.size,
     priced: priced,
     period: MAX_DAYS,

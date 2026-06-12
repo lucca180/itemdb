@@ -141,6 +141,10 @@ export type TradeData = {
     amount: number;
     addedAt: string;
     price: number | null;
+    relisting?: {
+      count: number;
+      since: string;
+    };
   }[];
 };
 
