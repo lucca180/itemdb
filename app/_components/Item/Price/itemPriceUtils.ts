@@ -1,7 +1,7 @@
-import Color from 'color';
 import { differenceInCalendarDays, isSameDay } from 'date-fns';
 import { tz } from '@date-fns/tz';
 import type { ItemData, PriceData, PricingInfo, UserList } from '@types';
+import { resolveItemListSeries } from '@utils/itemListSeries';
 
 export type ItemPriceStatLabels = {
   inflation: string;
@@ -166,41 +166,25 @@ export function buildPriceTableData(
   const sorted: PriceOrMarker[] = [...data];
   const itemAdded = new Date(item.firstSeen ?? 0);
 
-  lists?.forEach((list) => {
-    if (!list.seriesType) return;
-
-    const color = Color(list.colorHex ?? '#000')
-      .lightness(70)
-      .hex();
-
-    let startDate: string | null = list.itemInfo?.[0].seriesStart || list.createdAt;
-    let endDate: string | null = null;
+  resolveItemListSeries(lists).forEach((series) => {
+    let startDate: string | null = series.startAt;
     let markerType = 'added-to';
+    let hasEnding = !!series.endAt;
 
-    if (list.seriesType === 'itemAddition' && list.itemInfo?.[0].addedAt)
-      startDate = list.itemInfo?.[0].seriesStart || list.itemInfo?.[0].addedAt;
-
-    if (list.seriesType === 'listDates') {
-      startDate = list.itemInfo?.[0].seriesStart || list.seriesStart || null;
-    }
-
-    let hasEnding = !!list.itemInfo?.[0].seriesEnd;
-
-    if (list.seriesEnd || hasEnding) {
+    if (series.endAt) {
       markerType = 'available-at';
-      endDate = list.itemInfo?.[0].seriesEnd || (list.seriesEnd as string);
 
-      if (new Date(endDate) <= itemAdded) return;
+      if (new Date(series.endAt) <= itemAdded) return;
 
       hasEnding = !!startDate;
 
       sorted.push({
         marker: true,
-        title: list.name,
-        slug: list.slug ?? '',
+        title: series.name,
+        slug: series.slug,
         hasEnding: hasEnding,
-        addedAt: endDate,
-        color: color,
+        addedAt: series.endAt,
+        color: series.color,
         markerType: 'unavailable-at',
       });
     }
@@ -210,10 +194,10 @@ export function buildPriceTableData(
     if (startDate)
       sorted.push({
         marker: true,
-        title: list.name,
-        slug: list.slug ?? '',
+        title: series.name,
+        slug: series.slug,
         addedAt: startDate,
-        color: color,
+        color: series.color,
         hasEnding: hasEnding,
         markerType: markerType as 'added-to' | 'available-at' | 'unavailable-at',
       });
@@ -227,8 +211,10 @@ export function buildPriceTableData(
       isSameDay(aDate, bDate, {
         in: tz('America/Los_Angeles'),
       })
-    )
+    ) {
+      if (a.marker && b.marker) return bDate.getTime() - aDate.getTime();
       return b.marker ? -1 : 1;
+    }
 
     return bDate.getTime() - aDate.getTime();
   });

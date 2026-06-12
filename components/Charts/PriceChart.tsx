@@ -6,17 +6,21 @@ import {
   LineStyle,
   AreaSeries,
   Time,
-  isBusinessDay,
   createSeriesMarkers,
   TrackingModeExitMode,
 } from 'lightweight-charts';
 import type { MouseEventParams, SeriesMarker } from 'lightweight-charts';
 import { useEffect, useRef } from 'react';
-import { ColorData, ItemData, PriceData, UserList } from '../../types';
+import type { ColorData, ItemData, PriceData, UserList } from '@types';
 import { useFormatter, useTranslations } from 'next-intl';
-import { format } from 'date-fns';
-import { tz } from '@date-fns/tz';
-import { stripMarkdown } from '@utils/utils';
+import {
+  buildPriceChartModel,
+  timeToChartDateKey,
+  type ChartPoint,
+  type ChartSegment,
+  type ChartSeriesPoint,
+  type ChartSeriesStyle,
+} from '@components/Charts/priceChartModel';
 
 export type ChartComponentProps = {
   color: ItemData['color'] | ColorData;
@@ -79,11 +83,7 @@ const ChartComponent = (props: ChartComponentProps) => {
       },
     });
 
-    const chartData = getChartData(data);
-
-    const seriesInfo = getSeriesInfo(lists).sort((a, b) => a.startTime - b.startTime);
-    const seriesPointInfo = getSeriesPointInfo(lists, chartData);
-    const defaultSeries = {
+    const defaultSeries: ChartSeriesStyle = {
       id: 'default',
       name: 'Price history',
       lineColor,
@@ -92,11 +92,17 @@ const ChartComponent = (props: ChartComponentProps) => {
       startTime: Number.NEGATIVE_INFINITY,
       endTime: null,
     };
-    const chartSegments = getChartSegments(chartData, seriesInfo, defaultSeries);
+    const { segments: chartSegments, seriesPoints } = buildPriceChartModel(
+      data,
+      lists,
+      defaultSeries
+    );
     const contextByMarkerId = new Map<string, ChartMarkerPoint>();
     const seriesByTime = new Map<ChartPoint['time'], ChartSeriesInstance[]>();
     let lastTooltipKey: string | null = null;
 
+    // The model has already selected colors, ranges and marker ownership. This
+    // loop only creates the corresponding Lightweight Charts primitives.
     chartSegments.forEach((segment, index) => {
       const isLastSegment = index === chartSegments.length - 1;
       const newSeries = chart.addSeries(AreaSeries, {
@@ -115,6 +121,7 @@ const ChartComponent = (props: ChartComponentProps) => {
       };
 
       segment.data.forEach((point) => {
+        // Default-series points only need hit testing when they have context.
         if (segment.id === 'default' && !point.context) return;
 
         const seriesForTime = seriesByTime.get(point.time) ?? [];
@@ -139,12 +146,11 @@ const ChartComponent = (props: ChartComponentProps) => {
           } satisfies SeriesMarker<Time>;
         });
 
-      const seriesPointMarkers = seriesPointInfo
-        .filter((pointInfo) => {
-          const pointSegment = getSeriesAtTime(seriesInfo, pointInfo.startTime) ?? defaultSeries;
-
-          return pointSegment.id === segment.id && seriesInstance.dataByTime.has(pointInfo.time);
-        })
+      const seriesPointMarkers = seriesPoints
+        .filter(
+          (pointInfo) =>
+            pointInfo.segmentId === segment.id && seriesInstance.dataByTime.has(pointInfo.time)
+        )
         .map((pointInfo) => {
           const markerId = `series-point-${pointInfo.id}-${pointInfo.time}`;
           contextByMarkerId.set(markerId, { type: 'seriesPoint', point: pointInfo });
@@ -200,8 +206,6 @@ const ChartComponent = (props: ChartComponentProps) => {
       title.style.color = series.lineColor;
       title.style.marginBottom = '4px';
 
-      const type = document.createElement('div');
-
       const dates = document.createElement('div');
       const startDate = formatter.dateTime(new Date(series.startTime), {
         year: 'numeric',
@@ -218,7 +222,7 @@ const ChartComponent = (props: ChartComponentProps) => {
       dates.textContent = `${startDate} - ${endDate}`;
       dates.style.opacity = '0.78';
 
-      tooltip.replaceChildren(title, type, dates);
+      tooltip.replaceChildren(title, dates);
       lastTooltipKey = tooltipKey;
     };
 
@@ -253,7 +257,7 @@ const ChartComponent = (props: ChartComponentProps) => {
       lastTooltipKey = tooltipKey;
     };
 
-    const setSeriesPointTooltipContent = (point: ChartSeriesPointInfo) => {
+    const setSeriesPointTooltipContent = (point: ChartSeriesPoint) => {
       const tooltipKey = `series-point:${point.id}:${point.time}`;
       if (lastTooltipKey === tooltipKey) return;
 
@@ -284,6 +288,8 @@ const ChartComponent = (props: ChartComponentProps) => {
 
       if (!timeKey) return null;
 
+      // Segment boundary points may exist in two series. Compare their screen
+      // coordinates and use the line closest to the pointer.
       return (seriesByTime.get(timeKey) ?? []).reduce<ClosestSeriesPoint | null>(
         (closest, chartSeriesItem) => {
           const chartPoint = chartSeriesItem.dataByTime.get(timeKey);
@@ -345,6 +351,7 @@ const ChartComponent = (props: ChartComponentProps) => {
       const contextPoint =
         typeof markerId === 'string' ? contextByMarkerId.get(markerId) : undefined;
 
+      // Explicit marker hits take priority over proximity-based line tooltips.
       if (contextPoint?.type === 'priceContext') {
         setPriceContextTooltipContent(contextPoint.point);
         positionTooltip(point);
@@ -386,7 +393,7 @@ const ChartComponent = (props: ChartComponentProps) => {
       return true;
     };
 
-    chart.subscribeCrosshairMove((param) => {
+    const handleCrosshairMove = (param: MouseEventParams<Time>) => {
       if (!param.point || !param.time) {
         hideTooltip();
         return;
@@ -397,8 +404,9 @@ const ChartComponent = (props: ChartComponentProps) => {
         requireNearLine: true,
         seriesData: param.seriesData,
       });
-    });
+    };
 
+    chart.subscribeCrosshairMove(handleCrosshairMove);
     window.addEventListener('resize', handleResize);
 
     const showTouchTooltip = (event: PointerEvent) => {
@@ -419,6 +427,8 @@ const ChartComponent = (props: ChartComponentProps) => {
 
       const closestSeriesPoint = getClosestSeriesPoint(point, time);
 
+      // Touch devices do not have hover, so snap the crosshair to the selected
+      // series before showing the same tooltip used by pointer interaction.
       if (closestSeriesPoint) {
         chart.setCrosshairPosition(
           closestSeriesPoint.value,
@@ -443,6 +453,7 @@ const ChartComponent = (props: ChartComponentProps) => {
     chartContainer.addEventListener('pointercancel', hideTouchTooltip);
 
     return () => {
+      chart.unsubscribeCrosshairMove(handleCrosshairMove);
       window.removeEventListener('resize', handleResize);
       chartContainer.removeEventListener('pointerdown', showTouchTooltip);
       chartContainer.removeEventListener('pointermove', showTouchTooltip);
@@ -459,65 +470,7 @@ const ChartComponent = (props: ChartComponentProps) => {
 
 export default ChartComponent;
 
-type ChartPoint = {
-  time: string;
-  value: number;
-  addedAt: string;
-  context?: string | null;
-};
-
-const getChartData = (data: PriceData[]) => {
-  const dataByDay = new Map<ChartPoint['time'], ChartPoint & { addedAtTime: number }>();
-
-  data.forEach((price) => {
-    const time = format(price.addedAt, 'yyyy-MM-dd', {
-      in: tz('America/Los_Angeles'),
-    });
-    const addedAtTime = new Date(price.addedAt).getTime();
-    const existingPrice = dataByDay.get(time);
-
-    if (!existingPrice || addedAtTime > existingPrice.addedAtTime) {
-      dataByDay.set(time, {
-        time,
-        value: price.value,
-        addedAt: price.addedAt,
-        context: price.context ? stripMarkdown(price.context) : null,
-        addedAtTime,
-      });
-    }
-  });
-
-  return [...dataByDay.values()]
-    .sort((a, b) => timeToEpoch(a.time) - timeToEpoch(b.time))
-    .map(({ time, value, addedAt, context }) => ({ time, value, addedAt, context }));
-};
-
-type ChartSegment = {
-  id: string;
-  name: string;
-  lineColor: string;
-  topColor: string;
-  bottomColor: string;
-  startTime: number;
-  endTime: number | null;
-  data: ChartPoint[];
-};
-
-type ChartSeriesInfo = Omit<ChartSegment, 'data'> & {
-  seriesType: NonNullable<UserList['seriesType']>;
-};
-
 type ChartSeriesTooltipInfo = Omit<ChartSegment, 'data'>;
-
-type ChartSeriesPointInfo = {
-  id: string;
-  name: string;
-  lineColor: string;
-  startTime: number;
-  time: ChartPoint['time'];
-  value: ChartPoint['value'];
-  addedAt: string;
-};
 
 type ChartMarkerPoint =
   | {
@@ -526,7 +479,7 @@ type ChartMarkerPoint =
     }
   | {
       type: 'seriesPoint';
-      point: ChartSeriesPointInfo;
+      point: ChartSeriesPoint;
     };
 
 type ChartSeriesInstance = {
@@ -540,141 +493,4 @@ type ClosestSeriesPoint = ChartSeriesInstance & {
   value: number;
   yCoordinate: number;
   distance: number;
-};
-
-const getSeriesInfo = (lists?: UserList[]): ChartSeriesInfo[] => {
-  return (
-    lists
-      ?.map((list) => {
-        if (!list.seriesType) return null;
-
-        const color = Color(list.colorHex ?? '#000').lightness(70);
-        const startDate = getListSeriesStart(list);
-        const endDate = list.itemInfo?.[0].seriesEnd || list.seriesEnd;
-
-        if (!startDate) return null;
-        if (list.seriesType === 'itemAddition' && !endDate) return null;
-
-        return {
-          id: `${list.internal_id}`,
-          name: list.name,
-          lineColor: color.hex(),
-          topColor: color.alpha(0.62).hexa(),
-          bottomColor: color.alpha(0.16).hexa(),
-          startTime: new Date(startDate).getTime(),
-          endTime: endDate ? new Date(endDate).getTime() : null,
-          seriesType: list.seriesType,
-        };
-      })
-      .filter((series): series is ChartSeriesInfo => !!series) ?? []
-  );
-};
-
-const getSeriesPointInfo = (lists: UserList[] | undefined, chartData: ChartPoint[]) => {
-  return (
-    lists
-      ?.map((list) => {
-        if (list.seriesType !== 'itemAddition') return null;
-
-        const endDate = list.itemInfo?.[0].seriesEnd || list.seriesEnd;
-        if (endDate) return null;
-
-        const startDate = getListSeriesStart(list);
-        if (!startDate) return null;
-
-        const chartPoint = getClosestChartPoint(chartData, new Date(startDate).getTime());
-        if (!chartPoint) return null;
-
-        const color = Color(list.colorHex ?? '#000').lightness(70);
-
-        return {
-          id: `${list.internal_id}`,
-          name: list.name,
-          lineColor: color.hex(),
-          startTime: new Date(startDate).getTime(),
-          time: chartPoint.time,
-          value: chartPoint.value,
-          addedAt: startDate,
-        };
-      })
-      .filter((point): point is ChartSeriesPointInfo => !!point) ?? []
-  );
-};
-
-const getClosestChartPoint = (chartData: ChartPoint[], time: number) => {
-  if (!chartData.length) return null;
-
-  return (
-    chartData.find((point) => timeToEpoch(point.time) >= time) ?? chartData[chartData.length - 1]
-  );
-};
-
-const getListSeriesStart = (list: UserList) => {
-  if (list.seriesType === 'itemAddition' && list.itemInfo?.[0].addedAt) {
-    return list.itemInfo?.[0].seriesStart || list.itemInfo?.[0].addedAt;
-  }
-
-  if (list.seriesType === 'listDates') {
-    return list.itemInfo?.[0].seriesStart || list.seriesStart;
-  }
-
-  return list.itemInfo?.[0].seriesStart || list.createdAt;
-};
-
-const getChartSegments = (
-  data: ChartPoint[],
-  seriesInfo: ChartSeriesInfo[],
-  defaultSeries: Omit<ChartSegment, 'data'>
-) => {
-  const segments: ChartSegment[] = [];
-  let activeSegment: ChartSegment | null = null;
-
-  data.forEach((point) => {
-    const segmentInfo = getSeriesAtTime(seriesInfo, timeToEpoch(point.time)) ?? defaultSeries;
-
-    if (!activeSegment || activeSegment.id !== segmentInfo.id) {
-      activeSegment = {
-        ...segmentInfo,
-        data: activeSegment?.data.length ? [activeSegment.data[activeSegment.data.length - 1]] : [],
-      };
-      segments.push(activeSegment);
-    }
-
-    activeSegment.data.push(point);
-  });
-
-  return segments.filter((segment) => segment.data.length > 1);
-};
-
-const getSeriesAtTime = (seriesInfo: ChartSeriesInfo[], time: number) => {
-  return seriesInfo.findLast((series) => {
-    return series.startTime <= time && (!series.endTime || series.endTime >= time);
-  });
-};
-
-const timeToEpoch = (time: Time) => {
-  if (isBusinessDay(time)) {
-    return new Date(time.year, time.month - 1, time.day).getTime();
-  }
-
-  if (typeof time === 'string') {
-    return new Date(time).getTime();
-  }
-
-  return time * 1000;
-};
-
-const timeToChartDateKey = (time: Time) => {
-  if (isBusinessDay(time)) {
-    return `${time.year}-${String(time.month).padStart(2, '0')}-${String(time.day).padStart(
-      2,
-      '0'
-    )}`;
-  }
-
-  if (typeof time === 'string') {
-    return time;
-  }
-
-  return null;
 };
