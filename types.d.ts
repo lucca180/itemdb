@@ -144,6 +144,10 @@ export type TradeData = {
     relisting?: {
       count: number;
       since: string;
+      history: {
+        price: number | null;
+        date: string;
+      }[];
     };
   }[];
 };
