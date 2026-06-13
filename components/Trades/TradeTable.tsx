@@ -1,11 +1,11 @@
 import { Box, Text, Separator, Flex, Link, Badge, Tooltip, IconButton } from '@chakra-ui/react';
-import { ItemData, TradeData } from '../../types';
+import { ItemData, TradeData } from '@types';
 import Image from 'next/image';
-import { genItemKey, slugify } from '../../utils/utils';
+import { genItemKey, slugify } from '@utils/utils';
 import MainLink from '@components/Utils/MainLink';
 import { useFormatter, useTranslations } from 'next-intl';
 import { FaFlag } from 'react-icons/fa';
-import { TradeRelistingBadge } from '@components/Trades/TradeRelistingBadge';
+import { TradeRelisting } from '@components/Trades/TradeRelisting';
 
 type Props = {
   data: TradeData;
@@ -112,10 +112,21 @@ const TradeTable = (props: Props) => {
                 </Text>
               )}
               {item.relisting && (
-                <TradeRelistingBadge
+                <TradeRelisting
                   disclaimer={t('ItemPage.relisting-disclaimer')}
+                  history={item.relisting.history.map((entry) => ({
+                    date: format.dateTime(new Date(entry.date), {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    }),
+                    price:
+                      entry.price === null
+                        ? t('ItemPage.unspecified-price')
+                        : `${format.number(entry.price)} NP`,
+                  }))}
                   label={t('ItemPage.relisting-history', {
-                    count: item.relisting.count + 1,
+                    count: item.relisting.history.length,
                     date: format.dateTime(new Date(item.relisting.since), {
                       month: 'short',
                       day: 'numeric',
