@@ -130,6 +130,8 @@ const AddToListSelect = (props: Props) => {
                 <>
                   {sorted.map((list) => (
                     <Menu.Item
+                      _hover={{ bg: 'blackAlpha.300' }}
+                      cursor="pointer"
                       key={list.internal_id}
                       value={String(list.internal_id)}
                       onClick={() => addItemToList(list.internal_id)}
