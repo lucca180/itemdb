@@ -1,36 +1,16 @@
-import { getLocaleStaticPaths, resolvePageLocale } from '@utils/locales';
-import {
-  // Alert,
-  // AlertDescription,
-  // AlertIcon,
-  Box,
-  Center,
-  Flex,
-  Heading,
-  Image,
-  Link,
-} from '@chakra-ui/react';
+import { Box, Center, Flex, Heading, Image, Link } from '@chakra-ui/react';
 import NextImage from 'next/image';
-import Layout from '@components/Layout';
-
 import Background from '@assets/hub/faeriefest2023.png';
 import Logo from '@assets/hub/faeriefest2023-logo.png';
 import SearchCard from '@components/Hubs/FaerieFest2023/SearchCard';
-import { ReactElement } from 'react';
-import { loadTranslation } from '@utils/load-translation';
-import { getTrendingCatLists } from '@pages/api/v1/beta/trending';
-import { UserList } from '@types';
 import UserListCard from '@components/UserLists/ListCard';
+import type { UserList } from '@types';
 
-const EVENT_YEAR = 2025;
-
-type FaeriesFestivalProps = {
+type FaerieFestivalPageContentProps = {
   lists: UserList[];
 };
 
-const FaeriesFestival = (props: FaeriesFestivalProps) => {
-  const { lists } = props;
-
+export function FaerieFestivalPageContent({ lists }: FaerieFestivalPageContentProps) {
   return (
     <>
       <Box
@@ -38,21 +18,21 @@ const FaeriesFestival = (props: FaeriesFestivalProps) => {
         h="650px"
         left="0"
         width="100%"
-        bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(221,170,223,.7) 70%)`}
+        bgGradient="linear-gradient(to top,rgba(0,0,0,0) 0,rgba(221,170,223,.7) 70%)"
         zIndex={-1}
       />
-      <Center position={'relative'} mt={['40px', '50px', '60px']} mb={6}>
+      <Center position="relative" mt={['40px', '50px', '60px']} mb={6}>
         <Link
-          display={'inline'}
+          display="inline"
           href="https://www.neopets.com/faeriefestival/index.phtml"
           target="_blank"
           rel="noreferrer"
-          position={'absolute'}
+          position="absolute"
           top={['-40px', '-50px', '-60px']}
         >
           <Image
             as={NextImage}
-            //@ts-ignore
+            // @ts-expect-error chakra image props
             src={Logo}
             w={['175px', '200px', '300px']}
             maxW="300px"
@@ -68,30 +48,23 @@ const FaeriesFestival = (props: FaeriesFestivalProps) => {
         >
           <Image
             as={NextImage}
-            //@ts-ignore
+            // @ts-expect-error chakra image props
             src={Background}
             quality={100}
             alt="Faeries Festival background"
-            borderRadius={'md'}
+            borderRadius="md"
             boxShadow="lg"
           />
         </Link>
       </Center>
       <Center flexFlow="column" gap={5}>
-        {/* <Alert maxW="400px" fontSize={'sm'} status={'warning'}>
-          <AlertIcon />
-          <AlertDescription>
-            This guide is from the <b>Faerie Festival 2023</b> event. We don&apos;t know if the
-            point values will be the same for the next event.
-          </AlertDescription>
-        </Alert> */}
         <Center flexFlow="column" gap={1}>
           <Heading color="whiteAlpha.900">♻️Recycling</Heading>
           <Heading as="h3" size="sm" color="whiteAlpha.700">
             All items you can recycle and how much points you earn
           </Heading>
         </Center>
-        <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
+        <Flex gap={3} flexWrap="wrap" justifyContent="center">
           <SearchCard
             title="10 points"
             description="All items that give you 10 points to spend at the Prize Shop"
@@ -147,7 +120,7 @@ const FaeriesFestival = (props: FaeriesFestivalProps) => {
             All drops from the Faerie Donation Capsule
           </Heading>
         </Center>
-        <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
+        <Flex gap={3} flexWrap="wrap" justifyContent="center">
           <SearchCard
             title="r99"
             description="All r99 items that you can get from the Faerie Donation Capsule"
@@ -179,7 +152,7 @@ const FaeriesFestival = (props: FaeriesFestivalProps) => {
             Some curated lists to help you get the best items at the Faerie Festival event
           </Heading>
         </Center>
-        <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
+        <Flex gap={3} flexWrap="wrap" justifyContent="center">
           {lists.map((list) => (
             <UserListCard isSmall key={list.internal_id} list={list} />
           ))}
@@ -190,7 +163,7 @@ const FaeriesFestival = (props: FaeriesFestivalProps) => {
             itemdb Tools to make your life easier
           </Heading>
         </Center>
-        <Flex gap={3} flexWrap="wrap" justifyContent={'center'}>
+        <Flex gap={3} flexWrap="wrap" justifyContent="center">
           <SearchCard
             title="SDB Importer"
             description="Import all your sdb items to itemdb and sort them by Recycling Points to find the best items to recycle"
@@ -227,52 +200,4 @@ const FaeriesFestival = (props: FaeriesFestivalProps) => {
       </Center>
     </>
   );
-};
-
-export default FaeriesFestival;
-
-export async function getStaticProps(context: any) {
-  const locale = resolvePageLocale(context.params?.locale as string);
-  const lists = (await getTrendingCatLists('Faerie Festival', 100)).filter(
-    (l) => new Date(l.createdAt).getFullYear() === EVENT_YEAR
-  );
-
-  return {
-    props: {
-      lists: lists,
-      messages: await loadTranslation(locale as string, 'hub/faeriefestival'),
-      locale: locale,
-    },
-    revalidate: 300,
-  };
-}
-
-FaeriesFestival.getLayout = function getLayout(page: ReactElement) {
-  // const t = createTranslator({ messages: props.messages, locale: props.locale });
-  return (
-    <Layout
-      SEO={{
-        title: 'Faerie Festival Guide',
-        description: 'Find the best items to recycle for the Faerie Festival event!',
-        themeColor: '#9b65c0',
-        openGraph: {
-          images: [
-            {
-              url: 'https://images.neopets.com/homepage/marquee/icons/faeriefestival_event_icon.png',
-              width: 300,
-              height: 300,
-              alt: 'Faeries Festival',
-            },
-          ],
-        },
-      }}
-      mainColor="#9b65c0c7"
-    >
-      {page}
-    </Layout>
-  );
-};
-
-export async function getStaticPaths() {
-  return getLocaleStaticPaths();
 }
