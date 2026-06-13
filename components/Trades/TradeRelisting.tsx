@@ -47,9 +47,17 @@ export const TradeRelisting = ({ disclaimer, history, label }: TradeRelistingBad
                   </Text>
                 </Flex>
               ))}
-              <Box fontSize="2xs" color="gray.300" maxWidth="400px" textAlign="center" mt={2}>
-                {disclaimer}
-              </Box>
+              <Flex
+                justifyContent="center"
+                alignItems="center"
+                mt={2}
+                flexDirection="column"
+                textAlign="center"
+              >
+                <Box fontSize="2xs" color="gray.300" maxWidth="400px" textAlign="center">
+                  {disclaimer}
+                </Box>
+              </Flex>
             </Flex>
           </Accordion.ItemBody>
         </Accordion.ItemContent>

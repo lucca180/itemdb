@@ -7,8 +7,10 @@ type TradeRelistingTarget = {
 
 const normalize = (value: string) => value.trim().toLowerCase();
 
-export const shouldShowTradeRelisting = (item: Pick<ItemData, 'saleStatus'>) =>
-  item.saleStatus === null || item.saleStatus.status === 'hts';
+export const shouldShowTradeRelisting = (item: Pick<ItemData, 'saleStatus' | 'price'>) =>
+  item.saleStatus === null ||
+  item.saleStatus.status === 'hts' ||
+  (item.price.inflated && (item.price.value || 0) > 5_000_000);
 
 const isTargetItem = (item: TradeData['items'][number], target: TradeRelistingTarget) => {
   if (target.itemIid !== undefined) return item.item_iid === target.itemIid;
