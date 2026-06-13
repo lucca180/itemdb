@@ -1,103 +1,66 @@
-import { getLocaleStaticPaths, resolvePageLocale } from '@utils/locales';
-import {
-  Flex,
-  Heading,
-  Text,
-  Link,
-  List,
-  useMediaQuery,
-  Tabs,
-  Button,
-  Icon,
-  Alert,
-} from '@chakra-ui/react';
+import type { ReactNode } from 'react';
+import { Link as I18nLink } from '@i18n/navigation';
+import { Link, List, Text, Alert, Flex, Heading } from '@chakra-ui/react';
 import { BsCheckCircleFill, BsXCircleFill } from 'react-icons/bs';
-import HeaderCard from '@components/Card/HeaderCard';
-import Layout from '@components/Layout';
-import MainLink from '@components/Utils/MainLink';
-import { FiEdit3 } from 'react-icons/fi';
-import { createTranslator, useTranslations } from 'next-intl';
-import { ReactElement } from 'react';
-import { Breadcrumbs } from '@components/Breadcrumbs/Breadcrumbs';
-import { loadTranslation } from '@utils/load-translation';
 import FeedbackButton from '@components/Feedback/FeedbackButton';
+import { getTranslations } from 'next-intl/server';
+import { MobileDeviceWarning } from './MobileDeviceWarning';
+import type { BreadcrumbItem } from '@components/Breadcrumbs/types';
 
-const ContributePage = () => {
-  const t = useTranslations();
-  return (
-    <>
-      <HeaderCard
-        image={{
-          src: 'https://images.neopets.com/games/betterthanyou/contestant435.gif',
-          alt: 'helper acara thumbnail',
-        }}
-        color="#4974F5"
-        breadcrumb={
-          <Breadcrumbs
-            breadcrumbList={[
-              {
-                position: 1,
-                name: t('Layout.home'),
-                item: '/',
-              },
-              {
-                position: 2,
-                name: t('Layout.how-to-contribute'),
-                item: '/contribute',
-              },
-            ]}
-          />
-        }
-      >
-        <Heading as="h1" size="lg">
-          {t('Layout.how-to-contribute')}
-        </Heading>
-        <Text as="h2">{t('Feedback.contribute-description')}</Text>
-      </HeaderCard>
-      <Flex
-        flexFlow="column"
-        gap={3}
-        css={{ '& a': { color: '#ffee71' }, b: { color: '#8ea7f1' } }}
-      >
-        <Tabs.Root colorPalette="yellow" defaultValue="extractor">
-          <Tabs.List>
-            <Tabs.Trigger value="extractor">{t('Feedback.item-data-extractor')}</Tabs.Trigger>
-            <Tabs.Trigger value="feedback">{t('Feedback.feedback-system')}</Tabs.Trigger>
-            <Tabs.Trigger value="official">{t('Feedback.creating-official-lists')}</Tabs.Trigger>
-            <Tabs.Trigger value="where">{t('Feedback.where-to-find-data')}</Tabs.Trigger>
-          </Tabs.List>
-          <Tabs.Content value="extractor">
-            <ItemDataExtractor />
-          </Tabs.Content>
-          <Tabs.Content value="feedback">
-            <FeedbackSystem />
-          </Tabs.Content>
-          <Tabs.Content value="official">
-            <OfficialLists />
-          </Tabs.Content>
-          <Tabs.Content value="where">
-            <WhereToFindInfo />
-          </Tabs.Content>
-        </Tabs.Root>
-      </Flex>
-    </>
-  );
+export type ContributeTabLabels = {
+  extractor: string;
+  feedback: string;
+  official: string;
+  where: string;
 };
 
-export default ContributePage;
+export type ContributeTabContent = {
+  extractor: ReactNode;
+  feedback: ReactNode;
+  official: ReactNode;
+  where: ReactNode;
+};
 
-const ItemDataExtractor = () => {
-  const t = useTranslations();
-  const [isLargerThanMD] = useMediaQuery(['(min-width: 48em)'], { fallback: [true] });
+export type ContributePageLabels = {
+  breadcrumbList: BreadcrumbItem[];
+  heading: string;
+  description: string;
+  tabLabels: ContributeTabLabels;
+  tabContent: ContributeTabContent;
+};
+
+export async function buildContributePageProps(): Promise<ContributePageLabels> {
+  const t = await getTranslations();
+
+  return {
+    breadcrumbList: [
+      { position: 1, name: t('Layout.home'), item: '/' },
+      { position: 2, name: t('Layout.how-to-contribute'), item: '/contribute' },
+    ],
+    heading: t('Layout.how-to-contribute'),
+    description: t('Feedback.contribute-description'),
+    tabLabels: {
+      extractor: t('Feedback.item-data-extractor'),
+      feedback: t('Feedback.feedback-system'),
+      official: t('Feedback.creating-official-lists'),
+      where: t('Feedback.where-to-find-data'),
+    },
+    tabContent: {
+      extractor: buildExtractorTab(t),
+      feedback: buildFeedbackTab(t),
+      official: buildOfficialTab(t),
+      where: buildWhereTab(t),
+    },
+  };
+}
+
+type T = Awaited<ReturnType<typeof getTranslations>>;
+
+function buildExtractorTab(t: T) {
   return (
     <Flex flexFlow="column" gap={3} maxW="1000px">
       <Heading size="lg">{t('Feedback.the-item-data-extractor')}</Heading>
-      {!isLargerThanMD && (
-        <Text fontSize="sm" color="red.400">
-          {t('General.this-may-not-work-on-mobile-devices')}
-        </Text>
-      )}
-
+      <MobileDeviceWarning text={t('General.this-may-not-work-on-mobile-devices')} />
       <Text>
         {t.rich('Feedback.ide-1', {
           Link: (chunk) => (
@@ -250,7 +213,6 @@ const ItemDataExtractor = () => {
           <List.Indicator asChild color="red.300">
             <BsXCircleFill />
           </List.Indicator>
-
           {t.rich('Feedback.ide-11', {
             Text: (chunk) => (
               <Text fontSize="sm" color="gray.400">
@@ -262,51 +224,41 @@ const ItemDataExtractor = () => {
       </List.Root>
     </Flex>
   );
-};
+}
 
-const FeedbackSystem = () => {
-  const t = useTranslations();
-
+function buildFeedbackTab(t: T) {
   return (
-    <>
-      <Flex flexFlow="column" gap={3} maxW="1000px">
-        <Heading size="lg">{t('Feedback.feedback-system')}</Heading>
-        <Text>
-          {t.rich('Feedback.fds-1', {
-            Link: (chunk) => <MainLink href="/feedback">{chunk}</MainLink>,
-            b: (chunk) => <b>{chunk}</b>,
-          })}
-        </Text>
-        <Text>
-          {t.rich('Feedback.fds-2', {
-            Link1: (chunk) => <MainLink href="/feedback/trades">{chunk}</MainLink>,
-            Link2: (chunk) => <MainLink href="/feedback/vote">{chunk}</MainLink>,
-          })}
-        </Text>
-        <Text as="div">
-          {t.rich('Feedback.fds-3', {
-            Edit: (chunk) => (
-              <Button variant="outline" size="sm">
-                <Icon as={FiEdit3} mr={1} /> {chunk}
-              </Button>
-            ),
-            Feedback: () => <FeedbackButton />,
-            b: (chunk) => <b>{chunk}</b>,
-          })}
-        </Text>
-      </Flex>
-    </>
+    <Flex flexFlow="column" gap={3} maxW="1000px">
+      <Heading size="lg">{t('Feedback.feedback-system')}</Heading>
+      <Text>
+        {t.rich('Feedback.fds-1', {
+          Link: (chunk) => <I18nLink href="/feedback">{chunk}</I18nLink>,
+          b: (chunk) => <b>{chunk}</b>,
+        })}
+      </Text>
+      <Text>
+        {t.rich('Feedback.fds-2', {
+          Link1: (chunk) => <I18nLink href="/feedback/trades">{chunk}</I18nLink>,
+          Link2: (chunk) => <I18nLink href="/feedback/vote">{chunk}</I18nLink>,
+        })}
+      </Text>
+      <Text as="div">
+        {t.rich('Feedback.fds-3', {
+          Feedback: () => <FeedbackButton />,
+          b: (chunk) => <b>{chunk}</b>,
+        })}
+      </Text>
+    </Flex>
   );
-};
+}
 
-const OfficialLists = () => {
-  const t = useTranslations();
+function buildOfficialTab(t: T) {
   return (
     <Flex flexFlow="column" gap={3} maxW="1000px">
       <Heading size="lg">{t('Feedback.creating-official-lists')}</Heading>
       <Text>
         {t.rich('Feedback.ol-1', {
-          Link: (chunk) => <MainLink href="/lists/official">{chunk}</MainLink>,
+          Link: (chunk) => <I18nLink href="/lists/official">{chunk}</I18nLink>,
           b: (chunk) => <b>{chunk}</b>,
         })}
       </Text>
@@ -317,16 +269,15 @@ const OfficialLists = () => {
       </Text>
       <Text>
         {t.rich('Feedback.ol-3', {
-          Link1: (chunk) => <MainLink href="/lists/official">{chunk}</MainLink>,
-          Link2: (chunk) => <MainLink href="/terms">{chunk}</MainLink>,
+          Link1: (chunk) => <I18nLink href="/lists/official">{chunk}</I18nLink>,
+          Link2: (chunk) => <I18nLink href="/terms">{chunk}</I18nLink>,
         })}
       </Text>
     </Flex>
   );
-};
+}
 
-const WhereToFindInfo = () => {
-  const t = useTranslations();
+function buildWhereTab(t: T) {
   return (
     <Flex flexFlow="column" gap={3} maxW="1000px">
       <Heading size="lg">{t('Feedback.where-to-find-data')}</Heading>
@@ -445,49 +396,4 @@ const WhereToFindInfo = () => {
       </List.Root>
     </Flex>
   );
-};
-
-export async function getStaticProps(context: any) {
-  const locale = resolvePageLocale(context.params?.locale as string);
-  return {
-    props: {
-      messages: await loadTranslation(locale, 'contribute'),
-      locale: locale,
-    },
-  };
-}
-
-ContributePage.getLayout = function getLayout(page: ReactElement, props: any) {
-  const t = createTranslator({ messages: props.messages, locale: props.locale });
-
-  let canonical = 'https://itemdb.com.br/contribute';
-  if (props.locale && props.locale !== 'en') {
-    canonical = `https://itemdb.com.br/${props.locale}/contribute`;
-  }
-
-  return (
-    <Layout
-      SEO={{
-        title: t('Layout.how-to-contribute'),
-        description: t('Feedback.contribute-description'),
-        openGraph: {
-          images: [
-            {
-              url: 'https://images.neopets.com/games/betterthanyou/contestant435.gif',
-              width: 150,
-              height: 150,
-            },
-          ],
-        },
-        canonical: canonical,
-      }}
-      mainColor="#4974f5c7"
-    >
-      {page}
-    </Layout>
-  );
-};
-
-export async function getStaticPaths() {
-  return getLocaleStaticPaths();
 }

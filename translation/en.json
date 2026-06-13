@@ -727,7 +727,7 @@
     "ide-11": "Your username, password, or any other personal information from you or your Neopets account. <Text> Only the first 3 characters of your username may, sometimes, be collected in the situations mentioned above. </Text>",
     "fds-1": "The <Link>Feedback System</Link> is a way for you to help us improve itemdb.You can contribute by <b>manually completing</b> missing data or by <b>validating the suggestions</b> of other neopians like you! Either way, the more you contribute correctly the more our systems will trust your information - meaning your suggestions will be live faster.",
     "fds-2": "You can also help by <Link1>pricing trading lots</Link1> (aka translating the wishlist into Neopoints values) and <Link2>voting on community suggestions</Link2> to ensure they are accurate and correct, and should be incorporated into the itemdb.",
-    "fds-3": "Also, on every item page you can  <b>insert additional notes</b> to enrich the information we have available using the <Edit>Edit</Edit> button. You can also send comments, report bugs or suggest new features using the <Feedback>Feedback</Feedback> button",
+    "fds-3": "You can also send comments, report bugs or suggest new features using the <Feedback>Feedback</Feedback> button",
     "ol-1": "Want to track every prize of a certain event or daily? Or maybe you have a list that could be useful to other neopians? You can <Link>apply your list</Link> to become an <b>official list</b> on itemdb!",
     "ol-2": "As an official list, your list will receive <b>a special badge</b> and will be <b>featured on its item's pages</b>, so that other neopians can easily find it. You will be listed as the curator of the list, and it will be your task to keep it up to date and complete!",
     "ol-3": "Before applying, please make sure your list is complete and up to date. You can also check the <Link1>official lists</Link1> to see other examples of cool official lists! Also check our <Link2>Terms and Conditions</Link2> for more information on official lists.",
@@ -1115,12 +1115,12 @@
     "how-can-i-help": "How can I help?",
     "text-11": "We have a page dedicated to the different ways you can <Link>contribute to the itemdb</Link>.",
     "can-i-talk-about-itemdb-on-neopets": "Can i talk about itemdb on Neopets?",
-    "text-12": "itemdb is a <Link>Magnetismo Times</Link> project and, as Certified Site, you should be able to talk about it on Neopets - but you cannot link to it. Just make sure you also mention Magnetismo Times to be safe around Neopets' moderators",
+    "text-12": "itemdb is a <Link>Magnetismo Times</Link> project and a Certified Site by itself! So you are able to talk about it on Neopets - but you cannot create links to us.",
     "you-have-a-lot-of-missing-or-wrong-info": "You have a lot of missing or wrong info...",
     "text-13": "All the information on the itemdb is provided by users like you using our <Link>Item Data Extractor Script</Link>. Most of the time, as soon the correct information hits our database, it will be automatically updated on the site and you should not worry about it.",
     "text-14": "But sometimes, when TNT changes something, our algorithm will fall into a merge conflict and we will need to give it a check manually. If that is the case, you can help us by reporting the issue using the <b>Feedback Button</b> on each item's pages.",
     "is-it-safe-i-wont-be-frozen": "Is it safe? I won't be frozen?",
-    "text-is-safe": "itemdb doesn't break any Neopets rules nor any of our official userscripts. They do not automatize or give you an unfair advantage over other users.\n<br></br><br></br>\nBut if you are still unsure, <Gramps>Gramps</Gramps> did ask TNT about it and they said <Safe>we're fine</Safe> :)"
+    "text-is-safe": "itemdb is a <Link>Certified Fan Site</Link> and doesn't break any Neopets rules nor any of our official userscripts. They do not automatize or give you an unfair advantage over other users.\n"
   },
   "Articles": {
     "all-articles": "All Articles",
