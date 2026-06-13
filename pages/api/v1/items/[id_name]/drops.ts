@@ -7,6 +7,13 @@ import { OpenableItems, WearableData } from '@prisma/generated/client';
 import { ItemRevalidateTags, revalidateItem } from '@utils/revalidateItem';
 import { getManyItems } from '../many';
 import { redis_setDataCount } from '@utils/redis';
+import {
+  deduplicateCommunityDrops,
+  evaluateDropEvidence,
+  GRAM_OPTION_NOTE,
+  isAuthoritativeDrop,
+  MANUAL_OPENING_ID,
+} from '@utils/itemDropEvidence';
 
 const catType = ['trinkets', 'accessories', 'clothing', 'le', 'choice'];
 const catTypeZone = ['trinkets', 'accessories', 'clothing'];
@@ -33,7 +40,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (!item) return res.status(400).json({ error: 'Item not found' });
 
   const [drops, parents] = await Promise.all([
-    item.useTypes.canOpen !== 'false' ? getItemDrops(item.internal_id, item.isNC) : null,
+    item.useTypes.canOpen !== 'false' ? getItemDrops(item.internal_id) : null,
     getItemParent(item.internal_id),
   ]);
 
@@ -70,7 +77,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
         parent_iid: item.internal_id,
         item_iid: drop_id,
         prizePool: poolName,
-        opening_id: 'manual',
+        opening_id: MANUAL_OPENING_ID,
         isManual: true,
       },
     });
@@ -82,13 +89,13 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
         parent_iid: item.internal_id,
         item_iid: drop_id,
         prizePool: poolName,
-        opening_id: 'manual',
+        opening_id: MANUAL_OPENING_ID,
         isManual: true,
       },
     });
   }
 
-  const newDrops = await getItemDrops(item.internal_id, item.isNC);
+  const newDrops = await getItemDrops(item.internal_id);
 
   await revalidateItem(item.internal_id, ItemRevalidateTags.drops(item.internal_id));
 
@@ -96,10 +103,7 @@ const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 // ---------- helpers ---------- //
-export const getItemDrops = async (
-  item_iid: number,
-  isNC = false
-): Promise<ItemOpenable | null> => {
+export const getItemDrops = async (item_iid: number): Promise<ItemOpenable | null> => {
   if (SKIP_ITEMS.includes(item_iid)) return null;
 
   const itemProm = prisma.items.findFirst({
@@ -114,9 +118,23 @@ export const getItemDrops = async (
     },
   });
 
-  const [item, drops] = await Promise.all([itemProm, dropsProm]);
+  const [item, rawDrops] = await Promise.all([itemProm, dropsProm]);
 
-  if (drops.length === 0 || !item || item.canOpen === 'false') return null;
+  if (rawDrops.length === 0 || !item || item.canOpen === 'false') return null;
+
+  const evidence = evaluateDropEvidence(item, rawDrops);
+  const communityDrops = deduplicateCommunityDrops(rawDrops).filter((drop) =>
+    evidence.acceptedItemIds.has(drop.item_iid)
+  );
+  const authoritativeDrops = rawDrops.filter(isAuthoritativeDrop);
+  const gramOptions = rawDrops.filter(
+    (drop) =>
+      drop.notes?.toLowerCase().includes(GRAM_OPTION_NOTE) &&
+      evidence.acceptedItemIds.has(drop.item_iid)
+  );
+  const drops = [...authoritativeDrops, ...communityDrops, ...gramOptions];
+
+  if (!drops.length) return null;
 
   const isNoUnknown = item.flags?.includes('no-unknown');
 
@@ -129,24 +147,18 @@ export const getItemDrops = async (
   const confirmedDrops = new Set<string>();
   const allItemIds = new Set<number>();
 
-  let hasManual = false;
-
   drops.map((drop) => {
-    if (drop.opening_id === 'manual' || drop.opening_id === 'ncmall-sync') {
-      hasManual = true;
-      return;
-    }
+    if (isAuthoritativeDrop(drop)) return;
 
-    if (drop.notes?.includes('gramOption')) return;
+    if (drop.notes?.toLowerCase().includes(GRAM_OPTION_NOTE)) return;
 
     openingSet[drop.opening_id] = [...(openingSet[drop.opening_id] ?? []), drop.item_iid];
   });
 
   const openingCount = Object.keys(openingSet).length;
   let activePoolOpenings = openingCount;
-  if (openingCount < 5 && !hasManual) return null;
 
-  const manualItems: number[] = [];
+  const authoritativeItems: number[] = [];
   let isChoice = false;
   let isZoneCat = false;
   let isGram = false;
@@ -187,7 +199,7 @@ export const getItemDrops = async (
         }
 
         prizePools[pool].items.push(drop.item_iid);
-        manualItems.push(drop.item_iid);
+        if (isAuthoritativeDrop(drop)) authoritativeItems.push(drop.item_iid);
         dropData.pool = pool;
       }
 
@@ -251,9 +263,9 @@ export const getItemDrops = async (
     : [];
 
   Object.values(dropsData)
-    .filter((a) => manualItems.includes(a.item_iid) || a.dropRate >= (isNC ? 1 : 2))
+    .filter((a) => evidence.acceptedItemIds.has(a.item_iid))
     .map((drop) => {
-      if (manualItems.includes(drop.item_iid)) return;
+      if (authoritativeItems.includes(drop.item_iid)) return;
 
       const sortedCats = Object.entries(poolsData[drop.item_iid] ?? {})
         .filter((a) => !!a[0] && !!a[1])
@@ -297,7 +309,7 @@ export const getItemDrops = async (
   };
 
   const ignoreItems = Object.values(dropsData)
-    .filter((a) => !manualItems.includes(a.item_iid) && a.dropRate < (isNC ? 1 : 2))
+    .filter((a) => !evidence.acceptedItemIds.has(a.item_iid))
     .map((a) => a.item_iid);
 
   Object.values(prizePools).map((pool) => {
@@ -382,7 +394,7 @@ export const getItemDrops = async (
   }
 
   Object.values(dropsData)
-    .filter((a) => manualItems.includes(a.item_iid) || a.dropRate >= (isNC ? 1 : 2))
+    .filter((a) => evidence.acceptedItemIds.has(a.item_iid))
     .map((drop) => {
       const pool = prizePools[drop.pool ?? 'unknown'];
       if (!pool) return;
@@ -423,6 +435,7 @@ type ParentOpenableItem = OpenableItems & {
 };
 
 const isKnownParentDrop = (drop: ParentOpenableItem) => {
+  if (isAuthoritativeDrop(drop)) return true;
   if (!drop.parent_flags?.includes('no-unknown')) return true;
   if (drop.prizePool || drop.limitedEdition) return true;
 
@@ -445,7 +458,7 @@ export const getItemParent = async (item_iid: number, itemLimit?: number) => {
       , j2.flags AS parent_flags
       , j2.name AS parent_name
     FROM (
-        SELECT * 
+        SELECT *
         FROM OpenableItems
         WHERE item_iid = ${item_iid}
 
@@ -460,26 +473,78 @@ export const getItemParent = async (item_iid: number, itemLimit?: number) => {
     WHERE j2.canOpen != 'false';
   `;
 
-  const parents: { [id: number]: number } = {};
+  const eligibleDrops = drops.filter(
+    (drop) =>
+      drop.parent_iid &&
+      !SKIP_ITEMS.includes(drop.parent_iid) &&
+      !SKIP_ITEMS.includes(drop.item_iid)
+  );
 
-  drops
-    .filter(
-      (drop) =>
-        drop.parent_iid &&
-        !SKIP_ITEMS.includes(drop.parent_iid) &&
-        !SKIP_ITEMS.includes(drop.item_iid) &&
-        isKnownParentDrop(drop)
-    )
-    .map((drop) => {
-      if (!drop.parent_iid) return;
-      parents[drop.parent_iid] = parents[drop.parent_iid] ? parents[drop.parent_iid] + 1 : 1;
-      if (drop.prizePool) parents[drop.parent_iid] += 10;
-    });
+  const candidateParentIds = Array.from(
+    new Set(eligibleDrops.map((drop) => drop.parent_iid as number))
+  );
 
-  //discard parents with less than 3 drops
-  const parentsArray = Object.entries(parents)
-    .filter((a) => a[1] >= 2)
-    .map((a) => Number(a[0]));
+  const matchingItemIds = new Set(eligibleDrops.map((drop) => drop.item_iid));
+
+  const [parentItems, parentDrops] = await Promise.all([
+    prisma.items.findMany({
+      where: {
+        internal_id: {
+          in: candidateParentIds,
+        },
+      },
+      select: {
+        internal_id: true,
+        name: true,
+        flags: true,
+        isNC: true,
+        canOpen: true,
+        canPlay: true,
+        canEat: true,
+        canRead: true,
+      },
+    }),
+    prisma.openableItems.findMany({
+      where: {
+        parent_iid: {
+          in: candidateParentIds,
+        },
+      },
+      select: {
+        parent_iid: true,
+        opening_id: true,
+        item_iid: true,
+        notes: true,
+        prizePool: true,
+        limitedEdition: true,
+      },
+    }),
+  ]);
+
+  const parentsArray = parentItems
+    .filter((parent) => {
+      const parentReportRows = parentDrops.filter((drop) => drop.parent_iid === parent.internal_id);
+      const normalizedDrops = parentReportRows.map((drop) => ({
+        ...drop,
+        item_iid: matchingItemIds.has(drop.item_iid) ? item_iid : drop.item_iid,
+      }));
+      const evidence = evaluateDropEvidence(parent, normalizedDrops);
+
+      if (!evidence.acceptedItemIds.has(item_iid)) return false;
+
+      return eligibleDrops
+        .filter(
+          (drop) => drop.parent_iid === parent.internal_id && matchingItemIds.has(drop.item_iid)
+        )
+        .some((drop) =>
+          isKnownParentDrop({
+            ...drop,
+            parent_flags: parent.flags,
+            parent_name: parent.name,
+          })
+        );
+    })
+    .map((parent) => parent.internal_id);
 
   const itemDataRaw = await getManyItems({
     id: parentsArray.map((a) => a.toString()),

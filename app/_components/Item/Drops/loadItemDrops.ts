@@ -30,7 +30,7 @@ export const loadItemOpenableMeta = cache(async (item: ItemData): Promise<ItemOp
   cacheLife('itemFast');
   if (item.useTypes.canOpen === 'false') return null;
   if (SKIP_ITEMS.includes(item.internal_id)) return null;
-  return getItemDrops(item.internal_id, item.isNC);
+  return getItemDrops(item.internal_id);
 });
 
 export const loadDropItemCardData = cache(
