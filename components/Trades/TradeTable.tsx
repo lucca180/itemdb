@@ -5,6 +5,7 @@ import { genItemKey, slugify } from '../../utils/utils';
 import MainLink from '@components/Utils/MainLink';
 import { useFormatter, useTranslations } from 'next-intl';
 import { FaFlag } from 'react-icons/fa';
+import { TradeRelistingBadge } from '@components/Trades/TradeRelistingBadge';
 
 type Props = {
   data: TradeData;
@@ -111,15 +112,9 @@ const TradeTable = (props: Props) => {
                 </Text>
               )}
               {item.relisting && (
-                <Badge
-                  mt={1}
-                  p={1}
-                  colorPalette="gray"
-                  size="xs"
-                  textTransform="none"
-                  whiteSpace="normal"
-                >
-                  {t('ItemPage.relisting-history', {
+                <TradeRelistingBadge
+                  disclaimer={t('ItemPage.relisting-disclaimer')}
+                  label={t('ItemPage.relisting-history', {
                     count: item.relisting.count + 1,
                     date: format.dateTime(new Date(item.relisting.since), {
                       month: 'short',
@@ -127,7 +122,7 @@ const TradeTable = (props: Props) => {
                       year: 'numeric',
                     }),
                   })}
-                </Badge>
+                />
               )}
             </Flex>
           </Flex>

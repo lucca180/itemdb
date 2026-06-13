@@ -4,7 +4,6 @@ import { Badge, Box, Flex, Skeleton, Text } from '@chakra-ui/react';
 import { useRef } from 'react';
 import type { ItemData, TradeData } from '@types';
 import TradeTable from '@components/Trades/TradeTable';
-import { TradeRelistingDisclaimer } from '@components/Trades/TradeRelistingDisclaimer';
 import { useTranslations } from 'next-intl';
 import { ViewportList } from 'react-viewport-list';
 
@@ -35,7 +34,6 @@ const TradeCard = ({ trades, item, isLoading }: Props) => {
             <ViewportList viewportRef={ref} items={trades} overscan={2} initialPrerender={3}>
               {(trade) => <TradeTable featuredItem={item} key={trade.trade_id} data={trade} />}
             </ViewportList>
-            <TradeRelistingDisclaimer trades={trades} />
           </>
         )}
         {!isLoading && trades.length === 0 && (
