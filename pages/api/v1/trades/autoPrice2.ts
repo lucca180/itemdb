@@ -8,6 +8,7 @@ import { differenceInCalendarDays } from 'date-fns';
 import { ItemData } from '@types';
 import { shouldSkipTrade } from '@utils/utils';
 import { getTradeItemByOrder, normalizeCanonicalWishlist } from '@utils/tradeCanonical';
+import { omitOwnerHash } from '@utils/ownerHash';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
@@ -75,7 +76,7 @@ export const autoPriceTrades2 = async (tradeRaw: (Trades & { items: TradeItems[]
       ip: 'auto',
       pageRef: 'auto',
       auto_ref: originalId,
-      content: { trade: t },
+      content: { trade: omitOwnerHash(t) },
     }),
     votes: MAX_VOTE_MULTIPLIER - 1,
   }));

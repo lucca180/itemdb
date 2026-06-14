@@ -247,6 +247,7 @@ model PriceProcessHistory {
 model Trades {
   trade_id   Int       @id
   owner      String
+  ownerHash  String?   @db.Char(64)
   wishlist   String    @db.Text
   ip_address String?
   addedAt    DateTime  @default(now())
@@ -896,6 +897,7 @@ model PriceProcess2 {
   item     Items @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
 
   owner      String?
+  ownerHash  String?   @db.Char(64)
   type       String
   stock      Int      @default(1)
   price      Decimal  @db.Decimal(11, 0)
@@ -920,6 +922,7 @@ model RestockAuctionHistory {
   item     Items @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
 
   owner      String?
+  ownerHash  String?   @db.Char(64)
   type       String
   otherInfo  String?
   stock      Int      @default(1)

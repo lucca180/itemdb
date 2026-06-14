@@ -8,6 +8,7 @@ import { checkHash } from '../../../../utils/hash';
 import { ItemData } from '../../../../types';
 import { differenceInCalendarDays } from 'date-fns';
 import { chunk } from 'lodash';
+import { isValidOptionalOwnerHash, isValidOwnerHash } from '@utils/ownerHash';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 type RestockAuction = Prisma.RestockAuctionHistoryCreateManyInput & { addToPriceProcess: boolean };
@@ -43,6 +44,12 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (lang !== 'en') return res.status(400).json({ error: 'Invalid language' });
 
+  if (
+    !Array.isArray(itemPrices) ||
+    itemPrices.some((priceInfo) => !isValidOptionalOwnerHash(priceInfo.ownerHash))
+  )
+    return res.status(400).json({ error: 'Invalid ownerHash' });
+
   const dataHash = data.hash;
 
   if (!checkHash(dataHash, { itemPrices: itemPrices }) && tarnumkey !== TARNUM_KEY)
@@ -51,7 +58,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const dataList = [];
 
   for (const priceInfo of itemPrices) {
-    let { name, img, owner, stock, value, otherInfo, type, item_id, neo_id } = priceInfo;
+    let { name, img, owner, ownerHash, stock, value, otherInfo, type, item_id, neo_id } = priceInfo;
 
     let imageId: string | null = null;
 
@@ -80,6 +87,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       image: img as string | null,
       image_id: imageId as string | null,
       owner: owner as string | undefined,
+      ownerHash: ownerHash as string | undefined,
       type: type as string,
       stock: stock as number | undefined,
       price: value as number,
@@ -98,7 +106,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     x.hash = hash(
       { ...x, dateHash, neo_id: neo_id },
       {
-        excludeKeys: (key: string) => ['ip_address', 'hash', 'stock'].includes(key),
+        excludeKeys: (key: string) => ['ip_address', 'hash', 'stock', 'ownerHash'].includes(key),
       }
     );
 
@@ -218,6 +226,8 @@ export const newCreatePriceProcessFlow = async (
 
       return {
         owner: raw.owner,
+        ownerHash:
+          'ownerHash' in raw && isValidOwnerHash(raw.ownerHash) ? raw.ownerHash : undefined,
         stock: raw.stock,
         price: raw.price,
         ip_address: raw.ip_address,
@@ -243,6 +253,8 @@ export const newCreatePriceProcessFlow = async (
 
       return {
         owner: raw.owner,
+        ownerHash:
+          'ownerHash' in raw && isValidOwnerHash(raw.ownerHash) ? raw.ownerHash : undefined,
         stock: raw.stock,
         price: raw.price,
         otherInfo: raw.otherInfo,
@@ -366,6 +378,7 @@ const newHandleAuction = async (dataList: RestockAuction[]) => {
             },
             create: {
               owner: auction.owner,
+              ownerHash: auction.ownerHash,
               stock: auction.stock,
               price: auction.price,
               ip_address: auction.ip_address + isSold(auction),
@@ -378,6 +391,7 @@ const newHandleAuction = async (dataList: RestockAuction[]) => {
             },
             update: {
               price: auction.price,
+              ownerHash: auction.ownerHash,
               ip_address:
                 auction.ip_address + isSold(auction) + `, auctionUpdated(${now.getTime()})`,
               addedAt: now,

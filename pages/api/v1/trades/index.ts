@@ -13,6 +13,7 @@ import { newCreatePriceProcessFlow } from '../prices';
 import { TradeItems, Trades } from '@prisma/generated/client';
 import { getManyItems } from '../items/many';
 import { processSimilarTrades } from '../../feedback/send';
+import { isValidOptionalOwnerHash, omitOwnerHash } from '@utils/ownerHash';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
@@ -58,6 +59,12 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const tradeLots = data.tradeLots;
   const lang = data.lang;
   const dataHash = data.hash;
+
+  if (
+    !Array.isArray(tradeLots) ||
+    tradeLots.some((lot) => !isValidOptionalOwnerHash(lot.ownerHash))
+  )
+    return res.status(400).json({ error: 'Invalid ownerHash' });
 
   if (!checkHash(dataHash, { tradeLots: tradeLots }) && tarnumkey !== TARNUM_KEY)
     return res.status(400).json({ error: 'Invalid hash' });
@@ -190,6 +197,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       trade_id: Number(lot.tradeID),
       wishlist: lot.wishList.trim(),
       owner: lot.owner,
+      ownerHash: lot.ownerHash,
       ip_address: requestIp.getClientIp(req),
       priced:
         isPriced || (!lot.instantBuy && (lot.wishList === 'none' || shouldSkipTrade(lot.wishList))),
@@ -237,7 +245,13 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   await newCreatePriceProcessFlow(toPriceProcess, true);
   await autoPriceTrades2(tradesFulfilled.filter((x) => !x.processed));
 
-  res.json(result);
+  const publicResult = result.map((entry) => {
+    if (entry.status === 'rejected') return entry;
+
+    return { status: entry.status, value: omitOwnerHash(entry.value) };
+  });
+
+  res.json(publicResult);
 };
 
 const PATCH = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -378,6 +392,7 @@ export const processTradePrice = async (
       neo_id: item.trade_id,
       type: 'trade',
       owner: item.trade.owner,
+      ownerHash: item.trade.ownerHash,
       addedAt: item.trade.addedAt,
       ip_address: req ? requestIp.getClientIp(req) : undefined,
     });
@@ -504,6 +519,7 @@ const getTradeItems = async (trade_id: number, hash: string | null) => {
     trade: {
       trade_id: x.trade_id,
       owner: x.owner,
+      ownerHash: x.ownerHash,
       wishlist: x.wishlist,
       addedAt: x.addedAt,
       processed: x.processed,
@@ -528,6 +544,7 @@ const tradeItemToProcessItem = (
       type: 'trade',
       addedAt: item.addedAt,
       owner: trade.owner,
+      ownerHash: trade.ownerHash,
       ip_address: trade.ip_address,
     }));
 };
