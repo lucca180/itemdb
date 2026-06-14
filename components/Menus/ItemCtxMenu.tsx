@@ -17,7 +17,6 @@ import { ItemData, ListItemInfo, UserList } from '../../types';
 import { useAuth } from '../../utils/auth';
 import axios from 'axios';
 import { useMemo, useRef, useState } from 'react';
-import { DuplicatedItemModalProps } from '../Modal/DuplicatedItemModal';
 import dynamic from 'next/dynamic';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import NextImage from 'next/image';
@@ -34,9 +33,7 @@ import { useLists } from '../../utils/useLists';
 import { dynamicListCan } from '@utils/utils';
 import { ViewportList } from 'react-viewport-list';
 
-const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
-  () => import('../Modal/DuplicatedItemModal')
-);
+const DuplicatedItemModal = dynamic(() => import('../Modal/DuplicatedItemModal'), { ssr: false });
 
 const CONTEXT_MENU_Z_INDEX = 9999;
 const CONTEXT_MENU_TOOLTIP_Z_INDEX = CONTEXT_MENU_Z_INDEX + 1;

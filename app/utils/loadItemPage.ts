@@ -6,7 +6,7 @@ import {
   buildItemDbHreflangAlternates,
   getItemDbCanonical,
   normalizeItemDbLocale,
-} from '@utils/appPage';
+} from '@app/utils/appPage';
 import { getDefaultSEO } from '@utils/SEO';
 import { cacheLife } from 'next/cache';
 

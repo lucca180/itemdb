@@ -1,63 +1,42 @@
-import { Badge, Link, Text, Image, Box, HStack, Center, Heading, Tag } from '@chakra-ui/react';
+import type { ReactNode } from 'react';
+import { Badge, Box, Center, Heading, HStack, Link } from '@chakra-ui/react';
 import Color from 'color';
-import MainLink from '@components/Utils/MainLink';
-import { ShopInfo } from '../../../types';
-import {
-  faerielandShops,
-  getDateNST,
-  halloweenShops,
-  shopIDToCategory,
-  slugify,
-  tyrannianShops,
-} from '../../../utils/utils';
-import { useTranslations } from 'next-intl';
-import { useMemo } from 'react';
-import ChakraImage from '../../Utils/Image';
-import { RestockBreadcrumb } from '../../Breadcrumbs/RestockBreadcrumb';
-type Props = {
+import { Link as I18nLink } from '@i18n/navigation';
+import { RestockBreadcrumb } from '@components/Breadcrumbs/RestockBreadcrumb';
+import type { BreadcrumbItem } from '@components/Breadcrumbs/types';
+import { RestockShopSpecialDayTag } from '@components/Hubs/Restock/RestockShopSpecialDayTag';
+import ChakraImage from '@components/Utils/Image';
+import type { ShopInfo } from '@types';
+import type { ShopRestockSpecialDay } from '@utils/utils';
+
+export type RestockHeaderSpecialDayLabels = Record<ShopRestockSpecialDay, string>;
+
+type RestockHeaderProps = {
   shop: ShopInfo;
-  children?: React.ReactNode;
+  children?: ReactNode;
+  breadcrumbList: BreadcrumbItem[];
+  locale: string;
+  useAppDir?: boolean;
+  historyCta?: ReactNode;
+  specialDayLabels: RestockHeaderSpecialDayLabels;
   isHistory?: boolean;
+  historyBadge?: string;
 };
 
-const RestockHeader = (props: Props) => {
-  const t = useTranslations();
-  const { shop: shopInfo, isHistory } = props;
-
+export default function RestockHeader({
+  shop: shopInfo,
+  children,
+  breadcrumbList,
+  locale,
+  useAppDir,
+  historyCta,
+  specialDayLabels,
+  isHistory,
+  historyBadge,
+}: RestockHeaderProps) {
   const color = Color(shopInfo.color);
   const rgb = color.rgb().array();
-
-  const todayNST = getDateNST();
-  const todayDate = todayNST.getDate();
-
-  const specialDay = useMemo(() => {
-    const shopCategory = shopIDToCategory[shopInfo.id];
-
-    if (todayNST.getDate() === 3) return 'hpd';
-    else if (
-      todayNST.getMonth() === 4 &&
-      todayNST.getDate() === 12 &&
-      tyrannianShops.map((x) => x.toLowerCase()).includes(shopCategory)
-    )
-      return 'tyrannia';
-
-    if (todayNST.getMonth() === 7 && todayNST.getDate() === 20 && shopCategory === 'usuki doll')
-      return 'usukicon';
-
-    if (
-      todayNST.getMonth() === 8 &&
-      todayNST.getDate() === 20 &&
-      faerielandShops.map((x) => x.toLowerCase()).includes(shopCategory)
-    )
-      return 'festival';
-
-    if (
-      todayNST.getMonth() === 9 &&
-      todayNST.getDate() === 31 &&
-      halloweenShops.map((x) => x.toLowerCase()).includes(shopCategory)
-    )
-      return 'halloween';
-  }, [shopInfo.id, todayDate]);
+  const linkColor = color.lightness(70).hex();
 
   return (
     <>
@@ -70,25 +49,23 @@ const RestockHeader = (props: Props) => {
         zIndex={-1}
       />
       <Box mt={2}>
-        <RestockBreadcrumb shopData={shopInfo} isHistory={isHistory} />
+        <RestockBreadcrumb breadcrumbList={breadcrumbList} locale={locale} useAppDir={useAppDir} />
       </Box>
-      <Center
-        mt={2}
-        mb={6}
-        flexFlow="column"
-        gap={2}
-        css={{ '& a': { color: Color(shopInfo.color).lightness(70).hex() } }}
-      >
-        {!isHistory && (
+      <Center mt={2} mb={6} flexFlow="column" gap={2} css={{ '& a': { color: linkColor } }}>
+        {isHistory ? (
+          <HStack>
+            <Badge colorPalette="orange">{historyBadge}</Badge>
+          </HStack>
+        ) : (
           <HStack>
             <Link asChild>
-              <MainLink href="/restock" prefetch={false}>
+              <I18nLink href="/restock">
                 <Badge>{shopInfo.category}</Badge>
-              </MainLink>
+              </I18nLink>
             </Link>
             {shopInfo.difficulty.toLowerCase() !== 'medium' && (
               <Link asChild>
-                <MainLink href="/restock" prefetch={false}>
+                <I18nLink href="/restock">
                   <Badge
                     colorPalette={
                       shopInfo.difficulty.toLowerCase() === 'beginner' ? 'green' : 'red'
@@ -96,14 +73,9 @@ const RestockHeader = (props: Props) => {
                   >
                     {shopInfo.difficulty}
                   </Badge>
-                </MainLink>
+                </I18nLink>
               </Link>
             )}
-          </HStack>
-        )}
-        {isHistory && (
-          <HStack>
-            <Badge colorPalette="orange">Restock History</Badge>
           </HStack>
         )}
         <Link
@@ -119,60 +91,15 @@ const RestockHeader = (props: Props) => {
             height={150}
             alt={`${shopInfo.name} thumbnail`}
             borderRadius="md"
-            objectFit={'cover'}
-            boxShadow={'sm'}
+            objectFit="cover"
+            boxShadow="sm"
           />
         </Link>
         <Heading as="h1">{shopInfo.name}</Heading>
-        {props.children}
-        {!isHistory && (
-          <Text mt={3} fontSize="sm" textAlign={'center'}>
-            {t.rich('Restock.history-cta', {
-              Link: (chunk) => (
-                <Link asChild>
-                  <MainLink href={`/restock/${slugify(shopInfo.name)}/history`} prefetch={false}>
-                    {chunk}
-                    <Image
-                      src={'/favicon.svg'}
-                      width={'18px'}
-                      height={'18px'}
-                      style={{ display: 'inline', verticalAlign: 'middle' }}
-                      alt="link icon"
-                    />
-                  </MainLink>
-                </Link>
-              ),
-            })}
-          </Text>
-        )}
-        {specialDay === 'hpd' && (
-          <Tag.Root colorPalette="green">
-            <Tag.Label>{t('Restock.half-price-day')}</Tag.Label>
-          </Tag.Root>
-        )}
-        {specialDay === 'tyrannia' && (
-          <Tag.Root colorPalette="orange">
-            <Tag.Label>{t('Restock.tyrannian-victory-day')}</Tag.Label>
-          </Tag.Root>
-        )}
-        {specialDay === 'usukicon' && (
-          <Tag.Root colorPalette="pink">
-            <Tag.Label>{t('Restock.usuki-day')}</Tag.Label>
-          </Tag.Root>
-        )}
-        {specialDay === 'festival' && (
-          <Tag.Root colorPalette="purple">
-            <Tag.Label>{t('Restock.faerie-festival')}</Tag.Label>
-          </Tag.Root>
-        )}
-        {specialDay === 'halloween' && (
-          <Tag.Root colorPalette="orange">
-            <Tag.Label>{t('Restock.halloween')}</Tag.Label>
-          </Tag.Root>
-        )}
+        {children}
+        {!isHistory && historyCta}
+        <RestockShopSpecialDayTag shopId={shopInfo.id} labels={specialDayLabels} />
       </Center>
     </>
   );
-};
-
-export default RestockHeader;
+}

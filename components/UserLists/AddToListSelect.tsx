@@ -9,12 +9,9 @@ import dynamic from 'next/dynamic';
 import NextImage from 'next/image';
 import { useTranslations } from 'next-intl';
 import { isDynamicActionDisabled } from '../../utils/utils';
-import { DuplicatedItemModalProps } from '../Modal/DuplicatedItemModal';
 import { useLists } from '../../utils/useLists';
 
-const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
-  () => import('../Modal/DuplicatedItemModal')
-);
+const DuplicatedItemModal = dynamic(() => import('../Modal/DuplicatedItemModal'));
 
 type Props = {
   item: ItemData;

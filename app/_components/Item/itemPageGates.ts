@@ -47,7 +47,7 @@ export function needsAuctionCard(item: ItemData) {
 
   if (price >= 120_000_000) return false;
 
-  return isInflated ? price > 800_000 : price > 5_000_000;
+  return isInflated ? price > 2_000_000 : price > 5_000_000;
 }
 
 export function needsTradeCard(item: ItemData) {

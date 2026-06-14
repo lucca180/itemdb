@@ -8,7 +8,7 @@ import '@utils/global.css';
 import { inter } from '@utils/theme/fonts';
 import { AppScripts } from '@app/AppScripts';
 import { Providers } from '@app/providers';
-import { buildAppMetadataDefaults } from '@utils/appPage';
+import { buildAppMetadataDefaults } from '@app/utils/appPage';
 import { IntlProvider } from './IntlProvider';
 
 export function generateStaticParams() {
