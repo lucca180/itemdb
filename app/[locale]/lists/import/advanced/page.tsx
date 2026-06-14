@@ -5,7 +5,7 @@ import AppServerLayout from '@components/Layout/AppServerLayout';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import HeaderCard from '@components/Card/HeaderCard';
 import { BreadcrumbsView } from '@components/Breadcrumbs/BreadcrumbsView';
-import { getStaticAppPageProps } from '@utils/appPage';
+import { getStaticAppPageProps } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { buildAdvancedImportPageProps } from './buildAdvancedImportPageProps';
@@ -35,6 +35,7 @@ export async function generateMetadata({ params }: AdvancedImportPageProps): Pro
   return {
     ...pageProps.metadata,
     openGraph: {
+      ...pageProps.metadata.openGraph,
       images: [ogImage],
     },
   };

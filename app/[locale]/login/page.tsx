@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import AppServerLayout from '@components/Layout/AppServerLayout';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@utils/appPage';
+import { getStaticAppPageProps } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
 import { setRequestLocale } from 'next-intl/server';
 import { buildLoginPageProps } from './buildLoginPageProps';

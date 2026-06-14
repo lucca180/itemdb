@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
 import AppServerLayout from '@components/Layout/AppServerLayout';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@utils/appPage';
+import { getStaticAppPageProps } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
 import { wp_getLatestPosts } from '@pages/api/wp/posts';
 import { getTranslations, setRequestLocale } from 'next-intl/server';

@@ -5,7 +5,7 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import { getPathname } from '@i18n/navigation';
 import AppServerLayout from '@components/Layout/AppServerLayout';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@utils/appPage';
+import { getStaticAppPageProps } from '@app/utils/appPage';
 import { doSearch } from '@pages/api/v1/search';
 import { setRequestLocale } from 'next-intl/server';
 import type { ItemData, SearchFilters, ShopInfo } from '@types';
@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: RestockShopPageProps): Promis
 
   return {
     ...pageProps.metadata,
-    twitter: { card: 'summary_large_image' },
+    twitter: { ...pageProps.metadata.twitter, card: 'summary_large_image' },
     openGraph: {
       ...pageProps.metadata.openGraph,
       images: [

@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
 import AppServerLayout from '@components/Layout/AppServerLayout';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@utils/appPage';
+import { getStaticAppPageProps } from '@app/utils/appPage';
 import { getSpeciesOutfits } from '@pages/api/v1/tools/outfits';
 import { setRequestLocale } from 'next-intl/server';
 import type { ItemData } from '@types';
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: OutfitPageProps): Promise<Met
   return {
     ...pageProps.metadata,
     themeColor,
-    twitter: { card: 'summary_large_image' },
+    twitter: { ...pageProps.metadata.twitter, card: 'summary_large_image' },
     openGraph: {
       ...pageProps.metadata.openGraph,
       images: [{ url: headerImage, width: 600, height: 200, alt: labels.exclusiveClothesGuide }],

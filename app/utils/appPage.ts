@@ -25,6 +25,7 @@ export function getStaticAppPageProps(
 ): StaticAppPageProps {
   const normalizedLocale = normalizeItemDbLocale(locale);
   const canonical = getItemDbCanonical(options.pathname, normalizedLocale);
+  const hreflang = buildItemDbHreflangAlternates(options.pathname);
   const noindex = options.noindex ?? false;
   const nofollow = options.nofollow ?? false;
 
@@ -35,10 +36,22 @@ export function getStaticAppPageProps(
       description: options.description,
       alternates: {
         canonical,
+        languages: hreflang.languages,
       },
       robots: {
         index: !noindex,
         follow: !nofollow,
+      },
+      openGraph: {
+        type: 'website',
+        url: canonical,
+        title: options.title,
+        description: options.description,
+      },
+      twitter: {
+        card: 'summary',
+        title: options.title,
+        description: options.description,
       },
     },
     seo: {

@@ -1,4 +1,4 @@
-import { Flex, Heading, Text } from '@chakra-ui/react';
+import { Flex, Heading } from '@chakra-ui/react';
 import HeaderCard from '@components/Card/HeaderCard';
 import type { WP_Article } from '@types';
 import { ArticleSection } from './ArticleSection';
@@ -21,7 +21,6 @@ export function ArticlesPageContent({ labels, groupedPosts }: ArticlesPageConten
         <Heading size="lg" as="h1">
           {labels.title}
         </Heading>
-        <Text fontSize={{ base: 'sm', md: undefined }} as="h2" />
       </HeaderCard>
       <Flex flexFlow="column" gap={3}>
         {Object.entries(groupedPosts).map(([category, posts]) => (

@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
 import AppServerLayout from '@components/Layout/AppServerLayout';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@utils/appPage';
+import { getStaticAppPageProps } from '@app/utils/appPage';
 import { routing } from '@utils/locales';
 import { getTrendingCatLists } from '@pages/api/v1/beta/trending';
 import { setRequestLocale } from 'next-intl/server';

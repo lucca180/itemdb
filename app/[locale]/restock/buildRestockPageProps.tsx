@@ -38,7 +38,7 @@ export async function buildRestockPageProps(): Promise<RestockPageLabels> {
     const i = index + 1;
     return {
       questionName: t(`Restock.faq-${i}`),
-      acceptedAnswerText: t(`Restock.faq-${i}-text`),
+      acceptedAnswerText: getRestockFaqAnswerText(t, i),
     };
   });
 
@@ -99,6 +99,19 @@ export async function buildRestockPageProps(): Promise<RestockPageLabels> {
       { heading: t('Restock.faq-5'), body: t('Restock.faq-5-text') },
     ],
   };
+}
+
+function getRestockFaqAnswerText(
+  t: Awaited<ReturnType<typeof getTranslations>>,
+  index: number
+): string {
+  if (index === 1) {
+    return `${t('Restock.faq-1-text')}\n\n${t('Restock.faq-1-text-2')}`;
+  }
+  if (index === 3) {
+    return `${t('Restock.faq-3-text')}\n\n${t('Restock.faq-3-text-2')}`;
+  }
+  return t(`Restock.faq-${index}-text`);
 }
 
 export async function buildRestockPageMetadata() {

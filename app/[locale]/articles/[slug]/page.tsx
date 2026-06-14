@@ -4,7 +4,7 @@ import { cacheLife, cacheTag } from 'next/cache';
 import { notFound } from 'next/navigation';
 import AppServerLayout from '@components/Layout/AppServerLayout';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { getStaticAppPageProps } from '@utils/appPage';
+import { getStaticAppPageProps } from '@app/utils/appPage';
 import { wp_getBySlug } from '@pages/api/wp/posts/[slug]';
 import { wp_getLatestPosts } from '@pages/api/wp/posts';
 import { setRequestLocale } from 'next-intl/server';
