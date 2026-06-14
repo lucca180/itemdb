@@ -34,7 +34,6 @@ export async function generateMetadata({ params }: RestockHistoryPageProps): Pro
 
   return {
     ...pageProps.metadata,
-    themeColor: shopInfo.color,
     twitter: { card: 'summary_large_image' },
     openGraph: {
       ...pageProps.metadata.openGraph,

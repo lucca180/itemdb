@@ -71,7 +71,7 @@ export async function buildRestockShopPageProps(
             shopname: shopInfo.name,
           })}
         </Text>
-        <Text as="h3">
+        <Text as="h3" textAlign="center">
           <Link asChild>
             <MainLink
               href={`/search?s=&category[]=${shopIDToCategory[shopInfo.id]}&rarity[]=1&rarity[]=100`}

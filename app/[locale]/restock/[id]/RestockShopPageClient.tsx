@@ -18,7 +18,9 @@ import { getRestockProfit, restockBlackMarketItems, shopIDToCategory } from '@ut
 import Color from 'color';
 import type { RestockShopClientLabels } from './buildRestockShopPageProps';
 
-const SearchFilterModal = dynamic(() => import('@components/Search/SearchFiltersModal'));
+const SearchFilterModal = dynamic(() => import('@components/Search/SearchFiltersModal'), {
+  ssr: false,
+});
 
 const sortTypes = {
   name: 'name',

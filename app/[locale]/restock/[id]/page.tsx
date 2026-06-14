@@ -39,7 +39,6 @@ export async function generateMetadata({ params }: RestockShopPageProps): Promis
 
   return {
     ...pageProps.metadata,
-    themeColor: shopInfo.color,
     twitter: { card: 'summary_large_image' },
     openGraph: {
       ...pageProps.metadata.openGraph,
