@@ -45,14 +45,12 @@ async function ItemPageRoute({ params }: ItemPageProps) {
     notFound();
   }
 
-  const { item } = result;
-  preloadItemPageData(item);
-
+  preloadItemPageData(result.item);
   setRequestLocale(locale);
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={item.color.hex + '66'}>
-      <ItemPageView item={item} />
+    <AppServerLayout locale={locale} disableNextSeo mainColor={result.item.color.hex + '66'}>
+      <ItemPageView item={result.item} />
     </AppServerLayout>
   );
 }

@@ -1,4 +1,4 @@
-/* eslint-disable  */
+'use client';
 import { Skeleton, AspectRatio, Box } from '@chakra-ui/react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
@@ -15,6 +15,7 @@ export const SkeletonImage = (props: SkeletonImageProps) => {
   const { url, loadkey, width, height } = props;
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (isLoaded && isLoaded !== loadkey) setIsLoaded(null);
   }, [loadkey]);
 

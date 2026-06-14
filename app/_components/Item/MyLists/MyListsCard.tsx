@@ -25,18 +25,18 @@ import axios from 'axios';
 import Color from 'color';
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import { isDynamicActionDisabled } from '@utils/utils';
-import type { DuplicatedItemModalProps } from '@components/Modal/DuplicatedItemModal';
 import type { ItemActionModalProps } from '@components/Modal/ItemActionModal';
 import type { ItemData, ObligatoryUserList } from '@types';
 
 const Markdown = dynamic(() => import('@components/Utils/Markdown'));
 
 const ItemActionModal = dynamic<ItemActionModalProps>(
-  () => import('@components/Modal/ItemActionModal')
+  () => import('@components/Modal/ItemActionModal'),
+  { ssr: false }
 );
-const DuplicatedItemModal = dynamic<DuplicatedItemModalProps>(
-  () => import('@components/Modal/DuplicatedItemModal')
-);
+const DuplicatedItemModal = dynamic(() => import('@components/Modal/DuplicatedItemModal'), {
+  ssr: false,
+});
 
 type Props = {
   item: ItemData;

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { formatBreadcrumbJsonLd } from '@components/Breadcrumbs/formatBreadcrumbJsonLd';
 import {
   DEFAULT_LOCALE,
   getLocalizedHref,
@@ -81,5 +82,19 @@ describe('i18n routing helpers', () => {
     expect(getPageRouterHref(router, '/tools/rainbow-pool/acara/')).toBe(
       '/pt/tools/rainbow-pool/acara/'
     );
+  });
+
+  it('builds breadcrumb JSON-LD URLs with next-intl getPathname', () => {
+    const items = formatBreadcrumbJsonLd(
+      [
+        { position: 1, name: 'Home', item: '/' },
+        { position: 2, name: 'FAQ', item: '/faq' },
+      ],
+      'pt'
+    );
+
+    expect(items[0].item).toBe('https://itemdb.com.br/pt');
+    expect(items[1].item).toBe('https://itemdb.com.br/pt/faq');
+    expect(items[1].item).toBe(`https://itemdb.com.br${getLocalizedHref('/faq', 'pt')}`);
   });
 });

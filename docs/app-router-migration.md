@@ -24,7 +24,7 @@ Use this flow for static or mostly static content pages that currently live in t
 2. Keep `page.tsx` as a Server Component.
 3. If the visual body is large or needs client-only behavior, move it to `app/[locale]/<route>/<RouteName>PageClient.tsx` with `'use client'`.
 4. Wrap the page in [`AppServerLayout`](C:/Users/Lucca/itemdb/components/Layout/AppServerLayout.tsx) for App Router pages, or the existing [`Layout`](C:/Users/Lucca/itemdb/components/Layout.tsx) when still on Pages Router.
-5. Use [`getStaticAppPageProps`](C:/Users/Lucca/itemdb/utils/appPage.ts) to generate:
+5. Use [`getStaticAppPageProps`](C:/Users/Lucca/itemdb/app/utils/appPage.ts) to generate:
    - localized canonical URL
    - `generateMetadata()` output
    - `SEO` props for `Layout`
@@ -38,7 +38,7 @@ Use this flow for static or mostly static content pages that currently live in t
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
 import Layout from '@components/Layout';
-import { getStaticAppPageProps } from '@utils/appPage';
+import { getStaticAppPageProps } from '@app/utils/appPage';
 import { ExamplePageClient } from './ExamplePageClient';
 
 const description = 'Example description.';
@@ -84,7 +84,7 @@ Extract a `*PageClient.tsx` component when:
 
 For static migrations, prefer `generateMetadata()` plus `Layout` with `disableNextSeo`.
 
-Use [`getStaticAppPageProps`](C:/Users/Lucca/itemdb/utils/appPage.ts) unless the route has a genuinely different metadata shape.
+Use [`getStaticAppPageProps`](C:/Users/Lucca/itemdb/app/utils/appPage.ts) unless the route has a genuinely different metadata shape.
 
 ## Locale and canonical rules
 

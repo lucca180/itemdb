@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { Breadcrumbs } from './Breadcrumbs';
 import { categoryToShopID, restockShopInfo, slugify } from '../../utils/utils';
+import { resolvePageLocale } from '../../utils/locales';
 import { ProductJsonLd, ProductJsonLdProps } from 'next-seo';
 
 type ItemBreadcrumbProps = {
@@ -68,7 +69,11 @@ export const ItemBreadcrumb = (props: ItemBreadcrumbProps) => {
   const productJson = getItemJSONLD(item);
   return (
     <>
-      <Breadcrumbs breadcrumbList={breadcrumbList} useAppDir={useAppDir} />
+      <Breadcrumbs
+        breadcrumbList={breadcrumbList}
+        useAppDir={useAppDir}
+        locale={resolvePageLocale(locale)}
+      />
       {productJson && <ProductJsonLd {...productJson} useAppDir={useAppDir} />}
     </>
   );
