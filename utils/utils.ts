@@ -414,6 +414,45 @@ export function getDateNST(timestamp?: number) {
   return new Date(todayNST);
 }
 
+export type ShopRestockSpecialDay = 'hpd' | 'tyrannia' | 'usukicon' | 'festival' | 'halloween';
+
+export function getShopRestockSpecialDay(
+  shopId: string | number,
+  todayNST: Date = getDateNST()
+): ShopRestockSpecialDay | undefined {
+  const shopCategory = shopIDToCategory[shopId];
+
+  if (todayNST.getDate() === 3) return 'hpd';
+
+  if (
+    todayNST.getMonth() === 4 &&
+    todayNST.getDate() === 12 &&
+    tyrannianShops.map((x) => x.toLowerCase()).includes(shopCategory)
+  ) {
+    return 'tyrannia';
+  }
+
+  if (todayNST.getMonth() === 7 && todayNST.getDate() === 20 && shopCategory === 'usuki doll') {
+    return 'usukicon';
+  }
+
+  if (
+    todayNST.getMonth() === 8 &&
+    todayNST.getDate() === 20 &&
+    faerielandShops.map((x) => x.toLowerCase()).includes(shopCategory)
+  ) {
+    return 'festival';
+  }
+
+  if (
+    todayNST.getMonth() === 9 &&
+    todayNST.getDate() === 31 &&
+    halloweenShops.map((x) => x.toLowerCase()).includes(shopCategory)
+  ) {
+    return 'halloween';
+  }
+}
+
 export function rarityToCCPoints(item: ItemData) {
   if (item.internal_id === 289) return 1;
 

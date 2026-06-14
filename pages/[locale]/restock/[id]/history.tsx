@@ -16,7 +16,7 @@ import { restockShopInfo, slugify } from '@utils/utils';
 import MainLink from '@components/Utils/MainLink';
 import { createTranslator, useTranslations } from 'next-intl';
 import Layout from '@components/Layout';
-import RestockHeader from '@components/Hubs/Restock/RestockHeader';
+import RestockHeaderClient from '@components/Hubs/Restock/RestockHeaderClient';
 import { GetStaticPropsContext } from 'next';
 import { ReactElement, useEffect, useState } from 'react';
 import axios from 'axios';
@@ -80,7 +80,7 @@ const RestockHistory = (props: RestockHistoryPageProps) => {
 
   return (
     <>
-      <RestockHeader shop={shopInfo} isHistory>
+      <RestockHeaderClient shop={shopInfo} isHistory>
         <Text as="h2" textAlign={'center'}>
           {t.rich('Restock.restock-history-header', {
             Link: (chunk) => (
@@ -113,7 +113,7 @@ const RestockHistory = (props: RestockHistoryPageProps) => {
             />
           </Link>
         </Text>
-      </RestockHeader>
+      </RestockHeaderClient>
       <Separator />
       <Center mt={2}>
         <HStack>
