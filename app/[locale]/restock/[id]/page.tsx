@@ -2,18 +2,22 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
 import { notFound, permanentRedirect } from 'next/navigation';
-import { getPathname } from '@i18n/navigation';
 import AppServerLayout from '@components/Layout/AppServerLayout';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { getStaticAppPageProps } from '@app/utils/appPage';
 import { doSearch } from '@pages/api/v1/search';
 import { setRequestLocale } from 'next-intl/server';
 import type { ItemData, SearchFilters, ShopInfo } from '@types';
-import { getRestockProfit, removeOutliers, restockShopInfo, slugify } from '@utils/utils';
+import { getRestockProfit, removeOutliers, restockShopInfo } from '@utils/utils';
 import { INITIAL_MIN_PROFIT, RESTOCK_FILTER } from '@utils/restock-filters';
 import { mean } from 'simple-statistics';
 import { buildRestockShopPageProps } from './buildRestockShopPageProps';
 import { RestockShopPageContent } from './RestockShopPageContent';
+import {
+  getRestockShopPathname,
+  resolveRestockShopForMetadata,
+  resolveRestockShopRoute,
+} from '@app/utils/resolveRestockShopRoute';
 
 type RestockShopPageProps = {
   params: Promise<{ locale: string; id: string }>;
@@ -22,7 +26,7 @@ type RestockShopPageProps = {
 export async function generateMetadata({ params }: RestockShopPageProps): Promise<Metadata> {
   const { locale, id } = await params;
   setRequestLocale(locale);
-  const shopInfo = resolveRestockShopSlug(id);
+  const shopInfo = resolveRestockShopForMetadata(id);
   if (!shopInfo) return {};
 
   const labels = await buildRestockShopPageProps(shopInfo, {
@@ -34,7 +38,7 @@ export async function generateMetadata({ params }: RestockShopPageProps): Promis
   const pageProps = getStaticAppPageProps(locale, {
     title: `${shopInfo.name} | Neopets Shops`,
     description: labels.metaDescription,
-    pathname: `/restock/${id}`,
+    pathname: getRestockShopPathname(shopInfo),
   });
 
   return {
@@ -65,40 +69,33 @@ export default function RestockShopPage({ params }: RestockShopPageProps) {
 async function RestockShopPageContentWrapper({ params }: RestockShopPageProps) {
   const { locale, id } = await params;
   setRequestLocale(locale);
+  const route = resolveRestockShopRoute(id, locale);
 
-  if (!Number.isNaN(Number(id))) {
-    const shopById = restockShopInfo[id];
-    if (shopById) {
-      permanentRedirect(getPathname({ locale, href: `/restock/${slugify(shopById.name)}` }));
-    }
+  if (route.type === 'redirect') {
+    permanentRedirect(route.destination);
+  }
+  if (route.type === 'notFound') {
     notFound();
   }
 
-  const shopInfo = resolveRestockShopSlug(id);
-  if (!shopInfo || Number(shopInfo.id) < 0) notFound();
-
-  const pageData = await loadRestockShopPageData(shopInfo);
-  const labels = await buildRestockShopPageProps(shopInfo, {
+  const pageData = await loadRestockShopPageData(route.shop);
+  const labels = await buildRestockShopPageProps(route.shop, {
     totalItems: pageData.totalItems,
     profitableCount: pageData.profitableCount,
     profitMean: pageData.profitMean,
   });
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={`${shopInfo.color}a6`}>
+    <AppServerLayout locale={locale} disableNextSeo mainColor={`${route.shop.color}a6`}>
       <RestockShopPageContent
         locale={locale}
-        shopInfo={shopInfo}
+        shopInfo={route.shop}
         similarShops={pageData.similarShops}
         initialItems={pageData.initialItems}
         labels={labels}
       />
     </AppServerLayout>
   );
-}
-
-function resolveRestockShopSlug(id: string): ShopInfo | null {
-  return Object.values(restockShopInfo).find((shop) => slugify(shop.name) === id) ?? null;
 }
 
 type RestockShopPageData = {

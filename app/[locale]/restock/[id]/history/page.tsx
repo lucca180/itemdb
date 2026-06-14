@@ -1,13 +1,15 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { notFound, permanentRedirect } from 'next/navigation';
-import { getPathname } from '@i18n/navigation';
 import AppServerLayout from '@components/Layout/AppServerLayout';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { getStaticAppPageProps } from '@app/utils/appPage';
+import {
+  getRestockShopPathname,
+  resolveRestockShopForMetadata,
+  resolveRestockShopRoute,
+} from '@app/utils/resolveRestockShopRoute';
 import { setRequestLocale } from 'next-intl/server';
-import type { ShopInfo } from '@types';
-import { restockShopInfo, slugify } from '@utils/utils';
 import {
   buildRestockHistoryPageMetadata,
   buildRestockHistoryPageProps,
@@ -21,7 +23,7 @@ type RestockHistoryPageProps = {
 export async function generateMetadata({ params }: RestockHistoryPageProps): Promise<Metadata> {
   const { locale, id } = await params;
   setRequestLocale(locale);
-  const shopInfo = resolveRestockShopSlug(id);
+  const shopInfo = resolveRestockShopForMetadata(id);
   if (!shopInfo) return {};
 
   const { title, description } = await buildRestockHistoryPageMetadata(shopInfo);
@@ -29,7 +31,7 @@ export async function generateMetadata({ params }: RestockHistoryPageProps): Pro
   const pageProps = getStaticAppPageProps(locale, {
     title,
     description,
-    pathname: `/restock/${id}/history`,
+    pathname: getRestockShopPathname(shopInfo, true),
   });
 
   return {
@@ -60,29 +62,20 @@ export default function RestockHistoryPage({ params }: RestockHistoryPageProps) 
 async function RestockHistoryPageContentWrapper({ params }: RestockHistoryPageProps) {
   const { locale, id } = await params;
   setRequestLocale(locale);
+  const route = resolveRestockShopRoute(id, locale, { history: true });
 
-  if (!Number.isNaN(Number(id))) {
-    const shopById = restockShopInfo[id];
-    if (shopById) {
-      permanentRedirect(
-        getPathname({ locale, href: `/restock/${slugify(shopById.name)}/history` })
-      );
-    }
+  if (route.type === 'redirect') {
+    permanentRedirect(route.destination);
+  }
+  if (route.type === 'notFound') {
     notFound();
   }
 
-  const shopInfo = resolveRestockShopSlug(id);
-  if (!shopInfo || Number(shopInfo.id) < 0) notFound();
-
-  const labels = await buildRestockHistoryPageProps(shopInfo);
+  const labels = await buildRestockHistoryPageProps(route.shop);
 
   return (
-    <AppServerLayout locale={locale} disableNextSeo mainColor={`${shopInfo.color}a6`}>
-      <RestockHistoryPageContent locale={locale} shopInfo={shopInfo} labels={labels} />
+    <AppServerLayout locale={locale} disableNextSeo mainColor={`${route.shop.color}a6`}>
+      <RestockHistoryPageContent locale={locale} shopInfo={route.shop} labels={labels} />
     </AppServerLayout>
   );
-}
-
-function resolveRestockShopSlug(id: string): ShopInfo | null {
-  return Object.values(restockShopInfo).find((shop) => slugify(shop.name) === id) ?? null;
 }
