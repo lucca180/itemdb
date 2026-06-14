@@ -17,8 +17,10 @@ type RestockHeaderProps = {
   breadcrumbList: BreadcrumbItem[];
   locale: string;
   useAppDir?: boolean;
-  historyCta: ReactNode;
+  historyCta?: ReactNode;
   specialDayLabels: RestockHeaderSpecialDayLabels;
+  isHistory?: boolean;
+  historyBadge?: string;
 };
 
 export default function RestockHeader({
@@ -29,6 +31,8 @@ export default function RestockHeader({
   useAppDir,
   historyCta,
   specialDayLabels,
+  isHistory,
+  historyBadge,
 }: RestockHeaderProps) {
   const color = Color(shopInfo.color);
   const rgb = color.rgb().array();
@@ -48,24 +52,32 @@ export default function RestockHeader({
         <RestockBreadcrumb breadcrumbList={breadcrumbList} locale={locale} useAppDir={useAppDir} />
       </Box>
       <Center mt={2} mb={6} flexFlow="column" gap={2} css={{ '& a': { color: linkColor } }}>
-        <HStack>
-          <Link asChild>
-            <I18nLink href="/restock">
-              <Badge>{shopInfo.category}</Badge>
-            </I18nLink>
-          </Link>
-          {shopInfo.difficulty.toLowerCase() !== 'medium' && (
+        {isHistory ? (
+          <HStack>
+            <Badge colorPalette="orange">{historyBadge}</Badge>
+          </HStack>
+        ) : (
+          <HStack>
             <Link asChild>
               <I18nLink href="/restock">
-                <Badge
-                  colorPalette={shopInfo.difficulty.toLowerCase() === 'beginner' ? 'green' : 'red'}
-                >
-                  {shopInfo.difficulty}
-                </Badge>
+                <Badge>{shopInfo.category}</Badge>
               </I18nLink>
             </Link>
-          )}
-        </HStack>
+            {shopInfo.difficulty.toLowerCase() !== 'medium' && (
+              <Link asChild>
+                <I18nLink href="/restock">
+                  <Badge
+                    colorPalette={
+                      shopInfo.difficulty.toLowerCase() === 'beginner' ? 'green' : 'red'
+                    }
+                  >
+                    {shopInfo.difficulty}
+                  </Badge>
+                </I18nLink>
+              </Link>
+            )}
+          </HStack>
+        )}
         <Link
           href={`https://www.neopets.com/objects.phtml?type=shop&obj_type=${shopInfo.id}`}
           target="_blank"
@@ -85,7 +97,7 @@ export default function RestockHeader({
         </Link>
         <Heading as="h1">{shopInfo.name}</Heading>
         {children}
-        {historyCta}
+        {!isHistory && historyCta}
         <RestockShopSpecialDayTag shopId={shopInfo.id} labels={specialDayLabels} />
       </Center>
     </>
