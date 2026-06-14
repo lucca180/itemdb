@@ -7,8 +7,11 @@ type TradeRelistingTarget = {
 
 const normalize = (value: string) => value.trim().toLowerCase();
 
-export const shouldShowTradeRelisting = (item: Pick<ItemData, 'saleStatus'>) =>
-  item.saleStatus === null || item.saleStatus.status === 'hts';
+export const shouldShowTradeRelisting = (item: Pick<ItemData, 'saleStatus' | 'price'>) =>
+  item.saleStatus === null ||
+  item.saleStatus.status === 'hts' ||
+  (item.price.value || 0) > 20_000_000 ||
+  (item.price.inflated && (item.price.value || 0) > 5_000_000);
 
 const isTargetItem = (item: TradeData['items'][number], target: TradeRelistingTarget) => {
   if (target.itemIid !== undefined) return item.item_iid === target.itemIid;
@@ -20,7 +23,17 @@ export const addTradeRelistingHistory = (
   trades: TradeData[],
   target: TradeRelistingTarget
 ): TradeData[] => {
-  const ownerHistory = new Map<string, { count: number; since: string }>();
+  const ownerHistory = new Map<
+    string,
+    {
+      count: number;
+      since: string;
+      history: {
+        price: number | null;
+        date: string;
+      }[];
+    }
+  >();
   const result = trades.map((trade) => ({
     ...trade,
     items: trade.items.map((item) => ({ ...item })),
@@ -39,14 +52,21 @@ export const addTradeRelistingHistory = (
     const history = ownerHistory.get(ownerKey);
 
     if (!history) {
-      ownerHistory.set(ownerKey, { count: 1, since: trade.addedAt });
+      ownerHistory.set(ownerKey, {
+        count: 1,
+        since: trade.addedAt,
+        history: [{ price: item.price, date: trade.addedAt }],
+      });
       return;
     }
 
     item.relisting = {
       count: history.count,
       since: history.since,
+      history: [...history.history].reverse(),
     };
+
+    history.history.push({ price: item.price, date: trade.addedAt });
     history.count++;
   });
 
