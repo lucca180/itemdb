@@ -641,6 +641,14 @@ export const CategoriesTab = (props: TagSelectProps) => {
     setSpecialTags(tempTags);
   };
 
+  const handleSpecialTagToggle = (tag: string) => {
+    const next = specialTags.includes(tag)
+      ? specialTags.filter((specialTag) => specialTag !== tag)
+      : [...specialTags, tag];
+
+    handleSpecialTags(next);
+  };
+
   return (
     <Stack flexFlow="column" gap={4}>
       {isAdmin && (
@@ -669,16 +677,18 @@ export const CategoriesTab = (props: TagSelectProps) => {
               <Checkbox.Root
                 key={value}
                 checked={specialTags.includes(value)}
-                onCheckedChange={({ checked }) => {
-                  const next = checked
-                    ? [...specialTags, value]
-                    : specialTags.filter((tag) => tag !== value);
-                  handleSpecialTags(next);
+                cursor="pointer"
+                userSelect="none"
+                onClick={(event) => {
+                  event.preventDefault();
+                  handleSpecialTagToggle(value);
                 }}
               >
                 <Checkbox.HiddenInput />
-                <Checkbox.Control />
-                <Checkbox.Label>{label}</Checkbox.Label>
+                <Checkbox.Control cursor="pointer">
+                  <Checkbox.Indicator cursor="pointer" />
+                </Checkbox.Control>
+                <Checkbox.Label cursor="pointer">{label}</Checkbox.Label>
               </Checkbox.Root>
             ))}
           </Stack>
