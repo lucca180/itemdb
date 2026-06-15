@@ -12,7 +12,6 @@ import { FaerieFestivalPageContent } from './FaerieFestivalPageContent';
 
 const EVENT_YEAR = 2025;
 const mainColor = '#9b65c0c7';
-const themeColor = '#9b65c0';
 const ogImage = 'https://images.neopets.com/homepage/marquee/icons/faeriefestival_event_icon.png';
 
 type FaerieFestivalPageProps = {
@@ -30,7 +29,6 @@ export async function generateMetadata({ params }: FaerieFestivalPageProps): Pro
 
   return {
     ...pageProps.metadata,
-    themeColor,
     openGraph: {
       ...pageProps.metadata.openGraph,
       images: [{ url: ogImage, width: 300, height: 300, alt: 'Faeries Festival' }],

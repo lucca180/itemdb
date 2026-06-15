@@ -15,7 +15,6 @@ import {
 } from './buildOutfitPageProps';
 
 const mainColor = '#94aefaca';
-const themeColor = '#94aefa';
 const headerImage = 'https://images.neopets.com/ncmall/shopkeepers/cashshop_fashionshow.png';
 
 type OutfitPageProps = {
@@ -35,7 +34,6 @@ export async function generateMetadata({ params }: OutfitPageProps): Promise<Met
 
   return {
     ...pageProps.metadata,
-    themeColor,
     twitter: { ...pageProps.metadata.twitter, card: 'summary_large_image' },
     openGraph: {
       ...pageProps.metadata.openGraph,

@@ -12,7 +12,6 @@ import { buildRestockPageMetadata, buildRestockPageProps } from './buildRestockP
 import { RestockPageContent } from './RestockPageContent';
 
 const mainColor = 'rgba(165, 218, 233, 0.4)';
-const themeColor = '#A5DAE9';
 
 type RestockPageProps = {
   params: Promise<{ locale: string }>;
@@ -30,7 +29,6 @@ export async function generateMetadata({ params }: RestockPageProps): Promise<Me
 
   return {
     ...pageProps.metadata,
-    themeColor,
   };
 }
 

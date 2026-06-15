@@ -11,7 +11,6 @@ import type { ItemData, NCMallData } from '@types';
 import { buildLeavingMallPageProps } from './buildLeavingMallPageProps';
 import { LeavingMallPageContent } from './LeavingMallPageContent';
 const mainColor = 'rgba(205, 193, 255, 0.58)';
-const themeColor = '#CDC1FF';
 
 type LeavingMallPageProps = {
   params: Promise<{ locale: string }>;
@@ -36,7 +35,6 @@ export async function generateMetadata({ params }: LeavingMallPageProps): Promis
 
   return {
     ...pageProps.metadata,
-    themeColor,
   };
 }
 

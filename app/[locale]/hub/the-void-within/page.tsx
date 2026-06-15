@@ -11,7 +11,6 @@ import type { UserList } from '@types';
 import { TheVoidWithinPageContent } from './TheVoidWithinPageContent';
 
 const mainColor = '#8564df';
-const themeColor = '#8564df';
 const ogImage = 'https://images.neopets.com/plots/tvw/rewards/images/achievements/94n7e5ffbi.png';
 
 type TheVoidWithinPageProps = {
@@ -30,7 +29,6 @@ export async function generateMetadata({ params }: TheVoidWithinPageProps): Prom
 
   return {
     ...pageProps.metadata,
-    themeColor,
     openGraph: {
       ...pageProps.metadata.openGraph,
       images: [{ url: ogImage, width: 150, height: 150, alt: 'The Void Within Plot Paint Brush' }],
