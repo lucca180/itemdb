@@ -8,7 +8,7 @@ import { checkHash } from '../../../../utils/hash';
 import { ItemData } from '../../../../types';
 import { differenceInCalendarDays } from 'date-fns';
 import { chunk } from 'lodash';
-import { isValidOptionalOwnerHash, isValidOwnerHash } from '@utils/ownerHash';
+import { isValidOptionalOwnerHash, isValidOwnerHash, withoutOwnerData } from '@utils/ownerHash';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 type RestockAuction = Prisma.RestockAuctionHistoryCreateManyInput & { addToPriceProcess: boolean };
@@ -52,7 +52,10 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const dataHash = data.hash;
 
-  if (!checkHash(dataHash, { itemPrices: itemPrices }) && tarnumkey !== TARNUM_KEY)
+  if (
+    !checkHash(dataHash, { itemPrices: withoutOwnerData(itemPrices) }) &&
+    tarnumkey !== TARNUM_KEY
+  )
     return res.status(400).json({ error: 'Invalid hash' });
 
   const dataList = [];

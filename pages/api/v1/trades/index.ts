@@ -13,7 +13,7 @@ import { newCreatePriceProcessFlow } from '../prices';
 import { TradeItems, Trades } from '@prisma/generated/client';
 import { getManyItems } from '../items/many';
 import { processSimilarTrades } from '../../feedback/send';
-import { isValidOptionalOwnerHash, omitOwnerHash } from '@utils/ownerHash';
+import { isValidOptionalOwnerHash, omitOwnerHash, withoutOwnerData } from '@utils/ownerHash';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
@@ -66,7 +66,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   )
     return res.status(400).json({ error: 'Invalid ownerHash' });
 
-  if (!checkHash(dataHash, { tradeLots: tradeLots }) && tarnumkey !== TARNUM_KEY)
+  if (!checkHash(dataHash, { tradeLots: withoutOwnerData(tradeLots) }) && tarnumkey !== TARNUM_KEY)
     return res.status(400).json({ error: 'Invalid hash' });
 
   if (lang !== 'en') return res.status(400).json('Language must be english');

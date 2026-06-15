@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.10.3
+// @version      1.10.4
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -179,10 +179,11 @@ const itemdb_script = function() {
         const trade = {
           tradeID: lot.lot_id,
           owner: lot.owner.slice(0, 3).padEnd(6, '*'),
+          _temp_owner: lot.owner,
           wishList: lot.wishlist,
           instantBuy: lot.instant_buy_amount,
           items: [],
-        }
+        };
 
         lot.items.forEach((itemData, i2) => {
           const tradeItem = {
@@ -309,6 +310,7 @@ const itemdb_script = function() {
         name: itemName,
         value: price,
         owner: owner.slice(0, 3).padEnd(6, '*'),
+        _temp_owner: owner,
         stock: stock,
         type: 'usershop',
       };
@@ -700,6 +702,7 @@ const itemdb_script = function() {
           item_id: itemID,
           name: itemName,
           owner: shopOwner.slice(0, 3).padEnd(6, '*'),
+          _temp_owner: shopOwner,
           stock: parseInt(stock),
           value: parseInt(value),
           type: 'sw',
@@ -746,6 +749,7 @@ const itemdb_script = function() {
             item_id: itemID,
             name: itemName.slice(1, -1),
             owner: shopOwner.slice(0, 3).padEnd(6, '*'),
+            _temp_owner: shopOwner,
             stock: parseInt(stock),
             value: parseInt(price),
             type: 'ssw',
@@ -772,6 +776,7 @@ const itemdb_script = function() {
             item_id: itemID,
             name: itemName.slice(1, -1),
             owner: shopOwner.slice(0, 3).padEnd(6, '*'),
+            _temp_owner: shopOwner,
             stock: parseInt(stock),
             value: parseInt(price),
             type: 'ssw',
@@ -818,6 +823,7 @@ const itemdb_script = function() {
         name: itemName,
         img: img,
         owner: owner.slice(0, 3).padEnd(6, "*"),
+        _temp_owner: owner,
         stock: 1,
         value: parseInt(hasBuyer ? lastBid : askingPrice),
         otherInfo: otherInfo,
@@ -1124,7 +1130,7 @@ const itemdb_script = function() {
   }
 
   function discardPrevInventory(){
-    // in case of a refesh that is not a inventory refresh
+    // in case of a refresh that is not a inventory refresh
     // we need to discard the opening data
 
     return GM_deleteValue('prevInventory');
@@ -1213,6 +1219,7 @@ const itemdb_script = function() {
     if(checkTranslation()) return;
     if (priceList.length === 0) return;
 
+    await generateOwnerHash(priceList);
     const hash = idb.getPricesHash(priceList);
     
     const pageLang = GM_getValue('pageLang', 'unknown');
@@ -1247,6 +1254,8 @@ const itemdb_script = function() {
   async function submitTrades() {
     if(checkTranslation()) return;
     if (tradeList.length === 0) return;
+    
+    await generateOwnerHash(tradeList);
 
     const hash = idb.getTradesHash(tradeList);
 
@@ -1394,6 +1403,30 @@ function registerFetchWatcher({ match, eventName }) {
   }
 
   targetWindow.__idbFetchWatchers.push({ match, eventName });
+}
+
+// Generates an anonymous SHA-256 hash from the owner username before sending data.
+// The username is normalized to lowercase and is never included in the submitted payload.
+// If Web Crypto is unavailable, the masked owner is still sent without an ownerHash.
+async function generateOwnerHash(entries) {
+  await Promise.all(entries.map(async entry => {
+    const owner = entry._temp_owner;
+    if (!owner) return;
+
+    try {
+      if (!window.crypto?.subtle || typeof TextEncoder === 'undefined') return;
+
+      const data = new TextEncoder().encode(owner.trim().toLowerCase());
+      const hash = await window.crypto.subtle.digest('SHA-256', data);
+      entry.ownerHash = [...new Uint8Array(hash)]
+        .map(byte => byte.toString(16).padStart(2, '0'))
+        .join('');
+    } catch {
+      delete entry.ownerHash;
+    } finally {
+      delete entry._temp_owner;
+    }
+  }));
 }
 
 // **ONLY** watch requests in these pages

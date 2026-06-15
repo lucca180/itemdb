@@ -13,3 +13,10 @@ export const omitOwnerHash = <T extends { ownerHash?: unknown }>(
   delete result.ownerHash;
   return result;
 };
+
+export function withoutOwnerData(
+  entries: Array<{ ownerHash?: unknown; _temp_owner?: unknown } & Record<string, unknown>>
+) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  return entries.map(({ ownerHash, _temp_owner, ...entry }) => entry);
+}
