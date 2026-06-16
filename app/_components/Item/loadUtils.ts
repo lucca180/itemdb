@@ -1,6 +1,6 @@
 import { cache } from 'react';
-import { cacheLife } from 'next/cache';
-import { getItem } from '@pages/api/v1/items/[id_name]';
+import { cacheLife, cacheTag } from 'next/cache';
+import { getItemV2 } from '@app/server/items';
 import {
   getAuctionData,
   getLebronItemData,
@@ -36,13 +36,15 @@ import { getDyeworksData, type DyeworksData } from '@pages/api/v1/items/[id_name
 import { getItemRecipes } from '@pages/api/v1/items/[id_name]/recipes';
 import { getItemParent } from '@pages/api/v1/items/[id_name]/drops';
 import { getAvyData } from '@pages/api/v1/items/[id_name]/avys';
+import { itemRootTag } from '@utils/appCacheTags';
 
 export const getCachedItem = cache(async (id_name: number | string, flags = false) => {
   'use cache';
   cacheLife('itemFast');
-  const item = await getItem(id_name, flags);
+  const item = await getItemV2(id_name, flags);
   if (!item) return null;
 
+  cacheTag(itemRootTag(item.internal_id));
   applyItemSectionCacheTags(item.internal_id);
   return item;
 });

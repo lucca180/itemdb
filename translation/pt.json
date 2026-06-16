@@ -235,6 +235,7 @@
     "cooking-pot-text": "Este item aparece nas seguintes receitas do <Link>Caldeirão da Jhuidah</Link>",
     "cooking-pot-recipes": "Receitas do Caldeirão",
     "last-known-price": "Último Preço Conhecido",
+    "last-known-price-x-months-ago": "{x, plural, one {Último preço conhecido - # mês atrás} other {Último preço conhecido - # meses atrás}}",
     "not-sold": "Não Vendido",
     "sold": "Vendido",
     "sold-question": "Vendido?",

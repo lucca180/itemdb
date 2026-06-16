@@ -1,5 +1,6 @@
 'use client';
 import { Badge, Box, Icon, Skeleton, Text, Link, Tooltip, useMediaQuery } from '@chakra-ui/react';
+import { differenceInMonths } from 'date-fns';
 import dynamic from 'next/dynamic';
 import React, { useState } from 'react';
 import Image from 'next/image';
@@ -11,7 +12,7 @@ const ItemCtxMenu = dynamic(() => import('@components/Menus/ItemCtxMenu'), { ssr
 import { getRestockProfit, rarityToCCPoints } from '../../utils/utils';
 import { useFormatter, useTranslations } from 'next-intl';
 import MainLink from '../Utils/MainLink';
-import { MdHelp } from 'react-icons/md';
+import { MdHelp, MdOutlineHourglassBottom } from 'react-icons/md';
 import { isMallDiscounted } from './NCMallCard';
 
 export type ItemProps = {
@@ -256,10 +257,14 @@ export const ItemCardBadge = (props: ItemCardBadgeProps) => {
 
   if (!item) return null;
   const isDiscounted = isMallDiscounted(item.mallData);
+  const priceAgeInMonths = item.price.addedAt
+    ? differenceInMonths(new Date(), new Date(item.price.addedAt))
+    : 0;
+  const hasStalePriceBadge = priceAgeInMonths >= 6;
 
   return (
     <>
-      {item.price.value && item.price.inflated && (
+      {!hasStalePriceBadge && !!item.price.value && item.price.inflated && (
         <Tooltip.Root positioning={{ placement: 'top' }}>
           <Tooltip.Trigger asChild>
             <Badge colorPalette="red" whiteSpace="normal" cursor="default">
@@ -273,8 +278,24 @@ export const ItemCardBadge = (props: ItemCardBadgeProps) => {
         </Tooltip.Root>
       )}
 
-      {item.price.value && !item.price.inflated && (
+      {!hasStalePriceBadge && !!item.price.value && !item.price.inflated && (
         <Badge whiteSpace="normal">{format.number(item.price.value)} NP</Badge>
+      )}
+
+      {hasStalePriceBadge && item.price.value && (
+        <Tooltip.Root positioning={{ placement: 'top' }}>
+          <Tooltip.Trigger asChild>
+            <Badge colorPalette="orange" whiteSpace="normal" cursor="default">
+              <Icon as={MdOutlineHourglassBottom} verticalAlign="middle" />
+              {format.number(item.price.value)} NP
+            </Badge>
+          </Tooltip.Trigger>
+          <Tooltip.Positioner>
+            <Tooltip.Content>
+              {t('ItemPage.last-known-price-x-months-ago', { x: priceAgeInMonths })}
+            </Tooltip.Content>
+          </Tooltip.Positioner>
+        </Tooltip.Root>
       )}
 
       {item.type === 'np' && item.status === 'no trade' && <Badge>No Trade</Badge>}

@@ -236,6 +236,7 @@
     "sold": "Sold",
     "not-sold": "Not Sold",
     "last-known-price": "Last Known Price",
+    "last-known-price-x-months-ago": "{x, plural, one {Last known price - # month ago} other {Last known price - # months ago}}",
     "time-left": "Time Left",
     "sold-question": "Sold?",
     "first-seen-history": "First Seen",
