@@ -235,7 +235,7 @@ export const searchStatsCases: SearchStatsCase[] = [
     description: 'restock shop search',
     query: '',
     statsParams: { forceCategory: 'food', isRestock: true },
-    searchFilters: { category: ['food'], rarity: ['', '100'] },
+    searchFilters: { category: ['food'], rarity: ['', '99'] },
   },
 ];
 

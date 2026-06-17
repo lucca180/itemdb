@@ -2,7 +2,13 @@ import Color from 'color';
 import { Prisma } from '@prisma/generated/client';
 import { SearchFilters } from '../../types';
 import { parseFilters } from '../parseFilters';
-import { faerielandShops, getDateNST, halloweenShops, tyrannianShops } from '../utils';
+import {
+  faerielandShops,
+  getDateNST,
+  halloweenShops,
+  NORMAL_SHOP_RESTOCK_RARITY_MAX,
+  tyrannianShops,
+} from '../utils';
 
 const validColorTypes = [
   'vibrant',
@@ -588,7 +594,7 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
   }
   if (petpetSQL.length > 0) whereSQL.push(Prisma.sql`${Prisma.join(petpetSQL, ' AND ')}`);
   if (options.forceCategory) whereSQL.push(Prisma.sql`temp.category = ${options.forceCategory}`);
-  if (options.isRestock) whereSQL.push(Prisma.sql`temp.rarity <= 100`);
+  if (options.isRestock) whereSQL.push(Prisma.sql`temp.rarity < ${NORMAL_SHOP_RESTOCK_RARITY_MAX}`);
 
   return {
     originalQuery,
@@ -613,7 +619,11 @@ const getRestockQuery = (
   (temp.rarity <= 84 AND temp.price - GREATEST(100, temp.est_val * 1.9) * ${multiplier} >= ${minProfit} ) OR
   (temp.rarity >= 85 AND temp.rarity <= 89 AND temp.price - GREATEST(2500, temp.est_val * 1.9) * ${multiplier} >= ${minProfit} ) OR
   (temp.rarity >= 90 AND temp.rarity <= 94 AND temp.price - GREATEST(5000, temp.est_val * 1.9) * ${multiplier} >= ${minProfit} ) OR
-  (temp.rarity >= 95 AND temp.rarity <= 100 AND temp.price - GREATEST(1000, temp.est_val * 1.9) * ${multiplier} >= ${minProfit} ) 
-  ${includeUnpriced ? Prisma.sql` OR temp.price IS NULL` : Prisma.empty}
+  (temp.rarity >= 95 AND temp.rarity < ${NORMAL_SHOP_RESTOCK_RARITY_MAX} AND temp.price - GREATEST(1000, temp.est_val * 1.9) * ${multiplier} >= ${minProfit} ) 
+  ${
+    includeUnpriced
+      ? Prisma.sql` OR (temp.price IS NULL AND temp.rarity < ${NORMAL_SHOP_RESTOCK_RARITY_MAX})`
+      : Prisma.empty
+  }
 )
 `;

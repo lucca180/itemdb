@@ -10,7 +10,6 @@ import {
   UserList,
 } from '../types';
 import { differenceInCalendarDays } from 'date-fns';
-import type { NextApiResponse } from 'next';
 
 export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
   const findAt: ItemFindAt = {
@@ -51,7 +50,7 @@ export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
   if (
     item.rarity &&
     item.category &&
-    item.rarity <= 100 &&
+    isNormalShopRestockRarity(item.rarity) &&
     categoryToShopID[item.category.toLowerCase()]
   ) {
     findAt.restockShop = `https://www.neopets.com/objects.phtml?type=shop&obj_type=${
@@ -416,6 +415,10 @@ export function getDateNST(timestamp?: number) {
 
 export type ShopRestockSpecialDay = 'hpd' | 'tyrannia' | 'usukicon' | 'festival' | 'halloween';
 
+export const NORMAL_SHOP_RESTOCK_RARITY_MAX = 100;
+export const isNormalShopRestockRarity = (rarity: number) =>
+  rarity < NORMAL_SHOP_RESTOCK_RARITY_MAX;
+
 export function getShopRestockSpecialDay(
   shopId: string | number,
   todayNST: Date = getDateNST()
@@ -522,6 +525,7 @@ export const getRestockPrice = (
   date?: number
 ): number[] | null => {
   if (!item.category || !item.rarity || !item.estVal) return null;
+  if (item.rarity !== 200 && !isNormalShopRestockRarity(item.rarity)) return null;
 
   const todayNST = getDateNST(date);
 
@@ -537,7 +541,7 @@ export const getRestockPrice = (
   } else if (item.rarity <= 94) {
     minPrice = Math.max(minPrice, 5000);
     maxPrice = Math.max(maxPrice, 5000);
-  } else if (item.rarity <= 100) {
+  } else if (item.rarity < NORMAL_SHOP_RESTOCK_RARITY_MAX) {
     minPrice = Math.max(minPrice, 10000);
     maxPrice = Math.max(maxPrice, 10000);
   } else if (item.rarity === 200) {
