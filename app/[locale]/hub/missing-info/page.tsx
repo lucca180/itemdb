@@ -27,7 +27,6 @@ export async function generateMetadata({ params }: MissingInfoPageProps): Promis
 
   return {
     ...pageProps.metadata,
-    themeColor: '#aeb18a',
   };
 }
 

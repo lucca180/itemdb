@@ -26,7 +26,6 @@ export async function generateMetadata({ params }: ItemEffectsPageProps): Promis
 
   return {
     ...pageProps.metadata,
-    themeColor: '#f86dba',
   };
 }
 

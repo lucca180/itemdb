@@ -28,7 +28,6 @@ export async function generateMetadata({ params }: ArticlesPageProps): Promise<M
 
   return {
     ...pageProps.metadata,
-    themeColor: '#E4DA0A',
     openGraph: {
       ...pageProps.metadata.openGraph,
       images: [

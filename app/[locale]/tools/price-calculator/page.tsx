@@ -26,7 +26,6 @@ export async function generateMetadata({ params }: PriceCalculatorPageProps): Pr
 
   return {
     ...pageProps.metadata,
-    themeColor: '#3697bf',
   };
 }
 

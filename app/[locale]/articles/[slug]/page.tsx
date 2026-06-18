@@ -10,11 +10,7 @@ import { wp_getLatestPosts } from '@pages/api/wp/posts';
 import { setRequestLocale } from 'next-intl/server';
 import type { WP_Article } from '@types';
 import { ArticlePageContent } from './ArticlePageContent';
-import {
-  buildArticlePageProps,
-  getArticleMainColor,
-  getArticleThemeColor,
-} from './buildArticlePageProps';
+import { buildArticlePageProps, getArticleMainColor } from './buildArticlePageProps';
 
 type ArticlePageProps = {
   params: Promise<{ locale: string; slug: string }>;
@@ -34,7 +30,6 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
   return {
     ...pageProps.metadata,
-    themeColor: getArticleThemeColor(post),
     openGraph: {
       ...pageProps.metadata.openGraph,
       images: [{ url: post.thumbnail ?? '', width: 150, height: 150, alt: post.title }],
