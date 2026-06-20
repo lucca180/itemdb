@@ -8,15 +8,17 @@ const prismaMock = vi.hoisted(() => ({
     findMany: vi.fn(),
   },
   itemPrices: {
-    findMany: vi.fn(),
     updateMany: vi.fn(),
   },
+  $queryRaw: vi.fn(),
 }));
 
 const getManyItemsMock = vi.hoisted(() => vi.fn());
 const getServerCurrentUserMock = vi.hoisted(() => vi.fn());
 const getItemDropsMock = vi.hoisted(() => vi.fn());
 const createLogMock = vi.hoisted(() => vi.fn());
+
+vi.mock('server-only', () => ({}));
 
 vi.mock('@utils/prisma', () => ({
   default: prismaMock,
@@ -43,6 +45,10 @@ vi.mock('@services/ActionLogService', () => ({
 import { POST as applyPOST } from '@app/api/admin/price-context/apply/route';
 import { POST as previewPOST } from '@app/api/admin/price-context/preview/route';
 import { POST as sourcePOST } from '@app/api/admin/price-context/source/route';
+import {
+  MAX_PRICE_CONTEXT_ITEM_IDS,
+  MAX_PRICE_CONTEXT_LENGTH,
+} from '@app/api/admin/price-context/priceContextService';
 
 const item = (id: number, name = `Item ${id}`) =>
   ({
@@ -138,6 +144,32 @@ describe('admin price context route handlers', () => {
     expect(body.error).toBeDefined();
   });
 
+  test('rejects too many item IDs', async () => {
+    const itemIds = Array.from({ length: MAX_PRICE_CONTEXT_ITEM_IDS + 1 }, (_, index) => index + 1);
+
+    const res = await previewPOST(request({ itemIds, startDate: '2024-01-01' }));
+    const body = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(body.error).toBe(`Too many item IDs (max ${MAX_PRICE_CONTEXT_ITEM_IDS})`);
+  });
+
+  test('rejects priceContext longer than the database limit', async () => {
+    const res = await applyPOST(
+      request({
+        itemIds: [101],
+        startDate: '2024-01-01',
+        priceContext: 'x'.repeat(MAX_PRICE_CONTEXT_LENGTH + 1),
+      })
+    );
+    const body = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(body.error).toBe(`priceContext exceeds ${MAX_PRICE_CONTEXT_LENGTH} characters`);
+    expect(prismaMock.$queryRaw).not.toHaveBeenCalled();
+    expect(prismaMock.itemPrices.updateMany).not.toHaveBeenCalled();
+  });
+
   test('loads source items from a selected list', async () => {
     prismaMock.listItems.findMany.mockResolvedValue([{ item_iid: 101 }, { item_iid: 102 }]);
 
@@ -199,15 +231,15 @@ describe('admin price context route handlers', () => {
   });
 
   test('previews first price after start date and skipped rows', async () => {
-    prismaMock.itemPrices.findMany.mockResolvedValue([
+    prismaMock.$queryRaw.mockResolvedValue([
       price(2, 101, '2024-02-01T00:00:00.000Z', 'old context'),
-      price(3, 101, '2024-03-01T00:00:00.000Z'),
     ]);
 
     const res = await previewPOST(request({ itemIds: [101, 102], startDate: '2024-01-01' }));
     const body = await res.json();
 
     expect(res.status).toBe(200);
+    expect(prismaMock.$queryRaw).toHaveBeenCalledOnce();
     expect(body.targets).toBe(1);
     expect(body.rows[0].price.internal_id).toBe(2);
     expect(body.rows[0].price.priceContext).toBe('old context');
@@ -215,9 +247,7 @@ describe('admin price context route handlers', () => {
   });
 
   test('previews only inflation alert prices when requested', async () => {
-    prismaMock.itemPrices.findMany.mockResolvedValue([
-      price(5, 101, '2024-03-01T00:00:00.000Z', null, 4),
-    ]);
+    prismaMock.$queryRaw.mockResolvedValue([price(5, 101, '2024-03-01T00:00:00.000Z', null, 4)]);
 
     const res = await previewPOST(
       request({ itemIds: [101, 102], startDate: '2024-01-01', onlyInflationAlerts: true })
@@ -225,19 +255,13 @@ describe('admin price context route handlers', () => {
     const body = await res.json();
 
     expect(res.status).toBe(200);
-    expect(prismaMock.itemPrices.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({
-          noInflation_id: { not: null },
-        }),
-      })
-    );
+    expect(prismaMock.$queryRaw).toHaveBeenCalledOnce();
     expect(body.rows[0].price.inflated).toBe(true);
     expect(body.rows[1].skippedReason).toBe('no-inflation-price-after-start-date');
   });
 
   test('applies context after recomputing target prices', async () => {
-    prismaMock.itemPrices.findMany.mockResolvedValue([
+    prismaMock.$queryRaw.mockResolvedValue([
       price(10, 101, '2024-02-01T00:00:00.000Z'),
       price(11, 102, '2024-02-02T00:00:00.000Z'),
     ]);
@@ -258,13 +282,7 @@ describe('admin price context route handlers', () => {
       where: { internal_id: { in: [10, 11] } },
       data: { priceContext: 'Added to prize pool' },
     });
-    expect(prismaMock.itemPrices.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({
-          noInflation_id: { not: null },
-        }),
-      })
-    );
+    expect(prismaMock.$queryRaw).toHaveBeenCalledOnce();
     expect(body.updated).toBe(2);
     expect(body.skipped).toBe(0);
     expect(body.operation).toBe('set');
@@ -287,7 +305,7 @@ describe('admin price context route handlers', () => {
   });
 
   test('clears context after recomputing target prices', async () => {
-    prismaMock.itemPrices.findMany.mockResolvedValue([
+    prismaMock.$queryRaw.mockResolvedValue([
       price(20, 101, '2024-02-01T00:00:00.000Z', 'old context'),
       price(21, 102, '2024-02-02T00:00:00.000Z', 'another context'),
     ]);

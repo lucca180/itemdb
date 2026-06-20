@@ -1,8 +1,25 @@
-import { ItemPrices } from '@prisma/generated/client';
+import 'server-only';
+
+import { ItemPrices, Prisma } from '@prisma/generated/client';
+import { isValid } from 'date-fns';
+import { UTCDate } from '@date-fns/utc';
 import { getManyItems } from '@pages/api/v1/items/many';
 import { getItemDrops } from '@pages/api/v1/items/[id_name]/drops';
 import prisma from '@utils/prisma';
 import { ItemData, UserList } from '@types';
+import {
+  MAX_PRICE_CONTEXT_ITEM_IDS,
+  MAX_PRICE_CONTEXT_LENGTH,
+  type PriceContextDropPool,
+  type PriceContextPreviewRow,
+} from './priceContextShared';
+
+export {
+  MAX_PRICE_CONTEXT_ITEM_IDS,
+  MAX_PRICE_CONTEXT_LENGTH,
+  type PriceContextDropPool,
+  type PriceContextPreviewRow,
+} from './priceContextShared';
 
 export type PriceContextItemSourceRequest =
   | {
@@ -33,23 +50,6 @@ export type PriceContextApplyRequest = PriceContextPreviewRequest & {
   operation?: unknown;
 };
 
-export type PriceContextPreviewRow = {
-  itemId: number;
-  item: ItemData | null;
-  price: {
-    internal_id: number;
-    price: number;
-    addedAt: string;
-    priceContext: string | null;
-    inflated: boolean;
-  } | null;
-  skippedReason:
-    | 'no-price-after-start-date'
-    | 'no-inflation-price-after-start-date'
-    | 'item-not-found'
-    | null;
-};
-
 export type PriceContextApplyResult = {
   updated: number;
   skipped: number;
@@ -58,15 +58,6 @@ export type PriceContextApplyResult = {
 };
 
 export type PriceContextOperation = 'set' | 'clear';
-
-export type PriceContextDropPool = {
-  name: string;
-  itemCount: number;
-  openings: number;
-  totalDrops: number;
-  minDrop: number;
-  maxDrop: number;
-};
 
 export async function loadPriceContextSourceItems(body: PriceContextItemSourceRequest) {
   if (body.source === 'list') {
@@ -192,17 +183,18 @@ export function normalizeItemIds(value: unknown) {
 
   const itemIds = [...new Set(value.map(normalizeId).filter(Boolean) as number[])];
   if (!itemIds.length) throw new PriceContextInputError('No valid item IDs');
+  if (itemIds.length > MAX_PRICE_CONTEXT_ITEM_IDS) {
+    throw new PriceContextInputError(`Too many item IDs (max ${MAX_PRICE_CONTEXT_ITEM_IDS})`);
+  }
 
   return itemIds;
 }
 
 export function normalizeStartDate(value: unknown) {
   if (typeof value !== 'string' || !value) throw new PriceContextInputError('Invalid startDate');
+  if (!isValid(new Date(value))) throw new PriceContextInputError('Invalid startDate');
 
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) throw new PriceContextInputError('Invalid startDate');
-
-  return date;
+  return new UTCDate(new UTCDate(value).setHours(18));
 }
 
 export function normalizePriceContext(value: unknown) {
@@ -210,7 +202,12 @@ export function normalizePriceContext(value: unknown) {
     throw new PriceContextInputError('Invalid priceContext');
   }
 
-  return value.trim();
+  const trimmed = value.trim();
+  if (trimmed.length > MAX_PRICE_CONTEXT_LENGTH) {
+    throw new PriceContextInputError(`priceContext exceeds ${MAX_PRICE_CONTEXT_LENGTH} characters`);
+  }
+
+  return trimmed;
 }
 
 export function normalizePriceContextOperation(value: unknown): PriceContextOperation {
@@ -235,41 +232,52 @@ async function getFirstPricesAfterDate(
   startDate: Date,
   onlyInflationAlerts: boolean
 ) {
-  const prices = await prisma.itemPrices.findMany({
-    where: {
-      item_iid: {
-        in: itemIds,
-      },
-      addedAt: {
-        gte: startDate,
-      },
-      noInflation_id: onlyInflationAlerts
-        ? {
-            not: null,
-          }
-        : undefined,
-    },
-    orderBy: [
-      {
-        item_iid: 'asc',
-      },
-      {
-        addedAt: 'asc',
-      },
-    ],
-  });
+  if (!itemIds.length) return new Map<number, FirstPriceAfterDateRow>();
 
-  const firstPriceByItem = new Map<number, ItemPrices>();
+  const rows = await prisma.$queryRaw<FirstPriceAfterDateRow[]>`
+    SELECT
+      ranked.internal_id,
+      ranked.item_iid,
+      ranked.price,
+      ranked.addedAt,
+      ranked.priceContext,
+      ranked.noInflation_id
+    FROM (
+      SELECT
+        internal_id,
+        item_iid,
+        price,
+        addedAt,
+        priceContext,
+        noInflation_id,
+        ROW_NUMBER() OVER (
+          PARTITION BY item_iid
+          ORDER BY addedAt ASC, internal_id ASC
+        ) AS rn
+      FROM ItemPrices
+      WHERE item_iid IN (${Prisma.join(itemIds)})
+        AND addedAt >= ${startDate}
+        AND (${onlyInflationAlerts ? 1 : 0} = 0 OR noInflation_id IS NOT NULL)
+    ) AS ranked
+    WHERE ranked.rn = 1
+  `;
 
-  for (const price of prices) {
-    if (!price.item_iid || firstPriceByItem.has(price.item_iid)) continue;
-    firstPriceByItem.set(price.item_iid, price);
+  const firstPriceByItem = new Map<number, FirstPriceAfterDateRow>();
+
+  for (const row of rows) {
+    if (!row.item_iid) continue;
+    firstPriceByItem.set(row.item_iid, row);
   }
 
   return firstPriceByItem;
 }
 
-function serializePrice(price: ItemPrices) {
+type FirstPriceAfterDateRow = Pick<
+  ItemPrices,
+  'internal_id' | 'item_iid' | 'price' | 'addedAt' | 'priceContext' | 'noInflation_id'
+>;
+
+function serializePrice(price: FirstPriceAfterDateRow) {
   return {
     internal_id: price.internal_id,
     price: Number(price.price),

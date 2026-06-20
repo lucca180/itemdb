@@ -30,10 +30,11 @@ import ItemSelect from '@components/Input/ItemSelect';
 import ListInput, { ListInputOption } from '@components/Input/ListInput';
 import { useToast } from '@utils/theme/toast';
 import { ItemData } from '@types';
-import type {
-  PriceContextDropPool,
-  PriceContextPreviewRow,
-} from '@app/api/admin/price-context/priceContextService';
+import {
+  MAX_PRICE_CONTEXT_LENGTH,
+  type PriceContextDropPool,
+  type PriceContextPreviewRow,
+} from '@app/api/admin/price-context/priceContextShared';
 
 type SourceResponse = {
   items: ItemData[];
@@ -379,7 +380,11 @@ export function BulkPriceContextClient() {
                 variant="subtle"
                 bg="whiteAlpha.50"
                 minH="120px"
+                maxLength={MAX_PRICE_CONTEXT_LENGTH}
               />
+              <Field.HelperText>
+                {priceContext.length}/{MAX_PRICE_CONTEXT_LENGTH} characters
+              </Field.HelperText>
             </Field.Root>
             <Switch.Root
               checked={onlyInflationAlerts}
