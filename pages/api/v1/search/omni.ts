@@ -26,7 +26,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   let user: User | null = null;
   try {
     user = (await CheckAuth(req)).user;
-    if (!user || !user.isAdmin) throw new Error('Unauthorized');
+    if (!user) throw new Error('Unauthorized');
   } catch (e) {}
 
   const reqQuery = queryString.parse(req.url!.split('?')[1], {
