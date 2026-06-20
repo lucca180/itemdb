@@ -3,9 +3,9 @@ import 'server-only';
 import { cookies, headers } from 'next/headers';
 import type { NextRequest } from 'next/server';
 import requestIp from 'request-ip';
-import { isLikelyBrowser, normalizeIP } from '@utils/api-utils';
-import * as Redis from '@utils/redis';
-import { checkSession } from '@utils/redis';
+import { isLikelyBrowser, normalizeIP } from '@utils/api/api-utils';
+import * as Redis from '@utils/api/redis';
+import { checkSession } from '@utils/api/redis';
 
 export type TroubleshootingPageProps = {
   isBrowser: boolean;
