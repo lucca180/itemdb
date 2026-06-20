@@ -7,7 +7,7 @@ import {
   DTIItemPreview,
   DTILayer,
   DTIPetAppearance,
-} from '../types';
+} from '../../types';
 import {
   DTI_ALL_COLORS,
   GET_ITEM_LAYER_BY_REMOTE_ID,

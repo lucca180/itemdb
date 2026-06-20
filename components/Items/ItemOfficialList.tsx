@@ -6,7 +6,7 @@ import DynamicIcon from '@assets/icons/dynamic.png';
 import Color from 'color';
 import { getTranslations } from 'next-intl/server';
 import { Link as I18nLink } from '@i18n/navigation';
-import { getListLink } from '@utils/listLink';
+import { getListLink } from '@utils/list/listLink';
 import Markdown from '@components/Utils/Markdown';
 
 type Props = {

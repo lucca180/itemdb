@@ -1,12 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { dti, getVisibleLayers, resolveItemAppearanceConflicts } from '@utils/impress';
+import { dti, getVisibleLayers, resolveItemAppearanceConflicts } from '@utils/item/impress';
 import { createCanvas, loadImage } from '@napi-rs/canvas';
 import { cdnExists, uploadToS3 } from '@utils/googleCloud';
 import prisma from '@utils/prisma';
 import queryString from 'query-string';
 import objectHash from 'object-hash';
 import { Chance } from 'chance';
-import { ItemRevalidateTags, revalidateItem } from '@utils/revalidateItem';
+import { ItemRevalidateTags, revalidateItem } from '@utils/item/revalidateItem';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {

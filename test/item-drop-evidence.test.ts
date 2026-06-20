@@ -9,7 +9,7 @@ import {
   NC_DROP_SUPPORT,
   NP_DROP_SUPPORT_RULES,
   UNKNOWN_PARENT_MIN_OPENINGS,
-} from '@utils/itemDropEvidence';
+} from '@utils/item/itemDropEvidence';
 
 const parent = (
   overrides: Partial<Parameters<typeof evaluateDropEvidence>[0]> = {}

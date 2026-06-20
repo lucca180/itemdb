@@ -1,7 +1,7 @@
 import { differenceInCalendarDays, isSameDay } from 'date-fns';
 import { tz } from '@date-fns/tz';
 import type { ItemData, PriceData, PricingInfo, UserList } from '@types';
-import { resolveItemListSeries } from '@utils/itemListSeries';
+import { resolveItemListSeries } from '@utils/item/itemListSeries';
 
 export type ItemPriceStatLabels = {
   inflation: string;

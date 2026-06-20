@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 import requestIp from 'request-ip';
-import * as Redis from '@utils/redis';
+import * as Redis from '@utils/api/redis';
 import {
   generateSiteProof,
   isLikelyBrowser,
@@ -9,12 +9,16 @@ import {
   verifyApiToken,
   verifySiteChallenge,
   verifySiteProof,
-} from '@utils/api-utils';
+} from '@utils/api/api-utils';
 import * as Sentry from '@sentry/nextjs';
 import createIntlMiddleware from 'next-intl/middleware';
 import { getCurrentPath } from '@utils/locales';
-import { createForwardedContext, finalizeApiResponse, finalizePageResponse } from '@utils/proxy';
-import { checkSession } from '@utils/redis';
+import {
+  createForwardedContext,
+  finalizeApiResponse,
+  finalizePageResponse,
+} from '@utils/api/proxy';
+import { checkSession } from '@utils/api/redis';
 import { routing } from './i18n/routing';
 
 const handleI18nRouting = createIntlMiddleware(routing);

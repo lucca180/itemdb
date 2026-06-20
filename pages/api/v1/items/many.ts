@@ -4,7 +4,7 @@ import { getItemFindAtLinks, isMissingInfo } from '../../../../utils/utils';
 import { ItemData } from '../../../../types';
 import { Prisma } from '@prisma/generated/client';
 import queryString from 'query-string';
-import { redis_setDataCount } from '@utils/redis';
+import { redis_setDataCount } from '@utils/api/redis';
 
 const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
 const NC_VALUES_TYPE = process.env.NC_VALUES_TYPE;

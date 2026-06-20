@@ -40,7 +40,7 @@ export const createMagicToken = async (email: string, origin: string): Promise<s
     return token;
   }
 
-  const { redis } = await import('../redis');
+  const { redis } = await import('../api/redis');
   if (!redis) throw new Error('Redis is not configured');
 
   await redis.set(`magic:${hash}`, email, 'EX', MAGIC_TOKEN_TTL_SECONDS);
@@ -67,7 +67,7 @@ export const consumeMagicToken = async (token: string, email: string): Promise<v
     return;
   }
 
-  const { redis } = await import('../redis');
+  const { redis } = await import('../api/redis');
   if (!redis) throw new Error('Redis is not configured');
 
   const key = `magic:${hash}`;

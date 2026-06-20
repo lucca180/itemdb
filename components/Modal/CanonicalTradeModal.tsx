@@ -2,7 +2,7 @@ import { Button, Text, Badge, Dialog, CloseButton, Portal } from '@chakra-ui/rea
 import { TradeData } from '../../types';
 import { useMemo, useState } from 'react';
 import axios from 'axios';
-import { getCanonicalItemsCount, isTradeAllItemsEqual } from '@utils/tradeCanonical';
+import { getCanonicalItemsCount, isTradeAllItemsEqual } from '@utils/item/tradeCanonical';
 
 export type CanonicalTradeModalProps = {
   isOpen: boolean;

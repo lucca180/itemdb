@@ -44,7 +44,7 @@ import {
   AUTHORITATIVE_OPENING_IDS,
   NC_DROP_SUPPORT,
   NP_DROP_SUPPORT_RULES,
-} from '@utils/itemDropEvidence';
+} from '@utils/item/itemDropEvidence';
 
 const PARENT_ITEM_ID = 10;
 const INVERSE_PARENT_ITEM_ID = 20;

@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { ItemPriceData } from '../../../../types';
-import { redis_setDataCount } from '@utils/redis';
+import { redis_setDataCount } from '@utils/api/redis';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') return POST(req, res);

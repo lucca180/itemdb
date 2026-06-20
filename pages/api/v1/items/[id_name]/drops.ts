@@ -4,16 +4,16 @@ import { ItemDrop, ItemOpenable, PrizePoolData } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 import { OpenableItems, WearableData } from '@prisma/generated/client';
-import { ItemRevalidateTags, revalidateItem } from '@utils/revalidateItem';
+import { ItemRevalidateTags, revalidateItem } from '@utils/item/revalidateItem';
 import { getManyItems } from '../many';
-import { redis_setDataCount } from '@utils/redis';
+import { redis_setDataCount } from '@utils/api/redis';
 import {
   deduplicateCommunityDrops,
   evaluateDropEvidence,
   GRAM_OPTION_NOTE,
   isAuthoritativeDrop,
   MANUAL_OPENING_ID,
-} from '@utils/itemDropEvidence';
+} from '@utils/item/itemDropEvidence';
 
 const catType = ['trinkets', 'accessories', 'clothing', 'le', 'choice'];
 const catTypeZone = ['trinkets', 'accessories', 'clothing'];

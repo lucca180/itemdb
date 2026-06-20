@@ -2,7 +2,7 @@ import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@utils/prisma';
 import { NcMallData as dbMallData, Prisma } from '@prisma/generated/client';
-import { revalidateAppCache, HomeRevalidateTags } from '@utils/revalidateItem';
+import { revalidateAppCache, HomeRevalidateTags } from '@utils/item/revalidateItem';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 const TARNUM_SERVER = process.env.TARNUM_SERVER;

@@ -1,5 +1,5 @@
 import { CheckAuth } from '@utils/googleCloud';
-import { createSession } from '@utils/redis';
+import { createSession } from '@utils/api/redis';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {

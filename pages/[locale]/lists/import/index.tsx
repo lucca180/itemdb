@@ -33,7 +33,7 @@ import { GetServerSidePropsContext } from 'next';
 import { dynamicListCan } from '@utils/utils';
 import { ListService } from '@services/ListService';
 import { ImportInfo } from '@components/Import/ImportInfo';
-import { getListImportSession } from '@utils/importSession';
+import { getListImportSession } from '@utils/list/importSession';
 import { useScriptStatus } from '@utils/scriptUtils';
 
 type Props = {

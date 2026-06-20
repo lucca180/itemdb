@@ -1,7 +1,7 @@
 import { cache } from 'react';
 import { cacheLife } from 'next/cache';
 import { getSimilarItems } from '@pages/api/v1/items/[id_name]/similar';
-import { applyItemSectionCacheTags } from '@utils/applyItemCacheTags';
+import { applyItemSectionCacheTags } from '@utils/item/applyItemCacheTags';
 import type { ItemData } from '@types';
 
 export const loadSimilarItemData = cache(async (item: ItemData): Promise<ItemData[]> => {

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import type { DTICanonicalAppearance, DTILayer } from '@types';
-import { resolveItemAppearanceConflicts } from '@utils/impress';
+import { resolveItemAppearanceConflicts } from '@utils/item/impress';
 
 const layer = (id: string, zoneId: string): DTILayer =>
   ({

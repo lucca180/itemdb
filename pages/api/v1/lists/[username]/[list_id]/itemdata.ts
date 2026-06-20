@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { redis_setDataCount } from '@utils/redis';
+import { redis_setDataCount } from '@utils/api/redis';
 import { ListService } from '@services/ListService';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {

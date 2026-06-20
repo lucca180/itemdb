@@ -9,9 +9,9 @@ import {
   genItemKey,
   slugify,
 } from '@utils/utils';
-import { revalidateAppCache, HomeRevalidateTags } from '@utils/revalidateItem';
-import { getPalette } from '@utils/itemPalette';
-import { detectWearable } from '@utils/detectWearable';
+import { revalidateAppCache, HomeRevalidateTags } from '@utils/item/revalidateItem';
+import { getPalette } from '@utils/item/itemPalette';
+import { detectWearable } from '@utils/item/detectWearable';
 import { processOpenableItems } from './open';
 import { CheckAuth } from '@utils/googleCloud';
 import { ItemData } from '@types';
@@ -402,7 +402,7 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
   }
 }
 
-export { getPalette } from '@utils/itemPalette';
+export { getPalette } from '@utils/item/itemPalette';
 
 async function processOpenables() {
   const queue = await prisma.openableQueue.findMany({

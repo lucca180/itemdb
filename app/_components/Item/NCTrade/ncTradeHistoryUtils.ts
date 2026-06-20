@@ -1,5 +1,5 @@
 import type { ItemData, LebronTrade, NCTradeReport } from '@types';
-import { tradeReportToLebronTrade } from '@utils/ncTrades';
+import { tradeReportToLebronTrade } from '@utils/item/ncTrades';
 
 export function getUniqueTrades(trades: LebronTrade[]) {
   const uniqueTrades = new Map<string, LebronTrade>();

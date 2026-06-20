@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { getItem } from '../../items/[id_name]';
 import prisma from '@utils/prisma';
 import { ncTradeItems, ncValues } from '@prisma/generated/client';
-import { dti } from '@utils/impress';
+import { dti } from '@utils/item/impress';
 import { differenceInCalendarDays } from 'date-fns';
 import { NCValue, OwlsTrade } from '@types';
 

@@ -4,7 +4,7 @@ import { Flex, Text, Image, Badge, Center, Alert, Link, HStack, Button } from '@
 import ItemCard from '@components/Items/ItemCard';
 import MainLink from '@components/Utils/MainLink';
 import { showScriptCTA } from '@utils/scriptUtils';
-import { capInfoIds, capsulesInfo } from '@utils/ncCapsulesInfo';
+import { capInfoIds, capsulesInfo } from '@utils/item/ncCapsulesInfo';
 import type {
   HelpNeededLabels,
   PoolTextData,

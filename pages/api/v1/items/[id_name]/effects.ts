@@ -3,7 +3,7 @@ import { CheckAuth } from '../../../../../utils/googleCloud';
 import { ItemData, ItemEffect } from '../../../../../types';
 import prisma from '../../../../../utils/prisma';
 import { getItem } from '.';
-import { ItemRevalidateTags, revalidateItem } from '@utils/revalidateItem';
+import { ItemRevalidateTags, revalidateItem } from '@utils/item/revalidateItem';
 import { ItemEffect as PrimsaItemEffect } from '@prisma/generated/client';
 import {
   allNeopetsColors,

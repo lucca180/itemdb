@@ -9,7 +9,7 @@ import type { ItemData } from '@types';
 import { rawToItemData } from '@pages/api/v1/items/many';
 import { getSaleStats } from '@pages/api/v1/items/[id_name]/saleStats';
 import { getNCValue } from '@pages/api/v1/mall/[iid]';
-import { ItemRevalidateTags, revalidateItem } from '@utils/revalidateItem';
+import { ItemRevalidateTags, revalidateItem } from '@utils/item/revalidateItem';
 
 const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
 const NC_VALUES_TYPE = process.env.NC_VALUES_TYPE;

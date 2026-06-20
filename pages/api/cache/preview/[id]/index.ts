@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { dti, getVisibleLayers } from '../../../../../utils/impress';
+import { dti, getVisibleLayers } from '../../../../../utils/item/impress';
 import { createCanvas, loadImage } from '@napi-rs/canvas';
 import { cdnExists, uploadToS3 } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
@@ -7,7 +7,7 @@ import axios from 'axios';
 import { DTIBodiesAndTheirZones, DTIItemPreview } from '../../../../../types';
 import { Items, Prisma } from '@prisma/generated/client';
 import { Chance } from 'chance';
-import { ItemRevalidateTags, revalidateItem } from '@utils/revalidateItem';
+import { ItemRevalidateTags, revalidateItem } from '@utils/item/revalidateItem';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {

@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getItem } from '.';
-import { detectWearable } from '../../../../../utils/detectWearable';
+import { detectWearable } from '../../../../../utils/item/detectWearable';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });

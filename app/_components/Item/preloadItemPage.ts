@@ -16,7 +16,7 @@ import {
   needsTradeLists,
   needsWearableData,
 } from '@app/_components/Item/itemPageGates';
-import { shouldShowTradeRelisting } from '@utils/tradeRelisting';
+import { shouldShowTradeRelisting } from '@utils/item/tradeRelisting';
 import { loadItemOpenableMeta } from '@app/_components/Item/Drops/loadItemDrops';
 import {
   loadAvyData,

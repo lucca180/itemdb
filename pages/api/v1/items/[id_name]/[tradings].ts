@@ -14,12 +14,12 @@ import { Prisma } from '@prisma/generated/client';
 import { medianSorted } from 'simple-statistics';
 import { removeOutliersCombined } from '@utils/prices/pricing3';
 import { getItem } from '.';
-import { redis_setDataCount } from '@utils/redis';
+import { redis_setDataCount } from '@utils/api/redis';
 import {
   addTradeRelistingHistory,
   findTradeTargetItem,
   shouldShowTradeRelisting,
-} from '@utils/tradeRelisting';
+} from '@utils/item/tradeRelisting';
 
 const LEBRON_URL = process.env.LEBRON_API_URL;
 

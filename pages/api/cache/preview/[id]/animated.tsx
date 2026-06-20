@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { dti, getVisibleLayers } from '../../../../../utils/impress';
+import { dti, getVisibleLayers } from '../../../../../utils/item/impress';
 import ReactDOMServer from 'react-dom/server';
 import prisma from '@utils/prisma';
 import { PreviewWrapper } from '@components/AnimatedPreview/PreviewWrapper';

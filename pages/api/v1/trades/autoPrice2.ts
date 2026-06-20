@@ -7,7 +7,7 @@ import { getManyItems } from '../items/many';
 import { differenceInCalendarDays } from 'date-fns';
 import { ItemData } from '@types';
 import { shouldSkipTrade } from '@utils/utils';
-import { getTradeItemByOrder, normalizeCanonicalWishlist } from '@utils/tradeCanonical';
+import { getTradeItemByOrder, normalizeCanonicalWishlist } from '@utils/item/tradeCanonical';
 import { omitOwnerHash } from '@utils/ownerHash';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;

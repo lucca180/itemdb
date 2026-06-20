@@ -5,7 +5,7 @@ import { Link as I18nLink } from '@i18n/navigation';
 import { getFormatter, getTranslations } from 'next-intl/server';
 import Color from 'color';
 import type { ItemData } from '@types';
-import { itemToDataList } from '@utils/itemInfo';
+import { itemToDataList } from '@utils/item/itemInfo';
 import { rarityStr } from '@utils/utils';
 
 type Props = {

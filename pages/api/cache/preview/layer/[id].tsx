@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { dti } from '../../../../../utils/impress';
+import { dti } from '../../../../../utils/item/impress';
 import ReactDOMServer from 'react-dom/server';
 import { AnimatedLayer } from '@components/AnimatedPreview/AnimatedLayer';
 

@@ -5,7 +5,7 @@ import { getManyItems } from '../many';
 import { getItem } from '.';
 import { petpetColors, petpetSpecies } from '../../../../../utils/pet-utils';
 import { CheckAuth } from '../../../../../utils/googleCloud';
-import { ItemRevalidateTags, revalidateItem } from '@utils/revalidateItem';
+import { ItemRevalidateTags, revalidateItem } from '@utils/item/revalidateItem';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);

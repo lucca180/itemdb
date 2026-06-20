@@ -13,7 +13,7 @@ import { getNCTradeInsights } from '@pages/api/v1/mall/[iid]/insights';
 import { getItemNCMall } from '@pages/api/v1/items/[id_name]/ncmall';
 import { getLastSeen } from '@pages/api/v1/prices/stats';
 import { getPriceStatus } from '@pages/api/v1/prices/[iid]/status';
-import { applyItemSectionCacheTags } from '@utils/applyItemCacheTags';
+import { applyItemSectionCacheTags } from '@utils/item/applyItemCacheTags';
 import { shouldShowTradeLists } from '@utils/utils';
 import type {
   AvyData,

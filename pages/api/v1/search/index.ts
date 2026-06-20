@@ -4,9 +4,9 @@ import { ItemData, SearchFilters } from '../../../../types';
 import { Prisma } from '@prisma/generated/client';
 import queryString from 'query-string';
 import { defaultFilters, parseFilters } from '../../../../utils/parseFilters';
-import { redis_setDataCount } from '@utils/redis';
+import { redis_setDataCount } from '@utils/api/redis';
 import { rawToItemData } from '../items/many';
-import { verifyListJWT } from '@utils/api-utils';
+import { verifyListJWT } from '@utils/api/api-utils';
 import * as Sentry from '@sentry/nextjs';
 import { buildSearchQueryParts } from '../../../../utils/search/queryBuilder';
 

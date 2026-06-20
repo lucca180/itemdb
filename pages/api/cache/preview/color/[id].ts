@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { dti } from '../../../../../utils/impress';
+import { dti } from '../../../../../utils/item/impress';
 import { createCanvas, loadImage } from '@napi-rs/canvas';
 import { cdnExists, uploadToS3 } from '../../../../../utils/googleCloud';
 import {
@@ -10,7 +10,7 @@ import {
 } from '../../../../../utils/pet-utils';
 import { checkPetColorExists } from '../../../v1/tools/petcolors';
 import prisma from '../../../../../utils/prisma';
-import { ItemRevalidateTags, revalidateItem } from '@utils/revalidateItem';
+import { ItemRevalidateTags, revalidateItem } from '@utils/item/revalidateItem';
 import { Chance } from 'chance';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {

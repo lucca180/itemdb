@@ -1,8 +1,8 @@
-import { generateSiteProof, getSiteProofInput, verifySessionToken } from '@utils/api-utils';
+import { generateSiteProof, getSiteProofInput, verifySessionToken } from '@utils/api/api-utils';
 import { expect, test, describe } from 'vitest';
 import { NextRequest } from 'next/server';
 import { apiMiddleware } from '../proxy';
-import { createSession, redis_setItemCount } from '@utils/redis';
+import { createSession, redis_setItemCount } from '@utils/api/redis';
 import { generateAPIToken } from '../pages/api/auth/token';
 import { createHash } from 'crypto';
 

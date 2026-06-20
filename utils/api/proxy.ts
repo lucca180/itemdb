@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { generateSiteProof, verifySiteChallenge } from '@utils/api-utils';
+import { generateSiteProof, verifySiteChallenge } from '@utils/api/api-utils';
 
 const allowedOrigins = [
   'itemdb.com.br',

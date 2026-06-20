@@ -7,7 +7,7 @@ import { Provider } from 'jotai';
 import type { ReactNode } from 'react';
 import { system } from '@utils/theme/theme';
 import { AuthProvider } from '@utils/auth';
-import { installProofInterceptor } from '@utils/http/proofInterceptor';
+import { installProofInterceptor } from '@utils/api/proofInterceptor';
 import type { PreloadedAuthState } from '@app/utils/preloadData';
 import { ProgressProvider } from '@bprogress/next/app';
 

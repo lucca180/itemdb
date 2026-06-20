@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createListImportSession } from '@utils/importSession';
+import { createListImportSession } from '@utils/list/importSession';
 import { getLocalizedHref, resolvePageLocale } from '@utils/locales';
 
 export const config = {

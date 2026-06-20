@@ -29,7 +29,7 @@ import axios from 'axios';
 import { CheckAuth } from '@utils/googleCloud';
 import { Breadcrumbs } from '@components/Breadcrumbs/Breadcrumbs';
 import { loadTranslation } from '@utils/load-translation';
-import { tradeReportToLebronTrade } from '@utils/ncTrades';
+import { tradeReportToLebronTrade } from '@utils/item/ncTrades';
 
 const ItemSelect = dynamic(() => import('@components/Input/ItemSelect'), {
   ssr: false,

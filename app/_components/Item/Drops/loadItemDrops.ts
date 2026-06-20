@@ -2,7 +2,7 @@ import { cache } from 'react';
 import { cacheLife } from 'next/cache';
 import { getItemDrops, SKIP_ITEMS } from '@pages/api/v1/items/[id_name]/drops';
 import { getManyItems } from '@pages/api/v1/items/many';
-import { applyItemSectionCacheTags } from '@utils/applyItemCacheTags';
+import { applyItemSectionCacheTags } from '@utils/item/applyItemCacheTags';
 import type { ItemData, ItemOpenable } from '@types';
 
 /**

@@ -3,7 +3,7 @@ import { getItem } from '.';
 import { ItemData, SearchFilters } from '../../../../../types';
 import { doSearch } from '../../search';
 import { defaultFilters } from '../../../../../utils/parseFilters';
-import { redis_setDataCount } from '@utils/redis';
+import { redis_setDataCount } from '@utils/api/redis';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });

@@ -7,7 +7,7 @@ import hash from 'object-hash';
 import { getManyItems } from './many';
 import { Prisma } from '@prisma/generated/client';
 import { allCategories } from '@utils/allCats';
-import { redis_setDataCount } from '@utils/redis';
+import { redis_setDataCount } from '@utils/api/redis';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 

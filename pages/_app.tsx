@@ -12,7 +12,7 @@ import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import type { NextPage } from 'next';
 import { onIntlError } from '../utils/intlHandler';
-import { installProofInterceptor } from '@utils/http/proofInterceptor';
+import { installProofInterceptor } from '@utils/api/proofInterceptor';
 import { getLocalizedHref, VALID_LOCALES, type AppLocale } from '@utils/locales';
 import { system } from '@utils/theme/theme';
 import { Toaster } from '@components/ui/toaster';

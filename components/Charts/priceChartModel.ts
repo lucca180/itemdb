@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { isBusinessDay } from 'lightweight-charts';
 import type { Time } from 'lightweight-charts';
 import type { PriceData, UserList } from '@types';
-import { resolveItemListSeries } from '@utils/itemListSeries';
+import { resolveItemListSeries } from '@utils/item/itemListSeries';
 import { stripMarkdown } from '@utils/utils';
 
 export type ChartPoint = {

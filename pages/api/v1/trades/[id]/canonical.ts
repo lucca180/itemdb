@@ -3,7 +3,7 @@ import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 import { processTradePrice } from '..';
 import { FeedbackParsed, TradeData } from '../../../../../types';
-import { getTradeItemByOrder, normalizeCanonicalWishlist } from '@utils/tradeCanonical';
+import { getTradeItemByOrder, normalizeCanonicalWishlist } from '@utils/item/tradeCanonical';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   try {

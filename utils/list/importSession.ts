@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { redis } from '@utils/redis';
+import { redis } from '@utils/api/redis';
 
 export type ListImportSession = {
   items: { [index: number | string]: number };

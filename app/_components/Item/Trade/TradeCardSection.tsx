@@ -3,7 +3,7 @@ import TradeCard from '@components/Trades/TradeCard';
 import { needsTradeCard } from '@app/_components/Item/itemPageGates';
 import { loadItemTrades } from '@app/_components/Item/loadUtils';
 import type { ItemData } from '@types';
-import { shouldShowTradeRelisting } from '@utils/tradeRelisting';
+import { shouldShowTradeRelisting } from '@utils/item/tradeRelisting';
 
 type Props = {
   item: ItemData;
