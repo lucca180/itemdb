@@ -1,17 +1,14 @@
-import { getLocalizedLoginRedirect, resolvePageLocale } from '@utils/locales';
+'use client';
+
 import { Button, Center, Heading, Link, Spinner, Tabs, Text } from '@chakra-ui/react';
 import { useToast } from '@utils/theme/toast';
 import axios from 'axios';
-import { NextApiRequest, GetServerSidePropsContext } from 'next';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import HeaderCard from '@components/Card/HeaderCard';
-import Layout from '@components/Layout';
 import MainLink from '@components/Utils/MainLink';
 import { InfoTab, CategoriesTab } from '@components/Modal/EditItemModal';
 import { ItemData } from '@types';
 import { useAuth } from '@utils/auth';
-import { CheckAuth } from '@utils/googleCloud';
-import { loadTranslation } from '@utils/load-translation';
 
 const defaultItem: Partial<ItemData> = {
   internal_id: -1,
@@ -31,7 +28,6 @@ const defaultItem: Partial<ItemData> = {
   isWearable: false,
   isNeohome: false,
   estVal: null,
-  // specialType: null,
   status: 'active',
   isMissingInfo: true,
   slug: null,
@@ -50,7 +46,7 @@ const defaultItem: Partial<ItemData> = {
   mallData: null,
 };
 
-const CreateItem = () => {
+export function CreateItemPageClient() {
   const toast = useToast();
   const { user, authLoading } = useAuth();
   const [item, setItem] = useState<Partial<ItemData>>(defaultItem);
@@ -61,45 +57,31 @@ const CreateItem = () => {
     setItem((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleTagsChange = (tags: string[], type: 'tags' | 'categories' | 'special') => {
-    if (type === 'tags') setTags(tags);
-    // else if (type === 'categories') setCategories(tags);
+  const handleTagsChange = (nextTags: string[], type: 'tags' | 'categories' | 'special') => {
+    if (type === 'tags') setTags(nextTags);
     else if (type === 'special') {
       const itemCopy = { ...item };
 
-      if (tags.includes('nc')) {
+      if (nextTags.includes('nc')) {
         itemCopy.isNC = true;
         itemCopy.type = 'nc';
-      } else if (tags.includes('np')) {
+      } else if (nextTags.includes('np')) {
         itemCopy.isNC = false;
         itemCopy.type = 'np';
-      } else if (tags.includes('pb')) {
+      } else if (nextTags.includes('pb')) {
         itemCopy.isNC = false;
         itemCopy.type = 'pb';
       }
 
-      if (tags.includes('wearable')) itemCopy.isWearable = true;
+      if (nextTags.includes('wearable')) itemCopy.isWearable = true;
       else itemCopy.isWearable = false;
 
-      if (tags.includes('neohome')) itemCopy.isNeohome = true;
+      if (nextTags.includes('neohome')) itemCopy.isNeohome = true;
       else itemCopy.isNeohome = false;
 
       setItem(itemCopy);
     }
   };
-
-  // const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-  //   // this wont work on this page....
-  //   return;
-  //   // const { name, value } = e.target;
-
-  //   // setItem((prev) => {
-  //   //   const itemCopy = { ...prev };
-  //   //   //@ts-expect-error ts is dumb
-  //   //   itemCopy.useTypes[name] = value;
-  //   //   return itemCopy;
-  //   // });
-  // };
 
   const createItem = async () => {
     if (!item.name || !item.image) {
@@ -157,19 +139,21 @@ const CreateItem = () => {
         }),
       });
 
-      if (res.status === 200) {
-        await axios.post('/api/v1/items/process', null);
-
-        toast.update(toastID, {
-          id: toastID,
-          title: 'Item created.',
-          description: 'The item was successfully created.',
-          status: 'success',
-          duration: 5000,
-        });
-        setItem(defaultItem);
-        setTags([]);
+      if (!res.ok) {
+        throw new Error(`Create failed with status ${res.status}`);
       }
+
+      await axios.post('/api/v1/items/process', {});
+
+      toast.update(toastID, {
+        id: toastID,
+        title: 'Item created.',
+        description: 'The item was successfully created.',
+        status: 'success',
+        duration: 5000,
+      });
+      setItem(defaultItem);
+      setTags([]);
     } catch (err) {
       console.error(err);
       toast.update(toastID, {
@@ -182,26 +166,24 @@ const CreateItem = () => {
     }
   };
 
-  if (authLoading)
+  if (authLoading) {
     return (
-      <Layout SEO={{ nofollow: true, noindex: true }}>
-        <Center h="80vh">
-          <Spinner />
-        </Center>
-      </Layout>
+      <Center minH="60vh">
+        <Spinner />
+      </Center>
     );
+  }
 
-  if (!user || !user.isAdmin)
+  if (!user?.isAdmin) {
     return (
-      <Layout SEO={{ nofollow: true, noindex: true }}>
-        <Center h="80vh">
-          <Heading size="md">You are not authorized to access this page.</Heading>
-        </Center>
-      </Layout>
+      <Center minH="60vh">
+        <Heading size="md">You are not authorized to access this page.</Heading>
+      </Center>
     );
+  }
 
   return (
-    <Layout SEO={{ title: 'Create New Item', nofollow: true, noindex: true }} mainColor="#7AB92Ac7">
+    <>
       <HeaderCard
         image={{
           src: 'https://images.neopets.com/nt/ntimages/441_xweetok_agent.gif',
@@ -251,30 +233,6 @@ const CreateItem = () => {
           Create Item
         </Button>
       </Center>
-    </Layout>
+    </>
   );
-};
-
-export default CreateItem;
-
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const locale = resolvePageLocale(context.params?.locale as string);
-  try {
-    const res = await CheckAuth(context.req as NextApiRequest);
-
-    if (!res || !res.user || !res.user?.isAdmin) throw new Error('User is not an admin');
-
-    return {
-      props: {
-        messages: await loadTranslation(locale as string, 'admin/createItem'),
-      },
-    };
-  } catch (e) {
-    return {
-      redirect: {
-        destination: getLocalizedLoginRedirect(locale, context.resolvedUrl),
-        permanent: false,
-      },
-    };
-  }
 }

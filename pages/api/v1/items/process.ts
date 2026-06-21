@@ -27,40 +27,44 @@ const usedSlugs = new Set<string>();
 
 let manualChecks: any = [];
 const isDev = process.env.NODE_ENV === 'development';
+
+async function authorizeProcess(req: NextApiRequest, res: NextApiResponse) {
+  if (isDev) return true;
+
+  const authorization = req.headers.authorization;
+
+  if (authorization === TARNUM_KEY) return true;
+  if (authorization?.includes('Bearer')) return true;
+
+  try {
+    const user = (await CheckAuth(req)).user;
+    if (user?.isAdmin) return true;
+  } catch {
+    // fall through to unauthorized
+  }
+
+  res.status(401).json({ error: 'Unauthorized' });
+  return false;
+}
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  if (
-    !isDev &&
-    (!req.headers.authorization ||
-      (req.headers.authorization !== TARNUM_KEY && !req.headers.authorization.includes('Bearer')))
-  )
-    return res.status(401).json({ error: 'Unauthorized' });
-
-  if (
-    !isDev &&
-    req.headers.authorization !== TARNUM_KEY &&
-    !req.headers.authorization?.includes('Bearer')
-  ) {
-    try {
-      const user = (await CheckAuth(req)).user;
-      if (!user || !user.isAdmin) return res.status(403).json({ error: 'Forbidden' });
-    } catch (e) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-  }
+  if (!(await authorizeProcess(req, res))) return;
 
   usedSlugs.clear();
   manualChecks = [];
 
-  let limit = Number(req.body.limit);
+  const body = req.body ?? {};
+
+  let limit = Number(body.limit);
   limit = isNaN(limit) ? 300 : limit;
   limit = Math.min(limit, 5000);
 
-  let offset = Number(req.body.offset);
+  let offset = Number(body.offset);
   offset = isNaN(offset) ? 0 : offset;
 
-  const checkAll = req.body.checkAll === 'true';
+  const checkAll = body.checkAll === 'true';
   const skipColors = req.query.skipColors === 'true';
 
   const processList = await prisma.itemProcess.findMany({
