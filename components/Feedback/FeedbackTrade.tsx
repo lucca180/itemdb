@@ -30,7 +30,8 @@ import dynamic from 'next/dynamic';
 import Sticky from 'react-stickynode';
 
 const FeedbackExperimentsModal = dynamic<FeedbackExperimentsModalProps>(
-  () => import('../Modal/FeedbackExperimentsModal')
+  () => import('../Modal/FeedbackExperimentsModal'),
+  { ssr: false }
 );
 
 // const TradeCalculatorModal = dynamic<TradeCalculatorModalProps>(

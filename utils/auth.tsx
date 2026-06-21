@@ -103,12 +103,11 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
     };
   }, [initialUser]);
 
-  const updatePref = async (
+  const updatePref = (
     key: keyof UserPreferences,
     value: UserPreferences[keyof UserPreferences]
   ) => {
-    const newPref = { ...(userPref ?? undefined), [key]: value };
-    setUserPref(newPref);
+    setUserPref((prev) => ({ ...(prev ?? undefined), [key]: value }));
   };
 
   const resetUser = async () => {

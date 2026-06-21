@@ -1,4 +1,5 @@
-import { getLocalizedLoginRedirect, resolvePageLocale } from '@utils/locales';
+'use client';
+
 import { ExternalLinkIcon } from '@utils/theme/chakraIcons';
 import {
   Accordion,
@@ -6,7 +7,6 @@ import {
   Button,
   Center,
   Flex,
-  Heading,
   Icon,
   Spinner,
   Text,
@@ -14,40 +14,42 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import MainLink from '@components/Utils/MainLink';
-import { useState, useEffect, ReactElement, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { BsArrowDownCircleFill, BsArrowUpCircleFill } from 'react-icons/bs';
 import CardBase from '@components/Card/CardBase';
-import HeaderCard from '@components/Card/HeaderCard';
 import FeedbackItem from '@components/Feedback/FeedbackItem';
-import Layout from '@components/Layout';
+import { TradeGuidelines } from '@components/Feedback/TradeGuidelines';
 import TradeTable from '@components/Trades/TradeTable';
 import { Feedback, TradeData } from '@types';
 import { useAuth } from '@utils/auth';
-import { TradeGuidelines } from './trades';
-import { NextApiRequest, GetServerSidePropsContext } from 'next';
-import { CheckAuth } from '@utils/googleCloud';
-import { createTranslator, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
-import { ReportFeedbackModalProps } from '@components/Modal/ReportFeedbackModal';
-import { useRouter } from 'next/router';
-import { CanonicalTradeModalProps } from '@components/Modal/CanonicalTradeModal';
-import { Breadcrumbs } from '@components/Breadcrumbs/Breadcrumbs';
-import { loadTranslation } from '@utils/load-translation';
 import { NewPolicyReminder } from '@components/Feedback/NewPolicyReminder';
 
-const ReportFeedbackModal = dynamic<ReportFeedbackModalProps>(
-  () => import('@components/Modal/ReportFeedbackModal')
-);
+const ReportFeedbackModal = dynamic(() => import('@components/Modal/ReportFeedbackModal'), {
+  ssr: false,
+});
 
-const CanonicalTradeModal = dynamic<CanonicalTradeModalProps>(
-  () => import('@components/Modal/CanonicalTradeModal')
-);
+const CanonicalTradeModal = dynamic(() => import('@components/Modal/CanonicalTradeModal'), {
+  ssr: false,
+});
 
 const AUTO_PRICE_UID = 'UmY3BzWRSrhZDIlxzFUVxgRXjfi1';
 
-const FeedbackVotingPage = (props: { shouldShowReminder: boolean }) => {
+type FeedbackVotePageClientProps = {
+  shouldShowReminder: boolean;
+  target?: string;
+  wishlist?: string;
+  order?: string;
+};
+
+export function FeedbackVotePageClient({
+  shouldShowReminder,
+  target,
+  wishlist,
+  order,
+}: FeedbackVotePageClientProps) {
   const t = useTranslations();
-  const router = useRouter();
   const { user, authLoading } = useAuth();
   const { open: isOpen, onOpen, onClose } = useDisclosure();
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
@@ -69,9 +71,9 @@ const FeedbackVotingPage = (props: { shouldShowReminder: boolean }) => {
     try {
       const res = await axios.get('/api/feedback/getLatest', {
         params: {
-          itemName: router.query.target,
-          wishlist: router.query.wishlist,
-          order: router.query.order,
+          itemName: target,
+          wishlist,
+          order,
           skipList: skippedFeedbacks.current.join(','),
         },
       });
@@ -91,7 +93,7 @@ const FeedbackVotingPage = (props: { shouldShowReminder: boolean }) => {
       setError(e.message);
     }
     setIsLoading(false);
-  }, [router.query.order, router.query.target, router.query.wishlist]);
+  }, [order, target, wishlist]);
 
   const handleSkip = useCallback(async () => {
     if (!currentFeedback) {
@@ -198,46 +200,11 @@ const FeedbackVotingPage = (props: { shouldShowReminder: boolean }) => {
           refresh={init}
         />
       )}
-      <HeaderCard
-        image={{
-          src: 'https://images.neopets.com/altador/altadorcup/link_images/2008/help_me_decide.gif',
-          alt: 'quiz-giver thumbnail',
-        }}
-        breadcrumb={
-          <Breadcrumbs
-            breadcrumbList={[
-              {
-                position: 1,
-                name: t('Layout.home'),
-                item: '/',
-              },
-              {
-                position: 2,
-                name: t('Layout.feedback'),
-                item: '/feedback',
-              },
-              {
-                position: 3,
-                name: t('Feedback.feedback-voting'),
-                item: '/feedback/vote',
-              },
-            ]}
-          />
-        }
-      >
-        <Heading as="h1" size="lg">
-          {t('Feedback.the-feedback-system')}
-        </Heading>
-        <Text fontSize={{ base: 'sm', md: undefined }}>
-          {t('Feedback.feedback-system-description')}
-        </Text>
-      </HeaderCard>
       <Flex
         mt={8}
         gap={6}
         alignItems={{ base: 'center', md: 'flex-start' }}
         flexFlow={{ base: 'column', md: 'row' }}
-        // css={{ b: { color: 'blue.200' } }}
       >
         <CardBase
           chakraWrapper={{ flex: 2 }}
@@ -272,7 +239,7 @@ const FeedbackVotingPage = (props: { shouldShowReminder: boolean }) => {
           h="100%"
           w="100%"
         >
-          {props.shouldShowReminder && <NewPolicyReminder />}
+          {shouldShowReminder && <NewPolicyReminder />}
           {isLoading && (
             <Center>
               <Spinner size="lg" />
@@ -351,73 +318,4 @@ const FeedbackVotingPage = (props: { shouldShowReminder: boolean }) => {
       </Flex>
     </>
   );
-};
-
-export default FeedbackVotingPage;
-
-// const TagAndNotesGuidelines = () => {
-//   const t = useTranslations();
-//   return (
-//     <Box>
-//       {/* <Text>
-//         <b>Tags</b> are used to help you find items. They should be used to describe the{' '}
-//         <b>item&apos;s appearance or function</b>.<br />
-//         Tags <b>should not contain any meta-information</b> about the item such as method of
-//         acquisition.
-//         <br />
-//         Tags <b>should not contain any word of the item&apos;s name</b>.
-//       </Text> */}
-//       <Text>
-//         {t.rich('Feedback.in-1', {
-//           b: (chunks) => <b>{chunks}</b>,
-//         })}
-//       </Text>
-//     </Box>
-//   );
-// };
-
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const locale = resolvePageLocale(context.params?.locale as string);
-  try {
-    const check = await CheckAuth(context.req as NextApiRequest);
-    if (!check.user) throw new Error('User not found');
-
-    if (check.user.banned) {
-      return {
-        notFound: true,
-      };
-    }
-
-    const shouldShowReminder = !(context.req.cookies['bbpb_new_policy_reminder'] === 'true');
-
-    return {
-      props: {
-        messages: await loadTranslation(locale as string, 'feedback/vote'),
-        shouldShowReminder,
-        locale: locale,
-      },
-    };
-  } catch (e) {
-    return {
-      redirect: {
-        destination: getLocalizedLoginRedirect(locale, context.resolvedUrl),
-        permanent: false,
-      },
-    };
-  }
 }
-
-FeedbackVotingPage.getLayout = function getLayout(page: ReactElement, props: any) {
-  const t = createTranslator({ messages: props.messages, locale: props.locale });
-  return (
-    <Layout
-      SEO={{
-        title: t('Feedback.voting-feedback'),
-        description: t('Feedback.feedback-system-description'),
-      }}
-      mainColor="#4A5568c7"
-    >
-      {page}
-    </Layout>
-  );
-};

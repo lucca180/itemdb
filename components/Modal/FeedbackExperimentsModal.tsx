@@ -9,22 +9,46 @@ import {
   CloseButton,
   Portal,
 } from '@chakra-ui/react';
+import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
-import { useAuth } from '../../utils/auth';
+import { useAuth } from '@utils/auth';
 
 export type FeedbackExperimentsModalProps = {
   isOpen: boolean;
   onClose: () => void;
 };
 
+type FeedbackPrefKey = 'labs_feedbackCopyEquals' | 'labs_feedbackShortcuts';
+
 const FeedbackExperimentsModal = (props: FeedbackExperimentsModalProps) => {
   const t = useTranslations();
   const { userPref, updatePref } = useAuth();
   const { isOpen, onClose } = props;
 
-  const handleSwitch = (key: keyof NonNullable<typeof userPref>, checked: boolean) => {
+  const handleSwitch = (key: FeedbackPrefKey, checked: boolean) => {
     updatePref(key, checked);
   };
+
+  const renderSwitch = (key: FeedbackPrefKey, label: string, helper: ReactNode) => (
+    <Field.Root>
+      <Switch.Root
+        checked={userPref?.[key] ?? false}
+        onCheckedChange={({ checked }) => handleSwitch(key, !!checked)}
+        display="flex"
+        alignItems="flex-start"
+        gap={3}
+      >
+        <Switch.HiddenInput />
+        <Switch.Control mt={0.5}>
+          <Switch.Thumb />
+        </Switch.Control>
+        <VStack alignItems="flex-start" gap={0} flex={1}>
+          <Switch.Label>{label}</Switch.Label>
+          <Field.HelperText m={0}>{helper}</Field.HelperText>
+        </VStack>
+      </Switch.Root>
+    </Field.Root>
+  );
 
   return (
     <Dialog.Root
@@ -49,44 +73,18 @@ const FeedbackExperimentsModal = (props: FeedbackExperimentsModalProps) => {
             </Dialog.CloseTrigger>
             <Dialog.Body>
               <VStack gap={5}>
-                <Field.Root>
-                  <Switch.Root
-                    checked={userPref?.labs_feedbackCopyEquals ?? false}
-                    onCheckedChange={({ checked }) =>
-                      handleSwitch('labs_feedbackCopyEquals', !!checked)
-                    }
-                    display="flex"
-                    alignItems="center"
-                  >
-                    <Switch.HiddenInput id="labs_feedbackCopyEquals" />
-                    <Switch.Control />
-                    <VStack justifyContent={'flex-start'} ml={2} alignItems={'flex-start'} gap={0}>
-                      <Switch.Label>{t('Feedback.sync-price-for-equal-items')}</Switch.Label>
-                      <Field.HelperText m={0}>{t('Feedback.equal-items-helper')}</Field.HelperText>
-                    </VStack>
-                  </Switch.Root>
-                </Field.Root>
-                <Field.Root>
-                  <Switch.Root
-                    checked={userPref?.labs_feedbackShortcuts ?? false}
-                    onCheckedChange={({ checked }) =>
-                      handleSwitch('labs_feedbackShortcuts', !!checked)
-                    }
-                    display="flex"
-                    alignItems="center"
-                  >
-                    <Switch.HiddenInput id="labs_feedbackShortcuts" />
-                    <Switch.Control />
-                    <VStack justifyContent={'flex-start'} ml={2} alignItems={'flex-start'} gap={0}>
-                      <Switch.Label>{t('Feedback.multiplier-shortcuts')}</Switch.Label>
-                      <Field.HelperText m={0}>
-                        {t.rich('Feedback.multiplier-shortcuts-helper', {
-                          Kbd: (children) => <Kbd>{children}</Kbd>,
-                        })}
-                      </Field.HelperText>
-                    </VStack>
-                  </Switch.Root>
-                </Field.Root>
+                {renderSwitch(
+                  'labs_feedbackCopyEquals',
+                  t('Feedback.sync-price-for-equal-items'),
+                  t('Feedback.equal-items-helper')
+                )}
+                {renderSwitch(
+                  'labs_feedbackShortcuts',
+                  t('Feedback.multiplier-shortcuts'),
+                  t.rich('Feedback.multiplier-shortcuts-helper', {
+                    Kbd: (children) => <Kbd>{children}</Kbd>,
+                  })
+                )}
               </VStack>
             </Dialog.Body>
             <Dialog.Footer>
