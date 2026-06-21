@@ -7,7 +7,7 @@ import {
 import { GetServerSideProps } from 'next';
 import prisma from '@utils/prisma';
 import { restockShopInfo, slugify } from '@utils/utils';
-import { listCategoriesData } from '@pages/[locale]/lists/official/cat/[category]';
+import { listCategoriesData } from '@utils/lists/listCategoriesData';
 import { allSpecies, allNeopetsColors } from '@utils/pet-utils';
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {

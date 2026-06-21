@@ -2,7 +2,7 @@ import { UserList } from '../../types';
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { Breadcrumbs } from './Breadcrumbs';
-import { listCategoriesData } from '@pages/[locale]/lists/official/cat/[category]';
+import { listCategoriesData } from '@utils/lists/listCategoriesData';
 import { slugify } from '../../utils/utils';
 
 type ListBreadcrumb = {

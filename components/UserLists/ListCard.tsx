@@ -26,7 +26,10 @@ import { getListLink } from '@utils/list/listLink';
 const Markdown = dynamic(() => import('../Utils/Markdown'));
 
 const CreateListModal = dynamic<CreateListModalProps>(
-  () => import('@components/Modal/CreateListModal')
+  () => import('@components/Modal/CreateListModal'),
+  {
+    ssr: false,
+  }
 );
 
 type Props = {

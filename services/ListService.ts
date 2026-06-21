@@ -101,7 +101,7 @@ export class ListService {
   }
 
   async getUserLists(params: GetUserListsParams) {
-    const { username, limit = -1, officialTag } = params;
+    const { username, limit = -1, officialTag, includeItems = false } = params;
     const isOfficial = username === 'official';
 
     const listsRaw = await prisma.userList.findMany({
@@ -121,8 +121,20 @@ export class ListService {
               : undefined,
           },
       include: {
-        items: true,
         user: true,
+        ...(includeItems
+          ? { items: true }
+          : {
+              _count: {
+                select: {
+                  items: {
+                    where: {
+                      isHidden: false,
+                    },
+                  },
+                },
+              },
+            }),
       },
       orderBy: {
         createdAt: 'desc',
@@ -133,7 +145,7 @@ export class ListService {
     if (!listsRaw || listsRaw.length === 0) return [];
 
     const lists: UserList[] = listsRaw
-      .map((list) => rawToList(list, list.user))
+      .map((list) => rawToList(list, list.user, includeItems))
       .sort((a, b) =>
         isOfficial
           ? new Date(b.createdAt) < new Date(a.createdAt)
@@ -296,6 +308,7 @@ type GetUserListsParams = {
   username: string;
   limit?: number;
   officialTag?: string;
+  includeItems?: boolean;
 };
 
 const toListIdAndSlug = (list_id_or_slug: string | number) => {
@@ -314,10 +327,15 @@ type RequiredUser = {
 };
 
 export const rawToList = (
-  listRaw: RawList & { items?: ListItems[] },
+  listRaw: RawList & { items?: ListItems[]; _count?: { items: number } },
   owner: RawUser | User | RequiredUser,
   includeItems = false
 ): UserList => {
+  const itemCount =
+    listRaw.items !== undefined
+      ? listRaw.items.filter((x) => !x.isHidden).length
+      : (listRaw._count?.items ?? -1);
+
   return {
     internal_id: listRaw.internal_id,
     name: listRaw.name,
@@ -352,7 +370,7 @@ export const rawToList = (
     officialTag: splitOfficialTag(listRaw.official_tag),
     userTag: listRaw.listUserTag ?? null,
 
-    itemCount: listRaw.items?.filter((x) => !x.isHidden).length ?? -1,
+    itemCount: itemCount,
 
     slug: listRaw.slug,
     seriesType: listRaw.seriesType,

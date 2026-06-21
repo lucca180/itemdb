@@ -119,7 +119,18 @@ export const getTrendingLists = async (limit: number, excludeCats: string[] = []
       },
       official: true,
     },
-    include: { user: true, items: true },
+    include: {
+      user: true,
+      _count: {
+        select: {
+          items: {
+            where: {
+              isHidden: false,
+            },
+          },
+        },
+      },
+    },
   });
 
   const sorted = lists.sort((a, b) => {
