@@ -80,6 +80,22 @@ Extract a `*PageClient.tsx` component when:
 - the page uses client-only hooks or browser APIs
 - the page is mostly presentational and the server file should stay focused on route setup and metadata
 
+## Dynamic imports
+
+When migrating a page that uses `next/dynamic`, **always pass `{ ssr: false }`** in App Router client components.
+
+Modals, browser-only widgets, and other client-only UI should not be server-rendered. Skipping SSR avoids hydration mismatches and prevents subtle runtime bugs (for example, interactive controls inside dynamically loaded modals failing to respond).
+
+```tsx
+import dynamic from 'next/dynamic';
+
+const FeedbackModal = dynamic(() => import('@components/Modal/FeedbackModal'), {
+  ssr: false,
+});
+```
+
+Apply this to every `dynamic()` call introduced or carried over during a migration, unless there is a documented reason the component must render on the server.
+
 ## Metadata and SEO rules
 
 For static migrations, prefer `generateMetadata()` plus `Layout` with `disableNextSeo`.
@@ -109,3 +125,4 @@ After each migration:
 
 - Do not change `package.json`, `tsconfig.json`, `next.config.ts`, or other project config files without explicit user confirmation.
 - If a stale `.next/types` reference blocks typecheck after deleting a `pages/` route, clear the generated type output and rerun typecheck.
+- Always use `{ ssr: false }` on `next/dynamic` imports in migrated App Router client components (see [Dynamic imports](#dynamic-imports)).

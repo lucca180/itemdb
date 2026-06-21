@@ -1,5 +1,6 @@
+'use client';
+
 import {
-  Separator,
   Flex,
   Heading,
   Link,
@@ -10,186 +11,21 @@ import {
   VStack,
   Button,
   HStack,
-  Alert,
 } from '@chakra-ui/react';
 import { useToast } from '@utils/theme/toast';
-import { resolvePageLocale, getPageRouterHref } from '@utils/locales';
-import HeaderCard from '@components/Card/HeaderCard';
-import Layout from '@components/Layout';
-import { parseBody } from 'next/dist/server/api-utils/node/parse-body';
 import ListSelect from '@components/UserLists/ListSelect';
 import axios from 'axios';
-import { ReactElement, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ItemData, UserList } from '@types';
 import ItemCard from '@components/Items/ItemCard';
 import { useAuth } from '@utils/auth';
 import { CreateLinkedListButton } from '@components/DynamicLists/CreateLinkedList';
-import { useRouter } from 'next/router';
+import { useRouter } from '@i18n/navigation';
 import MainLink from '@components/Utils/MainLink';
-import { createTranslator, useTranslations } from 'next-intl';
-import { Breadcrumbs } from '@components/Breadcrumbs/Breadcrumbs';
-import { loadTranslation } from '@utils/load-translation';
-import { GetServerSidePropsContext } from 'next';
+import { useTranslations } from 'next-intl';
 import { dynamicListCan } from '@utils/utils';
-import { ListService } from '@services/ListService';
-import { ImportInfo } from '@components/Import/ImportInfo';
-import { getListImportSession } from '@utils/list/importSession';
-import { useScriptStatus } from '@utils/scriptUtils';
 
-type Props = {
-  items?: { [index: number | string]: number };
-  indexType?: string;
-  recommended_list?: UserList | null;
-  locale: string;
-  messages: any;
-};
-
-const ImportPage = (props: Props) => {
-  const t = useTranslations();
-  const { items, indexType, recommended_list } = props;
-
-  return (
-    <>
-      <HeaderCard
-        image={{
-          src: 'https://images.neopets.com/caption/sm_caption_831.gif',
-          alt: 'Importing Items Thumbnail',
-        }}
-        color="#65855B"
-        breadcrumb={
-          <Breadcrumbs
-            breadcrumbList={[
-              {
-                position: 1,
-                name: t('Layout.home'),
-                item: '/',
-              },
-              {
-                position: 2,
-                name: t('Lists.Lists'),
-                item: '/lists/official',
-              },
-              {
-                position: 3,
-                name: t('Lists.checklists-and-importing-items'),
-                item: '/lists/import',
-              },
-            ]}
-          />
-        }
-      >
-        <Heading as="h1" size="lg">
-          {t('Lists.checklists-and-importing-items')}
-        </Heading>
-        <Text as="div" css={{ '& a': { color: '#b8e9a9' } }}>
-          {t('Lists.import-page-description')}
-        </Text>
-      </HeaderCard>
-      <Flex flexFlow="column" gap={3} css={{ '& a': { color: '#b8e9a9' } }}>
-        <Separator />
-        <OutdatedListImporterAlert />
-        {!items && <ImportInfo />}
-        {items && !!indexType && (
-          <ImportItems items={items} indexType={indexType} recommended_list={recommended_list} />
-        )}
-      </Flex>
-    </>
-  );
-};
-
-const OutdatedListImporterAlert = () => {
-  const t = useTranslations();
-  const { scriptStatus } = useScriptStatus();
-  const listImporter = scriptStatus?.itemdb_listImporter;
-
-  if (!listImporter || listImporter?.status !== 'outdated') return null;
-
-  return (
-    <Alert.Root
-      status="warning"
-      variant="surface"
-      maxW="750px"
-      css={{ '& a': { color: 'colorPalette.100' } }}
-    >
-      <Alert.Indicator />
-      <Alert.Content>
-        <Alert.Title>{t('Lists.import-outdated-script-title')}</Alert.Title>
-        <Alert.Description>
-          {t.rich('Lists.import-outdated-script', {
-            Link: (chunk) => (
-              <Link asChild>
-                <MainLink href={listImporter?.link} isExternal>
-                  {chunk}
-                </MainLink>
-              </Link>
-            ),
-          })}
-        </Alert.Description>
-      </Alert.Content>
-    </Alert.Root>
-  );
-};
-
-export default ImportPage;
-
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const locale = resolvePageLocale(context.params?.locale as string);
-  const importToken = Array.isArray(context.query.importToken)
-    ? context.query.importToken[0]
-    : context.query.importToken;
-  const importSession = importToken ? await getListImportSession(importToken) : null;
-  const body =
-    !importSession && context.req.method === 'POST' ? await parseBody(context.req, '4mb') : null;
-  const items = importSession?.items ?? JSON.parse(body?.itemDataJson || 'null');
-  const indexType = importSession?.indexType ?? body?.indexType ?? 'item_id';
-  const list_id = importSession?.list_id ?? body?.list_id ?? null;
-
-  const listService = ListService.init();
-
-  const list = list_id
-    ? await listService.getList({
-        username: 'official',
-        listId: Number(list_id),
-        isOfficial: true,
-      })
-    : null;
-
-  return {
-    props: {
-      items: items,
-      indexType: indexType,
-      recommended_list: list,
-      messages: await loadTranslation(locale as string, 'lists/import/index'),
-      locale: locale ?? 'en',
-    },
-  };
-}
-
-ImportPage.getLayout = function getLayout(page: ReactElement, props: Props) {
-  const t = createTranslator({ messages: props.messages, locale: props.locale });
-  return (
-    <Layout
-      SEO={{
-        title: t('Lists.checklists-and-importing-items'),
-        description: t('Lists.import-page-description'),
-        openGraph: {
-          images: [
-            {
-              url: 'https://images.neopets.com/caption/sm_caption_831.gif',
-              width: 150,
-              height: 150,
-            },
-          ],
-        },
-      }}
-      mainColor="#65855Bc7"
-    >
-      {page}
-    </Layout>
-  );
-};
-
-type ImportItemsProps = {
+type ImportItemsExperienceProps = {
   items: { [item_id: number | string]: number };
   indexType: string;
   recommended_list?: UserList | null;
@@ -207,12 +43,11 @@ const DefaultImportInfo = {
   action: 'add' as 'add' | 'remove' | 'hide',
 };
 
-const ImportItems = (props: ImportItemsProps) => {
+export function ImportItems({ items, indexType, recommended_list }: ImportItemsExperienceProps) {
   const t = useTranslations();
   const { user } = useAuth();
   const router = useRouter();
   const toast = useToast();
-  const { items, indexType, recommended_list } = props;
   const [itemData, setItemData] = useState<{ [identifier: string | number]: ItemData } | null>(
     null
   );
@@ -221,14 +56,14 @@ const ImportItems = (props: ImportItemsProps) => {
 
   useEffect(() => {
     return () => toast.closeAll();
-  });
+  }, [toast]);
 
   const loadedItems = useMemo(
     () =>
       Object.entries(itemData ?? {}).sort(
         (a, b) => (b[1].price.value ?? 0) - (a[1].price.value ?? 0)
       ),
-    [itemData, items]
+    [itemData]
   );
 
   const init = async () => {
@@ -362,9 +197,7 @@ const ImportItems = (props: ImportItemsProps) => {
         isClosable: true,
       });
 
-      router.push(
-        getPageRouterHref(router, `/lists/${user.username}/${importInfo.list.internal_id}`)
-      );
+      router.push(`/lists/${user.username}/${importInfo.list.internal_id}`);
     } catch (e) {
       console.error(e);
       toast.update(toastInfo, {
@@ -432,11 +265,11 @@ const ImportItems = (props: ImportItemsProps) => {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    init();
-  }, [items]);
+    void init();
+  }, [items, indexType]);
 
   return (
-    <>
+    <Flex flexFlow="column" gap={3} css={{ '& a': { color: '#b8e9a9' } }}>
       <Heading size="lg">
         {t('Lists.importing-x-items', { x: Object.values(itemData ?? items).length })}
       </Heading>
@@ -556,6 +389,6 @@ const ImportItems = (props: ImportItemsProps) => {
           </Flex>
         </Flex>
       </Flex>
-    </>
+    </Flex>
   );
-};
+}

@@ -1,4 +1,4 @@
-import { Flex, Box, Heading, Link, List, Text, useMediaQuery } from '@chakra-ui/react';
+import { Flex, Box, Heading, Link, List, Text } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import DynamicIcon from '@assets/icons/dynamic.png';
@@ -7,16 +7,13 @@ import icon from '@assets/logo_icon.svg';
 
 export const ImportInfo = () => {
   const t = useTranslations();
-  const [isLargerThanMD] = useMediaQuery(['(min-width: 48em)'], { fallback: [true] });
 
   return (
     <Flex flexFlow="column" gap={3} maxW="1000px">
       <Heading size="md">{t('Lists.import-step-by-step')}</Heading>
-      {!isLargerThanMD && (
-        <Text fontSize="sm" color="red.400">
-          {t('Lists.import-this-guide-may-not-work-on-mobile-devices')}
-        </Text>
-      )}
+      <Text fontSize="sm" color="red.400" display={{ base: 'block', md: 'none' }}>
+        {t('Lists.import-this-guide-may-not-work-on-mobile-devices')}
+      </Text>
       <List.Root
         as="ol"
         gap={2}
