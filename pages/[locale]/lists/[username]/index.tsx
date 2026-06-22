@@ -17,7 +17,7 @@ import {
   IconButton,
 } from '@chakra-ui/react';
 import { useToast } from '@utils/theme/toast';
-import { resolvePageLocale } from '@utils/locales';
+import { resolvePageLocale, withLocalePrefix } from '@utils/locales';
 import axios from 'axios';
 import React, { useEffect, useMemo, useState } from 'react';
 import Layout from '@components/Layout';
@@ -620,6 +620,15 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const locale = resolvePageLocale(context.params?.locale as string);
   const { username } = context.query;
   if (!username || Array.isArray(username)) return { notFound: true };
+
+  if (username === 'official') {
+    return {
+      redirect: {
+        destination: withLocalePrefix('/lists/official', locale),
+        permanent: true,
+      },
+    };
+  }
 
   let user = null;
 
