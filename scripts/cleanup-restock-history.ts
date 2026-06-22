@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import 'dotenv/config';
 import { PrismaClient, Prisma } from '../prisma/generated/client.js';
-import { PrismaMariaDb } from '@prisma/adapter-mariadb';
+import { createPrismaAdapter } from '../utils/mariadbAdapter.js';
 import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -129,7 +129,7 @@ function createPrismaClient() {
     fail('DATABASE_URL is not set. Check your .env file.');
   }
 
-  const adapter = new PrismaMariaDb(databaseUrl);
+  const adapter = createPrismaAdapter(databaseUrl);
 
   return new PrismaClient({ adapter });
 }

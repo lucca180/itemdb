@@ -1,12 +1,13 @@
 import { PrismaClient } from '@prisma/generated/client';
-import { PrismaMariaDb } from '@prisma/adapter-mariadb';
+import { createPrismaAdapter } from '@utils/mariadbAdapter';
+import type { PrismaMariaDb } from '@prisma/adapter-mariadb';
 
 const globalForPrisma = global as unknown as {
   prisma: PrismaClient;
   adapter: PrismaMariaDb;
 };
 
-const adapter = globalForPrisma.adapter || new PrismaMariaDb(process.env.DATABASE_URL || '');
+const adapter = globalForPrisma.adapter || createPrismaAdapter(process.env.DATABASE_URL || '');
 
 const prisma =
   globalForPrisma.prisma ||

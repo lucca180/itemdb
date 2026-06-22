@@ -20,7 +20,7 @@
 
 import 'dotenv/config';
 import { PrismaClient } from './generated/client.js';
-import { PrismaMariaDb } from '@prisma/adapter-mariadb';
+import { createPrismaAdapter } from '../utils/mariadbAdapter.js';
 import { spawn } from 'node:child_process';
 import { readdirSync, createReadStream } from 'node:fs';
 import { createGunzip } from 'node:zlib';
@@ -30,7 +30,7 @@ import { URL } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const adapter = new PrismaMariaDb(process.env.DATABASE_URL || '');
+const adapter = createPrismaAdapter(process.env.DATABASE_URL || '');
 const prisma = new PrismaClient({ adapter } as any);
 
 // ---------------------------------------------------------------------------
