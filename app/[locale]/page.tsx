@@ -16,7 +16,7 @@ import {
   TrendingItemsHomeCard,
   LatestNcMallHomeCard,
 } from '@app/_components/Home/Cards/HomeServerCards';
-import { TVWHomeCard } from '@app/_components/Home/Cards/EventCard';
+// import { TVWHomeCard } from '@app/_components/Home/Cards/EventCard';
 import { NewItemsCountSection } from '@app/_components/Home/Cards/NewItemsCountSection';
 import { LatestArticlesSection } from '@app/_components/Home/Sections/LatestArticlesSection';
 import { LatestPricesSection } from '@app/_components/Home/Sections/LatestPricesSection';
@@ -102,7 +102,7 @@ async function HomePageContent({ params }: HomePageProps) {
       />
       <Flex mt={8} gap={8} flexDirection="column">
         <LatestPricesSection />
-        <TVWHomeCard />
+        {/* <TVWHomeCard /> */}
         <NewItemsCountSection />
         <Grid
           templateColumns={{ base: 'minmax(0, 1fr)', lg: 'repeat(3, minmax(0, 1fr))' }}

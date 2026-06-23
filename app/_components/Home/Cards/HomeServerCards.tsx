@@ -47,7 +47,7 @@ async function getCachedFeaturedLists() {
   'use cache';
   cacheTag('home-trending-lists');
   cacheLife('homeSlow');
-  return getTrendingLists(3, ['The Void Within']).catch(() => []);
+  return getTrendingLists(3, []).catch(() => []);
 }
 
 export function LatestItemsHomeCard() {
