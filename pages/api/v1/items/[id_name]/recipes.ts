@@ -39,16 +39,34 @@ export const getItemRecipes = async (iid: number) => {
         },
       ],
     },
-    include: {
-      ingredients: true,
+    select: {
+      internal_id: true,
+      result_iid: true,
+      type: true,
     },
   });
 
-  const itemIds = new Set<number>();
-  recipes.map((recipe) => {
-    itemIds.add(recipe.result_iid);
-    recipe.ingredients.map((ingredient) => itemIds.add(ingredient.item_iid));
+  if (recipes.length === 0) return [];
+
+  const recipeIds = recipes.map((recipe) => recipe.internal_id);
+  const ingredients = await prisma.itemIngredients.findMany({
+    where: { recipe_id: { in: recipeIds } },
   });
+
+  const ingredientsByRecipeId = new Map<number, typeof ingredients>();
+  for (const ingredient of ingredients) {
+    const list = ingredientsByRecipeId.get(ingredient.recipe_id) ?? [];
+    list.push(ingredient);
+    ingredientsByRecipeId.set(ingredient.recipe_id, list);
+  }
+
+  const itemIds = new Set<number>();
+  for (const recipe of recipes) {
+    itemIds.add(recipe.result_iid);
+    for (const ingredient of ingredientsByRecipeId.get(recipe.internal_id) ?? []) {
+      itemIds.add(ingredient.item_iid);
+    }
+  }
 
   const itemData = await getManyItems({
     id: Array.from(itemIds).map((x) => x.toString()),
@@ -63,7 +81,8 @@ export const getItemRecipes = async (iid: number) => {
       continue;
     }
 
-    const ingredientItems = recipe.ingredients.map((ingredient) => {
+    const recipeIngredients = ingredientsByRecipeId.get(recipe.internal_id) ?? [];
+    const ingredientItems = recipeIngredients.map((ingredient) => {
       if (!itemData[ingredient.item_iid]) {
         console.warn('missing ingredient item', ingredient.item_iid);
         return null;
@@ -73,7 +92,7 @@ export const getItemRecipes = async (iid: number) => {
     });
 
     if (ingredientItems.some((x) => !x)) {
-      console.warn('missing item data', recipe.result_iid, recipe.ingredients);
+      console.warn('missing item data', recipe.result_iid, recipeIngredients);
       continue;
     }
 
