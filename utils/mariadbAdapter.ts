@@ -2,10 +2,11 @@ import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 
 /** Applied to DATABASE_URL when a pool param is not already set. */
 export const MARIADB_POOL_DEFAULTS = {
-  connectionLimit: '4',
-  acquireTimeout: '15000',
-  idleTimeout: '600',
-  minimumIdle: '1',
+  connectionLimit: '10',
+  acquireTimeout: '10000',
+  idleTimeout: '900',
+  leakDetectionTimeout: '30000',
+  // minimumIdle: '5',
 } as const;
 
 export function withMariaDbPoolDefaults(databaseUrl: string): string {
