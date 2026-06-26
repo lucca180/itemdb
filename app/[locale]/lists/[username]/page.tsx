@@ -47,8 +47,8 @@ async function UserListsPageContent({ params }: UserListsPageProps) {
   const { locale, username } = await params;
   setRequestLocale(locale);
 
-  const pageData = await loadUserProfileRequest(username);
-  const { owner, viewer, isOwner, lists, achievements, matches } = pageData;
+  const { owner, viewer, isOwner, lists, achievements, matches } =
+    await loadUserProfileRequest(username);
 
   const t = await getTranslations();
   const color = Color(owner.profileColor || '#4A5568');

@@ -15,7 +15,6 @@ import {
   userMatchesTag,
   userProfileTag,
 } from '@utils/appCacheTags';
-
 export type ProfileListMatches = {
   seek: { [list_id: number]: ListItemInfo[] };
   trade: { [list_id: number]: ListItemInfo[] };
@@ -52,25 +51,18 @@ async function loadUserAchievementsCached(username: string, owner: User) {
   return (await getUserAchievements(owner)) ?? [];
 }
 
-async function loadUserListsPublicCached(username: string) {
+async function loadUserListsCached(username: string, isOwnerView: boolean) {
   'use cache';
   cacheTag(userListsTag(username));
   cacheLife('homeSection');
 
-  const listService = ListService.init();
-  return listService.getUserLists({ username });
-}
-
-async function loadUserListsOwnerCached(username: string) {
-  'use cache';
-  cacheTag(userListsTag(username));
-  cacheLife('homeSection');
-
-  const owner = await getUserCached(username);
+  const owner = await getUser(username);
   if (!owner) return [];
 
-  const listService = ListService.initUser(owner);
-  return listService.getUserLists({ username });
+  return ListService.initUser(isOwnerView ? owner : null).getUserLists({
+    username,
+    owner,
+  });
 }
 
 async function loadProfileMatchesCached(viewerUsername: string, ownerUsername: string) {
@@ -112,12 +104,13 @@ export async function loadUserProfile(username: string): Promise<UserProfilePage
   if (!owner) notFound();
 
   const isOwner = viewer?.id === owner.id;
+  const shouldLoadMatches = Boolean(viewer && !isOwner && viewer.username);
 
   const [lists, achievements, matches] = await Promise.all([
-    isOwner ? loadUserListsOwnerCached(username) : loadUserListsPublicCached(username),
+    loadUserListsCached(username, isOwner),
     loadUserAchievementsCached(username, owner),
-    viewer && !isOwner && viewer.username
-      ? loadProfileMatchesCached(viewer.username, username)
+    shouldLoadMatches
+      ? loadProfileMatchesCached(viewer!.username!, username)
       : Promise.resolve({ seek: {}, trade: {} } as ProfileListMatches),
   ]);
 

@@ -1,16 +1,17 @@
-import { ItemData, ListItemInfo, SearchFilters, User, UserList } from '@types';
+import { ItemData, SearchFilters, User, UserList } from '@types';
 import { CheckAuth } from '@utils/googleCloud';
 import prisma from '@utils/prisma';
 import { NextApiRequest } from 'next';
 import { syncDynamicList } from '../pages/api/v1/lists/[username]/[list_id]/dynamic';
 import { createListSlug } from '../pages/api/v1/lists/[username]';
-import { ListItems, UserList as RawList, User as RawUser } from '@prisma/generated/client';
-import { startOfDay } from 'date-fns';
+import { UserList as RawList } from '@prisma/generated/client';
 import { doSearch } from '../pages/api/v1/search';
 import { sortListItems } from '@utils/utils';
 import { getManyItems } from '../pages/api/v1/items/many';
 import { defaultFilters } from '@utils/parseFilters';
-import { tz } from '@date-fns/tz';
+import { queryUserLists, type GetUserListsOptions } from '@services/userListsQuery';
+import { rawToList, rawToListItems } from '@services/listMappers';
+export { rawToList, rawToListItems } from '@services/listMappers';
 
 export class ListService {
   user: User | null = null;
@@ -101,61 +102,10 @@ export class ListService {
   }
 
   async getUserLists(params: GetUserListsParams) {
-    const { username, limit = -1, officialTag, includeItems = false } = params;
-    const isOfficial = username === 'official';
-
-    const listsRaw = await prisma.userList.findMany({
-      where: !isOfficial
-        ? {
-            visibility: this.user?.username === username ? undefined : 'public',
-            user: {
-              username: username,
-            },
-          }
-        : {
-            official: true,
-            official_tag: officialTag
-              ? {
-                  contains: officialTag,
-                }
-              : undefined,
-          },
-      include: {
-        user: true,
-        ...(includeItems
-          ? { items: true }
-          : {
-              _count: {
-                select: {
-                  items: {
-                    where: {
-                      isHidden: false,
-                    },
-                  },
-                },
-              },
-            }),
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: limit > 0 ? limit : undefined,
+    return queryUserLists({
+      ...params,
+      viewerId: this.user?.id ?? null,
     });
-
-    if (!listsRaw || listsRaw.length === 0) return [];
-
-    const lists: UserList[] = listsRaw
-      .map((list) => rawToList(list, list.user, includeItems))
-      .sort((a, b) =>
-        isOfficial
-          ? new Date(b.createdAt) < new Date(a.createdAt)
-            ? -1
-            : 1
-          : (a.order ?? 0) - (b.order ?? 0) ||
-            (new Date(b.updatedAt) < new Date(a.updatedAt) ? -1 : 1)
-      );
-
-    return lists;
   }
 
   async getOfficialListsCat(tag: string, limit = 15) {
@@ -304,12 +254,7 @@ type GetListParams = {
   skipSync?: boolean;
 };
 
-type GetUserListsParams = {
-  username: string;
-  limit?: number;
-  officialTag?: string;
-  includeItems?: boolean;
-};
+type GetUserListsParams = Omit<GetUserListsOptions, 'viewerId'>;
 
 const toListIdAndSlug = (list_id_or_slug: string | number) => {
   if (typeof list_id_or_slug === 'number' || /^\d+$/.test(list_id_or_slug)) {
@@ -317,93 +262,4 @@ const toListIdAndSlug = (list_id_or_slug: string | number) => {
   } else {
     return { listId: undefined, listSlug: String(list_id_or_slug) };
   }
-};
-
-type RequiredUser = {
-  id: string;
-  username: string;
-  neo_user: string;
-  last_login: string;
-};
-
-export const rawToList = (
-  listRaw: RawList & { items?: ListItems[]; _count?: { items: number } },
-  owner: RawUser | User | RequiredUser,
-  includeItems = false
-): UserList => {
-  const itemCount =
-    listRaw.items !== undefined
-      ? listRaw.items.filter((x) => !x.isHidden).length
-      : (listRaw._count?.items ?? -1);
-
-  return {
-    internal_id: listRaw.internal_id,
-    name: listRaw.name,
-    description: listRaw.description,
-    coverURL: listRaw.cover_url,
-    colorHex: listRaw.colorHex,
-    purpose: listRaw.purpose,
-    official: !!listRaw.official,
-    visibility: listRaw.visibility,
-
-    owner: {
-      id: owner.id,
-      username: owner.username,
-      neopetsUser: (owner as RequiredUser)?.neo_user ?? (owner as User).neopetsUser,
-      lastSeen: startOfDay((owner as RequiredUser).last_login ?? (owner as User).lastLogin, {
-        in: tz('America/Los_Angeles'),
-      }).toJSON(),
-    },
-
-    createdAt: listRaw.createdAt.toJSON(),
-    updatedAt: listRaw.updatedAt.toJSON(),
-
-    sortBy: listRaw.sortBy,
-    sortDir: listRaw.sortDir,
-    order: listRaw.order ?? 0,
-
-    dynamicType: listRaw.dynamicType,
-    lastSync: listRaw.lastSync?.toJSON() ?? null,
-    linkedListId: listRaw.linkedListId ?? null,
-    canBeLinked: !!(listRaw.official || listRaw.canBeLinked),
-
-    officialTag: splitOfficialTag(listRaw.official_tag),
-    userTag: listRaw.listUserTag ?? null,
-
-    itemCount: itemCount,
-
-    slug: listRaw.slug,
-    seriesType: listRaw.seriesType,
-    seriesStart: listRaw.seriesStart?.toJSON() ?? null,
-    seriesEnd: listRaw.seriesEnd?.toJSON() ?? null,
-
-    highlight: listRaw.highlight ?? null,
-    highlightText: listRaw.highlightText ?? null,
-
-    itemInfo: !includeItems ? [] : rawToListItems(listRaw.items ?? []),
-  };
-};
-
-const splitOfficialTag = (officialTag: string | null) =>
-  officialTag
-    ?.split(',')
-    .map((tag) => tag.trim())
-    .filter(Boolean) ?? [];
-
-export const rawToListItems = (items: ListItems[]): ListItemInfo[] => {
-  return items.map((item) => ({
-    internal_id: item.internal_id,
-    list_id: item.list_id,
-    item_iid: item.item_iid,
-    addedAt: new Date(item.addedAt).toJSON(),
-    updatedAt: new Date(item.updatedAt).toJSON(),
-    amount: item.amount,
-    capValue: item.capValue,
-    imported: !!item.imported,
-    order: item.order,
-    isHighlight: !!item.isHighlight,
-    isHidden: !!item.isHidden,
-    seriesStart: item.seriesStart ? new Date(item.seriesStart).toJSON() : null,
-    seriesEnd: item.seriesEnd ? new Date(item.seriesEnd).toJSON() : null,
-  }));
 };
