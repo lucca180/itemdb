@@ -4,6 +4,8 @@ import { isValidLocale } from '../../../../../utils/locales';
 import prisma from '../../../../../utils/prisma';
 import { getImagePalette } from '../../lists/[username]';
 import { rawToUser } from '../../../auth/login';
+import { userAchievementsTag, userListsTag, userProfileTag } from '@utils/appCacheTags';
+import { triggerAppRevalidation } from '@utils/triggerAppRevalidation';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -105,6 +107,15 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         'Set-Cookie',
         `NEXT_LOCALE=${updatedUser.prefLang};Path=/;Max-Age=2147483647;SameSite=None;Secure;`
       );
+
+    const profileUsername = updatedUser.username ?? username;
+    await triggerAppRevalidation({
+      tags: [
+        userProfileTag(profileUsername),
+        userAchievementsTag(profileUsername),
+        userListsTag(profileUsername),
+      ],
+    });
 
     return res.json(updatedUser);
   } catch (e: any) {

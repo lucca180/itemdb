@@ -6,6 +6,8 @@ import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 import { slugify } from '../../../../../utils/utils';
 import { ListService } from '@services/ListService';
+import { userListsTag } from '@utils/appCacheTags';
+import { triggerAppRevalidation } from '@utils/triggerAppRevalidation';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -112,6 +114,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       },
     });
 
+    await triggerAppRevalidation({ tags: [userListsTag(username as string)] });
+
     return res.status(200).json({ success: true, message: list });
   } catch (e: any) {
     console.error(e);
@@ -143,6 +147,8 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
         official: user.isAdmin ? undefined : false,
       },
     });
+
+    await triggerAppRevalidation({ tags: [userListsTag(username as string)] });
 
     return res.status(200).json({ success: true, message: result });
   } catch (e: any) {
@@ -180,6 +186,8 @@ const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
     );
 
     const result = await prisma.$transaction(updateLists);
+
+    await triggerAppRevalidation({ tags: [userListsTag(username)] });
 
     return res.status(200).json({ success: true, message: result });
   } catch (e: any) {

@@ -51,7 +51,39 @@ export type ItemSectionCacheTag = `item-${number}-${ItemPageCacheScope}`;
 
 export type ItemScopedCacheTag = ItemRootCacheTag | ItemSectionCacheTag;
 
-export type AppCacheTag = HomeCacheTag | ItemScopedCacheTag;
+export type UserProfileCacheTag = `user-profile-${string}`;
+export type UserAchievementsCacheTag = `user-achievements-${string}`;
+export type UserListsCacheTag = `user-lists-${string}`;
+export type UserMatchesCacheTag = `user-matches-${string}-${string}`;
+
+export type UserListsPageCacheTag =
+  | UserProfileCacheTag
+  | UserAchievementsCacheTag
+  | UserListsCacheTag
+  | UserMatchesCacheTag;
+
+export type AppCacheTag = HomeCacheTag | ItemScopedCacheTag | UserListsPageCacheTag;
+
+export function userProfileTag(username: string): UserProfileCacheTag {
+  return `user-profile-${username}`;
+}
+
+export function userAchievementsTag(username: string): UserAchievementsCacheTag {
+  return `user-achievements-${username}`;
+}
+
+export function userListsTag(username: string): UserListsCacheTag {
+  return `user-lists-${username}`;
+}
+
+export function userMatchesTag(viewerUsername: string, ownerUsername: string): UserMatchesCacheTag {
+  return `user-matches-${viewerUsername}-${ownerUsername}`;
+}
+
+const USER_PROFILE_TAG_PATTERN = /^user-profile-[a-zA-Z0-9_]+$/;
+const USER_ACHIEVEMENTS_TAG_PATTERN = /^user-achievements-[a-zA-Z0-9_]+$/;
+const USER_LISTS_TAG_PATTERN = /^user-lists-[a-zA-Z0-9_]+$/;
+const USER_MATCHES_TAG_PATTERN = /^user-matches-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+$/;
 
 export function itemRootTag(internalId: number): ItemRootCacheTag {
   return `item-${internalId}`;
@@ -139,6 +171,15 @@ export function isAppCacheTag(tag: string): tag is AppCacheTag {
   const sectionMatch = tag.match(ITEM_SECTION_TAG_PATTERN);
   if (sectionMatch) {
     return (ITEM_PAGE_CACHE_SCOPES as readonly string[]).includes(sectionMatch[2]);
+  }
+
+  if (
+    USER_PROFILE_TAG_PATTERN.test(tag) ||
+    USER_ACHIEVEMENTS_TAG_PATTERN.test(tag) ||
+    USER_LISTS_TAG_PATTERN.test(tag) ||
+    USER_MATCHES_TAG_PATTERN.test(tag)
+  ) {
+    return true;
   }
 
   return false;

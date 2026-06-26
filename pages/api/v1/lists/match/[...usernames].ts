@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { ListItemInfo } from '../../../../../types';
+import { ListItemInfo, User } from '../../../../../types';
 import { CheckAuth } from '../../../../../utils/googleCloud';
 import prisma from '../../../../../utils/prisma';
 
@@ -19,10 +19,15 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   const [seeker, offerer] = usernames;
   try {
-    const listMatch = await getListMatch(
+    let viewer: User | null = null;
+    try {
+      viewer = (await CheckAuth(req)).user ?? null;
+    } catch (e) {}
+
+    const listMatch = await getListMatchWithViewer(
       seeker as string,
       offerer as string,
-      req,
+      viewer,
       list_id ? (list_id as string) : undefined
     );
 
@@ -33,17 +38,27 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 }
 
+/** @deprecated Prefer `getListMatchWithViewer` — kept for existing imports. */
 export const getListMatch = async (
   seeker: string,
   offerer: string,
   req: NextApiRequest,
   list_id?: string | number
 ) => {
-  let requestUser = null;
-
+  let viewer: User | null = null;
   try {
-    requestUser = (await CheckAuth(req)).user;
+    viewer = (await CheckAuth(req)).user ?? null;
   } catch (e) {}
+
+  return getListMatchWithViewer(seeker, offerer, viewer, list_id);
+};
+
+export const getListMatchWithViewer = async (
+  seeker: string,
+  offerer: string,
+  requestUser: User | null,
+  list_id?: string | number
+) => {
   const offerer_res = await prisma.user.findUnique({
     where: {
       username: offerer as string,
