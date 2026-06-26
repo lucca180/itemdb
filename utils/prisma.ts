@@ -2,15 +2,17 @@ import { PrismaClient } from '@prisma/generated/client';
 import { createPrismaAdapter } from '@utils/mariadbAdapter';
 import type { PrismaMariaDb } from '@prisma/adapter-mariadb';
 
-const globalForPrisma = global as unknown as {
-  prisma: PrismaClient;
-  adapter: PrismaMariaDb;
+// Next.js may bundle prisma into separate server chunks (app, ssr, pages/api);
+// globalThis ensures one adapter + client per process across those chunks.
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+  adapter: PrismaMariaDb | undefined;
 };
 
-const adapter = globalForPrisma.adapter || createPrismaAdapter(process.env.DATABASE_URL || '');
+const adapter = globalForPrisma.adapter ?? createPrismaAdapter(process.env.DATABASE_URL || '');
 
 const prisma =
-  globalForPrisma.prisma ||
+  globalForPrisma.prisma ??
   new PrismaClient({
     adapter,
     transactionOptions: {
@@ -19,11 +21,7 @@ const prisma =
     },
   });
 
-// const prisma = globalForPrisma.prisma || new PrismaClient();
-
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma;
-  globalForPrisma.adapter = adapter;
-}
+globalForPrisma.adapter = adapter;
+globalForPrisma.prisma = prisma;
 
 export default prisma;
