@@ -40,7 +40,7 @@ export const getDyeworksData = async (item: ItemData): Promise<DyeworksData | nu
 
   const search = await doSearch(
     notDyeworksName,
-    { ...defaultFilters, limit: 1000, mode: 'boolean' },
+    { ...defaultFilters, limit: 1000, mode: 'natural' },
     false
   );
   if (!search.content.length) return null;
