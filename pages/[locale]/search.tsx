@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import {
   Box,
   // Button,
@@ -336,10 +337,16 @@ const SearchPage = (props: SearchPageProps) => {
     selectItem(id);
   };
 
+  const pageTitle = props.userList
+    ? `${props.userList.name} - ${t('Lists.neopets-lists')}`
+    : router.query.s
+      ? `${router.query.s as string} - ${t('Search.search')}`
+      : t('Search.search');
+
   return (
     <Layout
       SEO={{
-        title: PageTitle(router.query.s as string, props.userList),
+        title: pageTitle,
         canonical: 'https://itemdb.com.br/search',
         noindex: true,
         nofollow: true,
@@ -695,13 +702,4 @@ const SpecialListSearch = (props: { userList: UserList }) => {
       </Text>
     </Flex>
   );
-};
-
-const PageTitle = (query: string, userList?: UserList | null) => {
-  const t = useTranslations();
-
-  if (userList) return `${userList.name} - ${t('Lists.neopets-lists')}`;
-  if (query) return `${query} - ${t('Search.search')}`;
-
-  return t('Search.search');
 };
