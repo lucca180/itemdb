@@ -1,5 +1,5 @@
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
-import type { PoolConfig } from 'mariadb';
+import type { Pool, PoolConfig } from 'mariadb';
 
 const POOL_OPTION_KEYS = [
   'connectionLimit',
@@ -46,6 +46,30 @@ function parsePoolOverrides(searchParams: URLSearchParams): Partial<PoolConfig> 
   return overrides;
 }
 
+export type MariaDbPoolStats = {
+  active: number;
+  idle: number;
+  total: number;
+  queued: number;
+  max: number;
+};
+
+let cachedMariaDbPool: Pool | null = null;
+let cachedConnectionLimit: number = MARIADB_POOL_DEFAULTS_PRODUCTION.connectionLimit;
+
+/** Snapshot of the process mariadb pool (active / queued / max, etc.). */
+export function getMariaDbPoolStats(): MariaDbPoolStats | null {
+  if (!cachedMariaDbPool || cachedMariaDbPool.closed) return null;
+
+  return {
+    active: cachedMariaDbPool.activeConnections(),
+    idle: cachedMariaDbPool.idleConnections(),
+    total: cachedMariaDbPool.totalConnections(),
+    queued: cachedMariaDbPool.taskQueueSize(),
+    max: cachedConnectionLimit,
+  };
+}
+
 /** Builds a mariadb `PoolConfig` from `DATABASE_URL` plus code defaults (not URL query params). */
 export function buildMariaDbPoolConfig(databaseUrl: string): PoolConfig | string {
   if (!databaseUrl) return databaseUrl;
@@ -70,5 +94,20 @@ export function buildMariaDbPoolConfig(databaseUrl: string): PoolConfig | string
 }
 
 export function createPrismaAdapter(databaseUrl: string): PrismaMariaDb {
-  return new PrismaMariaDb(buildMariaDbPoolConfig(databaseUrl));
+  const config = buildMariaDbPoolConfig(databaseUrl);
+
+  if (typeof config !== 'string' && typeof config.connectionLimit === 'number') {
+    cachedConnectionLimit = config.connectionLimit;
+  }
+
+  const adapter = new PrismaMariaDb(config);
+  const connect = adapter.connect.bind(adapter);
+
+  adapter.connect = async () => {
+    const connected = await connect();
+    cachedMariaDbPool = connected.underlyingDriver();
+    return connected;
+  };
+
+  return adapter;
 }
