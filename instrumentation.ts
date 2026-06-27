@@ -1,35 +1,4 @@
 import * as Sentry from '@sentry/nextjs';
-import type { TransactionEvent } from '@sentry/core';
-import { getMariaDbPoolStats } from '@utils/mariadbAdapter';
-
-function attachMariaDbPoolToTransaction(
-  event: TransactionEvent
-  // _hint: EventHint
-): TransactionEvent {
-  const hasDbSpan = event.spans?.some((span) => span.op === 'db');
-  if (!hasDbSpan) return event;
-
-  const pool = getMariaDbPoolStats();
-  if (!pool) return event;
-
-  event.contexts = {
-    ...event.contexts,
-    mariadb_pool: {
-      ...pool,
-      summary: `${pool.active} active ${pool.queued} queued ${pool.max} max`,
-    },
-  };
-  event.tags = {
-    ...event.tags,
-    'mariadb.pool.active': String(pool.active),
-    'mariadb.pool.idle': String(pool.idle),
-    'mariadb.pool.queued': String(pool.queued),
-    'mariadb.pool.total': String(pool.total),
-    'mariadb.pool.max': String(pool.max),
-  };
-
-  return event;
-}
 
 export function register() {
   const SENTRY_DSN = process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN;
@@ -54,7 +23,6 @@ export function register() {
             levels: ['error'],
           }),
         ],
-        beforeSendTransaction: attachMariaDbPoolToTransaction,
       });
     } else {
       Sentry.init({
