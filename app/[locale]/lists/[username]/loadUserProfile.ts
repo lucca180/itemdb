@@ -15,6 +15,7 @@ import {
   userMatchesTag,
   userProfileTag,
 } from '@utils/appCacheTags';
+
 export type ProfileListMatches = {
   seek: { [list_id: number]: ListItemInfo[] };
   trade: { [list_id: number]: ListItemInfo[] };
@@ -24,7 +25,7 @@ export function countProfileMatchItems(matches: ProfileListMatches, key: 'seek' 
   return new Set(Object.values(matches[key]).flat()).size;
 }
 
-export type UserProfilePageData = {
+export type ProfileData = {
   owner: User;
   viewer: User | null;
   isOwner: boolean;
@@ -33,7 +34,18 @@ export type UserProfilePageData = {
   matches: ProfileListMatches;
 };
 
-async function getUserCachedData(username: string) {
+export type ProfileCore = {
+  owner: User;
+  viewer: User | null;
+  isOwner: boolean;
+};
+
+export type ProfileListData = {
+  lists: UserList[];
+  matches: ProfileListMatches;
+};
+
+async function fetchUser(username: string) {
   'use cache';
   cacheTag(userProfileTag(username));
   cacheLife('homeSection');
@@ -41,9 +53,9 @@ async function getUserCachedData(username: string) {
   return getUser(username);
 }
 
-const getUserCached = cache(getUserCachedData);
+const getUserCached = cache(fetchUser);
 
-async function loadUserAchievementsCached(username: string, owner: User) {
+async function fetchAchievements(username: string, owner: User) {
   'use cache';
   cacheTag(userAchievementsTag(username));
   cacheLife('homeSlow');
@@ -51,12 +63,14 @@ async function loadUserAchievementsCached(username: string, owner: User) {
   return (await getUserAchievements(owner)) ?? [];
 }
 
-async function loadUserListsCached(username: string, isOwnerView: boolean) {
+const getAchievementsCached = cache(fetchAchievements);
+
+async function fetchLists(username: string, isOwnerView: boolean) {
   'use cache';
   cacheTag(userListsTag(username));
   cacheLife('homeSection');
 
-  const owner = await getUser(username);
+  const owner = await getUserCached(username);
   if (!owner) return [];
 
   return ListService.initUser(isOwnerView ? owner : null).getUserLists({
@@ -65,7 +79,9 @@ async function loadUserListsCached(username: string, isOwnerView: boolean) {
   });
 }
 
-async function loadProfileMatchesCached(viewerUsername: string, ownerUsername: string) {
+const getListsCached = cache(fetchLists);
+
+async function fetchMatches(viewerUsername: string, ownerUsername: string) {
   'use cache';
   cacheTag(userMatchesTag(viewerUsername, ownerUsername));
   cacheLife('itemFast');
@@ -95,7 +111,9 @@ async function loadProfileMatchesCached(viewerUsername: string, ownerUsername: s
   }
 }
 
-export async function loadUserProfile(username: string): Promise<UserProfilePageData> {
+const getMatchesCached = cache(fetchMatches);
+
+async function resolveProfileCore(username: string): Promise<ProfileCore> {
   const [{ user: viewer }, owner] = await Promise.all([
     getServerCurrentUser(),
     getUserCached(username),
@@ -103,18 +121,63 @@ export async function loadUserProfile(username: string): Promise<UserProfilePage
 
   if (!owner) notFound();
 
-  const isOwner = viewer?.id === owner.id;
-  const shouldLoadMatches = Boolean(viewer && !isOwner && viewer.username);
-
-  const [lists, achievements, matches] = await Promise.all([
-    loadUserListsCached(username, isOwner),
-    loadUserAchievementsCached(username, owner),
-    shouldLoadMatches
-      ? loadProfileMatchesCached(viewer!.username!, username)
-      : Promise.resolve({ seek: {}, trade: {} } as ProfileListMatches),
-  ]);
-
-  return { owner, viewer, isOwner, lists, achievements, matches };
+  return { owner, viewer, isOwner: viewer?.id === owner.id };
 }
 
-export const loadUserProfileRequest = cache(loadUserProfile);
+export const getProfileCore = cache(resolveProfileCore);
+
+async function resolveAchievements(username: string): Promise<UserAchievement[]> {
+  const owner = await getUserCached(username);
+  if (!owner) return [];
+
+  return getAchievementsCached(username, owner);
+}
+
+export const getAchievements = cache(resolveAchievements);
+
+async function resolveLists(username: string, isOwner: boolean): Promise<UserList[]> {
+  return getListsCached(username, isOwner);
+}
+
+export const getLists = cache(resolveLists);
+
+async function resolveMatches(
+  ownerUsername: string,
+  viewerUsername: string | undefined,
+  isOwner: boolean
+): Promise<ProfileListMatches> {
+  if (!viewerUsername || isOwner) {
+    return { seek: {}, trade: {} } as ProfileListMatches;
+  }
+
+  return getMatchesCached(viewerUsername, ownerUsername);
+}
+
+export const getMatches = cache(resolveMatches);
+
+async function resolveListData(
+  username: string,
+  isOwner: boolean,
+  viewerUsername: string | undefined
+): Promise<ProfileListData> {
+  const [lists, matches] = await Promise.all([
+    getLists(username, isOwner),
+    getMatches(username, viewerUsername, isOwner),
+  ]);
+
+  return { lists, matches };
+}
+
+export const getListData = cache(resolveListData);
+
+async function resolveProfile(username: string): Promise<ProfileData> {
+  const core = await getProfileCore(username);
+  const [listData, achievements] = await Promise.all([
+    getListData(username, core.isOwner, core.viewer?.username ?? undefined),
+    getAchievements(username),
+  ]);
+
+  return { ...core, ...listData, achievements };
+}
+
+export const getProfile = cache(resolveProfile);
