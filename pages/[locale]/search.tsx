@@ -58,12 +58,18 @@ installProofInterceptor(itemdb);
 itemdb.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.code === 'ERR_CANCELED') {
-      return Promise.reject({ status: 499 });
+    if (axios.isCancel(error)) {
+      return Promise.reject(error);
     }
-    return Promise.reject((error.response && error.response.data) || 'Error');
+    const data = error.response?.data;
+    if (data) return Promise.reject(data);
+    return Promise.reject(new Error(error.message || 'Request failed'));
   }
 );
+
+const ignoreCanceledSearchRequest = (error: unknown) => {
+  if (!axios.isCancel(error)) console.error(error);
+};
 
 const color = Color('#4A5568');
 const rgb = color.rgb().round().array();
@@ -156,57 +162,56 @@ const SearchPage = (props: SearchPageProps) => {
     if (fetchStats) setStatus(null);
     if (fetchCount) setTotalResults(null);
 
-    try {
-      ABORT_CONTROLLER.abort();
-      ABORT_CONTROLLER = new AbortController();
+    ABORT_CONTROLLER.abort();
+    ABORT_CONTROLLER = new AbortController();
 
-      if (fetchCount) {
-        itemdb
-          .get('search', {
-            signal: ABORT_CONTROLLER.signal,
-            params: {
-              ...params,
-              s: query,
-              limit: 1,
-              onlyStats: true,
-            },
-            headers: {
-              'x-itemdb-list-jwt': props.listJWT ?? undefined,
-            },
-          })
-          .then((res) => setTotalResults(res.data.totalResults))
-          .catch();
-      }
+    const signal = ABORT_CONTROLLER.signal;
+    const headers = { 'x-itemdb-list-jwt': props.listJWT ?? undefined };
 
-      if (fetchStats) {
-        itemdb
-          .get('search/stats', {
-            signal: ABORT_CONTROLLER.signal,
-            params: {
-              s: query,
-              list_id: params.list_id,
-            },
-            headers: {
-              'x-itemdb-list-jwt': props.listJWT ?? undefined,
-            },
-          })
-          .then((res) => setStatus(res.data));
-      }
-
+    if (fetchCount) {
       itemdb
         .get('search', {
-          signal: ABORT_CONTROLLER.signal,
+          signal,
           params: {
             ...params,
-            skipStats: true,
             s: query,
+            limit: 1,
+            onlyStats: true,
           },
-          headers: {
-            'x-itemdb-list-jwt': props.listJWT ?? undefined,
-          },
+          headers,
         })
-        .then((res) => setResult(res.data));
+        .then((res) => setTotalResults(res.data.totalResults))
+        .catch(ignoreCanceledSearchRequest);
+    }
+
+    if (fetchStats) {
+      itemdb
+        .get('search/stats', {
+          signal,
+          params: {
+            s: query,
+            list_id: params.list_id,
+          },
+          headers,
+        })
+        .then((res) => setStatus(res.data))
+        .catch(ignoreCanceledSearchRequest);
+    }
+
+    try {
+      const res = await itemdb.get('search', {
+        signal,
+        params: {
+          ...params,
+          skipStats: true,
+          s: query,
+        },
+        headers,
+      });
+      setResult(res.data);
     } catch (err) {
+      if (axios.isCancel(err)) return;
+
       toast({
         id: 'search-error',
         title: t('General.an-error-occurred'),
