@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import {
@@ -40,16 +39,21 @@ export function ItemEffectsPageClient({ labels }: ItemEffectsPageClientProps) {
     activeStats: string
   ) => {
     setIsLoading(true);
-    const res = await axios.get(`/api/v1/items/effects`, {
-      params: {
-        field: activeField,
-        page: newPage,
-        limit: LIMIT_PER_PAGE,
-        name: activeField === 'stats' && activeStats !== 'all' ? activeStats : undefined,
-      },
-    });
-    setItems(res.data);
-    setIsLoading(false);
+    try {
+      const res = await axios.get(`/api/v1/items/effects`, {
+        params: {
+          field: activeField,
+          page: newPage,
+          limit: LIMIT_PER_PAGE,
+          name: activeField === 'stats' && activeStats !== 'all' ? activeStats : undefined,
+        },
+      });
+      setItems(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {

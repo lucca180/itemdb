@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+ 
 'use client';
 
 import {
@@ -33,11 +33,16 @@ export function MissingInfoPageClient({ labels }: MissingInfoPageClientProps) {
 
   const fetchItems = async (newPage: number, activeField: MissingInfoField) => {
     setIsLoading(true);
-    const res = await axios.get(`/api/v1/items/missing`, {
-      params: { field: activeField, page: newPage },
-    });
-    setItems(res.data);
-    setIsLoading(false);
+    try {
+      const res = await axios.get(`/api/v1/items/missing`, {
+        params: { field: activeField, page: newPage },
+      });
+      setItems(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {

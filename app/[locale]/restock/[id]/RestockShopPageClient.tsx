@@ -70,18 +70,24 @@ export function RestockShopPageClient({
         })
         .then((res) => {
           setStats(res.data);
-        });
+        })
+        .catch(console.error);
     }
 
-    const res = await axios.get('/api/v1/search', {
-      params: {
-        ...getFiltersDiff(shopFilters),
-        skipStats: true,
-      },
-    });
+    try {
+      const res = await axios.get('/api/v1/search', {
+        params: {
+          ...getFiltersDiff(shopFilters),
+          skipStats: true,
+        },
+      });
 
-    setItemList(res.data.content);
-    setLoading(false);
+      setItemList(res.data.content);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleFilterChange = () => {
@@ -102,13 +108,13 @@ export function RestockShopPageClient({
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- migrated from Pages Router init on shop change
+     
     resetFilters(true);
   }, [shopInfo.id]);
 
   useEffect(() => {
     if (initialItems.length === itemList.length) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- filter list when search or items change
+     
     handleFilterChange();
   }, [itemSearch, itemList]);
 
@@ -129,25 +135,30 @@ export function RestockShopPageClient({
 
   const applyFilters = async (newFilters: SearchFilters) => {
     setLoading(true);
-    const res = await axios.get('/api/v1/search', {
-      params: {
-        ...getFiltersDiff(newFilters),
-        skipStats: true,
-      },
-    });
+    try {
+      const res = await axios.get('/api/v1/search', {
+        params: {
+          ...getFiltersDiff(newFilters),
+          skipStats: true,
+        },
+      });
 
-    const data = res.data as SearchResults;
-    const searchResult = data.content
-      .filter((item) =>
-        itemSearch ? item.name.toLowerCase().includes(itemSearch.toLowerCase()) : true
-      )
-      .sort((a, b) => sortItems(a, b, sortInfo.sortBy, sortInfo.sortDir));
+      const data = res.data as SearchResults;
+      const searchResult = data.content
+        .filter((item) =>
+          itemSearch ? item.name.toLowerCase().includes(itemSearch.toLowerCase()) : true
+        )
+        .sort((a, b) => sortItems(a, b, sortInfo.sortBy, sortInfo.sortDir));
 
-    setFilteredItems(searchResult);
-    setItemList(data.content);
-    setFiltered(true);
-    setLoading(false);
-    onClose();
+      setFilteredItems(searchResult);
+      setItemList(data.content);
+      setFiltered(true);
+      onClose();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

@@ -326,7 +326,10 @@ const ListPage = (props: ListPageProps) => {
 
     const basePath = `/api/v1/lists/${newList.owner.username}/${newList.internal_id}`;
 
-    axios.get(`${basePath}/stats`).then((res) => setListStats(res.data));
+    axios
+      .get(`${basePath}/stats`)
+      .then((res) => setListStats(res.data))
+      .catch(console.error);
     const [itemInfoRes, itemRes] = await Promise.all([
       axios.get(`${basePath}/items`),
       axios.get(`${basePath}/itemdata?asObject=true`),
@@ -397,23 +400,28 @@ const ListPage = (props: ListPageProps) => {
     }
     setLoading(true);
     setItemInfoIds([]);
-    const itemRes = await axios.get(
-      `/api/v1/lists/${list.owner.username}/${list.internal_id}/items`,
-      {
-        params,
-      }
-    );
+    try {
+      const itemRes = await axios.get(
+        `/api/v1/lists/${list.owner.username}/${list.internal_id}/items`,
+        {
+          params,
+        }
+      );
 
-    const itemInfoData = itemRes.data as ListItemInfo[];
+      const itemInfoData = itemRes.data as ListItemInfo[];
 
-    const { infoIds, itemMap } = getSortedItemInfo(itemInfoData, list, items);
+      const { infoIds, itemMap } = getSortedItemInfo(itemInfoData, list, items);
 
-    searchQuery.current = '';
-    setSearchItemInfoIds(null);
-    setItemSelect([]);
-    setItemInfoIds(infoIds);
-    setItemInfo(itemMap);
-    setLoading(false);
+      searchQuery.current = '';
+      setSearchItemInfoIds(null);
+      setItemSelect([]);
+      setItemInfoIds(infoIds);
+      setItemInfo(itemMap);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const toggleEdit = () => {

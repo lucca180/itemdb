@@ -15,7 +15,12 @@ if (isProd) {
     // Adjust this value in production, or use tracesSampler for greater control
     tracesSampleRate: 0.1,
     profileSessionSampleRate: 0.1,
-    ignoreErrors: ["Can't find variable: $", 'userscript.html', 'window.RufflePlayer.config'],
+    ignoreErrors: [
+      "Can't find variable: $",
+      'userscript.html',
+      'window.RufflePlayer.config',
+      'Connection closed.',
+    ],
     sampleRate: 0.8,
     tracePropagationTargets: [
       'localhost', // For local development
