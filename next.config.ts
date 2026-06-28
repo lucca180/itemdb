@@ -21,6 +21,7 @@ const nextConfig: NextConfig = {
   compress: false, // cloudflare does it for us
   productionBrowserSourceMaps: true,
   skipProxyUrlNormalize: true,
+  partialPrefetching: true,
   images: {
     qualities: [100, 90],
     remotePatterns: [

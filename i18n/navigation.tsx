@@ -3,6 +3,6 @@ import { routing } from './routing';
 
 const { Link: LinkRaw, redirect, usePathname, useRouter, getPathname } = createNavigation(routing);
 
-const Link = (props: any) => <LinkRaw {...props} prefetch={props.prefetch ?? false} />;
+const Link = (props: any) => <LinkRaw {...props} prefetch={props.prefetch ?? 'auto'} />;
 
 export { Link, redirect, usePathname, useRouter, getPathname };

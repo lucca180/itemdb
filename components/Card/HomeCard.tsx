@@ -228,7 +228,6 @@ export const HomeItem = ({
       >
         <Link asChild _hover={{ textDecoration: 'none' }} w="100%">
           <MainLink
-            prefetch={false}
             href={'/item/' + (item.slug ?? item.internal_id)}
             trackEvent={utm_content || undefined}
             trackEventLabel={item.slug || undefined}
