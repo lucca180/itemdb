@@ -141,7 +141,7 @@ const ItemCardBase = (props: ItemProps) => {
         ) : (
           <Link asChild _hover={{ textDecoration: 'none' }} outline={'none'}>
             <MainLink
-              prefetch={disablePrefetch !== false ? 'auto' : undefined}
+              prefetch={disablePrefetch !== false ? false : undefined}
               trackEvent={utm_content || undefined}
               trackEventLabel={item.slug || undefined}
               href={'/item/' + (item.slug ?? item.internal_id)}

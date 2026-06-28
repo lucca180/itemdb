@@ -35,7 +35,7 @@ const ShopCard = (props: Props) => {
     >
       <Box mt="-40px">
         <Link asChild _hover={{ textDecoration: 'none' }}>
-          <MainLink href={`/restock/${slugify(shop.name)}`}>
+          <MainLink href={`/restock/${slugify(shop.name)}`} prefetch={false}>
             <NextImage
               width={325}
               height={108.33}
@@ -48,7 +48,7 @@ const ShopCard = (props: Props) => {
       </Box>
       <Flex flexFlow={'column'} gap={3} justifyContent="center" flex="1" px={{ base: 2, md: 3 }}>
         <Link asChild _hover={{ textDecoration: 'none' }} display="block">
-          <MainLink href={`/restock/${slugify(shop.name)}`}>
+          <MainLink href={`/restock/${slugify(shop.name)}`} prefetch={false}>
             <Text textAlign={'center'} fontSize="xl" fontWeight={'bold'}>
               {shop.name}
             </Text>

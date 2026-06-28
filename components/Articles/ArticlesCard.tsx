@@ -24,7 +24,7 @@ export const ArticleCard = (props: Props) => {
           bg: `rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},.5)`,
         }}
       >
-        <MainLink href={`/articles/${article.slug}`}>
+        <MainLink prefetch={false} href={`/articles/${article.slug}`}>
           <Card.Root
             w={['150px', '200px']}
             h="100%"
@@ -70,7 +70,7 @@ export const ArticleCard = (props: Props) => {
         bg: `rgba(${rgb[0]},${rgb[1]}, ${rgb[2]},0.5)`,
       }}
     >
-      <MainLink href={`/articles/${article.slug}`}>
+      <MainLink prefetch={false} href={`/articles/${article.slug}`}>
         <Image
           src={article.thumbnail ?? '/logo.png'}
           alt="article thumbnail"

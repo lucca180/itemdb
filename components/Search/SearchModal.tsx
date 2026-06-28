@@ -768,7 +768,13 @@ const SearchItem = ({
           gap={3}
           _hover={{ bg: 'whiteAlpha.400' }}
         >
-          <Link href={`/item/${item.slug}`} aria-hidden tabIndex={-1} onClick={onClick}>
+          <Link
+            href={`/item/${item.slug}`}
+            prefetch={false}
+            aria-hidden
+            tabIndex={-1}
+            onClick={onClick}
+          >
             <Image
               src={item.image}
               alt=""
@@ -779,7 +785,7 @@ const SearchItem = ({
               aria-hidden
             />
           </Link>
-          <Link href={`/item/${item.slug}`} onClick={onClick}>
+          <Link href={`/item/${item.slug}`} prefetch={false} onClick={onClick}>
             <VStack alignItems={'flex-start'} gap={0}>
               {showLabel && (
                 <Text fontSize="xs" color="whiteAlpha.600">
@@ -883,7 +889,13 @@ const SearchShop = ({
       aria-selected={isFocus}
       _hover={{ bg: 'whiteAlpha.400' }}
     >
-      <Link href={`/restock/${slugify(shop.name)}`} aria-hidden tabIndex={-1} onClick={onClick}>
+      <Link
+        href={`/restock/${slugify(shop.name)}`}
+        prefetch={false}
+        aria-hidden
+        tabIndex={-1}
+        onClick={onClick}
+      >
         <Image
           src={'https://images.neopets.com/themes/h5/basic/images/v3/shop-icon.svg'}
           alt=""
@@ -893,7 +905,7 @@ const SearchShop = ({
           aria-hidden
         />
       </Link>
-      <Link href={`/restock/${slugify(shop.name)}`} onClick={onClick}>
+      <Link href={`/restock/${slugify(shop.name)}`} prefetch={false} onClick={onClick}>
         <VStack alignItems={'flex-start'} gap={0}>
           {showLabel && (
             <Text fontSize="xs" color="whiteAlpha.600">

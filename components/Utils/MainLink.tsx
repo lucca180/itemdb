@@ -11,7 +11,7 @@ export interface MainLinkProps {
   target?: HTMLAttributeAnchorTarget | undefined;
   className?: string;
   children: React.ReactNode;
-  prefetch?: boolean | string;
+  prefetch?: boolean;
   trackEvent?: string;
   trackEventLabel?: string;
   isExternal?: boolean;
@@ -81,7 +81,7 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
       );
     }
 
-    if (prefetch || typeof prefetch === 'undefined') {
+    if (prefetch) {
       return (
         <Link
           ref={ref}
@@ -90,7 +90,7 @@ const MainLink: React.FC<MainLinkProps> = React.forwardRef(
           href={internalPath}
           onClick={handleTracking}
           style={style}
-          prefetch={prefetch ?? 'auto'}
+          prefetch={prefetch}
         >
           {children}
         </Link>

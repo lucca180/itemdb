@@ -22,7 +22,7 @@ export function LatestArticleCard({ article, isNew }: LatestArticleCardProps) {
   } as CSSProperties;
 
   return (
-    <MainLink href={`/articles/${article.slug}`}>
+    <MainLink prefetch={false} href={`/articles/${article.slug}`}>
       <Flex
         p={3}
         gap={3}
