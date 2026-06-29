@@ -11,6 +11,7 @@ import { chunk } from 'lodash';
 import { isValidOptionalOwnerHash, isValidOwnerHash, withoutOwnerData } from '@utils/ownerHash';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
+const AUCTION_BATCH_SIZE = 5;
 type RestockAuction = Prisma.RestockAuctionHistoryCreateManyInput & { addToPriceProcess: boolean };
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
@@ -292,13 +293,17 @@ export const newCreatePriceProcessFlow = async (
 };
 
 const createPriceProcess = async (dataList: Prisma.PriceProcess2CreateManyInput[]) => {
-  const create = prisma.priceProcess2.createMany({
-    data: dataList,
-    skipDuplicates: true,
-  });
+  if (dataList.length === 0) return { count: 0 };
 
   try {
-    return await transactionRetry(() => create, 3);
+    return await transactionRetry(
+      () =>
+        prisma.priceProcess2.createMany({
+          data: dataList,
+          skipDuplicates: true,
+        }),
+      3
+    );
   } catch (e) {
     console.error('Create Price Process Error:', e);
     throw e;
@@ -306,13 +311,17 @@ const createPriceProcess = async (dataList: Prisma.PriceProcess2CreateManyInput[
 };
 
 const createRestockHistory = async (dataList: RestockAuction[]) => {
-  const create = prisma.restockAuctionHistory.createMany({
-    data: dataList.map(removePriceProcess),
-    skipDuplicates: true,
-  });
+  if (dataList.length === 0) return { count: 0 };
 
   try {
-    return await transactionRetry(() => create, 3);
+    return await transactionRetry(
+      () =>
+        prisma.restockAuctionHistory.createMany({
+          data: dataList.map(removePriceProcess),
+          skipDuplicates: true,
+        }),
+      3
+    );
   } catch (e) {
     console.error('Create Restock History Error:', e);
     throw e;
@@ -341,80 +350,135 @@ const processLastSeen = async (lastSeen: { [key: string]: { [id: number]: Date }
   }
 };
 
+const AUCTION_PRICE_PROCESS_LABELS = ['< 30 min', 'closed'];
+
+const shouldUpsertAuctionPrice = (auction: RestockAuction) =>
+  auction.addToPriceProcess &&
+  auction.price > 1_000_000 &&
+  AUCTION_PRICE_PROCESS_LABELS.some((label) => auction.otherInfo?.toLowerCase().includes(label));
+
 const newHandleAuction = async (dataList: RestockAuction[]) => {
+  if (dataList.length === 0) return;
+
   const sortedData = [...dataList].sort((a, b) => a.neo_id! - b.neo_id!);
 
-  const auctionData = sortedData.map((auction) =>
-    prisma.restockAuctionHistory.upsert({
-      where: {
-        type_neo_id: {
-          type: auction.type,
-          neo_id: auction.neo_id as number,
-        },
-      },
-      create: removePriceProcess(auction),
-      update: removePriceProcess(auction),
-    })
-  );
+  try {
+    await saveAuctionHistory(sortedData);
 
-  const filteredStr = ['< 30 min', 'closed'];
-  const filteredAuctions = sortedData.filter(
-    (x) => x.price > 1000000 && filteredStr.some((y) => x.otherInfo?.toLowerCase().includes(y))
-  );
+    await upsertFilteredAuctionPrices(sortedData.filter(shouldUpsertAuctionPrice));
+  } catch (e) {
+    console.error('Handle Auction Error:', e);
+    throw e;
+  }
+};
+
+const auctionHistorySql = (auctions: RestockAuction[]) => {
+  if (auctions.length === 0) return null;
+
+  const values = auctions.map((auction) => {
+    const row = removePriceProcess(auction);
+
+    return Prisma.sql`(
+      ${row.item_iid},
+      ${row.owner},
+      ${row.ownerHash},
+      ${row.type},
+      ${row.otherInfo},
+      ${row.stock ?? 1},
+      ${row.price},
+      ${row.addedAt ?? new Date()},
+      ${row.ip_address},
+      ${row.hash},
+      ${row.neo_id}
+    )`;
+  });
+
+  return Prisma.sql`
+    INSERT INTO RestockAuctionHistory (
+      item_iid,
+      owner,
+      ownerHash,
+      type,
+      otherInfo,
+      stock,
+      price,
+      addedAt,
+      ip_address,
+      hash,
+      neo_id
+    )
+    VALUES ${Prisma.join(values)}
+    ON DUPLICATE KEY UPDATE
+      item_iid   = VALUES(item_iid),
+      owner      = VALUES(owner),
+      ownerHash  = VALUES(ownerHash),
+      otherInfo  = VALUES(otherInfo),
+      stock      = VALUES(stock),
+      price      = VALUES(price),
+      addedAt    = VALUES(addedAt),
+      ip_address = VALUES(ip_address),
+      hash       = VALUES(hash)
+  `;
+};
+
+const saveAuctionHistory = async (auctions: RestockAuction[]) => {
+  if (auctions.length === 0) return;
+
+  for (const batch of chunk(auctions, AUCTION_BATCH_SIZE)) {
+    const query = auctionHistorySql(batch);
+    if (!query) continue;
+
+    await transactionRetry(() => prisma.$executeRaw(query), 3);
+  }
+};
+
+const upsertFilteredAuctionPrices = async (filteredAuctions: RestockAuction[]) => {
+  if (filteredAuctions.length === 0) return;
 
   const now = new Date();
   const isSold = (auction: RestockAuction) =>
     !auction.otherInfo?.includes('nobody') ? ', auctionSold' : '';
 
-  // we're using ip_address field to add more info than we should
-  // (adding a new column to PriceProcess2 is pain)
-  const upsertPriceProcess = filteredAuctions
-    .map((auction) =>
-      auction.addToPriceProcess
-        ? prisma.priceProcess2.upsert({
-            where: {
-              type_neo_id: {
-                type: 'auction',
-                neo_id: auction.neo_id as number,
-              },
-              item_iid: auction.item_iid,
-            },
-            create: {
-              owner: auction.owner,
-              ownerHash: auction.ownerHash,
-              stock: auction.stock,
-              price: auction.price,
-              ip_address: auction.ip_address + isSold(auction),
-              addedAt: auction.addedAt,
-              processed: false,
-              type: 'auction',
-              hash: auction.hash,
-              neo_id: auction.neo_id,
-              item_iid: auction.item_iid,
-            },
-            update: {
-              price: auction.price,
-              ownerHash: auction.ownerHash,
-              ip_address:
-                auction.ip_address + isSold(auction) + `, auctionUpdated(${now.getTime()})`,
-              addedAt: now,
-            },
-          })
-        : undefined
-    )
-    .filter((x) => x !== undefined);
+  await runBatched(filteredAuctions, (auction) =>
+    prisma.priceProcess2.upsert({
+      where: {
+        type_neo_id: {
+          type: 'auction',
+          neo_id: auction.neo_id as number,
+        },
+      },
+      create: {
+        owner: auction.owner,
+        ownerHash: auction.ownerHash,
+        stock: auction.stock,
+        price: auction.price,
+        ip_address: auction.ip_address + isSold(auction),
+        addedAt: auction.addedAt,
+        processed: false,
+        type: 'auction',
+        hash: auction.hash,
+        neo_id: auction.neo_id,
+        item_iid: auction.item_iid,
+      },
+      update: {
+        price: auction.price,
+        ownerHash: auction.ownerHash,
+        ip_address: auction.ip_address + isSold(auction) + `, auctionUpdated(${now.getTime()})`,
+        addedAt: now,
+      },
+    })
+  );
+};
 
-  try {
-    for (const batch of chunk(auctionData, 5)) {
-      await transactionRetry(() => prisma.$transaction(batch), 3);
-    }
+const runBatched = async <T>(
+  items: T[],
+  operation: (item: T) => Prisma.PrismaPromise<unknown>,
+  batchSize = AUCTION_BATCH_SIZE
+) => {
+  if (items.length === 0) return;
 
-    for (const batch of chunk(upsertPriceProcess, 5)) {
-      await transactionRetry(() => prisma.$transaction(batch), 3);
-    }
-  } catch (e) {
-    console.error('Handle Auction Error:', e);
-    throw e;
+  for (const batch of chunk(items, batchSize)) {
+    await transactionRetry(() => prisma.$transaction(batch.map((item) => operation(item))), 3);
   }
 };
 
@@ -482,7 +546,7 @@ const transactionRetry = async <T>(operation: () => Promise<T>, maxRetries = 3):
     try {
       return await operation();
     } catch (error: any) {
-      if (['P2002', 'P2034'].includes(error.code) && attempts < maxRetries - 1) {
+      if (['P2002', 'P2034', 'P2028'].includes(error.code) && attempts < maxRetries - 1) {
         attempts++;
         await exponentialBackoff(attempts);
       } else {
