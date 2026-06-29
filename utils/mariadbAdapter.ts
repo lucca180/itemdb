@@ -12,13 +12,13 @@ const POOL_OPTION_KEYS = [
 
 /**
  * Production pool defaults — sized for item-page preload bursts (~15 parallel queries)
- * with 3 PM2 workers (3 × 18 = 54 max connections per active deploy).
+ * with 3 PM2 workers (3 × 25 = 75 max connections per active deploy).
  */
 export const MARIADB_POOL_DEFAULTS_PRODUCTION = {
-  connectionLimit: 18,
+  connectionLimit: 25,
   acquireTimeout: 10_000,
-  idleTimeout: 900,
-  leakDetectionTimeout: 30_000,
+  idleTimeout: 600,
+  leakDetectionTimeout: 20_000,
 } as const satisfies Partial<PoolConfig>;
 
 /** Modest pool defaults for local `yarn dev` (single Node process). */
