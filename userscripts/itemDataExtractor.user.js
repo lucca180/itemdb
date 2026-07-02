@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      1.10.4
+// @version      2.0.0
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -11,9 +11,9 @@
 // @exclude      *://*.nc.neopets.com/*
 // @exclude      *://*images.neopets.com/*
 // @icon         https://itemdb.com.br/favicon.ico
-// @require      https://raw.githubusercontent.com/lucca180/itemdb/504cff75392e2a39a5aa6878fd87ac42f438e3c7/userscripts/hash.min.js#sha256-OR/o15BAHX1QDoCX/pOFJ/+cMrVqLuqbKQxdP0yW+vc=
+// @require      https://raw.githubusercontent.com/lucca180/itemdb/e7f790917a31289faa1299df1c8322ec0fa1b463/userscripts/hash.min.js#sha256-2qmelWPqbQQc5LCWqzH+/vzmsSj0ToxaNjeDi6h1l2s=
+// @require      https://itemdb.com.br/js/script-utils.js
 // @connect      itemdb.com.br
-// @connect      neopets.com
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -24,22 +24,18 @@
 // ==/UserScript==
 
 /* 
-We are loading an external script (@require) that is only used to generate the cryptographic hash 
-that ensures that the data sent to the server has not been altered.
+This script collects item and market data from neopets.com and sends it to itemdb.com.br
+Your personal data is NEVER collected and never sent to our servers. 
+None of the data collected can be used to identify you.
 
-This external script is accompanied by a SHA256 key. If any changes occur in this file, 
-its key will change, and if this userscript is not updated with the new key, 
-tampermonkey will not load the external script.
+We also load a hashing library to generate cryptographic hashes to ensure the data being sent is legit
+The code is obfuscated to prevent malicious actors from tampering with the script and sending fake data to our servers.
 
-This ensures that no one will modify this external script without your knowledge.
+You can learn more here - https://itemdb.com.br/contribute
+Privacy Policy - https://itemdb.com.br/privacy
 
-The code of the external script has been obfuscated to prevent malicious actors from 
-replicating the hash and inserting false information into the itemdb.
+PS: please don't edit this script otherwise it will not work :)
 */
-
-
-const originalOpen = window.XMLHttpRequest.prototype.open;
-const originalFetch = window.fetch;
 
 let resItemData = [];
 let dataSource = '';
@@ -56,11 +52,13 @@ function URLHas(string) {
   return hasWord;
 }
 
-const itemdb_script = function() {
+function itemdb_script() {
   if(typeof $ === 'undefined') return;
+  const hasher = new idb.HashCreator(this);
+  
   // Check if we are on the beta site
   const isBeta = !!$('#container__2020').length;
-
+  
   // Some variables we will need later
   const hasSSW = !!($('#ssw__2020').length || $('#sswmenu').length);
   let itemsObj = {};
@@ -90,8 +88,7 @@ const itemdb_script = function() {
     prevInventory = {};
   }
 
-  // this is used to convert shop ids to item categories
-  const shopIDToCategory={'1':'food','2':'magic item','3':'toy','4':'clothes','5':'grooming','7':'book','8':'collectable card','9':'battle magic','10':'defence magic','12':'gardening','13':'medicine','14':'candy','15':'baked','16':'healthy food','17':'gift','18':'smoothie','20':'tropical food','21':'island merchandise','22':'space food','23':'space battle','24':'space defence','25':'petpet','26':'robot petpet','27':'aquatic petpet','30':'spooky food','31':'spooky petpet','34':'coffee','35':'slushie','36':'ice crystal','37':'snow food','38':'faerie book','39':'faerie food','40':'faerie petpet','41':'furniture','42':'tyrannian food','43':'tyrannian furniture','44':'tyrannian petpet','45':'tyrannian weaponry','46':'hot dog','47':'pizza','48':'usuki doll','49':'desert food','50':'desert petpet','51':'desert scroll','53':'school','54':'desert weapon','55':'desert pottery','56':'medieval food','57':'medieval petpet','58':'stamp','59':'haunted weaponry','60':'spooky furniture','61':'wintery petpet','62':'jelly food','63':'refreshments','66':'kiko lake food','67':'kiko lake carpentry','68':'collectibles','69':'petpet supplies','70':'booktastic book','71':'kreludan furniture','72':'kreludan food','73':'meridell potion','74':'darigan toy','75':'faerie furniture','76':'roo island merchandise','77':'brightvale books','78':'brightvale scroll','79':'brightvale windows','80':'brightvale armour','81':'brightvale fruit','82':'brightvale motes','83':'brightvale potions','84':'instrument','85':'medical cures','86':'sea shells','87':'maractite weaponry','88':'maraquan petpets','89':'geraptiku petpet','90':'qasalan food','91':'qasalan weaponry','92':'qasalan tablets','93':'faerie weapon shop','94':'altadorian armour','95':'altadorian food','96':'altadorian magic','97':'altadorian petpets','98':'plushies','100':'wonderous weaponry','101':'exotic foods','102':'remarkable restoratives','103':'fanciful fauna','104':'neovian antiques','105':'neovian pastries','106':'neovian press','107':'neovian attire','108':'mystical surroundings','110':"lampwyck's lights fantastic",'111':"cog's togs",'112':'molten morsels','113':'moltaran petpets','114':'moltaran books','116':'springy things','117':'ugga shinies',};
+  const shopIDToCategory = idb_shopIDToCategory;
 
   // ------------ HANDLERS -------------- //
 
@@ -148,7 +145,7 @@ const itemdb_script = function() {
         if(itemData.is_notrade) subText += '(no trade) ';
         const item = {
           name: itemData.obj_name,
-          img: 'https://images.neopets.com/items/'+itemData.obj_filename,
+          img: 'https://images.neopets.com/items/'+itemData.obj_filename+'.gif',
           description: itemData.obj_desc,
           rarity: itemData.obj_rarity,
           subText: subText,
@@ -275,22 +272,22 @@ const itemdb_script = function() {
   }
 
   function handleUserShops() {
-    const allTds = $('.content table td');
-
+    const allTds = $('.bsp-item');
     allTds.each(function (i) {
-      const link = $(this).find('a').first().attr('href');
-      if (!link || !link.includes('buy_item.phtml')) return;
+      const btn = $(this).find('.bsp-item__buy').first();
 
-      const itemID = link.match(/(?<=obj_info_id\=)\d+/)?.[0];
-      const itemName = $(this).find('b').first().text();
+      const itemID = $(this).data("oii");
+      const itemName = btn.data("name");
       const img = $(this).find('img').attr('src');
       const description = $(this).find('img').attr('title');
-      const price = link.match(/(?<=old_price\=)\d+/)?.[0];
-      const owner = link.match(/(?<=owner\=)[^=&]+/gi)?.[0];
+      const price = btn.data("price");  
+      const owner = window.location.href.match(/(?<=owner\=)[^=&]+/gi)?.[0];
       const stock = $(this)
+        .find('.bsp-item__qty')
+        .first()
         .text()
         .match(/(\d+)(?= in stock)/gm)?.[0];
-
+     
       const item = {
         name: itemName,
         img: img,
@@ -1019,7 +1016,6 @@ const itemdb_script = function() {
 
           $(document).off(`ajaxSuccess.actionSuccess`);
 
-          console.log([item], parentItem, gramInfo)
           submitOpenable([item], parentItem, gramInfo)
         })
       })
@@ -1182,17 +1178,17 @@ const itemdb_script = function() {
     const itemsList = Object.values(itemsObj);
     if (itemsList.length === 0) return;
     
-    const hash = idb.getItemsHash(itemsObj);
     const pageLang = GM_getValue('pageLang', 'unknown');
     
     if(pageLang !== nl) return console.error('Language error');
 
-    const rawData = {
+    const payload = {
       lang: pageLang,
       items: itemsList,
-      hash: hash,
       dataSource,
     }
+
+    const hash = hasher.getHash(payload);
 
     GM_xmlhttpRequest({
       method: 'POST',
@@ -1201,15 +1197,14 @@ const itemdb_script = function() {
         'Content-Type': 'application/json',
         'itemdb-version': script_info.versionCode,
       },
-      data: JSON.stringify(rawData),
+      data: JSON.stringify({payload, hash}),
       onload: function (res) {
         if (res.status === 200) {
           console.log(`[itemdb] ${itemsList.length} items data sent`);
           localStorage?.setItem('idb_newItemHistory', JSON.stringify(itemsHistory));
           itemsObj = {};
-          idb.resetHash();
         } else {
-          console.error('[itemdb] submitItems error:', res, rawData);
+          console.error('[itemdb] submitItems error:', res);
         }
       },
     })
@@ -1220,15 +1215,15 @@ const itemdb_script = function() {
     if (priceList.length === 0) return;
 
     await generateOwnerHash(priceList);
-    const hash = idb.getPricesHash(priceList);
     
     const pageLang = GM_getValue('pageLang', 'unknown');
-    const rawData = {
+    const payload = {
       lang: pageLang,
       itemPrices: priceList,
-      hash: hash,
       dataSource
     }
+    
+    const hash = hasher.getHash(payload);
 
     GM_xmlhttpRequest({
       method: 'POST',
@@ -1237,15 +1232,14 @@ const itemdb_script = function() {
         'Content-Type': 'application/json',
         'itemdb-version': script_info.versionCode,
       },
-      data: JSON.stringify(rawData),
+      data: JSON.stringify({payload, hash}),
       onload: function (res) {
         if (res.status === 200) {
           console.log(`[itemdb] ${priceList.length} price data sent`);
           localStorage?.setItem('idb_restockHistory', JSON.stringify(restockHistory));
           priceList = [];
-          idb.resetHash();
         } else {
-          console.error('[itemdb] submitPrices error:', res, rawData);
+          console.error('[itemdb] submitPrices error:', res);
         }
       },
     })
@@ -1257,15 +1251,15 @@ const itemdb_script = function() {
     
     await generateOwnerHash(tradeList);
 
-    const hash = idb.getTradesHash(tradeList);
-
     const pageLang = GM_getValue('pageLang', 'unknown');
-    const rawData = {
+    
+    const payload = {
       lang: pageLang,
       tradeLots: tradeList,
-      hash: hash,
       dataSource
     }
+
+    const hash = hasher.getHash(payload);
 
     GM_xmlhttpRequest({
       method: 'POST',
@@ -1274,15 +1268,14 @@ const itemdb_script = function() {
         'Content-Type': 'application/json',
         'itemdb-version': script_info.versionCode,
       },
-      data: JSON.stringify(rawData),
+      data: JSON.stringify({payload, hash}),
       onload: function (res) {
         if (res.status === 200) {
           console.log(`[itemdb] ${tradeList.length} trade data sent`);
           localStorage?.setItem('idb_tradeHistory', JSON.stringify(tradeHistory));
           tradeList = [];
-          idb.resetHash();
         } else {
-          console.error('[itemdb] submitTrades error:', res, rawData);
+          console.error('[itemdb] submitTrades error:', res);
         }
       },
     })
@@ -1291,19 +1284,18 @@ const itemdb_script = function() {
   async function submitOpenable(items, parentItem, gramInfo) {
     if(checkTranslation()) return;
 
-    const hash = idb.getTradesHash({items, parentItem, gramInfo});
-
     const pageLang = GM_getValue('pageLang', 'unknown');
     if(pageLang !== nl) return console.error('Language error');
 
-    const rawData = {
+    const payload = {
       lang: pageLang,
       items: items,
       parentItem: parentItem,
       gramInfo: gramInfo,
-      hash: hash,
       dataSource,
     }
+
+    const hash = hasher.getHash(payload);
 
     GM_xmlhttpRequest({
       method: 'POST',
@@ -1312,25 +1304,23 @@ const itemdb_script = function() {
         'Content-Type': 'application/json',
         'itemdb-version': script_info.versionCode,
       },
-      data: JSON.stringify(rawData),
+      data: JSON.stringify({payload, hash}),
       onload: function (res) {
         if (res.status === 200) {
           console.log(`[itemdb] ${parentItem.name} open result sent`);
         } else {
-          console.error('[itemdb] openable result error:', res, rawData);
+          console.error('[itemdb] openable result error:', res);
         }
       },
     })
   }
+}
 
-  // ----------- //
-
-  // this function is used to detect if the page is translated using google translate or similar
-  function checkTranslation() {
-    return !!document.querySelector(
-      "html.translated-ltr, html.translated-rtl, ya-tr-span, *[_msttexthash], *[x-bergamot-translated]"
-    );
-  }
+// this function is used to detect if the page is translated using google translate or similar
+function checkTranslation() {
+  return !!document.querySelector(
+    "html.translated-ltr, html.translated-rtl, ya-tr-span, *[_msttexthash], *[x-bergamot-translated]"
+  );
 }
 
 // this function is used to generate a unique key for each item based on the information we got for it
@@ -1339,71 +1329,10 @@ function genItemKey(item) {
 }
 
 // only runs the script if the page is fully loaded
-addEventListener("DOMContentLoaded", itemdb_script);
-
-// For some pages, we need to watch if we receive the item data from the neo server
-// We only watch requests that contains the data from items. Everything else is ignored.
-
-function watchItemRequests(paramName){
-  XMLHttpRequest.prototype.open = function() {
-    this.addEventListener("load", function() {
-      if (this.response.includes("{")){
-        const requestData = JSON.parse(this.response);
-        // check if the request contains the item data we want, if not we ignore it
-        if (typeof requestData[paramName] === 'undefined') return;
-        resItemData.push(requestData);
-      }
-    })
-   
-    originalOpen.apply(this, arguments);
-  }
-}
-
-function registerFetchWatcher({ match, eventName }) {
-  const targetWindow = unsafeWindow ?? window;
-  if (!targetWindow.__idbFetchWatchers) {
-    targetWindow.__idbFetchWatchers = [];
-  }
-
-  if (!targetWindow.__idbFetchPatched) {
-    targetWindow.__idbFetchPatched = true;
-
-    const originalFetch = targetWindow.fetch;
-
-    targetWindow.fetch = async (...args) => {
-      const response = await originalFetch(...args);
-      const clonedResponse = response.clone();
-
-      let responseText = '';
-      try {
-        responseText = await clonedResponse.text();
-      } catch {
-        return response;
-      }
-
-      let requestData;
-      try {
-        requestData = JSON.parse(responseText);
-      } catch {
-        return response;
-      }
-
-      for (const watcher of targetWindow.__idbFetchWatchers) {
-        try {
-          if (watcher.match({ args, requestData, response })) {
-            document.dispatchEvent(
-              new CustomEvent(watcher.eventName, { detail: requestData })
-            );
-          }
-        } catch {}
-      }
-
-      return response;
-    };
-  }
-
-  targetWindow.__idbFetchWatchers.push({ match, eventName });
-}
+addEventListener("DOMContentLoaded", () => {
+  const obj = {itemdb_script}
+  obj.itemdb_script();
+});
 
 // Generates an anonymous SHA-256 hash from the owner username before sending data.
 // The username is normalized to lowercase and is never included in the submitted payload.
@@ -1430,22 +1359,22 @@ async function generateOwnerHash(entries) {
 }
 
 // **ONLY** watch requests in these pages
-if (URLHas('petlookup.phtml')) watchItemRequests('viewdata');
-if (URLHas('customise')) watchItemRequests('editordata');
+if (URLHas('petlookup.phtml')) idb_watchItemRequests('viewdata');
+if (URLHas('customise')) idb_watchItemRequests('editordata');
 if (URLHas('/stylingchamber/')) 
-  registerFetchWatcher({
+  idb_registerFetchWatcher({
     eventName: 'idb:ucChamberData',
     match: ({ requestData }) => typeof requestData.userStyles !== 'undefined',
   });
-if (URLHas('trading')) registerFetchWatcher({
+if (URLHas('trading')) idb_registerFetchWatcher({
   eventName: 'idb:tradingLots',
   match: ({ requestData }) => typeof requestData.lots !== 'undefined',
 });
-if (URLHas('closet')) registerFetchWatcher({
+if (URLHas('closet')) idb_registerFetchWatcher({
   eventName: 'idb:closetItemData',
   match: ({ requestData }) => typeof requestData.items !== 'undefined',
 });
-if (URLHas('safetydeposit')) registerFetchWatcher({
+if (URLHas('safetydeposit')) idb_registerFetchWatcher({
   eventName: 'idb:safetyDepositData',
   match: ({ requestData }) => typeof requestData.data.items !== 'undefined',
 });
