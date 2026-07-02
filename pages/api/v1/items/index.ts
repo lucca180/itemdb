@@ -3,13 +3,11 @@ import prisma from '../../../../utils/prisma';
 import requestIp from 'request-ip';
 import hash from 'object-hash';
 
-// import { checkHash } from '../../../../utils/hash';
 import { getManyItems } from './many';
 import { Prisma } from '@prisma/generated/client';
 import { allCategories } from '@utils/allCats';
 import { redis_setDataCount } from '@utils/api/redis';
-
-const TARNUM_KEY = process.env.TARNUM_KEY;
+import { validateExtractorHash } from '@utils/api/hashValidator';
 
 export const config = {
   api: {
@@ -46,22 +44,29 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const tarnumkey = req.headers['tarnumkey'] as string | undefined;
   const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-  const items = data.items;
-  const lang = data.lang;
-  // const dataHash = data.hash;
-
-  // if (!checkHash(dataHash, { items: items }))
-  // return res.status(400).json({ error: 'Invalid hash' });
+  const payload = data.payload ?? data;
+  const items = payload.items;
+  const lang = payload.lang;
 
   if (lang !== 'en') return res.status(400).json({ error: 'Language not supported' });
 
+  const hashValidation = await validateExtractorHash({
+    req,
+    endpoint: 'items',
+    hash: data.hash,
+    payload: data.payload ?? { items },
+    bypassKey: tarnumkey,
+  });
+
+  if (!hashValidation.valid) return res.status(400).json({ error: 'Invalid hash' });
+
   const meta = req.headers['itemdb-version'];
-  if (!meta && tarnumkey !== TARNUM_KEY)
+  if (!meta && hashValidation.mode !== 'bypass')
     return res.status(500).json({ error: 'Internal Server Error' });
 
   const requestMeta = {
     itemdbVersion: meta || 'direct-api',
-    dataSource: data.dataSource || 'unknown',
+    dataSource: payload.dataSource || 'unknown',
   };
 
   const dataList = [];

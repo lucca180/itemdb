@@ -4,6 +4,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../../../utils/prisma';
 import { getManyItems } from './many';
 import requestIp from 'request-ip';
+import { validateExtractorHash } from '@utils/api/hashValidator';
 
 const chance = new Chance();
 
@@ -21,17 +22,30 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-  const items = data.items;
-  const parentItem = data.parentItem;
-  const gramInfo = data.gramInfo as
+  const payload = data.payload ?? data;
+  const tarnumkey = req.headers['tarnumkey'] as string | undefined;
+  const items = payload.items;
+  const parentItem = payload.parentItem;
+  const gramInfo = payload.gramInfo as
     | {
         cash_id: string;
         options: string[];
       }
     | undefined;
-  const lang = data.lang;
+  const lang = payload.lang;
 
   if (lang !== 'en') return res.status(400).json({ error: 'Language not supported' });
+
+  const validationPayload = data.payload ?? { items, parentItem, gramInfo };
+  const hashValidation = await validateExtractorHash({
+    req,
+    endpoint: 'items/open',
+    hash: data.hash,
+    payload: validationPayload,
+    bypassKey: tarnumkey,
+  });
+
+  if (!hashValidation.valid) return res.status(400).json({ error: 'Invalid hash' });
 
   const name_image_id = items
     .map((item: any) => {

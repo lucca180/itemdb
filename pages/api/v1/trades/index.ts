@@ -4,7 +4,6 @@ import { ItemData, TradeData } from '../../../../types';
 import requestIp from 'request-ip';
 import { CheckAuth } from '../../../../utils/googleCloud';
 
-import { checkHash } from '../../../../utils/hash';
 import { Prisma } from '@prisma/generated/client';
 import { shouldSkipTrade } from '../../../../utils/utils';
 import hash from 'object-hash';
@@ -14,8 +13,7 @@ import { TradeItems, Trades } from '@prisma/generated/client';
 import { getManyItems } from '../items/many';
 import { processSimilarTrades } from '../../feedback/send';
 import { isValidOptionalOwnerHash, omitOwnerHash, withoutOwnerData } from '@utils/ownerHash';
-
-const TARNUM_KEY = process.env.TARNUM_KEY;
+import { validateExtractorHash } from '@utils/api/hashValidator';
 
 export const config = {
   api: {
@@ -54,11 +52,11 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+  const payload = data.payload ?? data;
   const tarnumkey = req.headers['tarnumkey'] as string | undefined;
 
-  const tradeLots = data.tradeLots;
-  const lang = data.lang;
-  const dataHash = data.hash;
+  const tradeLots = payload.tradeLots;
+  const lang = payload.lang;
 
   if (
     !Array.isArray(tradeLots) ||
@@ -66,8 +64,16 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   )
     return res.status(400).json({ error: 'Invalid ownerHash' });
 
-  if (!checkHash(dataHash, { tradeLots: withoutOwnerData(tradeLots) }) && tarnumkey !== TARNUM_KEY)
-    return res.status(400).json({ error: 'Invalid hash' });
+  const validationPayload = data.payload ?? { tradeLots: withoutOwnerData(tradeLots) };
+  const hashValidation = await validateExtractorHash({
+    req,
+    endpoint: 'trades',
+    hash: data.hash,
+    payload: validationPayload,
+    bypassKey: tarnumkey,
+  });
+
+  if (!hashValidation.valid) return res.status(400).json({ error: 'Invalid hash' });
 
   if (lang !== 'en') return res.status(400).json('Language must be english');
 

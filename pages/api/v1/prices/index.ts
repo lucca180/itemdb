@@ -4,13 +4,12 @@ import requestIp from 'request-ip';
 import hash from 'object-hash';
 import { PriceProcess, Prisma } from '@prisma/generated/client';
 import { getManyItems } from '../items/many';
-import { checkHash } from '../../../../utils/hash';
 import { ItemData } from '../../../../types';
 import { differenceInCalendarDays } from 'date-fns';
 import { chunk } from 'lodash';
 import { isValidOptionalOwnerHash, isValidOwnerHash, withoutOwnerData } from '@utils/ownerHash';
+import { validateExtractorHash } from '@utils/api/hashValidator';
 
-const TARNUM_KEY = process.env.TARNUM_KEY;
 const AUCTION_BATCH_SIZE = 5;
 type RestockAuction = Prisma.RestockAuctionHistoryCreateManyInput & { addToPriceProcess: boolean };
 
@@ -37,11 +36,12 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
 
 const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-  const itemPrices = data.itemPrices;
+  const payload = data.payload ?? data;
+  const itemPrices = payload.itemPrices;
 
   const tarnumkey = req.headers['tarnumkey'] as string | undefined;
 
-  const lang = data.lang;
+  const lang = payload.lang;
 
   if (lang !== 'en') return res.status(400).json({ error: 'Invalid language' });
 
@@ -51,13 +51,16 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   )
     return res.status(400).json({ error: 'Invalid ownerHash' });
 
-  const dataHash = data.hash;
+  const validationPayload = data.payload ?? { itemPrices: withoutOwnerData(itemPrices) };
+  const hashValidation = await validateExtractorHash({
+    req,
+    endpoint: 'prices',
+    hash: data.hash,
+    payload: validationPayload,
+    bypassKey: tarnumkey,
+  });
 
-  if (
-    !checkHash(dataHash, { itemPrices: withoutOwnerData(itemPrices) }) &&
-    tarnumkey !== TARNUM_KEY
-  )
-    return res.status(400).json({ error: 'Invalid hash' });
+  if (!hashValidation.valid) return res.status(400).json({ error: 'Invalid hash' });
 
   const dataList = [];
 

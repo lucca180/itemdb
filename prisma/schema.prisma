@@ -144,6 +144,21 @@ model ItemProcess {
   @@index([manual_check, processed])
 }
 
+model HashValidationKey {
+  internal_id   Int       @id @default(autoincrement())
+  validatorName String
+  versionCode   Int
+  secret        String    @db.Text
+  active        Boolean   @default(true)
+  revokedAt     DateTime?
+  notes         String?   @db.Text
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([validatorName, versionCode])
+  @@index([validatorName, versionCode, active])
+}
+
 enum ItemType {
   np
   nc
