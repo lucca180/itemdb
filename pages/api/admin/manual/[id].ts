@@ -5,6 +5,11 @@ import { ItemPrices, ItemProcess } from '@prisma/generated/client';
 import { slugify } from '../../../../utils/utils';
 import { User } from '@types';
 import { LogService } from '@services/ActionLogService';
+import {
+  computeItemProcessDiff,
+  ItemProcessDiffEntry,
+  parseConflictField,
+} from '@utils/manualCheck/itemProcessDiff';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   let user: User | null = null;
@@ -20,9 +25,15 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   if (req.method === 'POST') return POST(req, res, user);
 }
 
+export type ItemManualCheckInfoData = {
+  process: ItemProcess;
+  conflictField: string | null;
+  changes: ItemProcessDiffEntry[];
+};
+
 export type ItemManualCheckData = {
   inflation: ItemPrices | null;
-  info: ItemProcess | null;
+  info: ItemManualCheckInfoData | null;
 };
 
 export const getItemManualCheck = async (itemInternalId: number): Promise<ItemManualCheckData> => {
@@ -33,7 +44,7 @@ export const getItemManualCheck = async (itemInternalId: number): Promise<ItemMa
     },
   });
 
-  const info = await prisma.itemProcess.findFirst({
+  const process = await prisma.itemProcess.findFirst({
     where: {
       processed: false,
       manual_check: {
@@ -43,7 +54,25 @@ export const getItemManualCheck = async (itemInternalId: number): Promise<ItemMa
     },
   });
 
-  return { inflation, info };
+  const dbItem = await prisma.items.findUnique({
+    where: { internal_id: itemInternalId },
+  });
+
+  if (!process || !dbItem) {
+    return { inflation, info: null };
+  }
+
+  const conflictField = parseConflictField(process.manual_check);
+  const changes = computeItemProcessDiff(dbItem, process, conflictField);
+
+  return {
+    inflation,
+    info: {
+      process,
+      conflictField,
+      changes,
+    },
+  };
 };
 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {

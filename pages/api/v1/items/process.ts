@@ -1,14 +1,7 @@
 import { Items as Item, ItemProcess, Items, ItemColor, Prisma } from '@prisma/generated/client';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@utils/prisma';
-import {
-  allBooksCats,
-  allFoodsCats,
-  allPlayCats,
-  categoryToShopID,
-  genItemKey,
-  slugify,
-} from '@utils/utils';
+import { allBooksCats, allFoodsCats, allPlayCats, genItemKey, slugify } from '@utils/utils';
 import { revalidateAppCache, HomeRevalidateTags } from '@utils/item/revalidateItem';
 import { getPalette } from '@utils/item/itemPalette';
 import { detectWearable } from '@utils/item/detectWearable';
@@ -18,6 +11,7 @@ import { ItemData } from '@types';
 import { sendNewItemsHook } from '@utils/discord-hooks';
 import { syncAllDynamicLists } from '../lists/sync';
 import { LogService } from '@services/ActionLogService';
+import { mergeItemFieldKey } from '@utils/item/itemFieldMerge';
 
 type ValueOf<T> = T[keyof T];
 
@@ -261,82 +255,11 @@ async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefin
 
     // merge the data we're missing
     let hasChange = false;
-    const forceMerge = ['type', 'isNC', 'isWearable', 'status', 'est_val', 'isBD'];
     for (const key of Object.keys(dbItem) as Array<keyof typeof dbItem>) {
       if (['internal_id', 'addedAt', 'updatedAt', 'hash'].includes(key)) continue;
       const temp = dbItem[key];
 
-      if (!dbItem[key]) {
-        // @ts-ignore
-        dbItem[key] ||= item[key] ?? dbItem[key];
-      }
-
-      // merge conflict
-      // @ts-ignore
-      if (dbItem[key] && item[key] && dbItem[key] !== item[key]) {
-        // check if we're gaining info with specialType
-        if (key === 'specialType') {
-          const cleanedDb = cleanSpecialType(dbItem.specialType ?? '');
-          const cleanedItem = cleanSpecialType(item.specialType ?? '');
-
-          const dbArr = cleanedDb.split(',').map((x) => x.trim().toLowerCase());
-          const itemArr = cleanedItem.split(',').map((x) => x.trim().toLowerCase());
-
-          if (dbArr.length > itemArr.length && !checker(dbArr, itemArr))
-            throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
-          else if (dbArr.length < itemArr.length && checker(itemArr, dbArr))
-            dbItem.specialType = cleanedItem;
-        }
-
-        // check some default values
-        // neopets sometimes changes est_val randomly
-        else if (forceMerge.includes(key)) {
-          if (
-            (key == 'status' && dbItem.status == 'active') ||
-            (key == 'type' && dbItem.type == 'np') ||
-            (key == 'est_val' && dbItem.est_val)
-          )
-            //@ts-ignore
-            dbItem[key] = item[key];
-
-          // @ts-ignore
-          dbItem[key] ||= item[key] ?? dbItem[key];
-        }
-
-        // check if we're gaining info with description
-        else if (key === 'description' && item.description && dbItem.description) {
-          const dbDescNorm = normalizeText(dbItem.description);
-          const itemDescNorm = normalizeText(item.description);
-
-          if (dbDescNorm === itemDescNorm) continue;
-          if (dbDescNorm.trim().length < itemDescNorm.trim().length) {
-            if (itemDescNorm.trim().includes(dbDescNorm.trim()))
-              dbItem.description = itemDescNorm.trim();
-            else throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
-          }
-        }
-
-        // sdb sometimes calls things "special" when they're not
-        else if (key === 'category') {
-          const dbCatetory = dbItem.category?.toLowerCase() ?? '';
-          const itemCategory = item.category?.toLowerCase() ?? '';
-
-          if (
-            genericCats.includes(dbCatetory) &&
-            !genericCats.includes(itemCategory) &&
-            !categoryToShopID[dbCatetory] &&
-            categoryToShopID[itemCategory]
-          )
-            dbItem.category = item.category;
-          else if (
-            itemCategory !== dbCatetory &&
-            categoryToShopID[itemCategory] &&
-            categoryToShopID[dbCatetory] &&
-            !genericCats.includes(itemCategory)
-          )
-            throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
-        } else throw `'${key}' Merge Conflict with (${dbItem.internal_id})`;
-      }
+      if (mergeItemFieldKey(dbItem, item, key) === 'continue') continue;
 
       hasChange ||= dbItem[key] !== temp;
 
@@ -446,11 +369,6 @@ async function processOpenables() {
   await Promise.all(processPromises);
 }
 
-// check if all elements in target are in arr
-const checker = (arr: any[], target: any[]) => target.every((v) => arr.includes(v));
-
-const genericCats = ['special', 'gift', 'food', 'clothes', 'neogarden', 'neohome', 'none'];
-
 const checkEat = (category?: string | null) =>
   allFoodsCats.filter((x) => x.toLowerCase() === category?.toLowerCase()).length > 0;
 const checkPlay = (category?: string | null) =>
@@ -474,21 +392,3 @@ const logChanges = (
   if (!changeArr[field]) changeArr[field] = { oldVal, newVal };
   else changeArr[field].newVal = newVal;
 };
-
-const cleanSpecialType = (specialType: string) => {
-  const skipTypes = ['trading', 'auctioned'];
-
-  const types = specialType
-    .split(',')
-    .map((x) => x.trim().toLowerCase())
-    .filter((x) => !skipTypes.includes(x));
-
-  return types.join(',');
-};
-
-function normalizeText(str: string): string {
-  return str
-    .replace(/\r\n/g, '\n') // Windows → Unix
-    .replace(/\r/g, '\n') // Mac antigo → Unix
-    .trim(); // opcional
-}
