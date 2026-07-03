@@ -1,25 +1,15 @@
 import type { Items, ItemProcess } from '@prisma/generated/client';
-import { formatFieldValue, normalizeText, wouldFieldChange } from '@utils/item/itemFieldMerge';
+import {
+  formatFieldValue,
+  getMergedFieldValue,
+  normalizeText,
+  wouldFieldChange,
+  wouldFieldConflict,
+} from '@utils/item/itemFieldMerge';
 
 export { formatFieldValue, normalizeText };
 
-export const DIFF_FIELDS = [
-  'item_id',
-  'name',
-  'description',
-  'image',
-  'image_id',
-  'category',
-  'rarity',
-  'weight',
-  'type',
-  'est_val',
-  'isNC',
-  'isBD',
-  'isWearable',
-] as const;
-
-export type DiffField = (typeof DIFF_FIELDS)[number];
+const MERGE_SKIP_KEYS = new Set(['internal_id', 'addedAt', 'updatedAt', 'hash']);
 
 export type ItemProcessDiffEntry = {
   field: string;
@@ -28,6 +18,7 @@ export type ItemProcessDiffEntry = {
   isConflict: boolean;
   rawCurrent: unknown;
   rawIncoming: unknown;
+  rawApplied: unknown;
 };
 
 export function parseConflictField(manualCheck: string | null | undefined): string | null {
@@ -42,12 +33,50 @@ function normalizeFieldValue(field: string, value: unknown): string {
   return formatted.trim();
 }
 
-function getFieldValue(record: Items | ItemProcess, field: DiffField): unknown {
+function getRecordFieldValue(record: Items | ItemProcess, field: string): unknown {
   return record[field as keyof typeof record];
 }
 
-function getRecordFieldValue(record: Items | ItemProcess, field: string): unknown {
-  return record[field as keyof typeof record];
+function getAppliedValue(db: Items, incoming: ItemProcess, field: keyof Items): unknown {
+  if (wouldFieldConflict(db, incoming, field)) {
+    return incoming[field as keyof ItemProcess] ?? null;
+  }
+
+  return getMergedFieldValue(db, incoming, field);
+}
+
+function shouldIncludeOtherField(
+  db: Items,
+  incoming: ItemProcess,
+  field: keyof Items,
+  conflictField: string | null
+): boolean {
+  if (field === conflictField) return false;
+  if (MERGE_SKIP_KEYS.has(field as string)) return false;
+
+  return wouldFieldChange(db, incoming, field) || wouldFieldConflict(db, incoming, field);
+}
+
+function buildDiffEntry(
+  db: Items,
+  incoming: ItemProcess,
+  field: string,
+  isConflict: boolean
+): ItemProcessDiffEntry {
+  const key = field as keyof Items;
+  const rawCurrent = db[key];
+  const rawIncoming = getRecordFieldValue(incoming, field);
+  const rawApplied = isConflict ? rawIncoming : getAppliedValue(db, incoming, key);
+
+  return {
+    field,
+    current: formatFieldValue(rawCurrent),
+    incoming: formatFieldValue(rawIncoming),
+    isConflict,
+    rawCurrent,
+    rawIncoming,
+    rawApplied,
+  };
 }
 
 export function computeItemProcessDiff(
@@ -57,30 +86,7 @@ export function computeItemProcessDiff(
 ): ItemProcessDiffEntry[] {
   const changes: ItemProcessDiffEntry[] = [];
 
-  for (const field of DIFF_FIELDS) {
-    const rawCurrent = getFieldValue(db, field);
-    const rawIncoming = getFieldValue(incoming, field);
-
-    if (normalizeFieldValue(field, rawCurrent) === normalizeFieldValue(field, rawIncoming)) {
-      continue;
-    }
-
-    const isConflict = field === conflictField;
-    if (!wouldFieldChange(db, incoming, field) && !isConflict) {
-      continue;
-    }
-
-    changes.push({
-      field,
-      current: formatFieldValue(rawCurrent),
-      incoming: formatFieldValue(rawIncoming),
-      isConflict,
-      rawCurrent,
-      rawIncoming,
-    });
-  }
-
-  if (conflictField && !changes.some((change) => change.field === conflictField)) {
+  if (conflictField) {
     const rawCurrent = getRecordFieldValue(db, conflictField);
     const rawIncoming = getRecordFieldValue(incoming, conflictField);
 
@@ -88,18 +94,15 @@ export function computeItemProcessDiff(
       normalizeFieldValue(conflictField, rawCurrent) !==
       normalizeFieldValue(conflictField, rawIncoming)
     ) {
-      changes.unshift({
-        field: conflictField,
-        current: formatFieldValue(rawCurrent),
-        incoming: formatFieldValue(rawIncoming),
-        isConflict: true,
-        rawCurrent,
-        rawIncoming,
-      });
+      changes.push(buildDiffEntry(db, incoming, conflictField, true));
     }
+  }
+
+  for (const key of Object.keys(db) as Array<keyof Items>) {
+    if (!shouldIncludeOtherField(db, incoming, key, conflictField)) continue;
+
+    changes.push(buildDiffEntry(db, incoming, String(key), false));
   }
 
   return changes;
 }
-
-export { wouldFieldChange };

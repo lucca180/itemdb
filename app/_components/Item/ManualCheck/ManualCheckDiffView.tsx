@@ -45,11 +45,11 @@ function serializeForJson(value: unknown): unknown {
   return value ?? null;
 }
 
-function buildSnapshot(changes: ItemProcessDiffEntry[], side: 'current' | 'incoming') {
+function buildSnapshot(changes: ItemProcessDiffEntry[], side: 'current' | 'applied') {
   return Object.fromEntries(
     changes.map((change) => [
       change.field,
-      serializeForJson(side === 'current' ? change.rawCurrent : change.rawIncoming),
+      serializeForJson(side === 'current' ? change.rawCurrent : change.rawApplied),
     ])
   );
 }
@@ -126,7 +126,7 @@ export function ManualCheckDiffView({ changes, conflictField }: Props) {
           </Box>
           <ReactDiffViewer
             oldValue={buildSnapshot(otherChanges, 'current')}
-            newValue={buildSnapshot(otherChanges, 'incoming')}
+            newValue={buildSnapshot(otherChanges, 'applied')}
             compareMethod={DiffMethod.JSON}
             splitView={true}
             disableWordDiff={false}
@@ -135,7 +135,7 @@ export function ManualCheckDiffView({ changes, conflictField }: Props) {
             hideLineNumbers
             hideSummary
             leftTitle="Current"
-            rightTitle="Incoming"
+            rightTitle="Applied"
             styles={diffStyles}
           />
         </Box>

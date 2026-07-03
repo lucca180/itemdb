@@ -177,6 +177,17 @@ export function wouldFieldChange(db: Items, incoming: ItemProcess, field: keyof 
   return normalizeFieldValue(String(field), dbValue) !== normalizeFieldValue(String(field), merged);
 }
 
+export function wouldFieldConflict(db: Items, incoming: ItemProcess, field: keyof Items): boolean {
+  const dbClone = { ...db };
+
+  try {
+    mergeItemFieldKey(dbClone, incoming, field);
+    return false;
+  } catch (error) {
+    return typeof error === 'string' && error.includes('Merge Conflict');
+  }
+}
+
 function normalizeFieldValue(field: string, value: unknown): string {
   const formatted = formatFieldValue(value);
   if (field === 'description') return normalizeText(formatted);

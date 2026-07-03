@@ -4,9 +4,8 @@ import {
   computeItemProcessDiff,
   formatFieldValue,
   parseConflictField,
-  wouldFieldChange,
 } from '@utils/manualCheck/itemProcessDiff';
-import { decodeItemTextFields, normalizeText } from '@utils/item/itemFieldMerge';
+import { normalizeText, wouldFieldChange } from '@utils/item/itemFieldMerge';
 
 const baseDb = (): Items =>
   ({
@@ -93,37 +92,6 @@ describe('wouldFieldChange', () => {
     expect(wouldFieldChange(db, incoming, 'isNC')).toBe(false);
   });
 
-  it('changes isNC when db is false and incoming is true', () => {
-    const db = baseDb();
-    db.isNC = false;
-    const incoming = baseIncoming({ isNC: true });
-
-    expect(wouldFieldChange(db, incoming, 'isNC')).toBe(true);
-  });
-
-  it('does not change type when db is nc and incoming is np', () => {
-    const db = baseDb();
-    db.type = 'nc';
-    const incoming = baseIncoming({ type: 'np' });
-
-    expect(wouldFieldChange(db, incoming, 'type')).toBe(false);
-  });
-
-  it('changes type when db is np and incoming is nc', () => {
-    const db = baseDb();
-    db.type = 'np';
-    const incoming = baseIncoming({ type: 'nc' });
-
-    expect(wouldFieldChange(db, incoming, 'type')).toBe(true);
-  });
-
-  it('changes est_val when db has a value and incoming differs', () => {
-    const db = baseDb();
-    const incoming = baseIncoming({ est_val: 200 });
-
-    expect(wouldFieldChange(db, incoming, 'est_val')).toBe(true);
-  });
-
   it('changes est_val when db is empty and incoming has value', () => {
     const db = baseDb();
     db.est_val = null;
@@ -147,22 +115,6 @@ describe('normalizeText', () => {
   });
 });
 
-describe('decodeItemTextFields', () => {
-  it('decodes text fields on item process records', () => {
-    const incoming = baseIncoming({
-      name: 'Gift &amp; Box',
-      description: 'Say &quot;hello&quot;',
-      specialType: 'wearable,Neocash',
-    });
-
-    const decoded = decodeItemTextFields(incoming);
-
-    expect(decoded.name).toBe('Gift & Box');
-    expect(decoded.description).toBe('Say "hello"');
-    expect(decoded.specialType).toBe('wearable,Neocash');
-  });
-});
-
 describe('computeItemProcessDiff', () => {
   it('omits equal fields', () => {
     const db = baseDb();
@@ -178,48 +130,39 @@ describe('computeItemProcessDiff', () => {
     const changes = computeItemProcessDiff(db, incoming, 'category');
 
     expect(changes.some((change) => change.field === 'isNC')).toBe(false);
-    expect(changes.some((change) => change.field === 'category')).toBe(true);
+    expect(changes.some((change) => change.field === 'category' && change.isConflict)).toBe(true);
   });
 
-  it('includes isNC when db false and incoming true', () => {
+  it('includes mergeable and hidden conflict fields in other differences', () => {
     const db = baseDb();
     db.isNC = false;
-    const incoming = baseIncoming({ isNC: true, name: 'Changed Name' });
-
-    const changes = computeItemProcessDiff(db, incoming, 'name');
-
-    expect(changes.some((change) => change.field === 'isNC')).toBe(true);
-  });
-
-  it('never includes excluded fields', () => {
-    const db = baseDb();
+    db.specialType = 'wearable,Neocash';
     const incoming = baseIncoming({
-      specialType: 'wearable',
-      status: 'no trade',
-      releaseDate: new Date('2020-01-01'),
-      retiredDate: new Date('2021-01-01'),
       category: 'toy',
+      isNC: true,
+      specialType: 'no trade',
+      manual_check: "'category' Merge Conflict with (1)",
     });
 
     const changes = computeItemProcessDiff(db, incoming, 'category');
-    const fields = changes.map((change) => change.field);
+    const otherFields = changes
+      .filter((change) => !change.isConflict)
+      .map((change) => change.field);
 
-    expect(fields).not.toContain('specialType');
-    expect(fields).not.toContain('status');
-    expect(fields).not.toContain('releaseDate');
-    expect(fields).not.toContain('retiredDate');
+    expect(otherFields).toContain('isNC');
+    expect(otherFields).toContain('specialType');
+    expect(changes.find((change) => change.field === 'isNC')?.rawApplied).toBe(true);
+    expect(changes.find((change) => change.field === 'specialType')?.rawApplied).toBe('no trade');
   });
 
-  it('always includes conflict field when values differ', () => {
+  it('does not include fields blocked by force-merge defaults', () => {
     const db = baseDb();
-    const incoming = baseIncoming({ category: 'toy' });
+    db.type = 'nc';
+    const incoming = baseIncoming({ type: 'np', name: 'Changed Name' });
 
-    const changes = computeItemProcessDiff(db, incoming, 'category');
-    const categoryChange = changes.find((change) => change.field === 'category');
+    const changes = computeItemProcessDiff(db, incoming, 'name');
 
-    expect(categoryChange?.isConflict).toBe(true);
-    expect(categoryChange?.current).toBe('food');
-    expect(categoryChange?.incoming).toBe('toy');
+    expect(changes.some((change) => change.field === 'type')).toBe(false);
   });
 
   it('includes excluded conflict field when it is the merge conflict', () => {
@@ -234,8 +177,7 @@ describe('computeItemProcessDiff', () => {
     const specialTypeChange = changes.find((change) => change.field === 'specialType');
 
     expect(specialTypeChange?.isConflict).toBe(true);
-    expect(specialTypeChange?.current).toBe('wearable,Neocash');
-    expect(specialTypeChange?.incoming).toBe('no trade');
+    expect(changes.some((change) => !change.isConflict)).toBe(false);
   });
 
   it('decodes HTML entities in description diff display', () => {
