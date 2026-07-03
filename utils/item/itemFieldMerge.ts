@@ -120,7 +120,6 @@ export function mergeItemFieldKey(
     dbItem[key] ||= incoming[key as keyof ItemProcess] ?? dbItem[key];
   }
 
-  // @ts-expect-error dynamic field comparison mirrors process.ts
   if (
     dbItem[key] &&
     incoming[key as keyof ItemProcess] &&
