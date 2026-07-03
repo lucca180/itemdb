@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         itemdb - Item Data Extractor
-// @version      2.0.0
+// @version      2.0.1
 // @author       itemdb
 // @namespace    itemdb
 // @description  Feeds itemdb.com.br with neopets item data
@@ -138,11 +138,15 @@ function itemdb_script() {
       item_list = {};
       for (const itemData of itemList) {
         let type = 'np';
-        if(itemData.is_nc) type = 'nc';
+        
+        if(itemData.is_nc && itemData.obj_rarity === 500) 
+          type = 'nc';
 
         let subText = ''
         if(itemData.can_closet) subText += '(wearable) ';
-        if(itemData.is_notrade) subText += '(no trade) ';
+        if(!itemData.is_nc && itemData.is_notrade) 
+          subText += '(no trade) ';
+
         const item = {
           name: itemData.obj_name,
           img: 'https://images.neopets.com/items/'+itemData.obj_filename+'.gif',
