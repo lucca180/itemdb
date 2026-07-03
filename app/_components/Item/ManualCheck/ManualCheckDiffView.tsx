@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { Badge, Box, Flex, Skeleton, Text } from '@chakra-ui/react';
 import type { ItemProcessDiffEntry } from '@utils/manualCheck/itemProcessDiff';
+import { decodeHtmlEntities } from '@utils/text/decodeHtmlEntities';
 import { DiffMethod } from 'react-diff-viewer-continued';
 
 const ReactDiffViewer = dynamic(() => import('react-diff-viewer-continued'), {
@@ -40,6 +41,7 @@ type Props = {
 
 function serializeForJson(value: unknown): unknown {
   if (value instanceof Date) return value.toISOString();
+  if (typeof value === 'string') return decodeHtmlEntities(value);
   return value ?? null;
 }
 

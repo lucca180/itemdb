@@ -11,7 +11,7 @@ import { ItemData } from '@types';
 import { sendNewItemsHook } from '@utils/discord-hooks';
 import { syncAllDynamicLists } from '../lists/sync';
 import { LogService } from '@services/ActionLogService';
-import { mergeItemFieldKey } from '@utils/item/itemFieldMerge';
+import { mergeItemFieldKey, decodeItemTextFields } from '@utils/item/itemFieldMerge';
 
 type ValueOf<T> = T[keyof T];
 
@@ -94,7 +94,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       deleteIds.push(itemOtherData.internal_id);
     }
 
-    itemAddPromises.push(updateOrAddDB(itemData));
+    itemAddPromises.push(updateOrAddDB(decodeItemTextFields(itemData)));
   }
 
   // remove the 'undefined' and add new items to db
@@ -151,6 +151,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 // If a item does not exist in the DB we use "createMany" but
 // there is not a "updateMany" so we update here and return undefined
 async function updateOrAddDB(item: ItemProcess): Promise<Partial<Item> | undefined> {
+  item = decodeItemTextFields(item);
+
   try {
     if (!item.image_id || !item.image || !item.name) throw 'invalid data';
 

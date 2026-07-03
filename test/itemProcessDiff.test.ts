@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 import type { Items, ItemProcess } from '@prisma/generated/client';
 import {
   computeItemProcessDiff,
+  formatFieldValue,
   parseConflictField,
   wouldFieldChange,
 } from '@utils/manualCheck/itemProcessDiff';
+import { decodeItemTextFields, normalizeText } from '@utils/item/itemFieldMerge';
 
 const baseDb = (): Items =>
   ({
@@ -131,6 +133,36 @@ describe('wouldFieldChange', () => {
   });
 });
 
+describe('formatFieldValue', () => {
+  it('decodes common HTML entities in text fields', () => {
+    expect(formatFieldValue('Say &quot;hello&quot; &amp; &lt;goodbye&gt;')).toBe(
+      'Say "hello" & <goodbye>'
+    );
+  });
+});
+
+describe('normalizeText', () => {
+  it('decodes HTML entities before normalizing line endings', () => {
+    expect(normalizeText('Say &quot;hello&quot;\r\nworld')).toBe('Say "hello"\nworld');
+  });
+});
+
+describe('decodeItemTextFields', () => {
+  it('decodes text fields on item process records', () => {
+    const incoming = baseIncoming({
+      name: 'Gift &amp; Box',
+      description: 'Say &quot;hello&quot;',
+      specialType: 'wearable,Neocash',
+    });
+
+    const decoded = decodeItemTextFields(incoming);
+
+    expect(decoded.name).toBe('Gift & Box');
+    expect(decoded.description).toBe('Say "hello"');
+    expect(decoded.specialType).toBe('wearable,Neocash');
+  });
+});
+
 describe('computeItemProcessDiff', () => {
   it('omits equal fields', () => {
     const db = baseDb();
@@ -204,5 +236,20 @@ describe('computeItemProcessDiff', () => {
     expect(specialTypeChange?.isConflict).toBe(true);
     expect(specialTypeChange?.current).toBe('wearable,Neocash');
     expect(specialTypeChange?.incoming).toBe('no trade');
+  });
+
+  it('decodes HTML entities in description diff display', () => {
+    const db = baseDb();
+    db.description = 'Say &quot;hello&quot;';
+    const incoming = baseIncoming({
+      description: 'Say &quot;hello&quot; world',
+      manual_check: "'description' Merge Conflict with (1)",
+    });
+
+    const changes = computeItemProcessDiff(db, incoming, 'description');
+    const descriptionChange = changes.find((change) => change.field === 'description');
+
+    expect(descriptionChange?.current).toBe('Say "hello"');
+    expect(descriptionChange?.incoming).toBe('Say "hello" world');
   });
 });

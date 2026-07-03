@@ -1,5 +1,6 @@
 import type { Items, ItemProcess } from '@prisma/generated/client';
 import { categoryToShopID } from '@utils/utils';
+import { decodeHtmlEntities } from '@utils/text/decodeHtmlEntities';
 
 export const GENERIC_CATS = ['special', 'gift', 'food', 'clothes', 'neogarden', 'neohome', 'none'];
 
@@ -18,8 +19,23 @@ export type MergeItemFieldResult = 'done' | 'continue';
 
 export const isSubset = (arr: unknown[], target: unknown[]) => target.every((v) => arr.includes(v));
 
+export const ITEM_TEXT_DECODE_FIELDS = ['name', 'description'] as const;
+
 export function normalizeText(str: string): string {
-  return str.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
+  return decodeHtmlEntities(str).replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
+}
+
+export function decodeItemTextFields<T extends Items | ItemProcess>(record: T): T {
+  const decoded = { ...record };
+
+  for (const field of ITEM_TEXT_DECODE_FIELDS) {
+    const value = decoded[field as keyof T];
+    if (typeof value === 'string') {
+      (decoded as Record<string, unknown>)[field] = decodeHtmlEntities(value);
+    }
+  }
+
+  return decoded;
 }
 
 export function cleanSpecialType(specialType: string): string {
@@ -171,5 +187,5 @@ export function formatFieldValue(value: unknown): string {
   if (value === null || value === undefined) return '';
   if (value instanceof Date) return value.toISOString();
   if (typeof value === 'boolean') return String(value);
-  return String(value);
+  return decodeHtmlEntities(String(value));
 }
