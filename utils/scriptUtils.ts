@@ -1,7 +1,7 @@
 import React from 'react';
 
 export const LATEST_VERSIONS_CODE = {
-  itemdb_script: 200,
+  itemdb_script: 201,
   itemdb_restock: 204,
   itemdb_sdbPricer: 160,
   itemdb_albumHelper: 103,

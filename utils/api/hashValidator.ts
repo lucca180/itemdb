@@ -5,7 +5,7 @@ import * as Sentry from '@sentry/nextjs';
 import prisma from '@utils/prisma';
 import { checkHash } from '@utils/hash';
 
-export type HashValidationMode = 'new' | 'legacy' | 'invalid' | 'bypass' | 'dev-skip';
+export type HashValidationMode = 'new' | 'legacy' | 'invalid' | 'bypass' | 'dev-skip' | 'revoked';
 
 type ValidationArgs = {
   req: NextApiRequest;
@@ -20,46 +20,55 @@ type ValidationResult =
   | { valid: true; mode: Exclude<HashValidationMode, 'invalid'>; versionCode: number | null }
   | { valid: false; mode: 'invalid'; versionCode: number | null };
 
-const DEFAULT_VALIDATOR_NAME = 'itemDataExtractor';
-const SKIP_EXTRACTOR_HASH_VALIDATION_IN_DEV = false;
+const DEFAULT_VALIDATOR = 'itemDataExtractor';
+const SKIP_IN_DEV = false;
+const KEY_CACHE_TTL = 60_000;
+const LEGACY_SKIP_ENDPOINTS = new Set(['items', 'items/open']);
 
-const legacySkipEndpoints = new Set(['items', 'items/open']);
+const keyCache = new Map<string, { secret: string | null; revoked: boolean; expiresAt: number }>();
+
+export function clearKeyCache() {
+  keyCache.clear();
+}
 
 export async function validateExtractorHash(args: ValidationArgs): Promise<ValidationResult> {
-  const { req, endpoint, hash, payload, bypassKey, validatorName = DEFAULT_VALIDATOR_NAME } = args;
+  const { req, endpoint, hash, payload, bypassKey, validatorName = DEFAULT_VALIDATOR } = args;
 
-  const versionCode = getVersionCode(req);
+  const versionCode = getVersion(req);
 
-  if (SKIP_EXTRACTOR_HASH_VALIDATION_IN_DEV && process.env.NODE_ENV === 'development') {
-    recordHashValidationMetric('dev-skip', endpoint, versionCode);
+  if (SKIP_IN_DEV && process.env.NODE_ENV === 'development') {
+    recordMetric('dev-skip', endpoint, versionCode);
     return { valid: true, mode: 'dev-skip', versionCode };
   }
 
+  const key = versionCode === null ? null : await getKey(validatorName, versionCode);
+
+  if (key?.revoked) {
+    recordMetric('revoked', endpoint, versionCode);
+    return { valid: false, mode: 'invalid', versionCode };
+  }
+
   if (bypassKey && process.env.TARNUM_KEY && bypassKey === process.env.TARNUM_KEY) {
-    recordHashValidationMetric('bypass', endpoint, versionCode);
+    recordMetric('bypass', endpoint, versionCode);
     return { valid: true, mode: 'bypass', versionCode };
   }
 
   const hashValue = typeof hash === 'string' ? hash : '';
 
-  if (versionCode !== null && hashValue) {
-    const hashKey = await lookupHashValidationKey(validatorName, versionCode);
-
-    if (hashKey && isValidExtractorHash(hashValue, payload, hashKey)) {
-      recordHashValidationMetric('new', endpoint, versionCode);
-      return { valid: true, mode: 'new', versionCode };
-    }
+  if (hashValue && key?.secret && isValidExtractorHash(hashValue, payload, key.secret)) {
+    recordMetric('new', endpoint, versionCode);
+    return { valid: true, mode: 'new', versionCode };
   }
 
   if (
-    acceptLegacyHash() &&
-    ((hashValue && checkHash(hashValue, payload)) || legacySkipEndpoints.has(endpoint))
+    process.env.ITEMDB_ACCEPT_LEGACY_EXTRACTOR_HASH !== 'false' &&
+    ((hashValue && checkHash(hashValue, payload)) || LEGACY_SKIP_ENDPOINTS.has(endpoint))
   ) {
-    recordHashValidationMetric('legacy', endpoint, versionCode);
+    recordMetric('legacy', endpoint, versionCode);
     return { valid: true, mode: 'legacy', versionCode };
   }
 
-  recordHashValidationMetric('invalid', endpoint, versionCode);
+  recordMetric('invalid', endpoint, versionCode);
   return { valid: false, mode: 'invalid', versionCode };
 }
 
@@ -69,55 +78,51 @@ export function createExtractorHash(payload: unknown, hashKey: string) {
 
 export function isValidExtractorHash(hash: string, payload: unknown, hashKey: string) {
   const expected = createExtractorHash(payload, hashKey);
-  return timingSafeEqualString(hash, expected);
+  const left = Buffer.from(hash, 'utf8');
+  const right = Buffer.from(expected, 'utf8');
+
+  if (left.length !== right.length) return false;
+
+  return timingSafeEqual(left, right);
 }
 
-const hashValidationKeyCache = new Map<string, string | null>();
-async function lookupHashValidationKey(validatorName: string, versionCode: number) {
-  const cacheKey = `${validatorName}:${versionCode}`;
-  const cached = hashValidationKeyCache.get(cacheKey);
+async function getKey(validatorName: string, versionCode: number) {
+  const cacheId = `${validatorName}:${versionCode}`;
+  const cached = keyCache.get(cacheId);
 
-  if (cached !== undefined) {
+  if (cached && cached.expiresAt > Date.now()) {
     return cached;
   }
 
   try {
-    const validationKey = await prisma.hashValidationKey.findFirst({
-      where: {
-        validatorName,
-        versionCode,
-        active: true,
-        revokedAt: null,
-      },
-      select: {
-        secret: true,
-      },
+    const row = await prisma.hashValidationKey.findFirst({
+      where: { validatorName, versionCode },
+      select: { secret: true, active: true, revokedAt: true },
     });
 
-    hashValidationKeyCache.set(cacheKey, validationKey?.secret ?? null);
-    return validationKey?.secret ?? null;
+    const entry = {
+      secret: row?.active && !row.revokedAt ? row.secret : null,
+      revoked: !!row && (!row.active || row.revokedAt !== null),
+      expiresAt:
+        Date.now() + (Number(process.env.HASH_VALIDATION_KEY_CACHE_TTL_MS) || KEY_CACHE_TTL),
+    };
+
+    keyCache.set(cacheId, entry);
+    return entry;
   } catch {
-    return null;
+    return { secret: null, revoked: false, expiresAt: 0 };
   }
 }
 
-function acceptLegacyHash() {
-  return process.env.ITEMDB_ACCEPT_LEGACY_EXTRACTOR_HASH !== 'false';
-}
-
-function getVersionCode(req: NextApiRequest) {
+function getVersion(req: NextApiRequest) {
   const header = req.headers['itemdb-version'];
   const raw = Array.isArray(header) ? header[0] : header;
-  const versionCode = Number(raw);
+  const version = Number(raw);
 
-  return Number.isInteger(versionCode) ? versionCode : null;
+  return Number.isInteger(version) ? version : null;
 }
 
-function recordHashValidationMetric(
-  mode: HashValidationMode,
-  endpoint: string,
-  versionCode: number | null
-) {
+function recordMetric(mode: HashValidationMode, endpoint: string, versionCode: number | null) {
   try {
     Sentry.metrics.count('extractor.hash_validation', 1, {
       attributes: {
@@ -129,13 +134,4 @@ function recordHashValidationMetric(
   } catch {
     // Metrics must never block extractor submissions.
   }
-}
-
-function timingSafeEqualString(left: string, right: string) {
-  const leftBuffer = Buffer.from(left, 'utf8');
-  const rightBuffer = Buffer.from(right, 'utf8');
-
-  if (leftBuffer.length !== rightBuffer.length) return false;
-
-  return timingSafeEqual(leftBuffer, rightBuffer);
 }
