@@ -1,4 +1,4 @@
-import { Items as Item, ItemProcess, Items, ItemColor, Prisma } from '@prisma/generated/client';
+import { Items as Item, ItemProcess, ItemColor, Prisma } from '@prisma/generated/client';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@utils/prisma';
 import { allBooksCats, allFoodsCats, allPlayCats, genItemKey, slugify } from '@utils/utils';
@@ -12,8 +12,13 @@ import { sendNewItemsHook } from '@utils/discord-hooks';
 import { syncAllDynamicLists } from '../lists/sync';
 import { LogService } from '@services/ActionLogService';
 import { mergeItemFieldKey, decodeItemTextFields } from '@utils/item/itemFieldMerge';
+import pMap from 'p-map';
 
 type ValueOf<T> = T[keyof T];
+
+const ITEM_PROCESS_DB_CONCURRENCY = 7;
+const ITEM_PROCESS_PALETTE_CONCURRENCY = 10;
+const ITEM_PROCESS_OPENABLE_CONCURRENCY = 5;
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
@@ -78,7 +83,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   );
 
   const deleteIds: number[] = [];
-  const itemAddPromises: Promise<Partial<Items> | undefined>[] = [];
+  const itemsToProcess: ItemProcess[] = [];
 
   // for each unique entry we get the repeated ones and "merge" all the data we have
   for (const item of uniqueNames) {
@@ -94,13 +99,17 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       deleteIds.push(itemOtherData.internal_id);
     }
 
-    itemAddPromises.push(updateOrAddDB(decodeItemTextFields(itemData)));
+    itemsToProcess.push(decodeItemTextFields(itemData));
   }
 
   // remove the 'undefined' and add new items to db
-  let itemAddList = (await Promise.all(itemAddPromises)).filter((x) => !!x) as Item[];
+  let itemAddList = (
+    await pMap(itemsToProcess, updateOrAddDB, { concurrency: ITEM_PROCESS_DB_CONCURRENCY })
+  ).filter((x) => !!x) as Item[];
 
-  const itemColorAddList = (await Promise.all(itemAddList.map((i) => getPalette(i))))
+  const itemColorAddList = (
+    await pMap(itemAddList, getPalette, { concurrency: ITEM_PROCESS_PALETTE_CONCURRENCY })
+  )
     .flat()
     .filter((x) => !!x) as ItemColor[];
 
@@ -341,34 +350,36 @@ async function processOpenables() {
     },
   });
 
-  const processPromises = queue.map(async (openable) => {
-    try {
-      await processOpenableItems(openable);
-      await prisma.openableQueue.update({
-        data: {
-          processed: true,
-        },
-        where: {
-          internal_id: openable.internal_id,
-        },
-      });
-    } catch (e: any) {
-      if (typeof e === 'string' && e.includes('unknown')) return;
+  await pMap(
+    queue,
+    async (openable) => {
+      try {
+        await processOpenableItems(openable);
+        await prisma.openableQueue.update({
+          data: {
+            processed: true,
+          },
+          where: {
+            internal_id: openable.internal_id,
+          },
+        });
+      } catch (e: any) {
+        if (typeof e === 'string' && e.includes('unknown')) return;
 
-      console.error(e);
+        console.error(e);
 
-      await prisma.openableQueue.update({
-        data: {
-          manual_check: typeof e === 'string' ? e.slice(0, 140) : e.message.slice(0, 140),
-        },
-        where: {
-          internal_id: openable.internal_id,
-        },
-      });
-    }
-  });
-
-  await Promise.all(processPromises);
+        await prisma.openableQueue.update({
+          data: {
+            manual_check: typeof e === 'string' ? e.slice(0, 140) : e.message.slice(0, 140),
+          },
+          where: {
+            internal_id: openable.internal_id,
+          },
+        });
+      }
+    },
+    { concurrency: ITEM_PROCESS_OPENABLE_CONCURRENCY }
+  );
 }
 
 const checkEat = (category?: string | null) =>
