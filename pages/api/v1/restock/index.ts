@@ -6,6 +6,7 @@ import prisma from '../../../../utils/prisma';
 import { differenceInMilliseconds } from 'date-fns';
 import { getRestockPrice, getRestockProfitOnDate, removeOutliers } from '../../../../utils/utils';
 import { getManyItems } from '../items/many';
+import { compareShopRankingEntries } from '@utils/restock';
 import { UTCDate } from '@date-fns/utc';
 import { countBy, maxBy } from 'lodash';
 import { parseBody } from 'next/dist/server/api-utils/node/parse-body';
@@ -121,7 +122,10 @@ export const getRestockStats = async (params: GetRestockStatsParams) => {
   const { startDate, endDate, shopId, limit, user } = params;
   let newStartDate = startDate;
 
-  if (startDate && !endDate) {
+  if (startDate && endDate) {
+    const periodLength = Number(endDate) - Number(startDate);
+    newStartDate = (Number(startDate) - periodLength).toString();
+  } else if (startDate && !endDate) {
     const diff = differenceInMilliseconds(Date.now(), new Date(Number(startDate)));
     newStartDate = (Number(startDate) - diff).toString();
   }
@@ -147,11 +151,16 @@ export const getRestockStats = async (params: GetRestockStatsParams) => {
     },
   });
 
-  const currentStats = sessions.filter((x) => x.startedAt >= new Date(Number(startDate)));
+  const currentStatsStartDate = startDate ? new Date(Number(startDate)) : null;
+  const currentStats = currentStatsStartDate
+    ? sessions.filter((x) => x.startedAt >= currentStatsStartDate)
+    : sessions;
 
   if (!currentStats.length) return null;
 
-  const pastStats = sessions.filter((x) => x.startedAt < new Date(Number(startDate)));
+  const pastStats = currentStatsStartDate
+    ? sessions.filter((x) => x.startedAt < currentStatsStartDate)
+    : [];
 
   const [currentResult, pastResult] = await Promise.all([
     calculateStats(
@@ -187,7 +196,9 @@ export const calculateStats = async (
 
   const stats: RestockStats = JSON.parse(JSON.stringify(defaultStats));
   const sessions: RestockSession[] = [];
+  const sessionShopIds = new WeakMap<RestockSession, number>();
   const allShops: { [id: string]: number } = {};
+  const shopRankingMap: Record<number, RestockStats['shopRanking'][0]> = {};
   const allBought: RestockStats['hottestBought'] = [];
   const allLost: RestockStats['hottestBought'] = [];
   const allItems: ValueOf<RestockSession['items']>[] = [];
@@ -215,6 +226,7 @@ export const calculateStats = async (
     if (typeof session === 'string') session = JSON.parse(session) as RestockSession;
 
     sessions.push(session);
+    sessionShopIds.set(session, rawSession.shop_id);
 
     stats.startDate = Math.min(stats.startDate, new Date(rawSession.startedAt).getTime());
     stats.endDate = Math.max(stats.endDate, new Date(rawSession.endedAt).getTime());
@@ -227,6 +239,10 @@ export const calculateStats = async (
     allShops[rawSession.shop_id] = allShops[rawSession.shop_id]
       ? allShops[rawSession.shop_id] + duration
       : duration;
+    const shopRankingEntry = getShopRankingEntry(shopRankingMap, rawSession.shop_id);
+    shopRankingEntry.durationCount += duration;
+    shopRankingEntry.totalSessions++;
+    shopRankingEntry.totalClicks += session.clicks.length;
     stats.totalRefreshes += session.refreshes.length;
     stats.totalSessions++;
 
@@ -270,7 +286,6 @@ export const calculateStats = async (
       ? refreshesPerDay[date] + session.refreshes.length
       : session.refreshes.length;
 
-    stats.totalRefreshes += session.refreshes.length;
     stats.totalClicks += session.clicks.length;
   });
 
@@ -305,6 +320,10 @@ export const calculateStats = async (
       const rawItem = allItemsData[click.item_id];
       let restockItem = session.items[click.restock_id];
       if (!rawItem) return;
+      const shopRankingEntry = getShopRankingEntry(
+        shopRankingMap,
+        sessionShopIds.get(session) ?? getSessionShopId(session)
+      );
 
       if (!restockItem) {
         session.items[click.restock_id] = {
@@ -328,6 +347,8 @@ export const calculateStats = async (
 
         stats.totalBought.count++;
         stats.totalBought.value += item.price.value ?? 0;
+        shopRankingEntry.totalBought.count++;
+        shopRankingEntry.totalBought.value += item.price.value ?? 0;
 
         stats.mostExpensiveBought =
           stats.mostExpensiveBought &&
@@ -342,9 +363,11 @@ export const calculateStats = async (
         if (profit && profit <= 0) allBaits.push({ item, click, restockItem });
 
         stats.estRevenue += item.price.value ?? 0;
+        shopRankingEntry.estRevenue += item.price.value ?? 0;
 
         if (!stats.totalSpent) stats.totalSpent = 0;
         stats.totalSpent += buyVal ?? 0;
+        shopRankingEntry.totalSpent += buyVal ?? 0;
 
         if (buyVal) {
           const restockVal =
@@ -383,6 +406,8 @@ export const calculateStats = async (
       } else {
         stats.totalLost.count++;
         stats.totalLost.value += item.price.value ?? 0;
+        shopRankingEntry.totalLost.count++;
+        shopRankingEntry.totalLost.value += item.price.value ?? 0;
 
         if (click.soldOut_timestamp) {
           if (click.soldOut_timestamp < restockItem.timestamp) return;
@@ -437,6 +462,15 @@ export const calculateStats = async (
     .splice(0, 10);
 
   stats.shopList = Object.keys(allShops).map((x) => parseInt(x));
+  stats.shopRanking = Object.values(shopRankingMap)
+    .map((shopRanking) => ({
+      ...shopRanking,
+      estProfit: shopRanking.totalSpent ? shopRanking.estRevenue - shopRanking.totalSpent : null,
+      successRate: shopRanking.totalClicks
+        ? (shopRanking.totalBought.count / shopRanking.totalClicks) * 100
+        : 0,
+    }))
+    .sort(compareShopRankingEntries);
 
   stats.estProfit = stats.totalSpent ? stats.estRevenue - stats.totalSpent : null;
 
@@ -464,6 +498,7 @@ export const defaultStats: RestockStats = {
   durationCount: 0,
   shopList: [],
   shopDuration: {},
+  shopRanking: [],
   mostPopularShop: {
     shopId: 0,
     durationCount: 0,
@@ -594,6 +629,41 @@ const getItemProfitOnDate = (click: RestockSession['clicks'][0], item: ItemData)
   }
 
   return getRestockProfitOnDate(item, click.buy_timestamp!);
+};
+
+const getSessionShopId = (session: RestockSession) => {
+  if ((session.shopId as any) === 'attic') return -1;
+  if ((session.shopId as any) === 'igloo') return -2;
+
+  return Number(session.shopId);
+};
+
+const getShopRankingEntry = (
+  shopRankingMap: Record<number, RestockStats['shopRanking'][0]>,
+  shopId: number
+) => {
+  if (!shopRankingMap[shopId]) {
+    shopRankingMap[shopId] = {
+      shopId,
+      durationCount: 0,
+      totalSessions: 0,
+      totalClicks: 0,
+      totalBought: {
+        count: 0,
+        value: 0,
+      },
+      totalLost: {
+        count: 0,
+        value: 0,
+      },
+      totalSpent: 0,
+      estRevenue: 0,
+      estProfit: null,
+      successRate: 0,
+    };
+  }
+
+  return shopRankingMap[shopId];
 };
 
 //

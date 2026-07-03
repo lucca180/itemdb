@@ -26,6 +26,7 @@ import { ReactElement, useEffect, useMemo, useState } from 'react';
 import Layout from '@components/Layout';
 import MainLink from '@components/Utils/MainLink';
 import { StatsCard } from '@components/Hubs/Restock/StatsCard';
+import { ShopRankingTab } from '@components/Hubs/Restock/ShopRankingTab';
 import ItemCard from '@components/Items/ItemCard';
 import ImportRestockModal from '@components/Modal/ImportRestock';
 import { RestockChart, RestockSession, RestockStats, User } from '@types';
@@ -36,8 +37,6 @@ import RestockItem from '@components/Hubs/Restock/RestockItemCard';
 import { createTranslator, useFormatter, useTranslations } from 'next-intl';
 import { FaCog, FaEyeSlash, FaFileDownload } from 'react-icons/fa';
 // import CalendarHeatmap from '@components/Charts/CalHeatmap';
-import { endOfDay } from 'date-fns';
-import { UTCDate } from '@date-fns/utc';
 import dynamic from 'next/dynamic';
 import { FaArrowTrendUp, FaArrowTrendDown } from 'react-icons/fa6';
 import { NextApiRequest } from 'next';
@@ -47,6 +46,14 @@ import { getRestockStats } from '@pages/api/v1/restock';
 import { IntervalFormatted } from '@components/Utils/IntervalFormatted';
 import { loadTranslation } from '@utils/load-translation';
 import FeedbackButton from '@components/Feedback/FeedbackButton';
+import {
+  getFilterSelectValue,
+  getNstEndOfDay,
+  getPresetFilter,
+  getRollingStartDate,
+  normalizeFilterPreset,
+  type PeriodFilter,
+} from '@utils/restock';
 
 const RestockWrappedModal = dynamic(() => import('@components/Modal/RestockWrappedModal'));
 
@@ -66,8 +73,6 @@ const getAlertStatus = (type: AlertMsg['type']) => {
   if (type === 'loading') return 'info';
   return type;
 };
-
-type PeriodFilter = { timePeriod: number; shops: number | string; timestamp: number | null };
 
 const defaultFilter: PeriodFilter = { timePeriod: 30, shops: 'all', timestamp: null };
 
@@ -107,36 +112,39 @@ const RestockDashboard = (props: RestockDashboardProps) => {
   const [filter, setFilter] = useState<PeriodFilter | null>(props.initialFilter);
   const [chartData, setChartData] = useState<RestockChart | null>(null);
   const [showScriptCTA, setShowScriptCTA] = useState<boolean>(false);
+  const visiblePastSessionStats = userPref?.dashboard_hidePrev ? null : pastSessionStats;
 
   const revenueDiff = useMemo(() => {
-    if (!sessionStats || !pastSessionStats) return null;
-    const diff = sessionStats.estRevenue - pastSessionStats.estRevenue;
-    const diffPercentage = Math.abs(diff / pastSessionStats.estRevenue) * 100;
+    if (!sessionStats || !visiblePastSessionStats) return null;
+    const diff = sessionStats.estRevenue - visiblePastSessionStats.estRevenue;
+    if (!visiblePastSessionStats.estRevenue) return null;
+
+    const diffPercentage = Math.abs(diff / visiblePastSessionStats.estRevenue) * 100;
 
     return {
       diff,
       diffPercentage,
       isPositive: diff > 0,
     };
-  }, [sessionStats, pastSessionStats]);
+  }, [sessionStats, visiblePastSessionStats]);
 
   const profitDiff = useMemo(() => {
     if (
       !sessionStats ||
-      !pastSessionStats ||
+      !visiblePastSessionStats ||
       !sessionStats.estProfit ||
-      !pastSessionStats.estProfit
+      !visiblePastSessionStats.estProfit
     )
       return null;
-    const diff = sessionStats.estProfit - pastSessionStats.estProfit;
-    const diffPercentage = Math.abs(diff / pastSessionStats.estProfit) * 100;
+    const diff = sessionStats.estProfit - visiblePastSessionStats.estProfit;
+    const diffPercentage = Math.abs(diff / visiblePastSessionStats.estProfit) * 100;
 
     return {
       diff,
       diffPercentage,
       isPositive: diff > 0,
     };
-  }, [sessionStats, pastSessionStats]);
+  }, [sessionStats, visiblePastSessionStats]);
 
   const init = async (customFilter?: PeriodFilter) => {
     customFilter = customFilter ?? filter ?? defaultFilter;
@@ -145,11 +153,15 @@ const RestockDashboard = (props: RestockDashboardProps) => {
       const dataProm = axios.get('/api/v1/restock', {
         params: {
           startDate:
-            customFilter.timestamp ?? Date.now() - customFilter.timePeriod * 24 * 60 * 60 * 1000,
-          endDate: customFilter.timestamp
-            ? endOfDay(new UTCDate(customFilter.timestamp)).getTime()
-            : undefined,
+            customFilter.preset === 'lastSession'
+              ? undefined
+              : (customFilter.timestamp ?? getRollingStartDate(customFilter.timePeriod)),
+          endDate:
+            customFilter.timestamp && customFilter.preset !== 'lastSession'
+              ? getNstEndOfDay(customFilter.timestamp)
+              : undefined,
           shopId: customFilter.shops === 'all' ? undefined : customFilter.shops,
+          limit: customFilter.preset === 'lastSession' ? 1 : undefined,
         },
       });
 
@@ -257,21 +269,31 @@ const RestockDashboard = (props: RestockDashboardProps) => {
     init();
   };
 
+  const applyFilter = (nextFilter: PeriodFilter) => {
+    init(nextFilter);
+    setFilter(nextFilter);
+
+    setCookie('restockFilter2025', JSON.stringify(nextFilter), {
+      expires: new Date('2030-01-01'),
+    });
+  };
+
   const handleSelectChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
-    const nextValue = name === 'timePeriod' ? Number(value) : value;
+    if (name === 'timePeriod') {
+      const baseFilter = filter ?? defaultFilter;
+      const presetFilter = getPresetFilter(value, baseFilter);
 
-    init({ ...(filter ?? defaultFilter), [name]: nextValue, timestamp: null });
+      applyFilter(
+        presetFilter ?? { ...baseFilter, timePeriod: Number(value), timestamp: null, preset: null }
+      );
+      return;
+    }
 
-    setFilter((prev) => ({ ...(prev ?? defaultFilter), [name]: nextValue, timestamp: null }));
+    const nextValue = value;
+    const nextFilter = { ...(filter ?? defaultFilter), [name]: nextValue };
 
-    setCookie(
-      'restockFilter2025',
-      JSON.stringify({ ...filter, [name]: nextValue, timestamp: null }),
-      {
-        expires: new Date('2030-01-01'),
-      }
-    );
+    applyFilter(nextFilter);
   };
 
   const track = async () => {
@@ -356,20 +378,21 @@ const RestockDashboard = (props: RestockDashboardProps) => {
         >
           <NativeSelect.Field
             name="timePeriod"
-            value={String((filter ?? defaultFilter).timePeriod)}
+            value={getFilterSelectValue(filter ?? defaultFilter)}
             onChange={handleSelectChange}
             css={{ option: { color: 'white' } }}
           >
-            {filter?.timestamp && (
-              <option value={filter.timePeriod}>{formatter.dateTime(filter.timestamp)}</option>
+            {filter?.timestamp && !filter.preset && (
+              <option value="customDate">{formatter.dateTime(filter.timestamp)}</option>
             )}
-            <option value={0.08325}>{t('General.last-x-hours', { x: 2 })}</option>
+            <option value="lastSession">{t('Restock.last-session')}</option>
+            <option value="today">{t('General.today')}</option>
+            <option value="yesterday">{t('General.yesterday')}</option>
             <option value={0.5}>{t('General.last-x-hours', { x: 12 })}</option>
-            <option value={1}>{t('General.last-x-hours', { x: 24 })}</option>
             <option value={7}>{t('General.last-x-days', { x: 7 })}</option>
             <option value={30}>{t('General.last-x-days', { x: 30 })}</option>
-            <option value={60}>{t('General.last-x-days', { x: 60 })}</option>
             <option value={90}>{t('General.last-x-days', { x: 90 })}</option>
+            <option value="halfPriceDay">{t('Restock.half-price-day')}</option>
           </NativeSelect.Field>
           <NativeSelect.Indicator />
         </NativeSelect.Root>
@@ -699,9 +722,10 @@ const RestockDashboard = (props: RestockDashboardProps) => {
                       <Tooltip.Content bg="blackAlpha.900" color="white" fontSize="xs">
                         {t('Restock.from-x-with-y-items', {
                           0: formatter.number(
-                            pastSessionStats!.estProfit ?? pastSessionStats!.estRevenue
+                            visiblePastSessionStats!.estProfit ??
+                              visiblePastSessionStats!.estRevenue
                           ),
-                          1: pastSessionStats!.totalBought.count,
+                          1: visiblePastSessionStats!.totalBought.count,
                         })}
                         <Tooltip.Arrow>
                           <Tooltip.ArrowTip />
@@ -787,24 +811,53 @@ const RestockDashboard = (props: RestockDashboardProps) => {
           </Flex>
           <Separator />
           <SimpleGrid mt={3} columns={[2, 2, 2, 4, 4]} gap={[2, 3]}>
-            <StatsCard type="reactionTime" session={sessionStats} pastSession={pastSessionStats} />
-            <StatsCard type="fastestBuy" session={sessionStats} pastSession={pastSessionStats} />
-            <StatsCard type="refreshTime" session={sessionStats} pastSession={pastSessionStats} />
-            <StatsCard type="bestBuy" session={sessionStats} pastSession={pastSessionStats} />
+            <StatsCard
+              type="reactionTime"
+              session={sessionStats}
+              pastSession={visiblePastSessionStats}
+            />
+            <StatsCard
+              type="fastestBuy"
+              session={sessionStats}
+              pastSession={visiblePastSessionStats}
+            />
+            <StatsCard
+              type="successRate"
+              session={sessionStats}
+              pastSession={visiblePastSessionStats}
+            />
+            <StatsCard
+              type="refreshTime"
+              session={sessionStats}
+              pastSession={visiblePastSessionStats}
+            />
+            <StatsCard
+              type="bestBuy"
+              session={sessionStats}
+              pastSession={visiblePastSessionStats}
+            />
             <StatsCard
               type="clickedAndLost"
               blur={userPref?.dashboard_hideMisses}
               session={sessionStats}
-              pastSession={pastSessionStats}
+              pastSession={visiblePastSessionStats}
             />
             <StatsCard
               type="worstClickedAndLost"
               blur={userPref?.dashboard_hideMisses}
               session={sessionStats}
-              pastSession={pastSessionStats}
+              pastSession={visiblePastSessionStats}
             />
-            <StatsCard type="favoriteBuy" session={sessionStats} pastSession={pastSessionStats} />
-            <StatsCard type="savedHaggling" session={sessionStats} pastSession={pastSessionStats} />
+            <StatsCard
+              type="favoriteBuy"
+              session={sessionStats}
+              pastSession={visiblePastSessionStats}
+            />
+            {/* <StatsCard
+              type="savedHaggling"
+              session={sessionStats}
+              pastSession={visiblePastSessionStats}
+            /> */}
           </SimpleGrid>
           <Text textAlign={'center'} fontSize="xs" color="whiteAlpha.600" mt={6}>
             {t('General.tip')}:{' '}
@@ -863,6 +916,14 @@ const RestockDashboard = (props: RestockDashboardProps) => {
                     _selected={{ color: 'green.100', bg: 'blackAlpha.500', opacity: 1 }}
                   >
                     {t('Restock.worst-baits')}
+                  </Tabs.Trigger>
+                  <Tabs.Trigger
+                    value="shops"
+                    color="green.50"
+                    opacity={'0.5'}
+                    _selected={{ color: 'green.100', bg: 'blackAlpha.500', opacity: 1 }}
+                  >
+                    {t('Restock.shop-ranking')}
                   </Tabs.Trigger>
                 </Tabs.List>
                 <Tabs.Content value="restocks" px={0}>
@@ -947,6 +1008,9 @@ const RestockDashboard = (props: RestockDashboardProps) => {
                     )}
                   </Flex>
                 </Tabs.Content>
+                <Tabs.Content value="shops" px={0}>
+                  <ShopRankingTab shopRanking={sessionStats.shopRanking} />
+                </Tabs.Content>
               </Tabs.Root>
             </Flex>
           </Flex>
@@ -972,11 +1036,11 @@ export async function getServerSideProps(context: any): Promise<{ props: Restock
 
   const tip = tipList[Math.floor(Math.random() * tipList.length)];
 
-  const filter: PeriodFilter = {
+  const filter: PeriodFilter = normalizeFilterPreset({
     ...defaultFilter,
     ...JSON.parse(context.req.cookies.restockFilter2025 || '{}'),
     shops: 'all',
-  };
+  });
 
   try {
     res = await CheckAuth(context.req as NextApiRequest);
@@ -997,9 +1061,16 @@ export async function getServerSideProps(context: any): Promise<{ props: Restock
 
   const data = await getRestockStats({
     user: user,
-    startDate: filter.timestamp ?? Date.now() - (filter.timePeriod ?? 7) * 24 * 60 * 60 * 1000,
-    endDate: filter.timestamp ? endOfDay(new UTCDate(filter.timestamp)).getTime() : undefined,
+    startDate:
+      filter.preset === 'lastSession'
+        ? undefined
+        : (filter.timestamp ?? getRollingStartDate(filter.timePeriod ?? 7)),
+    endDate:
+      filter.timestamp && filter.preset !== 'lastSession'
+        ? getNstEndOfDay(filter.timestamp)
+        : undefined,
     shopId: filter.shops === 'all' ? undefined : filter.shops,
+    limit: filter.preset === 'lastSession' ? '1' : undefined,
   });
 
   return {

@@ -420,6 +420,24 @@ type RestockStats = {
   shopDuration: {
     [shopId: string]: number;
   };
+  shopRanking: {
+    shopId: number;
+    durationCount: number;
+    totalSessions: number;
+    totalClicks: number;
+    totalBought: {
+      count: number;
+      value: number;
+    };
+    totalLost: {
+      count: number;
+      value: number;
+    };
+    totalSpent: number;
+    estRevenue: number;
+    estProfit: number | null;
+    successRate: number;
+  }[];
   mostPopularShop: {
     shopId: number;
     durationCount: number;

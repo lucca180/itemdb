@@ -60,9 +60,6 @@ export const StatsCard = (props: StatsCardProps) => {
           <Tooltip.Positioner>
             <Tooltip.Content bg="blackAlpha.900" color="white" fontSize="xs">
               {labelTooltip}
-              <Tooltip.Arrow>
-                <Tooltip.ArrowTip />
-              </Tooltip.Arrow>
             </Tooltip.Content>
           </Tooltip.Positioner>
         </Tooltip.Root>
@@ -88,9 +85,6 @@ export const StatsCard = (props: StatsCardProps) => {
             <Tooltip.Positioner>
               <Tooltip.Content bg="blackAlpha.900" color="white" fontSize="xs">
                 {badgeTooltip}
-                <Tooltip.Arrow>
-                  <Tooltip.ArrowTip />
-                </Tooltip.Arrow>
               </Tooltip.Content>
             </Tooltip.Positioner>
           </Tooltip.Root>
@@ -113,19 +107,51 @@ const useStatsTypes = (
 
   let badgeData = {};
   switch (type) {
+    case 'successRate': {
+      const successRate = getSuccessRate(sessionStats);
+
+      if (pastSession && pastSession.totalClicks > 0) {
+        const pastSuccessRate = getSuccessRate(pastSession);
+        const diff = successRate - pastSuccessRate;
+
+        if (diff !== 0) {
+          badgeData = {
+            badgeStat: `${Math.abs(diff).toFixed(1)}pp`,
+            badgeIconType: diff > 0 ? 'up' : 'down',
+            badgeColor: diff > 0 ? 'green' : 'red',
+            badgeTooltip: t('Restock.from-x', {
+              0: `${pastSuccessRate.toFixed(1)}%`,
+            }),
+          };
+        }
+      }
+
+      return {
+        label: t('Restock.success-rate'),
+        stat: `${successRate.toFixed(1)}%`,
+        helpText: t('Restock.success-rate-helper', {
+          bought: formatter.number(sessionStats.totalBought.count),
+          clicks: formatter.number(sessionStats.totalClicks),
+        }),
+        labelTooltip: t('Restock.success-rate-tooltip'),
+        ...badgeData,
+      };
+    }
     case 'reactionTime':
       if (pastSession) {
         const diff = sessionStats.avgReactionTime - pastSession.avgReactionTime;
-        const diffPercentage = Math.abs(diff / pastSession.avgReactionTime) * 100;
+        const diffPercentage = getPercentDiff(diff, pastSession.avgReactionTime);
 
-        badgeData = {
-          badgeStat: `${diffPercentage.toFixed(2)}%`,
-          badgeIconType: diff > 0 ? 'up' : 'down',
-          badgeColor: diff > 0 ? 'red' : 'green',
-          badgeTooltip: t('Restock.from-x', {
-            0: msIntervalFormatted(pastSession.avgReactionTime, true, 2),
-          }),
-        };
+        if (diffPercentage !== null) {
+          badgeData = {
+            badgeStat: `${diffPercentage.toFixed(2)}%`,
+            badgeIconType: diff > 0 ? 'up' : 'down',
+            badgeColor: diff > 0 ? 'red' : 'green',
+            badgeTooltip: t('Restock.from-x', {
+              0: msIntervalFormatted(pastSession.avgReactionTime, true, 2),
+            }),
+          };
+        }
       }
 
       return {
@@ -147,16 +173,18 @@ const useStatsTypes = (
     case 'refreshTime':
       if (pastSession) {
         const diff = sessionStats.avgRefreshTime - pastSession.avgRefreshTime;
-        const diffPercentage = Math.abs(diff / pastSession.avgRefreshTime) * 100;
+        const diffPercentage = getPercentDiff(diff, pastSession.avgRefreshTime);
 
-        badgeData = {
-          badgeStat: `${diffPercentage.toFixed(2)}%`,
-          badgeIconType: diff > 0 ? 'up' : 'down',
-          badgeColor: diff > 0 ? 'red' : 'green',
-          badgeTooltip: t('Restock.from-x', {
-            0: msIntervalFormatted(pastSession.avgRefreshTime, true, 2),
-          }),
-        };
+        if (diffPercentage !== null) {
+          badgeData = {
+            badgeStat: `${diffPercentage.toFixed(2)}%`,
+            badgeIconType: diff > 0 ? 'up' : 'down',
+            badgeColor: diff > 0 ? 'red' : 'green',
+            badgeTooltip: t('Restock.from-x', {
+              0: msIntervalFormatted(pastSession.avgRefreshTime, true, 2),
+            }),
+          };
+        }
       }
       return {
         label: t('Restock.avg-refresh-time'),
@@ -169,16 +197,18 @@ const useStatsTypes = (
     case 'clickedAndLost':
       if (pastSession) {
         const diff = sessionStats.totalLost.value - pastSession.totalLost.value;
-        const diffPercentage = Math.abs(diff / pastSession.totalLost.value) * 100;
+        const diffPercentage = getPercentDiff(diff, pastSession.totalLost.value);
 
-        badgeData = {
-          badgeStat: `${diffPercentage.toFixed(2)}%`,
-          badgeIconType: diff > 0 ? 'up' : 'down',
-          badgeColor: diff > 0 ? 'red' : 'green',
-          badgeTooltip: t('Restock.from-x', {
-            0: `${formatter.number(pastSession.totalLost.value)} NP`,
-          }),
-        };
+        if (diffPercentage !== null) {
+          badgeData = {
+            badgeStat: `${diffPercentage.toFixed(2)}%`,
+            badgeIconType: diff > 0 ? 'up' : 'down',
+            badgeColor: diff > 0 ? 'red' : 'green',
+            badgeTooltip: t('Restock.from-x', {
+              0: `${formatter.number(pastSession.totalLost.value)} NP`,
+            }),
+          };
+        }
       }
 
       return {
@@ -200,16 +230,18 @@ const useStatsTypes = (
       if (pastSession) {
         const diff =
           (sessionStats.fastestBuy?.timediff ?? 0) - (pastSession.fastestBuy?.timediff ?? 0);
-        const diffPercentage = Math.abs(diff / (pastSession.fastestBuy?.timediff ?? 0)) * 100;
+        const diffPercentage = getPercentDiff(diff, pastSession.fastestBuy?.timediff ?? 0);
 
-        badgeData = {
-          badgeStat: `${diffPercentage.toFixed(2)}%`,
-          badgeIconType: diff > 0 ? 'up' : 'down',
-          badgeColor: diff > 0 ? 'red' : 'green',
-          badgeTooltip: t('Restock.from-x', {
-            0: msIntervalFormatted(pastSession.fastestBuy?.timediff ?? 0, true, 2),
-          }),
-        };
+        if (diffPercentage !== null) {
+          badgeData = {
+            badgeStat: `${diffPercentage.toFixed(2)}%`,
+            badgeIconType: diff > 0 ? 'up' : 'down',
+            badgeColor: diff > 0 ? 'red' : 'green',
+            badgeTooltip: t('Restock.from-x', {
+              0: msIntervalFormatted(pastSession.fastestBuy?.timediff ?? 0, true, 2),
+            }),
+          };
+        }
       }
 
       return {
@@ -237,16 +269,18 @@ const useStatsTypes = (
     case 'timeSpent':
       if (pastSession) {
         const diff = sessionStats.durationCount - pastSession.durationCount;
-        const diffPercentage = Math.abs(diff / pastSession.durationCount) * 100;
+        const diffPercentage = getPercentDiff(diff, pastSession.durationCount);
 
-        badgeData = {
-          badgeStat: `${diffPercentage.toFixed(2)}%`,
-          badgeIconType: diff > 0 ? 'up' : 'down',
-          badgeColor: diff > 0 ? 'green' : 'green',
-          badgeTooltip: t('Restock.from-x', {
-            0: msIntervalFormatted(pastSession.durationCount, true, 2),
-          }),
-        };
+        if (diffPercentage !== null) {
+          badgeData = {
+            badgeStat: `${diffPercentage.toFixed(2)}%`,
+            badgeIconType: diff > 0 ? 'up' : 'down',
+            badgeColor: diff > 0 ? 'green' : 'green',
+            badgeTooltip: t('Restock.from-x', {
+              0: msIntervalFormatted(pastSession.durationCount, true, 2),
+            }),
+          };
+        }
       }
       return {
         label: t('Restock.time-spent-restocking'),
@@ -259,16 +293,18 @@ const useStatsTypes = (
     case 'savedHaggling':
       if (pastSession) {
         const diff = sessionStats.totalHaggled - pastSession.totalHaggled;
-        const diffPercentage = Math.abs(diff / pastSession.totalHaggled) * 100;
+        const diffPercentage = getPercentDiff(diff, pastSession.totalHaggled);
 
-        badgeData = {
-          badgeStat: `${diffPercentage.toFixed(0)}%`,
-          badgeIconType: diff > 0 ? 'up' : 'down',
-          badgeColor: diff > 0 ? 'green' : 'red',
-          badgeTooltip: t('Restock.from-x', {
-            0: `${formatter.number(pastSession.totalHaggled)} NP`,
-          }),
-        };
+        if (diffPercentage !== null) {
+          badgeData = {
+            badgeStat: `${diffPercentage.toFixed(0)}%`,
+            badgeIconType: diff > 0 ? 'up' : 'down',
+            badgeColor: diff > 0 ? 'green' : 'red',
+            badgeTooltip: t('Restock.from-x', {
+              0: `${formatter.number(pastSession.totalHaggled)} NP`,
+            }),
+          };
+        }
       }
 
       return {
@@ -286,4 +322,17 @@ const useStatsTypes = (
         helpText: 'Total restocks made in this session',
       };
   }
+};
+
+const getSuccessRate = (sessionStats: RestockStats) => {
+  if (!sessionStats.totalClicks) return 0;
+
+  return (sessionStats.totalBought.count / sessionStats.totalClicks) * 100;
+};
+
+const getPercentDiff = (diff: number, previousValue: number) => {
+  if (!previousValue) return null;
+
+  const percentDiff = Math.abs(diff / previousValue) * 100;
+  return Number.isFinite(percentDiff) ? percentDiff : null;
 };
