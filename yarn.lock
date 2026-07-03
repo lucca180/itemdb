@@ -2439,7 +2439,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@emotion/cache@npm:^11.14.0":
+"@emotion/cache@npm:^11.13.5, @emotion/cache@npm:^11.14.0":
   version: 11.14.0
   resolution: "@emotion/cache@npm:11.14.0"
   dependencies:
@@ -2449,6 +2449,19 @@ __metadata:
     "@emotion/weak-memoize": "npm:^0.4.0"
     stylis: "npm:4.2.0"
   checksum: 10c0/3fa3e7a431ab6f8a47c67132a00ac8358f428c1b6c8421d4b20de9df7c18e95eec04a5a6ff5a68908f98d3280044f247b4965ac63df8302d2c94dba718769724
+  languageName: node
+  linkType: hard
+
+"@emotion/css@npm:^11.13.5":
+  version: 11.13.5
+  resolution: "@emotion/css@npm:11.13.5"
+  dependencies:
+    "@emotion/babel-plugin": "npm:^11.13.5"
+    "@emotion/cache": "npm:^11.13.5"
+    "@emotion/serialize": "npm:^1.3.3"
+    "@emotion/sheet": "npm:^1.4.0"
+    "@emotion/utils": "npm:^1.4.2"
+  checksum: 10c0/45d444b08c1a9776046786f1ad8b93297d9e0fb79e6a40b73e9f9c5c20a071f83bae2408e7b98fe526fc123774a18b12ae3c8dc5b5883b8169685ee7b8df9463
   languageName: node
   linkType: hard
 
@@ -8286,7 +8299,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"classnames@npm:^2.0.0, classnames@npm:^2.2.6":
+"classnames@npm:^2.0.0, classnames@npm:^2.2.6, classnames@npm:^2.5.1":
   version: 2.5.1
   resolution: "classnames@npm:2.5.1"
   checksum: 10c0/afff4f77e62cea2d79c39962980bf316bacb0d7c49e13a21adaadb9221e1c6b9d3cdb829d8bb1b23c406f4e740507f37e1dcf506f7e3b7113d17c5bab787aa69
@@ -9100,6 +9113,13 @@ __metadata:
   version: 4.0.2
   resolution: "diff@npm:4.0.2"
   checksum: 10c0/81b91f9d39c4eaca068eb0c1eb0e4afbdc5bb2941d197f513dd596b820b956fef43485876226d65d497bebc15666aa2aa82c679e84f65d5f2bfbf14ee46e32c1
+  languageName: node
+  linkType: hard
+
+"diff@npm:^9.0.0":
+  version: 9.0.0
+  resolution: "diff@npm:9.0.0"
+  checksum: 10c0/a971cc88f66071a33bd3942db2f51b57d484e9856265ae45cf44fb28ab2fde91f132d9c26d8be0fb6082d2be94d29e1295c1adb251b7461935d6a2dd304cd161
   languageName: node
   linkType: hard
 
@@ -11940,6 +11960,7 @@ __metadata:
     query-string: "npm:^9.3.1"
     rctx-contextmenu: "npm:^1.4.1"
     react: "npm:19.2.7"
+    react-diff-viewer-continued: "npm:^4.2.2"
     react-dom: "npm:19.2.7"
     react-icons: "npm:^5.6.0"
     react-markdown: "npm:^10.1.0"
@@ -12859,6 +12880,13 @@ __metadata:
   version: 2.27.1
   resolution: "mdn-data@npm:2.27.1"
   checksum: 10c0/eb8abf5d22e4d1e090346f5e81b67d23cef14c83940e445da5c44541ad874dc8fb9f6ca236e8258c3a489d9fb5884188a4d7d58773adb9089ac2c0b966796393
+  languageName: node
+  linkType: hard
+
+"memoize-one@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "memoize-one@npm:6.0.0"
+  checksum: 10c0/45c88e064fd715166619af72e8cf8a7a17224d6edf61f7a8633d740ed8c8c0558a4373876c9b8ffc5518c2b65a960266adf403cc215cb1e90f7e262b58991f54
   languageName: node
   linkType: hard
 
@@ -14827,6 +14855,23 @@ __metadata:
     csstype: "npm:^3.0.10"
     lodash.curry: "npm:^4.1.1"
   checksum: 10c0/00ed3bbc4b7cf829117eb38d2e350b03ef6a746a3b58e57494a2cf8a3de6f98494ee9209543a399d474e8a6c0172584b3b61309e59e57c2b2694b5dc910a14a1
+  languageName: node
+  linkType: hard
+
+"react-diff-viewer-continued@npm:^4.2.2":
+  version: 4.2.2
+  resolution: "react-diff-viewer-continued@npm:4.2.2"
+  dependencies:
+    "@emotion/css": "npm:^11.13.5"
+    "@emotion/react": "npm:^11.14.0"
+    classnames: "npm:^2.5.1"
+    diff: "npm:^9.0.0"
+    js-yaml: "npm:^4.1.1"
+    memoize-one: "npm:^6.0.0"
+  peerDependencies:
+    react: ^15.3.0 || ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+    react-dom: ^15.3.0 || ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10c0/07238e789eb8732a6b279fcf131d0a77eb0a29178fc766034e69f283bee1a7c073214694dd00d060805d7cc50f26c3e5356b51f4420aa46a7b68110b6448060b
   languageName: node
   linkType: hard
 

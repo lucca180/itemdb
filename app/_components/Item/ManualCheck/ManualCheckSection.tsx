@@ -15,9 +15,14 @@ export async function ManualCheckSection({ item }: Props) {
   const { inflation, info } = await getItemManualCheck(item.internal_id);
 
   if (info) {
-    const conflictField = info.manual_check?.split('Merge')[0].split("'")[1] ?? null;
     return (
-      <ManualCheckCard item={item} type="info" manualCheck={info} conflictField={conflictField} />
+      <ManualCheckCard
+        item={item}
+        type="info"
+        manualCheck={info.process}
+        conflictField={info.conflictField}
+        changes={info.changes}
+      />
     );
   }
 
