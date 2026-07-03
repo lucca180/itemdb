@@ -501,17 +501,11 @@ export function HelpNeeded({ item, labels }: { item: ItemData; labels: ItemPrice
   if (hideHelp) return null;
 
   return (
-    <Alert.Root status="warning" flexFlow="column" borderRadius="md">
+    <Alert.Root status="info" variant="surface" borderRadius="md">
       <Alert.Indicator />
       <Alert.Content>
         <Alert.Title>{labels.title}</Alert.Title>
-        <Alert.Description
-          textAlign="center"
-          display="flex"
-          flexFlow="column"
-          gap={3}
-          fontSize="sm"
-        >
+        <Alert.Description gap={3} fontSize="sm">
           {labels.description}
           <HStack justifyContent="center">
             {labels.priceTradeLots && (
