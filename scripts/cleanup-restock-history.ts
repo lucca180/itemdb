@@ -129,7 +129,7 @@ function createPrismaClient() {
     fail('DATABASE_URL is not set. Check your .env file.');
   }
 
-  const adapter = createPrismaAdapter(databaseUrl);
+  const adapter = createPrismaAdapter(databaseUrl, { statementTimeout: false });
 
   return new PrismaClient({ adapter });
 }

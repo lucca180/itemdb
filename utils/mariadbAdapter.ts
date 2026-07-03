@@ -10,6 +10,14 @@ const POOL_OPTION_KEYS = [
   'connectTimeout',
 ] as const satisfies readonly (keyof PoolConfig)[];
 
+/** Default per-statement timeout (seconds) for app pool connections in production. */
+export const DEFAULT_STATEMENT_TIMEOUT = 90;
+
+export type PrismaAdapterOptions = {
+  /** Pass `false` to skip session timeout (maintenance scripts). */
+  statementTimeout?: number | false;
+};
+
 /**
  * Production pool defaults — sized for item-page preload bursts (~15 parallel queries)
  * with 3 PM2 workers (3 × 25 = 75 max connections per active deploy).
@@ -34,6 +42,28 @@ export function getMariaDbPoolDefaults(): Partial<PoolConfig> {
     : MARIADB_POOL_DEFAULTS_PRODUCTION;
 }
 
+function getStatementTimeout(
+  override?: PrismaAdapterOptions['statementTimeout']
+): number | undefined {
+  if (override === false) return undefined;
+  if (typeof override === 'number') {
+    return override > 0 ? override : undefined;
+  }
+
+  const raw = process.env.DB_STATEMENT_TIMEOUT;
+  if (raw === '0') return undefined;
+  if (raw != null && raw !== '') {
+    const parsed = Number.parseInt(raw, 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    return DEFAULT_STATEMENT_TIMEOUT;
+  }
+
+  return undefined;
+}
+
 function parsePoolOverrides(searchParams: URLSearchParams): Partial<PoolConfig> {
   const overrides: Partial<PoolConfig> = {};
 
@@ -47,12 +77,16 @@ function parsePoolOverrides(searchParams: URLSearchParams): Partial<PoolConfig> 
 }
 
 /** Builds a mariadb `PoolConfig` from `DATABASE_URL` plus code defaults (not URL query params). */
-export function buildMariaDbPoolConfig(databaseUrl: string): PoolConfig | string {
+export function buildMariaDbPoolConfig(
+  databaseUrl: string,
+  options?: PrismaAdapterOptions
+): PoolConfig | string {
   if (!databaseUrl) return databaseUrl;
 
   try {
     const url = new URL(databaseUrl);
     const database = url.pathname.replace(/^\//, '') || undefined;
+    const statementTimeout = getStatementTimeout(options?.statementTimeout);
 
     return {
       host: url.hostname,
@@ -63,12 +97,18 @@ export function buildMariaDbPoolConfig(databaseUrl: string): PoolConfig | string
       prepareCacheLength: 0,
       ...getMariaDbPoolDefaults(),
       ...parsePoolOverrides(url.searchParams),
+      ...(statementTimeout != null
+        ? { sessionVariables: { max_statement_time: statementTimeout } }
+        : {}),
     };
   } catch {
     return databaseUrl;
   }
 }
 
-export function createPrismaAdapter(databaseUrl: string): PrismaMariaDb {
-  return new PrismaMariaDb(buildMariaDbPoolConfig(databaseUrl));
+export function createPrismaAdapter(
+  databaseUrl: string,
+  options?: PrismaAdapterOptions
+): PrismaMariaDb {
+  return new PrismaMariaDb(buildMariaDbPoolConfig(databaseUrl, options));
 }

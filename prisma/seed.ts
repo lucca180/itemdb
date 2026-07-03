@@ -30,7 +30,9 @@ import { URL } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const adapter = createPrismaAdapter(process.env.DATABASE_URL || '');
+const adapter = createPrismaAdapter(process.env.DATABASE_URL || '', {
+  statementTimeout: false,
+});
 const prisma = new PrismaClient({ adapter } as any);
 
 // ---------------------------------------------------------------------------
