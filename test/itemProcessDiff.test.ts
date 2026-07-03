@@ -189,4 +189,20 @@ describe('computeItemProcessDiff', () => {
     expect(categoryChange?.current).toBe('food');
     expect(categoryChange?.incoming).toBe('toy');
   });
+
+  it('includes excluded conflict field when it is the merge conflict', () => {
+    const db = baseDb();
+    db.specialType = 'wearable,Neocash';
+    const incoming = baseIncoming({
+      specialType: 'no trade',
+      manual_check: "'specialType' Merge Conflict with (1)",
+    });
+
+    const changes = computeItemProcessDiff(db, incoming, 'specialType');
+    const specialTypeChange = changes.find((change) => change.field === 'specialType');
+
+    expect(specialTypeChange?.isConflict).toBe(true);
+    expect(specialTypeChange?.current).toBe('wearable,Neocash');
+    expect(specialTypeChange?.incoming).toBe('no trade');
+  });
 });

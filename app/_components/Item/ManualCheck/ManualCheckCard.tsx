@@ -52,6 +52,7 @@ export function ManualCheckCard({ item, type, manualCheck, conflictField, change
   const toast = useToast();
 
   const conflictChange = changes.find((change) => change.field === conflictField);
+  const hasOtherIncomingData = changes.some((change) => !change.isConflict);
 
   const submitAction = async (action: 'approve' | 'reprove' | 'not_inflated' | 'correct') => {
     let correctInfo = undefined;
@@ -146,12 +147,14 @@ export function ManualCheckCard({ item, type, manualCheck, conflictField, change
                 tooltip="Throw away all of this new data. Nothing from it will be used."
                 onClick={() => submitAction('reprove')}
               />
-              <ActionButton
-                label="Current is correct"
-                colorPalette="orange"
-                tooltip={`Keep current ${conflictField}, but other new details from this update can still be applied.`}
-                onClick={() => submitAction('correct')}
-              />
+              {hasOtherIncomingData && (
+                <ActionButton
+                  label="Current is correct"
+                  colorPalette="orange"
+                  tooltip={`Keep current ${conflictField}, but other new details from this update can still be applied.`}
+                  onClick={() => submitAction('correct')}
+                />
+              )}
               <ActionButton
                 label="Approve"
                 colorPalette="green"

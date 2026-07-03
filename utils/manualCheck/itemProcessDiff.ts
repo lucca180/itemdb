@@ -46,6 +46,10 @@ function getFieldValue(record: Items | ItemProcess, field: DiffField): unknown {
   return record[field as keyof typeof record];
 }
 
+function getRecordFieldValue(record: Items | ItemProcess, field: string): unknown {
+  return record[field as keyof typeof record];
+}
+
 export function computeItemProcessDiff(
   db: Items,
   incoming: ItemProcess,
@@ -74,6 +78,25 @@ export function computeItemProcessDiff(
       rawCurrent,
       rawIncoming,
     });
+  }
+
+  if (conflictField && !changes.some((change) => change.field === conflictField)) {
+    const rawCurrent = getRecordFieldValue(db, conflictField);
+    const rawIncoming = getRecordFieldValue(incoming, conflictField);
+
+    if (
+      normalizeFieldValue(conflictField, rawCurrent) !==
+      normalizeFieldValue(conflictField, rawIncoming)
+    ) {
+      changes.unshift({
+        field: conflictField,
+        current: formatFieldValue(rawCurrent),
+        incoming: formatFieldValue(rawIncoming),
+        isConflict: true,
+        rawCurrent,
+        rawIncoming,
+      });
+    }
   }
 
   return changes;
