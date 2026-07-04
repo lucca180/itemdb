@@ -42,6 +42,8 @@ jobs:
 
             npx prisma migrate deploy
 
+            npx prisma generate
+
             if git log -1 --pretty=%B | grep -q '\[skip test\]'; then
               echo "Skipping tests"
             else
