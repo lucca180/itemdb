@@ -3,10 +3,10 @@ import { createListSlug, getImagePalette } from '..';
 import { ListItemInfo } from '../../../../../../types';
 import { CheckAuth } from '../../../../../../utils/googleCloud';
 import prisma from '../../../../../../utils/prisma';
-import { Prisma, SeriesType } from '@prisma/generated/client';
+import { SeriesType } from '@prisma/generated/client';
 import { UTCDate } from '@date-fns/utc';
 import { slugify } from '@utils/utils';
-import { ListService } from '@services/ListService';
+import { ListService, type PutListItemInput } from '@services/ListService';
 
 export const config = {
   api: {
@@ -79,54 +79,18 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     const itemInfo = req.body.itemInfo as ListItemInfo[];
 
     if (itemInfo?.length && action === 'update') {
-      const updateList = itemInfo.map((item) => {
-        return prisma.listItems.update({
-          where: {
-            internal_id: item.internal_id,
-          },
-          data: {
-            capValue: item.capValue,
-            updatedAt: new Date(),
-            order: item.order,
-            isHighlight: item.isHighlight,
-            isHidden: item.isHidden,
-            amount: item.amount,
-            seriesStart: item.seriesStart
-              ? new UTCDate(new UTCDate(item.seriesStart).setHours(18))
-              : null,
-            seriesEnd: item.seriesEnd
-              ? new UTCDate(new UTCDate(item.seriesEnd).setHours(18))
-              : null,
-          },
-        });
-      });
-
-      await prisma.$transaction(updateList);
+      await ListService.updateItems(Number(list_id), itemInfo);
     }
 
     if (itemInfo?.length && action === 'delete') {
-      const ids = itemInfo.map((item) => item.internal_id);
-
-      const deleted = await prisma.listItems.deleteMany({
-        where: {
-          internal_id: {
-            in: ids,
-          },
-        },
-      });
-
-      await prisma.userList.update({
-        where: {
-          internal_id: Number(list_id),
-        },
-        data: {
-          updatedAt: new Date(),
-        },
-      });
+      const deleteResult = await ListService.deleteItemsByInternalId(
+        Number(list_id),
+        itemInfo.map((item) => item.internal_id)
+      );
 
       return res.status(200).json({
         success: true,
-        message: `deleted ${deleted.count} items`,
+        message: `deleted ${deleteResult.count} items`,
       });
     }
 
@@ -147,48 +111,16 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       if (listDest.user_id !== user.id && !user.isAdmin)
         return res.status(401).json({ error: 'Unauthorized' });
 
-      const ids = itemInfo.map((item) => item.internal_id);
-
-      const create = prisma.listItems.createMany({
-        data: itemInfo.map((item) => {
-          return {
-            list_id: listDest.internal_id,
-            item_iid: item.item_iid,
-            capValue: item.capValue,
-            isHighlight: item.isHighlight,
-            isHidden: item.isHidden,
-            amount: item.amount,
-            seriesStart: item.seriesStart,
-            seriesEnd: item.seriesEnd,
-          };
-        }),
-        skipDuplicates: true,
+      const result = await ListService.moveOrCopyItems({
+        sourceListId: Number(list_id),
+        destListId: listDest.internal_id,
+        items: itemInfo,
+        move: shouldDelete,
       });
-
-      const update = prisma.listItems.deleteMany({
-        where: {
-          internal_id: {
-            in: shouldDelete ? ids : [],
-          },
-        },
-      });
-
-      const updateList = prisma.userList.updateMany({
-        where: {
-          internal_id: {
-            in: [listDest.internal_id, Number(shouldDelete ? list_id : -1)],
-          },
-        },
-        data: {
-          updatedAt: new Date(),
-        },
-      });
-
-      const result = await prisma.$transaction([create, update, updateList]);
 
       return res.status(200).json({
         success: true,
-        message: `moved ${result[0].count} items`,
+        message: `moved ${result.count} items`,
       });
     }
 
@@ -346,23 +278,9 @@ const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
         return res.status(400).json({ error: 'Duplicate Items', data: hasDuplicates });
       }
     }
-    const bulkListItemsUpsertQuery = buildBulkListItemsUpsertQuery(parsedListId, items);
+    await ListService.upsertItems(parsedListId, items);
 
-    const updateList = prisma.userList.update({
-      where: {
-        internal_id: parsedListId,
-      },
-      data: {
-        updatedAt: new Date(),
-      },
-    });
-
-    const result = await prisma.$transaction([
-      ...(bulkListItemsUpsertQuery ? [prisma.$executeRaw(bulkListItemsUpsertQuery)] : []),
-      updateList,
-    ]);
-
-    return res.status(200).json({ success: true, message: result });
+    return res.status(200).json({ success: true, message: 'items upserted' });
   } catch (e: any) {
     console.error(e);
     return res.status(500).json({ error: 'Internal Server Error' });
@@ -397,40 +315,17 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (list.dynamicType === 'fullSync') justHide = true;
 
-    let operation;
     if (justHide) {
-      operation = prisma.listItems.updateMany({
-        where: {
-          list_id: list.internal_id,
-          item_iid: {
-            in: item_internal_ids.map((iid) => Number(iid)),
-          },
-        },
-        data: {
-          isHidden: true,
-        },
-      });
+      await ListService.hideItems(
+        list.internal_id,
+        item_internal_ids.map((iid) => Number(iid))
+      );
     } else {
-      operation = prisma.listItems.deleteMany({
-        where: {
-          list_id: Number(list_id),
-          item_iid: {
-            in: item_internal_ids.map((iid) => Number(iid)),
-          },
-        },
-      });
+      await ListService.removeItems(
+        Number(list_id),
+        item_internal_ids.map((iid) => Number(iid))
+      );
     }
-
-    const updateList = prisma.userList.update({
-      where: {
-        internal_id: parseInt(list_id),
-      },
-      data: {
-        updatedAt: new Date(),
-      },
-    });
-
-    await prisma.$transaction([operation, updateList]);
 
     return res.status(200).json({
       success: true,
@@ -440,43 +335,4 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
     console.error(e);
     res.status(500).json({ error: 'Internal Server Error' });
   }
-};
-
-type PutListItemInput = {
-  item_iid: string;
-  capValue: string | undefined;
-  amount: string | undefined;
-  imported: boolean;
-};
-
-const buildBulkListItemsUpsertQuery = (listId: number, items: PutListItemInput[]) => {
-  if (items.length === 0) return null;
-
-  const values = items.map((item) => {
-    return Prisma.sql`(
-      ${listId},
-      ${Number(item.item_iid)},
-      ${item.capValue ? Number(item.capValue) : 0},
-      ${item.amount ? Number(item.amount) : 1},
-      ${item.imported ?? false},
-      NOW()
-    )`;
-  });
-
-  return Prisma.sql`
-    INSERT INTO ListItems (
-      list_id,
-      item_iid,
-      capValue,
-      amount,
-      imported,
-      updatedAt
-    )
-    VALUES ${Prisma.join(values)}
-    ON DUPLICATE KEY UPDATE
-      capValue = COALESCE(VALUES(capValue), capValue),
-      amount = COALESCE(VALUES(amount), amount),
-      imported = VALUES(imported),
-      updatedAt = NOW()
-  `;
 };

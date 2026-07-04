@@ -5,10 +5,10 @@
  * - `username` (regular profile): one owner, filter by user_id, no per-list user join.
  * - `'official'`: many lists from few creators, owners fetched in batch after the list query.
  *
- * Item counts always use a single groupBy (not Prisma _count per list) unless includeItems is true.
+ * Item counts come from UserList.visibleItemCount unless includeItems is true.
  */
 import { getUser } from '@pages/api/v1/users/[username]';
-import { rawToList } from '@services/listMappers';
+import { rawToList } from '@services/list/listMappers';
 import type { User, UserList } from '@types';
 import prisma from '@utils/prisma';
 import type { ListItems, UserList as RawList, User as RawUser } from '@prisma/generated/client';
@@ -24,6 +24,7 @@ export type GetUserListsOptions = {
   owner?: User;
   /** Logged-in viewer id; when it matches owner.id, private/unlisted lists are included. */
   viewerId?: string | null;
+  fillItemCounts?: (lists: RawList[]) => Promise<void>;
 };
 
 type ListRow = RawList & { items?: ListItems[] };
@@ -79,6 +80,7 @@ async function queryOfficialLists(options: GetUserListsOptions) {
     listsRaw,
     includeItems,
     isOfficial: true,
+    fillItemCounts: options.fillItemCounts,
     resolveOwner: (list) =>
       ownersById.get(list.user_id) ?? ownersById.get(FALLBACK_LIST_OWNER_ID) ?? missingListOwner(),
   });
@@ -110,6 +112,7 @@ async function queryUsernameLists(options: GetUserListsOptions) {
     listsRaw,
     includeItems,
     isOfficial: false,
+    fillItemCounts: options.fillItemCounts,
     resolveOwner: () => owner,
   });
 }
@@ -127,22 +130,6 @@ async function fetchListOwnersById(userIds: string[]) {
   return new Map(users.map((user) => [user.id, user as RawUser]));
 }
 
-/** Single groupBy for all lists — replaces N correlated _count subqueries from Prisma include. */
-async function fetchItemCountsByListIds(listIds: number[]) {
-  if (!listIds.length) return new Map<number, number>();
-
-  const counts = await prisma.listItems.groupBy({
-    by: ['list_id'],
-    where: {
-      list_id: { in: listIds },
-      isHidden: false,
-    },
-    _count: { _all: true },
-  });
-
-  return new Map(counts.map((entry) => [entry.list_id, entry._count._all]));
-}
-
 /** Official lists sort by createdAt; user lists use manual order then updatedAt. */
 function sortUserLists(lists: UserList[], isOfficial: boolean) {
   return lists.sort((a, b) =>
@@ -154,37 +141,26 @@ function sortUserLists(lists: UserList[], isOfficial: boolean) {
   );
 }
 
-/** Shared pipeline: batch item counts → rawToList → sort. */
+/** Shared pipeline: fill missing counts → rawToList → sort. */
 async function buildUserLists<T extends ListRow>({
   listsRaw,
   includeItems,
   isOfficial,
+  fillItemCounts,
   resolveOwner,
 }: {
   listsRaw: T[];
   includeItems: boolean;
   isOfficial: boolean;
+  fillItemCounts?: (lists: T[]) => Promise<void>;
   resolveOwner: (list: T) => OwnerRef;
 }) {
   if (!listsRaw.length) return [];
 
-  const itemCountByListId = !includeItems
-    ? await fetchItemCountsByListIds(listsRaw.map((list) => list.internal_id))
-    : new Map<number, number>();
+  if (!includeItems && fillItemCounts) await fillItemCounts(listsRaw);
 
   return sortUserLists(
-    listsRaw.map((list) =>
-      rawToList(
-        {
-          ...list,
-          _count: !includeItems
-            ? { items: itemCountByListId.get(list.internal_id) ?? 0 }
-            : undefined,
-        },
-        resolveOwner(list),
-        includeItems
-      )
-    ),
+    listsRaw.map((list) => rawToList(list, resolveOwner(list), includeItems)),
     isOfficial
   );
 }

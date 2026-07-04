@@ -111,6 +111,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         user_id: user.id,
         highlight: highlight?.trim() ?? undefined,
         highlightText: highlightText?.trim() ?? undefined,
+        visibleItemCount: 0,
       },
     });
 

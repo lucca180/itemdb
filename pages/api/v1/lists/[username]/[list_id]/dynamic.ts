@@ -197,6 +197,16 @@ export const syncDynamicList = async (list_id: number, force = false) => {
 
   const isFullSync = dynamicType === 'fullSync' || dynamicType === 'search';
 
+  const dynamicChanges: {
+    create: { list_id: number; item_iid: number }[];
+    deleteByInternalId: number[];
+    deleteByIid: number[];
+  } = {
+    create: [],
+    deleteByInternalId: [],
+    deleteByIid: [],
+  };
+
   if (linkedListId) {
     if (dynamicType === 'addOnly' || dynamicType === 'fullSync' || firstSync) {
       const res = (await prisma.$queryRaw`
@@ -206,19 +216,10 @@ export const syncDynamicList = async (list_id: number, force = false) => {
         and isHidden = 0
       `) as any;
 
-      const addData: { list_id: number; item_iid: number }[] = res.map(
-        (item: { item_iid: number }) => {
-          logData.added.push(item.item_iid);
-          return {
-            list_id: list_id,
-            item_iid: item.item_iid,
-          };
-        }
-      );
-
-      await prisma.listItems.createMany({
-        data: addData,
-      });
+      for (const item of res as { item_iid: number }[]) {
+        logData.added.push(item.item_iid);
+        dynamicChanges.create.push({ list_id, item_iid: item.item_iid });
+      }
     }
 
     if (dynamicType === 'removeOnly' || dynamicType === 'fullSync' || firstSync) {
@@ -228,18 +229,10 @@ export const syncDynamicList = async (list_id: number, force = false) => {
         and item_iid not in (select item_iid from listitems where list_id = ${linkedListId} and isHidden = 0)
       `) as any;
 
-      const removeData: number[] = res.map((item: { internal_id: number }) => {
+      for (const item of res as { internal_id: number }[]) {
         logData.removed.push(item.internal_id);
-        return item.internal_id;
-      });
-
-      await prisma.listItems.deleteMany({
-        where: {
-          internal_id: {
-            in: removeData,
-          },
-        },
-      });
+        dynamicChanges.deleteByInternalId.push(item.internal_id);
+      }
     }
   }
 
@@ -271,19 +264,10 @@ export const syncDynamicList = async (list_id: number, force = false) => {
         and internal_id not in (select item_iid from listitems where list_id = ${list_id})
       `) as any;
 
-      const addData: { list_id: number; item_iid: number }[] = res.map(
-        (item: { internal_id: number }) => {
-          logData.added.push(item.internal_id);
-          return {
-            list_id: list_id,
-            item_iid: item.internal_id,
-          };
-        }
-      );
-
-      await prisma.listItems.createMany({
-        data: addData,
-      });
+      for (const item of res as { internal_id: number }[]) {
+        logData.added.push(item.internal_id);
+        dynamicChanges.create.push({ list_id, item_iid: item.internal_id });
+      }
     }
 
     if (dynamicType === 'removeOnly' || isFullSync || firstSync) {
@@ -292,21 +276,14 @@ export const syncDynamicList = async (list_id: number, force = false) => {
         and item_iid not in (${Prisma.join(item_iids)})
       `) as any;
 
-      const removeData: number[] = res.map((item: { item_iid: number }) => {
+      for (const item of res as { item_iid: number }[]) {
         logData.removed.push(item.item_iid);
-        return item.item_iid;
-      });
-
-      await prisma.listItems.deleteMany({
-        where: {
-          item_iid: {
-            in: removeData,
-          },
-          list_id: list_id,
-        },
-      });
+        dynamicChanges.deleteByIid.push(item.item_iid);
+      }
     }
   }
+
+  await ListService.applyDynamicItemChanges(list_id, dynamicChanges);
 
   logData.runtime = Date.now() - start;
   const isLogEmpty = !logData.added.length && !logData.removed.length;

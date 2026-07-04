@@ -471,6 +471,8 @@ model UserList {
 
   items ListItems[]
 
+  visibleItemCount Int?
+
   highlight       String?
   highlightText   String?          @db.Text
   avatarSolutions AvatarSolution[]

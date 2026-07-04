@@ -20,7 +20,7 @@ export const rawToList = (
   const itemCount =
     listRaw.items !== undefined
       ? listRaw.items.filter((x) => !x.isHidden).length
-      : (listRaw._count?.items ?? -1);
+      : (listRaw.visibleItemCount ?? listRaw._count?.items ?? -1);
 
   return {
     internal_id: listRaw.internal_id,

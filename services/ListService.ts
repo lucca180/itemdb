@@ -9,12 +9,34 @@ import { doSearch } from '../pages/api/v1/search';
 import { sortListItems } from '@utils/utils';
 import { getManyItems } from '../pages/api/v1/items/many';
 import { defaultFilters } from '@utils/parseFilters';
-import { queryUserLists, type GetUserListsOptions } from '@services/userListsQuery';
-import { rawToList, rawToListItems } from '@services/listMappers';
-export { rawToList, rawToListItems } from '@services/listMappers';
+import { fillCount, fillCounts, updateCount } from '@services/list/listCount';
+import {
+  applyDynamicItemChanges,
+  deleteItemsByInternalId,
+  hideItems,
+  moveOrCopyItems,
+  removeItems,
+  updateItems,
+  upsertItems,
+  type DynamicItemChanges,
+  type PutListItemInput,
+} from '@services/list/listItemsWrite';
+import { rawToList, rawToListItems } from '@services/list/listMappers';
+import { queryUserLists, type GetUserListsOptions } from '@services/list/userListsQuery';
+
+export { rawToList, rawToListItems } from '@services/list/listMappers';
+export type { PutListItemInput, DynamicItemChanges };
 
 export class ListService {
   user: User | null = null;
+
+  static updateItems = updateItems;
+  static deleteItemsByInternalId = deleteItemsByInternalId;
+  static moveOrCopyItems = moveOrCopyItems;
+  static upsertItems = upsertItems;
+  static hideItems = hideItems;
+  static removeItems = removeItems;
+  static applyDynamicItemChanges = applyDynamicItemChanges;
 
   static init() {
     return ListService.initUser(null);
@@ -74,14 +96,18 @@ export class ListService {
         },
       },
       include: {
-        items: true,
         user: true,
       },
     });
 
     if (!listRaw || !ListService.canSeeList(listRaw, this.user)) return null;
 
-    if (listRaw.dynamicType && !skipSync) await syncDynamicList(listRaw.internal_id);
+    const didSync = !!(listRaw.dynamicType && !skipSync);
+    if (didSync) await syncDynamicList(listRaw.internal_id);
+
+    listRaw.visibleItemCount = didSync
+      ? await updateCount(listRaw.internal_id)
+      : await fillCount(listRaw);
 
     if (!listRaw.slug) {
       const slug = await createListSlug(listRaw.name, listRaw.user_id, listRaw.official);
@@ -105,6 +131,7 @@ export class ListService {
     return queryUserLists({
       ...params,
       viewerId: this.user?.id ?? null,
+      fillItemCounts: fillCounts,
     });
   }
 
