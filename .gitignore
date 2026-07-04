@@ -32,3 +32,5 @@ next-env.d.ts
 
 .pool-watchdog.lock
 .pool-watchdog-state.json
+
+*.log

@@ -216,6 +216,7 @@ model ItemPrices {
 
   @@unique([item_iid, isLatest])
   @@index([manual_check, processedAt])
+  @@index([manual_check, addedAt(sort: Desc)])
   @@index([item_iid, addedAt, manual_check])
 }
 
@@ -286,6 +287,7 @@ model Trades {
   @@index([processed, hash])
   @@index([hash, addedAt])
   @@index([wishlist(length: 200)])
+  @@index([priced, auto_ignore_pricing, wishlist(length: 100), addedAt(sort: Desc)])
 }
 
 model TradeItems {
@@ -373,6 +375,8 @@ model OpenableItems {
 
   item        Items  @relation("childItem", fields: [item_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
   parent_item Items? @relation("parentItem", fields: [parent_iid], references: [internal_id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([opening_id])
 }
 
 model OpenableQueue {
@@ -525,6 +529,7 @@ model ListItems {
   seriesEnd   DateTime?
 
   @@unique([list_id, item_iid])
+  @@index([list_id, isHidden])
 }
 
 model OwlsPrice {
