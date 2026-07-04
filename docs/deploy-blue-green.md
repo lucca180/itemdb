@@ -48,7 +48,9 @@ The `/api/health` endpoint returns `200` when the Next.js server is responding:
 }
 ```
 
-The deploy checks this endpoint first through `127.0.0.1:<port>` and then through the public URL.
+`/api/health/db` also probes the database (`SELECT 1`) and returns `503` when the connection pool cannot serve a query. The pool health watchdog uses this endpoint.
+
+The deploy checks `/api/health` first through `127.0.0.1:<port>` and then through the public URL.
 
 ### GitHub Actions
 
@@ -202,6 +204,53 @@ Prefer this flow:
 3. later deploy: remove old fields or code paths that are no longer used.
 
 Avoid removing or renaming columns in the same deploy that publishes the new code.
+
+## Pool health watchdog
+
+If the MariaDB connection pool inside a PM2 worker becomes saturated (`pool timeout`), the app can stay unhealthy until workers are restarted. A cron-driven watchdog recovers automatically.
+
+### How it detects the active stack
+
+The script reads the same Nginx snippet as the deploy workflow:
+
+```bash
+/etc/nginx/snippets/itemdb-active-backend.conf
+```
+
+It parses `proxy_pass http://127.0.0.1:<port>;` and maps:
+
+| Port | PM2 app      | Reload cwd          |
+| ---- | ------------ | ------------------- |
+| 4000 | `itemdb-web` | `/home/itemdb`      |
+| 4001 | `itemdb-green` | `/home/itemdb-green` |
+
+No manual `--app` / `--port` flags are required in cron.
+
+### Health probe
+
+`GET http://127.0.0.1:<active-port>/api/health/db` runs `SELECT 1` through Prisma. It returns `503` when the pool cannot serve a connection (the same failure mode as production incidents).
+
+### Recovery action
+
+After **3 consecutive unhealthy cycles** (default), with **≥ 2 failed probes per cycle** (of 6), the script runs:
+
+```bash
+pm2 reload ecosystem.config.js --only <active-app> --update-env
+```
+
+from the matching clone directory. A **15-minute cooldown** prevents reload loops.
+
+### Cron example
+
+```cron
+*/2 * * * * cd /home/itemdb && tsx scripts/pool-health-watchdog.ts >> /var/log/itemdb-watchdog.log 2>&1
+```
+
+Dry run: `tsx scripts/pool-health-watchdog.ts --dry-run`
+
+Environment: `NGINX_ACTIVE_BACKEND_CONF` — override snippet path (optional)
+
+State and lock files (gitignored): `.pool-watchdog-state.json`, `.pool-watchdog.lock`
 
 ## Manual rollback
 
