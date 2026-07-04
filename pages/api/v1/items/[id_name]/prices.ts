@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { PriceData } from '../../../../../types';
 import prisma from '../../../../../utils/prisma';
 import { redis_setDataCount } from '@utils/api/redis';
+import { getItem } from '.';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
@@ -15,16 +16,22 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const includeUnconfirmed = req.query.includeUnconfirmed === 'true';
   const id = Number(id_name);
 
-  const name = isNaN(id) ? id_name : undefined;
+  const itemQuery = isNaN(id) ? id_name : id;
+  const item = await getItem(itemQuery);
 
-  const prices = await getItemPrices({ iid: id, name, includeUnconfirmed, limit: -1 });
+  if (!item) return res.status(400).json({ error: 'Item not found' });
+
+  const prices = await getItemPrices({
+    iid: item.internal_id,
+    includeUnconfirmed,
+    limit: -1,
+  });
   redis_setDataCount(prices.length, req);
   res.json(prices);
 }
 
 type ItemPricesArgs = {
-  iid?: number | undefined;
-  name?: string;
+  iid: number;
   includeUnconfirmed?: boolean;
   limit?: number;
 };
@@ -33,7 +40,7 @@ export const getItemPrices = async (args: ItemPricesArgs) => {
 
   const pricesRaw = await prisma.itemPrices.findMany({
     where: {
-      item_iid: !isNaN(iid ?? NaN) ? iid : undefined,
+      item_iid: iid,
       manual_check: includeUnconfirmed ? undefined : null,
     },
     orderBy: { addedAt: 'desc' },
