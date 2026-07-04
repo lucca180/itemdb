@@ -95,6 +95,7 @@ export const getSaleStats = async (
     const update = prisma.saleStats.updateMany({
       where: {
         item_iid: iid,
+        isLatest: true,
       },
       data: {
         isLatest: null,
@@ -126,6 +127,7 @@ export const getSaleStats = async (
   const update = prisma.saleStats.updateMany({
     where: {
       item_iid: iid,
+      isLatest: true,
     },
     data: {
       isLatest: null,
