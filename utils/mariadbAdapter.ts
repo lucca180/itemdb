@@ -26,7 +26,7 @@ export const MARIADB_POOL_DEFAULTS_PRODUCTION = {
   connectionLimit: 25,
   acquireTimeout: 10_000,
   idleTimeout: 600,
-  leakDetectionTimeout: 20_000,
+  leakDetectionTimeout: 60_000,
 } as const satisfies Partial<PoolConfig>;
 
 /** Modest pool defaults for local `yarn dev` (single Node process). */
@@ -34,6 +34,7 @@ export const MARIADB_POOL_DEFAULTS_DEVELOPMENT = {
   connectionLimit: 5,
   acquireTimeout: 10_000,
   idleTimeout: 600,
+  leakDetectionTimeout: 60_000,
 } as const satisfies Partial<PoolConfig>;
 
 export function getMariaDbPoolDefaults(): Partial<PoolConfig> {
@@ -94,6 +95,7 @@ export function buildMariaDbPoolConfig(
       user: decodeURIComponent(url.username),
       password: decodeURIComponent(url.password),
       database,
+      // Required with binary protocol; kept at 0 even with useTextProtocol (Prisma default).
       prepareCacheLength: 0,
       ...getMariaDbPoolDefaults(),
       ...parsePoolOverrides(url.searchParams),
@@ -110,5 +112,9 @@ export function createPrismaAdapter(
   databaseUrl: string,
   options?: PrismaAdapterOptions
 ): PrismaMariaDb {
-  return new PrismaMariaDb(buildMariaDbPoolConfig(databaseUrl, options));
+  return new PrismaMariaDb(buildMariaDbPoolConfig(databaseUrl, options), {
+    // Text protocol avoids COM_STMT_PREPARE/CLOSE churn and prepared-statement leaks
+    // (see prisma/prisma#29364). Trade-off: less precise numeric conversions vs binary.
+    useTextProtocol: true,
+  });
 }
