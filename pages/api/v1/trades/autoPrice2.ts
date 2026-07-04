@@ -1,5 +1,6 @@
 import { Prisma, TradeItems, Trades } from '@prisma/generated/client';
 import { NextApiRequest, NextApiResponse } from 'next';
+import pMap from 'p-map';
 import prisma from '../../../../utils/prisma';
 import { processTradePrice } from '.';
 import { MAX_VOTE_MULTIPLIER } from '../../feedback/vote';
@@ -9,8 +10,15 @@ import { ItemData } from '@types';
 import { shouldSkipTrade } from '@utils/utils';
 import { getTradeItemByOrder, normalizeCanonicalWishlist } from '@utils/item/tradeCanonical';
 import { omitOwnerHash } from '@utils/ownerHash';
+import {
+  buildSimilarTradeLookupKey,
+  buildTradeItemSignature,
+  getTradeIsAllItemsEqual,
+  isWishlistBanned,
+} from '@utils/trades/findSimilarTrade';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
+const AUTO_PRICE_CONCURRENCY = 8;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -54,18 +62,19 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 export const autoPriceTrades2 = async (tradeRaw: (Trades & { items: TradeItems[] })[]) => {
-  const promises = [];
+  const similarCache = new Map<string, (Trades & { items: TradeItems[] }) | null>();
+  const similarInflight = new Map<string, Promise<(Trades & { items: TradeItems[] }) | null>>();
 
-  for (const trade of tradeRaw) {
-    const promise = findCanonical(trade).then((x) => {
-      if (x) return findSimilar(x);
-      return null;
-    });
+  const promResult = await pMap(
+    tradeRaw,
+    async (trade) => {
+      const afterCanonical = await findCanonical(trade);
+      if (!afterCanonical) return null;
+      return findSimilar(afterCanonical, similarCache, similarInflight);
+    },
+    { concurrency: AUTO_PRICE_CONCURRENCY }
+  );
 
-    promises.push(promise);
-  }
-
-  const promResult = await Promise.all(promises);
   const filteredTrades = promResult.filter((t) => !!t && t?.[0] !== null) as [Trades, number][];
 
   const feedbackArray: Prisma.FeedbacksCreateInput[] = filteredTrades.map(([t, originalId]) => ({
@@ -101,34 +110,63 @@ export const autoPriceTrades2 = async (tradeRaw: (Trades & { items: TradeItems[]
 
 const banWords = ['cool negg', 'baby', 'bby', 'bb'];
 
-const findSimilar = async (trade: Trades & { items: TradeItems[] }) => {
-  if (banWords.some((word) => trade.wishlist.toLowerCase().includes(word))) return null;
+const fetchSimilarTrade = async (trade: Trades & { items: TradeItems[] }) => {
+  const isAllItemsEqual = getTradeIsAllItemsEqual(trade);
 
-  const shouldSkip = (await checkTradeEstPrice(trade)) || (await checkInstaBuy(trade));
-  if (shouldSkip) return null;
-
-  const similarList = await prisma.trades.findMany({
+  return prisma.trades.findFirst({
     where: {
       priced: true,
       wishlist: trade.wishlist,
       auto_ignore_pricing: false,
+      itemsCount: trade.itemsCount,
+      isAllItemsEqual,
     },
     orderBy: { addedAt: 'desc' },
     include: { items: true },
-    take: 50,
+  });
+};
+
+const getCachedSimilarTrade = async (
+  trade: Trades & { items: TradeItems[] },
+  cache: Map<string, (Trades & { items: TradeItems[] }) | null>,
+  inflight: Map<string, Promise<(Trades & { items: TradeItems[] }) | null>>
+) => {
+  const key = buildSimilarTradeLookupKey(
+    trade.wishlist,
+    trade.itemsCount,
+    getTradeIsAllItemsEqual(trade),
+    buildTradeItemSignature(trade.items)
+  );
+
+  if (cache.has(key)) return cache.get(key)!;
+
+  const pending = inflight.get(key);
+  if (pending) return pending;
+
+  const promise = fetchSimilarTrade(trade).then((result) => {
+    cache.set(key, result);
+    inflight.delete(key);
+    return result;
   });
 
-  if (similarList.length === 0) return null;
+  inflight.set(key, promise);
+  return promise;
+};
 
-  const isAllItemsTheSame = trade.items.every((t) => t.item_iid === trade.items[0].item_iid);
+const findSimilar = async (
+  trade: Trades & { items: TradeItems[] },
+  similarCache: Map<string, (Trades & { items: TradeItems[] }) | null>,
+  similarInflight: Map<string, Promise<(Trades & { items: TradeItems[] }) | null>>
+) => {
+  if (isWishlistBanned(trade.wishlist, banWords)) return null;
 
-  const similar = similarList.find((t) => {
-    const isTheSame = t.items.every((t2) => t2.item_iid === t.items[0].item_iid);
+  const shouldSkip = (await checkTradeEstPrice(trade)) || (await checkInstaBuy(trade));
+  if (shouldSkip) return null;
 
-    return t.items.length === trade.items.length && isTheSame === isAllItemsTheSame;
-  });
-
+  const similar = await getCachedSimilarTrade(trade, similarCache, similarInflight);
   if (!similar) return null;
+
+  const isAllItemsTheSame = getTradeIsAllItemsEqual(trade);
 
   const updatedItems: any[] = [...trade.items];
 

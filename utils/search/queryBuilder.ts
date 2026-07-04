@@ -34,7 +34,7 @@ type BuildSearchQueryOptions = {
   includeZone?: boolean;
   enableFuzzySearch?: boolean;
   applyQueryFilters?: boolean;
-  mode?: 'items' | 'count';
+  mode?: 'items' | 'count' | 'facets';
 };
 
 export type SearchQueryParts = {
@@ -422,10 +422,14 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
     `;
   }
 
-  const shouldJoinZone = options.includeZone || zoneFilterSQL.length > 0;
+  const shouldJoinZone =
+    options.mode === 'facets'
+      ? zoneFilterSQL.length > 0
+      : options.includeZone || zoneFilterSQL.length > 0;
+  const isFacetsMode = options.mode === 'facets';
   const isCountMode = options.mode === 'count';
-  // Count mode is used by onlyStats=true. It keeps every filter valid, but avoids payload-only
-  // joins and columns. The needs* flags explain which filters/sorts require each optional join.
+  // Count mode is used by onlyStats=true. Facets mode is used by search/stats.
+  // Both keep filter-valid joins/columns but avoid payload-only joins and columns.
   const isSaleStatusFilter = typeFilters.some((type) =>
     ['ets', 'hts', 'regular', '!ets', '!hts', '!regular'].includes(type)
   );
@@ -434,11 +438,28 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
   const needsOwlsPrice = ncValueFilter.length > 0 || sortBy === 'ncValue';
   const needsItemColor = isColorSearch || !!colorSqlInside || sortBy === 'color';
 
-  const includePrices = !isCountMode || needsPrices;
-  const includeNcValues = !isCountMode;
-  const includeSaleStats = !isCountMode || isSaleStatusFilter;
-  const includeOwlsPrice = !isCountMode || needsOwlsPrice;
-  const includeNcMallData = !isCountMode;
+  let includePrices: boolean;
+  let includeNcValues: boolean;
+  let includeSaleStats: boolean;
+  let includeOwlsPrice: boolean;
+  let includeNcMallData: boolean;
+  let includeItemColor: boolean;
+
+  if (isFacetsMode) {
+    includePrices = false;
+    includeNcValues = false;
+    includeSaleStats = true;
+    includeOwlsPrice = false;
+    includeNcMallData = false;
+    includeItemColor = needsItemColor;
+  } else {
+    includePrices = !isCountMode || needsPrices;
+    includeNcValues = !isCountMode;
+    includeSaleStats = !isCountMode || isSaleStatusFilter;
+    includeOwlsPrice = !isCountMode || needsOwlsPrice;
+    includeNcMallData = !isCountMode;
+    includeItemColor = !isCountMode || needsItemColor;
+  }
 
   // Small helper to keep the SQL template readable when optional select/join fragments are empty.
   const sqlIf = (condition: boolean, sql: Prisma.Sql) => (condition ? sql : Prisma.empty);
@@ -446,24 +467,34 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
   // Select fragments define the temp table shape. Some null aliases are intentionally kept in
   // count mode because filters/sorts below still reference temp.price, temp.stats, or temp.owlsValueMin.
   const itemColorSelect = sqlIf(
-    !isCountMode || needsItemColor,
-    isCountMode
-      ? Prisma.sql`, b.lab_l, b.lab_a, b.lab_b, b.hsv_h, b.hsv_s, b.hsv_v`
-      : Prisma.sql`, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex, b.hsv_h, b.hsv_s, b.hsv_v`
+    includeItemColor,
+    isFacetsMode
+      ? Prisma.sql`, b.lab_l, b.lab_a, b.lab_b`
+      : isCountMode
+        ? Prisma.sql`, b.lab_l, b.lab_a, b.lab_b, b.hsv_h, b.hsv_s, b.hsv_v`
+        : Prisma.sql`, b.lab_l, b.lab_a, b.lab_b, b.population, b.rgb_r, b.rgb_g, b.rgb_b, b.hex, b.hsv_h, b.hsv_s, b.hsv_v`
   );
   const priceSelect = includePrices
     ? Prisma.sql`, c.addedAt as priceAdded, c.price, c.noInflation_id`
-    : Prisma.sql`, null as price`;
+    : isFacetsMode
+      ? Prisma.empty
+      : Prisma.sql`, null as price`;
   const ncValueSelect = sqlIf(
     includeNcValues,
     Prisma.sql`, d.addedAt as ncValueAddedAt, d.minValue, d.maxValue, d.valueRange`
   );
   const saleStatsSelect = includeSaleStats
-    ? Prisma.sql`, s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded`
-    : Prisma.sql`, null as stats`;
+    ? isFacetsMode
+      ? Prisma.sql`, s.stats`
+      : Prisma.sql`, s.totalSold, s.totalItems, s.stats, s.daysPeriod, s.addedAt as saleAdded`
+    : isFacetsMode
+      ? Prisma.empty
+      : Prisma.sql`, null as stats`;
   const owlsPriceSelect = includeOwlsPrice
     ? Prisma.sql`, o.pricedAt as owlsPriced, o.value as owlsValue, o.valueMin as owlsValueMin`
-    : Prisma.sql`, null as owlsValueMin`;
+    : isFacetsMode
+      ? Prisma.empty
+      : Prisma.sql`, null as owlsValueMin`;
   const ncMallSelect = sqlIf(
     includeNcMallData,
     Prisma.sql`, n.price as ncPrice, n.saleBegin, n.saleEnd, n.discountBegin, n.discountEnd, n.discountPrice`
@@ -498,10 +529,28 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
     Prisma.sql`, pc.isCanonical as p2Canonical, pc.color_id, pc.petpet_id, pc.isUnpaintable`
   );
 
+  const facetsItemsSelect = Prisma.sql`
+    a.internal_id, a.name, a.description, a.canonical_id,
+    a.category, a.isWearable, a.status, a.type, a.isNeohome, a.isBD,
+    a.canEat, a.canRead, a.canPlay, a.rarity, a.est_val, a.weight, a.addedAt, a.item_id
+  `;
+
+  const itemsSelect = isFacetsMode
+    ? Prisma.sql`SELECT ${facetsItemsSelect}${itemColorSelect}`
+    : Prisma.sql`SELECT a.*${itemColorSelect}`;
+
+  const itemColorJoin = includeItemColor
+    ? Prisma.sql`LEFT JOIN ItemColor as b on a.image_id = b.image_id and ${
+        isColorSearch
+          ? Prisma.sql`${searchColorItemDistance} = f.dist`
+          : Prisma.sql`${colorTypeSQL} ${colorSqlInside ? Prisma.sql`and b.population > 0` : Prisma.empty}`
+      }`
+    : Prisma.empty;
+
   // Base SELECT: this is intentionally a derived table. Outer WHERE/SORT clauses can then be
   // assembled once and reused by normal search, count mode, and search stats.
   const tempQuery = Prisma.sql`
-    SELECT a.*${itemColorSelect}
+    ${itemsSelect}
       ${priceSelect}
       ${ncValueSelect}
       ${saleStatsSelect}
@@ -513,11 +562,7 @@ export function buildSearchQueryParts(options: BuildSearchQueryOptions): SearchQ
       ${petpetSelect}
     FROM Items as a
     ${searchColorJoin}
-    LEFT JOIN ItemColor as b on a.image_id = b.image_id and ${
-      isColorSearch
-        ? Prisma.sql`${searchColorItemDistance} = f.dist`
-        : Prisma.sql`${colorTypeSQL} ${colorSqlInside ? Prisma.sql`and b.population > 0` : Prisma.empty}`
-    }
+    ${itemColorJoin}
     ${priceJoin}
     ${ncValueJoin}
     ${saleStatsJoin}

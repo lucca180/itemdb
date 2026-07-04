@@ -62,22 +62,36 @@ export async function doSearch(
     enableFuzzySearch: ENV_FUZZY_SEARCH,
     mode: onlyStats ? 'count' : 'items',
   });
-  const statsQuery =
-    !includeStats && !onlyStats ? Prisma.sql`` : Prisma.sql`,count(*) OVER() AS full_count`;
+
+  if (onlyStats) {
+    const countResult = (await prisma.$queryRaw`
+      SELECT COUNT(*) AS full_count FROM (
+        ${queryParts.tempQuery}
+      ) AS temp
+      ${queryParts.whereQuery}
+    `) as { full_count: bigint | number }[];
+
+    return {
+      content: [],
+      page: queryParts.page + 1,
+      totalResults: Number(countResult[0]?.full_count ?? 0),
+      resultsPerPage: queryParts.limit,
+    };
+  }
+
+  const statsQuery = includeStats ? Prisma.sql`,count(*) OVER() AS full_count` : Prisma.sql``;
 
   const resultRaw = (await prisma.$queryRaw`
-    SELECT ${!onlyStats ? Prisma.sql`*` : Prisma.sql`1`} ${statsQuery} FROM (
+    SELECT * ${statsQuery} FROM (
       ${queryParts.tempQuery}
     ) as temp
     ${queryParts.whereQuery}
-    ${!onlyStats ? queryParts.sortQuery : Prisma.empty}
-    ${!onlyStats ? (queryParts.sortDir === 'desc' ? Prisma.sql`DESC` : Prisma.sql`ASC`) : Prisma.empty}
+    ${queryParts.sortQuery}
+    ${queryParts.sortDir === 'desc' ? Prisma.sql`DESC` : Prisma.sql`ASC`}
     LIMIT ${queryParts.limit} OFFSET ${queryParts.page * queryParts.limit}
   `) as any[];
 
-  const filteredResult = onlyStats ? [] : resultRaw;
-
-  const itemList: ItemData[] = filteredResult.map((result: any) => rawToItemData(result));
+  const itemList: ItemData[] = resultRaw.map((result: any) => rawToItemData(result));
 
   return {
     content: itemList,

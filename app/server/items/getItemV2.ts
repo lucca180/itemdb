@@ -2,18 +2,16 @@ import { cache } from 'react';
 import { after } from 'next/server';
 import { Prisma } from '@prisma/generated/client';
 import { differenceInCalendarDays } from 'date-fns';
-import { UTCDate } from '@date-fns/utc';
 import prisma from '@utils/prisma';
 import { getItemFindAtLinks, isMissingInfo } from '@utils/utils';
 import type { ItemData } from '@types';
 import { rawToItemData } from '@pages/api/v1/items/many';
-import { getSaleStats } from '@pages/api/v1/items/[id_name]/saleStats';
+import { getSaleStats, getSaleStatsFreshnessCutoff } from '@pages/api/v1/items/[id_name]/saleStats';
 import { getNCValue } from '@pages/api/v1/mall/[iid]';
 import { ItemRevalidateTags, revalidateItem } from '@utils/item/revalidateItem';
 
 const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
 const NC_VALUES_TYPE = process.env.NC_VALUES_TYPE;
-const SALE_STATS_MIN_DATE = new UTCDate(1722650400000);
 const PRICE_UNKNOWN_AFTER_DAYS = 30 * 15; // 15 months
 
 type RawItemResult = {
@@ -37,11 +35,7 @@ function shouldRefreshSaleStats(item: ItemData) {
   if (DISABLE_SALE_STATS || !item.price.value || !item.price.addedAt) return false;
   if (!item.saleStatus?.addedAt) return true;
 
-  const latestDate = Math.max(
-    Date.now() - 5 * 24 * 60 * 60 * 1000,
-    new Date(item.price.addedAt).getTime(),
-    SALE_STATS_MIN_DATE.getTime()
-  );
+  const latestDate = getSaleStatsFreshnessCutoff(new Date(item.price.addedAt));
 
   return new Date(item.saleStatus.addedAt).getTime() < latestDate;
 }

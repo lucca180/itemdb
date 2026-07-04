@@ -8,6 +8,14 @@ import { differenceInCalendarDays, isSameDay } from 'date-fns';
 const MIN_PRICE_DATA = process.env.MIN_PRICE_DATA ? parseInt(process.env.MIN_PRICE_DATA) : 5;
 const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
 
+export function getSaleStatsFreshnessCutoff(lastPriceDate: Date | null = null) {
+  return Math.max(
+    Date.now() - 5 * 24 * 60 * 60 * 1000,
+    lastPriceDate?.getTime() ?? 0,
+    1722650400000
+  );
+}
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method == 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Methods', 'GET');
@@ -37,26 +45,21 @@ export const getSaleStats = async (
   lastPriceDate: Date | null = null
 ): Promise<SaleStatus | null> => {
   if (DISABLE_SALE_STATS) return null;
-  const latestDate = Math.max(
-    Date.now() - 5 * 24 * 60 * 60 * 1000,
-    lastPriceDate?.getTime() ?? 0,
-    1722650400000
-  );
 
-  const saleStats = await prisma.saleStats.findFirst({
+  const latestDate = getSaleStatsFreshnessCutoff(lastPriceDate);
+
+  const saleStats = await prisma.saleStats.findUnique({
     where: {
-      item_iid: iid,
-      addedAt: {
-        gte: new Date(latestDate),
+      item_iid_isLatest: {
+        item_iid: iid,
+        isLatest: true,
       },
-    },
-    orderBy: {
-      addedAt: 'desc',
     },
   });
 
-  if (saleStats && saleStats.stats === 'unknown') return null;
-  else if (saleStats && saleStats.stats !== 'unknown') {
+  if (saleStats && new Date(saleStats.addedAt).getTime() >= latestDate) {
+    if (saleStats.stats === 'unknown') return null;
+
     return {
       sold: saleStats.totalSold,
       total: saleStats.totalItems,

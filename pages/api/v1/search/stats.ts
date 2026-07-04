@@ -50,37 +50,39 @@ export const getSearchStats = async (resQuery: string, params?: SearchStatsParam
     forceCategory,
     isRestock,
     applyQueryFilters: false,
-  });
-  const zoneQueryParts = buildSearchQueryParts({
-    query: resQuery.trim() ?? '',
-    list,
-    forceCategory,
-    isRestock,
-    includeZone: true,
-    applyQueryFilters: false,
+    mode: 'facets',
   });
 
-  const groups: { key: string; column: Prisma.Sql; source: 'filtered' | 'zone_filtered' }[] = [
-    { key: 'category', column: Prisma.sql`filtered.category`, source: 'filtered' },
-    { key: 'isWearable', column: Prisma.sql`filtered.isWearable`, source: 'filtered' },
-    { key: 'status', column: Prisma.sql`filtered.status`, source: 'filtered' },
-    { key: 'type', column: Prisma.sql`filtered.type`, source: 'filtered' },
-    { key: 'isNeohome', column: Prisma.sql`filtered.isNeohome`, source: 'filtered' },
-    { key: 'isBD', column: Prisma.sql`filtered.isBD`, source: 'filtered' },
-    { key: 'canEat', column: Prisma.sql`filtered.canEat`, source: 'filtered' },
-    { key: 'canRead', column: Prisma.sql`filtered.canRead`, source: 'filtered' },
-    { key: 'canPlay', column: Prisma.sql`filtered.canPlay`, source: 'filtered' },
-    { key: 'zone_label', column: Prisma.sql`zone_filtered.zone_label`, source: 'zone_filtered' },
-    { key: 'saleStatus', column: Prisma.sql`filtered.stats`, source: 'filtered' },
+  const groups: { key: string; column: Prisma.Sql }[] = [
+    { key: 'category', column: Prisma.sql`filtered.category` },
+    { key: 'isWearable', column: Prisma.sql`filtered.isWearable` },
+    { key: 'status', column: Prisma.sql`filtered.status` },
+    { key: 'type', column: Prisma.sql`filtered.type` },
+    { key: 'isNeohome', column: Prisma.sql`filtered.isNeohome` },
+    { key: 'isBD', column: Prisma.sql`filtered.isBD` },
+    { key: 'canEat', column: Prisma.sql`filtered.canEat` },
+    { key: 'canRead', column: Prisma.sql`filtered.canRead` },
+    { key: 'canPlay', column: Prisma.sql`filtered.canPlay` },
+    { key: 'zone_label', column: Prisma.sql`filtered.zone_label` },
+    { key: 'saleStatus', column: Prisma.sql`filtered.stats` },
   ];
 
-  const statsQueries = groups.map((group) => {
-    return Prisma.sql`
-      SELECT ${group.key} as facet, ${group.column} as value, count(*) as count
-      FROM ${Prisma.raw(group.source)}
+  const statsQueries = groups
+    .filter((group) => group.key !== 'zone_label')
+    .map((group) => {
+      return Prisma.sql`
+      SELECT ${group.key} as facet, ${group.column} as value, count(DISTINCT filtered.internal_id) as count
+      FROM filtered
       group by ${group.column}
     `;
-  });
+    });
+
+  const zoneStatsQuery = Prisma.sql`
+    SELECT 'zone_label' as facet, w.zone_label as value, count(*) as count
+    FROM filtered f
+    INNER JOIN WearableData w ON w.item_iid = f.internal_id AND w.isCanonical = 1
+    GROUP BY w.zone_label
+  `;
 
   const resultRaw = (await prisma.$queryRaw`
     WITH filtered AS (
@@ -89,15 +91,8 @@ export const getSearchStats = async (resQuery: string, params?: SearchStatsParam
         ${queryParts.tempQuery}
       ) as temp
       ${queryParts.whereQuery}
-    ),
-    zone_filtered AS (
-      SELECT *
-      FROM (
-        ${zoneQueryParts.tempQuery}
-      ) as temp
-      ${zoneQueryParts.whereQuery}
     )
-    ${Prisma.join(statsQueries, ' UNION ALL ')}
+    ${Prisma.join([...statsQueries, zoneStatsQuery], ' UNION ALL ')}
   `) as any[];
 
   const result: { [id: string]: { [id: string]: number } | number } = {};

@@ -9,6 +9,10 @@ import { differenceInCalendarDays } from 'date-fns';
 import { chunk } from 'lodash';
 import { isValidOptionalOwnerHash, isValidOwnerHash, withoutOwnerData } from '@utils/ownerHash';
 import { validateExtractorHash } from '@utils/api/hashValidator';
+import {
+  getAuctionSoldSuffix,
+  shouldUpdateAuctionPriceProcess,
+} from '@utils/prices/auctionPriceUpsert';
 
 const AUCTION_BATCH_SIZE = 5;
 type RestockAuction = Prisma.RestockAuctionHistoryCreateManyInput & { addToPriceProcess: boolean };
@@ -438,50 +442,76 @@ const saveAuctionHistory = async (auctions: RestockAuction[]) => {
 const upsertFilteredAuctionPrices = async (filteredAuctions: RestockAuction[]) => {
   if (filteredAuctions.length === 0) return;
 
-  const now = new Date();
-  const isSold = (auction: RestockAuction) =>
-    !auction.otherInfo?.includes('nobody') ? ', auctionSold' : '';
+  const neoIds = filteredAuctions
+    .map((auction) => auction.neo_id)
+    .filter((neoId): neoId is number => neoId != null);
 
-  await runBatched(filteredAuctions, (auction) =>
-    prisma.priceProcess2.upsert({
-      where: {
-        type_neo_id: {
-          type: 'auction',
-          neo_id: auction.neo_id as number,
-        },
-      },
-      create: {
-        owner: auction.owner,
-        ownerHash: auction.ownerHash,
-        stock: auction.stock,
-        price: auction.price,
-        ip_address: auction.ip_address + isSold(auction),
-        addedAt: auction.addedAt,
-        processed: false,
-        type: 'auction',
-        hash: auction.hash,
-        neo_id: auction.neo_id,
-        item_iid: auction.item_iid,
-      },
-      update: {
-        price: auction.price,
-        ownerHash: auction.ownerHash,
-        ip_address: auction.ip_address + isSold(auction) + `, auctionUpdated(${now.getTime()})`,
-        addedAt: now,
-      },
-    })
-  );
-};
+  const existingRows = await prisma.priceProcess2.findMany({
+    where: {
+      type: 'auction',
+      neo_id: { in: neoIds },
+    },
+    select: {
+      neo_id: true,
+      price: true,
+      ownerHash: true,
+      ip_address: true,
+    },
+  });
 
-const runBatched = async <T>(
-  items: T[],
-  operation: (item: T) => Prisma.PrismaPromise<unknown>,
-  batchSize = AUCTION_BATCH_SIZE
-) => {
-  if (items.length === 0) return;
+  const existingByNeoId = new Map(existingRows.map((row) => [row.neo_id, row]));
 
-  for (const batch of chunk(items, batchSize)) {
-    await transactionRetry(() => prisma.$transaction(batch.map((item) => operation(item))), 3);
+  for (const auction of filteredAuctions) {
+    if (auction.neo_id == null) continue;
+
+    const existing = existingByNeoId.get(auction.neo_id);
+    const soldSuffix = getAuctionSoldSuffix(auction.otherInfo);
+
+    if (!existing) {
+      await transactionRetry(
+        () =>
+          prisma.priceProcess2.create({
+            data: {
+              owner: auction.owner,
+              ownerHash: auction.ownerHash,
+              stock: auction.stock,
+              price: auction.price,
+              ip_address: (auction.ip_address ?? '') + soldSuffix,
+              addedAt: auction.addedAt ?? new Date(),
+              processed: false,
+              type: 'auction',
+              hash: auction.hash,
+              neo_id: auction.neo_id,
+              item_iid: auction.item_iid,
+            },
+          }),
+        3
+      );
+      continue;
+    }
+
+    if (!shouldUpdateAuctionPriceProcess(existing, auction)) continue;
+
+    const now = new Date();
+    await transactionRetry(
+      () =>
+        prisma.priceProcess2.update({
+          where: {
+            type_neo_id: {
+              type: 'auction',
+              neo_id: auction.neo_id!,
+            },
+          },
+          data: {
+            price: auction.price,
+            ownerHash: auction.ownerHash,
+            ip_address:
+              (auction.ip_address ?? '') + soldSuffix + `, auctionUpdated(${now.getTime()})`,
+            addedAt: now,
+          },
+        }),
+      3
+    );
   }
 };
 
