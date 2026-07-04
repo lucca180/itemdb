@@ -95,28 +95,12 @@ export const getSaleStats = async (
   }
 
   if (itemTotal < MIN_PRICE_DATA) {
-    const update = prisma.saleStats.updateMany({
-      where: {
-        item_iid: iid,
-        isLatest: true,
-      },
-      data: {
-        isLatest: null,
-      },
+    await saveLatestSaleStats(iid, {
+      totalSold: 0,
+      totalItems: 0,
+      stats: 'unknown',
+      daysPeriod: dayLimit,
     });
-
-    const create = prisma.saleStats.create({
-      data: {
-        item_iid: iid,
-        totalSold: 0,
-        totalItems: 0,
-        stats: 'unknown',
-        daysPeriod: dayLimit,
-        isLatest: true,
-      },
-    });
-
-    await prisma.$transaction([update, create]);
 
     return null;
   }
@@ -127,28 +111,12 @@ export const getSaleStats = async (
   if (salePercent >= 45) status = 'ets';
   else if (salePercent >= 20) status = 'regular';
 
-  const update = prisma.saleStats.updateMany({
-    where: {
-      item_iid: iid,
-      isLatest: true,
-    },
-    data: {
-      isLatest: null,
-    },
+  await saveLatestSaleStats(iid, {
+    totalSold: itemSold,
+    totalItems: itemTotal,
+    stats: status,
+    daysPeriod: dayLimit,
   });
-
-  const create = prisma.saleStats.create({
-    data: {
-      item_iid: iid,
-      totalSold: itemSold,
-      totalItems: itemTotal,
-      stats: status,
-      daysPeriod: dayLimit,
-      isLatest: true,
-    },
-  });
-
-  await prisma.$transaction([update, create]);
 
   return {
     sold: itemSold,
@@ -353,4 +321,53 @@ const getAuctionSales = async (iid: number, dayLimit = 15) => {
   }
 
   return { itemSold, itemTotal };
+};
+
+type SaleStatsWrite = {
+  totalSold: number;
+  totalItems: number;
+  stats: 'unknown' | 'hts' | 'regular' | 'ets';
+  daysPeriod: number;
+};
+
+const saveLatestSaleStats = async (iid: number, data: SaleStatsWrite) => {
+  await transactionRetry(
+    () =>
+      prisma.$transaction([
+        prisma.saleStats.updateMany({
+          where: { item_iid: iid, isLatest: true },
+          data: { isLatest: null },
+        }),
+        prisma.saleStats.create({
+          data: {
+            item_iid: iid,
+            ...data,
+            isLatest: true,
+          },
+        }),
+      ]),
+    3
+  );
+};
+
+const exponentialBackoff = async (tries: number) => {
+  const delay = Math.pow(2, tries) * 300;
+  return new Promise((resolve) => setTimeout(resolve, delay));
+};
+
+const transactionRetry = async <T>(operation: () => Promise<T>, maxRetries = 3): Promise<T> => {
+  let attempts = 0;
+  while (attempts < maxRetries) {
+    try {
+      return await operation();
+    } catch (error: any) {
+      if (['P2002', 'P2034', 'P2028'].includes(error.code) && attempts < maxRetries - 1) {
+        attempts++;
+        await exponentialBackoff(attempts);
+      } else {
+        throw error;
+      }
+    }
+  }
+  throw new Error('Max retries reached');
 };
