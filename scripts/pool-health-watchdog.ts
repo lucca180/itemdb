@@ -23,11 +23,18 @@ const PROBE_FAIL_MAX = 2;
 const FAILURES_BEFORE_RELOAD = 3;
 const COOLDOWN_SEC = 900;
 const TIMEOUT_MS = 5_000;
+const STOP_WAIT_MS = 15_000;
 
 const dryRun = process.argv.includes('--dry-run');
 
 function log(msg: string) {
   console.log(`[${new Date().toISOString().slice(0, 19)}] ${msg}`);
+}
+
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }
 
 function withLock<T>(fn: () => Promise<T>) {
@@ -104,18 +111,25 @@ async function main() {
     return;
   }
 
-  const cmd = ['reload', 'ecosystem.config.js', '--only', backend.app, '--update-env'];
-  if (dryRun) log(`[dry-run] pm2 ${cmd.join(' ')} (cwd=${backend.cwd})`);
-  else {
-    log(`pm2 reload ${backend.app}`);
-    await exec('pm2', cmd, { cwd: backend.cwd, timeout: 120_000 });
+  const startCmd = ['start', 'ecosystem.config.js', '--only', backend.app, '--update-env'];
+  if (dryRun) {
+    log(`[dry-run] pm2 stop ${backend.app} (cwd=${backend.cwd})`);
+    log(`[dry-run] wait ${STOP_WAIT_MS / 1000}s`);
+    log(`[dry-run] pm2 ${startCmd.join(' ')} (cwd=${backend.cwd})`);
+  } else {
+    log(`pm2 stop ${backend.app}`);
+    await exec('pm2', ['stop', backend.app], { cwd: backend.cwd, timeout: 60_000 });
+    log(`waiting ${STOP_WAIT_MS / 1000}s`);
+    await sleep(STOP_WAIT_MS);
+    log(`pm2 start ${backend.app}`);
+    await exec('pm2', startCmd, { cwd: backend.cwd, timeout: 120_000 });
   }
 
   writeState({
     consecutiveFailures: 0,
     lastReloadAt: result.lastReloadAt ?? new Date().toISOString(),
   });
-  log('Reload done');
+  log('Restart done');
 }
 
 withLock(main).catch((e) => {

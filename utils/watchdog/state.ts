@@ -13,7 +13,7 @@ export function inCooldown(lastReloadAt: string | null, cooldownSec: number, now
   return (now - Date.parse(lastReloadAt)) / 1000 < cooldownSec;
 }
 
-/** Returns updated failure count and whether pm2 reload should run. */
+/** Returns updated failure count and whether pm2 stop/start should run. */
 export function afterUnhealthyCycle(failures: number, threshold: number) {
   const next = failures + 1;
   if (next < threshold) return { failures: next, reload: false as const };

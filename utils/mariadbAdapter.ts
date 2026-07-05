@@ -19,14 +19,15 @@ export type PrismaAdapterOptions = {
 };
 
 /**
- * Production pool defaults — sized for item-page preload bursts (~15 parallel queries)
- * with 3 PM2 workers (3 × 25 = 75 max connections per active deploy).
+ * Production pool defaults
+ * with 3 PM2 workers (3 × 20 = 60 max connections per active deploy).
  */
 export const MARIADB_POOL_DEFAULTS_PRODUCTION = {
-  connectionLimit: 25,
-  acquireTimeout: 10_000,
-  idleTimeout: 600,
-  leakDetectionTimeout: 60_000,
+  connectionLimit: 20,
+  connectTimeout: 3_000,
+  acquireTimeout: 15_000,
+  idleTimeout: 900,
+  leakDetectionTimeout: 0,
 } as const satisfies Partial<PoolConfig>;
 
 /** Modest pool defaults for local `yarn dev` (single Node process). */
@@ -34,7 +35,7 @@ export const MARIADB_POOL_DEFAULTS_DEVELOPMENT = {
   connectionLimit: 5,
   acquireTimeout: 10_000,
   idleTimeout: 600,
-  leakDetectionTimeout: 60_000,
+  leakDetectionTimeout: 0,
 } as const satisfies Partial<PoolConfig>;
 
 export function getMariaDbPoolDefaults(): Partial<PoolConfig> {
