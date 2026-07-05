@@ -35,6 +35,7 @@ function buildRedisUrl() {
  */
 function getRedisCacheHandlerOptions() {
   const redisUrl = buildRedisUrl();
+
   if (!redisUrl) {
     throw new Error(
       '[cache] Redis cache handler enabled but REDIS_HOST / REDIS_PASSWORD is missing'
@@ -47,7 +48,7 @@ function getRedisCacheHandlerOptions() {
     redisUrl,
     database: 1,
     keyPrefix: `itemdb:${buildId}:`,
-    getTimeoutMs: 500,
+    getTimeoutMs: 750,
     revalidateTagQuerySize: 250,
     sharedTagsKey: '__sharedTags__',
     avgResyncIntervalMs: 60 * 60 * 1_000,
