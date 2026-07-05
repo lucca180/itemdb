@@ -5596,13 +5596,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@trieb.work/nextjs-turbo-redis-cache@npm:^1.15.0":
+"@trieb.work/nextjs-turbo-redis-cache@npm:1.15.0":
   version: 1.15.0
   resolution: "@trieb.work/nextjs-turbo-redis-cache@npm:1.15.0"
   peerDependencies:
     next: ">=15.0.3 <16.3.0"
     redis: 4.7.0
   checksum: 10c0/c798447f7c9aa20615ba240c11eff35cf68d1b0281007247b6a30f16b1e03433f268b1e39331b7dd1344e74a9b861c7ee60ffac6cf7a6944f7c117f941d862d1
+  languageName: node
+  linkType: hard
+
+"@trieb.work/nextjs-turbo-redis-cache@patch:@trieb.work/nextjs-turbo-redis-cache@npm%3A1.15.0#~/.yarn/patches/@trieb.work-nextjs-turbo-redis-cache-npm-1.15.0-ac857fd0bb.patch":
+  version: 1.15.0
+  resolution: "@trieb.work/nextjs-turbo-redis-cache@patch:@trieb.work/nextjs-turbo-redis-cache@npm%3A1.15.0#~/.yarn/patches/@trieb.work-nextjs-turbo-redis-cache-npm-1.15.0-ac857fd0bb.patch::version=1.15.0&hash=e8e615"
+  peerDependencies:
+    next: ">=15.0.3 <16.3.0"
+    redis: 4.7.0
+  checksum: 10c0/780e60c013bc66a43ea4715967bc5f01d1dc92ccc2644b7c277df3b06320646fe50ebdd72b802df490106e035d7b639c208a642e8156d3b317e8a8b193b22399
   languageName: node
   linkType: hard
 
@@ -11985,7 +11995,7 @@ __metadata:
     "@swc-jotai/react-refresh": "npm:^0.5.0"
     "@testing-library/dom": "npm:^10.4.1"
     "@testing-library/react": "npm:^16.3.2"
-    "@trieb.work/nextjs-turbo-redis-cache": "npm:^1.15.0"
+    "@trieb.work/nextjs-turbo-redis-cache": "patch:@trieb.work/nextjs-turbo-redis-cache@npm%3A1.15.0#~/.yarn/patches/@trieb.work-nextjs-turbo-redis-cache-npm-1.15.0-ac857fd0bb.patch"
     "@tycrek/discord-hookr": "npm:^0.1.0"
     "@types/chance": "npm:^1.1.7"
     "@types/ejs": "npm:^3.1.5"

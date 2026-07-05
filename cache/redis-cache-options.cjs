@@ -2,7 +2,7 @@
  * Shared options for @trieb.work/nextjs-turbo-redis-cache handlers.
  *
  * Used by:
- * - cache/incremental-handler.cjs  → cacheHandler (ISR, fetch cache, Pages Router)
+ * - cache/incremental-handler.cjs  → cacheHandler (App Router ISR/fetch → Redis; Pages Router → disk)
  * - cache/components-handler.cjs   → cacheHandlers.default ('use cache')
  *
  * Reuses existing env: REDIS_HOST, REDIS_PORT, REDIS_PASSWORD, BUILD_ID.

@@ -1,0 +1,50 @@
+diff --git a/dist/index.js b/dist/index.js
+index 535cebd922bffaad8ab783f9b9d23ae909ecddb7..bbca39a5145f0190c9b7f1374a602b1f4afc594b 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -1382,7 +1382,19 @@ function getRedisCacheComponentsHandler(options = {}) {
+   }
+   return singletonHandler;
+ }
+-var redisCacheHandler = getRedisCacheComponentsHandler();
++var redisCacheHandler = new Proxy(
++  {},
++  {
++    get(_target, prop) {
++      const handler = getRedisCacheComponentsHandler();
++      const value = handler[prop];
++      return typeof value === "function" ? value.bind(handler) : value;
++    },
++    has(_target, prop) {
++      return prop in RedisCacheComponentsHandler.prototype;
++    }
++  }
++);
+ 
+ // src/index.ts
+ var index_default = CachedHandler;
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 76bffcf073c4d149e2666a2060dd6d851fce2248..89cba5cf7b4dac45d5304debcb809cf31f3ba708 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -1340,7 +1340,19 @@ function getRedisCacheComponentsHandler(options = {}) {
+   }
+   return singletonHandler;
+ }
+-var redisCacheHandler = getRedisCacheComponentsHandler();
++var redisCacheHandler = new Proxy(
++  {},
++  {
++    get(_target, prop) {
++      const handler = getRedisCacheComponentsHandler();
++      const value = handler[prop];
++      return typeof value === "function" ? value.bind(handler) : value;
++    },
++    has(_target, prop) {
++      return prop in RedisCacheComponentsHandler.prototype;
++    }
++  }
++);
+ 
+ // src/index.ts
+ var index_default = CachedHandler;
