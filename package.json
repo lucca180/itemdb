@@ -39,6 +39,7 @@
     "@prisma/adapter-mariadb": "7.8.0",
     "@prisma/client": "7.8.0",
     "@sentry/nextjs": "^10.58.0",
+    "@trieb.work/nextjs-turbo-redis-cache": "^1.15.0",
     "@tycrek/discord-hookr": "^0.1.0",
     "@umami/api-client": "^0.80.0",
     "axios": "^1.18.0",
