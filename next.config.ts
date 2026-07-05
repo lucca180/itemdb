@@ -4,7 +4,13 @@ import { SentryBuildOptions, withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
+const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN;
+
 const nextConfig: NextConfig = {
+  typescript: {
+    // Typecheck runs separately via `yarn typecheck:fast` (TS 7) during deploy.
+    ignoreBuildErrors: true,
+  },
   cacheComponents: true,
   cacheLife: {
     itemFast: { stale: 180, revalidate: 300, expire: 600 },
@@ -19,7 +25,8 @@ const nextConfig: NextConfig = {
   },
   cacheMaxMemorySize: 200 * 1024 * 1024,
   compress: false, // cloudflare does it for us
-  productionBrowserSourceMaps: true,
+  enablePrerenderSourceMaps: false,
+  productionBrowserSourceMaps: false,
   skipProxyUrlNormalize: true,
   images: {
     qualities: [100, 90],
@@ -178,13 +185,13 @@ const sentryWebpackPluginOptions: SentryBuildOptions = {
   org: 'lucca-4p',
   project: 'itemdb',
   silent: true,
-  authToken: process.env.SENTRY_AUTH_TOKEN,
+  authToken: sentryAuthToken,
   sourcemaps: {
-    disable: false, // Enable source maps (default: false)
+    disable: !sentryAuthToken,
     ignore: ['**/node_modules/**'],
-    deleteSourcemapsAfterUpload: false,
+    deleteSourcemapsAfterUpload: true,
   },
-  widenClientFileUpload: true,
+  widenClientFileUpload: false,
 };
 
 const withNextIntl = createNextIntlPlugin();

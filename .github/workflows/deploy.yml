@@ -8,8 +8,45 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  deploy:
-    name: Blue/green deploy
+  prepare:
+    name: Prepare inactive environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare inactive environment
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            set -euo pipefail
+
+            ACTIVE_CONF="/etc/nginx/snippets/itemdb-active-backend.conf"
+            BRANCH="${{ github.ref_name }}"
+            COMMIT_SHA="${{ github.sha }}"
+
+            if grep -q "4000" "$ACTIVE_CONF"; then
+              TARGET_DIR="/home/itemdb-green"
+            else
+              TARGET_DIR="/home/itemdb"
+            fi
+
+            cd "$TARGET_DIR"
+            git fetch origin "$BRANCH"
+            git reset --hard "$COMMIT_SHA"
+
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+            mkdir -p .cache
+
+            yarn install --immutable
+            npx prisma migrate deploy
+            npx prisma generate
+
+  test:
+    name: Test inactive environment
+    needs: prepare
     runs-on: ubuntu-latest
     steps:
       - name: Test inactive environment
@@ -22,8 +59,6 @@ jobs:
             set -euo pipefail
 
             ACTIVE_CONF="/etc/nginx/snippets/itemdb-active-backend.conf"
-            BRANCH="${{ github.ref_name }}"
-            COMMIT_SHA="${{ github.sha }}"
 
             if grep -q "4000" "$ACTIVE_CONF"; then
               TARGET_DIR="/home/itemdb-green"
@@ -32,23 +67,21 @@ jobs:
             fi
 
             cd "$TARGET_DIR"
-            git fetch origin "$BRANCH"
-            git reset --hard "$COMMIT_SHA"
 
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-
-            yarn install --immutable
-
-            npx prisma migrate deploy
-
-            npx prisma generate
 
             if git log -1 --pretty=%B | grep -q '\[skip test\]'; then
               echo "Skipping tests"
             else
               yarn test
             fi
+
+  build:
+    name: Build inactive environment
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
       - name: Build inactive environment
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -59,8 +92,6 @@ jobs:
             set -euo pipefail
 
             ACTIVE_CONF="/etc/nginx/snippets/itemdb-active-backend.conf"
-            BRANCH="${{ github.ref_name }}"
-            COMMIT_SHA="${{ github.sha }}"
 
             if grep -q "4000" "$ACTIVE_CONF"; then
               TARGET_DIR="/home/itemdb-green"
@@ -69,16 +100,22 @@ jobs:
             fi
 
             cd "$TARGET_DIR"
-            git fetch origin "$BRANCH"
-            git reset --hard "$COMMIT_SHA"
 
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
             export BUILD_ID=$(git rev-parse HEAD)
+
+            yarn typecheck:fast
             yarn build-intl
-            yarn build
+            yarn build:app
             yarn postbuild
+
+  switch:
+    name: Switch traffic
+    needs: [test, build]
+    runs-on: ubuntu-latest
+    steps:
       - name: Switch traffic
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -90,8 +127,6 @@ jobs:
 
             ACTIVE_CONF="/etc/nginx/snippets/itemdb-active-backend.conf"
             PUBLIC_HEALTH_URL="${{ vars.PUBLIC_HEALTH_URL || 'https://itemdb.com.br/api/health' }}"
-            BRANCH="${{ github.ref_name }}"
-            COMMIT_SHA="${{ github.sha }}"
 
             if grep -q "4000" "$ACTIVE_CONF"; then
               TARGET_NAME="itemdb-green"
@@ -110,8 +145,6 @@ jobs:
             fi
 
             cd "$TARGET_DIR"
-            git fetch origin "$BRANCH"
-            git reset --hard "$COMMIT_SHA"
 
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"

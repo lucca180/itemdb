@@ -14,8 +14,8 @@
     "jsx": "react-jsx",
     "incremental": true,
     "noEmit": true,
-    "downlevelIteration": true,
     "sourceMap": true,
+    "tsBuildInfoFile": ".cache/tsconfig.tsbuildinfo",
     "types": ["node"],
     "plugins": [
       {
