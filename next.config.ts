@@ -4,10 +4,6 @@ import { SentryBuildOptions, withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
-const redisCacheEnabled =
-  process.env.NODE_ENV !== 'development' &&
-  Boolean(process.env.REDIS_HOST && process.env.REDIS_PASSWORD);
-
 const nextConfig: NextConfig = {
   cacheComponents: true,
   cacheLife: {
@@ -21,17 +17,7 @@ const nextConfig: NextConfig = {
   generateBuildId: async () => {
     return process.env.BUILD_ID || 'dev';
   },
-  // With Redis handlers: delegate to shared store across PM2 workers.
-  // Without Redis (local dev): keep in-memory LRU (default 50 MB is too small for itemdb).
-  cacheMaxMemorySize: redisCacheEnabled ? 0 : 100 * 1024 * 1024,
-  ...(redisCacheEnabled
-    ? {
-        cacheHandler: require.resolve('./cache/incremental-handler.cjs'),
-        cacheHandlers: {
-          default: require.resolve('./cache/components-handler.cjs'),
-        },
-      }
-    : {}),
+  cacheMaxMemorySize: 100 * 1024 * 1024,
   compress: false, // cloudflare does it for us
   productionBrowserSourceMaps: true,
   skipProxyUrlNormalize: true,
