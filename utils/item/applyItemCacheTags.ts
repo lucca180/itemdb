@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { cacheTag } from 'next/cache';
-import { itemSectionCacheTags, type ItemPageCacheScope } from '@utils/appCacheTags';
+import { fitCacheTag, itemSectionCacheTags, type ItemPageCacheScope } from '@utils/appCacheTags';
 
 /** Registers root + section tags on a `'use cache'` loader. Accepts multiple scopes. */
 export function applyItemSectionCacheTags(
@@ -10,7 +10,7 @@ export function applyItemSectionCacheTags(
 ): void {
   for (const scope of scopes) {
     for (const tag of itemSectionCacheTags(internalId, scope)) {
-      cacheTag(tag);
+      cacheTag(fitCacheTag(tag));
     }
   }
 }

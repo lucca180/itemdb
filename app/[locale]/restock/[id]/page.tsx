@@ -8,6 +8,7 @@ import { getStaticAppPageProps } from '@app/utils/appPage';
 import { doSearch } from '@pages/api/v1/search';
 import { setRequestLocale } from 'next-intl/server';
 import type { ItemData, SearchFilters, ShopInfo } from '@types';
+import { fitCacheTag } from '@utils/appCacheTags';
 import { getRestockProfit, removeOutliers, restockShopInfo } from '@utils/utils';
 import { INITIAL_MIN_PROFIT, RESTOCK_FILTER } from '@utils/restock-filters';
 import { mean } from 'simple-statistics';
@@ -108,7 +109,7 @@ type RestockShopPageData = {
 
 async function loadRestockShopPageData(shopInfo: ShopInfo): Promise<RestockShopPageData> {
   'use cache';
-  cacheTag(`restock-shop-${shopInfo.id}`);
+  cacheTag(fitCacheTag(`restock-shop-${shopInfo.id}`));
   cacheLife({ stale: 600, revalidate: 600, expire: 3600 });
 
   const filters: SearchFilters = RESTOCK_FILTER(shopInfo.id);

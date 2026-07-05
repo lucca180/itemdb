@@ -2,12 +2,15 @@ import { describe, expect, it } from 'vitest';
 import {
   HomeRevalidateTags,
   ItemRevalidateTags,
+  MAX_CACHE_TAG_LENGTH,
+  fitCacheTag,
   isAppCacheTag,
   itemRootTag,
   itemSectionCacheTags,
   itemSectionTag,
   parseItemSectionTag,
   parseItemTagInternalId,
+  userMatchesTag,
 } from '@utils/appCacheTags';
 
 describe('appCacheTags', () => {
@@ -40,5 +43,14 @@ describe('appCacheTags', () => {
     expect(isAppCacheTag(itemSectionTag(1, 'avy'))).toBe(true);
     expect(isAppCacheTag('item-1-unknown-scope')).toBe(false);
     expect(isAppCacheTag('not-a-tag')).toBe(false);
+  });
+
+  it('fitCacheTag truncates tags over MAX_CACHE_TAG_LENGTH', () => {
+    const long = 'a'.repeat(250);
+    expect(fitCacheTag(long)).toHaveLength(MAX_CACHE_TAG_LENGTH);
+    expect(fitCacheTag('short')).toBe('short');
+    expect(userMatchesTag('x'.repeat(120), 'y'.repeat(120)).length).toBeLessThanOrEqual(
+      MAX_CACHE_TAG_LENGTH
+    );
   });
 });

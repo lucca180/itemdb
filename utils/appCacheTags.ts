@@ -1,3 +1,10 @@
+/** Next.js / Redis cache handlers: keep tags under this length (Next.js allows up to 256). */
+export const MAX_CACHE_TAG_LENGTH = 200;
+
+export function fitCacheTag(tag: string): string {
+  return tag.length <= MAX_CACHE_TAG_LENGTH ? tag : tag.slice(0, MAX_CACHE_TAG_LENGTH);
+}
+
 /** Home page tags — must match `'use cache'` tags in App Router home sections. */
 export const HOME_CACHE_TAGS = [
   'home-latest-items',
@@ -65,25 +72,20 @@ export type UserListsPageCacheTag =
 export type AppCacheTag = HomeCacheTag | ItemScopedCacheTag | UserListsPageCacheTag;
 
 export function userProfileTag(username: string): UserProfileCacheTag {
-  return `user-profile-${username}`;
+  return fitCacheTag(`user-profile-${username}`) as UserProfileCacheTag;
 }
 
 export function userAchievementsTag(username: string): UserAchievementsCacheTag {
-  return `user-achievements-${username}`;
+  return fitCacheTag(`user-achievements-${username}`) as UserAchievementsCacheTag;
 }
 
 export function userListsTag(username: string): UserListsCacheTag {
-  return `user-lists-${username}`;
+  return fitCacheTag(`user-lists-${username}`) as UserListsCacheTag;
 }
 
 export function userMatchesTag(viewerUsername: string, ownerUsername: string): UserMatchesCacheTag {
-  return `user-matches-${viewerUsername}-${ownerUsername}`;
+  return fitCacheTag(`user-matches-${viewerUsername}-${ownerUsername}`) as UserMatchesCacheTag;
 }
-
-const USER_PROFILE_TAG_PATTERN = /^user-profile-[a-zA-Z0-9_]+$/;
-const USER_ACHIEVEMENTS_TAG_PATTERN = /^user-achievements-[a-zA-Z0-9_]+$/;
-const USER_LISTS_TAG_PATTERN = /^user-lists-[a-zA-Z0-9_]+$/;
-const USER_MATCHES_TAG_PATTERN = /^user-matches-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+$/;
 
 export function itemRootTag(internalId: number): ItemRootCacheTag {
   return `item-${internalId}`;
@@ -138,6 +140,11 @@ export const HomeRevalidateTags = {
 const ITEM_ROOT_TAG_PATTERN = /^item-(\d+)$/;
 const ITEM_SECTION_TAG_PATTERN = /^item-(\d+)-([a-z][a-z0-9-]*)$/;
 
+const USER_PROFILE_TAG_PATTERN = /^user-profile-[a-zA-Z0-9_]+$/;
+const USER_ACHIEVEMENTS_TAG_PATTERN = /^user-achievements-[a-zA-Z0-9_]+$/;
+const USER_LISTS_TAG_PATTERN = /^user-lists-[a-zA-Z0-9_]+$/;
+const USER_MATCHES_TAG_PATTERN = /^user-matches-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+$/;
+
 export function parseItemTagInternalId(tag: ItemScopedCacheTag): number {
   const rootMatch = tag.match(ITEM_ROOT_TAG_PATTERN);
   if (rootMatch) return Number(rootMatch[1]);
@@ -164,6 +171,8 @@ export function parseItemSectionTag(tag: ItemSectionCacheTag): {
 }
 
 export function isAppCacheTag(tag: string): tag is AppCacheTag {
+  if (tag.length > MAX_CACHE_TAG_LENGTH) return false;
+
   if ((HOME_CACHE_TAGS as readonly string[]).includes(tag)) return true;
 
   if (ITEM_ROOT_TAG_PATTERN.test(tag)) return true;

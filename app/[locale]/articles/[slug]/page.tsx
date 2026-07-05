@@ -9,6 +9,7 @@ import { wp_getBySlug } from '@pages/api/wp/posts/[slug]';
 import { wp_getLatestPosts } from '@pages/api/wp/posts';
 import { setRequestLocale } from 'next-intl/server';
 import type { WP_Article } from '@types';
+import { fitCacheTag } from '@utils/appCacheTags';
 import { ArticlePageContent } from './ArticlePageContent';
 import { buildArticlePageProps, getArticleMainColor } from './buildArticlePageProps';
 
@@ -70,7 +71,7 @@ async function ArticlePageContentWrapper({ params }: ArticlePageProps) {
 
 async function loadArticle(slug: string): Promise<WP_Article | null> {
   'use cache';
-  cacheTag(`article-${slug}`);
+  cacheTag(fitCacheTag(`article-${slug}`));
   cacheLife({ stale: 60, revalidate: 60, expire: 3600 });
 
   return wp_getBySlug(slug);

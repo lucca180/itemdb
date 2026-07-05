@@ -7,6 +7,7 @@ import { getStaticAppPageProps } from '@app/utils/appPage';
 import { getSpeciesOutfits } from '@pages/api/v1/tools/outfits';
 import { setRequestLocale } from 'next-intl/server';
 import type { ItemData } from '@types';
+import { fitCacheTag } from '@utils/appCacheTags';
 import { OutfitPageContent } from './OutfitPageContent';
 import {
   buildOutfitPageProps,
@@ -68,7 +69,7 @@ async function OutfitPageContentWrapper({ params }: OutfitPageProps) {
 
 async function loadSpeciesOutfits(speciesSlug: string): Promise<Record<string, ItemData[]>> {
   'use cache';
-  cacheTag(`outfits-${speciesSlug.toLowerCase()}`);
+  cacheTag(fitCacheTag(`outfits-${speciesSlug.toLowerCase()}`));
   cacheLife({ stale: 600, revalidate: 600, expire: 3600 });
 
   return getSpeciesOutfits(speciesSlug);

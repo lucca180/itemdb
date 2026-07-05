@@ -3,6 +3,7 @@ import { cacheLife, cacheTag } from 'next/cache';
 import { ListService } from '@services/ListService';
 import { getTrendingLists } from '@pages/api/v1/beta/trending';
 import { UserList } from '@types';
+import { fitCacheTag } from '@utils/appCacheTags';
 import { listCategoriesData, sortOfficialLists } from '@utils/lists/listCategoriesData';
 
 export const OFFICIAL_LISTS_CACHE_TAG = 'official-lists';
@@ -46,7 +47,7 @@ export const loadOfficialAllLists = cache(loadOfficialAllListsCached);
 async function loadOfficialListsCatDataCached(category: string) {
   'use cache';
   cacheTag(OFFICIAL_LISTS_CACHE_TAG);
-  cacheTag(`${OFFICIAL_LISTS_CACHE_TAG}-${category}`);
+  cacheTag(fitCacheTag(`${OFFICIAL_LISTS_CACHE_TAG}-${category}`));
   cacheLife('homeSection');
 
   const catInfo = listCategoriesData[category];
