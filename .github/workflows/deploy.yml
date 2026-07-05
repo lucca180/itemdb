@@ -147,3 +147,5 @@ jobs:
 
             cd "$PREVIOUS_DIR"
             pm2 stop ecosystem.config.js --only "$PREVIOUS_NAME" || true
+
+            pm2 reset "$TARGET_NAME"

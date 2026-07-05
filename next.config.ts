@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
   generateBuildId: async () => {
     return process.env.BUILD_ID || 'dev';
   },
-  cacheMaxMemorySize: 100 * 1024 * 1024,
+  cacheMaxMemorySize: 200 * 1024 * 1024,
   compress: false, // cloudflare does it for us
   productionBrowserSourceMaps: true,
   skipProxyUrlNormalize: true,
