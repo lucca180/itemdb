@@ -82,11 +82,11 @@ export const siteAlerts = {
     bg: 'pink.300',
     color: 'blackAlpha.800',
   },
-  apiChanges: {
-    message: 'apiChanges',
-    link: 'https://itemdb.com.br/tools/troubleshooting',
+  newAuction: {
+    message: 'newAuction',
+    link: 'https://itemdb.com.br/articles/new-auction-house',
     img: {
-      src: 'https://images.neopets.com/themes/022_lqc_d2d1a/events/warning.png',
+      src: 'https://images.neopets.com/themes/h5/basic/images/auction-icon.png',
       h: 28,
       w: 28,
     },
@@ -103,7 +103,7 @@ export function getCurrentSiteAlert() {
   if (todayNST.getMonth() === 7 && todayNST.getDate() === 20) return siteAlerts.usuki;
   if (todayNST.getMonth() === 8 && todayNST.getDate() === 20) return siteAlerts.faerieFestival;
   if (todayNST.getMonth() === 9 && todayNST.getDate() === 31) return siteAlerts.halloween;
-  if (todayNST.getTime() < 1774461600000) return siteAlerts.apiChanges;
+  if (todayNST.getTime() < 1783468799000) return siteAlerts.newAuction;
 
   return siteAlerts.default;
 }

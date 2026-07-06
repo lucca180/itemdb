@@ -855,7 +855,7 @@
     "est-profit": "Lucro Est.",
     "faerie-festival": "Festival das Fadas - 50% off",
     "halloween": "Halloween - 50% off",
-    "half-price-day": "Dia da Metade do Preço - 50% off",
+    "half-price-day": "Half Price Day",
     "latest-restock": "Último Restock",
     "restock-info": "Restock Info",
     "restock-price": "Preço de Restock",
@@ -928,7 +928,6 @@
     "hide-misses": "Ocultar Perdas",
     "show-misses": "Mostrar Perdas",
     "last-session": "Ultima Sessao",
-    "half-price-day": "Half Price Day",
     "avg-reaction-time": "Tempo Médio de Reação ",
     "based-on-x-clicks": "com base em {x} cliques",
     "success-rate": "Taxa de Sucesso",
@@ -1222,7 +1221,8 @@
     "faerie-festival": "Festival das Fadas - <Link>Lojas do Mundo das Fadas</Link> com 50% de desconto (exceto Faerie Furniture e Faerie Weapon)",
     "halloween": "Halloween - <Link>Lojas dos Bosques Assombrados</Link> com 50% de desconto (exceto Neovia)",
     "hiddenTower": "3% de desconto na <Link>Torre Oculta</Link> hoje para contas com 60 meses ou mais!",
-    "apiChanges": "Userscripts pararam de funcionar? Confira a ferramenta de <Link>Solução de Problemas</Link>!"
+    "apiChanges": "Userscripts pararam de funcionar? Confira a ferramenta de <Link>Solução de Problemas</Link>!",
+    "newAuction": "Por favor leia algumas <Link>informações importantes</Link> sobre a nova casa de leilões"
   },
   "Owls": {
     "confirm-and-submit": "Confirmar e Enviar",

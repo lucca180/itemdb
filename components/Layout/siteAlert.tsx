@@ -3,6 +3,7 @@ import { getCurrentSiteAlert } from '@utils/siteAlert';
 import { getLocalizedHref, isLocalizableHref, type AppLocale } from '@utils/locales';
 import { cacheLife } from 'next/cache';
 import { SiteAlertBar } from './SiteAlertBar';
+import { Link } from '@chakra-ui/react';
 
 export async function getCachedSiteAlert() {
   'use cache';
@@ -38,16 +39,23 @@ export async function AppSiteAlert({ locale }: AppSiteAlertProps) {
           b: (children) => <b>{children}</b>,
 
           Link: (children) => (
-            <a
-              href={linkHref}
-              style={{ fontWeight: 'bold' }}
-              target={isExternal ? '_blank' : undefined}
-              rel={isExternal ? 'noopener noreferrer' : undefined}
+            <Link
+              asChild
+              fontWeight="bold"
               data-umami-event="site-alert-click"
               data-umami-event-label={alert.message}
+              _hover={{ textDecoration: 'underline' }}
+              color={alert.color}
             >
-              {children}
-            </a>
+              <a
+                href={linkHref}
+                style={{ fontWeight: 'bold' }}
+                target={isExternal ? '_blank' : undefined}
+                rel={isExternal ? 'noopener noreferrer' : undefined}
+              >
+                {children}
+              </a>
+            </Link>
           ),
         })}
     </SiteAlertBar>

@@ -852,7 +852,7 @@
   },
   "Restock": {
     "restock-info": "Restock Info",
-    "half-price-day": "Half Price Day - 50% off",
+    "half-price-day": "Half Price Day",
     "tyrannian-victory-day": "Tyrannian Victory Day - 80% off",
     "usuki-day": "Usuki Day - 66.6% off",
     "faerie-festival": "Faerie Festival - 50% off",
@@ -927,7 +927,6 @@
     "show-misses": "Show Misses",
     "hide-misses": "Hide Misses",
     "last-session": "Last Session",
-    "half-price-day": "Half Price Day",
     "avg-reaction-time": "Avg Reaction Time",
     "based-on-x-clicks": "based on {x} clicks",
     "success-rate": "Success Rate",
@@ -1221,7 +1220,8 @@
     "faerie-festival": "Faerie Festival - <Link>Faerieland Shops</Link> with 50% off (except Faerie Furniture and Faerie Weapon)",
     "halloween": "Halloween - <Link>Haunted Woods Shops</Link> with 50% off (except Neovia)",
     "hiddenTower": "3% off at the <Link>Hidden Tower</Link> today for account age 60 months or older!",
-    "apiChanges": "Userscripts not working? Please check our <Link>Troubleshooting Tool</Link>!"
+    "apiChanges": "Userscripts not working? Please check our <Link>Troubleshooting Tool</Link>!",
+    "newAuction": "Please read some <Link>important updates</Link> about the new Auction House."
   },
   "Owls": {
     "items-you-offered": "Items You Offered",

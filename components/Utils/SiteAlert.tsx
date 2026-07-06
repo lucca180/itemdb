@@ -26,6 +26,8 @@ export const SiteAlert = () => {
               fontWeight="bold"
               data-umami-event="site-alert-click"
               data-umami-event-label={alert.message}
+              _hover={{ textDecoration: 'underline' }}
+              color={alert.color}
             >
               <MainLink
                 href={alert.link}
