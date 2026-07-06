@@ -7,7 +7,7 @@ import { Flex } from '@chakra-ui/react';
 import UserListCard from '@components/UserLists/ListCard';
 
 type EventCardProps = {
-  lists: UserList[];
+  lists?: UserList[];
 };
 
 export const NeggsCard = (props: EventCardProps) => {
@@ -52,7 +52,7 @@ export const NeggsCard = (props: EventCardProps) => {
       }}
     >
       <Flex flexWrap="wrap" gap={4} justifyContent="center">
-        {lists.map((list) => (
+        {lists?.map((list) => (
           <UserListCard utm_content="event-lists" isSmall list={list} key={list.internal_id} />
         ))}
       </Flex>
@@ -100,7 +100,58 @@ export const TVWHomeCard = (props: EventCardProps) => {
       }}
     >
       <Flex flexWrap="wrap" gap={4} justifyContent="center">
-        {lists.map((list) => (
+        {lists?.map((list) => (
+          <UserListCard utm_content="event-lists" isSmall list={list} key={list.internal_id} />
+        ))}
+      </Flex>
+    </HorizontalHomeCard>
+  );
+};
+
+export const CupCard = (props: EventCardProps) => {
+  const { lists } = props;
+  // const t = useTranslations();
+
+  return (
+    <HorizontalHomeCard
+      color="#ffdba4"
+      h={50}
+      w={50}
+      image="https://images.neopets.com/themes/h5/basic/images/altadorcup-icon.png"
+      viewAllLink="/lists/official?cat=Altador%20Cup%202026"
+      title={'Altador Cup 2026'}
+      isSmall
+      utm_content="cup-lists"
+      css={{
+        position: 'relative',
+        isolation: 'isolate',
+        overflow: 'hidden',
+        '& h2': {
+          textShadow: '0 0 10px #ffdba4',
+        },
+        '&::before': {
+          content: "''",
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundImage:
+            "url('https://images.neopets.com/altador/altadorcup/2022/winners-bg.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'bottom center',
+          filter: 'blur(5px) brightness(0.7)',
+          opacity: 0.5,
+          zIndex: -1,
+        },
+      }}
+      innerStyle={{
+        border: '2px solid #ffdba47d',
+      }}
+    >
+      <Flex flexWrap="wrap" gap={4} justifyContent="center">
+        {!lists && <Flex flexWrap="wrap" gap={4} justifyContent="center" minH="120px" />}
+        {lists?.map((list) => (
           <UserListCard utm_content="event-lists" isSmall list={list} key={list.internal_id} />
         ))}
       </Flex>

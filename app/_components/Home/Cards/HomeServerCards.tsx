@@ -47,7 +47,7 @@ async function getCachedFeaturedLists() {
   'use cache';
   cacheTag('home-trending-lists');
   cacheLife('homeSlow');
-  return getTrendingLists(3, []).catch(() => []);
+  return getTrendingLists(3, ['Altador Cup 2026']).catch(() => []);
 }
 
 export function LatestItemsHomeCard() {
