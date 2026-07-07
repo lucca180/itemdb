@@ -103,7 +103,7 @@ export function getCurrentSiteAlert() {
   if (todayNST.getMonth() === 7 && todayNST.getDate() === 20) return siteAlerts.usuki;
   if (todayNST.getMonth() === 8 && todayNST.getDate() === 20) return siteAlerts.faerieFestival;
   if (todayNST.getMonth() === 9 && todayNST.getDate() === 31) return siteAlerts.halloween;
-  if (todayNST.getTime() < 1783468799000) return siteAlerts.newAuction;
+  if (todayNST.getTime() < 1783641599000) return siteAlerts.newAuction;
 
   return siteAlerts.default;
 }
