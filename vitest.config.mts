@@ -7,6 +7,8 @@ export default defineConfig({
     environment: 'node',
     setupFiles: ['dotenv/config', 'test/setup-next-navigation.ts'],
     retry: 3,
+    maxWorkers: '30%',
+    bail: 1,
   },
   resolve: {
     tsconfigPaths: true,

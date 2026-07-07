@@ -71,6 +71,8 @@ jobs:
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
+            yarn typecheck:fast
+
             if git log -1 --pretty=%B | grep -q '\[skip test\]'; then
               echo "Skipping tests"
             else
@@ -106,7 +108,6 @@ jobs:
 
             export BUILD_ID=$(git rev-parse HEAD)
 
-            yarn typecheck:fast
             yarn build-intl
             yarn build:app
             yarn postbuild
