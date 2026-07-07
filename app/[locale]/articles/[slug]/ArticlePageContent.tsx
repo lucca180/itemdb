@@ -1,4 +1,4 @@
-import { Alert, Code, Flex, Heading, Link, List, Table, Text } from '@chakra-ui/react';
+import { Alert, Box, Code, Flex, Heading, Link, List, Table, Text } from '@chakra-ui/react';
 import { ArticleCard } from '@components/Articles/ArticlesCard';
 import { BreadcrumbsView } from '@components/Breadcrumbs/BreadcrumbsView';
 import HeaderCard from '@components/Card/HeaderCard';
@@ -89,6 +89,13 @@ const articleParserOptions: HTMLReactParserOptions = {
 
     if (domChildren instanceof Element && domChildren.name === 'code')
       return <Code>{domToReact(children, articleParserOptions)}</Code>;
+
+    if (domChildren instanceof Element && domChildren.name === 'blockquote')
+      return (
+        <Box p={3} borderRadius="md" bg="whiteAlpha.50">
+          {domToReact(children, articleParserOptions)}
+        </Box>
+      );
 
     if (domChildren instanceof Element && domChildren.name === 'sc-alert') {
       const status = (domChildren.attribs.status ?? 'info') as
