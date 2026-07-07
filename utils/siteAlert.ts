@@ -86,7 +86,7 @@ export const siteAlerts = {
     message: 'newAuction',
     link: 'https://itemdb.com.br/articles/new-auction-house',
     img: {
-      src: 'https://images.neopets.com/themes/h5/basic/images/auction-icon.png',
+      src: '/icons/auction.png',
       h: 28,
       w: 28,
     },
