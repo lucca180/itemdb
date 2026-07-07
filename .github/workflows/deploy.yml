@@ -8,11 +8,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  prepare:
-    name: Prepare inactive environment
+  test:
+    name: Prepare and test inactive environment
     runs-on: ubuntu-latest
     steps:
-      - name: Prepare inactive environment
+      - name: Prepare and test inactive environment
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -44,33 +44,6 @@ jobs:
             npx prisma migrate deploy
             npx prisma generate
 
-  test:
-    name: Test inactive environment
-    needs: prepare
-    runs-on: ubuntu-latest
-    steps:
-      - name: Test inactive environment
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          script: |
-            set -euo pipefail
-
-            ACTIVE_CONF="/etc/nginx/snippets/itemdb-active-backend.conf"
-
-            if grep -q "4000" "$ACTIVE_CONF"; then
-              TARGET_DIR="/home/itemdb-green"
-            else
-              TARGET_DIR="/home/itemdb"
-            fi
-
-            cd "$TARGET_DIR"
-
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-
             yarn typecheck:fast
 
             if git log -1 --pretty=%B | grep -q '\[skip test\]'; then
@@ -81,7 +54,7 @@ jobs:
 
   build:
     name: Build inactive environment
-    needs: prepare
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Build inactive environment
@@ -114,7 +87,7 @@ jobs:
 
   switch:
     name: Switch traffic
-    needs: [test, build]
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Switch traffic

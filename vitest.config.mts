@@ -7,7 +7,7 @@ export default defineConfig({
     environment: 'node',
     setupFiles: ['dotenv/config', 'test/setup-next-navigation.ts'],
     retry: 3,
-    maxWorkers: '30%',
+    maxWorkers: '60%',
     bail: 1,
   },
   resolve: {
