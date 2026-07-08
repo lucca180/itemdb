@@ -4,9 +4,14 @@ import { ItemPrices, PriceProcess2, Prisma } from '@prisma/generated/client';
 import { differenceInCalendarDays } from 'date-fns';
 import { processPrices3 } from '@utils/prices/pricing3';
 import { handleInflation, PRICING, shouldUpdatePrice } from '@utils/prices/process-helpers';
+import pMap from 'p-map';
 
 export const MAX_DAYS = 30;
 export const MAX_PAST_DAYS = 60;
+
+// Caps parallel updateOrAddDB calls per POST so a single processing run
+// cannot exhaust the MariaDB pool (connectionLimit is per PM2 worker).
+const PRICE_PROCESS_DB_CONCURRENCY = 5;
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
 
@@ -243,47 +248,51 @@ export const doProcessPrices = async (
   ids: number[],
   forceMode = false
 ) => {
-  const priceAddPromises: Promise<Prisma.ItemPricesUncheckedCreateInput | undefined>[] = [];
   const processedIDs: number[] = [];
 
   // list of unique entries
+  const priceAddResults = await pMap(
+    ids,
+    async (itemId) => {
+      const allItemData = processList.filter((x) => x.item_iid === itemId);
+      const item = allItemData[0];
 
-  for (const itemId of ids) {
-    const allItemData = processList.filter((x) => x.item_iid === itemId);
-    const item = allItemData[0];
+      let newPrice: ReturnType<typeof processPrices3>;
+      try {
+        newPrice = processPrices3(allItemData, forceMode);
+      } catch (e) {
+        console.error(e, item);
+        if (e === 'NaN price') return undefined;
+        throw e;
+      }
 
-    try {
-      const newPrice = processPrices3(allItemData, forceMode);
-
-      if (!newPrice) continue;
+      if (!newPrice) return undefined;
 
       const allIDs = allItemData
-        .filter((x) => x.addedAt <= newPrice.latestDate)
+        .filter((x) => x.addedAt <= newPrice!.latestDate)
         .map((x) => x.internal_id);
 
-      priceAddPromises.push(
-        updateOrAddDB(
+      try {
+        const result = await updateOrAddDB(
           item,
           newPrice.price,
           allItemData.map((x) => x.internal_id),
           newPrice.latestDate,
           forceMode
-        ).then((_) => {
-          if (_) processedIDs.push(...allIDs);
-          return _;
-        })
-      );
-    } catch (e) {
-      console.error(e, item);
-      if (e === 'NaN price') continue;
-      throw e;
-    }
-  }
+        );
 
-  const priceAddList = (await Promise.allSettled(priceAddPromises))
-    .filter((x) => x.status === 'fulfilled')
-    .map((x) => (x.status === 'fulfilled' ? x.value : null))
-    .filter((x) => !!x) as ItemPrices[];
+        if (result) processedIDs.push(...allIDs);
+        return result;
+      } catch (e) {
+        // mirror the previous Promise.allSettled behavior: skip failed DB writes
+        console.error(e, item);
+        return undefined;
+      }
+    },
+    { concurrency: PRICE_PROCESS_DB_CONCURRENCY }
+  );
+
+  const priceAddList = priceAddResults.filter((x) => !!x) as ItemPrices[];
 
   const updatedIDs = priceAddList
     .filter((x) => !!x && !x.manual_check)

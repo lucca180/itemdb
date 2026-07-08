@@ -20,10 +20,10 @@ export type PrismaAdapterOptions = {
 
 /**
  * Production pool defaults
- * with 3 PM2 workers (3 × 20 = 60 max connections per active deploy).
+ * with 4 PM2 workers (4 × 16 = 64 max connections per active deploy).
  */
 export const MARIADB_POOL_DEFAULTS_PRODUCTION = {
-  connectionLimit: 20,
+  connectionLimit: 16,
   connectTimeout: 3_000,
   acquireTimeout: 15_000,
   idleTimeout: 900,
