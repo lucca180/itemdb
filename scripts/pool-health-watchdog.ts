@@ -12,6 +12,7 @@ import {
   inCooldown,
   type WatchdogState,
 } from '../utils/watchdog/state.js';
+import { notifyWatchdogRestart } from '../utils/watchdog/notifyRestart.js';
 
 const exec = promisify(execFile);
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -130,6 +131,17 @@ async function main() {
     lastReloadAt: result.lastReloadAt ?? new Date().toISOString(),
   });
   log('Restart done');
+
+  if (!dryRun) {
+    await notifyWatchdogRestart({
+      app: backend.app,
+      port: backend.port,
+      cwd: backend.cwd,
+      failedProbes: failed,
+      totalProbes: PROBES,
+      unhealthyCycles: FAILURES_BEFORE_RELOAD,
+    });
+  }
 }
 
 withLock(main).catch((e) => {
