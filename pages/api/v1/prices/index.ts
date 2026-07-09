@@ -440,11 +440,14 @@ const saveAuctionHistory = async (auctions: RestockAuction[]) => {
 };
 
 const upsertFilteredAuctionPrices = async (filteredAuctions: RestockAuction[]) => {
-  if (filteredAuctions.length === 0) return;
+  const byNeoId = new Map<number, RestockAuction>();
+  for (const auction of filteredAuctions) {
+    if (auction.neo_id != null) byNeoId.set(auction.neo_id, auction);
+  }
+  if (byNeoId.size === 0) return;
 
-  const neoIds = filteredAuctions
-    .map((auction) => auction.neo_id)
-    .filter((neoId): neoId is number => neoId != null);
+  const dedupedAuctions = Array.from(byNeoId.values());
+  const neoIds = dedupedAuctions.map((auction) => auction.neo_id!);
 
   const existingRows = await prisma.priceProcess2.findMany({
     where: {
@@ -460,33 +463,26 @@ const upsertFilteredAuctionPrices = async (filteredAuctions: RestockAuction[]) =
   });
 
   const existingByNeoId = new Map(existingRows.map((row) => [row.neo_id, row]));
+  const toCreate: Prisma.PriceProcess2CreateManyInput[] = [];
 
-  for (const auction of filteredAuctions) {
-    if (auction.neo_id == null) continue;
-
-    const existing = existingByNeoId.get(auction.neo_id);
+  for (const auction of dedupedAuctions) {
+    const existing = existingByNeoId.get(auction.neo_id!);
     const soldSuffix = getAuctionSoldSuffix(auction.otherInfo);
 
     if (!existing) {
-      await transactionRetry(
-        () =>
-          prisma.priceProcess2.create({
-            data: {
-              owner: auction.owner,
-              ownerHash: auction.ownerHash,
-              stock: auction.stock,
-              price: auction.price,
-              ip_address: (auction.ip_address ?? '') + soldSuffix,
-              addedAt: auction.addedAt ?? new Date(),
-              processed: false,
-              type: 'auction',
-              hash: auction.hash,
-              neo_id: auction.neo_id,
-              item_iid: auction.item_iid,
-            },
-          }),
-        3
-      );
+      toCreate.push({
+        owner: auction.owner,
+        ownerHash: auction.ownerHash,
+        stock: auction.stock,
+        price: auction.price,
+        ip_address: (auction.ip_address ?? '') + soldSuffix,
+        addedAt: auction.addedAt ?? new Date(),
+        processed: false,
+        type: 'auction',
+        hash: auction.hash,
+        neo_id: auction.neo_id,
+        item_iid: auction.item_iid,
+      });
       continue;
     }
 
@@ -510,6 +506,13 @@ const upsertFilteredAuctionPrices = async (filteredAuctions: RestockAuction[]) =
             addedAt: now,
           },
         }),
+      3
+    );
+  }
+
+  if (toCreate.length > 0) {
+    await transactionRetry(
+      () => prisma.priceProcess2.createMany({ data: toCreate, skipDuplicates: true }),
       3
     );
   }
