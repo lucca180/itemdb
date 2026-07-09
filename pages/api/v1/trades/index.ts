@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import pMap from 'p-map';
 import prisma from '../../../../utils/prisma';
 import { ItemData, TradeData } from '../../../../types';
 import requestIp from 'request-ip';
@@ -22,6 +23,12 @@ export const config = {
     },
   },
 };
+
+/** Caps parallel trade+items creates per ingest request (pool is 20/worker in prod). */
+const TRADE_CREATE_CONCURRENCY = 4;
+
+/** Caps parallel per-item price transactions inside processTradePrice. */
+const TRADE_PRICE_ITEM_CONCURRENCY = 4;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -77,7 +84,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (lang !== 'en') return res.status(400).json('Language must be english');
 
-  const promiseArr = [];
+  const pendingCreates: Prisma.TradesCreateInput[] = [];
   const toPriceProcess = [] as Prisma.PriceProcess2UncheckedCreateInput[];
   let itemDataRaw: { [key: string]: ItemData } = {};
 
@@ -221,25 +228,33 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
     // its not possible to use createMany with multiple related records
     // so we have to try to create the trade and then create the items
-    const prom = prisma.trades.create({
-      data: tradeData,
-      include: {
-        items: true,
-      },
-    });
-
     toPriceProcess.push(
       ...tradeItemToProcessItem(
         tradeData.items!.create as Prisma.TradeItemsCreateManyInput[],
         tradeData
       )
     );
-    promiseArr.push(prom);
+    pendingCreates.push(tradeData);
   }
 
-  // we have to use Promise.allSettled because we dont want to fail the whole request if one trade fails
-  // (and it will fail, because we cant create the same trade twice)
-  const result = await Promise.allSettled(promiseArr);
+  // Per-trade failures (e.g. duplicate trade_id) must not abort the whole batch.
+  const result = await pMap(
+    pendingCreates,
+    async (tradeData) => {
+      try {
+        const value = await prisma.trades.create({
+          data: tradeData,
+          include: {
+            items: true,
+          },
+        });
+        return { status: 'fulfilled' as const, value };
+      } catch (reason) {
+        return { status: 'rejected' as const, reason };
+      }
+    },
+    { concurrency: TRADE_CREATE_CONCURRENCY }
+  );
 
   const tradesFulfilled = result
     .filter((x) => x.status === 'fulfilled')
@@ -301,7 +316,7 @@ export const processTradePrice = async (
   // this is the worst (or is it?)
   // update: (its getting worse and worse)
   // update 2: god help us all
-  const updateItems = trade.items
+  const itemTransactions = trade.items
     .filter((x) => x.price && Number(x.price) > 0 && Number(x.price) < MAX_SUPPORTED_NUMBER)
     .map((item) => {
       if (
@@ -347,9 +362,12 @@ export const processTradePrice = async (
       }
 
       return prisma.$transaction(transaction, { isolationLevel: 'ReadUncommitted' });
-    });
+    })
+    .flat();
 
-  await Promise.all(updateItems.flat());
+  await pMap(itemTransactions, (transaction) => transaction, {
+    concurrency: TRADE_PRICE_ITEM_CONCURRENCY,
+  });
 
   const itemUpdate = await getTradeItems(trade.trade_id, tradeHash);
 
