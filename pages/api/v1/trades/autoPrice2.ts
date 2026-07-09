@@ -18,7 +18,7 @@ import {
 } from '@utils/trades/findSimilarTrade';
 
 const TARNUM_KEY = process.env.TARNUM_KEY;
-const AUTO_PRICE_CONCURRENCY = 8;
+const AUTO_PRICE_CONCURRENCY = 4;
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   try {

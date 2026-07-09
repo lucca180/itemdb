@@ -43,6 +43,6 @@ export const syncAllDynamicLists = async () => {
   dynamicOfficialLists = shuffle(dynamicOfficialLists);
 
   await pMap(dynamicOfficialLists, (list) => syncDynamicList(list.internal_id, true), {
-    concurrency: 7,
+    concurrency: 5,
   });
 };
