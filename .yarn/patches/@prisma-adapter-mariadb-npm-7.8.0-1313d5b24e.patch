@@ -1,0 +1,120 @@
+diff --git a/dist/index.js b/dist/index.js
+index 21a8cf3d85213061cb910139bac00a70aa2c60cf..3d75bb3cefd3675fb8427fcd32ec8d19bdeb5f6e 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -371,7 +371,7 @@ var MariaDbTransaction = class extends MariaDbQueryable {
+       this.onError(err);
+     } finally {
+       this.cleanup?.();
+-      await this.client.end();
++      await releaseConnection(this.client);
+     }
+   }
+   async rollback() {
+@@ -382,7 +382,7 @@ var MariaDbTransaction = class extends MariaDbQueryable {
+       this.onError(err);
+     } finally {
+       this.cleanup?.();
+-      await this.client.end();
++      await releaseConnection(this.client);
+     }
+   }
+   async createSavepoint(name2) {
+@@ -423,7 +423,7 @@ var PrismaMariaDbAdapter = class extends MariaDbQueryable {
+     };
+     conn.on("error", onError);
+     const cleanup = () => {
+-      conn.removeListener("error", onError);
++      conn.off("error", onError);
+     };
+     try {
+       const tx = new MariaDbTransaction(conn, this.mariadbOptions, options, cleanup);
+@@ -437,8 +437,11 @@ var PrismaMariaDbAdapter = class extends MariaDbQueryable {
+       await tx.conn.query({ sql: "BEGIN" }).catch(this.onError.bind(this));
+       return tx;
+     } catch (error) {
+-      await conn.end();
+-      cleanup();
++      try {
++        cleanup();
++      } finally {
++        await releaseConnection(conn);
++      }
+       this.onError(error);
+     }
+   }
+@@ -527,6 +530,14 @@ function rewriteConnectionString(url) {
+   }
+   return url;
+ }
++async function releaseConnection(conn) {
++  const release = conn.release;
++  if (typeof release === "function") {
++    await release.call(conn);
++  } else {
++    await conn.end();
++  }
++}
+ // Annotate the CommonJS export names for ESM import in node:
+ 0 && (module.exports = {
+   PrismaMariaDb
+diff --git a/dist/index.mjs b/dist/index.mjs
+index e292810f594bb8a66a7f33c3e7c524781e9281fc..cb4c22f0c8d4320ee6bd978c8ecf4a3c77828c13 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -335,7 +335,7 @@ var MariaDbTransaction = class extends MariaDbQueryable {
+       this.onError(err);
+     } finally {
+       this.cleanup?.();
+-      await this.client.end();
++      await releaseConnection(this.client);
+     }
+   }
+   async rollback() {
+@@ -346,7 +346,7 @@ var MariaDbTransaction = class extends MariaDbQueryable {
+       this.onError(err);
+     } finally {
+       this.cleanup?.();
+-      await this.client.end();
++      await releaseConnection(this.client);
+     }
+   }
+   async createSavepoint(name2) {
+@@ -387,7 +387,7 @@ var PrismaMariaDbAdapter = class extends MariaDbQueryable {
+     };
+     conn.on("error", onError);
+     const cleanup = () => {
+-      conn.removeListener("error", onError);
++      conn.off("error", onError);
+     };
+     try {
+       const tx = new MariaDbTransaction(conn, this.mariadbOptions, options, cleanup);
+@@ -401,8 +401,11 @@ var PrismaMariaDbAdapter = class extends MariaDbQueryable {
+       await tx.conn.query({ sql: "BEGIN" }).catch(this.onError.bind(this));
+       return tx;
+     } catch (error) {
+-      await conn.end();
+-      cleanup();
++      try {
++        cleanup();
++      } finally {
++        await releaseConnection(conn);
++      }
+       this.onError(error);
+     }
+   }
+@@ -491,6 +494,14 @@ function rewriteConnectionString(url) {
+   }
+   return url;
+ }
++async function releaseConnection(conn) {
++  const release = conn.release;
++  if (typeof release === "function") {
++    await release.call(conn);
++  } else {
++    await conn.end();
++  }
++}
+ export {
+   PrismaMariaDbAdapterFactory as PrismaMariaDb
+ };

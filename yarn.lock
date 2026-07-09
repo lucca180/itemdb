@@ -3957,6 +3957,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@prisma/adapter-mariadb@patch:@prisma/adapter-mariadb@npm%3A7.8.0#~/.yarn/patches/@prisma-adapter-mariadb-npm-7.8.0-1313d5b24e.patch":
+  version: 7.8.0
+  resolution: "@prisma/adapter-mariadb@patch:@prisma/adapter-mariadb@npm%3A7.8.0#~/.yarn/patches/@prisma-adapter-mariadb-npm-7.8.0-1313d5b24e.patch::version=7.8.0&hash=d78aa9"
+  dependencies:
+    "@prisma/driver-adapter-utils": "npm:7.8.0"
+    mariadb: "npm:3.4.5"
+  checksum: 10c0/f09d0cf8bbc09d19ed73059eb37358fb4af6e2ea095e2a042c3a7e7c6079e00ed0929fc221617e93bf26936a887c507de48678d555edba2eb6cf21fb0e105307
+  languageName: node
+  linkType: hard
+
 "@prisma/client-runtime-utils@npm:7.8.0":
   version: 7.8.0
   resolution: "@prisma/client-runtime-utils@npm:7.8.0"
@@ -12118,7 +12128,7 @@ __metadata:
     "@napi-rs/canvas": "npm:^1.0.0"
     "@next/bundle-analyzer": "npm:16.2.6"
     "@next/eslint-plugin-next": "npm:16.2.6"
-    "@prisma/adapter-mariadb": "npm:7.8.0"
+    "@prisma/adapter-mariadb": "patch:@prisma/adapter-mariadb@npm%3A7.8.0#~/.yarn/patches/@prisma-adapter-mariadb-npm-7.8.0-1313d5b24e.patch"
     "@prisma/client": "npm:7.8.0"
     "@sentry/nextjs": "npm:^10.64.0"
     "@swc-jotai/react-refresh": "npm:^0.5.0"

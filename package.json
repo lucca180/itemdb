@@ -38,7 +38,7 @@
     "@json2csv/node": "^7.0.6",
     "@microlink/react-json-view": "^1.27.1",
     "@napi-rs/canvas": "^1.0.0",
-    "@prisma/adapter-mariadb": "7.8.0",
+    "@prisma/adapter-mariadb": "patch:@prisma/adapter-mariadb@npm%3A7.8.0#~/.yarn/patches/@prisma-adapter-mariadb-npm-7.8.0-1313d5b24e.patch",
     "@prisma/client": "7.8.0",
     "@sentry/nextjs": "^10.64.0",
     "@tycrek/discord-hookr": "^0.1.0",
