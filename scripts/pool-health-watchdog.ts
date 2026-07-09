@@ -19,11 +19,11 @@ const lockFile = resolve(root, '.pool-watchdog.lock');
 const stateFile = resolve(root, '.pool-watchdog-state.json');
 
 const PROBES = 6;
-const PROBE_FAIL_MAX = 2;
-const FAILURES_BEFORE_RELOAD = 3;
-const COOLDOWN_SEC = 300; // 5 minutes
-const TIMEOUT_MS = 5_000;
-const STOP_WAIT_MS = 20_000;
+const PROBE_FAIL_MAX = 3;
+const FAILURES_BEFORE_RELOAD = 4;
+const COOLDOWN_SEC = 480; // 8 minutes
+const TIMEOUT_MS = 12_000;
+const STOP_WAIT_MS = 15_000;
 
 const dryRun = process.argv.includes('--dry-run');
 

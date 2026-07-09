@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@utils/prisma';
 
-const DB_PROBE_TIMEOUT_MS = 3_000;
+const DB_PROBE_TIMEOUT_MS = 10_000;
 
 export default async function handle(_req: NextApiRequest, res: NextApiResponse) {
   const started = Date.now();

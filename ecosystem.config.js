@@ -9,7 +9,7 @@ module.exports = {
       time: true,
       merge_logs: true,
       max_memory_restart: '2800M',
-      kill_timeout: 10_000,
+      kill_timeout: 15_000,
     },
     {
       name: 'itemdb-green',
@@ -20,7 +20,7 @@ module.exports = {
       time: true,
       merge_logs: true,
       max_memory_restart: '2800M',
-      kill_timeout: 10_000,
+      kill_timeout: 15_000,
     },
   ],
 };

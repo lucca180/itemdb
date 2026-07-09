@@ -25,7 +25,7 @@ export type PrismaAdapterOptions = {
 export const MARIADB_POOL_DEFAULTS_PRODUCTION = {
   connectionLimit: 16,
   connectTimeout: 3_000,
-  acquireTimeout: 15_000,
+  acquireTimeout: 20_000,
   idleTimeout: 900,
   leakDetectionTimeout: 0,
 } as const satisfies Partial<PoolConfig>;
