@@ -10,6 +10,7 @@ import { ItemData, UserList } from '@types';
 import {
   MAX_PRICE_CONTEXT_ITEM_IDS,
   MAX_PRICE_CONTEXT_LENGTH,
+  parseBulkItemIdentifiers,
   type PriceContextDropPool,
   type PriceContextPreviewRow,
 } from './priceContextShared';
@@ -17,6 +18,7 @@ import {
 export {
   MAX_PRICE_CONTEXT_ITEM_IDS,
   MAX_PRICE_CONTEXT_LENGTH,
+  parseBulkItemIdentifiers,
   type PriceContextDropPool,
   type PriceContextPreviewRow,
 } from './priceContextShared';
@@ -31,6 +33,11 @@ export type PriceContextItemSourceRequest =
       source: 'drops';
       parentItemId: number;
       prizePool?: string;
+    }
+  | {
+      source: 'bulk';
+      identifiers?: unknown;
+      text?: unknown;
     }
   | PriceContextDropPoolRequest;
 
@@ -96,6 +103,18 @@ export async function loadPriceContextSourceItems(body: PriceContextItemSourceRe
   }
 
   throw new PriceContextInputError('Invalid source');
+}
+
+export type PriceContextBulkSourceResult = {
+  items: Record<number, ItemData>;
+  notFound: string[];
+};
+
+export async function loadPriceContextBulkSourceItems(
+  body: Extract<PriceContextItemSourceRequest, { source: 'bulk' }>
+): Promise<PriceContextBulkSourceResult> {
+  const identifiers = normalizeBulkIdentifiers(body);
+  return loadBulkIdentifierItems(identifiers);
 }
 
 export async function loadPriceContextDropPools(
@@ -225,6 +244,55 @@ async function getItemsByIds(itemIds: number[]) {
 
   const items = await getManyItems({ id: ids });
   return items as Record<number, ItemData>;
+}
+
+function normalizeBulkIdentifiers(
+  body: Extract<PriceContextItemSourceRequest, { source: 'bulk' }>
+) {
+  const identifiers =
+    typeof body.text === 'string'
+      ? parseBulkItemIdentifiers(body.text)
+      : Array.isArray(body.identifiers)
+        ? [...new Set(body.identifiers.map((value) => String(value).trim()).filter(Boolean))]
+        : [];
+
+  if (!identifiers.length) throw new PriceContextInputError('No valid item identifiers');
+  if (identifiers.length > MAX_PRICE_CONTEXT_ITEM_IDS) {
+    throw new PriceContextInputError(`Too many identifiers (max ${MAX_PRICE_CONTEXT_ITEM_IDS})`);
+  }
+
+  return identifiers;
+}
+
+async function loadBulkIdentifierItems(
+  identifiers: string[]
+): Promise<PriceContextBulkSourceResult> {
+  const ids: string[] = [];
+  const names: string[] = [];
+
+  for (const identifier of identifiers) {
+    const id = normalizeId(identifier);
+    if (id) ids.push(String(id));
+    else names.push(identifier);
+  }
+
+  const [itemsById, itemsByName] = await Promise.all([
+    ids.length ? getManyItems({ id: ids }) : Promise.resolve({} as Record<string, ItemData>),
+    names.length ? getManyItems({ name: names }) : Promise.resolve({} as Record<string, ItemData>),
+  ]);
+
+  const merged: Record<number, ItemData> = {};
+  for (const item of [...Object.values(itemsById), ...Object.values(itemsByName)]) {
+    merged[item.internal_id] = item;
+  }
+
+  const notFound = identifiers.filter((identifier) => {
+    const id = normalizeId(identifier);
+    if (id) return !itemsById[String(id)];
+    return !itemsByName[identifier];
+  });
+
+  return { items: merged, notFound };
 }
 
 async function getFirstPricesAfterDate(

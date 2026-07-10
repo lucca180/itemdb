@@ -1,5 +1,6 @@
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import {
+  loadPriceContextBulkSourceItems,
   loadPriceContextDropPools,
   loadPriceContextSourceItems,
   PriceContextInputError,
@@ -25,6 +26,15 @@ export async function POST(request: Request) {
       return Response.json({
         pools,
         count: pools.length,
+      });
+    }
+
+    if (body.source === 'bulk') {
+      const { items, notFound } = await loadPriceContextBulkSourceItems(body);
+      return Response.json({
+        items: Object.values(items),
+        count: Object.keys(items).length,
+        notFound,
       });
     }
 

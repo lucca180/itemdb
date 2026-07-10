@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import axios from 'axios';
 import {
+  Alert,
   Badge,
   Box,
   Button,
@@ -39,6 +40,7 @@ import {
 type SourceResponse = {
   items: ItemData[];
   count: number;
+  notFound?: string[];
 };
 
 type DropPoolsResponse = {
@@ -68,6 +70,8 @@ export function BulkPriceContextClient() {
   const [listId, setListId] = useState('');
   const [parentItem, setParentItem] = useState<ItemData | null>(null);
   const [prizePool, setPrizePool] = useState('');
+  const [bulkItemsText, setBulkItemsText] = useState('');
+  const [bulkNotFound, setBulkNotFound] = useState<string[]>([]);
   const [dropPools, setDropPools] = useState<PriceContextDropPool[]>([]);
   const [startDate, setStartDate] = useState(today);
   const [priceContext, setPriceContext] = useState('');
@@ -153,6 +157,57 @@ export function BulkPriceContextClient() {
     try {
       const res = await prom;
       addItems(res.data.items);
+    } finally {
+      setIsLoadingSource(false);
+    }
+  };
+
+  const loadBulkItems = async () => {
+    if (!bulkItemsText.trim()) return;
+
+    setIsLoadingSource(true);
+    setBulkNotFound([]);
+
+    toast({
+      id: 'bulk-price-context-bulk',
+      title: 'Loading items...',
+      status: 'loading',
+      duration: null,
+    });
+
+    try {
+      const res = await axios.post<SourceResponse>('/api/admin/price-context/source', {
+        source: 'bulk',
+        text: bulkItemsText,
+      });
+      const notFound = res.data.notFound ?? [];
+
+      addItems(res.data.items);
+      setBulkNotFound(notFound);
+
+      const foundCount = res.data.items.length;
+      toast.update('bulk-price-context-bulk', {
+        id: 'bulk-price-context-bulk',
+        title: !foundCount
+          ? 'No items found.'
+          : notFound.length
+            ? `${foundCount} item${foundCount === 1 ? '' : 's'} added.`
+            : 'Items loaded.',
+        description: notFound.length
+          ? `${notFound.length} not found: ${notFound.join(', ')}`
+          : undefined,
+        status: !foundCount || notFound.length ? 'warning' : 'success',
+        duration: notFound.length || !foundCount ? 10000 : 5000,
+        isClosable: true,
+      });
+    } catch {
+      toast.update('bulk-price-context-bulk', {
+        id: 'bulk-price-context-bulk',
+        title: 'Unable to load items.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
     } finally {
       setIsLoadingSource(false);
     }
@@ -257,6 +312,7 @@ export function BulkPriceContextClient() {
           <Tabs.Root defaultValue="manual" variant="line" colorPalette="blue">
             <Tabs.List>
               <Tabs.Trigger value="manual">Manual</Tabs.Trigger>
+              <Tabs.Trigger value="paste">Paste</Tabs.Trigger>
               <Tabs.Trigger value="lists">Lists</Tabs.Trigger>
               <Tabs.Trigger value="drops">Drops</Tabs.Trigger>
             </Tabs.List>
@@ -265,6 +321,48 @@ export function BulkPriceContextClient() {
                 <Field.Label>Item</Field.Label>
                 <ItemSelect onChange={(item) => addItems([item])} placeholder="Add item" />
               </Field.Root>
+            </Tabs.Content>
+            <Tabs.Content value="paste" pt={5}>
+              <Stack gap={4}>
+                <Field.Root>
+                  <Field.Label>Items</Field.Label>
+                  <Textarea
+                    value={bulkItemsText}
+                    onChange={(e) => {
+                      setBulkItemsText(e.target.value);
+                      setBulkNotFound([]);
+                    }}
+                    placeholder={'101, 102, 103\nAlpha\nBeta'}
+                    variant="subtle"
+                    bg="whiteAlpha.50"
+                    minH="140px"
+                  />
+                  <Field.HelperText>
+                    One item per line or comma-separated. Use internal IDs or exact item names.
+                  </Field.HelperText>
+                </Field.Root>
+                <Button
+                  alignSelf="flex-start"
+                  colorPalette="blue"
+                  onClick={loadBulkItems}
+                  loading={isLoadingSource}
+                  disabled={!bulkItemsText.trim()}
+                >
+                  <LuListPlus />
+                  Add items
+                </Button>
+                {!!bulkNotFound.length && (
+                  <Alert.Root status="warning" variant="subtle">
+                    <Alert.Indicator />
+                    <Alert.Content>
+                      <Alert.Title>
+                        {bulkNotFound.length} item{bulkNotFound.length === 1 ? '' : 's'} not found
+                      </Alert.Title>
+                      <Alert.Description fontSize="sm">{bulkNotFound.join(', ')}</Alert.Description>
+                    </Alert.Content>
+                  </Alert.Root>
+                )}
+              </Stack>
             </Tabs.Content>
             <Tabs.Content value="lists" pt={5}>
               <Stack gap={4}>

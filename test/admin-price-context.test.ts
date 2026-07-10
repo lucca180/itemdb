@@ -48,6 +48,7 @@ import { POST as sourcePOST } from '@app/api/admin/price-context/source/route';
 import {
   MAX_PRICE_CONTEXT_ITEM_IDS,
   MAX_PRICE_CONTEXT_LENGTH,
+  parseBulkItemIdentifiers,
 } from '@app/api/admin/price-context/priceContextService';
 
 const item = (id: number, name = `Item ${id}`) =>
@@ -86,16 +87,24 @@ describe('admin price context route handlers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     getServerCurrentUserMock.mockResolvedValue({ user: { id: 'admin-user', isAdmin: true } });
-    getManyItemsMock.mockImplementation(({ id }: { id?: string[] }) => {
+    getManyItemsMock.mockImplementation(({ id, name }: { id?: string[]; name?: string[] }) => {
       const items = {
         101: item(101, 'Alpha'),
         102: item(102, 'Beta'),
         103: item(103, 'Gamma'),
       } as Record<string, ReturnType<typeof item>>;
 
-      return Object.fromEntries(
+      const byId = Object.fromEntries(
         (id ?? []).flatMap((itemId) => (items[itemId] ? [[itemId, items[itemId]]] : []))
       );
+      const byName = Object.fromEntries(
+        (name ?? []).flatMap((itemName) => {
+          const match = Object.values(items).find((loadedItem) => loadedItem.name === itemName);
+          return match ? [[itemName, match]] : [];
+        })
+      );
+
+      return { ...byId, ...byName };
     });
     getItemDropsMock.mockResolvedValue({
       pools: {
@@ -204,6 +213,37 @@ describe('admin price context route handlers', () => {
       })
     );
     expect(body.items).toHaveLength(1);
+  });
+
+  test('loads source items from bulk text with ids and names', async () => {
+    const res = await sourcePOST(
+      request({
+        source: 'bulk',
+        text: '101, 102\nGamma',
+      })
+    );
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(getManyItemsMock).toHaveBeenCalledWith({ id: ['101', '102'] });
+    expect(getManyItemsMock).toHaveBeenCalledWith({ name: ['Gamma'] });
+    expect(body.items).toHaveLength(3);
+    expect(body.notFound).toEqual([]);
+  });
+
+  test('returns not found identifiers from bulk text', async () => {
+    const res = await sourcePOST(
+      request({
+        source: 'bulk',
+        text: '101, Missing Item\n999',
+      })
+    );
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.items).toHaveLength(1);
+    expect(body.items[0].internal_id).toBe(101);
+    expect(body.notFound).toEqual(['Missing Item', '999']);
   });
 
   test('loads drop source items from the calculated drops route rules with optional prize pool', async () => {
@@ -344,5 +384,15 @@ describe('admin price context route handlers', () => {
       undefined,
       'admin-user'
     );
+  });
+});
+
+describe('parseBulkItemIdentifiers', () => {
+  test('splits comma and newline separated values', () => {
+    expect(parseBulkItemIdentifiers('101, 102\n103')).toEqual(['101', '102', '103']);
+  });
+
+  test('deduplicates and trims tokens', () => {
+    expect(parseBulkItemIdentifiers(' 101 ,101\nAlpha , Alpha ')).toEqual(['101', 'Alpha']);
   });
 });
