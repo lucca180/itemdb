@@ -49,32 +49,40 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const lastDaysFormated = lastDays.toISOString().split('T')[0];
 
   let query = prisma.$queryRaw`
-    SELECT p.item_iid, COUNT(*) as count, MAX(p.addedAt) as MAX_addedAt, count(*) OVER() AS full_count
-    FROM PriceProcess2 p
-    LEFT JOIN ItemPrices a ON a.item_iid = p.item_iid AND a.addedAt >= ${lastDaysFormated}
-    LEFT JOIN PriceProcessHistory b ON b.item_iid = p.item_iid
-    WHERE
-      p.addedAt >= ${maxPastFormated} AND
-      p.processed = 0 AND
-      a.item_iid IS NULL AND
-      b.item_iid IS NULL
-    GROUP BY p.item_iid
+    SELECT item_iid, COUNT(*) as count, MAX(addedAt) as MAX_addedAt, count(*) OVER() AS full_count FROM PriceProcess2 p
+    WHERE 
+      addedAt >= ${maxPastFormated} AND
+      processed = 0 AND
+      NOT EXISTS (
+        SELECT 1 FROM ItemPrices a WHERE 
+        a.addedAt >= ${lastDaysFormated}
+        and a.item_iid = p.item_iid 
+      ) AND
+      NOT EXISTS (
+        SELECT 1 FROM PriceProcessHistory b WHERE
+        b.item_iid = p.item_iid
+      )
+    GROUP BY item_iid 
     HAVING count >= 10 OR (MAX_addedAt <= ${maxDateFormated} and count >= 3)
     LIMIT 1
   ` as any;
 
   if (checkPopular)
     query = prisma.$queryRaw`
-      SELECT p.item_iid, COUNT(*) as count, count(*) OVER() AS full_count
-      FROM PriceProcess2 p
-      INNER JOIN (SELECT DISTINCT item_iid FROM ItemPrices WHERE addedAt >= ${lastDaysFormated}) a
-        ON a.item_iid = p.item_iid
-      LEFT JOIN PriceProcessHistory b ON b.item_iid = p.item_iid
-      WHERE
-        p.addedAt >= ${lastDaysFormated} AND
-        p.processed = 0 AND
-        b.item_iid IS NULL
-      GROUP BY p.item_iid
+      SELECT item_iid, COUNT(*) as count, count(*) OVER() AS full_count FROM PriceProcess2 p
+      WHERE 
+        addedAt >= ${lastDaysFormated} AND
+        processed = 0 AND
+        EXISTS (
+          SELECT 1 FROM ItemPrices a WHERE 
+          a.addedAt >= ${lastDaysFormated}
+          and a.item_iid = p.item_iid 
+        ) AND
+        NOT EXISTS (
+          SELECT 1 FROM PriceProcessHistory b WHERE
+          b.item_iid = p.item_iid
+        )
+      GROUP BY item_iid 
       HAVING count >= 20
       LIMIT 1
   ` as any;
@@ -116,16 +124,20 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   const lastDaysFormated = lastDays.toISOString().split('T')[0];
 
   let query = prisma.$queryRaw`
-    SELECT p.item_iid, COUNT(*) as count, MAX(p.addedAt) as MAX_addedAt
-    FROM PriceProcess2 p
-    LEFT JOIN ItemPrices a ON a.item_iid = p.item_iid AND a.addedAt >= ${lastDaysFormated}
-    LEFT JOIN PriceProcessHistory b ON b.item_iid = p.item_iid
-    WHERE
-      p.addedAt >= ${maxPastFormated} AND
-      p.processed = 0 AND
-      a.item_iid IS NULL AND
-      b.item_iid IS NULL
-    GROUP BY p.item_iid
+    SELECT item_iid, COUNT(*) as count, MAX(addedAt) as MAX_addedAt FROM PriceProcess2 p
+    WHERE 
+      addedAt >= ${maxPastFormated} AND
+      processed = 0 AND
+      NOT EXISTS (
+        SELECT 1 FROM ItemPrices a WHERE 
+        a.addedAt >= ${lastDaysFormated}
+        and a.item_iid = p.item_iid 
+      ) AND
+      NOT EXISTS (
+        SELECT 1 FROM PriceProcessHistory b WHERE
+        b.item_iid = p.item_iid
+      )
+    GROUP BY item_iid 
     HAVING count >= 10 OR (MAX_addedAt <= ${maxDateFormated} and count >= 3)
     ORDER BY MAX_addedAt asc
     LIMIT ${groupByLimit} OFFSET ${page * groupByLimit}
@@ -133,19 +145,23 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (checkPopular)
     query = prisma.$queryRaw`
-      SELECT p.item_iid, COUNT(*) as count
-      FROM PriceProcess2 p
-      INNER JOIN (SELECT DISTINCT item_iid FROM ItemPrices WHERE addedAt >= ${lastDaysFormated}) a
-        ON a.item_iid = p.item_iid
-      LEFT JOIN PriceProcessHistory b ON b.item_iid = p.item_iid
-      WHERE
-        p.addedAt >= ${lastDaysFormated} AND
-        p.processed = 0 AND
-        b.item_iid IS NULL
-      GROUP BY p.item_iid
-      HAVING count >= 30
-      ORDER BY count desc
-      LIMIT ${groupByLimit} OFFSET ${page * groupByLimit}
+      SELECT item_iid, COUNT(*) as count FROM PriceProcess2 p
+        WHERE 
+          addedAt >= ${lastDaysFormated} AND
+          processed = 0 AND
+          EXISTS (
+            SELECT 1 FROM ItemPrices a WHERE 
+            a.addedAt >= ${lastDaysFormated}
+            and a.item_iid = p.item_iid 
+          ) AND
+          NOT EXISTS (
+            SELECT 1 FROM PriceProcessHistory b WHERE
+            b.item_iid = p.item_iid
+          )
+        GROUP BY item_iid 
+        HAVING count >= 30
+        ORDER BY count desc
+        LIMIT ${groupByLimit} OFFSET ${page * groupByLimit}
     ` as any;
 
   const groupBy2 = await query;
