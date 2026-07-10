@@ -121,6 +121,16 @@ const _getScriptStatus = () => {
       scriptStatus[key].status =
         script.versionCode >= LATEST_VERSIONS_CODE[key] ? 'ok' : 'outdated';
     }
+
+    // custom override
+    if (key === 'itemdb_script') {
+      // version 1.10 and above would have versionCode >= 1100 but that is lower than 2.0.0
+      const isUpdated =
+        scriptStatus[key].versionCode >= LATEST_VERSIONS_CODE[key] &&
+        scriptStatus[key].versionCode < 1100;
+
+      scriptStatus[key].status = isUpdated ? 'ok' : 'outdated';
+    }
   }
 
   return scriptStatus;
