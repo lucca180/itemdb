@@ -19,6 +19,8 @@
 
 - NEVER EVER run any SQL commands nor make any database changes without confirming with user first. This can lead to data loss or corruption if not done carefully.
 
+- NEVER perform any database actions such as INSERT, UPDATE, DELETE... When dealing with database you are ALWAYS a "read-only" agent. You can only read data from the database, never write or modify it.
+
 - DO NOT create migrations manually. For database changes - after user confirmation, just change the schema and let the user run `prisma migrate dev`. NEVER run this command yourself.
 
 - When checking for Chakra UI docs, always refer to the official Chakra UI documentation at https://chakra-ui.com/docs/getting-started. Make sure you're looking at the correct version of the documentation that matches the version of Chakra UI being used in the project (v3 in this case). You can also use the Chakra MCP server to get specific information about Chakra UI components and their usage.
