@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "es6",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -16,32 +20,62 @@
     "noEmit": true,
     "sourceMap": true,
     "tsBuildInfoFile": ".cache/tsconfig.tsbuildinfo",
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "plugins": [
       {
         "name": "next"
       }
     ],
     "paths": {
-      "@prisma/generated/*": ["./prisma/generated/*"],
-      "@components/*": ["./components/*"],
-      "@utils/*": ["./utils/*"],
-      "@types": ["./types.d.ts"],
-      "@translations/*": ["./translations/*"],
-      "@services/*": ["./services/*"],
-      "@assets/*": ["./public/*"],
-      "@pages/*": ["./pages/*"],
-      "@app/*": ["./app/*"],
-      "@i18n/*": ["./i18n/*"]
+      "@prisma/generated/*": [
+        "./prisma/generated/*"
+      ],
+      "@components/*": [
+        "./components/*"
+      ],
+      "@utils/*": [
+        "./utils/*"
+      ],
+      "@types": [
+        "./types.d.ts"
+      ],
+      "@translations/*": [
+        "./translations/*"
+      ],
+      "@services/*": [
+        "./services/*"
+      ],
+      "@assets/*": [
+        "./public/*"
+      ],
+      "@pages/*": [
+        "./pages/*"
+      ],
+      "@app/*": [
+        "./app/*"
+      ],
+      "@i18n/*": [
+        "./i18n/*"
+      ]
     },
-    "typeRoots": ["node_modules/@types", "types.d.ts"]
+    "typeRoots": [
+      "node_modules/@types",
+      "types.d.ts"
+    ]
   },
-  "exclude": ["node_modules", "userscripts"],
+  "exclude": [
+    "node_modules",
+    "userscripts"
+  ],
   "include": [
     "next-env.d.ts",
     "types.d.ts",
     "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
   ],
   "ts-node": {
     "compilerOptions": {

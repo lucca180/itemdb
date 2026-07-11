@@ -9,6 +9,16 @@ export type DyeworksData = {
   dyes: ItemData[];
 };
 
+const isDyeworkVariant = (name: string) => {
+  const lower = name.toLowerCase();
+  return lower.includes('dyeworks') || lower.includes('prismatic');
+};
+
+const getBaseName = (name: string) =>
+  name.includes(':') ? name.split(':').slice(1).join(':').trim() : name;
+
+const isSameName = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
 
@@ -34,29 +44,29 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
 }
 
 export const getDyeworksData = async (item: ItemData): Promise<DyeworksData | null> => {
-  const notDyeworksName = item.name.includes(':')
-    ? item.name.split(':').slice(1).join(':').trim()
-    : item.name;
+  const baseName = getBaseName(item.name);
+  const itemIsVariant = isDyeworkVariant(item.name);
 
-  const search = await doSearch(
-    notDyeworksName,
-    { ...defaultFilters, limit: 1000, mode: 'natural' },
-    false
-  );
+  const search = await doSearch(baseName, { ...defaultFilters, limit: 1000, mode: 'name' }, false);
   if (!search.content.length) return null;
 
-  const dyes = search.content.filter(
-    (i) =>
-      i.name.toLowerCase().includes(notDyeworksName.toLowerCase()) &&
-      i.name !== notDyeworksName &&
-      (i.name.toLowerCase().includes('dyeworks') || i.name.toLowerCase().includes('prismatic'))
+  const baseNameLower = baseName.toLowerCase();
+
+  const originalFromSearch = search.content.find(
+    (i) => !isDyeworkVariant(i.name) && isSameName(i.name, baseName)
   );
 
-  const originalItem = search.content.find((i) => i.name === notDyeworksName);
-  if (!originalItem || !dyes.length) return null;
+  const originalItem =
+    !itemIsVariant && isSameName(item.name, baseName) ? item : originalFromSearch;
+
+  const familyDyes = search.content.filter(
+    (i) => isDyeworkVariant(i.name) && i.name.toLowerCase().includes(baseNameLower)
+  );
+
+  if (!originalItem || !familyDyes.length) return null;
 
   return {
     originalItem,
-    dyes,
+    dyes: familyDyes,
   };
 };
