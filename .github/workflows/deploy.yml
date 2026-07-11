@@ -44,6 +44,7 @@ jobs:
             npx prisma migrate deploy
             npx prisma generate
 
+            rm -rf .next/types .next/dev/types
             yarn typecheck:fast
 
             if git log -1 --pretty=%B | grep -q '\[skip test\]'; then
