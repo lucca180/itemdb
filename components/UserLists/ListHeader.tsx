@@ -27,7 +27,7 @@ import NPBag from '../../public/icons/npbag.png';
 import DynamicIcon from '../../public/icons/dynamic.png';
 import NextImage from 'next/image';
 import dynamic from 'next/dynamic';
-import { useFormatter, useTranslations } from 'next-intl';
+import { useFormatter, useNow, useTranslations } from 'next-intl';
 import { FaShareAlt } from 'react-icons/fa';
 import { MAX_ITEMS_LIST_PRICE, ListPriceHistoryModalProps } from '../Modal/ListPriceHistoryModal';
 import { AiOutlineAreaChart } from 'react-icons/ai';
@@ -56,6 +56,7 @@ type ListHeaderProps = {
 const ListHeader = (props: ListHeaderProps) => {
   const t = useTranslations();
   const format = useFormatter();
+  const now = useNow();
   const toast = useToast();
   const { list, color, items, itemInfo, canEdit: isOwner, setOpenCreateModal, isLoading } = props;
   const { open, onOpen, onClose } = useDisclosure();
@@ -378,7 +379,7 @@ const ListHeader = (props: ListHeaderProps) => {
                   •{' '}
                   {t.rich('Lists.updated-x', {
                     b: (chunk) => <b>{chunk}</b>,
-                    x: format.relativeTime(new Date(list.updatedAt)),
+                    x: format.relativeTime(new Date(list.updatedAt), now),
                   })}
                 </>
               )}

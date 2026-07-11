@@ -12,5 +12,6 @@ export default getRequestConfig(async ({ requestLocale }) => {
     locale,
     messages: (await import(`../translation/${locale}.json`)).default,
     timeZone: TIME_ZONE,
+    now: new Date(),
   };
 });
