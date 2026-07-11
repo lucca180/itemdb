@@ -42,7 +42,14 @@ export const SortSelect = (props: Props) => {
         <Menu.Positioner>
           <Menu.Content>
             {Object.entries(sortTypes).map(([key, val]) => (
-              <Menu.Item key={key} value={key} onClick={() => onclick(key)}>
+              <Menu.Item
+                key={key}
+                value={key}
+                onClick={() => onclick(key)}
+                _hover={{ bg: 'blackAlpha.300' }}
+                _focus={{ bg: 'blackAlpha.300' }}
+                cursor="pointer"
+              >
                 <Box flex="1">{t('SortTypes.' + val)}</Box>
                 {key === sortBy && arrow}
               </Menu.Item>
