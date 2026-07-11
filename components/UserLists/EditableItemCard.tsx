@@ -6,7 +6,7 @@ import { VStack, Box } from '@chakra-ui/react';
 import dynamic from 'next/dynamic';
 import { dynamicListCan } from '@utils/utils';
 
-const EditableFields = dynamic(() => import('./EditableFields'));
+const EditableFields = dynamic(() => import('./EditableFields'), { ssr: false });
 
 export type EditableItemCardProps = {
   id: number;

@@ -7,7 +7,9 @@ import { UserList } from '../../types';
 import { LinkedListModalProps } from './LinkedListModal';
 import { useTranslations } from 'next-intl';
 
-const LinkedListModal = Dynamic<LinkedListModalProps>(() => import('./LinkedListModal'));
+const LinkedListModal = Dynamic<LinkedListModalProps>(() => import('./LinkedListModal'), {
+  ssr: false,
+});
 
 type CreateLinkedListButtonProps = {
   list: UserList;

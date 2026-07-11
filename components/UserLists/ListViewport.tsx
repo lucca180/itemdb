@@ -6,7 +6,9 @@ import { Box, Flex } from '@chakra-ui/react';
 import { EditableItemCard, EditableItemCardProps } from './EditableItemCard';
 import dynamic from 'next/dynamic';
 
-const SortableItem = dynamic<EditableItemCardProps>(() => import('../Sortable/SortableItemCard'));
+const SortableItem = dynamic<EditableItemCardProps>(() => import('../Sortable/SortableItemCard'), {
+  ssr: false,
+});
 
 function useElementSize(ref: React.RefObject<HTMLElement | null>) {
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
@@ -59,20 +61,7 @@ export default function ListViewport(props: ListViewportProps) {
   const elementRef = useRef(null);
   const dimensions = useElementSize(elementRef);
 
-  const { itemInfo, items, editMode, activateSort, list } = props;
-  const [forceIds, setIds] = useState(props.ids);
-  const prevProps = React.useRef(props.ids);
-
-  const ids = useMemo(() => {
-    if (!checkEqual(prevProps.current, props.ids)) {
-      prevProps.current = props.ids;
-      setIds(props.ids);
-
-      return props.ids;
-    }
-
-    return forceIds;
-  }, [props.ids, forceIds]);
+  const { itemInfo, items, editMode, activateSort, list, ids } = props;
 
   const debouncedOnChange = useCallback(
     // eslint-disable-next-line react-hooks/use-memo
@@ -118,7 +107,7 @@ export default function ListViewport(props: ListViewportProps) {
           acc[groupIndex].push(cur);
           return acc;
         }, [] as number[][]),
-    [ids, editMode, dimensions?.width]
+    [ids, editMode, dimensions?.width, itemInfo, items, activateSort]
   );
 
   return (
@@ -160,7 +149,3 @@ export default function ListViewport(props: ListViewportProps) {
     </>
   );
 }
-
-const checkEqual = (a: number[], b: number[]) => {
-  return a.length === b.length && JSON.stringify(a) === JSON.stringify(b);
-};

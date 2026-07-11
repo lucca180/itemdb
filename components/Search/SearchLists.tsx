@@ -5,18 +5,20 @@ import { useState, useRef, useEffect } from 'react';
 type Props = {
   onChange: (search: string) => void;
   disabled?: boolean;
+  value?: string;
 };
 
 export const SearchList = (props: Props) => {
-  const [search, setSearch] = useState('');
+  const [internalSearch, setInternalSearch] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const search = props.value ?? internalSearch;
 
   const setFocus = () => {
     inputRef.current?.focus();
   };
 
   const reset = () => {
-    setSearch('');
+    setInternalSearch('');
     props.onChange('');
   };
 
@@ -42,7 +44,7 @@ export const SearchList = (props: Props) => {
   }, []);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value);
+    setInternalSearch(e.target.value);
     props.onChange(e.target.value);
   };
 

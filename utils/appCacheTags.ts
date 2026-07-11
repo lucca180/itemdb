@@ -69,7 +69,15 @@ export type UserListsPageCacheTag =
   | UserListsCacheTag
   | UserMatchesCacheTag;
 
-export type AppCacheTag = HomeCacheTag | ItemScopedCacheTag | UserListsPageCacheTag;
+export const LIST_ITEM_CACHE_SCOPES = ['preload', 'full', 'full-owner'] as const;
+export type ListItemCacheScope = (typeof LIST_ITEM_CACHE_SCOPES)[number];
+export type ListItemsCacheTag = `list-items-${string}-${number}-${ListItemCacheScope}`;
+
+export type AppCacheTag =
+  | HomeCacheTag
+  | ItemScopedCacheTag
+  | UserListsPageCacheTag
+  | ListItemsCacheTag;
 
 export function userProfileTag(username: string): UserProfileCacheTag {
   return fitCacheTag(`user-profile-${username}`) as UserProfileCacheTag;
@@ -85,6 +93,32 @@ export function userListsTag(username: string): UserListsCacheTag {
 
 export function userMatchesTag(viewerUsername: string, ownerUsername: string): UserMatchesCacheTag {
   return fitCacheTag(`user-matches-${viewerUsername}-${ownerUsername}`) as UserMatchesCacheTag;
+}
+
+export function listItemsTag(
+  username: string,
+  listId: number,
+  scope: ListItemCacheScope
+): ListItemsCacheTag {
+  return fitCacheTag(`list-items-${username}-${listId}-${scope}`) as ListItemsCacheTag;
+}
+
+/** Tags invalidated together when list items or list metadata change. */
+export function listMutationCacheTags(username: string, listId: number): AppCacheTag[] {
+  return [
+    listItemsTag(username, listId, 'preload'),
+    listItemsTag(username, listId, 'full'),
+    listItemsTag(username, listId, 'full-owner'),
+    userListsTag(username),
+  ];
+}
+
+/**
+ * Mutation-driven revalidation must expire immediately — not SWR — so the next read
+ * (e.g. refreshListData right after save) does not return stale cached rows.
+ */
+export function requiresImmediateRevalidation(tag: AppCacheTag): boolean {
+  return tag.startsWith('list-items-') || tag.startsWith('user-lists-');
 }
 
 export function itemRootTag(internalId: number): ItemRootCacheTag {
@@ -144,6 +178,7 @@ const USER_PROFILE_TAG_PATTERN = /^user-profile-[a-zA-Z0-9_]+$/;
 const USER_ACHIEVEMENTS_TAG_PATTERN = /^user-achievements-[a-zA-Z0-9_]+$/;
 const USER_LISTS_TAG_PATTERN = /^user-lists-[a-zA-Z0-9_]+$/;
 const USER_MATCHES_TAG_PATTERN = /^user-matches-[a-zA-Z0-9_]+-[a-zA-Z0-9_]+$/;
+const LIST_ITEMS_TAG_PATTERN = /^list-items-[a-zA-Z0-9_]+-\d+-(preload|full|full-owner)$/;
 
 export function parseItemTagInternalId(tag: ItemScopedCacheTag): number {
   const rootMatch = tag.match(ITEM_ROOT_TAG_PATTERN);
@@ -186,7 +221,8 @@ export function isAppCacheTag(tag: string): tag is AppCacheTag {
     USER_PROFILE_TAG_PATTERN.test(tag) ||
     USER_ACHIEVEMENTS_TAG_PATTERN.test(tag) ||
     USER_LISTS_TAG_PATTERN.test(tag) ||
-    USER_MATCHES_TAG_PATTERN.test(tag)
+    USER_MATCHES_TAG_PATTERN.test(tag) ||
+    LIST_ITEMS_TAG_PATTERN.test(tag)
   ) {
     return true;
   }

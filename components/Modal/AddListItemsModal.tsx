@@ -18,7 +18,7 @@ import { ItemData, ListItemInfo, UserList } from '../../types';
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 
-const DuplicatedItemModal = dynamic(() => import('./DuplicatedItemModal'));
+const DuplicatedItemModal = dynamic(() => import('./DuplicatedItemModal'), { ssr: false });
 
 export type AddListItemsModalProps = {
   isOpen: boolean;

@@ -23,7 +23,7 @@ import { FaPencilAlt, FaShareAlt } from 'react-icons/fa';
 import Image from '../Utils/Image';
 import { CreateListModalProps } from '@components/Modal/CreateListModal';
 import { getListLink } from '@utils/list/listLink';
-const Markdown = dynamic(() => import('../Utils/Markdown'));
+const Markdown = dynamic(() => import('../Utils/Markdown'), { ssr: false });
 
 const CreateListModal = dynamic<CreateListModalProps>(
   () => import('@components/Modal/CreateListModal'),

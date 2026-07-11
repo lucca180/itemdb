@@ -95,15 +95,12 @@ export default function SortableLists(props: SortableListsProps) {
     if (!over) return;
 
     if (active.id !== over?.id) {
-      setIds((ids) => {
-        const oldIndex = ids.indexOf(Number(active.id));
-        const newIndex = ids.indexOf(Number(over.id));
+      const oldIndex = ids.indexOf(Number(active.id));
+      const newIndex = ids.indexOf(Number(over.id));
+      const newIds = arrayMove(ids, oldIndex, newIndex);
 
-        const newIds = arrayMove(ids, oldIndex, newIndex);
-        props.onSort?.(newIds);
-
-        return newIds;
-      });
+      setIds(newIds);
+      props.onSort?.(newIds);
     }
 
     setActiveId(null);

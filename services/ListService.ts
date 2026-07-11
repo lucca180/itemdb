@@ -162,6 +162,10 @@ export class ListService {
     return false;
   }
 
+  private canViewHiddenListItems(list: UserList): boolean {
+    return !!(this.user && (this.user.id === list.owner.id || this.user.isAdmin));
+  }
+
   // overloaded function signatures
   async getListItems(params: GetListItemsParams & { asObject?: false }): Promise<ItemData[] | null>;
 
@@ -178,11 +182,11 @@ export class ListService {
       params.list ?? (await this.getList({ ...params, skipSync: true } as GetListParams));
     if (!list || list.dynamicType === 'search') return null;
 
-    const isOwner = !!(this.user && this.user.id === list.owner.id);
+    const canViewHidden = this.canViewHiddenListItems(list);
 
     const filters = { ...defaultFilters, limit: 100000 };
 
-    const queryRes = await doSearch('', filters, false, list.internal_id, isOwner);
+    const queryRes = await doSearch('', filters, false, list.internal_id, canViewHidden);
 
     if (!params.asObject) return queryRes.content;
 
@@ -199,7 +203,7 @@ export class ListService {
     const list =
       params.list ?? (await this.getList({ ...params, skipSync: true } as GetListParams));
     if (!list || list.dynamicType === 'search') return null;
-    const isOwner = !!(this.user && this.user.id === list.owner.id);
+    const canViewHidden = this.canViewHiddenListItems(list);
 
     const itemInfoRaw = await prisma.listItems.findMany({
       where: { list_id: list.internal_id },
@@ -208,17 +212,23 @@ export class ListService {
     const itemInfo = rawToListItems(itemInfoRaw);
 
     if (!query && Object.keys(searchFilters || {}).length === 0) {
-      const result = itemInfo.filter((item) => !item.isHidden || isOwner);
+      const result = itemInfo.filter((item) => !item.isHidden || canViewHidden);
 
       return result;
     }
 
-    const queryRes = await doSearch(query ?? '', searchFilters, false, list.internal_id, isOwner);
+    const queryRes = await doSearch(
+      query ?? '',
+      searchFilters,
+      false,
+      list.internal_id,
+      canViewHidden
+    );
 
     const itemIDs = new Set(queryRes.content.map((item) => item.internal_id));
 
     const result = itemInfo.filter(
-      (item) => itemIDs.has(item.item_iid) && (!item.isHidden || isOwner)
+      (item) => itemIDs.has(item.item_iid) && (!item.isHidden || canViewHidden)
     );
 
     return result;

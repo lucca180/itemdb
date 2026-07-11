@@ -8,8 +8,11 @@ import {
   itemRootTag,
   itemSectionCacheTags,
   itemSectionTag,
+  listItemsTag,
+  listMutationCacheTags,
   parseItemSectionTag,
   parseItemTagInternalId,
+  requiresImmediateRevalidation,
   userMatchesTag,
 } from '@utils/appCacheTags';
 
@@ -43,6 +46,28 @@ describe('appCacheTags', () => {
     expect(isAppCacheTag(itemSectionTag(1, 'avy'))).toBe(true);
     expect(isAppCacheTag('item-1-unknown-scope')).toBe(false);
     expect(isAppCacheTag('not-a-tag')).toBe(false);
+  });
+
+  it('builds list mutation tag sets', () => {
+    expect(listMutationCacheTags('lucca', 7)).toEqual([
+      'list-items-lucca-7-preload',
+      'list-items-lucca-7-full',
+      'list-items-lucca-7-full-owner',
+      'user-lists-lucca',
+    ]);
+  });
+
+  it('requires immediate revalidation for list mutation tags only', () => {
+    expect(requiresImmediateRevalidation(listItemsTag('lucca', 7, 'full'))).toBe(true);
+    expect(requiresImmediateRevalidation('user-lists-lucca')).toBe(true);
+    expect(requiresImmediateRevalidation(HomeRevalidateTags.latestItems)).toBe(false);
+  });
+
+  it('builds and validates list item cache tags', () => {
+    expect(listItemsTag('official', 42, 'preload')).toBe('list-items-official-42-preload');
+    expect(isAppCacheTag(listItemsTag('lucca', 7, 'full'))).toBe(true);
+    expect(isAppCacheTag(listItemsTag('lucca', 7, 'full-owner'))).toBe(true);
+    expect(isAppCacheTag('list-items-lucca-7-unknown')).toBe(false);
   });
 
   it('fitCacheTag truncates tags over MAX_CACHE_TAG_LENGTH', () => {

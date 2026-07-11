@@ -2,6 +2,7 @@ import { revalidateTag } from 'next/cache';
 import {
   assertTagsMatchInternalId,
   isAppCacheTag,
+  requiresImmediateRevalidation,
   type AppCacheTag,
   type ItemScopedCacheTag,
 } from '@utils/appCacheTags';
@@ -72,7 +73,11 @@ export async function POST(request: Request) {
   }
 
   for (const tag of tags) {
-    revalidateTag(tag, 'max');
+    if (requiresImmediateRevalidation(tag)) {
+      revalidateTag(tag, { expire: 0 });
+    } else {
+      revalidateTag(tag, 'max');
+    }
   }
 
   return Response.json({

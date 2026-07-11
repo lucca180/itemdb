@@ -766,6 +766,7 @@
     "highlights-text": "Destaques são ordenados apenas por nome",
     "import-items": "Importar Itens",
     "lock-sort": "Bloquear Ordenação",
+    "drag-sort-disabled-filter": "Limpe a busca e os filtros para reordenar itens arrastando.",
     "move-items": "Mover Itens",
     "user-list-tip-1": "você pode clicar com o botão direito para selecionar vários itens",
     "list-have": "Você tem {matchCount, plural, =1 {1 item} other {# itens}} desta lista",

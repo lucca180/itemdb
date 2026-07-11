@@ -7,6 +7,8 @@ import { SeriesType } from '@prisma/generated/client';
 import { UTCDate } from '@date-fns/utc';
 import { slugify } from '@utils/utils';
 import { ListService, type PutListItemInput } from '@services/ListService';
+import { listMutationCacheTags } from '@utils/appCacheTags';
+import { triggerAppRevalidation } from '@utils/triggerAppRevalidation';
 
 export const config = {
   api: {
@@ -28,6 +30,25 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 
   return res.status(405).json({ error: 'Method not allowed' });
+}
+
+async function revalidateListCaches(listId: number, extraListIds: number[] = []) {
+  const listIds = [listId, ...extraListIds];
+
+  for (const id of listIds) {
+    const list = await prisma.userList.findUnique({
+      where: { internal_id: id },
+      include: { user: true },
+    });
+
+    if (!list) continue;
+
+    const username = list.official ? 'official' : (list.user.username ?? '');
+
+    await triggerAppRevalidation({
+      tags: listMutationCacheTags(username, id),
+    });
+  }
 }
 
 // get a list
@@ -80,6 +101,7 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (itemInfo?.length && action === 'update') {
       await ListService.updateItems(Number(list_id), itemInfo);
+      await revalidateListCaches(Number(list_id));
     }
 
     if (itemInfo?.length && action === 'delete') {
@@ -87,6 +109,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         Number(list_id),
         itemInfo.map((item) => item.internal_id)
       );
+
+      await revalidateListCaches(Number(list_id));
 
       return res.status(200).json({
         success: true,
@@ -117,6 +141,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
         items: itemInfo,
         move: shouldDelete,
       });
+
+      await revalidateListCaches(Number(list_id), [listDest.internal_id]);
 
       return res.status(200).json({
         success: true,
@@ -232,6 +258,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
       });
     }
 
+    await revalidateListCaches(Number(list_id));
+
     return res.status(200).json({ success: true, message: 'list updated' });
   } catch (e: any) {
     console.error(e);
@@ -267,7 +295,7 @@ const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (!list) return res.status(400).json({ error: 'List Not Found' });
 
-    if (list.user_id !== user.id && !(list.official && user.isAdmin))
+    if (list.user_id !== user.id && !user.isAdmin)
       return res.status(403).json({ error: 'Forbidden' });
 
     if (alertDuplicates === 'true') {
@@ -279,6 +307,7 @@ const PUT = async (req: NextApiRequest, res: NextApiResponse) => {
       }
     }
     await ListService.upsertItems(parsedListId, items);
+    await revalidateListCaches(parsedListId);
 
     return res.status(200).json({ success: true, message: 'items upserted' });
   } catch (e: any) {
@@ -326,6 +355,8 @@ const DELETE = async (req: NextApiRequest, res: NextApiResponse) => {
         item_internal_ids.map((iid) => Number(iid))
       );
     }
+
+    await revalidateListCaches(Number(list_id));
 
     return res.status(200).json({
       success: true,

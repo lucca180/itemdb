@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -17,19 +17,15 @@ import ListViewport, { ListViewportProps } from '../UserLists/ListViewport';
 export default function SortableArea(props: ListViewportProps) {
   const { itemInfo, items, activateSort } = props;
   const [activeId, setActiveId] = useState<number | null>(null);
-  const [forceIds, setIds] = useState(props.ids);
-  const prevProps = React.useRef(props.ids);
+  const [ids, setIds] = useState(props.ids);
+  const prevPropsIdsRef = useRef(props.ids);
 
-  const ids = useMemo(() => {
-    if (!checkEqual(prevProps.current, props.ids)) {
-      prevProps.current = props.ids;
+  useEffect(() => {
+    if (!checkEqual(prevPropsIdsRef.current, props.ids)) {
+      prevPropsIdsRef.current = props.ids;
       setIds(props.ids);
-
-      return props.ids;
     }
-
-    return forceIds;
-  }, [props.ids, forceIds]);
+  }, [props.ids]);
 
   const sensors = useSensors(
     useSensor(TouchSensor, {
@@ -65,15 +61,12 @@ export default function SortableArea(props: ListViewportProps) {
     if (!over) return;
 
     if (active.id !== over?.id) {
-      setIds((ids) => {
-        const oldIndex = ids.indexOf(Number(active.id));
-        const newIndex = ids.indexOf(Number(over.id));
+      const oldIndex = ids.indexOf(Number(active.id));
+      const newIndex = ids.indexOf(Number(over.id));
+      const newIds = arrayMove(ids, oldIndex, newIndex);
 
-        const newIds = arrayMove(ids, oldIndex, newIndex);
-        props.onSort?.(newIds);
-
-        return newIds;
-      });
+      setIds(newIds);
+      props.onSort?.(newIds);
     }
 
     setActiveId(null);

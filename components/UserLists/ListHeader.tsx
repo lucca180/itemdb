@@ -35,12 +35,13 @@ import Image from '../Utils/Image';
 import { ListBreadcrumb } from '../Breadcrumbs/ListBreadcrumb';
 import { LuFileSpreadsheet } from 'react-icons/lu';
 
-const Markdown = dynamic(() => import('../Utils/Markdown'));
+const Markdown = dynamic(() => import('../Utils/Markdown'), { ssr: false });
 const ListPriceHistoryModal = dynamic<ListPriceHistoryModalProps>(
-  () => import('../Modal/ListPriceHistoryModal')
+  () => import('../Modal/ListPriceHistoryModal'),
+  { ssr: false }
 );
-const DynamicHistoryModal = dynamic(() => import('../Modal/DynamicListLogsModal'));
-const ExportListDataModal = dynamic(() => import('../Modal/ExportListModal'));
+const DynamicHistoryModal = dynamic(() => import('../Modal/DynamicListLogsModal'), { ssr: false });
+const ExportListDataModal = dynamic(() => import('../Modal/ExportListModal'), { ssr: false });
 
 type ListHeaderProps = {
   list: UserList;

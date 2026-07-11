@@ -609,6 +609,7 @@
     "delete-items": "Delete Items",
     "move-items": "Move Items",
     "lock-sort": "Lock Sort",
+    "drag-sort-disabled-filter": "Clear search and filters to reorder items by dragging.",
     "highlights": "Highlights",
     "highlights-text": "Highlights are only sorted by name",
     "user-list-tip-1": "you can use right click to select multiple items",
