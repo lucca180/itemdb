@@ -19,7 +19,7 @@ module.exports = {
       exec_mode: 'cluster',
       time: true,
       merge_logs: true,
-      max_memory_restart: '320M',
+      max_memory_restart: '3200M',
       kill_timeout: 15_000,
     },
   ],
