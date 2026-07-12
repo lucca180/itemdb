@@ -128,8 +128,8 @@ export const getPetColorData = async (
     .filter((data) => data.colorTarget === colorTargetId && data.speciesTarget === speciesTargetId)
     .sort(
       (a, b) =>
-        (itemData[a.item_iid].price.value ?? Infinity) -
-        (itemData[b.item_iid].price.value ?? Infinity)
+        (itemData[a.item_iid].price.value || Infinity) -
+        (itemData[b.item_iid].price.value || Infinity)
     )
     .map((x) => x.item_iid);
 
@@ -138,8 +138,8 @@ export const getPetColorData = async (
     .filter((data) => !(data.item_iid === 14488 && speciesTargetId === 7)) // remove orange paint brush from chias
     .sort(
       (a, b) =>
-        (itemData[a.item_iid].price.value ?? Infinity) -
-        (itemData[b.item_iid].price.value ?? Infinity)
+        (itemData[a.item_iid].price.value || Infinity) -
+        (itemData[b.item_iid].price.value || Infinity)
     )
     .map((x) => x.item_iid);
 
@@ -147,8 +147,8 @@ export const getPetColorData = async (
     .filter((data) => data.speciesTarget === speciesTargetId)
     .sort(
       (a, b) =>
-        (itemData[a.item_iid].price.value ?? Infinity) -
-        (itemData[b.item_iid].price.value ?? Infinity)
+        (itemData[a.item_iid].price.value || Infinity) -
+        (itemData[b.item_iid].price.value || Infinity)
     )
     .map((x) => x.item_iid);
 

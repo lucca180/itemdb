@@ -174,7 +174,7 @@ export const getPetpetData = async (item: ItemData): Promise<ItemPetpetData | nu
       color,
       cheapest: {
         items: [item],
-        cost: item.price.value ?? null,
+        cost: item.price.value || null,
       },
       alternativeWays: null,
     };
@@ -187,7 +187,7 @@ export const getPetpetData = async (item: ItemData): Promise<ItemPetpetData | nu
 
   for (const p of allPetpet) {
     if (p.isCanonical || p.isUnpaintable || p.item_iid === item.internal_id) continue;
-    const targetPrice = itemData[p.item_iid.toString()].price.value ?? Infinity;
+    const targetPrice = itemData[p.item_iid.toString()].price.value || Infinity;
     if (!cheapestP2 || targetPrice < cheapestP2.price.value!) {
       cheapestP2 = itemData[p.item_iid.toString()];
     }
@@ -215,7 +215,7 @@ export const getPetpetData = async (item: ItemData): Promise<ItemPetpetData | nu
       toCanonical: canonicalPb && canonicalP2 ? { pb: canonicalPb, p2: canonicalP2 } : null,
       cheapest: {
         items: [item],
-        cost: item.price.value ?? null,
+        cost: item.price.value || null,
       },
       alternativeWays: null,
     };
@@ -273,7 +273,7 @@ export const getPetpetData = async (item: ItemData): Promise<ItemPetpetData | nu
 };
 
 const getPriceSum = (items: ItemData[]) => {
-  return items.reduce((acc, item) => acc + (item.price.value ?? Infinity), 0);
+  return items.reduce((acc, item) => acc + (item.price.value || Infinity), 0);
 };
 
 const findSpecies = (itemName: string) => {
