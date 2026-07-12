@@ -23,7 +23,6 @@ type ValidationResult =
 const DEFAULT_VALIDATOR = 'itemDataExtractor';
 const SKIP_IN_DEV = false;
 const KEY_CACHE_TTL = 60_000;
-const LEGACY_SKIP_ENDPOINTS = new Set(['items', 'items/open']);
 
 const keyCache = new Map<string, { secret: string | null; revoked: boolean; expiresAt: number }>();
 
@@ -62,7 +61,8 @@ export async function validateExtractorHash(args: ValidationArgs): Promise<Valid
 
   if (
     process.env.ITEMDB_ACCEPT_LEGACY_EXTRACTOR_HASH !== 'false' &&
-    ((hashValue && checkHash(hashValue, payload)) || LEGACY_SKIP_ENDPOINTS.has(endpoint))
+    hashValue &&
+    checkHash(hashValue, payload)
   ) {
     recordMetric('legacy', endpoint, versionCode);
     return { valid: true, mode: 'legacy', versionCode };
