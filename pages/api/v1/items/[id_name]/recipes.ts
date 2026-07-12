@@ -96,13 +96,17 @@ export const getItemRecipes = async (iid: number) => {
       continue;
     }
 
+    const sortedIngredients = (ingredientItems as ItemData[]).sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+
     itemRecipes.push({
       internal_id: recipe.internal_id,
       result: target,
-      ingredients: ingredientItems as ItemData[],
+      ingredients: sortedIngredients,
       type: recipe.type,
     });
   }
 
-  return itemRecipes;
+  return itemRecipes.sort((a, b) => b.ingredients.length - a.ingredients.length);
 };

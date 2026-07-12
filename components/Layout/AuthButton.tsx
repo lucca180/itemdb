@@ -45,7 +45,8 @@ export const AuthButton = (props: AuthButtonProps) => {
             _hover={{ bg: 'gray.600' }}
             onClick={onOpen}
             px={{ base: 0, md: 4 }}
-            loading={authLoading}
+            // Avoid SSR mismatch: LayoutAuthServer already resolved initialUser (User | null).
+            loading={authLoading && typeof initialUser === 'undefined'}
           >
             <Icon as={BsBoxArrowInRight} boxSize="18px" mr={2} verticalAlign="text-top" />
             <Box as="span" display={{ base: 'none', md: 'inline' }}>

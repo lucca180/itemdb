@@ -233,6 +233,8 @@
     "waiting-votes-txt": "Trade Lots that are waiting for pricing validation",
     "cooking-pot-text": "This item appears in the following <Link>Cooking Pot</Link> recipes",
     "cooking-pot-recipes": "Cooking Pot Recipes",
+    "tangor-text": "This item appears in the following <Link>Tangor's Workshop</Link> recipes",
+    "tangor-recipes": "Tangor's Workshop",
     "sold": "Sold",
     "not-sold": "Not Sold",
     "last-known-price": "Last Known Price",
