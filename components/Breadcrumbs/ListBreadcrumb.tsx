@@ -9,10 +9,12 @@ type ListBreadcrumb = {
   list: UserList;
   show?: number;
   skipCurrent?: boolean;
+  /** Required in App Router so BreadcrumbJsonLd does not use next/head. */
+  useAppDir?: boolean;
 };
 
 export const ListBreadcrumb = (props: ListBreadcrumb) => {
-  const { list, show, skipCurrent } = props;
+  const { list, show, skipCurrent, useAppDir } = props;
   const t = useTranslations();
   const locale = useLocale();
 
@@ -79,7 +81,9 @@ export const ListBreadcrumb = (props: ListBreadcrumb) => {
     return breadList;
   }, [list, category, t, locale, show, skipCurrent]);
 
-  return <Breadcrumbs breadcrumbList={breadcrumbList} linkLast={skipCurrent} />;
+  return (
+    <Breadcrumbs breadcrumbList={breadcrumbList} linkLast={skipCurrent} useAppDir={useAppDir} />
+  );
 };
 
 // capitalize first letter of each word in a string

@@ -153,7 +153,7 @@ const ListHeader = (props: ListHeaderProps) => {
         bgGradient={`linear-gradient(to top,rgba(0,0,0,0) 0,rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]},.6) 80%)`}
         zIndex={-1}
       />
-      <Box pt={2}>{list.official && <ListBreadcrumb list={list} />}</Box>
+      <Box pt={2}>{list.official && <ListBreadcrumb list={list} useAppDir />}</Box>
       <Flex
         gap={{ base: 3, md: 6 }}
         pt={4}
