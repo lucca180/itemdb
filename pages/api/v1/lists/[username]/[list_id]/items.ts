@@ -15,6 +15,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const { username, list_id: list_id_or_slug } = req.query;
+  const isOfficial = username === 'official';
 
   if (
     !username ||
@@ -46,6 +47,13 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     });
 
     if (!result) return res.status(404).json({ error: 'List not found' });
+
+    res.setHeader(
+      'Cache-Control',
+      isOfficial
+        ? 'max-age=0, s-maxage=600, stale-while-revalidate=1500'
+        : 'max-age=0, s-maxage=180, stale-while-revalidate=300'
+    );
 
     return res.status(200).json(result);
   } catch (e: any) {

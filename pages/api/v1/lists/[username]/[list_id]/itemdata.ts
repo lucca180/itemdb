@@ -15,6 +15,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
 const GET = async (req: NextApiRequest, res: NextApiResponse) => {
   const { username, list_id: list_id_or_slug, asObject } = req.query;
+  const isOfficial = username === 'official';
   let startTime = Date.now();
   if (
     !username ||
@@ -38,6 +39,13 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     startTime = updateServerTime('get-item-data', startTime, res);
 
     if (!itemData) return res.status(404).json({ error: 'List not found' });
+
+    res.setHeader(
+      'Cache-Control',
+      isOfficial
+        ? 'max-age=0, s-maxage=600, stale-while-revalidate=1500'
+        : 'max-age=0, s-maxage=180, stale-while-revalidate=300'
+    );
 
     redis_setDataCount(Object.keys(itemData).length, req);
 
