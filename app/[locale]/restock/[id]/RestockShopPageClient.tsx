@@ -108,13 +108,12 @@ export function RestockShopPageClient({
   };
 
   useEffect(() => {
-     
     resetFilters(true);
   }, [shopInfo.id]);
 
   useEffect(() => {
     if (initialItems.length === itemList.length) return;
-     
+
     handleFilterChange();
   }, [itemSearch, itemList]);
 
@@ -261,14 +260,14 @@ function sortItems(a: ItemData, b: ItemData, sortBy: string, sortDir: string) {
   if (sortBy === 'price') {
     if (sortDir === 'asc') {
       return (
-        (a.price.value ?? Number.MIN_SAFE_INTEGER) - (b.price.value ?? Number.MIN_SAFE_INTEGER) ||
-        (a.ncValue?.minValue ?? Number.MIN_SAFE_INTEGER) -
-          (b.ncValue?.minValue ?? Number.MIN_SAFE_INTEGER)
+        (a.price.value || Number.MIN_SAFE_INTEGER) - (b.price.value || Number.MIN_SAFE_INTEGER) ||
+        (a.ncValue?.minValue || Number.MIN_SAFE_INTEGER) -
+          (b.ncValue?.minValue || Number.MIN_SAFE_INTEGER)
       );
     }
     return (
-      (b.price.value ?? Infinity) - (a.price.value ?? Infinity) ||
-      (b.ncValue?.minValue ?? Infinity) - (a.ncValue?.minValue ?? Infinity)
+      (b.price.value || Infinity) - (a.price.value || Infinity) ||
+      (b.ncValue?.minValue || Infinity) - (a.ncValue?.minValue || Infinity)
     );
   }
 

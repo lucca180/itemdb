@@ -187,9 +187,10 @@ export const getPetpetData = async (item: ItemData): Promise<ItemPetpetData | nu
 
   for (const p of allPetpet) {
     if (p.isCanonical || p.isUnpaintable || p.item_iid === item.internal_id) continue;
-    const targetPrice = itemData[p.item_iid.toString()].price.value || Infinity;
-    if (!cheapestP2 || targetPrice < cheapestP2.price.value!) {
-      cheapestP2 = itemData[p.item_iid.toString()];
+    const candidate = itemData[p.item_iid.toString()];
+    const targetPrice = getItemPrice(candidate);
+    if (!cheapestP2 || targetPrice < getItemPrice(cheapestP2)) {
+      cheapestP2 = candidate;
     }
   }
 
@@ -272,8 +273,11 @@ export const getPetpetData = async (item: ItemData): Promise<ItemPetpetData | nu
   };
 };
 
+// Treat missing/unknown prices (null or 0) as unusable for cheapest-route math.
+const getItemPrice = (item: ItemData) => item.price.value || Infinity;
+
 const getPriceSum = (items: ItemData[]) => {
-  return items.reduce((acc, item) => acc + (item.price.value || Infinity), 0);
+  return items.reduce((acc, item) => acc + getItemPrice(item), 0);
 };
 
 const findSpecies = (itemName: string) => {

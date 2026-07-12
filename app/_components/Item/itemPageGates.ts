@@ -41,7 +41,7 @@ export function needsMME(item: ItemData) {
 }
 
 export function needsAuctionCard(item: ItemData) {
-  if (item.isNC || item.status !== 'active' || item.price.value === null) return false;
+  if (item.isNC || item.status !== 'active' || !item.price.value) return false;
   const isInflated = item.price.inflated;
   const price = item.price.value;
 

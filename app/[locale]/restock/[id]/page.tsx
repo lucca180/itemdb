@@ -133,8 +133,8 @@ async function loadRestockShopPageData(shopInfo: ShopInfo): Promise<RestockShopP
 
 function sortItemsByPriceDesc(a: ItemData, b: ItemData) {
   return (
-    (b.price.value ?? Infinity) - (a.price.value ?? Infinity) ||
-    (b.ncValue?.minValue ?? Infinity) - (a.ncValue?.minValue ?? Infinity)
+    (b.price.value || Infinity) - (a.price.value || Infinity) ||
+    (b.ncValue?.minValue || Infinity) - (a.ncValue?.minValue || Infinity)
   );
 }
 
