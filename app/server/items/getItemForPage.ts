@@ -113,7 +113,8 @@ const refreshItemDerivedData = cache(async (item: ItemData) => {
   await Promise.allSettled(tasks);
 });
 
-export async function getItemV2(
+/** App Router item-page loader. Returns legacy `ItemData` (not the public ItemV2 API). */
+export async function getItemForPage(
   idName: number | string,
   includeFlags = false
 ): Promise<ItemData | null> {

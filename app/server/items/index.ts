@@ -1,1 +1,1 @@
-export { getItemV2 } from '@app/server/items/getItemV2';
+export { getItemForPage } from '@app/server/items/getItemForPage';

@@ -1,3 +1,7 @@
+/**
+ * @deprecated Use `ItemV2` for new code. Kept for `/api/v1` and unmigrated call sites.
+ * @see ItemV2
+ */
 export type ItemData = {
   internal_id: number;
   item_id: number | null;

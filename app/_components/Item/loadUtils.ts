@@ -1,6 +1,6 @@
 import { cache } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
-import { getItemV2 } from '@app/server/items';
+import { getItemForPage } from '@app/server/items';
 import {
   getAuctionData,
   getLebronItemData,
@@ -41,7 +41,7 @@ import { itemRootTag } from '@utils/appCacheTags';
 export const getCachedItem = cache(async (id_name: number | string, flags = false) => {
   'use cache';
   cacheLife('itemFast');
-  const item = await getItemV2(id_name, flags);
+  const item = await getItemForPage(id_name, flags);
   if (!item) return null;
 
   cacheTag(itemRootTag(item.internal_id));
