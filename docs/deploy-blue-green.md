@@ -125,6 +125,128 @@ or:
 proxy_pass http://127.0.0.1:4001;
 ```
 
+## Site-wide rate limiting (Cloudflare + Nginx)
+
+Apply on the **server** (not in the blue/green snippet). Without restoring the real client IP, `$binary_remote_addr` is a Cloudflare edge IP and one bad client can throttle many users.
+
+### 1. Separate file in the `http` context
+
+Directives such as `set_real_ip_from` and `limit_req_zone` only work in the `http` block. Put them in a separate file and load it with `include`.
+
+**Option A (recommended on Debian/Ubuntu):** create `/etc/nginx/conf.d/itemdb-rate-limit.conf`.  
+Stock `nginx.conf` already includes this inside `http { ... }`:
+
+```nginx
+include /etc/nginx/conf.d/*.conf;
+```
+
+In that case you do **not** need to edit `nginx.conf` — only create the file.
+
+**Option B:** another path with an explicit include:
+
+```nginx
+# inside http { } in /etc/nginx/nginx.conf
+include /etc/nginx/snippets/itemdb-http-rate-limit.conf;
+```
+
+File contents (e.g. `/etc/nginx/conf.d/itemdb-rate-limit.conf`):
+
+```nginx
+# Cloudflare IP ranges: https://www.cloudflare.com/ips/
+# Keep this list updated periodically.
+set_real_ip_from 173.245.48.0/20;
+set_real_ip_from 103.21.244.0/22;
+set_real_ip_from 103.22.200.0/22;
+set_real_ip_from 103.31.4.0/22;
+set_real_ip_from 141.101.64.0/18;
+set_real_ip_from 108.162.192.0/18;
+set_real_ip_from 190.93.240.0/20;
+set_real_ip_from 188.114.96.0/20;
+set_real_ip_from 197.234.240.0/22;
+set_real_ip_from 198.41.128.0/17;
+set_real_ip_from 162.158.0.0/15;
+set_real_ip_from 104.16.0.0/13;
+set_real_ip_from 104.24.0.0/14;
+set_real_ip_from 172.64.0.0/13;
+set_real_ip_from 131.0.72.0/22;
+
+set_real_ip_from 2400:cb00::/32;
+set_real_ip_from 2606:4700::/32;
+set_real_ip_from 2803:f800::/32;
+set_real_ip_from 2405:b500::/32;
+set_real_ip_from 2405:8100::/32;
+set_real_ip_from 2a06:98c0::/29;
+set_real_ip_from 2c0f:f248::/32;
+
+real_ip_header CF-Connecting-IP;
+real_ip_recursive on;
+
+# ~10 req/s sustained per client IP, with short burst for Next.js assets.
+# One HTML page can fan out into many /_next/* requests.
+limit_req_zone $binary_remote_addr zone=itemdb_site:20m rate=10r/s;
+limit_req_status 429;
+```
+
+Do not put a `server { }` in this file — only `http`-level directives. `limit_req` still belongs on the site (`location /`).
+
+### 2. Site `server` block — apply site-wide, exempt health checks
+
+```nginx
+server {
+  # ... listen / server_name / ssl ...
+
+  # Uptime + deploy health must not be rate-limited.
+  location = /api/health {
+    include /etc/nginx/snippets/itemdb-active-backend.conf;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  location = /api/health/db {
+    include /etc/nginx/snippets/itemdb-active-backend.conf;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  # Optional: static chunks are high-volume and cheap; skip limit if you see false 429s.
+  # location ^~ /_next/static/ {
+  #   include /etc/nginx/snippets/itemdb-active-backend.conf;
+  #   proxy_set_header Host $host;
+  #   proxy_set_header X-Real-IP $remote_addr;
+  #   proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  #   proxy_set_header X-Forwarded-Proto $scheme;
+  # }
+
+  location / {
+    limit_req zone=itemdb_site burst=40 nodelay;
+
+    include /etc/nginx/snippets/itemdb-active-backend.conf;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+}
+```
+
+If the site panel regenerates a `#PROXY-START/` … `#PROXY-END/` block, put `limit_req` inside that `location /`, and keep the health `location` blocks **outside** the managed section so they are not overwritten.
+
+### 3. Apply
+
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+Tune if needed:
+
+- Too many false `429` on normal browsing → raise `burst` (e.g. `60`) or exempt `/_next/static/`
+- Still too loose under crawl → lower to `rate=5r/s` and/or `burst=20`
+- Deploy only rewrites `/etc/nginx/snippets/itemdb-active-backend.conf`; do **not** put `limit_req_zone` inside that snippet
+
 ## Required server permissions
 
 The user used by GitHub Actions must be able to:
