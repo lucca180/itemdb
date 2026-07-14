@@ -50,13 +50,13 @@ const MINIMAL_FIELDS = [
   'slug',
   'image',
   'type',
-  'flags',
   'description',
   'status',
 ] as const satisfies readonly (keyof ItemV2)[];
 
 const CARD_FIELDS = [
   ...MINIMAL_FIELDS,
+  'flags',
   'colorHex',
   'price',
   'rarity',
@@ -64,7 +64,13 @@ const CARD_FIELDS = [
 ] as const satisfies readonly (keyof ItemV2)[];
 
 const PRICER_FIELDS = [
-  ...MINIMAL_FIELDS,
+  'internal_id',
+  'item_id',
+  'image',
+  'name',
+  'slug',
+  'type',
+  'status',
   'rarity',
   'price',
 ] as const satisfies readonly (keyof ItemV2)[];
