@@ -131,7 +131,7 @@ Apply on the **server** (not in the blue/green snippet). Without restoring the r
 
 ### 1. Separate file in the `http` context
 
-Directives such as `set_real_ip_from` and `limit_req_zone` only work in the `http` block. Put them in a separate file and load it with `include`.
+Directives such as `set_real_ip_from`, `map`, and `limit_req_zone` only work in the `http` block. Put them in a separate file and load it with `include`.
 
 **Option A (recommended on Debian/Ubuntu):** create `/etc/nginx/conf.d/itemdb-rate-limit.conf`.  
 Stock `nginx.conf` already includes this inside `http { ... }`:
@@ -181,59 +181,38 @@ set_real_ip_from 2c0f:f248::/32;
 real_ip_header CF-Connecting-IP;
 real_ip_recursive on;
 
-# ~10 req/s sustained per client IP, with short burst for Next.js assets.
-# One HTML page can fan out into many /_next/* requests.
-limit_req_zone $binary_remote_addr zone=itemdb_site:20m rate=10r/s;
+# Empty key => nginx skips rate limiting for that request.
+# Add more exemptions here instead of new location blocks.
+map $uri $itemdb_limit_key {
+  default                 $binary_remote_addr;
+  ~^/api/health(/db)?$    "";
+  ~^/api/(v1/)?cache      "";
+  ~^/_next/               "";
+}
+
+# ~10 req/s sustained per client IP, with short burst for HTML/API.
+limit_req_zone $itemdb_limit_key zone=itemdb_site:20m rate=10r/s;
 limit_req_status 429;
 ```
 
 Do not put a `server { }` in this file — only `http`-level directives. `limit_req` still belongs on the site (`location /`).
 
-### 2. Site `server` block — apply site-wide, exempt health checks
+### 2. Site `server` block — one `limit_req` on `location /`
+
+Exemptions live in the `map` above, so the proxy block stays unchanged except for `limit_req`:
 
 ```nginx
-server {
-  # ... listen / server_name / ssl ...
+#PROXY-START/
+location / {
+  limit_req zone=itemdb_site burst=40 nodelay;
 
-  # Uptime + deploy health must not be rate-limited.
-  location = /api/health {
-    include /etc/nginx/snippets/itemdb-active-backend.conf;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-  }
-
-  location = /api/health/db {
-    include /etc/nginx/snippets/itemdb-active-backend.conf;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-  }
-
-  # Optional: static chunks are high-volume and cheap; skip limit if you see false 429s.
-  # location ^~ /_next/static/ {
-  #   include /etc/nginx/snippets/itemdb-active-backend.conf;
-  #   proxy_set_header Host $host;
-  #   proxy_set_header X-Real-IP $remote_addr;
-  #   proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-  #   proxy_set_header X-Forwarded-Proto $scheme;
-  # }
-
-  location / {
-    limit_req zone=itemdb_site burst=40 nodelay;
-
-    include /etc/nginx/snippets/itemdb-active-backend.conf;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-  }
+  include /etc/nginx/snippets/itemdb-active-backend.conf;
+  # ... existing proxy_set_header / proxy_* settings ...
 }
+#PROXY-END/
 ```
 
-If the site panel regenerates a `#PROXY-START/` … `#PROXY-END/` block, put `limit_req` inside that `location /`, and keep the health `location` blocks **outside** the managed section so they are not overwritten.
+No separate exempt `location` blocks are required. To allow another path later, add one line to the `map` in `/etc/nginx/conf.d/itemdb-rate-limit.conf`.
 
 ### 3. Apply
 
@@ -243,9 +222,9 @@ sudo nginx -t && sudo systemctl reload nginx
 
 Tune if needed:
 
-- Too many false `429` on normal browsing → raise `burst` (e.g. `60`) or exempt `/_next/static/`
+- Too many false `429` on normal browsing → raise `burst` (e.g. `60`) or add more `map` exemptions
 - Still too loose under crawl → lower to `rate=5r/s` and/or `burst=20`
-- Deploy only rewrites `/etc/nginx/snippets/itemdb-active-backend.conf`; do **not** put `limit_req_zone` inside that snippet
+- Deploy only rewrites `/etc/nginx/snippets/itemdb-active-backend.conf`; do **not** put `limit_req_zone` / `map` inside that snippet
 
 ## Required server permissions
 
