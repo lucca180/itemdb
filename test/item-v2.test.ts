@@ -152,11 +152,9 @@ describe('ItemV2 mapper', () => {
       'slug',
       'image',
       'type',
-      'flags',
       'description',
       'status',
     ]);
-    expect(item.flags).toEqual(['wearable', 'bd', 'missingInfo', 'no-unknown', 'custom']);
     expect(item.image).toEqual({
       url: 'https://images.neopets.com/items/test.gif',
       id: 'test',

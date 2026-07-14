@@ -61,6 +61,7 @@ const CARD_FIELDS = [
   'price',
   'rarity',
   'category',
+  'estVal',
 ] as const satisfies readonly (keyof ItemV2)[];
 
 const PRICER_FIELDS = [

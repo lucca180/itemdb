@@ -79,7 +79,7 @@ export type ItemV2 = {
 
 | Concern | Where it lives |
 |---------|----------------|
-| RGB / LAB / HSV | **Client** derives from `colorHex` (`utils/item/v2.ts` later) |
+| RGB / LAB / HSV | Prefer hex in CSS (`colorHex` / 8-digit alpha). RGB helpers only if a caller truly needs them |
 | `findAt` | **Client** (`getItemFindAtLinks` adapted for `ItemV2`) |
 | `saleStatus` | **Deferred** — keep existing `/saleStats` sub-route for now; `+sales` intent later |
 
@@ -111,7 +111,7 @@ Actual removal only after hot-path migration — not in this wave.
 | Intent | Contents |
 |--------|----------|
 | `minimal` | ids, name, slug, image, type, flags, description, status |
-| `card` | + colorHex, price, rarity, category |
+| `card` | + colorHex, price, rarity, category, estVal |
 | `pricer` | minimal + rarity + price |
 | `full` | every `ItemV2` field (resolved from the query-engine field registry — not hand-listed) |
 
@@ -282,11 +282,11 @@ Takeaway: `minimal` is clearly cheaper; `card` payload is ~3× smaller than v1 e
 
 | Component / helper | Contract |
 |--------------------|----------|
-| `ItemImage` | `image`, `description` |
-| `ItemCardBadge` | `price` union, `type`, `status`, `flags` |
-| `ItemCtxMenu` | core + **client** findAt |
-| `getRestockProfit` | np price + category/rarity/estVal |
-| `ItemCard` | intent `card` |
+| `ItemImage` / `ItemImageV2` | `image`, `description` |
+| `ItemCardBadge` / `ItemCardBadgeV2` | `price` union, `type`, `status`, `flags` |
+| `ItemCtxMenu` / `ItemCtxMenuV2` | core + **client** findAt (`getItemFindAtLinksV2`) |
+| `getRestockProfit` / `getRestockProfitV2` | np price + category/rarity/estVal |
+| `ItemCard` / `ItemCardV2` | intent `card` (`components/Items/v2/ItemCardV2.tsx`, client component — `onSelect`/`onListAction` are plain client callbacks, not Server Actions, so it can't be a real Server Component) |
 | `FindAtCard` | core + client findAt + colorHex→rgb |
 | Item page | `full` (sales via `/saleStats` until later) |
 | Search / Home | `card` |
