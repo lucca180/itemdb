@@ -5,9 +5,9 @@ This migration is expected to take **several weeks**. v1 (`ItemData` + `/api/v1`
 ## Goals
 
 1. **New HTTP contract** (`ItemV2`) — breaking reshape, not just fewer fields.
-2. **Intents** — presets (`minimal` | `card` | `detail`); query engine derives JOINs from the fields each intent needs.
+2. **Intents** — presets in `itemIntents` (`minimal` | `card` | `full` | `pricer`); query engine derives JOINs from the fields each intent needs.
 3. **Typing** — UI consumes `ItemV2`; `ItemData` becomes `@deprecated`.
-4. **Lean layout:** legacy types under `/types` (file moved intact); ItemV2 helpers/registry under `/types`; runtime in `app/server/items/v2.ts` + `utils/item/v2.ts` + `route.ts`.
+4. **Lean layout:** legacy types under `/types` (file moved intact); ItemV2 helpers/registry under `/types`; server runtime under `app/server/items/`; client helpers in `utils/item/v2.ts`; HTTP in `route.ts`.
 5. **Coexistence** — no breaking changes to `/api/v1` during the migration.
 
 ## Current problem
@@ -53,7 +53,7 @@ export type ItemV2 = {
   type: 'np' | 'nc' | 'pb';
   flags: ItemFlags[];
   estVal: number | null;
-  status: 'active' | 'no trade' | null;
+  status: string | null;
   colorHex: string | null;
   price: ItemPriceField;
   slug: string | null;
@@ -69,7 +69,7 @@ export type ItemV2 = {
 | v1 | v2 |
 |----|-----|
 | `image` + `image_id` + `cacheHash` | `image: { url, id, hash? }` |
-| `isWearable`, `isNeohome`, `isBD`, `isMissingInfo` | `flags: ItemFlags[]` |
+| `isWearable`, `isNeohome`, `isBD`, `isMissingInfo`, `flags` (CSV) | `flags: ItemFlags[]` |
 | `isNC` | `type === 'nc'` |
 | `color` (lab/rgb/hsv/hex/…) | `colorHex` |
 | `price` + `ncValue` + `mallData` | discriminated `price` |
@@ -89,7 +89,8 @@ export type ItemV2 = {
 2. NC + ncValue → `{ ...ncValue, type: 'ncValue' }`
 3. NP with a price → `ItemPriceV2`
 4. NP unknown/stale → `value: 0`, `flags` includes `'unknown'`
-5. Otherwise → `null`
+5. NP older than 6 months → `flags` includes `'outdated'` (same rule as `ItemCardBadge`)
+6. Otherwise → `null`
 
 ### `ItemData` deprecated
 
@@ -109,12 +110,13 @@ Actual removal only after hot-path migration — not in this wave.
 
 | Intent | Contents |
 |--------|----------|
-| `minimal` | ids, name, slug, image, type, flags |
-| `card` | + colorHex, price, rarity, status, category |
-| `detail` | full `ItemV2` envelope |
+| `minimal` | ids, name, slug, image, type, flags, description, status |
+| `card` | + colorHex, price, rarity, category |
+| `pricer` | minimal + rarity + price |
+| `full` | every `ItemV2` field (resolved from the query-engine field registry — not hand-listed) |
 
-Field registry / `ItemV2For<>`: [`types/itemV2.ts`](../types/itemV2.ts).  
-**JOINs** are decided by the query engine (Phase 1) from the fields each intent needs — not declared in the types registry.
+Single registry: `itemIntents` in [`types/itemV2.ts`](../types/itemV2.ts) drives `ItemIntent`, `ItemV2For<>`, field lists, and HTTP validation (`parseItemIntent`).  
+**JOINs** are decided by the query engine from the fields each intent needs — not declared in the types registry.
 
 **Deferred:** `+sales` / `SaleStats` on the ItemV2 envelope — use `/saleStats` until a later wave.
 
@@ -132,13 +134,15 @@ types/
   itemV2.ts                  # ItemV2 contract, intents (fields), ItemV2For
   index.ts                   # @types alias entry: re-export legacy + itemV2
 
-app/server/items/v2.ts       # query engine (fields→JOINs) + mapItemV2 + getManyItemsV2 (Phase 1)
+app/server/items/v2.ts       # query engine + mapItemV2 + getManyItemsV2 + getItemV2
+app/server/items/itemV2Price.ts  # isolated price-union mapping
+app/server/items/itemV2Raw.ts    # raw SQL normalization helpers
 app/server/items/getItemForPage.ts  # App Router item-page loader (legacy ItemData)
 
 app/api/v2/
   items/many/route.ts
   items/[id_name]/route.ts
-  search/route.ts
+  items/parse.ts             # many-query parsing (intent via parseItemIntent/@types)
 
 utils/item/v2.ts             # client runtime helpers: hasFlag, itemColorRgb, findAt
 ```
@@ -207,19 +211,40 @@ import { getItemFindAtLinksV2 } from '@utils/item/v2';
 
 ---
 
-### Phase 1 — Server v2 (query + mapper)
+### Phase 1 — Server v2 (query + mapper) ✅
 
-**Goal:** Everything in `app/server/items/v2.ts` (consumes registry from `@types` / `types/itemV2.ts`).
+**Goal:** ItemV2 DAL under `app/server/items/`, with orchestration in `v2.ts` and focused raw/price helpers (consumes registry from `@types` / `types/itemV2.ts`).
 
 **Done when:** tests for price union / flags / `minimal` intent; v1 untouched.
 
 ---
 
-### Phase 2 — App Router HTTP POC
+### Phase 2 — App Router HTTP POC ✅
 
 **Goal:** `app/api/v2/items/many` and `[id_name]`.
 
 **Done when:** responses are `ItemV2`; benchmark recorded; v1 identical.
+
+#### HTTP surface
+
+| Route | Methods | Default intent | Notes |
+|-------|---------|----------------|-------|
+| `/api/v2/items/many` | `GET`, `POST` | `minimal` | Same lookup keys as v1 (`id`, `item_id`, `name_image_id`, `image_id`, `name`, `slug`) + `intent` |
+| `/api/v2/items/[id_name]` | `GET` | `minimal` | Lookup by `internal_id`, `slug`, or `name`; `404` when missing. No PATCH/DELETE (stay on v1) |
+
+Query/body: `?intent=` any key of `itemIntents` (`minimal` \| `card` \| `full` \| `pricer`). Rate limiting remains in `proxy.ts` (`/api/:path*`).
+
+#### Benchmark (2026-07-14)
+
+50 random items × 5 runs via `yarn tsx -r dotenv/config scripts/bench-item-v2.ts`:
+
+| Loader | avg ms | JOINs | Approx JSON bytes / item |
+|--------|--------|-------|---------------------------|
+| v1 `getManyItems` | 404.5 | 6 fixed | ~1244 |
+| v2 `card` | 405.3 | color + price JOINs | ~380 |
+| v2 `minimal` | 274.9 | none | — |
+
+Takeaway: `minimal` is clearly cheaper; `card` payload is ~3× smaller than v1 even when wall time is similar on this machine (warm cache / remote RTT can dominate JOINs).
 
 ---
 
@@ -263,7 +288,7 @@ import { getItemFindAtLinksV2 } from '@utils/item/v2';
 | `getRestockProfit` | np price + category/rarity/estVal |
 | `ItemCard` | intent `card` |
 | `FindAtCard` | core + client findAt + colorHex→rgb |
-| Item page | `detail` (sales via `/saleStats` until later) |
+| Item page | `full` (sales via `/saleStats` until later) |
 | Search / Home | `card` |
 | Widget | `minimal` |
 
@@ -288,4 +313,6 @@ import { getItemFindAtLinksV2 } from '@utils/item/v2';
 ## Next steps
 
 1. ~~**Phase 0:** move `types.d.ts` → `/types` + `types/itemV2.ts` + tsconfig + rename loader.~~
-2. **Phase 1:** `app/server/items/v2.ts` (query + mapper).
+2. ~~**Phase 1:** `app/server/items/v2.ts` (query + mapper).~~
+3. ~~**Phase 2:** `app/api/v2/items/many` + `[id_name]` Route Handlers + benchmark vs v1.~~
+4. **Phase 3:** `app/api/v2/search` (default intent `card`).
