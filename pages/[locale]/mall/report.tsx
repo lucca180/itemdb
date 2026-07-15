@@ -440,6 +440,7 @@ const NCTradeReportCard = (props: NCTradeReportProps) => {
                             height={80}
                             w="80px"
                             h="80px"
+                            unoptimized
                           />
                           <Button
                             size="xs"
