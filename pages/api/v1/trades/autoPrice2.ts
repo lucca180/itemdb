@@ -61,6 +61,18 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
   return res.status(200).json(result);
 };
 
+const applyInstantBuyUnitPrice = async (trade: Trades & { items: TradeItems[] }) => {
+  const itemsCount = trade.items.reduce((sum, item) => sum + (item.amount || 1), 0);
+  const unitPrice = Math.floor(trade.instantBuy! / itemsCount);
+
+  trade.items = trade.items.map((item) => ({
+    ...item,
+    price: unitPrice as any,
+  }));
+
+  await processTradePrice(trade as any);
+};
+
 export const autoPriceTrades2 = async (tradeRaw: (Trades & { items: TradeItems[] })[]) => {
   const similarCache = new Map<string, (Trades & { items: TradeItems[] }) | null>();
   const similarInflight = new Map<string, Promise<(Trades & { items: TradeItems[] }) | null>>();
@@ -68,6 +80,13 @@ export const autoPriceTrades2 = async (tradeRaw: (Trades & { items: TradeItems[]
   const promResult = await pMap(
     tradeRaw,
     async (trade) => {
+      // Identical-item IB lots: apply IB unit price immediately (same as ingest).
+      // Skip canonical/similar so they never land in the pricing queue.
+      if (trade.instantBuy && getTradeIsAllItemsEqual(trade)) {
+        await applyInstantBuyUnitPrice(trade);
+        return null;
+      }
+
       const afterCanonical = await findCanonical(trade);
       if (!afterCanonical) return null;
       return findSimilar(afterCanonical, similarCache, similarInflight);
@@ -305,6 +324,13 @@ const checkTradeEstPrice = async (trade: Trades & { items: TradeItems[] }) => {
 const checkInstaBuy = async (trade: Trades & { items: TradeItems[] }) => {
   if (!trade.instantBuy) return false;
 
+  // One unique item type: always take the IB unit price — no market data needed.
+  // Mirrors ingest (isAllItemsEqual && instantBuy) so these never stay in the queue.
+  if (getTradeIsAllItemsEqual(trade)) {
+    await applyInstantBuyUnitPrice(trade);
+    return true;
+  }
+
   const items = trade.items.map((item) =>
     itemDataCache.get(item.item_iid!.toString())
   ) as ItemData[];
@@ -328,9 +354,8 @@ const checkInstaBuy = async (trade: Trades & { items: TradeItems[] }) => {
     items[0]
   );
 
-  const otherItems = trade.items.filter(
-    (item) => item.internal_id !== mostExpensiveItem.internal_id
-  );
+  // ItemData.internal_id is item_iid; TradeItems.internal_id is the row PK.
+  const otherItems = trade.items.filter((item) => item.item_iid !== mostExpensiveItem.internal_id);
 
   const otherItemsValue = otherItems.reduce((sum, item) => {
     const itemData = itemDataCache.get(item.item_iid!.toString());
