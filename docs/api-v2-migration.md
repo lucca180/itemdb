@@ -248,7 +248,33 @@ Takeaway: `minimal` is clearly cheaper; `card` payload is ~3× smaller than v1 e
 
 ---
 
-### Phase 3 — Search v2
+### Phase 3 — Cache (CDN + Redis)
+
+**Goal:** Cache the two public HTTP routes (`items/many`, `items/[id_name]`) at two layers — CDN (Cloudflare) and Redis — before adding any new public surface (Search v2). Site/Home is **out of scope** here; it keeps using `'use cache'` only, as today.
+
+**Why before Search v2:** Search v2 will reuse the same `getManyItemsV2` engine and intents; landing the cache primitives (Redis key shape, TTL-per-intent, bypass) first means Search v2 can plug into an already-proven pattern instead of inventing its own.
+
+**Design:**
+
+- Redis key: `iv2:item:{idOrSlugRaw}:{intent}` — one entry per intent (`minimal`/`card`/`pricer`/`full`), never derived/shared across intents (each intent has a different field set — see Intents table above).
+- TTL fixed per intent, no invalidation (mutation events don't need to know this cache exists):
+
+  | Intent | TTL | Why |
+  |--------|----:|-----|
+  | `minimal` | 600s | no `price` field — only changes on admin edits |
+  | `card` / `pricer` / `full` | 60s | all include `price`, the most volatile field |
+
+- `items/many`: cache-aside **per item**, not per ID-combination — `mget` the batch, call `getManyItemsV2` only for the misses, pipeline `SET … EX <ttl>` the fresh ones back. Shares cache entries with `items/[id_name]` (same key shape).
+- CDN: `Cache-Control: public, s-maxage=<TTL>, stale-while-revalidate=<~4x TTL>` on `GET` responses only (same per-intent TTL as Redis). `POST /items/many` is Redis-only (not CDN-cacheable). Requires a Cloudflare Cache Rule for `/api/v2/items/*` to respect the origin header — outside this repo.
+- Bypass: single query param (name TBD, e.g. `?fresh=1`) skips the Redis read, forces a Prisma read, returns `Cache-Control: no-store`, but still writes the fresh value back to Redis (write-through) and still counts toward quota.
+- Quota: v2 has **no quota counting today** (only v1 does, via `redis_setDataCount`). This phase adds it, wired so cache **hits don't consume quota** — only misses (real Prisma reads) increment it.
+- Redis must fail fast (short timeout, try/catch, fallback to direct Prisma) so an unhealthy Redis is never worse than no cache; same guard pattern as [`utils/api/redis.ts`](../utils/api/redis.ts) (`if (!redis) return`).
+
+**Done when:** both routes serve `Cache-Control` + read/write Redis by intent; hit vs miss latency benchmarked; quota counter live for v2 misses; bypass param documented in the public API reference.
+
+---
+
+### Phase 4 — Search v2
 
 **Goal:** `app/api/v2/search` (default intent `card`).
 
@@ -256,7 +282,7 @@ Takeaway: `minimal` is clearly cheaper; `card` payload is ~3× smaller than v1 e
 
 ---
 
-### Phase 4 — UI core
+### Phase 5 — UI core
 
 **Goal:** Card/home/lists on `ItemV2`.
 
@@ -266,19 +292,19 @@ Takeaway: `minimal` is clearly cheaper; `card` payload is ~3× smaller than v1 e
 
 ---
 
-### Phase 5 — Broad adoption
+### Phase 6 — Broad adoption
 
 **Goal:** Remaining call sites; reduce `ItemData`.
 
 ---
 
-### Phase 6 — Public docs and stabilization
+### Phase 7 — Public docs and stabilization
 
 **Goal:** v1→v2 changelog; stabilize this document and API reference.
 
 ---
 
-## UI checklist (Phase 4+)
+## UI checklist (Phase 5+)
 
 | Component / helper | Contract |
 |--------------------|----------|
@@ -299,7 +325,8 @@ Takeaway: `minimal` is clearly cheaper; `card` payload is ~3× smaller than v1 e
 - Types move: typecheck before new logic.
 - Card ↔ CtxMenu: client findAt needs the right core fields.
 - Search: filters may force JOINs beyond the intent.
-- `@deprecated` alone does not fail CI — review discipline + Phase 4+.
+- `@deprecated` alone does not fail CI — review discipline + Phase 5+.
+- Cache (Phase 3): CDN hits skip `proxy.ts` entirely (no ban/quota check) — accepted trade-off, not a bug. Redis TTL-only means no explicit invalidation path; a stale value can live up to its TTL after a mutation.
 
 ## Out of scope
 
@@ -309,10 +336,12 @@ Takeaway: `minimal` is clearly cheaper; `card` payload is ~3× smaller than v1 e
 - Embedding findAt/RGB in the HTTP envelope
 - Removing `ItemData` (deprecate only)
 - `+sales` / embedding `saleStatus` in ItemV2 (later wave; use `/saleStats`)
+- Tag-based cache invalidation for Phase 3 (TTL-only by design); Next.js Data Cache / custom Redis `cacheHandler` for the App Router (evaluated, deferred — see cache strategy discussion)
 
 ## Next steps
 
 1. ~~**Phase 0:** move `types.d.ts` → `/types` + `types/itemV2.ts` + tsconfig + rename loader.~~
 2. ~~**Phase 1:** `app/server/items/v2.ts` (query + mapper).~~
 3. ~~**Phase 2:** `app/api/v2/items/many` + `[id_name]` Route Handlers + benchmark vs v1.~~
-4. **Phase 3:** `app/api/v2/search` (default intent `card`).
+4. **Phase 3:** CDN + Redis cache (per-intent TTL, bypass param, quota-on-miss) — before Search v2.
+5. **Phase 4:** `app/api/v2/search` (default intent `card`).
