@@ -171,19 +171,21 @@ const findSimilar = async (
   const updatedItems: any[] = [...trade.items];
 
   for (const similarItem of similar.items) {
-    const item = updatedItems[similarItem.order];
+    const item = getTradeItemByOrder(updatedItems, similarItem.order);
+    if (!item) continue;
+
     if (similarItem.amount !== 1 && item.amount !== similarItem.amount && similarItem.price)
       continue;
 
-    updatedItems[similarItem.order].addedAt = updatedItems[similarItem.order].addedAt.toJSON();
+    item.addedAt = item.addedAt.toJSON();
 
     if (similarItem.amount === 1 && item.amount !== 1 && similarItem.price) {
       const adjustedPrice = Math.floor(Number(similarItem.price) / item.amount);
-      updatedItems[similarItem.order].price = adjustedPrice;
+      item.price = adjustedPrice;
       continue;
     }
 
-    updatedItems[similarItem.order].price = similarItem.price;
+    item.price = similarItem.price;
   }
 
   const isAllEmpty = updatedItems.every((item) => !item.price);
