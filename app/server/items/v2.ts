@@ -5,6 +5,7 @@ import {
   getIntentFields,
   type ItemFlags,
   type ItemIntent,
+  type ItemSaleStatusV2,
   type ItemV2,
   type ItemV2For,
 } from '@types';
@@ -14,8 +15,10 @@ import { asJsonDate, asNumber, asString, type RawItemV2Row } from '@app/server/i
 export type { MapItemV2Options } from '@app/server/items/itemV2Price';
 export type { RawItemV2Row } from '@app/server/items/itemV2Raw';
 
+const DISABLE_SALE_STATS = process.env.DISABLE_SALE_STATS === 'true';
+
 type RawIdValue = string | number;
-type JoinName = 'color' | 'npPrice' | 'ncValue' | 'owlsPrice' | 'ncMall';
+type JoinName = 'color' | 'npPrice' | 'ncValue' | 'owlsPrice' | 'ncMall' | 'saleStats';
 type ColumnName = keyof typeof RAW_COLUMNS;
 
 /**
@@ -105,6 +108,8 @@ const RAW_COLUMNS = {
   ncMallDiscountBegin: Prisma.sql`ncMall.discountBegin AS ncMallDiscountBegin`,
   ncMallDiscountEnd: Prisma.sql`ncMall.discountEnd AS ncMallDiscountEnd`,
   ncMallDiscountPrice: Prisma.sql`ncMall.discountPrice AS ncMallDiscountPrice`,
+  saleStats: Prisma.sql`saleStats.stats AS saleStats`,
+  saleAdded: Prisma.sql`saleStats.addedAt AS saleAdded`,
 } as const;
 
 const JOINS: Record<JoinName, Prisma.Sql> = {
@@ -127,6 +132,12 @@ const JOINS: Record<JoinName, Prisma.Sql> = {
   ncMall: Prisma.sql`
     LEFT JOIN NcMallData AS ncMall
       ON ncMall.item_iid = a.internal_id AND ncMall.active = 1
+  `,
+  saleStats: Prisma.sql`
+    LEFT JOIN SaleStats AS saleStats
+      ON saleStats.item_iid = a.internal_id
+     AND saleStats.isLatest = 1
+     AND saleStats.stats != "unknown"
   `,
 };
 
@@ -212,6 +223,11 @@ const FIELD_DEFINITIONS: FieldDefinitions = {
     ],
     joins: ['npPrice', 'ncValue', 'owlsPrice', 'ncMall'],
     map: mapItemV2Price,
+  },
+  saleStatus: {
+    columns: ['saleStats', 'saleAdded'],
+    joins: ['saleStats'],
+    map: mapSaleStatus,
   },
   slug: { columns: ['slug'], map: (raw) => asString(raw.slug) },
   comment: { columns: ['comment'], map: (raw) => asString(raw.comment) },
@@ -366,6 +382,20 @@ function mapUseTypes(raw: RawItemV2Row): ItemV2['useTypes'] {
     canOpen: (asString(raw.canOpen) ?? 'unknown') as ItemV2['useTypes']['canOpen'],
     canPlay: (asString(raw.canPlay) ?? 'unknown') as ItemV2['useTypes']['canPlay'],
   };
+}
+
+const SALE_STATUS_VALUES = new Set<ItemSaleStatusV2['status']>(['ets', 'regular', 'hts']);
+
+function mapSaleStatus(raw: RawItemV2Row): ItemV2['saleStatus'] {
+  if (DISABLE_SALE_STATS) return null;
+
+  const status = asString(raw.saleStats);
+  if (!status || !SALE_STATUS_VALUES.has(status as ItemSaleStatusV2['status'])) return null;
+
+  const addedAt = asJsonDate(raw.saleAdded);
+  if (!addedAt) return null;
+
+  return { status: status as ItemSaleStatusV2['status'], addedAt };
 }
 
 /**

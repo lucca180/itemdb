@@ -47,6 +47,8 @@ const completeRow = (overrides: RawItemV2Row = {}): RawItemV2Row => ({
   priceInflationId: null,
   priceManualCheck: null,
   priceContext: null,
+  saleStats: 'ets',
+  saleAdded: new Date('2026-05-01T00:00:00.000Z'),
   ...overrides,
 });
 
@@ -73,14 +75,16 @@ describe('ItemV2 query planning', () => {
     ]);
   });
 
-  test('pricer intent joins price sources without color', () => {
+  test('pricer intent joins price sources and saleStats without color', () => {
     expect(getItemV2QueryPlan('pricer').joins).toEqual([
       'npPrice',
       'ncValue',
       'owlsPrice',
       'ncMall',
+      'saleStats',
     ]);
     expect(getItemV2QueryPlan('pricer').columns).not.toContain('colorHex');
+    expect(getItemV2QueryPlan('pricer').fields).toContain('saleStatus');
   });
 
   test('full intent includes every ItemV2 field without a hand-written list', () => {
@@ -97,10 +101,11 @@ describe('ItemV2 query planning', () => {
         'useTypes',
         'colorHex',
         'price',
+        'saleStatus',
       ])
     );
-    expect(plan.fields).toHaveLength(19);
-    expect(plan.joins).toEqual(['color', 'npPrice', 'ncValue', 'owlsPrice', 'ncMall']);
+    expect(plan.fields).toHaveLength(20);
+    expect(plan.joins).toEqual(['color', 'npPrice', 'ncValue', 'owlsPrice', 'ncMall', 'saleStats']);
   });
 
   test('getMany maps rows and preserves v1 identifier keys', async () => {
@@ -270,5 +275,21 @@ describe('ItemV2 mapper', () => {
   test('preserves non-standard item statuses', () => {
     const item = mapItemV2(completeRow({ status: 'retired' }), 'card');
     expect(item.status).toBe('retired');
+  });
+
+  test('maps slim saleStatus on pricer and omits it on card', () => {
+    const pricer = mapItemV2(completeRow(), 'pricer');
+    expect(pricer.saleStatus).toEqual({
+      status: 'ets',
+      addedAt: '2026-05-01T00:00:00.000Z',
+    });
+
+    const card = mapItemV2(completeRow(), 'card');
+    expect(card).not.toHaveProperty('saleStatus');
+  });
+
+  test('returns null saleStatus when stats are missing', () => {
+    const item = mapItemV2(completeRow({ saleStats: null, saleAdded: null }), 'pricer');
+    expect(item.saleStatus).toBeNull();
   });
 });
