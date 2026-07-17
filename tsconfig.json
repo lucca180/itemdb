@@ -39,7 +39,7 @@
         "./utils/*"
       ],
       "@types": [
-        "./types.d.ts"
+        "./types/index.ts"
       ],
       "@translations/*": [
         "./translations/*"
@@ -61,8 +61,7 @@
       ]
     },
     "typeRoots": [
-      "node_modules/@types",
-      "types.d.ts"
+      "node_modules/@types"
     ]
   },
   "exclude": [
@@ -71,7 +70,7 @@
   ],
   "include": [
     "next-env.d.ts",
-    "types.d.ts",
+    "types/**/*.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",

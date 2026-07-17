@@ -1,5 +1,6 @@
 import { Redis as RedisRaw } from 'ioredis';
 import { NextApiRequest } from 'next/types';
+import { NextRequest } from 'next/server';
 import {
   generateSessionToken,
   normalizeIP,
@@ -25,21 +26,34 @@ export const API_ERROR_CODES = {
   limitExceeded: 'limit-exceeded',
 } as const;
 
-export let redis: RedisRaw;
+// Next.js may bundle this module into separate server chunks; globalThis keeps
+// one ioredis connection per logical DB per process (same pattern as prisma.ts).
+const globalForRedis = globalThis as unknown as {
+  redis: RedisRaw | undefined;
+  redisCache: RedisRaw | undefined;
+};
 
-if (
+const redisOpts =
   process.env.NODE_ENV !== 'development' &&
   process.env.REDIS_PORT &&
   process.env.REDIS_HOST &&
   process.env.REDIS_PASSWORD
-) {
-  redis = new RedisRaw({
-    port: Number(process.env.REDIS_PORT),
-    host: process.env.REDIS_HOST,
-    password: process.env.REDIS_PASSWORD,
-    enableAutoPipelining: true,
-  });
-}
+    ? {
+        port: Number(process.env.REDIS_PORT),
+        host: process.env.REDIS_HOST,
+        password: process.env.REDIS_PASSWORD,
+        enableAutoPipelining: true,
+      }
+    : null;
+
+export const redis =
+  globalForRedis.redis ??
+  (redisOpts ? (globalForRedis.redis = new RedisRaw(redisOpts)) : undefined);
+
+/** ItemV2 HTTP cache — same Redis host, logical DB 1 (rate limit stays on DB 0). */
+export const redisCache =
+  globalForRedis.redisCache ??
+  (redisOpts ? (globalForRedis.redisCache = new RedisRaw({ ...redisOpts, db: 1 })) : undefined);
 
 export const createSession = (logged = false) => {
   const { LOGGED_LIMIT, MIN_LIMIT_COUNT, SESSION_EXPIRE, SESSION_EXPIRE_LOGGED } = API_CONST;
@@ -80,36 +94,74 @@ export const getBanTTL = async (ip: string) => {
   return ttl > 0 ? ttl : 0;
 };
 
+/** v1 Pages Router entry — increments the per-IP / API-key item quota. */
 export const redis_setDataCount = async (count: number, req: NextApiRequest) => {
   const ip = requestIp.getClientIp(req);
   return redis_setItemCount(ip, count, req);
 };
 
+/**
+ * v2 App Router quota entry (same rules as `redis_setDataCount`).
+ * Call only for Prisma-backed items — cache hits should pass count=0 / skip.
+ */
+export async function trackItemQuota(count: number, request: NextRequest): Promise<void> {
+  // Same extraction as `proxy.ts` for App Router / Edge requests.
+  const ip =
+    requestIp.getClientIp(request as any) ||
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    request.headers.get('cf-connecting-ip') ||
+    null;
+
+  return redis_setItemCount(ip, count, request);
+}
+
+function pathnameFromUrl(url: string | undefined): string {
+  if (!url) return '/';
+  try {
+    return new URL(url, 'https://itemdb.com.br').pathname;
+  } catch {
+    return url.split('?')[0] || '/';
+  }
+}
+
+/** `NextRequest` (App Router / Edge) already parses headers/cookies/URL — `NextApiRequest` (Pages) hasn't. */
+function isNextRequest(req: NextApiRequest | NextRequest): req is NextRequest {
+  return req.headers instanceof Headers;
+}
+
 export const redis_setItemCount = async (
   ip: string | null | undefined,
   itemCount: number,
-  req: NextApiRequest
+  req: NextApiRequest | NextRequest
 ) => {
   try {
     if (!ip || !itemCount || !redis) return;
 
-    const itemdbProof = getHeaderString(req.headers['x-itemdb-proof']);
+    const edge = isNextRequest(req);
+    const pathname = edge ? req.nextUrl.pathname : pathnameFromUrl(req.url);
+    const itemdbProof = edge
+      ? (req.headers.get('x-itemdb-proof') ?? undefined)
+      : firstHeaderValue(req.headers['x-itemdb-proof']);
+
     const isValidProof =
       itemdbProof &&
       verifySiteProof(itemdbProof, 0, {
         method: req.method,
-        pathname: getRequestPathname(req),
+        pathname,
       });
 
     if (isValidProof) return;
 
-    if (req.headers['x-itemdb-token'])
-      return incrementApiKey(req.headers['x-itemdb-token'] as string, itemCount);
+    const apiToken = edge
+      ? (req.headers.get('x-itemdb-token') ?? undefined)
+      : firstHeaderValue(req.headers['x-itemdb-token']);
+    if (apiToken) return incrementApiKey(apiToken, itemCount);
 
     let limit = API_CONST.MIN_LIMIT_COUNT as number;
 
-    const sessionCookie =
-      req.cookies['idb-session-id'] || (req.cookies as any)?.get?.('idb-session-id');
+    const sessionCookie = edge
+      ? req.cookies.get('idb-session-id')?.value
+      : req.cookies['idb-session-id'];
 
     ip = normalizeIP(ip);
 
@@ -117,8 +169,7 @@ export const redis_setItemCount = async (
     const banCount = Number((await redis.get(`bCount:${ip}`)) || '0');
 
     if (sessionCookie) {
-      const sessionToken = sessionCookie.value ?? sessionCookie;
-      const sessionData = verifySessionToken(sessionToken);
+      const sessionData = verifySessionToken(sessionCookie);
 
       if (sessionData && sessionData.limit) {
         limit = Math.max(sessionData.limit, limit);
@@ -226,15 +277,7 @@ export const getKeyTTL = async (token: string) => {
   return ttl > 0 ? ttl : 0;
 };
 
-function getHeaderString(value: string | string[] | undefined) {
-  if (Array.isArray(value)) return value[0];
-  return value;
-}
-
-function getRequestPathname(req: NextApiRequest) {
-  try {
-    return new URL(req.url || '/', 'https://itemdb.com.br').pathname;
-  } catch {
-    return req.url?.split('?')[0] || '/';
-  }
+/** `NextApiRequest` headers can be a single value or an array (multi-value headers). */
+function firstHeaderValue(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
 }

@@ -1,15 +1,15 @@
 // import { Suspense } from 'react';
 import { Text } from '@chakra-ui/react';
 import { getFormatter, getTranslations } from 'next-intl/server';
-import type { ItemData } from '@types';
+import type { ItemV2For } from '@types';
 import { HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
 import { LatestPricesItemsClient } from '@components/Home/LatestPricesItemsClient';
-import { getLatestPricedItems } from '@pages/api/v1/prices/index';
+import { getLatestPricedItemsV2 } from '@app/api/v2/prices/latest';
 import { cacheLife, cacheTag } from 'next/cache';
 
 export type LatestPricesRes = {
   count: number | null;
-  items: ItemData[];
+  items: ItemV2For<'card'>[];
 };
 
 async function getLatestPrices(): Promise<LatestPricesRes> {
@@ -17,7 +17,7 @@ async function getLatestPrices(): Promise<LatestPricesRes> {
   cacheTag('home-latest-prices');
   cacheLife('homeSection');
   try {
-    const result = await getLatestPricedItems(16, true);
+    const result = await getLatestPricedItemsV2(16, true);
     if (Array.isArray(result)) {
       return { items: result, count: null };
     }

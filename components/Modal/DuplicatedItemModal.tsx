@@ -21,7 +21,7 @@ export type DuplicatedItemModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onChange?: () => void;
-  item: ItemData;
+  item: Pick<ItemData, 'internal_id' | 'name'>;
   list?: UserList | ObligatoryUserList;
   itemInfo: ListItemInfo;
 };

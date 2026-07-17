@@ -34,7 +34,7 @@
 - `@components` -> `/components`
 - `@utils` -> `/utils`
 - `@prisma/generated` -> `/prisma/generated`
-- `@types` -> `./types.d.ts`
+- `@types` -> `/types` (`types/index.ts`)
 - `@translations` -> `/translations`
 - `@services` -> `/services`
 - `@assets` -> `/public`

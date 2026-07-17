@@ -13,19 +13,21 @@ import {
 } from '@chakra-ui/react';
 import dynamic from 'next/dynamic';
 import NextImage from 'next/image';
-import { ItemData } from '@types';
+import type { ItemV2For } from '@types';
 import Color from 'color';
-import ItemCard, { ItemCardBadge, ItemImage } from '@components/Items/ItemCard';
+import ItemCardV2 from '@components/Items/v2/ItemCardV2';
+import { ItemCardBadgeV2 } from '@components/Items/v2/ItemCardBadgeV2';
+import { ItemImageV2 } from '@components/Items/v2/ItemImageV2';
 import { CtxTrigger } from '@components/Menus/ItemCtxTrigger';
 import MainLink from '@components/Utils/MainLink';
 import { GoChevronLeft, GoChevronRight } from 'react-icons/go';
 import { useState, type MouseEvent } from 'react';
 import { useTranslations } from 'next-intl';
 
-const ItemCtxMenu = dynamic(() => import('@components/Menus/ItemCtxMenu'), { ssr: false });
+const ItemCtxMenuV2 = dynamic(() => import('@components/Menus/ItemCtxMenuV2'), { ssr: false });
 
 type HomeCardProps = {
-  items?: ItemData[];
+  items?: ItemV2For<'card'>[];
   title: string;
   image: string;
   color: string;
@@ -114,7 +116,7 @@ export const HomeCard = (props: HomeCardProps) => {
             {items
               .filter((_, i) => i >= perPage * page && i < perPage * (page + 1))
               .map((item) => (
-                <ItemCard
+                <ItemCardV2
                   uniqueID={title}
                   key={item.internal_id + title}
                   item={item}
@@ -185,7 +187,7 @@ const HomeCardLoadingRows = () => (
 const HomeCardLoadingItemGrid = ({ title, perPage }: { title: string; perPage: number }) => (
   <Flex flexWrap="wrap" gap={2} my={3} justifyContent="center">
     {Array.from({ length: perPage }).map((_, index) => (
-      <ItemCard uniqueID={title} key={`${title}-loading-${index}`} isLoading />
+      <ItemCardV2 uniqueID={title} key={`${title}-loading-${index}`} isLoading />
     ))}
   </Flex>
 );
@@ -195,7 +197,7 @@ export const HomeItem = ({
   menuKey,
   utm_content,
 }: {
-  item: ItemData;
+  item: ItemV2For<'card'>;
   menuKey: string;
   utm_content?: string;
 }) => {
@@ -203,7 +205,7 @@ export const HomeItem = ({
   const [isContextMenuLoaded, setIsContextMenuLoaded] = useState(false);
   const loadContextMenu = () => {
     if (!isMobile) {
-      void import('@components/Menus/ItemCtxMenu');
+      void import('@components/Menus/ItemCtxMenuV2');
       setIsContextMenuLoaded(true);
     }
   };
@@ -213,7 +215,7 @@ export const HomeItem = ({
 
   return (
     <>
-      {isContextMenuLoaded && <ItemCtxMenu item={item} menuId={menuKey} />}
+      {isContextMenuLoaded && <ItemCtxMenuV2 item={item} menuId={menuKey} />}
       <CtxTrigger
         id={menuKey}
         disable={isMobile ? true : undefined}
@@ -242,7 +244,7 @@ export const HomeItem = ({
               color="whiteAlpha.900"
               w="100%"
             >
-              <ItemImage
+              <ItemImageV2
                 item={item}
                 width={60}
                 height={60}
@@ -256,7 +258,7 @@ export const HomeItem = ({
                 gap={1}
               >
                 <Text fontSize={'sm'}>{item.name}</Text>
-                <ItemCardBadge item={item} />
+                <ItemCardBadgeV2 item={item} />
               </Flex>
             </Flex>
           </MainLink>

@@ -11,7 +11,17 @@ import {
 } from '../types';
 import { differenceInCalendarDays } from 'date-fns';
 
-export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
+export type FindAtItemInput = {
+  name: string;
+  isWearable: boolean;
+  item_id: number | null;
+  rarity: number | null;
+  type: string;
+  status: string | null;
+  category: string | null;
+};
+
+export function getItemFindAtLinks(item: FindAtItemInput): ItemFindAt {
   const findAt: ItemFindAt = {
     safetyDeposit: `https://www.neopets.com/safetydeposit.phtml?obj_name=${cleanItem(
       item
@@ -68,7 +78,7 @@ export function getItemFindAtLinks(item: ItemData | Items): ItemFindAt {
 }
 
 // Borrowed from Dice's Search Helper - https://github.com/diceroll123/NeoSearchHelper/
-function cleanItem(item: ItemData | Items | string) {
+function cleanItem(item: { name: string } | string) {
   const itemName = typeof item != 'string' ? item.name : item;
   return itemName
     .replaceAll('!', '%21')
@@ -456,7 +466,7 @@ export function getShopRestockSpecialDay(
   }
 }
 
-export function rarityToCCPoints(item: ItemData) {
+export function rarityToCCPoints(item: Pick<ItemData, 'internal_id' | 'rarity'>) {
   if (item.internal_id === 289) return 1;
 
   if (!item.rarity) return 0;
@@ -519,8 +529,10 @@ export const restockBlackMarketItems = [
   42546, 42604, 42605, 42688, 44226, 49784,
 ];
 
+export type RestockPriceItem = Pick<ItemData, 'category' | 'rarity' | 'estVal'>;
+
 export const getRestockPrice = (
-  item: ItemData,
+  item: RestockPriceItem,
   ignoreSpecialDays = false,
   date?: number
 ): number[] | null => {
@@ -602,7 +614,10 @@ export const getRestockPrice = (
   return [minPrice, maxPrice];
 };
 
-export const getRestockProfit = (item: ItemData, ignoreSpecialDays = false) => {
+export const getRestockProfit = (
+  item: RestockPriceItem & { price: { value: number | null } },
+  ignoreSpecialDays = false
+) => {
   if (!item.price.value) return null;
 
   const prices = getRestockPrice(item, ignoreSpecialDays);
