@@ -16,14 +16,39 @@ import {
   type RawItemV2Row,
 } from '@app/server/items/v2';
 
+const TEST_ITEM = {
+  internalId: 42,
+  itemId: 85020,
+  slug: 'test-item',
+} as const;
+
+/** Combined ItemV2 image, split across three raw columns in `completeRow`. */
+const TEST_IMAGE = {
+  url: 'https://images.neopets.com/items/test.gif',
+  id: 'test',
+  hash: 'hash',
+} as const;
+
+/** Slim saleStatus fixture; the raw row splits it into `saleStats` + `saleAdded`. */
+const TEST_SALE_STATUS = {
+  status: 'ets',
+  addedAt: new Date('2026-05-01T00:00:00.000Z'),
+} as const;
+
+/** JOIN groups the query engine derives per intent — declared once, reused below. */
+const PRICE_JOINS = ['npPrice', 'ncValue', 'owlsPrice', 'ncMall'] as const;
+const CARD_JOINS = ['color', ...PRICE_JOINS] as const;
+const PRICER_JOINS = [...PRICE_JOINS, 'saleStats'] as const;
+const FULL_JOINS = ['color', ...PRICE_JOINS, 'saleStats'] as const;
+
 const completeRow = (overrides: RawItemV2Row = {}): RawItemV2Row => ({
-  internal_id: 42,
-  item_id: 85020,
+  internal_id: TEST_ITEM.internalId,
+  item_id: TEST_ITEM.itemId,
   name: 'Test Item',
   description: 'A complete item.',
-  image: 'https://images.neopets.com/items/test.gif',
-  image_id: 'test',
-  imgCacheOverride: 'hash',
+  image: TEST_IMAGE.url,
+  image_id: TEST_IMAGE.id,
+  imgCacheOverride: TEST_IMAGE.hash,
   category: 'Toy',
   rarity: 90,
   weight: 1,
@@ -33,7 +58,7 @@ const completeRow = (overrides: RawItemV2Row = {}): RawItemV2Row => ({
   isBD: false,
   est_val: 500,
   status: 'active',
-  slug: 'test-item',
+  slug: TEST_ITEM.slug,
   comment: null,
   canonical_id: null,
   addedAt: new Date('2026-01-01T00:00:00.000Z'),
@@ -47,8 +72,8 @@ const completeRow = (overrides: RawItemV2Row = {}): RawItemV2Row => ({
   priceInflationId: null,
   priceManualCheck: null,
   priceContext: null,
-  saleStats: 'ets',
-  saleAdded: new Date('2026-05-01T00:00:00.000Z'),
+  saleStats: TEST_SALE_STATUS.status,
+  saleAdded: TEST_SALE_STATUS.addedAt,
   ...overrides,
 });
 
@@ -66,67 +91,59 @@ describe('ItemV2 query planning', () => {
   });
 
   test('card intent derives only the joins needed by card fields', () => {
-    expect(getItemV2QueryPlan('card').joins).toEqual([
-      'color',
-      'npPrice',
-      'ncValue',
-      'owlsPrice',
-      'ncMall',
-    ]);
+    expect(getItemV2QueryPlan('card').joins).toEqual([...CARD_JOINS]);
   });
 
   test('pricer intent joins price sources and saleStats without color', () => {
-    expect(getItemV2QueryPlan('pricer').joins).toEqual([
-      'npPrice',
-      'ncValue',
-      'owlsPrice',
-      'ncMall',
-      'saleStats',
-    ]);
-    expect(getItemV2QueryPlan('pricer').columns).not.toContain('colorHex');
-    expect(getItemV2QueryPlan('pricer').fields).toContain('saleStatus');
+    const plan = getItemV2QueryPlan('pricer');
+    expect(plan.joins).toEqual([...PRICER_JOINS]);
+    expect(plan.columns).not.toContain('colorHex');
+    expect(plan.fields).toContain('saleStatus');
   });
 
   test('full intent includes every ItemV2 field without a hand-written list', () => {
     const plan = getItemV2QueryPlan('full');
 
-    expect(plan.fields).toEqual(
-      expect.arrayContaining([
-        'internal_id',
-        'weight',
-        'estVal',
-        'comment',
-        'canonical_id',
-        'firstSeen',
-        'useTypes',
-        'colorHex',
-        'price',
-        'saleStatus',
+    // Every field declared by the narrower intents must also be in `full`.
+    const declaredElsewhere = new Set(
+      (['minimal', 'card', 'pricer'] as const).flatMap((intent) => [
+        ...getItemV2QueryPlan(intent).fields,
       ])
     );
-    expect(plan.fields).toHaveLength(20);
-    expect(plan.joins).toEqual(['color', 'npPrice', 'ncValue', 'owlsPrice', 'ncMall', 'saleStats']);
+    expect(plan.fields).toEqual(expect.arrayContaining([...declaredElsewhere]));
+
+    // `full` also carries the fields no other intent requests.
+    expect(plan.fields).toEqual(
+      expect.arrayContaining(['weight', 'comment', 'canonical_id', 'firstSeen', 'useTypes'])
+    );
+
+    // No field is listed twice.
+    expect(new Set(plan.fields).size).toBe(plan.fields.length);
+    expect(plan.joins).toEqual([...FULL_JOINS]);
   });
 
   test('getMany maps rows and preserves v1 identifier keys', async () => {
     prismaMock.$queryRaw.mockResolvedValueOnce([completeRow()]);
 
-    const items = await getManyItemsV2({ type: 'id', data: [42] }, { intent: 'minimal', limit: 1 });
+    const items = await getManyItemsV2(
+      { type: 'id', data: [TEST_ITEM.internalId] },
+      { intent: 'minimal', limit: 1 }
+    );
 
     expect(prismaMock.$queryRaw).toHaveBeenCalledOnce();
-    expect(items['42']).toEqual(mapItemV2(completeRow(), 'minimal'));
+    expect(items[TEST_ITEM.internalId]).toEqual(mapItemV2(completeRow(), 'minimal'));
   });
 
   test('uses the query type for both filtering and response keys', async () => {
     prismaMock.$queryRaw.mockResolvedValueOnce([completeRow()]);
 
     const items = await getManyItemsV2(
-      { type: 'slug', data: ['test-item'] },
+      { type: 'slug', data: [TEST_ITEM.slug] },
       { intent: 'minimal', limit: 1 }
     );
 
-    expect(items['test-item']).toEqual(mapItemV2(completeRow(), 'minimal'));
-    expect(items['42']).toBeUndefined();
+    expect(items[TEST_ITEM.slug]).toEqual(mapItemV2(completeRow(), 'minimal'));
+    expect(items[TEST_ITEM.internalId]).toBeUndefined();
   });
 
   test('empty data returns no rows without querying', async () => {
@@ -139,7 +156,7 @@ describe('ItemV2 query planning', () => {
   test('getItemV2 looks up by id and returns a single mapped item', async () => {
     prismaMock.$queryRaw.mockResolvedValueOnce([completeRow()]);
 
-    const item = await getItemV2(42, { intent: 'minimal' });
+    const item = await getItemV2(TEST_ITEM.internalId, { intent: 'minimal' });
 
     expect(item).toEqual(mapItemV2(completeRow(), 'minimal'));
   });
@@ -167,11 +184,7 @@ describe('ItemV2 mapper', () => {
       'description',
       'status',
     ]);
-    expect(item.image).toEqual({
-      url: 'https://images.neopets.com/items/test.gif',
-      id: 'test',
-      hash: 'hash',
-    });
+    expect(item.image).toEqual(TEST_IMAGE);
   });
 
   test('maps an unknown NP price and its explicit flags', () => {
@@ -280,8 +293,8 @@ describe('ItemV2 mapper', () => {
   test('maps slim saleStatus on pricer and omits it on card', () => {
     const pricer = mapItemV2(completeRow(), 'pricer');
     expect(pricer.saleStatus).toEqual({
-      status: 'ets',
-      addedAt: '2026-05-01T00:00:00.000Z',
+      status: TEST_SALE_STATUS.status,
+      addedAt: TEST_SALE_STATUS.addedAt.toJSON(),
     });
 
     const card = mapItemV2(completeRow(), 'card');

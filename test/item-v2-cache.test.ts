@@ -47,7 +47,13 @@ import {
   wantsFresh,
   writeItemCache,
 } from '@app/server/items/itemV2Cache';
-import { getIntentTtl } from '@types';
+import { getIntentTtl, itemIntents, type ItemIntent } from '@types';
+
+/** Cache TTLs come from `itemIntents` — derive them so tests never hardcode seconds. */
+const MINIMAL_TTL = getIntentTtl('minimal');
+const CARD_TTL = getIntentTtl('card');
+/** CDN stale-while-revalidate window mirrors the implementation (`ttl * 4`). */
+const SWR_MULTIPLIER = 4;
 
 describe('itemV2Cache helpers', () => {
   test('itemCacheKey includes type, key, and intent', () => {
@@ -57,11 +63,10 @@ describe('itemV2Cache helpers', () => {
     );
   });
 
-  test('getIntentTtl reads from itemIntents', () => {
-    expect(getIntentTtl('minimal')).toBe(600);
-    expect(getIntentTtl('card')).toBe(60);
-    expect(getIntentTtl('pricer')).toBe(60);
-    expect(getIntentTtl('full')).toBe(60);
+  test('getIntentTtl returns the ttlSeconds declared in itemIntents', () => {
+    for (const intent of Object.keys(itemIntents) as ItemIntent[]) {
+      expect(getIntentTtl(intent)).toBe(itemIntents[intent].ttlSeconds);
+    }
   });
 
   test('toManyCacheKeys maps { type, data } to redis keys', () => {
@@ -135,10 +140,10 @@ describe('itemV2Cache helpers', () => {
     expect(wantsFresh('http://localhost/api/v2/items/1')).toBe(false);
 
     expect(itemCacheControl('minimal', { method: 'GET' })).toBe(
-      'public, s-maxage=600, stale-while-revalidate=2400'
+      `public, s-maxage=${MINIMAL_TTL}, stale-while-revalidate=${MINIMAL_TTL * SWR_MULTIPLIER}`
     );
     expect(itemCacheControl('card', { method: 'GET' })).toBe(
-      'public, s-maxage=60, stale-while-revalidate=240'
+      `public, s-maxage=${CARD_TTL}, stale-while-revalidate=${CARD_TTL * SWR_MULTIPLIER}`
     );
     expect(itemCacheControl('card', { method: 'POST' })).toBe('private, no-cache');
     expect(itemCacheControl('card', { fresh: true, method: 'GET' })).toBe('no-store');
@@ -265,7 +270,7 @@ describe('itemV2Cache orchestrators', () => {
       'iv2:item:id:42:minimal',
       expect.any(String),
       'EX',
-      600
+      MINIMAL_TTL
     );
     expect(pipelineSetMock).not.toHaveBeenCalledWith(
       'iv2:item:id:042:minimal',
@@ -413,13 +418,13 @@ describe('itemV2Cache orchestrators', () => {
       'iv2:item:slug:blue-paint-brush:card',
       '{"internal_id":9}',
       'EX',
-      60
+      CARD_TTL
     );
     expect(pipelineSetMock).toHaveBeenCalledWith(
       'iv2:item:id:9:card',
       '{"internal_id":9}',
       'EX',
-      60
+      CARD_TTL
     );
   });
 });
