@@ -43,12 +43,13 @@ const DashboardOptionsModal = (props: DashboardOptionsModalProps) => {
         <Switch.Root
           checked={checked}
           onCheckedChange={({ checked }) => handleSwitch(key, !!checked)}
+          ids={{ hiddenInput: key }}
           display="flex"
           alignItems="flex-start"
           gap={3}
           cursor="pointer"
         >
-          <Switch.HiddenInput id={key} />
+          <Switch.HiddenInput />
           <Switch.Control mt={0.5}>
             <Switch.Thumb />
           </Switch.Control>

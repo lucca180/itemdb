@@ -125,6 +125,107 @@ or:
 proxy_pass http://127.0.0.1:4001;
 ```
 
+## Site-wide rate limiting (Cloudflare + Nginx)
+
+Apply on the **server** (not in the blue/green snippet). Without restoring the real client IP, `$binary_remote_addr` is a Cloudflare edge IP and one bad client can throttle many users.
+
+### 1. Separate file in the `http` context
+
+Directives such as `set_real_ip_from`, `map`, and `limit_req_zone` only work in the `http` block. Put them in a separate file and load it with `include`.
+
+**Option A (recommended on Debian/Ubuntu):** create `/etc/nginx/conf.d/itemdb-rate-limit.conf`.  
+Stock `nginx.conf` already includes this inside `http { ... }`:
+
+```nginx
+include /etc/nginx/conf.d/*.conf;
+```
+
+In that case you do **not** need to edit `nginx.conf` — only create the file.
+
+**Option B:** another path with an explicit include:
+
+```nginx
+# inside http { } in /etc/nginx/nginx.conf
+include /etc/nginx/snippets/itemdb-http-rate-limit.conf;
+```
+
+File contents (e.g. `/etc/nginx/conf.d/itemdb-rate-limit.conf`):
+
+```nginx
+# Cloudflare IP ranges: https://www.cloudflare.com/ips/
+# Keep this list updated periodically.
+set_real_ip_from 173.245.48.0/20;
+set_real_ip_from 103.21.244.0/22;
+set_real_ip_from 103.22.200.0/22;
+set_real_ip_from 103.31.4.0/22;
+set_real_ip_from 141.101.64.0/18;
+set_real_ip_from 108.162.192.0/18;
+set_real_ip_from 190.93.240.0/20;
+set_real_ip_from 188.114.96.0/20;
+set_real_ip_from 197.234.240.0/22;
+set_real_ip_from 198.41.128.0/17;
+set_real_ip_from 162.158.0.0/15;
+set_real_ip_from 104.16.0.0/13;
+set_real_ip_from 104.24.0.0/14;
+set_real_ip_from 172.64.0.0/13;
+set_real_ip_from 131.0.72.0/22;
+
+set_real_ip_from 2400:cb00::/32;
+set_real_ip_from 2606:4700::/32;
+set_real_ip_from 2803:f800::/32;
+set_real_ip_from 2405:b500::/32;
+set_real_ip_from 2405:8100::/32;
+set_real_ip_from 2a06:98c0::/29;
+set_real_ip_from 2c0f:f248::/32;
+
+real_ip_header CF-Connecting-IP;
+real_ip_recursive on;
+
+# Empty key => nginx skips rate limiting for that request.
+# Add more exemptions here instead of new location blocks.
+map $uri $itemdb_limit_key {
+  default                 $binary_remote_addr;
+  ~^/api/health(/db)?$    "";
+  ~^/api/(v1/)?cache      "";
+  ~^/_next/               "";
+}
+
+# ~10 req/s sustained per client IP, with short burst for HTML/API.
+limit_req_zone $itemdb_limit_key zone=itemdb_site:20m rate=10r/s;
+limit_req_status 429;
+```
+
+Do not put a `server { }` in this file — only `http`-level directives. `limit_req` still belongs on the site (`location /`).
+
+### 2. Site `server` block — one `limit_req` on `location /`
+
+Exemptions live in the `map` above, so the proxy block stays unchanged except for `limit_req`:
+
+```nginx
+#PROXY-START/
+location / {
+  limit_req zone=itemdb_site burst=40 nodelay;
+
+  include /etc/nginx/snippets/itemdb-active-backend.conf;
+  # ... existing proxy_set_header / proxy_* settings ...
+}
+#PROXY-END/
+```
+
+No separate exempt `location` blocks are required. To allow another path later, add one line to the `map` in `/etc/nginx/conf.d/itemdb-rate-limit.conf`.
+
+### 3. Apply
+
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+Tune if needed:
+
+- Too many false `429` on normal browsing → raise `burst` (e.g. `60`) or add more `map` exemptions
+- Still too loose under crawl → lower to `rate=5r/s` and/or `burst=20`
+- Deploy only rewrites `/etc/nginx/snippets/itemdb-active-backend.conf`; do **not** put `limit_req_zone` / `map` inside that snippet
+
 ## Required server permissions
 
 The user used by GitHub Actions must be able to:

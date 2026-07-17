@@ -43,7 +43,7 @@ const GET = async (req: NextApiRequest, res: NextApiResponse) => {
     res.setHeader(
       'Cache-Control',
       isOfficial
-        ? 'max-age=0, s-maxage=600, stale-while-revalidate=1500'
+        ? 'max-age=0, s-maxage=1800, stale-while-revalidate=3600'
         : 'max-age=0, s-maxage=180, stale-while-revalidate=300'
     );
 

@@ -62,7 +62,7 @@
     "lodash": "^4.18.1",
     "mailgen": "^2.0.32",
     "next": "16.2.9",
-    "next-intl": "^4.3.9",
+    "next-intl": "^4.13.2",
     "next-seo": "^6.6.0",
     "next-sitemap": "^4.2.3",
     "nextjs-progressbar": "^0.0.16",

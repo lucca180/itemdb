@@ -1,12 +1,12 @@
 'use client';
 
-import { Button, Center, Flex, Icon, IconButton, Link, Text } from '@chakra-ui/react';
+import { Button, Center, Flex, Icon, IconButton, Text } from '@chakra-ui/react';
 import { useToast } from '@utils/theme/toast';
 import { useState } from 'react';
 import { AiFillEyeInvisible } from 'react-icons/ai';
 import { BiCopy, BiSearch } from 'react-icons/bi';
 import Color from 'color';
-import { Link as I18nLink } from '@i18n/navigation';
+import { useRouter } from '@i18n/navigation';
 import type { FullItemColors } from '@types';
 
 const colorKeysOrder: (keyof FullItemColors)[] = [
@@ -30,6 +30,7 @@ type ColorInfoCardPaletteProps = {
 
 export function ColorInfoCardPalette({ colors, labels }: ColorInfoCardPaletteProps) {
   const toast = useToast();
+  const router = useRouter();
   const [showMore, setShowMore] = useState(false);
 
   const isInvisible = Object.values(colors).every(
@@ -49,6 +50,10 @@ export function ColorInfoCardPalette({ colors, labels }: ColorInfoCardPalettePro
       duration: 2000,
       isClosable: true,
     });
+  };
+
+  const handleSearch = (hex: string) => {
+    router.push('/search?s=' + encodeURIComponent(hex));
   };
 
   const toggleShowMore = () => {
@@ -97,12 +102,12 @@ export function ColorInfoCardPalette({ colors, labels }: ColorInfoCardPalettePro
               </Flex>
               <Flex justifyContent={'center'} alignItems="center" gap={2}>
                 <IconButton
-                  asChild
                   aria-label="Search Hex"
                   variant="subtle"
                   size="xs"
                   color={isLight ? 'blackAlpha.800' : 'whiteAlpha.800'}
                   colorPalette={isLight ? 'blackAlpha' : 'whiteAlpha'}
+                  onClick={() => handleSearch(colors[key].hex)}
                   minW={6}
                   h={6}
                   css={{
@@ -112,11 +117,7 @@ export function ColorInfoCardPalette({ colors, labels }: ColorInfoCardPalettePro
                     },
                   }}
                 >
-                  <Link asChild rel="nofollow">
-                    <I18nLink href={'/search?s=' + encodeURIComponent(colors[key].hex)}>
-                      <BiSearch />
-                    </I18nLink>
-                  </Link>
+                  <BiSearch />
                 </IconButton>
                 <IconButton
                   aria-label="Copy Hex"
