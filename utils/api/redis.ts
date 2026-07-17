@@ -26,21 +26,34 @@ export const API_ERROR_CODES = {
   limitExceeded: 'limit-exceeded',
 } as const;
 
-export let redis: RedisRaw;
+// Next.js may bundle this module into separate server chunks; globalThis keeps
+// one ioredis connection per logical DB per process (same pattern as prisma.ts).
+const globalForRedis = globalThis as unknown as {
+  redis: RedisRaw | undefined;
+  redisCache: RedisRaw | undefined;
+};
 
-if (
+const redisOpts =
   process.env.NODE_ENV !== 'development' &&
   process.env.REDIS_PORT &&
   process.env.REDIS_HOST &&
   process.env.REDIS_PASSWORD
-) {
-  redis = new RedisRaw({
-    port: Number(process.env.REDIS_PORT),
-    host: process.env.REDIS_HOST,
-    password: process.env.REDIS_PASSWORD,
-    enableAutoPipelining: true,
-  });
-}
+    ? {
+        port: Number(process.env.REDIS_PORT),
+        host: process.env.REDIS_HOST,
+        password: process.env.REDIS_PASSWORD,
+        enableAutoPipelining: true,
+      }
+    : null;
+
+export const redis =
+  globalForRedis.redis ??
+  (redisOpts ? (globalForRedis.redis = new RedisRaw(redisOpts)) : undefined);
+
+/** ItemV2 HTTP cache — same Redis host, logical DB 1 (rate limit stays on DB 0). */
+export const redisCache =
+  globalForRedis.redisCache ??
+  (redisOpts ? (globalForRedis.redisCache = new RedisRaw({ ...redisOpts, db: 1 })) : undefined);
 
 export const createSession = (logged = false) => {
   const { LOGGED_LIMIT, MIN_LIMIT_COUNT, SESSION_EXPIRE, SESSION_EXPIRE_LOGGED } = API_CONST;

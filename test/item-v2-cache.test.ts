@@ -26,12 +26,13 @@ vi.mock('@app/server/items/v2', async (importOriginal) => {
   };
 });
 
-vi.mock('@utils/api/redis', () => ({
-  redis: {
+vi.mock('@utils/api/redis', () => {
+  const client = {
     mget: mgetMock,
     pipeline: pipelineMock,
-  },
-}));
+  };
+  return { redis: client, redisCache: client };
+});
 
 import {
   ITEM_CACHE_BATCH_MAX,

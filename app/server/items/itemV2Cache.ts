@@ -18,7 +18,7 @@ import {
   type FindManyItemsV2Query,
   type FindManyItemsV2Type,
 } from '@app/server/items/v2';
-import { redis } from '@utils/api/redis';
+import { redisCache as redis } from '@utils/api/redis';
 import { getIntentTtl, type ItemIntent, type ItemV2 } from '@types';
 
 /** Which identifier field the request used — mirrors `resolveLookup` in v2.ts. */
@@ -45,7 +45,7 @@ export type CachedManyResult = {
 };
 
 /** Above this size, `many` skips Redis (mget cost can beat a single SQL). */
-export const ITEM_CACHE_BATCH_MAX = 1000;
+export const ITEM_CACHE_BATCH_MAX = 10000;
 /** Fail-open: slow Redis must not stall the request longer than this. */
 export const ITEM_CACHE_TIMEOUT_MS = 150;
 
