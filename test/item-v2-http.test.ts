@@ -27,7 +27,11 @@ vi.mock('@utils/api/redis', async () => {
 import { GET as getMany, POST as postMany } from '@app/api/v2/items/many/route';
 import { GET as getById } from '@app/api/v2/items/[id_name]/route';
 import { parseManyItemsV2Query, parseManyItemsV2SearchParams } from '@app/api/v2/items/parse';
+import { itemCacheControl } from '@app/server/items/itemV2Cache';
 import { parseItemIntent } from '@types';
+
+/** Expected GET header for the default `minimal` intent — derived, never hardcoded. */
+const MINIMAL_GET_CACHE_CONTROL = itemCacheControl('minimal', { method: 'GET' });
 
 describe('ItemV2 HTTP parsing', () => {
   test('parses intents from itemIntents with a default fallback', () => {
@@ -81,9 +85,7 @@ describe('ItemV2 HTTP routes', () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(response.headers.get('Cache-Control')).toBe(
-      'public, s-maxage=600, stale-while-revalidate=2400'
-    );
+    expect(response.headers.get('Cache-Control')).toBe(MINIMAL_GET_CACHE_CONTROL);
     expect(getCachedManyItemsV2Mock).toHaveBeenCalledWith(
       { type: 'id', data: ['1'] },
       {
@@ -186,9 +188,7 @@ describe('ItemV2 HTTP routes', () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(response.headers.get('Cache-Control')).toBe(
-      'public, s-maxage=600, stale-while-revalidate=2400'
-    );
+    expect(response.headers.get('Cache-Control')).toBe(MINIMAL_GET_CACHE_CONTROL);
     expect(getCachedItemV2Mock).toHaveBeenCalledWith(42, { intent: 'minimal', fresh: false });
     expect(trackItemQuotaMock).toHaveBeenCalledWith(1, expect.any(NextRequest));
     expect(body).toEqual({ internal_id: 42, name: 'Test Item' });
