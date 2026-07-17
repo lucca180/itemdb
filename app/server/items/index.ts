@@ -5,6 +5,7 @@ export {
   getManyItemsV2,
   mapItemV2,
   type FindManyItemsV2Query,
+  type FindManyItemsV2Type,
   type GetManyItemsV2Options,
   type MapItemV2Options,
   type RawItemV2Row,

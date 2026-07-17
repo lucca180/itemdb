@@ -106,22 +106,29 @@ describe('ItemV2 query planning', () => {
   test('getMany maps rows and preserves v1 identifier keys', async () => {
     prismaMock.$queryRaw.mockResolvedValueOnce([completeRow()]);
 
-    const items = await getManyItemsV2({ id: [42] }, { intent: 'minimal', limit: 1 });
+    const items = await getManyItemsV2({ type: 'id', data: [42] }, { intent: 'minimal', limit: 1 });
 
     expect(prismaMock.$queryRaw).toHaveBeenCalledOnce();
     expect(items['42']).toEqual(mapItemV2(completeRow(), 'minimal'));
   });
 
-  test('uses the same non-empty filter for querying and response keys', async () => {
+  test('uses the query type for both filtering and response keys', async () => {
     prismaMock.$queryRaw.mockResolvedValueOnce([completeRow()]);
 
     const items = await getManyItemsV2(
-      { id: [], slug: ['test-item'] },
+      { type: 'slug', data: ['test-item'] },
       { intent: 'minimal', limit: 1 }
     );
 
     expect(items['test-item']).toEqual(mapItemV2(completeRow(), 'minimal'));
     expect(items['42']).toBeUndefined();
+  });
+
+  test('empty data returns no rows without querying', async () => {
+    const items = await getManyItemsV2({ type: 'id', data: [] }, { intent: 'minimal', limit: 1 });
+
+    expect(prismaMock.$queryRaw).not.toHaveBeenCalled();
+    expect(items).toEqual({});
   });
 
   test('getItemV2 looks up by id and returns a single mapped item', async () => {

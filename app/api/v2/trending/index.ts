@@ -50,7 +50,10 @@ export async function getTrendingItemsV2(limit: number): Promise<ItemV2For<'card
     };
   });
 
-  const items = await getManyItemsV2({ slug: Object.keys(popularItemsStats) }, { intent: 'card' });
+  const items = await getManyItemsV2(
+    { type: 'slug', data: Object.keys(popularItemsStats) },
+    { intent: 'card' }
+  );
 
   const sorted = Object.values(items).sort((a, b) => {
     if (popularItemsStats[a.slug!]?.pageviews > popularItemsStats[b.slug!]?.pageviews) return -1;

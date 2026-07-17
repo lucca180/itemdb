@@ -33,7 +33,8 @@ export async function getLatestPricedItemsV2(
 
   const items = await getManyItemsV2(
     {
-      id: ids,
+      type: 'id',
+      data: ids,
     },
     { intent: 'card' }
   );

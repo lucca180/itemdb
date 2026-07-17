@@ -30,7 +30,8 @@ export async function getLatestItemsV2(
 
   const items = await getManyItemsV2(
     {
-      id: result.map((data) => data.internal_id.toString()),
+      type: 'id',
+      data: result.map((data) => data.internal_id.toString()),
     },
     { intent: 'card' }
   );

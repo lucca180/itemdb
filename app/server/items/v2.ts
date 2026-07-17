@@ -14,18 +14,46 @@ import { asJsonDate, asNumber, asString, type RawItemV2Row } from '@app/server/i
 export type { MapItemV2Options } from '@app/server/items/itemV2Price';
 export type { RawItemV2Row } from '@app/server/items/itemV2Raw';
 
-type Identifier = string | number;
+type RawIdValue = string | number;
 type JoinName = 'color' | 'npPrice' | 'ncValue' | 'owlsPrice' | 'ncMall';
 type ColumnName = keyof typeof RAW_COLUMNS;
 
-export type FindManyItemsV2Query = {
-  id?: Identifier[];
-  item_id?: Identifier[];
-  name_image_id?: [string, string][];
-  image_id?: string[];
-  name?: string[];
-  slug?: string[];
-};
+/**
+ * Canonical list of lookup kinds for `getManyItemsV2` — one active filter per query.
+ * Single source of truth: HTTP parsing (`parse.ts`) and the cache layer
+ * (`itemV2Cache.ts`) import this instead of re-declaring the same literals.
+ */
+export const FIND_MANY_ITEMS_V2_TYPES = [
+  'id',
+  'item_id',
+  'name_image_id',
+  'image_id',
+  'name',
+  'slug',
+] as const;
+
+export type FindManyItemsV2Type = (typeof FIND_MANY_ITEMS_V2_TYPES)[number];
+
+/**
+ * Batch lookup: which field to filter on + the values.
+ * Response keys match `data` encoding for that `type` (see `resolveLookup`).
+ */
+export type FindManyItemsV2Query =
+  | { type: 'id'; data: RawIdValue[] }
+  | { type: 'item_id'; data: RawIdValue[] }
+  | { type: 'name_image_id'; data: [string, string][] }
+  | { type: 'image_id'; data: string[] }
+  | { type: 'name'; data: string[] }
+  | { type: 'slug'; data: string[] };
+
+/**
+ * Redis/response key for a `name_image_id` pair — the one lookup kind whose
+ * encoding isn't just `String(value)`. Shared by `resolveLookup` (below) and
+ * the cache layer so the two never drift apart.
+ */
+export function encodeNameImageKey(name: string, imageId: string): string {
+  return `${encodeURI(name.toLowerCase())}_${imageId}`;
+}
 
 export type GetManyItemsV2Options<I extends ItemIntent> = {
   intent?: I;
@@ -227,67 +255,59 @@ export function getItemV2QueryPlan(intent: ItemIntent) {
 
 type ResolvedLookup = {
   where: Prisma.Sql;
-  getKey: (raw: RawItemV2Row) => string;
+  encodeKey: (raw: RawItemV2Row) => string;
 };
 
 /**
- * Resolves filter precedence and response indexing together. Keeping both in
- * one branch prevents the WHERE clause and result key from drifting apart.
+ * Builds WHERE + response key encoder for a `{ type, data }` query.
+ * Keeping both in one switch prevents the filter and result keys from drifting.
  */
 function resolveLookup(query: FindManyItemsV2Query): ResolvedLookup | null {
-  if (query.id?.length) {
-    return {
-      where: Prisma.sql`a.internal_id IN (${Prisma.join(query.id)})`,
-      getKey: (raw) => String(raw.internal_id),
-    };
-  }
+  if (!query.data.length) return null;
 
-  if (query.item_id?.length) {
-    return {
-      where: Prisma.sql`a.item_id IN (${Prisma.join(query.item_id)})`,
-      getKey: (raw) => String(raw.item_id),
-    };
+  switch (query.type) {
+    case 'id':
+      return {
+        where: Prisma.sql`a.internal_id IN (${Prisma.join(query.data)})`,
+        encodeKey: (raw) => String(raw.internal_id),
+      };
+    case 'item_id':
+      return {
+        where: Prisma.sql`a.item_id IN (${Prisma.join(query.data)})`,
+        encodeKey: (raw) => String(raw.item_id),
+      };
+    case 'name_image_id': {
+      const tuples = query.data.map(([name, imageId]) => Prisma.sql`(${name}, ${imageId})`);
+      return {
+        where: Prisma.sql`
+          (a.name, a.image_id) IN (${Prisma.join(tuples)})
+          AND a.canonical_id IS NULL
+        `,
+        encodeKey: (raw) => encodeNameImageKey(String(raw.name), String(raw.image_id)),
+      };
+    }
+    case 'image_id':
+      return {
+        where: Prisma.sql`
+          a.image_id IN (${Prisma.join(query.data)})
+          AND a.canonical_id IS NULL
+        `,
+        encodeKey: (raw) => String(raw.image_id),
+      };
+    case 'name':
+      return {
+        where: Prisma.sql`
+          a.name IN (${Prisma.join(query.data)})
+          AND a.canonical_id IS NULL
+        `,
+        encodeKey: (raw) => String(raw.name),
+      };
+    case 'slug':
+      return {
+        where: Prisma.sql`a.slug IN (${Prisma.join(query.data)})`,
+        encodeKey: (raw) => String(raw.slug),
+      };
   }
-
-  if (query.name_image_id?.length) {
-    const tuples = query.name_image_id.map(([name, imageId]) => Prisma.sql`(${name}, ${imageId})`);
-    return {
-      where: Prisma.sql`
-        (a.name, a.image_id) IN (${Prisma.join(tuples)})
-        AND a.canonical_id IS NULL
-      `,
-      getKey: (raw) => `${encodeURI(String(raw.name).toLowerCase())}_${String(raw.image_id)}`,
-    };
-  }
-
-  if (query.image_id?.length) {
-    return {
-      where: Prisma.sql`
-        a.image_id IN (${Prisma.join(query.image_id)})
-        AND a.canonical_id IS NULL
-      `,
-      getKey: (raw) => String(raw.image_id),
-    };
-  }
-
-  if (query.name?.length) {
-    return {
-      where: Prisma.sql`
-        a.name IN (${Prisma.join(query.name)})
-        AND a.canonical_id IS NULL
-      `,
-      getKey: (raw) => String(raw.name),
-    };
-  }
-
-  if (query.slug?.length) {
-    return {
-      where: Prisma.sql`a.slug IN (${Prisma.join(query.slug)})`,
-      getKey: (raw) => String(raw.slug),
-    };
-  }
-
-  return null;
 }
 
 function mapType(raw: RawItemV2Row): ItemV2['type'] {
@@ -416,7 +436,7 @@ export async function getItemV2<I extends ItemIntent = 'full'>(
 
 /**
  * Fetches ItemV2 records using only the columns and JOINs required by intent.
- * Filters keep v1's precedence so callers can migrate without lookup changes.
+ * Pass a single `{ type, data }` lookup — response keys follow that type's encoding.
  */
 export async function getManyItemsV2<I extends ItemIntent = 'full'>(
   query: FindManyItemsV2Query,
@@ -435,7 +455,7 @@ export async function getManyItemsV2<I extends ItemIntent = 'full'>(
 
   const items: Record<string, ItemV2For<I>> = {};
   for (const row of rows) {
-    items[lookup.getKey(row)] = mapItemV2(row, intent);
+    items[lookup.encodeKey(row)] = mapItemV2(row, intent);
   }
 
   return items;

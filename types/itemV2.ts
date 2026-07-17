@@ -78,11 +78,15 @@ const PRICER_FIELDS = [
 
 export const ALL_ITEM_V2_FIELDS = 'all' as const;
 
+/**
+ * Central intent registry: response fields + Redis/CDN TTL (`ttlSeconds`).
+ * `minimal` lasts longer (no volatile `price`); priced intents refresh every 60s.
+ */
 export const itemIntents = {
-  minimal: { fields: MINIMAL_FIELDS },
-  card: { fields: CARD_FIELDS },
-  pricer: { fields: PRICER_FIELDS },
-  full: { fields: ALL_ITEM_V2_FIELDS },
+  minimal: { fields: MINIMAL_FIELDS, ttlSeconds: 600 },
+  card: { fields: CARD_FIELDS, ttlSeconds: 60 },
+  pricer: { fields: PRICER_FIELDS, ttlSeconds: 60 },
+  full: { fields: ALL_ITEM_V2_FIELDS, ttlSeconds: 60 },
 } as const;
 
 export type ItemIntent = keyof typeof itemIntents;
@@ -100,6 +104,11 @@ export type ItemV2For<I extends ItemIntent> = I extends ItemIntent
 
 export function getIntentFields<I extends ItemIntent>(intent: I): IntentFields<I> {
   return itemIntents[intent].fields;
+}
+
+/** Redis EX + CDN `s-maxage` for this intent (seconds). */
+export function getIntentTtl(intent: ItemIntent): number {
+  return itemIntents[intent].ttlSeconds;
 }
 
 export function isItemIntent(value: unknown): value is ItemIntent {

@@ -1,11 +1,17 @@
-import { getItemV2 } from '@app/server/items/v2';
+import { getCachedItemV2, itemCacheControl, wantsFresh } from '@app/server/items/itemV2Cache';
+import { trackItemQuota } from '@utils/api/redis';
 import { parseItemIntent } from '@types';
+import type { NextRequest } from 'next/server';
 
 type RouteContext = {
   params: Promise<{ id_name: string }>;
 };
 
-export async function GET(request: Request, context: RouteContext) {
+/**
+ * GET /api/v2/items/[id_name]
+ * Thin handler: parse → cache-aside → quota on miss → wire-ready JSON body.
+ */
+export async function GET(request: NextRequest, context: RouteContext) {
   const { id_name } = await context.params;
   if (!id_name) {
     return Response.json({ error: 'Invalid Request' }, { status: 400 });
@@ -18,11 +24,28 @@ export async function GET(request: Request, context: RouteContext) {
   }
 
   const idOrName = Number.isNaN(Number(id_name)) ? id_name : Number(id_name);
-  const item = await getItemV2(idOrName, { intent });
+  const fresh = wantsFresh(request.url);
+  const result = await getCachedItemV2(idOrName, { intent, fresh });
 
-  if (!item) {
-    return Response.json({ error: 'Item not found' }, { status: 404 });
+  if (result.status === 'not_found') {
+    return Response.json(
+      { error: 'Item not found' },
+      // Don't let CDNs cache 404s
+      { status: 404, headers: { 'Cache-Control': 'no-store' } }
+    );
   }
 
-  return Response.json(item);
+  // Hits are free; misses (and ?fresh=1) count toward the API quota.
+  if (result.status === 'miss') {
+    await trackItemQuota(1, request);
+  }
+
+  // `result.body` is already a JSON string — avoid Response.json() re-stringify.
+  return new Response(result.body, {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': itemCacheControl(intent, { fresh, method: 'GET' }),
+    },
+  });
 }

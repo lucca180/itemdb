@@ -10,7 +10,8 @@ export async function getNCMallItemsDataV2(
 
   const items = await getManyItemsV2(
     {
-      id: ncMallData.map((data) => data.item_iid.toString()),
+      type: 'id',
+      data: ncMallData.map((data) => data.item_iid.toString()),
     },
     { intent: 'card' }
   );

@@ -1,5 +1,9 @@
 import queryString from 'query-string';
-import type { FindManyItemsV2Query } from '@app/server/items/v2';
+import {
+  FIND_MANY_ITEMS_V2_TYPES,
+  type FindManyItemsV2Query,
+  type FindManyItemsV2Type,
+} from '@app/server/items/v2';
 
 function asStringArray(value: unknown): string[] | undefined {
   if (value === undefined || value === null) return undefined;
@@ -18,26 +22,28 @@ function asNameImagePairs(value: unknown): [string, string][] | undefined {
   return pairs;
 }
 
-export function parseManyItemsV2Query(raw: Record<string, unknown>): FindManyItemsV2Query | null {
-  const query: FindManyItemsV2Query = {
-    id: asStringArray(raw.id),
-    item_id: asStringArray(raw.item_id),
-    name_image_id: asNameImagePairs(raw.name_image_id),
-    image_id: asStringArray(raw.image_id),
-    name: asStringArray(raw.name),
-    slug: asStringArray(raw.slug),
-  };
+function isLookupType(value: unknown): value is FindManyItemsV2Type {
+  return (
+    typeof value === 'string' && (FIND_MANY_ITEMS_V2_TYPES as readonly string[]).includes(value)
+  );
+}
 
-  const hasFilter = [
-    query.id,
-    query.item_id,
-    query.name_image_id,
-    query.image_id,
-    query.name,
-    query.slug,
-  ].some((value) => !!value?.length);
+/**
+ * v2 contract: `{ type, data }` only.
+ * GET example: `?type=id&data[]=1&data[]=2&intent=minimal`
+ */
+export function parseManyItemsV2Query(
+  rawParams: Record<string, unknown>
+): FindManyItemsV2Query | null {
+  if (!isLookupType(rawParams.type) || rawParams.data === undefined) return null;
 
-  return hasFilter ? query : null;
+  if (rawParams.type === 'name_image_id') {
+    const data = asNameImagePairs(rawParams.data);
+    return data?.length ? { type: 'name_image_id', data } : null;
+  }
+
+  const data = asStringArray(rawParams.data);
+  return data?.length ? ({ type: rawParams.type, data } as FindManyItemsV2Query) : null;
 }
 
 export function parseManyItemsV2SearchParams(url: string): Record<string, unknown> {

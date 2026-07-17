@@ -115,7 +115,7 @@ Actual removal only after hot-path migration — not in this wave.
 | `pricer` | minimal + rarity + price |
 | `full` | every `ItemV2` field (resolved from the query-engine field registry — not hand-listed) |
 
-Single registry: `itemIntents` in [`types/itemV2.ts`](../types/itemV2.ts) drives `ItemIntent`, `ItemV2For<>`, field lists, and HTTP validation (`parseItemIntent`).  
+Single registry: `itemIntents` in [`types/itemV2.ts`](../types/itemV2.ts) drives `ItemIntent`, `ItemV2For<>`, field lists, HTTP validation (`parseItemIntent`), and cache TTL (`ttlSeconds` / `getIntentTtl`).  
 **JOINs** are decided by the query engine from the fields each intent needs — not declared in the types registry.
 
 **Deferred:** `+sales` / `SaleStats` on the ItemV2 envelope — use `/saleStats` until a later wave.
@@ -131,10 +131,11 @@ No HTTP intent for `findAt` — always client-side.
 ```
 types/
   types.d.ts                 # ROOT types.d.ts MOVED INTACT (do not refactor the legacy blob)
-  itemV2.ts                  # ItemV2 contract, intents (fields), ItemV2For
+  itemV2.ts                  # ItemV2 contract, intents (fields + ttlSeconds), ItemV2For
   index.ts                   # @types alias entry: re-export legacy + itemV2
 
 app/server/items/v2.ts       # query engine + mapItemV2 + getManyItemsV2 + getItemV2
+app/server/items/itemV2Cache.ts  # Redis/CDN cache-aside for HTTP v2 item routes
 app/server/items/itemV2Price.ts  # isolated price-union mapping
 app/server/items/itemV2Raw.ts    # raw SQL normalization helpers
 app/server/items/getItemForPage.ts  # App Router item-page loader (legacy ItemData)
@@ -174,7 +175,7 @@ flowchart TD
 
 **2. Create ItemV2 TypeScript helpers under `/types`**
 
-- `types/itemV2.ts`: contract (`ItemV2`, `ItemPriceField`, …), `itemIntents` (fields only), `ItemIntent`, `ItemV2For<>` — TypeScript only (no Prisma/HTTP). JOINs belong to the query engine.
+- `types/itemV2.ts`: contract (`ItemV2`, `ItemPriceField`, …), `itemIntents` (fields + `ttlSeconds`), `ItemIntent`, `ItemV2For<>` — TypeScript only (no Prisma/HTTP). JOINs belong to the query engine.
 - `types/index.ts` re-exports legacy + `itemV2`.
 
 **3. Rename App Router loader**
@@ -229,7 +230,7 @@ import { getItemFindAtLinksV2 } from '@utils/item/v2';
 
 | Route | Methods | Default intent | Notes |
 |-------|---------|----------------|-------|
-| `/api/v2/items/many` | `GET`, `POST` | `minimal` | Same lookup keys as v1 (`id`, `item_id`, `name_image_id`, `image_id`, `name`, `slug`) + `intent` |
+| `/api/v2/items/many` | `GET`, `POST` | `minimal` | Lookup `{ type, data }` only (`type`: `id` \| `item_id` \| `name_image_id` \| `image_id` \| `name` \| `slug`) + `intent`. Example GET: `?type=id&data[]=1&data[]=2`. |
 | `/api/v2/items/[id_name]` | `GET` | `minimal` | Lookup by `internal_id`, `slug`, or `name`; `404` when missing. No PATCH/DELETE (stay on v1) |
 
 Query/body: `?intent=` any key of `itemIntents` (`minimal` \| `card` \| `full` \| `pricer`). Rate limiting remains in `proxy.ts` (`/api/:path*`).
@@ -254,23 +255,26 @@ Takeaway: `minimal` is clearly cheaper; `card` payload is ~3× smaller than v1 e
 
 **Why before Search v2:** Search v2 will reuse the same `getManyItemsV2` engine and intents; landing the cache primitives (Redis key shape, TTL-per-intent, bypass) first means Search v2 can plug into an already-proven pattern instead of inventing its own.
 
+**Implementation:** [`app/server/items/itemV2Cache.ts`](../app/server/items/itemV2Cache.ts) (`getCachedItemV2` / `getCachedManyItemsV2`).
+
 **Design:**
 
-- Redis key: `iv2:item:{idOrSlugRaw}:{intent}` — one entry per intent (`minimal`/`card`/`pricer`/`full`), never derived/shared across intents (each intent has a different field set — see Intents table above).
-- TTL fixed per intent, no invalidation (mutation events don't need to know this cache exists):
+- Redis key: `iv2:item:{type}:{key}:{intent}` — `type` is the active lookup (`id` / `item_id` / `name` / `slug` / `image_id` / `name_image_id` / `id_name`). The `{key}` segment is always lowercased. One entry per intent; never derived across intents. Writes also set an `id:{internal_id}` alias (same JSON string) so single-item and `many?type=id&data[]=` share entries. HTTP response keys remain DB-canonical (v1 parity).
+- TTL lives on [`itemIntents`](../types/itemV2.ts) as `ttlSeconds` (`getIntentTtl`); no tag invalidation (TTL-only):
 
   | Intent | TTL | Why |
   |--------|----:|-----|
   | `minimal` | 600s | no `price` field — only changes on admin edits |
   | `card` / `pricer` / `full` | 60s | all include `price`, the most volatile field |
 
-- `items/many`: cache-aside **per item**, not per ID-combination — `mget` the batch, call `getManyItemsV2` only for the misses, pipeline `SET … EX <ttl>` the fresh ones back. Shares cache entries with `items/[id_name]` (same key shape).
-- CDN: `Cache-Control: public, s-maxage=<TTL>, stale-while-revalidate=<~4x TTL>` on `GET` responses only (same per-intent TTL as Redis). `POST /items/many` is Redis-only (not CDN-cacheable). Requires a Cloudflare Cache Rule for `/api/v2/items/*` to respect the origin header — outside this repo.
-- Bypass: single query param (name TBD, e.g. `?fresh=1`) skips the Redis read, forces a Prisma read, returns `Cache-Control: no-store`, but still writes the fresh value back to Redis (write-through) and still counts toward quota.
-- Quota: v2 has **no quota counting today** (only v1 does, via `redis_setDataCount`). This phase adds it, wired so cache **hits don't consume quota** — only misses (real Prisma reads) increment it.
-- Redis must fail fast (short timeout, try/catch, fallback to direct Prisma) so an unhealthy Redis is never worse than no cache; same guard pattern as [`utils/api/redis.ts`](../utils/api/redis.ts) (`if (!redis) return`).
+- Redis stores per-item JSON under **DB-canonical keys** (same indexing as v1 / `getManyItemsV2`). Hits are parsed, merged into a record, and the response is `JSON.stringify`'d once. Redis writes are scheduled with Next.js `after()` so they do not block the response.
+- `items/many`: cache-aside **per item** when `keys.length <= ITEM_CACHE_BATCH_MAX` (128) — `mget` the batch, Prisma only for misses, `scheduleItemCacheWrite` for fresh entries. Above the batch max → Prisma only (no Redis read/write).
+- CDN: `Cache-Control: public, s-maxage=<TTL>, stale-while-revalidate=<4× TTL>` on `GET` 200 only. `POST /items/many` → `private, no-cache` (Redis-only). Requires a Cloudflare Cache Rule for `/api/v2/items/*` to respect the origin header — outside this repo.
+- Bypass: `?fresh=1` skips the Redis read, forces Prisma, returns `Cache-Control: no-store`, still schedules a Redis write, and counts toward quota.
+- Quota: `trackItemQuota` on App Router — cache **hits don't consume quota**; only Prisma reads (`dbCount` / single `miss`) increment it.
+- Redis must fail fast (short timeout, try/catch, fallback to direct Prisma); same guard pattern as [`utils/api/redis.ts`](../utils/api/redis.ts) (`if (!redis) return`).
 
-**Done when:** both routes serve `Cache-Control` + read/write Redis by intent; hit vs miss latency benchmarked; quota counter live for v2 misses; bypass param documented in the public API reference.
+**Done when:** ~~both routes serve `Cache-Control` + read/write Redis by intent; quota on miss; `fresh=1` bypass~~ — implemented. Remaining: hit vs miss latency benchmarked in prod; bypass noted in public API reference (Phase 7).
 
 ---
 
@@ -343,5 +347,5 @@ Takeaway: `minimal` is clearly cheaper; `card` payload is ~3× smaller than v1 e
 1. ~~**Phase 0:** move `types.d.ts` → `/types` + `types/itemV2.ts` + tsconfig + rename loader.~~
 2. ~~**Phase 1:** `app/server/items/v2.ts` (query + mapper).~~
 3. ~~**Phase 2:** `app/api/v2/items/many` + `[id_name]` Route Handlers + benchmark vs v1.~~
-4. **Phase 3:** CDN + Redis cache (per-intent TTL, bypass param, quota-on-miss) — before Search v2.
+4. ~~**Phase 3:** CDN + Redis cache (per-intent TTL, bypass param, quota-on-miss).~~
 5. **Phase 4:** `app/api/v2/search` (default intent `card`).
