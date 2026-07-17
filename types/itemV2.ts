@@ -88,13 +88,13 @@ export const ALL_ITEM_V2_FIELDS = 'all' as const;
 
 /**
  * Central intent registry: response fields + Redis/CDN TTL (`ttlSeconds`).
- * `minimal` lasts longer (no volatile `price`); priced intents refresh every 60s.
+ * `minimal` lasts longer (no volatile `price`);
  */
 export const itemIntents = {
-  minimal: { fields: MINIMAL_FIELDS, ttlSeconds: 600 },
-  card: { fields: CARD_FIELDS, ttlSeconds: 60 },
-  pricer: { fields: PRICER_FIELDS, ttlSeconds: 60 },
-  full: { fields: ALL_ITEM_V2_FIELDS, ttlSeconds: 60 },
+  minimal: { fields: MINIMAL_FIELDS, ttlSeconds: 2 * 60 * 60 },
+  card: { fields: CARD_FIELDS, ttlSeconds: 15 * 60 },
+  pricer: { fields: PRICER_FIELDS, ttlSeconds: 60 * 60 },
+  full: { fields: ALL_ITEM_V2_FIELDS, ttlSeconds: 30 * 60 },
 } as const;
 
 export type ItemIntent = keyof typeof itemIntents;
