@@ -41,6 +41,11 @@ flowchart LR
 Lives in [`types/itemV2.ts`](../types/itemV2.ts) (not in the legacy blob). Re-exported via `@types`.
 
 ```ts
+export type ItemSaleStatusV2 = {
+  status: 'ets' | 'regular' | 'hts';
+  addedAt: string;
+};
+
 export type ItemV2 = {
   internal_id: number;
   item_id: number | null;
@@ -56,6 +61,7 @@ export type ItemV2 = {
   status: string | null;
   colorHex: string | null;
   price: ItemPriceField;
+  saleStatus: ItemSaleStatusV2 | null;
   slug: string | null;
   comment: string | null;
   canonical_id: number | null;
@@ -74,6 +80,7 @@ export type ItemV2 = {
 | `color` (lab/rgb/hsv/hex/…) | `colorHex` |
 | `price` + `ncValue` + `mallData` | discriminated `price` |
 | `inflated: boolean` | `price.flags` |
+| `saleStatus` (`sold`/`total`/`percent`/`type`/…) | slim `{ status, addedAt }` on `pricer` / `full` |
 
 ### Outside the core envelope (locked)
 
@@ -81,7 +88,7 @@ export type ItemV2 = {
 |---------|----------------|
 | RGB / LAB / HSV | Prefer hex in CSS (`colorHex` / 8-digit alpha). RGB helpers only if a caller truly needs them |
 | `findAt` | **Client** (`getItemFindAtLinks` adapted for `ItemV2`) |
-| `saleStatus` | **Deferred** — keep existing `/saleStats` sub-route for now; `+sales` intent later |
+| Full sale stats (`sold`/`percent`/…) | `/api/v1/items/[id]/saleStats` — ItemV2 only embeds the slim badge |
 
 ### `price` mapping rules (mapper)
 
@@ -112,13 +119,13 @@ Actual removal only after hot-path migration — not in this wave.
 |--------|----------|
 | `minimal` | ids, name, slug, image, type, flags, description, status |
 | `card` | + colorHex, price, rarity, category, estVal |
-| `pricer` | minimal + rarity + price |
+| `pricer` | ids, image, name, slug, type, status, rarity, price, **saleStatus** |
 | `full` | every `ItemV2` field (resolved from the query-engine field registry — not hand-listed) |
 
 Single registry: `itemIntents` in [`types/itemV2.ts`](../types/itemV2.ts) drives `ItemIntent`, `ItemV2For<>`, field lists, HTTP validation (`parseItemIntent`), and cache TTL (`ttlSeconds` / `getIntentTtl`).  
 **JOINs** are decided by the query engine from the fields each intent needs — not declared in the types registry.
 
-**Deferred:** `+sales` / `SaleStats` on the ItemV2 envelope — use `/saleStats` until a later wave.
+`saleStatus` is slim (`{ status: 'ets' \| 'regular' \| 'hts', addedAt }`) — JOIN on latest `SaleStats` (excludes `unknown`). Read-only; no refresh side-effects. Full sold/percent details stay on `/saleStats`. There is **no** `+sales` intent.
 
 No HTTP intent for `findAt` — always client-side.
 
@@ -318,7 +325,7 @@ Takeaway: `minimal` is clearly cheaper; `card` payload is ~3× smaller than v1 e
 | `getRestockProfit` / `getRestockProfitV2` | np price + category/rarity/estVal |
 | `ItemCard` / `ItemCardV2` | intent `card` (`components/Items/v2/ItemCardV2.tsx`, client component — `onSelect`/`onListAction` are plain client callbacks, not Server Actions, so it can't be a real Server Component) |
 | `FindAtCard` | core + client findAt + colorHex→rgb |
-| Item page | `full` (sales via `/saleStats` until later) |
+| Item page | `full` (includes slim `saleStatus`; full stats via `/saleStats` if needed) |
 | Search / Home | `card` |
 | Widget | `minimal` |
 
@@ -339,7 +346,6 @@ Takeaway: `minimal` is clearly cheaper; `card` payload is ~3× smaller than v1 e
 - Renaming `internal_id` → `id`
 - Embedding findAt/RGB in the HTTP envelope
 - Removing `ItemData` (deprecate only)
-- `+sales` / embedding `saleStatus` in ItemV2 (later wave; use `/saleStats`)
 - Tag-based cache invalidation for Phase 3 (TTL-only by design); Next.js Data Cache / custom Redis `cacheHandler` for the App Router (evaluated, deferred — see cache strategy discussion)
 
 ## Next steps

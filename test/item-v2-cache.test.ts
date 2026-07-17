@@ -293,7 +293,12 @@ describe('itemV2Cache orchestrators', () => {
   });
 
   test('getCachedManyItemsV2 hits redis regardless of request casing', async () => {
-    mgetMock.mockResolvedValueOnce([JSON.stringify({ internal_id: 9, name: 'Blue Paint Brush' })]);
+    const cached = {
+      internal_id: 9,
+      name: 'Blue Paint Brush',
+      slug: 'Blue-Paint-Brush',
+    };
+    mgetMock.mockResolvedValueOnce([JSON.stringify(cached)]);
 
     const result = await getCachedManyItemsV2(
       { type: 'slug', data: ['Blue-Paint-Brush'] },
@@ -302,8 +307,37 @@ describe('itemV2Cache orchestrators', () => {
 
     expect(mgetMock).toHaveBeenCalledWith('iv2:item:slug:blue-paint-brush:minimal');
     expect(getManyItemsV2Mock).not.toHaveBeenCalled();
+    // Response key is DB-canonical slug, not the lowercased Redis lookup key.
     expect(JSON.parse(result.body)).toEqual({
-      'blue-paint-brush': { internal_id: 9, name: 'Blue Paint Brush' },
+      'Blue-Paint-Brush': cached,
+    });
+  });
+
+  test('getCachedManyItemsV2 merges hit+miss with consistent DB-canonical keys', async () => {
+    mgetMock.mockResolvedValueOnce([
+      JSON.stringify({
+        internal_id: 1,
+        name: 'Blue Paint Brush',
+        slug: 'Blue-Paint-Brush',
+      }),
+      null,
+    ]);
+    getManyItemsV2Mock.mockResolvedValueOnce({
+      'Rare-Pet': { internal_id: 2, name: 'Rare Pet', slug: 'Rare-Pet' },
+    });
+
+    const result = await getCachedManyItemsV2(
+      { type: 'slug', data: ['blue-paint-brush', 'Rare-Pet'] },
+      { intent: 'minimal', limit: 100, fresh: false }
+    );
+
+    expect(JSON.parse(result.body)).toEqual({
+      'Blue-Paint-Brush': {
+        internal_id: 1,
+        name: 'Blue Paint Brush',
+        slug: 'Blue-Paint-Brush',
+      },
+      'Rare-Pet': { internal_id: 2, name: 'Rare Pet', slug: 'Rare-Pet' },
     });
   });
 

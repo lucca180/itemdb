@@ -16,6 +16,12 @@ export type ItemPriceField =
   | (NCValue & { type: 'ncValue' })
   | null;
 
+/** Slim liquidity badge — full sold/percent details stay on `/saleStats` (v1). */
+export type ItemSaleStatusV2 = {
+  status: 'ets' | 'regular' | 'hts';
+  addedAt: string;
+};
+
 export type ItemV2 = {
   internal_id: number;
   item_id: number | null;
@@ -31,6 +37,7 @@ export type ItemV2 = {
   status: string | null;
   colorHex: string | null;
   price: ItemPriceField;
+  saleStatus: ItemSaleStatusV2 | null;
   slug: string | null;
   comment: string | null;
   canonical_id: number | null;
@@ -74,6 +81,7 @@ const PRICER_FIELDS = [
   'status',
   'rarity',
   'price',
+  'saleStatus',
 ] as const satisfies readonly (keyof ItemV2)[];
 
 export const ALL_ITEM_V2_FIELDS = 'all' as const;
