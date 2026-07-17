@@ -205,6 +205,24 @@ function toCacheEntries(items: Record<string, ItemRecord>): ItemCacheEntry[] {
   }));
 }
 
+/** DB-canonical response key — same rules as `getManyItemsV2` / v1. */
+function itemResponseKey(type: FindManyItemsV2Type, item: ItemRecord): string {
+  switch (type) {
+    case 'id':
+      return String(item.internal_id);
+    case 'item_id':
+      return String(item.item_id);
+    case 'name':
+      return String(item.name);
+    case 'slug':
+      return String(item.slug);
+    case 'image_id':
+      return String((item.image as { id: string }).id);
+    case 'name_image_id':
+      return encodeNameImageKey(String(item.name), String((item.image as { id: string }).id));
+  }
+}
+
 // ── Redis I/O ──
 
 /** In-request mget. Returns Map of lookup-key → parsed item. */
@@ -314,7 +332,10 @@ export async function getCachedManyItemsV2(
   const hits = await readItemCache(type, keys, intent);
   const missKeys = keys.filter((key) => !hits.has(key));
 
-  const result: Record<string, ItemRecord> = Object.fromEntries(hits);
+  const result: Record<string, ItemRecord> = {};
+  for (const item of hits.values()) {
+    result[itemResponseKey(type, item)] = item;
+  }
   let dbCount = 0;
 
   if (missKeys.length > 0) {
