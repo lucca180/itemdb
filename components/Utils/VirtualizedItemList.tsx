@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ItemData } from '../../types';
+import type { ItemV2For } from '@types';
 import { Box, Flex } from '@chakra-ui/react';
 import { ViewportList } from 'react-viewport-list';
-import ItemCard from '../Items/ItemCard';
+import ItemCardV2 from '@components/Items/v2/ItemCardV2';
 
 type VirtualizedItemListProps = {
-  items: ItemData[];
+  items: ItemV2For<'card'>[];
   sortType?: string;
   highlightList?: number[];
   uniqueID?: string;
@@ -46,7 +46,7 @@ export const VirtualizedItemList = (props: VirtualizedItemListProps) => {
         if (!acc[groupIndex]) acc[groupIndex] = [];
         acc[groupIndex].push(cur);
         return acc;
-      }, [] as ItemData[][]),
+      }, [] as ItemV2For<'card'>[][]),
     [items, dimensions]
   );
 
@@ -57,7 +57,7 @@ export const VirtualizedItemList = (props: VirtualizedItemListProps) => {
         {(group, index) => (
           <Flex gap={[1, 3]} key={index} justifyContent="center" flexWrap={'wrap'}>
             {group.map((item) => (
-              <ItemCard
+              <ItemCardV2
                 uniqueID={`virtualized-list-${props.uniqueID ?? 'default'}`}
                 highlight={props.highlightList?.includes(item.internal_id)}
                 sortType={sortType}

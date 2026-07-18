@@ -3,7 +3,7 @@ import ShopCard from '@components/Hubs/Restock/ShopCard';
 import RestockHeader from '@components/Hubs/Restock/RestockHeader';
 import MainLink from '@components/Utils/MainLink';
 import Color from 'color';
-import type { ItemData, ShopInfo } from '@types';
+import type { ItemV2For, ShopInfo } from '@types';
 import type { RestockShopClientLabels, RestockShopPageLabels } from './buildRestockShopPageProps';
 import { RestockShopPageClient } from './RestockShopPageClient';
 
@@ -11,7 +11,7 @@ type RestockShopPageContentProps = {
   locale: string;
   shopInfo: ShopInfo;
   similarShops: ShopInfo[];
-  initialItems: ItemData[];
+  initialItems: ItemV2For<'card'>[];
   labels: RestockShopPageLabels;
 };
 

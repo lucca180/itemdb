@@ -1,19 +1,19 @@
 import { Flex, Heading, Text } from '@chakra-ui/react';
-import { ItemData } from '../../../types';
+import type { ItemV2For } from '@types';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { VirtualizedItemList } from '../../Utils/VirtualizedItemList';
+import { VirtualizedItemList } from '@components/Utils/VirtualizedItemList';
 import { useTranslations } from 'next-intl';
-import { restockBlackMarketItems } from '../../../utils/utils';
+import { restockBlackMarketItems } from '@utils/utils';
 
 type Props = {
-  itemList: ItemData[];
+  itemList: ItemV2For<'card'>[];
   sortType?: string;
 };
 
 export const RarityView = (props: Props) => {
   const t = useTranslations();
   const { itemList, sortType } = props;
-  const [groupedItems, setGroupedItems] = useState<{ [range: string]: ItemData[] }>(
+  const [groupedItems, setGroupedItems] = useState<{ [range: string]: ItemV2For<'card'>[] }>(
     groupItems(itemList)
   );
   const skippedFirst = useRef(false);
@@ -69,8 +69,8 @@ const rarityText: { [range: string]: string } = {
   unknown: 'Unknown',
 };
 
-const groupItems = (items: ItemData[]) => {
-  const groups: { [range: string]: ItemData[] } = {};
+const groupItems = (items: ItemV2For<'card'>[]) => {
+  const groups: { [range: string]: ItemV2For<'card'>[] } = {};
 
   items.map((item) => {
     if (!item.rarity) {

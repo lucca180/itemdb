@@ -5,11 +5,12 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import AppServerLayout from '@components/Layout/AppServerLayout';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
 import { getStaticAppPageProps } from '@app/utils/appPage';
-import { doSearch } from '@pages/api/v1/search';
+import { doSearchV2 } from '@app/server/search/searchV2';
 import { setRequestLocale } from 'next-intl/server';
-import type { ItemData, SearchFilters, ShopInfo } from '@types';
+import type { ItemV2For, SearchFilters, ShopInfo } from '@types';
 import { fitCacheTag } from '@utils/appCacheTags';
-import { getRestockProfit, removeOutliers, restockShopInfo } from '@utils/utils';
+import { removeOutliers, restockShopInfo } from '@utils/utils';
+import { getRestockProfitV2 } from '@utils/item/v2';
 import { INITIAL_MIN_PROFIT, RESTOCK_FILTER } from '@utils/restock-filters';
 import { mean } from 'simple-statistics';
 import { buildRestockShopPageProps } from './buildRestockShopPageProps';
@@ -104,7 +105,7 @@ type RestockShopPageData = {
   profitableCount: number;
   profitMean: number;
   similarShops: ShopInfo[];
-  initialItems: ItemData[];
+  initialItems: ItemV2For<'card'>[];
 };
 
 async function loadRestockShopPageData(shopInfo: ShopInfo): Promise<RestockShopPageData> {
@@ -114,10 +115,10 @@ async function loadRestockShopPageData(shopInfo: ShopInfo): Promise<RestockShopP
 
   const filters: SearchFilters = RESTOCK_FILTER(shopInfo.id);
   filters.restockProfit = '';
-  const result = await doSearch('', filters, false);
+  const result = await doSearchV2('', filters, { intent: 'card' });
 
   const profitableItems = result.content
-    .filter((item) => (getRestockProfit(item) ?? 0) >= INITIAL_MIN_PROFIT)
+    .filter((item) => (getRestockProfitV2(item) ?? 0) >= INITIAL_MIN_PROFIT)
     .sort((a, b) => sortItemsByPriceDesc(a, b));
 
   const initialItems = profitableItems.slice(0, 32);
@@ -131,16 +132,18 @@ async function loadRestockShopPageData(shopInfo: ShopInfo): Promise<RestockShopP
   };
 }
 
-function sortItemsByPriceDesc(a: ItemData, b: ItemData) {
+function sortItemsByPriceDesc(a: ItemV2For<'card'>, b: ItemV2For<'card'>) {
+  const aPrice = a.price?.type === 'np' ? a.price.value : null;
+  const bPrice = b.price?.type === 'np' ? b.price.value : null;
   return (
-    (b.price.value || Infinity) - (a.price.value || Infinity) ||
+    (bPrice || Infinity) - (aPrice || Infinity) ||
     (b.ncValue?.minValue || Infinity) - (a.ncValue?.minValue || Infinity)
   );
 }
 
-function computeProfitMean(items: ItemData[]) {
+function computeProfitMean(items: ItemV2For<'card'>[]) {
   const profits = items
-    .map((item) => getRestockProfit(item, true))
+    .map((item) => getRestockProfitV2(item, true))
     .filter((profit): profit is number => profit !== null);
 
   const cleanProfit = removeOutliers(profits, 1.75);

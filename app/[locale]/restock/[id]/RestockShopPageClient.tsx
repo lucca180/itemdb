@@ -10,11 +10,12 @@ import { RarityView } from '@components/Hubs/Restock/RarityView';
 import { SortSelect } from '@components/Input/SortSelect';
 import { SearchList } from '@components/Search/SearchLists';
 import { VirtualizedItemList } from '@components/Utils/VirtualizedItemList';
-import type { ItemData, SearchFilters, SearchResults, SearchStats, ShopInfo } from '@types';
+import type { ItemV2For, SearchFilters, SearchStats, ShopInfo } from '@types';
 import { getFiltersDiff } from '@utils/parseFilters';
 import { useAuth } from '@utils/auth';
 import { RESTOCK_FILTER } from '@utils/restock-filters';
-import { getRestockProfit, restockBlackMarketItems, shopIDToCategory } from '@utils/utils';
+import { getRestockProfitV2 } from '@utils/item/v2';
+import { restockBlackMarketItems, shopIDToCategory } from '@utils/utils';
 import Color from 'color';
 import type { RestockShopClientLabels } from './buildRestockShopPageProps';
 
@@ -31,9 +32,11 @@ const sortTypes = {
   item_id: 'restock-order',
 };
 
+type RestockShopItem = ItemV2For<'card'>;
+
 type RestockShopPageClientProps = {
   shopInfo: ShopInfo;
-  initialItems: ItemData[];
+  initialItems: RestockShopItem[];
   labels: RestockShopClientLabels;
 };
 
@@ -44,8 +47,8 @@ export function RestockShopPageClient({
 }: RestockShopPageClientProps) {
   const { userPref, updatePref } = useAuth();
   const { open, onClose, onOpen } = useDisclosure();
-  const [filteredItems, setFilteredItems] = useState<ItemData[]>(initialItems);
-  const [itemList, setItemList] = useState<ItemData[]>(initialItems);
+  const [filteredItems, setFilteredItems] = useState<RestockShopItem[]>(initialItems);
+  const [itemList, setItemList] = useState<RestockShopItem[]>(initialItems);
   const [sortInfo, setSortInfo] = useState({ sortBy: 'price', sortDir: 'desc' });
   const [loading, setLoading] = useState(true);
   const [itemSearch, setItemSearch] = useState('');
@@ -75,10 +78,9 @@ export function RestockShopPageClient({
     }
 
     try {
-      const res = await axios.get('/api/v1/search', {
+      const res = await axios.get('/api/v2/search', {
         params: {
           ...getFiltersDiff(shopFilters),
-          skipStats: true,
         },
       });
 
@@ -135,14 +137,13 @@ export function RestockShopPageClient({
   const applyFilters = async (newFilters: SearchFilters) => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/v1/search', {
+      const res = await axios.get('/api/v2/search', {
         params: {
           ...getFiltersDiff(newFilters),
-          skipStats: true,
         },
       });
 
-      const data = res.data as SearchResults;
+      const data = res.data as { content: RestockShopItem[] };
       const searchResult = data.content
         .filter((item) =>
           itemSearch ? item.name.toLowerCase().includes(itemSearch.toLowerCase()) : true
@@ -246,7 +247,11 @@ export function RestockShopPageClient({
   );
 }
 
-function sortItems(a: ItemData, b: ItemData, sortBy: string, sortDir: string) {
+function getNpPrice(item: RestockShopItem): number | null {
+  return item.price?.type === 'np' ? item.price.value : null;
+}
+
+function sortItems(a: RestockShopItem, b: RestockShopItem, sortBy: string, sortDir: string) {
   if (sortBy === 'name') {
     if (sortDir === 'asc') return a.name.localeCompare(b.name);
     return b.name.localeCompare(a.name);
@@ -258,15 +263,17 @@ function sortItems(a: ItemData, b: ItemData, sortBy: string, sortDir: string) {
   }
 
   if (sortBy === 'price') {
+    const aPrice = getNpPrice(a);
+    const bPrice = getNpPrice(b);
     if (sortDir === 'asc') {
       return (
-        (a.price.value || Number.MIN_SAFE_INTEGER) - (b.price.value || Number.MIN_SAFE_INTEGER) ||
+        (aPrice || Number.MIN_SAFE_INTEGER) - (bPrice || Number.MIN_SAFE_INTEGER) ||
         (a.ncValue?.minValue || Number.MIN_SAFE_INTEGER) -
           (b.ncValue?.minValue || Number.MIN_SAFE_INTEGER)
       );
     }
     return (
-      (b.price.value || Infinity) - (a.price.value || Infinity) ||
+      (bPrice || Infinity) - (aPrice || Infinity) ||
       (b.ncValue?.minValue || Infinity) - (a.ncValue?.minValue || Infinity)
     );
   }
@@ -277,8 +284,8 @@ function sortItems(a: ItemData, b: ItemData, sortBy: string, sortDir: string) {
   }
 
   if (sortBy === 'color') {
-    const colorA = new Color(a.color.hex);
-    const colorB = new Color(b.color.hex);
+    const colorA = new Color(a.colorHex ?? '#000000');
+    const colorB = new Color(b.colorHex ?? '#000000');
     const hsvA = colorA.hsv().array();
     const hsvB = colorB.hsv().array();
     if (sortDir === 'asc') return hsvB[0] - hsvA[0] || hsvB[1] - hsvA[1] || hsvB[2] - hsvA[2];
@@ -287,10 +294,10 @@ function sortItems(a: ItemData, b: ItemData, sortBy: string, sortDir: string) {
 
   if (sortBy === 'profit') {
     if (sortDir === 'asc')
-      return (getRestockProfit(a) ?? Infinity) - (getRestockProfit(b) ?? Infinity);
+      return (getRestockProfitV2(a) ?? Infinity) - (getRestockProfitV2(b) ?? Infinity);
     return (
-      (getRestockProfit(b) ?? Number.MIN_SAFE_INTEGER) -
-      (getRestockProfit(a) ?? Number.MIN_SAFE_INTEGER)
+      (getRestockProfitV2(b) ?? Number.MIN_SAFE_INTEGER) -
+      (getRestockProfitV2(a) ?? Number.MIN_SAFE_INTEGER)
     );
   }
 
