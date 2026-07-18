@@ -9,17 +9,21 @@ import { RestockShopPageClient } from './RestockShopPageClient';
 
 type RestockShopPageContentProps = {
   locale: string;
+  routeId: string;
   shopInfo: ShopInfo;
   similarShops: ShopInfo[];
   initialItems: ItemV2For<'card'>[];
+  needsFullLoad: boolean;
   labels: RestockShopPageLabels;
 };
 
 export function RestockShopPageContent({
   locale,
+  routeId,
   shopInfo,
   similarShops,
   initialItems,
+  needsFullLoad,
   labels,
 }: RestockShopPageContentProps) {
   const shopColor = Color(shopInfo.color);
@@ -44,8 +48,12 @@ export function RestockShopPageContent({
       </RestockHeader>
       <Separator my={3} />
       <RestockShopPageClient
+        key={routeId}
+        routeId={routeId}
+        locale={locale}
         shopInfo={shopInfo}
         initialItems={initialItems}
+        needsFullLoad={needsFullLoad}
         labels={clientLabels}
       />
       <Text textAlign="center" mt={8} fontSize="xs">

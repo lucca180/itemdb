@@ -2,8 +2,8 @@
 
 import { Button, Flex, HStack, IconButton, Text, useDisclosure } from '@chakra-ui/react';
 import dynamic from 'next/dynamic';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { BsFilter } from 'react-icons/bs';
 import { CreateDynamicListButton } from '@components/DynamicLists/CreateButton';
 import { RarityView } from '@components/Hubs/Restock/RarityView';
@@ -11,13 +11,14 @@ import { SortSelect } from '@components/Input/SortSelect';
 import { SearchList } from '@components/Search/SearchLists';
 import { VirtualizedItemList } from '@components/Utils/VirtualizedItemList';
 import type { ItemV2For, SearchFilters, SearchStats, ShopInfo } from '@types';
-import { getFiltersDiff } from '@utils/parseFilters';
 import { useAuth } from '@utils/auth';
+import { useToast } from '@utils/theme/toast';
 import { RESTOCK_FILTER } from '@utils/restock-filters';
 import { getRestockProfitV2 } from '@utils/item/v2';
-import { restockBlackMarketItems, shopIDToCategory } from '@utils/utils';
+import { restockBlackMarketItems } from '@utils/utils';
 import Color from 'color';
 import type { RestockShopClientLabels } from './buildRestockShopPageProps';
+import { applyRestockFilters, loadRestockShopItems, loadRestockShopStats } from './actions';
 
 const SearchFilterModal = dynamic(() => import('@components/Search/SearchFiltersModal'), {
   ssr: false,
@@ -35,22 +36,41 @@ const sortTypes = {
 type RestockShopItem = ItemV2For<'card'>;
 
 type RestockShopPageClientProps = {
+  routeId: string;
+  locale: string;
   shopInfo: ShopInfo;
   initialItems: RestockShopItem[];
+  needsFullLoad: boolean;
   labels: RestockShopClientLabels;
 };
 
+function deriveFiltered(
+  list: RestockShopItem[],
+  sortBy: string,
+  sortDir: string,
+  search: string
+): RestockShopItem[] {
+  return [...list]
+    .filter((item) => (search ? item.name.toLowerCase().includes(search.toLowerCase()) : true))
+    .sort((a, b) => sortItems(a, b, sortBy, sortDir));
+}
+
 export function RestockShopPageClient({
+  routeId,
+  locale,
   shopInfo,
   initialItems,
+  needsFullLoad,
   labels,
 }: RestockShopPageClientProps) {
   const { userPref, updatePref } = useAuth();
+  const t = useTranslations();
+  const toast = useToast();
   const { open, onClose, onOpen } = useDisclosure();
   const [filteredItems, setFilteredItems] = useState<RestockShopItem[]>(initialItems);
   const [itemList, setItemList] = useState<RestockShopItem[]>(initialItems);
   const [sortInfo, setSortInfo] = useState({ sortBy: 'price', sortDir: 'desc' });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(needsFullLoad);
   const [itemSearch, setItemSearch] = useState('');
   const [filters, setFilters] = useState<SearchFilters>(RESTOCK_FILTER(shopInfo.id));
   const [stats, setStats] = useState<SearchStats | null>(null);
@@ -59,73 +79,81 @@ export function RestockShopPageClient({
     userPref?.restock_prefView ?? 'rarity'
   );
 
-  const init = async (forceStats = false) => {
-    setLoading(true);
-    const shopFilters = RESTOCK_FILTER(shopInfo.id);
+  // --- async race guards (mirrors the list page tier-3 loading) ---
+  const requestGenerationRef = useRef(0);
+  const deferredLoadKeyRef = useRef<string | null>(null);
+  // Kept in sync from event handlers so an async merge always sorts/filters with the latest view.
+  const sortInfoRef = useRef(sortInfo);
+  const itemSearchRef = useRef(itemSearch);
 
-    if (!stats || forceStats) {
-      axios
-        .get('/api/v1/search/stats', {
-          params: {
-            forceCategory: shopIDToCategory[shopInfo.id],
-            isRestock: 'true',
-          },
-        })
-        .then((res) => {
-          setStats(res.data);
-        })
-        .catch(console.error);
-    }
-
-    try {
-      const res = await axios.get('/api/v2/search', {
-        params: {
-          ...getFiltersDiff(shopFilters),
-        },
-      });
-
-      setItemList(res.data.content);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+  const showRefreshError = (id: string) => {
+    toast({
+      id,
+      title: t('General.an-error-occurred'),
+      description: t('General.refreshPage'),
+      status: 'error',
+      duration: null,
+    });
   };
 
-  const handleFilterChange = () => {
-    const filtered = [...itemList]
-      .filter((item) =>
-        itemSearch ? item.name.toLowerCase().includes(itemSearch.toLowerCase()) : true
+  /** Replace the item list (drops stale payloads) and re-derive the visible list. */
+  const applyItemList = (list: RestockShopItem[], generation: number) => {
+    if (requestGenerationRef.current !== generation) return;
+    setItemList(list);
+    setFilteredItems(
+      deriveFiltered(
+        list,
+        sortInfoRef.current.sortBy,
+        sortInfoRef.current.sortDir,
+        itemSearchRef.current
       )
-      .sort((a, b) => sortItems(a, b, sortInfo.sortBy, sortInfo.sortDir));
-
-    setFilteredItems(filtered);
+    );
+    setLoading(false);
   };
 
-  const resetFilters = (force = false) => {
-    setFilters(RESTOCK_FILTER(shopInfo.id));
-    setItemSearch('');
-    init(force);
-    setFiltered(false);
-  };
-
+  // Tier 3: load the full profitable list via server action after hydration.
+  // `loading` is initialized to `needsFullLoad`, so no setState is needed up front.
   useEffect(() => {
-    resetFilters(true);
-  }, [shopInfo.id]);
+    if (!needsFullLoad) return;
 
-  useEffect(() => {
-    if (initialItems.length === itemList.length) return;
+    const deferredLoadKey = `${locale}/${routeId}`;
+    if (deferredLoadKeyRef.current === deferredLoadKey) return;
+    deferredLoadKeyRef.current = deferredLoadKey;
 
-    handleFilterChange();
-  }, [itemSearch, itemList]);
+    const generation = ++requestGenerationRef.current;
+
+    loadRestockShopItems(routeId, locale)
+      .then((items) => {
+        if (
+          deferredLoadKeyRef.current !== deferredLoadKey ||
+          requestGenerationRef.current !== generation
+        ) {
+          return;
+        }
+        applyItemList(items, generation);
+      })
+      .catch((err) => {
+        console.error(err);
+        if (
+          deferredLoadKeyRef.current === deferredLoadKey &&
+          requestGenerationRef.current === generation
+        ) {
+          showRefreshError('restock-page-init-error');
+          setLoading(false);
+        }
+      });
+  }, [routeId, locale, needsFullLoad]);
 
   const handleSort = (sortBy: string, sortDir: string) => {
+    sortInfoRef.current = { sortBy, sortDir };
     setSortInfo({ sortBy, sortDir });
-    setFilteredItems([...filteredItems].sort((a, b) => sortItems(a, b, sortBy, sortDir)));
+    setFilteredItems(deriveFiltered(itemList, sortBy, sortDir, itemSearch));
   };
 
   const handleSearch = (query: string) => {
+    itemSearchRef.current = query;
     setItemSearch(query);
+    setFilteredItems(deriveFiltered(itemList, sortInfo.sortBy, sortInfo.sortDir, query));
   };
 
   const toggleView = () => {
@@ -134,30 +162,53 @@ export function RestockShopPageClient({
     updatePref('restock_prefView', newView);
   };
 
+  const handleOpenFilters = () => {
+    onOpen();
+    if (stats) return;
+
+    loadRestockShopStats(routeId, locale)
+      .then((result) => {
+        if (result) setStats(result);
+      })
+      .catch(console.error);
+  };
+
+  const resetFilters = () => {
+    itemSearchRef.current = '';
+    setFilters(RESTOCK_FILTER(shopInfo.id));
+    setItemSearch('');
+    setFiltered(false);
+
+    const generation = ++requestGenerationRef.current;
+    setLoading(true);
+
+    loadRestockShopItems(routeId, locale)
+      .then((items) => applyItemList(items, generation))
+      .catch((err) => {
+        console.error(err);
+        if (requestGenerationRef.current === generation) {
+          showRefreshError('restock-page-reset-error');
+          setLoading(false);
+        }
+      });
+  };
+
   const applyFilters = async (newFilters: SearchFilters) => {
+    const generation = ++requestGenerationRef.current;
     setLoading(true);
     try {
-      const res = await axios.get('/api/v2/search', {
-        params: {
-          ...getFiltersDiff(newFilters),
-        },
-      });
+      const items = await applyRestockFilters(routeId, locale, newFilters);
+      if (requestGenerationRef.current !== generation) return;
 
-      const data = res.data as { content: RestockShopItem[] };
-      const searchResult = data.content
-        .filter((item) =>
-          itemSearch ? item.name.toLowerCase().includes(itemSearch.toLowerCase()) : true
-        )
-        .sort((a, b) => sortItems(a, b, sortInfo.sortBy, sortInfo.sortDir));
-
-      setFilteredItems(searchResult);
-      setItemList(data.content);
+      applyItemList(items, generation);
       setFiltered(true);
       onClose();
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
+      if (requestGenerationRef.current === generation) {
+        showRefreshError('restock-page-filter-error');
+        setLoading(false);
+      }
     }
   };
 
@@ -210,7 +261,7 @@ export function RestockShopPageClient({
           <IconButton
             loading={loading}
             aria-label="search filters"
-            onClick={onOpen}
+            onClick={handleOpenFilters}
             colorPalette={isFiltered ? 'blue' : undefined}
           >
             <BsFilter />
