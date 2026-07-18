@@ -7,7 +7,7 @@
   // @website      https://itemdb.com.br
   // @match        *://*.itemdb.com.br/*
   // @match        *://*.neopets.com/safetydeposit.phtml*
-  // @require      https://itemdb.com.br/js/script-utils.js
+  // @require      https://itemdb.com.br/js/script-utils.js?v2
   // @icon         https://itemdb.com.br/favicon.ico
   // @connect      itemdb.com.br
   // @grant        GM_xmlhttpRequest
@@ -43,6 +43,10 @@ async function fetchPriceData(IDs) {
       type: 'item_id',
       data: IDs
     }),
+    onerror: function(res) {
+        console.error('[itemdb] Failed to fetch price data', res);
+        handleError(res);
+    },
     onload: function (res) {
       if (res.status === 200) {
         const itemData = JSON.parse(res.responseText);
@@ -50,7 +54,10 @@ async function fetchPriceData(IDs) {
         pricePage(itemData);
       }
 
-      else return console.error('[itemdb] Failed to fetch price data', res);
+      else {
+        console.error('[itemdb] Failed to fetch price data', res);
+        handleError(res);
+      }
     }
   });
 }
@@ -165,6 +172,16 @@ function priceSDB(itemData) {
 
     $(this).find('.sdb-item-info').append(`${priceStr}`);
   })
+}
+
+function handleError(res) {
+  const msg = idb_getApiErrorMessage(res, {
+    html: true,
+    fallback: 'Something went wrong. Please try again.',
+  });
+
+  const errorBox = $(`<div class="idb-api-error-box" style="font-size: small;text-align: center;color: red;margin: 10px 0;">itemdb SDB Pricer<br/>${msg}</div>`);
+  $('.sdb-header-bar').before(errorBox);
 }
 
 function setColor(rarity) {

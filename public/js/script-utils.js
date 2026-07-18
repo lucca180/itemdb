@@ -83,7 +83,7 @@ const idb_TROUBLESHOOT_URL = 'https://itemdb.com.br/tools/troubleshooting';
 const idb_apiStatusMessages = {
   0: "Couldn't connect. Check your internet connection and try again.",
   400: 'Invalid request.',
-  401: "You're not authorized - your session may be invalid or expired. See {troubleshoot} for help.",
+  401: "Your session may be invalid or expired. See {troubleshoot} for help.",
   403: "You don't have permission to do this.",
   404: "The requested resource wasn't found.",
   405: "This action isn't allowed.",
