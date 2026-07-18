@@ -24,6 +24,19 @@ vi.mock('@utils/api/redis', async () => {
   };
 });
 
+// Route handlers call `after()` to schedule quota tracking off the hot path.
+// Outside a real request scope (unit tests) `after` throws, so run the callback
+// immediately here to keep the post-response behavior observable in assertions.
+vi.mock('next/server', async () => {
+  const actual = await vi.importActual<typeof import('next/server')>('next/server');
+  return {
+    ...actual,
+    after: (callback: () => unknown) => {
+      void callback();
+    },
+  };
+});
+
 import { GET as getMany, POST as postMany } from '@app/api/v2/items/many/route';
 import { GET as getById } from '@app/api/v2/items/[id_name]/route';
 import { parseManyItemsV2Query, parseManyItemsV2SearchParams } from '@app/api/v2/items/parse';
