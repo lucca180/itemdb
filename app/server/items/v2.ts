@@ -137,6 +137,25 @@ export const NC_VALUE_JOINS: readonly JoinName[] =
         ? ['ncValue', 'owlsPrice']
         : []; // no source configured — mapItemV2NcValue always omits the field
 
+/**
+ * Columns for the configured NC value source. These MUST stay in lockstep with
+ * {@link NC_VALUE_JOINS}: selecting an `ncValue.*` / `owlsPrice.*` column whose
+ * table is not joined raises `Unknown column` (e.g. `lebron` only joins
+ * `owlsPrice`, so the `ncValue.*` columns must be dropped).
+ */
+const NC_VALUE_ITEMDB_COLUMNS = [
+  'ncValueAddedAt',
+  'ncValueMin',
+  'ncValueMax',
+  'ncValueRange',
+] as const;
+const NC_VALUE_OWLS_COLUMNS = ['owlsPricedAt', 'owlsValue', 'owlsValueMin'] as const;
+
+export const NC_VALUE_COLUMNS: readonly ColumnName[] = [
+  ...(NC_VALUE_JOINS.includes('ncValue') ? NC_VALUE_ITEMDB_COLUMNS : []),
+  ...(NC_VALUE_JOINS.includes('owlsPrice') ? NC_VALUE_OWLS_COLUMNS : []),
+];
+
 const JOINS: Record<JoinName, Prisma.Sql> = {
   color: Prisma.sql`
     LEFT JOIN ItemColor AS color
@@ -243,17 +262,7 @@ const FIELD_DEFINITIONS: FieldDefinitions = {
     map: mapItemV2Price,
   },
   ncValue: {
-    columns: [
-      'type',
-      'status',
-      'ncValueAddedAt',
-      'ncValueMin',
-      'ncValueMax',
-      'ncValueRange',
-      'owlsPricedAt',
-      'owlsValue',
-      'owlsValueMin',
-    ],
+    columns: ['type', 'status', ...NC_VALUE_COLUMNS],
     joins: NC_VALUE_JOINS,
     map: mapItemV2NcValue,
   },
