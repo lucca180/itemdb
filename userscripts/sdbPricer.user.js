@@ -1,12 +1,13 @@
   // ==UserScript==
   // @name         itemdb - Safety Deposit Box Pricer
-  // @version      1.6.0
+  // @version      2.0.0
   // @author       itemdb
   // @namespace    itemdb
   // @description  Shows the market price for your sdb
   // @website      https://itemdb.com.br
   // @match        *://*.itemdb.com.br/*
   // @match        *://*.neopets.com/safetydeposit.phtml*
+  // @require      https://itemdb.com.br/js/script-utils.js
   // @icon         https://itemdb.com.br/favicon.ico
   // @connect      itemdb.com.br
   // @grant        GM_xmlhttpRequest
@@ -31,16 +32,21 @@ const itemInfo = {};
 async function fetchPriceData(IDs) {
   GM_xmlhttpRequest({
     method: 'POST',
-    url: 'https://itemdb.com.br/api/v1/items/many',
+    // if you're reading this to create your own userscript,
+    // don't use v2 endpoint yet, it is still in development and its not ready for general use.
+    url: 'https://itemdb.com.br/api/v2/items/many',
     headers: {
       'Content-Type': 'application/json'
     },
     data: JSON.stringify({
-      item_id: IDs
+      intent: 'pricer',
+      type: 'item_id',
+      data: IDs
     }),
     onload: function (res) {
       if (res.status === 200) {
         const itemData = JSON.parse(res.responseText);
+        console.log(itemData);
         pricePage(itemData);
       }
 
@@ -80,39 +86,49 @@ function getPriceStr(item, itemQty) {
       //   priceStr += `</small> `
       // }
 
+      const linkUrl = `https://itemdb.com.br/item/${item.slug}?utm_content=sdbPricer`;
+
       if(item.status === 'no trade'){
-        priceStr += `<a href="https://itemdb.com.br/item/${item.slug}?utm_content=sdbPricer" target="_blank">No Trade</a>`;
+        priceStr += `<a href="${linkUrl}" target="_blank">No Trade</a>`;
       }
 
-      if(item.isNC && !item.ncValue && item.status === 'active'){
-        priceStr += `<a href="https://itemdb.com.br/item/${item.slug}?utm_content=sdbPricer" target="_blank">NC</a>`;
-      }
-
-      if(item.isNC && item.ncValue){
-        priceStr += `<a href="https://itemdb.com.br/item/${item.slug}?utm_content=sdbPricer" target="_blank">${item.ncValue.range} caps</a>`;
-      }
-
-      if(item && item.status !== 'no trade' && !item.price.value && !item.isNC){
-        priceStr += `<a href="https://itemdb.com.br/item/${item.slug}?utm_content=sdbPricer" target="_blank">???</a>`;
-      }
-
-      if(item.price.value){
-        priceStr += `<div>`;
-
-        if(item.saleStatus && item.saleStatus.status !== 'regular') {
-            var color2 = item.saleStatus.status === 'ets' ? 'green' : '#fb1717';
-            priceStr += `<small style='color:${color2}'><b>[${item.saleStatus.status.toUpperCase()}]</b></small> `;
+      if(item.status === 'active') {
+        if(item.type === 'nc' && !item.price){
+          priceStr += `<a href="${linkUrl}" target="_blank">NC</a>`;
         }
 
-        priceStr += `<a href="https://itemdb.com.br/item/${item.slug}?utm_content=sdbPricer" target="_blank">${item.price.inflated ? "⚠ " : ""}${intl.format(item.price.value)} NP</a>`;
-        priceStr += `</div>`;
+        if(item.type === 'nc' && item.price?.type === "ncValue"){
+          priceStr += `<a href="${linkUrl}" target="_blank">${item.price.range} caps</a>`;
+        }
 
-        let grandTotal = 0;
-        const totalValue = item.price.value * itemQty;
-        grandTotal += totalValue
+        if(item.type === 'nc' && item.price?.type === "ncMall"){
+          priceStr += `<a href="${linkUrl}" target="_blank">Buyable</a>`;
+        }
 
-        if (itemQty > 1){
-            priceStr += `<small style='color: #000000'><b>(${intl.format(totalValue)} NP total)</b></small> `
+        if(item.type === 'np' && !item.price.value){
+          priceStr += `<a href="${linkUrl}" target="_blank">???</a>`;
+        }
+
+        if(item.type === 'np' && item.price.value){
+          priceStr += `<div>`;
+
+          if(item.saleStatus && item.saleStatus.status !== 'regular') {
+              var color2 = item.saleStatus.status === 'ets' ? 'green' : '#fb1717';
+              priceStr += `<small style='color:${color2}'><b>[${item.saleStatus.status.toUpperCase()}]</b></small> `;
+          }
+
+          const isInflated = item.price.flags?.includes('inflated');
+
+          priceStr += `<a href="${linkUrl}" target="_blank">${isInflated ? "⚠ " : ""}${intl.format(item.price.value)} NP</a>`;
+          priceStr += `</div>`;
+
+          let grandTotal = 0;
+          const totalValue = item.price.value * itemQty;
+          grandTotal += totalValue
+
+          if (itemQty > 1){
+              priceStr += `<small style='color: #000000'><b>(${intl.format(totalValue)} NP total)</b></small> `
+          }
         }
       }
 
@@ -142,7 +158,7 @@ function priceSDB(itemData) {
 
     const item = itemData[item_id];
     if(!item) return;
-    
+
     const qty = itemInfo[item_id].amount || 1;
 
     const priceStr = getPriceStr(item, qty);
@@ -162,56 +178,9 @@ function setColor(rarity) {
   return '#ec69ff';                   // Neocash | Artifact - 500
 }
 
-function registerFetchWatcher({ match, eventName }) {
-  const targetWindow = unsafeWindow ?? window;
-
-  if (!targetWindow.__idbFetchWatchers) {
-    targetWindow.__idbFetchWatchers = [];
-  }
-
-  if (!targetWindow.__idbFetchPatched) {
-    targetWindow.__idbFetchPatched = true;
-
-    const originalFetch = targetWindow.fetch;
-
-    targetWindow.fetch = async (...args) => {
-      const response = await originalFetch(...args);
-      const clonedResponse = response.clone();
-
-      let responseText = '';
-      try {
-        responseText = await clonedResponse.text();
-      } catch {
-        return response;
-      }
-
-      let requestData;
-      try {
-        requestData = JSON.parse(responseText);
-      } catch {
-        return response;
-      }
-
-      for (const watcher of targetWindow.__idbFetchWatchers) {
-        try {
-          if (watcher.match({ args, requestData, response })) {
-            document.dispatchEvent(
-              new CustomEvent(watcher.eventName, { detail: requestData })
-            );
-          }
-        } catch {}
-      }
-
-      return response;
-    };
-  }
-
-  targetWindow.__idbFetchWatchers.push({ match, eventName });
-}
-
 if(URLHas('/safetydeposit')) {
   watchSDBItems();
-  registerFetchWatcher({
+  idb_registerFetchWatcher({
     eventName: 'idb:sdbPricer:safetyDeposit',
     match: ({ requestData }) => typeof requestData.data.items !== 'undefined',
   });
