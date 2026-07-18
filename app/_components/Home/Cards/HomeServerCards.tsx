@@ -2,9 +2,7 @@ import { Suspense } from 'react';
 import { cacheLife, cacheTag } from 'next/cache';
 import { getTranslations } from 'next-intl/server';
 import { getTrendingLists } from '@pages/api/v1/beta/trending';
-import { getLatestItemsV2 } from '@app/api/v2/items/latest';
-import { getTrendingItemsV2 } from '@app/api/v2/trending';
-import { getNCMallItemsDataV2 } from '@app/api/v2/mall';
+import { ItemService } from '@services/ItemService';
 import { HomeCard } from '@components/Card/HomeCard';
 import { HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
 import { FeaturedListsGrid } from '@components/Home/FeaturedListsGrid';
@@ -13,35 +11,35 @@ async function getCachedLatestItems() {
   'use cache';
   cacheTag('home-latest-items');
   cacheLife('homeSection');
-  return getLatestItemsV2(20, true).catch(() => []);
+  return ItemService.getLatest(20, true).catch(() => []);
 }
 
 async function getCachedLatestNcMallItems() {
   'use cache';
   cacheTag('home-latest-nc-mall');
   cacheLife({ stale: 600, revalidate: 600, expire: 3600 });
-  return getNCMallItemsDataV2(20).catch(() => []);
+  return ItemService.getMall(20).catch(() => []);
 }
 
 async function getCachedLeavingNcMallItems() {
   'use cache';
   cacheTag('home-latest-nc-mall');
   cacheLife({ stale: 600, revalidate: 600, expire: 3600 });
-  return getNCMallItemsDataV2(18, true).catch(() => []);
+  return ItemService.getMall(18, true).catch(() => []);
 }
 
 async function getCachedLatestWearableItems() {
   'use cache';
   cacheTag('home-latest-wearable-items');
   cacheLife('homeSection');
-  return getLatestItemsV2(18, true, true).catch(() => []);
+  return ItemService.getLatest(18, true, true).catch(() => []);
 }
 
 async function getCachedTrendingItems() {
   'use cache';
   cacheTag('home-trending-items');
   cacheLife('homeSlow');
-  return getTrendingItemsV2(20).catch(() => []);
+  return ItemService.getTrending(20).catch(() => []);
 }
 
 async function getCachedFeaturedLists() {

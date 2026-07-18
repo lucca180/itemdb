@@ -1,5 +1,5 @@
 import prisma from '@utils/prisma';
-import { getManyItemsV2 } from '@app/server/items/v2';
+import { ItemService } from '@services/ItemService';
 import type { ItemV2For } from '@types';
 
 export async function getLatestPricedItemsV2(
@@ -31,7 +31,7 @@ export async function getLatestPricedItemsV2(
 
   const ids = pricesRaw.map((p) => p.item_iid?.toString()) as string[];
 
-  const items = await getManyItemsV2(
+  const items = await ItemService.getManyItems(
     {
       type: 'id',
       data: ids,

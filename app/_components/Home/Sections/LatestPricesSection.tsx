@@ -4,7 +4,7 @@ import { getFormatter, getTranslations } from 'next-intl/server';
 import type { ItemV2For } from '@types';
 import { HorizontalHomeCard } from '@components/Card/HorizontalHomeCard';
 import { LatestPricesItemsClient } from '@components/Home/LatestPricesItemsClient';
-import { getLatestPricedItemsV2 } from '@app/api/v2/prices/latest';
+import { ItemService } from '@services/ItemService';
 import { cacheLife, cacheTag } from 'next/cache';
 
 export type LatestPricesRes = {
@@ -17,7 +17,7 @@ async function getLatestPrices(): Promise<LatestPricesRes> {
   cacheTag('home-latest-prices');
   cacheLife('homeSection');
   try {
-    const result = await getLatestPricedItemsV2(16, true);
+    const result = await ItemService.getLatestPriced(16, true);
     if (Array.isArray(result)) {
       return { items: result, count: null };
     }

@@ -1,5 +1,6 @@
-import { getCachedManyItemsV2, itemCacheControl, wantsFresh } from '@app/server/items/itemV2Cache';
+import { itemCacheControl, wantsFresh } from '@app/server/items/itemV2Cache';
 import { parseManyItemsV2Query, parseManyItemsV2SearchParams } from '@app/api/v2/items/parse';
+import { ItemService } from '@services/ItemService';
 import { trackItemQuota } from '@utils/api/redis';
 import { parseItemIntent } from '@types';
 import type { NextRequest } from 'next/server';
@@ -27,7 +28,7 @@ async function handleMany(
 
   // `fresh` is always read from the query string (works for POST too).
   const fresh = wantsFresh(request.url);
-  const { body, dbCount } = await getCachedManyItemsV2(query, {
+  const { body, dbCount } = await ItemService.getCachedManyItems(query, {
     intent,
     limit: MANY_LIMIT,
     fresh,

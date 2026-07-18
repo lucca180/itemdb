@@ -1,5 +1,5 @@
 import { getClient } from '@umami/api-client';
-import { getManyItemsV2 } from '@app/server/items/v2';
+import { ItemService } from '@services/ItemService';
 import type { ItemV2For } from '@types';
 
 const getUmamiEnv = () => {
@@ -50,7 +50,7 @@ export async function getTrendingItemsV2(limit: number): Promise<ItemV2For<'card
     };
   });
 
-  const items = await getManyItemsV2(
+  const items = await ItemService.getManyItems(
     { type: 'slug', data: Object.keys(popularItemsStats) },
     { intent: 'card' }
   );

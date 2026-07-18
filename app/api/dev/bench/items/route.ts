@@ -1,6 +1,6 @@
 import { getManyItems } from '@pages/api/v1/items/many';
-import { getCachedManyItemsV2, writeItemCache } from '@app/server/items/itemV2Cache';
-import { getManyItemsV2 } from '@app/server/items/v2';
+import { writeItemCache } from '@app/server/items/itemV2Cache';
+import { ItemService } from '@services/ItemService';
 import { parseItemIntent } from '@types';
 import { redisCache as redis } from '@utils/api/redis';
 import prisma from '@utils/prisma';
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
   const idQueryV1 = { id: ids.map(String) };
 
   // Warm Redis so the hit path is real (await write — don't rely on after()).
-  const warmItems = await getManyItemsV2(query, { intent, limit: ids.length });
+  const warmItems = await ItemService.getManyItems(query, { intent, limit: ids.length });
   if (redis) {
     await writeItemCache(
       'id',
@@ -71,12 +71,18 @@ export async function GET(request: NextRequest) {
 
   for (let i = 0; i < runs; i++) {
     v1.push(await measure(() => getManyItems(idQueryV1, ids.length)));
-    v2Prisma.push(await measure(() => getManyItemsV2(query, { intent, limit: ids.length })));
+    v2Prisma.push(
+      await measure(() => ItemService.getManyItems(query, { intent, limit: ids.length }))
+    );
     v2Miss.push(
-      await measure(() => getCachedManyItemsV2(query, { intent, limit: ids.length, fresh: true }))
+      await measure(() =>
+        ItemService.getCachedManyItems(query, { intent, limit: ids.length, fresh: true })
+      )
     );
     v2Hit.push(
-      await measure(() => getCachedManyItemsV2(query, { intent, limit: ids.length, fresh: false }))
+      await measure(() =>
+        ItemService.getCachedManyItems(query, { intent, limit: ids.length, fresh: false })
+      )
     );
   }
 

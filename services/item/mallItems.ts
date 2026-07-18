@@ -1,5 +1,5 @@
 import { getNCMallData } from '@pages/api/v1/mall/index';
-import { getManyItemsV2 } from '@app/server/items/v2';
+import { ItemService } from '@services/ItemService';
 import type { ItemV2For } from '@types';
 
 export async function getNCMallItemsDataV2(
@@ -8,7 +8,7 @@ export async function getNCMallItemsDataV2(
 ): Promise<ItemV2For<'card'>[]> {
   const ncMallData = await getNCMallData(limit, isLeaving);
 
-  const items = await getManyItemsV2(
+  const items = await ItemService.getManyItems(
     {
       type: 'id',
       data: ncMallData.map((data) => data.item_iid.toString()),

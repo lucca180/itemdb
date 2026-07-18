@@ -1,5 +1,5 @@
 import prisma from '@utils/prisma';
-import { getManyItemsV2 } from '@app/server/items/v2';
+import { ItemService } from '@services/ItemService';
 import type { ItemV2For } from '@types';
 
 export async function getLatestItemsV2(
@@ -28,7 +28,7 @@ export async function getLatestItemsV2(
     take: limit,
   });
 
-  const items = await getManyItemsV2(
+  const items = await ItemService.getManyItems(
     {
       type: 'id',
       data: result.map((data) => data.internal_id.toString()),

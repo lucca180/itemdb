@@ -1,4 +1,5 @@
-import { getCachedItemV2, itemCacheControl, wantsFresh } from '@app/server/items/itemV2Cache';
+import { itemCacheControl, wantsFresh } from '@app/server/items/itemV2Cache';
+import { ItemService } from '@services/ItemService';
 import { trackItemQuota } from '@utils/api/redis';
 import { parseItemIntent } from '@types';
 import type { NextRequest } from 'next/server';
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
   const idOrName = Number.isNaN(Number(id_name)) ? id_name : Number(id_name);
   const fresh = wantsFresh(request.url);
-  const result = await getCachedItemV2(idOrName, { intent, fresh });
+  const result = await ItemService.getCachedItem(idOrName, { intent, fresh });
 
   if (result.status === 'not_found') {
     return Response.json(
