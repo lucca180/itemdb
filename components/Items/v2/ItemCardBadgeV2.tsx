@@ -26,7 +26,7 @@ export const ItemCardBadgeV2 = (props: ItemCardBadgeV2Props) => {
 
   const npPrice = item.price?.type === 'np' ? item.price : null;
   const ncMall = item.price?.type === 'ncMall' ? item.price : null;
-  const ncValue = item.price?.type === 'ncValue' ? item.price : null;
+  const ncValue = item.ncValue ?? null;
   const isNc = item.type === 'nc';
   const isDiscounted = isMallDiscounted(ncMall);
   const priceAgeInMonths = npPrice?.addedAt

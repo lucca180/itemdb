@@ -13,6 +13,7 @@ import {
   getItemV2QueryPlan,
   getManyItemsV2,
   mapItemV2,
+  NC_VALUE_JOINS,
   type RawItemV2Row,
 } from '@app/server/items/v2';
 
@@ -35,8 +36,15 @@ const TEST_SALE_STATUS = {
   addedAt: new Date('2026-05-01T00:00:00.000Z'),
 } as const;
 
-/** JOIN groups the query engine derives per intent — declared once, reused below. */
-const PRICE_JOINS = ['npPrice', 'ncValue', 'owlsPrice', 'ncMall'] as const;
+/**
+ * JOIN groups the query engine derives per intent — declared once, reused below.
+ * Order follows field declaration: `price` (npPrice, ncMall) then `ncValue`.
+ *
+ * `NC_VALUE_JOINS` is imported (not hardcoded) because it depends on the
+ * `NC_VALUES_TYPE` env var — asserting a literal array here would make this
+ * test pass/fail based on unrelated environment config instead of behavior.
+ */
+const PRICE_JOINS = ['npPrice', 'ncMall', ...NC_VALUE_JOINS] as const;
 const CARD_JOINS = ['color', ...PRICE_JOINS] as const;
 const PRICER_JOINS = [...PRICE_JOINS, 'saleStats'] as const;
 const FULL_JOINS = ['color', ...PRICE_JOINS, 'saleStats'] as const;
@@ -226,7 +234,7 @@ describe('ItemV2 mapper', () => {
     });
   });
 
-  test('prefers an active NC Mall price over NC value sources', () => {
+  test('keeps the NC Mall price and the NC trade value side by side', () => {
     const item = mapItemV2(
       completeRow({
         type: 'nc',
@@ -244,6 +252,7 @@ describe('ItemV2 mapper', () => {
       { ncValuesType: 'best' }
     );
 
+    // `price` is the acquisition price (NC Mall)...
     expect(item.price).toEqual({
       type: 'ncMall',
       price: 150,
@@ -253,9 +262,17 @@ describe('ItemV2 mapper', () => {
       discountEnd: null,
       discountPrice: null,
     });
+    // ...while the trade value coexists in `ncValue` (owls wins under `best`).
+    expect(item.ncValue).toEqual({
+      minValue: 2,
+      maxValue: 2,
+      range: '2-3',
+      addedAt: '2026-03-01T00:00:00.000Z',
+      source: 'lebron',
+    });
   });
 
-  test('falls back from OWLS to ItemDB for the best NC value', () => {
+  test('falls back from OWLS to ItemDB for the best NC value (in ncValue)', () => {
     const item = mapItemV2(
       completeRow({
         type: 'nc',
@@ -270,8 +287,9 @@ describe('ItemV2 mapper', () => {
       { ncValuesType: 'best' }
     );
 
-    expect(item.price).toEqual({
-      type: 'ncValue',
+    // No NC Mall entry → no acquisition price for an NC item.
+    expect(item.price).toBeNull();
+    expect(item.ncValue).toEqual({
       minValue: 3,
       maxValue: 4,
       range: '3-4',
@@ -280,9 +298,15 @@ describe('ItemV2 mapper', () => {
     });
   });
 
-  test('returns no price for no-trade items', () => {
-    const item = mapItemV2(completeRow({ status: 'no trade' }), 'card');
+  test('omits ncValue for non-NC items', () => {
+    const item = mapItemV2(completeRow({ type: 'np' }), 'card');
+    expect(item).not.toHaveProperty('ncValue');
+  });
+
+  test('returns no price and no ncValue for no-trade items', () => {
+    const item = mapItemV2(completeRow({ type: 'nc', status: 'no trade' }), 'card');
     expect(item.price).toBeNull();
+    expect(item).not.toHaveProperty('ncValue');
   });
 
   test('preserves non-standard item statuses', () => {

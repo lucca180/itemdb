@@ -10,11 +10,8 @@ export type ItemPriceV2 = {
   type: 'np';
 };
 
-export type ItemPriceField =
-  | ItemPriceV2
-  | (ItemMallData & { type: 'ncMall' })
-  | (NCValue & { type: 'ncValue' })
-  | null;
+/** Acquisition price: NP market price or active NC Mall price. NC trade value lives in `ItemV2.ncValue`. */
+export type ItemPriceField = ItemPriceV2 | (ItemMallData & { type: 'ncMall' }) | null;
 
 /** Slim liquidity badge — full sold/percent details stay on `/saleStats` (v1). */
 export type ItemSaleStatusV2 = {
@@ -37,6 +34,8 @@ export type ItemV2 = {
   status: string | null;
   colorHex: string | null;
   price: ItemPriceField;
+  /** NC secondary-market trade value (owls/itemdb, in caps). Present only for NC items with a known value. */
+  ncValue?: NCValue;
   saleStatus: ItemSaleStatusV2 | null;
   slug: string | null;
   comment: string | null;
@@ -66,6 +65,7 @@ const CARD_FIELDS = [
   'flags',
   'colorHex',
   'price',
+  'ncValue',
   'rarity',
   'category',
   'estVal',
@@ -81,6 +81,7 @@ const PRICER_FIELDS = [
   'status',
   'rarity',
   'price',
+  'ncValue',
   'saleStatus',
 ] as const satisfies readonly (keyof ItemV2)[];
 

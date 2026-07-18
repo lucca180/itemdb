@@ -2,6 +2,7 @@ import { itemCacheControl, wantsFresh } from '@app/server/items/itemV2Cache';
 import { ItemService } from '@services/ItemService';
 import { trackItemQuota } from '@utils/api/redis';
 import { parseItemIntent } from '@types';
+import { after } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 type RouteContext = {
@@ -37,8 +38,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
   }
 
   // Hits are free; misses (and ?fresh=1) count toward the API quota.
+  // Quota is off the hot path — schedule it after the response is sent.
   if (result.status === 'miss') {
-    await trackItemQuota(1, request);
+    after(() => trackItemQuota(1, request));
   }
 
   // `result.body` is already a JSON string — avoid Response.json() re-stringify.

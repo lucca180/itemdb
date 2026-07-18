@@ -60,7 +60,8 @@ export type ItemV2 = {
   estVal: number | null;
   status: string | null;
   colorHex: string | null;
-  price: ItemPriceField;
+  price: ItemPriceField; // acquisition price: np | ncMall | null
+  ncValue?: NCValue; // NC trade value (caps); present only for NC items with a known value
   saleStatus: ItemSaleStatusV2 | null;
   slug: string | null;
   comment: string | null;
@@ -68,6 +69,10 @@ export type ItemV2 = {
   firstSeen: string | null;
   useTypes: UseTypes;
 };
+
+// price = acquisition cost; ncValue = secondary-market trade value. They coexist
+// (mirrors the item page, which shows NC Mall price and the owls/itemdb caps value
+// side by side). `ItemPriceField = ItemPriceV2 | (ItemMallData & { type: 'ncMall' }) | null`.
 ```
 
 ### Diff vs `ItemData`
@@ -78,7 +83,8 @@ export type ItemV2 = {
 | `isWearable`, `isNeohome`, `isBD`, `isMissingInfo`, `flags` (CSV) | `flags: ItemFlags[]` |
 | `isNC` | `type === 'nc'` |
 | `color` (lab/rgb/hsv/hex/…) | `colorHex` |
-| `price` + `ncValue` + `mallData` | discriminated `price` |
+| `price` + `mallData` | discriminated `price` (np \| ncMall) |
+| `ncValue` | `ncValue?` (separate optional field, NC only) |
 | `inflated: boolean` | `price.flags` |
 | `saleStatus` (`sold`/`total`/`percent`/`type`/…) | slim `{ status, addedAt }` on `pricer` / `full` |
 
@@ -90,14 +96,23 @@ export type ItemV2 = {
 | `findAt` | **Client** (`getItemFindAtLinks` adapted for `ItemV2`) |
 | Full sale stats (`sold`/`percent`/…) | `/api/v1/items/[id]/saleStats` — ItemV2 only embeds the slim badge |
 
-### `price` mapping rules (mapper)
+### `price` + `ncValue` mapping rules (mapper)
 
-1. NC + active mall → `{ ...mall, type: 'ncMall' }` (**mall wins** over ncValue)
-2. NC + ncValue → `{ ...ncValue, type: 'ncValue' }`
-3. NP with a price → `ItemPriceV2`
-4. NP unknown/stale → `value: 0`, `flags` includes `'unknown'`
-5. NP older than 6 months → `flags` includes `'outdated'` (same rule as `ItemCardBadge`)
-6. Otherwise → `null`
+`price` (acquisition) and `ncValue` (NC trade value) are independent fields, mapped separately:
+
+`price`:
+1. `status === 'no trade'` → `null`
+2. NC + active mall → `{ ...mall, type: 'ncMall' }`
+3. NC without an active mall → `null` (NC items have no NP acquisition price)
+4. NP with a price → `ItemPriceV2`
+5. NP unknown/stale → `value: 0`, `flags` includes `'unknown'`
+6. NP older than 6 months → `flags` includes `'outdated'` (same rule as `ItemCardBadge`)
+7. `pb` → `null`
+
+`ncValue` (via `mapItemV2NcValue`, independent of the mall price):
+1. Only for NC items that are not `no trade`; otherwise the field is **omitted**.
+2. Source per `NC_VALUES_TYPE` (`lebron` / `itemdb` / `best`); `best` = owls first, else itemdb.
+3. No known value → **omitted** (`undefined`, so JSON drops the key).
 
 ### `ItemData` deprecated
 
@@ -118,8 +133,8 @@ Actual removal only after hot-path migration — not in this wave.
 | Intent | Contents |
 |--------|----------|
 | `minimal` | ids, name, slug, image, type, flags, description, status |
-| `card` | + colorHex, price, rarity, category, estVal |
-| `pricer` | ids, image, name, slug, type, status, rarity, price, **saleStatus** |
+| `card` | + colorHex, price, **ncValue**, rarity, category, estVal |
+| `pricer` | ids, image, name, slug, type, status, rarity, price, **ncValue**, **saleStatus** |
 | `full` | every `ItemV2` field (resolved from the query-engine field registry — not hand-listed) |
 
 Single registry: `itemIntents` in [`types/itemV2.ts`](../types/itemV2.ts) drives `ItemIntent`, `ItemV2For<>`, field lists, HTTP validation (`parseItemIntent`), and cache TTL (`ttlSeconds` / `getIntentTtl`).  
@@ -267,12 +282,7 @@ Takeaway: `minimal` is clearly cheaper; `card` payload is ~3× smaller than v1 e
 **Design:**
 
 - Redis key: `iv2:item:{type}:{key}:{intent}` — `type` is the active lookup (`id` / `item_id` / `name` / `slug` / `image_id` / `name_image_id` / `id_name`). The `{key}` segment is always lowercased. One entry per intent; never derived across intents. Writes also set an `id:{internal_id}` alias (same JSON string) so single-item and `many?type=id&data[]=` share entries. HTTP response keys remain DB-canonical (v1 parity).
-- TTL lives on [`itemIntents`](../types/itemV2.ts) as `ttlSeconds` (`getIntentTtl`); no tag invalidation (TTL-only):
-
-  | Intent | TTL | Why |
-  |--------|----:|-----|
-  | `minimal` | 600s | no `price` field — only changes on admin edits |
-  | `card` / `pricer` / `full` | 60s | all include `price`, the most volatile field |
+- **TTL is a single source of truth: `itemIntents[intent].ttlSeconds` in [`types/itemV2.ts`](../types/itemV2.ts)**, read via `getIntentTtl()`. Not duplicated here as a table of numbers — those drift from the code (this doc previously hardcoded stale values). Rule of thumb baked into the registry: intents without `price` (`minimal`) get a longer TTL; intents with `price`/`ncValue` get a shorter one. No tag invalidation (TTL-only).
 
 - Redis stores per-item JSON under **DB-canonical keys** (same indexing as v1 / `getManyItemsV2`). Hits are parsed, merged into a record, and the response is `JSON.stringify`'d once. Redis writes are scheduled with Next.js `after()` so they do not block the response.
 - `items/many`: cache-aside **per item** when `keys.length <= ITEM_CACHE_BATCH_MAX` (128) — `mget` the batch, Prisma only for misses, `scheduleItemCacheWrite` for fresh entries. Above the batch max → Prisma only (no Redis read/write).
@@ -285,11 +295,19 @@ Takeaway: `minimal` is clearly cheaper; `card` payload is ~3× smaller than v1 e
 
 ---
 
-### Phase 4 — Search v2
+### Phase 4 — Search v2 ✅
 
 **Goal:** `app/api/v2/search` (default intent `card`).
 
-**Done when:** parity on critical filters; smaller payload in the simple case.
+**Implementation:** single query, `queryBuilder` untouched. [`app/server/search/searchV2.ts`](../app/server/search/searchV2.ts) reuses `buildSearchQueryParts` (`mode: 'items'` — same filters/sort/pagination as v1) and maps the raw rows with [`app/server/search/searchRowToItemV2.ts`](../app/server/search/searchRowToItemV2.ts), which normalizes the v1 aliases into the `RAW_COLUMNS` shape and delegates to `mapItemV2` (single source for price precedence/flags). Route: [`app/api/v2/search/route.ts`](../app/api/v2/search/route.ts) (`GET`, `s`/`intent`/`page`/`limit`≤3000/filters + `list_id`+JWT), quota via `trackItemQuota(content.length)`, `Cache-Control: private, no-store`. All intents are serviceable (the search row already selects `a.*` + all joins); default `card`.
+
+**`totalResults` is opt-in:** the default skips the `count(*) OVER()` window count; pass `?includeStats=true` to get the real total (otherwise `totalResults` equals the returned page length). No usage/Sentry tracking on the v2 route.
+
+**Parity gap:** the search price-select omits `manual_check` / `priceContext`, so the `unconfirmed` flag and price `context` are absent vs. `/api/v2/items` (add two columns to the price-select if full parity is needed).
+
+**Out of scope (stay on v1):** facets/stats (`onlyStats`, `search/stats`) and `search/omni`; no search cache this phase.
+
+**Done when:** ~~parity on critical filters; smaller payload in the simple case~~ — `test/search-v2.test.ts` asserts v1↔v2 item/order parity + ItemV2 card shape across the critical filter cases.
 
 ---
 
@@ -354,4 +372,5 @@ Takeaway: `minimal` is clearly cheaper; `card` payload is ~3× smaller than v1 e
 2. ~~**Phase 1:** `app/server/items/v2.ts` (query + mapper).~~
 3. ~~**Phase 2:** `app/api/v2/items/many` + `[id_name]` Route Handlers + benchmark vs v1.~~
 4. ~~**Phase 3:** CDN + Redis cache (per-intent TTL, bypass param, quota-on-miss).~~
-5. **Phase 4:** `app/api/v2/search` (default intent `card`).
+5. ~~**Phase 4:** `app/api/v2/search` (default intent `card`).~~
+6. **Phase 5:** migrate hot-path UI (item page, search results, lists, restock) to `ItemCardV2` / `ItemV2`.

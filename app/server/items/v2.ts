@@ -9,7 +9,11 @@ import {
   type ItemV2,
   type ItemV2For,
 } from '@types';
-import { mapItemV2Price, type MapItemV2Options } from '@app/server/items/itemV2Price';
+import {
+  mapItemV2NcValue,
+  mapItemV2Price,
+  type MapItemV2Options,
+} from '@app/server/items/itemV2Price';
 import { asJsonDate, asNumber, asString, type RawItemV2Row } from '@app/server/items/itemV2Raw';
 
 export type { MapItemV2Options } from '@app/server/items/itemV2Price';
@@ -112,6 +116,27 @@ const RAW_COLUMNS = {
   saleAdded: Prisma.sql`saleStats.addedAt AS saleAdded`,
 } as const;
 
+const NC_VALUES_TYPE = process.env.NC_VALUES_TYPE;
+
+/**
+ * JOINs needed for the configured NC value source. `NC_VALUES_TYPE` is a static
+ * per-deployment env var (never varies per request), so the unused source's JOIN
+ * can be dropped entirely instead of always paying for both `ncValues` and
+ * `owlsPrice` on every `card`/`pricer`/`full` query.
+ *
+ * `MapItemV2Options.ncValuesType` (a test-only override — no production call site
+ * passes it) does not affect this: it bypasses the query planner and reads
+ * whatever columns the caller's raw row already has.
+ */
+export const NC_VALUE_JOINS: readonly JoinName[] =
+  NC_VALUES_TYPE === 'lebron'
+    ? ['owlsPrice']
+    : NC_VALUES_TYPE === 'itemdb'
+      ? ['ncValue']
+      : NC_VALUES_TYPE === 'best'
+        ? ['ncValue', 'owlsPrice']
+        : []; // no source configured — mapItemV2NcValue always omits the field
+
 const JOINS: Record<JoinName, Prisma.Sql> = {
   color: Prisma.sql`
     LEFT JOIN ItemColor AS color
@@ -148,7 +173,7 @@ type FieldDefinition<K extends keyof ItemV2> = {
 };
 
 type FieldDefinitions = {
-  [K in keyof ItemV2]: FieldDefinition<K>;
+  [K in keyof ItemV2]-?: FieldDefinition<K>;
 };
 
 /**
@@ -207,13 +232,6 @@ const FIELD_DEFINITIONS: FieldDefinitions = {
       'priceInflationId',
       'priceManualCheck',
       'priceContext',
-      'ncValueAddedAt',
-      'ncValueMin',
-      'ncValueMax',
-      'ncValueRange',
-      'owlsPricedAt',
-      'owlsValue',
-      'owlsValueMin',
       'ncMallPrice',
       'ncMallSaleBegin',
       'ncMallSaleEnd',
@@ -221,8 +239,23 @@ const FIELD_DEFINITIONS: FieldDefinitions = {
       'ncMallDiscountEnd',
       'ncMallDiscountPrice',
     ],
-    joins: ['npPrice', 'ncValue', 'owlsPrice', 'ncMall'],
+    joins: ['npPrice', 'ncMall'],
     map: mapItemV2Price,
+  },
+  ncValue: {
+    columns: [
+      'type',
+      'status',
+      'ncValueAddedAt',
+      'ncValueMin',
+      'ncValueMax',
+      'ncValueRange',
+      'owlsPricedAt',
+      'owlsValue',
+      'owlsValueMin',
+    ],
+    joins: NC_VALUE_JOINS,
+    map: mapItemV2NcValue,
   },
   saleStatus: {
     columns: ['saleStats', 'saleAdded'],
@@ -408,10 +441,11 @@ export function mapItemV2<I extends ItemIntent>(
   options: MapItemV2Options = {}
 ): ItemV2For<I> {
   const item = Object.fromEntries(
-    getItemV2QueryPlan(intent).fields.map((field) => [
-      field,
-      FIELD_DEFINITIONS[field].map(raw, options),
-    ])
+    getItemV2QueryPlan(intent)
+      .fields.map((field) => [field, FIELD_DEFINITIONS[field].map(raw, options)] as const)
+      // Optional fields (e.g. `ncValue`) map to `undefined` when absent — omit the
+      // key entirely so the response never carries empty slots.
+      .filter(([, value]) => value !== undefined)
   );
 
   return item as ItemV2For<I>;

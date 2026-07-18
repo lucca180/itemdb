@@ -3,6 +3,7 @@ import { parseManyItemsV2Query, parseManyItemsV2SearchParams } from '@app/api/v2
 import { ItemService } from '@services/ItemService';
 import { trackItemQuota } from '@utils/api/redis';
 import { parseItemIntent } from '@types';
+import { after } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 const MANY_LIMIT = 10_000;
@@ -35,8 +36,9 @@ async function handleMany(
   });
 
   // Only Prisma-backed items count; full Redis hits leave dbCount at 0.
+  // Quota is off the hot path — schedule it after the response is sent.
   if (dbCount > 0) {
-    await trackItemQuota(dbCount, request);
+    after(() => trackItemQuota(dbCount, request));
   }
 
   return new Response(body, {
