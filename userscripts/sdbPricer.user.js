@@ -1,6 +1,6 @@
   // ==UserScript==
   // @name         itemdb - Safety Deposit Box Pricer
-  // @version      2.0.0
+  // @version      2.0.1
   // @author       itemdb
   // @namespace    itemdb
   // @description  Shows the market price for your sdb
@@ -100,16 +100,23 @@ function getPriceStr(item, itemQty) {
       }
 
       if(item.status === 'active') {
-        if(item.type === 'nc' && !item.price){
-          priceStr += `<a href="${linkUrl}" target="_blank">NC</a>`;
-        }
+        if(item.type === 'nc') {
+          // price for NC items is now only the active NC Mall price (or null).
+          // The secondary-market trade value lives in its own field: item.ncValue.
+          const ncMall = item.price?.type === "ncMall" ? item.price : null;
+          const ncValue = item.ncValue;
 
-        if(item.type === 'nc' && item.price?.type === "ncValue"){
-          priceStr += `<a href="${linkUrl}" target="_blank">${item.price.range} caps</a>`;
-        }
+          if(ncMall){
+            priceStr += `<a href="${linkUrl}" target="_blank">Buyable</a>`;
+          }
 
-        if(item.type === 'nc' && item.price?.type === "ncMall"){
-          priceStr += `<a href="${linkUrl}" target="_blank">Buyable</a>`;
+          else if(ncValue){
+            priceStr += `<a href="${linkUrl}" target="_blank">${ncValue.range} caps</a>`;
+          }
+
+          else {
+            priceStr += `<a href="${linkUrl}" target="_blank">NC</a>`;
+          }
         }
 
         if(item.type === 'np' && !item.price.value){
@@ -124,7 +131,7 @@ function getPriceStr(item, itemQty) {
               priceStr += `<small style='color:${color2}'><b>[${item.saleStatus.status.toUpperCase()}]</b></small> `;
           }
 
-          const isInflated = item.price.flags?.includes('inflated');
+          const isInflated = item.price.flags?.includes('inflation');
 
           priceStr += `<a href="${linkUrl}" target="_blank">${isInflated ? "⚠ " : ""}${intl.format(item.price.value)} NP</a>`;
           priceStr += `</div>`;
@@ -139,7 +146,7 @@ function getPriceStr(item, itemQty) {
         }
       }
 
-      if (item.isMissingInfo){
+      if (item.flags?.includes('missingInfo')){
         priceStr += `<div><small><a href="https://itemdb.com.br/contribute?utm_content=sdbPricer" target="_blank"><i>We need info about this item<br/>Learn how to Help</i></a></small></div>`
       }
     } catch(e) { // We're not catching any specific error, as any error that may surface it will be handled with the "We need more info" referral link.

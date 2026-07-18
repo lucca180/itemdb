@@ -83,6 +83,7 @@ const PRICER_FIELDS = [
   'price',
   'ncValue',
   'saleStatus',
+  'flags',
 ] as const satisfies readonly (keyof ItemV2)[];
 
 export const ALL_ITEM_V2_FIELDS = 'all' as const;
