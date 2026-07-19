@@ -172,7 +172,7 @@ export async function getFilteredListItems(
     list,
     username,
     list_id_or_slug: list.internal_id,
-    searchFilters: filters,
+    searchFilters: { ...filters, limit: 100000 },
   });
 
   if (!itemInfoData) return emptyListItemsData();
