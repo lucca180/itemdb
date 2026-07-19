@@ -1,23 +1,10 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 
-const getCachedManyItemsV2Mock = vi.hoisted(() => vi.fn());
-const getCachedItemV2Mock = vi.hoisted(() => vi.fn());
 const trackItemQuotaMock = vi.hoisted(() => vi.fn());
 
-vi.mock('@app/server/items/itemV2Cache', async () => {
-  const actual = await vi.importActual<typeof import('@app/server/items/itemV2Cache')>(
-    '@app/server/items/itemV2Cache'
-  );
-  return {
-    ...actual,
-    getCachedManyItemsV2: getCachedManyItemsV2Mock,
-    getCachedItemV2: getCachedItemV2Mock,
-  };
-});
-
-vi.mock('@utils/api/redis', async () => {
-  const actual = await vi.importActual<typeof import('@utils/api/redis')>('@utils/api/redis');
+vi.mock('@utils/api/redis', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@utils/api/redis')>();
   return {
     ...actual,
     trackItemQuota: trackItemQuotaMock,
@@ -27,8 +14,8 @@ vi.mock('@utils/api/redis', async () => {
 // Route handlers call `after()` to schedule quota tracking off the hot path.
 // Outside a real request scope (unit tests) `after` throws, so run the callback
 // immediately here to keep the post-response behavior observable in assertions.
-vi.mock('next/server', async () => {
-  const actual = await vi.importActual<typeof import('next/server')>('next/server');
+vi.mock('next/server', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('next/server')>();
   return {
     ...actual,
     after: (callback: () => unknown) => {
@@ -41,7 +28,16 @@ import { GET as getMany, POST as postMany } from '@app/api/v2/items/many/route';
 import { GET as getById } from '@app/api/v2/items/[id_name]/route';
 import { parseManyItemsV2Query, parseManyItemsV2SearchParams } from '@app/api/v2/items/parse';
 import { itemCacheControl } from '@app/server/items/itemV2Cache';
+import { ItemService } from '@services/ItemService';
 import { parseItemIntent } from '@types';
+
+// The routes reach the cache layer through `ItemService`, so we spy on that
+// facade instead of mocking `itemV2Cache` wholesale. This keeps the real
+// `itemCacheControl`/`wantsFresh` helpers in play (headers stay derived, never
+// hardcoded) and avoids the module-instance race that an async `vi.mock`
+// factory for `itemV2Cache` would introduce via `ItemService`'s static fields.
+const getCachedManyItemsV2Mock = vi.spyOn(ItemService, 'getCachedManyItems');
+const getCachedItemV2Mock = vi.spyOn(ItemService, 'getCachedItem');
 
 /** Expected GET header for the default `minimal` intent — derived, never hardcoded. */
 const MINIMAL_GET_CACHE_CONTROL = itemCacheControl('minimal', { method: 'GET' });
