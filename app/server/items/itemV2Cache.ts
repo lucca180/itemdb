@@ -46,8 +46,6 @@ export type CachedManyResult = {
 
 /** Above this size, `many` skips Redis (mget cost can beat a single SQL). */
 export const ITEM_CACHE_BATCH_MAX = 10000;
-/** Fail-open: slow Redis must not stall the request longer than this. */
-export const ITEM_CACHE_TIMEOUT_MS = 150;
 
 /** `iv2:item:{type}:{key}:{intent}` — key is always lowercased. */
 export function itemCacheKey(type: ItemCacheType, key: string, intent: ItemIntent): string {
@@ -179,24 +177,6 @@ function parseCachedItem(value: string): ItemRecord | null {
   return null;
 }
 
-/** Race Redis against a short timeout; null means treat as total miss. */
-async function withRedisTimeout<T>(promise: Promise<T>): Promise<T | null> {
-  let timeoutId: ReturnType<typeof setTimeout> | undefined;
-  try {
-    return await Promise.race([
-      promise,
-      new Promise<null>((resolve) => {
-        timeoutId = setTimeout(() => resolve(null), ITEM_CACHE_TIMEOUT_MS);
-      }),
-    ]);
-  } catch (error) {
-    console.error('itemV2Cache redis error', error);
-    return null;
-  } finally {
-    if (timeoutId) clearTimeout(timeoutId);
-  }
-}
-
 function toCacheEntries(items: Record<string, ItemRecord>): ItemCacheEntry[] {
   return Object.entries(items).map(([key, item]) => ({
     key,
@@ -235,8 +215,15 @@ export async function readItemCache(
   if (!redis || keys.length === 0) return hits;
 
   const redisKeys = keys.map((key) => itemCacheKey(type, key, intent));
-  const values = await withRedisTimeout(redis.mget(...redisKeys));
-  if (!values) return hits;
+
+  let values: (string | null)[];
+  try {
+    // `commandTimeout` on redisCache enforces the fail-open latency ceiling.
+    values = await redis.mget(...redisKeys);
+  } catch (error) {
+    console.error('itemV2Cache redis error', error);
+    return hits;
+  }
 
   for (let i = 0; i < keys.length; i++) {
     const value = values[i];

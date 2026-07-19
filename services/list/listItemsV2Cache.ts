@@ -18,33 +18,20 @@ import { runAfter } from '@utils/api/after';
 /** Longer TTL for official lists (they change rarely); shorter for user lists. */
 const LIST_IDS_TTL = { official: 60 * 60, regular: 5 * 60 } as const;
 
-/** Fail-open: a slow Redis read must not stall the request. */
-const READ_TIMEOUT_MS = 150;
-
 const listIdsKey = (listId: number) => `iv2:list:ids:${listId}`;
-
-/** Race a Redis promise against a timeout; any failure resolves to `null`. */
-async function withTimeout<T>(promise: Promise<T>): Promise<T | null> {
-  let timeoutId: ReturnType<typeof setTimeout> | undefined;
-  try {
-    return await Promise.race([
-      promise,
-      new Promise<null>((resolve) => {
-        timeoutId = setTimeout(() => resolve(null), READ_TIMEOUT_MS);
-      }),
-    ]);
-  } catch (error) {
-    console.error('listItemsV2Cache redis error', error);
-    return null;
-  } finally {
-    if (timeoutId) clearTimeout(timeoutId);
-  }
-}
 
 /** Returns the cached ordered ids for a list, or `null` on miss/error/no-redis. */
 export async function readListItemIds(listId: number): Promise<number[] | null> {
   if (!redisCache) return null;
-  const raw = await withTimeout(redisCache.get(listIdsKey(listId)));
+
+  let raw: string | null;
+  try {
+    // `commandTimeout` on redisCache enforces the fail-open latency ceiling.
+    raw = await redisCache.get(listIdsKey(listId));
+  } catch (error) {
+    console.error('listItemsV2Cache redis error', error);
+    return null;
+  }
   if (!raw) return null;
 
   try {

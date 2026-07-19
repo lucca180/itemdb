@@ -2,6 +2,7 @@ import prisma from '../../../utils/prisma';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { CheckAuth } from '../../../utils/googleCloud';
 import { LogService } from '@services/ActionLogService';
+import { invalidateCachedUser } from '@utils/auth/userCache';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
@@ -37,6 +38,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     await prisma.user.delete({
       where: { id: user.id },
     });
+
+    void invalidateCachedUser(user.id);
 
     await LogService.createLog(
       'deleteUser',

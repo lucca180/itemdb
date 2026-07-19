@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { CheckAuth } from '../../../utils/googleCloud';
 import { User as dbUser } from '@prisma/generated/client';
 import { rawToUser } from './login';
+import { invalidateCachedUser } from '@utils/auth/userCache';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
@@ -30,6 +31,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     })) as dbUser;
 
     if (!dbUser) return res.status(400).json({ error: 'user not found' });
+
+    void invalidateCachedUser(decodedToken.uid);
 
     const user = rawToUser(dbUser, true);
 

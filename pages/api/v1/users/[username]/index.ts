@@ -6,6 +6,7 @@ import { getImagePalette } from '../../lists/[username]';
 import { rawToUser } from '../../../auth/login';
 import { userAchievementsTag, userListsTag, userProfileTag } from '@utils/appCacheTags';
 import { triggerAppRevalidation } from '@utils/triggerAppRevalidation';
+import { invalidateCachedUser } from '@utils/auth/userCache';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') return GET(req, res);
@@ -99,6 +100,8 @@ const POST = async (req: NextApiRequest, res: NextApiResponse) => {
     });
 
     if (!tempUser) return res.status(400).json({ error: 'user not found' });
+
+    void invalidateCachedUser(decodedToken.uid);
 
     const updatedUser = rawToUser(tempUser, true);
 

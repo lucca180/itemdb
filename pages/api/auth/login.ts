@@ -6,6 +6,7 @@ import { startOfDay } from 'date-fns';
 import { User as PrismaUser } from '@prisma/generated/client';
 import { consumeMagicToken } from '@utils/auth/magicLink';
 import { SESSION_DURATION_SECONDS, SESSION_VERSION, signSession } from '@utils/auth/jwt';
+import { invalidateCachedUser } from '@utils/auth/userCache';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
@@ -35,6 +36,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     });
 
     if (!dbUser) return res.status(401).json({ error: 'Unauthorized' });
+
+    void invalidateCachedUser(dbUser.id);
 
     const sessionToken = await signSession({
       uid: dbUser.id,

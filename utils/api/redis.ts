@@ -33,6 +33,9 @@ const globalForRedis = globalThis as unknown as {
   redisCache: RedisRaw | undefined;
 };
 
+/** Hard per-command ceiling for the cache DB — lets callers fail open on a plain try/catch. */
+export const CACHE_REDIS_COMMAND_TIMEOUT_MS = 200;
+
 const redisOpts =
   process.env.NODE_ENV !== 'development' &&
   process.env.REDIS_PORT &&
@@ -50,10 +53,20 @@ export const redis =
   globalForRedis.redis ??
   (redisOpts ? (globalForRedis.redis = new RedisRaw(redisOpts)) : undefined);
 
-/** ItemV2 HTTP cache — same Redis host, logical DB 1 (rate limit stays on DB 0). */
+/**
+ * ItemV2 HTTP cache + auth-user cache — same Redis host, logical DB 1 (rate
+ * limit stays on DB 0). `commandTimeout` enforces the fail-open latency ceiling
+ * at the client level, so callers don't need their own `Promise.race` timeout.
+ */
 export const redisCache =
   globalForRedis.redisCache ??
-  (redisOpts ? (globalForRedis.redisCache = new RedisRaw({ ...redisOpts, db: 1 })) : undefined);
+  (redisOpts
+    ? (globalForRedis.redisCache = new RedisRaw({
+        ...redisOpts,
+        db: 1,
+        commandTimeout: CACHE_REDIS_COMMAND_TIMEOUT_MS,
+      }))
+    : undefined);
 
 export const createSession = (logged = false) => {
   const { LOGGED_LIMIT, MIN_LIMIT_COUNT, SESSION_EXPIRE, SESSION_EXPIRE_LOGGED } = API_CONST;

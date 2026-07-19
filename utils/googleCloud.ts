@@ -3,6 +3,7 @@ import prisma from './prisma';
 import { User as dbUser } from '@prisma/generated/client';
 import { rawToUser } from '../pages/api/auth/login';
 import { verifySession, VerifiedSession } from './auth/jwt';
+import { getCachedUser, setCachedUser } from './auth/userCache';
 import {
   S3Client,
   PutObjectCommand,
@@ -52,6 +53,9 @@ export const CheckAuth = async (
 
   if (skipUser) return { decodedToken, user: null };
 
+  const cached = await getCachedUser(payload.uid);
+  if (cached) return { decodedToken, user: cached };
+
   const dbUser = (await prisma.user.findUnique({
     where: { id: payload.uid },
   })) as dbUser | null;
@@ -59,6 +63,9 @@ export const CheckAuth = async (
   if (!dbUser) return { decodedToken, user: null };
 
   const user = rawToUser(dbUser);
+
+  // Fire-and-forget: caching must never block or fail the auth check.
+  void setCachedUser(payload.uid, user);
 
   return { decodedToken, user };
 };
