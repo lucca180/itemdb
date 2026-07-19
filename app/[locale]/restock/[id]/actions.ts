@@ -1,6 +1,6 @@
 'use server';
 
-import { doSearchV2 } from '@app/server/search/searchV2';
+import { ItemService } from '@services/ItemService';
 import { resolveRestockShopRoute } from '@app/utils/resolveRestockShopRoute';
 import type { ItemV2For, SearchFilters, SearchStats, ShopInfo } from '@types';
 import { getRestockShopData, getRestockShopStats } from './loadRestockShop';
@@ -42,6 +42,6 @@ export async function applyRestockFilters(
   const shop = resolveShop(id, locale);
   if (!shop) return [];
 
-  const result = await doSearchV2('', filters, { intent: 'card' });
+  const result = await ItemService.search('', filters, { intent: 'card' });
   return result.content;
 }

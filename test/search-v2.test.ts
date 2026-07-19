@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { doSearch } from '../pages/api/v1/search';
-import { doSearchV2 } from '@app/server/search/searchV2';
+import { ItemService } from '@services/ItemService';
 import { asSearchFilters, consistentPageCases } from './search-test-utils';
 
 describe('Search v2 parity', () => {
@@ -11,7 +11,7 @@ describe('Search v2 parity', () => {
 
       const [v1, v2] = await Promise.all([
         doSearch(query.s, filters, true, 0, false, false),
-        doSearchV2(query.s, filters, { intent: 'card', includeStats: true }),
+        ItemService.search(query.s, filters, { intent: 'card', includeStats: true }),
       ]);
 
       // Same envelope: filters/sort/pagination are shared with v1.

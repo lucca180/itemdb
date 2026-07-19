@@ -1,4 +1,4 @@
-import { doSearchV2 } from '@app/server/search/searchV2';
+import { ItemService } from '@services/ItemService';
 import { parseItemIntent } from '@types';
 import type { SearchFilters } from '@types';
 import { verifyListJWT } from '@utils/api/api-utils';
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const result = await doSearchV2(query, reqQuery as SearchFilters, {
+  const result = await ItemService.search(query, reqQuery as SearchFilters, {
     intent,
     includeStats,
     list: list_id ? { id: list_id, includeHidden: false } : undefined,

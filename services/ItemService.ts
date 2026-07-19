@@ -1,5 +1,6 @@
 import { getItemV2, getManyItemsV2, type FindManyItemsV2Query } from '@app/server/items/v2';
 import { getCachedItemV2, getCachedManyItemsV2 } from '@app/server/items/itemV2Cache';
+import { doSearchV2 } from '@app/server/search/searchV2';
 import { getLatestItemsV2 } from '@services/item/latestItems';
 import { getTrendingItemsV2 } from '@services/item/trendingItems';
 import { getNCMallItemsDataV2 } from '@services/item/mallItems';
@@ -60,6 +61,13 @@ export class ItemService {
   /** Recently repriced items (intent `card`). Delegates to `getLatestPricedItemsV2`. */
   static getLatestPriced: typeof getLatestPricedItemsV2 = (...args) =>
     getLatestPricedItemsV2(...args);
+
+  /**
+   * ItemV2 search (filters/sort/pagination mirror `/api/v1/search`, default
+   * intent `card`). The single entry point for v2 search — callers should not
+   * import `doSearchV2` directly. Delegates to `doSearchV2`.
+   */
+  static search = doSearchV2;
 
   /**
    * Route-oriented cache-aside for a SINGLE item.

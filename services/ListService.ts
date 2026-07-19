@@ -1,4 +1,4 @@
-import { ItemData, SearchFilters, User, UserList } from '@types';
+import { ItemData, ItemIntent, SearchFilters, User, UserList } from '@types';
 import { CheckAuth } from '@utils/googleCloud';
 import prisma from '@utils/prisma';
 import { NextApiRequest } from 'next';
@@ -23,6 +23,7 @@ import {
 } from '@services/list/listItemsWrite';
 import { rawToList, rawToListItems } from '@services/list/listMappers';
 import { queryUserLists, type GetUserListsOptions } from '@services/list/userListsQuery';
+import { fetchListItemsV2, type FetchListItemsV2Result } from '@services/list/listItemsV2';
 
 export { rawToList, rawToListItems } from '@services/list/listMappers';
 export type { PutListItemInput, DynamicItemChanges };
@@ -196,6 +197,39 @@ export class ListService {
     });
 
     return itemMap;
+  }
+
+  /**
+   * ItemV2 items for a list (v2 `itemdata`). Mirrors {@link getListItems}:
+   * resolves/authorizes the list, skips dynamic search lists, and decides
+   * hidden-item authorization here — the caller only owns HTTP concerns. Returns
+   * `null` when the list is missing or not visible. `includeHidden` is an opt-in
+   * request flag, still gated to the owner/admin. The resolved `list` is returned
+   * so the route can pick the right `Cache-Control`.
+   */
+  async getListItemsV2<I extends ItemIntent = 'card'>(
+    params: GetListItemsParams & {
+      intent?: I;
+      asObject?: boolean;
+      includeHidden?: boolean;
+      fresh?: boolean;
+    }
+  ): Promise<(FetchListItemsV2Result<I> & { list: UserList }) | null> {
+    const list =
+      params.list ?? (await this.getList({ ...params, skipSync: true } as GetListParams));
+    if (!list || list.dynamicType === 'search') return null;
+
+    // Opt-in flag, but hidden items are only ever exposed to the owner/admin.
+    const includeHidden = !!params.includeHidden && this.canViewHiddenListItems(list);
+
+    const result = await fetchListItemsV2(list, {
+      includeHidden,
+      intent: params.intent ?? ('card' as I),
+      asObject: params.asObject ?? false,
+      fresh: params.fresh ?? false,
+    });
+
+    return { ...result, list };
   }
 
   async getListItemInfo(params: GetListItemParams) {

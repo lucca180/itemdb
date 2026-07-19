@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { cacheLife, cacheTag } from 'next/cache';
-import { doSearchV2 } from '@app/server/search/searchV2';
+import { ItemService } from '@services/ItemService';
 import { getSearchStats } from '@pages/api/v1/search/stats';
 import type { ItemV2For, SearchFilters, SearchStats, ShopInfo } from '@types';
 import { fitCacheTag } from '@utils/appCacheTags';
@@ -24,7 +24,7 @@ export type RestockShopData = {
 /**
  * Full profitable item list + header counts for a restock shop.
  * Cached so the SSR preload and the client `loadRestockShopItems` action share
- * a single `doSearchV2` run.
+ * a single `ItemService.search` run.
  */
 export async function getRestockShopData(shopInfo: ShopInfo): Promise<RestockShopData> {
   'use cache';
@@ -33,7 +33,7 @@ export async function getRestockShopData(shopInfo: ShopInfo): Promise<RestockSho
 
   const filters: SearchFilters = RESTOCK_FILTER(shopInfo.id);
   filters.restockProfit = '';
-  const result = await doSearchV2('', filters, { intent: 'card' });
+  const result = await ItemService.search('', filters, { intent: 'card' });
 
   const fullItems = result.content
     .filter((item) => (getRestockProfitV2(item) ?? 0) >= INITIAL_MIN_PROFIT)
