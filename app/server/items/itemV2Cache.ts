@@ -10,7 +10,6 @@
  *
  * Used by `/api/v2/items/[id_name]` and `/api/v2/items/many`.
  */
-import { after } from 'next/server';
 import {
   encodeNameImageKey,
   getItemV2,
@@ -19,6 +18,7 @@ import {
   type FindManyItemsV2Type,
 } from '@app/server/items/v2';
 import { redisCache as redis } from '@utils/api/redis';
+import { runAfter } from '@utils/api/after';
 import { getIntentTtl, type ItemIntent, type ItemV2 } from '@types';
 
 /** Which identifier field the request used — mirrors `resolveLookup` in v2.ts. */
@@ -283,14 +283,14 @@ export async function writeItemCache(
 }
 
 /** Fire-and-forget write after the response is sent (same pattern as getItemForPage). */
-export function scheduleItemCacheWrite(
+export async function scheduleItemCacheWrite(
   type: ItemCacheType,
   intent: ItemIntent,
   entries: ItemCacheEntry[]
-): void {
+): Promise<void> {
   if (!redis || entries.length === 0) return;
 
-  after(async () => {
+  await runAfter(async () => {
     try {
       await writeItemCache(type, intent, entries);
     } catch (error) {
@@ -324,7 +324,7 @@ export async function getCachedManyItemsV2(
   if (!canCacheMany(keys.length) || fresh) {
     const items = await getManyItemsV2(query, { intent, limit });
     if (fresh && canCacheMany(keys.length)) {
-      scheduleItemCacheWrite(type, intent, toCacheEntries(items));
+      await scheduleItemCacheWrite(type, intent, toCacheEntries(items));
     }
     return { body: JSON.stringify(items), dbCount: Object.keys(items).length };
   }
@@ -343,7 +343,7 @@ export async function getCachedManyItemsV2(
     const items = await getManyItemsV2(missQuery, { intent, limit });
     dbCount = Object.keys(items).length;
     Object.assign(result, items);
-    scheduleItemCacheWrite(type, intent, toCacheEntries(items));
+    await scheduleItemCacheWrite(type, intent, toCacheEntries(items));
   }
 
   return { body: JSON.stringify(result), dbCount };
@@ -381,7 +381,7 @@ export async function getCachedItemV2(
   const json = JSON.stringify(item);
 
   if (redis) {
-    after(async () => {
+    await runAfter(async () => {
       try {
         await writeItemCache(type, intent, [{ key, json, internalId: item.internal_id }]);
         if (type === 'id_name' && item.slug) {

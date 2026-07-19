@@ -57,7 +57,7 @@ export async function fetchListItemsV2<I extends ItemIntent>(
     ids = content.map((item) => item.internal_id);
 
     // Never cache ids that include hidden items.
-    if (!includeHidden) scheduleListItemIdsWrite(list.internal_id, ids, !!list.official);
+    if (!includeHidden) await scheduleListItemIdsWrite(list.internal_id, ids, !!list.official);
   }
 
   // 2. Payloads via the shared item cache. Returns `{ body, dbCount }` so quota

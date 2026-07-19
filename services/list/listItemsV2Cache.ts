@@ -12,8 +12,8 @@
  * TTL-only (no active invalidation) — consistent with the Phase 3 item cache.
  * A membership change (add/remove/hide/reorder) may take up to the TTL to show.
  */
-import { after } from 'next/server';
 import { redisCache } from '@utils/api/redis';
+import { runAfter } from '@utils/api/after';
 
 /** Longer TTL for official lists (they change rarely); shorter for user lists. */
 const LIST_IDS_TTL = { official: 60 * 60, regular: 5 * 60 } as const;
@@ -56,11 +56,15 @@ export async function readListItemIds(listId: number): Promise<number[] | null> 
 }
 
 /** Schedules a Redis write of the ordered ids (off the hot path via `after()`). */
-export function scheduleListItemIdsWrite(listId: number, ids: number[], official: boolean): void {
+export async function scheduleListItemIdsWrite(
+  listId: number,
+  ids: number[],
+  official: boolean
+): Promise<void> {
   if (!redisCache) return;
 
   const ttl = official ? LIST_IDS_TTL.official : LIST_IDS_TTL.regular;
-  after(async () => {
+  await runAfter(async () => {
     try {
       if (!redisCache) return;
       await redisCache.set(listIdsKey(listId), JSON.stringify(ids), 'EX', ttl);
