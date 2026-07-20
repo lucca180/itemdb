@@ -18,6 +18,13 @@
     {},
     {
       "ApiKeyAuth": []
+    },
+    {
+      "SessionCookie": []
+    },
+    {
+      "ApiKeyAuth": [],
+      "SessionCookie": []
     }
   ],
   "paths": {
@@ -84,7 +91,7 @@
     "/api/v2/items/many": {
       "get": {
         "operationId": "getManyItemsV2",
-        "summary": "Get Many Items",
+        "summary": "Get many items",
         "description": "Lookup kind is `type` + `data` — exactly one active filter per request. Array params use bracket notation, e.g. `?type=id&data[]=1&data[]=2&intent=minimal`. For `type=name_image_id`, each `data[]` entry is a `[name, imageId]` pair.\n\n**Cache:** Redis + CDN for successful GETs (per item, keyed by lookup type + intent). Cache hits do not consume API quota; only Prisma-backed misses count. Use `?fresh=1` to bypass Redis (still counts toward quota; response is `no-store`).",
         "tags": ["Items"],
         "parameters": [
@@ -150,7 +157,7 @@
       },
       "post": {
         "operationId": "postManyItemsV2",
-        "summary": "Get Many Items",
+        "summary": "Get many items",
         "description": "Same contract as `GET /api/v2/items/many`, but `{ type, data }` is sent as a JSON body.\n\n**Cache:** Redis still applies server-side for item payloads, but the HTTP response is never CDN-cached (`Cache-Control: private, no-cache`). Use `?fresh=1` to bypass Redis (still counts toward quota).",
         "tags": ["Items"],
         "parameters": [
@@ -468,7 +475,13 @@
       "get": {
         "operationId": "getListItemsV2",
         "summary": "Get a list's items",
-        "description": "ItemV2 counterpart of the v1 `itemdata` endpoint. Visibility follows the auth session cookie (not a JWT).\n\n**Cache:** Reuses the shared per-item Redis cache for payloads. Public views may be CDN-cached (official lists longer than user lists). Requests with `includeHidden=true` or `fresh=1` stay private (`Cache-Control: no-store`). Default `intent` is `card`.",
+        "description": "ItemV2 counterpart of the v1 `itemdata` endpoint.\n\n**Auth:** Visibility follows the browser cookie. Anonymous callers only see public lists; A valid login session is required to see private lists and to use `includeHidden=true`.\n\n**Cache:** Reuses the shared per-item Redis cache for payloads. Public views may be CDN-cached (official lists longer than user lists). Requests with `includeHidden=true` or `fresh=1` stay private (`Cache-Control: no-store`). Default `intent` is `card`.",
+        "security": [
+          {},
+          { "SessionCookie": [] },
+          { "ApiKeyAuth": [] },
+          { "SessionCookie": [], "ApiKeyAuth": [] }
+        ],
         "tags": ["Lists"],
         "parameters": [
           { "name": "username", "in": "path", "required": true, "schema": { "type": "string" } },
@@ -845,7 +858,18 @@
       }
     },
     "securitySchemes": {
-      "ApiKeyAuth": { "type": "apiKey", "in": "header", "name": "x-itemdb-token" }
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-itemdb-token",
+        "description": "API JWT Token for server side applications. Raises your item-based quota vs anonymous access. Create keys at /tools/api — not used for list ownership/visibility."
+      },
+      "SessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "session",
+        "description": "Browser session cookie. Required for client side applications."
+      }
     }
   }
 }
