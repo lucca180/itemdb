@@ -14,19 +14,7 @@
       "url": "https://itemdb.com.br"
     }
   ],
-  "security": [
-    {},
-    {
-      "ApiKeyAuth": []
-    },
-    {
-      "SessionCookie": []
-    },
-    {
-      "ApiKeyAuth": [],
-      "SessionCookie": []
-    }
-  ],
+  "security": [{}],
   "paths": {
     "/api/v2/items/{id_name}": {
       "get": {
@@ -475,13 +463,7 @@
       "get": {
         "operationId": "getListItemsV2",
         "summary": "Get a list's items",
-        "description": "ItemV2 counterpart of the v1 `itemdata` endpoint.\n\n**Auth:** Visibility follows the browser cookie. Anonymous callers only see public lists; A valid login session is required to see private lists and to use `includeHidden=true`.\n\n**Cache:** Reuses the shared per-item Redis cache for payloads. Public views may be CDN-cached (official lists longer than user lists). Requests with `includeHidden=true` or `fresh=1` stay private (`Cache-Control: no-store`). Default `intent` is `card`.",
-        "security": [
-          {},
-          { "SessionCookie": [] },
-          { "ApiKeyAuth": [] },
-          { "SessionCookie": [], "ApiKeyAuth": [] }
-        ],
+        "description": "ItemV2 counterpart of the v1 `itemdata` endpoint.\n\n**Cache:** Reuses the shared per-item Redis cache for payloads. Public views may be CDN-cached (official lists longer than user lists). Requests with `includeHidden=true` or `fresh=1` stay private (`Cache-Control: no-store`). Default `intent` is `card`.",
         "tags": ["Lists"],
         "parameters": [
           { "name": "username", "in": "path", "required": true, "schema": { "type": "string" } },
@@ -855,20 +837,6 @@
         "type": "object",
         "required": ["error"],
         "properties": { "error": { "type": "string" } }
-      }
-    },
-    "securitySchemes": {
-      "ApiKeyAuth": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "x-itemdb-token",
-        "description": "API JWT Token for server side applications. Raises your item-based quota vs anonymous access. Create keys at /tools/api — not used for list ownership/visibility."
-      },
-      "SessionCookie": {
-        "type": "apiKey",
-        "in": "cookie",
-        "name": "session",
-        "description": "Browser session cookie. Required for client side applications."
       }
     }
   }
