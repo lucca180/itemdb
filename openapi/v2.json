@@ -1,0 +1,851 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "itemdb API v2",
+    "version": "2.0.0",
+    "description": "OpenAPI document for /api/v2.",
+    "license": {
+      "name": "MPL-2.0",
+      "url": "https://www.mozilla.org/en-US/MPL/2.0/"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://itemdb.com.br"
+    }
+  ],
+  "security": [
+    {},
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "paths": {
+    "/api/v2/items/{id_name}": {
+      "get": {
+        "operationId": "getItemV2",
+        "summary": "Get a single item",
+        "description": "Lookup by `internal_id`, `slug`, or `name` (LIKE match unless the caller passes wildcards).\n\n**Cache:** Redis + CDN for successful GETs. TTL follows the request `intent`. Cache hits do not consume API quota; database misses do. Use `?fresh=1` to bypass Redis (still counts toward quota; response is `no-store`). 404s are never cached.",
+        "tags": ["Items"],
+        "parameters": [
+          {
+            "name": "id_name",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Item `internal_id` (numeric), `slug`, or `name`."
+          },
+          {
+            "name": "intent",
+            "in": "query",
+            "required": false,
+            "schema": { "$ref": "#/components/schemas/ItemIntent", "default": "minimal" },
+            "description": "Response preset — selects which `ItemV2` fields are returned."
+          },
+          {
+            "name": "fresh",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "enum": ["1"] },
+            "description": "Bypass Redis/CDN cache and force a fresh read. Response is never cached."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Item found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    { "$ref": "#/components/schemas/ItemV2Minimal" },
+                    { "$ref": "#/components/schemas/ItemV2Card" },
+                    { "$ref": "#/components/schemas/ItemV2Pricer" },
+                    { "$ref": "#/components/schemas/ItemV2Full" }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid `intent` value.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          },
+          "404": {
+            "description": "No item matches `id_name`.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/items/many": {
+      "get": {
+        "operationId": "getManyItemsV2",
+        "summary": "Get Many Items",
+        "description": "Lookup kind is `type` + `data` — exactly one active filter per request. Array params use bracket notation, e.g. `?type=id&data[]=1&data[]=2&intent=minimal`. For `type=name_image_id`, each `data[]` entry is a `[name, imageId]` pair.\n\n**Cache:** Redis + CDN for successful GETs (per item, keyed by lookup type + intent). Cache hits do not consume API quota; only Prisma-backed misses count. Use `?fresh=1` to bypass Redis (still counts toward quota; response is `no-store`).",
+        "tags": ["Items"],
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["id", "item_id", "name_image_id", "image_id", "name", "slug"]
+            }
+          },
+          {
+            "name": "data",
+            "in": "query",
+            "required": true,
+            "style": "form",
+            "explode": true,
+            "schema": { "type": "array", "items": { "type": "string" } },
+            "description": "Values to look up. Encoding depends on `type` (see description above)."
+          },
+          {
+            "name": "intent",
+            "in": "query",
+            "required": false,
+            "schema": { "$ref": "#/components/schemas/ItemIntent", "default": "minimal" },
+            "description": "Response preset — selects which `ItemV2` fields are returned."
+          },
+          {
+            "name": "fresh",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "enum": ["1"] },
+            "description": "Bypass Redis/CDN cache and force a fresh read. Response is never cached."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Map of lookup key (per `type`'s encoding) to `ItemV2`. Missing keys are simply absent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "oneOf": [
+                      { "$ref": "#/components/schemas/ItemV2Minimal" },
+                      { "$ref": "#/components/schemas/ItemV2Card" },
+                      { "$ref": "#/components/schemas/ItemV2Pricer" },
+                      { "$ref": "#/components/schemas/ItemV2Full" }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid `intent`, or invalid/missing `type`+`data`.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "postManyItemsV2",
+        "summary": "Get Many Items",
+        "description": "Same contract as `GET /api/v2/items/many`, but `{ type, data }` is sent as a JSON body.\n\n**Cache:** Redis still applies server-side for item payloads, but the HTTP response is never CDN-cached (`Cache-Control: private, no-cache`). Use `?fresh=1` to bypass Redis (still counts toward quota).",
+        "tags": ["Items"],
+        "parameters": [
+          {
+            "name": "fresh",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "enum": ["1"] },
+            "description": "Bypass Redis/CDN cache and force a fresh read. Response is never cached."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["type", "data"],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["id", "item_id", "name_image_id", "image_id", "name", "slug"]
+                  },
+                  "data": { "type": "array", "items": {} },
+                  "intent": { "$ref": "#/components/schemas/ItemIntent" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Map of lookup key to `ItemV2`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "oneOf": [
+                      { "$ref": "#/components/schemas/ItemV2Minimal" },
+                      { "$ref": "#/components/schemas/ItemV2Card" },
+                      { "$ref": "#/components/schemas/ItemV2Pricer" },
+                      { "$ref": "#/components/schemas/ItemV2Full" }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON body, invalid `intent`, or invalid/missing `type`+`data`.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/search": {
+      "get": {
+        "operationId": "searchItemsV2",
+        "summary": "Search items",
+        "description": "Filters/sort/pagination mirror `/api/v1/search`; only the response shape (`ItemV2`) changes. `totalResults` is opt-in via `includeStats=true` (otherwise it just equals the page length).\n\n**Cache:** Not CDN-cached in this phase (`Cache-Control: private, no-store`). Every returned item counts toward API quota. Default `intent` is `card`.",
+        "tags": ["Search"],
+        "parameters": [
+          {
+            "name": "s",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Search query."
+          },
+          {
+            "name": "intent",
+            "in": "query",
+            "required": false,
+            "schema": { "$ref": "#/components/schemas/ItemIntent", "default": "card" },
+            "description": "Response preset — selects which `ItemV2` fields are returned."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 1, "default": 1 }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "maximum": 3000, "default": 48 }
+          },
+          {
+            "name": "includeStats",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "boolean", "default": false },
+            "description": "Populate `totalResults` with a real window count (extra query cost)."
+          },
+          {
+            "name": "list_id",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer" },
+            "description": "Restrict results to a list. Requires the `x-itemdb-list-jwt` header."
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          {
+            "name": "zone",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": { "type": "array", "items": { "type": "string" } }
+          },
+          { "name": "color", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "colorType", "in": "query", "required": false, "schema": { "type": "string" } },
+          {
+            "name": "colorTolerance",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "price",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "description": "`[min, max]`."
+          },
+          {
+            "name": "rarity",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          {
+            "name": "weight",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          {
+            "name": "estVal",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          {
+            "name": "ncValue",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          {
+            "name": "petpetColor",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": { "type": "array", "items": { "type": "string" } },
+            "description": "Petpet `color_id` values."
+          },
+          {
+            "name": "petpetSpecies",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": { "type": "array", "items": { "type": "string" } },
+            "description": "Petpet `petpet_id` values. `-2` means \"any species\"."
+          },
+          {
+            "name": "restockProfit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "restockIncludeUnpriced",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "boolean" }
+          },
+          {
+            "name": "p2Paintable",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "boolean" }
+          },
+          {
+            "name": "p2Canonical",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "boolean" }
+          },
+          { "name": "sortBy", "in": "query", "required": false, "schema": { "type": "string" } },
+          {
+            "name": "sortDir",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "enum": ["asc", "desc"] }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["name", "description", "all", "fuzzy", "not", "natural", "boolean"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["content", "page", "totalResults", "resultsPerPage"],
+                  "properties": {
+                    "content": {
+                      "type": "array",
+                      "items": {
+                        "oneOf": [
+                          { "$ref": "#/components/schemas/ItemV2Minimal" },
+                          { "$ref": "#/components/schemas/ItemV2Card" },
+                          { "$ref": "#/components/schemas/ItemV2Pricer" },
+                          { "$ref": "#/components/schemas/ItemV2Full" }
+                        ]
+                      }
+                    },
+                    "page": { "type": "integer" },
+                    "totalResults": { "type": "integer" },
+                    "resultsPerPage": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid `intent`.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          },
+          "401": {
+            "description": "`list_id` set without a valid `x-itemdb-list-jwt` header.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/lists/{username}/{list_id}/itemdata": {
+      "get": {
+        "operationId": "getListItemsV2",
+        "summary": "Get a list's items",
+        "description": "ItemV2 counterpart of the v1 `itemdata` endpoint. Visibility follows the auth session cookie (not a JWT).\n\n**Cache:** Reuses the shared per-item Redis cache for payloads. Public views may be CDN-cached (official lists longer than user lists). Requests with `includeHidden=true` or `fresh=1` stay private (`Cache-Control: no-store`). Default `intent` is `card`.",
+        "tags": ["Lists"],
+        "parameters": [
+          { "name": "username", "in": "path", "required": true, "schema": { "type": "string" } },
+          {
+            "name": "list_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "List id or slug."
+          },
+          {
+            "name": "intent",
+            "in": "query",
+            "required": false,
+            "schema": { "$ref": "#/components/schemas/ItemIntent", "default": "card" },
+            "description": "Response preset — selects which `ItemV2` fields are returned."
+          },
+          {
+            "name": "asObject",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "boolean", "default": false },
+            "description": "Return a map keyed by `internal_id` instead of an ordered array."
+          },
+          {
+            "name": "includeHidden",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "boolean", "default": false },
+            "description": "Include hidden items. Still gated server-side to the list owner/admin."
+          },
+          {
+            "name": "fresh",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "enum": ["1"] },
+            "description": "Bypass Redis/CDN cache and force a fresh read. Response is never cached."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List items as `ItemV2`. Shape depends on `asObject`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "oneOf": [
+                          { "$ref": "#/components/schemas/ItemV2Minimal" },
+                          { "$ref": "#/components/schemas/ItemV2Card" },
+                          { "$ref": "#/components/schemas/ItemV2Pricer" },
+                          { "$ref": "#/components/schemas/ItemV2Full" }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": {
+                        "oneOf": [
+                          { "$ref": "#/components/schemas/ItemV2Minimal" },
+                          { "$ref": "#/components/schemas/ItemV2Card" },
+                          { "$ref": "#/components/schemas/ItemV2Pricer" },
+                          { "$ref": "#/components/schemas/ItemV2Full" }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid `intent`.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          },
+          "404": {
+            "description": "List not found.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ItemIntent": {
+        "type": "string",
+        "enum": ["minimal", "card", "pricer", "full"],
+        "description": "Response preset — selects which `ItemV2` fields are returned. Must stay in sync with `itemIntents` in types/itemV2.ts."
+      },
+      "ItemFlags": {
+        "anyOf": [
+          { "type": "string" },
+          { "type": "string", "enum": ["wearable", "neohome", "bd", "missingInfo"] }
+        ]
+      },
+      "ItemPriceField": {
+        "anyOf": [
+          { "$ref": "#/components/schemas/ItemPriceV2" },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": { "type": "string", "const": "ncMall" },
+              "price": { "type": "number" },
+              "saleBegin": { "type": ["string", "null"] },
+              "saleEnd": { "type": ["string", "null"] },
+              "discountBegin": { "type": ["string", "null"] },
+              "discountEnd": { "type": ["string", "null"] },
+              "discountPrice": { "type": ["number", "null"] }
+            },
+            "required": [
+              "discountBegin",
+              "discountEnd",
+              "discountPrice",
+              "price",
+              "saleBegin",
+              "saleEnd",
+              "type"
+            ]
+          },
+          { "type": "null" }
+        ],
+        "description": "Acquisition price: NP market price or active NC Mall price. NC trade value lives in `ItemV2.ncValue`."
+      },
+      "ItemPriceV2": {
+        "type": "object",
+        "properties": {
+          "value": { "type": "number" },
+          "flags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["inflation", "outdated", "unconfirmed", "unknown"]
+            }
+          },
+          "addedAt": { "type": "string" },
+          "context": { "type": ["string", "null"] },
+          "type": { "type": "string", "const": "np" }
+        },
+        "required": ["value", "flags", "addedAt", "type"],
+        "additionalProperties": false
+      },
+      "NCValue": {
+        "type": "object",
+        "properties": {
+          "minValue": { "type": "number" },
+          "maxValue": { "type": "number" },
+          "range": { "type": "string" },
+          "addedAt": { "type": "string" },
+          "source": { "type": "string", "enum": ["itemdb", "lebron"] }
+        },
+        "required": ["minValue", "maxValue", "range", "addedAt", "source"],
+        "additionalProperties": false
+      },
+      "ItemSaleStatusV2": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "enum": ["ets", "regular", "hts"] },
+          "addedAt": { "type": "string" }
+        },
+        "required": ["status", "addedAt"],
+        "additionalProperties": false,
+        "description": "Slim liquidity badge — full sold/percent details stay on `/saleStats` (v1)."
+      },
+      "UseTypes": {
+        "type": "object",
+        "properties": {
+          "canEat": { "$ref": "#/components/schemas/ThreeStateBoolean" },
+          "canRead": { "$ref": "#/components/schemas/ThreeStateBoolean" },
+          "canPlay": { "$ref": "#/components/schemas/ThreeStateBoolean" },
+          "canOpen": { "$ref": "#/components/schemas/ThreeStateBoolean" }
+        },
+        "required": ["canEat", "canRead", "canPlay", "canOpen"],
+        "additionalProperties": false
+      },
+      "ThreeStateBoolean": { "type": "string", "enum": ["true", "false", "unknown"] },
+      "ItemV2Minimal": {
+        "type": "object",
+        "properties": {
+          "internal_id": { "type": "number" },
+          "item_id": { "type": ["number", "null"] },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "image": {
+            "type": "object",
+            "properties": {
+              "url": { "type": "string" },
+              "id": { "type": "string" },
+              "hash": { "type": "string" }
+            },
+            "required": ["url", "id"],
+            "additionalProperties": false
+          },
+          "type": { "type": "string", "enum": ["np", "nc", "pb"] },
+          "status": { "type": ["string", "null"] },
+          "slug": { "type": ["string", "null"] }
+        },
+        "required": [
+          "internal_id",
+          "item_id",
+          "name",
+          "description",
+          "image",
+          "type",
+          "status",
+          "slug"
+        ]
+      },
+      "ItemV2Card": {
+        "type": "object",
+        "properties": {
+          "internal_id": { "type": "number" },
+          "item_id": { "type": ["number", "null"] },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "image": {
+            "type": "object",
+            "properties": {
+              "url": { "type": "string" },
+              "id": { "type": "string" },
+              "hash": { "type": "string" }
+            },
+            "required": ["url", "id"],
+            "additionalProperties": false
+          },
+          "category": { "type": ["string", "null"] },
+          "rarity": { "type": ["number", "null"] },
+          "type": { "type": "string", "enum": ["np", "nc", "pb"] },
+          "flags": { "type": "array", "items": { "$ref": "#/components/schemas/ItemFlags" } },
+          "estVal": { "type": ["number", "null"] },
+          "status": { "type": ["string", "null"] },
+          "colorHex": { "type": ["string", "null"] },
+          "price": { "$ref": "#/components/schemas/ItemPriceField" },
+          "ncValue": {
+            "$ref": "#/components/schemas/NCValue",
+            "description": "NC secondary-market trade value (owls/itemdb, in caps). Present only for NC items with a known value."
+          },
+          "slug": { "type": ["string", "null"] }
+        },
+        "required": [
+          "internal_id",
+          "item_id",
+          "name",
+          "description",
+          "image",
+          "category",
+          "rarity",
+          "type",
+          "flags",
+          "estVal",
+          "status",
+          "colorHex",
+          "price",
+          "slug"
+        ]
+      },
+      "ItemV2Pricer": {
+        "type": "object",
+        "properties": {
+          "internal_id": { "type": "number" },
+          "item_id": { "type": ["number", "null"] },
+          "name": { "type": "string" },
+          "image": {
+            "type": "object",
+            "properties": {
+              "url": { "type": "string" },
+              "id": { "type": "string" },
+              "hash": { "type": "string" }
+            },
+            "required": ["url", "id"],
+            "additionalProperties": false
+          },
+          "rarity": { "type": ["number", "null"] },
+          "type": { "type": "string", "enum": ["np", "nc", "pb"] },
+          "flags": { "type": "array", "items": { "$ref": "#/components/schemas/ItemFlags" } },
+          "status": { "type": ["string", "null"] },
+          "price": { "$ref": "#/components/schemas/ItemPriceField" },
+          "ncValue": {
+            "$ref": "#/components/schemas/NCValue",
+            "description": "NC secondary-market trade value (owls/itemdb, in caps). Present only for NC items with a known value."
+          },
+          "saleStatus": {
+            "anyOf": [{ "$ref": "#/components/schemas/ItemSaleStatusV2" }, { "type": "null" }]
+          },
+          "slug": { "type": ["string", "null"] }
+        },
+        "required": [
+          "internal_id",
+          "item_id",
+          "name",
+          "image",
+          "rarity",
+          "type",
+          "flags",
+          "status",
+          "price",
+          "saleStatus",
+          "slug"
+        ]
+      },
+      "ItemV2Full": {
+        "type": "object",
+        "properties": {
+          "internal_id": { "type": "number" },
+          "item_id": { "type": ["number", "null"] },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "image": {
+            "type": "object",
+            "properties": {
+              "url": { "type": "string" },
+              "id": { "type": "string" },
+              "hash": { "type": "string" }
+            },
+            "required": ["url", "id"],
+            "additionalProperties": false
+          },
+          "category": { "type": ["string", "null"] },
+          "rarity": { "type": ["number", "null"] },
+          "weight": { "type": ["number", "null"] },
+          "type": { "type": "string", "enum": ["np", "nc", "pb"] },
+          "flags": { "type": "array", "items": { "$ref": "#/components/schemas/ItemFlags" } },
+          "estVal": { "type": ["number", "null"] },
+          "status": { "type": ["string", "null"] },
+          "colorHex": { "type": ["string", "null"] },
+          "price": { "$ref": "#/components/schemas/ItemPriceField" },
+          "ncValue": {
+            "$ref": "#/components/schemas/NCValue",
+            "description": "NC secondary-market trade value (owls/itemdb, in caps). Present only for NC items with a known value."
+          },
+          "saleStatus": {
+            "anyOf": [{ "$ref": "#/components/schemas/ItemSaleStatusV2" }, { "type": "null" }]
+          },
+          "slug": { "type": ["string", "null"] },
+          "comment": { "type": ["string", "null"] },
+          "canonical_id": { "type": ["number", "null"] },
+          "firstSeen": { "type": ["string", "null"] },
+          "useTypes": { "$ref": "#/components/schemas/UseTypes" }
+        },
+        "required": [
+          "internal_id",
+          "item_id",
+          "name",
+          "description",
+          "image",
+          "category",
+          "rarity",
+          "weight",
+          "type",
+          "flags",
+          "estVal",
+          "status",
+          "colorHex",
+          "price",
+          "saleStatus",
+          "slug",
+          "comment",
+          "canonical_id",
+          "firstSeen",
+          "useTypes"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "required": ["error"],
+        "properties": { "error": { "type": "string" } }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": { "type": "apiKey", "in": "header", "name": "x-itemdb-token" }
+    }
+  }
+}
