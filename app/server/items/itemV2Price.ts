@@ -71,12 +71,12 @@ function isOutdatedPrice(addedAt: unknown): boolean {
  * NC secondary-market trade value is a separate concern (see {@link mapItemV2NcValue}).
  */
 export function mapItemV2Price(raw: RawItemV2Row): ItemPriceField {
-  if (raw.status === 'no trade') return null;
-
   // NC items are not bought with NP; their only acquisition price is the NC Mall (when active).
   if (raw.type === 'nc') return mapMallPrice(raw);
 
   if (raw.type === 'pb') return null;
+
+  if (raw.status === 'no trade') return null;
 
   const value = asNumber(raw.npPrice) ?? 0;
   const flags: ItemPriceV2['flags'] = [];

@@ -23,7 +23,7 @@ import StatsCard, { StatsCardLoading } from '@app/_components/Home/Cards/StatsCa
 import { setRequestLocale } from 'next-intl/server';
 import { routing } from '@i18n/routing';
 import AppServerLayoutSkeleton from '@components/Layout/AppServerLayoutSkeleton';
-import { CupHomeCard } from '@app/_components/Home/Cards/EventCard';
+// import { CupHomeCard } from '@app/_components/Home/Cards/EventCard';
 
 const mainColor = Color('#4A5568').alpha(0.9).hexa();
 
@@ -102,7 +102,7 @@ async function HomePageContent({ params }: HomePageProps) {
       />
       <Flex mt={8} gap={8} flexDirection="column">
         <LatestPricesSection />
-        <CupHomeCard />
+        {/* <CupHomeCard /> */}
         <NewItemsCountSection />
         <Grid
           templateColumns={{ base: 'minmax(0, 1fr)', lg: 'repeat(3, minmax(0, 1fr))' }}
