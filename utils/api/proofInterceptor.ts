@@ -6,12 +6,14 @@ const INTERCEPTOR_MARKER = Symbol.for('itemdb.proof-interceptor-id');
 const SITE_PROOF_COOKIE = 'itemdb-proof';
 const SITE_PROOF_HEADER = 'X-itemdb-Proof';
 const PRIMARY_HOST = 'itemdb.com.br';
+const YIELD_EVERY_ATTEMPTS = 64;
 
 type SiteProofPayload = {
   difficulty?: number;
 };
 
 const proofCache = new Map<string, string>();
+const proofInflight = new Map<string, Promise<string | null>>();
 const textEncoder = typeof TextEncoder !== 'undefined' ? new TextEncoder() : null;
 
 export const requestInterceptor = async (config: InternalAxiosRequestConfig) => {
@@ -87,6 +89,31 @@ async function solveSiteProof(challenge: string, method = 'GET', pathname = '/')
   const cached = proofCache.get(cacheKey);
   if (cached) return cached;
 
+  const existing = proofInflight.get(cacheKey);
+  if (existing) return existing;
+
+  const pending = solveSiteProofInternal(
+    challenge,
+    normalizedMethod,
+    pathname,
+    difficulty,
+    cacheKey
+  ).finally(() => {
+    proofInflight.delete(cacheKey);
+  });
+  proofInflight.set(cacheKey, pending);
+  return pending;
+}
+
+async function solveSiteProofInternal(
+  challenge: string,
+  normalizedMethod: string,
+  pathname: string,
+  difficulty: number,
+  cacheKey: string
+) {
+  if (!textEncoder || !globalThis.crypto?.subtle) return null;
+
   const maxAttempts = Math.max(1, Math.min(2 ** (difficulty + 4), 10_000_000));
 
   for (let counter = 0; counter < maxAttempts; counter++) {
@@ -98,9 +125,24 @@ async function solveSiteProof(challenge: string, method = 'GET', pathname = '/')
       proofCache.set(cacheKey, solvedProof);
       return solvedProof;
     }
+
+    if ((counter & (YIELD_EVERY_ATTEMPTS - 1)) === YIELD_EVERY_ATTEMPTS - 1) {
+      await yieldToMain();
+    }
   }
 
   return null;
+}
+
+function yieldToMain() {
+  const scheduler = (globalThis as { scheduler?: { yield?: () => Promise<void> } }).scheduler;
+  if (typeof scheduler?.yield === 'function') {
+    return scheduler.yield();
+  }
+
+  return new Promise<void>((resolve) => {
+    setTimeout(resolve, 0);
+  });
 }
 
 function decodeChallengePayload(challenge: string): SiteProofPayload | null {

@@ -21,14 +21,15 @@ import {
   Link as ChakraLink,
 } from '@chakra-ui/react';
 import { ItemCardBadge } from '@components/Items/ItemCard';
-import ItemCtxMenu, { CtxTrigger } from '@components/Menus/ItemCtxMenu';
+import { CtxTrigger } from '@components/Menus/ItemCtxTrigger';
 import { getListLink } from '@utils/list/listLink';
 import { ItemData, UserList, ShopInfo } from '@types';
 import { slugify } from '@utils/utils';
 import axios from 'axios';
 import debounce from 'lodash/debounce';
+import dynamic from 'next/dynamic';
 import { Link } from '@i18n/navigation';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { useRouter } from 'next/compat/router';
 import { GrSearchAdvanced } from 'react-icons/gr';
 import { IoSearchOutline } from 'react-icons/io5';
@@ -37,6 +38,8 @@ import queryString from 'query-string';
 import { getFiltersDiff, parseFilters } from '@utils/parseFilters';
 import { useLocale, useTranslations } from 'next-intl';
 import { getLocalizedHref, type AppLocale } from '@utils/locales';
+
+const ItemCtxMenu = dynamic(() => import('@components/Menus/ItemCtxMenu'), { ssr: false });
 
 type SearchCard =
   | { index: number; type: 'item'; data: ItemData }
@@ -182,7 +185,7 @@ const SearchModal = (props: SearchModalProps) => {
 
   useEffect(() => {
     document.getElementById(`omni-search-el-${focusedIndex}`)?.scrollIntoView({
-      behavior: 'smooth',
+      behavior: 'auto',
       block: focusedIndex === 0 || focusedIndex === searchCards.length ? 'center' : 'nearest',
     });
   }, [focusedIndex]);
@@ -371,11 +374,16 @@ const SearchModal = (props: SearchModalProps) => {
   };
 
   const track = (event: string, type?: string) => {
-    if (window?.umami) {
-      window.umami?.track(event, {
-        type,
-      });
+    const run = () => {
+      window.umami?.track(event, { type });
+    };
+
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      window.requestIdleCallback(run);
+      return;
     }
+
+    setTimeout(run, 0);
   };
 
   return (
@@ -741,19 +749,32 @@ const SearchItem = ({
   showLabel?: boolean;
 }) => {
   const t = useTranslations();
+  const [isContextMenuLoaded, setIsContextMenuLoaded] = useState(false);
+
+  const loadContextMenu = () => {
+    if (!isContextMenuLoaded) {
+      void import('@components/Menus/ItemCtxMenu');
+      setIsContextMenuLoaded(true);
+    }
+  };
+  const loadContextMenuOnRightClick = (event: MouseEvent) => {
+    if (event.button === 2) loadContextMenu();
+  };
+
   return (
     <>
-      <ItemCtxMenu
-        menuId={`omni-search-${item.internal_id}`}
-        item={item}
-        // onShow={() => (disableListener = true)}
-        // onHide={() => (disableListener = false)}
-      />
+      {isContextMenuLoaded && (
+        <ItemCtxMenu menuId={`omni-search-${item.internal_id}`} item={item} />
+      )}
       <CtxTrigger
         id={`omni-search-${item.internal_id}`}
         //@ts-ignore
         disableWhileShiftPressed
-        // disable={isMobile ? true : undefined}
+        attributes={{
+          onPointerEnter: loadContextMenu,
+          onFocus: loadContextMenu,
+          onMouseDown: loadContextMenuOnRightClick,
+        }}
       >
         <Flex
           flex="1"
