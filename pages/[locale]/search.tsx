@@ -75,7 +75,10 @@ const ignoreCanceledSearchRequest = (error: unknown) => {
 const color = Color('#4A5568');
 const rgb = color.rgb().round().array();
 
-let ABORT_CONTROLLER = new AbortController();
+// Separate controllers so pagination/sort does not cancel in-flight facet/count requests.
+let SEARCH_ABORT = new AbortController();
+let STATS_ABORT = new AbortController();
+let COUNT_ABORT = new AbortController();
 
 type SearchPageProps = {
   listJWT?: string | null;
@@ -97,6 +100,8 @@ const SearchPage = (props: SearchPageProps) => {
   const [filters, setFilters] = useState<SearchFiltersType>(defaultFilters);
   const [searchStatus, setStatus] = useState<SearchStats | null>(null);
   const prevFilter = useRef<SearchFiltersType>(null);
+  // Keys of the latest stats/count request — avoids abort+stuck-null on pagination.
+  const statsKeyRef = useRef<string | null>(null);
   const [isLargerThanLG] = useMediaQuery(['(min-width: 62em)'], { fallback: [true] });
   const { open, onOpen, onClose } = useDisclosure();
 
@@ -133,12 +138,20 @@ const SearchPage = (props: SearchPageProps) => {
   }, [router.query, router.isReady]);
 
   const doSearch = async (fetchStats = false, fetchCount = false) => {
-    if (router.query.s !== searchQuery) {
+    const query = (router.query.s as string) ?? '';
+    const params = getFiltersDiff(filters);
+    // Facets only depend on the search term + list scope.
+    const statsKey = `${query}\0${params.list_id ?? 0}`;
+
+    if (query !== searchQuery) {
       fetchStats = true;
       fetchCount = true;
     }
 
-    const query = (router.query.s as string) ?? '';
+    if (statsKeyRef.current !== statsKey) {
+      fetchStats = true;
+    }
+
     setQuery(query);
     setSelectedItems([]);
 
@@ -154,25 +167,23 @@ const SearchPage = (props: SearchPageProps) => {
       }
     } else setIsColorSearch(false);
 
-    const params = getFiltersDiff(filters);
     setResult(null);
-
-    fetchStats = fetchStats || !totalResults;
-    fetchCount = fetchCount || !searchResult;
 
     if (fetchStats) setStatus(null);
     if (fetchCount) setTotalResults(null);
 
-    ABORT_CONTROLLER.abort();
-    ABORT_CONTROLLER = new AbortController();
+    SEARCH_ABORT.abort();
+    SEARCH_ABORT = new AbortController();
 
-    const signal = ABORT_CONTROLLER.signal;
     const headers = { 'x-itemdb-list-jwt': props.listJWT ?? undefined };
 
     if (fetchCount) {
+      COUNT_ABORT.abort();
+      COUNT_ABORT = new AbortController();
+
       itemdb
         .get('search', {
-          signal,
+          signal: COUNT_ABORT.signal,
           params: {
             ...params,
             s: query,
@@ -186,9 +197,13 @@ const SearchPage = (props: SearchPageProps) => {
     }
 
     if (fetchStats) {
+      statsKeyRef.current = statsKey;
+      STATS_ABORT.abort();
+      STATS_ABORT = new AbortController();
+
       itemdb
         .get('search/stats', {
-          signal,
+          signal: STATS_ABORT.signal,
           params: {
             s: query,
             list_id: params.list_id,
@@ -196,12 +211,17 @@ const SearchPage = (props: SearchPageProps) => {
           headers,
         })
         .then((res) => setStatus(res.data))
-        .catch(ignoreCanceledSearchRequest);
+        .catch((error) => {
+          if (axios.isCancel(error)) return;
+          // Allow a later search to retry this stats key.
+          if (statsKeyRef.current === statsKey) statsKeyRef.current = null;
+          console.error(error);
+        });
     }
 
     try {
       const res = await itemdb.get('search', {
-        signal,
+        signal: SEARCH_ABORT.signal,
         params: {
           ...params,
           skipStats: true,
