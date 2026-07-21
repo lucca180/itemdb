@@ -164,8 +164,10 @@ export type ItemAuctionData = {
   addedAt: string;
   owner: string;
   isNF: boolean;
+  flag: 'NF' | 'GM' | null;
   hasBuyer: boolean;
   timeLeft: string | null;
+  bidCount: number | null;
 };
 
 export type SearchResults = {

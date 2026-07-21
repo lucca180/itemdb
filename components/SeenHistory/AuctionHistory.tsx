@@ -1,4 +1,4 @@
-import { Table, Text, Flex, HStack, Tabs, Spinner } from '@chakra-ui/react';
+import { Badge, Table, Text, Flex, HStack, Tabs, Spinner } from '@chakra-ui/react';
 import React, { useEffect } from 'react';
 import { ContributeWallData, ItemAuctionData, ItemData } from '../../types';
 import { useFormatter, useTranslations } from 'next-intl';
@@ -197,13 +197,18 @@ const AuctionItem = (props: { auction: ItemAuctionData; index: number }) => {
       </Table.Cell>
       <Table.Cell>
         <Text>
-          {auction.isNF && '[NF]'} {auction.timeLeft}
+          {auction.flag && `[${auction.flag}] `}
+          {auction.timeLeft}
         </Text>
       </Table.Cell>
       <Table.Cell>
-        <Text color={auction.hasBuyer ? 'green.200' : 'undefined'}>
-          {auction.hasBuyer ? t('General.yes') : t('General.no')}
-        </Text>
+        <Badge colorPalette={auction.hasBuyer ? 'green' : 'gray'} size="xs">
+          {auction.bidCount != null
+            ? t('ItemPage.bids-count', { x: auction.bidCount })
+            : auction.hasBuyer
+              ? t('ItemPage.has-bids')
+              : t('ItemPage.no-bids')}
+        </Badge>
       </Table.Cell>
       <Table.Cell>
         <Text>{auction.owner}</Text>

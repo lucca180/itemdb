@@ -266,16 +266,25 @@ export const getAuctionData = async (name: string | number, onlySold = false) =>
     uniqueOwners.add(p.owner);
     if (!p.otherInfo?.includes('nobody')) soldAuctions++;
 
+    const parts = p.otherInfo?.split(',') ?? [];
+    const flagPart = parts[0]?.toLowerCase() ?? '';
+    const flag = flagPart.includes('nf') ? 'NF' : flagPart.includes('gm') ? 'GM' : null;
+    const bidRaw = parts[3];
+    const bidParsed = bidRaw != null && bidRaw !== '' ? Number(bidRaw) : NaN;
+    const bidCount = Number.isInteger(bidParsed) ? bidParsed : null;
+
     return {
       auction_id: p.neo_id,
       internal_id: p.internal_id,
       item_iid: p.item_iid,
       price: p.price,
       owner: p.owner ?? 'unknown',
-      isNF: !!p.otherInfo?.toLowerCase().split(',').includes('nf'),
+      isNF: flag === 'NF',
+      flag,
       hasBuyer: !p.otherInfo?.includes('nobody'),
       addedAt: p.addedAt.toJSON(),
-      timeLeft: p.otherInfo?.split(',')?.[1] ?? null,
+      timeLeft: parts[1] ?? null,
+      bidCount,
     };
   });
 
