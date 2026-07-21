@@ -550,7 +550,7 @@ const ShowMoreButton = (props: {
 const FilterSkeletons = () => (
   <>
     {[...Array(5)].map((_, i) => (
-      <Skeleton key={i} w="100%" h="25px" />
+      <Skeleton key={i} w="100%" h="25px" bg="whiteAlpha.200" />
     ))}
   </>
 );

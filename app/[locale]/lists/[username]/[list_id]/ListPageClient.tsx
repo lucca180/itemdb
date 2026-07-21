@@ -136,9 +136,9 @@ export function ListPageClient({
     metaKey: false,
   });
 
-  const openFiltersModal = async () => {
-    await state.handleOpenFilters();
+  const openFiltersModal = () => {
     onOpen();
+    void state.handleOpenFilters();
   };
 
   const highlightIds = state.displayedItemInfoIds.filter(
