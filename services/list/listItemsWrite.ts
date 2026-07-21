@@ -8,6 +8,7 @@ import { UTCDate } from '@date-fns/utc';
 import { Prisma } from '@prisma/generated/client';
 import type { ListItemInfo } from '@types';
 import { countSql } from '@services/list/listCount';
+import { invalidateListItemIds } from '@services/list/listItemsV2Cache';
 import prisma from '@utils/prisma';
 
 type DbClient = typeof prisma | Prisma.TransactionClient;
@@ -46,13 +47,17 @@ async function withItemWrite<T>(
   listIds: number[],
   fn: (tx: Prisma.TransactionClient) => Promise<T>
 ): Promise<T> {
-  return prisma.$transaction(async (tx) => {
-    const result = await fn(tx);
-    for (const listId of [...new Set(listIds)]) {
+  const uniqueListIds = [...new Set(listIds)];
+  const result = await prisma.$transaction(async (tx) => {
+    const writeResult = await fn(tx);
+    for (const listId of uniqueListIds) {
       await countSql(listId, tx);
     }
-    return result;
+    return writeResult;
   });
+  // API list-id Redis cache only — run after commit so readers never see stale membership.
+  await invalidateListItemIds(uniqueListIds);
+  return result;
 }
 
 /** Bumps `UserList.updatedAt` after an item mutation. */
@@ -249,6 +254,7 @@ export async function applyDynamicItemChanges(listId: number, changes: DynamicIt
     }
     await countSql(listId, tx);
   });
+  await invalidateListItemIds([listId]);
 }
 
 /** Builds a parameterized `INSERT … ON DUPLICATE KEY UPDATE` for {@link upsertItems}. */

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ItemData, ListItemInfo, UserList } from '@types';
+import type { ItemV2For, ListItemInfo, UserList } from '@types';
 import { getSortedListItemInfo } from '@app/[locale]/lists/[username]/[list_id]/listPage';
 
 describe('getSortedListItemInfo', () => {
@@ -8,8 +8,8 @@ describe('getSortedListItemInfo', () => {
     const second = { internal_id: 2, item_iid: 102, order: 1 } as ListItemInfo;
     const itemInfos = [first, second];
     const items = {
-      101: { internal_id: 101, name: 'First' } as ItemData,
-      102: { internal_id: 102, name: 'Second' } as ItemData,
+      101: { internal_id: 101, name: 'First' } as ItemV2For<'card'>,
+      102: { internal_id: 102, name: 'Second' } as ItemV2For<'card'>,
     };
     const list = { sortBy: 'custom', sortDir: 'asc' } as UserList;
 

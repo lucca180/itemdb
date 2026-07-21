@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/refs */
 import React, { useEffect, useState } from 'react';
-import ItemCard from '../Items/ItemCard';
-import { ItemData, ListItemInfo, UserList } from '../../types';
+import ItemCardV2 from '@components/Items/v2/ItemCardV2';
+import type { ItemV2For, ListItemInfo, UserList } from '@types';
 import { VStack, Box } from '@chakra-ui/react';
 import dynamic from 'next/dynamic';
 import { dynamicListCan } from '@utils/utils';
@@ -10,7 +10,7 @@ const EditableFields = dynamic(() => import('./EditableFields'), { ssr: false })
 
 export type EditableItemCardProps = {
   id: number;
-  item: ItemData;
+  item: ItemV2For<'card'>;
   isTrading?: boolean;
   itemInfo?: ListItemInfo;
   editMode?: boolean;
@@ -30,7 +30,7 @@ export type EditableItemCardProps = {
       | 'seriesEnd'
   ) => void;
   onClick?: (id: number, force?: boolean) => void;
-  onListAction?: (item: ItemData, action: 'move' | 'delete') => any;
+  onListAction?: (item: ItemV2For<'card'>, action: 'move' | 'delete') => unknown;
   innerRef?: any;
   style?: React.CSSProperties;
   attributes?: any;
@@ -72,7 +72,7 @@ export function EditableItemCard(props: EditableItemCardProps) {
     props.onChange?.(id, value, field);
   };
 
-  const onClick = (e: React.MouseEvent<any> | null, force = false) => {
+  const onClick = (e: React.MouseEvent | null, force = false) => {
     if (!editMode && !force) return;
 
     setSelected(!isSelected);
@@ -91,7 +91,7 @@ export function EditableItemCard(props: EditableItemCardProps) {
       opacity={itemInfo?.isHidden ? 0.5 : 1}
     >
       <Box onClick={(e) => onClick(e)} style={{ height: '100%' }}>
-        <ItemCard
+        <ItemCardV2
           uniqueID="editable-item-card"
           item={item}
           sortType={sortType}

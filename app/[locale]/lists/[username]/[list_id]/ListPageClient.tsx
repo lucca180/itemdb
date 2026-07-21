@@ -18,14 +18,15 @@ import {
 } from '@chakra-ui/react';
 import type { ReactNode } from 'react';
 import type { ListItemInfo, UserList } from '@types';
-import ItemCard from '@components/Items/ItemCard';
+import ItemCardV2 from '@components/Items/v2/ItemCardV2';
 import Color from 'color';
 import { ItemActionModalProps } from '@components/Modal/ItemActionModal';
 import { CreateListModalProps } from '@components/Modal/CreateListModal';
 import dynamic from 'next/dynamic';
 import ListHeader from '@components/UserLists/ListHeader';
 import { CreateLinkedListButton } from '@components/DynamicLists/CreateLinkedList';
-import { dynamicListCan, sortListItems } from '@utils/utils';
+import { dynamicListCan } from '@utils/utils';
+import { sortListItemsV2 } from '@utils/item/v2';
 import { SearchList } from '@components/Search/SearchLists';
 import { SortSelect } from '@components/Input/SortSelect';
 import { SelectItemsCheckbox } from '@components/Input/SelectItemsCheckbox';
@@ -82,7 +83,7 @@ export function ItemGridSkeleton({ count }: { count: number }) {
   return (
     <Flex gap={3} justifyContent="center" wrap="wrap">
       {Array.from({ length: Math.min(40, count) }).map((_, i) => (
-        <ItemCard uniqueID="loading" key={i} isLoading />
+        <ItemCardV2 uniqueID="loading" key={i} isLoading />
       ))}
     </Flex>
   );
@@ -395,10 +396,10 @@ export function ListPageClient({
             <Flex gap={3} flexWrap="wrap" w="100%" justifyContent="center">
               {[...matches]
                 .sort((a, b) =>
-                  sortListItems(a, b, state.sortInfo.sortBy, state.sortInfo.sortDir, state.items)
+                  sortListItemsV2(a, b, state.sortInfo.sortBy, state.sortInfo.sortDir, state.items)
                 )
                 .map((itemMatch) => (
-                  <ItemCard
+                  <ItemCardV2
                     small
                     uniqueID="list-match"
                     item={state.items[itemMatch.item_iid]}
@@ -476,7 +477,7 @@ export function ListPageClient({
         {state.isLoading && !state.itemInfoIds.length && (
           <Flex gap={3} justifyContent="center" wrap="wrap">
             {Array.from({ length: Math.min(8 * 5, state.list.itemCount ?? 40) }).map((_, i) => (
-              <ItemCard uniqueID="loading" key={i} isLoading />
+              <ItemCardV2 uniqueID="loading" key={i} isLoading />
             ))}
           </Flex>
         )}

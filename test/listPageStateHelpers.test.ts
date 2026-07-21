@@ -7,7 +7,7 @@ import {
   shouldMergeListItems,
 } from '@app/[locale]/lists/[username]/[list_id]/listPageStateHelpers';
 import { defaultFilters } from '@utils/parseFilters';
-import type { ItemData, ListItemInfo } from '@types';
+import type { ItemV2For, ListItemInfo } from '@types';
 
 const itemInfoRow = (
   id: number,
@@ -36,9 +36,9 @@ describe('listPageStateHelpers', () => {
       2: itemInfoRow(2, '200', {}),
     };
     const items = {
-      '100': { internal_id: '100', name: 'Apple' },
-      '200': { internal_id: '200', name: 'Banana' },
-    } as unknown as Record<string, ItemData>;
+      '100': { internal_id: 100, name: 'Apple' },
+      '200': { internal_id: 200, name: 'Banana' },
+    } as unknown as Record<string, ItemV2For<'card'>>;
 
     expect(filterItemInfoIdsBySearch([1, 2], itemInfo, items, 'app')).toEqual([1]);
   });

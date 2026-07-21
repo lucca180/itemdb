@@ -1,5 +1,5 @@
-import type { ItemData, ListItemInfo, User, UserList } from '@types';
-import { sortListItems } from '@utils/utils';
+import type { ItemV2For, ListItemInfo, User, UserList } from '@types';
+import { sortListItemsV2 } from '@utils/item/v2';
 
 export const LIST_PRELOAD_LIMIT = 30;
 export const LIST_FULL_SERVER_LOAD_THRESHOLD = 500;
@@ -12,7 +12,7 @@ export type ListItemsData = {
   itemMap: { [id: number]: ListItemInfo };
   infoIds: number[];
   itemInfo: ListItemInfo[];
-  items: { [id: string]: ItemData };
+  items: { [id: string]: ItemV2For<'card'> };
 };
 
 export type ListCore = {
@@ -47,10 +47,10 @@ export function getListLoadingStrategy(
 export function getSortedListItemInfo(
   itemInfos: ListItemInfo[],
   listData: UserList,
-  itemData: { [id: string]: ItemData }
+  itemData: { [id: string]: ItemV2For<'card'> }
 ): { infoIds: number[]; itemMap: { [id: number]: ListItemInfo } } {
   const sortedItemInfo = [...itemInfos].sort((a, b) =>
-    sortListItems(a, b, listData.sortBy, listData.sortDir, itemData)
+    sortListItemsV2(a, b, listData.sortBy, listData.sortDir, itemData)
   );
   const infoIds: number[] = [];
   const itemMap: { [id: number]: ListItemInfo } = {};

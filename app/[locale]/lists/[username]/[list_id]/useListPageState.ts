@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { ItemData, SearchFilters as SearchFiltersType, SearchStats } from '@types';
+import type { ItemV2For, SearchFilters as SearchFiltersType, SearchStats } from '@types';
 import { useToast } from '@utils/theme/toast';
 import { defaultFilters } from '@utils/parseFilters';
 import { useTranslations } from 'next-intl';
@@ -60,7 +60,7 @@ export function useListPageState({
   const [itemInfo, setItemInfo] = useState<Record<number, ExtendedListItemInfo>>(
     initialPreload.itemMap
   );
-  const [items, setItems] = useState<Record<string, ItemData>>(initialPreload.items);
+  const [items, setItems] = useState<Record<string, ItemV2For<'card'>>>(initialPreload.items);
   const [sortInfo, setSortInfo] = useState<ListSortInfo>({
     sortBy: core.list.sortBy,
     sortDir: core.list.sortDir,
@@ -408,7 +408,7 @@ export function useListPageState({
   );
 
   const cntxAction = useCallback(
-    (item: ItemData, action: 'move' | 'delete') => {
+    (item: ItemV2For<'card'>, action: 'move' | 'delete') => {
       const infoId = itemInfoIds.find((id) => itemInfo[id].item_iid === item.internal_id);
       if (!infoId) return;
       setItemSelect([infoId]);

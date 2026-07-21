@@ -1,6 +1,6 @@
-import type { ItemData, ListItemInfo, SearchFilters } from '@types';
+import type { ItemV2For, ListItemInfo, SearchFilters } from '@types';
 import { getFiltersDiff } from '@utils/parseFilters';
-import { sortListItems } from '@utils/utils';
+import { sortListItemsV2 } from '@utils/item/v2';
 
 export type ExtendedListItemInfo = ListItemInfo & { hasChanged?: boolean };
 
@@ -31,7 +31,7 @@ export function hasServerFilters(filters: SearchFilters): boolean {
 export function filterItemInfoIdsBySearch(
   itemInfoIds: number[],
   itemInfo: Record<number, ListItemInfo>,
-  items: Record<string, ItemData>,
+  items: Record<string, ItemV2For<'card'>>,
   searchQuery: string
 ): number[] {
   const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -125,10 +125,10 @@ export function sortItemInfoIds(
   itemInfo: Record<number, ListItemInfo>,
   sortBy: string,
   sortDir: string,
-  items: Record<string, ItemData>
+  items: Record<string, ItemV2For<'card'>>
 ): number[] {
   return Object.values(itemInfo)
-    .sort((a, b) => sortListItems(a, b, sortBy, sortDir, items))
+    .sort((a, b) => sortListItemsV2(a, b, sortBy, sortDir, items))
     .map((item) => item.internal_id);
 }
 

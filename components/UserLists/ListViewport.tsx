@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ListItemInfo, ItemData, UserList } from '../../types';
+import type { ListItemInfo, ItemV2For, UserList } from '@types';
 import debounce from 'lodash/debounce';
 import { ViewportList } from 'react-viewport-list';
 import { Box, Flex } from '@chakra-ui/react';
@@ -35,7 +35,7 @@ export type ListViewportProps = {
   ids: number[];
   list?: UserList;
   itemInfo: { [id: string]: ListItemInfo };
-  items: { [id: string]: ItemData };
+  items: { [id: string]: ItemV2For<'card'> };
   sortType?: string;
   itemSelect?: number[];
   editMode?: boolean;
@@ -54,7 +54,7 @@ export type ListViewportProps = {
       | 'seriesStart'
       | 'seriesEnd'
   ) => void;
-  onListAction?: (item: ItemData, action: 'move' | 'delete') => void;
+  onListAction?: (item: ItemV2For<'card'>, action: 'move' | 'delete') => void;
 };
 
 export default function ListViewport(props: ListViewportProps) {

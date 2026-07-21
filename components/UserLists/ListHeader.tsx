@@ -18,7 +18,7 @@ import { ColorInstance } from 'color';
 import { BiLinkExternal } from 'react-icons/bi';
 import { MdWarning } from 'react-icons/md';
 import MainLink from '@components/Utils/MainLink';
-import { ItemData, ListItemInfo, UserList } from '../../types';
+import type { ItemV2For, ListItemInfo, UserList } from '@types';
 import { useMemo } from 'react';
 import { useAuth } from '../../utils/auth';
 import icon from '../../public/logo_icon.svg';
@@ -46,7 +46,7 @@ const ExportListDataModal = dynamic(() => import('../Modal/ExportListModal'), { 
 type ListHeaderProps = {
   list: UserList;
   color: ColorInstance;
-  items: { [item_iid: string]: ItemData };
+  items: { [item_iid: string]: ItemV2For<'card'> };
   itemInfo: { [itemInfoId: number]: ListItemInfo & { hasChanged?: boolean } };
   canEdit: boolean;
   isLoading?: boolean;
@@ -73,7 +73,8 @@ const ListHeader = (props: ListHeaderProps) => {
 
       if (
         itemData &&
-        ((itemData.isNC && !itemData.ncValue) || (!itemData.isNC && !itemData.price.value)) &&
+        ((itemData.type === 'nc' && !itemData.ncValue) ||
+          (itemData.type !== 'nc' && !(itemData.price?.type === 'np' && itemData.price.value))) &&
         itemData.status === 'active' &&
         !item.isHidden
       )
@@ -88,7 +89,8 @@ const ListHeader = (props: ListHeaderProps) => {
 
     return Object.values(itemInfo).reduce((acc, item) => {
       const itemData = items[item.item_iid];
-      if (!itemData || !itemData.price.value || item.isHidden) return acc;
+      if (!itemData || itemData.price?.type !== 'np' || !itemData.price.value || item.isHidden)
+        return acc;
 
       return acc + itemData.price.value * item.amount;
     }, 0);
@@ -124,7 +126,7 @@ const ListHeader = (props: ListHeaderProps) => {
       .filter((item) => {
         const itemData = items[item.item_iid];
         if (!itemData) return false;
-        return !itemData.isNC && !item.isHidden;
+        return itemData.type !== 'nc' && !item.isHidden;
       })
       .map((item) => item.item_iid);
   }, [itemInfo, items]);

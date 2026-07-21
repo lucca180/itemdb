@@ -9,8 +9,8 @@
  * items are owner/admin-specific and must never leak across viewers, so those
  * requests always recompute the ids and skip this cache.
  *
- * TTL-only (no active invalidation) — consistent with the Phase 3 item cache.
- * A membership change (add/remove/hide/reorder) may take up to the TTL to show.
+ * Mutations invalidate via {@link invalidateListItemIds}. App Router / RSC list
+ * loaders must not use this cache — Redis item/id caches are HTTP API only.
  */
 import { redisCache } from '@utils/api/redis';
 import { runAfter } from '@utils/api/after';
@@ -59,4 +59,16 @@ export async function scheduleListItemIdsWrite(
       console.error('listItemsV2Cache write error', error);
     }
   });
+}
+
+/** Drops cached membership ids so the next public API read recomputes from DB. */
+export async function invalidateListItemIds(listIds: number[]): Promise<void> {
+  if (!redisCache || listIds.length === 0) return;
+
+  const uniqueIds = [...new Set(listIds)];
+  try {
+    await redisCache.del(...uniqueIds.map(listIdsKey));
+  } catch (error) {
+    console.error('listItemsV2Cache invalidate error', error);
+  }
 }

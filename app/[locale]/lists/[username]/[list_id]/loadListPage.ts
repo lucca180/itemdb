@@ -6,8 +6,9 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import { getSimilarLists } from '@pages/api/v1/lists/[username]/[list_id]/similar';
 import { getListMatchWithViewer } from '@pages/api/v1/lists/match/[...usernames]';
 import { getSearchStats } from '@pages/api/v1/search/stats';
+import { ItemService } from '@services/ItemService';
 import { ListService } from '@services/ListService';
-import type { ItemData, ListItemInfo, SearchFilters, SearchStats, UserList } from '@types';
+import type { ItemV2For, ListItemInfo, SearchFilters, SearchStats, UserList } from '@types';
 import { listItemsTag } from '@utils/appCacheTags';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { withLocalePrefix, type AppLocale } from '@utils/locales';
@@ -66,7 +67,7 @@ export const getListCore = cache(resolveListCore);
 
 function buildListItemsData(
   itemInfo: ListItemInfo[],
-  items: Record<string, ItemData>,
+  items: Record<string, ItemV2For<'card'>>,
   list: UserList
 ): ListItemsData {
   const { itemMap, infoIds } = getSortedListItemInfo(itemInfo, list, items);
@@ -78,6 +79,22 @@ function emptyListItemsData(): ListItemsData {
   return { itemMap: {}, infoIds: [], itemInfo: [], items: {} };
 }
 
+/**
+ * Card payloads for list rows — Prisma only, no Redis item/id cache.
+ * (HTTP `/api/v2/...` owns Redis caching; RSC loaders stay uncached.)
+ */
+async function fetchCardItemsByIids(
+  itemInfo: ListItemInfo[]
+): Promise<Record<string, ItemV2For<'card'>>> {
+  if (itemInfo.length === 0) return {};
+
+  const ids = [...new Set(itemInfo.map((row) => String(row.item_iid)))];
+  return ItemService.getManyItems(
+    { type: 'id', data: ids },
+    { intent: 'card', cached: false, limit: ids.length }
+  );
+}
+
 async function fetchListPreload(core: ListCore): Promise<ListItemsData> {
   'use cache';
   const { list, viewer } = core;
@@ -86,7 +103,7 @@ async function fetchListPreload(core: ListCore): Promise<ListItemsData> {
   cacheLife('homeSection');
 
   const listService = ListService.initUser(viewer);
-  const preloadData = await listService.preloadListItems({ list, limit: LIST_PRELOAD_LIMIT });
+  const preloadData = await listService.preloadListItemsV2({ list, limit: LIST_PRELOAD_LIMIT });
 
   if (!preloadData) return emptyListItemsData();
 
@@ -104,23 +121,16 @@ async function fetchListFullItems(core: ListCore): Promise<ListItemsData> {
   cacheLife('homeSection');
 
   const listService = ListService.initUser(viewer);
-  const [itemInfoData, itemData] = await Promise.all([
-    listService.getListItemInfo({
-      list,
-      username,
-      list_id_or_slug: list.internal_id,
-    }),
-    listService.getListItems({
-      list,
-      username,
-      list_id_or_slug: list.internal_id,
-      asObject: true,
-    }),
-  ]);
+  const itemInfoData = await listService.getListItemInfo({
+    list,
+    username,
+    list_id_or_slug: list.internal_id,
+  });
 
-  if (!itemInfoData || !itemData) return emptyListItemsData();
+  if (!itemInfoData) return emptyListItemsData();
 
-  return buildListItemsData(itemInfoData, itemData, list);
+  const items = await fetchCardItemsByIids(itemInfoData);
+  return buildListItemsData(itemInfoData, items, list);
 }
 
 export const getListFullItems = cache(fetchListFullItems);
@@ -177,13 +187,6 @@ export async function getFilteredListItems(
 
   if (!itemInfoData) return emptyListItemsData();
 
-  const itemData =
-    (await listService.getListItems({
-      list,
-      username,
-      list_id_or_slug: list.internal_id,
-      asObject: true,
-    })) ?? {};
-
-  return buildListItemsData(itemInfoData, itemData, list);
+  const items = await fetchCardItemsByIids(itemInfoData);
+  return buildListItemsData(itemInfoData, items, list);
 }

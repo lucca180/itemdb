@@ -50,7 +50,7 @@ const ItemCardV2 = (props: ItemCardV2Props) => {
   const [isMobile] = useMediaQuery(['(hover: none)'], { fallback: [false] });
   const [isContextMenuLoaded, setIsContextMenuLoaded] = useState(false);
 
-  if (!item || isLoading || !item.colorHex) {
+  if (!item || isLoading) {
     return (
       <Box
         as="a"
@@ -82,7 +82,7 @@ const ItemCardV2 = (props: ItemCardV2Props) => {
   }
 
   const profit = getRestockProfitV2(item);
-  const colorWash = colorHexWithAlpha(item.colorHex);
+  const colorWash = colorHexWithAlpha(item.colorHex ?? '#4A5568');
   const npValue = item.price?.type === 'np' ? item.price.value : null;
   const ccPoints = rarityToCCPointsV2(item);
   const menuId = item.internal_id.toString() + '-' + uniqueID;

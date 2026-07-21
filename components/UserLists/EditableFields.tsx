@@ -66,7 +66,7 @@ const EditableFields = (props: EditableFieldsProps) => {
           handleItemInfoChange(Number(value || 0), 'order')
         }
       />
-      {item.isNC && isTrading && (
+      {item.type === 'nc' && isTrading && (
         <NumberField
           label={t('General.cap-value')}
           defaultValue={itemInfo?.capValue != null ? String(itemInfo.capValue) : undefined}

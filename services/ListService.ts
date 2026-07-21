@@ -1,4 +1,4 @@
-import { ItemData, ItemIntent, SearchFilters, User, UserList } from '@types';
+import { ItemData, ItemIntent, ItemV2For, SearchFilters, User, UserList } from '@types';
 import { CheckAuth } from '@utils/googleCloud';
 import prisma from '@utils/prisma';
 import { NextApiRequest } from 'next';
@@ -7,7 +7,9 @@ import { createListSlug } from '../pages/api/v1/lists/[username]';
 import { UserList as RawList } from '@prisma/generated/client';
 import { doSearch } from '../pages/api/v1/search';
 import { sortListItems } from '@utils/utils';
+import { sortListItemsV2 } from '@utils/item/v2';
 import { getManyItems } from '../pages/api/v1/items/many';
+import { ItemService } from '@services/ItemService';
 import { defaultFilters } from '@utils/parseFilters';
 import { fillCount, fillCounts, updateCount } from '@services/list/listCount';
 import {
@@ -300,6 +302,48 @@ export class ListService {
     const finalItemData: { [id: string]: ItemData } = {};
     finalResult.forEach((item) => {
       finalItemData[item.item_iid] = itemData[item.item_iid];
+    });
+
+    return { items: finalResult, itemData: finalItemData };
+  };
+
+  /**
+   * ItemV2 preload for the list detail page. Same membership/sort rules as
+   * {@link preloadListItems}, but payloads are `ItemV2For<'card'>`.
+   **/
+  preloadListItemsV2 = async (params: GetListItemsParams & { limit?: number }) => {
+    const { limit = 30 } = params;
+
+    const list =
+      params.list ?? (await this.getList({ ...params, skipSync: true } as GetListParams));
+    if (!list || list.dynamicType === 'search') return null;
+
+    const itemInfoRaw = await prisma.listItems.findMany({
+      where: { list_id: list.internal_id },
+    });
+
+    const itemInfo = rawToListItems(itemInfoRaw);
+
+    // we're preloading so hidden items don't show in the first load
+    const result = itemInfo.filter((item) => !item.isHidden || !item);
+    const itemData = await ItemService.getManyItems(
+      { type: 'id', data: result.map((item) => item.item_iid.toString()) },
+      // RSC preload — never Redis; `/api/v2` owns item caching.
+      { intent: 'card', cached: false, limit: result.length || 1 }
+    );
+
+    const sortedItemInfo = result.sort((a, b) => {
+      if (a.isHighlight && !b.isHighlight) return -1;
+      if (!a.isHighlight && b.isHighlight) return 1;
+      return sortListItemsV2(a, b, list.sortBy, list.sortDir, itemData);
+    });
+
+    const finalResult = sortedItemInfo.splice(0, limit);
+
+    const finalItemData: { [id: string]: ItemV2For<'card'> } = {};
+    finalResult.forEach((item) => {
+      const payload = itemData[item.item_iid];
+      if (payload) finalItemData[item.item_iid] = payload;
     });
 
     return { items: finalResult, itemData: finalItemData };
