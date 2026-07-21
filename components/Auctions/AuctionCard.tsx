@@ -71,13 +71,17 @@ const AuctionCard = ({ auctions, item, totalSold, soldMedianPrice }: Props) => {
                     {format.number(auction.price)} NP
                   </Text>
                   <Text fontSize="xs" color="whiteAlpha.600">
-                    {auction.isNF && '[NF] '}
+                    {auction.flag && `[${auction.flag}] `}
                     {auction.timeLeft ?? t('General.unknown')}
                   </Text>
                 </Flex>
                 <Flex flexFlow="column" gap={1} alignItems="flex-end" textAlign="right">
                   <Badge colorPalette={auction.hasBuyer ? 'green' : 'gray'} size="xs">
-                    {auction.hasBuyer ? t('ItemPage.has-bids') : t('ItemPage.no-bids')}
+                    {auction.bidCount != null
+                      ? t('ItemPage.bids-count', { x: auction.bidCount })
+                      : auction.hasBuyer
+                        ? t('ItemPage.has-bids')
+                        : t('ItemPage.no-bids')}
                   </Badge>
                   <Text fontSize="xs" color="whiteAlpha.600" suppressHydrationWarning>
                     {format.relativeTime(new Date(auction.addedAt), now)}

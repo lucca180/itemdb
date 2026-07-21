@@ -331,7 +331,8 @@
     "avatars": "Avatars",
     "item-list": "Item List",
     "has-bids": "Has Bids",
-    "no-bids": "No Bids"
+    "no-bids": "No Bids",
+    "bids-count": "{x, plural, one {# Bid} other {# Bids}}"
   },
   "Button": {
     "feedback": "Feedback",

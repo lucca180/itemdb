@@ -332,7 +332,8 @@
     "avatars": "Avatares",
     "item-list": "Lista de Itens",
     "has-bids": "Possui lances",
-    "no-bids": "Sem lances"
+    "no-bids": "Sem lances",
+    "bids-count": "{x, plural, one {# Lance} other {# Lances}}"
   },
   "Button": {
     "feedback": "Feedback",

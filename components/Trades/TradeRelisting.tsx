@@ -24,7 +24,7 @@ export const TradeRelisting = ({ disclaimer, history, label }: TradeRelistingBad
     >
       <Accordion.Item value={label} border="none" bg={'gray.600'}>
         <Accordion.ItemTrigger px={2} py={1} borderRadius="sm" gap={2} cursor="pointer">
-          <Text flex="1" textAlign="left" fontSize="xs">
+          <Text flex="1" textAlign="left" fontSize="xs" lineHeight="1.5">
             {label}
           </Text>
           <Accordion.ItemIndicator />
