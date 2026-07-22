@@ -92,7 +92,7 @@ const articleParserOptions: HTMLReactParserOptions = {
 
     if (domChildren instanceof Element && domChildren.name === 'blockquote')
       return (
-        <Box p={3} borderRadius="md" bg="whiteAlpha.50">
+        <Box p={3} borderRadius="md" bg="whiteAlpha.50" css={{ '& p': { mb: 3 } }}>
           {domToReact(children, articleParserOptions)}
         </Box>
       );
@@ -185,9 +185,12 @@ export function ArticlePageContent({
           '& b,& strong': {
             color: Color(post.palette?.lightvibrant.hex).lightness(60).hex() ?? 'blue.300',
           },
+          '& i,& em': {
+            fontStyle: 'italic',
+          },
           '& img': { my: 2 },
+          '& ul': { my: 2, ml: 7 },
           '& ul li': { my: 1 },
-          '& ul ul': { ml: 4 },
         }}
       >
         <Flex flexFlow="column" gap={3} px={3} maxW="900px" w="100%" fontSize="md" mx="auto">
