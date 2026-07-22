@@ -8,7 +8,16 @@ import { useRouter } from 'next/compat/router';
 import { useTranslations } from 'next-intl';
 import SearchMenu from '../Menus/SearchMenu';
 
-const SearchModal = dynamic(() => import('./SearchModal'));
+const loadSearchModal = () => import('./SearchModal');
+
+const SearchModal = dynamic(loadSearchModal, {
+  loading: () => null,
+  ssr: false,
+});
+
+function preloadSearchModal() {
+  void loadSearchModal();
+}
 
 function getSearchQueryFromUrl() {
   if (typeof window === 'undefined') return '';
@@ -18,7 +27,7 @@ function getSearchQueryFromUrl() {
 export const SearchBar = () => {
   const t = useTranslations();
   const [search, setSearch] = React.useState<string>('');
-  const { open: isOpen, onToggle, onClose } = useDisclosure();
+  const { open: isOpen, onOpen, onClose } = useDisclosure();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -26,6 +35,16 @@ export const SearchBar = () => {
 
   React.useEffect(() => {
     setIsMac(/Mac/i.test(navigator.userAgent));
+  }, []);
+
+  // Warm the SearchModal chunk so the first open does not wait on the network.
+  React.useEffect(() => {
+    const ric = window.requestIdleCallback?.(preloadSearchModal, { timeout: 3000 });
+    if (ric == null) {
+      const t = window.setTimeout(preloadSearchModal, 1500);
+      return () => window.clearTimeout(t);
+    }
+    return () => window.cancelIdleCallback?.(ric);
   }, []);
 
   // Mirror the current ?s= query in the read-only bar (Pages Router or App Router fallback).
@@ -44,6 +63,11 @@ export const SearchBar = () => {
     inputRef.current?.blur();
   };
 
+  const openSearch = () => {
+    preloadSearchModal();
+    onOpen();
+  };
+
   const handleKeyDown = (event: KeyboardEvent) => {
     if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
       return;
@@ -53,7 +77,12 @@ export const SearchBar = () => {
       (!isMac && event.ctrlKey && event.key === 'k')
     ) {
       event.preventDefault();
-      onToggle();
+      preloadSearchModal();
+      if (isOpen) {
+        onClose();
+        return;
+      }
+      onOpen();
     }
   };
 
@@ -62,7 +91,7 @@ export const SearchBar = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isMac, onToggle]);
+  }, [isMac, isOpen, onClose, onOpen]);
 
   return (
     <>
@@ -72,6 +101,7 @@ export const SearchBar = () => {
         w="100%"
         h="100%"
         maxH="50px"
+        onPointerEnter={preloadSearchModal}
         startElement={<SearchIcon color="gray.300" />}
         startElementProps={{ pointerEvents: 'none', h: '100%' }}
         endElement={
@@ -100,13 +130,14 @@ export const SearchBar = () => {
           bg="gray.700"
           type="text"
           fontSize={{ base: 'sm', md: 'md' }}
-          onFocus={onToggle}
+          onFocus={openSearch}
           value={search}
           ref={inputRef}
           placeholder={t('Layout.search-by')}
           _focus={{ bg: 'gray.700' }}
           readOnly
           h="100%"
+          data-sentry-label="HeaderSearch"
         />
       </InputGroup>
     </>
