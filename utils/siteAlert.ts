@@ -82,16 +82,16 @@ export const siteAlerts = {
     bg: 'pink.300',
     color: 'blackAlpha.800',
   },
-  newAuction: {
-    message: 'newAuction',
-    link: 'https://itemdb.com.br/articles/new-auction-house',
+  apiV2: {
+    message: 'apiV2',
+    link: 'https://itemdb.com.br/articles/recent-outages-and-api-v2',
     img: {
-      src: '/icons/auction.png',
+      src: 'https://images.neopets.com/themes/h5/hauntedwoods/images/community-icon.svg?d=20210209',
       h: 28,
       w: 28,
     },
-    bg: 'red.200',
-    color: 'blackAlpha.900',
+    bg: 'whiteAlpha.300',
+    color: 'whiteAlpha.900',
   },
 } as const;
 
@@ -103,7 +103,7 @@ export function getCurrentSiteAlert() {
   if (todayNST.getMonth() === 7 && todayNST.getDate() === 20) return siteAlerts.usuki;
   if (todayNST.getMonth() === 8 && todayNST.getDate() === 20) return siteAlerts.faerieFestival;
   if (todayNST.getMonth() === 9 && todayNST.getDate() === 31) return siteAlerts.halloween;
-  // if (todayNST.getTime() < 1783641599000) return siteAlerts.newAuction;
+  if (todayNST.getTime() < 1784894400000) return siteAlerts.apiV2;
 
   return siteAlerts.default;
 }

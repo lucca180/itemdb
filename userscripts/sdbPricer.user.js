@@ -32,8 +32,6 @@ const itemInfo = {};
 async function fetchPriceData(IDs) {
   GM_xmlhttpRequest({
     method: 'POST',
-    // if you're reading this to create your own userscript,
-    // don't use v2 endpoint yet, it is still in development and its not ready for general use.
     url: 'https://itemdb.com.br/api/v2/items/many',
     headers: {
       'Content-Type': 'application/json'
