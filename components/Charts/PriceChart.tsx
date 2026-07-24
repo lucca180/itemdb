@@ -222,7 +222,16 @@ const ChartComponent = (props: ChartComponentProps) => {
       dates.textContent = `${startDate} - ${endDate}`;
       dates.style.opacity = '0.78';
 
-      tooltip.replaceChildren(title, dates);
+      if (series.description) {
+        dates.style.marginBottom = '6px';
+        const description = document.createElement('div');
+        description.textContent = series.description;
+        description.style.whiteSpace = 'pre-wrap';
+        tooltip.replaceChildren(title, dates, description);
+      } else {
+        tooltip.replaceChildren(title, dates);
+      }
+
       lastTooltipKey = tooltipKey;
     };
 

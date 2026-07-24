@@ -116,7 +116,7 @@ File: [`app/_components/Item/loadUtils.ts`](../app/_components/Item/loadUtils.ts
 |-------------------|----------------|--------------|-----------|-------------------|
 | `getOfficialItemLists` | `getOfficialItemListsCached` | `lists` | `itemFast` | `ItemAvyCard` (`loadAvyData`); indirectly via `loadItemPageLists` |
 | `loadItemPageLists` | *(React.cache)* → `getOfficialItemLists` | `lists` | `itemFast` | `ItemHeader`, `ItemOfficialListsSection`, `ItemPriceSection`, `RelatedLinksCard` |
-| `loadItemPriceMarkers` | *(React.cache)* → `getOfficialItemLists` + `resolveOfficialListMarkers` | `markers`, `lists` | `itemFast` | `ItemPriceSection` (price table + chart markers) |
+| `loadItemPriceMarkers` | *(React.cache)* → `getOfficialItemLists` + `resolveOfficialListMarkers` + `getManualPriceMarkers` | `markers`, `lists` | `itemFast` | `ItemPriceSection` (price table + chart markers) |
 | `loadItemEffects` | `loadItemEffectsCached` | `effects` | `homeSlow` | `ItemEffectsSection`, `ItemPageWearablePreview`, `ItemPageEditSectionLoader`, `RelatedLinksCard` |
 | `loadItemColors` | `loadItemColorsCached` | `colors` | `homeSlow` | `ColorInfoSection` |
 | `loadItemWearableData` | `loadItemWearableDataCached` | `wearable` | `homeSlow` | `ItemPageWearablePreview` |

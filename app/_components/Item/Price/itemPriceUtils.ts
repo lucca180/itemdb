@@ -102,6 +102,9 @@ export function buildLastSeenCards(
 
 export type PriceOrMarker = Partial<PriceData> & {
   marker?: boolean;
+  /** Stable source marker id, used for collision-free React keys. */
+  markerId?: string;
+  markerEdge?: 'start' | 'end';
   /** Already-translated Badge copy (or custom manual badge). */
   badgeText?: string;
   /** List name / marker title shown under the badge. */
@@ -157,9 +160,35 @@ export function getHelpNeededData(
 }
 
 /**
+ * Resolves badge copy for a table marker row.
+ * - Custom non-empty string → as-is
+ * - Explicit `""` → hide badge
+ * - `null` / omitted → auto i18n (official lists always; manuals when toggle is on)
+ */
+function resolveMarkerBadgeText(
+  marker: PriceMarker,
+  edge: 'start' | 'end',
+  hasEnding: boolean,
+  t: TranslateFn
+): string | undefined {
+  if (marker.badgeText === '') return undefined;
+  // Manual custom copy describes the opening edge. The closing edge keeps the
+  // translated "Unavailable at" semantics used by official list ranges.
+  if (marker.type === 'manual' && edge === 'end' && marker.badgeText) {
+    return t('ItemPage.unavailable-at');
+  }
+  if (marker.badgeText) return marker.badgeText;
+
+  // null / undefined → translated preset
+  if (edge === 'end') return t('ItemPage.unavailable-at');
+  return t(hasEnding ? 'ItemPage.available-at' : 'ItemPage.added-to');
+}
+
+/**
  * Interleaves price rows with presentation-ready markers.
  * Clamping / date validation already happened in the price-markers engine.
  * Official-list badge copy is resolved via i18n here into `badgeText`.
+ * Manual markers: `null` = same auto i18n; `""` = no badge; other = custom.
  */
 export function buildPriceTableData(
   data: PriceData[],
@@ -169,15 +198,23 @@ export function buildPriceTableData(
   const sorted: PriceOrMarker[] = [...data];
 
   markers.forEach((marker) => {
+    if (marker.title == null && marker.description == null && marker.badgeText == null) {
+      return;
+    }
+
     const hasEnding = !!marker.endAt;
     const slug = marker.type === 'officialList' ? marker.slug : null;
 
     if (marker.endAt) {
       sorted.push({
         marker: true,
-        badgeText: marker.badgeText ?? t('ItemPage.unavailable-at'),
-        title: marker.title,
-        description: marker.description,
+        markerId: marker.id,
+        markerEdge: 'end',
+        badgeText: resolveMarkerBadgeText(marker, 'end', hasEnding, t),
+        title: marker.title ?? undefined,
+        // Avoid repeating the same body at both edges when a title identifies
+        // the range. Description-only markers need their context on both rows.
+        description: marker.title ? null : marker.description,
         slug,
         hasEnding,
         addedAt: marker.endAt,
@@ -187,8 +224,10 @@ export function buildPriceTableData(
 
     sorted.push({
       marker: true,
-      badgeText: marker.badgeText ?? t(hasEnding ? 'ItemPage.available-at' : 'ItemPage.added-to'),
-      title: marker.title,
+      markerId: marker.id,
+      markerEdge: 'start',
+      badgeText: resolveMarkerBadgeText(marker, 'start', hasEnding, t),
+      title: marker.title ?? undefined,
       description: marker.description,
       slug,
       addedAt: marker.startAt,

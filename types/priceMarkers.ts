@@ -6,16 +6,19 @@
 
 type PriceMarkerBase = {
   id: string;
-  /** Main label (official list name, or manual marker title). */
-  title: string;
   /**
-   * Badge copy, already presentation-ready.
-   * Official lists omit this — `buildPriceTableData` fills translated
-   * "Added to" / "Available at" / "Unavailable at" per table row.
-   * Manual markers (PR4) set a custom string here.
+   * Main label (official list name, or manual marker title).
+   * Manual markers may omit title when badgeText and/or description are set.
+   * Supports markdown (rendered in the price table; stripped for chart tooltips).
+   */
+  title: string | null;
+  /**
+   * Badge copy, already presentation-ready when set.
+   * - Official lists omit this — table fills translated Added to / Available at / Unavailable at.
+   * - Manual: `null` = same auto i18n as official; `""` = hide badge; non-empty = custom copy.
    */
   badgeText?: string | null;
-  /** Optional long text (markdown). Filled by manual markers (PR4); null for official lists today. */
+  /** Optional long text (markdown). Manual markers may use this alone; null for official lists today. */
   description?: string | null;
   /** Lightened hex, ready to paint. */
   color: string;

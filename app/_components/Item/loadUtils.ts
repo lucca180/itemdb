@@ -15,7 +15,7 @@ import { getLastSeen } from '@pages/api/v1/prices/stats';
 import { getPriceStatus } from '@pages/api/v1/prices/[iid]/status';
 import { applyItemSectionCacheTags } from '@utils/item/applyItemCacheTags';
 import { shouldShowTradeLists } from '@utils/utils';
-import { resolveOfficialListMarkers } from '@app/server/items/priceMarkers';
+import { getManualPriceMarkers, resolveOfficialListMarkers } from '@app/server/items/priceMarkers';
 import type {
   AvyData,
   InsightsResponse,
@@ -83,8 +83,11 @@ export const loadItemPriceMarkers = cache(async (item: ItemData, includeTrade = 
   'use cache';
   applyItemSectionCacheTags(item.internal_id, 'markers', 'lists');
   cacheLife('itemFast');
-  const lists = await getOfficialItemLists(item.internal_id, includeTrade);
-  return resolveOfficialListMarkers(lists, item);
+  const [lists, manual] = await Promise.all([
+    getOfficialItemLists(item.internal_id, includeTrade),
+    getManualPriceMarkers(item),
+  ]);
+  return [...resolveOfficialListMarkers(lists, item), ...manual];
 });
 
 export const loadItemEffects = cache(async (item: ItemData): Promise<ItemEffect[]> => {

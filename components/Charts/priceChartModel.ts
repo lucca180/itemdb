@@ -21,6 +21,7 @@ export type ChartSeriesStyle = {
   bottomColor: string;
   startTime: number;
   endTime: number | null;
+  description?: string | null;
 };
 
 export type ChartSegment = ChartSeriesStyle & {
@@ -45,6 +46,13 @@ type ListChartSeries = ChartSeriesStyle & {
 
 type PendingSeriesPoint = Omit<ChartSeriesPoint, 'segmentId'>;
 
+function markerDisplayName(marker: PriceMarker): string {
+  if (marker.title) return stripMarkdown(marker.title);
+  if (marker.badgeText) return marker.badgeText;
+  if (marker.description) return stripMarkdown(marker.description);
+  return 'Marker';
+}
+
 export function buildPriceChartModel(
   prices: PriceData[],
   markers: PriceMarker[] | undefined,
@@ -57,6 +65,11 @@ export function buildPriceChartModel(
   const pendingPoints: PendingSeriesPoint[] = [];
 
   (markers ?? []).forEach((marker) => {
+    // Empty shells (all labels null) are skipped — no chart entry / "Marker" fallback.
+    if (marker.title == null && marker.description == null && marker.badgeText == null) {
+      return;
+    }
+
     // Point markers (single-day / open itemAddition / manual isPoint) snap to
     // the closest price day. Ranges become colored area segments.
     if (marker.isPoint) {
@@ -65,7 +78,7 @@ export function buildPriceChartModel(
 
       pendingPoints.push({
         id: marker.id,
-        name: marker.title,
+        name: markerDisplayName(marker),
         lineColor: marker.color,
         time: chartPoint.time,
         value: chartPoint.value,
@@ -79,7 +92,7 @@ export function buildPriceChartModel(
 
     seriesInfo.push({
       id: marker.id,
-      name: marker.title,
+      name: markerDisplayName(marker),
       lineColor: marker.color,
       topColor: color.alpha(0.62).hexa(),
       bottomColor: color.alpha(0.16).hexa(),
@@ -87,6 +100,7 @@ export function buildPriceChartModel(
       endTime: marker.endAt ? new Date(marker.endAt).getTime() : null,
       startDateKey: dateToChartDateKey(marker.startAt),
       endDateKey: marker.endAt ? dateToChartDateKey(marker.endAt) : null,
+      description: marker.description ? stripMarkdown(marker.description) : null,
     });
   });
 

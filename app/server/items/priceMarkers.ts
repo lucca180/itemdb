@@ -3,8 +3,10 @@ import 'server-only';
 import Color from 'color';
 import { tz } from '@date-fns/tz';
 import { isSameDay } from 'date-fns';
-import type { OfficialListPriceMarker, PriceMarker, UserList } from '@types';
+import type { ManualPriceMarker as ManualPriceMarkerRow } from '@prisma/generated/client';
+import type { ManualPriceMarkerDTO, OfficialListPriceMarker, PriceMarker, UserList } from '@types';
 import { getItemLists } from '@pages/api/v1/items/[id_name]/lists';
+import prisma from '@utils/prisma';
 
 type PriceMarkerItemRef = {
   internal_id: number;
@@ -16,20 +18,101 @@ export type GetItemPriceMarkersOptions = {
 };
 
 /**
- * Fetches official lists for an item and resolves them into presentation-ready
- * {@link PriceMarker}s. Prefer {@link loadItemPriceMarkers} on the item page
- * (shared `'use cache'` with other list loaders); this entry is for HTTP/API use.
+ * Fetches official lists + manual markers for an item and resolves them into
+ * presentation-ready {@link PriceMarker}s. Prefer {@link loadItemPriceMarkers}
+ * on the item page (shared `'use cache'` with other list loaders); this entry
+ * is for HTTP/API use.
  */
 export async function getItemPriceMarkers(
   item: PriceMarkerItemRef,
   opts: GetItemPriceMarkersOptions = {}
 ): Promise<PriceMarker[]> {
-  const { official } = await getItemLists(item.internal_id, {
-    includeOfficial: true,
-    includeTrade: opts.includeTrade ?? false,
-  });
+  const [{ official }, manual] = await Promise.all([
+    getItemLists(item.internal_id, {
+      includeOfficial: true,
+      includeTrade: opts.includeTrade ?? false,
+    }),
+    getManualPriceMarkers(item),
+  ]);
   const lists = official.filter((list) => !list.officialTag.includes('Avatar'));
-  return resolveOfficialListMarkers(lists, item);
+  return [...resolveOfficialListMarkers(lists, item), ...manual];
+}
+
+/** Loads active manual markers for an item and resolves them (dates clamped to firstSeen). */
+export async function getManualPriceMarkers(
+  item: Pick<PriceMarkerItemRef, 'internal_id' | 'firstSeen'>,
+  now = new Date()
+): Promise<ManualPriceMarkerDTO[]> {
+  const rows = await prisma.manualPriceMarkerItem.findMany({
+    where: { item_iid: item.internal_id },
+    select: { marker: true },
+  });
+
+  return resolveManualMarkers(
+    rows.map((row) => row.marker),
+    item,
+    now
+  );
+}
+
+/**
+ * Maps manual marker rows into {@link PriceMarker}s: validates dates, clamps to
+ * `item.firstSeen`, and hides fully-future markers (same rules as official lists).
+ * Admin-provided `isPoint`/`color`/`badgeText`/`title`/`description` pass through as-is.
+ */
+export function resolveManualMarkers(
+  markers: ManualPriceMarkerRow[] | undefined,
+  item: Pick<PriceMarkerItemRef, 'firstSeen'>,
+  now = new Date()
+): ManualPriceMarkerDTO[] {
+  const itemAdded = new Date(item.firstSeen ?? 0);
+
+  return (
+    markers
+      ?.map((marker) => resolveManualMarker(marker, itemAdded, now))
+      .filter((marker): marker is ManualPriceMarkerDTO => marker !== null) ?? []
+  );
+}
+
+function resolveManualMarker(
+  marker: ManualPriceMarkerRow,
+  itemAdded: Date,
+  now: Date
+): ManualPriceMarkerDTO | null {
+  const startDate = new Date(marker.startAt);
+  let endDate = marker.endAt ? new Date(marker.endAt) : null;
+
+  if (!isValidDate(startDate) || (endDate && !isValidDate(endDate))) return null;
+
+  // Mirror write-path / official-list same-day behavior.
+  const isSameDayRange =
+    !!endDate && isSameDay(startDate, endDate, { in: tz('America/Los_Angeles') });
+  const isPoint = marker.isPoint || isSameDayRange;
+  if (isPoint) endDate = null;
+
+  // Hide the whole marker while any part of it is still in the future.
+  if (startDate > now || (endDate && endDate > now)) return null;
+  // Window ended before the item existed — skip.
+  if (endDate && endDate <= itemAdded) return null;
+
+  const clampedStart = dateMax(itemAdded, startDate);
+
+  // Drop empty shells — badge/title/description cannot all be null.
+  if (marker.title == null && marker.description == null && marker.badgeText == null) {
+    return null;
+  }
+
+  return {
+    id: `manual-${marker.internal_id}`,
+    type: 'manual',
+    title: marker.title,
+    badgeText: marker.badgeText,
+    description: marker.description,
+    color: marker.color,
+    startAt: clampedStart.toJSON(),
+    endAt: endDate?.toJSON() ?? null,
+    isPoint,
+  };
 }
 
 /**

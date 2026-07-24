@@ -76,6 +76,7 @@ function PriceTableRow({
   index,
   isAdmin,
   itemColor,
+  linkColor,
   t,
   format,
 }: {
@@ -84,6 +85,7 @@ function PriceTableRow({
   index: number;
   isAdmin?: boolean;
   itemColor: string;
+  linkColor: string;
   t: ItemPriceLabels['t'];
   format: ItemPriceLabels['format'];
 }) {
@@ -95,23 +97,16 @@ function PriceTableRow({
       <Table.Row h={42} bg={bgColor} borderLeft={`3px solid ${price.color}85`}>
         <Table.Cell colSpan={isAdmin ? 4 : 3} border={0}>
           <Flex flexFlow="column" alignItems="center" gap={2}>
-            <Badge>{price.badgeText}</Badge>
-            {price.slug ? (
-              <I18nLink href={`/lists/official/${price.slug}`} style={{ color: price.color }}>
-                {price.title}
-              </I18nLink>
-            ) : (
-              <Text as="span" style={{ color: price.color }}>
-                {price.title}
+            {!!price.badgeText && <Badge>{price.badgeText}</Badge>}
+            {!!price.title && (
+              <Text as="span" css={{ '& a, & strong, & b': { color: price.color } }}>
+                {price.slug ? (
+                  <I18nLink href={`/lists/official/${price.slug}`}>{price.title}</I18nLink>
+                ) : (
+                  <Markdown skipParagraph>{price.title}</Markdown>
+                )}
               </Text>
             )}
-            <Text fontSize="xs">
-              {format.dateTime(new Date(price.addedAt!), {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </Text>
             {!!price.description && (
               <Box
                 whiteSpace="normal"
@@ -126,6 +121,13 @@ function PriceTableRow({
                 <Markdown>{price.description}</Markdown>
               </Box>
             )}
+            <Text fontSize="xs">
+              {format.dateTime(new Date(price.addedAt!), {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </Text>
           </Flex>
         </Table.Cell>
       </Table.Row>
@@ -249,6 +251,7 @@ function PriceTableRow({
               bg="blackAlpha.300"
               p={1}
               borderRadius="md"
+              css={{ '& a': { color: linkColor } }}
             >
               <Text fontWeight="bold" mb={2}>
                 {t('ItemPage.price-context')}
@@ -281,23 +284,22 @@ function PriceTableView({
   const linkColor = Color(item.color.hex).alpha(0.8).lightness(70).hexa();
 
   return (
-    <Table.ScrollArea
-      minH={{ base: 100 }}
-      maxH={{ base: 200, md: 300 }}
-      w="100%"
-      borderRadius="sm"
-      css={{ '& a': { color: linkColor } }}
-    >
+    <Table.ScrollArea minH={{ base: 100 }} maxH={{ base: 200, md: 300 }} w="100%" borderRadius="sm">
       <Table.Root h="100%" size="sm" css={{ '& td': { border: 0 } }}>
         <Table.Body>
           {sortedData.map((price, index) => (
             <PriceTableRow
-              key={price.addedAt + '_item' + (price.marker ? `_${price.badgeText}` : '')}
+              key={
+                price.marker
+                  ? `${price.markerId}-${price.markerEdge}`
+                  : `price-${price.price_id ?? price.addedAt}`
+              }
               price={price}
               sortedData={sortedData}
               index={index}
               isAdmin={isAdmin}
               itemColor={item.color.hex}
+              linkColor={linkColor}
               t={t}
               format={format}
             />
