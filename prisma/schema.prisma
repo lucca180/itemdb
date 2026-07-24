@@ -78,6 +78,7 @@ model Items {
   TradeItems            TradeItems[]
   bdEffects             bdEffects[]
   avatarSolutions       AvatarSolution[]
+  manualPriceMarkers    ManualPriceMarkerItem[]
 
   @@index([image_id])
   @@index([name, image_id])
@@ -358,6 +359,38 @@ model User {
   NCTrade         ncTrade[]
 
   apiKeys apiKeys[]
+
+  manualPriceMarkers ManualPriceMarker[]
+}
+
+model ManualPriceMarker {
+  internal_id Int       @id @default(autoincrement())
+  badgeText   String?   @db.VarChar(191)
+  title       String?   @db.VarChar(191)
+  description String?   @db.Text
+  color       String    @db.VarChar(9)
+  startAt     DateTime
+  endAt       DateTime?
+  isPoint     Boolean   @default(false)
+
+  createdBy     String?
+  createdByUser User?   @relation(fields: [createdBy], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items ManualPriceMarkerItem[]
+}
+
+model ManualPriceMarkerItem {
+  internal_id Int               @id @default(autoincrement())
+  marker_id   Int
+  marker      ManualPriceMarker @relation(fields: [marker_id], references: [internal_id], onDelete: Cascade)
+  item_iid    Int
+  item        Items             @relation(fields: [item_iid], references: [internal_id], onDelete: Cascade)
+
+  @@unique([marker_id, item_iid])
+  @@index([item_iid])
 }
 
 model OpenableItems {

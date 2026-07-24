@@ -44,6 +44,7 @@ export const ITEM_PAGE_CACHE_SCOPES = [
   'wearable',
   'colors',
   'lists',
+  'markers',
   'np-prices',
   'trade-lists',
 ] as const;

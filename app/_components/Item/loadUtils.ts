@@ -15,6 +15,7 @@ import { getLastSeen } from '@pages/api/v1/prices/stats';
 import { getPriceStatus } from '@pages/api/v1/prices/[iid]/status';
 import { applyItemSectionCacheTags } from '@utils/item/applyItemCacheTags';
 import { shouldShowTradeLists } from '@utils/utils';
+import { getManualPriceMarkers, resolveOfficialListMarkers } from '@app/server/items/priceMarkers';
 import type {
   AvyData,
   InsightsResponse,
@@ -73,6 +74,21 @@ export const getOfficialItemLists = cache(
       (list) => !list.officialTag.includes('Avatar')
     )
 );
+
+/**
+ * Presentation-ready price markers for the item page (table/chart).
+ * Uses the shared official-lists cache, then resolves dates/clamping server-side.
+ */
+export const loadItemPriceMarkers = cache(async (item: ItemData, includeTrade = false) => {
+  'use cache';
+  applyItemSectionCacheTags(item.internal_id, 'markers', 'lists');
+  cacheLife('itemFast');
+  const [lists, manual] = await Promise.all([
+    getOfficialItemLists(item.internal_id, includeTrade),
+    getManualPriceMarkers(item),
+  ]);
+  return [...resolveOfficialListMarkers(lists, item), ...manual];
+});
 
 export const loadItemEffects = cache(async (item: ItemData): Promise<ItemEffect[]> => {
   'use cache';

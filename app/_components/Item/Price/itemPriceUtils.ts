@@ -1,7 +1,6 @@
 import { differenceInCalendarDays, isSameDay } from 'date-fns';
 import { tz } from '@date-fns/tz';
-import type { ItemData, PriceData, PricingInfo, UserList } from '@types';
-import { resolveItemListSeries } from '@utils/item/itemListSeries';
+import type { ItemData, PriceData, PriceMarker, PricingInfo, UserList } from '@types';
 
 export type ItemPriceStatLabels = {
   inflation: string;
@@ -103,16 +102,18 @@ export function buildLastSeenCards(
 
 export type PriceOrMarker = Partial<PriceData> & {
   marker?: boolean;
+  /** Stable source marker id, used for collision-free React keys. */
+  markerId?: string;
+  markerEdge?: 'start' | 'end';
+  /** Already-translated Badge copy (or custom manual badge). */
+  badgeText?: string;
+  /** List name / marker title shown under the badge. */
   title?: string;
+  description?: string | null;
   color?: string;
-  slug?: string;
+  slug?: string | null;
   addedAt?: string;
   hasEnding?: boolean;
-  markerType?: 'added-to' | 'available-at' | 'unavailable-at';
-};
-
-const dateMax = (...dates: Date[]) => {
-  return dates.reduce((max, date) => (date > max ? date : max), new Date(0));
 };
 
 export function filterNPSeekingLists(lists?: UserList[]) {
@@ -158,49 +159,81 @@ export function getHelpNeededData(
   };
 }
 
+/**
+ * Resolves badge copy for a table marker row.
+ * - Custom non-empty string → as-is
+ * - Explicit `""` → hide badge
+ * - `null` / omitted → auto i18n (official lists always; manuals when toggle is on)
+ */
+function resolveMarkerBadgeText(
+  marker: PriceMarker,
+  edge: 'start' | 'end',
+  hasEnding: boolean,
+  t: TranslateFn
+): string | undefined {
+  if (marker.badgeText === '') return undefined;
+  // Manual custom copy describes the opening edge. The closing edge keeps the
+  // translated "Unavailable at" semantics used by official list ranges.
+  if (marker.type === 'manual' && edge === 'end' && marker.badgeText) {
+    return t('ItemPage.unavailable-at');
+  }
+  if (marker.badgeText) return marker.badgeText;
+
+  // null / undefined → translated preset
+  if (edge === 'end') return t('ItemPage.unavailable-at');
+  return t(hasEnding ? 'ItemPage.available-at' : 'ItemPage.added-to');
+}
+
+/**
+ * Interleaves price rows with presentation-ready markers.
+ * Clamping / date validation already happened in the price-markers engine.
+ * Official-list badge copy is resolved via i18n here into `badgeText`.
+ * Manual markers: `null` = same auto i18n; `""` = no badge; other = custom.
+ */
 export function buildPriceTableData(
   data: PriceData[],
-  lists: UserList[] | undefined,
-  item: ItemData
+  markers: PriceMarker[] = [],
+  t: TranslateFn = (key) => key
 ): PriceOrMarker[] {
   const sorted: PriceOrMarker[] = [...data];
-  const itemAdded = new Date(item.firstSeen ?? 0);
 
-  resolveItemListSeries(lists).forEach((series) => {
-    let startDate: string | null = series.startAt;
-    let markerType = 'added-to';
-    let hasEnding = !!series.endAt;
+  markers.forEach((marker) => {
+    if (marker.title == null && marker.description == null && marker.badgeText == null) {
+      return;
+    }
 
-    if (series.endAt) {
-      markerType = 'available-at';
+    const hasEnding = !!marker.endAt;
+    const slug = marker.type === 'officialList' ? marker.slug : null;
 
-      if (new Date(series.endAt) <= itemAdded) return;
-
-      hasEnding = !!startDate;
-
+    if (marker.endAt) {
       sorted.push({
         marker: true,
-        title: series.name,
-        slug: series.slug,
-        hasEnding: hasEnding,
-        addedAt: series.endAt,
-        color: series.color,
-        markerType: 'unavailable-at',
+        markerId: marker.id,
+        markerEdge: 'end',
+        badgeText: resolveMarkerBadgeText(marker, 'end', hasEnding, t),
+        title: marker.title ?? undefined,
+        // Avoid repeating the same body at both edges when a title identifies
+        // the range. Description-only markers need their context on both rows.
+        description: marker.title ? null : marker.description,
+        slug,
+        hasEnding,
+        addedAt: marker.endAt,
+        color: marker.color,
       });
     }
 
-    startDate = startDate ? dateMax(itemAdded, new Date(startDate)).toJSON() : null;
-
-    if (startDate)
-      sorted.push({
-        marker: true,
-        title: series.name,
-        slug: series.slug,
-        addedAt: startDate,
-        color: series.color,
-        hasEnding: hasEnding,
-        markerType: markerType as 'added-to' | 'available-at' | 'unavailable-at',
-      });
+    sorted.push({
+      marker: true,
+      markerId: marker.id,
+      markerEdge: 'start',
+      badgeText: resolveMarkerBadgeText(marker, 'start', hasEnding, t),
+      title: marker.title ?? undefined,
+      description: marker.description,
+      slug,
+      addedAt: marker.startAt,
+      color: marker.color,
+      hasEnding,
+    });
   });
 
   sorted.sort((a, b) => {
