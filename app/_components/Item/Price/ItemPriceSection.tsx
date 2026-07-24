@@ -7,15 +7,10 @@
  * Client shell: ItemPriceCard.tsx
  */
 import { Suspense, type ReactNode } from 'react';
-import { Box, Center, Flex, Table, Text, Badge } from '@chakra-ui/react';
-import Color from 'color';
+import { Box, Center, Flex, Text } from '@chakra-ui/react';
 import { MdMoneyOff } from 'react-icons/md';
-import { FaCaretDown, FaCaretUp } from 'react-icons/fa';
-import { LuMinus } from 'react-icons/lu';
 import { getFormatter, getTranslations } from 'next-intl/server';
-import { Link as I18nLink } from '@i18n/navigation';
 import CardBase from '@components/Card/CardBase';
-import Markdown from '@components/Utils/Markdown';
 import MatchTable from '@app/_components/Item/NCTrade/MatchTable';
 import {
   loadLastSeen,
@@ -26,20 +21,17 @@ import {
 } from '@app/_components/Item/loadUtils';
 import { getServerCurrentUser } from '@utils/auth/getServerCurrentUser';
 import { shouldShowTradeLists } from '@utils/utils';
-import type { ItemData, PriceData, PriceMarker } from '@types';
+import type { ItemData, PriceData } from '@types';
 import {
   buildLastSeenCards,
   buildLastSeenStaticCards,
-  buildPriceTableData,
   filterNPSeekingLists,
   filterNPTradingLists,
   getHelpNeededData,
   getLatestPrice,
-  getNextPrice,
-  getPercentChange,
   getPriceDiff,
-  type PriceOrMarker,
 } from '@app/_components/Item/Price/itemPriceUtils';
+import { PriceTableView } from '@app/_components/Item/Price/PriceTable';
 import {
   HelpNeeded,
   ItemPriceModalProvider,
@@ -52,7 +44,6 @@ import {
   PriceChartPanel,
   PriceEmptyPanel,
   PriceStatActions,
-  PriceTableEditButton,
 } from '@app/_components/Item/Price/ItemPriceCard';
 
 type ItemProps = { item: ItemData };
@@ -68,247 +59,7 @@ type ItemPriceLabels = {
   format: Awaited<ReturnType<typeof getFormatter>>;
 };
 
-// --- Price table (server) ---
-
-function PriceTableRow({
-  price,
-  sortedData,
-  index,
-  isAdmin,
-  itemColor,
-  linkColor,
-  t,
-  format,
-}: {
-  price: PriceOrMarker;
-  sortedData: PriceOrMarker[];
-  index: number;
-  isAdmin?: boolean;
-  itemColor: string;
-  linkColor: string;
-  t: ItemPriceLabels['t'];
-  format: ItemPriceLabels['format'];
-}) {
-  const bgColor = index % 2 === 0 ? 'blackAlpha.400' : 'transparent';
-  const nextPrice = getNextPrice(sortedData, index);
-
-  if (price.marker) {
-    return (
-      <Table.Row h={42} bg={bgColor} borderLeft={`3px solid ${price.color}85`}>
-        <Table.Cell colSpan={isAdmin ? 4 : 3} border={0}>
-          <Flex flexFlow="column" alignItems="center" gap={2}>
-            {!!price.badgeText && <Badge>{price.badgeText}</Badge>}
-            {!!price.title && (
-              <Text as="span" css={{ '& a, & strong, & b': { color: price.color } }}>
-                {price.slug ? (
-                  <I18nLink href={`/lists/official/${price.slug}`}>{price.title}</I18nLink>
-                ) : (
-                  <Markdown skipParagraph>{price.title}</Markdown>
-                )}
-              </Text>
-            )}
-            {!!price.description && (
-              <Box
-                whiteSpace="normal"
-                fontSize="0.8rem"
-                color="whiteAlpha.700"
-                textAlign="center"
-                bg="blackAlpha.300"
-                p={1}
-                borderRadius="md"
-                maxW="90%"
-              >
-                <Markdown>{price.description}</Markdown>
-              </Box>
-            )}
-            <Text fontSize="xs">
-              {format.dateTime(new Date(price.addedAt!), {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </Text>
-          </Flex>
-        </Table.Cell>
-      </Table.Row>
-    );
-  }
-
-  if (price.value === 0) {
-    return (
-      <Table.Row h={50} bg={bgColor} border={0} borderLeft={`3px solid ${itemColor}`}>
-        <Table.Cell colSpan={isAdmin ? 3 : 4}>
-          <Flex flexFlow="column" alignItems="center" gap={2}>
-            {format.dateTime(new Date(price.addedAt!), {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-            <Text textAlign="center" color="whiteAlpha.700">
-              {t('ItemPage.unknown-price-msg')}
-            </Text>
-          </Flex>
-        </Table.Cell>
-        {isAdmin && (
-          <Table.Cell px={1}>
-            <PriceTableEditButton price={price as PriceData} />
-          </Table.Cell>
-        )}
-      </Table.Row>
-    );
-  }
-
-  if (price.isUnconfirmed) {
-    return (
-      <Table.Row h={50} bg={bgColor} border={0} borderLeft={`3px solid ${itemColor}`}>
-        <Table.Cell colSpan={4}>
-          <Flex flexFlow="column" alignItems="center" gap={2}>
-            <Text textAlign="center">{t('ItemPage.unconfirmed-price')}</Text>
-            <Text
-              textAlign="center"
-              color="whiteAlpha.700"
-              maxW="90%"
-              fontSize="sm"
-              whiteSpace="normal"
-            >
-              {t('ItemPage.unconfirmed-price-text')}
-            </Text>
-          </Flex>
-        </Table.Cell>
-      </Table.Row>
-    );
-  }
-
-  return (
-    <>
-      <Table.Row
-        bg={bgColor}
-        border={0}
-        borderLeft={price.color ? `3px solid ${price.color}85` : undefined}
-      >
-        <Table.Cell>
-          <Flex alignItems="center">
-            <Flex flexFlow="column">
-              {price.inflated && (
-                <Text fontWeight="bold" color="red.400">
-                  {t('General.inflation')}!
-                </Text>
-              )}
-              {format.number(price.value!)} NP
-            </Flex>
-          </Flex>
-        </Table.Cell>
-        <Table.Cell px={1}>
-          {!!nextPrice?.value && (
-            <Flex alignItems="center">
-              {!!(price.value! - nextPrice.value) && (
-                <Flex
-                  display="inline-flex"
-                  flexFlow="column"
-                  justifyContent="center"
-                  alignItems="center"
-                >
-                  {price.value! - nextPrice.value > 0 && <FaCaretUp color="#68D391" size={22} />}
-                  {price.value! - nextPrice.value < 0 && <FaCaretDown color="#FC8181" size={22} />}
-                </Flex>
-              )}
-              {!(price.value! - nextPrice.value) && (
-                <LuMinus size={16} style={{ marginRight: 4, display: 'inline-block' }} />
-              )}
-              <Text>{format.number(price.value! - nextPrice.value)} NP</Text>
-              <Text
-                ml={1}
-                fontSize="0.55rem"
-                color={price.value! > nextPrice.value ? 'green.100' : 'red.200'}
-                opacity={0.8}
-              >
-                {getPercentChange(price.value!, nextPrice.value!)}%
-              </Text>
-            </Flex>
-          )}
-        </Table.Cell>
-        <Table.Cell px={1}>
-          {format.dateTime(new Date(price.addedAt!), {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
-        </Table.Cell>
-        {isAdmin && (
-          <Table.Cell px={1}>
-            <PriceTableEditButton price={price as PriceData} />
-          </Table.Cell>
-        )}
-      </Table.Row>
-      {!!price.context && (
-        <Table.Row bg={bgColor} border={0}>
-          <Table.Cell colSpan={4}>
-            <Box
-              whiteSpace="normal"
-              fontSize="0.8rem"
-              color="whiteAlpha.700"
-              textAlign="center"
-              bg="blackAlpha.300"
-              p={1}
-              borderRadius="md"
-              css={{ '& a': { color: linkColor } }}
-            >
-              <Text fontWeight="bold" mb={2}>
-                {t('ItemPage.price-context')}
-              </Text>
-              <Markdown>{price.context}</Markdown>
-            </Box>
-          </Table.Cell>
-        </Table.Row>
-      )}
-    </>
-  );
-}
-
-function PriceTableView({
-  data,
-  markers = [],
-  isAdmin,
-  item,
-  t,
-  format,
-}: {
-  data: PriceData[];
-  markers?: PriceMarker[];
-  isAdmin?: boolean;
-  item: ItemData;
-  t: ItemPriceLabels['t'];
-  format: ItemPriceLabels['format'];
-}) {
-  const sortedData = buildPriceTableData(data, markers, t);
-  const linkColor = Color(item.color.hex).alpha(0.8).lightness(70).hexa();
-
-  return (
-    <Table.ScrollArea minH={{ base: 100 }} maxH={{ base: 200, md: 300 }} w="100%" borderRadius="sm">
-      <Table.Root h="100%" size="sm" css={{ '& td': { border: 0 } }}>
-        <Table.Body>
-          {sortedData.map((price, index) => (
-            <PriceTableRow
-              key={
-                price.marker
-                  ? `${price.markerId}-${price.markerEdge}`
-                  : `price-${price.price_id ?? price.addedAt}`
-              }
-              price={price}
-              sortedData={sortedData}
-              index={index}
-              isAdmin={isAdmin}
-              itemColor={item.color.hex}
-              linkColor={linkColor}
-              t={t}
-              format={format}
-            />
-          ))}
-        </Table.Body>
-      </Table.Root>
-    </Table.ScrollArea>
-  );
-}
+// --- Price table (shared via PriceTable.tsx) ---
 
 function PriceTablePanel({
   item,
@@ -329,7 +80,9 @@ function PriceTablePanel({
 
   return (
     <Box bg="blackAlpha.300" borderRadius="md" overflow="hidden">
-      <Suspense fallback={<PriceTableView item={item} data={prices} t={t} format={format} />}>
+      <Suspense
+        fallback={<PriceTableView itemColor={item.color.hex} data={prices} t={t} format={format} />}
+      >
         <PriceTableTabFull item={item} prices={prices} t={t} format={format} />
       </Suspense>
     </Box>
@@ -349,7 +102,7 @@ async function PriceTableTabFull({
 
   return (
     <PriceTableView
-      item={item}
+      itemColor={item.color.hex}
       data={prices}
       markers={markers}
       isAdmin={!!user?.isAdmin}

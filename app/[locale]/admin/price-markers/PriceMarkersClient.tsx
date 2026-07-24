@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { UTCDate } from '@date-fns/utc';
+import { useFormatter } from 'next-intl';
 import {
   Alert,
   Badge,
@@ -21,7 +22,6 @@ import {
   SimpleGrid,
   Stack,
   Switch,
-  Table,
   Tabs,
   Text,
   Textarea,
@@ -31,7 +31,7 @@ import ItemSelect from '@components/Input/ItemSelect';
 import ListInput, { ListInputOption } from '@components/Input/ListInput';
 import Markdown from '@components/Utils/Markdown';
 import { useToast } from '@utils/theme/toast';
-import { buildPriceTableData } from '@app/_components/Item/Price/itemPriceUtils';
+import { PriceTableView } from '@app/_components/Item/Price/PriceTable';
 import type { ItemData, PriceData, PriceMarker } from '@types';
 import type { PriceContextDropPool } from '@app/api/admin/price-context/priceContextShared';
 import {
@@ -709,7 +709,7 @@ export function PriceMarkersClient() {
           <Text fontSize="sm" color="gray.400" mb={4}>
             Mock price history — only the marker rows reflect the form.
           </Text>
-          <MarkerPreviewTable marker={previewMarker} />
+          <MarkerPreviewTable marker={previewMarker} itemColor={form.color} />
         </Box>
 
         <Box bg="blackAlpha.400" borderRadius="md" p={4}>
@@ -833,82 +833,25 @@ function buildMockPrices(marker: PriceMarker | null): PriceData[] {
   }));
 }
 
-function MarkerPreviewTable({ marker }: { marker: PriceMarker | null }) {
-  const rows = useMemo(
-    () => buildPriceTableData(buildMockPrices(marker), marker ? [marker] : [], PREVIEW_T),
-    [marker]
-  );
+function MarkerPreviewTable({
+  marker,
+  itemColor,
+}: {
+  marker: PriceMarker | null;
+  itemColor: string;
+}) {
+  const format = useFormatter();
+  const mockPrices = useMemo(() => buildMockPrices(marker), [marker]);
 
   return (
-    <Table.ScrollArea maxH="360px" bg="blackAlpha.300" borderRadius="md">
-      <Table.Root size="sm" css={{ '& td': { border: 0 } }}>
-        <Table.Body>
-          {rows.map((row, index) => {
-            const bgColor = index % 2 === 0 ? 'blackAlpha.400' : 'transparent';
-
-            if (row.marker) {
-              return (
-                <Table.Row
-                  key={`marker-${index}-${row.badgeText}`}
-                  h={42}
-                  bg={bgColor}
-                  borderLeft={`3px solid ${row.color}85`}
-                >
-                  <Table.Cell colSpan={3} border={0}>
-                    <Flex flexFlow="column" alignItems="center" gap={2}>
-                      {!!row.badgeText && <Badge>{row.badgeText}</Badge>}
-                      {!!row.title && (
-                        <Text as="span" css={{ '& a, & strong, & b': { color: row.color } }}>
-                          <Markdown skipParagraph>{row.title}</Markdown>
-                        </Text>
-                      )}
-                      {!!row.description && (
-                        <Box
-                          whiteSpace="normal"
-                          fontSize="0.8rem"
-                          color="whiteAlpha.700"
-                          textAlign="center"
-                          bg="blackAlpha.300"
-                          p={1}
-                          borderRadius="md"
-                          maxW="90%"
-                        >
-                          <Markdown>{row.description}</Markdown>
-                        </Box>
-                      )}
-                      <Text fontSize="xs">
-                        {new Date(row.addedAt!).toLocaleDateString(undefined, {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })}
-                      </Text>
-                    </Flex>
-                  </Table.Cell>
-                </Table.Row>
-              );
-            }
-
-            return (
-              <Table.Row
-                key={`price-${index}`}
-                bg={bgColor}
-                borderLeft={row.color ? `3px solid ${row.color}85` : undefined}
-              >
-                <Table.Cell>{row.value?.toLocaleString()} NP</Table.Cell>
-                <Table.Cell px={1} color="whiteAlpha.700" fontSize="xs">
-                  {new Date(row.addedAt!).toLocaleDateString(undefined, {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </Table.Cell>
-              </Table.Row>
-            );
-          })}
-        </Table.Body>
-      </Table.Root>
-    </Table.ScrollArea>
+    <PriceTableView
+      data={mockPrices}
+      markers={marker ? [marker] : []}
+      itemColor={MARKER_COLOR_PATTERN.test(itemColor) ? itemColor : DEFAULT_COLOR}
+      t={PREVIEW_T}
+      format={format}
+      maxH="360px"
+    />
   );
 }
 
