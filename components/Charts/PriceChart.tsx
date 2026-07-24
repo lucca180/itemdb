@@ -11,7 +11,7 @@ import {
 } from 'lightweight-charts';
 import type { MouseEventParams, SeriesMarker } from 'lightweight-charts';
 import { useEffect, useRef } from 'react';
-import type { ColorData, ItemData, PriceData, UserList } from '@types';
+import type { ColorData, ItemData, PriceData, PriceMarker } from '@types';
 import { useFormatter, useTranslations } from 'next-intl';
 import {
   buildPriceChartModel,
@@ -25,13 +25,13 @@ import {
 export type ChartComponentProps = {
   color: ItemData['color'] | ColorData;
   data: PriceData[];
-  lists?: UserList[];
+  markers?: PriceMarker[];
 };
 
 const ChartComponent = (props: ChartComponentProps) => {
   const formatter = useFormatter();
   const t = useTranslations();
-  const { data, color, lists } = props;
+  const { data, color, markers } = props;
   const RBG = Color.rgb(color.rgb).round().array();
   const backgroundColor = 'transparent';
   const lineColor = `rgb(${RBG[0]}, ${RBG[1]}, ${RBG[2]})`;
@@ -94,7 +94,7 @@ const ChartComponent = (props: ChartComponentProps) => {
     };
     const { segments: chartSegments, seriesPoints } = buildPriceChartModel(
       data,
-      lists,
+      markers,
       defaultSeries
     );
     const contextByMarkerId = new Map<string, ChartMarkerPoint>();
@@ -275,7 +275,16 @@ const ChartComponent = (props: ChartComponentProps) => {
       });
       date.style.opacity = '0.78';
 
-      tooltip.replaceChildren(title, date);
+      if (point.description) {
+        date.style.marginBottom = '6px';
+        const description = document.createElement('div');
+        description.textContent = point.description;
+        description.style.whiteSpace = 'pre-wrap';
+        tooltip.replaceChildren(title, date, description);
+      } else {
+        tooltip.replaceChildren(title, date);
+      }
+
       lastTooltipKey = tooltipKey;
     };
 
@@ -463,7 +472,7 @@ const ChartComponent = (props: ChartComponentProps) => {
 
       chart.remove();
     };
-  }, [data, color, lists, formatter, t]);
+  }, [data, color, markers, formatter, t]);
 
   return <Box flex="1" position="relative" ref={chartContainerRef} />;
 };

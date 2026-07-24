@@ -19,7 +19,6 @@ import Markdown from '@components/Utils/Markdown';
 import MatchTable from '@app/_components/Item/NCTrade/MatchTable';
 import {
   loadLastSeen,
-  getOfficialItemLists,
   loadItemPriceMarkers,
   loadNPPrices,
   loadPriceStatus,
@@ -359,9 +358,9 @@ async function PriceTableTabFull({
 }
 
 async function PriceChartTabFull({ item, prices }: ItemProps & ItemPriceShellProps) {
-  const lists = await getOfficialItemLists(item.internal_id, shouldShowTradeLists(item));
+  const markers = await loadItemPriceMarkers(item, shouldShowTradeLists(item));
 
-  return <PriceChartPanel item={item} prices={prices} lists={lists} />;
+  return <PriceChartPanel item={item} prices={prices} markers={markers} />;
 }
 
 async function PriceHelpBannerAsync({

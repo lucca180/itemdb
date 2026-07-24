@@ -3,8 +3,7 @@ import { tz } from '@date-fns/tz';
 import { format } from 'date-fns';
 import { isBusinessDay } from 'lightweight-charts';
 import type { Time } from 'lightweight-charts';
-import type { PriceData, UserList } from '@types';
-import { resolveItemListSeries } from '@utils/item/itemListSeries';
+import type { PriceData, PriceMarker } from '@types';
 import { stripMarkdown } from '@utils/utils';
 
 export type ChartPoint = {
@@ -36,6 +35,7 @@ export type ChartSeriesPoint = {
   time: ChartPoint['time'];
   value: ChartPoint['value'];
   addedAt: string;
+  description?: string | null;
 };
 
 type ListChartSeries = ChartSeriesStyle & {
@@ -47,47 +47,46 @@ type PendingSeriesPoint = Omit<ChartSeriesPoint, 'segmentId'>;
 
 export function buildPriceChartModel(
   prices: PriceData[],
-  lists: UserList[] | undefined,
+  markers: PriceMarker[] | undefined,
   defaultSeries: ChartSeriesStyle
 ) {
-  // Convert raw prices and lists into the two concepts rendered by the chart:
-  // colored time ranges and contextual points attached to a price.
+  // Convert raw prices and presentation-ready markers into the two concepts
+  // rendered by the chart: colored time ranges and contextual points.
   const chartData = buildChartData(prices);
   const seriesInfo: ListChartSeries[] = [];
   const pendingPoints: PendingSeriesPoint[] = [];
 
-  resolveItemListSeries(lists).forEach((series) => {
-    const isOpenItemAddition = series.type === 'itemAddition' && !series.endAt;
-
-    // A one-day range cannot produce a useful line segment. Open item additions
-    // are also events rather than ranges, so both are rendered as context points.
-    if (series.isSingleDay || isOpenItemAddition) {
-      const chartPoint = getClosestChartPoint(chartData, dateToChartDateKey(series.startAt));
+  (markers ?? []).forEach((marker) => {
+    // Point markers (single-day / open itemAddition / manual isPoint) snap to
+    // the closest price day. Ranges become colored area segments.
+    if (marker.isPoint) {
+      const chartPoint = getClosestChartPoint(chartData, dateToChartDateKey(marker.startAt));
       if (!chartPoint) return;
 
       pendingPoints.push({
-        id: series.id,
-        name: series.name,
-        lineColor: series.color,
+        id: marker.id,
+        name: marker.title,
+        lineColor: marker.color,
         time: chartPoint.time,
         value: chartPoint.value,
-        addedAt: series.startAt,
+        addedAt: marker.startAt,
+        description: marker.description ? stripMarkdown(marker.description) : null,
       });
       return;
     }
 
-    const color = Color(series.color);
+    const color = Color(marker.color);
 
     seriesInfo.push({
-      id: series.id,
-      name: series.name,
-      lineColor: series.color,
+      id: marker.id,
+      name: marker.title,
+      lineColor: marker.color,
       topColor: color.alpha(0.62).hexa(),
       bottomColor: color.alpha(0.16).hexa(),
-      startTime: new Date(series.startAt).getTime(),
-      endTime: series.endAt ? new Date(series.endAt).getTime() : null,
-      startDateKey: dateToChartDateKey(series.startAt),
-      endDateKey: series.endAt ? dateToChartDateKey(series.endAt) : null,
+      startTime: new Date(marker.startAt).getTime(),
+      endTime: marker.endAt ? new Date(marker.endAt).getTime() : null,
+      startDateKey: dateToChartDateKey(marker.startAt),
+      endDateKey: marker.endAt ? dateToChartDateKey(marker.endAt) : null,
     });
   });
 

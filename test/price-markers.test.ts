@@ -9,6 +9,7 @@ vi.mock('@pages/api/v1/items/[id_name]/lists', () => ({
 
 import { resolveOfficialListMarkers } from '@app/server/items/priceMarkers';
 import { buildPriceTableData } from '@app/_components/Item/Price/itemPriceUtils';
+import { buildPriceChartModel } from '@components/Charts/priceChartModel';
 
 const now = new Date('2024-06-15T12:00:00.000Z');
 
@@ -263,5 +264,83 @@ describe('buildPriceTableData', () => {
     expect(rows).toHaveLength(1);
     expect(rows[0].badgeText).toBe('Price spike');
     expect(rows[0].title).toBe('Event');
+  });
+});
+
+describe('buildPriceChartModel', () => {
+  const defaultSeries = {
+    id: 'default',
+    name: 'Price history',
+    lineColor: '#fff',
+    topColor: '#fff',
+    bottomColor: '#fff0',
+    startTime: Number.NEGATIVE_INFINITY,
+    endTime: null,
+  };
+
+  const prices = [
+    {
+      price_id: 1,
+      value: 100,
+      addedAt: '2024-03-01T12:00:00.000Z',
+      inflated: false,
+      isLatest: false,
+    },
+    {
+      price_id: 2,
+      value: 200,
+      addedAt: '2024-04-15T12:00:00.000Z',
+      inflated: false,
+      isLatest: false,
+    },
+    {
+      price_id: 3,
+      value: 300,
+      addedAt: '2024-05-20T12:00:00.000Z',
+      inflated: false,
+      isLatest: true,
+    },
+  ];
+
+  it('renders isPoint markers as seriesPoints and ranges as colored segments', () => {
+    const { segments, seriesPoints } = buildPriceChartModel(
+      prices,
+      [
+        {
+          id: 'officialList-1',
+          type: 'officialList',
+          title: 'Point Event',
+          description: 'Hello **world**',
+          slug: 'point',
+          color: '#abcabc',
+          startAt: '2024-04-10T00:00:00.000Z',
+          endAt: null,
+          isPoint: true,
+        },
+        {
+          id: 'officialList-2',
+          type: 'officialList',
+          title: 'Range Event',
+          description: null,
+          slug: 'range',
+          color: '#112233',
+          startAt: '2024-03-01T00:00:00.000Z',
+          endAt: '2024-04-30T00:00:00.000Z',
+          isPoint: false,
+        },
+      ],
+      defaultSeries
+    );
+
+    expect(seriesPoints).toHaveLength(1);
+    expect(seriesPoints[0]).toMatchObject({
+      id: 'officialList-1',
+      name: 'Point Event',
+      description: 'Hello world',
+    });
+
+    const rangeSegments = segments.filter((segment) => segment.id === 'officialList-2');
+    expect(rangeSegments.length).toBeGreaterThan(0);
+    expect(rangeSegments[0].name).toBe('Range Event');
   });
 });

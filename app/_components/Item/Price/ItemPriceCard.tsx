@@ -39,7 +39,7 @@ import type { WrongPriceModalProps } from '@components/Modal/WrongPriceModal';
 import type { SaleStatusModalProps } from '@components/Modal/SaleStatusModal';
 import type { CreatePriceModalModalProps } from '@components/Modal/CreatePriceModal';
 import type { SeenHistoryModalProps } from '@components/SeenHistory/SeenHistoryModal';
-import type { ItemData, PriceData, PricingInfo, UserList } from '@types';
+import type { ItemData, PriceData, PriceMarker, PricingInfo } from '@types';
 import type {
   ItemPriceEmptyLabels,
   ItemPriceHelpLabels,
@@ -568,11 +568,11 @@ export function PriceEmptyPanel({ labels }: { labels: ItemPriceEmptyLabels }) {
 export function PriceChartPanel({
   item,
   prices,
-  lists,
+  markers,
 }: {
   item: ItemData;
   prices: PriceData[];
-  lists?: UserList[];
+  markers?: PriceMarker[];
 }) {
   const { activeTab } = useItemPriceTab();
   const [mounted, setMounted] = useState(false);
@@ -586,7 +586,7 @@ export function PriceChartPanel({
 
   return (
     <Box minH="200px" w="100%">
-      <ChartComponent lists={lists} color={item.color} data={prices} />
+      <ChartComponent markers={markers} color={item.color} data={prices} />
     </Box>
   );
 }
